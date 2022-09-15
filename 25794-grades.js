@@ -6,10 +6,12 @@
 
 const fs = require('fs');
 
-const RE_HADITH_NO_REF = /^[•*]? ?(\d+ \/ \d+|\. \. \/ \d+|\d+) - ?/;
-const RE_HADITH_W_REF = /^[•*]? ?(\d+ \/ \d+|\. \. \/ \d+|\d+) - ?.+ \((\d)\) ?\.?$/;
+const RE_HADITH_NO_REF = /^[•*°]? ?[•*°]? ?(\d+ \/ \d+|(?:\. )+\/ \d+|\d+) -? ?/;
+const RE_HADITH_W_REF = /^[•*°]? ?[•*°]? ?(\d+ \/ \d+|(?:\. )+\/ \d+|\d+) -? ?.+ \((\d)\) ?\.?$/;
 const RE_REF = /\((\d)\) ?\.?$/;
 const RE_FOOTER_REF = /^\((\d)\) (.+?)[:،,\-\.]/;
+
+var lastHadithNum = 0;
 var hadiths = []
 var refs = [];
 var partialHadith = false;
@@ -77,6 +79,10 @@ for (var pg = 152; pg < table.rows.length; pg++) {
 				partialHadith = false;
 				hadiths.push(m[1]);
 				refs.push(m[2]);
+				var hn = parseInt(m[1]);
+				if ((hn - lastHadithNum) != 1)
+					console.log((lastHadithNum + 1) + '\tMissing');
+				lastHadithNum = hn;
 			} else {
 				m = RE_HADITH_NO_REF.exec(line);
 				if (m && m.length >= 2) {
@@ -84,6 +90,10 @@ for (var pg = 152; pg < table.rows.length; pg++) {
 						refs.push(0);
 					partialHadith = true;
 					hadiths.push(m[1]);
+					var hn = parseInt(m[1]);
+					if ((hn - lastHadithNum) != 1)
+						console.log((lastHadithNum + 1) + '\tMissing');
+					lastHadithNum = parseInt(m[1]);
 				} else if (partialHadith) {
 					m = RE_REF.exec(line);
 					if (m && m.length >= 2) {
