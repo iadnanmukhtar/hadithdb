@@ -2,7 +2,7 @@ const fs = require('fs');
 const lines = require('line-reader');
 const { format } = require('@fast-csv/format');
 
-lines.eachLine('hadiths-final.csv', function (line, last) {
+lines.eachLine('data/hadiths-final.csv', function (line, last) {
 
     var toks = line.split(/\t/);
     if (!toks) return;

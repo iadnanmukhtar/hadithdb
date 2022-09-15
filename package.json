@@ -1,8 +1,11 @@
 {
   "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "debug": "~2.6.9",
+    "ejs": "^3.1.8",
+    "express": "^4.16.4",
     "fast-csv": "^4.3.6",
-    "json2csv": "^5.0.7",
-    "line-reader": "^0.4.0",
-    "rtl-arabic": "^2.1.0"
+    "http-errors": "~1.6.3",
+    "line-reader": "^0.4.0"
   }
 }
