@@ -1,19 +1,25 @@
+/* jslint node:true, esversion:6 */
+
+"use strict";
 const fs = require('fs');
-const lines = require('line-reader');
+const LineReaderSync = require('line-reader-sync');
 const { format } = require('@fast-csv/format');
 
-lines.eachLine('data/hadiths-final.csv', function (line, last) {
+var lineReader = new LineReaderSync('data/hadiths-final.csv');
+for (var line = lineReader.readline(); line != null; line = lineReader.readline()) {
 
     var toks = line.split(/\t/);
     if (!toks) return;
     var cid = toks[0];
-    var c = toks[1]
-    var n = toks[2];
-    var g = toks[3];
+    var n = toks[1];
+    var g = toks[2];
+    var h_en = toks[3];
     var h_ar = toks[4];
-    var h_en = toks[5];
-    var m = '';
     var ch = '';
+    var m = '';
+    if (h_en.startsWith("\""))
+        h_en = h_en.replace(/^"/, "").replace(/"$/, "");
+    h_en = h_en.replace(/\"{2,}/g, "\"");
 
     // normalize
     h_ar = h_ar.replace(/[\:\"\'،۔ـ\-\.\,]/g, '');
@@ -31,6 +37,7 @@ lines.eachLine('data/hadiths-final.csv', function (line, last) {
     //h2 = h2.replace(/(سمعت|سمعنا|سمعناه|سمع) (?!((النبي|نبي|الرسول|رسول)|[^\s]+ (النبي|نبي|الرسول|رسول)))/g, '~ ');
     h2 = h2.replace(/(سمعت|سمعنا|سمعناه|سمع) /g, '~ ');
     h2 = h2.replace(/(عن|عنه|عنها) /g, '~ ');
+    h2 = h2.replace(/(يبلغ به) /g, '~~ ');
     h2 = h2.replace(/(أنه|أن|أنها) /g, '~ ');
     h2 = h2.replace(/(قال|قالت) /g, '~ ');
     h2 = h2.replace(/\s+/g, ' ').trim();
@@ -41,7 +48,7 @@ lines.eachLine('data/hadiths-final.csv', function (line, last) {
         narr_toks.forEach(tok => {
             h2_tokslen.push(wordCount(tok));
         });
-        for (i = 0; i < narr_toks.length; i++) {
+        for (var i = 0; i < narr_toks.length; i++) {
             if (narr_toks[i].match(/(نبي|رسول)/)) {
                 m2 = narr_toks.slice(i).join('~ ');
                 break;
@@ -54,7 +61,7 @@ lines.eachLine('data/hadiths-final.csv', function (line, last) {
             m2 = narr_toks[narr_toks.length - 1];
     }
     if (!m2) {
-        process.stdout.write('ERROR on: ' + c + ' ' + n + '\n');
+        process.stdout.write('ERROR on: ' + cid + ' ' + n + '\n');
         return;
     }
     m2 = m2.replace(/\s+/g, ' ').trim();
@@ -79,8 +86,8 @@ lines.eachLine('data/hadiths-final.csv', function (line, last) {
     }
 
     // write
-    process.stdout.write(cid + '\t' + n + '\t' + ch + '\t' + m + '\n');
-});
+    process.stdout.write(cid + '\t' + n + '\t' + g + '\t' + h_en + '\t' + h_ar + '\t' + ch + '\t' + m + '\n');
+};
 
 function wordCount(s) {
     return s.split(' ').length;
