@@ -1,0 +1,90 @@
+[
+	{
+		"id": "1",
+		"alias": "bukhari",
+		"shortNameEn": "Bukhārī",
+		"shortNameAr": "البخاري",
+		"nameEn": "Ṣaḥīḥ al-Bukhārī",
+		"nameAr": "صحيح البخاري"
+	},
+	{
+		"id": "2",
+		"alias": "muslim",
+		"shortNameEn": "Muslim",
+		"shortNameAr": "مسلم",
+		"nameEn": "Ṣaḥīḥ Muslim",
+		"nameAr": "صحيح مسلم"
+	},
+	{
+		"id": "3",
+		"alias": "nasai",
+		"shortNameEn": "Nasāʾī",
+		"shortNameAr": "النسائي",
+		"nameEn": "Sunan al-Nasāʾī",
+		"nameAr": "سنن النسائي"
+	},
+	{
+		"id": "4",
+		"alias": "abudawud",
+		"shortNameEn": "Abū Dawūd",
+		"shortNameAr": "أبو داود",
+		"nameEn": "Sunan Abū Dawūd",
+		"nameAr": "سنن أبي داود"
+	},
+	{
+		"id": "5",
+		"alias": "tirmidhi",
+		"shortNameEn": "Tirmidhī",
+		"shortNameAr": "الترمذي",
+		"nameEn": "Jamiʿ al-Tirmidhī",
+		"nameAr": "جامع الترمذي"
+	},
+	{
+		"id": "6",
+		"alias": "ibnmajah",
+		"shortNameEn": "Ibn Mājah",
+		"shortNameAr": "ابن ماجة",
+		"nameEn": "Sunan Ibn Mājah",
+		"nameAr": "سنن ابن ماجة"
+	},
+	{
+		"id": "7",
+		"alias": "malik",
+		"shortNameEn": "Mālik",
+		"shortNameAr": "مالك",
+		"nameEn": "Muwatta Mālik",
+		"nameAr": "موطّأ مالك"
+	},
+	{
+		"id": "8",
+		"alias": "ahmad",
+		"shortNameEn": "Aḥmad",
+		"shortNameAr": "أحمد",
+		"nameEn": "Musnad Aḥmad",
+		"nameAr": "مسند أحمد"
+	},
+	{
+		"id": "10",
+		"alias": "shamail",
+		"shortNameEn": "Shamāʾil",
+		"shortNameAr": "الشمائل",
+		"nameEn": "al-Shamāʾil al-Muḥammadiyyah by Tirmidhī",
+		"nameAr": "الشمائل المحمّديّة للترمذي"
+	},
+	{
+		"id": "11",
+		"alias": "adab",
+		"shortNameEn": "al-Adab",
+		"shortNameAr": "الأدب المفرد",
+		"nameEn": "al-Adab al-Mufrad by Bukhārī",
+		"nameAr": "الأدب المفرد للبخاري"
+	},
+	{
+		"id": "12",
+		"alias": "bulughmaram",
+		"shortNameEn": "Bulūgh al-Marām",
+		"shortNameAr": "بلوغ المرام",
+		"nameEn": "Bulūgh al-Marām by Ibn Ḥajar",
+		"nameAr": "بلوغ المرام لابن حجر"
+	}
+]

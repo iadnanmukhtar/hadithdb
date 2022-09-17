@@ -1,0 +1,18 @@
+@font-face {
+	font-family: Kitab;
+	src: url(/fonts/kitab-base.woff2);
+  }
+
+body {
+	font-family: Arial;
+}
+  
+:lang(ar) {
+	font-family: Kitab;
+	direction: rtl;
+}
+
+.h :lang(en) {
+	font-size: 0.75rem;
+}
+
