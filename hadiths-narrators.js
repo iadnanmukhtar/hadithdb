@@ -5,7 +5,7 @@ const fs = require('fs');
 const LineReaderSync = require('line-reader-sync');
 const { format } = require('@fast-csv/format');
 
-var lineReader = new LineReaderSync('data/hadiths-final.csv.backup');
+var lineReader = new LineReaderSync('data/hadiths-final.backup.csv');
 for (var line = lineReader.readline(); line != null; line = lineReader.readline()) {
 
     var toks = line.split(/\t/);
