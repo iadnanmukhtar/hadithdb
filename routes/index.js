@@ -8,7 +8,7 @@ const Hadith = require('../lib/Hadith');
 
 var db = [];
 var dbsearchable = [];
-var recordReader = new LineReaderSync(__dirname + '/../data/hadiths-final.csv');
+var recordReader = new LineReaderSync(__dirname + '/../data/hadiths-final.csv.backup');
 for (var record = recordReader.readline(); record != null; record = recordReader.readline()) {
   db.push(record);
   dbsearchable.push(removeDiacritics(record));
@@ -16,7 +16,7 @@ for (var record = recordReader.readline(); record != null; record = recordReader
 
 String.prototype.toArabicDigits = function () {
   var s = this.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
-  s = s.replace('a', 'أ').replace('b', 'ب').replace('c', 'ج').replace('d', 'د').replace('e', 'ه').replace('f', 'و').replace('g', 'ز');
+  s = s.replace('a', ' أ').replace('b', ' ب').replace('c', ' ج').replace('d', ' د').replace('e', ' ه').replace('f', ' و').replace('g', ' ز');
   return s;
 };
 
