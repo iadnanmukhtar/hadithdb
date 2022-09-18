@@ -5,7 +5,7 @@ const fs = require('fs');
 const LineReaderSync = require('line-reader-sync');
 const { format } = require('@fast-csv/format');
 
-var lineReader = new LineReaderSync('data/hadiths-final.csv');
+var lineReader = new LineReaderSync('data/hadiths-final.csv.backup');
 for (var line = lineReader.readline(); line != null; line = lineReader.readline()) {
 
     var toks = line.split(/\t/);
@@ -60,7 +60,7 @@ for (var line = lineReader.readline(); line != null; line = lineReader.readline(
         if (m2 == '')
             m2 = narr_toks[narr_toks.length - 1];
     }
-    if (!m2) {
+    if (m2 == null) {
         process.stdout.write('ERROR on: ' + cid + ' ' + n + '\n');
         return;
     }
