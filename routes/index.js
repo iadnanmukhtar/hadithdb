@@ -6,9 +6,10 @@ const express = require('express');
 const LineReaderSync = require('line-reader-sync');
 const Hadith = require('../lib/Hadith');
 
+var books = JSON.parse(fs.readFileSync(__dirname + '/../data/books.json'));
 var db = [];
 var dbsearchable = [];
-var recordReader = new LineReaderSync(__dirname + '/../data/hadiths-final.csv.backup');
+var recordReader = new LineReaderSync(__dirname + '/../data/hadiths-final.csv');
 for (var record = recordReader.readline(); record != null; record = recordReader.readline()) {
   db.push(record);
   dbsearchable.push(removeDiacritics(record));
@@ -35,6 +36,8 @@ router.get('/', function (req, res, next) {
 });
 
 function searchWrapper(qs) {
+  if (qs.match(/^([^\s]+:\d+|\d+)/))
+    return searchNumber(qs);
   return search(toQueryPattern(qs));
 }
 
@@ -140,6 +143,34 @@ function searchQ(q) {
         }
       }
       results.push(new Hadith(recordHilited));
+    }
+  }
+  return results;
+}
+
+function searchNumber(q) {
+  var results = [];
+  var toks = q.split(/:/);
+  var book = null;
+  var bookRef = '';
+  var hadithNum = 0;
+  if (toks.length == 2) {
+    bookRef = toks[0];
+    hadithNum = toks[1];
+    book = books.filter(function (value) {
+      return (value.alias == bookRef || value.id == bookRef);
+    });
+    var re = new RegExp('^' + book[0].id + '\\t' + hadithNum + '([a-z]?|/[^\\t]*)\\t', 'i');
+    for (var i = 0; i < db.length; i++) {
+      if (db[i].match(re))
+        results.push(new Hadith(db[i]));
+    }
+  } else {
+    hadithNum = toks[0];
+    var re = new RegExp('^\\d+\\t' + hadithNum + '([a-z]?|/[^\\t]*)\\t', 'i');
+    for (var i = 0; i < db.length; i++) {
+      if (db[i].match(re))
+        results.push(new Hadith(db[i]));
     }
   }
   return results;
