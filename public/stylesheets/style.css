@@ -16,3 +16,8 @@ body {
 	font-size: 0.75rem;
 }
 
+.h i {
+	background-color: yellow;
+	font-style: inherit;
+}
+

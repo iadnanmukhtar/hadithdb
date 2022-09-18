@@ -42,15 +42,15 @@
         <div class="col-6">
           <p lang="en">
             <b><%= results[i].book.shortNameEn %> <%= results[i].num %></b> –
-            <%= results[i].trans %><br />
-            <em class="text-muted"><%= results[i].grade %></em>
+            <%- results[i].trans %></i><br />
+            <em class="text-muted"><%- results[i].grade %></em>
           </p>
         </div>
         <div class="col-6">
-            <p lang="ar">
-              <b><%= results[i].book.shortNameAr %> <%= results[i].num %></b> –
-              <span class="text-muted"><%= results[i].chain %></span> <%= results[i].body %>
-            </p>
+          <p lang="ar">
+            <b><%= results[i].book.shortNameAr %> <%= results[i].num.toArabicDigits() %></b> –
+            <span class="text-muted"><%- results[i].chain %></span> <%- results[i].body %></i>
+          </p>
         </div>
       <% } %>
       </div>

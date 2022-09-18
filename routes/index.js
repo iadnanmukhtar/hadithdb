@@ -14,6 +14,12 @@ for (var record = recordReader.readline(); record != null; record = recordReader
   dbsearchable.push(removeDiacritics(record));
 }
 
+String.prototype.toArabicDigits = function () {
+  var s = this.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  s = s.replace('a', 'أ').replace('b', 'ب').replace('c', 'ج').replace('d', 'د').replace('e', 'ه').replace('f', 'و').replace('g', 'ز');
+  return s;
+};
+
 const router = express.Router();
 
 router.get('/', function (req, res, next) {
@@ -100,10 +106,41 @@ function search(qs) {
 function searchQ(q) {
   var results = [];
   for (var i = 0; i < db.length; i++) {
-    if (results.length > 100)
+    var record = db[i];
+    var recordPlain = dbsearchable[i];
+    if (results.length > 1000)
       break;
-    if (dbsearchable[i].match(q))
-      results.push(new Hadith(db[i]));
+    if (recordPlain.match(q)) {
+      var re = new RegExp(q, 'gi');
+      var m = null;
+      while ((m = re.exec(recordPlain)) !== null) {
+        var start = m.index;
+        var end = m.index + m[0].length - 1;
+        // find starting token
+        for (var j = 1; (start - j) > 0; j++)
+          if (recordPlain[start - j].match(/[\s]/))
+            break;
+        if (j < 0) j = 0;
+        var startToks = recordPlain.substring(0, start - j).split(/ /).length;
+        // find ending token
+        for (var j = 1; (end + j) < (recordPlain.length - 1); j++)
+          if (recordPlain[end + j].match(/\s/))
+            break;
+        if (j >= recordPlain.length) j = recordPlain.length;
+        // hilite token
+        var endToks = recordPlain.substring(0, end + j).split(/ /).length - 1;
+        var recordHilited = '';
+        var toks = record.split(/ /);
+        for (var j = 0; j < toks.length; j++) {
+          if (j == startToks)
+            recordHilited += '<i>';
+          recordHilited += toks[j] + ' ';
+          if (j == endToks)
+            recordHilited += '</i>';
+        }
+      }
+      results.push(new Hadith(recordHilited));
+    }
   }
   return results;
 }
