@@ -72,6 +72,14 @@
 		"nameAr": "سنن الدارمي"
 	},
 	{
+		"id": "10",
+		"alias": "hakim",
+		"shortNameEn": "Ḥākim",
+		"shortNameAr": "الحاكم",
+		"nameEn": "Mustadrak al-Ḥākim",
+		"nameAr": "مستدرك الحاكم"
+	},
+	{
 		"id": "100",
 		"alias": "shamail",
 		"shortNameEn": "Shamāʾil",
