@@ -64,7 +64,15 @@
 		"nameAr": "مسند أحمد"
 	},
 	{
-		"id": "10",
+		"id": "9",
+		"alias": "darimi",
+		"shortNameEn": "Dārimī",
+		"shortNameAr": "الدارمي",
+		"nameEn": "Sunan al-Dārimī",
+		"nameAr": "سنن الدارمي"
+	},
+	{
+		"id": "100",
 		"alias": "shamail",
 		"shortNameEn": "Shamāʾil",
 		"shortNameAr": "الشمائل",
@@ -72,7 +80,7 @@
 		"nameAr": "الشمائل المحمّديّة للترمذي"
 	},
 	{
-		"id": "11",
+		"id": "101",
 		"alias": "adab",
 		"shortNameEn": "al-Adab",
 		"shortNameAr": "الأدب المفرد",
@@ -80,7 +88,7 @@
 		"nameAr": "الأدب المفرد للبخاري"
 	},
 	{
-		"id": "12",
+		"id": "102",
 		"alias": "bulughmaram",
 		"shortNameEn": "Bulūgh al-Marām",
 		"shortNameAr": "بلوغ المرام",
