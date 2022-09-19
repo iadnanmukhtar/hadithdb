@@ -36,6 +36,18 @@ router.get('/', function (req, res, next) {
     });
 });
 
+router.get('/:ref', function (req, res, next) {
+  if (req.params.ref) {
+    var results = searchNumber(req.params.ref.trim());
+    res.render('search', {
+      q: req.query.q,
+      results: results
+    });
+  } else
+    res.render('index', {
+    });
+});
+
 function searchWrapper(qs) {
   if (qs.match(/^([a-z]+:\d+|\d+)/))
     return searchNumber(qs);

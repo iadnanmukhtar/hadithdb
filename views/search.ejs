@@ -44,14 +44,14 @@
       <div class="col-6 text-start">
         <% if (results[0].prev) {
         var result = results[0]; %>
-        <a href="/?q=<%= result.prev.book.alias %>:<%= result.prev.num %>">
+        <a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">
           <small>&lt; <%= result.prev.book.shortNameEn %>:<%- result.prev.num %></small></a>
         <% } %>
       </div>
       <div class="col-6 text-end">
         <% if (results[results.length-1].next) { 
         var result = results[results.length-1]; %>
-        <a href="/?q=<%= result.next.book.alias %>:<%= result.next.num %>">
+        <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">
           <small><%= result.next.book.shortNameEn %>:<%- result.next.num %> &gt;</small></a>
         <% } %>  
       </div>
@@ -62,14 +62,14 @@
       <% for (var i = 0; i < results.length; i++) { %>
         <div class="col-6">
           <p lang="en">
-            <b><a href="/?q=<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameEn %> <%= results[i].num %></a></b> –
+            <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameEn %> <%= results[i].num %></a></b> –
             <%- results[i].trans %></i><br />
             <em class="text-muted"><%- results[i].grade %></em>
           </p>
         </div>
         <div class="col-6">
           <p lang="ar">
-            <b><a href="/?q=<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameAr %> <%= results[i].num.toArabicDigits() %></a></b> –
+            <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameAr %> <%= results[i].num.toArabicDigits() %></a></b> –
             <span class="text-muted"><%- results[i].chain %></span> <%- results[i].body %></i>
           </p>
         </div>
