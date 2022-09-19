@@ -2,3 +2,7 @@
 .history
 node_modules
 *.backup
+data/temp
+data/archive/*.csv
+data/archive/*.json
+data/archive/*.db
