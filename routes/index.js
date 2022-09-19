@@ -32,8 +32,11 @@ router.get('/', function (req, res, next) {
       results: results
     });
   } else
-    res.render('index', {
-    });
+    var results = searchRandom();
+  res.render('search', {
+    q: 'random',
+    results: results
+  });
 });
 
 router.get('/:ref', function (req, res, next) {
@@ -189,6 +192,11 @@ function searchNumber(q) {
     }
   }
   return results;
+}
+
+function searchRandom() {
+  var i = Math.floor(Math.random() * (db.length - 1));
+  return [new Hadith(i, db[i])];
 }
 
 module.exports = router;
