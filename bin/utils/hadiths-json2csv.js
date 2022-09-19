@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { format } = require('@fast-csv/format');
 
-var ahadith = JSON.parse(fs.readFileSync('data/hadiths.json'));
+var ahadith = JSON.parse(fs.readFileSync('data/archive/hadiths.json'));
 const stream = format({ delimiter: '\t', rowDelimiter: '\n', quote: '', escape: '' });
 stream.pipe(process.stdout);
 var cid = 0;

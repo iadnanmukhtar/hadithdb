@@ -17,7 +17,7 @@ var refs = [];
 var partialHadith = false;
 var withinFooter = false;
 
-var table = JSON.parse(fs.readFileSync('data/25794.json'))[0];
+var table = JSON.parse(fs.readFileSync('data/archive/25794.json'))[0];
 for (var pg = 152; pg < table.rows.length; pg++) {
 
 	if (hadiths.length > 10) {
