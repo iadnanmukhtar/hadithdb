@@ -41,14 +41,14 @@
 
     <% if (results.length > 0) { %> 
     <div class="row mb-2">
-      <div class="col-md-6 col-sml-12 text-start">
+      <div class="col-md-6 col-xs-12 text-start">
         <% if (results[0].prev) {
         var result = results[0]; %>
         <a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">
           <small>&lt; <%= result.prev.book.shortNameEn %>:<%- result.prev.num %></small></a>
         <% } %>
       </div>
-      <div class="col-md-6 col-sml-12 text-end">
+      <div class="col-md-6 col-xs-12 text-end">
         <% if (results[results.length-1].next) { 
         var result = results[results.length-1]; %>
         <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">
