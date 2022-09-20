@@ -1,13 +1,13 @@
-http://hadith.quranunlocked.com
-http://hadith.quranunlocked.com/bukhari:1
-http://hadith.quranunlocked.com/muslim:1
-http://hadith.quranunlocked.com/nasai:1
-http://hadith.quranunlocked.com/abudawud:1
-http://hadith.quranunlocked.com/tirmidhi:1
-http://hadith.quranunlocked.com/ibnmajah:1
-http://hadith.quranunlocked.com/malik:1
-http://hadith.quranunlocked.com/ahmad:1
-http://hadith.quranunlocked.com/darimi:1
-http://hadith.quranunlocked.com/hakim:1
+https://hadith.quranunlocked.com
+https://hadith.quranunlocked.com/bukhari:1
+https://hadith.quranunlocked.com/muslim:1
+https://hadith.quranunlocked.com/nasai:1
+https://hadith.quranunlocked.com/abudawud:1
+https://hadith.quranunlocked.com/tirmidhi:1
+https://hadith.quranunlocked.com/ibnmajah:1
+https://hadith.quranunlocked.com/malik:1
+https://hadith.quranunlocked.com/ahmad:1
+https://hadith.quranunlocked.com/darimi:1
+https://hadith.quranunlocked.com/hakim:1
 
 
