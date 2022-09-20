@@ -5,7 +5,7 @@ const fs = require('fs');
 const LineReaderSync = require('line-reader-sync');
 const { format } = require('@fast-csv/format');
 
-var lineReader = new LineReaderSync('data/archive/hadiths-final.backup.csv');
+var lineReader = new LineReaderSync('data/archive/hadiths-final.csv');
 for (var line = lineReader.readline(); line != null; line = lineReader.readline()) {
 
     var toks = line.split(/\t/);
@@ -32,10 +32,9 @@ for (var line = lineReader.readline(); line != null; line = lineReader.readline(
     var h2 = h_ar + '';
     var m2 = '';
     h2 = h2.replace(/[ؐ-ًؕ-ٖٓ-ٟۖ-ٰٰۭ]/g, '');
-    h2 = h2.replace(/(حدثنا|حدثني|حدثناه|حدثه) /g, '~ ');
-    h2 = h2.replace(/(أخبرنا|أخبرناه|أخبرني|أخبره) /g, '~ ');
-    //h2 = h2.replace(/(سمعت|سمعنا|سمعناه|سمع) (?!((النبي|نبي|الرسول|رسول)|[^\s]+ (النبي|نبي|الرسول|رسول)))/g, '~ ');
-    h2 = h2.replace(/(سمعت|سمعنا|سمعناه|سمع) /g, '~ ');
+    h2 = h2.replace(/و?(حدثنا|حدثني|حدثناه|حدثه) /g, '~ ');
+    h2 = h2.replace(/و?(أخبرنا|أخبرناه|أخبرني|أخبره) /g, '~ ');
+    h2 = h2.replace(/و?(سمعت|سمعنا|سمعناه|سمع) /g, '~ ');
     h2 = h2.replace(/(عن|عنه|عنها) /g, '~ ');
     h2 = h2.replace(/(يبلغ به) /g, '~~ ');
     h2 = h2.replace(/(أنه|أن|أنها) /g, '~ ');
