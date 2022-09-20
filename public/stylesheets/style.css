@@ -12,8 +12,13 @@ body {
 	direction: rtl;
 }
 
+.pagination a {
+	font-size: 0.75rem;
+	color: #2c9be5;
+}
+
 .h {
-	margin-top: 1em;
+	margin-top: 0.75em;
 }
 
 .h p {

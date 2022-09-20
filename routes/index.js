@@ -16,12 +16,6 @@ for (var record = recordReader.readline(); record != null; record = recordReader
   dbsearchable.push(removeDiacritics(record));
 }
 
-String.prototype.toArabicDigits = function () {
-  var s = this.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
-  s = s.replace('a', ' أ').replace('b', ' ب').replace('c', ' ج').replace('d', ' د').replace('e', ' ه').replace('f', ' و').replace('g', ' ز');
-  return s;
-};
-
 const router = express.Router();
 
 router.get('/', function (req, res, next) {
@@ -33,20 +27,35 @@ router.get('/', function (req, res, next) {
     });
   } else {
     var results = searchRandom();
-    res.render('search', {
-      q: 'random',
-      results: results
-    });
+    if (results.length > 0) {
+      res.render('search', {
+        book: results[0].book,
+        q: req.query.q,
+        results: results
+      });
+    } else {
+      res.render('search', {
+        results: results
+      });
+    }
   }
 });
 
 router.get('/:ref', function (req, res, next) {
   if (req.params.ref) {
     var results = searchNumber(req.params.ref.trim());
-    res.render('search', {
-      q: req.query.q,
-      results: results
-    });
+    if (results.length > 0) {
+      res.render('search', {
+        book: results[0].book,
+        q: req.query.q,
+        results: results
+      });
+    } else {
+      res.render('search', {
+        q: req.query.q,
+        results: results
+      });
+    }
   } else
     res.render('index', {
     });
@@ -167,6 +176,11 @@ function searchQ(q) {
   return results;
 }
 
+function searchRandom() {
+  var i = Math.floor(Math.random() * (db.length - 1));
+  return [new Hadith(i, db[i])];
+}
+
 function searchNumber(q) {
   var results = [];
   var toks = q.split(/:/);
@@ -195,9 +209,10 @@ function searchNumber(q) {
   return results;
 }
 
-function searchRandom() {
-  var i = Math.floor(Math.random() * (db.length - 1));
-  return [new Hadith(i, db[i])];
-}
+String.prototype.toArabicDigits = function () {
+  var s = this.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  s = s.replace('a', ' أ').replace('b', ' ب').replace('c', ' ج').replace('d', ' د').replace('e', ' ه').replace('f', ' و').replace('g', ' ز');
+  return s;
+};
 
 module.exports = router;
