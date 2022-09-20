@@ -12,6 +12,10 @@ body {
 	direction: rtl;
 }
 
+.banner img {
+	width: 30%;
+}
+
 .pagination a {
 	font-size: 0.75rem;
 	color: #2c9be5;
