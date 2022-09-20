@@ -1,19 +1,23 @@
 @font-face {
 	font-family: Kitab;
 	src: url(/fonts/kitab-base.woff2);
-  }
+}
 
 body {
 	font-family: Arial;
 }
-  
+
 :lang(ar) {
 	font-family: Kitab;
 	direction: rtl;
 }
 
-.h :lang(en) {
-	font-size: 0.75rem;
+.h {
+	margin-top: 1em;
+}
+
+.h p {
+	margin-bottom: 0.25rem;
 }
 
 .h i {
@@ -21,3 +25,18 @@ body {
 	font-style: inherit;
 }
 
+.h:lang(en) {
+	font-size: 0.75rem;
+}
+
+.h:lang(en) em {
+	color: #a0a0a0;
+}
+
+.h:lang(ar) .chain {
+	color: #a0a0a0;
+}
+
+.h:lang(ar) .body {
+	text-indent: 2em;
+}

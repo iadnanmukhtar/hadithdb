@@ -58,20 +58,23 @@
     </div>
     <% } %>
     
-    <div class="row h">
+    <div class="row">
       <% for (var i = 0; i < results.length; i++) { %>
-        <div class="col-md-6 col-sm-12">
-          <p lang="en">
+        <div class="col-md-6 col-sm-12 h" lang="en">
+          <p class="body">
             <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameEn %> <%= results[i].num %></a></b> –
-            <%- results[i].trans %></i><br />
-            <em class="text-muted"><%- results[i].grade %></em>
+            <%- results[i].trans %></i>
           </p>
+          <em><%- results[i].grade %></em>
         </div>
-        <div class="col-md-6 cols-sm-12">
-          <p lang="ar">
+        <div class="col-md-6 cols-sm-12 h" lang="ar">
+          <p>
             <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameAr %> <%= results[i].num.toArabicDigits() %></a></b> –
-            <span class="text-muted"><%- results[i].chain %></span> <%- results[i].body %></i>
+            <% if (results[i].chain) { %>
+            <span class="chain"><%- results[i].chain %></i></span>
+            <% } %>
           </p>
+          <p class="body"><%- results[i].body %></i></p>
         </div>
       <% } %>
     </div>
