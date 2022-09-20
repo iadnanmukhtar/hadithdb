@@ -31,12 +31,13 @@ router.get('/', function (req, res, next) {
       q: req.query.q,
       results: results
     });
-  } else
+  } else {
     var results = searchRandom();
-  res.render('search', {
-    q: 'random',
-    results: results
-  });
+    res.render('search', {
+      q: 'random',
+      results: results
+    });
+  }
 });
 
 router.get('/:ref', function (req, res, next) {
