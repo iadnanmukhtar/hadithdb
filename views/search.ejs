@@ -43,9 +43,13 @@
         </div>
       </div>
 
-    <% if (results.length != 1) { %>
+    <% if (results.length != 1 && q) { %>
       <div class="text-center">
         Found <%= results.length %> results for term: <%=q%>
+      </div>
+    <% } else if (results.length != 1) { %>
+      <div class="text-center">
+        Showing <%= results.length %> results
       </div>
     <% } %>
 
