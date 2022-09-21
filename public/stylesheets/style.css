@@ -9,6 +9,7 @@ body {
 
 :lang(ar) {
 	font-family: Kitab;
+	font-size: 1.25rem;
 	direction: rtl;
 }
 
@@ -16,8 +17,14 @@ body {
 	width: 30%;
 }
 
+@media (max-width: 720px) {
+	.banner img {
+		width: 50%;
+	}
+}
+
 .pagination a {
-	font-size: 0.75rem;
+	font-size: 0.85rem;
 	color: #2c9be5;
 }
 
@@ -35,14 +42,16 @@ body {
 }
 
 .h:lang(en) {
-	font-size: 0.75rem;
+	font-size: 0.85rem;
 }
 
-.h:lang(en) em {
-	color: #a0a0a0;
+.h:lang(en) .grade {
+	font-size: 1rem;
+	color: #2c9be5;
 }
 
 .h:lang(ar) .chain {
+	font-size: 0.95rem;
 	color: #a0a0a0;
 }
 

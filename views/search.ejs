@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html lang="en">
 <html>
 <head>
   <% if (typeof book != 'undefined') { %>
@@ -54,15 +54,13 @@
       <div class="col-md-6 col-xs-12 text-start">
         <% if (results[0].prev) {
         var result = results[0]; %>
-        &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">
-          Prev:&nbsp;<%= result.prev.book.shortNameEn %>&nbsp;<%- result.prev.num %></a>
+        &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">Prev:&nbsp;<%= result.prev.book.shortNameEn %>&nbsp;<%- result.prev.num %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
         <% if (results[results.length-1].next) { 
         var result = results[results.length-1]; %>
-        <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">
-          Next:&nbsp;<%= result.next.book.shortNameEn %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
+        <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">Next:&nbsp;<%= result.next.book.shortNameEn %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
         <% } %>  
       </div>
     </div>
@@ -70,13 +68,18 @@
     
     <div class="row">
       <% for (var i = 0; i < results.length; i++) { %>
+
         <div class="col-md-6 col-sm-12 h" lang="en">
           <p class="body">
             <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameEn %> <%= results[i].num %></a></b> –
+            <% if (!results[i].trans) { %>
+              <br/>Translation of this ḥadīth not currently available.
+            <% } %>
             <%- results[i].trans %></i>
           </p>
-          <em><%- results[i].grade %></em>
+          <em class="grade"><%- results[i].grade %></em>
         </div>
+
         <div class="col-md-6 cols-sm-12 h" lang="ar">
           <p>
             <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameAr %> <%= results[i].num.toArabicDigits() %></a></b> –
@@ -87,6 +90,7 @@
           <p class="body"><%- results[i].body %></i></p>
         </div>
       <% } %>
+
     </div>
 
     <% if (results.length > 1) { %> 
