@@ -46,7 +46,8 @@ body {
 }
 
 .h:lang(en) .grade {
-	font-size: 1rem;
+	font-weight: bold;
+	font-style: normal;
 	color: #2c9be5;
 }
 

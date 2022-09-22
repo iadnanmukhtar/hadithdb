@@ -1,5 +1,5 @@
-<!DOCTYPE html lang="en">
-<html>
+<!doctype html>
+<html lang="en">
 <head>
   <% if (typeof book != 'undefined') { %>
     <title>Ḥadīth Unlocked | <%- book.nameEn + ' ' + results[0].num %> (<%- book.nameAr %>)</title>
@@ -9,7 +9,7 @@
     <title>Ḥadīth Unlocked | Search Engine for Prophetic Hadith</title>
   <% } %>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
   <link href="/stylesheets/style.css" rel="stylesheet">
 </head>
 <body>
@@ -22,36 +22,32 @@
       </a>
     </header>
 
-    <main class="row search-results">
+    <main class="search-results">
 
-      <div class="col-12 mb-2 banner d-flex justify-content-center align-items-center">
-        <img src="/images/asam.svg" alt="allāhumma ṣalli ʿalá muḥammad" />
+      <div class="mb-2 banner text-center">
+        <img src="/images/asam.svg" alt="Allāhumma ṣalli ʿalá Muḥammad" />
       </div>
 
-      <div class="col-12 row d-flex justify-content-center align-items-center">
-        <div class="col-md-6">
-          <form action="/">
-            <div class="form">
-              <div class="input-group mb-3">
-                <input name="q" type="text" class="form-control" value="<%=q%>"
-                  placeholder="Search for aḥādīth">
-                <button class="btn btn-outline-secondary" type="submit"
-                  value=""><i class="fa fa-search"></i></button>
-              </div>
+      <form action="/">
+        <div class="container mb-3">
+          <div class="row justify-content-md-center">
+            <div class="col-md-6">
+              <input id="search-bar" name="q" type="text" class="form-control" value="<%= q %>"
+                placeholder="Search aḥādīth in English or بالعربية">
             </div>
-          </form>
+          </div>
         </div>
-      </div>
-
-    <% if (results.length != 1 && q) { %>
-      <div class="text-center">
-        Found <%= results.length %> results for term: <%=q%>
-      </div>
-    <% } else if (results.length != 1) { %>
-      <div class="text-center">
-        Showing <%= results.length %> results
-      </div>
-    <% } %>
+      </form>
+      
+      <% if (results.length != 1 && q) { %>
+        <div class="text-center">
+          Found <%= results.length %> results for term: <%=q%>
+        </div>
+      <% } else if (results.length != 1) { %>
+        <div class="text-center">
+          Showing <%= results.length %> results
+        </div>
+      <% } %>
 
     <% if (results.length > 0) { %> 
     <div class="row mb-2 pagination">
@@ -80,8 +76,8 @@
               <br/>Translation of this ḥadīth not currently available.
             <% } %>
             <%- results[i].trans %></i>
+            <em class="grade"><%- results[i].grade %></em>
           </p>
-          <em class="grade"><%- results[i].grade %></em>
         </div>
 
         <div class="col-md-6 cols-sm-12 h" lang="ar">
@@ -115,16 +111,13 @@
       </div>
     </div>
     <% } %>
- 
+
     </main>
   </div>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
-    crossorigin="anonymous"></script>
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
-    crossorigin="anonymous"></script>
-  <script src="https://kit.fontawesome.com/3c8decddde.js"
-    crossorigin="anonymous"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/3c8decddde.js" crossorigin="anonymous"></script>
   <script src="/javascripts/script.js"></script>
 
 </body>
