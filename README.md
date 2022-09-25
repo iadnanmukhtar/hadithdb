@@ -1,6 +1,6 @@
 # hadithdb
 
-* Ḥadīth database is available in SQLite format under data/hadiths.db.zip
+* The Ḥadīth Database is available in SQLite format under **data/hadiths.db.zip**
 * Feel free to use and leverage for your use and analysis
 
 ## Features
@@ -25,8 +25,9 @@ The following nine plus source books of ḥadīth are currently availble:
 ## TODO Enhancements
 - [ ]  Crowsdource translation editor
 - [ ]  Croudsource tagging
-- [ ]  Populate basic tags
-- [ ]  Translate narrators
+- [ ]  Auto relate similar aḥādīth
+- [ ]  Auto populate basic tags
+- [ ]  Auto translate narrators
 - [ ]  Populate aṭrāf al-ḥadīth
 - [ ]  Link narrators to Scholars Databases
 - [ ]  Add Zawaʾid of Buṣīrī (10 additional source books)
