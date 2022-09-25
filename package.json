@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "adm-zip": "^0.5.9",
+    "better-sqlite3": "^7.6.2",
     "cookie-parser": "^1.4.5",
     "debug": "~2.6.9",
     "ejs": "^3.1.8",

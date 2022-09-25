@@ -3,7 +3,7 @@
 node_modules
 *.backup
 data/*.csv
-data/*.Z
+data/*.db
 data/archive/*.csv
 data/archive/*.json
 data/archive/*.db

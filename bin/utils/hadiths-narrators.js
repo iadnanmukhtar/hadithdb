@@ -1,96 +1,102 @@
 /* jslint node:true, esversion:6 */
+'use strict';
 
-"use strict";
+const Database = require('better-sqlite3');
 const fs = require('fs');
-const LineReaderSync = require('line-reader-sync');
-const { format } = require('@fast-csv/format');
+const AdmZip = require("adm-zip");
 
-var lineReader = new LineReaderSync('data/archive/hadiths-final.csv');
-for (var line = lineReader.readline(); line != null; line = lineReader.readline()) {
-    try {
-        var toks = line.split(/\t/);
-        if (!toks) return;
-        var cid = toks[0];
-        var n = toks[1];
-        var g = toks[2];
-        var h_en = toks[3];
-        var h_ar = toks[4];
-        var ch = '';
-        var m = '';
-        if (h_en.startsWith("\""))
-            h_en = h_en.replace(/^"/, "").replace(/"$/, "");
-        h_en = h_en.replace(/\"{2,}/g, "\"");
+const dbFile = __dirname + '/../../data/hadiths.db';
+const readDb = new Database(dbFile);
+const writeDb = new Database(readDb.serialize());
+const updateStmt = writeDb.prepare('UPDATE hadiths SET body_en=?,text_en=?,text=?,chain=?,body=? ' +
+    'WHERE bookId=? AND num=? AND chain_en IS NOT null');
 
-        // normalize
-        h_ar = h_ar.replace(/[\:\"\'،۔ـ\-\.\,]/g, '');
-        h_ar = h_ar.replaceAll('رضى الله عنها', '');
-        h_ar = h_ar.replaceAll('رضى الله عنهما', '');
-        h_ar = h_ar.replaceAll('رضى الله عنهم', '');
-        h_ar = h_ar.replaceAll('رضى الله عنه', '');
-        h_ar = h_ar.replaceAll('صلى الله عليه وسلم', 'ﷺ');
-        h_ar = h_ar.replace(/\s+/g, ' ').trim();
-        var h2 = h_ar + '';
-        var m2 = '';
-        h2 = h2.replace(/[ؐ-ًؕ-ٖٓ-ٟۖ-ٰٰۭ]/g, '');
-        h2 = h2.replace(/و?(حدثنا|حدثني|حدثناه|حدثه|ثنا) /g, '~ ');
-        h2 = h2.replace(/و?(أخبرنا|أخبرناه|أخبرني|أخبره) /g, '~ ');
-        h2 = h2.replace(/و?(سمعت|سمعنا|سمعناه|سمع) /g, '~ ');
-        h2 = h2.replace(/(عن|عنه|عنها) /g, '~ ');
-        h2 = h2.replace(/(يبلغ به) /g, '~~ ');
-        h2 = h2.replace(/(أنه|أن|أنها) /g, '~ ');
-        h2 = h2.replace(/(قال|قالت) /g, '~ ');
-        h2 = h2.replace(/\s+/g, ' ').trim();
-        // extract body
-        var narr_toks = h2.split(/~/);
-        if (narr_toks) {
-            var h2_tokslen = [];
-            narr_toks.forEach(tok => {
-                h2_tokslen.push(wordCount(tok));
-            });
-            for (var i = 0; i < narr_toks.length; i++) {
-                if (narr_toks[i].match(/(نبي|رسول)/)) {
-                    m2 = narr_toks.slice(i).join('~ ');
-                    break;
-                } else if (h2_tokslen[i] > 7 && !narr_toks[i].match(/ (بن|ابن) /)) {
-                    m2 = narr_toks.slice(i).join('~ ');
-                    break;
-                }
-            }
-            if (m2 == '')
-                m2 = narr_toks[narr_toks.length - 1];
-        }
-        if (m2 == null) {
-            process.stdout.write('ERROR on: ' + cid + ' ' + n + '\n');
-            return;
-        }
-        m2 = m2.replace(/\s+/g, ' ').trim();
+console.log('Processing: split hadith chain and body');
+var rows = readDb.prepare('SELECT * from hadiths').all();
+for (var row of rows) {
+    if (row.text_en) {
+        if (row.text_en.startsWith('\"'))
+            row.text_en = row.text_en.replace(/^"/, "").replace(/"$/, "");
+        row.text_en = row.text_en.replace(/\"{2,}/g, "\"");
+    } else
+        row.text_en = '';
 
-        // extract chain and body
-        var h_toks = h_ar.split(/ /);
-        var h2_toks = h2.split(/ /);
-        var m2_toks = m2.split(/ /);
-        var m = '';
-        if (!h_toks || !m2_toks || h_toks.length == m2_toks.length)
-            m = h_ar;
-        else {
-            var diff = h_toks.length - m2_toks.length;
-            for (i = (diff - 1); i >= 0; i--) {
-                if (h2_toks[i].endsWith('~'))
-                    diff--;
-                else
-                    break;
-            }
-            ch = h_toks.slice(0, diff).join(' ').trim();
-            m = h_toks.slice(diff).join(' ').trim();
-        }
-
-        // write
-        process.stdout.write(cid + '\t' + n + '\t' + g + '\t' + h_en + '\t' + h_ar + '\t' + ch + '\t' + m + '\n');
-    } catch (err) {
-        console.log(err);
-        break;
+    // normalize
+    if (row.text) {
+        row.text = row.text.replace(/[\:\"\'،۔ـ\-\.\,]/g, '');
+        row.text = row.text.replaceAll('رضى الله عنها', '');
+        row.text = row.text.replaceAll('رضى الله عنهما', '');
+        row.text = row.text.replaceAll('رضى الله عنهم', '');
+        row.text = row.text.replaceAll('رضى الله عنه', '');
+        row.text = row.text.replaceAll('صلى الله عليه وسلم', 'ﷺ');
+        // FIXME: Replace صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ with diactrics also
+        row.text = row.text.replace(/\s+/g, ' ').trim();
     }
-};
+    var textMarked = row.text + '';
+    var bodyMarked = '';
+    textMarked = textMarked.replace(/[ؐ-ًؕ-ٖٓ-ٟۖ-ٰٰۭ]/g, '');
+    textMarked = textMarked.replace(/و?(حدثنا|حدثني|حدثناه|حدثه|ثنا) /g, '~ ');
+    textMarked = textMarked.replace(/و?(أخبرنا|أخبرناه|أخبرني|أخبره) /g, '~ ');
+    textMarked = textMarked.replace(/و?(سمعت|سمعنا|سمعناه|سمع) /g, '~ ');
+    textMarked = textMarked.replace(/(عن|عنه|عنها) /g, '~ ');
+    textMarked = textMarked.replace(/(يبلغ به) /g, '~~ ');
+    textMarked = textMarked.replace(/(أنه|أن|أنها) /g, '~ ');
+    textMarked = textMarked.replace(/(قال|قالت) /g, '~ ');
+    textMarked = textMarked.replace(/\s+/g, ' ').trim();
+    // extract body
+    var chainDelims = textMarked.split(/~/);
+    if (chainDelims) {
+        var chainToksWordCount = [];
+        for (var tok of chainDelims)
+            chainToksWordCount.push(wordCount(tok));
+        for (var j = 0; j < chainDelims.length; j++) {
+            if (chainDelims[j].match(/(نبي|رسول)/)) {
+                bodyMarked = chainDelims.slice(j).join('~ ');
+                break;
+            } else if (chainToksWordCount[j] > 7 && !chainDelims[j].match(/ (بن|ابن) /)) {
+                bodyMarked = chainDelims.slice(j).join('~ ');
+                break;
+            }
+        }
+        if (bodyMarked == '')
+            bodyMarked = chainDelims[chainDelims.length - 1];
+    }
+    if (bodyMarked == null) {
+        process.stdout.write('ERROR on: ' + row.bookId + ' ' + row.num + '\n');
+        return;
+    }
+    bodyMarked = bodyMarked.replace(/\s+/g, ' ').trim();
+
+    // extract chain and body
+    var textToks = row.text.split(/ /);
+    var textMarkedToks = textMarked.split(/ /);
+    var bodyMarkedToks = bodyMarked.split(/ /);
+    row.body = '';
+    if (!textToks || !bodyMarkedToks || textToks.length == bodyMarkedToks.length)
+        row.body = row.text;
+    else {
+        var diff = textToks.length - bodyMarkedToks.length;
+        for (var j = (diff - 1); j >= 0; j--) {
+            if (textMarkedToks[j].endsWith('~'))
+                diff--;
+            else
+                break;
+        }
+        row.chain = textToks.slice(0, diff).join(' ').trim();
+        row.body = textToks.slice(diff).join(' ').trim();
+    }
+
+    // stack chain and body updates
+    console.log(`Processed hadith ${row.bookId}:${row.num}`);
+    updateStmt.run([row.text_en, row.text_en, row.text, row.chain, row.body, row.bookId, row.num]);
+
+}
+readDb.close();
+
+console.log('Compressing database');
+var zip = new AdmZip();
+zip.addFile('hadiths.db', writeDb.serialize(), 'File');
+zip.writeZip(dbFile + '.zip');
 
 function wordCount(s) {
     return s.split(' ').length;

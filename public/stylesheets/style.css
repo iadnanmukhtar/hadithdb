@@ -45,17 +45,16 @@ body {
 	font-size: 0.85rem;
 }
 
-.h:lang(en) .grade {
+.h .grade {
 	font-weight: bold;
 	font-style: normal;
 	color: #2c9be5;
 }
 
-.h:lang(ar) .chain {
-	font-size: 0.95rem;
+.h .chain {
 	color: #a0a0a0;
 }
 
-.h:lang(ar) .body {
+.h .body {
 	text-indent: 2em;
 }

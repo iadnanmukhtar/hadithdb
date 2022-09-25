@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <% if (typeof book != 'undefined') { %>
-    <title>Ḥadīth Unlocked | <%- book.nameEn + ' ' + results[0].num %> (<%- book.nameAr %>)</title>
+    <title>Ḥadīth Unlocked | <%- book.name_en + ' ' + results[0].num %> (<%- book.name %>)</title>
   <% } else if (q) { %>
     <title>Ḥadīth Unlocked | Search Results for "<%- q %>"</title>
   <% } else { %>
@@ -54,13 +54,13 @@
       <div class="col-md-6 col-xs-12 text-start">
         <% if (results[0].prev) {
         var result = results[0]; %>
-        &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">Prev:&nbsp;<%= result.prev.book.shortNameEn %>&nbsp;<%- result.prev.num %></a>
+        &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">Prev:&nbsp;<%= result.prev.book.shortName_en %>&nbsp;<%- result.prev.num %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
         <% if (results[results.length-1].next) { 
         var result = results[results.length-1]; %>
-        <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">Next:&nbsp;<%= result.next.book.shortNameEn %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
+        <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">Next:&nbsp;<%= result.next.book.shortName_en %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
         <% } %>  
       </div>
     </div>
@@ -70,24 +70,29 @@
       <% for (var i = 0; i < results.length; i++) { %>
 
         <div class="col-md-6 col-sm-12 h" lang="en">
-          <p class="body">
-            <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameEn %> <%= results[i].num %></a></b> –
-            <% if (!results[i].trans) { %>
-              <br/>Translation of this ḥadīth not currently available.
+          <p>
+            <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName_en %> <%= results[i].num %></a></b> –
+            <% if (results[i].chain_en) { %>
+            <span class="chain"><%- results[i].chain_en %></span>
             <% } %>
-            <%- results[i].trans %></i>
-            <em class="grade"><%- results[i].grade %></em>
+          </p>
+          <p class="body">
+            <% if (!results[i].body_en) { %>
+              Translation of this ḥadīth is currently not available.
+            <% } %>
+            <%- results[i].body_en %><br/>
+            <em class="grade">– <%- results[i].grade.replace(/ \(/g, '&nbsp;(') %></em>
           </p>
         </div>
 
         <div class="col-md-6 cols-sm-12 h" lang="ar">
           <p>
-            <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortNameAr %> <%= results[i].num.toArabicDigits() %></a></b> –
+            <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName %> <%= results[i].num_ar %></a></b> –
             <% if (results[i].chain) { %>
-            <span class="chain"><%- results[i].chain %></i></span>
+            <span class="chain"><%- results[i].chain %></span>
             <% } %>
           </p>
-          <p class="body"><%- results[i].body %></i></p>
+          <p class="body"><%- results[i].body %></p>
         </div>
       <% } %>
 
@@ -99,14 +104,14 @@
         <% if (results[0].prev) {
         var result = results[0]; %>
         &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">
-          Prev:&nbsp;<%= result.prev.book.shortNameEn %>&nbsp;<%- result.prev.num %></a>
+          Prev:&nbsp;<%= result.prev.book.shortName_en %>&nbsp;<%- result.prev.num %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
         <% if (results[results.length-1].next) { 
         var result = results[results.length-1]; %>
         <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">
-          Next:&nbsp;<%= result.next.book.shortNameEn %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
+          Next:&nbsp;<%= result.next.book.shortName_en %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
         <% } %>  
       </div>
     </div>
