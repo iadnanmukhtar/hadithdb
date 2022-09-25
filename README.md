@@ -23,13 +23,13 @@ The following nine plus source books of ḥadīth are currently availble:
 |10|Mustadrak al-Ḥākim|Dhahabī(ar)|N/A|
 
 ## TODO Enhancements
-- [ ]  Crowsdource Translation editor
+- [ ]  Crowsdource translation editor
 - [ ]  Croudsource tagging
 - [ ]  Populate basic tags
-- [ ]  Add Zawaʾid of Busīrī (10 additional source books)
+- [ ]  Translate narrators
+- [ ]  Link narrators to Scholars Databases
+- [ ]  Add Zawaʾid of Buṣīrī (10 additional source books)
 - [ ]  Filter search by grade
 - [ ]  Ahmad translation
 - [ ]  Darimi translation
 - [ ]  Hakim translation
-
-
