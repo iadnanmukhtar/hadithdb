@@ -8,7 +8,7 @@
 * Hosted on https://hadith.quranunlocked.com
 
 ## Available Source Books
-The following nine source books of ḥadīth are currently availble:
+The following nine plus source books of ḥadīth are currently availble:
 |#| Name | Graded | Translation |
 |-|------|--------|-------------|
 |1|Ṣaḥīḥ al-Bukhārī|Ṣaḥīḥ(en)|en|
