@@ -1,6 +1,6 @@
 # hadithdb
 
-* Ḥadīth database is available in SQLite format under data/hadith.db.zip
+* Ḥadīth database is available in SQLite format under data/hadiths.db.zip
 * Feel free to use and leverage for your use and analysis
 
 ## Features
