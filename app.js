@@ -5,13 +5,14 @@ const path = require('path');
 const HomeDir = require('os').homedir();
 const createError = require('http-errors');
 const express = require('express');
+const asyncify = require('express-asyncify');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser')
 const ExpressAdmin = require('express-admin');
 
-var app = express();
+var app = asyncify(express());
 
-var xAdminConfig = {
+var ExpressAdminConfig = {
   dpath: './express-admin/',
   config: require(`${HomeDir}/.hadithdb/express-admin/config.json`),
   settings: require('./express-admin/settings.json'),
@@ -19,7 +20,7 @@ var xAdminConfig = {
   users: require(`${HomeDir}/.hadithdb/express-admin/users.json`)
 };
 
-ExpressAdmin.init(xAdminConfig, function (err, admin) {
+ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
   if (err) return console.log(err);
 
   app.use('/admin', admin);
@@ -33,7 +34,9 @@ ExpressAdmin.init(xAdminConfig, function (err, admin) {
   app.use(cookieParser());
   app.use('/', express.static(path.join(__dirname, 'public')));
 
+  const recentRouter = require('./routes/recent');
   const indexRouter = require('./routes/index');
+  app.use('/recent', recentRouter);
   app.use('/', indexRouter);
 
   app.use(function (req, res, next) {

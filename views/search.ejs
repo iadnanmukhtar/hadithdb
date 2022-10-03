@@ -102,23 +102,25 @@
 <body>
   <div class="col-lg-8 mx-auto p-3 py-md-5">
 
-    <header class="d-flex align-items-center pb-3 mb-3 border-bottom">
-      <a href="/"
-        class="d-flex align-items-center text-dark text-decoration-none">
-        <div class="row">
-          <div class="col-12">
-            <h1 class="fs-4">Ḥadīth Unlocked</h1>
-          </div>
-          <% if (!q && results.length > 0) { %>
-            <div>
-                <h2 class="text-muted fs-6">
-                  <%- results[0].book.name_en %>
-                  <span lang="ar"><%- results[0].book.name %></span>
-                </h2>
-            </div>
-          <% } %>
-        </div>
-      </a>
+    <header>
+      <div class="d-flex flex-column flex-md-row align-items-center pb-3">
+        <a href="/" class="d-flex text-dark text-decoration-none">
+          <img src="/images/logo.svg" width="32" height="32" class="me-2" role="img"><title><%= name %>></title>
+          <h1 class="fs-4">
+            <%= name %>
+            <% if (!q && results.length > 0) { %>
+              <br/><span class="fs-6 text-muted">
+                <%- results[0].book.name_en %>
+                <span lang="ar"><%- results[0].book.name %></span>
+              </span>
+            <% } %>
+          </h1>
+        </a>
+        <nav class="d-inline-flex mt-md-0 ms-md-auto">
+          <a class="me-3 py-2 text-dark text-decoration-none" href="/">Home</a>
+          <a class="py-2 text-dark text-decoration-none" href="/recent">Recent</a>
+        </nav>
+      </div>
     </header>
 
     <main class="search-results">
