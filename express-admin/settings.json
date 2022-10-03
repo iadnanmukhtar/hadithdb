@@ -1,0 +1,1355 @@
+{
+    "hadiths": {
+        "slug": "hadiths",
+        "table": {
+            "name": "hadiths",
+            "pk": "id",
+            "verbose": "Hadiths"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true,
+                    "editor": "text-en-ro"
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "bookId",
+                "verbose": "bookId",
+                "control": {
+                    "select": true,
+                    "editor": "text-en-ro"
+                },
+                "oneToMany": {
+                    "table": "books",
+                    "pk": "id",
+                    "columns": [
+                        "shortName_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "num",
+                "verbose": "num",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(25)",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "lastmod",
+                "verbose": "lastmod",
+                "control": {
+                    "datetime": true
+                },
+                "type": "timestamp",
+                "allowNull": true,
+                "defaultValue": "CURRENT_TIMESTAMP",
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "manual",
+                "verbose": "manual",
+                "control": {
+                    "select": true,
+                    "options": [
+                        {
+                            "0": "No"
+                        },
+                        {
+                            "1": "Yes"
+                        }
+                    ]
+                },
+                "type": "tinyint",
+                "allowNull": false,
+                "defaultValue": "1",
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "gradeId",
+                "verbose": "gradeId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "grades",
+                    "pk": "id",
+                    "columns": [
+                        "grade_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "graderId",
+                "verbose": "graderId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "graders",
+                    "pk": "id",
+                    "columns": [
+                        "shortName_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "chain_en",
+                "verbose": "chain_en",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-en"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "chain",
+                "verbose": "chain",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-ar"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "body_en",
+                "verbose": "body_en",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-en"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "body",
+                "verbose": "body",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-ar"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "text_en",
+                "verbose": "text_en",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-en-ro"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "text",
+                "verbose": "text",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-ar-ro"
+                },
+                "type": "mediumtext",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "footnote_en",
+                "verbose": "footnote_en",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-en"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "footnote",
+                "verbose": "footnote",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-ar"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "tags",
+                "verbose": "tags",
+                "control": {
+                    "select": true,
+                    "multiple": true
+                },
+                "manyToMany": {
+                    "link": {
+                        "table": "hadith_tags",
+                        "parentPk": "hadithId",
+                        "childPk": "tagId"
+                    },
+                    "ref": {
+                        "table": "tag_path",
+                        "pk": "id",
+                        "columns": [
+                            "tag"
+                        ]
+                    }
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "h1",
+                "verbose": "h1",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "toc",
+                    "pk": "id",
+                    "columns": [
+                        "text"
+                    ]
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "h2",
+                "verbose": "h2",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "toc",
+                    "pk": "id",
+                    "columns": [
+                        "text"
+                    ]
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "h3",
+                "verbose": "h3",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "toc",
+                    "pk": "id",
+                    "columns": [
+                        "text"
+                    ]
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "_grade",
+                "verbose": "_grade",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": false
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {
+                "bookId": "asc",
+                "num": "asc"
+            },
+            "filter": [
+                "bookId",
+                "num",
+                "gradeId",
+                "graderId",
+                "text"
+            ],
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "hadith_tags": {
+        "slug": "hadith_tags",
+        "table": {
+            "name": "hadith_tags",
+            "pk": "id",
+            "verbose": "Hadith Tags"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "hadithId",
+                "verbose": "hadithId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "hadiths",
+                    "pk": "id",
+                    "columns": [
+                        "text"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "tagId",
+                "verbose": "tagId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "tag_path",
+                    "pk": "id",
+                    "columns": [
+                        "tag"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "books": {
+        "slug": "books",
+        "table": {
+            "name": "books",
+            "pk": "id",
+            "verbose": "Collections"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "alias",
+                "verbose": "alias",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(15)",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "shortName_en",
+                "verbose": "shortName_en",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "name_en",
+                "verbose": "name_en",
+                "control": {
+                    "text": true
+                },
+                "type": "tinytext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "shortName",
+                "verbose": "shortName",
+                "control": {
+                    "text": true
+                },
+                "type": "tinytext",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "name",
+                "verbose": "name",
+                "control": {
+                    "text": true
+                },
+                "type": "tinytext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "toc": {
+        "slug": "toc",
+        "table": {
+            "name": "toc",
+            "pk": "id",
+            "verbose": "Table of Contents"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "bookId",
+                "verbose": "bookId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "books",
+                    "pk": "id",
+                    "columns": [
+                        "shortName_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "type",
+                "verbose": "type",
+                "control": {
+                    "select": true,
+                    "options": [
+                        {
+                            "0": "None"
+                        },
+                        {
+                            "1": "Chapter"
+                        },
+                        {
+                            "2": "Heading"
+                        },
+                        {
+                            "3": "Subheading"
+                        }
+                    ]
+                },
+                "type": "tinyint(1)",
+                "allowNull": false,
+                "defaultValue": 0,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "text_en",
+                "verbose": "text_en",
+                "control": {
+                    "textarea": true
+                },
+                "type": "tinytext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "text",
+                "verbose": "text",
+                "control": {
+                    "textarea": true
+                },
+                "type": "tinytext",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "bookID",
+                "verbose": "bookID",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "graders": {
+        "slug": "graders",
+        "table": {
+            "name": "graders",
+            "pk": "id",
+            "verbose": "Graders"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "shortName_en",
+                "verbose": "shortName_en",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "shortName",
+                "verbose": "shortName",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "name_en",
+                "verbose": "name_en",
+                "control": {
+                    "text": true
+                },
+                "type": "tinytext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "name",
+                "verbose": "name",
+                "control": {
+                    "text": true
+                },
+                "type": "tinytext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "grades": {
+        "slug": "grades",
+        "table": {
+            "name": "grades",
+            "pk": "id",
+            "verbose": "Grades"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "grade_en",
+                "verbose": "grade_en",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "grade",
+                "verbose": "grade",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "tags": {
+        "slug": "tags",
+        "table": {
+            "name": "tags",
+            "pk": "id",
+            "verbose": "Tags"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "parentId",
+                "verbose": "parentId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "tags",
+                    "pk": "id",
+                    "columns": [
+                        "text_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": 0,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "text_en",
+                "verbose": "text_en",
+                "control": {
+                    "textarea": true
+                },
+                "type": "varchar(255)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "text",
+                "verbose": "text",
+                "control": {
+                    "textarea": true
+                },
+                "type": "varchar(255)",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "hadith_grader_grades": {
+        "slug": "hadith_grader_grades",
+        "table": {
+            "name": "hadith_grader_grades",
+            "pk": "id",
+            "verbose": "Hadith Grader Grades"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "hadithId",
+                "verbose": "hadithId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "hadiths",
+                    "pk": "id",
+                    "columns": [
+                        "chain",
+                        "body"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "graderId",
+                "verbose": "graderId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "graders",
+                    "pk": "id",
+                    "columns": [
+                        "shortName_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "gradeId",
+                "verbose": "gradeId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "grades",
+                    "pk": "id",
+                    "columns": [
+                        "grade_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": false
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "hadith_graders": {
+        "slug": "hadith_graders",
+        "table": {
+            "name": "hadith_graders",
+            "pk": "id",
+            "verbose": "Hadith Graders"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "hadithId",
+                "verbose": "hadithId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "hadiths",
+                    "pk": "id",
+                    "columns": [
+                        "text"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "graderId",
+                "verbose": "graderId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "graders",
+                    "pk": "id",
+                    "columns": [
+                        "shortName_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": false
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "hadith_grades": {
+        "slug": "hadith_grades",
+        "table": {
+            "name": "hadith_grades",
+            "pk": "id",
+            "verbose": "Hadith Grades"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "hadithId",
+                "verbose": "hadithId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "hadiths",
+                    "pk": "id",
+                    "columns": [
+                        "text"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "gradeId",
+                "verbose": "gradeId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "grades",
+                    "pk": "id",
+                    "columns": [
+                        "grade_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": false
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "tag_path": {
+        "slug": "tag_path",
+        "table": {
+            "name": "tag_path",
+            "pk": "id",
+            "verbose": "Tag Path",
+            "view": true
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "tag",
+                "verbose": "tag",
+                "control": {
+                    "text": true
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    }
+}
