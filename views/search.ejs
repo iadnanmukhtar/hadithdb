@@ -1,16 +1,103 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <% if (typeof book != 'undefined') { %>
-    <title>Ḥadīth Unlocked | <%- book.name_en + ' ' + results[0].num %> (<%- book.name %>)</title>
-  <% } else if (q) { %>
-    <title>Ḥadīth Unlocked | Search Results for "<%- q %>"</title>
-  <% } else { %>
-    <title>Ḥadīth Unlocked | Search Engine for Prophetic Hadith</title>
-  <% } %>
+  <% 
+    var name = 'Ḥadīth Unlocked';
+    var title = name;
+    var url = 'https://hadith.quranunlocked.com';
+    var logo = `${url}/images/logo.png`;
+    var desc = null;
+    var canonical = null;
+    var prev = null;
+    var next = null;
+    if (typeof book != 'undefined') {
+      desc = `${book.name_en} ${results[0].num} (${book.name})`;
+      title = `${name} | ${desc}`;
+      canonical = `${url}/${book.alias}:${results[0].num}`;
+    } else if (q) {
+      desc = `Search Results for: "${q}"`;
+      title = `${name} | ${desc}`;
+      canonical = `${url}/?q=${q}`;
+    } else {
+      canonical = url;
+      desc = 'The search engine for Prophetic aḥādith';
+      title = `${name} | Search Engine for Prophetic Hadith`;
+    }
+    if (typeof results != 'undefined' && results.length > 0) {
+      if (results[0].prev)
+        prev = `${url}/${results[0].book.alias}:${results[0].num}`;
+      if (results[results.length-1].next)
+        prev = `${url}/${results[results.length-1].book.alias}:${results[results.length-1].num}`;
+    }
+  %>
+
+  <title><%- title %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
   <link href="/stylesheets/style.css" rel="stylesheet">
+
+  <link rel="canonical" href="<%= canonical %>" />
+  <% if (prev) { %>
+  <link rel="prev" href="<%= prev %>" />
+  <% } %>
+  <% if (next) { %>
+    <link rel="next" href="<%= next %>" />
+  <% } %>  
+
+  <meta name="og:site_name" content="<%= name %>">
+  <meta name="og:locale" content="en">
+  <meta name="og:image" content="<%= logo %>">
+  <meta name="og:url" content="<%= canonical %>">
+  <meta name="og:title" content="<%= title %>">
+  <meta name="og:description" content="<%= desc %>">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="<%= logo %>">
+  <meta name="twitter:title" content="<%= title %>">
+  <meta name="twitter:description" content="<%= desc %>">
+
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "Organization",
+      "url": "<%= url %>",
+      "logo": "<%= logo %>"
+    }
+  </script>
+
+  <% if (typeof book != 'undefined') { %>
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "Book",
+      "name": "<%= book.name_en %>",
+      "inLanguage": "English",
+      "url" : "<%= `${url}/${book.alias}:1` %>"
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "Book",
+      "name": "<%= book.name %>",
+      "inLanguage": "Arabic",
+      "url" : "<%= `${url}/${book.alias}:1` %>"
+    }
+  </script>
+  <% } %>
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "WebSite",
+      "url": "<%= url %>",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "<%= url %>/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  </script>
+
 </head>
 <body>
   <div class="col-lg-8 mx-auto p-3 py-md-5">
