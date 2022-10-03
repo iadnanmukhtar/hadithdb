@@ -1,41 +1,52 @@
-/*jslint node: true */
+/* jslint node:true, esversion:8 */
+'use strict';
 
-"use strict";
+const path = require('path');
+const HomeDir = require('os').homedir();
 const createError = require('http-errors');
 const express = require('express');
-const path = require('path');
 const cookieParser = require('cookie-parser');
-
-var indexRouter = require('./routes/index');
+const bodyParser = require('body-parser')
+const ExpressAdmin = require('express-admin');
 
 var app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+var xAdminConfig = {
+  dpath: './express-admin/',
+  config: require(`${HomeDir}/.hadithdb/express-admin/config.json`),
+  settings: require('./express-admin/settings.json'),
+  custom: require(`${HomeDir}/.hadithdb/express-admin/custom.json`),
+  users: require(`${HomeDir}/.hadithdb/express-admin/users.json`)
+};
 
-//app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use('/', express.static(path.join(__dirname, 'public')));
+ExpressAdmin.init(xAdminConfig, function (err, admin) {
+  if (err) return console.log(err);
 
-app.use('/', indexRouter);
+  app.use('/admin', admin);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
+  app.set('views', path.join(__dirname, 'views'));
+  app.set('view engine', 'ejs');
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  //app.use(logger('dev'));
+  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(bodyParser.json());
+  app.use(cookieParser());
+  app.use('/', express.static(path.join(__dirname, 'public')));
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  const indexRouter = require('./routes/index');
+  app.use('/', indexRouter);
+
+  app.use(function (req, res, next) {
+    next(createError(404));
+  });
+
+  app.use(function (err, req, res, next) {
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
+    res.status(err.status || 500);
+    res.render('error');
+  });
+
 });
 
 module.exports = app;

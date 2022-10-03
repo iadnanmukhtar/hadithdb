@@ -58,3 +58,8 @@ body {
 .h .body {
 	text-indent: 2em;
 }
+
+.h .footnote {
+	color: #a0a0a0;
+	text-indent: 2em;
+}

@@ -1,0 +1,16 @@
+@font-face {
+	font-family: Kitab;
+	src: url(/fonts/kitab-base.woff2);
+}
+
+.text-en-ro,
+.text-ar-ro {
+	color: gray;
+}
+
+.text-ar,
+.text-ar-ro {
+	direction: rtl;
+	font-family: Kitab;
+	font-size: 1.75rem;
+}

@@ -18,7 +18,19 @@
     <header class="d-flex align-items-center pb-3 mb-3 border-bottom">
       <a href="/"
         class="d-flex align-items-center text-dark text-decoration-none">
-        <h1 class="fs-4">Ḥadīth Unlocked</h1>
+        <div class="row">
+          <div class="col-12">
+            <h1 class="fs-4">Ḥadīth Unlocked</h1>
+          </div>
+          <% if (!q && results.length > 0) { %>
+            <div>
+                <h2 class="text-muted fs-6">
+                  <%- results[0].book.name_en %>
+                  <span lang="ar"><%- results[0].book.name %></span>
+                </h2>
+            </div>
+          <% } %>
+        </div>
       </a>
     </header>
 
@@ -39,8 +51,9 @@
         </div>
       </form>
       
-      <% if (results.length != 1 && q) { %>
-        <div class="text-center">
+    <% if (results.length != 1 && q) { %>
+      <!-- hadith nav -->
+      <div class="text-center">
           Found <%= results.length %> results for term: <%=q%>
         </div>
       <% } else if (results.length != 1) { %>
@@ -66,12 +79,13 @@
     </div>
     <% } %>
     
+    <!-- hadith nav -->
     <div class="row">
       <% for (var i = 0; i < results.length; i++) { %>
 
         <div class="col-md-6 col-sm-12 h" lang="en">
           <p>
-            <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName_en %> <%= results[i].num %></a></b> –
+            <b><a title="<%- results[i].matchType %>" href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName_en %> <%= results[i].num %></a></b> –
             <% if (results[i].chain_en) { %>
             <span class="chain"><%- results[i].chain_en %></span>
             <% } %>
@@ -81,8 +95,16 @@
               Translation of this ḥadīth is currently not available.
             <% } %>
             <%- results[i].body_en %><br/>
-            <em class="grade">– <%- results[i].grade.replace(/ \(/g, '&nbsp;(') %></em>
           </p>
+          <% if (!q && results[i].footnote_en) { %>
+            <p class="footnote">
+              <%- results[i].footnote_en %><br/>
+            </p>
+          <% } %>
+          <em class="grade">– <%- results[i].grade.grade_en %>&nbsp;(<%- results[i].grader.shortName_en %>)</em>
+          <% if (!q) { %>
+            <a class="text-muted" target="admin" href="/admin/hadiths/<%- results[i].id %>">[edit]</a>
+          <% } %>
         </div>
 
         <div class="col-md-6 cols-sm-12 h" lang="ar">
@@ -92,13 +114,23 @@
             <span class="chain"><%- results[i].chain %></span>
             <% } %>
           </p>
-          <p class="body"><%- results[i].body %></p>
+          <p class="body">
+            <%- results[i].body %><br />
+          </p>
+          <% if (!q && results[i].footnote) { %>
+            <p class="footnote">
+              <%- results[i].footnote %><br/>
+            </p>
+          <% } %>
+          <em class="grade">– <%- results[i].grade.grade %>&nbsp;(<%- results[i].grader.shortName %>)</em>
         </div>
+
       <% } %>
 
     </div>
 
     <% if (results.length > 1) { %> 
+    <!-- hadith search results -->
     <div class="row mt-3 pagination">
       <div class="col-md-6 col-xs-12 text-start">
         <% if (results[0].prev) {
