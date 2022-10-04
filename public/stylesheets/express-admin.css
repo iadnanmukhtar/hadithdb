@@ -3,14 +3,22 @@
 	src: url(/fonts/kitab-base.woff2);
 }
 
-.text-en-ro,
-.text-ar-ro {
-	color: gray;
+.text-en-ro.form-control,
+.text-ar-ro.form-control {
+	color: grey;
+	height: 4em;
 }
 
-.text-ar,
-.text-ar-ro {
+.text-ar.form-control,
+.text-ar-ro.form-control {
 	direction: rtl;
 	font-family: Kitab;
 	font-size: 1.75rem;
+	color: blue;
+	height: 8em !important;
+}
+
+.text-en.form-control {
+	color: blue;
+	height: 8em !important;
 }
