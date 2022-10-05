@@ -37,6 +37,7 @@ for (var row of rows) {
     textMarked = textMarked.replace(/[ؐ-ًؕ-ٖٓ-ٟۖ-ٰٰۭ]/g, '');
     textMarked = textMarked.replace(/و?(حدثنا|حدثني|حدثناه|حدثه|ثنا) /g, '~ ');
     textMarked = textMarked.replace(/و?(أخبرنا|أخبرناه|أخبرني|أخبره) /g, '~ ');
+    textMarked = textMarked.replace(/و?(أنبأنا|أنبأناه|أنبأني|أنبأه) /g, '~ ');
     textMarked = textMarked.replace(/و?(سمعت|سمعنا|سمعناه|سمع) /g, '~ ');
     textMarked = textMarked.replace(/(عن|عنه|عنها) /g, '~ ');
     textMarked = textMarked.replace(/(يبلغ به) /g, '~~ ');

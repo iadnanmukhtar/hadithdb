@@ -5,9 +5,9 @@
     var name = 'Ḥadīth Unlocked';
     var title = name;
     var url = 'https://hadith.quranunlocked.com';
-    var canonical = `${url}/recent`;
+    var canonical = `${url}/books`;
     var logo = `${url}/images/logo.png`;
-    var desc = 'Recent Updates';
+    var desc = 'Books Available';
   %>
   <title><%- name %> | <%- desc %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -70,56 +70,34 @@
       </div>
     </header>
 
-    <main class="search-results">
+    <main class="">
 
-    <!-- hadith nav -->
-    <div class="row">
-      <% for (var i = 0; i < results.length; i++) 
-        { %>
-
-        <div class="col-md-6 col-sm-12 h" lang="en">
-          <p>
-            <b><a title="<%- results[i].matchType %>" href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName_en %> <%= results[i].num %></a></b> –
-            <% if (results[i].chain_en) { %>
-            <span class="chain"><%- results[i].chain_en %></span>
-            <% } %>
-          </p>
-          <p class="body">
-            <% if (!results[i].body_en) { %>
-              Translation of this ḥadīth is currently not available.
-            <% } %>
-            <%- results[i].body_en %><br/>
-          </p>
-          <% if (results[i].footnote_en) { %>
-            <p class="footnote">
-              <%- results[i].footnote_en %><br/>
-            </p>
-          <% } %>
-          <em class="grade">– <%- results[i].grade.grade_en %>&nbsp;(<%- results[i].grader.shortName_en %>)</em>
-          <a class="text-muted" target="admin" href="/admin/hadiths/<%- results[i].id %>">[edit]</a>
+    <% for (var i = 0; i < books.length; i += 2) { %>
+      <div class="row mb-3">
+        <div class="col-sm-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title"><%- books[i].name_en %></h5>
+              <p class="card-text"><%- books[i].description %></p>
+              <p class="card-text"><small class="text-muted"><%- books[i].author %> (d. <%- books[i].yearOfDeath %>H)</small></p>
+              <a href="/<%- books[i].alias %>:1" class="btn btn-primary">Browse</a>
+            </div>
+          </div>
         </div>
-
-        <div class="col-md-6 cols-sm-12 h" lang="ar">
-          <p>
-            <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName %> <%= results[i].num_ar %></a></b> –
-            <% if (results[i].chain) { %>
-            <span class="chain"><%- results[i].chain %></span>
-            <% } %>
-          </p>
-          <p class="body">
-            <%- results[i].body %><br />
-          </p>
-          <% if (results[i].footnote) { %>
-            <p class="footnote">
-              <%- results[i].footnote %><br/>
-            </p>
-          <% } %>
-          <em class="grade">– <%- results[i].grade.grade %>&nbsp;(<%- results[i].grader.shortName %>)</em>
-        </div>
-
-      <% } %>
-
-    </div>
+        <% if (i < books.length -1) { %>
+          <div class="col-sm-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title"><%- books[i+1].name_en %></h5>
+                <p class="card-text"><%- books[i+1].description %></p>
+                <p class="card-text"><small class="text-muted"><%- books[i].author %> (d. <%- books[i+1].yearOfDeath %>H)</small></p>
+                <a href="/<%- books[i+1].alias %>:1" class="btn btn-primary">Browse</a>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
 
     </main>
   </div>

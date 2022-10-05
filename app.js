@@ -35,8 +35,10 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
   app.use('/', express.static(path.join(__dirname, 'public')));
 
   const recentRouter = require('./routes/recent');
+  const booksRouter = require('./routes/books');
   const indexRouter = require('./routes/index');
   app.use('/recent', recentRouter);
+  app.use('/books', booksRouter);
   app.use('/', indexRouter);
 
   app.use(function (req, res, next) {
