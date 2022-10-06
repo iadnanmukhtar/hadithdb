@@ -1,0 +1,35 @@
+<form action=""/>
+<textarea placeholder="Arabic" 
+  <% if (s) { %>
+    value="<%- s %>" 
+  <% } %>
+  name="s" rows="5" cols="80" style="direction: rtl; font-size: 16pt; font-family: Arial, Helvetica, sans-serif;"></textarea><br />
+<input type="submit">
+</form>
+
+<h3>ALA-LC Transliteration:</h3>
+<%- alalc %>
+
+<% if (trans) { %>
+<h3>Chains:</h3>
+<ul>
+<% if (trans.chain_en) {
+  for (var i = 0; i < trans.chain_en.length; i++) { %>
+    <li><%- trans.chain_en[i] %></li>
+<% }
+} %>
+</ul>
+
+<h3>Narrators:</h3>
+<ul>
+<% if (trans.narrators) {
+  for (var i = 0; i < trans.narrators.length; i++) {
+    var narrators = trans.narrators[i].split('>');
+    for (var j = 0; j < narrators.length; j++) { %>
+      <li><%- narrators[j] %></li>
+<%  }
+  }
+} %>
+</ul>
+
+<% } %>

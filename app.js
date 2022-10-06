@@ -34,9 +34,11 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
   app.use(cookieParser());
   app.use('/', express.static(path.join(__dirname, 'public')));
 
+  const toolsRouter = require('./routes/tools');
   const recentRouter = require('./routes/recent');
   const booksRouter = require('./routes/books');
   const indexRouter = require('./routes/index');
+  app.use('/tools', toolsRouter);
   app.use('/recent', recentRouter);
   app.use('/books', booksRouter);
   app.use('/', indexRouter);
