@@ -19,7 +19,9 @@ router.get('/', async function (req, res, next) {
     });
   } else {
     res.render('tools', {
-      alalc: ''
+      s: null,
+      alalc: null,
+      trans: null
     });
   }
 });
