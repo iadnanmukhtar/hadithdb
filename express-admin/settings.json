@@ -306,10 +306,11 @@
                         "childPk": "tagId"
                     },
                     "ref": {
-                        "table": "tag_path",
+                        "table": "tags",
                         "pk": "id",
                         "columns": [
-                            "tag"
+                            "text_en",
+                            "text"
                         ]
                     }
                 },
@@ -1015,21 +1016,14 @@
                 "control": {
                     "select": true
                 },
-                "oneToMany": {
-                    "table": "tags",
-                    "pk": "id",
-                    "columns": [
-                        "text_en"
-                    ]
-                },
                 "type": "int",
                 "allowNull": false,
                 "defaultValue": 0,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
-                    "show": true
+                    "show": false
                 }
             },
             {
@@ -1055,7 +1049,7 @@
                     "textarea": true
                 },
                 "type": "varchar(255)",
-                "allowNull": false,
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true
@@ -1354,59 +1348,6 @@
         ],
         "mainview": {
             "show": false
-        },
-        "listview": {
-            "order": {},
-            "page": 25
-        },
-        "editview": {
-            "readonly": false
-        }
-    },
-    "tag_path": {
-        "slug": "tag_path",
-        "table": {
-            "name": "tag_path",
-            "pk": "id",
-            "verbose": "Tag Path",
-            "view": true
-        },
-        "columns": [
-            {
-                "name": "id",
-                "verbose": "id",
-                "control": {
-                    "text": true
-                },
-                "type": "int",
-                "allowNull": false,
-                "defaultValue": "0",
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "tag",
-                "verbose": "tag",
-                "control": {
-                    "text": true
-                },
-                "type": "mediumtext",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            }
-        ],
-        "mainview": {
-            "show": true
         },
         "listview": {
             "order": {},
