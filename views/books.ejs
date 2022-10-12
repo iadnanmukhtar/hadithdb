@@ -7,7 +7,7 @@
     var url = 'https://hadith.quranunlocked.com';
     var canonical = `${url}/books`;
     var logo = `${url}/images/logo.png`;
-    var desc = 'Books Available';
+    var desc = 'Available Books of Ḥadīth';
   %>
   <title><%- name %> | <%- desc %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -73,25 +73,29 @@
     <main class="">
 
     <% for (var i = 0; i < books.length; i += 2) { %>
-      <div class="row mb-3">
-        <div class="col-sm-6">
+      <div class="row">
+        <div class="col-sm-6 mb-3">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title"><%- books[i].name_en %></h5>
-              <p class="card-text"><%- books[i].description %></p>
+              <h5 class="card-title row">
+                <div class="col"><%- books[i].name_en %></div>
+                <div class="col text-end" lang="ar"><%- books[i].name %></div>
+              </h5>
               <p class="card-text"><small class="text-muted"><%- books[i].author %> (d. <%- books[i].yearOfDeath %>H)</small></p>
-              <a href="/<%- books[i].alias %>:1" class="btn btn-primary">Browse</a>
+              <a href="/<%- books[i].alias %>" class="btn btn-primary">Browse <%- books[i+1].shortName_en %></a>
             </div>
           </div>
         </div>
-        <% if (i < books.length -1) { %>
-          <div class="col-sm-6">
+        <% if (i < (books.length-1)) { %>
+          <div class="col-sm-6 mb-3">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title"><%- books[i+1].name_en %></h5>
-                <p class="card-text"><%- books[i+1].description %></p>
+                <h5 class="card-title row">
+                  <div class="col"><%- books[i+1].name_en %></div>
+                  <div class="col text-end" lang="ar"><%- books[i+1].name %></div>
+                </h5>
                 <p class="card-text"><small class="text-muted"><%- books[i].author %> (d. <%- books[i+1].yearOfDeath %>H)</small></p>
-                <a href="/<%- books[i+1].alias %>:1" class="btn btn-primary">Browse</a>
+                <a href="/<%- books[i+1].alias %>" class="btn btn-primary">Browse <%- books[i+1].shortName_en %></a>
               </div>
             </div>
           </div>

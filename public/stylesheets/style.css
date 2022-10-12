@@ -7,7 +7,7 @@ body {
 	font-family: Arial;
 }
 
-:lang(ar) {
+body :lang(ar) {
 	font-family: Kitab;
 	font-size: 1.25rem;
 	direction: rtl;
@@ -23,9 +23,14 @@ body {
 	}
 }
 
-.pagination a {
+.pagination a,
+.top a {
 	font-size: 0.85rem;
 	color: #2c9be5;
+}
+
+.top a {
+	text-decoration: none;
 }
 
 .h {
@@ -62,4 +67,59 @@ body {
 .h .footnote {
 	color: #a0a0a0;
 	text-indent: 2em;
+}
+
+.toc a,
+.toc2 a {
+	text-decoration: none;
+}
+
+.toc a:hover,
+.toc2 a:hover {
+	text-decoration: underline;
+}
+
+.toc th,
+.toc2 th {
+	text-align: left;
+}
+
+.toc :lang(ar),
+.toc2 :lang(ar) {
+	text-align: right;
+}
+
+.toc tr.chapter,
+.toc2 tr.chapter {
+	background-color: ghostwhite;
+	font-weight: bold;
+}
+
+.toc tr.title,
+.toc2 tr.title {
+	font-size: small;
+}
+
+.toc tr.title :lang(ar),
+.toc2 tr.title :lang(ar) {
+	font-size: 1rem;
+}
+
+.toc tr.title td {
+	padding-left: 1.5rem;
+	padding-right: 0;
+}
+
+.toc tr.title td:nth-child(4) {
+	padding-left: 0;
+	padding-right: 1.5rem;
+}
+
+.toggle {
+	color: green;
+	text-decoration: none;
+}
+
+.chapter h3:lang(ar) {
+	font-size: 1.5rem;
 }

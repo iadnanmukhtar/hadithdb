@@ -26,7 +26,7 @@ where
 	ht.id = hs.id;
 
 # remove footnote from body
- update hadiths ht, (
+update hadiths ht, (
 	select 
 		h0.id, body, regexp_replace(body, 'قَالَ أَبُو عِيسَى .+$', '') as new_body 
 	from 
@@ -37,3 +37,14 @@ set
 	ht.body = hs.new_body
 where
 	ht.id = hs.id;
+
+# shamela table of contents
+select distinct
+    t.lvl, b1.nass, b2.bhno as _bhno
+from b1699 b1, b1699 b2, t1699 t
+where 
+    b1.bhno is null
+and b1.rowid = (b2.rowid-1)
+and b1.page = b2.page
+and b1.id = t.id
+order by b1.page;

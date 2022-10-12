@@ -9,6 +9,9 @@ const asyncify = require('express-asyncify');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser')
 const ExpressAdmin = require('express-admin');
+const Arabic = require('./lib/Arabic');
+
+global.arabic = Arabic;
 
 var app = asyncify(express());
 
