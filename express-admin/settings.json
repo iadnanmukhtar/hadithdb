@@ -4,7 +4,7 @@
         "table": {
             "name": "hadiths",
             "pk": "id",
-            "verbose": "Hadiths"
+            "verbose": "hadiths"
         },
         "columns": [
             {
@@ -58,6 +58,22 @@
                 },
                 "type": "varchar(25)",
                 "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "num0",
+                "verbose": "num0",
+                "control": {
+                    "text": true
+                },
+                "type": "decimal(9,3)",
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true
@@ -222,6 +238,38 @@
                 }
             },
             {
+                "name": "tags",
+                "verbose": "tags",
+                "control": {
+                    "select": true,
+                    "multiple": true
+                },
+                "manyToMany": {
+                    "link": {
+                        "table": "hadith_tags",
+                        "parentPk": "hadithId",
+                        "childPk": "tagId"
+                    },
+                    "ref": {
+                        "table": "tags",
+                        "pk": "id",
+                        "columns": [
+                            "text_en",
+                            "text"
+                        ]
+                    }
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
                 "name": "text_en",
                 "verbose": "text_en",
                 "control": {
@@ -293,55 +341,16 @@
                 }
             },
             {
-                "name": "tags",
-                "verbose": "tags",
-                "control": {
-                    "select": true,
-                    "multiple": true
-                },
-                "manyToMany": {
-                    "link": {
-                        "table": "hadith_tags",
-                        "parentPk": "hadithId",
-                        "childPk": "tagId"
-                    },
-                    "ref": {
-                        "table": "tags",
-                        "pk": "id",
-                        "columns": [
-                            "text_en",
-                            "text"
-                        ]
-                    }
-                },
-                "type": "int",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": false
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
                 "name": "h1",
                 "verbose": "h1",
                 "control": {
-                    "select": true
-                },
-                "oneToMany": {
-                    "table": "toc",
-                    "pk": "id",
-                    "columns": [
-                        "text"
-                    ]
+                    "text": true
                 },
                 "type": "int",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": false
+                    "show": true
                 },
                 "editview": {
                     "show": true
@@ -351,20 +360,13 @@
                 "name": "h2",
                 "verbose": "h2",
                 "control": {
-                    "select": true
-                },
-                "oneToMany": {
-                    "table": "toc",
-                    "pk": "id",
-                    "columns": [
-                        "text"
-                    ]
+                    "text": true
                 },
                 "type": "int",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": false
+                    "show": true
                 },
                 "editview": {
                     "show": true
@@ -374,48 +376,9 @@
                 "name": "h3",
                 "verbose": "h3",
                 "control": {
-                    "select": true
-                },
-                "oneToMany": {
-                    "table": "toc",
-                    "pk": "id",
-                    "columns": [
-                        "text"
-                    ]
+                    "text": true
                 },
                 "type": "int",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": false
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "_grade",
-                "verbose": "_grade",
-                "control": {
-                    "text": true
-                },
-                "type": "varchar(45)",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": false
-                },
-                "editview": {
-                    "show": false
-                }
-            },
-            {
-                "name": "num0",
-                "verbose": "num0",
-                "control": {
-                    "text": true
-                },
-                "type": "decimal(9,3)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -1613,58 +1576,6 @@
             "readonly": false
         }
     },
-    "tmp": {
-        "slug": "tmp",
-        "table": {
-            "name": "tmp",
-            "pk": "id",
-            "verbose": "tmp"
-        },
-        "columns": [
-            {
-                "name": "id",
-                "verbose": "id",
-                "control": {
-                    "text": true
-                },
-                "type": "int",
-                "allowNull": false,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "text",
-                "verbose": "text",
-                "control": {
-                    "text": true
-                },
-                "type": "longtext",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            }
-        ],
-        "mainview": {
-            "show": true
-        },
-        "listview": {
-            "order": {},
-            "page": 25
-        },
-        "editview": {
-            "readonly": false
-        }
-    },
     "attribution_type": {
         "slug": "attribution_type",
         "table": {
@@ -1697,6 +1608,58 @@
                 },
                 "type": "varchar(45)",
                 "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "tmp": {
+        "slug": "tmp",
+        "table": {
+            "name": "tmp",
+            "pk": "id",
+            "verbose": "tmp"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "text",
+                "verbose": "text",
+                "control": {
+                    "text": true
+                },
+                "type": "longtext",
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true
