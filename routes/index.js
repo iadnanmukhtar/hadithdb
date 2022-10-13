@@ -1,20 +1,19 @@
 /* jslint node:true, esversion:8 */
 'use strict';
 
-const fs = require('fs');
 const express = require('express');
+const asyncify = require('express-asyncify');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
-const { query } = require('express');
 
-const router = express.Router();
+const router = asyncify(express.Router());
 
 router.get('/reinit', function (req, res, next) {
   Hadith.reinit();
   res.send('<h1>NOTE</h1><p>Database is initializing, please wait a few seconds before your changes will take effect.</p>');
 });
 
-router.get('/', function (req, res, next) {
+router.get('/', async function (req, res, next) {
   var results = [];
   if (req.query.q) {
     req.query.q = req.query.q.trim();
@@ -28,11 +27,11 @@ router.get('/', function (req, res, next) {
       results: results
     });
   } else {
-    results = [Search.getRandom()];
+    results = [await Search.a_getRandom()];
     if (results.length > 0) {
       res.render('search', {
         book: results[0].book,
-        q: req.query.q,
+        q: null,
         results: results
       });
     } else {
@@ -43,8 +42,8 @@ router.get('/', function (req, res, next) {
   }
 });
 
-router.get('/:bookAlias\::num', function (req, res, next) {
-  var results = Search.lookupByRef(req.params.bookAlias, req.params.num);
+router.get('/:bookAlias\::num', async function (req, res, next) {
+  var results = await Search.a_lookupByRef(req.params.bookAlias, req.params.num);
   if (results.length > 0) {
     res.render('search', {
       book: results[0].book,
@@ -137,8 +136,9 @@ async function getChapter(bookId, chapterNum) {
     WHERE bookId=${bookId} and num0 >= ${chapter.start0} and num0 <= ${chapter.end0} 
     ORDER BY num0`);
   var hadiths = [];
-  for (var i = 0; i < hadithRows.length; i++)
+  for (var i = 0; i < hadithRows.length; i++) {
     hadiths.push(new Hadith(hadithRows[i], true));
+  }
   return {
     chapter: chapter,
     headings: chapterHeadings,

@@ -134,19 +134,19 @@
           var title = results.chapter.title.substring(0, 150);
           if (results.chapter.title.length > 150) title += '&hellip;';
       %> 
-      <h2 class="col-md-6 col-sm-12 fs-5 title" lang="en">
+      <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
         <a href="/<%- book.alias %>"><%- book.name_en %></a>
-      </h2>
-      <h2 class="col-md-6 col-sm-12 title" lang="ar">
+      </h3>
+      <h3 class="col-md-6 col-sm-12 title" lang="ar">
         <a href="/<%- book.alias %>"><%- book.name %></a>
-      </h2>
+      </h3>
 
       <%# --- CHAPTER TITLE ---  %>
       <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
-        <%- results.chapter.h1 %> <%- title_en %>
+        <%- results.chapter.h1 %>. <%- title_en || 'Chapter' %>
       </h2>
       <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar">
-        <%- arabic.toArabicDigits(results.chapter.h1+'') %> <%- title %>
+        <%- arabic.toArabicDigits(results.chapter.h1+'') %>۔ <%- title %>
       </h2>
       <div class="chapter-intro">
       <% if (results.chapter.intro_en) { %>
@@ -213,10 +213,10 @@
         <hr />
         <div class="row heading">
           <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
-            <%- heading.h2 %> <%- heading.title_en %>
+            <%- heading.h2 %>. <%- heading.title_en || 'Section' %>
           </h3>
           <h3 class="col-md-6 col-sm-12 title" lang="ar">
-            <%- arabic.toArabicDigits(heading.h2+'') %> <%- heading.title %>
+            <%- arabic.toArabicDigits(heading.h2+'') %>۔ <%- heading.title %>
           </h3>
         </div>        
         <div class="col-12">

@@ -69,6 +69,16 @@ body :lang(ar) {
 	text-indent: 2em;
 }
 
+.h .title,
+.h .title a {
+	color: #2c9be5;
+	text-decoration: none;
+}
+
+.h .title a:hover {
+	text-decoration: underline;
+}
+
 .toc a,
 .toc2 a {
 	text-decoration: none;
@@ -120,6 +130,14 @@ body :lang(ar) {
 	text-decoration: none;
 }
 
-.chapter h3:lang(ar) {
-	font-size: 1.5rem;
+.chapter h2:lang(ar),
+.chapter h2:lang(ar) a {
+	font-size: 1.75rem !important;
+	font-weight: bold;
+}
+
+.chapter h3:lang(ar),
+.chapter h3:lang(ar) a {
+	font-size: 1.5rem !important;
+	font-weight: bold;
 }

@@ -195,6 +195,12 @@
           <% if (!q) { %>
             <a class="text-muted" target="admin" href="/admin/hadiths/<%- results[i].id %>">[edit]</a>
           <% } %>
+          <% if (results[i].heading) { %>
+            <div class="title">
+              § <a href="/<%- `${results[i].book.alias}/${results[i].heading.h1}#${results[i].heading.start}` %>"><%- results[i].heading.title_en || 'Section' %></a>
+              in <a href="/<%- results[i].book.alias %>"><%- results[i].book.name_en %></a>
+            </div>
+          <% } %>
         </div>
 
         <div class="col-md-6 cols-sm-12 h" lang="ar">
@@ -213,6 +219,12 @@
             </p>
           <% } %>
           <em class="grade">– <%- results[i].grade.grade %>&nbsp;(<%- results[i].grader.shortName %>)</em>
+          <% if (results[i].heading) { %>
+            <div class="title">
+              § <a href="/<%- `${results[i].book.alias}/${results[i].heading.h1}#${results[i].heading.start}` %>"><%- results[i].heading.title %></a>
+              في <a href="/<%- results[i].book.alias %>"><%- results[i].book.name %></a>
+            </div>
+          <% } %>
         </div>
 
       <% } %>
