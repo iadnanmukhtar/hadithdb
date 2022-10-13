@@ -38,6 +38,8 @@ function setDirection() {
 
 function cleanText(s) {
 	s = s.toLowerCase();
+	s = s.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+	s = s.replace(/[ʿʾ`'\-]/g, '');
 	s = s.replace(/[\u064B\u064C\u064D\u064E\u064F\u0650\u0651\u0652\u0670]/g, '');
 	s = s.replace(/[إأآ]/g, 'ا');
 	s = s.replace(/ؤ/g, 'ء');

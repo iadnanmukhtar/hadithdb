@@ -87,7 +87,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     return (value.alias == req.params.bookAlias || value.id == req.params.bookAlias);
   });
   if (book && !isNaN(req.params.chapterNum)) {
-    var currentChapterNum = parseInt(req.params.chapterNum);
+    var currentChapterNum = parseFloat(req.params.chapterNum);
     var prevChapter = null;
     var nextChapter = null;
     var firstChapter = await getFirstChapter(book.id);
@@ -113,7 +113,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 async function getBookTOC(bookId) {
   return await global.query(`
     SELECT * FROM toc
-    WHERE bookId=${bookId} 
+    WHERE bookId=${bookId} AND level > 0
     ORDER BY h1, h2, h3`);
 }
 
