@@ -86,8 +86,8 @@
     {
       "@context": "http://schema.org",
       "@type": "Chapter",
-      "name": "<%- `${book.shortName_en}, Chapter ${results.chapter.h1}: ${results.chapter.title_en}` %>",
-      "alternateName": "<%- `${book.shortName}، ${arabic.toArabicDigits(results.chapter.h1+'')}- ${results.chapter.title}` %>",
+      "name": "Chapter ${results.chapter.h1}: ${results.chapter.title_en || ''}` %>",
+      "alternateName": "<%- `${book.shortName}، ${arabic.toArabicDigits(results.chapter.h1+'')}- ${results.chapter.title || ''}` %>",
       "pageStart": "<%- results.chapter.start0 %>",
       "pageEnd": "<%- results.chapter.end0 %>",
       "url": "<%- canonical %>",
