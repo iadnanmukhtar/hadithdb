@@ -46,35 +46,16 @@
     {
       "@context": "http://schema.org",
       "@type": "Organization",
+      "name": "<%= name %>",
       "url": "<%= url %>",
       "logo": "<%= logo %>"
     }
   </script>
-
-  <% if (typeof book != 'undefined') { %>
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "Book",
-      "name": "<%= book.name_en %>",
-      "inLanguage": "English",
-      "url" : "<%= `${url}/${book.alias}:1` %>"
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "Book",
-      "name": "<%= book.name %>",
-      "inLanguage": "Arabic",
-      "url" : "<%= `${url}/${book.alias}:1` %>"
-    }
-  </script>
-  <% } %>
   <script type="application/ld+json">
     {
       "@context": "http://schema.org",
       "@type": "WebSite",
+      "name": "<%= name %> Search Action",
       "url": "<%= url %>",
       "potentialAction": {
         "@type": "SearchAction",
@@ -83,7 +64,63 @@
       }
     }
   </script>
-
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "Book",
+      "name": "<%= book.name_en %>",
+      "inLanguage": "English",
+      "url" : "<%= `${url}/${book.alias}` %>"
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "Book",
+      "name": "<%= book.name %>",
+      "inLanguage": "Arabic",
+      "url" : "<%= `${url}/${book.alias}` %>"
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "Chapter",
+      "name": "<%- `${book.shortName_en}, Chapter ${results.chapter.h1}: ${results.chapter.title_en}` %>",
+      "alternateName": "<%- `${book.shortName}، ${arabic.toArabicDigits(results.chapter.h1+'')}- ${results.chapter.title}` %>",
+      "pageStart": "<%- results.chapter.start0 %>",
+      "pageEnd": "<%- results.chapter.end0 %>",
+      "url": "<%- canonical %>",
+      "schema:isPartOf": {
+        "@id": "<%= `${url}/${book.alias}` %>"
+      }
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "BreadcrumbList",
+      "name": "Books &gt; <%- book.shortName_en %> &gt; Chapter <%- results.chapter.h1 %> ",
+      "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Books",
+        "item": "<%- `${url}/books` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "<%- book.shortName_en %>",
+        "item": "<%- `${url}/${book.alias}` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "<%- `Chapter ${results.chapter.h1}` %>"
+      }]
+    }
+  </script>
 </head>
 <body>
   <div class="col-lg-8 mx-auto p-3 py-md-5">
