@@ -237,14 +237,15 @@
       <%# --- HADITH LOOP --- %>
       <% 
         for (var i = 0; i < results.hadiths.length; i++) {
-          var heading = results.headings.find(function(value) {
+          var headings = results.headings.filter(function(value) {
             return results.hadiths[i].num == value.start;
           });
       %>
 
       <%# --- HADITHS SECTION --- %>
       <a id="<%- results.hadiths[i].num %>"></a>
-      <% if (heading) { %>
+      <% for (var j = 0; headings && j < headings.length;j ++) { 
+            var heading = headings[j]; %>
       <div class="col-12 mt-4">
         <div class="top text-end">
           <a href="#top"><i class="bi bi-arrow-bar-up"></i>TOP</a>

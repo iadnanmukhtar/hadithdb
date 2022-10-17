@@ -387,6 +387,38 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "numInChapter",
+                "verbose": "numInChapter",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "gradeText",
+                "verbose": "gradeText",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(255)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {
