@@ -1,127 +1,10 @@
 /* jslint node:true, esversion:8 */
 'use strict';
 
-const fs = require('fs');
 const http = require('sync-request');
 const cheerio = require('cheerio');
 
-function getPage(url) {
-	return http('GET', url).getBody().toString();
-}
-
-function getHadiths(url, page) {
-	if (!page)
-		page = getPage(url);
-	var path = url.split('/');
-	var $ = cheerio.load(page);
-
-	var ha = [];
-	$('.actualHadithContainer').each(function (_, el) {
-		var id = $(el).attr('id');
-		var h = {};
-		h.bookAlias = path[3];
-		h.cNum = clean($('.book_page_number').text());
-		var link = $(`#${id} .bottomItems .hadith_permalink .sharelink`).attr('onclick');
-		try {
-			h.hNum = /([0-9]+.*?)'\)/.exec(link)[1];
-		} catch (err) {
-		}
-		h.hChain = clean($(`#${id} .arabic_sanad:nth-child(1)`).text());
-		h.hText = clean($(`#${id} .arabic_text_details`).text());
-		h.hFooter = clean($(`#${id} .arabic_sanad:nth-child(2)`).text());
-		h.hChain_en = clean($(`#${id} .englishcontainer .hadith_narrated`).text());
-		h.hBody_en = clean($(`#${id} .englishcontainer .text_details`).text());
-		h.hGrade = clean($(`#${id} .gradetable tr:nth-child(1) td:nth-child(2)`).text());
-		ha.push(h);
-	});
-
-	return ha;
-}
-
-function getChapter(url, page) {
-	if (!page)
-		page = getPage(url);
-	var path = url.split('/');
-	var $ = cheerio.load(page);
-
-	var c = {};
-
-	c.bookAlias = path[3];
-	c.cNum = clean($('.book_page_number').text());
-	c.cName_en = clean($('.book_page_english_name').text());
-	c.cName = clean($('.book_page_arabic_name').text());
-	c.cIntro_en = clean($('.ebookintro').text());
-	c.cIntro = clean($('.abookintro').text());
-
-	c.titles = [];
-	var i = 0;
-	$('.echapno').each(function (_, el) {
-		var t = {};
-		t.tIdx = ++i;
-		t.tNum = clean($(el).text());
-		c.titles.push(t);
-	});
-	i = 0;
-	$('.englishchapter').each(function (_, el) {
-		c.titles[i++].tText_en = clean($(el).text());
-	});
-	i = 0;
-	$('.arabicchapter').each(function (_, el) {
-		c.titles[i++].tText = clean($(el).text());
-	});
-	i = 0;
-	$('.achapintro').each(function (_, el) {
-		var elChapter = $(el).prev();
-		if (elChapter && elChapter.attr('class') != undefined) {
-			while (!(elChapter.hasClass('chapter') || elChapter.hasClass('surah'))) {
-				elChapter = elChapter.prev();
-				if (!elChapter)
-					throw "prev sibling not found";
-			}
-			var tNum = clean(elChapter.children().first().text());
-			var tText_en = clean(elChapter.children().first().next().text());
-			var i = c.titles.findIndex(function (val, i, arr) {
-				if (val.tText_en == tText_en && val.tNum == tNum)
-					return true;
-			});
-			c.titles[i].tIntro = clean($(el).text());
-		}
-	});
-	$('.chapter').each(function (_, el) {
-		var tNum = clean($(el).children().first().text());
-		var tText_en = clean($(el).children().first().next().text());
-		var i = c.titles.findIndex(function (val, i, arr) {
-			if (val.tText_en == tText_en && val.tNum == tNum)
-				return true;
-		});
-		var elHadith = $(el).next().next();
-		if ($(el).next().hasClass('achapintro'))
-			elHadith = elHadith.next();
-		if (elHadith.hasClass('actualHadithContainer')) {
-			var elHadithId = elHadith.attr('id');
-			var link = $(`#${elHadithId} .bottomItems .hadith_permalink .sharelink`).attr('onclick');
-			c.titles[i].hStartNum = /([0-9]+.*?)'\)/.exec(link)[1];
-		}
-	});
-
-	return c;
-}
-
-function clean(s) {
-	if (s)
-		s = s.replace(/\u200f/g, '').trim();
-	return s;
-}
-
-function msleep(n) {
-	Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
-}
-
-function sleep(n) {
-	msleep(n * 1000);
-}
-
-var urls = [
+const urls = [
 	'https://sunnah.com/abudawud/1',
 	'https://sunnah.com/abudawud/2',
 	'https://sunnah.com/abudawud/3',
@@ -526,26 +409,228 @@ var urls = [
 	'https://sunnah.com/ahmad/6',
 	'https://sunnah.com/ahmad/7'
 ];
+const bookIdMap = [
+	['bukhari', 1],
+	['muslim', 2],
+	['nasai', 3],
+	['abudawud', 4],
+	['tirmidhi', 5],
+	['ibnmajah', 6],
+	['malik', 7]
+	['ahmad', 8]
+];
 
-// var chapters = [];
-// for (var i = 0; i < urls.length; i++) {
-// 	if (i >= 0) sleep(1);
-// 	console.log(urls[i]);
-// 	chapters.push(getChapter(urls[i]));
-// }
-// fs.writeFileSync('data/sunnah-toc.json', JSON.stringify(chapters, null, 4));
+function parseChapter(url, page) {
+	if (!page)
+		page = getPage(url);
+	var path = url.split('/');
+	var $ = cheerio.load(page);
 
-var hadiths = [];
-for (var i = 0; i < urls.length; i++) {
-	console.log(urls[i]);
-	try {
-		hadiths.push(getHadiths(urls[i]));
-	} catch (err) {
-		console.log(err);
-		break;
+	// chapter heading and intro
+	var i = bookIdMap.findIndex(function (val, i, arr) {
+		if (val[0] == path[3])
+			return true;
+	});
+	var bookId = bookIdMap[i][1];
+	var chapter = {};
+	chapter.bookId = bookId;
+	chapter.level = 1;
+	chapter.h1 = $('.book_page_number').text();
+	chapter.h2 = null;
+	chapter.h3 = null;
+	chapter.title_en = clean($('.book_page_english_name').text());
+	chapter.title = clean($('.book_page_arabic_name').text());
+	chapter.intro_en = clean($('.ebookintro').text());
+	chapter.intro = clean($('.abookintro').text());
+	chapter.start = null;
+	chapter.end = null;
+	chapter.start0 = -1;
+	chapter.end0 = -1;
+	var headings = [];
+	var numInChapter = 1;
+	var lastNum = -1;
+	var h2InChapter = 1;
+	var afterHadith = false;
+
+	// section heading, intros, and hadith
+	$('.AllHadith').children().each(function () {
+		if ($(this).hasClass('chapter') || $(this).hasClass('surah')) {
+			// flush previous headings
+			if (afterHadith && headings.length > 0) {
+				headings[headings.length - 1].end = lastNum;
+				headings[headings.length - 1].end0 = hadithNumtoNumber(lastNum);
+				insertHeadings(headings);
+				headings = [];
+				afterHadith = false;
+			}
+			// parse new heading
+			var heading = {};
+			heading.bookId = bookId;
+			heading.level = 2;
+			heading.h1 = chapter.h1;
+			heading.h2 = h2InChapter++;
+			heading.h3 = null;
+			heading.title_en = clean($(this).find('.englishchapter').text());
+			heading.title = clean($(this).find('.arabicchapter').text());
+			heading.intro_en = null;
+			heading.intro = null;
+			heading.start = null;
+			heading.end = null;
+			heading.start0 = -1;
+			heading.end0 = -1;
+			headings.push(heading);
+		} else if ($(this).hasClass('achapintro')) {
+			headings[headings.length - 1].intro = clean($(this).text());
+		} else if ($(this).hasClass('actualHadithContainer')) {
+			afterHadith = true;
+			// parse new hadith
+			var heading = {
+				bookId: bookId,
+				level: 2,
+				h1: chapter.h1,
+				h2: h2InChapter,
+				h3: null,
+				title_en: null,
+				title: 'باب',
+				intro_en: null,
+				intro: null,
+				start: null,
+				end: null,
+				start0: -1,
+				end0: -1,
+			};
+			if (headings.length > 0)
+				heading = headings[headings.length - 1];
+			else
+				h2InChapter++;
+			var hadith = {};
+			hadith.bookId = bookId;
+			hadith.h1 = chapter.h1;
+			hadith.h2 = heading.h2;
+			hadith.h3 = null;
+			hadith.numInChapter = numInChapter++;
+			hadith.num = null;
+			try {
+				var link = $(this).find(`.bottomItems .hadith_permalink .sharelink`).attr('onclick');
+				lastNum = hadith.num = /([0-9]+.*?)'\)/.exec(link)[1] || '';
+			} catch (err) {
+			}
+			if (lastNum == '34')
+				var x = 0;
+			hadith.num0 = hadithNumtoNumber(hadith.num);
+			hadith.chain_en = clean($(this).find(`.englishcontainer .hadith_narrated`).text());
+			hadith.chain = null;
+			hadith.body_en = clean($(this).find(`.englishcontainer .text_details`).text());
+			hadith.footnote_en = null;
+			hadith.footnote = null;
+			hadith.text_en = (emptyIfNull(hadith.chain_en) + ' ' + hadith.body_en).trim();
+			hadith.text = hadith.body = clean($(this).find(`.arabic_hadith_full`).text()) || '';
+			hadith.gradeText = clean($(this).find(`.gradetable tr:nth-child(1) td:nth-child(2)`).text());
+			if (chapter.start0 < 0) {
+				chapter.start = hadith.num;
+				chapter.start0 = hadith.num0;
+			}
+			if (heading.start0 < 0) {
+				heading.start = hadith.num;
+				heading.start0 = hadith.num0;
+			}
+			insertHadith(hadith);
+		}
+	});
+	if (headings.length > 0) {
+		chapter.end = headings[headings.length - 1].end = lastNum;
+		chapter.end0 = headings[headings.length - 1].end0 = hadithNumtoNumber(lastNum);
+		insertHeadings(headings);
+		insertHeading(chapter);
 	}
 }
-fs.writeFileSync(`data/sunnah-hadiths.json`, JSON.stringify(hadiths, null, 4));
 
-// fs.writeFileSync('data/c.json', JSON.stringify(getChapter('https://sunnah.com/bukhari/65'), null, 4));
-// fs.writeFileSync('data/sunnah-hadiths.json', JSON.stringify(getHadiths('https://sunnah.com/tirmidhi/33'), null, 4));
+function insertHeadings(headings) {
+	if (headings.length > 0) {
+		for (var i = 0; i < headings.length; i++)
+			insertHeading(headings[i]);
+	}
+}
+
+function insertHeading(heading) {
+	console.log(sql(`
+	INSERT INTO toc
+		(bookId, level, h1, h2, h3, title_en, title, 
+			intro_en, intro, start, end, start0, end0)
+	VALUES (
+		${heading.bookId}, ${heading.level}, ${heading.h1}, ${heading.h2}, ${heading.h3}, ${heading.title_en}, ${heading.title},
+			${heading.intro_en}, ${heading.intro}, ${heading.start}, ${heading.end}, ${heading.start0}, ${heading.end0}
+		);
+	`));
+}
+
+function insertHadith(hadith) {
+	console.log(sql(`
+	INSERT INTO hadiths 
+		(bookId, h1, h2, h3, num, num0, numInChapter, gradeText, 
+			chain_en, chain, body_en, body, footnote_en, footnote, text_en, text)
+	VALUES (
+		${hadith.bookId}, ${hadith.h1}, ${hadith.h2}, ${hadith.h3}, ${hadith.num}, ${hadith.num0}, ${hadith.numInChapter}, ${hadith.gradeText},
+			${hadith.chain_en}, ${hadith.chain}, ${hadith.body_en}, ${hadith.body}, ${hadith.footnote_en}, ${hadith.footnote}, ${hadith.text_en}, ${hadith.text}
+		);
+	`));
+}
+
+function getPage(url) {
+	console.error(url);
+	return http('GET', url).getBody().toString();
+}
+
+function clean(s) {
+	if (s) {
+		s = s.replace(/\u200f/g, '').trim();
+		s = s.replace(/\"/g, '\\"').replace(/\'/g, "\\'");
+		return '"' + s + '"';
+	}
+	return null;
+}
+
+function emptyIfNull(s) {
+	if (!s) s = '';
+	return s;
+}
+
+function hadithNumtoNumber(num) {
+	var n = parseInt(extract(num, /^([0-9]+)/) || -1);
+	var d = 0;
+	var suffix = extract(num, /([a-z]+)/);
+	if (suffix)
+		d = parseInt(letterToNumber(suffix)) / 10.;
+	return n + d;
+}
+
+function letterToNumber(s) {
+	var out = 0, len = s.length;
+	for (var pos = 0; pos < len; pos++) {
+		out += (s.charCodeAt(pos) - 64) * Math.pow(26, len - pos - 1);
+	}
+	return out;
+}
+
+function sql(s) {
+	return s.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function extract(s, re) {
+	var arr = re.exec(s);
+	if (arr)
+		return arr[1];
+	return null;
+}
+
+function sleep(n) {
+	msleep(n * 1000);
+}
+
+function msleep(n) {
+	Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
+}
+
+// for (var i = 0; i < urls.length; i++)
+// 	parseChapter(urls[i]);
+parseChapter('https://sunnah.com/abudawud/1');
