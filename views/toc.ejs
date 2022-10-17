@@ -162,8 +162,10 @@
           var title_en = '';
           if (toc[i].title_en) title_en = toc[i].title_en.substring(0, 75);
           if (toc[i].title_en && toc[i].title_en.length > 75) title_en += '&hellip;';
-          var title = toc[i].title.substring(0, 150);
-          if (toc[i].title.length > 150) title += '&hellip;';
+
+          var title = '';
+          if (toc[i].title) title = toc[i].title.substring(0, 150);
+          if (toc[i].title && toc[i].title.length > 150) title += '&hellip;';
 
           if (toc[i].level > 1) {
           %>
