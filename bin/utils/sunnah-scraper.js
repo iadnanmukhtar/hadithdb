@@ -5,146 +5,146 @@ const http = require('sync-request');
 const cheerio = require('cheerio');
 
 const urls = [
-	'https://sunnah.com/abudawud/1',
-	'https://sunnah.com/abudawud/2',
-	'https://sunnah.com/abudawud/3',
-	'https://sunnah.com/abudawud/4',
-	'https://sunnah.com/abudawud/5',
-	'https://sunnah.com/abudawud/6',
-	'https://sunnah.com/abudawud/7',
-	'https://sunnah.com/abudawud/8',
-	'https://sunnah.com/abudawud/9',
-	'https://sunnah.com/abudawud/10',
-	'https://sunnah.com/abudawud/11',
-	'https://sunnah.com/abudawud/12',
-	'https://sunnah.com/abudawud/13',
-	'https://sunnah.com/abudawud/14',
-	'https://sunnah.com/abudawud/15',
-	'https://sunnah.com/abudawud/16',
-	'https://sunnah.com/abudawud/17',
-	'https://sunnah.com/abudawud/18',
-	'https://sunnah.com/abudawud/19',
-	'https://sunnah.com/abudawud/20',
-	'https://sunnah.com/abudawud/21',
-	'https://sunnah.com/abudawud/22',
-	'https://sunnah.com/abudawud/23',
-	'https://sunnah.com/abudawud/24',
-	'https://sunnah.com/abudawud/25',
-	'https://sunnah.com/abudawud/26',
-	'https://sunnah.com/abudawud/27',
-	'https://sunnah.com/abudawud/28',
-	'https://sunnah.com/abudawud/29',
-	'https://sunnah.com/abudawud/30',
-	'https://sunnah.com/abudawud/31',
-	'https://sunnah.com/abudawud/32',
-	'https://sunnah.com/abudawud/33',
-	'https://sunnah.com/abudawud/34',
-	'https://sunnah.com/abudawud/35',
-	'https://sunnah.com/abudawud/36',
-	'https://sunnah.com/abudawud/37',
-	'https://sunnah.com/abudawud/38',
-	'https://sunnah.com/abudawud/39',
-	'https://sunnah.com/abudawud/40',
-	'https://sunnah.com/abudawud/41',
-	'https://sunnah.com/abudawud/42',
-	'https://sunnah.com/abudawud/43',
-	'https://sunnah.com/bukhari/1',
-	'https://sunnah.com/bukhari/2',
-	'https://sunnah.com/bukhari/3',
-	'https://sunnah.com/bukhari/4',
-	'https://sunnah.com/bukhari/5',
-	'https://sunnah.com/bukhari/6',
-	'https://sunnah.com/bukhari/7',
-	'https://sunnah.com/bukhari/8',
-	'https://sunnah.com/bukhari/9',
-	'https://sunnah.com/bukhari/10',
-	'https://sunnah.com/bukhari/11',
-	'https://sunnah.com/bukhari/12',
-	'https://sunnah.com/bukhari/13',
-	'https://sunnah.com/bukhari/14',
-	'https://sunnah.com/bukhari/15',
-	'https://sunnah.com/bukhari/16',
-	'https://sunnah.com/bukhari/17',
-	'https://sunnah.com/bukhari/18',
-	'https://sunnah.com/bukhari/19',
-	'https://sunnah.com/bukhari/20',
-	'https://sunnah.com/bukhari/21',
-	'https://sunnah.com/bukhari/22',
-	'https://sunnah.com/bukhari/23',
-	'https://sunnah.com/bukhari/24',
-	'https://sunnah.com/bukhari/25',
-	'https://sunnah.com/bukhari/26',
-	'https://sunnah.com/bukhari/27',
-	'https://sunnah.com/bukhari/28',
-	'https://sunnah.com/bukhari/29',
-	'https://sunnah.com/bukhari/30',
-	'https://sunnah.com/bukhari/31',
-	'https://sunnah.com/bukhari/32',
-	'https://sunnah.com/bukhari/33',
-	'https://sunnah.com/bukhari/34',
-	'https://sunnah.com/bukhari/35',
-	'https://sunnah.com/bukhari/36',
-	'https://sunnah.com/bukhari/37',
-	'https://sunnah.com/bukhari/38',
-	'https://sunnah.com/bukhari/39',
-	'https://sunnah.com/bukhari/40',
-	'https://sunnah.com/bukhari/41',
-	'https://sunnah.com/bukhari/42',
-	'https://sunnah.com/bukhari/43',
-	'https://sunnah.com/bukhari/44',
-	'https://sunnah.com/bukhari/45',
-	'https://sunnah.com/bukhari/46',
-	'https://sunnah.com/bukhari/47',
-	'https://sunnah.com/bukhari/48',
-	'https://sunnah.com/bukhari/49',
-	'https://sunnah.com/bukhari/50',
-	'https://sunnah.com/bukhari/51',
-	'https://sunnah.com/bukhari/52',
-	'https://sunnah.com/bukhari/53',
-	'https://sunnah.com/bukhari/54',
-	'https://sunnah.com/bukhari/55',
-	'https://sunnah.com/bukhari/56',
-	'https://sunnah.com/bukhari/57',
-	'https://sunnah.com/bukhari/58',
-	'https://sunnah.com/bukhari/59',
-	'https://sunnah.com/bukhari/60',
-	'https://sunnah.com/bukhari/61',
-	'https://sunnah.com/bukhari/62',
-	'https://sunnah.com/bukhari/63',
-	'https://sunnah.com/bukhari/64',
-	'https://sunnah.com/bukhari/65',
-	'https://sunnah.com/bukhari/66',
-	'https://sunnah.com/bukhari/67',
-	'https://sunnah.com/bukhari/68',
-	'https://sunnah.com/bukhari/69',
-	'https://sunnah.com/bukhari/70',
-	'https://sunnah.com/bukhari/71',
-	'https://sunnah.com/bukhari/72',
-	'https://sunnah.com/bukhari/73',
-	'https://sunnah.com/bukhari/74',
-	'https://sunnah.com/bukhari/75',
-	'https://sunnah.com/bukhari/76',
-	'https://sunnah.com/bukhari/77',
-	'https://sunnah.com/bukhari/78',
-	'https://sunnah.com/bukhari/79',
-	'https://sunnah.com/bukhari/80',
-	'https://sunnah.com/bukhari/81',
-	'https://sunnah.com/bukhari/82',
-	'https://sunnah.com/bukhari/83',
-	'https://sunnah.com/bukhari/84',
-	'https://sunnah.com/bukhari/85',
-	'https://sunnah.com/bukhari/86',
-	'https://sunnah.com/bukhari/87',
-	'https://sunnah.com/bukhari/88',
-	'https://sunnah.com/bukhari/89',
-	'https://sunnah.com/bukhari/90',
-	'https://sunnah.com/bukhari/91',
-	'https://sunnah.com/bukhari/92',
-	'https://sunnah.com/bukhari/93',
-	'https://sunnah.com/bukhari/94',
-	'https://sunnah.com/bukhari/95',
-	'https://sunnah.com/bukhari/96',
-	'https://sunnah.com/bukhari/97',
+	// 'https://sunnah.com/abudawud/1',
+	// 'https://sunnah.com/abudawud/2',
+	// 'https://sunnah.com/abudawud/3',
+	// 'https://sunnah.com/abudawud/4',
+	// 'https://sunnah.com/abudawud/5',
+	// 'https://sunnah.com/abudawud/6',
+	// 'https://sunnah.com/abudawud/7',
+	// 'https://sunnah.com/abudawud/8',
+	// 'https://sunnah.com/abudawud/9',
+	// 'https://sunnah.com/abudawud/10',
+	// 'https://sunnah.com/abudawud/11',
+	// 'https://sunnah.com/abudawud/12',
+	// 'https://sunnah.com/abudawud/13',
+	// 'https://sunnah.com/abudawud/14',
+	// 'https://sunnah.com/abudawud/15',
+	// 'https://sunnah.com/abudawud/16',
+	// 'https://sunnah.com/abudawud/17',
+	// 'https://sunnah.com/abudawud/18',
+	// 'https://sunnah.com/abudawud/19',
+	// 'https://sunnah.com/abudawud/20',
+	// 'https://sunnah.com/abudawud/21',
+	// 'https://sunnah.com/abudawud/22',
+	// 'https://sunnah.com/abudawud/23',
+	// 'https://sunnah.com/abudawud/24',
+	// 'https://sunnah.com/abudawud/25',
+	// 'https://sunnah.com/abudawud/26',
+	// 'https://sunnah.com/abudawud/27',
+	// 'https://sunnah.com/abudawud/28',
+	// 'https://sunnah.com/abudawud/29',
+	// 'https://sunnah.com/abudawud/30',
+	// 'https://sunnah.com/abudawud/31',
+	// 'https://sunnah.com/abudawud/32',
+	// 'https://sunnah.com/abudawud/33',
+	// 'https://sunnah.com/abudawud/34',
+	// 'https://sunnah.com/abudawud/35',
+	// 'https://sunnah.com/abudawud/36',
+	// 'https://sunnah.com/abudawud/37',
+	// 'https://sunnah.com/abudawud/38',
+	// 'https://sunnah.com/abudawud/39',
+	// 'https://sunnah.com/abudawud/40',
+	// 'https://sunnah.com/abudawud/41',
+	// 'https://sunnah.com/abudawud/42',
+	// 'https://sunnah.com/abudawud/43',
+	// 'https://sunnah.com/bukhari/1',
+	// 'https://sunnah.com/bukhari/2',
+	// 'https://sunnah.com/bukhari/3',
+	// 'https://sunnah.com/bukhari/4',
+	// 'https://sunnah.com/bukhari/5',
+	// 'https://sunnah.com/bukhari/6',
+	// 'https://sunnah.com/bukhari/7',
+	// 'https://sunnah.com/bukhari/8',
+	// 'https://sunnah.com/bukhari/9',
+	// 'https://sunnah.com/bukhari/10',
+	// 'https://sunnah.com/bukhari/11',
+	// 'https://sunnah.com/bukhari/12',
+	// 'https://sunnah.com/bukhari/13',
+	// 'https://sunnah.com/bukhari/14',
+	// 'https://sunnah.com/bukhari/15',
+	// 'https://sunnah.com/bukhari/16',
+	// 'https://sunnah.com/bukhari/17',
+	// 'https://sunnah.com/bukhari/18',
+	// 'https://sunnah.com/bukhari/19',
+	// 'https://sunnah.com/bukhari/20',
+	// 'https://sunnah.com/bukhari/21',
+	// 'https://sunnah.com/bukhari/22',
+	// 'https://sunnah.com/bukhari/23',
+	// 'https://sunnah.com/bukhari/24',
+	// 'https://sunnah.com/bukhari/25',
+	// 'https://sunnah.com/bukhari/26',
+	// 'https://sunnah.com/bukhari/27',
+	// 'https://sunnah.com/bukhari/28',
+	// 'https://sunnah.com/bukhari/29',
+	// 'https://sunnah.com/bukhari/30',
+	// 'https://sunnah.com/bukhari/31',
+	// 'https://sunnah.com/bukhari/32',
+	// 'https://sunnah.com/bukhari/33',
+	// 'https://sunnah.com/bukhari/34',
+	// 'https://sunnah.com/bukhari/35',
+	// 'https://sunnah.com/bukhari/36',
+	// 'https://sunnah.com/bukhari/37',
+	// 'https://sunnah.com/bukhari/38',
+	// 'https://sunnah.com/bukhari/39',
+	// 'https://sunnah.com/bukhari/40',
+	// 'https://sunnah.com/bukhari/41',
+	// 'https://sunnah.com/bukhari/42',
+	// 'https://sunnah.com/bukhari/43',
+	// 'https://sunnah.com/bukhari/44',
+	// 'https://sunnah.com/bukhari/45',
+	// 'https://sunnah.com/bukhari/46',
+	// 'https://sunnah.com/bukhari/47',
+	// 'https://sunnah.com/bukhari/48',
+	// 'https://sunnah.com/bukhari/49',
+	// 'https://sunnah.com/bukhari/50',
+	// 'https://sunnah.com/bukhari/51',
+	// 'https://sunnah.com/bukhari/52',
+	// 'https://sunnah.com/bukhari/53',
+	// 'https://sunnah.com/bukhari/54',
+	// 'https://sunnah.com/bukhari/55',
+	// 'https://sunnah.com/bukhari/56',
+	// 'https://sunnah.com/bukhari/57',
+	// 'https://sunnah.com/bukhari/58',
+	// 'https://sunnah.com/bukhari/59',
+	// 'https://sunnah.com/bukhari/60',
+	// 'https://sunnah.com/bukhari/61',
+	// 'https://sunnah.com/bukhari/62',
+	// 'https://sunnah.com/bukhari/63',
+	// 'https://sunnah.com/bukhari/64',
+	// 'https://sunnah.com/bukhari/65',
+	// 'https://sunnah.com/bukhari/66',
+	// 'https://sunnah.com/bukhari/67',
+	// 'https://sunnah.com/bukhari/68',
+	// 'https://sunnah.com/bukhari/69',
+	// 'https://sunnah.com/bukhari/70',
+	// 'https://sunnah.com/bukhari/71',
+	// 'https://sunnah.com/bukhari/72',
+	// 'https://sunnah.com/bukhari/73',
+	// 'https://sunnah.com/bukhari/74',
+	// 'https://sunnah.com/bukhari/75',
+	// 'https://sunnah.com/bukhari/76',
+	// 'https://sunnah.com/bukhari/77',
+	// 'https://sunnah.com/bukhari/78',
+	// 'https://sunnah.com/bukhari/79',
+	// 'https://sunnah.com/bukhari/80',
+	// 'https://sunnah.com/bukhari/81',
+	// 'https://sunnah.com/bukhari/82',
+	// 'https://sunnah.com/bukhari/83',
+	// 'https://sunnah.com/bukhari/84',
+	// 'https://sunnah.com/bukhari/85',
+	// 'https://sunnah.com/bukhari/86',
+	// 'https://sunnah.com/bukhari/87',
+	// 'https://sunnah.com/bukhari/88',
+	// 'https://sunnah.com/bukhari/89',
+	// 'https://sunnah.com/bukhari/90',
+	// 'https://sunnah.com/bukhari/91',
+	// 'https://sunnah.com/bukhari/92',
+	// 'https://sunnah.com/bukhari/93',
+	// 'https://sunnah.com/bukhari/94',
+	// 'https://sunnah.com/bukhari/95',
+	// 'https://sunnah.com/bukhari/96',
+	// 'https://sunnah.com/bukhari/97',
 	'https://sunnah.com/ibnmajah/introduction',
 	'https://sunnah.com/ibnmajah/1',
 	'https://sunnah.com/ibnmajah/2',
@@ -408,6 +408,7 @@ const urls = [
 	'https://sunnah.com/ahmad/5',
 	'https://sunnah.com/ahmad/6',
 	'https://sunnah.com/ahmad/7'
+
 ];
 const bookIdMap = [
 	['bukhari', 1],
@@ -416,7 +417,7 @@ const bookIdMap = [
 	['abudawud', 4],
 	['tirmidhi', 5],
 	['ibnmajah', 6],
-	['malik', 7]
+	['malik', 7],
 	['ahmad', 8]
 ];
 
@@ -435,7 +436,7 @@ function parseChapter(url, page) {
 	var chapter = {};
 	chapter.bookId = bookId;
 	chapter.level = 1;
-	chapter.h1 = $('.book_page_number').text();
+	chapter.h1 = $('.book_page_number').text() || 0;
 	chapter.h2 = null;
 	chapter.h3 = null;
 	chapter.title_en = clean($('.book_page_english_name').text());
@@ -457,8 +458,8 @@ function parseChapter(url, page) {
 		if ($(this).hasClass('chapter') || $(this).hasClass('surah')) {
 			// flush previous headings
 			if (afterHadith && headings.length > 0) {
-				headings[headings.length - 1].end = lastNum;
 				headings[headings.length - 1].end0 = hadithNumtoNumber(lastNum);
+				headings[headings.length - 1].end = clean(lastNum);
 				insertHeadings(headings);
 				headings = [];
 				afterHadith = false;
@@ -491,7 +492,7 @@ function parseChapter(url, page) {
 				h2: h2InChapter,
 				h3: null,
 				title_en: null,
-				title: 'باب',
+				title: clean('باب'),
 				intro_en: null,
 				intro: null,
 				start: null,
@@ -501,8 +502,10 @@ function parseChapter(url, page) {
 			};
 			if (headings.length > 0)
 				heading = headings[headings.length - 1];
-			else
+			else {
+				headings.push(heading);
 				h2InChapter++;
+			}
 			var hadith = {};
 			hadith.bookId = bookId;
 			hadith.h1 = chapter.h1;
@@ -512,37 +515,108 @@ function parseChapter(url, page) {
 			hadith.num = null;
 			try {
 				var link = $(this).find(`.bottomItems .hadith_permalink .sharelink`).attr('onclick');
-				lastNum = hadith.num = /([0-9]+.*?)'\)/.exec(link)[1] || '';
+				var n = extract(link, /([0-9]+.*?)'\)/);
+				if (n && n.indexOf('/') >= 0)
+					n = extract(n, /\/([0-9]+.*?)/);
+				lastNum = hadith.num = n;
 			} catch (err) {
 			}
-			if (lastNum == '34')
-				var x = 0;
 			hadith.num0 = hadithNumtoNumber(hadith.num);
+			hadith.num = clean(hadith.num);
 			hadith.chain_en = clean($(this).find(`.englishcontainer .hadith_narrated`).text());
 			hadith.chain = null;
 			hadith.body_en = clean($(this).find(`.englishcontainer .text_details`).text());
 			hadith.footnote_en = null;
 			hadith.footnote = null;
 			hadith.text_en = (emptyIfNull(hadith.chain_en) + ' ' + hadith.body_en).trim();
-			hadith.text = hadith.body = clean($(this).find(`.arabic_hadith_full`).text()) || '';
+			hadith.text = hadith.body = $(this).find(`.arabic_hadith_full`).text();
+			hadith = splitHadith(hadith);
+			hadith.chain = clean(hadith.chain);
+			hadith.body = clean(hadith.body);
+			hadith.text = clean(hadith.text);
 			hadith.gradeText = clean($(this).find(`.gradetable tr:nth-child(1) td:nth-child(2)`).text());
 			if (chapter.start0 < 0) {
 				chapter.start = hadith.num;
 				chapter.start0 = hadith.num0;
 			}
 			if (heading.start0 < 0) {
-				heading.start = hadith.num;
-				heading.start0 = hadith.num0;
+				for (var i = 0; i < headings.length; i++) {
+					headings[i].start = hadith.num;
+					headings[i].start0 = hadith.num0;
+				}
 			}
 			insertHadith(hadith);
 		}
 	});
 	if (headings.length > 0) {
-		chapter.end = headings[headings.length - 1].end = lastNum;
 		chapter.end0 = headings[headings.length - 1].end0 = hadithNumtoNumber(lastNum);
+		chapter.end = headings[headings.length - 1].end = clean(lastNum);
 		insertHeadings(headings);
 		insertHeading(chapter);
 	}
+}
+
+function splitHadith(hadith) {
+	// normalize
+	if (hadith.text) {
+		hadith.text = hadith.text.replace(/[\:\"\'،۔ـ\-\.\,]/g, '');
+		hadith.text = hadith.text.replaceAll('صلى الله عليه وسلم', 'ﷺ');
+		hadith.text = hadith.text.replace(/\s+/g, ' ').trim();
+	}
+	var textMarked = hadith.text + '';
+	var bodyMarked = '';
+	textMarked = textMarked.replace(/[ؐ-ًؕ-ٖٓ-ٟۖ-ٰٰۭ]/g, '');
+	textMarked = textMarked.replace(/و?(حدثنا|حدثني|حدثناه|حدثه|ثنا) /g, '~ ');
+	textMarked = textMarked.replace(/و?(أخبرنا|أخبرناه|أخبرني|أخبره|آنا) /g, '~ ');
+	textMarked = textMarked.replace(/و?(أنبأنا|أنبأناه|أنبأني|أنبأه|آنبأ) /g, '~ ');
+	textMarked = textMarked.replace(/و?(سمعت|سمعنا|سمعناه|سمع) /g, '~ ');
+	textMarked = textMarked.replace(/(عن) /g, '~ ');
+	textMarked = textMarked.replace(/(يبلغ به) /g, '~~ ');
+	textMarked = textMarked.replace(/(أنه|أن|أنها) /g, '~ ');
+	textMarked = textMarked.replace(/(قال|قالت) /g, '~ ');
+	textMarked = textMarked.replace(/\s+/g, ' ').trim();
+	// extract body
+	var chainDelims = textMarked.split(/~/);
+	if (chainDelims) {
+		var chainToksWordCount = [];
+		for (var tok of chainDelims)
+			chainToksWordCount.push(wordCount(tok));
+		for (var j = 0; j < chainDelims.length; j++) {
+			if (chainDelims[j].match(/(نبي|رسول)/)) {
+				bodyMarked = chainDelims.slice(j).join('~ ');
+				break;
+			} else if (chainToksWordCount[j] > 7 && !chainDelims[j].match(/ (بن|ابن) /)) {
+				bodyMarked = chainDelims.slice(j).join('~ ');
+				break;
+			}
+		}
+		if (bodyMarked == '')
+			bodyMarked = chainDelims[chainDelims.length - 1];
+	}
+	if (bodyMarked == null) {
+		process.stdout.write('ERROR on: ' + hadith.bookId + ' ' + hadith.num + '\n');
+		return;
+	}
+	bodyMarked = bodyMarked.replace(/\s+/g, ' ').trim();
+	// extract chain and body
+	var textToks = hadith.text.split(/ /);
+	var textMarkedToks = textMarked.split(/ /);
+	var bodyMarkedToks = bodyMarked.split(/ /);
+	hadith.body = '';
+	if (!textToks || !bodyMarkedToks || textToks.length == bodyMarkedToks.length)
+		hadith.body = hadith.text;
+	else {
+		var diff = textToks.length - bodyMarkedToks.length;
+		for (var j = (diff - 1); j >= 0; j--) {
+			if (textMarkedToks[j].endsWith('~'))
+				diff--;
+			else
+				break;
+		}
+		hadith.chain = textToks.slice(0, diff).join(' ').trim();
+		hadith.body = textToks.slice(diff).join(' ').trim();
+	}
+	return hadith;
 }
 
 function insertHeadings(headings) {
@@ -568,10 +642,11 @@ function insertHadith(hadith) {
 	console.log(sql(`
 	INSERT INTO hadiths 
 		(bookId, h1, h2, h3, num, num0, numInChapter, gradeText, 
-			chain_en, chain, body_en, body, footnote_en, footnote, text_en, text)
+			chain_en, chain, body_en, body, footnote_en, footnote, text_en, text, lastmod)
 	VALUES (
 		${hadith.bookId}, ${hadith.h1}, ${hadith.h2}, ${hadith.h3}, ${hadith.num}, ${hadith.num0}, ${hadith.numInChapter}, ${hadith.gradeText},
-			${hadith.chain_en}, ${hadith.chain}, ${hadith.body_en}, ${hadith.body}, ${hadith.footnote_en}, ${hadith.footnote}, ${hadith.text_en}, ${hadith.text}
+			${hadith.chain_en}, ${hadith.chain}, ${hadith.body_en}, ${hadith.body}, ${hadith.footnote_en}, ${hadith.footnote}, ${hadith.text_en}, ${hadith.text}, 
+			STR_TO_DATE("1970-01-01 00:00:00", "%Y-%m-%d %H:%i:%s")
 		);
 	`));
 }
@@ -581,10 +656,16 @@ function getPage(url) {
 	return http('GET', url).getBody().toString();
 }
 
+function wordCount(s) {
+	return s.split(' ').length;
+}
+
 function clean(s) {
 	if (s) {
+		s = s + '';
 		s = s.replace(/\u200f/g, '').trim();
 		s = s.replace(/\"/g, '\\"').replace(/\'/g, "\\'");
+		s = s.replace(/^Chapter\s*:\s*/, '');
 		return '"' + s + '"';
 	}
 	return null;
@@ -600,11 +681,12 @@ function hadithNumtoNumber(num) {
 	var d = 0;
 	var suffix = extract(num, /([a-z]+)/);
 	if (suffix)
-		d = parseInt(letterToNumber(suffix)) / 10.;
+		d = parseInt(letterToNumber(suffix)) / 100.;
 	return n + d;
 }
 
 function letterToNumber(s) {
+	s = s.toUpperCase();
 	var out = 0, len = s.length;
 	for (var pos = 0; pos < len; pos++) {
 		out += (s.charCodeAt(pos) - 64) * Math.pow(26, len - pos - 1);
@@ -631,6 +713,7 @@ function msleep(n) {
 	Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
 }
 
-// for (var i = 0; i < urls.length; i++)
-// 	parseChapter(urls[i]);
-parseChapter('https://sunnah.com/abudawud/1');
+for (var i = 0; i < urls.length; i++) {
+	parseChapter(urls[i]);
+}
+//parseChapter('https://sunnah.com/muslim/introduction');
