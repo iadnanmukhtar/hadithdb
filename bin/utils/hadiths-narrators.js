@@ -36,10 +36,10 @@ for (var row of rows) {
     var bodyMarked = '';
     textMarked = textMarked.replace(/[ؐ-ًؕ-ٖٓ-ٟۖ-ٰٰۭ]/g, '');
     textMarked = textMarked.replace(/و?(حدثنا|حدثني|حدثناه|حدثه|ثنا) /g, '~ ');
-    textMarked = textMarked.replace(/و?(أخبرنا|أخبرناه|أخبرني|أخبره) /g, '~ ');
-    textMarked = textMarked.replace(/و?(أنبأنا|أنبأناه|أنبأني|أنبأه) /g, '~ ');
+    textMarked = textMarked.replace(/و?(أخبرنا|أخبرناه|أخبرني|أخبره|آنا) /g, '~ ');
+    textMarked = textMarked.replace(/و?(أنبأنا|أنبأناه|أنبأني|أنبأه|آنبأ) /g, '~ ');
     textMarked = textMarked.replace(/و?(سمعت|سمعنا|سمعناه|سمع) /g, '~ ');
-    textMarked = textMarked.replace(/(عن|عنه|عنها) /g, '~ ');
+    textMarked = textMarked.replace(/(عن) /g, '~ ');
     textMarked = textMarked.replace(/(يبلغ به) /g, '~~ ');
     textMarked = textMarked.replace(/(أنه|أن|أنها) /g, '~ ');
     textMarked = textMarked.replace(/(قال|قالت) /g, '~ ');
