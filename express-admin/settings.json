@@ -4,7 +4,7 @@
         "table": {
             "name": "books",
             "pk": "id",
-            "verbose": "books"
+            "verbose": "Books"
         },
         "columns": [
             {
@@ -17,7 +17,7 @@
                 "allowNull": false,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -412,14 +412,14 @@
                 "name": "id",
                 "verbose": "id",
                 "control": {
-                    "text": true,
+                    "number": true,
                     "editor": "text-en-ro"
                 },
                 "type": "int",
-                "allowNull": false,
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "readonly": true,
@@ -455,9 +455,9 @@
                 "name": "h1",
                 "verbose": "h1",
                 "control": {
-                    "text": true
+                    "number": true
                 },
-                "type": "decimal(10,3)",
+                "type": "decimal(10,2)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -471,7 +471,7 @@
                 "name": "numInChapter",
                 "verbose": "numInChapter",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "int",
                 "allowNull": true,
@@ -487,9 +487,9 @@
                 "name": "h2",
                 "verbose": "h2",
                 "control": {
-                    "text": true
+                    "number": true
                 },
-                "type": "int",
+                "type": "decimal(10,3)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -503,11 +503,27 @@
                 "name": "h3",
                 "verbose": "h3",
                 "control": {
-                    "text": true
+                    "number": true
                 },
-                "type": "int",
+                "type": "decimal(10,3)",
                 "allowNull": true,
                 "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "remark",
+                "verbose": "Type",
+                "control": {
+                    "number": true
+                },
+                "type": "tinyint(1)",
+                "allowNull": false,
+                "defaultValue": "0",
                 "listview": {
                     "show": true
                 },
@@ -521,8 +537,8 @@
                 "control": {
                     "text": true
                 },
-                "type": "varchar(25)",
-                "allowNull": false,
+                "type": "varchar(15)",
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true
@@ -535,13 +551,13 @@
                 "name": "num0",
                 "verbose": "num0",
                 "control": {
-                    "text": true
+                    "number": true
                 },
-                "type": "decimal(9,3)",
+                "type": "decimal(10,3)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -577,8 +593,8 @@
                     ]
                 },
                 "type": "int",
-                "allowNull": true,
-                "defaultValue": null,
+                "allowNull": false,
+                "defaultValue": -1,
                 "listview": {
                     "show": true
                 },
@@ -600,10 +616,10 @@
                     ]
                 },
                 "type": "int",
-                "allowNull": true,
-                "defaultValue": null,
+                "allowNull": false,
+                "defaultValue": -1,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -620,7 +636,7 @@
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -637,7 +653,7 @@
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -688,7 +704,7 @@
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -705,7 +721,7 @@
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -754,7 +770,7 @@
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -771,7 +787,7 @@
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -787,7 +803,7 @@
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
-                    "show": true
+                    "show": false
                 },
                 "editview": {
                     "show": true
@@ -798,7 +814,24 @@
             "show": true
         },
         "listview": {
-            "order": {},
+            "order": {
+                "bookId": "asc",
+                "h1": "asc",
+                "numInChapter": "asc",
+                "h2": "asc",
+                "h3": "asc"
+            },
+            "filter": [
+                "bookId",
+                "h1",
+                "numInChapter",
+                "h2",
+                "num",
+                "body_en",
+                "body",
+                "start",
+                "end"
+            ],
             "page": 25
         },
         "editview": {
@@ -918,7 +951,7 @@
                 "name": "id",
                 "verbose": "id",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "int",
                 "allowNull": false,
@@ -950,7 +983,7 @@
                 "name": "level",
                 "verbose": "level",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "tinyint(1)",
                 "allowNull": false,
@@ -966,7 +999,7 @@
                 "name": "h1",
                 "verbose": "h1",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,2)",
                 "allowNull": false,
@@ -982,9 +1015,9 @@
                 "name": "h2",
                 "verbose": "h2",
                 "control": {
-                    "text": true
+                    "number": true
                 },
-                "type": "int",
+                "type": "decimal(10,2)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -998,9 +1031,9 @@
                 "name": "h3",
                 "verbose": "h3",
                 "control": {
-                    "text": true
+                    "number": true
                 },
-                "type": "int",
+                "type": "decimal(10,2)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -1114,9 +1147,9 @@
                 "name": "start0",
                 "verbose": "start0",
                 "control": {
-                    "text": true
+                    "number": true
                 },
-                "type": "int",
+                "type": "decimal(10,3)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -1130,9 +1163,9 @@
                 "name": "end0",
                 "verbose": "end0",
                 "control": {
-                    "text": true
+                    "number": true
                 },
-                "type": "int",
+                "type": "decimal(10,3)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
