@@ -21,7 +21,7 @@ router.get('/', async function (req, res, next) {
       res.redirect('/' + req.query.q);
       return;
     }
-    results = Search.searchText(req.query.q);
+    results = await Search.a_searchText(req.query.q);
     res.render('search', {
       q: req.query.q,
       results: results

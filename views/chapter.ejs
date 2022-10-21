@@ -289,7 +289,7 @@
           <% if (!results.hadiths[i].body_en) { %>
             Translation of this ḥadīth is currently not available.
           <% } %>
-          <%- results.hadiths[i].body_en.replace(/\n/g, '</p><p class="body">') %><br/>
+          <%- (results.hadiths[i].body_en+'').replace(/\n/g, '</p><p class="body">') %><br/>
         </p>
         <% if (results.hadiths[i].footnote_en) { %>
           <p class="footnote">
@@ -310,7 +310,7 @@
           <% } %>
         </p>
         <p class="body">
-          <%- results.hadiths[i].body.replace(/\n/g, '</p><p class="body">') %>
+          <%- (results.hadiths[i].body+'').replace(/\n/g, '</p><p class="body">') %>
         </p>
         <% if (results.hadiths[i].footnote) { %>
           <p class="footnote">
