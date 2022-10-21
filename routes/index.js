@@ -134,7 +134,7 @@ async function getChapter(bookId, chapterNum) {
   var hadithRows = await global.query(`
     SELECT * FROM hadiths 
     WHERE bookId=${bookId} AND h1=${chapterNum}
-    ORDER BY numInChapter`);
+    ORDER BY h1, numInChapter, num0`);
   var hadiths = [];
   for (var i = 0; i < hadithRows.length; i++) {
     hadiths.push(new Hadith(hadithRows[i], true));
