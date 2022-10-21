@@ -244,7 +244,8 @@
 
       <%# --- HADITHS SECTION --- %>
       <a id="<%- results.hadiths[i].num %>"></a>
-      <% for (var j = 0; headings && j < headings.length;j ++) { 
+      <%  var totalHeadings = headings.length;
+          for (var j = 0; headings && j < totalHeadings; j++) { 
             var heading = headings[j]; %>
       <div class="col-12 mt-4">
         <div class="top text-end">
@@ -288,14 +289,16 @@
           <% if (!results.hadiths[i].body_en) { %>
             Translation of this ḥadīth is currently not available.
           <% } %>
-          <%- results.hadiths[i].body_en %><br/>
+          <%- results.hadiths[i].body_en.replace(/\n/g, '</p><p class="body">') %><br/>
         </p>
         <% if (results.hadiths[i].footnote_en) { %>
           <p class="footnote">
             <%- results.hadiths[i].footnote_en %><br/>
           </p>
         <% } %>
-        <em class="grade">– <%- results.hadiths[i].grade.grade_en %>&nbsp;(<%- results.hadiths[i].grader.shortName_en %>)</em>
+        <% if (results.hadiths[i].remark == 0) { %>
+          <em class="grade">– <%- results.hadiths[i].grade.grade_en %>&nbsp;(<%- results.hadiths[i].grader.shortName_en %>)</em>
+        <% } %>
         <a class="text-muted" target="admin" href="/admin/hadiths/<%- results.hadiths[i].id %>">[edit]</a>
       </div>
 
@@ -307,14 +310,16 @@
           <% } %>
         </p>
         <p class="body">
-          <%- results.hadiths[i].body %><br />
+          <%- results.hadiths[i].body.replace(/\n/g, '</p><p class="body">') %>
         </p>
         <% if (results.hadiths[i].footnote) { %>
           <p class="footnote">
             <%- results.hadiths[i].footnote %><br/>
           </p>
         <% } %>
-        <em class="grade">– <%- results.hadiths[i].grade.grade %>&nbsp;(<%- results.hadiths[i].grader.shortName %>)</em>
+        <% if (results.hadiths[i].remark == 0) { %>
+          <em class="grade">– <%- results.hadiths[i].grade.grade %>&nbsp;(<%- results.hadiths[i].grader.shortName %>)</em>
+        <% } %>
       </div>
 
       <% } %>
