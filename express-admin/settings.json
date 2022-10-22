@@ -808,6 +808,38 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "search_chain",
+                "verbose": "search_chain",
+                "control": {
+                    "text": true
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": false
+                }
+            },
+            {
+                "name": "search_body",
+                "verbose": "search_body",
+                "control": {
+                    "text": true
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": false
+                }
             }
         ],
         "mainview": {
