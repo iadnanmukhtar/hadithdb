@@ -9,6 +9,8 @@ const asyncify = require('express-asyncify');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser')
 const ExpressAdmin = require('express-admin');
+const MySQL = require('mysql');
+const Util = require('util');
 const Arabic = require('./lib/Arabic');
 
 global.arabic = Arabic;
@@ -60,3 +62,46 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
 });
 
 module.exports = app;
+
+// initialize data load
+global.MySQLConfig = require(HomeDir + '/.hadithdb/store.json');
+global.books = [{
+    id: -1,
+    alias: 'none',
+    shortName_en: 'Loading...',
+    shortName: "",
+    name_en: 'Loading...',
+    name: '',
+}];
+global.grades = [{
+    id: -1,
+    hadithId: -1,
+    grade_en: 'N/A',
+    grade: '',
+}];
+global.graders = [{
+    id: -1,
+    shortName_en: 'N/A',
+    shortName: '',
+    name_en: '',
+    name: '',
+}];
+global.toc = [];
+global.tags = [];
+
+global.connection = MySQL.createConnection(global.MySQLConfig.connection);
+global.query = Util.promisify(global.connection.query).bind(global.connection);
+async function a_dbInitApp() {
+    console.log('loading books...');
+    global.books = await global.query('SELECT * FROM books ORDER BY id ASC');
+    console.log('loading toc...');
+    global.toc = await global.query('SELECT * FROM toc');
+    console.log('loading tags...');
+    global.tags = await global.query('SELECT * FROM tags');
+    console.log('loading grades...');
+    global.grades = await global.query('SELECT * FROM grades');
+    console.log('loading graders...');
+    global.graders = await global.query('SELECT * FROM graders');
+    console.log('done loading hadith data');
+}
+a_dbInitApp();
