@@ -167,7 +167,7 @@
           if (toc[i].title) title = toc[i].title.substring(0, 150);
           if (toc[i].title && toc[i].title.length > 150) title += '&hellip;';
 
-          if (toc[i].level > 1) {
+          if (toc[i].level == 2) {
           %>
             <tr class="title">
             <td><%- toc[i].start0 %></td>

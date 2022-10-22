@@ -98,37 +98,6 @@
     }
   </script>
   <% if (typeof book != 'undefined' && results.length > 0) { %>
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "BreadcrumbList",
-      "name": "Books &gt; <%- book.shortName_en %> &gt; Chapter <%- results[0].heading.h1 %> &gt; Hadith <%- results[0].num %>",
-      "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Books",
-        "item": "<%- `${url}/books` %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "<%- book.shortName_en %>",
-        "item": "<%- `${url}/${book.alias}` %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "<%- `Chapter ${results[0].heading.h1}` %>",
-        "item": "<%- `${url}/${book.alias}/${results[0].heading.h1}` %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 4,
-        "name": "<%- `Hadith ${results[0].num}` %>"
-      }]
-    }
-  </script>
   <% } %>
 </head>
 <body>

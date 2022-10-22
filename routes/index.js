@@ -113,7 +113,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 async function getBookTOC(bookId) {
   return await global.query(`
     SELECT * FROM toc
-    WHERE bookId=${bookId} AND level > 0
+    WHERE bookId=${bookId} AND level > 0 AND level < 3
     ORDER BY h1, h2, h3`);
 }
 
