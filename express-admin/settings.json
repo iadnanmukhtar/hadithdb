@@ -532,6 +532,22 @@
                 }
             },
             {
+                "name": "numActual",
+                "verbose": "numActual",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(15)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
                 "name": "num",
                 "verbose": "num",
                 "control": {
@@ -885,29 +901,13 @@
                     "text": true
                 },
                 "type": "int",
-                "allowNull": false,
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true
                 },
                 "editview": {
                     "readonly": true,
-                    "show": true
-                }
-            },
-            {
-                "name": "parentId",
-                "verbose": "parentId",
-                "control": {
-                    "text": true
-                },
-                "type": "int",
-                "allowNull": true,
-                "defaultValue": "0",
-                "listview": {
-                    "show": true
-                },
-                "editview": {
                     "show": true
                 }
             },
@@ -999,7 +999,15 @@
                 "name": "bookId",
                 "verbose": "bookId",
                 "control": {
-                    "text": true
+                    "select": true,
+                    "editor": "text-en-ro"
+                },
+                "oneToMany": {
+                    "table": "books",
+                    "pk": "id",
+                    "columns": [
+                        "shortName_en"
+                    ]
                 },
                 "type": "int",
                 "allowNull": false,

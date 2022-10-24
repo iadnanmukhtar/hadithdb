@@ -713,7 +713,9 @@ function msleep(n) {
 	Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
 }
 
-for (var i = 0; i < urls.length; i++) {
-	parseChapter(urls[i]);
-}
-//parseChapter('https://sunnah.com/muslim/introduction');
+// for (var i = 0; i < urls.length; i++) {
+// 	parseChapter(urls[i]);
+// }
+// //parseChapter('https://sunnah.com/muslim/introduction');
+
+console.log(letterToNumber('ad'));

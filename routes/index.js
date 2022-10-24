@@ -9,7 +9,6 @@ const Hadith = require('../lib/Hadith');
 const router = asyncify(express.Router());
 
 router.get('/reinit', function (req, res, next) {
-  Hadith.reinit();
   res.send('<h1>NOTE</h1><p>Database is initializing, please wait a few seconds before your changes will take effect.</p>');
 });
 
