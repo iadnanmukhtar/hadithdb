@@ -283,8 +283,11 @@
           <b><a href="/<%= results.hadiths[i].book.alias%>:<%=results.hadiths[i].num %>"><%= results.hadiths[i].book.shortName_en %> <%= results.hadiths[i].num %></a></b> –
           <% if (results.hadiths[i].chain_en) { %>
           <span class="chain"><%- results.hadiths[i].chain_en %></span>
+          <% } else if (results.hadiths[i].remark == 2) { %>
+          <%- results.hadiths[i].body_en %>
           <% } %>
         </p>
+        <% if (results.hadiths[i].remark < 2) { %>
         <p class="body">
           <% if (!results.hadiths[i].body_en) { %>
             Translation of this ḥadīth is currently not available.
@@ -298,7 +301,8 @@
         <% } %>
         <% if (results.hadiths[i].remark == 0) { %>
           <em class="grade">– <%- results.hadiths[i].grade.grade_en %>&nbsp;(<%- results.hadiths[i].grader.shortName_en %>)</em>
-        <% } %>
+        <% }
+         } %>
         <a class="text-muted" target="admin" href="/admin/hadiths/<%- results.hadiths[i].id %>">[edit]</a>
       </div>
 
@@ -307,8 +311,11 @@
           <b><a href="/<%=results.hadiths[i].book.alias%>:<%=results.hadiths[i].num%>"><%= results.hadiths[i].book.shortName %> <%= results.hadiths[i].num_ar %></a></b> –
           <% if (results.hadiths[i].chain) { %>
           <span class="chain"><%- results.hadiths[i].chain %></span>
+          <% } else if (results.hadiths[i].remark == 2) { %>
+            <%- results.hadiths[i].body %>&nbsp;۝
           <% } %>
         </p>
+        <% if (results.hadiths[i].remark < 2) { %>
         <p class="body">
           <%- (results.hadiths[i].body+'').replace(/\n/g, '</p><p class="body">') %>
         </p>
@@ -319,7 +326,8 @@
         <% } %>
         <% if (results.hadiths[i].remark == 0) { %>
           <em class="grade">– <%- results.hadiths[i].grade.grade %>&nbsp;(<%- results.hadiths[i].grader.shortName %>)</em>
-        <% } %>
+        <% }
+         } %>
       </div>
 
       <% } %>

@@ -179,8 +179,11 @@
             <b><a title="<%- results[i].matchType %>" href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName_en %> <%= results[i].num %></a></b> –
             <% if (results[i].chain_en) { %>
             <span class="chain"><%- results[i].chain_en %></span>
+            <% } else if (results[i].remark == 2) { %>
+            <%- results[i].body_en %>
             <% } %>
           </p>
+          <% if (results[i].remark < 2) { %>
           <p class="body">
             <% if (!results[i].body_en) { %>
               Translation of this ḥadīth is currently not available.
@@ -201,7 +204,8 @@
               § <a href="/<%- `${results[i].book.alias}/${results[i].heading.h1}#${results[i].heading.start}` %>"><%- results[i].heading.title_en || 'Section' %></a>
               in <a href="/<%- results[i].book.alias %>"><%- results[i].book.name_en %></a>
             </div>
-          <% } %>
+          <% } 
+            }%>
         </div>
 
         <div class="col-md-6 cols-sm-12 h" lang="ar">
@@ -209,8 +213,11 @@
             <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName %> <%= results[i].num_ar %></a></b> –
             <% if (results[i].chain) { %>
             <span class="chain"><%- results[i].chain %></span>
+            <% } else if (results[i].remark == 2) { %>
+            <%- results[i].body %>&nbsp;۝
             <% } %>
           </p>
+          <% if (results[i].remark < 2) { %>
           <p class="body">
             <%- (results[i].body+'').replace(/\n/g, '</p><p class="body">') %><br />
           </p>
@@ -225,7 +232,8 @@
               § <a href="/<%- `${results[i].book.alias}/${results[i].heading.h1}#${results[i].heading.start}` %>"><%- results[i].heading.title %></a>
               في <a href="/<%- results[i].book.alias %>"><%- results[i].book.name %></a>
             </div>
-          <% } %>
+          <% }
+           } %>
         </div>
 
       <% } %>

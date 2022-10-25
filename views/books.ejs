@@ -93,7 +93,11 @@
                 <div class="col"><%- books[i].name_en %></div>
                 <div class="col text-end" lang="ar"><%- books[i].name %></div>
               </h5>
-              <p class="card-text"><small class="text-muted"><%- books[i].author %> (d. <%- books[i].yearOfDeath %>H)</small></p>
+              <p class="card-text">
+                <% if (books[i].id > 0) { %>
+                  <small class="text-muted"><%- books[i].author %> (d. <%- books[i].yearOfDeath %>H)</small>
+                <% } %>&nbsp;
+              </p>
               <a href="/<%- books[i].alias %>" class="btn btn-primary">Browse <%- books[i].shortName_en %></a>
             </div>
           </div>
@@ -106,7 +110,11 @@
                   <div class="col"><%- books[i+1].name_en %></div>
                   <div class="col text-end" lang="ar"><%- books[i+1].name %></div>
                 </h5>
-                <p class="card-text"><small class="text-muted"><%- books[i].author %> (d. <%- books[i+1].yearOfDeath %>H)</small></p>
+                <p class="card-text">
+                  <% if (books[i+1].id > 0) { %>
+                  <small class="text-muted"><%- books[i+1].author %> (d. <%- books[i+1].yearOfDeath %>H)</small>
+                  <% } %>&nbsp;
+                </p>
                 <a href="/<%- books[i+1].alias %>" class="btn btn-primary">Browse <%- books[i+1].shortName_en %></a>
               </div>
             </div>
