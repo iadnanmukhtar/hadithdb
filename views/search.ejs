@@ -194,18 +194,22 @@
             <p class="footnote">
               <%- results[i].footnote_en %><br/>
             </p>
-          <% } %>
+          <%  } %>
           <em class="grade">– <%- results[i].grade.grade_en %>&nbsp;(<%- results[i].grader.shortName_en %>)</em>
+          <% } %>
           <% if (!q) { %>
             <a class="text-muted" target="admin" href="/admin/hadiths/<%- results[i].id %>">[edit]</a>
           <% } %>
-          <% if (results[i].heading) { %>
+          <% if (results[i].chapter || results[i].section) { %>
             <div class="title">
-              § <a href="/<%- `${results[i].book.alias}/${results[i].heading.h1}#${results[i].heading.start}` %>"><%- results[i].heading.title_en || 'Section' %></a>
-              in <a href="/<%- results[i].book.alias %>"><%- results[i].book.name_en %></a>
+              <% if (results[i].section) { %>
+              § <a href="/<%- `${results[i].book.alias}/${results[i].section.h1}#${results[i].section.start}` %>"><%- utils.truncate(results[i].section.title_en, 30, true) || 'Section' %></a>
+              <% } %>
+              <% if (results[i].chapter) { %>
+              in <a href="/<%- `${results[i].book.alias}/${results[i].chapter.h1}` %>"><%- utils.truncate(results[i].chapter.title_en, 30, true) || 'Chapter' %></a>
+              <% } %>
             </div>
-          <% } 
-            }%>
+          <% } %>
         </div>
 
         <div class="col-md-6 cols-sm-12 h" lang="ar">
@@ -225,16 +229,20 @@
             <p class="footnote">
               <%- results[i].footnote %><br/>
             </p>
-          <% } %>
+          <%  } %>
           <em class="grade">– <%- results[i].grade.grade %>&nbsp;(<%- results[i].grader.shortName %>)</em>
-          <% if (results[i].heading) { %>
+          <% } %>
+          <% if (results[i].chapter || results[i].section) { %>
             <div class="title">
-              § <a href="/<%- `${results[i].book.alias}/${results[i].heading.h1}#${results[i].heading.start}` %>"><%- results[i].heading.title %></a>
-              في <a href="/<%- results[i].book.alias %>"><%- results[i].book.name %></a>
+              <% if (results[i].section) { %>
+              § <a href="/<%- `${results[i].book.alias}/${results[i].section.h1}#${results[i].section.start}` %>"><%- utils.truncate(results[i].section.title, 60, true) || 'بَاب' %></a>
+              <% } %>
+              <% if (results[i].chapter) { %>
+              في <a href="/<%- `${results[i].book.alias}/${results[i].chapter.h1}` %>"><%- utils.truncate(results[i].chapter.title, 60, true) || 'كِتَاب' %></a>
+              <% } %>
             </div>
-          <% }
-           } %>
-        </div>
+          <% } %>
+          </div>
 
       <% } %>
 
