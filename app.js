@@ -12,8 +12,9 @@ const ExpressAdmin = require('express-admin');
 const MySQL = require('mysql');
 const Util = require('util');
 const Arabic = require('./lib/Arabic');
-const Hadith = require('./lib/Hadith');
+const Utils = require('./lib/Utils');
 
+global.utils = Utils;
 global.arabic = Arabic;
 
 var app = asyncify(express());
