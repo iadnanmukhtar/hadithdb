@@ -1198,22 +1198,6 @@
                 "editview": {
                     "show": true
                 }
-            },
-            {
-                "name": "end0",
-                "verbose": "end0",
-                "control": {
-                    "number": true
-                },
-                "type": "decimal(10,3)",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": false
-                },
-                "editview": {
-                    "show": true
-                }
             }
         ],
         "mainview": {

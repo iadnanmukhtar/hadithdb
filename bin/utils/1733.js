@@ -2,13 +2,13 @@
 /*
  * Hadith Grades Parser for Shamela Book: https://old.shamela.ws/index.php/book/1733
  * Mu`jam al-Kabir of Tabarani
- * مسند أحمد ط الرسالة
+ * المعجم الكبير للطبراني
  */
 
-const fs = require('fs');
 const Database = require('better-sqlite3');
 const Hadith = require('../../lib/Hadith');
 const Arabic = require('../../lib/Arabic');
+const Utils = require('../../lib/Utils');
 
 const dbFile = __dirname + '/../../data/tabarani.db';
 const readDb = new Database(dbFile);
@@ -48,13 +48,13 @@ var titles = [];
 var start = -1;
 var lastNum = 0;
 var level = 0;
-var h1 = 1;
+var h1 = 0;
 var h2 = null;
 var h3 = null;
 var numInChapter = 1;
 var prefixNum = 0;
 
-var rows = readDb.prepare('SELECT * from b1733').all();
+var rows = readDb.prepare('SELECT * FROM b1733 ORDER BY id').all();
 for (var i = 0; i < rows.length; i++) {
 
 	var page = rows[i].nass;
@@ -133,14 +133,14 @@ for (var i = 0; i < rows.length; i++) {
 		});
 	} else if (/^§?\d/.test(body)) {
 		var numActual = '';
-		var num = parseInt(extract(body, /^§?(\d+)/));
+		var num = parseInt(Utils.regexExtract(body, /^§?(\d+)/));
 		if (lastNum > num)
 			prefixNum += lastNum;
 		numActual = lastNum = num;
 		num = (prefixNum + num);
 		if (start == -1 && titles.length > 0)
 			titles[titles.length - 1].start = num;
-		var hadithText = extract(body, /^§?\d+\s*-\s*(.+)/);
+		var hadithText = Utils.regexExtract(body, /^§?\d+\s*-\s*(.+)/);
 		if (hadithText) {
 			numInChapter++;
 			var splitText = Hadith.splitHadithText({ text: hadithText });
@@ -195,15 +195,5 @@ function isChap(s) {
 }
 
 function esc(s) {
-	if (s) {
-		s = s.trim().replace(/(['"])/g, '\\$1');
-		s = s.replace(/\n/, '\\n');
-	}
-	return s;
-}
-function extract(s, re) {
-	var arr = re.exec(s);
-	if (arr)
-		return arr[1];
-	return '';
+	return Utils.escSQL(s);
 }
