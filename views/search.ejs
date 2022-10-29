@@ -36,6 +36,11 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
   <link href="/stylesheets/style.css" rel="stylesheet">
 
+  <link rel="image_src" href="<%= logo %>" />
+  <link rel="apple-touch-icon" href="<%= logo %>" />
+  <link rel="icon" href="<%= logo %>" />
+  <link rel="icon" href="/favicon.ico">
+
   <link rel="canonical" href="<%= canonical %>" />
   <% if (prev) { %>
   <link rel="prev" href="<%= prev %>" />
@@ -97,8 +102,43 @@
       }
     }
   </script>
-  <% if (typeof book != 'undefined' && results.length > 0) { %>
-  <% } %>
+  <% if (typeof book != 'undefined' && results.length > 0) {
+    var breadcrumb = `Books &gt; ${book.shortName_en}`; 
+    if (results[0].chapter)
+      breadcrumb += ` &gt; Chapter ${results[0].chapter.h1}`;
+    breadcrumb += ` &gt; Hadith ${results[0].num}`; %>
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "BreadcrumbList",
+      "name": "<%- breadcrumb %>",
+      "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Books",
+        "item": "<%- `${url}/books` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "<%- book.shortName_en %>",
+        "item": "<%- `${url}/${book.alias}` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "<%- `Chapter ${results[0].chapter.h1}` %>",
+        "item": "<%- `${url}/${book.alias}/${results[0].chapter.h1}` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "<%- `Hadith ${results[0].num}` %>"
+      }]
+    }
+  </script>
+<% } %>
 </head>
 <body>
   <div class="col-lg-8 mx-auto p-3 py-md-5">

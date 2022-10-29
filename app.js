@@ -10,7 +10,8 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser')
 const ExpressAdmin = require('express-admin');
 const MySQL = require('mysql');
-const Util = require('util');
+const si = require('search-index');
+const util = require('util');
 const Arabic = require('./lib/Arabic');
 const Utils = require('./lib/Utils');
 
@@ -89,7 +90,7 @@ global.graders = [{
 global.tags = [];
 
 global.dbPool = MySQL.createPool(global.MySQLConfig.connection);
-global.query = Util.promisify(global.dbPool.query).bind(global.dbPool);
+global.query = util.promisify(global.dbPool.query).bind(global.dbPool);
 async function a_dbInitApp() {
   console.error('loading books...');
   global.books = await global.query('SELECT * FROM books ORDER BY id ASC');
@@ -100,6 +101,9 @@ async function a_dbInitApp() {
   console.error('loading graders...');
   global.graders = await global.query('SELECT * FROM graders');
   console.error('done loading hadith data');
+	console.error('initializing search index');
+  global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
+  global.search = util.promisify(global.searchIdx.SEARCH).bind();
 
   var bookId = 8;
 
