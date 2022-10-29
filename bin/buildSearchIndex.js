@@ -25,7 +25,7 @@ var query = util.promisify(dbPool.query).bind(dbPool);
 			data[k] = rows[i][k];
 		data.h1_title = Arabic.removeArabicDiacritics(data.h1_title);
 		data.h2_title = Arabic.removeArabicDiacritics(data.h2_title);
-		if (batch.length > 5000) {
+		if (batch.length > 1000) {
 			console.log(`PUT ${data.bookAlias}:${data.num}`);
 			await idx.PUT(batch);
 			batch = [];
