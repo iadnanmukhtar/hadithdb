@@ -8,7 +8,6 @@ const natural = require('natural');
 const arabicStem = require('arabic-stem');
 const Arabic = require('../lib/Arabic');
 const jsastem = require('../lib/jsastem');
-const { exit } = require('process');
 
 const RE_WORD = /[\p{L}\p{M}\d]+/gu;
 
