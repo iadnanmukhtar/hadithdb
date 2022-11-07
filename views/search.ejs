@@ -196,13 +196,13 @@
     <% if (results.length > 0) { %> 
     <div class="row mb-2 pagination">
       <div class="col-md-6 col-xs-12 text-start">
-        <% if (results[0].prev) {
+        <% if (results[0].prev && results[0].prev.book) {
         var result = results[0]; %>
         &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">Prev:&nbsp;<%= result.prev.book.shortName_en %>&nbsp;<%- result.prev.num %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
-        <% if (results[results.length-1].next) { 
+        <% if (results[results.length-1].next && results[results.length-1].next.book) { 
         var result = results[results.length-1]; %>
         <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">Next:&nbsp;<%= result.next.book.shortName_en %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
         <% } %>  
@@ -292,14 +292,14 @@
     <!-- hadith search results -->
     <div class="row mt-3 pagination">
       <div class="col-md-6 col-xs-12 text-start">
-        <% if (results[0].prev) {
+        <% if (results[0].prev && results[0].prev.book) {
         var result = results[0]; %>
         &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">
           Prev:&nbsp;<%= result.prev.book.shortName_en %>&nbsp;<%- result.prev.num %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
-        <% if (results[results.length-1].next) { 
+        <% if (results[results.length-1].next && results[results.length-1].next.book) { 
         var result = results[results.length-1]; %>
         <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">
           Next:&nbsp;<%= result.next.book.shortName_en %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
