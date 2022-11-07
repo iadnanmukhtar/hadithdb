@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "adm-zip": "^0.5.9",
+    "arabic-stem": "^0.0.7",
     "better-sqlite3": "^7.6.2",
     "body-parser": "^1.20.0",
     "cheerio": "^1.0.0-rc.12",
@@ -14,6 +15,7 @@
     "http-errors": "~1.6.3",
     "line-reader-sync": "^0.1.0",
     "mysql": "^2.18.1",
+    "natural": "^5.2.3",
     "search-index": "^3.2.0",
     "sync-request": "^6.1.0"
   }
