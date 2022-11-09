@@ -91,9 +91,14 @@ global.tags = [];
 
 global.dbPool = MySQL.createPool(global.MySQLConfig.connection);
 global.query = util.promisify(global.dbPool.query).bind(global.dbPool);
+global.quran = [];
 async function a_dbInitApp() {
   console.error('loading books...');
-  global.books = await global.query('SELECT * FROM books ORDER BY id ASC');
+  global.books = await global.query('SELECT * FROM books ORDER BY id');
+  console.error('loading quran...');
+  global.quran = await global.query('SELECT * FROM v_hadiths WHERE bookId=0 ORDER BY h1, numInChapter');
+  for (var i = 0; i < global.quran.length; i++)
+    global.quran[i].search_body = Arabic.normalize(Arabic.removeArabicDiacritics(global.quran[i].body));
   console.error('loading tags...');
   global.tags = await global.query('SELECT * FROM tags');
   console.error('loading grades...');

@@ -1666,6 +1666,54 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "num0",
+                "verbose": "num0",
+                "control": {
+                    "text": true
+                },
+                "type": "decimal(10,3)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "h1_start",
+                "verbose": "h1_start",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(15)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "h2_start",
+                "verbose": "h2_start",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(15)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {
@@ -1792,6 +1840,122 @@
                 },
                 "type": "longtext",
                 "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "h1_start",
+                "verbose": "h1_start",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(15)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "h2_start",
+                "verbose": "h2_start",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(15)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "quran_text": {
+        "slug": "quran_text",
+        "table": {
+            "name": "quran_text",
+            "pk": "index",
+            "verbose": "quran_text"
+        },
+        "columns": [
+            {
+                "name": "index",
+                "verbose": "index",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "sura",
+                "verbose": "sura",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "aya",
+                "verbose": "aya",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "text",
+                "verbose": "text",
+                "control": {
+                    "text": true
+                },
+                "type": "text",
+                "allowNull": false,
                 "defaultValue": null,
                 "listview": {
                     "show": true

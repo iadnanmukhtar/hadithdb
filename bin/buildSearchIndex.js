@@ -9,7 +9,7 @@ const arabicStem = require('arabic-stem');
 const Arabic = require('../lib/Arabic');
 const jsastem = require('../lib/jsastem');
 
-const RE_WORD = /[\p{L}\p{M}\d]+/gu;
+const RE_WORD = /(\p{N}+:\p{N}+|[\p{L}\p{M}\d]+)/gu;
 
 var idx = null;
 
@@ -63,7 +63,7 @@ async function getData() {
 async function getTestData() {
 	return [
 		{
-			test: 'Abū Hurayrah'
+			test: 'Abū Hurayrah 1:3'
 		}
 	];
 }
@@ -80,11 +80,21 @@ const customTokenizer = (tokens, field, ops) =>
 			tokens = tokens.map(function (tok) {
 				return tok.replace(/[ʿʾ`']/g, '');
 			});
+			var newTokens = [];
+			for (var i = 0; i < tokens.length; i++) {
+				if (tokens[i].indexOf(':') >= 0)
+					newTokens = newTokens.concat(tokens[i].split(/:/));
+			}
 			tokens = tokens.map(function (tok) {
-				if (Arabic.isArabic(tok))
-					tok = Arabic.normalize(tok);
+				if (Arabic.isArabic(tok)) {
+					var tok0 = Arabic.removeArabicDiacritics(tok);
+					tok = Arabic.normalize(tok0);
+					if (tok0 != tok && newTokens.indexOf(tok0) < 0)
+						newTokens.push(tok0);
+				}
 				return tok;
 			});
+			tokens = tokens.concat(newTokens);
 			arr[0] = tokens;
 			return arr;
 		})
