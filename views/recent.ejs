@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head> 
-  <%
+<%
     var root = 'https://hadith.quranunlocked.com';
     var site = {
       name: 'Ḥadīth Unlocked',
@@ -20,9 +20,9 @@
     };
     var book = null;
     var chapter = null;
-  %> 
+%> 
 
-  <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
+<%- include('sub-views/head.ejs', { site: site, page: page, context: {} }); %> 
 
 </head>
 
@@ -44,7 +44,7 @@
     </main>
   </div>
 
-  <%- include('sub-views/scripts.ejs'); %>
+<%- include('sub-views/scripts.ejs'); %>
 
 </body>
 </html>

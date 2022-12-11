@@ -15,7 +15,8 @@ var query = util.promisify(dbPool.query).bind(dbPool);
 	var go = false;
 	var rows = await getData();
 	for (var i = 0; i < rows.length; i++) {
-		if (rows[i].bookId == 1 && rows[i].num0 == 4198) go = true;
+		if (rows[i].bookId == 2 && rows[i].num0 == 1268.001) go = true;
+		if (!go) console.log(`skipping ${rows[i].bookId}:${rows[i].num0}`);
 		for (var j = 0; go && j < rows.length; j++) {
 			if (rows[i].id === rows[j].id) continue;
 			try {
@@ -24,8 +25,13 @@ var query = util.promisify(dbPool.query).bind(dbPool);
 			var match = stringSimilarity.findBestMatch(source, [target]);
 				if (match.bestMatch.rating > 0.5) {
 					console.log(`${rows[i].bookId}:${rows[i].num0} ~ ${rows[j].bookId}:${rows[j].num0}\t${rows[i].body.substring(0, 100)}\t${rows[j].body.substring(0, 100)}`);
+					if (dbPool.state === 'disconnected') {
+						dbPool = MySQL.createPool(MySQLConfig.connection);
+						query = util.promisify(dbPool.query).bind(dbPool);
+					}
 					await query(`
-					INSERT INTO hadith_sim_candidates VALUES (${rows[i].id}, ${rows[j].id}, ${match.bestMatch.rating})`);
+						INSERT INTO hadith_sim_candidates
+						VALUES (${rows[i].id}, ${rows[j].id}, ${match.bestMatch.rating})`);
 				}
 			} catch (err) {
 				console.error(`${rows[i].bookId}:${rows[i].num0} ~ ${rows[j].bookId}:${rows[j].num0}\t${err}`);
@@ -67,6 +73,7 @@ function matchWord(a, b) {
 async function getData() {
 	var rows = await query(`
 		SELECT id, bookId, num0, body FROM hadiths 
+		-- WHERE bookId=2 AND num0 >= 649.012
 		ORDER BY bookId, num0`);
 	rows = rows.map((row) => {
 		row.body = row.body.replace(/ًا/gu, '');

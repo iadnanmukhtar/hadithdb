@@ -28,11 +28,7 @@ router.get('/', async function (req, res, next) {
   } else {
     results = [await Search.a_getRandom()];
     if (results.length > 0) {
-      res.render('search', {
-        book: results[0].book,
-        q: null,
-        results: results
-      });
+      res.redirect(`/${results[0].book.alias}:${results[0].num}`);
     } else {
       res.render('search', {
         results: results
