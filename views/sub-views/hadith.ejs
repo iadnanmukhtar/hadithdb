@@ -1,0 +1,133 @@
+<% if (hadith.remark != 2) { %>
+
+<div class="col-md-6 col-sm-12 h" lang="en">
+	<p>
+		<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
+		<% if (hadith.chain_en) { %>
+			<span class="chain"><%- hadith.chain_en %></span>
+		<% } %>
+	</p>
+	<p class="body">
+		<% if (!hadith.body_en) { %>
+			Translation of this ḥadīth is currently not available.
+		<% } %>
+		<%- (hadith.body_en+'').replace(/\n/g, '</p><p class="body">') || hadith.text_en %><br/>
+	</p>
+	<% if (hadith.footnote_en) { %>
+		<p class="footnote">
+			<%- hadith.footnote_en %><br/>
+		</p>
+	<% } %>
+	<em class="grade">– <%- hadith.grade.grade_en %>&nbsp;(<%- hadith.grader.shortName_en %>)</em>
+	<% if (title && (hadith.chapter || hadith.section)) { %>
+		<div class="title">
+		§ 
+		<% if (hadith.section) { %>
+			<a href="/<%- `${hadith.book.alias}/${hadith.section.h1}#${hadith.section.start}` %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+		<% } %>
+		<% if (hadith.chapter) { %>
+			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+		<% } %>
+		<a class="text-muted" target="admin" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
+		</div>
+	<% } else { %>
+		<a class="text-muted" target="admin" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
+	<% } %>
+</div>
+<div class="col-md-6 cols-sm-12 h" lang="ar">
+	<p>
+		<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= hadith.book.shortName %> <%= hadith.num_ar %></a></b> –
+		<% if (hadith.chain) { %>
+			<span class="chain"><%- hadith.chain %></span>
+		<% } %>
+	</p>
+	<p class="body">
+		<%- (hadith.body+'').replace(/\n/g, '</p><p class="body">') %><br />
+	</p>
+	<% if (hadith.footnote) { %>
+		<p class="footnote">
+		<%- hadith.footnote %><br/>
+		</p>
+	<%  } %>
+	<em class="grade">– <%- hadith.grade.grade %>&nbsp;(<%- hadith.grader.shortName %>)</em>
+	<% if (title && (hadith.chapter || hadith.section)) { %>
+		<div class="title">
+		§ 
+		<% if (hadith.section) { %>
+			<a href="/<%- `${hadith.book.alias}/${hadith.section.h1}#${hadith.section.start}` %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
+		<% } %>
+		<% if (hadith.chapter) { %>
+			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
+		<% } %>
+		</div>
+	<% } %>
+</div>
+
+<% } else { %>
+
+<div class="col-md-6 col-sm-12 h" lang="en">
+	<% if (hadith.chain_en) { %>
+		<p>
+			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
+			<span class="chain"><%- hadith.chain_en %></span>
+		</p>
+		<p class="body">
+			<%- (hadith.body_en+'').replace(/\n/g, '</p><p class="body">') %><br />
+		</p>
+	<% } else { %>
+		<p>
+			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
+			<span class="chain"><%- hadith.chain_en %></span>
+			<%- (hadith.body_en+'').replace(/\n/g, '</p><p class="body">') %>
+			<a class="text-muted" target="admin" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
+			<br />
+		</p>
+	<% } %>
+	<% if (hadith.footnote_en) { %>
+		<p class="footnote">
+			<%- hadith.footnote_en %><br/>
+		</p>
+	<% } %>
+	<% if (title) { %>
+		<div class="title">
+			§ <a href="/<%- `${hadith.book.alias}/${hadith.section.h1}#${hadith.section.start}` %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+		</div>
+	<% } %>
+</div>
+<div class="col-md-6 cols-sm-12 h" lang="ar">
+	<% if (hadith.chain) { %>
+		<p>
+			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName} ${hadith.num_ar}` %></a></b> –
+			<span class="chain"><%- hadith.chain %></span>
+		</p>
+		<p class="body">
+			<%- (hadith.body+'').replace(/\n/g, '</p><p class="body">') %>&nbsp;۝<br />
+		</p>
+	<% } else { %>
+		<p>
+			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName} ${hadith.num_ar}` %></a></b> –
+			<span class="chain"><%- hadith.chain %></span>
+			<%- (hadith.body+'').replace(/\n/g, '</p><p class="body">') %>&nbsp;۝<br />
+		</p>
+	<% } %>
+	<% if (hadith.footnote) { %>
+		<p class="footnote">
+		<%- hadith.footnote %><br/>
+		</p>
+	<%  } %>
+	<% if (title) { %>
+		<div class="title">
+			§ <a href="/<%- `${hadith.book.alias}/${hadith.section.h1}#${hadith.section.start}` %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
+			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
+		</div>
+	<% } %>
+</div>
+
+<% } %>
+
+<% if (title) { %>
+	<hr class="mt-2" />
+<% } else { %>
+	<div class="mt-2"></div>
+<% } %>

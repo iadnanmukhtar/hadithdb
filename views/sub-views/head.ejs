@@ -1,0 +1,121 @@
+<title><%= page.title_en %></title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+<link href="/stylesheets/style.css" rel="stylesheet">
+
+<link rel="image_src" href="<%= site.logo %>" />
+<link rel="apple-touch-icon" href="<%= site.logo %>" />
+<link rel="icon" href="<%= site.logo %>" />
+<link rel="icon" href="/favicon.ico" />
+
+<link rel="canonical" href="<%= page.canonical %>" />
+<% 	if (page) {
+		if (page.prev) { %>
+<link rel="prev" href="<%= page.prev %>" />
+<% 		}
+		if (page.next) { %>
+<link rel="next" href="<%= page.next %>" />
+<% 		}
+	} %>
+
+<meta name="og:site_name" content="<%= site.name %>">
+<meta name="og:locale" content="en">
+<meta name="og:image" content="<%= site.logo %>">
+<meta name="og:url" content="<%= page.canonical %>">
+<meta name="og:title" content="<%= page.title_en %>">
+<meta name="og:description" content="<%= page.subtitle_en %>">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="<%= site.logo %>">
+<meta name="twitter:title" content="<%= page.title_en %>">
+<meta name="twitter:description" content="<%= page.subtitle_en %>">
+
+<script type="application/ld+json">
+  {
+	"@context": "http://schema.org",
+	"@type": "Organization",
+	"name": "<%= site.name %>",
+	"url": "<%= site.url %>",
+	"logo": "<%= site.logo %>"
+  }
+</script>
+<script type="application/ld+json">
+  {
+	"@context": "http://schema.org",
+	"@type": "WebSite",
+	"name": "<%= site.name %> Search Action",
+	"url": "<%= site.url %>",
+	"potentialAction": {
+	  "@type": "SearchAction",
+	  "target": "<%= site.url %>/?q={search_term_string}",
+	  "query-input": "required name=search_term_string"
+	}
+  }
+</script>
+
+<% if (typeof book !== 'undefined') { %>
+<script type="application/ld+json">
+  {
+	"@context": "http://schema.org",
+	"@type": "Book",
+	"name": "<%= book.name_en %>",
+	"inLanguage": "English",
+	"url" : "<%= `${url}/${book.alias}` %>"
+  }
+</script>
+<script type="application/ld+json">
+  {
+	"@context": "http://schema.org",
+	"@type": "Book",
+	"name": "<%= book.name %>",
+	"inLanguage": "Arabic",
+	"url" : "<%= `${site.url}/${book.alias}` %>"
+  }
+</script>
+<% } %>
+
+<% if (typeof book !== 'undefined' && typeof chapter !== 'undefined') { %>
+<script type="application/ld+json">
+  {
+	"@context": "http://schema.org",
+	"@type": "Chapter",
+	"name": "<%= `Chapter ${chapter.h1}: ${chapter.title_en || ''}` %>",
+	"alternateName": "<%= `${book.shortName}، ${arabic.toArabicDigits(chapter.h1 + '')}- ${chapter.title || ''}` %>",
+	"pageStart": "<%= chapter.start0 %>",
+	"url": "<%= page.canonical %>",
+	"schema:isPartOf": {
+	  "@id": "<%= `${site.url}/${book.alias}` %>"
+	}
+  }
+</script>
+<% } %>
+
+<% if (typeof book !== 'undefined' && typeof chapter !== 'undefined') { %>
+<script type="application/ld+json">
+  {
+	"@context": "http://schema.org",
+	"@type": "BreadcrumbList",
+	"name": "Books &gt; <%= book.shortName_en %> &gt; Chapter <%= chapter.h1 %> ",
+	"itemListElement": [
+	{
+	  "@type": "ListItem",
+	  "position": 1,
+	  "name": "Books",
+	  "item": "<%- `${site.url}/books` %>"
+	},
+	{
+	  "@type": "ListItem",
+	  "position": 2,
+	  "name": "<%- book.shortName_en %>",
+	  "item": "<%- `${site.url}/${book.alias}` %>"
+	},
+	{
+	  "@type": "ListItem",
+	  "position": 3,
+	  "name": "<%- `Chapter ${chapter.h1}` %>"
+	}]
+  }
+</script>
+<% } %>

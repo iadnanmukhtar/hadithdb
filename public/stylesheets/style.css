@@ -56,8 +56,9 @@ body :lang(ar) {
 	color: #2c9be5;
 }
 
-.h .chain {
-	color: #a0a0a0;
+.h .chain,
+.text-muted {
+	color: #a0a0a0 !important;
 }
 
 .h .body {

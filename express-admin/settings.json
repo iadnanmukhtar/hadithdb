@@ -1892,17 +1892,20 @@
             "readonly": false
         }
     },
-    "quran_text": {
-        "slug": "quran_text",
+    "hadith_sim_candidates": {
+        "slug": "hadith_sim_candidates",
         "table": {
-            "name": "quran_text",
-            "pk": "index",
-            "verbose": "quran_text"
+            "name": "hadith_sim_candidates",
+            "pk": [
+                "hadithId1",
+                "hadithId2"
+            ],
+            "verbose": "hadith_sim_candidates"
         },
         "columns": [
             {
-                "name": "index",
-                "verbose": "index",
+                "name": "hadithId1",
+                "verbose": "hadithId1",
                 "control": {
                     "text": true
                 },
@@ -1917,14 +1920,14 @@
                 }
             },
             {
-                "name": "sura",
-                "verbose": "sura",
+                "name": "hadithId2",
+                "verbose": "hadithId2",
                 "control": {
                     "text": true
                 },
                 "type": "int",
                 "allowNull": false,
-                "defaultValue": "0",
+                "defaultValue": null,
                 "listview": {
                     "show": true
                 },
@@ -1933,29 +1936,13 @@
                 }
             },
             {
-                "name": "aya",
-                "verbose": "aya",
+                "name": "rating",
+                "verbose": "rating",
                 "control": {
                     "text": true
                 },
-                "type": "int",
-                "allowNull": false,
-                "defaultValue": "0",
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "text",
-                "verbose": "text",
-                "control": {
-                    "text": true
-                },
-                "type": "text",
-                "allowNull": false,
+                "type": "decimal(10,3)",
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true

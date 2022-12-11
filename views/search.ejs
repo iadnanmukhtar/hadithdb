@@ -210,79 +210,10 @@
     </div>
     <% } %>
     
-    <!-- hadith nav -->
     <div class="row">
       <% for (var i = 0; i < results.length; i++) { %>
 
-        <div class="col-md-6 col-sm-12 h" lang="en">
-          <p>
-            <b><a title="<%- results[i].matchType %>" href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName_en %> <%= results[i].num %></a></b> –
-            <% if (results[i].chain_en) { %>
-            <span class="chain"><%- results[i].chain_en %></span>
-            <% } else if (results[i].remark == 2) { %>
-            <%- results[i].body_en %>
-            <% } %>
-          </p>
-          <% if (results[i].remark < 2) { %>
-          <p class="body">
-            <% if (!results[i].body_en) { %>
-              Translation of this ḥadīth is currently not available.
-            <% } %>
-            <%- (results[i].body_en+'').replace(/\n/g, '</p><p class="body">') || results[i].text_en %><br/>
-          </p>
-          <% if (!q && results[i].footnote_en) { %>
-            <p class="footnote">
-              <%- results[i].footnote_en %><br/>
-            </p>
-          <%  } %>
-          <em class="grade">– <%- results[i].grade.grade_en %>&nbsp;(<%- results[i].grader.shortName_en %>)</em>
-          <% } %>
-          <% if (!q) { %>
-            <a class="text-muted" target="admin" href="/admin/hadiths/<%- results[i].id %>">[edit]</a>
-          <% } %>
-          <% if (results[i].chapter || results[i].section) { %>
-            <div class="title">
-              <% if (results[i].section) { %>
-              § <a href="/<%- `${results[i].book.alias}/${results[i].section.h1}#${results[i].section.start}` %>"><%- utils.truncate(results[i].section.title_en, 30, true) || 'Section' %></a>
-              <% } %>
-              <% if (results[i].chapter) { %>
-              in <a href="/<%- `${results[i].book.alias}/${results[i].chapter.h1}` %>"><%- utils.truncate(results[i].chapter.title_en, 30, true) || 'Chapter' %></a>
-              <% } %>
-            </div>
-          <% } %>
-        </div>
-
-        <div class="col-md-6 cols-sm-12 h" lang="ar">
-          <p>
-            <b><a href="/<%=results[i].book.alias%>:<%=results[i].num%>"><%= results[i].book.shortName %> <%= results[i].num_ar %></a></b> –
-            <% if (results[i].chain) { %>
-            <span class="chain"><%- results[i].chain %></span>
-            <% } else if (results[i].remark == 2) { %>
-            <%- results[i].body %>&nbsp;۝
-            <% } %>
-          </p>
-          <% if (results[i].remark < 2) { %>
-          <p class="body">
-            <%- (results[i].body+'').replace(/\n/g, '</p><p class="body">') %><br />
-          </p>
-          <% if (!q && results[i].footnote) { %>
-            <p class="footnote">
-              <%- results[i].footnote %><br/>
-            </p>
-          <%  } %>
-          <em class="grade">– <%- results[i].grade.grade %>&nbsp;(<%- results[i].grader.shortName %>)</em>
-          <% } %>
-          <% if (results[i].chapter || results[i].section) { %>
-            <div class="title">
-              <% if (results[i].section) { %>
-              § <a href="/<%- `${results[i].book.alias}/${results[i].section.h1}#${results[i].section.start}` %>"><%- utils.truncate(results[i].section.title, 60, true) || 'بَاب' %></a>
-              <% } %>
-              <% if (results[i].chapter) { %>
-              في <a href="/<%- `${results[i].book.alias}/${results[i].chapter.h1}` %>"><%- utils.truncate(results[i].chapter.title, 60, true) || 'كِتَاب' %></a>
-              <% } %>
-            </div>
-          <% } %>
-          </div>
+        <%- include('sub-views/hadith.ejs', { hadith: results[i], title: true }); %>
 
       <% } %>
 

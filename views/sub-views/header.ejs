@@ -1,0 +1,23 @@
+<header>
+	<div class="d-flex flex-column flex-md-row align-items-center pb-3">
+		<a href="/" class="d-flex text-dark text-decoration-none">
+		<img src="/images/logo.svg" width="32" height="32" class="me-2" role="img">
+		<title><%- site.name %></title>
+		<h1 class="fs-4">
+			<%- site.name %>
+			<% if (page.subtitle_en) { %>
+			<br/><span class="fs-6 text-muted">
+				<%- page.subtitle_en %>
+				<%- page.subtitle ? `<span lang="ar">${page.subtitle}</span>` : '' %>
+			</span>
+			<% } %>
+		</h1>
+		</a>
+		<nav class="d-inline-flex mt-md-0 ms-md-auto">
+			<a class="me-3 py-2 text-dark text-decoration-none" href="/">Home</a>
+			<a class="me-3 py-2 text-dark text-decoration-none" href="/books">Books</a>
+			<a class="me-3 py-2 text-dark text-decoration-none" href="/recent">Recent</a>
+			<a class="     py-2 text-dark text-decoration-none" href="/"><i class="bi bi-search"></i></a>
+		</nav>
+	</div>
+</header>

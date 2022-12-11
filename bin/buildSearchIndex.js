@@ -1,4 +1,5 @@
 /* jslint node:true, esversion:9 */
+'use strict';
 
 const HomeDir = require('os').homedir();
 const si = require('search-index');
