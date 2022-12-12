@@ -856,6 +856,22 @@
                 "editview": {
                     "show": false
                 }
+            },
+            {
+                "name": "back_ref",
+                "verbose": "back_ref",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {

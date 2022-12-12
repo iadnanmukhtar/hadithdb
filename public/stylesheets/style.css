@@ -142,3 +142,7 @@ body :lang(ar) {
 	font-size: 1.5rem !important;
 	font-weight: bold;
 }
+
+.similar-list {
+	opacity: 0.6;
+}

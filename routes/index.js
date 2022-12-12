@@ -39,6 +39,8 @@ router.get('/', async function (req, res, next) {
 
 router.get('/:bookAlias\::num', async function (req, res, next) {
   var results = await Search.a_lookupByRef(req.params.bookAlias, req.params.num);
+  for (var i = 0; i < results.length; i++)
+    results[i].similar = await Hadith.a_getSimilarCandidates(results[i].id);
   if (results.length > 0) {
     res.render('search', {
       book: results[0].book,

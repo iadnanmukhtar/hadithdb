@@ -104,6 +104,15 @@
 
         <%- include('sub-views/hadith.ejs', { hadith: results[i], title: true }); %>
 
+        <% if (!q && results[i].similar && results[i].similar.length > 0) { %>
+        <div class="row similar-list">
+          <div class="col-12"><h4 class="fs-5">See also:</h4></div>
+          <% for (var j = 0; j < results[i].similar.length; j++) { %>
+            <%- include('sub-views/hadith.ejs', { hadith: results[i].similar[j], title: true }); %>
+          <% } %>
+        </div>
+        <% } %>
+
       <% } %>
 
     </div>
