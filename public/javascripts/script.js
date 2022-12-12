@@ -1,6 +1,6 @@
 /* jslint esversion:8 */
 
-$(document).ready(function () {
+$(function () {
 	'use strict';
 
 	setDirection();

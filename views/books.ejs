@@ -1,91 +1,40 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <% 
+<% 
     var name = 'Ḥadīth Unlocked';
     var title = name;
     var url = 'https://hadith.quranunlocked.com';
     var canonical = `${url}/books`;
     var logo = `${url}/images/logo.png`;
     var desc = 'Available Books of Ḥadīth';
-  %>
-  <title><%- name %> | <%- desc %></title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-  <link href="/stylesheets/style.css" rel="stylesheet">
 
-  <link rel="image_src" href="<%= logo %>" />
-  <link rel="apple-touch-icon" href="<%= logo %>" />
-  <link rel="icon" href="<%= logo %>" />
-  <link rel="icon" href="/favicon.ico">
+    var root = 'https://hadith.quranunlocked.com';
+    var site = {
+      name: 'Ḥadīth Unlocked',
+      url: root,
+      logo: `${root}/images/logo.png`,
+    };
+    
+    var page = {
+      menu: 'Books',
+      title_en: `${site.name} | Available Books of Ḥadīth`,
+      subtitle_en: `Available Books`,
+      subtitle: ``,
+      canonical: `/books`,
+    };
 
-  <meta name="og:site_name" content="<%= name %>">
-  <meta name="og:locale" content="en">
-  <meta name="og:image" content="<%= logo %>">
-  <meta name="og:url" content="<%= canonical %>">
-  <meta name="og:title" content="<%= title %>">
-  <meta name="og:description" content="<%= desc %>">
+    var context = {}
+%>
 
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:image" content="<%= logo %>">
-  <meta name="twitter:title" content="<%= title %>">
-  <meta name="twitter:description" content="<%= desc %>">
+<%- include('sub-views/head.ejs', { site: site, page: page, context: context }); %> 
 
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "Organization",
-      "url": "<%= url %>",
-      "logo": "<%= logo %>"
-    }
-  </script>
-
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "WebSite",
-      "url": "<%= url %>",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "<%= url %>/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "BreadcrumbList",
-      "name": "Books",
-      "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Books"
-      }]
-    }
-  </script>
 </head>
 <body>
 
   <div class="col-lg-8 mx-auto p-3 py-md-5">
 
-    <header>
-      <div class="d-flex flex-column flex-md-row align-items-center pb-3">
-        <a href="/" class="d-flex text-dark text-decoration-none">
-          <img src="/images/logo.svg" width="32" height="32" class="me-2" role="img"><title><%= title %></title>
-          <h1 class="fs-4">
-            <%= title %>
-            <br/><span class="fs-6 text-muted"><%- desc %></span>
-          </h1>
-        </a>
-        <nav class="d-inline-flex mt-md-0 ms-md-auto">
-          <a class="me-3 py-2 text-dark text-decoration-none" href="/">Home</a>
-          <a class="me-3 py-2 text-dark text-decoration-none" href="/books">Books</a>
-          <a class="py-2 text-dark text-decoration-none" href="/recent">Recent</a>
-        </nav>
-      </div>
-    </header>
+    <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
     <main class="">
 
@@ -99,9 +48,11 @@
                 <div class="col text-end" lang="ar"><%- books[i].name %></div>
               </h5>
               <p class="card-text">
+                  <small class="text-muted"><%- books[i].author %>
                 <% if (books[i].id > 0) { %>
-                  <small class="text-muted"><%- books[i].author %> (d. <%- books[i].yearOfDeath %>H)</small>
+                  (d. <%- books[i].yearOfDeath %>H)
                 <% } %>&nbsp;
+                </small>
               </p>
               <a href="/<%- books[i].alias %>" class="btn btn-primary">Browse <%- books[i].shortName_en %></a>
             </div>
@@ -131,10 +82,7 @@
     </main>
   </div>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
-  <script src="https://kit.fontawesome.com/3c8decddde.js" crossorigin="anonymous"></script>
-  <script src="/javascripts/script.js"></script>
+<%- include('sub-views/scripts.ejs'); %>
 
 </body>
 </html>

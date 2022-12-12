@@ -19,7 +19,7 @@
         page.subtitle_en = 'Search Results';
         page.subtitle = '';
     } else if (results.length > 0 && typeof book !== 'undefined') {
-        page.canonical = `${site.url}/${book.alias}:${results[0].num}`;
+        page.canonical = `/${book.alias}:${results[0].num}`;
         page.title_en = `${site.name} | ${book.name_en} ${results[0].num} (${book.name})`;
         page.title = `${book.name} ${results[0].num_ar}`;
         page.subtitle_en = `${book.name_en}`;
@@ -132,7 +132,12 @@
   </div>
 
 <%- include('sub-views/scripts.ejs'); %>
-
+<script>
+    $(function () {
+        'use strict';
+        $('#search-bar').focus();
+    });
+</script>
 
 </body>
 </html>

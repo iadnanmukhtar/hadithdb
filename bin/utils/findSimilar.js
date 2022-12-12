@@ -15,8 +15,11 @@ var query = util.promisify(dbPool.query).bind(dbPool);
 	var go = false;
 	var rows = await getData();
 	for (var i = 0; i < rows.length; i++) {
-		if (rows[i].bookId == 2 && rows[i].num0 == 1268.001) go = true;
+		if (rows[i].bookId == 3 && rows[i].num0 == 760) go = true;
 		if (!go) console.log(`skipping ${rows[i].bookId}:${rows[i].num0}`);
+		if (rows[i].body.length < 50 && (
+			rows[i].body.endsWith('مثله')
+		)) continue;
 		for (var j = 0; go && j < rows.length; j++) {
 			if (rows[i].id === rows[j].id) continue;
 			try {

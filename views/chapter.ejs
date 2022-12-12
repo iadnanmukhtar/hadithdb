@@ -1,166 +1,52 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <% 
-    var name = 'Ḥadīth Unlocked';
-    var url = 'https://hadith.quranunlocked.com';
-    var logo = `${url}/images/logo.png`;
-    var desc = `${book.name_en} | Chapter ${results.chapter.h1}: ${results.chapter.title_en}`.substring(0, 70);
-    var title = `${name} | ${desc}`;
-    var canonical = `${url}/${book.alias}/${results.chapter.h1}`;
-    var prev = null;
-    var next = null;
+<% 
+    var root = 'https://hadith.quranunlocked.com';
+    var site = {
+      name: 'Ḥadīth Unlocked',
+      url: root,
+      logo: `${root}/images/logo.png`,
+    };
+    
+    var page = {
+      menu: 'Books',
+      title_en: `${site.name} | ${book.name_en} Chapter ${results.chapter.h1}: ${results.chapter.title_en}`.substring(0, 70),
+      subtitle_en: `${book.name_en}`,
+      subtitle: `${book.name}`,
+      canonical: `/${book.alias}/${results.chapter.h1}`,
+    };
     if (typeof prevChapter != 'undefined' && prevChapter)
-      prev = `${url}/${book.alias}/${prevChapter.num0}`;
+        page.prev = `/${book.alias}/${prevChapter.h1}`;
     if (typeof nextChapter != 'undefined' && nextChapter)
-      next = `${url}/${book.alias}/${nextChapter.num0}`;
-  %>
+        page.next = `/${book.alias}/${nextChapter.h1}`;
 
-  <title><%- title %></title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
-  <link href="/stylesheets/style.css" rel="stylesheet">
+    var context = {
+        book: book,
+        chapter: results.chapter,
+    }
+%>
 
-  <link rel="image_src" href="<%= logo %>" />
-  <link rel="apple-touch-icon" href="<%= logo %>" />
-  <link rel="icon" href="<%= logo %>" />
-  <link rel="icon" href="/favicon.ico">
+<%- include('sub-views/head.ejs', { site: site, page: page, context: context }); %> 
 
-  <link rel="canonical" href="<%= canonical %>" />
-  <% if (prev) { %>
-  <link rel="prev" href="<%= prev %>" />
-  <% } %>
-  <% if (next) { %>
-    <link rel="next" href="<%= next %>" />
-  <% } %>  
-
-  <meta name="og:site_name" content="<%= name %>">
-  <meta name="og:locale" content="en">
-  <meta name="og:image" content="<%= logo %>">
-  <meta name="og:url" content="<%= canonical %>">
-  <meta name="og:title" content="<%= title %>">
-  <meta name="og:description" content="<%= desc %>">
-
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:image" content="<%= logo %>">
-  <meta name="twitter:title" content="<%= title %>">
-  <meta name="twitter:description" content="<%= desc %>">
-
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "Organization",
-      "name": "<%= name %>",
-      "url": "<%= url %>",
-      "logo": "<%= logo %>"
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "WebSite",
-      "name": "<%= name %> Search Action",
-      "url": "<%= url %>",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "<%= url %>/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "Book",
-      "name": "<%= book.name_en %>",
-      "inLanguage": "English",
-      "url" : "<%= `${url}/${book.alias}` %>"
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "Book",
-      "name": "<%= book.name %>",
-      "inLanguage": "Arabic",
-      "url" : "<%= `${url}/${book.alias}` %>"
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "Chapter",
-      "name": "<%- `Chapter ${results.chapter.h1}: ${results.chapter.title_en || ''}` %>",
-      "alternateName": "<%- `${book.shortName}، ${arabic.toArabicDigits(results.chapter.h1+'')}- ${results.chapter.title || ''}` %>",
-      "pageStart": "<%- results.chapter.start0 %>",
-      "url": "<%- canonical %>",
-      "schema:isPartOf": {
-        "@id": "<%= `${url}/${book.alias}` %>"
-      }
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "BreadcrumbList",
-      "name": "Books &gt; <%- book.shortName_en %> &gt; Chapter <%- results.chapter.h1 %> ",
-      "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Books",
-        "item": "<%- `${url}/books` %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "<%- book.shortName_en %>",
-        "item": "<%- `${url}/${book.alias}` %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "<%- `Chapter ${results.chapter.h1}` %>"
-      }]
-    }
-  </script>
 </head>
 <body>
   <div class="col-lg-8 mx-auto p-3 py-md-5">
 
-    <header>
-      <div class="d-flex flex-column flex-md-row align-items-center pb-3">
-        <a href="/" class="d-flex text-dark text-decoration-none">
-          <img src="/images/logo.svg" width="32" height="32" class="me-2" role="img"><title><%= name %></title>
-          <h1 class="fs-4">
-            <%= name %><br/>
-            <span class="fs-6 text-muted">
-                <%- book.name_en %>
-                <span lang="ar"><%- book.name %></span>
-            </span>
-          </h1>
-        </a>
-        <nav class="d-inline-flex mt-md-0 ms-md-auto">
-          <a class="me-3 py-2 text-dark text-decoration-none" href="/">Home</a>
-          <a class="me-3 py-2 text-dark text-decoration-none" href="/books">Books</a>
-          <a class="py-2 text-dark text-decoration-none" href="/recent">Recent</a>
-        </nav>
-      </div>
-    </header>
+    <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
     <main class="chapter">
 
     <%# --- PREV/NEXT NAV ---  %>
     <div class="row mb-2 pagination">
       <div class="col-md-6 col-xs-12 text-start">
-        <% if (prev) { %>
-        &lt;&nbsp;<a href="/<%- book.alias + '/' + prevChapter.h1 %>">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
+        <% if (page.prev) { %>
+        &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
-        <% if (next) { %>
-          <a href="/<%- book.alias + '/' + nextChapter.h1 %>">Next:&nbsp;Chapterr&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
+        <% if (page.next) { %>
+          <a href="<%- page.next %>">Next:&nbsp;Chapterr&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
         <% } %>
       </div>
     </div>
@@ -292,13 +178,13 @@
     <%# --- PREV/NEXT NAV ---  %>
     <div class="row mt-2 pagination">
       <div class="col-md-6 col-xs-12 text-start">
-        <% if (prev) { %>
-        &lt;&nbsp;<a href="/<%- book.alias + '/' + prevChapter.h1 %>">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
+        <% if (page.prev) { %>
+        &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
-        <% if (next) { %>
-          <a href="/<%- book.alias + '/' + nextChapter.h1 %>">Next:&nbsp;Chapterr&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
+        <% if (page.next) { %>
+          <a href="<%- page.next %>">Next:&nbsp;Chapterr&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
         <% } %>
       </div>
     </div>
@@ -306,10 +192,7 @@
     </main>
   </div>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
-  <script src="https://kit.fontawesome.com/3c8decddde.js" crossorigin="anonymous"></script>
-  <script src="/javascripts/script.js"></script>
+<%- include('sub-views/scripts.ejs'); %>
 
 </body>
 </html>
