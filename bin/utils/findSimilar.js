@@ -14,7 +14,7 @@ global.query = util.promisify(dbPool.query).bind(dbPool);
 	var go = false;
 	var rows = await Hadith.a_dbGetDisemvoweledHadiths();
 	for (var i = 0; i < rows.length; i++) {
-		if (rows[i].bookId == 4 && rows[i].num0 == 2685) go = true;
+		if (rows[i].bookId == 8 && rows[i].num0 == 1719) go = true;
 		if (!go) console.log(`skipping ${rows[i].bookId}:${rows[i].num0}`);
 		if (go) await Hadith.a_recordSimilarMatches(rows[i], rows);
 	}

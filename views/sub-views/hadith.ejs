@@ -69,6 +69,7 @@
 <div class="col-md-6 col-sm-12 h" lang="en">
 	<% if (hadith.chain_en) { %>
 		<p>
+			<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
 			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 			<span class="chain"><%- hadith.chain_en %></span>
 		</p>
@@ -77,6 +78,7 @@
 		</p>
 	<% } else { %>
 		<p>
+			<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
 			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 			<span class="chain"><%- hadith.chain_en %></span>
 			<%- (hadith.body_en+'').replace(/\n/g, '</p><p class="body">') %>

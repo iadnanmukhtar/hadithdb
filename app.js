@@ -14,6 +14,7 @@ const si = require('search-index');
 const util = require('util');
 const Arabic = require('./lib/Arabic');
 const Utils = require('./lib/Utils');
+const Hadith = require('./lib/Hadith');
 
 global.utils = Utils;
 global.arabic = Arabic;
@@ -110,7 +111,7 @@ async function a_dbInitApp() {
   global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
   global.search = util.promisify(global.searchIdx.SEARCH).bind();
 
-  var bookId = 8;
+  var bookId = 12 ;
 
   // console.log('fix hadith decimal numbers');
   // var rows = await global.query(`SELECT * FROM hadiths WHERE num REGEXP "[^0-9]" ORDER BY bookId`);
@@ -124,12 +125,12 @@ async function a_dbInitApp() {
   //   `);
   // }
 
-  // // update hadiths heading numbers based on toc
+  // update hadiths heading numbers based on toc
   // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} ORDER BY h1,h2,h3`);
   // var sql = '';
   // for (var i = 0; i < toc.length; i++) {
-  //   if (toc[i].h1 < 13)
-  //     continue;
+  //   // if (toc[i].h1 < 24)
+  //   //   continue;
   //   if (i < (toc.length - 1)) {
   //     sql = global.utils.sql(`
   //       UPDATE hadiths
@@ -169,6 +170,29 @@ async function a_dbInitApp() {
   //   `);
   //   console.log(sql);
   //   await global.query(sql);
+  // }
+
+  // split chain and body where missing
+  // var rows = await global.query(`SELECT * FROM hadiths
+  //   WHERE bookId > 0 AND (chain IS null OR chain = '')
+  //   ORDER BY bookId, numInChapter`);
+  // for (var i = 0; i < rows.length; i++) {
+  //   if (rows[i].body) {
+  //     rows[i].text = rows[i].body;
+  //     var text = Hadith.splitHadithText(rows[i]);
+  //     console.log(`updating ${rows[i].bookId}:${rows[i].num}`);
+  //     await global.query(`update hadiths set chain='${text.chain}', body='${text.body}'
+  //       WHERE id=${rows[i].id}`);
+  //   }
+  // }
+  
+  // restore db from search index
+  // var docs = await global.searchIdx.ALL_DOCUMENTS(110000);
+  // for (var i = 0; i < docs.length; i++) {
+  //   var doc = docs[i]._doc;
+  //   console.log(`restoring ${doc._id} ${doc.bookId}:${doc.num}`);
+  //   await global.query(`update hadiths set chain='${doc.chain}', body='${doc.body}'
+  //       WHERE id=${doc._id}`);
   // }
 
 }
