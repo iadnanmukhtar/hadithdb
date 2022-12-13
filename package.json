@@ -17,6 +17,7 @@
     "mysql": "^2.18.1",
     "natural": "^5.2.3",
     "search-index": "^3.3.0",
+    "string-similarity": "^4.0.4",
     "sync-request": "^6.1.0"
   }
 }
