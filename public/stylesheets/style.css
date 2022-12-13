@@ -146,3 +146,14 @@ body :lang(ar) {
 .similar-list {
 	opacity: 0.6;
 }
+
+.bi-reception-4,
+.bi-reception-3,
+.bi-reception-2 {
+	color: green;
+}
+
+.bi-reception-1,
+.bi-reception-0 {
+	color: red;
+}

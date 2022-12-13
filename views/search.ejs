@@ -107,8 +107,10 @@
         <% if (!q && results[i].similar && results[i].similar.length > 0) { %>
         <div class="row similar-list">
           <div class="col-12"><h4 class="fs-5">See also:</h4></div>
-          <% for (var j = 0; j < results[i].similar.length; j++) { %>
-            <%- include('sub-views/hadith.ejs', { hadith: results[i].similar[j], title: true }); %>
+          <% for (var j = 0; j < results[i].similar.length; j++) { 
+            var rating = Math.round((results[i].similar[j].rating - 0.5)*100/50*100/25);
+          %>
+            <%- include('sub-views/hadith.ejs', { hadith: results[i].similar[j], title: true, rating: rating }); %>
           <% } %>
         </div>
         <% } %>
