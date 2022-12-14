@@ -39,8 +39,20 @@ router.get('/', async function (req, res, next) {
 
 router.get('/:bookAlias\::num', async function (req, res, next) {
   var results = await Search.a_lookupByRef(req.params.bookAlias, req.params.num);
-  for (var i = 0; i < results.length; i++)
+  for (var i = 0; i < results.length; i++) {
     results[i].similar = await Hadith.a_getSimilarCandidates(results[i].id);
+    var bookSet = new Set();
+    for (var j = 0; results[i].similar && j < results[i].similar.length; j++) {
+      var book = global.books.find(function (value) {
+        return results[i].similar[j].bookId == value.id;
+      });
+      if (book) bookSet.add(book);
+    }
+    results[i].similarBooks = Array.from(bookSet);
+    results[i].similarBooks.sort(function (book1, book2) {
+      return book1.id - book2.id;
+    });
+  }
   if (results.length > 0) {
     res.render('search', {
       book: results[0].book,

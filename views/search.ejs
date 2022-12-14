@@ -106,7 +106,14 @@
 
         <% if (!q && results[i].similar && results[i].similar.length > 0) { %>
         <div class="row similar-list">
-          <div class="col-12"><h4 class="fs-5">See also:</h4></div>
+
+          <div class="col-12">
+            <h4 class="fs-5">See additional references below (تخريج الحديث):</h4>
+            <small><% for (var j = 0; results[i].similarBooks && j < results[i].similarBooks.length; j++) { %>
+              <span title="<%- results[i].similarBooks[j].name %>"><%- results[i].similarBooks[j].shortName_en + ((j < results[i].similarBooks.length-1) ? ', ' : '') %></span>
+            <% } %> %></small>
+          </div>
+
           <% for (var j = 0; j < results[i].similar.length; j++) { 
             var rating = Math.round((results[i].similar[j].rating - 0.5)*100/50*100/25);
           %>
