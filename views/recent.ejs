@@ -34,6 +34,22 @@
         
         <% for (var i = 0; i < results.length; i++) { %>
 
+          <% if (i == 2) { %>
+          <div class="col-12 mt-3 mb-3">
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"
+              crossorigin="anonymous"></script>
+              <ins class="adsbygoogle"
+                style="display:block; text-align:center;"
+                data-ad-layout="in-article"
+                data-ad-format="fluid"
+                data-ad-client="ca-pub-1199080602686133"
+                data-ad-slot="7623204143"></ins>
+            <script>
+              (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+          </div>
+          <% } %>
+
           <%- include('sub-views/hadith.ejs', { hadith: results[i], title: true }); %>
 
         <% } %>

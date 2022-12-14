@@ -64,6 +64,16 @@
     </div>
     
     <div class="row">
+
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Table",
+          "name" : "<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>",
+          "about": "<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>"
+        }
+      </script>
+
       <table id="toc" class="table">
         <tbody>
         <%

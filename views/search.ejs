@@ -109,22 +109,25 @@
 
           <div class="col-12">
             <h4 class="fs-5">See additional references below (تخريج الحديث):</h4>
-            <small><% for (var j = 0; results[i].similarBooks && j < results[i].similarBooks.length; j++) { %>
+            <small><a title="أخرجه">Collected by</a>
+              <% for (var j = 0; results[i].similarBooks && j < results[i].similarBooks.length; j++) { %>
               <span title="<%- results[i].similarBooks[j].name %>"><%- results[i].similarBooks[j].shortName_en + ((j < results[i].similarBooks.length-1) ? ', ' : '') %></span>
             <% } %> %></small>
           </div>
 
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"
-  crossorigin="anonymous"></script>
-  <ins class="adsbygoogle"
-    style="display:block; text-align:center;"
-    data-ad-layout="in-article"
-    data-ad-format="fluid"
-    data-ad-client="ca-pub-1199080602686133"
-    data-ad-slot="7623204143"></ins>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+          <div class="col-12 mt-3 mb-3">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"
+            crossorigin="anonymous"></script>
+            <ins class="adsbygoogle"
+              style="display:block; text-align:center;"
+              data-ad-layout="in-article"
+              data-ad-format="fluid"
+              data-ad-client="ca-pub-1199080602686133"
+              data-ad-slot="7623204143"></ins>
+          <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+          </div>
 
           <% for (var j = 0; j < results[i].similar.length; j++) { 
             var rating = Math.round((results[i].similar[j].rating - 0.5)*100/50*100/25);
