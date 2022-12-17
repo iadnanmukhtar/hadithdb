@@ -872,6 +872,22 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "temp_trans",
+                "verbose": "temp_trans",
+                "control": {
+                    "text": true
+                },
+                "type": "tinyint",
+                "allowNull": false,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {
