@@ -580,6 +580,22 @@
                 }
             },
             {
+                "name": "highlight",
+                "verbose": "highlight",
+                "control": {
+                    "datetime": true
+                },
+                "type": "datetime",
+                "allowNull": true,
+                "defaultValue": "CURRENT_TIMESTAMP",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
                 "name": "lastmod",
                 "verbose": "lastmod",
                 "control": {
