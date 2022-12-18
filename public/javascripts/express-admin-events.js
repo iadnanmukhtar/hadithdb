@@ -28,7 +28,6 @@ exports.postSave = async function (req, res, args, next) {
 		await global.searchIdx.PUT([data], SearchIndex.TOKENIZER_OPTIONS);
 
 		console.log(`recording similar matches for ${data.bookAlias}:${data.num}`);
-		await global.query(`DELETE FROM hadith_sim_candidates WHERE hadithId1=${args.id[0]} OR hadithId2=${args.id[0]}`);
 		rows = await global.query(`SELECT * FROM hadiths WHERE id=${args.id[0]}`);
 		var deHadith = Hadith.disemvoweledHadith(rows[0]);
 		await Hadith.a_recordSimilarMatches(deHadith);

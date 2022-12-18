@@ -29,10 +29,10 @@
 		<% if (hadith.chapter) { %>
 			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		<% } %>
-		<a class="text-muted" target="admin" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
+		<a class="text-muted" target="_blank" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
 		</div>
 	<% } else { %>
-		<a class="text-muted" target="admin" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
+		<a class="text-muted" target="_blank" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
 	<% } %>
 </div>
 <div class="col-md-6 cols-sm-12 h" lang="ar">
@@ -82,7 +82,7 @@
 			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 			<span class="chain"><%- hadith.chain_en %></span>
 			<%- (hadith.body_en+'').replace(/\n/g, '</p><p class="body">') %>
-			<a class="text-muted" target="admin" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
+			<a class="text-muted" target="_blank" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
 			<br />
 		</p>
 	<% } %>
