@@ -41,9 +41,9 @@
         context.chapter = results[0].chapter;
         context.section = results[0].section;
         if (results[0].prev)
-            page.prev = `${url}/${results[0].book.alias}:${results[0].num}`;
+            page.prev = `${site.url}/${results[0].book.alias}:${results[0].num}`;
         if (results[results.length-1].next)
-            page.next = `${url}/${results[results.length-1].book.alias}:${results[results.length-1].num}`;
+            page.next = `${site.url}/${results[results.length-1].book.alias}:${results[results.length-1].num}`;
     }
 %>
 
@@ -113,20 +113,6 @@
               <% for (var j = 0; results[i].similarBooks && j < results[i].similarBooks.length; j++) { %>
               <span title="<%- results[i].similarBooks[j].name %>"><%- results[i].similarBooks[j].shortName_en + ((j < results[i].similarBooks.length-1) ? ', ' : '') %></span>
             <% } %> %></small>
-          </div>
-
-          <div class="col-12 mt-3 mb-3">
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"
-            crossorigin="anonymous"></script>
-            <ins class="adsbygoogle"
-              style="display:block; text-align:center;"
-              data-ad-layout="in-article"
-              data-ad-format="fluid"
-              data-ad-client="ca-pub-1199080602686133"
-              data-ad-slot="7623204143"></ins>
-          <script>
-            (adsbygoogle = window.adsbygoogle || []).push({});
-          </script>
           </div>
 
           <% for (var j = 0; j < results[i].similar.length; j++) { 

@@ -904,6 +904,22 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "ordinal",
+                "verbose": "ordinal",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {
@@ -1756,6 +1772,22 @@
                 "type": "varchar(15)",
                 "allowNull": true,
                 "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "ordinal",
+                "verbose": "ordinal",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": "0",
                 "listview": {
                     "show": true
                 },
