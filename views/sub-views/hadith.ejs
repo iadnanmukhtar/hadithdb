@@ -2,6 +2,7 @@
 
 <div class="col-md-6 col-sm-12 h" lang="en">
 	<p>
+		<%- (hadith.numVirtual) ? `(${hadith.numVirtual})` : "" %>
 		<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
 		<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 		<% if (hadith.chain_en) { %>

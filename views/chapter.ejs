@@ -128,7 +128,7 @@
       <% 
         for (var i = 0; i < results.hadiths.length; i++) {
           var headings = results.headings.filter(function(value) {
-            return results.hadiths[i].num == value.start;
+            return results.hadiths[i].num == value.start || results.hadiths[i].numVirtual == value.start;
           });
       %>
 

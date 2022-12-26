@@ -85,7 +85,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       book: book,
       prevBook: prevBook,
       nextBook: nextBook,
-      toc: await getBookTOC(book.id)
+      toc: await getBookTOC(book)
     });
   } else
     res.status(404).send('Book not found');
@@ -99,51 +99,60 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var currentChapterNum = parseFloat(req.params.chapterNum);
     var prevChapter = null;
     var nextChapter = null;
-    var firstChapter = await getFirstChapter(book.id);
-    var lastChapter = await getLastChapter(book.id);
+    var firstChapter = await getFirstChapter(book);
+    var lastChapter = await getLastChapter(book);
     if (currentChapterNum < firstChapter.h1 || currentChapterNum > lastChapter.h1) {
       res.status(404).send('Chapter not found');
       return;
     }
     if (currentChapterNum > firstChapter.h1 && currentChapterNum <= lastChapter.h1)
-      prevChapter = await getChapterHeading(book.id, currentChapterNum - 1);
+      prevChapter = await getChapterHeading(book, currentChapterNum - 1);
     if (currentChapterNum >= firstChapter.h1 && currentChapterNum < lastChapter.h1)
-      nextChapter = await getChapterHeading(book.id, currentChapterNum + 1);
+      nextChapter = await getChapterHeading(book, currentChapterNum + 1);
     res.render('chapter', {
       book: book,
       prevChapter: prevChapter,
       nextChapter: nextChapter,
-      results: await getChapter(book.id, currentChapterNum)
+      results: await getChapter(book, currentChapterNum)
     });
   } else
     res.status(404).send('Chapter not found');
 });
 
-async function getBookTOC(bookId) {
+async function getBookTOC(book) {
   return await global.query(`
     SELECT * FROM toc
-    WHERE bookId=${bookId} AND level > 0 AND level < 3
+    WHERE bookId=${book.id} AND level > 0 AND level < 3
     ORDER BY h1, h2, h3`);
 }
 
-async function getChapterHeading(bookId, chapterNum) {
+async function getChapterHeading(book, chapterNum) {
   var chapterHeadings = await global.query(`
     SELECT * FROM toc 
-    WHERE bookId=${bookId} AND h1=${chapterNum} AND level=1
+    WHERE bookId=${book.id} AND h1=${chapterNum} AND level=1
     ORDER BY h1, h2, h3`);
   return chapterHeadings[0];
 }
 
-async function getChapter(bookId, chapterNum) {
+async function getChapter(book, chapterNum) {
   var chapterHeadings = await global.query(`
     SELECT * FROM toc 
-    WHERE bookId=${bookId} AND h1=${chapterNum} 
+    WHERE bookId=${book.id} AND h1=${chapterNum} 
     ORDER BY h1, h2, h3`);
   var chapter = chapterHeadings.shift();
-  var hadithRows = await global.query(`
-    SELECT * FROM hadiths 
-    WHERE bookId=${bookId} AND h1=${chapterNum}
-    ORDER BY h1, numInChapter, num0`);
+  var hadithRows = [];
+  if (!book.virtual) {
+    hadithRows = await global.query(`
+      SELECT * FROM hadiths 
+      WHERE bookId=${book.id} AND h1=${chapterNum}
+      ORDER BY h1, numInChapter, num0`);
+  } else {
+    hadithRows = await global.query(`
+      SELECT h.*, hv.num as numVirtual
+      FROM hadiths_virtual hv, hadiths h
+      WHERE hv.bookId=${book.id} AND hv.h1=${chapterNum} AND hv.hadithId=h.id
+      ORDER BY hv.h1, hv.numInChapter, hv.num0`);
+  }
   var hadiths = [];
   for (var i = 0; i < hadithRows.length; i++) {
     hadiths.push(new Hadith(hadithRows[i], true));
@@ -155,20 +164,20 @@ async function getChapter(bookId, chapterNum) {
   };
 }
 
-async function getFirstChapter(bookId) {
+async function getFirstChapter(book) {
   var chapterHeadings = await global.query(`
     SELECT * FROM toc 
-    WHERE bookId=${bookId} AND level=1 
+    WHERE bookId=${book.id} AND level=1 
     ORDER BY h1 ASC 
     LIMIT 1;
   `);
   return chapterHeadings[0];
 }
 
-async function getLastChapter(bookId) {
+async function getLastChapter(book) {
   var chapterHeadings = await global.query(`
     SELECT * FROM toc 
-    WHERE bookId=${bookId} AND level=1 
+    WHERE bookId=${book.id} AND level=1 
     ORDER BY h1 DESC 
     LIMIT 1;
   `);
