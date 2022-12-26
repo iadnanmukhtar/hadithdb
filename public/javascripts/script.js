@@ -6,13 +6,13 @@ $(function () {
 	setDirection();
 	$('#search-bar').on('input', setDirection);
 
-	$('#search-bar').on('keyup', function () {
-		var value = cleanText($(this).val());
-		$('#toc tbody tr').filter(function () {
-			var content = cleanText($(this).text());
-			$(this).toggle(content.indexOf(value) > -1);
-		});
-	});
+	// $('#search-bar').on('keyup', function () {
+	// 	var value = cleanText($(this).val());
+	// 	$('#toc tbody tr').filter(function () {
+	// 		var content = cleanText($(this).text());
+	// 		$(this).toggle(content.indexOf(value) > -1);
+	// 	});
+	// });
 
 	$('#toc2').on('hidden.bs.collapse', function (event) {
 		console.log('hello');

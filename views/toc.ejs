@@ -30,6 +30,7 @@
 
 </head>
 <body>
+
   <div class="col-lg-8 mx-auto p-3 py-md-5">
 
     <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
@@ -38,17 +39,17 @@
 
     <div class="container mb-3">
       <div class="row text-center justify-content-center">
-        <h2 class="fs-3"><%- book.name_en %></h2>
+        <h2 class="fs-3" title="<%- book.name %>"><%- book.name_en %></h2>
       </div>
     </div>
 
-    <div class="container mb-3">
-      <div class="row justify-content-md-center">
-        <div class="col-md-6">
-          <input id="search-bar" type="text" class="form-control" placeholder="Filter table of contents...">
-        </div>
-      </div>
-    </div>
+    <p>
+      <%- book.description %>
+      <% if (book.id > 0) { %>
+        <br>
+        <small>Author: <%- book.author %> (d. <%- book.yearOfDeath %>H)</small>
+      <% } %>
+    </p>
 
     <div class="row mb-2 pagination">
       <div class="col-md-6 col-xs-12 text-start">
@@ -58,7 +59,7 @@
       </div>
       <div class="col-md-6 col-xs-12 text-end">
         <% if (page.next) { %>
-          <a href="<%- page.prev %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
+          <a href="<%- page.next %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
         <% } %>
       </div>
     </div>
