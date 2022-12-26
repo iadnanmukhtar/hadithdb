@@ -155,7 +155,10 @@ async function getChapter(book, chapterNum) {
   }
   var hadiths = [];
   for (var i = 0; i < hadithRows.length; i++) {
-    hadiths.push(new Hadith(hadithRows[i], true));
+    var hadith = new Hadith(hadithRows[i]);
+    if (book.virtual)
+      await Hadith.a_dbHadithInit(hadith);
+    hadiths.push(hadith);
   }
   return {
     chapter: chapter,

@@ -21,7 +21,7 @@
 		</p>
 	<% } %>
 	<em class="grade">– <%- hadith.grade.grade_en %>&nbsp;(<%- hadith.grader.shortName_en %>)</em>
-	<% if (title && (hadith.chapter || hadith.section)) { %>
+	<% if ((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) { %>
 		<div class="title">
 		§ 
 		<% if (hadith.section) { %>
@@ -52,7 +52,7 @@
 		</p>
 	<%  } %>
 	<em class="grade">– <%- hadith.grade.grade %>&nbsp;(<%- hadith.grader.shortName %>)</em>
-	<% if (title && (hadith.chapter || hadith.section)) { %>
+	<% if ((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) { %>
 		<div class="title">
 		§ 
 		<% if (hadith.section) { %>
@@ -92,7 +92,7 @@
 			<%- hadith.footnote_en %><br/>
 		</p>
 	<% } %>
-	<% if (title) { %>
+	<% if (title || hadith.numVirtual) { %>
 		<div class="title">
 			§ <a href="/<%- `${hadith.book.alias}/${hadith.section.h1}#${hadith.section.start}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
 			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
@@ -120,7 +120,7 @@
 		<%- hadith.footnote %><br/>
 		</p>
 	<%  } %>
-	<% if (title) { %>
+	<% if (title || hadith.numVirtual) { %>
 		<div class="title">
 			§ <a href="/<%- `${hadith.book.alias}/${hadith.section.h1}#${hadith.section.start}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
 			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
