@@ -128,7 +128,7 @@
       <% 
         for (var i = 0; i < results.hadiths.length; i++) {
           var headings = results.headings.filter(function(value) {
-            if (book.numVirtual)
+            if (book.virtual == 1)
               return results.hadiths[i].numVirtual == value.start;
             else
               return results.hadiths[i].num == value.start;
