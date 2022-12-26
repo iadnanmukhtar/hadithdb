@@ -1,39 +1,41 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
+const fs = require('fs');
+const HomeDir = require('os').homedir();
 const Hadith = require("../../lib/Hadith");
 const SearchIndex = require("../../lib/SearchIndex");
 
 exports.postSave = async function (req, res, args, next) {
+	try {
+		var settings = JSON.parse(fs.readFileSync(HomeDir + '/.hadithdb/settings.json'));
+		if (settings.reindex || settings.findSimilar) {
 
-	var rows = await global.query(`SELECT bookId FROM hadiths WHERE id=${args.id[0]}`);
-	var sql = `SELECT * FROM v_hadiths WHERE bookId=${rows[0].bookId} ORDER BY h1, numInChapter`;
-	rows = await global.query(sql);
-	var i = rows.findIndex(function (row) {
-		return (row.hId == parseInt(args.id[0]));
-	});
-	if (i != undefined) {
+			console.log(`post processing ${args.id[0]}`);
 
-		console.log(`post processing ${args.id[0]}`);
-		var data = {
-			_id: rows[i].hId
-		};
-		if (i > 0 && rows[i].bookId == rows[i - 1].bookId)
-			data.prevId = rows[i - 1].hId;
-		if (i < (rows.length - 1) && rows[i].bookId == rows[i + 1].bookId)
-			data.nextId = rows[i + 1].hId;
-		for (var k in rows[i])
-			data[k] = rows[i][k];
-		console.log(`reindexed ${data.bookAlias}:${data.num}`);
-		await global.searchIdx.PUT([data], SearchIndex.TOKENIZER_OPTIONS);
+			var rows = await global.query(`SELECT * FROM v_hadiths WHERE hId=${args.id[0]}`);
+			if (rows.length > 0) {
 
-		console.log(`recording similar matches for ${data.bookAlias}:${data.num}`);
-		rows = await global.query(`SELECT * FROM hadiths WHERE id=${args.id[0]}`);
-		var deHadith = Hadith.disemvoweledHadith(rows[0]);
-		await Hadith.a_recordSimilarMatches(deHadith);
+				if (settings.reindex) {
+					var data = {
+						_id: rows[0].hId
+					};
+					for (var k in rows[0])
+						data[k] = rows[0][k];
+					console.log(`reindexed ${data.bookAlias}:${data.num}`);
+					await global.searchIdx.PUT([data], SearchIndex.TOKENIZER_OPTIONS);
+				}
+				if (settings.findSimilar) {
+					rows[0].id = args.id[0];
+					console.log(`recording similar matches for ${rows[0].bookAlias}:${rows[0].num}`);
+					var deHadith = Hadith.disemvoweledHadith(rows[0]);
+					await Hadith.a_recordSimilarMatches(deHadith);
+				}
 	
+			}
+		}
+	} catch (err) {
+		console.error(err);
 	}
-
-
 	next();
 };
