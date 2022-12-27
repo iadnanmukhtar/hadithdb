@@ -1,3 +1,49 @@
-<h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<!doctype html>
+<html lang="en">
+
+<head> 
+<%
+    var root = 'https://hadith.quranunlocked.com';
+    var site = {
+      name: 'Ḥadīth Unlocked',
+      url: root,
+      logo: `${root}/images/logo.png`,
+    };
+    
+    var subtitle_en = `Error ${error.status} `;
+    var page = {
+      menu: 'Recent',
+      title_en: `${site.name} | Error: ${message}`,
+      subtitle_en: subtitle_en,
+      subtitle: null,
+      canonical: '/',
+    };
+%> 
+
+<%- include('sub-views/head.ejs', { site: site, page: page, context: {} }); %> 
+
+</head>
+
+<body>
+  <div class="col-lg-8 mx-auto p-3 py-md-5">
+
+    <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
+
+    <main class="search-results">
+      <div class="row"> 
+        
+		<h1><%= message %></h1>
+		<h2><%= error.status %></h2>
+		<% if (error.status >= 500) { %>
+			<pre><%= error.stack %></pre>
+		<% } %>
+
+      </div>
+    </main>
+  </div>
+
+<%- include('sub-views/footer.ejs'); %>
+<%- include('sub-views/scripts.ejs'); %>
+
+</body>
+</html>

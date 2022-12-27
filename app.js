@@ -1,6 +1,8 @@
 /* jslint node:true, esversion:8 */
 'use strict';
 
+const stringSimilarity = require("string-similarity");
+
 const path = require('path');
 const HomeDir = require('os').homedir();
 const createError = require('http-errors');
@@ -53,7 +55,7 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
   app.use('/', indexRouter);
 
   app.use(function (req, res, next) {
-    next(createError(404));
+    next(createError(404, 'Requested resource not found'));
   });
 
   app.use(function (err, req, res, next) {
@@ -107,11 +109,11 @@ async function a_dbInitApp() {
   console.error('loading graders...');
   global.graders = await global.query('SELECT * FROM graders');
   console.error('done loading hadith data');
-	console.error('initializing search index');
+  console.error('initializing search index');
   global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
   global.search = util.promisify(global.searchIdx.SEARCH).bind();
 
-  var bookId = 12 ;
+  var bookId = 8;
 
   // console.log('fix hadith decimal numbers');
   // var rows = await global.query(`SELECT * FROM hadiths WHERE num REGEXP "[^0-9]" ORDER BY bookId`);
@@ -185,14 +187,106 @@ async function a_dbInitApp() {
   //       WHERE id=${rows[i].id}`);
   //   }
   // }
-  
-  // restore db from search index
+
+  // // restore db from search index
   // var docs = await global.searchIdx.ALL_DOCUMENTS(110000);
   // for (var i = 0; i < docs.length; i++) {
   //   var doc = docs[i]._doc;
   //   console.log(`restoring ${doc._id} ${doc.bookId}:${doc.num}`);
   //   await global.query(`update hadiths set chain='${doc.chain}', body='${doc.body}'
   //       WHERE id=${doc._id}`);
+  // }
+
+  // // restore grader from search index
+  // var docs = await global.searchIdx.ALL_DOCUMENTS(110000);
+  // for (var i = 0; i < docs.length; i++) {
+  //   var doc = docs[i]._doc;
+  //   if (doc.bookId == 3 || doc.bookId == 4) {
+  //     console.log(`restoring ${doc._id} ${doc.bookId}:${doc.num}`);
+  //     var grader = global.graders.find(function (val) {
+  //       return val.shortName_en == doc.grader_en;
+  //     });
+  //     await global.query(`update hadiths set graderId='${grader.id}'
+  //       WHERE id=${doc._id}`);
+  //   }
+  // }
+
+  // // match muslim ahadith of lulu marjan
+  // var lulu = await global.query('select id, hno, nass_matched as body, muslim_h1, muslim_h2 from b10619 where hno is not null');
+  // var sah = await global.query('select * from hadiths h where h.bookId=2 and remark=0 order by ordinal');
+  // for (var i = 0; i < lulu.length; i++) {
+  //   // console.log(`lulu ${lulu[i].hno}`);
+  //   lulu[i] = Hadith.disemvoweledHadith(lulu[i]);
+  //   var maxi = 0;
+  //   var maxRating = 0;
+  //   for (var j = 0; j < sah.length; j++) {
+  //     if (sah[j].h1 == lulu[i].muslim_h1 && sah[j].h2 == lulu[i].muslim_h2) {
+  //       sah[j] = Hadith.disemvoweledHadith(sah[j]);
+  //       var match = Hadith.findBestMatch(lulu[i], sah[j]);
+  //       if (match.bestMatch.rating > maxRating) {
+  //         maxRating = match.bestMatch.rating;
+  //         maxi = j;
+  //       }
+  //     }
+  //   }
+  //   console.log(`${sah[maxi].id}\t${lulu[i].hno}\t${sah[maxi].bookId}:${sah[maxi].num0}\t${maxRating}`);
+  //   await global.query(`update b10619 set muslim_id=${sah[maxi].id}, muslim_rating=${maxRating} where id=${lulu[i].id}`);
+  // }
+
+//  // match bukhari ahadith of lulu marjan
+//  var lulu = await global.query('select id, hno, nass_matched as body, bukhari_h1, bukhari_h2 from b10619 where hno is not null and bukhari_id is null');
+//  var sah = await global.query('select * from hadiths h where h.bookId=1 and remark=0 order by ordinal');
+//  for (var i = 0; i < lulu.length; i++) {
+//    // console.log(`lulu ${lulu[i].hno}`);
+//    lulu[i] = Hadith.disemvoweledHadith(lulu[i]);
+//    var maxi = 0;
+//    var maxRating = 0;
+//    for (var j = 0; j < sah.length; j++) {
+//      //if (!lulu[i].bukhari_h1 || (sah[j].h1 == lulu[i].bukhari_h1 && sah[j].h2 == lulu[i].bukhari_h2)) {
+//        sah[j] = Hadith.disemvoweledHadith(sah[j]);
+//        var match = Hadith.findBestMatch(lulu[i], sah[j]);
+//        if (match.bestMatch.rating > maxRating) {
+//          maxRating = match.bestMatch.rating;
+//          maxi = j;
+//        }
+//      //}
+//    }
+//    console.log(`${sah[maxi].id}\t${lulu[i].hno}\t${sah[maxi].bookId}:${sah[maxi].num0}\t${maxRating}`);
+//    await global.query(`update b10619 set bukhari_id=${sah[maxi].id}, bukhari_rating=${maxRating} where id=${lulu[i].id}`);
+//  }
+
+  // // match muslim titles lulu marjan
+  // var lulu = await global.query('select id, nass from b10619 where hno is null and muslim_h1 is null');
+  // var toc = await global.query('select * from toc where bookId=2 and level=1 order by h1, h2');
+  // for (var i = 0; i < lulu.length; i++) {
+  //   // console.log(`lulu ${lulu[i].hno}`);
+  //   lulu[i].nass = Arabic.removeArabicDiacritics(lulu[i].nass);
+  //   var maxi = 0;
+  //   var maxRating = 0;
+  //   for (var j = 0; j < toc.length; j++) {
+  //     toc[j].title = Arabic.removeArabicDiacritics(toc[j].title).replace(/باب /, '');
+  //     var rating = stringSimilarity.compareTwoStrings(lulu[i].nass, toc[j].title);
+  //     if (rating > maxRating) {
+  //       maxRating = rating;
+  //       maxi = j;
+  //     }
+  //   }
+  //   console.log(`${toc[maxi].id}\t${lulu[i].nass}\t${toc[maxi].bookId}:${toc[maxi].title}\t${maxRating}`);
+  //   await global.query(`update b10619 set muslim_toc_id=${toc[maxi].id},muslim_toc_rating=${maxRating} where id=${lulu[i].id}`);
+  // }
+
+  // // copy muslim h1 and h2 to hadith
+  // var lulu = await global.query('select * from b10619 order by id');
+  // var h1 = null;
+  // var h2 = null;
+  // for (var i = 0; i < lulu.length; i++) {
+  //   if (lulu[i].muslim_h1) {
+  //     h1 = lulu[i].muslim_h1;
+  //     h2 = lulu[i].muslim_h2;
+  //   } else {
+  //     console.log(`${lulu[i].id}\t${lulu[i].hno}\t${h1}\t${h2}`);
+  //     await global.query(`update b10619 set muslim_h1=${h1},muslim_h2=${h2} where id=${lulu[i].id}`);
+  //   }
   // }
 
 }

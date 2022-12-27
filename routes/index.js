@@ -2,6 +2,7 @@
 'use strict';
 
 const express = require('express');
+const createError = require('http-errors');
 const asyncify = require('express-asyncify');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
@@ -88,7 +89,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       toc: await getBookTOC(book)
     });
   } else
-    res.status(404).send('Book not found');
+    throw createError(404, `Book '${req.params.bookAlias}' does not exist`);
 });
 
 router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
@@ -101,10 +102,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var nextChapter = null;
     var firstChapter = await getFirstChapter(book);
     var lastChapter = await getLastChapter(book);
-    if (currentChapterNum < firstChapter.h1 || currentChapterNum > lastChapter.h1) {
-      res.status(404).send('Chapter not found');
-      return;
-    }
+    if (currentChapterNum < firstChapter.h1 || currentChapterNum > lastChapter.h1)
+      throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
     if (currentChapterNum > firstChapter.h1 && currentChapterNum <= lastChapter.h1)
       prevChapter = await getChapterHeading(book, currentChapterNum - 1);
     if (currentChapterNum >= firstChapter.h1 && currentChapterNum < lastChapter.h1)
@@ -116,7 +115,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       results: await getChapter(book, currentChapterNum)
     });
   } else
-    res.status(404).send('Chapter not found');
+    throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
 });
 
 async function getBookTOC(book) {
