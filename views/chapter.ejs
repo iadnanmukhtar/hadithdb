@@ -12,8 +12,8 @@
     var page = {
       menu: 'Books',
       title_en: `${site.name} | ${book.name_en} Chapter ${results.chapter.h1}: ${results.chapter.title_en}`.substring(0, 70),
-      subtitle_en: `${book.name_en}`,
-      subtitle: `${book.name}`,
+      subtitle_en: `${book.shortName_en}`,
+      subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${results.chapter.h1}`,
     };
     if (typeof prevChapter != 'undefined' && prevChapter)

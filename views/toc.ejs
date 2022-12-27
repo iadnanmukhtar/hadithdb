@@ -12,8 +12,8 @@
     var page = {
       menu: 'Books',
       title_en: `Table of Contents of ${book.name_en} (فهرس ${book.name})`,
-      subtitle_en: `${book.name_en}`,
-      subtitle: `${book.name}`,
+      subtitle_en: `${book.shortName_en}`,
+      subtitle: `${book.shortName}`,
       canonical: `/${book.alias}`,
     };
     if (typeof prevBook != 'undefined' && prevBook)
