@@ -2,8 +2,8 @@
 
 <div class="col-md-6 col-sm-12 h" lang="en">
 	<p>
-		<%- (hadith.numVirtual) ? `(${hadith.numVirtual})` : "" %>
 		<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
+		<%- (hadith.numVirtual) ? `(${hadith.numVirtual})` : "" %>
 		<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 		<% if (hadith.chain_en) { %>
 			<span class="chain"><%- utils.emptyIfNull(hadith.chain_en) %></span>
@@ -38,6 +38,7 @@
 </div>
 <div class="col-md-6 cols-sm-12 h" lang="ar">
 	<p>
+		<%- (hadith.numVirtual) ? `(${arabic.toArabicDigits(hadith.numVirtual+'')})` : "" %>
 		<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= hadith.book.shortName %> <%= hadith.num_ar %></a></b> –
 		<% if (hadith.chain) { %>
 			<span class="chain"><%- utils.emptyIfNull(hadith.chain) %></span>
