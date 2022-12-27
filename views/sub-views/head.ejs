@@ -183,10 +183,10 @@
       "@type": "Article",
       "name": "<%- `${context.hadiths[0].book.shortName_en} ${context.hadiths[0].num}` %>",
       "headline": "<%- `${context.hadiths[0].book.shortName_en} ${context.hadiths[0].num}` %>",
-	  "url": "<%- `${site.url}/${page.canonical}` %>",
+	  "url": "<%- `${site.url}${page.canonical}` %>",
 	  "mainEntityOfPage": {
 		"@type": "WebPage",
-		"@id": "<%- `${site.url}/${page.canonical}` %>"
+		"@id": "<%- `${site.url}${page.canonical}` %>"
 	  },
 	  "genre": "Hadith",
       "dateModified": "<%- context.hadiths[0].lastmod.toISOString() %>",
