@@ -92,12 +92,13 @@
 </script>
 <% } %>
 
-<% if (typeof context.book !== 'undefined') { %>
+<% if (typeof context.book !== 'undefined' && typeof context.chapter !== 'undefined' && 
+	   typeof context.section !== 'undefined') { %>
 <script type="application/ld+json">
 	{
 		"@context": "http://schema.org",
 		"@type": "BreadcrumbList",
-		"name": "Books &gt; <%= context.book.name_en %>",
+		"name": "Books &gt; <%= context.book.name_en %> &gt; Chapter <%= context.chapter.h1 %>  &gt; Section <%= context.section.h2 %>",
 		"itemListElement": [
 		{
 		"@type": "ListItem",
@@ -108,10 +109,23 @@
 		{
 		"@type": "ListItem",
 		"position": 2,
-		"name": "<%- context.book.name_en %>"
+		"name": "<%- context.book.name_en %>",
+		"item": "<%- `${site.url}/${context.book.alias}` %>"
+		},
+		{
+		"@type": "ListItem",
+		"position": 3,
+		"name": "<%- `${context.chapter.h1}. ${context.chapter.title_en || 'Chapter'}` %>",
+		"item": "<%- `${site.url}/${context.book.alias}/${context.chapter.h1}` %>"
+		},
+		{
+		"@type": "ListItem",
+		"position": 4,
+		"name": "<%- `${context.section.h2}. ${context.section.title_en || 'Section'}` %>",
+		"item": "<%- `${site.url}/${context.book.alias}/${context.chapter.h1}#S${context.section.h2}` %>"
 		}]
 	}
-</script>
+	</script>
 <% } else if (typeof context.book !== 'undefined' && typeof context.chapter !== 'undefined') { %>
 <script type="application/ld+json">
   {
@@ -134,8 +148,57 @@
 	{
 	  "@type": "ListItem",
 	  "position": 3,
-	  "name": "<%- `Chapter ${context.chapter.h1}` %>"
+	  "name": "<%- `${context.chapter.h1}. ${context.chapter.title_en || 'Chapter'}` %>",
+	  "item": "<%- `${site.url}/${context.book.alias}/${context.chapter.h1}` %>"
 	}]
   }
+</script>
+<% } else if (typeof context.book !== 'undefined') { %>
+<script type="application/ld+json">
+	{
+		"@context": "http://schema.org",
+		"@type": "BreadcrumbList",
+		"name": "Books &gt; <%= context.book.name_en %>",
+		"itemListElement": [
+		{
+		"@type": "ListItem",
+		"position": 1,
+		"name": "Books",
+		"item": "<%- `${site.url}/books` %>"
+		},
+		{
+		"@type": "ListItem",
+		"position": 2,
+		"name": "<%- context.book.name_en %>",
+		"item": "<%- `${site.url}/${context.book.alias}` %>"
+		}]
+	}
+</script>
+<% } %>
+
+<% if (context.hadiths && !context.fromSearch) { %>
+<script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "name": "<%- `${context.hadiths[0].book.shortName_en} ${context.hadiths[0].num}` %>",
+      "headline": "<%- `${context.hadiths[0].book.shortName_en} ${context.hadiths[0].num}` %>",
+	  "url": "<%- `${site.url}/${page.canonical}` %>",
+	  "mainEntityOfPage": {
+		"@type": "WebPage",
+		"@id": "<%- `${site.url}/${page.canonical}` %>"
+	  },
+	  "genre": "Hadith",
+      "dateModified": "<%- context.hadiths[0].lastmod.toISOString() %>",
+      "author": [{
+          "@type": "Book",
+          "name": "<%- context.hadiths[0].book.name_en %>",
+          "url": "<%- `${site.url}/${context.hadiths[0].book.alias}` %>"
+        },
+		{
+		  "@type": "Person",
+		  "name": "<%- context.hadiths[0].book.author %>"
+	  }]
+    }
 </script>
 <% } %>
