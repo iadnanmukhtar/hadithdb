@@ -9,6 +9,8 @@ const Hadith = require('../lib/Hadith');
 const router = asyncify(express.Router());
 
 router.get('/', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
   var results = [];
   results = await Hadith.a_getRecentUpdates();
   res.render('recent', {

@@ -1,4 +1,11 @@
-<% if (hadith.remark != 2) { %>
+<% 
+	var publicLink = 'https://forms.gle/xPgw7eH1akjp3PPj9';
+	var adminLink = `/admin/hadiths/${hadith.id}`;
+	var editLink = publicLink;
+	if (req.cookies.admin == 'b8dff5ea-bd35-459d-9481-0c2f0b287a9c')
+		editLink = adminLink;
+	
+	if (hadith.remark != 2) { %>
 
 <div class="col-md-6 col-sm-12 h" lang="en">
 	<p>
@@ -11,7 +18,8 @@
 	</p>
 	<p class="body">
 		<% if (!hadith.body_en) { %>
-			Translation of this ḥadīth is currently not available.
+			Translation of this ḥadīth is currently not available. 
+			<a target="_blank" href="https://forms.gle/xPgw7eH1akjp3PPj9">Submit translation</a><br />
 		<% } %>
 		<%- utils.emptyIfNull(hadith.body_en).replace(/\n/g, '</p><p class="body">') || utils.emptyIfNull(hadith.text_en) %><br/>
 	</p>
@@ -30,10 +38,10 @@
 		<% if (hadith.chapter) { %>
 			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		<% } %>
-		<a class="text-muted" target="_blank" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
+		<a class="text-muted" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>
 		</div>
 	<% } else { %>
-		<a class="text-muted" target="_blank" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
+		<a class="text-muted" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>
 	<% } %>
 </div>
 <div class="col-md-6 cols-sm-12 h" lang="ar">
@@ -84,7 +92,7 @@
 			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 			<span class="chain"><%- hadith.chain_en %></span>
 			<%- (hadith.body_en+'').replace(/\n/g, '</p><p class="body">') %>
-			<a class="text-muted" target="_blank" href="/admin/hadiths/<%- hadith.id %>"><span class="bi bi-pencil"></span></a>
+			<a class="text-muted" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>
 			<br />
 		</p>
 	<% } %>

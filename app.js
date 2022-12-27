@@ -59,8 +59,10 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
   });
 
   app.use(function (err, req, res, next) {
+    res.locals.req = req;
+    res.locals.res = res;
     res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
+    res.locals.error = err;
     res.status(err.status || 500);
     res.render('error');
   });

@@ -10,10 +10,10 @@
       logo: `${root}/images/logo.png`,
     };
     
-    var subtitle_en = `Error ${error.status} `;
+    var subtitle_en = `Error ${res.statusCode} `;
     var page = {
       menu: 'Recent',
-      title_en: `${site.name} | Error: ${message}`,
+      title_en: `${site.name} | Error: ${res.statusCode} ${utils.emptyIfNull(message)} `,
       subtitle_en: subtitle_en,
       subtitle: null,
       canonical: '/',
@@ -32,10 +32,9 @@
     <main class="search-results">
       <div class="row"> 
         
-		<h1><%= message %></h1>
-		<h2><%= error.status %></h2>
-		<% if (error.status >= 500) { %>
-			<pre><%= error.stack %></pre>
+		<h5><%- res.statusCode %> <%- message %></h5>
+		<% if (res.statusCode >= 500) { %>
+			<pre><%- error.stack %></pre>
 		<% } %>
 
       </div>

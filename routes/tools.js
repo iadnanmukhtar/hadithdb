@@ -6,13 +6,10 @@ const asyncify = require('express-asyncify');
 const Arabic = require('../lib/Arabic');
 
 const router = asyncify(express.Router());
-
-router.get('/index', async function (req, res, next) {
-  var db = await si({ name: `${HomeDir}/.hadithdb/si` });
-  global.query('SELECT id, search_chain, search_body from hadiths');
-});
   
 router.get('/', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
   var result = '';
   if (req.query.s) {
     result = Arabic.toALALC(req.query.s);

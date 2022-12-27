@@ -10,10 +10,12 @@ const Hadith = require('../lib/Hadith');
 const router = asyncify(express.Router());
 
 router.get('/reinit', function (req, res, next) {
-  res.send('<h1>NOTE</h1><p>Database is initializing, please wait a few seconds before your changes will take effect.</p>');
+  throw new createError('Unimplemented');
 });
 
 router.get('/', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
   var results = [];
   if (req.query.q) {
     req.query.q = req.query.q.trim();
@@ -39,6 +41,8 @@ router.get('/', async function (req, res, next) {
 });
 
 router.get('/:bookAlias\::num', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
   var results = await Search.a_lookupByRef(req.params.bookAlias, req.params.num);
   for (var i = 0; i < results.length; i++) {
     results[i].similar = await Hadith.a_getSimilarCandidates(results[i].id);
@@ -69,6 +73,8 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 });
 
 router.get('/:bookAlias', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
   var book = global.books.find(function (value) {
     return (value.alias == req.params.bookAlias || value.id == req.params.bookAlias);
   });
@@ -93,6 +99,8 @@ router.get('/:bookAlias', async function (req, res, next) {
 });
 
 router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
   var book = global.books.find(function (value) {
     return (value.alias == req.params.bookAlias || value.id == req.params.bookAlias);
   });
