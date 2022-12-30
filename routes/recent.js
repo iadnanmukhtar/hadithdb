@@ -12,7 +12,7 @@ router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   var results = [];
-  results = await Hadith.a_getRecentUpdates();
+  results = await Hadith.a_dbGetRecentUpdates();
   res.render('recent', {
     results: results
   });

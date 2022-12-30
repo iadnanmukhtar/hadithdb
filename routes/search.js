@@ -10,7 +10,7 @@ const Hadith = require('../lib/Hadith');
 const router = asyncify(express.Router());
 
 router.get('/reinit', function (req, res, next) {
-  throw new createError('Unimplemented');
+  throw new createError(405, 'Unimplemented');
 });
 
 router.get('/', async function (req, res, next) {
@@ -45,7 +45,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.res = res;
   var results = await Search.a_lookupByRef(req.params.bookAlias, req.params.num);
   for (var i = 0; i < results.length; i++) {
-    results[i].similar = await Hadith.a_getSimilarCandidates(results[i].id);
+    results[i].similar = await Hadith.a_dbGetSimilarCandidates(results[i].id);
     var bookSet = new Set();
     for (var j = 0; results[i].similar && j < results[i].similar.length; j++) {
       var book = global.books.find(function (value) {

@@ -48,11 +48,13 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
   const toolsRouter = require('./routes/tools');
   const recentRouter = require('./routes/recent');
   const booksRouter = require('./routes/books');
-  const indexRouter = require('./routes/index');
+  const tagRouter = require('./routes/tag');
+  const searchRouter = require('./routes/search');
   app.use('/tools', toolsRouter);
   app.use('/recent', recentRouter);
   app.use('/books', booksRouter);
-  app.use('/', indexRouter);
+  app.use('/tag', tagRouter);
+  app.use('/', searchRouter);
 
   app.use(function (req, res, next) {
     next(createError(404, 'Requested resource not found'));
@@ -115,7 +117,7 @@ async function a_dbInitApp() {
   global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
   global.search = util.promisify(global.searchIdx.SEARCH).bind();
 
-  var bookId = 8;
+  var bookId = 14;
 
   // console.log('fix hadith decimal numbers');
   // var rows = await global.query(`SELECT * FROM hadiths WHERE num REGEXP "[^0-9]" ORDER BY bookId`);
@@ -129,7 +131,7 @@ async function a_dbInitApp() {
   //   `);
   // }
 
-  // update hadiths heading numbers based on toc
+  // // update hadiths heading numbers based on toc
   // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} ORDER BY h1,h2,h3`);
   // var sql = '';
   // for (var i = 0; i < toc.length; i++) {
@@ -167,19 +169,14 @@ async function a_dbInitApp() {
   //     numInChapter = 0;
   //   prevH1 = hadiths[i].h1;
   //   numInChapter++;
-  //   var sql = global.utils.sql(`
-  //     UPDATE hadiths
-  //     SET numInChapter=${numInChapter}
-  //     WHERE id=${hadiths[i].id}
-  //   `);
-  //   console.log(sql);
-  //   await global.query(sql);
+  //   console.log(`updating numInChapter for ${hadiths[i].bookId}:${hadiths[i].num}`);
+  //   await global.query(`UPDATE hadiths SET numInChapter=${numInChapter} WHERE id=${hadiths[i].id}`);
   // }
 
-  // split chain and body where missing
+  // // split chain and body where missing
   // var rows = await global.query(`SELECT * FROM hadiths
-  //   WHERE bookId > 0 AND (chain IS null OR chain = '')
-  //   ORDER BY bookId, numInChapter`);
+  //   WHERE bookId=${bookId} AND (chain IS null OR chain = '')
+  //   ORDER BY bookId, h1, h2, h3, num0`);
   // for (var i = 0; i < rows.length; i++) {
   //   if (rows[i].body) {
   //     rows[i].text = rows[i].body;
@@ -213,70 +210,6 @@ async function a_dbInitApp() {
   //   }
   // }
 
-  // // match muslim ahadith of lulu marjan
-  // var lulu = await global.query('select id, hno, nass_matched as body, muslim_h1, muslim_h2 from b10619 where hno is not null');
-  // var sah = await global.query('select * from hadiths h where h.bookId=2 and remark=0 order by ordinal');
-  // for (var i = 0; i < lulu.length; i++) {
-  //   // console.log(`lulu ${lulu[i].hno}`);
-  //   lulu[i] = Hadith.disemvoweledHadith(lulu[i]);
-  //   var maxi = 0;
-  //   var maxRating = 0;
-  //   for (var j = 0; j < sah.length; j++) {
-  //     if (sah[j].h1 == lulu[i].muslim_h1 && sah[j].h2 == lulu[i].muslim_h2) {
-  //       sah[j] = Hadith.disemvoweledHadith(sah[j]);
-  //       var match = Hadith.findBestMatch(lulu[i], sah[j]);
-  //       if (match.bestMatch.rating > maxRating) {
-  //         maxRating = match.bestMatch.rating;
-  //         maxi = j;
-  //       }
-  //     }
-  //   }
-  //   console.log(`${sah[maxi].id}\t${lulu[i].hno}\t${sah[maxi].bookId}:${sah[maxi].num0}\t${maxRating}`);
-  //   await global.query(`update b10619 set muslim_id=${sah[maxi].id}, muslim_rating=${maxRating} where id=${lulu[i].id}`);
-  // }
-
-//  // match bukhari ahadith of lulu marjan
-//  var lulu = await global.query('select id, hno, nass_matched as body, bukhari_h1, bukhari_h2 from b10619 where hno is not null and bukhari_id is null');
-//  var sah = await global.query('select * from hadiths h where h.bookId=1 and remark=0 order by ordinal');
-//  for (var i = 0; i < lulu.length; i++) {
-//    // console.log(`lulu ${lulu[i].hno}`);
-//    lulu[i] = Hadith.disemvoweledHadith(lulu[i]);
-//    var maxi = 0;
-//    var maxRating = 0;
-//    for (var j = 0; j < sah.length; j++) {
-//      //if (!lulu[i].bukhari_h1 || (sah[j].h1 == lulu[i].bukhari_h1 && sah[j].h2 == lulu[i].bukhari_h2)) {
-//        sah[j] = Hadith.disemvoweledHadith(sah[j]);
-//        var match = Hadith.findBestMatch(lulu[i], sah[j]);
-//        if (match.bestMatch.rating > maxRating) {
-//          maxRating = match.bestMatch.rating;
-//          maxi = j;
-//        }
-//      //}
-//    }
-//    console.log(`${sah[maxi].id}\t${lulu[i].hno}\t${sah[maxi].bookId}:${sah[maxi].num0}\t${maxRating}`);
-//    await global.query(`update b10619 set bukhari_id=${sah[maxi].id}, bukhari_rating=${maxRating} where id=${lulu[i].id}`);
-//  }
-
-  // // match muslim titles lulu marjan
-  // var lulu = await global.query('select id, nass from b10619 where hno is null and muslim_h1 is null');
-  // var toc = await global.query('select * from toc where bookId=2 and level=1 order by h1, h2');
-  // for (var i = 0; i < lulu.length; i++) {
-  //   // console.log(`lulu ${lulu[i].hno}`);
-  //   lulu[i].nass = Arabic.removeArabicDiacritics(lulu[i].nass);
-  //   var maxi = 0;
-  //   var maxRating = 0;
-  //   for (var j = 0; j < toc.length; j++) {
-  //     toc[j].title = Arabic.removeArabicDiacritics(toc[j].title).replace(/باب /, '');
-  //     var rating = stringSimilarity.compareTwoStrings(lulu[i].nass, toc[j].title);
-  //     if (rating > maxRating) {
-  //       maxRating = rating;
-  //       maxi = j;
-  //     }
-  //   }
-  //   console.log(`${toc[maxi].id}\t${lulu[i].nass}\t${toc[maxi].bookId}:${toc[maxi].title}\t${maxRating}`);
-  //   await global.query(`update b10619 set muslim_toc_id=${toc[maxi].id},muslim_toc_rating=${maxRating} where id=${lulu[i].id}`);
-  // }
-
   // // copy muslim h1 and h2 to hadith
   // var lulu = await global.query('select * from b10619 order by id');
   // var h1 = null;
@@ -290,6 +223,63 @@ async function a_dbInitApp() {
   //     await global.query(`update b10619 set muslim_h1=${h1},muslim_h2=${h2} where id=${lulu[i].id}`);
   //   }
   // }
+
+  var shamela = 'b7861';
+
+  // // concat split up hadith without hno
+  // var rows = await global.query(`select * from ${shamela} where toc=0 order by id`);
+  // for (var i = 1; i < rows.length; i++) {
+  //   if (i == rows.length - 1) break;
+  //   if (rows[i].hno != null && rows[i+1].hno == null) {
+  //     var nextNass = Utils.escSQL(rows[i+1].nass);
+  //     console.log(`concating id:${rows[i].id}:H${rows[i].hno} w/ id:${rows[i+1].id}`);
+  //     await global.query(`update ${shamela} set nass=concat(nass, '\\n${nextNass}') where id=${rows[i].id}`);
+  //     await global.query(`delete from ${shamela} where id=${rows[i+1].id}`);
+  //     i++;
+  //   }
+  // }
+
+  // // concat split up hadith without same hno
+  // var rows = await global.query(`select * from ${shamela} where toc=0 order by id`);
+  // for (var i = 1; i < rows.length; i++) {
+  //   if (i == rows.length - 1) break;
+  //   if (rows[i].hno != null && rows[i].hno == rows[i+1].hno) {
+  //     var nextNass = Utils.escSQL(rows[i+1].nass);
+  //     console.log(`concating id:${rows[i].id}:H${rows[i].hno} w/ id:${rows[i+1].id}:H${rows[i+1].hno}`);
+  //     await global.query(`update ${shamela} set nass=concat(nass, '\\n${nextNass}') where id=${rows[i].id}`);
+  //     await global.query(`delete from ${shamela} where id=${rows[i+1].id}`);
+  //     i++;
+  //     // break;
+  //   }
+  // }
+
+  // // update headings with hadith starts
+  // var rows = await global.query(`select * from ${shamela} order by id`);
+  // var hno = null;
+  // for (var i = 1; i < rows.length; i++) {
+  //   if (rows[i].toc == 1 && rows[i].hno == null && rows[i+1].hno != null) {
+  //     console.log(`updating w/ ${rows[i+1].hno} ${rows[i].nass}`);
+  //     await global.query(`update ${shamela} set hno=${rows[i+1].hno} where id=${rows[i].id}`);
+  //     // break;
+  //   }
+  // }
+
+  // // update h1, h2 for all toc
+  // var rows = await global.query(`select * from ${shamela} order by id`);
+  // var h1 = null;
+  // var h2 = 1;
+  // for (var i = 1; i < rows.length; i++) {
+  //   if (rows[i].toc == 1 && rows[i].level == 1 && rows[i].h1 != null) {
+  //     h1 = rows[i].h1;
+  //     h2 = 1;
+  //   }  else if (rows[i].toc == 1 && rows[i].level == 2) {
+  //     console.log(`updating w/ ${h1}:${h2} ${rows[i].nass}`);
+  //     await global.query(`update ${shamela} set h1=${h1},h2=${h2++} where id=${rows[i].id}`);
+  //     // break;
+  //   }
+  // }
+
+  console.log('done');
 
 }
 a_dbInitApp();
