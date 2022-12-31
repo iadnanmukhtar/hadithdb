@@ -62,3 +62,26 @@ set
 where
 	h.bookId = toc.bookId
 and h.num0 between toc.start0 and toc.end0;
+
+-- copy translations from similar ahadith
+set sql_safe_updates=0;
+UPDATE hadiths h1, (
+	SELECT hadithId1, b2.shortName_en, h2.num, h2.body_en
+    FROM hadiths h2, books b2, hadith_sim_candidates c 
+	WHERE 
+			h2.id = c.hadithId2
+		AND h2.bookId = b2.id
+        AND h2.body != ''
+		AND h2.body_en != ''
+		AND c.rating >= 0.75
+	ORDER BY h2.bookId
+    ) as m
+SET
+	h1.temp_trans = 1,
+	h1.body_en = CONCAT(m.body_en, ' (Using translation from ', m.shortName_en, ' ', m.num, ') ')
+WHERE
+	h1.id = m.hadithId1
+AND (h1.body_en is null OR h1.body_en = '')
+AND h1.temp_trans = 0
+-- AND h1.id = 135341
+;
