@@ -22,9 +22,11 @@ exports.postSave = async function (req, res, args, next) {
 					var data = {
 						_id: rows[0].hId
 					};
+					delete rows[0].lastmod;
+					delete rows[0].highlight;
 					for (var k in rows[0])
 						data[k] = rows[0][k];
-					console.log(`reindexed ${data.bookAlias}:${data.num}`);
+					console.log(`reindexed ${data.book_alias}:${data.num}`);
 					await global.searchIdx.PUT([data], SearchIndex.TOKENIZER_OPTIONS);
 				}
 				if (settings.findSimilar) {
