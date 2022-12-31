@@ -10,7 +10,7 @@ const Hadith = require('../lib/Hadith');
 const router = asyncify(express.Router());
 
 router.get('/reinit', function (req, res, next) {
-  throw new createError(405, 'Unimplemented');
+  throw createError(405, 'Unimplemented');
 });
 
 router.get('/', async function (req, res, next) {
@@ -23,7 +23,13 @@ router.get('/', async function (req, res, next) {
       res.redirect('/' + req.query.q);
       return;
     }
-    results = await Search.a_searchText(req.query.q);
+    try {
+      results = await Search.a_searchText(req.query.q);
+    } catch (err) {
+      var message = `Error searching [${req.query.q}]`;
+      console.error(message + `\n${err.stack}`);
+      throw createError(500, message);
+    }
     res.render('search', {
       q: req.query.q,
       results: results

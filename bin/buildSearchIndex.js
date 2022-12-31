@@ -8,24 +8,26 @@ const MySQL = require('mysql');
 const SearchIndex = require('../lib/SearchIndex');
 
 (async () => {
-	global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
 	console.log(`retreiving data to index...`);
 	var rows = await getData();
 	console.log(`creating index...`);
+	global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
 	await global.searchIdx.FLUSH();
 	var batch = [];
 	for (var i = 0; i < rows.length; i++) {
+		delete rows[i].highlight;
+		delete rows[i].lastmod;
 		var data = {
 			_id: rows[i].hId
 		};
-		if (i > 0 && rows[i].bookId == rows[i - 1].bookId)
+		if (i > 0 && rows[i].book_id == rows[i - 1].book_id)
 			data.prevId = rows[i - 1].hId;
-		if (i < (rows.length - 1) && rows[i].bookId == rows[i + 1].bookId)
+		if (i < (rows.length - 1) && rows[i].book_id == rows[i + 1].book_id)
 			data.nextId = rows[i + 1].hId;
 		for (var k in rows[i])
 			data[k] = rows[i][k];
-		if (batch.length > 1000) {
-			console.log(`PUT ${data.bookAlias}:${data.num}`);
+		if (batch.length > 500) {
+			console.log(`PUT ${data.book_alias}:${data.num}`);
 			await global.searchIdx.PUT(batch, SearchIndex.TOKENIZER_OPTIONS);
 			batch = [];
 		}
@@ -33,9 +35,9 @@ const SearchIndex = require('../lib/SearchIndex');
 	}
 	console.log(`PUT last batch`);
 	await global.searchIdx.PUT(batch, SearchIndex.TOKENIZER_OPTIONS);
-	var result = await global.searchIdx.SEARCH(['abu'], { DOCUMENTS: true });
-	console.log(result.RESULT.length);
-	console.log('done');
+	console.log('indexing complete');
+	var test = await global.searchIdx.SEARCH(['abu'], { DOCUMENTS: true });
+	console.log(`test search returns: ${test.RESULT.length} results`);
 })();
 
 async function getData() {
@@ -44,8 +46,8 @@ async function getData() {
 	var query = util.promisify(dbPool.query).bind(dbPool);
 	var rows = await query(`
 		SELECT * FROM v_hadiths 
-		ORDER BY bookId, h1, numInChapter, num0
-		-- LIMIT 1`);
+		ORDER BY book_id, h1, numInChapter, num0
+		-- LIMIT 1500`);
 	dbPool.end();
 	return rows;
 }
