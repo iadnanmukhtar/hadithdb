@@ -9,7 +9,11 @@ const SearchIndex = require("../../lib/SearchIndex");
 exports.postSave = async function (req, res, args, next) {
 	try {
 		console.log(`updated ${args.name}:${args.id[0]} by ${req.session.user.name}`);
-		await global.query(`UPDATE ${args.name} SET lastmod_user='${req.session.user.name}' WHERE id=${args.id[0]}`);
+		
+		try {
+			await global.query(`UPDATE ${args.name} SET lastmod_user='${req.session.user.name}' WHERE id=${args.id[0]}`);
+		} catch (err) { }
+
 		var settings = JSON.parse(fs.readFileSync(HomeDir + '/.hadithdb/settings.json'));
 		if (settings.reindex || settings.findSimilar) {
 

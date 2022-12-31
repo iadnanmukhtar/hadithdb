@@ -1542,12 +1542,12 @@
             "readonly": false
         }
     },
-    "toc": {
-        "slug": "toc",
+    "tags": {
+        "slug": "tags",
         "table": {
-            "name": "toc",
+            "name": "tags",
             "pk": "id",
-            "verbose": "Table of Contents"
+            "verbose": "Tags"
         },
         "columns": [
             {
@@ -1557,6 +1557,23 @@
                     "text": true
                 },
                 "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "readonly": true,
+                    "show": true
+                }
+            },
+            {
+                "name": "text_en",
+                "verbose": "text_en",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
                 "allowNull": false,
                 "defaultValue": null,
                 "listview": {
@@ -1567,60 +1584,12 @@
                 }
             },
             {
-                "name": "bookId",
-                "verbose": "bookId",
+                "name": "text",
+                "verbose": "text",
                 "control": {
                     "text": true
                 },
-                "type": "int",
-                "allowNull": false,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "level",
-                "verbose": "level",
-                "control": {
-                    "text": true
-                },
-                "type": "tinyint(1)",
-                "allowNull": false,
-                "defaultValue": "0",
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "h1",
-                "verbose": "h1",
-                "control": {
-                    "text": true
-                },
-                "type": "decimal(10,2)",
-                "allowNull": false,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "h2",
-                "verbose": "h2",
-                "control": {
-                    "text": true
-                },
-                "type": "decimal(10,2)",
+                "type": "varchar(90)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -1631,108 +1600,12 @@
                 }
             },
             {
-                "name": "h3",
-                "verbose": "h3",
+                "name": "description",
+                "verbose": "description",
                 "control": {
-                    "text": true
+                    "textarea": true
                 },
-                "type": "decimal(10,2)",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "title_en",
-                "verbose": "title_en",
-                "control": {
-                    "text": true
-                },
-                "type": "mediumtext",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "title",
-                "verbose": "title",
-                "control": {
-                    "text": true
-                },
-                "type": "mediumtext",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "intro_en",
-                "verbose": "intro_en",
-                "control": {
-                    "text": true
-                },
-                "type": "longtext",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "intro",
-                "verbose": "intro",
-                "control": {
-                    "text": true
-                },
-                "type": "longtext",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "start",
-                "verbose": "start",
-                "control": {
-                    "text": true
-                },
-                "type": "varchar(15)",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "start0",
-                "verbose": "start0",
-                "control": {
-                    "text": true
-                },
-                "type": "decimal(10,3)",
+                "type": "varchar(255)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -1754,12 +1627,12 @@
             "readonly": false
         }
     },
-    "hadith_tags": {
-        "slug": "hadith_tags",
+    "toc": {
+        "slug": "toc",
         "table": {
-            "name": "hadith_tags",
+            "name": "toc",
             "pk": "id",
-            "verbose": "Hadith Tags"
+            "verbose": "Table of Contents"
         },
         "columns": [
             {
@@ -1769,6 +1642,77 @@
                     "text": true
                 },
                 "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": false
+                }
+            },
+            {
+                "name": "bookId",
+                "verbose": "bookId",
+                "control": {
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "books",
+                    "pk": "id",
+                    "columns": [
+                        "shortName_en"
+                    ]
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "level",
+                "verbose": "level",
+                "control": {
+                    "number": true
+                },
+                "type": "tinyint(1)",
+                "allowNull": false,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "h1",
+                "verbose": "h1",
+                "control": {
+                    "number": true
+                },
+                "type": "decimal(10,2)",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "h2",
+                "verbose": "h2",
+                "control": {
+                    "number": true
+                },
+                "type": "decimal(10,2)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -1779,13 +1723,13 @@
                 }
             },
             {
-                "name": "hadithId",
-                "verbose": "hadithId",
+                "name": "h3",
+                "verbose": "h3",
                 "control": {
-                    "text": true
+                    "number": true
                 },
-                "type": "int",
-                "allowNull": false,
+                "type": "decimal(10,2)",
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true
@@ -1795,13 +1739,14 @@
                 }
             },
             {
-                "name": "tagId",
-                "verbose": "tagId",
+                "name": "title_en",
+                "verbose": "title_en",
                 "control": {
-                    "text": true
+                    "textarea": true,
+                    "editor": "text-en"
                 },
-                "type": "int",
-                "allowNull": false,
+                "type": "mediumtext",
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true
@@ -1809,13 +1754,139 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "title",
+                "verbose": "title",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-ar"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "intro_en",
+                "verbose": "intro_en",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-en"
+                },
+                "type": "longtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "intro",
+                "verbose": "intro",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-ar"
+                },
+                "type": "longtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "start",
+                "verbose": "start",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(15)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "start0",
+                "verbose": "start0",
+                "control": {
+                    "number": true
+                },
+                "type": "decimal(10,3)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "lastmod",
+                "verbose": "lastmod",
+                "control": {
+                    "text": true
+                },
+                "type": "datetime",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": false
+                }
+            },
+            {
+                "name": "lastmod_user",
+                "verbose": "lastmod_user",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": false
+                }
             }
         ],
         "mainview": {
-            "show": false
+            "show": true
         },
         "listview": {
-            "order": {},
+            "order": {
+                "bookId": "asc",
+                "h1": "asc",
+                "h2": "asc",
+                "h3": "asc"
+            },
+            "filter": [
+                "bookId",
+                "h1",
+                "h2",
+                "h3"
+            ],
             "page": 25
         },
         "editview": {
@@ -1906,7 +1977,7 @@
                 "name": "numInChapter",
                 "verbose": "numInChapter",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,2)",
                 "allowNull": true,
@@ -2002,7 +2073,7 @@
                 "name": "num0",
                 "verbose": "num0",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,3)",
                 "allowNull": true,
@@ -2043,7 +2114,7 @@
                     "show": false
                 },
                 "editview": {
-                    "show": true
+                    "show": false
                 }
             },
             {
@@ -2401,12 +2472,12 @@
             "readonly": false
         }
     },
-    "tags": {
-        "slug": "tags",
+    "hadith_tags": {
+        "slug": "hadith_tags",
         "table": {
-            "name": "tags",
+            "name": "hadith_tags",
             "pk": "id",
-            "verbose": "Tags"
+            "verbose": "Hadith Tags"
         },
         "columns": [
             {
@@ -2422,17 +2493,16 @@
                     "show": true
                 },
                 "editview": {
-                    "readonly": true,
                     "show": true
                 }
             },
             {
-                "name": "text_en",
-                "verbose": "text_en",
+                "name": "hadithId",
+                "verbose": "hadithId",
                 "control": {
                     "text": true
                 },
-                "type": "varchar(45)",
+                "type": "int",
                 "allowNull": false,
                 "defaultValue": null,
                 "listview": {
@@ -2443,29 +2513,13 @@
                 }
             },
             {
-                "name": "text",
-                "verbose": "text",
+                "name": "tagId",
+                "verbose": "tagId",
                 "control": {
                     "text": true
                 },
-                "type": "varchar(90)",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "description",
-                "verbose": "description",
-                "control": {
-                    "textarea": true
-                },
-                "type": "varchar(255)",
-                "allowNull": true,
+                "type": "int",
+                "allowNull": false,
                 "defaultValue": null,
                 "listview": {
                     "show": true
@@ -2476,7 +2530,7 @@
             }
         ],
         "mainview": {
-            "show": true
+            "show": false
         },
         "listview": {
             "order": {},
