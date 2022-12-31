@@ -37,16 +37,15 @@
 
     <main class="chapter">
 
-    <%# --- PREV/NEXT NAV ---  %>
     <div class="row mb-2 pagination">
       <div class="col-md-6 col-xs-12 text-start">
         <% if (page.prev) { %>
-        &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
+        &lt;&nbsp;<a href="<%- page.prev %>" rel="prev">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
         <% if (page.next) { %>
-          <a href="<%- page.next %>">Next:&nbsp;Chapterr&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
+          <a href="<%- page.next %>" rel="next">Next:&nbsp;Chapter&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
         <% } %>
       </div>
     </div>
@@ -185,12 +184,12 @@
     <div class="row mt-2 pagination">
       <div class="col-md-6 col-xs-12 text-start">
         <% if (page.prev) { %>
-        &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
+        &lt;&nbsp;<a href="<%- page.prev %>" rel="prev">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
         <% if (page.next) { %>
-          <a href="<%- page.next %>">Next:&nbsp;Chapter&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
+          <a href="<%- page.next %>" rel="next">Next:&nbsp;Chapter&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
         <% } %>
       </div>
     </div>

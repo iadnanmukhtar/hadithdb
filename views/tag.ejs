@@ -10,15 +10,24 @@
       logo: `${root}/images/logo.png`,
     };
     
-    var subtitle_en = `Aḥādīth About ${tag.description || tag.text_en} (${tag.text})`;
+    var subtitle_en = `About ${tag.description || tag.text_en} (${tag.text})`;
     var page = {
       menu: 'Home',
-      title_en: `${site.name} | ${subtitle_en}`,
+      title_en: `${site.name} | Collection on ${subtitle_en}`,
       subtitle_en: subtitle_en,
       subtitle: null,
-      canonical: `/tag/${tag}`,
+      canonical: `/tag/${tag.text_en}`,
     };
-%> 
+    if (results.offset) {
+      page.canonical += `?o=${results.offset}`;
+      if (results.pg && results.pg > 1)
+        page.title += ` P${results.pg}`;
+    }
+    if (results.hasPrev)
+      page.prev = `/tag/${tag.text_en}?o=${results.prevOffset}`;
+    if (results.hasNext)
+      page.next = `/tag/${tag.text_en}?o=${results.nextOffset}`;
+%>
 
 <%- include('sub-views/head.ejs', { site: site, page: page, context: {} }); %> 
 
@@ -30,8 +39,27 @@
     <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
     <main class="search-results">
+
+      <div class="row mb-2 pagination">
+        <div class="col-md-6 col-xs-12 text-start">
+          <% if (page.prev) { %>
+          &lt;&nbsp;<a href="<%- page.prev %>" rel="prev">Prev:&nbsp;Page</a>
+          <% } %>
+        </div>
+        <div class="col-md-6 col-xs-12 text-end">
+          <% if (page.next) { %>
+            <a href="<%- page.next %>" rel="next">Next:&nbsp;Page</a>&nbsp;&gt;
+          <% } %>
+        </div>
+      </div>
+
       <div class="row"> 
-        
+
+        <h2 class="col-md-12 col-sm-12 fs-5 title" lang="en">
+          <%- `${tag.description}` %>
+          <%- (results.pg && results.pg > 1) ? `Pg. ${results.pg}` : `` %>
+        </h2>
+
         <% for (var i = 0; i < results.length; i++) { %>
 
           <%- include('sub-views/hadith.ejs', { hadith: results[i], title: true }); %>
@@ -39,6 +67,20 @@
         <% } %>
 
       </div>
+
+      <div class="row mb-2 pagination">
+        <div class="col-md-6 col-xs-12 text-start">
+          <% if (page.prev) { %>
+          &lt;&nbsp;<a href="<%- page.prev %>" rel="prev">Prev:&nbsp;Page</a>
+          <% } %>
+        </div>
+        <div class="col-md-6 col-xs-12 text-end">
+          <% if (page.next) { %>
+            <a href="<%- page.next %>" rel="next">Next:&nbsp;Page</a>&nbsp;&gt;
+          <% } %>
+        </div>
+      </div>
+
     </main>
   </div>
 
