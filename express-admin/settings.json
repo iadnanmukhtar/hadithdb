@@ -2093,7 +2093,7 @@
                 },
                 "type": "datetime",
                 "allowNull": true,
-                "defaultValue": "CURRENT_TIMESTAMP",
+                "defaultValue": null,
                 "listview": {
                     "show": false
                 },
