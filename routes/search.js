@@ -35,6 +35,7 @@ router.get('/sitemap\.txt', async function (req, res, next) {
     var h1 = Utils.emptyIfNull(results[i].h1).replace(/(\.0+|0+)$/, '');      
     res.write(`${domain}/${alias}${(h1 ? '/' + h1 : '')}\n`);
   }
+  res.end();
   return;
 });
 
