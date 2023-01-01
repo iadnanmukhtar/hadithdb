@@ -6,11 +6,36 @@ const createError = require('http-errors');
 const asyncify = require('express-asyncify');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
+const Utils = require('../lib/Utils');
 
 const router = asyncify(express.Router());
 
 router.get('/reinit', function (req, res, next) {
   throw createError(405, 'Unimplemented');
+});
+
+router.get('/sitemap\.txt', async function (req, res, next) {
+  res.setHeader('content-type', 'text/plain');
+  var domain = `https://hadith.quranunlocked.com`;
+  res.write(`${domain}\n`);
+  res.write(`${domain}/books\n`);
+  res.write(`${domain}/recent\n`);
+  var results = await global.query(`
+    select b.alias,null as h1 from books b
+    union
+    select b.alias,t.h1 from toc t, books b
+    where t.bookId = b.id and t.level=1
+    union
+    select distinct 'tag' as alias,t.text_en as h1 from tags t, hadiths_tags ht
+    where t.id = ht.tagId
+    order by alias, h1  
+  `);
+  for (var i = 0; i < results.length; i++) {
+    var alias = results[i].alias;
+    var h1 = Utils.emptyIfNull(results[i].h1).replace(/(\.0+|0+)$/, '');      
+    res.write(`${domain}/${alias}${(h1 ? '/' + h1 : '')}\n`);
+  }
+  return;
 });
 
 router.get('/', async function (req, res, next) {
