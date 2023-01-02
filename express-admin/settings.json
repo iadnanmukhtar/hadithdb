@@ -2488,7 +2488,7 @@
                 "name": "id",
                 "verbose": "id",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "int",
                 "allowNull": true,
@@ -2603,15 +2603,38 @@
         "slug": "hadiths_virtual",
         "table": {
             "name": "hadiths_virtual",
-            "pk": "",
+            "pk": "id",
             "verbose": "Virtual Hadiths"
         },
         "columns": [
             {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
                 "name": "bookId",
                 "verbose": "bookId",
                 "control": {
-                    "text": true
+                    "select": true
+                },
+                "oneToMany": {
+                    "table": "books",
+                    "pk": "id",
+                    "columns": [
+                        "shortName_en"
+                    ]
                 },
                 "type": "int",
                 "allowNull": false,
@@ -2627,7 +2650,7 @@
                 "name": "ordinal",
                 "verbose": "ordinal",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "int",
                 "allowNull": false,
@@ -2643,7 +2666,7 @@
                 "name": "h1",
                 "verbose": "h1",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,2)",
                 "allowNull": true,
@@ -2659,7 +2682,7 @@
                 "name": "numInChapter",
                 "verbose": "numInChapter",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,2)",
                 "allowNull": true,
@@ -2668,14 +2691,14 @@
                     "show": true
                 },
                 "editview": {
-                    "show": true
+                    "show": false
                 }
             },
             {
                 "name": "h2",
                 "verbose": "h2",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,2)",
                 "allowNull": true,
@@ -2691,7 +2714,7 @@
                 "name": "h3",
                 "verbose": "h3",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,2)",
                 "allowNull": true,
@@ -2739,7 +2762,7 @@
                 "name": "num0",
                 "verbose": "num0",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,3)",
                 "allowNull": true,
@@ -2755,23 +2778,7 @@
                 "name": "hadithId",
                 "verbose": "hadithId",
                 "control": {
-                    "text": true
-                },
-                "type": "int",
-                "allowNull": false,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "id",
-                "verbose": "id",
-                "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "int",
                 "allowNull": false,
