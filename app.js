@@ -1,4 +1,4 @@
-/* jslint node:true, esversion:8 */
+/* jslint node:true, esversion:9 */
 'use strict';
 
 const stringSimilarity = require("string-similarity");
@@ -9,7 +9,7 @@ const createError = require('http-errors');
 const express = require('express');
 const asyncify = require('express-asyncify');
 const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 const ExpressAdmin = require('express-admin');
 const MySQL = require('mysql');
 const si = require('search-index');
@@ -17,6 +17,7 @@ const util = require('util');
 const Arabic = require('./lib/Arabic');
 const Utils = require('./lib/Utils');
 const Hadith = require('./lib/Hadith');
+const { title } = require("process");
 
 global.utils = Utils;
 global.arabic = Arabic;
@@ -119,7 +120,7 @@ async function a_dbInitApp() {
   global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
   global.search = util.promisify(global.searchIdx.SEARCH).bind();
 
-  var bookId = 14;
+  var bookId = 1000;
 
   // console.log('fix hadith decimal numbers');
   // var rows = await global.query(`SELECT * FROM hadiths WHERE num REGEXP "[^0-9]" ORDER BY bookId`);
@@ -137,8 +138,6 @@ async function a_dbInitApp() {
   // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} ORDER BY h1,h2,h3`);
   // var sql = '';
   // for (var i = 0; i < toc.length; i++) {
-  //   // if (toc[i].h1 < 24)
-  //   //   continue;
   //   if (i < (toc.length - 1)) {
   //     sql = global.utils.sql(`
   //       UPDATE hadiths
@@ -212,21 +211,22 @@ async function a_dbInitApp() {
   //   }
   // }
 
-  // // copy muslim h1 and h2 to hadith
-  // var lulu = await global.query('select * from b10619 order by id');
-  // var h1 = null;
-  // var h2 = null;
-  // for (var i = 0; i < lulu.length; i++) {
-  //   if (lulu[i].muslim_h1) {
-  //     h1 = lulu[i].muslim_h1;
-  //     h2 = lulu[i].muslim_h2;
-  //   } else {
-  //     console.log(`${lulu[i].id}\t${lulu[i].hno}\t${h1}\t${h2}`);
-  //     await global.query(`update b10619 set muslim_h1=${h1},muslim_h2=${h2} where id=${lulu[i].id}`);
+  // // // restore body_en from search index
+  // var docs = await global.searchIdx.ALL_DOCUMENTS(143187);
+  // for (var i = 0; i < docs.length; i++) {
+  //   var doc = docs[i]._doc;
+  //   if (doc.body_en && doc.body_en.length > 0) {
+  //     console.log(`restoring ${doc._id} ${doc.book_id}:${doc.num}`);
+  //     var grader = global.graders.find(function (val) {
+  //       return val.shortName_en == doc.grader_en;
+  //     });
+  //     await global.query(`update hadiths set body_en='${Utils.escSQL(doc.body_en)}'
+  //       WHERE id=${doc._id}`);
+  //     // break;
   //   }
   // }
 
-  var shamela = 'b7861';
+  var shamela = 'b';
 
   // // concat split up hadith without hno
   // var rows = await global.query(`select * from ${shamela} where toc=0 order by id`);
@@ -281,9 +281,43 @@ async function a_dbInitApp() {
   //   }
   // }
 
+  // var titles = await global.query(`select tit from ${shamela}_t`);
+  // titles.map(function (val) {
+  //   val.tit = Arabic.removeArabicDiacritics(Arabic.removeDelimeters(val.tit));
+  // });
+  // var rows = await global.query(`select id, nass_clean from ${shamela} order by id`);
+  // // var reH = /(\d+ ?\/ ?\d+ ?-) ?(["«»])(.+)(["«»])?(\n|$)?/;
+  // var reHNO = /((\d+) ?\/ ?(\d+) ?-?)/;
+  // var n = 1;
+  // var text = '';
+  // var num = '';
+  // for (var i = 0; i < rows.length; i++) {
+  //   console.log(`% ${i / rows.length * 100}`);
+  //   var lines = rows[i].nass_clean.split(/\n/g);
+  //   for (var j = 0; j < lines.length; j++) {
+  //     if (reHNO.test(lines[j])) {
+  //       if (text.length > 0) {
+  //         text = text.replace(reHNO, '');
+  //         await global.query(`insert ignore into b_jami (id, num, text, source) values (${n++}, '${num}', '${Utils.escSQL(text)}', '${Utils.escSQL(rows[i].nass_clean)}')`);
+  //       }
+  //       var hno = reHNO.exec(lines[j]);
+  //       num = hno[3] + '-' + hno[2];
+  //       text = lines[j];
+  //     } else {
+  //       var lineClean = Arabic.removeArabicDiacritics(Arabic.removeDelimeters(lines[j]));
+  //       if (!titles.find(function (val) {
+  //         return lineClean.includes(val.tit);
+  //       }))
+  //         text += '\n' + lines[j];
+  //     }
+  //   }
+  // }
+  // await global.query(`insert ignore into b_jami (id, num, text, source) values (${n++}, '${num}', '${Utils.escSQL(text)}', '')`);
+
   console.log('done');
 
 }
 a_dbInitApp();
 
 module.exports = app;
+

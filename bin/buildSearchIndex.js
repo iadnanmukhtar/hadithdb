@@ -36,7 +36,10 @@ const SearchIndex = require('../lib/SearchIndex');
 	console.log(`PUT last batch`);
 	await global.searchIdx.PUT(batch, SearchIndex.TOKENIZER_OPTIONS);
 	console.log('indexing complete');
-	var test = await global.searchIdx.SEARCH(['abu'], { DOCUMENTS: true });
+	var test = await global.searchIdx.SEARCH(['abu'], {
+		PAGE: { SIZE: 1000 },
+		DOCUMENTS: true
+	});
 	console.log(`test search returns: ${test.RESULT.length} results`);
 })();
 
