@@ -1842,11 +1842,11 @@
                 "name": "lastmod",
                 "verbose": "lastmod",
                 "control": {
-                    "text": true
+                    "datetime": true
                 },
                 "type": "datetime",
                 "allowNull": true,
-                "defaultValue": null,
+                "defaultValue": "CURRENT_TIMESTAMP",
                 "listview": {
                     "show": false
                 },
@@ -2781,6 +2781,38 @@
                 },
                 "editview": {
                     "show": true
+                }
+            },
+            {
+                "name": "lastmod",
+                "verbose": "lastmod",
+                "control": {
+                    "datetime": true
+                },
+                "type": "datetime",
+                "allowNull": true,
+                "defaultValue": "CURRENT_TIMESTAMP",
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": false
+                }
+            },
+            {
+                "name": "lastmod_user",
+                "verbose": "lastmod_user",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": false
                 }
             }
         ],
