@@ -1961,7 +1961,7 @@
                 "name": "h1",
                 "verbose": "h1",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,2)",
                 "allowNull": true,
@@ -1970,7 +1970,7 @@
                     "show": true
                 },
                 "editview": {
-                    "show": false
+                    "show": true
                 }
             },
             {
@@ -1993,7 +1993,7 @@
                 "name": "h2",
                 "verbose": "h2",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,2)",
                 "allowNull": true,
@@ -2002,14 +2002,14 @@
                     "show": true
                 },
                 "editview": {
-                    "show": false
+                    "show": true
                 }
             },
             {
                 "name": "h3",
                 "verbose": "h3",
                 "control": {
-                    "text": true
+                    "number": true
                 },
                 "type": "decimal(10,2)",
                 "allowNull": true,
@@ -2018,7 +2018,7 @@
                     "show": false
                 },
                 "editview": {
-                    "show": false
+                    "show": true
                 }
             },
             {
@@ -2469,7 +2469,11 @@
             "page": 25
         },
         "editview": {
-            "readonly": false
+            "readonly": false,
+            "manyToOne": {
+                "hadiths_sim": "hadithId1",
+                "hadiths_sim_candidates": "hadithId1"
+            }
         }
     },
     "hadith_tags": {
@@ -2600,7 +2604,7 @@
         "table": {
             "name": "hadiths_virtual",
             "pk": "",
-            "verbose": "hadiths_virtual"
+            "verbose": "Virtual Hadiths"
         },
         "columns": [
             {
