@@ -37,6 +37,19 @@
 
     <main class="toc">
 
+    <div class="row mb-2 pagination">
+      <div class="col-md-6 col-xs-12 text-start">
+        <% if (page.prev) { %>
+        &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
+        <% } %>
+      </div>
+      <div class="col-md-6 col-xs-12 text-end">
+        <% if (page.next) { %>
+          <a href="<%- page.next %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
+        <% } %>
+      </div>
+    </div>
+
     <div class="container mb-3">
       <div class="row text-center justify-content-center">
         <h2 class="fs-3" title="<%- book.name %>"><%- book.name_en %></h2>
@@ -50,19 +63,6 @@
         <small>Author: <%- book.author %> (d. <%- book.yearOfDeath %>H)</small>
       <% } %>
     </p>
-
-    <div class="row mb-2 pagination">
-      <div class="col-md-6 col-xs-12 text-start">
-        <% if (page.prev) { %>
-        &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
-        <% } %>
-      </div>
-      <div class="col-md-6 col-xs-12 text-end">
-        <% if (page.next) { %>
-          <a href="<%- page.next %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
-        <% } %>
-      </div>
-    </div>
     
     <div class="row">
 
