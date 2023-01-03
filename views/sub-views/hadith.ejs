@@ -11,15 +11,14 @@
 	<p>
 		<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
 		<%- (hadith.numVirtual) ? `(${hadith.numVirtual})` : "" %>
-		<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
+		<b><a title="<%-hadith.num0%>" href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 		<% if (hadith.chain_en) { %>
 			<span class="chain"><%- utils.emptyIfNull(hadith.chain_en) %></span>
 		<% } %>
 	</p>
 	<p class="body">
 		<% if (!hadith.body_en) { %>
-			Translation of this ḥadīth is currently not available. 
-			<a target="_blank" href="https://forms.gle/xPgw7eH1akjp3PPj9">Submit translation</a><br />
+			<a target="_blank" class="text-muted" href="https://forms.gle/xPgw7eH1akjp3PPj9">Submit translation</a><br />
 		<% } %>
 		<%- utils.emptyIfNull(hadith.body_en).replace(/\n/g, '</p><p class="body">') || utils.emptyIfNull(hadith.text_en) %><br/>
 	</p>
@@ -47,7 +46,7 @@
 <div class="col-md-6 cols-sm-12 h" lang="ar">
 	<p>
 		<%- (hadith.numVirtual) ? `(${arabic.toArabicDigits(hadith.numVirtual+'')})` : "" %>
-		<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= hadith.book.shortName %> <%= hadith.num_ar %></a></b> –
+		<b><a title="<%-hadith.num0%>" href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= hadith.book.shortName %> <%= hadith.num_ar %></a></b> –
 		<% if (hadith.chain) { %>
 			<span class="chain"><%- utils.emptyIfNull(hadith.chain) %></span>
 		<% } %>
@@ -60,7 +59,9 @@
 		<%- utils.emptyIfNull(hadith.footnote) %><br/>
 		</p>
 	<%  } %>
+	<% if (hadith.grade.id != -1) { %>
 	<em class="grade">– <%- hadith.grade.grade %>&nbsp;(<%- hadith.grader.shortName %>)</em>
+	<%  } %>
 	<% if ((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) { %>
 		<div class="title">
 		§ 

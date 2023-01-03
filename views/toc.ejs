@@ -91,7 +91,7 @@
           if (toc[i].level == 2) {
           %>
             <!-- tr class="title">
-            <td><%- toc[i].start0 %></td>
+            <td><%- toc[i].start %></td>
             <td><%- toc[i].h1 %>.<%- toc[i].h2 %></td>
             <% if (toc[i].start) { %>
               <td><a href="/<%- `${book.alias}/${toc[i].h1}#${toc[i].start}` %>"><%- title_en || 'Section' %></a></td>
@@ -105,7 +105,7 @@
           } else { 
           %>
             <tr class="chapter">
-            <td><%- toc[i].start0 %></td>
+            <td><%- toc[i].start %></td>
             <td>C<%- toc[i].h1 %></td>
             <% if (toc[i].start) { %>
               <td><a href="/<%- `${book.alias}/${toc[i].h1}` %>"><%- title_en || 'Chapter' %></a></td>
