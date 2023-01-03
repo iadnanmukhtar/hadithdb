@@ -101,26 +101,11 @@ global.dbPool = MySQL.createPool(global.MySQLConfig.connection);
 global.query = util.promisify(global.dbPool.query).bind(global.dbPool);
 global.quran = [];
 async function a_dbInitApp() {
-  console.error('loading books...');
-  global.books = await global.query('SELECT * FROM books ORDER BY id');
-  console.error('loading quran...');
-  global.quran = await global.query('SELECT * FROM v_hadiths WHERE book_id=0 ORDER BY h1, numInChapter');
-  for (var i = 0; i < global.quran.length; i++) {
-    global.quran[i] = new Hadith(global.quran[i]);
-    global.quran[i].search_body = Arabic.normalize(Arabic.removeArabicDiacritics(global.quran[i].body));
-  }
-  console.error('loading tags...');
-  global.tags = await global.query('SELECT * FROM tags');
-  console.error('loading grades...');
-  global.grades = await global.query('SELECT * FROM grades');
-  console.error('loading graders...');
-  global.graders = await global.query('SELECT * FROM graders');
-  console.error('done loading hadith data');
-  console.error('initializing search index');
+  await Hadith.a_reinit();
   global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
   global.search = util.promisify(global.searchIdx.SEARCH).bind();
 
-  var bookId = 1000;
+  var bookId = 14;
 
   // console.log('fix hadith decimal numbers');
   // var rows = await global.query(`SELECT * FROM hadiths WHERE num REGEXP "[^0-9]" ORDER BY bookId`);
@@ -142,7 +127,7 @@ async function a_dbInitApp() {
   //     sql = global.utils.sql(`
   //       UPDATE hadiths
   //       SET h1=${toc[i].h1},h2=${toc[i].h2},h3=${toc[i].h3}
-  //       WHERE bookId=${bookId} AND num0 BETWEEN ${toc[i].start0} AND ${toc[i + 1].start0}
+  //       WHERE bookId=${bookId} AND num0 BETWEEN ${toc[i].start0} AND ${toc[i + 1].start0-1+0.9999}
   //     `);
   //     if (toc[i+1].start0 < toc[i].start0) {
   //       console.error(sql);
@@ -161,18 +146,40 @@ async function a_dbInitApp() {
   //   await global.query(sql);
   // }
 
+  // // update hadiths counts in toc
+  // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} AND level=1 ORDER BY h1`);
+  // var sql = '';
+  // for (var i = 0; i < toc.length; i++) {
+  //   var h1 = await global.query(`SELECT count(*) AS count FROM hadiths WHERE bookId=${bookId} AND h1=${toc[i].h1}`);
+  //   sql = global.utils.sql(`UPDATE toc SET count=${h1[0].count} WHERE id=${toc[i].id}`);
+  //   console.log(sql);
+  //   await global.query(sql);
+  // }
+
   // // update numInChapter
   // var prevH1 = 0;
   // var numInChapter = 0;
-  // var hadiths = await global.query(`SELECT * FROM hadiths WHERE bookId=${bookId} ORDER BY h1,h2,h3,num0`);
+  // var hadiths = await global.query(`SELECT * FROM hadiths WHERE bookId = ${bookId} ORDER BY h1,h2,h3,num0`);
+  // var inserts = '';
+  // var insertCnt = 0;
   // for (var i = 0; i < hadiths.length; i++) {
   //   if (hadiths[i].h1 != prevH1)
   //     numInChapter = 0;
   //   prevH1 = hadiths[i].h1;
   //   numInChapter++;
   //   console.log(`updating numInChapter for ${hadiths[i].bookId}:${hadiths[i].num}`);
-  //   await global.query(`UPDATE hadiths SET numInChapter=${numInChapter} WHERE id=${hadiths[i].id}`);
+  //   if (insertCnt > 0)
+  //     inserts += ` UNION ALL `;
+  //   inserts += ` SELECT ${hadiths[i].id} AS id, ${numInChapter} AS new`;
+  //   if (insertCnt > 100) {
+  //     await global.query(`UPDATE hadiths h JOIN ( ${inserts} ) vals ON h.id=vals.id SET numInChapter=new`);
+  //     inserts = ``;
+  //     insertCnt = 0;
+  //   } else
+  //     insertCnt++;
   // }
+  // if (insertCnt > 0)
+  //   await global.query(`UPDATE hadiths h JOIN ( ${inserts} ) vals ON h.id=vals.id SET numInChapter=new`);
 
   // // split chain and body where missing
   // var rows = await global.query(`SELECT * FROM hadiths

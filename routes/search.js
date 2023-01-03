@@ -12,6 +12,13 @@ const router = asyncify(express.Router());
 
 global.MAX_PER_PAGE = 250;
 
+router.get('/reinit', async function (req, res, next) {
+  await Hadith.a_reinit();
+  res.write('Done');
+  res.end();
+  return;
+});
+
 // SITEMAP
 router.get('/sitemap\.txt', async function (req, res, next) {
   res.setHeader('content-type', 'text/plain');
