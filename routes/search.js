@@ -1,4 +1,4 @@
-/* jslint node:true, esversion:8 */
+/* jslint node:true, esversion:9 */
 'use strict';
 
 const express = require('express');
@@ -10,10 +10,9 @@ const Utils = require('../lib/Utils');
 
 const router = asyncify(express.Router());
 
-router.get('/reinit', function (req, res, next) {
-  throw createError(405, 'Unimplemented');
-});
+global.MAX_PER_PAGE = 250;
 
+// SITEMAP
 router.get('/sitemap\.txt', async function (req, res, next) {
   res.setHeader('content-type', 'text/plain');
   var domain = `https://hadith.quranunlocked.com`;
@@ -32,13 +31,14 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   `);
   for (var i = 0; i < results.length; i++) {
     var alias = results[i].alias;
-    var h1 = Utils.emptyIfNull(results[i].h1).replace(/(\.0+|0+)$/, '');      
+    var h1 = Utils.emptyIfNull(results[i].h1).replace(/(\.0+|0+)$/, '');
     res.write(`${domain}/${alias}${(h1 ? '/' + h1 : '')}\n`);
   }
   res.end();
   return;
 });
 
+// HOME (SEARCH OR SHOW RANDOM HADITH)
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
@@ -72,6 +72,7 @@ router.get('/', async function (req, res, next) {
   }
 });
 
+// HADITH (SINGLE)
 router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
@@ -104,6 +105,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   }
 });
 
+// BOOK: TABLE OF CONTENTS
 router.get('/:bookAlias', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
@@ -130,6 +132,7 @@ router.get('/:bookAlias', async function (req, res, next) {
     throw createError(404, `Book '${req.params.bookAlias}' does not exist`);
 });
 
+// BOOK: CHAPTER
 router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
@@ -140,23 +143,40 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var currentChapterNum = parseFloat(req.params.chapterNum);
     var prevChapter = null;
     var nextChapter = null;
-    var firstChapter = await getFirstChapter(book);
-    var lastChapter = await getLastChapter(book);
+    var firstChapter = await a_dbGetFirstChapter(book);
+    var lastChapter = await a_dbGetLastChapter(book);
     if (currentChapterNum < firstChapter.h1 || currentChapterNum > lastChapter.h1)
       throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
     if (currentChapterNum > firstChapter.h1 && currentChapterNum <= lastChapter.h1)
-      prevChapter = await getChapterHeading(book, currentChapterNum - 1);
+      prevChapter = await a_dbGetChapterHeading(book, currentChapterNum - 1);
     if (currentChapterNum >= firstChapter.h1 && currentChapterNum < lastChapter.h1)
-      nextChapter = await getChapterHeading(book, currentChapterNum + 1);
+      nextChapter = await a_dbGetChapterHeading(book, currentChapterNum + 1);
+
+    var offset = 0;
+    if (req.query.o)
+      offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+    var results = await a_dbGetChapter(book, currentChapterNum, offset);
+    var hadiths = results.hadiths;
+    hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;
+    if (offset > 0)
+      hadiths.offset = offset;
+    hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE); hadiths.pop();
+    hadiths.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
+    hadiths.nextOffset = offset + global.MAX_PER_PAGE;
+    hadiths.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
+    if (!hadiths.hasNext)
+      delete hadiths.nextOffset;
+
     res.render('chapter', {
       book: book,
       prevChapter: prevChapter,
       nextChapter: nextChapter,
-      results: await getChapter(book, currentChapterNum)
+      results: results
     });
   } else
     throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
 });
+
 
 async function getBookTOC(book) {
   return await global.query(`
@@ -165,7 +185,7 @@ async function getBookTOC(book) {
     ORDER BY h1, h2, h3`);
 }
 
-async function getChapterHeading(book, chapterNum) {
+async function a_dbGetChapterHeading(book, chapterNum) {
   var chapterHeadings = await global.query(`
     SELECT * FROM toc 
     WHERE bookId=${book.id} AND h1=${chapterNum} AND level=1
@@ -173,7 +193,7 @@ async function getChapterHeading(book, chapterNum) {
   return chapterHeadings[0];
 }
 
-async function getChapter(book, chapterNum) {
+async function a_dbGetChapter(book, chapterNum, offset) {
   var chapterHeadings = await global.query(`
     SELECT * FROM toc 
     WHERE bookId=${book.id} AND h1=${chapterNum} 
@@ -184,13 +204,15 @@ async function getChapter(book, chapterNum) {
     hadithRows = await global.query(`
       SELECT * FROM hadiths 
       WHERE bookId=${book.id} AND h1=${chapterNum}
-      ORDER BY h1, numInChapter, num0`);
+      ORDER BY h1, numInChapter, num0
+      LIMIT ${offset},${global.MAX_PER_PAGE + 1}`);
   } else {
     hadithRows = await global.query(`
       SELECT h.*, hv.num as numVirtual
       FROM hadiths_virtual hv, hadiths h
       WHERE hv.bookId=${book.id} AND hv.h1=${chapterNum} AND hv.hadithId=h.id
-      ORDER BY hv.h1, hv.numInChapter, hv.num0`);
+      ORDER BY hv.h1, hv.numInChapter, hv.num0
+      LIMIT ${offset}, ${global.MAX_PER_PAGE + 1}`);
   }
   var hadiths = [];
   for (var i = 0; i < hadithRows.length; i++) {
@@ -206,7 +228,7 @@ async function getChapter(book, chapterNum) {
   };
 }
 
-async function getFirstChapter(book) {
+async function a_dbGetFirstChapter(book) {
   var chapterHeadings = await global.query(`
     SELECT * FROM toc 
     WHERE bookId=${book.id} AND level=1 
@@ -216,7 +238,7 @@ async function getFirstChapter(book) {
   return chapterHeadings[0];
 }
 
-async function getLastChapter(book) {
+async function a_dbGetLastChapter(book) {
   var chapterHeadings = await global.query(`
     SELECT * FROM toc 
     WHERE bookId=${book.id} AND level=1 

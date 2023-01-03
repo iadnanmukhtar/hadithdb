@@ -1,4 +1,4 @@
-/* jslint node:true, esversion:8 */
+/* jslint node:true, esversion:9 */
 'use strict';
 
 const express = require('express');
@@ -19,10 +19,10 @@ router.get('/:tag', async function (req, res, next) {
   
   var offset = 0;
   if (req.query.o)
-    offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * 100;
+    offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
   var results = await Hadith.a_dbGetAllHadithsWithTag(tag.id, offset);
   if (req.query.o) {
-    results.pg = (Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE)) + 1;
+    results.pg = (offset / global.MAX_PER_PAGE) + 1;
     if (results.pg == 1)
       delete results.pg;
   }

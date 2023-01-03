@@ -21,7 +21,7 @@
     if (results.offset) {
       page.canonical += `?o=${results.offset}`;
       if (results.pg && results.pg > 1)
-        page.title += ` P${results.pg}`;
+        page.title_en += ` P${results.pg}`;
     }
     if (results.hasPrev)
       page.prev = `/tag/${tag.text_en}?o=${results.prevOffset}`;
@@ -57,7 +57,7 @@
 
         <h2 class="col-md-12 col-sm-12 fs-5 title" lang="en">
           <%- `${tag.description}` %>
-          <%- (results.pg && results.pg > 1) ? `Pg. ${results.pg}` : `` %>
+          <%- (results.hasNext || results.pg && results.pg > 1) ? `Pg. ${results.pg}` : `` %>
         </h2>
 
         <% for (var i = 0; i < results.length; i++) { %>

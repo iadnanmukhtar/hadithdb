@@ -4,6 +4,8 @@
 	var editLink = publicLink;
 	if (req.cookies.admin == 'b8dff5ea-bd35-459d-9481-0c2f0b287a9c')
 		editLink = adminLink;
+	if (hadith.chapter)
+		hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
 	
 	if (hadith.remark != 2) { %>
 
@@ -32,10 +34,10 @@
 		<div class="title">
 		§ 
 		<% if (hadith.section) { %>
-			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}#S${hadith.section.h2}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
 		<% } %>
 		<% if (hadith.chapter) { %>
-			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		<% } %>
 		<a class="text-muted" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>
 		</div>
@@ -66,10 +68,10 @@
 		<div class="title">
 		§ 
 		<% if (hadith.section) { %>
-			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}#S${hadith.section.h2}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
+			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
 		<% } %>
 		<% if (hadith.chapter) { %>
-			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
+			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
 		<% } %>
 		</div>
 	<% } %>
@@ -104,8 +106,8 @@
 	<% } %>
 	<% if (title || hadith.numVirtual) { %>
 		<div class="title">
-			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}#S${hadith.section.h2}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
-			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		</div>
 	<% } %>
 </div>
@@ -132,8 +134,8 @@
 	<%  } %>
 	<% if (title || hadith.numVirtual) { %>
 		<div class="title">
-			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}#S${hadith.section.h2}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
-			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
+			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
+			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
 		</div>
 	<% } %>
 </div>

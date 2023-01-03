@@ -11,15 +11,31 @@
     
     var page = {
       menu: 'Books',
-      title_en: `${site.name} | ${book.name_en} Chapter ${results.chapter.h1}: ${results.chapter.title_en}`.substring(0, 70),
+      title_en: utils.truncate(`${site.name} | ${book.name_en} Chapter ${results.chapter.h1}: ${results.chapter.title_en}`, 70),
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${results.chapter.h1}`,
     };
-    if (typeof prevChapter != 'undefined' && prevChapter)
-        page.prev = `/${book.alias}/${prevChapter.h1}`;
-    if (typeof nextChapter != 'undefined' && nextChapter)
+
+    if (results.hadiths.offset) {
+      page.canonical += `?o=${results.hadiths.offset}`;
+      if (results.hadiths.pg && (results.hadiths.hasNext || results.hadiths.pg > 1))
+        page.title_en += ` P${results.hadiths.pg}`;
+    }
+    if (results.hadiths.hasPrev) {
+      page.prev = `/${book.alias}/${results.chapter.h1}?o=${results.hadiths.prevOffset}`;
+      page.prevTitle = `Prev:&nbsp;Chapter&nbsp;${results.chapter.h1}&nbsp;Pg.&nbsp;${results.hadiths.pg-1}`
+    } else if (typeof prevChapter != 'undefined' && prevChapter) {
+      page.prev = `/${book.alias}/${prevChapter.h1}`;
+      page.prevTitle = `Prev:&nbsp;Chapter&nbsp;${prevChapter.h1}`
+    }
+    if (results.hadiths.hasNext) {
+      page.next = `/${book.alias}/${results.chapter.h1}?o=${results.hadiths.nextOffset}`;
+      page.nextTitle = `Next:&nbsp;Chapter&nbsp;${results.chapter.h1}&nbsp;Pg.&nbsp;${results.hadiths.pg+1}`
+    } else if (typeof nextChapter != 'undefined' && nextChapter) {
         page.next = `/${book.alias}/${nextChapter.h1}`;
+        page.nextTitle = `Next:&nbsp;Chapter&nbsp;${nextChapter.h1}`
+    }
 
     var context = {
         book: book,
@@ -37,15 +53,15 @@
 
     <main class="chapter">
 
-    <div class="row mb-2 pagination">
+    <div class="row mb-3 pagination">
       <div class="col-md-6 col-xs-12 text-start">
         <% if (page.prev) { %>
-        &lt;&nbsp;<a href="<%- page.prev %>" rel="prev">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
+        &lt;&nbsp;<a href="<%- page.prev %>" rel="prev"><%- page.prevTitle %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
         <% if (page.next) { %>
-          <a href="<%- page.next %>" rel="next">Next:&nbsp;Chapter&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
+          <a href="<%- page.next %>" rel="next"><%- page.nextTitle %></a>&nbsp;&gt;
         <% } %>
       </div>
     </div>
@@ -55,10 +71,8 @@
       <%# --- BOOK TITLE ---  %>
       <%
           var title_en = '';
-          if (results.chapter.title_en) title_en = results.chapter.title_en.substring(0, 75);
-          if (results.chapter.title_en && results.chapter.title_en.length > 75) title_en += '&hellip;';
-          var title = results.chapter.title.substring(0, 150);
-          if (results.chapter.title.length > 150) title += '&hellip;';
+          if (results.chapter.title_en) title_en = utils.truncate(results.chapter.title_en, 75);
+          var title = utils.truncate(results.chapter.title, 150);
       %> 
       <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
         <a href="/<%- book.alias %>"><%- book.name_en %></a>
@@ -70,10 +84,12 @@
       <%# --- CHAPTER TITLE ---  %>
       <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
         <%- results.chapter.h1 %>. <%- title_en || 'Chapter' %>
+        <%- (results.hadiths.hasNext || results.hadiths.pg && results.hadiths.pg > 1) ? `Pg. ${results.hadiths.pg}` : `` %>
         <small><a class="text-muted" target="_blank" href="<%- `/admin/toc/${results.chapter.id}` %>"><span class="bi bi-pencil"></span></a></small>
       </h2>
       <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar">
         <%- arabic.toArabicDigits(results.chapter.h1+'') %>۔ <%- title %>
+        <%- (results.hadiths.hasNext || results.hadiths.pg && results.hadiths.pg > 1) ? `ص ${arabic.toArabicDigits(results.hadiths.pg+'')}` : `` %>
       </h2>
       <div class="chapter-intro">
       <% if (results.chapter.intro_en) { %>
@@ -103,17 +119,24 @@
           </thead>
           -->
           <tbody>
-            <% for (var i = 0; i < results.headings.length; i++) {
+            <%
+              var firstNum = results.hadiths[0].num0
+              var lastNum = results.hadiths[results.hadiths.length-1].num0;
+              var rootPath = `/${book.alias}/${results.chapter.h1}`;
+              if (results.hadiths.hasNext || results.hadiths.pg && results.hadiths.pg > 1)
+                rootPath += `?o=${results.hadiths.offset}`;
+              for (var i = 0; i < results.headings.length; i++) {
+                var showHeadingLink = true;
+                if (results.headings[i].start0 < firstNum) showHeadingLink = false;
+                if (results.headings[i].start0 > lastNum) showHeadingLink = false;
                 title_en = '';
-                if (results.headings[i].title_en) title_en = (results.headings[i].title_en+'').substring(0, 75);
-                if (results.headings[i].title_en && results.headings[i].title_en.length > 75) title_en += '&hellip;';
-                title = (results.headings[i].title+'').substring(0, 150);
-                if ((results.headings[i].title+'').length > 150) title += '&hellip;'; %>
+                if (results.headings[i].title_en) title_en = utils.truncate((results.headings[i].title_en+''), 75);
+                title = utils.truncate((results.headings[i].title+''), 150); %>
                 <tr class="title">
                   <td><%- results.headings[i].start0 %></td>
-                  <% if (results.headings[i].start) { %>
-                    <td><a href="/<%- `${book.alias}/${results.headings[i].h1}#S${results.headings[i].h2}` %>"><%- title_en %></a></td>
-                    <td lang="ar"><a href="/<%- `${book.alias}/${results.headings[i].h1}#S${results.headings[i].h2}` %>"><%- title %></a></td>
+                  <% if (showHeadingLink && results.headings[i].start) { %>
+                    <td><a href="<%- `${rootPath}#S${results.headings[i].h2}` %>"><%- title_en %></a></td>
+                    <td lang="ar"><a href="<%- `${rootPath}#S${results.headings[i].h2}` %>"><%- title %></a></td>
                   <% } else { %>
                     <td><%- title_en %></td>
                   <td lang="ar"><%- title %></td>
@@ -184,12 +207,12 @@
     <div class="row mt-2 pagination">
       <div class="col-md-6 col-xs-12 text-start">
         <% if (page.prev) { %>
-        &lt;&nbsp;<a href="<%- page.prev %>" rel="prev">Prev:&nbsp;Chapter&nbsp;<%- prevChapter.h1 %></a>
+        &lt;&nbsp;<a href="<%- page.prev %>" rel="prev"><%- page.prevTitle %></a>
         <% } %>
       </div>
       <div class="col-md-6 col-xs-12 text-end">
         <% if (page.next) { %>
-          <a href="<%- page.next %>" rel="next">Next:&nbsp;Chapter&nbsp;<%- nextChapter.h1 %></a>&nbsp;&gt;
+          <a href="<%- page.next %>" rel="next"><%- page.nextTitle %></a>&nbsp;&gt;
         <% } %>
       </div>
     </div>
