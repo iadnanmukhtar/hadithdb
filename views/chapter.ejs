@@ -134,10 +134,10 @@
                 <tr class="title">
                   <td><%- results.headings[i].start0 %></td>
                   <% if (results.headings[i].start) { %>
-                    <td><a href="<%- `${rootPath}${offsetLink}#S${results.headings[i].h2}` %>"><%- title_en %></a></td>
+                    <td><a href="<%- `${rootPath}${offsetLink}#S${results.headings[i].h2}` %>"><%- title_en || `Section ${results.headings[i].h2}` %></a></td>
                     <td lang="ar"><a href="<%- `${rootPath}${offsetLink}#S${results.headings[i].h2}` %>"><%- title %></a></td>
                   <% } else { %>
-                    <td><%- title_en %></td>
+                    <td><%- title_en || 'Section' %></td>
                   <td lang="ar"><%- title %></td>
                   <% } %>
                 </tr>
