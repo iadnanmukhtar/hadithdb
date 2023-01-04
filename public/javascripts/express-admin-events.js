@@ -36,7 +36,7 @@ exports.postSave = async function (req, res, args, next) {
 					}
 					if (settings.findSimilar) {
 						rows[0].id = args.id[0];
-						console.log(`recording similar matches for ${rows[0].bookAlias}:${rows[0].num}`);
+						console.log(`recording similar matches for ${rows[0].book_alias}:${rows[0].num}`);
 						var deHadith = Hadith.disemvoweledHadith(rows[0]);
 						await Hadith.a_recordSimilarMatches(deHadith);
 					}
