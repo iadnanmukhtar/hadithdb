@@ -165,9 +165,9 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var results = await a_dbGetChapter(book, currentChapterNum, offset);
     var hadiths = results.hadiths;
     hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;
-    if (offset > 0)
-      hadiths.offset = offset;
-    if (hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE))
+    hadiths.offset = offset;
+    hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE);
+    if (hadiths.hasNext)
       hadiths.pop();
     hadiths.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
     hadiths.nextOffset = offset + global.MAX_PER_PAGE;

@@ -57,8 +57,10 @@
 
         <h2 class="col-md-12 col-sm-12 fs-5 title" lang="en">
           <%- `${tag.description}` %>
-          <%- (results.hasNext || results.pg && results.pg > 1) ? `Pg. ${results.pg}` : `` %>
-        </h2>
+          <% if (results.hasNext || results.pg && results.pg > 1) { %>
+            (<%- results.pg %>)
+          <% } %>
+          </h2>
 
         <% for (var i = 0; i < results.length; i++) { %>
 

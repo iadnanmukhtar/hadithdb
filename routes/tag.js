@@ -21,15 +21,11 @@ router.get('/:tag', async function (req, res, next) {
   if (req.query.o)
     offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
   var results = await Hadith.a_dbGetAllHadithsWithTag(tag.id, offset);
-  if (req.query.o) {
-    results.pg = (offset / global.MAX_PER_PAGE) + 1;
-    if (results.pg == 1)
-      delete results.pg;
-  }
-  if (offset > 0)
-    results.offset = offset;
-  if (results.hasNext = (results.length > global.MAX_PER_PAGE))
-      results.pop();
+  results.pg = (offset / global.MAX_PER_PAGE) + 1;
+  results.offset = offset;
+  results.hasNext = (results.length > global.MAX_PER_PAGE);
+  if (results.hasNext)
+    results.pop();
   results.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
   results.nextOffset = offset + global.MAX_PER_PAGE;
   results.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
