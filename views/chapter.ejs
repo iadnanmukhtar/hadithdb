@@ -84,7 +84,9 @@
       <%# --- CHAPTER TITLE ---  %>
       <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
         <%- results.chapter.h1 %>. <%- title_en || 'Chapter' %>
-        <%- (results.hadiths.hasNext || results.hadiths.pg && results.hadiths.pg > 1) ? `Pg. ${results.hadiths.pg}` : `` %>
+        <% if (results.hadiths.hasNext || results.hadiths.pg && results.hadiths.pg > 1) { %>
+          (<%- results.hadiths.pg %>/<%- Math.ceil(results.chapter.count / global.MAX_PER_PAGE) %>)
+        <% } %>
         <small><a class="text-muted" target="_blank" href="<%- `/admin/toc/${results.chapter.id}` %>"><span class="bi bi-pencil"></span></a></small>
       </h2>
       <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar">
