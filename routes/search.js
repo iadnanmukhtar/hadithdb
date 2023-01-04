@@ -201,13 +201,21 @@ async function a_dbGetChapterHeading(book, chapterNum) {
 }
 
 async function a_dbGetChapter(book, chapterNum, offset) {
-  var chapterHeadings = await global.query(`
-    SELECT t.*, h.numInChapter FROM toc t, hadiths h
-    WHERE t.bookId=${book.id} AND t.h1=${chapterNum}
-      AND t.bookId = h.bookId
-      AND t.h1 = h.h1
-      AND t.start0 = h.num0
-    ORDER BY h1, h2, h3`);
+  var chapterHeadings = []; 
+  if (!book.virtual)
+    chapterHeadings = await global.query(`
+      SELECT t.*, h.numInChapter FROM toc t, hadiths h
+      WHERE t.bookId=${book.id} AND t.h1=${chapterNum}
+        AND t.bookId = h.bookId
+        AND t.h1 = h.h1
+        AND t.start0 = h.num0
+      ORDER BY h1, h2, h3`);
+  else {
+    chapterHeadings = await global.query(`
+    SELECT t.*, 0 as numInChapter FROM toc t
+      WHERE t.bookId=${book.id} AND t.h1=${chapterNum}
+      ORDER BY h1, h2, h3`);
+  }
   var chapter = chapterHeadings.shift();
   var hadithRows = [];
   if (!book.virtual) {
