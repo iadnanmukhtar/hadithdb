@@ -167,7 +167,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;
     if (offset > 0)
       hadiths.offset = offset;
-    hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE); hadiths.pop();
+    if (hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE))
+      hadiths.pop();
     hadiths.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
     hadiths.nextOffset = offset + global.MAX_PER_PAGE;
     hadiths.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
