@@ -2612,13 +2612,26 @@
         "slug": "hadiths_sim",
         "table": {
             "name": "hadiths_sim",
-            "pk": [
-                "hadithId1",
-                "hadithId2"
-            ],
-            "verbose": "hadiths_sim"
+            "pk": "id",
+            "verbose": "Similar"
         },
         "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "number": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": false
+                }
+            },
             {
                 "name": "hadithId1",
                 "verbose": "hadithId1",
@@ -2642,7 +2655,23 @@
                     "text": true
                 },
                 "type": "int",
-                "allowNull": false,
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "ref_num",
+                "verbose": "ref_num",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true
@@ -2907,7 +2936,20 @@
             "show": true
         },
         "listview": {
-            "order": {},
+            "order": {
+                "bookId": "asc",
+                "h1": "asc",
+                "numInChapter": "asc",
+                "h2": "asc",
+                "h3": "asc"
+            },
+            "filter": [
+                "bookId",
+                "h1",
+                "h2",
+                "num",
+                "ref_num"
+            ],
             "page": 25
         },
         "editview": {
@@ -3086,13 +3128,26 @@
         "slug": "hadiths_sim_candidates",
         "table": {
             "name": "hadiths_sim_candidates",
-            "pk": [
-                "hadithId1",
-                "hadithId2"
-            ],
-            "verbose": "hadiths_sim_candidates"
+            "pk": "id",
+            "verbose": "Similar Candidates"
         },
         "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "number": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": false
+                }
+            },
             {
                 "name": "hadithId1",
                 "verbose": "hadithId1",
