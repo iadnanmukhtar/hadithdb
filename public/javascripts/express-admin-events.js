@@ -9,12 +9,14 @@ const SearchIndex = require("../../lib/SearchIndex");
 exports.postSave = async function (req, res, args, next) {
 	try {
 		console.log(`updated ${args.name}:${args.id[0]} by ${req.session.user.name}`);
+		//console.log(`${JSON.stringify(args.data.view)}`);
 
 		try {
 			await global.query(`UPDATE ${args.name} SET lastmod_user='${req.session.user.name}' WHERE id=${args.id[0]}`);
 		} catch (err) { }
 
 		if (args.name == 'hadiths') {
+
 			var settings = JSON.parse(fs.readFileSync(HomeDir + '/.hadithdb/settings.json'));
 			if (settings.reindex || settings.findSimilar) {
 
@@ -22,7 +24,11 @@ exports.postSave = async function (req, res, args, next) {
 
 				var rows = await global.query(`SELECT * FROM v_hadiths WHERE hId=${args.id[0]}`);
 				if (rows.length > 0) {
+					rows[0].id = rows[0].hId;
 
+					if (!args.data.view.hadiths.records[0].columns.chain_en)
+						await Hadith.a_parseNarrators(rows[0]);
+	
 					if (settings.reindex) {
 						var data = {
 							_id: rows[0].hId

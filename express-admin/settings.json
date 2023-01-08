@@ -2535,95 +2535,28 @@
         "editview": {
             "readonly": false,
             "manyToOne": {
+                "hadiths_narrs": "hadithId",
                 "hadiths_sim": "hadithId1",
                 "hadiths_sim_candidates": "hadithId1"
             }
         }
     },
-    "hadith_tags": {
-        "slug": "hadith_tags",
+    "hadiths_narrs": {
+        "slug": "hadiths_narrs",
         "table": {
-            "name": "hadith_tags",
+            "name": "hadiths_narrs",
             "pk": "id",
-            "verbose": "Hadith Tags"
+            "verbose": "Hadith Narrators"
         },
         "columns": [
             {
                 "name": "id",
                 "verbose": "id",
                 "control": {
-                    "number": true
-                },
-                "type": "int",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "hadithId",
-                "verbose": "hadithId",
-                "control": {
                     "text": true
                 },
                 "type": "int",
                 "allowNull": false,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "tagId",
-                "verbose": "tagId",
-                "control": {
-                    "text": true
-                },
-                "type": "int",
-                "allowNull": false,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            }
-        ],
-        "mainview": {
-            "show": false
-        },
-        "listview": {
-            "order": {},
-            "page": 25
-        },
-        "editview": {
-            "readonly": false
-        }
-    },
-    "hadiths_sim": {
-        "slug": "hadiths_sim",
-        "table": {
-            "name": "hadiths_sim",
-            "pk": "id",
-            "verbose": "Similar"
-        },
-        "columns": [
-            {
-                "name": "id",
-                "verbose": "id",
-                "control": {
-                    "number": true
-                },
-                "type": "int",
-                "allowNull": true,
                 "defaultValue": null,
                 "listview": {
                     "show": true
@@ -2633,10 +2566,42 @@
                 }
             },
             {
-                "name": "hadithId1",
-                "verbose": "hadithId1",
+                "name": "hadithId",
+                "verbose": "hadithId",
                 "control": {
-                    "text": true
+                    "number": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": false
+                }
+            },
+            {
+                "name": "chainNum",
+                "verbose": "chainNum",
+                "control": {
+                    "number": true
+                },
+                "type": "tinyint",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "ordinal",
+                "verbose": "ordinal",
+                "control": {
+                    "number": true
                 },
                 "type": "int",
                 "allowNull": false,
@@ -2649,12 +2614,28 @@
                 }
             },
             {
-                "name": "hadithId2",
-                "verbose": "hadithId2",
+                "name": "narrId",
+                "verbose": "narrId",
                 "control": {
                     "text": true
                 },
                 "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": false
+                },
+                "editview": {
+                    "show": false
+                }
+            },
+            {
+                "name": "name_en",
+                "verbose": "name_en",
+                "control": {
+                    "text": true
+                },
+                "type": "mediumtext",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -2665,12 +2646,12 @@
                 }
             },
             {
-                "name": "ref_num",
-                "verbose": "ref_num",
+                "name": "name",
+                "verbose": "name",
                 "control": {
                     "text": true
                 },
-                "type": "varchar(45)",
+                "type": "mediumtext",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -2956,106 +2937,6 @@
             "readonly": false
         }
     },
-    "hadiths_virtual_tmp": {
-        "slug": "hadiths_virtual_tmp",
-        "table": {
-            "name": "hadiths_virtual_tmp",
-            "pk": "id",
-            "verbose": "hadiths_virtual_tmp"
-        },
-        "columns": [
-            {
-                "name": "id",
-                "verbose": "id",
-                "control": {
-                    "text": true
-                },
-                "type": "int",
-                "allowNull": false,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "bookId",
-                "verbose": "bookId",
-                "control": {
-                    "text": true
-                },
-                "type": "int",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "num",
-                "verbose": "num",
-                "control": {
-                    "text": true
-                },
-                "type": "int",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "bookAlias",
-                "verbose": "bookAlias",
-                "control": {
-                    "text": true
-                },
-                "type": "varchar(45)",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            },
-            {
-                "name": "hadithNum",
-                "verbose": "hadithNum",
-                "control": {
-                    "text": true
-                },
-                "type": "varchar(15)",
-                "allowNull": true,
-                "defaultValue": null,
-                "listview": {
-                    "show": true
-                },
-                "editview": {
-                    "show": true
-                }
-            }
-        ],
-        "mainview": {
-            "show": false
-        },
-        "listview": {
-            "order": {},
-            "page": 25
-        },
-        "editview": {
-            "readonly": false
-        }
-    },
     "hadiths_tags": {
         "slug": "hadiths_tags",
         "table": {
@@ -3124,6 +3005,90 @@
             "readonly": false
         }
     },
+    "hadiths_sim": {
+        "slug": "hadiths_sim",
+        "table": {
+            "name": "hadiths_sim",
+            "pk": "id",
+            "verbose": "Similar"
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "number": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": false
+                }
+            },
+            {
+                "name": "hadithId1",
+                "verbose": "hadithId1",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": false
+                }
+            },
+            {
+                "name": "hadithId2",
+                "verbose": "hadithId2",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "ref_num",
+                "verbose": "ref_num",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": false
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
     "hadiths_sim_candidates": {
         "slug": "hadiths_sim_candidates",
         "table": {
@@ -3161,7 +3126,7 @@
                     "show": true
                 },
                 "editview": {
-                    "show": true
+                    "show": false
                 }
             },
             {
@@ -3714,7 +3679,7 @@
             }
         ],
         "mainview": {
-            "show": true
+            "show": false
         },
         "listview": {
             "order": {},
