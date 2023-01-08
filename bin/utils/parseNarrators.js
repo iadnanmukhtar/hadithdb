@@ -14,9 +14,13 @@ global.query = util.promisify(dbPool.query).bind(dbPool);
 	var go = false;
 	var rows = await global.query(`SELECT id, bookId, num, num0, chain_en, chain FROM hadiths WHERE bookId>0 ORDER BY bookId, h1, h2, h3, num0`);
 	for (var i = 0; i < rows.length; i++) {
-		if (rows[i].bookId == 1 && rows[i].num0 == 46) go = true ;
+		if (rows[i].bookId == 5 && rows[i].num == 2575) go = true ;
 		if (!go) console.log(`skipping ${rows[i].bookId}:${rows[i].num0}`);
-		if (go) await Hadith.a_parseNarrators(rows[i]);
+		try {
+			if (go) await Hadith.a_parseNarrators(rows[i]);
+		} catch (err) {
+			console.log(`${err}\n${err.stack}`);
+		}
 	}
 	console.log('done');
 })();
