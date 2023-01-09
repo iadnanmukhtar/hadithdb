@@ -13,10 +13,14 @@
 			<% } %>
 		</h1>
 		</a>
-		<nav class="d-inline-flex mt-md-0 ms-md-auto">
+		<nav class="d-inline-flex mt-md-0 ms-md-auto dropdown">
 			<a class="me-3 py-2 text-dark text-decoration-none" href="/">Home</a>
 			<a class="me-3 py-2 text-dark text-decoration-none" href="/books">Books</a>
-			<a class="me-3 py-2 text-dark text-decoration-none" href="/recent">Recent</a>
+			<a class="me-3 py-2 text-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">More</a>
+			<ul class="dropdown-menu">
+				<li><a class="dropdown-item" href="/recent">Highlights</a></li>
+				<li><a class="dropdown-item" href="/requests">Translation Requests</a></li>
+			  </ul>
 			<a class="     py-2 text-dark text-decoration-none" href="/"><i class="bi bi-search"></i></a>
 		</nav>
 	</div>

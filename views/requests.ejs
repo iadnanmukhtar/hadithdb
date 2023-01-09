@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+
+<head> 
+<%
+    var root = 'https://hadith.quranunlocked.com';
+    var site = {
+      name: 'Ḥadīth Unlocked',
+      url: root,
+      logo: `${root}/images/logo.png`,
+    };
+    
+    var subtitle_en = 'Translation Requests';
+    var page = {
+      menu: 'Translation Requests',
+      title_en: `${site.name} | ${subtitle_en}`,
+      subtitle_en: subtitle_en,
+      subtitle: null,
+      canonical: `/requests`,
+    };
+%> 
+
+<%- include('sub-views/head.ejs', { site: site, page: page, context: {} }); %> 
+
+</head>
+
+<body>
+  <div class="col-lg-8 mx-auto p-3 py-md-5">
+
+    <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
+
+    <main class="search-results">
+      <div class="row"> 
+        
+        <% for (var i = 0; i < results.length; i++) { %>
+
+          <% if (i == 2) { %>
+          <div class="col-12 mt-3 mb-3">
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"
+              crossorigin="anonymous"></script>
+              <ins class="adsbygoogle"
+                style="display:block; text-align:center;"
+                data-ad-layout="in-article"
+                data-ad-format="fluid"
+                data-ad-client="ca-pub-1199080602686133"
+                data-ad-slot="7623204143"></ins>
+            <script>
+              (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+          </div>
+          <% } %>
+
+          <%- include('sub-views/hadith.ejs', { hadith: results[i], title: true }); %>
+
+        <% } %>
+
+      </div>
+    </main>
+  </div>
+
+<%- include('sub-views/footer.ejs'); %>
+<%- include('sub-views/scripts.ejs'); %>
+
+</body>
+</html>

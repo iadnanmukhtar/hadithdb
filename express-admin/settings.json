@@ -919,6 +919,22 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "verified",
+                "verbose": "verified",
+                "control": {
+                    "text": true
+                },
+                "type": "tinyint",
+                "allowNull": true,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {

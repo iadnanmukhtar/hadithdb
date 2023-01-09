@@ -23,6 +23,10 @@ body :lang(ar) {
 	}
 }
 
+.dropdown-menu {
+	font-size: 0.90rem;
+}
+
 .pagination a,
 .top a {
 	font-size: 0.85rem;
