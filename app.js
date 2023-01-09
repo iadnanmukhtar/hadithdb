@@ -48,11 +48,13 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
 
   const toolsRouter = require('./routes/tools');
   const recentRouter = require('./routes/recent');
+  const requestsRouter = require('./routes/requests');
   const booksRouter = require('./routes/books');
   const tagRouter = require('./routes/tag');
   const searchRouter = require('./routes/search');
   app.use('/tools', toolsRouter);
   app.use('/recent', recentRouter);
+  app.use('/requests', requestsRouter);
   app.use('/books', booksRouter);
   app.use('/tag', tagRouter);
   app.use('/', searchRouter);
@@ -105,7 +107,7 @@ async function a_dbInitApp() {
   global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
   global.search = util.promisify(global.searchIdx.SEARCH).bind();
 
-  var bookId = 14;
+  var bookId = 1;
 
   // console.log('fix hadith decimal numbers');
   // var rows = await global.query(`SELECT * FROM hadiths WHERE num REGEXP "[^0-9]" ORDER BY bookId`);
@@ -120,7 +122,7 @@ async function a_dbInitApp() {
   // }
 
   // // update hadiths heading numbers based on toc
-  // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} ORDER BY h1,h2,h3`);
+  // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} and h1=3 ORDER BY h1,h2,h3`);
   // var sql = '';
   // for (var i = 0; i < toc.length; i++) {
   //   if (i < (toc.length - 1)) {
