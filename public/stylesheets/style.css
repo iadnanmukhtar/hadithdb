@@ -143,9 +143,11 @@ body :lang(ar) {
 	font-weight: bold;
 }
 
+/*
 .similar-list {
 	opacity: 0.6;
 }
+*/
 
 .bi-reception-4,
 .bi-reception-3,
@@ -156,4 +158,14 @@ body :lang(ar) {
 .bi-reception-1,
 .bi-reception-0 {
 	color: red;
+}
+
+.bi-patch-check-fill {
+	color: #2c9be5;
+}
+
+.cmd-tr,
+.cmd-tr a {
+	color: #a0a0a0;
+	line-height: 1.5rem;
 }

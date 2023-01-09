@@ -12,6 +12,7 @@
 <div class="col-md-6 col-sm-12 h" lang="en">
 	<p>
 		<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
+		<%- hadith.verified ? `<span title="Verified Translation" class="bi bi-patch-check-fill"></span>` : '' %>
 		<%- (hadith.numVirtual) ? `(${hadith.numVirtual})` : "" %>
 		<b><a title="<%-hadith.num0%>" href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 		<% if (hadith.chain_en) { %>
@@ -20,7 +21,11 @@
 	</p>
 	<p class="body">
 		<% if (!hadith.body_en) { %>
-			<a target="_blank" class="text-muted" href="https://forms.gle/xPgw7eH1akjp3PPj9">Submit translation</a><br />
+			<div class="cmd-tr">
+				<br />
+				<span id="<%- `CMD_TR-${hadith.id}` %>"><a href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!'); $('#<%- `CMD_TR-${hadith.id}` %>').hide();">Request/Fix</a> translation<br/></span>
+				<a target="_blank" href="https://forms.gle/xPgw7eH1akjp3PPj9">Submit</a> a translation<br />
+			</div>
 		<% } %>
 		<%- utils.emptyIfNull(hadith.body_en).replace(/\n/g, '</p><p class="body">') || utils.emptyIfNull(hadith.text_en) %><br/>
 	</p>
@@ -37,7 +42,7 @@
 			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
 		<% } %>
 		<% if (hadith.chapter) { %>
-			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		<% } %>
 		<a class="text-muted" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>
 		</div>
@@ -71,7 +76,7 @@
 			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
 		<% } %>
 		<% if (hadith.chapter) { %>
-			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
+			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
 		<% } %>
 		</div>
 	<% } %>
@@ -107,7 +112,7 @@
 	<% if (title || hadith.numVirtual) { %>
 		<div class="title">
 			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
-			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		</div>
 	<% } %>
 </div>
@@ -135,7 +140,7 @@
 	<% if (title || hadith.numVirtual) { %>
 		<div class="title">
 			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
-			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
+			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
 		</div>
 	<% } %>
 </div>

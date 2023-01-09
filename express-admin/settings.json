@@ -2198,6 +2198,26 @@
                 }
             },
             {
+                "name": "verified",
+                "verbose": "verified",
+                "control": {
+                    "radio": true,
+                    "options": [
+                        "True",
+                        "False"
+                    ]
+                },
+                "type": "tinyint",
+                "allowNull": true,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
                 "name": "gradeId",
                 "verbose": "gradeId",
                 "control": {
@@ -2429,10 +2449,34 @@
                 }
             },
             {
+                "name": "requested",
+                "verbose": "requested",
+                "control": {
+                    "radio": true,
+                    "options": [
+                        "True",
+                        "False"
+                    ]
+                },
+                "type": "tinyint",
+                "allowNull": true,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
                 "name": "temp_trans",
                 "verbose": "temp_trans",
                 "control": {
-                    "number": true
+                    "radio": true,
+                    "options": [
+                        "True",
+                        "False"
+                    ]
                 },
                 "type": "tinyint",
                 "allowNull": false,

@@ -19,6 +19,25 @@ router.get('/reinit', async function (req, res, next) {
   return;
 });
 
+
+router.get('/do/:id', async function (req, res, next) {
+  if (req.query.cmd == 'tr') {
+    // translation request
+    try {
+      var id = parseInt(req.params.id);
+      await global.query(`UPDATE hadiths SET requested=(requested+1) WHERE id=${id}`);
+      res.sendStatus(204);
+      res.end();
+      return;
+    } catch (err) {
+      var message = `Error in action [${req.params.id}?${req.query.action}]`;
+      console.error(message + `\n${err.stack}`);
+      throw createError(500, message);
+    }
+  }
+  throw createError(501, 'Action unknown');
+});
+
 // SITEMAP
 router.get('/sitemap\.txt', async function (req, res, next) {
   res.setHeader('content-type', 'text/plain');
@@ -202,7 +221,7 @@ async function a_dbGetChapterHeading(book, chapterNum) {
 }
 
 async function a_dbGetChapter(book, chapterNum, offset) {
-  var chapterHeadings = []; 
+  var chapterHeadings = [];
   if (!book.virtual)
     chapterHeadings = await global.query(`
       SELECT t.*, h.numInChapter FROM toc t, hadiths h
