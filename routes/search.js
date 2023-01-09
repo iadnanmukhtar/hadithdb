@@ -45,6 +45,7 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   res.write(`${domain}\n`);
   res.write(`${domain}/books\n`);
   res.write(`${domain}/recent\n`);
+  res.write(`${domain}/requests\n`);
   var results = await global.query(`
     select b.alias,null as h1 from books b
     union
