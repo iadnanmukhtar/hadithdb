@@ -26,25 +26,37 @@ exports.postSave = async function (req, res, args, next) {
 				if (rows.length > 0) {
 					rows[0].id = rows[0].hId;
 
-					if (!args.data.view.hadiths.records[0].columns.chain_en)
-						await Hadith.a_parseNarrators(rows[0]);
-	
+					try {
+						if (!args.data.view.hadiths.records[0].columns.chain_en)
+							await Hadith.a_parseNarrators(rows[0]);
+					} catch (err) {
+						console.error(`ERROR: parsing narrators: ${err}\n${err.stack}`);
+					}
+
 					if (settings.reindex) {
-						var data = {
-							_id: rows[0].hId
-						};
-						delete rows[0].lastmod;
-						delete rows[0].highlight;
-						for (var k in rows[0])
-							data[k] = rows[0][k];
-						console.log(`reindexed ${data.book_alias}:${data.num}`);
-						await global.searchIdx.PUT([data], SearchIndex.TOKENIZER_OPTIONS);
+						try {
+							var data = {
+								_id: rows[0].hId
+							};
+							delete rows[0].lastmod;
+							delete rows[0].highlight;
+							for (var k in rows[0])
+								data[k] = rows[0][k];
+							console.log(`reindexed ${data.book_alias}:${data.num}`);
+							await global.searchIdx.PUT([data], SearchIndex.TOKENIZER_OPTIONS);
+						} catch (err) {
+							console.error(`ERROR: reindexing: ${err}\n${err.stack}`);
+						}
 					}
 					if (settings.findSimilar) {
-						rows[0].id = args.id[0];
-						console.log(`recording similar matches for ${rows[0].book_alias}:${rows[0].num}`);
-						var deHadith = Hadith.disemvoweledHadith(rows[0]);
-						await Hadith.a_recordSimilarMatches(deHadith);
+						try {
+							rows[0].id = args.id[0];
+							console.log(`recording similar matches for ${rows[0].book_alias}:${rows[0].num}`);
+							var deHadith = Hadith.disemvoweledHadith(rows[0]);
+							await Hadith.a_recordSimilarMatches(deHadith);
+						} catch (err) {
+							console.error(`ERROR: reindexing: ${err}\n${err.stack}`);
+						}
 					}
 
 				}
