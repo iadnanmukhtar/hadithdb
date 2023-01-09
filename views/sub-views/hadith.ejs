@@ -23,7 +23,7 @@
 		<% if (!hadith.body_en) { %>
 			<div class="cmd-tr">
 				<br />
-				<span id="<%- `CMD_TR-${hadith.id}` %>"><a href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!'); $('#<%- `CMD_TR-${hadith.id}` %>').hide();">Request/Fix</a> translation<br/></span>
+				<a href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');">Request/Fix</a> translation<br/>
 				<a target="_blank" href="https://forms.gle/xPgw7eH1akjp3PPj9">Submit</a> a translation<br />
 			</div>
 		<% } %>
@@ -44,10 +44,12 @@
 		<% if (hadith.chapter) { %>
 			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		<% } %>
-		<a class="text-muted" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>
+		<a class="cmd-btn" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>&nbsp;<a
+		   class="cmd-btn" title="Report an issue" href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
 		</div>
 	<% } else { %>
-		<a class="text-muted" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>
+		<a class="cmd-btn" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>&nbsp;<a
+		   class="cmd-btn" title="Report an issue" href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
 	<% } %>
 </div>
 <div class="col-md-6 cols-sm-12 h" lang="ar">
@@ -100,7 +102,8 @@
 			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 			<span class="chain"><%- hadith.chain_en %></span>
 			<%- (hadith.body_en+'').replace(/\n/g, '</p><p class="body">') %>
-			<a class="text-muted" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>
+			<a class="cmd-btn" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>&nbsp;<a
+			   class="cmd-btn" title="Report an issue" href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
 			<br />
 		</p>
 	<% } %>
