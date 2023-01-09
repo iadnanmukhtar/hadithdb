@@ -169,3 +169,12 @@ body :lang(ar) {
 	color: #a0a0a0;
 	line-height: 1.5rem;
 }
+
+.cmd-btn,
+a.cmd-btn {
+	color: #a0a0a0 !important;
+	margin-left: 5px;
+}
+a.cmd-btn:hover {
+	color: red !important;
+}
