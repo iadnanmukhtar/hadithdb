@@ -206,6 +206,21 @@ async function a_dbInitApp() {
   //       WHERE id=${doc._id}`);
   // }
 
+  // // restore specific ids to db from search index
+  // var rows = await global.query(`select h.id, b.alias, h.num from hadiths h, books b where h.bookId=b.id and h.bookId > 0 and h.lastmod = '2023-01-09 23:32:03' order by lastmod desc;`);
+  // for (var i = 0; i < rows.length; i++) {
+  //   var docs = await global.searchIdx.QUERY({
+  //     AND: [`book_alias:${rows[i].alias}`, `num:${rows[i].num}`]
+  //   }, { DOCUMENTS: true });
+  //   if (docs.RESULT.length == 1) {
+  //     var doc = docs.RESULT[0]._doc;
+  //     console.log(`restoring ${doc._id} ${doc.book_alias}:${doc.num}`);
+  //     await global.query(`UPDATE hadiths SET body='${Utils.escSQL(doc.body)}' WHERE id=${doc._id}`);
+  //   } else {
+  //     console.log(`Cannot find doc to restore for id=${rows[i].id}`);
+  //   }
+  // }
+
   // // restore grader from search index
   // var docs = await global.searchIdx.ALL_DOCUMENTS(110000);
   // for (var i = 0; i < docs.length; i++) {
