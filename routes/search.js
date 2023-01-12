@@ -174,6 +174,19 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var results = await a_dbGetChapter(book, currentChapterNum, offset);
     if (!results)
       throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
+    var hadiths = results.hadiths;
+    hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;
+    hadiths.offset = offset;
+    hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE);
+    if (hadiths.hasNext)
+      hadiths.pop();
+    hadiths.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
+    hadiths.nextOffset = offset + global.MAX_PER_PAGE;
+    hadiths.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
+    if (!hadiths.hasNext)
+      delete hadiths.nextOffset;
+    if (results.hadiths.length == 0)
+      throw createError(404, `Page ${hadiths.pg} of Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
 
     var currChapter = results.chapter;
     var prevChapter = null;
@@ -186,18 +199,6 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       prevChapter = await a_dbGetPrevChapterHeading(currChapter, currChapter.ordinal - 1);
     if (currentChapterNum >= firstChapter.h1 && currentChapterNum < lastChapter.h1)
       nextChapter = await a_dbGetNextChapterHeading(currChapter, currChapter.ordinal + 1);
-
-    var hadiths = results.hadiths;
-    hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;
-    hadiths.offset = offset;
-    hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE);
-    if (hadiths.hasNext)
-      hadiths.pop();
-    hadiths.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
-    hadiths.nextOffset = offset + global.MAX_PER_PAGE;
-    hadiths.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
-    if (!hadiths.hasNext)
-      delete hadiths.nextOffset;
 
     res.render('chapter', {
       book: book,

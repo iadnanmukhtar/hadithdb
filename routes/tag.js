@@ -16,7 +16,7 @@ router.get('/:tag', async function (req, res, next) {
   });
   if (!tag)
     throw createError(404, `Tag '${req.params.tag}' not found`);
-  
+
   var offset = 0;
   if (req.query.o)
     offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
@@ -31,7 +31,9 @@ router.get('/:tag', async function (req, res, next) {
   results.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
   if (!results.hasNext)
     delete results.nextOffset;
-  
+  if (results.length == 0)
+    throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
+
   res.render('tag', {
     tag: tag,
     results: results
