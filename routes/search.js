@@ -168,6 +168,14 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
   });
   if (book && !isNaN(req.params.chapterNum)) {
     var currentChapterNum = parseFloat(req.params.chapterNum);
+    var offset = 0;
+    if (req.query.o)
+      offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+    var results = await a_dbGetChapter(book, currentChapterNum, offset);
+    if (!results)
+      throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
+
+    var currChapter = results.chapter;
     var prevChapter = null;
     var nextChapter = null;
     var firstChapter = await a_dbGetFirstChapter(book);
@@ -175,14 +183,10 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     if (currentChapterNum < firstChapter.h1 || currentChapterNum > lastChapter.h1)
       throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
     if (currentChapterNum > firstChapter.h1 && currentChapterNum <= lastChapter.h1)
-      prevChapter = await a_dbGetChapterHeading(book, currentChapterNum - 1);
+      prevChapter = await a_dbGetPrevChapterHeading(currChapter, currChapter.ordinal - 1);
     if (currentChapterNum >= firstChapter.h1 && currentChapterNum < lastChapter.h1)
-      nextChapter = await a_dbGetChapterHeading(book, currentChapterNum + 1);
+      nextChapter = await a_dbGetNextChapterHeading(currChapter, currChapter.ordinal + 1);
 
-    var offset = 0;
-    if (req.query.o)
-      offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-    var results = await a_dbGetChapter(book, currentChapterNum, offset);
     var hadiths = results.hadiths;
     hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;
     hadiths.offset = offset;
@@ -213,11 +217,21 @@ async function getBookTOC(book) {
     ORDER BY h1, h2, h3`);
 }
 
-async function a_dbGetChapterHeading(book, chapterNum) {
+async function a_dbGetPrevChapterHeading(currChapter) {
   var chapterHeadings = await global.query(`
     SELECT * FROM toc 
-    WHERE bookId=${book.id} AND h1=${chapterNum} AND level=1
-    ORDER BY h1, h2, h3`);
+    WHERE bookId=${currChapter.bookId} AND ordinal < ${currChapter.ordinal} AND level=1 AND start0 IS NOT NULL
+    ORDER BY ordinal DESC
+    LIMIT 1`);
+  return chapterHeadings[0];
+}
+
+async function a_dbGetNextChapterHeading(currChapter) {
+  var chapterHeadings = await global.query(`
+    SELECT * FROM toc 
+    WHERE bookId=${currChapter.bookId} AND ordinal > ${currChapter.ordinal} AND level=1 AND start0 IS NOT NULL
+    ORDER BY ordinal
+    LIMIT 1`);
   return chapterHeadings[0];
 }
 
@@ -238,6 +252,8 @@ async function a_dbGetChapter(book, chapterNum, offset) {
       ORDER BY h1, h2, h3`);
   }
   var chapter = chapterHeadings.shift();
+  if (!chapter || chapter.level != 1)
+    return null;
   var hadithRows = [];
   if (!book.virtual) {
     hadithRows = await global.query(`

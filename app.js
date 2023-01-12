@@ -107,7 +107,9 @@ async function a_dbInitApp() {
   global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
   global.search = util.promisify(global.searchIdx.SEARCH).bind();
 
-  var bookId = 1;
+  var bookId = 2;
+  var updateCnt = 0;
+  var updates = '';
 
   // console.log('fix hadith decimal numbers');
   // var rows = await global.query(`SELECT * FROM hadiths WHERE num REGEXP "[^0-9]" ORDER BY bookId`);
@@ -122,7 +124,7 @@ async function a_dbInitApp() {
   // }
 
   // // update hadiths heading numbers based on toc
-  // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} and h1=3 ORDER BY h1,h2,h3`);
+  // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} and h1>55 ORDER BY h1,h2,h3`);
   // var sql = '';
   // for (var i = 0; i < toc.length; i++) {
   //   if (i < (toc.length - 1)) {
@@ -198,12 +200,29 @@ async function a_dbInitApp() {
   // }
 
   // // restore db from search index
-  // var docs = await global.searchIdx.ALL_DOCUMENTS(110000);
+  // updateCnt = 0;
+  // updates = '';
+  // var docs = await global.searchIdx.ALL_DOCUMENTS(200000);
   // for (var i = 0; i < docs.length; i++) {
   //   var doc = docs[i]._doc;
-  //   console.log(`restoring ${doc._id} ${doc.bookId}:${doc.num}`);
-  //   await global.query(`update hadiths set chain='${doc.chain}', body='${doc.body}'
-  //       WHERE id=${doc._id}`);
+  //   console.log(`restoring ${doc._id} ${doc.book_alias}:${doc.num}`);
+  //   if (updateCnt > 0)
+  //     updates += ` UNION ALL `;
+  //   updates += ` (SELECT ${doc._id} AS id, '${Utils.escSQL(doc.chain)}' AS new_chain, '${Utils.escSQL(doc.body)}' AS new_body)`;
+  //   updateCnt++;
+  //   if (updateCnt > 1000) {
+  //     console.log(`updating %${i/docs.length*100} = ${i}/${docs.length}`);
+  //     await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
+  //     updates = '';
+  //     updateCnt = 0;
+  //   }
+  //   // break;
+  // }
+  // if (updateCnt > 0) {
+  //   console.log(`updating %100`);
+  //   await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
+  //   updates = '';
+  //   updateCnt = 0;
   // }
 
   // // restore specific ids to db from search index
@@ -222,7 +241,7 @@ async function a_dbInitApp() {
   // }
 
   // // restore grader from search index
-  // var docs = await global.searchIdx.ALL_DOCUMENTS(110000);
+  // var docs = await global.searchIdx.ALL_DOCUMENTS(200000);
   // for (var i = 0; i < docs.length; i++) {
   //   var doc = docs[i]._doc;
   //   if (doc.bookId == 3 || doc.bookId == 4) {
@@ -236,7 +255,7 @@ async function a_dbInitApp() {
   // }
 
   // // // restore body_en from search index
-  // var docs = await global.searchIdx.ALL_DOCUMENTS(143187);
+  // var docs = await global.searchIdx.ALL_DOCUMENTS(200000);
   // for (var i = 0; i < docs.length; i++) {
   //   var doc = docs[i]._doc;
   //   if (doc.body_en && doc.body_en.length > 0) {
