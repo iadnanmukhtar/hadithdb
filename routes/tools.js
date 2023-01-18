@@ -4,6 +4,7 @@
 const express = require('express');
 const asyncify = require('express-asyncify');
 const Arabic = require('../lib/Arabic');
+const Hadith = require('../lib/Hadith');
 
 const router = asyncify(express.Router());
   
@@ -16,7 +17,7 @@ router.get('/', async function (req, res, next) {
     res.render('tools', {
       s: req.query.s,
       alalc: Arabic.toALALC(req.query.s),
-      trans: Arabic.translateChain(req.query.s)
+      trans: Hadith.translateNarrators(req.query.s)
     });
   } else {
     res.render('tools', {

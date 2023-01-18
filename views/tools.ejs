@@ -1,46 +1,80 @@
 <% res.cookie('admin', 'b8dff5ea-bd35-459d-9481-0c2f0b287a9c'); %>
+<!doctype html>
+<html lang="en">
 
-<head>
-  <title>Hadith Unlocked Tools</title>
+<head> 
+<%
+    var root = 'https://hadith.quranunlocked.com';
+    var site = {
+      name: 'Ḥadīth Unlocked',
+      url: root,
+      logo: `${root}/images/logo.png`,
+    };
+    
+    var subtitle_en = `Transliteration`;
+    var page = {
+      menu: 'Recent',
+      title_en: `${site.name} | ALA-LC Arabic Transliteration`,
+      subtitle_en: subtitle_en,
+      subtitle: null,
+      canonical: '/',
+    };
+%> 
+
+<%- include('sub-views/head.ejs', { site: site, page: page, context: {} }); %> 
+
 </head>
+
 <body>
-<form action=""/>
-<textarea placeholder="Arabic" 
-  <% if (s) { %>
-    value="<%- s %>" 
-  <% } %>
-  name="s" rows="5" cols="80" style="direction: rtl; font-size: 16pt; font-family: Arial, Helvetica, sans-serif;"></textarea><br />
-<input type="submit">
-</form>
+  <div class="col-lg-8 mx-auto p-3 py-md-5">
 
-<h3>ALA-LC Transliteration:</h3>
-<%- alalc %>
+    <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-<% if (trans) { %>
-<h3>Chains:</h3>
-<ul>
-<% if (trans.chain_en) {
-  for (var i = 0; i < trans.chain_en.length; i++) { %>
-    <li><%- trans.chain_en[i] %></li>
-<% }
-} %>
-</ul>
+    <main class="search-results">
 
-<h3>Narrators:</h3>
-<ul>
-<% if (trans.narrators) {
-  for (var i = 0; i < trans.narrators.length; i++) {
-    var narrators = trans.narrators[i].split('>');
-    for (var j = 0; j < narrators.length; j++) { %>
-      <li><%- narrators[j] %></li>
-<%  }
-  }
-} %>
-</ul>
+      <h2>ALA-LC Arabic and Ḥadīth Chain Transliteration </h2>
+      <div class="mb-3">
+      <form action=""/>
+      <textarea placeholder="Arabic" 
+        name="s" rows="5" cols="80" style="direction: rtl; font-size: 16pt; font-family: Arial, Helvetica, sans-serif;"><%- utils.emptyIfNull(s) %></textarea><br />
+      <input type="submit">
+      </form>
+      </div>
 
-<% } %>
+      <% if (alalc) { %>
+        <h3>ALA-LC Transliteration:</h3>
+        <p><%- alalc %></p>
+      <% } %>
+
+      <% if (trans) { %>
+      <h3>Chains:</h3>
+      <ul>
+      <% if (trans.chain_en) {
+        for (var i = 0; i < trans.chain_en.length; i++) { %>
+          <li><%- trans.chain_en[i] %></li>
+      <% }
+      } %>
+      </ul>
+
+      <h3>Narrators:</h3>
+      <ul>
+      <% if (trans.narrators) {
+        for (var i = 0; i < trans.narrators.length; i++) {
+          var narrators = trans.narrators[i];
+          for (var j = 0; j < narrators.length; j++) { %>
+            <li><%- narrators[j] %></li>
+      <%  }
+        }
+      } %>
+      </ul>
+
+      <% } %>
+
+  </main>
+</div>
 
 <%- include('sub-views/footer.ejs'); %>
 <%- include('sub-views/scripts.ejs'); %>
 
 </body>
+</html>
