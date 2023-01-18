@@ -111,6 +111,84 @@ async function a_dbInitApp() {
   var updateCnt = 0;
   var updates = '';
 
+  // // clean suyuti duplicated footnotes from body
+  // var codes = [
+  //   ['خ', 'البخاري', 'Bukhārī'],
+  //   ['م', 'مسلم', 'Muslim'],
+  //   ['حب', 'ابن حبّان', 'Ibn Ḥibbān'],
+  //   ['ك', 'الحاكم في المستدرك', 'Ḥākim'],
+  //   ['ض', 'ضياء المقدسي في مختاره', `Ḍ Maqdisī's Mukhtār`],
+  //   ['د', 'أبو داود', 'Abū Dawūd'],
+  //   ['ت', 'الترمذي', 'Tirmdhī'],
+  //   ['ن', 'النسائي', 'Nasaʾī'],
+  //   ['هـ', 'ابن ماجة', 'Ibn Mājah'],
+  //   ['ط', 'الطيالسي', 'Ṭayālisī'],
+  //   ['حم', 'أحمد', 'Aḥmad'],
+  //   ['عم', 'زيادات عبد الله بن أحمد', `Ibn Aḥmad's Ziyadāt`],
+  //   ['عب', 'عبد الرازق', 'ʿAbd al-Razzāq'],
+  //   ['ص', 'سعيد بن منصور', 'Saʿīd b. Manṣūr'],
+  //   ['ش', 'ابن أبى شيبة', 'Ibn Abū Shaybah'],
+  //   ['ع', 'أبو يعلى', 'Abū Yaʿlá'],
+  //   ['طب', 'الطبرانى في الكبير', `Ṭabarānī's Kabīr`],
+  //   ['طك', 'الطبرانى في الكبير', `Ṭabarānī's Kabīr`],
+  //   ['طس', 'الطبرانى في الأوسط', `Ṭabarānī's Awṣaṭ`],
+  //   ['طص', 'الطبرانى في الصغير', `Ṭabarānī's Saghīr`],
+  //   ['ز', 'البزّار في سننه', `Bazzār's Sunan`],
+  //   ['بز', 'البزّار في سننه', `Bazzār's Sunan`],
+  //   ['قط', 'الدارقطنى في السنن', 'Dārquṭnī'],
+  //   ['حل', 'أبى نعيم في الحلية', `Abū Nuʿaym's Ḥīlah`],
+  //   ['ق', 'البيهقى في السنن', `Bayhaqī Sunan`],
+  //   ['هق', 'البيهقى في السنن', `Bayhaqī Sunan`],
+  //   ['هب', 'البيهقى في شعب الإيمان', 'Bayhaqī Shuʿab'],
+  //   ['عق', 'العقيلى في الضعفاء', `ʿUqaylī's Duʿafāʾ`],
+  //   ['عد', 'ابن عدى في الكامل', `Ibn ʿAdī's Kāmil`],
+  //   ['خط', 'الخطيب', 'Kaṭīb al-Baghdād¯ʼ'],
+  //   ['كر', 'ابن عساكر في تاريخه', 'Ibn ʿAsākir'],
+  //   ['فر', ' الديلمى في الفردوس', 'Daylamī'],
+  //   ['خد', 'البخارى في الأدب المفرد', `Bukhārī's Adab`],
+  //   ['تخ', 'البخارى في تاريخه', `Bukhārī's Tārīkh`]
+  // ];
+  // var rows = await global.query(`SELECT id, num, footnote FROM hadiths WHERE bookId=1000 order by ordinal`);
+  // for (var i = 0; i < rows.length; i++) {
+  //   var footnote = Utils.emptyIfNull(rows[i].footnote).trim();
+  //   for (var j = 0; j < codes.length; j++) {
+  //     var code = codes[j][0];
+  //     var desc = codes[j][1];
+  //     footnote = footnote.replace(new RegExp(`(^|[ \\.،\\-:"'\\(])${code}([ \\.،\\-:"'\\)]|$)`, 'g'), ` [${code}] ${desc} `)
+  //       .replace(/ +/g, ' ');
+  //     footnote = footnote.replace(/- رضي الله عنهما -/g, ' ');
+  //     footnote = footnote.replace(/-رضي الله عنهما-/g, ' ');
+  //     footnote = footnote.replace(/- رضي الله عنهم -/g, ' ');
+  //     footnote = footnote.replace(/-رضي الله عنهم-/g, ' ');
+  //     footnote = footnote.replace(/- رضي الله عنهن -/g, ' ');
+  //     footnote = footnote.replace(/-رضي الله عنهن-/g, ' ');
+  //     footnote = footnote.replace(/- رضي الله عنها -/g, ' ');
+  //     footnote = footnote.replace(/-رضي الله عنها-/g, ' ');
+  //     footnote = footnote.replace(/- رضي الله عنه -/g, ' ');
+  //     footnote = footnote.replace(/-رضي الله عنه-/g, ' ');
+  //     footnote = footnote.replace(/- صلى الله عليه وسلم -/g, ' ﷺ ');
+  //     footnote = footnote.replace(/-صلى الله عليه وسلم-/g, ' ﷺ ');
+  //     footnote = footnote.replace(/\. ?$/g, '').trim();
+  //   }
+  //   console.log(`cleaning ${rows[i].id} 1000:${rows[i].num}`);
+  //   if (updateCnt > 0)
+  //     updates += ` UNION ALL `;
+  //   updates += ` (SELECT ${rows[i].id} AS id, '${Utils.escSQL(footnote)}' AS new_fn)`;
+  //   updateCnt++;
+  //   if (updateCnt > 1000) {
+  //     console.log(`updating %${i / rows.length * 100} = ${i}/${rows.length}`);
+  //     await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET footnote=new_fn`);
+  //     updates = '';
+  //     updateCnt = 0;
+  //   }
+  // }
+  // if (updateCnt > 0) {
+  //   console.log(`updating %${i / rows.length * 100} = ${i}/${rows.length}`);
+  //   await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET footnote=new_fn`);
+  //   updates = '';
+  //   updateCnt = 0;
+  // }
+
   // console.log('fix hadith decimal numbers');
   // var rows = await global.query(`SELECT * FROM hadiths WHERE num REGEXP "[^0-9]" ORDER BY bookId`);
   // console.log(`fixing ${rows.length} numbers`);
