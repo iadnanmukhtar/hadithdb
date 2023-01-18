@@ -3,8 +3,8 @@
 
 const fs = require('fs');
 const HomeDir = require('os').homedir();
-const Hadith = require("../../lib/Hadith");
-const SearchIndex = require("../../lib/SearchIndex");
+const Hadith = require("../lib/Hadith");
+const SearchIndex = require("../lib/SearchIndex");
 
 exports.postSave = async function (req, res, args, next) {
 	try {
