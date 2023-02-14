@@ -5,6 +5,8 @@ const express = require('express');
 const createError = require('http-errors');
 const asyncify = require('express-asyncify');
 const Hadith = require('../lib/Hadith');
+const lev = require('fast-levenshtein');
+const Arabic = require('../lib/Arabic');
 
 const router = asyncify(express.Router());
 
@@ -21,6 +23,15 @@ router.get('/:tag', async function (req, res, next) {
   if (req.query.o)
     offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
   var results = await Hadith.a_dbGetAllHadithsWithTag(tag.id, offset);
+  results.map(function (h) {
+    h.deBody = Arabic.disemvowelArabic(h.body);
+  });
+  results.map(function (h) {
+    results.sort(function (x, y) {
+      var rating = lev.get(x.deBody, h.deBody) - lev.get(y.deBody, h.deBody);
+      return rating;
+    });
+  });
   results.pg = (offset / global.MAX_PER_PAGE) + 1;
   results.offset = offset;
   results.hasNext = (results.length > global.MAX_PER_PAGE);
