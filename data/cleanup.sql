@@ -12,26 +12,29 @@ delete hadiths
 commit;
 
 -- extract footnote from body
+set @b := 14;
+set @s0 := ' أَخْرَجَهُ ' COLLATE utf8mb4_unicode_ci;
+set @s1 := concat(@s0, '.+$') COLLATE utf8mb4_unicode_ci;
+
 update hadiths ht, (
 	select 
-		h0.id, regexp_substr(h0.body, 'قَالَ أَبُو عِيسَى .+$') as new_footnote 
+		h0.id, regexp_substr(h0.body, @s1) as new_footnote 
 	from 
 		hadiths h0
 	where 
-		h0.bookId=5 and h0.body regexp 'قَالَ أَبُو عِيسَى'
+		h0.bookId=@b and h0.body regexp @s0
 ) as hs
 set
 	ht.footnote = hs.new_footnote
 where 
 	ht.id = hs.id;
 
--- remove footnote from body
 update hadiths ht, (
 	select 
-		h0.id, body, regexp_replace(body, 'قَالَ أَبُو عِيسَى .+$', '') as new_body 
+		h0.id, body, regexp_replace(body, @s1, '') as new_body 
 	from 
 		hadiths h0
-	where h0.bookId=5 and h0.body regexp 'قَالَ أَبُو عِيسَى'
+	where h0.bookId=@b and h0.body regexp @s0
 ) as hs
 set
 	ht.body = hs.new_body
@@ -85,3 +88,26 @@ AND (h1.body_en is null OR h1.body_en = '')
 AND h1.temp_trans = 0
 -- AND h1.id = 135341
 ;
+
+-- order tagged ahadith by similarity
+set @tagId := 179;
+select distinct *
+from (
+	select h1.id as h1_id, h2.id as h2_id, b.alias as alias, h2.num as num, h2.chain, h2.body 
+	 from hadiths h1, hadiths h2, books b, hadiths_tags t, hadiths_sim_candidates c
+	where  h1.id = t.hadithId
+	  and h1.id = c.hadithId1
+	  and c.hadithId2 = h2.id
+	  and h2.id != h1.id
+	  and h2.id in (select hadithId from hadiths_tags where tagId=@tagId)
+	  and h2.bookId = b.id
+	  and t.tagId = 179
+	  and c.rating > 0.67
+	union
+	select h1.id as h1_id, h1.id as h2_id, b.alias as alias, h1.num as num, h1.chain, h1.body
+	 from hadiths h1, books b
+	where h1.id in (select hadithId from hadiths_tags where tagId=@tagId)
+	 and h1.bookId = b.id
+) x
+order by h1_id, h2_id, alias, num
+
