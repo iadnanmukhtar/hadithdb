@@ -119,11 +119,16 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     });
   }
   if (results.length > 0) {
-    res.render('search', {
-      book: results[0].book,
-      q: req.query.q,
-      results: results
-    });
+    if ('json' in req.query) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(results));
+    } else {
+      res.render('search', {
+        book: results[0].book,
+        q: req.query.q,
+        results: results
+      });
+    }
   } else {
     res.render('search', {
       q: req.query.q,
@@ -149,12 +154,18 @@ router.get('/:bookAlias', async function (req, res, next) {
       prevBook = global.books[bookIdx - 1];
     if (bookIdx < (global.books.length - 1))
       nextBook = global.books[bookIdx + 1];
-    res.render('toc', {
-      book: book,
-      prevBook: prevBook,
-      nextBook: nextBook,
-      toc: await getBookTOC(book)
-    });
+    var results = await getBookTOC(book);
+    if ('json' in req.query) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(results));
+    } else {
+      res.render('toc', {
+        book: book,
+        prevBook: prevBook,
+        nextBook: nextBook,
+        toc: results
+      });
+    }
   } else
     throw createError(404, `Book '${req.params.bookAlias}' does not exist`);
 });
@@ -174,38 +185,43 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var results = await a_dbGetChapter(book, currentChapterNum, offset);
     if (!results)
       throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
-    var hadiths = results.hadiths;
-    hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;
-    hadiths.offset = offset;
-    hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE);
-    if (hadiths.hasNext)
-      hadiths.pop();
-    hadiths.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
-    hadiths.nextOffset = offset + global.MAX_PER_PAGE;
-    hadiths.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
-    if (!hadiths.hasNext)
-      delete hadiths.nextOffset;
-    if (results.hadiths.length == 0)
-      throw createError(404, `Page ${hadiths.pg} of Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
+    if ('json' in req.query) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(results));
+    } else {
+      var hadiths = results.hadiths;
+      hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;
+      hadiths.offset = offset;
+      hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE);
+      if (hadiths.hasNext)
+        hadiths.pop();
+      hadiths.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
+      hadiths.nextOffset = offset + global.MAX_PER_PAGE;
+      hadiths.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
+      if (!hadiths.hasNext)
+        delete hadiths.nextOffset;
+      if (results.hadiths.length == 0)
+        throw createError(404, `Page ${hadiths.pg} of Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
 
-    var currChapter = results.chapter;
-    var prevChapter = null;
-    var nextChapter = null;
-    var firstChapter = await a_dbGetFirstChapter(book);
-    var lastChapter = await a_dbGetLastChapter(book);
-    if (currentChapterNum < firstChapter.h1 || currentChapterNum > lastChapter.h1)
-      throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
-    if (currentChapterNum > firstChapter.h1 && currentChapterNum <= lastChapter.h1)
-      prevChapter = await a_dbGetPrevChapterHeading(currChapter, currChapter.ordinal - 1);
-    if (currentChapterNum >= firstChapter.h1 && currentChapterNum < lastChapter.h1)
-      nextChapter = await a_dbGetNextChapterHeading(currChapter, currChapter.ordinal + 1);
+      var currChapter = results.chapter;
+      var prevChapter = null;
+      var nextChapter = null;
+      var firstChapter = await a_dbGetFirstChapter(book);
+      var lastChapter = await a_dbGetLastChapter(book);
+      if (currentChapterNum < firstChapter.h1 || currentChapterNum > lastChapter.h1)
+        throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
+      if (currentChapterNum > firstChapter.h1 && currentChapterNum <= lastChapter.h1)
+        prevChapter = await a_dbGetPrevChapterHeading(currChapter, currChapter.ordinal - 1);
+      if (currentChapterNum >= firstChapter.h1 && currentChapterNum < lastChapter.h1)
+        nextChapter = await a_dbGetNextChapterHeading(currChapter, currChapter.ordinal + 1);
 
-    res.render('chapter', {
-      book: book,
-      prevChapter: prevChapter,
-      nextChapter: nextChapter,
-      results: results
-    });
+      res.render('chapter', {
+        book: book,
+        prevChapter: prevChapter,
+        nextChapter: nextChapter,
+        results: results
+      });
+    }
   } else
     throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
 });

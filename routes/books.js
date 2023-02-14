@@ -10,12 +10,17 @@ const router = asyncify(express.Router());
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
-  var visibleBooks = global.books.filter(function (val) {
+  var results = global.books.filter(function (val) {
     return (val.hidden == 0);
   });
-  res.render('books', {
-    books: visibleBooks
-  });
+  if ('json' in req.query) {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(results));
+  } else {
+    res.render('books', {
+      books: results
+    });
+  }
 });
 
 module.exports = router;

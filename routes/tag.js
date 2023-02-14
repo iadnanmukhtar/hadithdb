@@ -32,24 +32,30 @@ router.get('/:tag', async function (req, res, next) {
       return rating;
     });
   });
-  results.pg = (offset / global.MAX_PER_PAGE) + 1;
-  results.offset = offset;
-  results.hasNext = (results.length > global.MAX_PER_PAGE);
-  if (results.hasNext)
-    results.pop();
-  results.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
-  results.nextOffset = offset + global.MAX_PER_PAGE;
-  results.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
-  if (!results.hasNext)
-    delete results.nextOffset;
-  if (results.length == 0)
-    throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
-
-  res.render('tag', {
-    tag: tag,
-    results: results
+  results.map(function (h) {
+    delete h.deBody;
   });
-
+  if ('json' in req.query) {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(results));
+  } else {
+    results.pg = (offset / global.MAX_PER_PAGE) + 1;
+    results.offset = offset;
+    results.hasNext = (results.length > global.MAX_PER_PAGE);
+    if (results.hasNext)
+      results.pop();
+    results.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
+    results.nextOffset = offset + global.MAX_PER_PAGE;
+    results.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
+    if (!results.hasNext)
+      delete results.nextOffset;
+    if (results.length == 0)
+      throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
+    res.render('tag', {
+      tag: tag,
+      results: results
+    });
+  }
 });
 
 module.exports = router;
