@@ -23,6 +23,7 @@ router.get('/:tag', async function (req, res, next) {
   if (req.query.o)
     offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
   var results = await Hadith.a_GetAllHadithsWithTag(tag.id);
+  var count = results.length;
   results.map(function (h) {
     h.bodyBackup = `${h.body}`;
     h.body = Arabic.disemvowelArabic(h.body);
@@ -36,7 +37,7 @@ router.get('/:tag', async function (req, res, next) {
     var group = [hadith1];
     for (var j = 0; j < results.length - 1; j++) {
       var r = Hadith.findBestMatch(hadith1, results[j]).bestMatch.rating;
-      if (r >= 0.69) {
+      if (r >= 0.65) {
         var hadith2 = Object.assign({}, results[j]);
         hadith2.groupNo = groupNo;
         hadith2.rating = r;
@@ -55,7 +56,6 @@ router.get('/:tag', async function (req, res, next) {
   results.map(function (h) {
     h.body = `${h.bodyBackup}`;
     delete h.bodyBackup;
-    Hadith.a_dbHadithInit(h);
   });
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
@@ -76,7 +76,8 @@ router.get('/:tag', async function (req, res, next) {
       throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
     res.render('tag', {
       tag: tag,
-      results: results
+      results: results,
+      count: count
     });
   }
 });
