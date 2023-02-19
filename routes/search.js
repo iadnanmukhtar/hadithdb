@@ -122,6 +122,12 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results));
+    } else if ('tsv' in req.query) {
+      res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+      var keyNames = Object.keys(results[0]);
+      if ('keys' in req.query)
+        keyNames = req.query.keys.split(/,/);
+      res.end(Utils.toTSV(results, keyNames));
     } else {
       res.render('search', {
         book: results[0].book,
@@ -158,6 +164,12 @@ router.get('/:bookAlias', async function (req, res, next) {
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results));
+    } else if ('tsv' in req.query) {
+      res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+      var keyNames = Object.keys(results[0]);
+      if ('keys' in req.query)
+        keyNames = req.query.keys.split(/,/);
+      res.end(Utils.toTSV(results, keyNames));
     } else {
       res.render('toc', {
         book: book,
@@ -188,6 +200,12 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results));
+    } else if ('tsv' in req.query) {
+      res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+      var keyNames = Object.keys(results[0]);
+      if ('keys' in req.query)
+        keyNames = req.query.keys.split(/,/);
+      res.end(Utils.toTSV(results, keyNames));
     } else {
       var hadiths = results.hadiths;
       hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;

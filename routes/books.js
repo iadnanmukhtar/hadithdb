@@ -3,6 +3,7 @@
 
 const express = require('express');
 const asyncify = require('express-asyncify');
+const Utils = require('../lib/Utils');
 
 
 const router = asyncify(express.Router());
@@ -16,6 +17,12 @@ router.get('/', async function (req, res, next) {
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(results));
+  } else if ('tsv' in req.query) {
+    res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+    var keyNames = Object.keys(results[0]);
+    if ('keys' in req.query)
+      keyNames = req.query.keys.split(/,/);
+    res.end(Utils.toTSV(results, keyNames));
   } else {
     res.render('books', {
       books: results
