@@ -5,7 +5,7 @@ const express = require('express');
 const createError = require('http-errors');
 const asyncify = require('express-asyncify');
 const Hadith = require('../lib/Hadith');
-const lev = require('fast-levenshtein');
+// const lev = require('fast-levenshtein');
 const Arabic = require('../lib/Arabic');
 
 const router = asyncify(express.Router());
