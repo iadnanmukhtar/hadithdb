@@ -22,23 +22,46 @@ router.get('/:tag', async function (req, res, next) {
   var offset = 0;
   if (req.query.o)
     offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-  var results = await Hadith.a_dbGetAllHadithsWithTag(tag.id, offset);
+  var results = await Hadith.a_GetAllHadithsWithTag(tag.id);
   results.map(function (h) {
-    h.deBody = Arabic.disemvowelArabic(h.body);
+    h.bodyBackup = `${h.body}`;
+    h.body = Arabic.disemvowelArabic(h.body);
   });
-  results.map(function (h) {
-    results.sort(function (x, y) {
-      var rating = lev.get(x.deBody, h.deBody) - lev.get(y.deBody, h.deBody);
-      return rating;
+  var groupedResults = [];
+  var groupNo = 1;
+  while (results.length > 0) {
+    var hadith1 = Object.assign({}, results.splice(0, 1)[0]);
+    hadith1.groupNo = groupNo;
+    hadith1.rating = 1.1;
+    var group = [hadith1];
+    for (var j = 0; j < results.length - 1; j++) {
+      var r = Hadith.findBestMatch(hadith1, results[j]).bestMatch.rating;
+      if (r >= 0.69) {
+        var hadith2 = Object.assign({}, results[j]);
+        hadith2.groupNo = groupNo;
+        hadith2.rating = r;
+        group.push(hadith2);
+        results.splice(j--, 1);
+      }
+    }
+    group.sort(function (x, y) {
+      return y.rating - x.rating;
     });
-  });
+    groupedResults = groupedResults.concat(group);
+    groupNo++;
+  }
+  groupedResults = groupedResults.concat(results);
+  results = groupedResults;
   results.map(function (h) {
-    delete h.deBody;
+    h.body = `${h.bodyBackup}`;
+    delete h.bodyBackup;
+    Hadith.a_dbHadithInit(h);
   });
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(results));
   } else {
+    results = results.slice(offset, offset + global.MAX_PER_PAGE + 1);
     results.pg = (offset / global.MAX_PER_PAGE) + 1;
     results.offset = offset;
     results.hasNext = (results.length > global.MAX_PER_PAGE);
