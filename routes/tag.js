@@ -57,10 +57,28 @@ router.get('/:tag', async function (req, res, next) {
   results.map(function (h) {
     h.body = `${h.bodyBackup}`;
     delete h.bodyBackup;
+    var chain = Utils.emptyIfNull(h.chain_en).split(/>/g).reverse();
+    chain.map(function (n) {
+      return n.trim();
+    });
+    h.chain_en_reverse = chain.join(' > ');
+    return h;
   });
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.end(JSON.stringify(results));
+  } else if ('chains' in req.query) {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    var out = '';
+    for (var i = 0; i < results.length; i++) {
+      var chain = Utils.emptyIfNull(results[i].chain_en).split(/>/g).reverse();
+      for (var j = 0; j < chain.length; j++) {
+        for (var k = 0; k < j; k++) out += '\t';
+        out += '* ' + chain[j].trim().replace(/ /g, '_');
+        out += '\n';
+      }
+    }
+    res.end(out);
   } else if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
     var keyNames = Object.keys(results[0]);
