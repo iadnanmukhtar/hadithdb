@@ -50,20 +50,18 @@
       </div>
     </div>
 
-    <div class="container mb-3">
+    <div class="container mb-2">
       <div class="row text-center justify-content-center">
         <h2 class="fs-3" title="<%- book.name %>"><%- book.name_en %></h2>
+        <h2 class="fs-3" title="<%- book.name_en %>"><%- book.name %></h2>
       </div>
     </div>
 
-    <p>
-      <%- book.description %>
-      <% if (book.id > 0) { %>
-        <br>
-        <small>Author: <%- book.author %> (d. <%- book.yearOfDeath %>H)</small>
-      <% } %>
-    </p>
-    
+    <p class="mb-1"><%- book.description %></p>
+    <% if (book.id > 0) { %>
+      <div><small>Author: <%- book.author %> (d. <%- book.yearOfDeath %>H)</small></div>
+    <% } %>
+  
     <div class="row">
 
       <script type="application/ld+json">
@@ -75,7 +73,9 @@
         }
       </script>
 
-      <table id="toc" class="table">
+      <h3 class="fs-5 mt-3">Chapters Headings</h3>
+
+      <table id="toc" class="table" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>">
         <tbody>
         <%
         for (var i = 0; i < toc.length; i++) {
