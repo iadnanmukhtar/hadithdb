@@ -3,8 +3,8 @@
 
 const fs = require('fs');
 const HomeDir = require('os').homedir();
+const axios = require('axios');
 const Hadith = require("../lib/Hadith");
-const SearchIndex = require("../lib/SearchIndex");
 
 exports.postSave = async function (req, res, args, next) {
 	try {
@@ -36,14 +36,18 @@ exports.postSave = async function (req, res, args, next) {
 					if (settings.reindex) {
 						try {
 							var data = {
-								_id: rows[0].hId
+								ref: rows[0].book_alias + ':' + rows[0].num
 							};
 							delete rows[0].lastmod;
 							delete rows[0].highlight;
 							for (var k in rows[0])
 								data[k] = rows[0][k];
-							console.log(`reindexed ${data.book_alias}:${data.num}`);
-							await global.searchIdx.PUT([data], SearchIndex.TOKENIZER_OPTIONS);
+							console.log(`reindexing ${data.book_alias}:${data.num}`);
+							var res = await axios.post(
+								global.searchURL + '/_update/' + rows[0].hId,
+								{ doc: data },
+								{ 'Content-Type': 'application/json' });
+							console.log(`${res.status} ${JSON.stringify(res.data)}`);
 						} catch (err) {
 							console.error(`ERROR: reindexing: ${err}\n${err.stack}`);
 						}

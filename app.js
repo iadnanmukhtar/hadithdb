@@ -10,7 +10,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const ExpressAdmin = require('express-admin');
 const MySQL = require('mysql');
-const si = require('search-index');
 const util = require('util');
 const Arabic = require('./lib/Arabic');
 const Utils = require('./lib/Utils');
@@ -102,8 +101,7 @@ global.query = util.promisify(global.dbPool.query).bind(global.dbPool);
 global.quran = [];
 async function a_dbInitApp() {
   await Hadith.a_reinit();
-  global.searchIdx = await si({ name: `${HomeDir}/.hadithdb/si` });
-  global.search = util.promisify(global.searchIdx.SEARCH).bind();
+  global.searchURL = 'http://search.quranunlocked.com/hadiths';
 
   var bookId = 5;
   var updateCnt = 0;

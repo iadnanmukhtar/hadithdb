@@ -935,6 +935,38 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "title_en",
+                "verbose": "title_en",
+                "control": {
+                    "text": true
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "title",
+                "verbose": "title",
+                "control": {
+                    "text": true
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {
@@ -2291,6 +2323,40 @@
                 "defaultValue": "-1",
                 "listview": {
                     "show": false
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "title_en",
+                "verbose": "title_en",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-en"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "title",
+                "verbose": "title",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-ar"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
                 },
                 "editview": {
                     "show": true
