@@ -6,9 +6,15 @@
 		editLink = adminLink;
 	if (hadith.chapter)
 		hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-	
-	if (hadith.remark != 2) { %>
+%>
 
+<div class="col-12 h" lang="en">
+	<% if (hadith.title_en) { %>
+		<h4 class="fs-5"><%- hadith.title_en %></h4>
+	<% } %>
+</div>
+		
+<% if (hadith.remark != 2) { %>
 <div class="col-md-6 col-sm-12 h" lang="en">
 	<p>
 		<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
@@ -87,6 +93,7 @@
 <% } else { %>
 
 <div class="col-md-6 col-sm-12 h" lang="en">
+	<h3>Title<%- hadith.title_en %></h3>
 	<% if (hadith.chain_en) { %>
 		<p>
 			<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
