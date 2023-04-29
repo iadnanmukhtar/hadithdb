@@ -99,6 +99,25 @@ router.get('/', async function (req, res, next) {
   }
 });
 
+// QURAN (RANGE)
+router.get('/passage\::surah\::ayah1-:ayah2', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
+  var results = await Search.a_lookupQuranByRange(req.params.surah, req.params.ayah1, req.params.ayah2);
+  if ('json' in req.query) {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(results));
+  } else if ('tsv' in req.query) {
+    res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+    var keyNames = Object.keys(results[0]);
+    if ('keys' in req.query)
+      keyNames = req.query.keys.split(/,/);
+    res.end(Utils.toTSV(results, keyNames));
+  } else {
+    throw createError(501, "Passage view is not implemented");
+  }
+});
+
 // HADITH (SINGLE)
 router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
