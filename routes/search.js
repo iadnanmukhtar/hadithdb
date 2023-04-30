@@ -83,10 +83,21 @@ router.get('/', async function (req, res, next) {
       console.error(message + `\n${err.stack}`);
       throw createError(500, message);
     }
-    res.render('search', {
-      q: req.query.q,
-      results: results
-    });
+    if ('json' in req.query) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(results));
+    } else if ('tsv' in req.query) {
+      res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+      var keyNames = Object.keys(results[0]);
+      if ('keys' in req.query)
+        keyNames = req.query.keys.split(/,/);
+      res.end(Utils.toTSV(results, keyNames));
+    } else {
+      res.render('search', {
+        q: req.query.q,
+        results: results
+      });
+    }
   } else {
     results = [await Search.a_getRandom()];
     if (results.length > 0) {
