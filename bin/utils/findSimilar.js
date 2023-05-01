@@ -11,12 +11,16 @@ var dbPool = MySQL.createPool(MySQLConfig.connection);
 global.query = util.promisify(dbPool.query).bind(dbPool);
 
 (async () => {
-	var go = false;
-	var rows = await Hadith.a_dbGetDisemvoweledHadiths();
-	for (var i = 0; i < rows.length; i++) {
-		if (rows[i].bookId == 8 && rows[i].num0 == 8077) go = true ;
-		if (!go) console.log(`skipping ${rows[i].bookId}:${rows[i].num0}`);
-		if (go) await Hadith.a_recordSimilarMatches(rows[i], rows);
+	var go = true;
+	var main = await global.query(
+		`SELECT h.id, bookId, num0, body, back_ref, lastmod
+		FROM riyad h`);
+	main = main.map(Hadith.disemvoweledHadith);
+	var all = await Hadith.a_dbGetDisemvoweledHadiths(`SELECT id, bookId, num0, body, back_ref, lastmod FROM hadiths WHERE bookId BETWEEN 1 AND 6 ORDER BY bookId, h1, num0`);
+	for (var i = 0; i < main.length; i++) {
+		// if (main[i].bookId == 1) go = true ;
+		if (!go) console.log(`skipping ${main[i].bookId}:${main[i].num0}`);
+		if (go) await Hadith.a_recordSimilarMatches(main[i], all, 'riyad_sim');
 	}
 	console.log('done');
 })();
