@@ -64,7 +64,7 @@
 
         <% for (var i = 0; i < results.length; i++) { %>
 
-          <%- include('sub-views/hadith.ejs', { hadith: results[i], title: true }); %>
+          <%- include('sub-views/hadith.ejs', { hadith: results[i], main: false, title: true }); %>
 
         <% } %>
 

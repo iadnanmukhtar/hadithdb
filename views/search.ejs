@@ -89,7 +89,8 @@
     <div class="row mb-2 pagination">
       <div class="col-md-6 col-xs-12 text-start">
         <% if (results[0].prev && results[0].prev.book) {
-        var result = results[0]; %>
+        var result = results[0];
+        var hashtag = result.book.alias + result.num; %>
         &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">Prev:&nbsp;<%= result.prev.book.shortName_en %>&nbsp;<%- result.prev.num %></a>
         <% } %>
       </div>
@@ -103,9 +104,10 @@
     <% } %>
     
     <div class="row">
-      <% for (var i = 0; i < results.length; i++) { %>
+      <% for (var i = 0; i < results.length; i++) { 
+        var main = !q; %>
 
-        <%- include('sub-views/hadith.ejs', { hadith: results[i], title: true }); %>
+        <%- include('sub-views/hadith.ejs', { hadith: results[i], title: true, main: main }); %>
 
         <% if (!q && results[i].similar && results[i].similar.length > 0) { %>
         <div class="row similar-list">
@@ -121,7 +123,7 @@
           <% for (var j = 0; j < results[i].similar.length; j++) { 
             var rating = Math.round((results[i].similar[j].rating - 0.5)*100/50*100/25);
           %>
-            <%- include('sub-views/hadith.ejs', { hadith: results[i].similar[j], title: true, rating: rating }); %>
+            <%- include('sub-views/hadith.ejs', { hadith: results[i].similar[j], main: true, title: true, rating: rating }); %>
           <% } %>
         </div>
         <% } %>

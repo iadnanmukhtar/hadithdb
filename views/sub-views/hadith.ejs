@@ -6,6 +6,7 @@
 		editLink = adminLink;
 	if (hadith.chapter)
 		hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+	hashtag = (hadith.book.alias + '_' + hadith.num).replace(/[-\:]/, '_');
 %>
 
 <div class="col-12 h" lang="en">
@@ -56,6 +57,11 @@
 	<% } else { %>
 		<a class="cmd-btn" target="_blank" href="<%- editLink %>"><span class="bi bi-pencil"></span></a>&nbsp;<a
 		   class="cmd-btn" title="Report an issue" href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
+	<% } %>
+	<% if (main) { %>
+		<div>
+		<a href="https://twitter.com/intent/tweet?button_hashtag=<%=hashtag%>&ref_src=twsrc%5Etfw" class="twitter-hashtag-button" data-show-count="false">Tweet #<%=hashtag%></a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+		</div>
 	<% } %>
 </div>
 <div class="col-md-6 cols-sm-12 h" lang="ar">
@@ -122,6 +128,11 @@
 		<div class="title">
 			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
 			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+		</div>
+	<% } %>
+	<% if (main) { %>
+		<div>
+		<a href="https://twitter.com/intent/tweet?button_hashtag=<%=hashtag%>&ref_src=twsrc%5Etfw" class="twitter-hashtag-button" data-show-count="false">Tweet #<%=hashtag%></a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 		</div>
 	<% } %>
 </div>
