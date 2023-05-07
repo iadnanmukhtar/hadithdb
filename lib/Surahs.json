@@ -1,0 +1,458 @@
+[
+  {
+    "num": 1,
+    "alias": "faithah"
+  },
+  {
+    "num": 2,
+    "alias": "baqarah"
+  },
+  {
+    "num": 3,
+    "alias": "ali-imran"
+  },
+  {
+    "num": 4,
+    "alias": "nisa"
+  },
+  {
+    "num": 5,
+    "alias": "maidah"
+  },
+  {
+    "num": 6,
+    "alias": "anam"
+  },
+  {
+    "num": 7,
+    "alias": "araf"
+  },
+  {
+    "num": 8,
+    "alias": "anfal"
+  },
+  {
+    "num": 9,
+    "alias": "tawbah"
+  },
+  {
+    "num": 10,
+    "alias": "yunus"
+  },
+  {
+    "num": 11,
+    "alias": "hud"
+  },
+  {
+    "num": 12,
+    "alias": "yusuf"
+  },
+  {
+    "num": 13,
+    "alias": "rad"
+  },
+  {
+    "num": 14,
+    "alias": "ibrahim"
+  },
+  {
+    "num": 15,
+    "alias": "hijr"
+  },
+  {
+    "num": 16,
+    "alias": "nahl"
+  },
+  {
+    "num": 17,
+    "alias": "isra"
+  },
+  {
+    "num": 18,
+    "alias": "kahf"
+  },
+  {
+    "num": 19,
+    "alias": "maryam"
+  },
+  {
+    "num": 20,
+    "alias": "ta-ha"
+  },
+  {
+    "num": 21,
+    "alias": "anbiya"
+  },
+  {
+    "num": 22,
+    "alias": "hajj"
+  },
+  {
+    "num": 23,
+    "alias": "muminun"
+  },
+  {
+    "num": 24,
+    "alias": "nur"
+  },
+  {
+    "num": 25,
+    "alias": "furqan"
+  },
+  {
+    "num": 26,
+    "alias": "shura"
+  },
+  {
+    "num": 27,
+    "alias": "naml"
+  },
+  {
+    "num": 28,
+    "alias": "qasas"
+  },
+  {
+    "num": 29,
+    "alias": "ankabut"
+  },
+  {
+    "num": 30,
+    "alias": "rum"
+  },
+  {
+    "num": 31,
+    "alias": "luqman"
+  },
+  {
+    "num": 32,
+    "alias": "sajdah"
+  },
+  {
+    "num": 33,
+    "alias": "ahzab"
+  },
+  {
+    "num": 34,
+    "alias": "saba"
+  },
+  {
+    "num": 35,
+    "alias": "fatir"
+  },
+  {
+    "num": 36,
+    "alias": "ya-sin"
+  },
+  {
+    "num": 37,
+    "alias": "saffat"
+  },
+  {
+    "num": 38,
+    "alias": "sad"
+  },
+  {
+    "num": 39,
+    "alias": "zumar"
+  },
+  {
+    "num": 40,
+    "alias": "ghafir"
+  },
+  {
+    "num": 41,
+    "alias": "fussilat"
+  },
+  {
+    "num": 42,
+    "alias": "shura"
+  },
+  {
+    "num": 43,
+    "alias": "zukhruf"
+  },
+  {
+    "num": 44,
+    "alias": "dukhkhan"
+  },
+  {
+    "num": 45,
+    "alias": "jathiyah"
+  },
+  {
+    "num": 46,
+    "alias": "ahqaf"
+  },
+  {
+    "num": 47,
+    "alias": "muhammad"
+  },
+  {
+    "num": 48,
+    "alias": "fath"
+  },
+  {
+    "num": 49,
+    "alias": "hujurat"
+  },
+  {
+    "num": 50,
+    "alias": "qaf"
+  },
+  {
+    "num": 51,
+    "alias": "dhariyat"
+  },
+  {
+    "num": 52,
+    "alias": "tur"
+  },
+  {
+    "num": 53,
+    "alias": "najm"
+  },
+  {
+    "num": 54,
+    "alias": "qamar"
+  },
+  {
+    "num": 55,
+    "alias": "rahman"
+  },
+  {
+    "num": 56,
+    "alias": "waqiah"
+  },
+  {
+    "num": 57,
+    "alias": "hadid"
+  },
+  {
+    "num": 58,
+    "alias": "mujadalah"
+  },
+  {
+    "num": 59,
+    "alias": "hashr"
+  },
+  {
+    "num": 60,
+    "alias": "mumtahinah"
+  },
+  {
+    "num": 61,
+    "alias": "saff"
+  },
+  {
+    "num": 62,
+    "alias": "jumuah"
+  },
+  {
+    "num": 63,
+    "alias": "munafiqun"
+  },
+  {
+    "num": 64,
+    "alias": "taghabun"
+  },
+  {
+    "num": 65,
+    "alias": "talaq"
+  },
+  {
+    "num": 66,
+    "alias": "tahrim"
+  },
+  {
+    "num": 67,
+    "alias": "mulk"
+  },
+  {
+    "num": 68,
+    "alias": "qalam"
+  },
+  {
+    "num": 69,
+    "alias": "haqqah"
+  },
+  {
+    "num": 70,
+    "alias": "maarij"
+  },
+  {
+    "num": 71,
+    "alias": "nuh"
+  },
+  {
+    "num": 72,
+    "alias": "jinn"
+  },
+  {
+    "num": 73,
+    "alias": "muzzammil"
+  },
+  {
+    "num": 74,
+    "alias": "muddaththir"
+  },
+  {
+    "num": 75,
+    "alias": "qiyamah"
+  },
+  {
+    "num": 76,
+    "alias": "insan"
+  },
+  {
+    "num": 77,
+    "alias": "mursalat"
+  },
+  {
+    "num": 78,
+    "alias": "naba"
+  },
+  {
+    "num": 79,
+    "alias": "naziat"
+  },
+  {
+    "num": 80,
+    "alias": "abasa"
+  },
+  {
+    "num": 81,
+    "alias": "takwir"
+  },
+  {
+    "num": 82,
+    "alias": "infitar"
+  },
+  {
+    "num": 83,
+    "alias": "mutaffifin"
+  },
+  {
+    "num": 84,
+    "alias": "inshiqaq"
+  },
+  {
+    "num": 85,
+    "alias": "buruj"
+  },
+  {
+    "num": 86,
+    "alias": "tariq"
+  },
+  {
+    "num": 87,
+    "alias": "ala"
+  },
+  {
+    "num": 88,
+    "alias": "ghashiyah"
+  },
+  {
+    "num": 89,
+    "alias": "fajr"
+  },
+  {
+    "num": 90,
+    "alias": "balad"
+  },
+  {
+    "num": 91,
+    "alias": "shams"
+  },
+  {
+    "num": 92,
+    "alias": "layl"
+  },
+  {
+    "num": 93,
+    "alias": "dhuha"
+  },
+  {
+    "num": 94,
+    "alias": "inshirah"
+  },
+  {
+    "num": 95,
+    "alias": "tin"
+  },
+  {
+    "num": 96,
+    "alias": "alaq"
+  },
+  {
+    "num": 97,
+    "alias": "qadr"
+  },
+  {
+    "num": 98,
+    "alias": "bayyinah"
+  },
+  {
+    "num": 99,
+    "alias": "zilzal"
+  },
+  {
+    "num": 100,
+    "alias": "adiyat"
+  },
+  {
+    "num": 101,
+    "alias": "qariah"
+  },
+  {
+    "num": 102,
+    "alias": "takathur"
+  },
+  {
+    "num": 103,
+    "alias": "asr"
+  },
+  {
+    "num": 104,
+    "alias": "humazah"
+  },
+  {
+    "num": 105,
+    "alias": "fil"
+  },
+  {
+    "num": 106,
+    "alias": "quraysh"
+  },
+  {
+    "num": 107,
+    "alias": "maun"
+  },
+  {
+    "num": 108,
+    "alias": "kawthar"
+  },
+  {
+    "num": 109,
+    "alias": "kafirun"
+  },
+  {
+    "num": 110,
+    "alias": "nasr"
+  },
+  {
+    "num": 111,
+    "alias": "masad"
+  },
+  {
+    "num": 112,
+    "alias": "ikhlas"
+  },
+  {
+    "num": 113,
+    "alias": "falaq"
+  },
+  {
+    "num": 114,
+    "alias": "nas"
+  }
+]
