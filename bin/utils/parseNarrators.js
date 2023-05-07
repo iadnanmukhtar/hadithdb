@@ -20,7 +20,7 @@ global.query = util.promisify(dbPool.query).bind(dbPool);
 	var updateCnt = 0;
 	var updates = '';
 	for (var i = 0; i < rows.length; i++) {
-		if (rows[i].bookId == 1 && rows[i].num0 == 7) go = true;
+		if (rows[i].bookId == 12 && rows[i].num0 == 2048) go = true;
 		if (!go) console.log(`skipping ${rows[i].bookId}:${rows[i].num0}`);
 		if (go) {
 			try {

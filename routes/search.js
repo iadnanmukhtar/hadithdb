@@ -112,9 +112,15 @@ router.get('/', async function (req, res, next) {
 
 // QURAN (RANGE)
 router.get('/passage\::surah\::ayah1-:ayah2', async function (req, res, next) {
-  res.locals.req = req;
-  res.locals.res = res;
-  var results = await Search.a_lookupQuranByRange(req.params.surah, req.params.ayah1, req.params.ayah2);
+  return await a_getPassage(req.params.surah, req.params.ayah1, req.params.ayah2, req, res, next);
+});
+
+router.get('/passage\::surah\::ayah1', async function (req, res, next) {
+  return await a_getPassage(req.params.surah, req.params.ayah1, req.params.ayah1, req, res, next)
+});
+
+async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
+  var results = await Search.a_lookupQuranByRange(surah, ayah1, ayah2);
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(results));
@@ -127,7 +133,7 @@ router.get('/passage\::surah\::ayah1-:ayah2', async function (req, res, next) {
   } else {
     throw createError(501, "Passage view is not implemented");
   }
-});
+};
 
 // HADITH (SINGLE)
 router.get('/:bookAlias\::num', async function (req, res, next) {
