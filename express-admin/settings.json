@@ -2363,6 +2363,40 @@
                 }
             },
             {
+                "name": "part_en",
+                "verbose": "part_en",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-en"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "part",
+                "verbose": "part",
+                "control": {
+                    "textarea": true,
+                    "editor": "text-ar"
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
                 "name": "chain_en",
                 "verbose": "chain_en",
                 "control": {
