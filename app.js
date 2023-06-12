@@ -1,6 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const HomeDir = require('os').homedir();
 const createError = require('http-errors');
@@ -72,6 +73,7 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
 });
 
 // initialize data load
+global.surahs = require('./lib/Surahs.json');
 global.MySQLConfig = require(HomeDir + '/.hadithdb/store.json');
 global.books = [{
   id: -1,
@@ -103,7 +105,7 @@ async function a_dbInitApp() {
   await Hadith.a_reinit();
   global.searchURL = 'http://search.quranunlocked.com/hadiths';
 
-  var bookId = 5;
+  var bookId = 7;
   var updateCnt = 0;
   var updates = '';
 
@@ -224,7 +226,7 @@ async function a_dbInitApp() {
   //   await global.query(sql);
   // }
 
-  // // update hadiths counts in toc
+  // update hadiths counts in toc
   // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} AND level=1 ORDER BY h1`);
   // var sql = '';
   // for (var i = 0; i < toc.length; i++) {
@@ -466,32 +468,71 @@ async function a_dbInitApp() {
   //   updateCnt = 0;
   // }
 
-//  // fix  body startsWith qala Rasullah/Nabi
-//  var startsWith = 'قَالَ';
-//  var rows = await global.query(`select * from hadiths where chain regexp ' قَالَ$' and body regexp '^(النَّبِيُّ|رَسُولُ اللَّهِ) ' order by ordinal`);
-//  for (var i = 1; i < rows.length; i++) {
-//    console.log(`updating 'qala Rasullah' ${rows[i].bookId}:${rows[i].num}`);
-//    var body = startsWith + ' ' + rows[i].body;
-//    var chain = rows[i].chain.replace(new RegExp(` ${startsWith}$`), '');
-//    if (updateCnt > 0)
-//      updates += ` UNION ALL `;
-//    updates += ` (SELECT ${rows[i].id} AS id, '${Utils.escSQL(chain)}' AS new_chain, '${Utils.escSQL(body)}' AS new_body)`;
-//    updateCnt++;
-//    if (updateCnt > 1000) {
-//      console.log(`updating %${i/rows.length*100} = ${i}/${rows.length}`);
-//      await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
-//      updates = '';
-//      updateCnt = 0;
-//    }
-//  }
-//  if (updateCnt > 0) {
-//    console.log(`updating %100`);
-//    await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
-//    updates = '';
-//    updateCnt = 0;
-//  }
+  //  // fix  body startsWith qala Rasullah/Nabi
+  //  var startsWith = 'قَالَ';
+  //  var rows = await global.query(`select * from hadiths where chain regexp ' قَالَ$' and body regexp '^(النَّبِيُّ|رَسُولُ اللَّهِ) ' order by ordinal`);
+  //  for (var i = 1; i < rows.length; i++) {
+  //    console.log(`updating 'qala Rasullah' ${rows[i].bookId}:${rows[i].num}`);
+  //    var body = startsWith + ' ' + rows[i].body;
+  //    var chain = rows[i].chain.replace(new RegExp(` ${startsWith}$`), '');
+  //    if (updateCnt > 0)
+  //      updates += ` UNION ALL `;
+  //    updates += ` (SELECT ${rows[i].id} AS id, '${Utils.escSQL(chain)}' AS new_chain, '${Utils.escSQL(body)}' AS new_body)`;
+  //    updateCnt++;
+  //    if (updateCnt > 1000) {
+  //      console.log(`updating %${i/rows.length*100} = ${i}/${rows.length}`);
+  //      await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
+  //      updates = '';
+  //      updateCnt = 0;
+  //    }
+  //  }
+  //  if (updateCnt > 0) {
+  //    console.log(`updating %100`);
+  //    await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
+  //    updates = '';
+  //    updateCnt = 0;
+  //  }
 
- console.log('done');
+  //   var books = await global.query(`select * from books where id > 0 order by id`);
+  //   for (var i = 0; i < books.length; i++) {
+  //     var name_en = Arabic.removeLatinDiacritics(books[i].name_en);
+  //     var name = Arabic.removeArabicDiacritics(books[i].name);
+  //     var shortName_en = Arabic.removeLatinDiacritics(books[i].shortName_en);
+  //     var shortName = Arabic.removeArabicDiacritics(books[i].shortName);
+  //     var data =
+  // `---
+  // aliases:
+  //   - ${shortName}
+  //   - ${name}
+  //   - ${name_en}
+  //   - ${shortName_en}
+  // ---
+  // [[Ḥadīth]] [[${books[i].author}]]
+  // `
+  //     fs.writeFileSync('/Users/adnanmukhtar/Library/Mobile Documents/iCloud~md~obsidian/Documents/notes/Ḥadīth/' + books[i].shortName_en + '.md', data);
+  //   }
+
+  // // find similar hadith between two tables
+  // var rows1 = await global.query(`select * from hadiths_malik order by id`);
+  // var rows2 = await global.query(`select * from hadiths where bookId=7 order by h1, numInChapter`);
+  // rows1.map(row => Hadith.disemvoweledHadith(row));
+  // rows2.map(row => { row.body = ((row.chain || '').trim() + ' ' + (row.body || '')).trim() });
+  // rows2.map(row => Hadith.disemvoweledHadith(row));
+  // for (var i = 0; i < rows1.length; i++) {
+  //   var matchedj = -1;
+  //   var maxRating = -1;
+  //   for (var j = 0; j < rows2.length; j++) {
+  //     var rating = Hadith.findBestMatch(rows1[i], rows2[j]).bestMatch.rating;
+  //     if (rating > maxRating) {
+  //       maxRating = rating;
+  //       matchedj = j;
+  //     }
+  //   }
+  //   console.log(`updating ${rows1[i].num} with ${rows2[matchedj].num}`);
+  //   await global.query(`update hadiths_malik set num_match="${rows2[matchedj].num}", match_rating=${maxRating} where id=${rows1[i].id}`);
+  // }
+
+  console.log('done');
 
 }
 a_dbInitApp();
