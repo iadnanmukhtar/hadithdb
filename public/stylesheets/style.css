@@ -50,7 +50,8 @@ body :lang(ar) {
 	font-style: inherit;
 }
 
-.h:lang(en) {
+.h:lang(en),
+.intro:lang(en) {
 	font-size: 0.85rem;
 }
 

@@ -93,16 +93,16 @@
         <%- arabic.toArabicDigits(results.chapter.h1+'') %>۔ <%- title %>
         <%- (results.hadiths.hasNext || results.hadiths.pg && results.hadiths.pg > 1) ? `ص ${arabic.toArabicDigits(results.hadiths.pg+'')}` : `` %>
       </h2>
-      <div class="chapter-intro">
+      <div class="chapter-intro row">
       <% if (results.chapter.intro_en) { %>
-        <p class="col col-sm-12 intro" lang="en">
-          <%- results.chapter.intro_en %>
-        </p>
+        <div class="col-md-6 col-sm-12 intro" lang="en">
+          <p><%- utils.emptyIfNull(results.chapter.intro_en).replace(/\n/g, '</p><p>') %></p>
+        </div>
       <% }
          if (results.chapter.intro) { %>
-        <p class="col col-sm-12 intro" lang="ar">
-          <%- results.chapter.intro %>
-        </p>
+        <div class="col-md-6 col-sm-12 intro" lang="ar">
+          <p><%- utils.emptyIfNull(results.chapter.intro).replace(/\n/g, '</p><p>') %></p>
+        </div>
       <% } %>
       </div>
 
