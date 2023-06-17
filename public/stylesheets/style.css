@@ -41,7 +41,8 @@ body :lang(ar) {
 	margin-top: 0.75em;
 }
 
-.h p {
+.h p,
+.intro p {
 	margin-bottom: 0.25rem;
 }
 
@@ -66,7 +67,8 @@ body :lang(ar) {
 	color: #a0a0a0 !important;
 }
 
-.h .body {
+.h .body,
+.intro {
 	text-indent: 2em;
 }
 
