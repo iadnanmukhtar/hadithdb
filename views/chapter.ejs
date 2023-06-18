@@ -94,16 +94,16 @@
         <%- (results.hadiths.hasNext || results.hadiths.pg && results.hadiths.pg > 1) ? `ص ${arabic.toArabicDigits(results.hadiths.pg+'')}` : `` %>
       </h2>
       <div class="chapter-intro row">
-      <% if (results.chapter.intro_en) { %>
         <div class="col-md-6 col-sm-12 intro" lang="en">
-          <p><%- utils.emptyIfNull(results.chapter.intro_en).replace(/\n/g, '</p><p>') %></p>
+          <% if (results.chapter.intro_en) { %>
+            <p><%- utils.emptyIfNull(results.chapter.intro_en).replace(/\n/g, '</p><p>') %></p>
+          <% } %>
         </div>
-      <% }
-         if (results.chapter.intro) { %>
         <div class="col-md-6 col-sm-12 intro" lang="ar">
-          <p><%- utils.emptyIfNull(results.chapter.intro).replace(/\n/g, '</p><p>') %></p>
+          <% if (results.chapter.intro) { %>
+            <p><%- utils.emptyIfNull(results.chapter.intro).replace(/\n/g, '</p><p>') %></p>
+          <% } %>
         </div>
-      <% } %>
       </div>
 
       <%# --- TABLE OF CONTENTS --- %>
@@ -182,16 +182,16 @@
         </div>        
         <div class="col-12">
           <div class="row heading-intro">
-            <% if (heading.intro_en) { %>
-            <p class="col col-sm-12 intro" lang="en">
-              <%- heading.intro_en %>
-            </p>
-            <% }
-              if (heading.intro) { %>
-            <p class="col col-sm-12 intro" lang="ar">
-              <%- heading.intro %>
-            </p>
-            <% } %>
+            <div class="col-md-6 col-sm-12 intro" lang="en">
+              <% if (heading.intro_en) { %>
+                <p><%- utils.emptyIfNull(heading.intro_en).replace(/\n/g, '</p><p>') %></p>
+              <% } %>
+            </div>
+            <div class="col-md-6 col-sm-12 intro" lang="ar">
+              <% if (heading.intro) { %>
+                <p><%- utils.emptyIfNull(heading.intro).replace(/\n/g, '</p><p>') %></p>
+              <% } %>
+            </div>
           </div>
         </div>
       </div>

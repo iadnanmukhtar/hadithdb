@@ -42,7 +42,8 @@ body :lang(ar) {
 }
 
 .h p,
-.intro p {
+.intro p,
+.heading-intro p {
 	margin-bottom: 0.25rem;
 }
 
@@ -52,7 +53,8 @@ body :lang(ar) {
 }
 
 .h:lang(en),
-.intro:lang(en) {
+.intro:lang(en),
+.heading-intro:lang(en) {
 	font-size: 0.85rem;
 }
 
@@ -68,7 +70,8 @@ body :lang(ar) {
 }
 
 .h .body,
-.intro {
+.intro,
+.heading-intro {
 	text-indent: 2em;
 }
 
