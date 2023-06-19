@@ -54,8 +54,9 @@
 	<% if (hadith.tags || site.admin) {
 		var tags = null;
 		if (hadith.tags) {
-			tags = hadith.tags.map(tag => {
-				return `<a href="/tag/${tag.text_en}">${tag.text_en}</a>`;
+			tags = hadith.tags.replace(/[{}]/g, '');
+			tags = tags.split(/ +/).map(tag => {
+				return `<a href="/tag/${tag}">${tag}</a>`;
 			});
 			tags = tags.join(' ');
 		}

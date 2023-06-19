@@ -20,16 +20,21 @@ router.post('/:id/:prop', async function (req, res, next) {
     var type = prop.split(/\./)[0]; 
     var col = prop.split(/\./)[1];
     console.log(`updating ${req.params.id} ${prop}: ${(req.body.value + '').trim().substring(0, 20)}`);
+
     if (type == 'hadith') {
       var result = "";
+
       if (col == 'tags') {
         var tags = req.body.value.split(/[,; \t\n]/);
         tags.map(t => {
           return t.replace(/^#/, '');
         });
+        tags = tags.filter(t => {
+          return t.trim().length > 0;
+        });
         var vals = '';
         for (var i = 0; i < tags.length; i++) {
-          if (i > 0) vals += ', '
+          if (vals.length > 0) vals += ', '
           vals += `("${tags[i]}")`;
         }
         result = await global.query(`INSERT IGNORE INTO tags (text_en) VALUES ${vals}`);
@@ -38,7 +43,9 @@ router.post('/:id/:prop', async function (req, res, next) {
           var tag = await global.query(`SELECT * FROM tags WHERE text_en="${tags[i]}"`);
           await global.query(`INSERT IGNORE INTO hadiths_tags (hadithId, tagId) VALUES (${req.params.id}, ${tag[0].id})`);
         }
-      } else {
+        await Hadith.a_reinit();
+
+      } else { // hadith
         result = await global.query(`UPDATE hadiths SET lastmod_user='admin', ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
       }
       status.code = 200;
@@ -48,16 +55,19 @@ router.post('/:id/:prop', async function (req, res, next) {
       } catch (err) {
         console.log(`${err.message}:\n${err.stack}`);
       }
+
     } else if (type == 'toc') {
       var result = await global.query(`UPDATE toc SET lastmod_user='admin', ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
       status.code = 200;
       status.message = result.message;
+
     } else if (type == 'book') {
       var result = await global.query(`UPDATE books SET ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
       status.code = 200;
       status.message = result.message;
       await Hadith.a_reinit();
     }
+
   } catch (err) {
     status.message = err.message;
     status.code = 500;
