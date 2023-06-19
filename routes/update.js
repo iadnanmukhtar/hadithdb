@@ -58,6 +58,12 @@ router.post('/:id/:prop', async function (req, res, next) {
         console.log(`${err.message}:\n${err.stack}`);
       }
 
+    } else if (type == 'tags') {
+      var result = await global.query(`UPDATE tags SET ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
+      status.code = 200;
+      status.message = result.message;
+      await Hadith.a_reinit();
+
     } else if (type == 'toc') {
       var result = await global.query(`UPDATE toc SET lastmod_user='admin', ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
       status.code = 200;
