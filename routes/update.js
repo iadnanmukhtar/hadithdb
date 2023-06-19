@@ -19,6 +19,8 @@ router.post('/:id/:prop', async function (req, res, next) {
     var prop = req.params.prop;
     var type = prop.split(/\./)[0]; 
     var col = prop.split(/\./)[1];
+    if (req.body.value == '…')
+      req.body.value = null;
     console.log(`updating ${req.params.id} ${prop}: ${(req.body.value + '').trim().substring(0, 20)}`);
 
     if (type == 'hadith') {
@@ -87,6 +89,7 @@ router.post('/:id/:prop', async function (req, res, next) {
 
 function sql(s) {
   if (s) {
+    if (s == '…') return null;
     s = s + '';
     s = s.replace(/\u200f/g, '').trim();
     s = s.replace(/\"/g, '\\"').replace(/\'/g, "\\'").replace(/‘/g, "\\‘");
