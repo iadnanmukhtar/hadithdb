@@ -11,7 +11,7 @@
 <% } %>
 <% if (hadith.part || site.admin) { %>
 	<div class="col-12 h" lang="ar">
-		<h4 class="_e fs-5" title="Ḥadīth Ṭarf (طرف الحديت)" data-id="<%= hadith.id %>" data-prop="hadith.part"><%- hadith.part || `&hellip;` %></h4>
+		<h4 class="fs-5" title="Ḥadīth Group"><strong>مجموعة: <span class="_e" data-id="<%= hadith.id %>" data-prop="hadith.part"><%- hadith.part || `&hellip;` %></span></strong></h4>
 	</div>
 <% } %>
 		

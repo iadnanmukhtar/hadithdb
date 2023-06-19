@@ -38,7 +38,7 @@ router.get('/:tag', async function (req, res, next) {
     var group = [hadith1];
     for (var j = 0; j < results.length - 1; j++) {
       var r = Hadith.findBestMatch(hadith1, results[j]).bestMatch.rating;
-      if (r >= 0.65) {
+      if (r >= 0.60) {
         var hadith2 = Object.assign({}, results[j]);
         hadith2.groupNo = groupNo;
         hadith2.rating = r;
