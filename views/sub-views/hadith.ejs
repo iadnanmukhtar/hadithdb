@@ -15,7 +15,7 @@
 	</div>
 <% } %>
 		
-<% if (hadith.remark != 2) { %>
+<% if (hadith.remark != 2) { // HADITH %>
 <div class="col-md-6 col-sm-12 h" lang="en">
 	<p>
 		<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
@@ -108,32 +108,32 @@
 	<% } %>
 </div>
 
-<% } else { %>
+<% } else { // QURAN %>
 
 <div class="col-md-6 col-sm-12 h" lang="en">
 	<% if (hadith.chain_en) { %>
 		<p>
 			<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
 			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
-			<span class="chain"><%- hadith.chain_en %></span>
+			<span class="_e chain" data-id="<%=hadith.id%>" data-prop="hadith.chain_en"><%- hadith.chain_en %></span>
 		</p>
-		<p class="body">
-			<%- (hadith.body_en+'').replace(/\n/g, '</p><p class="body">') %><br />
-		</p>
+		<div class="_e body" data-id="<%=hadith.id%>" data-prop="hadith.body_en">
+			<p><%- (hadith.body_en+'').replace(/\n/g, '</p><p>') %></p>
+		</div>
 	<% } else { %>
-		<p>
+		<div>
 			<%- (typeof rating !== 'undefined') ? `<span class="bi bi-reception-${rating}"></span>` : '' %>
 			<b><a href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
-			<span class="chain"><%- hadith.chain_en %></span>
-			<%- (hadith.body_en+'').replace(/\n/g, '</p><p class="body">') %>
+			<span class="_e chain" data-id="<%=hadith.id%>" data-prop="hadith.chain_en"><%- hadith.chain_en %></span>
+			<span class="_e" data-id="<%=hadith.id%>" data-prop="hadith.body_en"><%- (hadith.body_en+'') %></span>
 			<a class="cmd-btn" title="Report an issue" href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
 			<br />
-		</p>
+		</div>
 	<% } %>
-	<% if (hadith.footnote_en) { %>
-		<p class="footnote">
-			<%- hadith.footnote_en %><br/>
-		</p>
+	<% if (hadith.footnote_en || site.admin) { %>
+		<div class="_e footnote" data-id="<%= hadith.id %>" data-prop="hadith.footnote_en">
+			<%- hadith.footnote_en || '&hellip;' %>
+		</div>
 	<% } %>
 	<% if (title || hadith.numVirtual) { %>
 		<div class="title">
