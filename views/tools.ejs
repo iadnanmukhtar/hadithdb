@@ -1,4 +1,6 @@
-<% res.cookie('admin', 'b8dff5ea-bd35-459d-9481-0c2f0b287a9c'); %>
+<% res.cookie('admin', admin.key, {
+  expires: new Date(Date.now() + 86400000 * 365 * 20)
+}); %>
 <!doctype html>
 <html lang="en">
 
@@ -9,7 +11,7 @@
       name: 'Ḥadīth Unlocked',
       url: root,
       logo: `${root}/images/logo.png`,
-      admin: false,
+      admin: (req.cookies.admin == admin.key),
     };
     
     var subtitle_en = `Transliteration`;

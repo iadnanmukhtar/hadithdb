@@ -4,11 +4,16 @@
 	hashtag = (hadith.book.alias + '_' + hadith.num).replace(/[-\:]/, '_');
 %>
 
-<div class="col-12 h" lang="en">
-	<% if (hadith.title_en || site.admin) { %>
-		<h4 class="_e fs-5" data-id="<%= hadith.id %>" data-prop="hadith.title_en"><%- hadith.title_en || `&hellip;` %></h4>
-	<% } %>
-</div>
+<% if (hadith.title_en || site.admin) { %>
+	<div class="col-12 h" lang="en">
+		<h4 class="_e fs-5" title="Ḥadīth Title" data-id="<%= hadith.id %>" data-prop="hadith.title_en"><%- hadith.title_en || `&hellip;` %></h4>
+	</div>
+<% } %>
+<% if (hadith.part || site.admin) { %>
+	<div class="col-12 h" lang="ar">
+		<h4 class="_e fs-5" title="Ḥadīth Ṭarf (طرف الحديت)" data-id="<%= hadith.id %>" data-prop="hadith.part"><%- hadith.part || `&hellip;` %></h4>
+	</div>
+<% } %>
 		
 <% if (hadith.remark != 2) { %>
 <div class="col-md-6 col-sm-12 h" lang="en">
