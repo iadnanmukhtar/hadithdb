@@ -25,38 +25,38 @@ router.get('/:tag', async function (req, res, next) {
     offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
   var results = await Hadith.a_GetAllHadithsWithTag(tag.id);
   var count = results.length;
-  // results.map(function (h) {
-  //   h.bodyBackup = `${h.body}`;
-  //   h.body = Arabic.disemvowelArabic(h.body);
-  // });
-  // var groupedResults = [];
-  // var groupNo = 1;
-  // while (results.length > 0) {
-  //   var hadith1 = Object.assign({}, results.splice(0, 1)[0]);
-  //   hadith1.groupNo = groupNo;
-  //   hadith1.rating = 1.1;
-  //   var group = [hadith1];
-  //   for (var j = 0; j < results.length - 1; j++) {
-  //     var r = Hadith.findBestMatch(hadith1, results[j]).bestMatch.rating;
-  //     if (r >= 0.65) {
-  //       var hadith2 = Object.assign({}, results[j]);
-  //       hadith2.groupNo = groupNo;
-  //       hadith2.rating = r;
-  //       group.push(hadith2);
-  //       results.splice(j--, 1);
-  //     }
-  //   }
-  //   group.sort(function (x, y) {
-  //     return y.rating - x.rating;
-  //   });
-  //   groupedResults = groupedResults.concat(group);
-  //   groupNo++;
-  // }
-  // groupedResults = groupedResults.concat(results);
-  // results = groupedResults;
   results.map(function (h) {
-    // h.body = `${h.bodyBackup}`;
-    // delete h.bodyBackup;
+    h.bodyBackup = `${h.body}`;
+    h.body = Arabic.disemvowelArabic(h.body);
+  });
+  var groupedResults = [];
+  var groupNo = 1;
+  while (results.length > 0) {
+    var hadith1 = Object.assign({}, results.splice(0, 1)[0]);
+    hadith1.groupNo = groupNo;
+    hadith1.rating = 1.1;
+    var group = [hadith1];
+    for (var j = 0; j < results.length - 1; j++) {
+      var r = Hadith.findBestMatch(hadith1, results[j]).bestMatch.rating;
+      if (r >= 0.65) {
+        var hadith2 = Object.assign({}, results[j]);
+        hadith2.groupNo = groupNo;
+        hadith2.rating = r;
+        group.push(hadith2);
+        results.splice(j--, 1);
+      }
+    }
+    group.sort(function (x, y) {
+      return y.rating - x.rating;
+    });
+    groupedResults = groupedResults.concat(group);
+    groupNo++;
+  }
+  groupedResults = groupedResults.concat(results);
+  results = groupedResults;
+  results.map(function (h) {
+    h.body = `${h.bodyBackup}`;
+    delete h.bodyBackup;
     var chain = Utils.emptyIfNull(h.chain_en).split(/>/g).reverse();
     chain.map(function (n) {
       return n.trim();
