@@ -57,7 +57,7 @@
       <div class="row"> 
 
         <h2 class="col-md-12 col-sm-12 fs-5 title" lang="en">
-          <%- `${tag.description}` %>
+          <%- `${tag.description || ('#'+tag.text_en)}` %>
           <% if (results.hasNext || results.pg && results.pg > 1) { %>
             (<%- results.pg %>/<%- Math.ceil(count / global.MAX_PER_PAGE) %>)
           <% } %>
