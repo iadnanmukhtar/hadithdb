@@ -37,8 +37,10 @@ router.post('/:id/:prop', async function (req, res, next) {
           if (vals.length > 0) vals += ', '
           vals += `("${tags[i]}")`;
         }
-        result = await global.query(`INSERT IGNORE INTO tags (text_en) VALUES ${vals}`);
-        await global.query(`DELETE FROM hadiths_tags WHERE hadithId=${req.params.id}`);
+        if (tags.length > 0)
+          result = await global.query(`INSERT IGNORE INTO tags (text_en) VALUES ${vals}`);
+          await global.query(`UPDATE hadiths SET tags=NULL WHERE id=${req.params.id}`);
+          await global.query(`DELETE FROM hadiths_tags WHERE hadithId=${req.params.id}`);
         for (var i = 0; i < tags.length; i++) {
           var tag = await global.query(`SELECT * FROM tags WHERE text_en="${tags[i]}"`);
           await global.query(`INSERT IGNORE INTO hadiths_tags (hadithId, tagId) VALUES (${req.params.id}, ${tag[0].id})`);
