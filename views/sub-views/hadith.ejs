@@ -141,6 +141,20 @@
 			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		</div>
 	<% } %>
+	<% if (hadith.tags || site.admin) {
+		var tags = null;
+		if (hadith.tags) {
+			tags = hadith.tags.replace(/[{}]/g, '');
+			tags = tags.split(/ +/).map(tag => {
+				return `<a href="/tag/${tag}">${tag}</a>`;
+			});
+			tags = tags.join(' ');
+		}
+		%>
+		<div class="tags">
+			# <span class="_e" data-id="<%= hadith.id %>" data-prop="hadith.tags"><%- tags || '&hellip;' %></span>
+		</div>
+	<% } %>
 	<% if (main) { %>
 		<div>
 			<a href="https://twitter.com/intent/tweet?button_hashtag=<%=hashtag%>" class="twitter-hashtag-button" data-text="<%=hadith.title_en%>" data-hashtags="hadith" data-size="I" data-show-count="true" data-url="https://hadith.quranunlocked.com/<%=hadith.book.alias%>:<%=hadith.num%>">Tweet #<%=hashtag%></a>
