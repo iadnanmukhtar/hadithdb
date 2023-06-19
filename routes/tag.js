@@ -47,7 +47,7 @@ router.get('/:tag', async function (req, res, next) {
       }
     }
     group.sort(function (x, y) {
-      return y.rating - x.rating;
+      return x.bookId - y.bookId;
     });
     groupedResults = groupedResults.concat(group);
     groupNo++;
