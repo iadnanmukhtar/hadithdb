@@ -49,11 +49,25 @@ router.get('/:tag', async function (req, res, next) {
     group.sort(function (x, y) {
       return x.bookId - y.bookId;
     });
-    groupedResults = groupedResults.concat(group);
+    groupedResults.push(group);
     groupNo++;
   }
-  groupedResults = groupedResults.concat(results);
-  results = groupedResults;
+  if (results.length > 0) {
+    results.sort(function (x, y) {
+      return x.bookId - y.bookId;
+    });
+    groupedResults.push(results);
+  }
+  groupedResults.sort(function (x, y) {
+    return x[0].bookId - y[0].bookId;
+  });
+  var flattenedGroups = [];
+  groupedResults.forEach(function (group) {
+    group.forEach(function (hadith) {
+      flattenedGroups.push(hadith);
+    })
+  });
+  results = flattenedGroups;
   results.map(function (h) {
     h.body = `${h.bodyBackup}`;
     delete h.bodyBackup;
