@@ -1,7 +1,63 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://kit.fontawesome.com/3c8decddde.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="/javascripts/script.js"></script>
+
+<% if (site.admin) { %>
+<script>
+
+  toastr.options.closeMethod = 'fadeOut';
+  toastr.options.closeDuration = 300;
+  toastr.options.closeEasing = 'swing';
+
+  $('._e*').each(function() {
+    $(this).attr('contenteditable', 'true');
+    $(this).on('input', function() {
+      $(this).attr('editing', 'true');
+    });
+    $(this).blur(function() {
+      if ($(this).attr('editing') == 'true') {
+        var id = $(this).data('id');
+        var prop = $(this).data('prop');
+        var value = $(this).html();
+        value = value.replace(/&nbsp;/g, ' ');
+        value = value.replace(/<div>/g, '\n');
+        value = value.replace(/<p>/g, '\n');
+        value = value.replace(/<br>/g, '\n');
+        value = value.replace(/<\/div>/g, '').trim();
+        value = value.replace(/<[^>]+>/g, '');
+        console.log(`updating: ${id} ${prop}: ${value}`);
+        update({
+          id: id,
+          prop: prop,
+          value: value,
+        });
+      }
+    });
+  });
+
+  async function update(body) {
+     var res = await fetch(`/update/${body.id}/${body.prop}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: body.id,
+        prop: body.prop,
+        value: body.value,
+      })
+    });
+    console.log(`Update Result:\n${res.status} ${res.statusText}`);
+    if (res.status == 200)
+      toastr.success(`${res.statusText}`, 'Update Result');
+    else
+      toastr.error(`${res.statusText}`, 'Update Result');
+    return res;
+  }
+</script>
+<% } %>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZFHG1L3ZX"></script>

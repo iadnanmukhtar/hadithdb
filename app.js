@@ -15,10 +15,10 @@ const util = require('util');
 const Arabic = require('./lib/Arabic');
 const Utils = require('./lib/Utils');
 const Hadith = require('./lib/Hadith');
-const { title } = require("process");
 
 global.utils = Utils;
 global.arabic = Arabic;
+global.admin = require(`${HomeDir}/.hadithdb/admin.json`);
 
 var app = asyncify(express());
 
@@ -39,8 +39,9 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
   app.set('view engine', 'ejs');
 
   //app.use(logger('dev'));
-  app.use(bodyParser.urlencoded({ extended: false }));
-  app.use(bodyParser.json());
+  app.use(express.json());
+  // app.use(bodyParser.urlencoded({ extended: true }));
+  // app.use(bodyParser.json());
   app.use(cookieParser());
   app.use('/', express.static(path.join(__dirname, 'public')));
 
@@ -50,11 +51,14 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
   const booksRouter = require('./routes/books');
   const tagRouter = require('./routes/tag');
   const searchRouter = require('./routes/search');
+  const updateRouter = require('./routes/update');
+
   app.use('/tools', toolsRouter);
   app.use('/recent', recentRouter);
   app.use('/requests', requestsRouter);
   app.use('/books', booksRouter);
   app.use('/tag', tagRouter);
+  app.use('/update', updateRouter);
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {
@@ -226,7 +230,7 @@ async function a_dbInitApp() {
   //   await global.query(sql);
   // }
 
-  // update hadiths counts in toc
+  // // update hadiths counts in toc
   // var toc = await global.query(`SELECT * FROM toc WHERE bookId=${bookId} AND level=1 ORDER BY h1`);
   // var sql = '';
   // for (var i = 0; i < toc.length; i++) {

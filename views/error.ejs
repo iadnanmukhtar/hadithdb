@@ -8,6 +8,7 @@
       name: 'Ḥadīth Unlocked',
       url: root,
       logo: `${root}/images/logo.png`,
+      admin: false,
     };
     
     var subtitle_en = `Error ${res.statusCode} `;
@@ -42,7 +43,7 @@
   </div>
 
 <%- include('sub-views/footer.ejs'); %>
-<%- include('sub-views/scripts.ejs'); %>
+<%- include('sub-views/scripts.ejs', { site: site }); %>
 
 </body>
 </html>

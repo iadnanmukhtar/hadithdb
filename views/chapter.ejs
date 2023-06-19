@@ -7,6 +7,7 @@
       name: 'Ḥadīth Unlocked',
       url: root,
       logo: `${root}/images/logo.png`,
+      admin: (req.cookies.admin == admin.key),
     };
     
     var page = {
@@ -83,25 +84,28 @@
 
       <%# --- CHAPTER TITLE ---  %>
       <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
-        <%- results.chapter.h1 %>. <%- title_en || 'Chapter' %>
+        <%- results.chapter.h1 %>. <span class="_e" data-id="<%=results.chapter.id%>" data-prop="toc.title_en"><%- title_en || 'Chapter' %></span>
         <% if (results.hadiths.hasNext || results.hadiths.pg && results.hadiths.pg > 1) { %>
           (<%- results.hadiths.pg %>/<%- Math.ceil(results.chapter.count / global.MAX_PER_PAGE) %>)
         <% } %>
-        <small><a class="text-muted" target="_blank" href="<%- `/admin/toc/${results.chapter.id}` %>"><span class="bi bi-pencil"></span></a></small>
       </h2>
       <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar">
-        <%- arabic.toArabicDigits(results.chapter.h1+'') %>۔ <%- title %>
+        <%- arabic.toArabicDigits(results.chapter.h1+'') %>۔ <span class="_e" data-id="<%=results.chapter.id%>" data-prop="toc.title"><%- title %></span>
         <%- (results.hadiths.hasNext || results.hadiths.pg && results.hadiths.pg > 1) ? `ص ${arabic.toArabicDigits(results.hadiths.pg+'')}` : `` %>
       </h2>
       <div class="chapter-intro row">
         <div class="col-md-6 col-sm-12 intro" lang="en">
           <% if (results.chapter.intro_en) { %>
             <p><%- utils.emptyIfNull(results.chapter.intro_en).replace(/\n/g, '</p><p>') %></p>
+          <% } else { %> 
+            <p>&hellip;</p>
           <% } %>
         </div>
         <div class="col-md-6 col-sm-12 intro" lang="ar">
           <% if (results.chapter.intro) { %>
             <p><%- utils.emptyIfNull(results.chapter.intro).replace(/\n/g, '</p><p>') %></p>
+          <% } else { %> 
+            <p>&hellip;</p>
           <% } %>
         </div>
       </div>
@@ -173,23 +177,26 @@
         <hr />
         <div class="row heading">
           <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
-            <%- heading.h2 %>. <%- heading.title_en || 'Section' %>
-            <small><a class="text-muted" target="_blank" href="<%- `/admin/toc/${heading.id}` %>"><span class="bi bi-pencil"></span></a></small>
+            <%- heading.h2 %>. <span class="_e" data-id="<%=heading.id%>" data-prop="toc.title_en"><%- heading.title_en || 'Section' %></span>
           </h3>
           <h3 class="col-md-6 col-sm-12 title" lang="ar">
-            <%- arabic.toArabicDigits(heading.h2+'') %>۔ <%- heading.title %>
+            <%- arabic.toArabicDigits(heading.h2+'') %>۔ <span class="_e" data-id="<%=heading.id%>" data-prop="toc.title"><%- heading.title %></span>
           </h3>
         </div>        
         <div class="col-12">
           <div class="row heading-intro">
-            <div class="col-md-6 col-sm-12 intro" lang="en">
+            <div class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%=heading.id%>" data-prop="toc.intro_en">
               <% if (heading.intro_en) { %>
                 <p><%- utils.emptyIfNull(heading.intro_en).replace(/\n/g, '</p><p>') %></p>
+              <% } else { %> 
+                <p>&hellip;</p>
               <% } %>
             </div>
-            <div class="col-md-6 col-sm-12 intro" lang="ar">
+            <div class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%=heading.id%>" data-prop="toc.intro">
               <% if (heading.intro) { %>
                 <p><%- utils.emptyIfNull(heading.intro).replace(/\n/g, '</p><p>') %></p>
+              <% } else { %> 
+                <p>&hellip;</p>
               <% } %>
             </div>
           </div>
@@ -198,7 +205,7 @@
       <% } %>
 
       <%# --- HADITH --- %>
-      <%- include('sub-views/hadith.ejs', { hadith: results.hadiths[i], main: false, title: false }); %>
+      <%- include('sub-views/hadith.ejs', { site: site, hadith: results.hadiths[i], main: false, title: false }); %>
 
       <% } %>
 
@@ -222,7 +229,7 @@
   </div>
 
 <%- include('sub-views/footer.ejs'); %>
-<%- include('sub-views/scripts.ejs'); %>
+<%- include('sub-views/scripts.ejs', { site: site }); %>
 
 </body>
 </html>

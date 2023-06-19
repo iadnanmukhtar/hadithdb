@@ -81,12 +81,15 @@ body :lang(ar) {
 }
 
 .h .title,
-.h .title a {
+.h .title a,
+.h .tags,
+.h .tags a {
 	color: #2c9be5;
 	text-decoration: none;
 }
 
-.h .title a:hover {
+.h .title a:hover,
+.h .tags a:hover {
 	text-decoration: underline;
 }
 

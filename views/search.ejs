@@ -7,6 +7,7 @@
         name: 'Ḥadīth Unlocked',
         url: root,
         logo: `${root}/images/logo.png`,
+        admin: (req.cookies.admin == admin.key),
     };
 
     var page = {
@@ -109,7 +110,7 @@
       <% for (var i = 0; i < results.length; i++) { 
         var main = !q; %>
 
-        <%- include('sub-views/hadith.ejs', { hadith: results[i], title: true, main: main }); %>
+        <%- include('sub-views/hadith.ejs', { site: site, hadith: results[i], title: true, main: main }); %>
 
         <% if (!q && results[i].similar && results[i].similar.length > 0) { %>
         <div class="row similar-list">
@@ -125,7 +126,7 @@
           <% for (var j = 0; j < results[i].similar.length; j++) { 
             var rating = Math.round((results[i].similar[j].rating - 0.5)*100/50*100/25);
           %>
-            <%- include('sub-views/hadith.ejs', { hadith: results[i].similar[j], main: true, title: true, rating: rating }); %>
+            <%- include('sub-views/hadith.ejs', { site: site, hadith: results[i].similar[j], main: true, title: true, rating: rating }); %>
           <% } %>
         </div>
         <% } %>
@@ -158,7 +159,7 @@
   </div>
 
 <%- include('sub-views/footer.ejs'); %>
-<%- include('sub-views/scripts.ejs'); %>
+<%- include('sub-views/scripts.ejs', { site: site }); %>
 
 </body>
 </html>

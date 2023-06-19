@@ -14,6 +14,7 @@
       name: 'Ḥadīth Unlocked',
       url: root,
       logo: `${root}/images/logo.png`,
+      admin: (req.cookies.admin == admin.key),
     };
     
     var page = {
@@ -92,7 +93,7 @@
   </div>
 
 <%- include('sub-views/footer.ejs'); %>
-<%- include('sub-views/scripts.ejs'); %>
+<%- include('sub-views/scripts.ejs', { site: site }); %>
 
 </body>
 </html>
