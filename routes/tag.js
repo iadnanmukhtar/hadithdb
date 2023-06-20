@@ -14,6 +14,21 @@ const router = asyncify(express.Router());
 router.get('/:tag', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
+
+  if (req.params.tag == '_list') {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    var result = global.tags;
+    if (req.query.s) {
+      result = global.tags.filter(function (t) {
+        return t.text_en.includes(req.query.s);
+      });
+    }
+    res.end(JSON.stringify(result.map(function (t) {
+      return { id: t.text_en, label: t.text_en, value: t.text_en };
+    })));
+    return;
+  }
+
   var tag = global.tags.find(function (val) {
     return (val.text_en == req.params.tag);
   });
