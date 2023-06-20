@@ -983,6 +983,38 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "part_en",
+                "verbose": "part_en",
+                "control": {
+                    "text": true
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "part",
+                "verbose": "part",
+                "control": {
+                    "text": true
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {
