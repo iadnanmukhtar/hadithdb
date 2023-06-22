@@ -1758,6 +1758,22 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "cnt_used",
+                "verbose": "cnt_used",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {
@@ -3453,6 +3469,107 @@
         ],
         "mainview": {
             "show": false
+        },
+        "listview": {
+            "order": {},
+            "page": 25
+        },
+        "editview": {
+            "readonly": false
+        }
+    },
+    "v_tags": {
+        "slug": "v_tags",
+        "table": {
+            "name": "v_tags",
+            "pk": "",
+            "verbose": "v_tags",
+            "view": true
+        },
+        "columns": [
+            {
+                "name": "id",
+                "verbose": "id",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": false,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "text_en",
+                "verbose": "text_en",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(45)",
+                "allowNull": false,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "text",
+                "verbose": "text",
+                "control": {
+                    "text": true
+                },
+                "type": "varchar(90)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "description",
+                "verbose": "description",
+                "control": {
+                    "text": true
+                },
+                "type": "mediumtext",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "cnt_used",
+                "verbose": "cnt_used",
+                "control": {
+                    "text": true
+                },
+                "type": "bigint",
+                "allowNull": false,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            }
+        ],
+        "mainview": {
+            "show": true
         },
         "listview": {
             "order": {},
