@@ -88,6 +88,10 @@ body :lang(ar) {
 	text-decoration: none;
 }
 
+.tags ._e {
+	border: 0;
+}
+
 .h .title a:hover,
 .h .tags a:hover {
 	text-decoration: underline;

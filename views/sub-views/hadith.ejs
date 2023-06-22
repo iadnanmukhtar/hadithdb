@@ -59,17 +59,21 @@
 	<% } %>
 	<% if (hadith.tags || site.admin) {
 		var tags = null;
-		if (hadith.tags) {
+		if (hadith.tags)
 			tags = hadith.tags.replace(/[{}]/g, '');
-			tags = tags.split(/ +/).map(tag => {
-				return `<a href="/tag/${tag}">${tag}</a>`;
-			});
-			tags = tags.join(' ');
-		}
 		%>
 		<div class="tags">
-			# <span class="<%=_e%>" data-id="<%= hadith.id %>" data-prop="hadith.tags"><%- tags || '&hellip;' %></span>
-		</div>
+			<% if (site.admin) { %>
+				<textarea class="<%=_e%> d-inline-block w-100" placeholder="#hashtag" data-id="<%= hadith.id %>" data-prop="hadith.tags"><%= tags %></textarea>
+			<% } else {
+				tags = tags.split(/ +/).map(tag => {
+				return `<a href="/tag/${tag}">${tag}</a>`;
+				});
+				tags = tags.join(' ');
+			%>
+				# <div class="<%=_e%> d-inline-block" data-id="<%= hadith.id %>" data-prop="hadith.tags"><%- tags || '&hellip;' %></div>
+			<% } %>
+			</div>
 	<% } %>
 	<% if (main) { %>
 		<div>

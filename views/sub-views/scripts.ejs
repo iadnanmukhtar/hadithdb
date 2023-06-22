@@ -21,7 +21,7 @@
       if ($(this).attr('editing') == 'true') {
         var id = $(this).data('id');
         var prop = $(this).data('prop');
-        var value = $(this).html();
+        var value = $(this).val();
         value = value.replace(/&nbsp;/g, ' ');
         value = value.replace(/<div>/g, '\n');
         value = value.replace(/<p>/g, '\n');
@@ -83,7 +83,7 @@
           }, response );
         },
         search: function() {
-          var term = extractLast( $(this).text() );
+          var term = extractLast( $(this).val() );
           if ( term.length < 2 )
             return false;
         },
@@ -91,10 +91,12 @@
           return false;
         },
         select: function( event, ui ) {
-          var terms = split( $(this).text() );
+          var terms = split($(this).val());
           terms.pop();
-          terms.push( ui.item.value );
-          $(this).text(terms.join(' ') + '');
+          terms.push(ui.item.value);
+          terms.push('');
+          $(this).val(terms.join(' '));
+          $(this).focus().end();
           return false;
         }
       });
