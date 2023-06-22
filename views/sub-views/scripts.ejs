@@ -21,7 +21,11 @@
       if ($(this).attr('editing') == 'true') {
         var id = $(this).data('id');
         var prop = $(this).data('prop');
-        var value = $(this).val();
+        var value = '';
+        if ($(this).is('textarea'))
+          value = $(this).val();
+        else
+          value = $(this).html();
         value = value.replace(/&nbsp;/g, ' ');
         value = value.replace(/<div>/g, '\n');
         value = value.replace(/<p>/g, '\n');
