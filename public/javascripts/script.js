@@ -6,21 +6,19 @@ $(function () {
 	setDirection();
 	$('#search-bar').on('input', setDirection);
 
-	// $('#search-bar').on('keyup', function () {
-	// 	var value = cleanText($(this).val());
-	// 	$('#toc tbody tr').filter(function () {
-	// 		var content = cleanText($(this).text());
-	// 		$(this).toggle(content.indexOf(value) > -1);
-	// 	});
-	// });
+	$('#search-bar').on('keyup', function () {
+		var value = cleanText($(this).val());
+		$('#toc tbody tr').filter(function () {
+			var content = cleanText($(this).text());
+			$(this).toggle(content.indexOf(value) > -1);
+		});
+	});
 
 	$('#toc2').on('hidden.bs.collapse', function (event) {
-		console.log('hello');
 		$('.toggle').removeClass('bi-toggle-on');
 		$('.toggle').addClass('bi-toggle-off');
 	});
 	$('#toc2').on('shown.bs.collapse', function(event) {
-		console.log('hello');
 		$('.toggle').removeClass('bi-toggle-off');
 		$('.toggle').addClass('bi-toggle-on');
 	});
@@ -28,6 +26,7 @@ $(function () {
 });
 
 function setDirection() {
+	console.log('here');
 	if ($('#search-bar').length) {
 		if ($('#search-bar').val().match(/^[\u0600-\u06ff]+/))
 			$('#search-bar').css({ 'direction': 'rtl' });

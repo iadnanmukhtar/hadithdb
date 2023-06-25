@@ -63,18 +63,28 @@
 
     <main class="search-results">
 
-      <!-- performed poorly in A/B test
-      <div class="mb-2 banner text-center">
-        <img src="/images/asam.svg" alt="Allāhumma ṣalli ʿalá Muḥammad" />
-      </div>
-      -->
-
-      <form action="/">
-        <div class="container mb-3">
+      <form class="form-group" action="/">
+        <div class="search container mb-3">
           <div class="row justify-content-md-center">
             <div class="col-md-6">
-              <input id="search-bar" name="q" type="text" class="form-control" value="<%= q %>"
-                placeholder="Search aḥādīth in English or بالعربية">
+
+              <div class="input-group mb-3">
+                <input id="search-bar" name="q" type="text" class="form-control" value="<%= q %>" placeholder="Search aḥādīth in English or بالعربية">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <i class="bi bi-book"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+
+                  <% global.books.filter(b => {return !b.virtual;}).forEach(bk => { %>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
+                      <label class="form-check-label"><%=bk.shortName_en%></label>
+                    </div>
+                    <% }); %>
+
+                </div>
+              </div>
+
             </div>
           </div>
         </div>

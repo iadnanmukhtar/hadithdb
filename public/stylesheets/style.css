@@ -23,8 +23,18 @@ body :lang(ar) {
 	}
 }
 
-.dropdown-menu {
+.dropdown-menu,
+.form-check {
 	font-size: 0.90rem;
+}
+
+.dropdown-menu {
+	max-height: 11rem;
+	overflow-y: scroll;
+}
+
+.search .form-check {
+	margin-left: 0.5rem;
 }
 
 .pagination a,

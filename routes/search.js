@@ -77,9 +77,11 @@ router.get('/', async function (req, res, next) {
       return;
     }
     try {
-      results = await Search.a_searchText(req.query.q);
+      if (req.query.b && (typeof req.query.b) != 'object')
+        req.query.b = [req.query.b];
+      results = await Search.a_searchText(req.query.q, req.query.b);
     } catch (err) {
-      var message = `Error searching [${req.query.q}]`;
+      var message = `Error searching [${req.query.q} ${req.query.b}]`;
       console.error(message + `\n${err.stack}`);
       throw createError(500, message);
     }
@@ -94,8 +96,9 @@ router.get('/', async function (req, res, next) {
       res.end(Utils.toTSV(results, keyNames));
     } else {
       res.render('search', {
+        results: results,
         q: req.query.q,
-        results: results
+        b: (req.query.b ? req.query.b : []),
       });
     }
   } else {
@@ -104,7 +107,8 @@ router.get('/', async function (req, res, next) {
       res.redirect(`/${results[0].book.alias}:${results[0].num}`);
     } else {
       res.render('search', {
-        results: results
+        results: results,
+        b: [],
       });
     }
   }
@@ -166,15 +170,17 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       res.end(Utils.toTSV(results, keyNames));
     } else {
       res.render('search', {
+        results: results,
         book: results[0].book,
         q: req.query.q,
-        results: results
+        b: [],
       });
     }
   } else {
     res.render('search', {
+      results: results,
       q: req.query.q,
-      results: results
+      b: [],
     });
   }
 });
