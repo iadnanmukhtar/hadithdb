@@ -18,6 +18,7 @@
       $(this).attr('contenteditable', 'true');
       $(this).on('input', function () {
         $(this).attr('editing', 'true');
+        $(this).removeClass('partial');
       });
       $(this).blur(function () {
         if ($(this).attr('editing') == 'true') {
