@@ -57,9 +57,10 @@
 
 </head>
 <body>
-  <div class="col-lg-8 mx-auto p-3 py-md-5">
 
-    <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
+
+  <div class="container col-lg-8 mx-auto">
 
     <main class="search-results">
 
@@ -69,7 +70,7 @@
             <div class="col-md-6">
 
               <div class="input-group mb-3">
-                <input id="search-bar" name="q" type="text" class="form-control" value="<%= q %>" placeholder="Search aḥādīth in English or بالعربية">
+                <input id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="Search aḥādīth in English or بالعربية ...">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="bi bi-book"></i>
                 </button>

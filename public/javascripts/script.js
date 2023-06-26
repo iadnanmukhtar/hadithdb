@@ -3,15 +3,18 @@
 $(function () {
 	'use strict';
 
-	setDirection();
-	$('#search-bar').on('input', setDirection);
+	setDirection($('#search-bar'));
 
-	$('#search-bar').on('keyup', function () {
-		var value = cleanText($(this).val());
-		$('#toc tbody tr').filter(function () {
-			var content = cleanText($(this).text());
-			$(this).toggle(content.indexOf(value) > -1);
-		});
+	$(window).scroll(function() {
+		if ($(document).scrollTop() > 50) {
+		  $('nav').addClass('shrink');
+		} else {
+		  $('nav').removeClass('shrink');
+		}
+	});
+	
+	$('#search-bar, .search-click').on('input', function () {
+		setDirection($(this));
 	});
 
 	$('#toc2').on('hidden.bs.collapse', function (event) {
@@ -25,13 +28,12 @@ $(function () {
 
 });
 
-function setDirection() {
-	console.log('here');
-	if ($('#search-bar').length) {
-		if ($('#search-bar').val().match(/^[\u0600-\u06ff]+/))
-			$('#search-bar').css({ 'direction': 'rtl' });
+function setDirection(el) {
+	if (el.length) {
+		if (el.val().match(/^[\u0600-\u06ff]+/))
+			el.css({ 'direction': 'rtl' });
 		else
-			$('#search-bar').css({ 'direction': 'ltr' });
+			el.css({ 'direction': 'ltr' });
 	}
 }
 
