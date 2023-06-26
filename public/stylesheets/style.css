@@ -68,17 +68,8 @@ nav .nav-link {
 	display: none;
 }
 
-.search-click-toggle:hover input {
-	display: inherit;
-	width: 10rem;
-}
-
 .search-click-toggle i {
 	display: inherit;
-}
-
-.search-click-toggle:hover i {
-	display: none;
 }
 
 .search .form-check {

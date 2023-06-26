@@ -12,7 +12,18 @@ $(function () {
 		  $('nav').removeClass('shrink');
 		}
 	});
+
+	$('.search-click-toggle a').click(function () {
+		$('.search-click-toggle a').hide();
+		$('.search-click-toggle input').show();
+		$('.search-click-toggle input').focus();
+	});
 	
+	$('.search-click-toggle input').on('blur', function () {
+		$('.search-click-toggle a').show();
+		$('.search-click-toggle input').hide();
+	});
+
 	$('#search-bar, .search-click').on('input', function () {
 		setDirection($(this));
 	});
