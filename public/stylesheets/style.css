@@ -77,6 +77,7 @@ body :lang(ar) {
 .h .chain,
 .text-muted {
 	color: #a0a0a0 !important;
+	text-indent: 2em;
 }
 
 .h .body,
@@ -105,6 +106,24 @@ body :lang(ar) {
 .h .title a:hover,
 .h .tags a:hover {
 	text-decoration: underline;
+}
+
+.partial {
+	display: block;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+			line-clamp: 3; 
+	-webkit-box-orient: vertical;
+}
+
+.partial:hover {
+	height: fit-content;
+	overflow: visible;
+	display: block;
+	-webkit-line-clamp: unset;
+			line-clamp: unset; 
+	-webkit-box-orient: unset;
 }
 
 .toc a,
