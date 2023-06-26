@@ -122,7 +122,7 @@
       <% for (var i = 0; i < results.length; i++) { 
         var main = !q; %>
 
-        <%- include('sub-views/hadith.ejs', { site: site, hadith: results[i], title: true, main: main, editable: !q }); %>
+        <%- include('sub-views/hadith.ejs', { site: site, hadith: results[i], title: true, main: main, editable: true }); %>
 
         <% if (!q && results[i].similar && results[i].similar.length > 0) { %>
         <div class="row similar-list">
