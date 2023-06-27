@@ -33,7 +33,7 @@ main {
 	background-color: white;
 	position: fixed;
 	z-index: 1000;
-	border-bottom: 1px solid #f0f0f0;
+	border-bottom: 1px solid var(--bs-border-color);
 }
 
 nav.shrink .title,
@@ -76,6 +76,20 @@ nav .nav-link {
 
 .search .form-check {
 	margin-left: 0.5rem;
+}
+
+#search-bar + .btn-outline-secondary {
+	border-color: var(--bs-border-color);
+	color: #2c9be5;
+}
+
+#search-bar + .btn-outline-secondary:hover,
+#search-bar + .btn-outline-secondary:focus,
+#search-bar + .btn-outline-secondary:active,
+#search-bar + .btn.show {
+	border-color: #2c9be5;
+	background-color: #2c9be5;
+	color: white;
 }
 
 .pagination a,
