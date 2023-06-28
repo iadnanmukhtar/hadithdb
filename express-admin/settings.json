@@ -2251,7 +2251,7 @@
                 "control": {
                     "text": true
                 },
-                "type": "varchar(15)",
+                "type": "varchar(45)",
                 "allowNull": false,
                 "defaultValue": null,
                 "listview": {
