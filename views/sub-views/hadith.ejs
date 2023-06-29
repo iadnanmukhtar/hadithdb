@@ -46,15 +46,30 @@
 			<%- hadith.footnote_en || '&hellip;' %>
 		</div>
 	<% } %>
-	<em class="grade">– <span title="Grade ID <%=hadith.grade.id%>" class="<%=_e%>" data-id="<%= hadith.id %>" data-prop="hadith.gradeId"><%- hadith.grade.grade_en %></span>&nbsp;(<span title="Grader ID <%=hadith.grader.id%>" class="<%=_e%>" data-id="<%= hadith.id %>" data-prop="hadith.graderId"><%- hadith.grader.shortName_en %></span>)</em>
+	<em class="grade">
+		<% if (site.admin) { %>
+		<select dir="rtl" class="<%=_e%>" data-id="<%= hadith.id %>" data-prop="hadith.gradeId">
+			<% global.grades.forEach(function (grade) { %>
+				<option value="<%=grade.id%>" <%=(grade.id == hadith.grade.id) ? 'selected' :''%>><%=grade.grade%></option>
+			<% }); %>
+		</select> 
+		(<select class="<%=_e%>" data-id="<%= hadith.id %>" data-prop="hadith.graderId">
+			<% global.graders.forEach(function (grader) { %>
+				<option value="<%=grader.id%>" <%=(grader.id == hadith.grader.id) ? 'selected' :''%>><%=grader.shortName_en%></option>
+			<% }); %>
+		</select>)
+		<% } else { %>
+		– <span><%- hadith.grade.grade_en %></span>&nbsp;(<span title="<%=hadith.grader.name_en%>"><%- hadith.grader.shortName_en %></span>)
+		<% } %>
+	</em>
 	<% if ((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) { %>
 		<div class="title">
 		§ 
 		<% if (hadith.section) { %>
-			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%= hadith.section.title_en %>"><%= utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
 		<% } %>
 		<% if (hadith.chapter) { %>
-			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%= hadith.chapter.title_en %>"><%= utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		<% } %>
 		<a class="cmd-btn" title="Report an issue" href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
 		</div>
@@ -105,16 +120,16 @@
 		</div>
 	<%  } %>
 	<% if (hadith.grade.id != -1) { %>
-	<em class="grade">– <%- hadith.grade.grade %>&nbsp;(<%- hadith.grader.shortName %>)</em>
+	<em class="grade">– <%- hadith.grade.grade %>&nbsp;(<span title="<%= hadith.grader.name %>"><%- hadith.grader.shortName %></span>)</em>
 	<%  } %>
 	<% if ((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) { %>
 		<div class="title">
 		§ 
 		<% if (hadith.section) { %>
-			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
+			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%= hadith.section.title %>"><%= utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
 		<% } %>
 		<% if (hadith.chapter) { %>
-			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
+			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%= utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
 		<% } %>
 		</div>
 	<% } %>

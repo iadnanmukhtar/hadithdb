@@ -25,7 +25,7 @@
           var id = $(this).data('id');
           var prop = $(this).data('prop');
           var value = '';
-          if ($(this).is('textarea'))
+          if ($(this).is('textarea') || $(this).is('select'))
             value = $(this).val();
           else
             value = $(this).html();
