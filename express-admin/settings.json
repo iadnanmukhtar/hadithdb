@@ -2433,7 +2433,7 @@
                     "textarea": true,
                     "editor": "text-en"
                 },
-                "type": "mediumtext",
+                "type": "varchar(512)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {
@@ -2450,7 +2450,7 @@
                     "textarea": true,
                     "editor": "text-ar"
                 },
-                "type": "mediumtext",
+                "type": "varchar(512)",
                 "allowNull": true,
                 "defaultValue": null,
                 "listview": {

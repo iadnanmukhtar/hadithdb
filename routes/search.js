@@ -145,7 +145,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.res = res;
   var results = await Search.a_lookupByRef(req.params.bookAlias, req.params.num);
   for (var i = 0; i < results.length; i++) {
-    results[i].similar = await Hadith.a_dbGetSimilarCandidates(results[i].id);
+    results[i].similar = await Hadith.a_dbGetSimilarCandidates(results[i]);
     var bookSet = new Set();
     for (var j = 0; results[i].similar && j < results[i].similar.length; j++) {
       var book = global.books.find(function (value) {
