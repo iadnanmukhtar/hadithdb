@@ -2178,7 +2178,7 @@
                     "show": false
                 },
                 "editview": {
-                    "show": false
+                    "show": true
                 }
             },
             {
