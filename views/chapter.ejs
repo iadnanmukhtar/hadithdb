@@ -4,7 +4,7 @@
 <% 
     var root = 'https://hadith.quranunlocked.com';
     var site = {
-      name: 'Ḥadīth Unlocked',
+      name: 'Ḥadīth',
       url: root,
       logo: `${root}/images/logo.png`,
       admin: (req.cookies.admin == admin.key),
@@ -12,7 +12,7 @@
     
     var page = {
       menu: 'Books',
-      title_en: utils.truncate(`${site.name} | ${book.name_en} Chapter ${results.chapter.h1}: ${results.chapter.title_en}`, 70),
+      title_en: `${site.name} | ${book.shortName_en} Chapter ${results.chapter.h1}: ${results.chapter.title_en}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${results.chapter.h1}`,

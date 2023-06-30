@@ -4,7 +4,7 @@
 <% 
     var root = 'https://hadith.quranunlocked.com';
     var site = {
-        name: 'Ḥadīth Unlocked',
+        name: 'Ḥadīth',
         url: root,
         logo: `${root}/images/logo.png`,
         admin: (req.cookies.admin == admin.key),
@@ -21,9 +21,9 @@
         page.subtitle = '';
     } else if (results.length > 0 && typeof book !== 'undefined') {
         page.canonical = `/${book.alias}:${results[0].num}`;
-        page.title_en = `${site.name} | ${book.name_en} ${results[0].num} (${book.name})`;
+        page.title_en = `${site.name} | ${book.shortName_en} (${book.shortName}) ${book.alias}:${results[0].num}`;
         if (results[0].title_en)
-          page.title_en = `${site.name} | ${results[0].title_en} ${book.alias}:${results[0].num}`;
+          page.title_en = `${site.name} | ${book.alias}:${results[0].num} ${results[0].title_en}`;
         page.title = `${book.name} ${results[0].num_ar}`;
         page.subtitle_en = `${book.shortName_en}`;
         page.subtitle = `${book.shortName}`;

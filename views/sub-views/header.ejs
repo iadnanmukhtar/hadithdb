@@ -1,11 +1,11 @@
 <nav class="navbar fixed-top container col-lg-8 mx-auto">
-	<div class="row">
+	<div class="row ms-1">
 
 		<div class="col-md-4 col-1 text-nowrap">
-			<a href="/" class="d-flex text-dark text-decoration-none">
-				<img src="/images/logo.svg" width="32" height="32" class="me-2" role="img">
+			<span class="d-flex">
+				<a href="/"><img src="/images/logo.svg" width="32" height="32" class="me-2" role="img"></a>
 				<h1 class="fs-4 d-md-block d-none">
-					<div class="title"><%- site.name %></div>
+					<div class="title"><a href="/" class="text-dark text-decoration-none">Ḥadīth Unlocked</a></div>
 					<% if (page.subtitle_en) { %>
 					<div class="subtitle fs-6 text-muted">
 						<%- page.subtitle_en %>
@@ -13,8 +13,8 @@
 					</div>
 					<% } %>
 				</h1>
-				<h1 class="fs-4 d-md-none d-block">Ḥadīth</h1>
-			</a>
+				<a href="/" class="mt-1 text-dark text-decoration-none"><h1 class="fs-4 d-md-none d-block">Ḥadīth</h1></a>
+			</span>
 		</div>
 
 		<div class="col">
