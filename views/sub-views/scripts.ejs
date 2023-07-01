@@ -5,7 +5,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="/javascripts/script.js"></script> 
 
-<% if (site.admin) { %>
+<% if (site.editMode) { %>
 
 <!-- Inline Editing -->
 <script>
@@ -14,35 +14,32 @@
     toastr.options.closeMethod = 'fadeOut';
     toastr.options.closeDuration = 300;
     toastr.options.closeEasing = 'swing';
-    $('._e*').each(function () {
-      $(this).attr('contenteditable', 'true');
-      $(this).on('input', function () {
-        $(this).attr('editing', 'true');
-        $(this).removeClass('partial');
-      });
-      $(this).blur(function () {
-        if ($(this).attr('editing') == 'true') {
-          var id = $(this).data('id');
-          var prop = $(this).data('prop');
-          var value = '';
-          if ($(this).is('textarea') || $(this).is('select'))
-            value = $(this).val();
-          else
-            value = $(this).html();
-          value = value.replace(/&nbsp;/g, ' ');
-          value = value.replace(/<div>/g, '\n');
-          value = value.replace(/<p>/g, '\n');
-          value = value.replace(/<br>/g, '\n');
-          value = value.replace(/<\/div>/g, '').trim();
-          value = value.replace(/<[^>]+>/g, '');
-          update({
-            id: id,
-            prop: prop,
-            value: value,
-          });
-        }
-      });
-    });
+
+    function changeListener(e) {
+      if ($(this).attr('editing') == 'true') {
+        var id = $(this).data('id');
+        var prop = $(this).data('prop');
+        var value = '';
+        if ($(this).is('textarea') || $(this).is('select'))
+          value = $(this).val();
+        else if ($(this).attr('type') == 'checkbox')
+          value = $(this).prop('checked') ? "1" : "0";
+        else
+          value = $(this).html();
+        value = value.replace(/&nbsp;/g, ' ');
+        value = value.replace(/<div>/g, '\n');
+        value = value.replace(/<p>/g, '\n');
+        value = value.replace(/<br>/g, '\n');
+        value = value.replace(/<\/div>/g, '').trim();
+        value = value.replace(/<[^>]+>/g, '');
+        update({
+          id: id,
+          prop: prop,
+          value: value,
+        });
+      }
+      e.stopPropagation();
+    }
 
     async function update(body) {
       var res = await fetch(`/update/${body.id}/${body.prop}`, {
@@ -69,6 +66,15 @@
     function extractLast(term) {
       return split(term).pop();
     }
+
+    $('._e*').each(function () {
+      $(this).attr('contenteditable', 'true');
+      $(this).on('input', function () {
+        $(this).attr('editing', 'true');
+        $(this).removeClass('partial');
+      });
+      $(this).on('blur', changeListener);
+    });
 
     $(".tags ._e")
       // don't navigate away from the field on tab when selecting an item

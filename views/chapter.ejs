@@ -9,6 +9,7 @@
       logo: `${root}/images/logo.png`,
       admin: (req.cookies.admin == admin.key),
     };
+    site.editMode = (site.admin && req.cookies.editMode == 1);
     
     var page = {
       menu: 'Books',

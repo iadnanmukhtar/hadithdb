@@ -9,6 +9,7 @@
       logo: `${root}/images/logo.png`,
       admin: (req.cookies.admin == admin.key),
     };
+    site.editMode = (site.admin && req.cookies.editMode == 1);
     
     var page = {
       menu: 'Books',
@@ -55,6 +56,12 @@
       <div class="row text-center justify-content-center">
         <h2 class="_e fs-3" title="<%- book.name %>" data-id="<%=book.id%>" data-prop="book.name_en"><%- book.name_en %></h2>
         <h2 class="_e fs-3" title="<%- book.name_en %>" data-id="<%=book.id%>" data-prop="book.name"><%- book.name %></h2>
+        <% if (site.editMode) { %>
+          <h3>
+            <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName_en"><%- book.shortName_en %></span>
+            <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName"><%- book.shortName %></span>
+          </h3>
+        <% } %>
       </div>
     </div>
 

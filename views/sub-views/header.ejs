@@ -21,8 +21,8 @@
 
 			<form action="/">
 			<ul class="nav justify-content-end">
-				<li class="nav-item"><a class="nav-link" aria-current="page" href="/">Home</a></li>
-				<li class="nav-item"><a class="nav-link" aria-current="page" href="/books">Books</a></li>
+				<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+				<li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
 				<li class="nav-item dropdown">
 					<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
 					<ul class="dropdown-menu dropdown-menu-end">
@@ -30,6 +30,11 @@
 						<li><a class="dropdown-item" href="/requests">Translation Requests</a></li>
 					</ul>
 				</li>
+				<% if (site.admin) { %>
+					<li class="nav-item"><a class="nav-link" href="#" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
+						<i class="bi bi-file-text<%=site.editMode ? '-fill' : ''%>"></i></a>
+					</li>
+				<% } %>
 				<li class="nav-item search-click-toggle <%= (page.menu == 'Home' || page.menu == 'Search') ? 'd-none' : '' %>">
 					<input type="text" class="form-control search-click" name="q" placeholder="Search aḥādīth..." />
 					<a class="nav-link"><i class="bi bi-search"></i></a>

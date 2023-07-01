@@ -10,8 +10,7 @@
       logo: `${root}/images/logo.png`,
       admin: (req.cookies.admin == admin.key),
     };
-    if (req.cookies.admin == 'b8dff5ea-bd35-459d-9481-0c2f0b287a9c')
-      site.admin = true;
+    site.editMode = (site.admin && req.cookies.editMode == 1);
 
     var subtitle_en = 'Recent Updates';
     var page = {
