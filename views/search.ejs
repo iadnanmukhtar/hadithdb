@@ -77,7 +77,7 @@
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
 
-                  <% global.books.filter(b => {return !b.virtual;}).forEach(bk => { %>
+                  <% global.books.filter(b => {return !b.virtual && !b.hidden;}).forEach(bk => { %>
                     <div class="form-check">
                       <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
                       <label class="form-check-label"><%=bk.shortName_en%></label>
