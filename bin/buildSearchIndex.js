@@ -50,7 +50,9 @@ async function getData() {
 	var dbPool = MySQL.createPool(MySQLConfig.connection);
 	var query = util.promisify(dbPool.query).bind(dbPool);
 	var rows = await query(`
-		SELECT * FROM v_hadiths 
+		SELECT * FROM v_hadiths_searchindex
+		-- WHERE hId IN (SELECT DISTINCT hadithId FROM hadiths_tags WHERE tagId=166)
+		-- WHERE book_id=0
 		ORDER BY ordinal
 		-- LIMIT 10`);
 	dbPool.end();
