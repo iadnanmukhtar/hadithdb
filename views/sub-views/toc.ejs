@@ -1,0 +1,59 @@
+<% 
+	if (toc.chapter)
+		toc.chapter.offset = Math.floor(toc.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+	hashtag = (toc.book.alias + '_' + toc.num).replace(/[-\:]/, '_');
+	var _e = '_e';
+	var _p = searchResult ? 'partial' : '';
+%>
+
+<!-- English Hadith ----------------------------------------- -->
+
+<div class="col-md-6 col-sm-12 h" lang="en">
+	<p>
+		<b><a title="<%-toc.tId%>" href="/<%=toc.book_alias%>/<%=toc.h1%>"><%= `${toc.book.shortName_en}` %></a></b> –
+		<%= toc.h2_title_en || toc.h1_title_en || 'Section' %>
+	</p>
+	<div class="body">
+		<p><%- utils.emptyIfNull(toc.intro_en).replace(/\n/g, '</p><p>') %></p>
+	</div>
+	<% if (title && (toc.chapter || toc.section)) { %>
+		<div class="title">
+			§ 
+			<% if (toc.h2) { %>
+				<a title="<%= toc.section.title_en %>"><%- utils.truncate(toc.h2_title_en, 30, true) || 'Section' %></a>
+			<% } %>
+			<% if (toc.h1) { %>
+				in <a href="/<%=toc.book_alias%>/<%=toc.h1%>"><%- utils.truncate(toc.h1_title_en, 30, true) || 'Chapter' %></a>
+			<% } %>
+		</div>
+	<% } %>
+</div>
+
+<!-- Arabic Hadith ----------------------------------------- -->
+
+<div class="col-md-6 cols-sm-12 h" lang="ar">
+	<p>
+		<b><a title="<%-toc.tId%>" href="/<%=toc.book_alias%>/<%=toc.h1%>"><%= `${toc.book.shortName}` %></a></b> –
+		<%= toc.h2_title || toc.h1_title || 'باب' %>
+	</p>
+	<div class="body">
+		<p><%- utils.emptyIfNull(toc.intro).replace(/\n/g, '</p><p>') %></p>
+	</div>
+	<% if (title && (toc.chapter || toc.section)) { %>
+		<div class="title">
+		§ 
+		<% if (toc.h2) { %>
+			<a title="<%= toc.section.title %>"><%- utils.truncate(toc.section.title, 60, true) || 'بَاب' %></a>
+		<% } %>
+		<% if (toc.chapter) { %>
+			في <a href="/<%=toc.book_alias%>/<%=toc.h1%>" title="<%- toc.chapter.title %>"><%- utils.truncate(toc.chapter.title, 60, true) || 'كِتَاب' %></a>
+		<% } %>
+		</div>
+	<% } %>
+</div>
+
+<% if (title) { %>
+	<hr class="mt-2" />
+<% } else { %>
+	<div class="mt-2"></div>
+<% } %>

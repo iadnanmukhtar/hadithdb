@@ -31,7 +31,7 @@
 					</ul>
 				</li>
 				<% if (site.admin) { %>
-					<li class="nav-item"><a class="nav-link" href="#" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
+					<li class="nav-item"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
 						<i class="bi bi-file-text<%=site.editMode ? '-fill' : ''%>"></i></a>
 					</li>
 				<% } %>
