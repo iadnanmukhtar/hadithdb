@@ -21,7 +21,6 @@ router.post('/:id/:prop', async function (req, res, next) {
     var col = prop.split(/\./)[1];
     if (req.body.value == '…')
       req.body.value = null;
-    console.log(`updating ${req.params.id} ${prop}: ${(req.body.value + '').trim().substring(0, 20)}`);
 
     if (type == 'hadith') {
       var result = "";
@@ -90,6 +89,7 @@ router.post('/:id/:prop', async function (req, res, next) {
   }
   res.status(status.code);
   res.end(JSON.stringify(status));
+  console.log(`updated ${req.params.id} ${prop}: ${(req.body.value + '').trim().substring(0, 20)}`);
 });
 
 function sql(s) {
