@@ -70,6 +70,11 @@ router.post('/:id/:prop', async function (req, res, next) {
       var result = await global.query(`UPDATE toc SET lastmod_user='admin', ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
       status.code = 200;
       status.message = result.message;
+      try {
+        await Hadith.a_ReindexTOC(req.params.id);
+      } catch (err) {
+        console.log(`${err.message}:\n${err.stack}`);
+      }
 
     } else if (type == 'book') {
       var result = await global.query(`UPDATE books SET ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);

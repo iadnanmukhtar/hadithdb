@@ -1,6 +1,4 @@
 <% 
-	if (toc.chapter)
-		toc.chapter.offset = Math.floor(toc.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
 	hashtag = (toc.book.alias + '_' + toc.num).replace(/[-\:]/, '_');
 	var _e = '_e';
 	var _p = searchResult ? 'partial' : '';
@@ -10,19 +8,28 @@
 
 <div class="col-md-6 col-sm-12 h" lang="en">
 	<p><strong>
-		<a title="<%-toc.tId%>" href="/<%=toc.book_alias%>/<%=toc.h1%>"><%= `${toc.book.shortName_en}` %></a> –
-		<%= toc.h2_title_en || toc.h1_title_en || 'Section' %>
+		<% if (toc.section) { %>
+			<a href="/<%=toc.book.alias%>/<%=toc.chapter.h1%><%=toc.chapter.offset%>#S<%=toc.section.h2%>"><%= `${toc.book.shortName_en}` %> Section <%=toc.chapter.h1%>.<%=toc.section.h2%></a> –
+			<span class="<%=_e%>" data-id="<%=toc.section.id%>" data-prop="toc.title_en"><%= toc.section.title_en || 'Section' %></span>
+		<% } else if (toc.chapter) { %>
+			<a href="/<%=toc.book.alias%>/<%=toc.chapter.h1%>"><%= `${toc.book.shortName_en}` %> Chapter <%=toc.chapter.h1%></a> –
+			<span class="<%=_e%>" data-id="<%=toc.chapter.id%>" data-prop="toc.title_en"><%= toc.chapter.title_en || 'Chapter' %></span>
+		<% } %>
 	</strong></p>
 	<div class="body">
-		<p><%- utils.emptyIfNull(toc.h2_intro_en || toc.h1_intro_en).replace(/\n/g, '</p><p>') %></p>
+		<% if (toc.section) { %>
+			<p class="<%=_e%> <%=_p%>" data-id="<%=toc.section.id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h2_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
+		<% } else if (toc.chapter) { %>
+			<p class="<%=_e%> <%=_p%>" data-id="<%=toc.chapter.id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h1_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
+		<% } %>
 	</div>
 	<% if (title && (toc.chapter || toc.section)) { %>
 		<div class="title">
 			§ 
-			<% if (toc.h2) { %>
-				<a title="<%= toc.section.title_en %>"><%- utils.truncate(toc.h2_title_en, 30, true) || 'Section' %></a>
+			<% if (toc.section) { %>
+				<a href="/<%=toc.book.alias%>/<%=toc.chapter.h1%><%=toc.chapter.offset%>#S<%=toc.section.h2%>" title="<%= toc.section.title_en %>"><%- utils.truncate(toc.h2_title_en, 30, true) || 'Section' %></a>
 			<% } %>
-			<% if (toc.h1) { %>
+			<% if (toc.chapter) { %>
 				in <a href="/<%=toc.book_alias%>/<%=toc.h1%>"><%- utils.truncate(toc.h1_title_en, 30, true) || 'Chapter' %></a>
 			<% } %>
 		</div>
@@ -33,18 +40,26 @@
 
 <div class="col-md-6 cols-sm-12 h" lang="ar">
 	<p><strong>
-		<a title="<%-toc.tId%>" href="/<%=toc.book_alias%>/<%=toc.h1%>"><%= `${toc.book.shortName}` %></a> –
-		<%= toc.h2_title || toc.h1_title || 'باب' %>
+		<% if (toc.section) { %>
+			<a href="/<%=toc.book.alias%>/<%=toc.chapter.h1%><%=toc.chapter.offset%>#S<%=toc.section.h2%>"><%=toc.book.shortName%> <%=arabic.toArabicDigits(toc.chapter.h1)%>.<%=arabic.toArabicDigits(toc.section.h2)%></a> –
+			<span class="<%=_e%>" data-id="<%=toc.section.id%>" data-prop="toc.title"><%= toc.section.title || 'باب' %></span>
+		<% } else if (toc.chapter) { %>
+			<a href="/<%=toc.book.alias%>/<%=toc.chapter.h1%>"><%=toc.book.shortName_en%> <%=arabic.toArabicDigits(toc.chapter.h1)%></a> –
+			<span class="<%=_e%>" data-id="<%=toc.chapter.id%>" data-prop="toc.title"><%= toc.chapter.title || 'كتاب' %></span>
+		<% } %>
 	</strong></p>
 	<div class="body">
-		<% console.log(JSON.stringify(toc)); %>
-		<p><%- utils.emptyIfNull(toc.h2_intro || toc.h1_intro).replace(/\n/g, '</p><p>') %></p>
+		<% if (toc.section) { %>
+			<p class="<%=_e%> <%=_p%>" data-id="<%=toc.section.id%>" data-prop="toc.intro"><%- utils.emptyIfNull(toc.h2_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
+		<% } else if (toc.chapter) { %>
+			<p class="<%=_e%> <%=_p%>" data-id="<%=toc.chapter.id%>" data-prop="toc.intro"><%- utils.emptyIfNull(toc.h1_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
+		<% } %>
 	</div>
 	<% if (title && (toc.chapter || toc.section)) { %>
 		<div class="title">
 		§ 
-		<% if (toc.h2) { %>
-			<a title="<%= toc.section.title %>"><%- utils.truncate(toc.section.title, 60, true) || 'بَاب' %></a>
+		<% if (toc.section) { %>
+			<a href="/<%=toc.book.alias%>/<%=toc.chapter.h1%><%=toc.chapter.offset%>#S<%=toc.section.h2%>" title="<%= toc.section.title %>"><%- utils.truncate(toc.section.title, 60, true) || 'بَاب' %></a>
 		<% } %>
 		<% if (toc.chapter) { %>
 			في <a href="/<%=toc.book_alias%>/<%=toc.h1%>" title="<%- toc.chapter.title %>"><%- utils.truncate(toc.chapter.title, 60, true) || 'كِتَاب' %></a>

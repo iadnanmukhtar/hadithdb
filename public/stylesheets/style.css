@@ -103,7 +103,11 @@ nav .nav-link {
 }
 
 .h {
-	margin-top: 0.75em;
+	margin-top: 0.75rem;
+}
+
+.h:lang(ar) {
+	margin-top: 0.5rem;
 }
 
 .h p,

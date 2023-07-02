@@ -109,7 +109,7 @@ async function a_dbInitApp() {
   await Hadith.a_reinit();
   global.searchURL = 'http://search.quranunlocked.com/hadiths';
 
-  var bookId = 7;
+  var bookId = 12;
   var updateCnt = 0;
   var updates = '';
 

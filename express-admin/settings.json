@@ -1436,6 +1436,38 @@
                 "editview": {
                     "show": true
                 }
+            },
+            {
+                "name": "tId",
+                "verbose": "tId",
+                "control": {
+                    "text": true
+                },
+                "type": "bigint",
+                "allowNull": false,
+                "defaultValue": "0",
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
+            },
+            {
+                "name": "numInChapter",
+                "verbose": "numInChapter",
+                "control": {
+                    "text": true
+                },
+                "type": "decimal(10,2)",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {

@@ -80,6 +80,15 @@ router.get('/', async function (req, res, next) {
       if (req.query.b && (typeof req.query.b) != 'object')
         req.query.b = [req.query.b];
       results = await Search.a_searchText(req.query.q, req.query.b);
+      results.map(function (hadith) { 
+        if (hadith.chapter) {
+          hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+          if (hadith.chapter.offset > 0)
+            hadith.chapter.offset = '?o=' + hadith.chapter.offset;
+          else
+            hadith.chapter.offset = '';
+        }
+      });
     } catch (err) {
       var message = `Error searching [${req.query.q} ${req.query.b}]`;
       console.error(message + `\n${err.stack}`);
@@ -144,8 +153,26 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   var results = await Search.a_lookupByRef(req.params.bookAlias, req.params.num);
+  results.map(function (hadith) { 
+    if (hadith.chapter) {
+      hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+      if (hadith.chapter.offset > 0)
+        hadith.chapter.offset = '?o=' + hadith.chapter.offset;
+      else
+        hadith.chapter.offset = '';
+    }
+  });
   for (var i = 0; i < results.length; i++) {
     results[i].similar = await Hadith.a_dbGetSimilarCandidates(results[i]);
+    results[i].similar.map(function (hadith) { 
+      if (hadith.chapter) {
+        hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+        if (hadith.chapter.offset > 0)
+          hadith.chapter.offset = '?o=' + hadith.chapter.offset;
+        else
+          hadith.chapter.offset = '';
+      }
+    });
     var bookSet = new Set();
     for (var j = 0; results[i].similar && j < results[i].similar.length; j++) {
       var book = global.books.find(function (value) {

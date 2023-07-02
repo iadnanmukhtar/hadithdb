@@ -1,6 +1,4 @@
 <% 
-	if (hadith.chapter)
-		hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
 	hashtag = (hadith.book.alias + '_' + hadith.num).replace(/[-\:]/, '_');
 	var _e = '_e';
 	var _p = searchResult ? 'partial' : '';
@@ -82,7 +80,7 @@
 		<div class="title">
 		§ 
 		<% if (hadith.section) { %>
-			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%= hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}${hadith.chapter.offset}#S${hadith.section.h2}` %>" title="<%= hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
 		<% } %>
 		<% if (hadith.chapter) { %>
 			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%= hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
@@ -142,7 +140,7 @@
 		<div class="title">
 		§ 
 		<% if (hadith.section) { %>
-			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%= hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
+			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}${hadith.chapter.offset}#S${hadith.section.h2}` %>" title="<%= hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
 		<% } %>
 		<% if (hadith.chapter) { %>
 			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
@@ -182,7 +180,7 @@
 	<% } %>
 	<% if (title || hadith.numVirtual) { %>
 		<div class="title">
-			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}${hadith.chapter.offset}#S${hadith.section.h2}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
 			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
 		</div>
 	<% } %>
@@ -232,7 +230,7 @@
 	<%  } %>
 	<% if (title || hadith.numVirtual) { %>
 		<div class="title">
-			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}?o=${hadith.chapter.offset}#${hadith.num}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
+			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}${hadith.chapter.offset}#S${hadith.section.h2}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
 			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
 		</div>
 	<% } %>
