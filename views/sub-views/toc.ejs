@@ -9,12 +9,12 @@
 <!-- English Hadith ----------------------------------------- -->
 
 <div class="col-md-6 col-sm-12 h" lang="en">
-	<p>
-		<b><a title="<%-toc.tId%>" href="/<%=toc.book_alias%>/<%=toc.h1%>"><%= `${toc.book.shortName_en}` %></a></b> –
+	<p><strong>
+		<a title="<%-toc.tId%>" href="/<%=toc.book_alias%>/<%=toc.h1%>"><%= `${toc.book.shortName_en}` %></a> –
 		<%= toc.h2_title_en || toc.h1_title_en || 'Section' %>
-	</p>
+	</strong></p>
 	<div class="body">
-		<p><%- utils.emptyIfNull(toc.intro_en).replace(/\n/g, '</p><p>') %></p>
+		<p><%- utils.emptyIfNull(toc.h2_intro_en || toc.h1_intro_en).replace(/\n/g, '</p><p>') %></p>
 	</div>
 	<% if (title && (toc.chapter || toc.section)) { %>
 		<div class="title">
@@ -32,12 +32,13 @@
 <!-- Arabic Hadith ----------------------------------------- -->
 
 <div class="col-md-6 cols-sm-12 h" lang="ar">
-	<p>
-		<b><a title="<%-toc.tId%>" href="/<%=toc.book_alias%>/<%=toc.h1%>"><%= `${toc.book.shortName}` %></a></b> –
+	<p><strong>
+		<a title="<%-toc.tId%>" href="/<%=toc.book_alias%>/<%=toc.h1%>"><%= `${toc.book.shortName}` %></a> –
 		<%= toc.h2_title || toc.h1_title || 'باب' %>
-	</p>
+	</strong></p>
 	<div class="body">
-		<p><%- utils.emptyIfNull(toc.intro).replace(/\n/g, '</p><p>') %></p>
+		<% console.log(JSON.stringify(toc)); %>
+		<p><%- utils.emptyIfNull(toc.h2_intro || toc.h1_intro).replace(/\n/g, '</p><p>') %></p>
 	</div>
 	<% if (title && (toc.chapter || toc.section)) { %>
 		<div class="title">
