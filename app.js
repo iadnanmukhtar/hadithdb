@@ -107,7 +107,7 @@ global.query = util.promisify(global.dbPool.query).bind(global.dbPool);
 global.quran = [];
 async function a_dbInitApp() {
   await Hadith.a_reinit();
-  global.searchURL = 'http://search.quranunlocked.com/hadiths';
+  global.searchURL = 'http://search.quranunlocked.com/hadiths,toc';
 
   var bookId = 12;
   var updateCnt = 0;
@@ -536,7 +536,12 @@ async function a_dbInitApp() {
   //   await global.query(`update hadiths_malik set num_match="${rows2[matchedj].num}", match_rating=${maxRating} where id=${rows1[i].id}`);
   // }
 
-  console.log('done');
+  // var rows = await global.query(`select id, title, title_en from toc where bookId=5 order by h1,h2,h3`);
+  // rows.forEach(row => {
+  //   console.log(`${row.id}\t"${Utils.sql(row.title)}"\t"${Utils.sql(row.title_en)}"`);
+  // });
+
+  console.error('done');
 
 }
 a_dbInitApp();

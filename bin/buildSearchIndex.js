@@ -11,60 +11,71 @@ const MySQLConfig = require(HomeDir + '/.hadithdb/store.json');
 var dbPool = MySQL.createPool(MySQLConfig.connection);
 var query = util.promisify(dbPool.query).bind(dbPool);
 
-const indexUrl = 'http://search.quranunlocked.com/hadiths/_bulk';
 const headers = {
 	'Content-Type': 'application/x-ndjson'
 };
 
 (async () => {
-	console.log(`retreiving data to index...`);
-	var books = await query(`SELECT * FROM books ORDER BY id`);
-	for (var b = 0; b < books.length; b++) {
-		console.log(`creating index for ${books[b].shortName_en}...`);
-		var rows = await getData(books[b].id);
-		console.log(`indexing ${rows.length} docs...`);
-		var bulk = '';
-		for (var i = 0; i < rows.length; i++) {
-			delete rows[i].highlight;
-			var data = {};
-			if (rows[i].num)
-				data.ref = rows[i].book_alias + ':' + rows[i].num;
-			else
-				data.ref = rows[i].book_alias + '/' + rows[i].h1 + '#S' + rows[i].h2;
-			if (i > 0 && rows[i].book_id == rows[i - 1].book_id)
-				data.prevId = rows[i - 1].hId;
-			if (i < (rows.length - 1) && rows[i].book_id == rows[i + 1].book_id)
-				data.nextId = rows[i + 1].hId;
-			for (var k in rows[i])
-				data[k] = rows[i][k];
-			bulk += `{ "index" : { "_index":"hadiths","_id":"${rows[i].hId}" } }\n${JSON.stringify(data)}\n`;
-			if (i > 0 && (i % 100) == 0) {
-				Utils.msleep(500);
-				console.log(`POSTing ${data.ref}`);
-				var res = await axios.post(indexUrl, bulk + '\n', { headers });
-				console.log(`${res.status} errors=${res.data.errors}`);
-				bulk = "";
-			}
+	try {
+		console.log(`retreiving data to index...`);
+		var books = await query(`SELECT * FROM books ORDER BY id`);
+		for (var i = 0; i < books.length; i++) {
+			await indexDocs('hadiths', books[i]);
+			await indexDocs('toc', books[i]);
 		}
-		if (bulk.length > 0) {
-			Utils.msleep(500);
-			console.log(`POSTing last batch`);
-			var res = await axios.post(indexUrl, bulk + '\n', { headers });
+	} finally {
+		dbPool.end();
+		console.log('indexing complete');
+	}
+})();
+
+async function indexDocs(indexName, book) {
+	console.log(`\n*****\ncreating ${indexName} index for ${book.shortName_en}...`);
+	var indexURL = 'http://search.quranunlocked.com/' + indexName + '/_bulk';
+	var rows = await getData(indexName, book);
+	console.log(`indexing ${rows.length} docs...`);
+	var bulk = '';
+	for (var i = 0; i < rows.length; i++) {
+		delete rows[i].highlight;
+		var data = {};
+		if (rows[i].num)
+			data.ref = rows[i].book_alias + ':' + rows[i].num;
+		else {
+			data.ref = rows[i].book_alias + '/' + rows[i].h1;
+			if (rows[i].h2)
+				data.ref += '#S' + rows[i].h2;
+		}
+		if (i > 0 && rows[i].book_id == rows[i - 1].book_id)
+			data.prevId = rows[i - 1].hId;
+		if (i < (rows.length - 1) && rows[i].book_id == rows[i + 1].book_id)
+			data.nextId = rows[i + 1].hId;
+		for (var k in rows[i])
+			data[k] = rows[i][k];
+		bulk += `{ "index" : { "_index":"${indexName}","_id":"${rows[i].hId}" } }\n${JSON.stringify(data)}\n`;
+		if (i > 0 && (i % 100) == 0) {
+			Utils.msleep(100);
+			console.log(`POSTing ${data.ref}`);
+			var res = await axios.post(indexURL, bulk + '\n', { headers });
 			console.log(`${res.status} errors=${res.data.errors}`);
 			bulk = "";
 		}
 	}
-	console.log('indexing complete');
-})();
+	if (bulk.length > 0) {
+		Utils.msleep(500);
+		console.log(`POSTing last batch`);
+		var res = await axios.post(indexURL, bulk + '\n', { headers });
+		console.log(`${res.status} errors=${res.data.errors}`);
+		bulk = "";
+	}
+}
 
-async function getData(bookId) {
+async function getData(indexName, book) {
 	var rows = await query(`
-		SELECT * FROM v_hadiths_searchindex
+		SELECT * FROM v_${indexName}_searchindex
 		WHERE
-			book_id = ${bookId}
+			book_id = ${book.id}
 		ORDER BY 
-			book_id, h1, numInChapter
+			ordinal
 		-- LIMIT 10`);
-	dbPool.end();
 	return rows;
 }

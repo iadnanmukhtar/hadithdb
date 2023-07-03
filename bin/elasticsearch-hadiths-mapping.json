@@ -1,0 +1,219 @@
+{
+	"properties": {
+
+		
+		"hId": {
+			"type": "long"
+		},
+		"doctype": {
+			"type": "keyword"
+		},
+		"id": {
+			"type": "long"
+		},
+		"ordinal": {
+			"enabled": false
+		},
+		"prevId": {
+			"enabled": false
+		},
+		"nextId": {
+			"enabled": false
+		},
+
+
+		"book_alias": {
+			"type": "keyword"
+		},
+		"book_id": {
+			"enabled": false
+		},
+		"book_author": {
+			"enabled": false
+		},
+		"book_name": {
+			"enabled": false
+		},
+		"book_name_en": {
+			"enabled": false
+		},
+		"book_shortName": {
+			"enabled": false
+		},
+		"book_shortName_en": {
+			"enabled": false
+		},
+		"book_virtual": {
+			"enabled": false
+		},
+
+
+		"level": {
+			"type": "integer"
+		},
+		"h1": {
+			"type": "integer"
+		},
+		"h1_id": {
+			"type": "integer"
+		},
+		"h2": {
+			"type": "integer"
+		},
+		"h2_id": {
+			"type": "integer"
+		},
+		"h1_count": {
+			"enabled": false
+		},
+		"h1_intro": {
+			"enabled": false
+		},
+		"h1_intro_en": {
+			"enabled": false
+		},
+		"h1_start": {
+			"enabled": false
+		},
+		"h1_title": {
+			"enabled": false
+		},
+		"h1_title_en": {
+			"enabled": false
+		},
+		"h2_intro": {
+			"enabled": false
+		},
+		"h2_intro_en": {
+			"enabled": false
+		},
+		"h2_start": {
+			"enabled": false
+		},
+		"h2_title": {
+			"enabled": false
+		},
+		"h2_title_en": {
+			"enabled": false
+		},
+
+
+		"numInChapter": {
+			"type": "integer"
+		},
+		"num": {
+			"type": "keyword"
+		},
+		"numActual": {
+			"type": "keyword"
+		},
+		"ref": {
+			"type": "keyword"
+		},
+		"remark": {
+			"type": "integer"
+		},
+		"part": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "arabic"
+		},
+		"part_en": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "english"
+		},
+		"title": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "arabic"
+		},
+		"title_en": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "english"
+		},
+
+
+		"chain": {
+			"type": "text",
+			"boost": 1,
+			"analyzer": "arabic"
+		},
+		"chain_en": {
+			"type": "text",
+			"boost": 1,
+			"analyzer": "english"
+		},
+		"body": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "arabic"
+		},
+		"body_en": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "english"
+		},
+		"footnote": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "arabic"
+		},
+		"footnote_en": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "english"
+		},
+		"num0": {
+			"enabled": false
+		},
+
+
+		"grade_id": {
+			"type": "integer"
+		},
+		"grader_id": {
+			"type": "integer"
+		},
+		"grade_grade": {
+			"enabled": false
+		},
+		"grade_grade_en": {
+			"enabled": false
+		},
+		"grader_name": {
+			"enabled": false
+		},
+		"grader_name_en": {
+			"enabled": false
+		},
+		"grader_shortName": {
+			"enabled": false
+		},
+		"grader_shortName_en": {
+			"enabled": false
+		},
+
+
+		"verified": {
+			"type": "integer"
+		},
+		"tags": {
+			"type": "text",
+			"fields": {
+				"keyword": {
+					"type": "keyword",
+					"ignore_above": 256
+				}
+			}
+		},
+		"highlight": {
+			"enabled": false
+		},
+		"lastmod": {
+			"enabled": false
+		}
+
+	}
+}
