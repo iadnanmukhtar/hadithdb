@@ -44,7 +44,7 @@
 			<a href="/<%=toc.book.alias%>/<%=toc.chapter.h1%><%=toc.chapter.offset%>#S<%=toc.section.h2%>"><%=toc.book.shortName%> <%=arabic.toArabicDigits(toc.chapter.h1)%>.<%=arabic.toArabicDigits(toc.section.h2)%></a> –
 			<span class="<%=_e%>" data-id="<%=toc.section.id%>" data-prop="toc.title"><%= toc.section.title || 'باب' %></span>
 		<% } else if (toc.chapter) { %>
-			<a href="/<%=toc.book.alias%>/<%=toc.chapter.h1%>"><%=toc.book.shortName_en%> <%=arabic.toArabicDigits(toc.chapter.h1)%></a> –
+			<a href="/<%=toc.book.alias%>/<%=toc.chapter.h1%>"><%=toc.book.shortName%> <%=arabic.toArabicDigits(toc.chapter.h1)%></a> –
 			<span class="<%=_e%>" data-id="<%=toc.chapter.id%>" data-prop="toc.title"><%= toc.chapter.title || 'كتاب' %></span>
 		<% } %>
 	</strong></p>
