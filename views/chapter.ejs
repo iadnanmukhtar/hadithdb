@@ -128,22 +128,16 @@
           -->
           <tbody>
             <%
-              var firstNum = results.hadiths[0].num0
-              var lastNum = results.hadiths[results.hadiths.length-1].num0;
               var rootPath = `/${book.alias}/${results.chapter.h1}`;
               for (var i = 0; i < results.headings.length; i++) {
-                var h2OffsetLink = `?o=${results.hadiths.offset}`;
-                var h2Offset = Math.floor(results.headings[i].numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-                if (results.headings[i].start0 < firstNum || results.headings[i].start0 > lastNum) 
-                  h2OffsetLink = `?o=${h2Offset}`;
                 title_en = '';
                 if (results.headings[i].title_en) title_en = utils.truncate((results.headings[i].title_en+''), 75);
                 title = utils.truncate((results.headings[i].title+''), 150); %>
                 <tr class="title">
                   <td><%- results.headings[i].start0 %></td>
                   <% if (results.headings[i].start) { %>
-                    <td><a href="<%- `${rootPath}${h2OffsetLink}#S${results.headings[i].h2}` %>"><%- title_en || `Section ${results.headings[i].h2}` %></a></td>
-                    <td lang="ar"><a href="<%- `${rootPath}${h2OffsetLink}#S${results.headings[i].h2}` %>"><%- title %></a></td>
+                    <td><a href="<%- `${rootPath}${results.headings[i].offset}#S${results.headings[i].h2}` %>"><%- title_en || `Section ${results.headings[i].h2}` %></a></td>
+                    <td lang="ar"><a href="<%- `${rootPath}${results.headings[i].offset}#S${results.headings[i].h2}` %>"><%- title %></a></td>
                   <% } else { %>
                     <td><%- title_en || 'Section' %></td>
                   <td lang="ar"><%- title %></td>

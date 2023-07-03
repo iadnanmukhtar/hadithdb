@@ -80,7 +80,7 @@ router.get('/', async function (req, res, next) {
       if (req.query.b && (typeof req.query.b) != 'object')
         req.query.b = [req.query.b];
       results = await Search.a_searchText(req.query.q, req.query.b);
-      results.map(function (hadith) { 
+      results.map(function (hadith) {
         if (hadith.chapter) {
           hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
           if (hadith.chapter.offset > 0)
@@ -153,7 +153,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   var results = await Search.a_lookupByRef(req.params.bookAlias, req.params.num);
-  results.map(function (hadith) { 
+  results.map(function (hadith) {
     if (hadith.chapter) {
       hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
       if (hadith.chapter.offset > 0)
@@ -164,7 +164,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   });
   for (var i = 0; i < results.length; i++) {
     results[i].similar = await Hadith.a_dbGetSimilarCandidates(results[i]);
-    results[i].similar.map(function (hadith) { 
+    results[i].similar.map(function (hadith) {
       if (hadith.chapter) {
         hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
         if (hadith.chapter.offset > 0)
@@ -287,8 +287,22 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       hadiths.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
       if (!hadiths.hasNext)
         delete hadiths.nextOffset;
-      if (results.hadiths.length == 0)
+      if (hadiths.length == 0)
         throw createError(404, `Page ${hadiths.pg} of Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
+
+      var firstNum = hadiths[0].num0
+      var lastNum = hadiths[hadiths.length-1].num0;
+      results.headings.map(function (heading) {
+        heading.offset = '';
+        if (hadiths.offset > 0)
+          heading.offset = `?o=${hadiths.offset}`;
+        var offset = Math.floor(heading.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+        if (heading.start0 < firstNum || heading.start0 > lastNum) {
+          heading.offset = '';
+          if (offset > 0)
+            heading.offset = `?o=${offset}`;
+        }
+      });
 
       var currChapter = results.chapter;
       var prevChapter = null;
