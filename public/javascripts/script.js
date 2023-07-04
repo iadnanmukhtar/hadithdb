@@ -13,6 +13,10 @@ $(function () {
 		}
 	});
 
+	$(document).on('click', function () {
+		$('.collapse').collapse('hide');
+	});
+
 	$('.search-click-toggle a').click(function () {
 		$('.search-click-toggle a').hide();
 		$('.search-click-toggle input').show();

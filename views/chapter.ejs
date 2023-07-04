@@ -12,7 +12,7 @@
     site.editMode = (site.admin && req.cookies.editMode == 1);
     
     var page = {
-      menu: 'Books',
+      menu: 'Chapter',
       title_en: `${site.name} | ${book.shortName_en} Chapter ${results.chapter.h1}: ${results.chapter.title_en}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
@@ -54,7 +54,7 @@
 
   <div class="container col-lg-8 mx-auto">
     
-    <main class="chapter">
+    <main class="chapter mt-10">
 
     <div class="row mb-3 pagination">
       <div class="col-md-6 col-xs-12 text-start">
@@ -112,54 +112,25 @@
         </div>
       </div>
 
-      <%# --- TABLE OF CONTENTS --- %>
-      <div>
-        <a data-bs-toggle="collapse" href="#toc2"><big class="toggle bi bi-toggle-off"></big></a> 
-        <a data-bs-toggle="collapse" href="#toc2">Table of Contents</a>
-      </div>
-      <div id="toc2" class="toc2 collapse">
-        <table class="table">
-          <!--
-          <thead>
-            <th>Hadith</th>
-            <th>Title</th>
-            <th lang="ar">عنوان الكتاب</th>
-          </thead>
-          -->
-          <tbody>
-            <%
-              var rootPath = `/${book.alias}/${results.chapter.h1}`;
-              for (var i = 0; i < results.headings.length; i++) {
-                if (results.headings[i].level < 3) {
-                  title_en = '';
-                  if (results.headings[i].title_en) 
-                    title_en = utils.truncate((results.headings[i].title_en+''), 75);
-                  title = utils.truncate((results.headings[i].title+''), 150); %>
-                  <tr class="title">
-                    <td><%- results.headings[i].start %></td>
-                    <% if (results.headings[i].start) { %>
-                      <td><a href="<%- `${rootPath}${results.headings[i].offset}#S${results.headings[i].h2 + (results.headings[i].h3 ? `-${results.headings[i].h3}` : '')}` %>"><%- title_en || `Section ${results.headings[i].h2 + (results.headings[i].h3 ? `-${results.headings[i].h3}` : '')}` %> (<%=results.headings[i].count%>)</a></td>
-                      <td lang="ar"><a href="<%- `${rootPath}${results.headings[i].offset}#S${results.headings[i].h2 + (results.headings[i].h3 ? `-${arabic.toArabicDigits(results.headings[i].h3+'')}` : '')}` %>"><%- title %></a></td>
-                    <% } else { %>
-                      <td><%- title_en || 'Section' %></td>
-                    <td lang="ar"><%- title %></td>
-                    <% } %>
-                  </tr>
-            <%    }
-                }  %>
-          </tbody>
-        </table>
-      </div>
-
       <%# --- HADITH LOOP --- %>
       <% 
         for (var i = 0; i < results.hadiths.length; i++) {
-          var headings = results.headings.filter(function(value) {
+          var headings = results.headings.filter(function(heading) {
             if (book.virtual == 1)
-              return results.hadiths[i].numVirtual == value.start;
+              return results.hadiths[i].numVirtual == heading.start;
             else
-              return results.hadiths[i].num == value.start;
+              return results.hadiths[i].num == heading.start;
           });
+
+          var sectionContinued = false;
+          if (i == 0 && headings.length == 0 && book.virtual == 0) {
+            for (var j = results.headings.length-1; j >=0; j--) {
+              headings = [ results.headings[j] ];
+              if (results.headings[j].start0 <= results.hadiths[i].num0)
+                break;
+            }
+            sectionContinued = headings.length > 0;
+          }
       %>
 
       <%# --- HADITHS SECTION --- %>
@@ -177,6 +148,9 @@
         <div class="row heading">
           <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
             <%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>. <span class="_e" data-id="<%=heading.id%>" data-prop="toc.title_en"><%- heading.title_en || 'Section' %></span>
+            <% if (sectionContinued) { %>
+              <small class="text-muted">(contd &hellip;)</small>
+            <% } %>
           </h3>
           <h3 class="col-md-6 col-sm-12 title" lang="ar">
             <%- arabic.toArabicDigits(heading.h2+'') + (heading.h3 ? `-${arabic.toArabicDigits(heading.h3+'')}` : '') %>۔ <span class="_e" data-id="<%=heading.id%>" data-prop="toc.title"><%- heading.title %></span>
