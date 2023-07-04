@@ -42,9 +42,14 @@
 			</span>
 		<% } %>
 
-		<%- (hadith.numVirtual) ? `(${hadith.numVirtual})` : "" %>
+		<% if (hadith.numVirtual || site.editMode) { %>
+			(<span class="_e" title="Virtual Num" data-id="<%=hadith.id%>" data-prop="hadith_virtual.num"><%- (hadith.numVirtual) ? `${hadith.numVirtual}` : '' %></span>)
+		<% } %>
+		<% if (site.editMode) { %>
+			(<span class="_e" title="Virtual Num0" data-id="<%=hadith.id%>" data-prop="hadith_virtual.num0"><%- hadith.num0Virtual || '&hellip;' %></span>)
+		<% } %>
 
-		<b><a title="<%-hadith.id + ' (' + hadith.score + ')'%>" href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
+		<b><a title="<%-hadith.id%>" href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
 		<% if (hadith.chain_en || site.editMode) { %>
 			<span class="_e chain <%=_p%>" title="Ḥadīth Chain" data-id="<%= hadith.id %>" data-prop="hadith.chain_en"><%- hadith.chain_en || `&hellip;` %></span>
 		<% } %>
@@ -114,7 +119,14 @@
 	<% } %>
 	<% if (site.editMode && hadith.parentId) { %>
 		<div>
-			<a class="_click" title="Remove Association" data-id="<%= hadith.parentId %>,<%= hadith.id %>" data-prop="hadiths_sim.del"><i class="bi bi-trash"></i>Remove</a>
+			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Remove Association" data-id="<%= hadith.parentId %>,<%= hadith.id %>" data-prop="hadiths_sim.del">Remove</a>
+		</div>
+	<% } %>
+	<% if (site.editMode && hadith.numVirtual) { %>
+		<div>
+			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Delete" data-id="<%= hadith.idVirtual %>" data-prop="hadith_virtual.del">Delete</a>
+			|
+			<span class="bi bi-file-plus"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= hadith.idVirtual %>" data-prop="hadith_virtual.add">
 		</div>
 	<% } %>
 	<% if (main && !site.editMode) { %>

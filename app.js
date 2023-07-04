@@ -245,26 +245,26 @@ async function a_dbInitApp() {
   // // update numInChapter
   // var prevH1 = 0;
   // var numInChapter = 0;
-  // var hadiths = await global.query(`SELECT * FROM hadiths WHERE bookId = 13 ORDER BY h1,h2,h3,num0`);
+  // var hadiths = await global.query(`SELECT * FROM hadiths WHERE bookId = 5 ORDER BY h1,h2,h3,num0`);
   // var inserts = '';
-  // var insertCnt = 0;
+  // var updateCnt = 0;
   // for (var i = 0; i < hadiths.length; i++) {
   //   if (hadiths[i].h1 != prevH1)
   //     numInChapter = 0;
   //   prevH1 = hadiths[i].h1;
   //   numInChapter++;
   //   console.log(`updating numInChapter for ${hadiths[i].bookId}:${hadiths[i].num}`);
-  //   if (insertCnt > 0)
+  //   if (updateCnt > 0)
   //     inserts += ` UNION ALL `;
   //   inserts += ` SELECT ${hadiths[i].id} AS id, ${numInChapter} AS new`;
-  //   if (insertCnt > 100) {
+  //   if (updateCnt > 100) {
   //     await global.query(`UPDATE hadiths h JOIN ( ${inserts} ) vals ON h.id=vals.id SET numInChapter=new`);
   //     inserts = ``;
-  //     insertCnt = 0;
+  //     updateCnt = 0;
   //   } else
-  //     insertCnt++;
+  //     updateCnt++;
   // }
-  // if (insertCnt > 0)
+  // if (updateCnt > 0)
   //   await global.query(`UPDATE hadiths h JOIN ( ${inserts} ) vals ON h.id=vals.id SET numInChapter=new`);
 
   // // split chain and body where missing

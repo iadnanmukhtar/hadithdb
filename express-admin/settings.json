@@ -3408,6 +3408,22 @@
                 "editview": {
                     "show": false
                 }
+            },
+            {
+                "name": "tocId",
+                "verbose": "tocId",
+                "control": {
+                    "text": true
+                },
+                "type": "int",
+                "allowNull": true,
+                "defaultValue": null,
+                "listview": {
+                    "show": true
+                },
+                "editview": {
+                    "show": true
+                }
             }
         ],
         "mainview": {

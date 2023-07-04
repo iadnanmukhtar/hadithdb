@@ -21,7 +21,7 @@
         var prop = $(this).data('prop');
         console.log(`applying change: id=${id}, prop=${prop}`);
         var value = '';
-        if ($(this).is('textarea') || $(this).is('select'))
+        if ($(this).is('textarea') || $(this).is('input') || $(this).is('select'))
           value = $(this).val();
         else if ($(this).attr('type') == 'checkbox')
           value = $(this).prop('checked') ? "1" : "0";

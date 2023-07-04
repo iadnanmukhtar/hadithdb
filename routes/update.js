@@ -81,27 +81,61 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.message = result.message;
       await Hadith.a_reinit();
 
+    } else if (type == 'hadith_virtual') {
+      var result = "";
+      var ids = req.params.id.split(/,/);
+
+      if (col == 'del') {
+        var curr = await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`);
+        curr = curr[0];
+        result = await global.query(`DELETE FROM hadiths_virtual 
+          WHERE bookId=${curr.bookId} AND id=${ids[0]}`);
+        await global.query(`SET @n:=0`);
+        await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
+          WHERE bookId=${curr.bookId} AND h1=${curr.h1} ORDER by numInChapter`);
+        await global.query(`SET @n:=0`);
+        await global.query(`UPDATE hadiths_virtual SET ordinal=(@n:=@n+1)
+          ORDER by bookId, h1, numInChapter`);
+        
+      } else if (col == 'add') {
+        var prev = await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`);
+        prev = prev[0];
+        result = await global.query(`SET @n:=${prev.numInChapter+1}`);
+        result = await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
+          WHERE bookId=${prev.bookId} AND h1=${prev.h1} AND numInChapter > ${prev.numInChapter}`);
+        result = await global.query(`INSERT INTO hadiths_virtual
+          (bookId, tocId, numInChapter, num, num0, ref_num) VALUES
+          (${prev.bookId}, ${prev.tocId}, ${prev.numInChapter + 1}, "${prev.num + 1}", ${prev.num0}, ${sql(req.body.value)})`);
+      } else {
+        // hadith virtual
+        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='admin', ${col}=${sql(req.body.value)} WHERE hadithId=${ids[0]}`);
+      }
+      status.code = 200;
+      status.message = result.message;
+
     } else if (type == 'hadiths_sim') {
       var ids = req.params.id.split(/,/);
+
       if (col == 'del') {
         var result = await global.query(`DELETE FROM hadiths_sim_candidates 
           WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
         result = await global.query(`DELETE FROM hadiths_sim 
           WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
-        status.code = 200;
-        status.message = result.message;  
       }
-
+      status.code = 200;
+      status.message = result.message;
     }
 
   } catch (err) {
     status.message = err.message;
     status.code = 500;
     console.log(`${status.message}:\n${err.stack}`);
+  } finally {
+    console.log(`update status:${status.code}, id:${req.params.id}, prop:${prop}, value:${(req.body.value + '').trim().substring(0, 20)}`);
+    console.log(status.message);
   }
   res.status(status.code);
   res.end(JSON.stringify(status));
-  console.log(`updated ${req.params.id} ${prop}: ${(req.body.value + '').trim().substring(0, 20)}`);
 });
 
 function sql(s) {
