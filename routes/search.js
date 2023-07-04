@@ -266,6 +266,17 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var results = await a_dbGetChapter(book, currentChapterNum, offset);
     if (!results)
       throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
+    
+    results.hadiths.map(function (hadith) {
+      if (hadith.chapter) {
+        hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+        if (hadith.chapter.offset > 0)
+          hadith.chapter.offset = '?o=' + hadith.chapter.offset;
+        else
+          hadith.chapter.offset = '';
+      }
+    });
+    
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results));
@@ -382,8 +393,8 @@ async function a_dbGetChapter(book, chapterNum, offset) {
   } else {
     hadithRows = await global.query(`
       SELECT h.*, hv.num as numVirtual
-      FROM hadiths_virtual hv, hadiths h
-      WHERE hv.bookId=${book.id} AND hv.h1=${chapterNum} AND hv.hadithId=h.id
+      FROM hadiths_virtual hv, v_hadiths h
+      WHERE hv.bookId=${book.id} AND hv.h1=${chapterNum} AND hv.hadithId=h.hId
       ORDER BY hv.h1, hv.numInChapter, hv.num0
       LIMIT ${offset}, ${global.MAX_PER_PAGE + 1}`);
   }
