@@ -42,10 +42,10 @@
 			</span>
 		<% } %>
 
-		<% if (hadith.numVirtual || site.editMode) { %>
+		<% if (hadith.numVirtual) { %>
 			(<span class="_e" title="Virtual Num" data-id="<%=hadith.id%>" data-prop="hadith_virtual.num"><%- (hadith.numVirtual) ? `${hadith.numVirtual}` : '' %></span>)
 		<% } %>
-		<% if (site.editMode) { %>
+		<% if (site.editMode && hadith.numVirtual) { %>
 			(<span class="_e" title="Virtual Num0" data-id="<%=hadith.id%>" data-prop="hadith_virtual.num0"><%- hadith.num0Virtual || '&hellip;' %></span>)
 		<% } %>
 
