@@ -141,13 +141,14 @@
 
       <a id="S<%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>"></a>
       <div class="col-12 mt-4">
+        <!--
         <div class="top text-end">
           <a href="#top"><i class="bi bi-arrow-bar-up"></i>TOP</a>
         </div>
-        <hr />
-        <div class="row heading">
+        -->
+        <div class="row heading py-2">
           <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
-            <%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>. <span class="_e" data-id="<%=heading.id%>" data-prop="toc.title_en"><%- heading.title_en || 'Section' %></span>
+              <%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>. <span class="_e" data-id="<%=heading.id%>" data-prop="toc.title_en"><%- heading.title_en || 'Section' %></span>
             <% if (sectionContinued) { %>
               <small class="text-muted">(contd &hellip;)</small>
             <% } %>
@@ -159,17 +160,21 @@
         <div class="col-12">
           <div class="row heading-intro">
             <div class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%=heading.id%>" data-prop="toc.intro_en">
-              <% if (heading.intro_en) { %>
-                <p><%- utils.emptyIfNull(heading.intro_en).replace(/\n/g, '</p><p>') %></p>
-              <% } else { %> 
-                <p>&hellip;</p>
+              <% if (heading.intro_en || site.editMode) { %>
+                <% if (heading.intro_en) { %>
+                  <p><%- utils.emptyIfNull(heading.intro_en).replace(/\n/g, '</p><p>') %></p>
+                <% } else { %> 
+                  <p>&hellip;</p>
+                <% } %>
               <% } %>
             </div>
             <div class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%=heading.id%>" data-prop="toc.intro">
-              <% if (heading.intro) { %>
-                <p><%- utils.emptyIfNull(heading.intro).replace(/\n/g, '</p><p>') %></p>
-              <% } else { %> 
-                <p>&hellip;</p>
+              <% if (heading.intro_en || site.editMode) { %>
+                <% if (heading.intro) { %>
+                  <p><%- utils.emptyIfNull(heading.intro).replace(/\n/g, '</p><p>') %></p>
+                <% } else { %> 
+                  <p>&hellip;</p>
+                <% } %>
               <% } %>
             </div>
           </div>

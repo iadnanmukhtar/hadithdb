@@ -139,6 +139,20 @@ nav .nav-link {
 	text-decoration: none;
 }
 
+.heading {
+	border-top: 1px solid var(--bs-border-color);
+	color: #2c9be5;
+}
+
+.heading h3 {
+	font-weight: bolder;
+}
+
+.heading,
+.heading-intro {
+	background-color: #fafafa !important;
+}
+
 .h {
 	margin-top: 0.75rem;
 	margin-bottom: 2rem;
