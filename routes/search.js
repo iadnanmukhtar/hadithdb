@@ -395,7 +395,7 @@ async function a_dbGetChapter(book, chapterNum, offset) {
       SELECT h.*, hv.num as numVirtual, hv.num0 as num0Virtual, hv.id as idVirtual
       FROM hadiths_virtual hv, v_hadiths h
       WHERE hv.bookId=${book.id} AND hv.h1=${chapterNum} AND hv.hadithId=h.hId
-      ORDER BY hv.h1, hv.numInChapter, hv.num0
+      ORDER BY hv.h1, hv.num0
       LIMIT ${offset}, ${global.MAX_PER_PAGE + 1}`);
   }
   var hadiths = [];

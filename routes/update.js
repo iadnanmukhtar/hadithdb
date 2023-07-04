@@ -92,10 +92,10 @@ router.post('/:id/:prop', async function (req, res, next) {
           WHERE bookId=${curr.bookId} AND id=${ids[0]}`);
         await global.query(`SET @n:=0`);
         await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
-          WHERE bookId=${curr.bookId} AND h1=${curr.h1} ORDER by numInChapter`);
+          WHERE bookId=${curr.bookId} AND h1=${curr.h1} ORDER by bookId, h1, num0`);
         await global.query(`SET @n:=0`);
         await global.query(`UPDATE hadiths_virtual SET ordinal=(@n:=@n+1)
-          ORDER by bookId, h1, numInChapter`);
+          ORDER by bookId, h1, num0`);
         
       } else if (col == 'add') {
         var prev = await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`);
