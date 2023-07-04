@@ -80,6 +80,18 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
       await Hadith.a_reinit();
+
+    } else if (type == 'hadiths_sim') {
+      var ids = req.params.id.split(/,/);
+      if (col == 'del') {
+        var result = await global.query(`DELETE FROM hadiths_sim_candidates 
+          WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
+        result = await global.query(`DELETE FROM hadiths_sim 
+          WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
+        status.code = 200;
+        status.message = result.message;  
+      }
+
     }
 
   } catch (err) {

@@ -105,9 +105,11 @@ global.tags = [];
 global.dbPool = MySQL.createPool(global.MySQLConfig.connection);
 global.query = util.promisify(global.dbPool.query).bind(global.dbPool);
 global.quran = [];
+global.searchURL = 'http://search.quranunlocked.com/hadiths,toc';
+
 async function a_dbInitApp() {
+
   await Hadith.a_reinit();
-  global.searchURL = 'http://search.quranunlocked.com/hadiths,toc';
 
   var bookId = 12;
   var updateCnt = 0;
@@ -243,7 +245,7 @@ async function a_dbInitApp() {
   // // update numInChapter
   // var prevH1 = 0;
   // var numInChapter = 0;
-  // var hadiths = await global.query(`SELECT * FROM hadiths WHERE bookId = ${bookId} ORDER BY h1,h2,h3,num0`);
+  // var hadiths = await global.query(`SELECT * FROM hadiths WHERE bookId = 13 ORDER BY h1,h2,h3,num0`);
   // var inserts = '';
   // var insertCnt = 0;
   // for (var i = 0; i < hadiths.length; i++) {

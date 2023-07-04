@@ -19,6 +19,7 @@
       if ($(this).attr('editing') == 'true') {
         var id = $(this).data('id');
         var prop = $(this).data('prop');
+        console.log(`applying change: id=${id}, prop=${prop}`);
         var value = '';
         if ($(this).is('textarea') || $(this).is('select'))
           value = $(this).val();
@@ -74,6 +75,11 @@
         $(this).removeClass('partial');
       });
       $(this).on('blur', changeListener);
+    });
+
+    $('._click').each(function () {
+      $(this).attr('editing', 'true');
+      $(this).on('click', changeListener);
     });
 
     $(".tags ._e")
