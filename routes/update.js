@@ -5,6 +5,7 @@ const express = require('express');
 const createError = require('http-errors');
 const asyncify = require('express-asyncify');
 const Hadith = require('../lib/Hadith');
+const Arabic = require('../lib/Arabic');
 
 const router = asyncify(express.Router());
 
@@ -19,14 +20,16 @@ router.post('/:id/:prop', async function (req, res, next) {
     var prop = req.params.prop;
     var type = prop.split(/\./)[0];
     var col = prop.split(/\./)[1];
-    if (req.body.value == '…')
-      req.body.value = null;
+    var value = req.body.value;
+    if (value == '…')
+      value = null;
+    value = Arabic.arabizi2ALALC(value);
 
     if (type == 'hadith') {
       var result = "";
 
       if (col == 'tags') {
-        var tags = req.body.value.split(/[,; \t\n]/);
+        var tags = value.split(/[,; \t\n]/);
         tags.map(t => {
           return t.replace(/^#/, '');
         });
@@ -49,7 +52,7 @@ router.post('/:id/:prop', async function (req, res, next) {
         await Hadith.a_reinit();
 
       } else { // hadith
-        result = await global.query(`UPDATE hadiths SET lastmod_user='admin', ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
+        result = await global.query(`UPDATE hadiths SET lastmod_user='admin', ${col}=${sql(value)} WHERE id=${req.params.id}`);
       }
       status.code = 200;
       status.message = result.message;
@@ -60,13 +63,13 @@ router.post('/:id/:prop', async function (req, res, next) {
       }
 
     } else if (type == 'tags') {
-      var result = await global.query(`UPDATE tags SET ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
+      var result = await global.query(`UPDATE tags SET ${col}=${sql(value)} WHERE id=${req.params.id}`);
       status.code = 200;
       status.message = result.message;
       await Hadith.a_reinit();
 
     } else if (type == 'toc') {
-      var result = await global.query(`UPDATE toc SET lastmod_user='admin', ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
+      var result = await global.query(`UPDATE toc SET lastmod_user='admin', ${col}=${sql(value)} WHERE id=${req.params.id}`);
       status.code = 200;
       status.message = result.message;
       try {
@@ -76,7 +79,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       }
 
     } else if (type == 'book') {
-      var result = await global.query(`UPDATE books SET ${col}=${sql(req.body.value)} WHERE id=${req.params.id}`);
+      var result = await global.query(`UPDATE books SET ${col}=${sql(value)} WHERE id=${req.params.id}`);
       status.code = 200;
       status.message = result.message;
       await Hadith.a_reinit();
@@ -105,10 +108,10 @@ router.post('/:id/:prop', async function (req, res, next) {
           WHERE bookId=${prev.bookId} AND h1=${prev.h1} AND numInChapter > ${prev.numInChapter}`);
         result = await global.query(`INSERT INTO hadiths_virtual
           (bookId, tocId, numInChapter, num, num0, ref_num) VALUES
-          (${prev.bookId}, ${prev.tocId}, ${prev.numInChapter + 1}, "${prev.num + 1}", ${prev.num0}, ${sql(req.body.value)})`);
+          (${prev.bookId}, ${prev.tocId}, ${prev.numInChapter + 1}, "${prev.num + 1}", ${prev.num0}, ${sql(value)})`);
       } else {
         // hadith virtual
-        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='admin', ${col}=${sql(req.body.value)} WHERE hadithId=${ids[0]}`);
+        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='admin', ${col}=${sql(value)} WHERE hadithId=${ids[0]}`);
       }
       status.code = 200;
       status.message = result.message;
@@ -131,7 +134,7 @@ router.post('/:id/:prop', async function (req, res, next) {
     status.code = 500;
     console.log(`${status.message}:\n${err.stack}`);
   } finally {
-    console.log(`update status:${status.code}, id:${req.params.id}, prop:${prop}, value:${(req.body.value + '').trim().substring(0, 20)}`);
+    console.log(`update status:${status.code}, id:${req.params.id}, prop:${prop}, value:${(value + '').trim().substring(0, 20)}`);
     console.log(status.message);
   }
   res.status(status.code);
