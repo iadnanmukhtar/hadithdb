@@ -6,6 +6,7 @@ const createError = require('http-errors');
 const asyncify = require('express-asyncify');
 const Hadith = require('../lib/Hadith');
 const Arabic = require('../lib/Arabic');
+const Utils = require('../lib/Utils');
 
 const router = asyncify(express.Router());
 
@@ -15,21 +16,22 @@ router.post('/:id/:prop', async function (req, res, next) {
   var status = {
     code: 405,
     message: 'Method Not Allowed',
+    value: req.body.value
   };
   try {
+    var ids = req.params.id.split(/,/);
     var prop = req.params.prop;
     var type = prop.split(/\./)[0];
     var col = prop.split(/\./)[1];
-    var value = req.body.value;
-    if (value == '…')
-      value = null;
-    value = Arabic.arabizi2ALALC(value);
+    if (status.value == '…')
+      status.value = null;
+    status.value = Utils.emptyIfNull(Arabic.arabizi2ALALC(status.value)).trim();
 
     if (type == 'hadith') {
       var result = "";
 
       if (col == 'tags') {
-        var tags = value.split(/[,; \t\n]/);
+        var tags = status.value.split(/[,; \t\n]/);
         tags.map(t => {
           return t.replace(/^#/, '');
         });
@@ -43,50 +45,49 @@ router.post('/:id/:prop', async function (req, res, next) {
         }
         if (tags.length > 0)
           result = await global.query(`INSERT IGNORE INTO tags (text_en) VALUES ${vals}`);
-        await global.query(`UPDATE hadiths SET tags=NULL WHERE id=${req.params.id}`);
-        await global.query(`DELETE FROM hadiths_tags WHERE hadithId=${req.params.id}`);
+        await global.query(`UPDATE hadiths SET tags=NULL WHERE id=${ids[0]}`);
+        await global.query(`DELETE FROM hadiths_tags WHERE hadithId=${ids[0]}`);
         for (var i = 0; i < tags.length; i++) {
           var tag = await global.query(`SELECT * FROM tags WHERE text_en="${tags[i]}"`);
-          await global.query(`INSERT IGNORE INTO hadiths_tags (hadithId, tagId) VALUES (${req.params.id}, ${tag[0].id})`);
+          await global.query(`INSERT IGNORE INTO hadiths_tags (hadithId, tagId) VALUES (${ids[0]}, ${tag[0].id})`);
         }
         await Hadith.a_reinit();
 
       } else { // hadith
-        result = await global.query(`UPDATE hadiths SET lastmod_user='admin', ${col}=${sql(value)} WHERE id=${req.params.id}`);
+        result = await global.query(`UPDATE hadiths SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       }
       status.code = 200;
       status.message = result.message;
       try {
-        await Hadith.a_ReindexHadith(req.params.id);
+        await Hadith.a_ReindexHadith(ids[0]);
       } catch (err) {
         console.log(`${err.message}:\n${err.stack}`);
       }
 
     } else if (type == 'tags') {
-      var result = await global.query(`UPDATE tags SET ${col}=${sql(value)} WHERE id=${req.params.id}`);
+      var result = await global.query(`UPDATE tags SET ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       status.code = 200;
       status.message = result.message;
       await Hadith.a_reinit();
 
     } else if (type == 'toc') {
-      var result = await global.query(`UPDATE toc SET lastmod_user='admin', ${col}=${sql(value)} WHERE id=${req.params.id}`);
+      var result = await global.query(`UPDATE toc SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       status.code = 200;
       status.message = result.message;
       try {
-        await Hadith.a_ReindexTOC(req.params.id);
+        await Hadith.a_ReindexTOC(ids[0]);
       } catch (err) {
         console.log(`${err.message}:\n${err.stack}`);
       }
 
     } else if (type == 'book') {
-      var result = await global.query(`UPDATE books SET ${col}=${sql(value)} WHERE id=${req.params.id}`);
+      var result = await global.query(`UPDATE books SET ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       status.code = 200;
       status.message = result.message;
       await Hadith.a_reinit();
 
     } else if (type == 'hadith_virtual') {
       var result = "";
-      var ids = req.params.id.split(/,/);
 
       if (col == 'del') {
         var curr = await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`);
@@ -108,16 +109,15 @@ router.post('/:id/:prop', async function (req, res, next) {
           WHERE bookId=${prev.bookId} AND h1=${prev.h1} AND numInChapter > ${prev.numInChapter}`);
         result = await global.query(`INSERT INTO hadiths_virtual
           (bookId, tocId, numInChapter, num, num0, ref_num) VALUES
-          (${prev.bookId}, ${prev.tocId}, ${prev.numInChapter + 1}, "${prev.num + 1}", ${prev.num0}, ${sql(value)})`);
+          (${prev.bookId}, ${prev.tocId}, ${prev.numInChapter + 1}, "${prev.num + 1}", ${prev.num0}, ${sql(status.value)})`);
       } else {
         // hadith virtual
-        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='admin', ${col}=${sql(value)} WHERE hadithId=${ids[0]}`);
+        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE hadithId=${ids[0]}`);
       }
       status.code = 200;
       status.message = result.message;
 
     } else if (type == 'hadiths_sim') {
-      var ids = req.params.id.split(/,/);
 
       if (col == 'del') {
         var result = await global.query(`DELETE FROM hadiths_sim_candidates 
@@ -134,7 +134,7 @@ router.post('/:id/:prop', async function (req, res, next) {
     status.code = 500;
     console.log(`${status.message}:\n${err.stack}`);
   } finally {
-    console.log(`update status:${status.code}, id:${req.params.id}, prop:${prop}, value:${(value + '').trim().substring(0, 20)}`);
+    console.log(`update status:${status.code}, id:${ids}, prop:${prop}, value:${(status.value + '').trim().substring(0, 20)}`);
     console.log(status.message);
   }
   res.status(status.code);

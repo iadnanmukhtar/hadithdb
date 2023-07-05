@@ -15,8 +15,9 @@
     toastr.options.closeDuration = 300;
     toastr.options.closeEasing = 'swing';
 
-    function changeListener(e) {
+    async function changeListener(e) {
       if ($(this).attr('editing') == 'true') {
+        $(this).attr('editing', 'false');
         var id = $(this).data('id');
         var prop = $(this).data('prop');
         console.log(`applying change: id=${id}, prop=${prop}`);
@@ -33,11 +34,22 @@
         value = value.replace(/<br>/g, '\n');
         value = value.replace(/<\/div>/g, '').trim();
         value = value.replace(/<[^>]+>/g, '');
-        update({
+        var resBody = await update({
           id: id,
           prop: prop,
           value: value,
         });
+        // update element on success
+        console.log('response: ' + JSON.stringify(resBody).substring(1,255));
+        if (resBody.code == 200) {
+          value = resBody.value;
+          if ($(this).data('reset') == 'true')
+            value = '';
+          if ($(this).is('textarea') || $(this).is('input'))
+            $(this).val(value);
+          else
+            $(this).html(value);
+        }
       }
       e.stopPropagation();
     }
@@ -54,11 +66,15 @@
           value: body.value,
         })
       });
+      var body = JSON.parse(await res.text());
       if (res.status == 200)
-        toastr.success(`${res.statusText}`, 'Update Result');
-      else
-        toastr.error(`${res.statusText}`, 'Update Result');
-      return res;
+        toastr.success(`${res.status} ${res.statusText}`, 'Successful Update');
+      else {
+        var errMessage = `${res.status} ${res.statusText} ${body.message}`;
+        console.error(`Update Error\n${errMessage}`);
+        toastr.error(errMessage, `Update Error`);
+      }
+      return body;
     }
 
     function split(val) {
