@@ -21,10 +21,10 @@
         var prop = $(this).data('prop');
         console.log(`applying change: id=${id}, prop=${prop}`);
         var value = '';
-        if ($(this).is('textarea') || $(this).is('input') || $(this).is('select'))
-          value = $(this).val();
-        else if ($(this).attr('type') == 'checkbox')
+        if ($(this).attr('type') == 'checkbox')
           value = $(this).prop('checked') ? "1" : "0";
+        else if ($(this).is('textarea') || $(this).is('select') || $(this).is('input'))
+          value = $(this).val();
         else
           value = $(this).html();
         value = value.replace(/&nbsp;/g, ' ');
