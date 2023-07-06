@@ -91,7 +91,7 @@
 		<% if (site.editMode && results.allHeadings) { %>
 			(<select dir="rtl" class="_e" data-id="<%= hadith.id %>" data-prop="hadith.tocId">
 				<% results.allHeadings.forEach(function (section) { %>
-					<option value="<%=section.id%>" <%=(section.id == hadith.tocId) ? 'selected' :''%>><%=section.title%></option>
+					<option value="<%=section.id%>" <%=(section.id == hadith.tocId) ? 'selected' :''%>><%=utils.truncate(section.title, 50, true, false, false)%></option>
 				<% }); %>
 			</select>)
 		<% } else { %>
