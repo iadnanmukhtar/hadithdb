@@ -25,7 +25,8 @@ router.post('/:id/:prop', async function (req, res, next) {
     var col = prop.split(/\./)[1];
     if (status.value == '…')
       status.value = null;
-    status.value = Utils.emptyIfNull(Arabic.arabizi2ALALC(status.value)).trim();
+    if (req.body.arabizi)
+      status.value = Utils.emptyIfNull(Arabic.arabizi2ALALC(status.value)).trim();
 
     if (type == 'hadith') {
       var result = "";

@@ -54,11 +54,11 @@
 
     <div class="container mb-2">
       <div class="row text-center justify-content-center">
-        <h2 class="_e fs-3" title="<%- book.name %>" data-id="<%=book.id%>" data-prop="book.name_en"><%- book.name_en %></h2>
+        <h2 class="_e fs-3" title="<%- book.name %>" data-id="<%=book.id%>" data-prop="book.name_en" data-arabizi="true"><%- book.name_en %></h2>
         <h2 class="_e fs-3" title="<%- book.name_en %>" data-id="<%=book.id%>" data-prop="book.name"><%- book.name %></h2>
         <% if (site.editMode) { %>
           <h3>
-            <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName_en"><%- book.shortName_en %></span>
+            <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName_en" data-arabizi="true"><%- book.shortName_en %></span>
             <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName"><%- book.shortName %></span>
           </h3>
         <% } %>
@@ -105,10 +105,10 @@
             <td><%- toc[i].start %></td>
             <td><%- toc[i].h1 %>.<%- toc[i].h2 %></td>
             <% if (toc[i].start) { %>
-              <td><a href="/<%- `${book.alias}/${toc[i].h1}#${toc[i].start}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en"><%- title_en || 'Section' %></a></td>
+              <td><a href="/<%- `${book.alias}/${toc[i].h1}#${toc[i].start}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Section' %></a></td>
               <td lang="ar"><a href="/<%- `${book.alias}/${toc[i].h1}#${toc[i].start}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
             <% } else { %>
-              <td class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en"><%- title_en %></td>
+              <td class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en %></td>
             <td lang="ar" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></td>
             <% } %>
             </tr -->
@@ -119,10 +119,10 @@
             <td><%- toc[i].start %></td>
             <td>C<%- toc[i].h1 %></td>
             <% if (toc[i].start) { %>
-              <td><a href="/<%- `${book.alias}/${toc[i].h1}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en"><%- title_en || 'Chapter' %></a></td>
+              <td><a href="/<%- `${book.alias}/${toc[i].h1}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a></td>
               <td lang="ar"><a href="/<%- `${book.alias}/${toc[i].h1}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
             <% } else { %>
-              <td class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en"><%- title_en %></td>
+              <td class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en %></td>
               <td lang="ar" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></td>
             <% } %>
             </tr>
