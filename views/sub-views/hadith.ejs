@@ -88,8 +88,9 @@
 	<% if (((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) || site.editMode) { %>
 		<div class="title">
 		§ 
-		<% if (site.editMode && results.allHeadings) { %>
+		<% if (site.editMode && results.allHeadings && !hadith.numVirtual) { %>
 			(<select dir="rtl" class="_e" data-id="<%= hadith.id %>" data-prop="hadith.tocId">
+				<option value="">-- خالي --</option>
 				<% results.allHeadings.forEach(function (section) { %>
 					<option value="<%=section.id%>" <%=(section.id == hadith.tocId) ? 'selected' :''%>><%=utils.truncate(section.title, 50, true, false, false)%></option>
 				<% }); %>

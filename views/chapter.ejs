@@ -134,7 +134,7 @@
       %>
 
       <%# --- HADITHS SECTION --- %>
-      <a id="<%- results.hadiths[i].num %>"></a>
+      <a id="<%- results.hadiths[i].numVirtual || results.hadiths[i].num %>"></a>
       <%  var totalHeadings = headings.length;
           for (var j = 0; headings && j < totalHeadings; j++) { 
             var heading = headings[j]; %>
