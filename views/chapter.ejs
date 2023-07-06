@@ -148,7 +148,11 @@
         -->
         <div class="row heading py-2">
           <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
-              <%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>. <span class="_e" data-id="<%=heading.id%>" data-prop="toc.title_en"><%- heading.title_en || 'Section' %></span>
+            <% if (site.editMode) { %>
+              (<span class="_e" title="Start Num" data-id="<%=heading.id%>" data-prop="toc.start"><%- heading.start || '&hellip;' %></span>)
+              (<span class="_e" title="Start Num0" data-id="<%=heading.id%>" data-prop="toc.start0"><%- heading.start0 || '&hellip;' %></span>)
+            <% } %>
+            <%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>. <span class="_e" data-id="<%=heading.id%>" data-prop="toc.title_en"><%- heading.title_en || 'Section' %></span>
             <% if (sectionContinued) { %>
               <small class="text-muted">(contd &hellip;)</small>
             <% } %>
@@ -183,7 +187,7 @@
       <% } %>
 
       <%# --- HADITH --- %>
-      <%- include('sub-views/hadith.ejs', { site: site, hadith: results.hadiths[i], main: false, title: false, searchResult: false }); %>
+      <%- include('sub-views/hadith.ejs', { site: site, page: page, hadith: results.hadiths[i], main: false, title: false, searchResult: false }); %>
 
       <% } %>
 

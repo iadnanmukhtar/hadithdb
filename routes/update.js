@@ -53,9 +53,34 @@ router.post('/:id/:prop', async function (req, res, next) {
         }
         await Hadith.a_reinit();
 
+      } else if (col == 'moveup' || col == 'movedn') {
+        var curr = (await global.query(`SELECT * from hadiths WHERE id=${ids[0]}`))[0];
+        var prev = (await global.query(`SELECT * from hadiths WHERE ordinal < ${curr.ordinal} ORDER BY ordinal DESC LIMIT 1`))[0];
+        var next = (await global.query(`SELECT * from hadiths WHERE ordinal > ${curr.ordinal} ORDER BY ordinal ASC LIMIT 1`))[0];
+        var repl = null;
+        if (col == 'moveup')
+          repl = prev;
+        else if (col == 'moveup')
+          repl = next;
+        if (repl != null) {
+          result = await global.query(`UPDATE hadiths 
+            SET
+              tocId=${repl.tocId},
+              h1=${repl.h1},
+              h2=${repl.h2},
+              h3=${repl.h3}
+            WHERE id=${curr.id} AND bookId=${curr.bookId}`);
+          await global.query(`SET @n:=0`);
+          await global.query(`UPDATE hadiths SET numInChapter=(@n:=@n+1)
+            WHERE bookId=${curr.bookId} AND h1=${repl.h1} ORDER by bookId, h1, ordinal`);
+    
+        } else
+          throw new Error("Invalid command");
+        
       } else { // hadith
         result = await global.query(`UPDATE hadiths SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       }
+
       status.code = 200;
       status.message = result.message;
       try {
@@ -90,8 +115,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       var result = "";
 
       if (col == 'del') {
-        var curr = await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`);
-        curr = curr[0];
+        var curr = (await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`))[0];
         result = await global.query(`DELETE FROM hadiths_virtual 
           WHERE bookId=${curr.bookId} AND id=${ids[0]}`);
         await global.query(`SET @n:=0`);
@@ -102,14 +126,14 @@ router.post('/:id/:prop', async function (req, res, next) {
           ORDER by bookId, h1, num0`);
         
       } else if (col == 'add') {
-        var prev = await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`);
-        prev = prev[0];
-        result = await global.query(`SET @n:=${prev.numInChapter+1}`);
+        var curr = (await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`))[0];
+        result = await global.query(`SET @n:=${curr.numInChapter+1}`);
         result = await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
-          WHERE bookId=${prev.bookId} AND h1=${prev.h1} AND numInChapter > ${prev.numInChapter}`);
+          WHERE bookId=${curr.bookId} AND h1=${curr.h1} AND numInChapter > ${curr.numInChapter}`);
         result = await global.query(`INSERT INTO hadiths_virtual
           (bookId, tocId, numInChapter, num, num0, ref_num) VALUES
-          (${prev.bookId}, ${prev.tocId}, ${prev.numInChapter + 1}, "${prev.num + 1}", ${prev.num0}, ${sql(status.value)})`);
+          (${curr.bookId}, ${curr.tocId}, ${curr.numInChapter + 1}, "${curr.num + 1}", ${curr.num0}, ${sql(status.value)})`);
+
       } else {
         // hadith virtual
         result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE hadithId=${ids[0]}`);

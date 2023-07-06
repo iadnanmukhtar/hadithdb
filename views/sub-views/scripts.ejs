@@ -16,8 +16,7 @@
     toastr.options.closeEasing = 'swing';
 
     async function changeListener(e) {
-      if ($(this).attr('editing') == 'true') {
-        $(this).attr('editing', 'false');
+      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
         var id = $(this).data('id');
         var prop = $(this).data('prop');
         console.log(`applying change: id=${id}, prop=${prop}`);
@@ -47,6 +46,8 @@
             value = '';
           if ($(this).is('textarea') || $(this).is('input'))
             $(this).val(value);
+          else if ($(this).is('select'))
+            void(0);
           else
             $(this).html(value);
         }
@@ -94,7 +95,7 @@
     });
 
     $('._click').each(function () {
-      $(this).attr('editing', 'true');
+      $(this).attr('clickable', 'true');
       $(this).on('click', changeListener);
     });
 

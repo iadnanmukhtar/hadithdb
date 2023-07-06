@@ -85,11 +85,19 @@
 		– <span><%- hadith.grade.grade_en %></span>&nbsp;(<span title="<%=hadith.grader.name_en%>"><%- hadith.grader.shortName_en %></span>)
 		<% } %>
 	</em>
-	<% if ((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) { %>
+	<% if (((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) || site.editMode) { %>
 		<div class="title">
 		§ 
-		<% if (hadith.section) { %>
-			<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}${hadith.chapter.offset}#S${hadith.section.h2}` %>" title="<%= hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+		<% if (site.editMode && results.allHeadings) { %>
+			(<select dir="rtl" class="_e" data-id="<%= hadith.id %>" data-prop="hadith.tocId">
+				<% results.allHeadings.forEach(function (section) { %>
+					<option value="<%=section.id%>" <%=(section.id == hadith.tocId) ? 'selected' :''%>><%=section.title%></option>
+				<% }); %>
+			</select>)
+		<% } else { %>
+			<% if (hadith.section) { %>
+				<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}${hadith.chapter.offset}#S${hadith.section.h2}` %>" title="<%= hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+			<% } %>
 		<% } %>
 		<% if (hadith.chapter) { %>
 			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%= hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
@@ -117,16 +125,19 @@
 			<% } %>
 			</div>
 	<% } %>
-	<% if (site.editMode && hadith.parentId) { %>
+	<% if (site.editMode) { %>
 		<div>
+		<% if (hadith.parentId) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Remove Association" data-id="<%= hadith.parentId %>,<%= hadith.id %>" data-prop="hadiths_sim.del">Remove</a>
-		</div>
-	<% } %>
-	<% if (site.editMode && hadith.numVirtual) { %>
-		<div>
+		<% } else if (hadith.numVirtual) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Delete" data-id="<%= hadith.idVirtual %>" data-prop="hadith_virtual.del">Delete</a>
 			|
-			<span class="bi bi-file-plus"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= hadith.idVirtual %>" data-prop="hadith_virtual.add" data-reset="true">
+			<span class="bi bi-file-plus-fill"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= hadith.idVirtual %>" data-prop="hadith_virtual.add" data-reset="true">
+		<% } else if (page.menu == 'Chapter') { %>
+			<span class="bi bi-caret-up-square-fill"></span>&nbsp;<a class="_click" title="Move Up" data-id="<%= hadith.id %>" data-prop="hadith.moveup">Move Up</a>
+			|
+			<span class="bi bi-caret-down-square-fill"></span>&nbsp;<a class="_click" title="Move Down" data-id="<%= hadith.id %>" data-prop="hadith.movedn">Move Down</a>
+		<% } %>
 		</div>
 	<% } %>
 	<% if (main && !site.editMode) { %>
@@ -134,6 +145,7 @@
 			<a href="https://twitter.com/intent/tweet?button_hashtag=<%=hashtag%>" class="twitter-hashtag-button" data-text="<%=hadith.title_en%>" data-hashtags="hadith,HadithoftheDay" data-size="I" data-show-count="true" data-url="https://hadith.quranunlocked.com/<%=hadith.book.alias%>:<%=hadith.num%>">Tweet #<%=hashtag%></a>
 		</div>
 	<% } %>
+
 </div>
 
 <!-- Arabic Hadith ----------------------------------------- -->
