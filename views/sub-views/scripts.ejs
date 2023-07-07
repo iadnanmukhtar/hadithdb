@@ -16,6 +16,7 @@
     toastr.options.closeEasing = 'swing';
 
     async function changeListener(e) {
+      console.log('did this fire?');
       if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
         var id = $(this).data('id');
         var prop = $(this).data('prop');
