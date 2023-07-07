@@ -33,15 +33,12 @@
         value = value.replace(/<br>/g, '\n');
         value = value.replace(/<\/div>/g, '').trim();
         value = value.replace(/<[^>]+>/g, '');
-        console.log('here 3');
         var reqBody = {
           id: id,
           prop: prop,
           arabizi: arabizi,
           value: value,
         };
-        console.log('req: ' + reqBody);
-        console.log('req: ' + JSON.stringify(reqBody));
         var resBody = await update(reqBody);
         // update element on success
         console.log('response: ' + JSON.stringify(resBody).substring(1,255));
@@ -61,25 +58,27 @@
     }
 
     async function update(body) {
-      console.log('here 3.1');
-      console.log('body: ' + body);
-      console.log(`/update/${body.id}/${body.prop}`);
-      console.log(JSON.stringify(body));
-      var res = await fetch(`/update/${body.id}/${body.prop}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: body.id,
-          prop: body.prop,
-          arabizi: body.arabizi,
-          value: body.value,
-        })
-      });
-      console.log('here 3.2');
-      var body = JSON.parse(await res.text());
-      console.log('here 3.3');
+      var res = {
+        status: 500,
+        statusText: 'Unable to execute update due to an unknown error'
+      };
+      if (body) {
+        res = await fetch(`/update/${body.id}/${body.prop}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: body.id,
+            prop: body.prop,
+            arabizi: body.arabizi,
+            value: body.value,
+          })
+        });
+        var body = JSON.parse(await res.text());
+      } else {
+        res.statusText = 'Update request body is not present';
+      }
       if (res.status == 200)
         toastr.success(`${res.status} ${res.statusText}`, 'Successful Update');
       else {
