@@ -111,3 +111,41 @@ from (
 ) x
 order by h1_id, h2_id, alias, num
 
+-- move t3 to t2 for unit hadiths
+update toc t2, toc t3, hadiths h
+set
+	h.tocId = t2.id
+where 
+	t2.level=2
+and t3.level=3
+and t2.bookId = t3.bookId
+and t2.h1 = t3.h1
+and t2.h2 = t3.h2
+and t2.h3 is null
+and h.tocId = t3.id
+  and t3.bookId=13
+  and t3.h1=54
+  and t3.count < 3;
+
+-- TOC hierarchy
+select 
+	  t1.bookId 
+	, t1.level
+	, t1.h1, t1.title
+	, t2.level
+	, t2.h2, t2.title
+	, t3.level
+	, t3.h3, t3.title
+from 
+	toc t1 
+    left join toc t2 on t2.level=2 and t2.bookId = t1.bookId and t2.h1=t1.h1
+	left join toc t3 on t3.level=3 and t3.bookId = t2.bookId and t3.h1=t1.h1 and t3.h2=t2.h2
+where
+		t1.level=1
+	and t1.bookId=11
+order by 
+	  t1.bookId
+	, t1.h1
+    , t2.h2
+    , t3.h3
+;
