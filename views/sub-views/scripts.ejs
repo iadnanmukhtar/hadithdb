@@ -62,6 +62,7 @@
     }
 
     async function update(body) {
+      console.log('here 3.1');
       var res = await fetch(`/update/${body.id}/${body.prop}`, {
         method: 'POST',
         headers: {
@@ -74,7 +75,9 @@
           value: body.value,
         })
       });
+      console.log('here 3.2');
       var body = JSON.parse(await res.text());
+      console.log('here 3.3');
       if (res.status == 200)
         toastr.success(`${res.status} ${res.statusText}`, 'Successful Update');
       else {
