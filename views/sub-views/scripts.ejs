@@ -57,36 +57,37 @@
       e.stopPropagation();
     }
 
-    async function update(body) {
+    async function update(reqBody) {
+      var resBody = {};
       var res = {
         status: 500,
         statusText: 'Unable to execute update due to an unknown error'
       };
-      if (body) {
-        res = await fetch(`/update/${body.id}/${body.prop}`, {
+      if (reqBody) {
+        res = await fetch(`/update/${reqBody.id}/${reqBody.prop}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            id: body.id,
-            prop: body.prop,
-            arabizi: body.arabizi,
-            value: body.value,
+            id: reqBody.id,
+            prop: reqBody.prop,
+            arabizi: reqBody.arabizi,
+            value: reqBody.value,
           })
         });
-        var body = JSON.parse(await res.text());
+        resBody = JSON.parse(await res.text());
       } else {
         res.statusText = 'Update request body is not present';
       }
       if (res.status == 200)
         toastr.success(`${res.status} ${res.statusText}`, 'Successful Update');
       else {
-        var errMessage = `${res.status} ${res.statusText} ${body.message}`;
+        var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
         console.error(`Update Error\n${errMessage}`);
         toastr.error(errMessage, `Update Error`);
       }
-      return body;
+      return resBody;
     }
 
     function split(val) {
