@@ -16,12 +16,13 @@
     toastr.options.closeEasing = 'swing';
 
     async function changeListener(e) {
-      console.log('did this fire?');
       if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
+        console.log('in edit');
         var id = $(this).data('id');
         var prop = $(this).data('prop');
         var arabizi = $(this).data('arabizi');
         var value = '';
+        console.log('here 1');
         if ($(this).attr('type') == 'checkbox')
           value = $(this).prop('checked') ? "1" : "0";
         else if ($(this).is('textarea') || $(this).is('select') || $(this).is('input'))
@@ -34,6 +35,7 @@
         value = value.replace(/<br>/g, '\n');
         value = value.replace(/<\/div>/g, '').trim();
         value = value.replace(/<[^>]+>/g, '');
+        console.log('here 2');
         var resBody = await update({
           id: id,
           prop: prop,
@@ -41,6 +43,7 @@
           value: value,
         });
         // update element on success
+        console.log('here 3');
         console.log('response: ' + JSON.stringify(resBody).substring(1,255));
         if (resBody.code == 200) {
           value = resBody.value;
@@ -53,7 +56,8 @@
           else
             $(this).html(value);
         }
-      }
+      } else
+        console.log('not in edit :-()');
       e.stopPropagation();
     }
 
