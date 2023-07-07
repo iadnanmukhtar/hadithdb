@@ -58,6 +58,7 @@
 
     async function update(body) {
       console.log('here 3.1');
+      console.log('body: ' + body);
       console.log(`/update/${body.id}/${body.prop}`);
       console.log(JSON.stringify(body));
       var res = await fetch(`/update/${body.id}/${body.prop}`, {
