@@ -33,13 +33,15 @@
         value = value.replace(/<br>/g, '\n');
         value = value.replace(/<\/div>/g, '').trim();
         value = value.replace(/<[^>]+>/g, '');
+        console.log('here 3');
         var reqBody = {
           id: id,
           prop: prop,
           arabizi: arabizi,
           value: value,
         };
-        console('req: ' + reqBody);
+        console.log('req: ' + reqBody);
+        console.log('req: ' + JSON.stringify(reqBody));
         var resBody = await update(reqBody);
         // update element on success
         console.log('response: ' + JSON.stringify(resBody).substring(1,255));
