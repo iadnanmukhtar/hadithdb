@@ -82,9 +82,9 @@
 		§ 
 		<% if (toc.h2) {
 			if (toc.level == 3) { %>
-				<a href="/<%=toc.book.alias%>/<%=toc.h1%><%=toc.h1_offset%>#S<%=toc.h2%>-<%=toc.h3%>" title="<%= toc.h3_title %>"><%- utils.truncate(toc.h3_title, 60, true) || 'بَاب' %></i></a>
+				<a href="/<%=toc.book.alias%>/<%=toc.h1%><%=toc.h1_offset%>#S<%=toc.h2%>-<%=toc.h3%>" title="<%= toc.h3_title %>"><%- utils.truncate(toc.h3_title, 60, true) || 'بَاب' %></a>
 			<% } else { %> 
-				<a href="/<%=toc.book.alias%>/<%=toc.h1%><%=toc.h1_offset%>#S<%=toc.h2%>" title="<%= toc.h2_title %>"><%- utils.truncate(toc.h2_title, 60, true) || 'بَاب' %></i></a>
+				<a href="/<%=toc.book.alias%>/<%=toc.h1%><%=toc.h1_offset%>#S<%=toc.h2%>" title="<%= toc.h2_title %>"><%- utils.truncate(toc.h2_title, 60, true) || 'بَاب' %></a>
 			<% } %> 
 		<% } %>
 		<% if (toc.h1) { %>
