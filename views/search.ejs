@@ -71,7 +71,7 @@
             <div class="col-md-6">
 
               <div class="input-group mb-3">
-                <input id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="Search aḥādīth in English or بالعربية ...">
+                <input id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="Search aḥādīth...">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="bi bi-book"></i>
                 </button>
@@ -82,7 +82,7 @@
                       <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
                       <label class="form-check-label"><%=bk.shortName_en%></label>
                     </div>
-                    <% }); %>
+                  <% }); %>
 
                 </div>
               </div>
@@ -94,7 +94,7 @@
       
     <% if (results.length != 1 && q) { %>
       <div class="text-center">
-          Found <%= results.length %> results for term: <%=q%>
+          Found <%= results.length %> results for term: [<%=q%>] in <%= b.length > 0 ? `${b.join(', ')}` : 'all books'%>
         </div>
       <% } else if (results.length != 1) { %>
         <div class="text-center">

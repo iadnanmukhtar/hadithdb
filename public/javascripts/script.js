@@ -13,6 +13,25 @@ $(function () {
 		}
 	});
 
+	if ($('.search .form-check input:checked').length > 0) {
+		$('.search .btn i').removeClass('bi-book');
+		$('.search .btn i').addClass('bi-book-fill');
+	}
+	$('.search .form-check input').on('click', function () {
+		var checked = false;
+		$('.search .form-check input').each(function () {
+			if ($(this).prop('checked'))
+				checked = true;
+		});
+		if (checked) {
+			$('#search-bar + .btn i').removeClass('bi-book');
+			$('#search-bar + .btn i').addClass('bi-book-fill');
+		} else {
+			$('#search-bar + .btn i').removeClass('bi-book-fill');
+			$('#search-bar + .btn i').addClass('bi-book');
+		}
+	});
+
 	$(document).on('click', function () {
 		$('.collapse').collapse('hide');
 	});

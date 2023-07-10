@@ -79,7 +79,13 @@ nav .nav-link {
 }
 
 .search-click-toggle .form-control {
-	width: 30vw;
+	width: 20vw;
+}
+
+@media (max-width: 576px) {
+	.search-click-toggle .form-control {
+		width: 30vw;
+	}
 }
 
 .search-click-toggle input {
@@ -94,8 +100,19 @@ nav .nav-link {
 	margin-left: 0.5rem;
 }
 
+.form-check:hover {
+	background-color: var(--bs-border-color);
+}
+
+#search-bar {
+	font-size: 20pt;
+	border-color: #2c9be5;
+	border-right: 0 none transparent;
+}
+
 #search-bar + .btn-outline-secondary {
-	border-color: var(--bs-border-color);
+	border-color: #2c9be5;
+	border-left: 0 none transparent;
 	color: #2c9be5;
 }
 
