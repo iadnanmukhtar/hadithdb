@@ -212,11 +212,29 @@
 			<%- hadith.footnote_en || '&hellip;' %>
 		</div>
 	<% } %>
-	<% if (title || hadith.numVirtual) { %>
+
+	<% if (((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) || site.editMode) { %>
 		<div class="title">
-			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}${hadith.chapter.offset}#S${hadith.section.h2}` %>" title="<%- hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
-			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+		§ 
+		<% if (site.editMode && results.allHeadings && !hadith.numVirtual) { %>
+			(<select dir="rtl" class="_e" data-id="<%= hadith.id %>" data-prop="hadith.tocId">
+				<option value="">-- خالي --</option>
+				<% results.allHeadings.forEach(function (section) { %>
+					<option value="<%=section.id%>" <%=(section.id == hadith.tocId) ? 'selected' :''%>><%=section.h2%>-<%=section.h3%> <%=utils.truncate(section.title, 50, true, false, false)%></option>
+				<% }); %>
+			</select>)
+		<% } else { %>
+			<% if (hadith.section) { %>
+				<a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}${hadith.chapter.offset}#S${hadith.section.h2}` %>" title="<%= hadith.section.title_en %>"><%- utils.truncate(hadith.section.title_en, 30, true) || 'Section' %></a>
+			<% } %>
+		<% } %>
+		<% if (hadith.chapter) { %>
+			in <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%= hadith.chapter.title_en %>"><%- utils.truncate(hadith.chapter.title_en, 30, true) || 'Chapter' %></a>
+		<% } %>
+		<a class="cmd-btn" title="Report an issue" href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
 		</div>
+	<% } else { %>
+		<a class="cmd-btn" title="Report an issue" href="<%- `/do/${hadith.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
 	<% } %>
 	<% if (hadith.tags || site.editMode) {
 		var tags = null;

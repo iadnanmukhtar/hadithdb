@@ -97,26 +97,54 @@
 			"boost": 2,
 			"analyzer": "english"
 		},
+		"h3": {
+			"type": "integer"
+		},
+		"h3_id": {
+			"type": "integer"
+		},
+		"h3_title": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "arabic"
+		},
+		"h3_title_en": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "english"
+		},
+		"h3_intro": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "arabic"
+		},
+		"h3_intro_en": {
+			"type": "text",
+			"boost": 2,
+			"analyzer": "english"
+		},
 		"h1_count": {
 			"enabled": false
 		},
 		"h1_start": {
 			"enabled": false
 		},
+		"h2_count": {
+			"enabled": false
+		},
 		"h2_start": {
 			"enabled": false
 		},
-
+		"h3_count": {
+			"enabled": false
+		},
+		"h3_start": {
+			"enabled": false
+		},
 
 		"numInChapter": {
 			"type": "integer"
-		},
-
-
-		"lastmod": {
-			"enabled": false
 		}
-
 
 	}
 }

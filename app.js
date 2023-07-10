@@ -105,6 +105,7 @@ global.tags = [];
 global.dbPool = MySQL.createPool(global.MySQLConfig.connection);
 global.query = util.promisify(global.dbPool.query).bind(global.dbPool);
 global.quran = [];
+global.searchURLBase = 'http://search.quranunlocked.com';
 global.searchURL = 'http://search.quranunlocked.com/hadiths,toc';
 
 async function a_dbInitApp() {
