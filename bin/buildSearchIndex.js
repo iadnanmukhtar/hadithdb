@@ -2,6 +2,7 @@
 'use strict';
 
 const HomeDir = require('os').homedir();
+const fs = require('fs');
 const util = require('util');
 const MySQL = require('mysql');
 const axios = require('axios');
@@ -17,23 +18,23 @@ const headers = {
 
 (async () => {
 	try {
-		console.log(`retreiving data to index...`);
-		var books = await query(`SELECT * FROM books b WHERE b.id > 12 ORDER BY id`);
+		log(`retreiving data to index...`);
+		var books = await query(`SELECT * FROM books b WHERE b.id > 2 ORDER BY id`);
 		for (var i = 0; i < books.length; i++) {
 			await indexDocs('hadiths', books[i]);
-			// await indexDocs('toc', books[i]);
+			await indexDocs('toc', books[i]);
 		}
 	} finally {
 		dbPool.end();
-		console.log('indexing complete');
+		log('indexing complete');
 	}
 })();
 
 async function indexDocs(indexName, book) {
-	console.log(`\n*****\ncreating ${indexName} index for ${book.shortName_en}...`);
+	log(`\n*****\ncreating ${indexName} index for ${book.shortName_en}...`);
 	var indexURL = 'http://search.quranunlocked.com/' + indexName + '/_bulk';
 	var rows = await getData(indexName, book);
-	console.log(`indexing ${rows.length} docs...`);
+	log(`indexing ${rows.length} docs...`);
 	var bulk = '';
 	for (var i = 0; i < rows.length; i++) {
 		delete rows[i].highlight;
@@ -54,17 +55,17 @@ async function indexDocs(indexName, book) {
 		bulk += `{ "index" : { "_index":"${indexName}","_id":"${rows[i].hId}" } }\n${JSON.stringify(data)}\n`;
 		if (i > 0 && (i % 50) == 0) {
 			Utils.msleep(250);
-			console.log(`POSTing ${data.ref}`);
+			log(`POSTing ${data.ref}`);
 			var res = await axios.post(indexURL, bulk + '\n', { headers });
-			console.log(`${res.status} errors=${res.data.errors}`);
+			log(`${res.status} errors=${res.data.errors}`);
 			bulk = "";
 		}
 	}
 	if (bulk.length > 0) {
 		Utils.msleep(500);
-		console.log(`POSTing last batch`);
+		log(`POSTing last batch`);
 		var res = await axios.post(indexURL, bulk + '\n', { headers });
-		console.log(`${res.status} errors=${res.data.errors}`);
+		log(`${res.status} errors=${res.data.errors}`);
 		bulk = "";
 	}
 }
@@ -78,4 +79,9 @@ async function getData(indexName, book) {
 			book_id, h1, numInChapter
 		-- LIMIT 10`);
 	return rows;
+}
+
+function log(message) {
+	console.log(message);
+	fs.appendFileSync('buildSearchIndex.log', message + '\n');
 }
