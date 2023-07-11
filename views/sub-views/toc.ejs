@@ -6,8 +6,8 @@
 
 <!-- English Hadith ----------------------------------------- -->
 
-<div class="col-md-6 col-sm-12 h" lang="en">
-	<p><strong>
+<article class="col-md-6 col-sm-12 h" lang="en">
+	<section><strong>
 		<% if (toc.h2) {
 			if (toc.level == 3) { %>
 				<a href="/<%=toc.book.alias%>/<%=toc.h1%><%=toc.h1_offset%>#S<%=toc.h2%>-<%=toc.h3%>"><%= `${toc.book.shortName_en}` %> Subsection <%=toc.h1%>.<%=toc.h2%>-<%=toc.h3%></a> –
@@ -20,20 +20,22 @@
 			<a href="/<%=toc.book.alias%>/<%=toc.h1%>"><%= `${toc.book.shortName_en}` %> Chapter <%=toc.h1%></a> –
 			<span class="<%=_e%>" data-id="<%=toc.h1_id%>" data-prop="toc.title_en"><%- toc.h1_title_en || 'Chapter' %></span>
 		<% } %>
-	</strong></p>
-	<div class="body">
-		<% if (toc.h2) {
-			if (toc.level == 3) { %>
-				<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h3_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
-			<% } else { %>
-				<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h2_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
+	</strong></section>
+	<% if (site.editMode || toc.h1_intro_en || toc.h2_intro_en || toc.h3_intro_en ) { %>
+		<section class="body">
+			<% if (toc.h2) {
+				if (toc.level == 3) { %>
+					<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h3_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
+				<% } else { %>
+					<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h2_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
+				<% } %>
+			<% } else if (toc.h1) { %>
+				<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h1_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
 			<% } %>
-		<% } else if (toc.h1) { %>
-			<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h1_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
-		<% } %>
-	</div>
+		</section>
+	<% } %>
 	<% if (title && (toc.h1 || toc.h2)) { %>
-		<div class="title">
+		<section class="title">
 			§ 
 			<% if (toc.h2) {
 				if (toc.level == 3) { %>
@@ -45,13 +47,13 @@
 			<% if (toc.h1) { %>
 				in <a href="/<%=toc.book_alias%>/<%=toc.h1%>"><%- utils.truncate(toc.h1_title_en, 30, true) || 'Chapter' %></a>
 			<% } %>
-		</div>
+		</section>
 	<% } %>
-</div>
+</article>
 
 <!-- Arabic Hadith ----------------------------------------- -->
 
-<div class="col-md-6 cols-sm-12 h" lang="ar">
+<article class="col-md-6 cols-sm-12 h" lang="ar">
 	<p><strong>
 		<% if (toc.h2) { 
 			if (toc.level == 3) { %>
@@ -66,19 +68,22 @@
 			<span class="<%=_e%>" data-id="<%=toc.h1_id%>" data-prop="toc.title"><%- toc.h1_title || 'كتاب' %></span>
 		<% } %>
 	</strong></p>
-	<div class="body">
-		<% if (toc.h2) {
-			if (toc.level == 3) { %>
-				<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro"><%- utils.emptyIfNull(toc.h3_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
-			<% } else { %> 
-				<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro"><%- utils.emptyIfNull(toc.h2_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
+	<% if (site.editMode || toc.h1_intro || toc.h2_intro || toc.h3_intro ) { %>
+		<section class="body">
+			<% if (toc.h2) {
+				if (toc.level == 3) { %>
+					<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro">
+						<%- utils.emptyIfNull(toc.h3_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
+				<% } else { %> 
+					<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro"><%- utils.emptyIfNull(toc.h2_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
+				<% } %>
+			<% } else if (toc.h1) { %>
+				<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro"><%- utils.emptyIfNull(toc.h1_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
 			<% } %>
-		<% } else if (toc.h1) { %>
-			<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro"><%- utils.emptyIfNull(toc.h1_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
-		<% } %>
-	</div>
+		</section>
+	<% } %>
 	<% if (title && (toc || toc.h2)) { %>
-		<div class="title">
+		<section class="title">
 		§ 
 		<% if (toc.h2) {
 			if (toc.level == 3) { %>
@@ -90,9 +95,9 @@
 		<% if (toc.h1) { %>
 			في <a href="/<%=toc.book_alias%>/<%=toc.h1%>" title="<%- toc.h1_title %>"><%- utils.truncate(toc.h1_title, 60, true) || 'كِتَاب' %></a>
 		<% } %>
-		</div>
+		</section>
 	<% } %>
-</div>
+</article>
 
 <% if (title) { %>
 	<hr class="mt-2" />

@@ -246,7 +246,7 @@ async function a_dbInitApp() {
   // // update numInChapter
   // var prevH1 = 0;
   // var numInChapter = 0;
-  // var hadiths = await global.query(`SELECT * FROM hadiths WHERE bookId = 5 ORDER BY h1,h2,h3,num0`);
+  // var hadiths = await global.query(`SELECT * FROM hadiths_virtual WHERE bookId = 49 ORDER BY h1,h2,h3,num0`);
   // var inserts = '';
   // var updateCnt = 0;
   // for (var i = 0; i < hadiths.length; i++) {
@@ -259,14 +259,14 @@ async function a_dbInitApp() {
   //     inserts += ` UNION ALL `;
   //   inserts += ` SELECT ${hadiths[i].id} AS id, ${numInChapter} AS new`;
   //   if (updateCnt > 100) {
-  //     await global.query(`UPDATE hadiths h JOIN ( ${inserts} ) vals ON h.id=vals.id SET numInChapter=new`);
+  //     await global.query(`UPDATE hadiths_virtual h JOIN ( ${inserts} ) vals ON h.id=vals.id SET numInChapter=new`);
   //     inserts = ``;
   //     updateCnt = 0;
   //   } else
   //     updateCnt++;
   // }
   // if (updateCnt > 0)
-  //   await global.query(`UPDATE hadiths h JOIN ( ${inserts} ) vals ON h.id=vals.id SET numInChapter=new`);
+  //   await global.query(`UPDATE hadiths_virtual h JOIN ( ${inserts} ) vals ON h.id=vals.id SET numInChapter=new`);
 
   // // split chain and body where missing
   // var rows = await global.query(`SELECT * FROM hadiths
@@ -544,6 +544,31 @@ async function a_dbInitApp() {
   //   console.log(`${row.id}\t"${Utils.sql(row.title)}"\t"${Utils.sql(row.title_en)}"`);
   // });
 
+  // // read from a TSV file and process rows
+  // var tsv = fs.readFileSync(`${HomeDir}/Downloads/qt.tsv`).toString().split(/[\n\r]+/g);
+  // var numInChapter = 0;
+  // var prevTocId = -1;
+  // for (var n = 0; n < tsv.length; n++) {
+  //   var cols = tsv[n].split(/\t/g);
+  //   var tocId = parseInt(cols[0])
+  //   if (tocId != prevTocId)
+  //     numInChapter = 1;
+  //   else
+  //     numInChapter++;
+  //   prevTocId = tocId;
+  //   var surah = parseInt(cols[1]);
+  //   var ayah = parseInt(cols[2]);
+  //   var len = parseInt(cols[3]);
+  //   // console.log(`${tocId} ${surah}:${ayah}-${ayah + (len - 1)}`);
+  //   for (var i = ayah; i <= (ayah + (len-1)); i++) {
+  //     console.log(`${tocId} ${numInChapter}-quran:${surah}:${i}`);
+  //     await global.query(`INSERT INTO hadiths_virtual
+  //       (bookId, tocId, numInChapter, num, num0, ref_num) VALUES
+  //       (49, ${tocId}, ${numInChapter}, "${surah}:${i}", ${surah + (i/1000.)}, 'quran:${surah}:${i}')`);
+  //     numInChapter++;
+  //   }
+  // }
+  
   console.error('done');
 
 }

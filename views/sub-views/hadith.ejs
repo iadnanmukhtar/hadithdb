@@ -1,5 +1,5 @@
 <% 
-	hashtag = (hadith.book.alias + '_' + hadith.num).replace(/[-\:]/, '_');
+	hashtag = (hadith.book.alias + hadith.num).replace(/[-\:]/, '_');
 	var _p = searchResult ? 'partial' : '';
 %>
 
@@ -42,11 +42,11 @@
 			</span>
 		<% } %>
 
-		<% if (hadith.numVirtual) { %>
-			(<span class="_e" title="Virtual Num" data-id="<%=hadith.id%>" data-prop="hadith_virtual.num"><%- (hadith.numVirtual) ? `${hadith.numVirtual}` : '' %></span>)
+		<% if (hadith.num_virtual) { %>
+			(<span class="_e" title="Virtual Num" data-id="<%=hadith.id%>" data-prop="hadith_virtual.num"><%- (hadith.num_virtual) ? `${hadith.num_virtual}` : '' %></span>)
 		<% } %>
-		<% if (site.editMode && hadith.numVirtual) { %>
-			(<span class="_e" title="Virtual Num0" data-id="<%=hadith.id%>" data-prop="hadith_virtual.num0"><%- hadith.num0Virtual || '&hellip;' %></span>)
+		<% if (site.editMode && hadith.num_virtual) { %>
+			(<span class="_e" title="Virtual Num0" data-id="<%=hadith.id%>" data-prop="hadith_virtual.num0"><%- hadith.num0_virtual || '&hellip;' %></span>)
 		<% } %>
 
 		<b><a title="<%-hadith.id%>" href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= `${hadith.book.shortName_en} ${hadith.num}` %></a></b> –
@@ -85,10 +85,10 @@
 		– <span><%- hadith.grade.grade_en %></span>&nbsp;(<span title="<%=hadith.grader.name_en%>"><%- hadith.grader.shortName_en %></span>)
 		<% } %>
 	</em>
-	<% if (((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) || site.editMode) { %>
+	<% if (((title || hadith.num_virtual) && (hadith.chapter || hadith.section)) || site.editMode) { %>
 		<section class="title">
 		§ 
-		<% if (site.editMode && results.allHeadings && !hadith.numVirtual) { %>
+		<% if (site.editMode && results.allHeadings && !hadith.num_virtual) { %>
 			(<select dir="rtl" class="_e" data-id="<%= hadith.id %>" data-prop="hadith.tocId">
 				<option value="">-- خالي --</option>
 				<% results.allHeadings.forEach(function (section) { %>
@@ -130,10 +130,10 @@
 		<div>
 		<% if (hadith.parentId) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Remove Association" data-id="<%= hadith.parentId %>,<%= hadith.id %>" data-prop="hadiths_sim.del">Remove</a>
-		<% } else if (hadith.numVirtual) { %>
-			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Delete" data-id="<%= hadith.idVirtual %>" data-prop="hadith_virtual.del">Delete</a>
+		<% } else if (hadith.num_virtual) { %>
+			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Delete" data-id="<%= hadith.id_virtual %>" data-prop="hadith_virtual.del">Delete</a>
 			|
-			<span class="bi bi-file-plus-fill"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= hadith.idVirtual %>" data-prop="hadith_virtual.add" data-reset="true">
+			<span class="bi bi-file-plus-fill"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= hadith.id_virtual %>" data-prop="hadith_virtual.add" data-reset="true">
 		<% } else if (page.menu == 'Chapter') { %>
 			<span class="bi bi-caret-up-square-fill"></span>&nbsp;<a class="_click" title="Move Up" data-id="<%= hadith.id %>" data-prop="hadith.moveup">Move Up</a>
 			|
@@ -153,7 +153,7 @@
 
 <article class="col-md-6 cols-sm-12 h" lang="ar">
 	<section>
-		<%- (hadith.numVirtual) ? `(${arabic.toArabicDigits(hadith.numVirtual+'')})` : "" %>
+		<%- (hadith.num_virtual) ? `(${arabic.toArabicDigits(hadith.num_virtual+'')})` : "" %>
 		<b><a title="<%-hadith.num0%>" href="/<%=hadith.book.alias%>:<%=hadith.num%>"><%= hadith.book.shortName %> <%= hadith.num_ar %></a></b> –
 		<% if (hadith.chain || site.editMode) { %>
 			<span class="_e chain <%=_p%>" data-id="<%= hadith.id %>" data-prop="hadith.chain"><%- hadith.chain || '&hellip;' %></span>
@@ -170,7 +170,7 @@
 	<% if (hadith.grade.id != -1) { %>
 	<em class="grade">– <%- hadith.grade.grade %>&nbsp;(<span title="<%= hadith.grader.name %>"><%- hadith.grader.shortName %></span>)</em>
 	<%  } %>
-	<% if ((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) { %>
+	<% if ((title || hadith.num_virtual) && (hadith.chapter || hadith.section)) { %>
 		<section class="title">
 		§ 
 		<% if (hadith.section) { %>
@@ -213,10 +213,10 @@
 		</section>
 	<% } %>
 
-	<% if (((title || hadith.numVirtual) && (hadith.chapter || hadith.section)) || site.editMode) { %>
+	<% if (((title || hadith.num_virtual) && (hadith.chapter || hadith.section)) || site.editMode) { %>
 		<section class="title">
 		§ 
-		<% if (site.editMode && results.allHeadings && !hadith.numVirtual) { %>
+		<% if (site.editMode && results.allHeadings && !hadith.num_virtual) { %>
 			(<select dir="rtl" class="_e" data-id="<%= hadith.id %>" data-prop="hadith.tocId">
 				<option value="">-- خالي --</option>
 				<% results.allHeadings.forEach(function (section) { %>
@@ -280,7 +280,7 @@
 		<%- hadith.footnote %><br/>
 		</section>
 	<%  } %>
-	<% if (title || hadith.numVirtual) { %>
+	<% if (title || hadith.num_virtual) { %>
 		<section class="title">
 			§ <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}${hadith.chapter.offset}#S${hadith.section.h2}` %>" title="<%- hadith.section.title %>"><%- utils.truncate(hadith.section.title, 60, true) || 'بَاب' %></a>
 			في <a href="/<%- `${hadith.book.alias}/${hadith.chapter.h1}` %>" title="<%- hadith.chapter.title %>"><%- utils.truncate(hadith.chapter.title, 60, true) || 'كِتَاب' %></a>
