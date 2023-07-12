@@ -266,7 +266,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var results = await a_dbGetChapter(book, currentChapterNum, offset);
     if (!results)
       throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
-    
+
     results.hadiths.map(function (hadith) {
       if (hadith.chapter) {
         hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
@@ -276,7 +276,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
           hadith.chapter.offset = '';
       }
     });
-    
+
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results));
@@ -302,7 +302,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         throw createError(404, `Page ${hadiths.pg} of Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
 
       var firstNum = hadiths[0].num0
-      var lastNum = hadiths[hadiths.length-1].num0;
+      var lastNum = hadiths[hadiths.length - 1].num0;
       results.headings.map(function (heading) {
         heading.offset = '';
         if (hadiths.offset > 0)
@@ -384,27 +384,39 @@ async function a_dbGetChapter(book, chapterNum, offset) {
   var chapter = chapterHeadings.shift();
   if (!chapter || chapter.level != 1)
     return null;
-  var hadithRows = [];
+  var hadiths = [];
   if (!book.virtual) {
-    hadithRows = await global.query(`
+    var rows = await global.query(`
       SELECT * FROM hadiths 
       WHERE bookId=${book.id} AND h1=${chapterNum}
       ORDER BY numInChapter, num0
       LIMIT ${offset},${global.MAX_PER_PAGE + 1}`);
+    for (var i = 0; i < rows.length; i++) {
+      var hadith = new Hadith(rows[i]);
+      if (book.virtual)
+        await Hadith.a_dbHadithInit(hadith);
+      hadiths.push(hadith);
+    }
   } else {
-    hadithRows = await global.query(`
+    var rows = await global.query(`
       SELECT *
       FROM v_hadiths_virtual
       WHERE book_id_virtual=${book.id} AND h1_virtual=${chapterNum}
       ORDER BY numInChapter_virtual
       LIMIT ${offset}, ${global.MAX_PER_PAGE + 1}`);
-  }
-  var hadiths = [];
-  for (var i = 0; i < hadithRows.length; i++) {
-    var hadith = new Hadith(hadithRows[i]);
-    if (book.virtual)
-      await Hadith.a_dbHadithInit(hadith);
-    hadiths.push(hadith);
+    for (var i = 0; i < rows.length; i++) {
+      var hadith = new Hadith(rows[i]);
+      if (book.virtual)
+        await Hadith.a_dbHadithInit(hadith);
+      hadiths.push(hadith);
+    }
+    // var rows = await global.query(`
+    //   SELECT hadithId
+    //   FROM hadiths_virtual
+    //   WHERE bookId=${book.id} AND h1=${chapterNum}
+    //   ORDER BY numInChapter
+    //   LIMIT ${offset}, ${global.MAX_PER_PAGE + 1}`);
+    // hadiths = await Hadith.a_GetHadithByIds(rows, 'hadithId');
   }
   return {
     chapter: chapter,

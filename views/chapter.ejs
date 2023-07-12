@@ -117,16 +117,16 @@
         for (var i = 0; i < results.hadiths.length; i++) {
           var headings = results.headings.filter(function(heading) {
             if (book.virtual == 1)
-              return results.hadiths[i].num_virtual == heading.start;
+              return results.hadiths[i].num_virtual == heading.start && results.hadiths[i].h2_virtual == heading.h2;
             else
-              return results.hadiths[i].num == heading.start;
+              return results.hadiths[i].num == heading.start && results.hadiths[i].h2 == heading.h2;
           });
 
           var sectionContinued = false;
           if (i == 0 && headings.length == 0 && book.virtual == 0) {
             for (var j = results.headings.length-1; j >=0; j--) {
               headings = [ results.headings[j] ];
-              if (results.headings[j].start0 <= results.hadiths[i].num0)
+              if (results.headings[j].start0 <= results.hadiths[i].num0 && results.hadiths[i].h2_virtual == results.headings[j].h2)
                 break;
             }
             sectionContinued = headings.length > 0;
