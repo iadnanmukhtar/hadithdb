@@ -3,7 +3,8 @@
 
 <head>
   <% 
-    var book = chapter.book;
+    var book = section.book;
+    var chapter = section.chapter;
 
     var root = 'https://hadith.quranunlocked.com';
     var site = {
@@ -15,15 +16,16 @@
     site.editMode = (site.admin && req.cookies.editMode == 1);
     
     var page = {
-      menu: 'Chapter',
-      title_en: `${site.name} | ${book.shortName_en} ${chapter.title_en || chapter.title} §${chapter.h1}`,
+      menu: 'Section',
+      title_en: `${site.name} | ${book.shortName_en}, ${section.title_en || section.title} §${section.h1}.${section.h2}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${chapter.h1}`,
       context: {
         book: book,
         chapter: chapter,
-        heading: chapter,
+        section: section,
+        heading: section,
         continued: false
       }
     };
@@ -58,8 +60,9 @@
         
         <% if (n === 0 && item.heading.level === 3) {
              page.context.continued = true; %>
-        <%- include('sub-views/heading.ejs', { site: site, page: page, heading: item.section }); %>
-        <%   page.context.continued = false;
+        <%- include('sub-views/heading.ejs', { site: site, page: page, heading: section }); %>
+        <% 
+             page.context.continued = false;
            } else {
              page.context.continued = false;
            } %>

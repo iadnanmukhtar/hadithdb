@@ -1,89 +1,94 @@
 <nav class="navbar fixed-top container col-lg-8 mx-auto">
-	<div class="row ms-1">
-
-		<div class="col-md-4 col-1 text-nowrap">
-			<span class="d-flex">
-				<a href="/"><img src="/images/logo.svg" width="32" height="32" class="me-2" role="img"></a>
-				<h1 class="fs-4 d-md-block d-none">
-					<div class="title"><a href="/" class="text-dark text-decoration-none">Ḥadīth Unlocked</a></div>
-					<% if (page.subtitle_en) { %>
-					<div class="subtitle fs-6 text-muted">
-						<%- page.subtitle_en %>
-						<%- page.subtitle ? `<span lang="ar">${page.subtitle}</span>` : '' %>
-					</div>
-					<% } %>
-				</h1>
-				<a href="/" class="mt-1 text-dark text-decoration-none"><h1 class="fs-4 d-md-none d-block">Ḥadīth</h1></a>
-			</span>
-		</div>
-
-		<div class="col">
-
-			<form action="/">
-			<ul class="nav justify-content-end">
-				<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-				<li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
-				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
-					<ul class="dropdown-menu dropdown-menu-end">
-						<li><a class="dropdown-item" href="/recent">Highlights</a></li>
-						<li><a class="dropdown-item" href="/requests">Translation Requests</a></li>
-					</ul>
-				</li>
-				<% if (site.admin) { %>
-					<li class="nav-item"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
-						<i class="bi bi-file-text<%=site.editMode ? '-fill' : ''%>"></i></a>
-					</li>
-				<% } %>
-				<li class="nav-item search-click-toggle">
-					<input type="text" class="form-control search-click" name="q" placeholder="Search aḥādīth..." />
-					<a class="nav-link"><i class="bi bi-search"></i></a>
-				</li>
-			</ul>
-			</form>
-
-		</div>
-
-	</div>
-
-	<% if (page.menu == 'Chapter') { %>
-		<div class="row ms-1 chapter-toc">
-		<%# --- TABLE OF CONTENTS --- %>
-		<div class="d-flex justify-content-center">
-			<a data-bs-toggle="collapse" href="#toc2">Jump to Section <i class="bi bi-caret-down"></i></a>
-		</div>
-		<div id="toc2" class="toc2 collapse">
-			<table class="table">
-			<tbody>
-				<%
-				var rootPath = `/${book.alias}/${results.chapter.h1}`;
-				for (var i = 0; i < results.headings.length; i++) {
-					if (results.headings[i].level < 3) {
+  <div class="row ms-1">
+    
+    <div class="col-md-4 col-1 text-nowrap">
+      <span class="d-flex">
+        <a href="/"><img src="/images/logo.svg" width="32" height="32" class="me-2" role="img"></a>
+        <h1 class="fs-4 d-md-block d-none">
+          <div class="title"><a href="/" class="text-dark text-decoration-none">Ḥadīth Unlocked</a></div>
+          <% if (page.subtitle_en) { %>
+          <div class="subtitle fs-6 text-muted">
+            <%- page.subtitle_en %>
+            <%- page.subtitle ? `<span lang="ar">${page.subtitle}</span>` : '' %>
+          </div>
+          <% } %>
+        </h1>
+        <a href="/" class="mt-1 text-dark text-decoration-none">
+          <h1 class="fs-4 d-md-none d-block">Ḥadīth</h1>
+        </a>
+      </span>
+    </div>
+    
+    <div class="col">
+      
+      <form action="/">
+        <ul class="nav justify-content-end">
+          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/recent">Highlights</a></li>
+              <li><a class="dropdown-item" href="/requests">Translation Requests</a></li>
+            </ul>
+          </li>
+          <% if (site.admin) { %>
+          <li class="nav-item"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
+              <i class="bi bi-file-text<%=site.editMode ? '-fill' : ''%>"></i></a>
+          </li>
+          <% } %>
+          <li class="nav-item search-click-toggle">
+            <input type="text" class="form-control search-click" name="q" placeholder="Search aḥādīth..." />
+            <a class="nav-link"><i class="bi bi-search"></i></a>
+          </li>
+        </ul>
+      </form>
+      
+    </div>
+    
+  </div>
+  
+  <% if (page.menu === 'Chapter' || page.menu === 'Section') { 
+      var book = page.context.book;
+      var chapter = page.context.chapter;
+      var sections = chapter.sections; 
+  %>
+  <div class="row ms-1 chapter-toc">
+    <%# --- TABLE OF CONTENTS --- %>
+    <div class="d-flex justify-content-center">
+      <a data-bs-toggle="collapse" href="#toc2">Jump to Section <i class="bi bi-caret-down"></i></a>
+    </div>
+    <div id="toc2" class="toc2 collapse">
+      <table class="table">
+        <tbody>
+          <%
+				for (var section of sections) {
+					if (section.level < 3) {
 					title_en = '';
-					if (results.headings[i].title_en) 
-						title_en = utils.truncate((results.headings[i].title_en+''), 75);
-					title = utils.truncate((results.headings[i].title+''), 150); %>
-					<tr class="title">
-						<td><%- results.headings[i].start %></td>
-						<% if (results.headings[i].start) { %>
-						<td>
-							<a href="<%- `${rootPath}${results.headings[i].offset}#S${results.headings[i].h2 + (results.headings[i].h3 ? `-${results.headings[i].h3}` : '')}` %>">
-								<%= `${results.headings[i].h2 + (results.headings[i].h3 ? `-${results.headings[i].h3}` : '')}` %>
-								<%- title_en || `Section ${results.headings[i].h2 + (results.headings[i].h3 ? `-${results.headings[i].h3}` : '')}` %> (<%=results.headings[i].count%>)
-							</a>
-						</td>
-						<td lang="ar"><a href="<%- `${rootPath}${results.headings[i].offset}#S${results.headings[i].h2 + (results.headings[i].h3 ? `-${arabic.toArabicDigits(results.headings[i].h3+'')}` : '')}` %>"><%- title %></a></td>
-						<% } else { %>
-						<td><%- title_en || 'Section' %></td>
-						<td lang="ar"><%- title %></td>
-						<% } %>
-					</tr>
-				<%    }
+					if (section.title_en) 
+						title_en = utils.truncate((section.title_en+''), 75);
+					title = utils.truncate((section.title+''), 150); %>
+          <tr class="title">
+            <td><%- section.start %></td>
+            <% if (section.start) { %>
+            <td>
+              <a href="/<%=section.path%>">
+                <%= `${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>
+                <%- title_en || `Section ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%=section.count%>)
+              </a>
+            </td>
+            <td lang="ar"><a href="/<%=section.path%>"><%- title %></a></td>
+            <% } else { %>
+            <td><%- title_en || 'Section' %></td>
+            <td lang="ar"><%- title %></td>
+            <% } %>
+          </tr>
+          <%    }
 					}  %>
-			</tbody>
-			</table>
-		</div>
-		</div>
-	<% } %>
-
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <% } %>
+  
 </nav>

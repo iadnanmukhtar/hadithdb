@@ -146,14 +146,34 @@ nav .nav-link {
 	background-color: #f8f8f8 !important;
 }
 
+.pagination,
 .pagination a,
+.pagination div,
+.pagination div span,
 .top a {
 	font-size: 0.85rem;
 	color: #2c9be5;
 }
 
+.pagination,
+.pagination div:lang(ar) a,
+.pagination div:lang(ar),
+.pagination div:lang(ar) span {
+	font-size: 1rem;
+}
+
 .top a {
 	text-decoration: none;
+}
+
+.major .title,
+.major .title a {
+	color: black;
+	text-decoration: none;
+}
+
+.major .title a:hover {
+	text-decoration: underline;
 }
 
 .heading {
@@ -163,6 +183,15 @@ nav .nav-link {
 
 .heading h3 {
 	font-weight: bolder;
+}
+
+.heading h3 a {
+	text-decoration: none;
+	color: #2c9be5;
+}
+
+.heading h3 a:hover {
+	text-decoration: underline;
 }
 
 .heading,

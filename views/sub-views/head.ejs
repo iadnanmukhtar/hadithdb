@@ -36,171 +36,171 @@
 
 <script type="application/ld+json">
   {
-	"@context": "http://schema.org",
-	"@type": "Organization",
-	"name": "<%= site.name %>",
-	"url": "<%= site.url %>",
-	"logo": "<%= site.logo %>"
+    "@context": "http://schema.org",
+    "@type": "Organization",
+    "name": "<%= site.name %>",
+    "url": "<%= site.url %>",
+    "logo": "<%= site.logo %>"
   }
 </script>
 <script type="application/ld+json">
   {
-	"@context": "http://schema.org",
-	"@type": "WebSite",
-	"name": "<%= site.name %> Search Action",
-	"url": "<%= site.url %>",
-	"potentialAction": {
-	  "@type": "SearchAction",
-	  "target": "<%= site.url %>/?q={search_term_string}",
-	  "query-input": "required name=search_term_string"
-	}
-  }
-</script>
-
-<% if (typeof context.book !== 'undefined') { %>
-<script type="application/ld+json">
-  {
-	"@context": "http://schema.org",
-	"@type": "Book",
-	"name": "<%= context.book.name_en %>",
-	"inLanguage": "English",
-	"url" : "<%= `${site.url}/${context.book.alias}` %>"
-  }
-</script>
-<script type="application/ld+json">
-  {
-	"@context": "http://schema.org",
-	"@type": "Book",
-	"name": "<%= context.book.name %>",
-	"inLanguage": "Arabic",
-	"url" : "<%= `${site.url}/${context.book.alias}` %>"
-  }
-</script>
-<% } %>
-
-<% if (typeof context.book !== 'undefined' && typeof context.chapter !== 'undefined') { %>
-<script type="application/ld+json">
-  {
-	"@context": "http://schema.org",
-	"@type": "Chapter",
-	"name": "<%= `Chapter ${context.chapter.h1}: ${context.chapter.title_en || ''}` %>",
-	"alternateName": "<%= `${context.book.shortName}، ${arabic.toArabicDigits(context.chapter.h1 + '')}- ${context.chapter.title || ''}` %>",
-	"pageStart": "<%= context.chapter.start0 %>",
-	"url": "<%= page.canonical %>",
-	"schema:isPartOf": {
-	  "@id": "<%= `${site.url}/${context.book.alias}` %>"
-	}
-  }
-</script>
-<% } %>
-
-<% if (typeof context.book !== 'undefined' && typeof context.chapter !== 'undefined' && 
-	   typeof context.section !== 'undefined') { %>
-<script type="application/ld+json">
-	{
-		"@context": "http://schema.org",
-		"@type": "BreadcrumbList",
-		"name": "Books &gt; <%= context.book.name_en %> &gt; Chapter <%= context.chapter.h1 %>  &gt; Section <%= context.section.h2 %>",
-		"itemListElement": [
-		{
-		"@type": "ListItem",
-		"position": 1,
-		"name": "Books",
-		"item": "<%- `${site.url}/books` %>"
-		},
-		{
-		"@type": "ListItem",
-		"position": 2,
-		"name": "<%- context.book.name_en %>",
-		"item": "<%- `${site.url}/${context.book.alias}` %>"
-		},
-		{
-		"@type": "ListItem",
-		"position": 3,
-		"name": "<%= `${context.chapter.h1}. ${context.chapter.title_en || 'Chapter'}` %>",
-		"item": "<%= `${site.url}/${context.book.alias}/${context.chapter.h1}` %>"
-		},
-		{
-		"@type": "ListItem",
-		"position": 4,
-		"name": "<%= `${context.section.h2}. ${context.section.title_en || 'Section'}` %>",
-		"item": "<%= `${site.url}/${context.book.alias}/${context.chapter.h1}#S${context.section.h2}` %>"
-		}]
-	}
-	</script>
-<% } else if (typeof context.book !== 'undefined' && typeof context.chapter !== 'undefined') { %>
-<script type="application/ld+json">
-  {
-	"@context": "http://schema.org",
-	"@type": "BreadcrumbList",
-	"name": "Books &gt; <%= context.book.name_en %> &gt; Chapter <%= context.chapter.h1 %>",
-	"itemListElement": [
-	{
-	  "@type": "ListItem",
-	  "position": 1,
-	  "name": "Books",
-	  "item": "<%- `${site.url}/books` %>"
-	},
-	{
-	  "@type": "ListItem",
-	  "position": 2,
-	  "name": "<%= context.book.name_en %>",
-	  "item": "<%= `${site.url}/${context.book.alias}` %>"
-	},
-	{
-	  "@type": "ListItem",
-	  "position": 3,
-	  "name": "<%= `${context.chapter.h1}. ${context.chapter.title_en || 'Chapter'}` %>",
-	  "item": "<%= `${site.url}/${context.book.alias}/${context.chapter.h1}` %>"
-	}]
-  }
-</script>
-<% } else if (typeof context.book !== 'undefined') { %>
-<script type="application/ld+json">
-	{
-		"@context": "http://schema.org",
-		"@type": "BreadcrumbList",
-		"name": "Books &gt; <%= context.book.name_en %>",
-		"itemListElement": [
-		{
-		"@type": "ListItem",
-		"position": 1,
-		"name": "Books",
-		"item": "<%- `${site.url}/books` %>"
-		},
-		{
-		"@type": "ListItem",
-		"position": 2,
-		"name": "<%- context.book.name_en %>",
-		"item": "<%- `${site.url}/${context.book.alias}` %>"
-		}]
-	}
-</script>
-<% } %>
-
-<% if (context.hadiths && !context.fromSearch) { %>
-<script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      "name": "<%- `${context.hadiths[0].book.shortName_en} ${context.hadiths[0].num}` %>",
-      "headline": "<%- `${context.hadiths[0].book.shortName_en} ${context.hadiths[0].num}` %>",
-	  "url": "<%- `${site.url}${page.canonical}` %>",
-	  "mainEntityOfPage": {
-		"@type": "WebPage",
-		"@id": "<%- `${site.url}${page.canonical}` %>"
-	  },
-	  "genre": "Hadith",
-      "dateModified": "<%- context.hadiths[0].lastmod.toISOString() %>",
-      "author": [{
-          "@type": "Book",
-          "name": "<%- context.hadiths[0].book.name_en %>",
-          "url": "<%- `${site.url}/${context.hadiths[0].book.alias}` %>"
-        },
-		{
-		  "@type": "Person",
-		  "name": "<%- context.hadiths[0].book.author %>"
-	  }]
+    "@context": "http://schema.org",
+    "@type": "WebSite",
+    "name": "<%= site.name %> Search Action",
+    "url": "<%= site.url %>",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "<%= site.url %>/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
     }
+  }
+</script>
+
+<% if (page.context.book !== undefined) { %>
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "Book",
+    "name": "<%= page.context.book.name_en %>",
+    "inLanguage": "English",
+    "url": "<%= `${site.url}/${page.context.book.alias}` %>"
+  }
+</script>
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "Book",
+    "name": "<%= page.context.book.name %>",
+    "inLanguage": "Arabic",
+    "url": "<%= `${site.url}/${page.context.book.alias}` %>"
+  }
+</script>
+<% } %>
+
+<% if (page.context.book !== undefined && page.context.chapter !== undefined) { %>
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "Chapter",
+    "name": "<%= `Chapter ${page.context.chapter.h1}: ${page.context.chapter.title_en || ''}` %>",
+    "alternateName": "<%= `${page.context.book.shortName}، ${arabic.toArabicDigits(page.context.chapter.h1 + '')}- ${page.context.chapter.title || ''}` %>",
+    "pageStart": "<%= page.context.chapter.start0 %>",
+    "url": "<%= page.canonical %>",
+    "schema:isPartOf": {
+      "@id": "<%= `${site.url}/${page.context.book.alias}` %>"
+    }
+  }
+</script>
+<% } %>
+
+<% if ( page.context.book !== undefined &&  page.context.chapter !== undefined && 
+	    page.context.section !== undefined) { %>
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "BreadcrumbList",
+    "name": "Books &gt; <%= page.context.book.name_en %> &gt; Chapter <%= page.context.chapter.h1 %>  &gt; Section <%= page.context.section.h2 %>",
+    "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Books",
+        "item": "<%- `${site.url}/books` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "<%- page.context.book.name_en %>",
+        "item": "<%- `${site.url}/${page.context.book.alias}` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "<%= `${page.context.chapter.h1}. ${page.context.chapter.title_en || 'Chapter'}` %>",
+        "item": "<%= `${site.url}/${page.context.book.alias}/${page.context.chapter.h1}` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "<%= `${page.context.section.h2}. ${page.context.section.title_en || 'Section'}` %>",
+        "item": "<%= `${site.url}/${page.context.book.alias}/${page.context.chapter.h1}/${page.context.section.h2}` %>"
+      }
+    ]
+  }
+</script>
+<% } else if ( page.context.book !== undefined &&  page.context.chapter !== undefined) { %>
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "BreadcrumbList",
+    "name": "Books &gt; <%= page.context.book.name_en %> &gt; Chapter <%= page.context.chapter.h1 %>",
+    "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Books",
+        "item": "<%- `${site.url}/books` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "<%= page.context.book.name_en %>",
+        "item": "<%= `${site.url}/${page.context.book.alias}` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "<%= `${page.context.chapter.h1}. ${page.context.chapter.title_en || 'Chapter'}` %>",
+        "item": "<%= `${site.url}/${page.context.book.alias}/${page.context.chapter.h1}` %>"
+      }
+    ]
+  }
+</script>
+<% } else if ( page.context.book !== undefined) { %>
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "BreadcrumbList",
+    "name": "Books &gt; <%= page.context.book.name_en %>",
+    "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Books",
+        "item": "<%- `${site.url}/books` %>"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "<%- page.context.book.name_en %>",
+        "item": "<%- `${site.url}/${page.context.book.alias}` %>"
+      }
+    ]
+  }
+</script>
+<% } %>
+
+<% if (page.context.hadiths && !page.context.fromSearch) { %>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "name": "<%- `${page.context.hadiths[0].book.shortName_en} ${page.context.hadiths[0].num}` %>",
+    "headline": "<%- `${page.context.hadiths[0].book.shortName_en} ${page.context.hadiths[0].num}` %>",
+    "url": "<%- `${site.url}${page.canonical}` %>",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "<%- `${site.url}${page.canonical}` %>"
+    },
+    "genre": "Hadith",
+    "author": [{
+        "@type": "Book",
+        "name": "<%- page.context.hadiths[0].book.name_en %>",
+        "url": "<%- `${site.url}/${page.context.hadiths[0].book.alias}` %>"
+      },
+      {
+        "@type": "Person",
+        "name": "<%- page.context.hadiths[0].book.author %>"
+      }
+    ]
+  }
 </script>
 <% } %>

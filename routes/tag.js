@@ -3,11 +3,12 @@
 
 const express = require('express');
 const createError = require('http-errors');
-const asyncify = require('express-asyncify');
+const asyncify = require('express-asyncify').default;
 const Hadith = require('../lib/Hadith');
-// const lev = require('fast-levenshtein');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
+const Index = require('../lib/Index');
+const { Item } = require('../lib/Model');
 
 const router = asyncify(express.Router());
 
@@ -28,17 +29,21 @@ router.get('/:tag', async function (req, res, next) {
     })));
     return;
   }
-
-  var tag = global.tags.find(function (val) {
-    return (val.text_en == req.params.tag);
-  });
-  if (!tag)
-    throw createError(404, `Tag '${req.params.tag}' not found`);
-
+  
   var offset = 0;
   if (req.query.o)
-    offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-  var results = await Hadith.a_GetAllHadithsWithTag(tag.id);
+    offset = Math.floor(parseFloat(req.query.o) / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
+  
+  var queryString = '';
+  var tags = req.params.tag.split(/\+/);
+  for (var i in tags) {
+    if (i > 0)
+      queryString += ' AND ';
+    queryString += `(tags:"{${tags[i]}}" OR part:"${tags[i]}")`;
+  }
+  var results = await Index.docsFromQueryString('hadiths', queryString, offset);
+  results = results.map(item => new Item(item));
+
   var count = results.length;
   results.map(function (h) {
     h.bodyBackup = `${h.body}`;
@@ -47,14 +52,14 @@ router.get('/:tag', async function (req, res, next) {
   var groupedResults = [];
   var groupNo = 1;
   while (results.length > 0) {
-    var hadith1 = Object.assign({}, results.splice(0, 1)[0]);
+    var hadith1 = new Item(Object.assign({}, results.splice(0, 1)[0]));
     hadith1.groupNo = groupNo;
     hadith1.rating = 1.1;
     var group = [hadith1];
     for (var j = 0; j < results.length - 1; j++) {
       var r = Hadith.findBestMatch(hadith1, results[j]).bestMatch.rating;
       if (r >= 0.60) {
-        var hadith2 = Object.assign({}, results[j]);
+        var hadith2 = new Item(Object.assign({}, results[j]));
         hadith2.groupNo = groupNo;
         hadith2.rating = r;
         group.push(hadith2);
@@ -62,19 +67,19 @@ router.get('/:tag', async function (req, res, next) {
       }
     }
     group.sort(function (x, y) {
-      return x.bookId - y.bookId;
+      return x.book_id - y.book_id;
     });
     groupedResults.push(group);
     groupNo++;
   }
   if (results.length > 0) {
     results.sort(function (x, y) {
-      return x.bookId - y.bookId;
+      return x.book_id - y.book_id;
     });
     groupedResults.push(results);
   }
   groupedResults.sort(function (x, y) {
-    return x[0].bookId - y[0].bookId;
+    return x[0].book_id - y[0].book_id;
   });
   var flattenedGroups = [];
   groupedResults.forEach(function (group) {
@@ -115,21 +120,21 @@ router.get('/:tag', async function (req, res, next) {
       keyNames = req.query.keys.split(/,/);
     res.end(Utils.toTSV(results, keyNames));
   } else {
-    results = results.slice(offset, offset + global.MAX_PER_PAGE + 1);
-    results.pg = (offset / global.MAX_PER_PAGE) + 1;
+    results = results.slice(offset, offset + global.settings.search.itemsPerPage + 1);
+    results.pg = (offset / global.settings.search.itemsPerPage) + 1;
     results.offset = offset;
-    results.hasNext = (results.length > global.MAX_PER_PAGE);
+    results.hasNext = (results.length > global.settings.search.itemsPerPage);
     if (results.hasNext)
       results.pop();
-    results.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
-    results.nextOffset = offset + global.MAX_PER_PAGE;
-    results.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
+    results.prevOffset = ((offset - global.settings.search.itemsPerPage) < global.settings.search.itemsPerPage) ? 0 : offset - global.settings.search.itemsPerPage;
+    results.nextOffset = offset + global.settings.search.itemsPerPage;
+    results.hasPrev = ((offset - global.settings.search.itemsPerPage) >= 0);
     if (!results.hasNext)
       delete results.nextOffset;
     if (results.length == 0)
       throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
     res.render('tag', {
-      tag: tag,
+      tag: tags,
       results: results,
       count: count
     });

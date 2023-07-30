@@ -19,9 +19,9 @@ const headers = {
 (async () => {
 	try {
 		log(`retreiving data to index...`);
-		var books = await query(`SELECT * FROM books b WHERE b.id > 2 ORDER BY id`);
+		var books = await query(`SELECT * FROM books b ORDER BY id`);
 		for (var i = 0; i < books.length; i++) {
-			await indexDocs('hadiths', books[i]);
+			// await indexDocs('hadiths', books[i]);
 			await indexDocs('toc', books[i]);
 		}
 	} finally {
@@ -39,13 +39,15 @@ async function indexDocs(indexName, book) {
 	for (var i = 0; i < rows.length; i++) {
 		delete rows[i].highlight;
 		var data = {};
-		if (rows[i].num)
-			data.ref = rows[i].book_alias + ':' + rows[i].num;
-		else {
-			data.ref = rows[i].book_alias + '/' + rows[i].h1;
-			if (rows[i].h2)
-				data.ref += '#S' + rows[i].h2;
-		}
+		// if (indexName === 'hadiths')
+		// 	data.ref = rows[i].book_alias + ':' + rows[i].num;
+		// else if (indexName === 'toc') {
+		// 	data.ref = rows[i].book_alias + '/' + rows[i].h1;
+		// 	if (rows[i].h2)
+		// 		data.ref += '/' + rows[i].h2;
+		// 	if (rows[i].h3)
+		// 		data.ref += '/' + rows[i].h3;
+		// }
 		if (i > 0 && rows[i].book_id == rows[i - 1].book_id)
 			data.prevId = rows[i - 1].hId;
 		if (i < (rows.length - 1) && rows[i].book_id == rows[i + 1].book_id)

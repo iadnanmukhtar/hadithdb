@@ -1,11 +1,12 @@
 .DS_Store
 .history
-node_modules
 *.backup
+*.log
+node_modules
+coverage
 data/*.csv
 data/*.db
 data/archive/*.csv
 data/archive/*.json
 data/archive/*.db
 data/temp
-test.js

@@ -12,13 +12,14 @@
     };
     site.editMode = (site.admin && req.cookies.editMode == 1);
     
-    var subtitle_en = `${tag.description || tag.text_en} (${tag.text})`;
+    var subtitle_en = `${tag.join('+')}`;
     var page = {
-      menu: 'Home',
-      title_en: `${site.name} | Aḥādith on ${subtitle_en}`,
+      menu: 'Tag',
+      title_en: `${site.name} | Aḥādith with tags ${subtitle_en}`,
       subtitle_en: subtitle_en,
       subtitle: null,
-      canonical: `/tag/${tag.text_en}`,
+      canonical: `/tag/${tag.join('+')}`,
+      context: {}
     };
     if (results.offset) {
       page.canonical += `?o=${results.offset}`;
@@ -26,12 +27,12 @@
         page.title_en += ` P${results.pg}`;
     }
     if (results.hasPrev)
-      page.prev = `/tag/${tag.text_en}?o=${results.prevOffset}`;
+      page.prev = `/tag/${tag.join('+')}?o=${results.prevOffset}`;
     if (results.hasNext)
-      page.next = `/tag/${tag.text_en}?o=${results.nextOffset}`;
+      page.next = `/tag/${tag.join('+')}?o=${results.nextOffset}`;
 %>
 
-<%- include('sub-views/head.ejs', { site: site, page: page, context: {} }); %> 
+<%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
 </head>
 
@@ -59,11 +60,11 @@
       <div class="row"> 
 
         <h2 class="col-md-12 col-sm-12 fs-5 title" lang="en">
-          <span class="_e" data-id="<%=tag.id%>" data-prop="tags.description"><%- `${tag.description || ('#'+tag.text_en)}` %></span>
+          <span class="_e" data-id="<%=tag.id%>" data-prop="tags.description"><%- `${('#'+tag.join(' #'))}` %></span>
           <% if (results.hasNext || results.pg && results.pg > 1) { %>
-            (<%- results.pg %>/<%- Math.ceil(count / global.MAX_PER_PAGE) %>)
+            (<%- results.pg %>/<%- Math.ceil(count / global.settings.search.itemsPerPage) %>)
           <% } %>
-          </h2>
+        </h2>
 
         <% for (var i = 0; i < results.length; i++) { %>
 

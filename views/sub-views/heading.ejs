@@ -1,0 +1,70 @@
+<%
+    var book = page.context.book;
+    var chapter = page.context.chapter;
+    var section = page.context.section;
+%>
+
+<a id="S<%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>"></a>
+
+<div class="col-12 mt-4">
+  <div class="row heading py-2">
+    
+    <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
+      <% if (heading.level < 3) { %>
+      <a href="/<%=heading.path%>">
+        <% } %>
+        <% if (site.editMode) { %>
+        (<span class="_e" title="Start Num" data-id="<%= heading.id %>" data-prop="toc.start">
+          <%- heading.start || '&hellip;' %>
+        </span>) (<span class="_e" title="Start Num0" data-id="<%= heading.id %>" data-prop="toc.start0">
+          <%- heading.start0 || '&hellip;' %>
+        </span>)
+        <% } %>
+        <%- `${heading.h1}.${heading.h2}` + (heading.h3 ? `.${heading.h3}` : '') %>
+        <span class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
+          <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
+        </span>
+        <% if (page.context.continued) { %>
+        <small class="text-muted">(contd &hellip;)</small>
+        <% } %>
+        <% if (heading.level < 3) { %>
+      </a>
+      <% } %>
+    </h3>
+    
+    <h3 class="col-md-6 col-sm-12 title" lang="ar"><a href="/<%=heading.path%>">
+        <%- `${arabic.toArabicDigits(heading.h1 + '')}۔${arabic.toArabicDigits(heading.h2 + '')}` + (heading.h3 ? `۔${arabic.toArabicDigits(heading.h3+'')}` : '') %>
+        <span class="_e" data-id="<%= heading.id %>" data-prop="toc.title">
+          <%- heading.title %>
+        </span>
+      </a>
+    </h3>
+    
+  </div>
+  <div class="col-12">
+    <div class="row heading-intro mb-3">
+      <div class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-arabizi="true">
+        <% if (heading.intro_en || site.editMode) { %>
+        <% if (heading.intro_en) { %>
+        <p>
+          <%- utils.emptyIfNull(heading.intro_en).replace(/\n/g, '</p><p>') %>
+        </p>
+        <% } else { %>
+        <p>&hellip;</p>
+        <% } %>
+        <% } %>
+      </div>
+      <div class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro">
+        <% if (heading.intro_en || site.editMode) { %>
+        <% if (heading.intro) { %>
+        <p>
+          <%- utils.emptyIfNull(heading.intro).replace(/\n/g, '</p><p>') %>
+        </p>
+        <% } else { %>
+        <p>&hellip;</p>
+        <% } %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>

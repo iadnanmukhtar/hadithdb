@@ -3,15 +3,16 @@
 
 const express = require('express');
 const createError = require('http-errors');
-const asyncify = require('express-asyncify');
+const asyncify = require('express-asyncify').default;
 const Hadith = require('../lib/Hadith');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
+const Index = require('../lib/Index');
 
 const router = asyncify(express.Router());
 
 router.post('/:id/:prop', async function (req, res, next) {
-  if (global.admin.key != req.cookies.admin)
+  if (global.settings.admin.key != req.cookies.admin)
     throw createError(403, "Update unauthorized");
   var status = {
     code: 405,
@@ -88,7 +89,8 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
       try {
-        await Hadith.a_ReindexHadith(ids[0]);
+        var item = await global.query(`SELECT * from v_hadiths WHERE hId=${ids[0]}`);
+        await Index.update('hadiths', item[0]);
       } catch (err) {
         console.log(`${err.message}:\n${err.stack}`);
       }
@@ -104,7 +106,8 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
       try {
-        await Hadith.a_ReindexTOC(ids[0]);
+        var item = await global.query(`SELECT * from v_toc WHERE hId=${ids[0]}`);
+        await Index.update('toc', item[0]);
       } catch (err) {
         console.log(`${err.message}:\n${err.stack}`);
       }

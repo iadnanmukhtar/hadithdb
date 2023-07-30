@@ -1,47 +1,21 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const fs = require('fs');
+require('./lib/Globals');
 const path = require('path');
-const HomeDir = require('os').homedir();
 const createError = require('http-errors');
 const express = require('express');
-const asyncify = require('express-asyncify');
+const asyncify = require('express-asyncify').default;
 const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
-const ExpressAdmin = require('express-admin');
-const MySQL = require('mysql');
-const util = require('util');
-const Arabic = require('./lib/Arabic');
-const Utils = require('./lib/Utils');
 const Hadith = require('./lib/Hadith');
 
-global.utils = Utils;
-global.arabic = Arabic;
-global.admin = require(`${HomeDir}/.hadithdb/admin.json`);
+const app = asyncify(express());
 
-var app = asyncify(express());
-
-var ExpressAdminConfig = {
-  dpath: './express-admin/',
-  config: require(`${HomeDir}/.hadithdb/express-admin/config.json`),
-  settings: require('./express-admin/settings.json'),
-  custom: require(`${HomeDir}/.hadithdb/express-admin/custom.json`),
-  users: require(`${HomeDir}/.hadithdb/express-admin/users.json`)
-};
-
-ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
-  if (err) return console.log(err);
-
-  app.use('/admin', admin);
-
+(async () => {
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
-  //app.use(logger('dev'));
   app.use(express.json());
-  // app.use(bodyParser.urlencoded({ extended: true }));
-  // app.use(bodyParser.json());
   app.use(cookieParser());
   app.use('/', express.static(path.join(__dirname, 'public')));
 
@@ -74,47 +48,7 @@ ExpressAdmin.init(ExpressAdminConfig, function (err, admin) {
     res.render('error');
   });
 
-});
-
-// initialize data load
-global.surahs = require('./lib/Surahs.json');
-global.MySQLConfig = require(HomeDir + '/.hadithdb/store.json');
-global.books = [{
-  id: -1,
-  alias: 'none',
-  shortName_en: 'Loading...',
-  shortName: "",
-  name_en: 'Loading...',
-  name: '',
-}];
-global.grades = [{
-  id: -1,
-  hadithId: -1,
-  grade_en: 'N/A',
-  grade: '',
-}];
-global.graders = [{
-  id: -1,
-  shortName_en: 'N/A',
-  shortName: '',
-  name_en: '',
-  name: '',
-}];
-global.tags = [];
-
-global.dbPool = MySQL.createPool(global.MySQLConfig.connection);
-global.query = util.promisify(global.dbPool.query).bind(global.dbPool);
-global.quran = [];
-global.searchURLBase = 'http://search.quranunlocked.com';
-global.searchURL = 'http://search.quranunlocked.com/hadiths,toc';
-
-async function a_dbInitApp() {
-
   await Hadith.a_reinit();
-
-  var bookId = 12;
-  var updateCnt = 0;
-  var updates = '';
 
   // // clean suyuti duplicated footnotes from body
   // var codes = [
@@ -568,11 +502,40 @@ async function a_dbInitApp() {
   //     numInChapter++;
   //   }
   // }
-  
+
+  // // read URLs to load
+  // const cheerio = require('cheerio');
+  // const http = require('sync-request');
+  // var urls = fs.readFileSync(`./data/quranverses.txt`).toString().split(/[\n\r]+/g);
+  // for (var n = 0; n < urls.length; n++) {
+  //   var $ = cheerio.load(http('GET', urls[n]).getBody().toString());
+  //   var headings = [];
+  //   $('#breadcrumb a').each(function () {
+  //     headings.push($(this).text());
+  //   });
+  //   headings.push($('#breadcrumb span').text());
+  //   var ref_num = [];
+  //   $('div.soura').each(function () {
+  //     var heading = $(this).text().split(/[ -]/);
+  //     var surah = heading[0];
+  //     var title = heading[1] + ' ' + heading[2];
+  //     ref_num.push({ title: title, ayahs: [] });
+  //     var ayah = parseInt(heading[3]);
+  //     var ayah2 = (heading.length > 4) ? parseInt(heading[4]) : ayah;
+  //     for (; ayah <= ayah2; ayah++) {
+  //       ref_num[ref_num.length-1].ayahs.push({ surah: surah, ayah: ayah });
+  //     }
+  //   });
+  //   var sql = `INSERT INTO toc (bookId,level,h1,h2,h3,title,start,start0) VALUES
+  //     (49, 1, null, null, '${headings[1]} > ${headings[2]}', '${ref_num[0].ayahs[0].surah}:${ref_num[0].ayahs[0].ayah}', ${ref_num[0].ayahs[0].surah + ref_num[0].ayahs[0].ayah/1000.})`;
+  //   sql = `INSERT INTO toc (bookId,level,h1,h2,h3,title,start,start0) VALUES
+  //     (49, 2, null, null, '${headings[1]} > ${headings[2]}', '${ref_num[0].ayahs[0].surah}:${ref_num[0].ayahs[0].ayah}', ${ref_num[0].ayahs[0].surah + ref_num[0].ayahs[0].ayah/1000.})`;
+  //   Utils.msleep(500);
+  // }
+
   console.error('done');
 
-}
-a_dbInitApp();
+})();
 
 module.exports = app;
 

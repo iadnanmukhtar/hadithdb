@@ -3,14 +3,14 @@
 
 const express = require('express');
 const createError = require('http-errors');
-const asyncify = require('express-asyncify');
+const asyncify = require('express-asyncify').default;
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
 const Utils = require('../lib/Utils');
+const { Section, Chapter, Item, Library } = require('../lib/Model');
+const Index = require('../lib/Index');
 
 const router = asyncify(express.Router());
-
-global.MAX_PER_PAGE = 250;
 
 router.get('/reinit', async function (req, res, next) {
   await Hadith.a_reinit();
@@ -18,7 +18,6 @@ router.get('/reinit', async function (req, res, next) {
   res.end();
   return;
 });
-
 
 router.get('/do/:id', async function (req, res, next) {
   if (req.query.cmd == 'tr') {
@@ -82,7 +81,7 @@ router.get('/', async function (req, res, next) {
       results = await Search.a_searchText(req.query.q, req.query.b);
       results.map(function (hadith) {
         if (hadith.chapter) {
-          hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
+          hadith.chapter.offset = Math.floor(hadith.numInChapter / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
           if (hadith.chapter.offset > 0)
             hadith.chapter.offset = '?o=' + hadith.chapter.offset;
           else
@@ -111,9 +110,9 @@ router.get('/', async function (req, res, next) {
       });
     }
   } else {
-    results = [await Search.a_getRandom()];
+    results = await Index.docRandomnly('hadiths');
     if (results.length > 0) {
-      res.redirect(`/${results[0].book.alias}:${results[0].num}`);
+      res.redirect(`/${results[0].book_alias}:${results[0].num}`);
     } else {
       res.render('search', {
         results: results,
@@ -152,27 +151,10 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
 router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
-  var results = await Search.a_lookupByRef(req.params.bookAlias, req.params.num);
-  results.map(function (hadith) {
-    if (hadith.chapter) {
-      hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-      if (hadith.chapter.offset > 0)
-        hadith.chapter.offset = '?o=' + hadith.chapter.offset;
-      else
-        hadith.chapter.offset = '';
-    }
-  });
+  var results = await Index.docsFromKeyValue('hadiths', { ref: `${req.params.bookAlias}:${req.params.num}` });
+  results = results.map(item => new Item(item));
   for (var i = 0; i < results.length; i++) {
-    results[i].similar = await Hadith.a_dbGetSimilarCandidates(results[i]);
-    results[i].similar.map(function (hadith) {
-      if (hadith.chapter) {
-        hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-        if (hadith.chapter.offset > 0)
-          hadith.chapter.offset = '?o=' + hadith.chapter.offset;
-        else
-          hadith.chapter.offset = '';
-      }
-    });
+    results[i].similar = await Hadith.a_dbGetSimilarCandidates(new Item(results[i]));
     var bookSet = new Set();
     for (var j = 0; results[i].similar && j < results[i].similar.length; j++) {
       var book = global.books.find(function (value) {
@@ -229,7 +211,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       prevBook = global.books[bookIdx - 1];
     if (bookIdx < (global.books.length - 1))
       nextBook = global.books[bookIdx + 1];
-    var results = await getBookTOC(book);
+    var results = await Library.instance.findBook(req.params.bookAlias).getChapters();
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results));
@@ -253,197 +235,74 @@ router.get('/:bookAlias', async function (req, res, next) {
 
 // BOOK: CHAPTER
 router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
+
   res.locals.req = req;
   res.locals.res = res;
-  var book = global.books.find(function (value) {
-    return (value.alias == req.params.bookAlias || value.id == req.params.bookAlias);
-  });
-  if (book && !isNaN(req.params.chapterNum)) {
-    var currentChapterNum = parseFloat(req.params.chapterNum);
-    var offset = 0;
-    if (req.query.o)
-      offset = Math.floor(parseFloat(req.query.o) / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-    var results = await a_dbGetChapter(book, currentChapterNum, offset);
-    if (!results)
-      throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
 
-    results.hadiths.map(function (hadith) {
-      if (hadith.chapter) {
-        hadith.chapter.offset = Math.floor(hadith.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-        if (hadith.chapter.offset > 0)
-          hadith.chapter.offset = '?o=' + hadith.chapter.offset;
-        else
-          hadith.chapter.offset = '';
-      }
+  try {
+    var results = [];
+    var bookAlias = req.params.bookAlias;
+    var chapterNum = req.params.chapterNum;
+    var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
+
+    var chapter = await Chapter.chapterFromRef(`${bookAlias}/${chapterNum}`);
+    await chapter.getPrev();
+    await chapter.getNext();
+    await chapter.getSections();
+    results = await chapter.getItems(offset);
+
+    res.render('chapter', {
+      chapter: chapter,
+      results: results
     });
 
-    if ('json' in req.query) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(results));
-    } else if ('tsv' in req.query) {
-      res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
-      var keyNames = Object.keys(results[0]);
-      if ('keys' in req.query)
-        keyNames = req.query.keys.split(/,/);
-      res.end(Utils.toTSV(results, keyNames));
-    } else {
-      var hadiths = results.hadiths;
-      hadiths.pg = (offset / global.MAX_PER_PAGE) + 1;
-      hadiths.offset = offset;
-      hadiths.hasNext = (hadiths.length > global.MAX_PER_PAGE);
-      if (hadiths.hasNext)
-        hadiths.pop();
-      hadiths.prevOffset = ((offset - global.MAX_PER_PAGE) < global.MAX_PER_PAGE) ? 0 : offset - global.MAX_PER_PAGE;
-      hadiths.nextOffset = offset + global.MAX_PER_PAGE;
-      hadiths.hasPrev = ((offset - global.MAX_PER_PAGE) >= 0);
-      if (!hadiths.hasNext)
-        delete hadiths.nextOffset;
-      if (hadiths.length == 0)
-        throw createError(404, `Page ${hadiths.pg} of Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
-
-      var firstNum = hadiths[0].num0
-      var lastNum = hadiths[hadiths.length - 1].num0;
-      results.headings.map(function (heading) {
-        heading.offset = '';
-        if (hadiths.offset > 0)
-          heading.offset = `?o=${hadiths.offset}`;
-        var offset = Math.floor(heading.numInChapter / global.MAX_PER_PAGE) * global.MAX_PER_PAGE;
-        if (heading.start0 < firstNum || heading.start0 > lastNum) {
-          heading.offset = '';
-          if (offset > 0)
-            heading.offset = `?o=${offset}`;
-        }
-      });
-
-      var currChapter = results.chapter;
-      var prevChapter = null;
-      var nextChapter = null;
-      var firstChapter = await a_dbGetFirstChapter(book);
-      var lastChapter = await a_dbGetLastChapter(book);
-      if (currentChapterNum < firstChapter.h1 || currentChapterNum > lastChapter.h1)
-        throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
-      if (currentChapterNum > firstChapter.h1 && currentChapterNum <= lastChapter.h1)
-        prevChapter = await a_dbGetPrevChapterHeading(currChapter, currChapter.ordinal - 1);
-      if (currentChapterNum >= firstChapter.h1 && currentChapterNum < lastChapter.h1)
-        nextChapter = await a_dbGetNextChapterHeading(currChapter, currChapter.ordinal + 1);
-
-      res.render('chapter', {
-        book: book,
-        prevChapter: prevChapter,
-        nextChapter: nextChapter,
-        results: results
-      });
+  } catch (e) {
+    if (e instanceof ReferenceError)
+      throw createError(404, e.message);
+    else {
+      console.log(e.stack);
+      throw createError(500, e.message);
     }
-  } else
-    throw createError(404, `Chapter '${req.params.bookAlias}/${req.params.chapterNum}' does not exist`);
+  }
+
 });
 
+// BOOK: SECTION
+router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next) {
 
-async function getBookTOC(book) {
-  return await global.query(`
-    SELECT * FROM toc
-    WHERE bookId=${book.id} AND level > 0 AND level < 3
-    ORDER BY h1, h2, h3`);
-}
+  res.locals.req = req;
+  res.locals.res = res;
 
-async function a_dbGetPrevChapterHeading(currChapter) {
-  var chapterHeadings = await global.query(`
-    SELECT * FROM toc 
-    WHERE bookId=${currChapter.bookId} AND ordinal < ${currChapter.ordinal} AND level=1 AND start0 IS NOT NULL
-    ORDER BY ordinal DESC
-    LIMIT 1`);
-  return chapterHeadings[0];
-}
+  try {
+    var results = [];
+    var bookAlias = req.params.bookAlias;
+    var chapterNum = req.params.chapterNum;
+    var sectionNum = req.params.sectionNum;
+    var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
-async function a_dbGetNextChapterHeading(currChapter) {
-  var chapterHeadings = await global.query(`
-    SELECT * FROM toc 
-    WHERE bookId=${currChapter.bookId} AND ordinal > ${currChapter.ordinal} AND level=1 AND start0 IS NOT NULL
-    ORDER BY ordinal
-    LIMIT 1`);
-  return chapterHeadings[0];
-}
+    var section = await Section.sectionFromRef(`${bookAlias}/${chapterNum}/${sectionNum}`);
+    await section.getPrev();
+    await section.getNext();
+    var chapter = await section.getChapter();
+    await chapter.getPrev();
+    await chapter.getNext();
+    await chapter.getSections();
+    results = await section.getItems(offset);
 
-async function a_dbGetChapter(book, chapterNum, offset) {
-  var chapterHeadings = [];
-  var allHeadings = await global.query(`
-    SELECT t.*, 0 as numInChapter FROM toc t
-      WHERE t.bookId=${book.id} AND t.h1=${chapterNum}
-      ORDER BY h1, h2, h3`);
-  if (!book.virtual) {
-    chapterHeadings = await global.query(`
-      SELECT t.*, h.numInChapter FROM toc t, hadiths h
-      WHERE t.bookId=${book.id} AND t.h1=${chapterNum}
-        AND t.bookId = h.bookId
-        AND t.h1 = h.h1
-        AND t.start0 = h.num0
-      ORDER BY h1, h2, h3`);
-  } else {
-    chapterHeadings = allHeadings;
-  }
-  var chapter = chapterHeadings.shift();
-  if (!chapter || chapter.level != 1)
-    return null;
-  var hadiths = [];
-  if (!book.virtual) {
-    var rows = await global.query(`
-      SELECT * FROM hadiths 
-      WHERE bookId=${book.id} AND h1=${chapterNum}
-      ORDER BY numInChapter, num0
-      LIMIT ${offset},${global.MAX_PER_PAGE + 1}`);
-    for (var i = 0; i < rows.length; i++) {
-      var hadith = new Hadith(rows[i]);
-      if (book.virtual)
-        await Hadith.a_dbHadithInit(hadith);
-      hadiths.push(hadith);
+    res.render('section', {
+      section: section,
+      results: results
+    });
+
+  } catch (e) {
+    if (e instanceof ReferenceError)
+      throw createError(404, e.message);
+    else {
+      console.log(e.stack);
+      throw createError(500, e.message);
     }
-  } else {
-    var rows = await global.query(`
-      SELECT *
-      FROM v_hadiths_virtual
-      WHERE book_id_virtual=${book.id} AND h1_virtual=${chapterNum}
-      ORDER BY numInChapter_virtual
-      LIMIT ${offset}, ${global.MAX_PER_PAGE + 1}`);
-    for (var i = 0; i < rows.length; i++) {
-      var hadith = new Hadith(rows[i]);
-      if (book.virtual)
-        await Hadith.a_dbHadithInit(hadith);
-      hadiths.push(hadith);
-    }
-    // var rows = await global.query(`
-    //   SELECT hadithId
-    //   FROM hadiths_virtual
-    //   WHERE bookId=${book.id} AND h1=${chapterNum}
-    //   ORDER BY numInChapter
-    //   LIMIT ${offset}, ${global.MAX_PER_PAGE + 1}`);
-    // hadiths = await Hadith.a_GetHadithByIds(rows, 'hadithId');
   }
-  return {
-    chapter: chapter,
-    headings: chapterHeadings,
-    allHeadings: allHeadings,
-    hadiths: hadiths
-  };
-}
 
-async function a_dbGetFirstChapter(book) {
-  var chapterHeadings = await global.query(`
-    SELECT * FROM toc 
-    WHERE bookId=${book.id} AND level=1 
-    ORDER BY h1 ASC 
-    LIMIT 1;
-  `);
-  return chapterHeadings[0];
-}
-
-async function a_dbGetLastChapter(book) {
-  var chapterHeadings = await global.query(`
-    SELECT * FROM toc 
-    WHERE bookId=${book.id} AND level=1 
-    ORDER BY h1 DESC 
-    LIMIT 1;
-  `);
-  return chapterHeadings[0];
-}
+});
 
 module.exports = router;

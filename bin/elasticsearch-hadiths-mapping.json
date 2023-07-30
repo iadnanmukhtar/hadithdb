@@ -12,7 +12,7 @@
 			"type": "long"
 		},
 		"ordinal": {
-			"enabled": false
+			"type": "long"
 		},
 		"prevId": {
 			"enabled": false
@@ -51,17 +51,26 @@
 		"level": {
 			"type": "integer"
 		},
+		"path": {
+			"type": "keyword"
+		},
 		"h1": {
-			"type": "integer"
+			"type": "float"
 		},
 		"h1_id": {
-			"type": "integer"
+			"type": "long"
 		},
 		"h2": {
-			"type": "integer"
+			"type": "float"
 		},
 		"h2_id": {
-			"type": "integer"
+			"type": "long"
+		},
+		"h3": {
+			"type": "float"
+		},
+		"h3_id": {
+			"type": "long"
 		},
 		"h1_count": {
 			"enabled": false
@@ -103,6 +112,9 @@
 		},
 		"num": {
 			"type": "keyword"
+		},
+		"num0": {
+			"type": "float"
 		},
 		"numActual": {
 			"type": "keyword"
@@ -165,10 +177,6 @@
 			"boost": 2,
 			"analyzer": "english"
 		},
-		"num0": {
-			"enabled": false
-		},
-
 
 		"grade_id": {
 			"type": "integer"

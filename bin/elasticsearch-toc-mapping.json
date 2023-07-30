@@ -12,7 +12,7 @@
 			"type": "long"
 		},
 		"ordinal": {
-			"enabled": false
+			"type": "long"
 		},
 
 
@@ -23,7 +23,7 @@
 			"type": "integer"
 		},
 		"book_id": {
-			"enabled": false
+			"type": "integer"
 		},
 		"book_author": {
 			"enabled": false
@@ -45,11 +45,14 @@
 		"level": {
 			"type": "integer"
 		},
+		"path": {
+			"type": "keyword"
+		},
 		"h1": {
-			"type": "integer"
+			"type": "float"
 		},
 		"h1_id": {
-			"type": "integer"
+			"type": "long"
 		},
 		"h1_title": {
 			"type": "text",
@@ -72,10 +75,10 @@
 			"analyzer": "english"
 		},
 		"h2": {
-			"type": "integer"
+			"type": "float"
 		},
 		"h2_id": {
-			"type": "integer"
+			"type": "long"
 		},
 		"h2_title": {
 			"type": "text",
@@ -98,10 +101,10 @@
 			"analyzer": "english"
 		},
 		"h3": {
-			"type": "integer"
+			"type": "float"
 		},
 		"h3_id": {
-			"type": "integer"
+			"type": "long"
 		},
 		"h3_title": {
 			"type": "text",

@@ -2,7 +2,7 @@
 'use strict';
 
 const express = require('express');
-const asyncify = require('express-asyncify');
+const asyncify = require('express-asyncify').default;
 const Arabic = require('../lib/Arabic');
 const Hadith = require('../lib/Hadith');
 

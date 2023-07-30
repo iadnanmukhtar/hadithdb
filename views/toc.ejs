@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <%
     var root = 'https://hadith.quranunlocked.com';
@@ -17,80 +18,79 @@
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}`,
+      context: {
+        book,
+      }
     };
     if (typeof prevBook != 'undefined' && prevBook)
         page.prev = `/${prevBook.alias}`;
     if (typeof nextBook != 'undefined' && nextBook)
         page.next = `/${nextBook.alias}`;
-
-    var context = {
-        book: book
-    }
 %>
-
-<%- include('sub-views/head.ejs', { site: site, page: page, context: context }); %> 
-
+  
+  <%- include('sub-views/head.ejs', { site: site, page: page }); %>
+  
 </head>
+
 <body>
-
-  <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
-
+  
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+  
   <div class="container col-lg-8 mx-auto">
-
+    
     <main class="toc">
-
-    <div class="row mb-2 pagination">
-      <div class="col-md-6 col-xs-12 text-start">
-        <% if (page.prev) { %>
-        &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
-        <% } %>
-      </div>
-      <div class="col-md-6 col-xs-12 text-end">
-        <% if (page.next) { %>
+      
+      <div class="row mb-2 pagination">
+        <div class="col-md-6 col-xs-12 text-start">
+          <% if (page.prev) { %>
+          &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
+          <% } %>
+        </div>
+        <div class="col-md-6 col-xs-12 text-end">
+          <% if (page.next) { %>
           <a href="<%- page.next %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
-        <% } %>
+          <% } %>
+        </div>
       </div>
-    </div>
 
-    <div class="container mb-2">
-      <div class="row text-center justify-content-center">
-        <h2 class="_e fs-3" title="<%- book.name %>" data-id="<%=book.id%>" data-prop="book.name_en" data-arabizi="true"><%- book.name_en %></h2>
-        <h2 class="_e fs-3" title="<%- book.name_en %>" data-id="<%=book.id%>" data-prop="book.name"><%- book.name %></h2>
-        <% if (site.editMode) { %>
+      <div class="container mb-2">
+        <div class="row text-center justify-content-center">
+          <h2 class="_e fs-3" title="<%- book.name %>" data-id="<%=book.id%>" data-prop="book.name_en" data-arabizi="true"><%- book.name_en %></h2>
+          <h2 class="_e fs-3" title="<%- book.name_en %>" data-id="<%=book.id%>" data-prop="book.name"><%- book.name %></h2>
+          <% if (site.editMode) { %>
           <h3>
             <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName_en" data-arabizi="true"><%- book.shortName_en %></span>
             <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName"><%- book.shortName %></span>
           </h3>
-        <% } %>
+          <% } %>
+        </div>
       </div>
-    </div>
-
-    <p class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description"><%- book.description %></p>
-    <% if (book.id > 0) { %>
+      
+      <p class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description"><%- book.description %></p>
+      <% if (book.id > 0) { %>
       <div><small>
-        Author: <span class="_e" data-id="<%=book.id%>" data-prop="book.author"><%- book.author %></span>
-        (d. <span class="_e" data-id="<%=book.id%>" data-prop="book.yearOfDeath"><%- book.yearOfDeath %></span> H)
-      </small></div>
-    <% } %>
-  
-    <div class="row">
-
-      <script type="application/ld+json">
-        {
-          "@context": "https://schema.org",
-          "@type": "Table",
-          "name" : "<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>",
-          "about": "<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>"
-        }
-      </script>
-
-      <h3 class="fs-5 mt-3">Chapters Headings</h3>
-
-      <table id="toc" class="table" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>">
-        <tbody>
-        <%
+          Author: <span class="_e" data-id="<%=book.id%>" data-prop="book.author"><%- book.author %></span>
+          (d. <span class="_e" data-id="<%=book.id%>" data-prop="book.yearOfDeath"><%- book.yearOfDeath %></span> H)
+        </small></div>
+      <% } %>
+      
+      <div class="row">
+        
+        <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@type": "Table",
+            "name": "<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>",
+            "about": "<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>"
+          }
+        </script>
+        
+        <h3 class="fs-5 mt-3">Chapters Headings</h3>
+        
+        <table id="toc" class="table" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>">
+          <tbody>
+            <%
         for (var i = 0; i < toc.length; i++) {
-
           var title_en = '';
           if (toc[i].title_en) title_en = toc[i].title_en.substring(0, 75);
           if (toc[i].title_en && toc[i].title_en.length > 75) title_en += '&hellip;';
@@ -112,46 +112,47 @@
             <td lang="ar" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></td>
             <% } %>
             </tr -->
-          <% 
+            <% 
           } else { 
           %>
             <tr class="chapter">
-            <td><%- toc[i].start %></td>
-            <td>C<%- toc[i].h1 %></td>
-            <% if (toc[i].start) { %>
-              <td><a href="/<%- `${book.alias}/${toc[i].h1}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a></td>
-              <td lang="ar"><a href="/<%- `${book.alias}/${toc[i].h1}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
-            <% } else { %>
+              <td><%- toc[i].start %></td>
+              <td>C<%- toc[i].h1 %></td>
+              <% if (toc[i].start) { %>
+              <td><a href="/<%- `${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a></td>
+              <td lang="ar"><a href="/<%- `${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
+              <% } else { %>
               <td class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en %></td>
               <td lang="ar" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></td>
-            <% } %>
+              <% } %>
             </tr>
-        <%
+            <%
           }
         }
         %>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="row mt-2 pagination">
-      <div class="col-md-6 col-xs-12 text-start">
-        <% if (page.prev) { %>
-        &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
-        <% } %>
+          </tbody>
+        </table>
       </div>
-      <div class="col-md-6 col-xs-12 text-end">
-        <% if (page.next) { %>
+      
+      <div class="row mt-2 pagination">
+        <div class="col-md-6 col-xs-12 text-start">
+          <% if (page.prev) { %>
+          &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
+          <% } %>
+        </div>
+        <div class="col-md-6 col-xs-12 text-end">
+          <% if (page.next) { %>
           <a href="<%- page.next %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
-        <% } %>
+          <% } %>
+        </div>
       </div>
-    </div>
-    
+      
     </main>
   </div>
-
-<%- include('sub-views/footer.ejs'); %>
-<%- include('sub-views/scripts.ejs', { site: site }); %>
-
+  
+  <%- include('sub-views/footer.ejs'); %>
+  <%- include('sub-views/scripts.ejs', { site: site }); %>
+  
 </body>
+
 </html>
