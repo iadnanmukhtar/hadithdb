@@ -89,7 +89,7 @@ router.get('/:tag', async function (req, res, next) {
   });
   results = flattenedGroups;
   results.map(function (h) {
-    h.body = `${h.bodyBackup}`;
+    h.body = h.ar.body = `${h.bodyBackup}`;
     delete h.bodyBackup;
     var chain = Utils.emptyIfNull(h.chain_en).split(/>/g).reverse();
     chain.map(function (n) {
