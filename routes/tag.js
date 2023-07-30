@@ -41,7 +41,7 @@ router.get('/:tag', async function (req, res, next) {
       queryString += ' AND ';
     queryString += `(tags:"{${tags[i]}}" OR part:"${tags[i]}")`;
   }
-  var results = await Index.docsFromQueryString('hadiths', queryString, offset);
+  var results = await Index.docsFromQueryString(Item.INDEX, queryString, offset);
   results = results.map(item => new Item(item));
 
   var count = results.length;

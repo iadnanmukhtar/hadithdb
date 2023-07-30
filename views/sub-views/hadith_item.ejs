@@ -101,7 +101,7 @@
 				</select>)
 			<% } else { %>
 				<% if (i.section) { %>
-					<a href="/<%- `${i.book_alias}/${i.chapter.h1}/${i.section.h2}` %>" title="<%= i[lang].h2_title %>"><%- utils.truncate(i[lang].h2_title, 30, true) || 'Section' %></a>
+					<a href="/<%- `${i.book_alias}/${i.section.h1}/${i.section.h2}` %>" title="<%= i[lang].h2_title %>"><%- utils.truncate(i[lang].h2_title, 30, true) || 'Section' %></a>
 				<% } %>
 			<% } %>
 			<% if (i.chapter) { %>
