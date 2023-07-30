@@ -158,6 +158,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     results[i].similar = await Hadith.a_dbGetSimilarCandidates(new Item(results[i]));
     var bookSet = new Set();
     for (var j = 0; results[i].similar && j < results[i].similar.length; j++) {
+      results[i].similar[j].parentId = results[i].id;
       var book = global.books.find(function (value) {
         return results[i].similar[j].bookId == value.id;
       });

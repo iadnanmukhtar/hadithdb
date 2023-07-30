@@ -2,6 +2,8 @@
 	hashtag = (i.book_alias + i.num).replace(/[-\:]/, '_');
 	var _p = searchResult ? 'partial' : '';
 	var langSuff = (lang === 'en') ? '_en' : '';
+	var chapter = page.context.chapter;
+    var sections = chapter.sections; 
 %>
 
 <article class="col-md-6 col-sm-12 h" lang="<%=lang%>">
@@ -70,7 +72,7 @@
 	<% if (i.remark == 0) { %>
 		<section>
 		<em class="grade">
-			<% if (site.editMode) { %>
+			<% if (lang === 'en' && site.editMode) { %>
 			<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.gradeId">
 				<% global.grades.forEach(function (grade) { %>
 					<option value="<%=grade.id%>" <%=(grade.id == i.grade.id) ? 'selected' :''%>><%=grade.grade%></option>
@@ -89,15 +91,15 @@
 	<% } %>
 
 	<%# Nav  ............................................................... %>
-	<% if (((title || i.book_virtual===1) && (i.chapter || i.section)) || site.editMode) { %>
+	<% if (site.editMode || ((title || i.book_virtual===1) && (i.chapter || i.section))) { %>
 		<section class="title">
 			§ 
-			<% if (site.editMode && results.allHeadings && i.book_virtual===0) { %>
+			<% if (lang === 'en' && site.editMode && i.book_virtual===0 && chapter.sections) { %>
 				(<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.tocId">
 					<option value="">-- خالي --</option>
-					<% results.allHeadings.forEach(function (section) { %>
+					<% for (var section of chapter.sections) { %>
 						<option value="<%=section.id%>" <%=(section.id == i.tocId) ? 'selected' :''%>><%=utils.truncate(section.title, 50, true, false, false)%></option>
-					<% }); %>
+					<% }; %>
 				</select>)
 			<% } else { %>
 				<% if (i.section) { %>
@@ -108,12 +110,7 @@
 				<%= lang == 'en' ? 'in' : 'في' %> 
 				<a href="/<%- `${i.book_alias}/${i.chapter.h1}` %>" title="<%= i[lang].h1_title %>"><%- utils.truncate(i[lang].h1_title, 30, true) || 'Chapter' %></a>
 			<% } %>
-			<% if (lang === 'en') { %>
-				<a class="cmd-btn" title="Report an issue" href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
-			<% } %>
 		</section>
-	<% } else if (lang === 'en') { %>
-		<a class="cmd-btn" title="Report an issue" href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');"><span class="bi bi-bug"></span></a>
 	<% } %>
 
 	<%# Tags  .............................................................. %>
@@ -137,15 +134,15 @@
 	<% } %>
 
 	<%# Admin  ............................................................. %>
-	<% if (site.editMode) { %>
+	<% if (site.editMode && lang === 'en') { %>
 		<div>
 		<% if (i.parentId) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.del">Remove</a>
-		<% } else if (i.book_virtual) { %>
+		<% } else if (i.book_virtual == 1) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Delete" data-id="<%= i.id %>" data-prop="hadith_virtual.del">Delete</a>
 			|
 			<span class="bi bi-file-plus-fill"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= i.id_virtual %>" data-prop="hadith_virtual.add" data-reset="true">
-		<% } else if (page.menu == 'Chapter') { %>
+		<% } else if (page.menu == 'Chapter' || page.menu == 'Section') { %>
 			<span class="bi bi-caret-up-square-fill"></span>&nbsp;<a class="_click" title="Move Up" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.moveup">Move Up</a>
 			|
 			<span class="bi bi-caret-down-square-fill"></span>&nbsp;<a class="_click" title="Move Down" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.movedn">Move Down</a>
