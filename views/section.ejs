@@ -71,8 +71,16 @@
         <%- include('sub-views/heading.ejs', { site: site, page: page, heading: item.heading }); %>
         <% } %>
         
+        <% if (item.id) { %>
         <%- include('sub-views/hadith.ejs', { site: site, page: page, hadith: item, main: false, title: false, searchResult: false }); %>
+        <% } %>
         
+        <% } %>
+
+        <% if (results.length == 0 || !results[0].id) { %>
+          <div class="col">
+            <p>This is an empty section.</p>
+          </div>
         <% } %>
         
       </div>
