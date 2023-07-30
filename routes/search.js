@@ -46,19 +46,20 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   res.write(`${domain}/recent\n`);
   res.write(`${domain}/requests\n`);
   var results = await global.query(`
-    select b.alias,null as h1 from books b
+    select b.alias, null as h1, null as h2 from books b
     union
-    select b.alias,t.h1 from toc t, books b
-    where t.bookId = b.id and t.level=1
+    select b.alias, t.h1, t.h2 from toc t, books b
+    where t.bookId = b.id and t.level < 3
     union
-    select distinct 'tag' as alias,t.text_en as h1 from tags t, hadiths_tags ht
+    select distinct 'tag' as alias,t.text_en as h1, null as h2 from tags t, hadiths_tags ht
     where t.id = ht.tagId
     order by alias, h1  
   `);
   for (var i = 0; i < results.length; i++) {
     var alias = results[i].alias;
     var h1 = Utils.emptyIfNull(results[i].h1).replace(/(\.0+|0+)$/, '');
-    res.write(`${domain}/${alias}${(h1 ? '/' + h1 : '')}\n`);
+    var h2 = Utils.emptyIfNull(results[i].h2);
+    res.write(`${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`);
   }
   res.end();
   return;
