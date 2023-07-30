@@ -40,7 +40,7 @@
 		<% } %>
 
 		<%# Item Number %>
-		<b><a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.actual.num : i.num %>"><%= `${i.actual ? i[lang].actual.book_shortName : i[lang].book_shortName} ${i.actual ? i[lang].actual.num : i[lang].num}` %></a></b> –
+		<b><a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i[lang].actual.num : i[lang].num %>"><%= `${i[lang].book_shortName} ${i.actual ? i[lang].actual.num : i[lang].num}` %></a></b> –
 		<% if (i[lang].chain || site.editMode) { %>
 			<span class="_e chain <%=_p%>" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.chain<%=langSuff%>" data-arabizi="true"><%- i[lang].chain || `&hellip;` %></span>
 		<% } %>

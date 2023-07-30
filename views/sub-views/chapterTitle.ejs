@@ -4,6 +4,29 @@
     var heading = page.context.section || chapter;
 %>
 
+<%# Chapter Title %>
+<div class="row major">
+
+  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="/<%=chapter.path%>">
+    <%- chapter.h1 %>. <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title_en" data-arabizi="true">
+      <%- chapter.title_en || 'Chapter' %>
+    </span>
+    <% if (heading.page.hasNext || heading.page.number && heading.page.number > 1) { %>
+    (<%- heading.page.number %>/<%- Math.ceil(chapter.count/global.settings.search.itemsPerPage)%>)
+    <% } %>
+  </a></h2>
+  
+  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="/<%=chapter.path%>">
+    <%- arabic.toArabicDigits(chapter.h1 + '') %>۔
+    <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title">
+      <%- chapter.title %>
+    </span>
+    <%- (heading.page.hasNext || heading.page.number && heading.page.number > 1) ? `ص ${arabic.toArabicDigits(heading.page.number+'')}` : `` %>
+  </a></h2>
+
+</div>
+
+<%# Chapter Breadcrumbs %>
 <div class="row breadcrumbs pagination">
 
   <div class="col-md-6 col-sm-12" lang="en">
@@ -32,43 +55,10 @@
 
 </div>
 
-<!--
-<div class="row major">
-
-  <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
-    <a href="/<%- book.alias %>"><%- book.name_en %></a>
-  </h3>
-
-  <h3 class="col-md-6 col-sm-12 title" lang="ar">
-    <a href="/<%- book.alias %>"><%- book.name %></a>
-  </h3>
-
-</div>
--->
-
-<div class="row major">
-
-  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="/<%=chapter.path%>">
-    <%- chapter.h1 %>. <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title_en" data-arabizi="true">
-      <%- chapter.title_en || 'Chapter' %>
-    </span>
-    <% if (heading.page.hasNext || heading.page.number && heading.page.number > 1) { %>
-    (<%- heading.page.number %>/<%- Math.ceil(chapter.count/global.settings.search.itemsPerPage)%>)
-    <% } %>
-  </a></h2>
-  
-  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="/<%=chapter.path%>">
-    <%- arabic.toArabicDigits(chapter.h1 + '') %>۔
-    <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title">
-      <%- chapter.title %>
-    </span>
-    <%- (heading.page.hasNext || heading.page.number && heading.page.number > 1) ? `ص ${arabic.toArabicDigits(heading.page.number+'')}` : `` %>
-  </a></h2>
-
-</div>
-
+<%# Chapter Intro %>
 <% if (heading.offset == 0) { %>
 <div class="chapter-intro row">
+
   <div class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="intro_en" data-arabizi="true">
     <% if (chapter.intro_en) { %>
     <p>
@@ -78,6 +68,7 @@
     <p>&hellip;</p>
     <% } %>
   </div>
+
   <div class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= chapter.id %>" data-prop="intro">
     <% if (chapter.intro) { %>
     <p>
@@ -87,5 +78,6 @@
     <p>&hellip;</p>
     <% } %>
   </div>
+
 </div>
 <% } %>
