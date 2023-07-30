@@ -7,7 +7,7 @@ const asyncify = require('express-asyncify').default;
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
 const Utils = require('../lib/Utils');
-const { Section, Chapter, Item, Library } = require('../lib/Model');
+const { Section, Chapter, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
 
 const router = asyncify(express.Router());
@@ -290,6 +290,11 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     await chapter.getNext();
     await chapter.getSections();
     results = await section.getItems(offset);
+    if (results.length == 0) {
+      var item = new Item(section);
+      item.id = item.hId = undefined;
+      results.push(item);
+    }
 
     res.render('section', {
       section: section,
