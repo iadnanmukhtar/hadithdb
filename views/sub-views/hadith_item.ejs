@@ -98,7 +98,7 @@
 				(<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.tocId">
 					<option value="">-- خالي --</option>
 					<% for (var section of chapter.sections) { %>
-						<option value="<%=section.id%>" <%=(section.id == i.tId) ? 'selected' :''%>><%=utils.truncate(section.title, 50, true, false, false)%></option>
+						<option value="<%=section.id%>" <%=(section.path === i.path) ? 'selected' :''%>><%=utils.truncate(section.title, 50, true, false, false)%></option>
 					<% }; %>
 				</select>)
 			<% } else { %>
