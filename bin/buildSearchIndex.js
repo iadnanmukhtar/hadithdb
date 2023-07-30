@@ -5,16 +5,11 @@ const HomeDir = require('os').homedir();
 const fs = require('fs');
 const util = require('util');
 const MySQL = require('mysql');
-const axios = require('axios');
-const Utils = require('../lib/Utils');
+const Index = require('../lib/Index');
 
 const MySQLConfig = require(HomeDir + '/.hadithdb/store.json');
 var dbPool = MySQL.createPool(MySQLConfig.connection);
 var query = util.promisify(dbPool.query).bind(dbPool);
-
-const headers = {
-	'Content-Type': 'application/x-ndjson'
-};
 
 (async () => {
 	try {
@@ -32,44 +27,8 @@ const headers = {
 
 async function indexDocs(indexName, book) {
 	log(`\n*****\ncreating ${indexName} index for ${book.shortName_en}...`);
-	var indexURL = 'http://search.quranunlocked.com/' + indexName + '/_bulk';
 	var rows = await getData(indexName, book);
-	log(`indexing ${rows.length} docs...`);
-	var bulk = '';
-	for (var i = 0; i < rows.length; i++) {
-		delete rows[i].highlight;
-		var data = {};
-		// if (indexName === 'hadiths')
-		// 	data.ref = rows[i].book_alias + ':' + rows[i].num;
-		// else if (indexName === 'toc') {
-		// 	data.ref = rows[i].book_alias + '/' + rows[i].h1;
-		// 	if (rows[i].h2)
-		// 		data.ref += '/' + rows[i].h2;
-		// 	if (rows[i].h3)
-		// 		data.ref += '/' + rows[i].h3;
-		// }
-		if (i > 0 && rows[i].book_id == rows[i - 1].book_id)
-			data.prevId = rows[i - 1].hId;
-		if (i < (rows.length - 1) && rows[i].book_id == rows[i + 1].book_id)
-			data.nextId = rows[i + 1].hId;
-		for (var k in rows[i])
-			data[k] = rows[i][k];
-		bulk += `{ "index" : { "_index":"${indexName}","_id":"${rows[i].hId}" } }\n${JSON.stringify(data)}\n`;
-		if (i > 0 && (i % 50) == 0) {
-			Utils.msleep(250);
-			log(`POSTing ${data.ref}`);
-			var res = await axios.post(indexURL, bulk + '\n', { headers });
-			log(`${res.status} errors=${res.data.errors}`);
-			bulk = "";
-		}
-	}
-	if (bulk.length > 0) {
-		Utils.msleep(500);
-		log(`POSTing last batch`);
-		var res = await axios.post(indexURL, bulk + '\n', { headers });
-		log(`${res.status} errors=${res.data.errors}`);
-		bulk = "";
-	}
+	await Index.updateBulk(indexName, rows);
 }
 
 async function getData(indexName, book) {

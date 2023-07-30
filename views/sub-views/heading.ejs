@@ -10,25 +10,25 @@
   <div class="row heading py-2">
     
     <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
-      <% if (heading.level < 3) { %>
-      <a href="/<%=heading.path%>">
-        <% } %>
-        <% if (site.editMode) { %>
-        (<span class="_e" title="Start Num" data-id="<%= heading.id %>" data-prop="toc.start">
-          <%- heading.start || '&hellip;' %>
-        </span>) (<span class="_e" title="Start Num0" data-id="<%= heading.id %>" data-prop="toc.start0">
-          <%- heading.start0 || '&hellip;' %>
-        </span>)
-        <% } %>
-        <%- `${heading.h1}.${heading.h2}` + (heading.h3 ? `.${heading.h3}` : '') %>
-        <span class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
-          <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
-        </span>
-        <% if (page.context.continued) { %>
-        <small class="text-muted">(contd &hellip;)</small>
-        <% } %>
-        <% if (heading.level < 3) { %>
+      <% if (site.editMode) { %>
+      (<span class="_e" title="Start Num" data-id="<%= heading.id %>" data-prop="toc.start">
+        <%- heading.start || '&hellip;' %>
+      </span>) (<span class="_e" title="Start Num0" data-id="<%= heading.id %>" data-prop="toc.start0">
+        <%- heading.start0 || '&hellip;' %>
+      </span>)
+      <% } %>
+      <%- `${heading.h1}.${heading.h2}` + (heading.h3 ? `.${heading.h3}` : '') %>
+      <% if (heading.level < 2)  { %>
+      <a href="/<%=heading.path%>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
+        <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
       </a>
+      <% } else { %>
+      <span href="/<%=heading.path%>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
+        <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
+      </span>
+      <% } %>
+      <% if (page.context.continued) { %>
+      <small class="text-muted">(contd &hellip;)</small>
       <% } %>
     </h3>
     

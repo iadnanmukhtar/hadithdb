@@ -8,6 +8,7 @@ const Hadith = require('../lib/Hadith');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
 const Index = require('../lib/Index');
+const { Heading, Item } = require('../lib/Model');
 
 const router = asyncify(express.Router());
 
@@ -106,8 +107,11 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
       try {
-        var item = await global.query(`SELECT * from v_toc WHERE hId=${ids[0]}`);
-        await Index.update('toc', item[0]);
+        var heading = await global.query(`SELECT * from v_toc WHERE hId=${ids[0]}`);
+        heading = new Heading(heading[0]);
+        await Index.update('toc', heading);
+        var items = await global.query(`SELECT * FROM v_hadiths WHERE tId=${heading.id}`);
+        await Index.updateBulk(Item.INDEX, items);
       } catch (err) {
         console.log(`${err.message}:\n${err.stack}`);
       }
