@@ -19,7 +19,7 @@
       </span>)
       <% } %>
       <%- `${heading.h1}.${heading.h2}` + (heading.h3 ? `.${heading.h3}` : '') %>
-      <% if (heading.level < 2)  { %>
+      <% if (page.menu === 'Chapter')  { %>
       <a href="/<%=heading.path%>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
         <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
       </a>

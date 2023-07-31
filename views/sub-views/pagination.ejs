@@ -18,9 +18,9 @@
     }
     if (page.prev) {
       if (page.prevHeading.level == 1)
-            page.prevTitle = `Prev${page.type}:&nbsp;${page.prevHeading.book.shortName_en}&nbsp;${page.prevHeading.h1}`;
+        page.prevTitle = `Prev${page.type}:&nbsp;${page.prevHeading.book.shortName_en}&nbsp;${page.prevHeading.h1}`;
       else if (page.prevHeading.level == 2)
-        page.prevTitle = `Prev${page.type}:&nbsp;${page.prevHeading.book.shortName_en}&nbsp;${page.prevHeading.h1}.${page.prevHeading.h2}`;
+        page.prevTitle = `Prev${page.type}:&nbsp;${page.prevHeading.book.shortName_en}&nbsp;§${page.prevHeading.h1}.${page.prevHeading.h2}`;
     }
 
     if (heading.page.hasNext) {
@@ -35,7 +35,7 @@
       if (page.nextHeading.level == 1)
         page.nextTitle = `Next${page.type}:&nbsp;${page.nextHeading.book.shortName_en}&nbsp;${page.nextHeading.h1}`;
       else if (page.nextHeading.level == 2)
-        page.nextTitle = `Next${page.type}:&nbsp;${page.nextHeading.book.shortName_en}&nbsp;${page.nextHeading.h1}.${page.nextHeading.h2}`;
+        page.nextTitle = `Next${page.type}:&nbsp;${page.nextHeading.book.shortName_en}&nbsp;§${page.nextHeading.h1}.${page.nextHeading.h2}`;
     }
 %>
 

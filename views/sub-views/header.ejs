@@ -56,7 +56,11 @@
   <div class="row ms-1 chapter-toc">
     <%# --- TABLE OF CONTENTS --- %>
     <div class="d-flex justify-content-center">
-      <a data-bs-toggle="collapse" href="#toc2">Jump to Section <i class="bi bi-caret-down"></i></a>
+      <% if (sections && sections.length > 0) { %>
+        <a data-bs-toggle="collapse" href="#toc2">Section Menu<i class="bi bi-caret-down"></i></a>
+      <% } else { %>
+        <a>No sections in this chapter</a>
+      <% } %>
     </div>
     <div id="toc2" class="toc2 collapse">
       <table class="table">
@@ -73,7 +77,7 @@
             <% if (section.start) { %>
             <td>
               <a href="/<%=section.path%>">
-                <%= `${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>
+                <%= `§${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>
                 <%- title_en || `Section ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%=section.count%>)
               </a>
             </td>
