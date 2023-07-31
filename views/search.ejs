@@ -78,7 +78,10 @@
                   <i class="bi bi-book"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
-                  
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="b" value="toc" <%= (b.indexOf('toc') >= 0) ? 'checked' : '' %>>
+                    <label class="form-check-label">Headings</label>
+                  </div>
                   <% global.books.filter(b => {return !b.virtual && !b.hidden;}).forEach(bk => { %>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
