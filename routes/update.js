@@ -77,11 +77,23 @@ router.post('/:id/:prop', async function (req, res, next) {
             await global.query(`SET @n:=0`);
             await global.query(`UPDATE hadiths SET numInChapter=(@n:=@n+1)
             WHERE bookId=${curr.bookId} AND h1=${repl.h1} ORDER by bookId, h1, ordinal`);
-
           } else
             throw new Error("Invalid command");
+          var prevTOC = (await global.query(`SELECT * from v_toc WHERE tId=${prev.tocId} ORDER BY ordinal DESC LIMIT 1`))[0];
+          await Index.update(Heading.INDEX, prevTOC);
+          var nextTOC = (await global.query(`SELECT * from v_toc WHERE tId=${next.tocId} ORDER BY ordinal DESC LIMIT 1`))[0];
+          await Index.update(Heading.INDEX, nextTOC);
         } else
           throw new Error("Hadith not found");
+
+      } else if (col === 'tocId') {
+        var before = (await global.query(`SELECT * FROM hadiths WHERE id=${ids[0]}`))[0];
+        var afterTOCId = status.value;
+        result = await global.query(`UPDATE hadiths SET lastmod_user='admin', tocId=${status.value} WHERE id=${ids[0]}`);
+        var prevTOC = (await global.query(`SELECT * from v_toc WHERE tId=${before.tocId} ORDER BY ordinal DESC LIMIT 1`))[0];
+        await Index.update(Heading.INDEX, prevTOC);
+        var nextTOC = (await global.query(`SELECT * from v_toc WHERE tId=${afterTOCId} ORDER BY ordinal DESC LIMIT 1`))[0];
+        await Index.update(Heading.INDEX, nextTOC);
 
       } else { // hadith
         result = await global.query(`UPDATE hadiths SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
@@ -91,7 +103,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.message = result.message;
       try {
         var item = await global.query(`SELECT * from v_hadiths WHERE hId=${ids[0]}`);
-        await Index.update('hadiths', item[0]);
+        await Index.update(Item.INDEX, item[0]);
       } catch (err) {
         console.log(`${err.message}:\n${err.stack}`);
       }
@@ -109,7 +121,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       try {
         var heading = await global.query(`SELECT * from v_toc WHERE hId=${ids[0]}`);
         heading = new Heading(heading[0]);
-        await Index.update('toc', heading);
+        await Index.update(Heading.INDEX, heading);
         var items = await global.query(`SELECT * FROM v_hadiths WHERE tId=${heading.id}`);
         await Index.updateBulk(Item.INDEX, items);
       } catch (err) {
