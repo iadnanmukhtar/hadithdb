@@ -16,7 +16,7 @@
     
     var page = {
       menu: 'Chapter',
-      title_en: `${site.name} | ${book.shortName_en} ${chapter.title_en || chapter.title} §${chapter.h1}`,
+      title_en: `${site.name} | ${book.shortName_en} ${chapter.h1} ${chapter.title_en || chapter.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${chapter.h1}`,
@@ -68,7 +68,9 @@
         <%- include('sub-views/heading.ejs', { site: site, page: page, heading: item.heading }); %>
         <% } %>
         
+        <% if (item.id) { %>
         <%- include('sub-views/hadith.ejs', { site: site, page: page, i: item, main: false, title: false, searchResult: false }); %>
+        <% } %>
         
         <% } %>
         
