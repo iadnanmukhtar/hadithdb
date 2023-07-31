@@ -1,19 +1,21 @@
 <% if (site.editMode) { %>
 	<div class="col-12" lang="ar">
-		<h4 class="fs-5" title="Ḥadīth Group"><strong>مجموعة: <span class="_e" data-id="<%= hadith.id %>" data-prop="hadith.part"><%- hadith.part || `&hellip;` %></span></strong></h4>
+		<h4 class="fs-5" title="Ḥadīth Group"><strong>مجموعة: <span class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.part"><%- i.part || `&hellip;` %></span></strong></h4>
 	</div>
 <% } %>
-<% if (hadith.title_en || site.editMode) { %>
+
+<%# Title  ............................................................. %>
+<% if (i.en.title || site.editMode) { %>
 	<div class="col-12" lang="en">
-		<h4 class="_e fs-5" title="Ḥadīth Title" data-id="<%= hadith.id %>" data-prop="hadith.title_en" data-arabizi="true"><%- hadith.title_en || `&hellip;` %></h4>
+		<h4 class="_e fs-5" title="Ḥadīth Title" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.title_en" data-arabizi="true"><%- i.en.title || `&hellip;` %></h4>
 	</div>
 <% } %>
-<% if (hadith.title || site.editMode) { %>
+<% if (i.ar.title || site.editMode) { %>
 	<div class="col-12" lang="ar">
-		<h4 class="_e fs-5" title="ذكر الحديث" data-id="<%= hadith.id %>" data-prop="hadith.title"><strong><%- hadith.title || `&hellip;` %></strong></h4>
+		<h4 class="_e fs-5" title="ذكر الحديث" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.title"><strong><%- i.ar.title || `&hellip;` %></strong></h4>
 	</div>
 <% } %>
 
-<%- include('hadith_item.ejs', { site: site, page: page, i: hadith, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
+<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
 
-<%- include('hadith_item.ejs', { site: site, page: page, i: hadith, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
+<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>

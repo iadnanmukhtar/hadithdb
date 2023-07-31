@@ -54,7 +54,7 @@
           </div>
           <% } %>
 
-          <%- include('sub-views/hadith.ejs', { site: site, page: page, hadith: results[i], main: true, title: true, searchResult: false }); %>
+          <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], main: true, title: true, searchResult: false }); %>
 
         <% } %>
 

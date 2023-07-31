@@ -3,7 +3,9 @@
 	var _p = searchResult ? 'partial' : '';
 	var langSuff = (lang === 'en') ? '_en' : '';
 	var chapter = page.context.chapter;
-    var sections = chapter.sections; 
+    var sections = [];
+	if (chapter)
+		sections = chapter.sections; 
 %>
 
 <article class="col-md-6 col-sm-12 h" lang="<%=lang%>">
@@ -15,14 +17,14 @@
 		<%- (lang === 'en' && i.rating !== undefined) ? `<span class="bi bi-reception-${i.rating}"></span>` : '' %>
 
 		<%# Verification %>
-		<% if (site.editMode) { %>
+		<% if (lang === 'en' && site.editMode) { %>
 			<input class="_e form-check-input" title="Verified" type="checkbox" <%- i.verified ? 'checked' : '' %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.verified">
 		<% } else if (lang === 'en') { %>
 			<%- i.verified ? `<span title="Verified Translation" class="bi bi-patch-check-fill"></span>` : '' %>
 		<% } %>
 
 		<%# Highlight Date %>
-		<% if (site.editMode) { 
+		<% if (lang === 'en' && site.editMode) { 
 			var hlDate = null;
 			if (i.highlight)
 				hlDate = `${i.highlight.getFullYear()}-${i.highlight.getMonth()+1}-${i.highlight.getDate()}`; %>
@@ -33,16 +35,17 @@
 
 		<%# Virtual Num %>
 		<% if (i.book_virtual) { %>
-			(<span class="_e" title="Virtual Num" data-id="<%= i.id %>" data-prop="hadith_virtual.num"><%- (i.num) ? `${i.num}` : '' %></span>)
+			(<span class="_e" title="Virtual Num" data-id="<%= i.id %>" data-prop="hadith_virtual.num"><%- (i[lang].num) ? `${i[lang].num}` : '' %></span>)
 		<% } %>
 
 		<%# Admin: Virtul Num 0%>
-		<% if (site.editMode) { %>
+		<% if (lang === 'en' && site.editMode) { %>
 			(<span class="_e" title="Virtual Num0" data-id="<%= i.id %>" data-prop="hadith_virtual.num0"><%- i.num0 || '&hellip;' %></span>)
+			(<span class="_e" title="Num" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.num"><%- i.actual ? i[lang].actual.num : i[lang].num %></span>)
 		<% } %>
 
 		<%# Item Number %>
-		<b><a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i[lang].actual.num : i[lang].num %>"><%= `${i[lang].book_shortName} ${i.actual ? i[lang].actual.num : i[lang].num}` %></a></b> –
+		<b><a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i[lang].actual.num : i[lang].num %>"><%= `${i.actual ? i[lang].actual.book_shortName : i[lang].book_shortName} ${i.actual ? i[lang].actual.num : i[lang].num}` %></a></b> –
 		<% if (i[lang].chain || site.editMode) { %>
 			<span class="_e chain <%=_p%>" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.chain<%=langSuff%>" data-arabizi="true"><%- i[lang].chain || `&hellip;` %></span>
 		<% } %>
@@ -94,7 +97,7 @@
 	<% if (site.editMode || ((title || i.book_virtual===1) && (i.chapter || i.section))) { %>
 		<section class="title">
 			§ 
-			<% if (lang === 'en' && site.editMode && i.book_virtual===0 && chapter.sections) { %>
+			<% if (lang === 'en' && site.editMode && i.book_virtual===0 && chapter && chapter.sections) { %>
 				(<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.tocId">
 					<option value="">-- خالي --</option>
 					<% for (var section of chapter.sections) { %>

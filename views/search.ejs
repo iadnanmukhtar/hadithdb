@@ -130,7 +130,7 @@
         var main = !q; %>
         
         <% if (!results[i].doctype || results[i].doctype == 'hadith') { %>
-        <%- include('sub-views/hadith.ejs', { site: site, page: page, hadith: results[i], title: true, main: main, searchResult: q }); %>
+        <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], title: true, main: main, searchResult: q }); %>
         <% } else { %>
         <%- include('sub-views/toc.ejs', { site: site, page: page, toc: results[i], title: true, main: main, searchResult: q }); %>
         <% } %>
@@ -149,7 +149,7 @@
             results[i].similar[j].rating = Math.round((results[i].similar[j].rating - 0.5)*100/50*100/25);
           %>
           
-          <%- include('sub-views/hadith.ejs', { site: site, page: page, hadith: results[i].similar[j], main: true, title: true, searchResult: false }); %>
+          <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i].similar[j], main: true, title: true, searchResult: false }); %>
           
           <% } %>
         </div>
