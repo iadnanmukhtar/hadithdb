@@ -3,19 +3,14 @@
 
 <head> 
 <%
-    var root = 'https://hadithunlocked.com';
-    var site = {
-      name: 'Ḥadīth',
-      url: root,
-      logo: `${root}/images/logo.png`,
-      admin: (req.cookies.admin == admin.key),
-    };
+    var site = new Object(global.settings.site);
+    site.admin = (req.cookies.admin == admin.key);
     site.editMode = (site.admin && req.cookies.editMode == 1);
     
     var subtitle_en = `${tag.join('+')}`;
     var page = {
       menu: 'Tag',
-      title_en: `${site.name} | Aḥādith with tags ${subtitle_en}`,
+      title_en: `${site.shortName} | Aḥādith with tags ${subtitle_en}`,
       subtitle_en: subtitle_en,
       subtitle: null,
       canonical: `/tag/${tag.join('+')}`,

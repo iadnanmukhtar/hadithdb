@@ -3,13 +3,8 @@
 
 <head>
   <%
-    var root = 'https://hadithunlocked.com';
-    var site = {
-      name: 'Ḥadīth',
-      url: root,
-      logo: `${root}/images/logo.png`,
-      admin: (req.cookies.admin == admin.key),
-    };
+    var site = new Object(global.settings.site);
+    site.admin = (req.cookies.admin == admin.key);
     site.editMode = (site.admin && req.cookies.editMode == 1);
     
     var page = {

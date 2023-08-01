@@ -3,21 +3,15 @@
 
 <head>
   <% 
-    var book = section.book;
-    var chapter = section.chapter;
-
-    var root = 'https://hadithunlocked.com';
-    var site = {
-      name: 'Ḥadīth',
-      url: root,
-      logo: `${root}/images/logo.png`,
-      admin: (req.cookies.admin == admin.key),
-    };
+    var site = new Object(global.settings.site);
+    site.admin = (req.cookies.admin == admin.key);
     site.editMode = (site.admin && req.cookies.editMode == 1);
-    
+
+    var book = section.book;
+    var chapter = section.chapter;    
     var page = {
       menu: 'Section',
-      title_en: `${site.name} | ${book.shortName_en} §${section.h1}.${section.h2} ${section.title_en || section.title}`,
+      title_en: `${site.shortName} | ${book.shortName_en} §${section.h1}.${section.h2} ${section.title_en || section.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${chapter.h1}/${section.h2}?view=passage`,

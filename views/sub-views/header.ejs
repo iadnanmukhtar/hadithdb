@@ -3,9 +3,9 @@
     
     <div class="col-md-4 col-1 text-nowrap">
       <span class="d-flex">
-        <a href="/"><img src="/images/logo.svg" width="32" height="32" class="me-2" role="img"></a>
+        <a href="/"><img src="<%= site.logoVector %>" width="32" height="32" class="me-2" role="img"></a>
         <h1 class="fs-4 d-md-block d-none">
-          <div class="title"><a href="/" class="text-dark text-decoration-none">Ḥadīth Unlocked</a></div>
+          <div class="title"><a href="/" class="text-dark text-decoration-none"><%= site.name %></a></div>
           <% if (page.subtitle_en) { %>
           <div class="subtitle fs-6 text-muted">
             <%- page.subtitle_en %>
@@ -14,7 +14,7 @@
           <% } %>
         </h1>
         <a href="/" class="mt-1 text-dark text-decoration-none">
-          <h1 class="fs-4 d-md-none d-block">Ḥadīth</h1>
+          <h1 class="fs-4 d-md-none d-block"><%= site.shortName %></h1>
         </a>
       </span>
     </div>

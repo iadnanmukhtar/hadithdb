@@ -3,13 +3,8 @@
 
 <head>
   <% 
-    var root = 'https://hadithunlocked.com';
-    var site = {
-        name: 'Ḥadīth',
-        url: root,
-        logo: `${root}/images/logo.png`,
-        admin: (req.cookies.admin == admin.key),
-    };
+    var site = new Object(global.settings.site);
+    site.admin = (req.cookies.admin == admin.key);
     site.editMode = (site.admin && req.cookies.editMode == 1);
 
     var page = {
@@ -17,20 +12,20 @@
     };
     if (q) {
         page.menu = 'Search';
-        page.title_en = `${site.name} | Search Results for [${q}]`;
+        page.title_en = `${site.shortName} | Search Results for [${q}]`;
         page.title = '';
         page.subtitle_en = 'Search Results';
         page.subtitle = '';
     } else if (results.length > 0 && typeof book !== 'undefined') {
         page.canonical = `/${book.alias}:${results[0].num}`;
-        page.title_en = `${site.name} | ${book.shortName_en} (${book.shortName}) ${book.alias}:${results[0].num}`;
+        page.title_en = `${site.shortName} | ${book.shortName_en} (${book.shortName}) ${book.alias}:${results[0].num}`;
         if (results[0].title_en)
-          page.title_en = `${site.name} | ${book.alias}:${results[0].num} ${results[0].title_en}`;
+          page.title_en = `${site.shortName} | ${book.alias}:${results[0].num} ${results[0].title_en}`;
         page.title = `${book.name} ${results[0].num_ar}`;
         page.subtitle_en = `${book.shortName_en}`;
         page.subtitle = `${book.shortName}`;
     } else {
-      page.title_en = `${site.name}`;
+      page.title_en = `${site.shortName}`;
       page.title = '';
       page.subtitle_en = 'Home';
       page.subtitle = '';

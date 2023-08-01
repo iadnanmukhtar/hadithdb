@@ -3,20 +3,14 @@
 
 <head>
   <% 
-    var book = chapter.book;
-
-    var root = 'https://hadithunlocked.com';
-    var site = {
-      name: 'Ḥadīth',
-      url: root,
-      logo: `${root}/images/logo.png`,
-      admin: (req.cookies.admin == admin.key),
-    };
+    var site = new Object(global.settings.site);
+    site.admin = (req.cookies.admin == admin.key);
     site.editMode = (site.admin && req.cookies.editMode == 1);
-    
+
+    var book = chapter.book;
     var page = {
       menu: 'Chapter',
-      title_en: `${site.name} | ${book.shortName_en} ${chapter.h1} ${chapter.title_en || chapter.title}`,
+      title_en: `${site.shortName} | ${book.shortName_en} ${chapter.h1} ${chapter.title_en || chapter.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${chapter.h1}`,

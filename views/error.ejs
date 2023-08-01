@@ -3,18 +3,14 @@
 
 <head> 
 <%
-    var root = 'https://hadithunlocked.com';
-    var site = {
-      name: 'Ḥadīth Unlocked',
-      url: root,
-      logo: `${root}/images/logo.png`,
-      admin: false,
-    };
-    
+    var site = new Object(global.settings.site);
+    site.admin = false;
+    site.editMode = false;
+
     var subtitle_en = `Error ${res.statusCode} `;
     var page = {
-      menu: 'Recent',
-      title_en: `${site.name} | Error: ${res.statusCode} ${utils.emptyIfNull(message)} `,
+      menu: 'Error',
+      title_en: `${site.shortName} | Error: ${res.statusCode} ${utils.emptyIfNull(message)} `,
       subtitle_en: subtitle_en,
       subtitle: null,
       canonical: '/',

@@ -2,25 +2,13 @@
 <html lang="en">
 <head>
 <% 
-    var name = 'Ḥadīth';
-    var title = name;
-    var url = 'https://hadithunlocked.com';
-    var canonical = `${url}/books`;
-    var logo = `${url}/images/logo.png`;
-    var desc = 'Available Books of Ḥadīth';
-
-    var root = 'https://hadithunlocked.com';
-    var site = {
-      name: 'Ḥadīth Unlocked',
-      url: root,
-      logo: `${root}/images/logo.png`,
-      admin: (req.cookies.admin == admin.key),
-    };
+    var site = new Object(global.settings.site);
+    site.admin = (req.cookies.admin == admin.key);
     site.editMode = (site.admin && req.cookies.editMode == 1);
     
     var page = {
       menu: 'Books',
-      title_en: `${site.name} | Available Books of Ḥadīth`,
+      title_en: `${site.shortName} | Available Books`,
       subtitle_en: `Available Books`,
       subtitle: ``,
       canonical: `/books`,
