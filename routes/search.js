@@ -40,7 +40,7 @@ router.get('/do/:id', async function (req, res, next) {
 // SITEMAP
 router.get('/sitemap\.txt', async function (req, res, next) {
   res.setHeader('content-type', 'text/plain');
-  var domain = `https://hadith.quranunlocked.com`;
+  var domain = `https://hadithunlocked.com`;
   res.write(`${domain}\n`);
   res.write(`${domain}/books\n`);
   res.write(`${domain}/recent\n`);

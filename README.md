@@ -5,7 +5,7 @@
 
 ## Features
 * Isnād and Matn are split for all aḥādīth
-* Hosted on https://hadith.quranunlocked.com
+* Hosted on https://hadithunlocked.com
 
 ## Available Source Books
 The following nine plus source books of ḥadīth are currently availble:
