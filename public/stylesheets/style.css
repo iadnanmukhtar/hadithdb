@@ -13,6 +13,14 @@ body :lang(ar) {
 	direction: rtl;
 }
 
+sup {
+	color: #a0a0a0;
+}
+
+:lang(ar) sup {
+	font-size: 0.8rem;
+}
+
 .banner img {
 	width: 30%;
 }
@@ -240,6 +248,16 @@ nav .nav-link {
 .intro,
 .heading-intro {
 	text-indent: 2em;
+}
+
+.body.passage {
+	text-indent: unset;
+	text-align: justify;
+}
+
+.body .ayah:hover {
+	color: #2379b1;
+	background-color: cornsilk;
 }
 
 .h .footnote {

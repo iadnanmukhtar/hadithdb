@@ -1,0 +1,24 @@
+<%
+	var chapter = page.context.chapter;
+    var sections = [];
+	if (chapter)
+		sections = chapter.sections; 
+%>
+
+<article class="col-md-6 col-sm-12 h" lang="<%=lang%>">
+
+	<%# Body  .............................................................. %>
+	<section class="chain">
+		<p><%= passage[0][lang].chain %></p>
+	</section>
+	<section class="body passage">
+		<p>
+			<% for (var i in passage) { %>
+				<span  class="ayah">
+					<sup><%= (i == 0) ? passage[i][lang].num : passage[i][lang].num.split(/:/)[1] %></sup>&nbsp;<%= passage[i][lang].body %>&nbsp;<%- (lang === 'ar') ? '<sup>۝</sup>' : '' %>
+				</span>
+			<% } %>
+		</p>
+	</section>
+
+</article>

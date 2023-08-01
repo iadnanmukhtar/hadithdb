@@ -296,10 +296,17 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       results.push(item);
     }
 
-    res.render('section', {
-      section: section,
-      results: results
-    });
+    if (req.query.view !== undefined && req.query.view === 'passage') {
+      res.render('section_quran', {
+        section: section,
+        results: results
+      });
+    } else {
+      res.render('section', {
+        section: section,
+        results: results
+      });
+    }
 
   } catch (e) {
     if (e instanceof ReferenceError)

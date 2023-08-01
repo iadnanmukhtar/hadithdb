@@ -57,7 +57,14 @@
     <%# --- TABLE OF CONTENTS --- %>
     <div class="d-flex justify-content-center">
       <% if (sections && sections.length > 0) { %>
-        <a data-bs-toggle="collapse" href="#toc2">Section Menu<i class="bi bi-caret-down"></i></a>
+        <a data-bs-toggle="collapse" href="#toc2" title="Click to show sections">Section Menu <i class="bi bi-caret-down-square"></i></a>
+        <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
+             if (req.query.view !== undefined && req.query.view === 'passage') { %>
+               &nbsp;|&nbsp; <a href="<%= req.path %>" title="Passage View"><i class="bi bi-text-paragraph"></i> Passage</a>
+             <% } else { %>
+              &nbsp;|&nbsp; <a href="<%= req.path %>?view=passage" title="Āyah View"><i class="bi bi-blockquote-left"></i> Āyāt</a>
+        <%   }
+           } %>
       <% } else { %>
         <a>No sections in this chapter</a>
       <% } %>
