@@ -8,7 +8,7 @@
 <%
     var root = 'https://hadithunlocked.com';
     var site = {
-      name: 'Ḥadīth Unlocked',
+      name: 'Ḥadīth',
       url: root,
       logo: `${root}/images/logo.png`,
       admin: (req.cookies.admin == admin.key),
@@ -22,10 +22,11 @@
       subtitle_en: subtitle_en,
       subtitle: null,
       canonical: '/',
+      context: {}
     };
 %> 
 
-<%- include('sub-views/head.ejs', { site: site, page: page, context: {} }); %> 
+<%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
 </head>
 
