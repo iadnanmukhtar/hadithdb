@@ -41,7 +41,7 @@ router.get('/:tag', async function (req, res, next) {
       queryString += ' AND ';
     queryString += `(tags:"{${tags[i]}}" OR part:"${tags[i]}")`;
   }
-  var results = await Index.docsFromQueryString(Item.INDEX, queryString, offset);
+  var results = await Index.docsFromQueryString(Item.INDEX, queryString, 0, 5000);
   results = results.map(item => new Item(item));
 
   var count = results.length;
@@ -120,17 +120,32 @@ router.get('/:tag', async function (req, res, next) {
       keyNames = req.query.keys.split(/,/);
     res.end(Utils.toTSV(results, keyNames));
   } else {
-    results = results.slice(offset, offset + global.settings.search.itemsPerPage + 1);
-    results.pg = (offset / global.settings.search.itemsPerPage) + 1;
-    results.offset = offset;
-    results.hasNext = (results.length > global.settings.search.itemsPerPage);
-    if (results.hasNext)
-      results.pop();
-    results.prevOffset = ((offset - global.settings.search.itemsPerPage) < global.settings.search.itemsPerPage) ? 0 : offset - global.settings.search.itemsPerPage;
-    results.nextOffset = offset + global.settings.search.itemsPerPage;
-    results.hasPrev = ((offset - global.settings.search.itemsPerPage) >= 0);
-    if (!results.hasNext)
-      delete results.nextOffset;
+    var size = global.settings.search.itemsPerPage;
+    var end = offset + size + 1;
+    if (end > (results.length - 1))
+      end = results.length;
+    results = results.slice(offset, end);
+    // set offset based attributes
+		results.page = {
+			offset: offset,
+			number: (offset / size) + 1,
+			hasNext: (results.length > size),
+			prevOffset: ((offset - size) < size) ? 0 : offset - size,
+			nextOffset: offset + size,
+			hasPrev: ((offset - size) >= 0),
+		};
+		if (results.page.hasNext)
+			results.pop();
+    // results.pg = (offset / global.settings.search.itemsPerPage) + 1;
+    // results.offset = offset;
+    // results.hasNext = (results.length > global.settings.search.itemsPerPage);
+    // if (results.hasNext)
+    //   results.pop();
+    // results.prevOffset = ((offset - global.settings.search.itemsPerPage) < global.settings.search.itemsPerPage) ? 0 : offset - global.settings.search.itemsPerPage;
+    // results.nextOffset = offset + global.settings.search.itemsPerPage;
+    // results.hasPrev = ((offset - global.settings.search.itemsPerPage) >= 0);
+    // if (!results.hasNext)
+    //   delete results.nextOffset;
     if (results.length == 0)
       throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
     res.render('tag', {

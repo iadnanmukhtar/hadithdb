@@ -26,10 +26,10 @@
       if (results.pg && results.pg > 1)
         page.title_en += ` P${results.pg}`;
     }
-    if (results.hasPrev)
-      page.prev = `/tag/${tag.join('+')}?o=${results.prevOffset}`;
-    if (results.hasNext)
-      page.next = `/tag/${tag.join('+')}?o=${results.nextOffset}`;
+    if (results.page.hasPrev)
+      page.prev = `/tag/${tag.join('+')}?o=${results.page.prevOffset}`;
+    if (results.page.hasNext)
+      page.next = `/tag/${tag.join('+')}?o=${results.page.nextOffset}`;
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
@@ -61,16 +61,24 @@
 
         <h2 class="col-md-12 col-sm-12 fs-5 title" lang="en">
           <span class="_e" data-id="<%=tag.id%>" data-prop="tags.description"><%- `${('#'+tag.join(' #'))}` %></span>
-          <% if (results.hasNext || results.pg && results.pg > 1) { %>
-            (<%- results.pg %>/<%- Math.ceil(count / global.settings.search.itemsPerPage) %>)
+          <% if (results.page.hasNext || results.page.number && results.page.number > 1) { %>
+            (<%- results.page.number %>)
           <% } %>
         </h2>
 
-        <% for (var i = 0; i < results.length; i++) { %>
+        <% 
+          var lastGroup;
+          for (var i = 0; i < results.length; i++) {
+            if (i > 0 && results[i].groupNo !== lastGroup) {
+        %>
+              <hr>
+         <% } %>
 
           <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], main: false, title: true, searchResult: false }); %>
 
-        <% } %>
+        <% 
+            lastGroup = results[i].groupNo; 
+          }%>
 
       </div>
 
