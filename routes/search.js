@@ -153,6 +153,8 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   var results = await Index.docsFromKeyValue('hadiths', { ref: `${req.params.bookAlias}:${req.params.num}` });
+  if (results.length == 0)
+    throw createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`);
   results = results.map(item => new Item(item));
   for (var i = 0; i < results.length; i++) {
     results[i].similar = await Hadith.a_dbGetSimilarCandidates(new Item(results[i]));
