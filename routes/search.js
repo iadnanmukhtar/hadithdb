@@ -9,6 +9,7 @@ const Hadith = require('../lib/Hadith');
 const Utils = require('../lib/Utils');
 const { Section, Chapter, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
+const Arabic = require('../lib/Arabic');
 
 const router = asyncify(express.Router());
 
@@ -133,6 +134,8 @@ router.get('/passage\::surah\::ayah1', async function (req, res, next) {
 });
 
 async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
+  ayah1 = Arabic.toLatinDigits(ayah1);
+  ayah2 = Arabic.toLatinDigits(ayah2);
   var results = await Search.a_lookupQuranByRange(surah, ayah1, ayah2);
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
@@ -152,6 +155,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
 router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
+  req.params.num = Arabic.toLatinDigits(req.params.num);
   var results = await Index.docsFromKeyValue('hadiths', { ref: `${req.params.bookAlias}:${req.params.num}` });
   if (results.length == 0)
     throw createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`);
@@ -246,7 +250,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
   try {
     var results = [];
     var bookAlias = req.params.bookAlias;
-    var chapterNum = req.params.chapterNum;
+    var chapterNum = Arabic.toLatinDigits(req.params.chapterNum);
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
     var chapter = await Chapter.chapterFromRef(`${bookAlias}/${chapterNum}`);
@@ -280,8 +284,8 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
   try {
     var results = [];
     var bookAlias = req.params.bookAlias;
-    var chapterNum = req.params.chapterNum;
-    var sectionNum = req.params.sectionNum;
+    var chapterNum = Arabic.toLatinDigits(req.params.chapterNum);
+    var sectionNum = Arabic.toLatinDigits(req.params.sectionNum);
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
     var section = await Section.sectionFromRef(`${bookAlias}/${chapterNum}/${sectionNum}`);
