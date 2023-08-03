@@ -43,19 +43,25 @@
     "logo": "<%= site.logo %>"
   }
 </script>
+
+<% if (page.menu === 'Home') { %>
 <script type="application/ld+json">
   {
     "@context": "http://schema.org",
     "@type": "WebSite",
-    "name": "<%= site.name %> Search Action",
+    "name": "<%= site.name %>",
     "url": "<%= site.url %>",
     "potentialAction": {
-      "@type": "SearchAction",
-      "target": "<%= site.url %>/?q={search_term_string}",
-      "query-input": "required name=search_term_string"
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "<%= site.url %>/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
     }
   }
 </script>
+<% } %>
 
 <% if (page.context.book !== undefined) { %>
 <script type="application/ld+json">

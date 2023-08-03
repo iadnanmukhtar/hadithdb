@@ -73,9 +73,17 @@ router.get('/', async function (req, res, next) {
   var results = [];
   if (req.query.q) {
     req.query.q = req.query.q.trim();
+    // is it a item ref number?
     if (req.query.q.match(/^([a-z]+:\d+|\d+)/)) {
-      res.redirect('/' + req.query.q);
-      return;
+      if (Library.instance.findBook(req.query.q.split(/:/)[0])) {
+        res.redirect('/' + req.query.q);
+        return;
+      }
+    } else if (req.query.q.match(/^[a-z]+\//)) {
+      if (Library.instance.findBook(req.query.q.split(/\//)[0])) {
+        res.redirect('/' + req.query.q);
+        return;
+      }
     }
     try {
       if (req.query.b && (typeof req.query.b) != 'object')
