@@ -49,13 +49,13 @@
 		<%# Item Number + Chain %>
 		<b><a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.en.actual.num : i.en.num %>"><%= `${i.actual ? i[lang].actual.book_shortName : i[lang].book_shortName}:${i.actual ? i[lang].actual.num : i[lang].num}` %></a></b> –
 		<% if (i[lang].chain || site.editMode) { %>
-			<span class="_e chain <%=_p%>" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.chain<%=langSuff%>" data-arabizi="true"><%- i[lang].chain || `&hellip;` %></span>
+			<span class="_e chain <%=_p%> l3" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.chain<%=langSuff%>" data-arabizi="true"><%- i[lang].chain || `&hellip;` %></span>
 		<% } %>
 
 	</section>
 
 	<%# Body  .............................................................. %>
-	<section class="_e body <%=_p%>" title="Ḥadīth Body" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
+	<section class="_e body <%=_p%> l5" title="Ḥadīth Body" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
 		<% if (!i[lang].body) { %>
 			<div class="cmd-tr">
 				<br />
@@ -68,7 +68,7 @@
 
 	<%# Footer  ............................................................ %>
 	<% if (i[lang].footnote || site.editMode) { %>
-		<section class="_e footnote <%=_p%>" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true">
+		<section class="_e footnote <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true">
 			<%- i[lang].footnote || '&hellip;' %>
 		</section>
 	<% } %>
