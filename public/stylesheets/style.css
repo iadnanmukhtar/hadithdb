@@ -112,6 +112,12 @@ nav .nav-link {
 	background-color: var(--bs-border-color);
 }
 
+.caution {
+	font-size: 0.75rem;
+	color: #a0a0a0;
+	margin-top: 5px;
+}
+
 #search-bar {
 	font-size: 1.5em;
 	border-color: #2c9be5;
