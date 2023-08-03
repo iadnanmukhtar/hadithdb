@@ -292,8 +292,6 @@ nav .nav-link {
 	display: block;
 	overflow: hidden;
 	display: -webkit-box;
-	-webkit-line-clamp: 5;
-	line-clamp: 5;
 	-webkit-box-orient: vertical;
 }
 
@@ -304,6 +302,26 @@ nav .nav-link {
 	-webkit-line-clamp: unset;
 	line-clamp: unset;
 	-webkit-box-orient: unset;
+}
+
+.l2 {
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+}
+
+.l3 {
+	-webkit-line-clamp: 3;
+	line-clamp: 3;
+}
+
+.l4 {
+	-webkit-line-clamp: 4;
+	line-clamp: 4;
+}
+
+.l5 {
+	-webkit-line-clamp: 5;
+	line-clamp: 5;
 }
 
 .toc a,
