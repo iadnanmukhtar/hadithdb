@@ -68,9 +68,9 @@
         <a data-bs-toggle="collapse" href="#toc2" title="Click to show sections">Section Menu <i class="bi bi-caret-down-square"></i></a>
         <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
              if (req.query.view !== undefined && req.query.view === 'passage') { %>
-               &nbsp;|&nbsp; <a href="<%= req.path %>" title="Passage View"><i class="bi bi-text-paragraph"></i> Passage</a>
+                &nbsp;|&nbsp; <a href="<%= req.path %>" title="Āyah View"><i class="bi bi-blockquote-left"></i> Āyāt</a>
              <% } else { %>
-              &nbsp;|&nbsp; <a href="<%= req.path %>?view=passage" title="Āyah View"><i class="bi bi-blockquote-left"></i> Āyāt</a>
+                &nbsp;|&nbsp; <a href="<%= req.path %>?view=passage" title="Passage View"><i class="bi bi-text-paragraph"></i> Passage</a>
         <%   }
            } %>
       <% } else { %>
