@@ -5,7 +5,11 @@
       <span class="d-flex">
         <a href="/"><img src="<%= site.logoVector %>" width="32" height="32" class="me-2" role="img"></a>
         <h1 class="fs-4 d-md-block d-none">
-          <div class="title"><a href="/" class="text-dark text-decoration-none"><%= site.name %></a></div>
+          <% if (page.context.book && page.context.book.alias === 'quran') { %>
+            <div class="title"><a href="/" class="text-dark text-decoration-none">Quran Unlocked</a></div>
+          <% } else { %>
+            <div class="title"><a href="/" class="text-dark text-decoration-none"><%= site.name %></a></div>
+          <% } %>
           <% if (page.subtitle_en) { %>
           <div class="subtitle fs-6 text-muted">
             <%- page.subtitle_en %>
@@ -14,8 +18,12 @@
           <% } %>
         </h1>
         <a href="/" class="mt-1 text-dark text-decoration-none">
-          <h1 class="fs-4 d-md-none d-block"><%= site.shortName %></h1>
-        </a>
+          <% if (page.context.book && page.context.book.alias === 'quran') { %>
+            <h1 class="fs-4 d-md-none d-block">Quran</h1>
+          <% } else { %>
+            <h1 class="fs-4 d-md-none d-block"><%= site.shortName %></h1>
+          <% } %>
+          </a>
       </span>
     </div>
     
