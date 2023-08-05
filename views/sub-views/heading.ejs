@@ -33,12 +33,17 @@
       <% } %>
     </h3>
     
-    <h3 class="col-md-6 col-sm-12 title" lang="ar"><a href="/<%=heading.path%>">
-        <%- `${arabic.toArabicDigits(heading.h1 + '')}۔${arabic.toArabicDigits(heading.h2 + '')}` + (heading.h3 ? `۔${arabic.toArabicDigits(heading.h3+'')}` : '') %>
-        <span class="_e" data-id="<%= heading.id %>" data-prop="toc.title">
-          <%- heading.title %>
+    <h3 class="col-md-6 col-sm-12 title" lang="ar">
+      <%- `${arabic.toArabicDigits(heading.h1 + '')}۔${arabic.toArabicDigits(heading.h2 + '')}` + (heading.h3 ? `۔${arabic.toArabicDigits(heading.h3+'')}` : '') %>
+      <% if (page.menu === 'Chapter')  { %>
+        <a href="/<%=heading.path%>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title" data-arabizi="true">
+          <%- heading.title || (heading.level === 3 ? 'مقطع' : 'مقطع') %>
+        </a>
+        <% } else { %>
+        <span href="/<%=heading.path%>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title" data-arabizi="true">
+          <%- heading.title || (heading.level === 3 ? 'مقطع' : 'مقطع') %>
         </span>
-      </a>
+      <% } %>
     </h3>
     
   </div>
