@@ -2,6 +2,7 @@
 /* jslint node:true, esversion:8 */
 'use strict';
 
+require('dotenv').config();
 const app = require('../app');
 const debug = require('debug')('hadithdb:server');
 const http = require('http');

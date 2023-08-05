@@ -1,7 +1,9 @@
 .DS_Store
+.env
 .history
 *.backup
 *.log
+.env
 node_modules
 coverage
 data/*.csv
