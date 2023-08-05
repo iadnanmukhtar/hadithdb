@@ -26,7 +26,7 @@ const app = asyncify(express());
 
   const limiter = rateLimit({
     keyGenerator: req => {
-      debug('ip address: ' + req.ip);
+      debug('ip address: ' + req.clientIp);
       return req.clientIp;
     },
     standardHeaders: true,
