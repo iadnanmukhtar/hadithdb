@@ -7,26 +7,27 @@ const createError = require('http-errors');
 const express = require('express');
 const asyncify = require('express-asyncify').default;
 const cookieParser = require('cookie-parser');
-const rateLimiter = require('express-rate-limit').default;
+const rateLimit = require('express-rate-limit').default;
 const Hadith = require('./lib/Hadith');
 
 const app = asyncify(express());
+
+const limiter = rateLimit({
+  keyGenerator: (request, response) => request.ip,
+  standardHeaders: true,
+  legacyHeaders: false,
+  windowMs: 60000,
+  max: 100,
+});
 
 (async () => {
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
-  // const limiter = rateLimiter({
-  //   windowMs: 5 * 60 * 1000, // 5 minutes
-  //   max: 100, // Limit each IP to 100 requests per `window`
-  //   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  //   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  // })
-  // app.use(limiter);
-
   app.use(express.json());
   app.use(cookieParser());
   app.use('/', express.static(path.join(__dirname, 'public')));
+  app.use(limiter);
 
   const toolsRouter = require('./routes/tools');
   const recentRouter = require('./routes/recent');
