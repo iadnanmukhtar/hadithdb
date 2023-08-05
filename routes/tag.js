@@ -1,6 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
+const debug = require('debug')('hadithdb:tag');
 const express = require('express');
 const createError = require('http-errors');
 const asyncify = require('express-asyncify').default;

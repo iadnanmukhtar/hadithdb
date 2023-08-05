@@ -1,10 +1,10 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
+const debug = require('debug')('hadithdb:books');
 const express = require('express');
 const asyncify = require('express-asyncify').default;
 const Utils = require('../lib/Utils');
-
 
 const router = asyncify(express.Router());
 

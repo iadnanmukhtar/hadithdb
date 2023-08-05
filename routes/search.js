@@ -1,6 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
+const debug = require('debug')('hadithdb:search');
 const express = require('express');
 const createError = require('http-errors');
 const asyncify = require('express-asyncify').default;
@@ -31,7 +32,7 @@ router.get('/do/:id', async function (req, res, next) {
       return;
     } catch (err) {
       var message = `Error in action [${req.params.id}?${req.query.action}]`;
-      console.error(message + `\n${err.stack}`);
+      debug(message + `\n${err.stack}`);
       throw createError(500, message);
     }
   }
@@ -100,7 +101,7 @@ router.get('/', async function (req, res, next) {
       });
     } catch (err) {
       var message = `Error searching [${req.query.q} ${req.query.b}]`;
-      console.error(message + `\n${err.stack}`);
+      debug(message + `\n${err.stack}`);
       throw createError(500, message);
     }
     if ('json' in req.query) {
@@ -276,7 +277,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     if (e instanceof ReferenceError)
       throw createError(404, e.message);
     else {
-      console.log(e.stack);
+      debug(e.stack);
       throw createError(500, e.message);
     }
   }
@@ -326,7 +327,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     if (e instanceof ReferenceError)
       throw createError(404, e.message);
     else {
-      console.log(e.stack);
+      debug(e.stack);
       throw createError(500, e.message);
     }
   }

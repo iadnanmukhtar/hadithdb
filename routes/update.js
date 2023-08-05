@@ -1,6 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
+const debug = require('debug')('hadithdb:update');
 const express = require('express');
 const createError = require('http-errors');
 const asyncify = require('express-asyncify').default;
@@ -105,7 +106,7 @@ router.post('/:id/:prop', async function (req, res, next) {
         var item = await global.query(`SELECT * from v_hadiths WHERE hId=${ids[0]}`);
         await Index.update(Item.INDEX, item[0]);
       } catch (err) {
-        console.log(`${err.message}:\n${err.stack}`);
+        debug(`${err.message}:\n${err.stack}`);
       }
 
     } else if (type == 'tags') {
@@ -125,7 +126,7 @@ router.post('/:id/:prop', async function (req, res, next) {
         var items = await global.query(`SELECT * FROM v_hadiths WHERE tId=${heading.id}`);
         await Index.updateBulk(Item.INDEX, items);
       } catch (err) {
-        console.log(`${err.message}:\n${err.stack}`);
+        debug(`${err.message}:\n${err.stack}`);
       }
 
     } else if (type == 'book') {
@@ -185,10 +186,10 @@ router.post('/:id/:prop', async function (req, res, next) {
   } catch (err) {
     status.message = err.message;
     status.code = 500;
-    console.log(`${status.message}:\n${err.stack}`);
+    debug(`${status.message}:\n${err.stack}`);
   } finally {
-    console.log(`update status:${status.code}, id:${ids}, prop:${prop}, value:${(status.value + '').trim().substring(0, 20)}`);
-    console.log(status.message);
+    debug(`update status:${status.code}, id:${ids}, prop:${prop}, value:${(status.value + '').trim().substring(0, 20)}`);
+    debug(status.message);
   }
   res.status(status.code);
   res.end(JSON.stringify(status));

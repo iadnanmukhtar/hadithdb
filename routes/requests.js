@@ -1,6 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
+const debug = require('debug')('hadithdb:requests');
 const express = require('express');
 const asyncify = require('express-asyncify').default;
 const Hadith = require('../lib/Hadith');
