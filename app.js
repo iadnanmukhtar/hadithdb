@@ -2,31 +2,38 @@
 'use strict';
 
 require('./lib/Globals');
+const debug = require('debug')('hadithdb:app');
 const path = require('path');
 const createError = require('http-errors');
 const express = require('express');
 const asyncify = require('express-asyncify').default;
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit').default;
+const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
 
 const app = asyncify(express());
 
-const limiter = rateLimit({
-  keyGenerator: (request, response) => request.ip,
-  standardHeaders: true,
-  legacyHeaders: false,
-  windowMs: 60000,
-  max: 50,
-});
 
 (async () => {
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
+  app.use(requestIp.mw());
   app.use(express.json());
   app.use(cookieParser());
   app.use('/', express.static(path.join(__dirname, 'public')));
+
+  const limiter = rateLimit({
+    keyGenerator: req => {
+      debug('ip address: ' + req.ip);
+      return req.clientIp;
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    windowMs: 60000,
+    max: 50,
+  });
   app.use(limiter);
 
   const toolsRouter = require('./routes/tools');
@@ -119,31 +126,31 @@ const limiter = rateLimit({
   //     footnote = footnote.replace(/-صلى الله عليه وسلم-/g, ' ﷺ ');
   //     footnote = footnote.replace(/\. ?$/g, '').trim();
   //   }
-  //   console.log(`cleaning ${rows[i].id} 1000:${rows[i].num}`);
+  //   debug(`cleaning ${rows[i].id} 1000:${rows[i].num}`);
   //   if (updateCnt > 0)
   //     updates += ` UNION ALL `;
   //   updates += ` (SELECT ${rows[i].id} AS id, '${Utils.escSQL(footnote)}' AS new_fn)`;
   //   updateCnt++;
   //   if (updateCnt > 1000) {
-  //     console.log(`updating %${i / rows.length * 100} = ${i}/${rows.length}`);
+  //     debug(`updating %${i / rows.length * 100} = ${i}/${rows.length}`);
   //     await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET footnote=new_fn`);
   //     updates = '';
   //     updateCnt = 0;
   //   }
   // }
   // if (updateCnt > 0) {
-  //   console.log(`updating %${i / rows.length * 100} = ${i}/${rows.length}`);
+  //   debug(`updating %${i / rows.length * 100} = ${i}/${rows.length}`);
   //   await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET footnote=new_fn`);
   //   updates = '';
   //   updateCnt = 0;
   // }
 
-  // console.log('fix hadith decimal numbers');
+  // debug('fix hadith decimal numbers');
   // var rows = await global.query(`SELECT * FROM hadiths WHERE num REGEXP "[^0-9]" ORDER BY bookId`);
-  // console.log(`fixing ${rows.length} numbers`);
+  // debug(`fixing ${rows.length} numbers`);
   // for (var i = 0; i < rows.length; i++) {
   //   var numDec = Hadith.hadithNumtoDecimal(rows[i].num);
-  //   console.log(`fixing ${rows[i].bookId}:${rows[i].num} to ${numDec}`);
+  //   debug(`fixing ${rows[i].bookId}:${rows[i].num} to ${numDec}`);
   //   await global.query(`
   //     UPDATE hadiths SET num0="${numDec}"
   //     WHERE id=${rows[i].id}
@@ -161,9 +168,9 @@ const limiter = rateLimit({
   //       WHERE bookId=${bookId} AND num0 BETWEEN ${toc[i].start0} AND ${toc[i + 1].start0-1+0.9999}
   //     `);
   //     if (toc[i+1].start0 < toc[i].start0) {
-  //       console.error(sql);
-  //       console.error(toc[i+1]);
-  //       console.error(`next hadith range (${toc[i+1].start0}) is less than the previous (${toc[i].start0})`);
+  //       debug(sql);
+  //       debug(toc[i+1]);
+  //       debug(`next hadith range (${toc[i+1].start0}) is less than the previous (${toc[i].start0})`);
   //       break;
   //     }
   //   } else {
@@ -173,7 +180,7 @@ const limiter = rateLimit({
   //       WHERE bookId=${bookId} AND num0 >= ${toc[i].start0}
   //     `);
   //   }
-  //   console.log(sql);
+  //   debug(sql);
   //   await global.query(sql);
   // }
 
@@ -183,7 +190,7 @@ const limiter = rateLimit({
   // for (var i = 0; i < toc.length; i++) {
   //   var h1 = await global.query(`SELECT count(*) AS count FROM hadiths WHERE bookId=${bookId} AND h1=${toc[i].h1}`);
   //   sql = global.utils.sql(`UPDATE toc SET count=${h1[0].count} WHERE id=${toc[i].id}`);
-  //   console.log(sql);
+  //   debug(sql);
   //   await global.query(sql);
   // }
 
@@ -198,7 +205,7 @@ const limiter = rateLimit({
   //     numInChapter = 0;
   //   prevH1 = hadiths[i].h1;
   //   numInChapter++;
-  //   console.log(`updating numInChapter for ${hadiths[i].bookId}:${hadiths[i].num}`);
+  //   debug(`updating numInChapter for ${hadiths[i].bookId}:${hadiths[i].num}`);
   //   if (updateCnt > 0)
   //     inserts += ` UNION ALL `;
   //   inserts += ` SELECT ${hadiths[i].id} AS id, ${numInChapter} AS new`;
@@ -220,7 +227,7 @@ const limiter = rateLimit({
   //   if (rows[i].body) {
   //     rows[i].text = rows[i].body;
   //     var text = Hadith.splitHadithText(rows[i]);
-  //     console.log(`updating ${rows[i].bookId}:${rows[i].num}`);
+  //     debug(`updating ${rows[i].bookId}:${rows[i].num}`);
   //     await global.query(`update hadiths set chain='${text.chain}', body='${text.body}'
   //       WHERE id=${rows[i].id}`);
   //   }
@@ -232,13 +239,13 @@ const limiter = rateLimit({
   // var docs = await global.searchIdx.ALL_DOCUMENTS(200000);
   // for (var i = 0; i < docs.length; i++) {
   //   var doc = docs[i]._doc;
-  //   console.log(`restoring ${doc._id} ${doc.book_alias}:${doc.num}`);
+  //   debug(`restoring ${doc._id} ${doc.book_alias}:${doc.num}`);
   //   if (updateCnt > 0)
   //     updates += ` UNION ALL `;
   //   updates += ` (SELECT ${doc._id} AS id, '${Utils.escSQL(doc.chain)}' AS new_chain, '${Utils.escSQL(doc.body)}' AS new_body)`;
   //   updateCnt++;
   //   if (updateCnt > 1000) {
-  //     console.log(`updating %${i/docs.length*100} = ${i}/${docs.length}`);
+  //     debug(`updating %${i/docs.length*100} = ${i}/${docs.length}`);
   //     await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
   //     updates = '';
   //     updateCnt = 0;
@@ -246,7 +253,7 @@ const limiter = rateLimit({
   //   // break;
   // }
   // if (updateCnt > 0) {
-  //   console.log(`updating %100`);
+  //   debug(`updating %100`);
   //   await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
   //   updates = '';
   //   updateCnt = 0;
@@ -258,7 +265,7 @@ const limiter = rateLimit({
   //   from hadiths h, books b
   //   where h.bookId=b.id and h.bookId > 0 and h.lastmod >= '2023-01-28 18:17:00' and h.lastmod <= '2023-01-28 18:17:50'
   //   order by lastmod desc;`);
-  // console.log(`restoring ${rows.length} ahadith`);
+  // debug(`restoring ${rows.length} ahadith`);
   // for (var i = 0; i < rows.length; i++) {
   //   var docs = await global.searchIdx.QUERY({
   //     AND: [
@@ -270,10 +277,10 @@ const limiter = rateLimit({
   //   }, { DOCUMENTS: true });
   //   if (docs.RESULT.length == 1) {
   //     var doc = docs.RESULT[0]._doc;
-  //     console.log(`restoring ${doc._id} ${doc.book_alias}:${doc.num} ${(i/rows.length*100.).toFixed(2)}%`);
+  //     debug(`restoring ${doc._id} ${doc.book_alias}:${doc.num} ${(i/rows.length*100.).toFixed(2)}%`);
   //     await global.query(`UPDATE hadiths SET body='${Utils.escSQL(doc.body)}' WHERE id=${doc._id}`);
   //   } else {
-  //     console.log(`${docs.RESULT.length} results found for book_alias:${rows[i].alias} num:${rows[i].num} ${(i/rows.length*100.).toFixed(2)}%`);
+  //     debug(`${docs.RESULT.length} results found for book_alias:${rows[i].alias} num:${rows[i].num} ${(i/rows.length*100.).toFixed(2)}%`);
   //   }
   // }
 
@@ -282,7 +289,7 @@ const limiter = rateLimit({
   // for (var i = 0; i < docs.length; i++) {
   //   var doc = docs[i]._doc;
   //   if (doc.bookId == 3 || doc.bookId == 4) {
-  //     console.log(`restoring ${doc._id} ${doc.bookId}:${doc.num}`);
+  //     debug(`restoring ${doc._id} ${doc.bookId}:${doc.num}`);
   //     var grader = global.graders.find(function (val) {
   //       return val.shortName_en == doc.grader_en;
   //     });
@@ -296,7 +303,7 @@ const limiter = rateLimit({
   // for (var i = 0; i < docs.length; i++) {
   //   var doc = docs[i]._doc;
   //   if (doc.body_en && doc.body_en.length > 0) {
-  //     console.log(`restoring ${doc._id} ${doc.book_id}:${doc.num}`);
+  //     debug(`restoring ${doc._id} ${doc.book_id}:${doc.num}`);
   //     var grader = global.graders.find(function (val) {
   //       return val.shortName_en == doc.grader_en;
   //     });
@@ -314,7 +321,7 @@ const limiter = rateLimit({
   //   if (i == rows.length - 1) break;
   //   if (rows[i].hno != null && rows[i+1].hno == null) {
   //     var nextNass = Utils.escSQL(rows[i+1].nass);
-  //     console.log(`concating id:${rows[i].id}:H${rows[i].hno} w/ id:${rows[i+1].id}`);
+  //     debug(`concating id:${rows[i].id}:H${rows[i].hno} w/ id:${rows[i+1].id}`);
   //     await global.query(`update ${shamela} set nass=concat(nass, '\\n${nextNass}') where id=${rows[i].id}`);
   //     await global.query(`delete from ${shamela} where id=${rows[i+1].id}`);
   //     i++;
@@ -327,7 +334,7 @@ const limiter = rateLimit({
   //   if (i == rows.length - 1) break;
   //   if (rows[i].hno != null && rows[i].hno == rows[i+1].hno) {
   //     var nextNass = Utils.escSQL(rows[i+1].nass);
-  //     console.log(`concating id:${rows[i].id}:H${rows[i].hno} w/ id:${rows[i+1].id}:H${rows[i+1].hno}`);
+  //     debug(`concating id:${rows[i].id}:H${rows[i].hno} w/ id:${rows[i+1].id}:H${rows[i+1].hno}`);
   //     await global.query(`update ${shamela} set nass=concat(nass, '\\n${nextNass}') where id=${rows[i].id}`);
   //     await global.query(`delete from ${shamela} where id=${rows[i+1].id}`);
   //     i++;
@@ -340,7 +347,7 @@ const limiter = rateLimit({
   // var hno = null;
   // for (var i = 1; i < rows.length; i++) {
   //   if (rows[i].toc == 1 && rows[i].hno == null && rows[i+1].hno != null) {
-  //     console.log(`updating w/ ${rows[i+1].hno} ${rows[i].nass}`);
+  //     debug(`updating w/ ${rows[i+1].hno} ${rows[i].nass}`);
   //     await global.query(`update ${shamela} set hno=${rows[i+1].hno} where id=${rows[i].id}`);
   //     // break;
   //   }
@@ -355,7 +362,7 @@ const limiter = rateLimit({
   //     h1 = rows[i].h1;
   //     h2 = 1;
   //   }  else if (rows[i].toc == 1 && rows[i].level == 2) {
-  //     console.log(`updating w/ ${h1}:${h2} ${rows[i].nass}`);
+  //     debug(`updating w/ ${h1}:${h2} ${rows[i].nass}`);
   //     await global.query(`update ${shamela} set h1=${h1},h2=${h2++} where id=${rows[i].id}`);
   //     // break;
   //   }
@@ -372,7 +379,7 @@ const limiter = rateLimit({
   // var text = '';
   // var num = '';
   // for (var i = 0; i < rows.length; i++) {
-  //   console.log(`% ${i / rows.length * 100}`);
+  //   debug(`% ${i / rows.length * 100}`);
   //   var lines = rows[i].nass_clean.split(/\n/g);
   //   for (var j = 0; j < lines.length; j++) {
   //     if (reHNO.test(lines[j])) {
@@ -398,7 +405,7 @@ const limiter = rateLimit({
   // var startsWith = 'حَدَّثَهُ';
   // var rows = await global.query(`select * from hadiths where body regexp '^${startsWith} ' order by ordinal`);
   // for (var i = 1; i < rows.length; i++) {
-  //   console.log(`updating ${startsWith} ${rows[i].bookId}:${rows[i].num}`);
+  //   debug(`updating ${startsWith} ${rows[i].bookId}:${rows[i].num}`);
   //   var body = rows[i].body.replace(new RegExp(`^${startsWith} `), '');
   //   var chain = rows[i].chain + ` ${startsWith}`;
   //   if (updateCnt > 0)
@@ -406,14 +413,14 @@ const limiter = rateLimit({
   //   updates += ` (SELECT ${rows[i].id} AS id, '${Utils.escSQL(chain)}' AS new_chain, '${Utils.escSQL(body)}' AS new_body)`;
   //   updateCnt++;
   //   if (updateCnt > 1000) {
-  //     console.log(`updating %${i/rows.length*100} = ${i}/${rows.length}`);
+  //     debug(`updating %${i/rows.length*100} = ${i}/${rows.length}`);
   //     await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
   //     updates = '';
   //     updateCnt = 0;
   //   }
   // }
   // if (updateCnt > 0) {
-  //   console.log(`updating %100`);
+  //   debug(`updating %100`);
   //   await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
   //   updates = '';
   //   updateCnt = 0;
@@ -423,7 +430,7 @@ const limiter = rateLimit({
   //  var startsWith = 'قَالَ';
   //  var rows = await global.query(`select * from hadiths where chain regexp ' قَالَ$' and body regexp '^(النَّبِيُّ|رَسُولُ اللَّهِ) ' order by ordinal`);
   //  for (var i = 1; i < rows.length; i++) {
-  //    console.log(`updating 'qala Rasullah' ${rows[i].bookId}:${rows[i].num}`);
+  //    debug(`updating 'qala Rasullah' ${rows[i].bookId}:${rows[i].num}`);
   //    var body = startsWith + ' ' + rows[i].body;
   //    var chain = rows[i].chain.replace(new RegExp(` ${startsWith}$`), '');
   //    if (updateCnt > 0)
@@ -431,14 +438,14 @@ const limiter = rateLimit({
   //    updates += ` (SELECT ${rows[i].id} AS id, '${Utils.escSQL(chain)}' AS new_chain, '${Utils.escSQL(body)}' AS new_body)`;
   //    updateCnt++;
   //    if (updateCnt > 1000) {
-  //      console.log(`updating %${i/rows.length*100} = ${i}/${rows.length}`);
+  //      debug(`updating %${i/rows.length*100} = ${i}/${rows.length}`);
   //      await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
   //      updates = '';
   //      updateCnt = 0;
   //    }
   //  }
   //  if (updateCnt > 0) {
-  //    console.log(`updating %100`);
+  //    debug(`updating %100`);
   //    await global.query(`UPDATE hadiths h JOIN ( ${updates} ) vals ON h.id=vals.id SET chain=new_chain, body=new_body`);
   //    updates = '';
   //    updateCnt = 0;
@@ -479,13 +486,13 @@ const limiter = rateLimit({
   //       matchedj = j;
   //     }
   //   }
-  //   console.log(`updating ${rows1[i].num} with ${rows2[matchedj].num}`);
+  //   debug(`updating ${rows1[i].num} with ${rows2[matchedj].num}`);
   //   await global.query(`update hadiths_malik set num_match="${rows2[matchedj].num}", match_rating=${maxRating} where id=${rows1[i].id}`);
   // }
 
   // var rows = await global.query(`select id, title, title_en from toc where bookId=5 order by h1,h2,h3`);
   // rows.forEach(row => {
-  //   console.log(`${row.id}\t"${Utils.sql(row.title)}"\t"${Utils.sql(row.title_en)}"`);
+  //   debug(`${row.id}\t"${Utils.sql(row.title)}"\t"${Utils.sql(row.title_en)}"`);
   // });
 
   // // read from a TSV file and process rows
@@ -503,9 +510,9 @@ const limiter = rateLimit({
   //   var surah = parseInt(cols[1]);
   //   var ayah = parseInt(cols[2]);
   //   var len = parseInt(cols[3]);
-  //   // console.log(`${tocId} ${surah}:${ayah}-${ayah + (len - 1)}`);
+  //   // debug(`${tocId} ${surah}:${ayah}-${ayah + (len - 1)}`);
   //   for (var i = ayah; i <= (ayah + (len-1)); i++) {
-  //     console.log(`${tocId} ${numInChapter}-quran:${surah}:${i}`);
+  //     debug(`${tocId} ${numInChapter}-quran:${surah}:${i}`);
   //     await global.query(`INSERT INTO hadiths_virtual
   //       (bookId, tocId, numInChapter, num, num0, ref_num) VALUES
   //       (49, ${tocId}, ${numInChapter}, "${surah}:${i}", ${surah + (i/1000.)}, 'quran:${surah}:${i}')`);
@@ -543,7 +550,7 @@ const limiter = rateLimit({
   //   Utils.msleep(500);
   // }
 
-  console.error('done');
+  debug('done');
 
 })();
 
