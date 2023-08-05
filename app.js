@@ -17,7 +17,7 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   windowMs: 60000,
-  max: 100,
+  max: 50,
 });
 
 (async () => {
