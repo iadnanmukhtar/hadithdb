@@ -143,9 +143,32 @@ router.get('/passage\::surah\::ayah1', async function (req, res, next) {
 });
 
 async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
   ayah1 = Arabic.toLatinDigits(ayah1);
   ayah2 = Arabic.toLatinDigits(ayah2);
-  var results = await Search.a_lookupQuranByRange(surah, ayah1, ayah2);
+  surah = global.surahs.find(function (value) {
+    return (value.alias === surah || value.num == surah);
+  });
+  if (!surah)
+    throw createError(404, `Reference 'passage:${surah}:${ayah1}-${ayah2}' does not exist`);
+  var results = await Index.docsFromQueryString(Item.INDEX, `book_alias:quran AND h1:${surah.num} AND numInChapter:[${ayah1} TO ${ayah2}]`, 0, ayah2 - ayah1 + 1, 'numInChapter');
+  results = results.map(item => new Item(item));
+  var section;
+  if (results.length > 0) {
+    section = await results[0].getSection();
+    await section.getPrev();
+    await section.getNext();
+    var chapter = await section.getChapter();
+    await chapter.getPrev();
+    await chapter.getNext();
+    await chapter.getSections();
+    section.prev = section.next = undefined;
+    section.page = {
+      offset: 0,
+      number: 0
+    };
+  }
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(results));
@@ -156,15 +179,33 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
       keyNames = req.query.keys.split(/,/);
     res.end(Utils.toTSV(results, keyNames));
   } else {
-    throw createError(501, "Passage view is not implemented");
+
+    if (req.query.view !== undefined && req.query.view === 'passage') {
+      section.title_en = chapter.title_en + ` Āyāt ${surah.num}:${ayah1}–${ayah2}`;
+      section.title = chapter.title + ` آيات ${Arabic.toArabicDigits(ayah1)}–${Arabic.toArabicDigits(ayah2)}`;
+      res.render('section_quran', {
+        section: section,
+        results: results
+      });
+    } else {
+      res.render('section', {
+        section: section,
+        results: results
+      });
+    }
+
   }
-};
+}
 
 // HADITH (SINGLE)
 router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   req.params.num = Arabic.toLatinDigits(req.params.num);
+  if (req.params.bookAlias === 'quran' && /\d+-\d+$/.test(req.params.num)) {
+    var toks = req.params.num.split(/[:\-]/);
+    return await a_getPassage(toks[0], toks[1], toks[2], req, res, next);
+  }
   var results = await Index.docsFromKeyValue('hadiths', { ref: `${req.params.bookAlias}:${req.params.num}` });
   if (results.length == 0)
     throw createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`);
