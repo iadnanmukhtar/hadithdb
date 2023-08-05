@@ -16,13 +16,13 @@ const app = asyncify(express());
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
-  const limiter = rateLimiter({
-    windowMs: 5 * 60 * 1000, // 5 minutes
-    max: 100, // Limit each IP to 100 requests per `window`
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  })
-  app.use(limiter);
+  // const limiter = rateLimiter({
+  //   windowMs: 5 * 60 * 1000, // 5 minutes
+  //   max: 100, // Limit each IP to 100 requests per `window`
+  //   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  //   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // })
+  // app.use(limiter);
 
   app.use(express.json());
   app.use(cookieParser());
