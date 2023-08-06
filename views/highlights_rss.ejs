@@ -2,18 +2,16 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><%
   const site = new Object(global.settings.site);
   const page = {
-    menu: 'Highlights',
     title_en: `${site.shortName} | Notable Aḥādīth`,
     subtitle_en: 'Recent translations of beautiful and notable aḥādīth',
-    canonical: `/highlights`,
-    context: {},
+    canonical: '/highlights/rss'
   };
 %>
 <channel>
   <title><%= page.title_en %></title>
-  <link><%= `${site.url}/${page.canonical}?rss` %></link>
+  <link><%= `${site.url}/${page.canonical}` %></link>
   <description><%= page.subtitle_en %></description>
-  <atom:link href="<%= `${site.url}/${page.canonical}?rss` %>" rel="self"/>
+  <atom:link href="<%= `${site.url}/${page.canonical}` %>" rel="self"/>
   <language>en-us</language>
   <webMaster><%= site.email %> (<%= site.owner %>)</webMaster>
   <category>Islam</category>
@@ -23,7 +21,7 @@
   <image>
       <url><%= site.logo %></url>
       <title><%= page.title_en %></title>
-      <link><%= `${site.url}/${page.canonical}?rss` %></link>
+      <link><%= `${site.url}/${page.canonical}` %></link>
   </image>
   <% for (item of results) { 
         var title = `${item.en.title || item.book.shortName_en+' '+item.en.num}`;
