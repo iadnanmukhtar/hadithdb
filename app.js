@@ -37,7 +37,7 @@ const app = asyncify(express());
   app.use(limiter);
 
   const toolsRouter = require('./routes/tools');
-  const recentRouter = require('./routes/recent');
+  const highlightsRouter = require('./routes/highlights');
   const requestsRouter = require('./routes/requests');
   const booksRouter = require('./routes/books');
   const tagRouter = require('./routes/tag');
@@ -45,7 +45,8 @@ const app = asyncify(express());
   const updateRouter = require('./routes/update');
 
   app.use('/tools', toolsRouter);
-  app.use('/recent', recentRouter);
+  app.use('/recent', highlightsRouter);
+  app.use('/highlights', highlightsRouter);
   app.use('/requests', requestsRouter);
   app.use('/books', booksRouter);
   app.use('/tag', tagRouter);
@@ -521,8 +522,10 @@ const app = asyncify(express());
   // }
 
   // // read URLs to load
+  // const fs = require('fs');
   // const cheerio = require('cheerio');
   // const http = require('sync-request');
+  // const Utils = require('./lib/Utils');
   // var urls = fs.readFileSync(`./data/quranverses.txt`).toString().split(/[\n\r]+/g);
   // for (var n = 0; n < urls.length; n++) {
   //   var $ = cheerio.load(http('GET', urls[n]).getBody().toString());
@@ -544,9 +547,8 @@ const app = asyncify(express());
   //     }
   //   });
   //   var sql = `INSERT INTO toc (bookId,level,h1,h2,h3,title,start,start0) VALUES
-  //     (49, 1, null, null, '${headings[1]} > ${headings[2]}', '${ref_num[0].ayahs[0].surah}:${ref_num[0].ayahs[0].ayah}', ${ref_num[0].ayahs[0].surah + ref_num[0].ayahs[0].ayah/1000.})`;
-  //   sql = `INSERT INTO toc (bookId,level,h1,h2,h3,title,start,start0) VALUES
-  //     (49, 2, null, null, '${headings[1]} > ${headings[2]}', '${ref_num[0].ayahs[0].surah}:${ref_num[0].ayahs[0].ayah}', ${ref_num[0].ayahs[0].surah + ref_num[0].ayahs[0].ayah/1000.})`;
+  //     (49, 1, null, null, '${headings[1]} > ${headings[2]}', '${ref_num[0].ayahs[0].surah}:${ref_num[0].ayahs[0].ayah}', ${ref_num[0].ayahs[0].surah + ref_num[0].ayahs[0].ayah / 1000.})`;
+  //   await global.query(sql);
   //   Utils.msleep(500);
   // }
 

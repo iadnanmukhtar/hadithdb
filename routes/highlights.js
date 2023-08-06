@@ -6,7 +6,6 @@ const express = require('express');
 const asyncify = require('express-asyncify').default;
 const Hadith = require('../lib/Hadith');
 
-
 const router = asyncify(express.Router());
 
 router.get('/', async function (req, res, next) {
@@ -14,9 +13,15 @@ router.get('/', async function (req, res, next) {
   res.locals.res = res;
   var results = [];
   results = await Hadith.a_dbGetRecentUpdates();
-  res.render('recent', {
-    results: results
-  });
+  if ('rss' in req.query && results.length > 0) {
+    res.render('highlights_rss', {
+      results: results
+    });
+  } else {
+    res.render('highlights', {
+      results: results
+    });
+  }
 });
 
 module.exports = router;

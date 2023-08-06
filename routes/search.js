@@ -45,7 +45,7 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   var domain = `https://hadithunlocked.com`;
   res.write(`${domain}\n`);
   res.write(`${domain}/books\n`);
-  res.write(`${domain}/recent\n`);
+  res.write(`${domain}/highlights\n`);
   res.write(`${domain}/requests\n`);
   var results = await global.query(`
     select b.alias, null as h1, null as h2 from books b
