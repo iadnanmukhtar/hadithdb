@@ -18,8 +18,8 @@
   <webMaster><%= site.email %> (<%= site.owner %>)</webMaster>
   <category>Islam</category>
   <category>Hadith</category>
-  <pubDate><%= results[0].lastmod.toUTCString() %></pubDate>
-  <lastBuildDate><%= results[0].lastmod.toUTCString() %></lastBuildDate>
+  <pubDate><%= results[0].highlight.toUTCString() %></pubDate>
+  <lastBuildDate><%= results[0].highlight.toUTCString() %></lastBuildDate>
   <image>
       <url><%= site.logo %></url>
       <title><%= page.title_en %></title>
@@ -60,7 +60,7 @@
         <title><%= title %></title>
         <link><%= `${site.url}/${item.ref}` %></link>
         <description><%= content %></description>
-        <pubDate><%= item.lastmod.toUTCString() %></pubDate>
+        <pubDate><%= item.highlight.toUTCString() %></pubDate>
         <guid><%= `${site.url}/${item.ref}` %></guid>
         <category>Islam</category>
         <category>Hadith</category>
