@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><%
+  const site = new Object(global.settings.site);
+  const page = {
+    title_en: `${site.shortName} | Notable Aḥādīth`,
+    subtitle_en: 'Recent translations of beautiful and notable aḥādīth',
+    alternate: `${site.url}/highlights`,
+    canonical: `${site.url}/highlights/feed`,
+  };
+%>
+  <title><%= page.title_en %></title>
+  <subtitle><%= page.subtitle_en %></subtitle>
+  <link rel="alternate" type="text/html" href="<%= page.alternate %>" />
+  <updated><%= results[0].lastmod.toISOString() %></updated>
+  <icon><%= site.logo %></icon>
+  <logo><%= site.logo %></logo>
+  <id><%= page.canonical %></id>
+  <category term="islam"></category>
+  <category term="hadith"></category>
+  <contributor>
+    <name><%= site.owner %></name>
+    <email><%= site.email %></email>
+  </contributor>
+  <% for (item of results) { 
+        const content = `
+        <article>
+          <img src="${site.logo}" width="32" height=""32">
+          <section lang="en">
+            <p class="ref">${item.book_shortName_en} ${item.en.num}</p>
+            <p>
+              <div class="chain">${item.en.chain}</div>
+              <div class="body"><strong>${item.en.body}</strong></div>
+              <div class="footnote">${item.en.footnote || ''}</div>
+            </p>
+            <p>
+              <div class="grade">${item.en.grade_grade} (${item.en.grader_shortName})</div>
+              <div class="source">${item.book_name_en} &gt; ${item.en.h1_title} &gt; ${item.en.h2_title || 'Section'}</div>
+            </p>
+          </section>
+          <section lang="ar" dir="rtl">
+            <p class="ref">${item.ar.book_shortName} ${item.ar.num}</p>
+            <p>
+              <div class="chain">${item.ar.chain}</div>
+              <div class="body"><strong>${item.ar.body}</strong></div>
+              <div class="footnote">${item.ar.footnote || ''}</div>
+            </p>
+            <p>
+              <div class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</div>
+              <div class="source">${item.ar.book_shortName} &gt; ${item.ar.h1_title} &gt; ${item.ar.h2_title || 'مقطع'} </div>
+            </p>
+          </section>
+        </article>
+        `;
+  %>
+    <entry>
+      <published><%= item.highlight.toISOString() %></published>
+      <updated><%= item.lastmod.toISOString() %></updated>
+      <title><%= `${item.en.title || item.book.shortName_en+' '+item.en.num}` %></title>
+      <summary><%= item.en.body || '' %></summary>
+      <link rel="alternate" type="text/html" href="<%= `${site.url}/${item.ref}` %>" />
+      <id><%= `${site.url}/${item.ref}` %></id>
+      <author>
+        <name><%= item.book.author %></name>
+        <uri><%= `${site.url}/${item.book.alias}` %></name>
+      </author>
+      <content type="html"><%= content %></content>
+      <%
+          var tags = [];
+		      if (item.tags)
+			      tags = item.tags.replace(/[{}]/g, '').split(' ');
+          console.log(tags);
+          for (tag of tags) {
+		  %>
+      <category term="<%= tag %>" />
+      <% } %>
+
+    </entry>
+  <% } %>
+</feed>
