@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<rss version="2.0">
-
-<%
+<rss version="2.0"><%
   var site = new Object(global.settings.site);
-
   var page = {
     menu: 'Highlights',
     title_en: `${site.shortName} | Notable Aḥādīth`,
@@ -18,48 +15,51 @@
   <description><%= page.subtitle_en %></description>
   <language>en</language>
   <ttl>60</ttl>
-  <webMaster><%= site.owner %></webMaster>
+  <webMaster><%= site.email %> (<%= site.owner %>)</webMaster>
   <category>Hadith</category>
-  <pubDate><%= results[0].lastmod %></pubDate>
-  <lastBuildDate><%= results[0].lastmod %></lastBuildDate>
+  <pubDate><%= results[0].lastmod.toUTCString() %></pubDate>
+  <lastBuildDate><%= results[0].lastmod.toUTCString() %></lastBuildDate>
   <image>
-      <title><%= site.name %></title>
       <url><%= site.logo %></url>
-      <link><%= `${site.url}/${page.canonical}` %></link>
+      <title><%= page.title_en %></title>
+      <link><%= `${site.url}/${page.canonical}?rss` %></link>
   </image>
 
   <% for (item of results) { %>
       
     <item>
-        <title><%= `${item.en.title || ''}` %></title>
+        <title><%= `${item.en.title || item.book.shortName_en+' '+item.en.num}` %></title>
         <link><%= `${site.url}/${item.ref}` %></link>
-        <author><%= item.book.shortName %></author>
-        <pubDate><%= item.book.lastmod %></pubDate>
+        <pubDate><%= item.lastmod.toUTCString() %></pubDate>
+        <source url="<%= `${site.url}/${page.canonical}?rss` %>"><%= page.title_en %></source>
         <description><%= `
           <article>
             <section lang="en">
-              <p class="ref">${item.en.book_shortName} ${item.en.num}</p>
+              <p class="ref">${item.book_shortName_en} ${item.en.num}</p>
               <p>
                 <div class="chain">${item.en.chain}</div>
-                <div class="body">${item.en.body}</div>
+                <div class="body"><strong>${item.en.body}</strong></div>
                 <div class="footnote">${item.en.footnote || ''}</div>
               </p>
-              <p class="source">${item.en.h2_title || ''} in ${item.en.h1_title} of ${item.en.book_shortName}</p>
-              <p class="grade">${item.en.grade_grade} (${item.en.grader_shortName})</p>
+              <p>
+                <div class="grade">${item.en.grade_grade} (${item.en.grader_shortName})</div>
+                <div class="source">${item.en.h2_title || 'Section'} &gt; ${item.en.h1_title} &gt; ${item.book_name_en}</div>
+              </p>
             </section>
-            <section lang="ar">
+            <section lang="ar" dir="rtl">
               <p class="ref">${item.ar.book_shortName} ${item.ar.num}</p>
               <p>
                 <div class="chain">${item.ar.chain}</div>
-                <div class="body">${item.ar.body}</div>
+                <div class="body"><strong>${item.ar.body}</strong></div>
                 <div class="footnote">${item.ar.footnote || ''}</div>
               </p>
-              <p class="source">${item.ar.h2_title || ''} in ${item.ar.h1_title} of ${item.ar.book_shortName}</p>
-              <p class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</p>
+              <p>
+                <div class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</div>
+                <div class="source">${item.ar.h2_title || 'مقطع'} &gt; ${item.ar.h1_title} &gt; ${item.ar.book_shortName}</div>
+              </p>
             </section>
           </article>
         `%></description>
-        <source>....</source>
     </item>
   
   <% } %>
