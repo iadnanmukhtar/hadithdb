@@ -14,6 +14,7 @@ router.get('/', async function (req, res, next) {
   var results = [];
   results = await Hadith.a_dbGetRecentUpdates();
   if ('rss' in req.query && results.length > 0) {
+    res.type('application/rss+xml; charset=utf-8')
     res.render('highlights_rss', {
       results: results
     });
