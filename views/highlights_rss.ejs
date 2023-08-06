@@ -37,7 +37,7 @@
             </p>
             <p>
               <div class="grade">${item.en.grade_grade} (${item.en.grader_shortName})</div>
-              <div class="source">${item.en.h2_title || 'Section'} &gt; ${item.en.h1_title} &gt; ${item.book_name_en}</div>
+              <div class="source">${item.book_name_en} &gt; ${item.en.h1_title} &gt; ${item.en.h2_title || 'Section'}</div>
             </p>
           </section>
           <section lang="ar" dir="rtl">
@@ -49,7 +49,7 @@
             </p>
             <p>
               <div class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</div>
-              <div class="source">${item.ar.h2_title || 'مقطع'} &gt; ${item.ar.h1_title} &gt; ${item.ar.book_shortName}</div>
+              <div class="source">${item.ar.book_shortName} &gt; ${item.ar.h1_title} &gt; ${item.ar.h2_title || 'مقطع'} </div>
             </p>
           </section>
         </article>
