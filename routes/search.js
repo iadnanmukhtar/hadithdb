@@ -72,6 +72,8 @@ router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   var results = [];
+
+  // search
   if (req.query.q) {
     req.query.q = req.query.q.trim();
     // is it a item ref number?
@@ -104,6 +106,7 @@ router.get('/', async function (req, res, next) {
       debug(message + `\n${err.stack}`);
       throw createError(500, message);
     }
+
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results));
@@ -120,16 +123,18 @@ router.get('/', async function (req, res, next) {
         b: (req.query.b ? req.query.b : []),
       });
     }
+    
+  // show random and highlighted ahadith
   } else {
-    results = await Index.docRandomnly('hadiths');
-    if (results.length > 0) {
-      res.redirect(`/${results[0].book_alias}:${results[0].num}`);
-    } else {
-      res.render('search', {
-        results: results,
-        b: [],
-      });
-    }
+    results = await Hadith.a_dbGetRecentUpdates();
+    var random = await Index.docRandomnly('hadiths');
+    if (random.length > 0)
+      random = new Item(random[0]);
+    res.render('index', {
+      random: random,
+      results: results,
+      b: [],
+    });
   }
 });
 
