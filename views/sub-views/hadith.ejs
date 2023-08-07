@@ -21,8 +21,10 @@
 <%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
 
 <%# Telegram Comments %>
-<div class="row">
-	<div class="col-12">
-		<script async src="https://comments.app/js/widget.js?3" data-comments-app-website="rOdWjWWp" data-limit="5" data-dislikes="1" data-outlined="1"></script>
+<% if (i.random || typeof single !== 'undefined') { %>
+	<div class="row">
+		<div class="col-12">
+			<script async src="https://comments.app/js/widget.js?3" data-comments-app-website="rOdWjWWp" data-limit="5" data-dislikes="1" data-outlined="1"></script>
+		</div>
 	</div>
-</div>
+<% } %>

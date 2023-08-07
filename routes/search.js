@@ -130,6 +130,7 @@ router.get('/', async function (req, res, next) {
     var random = await Index.docRandomnly('hadiths');
     if (random.length > 0)
       random = new Item(random[0]);
+    random.random = true;
     res.render('index', {
       random: random,
       results: results,
@@ -242,6 +243,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       res.end(Utils.toTSV(results, keyNames));
     } else {
       res.render('search', {
+        single: true,
         results: results,
         book: results[0].book,
         q: req.query.q,
@@ -250,6 +252,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     }
   } else {
     res.render('search', {
+      single: true,
       results: results,
       q: req.query.q,
       b: [],
