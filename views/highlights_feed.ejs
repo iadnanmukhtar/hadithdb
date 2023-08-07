@@ -23,8 +23,9 @@
   </contributor>
   <% for (item of results) { 
         const content = `
-        <article>
-          <img src="${site.logo}" width="32" height=""32">
+          <figure>
+            <img title="${item.book_shortName_en} ${item.en.num}" src="${site.logo}" width="32" height="32">
+          </figure>
           <section lang="en">
             <p class="ref">${item.book_shortName_en} ${item.en.num}</p>
             <p>
@@ -49,7 +50,6 @@
               <div class="source">${item.ar.book_shortName} &gt; ${item.ar.h1_title} &gt; ${item.ar.h2_title || 'مقطع'} </div>
             </p>
           </section>
-        </article>
         `;
   %>
     <entry>
@@ -68,7 +68,6 @@
           var tags = [];
 		      if (item.tags)
 			      tags = item.tags.replace(/[{}]/g, '').split(' ');
-          console.log(tags);
           for (tag of tags) {
 		  %>
       <category term="<%= tag %>" />
