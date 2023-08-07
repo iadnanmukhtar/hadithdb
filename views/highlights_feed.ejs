@@ -51,11 +51,15 @@
             </p>
           </section>
         `;
+        var tags = [];
+        if (item.tags)
+          tags = item.tags.replace(/[{}]/g, '').split(' ');
   %>
     <entry>
       <published><%= item.highlight.toISOString() %></published>
       <updated><%= item.lastmod.toISOString() %></updated>
       <title><%= `${item.en.title || item.book.shortName_en+' '+item.en.num}` %></title>
+      <subtitle><%= `#${item.book.alias}${item.en.num} #${tags.join(' #')}` %></subtitle>
       <summary><%= item.en.body || '' %></summary>
       <link rel="alternate" type="text/html" href="<%= `${site.url}/${item.ref}` %>" />
       <id><%= `${site.url}/${item.ref}` %></id>
@@ -63,14 +67,8 @@
         <name><%= item.book.author %></name>
         <uri><%= `${site.url}/${item.book.alias}` %></uri>
       </author>
-      <content type="html"><%= content %></content>
-      <%
-          var tags = [];
-		      if (item.tags)
-			      tags = item.tags.replace(/[{}]/g, '').split(' ');
-          for (tag of tags) {
-		  %>
-      <category term="<%= tag %>" />
+      <content type="html"><%= content %></content><% for (tag of tags) { %>
+        <category term="<%= tag %>" />
       <% } %>
 
     </entry>
