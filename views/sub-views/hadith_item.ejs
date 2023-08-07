@@ -133,9 +133,12 @@
 				});
 				tags = tags.join(' ');
 			%>
-				# <%- tags %>
+				<div><span class="bi bi-hash"></span> <%- tags %></div>
 			<% } %>
 		</section>
+	<% } %>
+	<% if (lang === 'en' && !i.single) { %>
+		<div class="tags"><span class="bi bi-chat-right-text"></span> <a href="/<%= i.ref %>">Discuss</a></div>
 	<% } %>
 
 	<%# Admin  ............................................................. %>
@@ -153,11 +156,6 @@
 			<span class="bi bi-caret-down-square-fill"></span>&nbsp;<a class="_click" title="Move Down" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.movedn">Move Down</a>
 		<% } %>
 		</div>
-	<% } %>
-	<% if (lang === 'en' && main && !site.editMode) { %>
-		<!-- <div>
-			<a href="https://twitter.com/intent/tweet?button_hashtag=<%=hashtag%>" class="twitter-hashtag-button" data-text="<%=i.title_en%>" data-hashtags="hadith,HadithoftheDay" data-size="I" data-show-count="true" data-url="https://hadithunlocked.com/<%=i.book_alias%>:<%=i.num%>">Tweet #<%=hashtag%></a>
-		</div> -->
 	<% } %>
 
 </article>

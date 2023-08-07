@@ -130,7 +130,6 @@ router.get('/', async function (req, res, next) {
     var random = await Index.docRandomnly('hadiths');
     if (random.length > 0)
       random = new Item(random[0]);
-    random.random = true;
     res.render('index', {
       random: random,
       results: results,
@@ -216,6 +215,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   if (results.length == 0)
     throw createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`);
   results = results.map(item => new Item(item));
+  results[0].single = true;
   for (var i = 0; i < results.length; i++) {
     results[i].similar = await Hadith.a_dbGetSimilarCandidates(new Item(results[i]));
     var bookSet = new Set();
@@ -243,7 +243,6 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       res.end(Utils.toTSV(results, keyNames));
     } else {
       res.render('search', {
-        single: true,
         results: results,
         book: results[0].book,
         q: req.query.q,
@@ -252,7 +251,6 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     }
   } else {
     res.render('search', {
-      single: true,
       results: results,
       q: req.query.q,
       b: [],
