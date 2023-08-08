@@ -5,6 +5,10 @@ $(function () {
 
 	setDirection($('#search-bar'));
 
+	$('#comments-app-rOdWjWWp-1').on('mouseover focus', function () {
+		console.log('over!');
+	});
+
 	$(window).scroll(function() {
 		if ($(document).scrollTop() > 50) {
 		  $('nav').addClass('shrink');
