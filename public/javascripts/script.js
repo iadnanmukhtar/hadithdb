@@ -5,8 +5,8 @@ $(function () {
 
 	setDirection($('#search-bar'));
 
-	$('#comments-app-rOdWjWWp-1').on('mouseover focus', function () {
-		console.log('over!');
+	$('#comments-app-rOdWjWWp-1').on('mouseover focus click', function (event) {
+		console.log(event.type);
 	});
 
 	$(window).scroll(function() {
