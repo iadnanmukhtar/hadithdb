@@ -28,4 +28,14 @@
 			<script async src="https://comments.app/js/widget.js?3" data-comments-app-website="rOdWjWWp" data-limit="5" data-dislikes="1" data-outlined="1"></script>
 		</div>
 	</div>
+	<script>
+		window.focus()
+		window.addEventListener("blur", () => {
+			setTimeout(() => {
+				if (document.activeElement.tagName === "IFRAME") {
+					await fetch('<%= site.url %>/do/<%= item.id %>?cmd=comment');
+				}
+		});
+		}, { once: true });
+	</script>
 <% } %>

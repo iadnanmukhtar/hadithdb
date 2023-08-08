@@ -5,19 +5,6 @@ $(function () {
 
 	setDirection($('#search-bar'));
 
-	// $('#comments-app-rOdWjWWp-1').on('mouseover focus click', function (event) {
-	// 	console.log(event.type);
-	// });
-	window.focus()
-	window.addEventListener("blur", () => {
-	  setTimeout(() => {
-		if (document.activeElement.tagName === "IFRAME") {
-		  message.textContent = "clicked " + Date.now();
-		  console.log("clicked");
-		}
-	  });
-	}, { once: true });
-
 	$(window).scroll(function() {
 		if ($(document).scrollTop() > 50) {
 		  $('nav').addClass('shrink');
