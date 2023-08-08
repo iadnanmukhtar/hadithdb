@@ -16,7 +16,7 @@ router.get('/', async function (req, res, next) {
   results = await global.query(`SELECT * FROM v_hadiths WHERE hId IN 
     (SELECT id FROM hadiths WHERE commented > 0) LIMIT ${global.settings.search.itemsPerPage}`);
   results = results.map(item => new Item(item));
-  res.render('requests', {
+  res.render('highlights', {
     results: results
   });
 });
