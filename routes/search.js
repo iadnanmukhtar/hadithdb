@@ -22,27 +22,26 @@ router.get('/reinit', async function (req, res, next) {
 });
 
 router.get('/do/:id', async function (req, res, next) {
-  if (req.query.cmd == 'tr') {
-    // translation request
-    try {
+  try {
+    if (req.query.cmd == 'tr') {
+      // translation requested
       var id = parseInt(req.params.id);
       await global.query(`UPDATE hadiths SET requested=(requested+1) WHERE id=${id}`);
-      res.sendStatus(204);
-      res.end();
-      return;
-    } catch (err) {
-      var message = `Error in action [${req.params.id}?${req.query.action}]`;
-      debug(message + `\n${err.stack}`);
-      throw createError(500, message);
+      console.log(`translation requested on id ${id}`);
+    } else if (req.query.cmd == 'comment') {
+      // comment clicked
+      var id = parseInt(req.params.id);
+      await global.query(`UPDATE hadiths SET commented=(commented+1) WHERE id=${id}`);
+      console.log(`commented on id ${id}`);
     }
-  } else if (req.query.cmd == 'comment') {
-    var id = parseInt(req.params.id);
-    await global.query(`UPDATE hadiths SET commented=(commented+1) WHERE id=${id}`);
     res.sendStatus(204);
     res.end();
     return;
-}
-  throw createError(501, 'Action unknown');
+} catch (err) {
+    var message = `Error in action [${req.params.id}?${req.query.action}]`;
+    debug(message + `\n${err.stack}`);
+    throw createError(500, message);
+  }
 });
 
 // SITEMAP
