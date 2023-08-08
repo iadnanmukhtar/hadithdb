@@ -33,7 +33,8 @@
 		window.addEventListener("blur", () => {
 			setTimeout(() => {
 				if (document.activeElement.tagName === "IFRAME") {
-					await fetch('<%= site.url %>/do/<%= item.id %>?cmd=comment');
+					console.log('commenting on <%= i.ref %>');
+					await fetch('<%= site.url %>/do/<%= i.id %>?cmd=comment');
 				}
 		});
 		}, { once: true });
