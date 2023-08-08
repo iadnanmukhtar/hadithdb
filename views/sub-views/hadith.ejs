@@ -30,7 +30,7 @@
 	</div>
 	<script>
 		window.focus()
-		window.addEventListener("blur", () => {
+		window.addEventListener("blur", async () => {
 			setTimeout(() => {
 				if (document.activeElement.tagName === "IFRAME") {
 					console.log('commenting on <%= i.ref %>');
