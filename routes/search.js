@@ -35,7 +35,13 @@ router.get('/do/:id', async function (req, res, next) {
       debug(message + `\n${err.stack}`);
       throw createError(500, message);
     }
-  }
+  } else if (req.query.cmd == 'comment') {
+    var id = parseInt(req.params.id);
+    await global.query(`UPDATE hadiths SET commented=(commented+1) WHERE id=${id}`);
+    res.sendStatus(204);
+    res.end();
+    return;
+}
   throw createError(501, 'Action unknown');
 });
 
