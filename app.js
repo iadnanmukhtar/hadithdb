@@ -24,6 +24,14 @@ const app = asyncify(express());
   app.use(cookieParser());
   app.use('/', express.static(path.join(__dirname, 'public')));
 
+  app.all('/*', function (req, res, next) {
+    if (/^www\./.test(req.hostname)) {
+      res.redirect(301, `${global.settings.site.url}/${req.originalUrl}`);
+      return;
+    }
+    next();
+  })
+
   const limiter = rateLimit({
     keyGenerator: req => {
       debug('ip address: ' + req.clientIp);
@@ -66,6 +74,7 @@ const app = asyncify(express());
     res.locals.error = err;
     res.status(err.status || 500);
     res.render('error');
+    next();
   });
 
   await Hadith.a_reinit();
@@ -316,7 +325,7 @@ const app = asyncify(express());
   //   }
   // }
 
-  var shamela = 'b';
+  // var shamela = 'b';
 
   // // concat split up hadith without hno
   // var rows = await global.query(`select * from ${shamela} where toc=0 order by id`);
