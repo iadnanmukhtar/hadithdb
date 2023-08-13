@@ -142,29 +142,32 @@ router.post('/:id/:prop', async function (req, res, next) {
         var curr = (await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`))[0];
         if (curr) {
           result = await global.query(`DELETE FROM hadiths_virtual 
-          WHERE bookId=${curr.bookId} AND id=${ids[0]}`);
-          await global.query(`SET @n:=0`);
-          await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
-          WHERE bookId=${curr.bookId} AND h1=${curr.h1} ORDER by bookId, h1, num0`);
-          await global.query(`SET @n:=0`);
-          await global.query(`UPDATE hadiths_virtual SET ordinal=(@n:=@n+1)
-          ORDER by bookId, h1, num0`);
+            WHERE bookId=${curr.bookId} AND id=${ids[0]}`);
+          result = await global.query(`SET sql_safe_updates=0`);
+          result = await global.query(`SET @n:=0`);
+          result = await global.query(`UPDATE hadiths_virtual SET ordinal=(@n:=@n+1)
+            ORDER BY bookId, num0`);
+          result = await global.query(`SET @n:=0`);
+          result = await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
+            WHERE bookId=${curr.bookId} AND h1=${curr.h1} 
+            ORDER BY bookId, num0`);  
         } else
           throw new Error("Hadith not found");
 
       } else if (col == 'add') {
         var curr = (await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`))[0];
         if (curr) {
-          result = await global.query(`SET @n:=${curr.numInChapter + 1}`);
-          result = await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
-            WHERE bookId=${curr.bookId} AND h1=${curr.h1} AND numInChapter > ${curr.numInChapter}`);
           result = await global.query(`INSERT INTO hadiths_virtual
-          (bookId, tocId, numInChapter, num, num0, ref_num) VALUES
-          (${curr.bookId}, ${curr.tocId}, ${curr.numInChapter + 1}, "${curr.num + 1}", ${curr.num0}, ${sql(status.value)})`);
+            (bookId, tocId, numInChapter, num, num0, ref_num) VALUES
+            (${curr.bookId}, ${curr.tocId}, ${curr.numInChapter + 1}, "${curr.num + 1}", ${curr.num0}, ${sql(status.value)})`);
           result = await global.query(`SET sql_safe_updates=0`);
           result = await global.query(`SET @n:=0`);
           result = await global.query(`UPDATE hadiths_virtual SET ordinal=(@n:=@n+1)
-            ORDER BY bookId, h1, numInChapter`);
+            ORDER BY bookId, num0`);
+          result = await global.query(`SET @n:=0`);
+          result = await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
+            WHERE bookId=${curr.bookId} AND h1=${curr.h1} 
+            ORDER BY bookId, num0`);
         } else
           throw new Error("Hadith not found");
 
