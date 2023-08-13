@@ -166,7 +166,7 @@ router.post('/:id/:prop', async function (req, res, next) {
 
       } else {
         // hadith virtual
-        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE hadithId=${ids[0]}`);
+        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       }
       status.code = 200;
       status.message = result.message;
