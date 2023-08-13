@@ -24,9 +24,10 @@ const app = asyncify(express());
   app.use(cookieParser());
   app.use('/', express.static(path.join(__dirname, 'public')));
 
+  // global redirect www
   app.all('/*', function (req, res, next) {
     if (/^www\./.test(req.hostname)) {
-      res.redirect(301, `${global.settings.site.url}/${req.originalUrl}`);
+      res.redirect(301, `${global.settings.site.url}${req.originalUrl}`);
       return;
     }
     next();
