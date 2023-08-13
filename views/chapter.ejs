@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <% 
+  <%
     var site = new Object(global.settings.site);
     site.admin = (req.cookies.admin == admin.key);
     site.editMode = (site.admin && req.cookies.editMode == 1);
@@ -13,7 +13,7 @@
       title_en: `${site.shortName} | ${book.shortName_en} ${chapter.h1} ${chapter.title_en || chapter.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
-      canonical: `/${book.alias}/${chapter.h1}`,
+      canonical: `/${book.alias}/${chapter.h1}${req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : ''}`,
       context: {
         book: book,
         chapter: chapter,

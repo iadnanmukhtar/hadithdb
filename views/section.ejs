@@ -14,7 +14,7 @@
       title_en: `${site.shortName} | ${book.shortName_en} §${section.h1}.${section.h2} ${section.title_en || section.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
-      canonical: `/${book.alias}/${chapter.h1}/${section.h2}`,
+      canonical: `/${book.alias}/${chapter.h1}/${section.h2}${req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : ''}`,
       context: {
         book: book,
         chapter: chapter,
