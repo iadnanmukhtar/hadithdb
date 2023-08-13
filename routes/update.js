@@ -157,10 +157,14 @@ router.post('/:id/:prop', async function (req, res, next) {
         if (curr) {
           result = await global.query(`SET @n:=${curr.numInChapter + 1}`);
           result = await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
-          WHERE bookId=${curr.bookId} AND h1=${curr.h1} AND numInChapter > ${curr.numInChapter}`);
+            WHERE bookId=${curr.bookId} AND h1=${curr.h1} AND numInChapter > ${curr.numInChapter}`);
           result = await global.query(`INSERT INTO hadiths_virtual
           (bookId, tocId, numInChapter, num, num0, ref_num) VALUES
           (${curr.bookId}, ${curr.tocId}, ${curr.numInChapter + 1}, "${curr.num + 1}", ${curr.num0}, ${sql(status.value)})`);
+          result = await global.query(`SET sql_safe_updates=0`);
+          result = await global.query(`SET @n:=0`);
+          result = await global.query(`UPDATE hadiths_virtual SET ordinal=(@n:=@n+1)
+            ORDER BY bookId, h1, numInChapter`);
         } else
           throw new Error("Hadith not found");
 
