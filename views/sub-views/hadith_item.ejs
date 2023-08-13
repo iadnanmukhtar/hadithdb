@@ -149,7 +149,7 @@
 		<% } else if (i.book_virtual == 1) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Delete" data-id="<%= i.id %>" data-prop="hadith_virtual.del">Delete</a>
 			|
-			<span class="bi bi-file-plus-fill"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= i.id_virtual %>" data-prop="hadith_virtual.add" data-reset="true">
+			<span class="bi bi-file-plus-fill"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= i.id %>" data-prop="hadith_virtual.add" data-reset="true">
 		<% } else if (page.menu == 'Chapter' || page.menu == 'Section') { %>
 			<span class="bi bi-caret-up-square-fill"></span>&nbsp;<a class="_click" title="Move Up" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.moveup">Move Up</a>
 			|
