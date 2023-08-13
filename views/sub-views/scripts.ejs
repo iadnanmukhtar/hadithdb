@@ -41,7 +41,6 @@
         };
         var resBody = await update(reqBody);
         // update element on success
-        console.log('response: ' + JSON.stringify(resBody).substring(1,255));
         if (resBody.code == 200) {
           value = resBody.value;
           if ($(this).data('reset') == 'true')
@@ -50,8 +49,10 @@
             $(this).val(value);
           else if ($(this).is('select'))
             void(0);
-          else
+          else {
+            value = '<p>' + value.replaceAll('\n', '</p><p>') + '</p>';
             $(this).html(value);
+          }
         }
       };
       e.stopPropagation();
