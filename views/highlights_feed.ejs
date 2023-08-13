@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><%
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xml:lang="en"><%
   const site = new Object(global.settings.site);
   const page = {
     title_en: `${site.shortName} | Notable Aḥādīth`,
@@ -15,8 +15,8 @@
   <icon><%= site.logo %></icon>
   <logo><%= site.logo %></logo>
   <id><%= page.canonical %></id>
-  <category term="islam"></category>
-  <category term="hadith"></category>
+  <category term="Islam"></category>
+  <category term="Hadith"></category>
   <contributor>
     <name><%= site.owner %></name>
     <email><%= site.email %></email>
@@ -24,7 +24,7 @@
   <% for (item of results) { 
         const content = `
           <figure>
-            <img title="${item.book_shortName_en} ${item.en.num}" src="${site.logo}" width="32" height="32">
+            <img class="type:primaryImage" title="${item.book_shortName_en} ${item.en.num}" src="${site.logo}" width="32" height="32">
           </figure>
           <section lang="en">
             <p class="ref">${item.book_shortName_en} ${item.en.num}</p>
@@ -67,7 +67,8 @@
         <name><%= item.book.author %></name>
         <uri><%= `${site.url}/${item.book.alias}` %></uri>
       </author>
-      <content type="html"><%= content %></content><% for (tag of tags) { %>
+      <media:content url="<%= site.logo %>" medium="image" type="image/png" />
+      <content:encoded type="html"><%= content %></content:encoded><% for (tag of tags) { %>
         <category term="<%= tag %>" />
       <% } %>
 
