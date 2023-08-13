@@ -50,7 +50,8 @@
           else if ($(this).is('select'))
             void(0);
           else {
-            value = '<p>' + value.replaceAll('\n', '</p><p>') + '</p>';
+            if (value.includes('\n'))
+              value = '<p>' + value.replaceAll('\n', '</p><p>') + '</p>';
             $(this).html(value);
           }
         }
