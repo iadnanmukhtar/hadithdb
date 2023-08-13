@@ -63,7 +63,7 @@
     <main class="search-results">
       
       <form class="form-group" action="/">
-        <div class="search container pt-3 mb-3">
+        <search class="search container pt-3 mb-3">
           <div class="row justify-content-md-center">
             <div class="col-md-6">
               
@@ -97,6 +97,7 @@
               </div>
             </div>
           </div>
+        </search>
       </form>
       
       <% if (results.length != 1 && q) { %>
@@ -127,7 +128,6 @@
       </div>
       <% } %>
       
-      <div class="row">
         <% for (var i = 0; i < results.length; i++) { 
         var main = !q; %>
         
@@ -148,6 +148,7 @@
               <% } %> %></small>
           </div>
           
+          <div class="col-12">
           <% for (var j = 0; j < results[i].similar.length; j++) { 
             results[i].similar[j].rating = Math.round((results[i].similar[j].rating - 0.5)*100/50*100/25);
           %>
@@ -155,6 +156,8 @@
           <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i].similar[j], main: true, title: true, searchResult: false }); %>
           
           <% } %>
+          </div>
+          
         </div>
         <% } %>
         

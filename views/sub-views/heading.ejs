@@ -7,8 +7,9 @@
 <a id="S<%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>"></a>
 
 <%# Heading Title %>
-<div class="col-12 mt-4">
-  <div class="row heading py-2">
+<article class="col-12 mt-4">
+
+  <heading class="row heading py-2">
     
     <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
       <% if (site.editMode) { %>
@@ -45,14 +46,14 @@
         </span>
       <% } %>
     </h3>
-    
-  </div>
+
+  </heading>
 
   <%# Heading Intro %>
-  <div class="col-12">
+  <section class="col-12">
     <div class="row heading-intro mb-3">
 
-      <div class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-arabizi="true">
+      <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-arabizi="true">
         <% if (heading.intro_en || site.editMode) { %>
         <% if (heading.intro_en) { %>
         <p>
@@ -62,9 +63,9 @@
         <p>&hellip;</p>
         <% } %>
         <% } %>
-      </div>
+      </section>
 
-      <div class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro">
+      <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro">
         <% if (heading.intro || site.editMode) { %>
         <% if (heading.intro) { %>
         <p>
@@ -74,8 +75,9 @@
         <p>&hellip;</p>
         <% } %>
         <% } %>
-      </div>
+      </section>
 
     </div>
-  </div>
-</div>
+  </section>
+
+</article>

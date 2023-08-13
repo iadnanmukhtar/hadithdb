@@ -35,7 +35,7 @@
     
     <main class="toc">
       
-      <div class="row mb-2 pagination">
+      <aside class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (page.prev) { %>
           &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
@@ -46,9 +46,9 @@
           <a href="<%- page.next %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
           <% } %>
         </div>
-      </div>
+      </aside>
 
-      <div class="container mb-2">
+      <heading class="container mb-2">
         <div class="row text-center justify-content-center">
           <h2 class="_e fs-3" title="<%- book.name %>" data-id="<%=book.id%>" data-prop="book.name_en" data-arabizi="true"><%- book.name_en %></h2>
           <h2 class="_e fs-3" title="<%- book.name_en %>" data-id="<%=book.id%>" data-prop="book.name"><%- book.name %></h2>
@@ -59,17 +59,20 @@
           </h3>
           <% } %>
         </div>
-      </div>
+      </heading>
       
-      <p class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description"><%- book.description %></p>
+      <section>
+        <p class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description"><%- book.description %></p>
+      </section>
+
       <% if (book.id > 0) { %>
-      <div><small>
+      <section><small>
           Author: <span class="_e" data-id="<%=book.id%>" data-prop="book.author"><%- book.author %></span>
           (d. <span class="_e" data-id="<%=book.id%>" data-prop="book.yearOfDeath"><%- book.yearOfDeath %></span> H)
-        </small></div>
+        </small></section>
       <% } %>
       
-      <div class="row">
+      <section class="row">
         
         <script type="application/ld+json">
           {
@@ -127,9 +130,9 @@
         %>
           </tbody>
         </table>
-      </div>
+      </section>
       
-      <div class="row mt-2 pagination">
+      <aside class="row mt-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (page.prev) { %>
           &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
@@ -140,7 +143,7 @@
           <a href="<%- page.next %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
           <% } %>
         </div>
-      </div>
+      </aside>
       
     </main>
   </div>

@@ -5,7 +5,7 @@
 %>
 
 <%# Chapter Title %>
-<div class="row major">
+<heading class="row major">
 
   <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="/<%=chapter.path%>">
     <%- chapter.h1 %>. <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title_en" data-arabizi="true">
@@ -24,10 +24,10 @@
     <%- (heading.page.hasNext || heading.page.number && heading.page.number > 1) ? `ص ${arabic.toArabicDigits(heading.page.number+'')}` : `` %>
   </a></h2>
 
-</div>
+</heading>
 
 <%# Chapter Breadcrumbs %>
-<div class="row breadcrumbs pagination">
+<section class="row breadcrumbs pagination">
 
   <div class="col-md-6 col-sm-12" lang="en">
     <a title="<%- book.name_en %>" href="/<%=book.alias%>"><%- book.shortName_en %></a>
@@ -53,13 +53,13 @@
     <% } %>
   </div>
 
-</div>
+</section>
 
 <%# Chapter Intro %>
 <% if (heading.offset == 0) { %>
-<div class="chapter-intro row">
+<section class="chapter-intro row">
 
-  <div class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="intro_en" data-arabizi="true">
+  <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="intro_en" data-arabizi="true">
     <% if (chapter.intro_en) { %>
     <p>
       <%- utils.emptyIfNull(chapter.intro_en).replace(/\n/g, '</p><p>') %>
@@ -67,9 +67,9 @@
     <% } else if (site.editMode) { %>
     <p>&hellip;</p>
     <% } %>
-  </div>
+  </section>
 
-  <div class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= chapter.id %>" data-prop="intro">
+  <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= chapter.id %>" data-prop="intro">
     <% if (chapter.intro) { %>
     <p>
       <%- utils.emptyIfNull(chapter.intro).replace(/\n/g, '</p><p>') %>
@@ -77,7 +77,7 @@
     <% } else if (site.editMode) { %>
     <p>&hellip;</p>
     <% } %>
-  </div>
+    </section>
 
-</div>
+</section>
 <% } %>

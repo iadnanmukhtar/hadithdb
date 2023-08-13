@@ -40,44 +40,41 @@
       <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
+              
+      <%
+      var lastPath = -1;
+      var n = -1;
+      for (var item of results) {
+        n++;
+        var showHeading = (item.path != lastPath && item.heading.level > 1); 
+        lastPath = item.path;
+      %>
       
-      <div class="row">
-        
-        <%
-        var lastPath = -1;
-        var n = -1;
-        for (var item of results) {
-          n++;
-          var showHeading = (item.path != lastPath && item.heading.level > 1); 
-          lastPath = item.path;
-        %>
-        
-        <% if (n === 0 && item.heading.level === 3) {
-             page.context.continued = true; %>
-        <%- include('sub-views/heading.ejs', { site: site, page: page, heading: section }); %>
-        <% 
-             page.context.continued = false;
-           } else {
-             page.context.continued = false;
-           } %>
-        
-        <% if (showHeading) { %>
-        <%- include('sub-views/heading.ejs', { site: site, page: page, heading: item.heading }); %>
-        <% } %>
-        
-        <% if (item.id) { %>
-        <%- include('sub-views/hadith.ejs', { site: site, page: page, i: item, main: false, title: false, searchResult: false }); %>
-        <% } %>
-        
-        <% } %>
+      <% if (n === 0 && item.heading.level === 3) {
+            page.context.continued = true; %>
+      <%- include('sub-views/heading.ejs', { site: site, page: page, heading: section }); %>
+      <% 
+            page.context.continued = false;
+          } else {
+            page.context.continued = false;
+          } %>
+      
+      <% if (showHeading) { %>
+      <%- include('sub-views/heading.ejs', { site: site, page: page, heading: item.heading }); %>
+      <% } %>
+      
+      <% if (item.id) { %>
+      <%- include('sub-views/hadith.ejs', { site: site, page: page, i: item, main: false, title: false, searchResult: false }); %>
+      <% } %>
+      
+      <% } %>
 
-        <% if (results.length == 0 || !results[0].id) { %>
-          <div class="col">
-            <p>This is an empty section.</p>
-          </div>
-        <% } %>
+      <% if (results.length == 0 || !results[0].id) { %>
+        <footer class="row">
+          <p class="col-12">This is an empty section.</p>
+        </footer>
+      <% } %>
         
-      </div>
       
       <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
       

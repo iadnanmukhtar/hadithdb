@@ -5,12 +5,12 @@
 		sections = chapter.sections; 
 %>
 
-<article class="col-md-6 col-sm-12 h" lang="<%=lang%>">
+<section class="col-md-6 col-sm-12 h" lang="<%=lang%>">
 
 	<%# Body  .............................................................. %>
-	<section class="chain">
+	<aside class="chain">
 		<p><%= passage[0][lang].chain %></p>
-	</section>
+	</aside>
 	<section class="body passage">
 		<p>
 			<% for (var i in passage) { %>
@@ -21,4 +21,4 @@
 		</p>
 	</section>
 
-</article>
+</section>

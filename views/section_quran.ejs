@@ -41,8 +41,6 @@
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
       
-      <div class="row">
-
         <% if (results.length > 0) { %>
           <%- include('sub-views/heading.ejs', { site: site, page: page, heading: results[0].heading }); %>
         <% } %>
@@ -50,13 +48,11 @@
         <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, main: false, title: false, searchResult: false }); %>
         
         <% if (results.length == 0 || !results[0].id) { %>
-          <div class="col">
+          <footer class="col-12">
             <p>This is an empty section.</p>
-          </div>
+          </footer>
         <% } %>
-        
-      </div>
-      
+            
       <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
       
     </main>

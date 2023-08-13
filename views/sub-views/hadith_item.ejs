@@ -8,7 +8,7 @@
 		sections = chapter.sections; 
 %>
 
-<article class="col-md-6 col-sm-12 h" lang="<%=lang%>">
+<section class="col-md-6 col-sm-12 h" lang="<%=lang%>">
 
 	<%# Chain  ............................................................. %>
 	<section>
@@ -68,14 +68,14 @@
 
 	<%# Footer  ............................................................ %>
 	<% if (i[lang].footnote || site.editMode) { %>
-		<section class="_e footnote <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true">
+		<footer class="footnote _e <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true">
 			<%- i[lang].footnote || '&hellip;' %>
-		</section>
+		</footer>
 	<% } %>
 
 	<%# Grade  ............................................................. %>
 	<% if (i.remark == 0) { %>
-		<section>
+		<aside>
 		<em class="grade">
 			<% if (lang === 'en' && site.editMode) { %>
 			<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.gradeId">
@@ -92,12 +92,12 @@
 			– <span><%- i[lang].grade_grade %></span>&nbsp;(<span title="<%=i[lang].grader_name%>"><%- i[lang].grader_shortName %></span>)
 			<% } %>
 		</em>
-		</section>
+		</aside>
 	<% } %>
 
 	<%# Nav  ............................................................... %>
 	<% if (site.editMode || ((title || i.book_virtual===1) && (i.chapter || i.section))) { %>
-		<section class="title">
+		<aside class="title">
 			§ 
 			<% if (lang === 'en' && site.editMode && i.book_virtual===0 && chapter && chapter.sections) { %>
 				(<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.tocId">
@@ -115,7 +115,7 @@
 				<%= lang == 'en' ? 'in' : 'في' %> 
 				<a href="/<%- `${i.book_alias}/${i.chapter.h1}` %>" title="<%= i[lang].h1_title %>"><%- utils.truncate(i[lang].h1_title, 30, true) || 'Chapter' %></a>
 			<% } %>
-		</section>
+		</aside>
 	<% } %>
 
 	<%# Tags  .............................................................. %>
@@ -124,7 +124,7 @@
 		if (i.tags)
 			tags = i.tags.replace(/[{}]/g, '');
 		%>
-		<section class="tags">
+		<aside class="tags">
 			<% if (site.editMode) { %>
 				<textarea class="_e d-inline-block w-100" placeholder="#hashtag" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.tags"><%= tags %></textarea>
 			<% } else {
@@ -135,15 +135,15 @@
 			%>
 				<div><span class="bi bi-hash"></span> <%- tags %></div>
 			<% } %>
-		</section>
+		</aside>
 	<% } %>
 	<% if (lang === 'en' && !i.single) { %>
-		<div class="tags"><span class="bi bi-chat-right-text"></span> <a href="/<%= i.ref %>">Discuss</a></div>
+		<aside class="tags"><span class="bi bi-chat-right-text"></span> <a href="/<%= i.ref %>">Discuss</a></aside>
 	<% } %>
 
 	<%# Admin  ............................................................. %>
 	<% if (site.editMode && lang === 'en') { %>
-		<div>
+		<aside>
 		<% if (i.parentId) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.del">Remove</a>
 		<% } else if (i.book_virtual == 1) { %>
@@ -155,7 +155,7 @@
 			|
 			<span class="bi bi-caret-down-square-fill"></span>&nbsp;<a class="_click" title="Move Down" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.movedn">Move Down</a>
 		<% } %>
-		</div>
+		</aside>
 	<% } %>
 
-</article>
+</section>

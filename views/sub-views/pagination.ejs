@@ -48,7 +48,7 @@
 
 %>
 
-<div class="row mb-3 pagination">
+<aside class="row mb-3 pagination">
   <div class="col-md-6 col-xs-12 text-start">
     <% if (page.prev) { %>
     &lt;&nbsp;<a title="<%- page.prevHeading.title_en || page.prevHeading.title %>" href="<%- page.prev %>" rel="prev"><%- page.prevTitle %></a>
@@ -59,4 +59,4 @@
     <a  title="<%- page.nextHeading.title_en || page.nextHeading.title %>" href="<%- page.next %>" rel="next"><%- page.nextTitle %></a>&nbsp;&gt;
     <% } %>
   </div>
-</div>
+</aside>

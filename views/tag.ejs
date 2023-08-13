@@ -39,7 +39,7 @@
     
     <main class="search-results">
 
-      <div class="row mb-2 pagination">
+      <aside class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (page.prev) { %>
           &lt;&nbsp;<a href="<%- page.prev %>" rel="prev">Prev:&nbsp;Page</a>
@@ -50,34 +50,32 @@
             <a href="<%- page.next %>" rel="next">Next:&nbsp;Page</a>&nbsp;&gt;
           <% } %>
         </div>
-      </div>
+      </aside>
 
-      <div class="row"> 
-
-        <h2 class="col-md-12 col-sm-12 fs-5 title" lang="en">
+      <header class="row">
+        <h1 class="col-md-12 col-sm-12 fs-5 title" lang="en">
           <span class="_e" data-id="<%=tag.id%>" data-prop="tags.description"><%- `${('#'+tag.join(' #'))}` %></span>
           <% if (results.page.hasNext || results.page.number && results.page.number > 1) { %>
             (<%- results.page.number %>)
           <% } %>
-        </h2>
+        </h1>
+      </header>
 
-        <% 
-          var lastGroup;
-          for (var i = 0; i < results.length; i++) {
-            if (i > 0 && results[i].groupNo !== lastGroup) {
-        %>
-              <hr>
-         <% } %>
+      <% 
+        var lastGroup;
+        for (var i = 0; i < results.length; i++) {
+          if (i > 0 && results[i].groupNo !== lastGroup) {
+      %>
+            <hr>
+        <% } %>
 
-          <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], main: false, title: true, searchResult: false }); %>
+        <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], main: false, title: true, searchResult: false }); %>
 
-        <% 
-            lastGroup = results[i].groupNo; 
-          }%>
+      <% 
+          lastGroup = results[i].groupNo; 
+        } %>
 
-      </div>
-
-      <div class="row mb-2 pagination">
+      <aside class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (page.prev) { %>
           &lt;&nbsp;<a href="<%- page.prev %>" rel="prev">Prev:&nbsp;Page</a>
@@ -88,7 +86,7 @@
             <a href="<%- page.next %>" rel="next">Next:&nbsp;Page</a>&nbsp;&gt;
           <% } %>
         </div>
-      </div>
+      </aside>
 
     </main>
   </div>
