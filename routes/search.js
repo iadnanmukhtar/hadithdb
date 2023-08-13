@@ -212,9 +212,19 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   req.params.num = Arabic.toLatinDigits(req.params.num);
-  if (req.params.bookAlias === 'quran' && /\d+-\d+$/.test(req.params.num)) {
-    var toks = req.params.num.split(/[:\-]/);
-    return await a_getPassage(toks[0], toks[1], toks[2], req, res, next);
+  if (req.params.bookAlias === 'quran') {
+    if (/\d+-\d+$/.test(req.params.num)) {
+      var toks = req.params.num.split(/[:\-]/);
+      return await a_getPassage(toks[0], toks[1], toks[2], req, res, next);
+    } else if (/:\d+$/.test(req.params.num)) {
+      var toks = req.params.num.split(/:/);
+      var surah = toks[0];
+      var num = toks[1];
+      surah = global.surahs.find(function (value) {
+        return (value.alias === surah || value.num == surah);
+      });
+      req.params.num = `${surah.num}:${num}`;
+    }
   }
   var results = await Index.docsFromKeyValue('hadiths', { ref: `${req.params.bookAlias}:${req.params.num}` });
   if (results.length == 0)
