@@ -1,32 +1,39 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/"><%
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/"
+xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/"><%
   const site = new Object(global.settings.site);
   const page = {
     title_en: `${site.shortName} | Notable Aḥādīth`,
     subtitle_en: 'Recent translations of beautiful and notable aḥādīth',
-    canonical: '/highlights/rss'
+    alternate: `${site.url}/highlights`,
+    canonical: `${site.url}/highlights/rss`
   };
 %>
 <channel>
   <title><%= page.title_en %></title>
-  <link><%= `${site.url}/${page.canonical}` %></link>
+  <atom:link href="<%= page.canonical %>" rel="self" type="application/rss+xml" />
+  <link><%= page.canonical %></link>
   <description><%= page.subtitle_en %></description>
-  <language>en-us</language>
+  <language>en-US</language>
   <webMaster><%= site.email %> (<%= site.owner %>)</webMaster>
   <category>Islam</category>
   <category>Hadith</category>
   <pubDate><%= results[0].highlight.toUTCString() %></pubDate>
   <lastBuildDate><%= results[0].highlight.toUTCString() %></lastBuildDate>
+	<sy:updatePeriod>hourly</sy:updatePeriod>
+	<sy:updateFrequency>1</sy:updateFrequency>
   <image>
-      <url><%= site.logo %></url>
+      <url><%= site.logo32 %></url>
       <title><%= page.title_en %></title>
-      <link><%= `${site.url}/${page.canonical}` %></link>
+      <link><%= page.canonical %></link>
+      <width>32</width>
+      <height>32</height>
   </image>
   <% for (item of results) { 
         var title = `${item.en.title || item.book.shortName_en+' '+item.en.num}`;
-        const content = `
-        <article>
-          <img src="${site.logo}" width="32" height=""32">
+        const content = `<figure>
+            <img class="type:primaryImage" title="${item.book_shortName_en} ${item.en.num}" src="${site.logo}" width="32" height="32">
+          </figure>
           <section lang="en">
             <p class="ref">${item.book_shortName_en} ${item.en.num}</p>
             <p>
@@ -50,18 +57,19 @@
               <div class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</div>
               <div class="source">${item.ar.book_shortName} &gt; ${item.ar.h1_title} &gt; ${item.ar.h2_title || 'مقطع'} </div>
             </p>
-          </section>
-        </article>
-        `;
+          </section>`;
   %>
     <item>
         <title><%= title %></title>
         <link><%= `${site.url}/${item.ref}` %></link>
-        <description><%= content %></description>
+        <dc:creator><%= site.owner %></dc:creator>
+        <dc:date><%= item.highlight.toUTCString() %></dc:date>
         <pubDate><%= item.highlight.toUTCString() %></pubDate>
-        <guid><%= `${site.url}/${item.ref}` %></guid>
+        <guid isPermaLink="false"><%= `${site.url}/${item.ref}` %></guid>
         <category>Islam</category>
         <category>Hadith</category>
+        <wfw:commentRss><%= `${site.url}/${item.ref}` %></wfw:commentRss>
+        <slash:comments>0</slash:comments>
         <og xmlns:og="http://ogp.me/ns#">
           <type>article</type>
           <site_name><%= page.title_en %></site_name>
@@ -69,6 +77,8 @@
           <url><%= `${site.url}/${item.ref}` %></url>
           <description><%= content %></description>
         </og>
+        <description><%= content %></description>
+        <content:encoded><%= content %></content:encoded>
     </item>
   <% } %>
 </channel>

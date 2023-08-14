@@ -12,8 +12,8 @@
   <subtitle><%= page.subtitle_en %></subtitle>
   <link rel="alternate" type="text/html" href="<%= page.alternate %>" />
   <updated><%= results[0].lastmod.toISOString() %></updated>
-  <icon><%= site.logo %></icon>
-  <logo><%= site.logo %></logo>
+  <icon><%= site.logo32 %></icon>
+  <logo><%= site.logo32 %></logo>
   <id><%= page.canonical %></id>
   <category term="Islam"></category>
   <category term="Hadith"></category>
@@ -22,8 +22,7 @@
     <email><%= site.email %></email>
   </contributor>
   <% for (item of results) { 
-        const content = `
-          <figure>
+        const content = `<figure>
             <img class="type:primaryImage" title="${item.book_shortName_en} ${item.en.num}" src="${site.logo}" width="32" height="32">
           </figure>
           <section lang="en">
@@ -49,8 +48,7 @@
               <div class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</div>
               <div class="source">${item.ar.book_shortName} &gt; ${item.ar.h1_title} &gt; ${item.ar.h2_title || 'مقطع'} </div>
             </p>
-          </section>
-        `;
+          </section>`;
         var tags = [];
         if (item.tags)
           tags = item.tags.replace(/[{}]/g, '').split(' ');
