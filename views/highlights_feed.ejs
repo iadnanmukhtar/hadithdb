@@ -23,32 +23,35 @@
   </contributor>
   <% for (item of results) { 
         const content = `<figure>
-            <img class="type:primaryImage" title="${item.book_shortName_en} ${item.en.num}" src="${site.logo}" width="32" height="32">
+            <img class="type:primaryImage" title="${item.book_shortName_en} ${item.en.num}" src="${site.logo32}" width="32" height="32">
           </figure>
-          <section lang="en">
-            <p class="ref">${item.book_shortName_en} ${item.en.num}</p>
-            <p>
-              <div class="chain">${item.en.chain}</div>
-              <div class="body"><strong>${item.en.body}</strong></div>
-              <div class="footnote">${item.en.footnote || ''}</div>
-            </p>
-            <p>
-              <div class="grade">${item.en.grade_grade} (${item.en.grader_shortName})</div>
-              <div class="source">${item.book_name_en} &gt; ${item.en.h1_title} &gt; ${item.en.h2_title || 'Section'}</div>
-            </p>
-          </section>
-          <section lang="ar" dir="rtl">
-            <p class="ref">${item.ar.book_shortName} ${item.ar.num}</p>
-            <p>
-              <div class="chain">${item.ar.chain}</div>
-              <div class="body"><strong>${item.ar.body}</strong></div>
-              <div class="footnote">${item.ar.footnote || ''}</div>
-            </p>
-            <p>
-              <div class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</div>
-              <div class="source">${item.ar.book_shortName} &gt; ${item.ar.h1_title} &gt; ${item.ar.h2_title || 'مقطع'} </div>
-            </p>
-          </section>`;
+          <article>
+            <header><h1>${title}</h1></header>
+            <section lang="en">
+              <section>
+                <div class="chain">${item.en.chain}</div>
+                <div class="body"><strong>${item.en.body}</strong></div>
+                <footer class="footnote">${item.en.footnote || ''}</footer>
+              </section>
+              <aside>
+                <div class="ref">${item.book_shortName_en} ${item.en.num}</div>
+                <div class="grade">${item.en.grade_grade} (${item.en.grader_shortName})</div>
+                <div class="source">${item.book_name_en} &gt; ${item.en.h1_title} &gt; ${item.en.h2_title || 'Section'}</div>
+              </aside>
+            </section>
+            <section lang="ar" dir="rtl">
+              <section>
+                <div class="chain">${item.ar.chain}</div>
+                <div class="body"><strong>${item.ar.body}</strong></div>
+                <footer class="footnote">${item.ar.footnote || ''}</footer>
+              </section>
+              <aside>
+                <div class="ref">${item.ar.book_shortName} ${item.ar.num}</div>
+                <div class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</div>
+                <div class="source">${item.ar.book_shortName} &gt; ${item.ar.h1_title} &gt; ${item.ar.h2_title || 'مقطع'} </div>
+              </aside>
+            </section>
+          </article>`;
         var tags = [];
         if (item.tags)
           tags = item.tags.replace(/[{}]/g, '').split(' ');
@@ -56,7 +59,7 @@
     <entry>
       <published><%= item.highlight.toISOString() %></published>
       <updated><%= item.lastmod.toISOString() %></updated>
-      <title><%= `${item.en.title || item.book.shortName_en+' '+item.en.num}` %></title>
+      <title><%= title %></title>
       <subtitle><%= `#${item.book.alias}${item.en.num} #${tags.join(' #')}` %></subtitle>
       <summary><%= item.en.body || '' %></summary>
       <link rel="alternate" type="text/html" href="<%= `${site.url}/${item.ref}` %>" />
