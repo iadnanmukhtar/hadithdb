@@ -30,7 +30,7 @@ xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modul
       <height>32</height>
   </image>
   <% for (item of results) { 
-        var title = `${item.en.title || item.book.shortName_en+' '+item.en.num}`;
+        const title = `${item.en.title || item.book.shortName_en+' '+item.en.num}`;
         const content = `<figure>
             <img class="type:primaryImage" title="${item.book_shortName_en} ${item.en.num}" src="${site.logo32}" width="32" height="32">
           </figure>

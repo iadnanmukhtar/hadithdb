@@ -21,7 +21,8 @@
     <name><%= site.owner %></name>
     <email><%= site.email %></email>
   </contributor>
-  <% for (item of results) { 
+  <% for (item of results) {
+        const title = `${item.en.title || item.book.shortName_en+' '+item.en.num}`; 
         const content = `<figure>
             <img class="type:primaryImage" title="${item.book_shortName_en} ${item.en.num}" src="${site.logo32}" width="32" height="32">
           </figure>
