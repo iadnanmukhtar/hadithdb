@@ -29,59 +29,29 @@ xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modul
       <width>32</width>
       <height>32</height>
   </image>
-  <% for (item of results) { 
-        const title = `${item.en.title || item.book.shortName_en+' '+item.en.num}`;
-        const content = `<figure>
-            <img class="type:primaryImage" title="${item.book_shortName_en} ${item.en.num}" src="${site.logo}" width="32" height="32">
-          </figure>
-          <article>
-            <header><h1>${title}</h1></header>
-            <section lang="en">
-              <section>
-                <div class="body"><strong>${item.en.body}</strong></div>
-                <div class="chain">${item.en.chain}</div>
-                <footer class="footnote">${item.en.footnote || ''}</footer>
-              </section>
-              <aside>
-                <div class="ref">${item.book_shortName_en} ${item.en.num}</div>
-                <div class="grade">${item.en.grade_grade} (${item.en.grader_shortName})</div>
-                <div class="source">${item.book_name_en} &gt; ${item.en.h1_title} &gt; ${item.en.h2_title || 'Section'}</div>
-              </aside>
-            </section>
-            <section lang="ar" dir="rtl">
-              <section>
-                <div class="body"><strong>${item.ar.body}</strong></div>
-                <div class="chain">${item.ar.chain}</div>
-                <footer class="footnote">${item.ar.footnote || ''}</footer>
-              </section>
-              <aside>
-                <div class="ref">${item.ar.book_shortName} ${item.ar.num}</div>
-                <div class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</div>
-                <div class="source">${item.ar.book_shortName} &gt; ${item.ar.h1_title} &gt; ${item.ar.h2_title || 'مقطع'} </div>
-              </aside>
-            </section>
-          </article>`;
+  <% for (i of results) {
+    i.title = `${i.en.title || i.book.shortName_en+' '+i.en.num}`;
   %>
     <item>
-        <title><%= title %></title>
-        <link><%= `${site.url}/${item.ref}` %></link>
+        <title><%= i.title %></title>
+        <link><%= `${site.url}/${i.ref}` %></link>
         <dc:creator><%= site.owner %></dc:creator>
-        <dc:date><%= item.highlight.toUTCString() %></dc:date>
-        <pubDate><%= item.highlight.toUTCString() %></pubDate>
-        <guid isPermaLink="false"><%= `${site.url}/${item.ref}` %></guid>
+        <dc:date><%= i.highlight.toUTCString() %></dc:date>
+        <pubDate><%= i.highlight.toUTCString() %></pubDate>
+        <guid isPermaLink="false"><%= `${site.url}/${i.ref}` %></guid>
         <category>Islam</category>
         <category>Hadith</category>
-        <wfw:commentRss><%= `${site.url}/${item.ref}` %></wfw:commentRss>
+        <wfw:commentRss><%= `${site.url}/${i.ref}` %></wfw:commentRss>
         <slash:comments>0</slash:comments>
         <og xmlns:og="http://ogp.me/ns#">
           <type>article</type>
           <site_name><%= page.title_en %></site_name>
-          <title><%= title %></title>
-          <url><%= `${site.url}/${item.ref}` %></url>
-          <description><%= content %></description>
+          <title><%= i.title %></title>
+          <url><%= `${site.url}/${i.ref}` %></url>
+          <description><%- include('sub-views/rss_item.ejs', { site: site, i: i }); %></description>
         </og>
-        <description><%= content %></description>
-        <content:encoded type="html"><%= content %></content:encoded>
+        <description><%- include('sub-views/rss_item.ejs', { site: site, i: i }); %></description>
+        <content:encoded type="html"><%- include('sub-views/rss_item.ejs', { site: site, i: i }); %></content:encoded>
     </item>
   <% } %>
 </channel>

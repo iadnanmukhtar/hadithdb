@@ -1,0 +1,48 @@
+<%
+	i.en.narrators = utils.emptyIfNull(i.en.chain).split(/(>|&gt;)/);
+	i.en.narrator = i.en.narrators.pop().trim();
+	i.ar.narrator = ''; // Arabic.toArabic(i.en.narrator);
+
+	var content = `<article>
+	<figure>
+	  <img class="type:primaryImage" title="${site.name}" src="${site.logo}" width="32" height="32">
+	</figure>
+	
+	<header>
+	  <h1>${i.title}</h1>
+	</header>
+	
+	<section lang="en">
+	  <p>
+		<small"><a href="${site.url}/${i.ref}">${i.en.book_shortName.toUpperCase()} ${i.en.num.toUpperCase()}</small></a><br>
+		${i.en.narrator} –
+		<strong>${i.en.body}</strong>
+	  </p>
+	</section>
+	<section lang="ar" dir="rtl">
+	  <!-- ${i.ar.narrator} – -->
+	  <strong>${i.ar.body}</strong>
+	  </p>
+	</section>
+	
+	<aside lang="en">`;
+
+	if (i.remark == 0)
+		content += `<div class="grade">${i.en.grade_grade} (${i.en.grader_shortName})</div>`;
+
+	content += `<div class="source">${i.book_name_en} &gt; ${i.en.h1_title} &gt; ${i.en.h2_title || 'Section'}</div>
+	</aside>
+	<aside lang="ar" dir="rtl">`;
+	
+	if (i.remark == 0)
+		content += `<div class="grade">${i.ar.grade_grade} (${i.ar.grader_shortName})</div>`;
+
+	content += `<div class="source">${i.ar.book_shortName} &gt; ${i.ar.h1_title} &gt; ${i.ar.h2_title || 'باب'}</div>
+	</aside>
+  
+	<footer>
+	  <p>${i.highlight.toDateString()}</p>
+	</footer>
+	
+  </article>`;
+%><%= content %>

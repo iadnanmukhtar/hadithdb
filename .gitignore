@@ -12,3 +12,4 @@ data/archive/*.csv
 data/archive/*.json
 data/archive/*.db
 data/temp
+temp/*

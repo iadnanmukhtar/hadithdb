@@ -21,56 +21,27 @@
     <name><%= site.owner %></name>
     <email><%= site.email %></email>
   </contributor>
-  <% for (item of results) {
-        const title = `${item.en.title || item.book.shortName_en+' '+item.en.num}`; 
-        const content = `<figure>
-            <img class="type:primaryImage" title="${item.book_shortName_en} ${item.en.num}" src="${site.logo}" width="32" height="32">
-          </figure>
-          <article>
-            <header><h1>${title}</h1></header>
-            <section lang="en">
-              <section>
-                <div class="body"><strong>${item.en.body}</strong></div>
-                <div class="chain">${item.en.chain}</div>
-                <footer class="footnote">${item.en.footnote || ''}</footer>
-              </section>
-              <aside>
-                <div class="ref">${item.book_shortName_en} ${item.en.num}</div>
-                <div class="grade">${item.en.grade_grade} (${item.en.grader_shortName})</div>
-                <div class="source">${item.book_name_en} &gt; ${item.en.h1_title} &gt; ${item.en.h2_title || 'Section'}</div>
-              </aside>
-            </section>
-            <section lang="ar" dir="rtl">
-              <section>
-                <div class="body"><strong>${item.ar.body}</strong></div>
-                <div class="chain">${item.ar.chain}</div>
-                <footer class="footnote">${item.ar.footnote || ''}</footer>
-              </section>
-              <aside>
-                <div class="ref">${item.ar.book_shortName} ${item.ar.num}</div>
-                <div class="grade">${item.ar.grade_grade} (${item.ar.grader_shortName})</div>
-                <div class="source">${item.ar.book_shortName} &gt; ${item.ar.h1_title} &gt; ${item.ar.h2_title || 'مقطع'} </div>
-              </aside>
-            </section>
-          </article>`;
+  <% for (i of results) {
+        i.title = `${i.en.title || i.book.shortName_en+' '+i.en.num}`; 
         var tags = [];
-        if (item.tags)
-          tags = item.tags.replace(/[{}]/g, '').split(' ');
+        if (i.tags)
+          tags = i.tags.replace(/[{}]/g, '').split(' ');
   %>
     <entry>
-      <published><%= item.highlight.toISOString() %></published>
-      <updated><%= item.lastmod.toISOString() %></updated>
-      <title><%= title %></title>
-      <subtitle><%= `#${item.book.alias}${item.en.num} #${tags.join(' #')}` %></subtitle>
-      <summary><%= item.en.body || '' %></summary>
-      <link rel="alternate" type="text/html" href="<%= `${site.url}/${item.ref}` %>" />
-      <id><%= `${site.url}/${item.ref}` %></id>
+      <published><%= i.highlight.toISOString() %></published>
+      <updated><%= i.lastmod.toISOString() %></updated>
+      <title><%= i.title %></title>
+      <subtitle><%= `#${i.book.alias}${i.en.num} #${tags.join(' #')}` %></subtitle>
+      <summary><%- include('sub-views/rss_item.ejs', { site: site, i: i }); %></summary>
+      <link rel="alternate" type="text/html" href="<%= `${site.url}/${i.ref}` %>" />
+      <id><%= `${site.url}/${i.ref}` %></id>
       <author>
-        <name><%= item.book.author %></name>
-        <uri><%= `${site.url}/${item.book.alias}` %></uri>
+        <name><%= i.book.author %></name>
+        <uri><%= `${site.url}/${i.book.alias}` %></uri>
       </author>
       <media:content url="<%= site.logo %>" medium="image" type="image/png" />
-      <content:encoded type="html"><%= content %></content:encoded><% for (tag of tags) { %>
+      <content:encoded type="html"><%- include('sub-views/rss_item.ejs', { site: site, i: i }); %></content:encoded>
+      <% for (tag of tags) { %>
         <category term="<%= tag %>" />
       <% } %>
 
