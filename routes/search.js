@@ -37,7 +37,7 @@ router.get('/do/:id', async function (req, res, next) {
     res.sendStatus(204);
     res.end();
     return;
-} catch (err) {
+  } catch (err) {
     var message = `Error in action [${req.params.id}?${req.query.action}]`;
     debug(message + `\n${err.stack}`);
     throw createError(500, message);
@@ -128,11 +128,11 @@ router.get('/', async function (req, res, next) {
         b: (req.query.b ? req.query.b : []),
       });
     }
-    
-  // show random and highlighted ahadith
+
+    // show random and highlighted ahadith
   } else {
     results = await Hadith.a_dbGetRecentUpdates();
-    var random = await Index.docRandomnly('hadiths');
+    var random = await Index.docRandomnly(Item.INDEX);
     if (random.length > 0)
       random = new Item(random[0]);
     res.render('index', {
@@ -226,7 +226,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       req.params.num = `${surah.num}:${num}`;
     }
   }
-  var results = await Index.docsFromKeyValue('hadiths', { ref: `${req.params.bookAlias}:${req.params.num}` });
+  var results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}` });
   if (results.length == 0)
     throw createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`);
   results = results.map(item => new Item(item));
@@ -277,35 +277,48 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 router.get('/:bookAlias', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
-  var book = global.books.find(function (value) {
+  var books = global.books.filter(book => {
+    return book.hidden == 0;
+  });
+  var book = books.find(function (value) {
     return (value.alias == req.params.bookAlias || value.id == req.params.bookAlias);
   });
   if (book) {
     var prevBook = null;
     var nextBook = null;
-    var bookIdx = global.books.findIndex(function (value, index, arr) {
+    var bookIdx = books.findIndex(function (value, index, arr) {
       return (value.id == book.id);
     });
     if (bookIdx > 0)
-      prevBook = global.books[bookIdx - 1];
-    if (bookIdx < (global.books.length - 1))
-      nextBook = global.books[bookIdx + 1];
+      prevBook = books[bookIdx - 1];
+    if (bookIdx < (books.length - 1))
+      nextBook = books[bookIdx + 1];
+
     var results = await Library.instance.findBook(req.params.bookAlias).getChapters();
+    var random;
+    if (!book.virtual)
+      random = await Index.docRandomnly(Item.INDEX, { book_alias: { value: req.params.bookAlias } });
+    else
+      random = await global.query(`SELECT * FROM v_hadiths_virtual WHERE book_id=${book.id} ORDER BY RAND() LIMIT 1`);
+    if (random && random.length > 0)
+      random = new Item(random[0]);
+
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(results));
+      res.end(JSON.stringify(toc));
     } else if ('tsv' in req.query) {
       res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
-      var keyNames = Object.keys(results[0]);
+      var keyNames = Object.keys(toc[0]);
       if ('keys' in req.query)
         keyNames = req.query.keys.split(/,/);
-      res.end(Utils.toTSV(results, keyNames));
+      res.end(Utils.toTSV(toc, keyNames));
     } else {
       res.render('toc', {
         book: book,
         prevBook: prevBook,
         nextBook: nextBook,
-        toc: results
+        toc: results,
+        random: random
       });
     }
   } else

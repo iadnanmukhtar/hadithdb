@@ -34,7 +34,7 @@
           <div class="row justify-content-md-center">
             <div class="col-md-6">
               
-              <div class="input-group mb-3">
+              <div class="input-group mb-1">
                 <input id="search-bar" name="q" type="text" class="search-bar form-control" placeholder="Search aḥādīth...">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="bi bi-book"></i>
@@ -69,7 +69,7 @@
         
       <% if (typeof random !== 'undefined') { %>
         <header class="row">
-          <h3 class="col-12 fs-4">A random ḥadīth</h3>
+          <h3 class="col-12 fs-4">Random <%= random.remark==2 ? 'āyah' : 'ḥadīth' %> <a class="text-muted" href="/"><i class="bi bi-arrow-clockwise"></i></a></h3>
         </header>          
         <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false }); %>
         <hr>

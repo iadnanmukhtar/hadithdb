@@ -48,7 +48,8 @@
         </div>
       </aside>
 
-      <heading class="container mb-2">
+      <article>
+      <heading class="mb-2">
         <div class="row text-center justify-content-center">
           <h2 class="_e fs-3" title="<%- book.name %>" data-id="<%=book.id%>" data-prop="book.name_en" data-arabizi="true"><%- book.name_en %></h2>
           <h2 class="_e fs-3" title="<%- book.name_en %>" data-id="<%=book.id%>" data-prop="book.name"><%- book.name %></h2>
@@ -71,7 +72,16 @@
           (d. <span class="_e" data-id="<%=book.id%>" data-prop="book.yearOfDeath"><%- book.yearOfDeath %></span> H)
         </small></section>
       <% } %>
-      
+
+      <% if (typeof random !== 'undefined') { %>
+        <hr class="mt-3">
+        <header class="row">
+          <h3 class="col-12 fs-4">Random <%= random.remark==2 ? 'āyah' : 'ḥadīth' %> in <%- book.shortName_en %> <a class="text-muted" href="<%= page.canonical %>"><i class="bi bi-arrow-clockwise"></i></a></h3>
+        </header>
+        <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: true }); %>
+        <hr>
+      <% } %>
+
       <section class="row">
         
         <script type="application/ld+json">
@@ -83,7 +93,7 @@
           }
         </script>
         
-        <h3 class="fs-5 mt-3">Chapters Headings</h3>
+        <h2 class="fs-4 mt-3">Chapters Headings</h2>
         
         <table id="toc" class="table" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>">
           <tbody>
@@ -131,6 +141,7 @@
           </tbody>
         </table>
       </section>
+      </article>
       
       <aside class="row mt-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
