@@ -16,6 +16,7 @@ const router = asyncify(express.Router());
 router.post('/:id/:prop', async function (req, res, next) {
   if (global.settings.admin.key != req.cookies.admin)
     throw createError(403, "Update unauthorized");
+  var userId = req.cookies.userId;
   var status = {
     code: 405,
     message: 'Did not process',
@@ -90,14 +91,14 @@ router.post('/:id/:prop', async function (req, res, next) {
       } else if (col === 'tocId') {
         var before = (await global.query(`SELECT * FROM hadiths WHERE id=${ids[0]}`))[0];
         var afterTOCId = status.value;
-        result = await global.query(`UPDATE hadiths SET lastmod_user='admin', tocId=${status.value} WHERE id=${ids[0]}`);
+        result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', tocId=${status.value} WHERE id=${ids[0]}`);
         var prevTOC = (await global.query(`SELECT * from v_toc WHERE tId=${before.tocId} ORDER BY ordinal DESC LIMIT 1`))[0];
         await Index.update(Heading.INDEX, prevTOC);
         var nextTOC = (await global.query(`SELECT * from v_toc WHERE tId=${afterTOCId} ORDER BY ordinal DESC LIMIT 1`))[0];
         await Index.update(Heading.INDEX, nextTOC);
 
       } else { // hadith
-        result = await global.query(`UPDATE hadiths SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
+        result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       }
 
       status.code = 200;
@@ -116,7 +117,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       await Hadith.a_reinit();
 
     } else if (type == 'toc') {
-      var result = await global.query(`UPDATE toc SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
+      var result = await global.query(`UPDATE toc SET lastmod_user='${userId}', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       status.code = 200;
       status.message = result.message;
       try {
@@ -173,7 +174,7 @@ router.post('/:id/:prop', async function (req, res, next) {
 
       } else {
         // hadith virtual
-        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='admin', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
+        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='${userId}', ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       }
       status.code = 200;
       status.message = result.message;

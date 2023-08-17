@@ -14,7 +14,6 @@ const Hadith = require('./lib/Hadith');
 
 const app = asyncify(express());
 
-
 (async () => {
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
@@ -52,6 +51,7 @@ const app = asyncify(express());
   const booksRouter = require('./routes/books');
   const tagRouter = require('./routes/tag');
   const searchRouter = require('./routes/search');
+  const loginRouter = require('./routes/login');
   const updateRouter = require('./routes/update');
 
   app.use('/tools', toolsRouter);
@@ -62,6 +62,7 @@ const app = asyncify(express());
   app.use('/books', booksRouter);
   app.use('/tag', tagRouter);
   app.use('/update', updateRouter);
+  app.use('/login', loginRouter);
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {

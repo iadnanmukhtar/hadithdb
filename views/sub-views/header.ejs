@@ -42,7 +42,7 @@
           </li>
           <% if (site.admin) { %>
           <li class="nav-item"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
-              <i class="bi bi-file-text<%=site.editMode ? '-fill' : ''%>"></i></a>
+              <i class="bi bi-gear<%=site.editMode ? '-fill' : ''%>"></i></a>
           </li>
           <% } %>
           <li class="nav-item search-click-toggle">
