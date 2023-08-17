@@ -1,6 +1,6 @@
 <footer class="col-lg-8 mx-auto p-3 py-md-5 text-center">
 	<aside>
-		<% if (req.cookies.tg_user) { %>
+		<% if (!req.cookies.userId) { %>
 			<script async src="https://telegram.org/js/telegram-widget.js?22" data-telegram-login="hadithunlocked_bot" data-size="small" data-onauth="onTelegramAuth(user)" data-request-access="write"></script>
 		<% } %>
 	</aside>
