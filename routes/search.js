@@ -71,6 +71,9 @@ router.get('/sitemap\.txt', async function (req, res, next) {
     union
     select b.alias, t.h1, t.h2 from toc t, books b
     where t.bookId = b.id and t.level < 3
+    union
+    select concat(b.alias, ':', num) as alias, null h1, null as h2 from hadiths h, books b
+    where h.bookId = b.id and h.title_en is not null
     -- union
     -- select distinct 'tag' as alias,t.text_en as h1, null as h2 from tags t, hadiths_tags ht
     -- where t.id = ht.tagId
