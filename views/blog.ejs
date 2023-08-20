@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<% 
+    var site = new Object(global.settings.blog);
+    
+    var page = {
+      menu: 'Blog',
+      title_en: `${site.shortName} | Blog Posts`,
+      subtitle_en: `Blog Posts`,
+      subtitle: ``,
+      canonical: `/blog`,
+      context: {}
+    };
+%>
+
+<%- include('sub-views/head.ejs', { site: site, page: page }); %> 
+
+</head>
+<body>
+
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
+
+  <div class="container col-lg-8 mx-auto">
+
+    <main class="">
+
+    <% for (var i = 0; i < posts.length; i += 2) { %>
+      <div class="row">
+        <div class="col-sm-6 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title row">
+                <div class="col"><a href="/blog/<%- posts[i].file %>"><%- posts[i].title %></a></div>
+              </h5>
+              <p class="card-text">
+                <%- posts[i].description %>
+                <div><small class="text-muted"><%- new Date(posts[i].published).toDateString() %></small></div>
+              </p>
+            </div>
+          </div>
+        </div>
+        <% if (i < (posts.length-1)) { %>
+          <div class="col-sm-6 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title row">
+                  <div class="col"><a href="/blog/<%- posts[i+1].file %>"><%- posts[i+1].title %></a></div>
+                </h5>
+                <p class="card-text">
+                  <%- posts[i+1].description %>
+                  <div><small class="text-muted"><%- new Date(posts[i+1].published).toDateString() %></small></div>
+                </p>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+
+    </main>
+  </div>
+
+<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+
+</body>
+</html>

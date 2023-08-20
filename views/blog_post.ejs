@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+
+<head> 
+<%
+    var site = new Object(global.settings.blog);
+
+    var page = {
+      menu: 'Blog Post',
+      title_en: `${site.shortName} | ${attr.title}`,
+      subtitle_en: attr.subtitle || 'Blog Post',
+      subtitle: null,
+      canonical: `/blog/${req.path}`,
+      context: {},
+    };
+%> 
+
+<%- include('sub-views/head.ejs', { site: site, page: page }); %> 
+
+</head>
+
+<body>
+
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
+
+  <div class="container col-lg-8 mx-auto">
+    
+    <main class="blog-post">
+
+      <artile>
+        <header>
+          <h1><%= attr.title %></h1>
+        </header>
+        <figure>
+          <img src="<%- attr.cover %>">
+        </figure>
+        <%- body %>
+      </artile>
+
+    </main>
+  </div>
+
+<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+
+</body>
+</html>

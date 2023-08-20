@@ -5,6 +5,8 @@ const debug = require('debug')('hadithdb:search');
 const express = require('express');
 const createError = require('http-errors');
 const asyncify = require('express-asyncify').default;
+const fs = require('fs');
+const fm = require('front-matter');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
 const Utils = require('../lib/Utils');
@@ -46,29 +48,41 @@ router.get('/do/:id', async function (req, res, next) {
 
 // SITEMAP
 router.get('/sitemap\.txt', async function (req, res, next) {
+  var txt = '';
+  var domain = global.settings.site.url;
   res.setHeader('content-type', 'text/plain');
-  var domain = `https://hadithunlocked.com`;
-  res.write(`${domain}\n`);
-  res.write(`${domain}/books\n`);
-  res.write(`${domain}/highlights\n`);
-  res.write(`${domain}/requests\n`);
+  txt += `${domain}\n`;
+  txt += `${domain}/books\n`;
+  txt += `${domain}/highlights\n`;
+  txt += `${domain}/requests\n`;
+  txt += `${domain}/blog\n`;
+  const files = fs.readdirSync(global.settings.blog.dir);
+  for (var file of files) {
+    if (file.endsWith('.md')) {
+      try {
+        const { attributes } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
+        txt += `${domain}/blog/${file.replace(/.md$/, '')}\n`;
+      } catch (e) {
+      }
+    }
+  }
   var results = await global.query(`
     select b.alias, null as h1, null as h2 from books b
     union
     select b.alias, t.h1, t.h2 from toc t, books b
     where t.bookId = b.id and t.level < 3
-    union
-    select distinct 'tag' as alias,t.text_en as h1, null as h2 from tags t, hadiths_tags ht
-    where t.id = ht.tagId
+    -- union
+    -- select distinct 'tag' as alias,t.text_en as h1, null as h2 from tags t, hadiths_tags ht
+    -- where t.id = ht.tagId
     order by alias, h1  
   `);
   for (var i = 0; i < results.length; i++) {
     var alias = results[i].alias;
-    var h1 = Utils.emptyIfNull(results[i].h1).replace(/(\.0+|0+)$/, '');
-    var h2 = Utils.emptyIfNull(results[i].h2);
-    res.write(`${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`);
+    var h1 = Utils.emptyIfNull(results[i].h1).toString().replace(/(\.0+|0+)$/, '');
+    var h2 = Utils.emptyIfNull(results[i].h2).toString();
+    txt += `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
   }
-  res.end();
+  res.end(txt);
   return;
 });
 

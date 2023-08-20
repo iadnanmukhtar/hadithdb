@@ -22,6 +22,7 @@ const app = asyncify(express());
   app.use(express.json());
   app.use(cookieParser());
   app.use('/', express.static(path.join(__dirname, 'public')));
+  app.use('/blog', express.static(`${global.settings.blog.dir}`));
 
   // global redirect www
   app.all('/*', function (req, res, next) {
@@ -52,6 +53,7 @@ const app = asyncify(express());
   const tagRouter = require('./routes/tag');
   const searchRouter = require('./routes/search');
   const loginRouter = require('./routes/login');
+  const blogRouter = require('./routes/blog');
   const updateRouter = require('./routes/update');
 
   app.use('/tools', toolsRouter);
@@ -63,6 +65,7 @@ const app = asyncify(express());
   app.use('/tag', tagRouter);
   app.use('/update', updateRouter);
   app.use('/login', loginRouter);
+  app.use('/blog', blogRouter);
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {

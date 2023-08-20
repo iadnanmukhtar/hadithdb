@@ -139,6 +139,11 @@ nav .nav-link {
 	color: white;
 }
 
+.blog-post img {
+	width: 100%;
+	height: auto;
+}
+
 .chapter-toc {
 	border-bottom: 1px solid var(--bs-border-color);
 	padding-top: 5px;
