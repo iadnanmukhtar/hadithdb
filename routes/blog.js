@@ -68,7 +68,7 @@ router.get('/:title', async function (req, res, next) {
       return markdownitfence(md, "ar", {
         marker: ":",
         render: (tokens, idx, options, env, self) => {
-          return `<span lang="ar">${md.render(tokens[idx].content)}</span>`
+          return `<div lang="ar">${md.render(tokens[idx].content)}</div>`
         },
       })
     });
