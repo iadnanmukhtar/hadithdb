@@ -8,7 +8,7 @@
     var page = {
       menu: 'Blog Post',
       title_en: `${site.shortName} | ${attr.title}`,
-      subtitle_en: attr.subtitle || 'Blog Post',
+      subtitle_en: attr.title || 'Blog Post',
       subtitle: null,
       canonical: `/blog/${req.path}`,
       context: {},
