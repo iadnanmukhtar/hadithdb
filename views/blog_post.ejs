@@ -29,7 +29,11 @@
 
       <article>
         <header>
-          <h1><%= attr.title %></h1>
+          <h1 class="fs-3 mb-0"><%= attr.title %></h1>
+          <% if (attr.subtitle) { %>
+            <h2 class="fs-6 mb-0 text-muted"><%= attr.subtitle %></h2>
+          <% } %>
+          <p class="fs-6 text-muted"><%= attr.published.toDateString() %></p>
         </header>
         <figure>
           <img src="<%- attr.cover %>">

@@ -52,12 +52,10 @@ router.get('/:title', async function (req, res, next) {
 
     const { attributes, body } = fm(fs.readFileSync(filename).toString());
     const md = new markdownit({
+      breaks: true,
       html: true,
       linkify: true,
-      langPrefix: '',
-      highlight: function (str, lang) {
-        return `<p lang="${lang}">${str}</p>`;
-      }
+      langPrefix: 'language-',
     });
     md.use(require('markdown-it-toc'));
     md.use(require('markdown-it-wikilinks'));
