@@ -196,24 +196,58 @@ nav .nav-link {
 	font-size: 1.75rem;
 }
 
+.blog-post :lang(ar) h1 {
+	font-size: 2.27rem;
+	font-weight: bold;
+}
+
 .blog-post h2 {
 	font-size: 1.5rem;
+}
+
+.blog-post :lang(ar) h2 {
+	font-size: 1.95rem;
+	font-weight: bold;
 }
 
 .blog-post h3 {
 	font-size: 1.4rem;
 }
 
+.blog-post :lang(ar) h3 {
+	font-size: 1.82rem;
+	font-weight: bold;
+}
+
 .blog-post h4 {
 	font-size: 1.3rem;
+}
+
+.blog-post :lang(ar) h4 {
+	font-size: 1.7rem;
+	font-weight: bold;
 }
 
 .blog-post h5 {
 	font-size: 1.2rem;
 }
 
+.blog-post :lang(ar) h5 {
+	font-size: 1.56rem;
+	font-weight: bold;
+}
+
 .blog-post h6 {
 	font-size: 1.10rem;
+}
+
+.blog-post :lang(ar) h6 {
+	font-size: 1.43rem;
+	font-weight: bold;
+}
+
+.blog-post .body p {
+	text-indent: 2rem;
 }
 
 .blog-post blockquote {
