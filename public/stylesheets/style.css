@@ -16,7 +16,9 @@
 	--f-size-ar-sup: 0.8rem;
 }
 
+html,
 body {
+	font-size: 16pt !important;
 	font-family: Arial;
 }
 
@@ -24,6 +26,16 @@ body :lang(ar) {
 	font-family: Kitab;
 	font-size: var(--f-size-ar);
 	direction: rtl;
+}
+
+@media (max-width: 768px) {
+	html,
+	body {
+		font-size: 13pt !important;
+	}
+	.banner img {
+		width: 50%;
+	}
 }
 
 :lang(ar) b,
@@ -43,7 +55,7 @@ sup {
 	width: 30%;
 }
 
-@media (max-width: 720px) {
+@media (max-width: var(--bs-breakpoint-sm)) {
 	.banner img {
 		width: 50%;
 	}
@@ -166,9 +178,33 @@ nav .nav-link {
     align-items: center;
 }
 
-figure img {
+.blog-post figure img {
 	width: 100%;
 	height: auto;
+}
+
+.blog-post h1 {
+	font-size: 1.75rem;
+}
+
+.blog-post h2 {
+	font-size: 1.5rem;
+}
+
+.blog-post h3 {
+	font-size: 1.4rem;
+}
+
+.blog-post h4 {
+	font-size: 1.3rem;
+}
+
+.blog-post h5 {
+	font-size: 1.2rem;
+}
+
+.blog-post h6 {
+	font-size: 1.10rem;
 }
 
 .blog-post blockquote {
