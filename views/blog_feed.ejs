@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xml:lang="en"><%
+  const site = new Object(global.settings.blog);
+  const page = {
+    title_en: `${site.shortName} | ${site.desc}`,
+    subtitle_en: site.desc,
+    alternate: `${site.url}/blog`,
+    canonical: `${site.url}/blog/feed`,
+  };
+%>
+  <title><%= page.title_en %></title>
+  <subtitle><%= page.subtitle_en %></subtitle>
+  <link rel="alternate" type="text/html" href="<%= page.alternate %>" />
+  <updated><%= posts[0].published.toISOString() %></updated>
+  <icon><%= site.logo32 %></icon>
+  <logo><%= site.logo %></logo>
+  <id><%= page.canonical %></id>
+  <category term="Islam"></category>
+  <category term="Quran"></category>
+  <category term="Hadith"></category>
+  <contributor>
+    <name><%= site.owner %></name>
+    <email><%= site.email %></email>
+  </contributor>
+  <% for (post of posts) { %>
+    <entry>
+      <published><%= post.published.toISOString() %></published>
+      <title><%= post.title %></title>
+      <subtitle><%= post.subtitle %></subtitle>
+      <summary><%= post.summary || post.html %></summary>
+      <link rel="alternate" type="text/html" href="<%= `${site.url}/blog/${post.file}` %>" />
+      <id><%= `${site.url}/blog/${post.file}` %></id>
+      <author>
+        <name><%= site.owner %></name>
+      </author>
+      <media:content url="<%= post.cover %>" medium="image" type="image/png" />
+      <content:encoded type="html"><%= post.html %></content:encoded>
+    </entry>
+  <% } %>
+</feed>

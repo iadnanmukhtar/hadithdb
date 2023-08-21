@@ -169,6 +169,15 @@ nav .nav-link {
 	color: white;
 }
 
+.card-title a {
+	color: var(--c-accent);
+	text-decoration: none;
+}
+
+.card-title a:hover {
+	text-decoration: underline;
+}
+
 .blog-post figure {
     display: flex;
     flex-direction: column;

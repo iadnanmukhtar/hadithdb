@@ -42,6 +42,38 @@ router.get('/', async function (req, res, next) {
 
 });
 
+router.get('/feed', async function (req, res, next) {
+
+  res.locals.req = req;
+  res.locals.res = res;
+
+  var posts = [];
+  const files = fs.readdirSync(global.settings.blog.dir);
+  for (var file of files) {
+    if (file.endsWith('.md')) {
+      try {
+        const { attributes, body } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
+        const html = renderHtml(body);
+        posts.push({
+          file: file.replace(/.md$/, ''),
+          title: attributes.title,
+          description: attributes.description,
+          published: new Date(Date.parse(attributes.published)),
+          html: html
+        });
+      } catch (e) {
+      }
+    }
+  }
+  posts.sort((a, b) => {
+    return b.published - a.published;
+  });
+  res.render('blog_feed', {
+    posts: posts
+  });
+
+});
+
 router.get('/:title', async function (req, res, next) {
 
   res.locals.req = req;
@@ -51,26 +83,7 @@ router.get('/:title', async function (req, res, next) {
   if (fs.existsSync(filename)) {
 
     const { attributes, body } = fm(fs.readFileSync(filename).toString());
-    const md = new markdownit({
-      breaks: true,
-      html: true,
-      linkify: true,
-      langPrefix: 'language-',
-    });
-    md.use(require('markdown-it-toc'));
-    md.use(require('markdown-it-wikilinks'));
-    md.use(require('markdown-it-obsidian-images')({ relativeBaseURL: 'Attachments/' }));
-    md.use(require('markdown-it-bracketed-spans'));
-    md.use(require('markdown-it-attrs'));
-    md.use(function (md, options) {
-      return markdownitfence(md, "ar", {
-        marker: ":",
-        render: (tokens, idx, options, env, self) => {
-          return `<div lang="ar">${md.render(tokens[idx].content)}</div>`
-        },
-      })
-    });
-    const html = md.render(body);
+    const html = renderHtml(body);
 
     res.render('blog_post', {
       attr: attributes,
@@ -85,5 +98,29 @@ router.get('/:title', async function (req, res, next) {
 });
 
 module.exports = router;
+
+function renderHtml(body) {
+  const md = new markdownit({
+    breaks: true,
+    html: true,
+    linkify: true,
+    langPrefix: 'language-',
+  });
+  md.use(require('markdown-it-toc'));
+  md.use(require('markdown-it-wikilinks'));
+  md.use(require('markdown-it-obsidian-images')({ relativeBaseURL: 'Attachments/' }));
+  md.use(require('markdown-it-bracketed-spans'));
+  md.use(require('markdown-it-attrs'));
+  md.use(function (md, options) {
+    return markdownitfence(md, "ar", {
+      marker: ":",
+      render: (tokens, idx, options, env, self) => {
+        return `<div lang="ar" dir="rtl">${md.render(tokens[idx].content)}</div>`
+      },
+    })
+  });
+  const html = md.render(body);
+  return html;
+}
 
 
