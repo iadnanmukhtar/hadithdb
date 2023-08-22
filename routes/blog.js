@@ -23,12 +23,9 @@ router.get('/', async function (req, res, next) {
     if (file.endsWith('.md')) {
       try {
         const { attributes } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
-        posts.push({
-          file: file.replace(/.md$/, ''),
-          title: attributes.title,
-          description: attributes.description,
-          published: Date.parse(attributes.published)
-        });
+        var post = new Object(attributes);
+        post.file = file.replace(/.md$/, '');
+        posts.push(post);
       } catch (e) {
       }
     }
@@ -54,13 +51,10 @@ router.get('/feed', async function (req, res, next) {
       try {
         const { attributes, body } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
         const html = renderHtml(body);
-        posts.push({
-          file: file.replace(/.md$/, ''),
-          title: attributes.title,
-          description: attributes.description,
-          published: new Date(Date.parse(attributes.published)),
-          html: html
-        });
+        var post = new Object(attributes);
+        post.file = file.replace(/.md$/, '');
+        post.html = html;
+        posts.push(post);
       } catch (e) {
       }
     }
