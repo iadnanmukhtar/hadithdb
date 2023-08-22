@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Gentium+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;700&display=swap');
+
 @font-face {
 	font-family: Kitab;
 	src: url(/fonts/kitab-base.woff2);
@@ -19,12 +21,12 @@
 
 html,
 body {
-	font-size: 16pt !important;
-	font-family: Arial;
+	font-size: 13.5pt !important;
+	font-family: "Gentium Plus", Serif;
 }
 
 body :lang(ar) {
-	font-family: Kitab;
+	font-family: Kitab, Serif;
 	font-size: var(--f-size-ar);
 	direction: rtl;
 }
@@ -32,7 +34,7 @@ body :lang(ar) {
 @media (max-width: 768px) {
 	html,
 	body {
-		font-size: 13pt !important;
+		font-size: 12.5pt !important;
 	}
 	.banner img {
 		width: 50%;
@@ -41,7 +43,7 @@ body :lang(ar) {
 
 :lang(ar) b,
 :lang(ar) strong {
-	font-family: KitabBold;
+	font-family: KitabBold, Serif;
 }
 
 sup {
@@ -203,7 +205,7 @@ nav .nav-link {
 
 .blog-post :lang(ar) h1 {
 	font-family: KitabBold;
-	font-size: 2.27rem;
+	font-size: 2.1rem;
 }
 
 .blog-post h2 {
@@ -212,7 +214,7 @@ nav .nav-link {
 
 .blog-post :lang(ar) h2 {
 	font-family: KitabBold;
-	font-size: 1.95rem;
+	font-size: 1.9rem;
 }
 
 .blog-post h3 {
@@ -221,7 +223,7 @@ nav .nav-link {
 
 .blog-post :lang(ar) h3 {
 	font-family: KitabBold;
-	font-size: 1.82rem;
+	font-size: 1.8rem;
 }
 
 .blog-post h4 {
@@ -358,7 +360,7 @@ nav .nav-link {
 .h:lang(en),
 .intro:lang(en),
 .heading-intro:lang(en) {
-	font-size: 0.85rem;
+	font-size: 0.9rem;
 }
 
 .h .grade {
