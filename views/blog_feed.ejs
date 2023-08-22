@@ -33,7 +33,7 @@
       <author>
         <name><%= site.owner %></name>
       </author>
-      <media:content url="<%= post.cover %>" medium="image" type="image/png" />
+      <media:content url="<%= `${site.url}/${post.cover}` %>" medium="image" type="image/png" />
       <content:encoded type="html"><%= post.html %></content:encoded>
     </entry>
   <% } %>
