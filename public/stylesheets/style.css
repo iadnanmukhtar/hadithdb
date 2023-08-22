@@ -257,6 +257,10 @@ nav .nav-link {
 	text-indent: 2rem;
 }
 
+.blog-post .footnotes p {
+	text-indent: unset;
+}
+
 .blog-post blockquote {
 	padding-left: 2rem;
 	border-left: 1px solid var(--bs-border-color);

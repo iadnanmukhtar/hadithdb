@@ -101,12 +101,13 @@ function renderHtml(body) {
     linkify: true,
     langPrefix: 'language-',
   });
-  md.use(require('markdown-it-toc'));
+  md.use(require('markdown-it-toc')); // @[toc]
   md.use(require('markdown-it-wikilinks'));
   md.use(require('markdown-it-obsidian-images')({ relativeBaseURL: 'Attachments/' }));
-  md.use(require('markdown-it-bracketed-spans'));
+  md.use(require('markdown-it-bracketed-spans')); // [text]{attr=value}
+  md.use(require('markdown-it-footnote'));
   md.use(require('markdown-it-attrs'));
-  md.use(function (md, options) {
+  md.use(function (md, options) { // :::ar text :::
     return markdownitfence(md, "ar", {
       marker: ":",
       render: (tokens, idx, options, env, self) => {
