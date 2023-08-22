@@ -23,39 +23,25 @@
 
   <div class="container col-lg-8 mx-auto">
 
-    <main class="">
+    <main class="posts">
 
-    <% for (var i = 0; i < posts.length; i += 2) { %>
-      <div class="row">
-        <div class="col-sm-6 mb-3">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title row">
-                <div class="col"><a href="/blog/<%- posts[i].file %>"><%- posts[i].title %></a></div>
-              </h5>
-              <p class="card-text">
-                <%- posts[i].subtitle %>
-                <div><small class="text-muted"><%- new Date(posts[i].published).toDateString() %></small></div>
-              </p>
+    <% for (var i = 0; i < posts.length; i++) { %>
+
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-4 card-thumb">
+              <a href="/blog/<%- posts[i].file %>"><img src="<%- posts[i].cover %>" class="img-fluid rounded-start" alt="..."></a>
             </div>
-          </div>
-        </div>
-        <% if (i < (posts.length-1)) { %>
-          <div class="col-sm-6 mb-3">
-            <div class="card">
+            <div class="col-md-8">
               <div class="card-body">
-                <h5 class="card-title row">
-                  <div class="col"><a href="/blog/<%- posts[i+1].file %>"><%- posts[i+1].title %></a></div>
-                </h5>
-                <p class="card-text">
-                  <%- posts[i+1].subtitle %>
-                  <div><small class="text-muted"><%- new Date(posts[i+1].published).toDateString() %></small></div>
-                </p>
+                <h5 class="card-title"><a href="/blog/<%- posts[i].file %>"><%= posts[i].title %></a></h5>
+                <p class="card-text mb-0"><%= posts[i].subtitle %></p>
+                <p class="card-text"><small class="text-body-secondary"><%= posts[i].published.toDateString() %></small></p>
               </div>
             </div>
           </div>
-        <% } %>
-      </div>
+        </div>
+
     <% } %>
 
     </main>

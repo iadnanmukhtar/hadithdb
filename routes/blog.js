@@ -27,6 +27,7 @@ router.get('/', async function (req, res, next) {
         post.file = file.replace(/.md$/, '');
         posts.push(post);
       } catch (e) {
+        debug(`Unable to read ${file}`);
       }
     }
   }

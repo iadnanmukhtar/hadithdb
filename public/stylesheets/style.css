@@ -8,6 +8,7 @@
 }
 
 :root {
+	--c-ghostwhite: #f8f8f8;
 	--c-accent: #2c9be5;
 	--c-gray-mid: #a0a0a0;
 	--c-gray-dark: #808080;
@@ -178,13 +179,17 @@ nav .nav-link {
 	text-decoration: underline;
 }
 
+.card-thumb {
+	background-color: var(--c-ghostwhite);
+}
+
 .blog-post figure {
     display: flex;
     flex-direction: column;
-    max-height: 20rem;
 	overflow-y: hidden;
     align-self: center;
     align-items: center;
+    max-height: 20rem;
 }
 
 .blog-post figure img {
@@ -262,7 +267,7 @@ nav .nav-link {
 	padding-top: 5px;
 	padding-bottom: 5px;
 	font-size: 0.85rem;
-	background-color: #f8f8f8;
+	background-color: var(--c-ghostwhite);
 }
 
 .chapter-toc a {
@@ -275,7 +280,7 @@ nav .nav-link {
 }
 
 .chapter-toc tr, .chapter-toc td {
-	background-color: #f8f8f8 !important;
+	background-color: var(--c-ghostwhite) !important;
 }
 
 .pagination,
@@ -328,7 +333,7 @@ nav .nav-link {
 
 .heading,
 .heading-intro {
-	background-color: #f8f8f8 !important;
+	background-color: var(--c-ghostwhite) !important;
 }
 
 .h {
