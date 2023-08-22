@@ -32,7 +32,7 @@ router.get('/', async function (req, res, next) {
     }
   }
   posts.sort((a, b) => {
-    return new Date(b.published) - new Date(a.published);
+    return b.published - a.published;
   });
   res.render('blog', {
     posts: posts
