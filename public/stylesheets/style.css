@@ -202,8 +202,8 @@ nav .nav-link {
 }
 
 .blog-post :lang(ar) h1 {
+	font-family: KitabBold;
 	font-size: 2.27rem;
-	font-weight: bold;
 }
 
 .blog-post h2 {
@@ -211,8 +211,8 @@ nav .nav-link {
 }
 
 .blog-post :lang(ar) h2 {
+	font-family: KitabBold;
 	font-size: 1.95rem;
-	font-weight: bold;
 }
 
 .blog-post h3 {
@@ -220,8 +220,8 @@ nav .nav-link {
 }
 
 .blog-post :lang(ar) h3 {
+	font-family: KitabBold;
 	font-size: 1.82rem;
-	font-weight: bold;
 }
 
 .blog-post h4 {
@@ -229,8 +229,8 @@ nav .nav-link {
 }
 
 .blog-post :lang(ar) h4 {
+	font-family: KitabBold;
 	font-size: 1.7rem;
-	font-weight: bold;
 }
 
 .blog-post h5 {
@@ -238,8 +238,8 @@ nav .nav-link {
 }
 
 .blog-post :lang(ar) h5 {
+	font-family: KitabBold;
 	font-size: 1.56rem;
-	font-weight: bold;
 }
 
 .blog-post h6 {
@@ -247,8 +247,8 @@ nav .nav-link {
 }
 
 .blog-post :lang(ar) h6 {
+	font-family: KitabBold;
 	font-size: 1.43rem;
-	font-weight: bold;
 }
 
 .blog-post .body p {
