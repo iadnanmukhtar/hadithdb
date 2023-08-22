@@ -256,7 +256,7 @@ nav .nav-link {
 }
 
 .blog-post blockquote {
-	padding-left: 3rem;
+	padding-left: 2rem;
 	border-left: 1px solid var(--bs-border-color);
 	color: var(--c-gray-very-dark);
 }
