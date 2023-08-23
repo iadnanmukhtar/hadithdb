@@ -34,7 +34,7 @@
         <uri><%= `${site.url}/${i.book.alias}` %></uri>
       </author>
       <media:content url="<%= site.logo %>" medium="image" type="image/png" />
-      <content:encoded type="html"><%- include('sub-views/rss_item.ejs', { site: site, i: i }); %></content:encoded>
+      <content:encoded><%- include('sub-views/rss_item.ejs', { site: site, i: i }); %></content:encoded>
       <% for (tag of tags) { %>
         <category term="<%= tag %>" />
       <% } %>
