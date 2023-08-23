@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <link rel="stylesheet" href="/stylesheets/style.css" rel="stylesheet">
 <% if (page.feed) { %>
-  <link rel="alternate" type="application/atom+xml" title="<%= site.name %>" href="<%= page.feed %>" />
+  <link rel="alternate" type="application/atom+xml" title="<%= page.title_en %>" href="<%= page.feed %>" />
 <% } else { %>
   <link rel="alternate" type="application/atom+xml" title="Recent translations of beautiful and notable aḥādīth" href="<%= site.url %>/highlights/feed" />
   <link rel="alternate" type="application/rss+xml" title="Recent translations of beautiful and notable aḥādīth" href="<%= site.url %>/highlights/rss" />

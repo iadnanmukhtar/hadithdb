@@ -56,11 +56,12 @@ async function getList() {
 function getPage(route) {
   return {
     menu: 'Translation Requests',
-    title_en: `${global.settings.site.shortName} | 'Translation Requests'`,
+    title_en: `${global.settings.site.shortName} | Translation Requests`,
     subtitle_en: 'Translations of aḥādīth requested to be translated',
     subtitle: null,
     canonical: `/requests${route ? route : ''}`,
     alternate: '/requests',
+    feed: `${global.settings.site.url}/requests/feed`,
     context: {},
   };
 }

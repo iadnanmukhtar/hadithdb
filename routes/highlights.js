@@ -60,6 +60,7 @@ function getPage(route) {
     subtitle: null,
     canonical: `/highlights${route ? route : ''}`,
     alternate: '/highlights',
+    feed: `${global.settings.site.url}/highlights/feed`,
     context: {},
   };
 }

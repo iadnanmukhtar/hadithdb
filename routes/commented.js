@@ -58,6 +58,7 @@ function getPage(route) {
     subtitle: null,
     canonical: `/commented${route ? route : ''}`,
     alternate: '/commented',
+    feed: `${global.settings.site.url}/commented/feed`,
     context: {},
   };
 }
