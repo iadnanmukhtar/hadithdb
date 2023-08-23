@@ -186,6 +186,9 @@ router.post('/:id/:prop', async function (req, res, next) {
           WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
         result = await global.query(`DELETE FROM hadiths_sim 
           WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
+      } else if (col == 'delall') {
+        var result = await global.query(`DELETE FROM hadiths_sim_candidates 
+          WHERE hadithId1=${ids[0]} OR hadithId1=${ids[1]}`);
       }
       status.code = 200;
       status.message = result.message;

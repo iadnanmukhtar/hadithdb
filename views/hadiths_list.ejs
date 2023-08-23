@@ -6,15 +6,6 @@
     var site = new Object(global.settings.site);
     site.admin = (req.cookies.admin == admin.key);
     site.editMode = (site.admin && req.cookies.editMode == 1);
-        
-    var page = {
-      menu: 'Translation Requests',
-      title_en: `${site.name} | 'Translation Requests'`,
-      subtitle_en: 'Translation Requests',
-      subtitle: null,
-      canonical: `/requests`,
-      context: {},
-    };
 %> 
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
@@ -32,7 +23,7 @@
         <% for (var i = 0; i < results.length; i++) { %>
 
           <% if (i == 2) { %>
-          <div class="row mt-3 mb-3">
+          <div class="col-12 mt-3 mb-3">
             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"
               crossorigin="anonymous"></script>
               <ins class="adsbygoogle"

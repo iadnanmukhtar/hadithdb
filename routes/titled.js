@@ -1,10 +1,11 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:highlights');
+const debug = require('debug')('hadithdb:titled');
 const express = require('express');
 const asyncify = require('express-asyncify').default;
 const { Item } = require('../lib/Model');
+
 
 const router = asyncify(express.Router());
 
@@ -15,6 +16,7 @@ router.get('/', async function (req, res, next) {
   res.render('hadiths_list', {
     results: results,
     page: getPage()
+
   });
 });
 
@@ -43,23 +45,21 @@ router.get('/feed', async function (req, res, next) {
 module.exports = router;
 
 async function getList() {
-  var results = await global.query(
-    `SELECT vh.* FROM hadiths h, v_hadiths vh
-    WHERE h.highlight IS NOT NULL
-      AND h.id = vh.hId
-    ORDER BY vh.highlight DESC
+  var results = await global.query(`SELECT * FROM v_hadiths WHERE hId IN 
+    (SELECT id FROM hadiths WHERE title_en IS NOT NULL OR title_en != '')
+    ORDER BY lastmod DESC
     LIMIT ${global.settings.search.itemsPerPage}`);
   return results.map(item => new Item(item));
 }
 
 function getPage(route) {
   return {
-    menu: 'Highlights',
-    title_en: `${global.settings.site.shortName} | Notable Aḥādīths`,
-    subtitle_en: 'Recent translations of beautiful and notable aḥādīth',
+    menu: 'Recently Titled',
+    title_en: `${global.settings.site.shortName} | Recently Titled`,
+    subtitle_en: 'Aḥādīth recently summarized by a title',
     subtitle: null,
-    canonical: `/highlights${route ? route : ''}`,
-    alternate: '/highlights',
+    canonical: `/titled${route ? route : ''}`,
+    alternate: '/titled',
     context: {},
   };
 }

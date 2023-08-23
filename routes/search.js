@@ -54,6 +54,8 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   txt += `${domain}\n`;
   txt += `${domain}/books\n`;
   txt += `${domain}/highlights\n`;
+  txt += `${domain}/titled\n`;
+  txt += `${domain}/commented\n`;
   txt += `${domain}/requests\n`;
   txt += `${domain}/blog\n`;
   const files = fs.readdirSync(global.settings.blog.dir);

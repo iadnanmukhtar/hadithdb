@@ -2,12 +2,6 @@
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/"
 xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/"><%
   const site = new Object(global.settings.site);
-  const page = {
-    title_en: `${site.shortName} | Notable Aḥādīth`,
-    subtitle_en: 'Recent translations of beautiful and notable aḥādīth',
-    alternate: `${site.url}/highlights`,
-    canonical: `${site.url}/highlights/rss`
-  };
 %>
 <channel>
   <title><%= page.title_en %></title>
@@ -18,8 +12,8 @@ xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modul
   <webMaster><%= site.email %> (<%= site.owner %>)</webMaster>
   <category>Islam</category>
   <category>Hadith</category>
-  <pubDate><%= results[0].highlight.toUTCString() %></pubDate>
-  <lastBuildDate><%= results[0].highlight.toUTCString() %></lastBuildDate>
+  <pubDate><%= results[0].pubdate.toUTCString() %></pubDate>
+  <lastBuildDate><%= results[0].lastmod.toUTCString() %></lastBuildDate>
 	<sy:updatePeriod>hourly</sy:updatePeriod>
 	<sy:updateFrequency>1</sy:updateFrequency>
   <image>
@@ -36,8 +30,8 @@ xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modul
         <title><%= i.title %></title>
         <link><%= `${site.url}/${i.ref}` %></link>
         <dc:creator><%= site.owner %></dc:creator>
-        <dc:date><%= i.highlight.toUTCString() %></dc:date>
-        <pubDate><%= i.highlight.toUTCString() %></pubDate>
+        <dc:date><%= i.lastmod.toUTCString() %></dc:date>
+        <pubDate><%= i.pubdate.toUTCString() %></pubDate>
         <guid isPermaLink="false"><%= `${site.url}/${i.ref}` %></guid>
         <category>Islam</category>
         <category>Hadith</category>

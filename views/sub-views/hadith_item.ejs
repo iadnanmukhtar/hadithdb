@@ -146,6 +146,7 @@
 		<aside>
 		<% if (i.parentId) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.del">Remove</a>
+			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Remove All Associations" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.delall">Remove All</a>
 		<% } else if (i.book_virtual == 1) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Delete" data-id="<%= i.id %>" data-prop="hadith_virtual.del">Delete</a>
 			|

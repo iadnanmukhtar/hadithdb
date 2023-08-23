@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xml:lang="en"><%
   const site = new Object(global.settings.site);
-  const page = {
-    title_en: `${site.shortName} | Notable Aḥādīth`,
-    subtitle_en: 'Recent translations of beautiful and notable aḥādīth',
-    alternate: `${site.url}/highlights`,
-    canonical: `${site.url}/highlights/feed`,
-  };
 %>
   <title><%= page.title_en %></title>
   <subtitle><%= page.subtitle_en %></subtitle>
@@ -28,7 +22,7 @@
           tags = i.tags.replace(/[{}]/g, '').split(' ');
   %>
     <entry>
-      <published><%= i.highlight.toISOString() %></published>
+      <published><%= i.pubdate.toISOString() %></published>
       <updated><%= i.lastmod.toISOString() %></updated>
       <title><%= i.title %></title>
       <subtitle><%= `#${i.book.alias}${i.en.num} #${tags.join(' #')}` %></subtitle>
@@ -44,7 +38,6 @@
       <% for (tag of tags) { %>
         <category term="<%= tag %>" />
       <% } %>
-
     </entry>
   <% } %>
 </feed>
