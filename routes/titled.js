@@ -61,6 +61,7 @@ function getPage(route) {
     canonical: `/titled${route ? route : ''}`,
     alternate: '/titled',
     feed: `${global.settings.site.url}/titled/feed`,
+    rss: `${global.settings.site.url}/titled/rss`,
     context: {},
   };
 }

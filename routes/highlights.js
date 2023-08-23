@@ -61,6 +61,7 @@ function getPage(route) {
     canonical: `/highlights${route ? route : ''}`,
     alternate: '/highlights',
     feed: `${global.settings.site.url}/highlights/feed`,
+    rss: `${global.settings.site.url}/highlights/rss`,
     context: {},
   };
 }

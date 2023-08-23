@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/"
+xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/"><%
+  const site = new Object(global.settings.blog);
+  const page = {
+    title_en: `${site.shortName} | ${site.desc}`,
+    subtitle_en: site.desc,
+    alternate: `${site.url}`,
+    canonical: `${site.url}/feed`,
+  };
+%>
+<channel>
+  <title><%= page.title_en %></title>
+  <atom:link href="<%= page.canonical %>" rel="self" type="application/rss+xml" />
+  <link><%= page.canonical %></link>
+  <description><%= page.subtitle_en %></description>
+  <language>en-US</language>
+  <webMaster><%= site.email %> (<%= site.owner %>)</webMaster>
+  <category>Islam</category>
+  <pubDate><%= posts[0].published.toUTCString() %></pubDate>
+  <lastBuildDate><%= posts[0].lastmod.toUTCString() %></lastBuildDate>
+	<sy:updatePeriod>daily</sy:updatePeriod>
+	<sy:updateFrequency>1</sy:updateFrequency>
+  <image>
+      <url><%= site.logo32 %></url>
+      <title><%= page.title_en %></title>
+      <link><%= page.canonical %></link>
+      <width>32</width>
+      <height>32</height>
+  </image>
+  <% for (post of posts) { %>
+    <item>
+      <title><%= post.title %></title>
+      <link><%= `${site.url}/${post.file}` %></link>
+      <dc:creator><%= site.owner %></dc:creator>
+      <dc:date><%= post.lastmod.toUTCString() %></dc:date>
+      <pubDate><%= post.published.toUTCString() %></pubDate>
+      <guid isPermaLink="false"><%= `${site.url}/${post.file}` %></guid>
+      <category>Islam</category>
+      <category>Hadith</category>
+      <wfw:commentRss><%= `${site.url}/${post.file}` %></wfw:commentRss>
+      <slash:comments>0</slash:comments>
+      <og xmlns:og="http://ogp.me/ns#">
+        <type>article</type>
+        <site_name><%= site.name %></site_name>
+        <title><%= post.title %></title>
+        <url><%= `${site.url}/${post.file}` %></url>
+        <description><%= post.subtitle %></description>
+      </og>
+      <description><%= post.subtitle %></description>
+      <enclosure url="<%= `${site.url}/${post.cover}` %>" />
+      <content:encoded type="html"><%= post.html %></content:encoded>
+    </item>
+  <% } %>
+</channel>
+</rss>
