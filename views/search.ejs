@@ -8,7 +8,7 @@
     site.editMode = (site.admin && req.cookies.editMode == 1);
 
     var page = {
-        menu: 'Home'
+        menu: 'Search'
     };
     if (q) {
         page.menu = 'Search';
@@ -39,14 +39,14 @@
     }
     if (typeof chapter !== 'undefined')
       page.context.chapter = chapter;
-    if (results.length > 0) {
+    if (utils.isFalsey(q) && results.length > 0) {
       page.context.chapter = results[0].chapter;
       page.context.section = results[0].section;
       page.context.hadiths = results;
-        if (results[0].prev)
-            page.prev = `${site.url}/${results[0].book.alias}:${results[0].num}`;
-        if (results[results.length-1].next)
-            page.next = `${site.url}/${results[results.length-1].book.alias}:${results[results.length-1].num}`;
+      if (results[0].prev_ref)
+          page.prev = `/${results[0].prev_ref}`;
+      if (results[results.length-1].next_ref)
+          page.next = `/${results[results.length-1].next_ref}`;
     }
 %>
   
@@ -113,18 +113,15 @@
       <% if (results.length > 0) { %>
       <div class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
-          <% if (results[0].prev && results[0].prev.book) {
-        var result = results[0];
-        var hashtag = result.book.alias + result.num; %>
-          &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">Prev:&nbsp;<%= result.prev.book.shortName_en %>&nbsp;<%- result.prev.num %></a>
+          <% if (page.prev) { %>
+          &lt;&nbsp;<a rel="prev" href="<%= page.prev %>" title="<%= page.prev %>">Prev</a>
           <% } %>
         </div>
         <div class="col-md-6 col-xs-12 text-end">
-          <% if (results[results.length-1].next && results[results.length-1].next.book) { 
-        var result = results[results.length-1]; %>
-          <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">Next:&nbsp;<%= result.next.book.shortName_en %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
-          <% } %>
-        </div>
+          <% if (page.next) { %>
+            <a rel="next" href="<%= page.next %>" title="<%= page.prev %>">Next</a>&nbsp;&gt;
+            <% } %>
+          </div>
       </div>
       <% } %>
       
@@ -163,25 +160,18 @@
         
         <% } %>
         
-      </div>
-      
-      <% if (results.length > 1) { %>
-      <!-- hadith search results -->
-      <div class="row mt-3 pagination">
+      <% if (results.length > 0) { %>
+      <div class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
-          <% if (results[0].prev && results[0].prev.book) {
-        var result = results[0]; %>
-          &lt;&nbsp;<a href="/<%= result.prev.book.alias %>:<%= result.prev.num %>">
-            Prev:&nbsp;<%= result.prev.book.shortName_en %>&nbsp;<%- result.prev.num %></a>
+          <% if (page.prev) { %>
+          &lt;&nbsp;<a rel="prev" href="<%= page.prev %>" title="<%= page.prev %>">Prev</a>
           <% } %>
         </div>
         <div class="col-md-6 col-xs-12 text-end">
-          <% if (results[results.length-1].next && results[results.length-1].next.book) { 
-        var result = results[results.length-1]; %>
-          <a href="/<%= result.next.book.alias %>:<%= result.next.num %>">
-            Next:&nbsp;<%= result.next.book.shortName_en %>&nbsp;<%- result.next.num %></a>&nbsp;&gt;
-          <% } %>
-        </div>
+          <% if (page.next) { %>
+            <a rel="next" href="<%= page.next %>" title="<%= page.prev %>">Next</a>&nbsp;&gt;
+            <% } %>
+          </div>
       </div>
       <% } %>
       

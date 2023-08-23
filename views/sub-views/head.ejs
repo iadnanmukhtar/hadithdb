@@ -20,7 +20,7 @@
 
 
 <link rel="canonical" href="<%= site.url %><%- page.canonical %>" />
-<% 	if (page) {
+<% 	if (page && page.menu !== 'Home') {
 		if (page.prev) { %>
 <link rel="prev" href="<%= page.prev %>" />
 <% 		}

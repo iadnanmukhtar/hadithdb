@@ -20,7 +20,18 @@
 		"nextId": {
 			"enabled": false
 		},
-
+		"prev_ref": {
+			"type": "keyword"
+		},
+		"next_ref": {
+			"type": "keyword"
+		},
+		"prev_path": {
+			"type": "keyword"
+		},
+		"next_path": {
+			"type": "keyword"
+		},
 
 		"book_alias": {
 			"type": "keyword"

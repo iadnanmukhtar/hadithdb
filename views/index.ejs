@@ -15,6 +15,15 @@
       canonical: `/`,
       context: {},
     };
+    if (random) {
+      page.context.chapter = random.chapter;
+      page.context.section = random.section;
+      page.context.hadiths = results;
+      if (random.prev_ref)
+          page.prev = `/${random.prev_ref}`;
+      if (random.next_ref)
+          page.next = `/${random.next_ref}`;
+    }
 %> 
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
@@ -66,11 +75,25 @@
           </div>
         </search>
       </form>
-        
+      
       <% if (typeof random !== 'undefined') { %>
         <header class="row">
           <h3 class="col-12 fs-4">Random <%= random.remark==2 ? 'āyah' : 'ḥadīth' %> <a class="text-muted" href="/"><i class="bi bi-arrow-clockwise"></i></a></h3>
-        </header>          
+        </header>
+        
+        <div class="row mb-2 pagination">
+          <div class="col-md-6 col-xs-12 text-start">
+            <% if (page.prev) { %>
+            &lt;&nbsp;<a rel="prev" href="<%= page.prev %>" title="<%= page.prev %>">Prev</a>
+            <% } %>
+          </div>
+          <div class="col-md-6 col-xs-12 text-end">
+            <% if (page.next) { %>
+              <a rel="next" href="<%= page.next %>" title="<%= page.prev %>">Next</a>&nbsp;&gt;
+              <% } %>
+            </div>
+        </div>
+        
         <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false }); %>
         <hr>
       <% } %>
