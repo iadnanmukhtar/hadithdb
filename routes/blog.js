@@ -41,71 +41,22 @@ router.get('/', async function (req, res, next) {
 });
 
 router.get('/feed', async function (req, res, next) {
-
   res.locals.req = req;
   res.locals.res = res;
-
-  var posts = [];
-  const files = fs.readdirSync(global.settings.blog.dir);
-  for (var file of files) {
-    if (file.endsWith('.md')) {
-      try {
-        const stat = fs.statSync(`${global.settings.blog.dir}/${file}`);
-        const { attributes, body } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
-        const html = renderHtml(body);
-        var post = new Object(attributes);
-        post.lastmod = stat.mtime;
-        post.file = file.replace(/.md$/, '');
-        post.html = html;
-        posts.push(post);
-      } catch (e) {
-        debug(e.toString());
-        debug(e.stack);
-      }
-    }
-  }
-  posts.sort((a, b) => {
-    return b.published - a.published;
-  });
+  var posts = getPosts();
   res.render('blog_feed', {
     posts: posts
   });
-
 });
 
 router.get('/rss', async function (req, res, next) {
-
   res.locals.req = req;
   res.locals.res = res;
-
-  var posts = [];
-  const files = fs.readdirSync(global.settings.blog.dir);
-  for (var file of files) {
-    if (file.endsWith('.md')) {
-      try {
-        const stat = fs.statSync(`${global.settings.blog.dir}/${file}`);
-        const { attributes, body } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
-        const html = renderHtml(body);
-        var post = new Object(attributes);
-        post.lastmod = stat.mtime;
-        post.file = file.replace(/.md$/, '');
-        post.html = html;
-        posts.push(post);
-      } catch (e) {
-        debug(e.toString());
-        debug(e.stack);
-      }
-    }
-  }
-  posts.sort((a, b) => {
-    return b.published - a.published;
-  });
+  var posts = getPosts();
   res.render('blog_rss', {
     posts: posts
   });
-
 });
-
 
 router.get('/:title', async function (req, res, next) {
 
@@ -131,6 +82,33 @@ router.get('/:title', async function (req, res, next) {
 });
 
 module.exports = router;
+
+function getPosts() {
+  var posts = [];
+  const files = fs.readdirSync(global.settings.blog.dir);
+  for (var file of files) {
+    if (file.endsWith('.md')) {
+      try {
+        const stat = fs.statSync(`${global.settings.blog.dir}/${file}`);
+        const { attributes, body } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
+        var html = renderHtml(body);
+        html = html.replace(/(href|src)="\//g, `$1="${global.settings.site.url}/`);
+        var post = new Object(attributes);
+        post.lastmod = stat.mtime;
+        post.file = file.replace(/.md$/, '');
+        post.html = html;
+        posts.push(post);
+      } catch (e) {
+        debug(e.toString());
+        debug(e.stack);
+      }
+    }
+  }
+  posts.sort((a, b) => {
+    return b.published - a.published;
+  });
+  return posts;
+}
 
 function renderHtml(body) {
   const md = new markdownit({
