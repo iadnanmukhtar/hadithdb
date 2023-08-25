@@ -26,7 +26,6 @@
       <updated><%= i.lastmod.toISOString() %></updated>
       <title><%= i.title %></title>
       <subtitle><%= `#${i.book.alias}${i.en.num} #${tags.join(' #')}` %></subtitle>
-      <summary><%- include('sub-views/rss_item.ejs', { site: site, i: i }); %></summary>
       <link rel="alternate" type="text/html" href="<%= `${site.url}/${i.ref}` %>" />
       <id><%= `${site.url}/${i.ref}` %></id>
       <author>
@@ -34,7 +33,12 @@
         <uri><%= `${site.url}/${i.book.alias}` %></uri>
       </author>
       <media:content url="<%= site.logo %>" medium="image" type="image/png" />
-      <content:encoded><%- include('sub-views/rss_item.ejs', { site: site, i: i }); %></content:encoded>
+      <summary><![CDATA[
+          <%- include('sub-views/rss_item.ejs', { site: site, i: i }); %>
+      ]]></summary>
+      <content:encoded><![CDATA[
+          <%- include('sub-views/rss_item.ejs', { site: site, i: i }); %>
+      ]]></content:encoded>
       <% for (tag of tags) { %>
         <category term="<%= tag %>" />
       <% } %>

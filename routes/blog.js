@@ -41,6 +41,8 @@ router.get('/', async function (req, res, next) {
 });
 
 router.get('/feed', async function (req, res, next) {
+  res.setHeader('Content-Type', 'application/atom+xml; charset=UTF-8');
+  res.setHeader('Content-Disposition', `inline; filename="${global.settings.blog.shortName}_atom.xml"`);
   res.locals.req = req;
   res.locals.res = res;
   var posts = getPosts();
@@ -50,6 +52,8 @@ router.get('/feed', async function (req, res, next) {
 });
 
 router.get('/rss', async function (req, res, next) {
+  res.setHeader('Content-Type', 'application/rss+xml; charset=UTF-8');
+  res.setHeader('Content-Disposition', `inline; filename="${global.settings.blog.shortName}_rss.xml"`);
   res.locals.req = req;
   res.locals.res = res;
   var posts = getPosts();

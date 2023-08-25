@@ -40,8 +40,22 @@ xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modul
       <category>Hadith</category>
       <wfw:commentRss><%= `${site.url}/${post.file}` %></wfw:commentRss>
       <slash:comments>0</slash:comments>
-      <description><%= post.subtitle %></description>
-      <content:encoded><%= post.html %></content:encoded>
+      <description><![CDATA[
+        <h1><%- post.title %><h1>
+        <h2><%- post.subtitle %></h2>
+        <%- post.html %>
+        <footer>
+          <p>Published on <%= post.published.toDateString() %></p>
+        </footer>
+      ]]></description>
+      <content:encoded><![CDATA[
+        <h1><%- post.title %><h1>
+        <h2><%- post.subtitle %><h2>
+        <%- post.html %>
+        <footer>
+          <p>Published on <%= post.published.toDateString() %></p>
+        </footer>
+      ]]></content:encoded>
     </item>
   <% } %>
 </channel>

@@ -6,8 +6,8 @@ const express = require('express');
 const asyncify = require('express-asyncify').default;
 const { Item } = require('../lib/Model');
 
-
 const router = asyncify(express.Router());
+const name = 'requests';
 
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
@@ -19,25 +19,27 @@ router.get('/', async function (req, res, next) {
   });
 });
 
-router.get('/rss', async function (req, res, next) {
-  res.locals.req = req;
-  res.locals.res = res;
-  var results = await getList();
-  res.type('text/xml; charset=utf-8')
-  res.render('hadiths_list_rss', {
-    results: results,
-    page: getPage('/rss')
-  });
-});
-
 router.get('/feed', async function (req, res, next) {
+  res.setHeader('Content-Type', 'application/atom+xml; charset=UTF-8');
+  res.setHeader('Content-Disposition', `inline; filename="hadithunlocked_${name}_atom.xml"`);
   res.locals.req = req;
   res.locals.res = res;
   var results = await getList();
-  res.type('text/xml; charset=utf-8')
   res.render('hadiths_list_feed', {
     results: results,
     page: getPage('/feed')
+  });
+});
+
+router.get('/rss', async function (req, res, next) {
+  res.setHeader('Content-Type', 'application/rss+xml; charset=UTF-8');
+  res.setHeader('Content-Disposition', `inline; filename="hadithunlocked_${name}_rss.xml"`);
+  res.locals.req = req;
+  res.locals.res = res;
+  var results = await getList();
+  res.render('hadiths_list_rss', {
+    results: results,
+    page: getPage('/rss')
   });
 });
 
@@ -59,10 +61,10 @@ function getPage(route) {
     title_en: `${global.settings.site.shortName} | Translation Requests`,
     subtitle_en: 'Translations of aḥādīth requested to be translated',
     subtitle: null,
-    canonical: `/requests${route ? route : ''}`,
-    alternate: '/requests',
-    feed: `${global.settings.site.url}/requests/feed`,
-    rss: `${global.settings.site.url}/requests/rss`,
+    canonical: `/${name}${route ? route : ''}`,
+    alternate: `/${name}`,
+    feed: `${global.settings.site.url}/${name}/feed`,
+    rss: `${global.settings.site.url}/${name}/rss`,
     context: {},
   };
 }
