@@ -1,36 +1,31 @@
 <nav class="navbar fixed-top container col-lg-8 mx-auto">
   <div class="row ms-1">
     
-    <header class="col-md-4 col-1 text-nowrap">
-      <span class="d-flex">
-        <a href="/"><img src="<%= site.logoVector %>" width="32" height="32" class="me-2" role="img"></a>
-        <h1 class="fs-4 d-md-block d-none">
+    <header class="col-md-4 col-1 text-nowrap d-flex">
+      <a href="/"><img src="<%= site.logoVector %>" width="32" height="32" class="me-2"></a>
+      <div>
+        <h6 class="fs-4 mb-0">
+          <a href="/" class="text-dark text-decoration-none">
           <% if (page.context.book && page.context.book.alias === 'quran') { %>
-            <div class="title"><a href="/" class="text-dark text-decoration-none">Quran Unlocked</a></div>
+            Quran Unlocked
           <% } else { %>
-            <div class="title"><a href="/" class="text-dark text-decoration-none"><%= site.name %></a></div>
-          <% } %>
-          <% if (page.subtitle_en) { %>
-          <div class="subtitle fs-6 text-muted">
-            <%- page.subtitle_en %>
-            <%- page.subtitle ? `<span lang="ar">${page.subtitle}</span>` : '' %>
-          </div>
-          <% } %>
-        </h1>
-        <a href="/" class="mt-1 text-dark text-decoration-none">
-          <% if (page.context.book && page.context.book.alias === 'quran') { %>
-            <h1 class="fs-4 d-md-none d-block">Quran</h1>
-          <% } else { %>
-            <h1 class="fs-4 d-md-none d-block"><%= site.shortName %></h1>
+            <%= site.name %>
           <% } %>
           </a>
-      </span>
+        </h6>
+        <% if (page.subtitle_en) { %>
+        <div class="subtitle fs-6 text-muted">
+          <%- page.subtitle_en %>
+          <%- page.subtitle ? `<span lang="ar">${page.subtitle}</span>` : '' %>
+        </div>
+        <% } %>
+      </div>
     </header>
-    
-    <menu class="col">
+
+    <menu class="col d-md-block d-none">
       
       <form action="/">
-        <ul class="nav justify-content-end">
+        <ul class="nav container-fluid justify-content-end">
           <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
           <li class="nav-item"><a class="nav-link" href="/blog">Blog</a></li>
@@ -48,13 +43,59 @@
           </li>
           <% } %>
           <li class="nav-item search-click-toggle">
-            <input type="text" class="form-control search-click" name="q" placeholder="Search aḥādīth..." />
+            <input role="search" type="text" class="form-control search-click" name="q" placeholder="Search aḥādīth..." />
             <a class="nav-link"><i class="bi bi-search"></i></a>
           </li>
         </ul>
       </form>
       
     </menu>
+
+    <menu class="col d-md-none d-block">
+      <div class="nav container-fluid justify-content-end">
+        <a type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav">
+          <i id="icon-menu" class="bi bi-list"></i>
+        </a>
+      </div>
+    </menu>
+
+    <nav id="offcanvas-topnav" class="offcanvas offcanvas-start collapse" tabindex="-1" data-bs-static="true" data-bs-backdrop="true">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title fs-4" id="offcanvasLabel">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body">
+        <form action="/">
+          <input role="search" type="text" class="form-control mb-2" name="q" placeholder="Search aḥādīth..." />
+        </form>
+        <div class="container row">
+          <ul class="col-7 nav flex-column offcanvas-col1">
+            <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="/books"><i class="bi bi-book"></i> Books</a></li>
+            <li class="nav-item"><a class="nav-link" href="/blog"><i class="bi bi-text-paragraph"></i> Blog</a></li>
+            <li><hr></li>
+            <li class="nav-item"><a class="nav-link" href="/highlights"><i class="bi bi-card-text"></i> Highlights</a></li>
+            <li class="nav-item"><a class="nav-link" href="/titled"><i class="bi bi-card-heading"></i> Updated Titles</a></li>
+            <li class="nav-item"><a class="nav-link" href="/requests"><i class="bi bi-translate"></i> Translation Req</a></li>
+            <% if (site.admin) { %>
+              <li><hr></li>
+              <li class="nav-item"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
+                <% if (site.editMode) { %>  
+                  <i class="bi bi-gear-fill"></i> <strong>View</strong>
+                <% } else { %>
+                  <i class="bi bi-gear"></i> <strong>Edit</strong>
+                <% } %>
+              </a></li>
+              <% } %>
+          </ul>
+          <ul class="col-5 nav flex-column offcanvas-col2">
+            <% for (b of books.filter(b => !b.hidden)) { %>
+              <li class="nav-item"><a class="nav-link" title="<%= b.shortName %>" href="/<%= b.alias%>"><%= b.shortName_en %></a></li>
+            <% } %>
+          </ul>
+        </div>
+      </div>
+    </nav>
     
   </div>
   

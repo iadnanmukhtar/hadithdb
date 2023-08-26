@@ -32,10 +32,6 @@ $(function () {
 		}
 	});
 
-	$(document).on('click', function () {
-		$('.collapse').collapse('hide');
-	});
-
 	$('.search-click-toggle a').click(function () {
 		$('.search-click-toggle a').hide();
 		$('.search-click-toggle input').show();
@@ -47,7 +43,7 @@ $(function () {
 		$('.search-click-toggle input').hide();
 	});
 
-	$('#search-bar, .search-click').on('input', function () {
+	$('[role=search]').on('input', function () {
 		setDirection($(this));
 	});
 
