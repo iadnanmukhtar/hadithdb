@@ -123,6 +123,24 @@ nav .nav-link {
 	color: var(--c-gray-mid) !important;
 }
 
+.icon {
+	color: var(--c-accent);
+	text-indent: 0;
+}
+
+.modal-header {
+	align-items: baseline;
+}
+
+.modal-footer {
+	display: block;
+}
+
+.hanging-indent {
+	text-indent: -2rem;
+	margin-left: 2rem;
+}
+
 .dropdown-menu,
 .form-check {
 	font-size: 0.90rem;

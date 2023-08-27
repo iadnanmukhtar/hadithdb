@@ -95,6 +95,8 @@
         </div>
         
         <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false }); %>
+        <%- include('sub-views/hadith_modal.ejs', { site: site, page: page, i: random }); %>
+
         <hr>
       <% } %>
 

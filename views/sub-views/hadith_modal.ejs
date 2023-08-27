@@ -1,0 +1,60 @@
+<%
+	i.en.body = utils.emptyIfNull(i.en.body).replace(/\n/g, '<br> ');
+	i.ar.body = utils.emptyIfNull(i.ar.body).replace(/\n/g, '<br> ');
+	i.en.narrators = utils.emptyIfNull(i.en.chain).split(/(>|&gt;)/);
+	i.en.narrator = i.en.narrators.pop().trim();
+	i.ar.narrator = ''; // Arabic.toArabic(i.en.narrator);
+%>
+<div class="h modal fade" id="H<%= i.id %>" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+		<% if (i.en.title) { %>
+        	<h1 class="modal-title fs-5" id="exampleModalLabel"><%= i.en.title %></h1>
+		<% } %>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+		<% if (i.en.body) { %>
+        <p>
+			<div class="text-muted">
+				<%= i.en.book_shortName.toUpperCase() %> <%= i.en.num %>:
+				<% if (i.remark === 0 && i.en.narrator) { %>
+					from <em><%= i.en.narrator %></em> —
+				<% } %>
+			</div>
+			<div class="body" lang="en">
+				<%- utils.emptyIfNull(i.en.body).replace(/\n/g, '</p><p>') %>
+			</div>
+		</p>
+		<% } %>
+        <p class="body" lang="ar">
+			<div class="body" lang="ar">
+				<%= i.ar.num %> — <%- utils.emptyIfNull(i.ar.body).replace(/\n/g, '</p><p>') %>
+			</div>
+		</p>
+		<div class="text-muted">
+			<small>//hadithunlocked.com</small>
+		</div>
+      </div>
+      <div class="modal-footer hanging-indent">
+		<% if (i.remark === 0) { %>
+			<div class="grade">
+				<%= i.en.grade_grade %>&nbsp;(<span title="<%= i.en.grader_name %>"><%= i.en.grader_shortName %></span>)
+			</div>
+		<% } %>
+		<div class="title">
+			<%= i.book_shortName_en %>
+			<% if (i.chapter) { %>
+				&gt;
+				<%- utils.truncate(i.en.h1_title, 60, true) || 'Chapter' %></a>
+			<% } %>
+			<% if (i.section) { %>
+				&gt;
+				§&nbsp;<%- utils.truncate(i.en.h2_title, 60, true) || 'Section' %></a>
+			<% } %>
+		</div>
+      </div>
+    </div>
+  </div>
+</div>

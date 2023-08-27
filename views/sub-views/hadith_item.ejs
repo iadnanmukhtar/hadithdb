@@ -58,12 +58,12 @@
 	<section class="_e body <%=_p%> l5" title="Ḥadīth Body" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
 		<% if (!i[lang].body) { %>
 			<div class="cmd-tr">
-				<br />
 				<a href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');">Request/Fix</a> translation<br/>
-				<a target="_blank" href="https://forms.gle/xPgw7eH1akjp3PPj9">Submit</a> a translation<br />
 			</div>
 		<% } %>
-		<p><%- utils.emptyIfNull(i[lang].body).replace(/\n/g, '</p><p>') || utils.emptyIfNull(i[lang].text) %></p>
+		<p>
+			<%- utils.emptyIfNull(i[lang].body).replace(/\n/g, '</p><p>') || utils.emptyIfNull(i[lang].text) %>&nbsp;&nbsp;<% if (lang === 'en' && (i.single || i.random)) { %><a type="button" title="Zoom In" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>"><em class="bi bi-zoom-in"></em></a><% } %>
+		</p>
 	</section>
 
 	<%# Footer  ............................................................ %>
