@@ -1,6 +1,4 @@
 <%
-	i.en.body = utils.emptyIfNull(i.en.body).replace(/\n/g, '<br> ');
-	i.ar.body = utils.emptyIfNull(i.ar.body).replace(/\n/g, '<br> ');
 	i.en.narrators = utils.emptyIfNull(i.en.chain).split(/(>|&gt;)/);
 	i.en.narrator = i.en.narrators.pop().trim();
 	i.ar.narrator = ''; // Arabic.toArabic(i.en.narrator);
