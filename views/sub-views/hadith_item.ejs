@@ -62,7 +62,7 @@
 			</div>
 		<% } %>
 		<p>
-			<%- utils.emptyIfNull(i[lang].body).replace(/\n/g, '</p><p>') || utils.emptyIfNull(i[lang].text) %>&nbsp;&nbsp;<% if (lang === 'en' && (i.single || i.random)) { %><a type="button" title="Zoom In" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>"><em class="bi bi-zoom-in"></em></a><% } %>
+			<%- utils.emptyIfNull(i[lang].body).replace(/\n/g, '</p><p>') || utils.emptyIfNull(i[lang].text) %>&nbsp;&nbsp;<% if (lang === 'en') { %><a type="button" title="Zoom In" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>"><em class="bi bi-zoom-in"></em></a><% } %>
 		</p>
 	</section>
 

@@ -130,7 +130,6 @@
         
         <% if (!results[i].doctype || results[i].doctype == 'hadith') { %>
           <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], title: true, main: main, searchResult: q }); %>
-          <%- include('sub-views/hadith_modal.ejs', { site: site, page: page, i: results[i] }); %>
         <% } else { %>
           <%- include('sub-views/toc.ejs', { site: site, page: page, toc: results[i], title: true, main: main, searchResult: q }); %>
         <% } %>

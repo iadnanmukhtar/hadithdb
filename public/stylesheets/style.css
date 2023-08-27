@@ -41,6 +41,10 @@ body :lang(ar) {
 	}
 }
 
+.modal :lang(ar) {
+	font-size: var(--f-size-ar) * 0.90;
+}
+
 :lang(ar) b,
 :lang(ar) strong {
 	font-family: KitabBold, Serif;

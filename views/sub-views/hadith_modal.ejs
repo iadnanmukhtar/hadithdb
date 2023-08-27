@@ -3,45 +3,43 @@
 	i.en.narrator = i.en.narrators.pop().trim();
 	i.ar.narrator = ''; // Arabic.toArabic(i.en.narrator);
 %>
-<div class="h modal fade" id="H<%= i.id %>" tabindex="-1">
+<aside class="h modal fade" id="H<%= i.id %>" tabindex="-1">
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
-      <div class="modal-header">
-		<% if (i.en.title) { %>
-        	<h1 class="modal-title fs-5" id="exampleModalLabel"><%= i.en.title %></h1>
-		<% } %>
+      <header class="modal-header">
+		<h1 class="modal-title fs-5" contenteditable="true"><%= i.en.title %></h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
+	  </header>
+      <section class="modal-body">
 		<% if (i.en.body) { %>
         <p>
 			<div class="text-muted">
 				<%= i.en.book_shortName.toUpperCase() %> <%= i.en.num %>:
 				<% if (i.remark === 0 && i.en.narrator) { %>
-					from <em><%= i.en.narrator %></em> —
+					from <em contenteditable="true"><%= i.en.narrator %></em> —
 				<% } %>
 			</div>
-			<div class="body" lang="en">
+			<div class="body" lang="en" contenteditable="true">
 				<%- utils.emptyIfNull(i.en.body).replace(/\n/g, '</p><p>') %>
 			</div>
 		</p>
 		<% } %>
-        <p class="body" lang="ar">
-			<div class="body" lang="ar">
+        <p class="mt-2">
+			<div class="body" lang="ar" contenteditable="true">
 				<%= i.ar.num %> — <%- utils.emptyIfNull(i.ar.body).replace(/\n/g, '</p><p>') %>
 			</div>
 		</p>
 		<div class="text-muted">
 			<small>//hadithunlocked.com</small>
 		</div>
-      </div>
-      <div class="modal-footer hanging-indent">
+	  </section>
+      <footer class="modal-footer hanging-indent">
 		<% if (i.remark === 0) { %>
 			<div class="grade">
-				<%= i.en.grade_grade %>&nbsp;(<span title="<%= i.en.grader_name %>"><%= i.en.grader_shortName %></span>)
+				<span contenteditable="true"><%= i.en.grade_grade %></span>&nbsp;(<span title="<%= i.en.grader_name %>" contenteditable="true"><%= i.en.grader_shortName %></span>)
 			</div>
 		<% } %>
-		<div class="title">
+		<div class="title" contenteditable="true">
 			<%= i.book_shortName_en %>
 			<% if (i.chapter) { %>
 				&gt;
@@ -52,7 +50,7 @@
 				§&nbsp;<%- utils.truncate(i.en.h2_title, 60, true) || 'Section' %></a>
 			<% } %>
 		</div>
-      </div>
+	  </footer>
     </div>
   </div>
-</div>
+</aside>
