@@ -79,11 +79,13 @@ router.get('/sitemap\.txt', async function (req, res, next) {
     -- union
     -- select distinct 'tag' as alias,t.text_en as h1, null as h2 from tags t, hadiths_tags ht
     -- where t.id = ht.tagId
-    order by alias, h1  
+    order by alias, h1, h2
   `);
   for (var i = 0; i < results.length; i++) {
     var alias = results[i].alias;
-    var h1 = Utils.emptyIfNull(results[i].h1).toString().replace(/(\.0+|0+)$/, '');
+    if (alias === 'ibnhibban' && h1 == 2)
+      var x = 1;
+    var h1 = Utils.emptyIfNull(results[i].h1).toString().replace(/\.0+$/, '');
     var h2 = Utils.emptyIfNull(results[i].h2).toString();
     txt += `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
   }
