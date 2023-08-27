@@ -25,14 +25,20 @@
 
 		<%# Highlight Date %>
 		<% if (lang === 'en' && site.editMode) {
-			try {
 			var hlDate = null;
-			if (i.highlight)
-				hlDate = `${i.highlight.getFullYear()}-${i.highlight.getMonth()+1}-${i.highlight.getDate()}`; %>
-			<span class="_e form-input" style="width:100px;" title="Hightlight Date" type="text" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.highlight">
-				<%- hlDate || '&hellip;' %>
-			</span>
-		<% 	} catch (e) {}
+			try {
+				if (i.highlight) {
+					if (typeof i.highlight === 'string')
+						i.highlight = new Date(i.highlight);
+					hlDate = `${i.highlight.getFullYear()}-${i.highlight.getMonth()+1}-${i.highlight.getDate()}`; 
+				}
+			} catch (e) {
+				console.log(i.highlight);
+				console.log(typeof i.highlight);
+				console.log(e);
+			} %>
+			<span class="_e form-input" style="width:100px;" title="Hightlight Date" type="text" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.highlight"><%- hlDate || '&hellip;' %></span>
+		<% 	
 		    } %>
 
 		<%# Virtual Num %>
