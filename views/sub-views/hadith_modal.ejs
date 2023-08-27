@@ -1,7 +1,7 @@
 <%
 	i.en.narrators = utils.emptyIfNull(i.en.chain).split(/(>|&gt;)/);
 	i.en.narrator = i.en.narrators.pop().trim();
-	i.ar.narrator = ''; // Arabic.toArabic(i.en.narrator);
+	i.ar.narrator = arabic.toArabic(i.en.narrator);
 %>
 <aside class="h modal fade" id="H<%= i.id %>" tabindex="-1">
   <div class="modal-dialog modal-dialog-scrollable">
@@ -25,8 +25,14 @@
 		</p>
 		<% } %>
         <p class="mt-2">
+			<div class="text-muted" lang="ar">
+				<%= i.ar.book_shortName %> <%= i.ar.num %>:
+				<% if (i.remark === 0 && i.ar.narrator) { %>
+					عن <span contenteditable="true"><%= i.ar.narrator %></span> —
+				<% } %>
+			</div>
 			<div class="body" lang="ar" contenteditable="true">
-				<%= i.ar.num %> — <%- utils.emptyIfNull(i.ar.body).replace(/\n/g, '</p><p>') %>
+				<%- utils.emptyIfNull(i.ar.body).replace(/\n/g, '</p><p>') %>
 			</div>
 		</p>
 		<div class="text-muted">

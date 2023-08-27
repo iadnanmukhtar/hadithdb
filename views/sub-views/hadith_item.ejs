@@ -137,9 +137,14 @@
 			<% } %>
 		</aside>
 	<% } %>
-	<% if (lang === 'en' && !i.single) { %>
-		<aside class="tags"><span class="bi bi-chat-right-text"></span> <a href="/<%= i.ref %>">Discuss</a></aside>
+	<aside class="tags">
+	<% if (lang === 'en') { %>
+		<% if (i.single) { %>
+			<span class="bi bi-chat-right-text"></span> <a href="/<%= i.ref %>">Discuss</a>
+		<% } %>
+		<span class="bi bi-zoom-in"></span> <a type="button" title="Zoom In" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>">Zoom</a>
 	<% } %>
+	</aside>
 
 	<%# Admin  ............................................................. %>
 	<% if (site.editMode && lang === 'en') { %>
