@@ -83,11 +83,12 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   `);
   for (var i = 0; i < results.length; i++) {
     var alias = results[i].alias;
-    if (alias === 'ibnhibban' && h1 == 2)
-      var x = 1;
     var h1 = Utils.emptyIfNull(results[i].h1).toString().replace(/\.0+$/, '');
     var h2 = Utils.emptyIfNull(results[i].h2).toString();
-    txt += `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
+    var url = `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
+    if (url.endsWith('riyad/81\n'))
+      var x = 1;
+    txt += url;
   }
   res.end(txt);
   return;
