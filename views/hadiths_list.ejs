@@ -23,6 +23,7 @@
         <% for (var i = 0; i < results.length; i++) { %>
 
           <% if (i == 2) { %>
+          <%#
           <div class="col-12 mt-3 mb-3">
             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"
               crossorigin="anonymous"></script>
@@ -36,6 +37,7 @@
               (adsbygoogle = window.adsbygoogle || []).push({});
             </script>
           </div>
+          %>
           <% } %>
 
           <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], main: true, title: true, searchResult: false }); %>
