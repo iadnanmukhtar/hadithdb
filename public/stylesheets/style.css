@@ -45,6 +45,10 @@ body :lang(ar) {
 	font-size: var(--f-size-ar) * 0.90;
 }
 
+.modal-title {
+	line-height: 1.6rem;
+}
+
 :lang(ar) b,
 :lang(ar) strong {
 	font-family: KitabBold, Serif;

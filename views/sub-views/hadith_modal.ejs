@@ -14,7 +14,11 @@
 		<% if (i.en.body) { %>
         <p>
 			<div class="text-muted">
-				<%= i.en.book_shortName.toUpperCase() %> <%= i.en.num %>:
+				<% if (i.book_virtual) { %>
+					<%= i.en.actual.book_shortName.toUpperCase() %> <%= i.en.num %>:
+				<% } else { %>
+					<%= i.en.book_shortName.toUpperCase() %> <%= i.en.num %>:
+				<% } %>
 				<% if (i.remark === 0 && i.en.narrator) { %>
 					from <em contenteditable="true"><%= i.en.narrator %></em> —
 				<% } %>
