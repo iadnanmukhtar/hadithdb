@@ -30,12 +30,12 @@ router.get('/do/:id', async function (req, res, next) {
     if (req.query.cmd == 'tr') {
       // translation requested
       var id = parseInt(req.params.id);
-      await global.query(`UPDATE hadiths SET requested=(requested+1) WHERE id=${id}`);
+      await global.query(`UPDATE hadiths SET requested=(requested+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${id}`);
       console.log(`translation requested on id ${id}`);
     } else if (req.query.cmd == 'comment') {
       // comment clicked
       var id = parseInt(req.params.id);
-      await global.query(`UPDATE hadiths SET commented=(commented+1) WHERE id=${id}`);
+      await global.query(`UPDATE hadiths SET commented=(commented+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${id}`);
       console.log(`commented on id ${id}`);
     }
     res.sendStatus(204);
@@ -88,8 +88,6 @@ router.get('/sitemap\.txt', async function (req, res, next) {
     var h1 = Utils.emptyIfNull(results[i].h1).toString().replace(/\.0+$/, '');
     var h2 = Utils.emptyIfNull(results[i].h2).toString();
     var url = `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
-    if (url.endsWith('riyad/81\n'))
-      var x = 1;
     txt += url;
   }
   res.end(txt);

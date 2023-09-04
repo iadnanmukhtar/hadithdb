@@ -50,7 +50,7 @@ async function getList() {
     `SELECT vh.*, h.requested, h.lastmod FROM hadiths h, v_hadiths vh
     WHERE h.requested > 0
       AND h.id = vh.hId
-    ORDER BY h.lastmod DESC
+    ORDER BY h.lastfixed DESC
     LIMIT ${global.settings.search.itemsPerPage}`);
   return results.map(item => new Item(item));
 }

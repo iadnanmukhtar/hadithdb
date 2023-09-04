@@ -49,7 +49,7 @@ module.exports = router;
 async function getList() {
   var results = await global.query(`SELECT * FROM v_hadiths WHERE hId IN 
     (SELECT id FROM hadiths WHERE title_en IS NOT NULL OR title_en != '')
-    ORDER BY lastmod DESC
+    ORDER BY lastfixed DESC
     LIMIT ${global.settings.search.itemsPerPage}`);
   return results.map(item => new Item(item));
 }
