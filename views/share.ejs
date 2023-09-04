@@ -1,0 +1,240 @@
+<%
+  var site = new Object(global.settings.site);
+  var page = {
+        menu: 'Search'
+  };
+  page.canonical = `/${book.alias}:${i.num}`;
+  page.title_en = `${site.shortName} | ${book.shortName_en} (${book.shortName}) ${book.alias}:${i.num}`;
+  if (i.title_en)
+    page.title_en = `${site.shortName} | ${book.alias}:${i.num} ${i.title_en}`;
+  page.title = `${book.name} ${i.num_ar}`;
+  page.subtitle_en = `${book.shortName_en}`;
+  page.subtitle = `${book.shortName}`;
+
+	i.en.narrators = utils.emptyIfNull(i.en.chain).split(/(>|&gt;)/);
+	i.en.narrator = i.en.narrators.pop().trim();
+	i.ar.narrator = arabic.toArabic(i.en.narrator);
+%>
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title><%= page.title_en %></title>
+  <link rel="image_src" href="<%= site.logo %>" />
+  <link rel="apple-touch-icon" href="<%= site.logo %>" />
+  <link rel="icon" href="<%= site.logo %>" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="canonical" href="<%= site.url %><%- page.canonical %>" />
+  <meta name="og:site_name" content="<%= site.name %>">
+  <meta name="og:locale" content="en">
+  <meta name="og:image" content="<%= site.logo %>">
+  <meta name="og:url" content="<%= page.canonical %>">
+  <meta name="og:title" content="<%= page.title_en %>">
+  <meta name="og:description" content="<%= page.subtitle_en %>">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="<%= site.logo %>">
+  <meta name="twitter:title" content="<%= page.title_en %>">
+  <meta name="twitter:description" content="<%= page.subtitle_en %>">    
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Gentium+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;700&display=swap');
+    
+    @font-face {
+      font-family: Kitab;
+      src: url(/fonts/kitab-base.woff2);
+    }
+    
+    @font-face {
+      font-family: KitabBold;
+      src: url(/fonts/kitab-base-b.woff2);
+    }
+    
+    :root {
+      --c-ghostwhite: #f8f8f8;
+      --c-accent: #2c9be5;
+      --c-gray-mid: #a0a0a0;
+      --c-gray-dark: #808080;
+      --c-gray-very-dark: #606060;
+      --f-size-ar: 1.3rem;
+      --f-size-ar-sup: 0.8rem;
+    }
+    
+    html,
+    body {
+      font-size: 13.5pt !important;
+      font-family: "Gentium Plus", Serif;
+      max-width: 478px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    body :lang(ar) {
+      font-family: Kitab, Serif;
+      font-size: var(--f-size-ar);
+      direction: rtl;
+    }
+    
+    @media (max-width: 768px) {
+      
+      html,
+      body {
+        font-size: 12.5pt !important;
+      }
+      
+    }
+    
+    a {
+      text-decoration: none;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+    
+    .text-muted,
+    .text-muted a {
+      color: var(--c-gray-mid);
+    }
+    
+    .text-muted a:hover {
+      color: var(--c-gray-very-dark);
+    }
+    
+    .logo {
+      display: flex;
+      padding-left: 5px;
+    }
+    
+    .modal {
+      padding: 5px 15px 15px 15px;
+    }
+    
+    .modal :lang(ar) {
+      font-size: var(--f-size-ar) * 0.90;
+    }
+    
+    .modal-title {
+      line-height: 1.6rem;
+    }
+    
+    .modal-header {
+      align-items: baseline;
+    }
+    
+    .modal-footer {
+      display: flex;
+    }
+    
+    .hanging-indent {
+      text-indent: -2rem;
+      margin-left: 2rem;
+    }
+    
+    :lang(ar) b,
+    :lang(ar) strong {
+      font-family: KitabBold, Serif;
+    }
+    
+    .h:lang(en) {
+      font-size: 0.9rem;
+    }
+    
+    .grade,
+    .grade a {
+      font-weight: bold;
+      font-style: normal;
+      color: var(--c-accent);
+    }
+    
+    .chain {
+      color: var(--c-gray-mid) !important;
+      text-indent: 2em;
+    }
+    
+    .body {
+      text-indent: 2em;
+    }
+    
+    .title,
+    .title a {
+      color: var(--c-accent);
+    }
+    
+    .site {
+      margin-top: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="h modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <% if (i.en.title) { %>
+        <header class="modal-header">
+          <h1 class="modal-title fs-5" contenteditable="true"><%= i.en.title %></h1>
+        </header>
+        <% } %>
+        <section class="modal-body">
+          <% if (i.en.body) { %>
+          <p>
+          <div class="text-muted">
+            <% if (i.book_virtual) { %>
+            <a href="<%= `${site.url}/${i.book_alias}/${i.en.num}` %>"><%= i.en.actual.book_shortName.toUpperCase() %> <%= i.en.num %></a>:
+            <% } else { %>
+            <a href="<%= `${site.url}/${i.book_alias}/${i.en.num}` %>"><%= i.en.book_shortName.toUpperCase() %> <%= i.en.num %></a>:
+            <% } %>
+            <% if (i.remark === 0 && i.en.narrator) { %>
+            from <em contenteditable="true"><%= i.en.narrator %></em> —
+            <% } %>
+          </div>
+          <div class="body" lang="en" contenteditable="true">
+            <%- utils.emptyIfNull(i.en.body).replace(/\n/g, '</p><p>') %>
+          </div>
+          </p>
+          <% } %>
+          <p class="mt-2">
+          <div class="text-muted" lang="ar">
+            <%= i.ar.book_shortName %> <%= i.ar.num %>:
+            <% if (i.remark === 0 && i.ar.narrator) { %>
+            عن <span contenteditable="true"><%= i.ar.narrator %></span> —
+            <% } %>
+          </div>
+          <div class="body" lang="ar" contenteditable="true">
+            <%- utils.emptyIfNull(i.ar.body).replace(/\n/g, '</p><p>') %>
+          </div>
+          </p>
+        </section>
+        <hr>
+        <footer class="modal-footer">
+          <div class="book hanging-indent">
+            <% if (i.remark === 0) { %>
+            <div class="grade">
+              <span><%= i.en.grade_grade %></span>&nbsp;(<span title="<%= i.en.grader_name %>"><%= i.en.grader_shortName %></span>)
+            </div>
+            <% } %>
+            <div class="title">
+              <a href="<%= `${site.url}/${i.book_alias}` %>"><%= i.book_shortName_en %></a>
+              <% if (i.chapter) { %>
+              &gt;
+              <a href="<%= `${site.url}/${i.book_alias}/${i.chapter.h1} `%>"><%- utils.truncate(i.en.h1_title, 60, true) || 'Chapter' %></a>
+              <% } %>
+              <% if (i.section) { %>
+              &gt;
+              §&nbsp;<a href="<%= `${site.url}/${i.book_alias}/${i.section.h1}/${i.section.h2}` %>"><%- utils.truncate(i.en.h2_title, 60, true) || 'Section' %></a>
+              <% } %>
+            </div>
+          </div>
+          <div class="logo">
+            <a href="<%= `${site.url}/${i.book_alias}/${i.en.num}` %>"><img src="https://hadithunlocked.com/images/logo2.svg" width="64" height="64"></a>
+          </div>
+        </footer>
+        <div class="site text-muted">
+          <small><a href="<%= `${site.url}/${i.book_alias}/${i.en.num}` %>">hadithunlocked.com</a></small>
+        </div>
+      </div>
+    </div>
+  </aside>
+</body>
+
+</html>

@@ -149,7 +149,7 @@
 			<span class="bi bi-chat-right-text"></span>&nbsp;<a href="/<%= i.ref %>">Discuss</a>
 			&nbsp;
 		<% } %>
-		<span class="bi bi-zoom-in"></span>&nbsp;<a type="button" title="Zoom In" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>">Zoom</a>
+		<span class="bi bi-box-arrow-up"></span>&nbsp;<a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.en.actual.num : i.en.num %>?sharepreview" type="button" title="Zoom In" class="icon">Share</a>
 	<% } %>
 	</aside>
 

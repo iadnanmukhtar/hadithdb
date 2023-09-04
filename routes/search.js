@@ -7,6 +7,8 @@ const createError = require('http-errors');
 const asyncify = require('express-asyncify').default;
 const fs = require('fs');
 const fm = require('front-matter');
+const nodeHtmlToImage = require('node-html-to-image');
+const ejs = require('ejs');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
 const Utils = require('../lib/Utils');
@@ -281,12 +283,37 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
         keyNames = req.query.keys.split(/,/);
       res.end(Utils.toTSV(results, keyNames));
     } else {
-      res.render('search', {
-        results: results,
-        book: results[0].book,
-        q: req.query.q,
-        b: [],
-      });
+      if (req.query.sharepreview !== undefined) {
+        res.render('share', {
+          book: results[0].book,
+          i: results[0]
+        });
+      } else if (req.query.share !== undefined) {
+        const html = ejs.render(fs.readFileSync(__dirname + '/../views/share.ejs').toString(), {
+          req: req,
+          book: results[0].book,
+          i: results[0]
+        });
+        const image = await nodeHtmlToImage({
+          html: html,
+          type: 'png',
+          puppeteerArgs: {
+            defaultViewport: {
+              width: 680,
+              height: 680,
+            },
+          }
+        });
+        res.writeHead(200, { 'Content-Type': 'image/png' });
+        res.end(image, 'binary');
+      } else {
+        res.render('search', {
+          results: results,
+          book: results[0].book,
+          q: req.query.q,
+          b: [],
+        });
+      }
     }
   } else {
     res.render('search', {
