@@ -289,7 +289,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
           i: results[0]
         });
       } else if (req.query.share !== undefined) {
-        const html = ejs.render(fs.readFileSync(__dirname + '/../views/share.ejs').toString(), {
+        const html = ejs.render(fs.readFileSync(__dirname + '/../views/share.ejs', 'utf-8').toString(), {
           req: req,
           book: results[0].book,
           i: results[0]

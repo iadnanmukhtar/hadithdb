@@ -105,10 +105,27 @@ main.chapter {
 	border-bottom: 1px solid var(--bs-border-color);
 }
 
+nav.shrink .logo {
+	transition: all .25s;
+	width: 32px;
+	height: 32px;
+}
+
 nav.shrink .title,
 nav.shrink .title :lang(ar) {
 	transition: all .25s;
 	font-size: 0.75rem !important;
+}
+
+nav.shrink .subtitle,
+nav.shrink .subtitle :lang(ar) {
+	transition: all .25s;
+	font-size: 0.75rem !important;
+}
+
+nav.shrink #icon-menu {
+	transition: all .25s;
+	font-size: 1rem !important;
 }
 
 nav .nav-link {
