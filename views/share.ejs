@@ -180,9 +180,9 @@
           <p>
           <div class="text-muted">
             <% if (i.book_virtual) { %>
-            <a href="<%= `${site.url}/${i.book_alias}/${i.en.num}` %>"><%= i.en.actual.book_shortName.toUpperCase() %> <%= i.en.num %></a>:
+            <a href="<%= `${site.url}/${i.book_alias}:${i.en.num}` %>"><%= i.en.actual.book_shortName.toUpperCase() %> <%= i.en.num %></a>:
             <% } else { %>
-            <a href="<%= `${site.url}/${i.book_alias}/${i.en.num}` %>"><%= i.en.book_shortName.toUpperCase() %> <%= i.en.num %></a>:
+            <a href="<%= `${site.url}/${i.book_alias}:${i.en.num}` %>"><%= i.en.book_shortName.toUpperCase() %> <%= i.en.num %></a>:
             <% } %>
             <% if (i.remark === 0 && i.en.narrator) { %>
             from <em contenteditable="true"><%= i.en.narrator %></em> —
@@ -226,11 +226,11 @@
             </div>
           </div>
           <div class="logo">
-            <a href="<%= `${site.url}/${i.book_alias}/${i.en.num}` %>"><img src="https://hadithunlocked.com/images/logo2.svg" width="64" height="64"></a>
+            <a href="<%= `${site.url}/${i.book_alias}:${i.en.num}` %>"><img src="https://hadithunlocked.com/images/logo2.svg" width="64" height="64"></a>
           </div>
         </footer>
         <div class="site text-muted">
-          <small><a href="<%= `${site.url}/${i.book_alias}/${i.en.num}` %>">hadithunlocked.com</a></small>
+          <small><a href="<%= `${site.url}/${i.book_alias}:${i.en.num}` %>">hadithunlocked.com</a></small>
         </div>
       </div>
     </div>
