@@ -133,6 +133,21 @@
         <% } else { %>
           <%- include('sub-views/toc.ejs', { site: site, page: page, toc: results[i], title: true, main: main, searchResult: q }); %>
         <% } %>
+
+        <% if (i == 2) { %>
+        <div class="row">
+          <div class="col" id="ms-ad-874543718"></div> 
+          <script> 
+            window.msAdsQueue.push(() => { 
+              window.pubCenterSdk.render({ 
+                adUnitId: "874543718", 
+                elementId: "ms-ad-874543718" 
+              }); 
+            }); 
+          </script>
+        </div>
+        <% } %>
+
         <% if (!q && results[i].similar && results[i].similar.length > 0) { %>
         <div class="row similar-list">
           

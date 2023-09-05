@@ -23,15 +23,17 @@
         <% for (var i = 0; i < results.length; i++) { %>
 
           <% if (i == 2) { %>
-            <div id="ms-ad-874543718"></div> 
-            <script> 
-              window.msAdsQueue.push(() => { 
-                window.pubCenterSdk.render({ 
-                  adUnitId: "874543718", 
-                  elementId: "ms-ad-874543718" 
+            <div class="row">
+              <div class="col" id="ms-ad-874543718"></div> 
+              <script> 
+                window.msAdsQueue.push(() => { 
+                  window.pubCenterSdk.render({ 
+                    adUnitId: "874543718", 
+                    elementId: "ms-ad-874543718" 
+                  }); 
                 }); 
-              }); 
-            </script>
+              </script>
+            </div>
           <%#
           <div class="col-12 mt-3 mb-3">
             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"
