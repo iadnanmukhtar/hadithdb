@@ -3,7 +3,7 @@
   var page = {
         menu: 'Search'
   };
-  page.canonical = `/${book.alias}:${i.num}`;
+  page.canonical = `/${book.alias}:${i.num}?sharepreview`;
   page.title_en = `${site.shortName} | ${book.shortName_en} (${book.shortName}) ${book.alias}:${i.num}`;
   if (i.title_en)
     page.title_en = `${site.shortName} | ${book.alias}:${i.num} ${i.title_en}`;
@@ -168,9 +168,9 @@
 </head>
 
 <body>
-  <aside class="h modal">
+  <div class="h modal">
     <div class="modal-dialog">
-      <div class="modal-content">
+      <article class="modal-content">
         <% if (i.en.title) { %>
         <header class="modal-header">
           <h1 class="modal-title fs-5" contenteditable="true"><%= i.en.title %></h1>
@@ -233,9 +233,9 @@
         <div class="site text-muted">
           <small><a href="<%= `${site.url}/${i.book_alias}:${i.en.num}` %>">hadithunlocked.com</a></small>
         </div>
-      </div>
+      </article>
     </div>
-  </aside>
+  </div>
 </body>
 
 </html>
