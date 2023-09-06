@@ -14,7 +14,7 @@
       title_en: `${site.shortName} | ${book.shortName_en} §${section.h1}.${section.h2} ${section.title_en || section.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
-      canonical: `/${book.alias}/${chapter.h1}/${section.h2}?view=passage`,
+      canonical: `/${book.alias}/${chapter.h1}/${section.h2}?passage`,
       context: {
         book: book,
         chapter: chapter,
@@ -41,17 +41,17 @@
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
       
-        <% if (results.length > 0) { %>
-          <%- include('sub-views/heading.ejs', { site: site, page: page, heading: results[0].heading }); %>
-        <% } %>
-                            
-        <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, main: false, title: false, searchResult: false }); %>
-        
-        <% if (results.length == 0 || !results[0].id) { %>
-          <footer class="col-12">
-            <p>This is an empty section.</p>
-          </footer>
-        <% } %>
+      <% if (results.length > 0) { %>
+        <%- include('sub-views/heading.ejs', { site: site, page: page, heading: results[0].heading }); %>
+      <% } %>
+                          
+      <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, main: false, title: false, searchResult: false }); %>
+      
+      <% if (results.length == 0 || !results[0].id) { %>
+        <footer class="col-12">
+          <p>This is an empty section.</p>
+        </footer>
+      <% } %>
             
       <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
       

@@ -191,8 +191,8 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   var section;
   if (results.length > 0) {
     section = await results[0].getSection();
-    await section.getPrev();
-    await section.getNext();
+    // await section.getPrev();
+    // await section.getNext();
     var chapter = await section.getChapter();
     await chapter.getPrev();
     await chapter.getNext();
@@ -214,7 +214,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     res.end(Utils.toTSV(results, keyNames));
   } else {
 
-    if (req.query.view !== undefined && req.query.view === 'passage') {
+    if (req.query.passage != undefined) {
       section.title_en = chapter.title_en + ` Āyāt ${surah.num}:${ayah1}–${ayah2}`;
       section.title = chapter.title + ` آيات ${Arabic.toArabicDigits(ayah1)}–${Arabic.toArabicDigits(ayah2)}`;
       res.render('section_quran', {
@@ -435,7 +435,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       results.push(item);
     }
 
-    if (req.query.view !== undefined && req.query.view === 'passage') {
+    if (req.query.passage != undefined) {
       res.render('section_quran', {
         section: section,
         results: results

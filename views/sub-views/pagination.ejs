@@ -12,13 +12,13 @@
       page.type = ' Page';
       page.prevHeading = heading;
       page.prev = `/${heading.path}?o=${heading.page.prevOffset}`;
-      if (req.query.view !== undefined && req.query.view === 'passage')
-        page.prev += '&view=passage';
+      if (req.query.passage != undefined)
+        page.prev += '&passage';
     } else if (heading.prev) {
       page.prevHeading = heading.prev;
       page.prev = `/${page.prevHeading.path}`;
-      if (req.query.view !== undefined && req.query.view === 'passage')
-        page.prev += '?view=passage';
+      if (req.query.passage != undefined)
+        page.prev += '?passage';
     }
     if (page.prev) {
       if (page.prevHeading.level == 1)
@@ -31,13 +31,13 @@
       page.type = ' Page';
       page.nextHeading = heading;
       page.next = `/${heading.path}?o=${heading.page.nextOffset}`;
-      if (req.query.view !== undefined && req.query.view === 'passage')
-        page.next += '&view=passage';
+      if (req.query.passage != undefined)
+        page.next += '&passage';
     } else if (heading.next) {
       page.nextHeading = heading.next;
       page.next = `/${page.nextHeading.path}`;
-      if (req.query.view !== undefined && req.query.view === 'passage')
-        page.next += '?view=passage';
+      if (req.query.passage != undefined)
+        page.next += '?passage';
     }
     if (page.next) {
       if (page.nextHeading.level == 1)
