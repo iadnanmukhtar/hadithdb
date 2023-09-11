@@ -205,7 +205,22 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   }
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(results));
+    var ayahs_en = [];
+    var ayahs = [];
+    var footnotes_en = [];
+    var footnotes = [];
+    for (var i = 0; i < results.length; i++) {
+      ayahs_en.push((i+1) + ' ' + results[i].en.body);
+      ayahs.push(results[i].ar.body + '۝ ');
+      footnotes_en.push((i+1) + ' ' + results[i].en.footnote);
+      footnotes.push(Arabic.toArabicDigits(i) + ' ' + results[i].ar.footnote);
+    }
+    results[0].body_en = results[0].en.body = ayahs_en.join(' ').trim();
+    results[0].body = results[0].ar.body = ayahs.join(' ').trim();
+    results[0].footnote_en = results[0].en.footnote = footnotes_en.join('\n').trim();
+    results[0].footnote = results[0].ar.footnote = footnotes.join('\n').trim();
+    results[0] = results.splice(0, 1);
+    res.end(JSON.stringify(results[0]));
   } else if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
     var keyNames = Object.keys(results[0]);
