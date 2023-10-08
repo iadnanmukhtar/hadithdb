@@ -1,6 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
+require('dotenv').config();
 require('../lib/Globals');
 const fs = require('fs');
 const Index = require('../lib/Index');
@@ -8,9 +9,9 @@ const Index = require('../lib/Index');
 (async () => {
 	try {
 		log(`retreiving data to index...`);
-		var books = await global.query(`SELECT * FROM books b ORDER BY id`);
+		var books = await global.query(`SELECT * FROM books b where b.id=61 ORDER BY id`);
 		for (var i = 0; i < books.length; i++) {
-			// await indexDocs('hadiths', books[i]);
+			await indexDocs('hadiths', books[i]);
 			await indexDocs('toc', books[i]);
 		}
 	} finally {
@@ -33,7 +34,7 @@ async function getData(indexName, book) {
 async function indexDocs(indexName, book) {
 	log(`\n*****\ncreating ${indexName} index for ${book.shortName_en}...`);
 	var rows = await getData(indexName, book);
-	await Index.updateBulk(indexName, rows);
+	await Index.updateBulk(indexName, rows, true);
 }
 
 function log(message) {
