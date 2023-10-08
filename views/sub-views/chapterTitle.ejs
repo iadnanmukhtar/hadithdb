@@ -56,7 +56,7 @@
 </section>
 
 <%# Chapter Intro %>
-<% if (heading.offset == 0) { %>
+<% if (!heading.offset || heading.offset == 0) { %>
 <section class="chapter-intro row">
 
   <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="intro_en" data-arabizi="true">
