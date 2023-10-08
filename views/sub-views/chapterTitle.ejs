@@ -56,10 +56,10 @@
 </section>
 
 <%# Chapter Intro %>
-<% if (!heading.offset || heading.offset == 0) { %>
+<% if (heading.level == 1) { %>
 <section class="chapter-intro row">
 
-  <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="intro_en" data-arabizi="true">
+  <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-arabizi="true">
     <% if (chapter.intro_en) { %>
     <p>
       <%- utils.emptyIfNull(chapter.intro_en).replace(/\n/g, '</p><p>') %>
@@ -69,7 +69,7 @@
     <% } %>
   </section>
 
-  <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= chapter.id %>" data-prop="intro">
+  <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= chapter.id %>" data-prop="toc.intro">
     <% if (chapter.intro) { %>
     <p>
       <%- utils.emptyIfNull(chapter.intro).replace(/\n/g, '</p><p>') %>
