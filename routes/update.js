@@ -100,14 +100,14 @@ router.post('/:id/:prop', async function (req, res, next) {
       } else { // hadith
         result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
         if (col === 'body_en' && Utils.isFalsey(status.value)) {
-          var heading = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
-          if (Utils.isFalsey(heading.body_en) && Utils.isTruthy(heading.body)) {
-            heading.body_en = await Utils.openai('gpt-3.5-turbo', `Translate the following passage into English:\n${heading.body}`);
-            heading.body_en = Utils.trimToEmpty(heading.body_en);
-            heading.body_en = heading.body_en.replace(/\(PBUH\)/g, 'ﷺ ');
-            heading.body_en = heading.body_en.replace(/\(peace be upon him\)/g, 'ﷺ ');
-            status.value = heading.body_en;
-            await global.query(`UPDATE hadiths SET body_en="${Utils.escSQL(heading.body_en)}" WHERE id=${heading.hId}`);
+          var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
+          if (Utils.isFalsey(item.body_en) && Utils.isTruthy(item.body)) {
+            item.body_en = await Utils.openai('gpt-3.5-turbo', `Translate the following passage into English:\n${item.body}`);
+            item.body_en = Utils.trimToEmpty(item.body_en);
+            item.body_en = item.body_en.replace(/\(PBUH\)/g, 'ﷺ ');
+            item.body_en = item.body_en.replace(/\(peace be upon him\)/g, 'ﷺ ');
+            status.value = item.body_en;
+            await global.query(`UPDATE hadiths SET body_en="${Utils.escSQL(item.body_en)}" WHERE id=${item.hId}`);
           }  
         }
       }
@@ -115,8 +115,8 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
       try {
-        var heading = new Heading((await global.query(`SELECT * from v_hadiths WHERE hId=${ids[0]}`))[0]);
-        await Index.update(Item.INDEX, heading);
+        var item = await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`);
+        await Index.update(Item.INDEX, item[0]);
       } catch (err) {
         debug(`${err.message}:\n${err.stack}`);
       }
