@@ -154,7 +154,7 @@ router.get('/', async function (req, res, next) {
     // show random and highlighted ahadith
   } else {
     results = await Hadith.a_dbGetRecentUpdates(5);
-    var random = await Index.docRandomnly(Item.INDEX);
+    var random = await Index.docRandomnly(Item.INDEX, `body_en:/.+/`);
     if (random.length > 0) {
       random = new Item(random[0]);
       random.single = true;
@@ -361,7 +361,7 @@ router.get('/:bookAlias', async function (req, res, next) {
     var results = await Library.instance.findBook(req.params.bookAlias).getChapters();
     var random;
     if (!book.virtual)
-      random = await Index.docRandomnly(Item.INDEX, { book_alias: { value: req.params.bookAlias } });
+      random = await Index.docRandomnly(Item.INDEX, `book_alias:${req.params.bookAlias}`);
     else
       random = await global.query(`SELECT * FROM v_hadiths_virtual WHERE book_id=${book.id} ORDER BY RAND() LIMIT 1`);
     if (random && random.length > 0)
