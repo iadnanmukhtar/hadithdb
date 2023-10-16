@@ -60,14 +60,14 @@
   }
 </script>
 
-<% if (page.menu === 'Home') { %>
 <script type="application/ld+json">
   {
     "@context": "http://schema.org",
     "@type": "WebSite",
     "name": "<%= site.name %>",
-    "url": "<%= site.url %>",
-    "potentialAction": {
+    "url": "<%= site.url %>"
+<% if (page.menu === 'Home') { %>
+    , "potentialAction": {
         "@type": "SearchAction",
         "target": {
           "@type": "EntryPoint",
@@ -75,9 +75,9 @@
         },
         "query-input": "required name=search_term_string"
     }
+<% } %>
   }
 </script>
-<% } %>
 
 <% if (page.context.book !== undefined) { %>
 <script type="application/ld+json">
