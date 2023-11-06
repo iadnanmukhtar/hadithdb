@@ -104,7 +104,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           if (Utils.isFalsey(item.body_en) && Utils.isTruthy(item.body)) {
             item.body_en = await Utils.openai('gpt-3.5-turbo', `Translate the following passage into English:\n${item.body}`);
             item.body_en = Utils.trimToEmpty(item.body_en);
-            item.body_en = replacePBUH(item.body_en);
+            item.body_en = Utils.replacePBUH(item.body_en);
             status.value = item.body_en;
             await global.query(`UPDATE hadiths SET body_en="${Utils.escSQL(item.body_en)}" WHERE id=${item.hId}`);
           }  
@@ -113,7 +113,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           if (Utils.isFalsey(item.title_en) && Utils.isTruthy(item.title)) {
             item.title_en = await Utils.openai('gpt-3.5-turbo', `Translate the following title or passage into English:\n${item.title}`);
             item.title_en = Utils.trimToEmpty(item.title_en);
-            item.title_en = replacePBUH(item.title_en);
+            item.title_en = Utils.replacePBUH(item.title_en);
             status.value = item.title_en;
             await global.query(`UPDATE hadiths SET title_en="${Utils.escSQL(item.title_en)}" WHERE id=${item.hId}`);
           }  
@@ -142,7 +142,7 @@ router.post('/:id/:prop', async function (req, res, next) {
         if (Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
           heading.title_en = await Utils.openai('gpt-3.5-turbo', `Translate the following title or passage into English:\n${heading.title}`);
           heading.title_en = Utils.trimToEmpty(heading.title_en);
-          heading.title_en = replacePBUH(heading.title_en);
+          heading.title_en = Utils.replacePBUH(heading.title_en);
           status.value = heading.title_en;
           await global.query(`UPDATE toc SET title_en="${Utils.escSQL(heading.title_en)}" WHERE id=${heading.id}`);
         }  
@@ -151,7 +151,7 @@ router.post('/:id/:prop', async function (req, res, next) {
         if (Utils.isFalsey(heading.intro_en) && Utils.isTruthy(heading.intro)) {
           heading.intro_en = await Utils.openai('gpt-3.5-turbo', `Translate the following title or passage into English:\n${heading.intro}`);
           heading.intro_en = Utils.trimToEmpty(heading.intro_en);
-          heading.intro_en = replacePBUH(heading.intro_en);
+          heading.intro_en = Utils.replacePBUH(heading.intro_en);
           status.value = heading.intro_en;
           await global.query(`UPDATE toc SET intro_en="${Utils.escSQL(heading.intro_en)}" WHERE id=${heading.id}`);
         }  
@@ -253,16 +253,6 @@ function sql(s) {
     return '"' + s + '"';
   }
   return null;
-}
-
-function replacePBUH(s) {
-  s = s.replace(/[\[\(]]PBUH[\]\)]/g, 'ﷺ ');
-  s = s.replace(/[\[\(]SAW[\]\)]/g, 'ﷺ ');
-  s = s.replace(/[\[\(]peace be upon him[\]\)]/g, 'ﷺ ');
-  s = s.replace(/[\[\(]pbuh[\]\)]/g, 'ﷺ ');
-  s = s.replace(/, peace be upon him, /g, 'ﷺ ');
-  s = s.replace(/[\[\(]ﷺ[\]\)]/g, 'ﷺ ');
-  return s;
 }
 
 module.exports = router;
