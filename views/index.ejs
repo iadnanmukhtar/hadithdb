@@ -111,6 +111,8 @@
         </script>
       </div>
 
+      <% if (results) { %>
+
       <header class="row">
         <h3 class="col-12 fs-4">Recent translations of beautiful and notable aḥādīth</h3>
       </header>
@@ -137,7 +139,8 @@
 
         <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], main: true, title: true, searchResult: false }); %>
 
-      <% } %>
+      <% }
+        } %>
 
     </main>
   </div>
