@@ -255,13 +255,17 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     if (/\d+-\d+$/.test(req.params.num)) {
       var toks = req.params.num.split(/[:\-]/);
       return await a_getPassage(toks[0], toks[1], toks[2], req, res, next);
-    } else if (/:\d+$/.test(req.params.num)) {
+    } else {
       var toks = req.params.num.split(/:/);
       var surah = toks[0];
-      var num = toks[1];
+      var num = 1;
+      if (toks.length > 1)
+        num = toks[1];
       surah = global.surahs.find(function (value) {
         return (value.alias === surah || value.num == surah);
       });
+      if (!surah)
+        throw createError(404, `Surah '${toks[0]}' not found`);
       req.params.num = `${surah.num}:${num}`;
     }
   }
