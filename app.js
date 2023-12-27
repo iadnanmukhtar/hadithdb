@@ -1,4 +1,4 @@
-/* jslint node:true, esversion:9 */
+// @ts-check
 'use strict';
 
 require('./lib/Globals');
