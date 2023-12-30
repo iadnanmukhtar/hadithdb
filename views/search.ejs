@@ -47,6 +47,13 @@
           page.prev = `/${results[0].prev_ref}`;
       if (results[results.length-1].next_ref)
           page.next = `/${results[results.length-1].next_ref}`;
+    } else if (results.length > 0) {
+      if (results.prev) {
+        if (results.prev != '0' && results.prev != 0)
+          page.prev = `?q=${q}&b=${b}&o=${results.prev}`;
+      }
+      if (results.next)
+        page.next = `?q=${q}&b=${b}&o=${results.next}`;
     }
 %>
   
@@ -102,7 +109,7 @@
       
       <% if (results.length != 1 && q) { %>
       <div class="text-center">
-        Found <%= results.length %> results for term: [<%=q%>] in <%= b.length > 0 ? `${b.join(', ')}` : 'all books'%>
+        Found results for term: [<%=q%>] in <%= b.length > 0 ? `${b.join(', ')}` : 'all books'%>
       </div>
       <% } else if (results.length != 1) { %>
       <div class="text-center">

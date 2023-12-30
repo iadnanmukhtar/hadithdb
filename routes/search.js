@@ -118,7 +118,13 @@ router.get('/', async function (req, res, next) {
     try {
       if (req.query.b && (typeof req.query.b) != 'object')
         req.query.b = [req.query.b];
-      results = await Search.a_searchText(req.query.q, req.query.b);
+      var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
+      offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
+      results = await Search.a_searchText(req.query.q, req.query.b, offset);
+      if (results.length > global.settings.search.itemsPerPage)
+        results.next = offset + global.settings.search.itemsPerPage;
+      if (offset >= global.settings.search.itemsPerPage)
+        results.prev = offset - global.settings.search.itemsPerPage;
       results.map(function (hadith) {
         if (hadith.chapter) {
           hadith.chapter.offset = Math.floor(hadith.numInChapter / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
@@ -210,9 +216,9 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     var footnotes_en = [];
     var footnotes = [];
     for (var i = 0; i < results.length; i++) {
-      ayahs_en.push((i+1) + ' ' + results[i].en.body);
+      ayahs_en.push((i + 1) + ' ' + results[i].en.body);
       ayahs.push(results[i].ar.body + '۝ ');
-      footnotes_en.push((i+1) + ' ' + results[i].en.footnote);
+      footnotes_en.push((i + 1) + ' ' + results[i].en.footnote);
       footnotes.push(Arabic.toArabicDigits(i) + ' ' + results[i].ar.footnote);
     }
     results[0].body_en = results[0].en.body = ayahs_en.join(' ').trim();
