@@ -103,20 +103,29 @@ router.post('/:id/:prop', async function (req, res, next) {
           var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
           if (Utils.isFalsey(item.body_en) && Utils.isTruthy(item.body)) {
             item.body_en = await Utils.openai('gpt-3.5-turbo', `Translate the following passage into English:\n${item.body}`);
-            item.body_en = Utils.trimToEmpty(item.body_en);
+            item.body_en = '[Machine] ' + Utils.trimToEmpty(item.body_en);
             item.body_en = Utils.replacePBUH(item.body_en);
             status.value = item.body_en;
             await global.query(`UPDATE hadiths SET body_en="${Utils.escSQL(item.body_en)}" WHERE id=${item.hId}`);
-          }  
+          }
         } else if (col === 'title_en' && Utils.isFalsey(status.value)) {
           var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
           if (Utils.isFalsey(item.title_en) && Utils.isTruthy(item.title)) {
             item.title_en = await Utils.openai('gpt-3.5-turbo', `Translate the following title or passage into English:\n${item.title}`);
-            item.title_en = Utils.trimToEmpty(item.title_en);
+            item.title_en = '[Machine] ' + Utils.trimToEmpty(item.title_en);
             item.title_en = Utils.replacePBUH(item.title_en);
             status.value = item.title_en;
             await global.query(`UPDATE hadiths SET title_en="${Utils.escSQL(item.title_en)}" WHERE id=${item.hId}`);
-          }  
+          }
+        } else if (col === 'footnote_en' && Utils.isFalsey(status.value)) {
+          var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
+          if (Utils.isFalsey(item.footnote_en) && Utils.isTruthy(item.footnote)) {
+            item.footnote_en = await Utils.openai('gpt-3.5-turbo', `Translate the following title or passage into English:\n${item.footnote}`);
+            item.footnote_en = '[Machine] ' + Utils.trimToEmpty(item.footnote_en);
+            item.footnote_en = Utils.replacePBUH(item.footnote_en);
+            status.value = item.footnote_en;
+            await global.query(`UPDATE hadiths SET footnote_en="${Utils.escSQL(item.footnote_en)}" WHERE id=${item.hId}`);
+          }
         }
       }
 
@@ -141,20 +150,20 @@ router.post('/:id/:prop', async function (req, res, next) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
         if (Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
           heading.title_en = await Utils.openai('gpt-3.5-turbo', `Translate the following title or passage into English:\n${heading.title}`);
-          heading.title_en = Utils.trimToEmpty(heading.title_en);
+          heading.title_en = '[Machine] ' + Utils.trimToEmpty(heading.title_en);
           heading.title_en = Utils.replacePBUH(heading.title_en);
           status.value = heading.title_en;
           await global.query(`UPDATE toc SET title_en="${Utils.escSQL(heading.title_en)}" WHERE id=${heading.id}`);
-        }  
+        }
       } else if (col === 'intro_en' && Utils.isFalsey(status.value)) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
         if (Utils.isFalsey(heading.intro_en) && Utils.isTruthy(heading.intro)) {
           heading.intro_en = await Utils.openai('gpt-3.5-turbo', `Translate the following title or passage into English:\n${heading.intro}`);
-          heading.intro_en = Utils.trimToEmpty(heading.intro_en);
+          heading.intro_en = '[Machine] ' + Utils.trimToEmpty(heading.intro_en);
           heading.intro_en = Utils.replacePBUH(heading.intro_en);
           status.value = heading.intro_en;
           await global.query(`UPDATE toc SET intro_en="${Utils.escSQL(heading.intro_en)}" WHERE id=${heading.id}`);
-        }  
+        }
       }
       status.code = 200;
       status.message = result.message;
@@ -189,7 +198,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           result = await global.query(`SET @n:=0`);
           result = await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
             WHERE bookId=${curr.bookId} AND h1=${curr.h1} 
-            ORDER BY bookId, num0`);  
+            ORDER BY bookId, num0`);
         } else
           throw new Error("Hadith not found");
 
