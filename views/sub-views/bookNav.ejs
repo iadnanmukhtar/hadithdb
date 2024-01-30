@@ -1,0 +1,5 @@
+<div class="btn-group mb-3 h-menu text-nowrap" role="group">
+	<% for (b of books.filter(b => !b.hidden)) { %>
+	  <a class="btn btn-outline-primary text-nowrap" href="/<%= b.alias%>"><%= b.shortName_en %></a>
+	<% } %>
+</div>
