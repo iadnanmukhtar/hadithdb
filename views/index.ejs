@@ -75,6 +75,12 @@
           </div>
         </search>
       </form>
+
+      <div class="btn-group mb-3 h-menu" role="group">
+        <% for (b of books.filter(b => !b.hidden)) { %>
+          <a class="btn btn-outline-primary" style="text-overflow: ellipsis;" href="/<%= b.alias%>"><%= b.shortName_en %></a>
+        <% } %>
+      </div>
       
       <% if (typeof random !== 'undefined') { %>
         <header class="row">
