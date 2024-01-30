@@ -29,12 +29,15 @@
   <div class="container col-lg-8 mx-auto">
     
     <main class="search-results">
+
+      <%- include('sub-views/bookNav.ejs'); %> 
+
       <div class="row"> 
         
-		<h5><%- res.statusCode %> <%- message %></h5>
-		<% if (res.statusCode >= 500) { %>
-			<pre><%- error.stack %></pre>
-		<% } %>
+        <h5><%- res.statusCode %> <%- message %></h5>
+        <% if (res.statusCode >= 500) { %>
+          <pre><%- error.stack %></pre>
+        <% } %>
 
       </div>
     </main>

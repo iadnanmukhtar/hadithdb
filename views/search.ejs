@@ -74,7 +74,7 @@
           <div class="row justify-content-md-center">
             <div class="col-md-8">
               
-              <div class="input-group mb-3">
+              <div class="input-group mb-1">
                 <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="Search aḥādīth...">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="bi bi-book"></i>
@@ -107,6 +107,8 @@
         </search>
       </form>
       
+      <%- include('sub-views/bookNav.ejs'); %> 
+
       <% if (results.length != 1 && q) { %>
       <div class="text-center">
         Found results for term: [<%=q%>] in <%= b.length > 0 ? `${b.join(', ')}` : 'all books'%>
