@@ -35,6 +35,12 @@
     
     <main class="toc">
       
+      <div class="btn-group mb-3 h-menu" role="group">
+        <% for (b of books.filter(b => !b.hidden)) { %>
+          <a class="btn btn-outline-primary" style="text-overflow: ellipsis;" href="/<%= b.alias%>"><%= b.shortName_en %></a>
+        <% } %>
+      </div>
+    
       <aside class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (page.prev) { %>
