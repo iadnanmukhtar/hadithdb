@@ -15,6 +15,7 @@ const Utils = require('../lib/Utils');
 const { Section, Chapter, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
 const Arabic = require('../lib/Arabic');
+const { homedir } = require('os');
 
 const router = asyncify(express.Router());
 
@@ -411,6 +412,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var chapterNum = Arabic.toLatinDigits(req.params.chapterNum);
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
+    var cachedFile = `~/.hadithdb/cache/${bookAlias}-${chapterNum}.html`;
+
     var chapter = await Chapter.chapterFromRef(`${bookAlias}/${chapterNum}`);
     await chapter.getPrev();
     await chapter.getNext();
@@ -446,6 +449,12 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     var sectionNum = Arabic.toLatinDigits(req.params.sectionNum);
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
+    var cachedFile = `${homedir}/.hadithdb/cache/${bookAlias}-${chapterNum}-${sectionNum}.html`;
+    if (fs.existsSync(cachedFile)) {
+      res.send(fs.readFileSync(cachedFile));
+      return;
+    }
+
     var section = await Section.sectionFromRef(`${bookAlias}/${chapterNum}/${sectionNum}`);
     await section.getPrev();
     await section.getNext();
@@ -466,6 +475,16 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         results: results
       });
     } else {
+
+      // cache response
+      var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
+        section: section,
+        results: results,
+        req: req,
+        res: res
+      });
+      fs.writeFileSync(cachedFile, html);
+
       res.render('section', {
         section: section,
         results: results
