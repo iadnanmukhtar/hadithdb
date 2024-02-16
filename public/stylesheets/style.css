@@ -639,3 +639,17 @@ a.cmd-btn:hover {
 * html .ui-autocomplete {
 	height: 100px;
 }
+
+@media (max-width: 500px) {
+
+	nav.navbar, aside.tags, a.icon, footer, #bmc-wbtn {
+		display: none !important;
+	}
+
+	main {
+		margin-top: auto !important;
+	}
+
+}
+
+
