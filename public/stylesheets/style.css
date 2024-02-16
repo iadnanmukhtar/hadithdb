@@ -640,7 +640,7 @@ a.cmd-btn:hover {
 	height: 100px;
 }
 
-@media (max-width: 450px) {
+@media only screen and (max-width: 400px) {
 
 	nav.navbar, aside.tags, a.icon, footer, #bmc-wbtn {
 		display: none !important;
