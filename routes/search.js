@@ -412,13 +412,27 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var chapterNum = Arabic.toLatinDigits(req.params.chapterNum);
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
-    var cachedFile = `~/.hadithdb/cache/${bookAlias}-${chapterNum}.html`;
+    var cachedFile = `${homedir}/.hadithdb/cache/${bookAlias}-${chapterNum}-p${offset}.html`;
+    if (fs.existsSync(cachedFile)) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end(fs.readFileSync(cachedFile));  
+      return;
+    }
 
     var chapter = await Chapter.chapterFromRef(`${bookAlias}/${chapterNum}`);
     await chapter.getPrev();
     await chapter.getNext();
     await chapter.getSections();
     results = await chapter.getItems(offset);
+
+    // cache response
+    var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
+      chapter: chapter,
+      results: results,
+      req: req,
+      res: res
+    });
+    fs.writeFileSync(cachedFile, html);
 
     res.render('chapter', {
       chapter: chapter,
@@ -449,9 +463,10 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     var sectionNum = Arabic.toLatinDigits(req.params.sectionNum);
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
-    var cachedFile = `${homedir}/.hadithdb/cache/${bookAlias}-${chapterNum}-${sectionNum}.html`;
+    var cachedFile = `${homedir}/.hadithdb/cache/${bookAlias}-${chapterNum}-${sectionNum}-p${offset}.html`;
     if (fs.existsSync(cachedFile)) {
-      res.send(fs.readFileSync(cachedFile));
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end(fs.readFileSync(cachedFile));  
       return;
     }
 
