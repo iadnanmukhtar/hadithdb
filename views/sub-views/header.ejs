@@ -38,7 +38,7 @@
             </ul>
           </li>
           <% if (site.admin) { %>
-          <li class="nav-item"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
+          <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
               <i class="bi bi-gear<%=site.editMode ? '-fill' : ''%>"></i></a>
           </li>
           <% } %>
@@ -84,7 +84,7 @@
             <li class="nav-item"><a class="nav-link" href="/requests"><i class="bi bi-translate"></i> Translation Req</a></li>
             <% if (site.admin) { %>
               <li><hr></li>
-              <li class="nav-item"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
+              <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
                 <% if (site.editMode) { %>  
                   <i class="bi bi-gear-fill"></i> <strong>View</strong>
                 <% } else { %>

@@ -3,6 +3,8 @@
 $(function () {
 	'use strict';
 
+	document.cookie.includes('admin=') ? false : $('.edit-gear').hide();
+
 	setDirection($('#search-bar'));
 
 	$(window).scroll(function() {
