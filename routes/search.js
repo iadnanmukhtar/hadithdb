@@ -405,6 +405,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
   res.locals.req = req;
   res.locals.res = res;
+  var admin = (global.settings.site.admin && req.cookies.editMode == 1);
 
   try {
     var results = [];
@@ -413,9 +414,9 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
-    if (fs.existsSync(cachedFile)) {
+    if (!admin && fs.existsSync(cachedFile)) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end(fs.readFileSync(cachedFile));  
+      res.end(fs.readFileSync(cachedFile));
       return;
     }
 
@@ -426,13 +427,15 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     results = await chapter.getItems(offset);
 
     // cache response
-    var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
-      chapter: chapter,
-      results: results,
-      req: req,
-      res: res
-    });
-    fs.writeFileSync(cachedFile, html);
+    if (!admin) {
+      var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
+        chapter: chapter,
+        results: results,
+        req: req,
+        res: res
+      });
+      fs.writeFileSync(cachedFile, html);
+    }
 
     res.render('chapter', {
       chapter: chapter,
@@ -455,6 +458,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
 
   res.locals.req = req;
   res.locals.res = res;
+  var admin = (global.settings.site.admin && req.cookies.editMode == 1);
 
   try {
     var results = [];
@@ -464,9 +468,9 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
-    if (fs.existsSync(cachedFile)) {
+    if (!admin && fs.existsSync(cachedFile)) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end(fs.readFileSync(cachedFile));  
+      res.end(fs.readFileSync(cachedFile));
       return;
     }
 
@@ -485,6 +489,18 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     }
 
     if (req.query.passage != undefined) {
+
+      // cache response
+      if (!admin) {
+        var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
+          section: section,
+          results: results,
+          req: req,
+          res: res
+        });
+        fs.writeFileSync(cachedFile, html);
+      }
+
       res.render('section_quran', {
         section: section,
         results: results
@@ -492,13 +508,15 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     } else {
 
       // cache response
-      var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
-        section: section,
-        results: results,
-        req: req,
-        res: res
-      });
-      fs.writeFileSync(cachedFile, html);
+      if (!admin) {
+        var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
+          section: section,
+          results: results,
+          req: req,
+          res: res
+        });
+        fs.writeFileSync(cachedFile, html);
+      }
 
       res.render('section', {
         section: section,
