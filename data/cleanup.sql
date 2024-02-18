@@ -149,3 +149,12 @@ order by
     , t2.h2
     , t3.h3
 ;
+
+-- tag hadiths
+DROP TABLE x;
+CREATE TEMPORARY TABLE IF NOT EXISTS x AS
+SELECT id AS hadithId, 2832 tagId FROM hadiths 
+	WHERE search_body regexp 'رجب ' OR search_body regexp ' رجب';
+
+DELETE FROM hadiths_tags WHERE tagId=2832;
+INSERT INTRO hadiths_tags (hadithId, tagId) SELECT hadithId, tagId FROM X;

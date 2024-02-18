@@ -6,7 +6,7 @@ const fs = require('fs');
 const Index = require('../lib/Index');
 const { Item, Heading } = require('../lib/Model');
 
-const date = '2023-07-30';
+const date = '2024-01-11';
 
 (async () => {
 	try {

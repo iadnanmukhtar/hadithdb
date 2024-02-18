@@ -1,7 +1,10 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
+const { homedir } = require('os');
 const debug = require('debug')('hadithdb:update');
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const createError = require('http-errors');
 const asyncify = require('express-asyncify').default;
@@ -249,6 +252,10 @@ router.post('/:id/:prop', async function (req, res, next) {
     debug(`update status:${status.code}, id:${ids}, prop:${prop}, value:${(status.value + '').trim().substring(0, 20)}`);
     debug(status.message);
   }
+
+  // uncache
+  // findAndDeleteFilesWithText(`${homedir}/.hadithdb/cache`, '');
+
   res.status(status.code);
   res.end(JSON.stringify(status));
 });
@@ -263,5 +270,44 @@ function sql(s) {
   }
   return null;
 }
+
+function findAndDeleteFilesWithText(dir, s) {
+  fs.readdir(dir, (err, files) => {
+    if (err) {
+      console.error('Error reading directory:', err);
+      return;
+    }
+    files.forEach(file => {
+      const filePath = path.join(dir, file);
+      fs.stat(filePath, (err, stats) => {
+        if (err) {
+          console.error('Error stating file:', err);
+          return;
+        }
+        if (stats.isFile()) {
+          fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+              console.error('Error reading file:', err);
+              return;
+            }
+            if (data.includes(s)) {
+              console.log('Deleting file:', filePath);
+              fs.unlink(filePath, (err) => {
+                if (err) {
+                  console.error('Error deleting file:', err);
+                  return;
+                }
+                console.log('File deleted:', filePath);
+              });
+            }
+          });
+        } else if (stats.isDirectory()) {
+          findAndDeleteFilesWithText(filePath, s);
+        }
+      });
+    });
+  });
+}
+
 
 module.exports = router;
