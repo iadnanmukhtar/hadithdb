@@ -5,6 +5,9 @@ const debug = require('debug')('hadithdb:tag');
 const express = require('express');
 const createError = require('http-errors');
 const asyncify = require('express-asyncify').default;
+const { homedir } = require('os');
+const fs = require('fs');
+const ejs = require('ejs');
 const Hadith = require('../lib/Hadith');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
@@ -30,7 +33,16 @@ router.get('/:tag', async function (req, res, next) {
     })));
     return;
   }
-  
+
+  var admin = (req.cookies.admin == global.settings.admin.key);
+  var editMode = (admin && req.cookies.editMode == 1);
+  var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
+  if (!editMode && fs.existsSync(cachedFile)) {
+    res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+    res.end(fs.readFileSync(cachedFile));
+    return;
+  }
+
   var offset = 0;
   if (req.query.o)
     offset = Math.floor(parseFloat(req.query.o) / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
@@ -149,6 +161,19 @@ router.get('/:tag', async function (req, res, next) {
     //   delete results.nextOffset;
     if (results.length == 0)
       throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
+
+    // cache response
+    if (!editMode) {
+      var html = await ejs.renderFile(`${__dirname}/../views/tag.ejs`, {
+        tag: tags,
+        results: results,
+        count: count,
+        req: req,
+        res: res
+      });
+      fs.writeFileSync(cachedFile, html);
+    }
+
     res.render('tag', {
       tag: tags,
       results: results,

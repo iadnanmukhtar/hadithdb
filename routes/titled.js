@@ -4,7 +4,11 @@
 const debug = require('debug')('hadithdb:titled');
 const express = require('express');
 const asyncify = require('express-asyncify').default;
+const { homedir } = require('os');
+const fs = require('fs');
+const ejs = require('ejs');
 const { Item } = require('../lib/Model');
+const Utils = require('../lib/Utils');
 
 const router = asyncify(express.Router());
 const name = 'titled';
@@ -12,11 +16,33 @@ const name = 'titled';
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
+
+
+  var admin = (req.cookies.admin == global.settings.admin.key);
+  var editMode = (admin && req.cookies.editMode == 1);
+  var cachedFile = `${homedir}/.hadithdb/cache/titled.html`;
+  if (!editMode && fs.existsSync(cachedFile)) {
+    res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+    res.end(fs.readFileSync(cachedFile));
+    return;
+  }
+
   var results = await getList();
+
+  // cache response
+  if (!editMode) {
+    var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list.ejs`, {
+      results: results,
+      page: getPage(),
+      req: req,
+      res: res
+    });
+    fs.writeFileSync(cachedFile, html);
+  }
+  
   res.render('hadiths_list', {
     results: results,
     page: getPage()
-
   });
 });
 
