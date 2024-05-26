@@ -22,7 +22,7 @@
   <link rel="alternate" type="application/rss+xml" title="Recent translations of beautiful and notable aḥādīth" href="<%= site.url %>/highlights/rss" />
 <% } %>
 
-<link rel="image_src" href="<%= site.logo %>" />
+<link rel="image_src" href="<%= page.cover || site.logo %>" />
 <link rel="apple-touch-icon" href="<%= site.logo %>" />
 <link rel="icon" href="<%= site.logo %>" />
 <link rel="icon" href="/favicon.ico" />
@@ -40,13 +40,13 @@
 
 <meta name="og:site_name" content="<%= site.name %>">
 <meta name="og:locale" content="en">
-<meta name="og:image" content="<%= site.logo %>">
+<meta name="og:image" content="<%= page.cover || site.logo %>">
 <meta name="og:url" content="<%= site.url %><%- page.canonical %>">
 <meta name="og:title" content="<%= page.title_en %>">
 <meta name="og:description" content="<%= page.subtitle_en %>">
 
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="<%= site.logo %>">
+<meta name="twitter:image" content="<%= page.cover || site.logo %>">
 <meta name="twitter:title" content="<%= page.title_en %>">
 <meta name="twitter:description" content="<%= page.subtitle_en %>">
 
