@@ -83,11 +83,11 @@
         res.statusText = 'Update request body is not present';
       }
       if (res.status == 200)
-        toastr.success(`${res.status} ${res.statusText}`, 'Successful Update');
+        toastr.success(`${res.status} ${res.statusText}`, `Successful update for ${reqBody.id}/${reqBody.prop}`);
       else {
         var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
         console.error(`Update Error\n${errMessage}`);
-        toastr.error(errMessage, `Update Error`);
+        toastr.error(errMessage, `Error on update for ${reqBody.id}/${reqBody.prop}`);
       }
       return resBody;
     }

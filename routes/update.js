@@ -104,7 +104,6 @@ router.post('/:id/:prop', async function (req, res, next) {
 
         result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
         var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
-        await Utils.flushCacheContaining(`${item.book_alias}:${item.num}`);
         if (col === 'body_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.body_en) && Utils.isTruthy(item.body)) {
             item.body_en = await Utils.openai('gpt-3.5-turbo', `Translate the following passage into English:\n${item.body}`);
@@ -137,6 +136,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       try {
         var item = await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`);
         await Index.update(Item.INDEX, item[0]);
+        await Utils.flushCacheContaining(`${item[0].book_alias}:${item.num}`);
       } catch (err) {
         debug(`${err.message}:\n${err.stack}`);
       }
