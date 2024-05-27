@@ -539,7 +539,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
 // BOOK: SECTION
 router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function (req, res, next) {
   var p = req.params;
-  res.redirect(301, `/${p.bookAlias}/${p.chapterNum}/${p.sectionNum}`);
+  res.redirect(301, `/${p.bookAlias}/${p.chapterNum}/${p.sectionNum}#S${p.sectionNum}-${p.subsectionNum}`);
   return;
 });
 
