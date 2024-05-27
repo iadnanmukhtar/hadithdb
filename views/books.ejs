@@ -3,21 +3,19 @@
 <head>
 <% 
     var site = new Object(global.settings.site);
-    if (!locals.noadmin) {
-      site.admin = (req.cookies.admin == admin.key);
+    site.admin = (req.cookies.admin == admin.key);
+    if (!locals.noadmin)
       site.editMode = (site.admin && req.cookies.editMode == 1);
-    } else {
-      site.admin = false;
+    else
       site.editMode = false;
-    }
-    
+
     var page = {
-      menu: 'Books',
-      title_en: `${site.shortName} | Available Books`,
-      subtitle_en: `Available Books`,
-      subtitle: ``,
-      canonical: `/books`,
-      context: {}
+    menu: 'Books',
+    title_en: `${site.shortName} | Available Books`,
+    subtitle_en: `Available Books`,
+    subtitle: ``,
+    canonical: `/books`,
+    context: {}
     };
 %>
 
