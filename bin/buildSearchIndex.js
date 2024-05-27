@@ -9,7 +9,7 @@ const Index = require('../lib/Index');
 (async () => {
 	try {
 		log(`retreiving data to index...`);
-		var books = await global.query(`SELECT * FROM books b where b.id=61 ORDER BY id`);
+		var books = await global.query(`SELECT * FROM books b ORDER BY id`);
 		for (var i = 0; i < books.length; i++) {
 			await indexDocs('hadiths', books[i]);
 			await indexDocs('toc', books[i]);
