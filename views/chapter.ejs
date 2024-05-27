@@ -44,11 +44,11 @@
       var n = -1;
       for (var item of results) {
         n++;
-        var showHeading = (item.path != lastPath && item.heading.level > 1);
+        var showHeading = (item.path != lastPath && item.heading && item.heading.level > 1);
         lastPath = item.path;
       %>
       
-      <% if (n === 0 && item.heading.level === 3) {
+      <% if (n === 0 && item.heading && item.heading.level === 3) {
             page.context.continued = true; %>
       <%- include('sub-views/heading.ejs', { site: site, page: page, heading: item.section }); %>
       <%   page.context.continued = false;
