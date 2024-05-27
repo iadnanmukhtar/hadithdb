@@ -4,8 +4,13 @@
 <head>
   <%
     var site = new Object(global.settings.site);
-    site.admin = (req.cookies.admin == admin.key);
-    site.editMode = (site.admin && req.cookies.editMode == 1);
+    if (!locals.noadmin) {
+      site.admin = (req.cookies.admin == admin.key);
+      site.editMode = (site.admin && req.cookies.editMode == 1);
+    } else {
+      site.admin = false;
+      site.editMode = false;
+    }
 
     var book = chapter.book;
     var page = {

@@ -4,6 +4,8 @@
 <head> 
 <%
     var site = new Object(global.settings.blog);
+    site.admin = false;
+    site.editMode = false;
 
     var page = {
       menu: 'Blog Post',

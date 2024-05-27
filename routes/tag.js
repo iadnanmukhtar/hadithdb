@@ -163,16 +163,14 @@ router.get('/:tag', async function (req, res, next) {
       throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
 
     // cache response
-    if (!editMode) {
-      var html = await ejs.renderFile(`${__dirname}/../views/tag.ejs`, {
-        tag: tags,
-        results: results,
-        count: count,
-        req: req,
-        res: res
-      });
-      fs.writeFileSync(cachedFile, html);
-    }
+    var html = await ejs.renderFile(`${__dirname}/../views/tag.ejs`, {
+      tag: tags,
+      results: results,
+      count: count,
+      req: req,
+      res: res
+    });
+    fs.writeFileSync(cachedFile, html);
 
     res.render('tag', {
       tag: tags,

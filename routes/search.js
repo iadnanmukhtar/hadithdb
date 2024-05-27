@@ -429,15 +429,14 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     results = await chapter.getItems(offset);
 
     // cache response
-    if (!editMode) {
-      var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
-        chapter: chapter,
-        results: results,
-        req: req,
-        res: res
-      });
-      fs.writeFileSync(cachedFile, html);
-    }
+    var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
+      noadmin: true,
+      chapter: chapter,
+      results: results,
+      req: req,
+      res: res
+    });
+    fs.writeFileSync(cachedFile, html);
 
     res.render('chapter', {
       chapter: chapter,
@@ -495,15 +494,14 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     if (req.query.passage != undefined) {
 
       // cache response
-      if (!editMode) {
-        var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
-          section: section,
-          results: results,
-          req: req,
-          res: res
-        });
-        fs.writeFileSync(cachedFile, html);
-      }
+      var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
+        noadmin: true,
+        section: section,
+        results: results,
+        req: req,
+        res: res
+      });
+      fs.writeFileSync(cachedFile, html);
 
       res.render('section_quran', {
         section: section,
@@ -512,15 +510,14 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     } else {
 
       // cache response
-      if (!editMode) {
-        var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
-          section: section,
-          results: results,
-          req: req,
-          res: res
-        });
-        fs.writeFileSync(cachedFile, html);
-      }
+      var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
+        noadmin: true,
+        section: section,
+        results: results,
+        req: req,
+        res: res
+      });
+      fs.writeFileSync(cachedFile, html);
 
       res.render('section', {
         section: section,

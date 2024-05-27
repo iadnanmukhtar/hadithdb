@@ -19,7 +19,7 @@ router.get('/', async function (req, res, next) {
 
   var admin = (req.cookies.admin == global.settings.admin.key);
   var editMode = (admin && req.cookies.editMode == 1);
-  var cachedFile = `${homedir}/.hadithdb/cache/highlights.html`;
+  var cachedFile = `${homedir}/.hadithdb/cache/${name}.html`;
   if (!editMode && fs.existsSync(cachedFile)) {
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
     res.end(fs.readFileSync(cachedFile));
@@ -29,15 +29,14 @@ router.get('/', async function (req, res, next) {
   var results = await getList();
 
   // cache response
-  if (!editMode) {
-    var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list.ejs`, {
-      results: results,
-      page: getPage(),
-      req: req,
-      res: res
-    });
-    fs.writeFileSync(cachedFile, html);
-  }
+  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list.ejs`, {
+    noadmin: true,
+    results: results,
+    page: getPage(),
+    req: req,
+    res: res
+  });
+  fs.writeFileSync(cachedFile, html);
 
   res.render('hadiths_list', {
     results: results,
@@ -50,7 +49,27 @@ router.get('/feed', async function (req, res, next) {
   res.setHeader('Content-Disposition', `inline; filename="hadithunlocked_${name}_atom.xml"`);
   res.locals.req = req;
   res.locals.res = res;
+
+  var admin = (req.cookies.admin == global.settings.admin.key);
+  var editMode = (admin && req.cookies.editMode == 1);
+  var cachedFile = `${homedir}/.hadithdb/cache/${name}_feed.xml`;
+  if (!editMode && fs.existsSync(cachedFile)) {
+    res.end(fs.readFileSync(cachedFile));
+    return;
+  }
+
   var results = await getList();
+
+  // cache response
+  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, {
+    noadmin: true,
+    results: results,
+    page: getPage('/feed'),
+    req: req,
+    res: res
+  });
+  fs.writeFileSync(cachedFile, html);
+
   res.render('hadiths_list_feed', {
     results: results,
     page: getPage('/feed')
@@ -62,7 +81,27 @@ router.get('/rss', async function (req, res, next) {
   res.setHeader('Content-Disposition', `inline; filename="hadithunlocked_${name}_rss.xml"`);
   res.locals.req = req;
   res.locals.res = res;
+
+  var admin = (req.cookies.admin == global.settings.admin.key);
+  var editMode = (admin && req.cookies.editMode == 1);
+  var cachedFile = `${homedir}/.hadithdb/cache/${name}_rss.xml`;
+  if (!editMode && fs.existsSync(cachedFile)) {
+    res.end(fs.readFileSync(cachedFile));
+    return;
+  }
+
   var results = await getList();
+
+  // cache response
+  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, {
+    noadmin: true,
+    results: results,
+    page: getPage('/rss'),
+    req: req,
+    res: res
+  });
+  fs.writeFileSync(cachedFile, html);
+
   res.render('hadiths_list_rss', {
     results: results,
     page: getPage('/rss')
