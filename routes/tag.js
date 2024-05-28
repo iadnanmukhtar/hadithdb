@@ -37,7 +37,7 @@ router.get('/:tag', async function (req, res, next) {
   var admin = (req.cookies.admin == global.settings.admin.key);
   var editMode = (admin && req.cookies.editMode == 1);
   var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
-  if (!editMode && fs.existsSync(cachedFile)) {
+  if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
     res.end(fs.readFileSync(cachedFile));
     return;
