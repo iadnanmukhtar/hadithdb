@@ -13,3 +13,4 @@ data/archive/*.json
 data/archive/*.db
 data/temp
 temp/*
+*test*

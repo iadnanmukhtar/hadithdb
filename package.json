@@ -14,6 +14,7 @@
     "express-rate-limit": "7.2.0",
     "fast-csv": "5.0.1",
     "front-matter": "4.0.2",
+    "grep1": "^0.0.5",
     "http-errors": "2.0.0",
     "markdown-it": "14.1.0",
     "markdown-it-attrs": "4.1.6",
@@ -34,12 +35,6 @@
   },
   "devDependencies": {
     "@types/jest": "29.5.12",
-    "eslint": "9.0.0",
-    "eslint-config-standard": "17.1.0",
-    "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-jest": "28.2.0",
-    "eslint-plugin-n": "17.2.1",
-    "eslint-plugin-promise": "6.1.1",
     "jest": "29.7.0"
   }
 }
