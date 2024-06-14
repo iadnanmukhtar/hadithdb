@@ -40,8 +40,8 @@
     percentPosition: false,
   });
   
-  var apiURL = "https://thingproxy.freeboard.io/fetch/" + encodeURI('https://masjidal.com/api/v2/masjids/5AvPx2KX?date_end=2024-06-21&date_start=2024-06-11&expand=slideshow,announcements');
-  fetch(apiURL, {mode: 'no-cors'})
+  var apiURL = "https://crossorigin.me/" + encodeURI('https://masjidal.com/api/v2/masjids/5AvPx2KX?date_end=2024-06-21&date_start=2024-06-11&expand=slideshow,announcements');
+  fetch(apiURL)
     .then(response => response.json())
     .then(masjidal => {
       createCarousel(masjidal);
