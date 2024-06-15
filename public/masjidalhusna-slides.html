@@ -40,13 +40,9 @@
     percentPosition: false,
   });
   
-  var apiURL = "https://thingproxy.freeboard.io/fetch/" + encodeURI('https://masjidal.com/api/v2/masjids/5AvPx2KX?date_end=2024-06-21&date_start=2024-06-11&expand=slideshow,announcements');
-  fetch(apiURL, {
-    method: 'GET',
-    headers: {
-      'Origin': 'https://hadithunlocked.com'
-    }
-  })
+  var apiURL = '/proxy/https%3A%2F%2Fmasjidal.com%2Fapi%2Fv2%2Fmasjids%2F5AvPx2KX%3Fdate_end%3D2024-06-21%26date_start%3D2024-06-11%26expand%3Dslideshow%2Cannouncements';
+  console.log(apiURL);
+  fetch(apiURL)
     .then(response => response.json())
     .then(masjidal => {
       createCarousel(masjidal);

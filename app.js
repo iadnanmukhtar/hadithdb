@@ -56,6 +56,7 @@ const app = asyncify(express());
   const blogRouter = require('./routes/blog');
   const loginRouter = require('./routes/login');
   const updateRouter = require('./routes/update');
+  const proxyRouter = require('./routes/proxy');
 
   app.use('/tools', toolsRouter);
   app.use('/recent', highlightsRouter);
@@ -68,6 +69,7 @@ const app = asyncify(express());
   app.use('/update', updateRouter);
   app.use('/login', loginRouter);
   app.use('/blog', blogRouter);
+  app.use('/proxy', proxyRouter);
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {
