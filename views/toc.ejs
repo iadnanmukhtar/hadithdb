@@ -78,6 +78,10 @@
         </small></section>
       <% } %>
 
+      <aside class="h"><div class="tags">
+        <span class="bi bi-download"></span> <a href="/<%- book.alias %>?download&tsv" type="button" rel="nofollow">Download TSV</a>
+      </div></aside>
+
       <% if (typeof random !== 'undefined') { %>
         <hr class="mt-3">
         <header class="row">

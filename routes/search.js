@@ -369,24 +369,33 @@ router.get('/:bookAlias', async function (req, res, next) {
     if (bookIdx < (books.length - 1))
       nextBook = books[bookIdx + 1];
 
-    var results = await Library.instance.findBook(req.params.bookAlias).getChapters();
+    var results;
     var random;
-    if (!book.virtual)
-      random = await Index.docRandomnly(Item.INDEX, `book_alias:${req.params.bookAlias}`);
-    else
-      random = await global.query(`SELECT * FROM v_hadiths_virtual WHERE book_id=${book.id} ORDER BY RAND() LIMIT 1`);
-    if (random && random.length > 0)
-      random = new Item(random[0]);
+    if ('download' in req.query && 'tsv' in req.query) {
+      debug(`downloading ${req.params.bookAlias}`);
+      if (!book.virtual)
+        results = await global.query(`SELECT * from v_hadiths WHERE book_id=${book.id} ORDER BY ordinal`);
+      else
+        results = await global.query(`SELECT * from v_hadiths_virtual WHERE book_id=${book.id} ORDER BY ordinal`);
+    } else {
+      results = await Library.instance.findBook(req.params.bookAlias).getChapters();
+      if (!book.virtual)
+        random = await Index.docRandomnly(Item.INDEX, `book_alias:${req.params.bookAlias}`);
+      else
+        random = await global.query(`SELECT * FROM v_hadiths_virtual WHERE book_id=${book.id} ORDER BY RAND() LIMIT 1`);
+      if (random && random.length > 0)
+        random = new Item(random[0]);
+    }
 
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(toc));
+      res.end(JSON.stringify(results));
     } else if ('tsv' in req.query) {
       res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
-      var keyNames = Object.keys(toc[0]);
+      var keyNames = Object.keys(results[0]);
       if ('keys' in req.query)
         keyNames = req.query.keys.split(/,/);
-      res.end(Utils.toTSV(toc, keyNames));
+      res.end(Utils.toTSV(results, keyNames));
     } else {
       res.render('toc', {
         book: book,
