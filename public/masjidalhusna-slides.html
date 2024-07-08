@@ -59,7 +59,11 @@
       img.addEventListener('load', () => {
         const div = document.createElement('div');
         div.setAttribute('class', 'carousel-cell');
-        div.appendChild(img);
+        const a = document.createElement('a');
+        a.setAttribute('href', image.img_click_url);
+        a.setAttribute('title', image.name);
+        a.appendChild(img);
+        div.appendChild(a);
         flkty.append(div);
       });
     });
