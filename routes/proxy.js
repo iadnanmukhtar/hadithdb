@@ -19,7 +19,7 @@ router.get('/:url', async function (req, res, next) {
     var resource;
     var text;
     var headers = req.headers;
-    headers.host = 'localhost';
+    headers.host = 'masjidal.com';
     console.log(headers);
     try {
       resource = await fetch(req.params.url, { method: 'GET', headers: headers, agent: agent });
