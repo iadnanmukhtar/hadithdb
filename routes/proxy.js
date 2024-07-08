@@ -16,8 +16,14 @@ router.get('/:url', async function (req, res, next) {
     const agent = new https.Agent({
       rejectUnauthorized: false
     });
-    const resource = await fetch(req.params.url, { method: 'GET', headers: req.headers, agent: agent });
-    const text = await resource.text();
+    var resource;
+    var text;
+    try {
+      resource = await fetch(req.params.url, { method: 'GET', headers: req.headers, agent: agent });
+      text = await resource.text();
+    } catch (e) {
+      console.log(e);
+    }
     console.log(text);
     res.send(text);
     res.end();
