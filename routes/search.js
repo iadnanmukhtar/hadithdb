@@ -4,7 +4,6 @@
 const debug = require('debug')('hadithdb:search');
 const express = require('express');
 const createError = require('http-errors');
-const asyncify = require('express-asyncify').default;
 const fs = require('fs');
 const fm = require('front-matter');
 const nodeHtmlToImage = require('node-html-to-image');
@@ -17,7 +16,7 @@ const Index = require('../lib/Index');
 const Arabic = require('../lib/Arabic');
 const { homedir } = require('os');
 
-const router = asyncify(express.Router());
+const router = express.Router();
 
 router.get('/reinit', async function (req, res, next) {
   await Hadith.a_reinit();

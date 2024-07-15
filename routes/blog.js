@@ -3,14 +3,13 @@
 
 const debug = require('debug')('hadithdb:blog');
 const express = require('express');
-const asyncify = require('express-asyncify').default;
 const fs = require('fs');
 const createError = require('http-errors');
 const fm = require('front-matter');
 const markdownit = require('markdown-it');
 const markdownitfence = require('markdown-it-fence')
 
-const router = asyncify(express.Router());
+const router = express.Router();
 
 router.get('/', async function (req, res, next) {
 

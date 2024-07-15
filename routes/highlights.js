@@ -3,14 +3,13 @@
 
 const debug = require('debug')('hadithdb:highlights');
 const express = require('express');
-const asyncify = require('express-asyncify').default;
 const { homedir } = require('os');
 const fs = require('fs');
 const ejs = require('ejs');
 const { Item } = require('../lib/Model');
 const Utils = require('../lib/Utils');
 
-const router = asyncify(express.Router());
+const router = express.Router();
 const name = 'highlights';
 
 router.get('/', async function (req, res, next) {
@@ -29,6 +28,10 @@ router.get('/', async function (req, res, next) {
   var results = await getList();
 
   // cache response
+  var refs = [];
+  for (const item of results)
+    refs.push(item.ref);
+  Utils.indexCachedItem(refs, cachedFile);
   var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list.ejs`, {
     noadmin: true,
     results: results,

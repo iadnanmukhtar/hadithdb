@@ -2,11 +2,10 @@
 
 const debug = require('debug')('hadithdb:proxy');
 const express = require('express');
-const asyncify = require('express-asyncify').default;
 const axios = require('axios');
 const https = require('https')
 
-const router = asyncify(express.Router());
+const router = express.Router();
 
 router.get('/:url', async function (req, res, next) {
   res.locals.req = req;

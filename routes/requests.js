@@ -3,14 +3,13 @@
 
 const debug = require('debug')('hadithdb:requests');
 const express = require('express');
-const asyncify = require('express-asyncify').default;
 const { homedir } = require('os');
 const fs = require('fs');
 const ejs = require('ejs');
 const { Item } = require('../lib/Model');
 const Utils = require('../lib/Utils');
 
-const router = asyncify(express.Router());
+const router = express.Router();
 const name = 'requests';
 
 router.get('/', async function (req, res, next) {

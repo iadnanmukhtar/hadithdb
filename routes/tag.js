@@ -4,7 +4,6 @@
 const debug = require('debug')('hadithdb:tag');
 const express = require('express');
 const createError = require('http-errors');
-const asyncify = require('express-asyncify').default;
 const { homedir } = require('os');
 const fs = require('fs');
 const ejs = require('ejs');
@@ -14,7 +13,7 @@ const Utils = require('../lib/Utils');
 const Index = require('../lib/Index');
 const { Item } = require('../lib/Model');
 
-const router = asyncify(express.Router());
+const router = express.Router();
 
 router.get('/:tag', async function (req, res, next) {
   res.locals.req = req;

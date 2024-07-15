@@ -7,14 +7,13 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const createError = require('http-errors');
-const asyncify = require('express-asyncify').default;
 const Hadith = require('../lib/Hadith');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
 const Index = require('../lib/Index');
 const { Heading, Item } = require('../lib/Model');
 
-const router = asyncify(express.Router());
+const router = express.Router();
 
 router.post('/:id/:prop', async function (req, res, next) {
   if (global.settings.admin.key != req.cookies.admin)
@@ -135,8 +134,8 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.message = result.message;
       try {
         var item = await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`);
+        await Utils.flushCacheContaining(`${item[0].book_alias}:${item[0].num}`);
         await Index.update(Item.INDEX, item[0]);
-        await Utils.flushCacheContaining(`${item[0].book_alias}:${item.num}`);
       } catch (err) {
         debug(`${err.message}:\n${err.stack}`);
       }

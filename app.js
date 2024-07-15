@@ -6,13 +6,12 @@ const debug = require('debug')('hadithdb:app');
 const path = require('path');
 const createError = require('http-errors');
 const express = require('express');
-const asyncify = require('express-asyncify').default;
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit').default;
 const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
 
-const app = asyncify(express());
+const app = express();
 
 (async () => {
   app.set('views', path.join(__dirname, 'views'));

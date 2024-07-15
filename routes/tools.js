@@ -3,11 +3,10 @@
 
 const debug = require('debug')('hadithdb:tools');
 const express = require('express');
-const asyncify = require('express-asyncify').default;
 const Arabic = require('../lib/Arabic');
 const Hadith = require('../lib/Hadith');
 
-const router = asyncify(express.Router());
+const router = express.Router();
   
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
