@@ -425,7 +425,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
     if ('flush' in req.query)
-      Utils.flushCachedFile(cachedFile);  
+      Utils.flushCachedFile(cachedFile);
     if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       res.end(fs.readFileSync(cachedFile));
@@ -439,6 +439,10 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     results = await chapter.getItems(offset);
 
     // cache response
+    var refs = [];
+    for (const item of results)
+      refs.push(item.ref);
+    Utils.indexCachedItem(refs, cachedFile);
     var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
       noadmin: true,
       chapter: chapter,
@@ -482,7 +486,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
 
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
     if ('flush' in req.query)
-      Utils.flushCachedFile(cachedFile);  
+      Utils.flushCachedFile(cachedFile);
     if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       res.end(fs.readFileSync(cachedFile));
@@ -506,6 +510,10 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     if (req.query.passage != undefined) {
 
       // cache response
+      var refs = [];
+      for (const item of results)
+        refs.push(item.ref);
+      Utils.indexCachedItem(refs, cachedFile);  
       var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
         noadmin: true,
         section: section,
@@ -522,6 +530,10 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     } else {
 
       // cache response
+      var refs = [];
+      for (const item of results)
+        refs.push(item.ref);
+      Utils.indexCachedItem(refs, cachedFile);  
       var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
         noadmin: true,
         section: section,

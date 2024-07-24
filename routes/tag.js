@@ -164,6 +164,10 @@ router.get('/:tag', async function (req, res, next) {
       throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
 
     // cache response
+    var refs = [];
+    for (const item of results)
+      refs.push(item.ref);
+    Utils.indexCachedItem(refs, cachedFile);
     var html = await ejs.renderFile(`${__dirname}/../views/tag.ejs`, {
       tag: tags,
       results: results,

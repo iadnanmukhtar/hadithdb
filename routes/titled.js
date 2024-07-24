@@ -31,6 +31,10 @@ router.get('/', async function (req, res, next) {
   var results = await getList();
 
   // cache response
+  var refs = [];
+  for (const item of results)
+    refs.push(item.ref);
+  Utils.indexCachedItem(refs, cachedFile);
   var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list.ejs`, {
     noadmin: true,
     results: results,
@@ -65,6 +69,10 @@ router.get('/feed', async function (req, res, next) {
   var results = await getList();
 
   // cache response
+  var refs = [];
+  for (const item of results)
+    refs.push(item.ref);
+  Utils.indexCachedItem(refs, cachedFile);
   var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, {
     noadmin: true,
     results: results,
@@ -99,6 +107,10 @@ router.get('/rss', async function (req, res, next) {
   var results = await getList();
 
   // cache response
+  var refs = [];
+  for (const item of results)
+    refs.push(item.ref);
+  Utils.indexCachedItem(refs, cachedFile);
   var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, {
     noadmin: true,
     results: results,
