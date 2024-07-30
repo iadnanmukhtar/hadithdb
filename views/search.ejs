@@ -114,7 +114,7 @@
 
       <% if (results.length != 1 && q) { %>
       <div class="text-center">
-        Found results for term: [<%=q%>] in <%= b.length > 0 ? `${b.join(', ')}` : 'all books'%>
+        Found results for term: [<%=q%>] in <%= b.length > 0 ? `${Array.isArray(b) ? b.join(', ') : b}` : 'all books'%>
       </div>
       <% } else if (results.length != 1) { %>
       <div class="text-center">
