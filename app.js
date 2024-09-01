@@ -20,7 +20,7 @@ const app = express();
   app.use(requestIp.mw());
   app.use(express.json());
   app.use(cookieParser());
-  app.use('/', express.static(path.join(__dirname, 'public')));
+  app.use('/', express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));
   app.use('/blog', express.static(`${global.settings.blog.dir}`));
 
   // global redirect www
