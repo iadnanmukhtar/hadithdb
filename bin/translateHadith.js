@@ -26,7 +26,7 @@ async function translate(item) {
 		item = await Item.itemFromRef(item.hId);
 		if (utils.isFalsey(item.body_en)) {
 			console.log(`Translating ${item.ref}...`);
-			item.body_en = await utils.openai('gpt-3.5-turbo', `Translate the following passage into English and don't include the prompt answer: ${item.body}`);
+			item.body_en = await utils.openai('gpt-4o', `Translate the following passage into English and don't include the prompt answer: ${item.body}`);
 			item.body_en = utils.replacePBUH('[Machine] ' + utils.trimToEmpty(item.body_en));
 			await global.query(`UPDATE hadiths SET body_en="${utils.escSQL(item.body_en)}", temp_trans=1 WHERE id=${item.hId}`);
 			await Index.update(Item.INDEX, item);

@@ -38,7 +38,7 @@ async function translate(heading) {
 			title = title.replace(/^بَابٌ[ :]/, '');
 			title = title.replace(/^حديث[ :]/, '');
 			title = title.replace(/^ذكر /, '');
-			heading[`h${level}_title_en`] = await utils.openai('gpt-3.5-turbo', `Translate the following heading into English and don't include the prompt answer: ${title}`);
+			heading[`h${level}_title_en`] = await utils.openai('gpt-4o', `Translate the following heading into English and don't include the prompt answer: ${title}`);
 			console.log(`Fix ${heading.ref}...`);
 			heading[`h${level}_title_en`] = heading[`h${level}_title_en`].replace(/^"/, '');
 			heading[`h${level}_title_en`] = heading[`h${level}_title_en`].replace(/"$/, '');

@@ -491,6 +491,17 @@ nav .nav-link {
 }
 
 .partial {
+	height: 4rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.partial:hover {
+	height: auto;
+	overflow: visible;
+}
+
+/* .partial {
 	display: block;
 	overflow: hidden;
 	display: -webkit-box;
@@ -504,7 +515,7 @@ nav .nav-link {
 	-webkit-line-clamp: unset;
 	line-clamp: unset;
 	-webkit-box-orient: unset;
-}
+} */
 
 .l2 {
 	-webkit-line-clamp: 2;
