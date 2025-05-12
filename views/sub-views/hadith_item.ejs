@@ -64,7 +64,8 @@
 	<section class="_e body <%=_p%> l5" title="Ḥadīth Body" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
 		<% if (!i[lang].body) { %>
 			<div class="cmd-tr">
-				<a href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');">Request/Fix</a> translation<br/>
+				<!-- <a href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');">Request/Fix</a> translation<br/> -->
+				Translation not available.
 			</div>
 		<% } %>
 		<p>
@@ -146,7 +147,7 @@
 	<aside class="tags">
 	<% if (lang === 'en') { %>
 		<% if (!i.single) { %>
-			<span class="bi bi-chat-right-text"></span>&nbsp;<a href="/<%= i.ref %>">Discuss</a>
+			<span class="bi bi-chat-right-text"></span>&nbsp;<a href="/<%= i.ref %>">Reflect</a>
 			&nbsp;
 		<% } %>
 		<span class="bi bi-box-arrow-up"></span>&nbsp;<a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.en.actual.num : i.en.num %>?sharepreview" type="button" title="Zoom In" class="icon">Share</a>
