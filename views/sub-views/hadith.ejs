@@ -23,8 +23,9 @@
 
 	<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
 
-	<%# Telegram Comments %>
 	<% if (i.single) { %>
+		<%# Telegram Comments %>
+		<!--
 		<a href="#discuss"></a>
 		<aside class="row">
 			<div class="col-12">
@@ -41,6 +42,21 @@
 					}
 			});
 			}, { once: true });
+		</script>
+		-->
+		<%# Disqus Comments %>
+		<div id="disqus_thread"></div>
+		<script>
+			var disqus_config = function () {
+				this.page.url = '<%=page.canonical%>';
+				this.page.identifier = '<%=i.ref%>';
+			};
+			(function() {
+			var d = document, s = d.createElement('script');
+			s.src = 'https://https-hadithunlocked-com.disqus.com/embed.js';
+			s.setAttribute('data-timestamp', +new Date());
+			(d.head || d.body).appendChild(s);
+			})();
 		</script>
 	<% } %>
 
