@@ -16,7 +16,7 @@ const { Heading, Item } = require('../lib/Model');
 const router = express.Router();
 
 router.post('/:id/:prop', async function (req, res, next) {
-  if (global.settings.admin.key != req.cookies.admin)
+  if (global.settings.admin.key != req.cookies.admin && req.hostname != 'localhost')
     throw createError(403, "Update unauthorized");
   var userId = req.cookies.userId;
   var status = {
@@ -98,6 +98,14 @@ router.post('/:id/:prop', async function (req, res, next) {
         await Index.update(Heading.INDEX, prevTOC);
         var nextTOC = (await global.query(`SELECT * from v_toc WHERE tId=${afterTOCId} ORDER BY ordinal DESC LIMIT 1`))[0];
         await Index.update(Heading.INDEX, nextTOC);
+
+      } else if (col === 'add') {
+
+        var curr = (await global.query(`SELECT * from hadiths WHERE id=${ids[0]}`))[0];
+        if (curr) {
+          result = await global.query(`INSERT IGNORE INTO hadiths_sim
+            (hadithId1, ref_num) VALUES (${ids[0]}, ${sql(status.value)})`);
+        }
 
       } else { // hadith
 
