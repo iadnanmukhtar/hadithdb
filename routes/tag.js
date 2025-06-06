@@ -169,6 +169,7 @@ router.get('/:tag', async function (req, res, next) {
       refs.push(item.ref);
     Utils.indexCachedItem(refs, cachedFile);
     var html = await ejs.renderFile(`${__dirname}/../views/tag.ejs`, {
+      noadmin: true,
       tag: tags,
       results: results,
       count: count,
