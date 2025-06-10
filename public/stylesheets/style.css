@@ -26,6 +26,7 @@ body {
 	font-family: "Gentium Plus", Serif;
 }
 
+s,
 body :lang(ar) {
 	font-family: Kitab, Serif;
 	font-size: var(--f-size-ar);
@@ -52,6 +53,7 @@ body :lang(ar) {
 	line-height: 1.6rem;
 }
 
+s,
 :lang(ar) b,
 :lang(ar) strong {
 	font-family: KitabBold, Serif;
@@ -276,6 +278,7 @@ nav .nav-link {
 	font-size: 1.75rem;
 }
 
+s,
 .blog-post :lang(ar) h1 {
 	font-family: KitabBold;
 	font-size: 2.1rem;
@@ -285,6 +288,7 @@ nav .nav-link {
 	font-size: 1.5rem;
 }
 
+s,
 .blog-post :lang(ar) h2 {
 	font-family: KitabBold;
 	font-size: 1.9rem;
@@ -294,6 +298,7 @@ nav .nav-link {
 	font-size: 1.4rem;
 }
 
+s,
 .blog-post :lang(ar) h3 {
 	font-family: KitabBold;
 	font-size: 1.8rem;
@@ -303,6 +308,7 @@ nav .nav-link {
 	font-size: 1.3rem;
 }
 
+s,
 .blog-post :lang(ar) h4 {
 	font-family: KitabBold;
 	font-size: 1.7rem;
@@ -312,6 +318,7 @@ nav .nav-link {
 	font-size: 1.2rem;
 }
 
+s,
 .blog-post :lang(ar) h5 {
 	font-family: KitabBold;
 	font-size: 1.56rem;
@@ -321,6 +328,7 @@ nav .nav-link {
 	font-size: 1.10rem;
 }
 
+s,
 .blog-post :lang(ar) h6 {
 	font-family: KitabBold;
 	font-size: 1.43rem;
@@ -663,4 +671,5 @@ a.cmd-btn:hover {
 
 }
 
+/* Blog Style */
 
