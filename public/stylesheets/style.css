@@ -285,6 +285,7 @@ nav .nav-link {
 }
 
 .blog-post p:has(s),
+.blog-post ol>li:has(s),
 .blog-post ul>li:has(s) {
 	direction: rtl;
 	text-align: right;
