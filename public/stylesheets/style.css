@@ -280,8 +280,8 @@ nav .nav-link {
 	font-size: 1.5rem;
 }
 
-p:has(s),
-ul>li:has(s) {
+.blog-post p:has(s),
+.blog-post ul>li:has(s) {
 	direction: rtl;
 	text-align: right;
 }
