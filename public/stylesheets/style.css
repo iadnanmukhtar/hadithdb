@@ -340,7 +340,7 @@ nav .nav-link {
 }
 
 .blog-post .body p {
-	text-indent: 2rem;
+	/* text-indent: 2rem; */
 }
 
 .blog-post .footnotes p {
@@ -354,6 +354,7 @@ nav .nav-link {
 }
 
 .blog-post blockquote blockquote {
+	border-left: 0;
 	padding-left: 0;
 	font-size: 75%;
 }
