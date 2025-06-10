@@ -273,12 +273,16 @@ nav .nav-link {
 }
 
 
-.blog-post s,
-ul>li:has(s) {
+.blog-post s {
 	direction: rtl;
+	text-align: right;
 	font-family: Kitab, Serif;
 	text-decoration: none !important;
 	font-size: 1.5rem;
+}
+
+ul>li:has(s) {
+	direction: rtl;
 }
 
 .blog-post h1 {
