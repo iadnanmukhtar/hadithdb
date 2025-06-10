@@ -272,6 +272,11 @@ nav .nav-link {
 	height: auto;
 }
 
+.blog-post p>img {
+	max-width: 100%;
+	height: auto;
+}
+
 .blog-post s {
 	direction: rtl;
 	font-family: Kitab, Serif;
