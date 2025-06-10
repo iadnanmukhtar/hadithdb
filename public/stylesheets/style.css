@@ -275,7 +275,6 @@ nav .nav-link {
 
 .blog-post s {
 	direction: rtl;
-	text-align: right;
 	font-family: Kitab, Serif;
 	text-decoration: none !important;
 	font-size: 1.5rem;
@@ -283,6 +282,7 @@ nav .nav-link {
 
 ul>li:has(s) {
 	direction: rtl;
+	text-align: right;
 }
 
 .blog-post h1 {
