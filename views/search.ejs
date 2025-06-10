@@ -2,11 +2,11 @@
 <html lang="en">
 
 <head>
-  <% 
+  <%
     var site = new Object(global.settings.site);
     site.admin = (req.cookies.admin == admin.key);
     if (!locals.noadmin)
-      site.editMode = (site.admin && req.cookies.editMode == 1);
+      site.editMode = (site.admin && req.cookies.editMode == 1) || req.hostname == 'localhost';
     else
       site.editMode = false;
     
