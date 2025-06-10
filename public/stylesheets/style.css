@@ -272,7 +272,9 @@ nav .nav-link {
 	height: auto;
 }
 
-.blog-post s {
+
+.blog-post s,
+ul>li:has(s) {
 	direction: rtl;
 	font-family: Kitab, Serif;
 	text-decoration: none !important;
