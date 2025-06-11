@@ -284,6 +284,11 @@ nav .nav-link {
 	font-size: 1.5rem;
 }
 
+.blog-post s b,
+.blog-post s strong {
+	color: blue;
+}
+
 .blog-post p:has(s),
 .blog-post ol>li:has(s),
 .blog-post ul>li:has(s) {
