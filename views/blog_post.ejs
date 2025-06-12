@@ -51,8 +51,8 @@
       <div id="disqus_thread"></div>
       <script>
         var disqus_config = function () {
-          this.page.url = '<%=site.url + '/' + i.ref%>';
-          this.page.identifier = '<%= i.ref%>';
+          this.page.url = '<%=`${site.url}${page.canonical}`%>';
+          this.page.identifier = '<%= page.canonical %>';
         };
         (function() {
         var d = document, s = d.createElement('script');
