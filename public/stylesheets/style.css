@@ -366,6 +366,7 @@ s em strong,
 del em strong {
 	font-style: normal;
 	font-weight: normal;
+	color: inherit !important;
 	font-family: "Noto Nastaliq Urdu";
 	font-size: 75%;
 }
