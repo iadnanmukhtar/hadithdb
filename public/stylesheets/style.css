@@ -364,7 +364,10 @@ nav .nav-link {
 
 s em strong,
 del em strong {
+	font-style: normal;
+	font-weight: normal;
 	font-family: "Noto Nastaliq Urdu";
+	font-size: 75%;
 }
 
 .blog-post .body p {
