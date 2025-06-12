@@ -14,7 +14,7 @@
       subtitle: null,
       canonical: `${req.path}`,
       feed: `${site.url}/feed`,
-      cover: `https://hadithunlocked.com/blog/${attr.cover}`,
+      cover: encodeURI(`https://hadithunlocked.com/blog/${attr.cover}`),
       context: {},
     };
 %> 
