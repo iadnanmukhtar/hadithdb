@@ -22,9 +22,9 @@
   <link rel="alternate" type="application/rss+xml" title="Recent translations of beautiful and notable aḥādīth" href="<%= site.url %>/highlights/rss" />
 <% } %>
 
-<link rel="image_src" href="<%= page.cover %>" />
-<link rel="apple-touch-icon" href="<%= page.cover %>" />
-<link rel="icon" href="<%= page.cover %>" />
+<link rel="image_src" href="<%= page.cover || site.logo %>" />
+<link rel="apple-touch-icon" href="<%= page.cover || site.logo %>" />
+<link rel="icon" href="<%= page.cover || site.logo %>" />
 <link rel="icon" href="/favicon.ico" />
 
 
@@ -40,14 +40,14 @@
 
 <meta property="og:site_name" content="<%= site.name %>">
 <meta property="og:locale" content="en">
-<meta property="og:image" content="<%= page.cover %>">
+<meta property="og:image" content="<%= page.cover || site.logo %>">
 <meta property="og:url" content="<%= site.url %><%- page.canonical %>">
 <meta property="og:title" content="<%= page.title_en %>">
 <meta property="og:description" content="<%= page.subtitle_en %>">
 <meta property="og:type" content="article" />
 
 <meta property="twitter:card" content="summary">
-<meta property="twitter:image" content="<%= page.cover %>">
+<meta property="twitter:image" content="<%= page.cover || site.logo %>">
 <meta property="twitter:title" content="<%= page.title_en %>">
 <meta property="twitter:description" content="<%= page.subtitle_en %>">
 
