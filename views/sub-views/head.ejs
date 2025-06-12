@@ -38,17 +38,18 @@
 <% 		}
 	} %>
 
-<meta name="og:site_name" content="<%= site.name %>">
-<meta name="og:locale" content="en">
-<meta name="og:image" content="<%= page.cover %>">
-<meta name="og:url" content="<%= site.url %><%- page.canonical %>">
-<meta name="og:title" content="<%= page.title_en %>">
-<meta name="og:description" content="<%= page.subtitle_en %>">
+<meta property="og:site_name" content="<%= site.name %>">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="<%= page.cover %>">
+<meta property="og:url" content="<%= site.url %><%- page.canonical %>">
+<meta property="og:title" content="<%= page.title_en %>">
+<meta property="og:description" content="<%= page.subtitle_en %>">
+<meta property="og:type" content="article" />
 
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="<%= page.cover %>">
-<meta name="twitter:title" content="<%= page.title_en %>">
-<meta name="twitter:description" content="<%= page.subtitle_en %>">
+<meta property="twitter:card" content="summary">
+<meta property="twitter:image" content="<%= page.cover %>">
+<meta property="twitter:title" content="<%= page.title_en %>">
+<meta property="twitter:description" content="<%= page.subtitle_en %>">
 
 <script type="application/ld+json">
   {
