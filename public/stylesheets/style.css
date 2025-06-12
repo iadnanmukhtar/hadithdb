@@ -362,8 +362,8 @@ nav .nav-link {
 	font-size: 1.43rem;
 }
 
-s strong em,
-del strong em {
+s em strong,
+del em strong {
 	font-family: "Noto Nastaliq Urdu";
 }
 
