@@ -289,6 +289,12 @@ nav .nav-link {
 	color: blue;
 }
 
+.blog-post h1:has(s),
+.blog-post h2:has(s),
+.blog-post h3:has(s),
+.blog-post h4:has(s),
+.blog-post h5:has(s),
+.blog-post h6:has(s),
 .blog-post p:has(s),
 .blog-post ol>li:has(s),
 .blog-post ul>li:has(s) {
@@ -300,6 +306,7 @@ nav .nav-link {
 	font-size: 1.75rem;
 }
 
+.blog-post h1 s,
 .blog-post :lang(ar) h1 {
 	font-family: KitabBold;
 	font-size: 2.1rem;
@@ -309,6 +316,7 @@ nav .nav-link {
 	font-size: 1.5rem;
 }
 
+.blog-post h2 s,
 .blog-post :lang(ar) h2 {
 	font-family: KitabBold;
 	font-size: 1.9rem;
@@ -318,6 +326,7 @@ nav .nav-link {
 	font-size: 1.4rem;
 }
 
+.blog-post h3 s,
 .blog-post :lang(ar) h3 {
 	font-family: KitabBold;
 	font-size: 1.8rem;
@@ -327,6 +336,7 @@ nav .nav-link {
 	font-size: 1.3rem;
 }
 
+.blog-post h4 s,
 .blog-post :lang(ar) h4 {
 	font-family: KitabBold;
 	font-size: 1.7rem;
@@ -336,6 +346,7 @@ nav .nav-link {
 	font-size: 1.2rem;
 }
 
+.blog-post h5 s,
 .blog-post :lang(ar) h5 {
 	font-family: KitabBold;
 	font-size: 1.56rem;
@@ -345,6 +356,7 @@ nav .nav-link {
 	font-size: 1.10rem;
 }
 
+.blog-post h6 s,
 .blog-post :lang(ar) h6 {
 	font-family: KitabBold;
 	font-size: 1.43rem;
