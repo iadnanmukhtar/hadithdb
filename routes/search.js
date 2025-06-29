@@ -149,6 +149,9 @@ router.get('/', async function (req, res, next) {
       if ('keys' in req.query)
         keyNames = req.query.keys.split(/,/);
       res.end(Utils.toTSV(results, keyNames));
+    } else if ('md' in req.query) {
+      res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+      res.end(Utils.toMarkdown(results));
     } else {
       res.render('search', {
         results: results,
@@ -441,24 +444,39 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     await chapter.getSections();
     results = await chapter.getItems(offset);
 
-    // cache response
-    var refs = [];
-    for (const item of results)
-      refs.push(item.ref);
-    Utils.indexCachedItem(refs, cachedFile);
-    var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
-      noadmin: true,
-      chapter: chapter,
-      results: results,
-      req: req,
-      res: res
-    });
-    fs.writeFileSync(cachedFile, html);
+    if ('json' in req.query) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(results));
+    } else if ('tsv' in req.query) {
+      res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+      var keyNames = Object.keys(results[0]);
+      if ('keys' in req.query)
+        keyNames = req.query.keys.split(/,/);
+      res.end(Utils.toTSV(results, keyNames));
+    } else if ('md' in req.query) {
+      res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+      res.end(Utils.toMarkdown(results));
+    } else {
 
-    res.render('chapter', {
-      chapter: chapter,
-      results: results
-    });
+      // cache response
+      var refs = [];
+      for (const item of results)
+        refs.push(item.ref);
+      Utils.indexCachedItem(refs, cachedFile);
+      var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
+        noadmin: true,
+        chapter: chapter,
+        results: results,
+        req: req,
+        res: res
+      });
+      fs.writeFileSync(cachedFile, html);
+
+      res.render('chapter', {
+        chapter: chapter,
+        results: results
+      });
+    }
 
   } catch (e) {
     if (e instanceof ReferenceError)
@@ -516,7 +534,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       var refs = [];
       for (const item of results)
         refs.push(item.ref);
-      Utils.indexCachedItem(refs, cachedFile);  
+      Utils.indexCachedItem(refs, cachedFile);
       var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
         noadmin: true,
         section: section,
@@ -532,24 +550,41 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       });
     } else {
 
-      // cache response
-      var refs = [];
-      for (const item of results)
-        refs.push(item.ref);
-      Utils.indexCachedItem(refs, cachedFile);  
-      var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
-        noadmin: true,
-        section: section,
-        results: results,
-        req: req,
-        res: res
-      });
-      fs.writeFileSync(cachedFile, html);
+      if ('json' in req.query) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(results));
+      } else if ('tsv' in req.query) {
+        res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+        var keyNames = Object.keys(results[0]);
+        if ('keys' in req.query)
+          keyNames = req.query.keys.split(/,/);
+        res.end(Utils.toTSV(results, keyNames));
+      } else if ('md' in req.query) {
+        res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+        res.end(Utils.toMarkdown(results));
+      } else {
 
-      res.render('section', {
-        section: section,
-        results: results
-      });
+        // cache response
+        var refs = [];
+        for (const item of results)
+          refs.push(item.ref);
+        Utils.indexCachedItem(refs, cachedFile);
+        var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
+          noadmin: true,
+          section: section,
+          results: results,
+          req: req,
+          res: res
+        });
+        fs.writeFileSync(cachedFile, html);
+
+        res.render('section', {
+          section: section,
+          results: results
+        });
+
+      }
+
     }
 
   } catch (e) {
