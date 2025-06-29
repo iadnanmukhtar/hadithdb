@@ -47,7 +47,7 @@ router.get('/:tag', async function (req, res, next) {
   var offset = 0;
   if (req.query.o)
     offset = Math.floor(parseFloat(req.query.o) / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
-  
+
   var queryString = '';
   var tags = req.params.tag.split(/\+/);
   for (var i in tags) {
@@ -133,6 +133,9 @@ router.get('/:tag', async function (req, res, next) {
     if ('keys' in req.query)
       keyNames = req.query.keys.split(/,/);
     res.end(Utils.toTSV(results, keyNames));
+  } else if ('md' in req.query) {
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.end(Utils.toMarkdown(results));
   } else {
     var size = global.settings.search.itemsPerPage;
     var end = offset + size + 1;
@@ -140,16 +143,16 @@ router.get('/:tag', async function (req, res, next) {
       end = results.length;
     results = results.slice(offset, end);
     // set offset based attributes
-		results.page = {
-			offset: offset,
-			number: (offset / size) + 1,
-			hasNext: (results.length > size),
-			prevOffset: ((offset - size) < size) ? 0 : offset - size,
-			nextOffset: offset + size,
-			hasPrev: ((offset - size) >= 0),
-		};
-		if (results.page.hasNext)
-			results.pop();
+    results.page = {
+      offset: offset,
+      number: (offset / size) + 1,
+      hasNext: (results.length > size),
+      prevOffset: ((offset - size) < size) ? 0 : offset - size,
+      nextOffset: offset + size,
+      hasPrev: ((offset - size) >= 0),
+    };
+    if (results.page.hasNext)
+      results.pop();
     // results.pg = (offset / global.settings.search.itemsPerPage) + 1;
     // results.offset = offset;
     // results.hasNext = (results.length > global.settings.search.itemsPerPage);
