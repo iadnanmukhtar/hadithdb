@@ -121,10 +121,12 @@ router.get('/:tag', async function (req, res, next) {
     for (var i = 0; i < results.length; i++) {
       var chain = Utils.emptyIfNull(results[i].chain_en).split(/(>|&gt;)/g).filter(s => (s != '>' && s != '&gt;')).reverse();
       for (var j = 0; j < chain.length; j++) {
-        for (var k = 0; k < j; k++) out += '\t';
-        out += '* ' + chain[j].trim().replace(/ /g, '_');
-        out += '\n';
+        // for (var k = 0; k < j; k++) out += '\t';
+        if (j > 0)
+          out += ' < ';
+        out += chain[j].trim();
       }
+      out += '\n';
     }
     res.end(out);
   } else if ('tsv' in req.query) {
