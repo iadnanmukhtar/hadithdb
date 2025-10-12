@@ -45,19 +45,22 @@
 			}, { once: true });
 		</script>
 		-->
-		<%# Disqus Comments %>
-		<div id="disqus_thread"></div>
-		<script>
-			var disqus_config = function () {
-				this.page.url = '<%=site.url + '/' + i.ref%>';
-				this.page.identifier = '<%= i.ref%>';
-			};
-			(function() {
-			var d = document, s = d.createElement('script');
-			s.src = 'https://https-hadithunlocked-com.disqus.com/embed.js';
-			s.setAttribute('data-timestamp', +new Date());
-			(d.head || d.body).appendChild(s);
-			})();
+		<%# Giscus Comments %>
+		<script src="https://giscus.app/client.js"
+			data-repo="iadnanmukhtar/hadithdb"
+			data-repo-id="R_kgDOH-tiLA"
+			data-category="Show and tell"
+			data-category-id="DIC_kwDOH-tiLM4CwjYB"
+			data-mapping="url"
+			data-strict="0"
+			data-reactions-enabled="1"
+			data-emit-metadata="1"
+			data-input-position="top"
+			data-theme="light"
+			data-lang="en"
+			data-loading="lazy"
+			crossorigin="anonymous"
+			async>
 		</script>
 	<% } %>
 
