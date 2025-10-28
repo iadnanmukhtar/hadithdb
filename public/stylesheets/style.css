@@ -391,13 +391,15 @@ del em strong {
 	font-size: 75%;
 }
 
-.blog-post blockquote.callout {
+.blog-post blockquote.callout,
+.blog-post blockquote:has(p.callout) {
 	padding: 15px;
 	color: var(--bs-body-color);
 	background-color: #e2f5ff;
 }
 
-.blog-post blockquote.callout::first-line {
+.blog-post blockquote.callout::first-line,
+.blog-post blockquote:has(p.callout)::first-line {
 	font-weight: bold;
 }
 
