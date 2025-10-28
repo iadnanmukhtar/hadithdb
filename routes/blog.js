@@ -134,6 +134,7 @@ function renderHtml(body) {
       },
     })
   });
+  body = body.replace(/\[![^\]]+\]/g, ''); // remove [!xyz] tags
   const html = md.render(body);
   return html;
 }

@@ -391,6 +391,16 @@ del em strong {
 	font-size: 75%;
 }
 
+.blog-post blockquote.callout {
+	padding: 15px;
+	color: var(--bs-body-color);
+	background-color: #e2f5ff;
+}
+
+.blog-post blockquote.callout::first-line {
+	font-weight: bold;
+}
+
 .chapter-toc {
 	border-bottom: 1px solid var(--bs-border-color);
 	padding-top: 5px;

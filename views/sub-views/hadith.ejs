@@ -25,26 +25,6 @@
 
 	<% if (i.single) { %>
 		<h4 class="fs-5">Add your own reflection below:</h4>
-		<%# Telegram Comments %>
-		<!--
-		<a href="#discuss"></a>
-		<aside class="row">
-			<div class="col-12">
-				<script async src="https://comments.app/js/widget.js?3" data-comments-app-website="rOdWjWWp" data-limit="5" data-dislikes="1" data-outlined="1" data-colorful="1"></script>
-			</div>
-		</aside>
-		<script>
-			window.focus()
-			window.addEventListener("blur", () => {
-				setTimeout(async () => {
-					if (document.activeElement.tagName === "IFRAME") {
-						// console.log('commenting on <%= i.ref %>');
-						await fetch('<%= site.url %>/do/<%= i.id %>?cmd=comment');
-					}
-			});
-			}, { once: true });
-		</script>
-		-->
 		<%# Giscus Comments %>
 		<script src="https://giscus.app/client.js"
 			data-repo="iadnanmukhtar/hadithdb"
