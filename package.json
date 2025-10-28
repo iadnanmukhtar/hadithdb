@@ -2,7 +2,7 @@
   "dependencies": {
     "adm-zip": "0.5.14",
     "axios": "1.7.2",
-    "better-sqlite3": "11.8.1",
+    "better-sqlite3": "^12.4.1",
     "body-parser": "1.20.2",
     "cheerio": "1.0.0-rc.12",
     "cookie-parser": "1.4.6",
