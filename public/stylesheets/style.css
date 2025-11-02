@@ -10,6 +10,16 @@
 	src: url(/fonts/kitab-base-b.woff2);
 }
 
+@font-face {
+	font-family: Arabic;
+	src: url('https://hadithunlocked.com/fonts/kd-hafs.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: ArabicBold;
+	src: url('https://hadithunlocked.com/fonts/kd-hafs.woff2') format('woff2');
+}
+
 :root {
 	--c-ghostwhite: #f8f8f8;
 	--c-accent: #2c9be5;
@@ -279,7 +289,7 @@ nav .nav-link {
 
 .blog-post s {
 	direction: rtl;
-	font-family: Kitab, Serif;
+	font-family: Arabic, Serif;
 	text-decoration: none !important;
 	font-size: 1.5rem;
 }
@@ -287,6 +297,7 @@ nav .nav-link {
 .blog-post s b,
 .blog-post s strong {
 	color: blue;
+	font-family: ArabicBold, Serif;
 }
 
 .blog-post h1:has(s),
@@ -308,7 +319,7 @@ nav .nav-link {
 
 .blog-post h1 s,
 .blog-post :lang(ar) h1 {
-	font-family: KitabBold;
+	font-family: ArabicBold, Serif;
 	font-size: 2.1rem;
 }
 
@@ -318,7 +329,7 @@ nav .nav-link {
 
 .blog-post h2 s,
 .blog-post :lang(ar) h2 {
-	font-family: KitabBold;
+	font-family: ArabicBold, Serif;
 	font-size: 1.9rem;
 }
 
@@ -328,7 +339,7 @@ nav .nav-link {
 
 .blog-post h3 s,
 .blog-post :lang(ar) h3 {
-	font-family: KitabBold;
+	font-family: ArabicBold, Serif;
 	font-size: 1.8rem;
 }
 
@@ -338,7 +349,7 @@ nav .nav-link {
 
 .blog-post h4 s,
 .blog-post :lang(ar) h4 {
-	font-family: KitabBold;
+	font-family: ArabicBold, Serif;
 	font-size: 1.7rem;
 }
 
@@ -348,7 +359,7 @@ nav .nav-link {
 
 .blog-post h5 s,
 .blog-post :lang(ar) h5 {
-	font-family: KitabBold;
+	font-family: ArabicBold, Serif;
 	font-size: 1.56rem;
 }
 
@@ -358,7 +369,7 @@ nav .nav-link {
 
 .blog-post h6 s,
 .blog-post :lang(ar) h6 {
-	font-family: KitabBold;
+	font-family: ArabicBold, Serif;
 	font-size: 1.43rem;
 }
 
