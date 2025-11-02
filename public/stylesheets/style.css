@@ -313,7 +313,12 @@ nav .nav-link {
 	text-align: right;
 }
 
-.blog-post ul+p {
+.blog-post .footnote-item {
+	direction: ltr;
+	text-align: left;
+}
+
+.blog-post .footnotes li+p {
 	direction: ltr;
 	text-align: left;
 }
