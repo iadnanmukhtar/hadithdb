@@ -282,8 +282,12 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     }
   }
   var results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}` });
-  if (results.length == 0)
-    throw createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`);
+  if (results.length == 0) {
+    results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}a` });
+    if (results.length == 0)
+      throw createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`);
+  }
+
   results = results.map(item => new Item(item));
   results[0].single = true;
   for (var i = 0; i < results.length; i++) {
