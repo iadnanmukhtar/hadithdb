@@ -280,6 +280,19 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
         throw createError(404, `Surah '${toks[0]}' not found`);
       req.params.num = `${surah.num}:${num}`;
     }
+  } else {
+    var book = global.books.find(function (value) {
+      return value.alias === req.params.bookAlias;
+    });
+    if (!book) {
+      var surah = global.surahs.find(function (value) {
+        return (value.alias === req.params.bookAlias || value.num == req.params.bookAlias);
+      });
+      if (surah) {
+        req.params.bookAlias = 'quran';
+        req.params.num = `${surah.num}:${req.params.num}`;
+      }
+    }
   }
   var results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}` });
   if (results.length == 0) {
