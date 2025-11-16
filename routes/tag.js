@@ -33,7 +33,7 @@ router.get('/:tag', async function (req, res, next) {
     return;
   }
 
-  var admin = (req.cookies.admin == global.settings.admin.key);
+  var admin = (req.cookies.admin == global.settings.admin.key || req.hostname == 'localhost');
   var editMode = (admin && req.cookies.editMode == 1);
   var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
   if ('flush' in req.query)

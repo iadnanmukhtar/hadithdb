@@ -4,7 +4,7 @@
 <head>
   <%
     var site = new Object(global.settings.site);
-    site.admin = (req.cookies.admin == admin.key);
+    site.admin = (req.cookies.admin == admin.key || req.hostname == 'localhost');
     if (!locals.noadmin)
       site.editMode = (site.admin && req.cookies.editMode == 1) || req.hostname == 'localhost';
     else

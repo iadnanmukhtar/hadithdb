@@ -4,12 +4,12 @@
 <head> 
 <%
     var site = new Object(global.settings.site);
-    site.admin = (req.cookies.admin == admin.key);
+    site.admin = (req.cookies.admin == admin.key || req.hostname == 'localhost');
     if (!locals.noadmin)
       site.editMode = (site.admin && req.cookies.editMode == 1);
     else
       site.editMode = false;
-        
+
     var subtitle_en = `${tagIds.join('+')}`;
     var page = {
       menu: 'Tag',
@@ -60,7 +60,7 @@
           <% 
             for (var i = 0; i < tags.length; i++) {
           %>
-            <span class="_e" data-id="<%=tags[i].id%>" data-prop="tags.desc"><%- `#${tags[i].text_en} ${tags[i].description}` %></span>
+            <span class="_e" data-id="<%=tags[i].id%>" data-prop="tags.description"><%- `#${tags[i].text_en} ${tags[i].description}` %></span>
           <% 
               if (i < tags.length - 1) {
           %>
