@@ -49,14 +49,17 @@ router.get('/:tag', async function (req, res, next) {
     offset = Math.floor(parseFloat(req.query.o) / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
 
   var queryString = '';
-  var tags = req.params.tag.split(/\+/);
-  for (var i in tags) {
+  var tagIds = req.params.tag.split(/\+/);
+  for (var i in tagIds) {
     if (i > 0)
       queryString += ' AND ';
-    queryString += `(tags:"{${tags[i]}}" OR part:"${tags[i]}")`;
+    queryString += `(tags:"{${tagIds[i]}}" OR part:"${tagIds[i]}")`;
   }
   var results = await Index.docsFromQueryString(Item.INDEX, queryString, 0, 5000);
   results = results.map(item => new Item(item));
+  var tags = global.tags.filter(function (t) {
+    return tagIds.includes(t.text_en);
+  });
 
   var count = results.length;
   results.map(function (h) {
@@ -166,7 +169,7 @@ router.get('/:tag', async function (req, res, next) {
     // if (!results.hasNext)
     //   delete results.nextOffset;
     if (results.length == 0)
-      throw createError(404, `Page ${results.pg} of Tag '${tag.text_en}' does not exist`);
+      throw createError(404, `Page ${results.pg} of Tag '${tagIds.join('+')}' does not exist`);
 
     // cache response
     var refs = [];
@@ -175,7 +178,8 @@ router.get('/:tag', async function (req, res, next) {
     Utils.indexCachedItem(refs, cachedFile);
     var html = await ejs.renderFile(`${__dirname}/../views/tag.ejs`, {
       noadmin: true,
-      tag: tags,
+      tagIds: tagIds,
+      tags: tags,
       results: results,
       count: count,
       req: req,
@@ -184,7 +188,8 @@ router.get('/:tag', async function (req, res, next) {
     fs.writeFileSync(cachedFile, html);
 
     res.render('tag', {
-      tag: tags,
+      tagIds: tagIds,
+      tags: tags,
       results: results,
       count: count
     });

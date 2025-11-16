@@ -10,13 +10,13 @@
     else
       site.editMode = false;
         
-    var subtitle_en = `${tag.join('+')}`;
+    var subtitle_en = `${tagIds.join('+')}`;
     var page = {
       menu: 'Tag',
       title_en: `${site.shortName} | Aḥādith with tags ${subtitle_en}`,
       subtitle_en: subtitle_en,
       subtitle: null,
-      canonical: `/tag/${tag.join('+')}`,
+      canonical: `/tag/${tagIds.join('+')}`,
       context: {}
     };
     if (results.offset) {
@@ -25,9 +25,9 @@
         page.title_en += ` P${results.pg}`;
     }
     if (results.page.hasPrev)
-      page.prev = `/tag/${tag.join('+')}?o=${results.page.prevOffset}`;
+      page.prev = `/tag/${tagIds.join('+')}?o=${results.page.prevOffset}`;
     if (results.page.hasNext)
-      page.next = `/tag/${tag.join('+')}?o=${results.page.nextOffset}`;
+      page.next = `/tag/${tagIds.join('+')}?o=${results.page.nextOffset}`;
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
@@ -57,7 +57,18 @@
 
       <header class="row">
         <h1 class="col-md-12 col-sm-12 fs-5 title" lang="en">
-          <span class="_e" data-id="<%=tag.id%>" data-prop="tags.desc"><%- `${('#'+tag.join(' #'))}` %></span>
+          <% 
+            for (var i = 0; i < tags.length; i++) {
+          %>
+            <span class="_e" data-id="<%=tags[i].id%>" data-prop="tags.desc"><%- `#${tags[i].text_en} ${tags[i].description}` %></span>
+          <% 
+              if (i < tags.length - 1) {
+          %>
+            <br>
+          <% 
+              }
+            } 
+          %>
           <% if (results.page.hasNext || results.page.number && results.page.number > 1) { %>
             (<%- results.page.number %>)
           <% } %>
