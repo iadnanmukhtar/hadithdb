@@ -60,7 +60,7 @@
           <% 
             for (var i = 0; i < tags.length; i++) {
           %>
-            <span class="_e" data-id="<%=tags[i].id%>" data-prop="tags.description"><%- `#${tags[i].text_en} ${tags[i].description}` %></span>
+            <%- `#${tags[i].text_en} %> <span class="_e" data-id="<%=tags[i].id%>" data-prop="tags.description"><%- ${tags[i].description}` %></span>
           <% 
               if (i < tags.length - 1) {
           %>
