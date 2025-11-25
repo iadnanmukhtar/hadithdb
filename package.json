@@ -2,7 +2,6 @@
   "dependencies": {
     "adm-zip": "0.5.14",
     "axios": "1.7.2",
-    "better-sqlite3": "^12.4.1",
     "body-parser": "1.20.2",
     "cheerio": "1.0.0-rc.12",
     "cookie-parser": "1.4.6",
@@ -11,6 +10,7 @@
     "ejs": "3.1.10",
     "express": "^4.20.0",
     "express-rate-limit": "7.3.1",
+    "firebase-admin": "^12.6.0",
     "fast-csv": "5.0.1",
     "front-matter": "4.0.2",
     "http-errors": "2.0.0",
@@ -28,6 +28,7 @@
     "natural": "^7.1.0",
     "node-html-to-image": "^4.0.0",
     "request-ip": "3.3.0",
+    "sqlite3": "^5.1.7",
     "string-similarity": "4.0.4",
     "sync-request": "6.1.0"
   },
