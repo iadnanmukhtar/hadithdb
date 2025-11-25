@@ -20,7 +20,8 @@ async function verifyFirebase(req, res, next) {
     req.user = {
       uid: decoded.uid,
       name: decoded.name || decoded.email || 'User',
-      provider: decoded.firebase && decoded.firebase.sign_in_provider ? decoded.firebase.sign_in_provider : 'firebase'
+      provider: decoded.firebase && decoded.firebase.sign_in_provider ? decoded.firebase.sign_in_provider : 'firebase',
+      email: decoded.email || null
     };
     next();
   } catch (err) {
@@ -37,7 +38,7 @@ router.get('/:hadithId', async function (req, res, next) {
   }
   try {
     const rows = await global.query(`
-      SELECT id, hadithId, parentId, user_provider, user_name, text, createdAt
+      SELECT id, hadithId, parentId, user_provider, user_name, user_email, text, createdAt
       FROM hadiths_comments
       WHERE hadithId=${hadithId}
       ORDER BY createdAt ASC, id ASC
@@ -47,7 +48,7 @@ router.get('/:hadithId', async function (req, res, next) {
       parentId: r.parentId,
       text: r.text,
       ts: r.createdAt,
-      user: { provider: r.user_provider, name: r.user_name }
+      user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
     }));
     res.json(comments);
   } catch (err) {
@@ -83,15 +84,16 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
     const escText = Utils.escSQL(text);
     const escProvider = Utils.escSQL(user.provider);
     const escName = Utils.escSQL(user.name);
+    const escEmail = user.email ? Utils.escSQL(user.email) : null;
     const parentSql = parentId ? parentId : 'NULL';
     const insertRes = await global.query(`
-      INSERT INTO hadiths_comments (hadithId, parentId, user_provider, user_name, text, createdAt)
-      VALUES (${hadithId}, ${parentSql}, '${escProvider}', '${escName}', '${escText}', NOW())
+      INSERT INTO hadiths_comments (hadithId, parentId, user_provider, user_name, user_email, text, createdAt)
+      VALUES (${hadithId}, ${parentSql}, '${escProvider}', '${escName}', '${escEmail}', '${escText}', NOW())
     `);
     const newId = insertRes.insertId;
     await global.query(`UPDATE hadiths SET commented=(commented+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${hadithId}`);
     const rows = await global.query(`
-      SELECT id, hadithId, parentId, user_provider, user_name, text, createdAt
+      SELECT id, hadithId, parentId, user_provider, user_name, user_email, text, createdAt
       FROM hadiths_comments
       WHERE id=${newId}
       LIMIT 1
@@ -102,7 +104,7 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
       parentId: r.parentId,
       text: r.text,
       ts: r.createdAt,
-      user: { provider: r.user_provider, name: r.user_name }
+      user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
     });
   } catch (err) {
     debug(`Error adding user comment:\n${err.stack}`);
