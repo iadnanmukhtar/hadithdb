@@ -33,7 +33,7 @@ ${comment.text}
 `;
   try {
     await transport.sendMail({
-      from: global.settings.smtp.from,
+      from: comment.user.email,
       to: global.settings.smtp.to,
       subject: subject,
       text: body
