@@ -44,7 +44,7 @@
 			<form class="mb-3" id="comment-form">
 				<div class="mb-2">
 					<label class="form-label fw-semibold small mb-1" for="comment-text">Your reflection</label>
-					<textarea class="form-control" id="comment-text" rows="3" placeholder="Share your thoughts..." maxlength="2000" required disabled></textarea>
+					<textarea class="form-control" id="comment-text" rows="3" placeholder="Share your thoughts (Markdown format accepted) ..." maxlength="2000" required disabled></textarea>
 				</div>
 				<input type="hidden" id="comment-parent">
 				<button type="submit" class="btn btn-primary btn-sm" disabled>Post reflection</button>
@@ -150,10 +150,10 @@
 										<div><strong>${c.user.name}</strong> <span class="text-muted small">via ${c.user.provider}</span></div>
 										<span class="text-muted small">${formatDate(c.ts)}</span>
 									</div>
-									<p class="mb-2"></p>
+									<p class="mb-2 comment-text"></p>
 									<button type="button" class="btn btn-link btn-sm p-0 comment-reply" data-id="${c.id}">Reply</button>
 								`;
-								item.querySelector('p').textContent = c.text;
+								item.querySelector('p').innerHTML = c.text;
 								threadEl.appendChild(item);
 								build(c.id, depth + 1);
 							});

@@ -581,6 +581,10 @@ del em strong {
 	text-decoration: underline;
 }
 
+.comment-text{
+	font-size: 90%;
+}
+
 .partial {
 	height: 4rem;
 	overflow: hidden;
@@ -753,6 +757,4 @@ a.cmd-btn:hover {
 	}
 
 }
-
-/* Blog Style */
 

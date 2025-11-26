@@ -6,9 +6,11 @@ const debug = require('debug')('hadithdb:comments');
 const Utils = require('../lib/Utils');
 const admin = require('../lib/Firebase');
 const nodemailer = require('nodemailer');
+const MarkdownIt = require('markdown-it');
 
 const router = express.Router();
 let mailer = null;
+const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
 
 function getMailer() {
   const mailer = nodemailer.createTransport({
@@ -82,7 +84,7 @@ router.get('/:hadithId', async function (req, res, next) {
       id: r.id,
       ref: r.ref,
       parentId: r.parentId,
-      text: r.text,
+      text: md.render(r.text),
       ts: r.createdAt,
       user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
     }));
@@ -140,6 +142,7 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
       id: r.id,
       parentId: r.parentId,
       text: r.text,
+      html: md.render(r.text),
       ts: r.createdAt,
       user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
     });
