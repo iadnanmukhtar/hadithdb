@@ -5,8 +5,43 @@ const express = require('express');
 const debug = require('debug')('hadithdb:comments');
 const Utils = require('../lib/Utils');
 const admin = require('../lib/Firebase');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
+let mailer = null;
+
+function getMailer() {
+  const mailer = nodemailer.createTransport({
+    host: global.settings.smtp.host,
+    port: parseInt(global.settings.smtp.port),
+    secure: global.settings.smtp.secure,
+    auth: global.settings.smtp.auth
+  });
+  return mailer;
+}
+
+async function sendCommentEmail(comment) {
+  const transport = getMailer();
+  if (!transport) return;
+  const subject = `New reflection on Hadith ${comment.ref}`;
+  const body = `
+New reflection posted
+Hadith: ${global.settings.site.url}/${comment.ref}
+User: ${comment.user.name} (${comment.user.provider}${comment.user.email ? ', ' + comment.user.email : ''})
+
+${comment.text}
+`;
+  try {
+    await transport.sendMail({
+      from: global.settings.smtp.from,
+      to: global.settings.smtp.to,
+      subject: subject,
+      text: body
+    });
+  } catch (e) {
+    debug(`Email notification failed: ${e.message}`);
+  }
+}
 
 async function verifyFirebase(req, res, next) {
   try {
@@ -41,10 +76,11 @@ router.get('/:hadithId', async function (req, res, next) {
       SELECT id, hadithId, parentId, user_provider, user_name, user_email, text, createdAt
       FROM hadiths_comments
       WHERE hadithId=${hadithId}
-      ORDER BY createdAt ASC, id ASC
+      ORDER BY createdAt DESC
     `);
     const comments = rows.map(r => ({
       id: r.id,
+      ref: r.ref,
       parentId: r.parentId,
       text: r.text,
       ts: r.createdAt,
@@ -93,9 +129,10 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
     const newId = insertRes.insertId;
     await global.query(`UPDATE hadiths SET commented=(commented+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${hadithId}`);
     const rows = await global.query(`
-      SELECT id, hadithId, parentId, user_provider, user_name, user_email, text, createdAt
+      SELECT id, hadithId, ref_num, parentId, user_provider, user_name, user_email, text, createdAt
       FROM hadiths_comments
       WHERE id=${newId}
+      ORDER BY createdAt DESC
       LIMIT 1
     `);
     const r = rows[0];
@@ -104,6 +141,13 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
       parentId: r.parentId,
       text: r.text,
       ts: r.createdAt,
+      user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
+    });
+    sendCommentEmail({
+      id: r.id,
+      ref: r.ref_num,
+      hadithId,
+      text: r.text,
       user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
     });
   } catch (err) {
