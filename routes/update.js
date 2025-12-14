@@ -1,7 +1,6 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const { homedir } = require('os');
 const debug = require('debug')('hadithdb:update');
 const fs = require('fs');
 const path = require('path');
@@ -113,7 +112,7 @@ router.post('/:id/:prop', async function (req, res, next) {
         var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
         if (col === 'body_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.body_en) && Utils.isTruthy(item.body)) {
-            item.body_en = await Utils.openai('gpt-4o', `Translate the following passage into English:\n${item.body}`);
+            item.body_en = await Utils.openai('gpt-5.2', `Translate the following passage into English and exclude a preface before the translation:\n${item.body}`);
             item.body_en = '[Machine] ' + Utils.trimToEmpty(item.body_en);
             item.body_en = Utils.replacePBUH(item.body_en);
             status.value = item.body_en;
@@ -121,7 +120,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           }
         } else if (col === 'title_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.title_en) && Utils.isTruthy(item.title)) {
-            item.title_en = await Utils.openai('gpt-4o', `Translate the following title or passage into English:\n${item.title}`);
+            item.title_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English and exclude a preface before the translation:\n${item.title}`);
             item.title_en = '[Machine] ' + Utils.trimToEmpty(item.title_en);
             item.title_en = Utils.replacePBUH(item.title_en);
             status.value = item.title_en;
@@ -129,13 +128,22 @@ router.post('/:id/:prop', async function (req, res, next) {
           }
         } else if (col === 'footnote_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.footnote_en) && Utils.isTruthy(item.footnote)) {
-            item.footnote_en = await Utils.openai('gpt-4o', `Translate the following title or passage into English:\n${item.footnote}`);
+            item.footnote_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English and exclude a preface before the translation:\n${item.footnote}`);
             item.footnote_en = '[Machine] ' + Utils.trimToEmpty(item.footnote_en);
             item.footnote_en = Utils.replacePBUH(item.footnote_en);
             status.value = item.footnote_en;
             await global.query(`UPDATE hadiths SET footnote_en="${Utils.escSQL(item.footnote_en)}" WHERE id=${item.hId}`);
           }
+        } else if (col === 'chain_en' && Utils.isFalsey(status.value)) {
+          if (Utils.isFalsey(item.chain_en) && Utils.isTruthy(item.chain)) {
+            item.chain_en = await Utils.openai('gpt-5.2', `Extract the narrators from this chain, transliterate them in English, and separate them using the "greator than" symbol. Instead of ibn or bint, use "b.":\n${item.chain}`);
+            item.chain_en = Utils.trimToEmpty(item.chain_en);
+            item.chain_en = Utils.replacePBUH(item.chain_en);
+            status.value = item.chain_en;
+            await global.query(`UPDATE hadiths SET chain_en="${Utils.escSQL(item.chain_en)}" WHERE id=${item.hId}`);
+          }
         }
+
       }
 
       status.code = 200;

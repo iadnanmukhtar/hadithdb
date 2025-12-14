@@ -100,6 +100,12 @@ router.get('/', async function (req, res, next) {
   res.locals.res = res;
   var results = [];
 
+  if (req.hostname === 'localhost') {
+    res.cookie('admin', global.settings.admin.key, { path: '/' });
+    req.cookies.admin = global.settings.admin.key;
+    debug("admin cookie set for localhost");
+  }
+
   // search
   if (req.query.q) {
     req.query.q = req.query.q.trim();
