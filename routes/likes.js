@@ -82,9 +82,10 @@ router.post('/:hadithId', async function (req, res, next) {
       return;
     }
     const rows = await global.query(`
-      SELECT likes
-      FROM hadiths
-      WHERE id=${hadithId}
+      SELECT likes, CONCAT(b.alias, h.num) as ref_num
+      FROM hadiths h, books b
+      WHERE h.id=${hadithId}
+        AND h.bookId = b.id
       LIMIT 1
     `);
     const ref = rows[0].ref_num || hadithId;
