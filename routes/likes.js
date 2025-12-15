@@ -4,6 +4,7 @@
 const express = require('express');
 const debug = require('debug')('hadithdb:likes');
 const nodemailer = require('nodemailer');
+const Utils = require('../lib/Utils');
 
 const router = express.Router();
 
@@ -82,12 +83,13 @@ router.post('/:hadithId', async function (req, res, next) {
       return;
     }
     const rows = await global.query(`
-      SELECT likes, CONCAT(b.alias, h.num) as ref_num
+      SELECT likes, CONCAT(b.alias, ':', h.num) as ref_num
       FROM hadiths h, books b
       WHERE h.id=${hadithId}
         AND h.bookId = b.id
       LIMIT 1
     `);
+    await Utils.flushCacheContaining(`${rows[0].ref_num}`);
     const ref = rows[0].ref_num || hadithId;
     const likes = rows[0].likes || 0;
     res.json({ likes });

@@ -148,13 +148,12 @@
 	<% if (lang === 'en') { %>
 		<% if (!i.single) { %>
 			<span class="bi bi-chat-right-text"></span>&nbsp;<a href="/<%= i.ref %>">Reflect</a>
-		<% } else { %>
-			&nbsp;
-			<button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="Like this hadith">
-				<span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>"></span>
-			</button>
-			<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">0</span>
 		<% } %>
+		&nbsp;
+		<button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="Like this hadith">
+			<span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>"></span>
+		</button>
+		<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">0</span>
 		&nbsp;
 		<span class="bi bi-box-arrow-up"></span>&nbsp;<a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.en.actual.num : i.en.num %>?sharepreview" type="button" title="Zoom In" class="icon">Share</a>
 	<% } %>
