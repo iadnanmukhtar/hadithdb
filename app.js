@@ -32,17 +32,17 @@ const app = express();
     next();
   })
 
-  const limiter = rateLimit({
-    keyGenerator: req => {
-      debug('ip address: ' + req.clientIp);
-      return req.clientIp;
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    windowMs: 60000,
-    max: 50,
-  });
-  app.use(limiter);
+  // const limiter = rateLimit({
+  //   keyGenerator: req => {
+  //     debug('ip address: ' + req.clientIp);
+  //     return req.clientIp;
+  //   },
+  //   standardHeaders: true,
+  //   legacyHeaders: false,
+  //   windowMs: 60000,
+  //   max: 50,
+  // });
+  // app.use(limiter);
 
   const toolsRouter = require('./routes/tools');
   const highlightsRouter = require('./routes/highlights');
