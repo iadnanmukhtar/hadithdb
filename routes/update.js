@@ -136,7 +136,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           }
         } else if (col === 'chain_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.chain_en) && Utils.isTruthy(item.chain)) {
-            item.chain_en = await Utils.openai('gpt-5.2', `Extract the narrators from this chain, transliterate them in English, and separate them using the "greator than" symbol. Instead of ibn or bint, use "b.":\n${item.chain}`);
+            item.chain_en = await Utils.openai('gpt-5.2', `Extract the narrators from this chain, transliterate them using ALA-LC, and separate them using the "greator than" symbol. Instead of ibn or bint, use "b.":\n${item.chain}`);
             item.chain_en = Utils.trimToEmpty(item.chain_en);
             item.chain_en = Utils.replacePBUH(item.chain_en);
             status.value = item.chain_en;
