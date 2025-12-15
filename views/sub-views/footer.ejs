@@ -17,3 +17,67 @@
 		<a href="https://www.buymeacoffee.com/adnanmukhtar"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=adnanmukhtar&button_colour=FF5F5F&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00" width="200" /></a>
 	</aside>
 </footer>
+
+<script>
+	(function () {
+		if (window.hadithLikeInit) return;
+		window.hadithLikeInit = true;
+		const likedMap = {};
+		const getButtons = () => Array.from(document.querySelectorAll('.hadith-like-btn[data-hadith-id]'));
+		const getIcon = (id) => document.querySelector(`.hadith-like-icon[data-hadith-id="${id}"]`);
+		const getCount = (id) => document.querySelector(`.hadith-like-count[data-hadith-id="${id}"]`);
+
+		const setState = (id, liked, likes) => {
+			const icon = getIcon(id);
+			const countEl = getCount(id);
+			if (icon) icon.className = liked ? 'hadith-like-icon bi bi-heart-fill text-danger' : 'hadith-like-icon bi bi-heart text-danger';
+			if (countEl && typeof likes === 'number') countEl.textContent = likes;
+		};
+
+		const fetchLikes = async (id) => {
+			try {
+				const res = await fetch(`/likes/${id}`);
+				if (!res.ok) throw new Error('Failed likes fetch');
+				const data = await res.json();
+				setState(id, !!likedMap[id], data.likes ?? 0);
+			} catch (err) {
+				console.warn('Could not load likes', err);
+			}
+		};
+
+		const sendLike = async (id, btn) => {
+			if (likedMap[id]) return;
+			try {
+				btn.disabled = true;
+				const res = await fetch(`/likes/${id}`, { method: 'POST' });
+				if (!res.ok) throw new Error('Failed like');
+				const data = await res.json();
+				likedMap[id] = true;
+				setState(id, true, data.likes ?? null);
+			} catch (err) {
+				console.warn('Could not like', err);
+			} finally {
+				btn.disabled = false;
+			}
+		};
+
+		const init = () => {
+			const seen = new Set();
+			getButtons().forEach(btn => {
+				const id = parseInt(btn.dataset.hadithId);
+				if (Number.isNaN(id)) return;
+				if (!seen.has(id)) {
+					seen.add(id);
+					fetchLikes(id);
+				}
+				btn.addEventListener('click', () => sendLike(id, btn));
+			});
+		};
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', init);
+		} else {
+			init();
+		}
+	})();
+</script>

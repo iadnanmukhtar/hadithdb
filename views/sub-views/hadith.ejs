@@ -76,6 +76,7 @@
 						appId: '<%= global.settings.firebase.appId || "" %>'
 					};
 
+
 					const initFirebase = () => {
 						if (firebaseReady) return;
 						if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId || !firebaseConfig.appId) {
@@ -145,20 +146,44 @@
 								const item = document.createElement('div');
 								item.className = 'list-group-item';
 								item.style.marginLeft = depth ? `${depth * 12}px` : '0';
+								const upVote = typeof c.upVote === 'number' ? c.upVote : 0;
+								const downVote = typeof c.downVote === 'number' ? c.downVote : 0;
+								const userVote = c.userVote || null;
+								const upBtnClass = userVote === 'up' ? 'btn-success text-white' : 'btn-outline-success';
+								const downBtnClass = userVote === 'down' ? 'btn-danger text-white' : 'btn-outline-danger';
 								item.innerHTML = `
 									<div class="d-flex justify-content-between align-items-center mb-1">
 										<div><strong>${c.user.name}</strong> <span class="text-muted small">via ${c.user.provider}</span></div>
 										<span class="text-muted small">${formatDate(c.ts)}</span>
 									</div>
 									<p class="mb-2 comment-text"></p>
-									<button type="button" class="btn btn-link btn-sm p-0 comment-reply" data-id="${c.id}">Reply</button>
+									<div class="d-flex align-items-center gap-2">
+										<div class="btn-group" role="group" aria-label="Vote controls">
+											<button type="button" class="btn btn-sm ${upBtnClass} comment-vote" data-id="${c.id}" data-direction="up">
+												▲ <span class="comment-up-count">${upVote}</span>
+											</button>
+											<button type="button" class="btn btn-sm ${downBtnClass} comment-vote" data-id="${c.id}" data-direction="down">
+												▼ <span class="comment-down-count">${downVote}</span>
+											</button>
+										</div>
+										<button type="button" class="btn btn-link btn-sm p-0 comment-reply" data-id="${c.id}">Reply</button>
+									</div>
 								`;
-								item.querySelector('p').innerHTML = c.text;
+								item.querySelector('p').innerHTML = c.html || c.text;
 								threadEl.appendChild(item);
 								build(c.id, depth + 1);
 							});
 						};
 						build(null, 0);
+						threadEl.querySelectorAll('.comment-vote').forEach(btn => {
+							btn.onclick = () => {
+								const commentId = parseInt(btn.dataset.id);
+								const direction = btn.dataset.direction;
+								if (!Number.isNaN(commentId) && (direction === 'up' || direction === 'down')) {
+									submitVote(commentId, direction);
+								}
+							};
+						});
 						threadEl.querySelectorAll('.comment-reply').forEach(btn => {
 							btn.onclick = () => {
 								parentInput.value = btn.dataset.id;
@@ -168,12 +193,19 @@
 						});
 					};
 
-					const fetchComments = async () => {
+					const fetchComments = async (authToken = null) => {
 						try {
-							const res = await fetch(`/comments/${hadithId}`);
+							const res = await fetch(`/comments/${hadithId}`, {
+								headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+							});
 							if (!res.ok) throw new Error('Unable to load comments');
 							const data = await res.json();
-							comments = data;
+							comments = data.map(c => ({
+								...c,
+								upVote: typeof c.upVote === 'number' ? c.upVote : 0,
+								downVote: typeof c.downVote === 'number' ? c.downVote : 0,
+								userVote: c.userVote || null
+							}));
 						} catch (e) {
 							threadEl.innerHTML = '<div class="list-group-item text-danger small">Failed to load comments. Please try again later.</div>';
 							return;
@@ -206,6 +238,34 @@
 					cancelReply.onclick = () => {
 						parentInput.value = '';
 						cancelReply.classList.add('d-none');
+					};
+
+					const submitVote = async (commentId, direction) => {
+						const user = currentUser;
+						if (!user) { renderUser(); return; }
+						try {
+							const idToken = await user.getIdToken();
+							const res = await fetch(`/comments/${commentId}/vote`, {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+									'Authorization': `Bearer ${idToken}`
+								},
+								body: JSON.stringify({ direction })
+							});
+							if (!res.ok) throw new Error('Unable to record vote');
+							const data = await res.json();
+							const idx = comments.findIndex(c => c.id === data.id);
+							if (idx >= 0) {
+								comments[idx].upVote = data.upVote;
+								comments[idx].downVote = data.downVote;
+								comments[idx].userVote = data.userVote || direction;
+							}
+							renderComments();
+						} catch (err) {
+							alert('Could not record your vote right now. Please try again.');
+							console.error(err);
+						}
 					};
 
 					form.onsubmit = async (e) => {
@@ -242,11 +302,24 @@
 
 					initFirebase();
 					if (firebaseReady) {
-						firebase.auth().onAuthStateChanged(() => renderUser());
+						firebase.auth().onAuthStateChanged(async (user) => {
+							await renderUser();
+							if (user) {
+								try {
+									const token = await user.getIdToken();
+									fetchComments(token);
+								} catch (err) {
+									console.warn('Could not fetch comments with auth token', err);
+									fetchComments();
+								}
+							} else {
+								fetchComments();
+							}
+						});
 					} else {
 						renderUser();
+						fetchComments();
 					}
-					fetchComments();
 				})();
 			</script>
 		</section>

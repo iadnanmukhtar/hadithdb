@@ -57,6 +57,7 @@ const app = express();
   const updateRouter = require('./routes/update');
   const proxyRouter = require('./routes/proxy');
   const commentsRouter = require('./routes/comments');
+  const likesRouter = require('./routes/likes');
 
   app.use('/tools', toolsRouter);
   app.use('/recent', highlightsRouter);
@@ -71,6 +72,7 @@ const app = express();
   app.use('/blog', blogRouter);
   app.use('/proxy', proxyRouter);
   app.use('/comments', commentsRouter);
+  app.use('/likes', likesRouter);
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {
