@@ -163,7 +163,7 @@
       });
       var resBody = JSON.parse(await res.text());
       if (res.status == 200) {
-        alert('Logged in as ' + user.first_name + ' ' + user.last_name + ' (' + user.id + (user.username ? ', @' + user.username : '') + ')');
+        alert('Logged in as ' + user.username);
         window.location.reload();
       } else {
         var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
