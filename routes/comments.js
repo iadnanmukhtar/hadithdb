@@ -12,16 +12,6 @@ const router = express.Router();
 let mailer = null;
 const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
 
-function parseVoteHistory(raw) {
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch (err) {
-    return {};
-  }
-}
-
 function getMailer() {
   const mailer = nodemailer.createTransport({
     host: global.settings.smtp.host,
@@ -81,6 +71,32 @@ ${payload.text || '(no text found)'}
   }
 }
 
+async function getVoteStats(commentIds, userUid = null) {
+  if (!commentIds || !commentIds.length) return {};
+  const idsCsv = commentIds.join(',');
+  const userUidEsc = userUid ? Utils.escSQL(userUid) : null;
+  const userSelect = userUidEsc ? `,
+           MAX(CASE WHEN user_uid='${userUidEsc}' THEN direction END) AS userVote` : '';
+  const rows = await global.query(`
+    SELECT commentId,
+           SUM(direction='up') AS upVote,
+           SUM(direction='down') AS downVote
+           ${userSelect}
+    FROM hadiths_comments_votes
+    WHERE commentId IN (${idsCsv})
+    GROUP BY commentId
+  `);
+  const stats = {};
+  rows.forEach(r => {
+    stats[r.commentId] = {
+      upVote: r.upVote || 0,
+      downVote: r.downVote || 0,
+      userVote: userUid ? (r.userVote || null) : null
+    };
+  });
+  return stats;
+}
+
 async function verifyFirebase(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
@@ -122,23 +138,28 @@ router.get('/:hadithId', async function (req, res, next) {
       }
     }
     const rows = await global.query(`
-      SELECT id, hadithId, parentId, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote, vote_history
+      SELECT id, hadithId, parentId, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote
       FROM hadiths_comments
       WHERE hadithId=${hadithId}
       ORDER BY createdAt DESC
     `);
-    const comments = rows.map(r => ({
-      id: r.id,
-      ref: r.ref,
-      parentId: r.parentId,
-      text: r.text,
-      html: md.render(r.text),
-      ts: r.createdAt,
-      upVote: r.up_vote || 0,
-      downVote: r.down_vote || 0,
-      userVote: user ? parseVoteHistory(r.vote_history)[user.uid] || null : null,
-      user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
-    }));
+    const commentIds = rows.map(r => r.id);
+    const voteStats = await getVoteStats(commentIds, user ? user.uid : null);
+    const comments = rows.map(r => {
+      const stats = voteStats[r.id] || { upVote: r.up_vote || 0, downVote: r.down_vote || 0, userVote: null };
+      return {
+        id: r.id,
+        ref: r.ref,
+        parentId: r.parentId,
+        text: r.text,
+        html: md.render(r.text),
+        ts: r.createdAt,
+        upVote: stats.upVote || 0,
+        downVote: stats.downVote || 0,
+        userVote: stats.userVote || null,
+        user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
+      };
+    });
     res.json(comments);
   } catch (err) {
     debug(`Error loading user comments:\n${err.stack}`);
@@ -182,7 +203,7 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
     const newId = insertRes.insertId;
     await global.query(`UPDATE hadiths SET commented=(commented+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${hadithId}`);
     const rows = await global.query(`
-      SELECT id, hadithId, ref_num, parentId, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote, vote_history
+      SELECT id, hadithId, ref_num, parentId, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote
       FROM hadiths_comments
       WHERE id=${newId}
       ORDER BY createdAt DESC
@@ -225,7 +246,7 @@ router.post('/:commentId/vote', verifyFirebase, async function (req, res, next) 
   }
   try {
     const rows = await global.query(`
-      SELECT id, hadithId, ref_num, parentId, user_provider, user_name, user_email, text, up_vote, down_vote, vote_history
+      SELECT id, hadithId, ref_num, parentId, user_provider, user_name, user_email, text, up_vote, down_vote
       FROM hadiths_comments
       WHERE id=${commentId}
       LIMIT 1
@@ -235,39 +256,50 @@ router.post('/:commentId/vote', verifyFirebase, async function (req, res, next) 
       return;
     }
     const r = rows[0];
-    const votes = parseVoteHistory(r.vote_history);
-    const prevVote = votes[req.user.uid];
-    let upVote = r.up_vote || 0;
-    let downVote = r.down_vote || 0;
+    const escUid = Utils.escSQL(req.user.uid);
+    const prevRows = await global.query(`
+      SELECT direction
+      FROM hadiths_comments_votes
+      WHERE commentId=${commentId}
+        AND user_uid='${escUid}'
+      LIMIT 1
+    `);
+    const prevVote = prevRows && prevRows.length ? prevRows[0].direction : null;
     if (prevVote === direction) {
+      const stats = await getVoteStats([commentId], req.user.uid);
+      const current = stats[commentId] || { upVote: r.up_vote || 0, downVote: r.down_vote || 0 };
       res.json({
         id: r.id,
         parentId: r.parentId,
-        upVote,
-        downVote,
+        upVote: current.upVote || 0,
+        downVote: current.downVote || 0,
         userVote: direction
       });
       return;
     }
-    if (prevVote === 'up') upVote = Math.max(0, upVote - 1);
-    if (prevVote === 'down') downVote = Math.max(0, downVote - 1);
-    if (direction === 'up') upVote += 1;
-    if (direction === 'down') downVote += 1;
-    votes[req.user.uid] = direction;
-    const votesJson = Utils.escSQL(JSON.stringify(votes));
+    await global.query(`
+      DELETE FROM hadiths_comments_votes
+      WHERE commentId=${commentId}
+        AND user_uid='${escUid}'
+    `);
+    await global.query(`
+      INSERT INTO hadiths_comments_votes (commentId, user_uid, direction)
+      VALUES (${commentId}, '${escUid}', '${direction}')
+    `);
+    const stats = await getVoteStats([commentId], req.user.uid);
+    const current = stats[commentId] || { upVote: 0, downVote: 0, userVote: direction };
     await global.query(`
       UPDATE hadiths_comments
-      SET up_vote=${upVote},
-          down_vote=${downVote},
-          vote_history='${votesJson}'
+      SET up_vote=${current.upVote || 0},
+          down_vote=${current.downVote || 0}
       WHERE id=${commentId}
     `);
     res.json({
       id: r.id,
       parentId: r.parentId,
-      upVote,
-      downVote,
-      userVote: direction
+      upVote: current.upVote || 0,
+      downVote: current.downVote || 0,
+      userVote: current.userVote || direction
     });
     sendVoteEmail({
       direction,
