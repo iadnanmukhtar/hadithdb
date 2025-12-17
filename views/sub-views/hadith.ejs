@@ -98,6 +98,7 @@
 							form.querySelector('button[type="submit"]').disabled = true;
 							return;
 						}
+						await onAuth({ username: currentUser.email });
 						userBox.classList.remove('d-none');
 						authBlock.querySelector('p').classList.add('d-none');
 						authBlock.querySelector('.comment-login').classList.add('d-none');
