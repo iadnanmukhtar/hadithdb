@@ -4,10 +4,10 @@
 <head>
   <%
     var site = new Object(global.settings.site);
-    site.admin = (req.cookies.admin == admin.key || req.hostname == 'localhost');
+    site.admin = (req.cookies.admin == admin.key);
     console.log('Admin status:', site.admin);
     if (!locals.noadmin)
-      site.editMode = (site.admin && req.cookies.editMode == 1) || req.hostname == 'localhost';
+      site.editMode = (site.admin && req.cookies.editMode == 1);
     else
       site.editMode = false;
     

@@ -98,11 +98,15 @@
 							form.querySelector('button[type="submit"]').disabled = true;
 							return;
 						}
-						await onAuth({ username: currentUser.email });
+						const providerId = currentUser.providerData[0] ? currentUser.providerData[0].providerId : 'firebase';
+						const isFirstGoogleLogin = providerId === 'google.com' && !sessionStorage.getItem('hadithdb_google_login');
+						if (isFirstGoogleLogin) {
+							await onAuth({ username: currentUser.email });
+							sessionStorage.setItem('hadithdb_google_login', '1');
+						}
 						userBox.classList.remove('d-none');
 						authBlock.querySelector('p').classList.add('d-none');
 						authBlock.querySelector('.comment-login').classList.add('d-none');
-						const providerId = currentUser.providerData[0] ? currentUser.providerData[0].providerId : 'firebase';
 						const name = currentUser.displayName || currentUser.email || 'User';
 						const photo = currentUser.photoURL || 'https://www.gravatar.com/avatar/?d=mp&s=64';
 						userBox.innerHTML = `
