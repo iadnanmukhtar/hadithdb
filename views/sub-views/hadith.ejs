@@ -101,6 +101,7 @@
 						const providerId = currentUser.providerData[0] ? currentUser.providerData[0].providerId : 'firebase';
 						const isFirstGoogleLogin = providerId === 'google.com' && !sessionStorage.getItem('hadithdb_google_login');
 						if (isFirstGoogleLogin) {
+							console.log('Google sign-in detected');
 							await onAuth({ username: currentUser.email });
 							sessionStorage.setItem('hadithdb_google_login', '1');
 						}

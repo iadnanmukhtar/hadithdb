@@ -4,8 +4,6 @@
 const debug = require('debug')('hadithdb:login');
 const HomeDir = require('os').homedir();
 const express = require('express');
-const Arabic = require('../lib/Arabic');
-const Hadith = require('../lib/Hadith');
 
 const router = express.Router();
 
@@ -17,12 +15,8 @@ router.get('/:userId', async function (req, res, next) {
   var adminUsers = require(HomeDir + '/.hadithdb/admin-users.json');
   if (adminUsers.find(userId => { return userId === req.params.userId })) {
     debug(`Admin User ${req.params.userId} logged in`);
-    await res.cookie('admin', global.settings.admin.key, {
-      expires: new Date(Date.now() + 86400000 * 60 * 1)
-    });
-    await res.cookie('userId', req.params.userId, {
-      expires: new Date(Date.now() + 86400000 * 60 * 1)
-    });
+    await res.cookie('admin', global.settings.admin.key);
+    await res.cookie('userId', req.params.userId);
   }
   res.status(200);
   res.end(JSON.stringify({
