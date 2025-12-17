@@ -163,11 +163,10 @@
       });
       var resBody = JSON.parse(await res.text());
       if (res.status == 200) {
-        alert('Logged in as ' + user.username);
+        toastr.success('Logged in as ' + user.username);
         window.location.reload();
       } else {
         var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
-        console.error(`Update Error\n${errMessage}`);
         toastr.error(errMessage, `Update Error`);
       }
       return resBody;
