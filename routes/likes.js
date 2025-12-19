@@ -174,9 +174,10 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
       WHERE hadithId=${hadithId}
     `);
     const likes = countRows && countRows.length ? countRows[0].cnt || 0 : 0;
+    const delta = liked ? 1 : (action === 'unlike' ? -1 : 0);
     await global.query(`
       UPDATE hadiths
-      SET likes=${likes},
+      SET likes=GREATEST(0, ${likes} ${delta ? `+ (${delta})` : ''}),
           lastfixed = CURRENT_TIMESTAMP()
       WHERE id=${hadithId}
     `);
