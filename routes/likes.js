@@ -5,6 +5,7 @@ const express = require('express');
 const debug = require('debug')('hadithdb:likes');
 const nodemailer = require('nodemailer');
 const Utils = require('../lib/Utils');
+const admin = require('../lib/Firebase');
 
 const router = express.Router();
 
@@ -21,13 +22,15 @@ function getMailer() {
 async function sendLikeEmail(payload) {
   const transport = getMailer();
   if (!transport) return;
-  const subject = `New like on Hadith ${payload.ref || payload.hadithId}`;
+  const action = payload.action === 'unlike' ? 'unlike' : 'like';
+  const subject = `New ${action} on Hadith ${payload.ref || payload.hadithId}`;
   const body = `
-New like received
+New ${action} received
 Hadith: ${global.settings.site.url}/${payload.ref || payload.hadithId}
 Hadith ID: ${payload.hadithId}
 Likes total: ${payload.likes}
 Visitor: IP ${payload.ip || 'unknown'} | UA ${payload.ua || 'unknown'}
+User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider || 'firebase'}${payload.user.email ? ', ' + payload.user.email : ''})` : 'Unknown'}
 `;
   try {
     await transport.sendMail({
@@ -41,49 +44,144 @@ Visitor: IP ${payload.ip || 'unknown'} | UA ${payload.ua || 'unknown'}
   }
 }
 
+async function verifyFirebase(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
+    if (!token) {
+      res.status(401).json({ error: 'Authentication required.' });
+      return;
+    }
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.user = {
+      uid: decoded.uid,
+      name: decoded.name || decoded.email || 'User',
+      provider: decoded.firebase && decoded.firebase.sign_in_provider ? decoded.firebase.sign_in_provider : 'firebase',
+      email: decoded.email || null
+    };
+    next();
+  } catch (err) {
+    debug(`Auth error: ${err.message}`);
+    res.status(401).json({ error: 'Invalid authentication token.' });
+  }
+}
+
 router.get('/:hadithId', async function (req, res, next) {
   const hadithId = parseInt(req.params.hadithId);
   if (Number.isNaN(hadithId)) {
     res.status(400).json({ error: 'Invalid hadith id' });
     return;
   }
-  try {
+  const getLikeCount = async () => {
     const rows = await global.query(`
-      SELECT likes
-      FROM hadiths
-      WHERE id=${hadithId}
+      SELECT COUNT(*) AS cnt
+      FROM hadiths_likes
+      WHERE hadithId=${hadithId}
+    `);
+    return rows && rows.length ? rows[0].cnt || 0 : 0;
+  };
+  const getLikedFlag = async (userUid) => {
+    if (!userUid) return false;
+    const uidEsc = Utils.escSQL(userUid);
+    const rows = await global.query(`
+      SELECT 1
+      FROM hadiths_likes
+      WHERE hadithId=${hadithId}
+        AND user_uid='${uidEsc}'
       LIMIT 1
     `);
-    if (!rows || !rows.length) {
+    return !!(rows && rows.length);
+  };
+  try {
+    const exists = await global.query(`SELECT id FROM hadiths WHERE id=${hadithId} LIMIT 1`);
+    if (!exists || !exists.length) {
       res.status(404).json({ error: 'Hadith not found.' });
       return;
     }
-    res.json({ likes: rows[0].likes || 0 });
+    let userUid = null;
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
+    if (token) {
+      try {
+        const decoded = await admin.auth().verifyIdToken(token);
+        userUid = decoded.uid;
+      } catch (err) {
+        // ignore invalid token for public fetch
+      }
+    }
+    const likes = await getLikeCount();
+    const liked = await getLikedFlag(userUid);
+    res.json({ likes, liked });
   } catch (err) {
     debug(`Error fetching likes:\n${err.stack}`);
     next(err);
   }
 });
 
-router.post('/:hadithId', async function (req, res, next) {
+router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
   const hadithId = parseInt(req.params.hadithId);
   if (Number.isNaN(hadithId)) {
     res.status(400).json({ error: 'Invalid hadith id' });
     return;
   }
   try {
-    const updateRes = await global.query(`
-      UPDATE hadiths
-      SET likes = IFNULL(likes, 0) + 1,
-          lastfixed = CURRENT_TIMESTAMP()
-      WHERE id=${hadithId}
-    `);
-    if (!updateRes.affectedRows) {
+    const requestedAction = req.body && req.body.action === 'unlike' ? 'unlike' : 'like';
+    const exists = await global.query(`SELECT id FROM hadiths WHERE id=${hadithId} LIMIT 1`);
+    if (!exists || !exists.length) {
       res.status(404).json({ error: 'Hadith not found.' });
       return;
     }
+    const escUid = Utils.escSQL(req.user.uid);
+    const escProvider = Utils.escSQL(req.user.provider || 'firebase');
+    const escName = Utils.escSQL(req.user.name || 'User');
+    const escEmail = req.user.email ? Utils.escSQL(req.user.email) : null;
+    const escIp = Utils.escSQL(req.clientIp || '');
+    const escUa = Utils.escSQL(req.get('user-agent') || '');
+    let liked = false;
+    let action = 'like';
+    const existing = await global.query(`
+      SELECT id
+      FROM hadiths_likes
+      WHERE hadithId=${hadithId}
+        AND user_uid='${escUid}'
+      LIMIT 1
+    `);
+    if (existing && existing.length) {
+      if (requestedAction === 'unlike') {
+        await global.query(`
+          DELETE FROM hadiths_likes
+          WHERE hadithId=${hadithId}
+            AND user_uid='${escUid}'
+          LIMIT 1
+        `);
+        liked = false;
+        action = 'unlike';
+      } else {
+        liked = true;
+        action = 'like';
+      }
+    } else if (requestedAction === 'like') {
+      await global.query(`
+        INSERT INTO hadiths_likes (hadithId, user_uid, user_provider, user_name, user_email, ip, ua, createdAt)
+        VALUES (${hadithId}, '${escUid}', '${escProvider}', '${escName}', ${escEmail ? `'${escEmail}'` : 'NULL'}, '${escIp}', '${escUa}', NOW())
+      `);
+      liked = true;
+      action = 'like';
+    }
+    const countRows = await global.query(`
+      SELECT COUNT(*) AS cnt
+      FROM hadiths_likes
+      WHERE hadithId=${hadithId}
+    `);
+    const likes = countRows && countRows.length ? countRows[0].cnt || 0 : 0;
+    await global.query(`
+      UPDATE hadiths
+      SET likes=${likes},
+          lastfixed = CURRENT_TIMESTAMP()
+      WHERE id=${hadithId}
+    `);
     const rows = await global.query(`
-      SELECT likes, CONCAT(b.alias, ':', h.num) as ref_num
+      SELECT CONCAT(b.alias, ':', h.num) as ref_num
       FROM hadiths h, books b
       WHERE h.id=${hadithId}
         AND h.bookId = b.id
@@ -91,14 +189,15 @@ router.post('/:hadithId', async function (req, res, next) {
     `);
     await Utils.flushCacheContaining(`${rows[0].ref_num}`);
     const ref = rows[0].ref_num || hadithId;
-    const likes = rows[0].likes || 0;
-    res.json({ likes });
+    res.json({ likes, liked });
     sendLikeEmail({
       hadithId,
       ref,
       likes,
       ip: req.clientIp,
-      ua: req.get('user-agent')
+      ua: req.get('user-agent'),
+      action,
+      user: req.user || null
     });
   } catch (err) {
     debug(`Error updating likes:\n${err.stack}`);

@@ -186,6 +186,47 @@
   gtag('config', 'G-ZZFHG1L3ZX');
 </script>
 
+<!-- Firebase Auth (shared across pages) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+  (function initFirebaseGlobal() {
+    if (window.firebaseApp) return;
+    const firebaseConfig = {
+      apiKey: '<%= global.settings.firebase.apiKey || "" %>',
+      authDomain: '<%= global.settings.firebase.authDomain || "" %>',
+      projectId: '<%= global.settings.firebase.projectId || "" %>',
+      appId: '<%= global.settings.firebase.appId || "" %>'
+    };
+    if (!firebaseConfig.apiKey) return;
+    if (!firebase.apps?.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((err) => {
+      console.warn('Could not set Firebase persistence to LOCAL', err);
+    });
+    const auth = firebase.auth();
+    const getUser = () =>
+      auth.currentUser ||
+      new Promise(resolve => {
+        const unsub = auth.onAuthStateChanged(u => {
+          unsub();
+          resolve(u);
+        });
+      });
+    window.hadithAuth = {
+      getToken: async () => {
+        const user = await getUser();
+        return user ? user.getIdToken() : null;
+      },
+      requireLogin: () => {
+			  toastr.error('Please sign in from the Home Page to like or comment.', 'Sign-in required');
+      }
+    };
+    window.firebaseApp = true;
+  })();
+</script>
+
 <%#
 <!-- Adsense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"

@@ -18,6 +18,24 @@
 		if (window.hadithLikeInit) return;
 		window.hadithLikeInit = true;
 		const likedMap = {};
+
+		const loadLikedMap = () => {
+			try {
+				const raw = localStorage.getItem('hadithLikedMap');
+				if (raw) Object.assign(likedMap, JSON.parse(raw));
+			} catch (err) {
+				console.warn('Could not load liked map', err);
+			}
+		};
+
+		const persistLikedMap = () => {
+			try {
+				localStorage.setItem('hadithLikedMap', JSON.stringify(likedMap));
+			} catch (err) {
+				console.warn('Could not persist liked map', err);
+			}
+		};
+
 		const getButtons = () => Array.from(document.querySelectorAll('.hadith-like-btn[data-hadith-id]'));
 		const getIcon = (id) => document.querySelector(`.hadith-like-icon[data-hadith-id="${id}"]`);
 		const getCount = (id) => document.querySelector(`.hadith-like-count[data-hadith-id="${id}"]`);
@@ -29,26 +47,51 @@
 			if (countEl && typeof likes === 'number') countEl.textContent = likes;
 		};
 
+		const requireLogin = () => {
+			if (window.hadithAuth && window.hadithAuth.requireLogin) window.hadithAuth.requireLogin();
+			toastr.error('Please sign in from the Home Page to like or comment.', 'Sign-in required');
+		};
+
 		const fetchLikes = async (id) => {
+			const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
 			try {
-				const res = await fetch(`/likes/${id}`);
+				const res = await fetch(`/likes/${id}`, {
+					headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+				});
 				if (!res.ok) throw new Error('Failed likes fetch');
 				const data = await res.json();
+				if (typeof data.liked === 'boolean') {
+					likedMap[id] = data.liked;
+					persistLikedMap();
+				}
 				setState(id, !!likedMap[id], data.likes ?? 0);
 			} catch (err) {
 				console.warn('Could not load likes', err);
 			}
 		};
 
-		const sendLike = async (id, btn) => {
-			if (likedMap[id]) return;
+		const toggleLike = async (id, btn) => {
+			const action = likedMap[id] ? 'unlike' : 'like';
+			const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+			if (!token) {
+				requireLogin();
+				return;
+			}
 			try {
 				btn.disabled = true;
-				const res = await fetch(`/likes/${id}`, { method: 'POST' });
+				const res = await fetch(`/likes/${id}`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({ action })
+				});
 				if (!res.ok) throw new Error('Failed like');
 				const data = await res.json();
-				likedMap[id] = true;
-				setState(id, true, data.likes ?? null);
+				if (typeof data.liked === 'boolean') likedMap[id] = data.liked;
+				persistLikedMap();
+				setState(id, !!likedMap[id], data.likes ?? null);
 			} catch (err) {
 				console.warn('Could not like', err);
 			} finally {
@@ -65,10 +108,11 @@
 					seen.add(id);
 					fetchLikes(id);
 				}
-				btn.addEventListener('click', () => sendLike(id, btn));
+				btn.addEventListener('click', () => toggleLike(id, btn));
 			});
 		};
 
+		loadLikedMap();
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', init);
 		} else {
