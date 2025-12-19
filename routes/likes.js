@@ -6,6 +6,7 @@ const debug = require('debug')('hadithdb:likes');
 const nodemailer = require('nodemailer');
 const Utils = require('../lib/Utils');
 const admin = require('../lib/Firebase');
+const { homedir } = require('os');
 
 const router = express.Router();
 
@@ -125,6 +126,9 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
     return;
   }
   try {
+    var ref_nums = await global.query(`SELECT CONCAT(b.alias, ':', h.num) AS ref_num FROM hadiths h, books b WHERE h.id=${hadithId} AND h.bookId = b.id LIMIT 1`);
+    await Utils.flushCacheContaining(`${ref_nums[0].ref_num}`);
+    await Utils.flushCachedFile(`${homedir}/.hadithdb/cache/liked.html`);
     const requestedAction = req.body && req.body.action === 'unlike' ? 'unlike' : 'like';
     const exists = await global.query(`SELECT id FROM hadiths WHERE id=${hadithId} LIMIT 1`);
     if (!exists || !exists.length) {
