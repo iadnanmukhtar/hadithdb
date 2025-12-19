@@ -59,6 +59,7 @@ const app = express();
   const commentsRouter = require('./routes/comments');
   const likesRouter = require('./routes/likes');
   const likedRouter = require('./routes/liked');
+  const bookmarksRouter = require('./routes/bookmarks');
 
   app.use('/tools', toolsRouter);
   app.use('/recent', highlightsRouter);
@@ -75,6 +76,7 @@ const app = express();
   app.use('/comments', commentsRouter);
   app.use('/likes', likesRouter);
   app.use('/liked', likedRouter);
+  app.use('/bookmarks', bookmarksRouter);
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {

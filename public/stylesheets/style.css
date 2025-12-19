@@ -179,6 +179,10 @@ nav .nav-link {
 	text-indent: 0;
 }
 
+.text-accent {
+	color: var(--c-accent) !important;
+}
+
 .modal-header {
 	align-items: baseline;
 }
@@ -757,4 +761,3 @@ a.cmd-btn:hover {
 	}
 
 }
-

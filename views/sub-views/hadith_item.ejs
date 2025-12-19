@@ -150,6 +150,10 @@
 			<span class="bi bi-chat-right-text"></span>&nbsp;<a href="/<%= i.ref %>">Reflect</a>
 		<% } %>
 		&nbsp;
+		<button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="Bookmark this hadith">
+			<span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>"></span>
+		</button>
+		&nbsp;
 		<button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="Like this hadith">
 			<span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>"></span>
 		</button>

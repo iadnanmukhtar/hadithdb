@@ -1,0 +1,3 @@
+<% for (var i = 0; i < results.length; i++) { %>
+  <%- include('hadith.ejs', { site: site, page: page, i: results[i], main: true, title: true, searchResult: false }); %>
+<% } %>

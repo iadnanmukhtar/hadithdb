@@ -32,9 +32,10 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="/liked">Liked</a></li>
-              <li><a class="dropdown-item" href="/highlights">Highlights</a></li>
-              <li><a class="dropdown-item" href="/titled">Titled</a></li>
+              <li><a class="dropdown-item" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
+              <li><a class="dropdown-item" href="/liked"><i class="bi bi-heart"></i> Liked</a></li>
+              <li><a class="dropdown-item" href="/highlights"><i class="bi bi-star"></i> Highlighted</a></li>
+              <li><a class="dropdown-item" href="/titled"><i class="bi bi-card-heading"></i> Titled</a></li>
             </ul>
           </li>
           <% if (site.admin) { %>
@@ -81,10 +82,10 @@
             <li class="nav-item"><a class="nav-link" href="/books"><i class="bi bi-book"></i> Books</a></li>
             <li class="nav-item"><a class="nav-link" href="/blog"><i class="bi bi-text-paragraph"></i> Blog</a></li>
             <li><hr></li>
-            <li class="nav-item"><a class="nav-link" href="/liked"><i class="bi bi-heart"></i> Recently Liked</a></li>
-            <li class="nav-item"><a class="nav-link" href="/highlights"><i class="bi bi-card-text"></i> Highlights</a></li>
-            <li class="nav-item"><a class="nav-link" href="/titled"><i class="bi bi-card-heading"></i> Updated Titles</a></li>
-            <li class="nav-item"><a class="nav-link" href="/requests"><i class="bi bi-translate"></i> Translation Req</a></li>
+            <li class="nav-item"><a class="nav-link" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
+            <li class="nav-item"><a class="nav-link" href="/liked"><i class="bi bi-heart"></i> Liked</a></li>
+            <li class="nav-item"><a class="nav-link" href="/highlights"><i class="bi bi-star"></i> Highlighted</a></li>
+            <li class="nav-item"><a class="nav-link" href="/titled"><i class="bi bi-card-heading"></i> Titled</a></li>
             <% if (site.admin) { %>
               <li><hr></li>
               <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">

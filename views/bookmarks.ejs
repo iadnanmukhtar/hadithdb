@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<%
+    var site = new Object(global.settings.site);
+    site.admin = (req.cookies.admin == global.settings.admin.key);
+    site.editMode = false;
+%>
+
+<%- include('sub-views/head.ejs', { site: site, page: page }); %>
+
+</head>
+
+<body>
+
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+
+  <div class="container col-lg-8 mx-auto">
+    <main class="search-results">
+      <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
+        <div>
+          <h1 class="fs-4 mb-0">Bookmarked Aḥādīths</h1>
+          <p class="text-muted small mb-0">Bookmarks are saved locally on this device.</p>
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm" id="clear-bookmarks-btn">Clear all</button>
+      </div>
+      <div id="bookmarks-empty" class="alert alert-info">You have not bookmarked any aḥādīths yet.</div>
+      <div id="bookmarks-list" class="d-flex flex-column gap-3"></div>
+    </main>
+  </div>
+
+<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+
+<script>
+  (function () {
+    const listEl = document.getElementById('bookmarks-list');
+    const emptyEl = document.getElementById('bookmarks-empty');
+    const clearBtn = document.getElementById('clear-bookmarks-btn');
+
+    const setEmpty = (hasItems) => {
+      if (hasItems) {
+        emptyEl.classList.add('d-none');
+      } else {
+        emptyEl.classList.remove('d-none');
+      }
+    };
+
+    const load = async () => {
+      const ids = (window.hadithBookmarks && window.hadithBookmarks.getAll) ? window.hadithBookmarks.getAll() : [];
+      if (!ids.length) {
+        listEl.innerHTML = '';
+        setEmpty(false);
+        return;
+      }
+      try {
+        listEl.innerHTML = '<div class="text-muted small">Loading bookmarks...</div>';
+        const res = await fetch('/bookmarks/list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        if (!res.ok) throw new Error('Failed to load bookmarks');
+        const data = await res.json();
+        listEl.innerHTML = data.html || '';
+        setEmpty(!!data.count);
+        if (window.refreshHadithActions) window.refreshHadithActions();
+      } catch (err) {
+        console.warn(err);
+        listEl.innerHTML = '<div class="alert alert-warning mb-0">Unable to load bookmarks. Please try again.</div>';
+      }
+    };
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (window.hadithBookmarks && window.hadithBookmarks.clear) {
+          window.hadithBookmarks.clear();
+        } else {
+          localStorage.removeItem('hadithBookmarkMap');
+        }
+        load();
+      });
+    }
+
+    document.addEventListener('hadithBookmarkToggled', load);
+    document.addEventListener('hadithBookmarksCleared', load);
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', load);
+    } else {
+      load();
+    }
+  })();
+</script>
+
+</body>
+</html>

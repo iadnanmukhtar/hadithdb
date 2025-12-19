@@ -15,29 +15,38 @@
 
 <script>
 	(function () {
-		if (window.hadithLikeInit) return;
-		window.hadithLikeInit = true;
+		if (window.hadithActionsInit) return;
+		window.hadithActionsInit = true;
 		const likedMap = {};
+		const bookmarkMap = {};
+		const LIKE_KEY = 'hadithLikedMap';
+		const BOOKMARK_KEY = 'hadithBookmarkMap';
 
-		const loadLikedMap = () => {
+		const loadMap = (key, target) => {
 			try {
-				const raw = localStorage.getItem('hadithLikedMap');
-				if (raw) Object.assign(likedMap, JSON.parse(raw));
+				const raw = localStorage.getItem(key);
+				if (raw) Object.assign(target, JSON.parse(raw));
 			} catch (err) {
-				console.warn('Could not load liked map', err);
+				console.warn(`Could not load map for ${key}`, err);
 			}
 		};
 
-		const persistLikedMap = () => {
+		const persistMap = (key, map) => {
 			try {
-				localStorage.setItem('hadithLikedMap', JSON.stringify(likedMap));
+				if (Object.keys(map).length) {
+					localStorage.setItem(key, JSON.stringify(map));
+				} else {
+					localStorage.removeItem(key);
+				}
 			} catch (err) {
-				console.warn('Could not persist liked map', err);
+				console.warn(`Could not persist map for ${key}`, err);
 			}
 		};
 
 		const getButtons = () => Array.from(document.querySelectorAll('.hadith-like-btn[data-hadith-id]'));
+		const getBookmarkButtons = () => Array.from(document.querySelectorAll('.hadith-bookmark-btn[data-hadith-id]'));
 		const getIcon = (id) => document.querySelector(`.hadith-like-icon[data-hadith-id="${id}"]`);
+		const getBookmarkIcon = (id) => document.querySelector(`.hadith-bookmark-icon[data-hadith-id="${id}"]`);
 		const getCount = (id) => document.querySelector(`.hadith-like-count[data-hadith-id="${id}"]`);
 
 		const setState = (id, liked, likes) => {
@@ -45,6 +54,11 @@
 			const countEl = getCount(id);
 			if (icon) icon.className = liked ? 'hadith-like-icon bi bi-heart-fill text-danger' : 'hadith-like-icon bi bi-heart text-danger';
 			if (countEl && typeof likes === 'number') countEl.textContent = likes;
+		};
+
+		const setBookmarkState = (id, bookmarked) => {
+			const icon = getBookmarkIcon(id);
+			if (icon) icon.className = bookmarked ? 'hadith-bookmark-icon bi bi-bookmark-fill text-accent' : 'hadith-bookmark-icon bi bi-bookmark text-accent';
 		};
 
 		const requireLogin = () => {
@@ -62,7 +76,7 @@
 				const data = await res.json();
 				if (typeof data.liked === 'boolean') {
 					likedMap[id] = data.liked;
-					persistLikedMap();
+					persistMap(LIKE_KEY, likedMap);
 				}
 				setState(id, !!likedMap[id], data.likes ?? 0);
 			} catch (err) {
@@ -90,7 +104,7 @@
 				if (!res.ok) throw new Error('Failed like');
 				const data = await res.json();
 				if (typeof data.liked === 'boolean') likedMap[id] = data.liked;
-				persistLikedMap();
+				persistMap(LIKE_KEY, likedMap);
 				setState(id, !!likedMap[id], data.likes ?? null);
 			} catch (err) {
 				console.warn('Could not like', err);
@@ -99,24 +113,65 @@
 			}
 		};
 
-		const init = () => {
+		const toggleBookmark = (id) => {
+			const bookmarked = !bookmarkMap[id];
+			if (bookmarked) bookmarkMap[id] = true;
+			else delete bookmarkMap[id];
+			persistMap(BOOKMARK_KEY, bookmarkMap);
+			setBookmarkState(id, bookmarked);
+			document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
+				detail: { hadithId: id, bookmarked }
+			}));
+		};
+
+		const initLikes = () => {
 			const seen = new Set();
 			getButtons().forEach(btn => {
 				const id = parseInt(btn.dataset.hadithId);
 				if (Number.isNaN(id)) return;
+				setState(id, !!likedMap[id], null);
 				if (!seen.has(id)) {
 					seen.add(id);
 					fetchLikes(id);
 				}
+				if (btn.dataset.hadithLikeInit === '1') return;
+				btn.dataset.hadithLikeInit = '1';
 				btn.addEventListener('click', () => toggleLike(id, btn));
 			});
 		};
 
-		loadLikedMap();
+		const initBookmarks = () => {
+			getBookmarkButtons().forEach(btn => {
+				const id = parseInt(btn.dataset.hadithId);
+				if (Number.isNaN(id)) return;
+				setBookmarkState(id, !!bookmarkMap[id]);
+				if (btn.dataset.hadithBookmarkInit === '1') return;
+				btn.dataset.hadithBookmarkInit = '1';
+				btn.addEventListener('click', () => toggleBookmark(id));
+			});
+		};
+
+		const init = () => {
+			initLikes();
+			initBookmarks();
+		};
+
+		loadMap(LIKE_KEY, likedMap);
+		loadMap(BOOKMARK_KEY, bookmarkMap);
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', init);
 		} else {
 			init();
 		}
+		window.refreshHadithActions = init;
+		window.hadithBookmarks = {
+			getAll: () => Object.keys(bookmarkMap).map(id => parseInt(id, 10)).filter(id => !Number.isNaN(id)),
+			clear: () => {
+				Object.keys(bookmarkMap).forEach(key => delete bookmarkMap[key]);
+				persistMap(BOOKMARK_KEY, bookmarkMap);
+				initBookmarks();
+				document.dispatchEvent(new CustomEvent('hadithBookmarksCleared'));
+			}
+		};
 	})();
 </script>
