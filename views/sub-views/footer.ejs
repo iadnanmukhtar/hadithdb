@@ -49,7 +49,7 @@
 
 		const requireLogin = () => {
 			if (window.hadithAuth && window.hadithAuth.requireLogin) window.hadithAuth.requireLogin();
-			toastr.error('Please sign in from the Home Page to like or comment.', 'Sign-in required');
+			toastr.error('Please sign in to like or comment.', 'Sign-in required');
 		};
 
 		const fetchLikes = async (id) => {

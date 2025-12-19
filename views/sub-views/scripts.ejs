@@ -220,10 +220,72 @@
         return user ? user.getIdToken() : null;
       },
       requireLogin: () => {
-			  toastr.error('Please sign in from the Home Page to like or comment.', 'Sign-in required');
-      }
+        toastr.error('Please sign in to like or comment.', 'Sign-in required');
+      },
+      getUser
     };
     window.firebaseApp = true;
+  })();
+</script>
+
+<!-- Nav Google Auth UI -->
+<script>
+  (function initNavAuth() {
+    if (window.navAuthInit) return;
+    const desktopSlot = document.getElementById('nav-auth-desktop');
+    const mobileSlot = document.getElementById('nav-auth-mobile');
+    if (!desktopSlot && !mobileSlot) return;
+    window.navAuthInit = true;
+
+    const render = (user) => {
+      const avatar = user && (user.photoURL || 'https://www.gravatar.com/avatar/?d=mp&s=48');
+      const name = user && (user.displayName || user.email || 'User');
+      const profileHtml = `
+        <div class="dropdown">
+          <button class="btn btn-link p-0 border-0 dropdown-toggle d-flex align-items-center nav-auth-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="${avatar}" alt="${name}" class="rounded-circle" width="32" height="32">
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button type="button" class="dropdown-item nav-signout">Sign out</button></li>
+          </ul>
+        </div>
+      `;
+      const loginHtml = `<button type="button" class="btn btn-link p-0 nav-signin" title="Sign in"><i class="bi bi-person-circle fs-4"></i></button>`;
+      if (desktopSlot) desktopSlot.innerHTML = user ? profileHtml : loginHtml;
+      if (mobileSlot) mobileSlot.innerHTML = user ? profileHtml : loginHtml;
+      attachHandlers();
+    };
+
+    const attachHandlers = () => {
+      const signinBtns = document.querySelectorAll('.nav-signin');
+      signinBtns.forEach(btn => btn.onclick = signIn);
+      const signoutBtns = document.querySelectorAll('.nav-signout');
+      signoutBtns.forEach(btn => btn.onclick = signOut);
+    };
+
+    const signIn = async () => {
+      try {
+        const auth = firebase.auth();
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
+      } catch (err) {
+        toastr.error('Sign-in failed. Please try again.', 'Auth');
+        console.warn(err);
+      }
+    };
+
+    const signOut = async () => {
+      try {
+        await firebase.auth().signOut();
+      } catch (err) {
+        toastr.error('Sign-out failed. Please try again.', 'Auth');
+        console.warn(err);
+      }
+    };
+
+    const auth = firebase.auth();
+    auth.onAuthStateChanged(render);
+    render(null);
   })();
 </script>
 
