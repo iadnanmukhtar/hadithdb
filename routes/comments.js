@@ -97,6 +97,13 @@ async function getVoteStats(commentIds, userUid = null) {
   return stats;
 }
 
+function isCommentOwner(comment, user) {
+  if (!comment || !user) return false;
+  if (comment.user_uid) return comment.user_uid === user.uid;
+  const emailMatch = !!(comment.user_email && user.email && comment.user_email === user.email);
+  return !comment.user_uid && emailMatch && comment.user_provider === user.provider;
+}
+
 async function verifyFirebase(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
@@ -132,13 +139,17 @@ router.get('/:hadithId', async function (req, res, next) {
     if (token) {
       try {
         const decoded = await admin.auth().verifyIdToken(token);
-        user = { uid: decoded.uid };
+        user = {
+          uid: decoded.uid,
+          provider: decoded.firebase && decoded.firebase.sign_in_provider ? decoded.firebase.sign_in_provider : 'firebase',
+          email: decoded.email || null
+        };
       } catch (err) {
         // ignore invalid token for public fetch
       }
     }
     const rows = await global.query(`
-      SELECT id, hadithId, parentId, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote
+      SELECT id, hadithId, parentId, user_uid, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote, deleted
       FROM hadiths_comments
       WHERE hadithId=${hadithId}
       ORDER BY createdAt DESC
@@ -146,18 +157,23 @@ router.get('/:hadithId', async function (req, res, next) {
     const commentIds = rows.map(r => r.id);
     const voteStats = await getVoteStats(commentIds, user ? user.uid : null);
     const comments = rows.map(r => {
+      const deleted = !!r.deleted;
+      const isOwner = isCommentOwner(r, user);
       const stats = voteStats[r.id] || { upVote: r.up_vote || 0, downVote: r.down_vote || 0, userVote: null };
       return {
         id: r.id,
         ref: r.ref,
         parentId: r.parentId,
-        text: r.text,
-        html: md.render(r.text),
+        text: deleted ? '' : r.text,
+        html: deleted ? '' : md.render(r.text),
+        deleted,
         ts: r.createdAt,
-        upVote: stats.upVote || 0,
-        downVote: stats.downVote || 0,
-        userVote: stats.userVote || null,
-        user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
+        upVote: deleted ? 0 : (stats.upVote || 0),
+        downVote: deleted ? 0 : (stats.downVote || 0),
+        userVote: deleted ? null : (stats.userVote || null),
+        user: { provider: r.user_provider, name: r.user_name, email: r.user_email },
+        canEdit: !!(isOwner && !deleted),
+        canDelete: !!(isOwner && !deleted)
       };
     });
     res.json(comments);
@@ -192,18 +208,19 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
 
   try {
     const escText = Utils.escSQL(text);
+    const escUid = Utils.escSQL(user.uid);
     const escProvider = Utils.escSQL(user.provider);
     const escName = Utils.escSQL(user.name);
     const escEmail = user.email ? Utils.escSQL(user.email) : null;
     const parentSql = parentId ? parentId : 'NULL';
     const insertRes = await global.query(`
-      INSERT INTO hadiths_comments (hadithId, parentId, user_provider, user_name, user_email, text, createdAt)
-      VALUES (${hadithId}, ${parentSql}, '${escProvider}', '${escName}', '${escEmail}', '${escText}', NOW())
+      INSERT INTO hadiths_comments (hadithId, parentId, user_uid, user_provider, user_name, user_email, text, createdAt, deleted)
+      VALUES (${hadithId}, ${parentSql}, '${escUid}', '${escProvider}', '${escName}', '${escEmail}', '${escText}', NOW(), 0)
     `);
     const newId = insertRes.insertId;
     await global.query(`UPDATE hadiths SET commented=(commented+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${hadithId}`);
     const rows = await global.query(`
-      SELECT id, hadithId, ref_num, parentId, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote
+      SELECT id, hadithId, ref_num, parentId, user_uid, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote, deleted
       FROM hadiths_comments
       WHERE id=${newId}
       ORDER BY createdAt DESC
@@ -215,10 +232,13 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
       parentId: r.parentId,
       text: r.text,
       html: md.render(r.text),
+      deleted: false,
       ts: r.createdAt,
       upVote: r.up_vote || 0,
       downVote: r.down_vote || 0,
-      user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
+      user: { provider: r.user_provider, name: r.user_name, email: r.user_email },
+      canEdit: true,
+      canDelete: true
     });
     sendCommentEmail({
       id: r.id,
@@ -229,6 +249,126 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
     });
   } catch (err) {
     debug(`Error adding user comment:\n${err.stack}`);
+    next(err);
+  }
+});
+
+router.put('/:commentId', verifyFirebase, async function (req, res, next) {
+  const commentId = parseInt(req.params.commentId);
+  if (Number.isNaN(commentId)) {
+    res.status(400).json({ error: 'Invalid comment id' });
+    return;
+  }
+  const text = Utils.trimToEmpty(req.body.text);
+  if (!text || text.length > 10000) {
+    res.status(400).json({ error: 'Comment text is required and must be under 10000 characters.' });
+    return;
+  }
+  try {
+    const rows = await global.query(`
+      SELECT id, hadithId, ref_num, parentId, user_uid, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote, deleted
+      FROM hadiths_comments
+      WHERE id=${commentId}
+      LIMIT 1
+    `);
+    if (!rows || !rows.length) {
+      res.status(404).json({ error: 'Comment not found.' });
+      return;
+    }
+    const r = rows[0];
+    if (r.deleted) {
+      res.status(400).json({ error: 'Comment has been deleted.' });
+      return;
+    }
+    if (!isCommentOwner(r, req.user)) {
+      res.status(403).json({ error: 'You can only edit your own comment.' });
+      return;
+    }
+    const escText = Utils.escSQL(text);
+    await global.query(`
+      UPDATE hadiths_comments
+      SET text='${escText}'
+      WHERE id=${commentId}
+    `);
+    await global.query(`UPDATE hadiths SET lastfixed=CURRENT_TIMESTAMP() WHERE id=${r.hadithId}`);
+    const updatedRows = await global.query(`
+      SELECT id, hadithId, ref_num, parentId, user_uid, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote, deleted
+      FROM hadiths_comments
+      WHERE id=${commentId}
+      LIMIT 1
+    `);
+    const updated = updatedRows[0];
+    const stats = await getVoteStats([commentId], req.user.uid);
+    const vote = stats[commentId] || { upVote: updated.up_vote || 0, downVote: updated.down_vote || 0, userVote: null };
+    res.json({
+      id: updated.id,
+      parentId: updated.parentId,
+      text: updated.text,
+      html: md.render(updated.text),
+      ts: updated.createdAt,
+      upVote: vote.upVote || 0,
+      downVote: vote.downVote || 0,
+      userVote: vote.userVote || null,
+      user: { provider: updated.user_provider, name: updated.user_name, email: updated.user_email },
+      canEdit: true,
+      canDelete: true,
+      deleted: false
+    });
+  } catch (err) {
+    debug(`Error updating user comment:\n${err.stack}`);
+    next(err);
+  }
+});
+
+router.delete('/:commentId', verifyFirebase, async function (req, res, next) {
+  const commentId = parseInt(req.params.commentId);
+  if (Number.isNaN(commentId)) {
+    res.status(400).json({ error: 'Invalid comment id' });
+    return;
+  }
+  try {
+    const rows = await global.query(`
+      SELECT id, hadithId, ref_num, parentId, user_uid, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote
+      FROM hadiths_comments
+      WHERE id=${commentId}
+      LIMIT 1
+    `);
+    if (!rows || !rows.length) {
+      res.status(404).json({ error: 'Comment not found.' });
+      return;
+    }
+    const r = rows[0];
+    if (!isCommentOwner(r, req.user)) {
+      res.status(403).json({ error: 'You can only delete your own comment.' });
+      return;
+    }
+    if (!r.deleted) {
+      await global.query(`DELETE FROM hadiths_comments_votes WHERE commentId=${commentId}`);
+      await global.query(`
+        UPDATE hadiths_comments
+        SET deleted=1,
+            up_vote=0,
+            down_vote=0
+        WHERE id=${commentId}
+      `);
+      await global.query(`UPDATE hadiths SET lastfixed=CURRENT_TIMESTAMP() WHERE id=${r.hadithId}`);
+    }
+    res.json({
+      id: r.id,
+      parentId: r.parentId,
+      text: '',
+      html: '',
+      deleted: true,
+      ts: r.createdAt,
+      upVote: 0,
+      downVote: 0,
+      userVote: null,
+      user: { provider: r.user_provider, name: r.user_name, email: r.user_email },
+      canEdit: false,
+      canDelete: false
+    });
+  } catch (err) {
+    debug(`Error deleting user comment:\n${err.stack}`);
     next(err);
   }
 });
@@ -246,7 +386,7 @@ router.post('/:commentId/vote', verifyFirebase, async function (req, res, next) 
   }
   try {
     const rows = await global.query(`
-      SELECT id, hadithId, ref_num, parentId, user_provider, user_name, user_email, text, up_vote, down_vote
+      SELECT id, hadithId, ref_num, parentId, user_provider, user_name, user_email, text, up_vote, down_vote, deleted
       FROM hadiths_comments
       WHERE id=${commentId}
       LIMIT 1
@@ -256,6 +396,10 @@ router.post('/:commentId/vote', verifyFirebase, async function (req, res, next) 
       return;
     }
     const r = rows[0];
+    if (r.deleted) {
+      res.status(400).json({ error: 'Comment has been deleted.' });
+      return;
+    }
     const escUid = Utils.escSQL(req.user.uid);
     const prevRows = await global.query(`
       SELECT direction

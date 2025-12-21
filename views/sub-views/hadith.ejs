@@ -38,6 +38,7 @@
 				<input type="hidden" id="comment-parent">
 				<button type="submit" class="btn btn-primary btn-sm" disabled>Post reflection</button>
 				<button type="button" class="btn btn-link btn-sm text-decoration-none d-none" id="cancel-reply">Cancel reply</button>
+				<button type="button" class="btn btn-link btn-sm text-decoration-none d-none" id="cancel-edit">Cancel edit</button>
 			</form>
 			<div id="comment-thread" class="list-group"></div>
 			<script>
@@ -51,9 +52,12 @@
 					const textarea = document.getElementById('comment-text');
 					const parentInput = document.getElementById('comment-parent');
 					const cancelReply = document.getElementById('cancel-reply');
+					const cancelEdit = document.getElementById('cancel-edit');
+					const submitBtn = form.querySelector('button[type="submit"]');
 					const userBox = document.getElementById('comment-user');
 					let currentUser = null;
 					let comments = [];
+					let editingId = null;
 					let firebaseReady = false;
 					let firebaseAvailable = false;
 
@@ -152,6 +156,15 @@
 						return d.toLocaleString();
 					};
 
+					const resetFormState = (clearText = false) => {
+						editingId = null;
+						parentInput.value = '';
+						submitBtn.textContent = 'Post reflection';
+						cancelReply.classList.add('d-none');
+						cancelEdit.classList.add('d-none');
+						if (clearText) textarea.value = '';
+					};
+
 					const renderComments = () => {
 						threadEl.innerHTML = '';
 						if (!comments.length) {
@@ -169,30 +182,41 @@
 								const item = document.createElement('div');
 								item.className = 'list-group-item';
 								item.style.marginLeft = depth ? `${depth * 12}px` : '0';
+								const deleted = !!c.deleted;
 								const upVote = typeof c.upVote === 'number' ? c.upVote : 0;
 								const downVote = typeof c.downVote === 'number' ? c.downVote : 0;
 								const userVote = c.userVote || null;
 								const upBtnClass = userVote === 'up' ? 'btn-success text-white' : 'btn-outline-success';
 								const downBtnClass = userVote === 'down' ? 'btn-danger text-white' : 'btn-outline-danger';
+								const voteControls = deleted ? '' : `
+									<div class="btn-group" role="group" aria-label="Vote controls">
+										<button type="button" class="btn btn-sm ${upBtnClass} comment-vote" data-id="${c.id}" data-direction="up">
+											▲ <span class="comment-up-count">${upVote}</span>
+										</button>
+										<button type="button" class="btn btn-sm ${downBtnClass} comment-vote" data-id="${c.id}" data-direction="down">
+											▼ <span class="comment-down-count">${downVote}</span>
+										</button>
+									</div>
+								`;
+								const editControls = deleted ? '' : (c.canEdit ? `<button type="button" class="btn btn-link btn-sm p-0 comment-edit" data-id="${c.id}">Edit</button>` : '');
+								const deleteControls = deleted ? '' : (c.canDelete ? `<button type="button" class="btn btn-link btn-sm p-0 comment-delete text-danger" data-id="${c.id}">Delete</button>` : '');
+								const replyControls = deleted ? '' : `<button type="button" class="btn btn-link btn-sm p-0 comment-reply" data-id="${c.id}">Reply</button>`;
 								item.innerHTML = `
 									<div class="d-flex justify-content-between align-items-center mb-1">
 										<div><strong>${c.user.name}</strong> <span class="text-muted small">via ${c.user.provider}</span></div>
 										<span class="text-muted small">${formatDate(c.ts)}</span>
 									</div>
-									<p class="mb-2 comment-text"></p>
-									<div class="d-flex align-items-center gap-2">
-										<div class="btn-group" role="group" aria-label="Vote controls">
-											<button type="button" class="btn btn-sm ${upBtnClass} comment-vote" data-id="${c.id}" data-direction="up">
-												▲ <span class="comment-up-count">${upVote}</span>
-											</button>
-											<button type="button" class="btn btn-sm ${downBtnClass} comment-vote" data-id="${c.id}" data-direction="down">
-												▼ <span class="comment-down-count">${downVote}</span>
-											</button>
-										</div>
-										<button type="button" class="btn btn-link btn-sm p-0 comment-reply" data-id="${c.id}">Reply</button>
-									</div>
+									${deleted ? '<p class="mb-2 text-muted fst-italic small">This reflection was deleted.</p>' : '<p class="mb-2 comment-text"></p>'}
+									${deleted ? '' : `<div class="d-flex align-items-center gap-2">
+										${voteControls}
+										${editControls}
+										${deleteControls}
+										${replyControls}
+									</div>`}
 								`;
-								item.querySelector('p').innerHTML = c.html || c.text;
+								if (!deleted) {
+									item.querySelector('p').innerHTML = c.html || c.text;
+								}
 								threadEl.appendChild(item);
 								build(c.id, depth + 1);
 							});
@@ -209,9 +233,30 @@
 						});
 						threadEl.querySelectorAll('.comment-reply').forEach(btn => {
 							btn.onclick = () => {
+								resetFormState();
 								parentInput.value = btn.dataset.id;
 								cancelReply.classList.remove('d-none');
 								textarea.focus();
+							};
+						});
+						threadEl.querySelectorAll('.comment-edit').forEach(btn => {
+							btn.onclick = () => {
+								const commentId = parseInt(btn.dataset.id);
+								const comment = comments.find(c => c.id === commentId);
+								if (!comment) return;
+								resetFormState();
+								editingId = comment.id;
+								textarea.value = comment.text;
+								submitBtn.textContent = 'Update reflection';
+								cancelEdit.classList.remove('d-none');
+								textarea.focus();
+							};
+						});
+						threadEl.querySelectorAll('.comment-delete').forEach(btn => {
+							btn.onclick = () => {
+								const commentId = parseInt(btn.dataset.id);
+								if (Number.isNaN(commentId)) return;
+								deleteComment(commentId);
 							};
 						});
 					};
@@ -227,7 +272,10 @@
 								...c,
 								upVote: typeof c.upVote === 'number' ? c.upVote : 0,
 								downVote: typeof c.downVote === 'number' ? c.downVote : 0,
-								userVote: c.userVote || null
+								userVote: c.userVote || null,
+								canEdit: !!c.canEdit,
+								canDelete: !!c.canDelete,
+								deleted: !!c.deleted
 							}));
 						} catch (e) {
 							threadEl.innerHTML = '<div class="list-group-item text-danger small">Failed to load comments. Please try again later.</div>';
@@ -241,9 +289,41 @@
 						cancelReply.classList.add('d-none');
 					};
 
+					cancelEdit.onclick = () => {
+						resetFormState(true);
+					};
+
+					const deleteComment = async (commentId) => {
+						const user = currentUser;
+						if (!user) { renderUser(); return; }
+						if (!window.confirm('Delete this reflection? This cannot be undone.')) return;
+						try {
+							const idToken = await user.getIdToken();
+							const res = await fetch(`/comments/${commentId}`, {
+								method: 'DELETE',
+								headers: {
+									'Authorization': `Bearer ${idToken}`
+								}
+							});
+							if (!res.ok) throw new Error('Unable to delete comment');
+							const data = await res.json();
+							const idx = comments.findIndex(c => c.id === data.id);
+							if (idx >= 0) {
+								comments[idx] = { ...comments[idx], ...data, deleted: true, canEdit: false, canDelete: false };
+							}
+							if (editingId === commentId) resetFormState(true);
+							renderComments();
+						} catch (err) {
+							console.error('Could not delete comment', err);
+							alert('Could not delete comment right now. Please try again.');
+						}
+					};
+
 					const submitVote = async (commentId, direction) => {
 						const user = currentUser;
 						if (!user) { renderUser(); return; }
+						const comment = comments.find(c => c.id === commentId);
+						if (!comment || comment.deleted) return;
 						try {
 							const idToken = await user.getIdToken();
 							const res = await fetch(`/comments/${commentId}/vote`, {
@@ -275,30 +355,39 @@
 						if (!user) { renderUser(); return; }
 						const text = textarea.value.trim();
 						if (!text) return;
+						const isEditing = !!editingId;
 						try {
 							const idToken = await user.getIdToken();
-							const res = await fetch(`/comments/${hadithId}`, {
-								method: 'POST',
+							const errorMsg = isEditing ? 'Unable to update comment' : 'Unable to post comment';
+							const res = await fetch(isEditing ? `/comments/${editingId}` : `/comments/${hadithId}`, {
+								method: isEditing ? 'PUT' : 'POST',
 								headers: {
 									'Content-Type': 'application/json',
 									'Authorization': `Bearer ${idToken}`
 								},
 								body: JSON.stringify({
 									text,
-									parentId: parentInput.value || null
+									parentId: isEditing ? null : (parentInput.value || null)
 								})
 							});
-							if (!res.ok) throw new Error('Unable to post comment');
+							if (!res.ok) throw new Error(errorMsg);
 							const data = await res.json();
-							comments.push(data);
-							fetch('/do/<%= i.actual ? i.actual.id : i.id %>?cmd=comment', { method: 'GET', keepalive: true }).catch(() => {});
-							textarea.value = '';
-							parentInput.value = '';
-							cancelReply.classList.add('d-none');
+							if (isEditing) {
+								const idx = comments.findIndex(c => c.id === data.id);
+								if (idx >= 0) {
+									comments[idx] = { ...comments[idx], ...data, canEdit: true };
+								} else {
+									comments.push({ ...data, canEdit: true });
+								}
+							} else {
+								comments.push(data);
+								fetch('/do/<%= i.actual ? i.actual.id : i.id %>?cmd=comment', { method: 'GET', keepalive: true }).catch(() => {});
+							}
+							resetFormState(true);
 							renderComments();
 						} catch (err) {
-							console.error('Could not post comment', err);
-							alert('Could not post comment right now. Please try again.');
+							console.error('Could not submit comment', err);
+							alert(isEditing ? 'Could not update comment right now. Please try again.' : 'Could not post comment right now. Please try again.');
 						}
 					};
 
