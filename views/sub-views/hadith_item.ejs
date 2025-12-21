@@ -18,7 +18,7 @@
 
 		<%# Verification %>
 		<% if (lang === 'en' && site.editMode) { %>
-			<input class="_e form-check-input" title="Verified" type="checkbox" <%- i.verified ? 'checked' : '' %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.verified">
+			<input class="_e form-check-input" title="Verified" type="text" size="1" value="<%- i.verified ? 'x' : '' %>"" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.verified">
 		<% } else if (lang === 'en') { %>
 			<%- i.verified ? `<span title="Verified Translation" class="bi bi-patch-check-fill"></span>` : '' %>
 		<% } %>

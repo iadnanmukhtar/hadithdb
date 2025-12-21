@@ -108,6 +108,9 @@ router.post('/:id/:prop', async function (req, res, next) {
 
       } else { // hadith
 
+        if (col === 'verified')
+          status.value = (status.value && status.value !== '') ? 1 : 0;
+
         result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
         var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
         if (col === 'body_en' && Utils.isFalsey(status.value)) {
@@ -268,9 +271,6 @@ router.post('/:id/:prop', async function (req, res, next) {
     debug(status.message);
   }
 
-  // uncache
-  // findAndDeleteFilesWithText(`${homedir}/.hadithdb/cache`, '');
-
   res.status(status.code);
   res.end(JSON.stringify(status));
 });
@@ -285,44 +285,5 @@ function sql(s) {
   }
   return null;
 }
-
-function findAndDeleteFilesWithText(dir, s) {
-  fs.readdir(dir, (err, files) => {
-    if (err) {
-      console.error('Error reading directory:', err);
-      return;
-    }
-    files.forEach(file => {
-      const filePath = path.join(dir, file);
-      fs.stat(filePath, (err, stats) => {
-        if (err) {
-          console.error('Error stating file:', err);
-          return;
-        }
-        if (stats.isFile()) {
-          fs.readFile(filePath, 'utf8', (err, data) => {
-            if (err) {
-              console.error('Error reading file:', err);
-              return;
-            }
-            if (data.includes(s)) {
-              console.log('Deleting file:', filePath);
-              fs.unlink(filePath, (err) => {
-                if (err) {
-                  console.error('Error deleting file:', err);
-                  return;
-                }
-                console.log('File deleted:', filePath);
-              });
-            }
-          });
-        } else if (stats.isDirectory()) {
-          findAndDeleteFilesWithText(filePath, s);
-        }
-      });
-    });
-  });
-}
-
 
 module.exports = router;
