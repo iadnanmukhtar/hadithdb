@@ -129,6 +129,8 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
     var ref_nums = await global.query(`SELECT CONCAT(b.alias, ':', h.num) AS ref_num FROM hadiths h, books b WHERE h.id=${hadithId} AND h.bookId = b.id LIMIT 1`);
     await Utils.flushCacheContaining(`${ref_nums[0].ref_num}`);
     await Utils.flushCachedFile(`${homedir}/.hadithdb/cache/liked.html`);
+    await Utils.flushCachedFile(`${homedir}/.hadithdb/cache/liked_feed.xml`);
+    await Utils.flushCachedFile(`${homedir}/.hadithdb/cache/liked_rss.xml`);
     const requestedAction = req.body && req.body.action === 'unlike' ? 'unlike' : 'like';
     const exists = await global.query(`SELECT id FROM hadiths WHERE id=${hadithId} LIMIT 1`);
     if (!exists || !exists.length) {
