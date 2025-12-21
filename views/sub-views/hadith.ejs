@@ -40,8 +40,6 @@
 				<button type="button" class="btn btn-link btn-sm text-decoration-none d-none" id="cancel-reply">Cancel reply</button>
 			</form>
 			<div id="comment-thread" class="list-group"></div>
-			<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-			<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 			<script>
 				(function () {
 					const authBlock = document.getElementById('comment-auth');
@@ -57,6 +55,7 @@
 					let currentUser = null;
 					let comments = [];
 					let firebaseReady = false;
+					let firebaseAvailable = false;
 
 					const firebaseConfig = {
 						apiKey: '<%= global.settings.firebase.apiKey || "" %>',
@@ -65,9 +64,18 @@
 						appId: '<%= global.settings.firebase.appId || "" %>'
 					};
 
+					const waitForFirebase = (timeoutMs = 5000) => new Promise(resolve => {
+						const start = Date.now();
+						const check = () => {
+							if (window.firebase && window.firebase.auth) return resolve(true);
+							if (Date.now() - start > timeoutMs) return resolve(false);
+							setTimeout(check, 50);
+						};
+						check();
+					});
 
 					const initFirebase = () => {
-						if (firebaseReady) return;
+						if (!firebaseAvailable || firebaseReady) return;
 						if (firebase.apps && firebase.apps.length) {
 							firebaseReady = true;
 							return;
@@ -81,6 +89,7 @@
 					};
 
 					const getActiveUser = async () => {
+						if (!firebaseAvailable) return null;
 						if (window.hadithAuth && window.hadithAuth.getUser) {
 							return await window.hadithAuth.getUser();
 						}
@@ -98,7 +107,7 @@
 					};
 
 					const renderUser = async () => {
-						if (!firebaseReady) initFirebase();
+						if (firebaseAvailable && !firebaseReady) initFirebase();
 						currentUser = await getActiveUser();
 						if (!currentUser) {
 							userBox.classList.add('d-none');
@@ -130,7 +139,7 @@
 						form.querySelector('button[type="submit"]').disabled = false;
 						const logoutBtn = document.getElementById('comment-logout');
 						logoutBtn.onclick = async () => {
-							if (firebaseReady) {
+							if (firebaseReady && firebase.auth) {
 								await firebase.auth().signOut();
 								currentUser = null;
 								renderUser();
@@ -292,26 +301,30 @@
 						}
 					};
 
-					initFirebase();
-					if (firebaseReady) {
-						firebase.auth().onAuthStateChanged(async (user) => {
-							await renderUser();
-							if (user) {
-								try {
-									const token = await user.getIdToken();
-									fetchComments(token);
-								} catch (err) {
-									console.warn('Could not fetch comments with auth token', err);
+					(async () => {
+						firebaseAvailable = await waitForFirebase();
+						if (firebaseAvailable) initFirebase();
+						// Load comments immediately with the page; auth refresh will re-fetch with user context if available.
+						fetchComments();
+						if (firebaseAvailable && firebaseReady) {
+							firebase.auth().onAuthStateChanged(async (user) => {
+								await renderUser();
+								if (user) {
+									try {
+										const token = await user.getIdToken();
+										fetchComments(token);
+									} catch (err) {
+										console.warn('Could not fetch comments with auth token', err);
+										fetchComments();
+									}
+								} else {
 									fetchComments();
 								}
-							} else {
-								fetchComments();
-							}
-						});
-					} else {
-						renderUser();
-						fetchComments();
-					}
+							});
+						} else {
+							renderUser();
+						}
+					})();
 				})();
 			</script>
 		</section>

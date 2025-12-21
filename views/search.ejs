@@ -5,7 +5,6 @@
   <%
     var site = new Object(global.settings.site);
     site.admin = (req.cookies.admin == admin.key);
-    console.log('Admin status:', site.admin);
     if (!locals.noadmin)
       site.editMode = (site.admin && req.cookies.editMode == 1);
     else
