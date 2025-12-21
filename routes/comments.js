@@ -178,7 +178,7 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
   const parentId = req.body.parentId ? parseInt(req.body.parentId) : null;
 
   if (!text || text.length > 2000) {
-    res.status(400).json({ error: 'Comment text is required and must be under 2000 characters.' });
+    res.status(400).json({ error: 'Comment text is required and must be under 10000 characters.' });
     return;
   }
   if (!user) {

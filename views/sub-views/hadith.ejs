@@ -297,6 +297,7 @@
 							cancelReply.classList.add('d-none');
 							renderComments();
 						} catch (err) {
+							console.error('Could not post comment', err);
 							alert('Could not post comment right now. Please try again.');
 						}
 					};
