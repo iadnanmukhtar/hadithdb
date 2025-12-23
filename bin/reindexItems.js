@@ -6,7 +6,7 @@ const fs = require('fs');
 const Index = require('../lib/Index');
 const { Item, Heading } = require('../lib/Model');
 
-const date = '2024-01-11';
+const date = '1970-01-11';
 
 (async () => {
 	try {
@@ -35,8 +35,6 @@ async function reindexTOC() {
 		ORDER BY t.ordinal`);
 	await indexDocs(Item.INDEX, items);
 }
-
-
 
 async function indexDocs(indexName, recs) {
 	logfile(`\n*****\nreindexing ${recs.length} records in index ${indexName}...`);

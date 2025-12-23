@@ -93,13 +93,28 @@ async function ensureTag(text) {
 }
 
 async function tagHadiths(hadithIds, tagId) {
+	const BATCH_SIZE = 50;
+	var fetchBatch = [];
+	const total = hadithIds.length;
+	let processed = 0;
 	for (const id of hadithIds) {
 		await global.query(`INSERT IGNORE INTO hadiths_tags (hadithId, tagId) VALUES (${id}, ${tagId})`);
 		await global.query(`UPDATE hadiths SET lastfixed=CURRENT_TIMESTAMP() WHERE id=${id}`);
-		const itemRows = await global.query(`SELECT * FROM v_hadiths WHERE hId=${id} LIMIT 1`);
-		if (itemRows && itemRows.length) {
-			await Index.update(Item.INDEX, itemRows[0]);
+		fetchBatch.push(id);
+		if (fetchBatch.length >= BATCH_SIZE) {
+			const itemRows = await global.query(`SELECT * FROM v_hadiths WHERE hId IN (${fetchBatch.join(',')})`);
+			await Index.updateBulk(Item.INDEX, itemRows, true);
+			for (const row of itemRows) console.log(`Tagged and reindexed hadith ${row.ref}`);
+			processed += itemRows.length;
+			console.log(`${Math.round((processed / total) * 100)}% complete`);
+			fetchBatch = [];
 		}
-		console.log(`Tagged and reindexed hadith ${id}`);
+	}
+	if (fetchBatch.length) {
+		const itemRows = await global.query(`SELECT * FROM v_hadiths WHERE hId IN (${fetchBatch.join(',')})`);
+		await Index.updateBulk(Item.INDEX, itemRows, true);
+		for (const row of itemRows) console.log(`Tagged and reindexed hadith ${row.ref}`);
+		processed += itemRows.length;
+		console.log(`${Math.round((processed / total) * 100)}% complete`);
 	}
 }
