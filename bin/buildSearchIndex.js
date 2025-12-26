@@ -32,7 +32,9 @@ async function getData(indexName, book) {
 }
 
 async function indexDocs(indexName, book) {
-	log(`\n*****\ncreating ${indexName} index for ${book.shortName_en}...`);
+	log(`\n*****\ndeleting ${indexName} index for ${book.shortName_en}...`);
+	await Index.deleteByBookId(indexName, book.id);
+	log(`\ncreating ${indexName} index for ${book.shortName_en}...`);
 	var rows = await getData(indexName, book);
 	await Index.updateBulk(indexName, rows, true);
 }
