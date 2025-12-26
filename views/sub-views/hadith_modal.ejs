@@ -24,7 +24,7 @@
 				<% } %>
 			</div>
 			<div class="body" lang="en" contenteditable="true">
-				<%- utils.emptyIfNull(i.en.body).replace(/\n/g, '</p><p>') %>
+				<%- utils.markdownToHtml(i.en.body) %>
 			</div>
 		</p>
 		<% } %>
@@ -36,7 +36,7 @@
 				<% } %>
 			</div>
 			<div class="body" lang="ar" contenteditable="true">
-				<%- utils.emptyIfNull(i.ar.body).replace(/\n/g, '</p><p>') %>
+				<%- utils.markdownToHtml(i.ar.body) %>
 			</div>
 		</p>
 		<div class="text-muted">

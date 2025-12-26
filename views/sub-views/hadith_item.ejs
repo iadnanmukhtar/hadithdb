@@ -61,16 +61,23 @@
 	</section>
 
 	<%# Body  .............................................................. %>
-	<section class="_e body <%=_p%> l5" title="Ḥadīth Body" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
+	<%
+		const bodyMarkdown = utils.emptyIfNull(i[lang].body) || utils.emptyIfNull(i[lang].text);
+		const bodyHtml = utils.markdownToHtml(bodyMarkdown);
+	%>
+	<section class="body <%=_p%> l5" title="Ḥadīth Body">
 		<% if (!i[lang].body) { %>
 			<div class="cmd-tr">
 				<!-- <a href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');">Request/Fix</a> translation<br/> -->
 				Translation not available.
 			</div>
 		<% } %>
-		<p>
-			<%- utils.emptyIfNull(i[lang].body).replace(/\n/g, '</p><p>') || utils.emptyIfNull(i[lang].text) %>&nbsp;&nbsp;<% if (lang === 'en') { %><a type="button" title="Zoom In" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>"><em class="bi bi-zoom-in"></em></a><% } %>
-		</p>
+		<div class="_e hadith-body-content <%=_p%>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
+			<%- bodyHtml %>
+		</div>
+		<% if (lang === 'en') { %>
+			<a type="button" title="Zoom In" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>"><em class="bi bi-zoom-in"></em></a>
+		<% } %>
 	</section>
 
 	<%# Footer  ............................................................ %>

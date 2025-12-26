@@ -1,6 +1,6 @@
 <%
-	i.en.body = utils.emptyIfNull(i.en.body).replace(/\n/g, '<br> ');
-	i.ar.body = utils.emptyIfNull(i.ar.body).replace(/\n/g, '<br> ');
+	const bodyEn = utils.markdownToHtml(i.en.body);
+	const bodyAr = utils.markdownToHtml(i.ar.body);
 	i.en.narrators = utils.emptyIfNull(i.en.chain).split(/(>|&gt;)/);
 	i.en.narrator = i.en.narrators.pop().trim();
 	i.ar.narrator = ''; // Arabic.toArabic(i.en.narrator);
@@ -18,12 +18,12 @@
 	  <p>
 		<small><a href="${site.url}/${i.ref}">${i.en.book_shortName.toUpperCase()} ${i.en.num.toUpperCase()}</small></a><br>
 		${i.en.narrator} –
-		<strong>${i.en.body}</strong>
+		<strong>${bodyEn}</strong>
 	  </p>
 	</section>
 	<section lang="ar" dir="rtl">
 	  <!-- ${i.ar.narrator} – -->
-	  <big><strong>${i.ar.body}</strong></big>
+	  <big><strong>${bodyAr}</strong></big>
 	  </p>
 	</section>
 	

@@ -5,58 +5,110 @@
 <script src="/javascripts/script.js"></script> 
 
 <% if (site.editMode) { %>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <!-- Inline Editing -->
 <script>
   $(function () {
 
-    toastr.options.closeMethod = 'fadeOut';
-    toastr.options.closeDuration = 300;
-    toastr.options.closeEasing = 'swing';
+	    toastr.options.closeMethod = 'fadeOut';
+	    toastr.options.closeDuration = 300;
+	    toastr.options.closeEasing = 'swing';
 
-    async function changeListener(e) {
-      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
-        var id = $(this).data('id');
-        var prop = $(this).data('prop');
-        var arabizi = $(this).data('arabizi');
-        var value = '';
-        if ($(this).attr('type') == 'checkbox')
-          value = $(this).prop('checked') ? "1" : "0";
-        else if ($(this).is('textarea') || $(this).is('select') || $(this).is('input'))
-          value = $(this).val();
-        else
-          value = $(this).html();
-        value = value.replace(/&nbsp;/g, ' ');
-        value = value.replace(/<div>/g, '\n');
-        value = value.replace(/<p>/g, '\n');
-        value = value.replace(/<br>/g, '\n');
-        value = value.replace(/<\/div>/g, '').trim();
-        value = value.replace(/<[^>]+>/g, '');
-        var reqBody = {
-          id: id,
-          prop: prop,
-          arabizi: arabizi,
-          value: value,
+	    const renderMarkdown = (text) => {
+	      if (!text) return '';
+	      if (window.marked && window.marked.parse)
+	        return window.marked.parse(text);
+	      return text;
+	    };
+
+	    const htmlNodeToMarkdown = (node) => {
+	      if (!node) return '';
+	      if (node.nodeType === Node.TEXT_NODE)
+	        return node.nodeValue;
+	      if (node.nodeType !== Node.ELEMENT_NODE)
+	        return '';
+	      const tag = node.tagName.toLowerCase();
+	      const children = Array.from(node.childNodes).map(htmlNodeToMarkdown).join('');
+	      switch (tag) {
+	        case 'br':
+	          return '\n';
+	        case 'p':
+	        case 'div':
+	          return `${children}\n\n`;
+	        case 'strong':
+	        case 'b':
+	          return children ? `**${children}**` : '';
+	        case 'em':
+	        case 'i':
+	          return children ? `*${children}*` : '';
+	        case 'u':
+	          return children ? `__${children}__` : '';
+	        case 'a': {
+	          const href = node.getAttribute('href') || '';
+	          return href ? `[${children || href}](${href})` : children;
+	        }
+	        case 'ul':
+	          return Array.from(node.children).map(li => `- ${htmlNodeToMarkdown(li).trim()}`).join('\n') + '\n\n';
+	        case 'ol':
+	          return Array.from(node.children).map((li, idx) => `${idx + 1}. ${htmlNodeToMarkdown(li).trim()}`).join('\n') + '\n\n';
+	        case 'li':
+	          return children;
+	        case 'blockquote':
+	          return children.split(/\n/).map(line => line ? `> ${line}` : '>').join('\n') + '\n\n';
+	        default:
+	          return children;
+	      }
+	    };
+
+	    const htmlToMarkdown = (html) => {
+	      if (!html) return '';
+	      const parser = new DOMParser();
+	      const doc = parser.parseFromString(html, 'text/html');
+	      return Array.from(doc.body.childNodes).map(htmlNodeToMarkdown).join('').replace(/\n{3,}/g, '\n\n').trim();
+	    };
+
+	    async function changeListener(e) {
+	      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
+	        var id = $(this).data('id');
+	        var prop = $(this).data('prop');
+	        var arabizi = $(this).data('arabizi');
+	        const isMarkdownField = prop && prop.toString().includes('body');
+	        var value = '';
+	        if ($(this).attr('type') == 'checkbox')
+	          value = $(this).prop('checked') ? "1" : "0";
+	        else if ($(this).is('textarea') || $(this).is('select') || $(this).is('input'))
+	          value = $(this).val();
+	        else if (isMarkdownField)
+	          value = htmlToMarkdown($(this).html());
+	        else
+	          value = $(this).text();
+	        value = (value || '').toString().replace(/&nbsp;/g, ' ').trim();
+	        var reqBody = {
+	          id: id,
+	          prop: prop,
+	          arabizi: arabizi,
+	          value: value,
         };
         var resBody = await update(reqBody);
         // update element on success
         if (resBody.code == 200) {
           value = resBody.value;
-          if ($(this).data('reset') == 'true')
-            value = '';
-          if ($(this).is('textarea') || $(this).is('input'))
-            $(this).val(value);
-          else if ($(this).is('select'))
-            void(0);
-          else {
-            if (value.includes('\n'))
-              value = '<p>' + value.replaceAll('\n', '</p><p>') + '</p>';
-            $(this).html(value);
-          }
-        }
-      };
-      e.stopPropagation();
-    }
+	          if ($(this).data('reset') == 'true')
+	            value = '';
+	          if ($(this).is('textarea') || $(this).is('input'))
+	            $(this).val(value);
+	          else if ($(this).is('select'))
+	            void(0);
+	          else if (isMarkdownField) {
+	            $(this).html(renderMarkdown(value));
+	          } else {
+	            $(this).text(value);
+	          }
+	        }
+	      };
+	      e.stopPropagation();
+	    }
 
     async function update(reqBody) {
       var resBody = {};
