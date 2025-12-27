@@ -66,13 +66,13 @@
 		const bodyHtml = utils.markdownToHtml(bodyMarkdown);
 	%>
 	<section class="body <%=_p%> l5" title="Ḥadīth Body">
+		<div class="_e hadith-body-content <%=_p%>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
 		<% if (!i[lang].body) { %>
 			<div class="cmd-tr">
 				<!-- <a href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');">Request/Fix</a> translation<br/> -->
 				Translation not available.
 			</div>
 		<% } %>
-		<div class="_e hadith-body-content <%=_p%>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
 			<%- bodyHtml %>
 		</div>
 		<% if (lang === 'en') { %>
