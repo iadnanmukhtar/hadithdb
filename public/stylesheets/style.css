@@ -23,6 +23,7 @@
 :root {
 	--c-ghostwhite: #f8f8f8;
 	--c-accent: #2c9be5;
+	--c-speech: #1b7b00;
 	--c-gray-mid: #a0a0a0;
 	--c-gray-dark: #808080;
 	--c-gray-very-dark: #606060;
@@ -561,6 +562,11 @@ del em strong {
 .body .ayah:hover {
 	color: #2379b1;
 	background-color: cornsilk;
+}
+
+.body em {
+	font-style: normal;
+	color: var(--c-speech);
 }
 
 .h .footnote {
