@@ -24,37 +24,37 @@
 
     <menu class="col d-md-block d-none">
       
-      <form action="/">
-        <ul class="nav container-fluid justify-content-end">
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
-          <li class="nav-item"><a class="nav-link" href="/blog">Blog</a></li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
-              <li><a class="dropdown-item" href="/liked"><i class="bi bi-heart"></i> Liked</a></li>
-              <li><a class="dropdown-item" href="/highlights"><i class="bi bi-star"></i> Highlighted</a></li>
-              <li><a class="dropdown-item" href="/titled"><i class="bi bi-card-heading"></i> Titled</a></li>
-            </ul>
-          </li>
-          <% if (site.admin) { %>
-          <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
-              <i class="bi bi-gear<%=site.editMode ? '-fill' : ''%>"></i></a>
-          </li>
-          <% } %>
-          <li class="nav-item search-click-toggle">
-            <input role="search" type="text" class="form-control search-click" name="q" placeholder="Search aḥādīth..." />
-            <a class="nav-link"><i class="bi bi-search"></i></a>
-          </li>
-          <li class="nav-item">
-            <a type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav">
-              <i id="icon-menu" class="bi bi-list"></i>
-            </a>
-          </li>
-          <li class="nav-item d-flex align-items-center" id="nav-auth-desktop"></li>
-        </ul>
-      </form>
+      <ul class="nav container-fluid justify-content-end">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
+        <li class="nav-item"><a class="nav-link" href="/blog">Blog</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
+            <li><a class="dropdown-item" href="/liked"><i class="bi bi-heart"></i> Liked</a></li>
+            <li><a class="dropdown-item" href="/highlights"><i class="bi bi-star"></i> Highlighted</a></li>
+            <li><a class="dropdown-item" href="/titled"><i class="bi bi-card-heading"></i> Titled</a></li>
+          </ul>
+        </li>
+        <% if (site.admin) { %>
+        <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
+            <i class="bi bi-gear<%=site.editMode ? '-fill' : ''%>"></i></a>
+        </li>
+        <% } %>
+        <li class="nav-item search-click-toggle">
+          <form action="/">
+          <input role="search" type="text" class="form-control search-click" name="q" placeholder="Search aḥādīth..." />
+          </form>
+          <a class="nav-link"><i class="bi bi-search"></i></a>
+        </li>
+        <li class="nav-item">
+          <a type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav">
+            <i id="icon-menu" class="bi bi-list"></i>
+          </a>
+        </li>
+        <li class="nav-item d-flex align-items-center" id="nav-auth-desktop"></li>
+      </ul>
       
     </menu>
 
