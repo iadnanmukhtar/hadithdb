@@ -81,9 +81,12 @@
 	</section>
 
 	<%# Footer  ............................................................ %>
-	<% if (i[lang].footnote || site.editMode) { %>
+	<% if (i[lang].footnote || site.editMode) { 
+		const footnoteHtml = utils.markdownToHtml(i[lang].footnote);
+		const footnoteContent = footnoteHtml || '&hellip;';
+	%>
 		<footer class="footnote _e <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true">
-			<%- i[lang].footnote || '&hellip;' %>
+			<%- footnoteContent %>
 		</footer>
 	<% } %>
 

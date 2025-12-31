@@ -26,12 +26,21 @@
 			<section class="body">
 				<% if (toc.h2) {
 					if (toc.level == 3) { %>
-						<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h3_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
+						<%
+							const introEn = utils.markdownToHtml(toc.h3_intro_en) || '&hellip;';
+						%>
+						<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro_en"><%- introEn %></div>
 					<% } else { %>
-						<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h2_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
+						<%
+							const introEn = utils.markdownToHtml(toc.h2_intro_en) || '&hellip;';
+						%>
+						<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro_en"><%- introEn %></div>
 					<% } %>
 				<% } else if (toc.h1) { %>
-					<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro_en"><%- utils.emptyIfNull(toc.h1_intro_en).replace(/\n/g, '</p><p>') || '&hellip;' %></p>
+					<%
+						const introEn = utils.markdownToHtml(toc.h1_intro_en) || '&hellip;';
+					%>
+					<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro_en"><%- introEn %></div>
 				<% } %>
 			</section>
 		<% } %>
@@ -72,13 +81,23 @@
 			<section class="body">
 				<% if (toc.h2) {
 					if (toc.level == 3) { %>
-						<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro">
-							<%- utils.emptyIfNull(toc.h3_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
+						<%
+							const introAr = utils.markdownToHtml(toc.h3_intro) || '&hellip;';
+						%>
+						<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro">
+							<%- introAr %>
+						</div>
 					<% } else { %> 
-						<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro"><%- utils.emptyIfNull(toc.h2_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
+						<%
+							const introAr = utils.markdownToHtml(toc.h2_intro) || '&hellip;';
+						%>
+						<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro"><%- introAr %></div>
 					<% } %>
 				<% } else if (toc.h1) { %>
-					<p class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro"><%- utils.emptyIfNull(toc.h1_intro).replace(/\n/g, '</p><p>') || '&hellip;'  %></p>
+					<%
+						const introAr = utils.markdownToHtml(toc.h1_intro) || '&hellip;';
+					%>
+					<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro"><%- introAr %></div>
 				<% } %>
 			</section>
 		<% } %>

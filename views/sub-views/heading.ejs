@@ -54,26 +54,22 @@
     <div class="row heading-intro mb-3">
 
       <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-arabizi="true">
-        <% if (heading.intro_en || site.editMode) { %>
-        <% if (heading.intro_en) { %>
-        <p>
-          <%- utils.emptyIfNull(heading.intro_en).replace(/\n/g, '</p><p>') %>
-        </p>
-        <% } else { %>
-        <p>&hellip;</p>
-        <% } %>
+        <% if (heading.intro_en || site.editMode) { 
+            const introEn = utils.markdownToHtml(heading.intro_en) || '&hellip;';
+        %>
+        <div>
+          <%- introEn %>
+        </div>
         <% } %>
       </section>
 
       <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro">
-        <% if (heading.intro || site.editMode) { %>
-        <% if (heading.intro) { %>
-        <p>
-          <%- utils.emptyIfNull(heading.intro).replace(/\n/g, '</p><p>') %>
-        </p>
-        <% } else { %>
-        <p>&hellip;</p>
-        <% } %>
+        <% if (heading.intro || site.editMode) { 
+            const introAr = utils.markdownToHtml(heading.intro) || '&hellip;';
+        %>
+        <div>
+          <%- introAr %>
+        </div>
         <% } %>
       </section>
 

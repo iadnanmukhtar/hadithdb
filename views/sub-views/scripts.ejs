@@ -73,7 +73,8 @@
 	        var id = $(this).data('id');
 	        var prop = $(this).data('prop');
 	        var arabizi = $(this).data('arabizi');
-	        const isMarkdownField = prop && prop.toString().includes('body');
+	        const propStr = prop ? prop.toString() : '';
+	        const isMarkdownField = /body|intro|footnote/.test(propStr);
 	        var value = '';
 	        if ($(this).attr('type') == 'checkbox')
 	          value = $(this).prop('checked') ? "1" : "0";
