@@ -11,7 +11,7 @@
 <section class="col-md-6 col-sm-12 h" lang="<%=lang%>">
 
 	<%# Chain  ............................................................. %>
-	<section>
+	<section lang="<%=lang%>" >
 
 		<%# Rating %>
 		<%- (lang === 'en' && i.rating !== undefined) ? `<span class="bi bi-reception-${i.rating}"></span>` : '' %>
@@ -65,7 +65,7 @@
 		const bodyMarkdown = utils.emptyIfNull(i[lang].body) || utils.emptyIfNull(i[lang].text);
 		const bodyHtml = utils.markdownToHtml(bodyMarkdown);
 	%>
-	<section class="body <%=_p%> l5" title="Ḥadīth Body">
+	<section lang="<%=lang%>" class="body <%=_p%> l5" title="Ḥadīth Body">
 		<div class="_e hadith-body-content <%=_p%>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
 		<% if (!i[lang].body) { %>
 			<div class="cmd-tr">
@@ -85,14 +85,26 @@
 		const footnoteHtml = utils.markdownToHtml(i[lang].footnote);
 		const footnoteContent = footnoteHtml || '&hellip;';
 	%>
-		<footer class="footnote _e <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true">
+		<footer lang="<%=lang%>" class="footnote _e <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true">
 			<%- footnoteContent %>
 		</footer>
 	<% } %>
 
+	<% if (i.book_virtual) { %>
+		<%# Author Note  ....................................................... %>
+		<% if (i[lang].note || site.editMode) { 
+			const noteHtml = utils.markdownToHtml(i[lang].note);
+			const noteContent = noteHtml || '&hellip;';
+		%>
+			<aside lang="<%=lang%>" class="note _e <%=_p%> l2" title="Ḥadīth Note" data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true">
+				<%- noteContent %>
+			</aside>
+		<% }
+	} %>
+
 	<%# Grade  ............................................................. %>
 	<% if (i.remark == 0) { %>
-		<aside>
+		<aside lang="<%=lang%>" >
 		<em class="grade">
 			<% if (lang === 'en' && site.editMode) { %>
 			<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.gradeId">

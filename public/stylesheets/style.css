@@ -24,10 +24,12 @@
 	--c-ghostwhite: #f8f8f8;
 	--c-accent: #2c9be5;
 	--c-speech: #1b7b00;
+	--c-note: #004a9f;
 	--c-gray-mid: #a0a0a0;
 	--c-gray-dark: #808080;
 	--c-gray-very-dark: #606060;
 	--f-size-ar: 1.3rem;
+	--f-size-ar-note: 1.1rem;
 	--f-size-ar-sup: 0.8rem;
 }
 
@@ -572,6 +574,20 @@ del em strong {
 .h .footnote {
 	color: var(--c-gray-mid);
 	text-indent: 2em;
+}
+
+.h .note,
+.h .note p {
+	color: var(--c-note);
+	text-indent: 2em;
+	font-size: 95%;
+}
+
+.h .note:lang(ar),
+.h .note:lang(ar) p {
+	color: var(--c-note);
+	text-indent: 2em;
+	font-size: var(--f-size-ar-note);
 }
 
 .h .title,

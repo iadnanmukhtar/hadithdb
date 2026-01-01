@@ -243,6 +243,18 @@ router.post('/:id/:prop', async function (req, res, next) {
       } else {
         // hadith virtual
         result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
+
+        if (col === 'note_en' && Utils.isFalsey(status.value)) {
+          item = new Item((await global.query(`SELECT * FROM v_hadiths_virtual WHERE hId=${ids[0]}`))[0]);
+          if (Utils.isFalsey(item.note_en) && Utils.isTruthy(item.note)) {
+            item.note_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English and exclude a preface before the translation:\n${item.note}`);
+            item.note_en = '[Machine] ' + Utils.trimToEmpty(item.note_en);
+            item.note_en = Utils.replacePBUH(item.note_en);
+            status.value = item.note_en;
+            await global.query(`UPDATE hadiths_virtual SET note_en="${Utils.escSQL(item.note_en)}" WHERE id=${item.hId}`);
+          }
+        }
+
       }
       status.code = 200;
       status.message = result.message;
