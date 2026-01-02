@@ -404,7 +404,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       if (!book.virtual)
         random = await Index.docRandomnly(Item.INDEX, `book_alias:${req.params.bookAlias}`);
       else
-        random = await global.query(`SELECT * FROM v_hadiths_virtual WHERE book_id=${book.id} ORDER BY RAND() LIMIT 1`);
+        random = await Index.docRandomnly(Item.INDEX, `books:"{${req.params.bookAlias}}"`);
       if (random && random.length > 0)
         random = new Item(random[0]);
     }
