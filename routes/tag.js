@@ -169,7 +169,7 @@ router.get('/:tag', async function (req, res, next) {
     // if (!results.hasNext)
     //   delete results.nextOffset;
     if (results.length == 0)
-      throw createError(404, `Page ${results.pg} of Tag '${tagIds.join('+')}' does not exist`);
+      return next(createError(404, `Page ${results.page.number} of Tag '${tagIds.join('+')}' does not exist`));
 
     // cache response
     var refs = [];

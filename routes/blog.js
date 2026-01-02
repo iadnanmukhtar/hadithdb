@@ -79,7 +79,7 @@ router.get('/:title', async function (req, res, next) {
 
   } else {
     debug(`Post ${filename} not found`);
-    next(createError(404, 'Post not found'));
+    return next(createError(404, 'Post not found'));
   }
 
 });

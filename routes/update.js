@@ -16,7 +16,7 @@ const router = express.Router();
 
 router.post('/:id/:prop', async function (req, res, next) {
   if (global.settings.admin.key != req.cookies.admin)
-    throw createError(403, "Update unauthorized");
+    return next(createError(403, "Update unauthorized"));
   var userId = req.cookies.userId;
   var status = {
     code: 405,

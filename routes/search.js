@@ -44,7 +44,7 @@ router.get('/do/:id', async function (req, res, next) {
   } catch (err) {
     var message = `Error in action [${req.params.id}?${req.query.action}]`;
     debug(message + `\n${err.stack}`);
-    throw createError(500, message);
+    return next(createError(500, message));
   }
 });
 
@@ -137,7 +137,7 @@ router.get('/', async function (req, res, next) {
     } catch (err) {
       var message = `Error searching [${req.query.q} ${req.query.b}]`;
       debug(message + `\n${err.stack}`);
-      throw createError(500, message);
+      return next(createError(500, message));
     }
 
     if ('json' in req.query) {
@@ -194,7 +194,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     return (value.alias === surah || value.num == surah);
   });
   if (!surah)
-    throw createError(404, `Reference 'passage:${surah}:${ayah1}-${ayah2}' does not exist`);
+    return next(createError(404, `Reference 'passage:${surah}:${ayah1}-${ayah2}' does not exist`));
   var results = await Index.docsFromQueryString(Item.INDEX, `book_alias:quran AND h1:${surah.num} AND numInChapter:[${ayah1} TO ${ayah2}]`, 0, ayah2 - ayah1 + 1, 'numInChapter');
   results = results.map(item => new Item(item));
   var section;
@@ -277,7 +277,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
         return (value.alias === surah || value.num == surah);
       });
       if (!surah)
-        throw createError(404, `Surah '${toks[0]}' not found`);
+        return next(createError(404, `Surah '${toks[0]}' not found`));
       req.params.num = `${surah.num}:${num}`;
     }
   } else {
@@ -298,7 +298,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   if (results.length == 0) {
     results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}a` });
     if (results.length == 0)
-      throw createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`);
+      return next(createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`));
   }
 
   results = results.map(item => new Item(item));
@@ -428,7 +428,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       });
     }
   } else
-    throw createError(404, `Book '${req.params.bookAlias}' does not exist`);
+    return next(createError(404, `Book '${req.params.bookAlias}' does not exist`));
 });
 
 // BOOK: CHAPTER
@@ -443,7 +443,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
   try {
     var results = [];
     var bookAlias = req.params.bookAlias;
-    var chapterNum = Arabic.toLatinDigits(req.params.chapterNum);
+    var chapterNum = Number(Arabic.toLatinDigits(req.params.chapterNum));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
@@ -497,10 +497,10 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
   } catch (e) {
     if (e instanceof ReferenceError)
-      throw createError(404, e.message);
+      return next(createError(404, e.message));
     else {
       debug(e.stack);
-      throw createError(500, e.message);
+      return next(createError(500, e.message));
     }
   }
 
@@ -518,8 +518,8 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
   try {
     var results = [];
     var bookAlias = req.params.bookAlias;
-    var chapterNum = Arabic.toLatinDigits(req.params.chapterNum);
-    var sectionNum = Arabic.toLatinDigits(req.params.sectionNum);
+    var chapterNum = Number(Arabic.toLatinDigits(req.params.chapterNum));
+    var sectionNum = Number(Arabic.toLatinDigits(req.params.sectionNum));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
 
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
@@ -606,10 +606,10 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
 
   } catch (e) {
     if (e instanceof ReferenceError)
-      throw createError(404, e.message);
+      return next(createError(404, e.message));
     else {
       debug(e.stack);
-      throw createError(500, e.message);
+      return next(createError(500, e.message));
     }
   }
 
