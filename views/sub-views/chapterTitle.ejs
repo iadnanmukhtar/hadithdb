@@ -1,7 +1,10 @@
 <% 
     var book = page.context.book;
     var chapter = page.context.chapter;
+    var section = page.context.section;
     var heading = page.context.section || chapter;
+    if (chapter.h1 != Math.floor(chapter.h1))
+      chapter.h1 = Number(chapter.h1).toFixed(2);
 %>
 
 <%# Chapter Title %>

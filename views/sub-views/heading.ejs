@@ -2,6 +2,8 @@
     var book = page.context.book;
     var chapter = page.context.chapter;
     var section = page.context.section;
+    if (chapter.h1 != Math.floor(chapter.h1))
+      chapter.h1 = Number(chapter.h1).toFixed(2);
 %>
 
 <a id="S<%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>"></a>

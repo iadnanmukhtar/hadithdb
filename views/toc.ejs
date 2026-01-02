@@ -109,6 +109,10 @@
             <%
         for (var i = 0; i < toc.length; i++) {
           var title_en = '';
+          if (toc[i].h1 != Math.floor(toc[i].h1))
+            toc[i].h1 = Number(toc[i].h1).toFixed(2);
+          if (toc[i].h2 != Math.floor(toc[i].h2))
+            toc[i].h2 = Number(toc[i].h2).toFixed(2);
           if (toc[i].title_en) title_en = toc[i].title_en.substring(0, 75);
           if (toc[i].title_en && toc[i].title_en.length > 75) title_en += '&hellip;';
 
