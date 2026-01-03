@@ -16,12 +16,14 @@
 		<%# Rating %>
 		<%- (lang === 'en' && i.rating !== undefined) ? `<span class="bi bi-reception-${i.rating}"></span>` : '' %>
 
+		<!--
 		<%# Verification %>
 		<% if (lang === 'en' && site.editMode) { %>
 			<input class="_e form-check-input" title="Verified" type="text" size="1" value="<%- i.verified ? 'x' : '' %>"" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.verified">
 		<% } else if (lang === 'en') { %>
 			<%- i.verified ? `<span title="Verified Translation" class="bi bi-patch-check-fill"></span>` : '' %>
 		<% } %>
+		-->
 
 		<%# Highlight Date %>
 		<% if (lang === 'en' && site.editMode) {
@@ -166,6 +168,22 @@
 			<% } %>
 		</aside>
 	<% } %>
+
+	<%# Books  ............................................................. %>
+	<% if (lang === 'en' && i.books) {
+		var books = null;
+		books = i.books.replace(/[{}]/g, ' ');
+		books = books.split(/ +/).map(book => {
+			return `<a href="/${book}">${book}</a>`;
+		});
+		books = books.join(' ');
+		%>
+		<aside class="tags">
+			<div>also in: <%- books %></div>
+		</aside>
+	<% } %>
+
+	<%# Actions  ........................................................... %>
 	<aside class="tags">
 	<% if (lang === 'en') { %>
 		<button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="Bookmark this hadith">

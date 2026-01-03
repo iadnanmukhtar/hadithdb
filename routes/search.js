@@ -163,7 +163,7 @@ router.get('/', async function (req, res, next) {
     // show random and highlighted ahadith
   } else {
     // results = await Hadith.a_dbGetRecentUpdates(5);
-    var random = await Index.docRandomnly(Item.INDEX, `body_en:/.+/`);
+    var random = await Index.docRandomnly(Item.INDEX, `books:/.+/`);
     if (random.length > 0) {
       random = new Item(random[0]);
       random.single = true;
