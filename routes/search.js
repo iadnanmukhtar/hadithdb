@@ -328,6 +328,9 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       if ('keys' in req.query)
         keyNames = req.query.keys.split(/,/);
       res.end(Utils.toTSV(results, keyNames));
+    } else if ('md' in req.query) {
+      res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+      res.end(Utils.toMarkdown(results));
     } else {
       if (req.query.sharepreview !== undefined) {
         res.render('share', {
