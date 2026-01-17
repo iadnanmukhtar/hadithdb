@@ -566,7 +566,10 @@ del em strong {
 	background-color: cornsilk;
 }
 
-.body em {
+.heading-intro em,
+.h .body em,
+.h .footnote em,
+.h .note em {
 	font-style: normal;
 	color: var(--c-speech);
 }
