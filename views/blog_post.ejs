@@ -6,6 +6,7 @@
     var site = new Object(global.settings.blog);
     site.admin = false;
     site.editMode = false;
+    const slugVal = (typeof locals !== 'undefined' && locals && typeof locals.slug !== 'undefined') ? locals.slug : req.params.title;
 
     var page = {
       menu: 'Blog Post',
@@ -46,22 +47,14 @@
          <%- body %>
         </section>
       </article>
-		  <%# Giscus Comments %>
-      <script src="https://giscus.app/client.js"
-        data-repo="iadnanmukhtar/hadithdb"
-        data-repo-id="R_kgDOH-tiLA"
-        data-category="Islamic Discussions"
-        data-category-id="DIC_kwDOH-tiLM4Cwjaf"
-        data-mapping="url"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="1"
-        data-input-position="top"
-        data-theme="light"
-        data-lang="en"
-        data-loading="lazy"
-        crossorigin="anonymous"
-        async></script>
+      <%- include('sub-views/comment_widget.ejs', {
+        widgetId: 'blog-comments',
+        heading: 'Share your reflection below:',
+        targetId: slugVal,
+        ref: slugVal,
+        endpoint: '/blog-comments',
+        subjectLabel: 'reflection'
+      }); %>
     </main>
   </div>
 

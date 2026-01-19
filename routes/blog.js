@@ -66,7 +66,8 @@ router.get('/:title', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  const filename = `${global.settings.blog.dir}/${req.params.title}.md`;
+  const slug = req.params.title;
+  const filename = `${global.settings.blog.dir}/${slug}.md`;
   if (fs.existsSync(filename)) {
 
     const { attributes, body } = fm(fs.readFileSync(filename).toString());
@@ -74,7 +75,8 @@ router.get('/:title', async function (req, res, next) {
 
     res.render('blog_post', {
       attr: attributes,
-      body: html
+      body: html,
+      slug
     });
 
   } else {
@@ -138,5 +140,4 @@ function renderHtml(body) {
   const html = md.render(body);
   return html;
 }
-
 
