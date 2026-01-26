@@ -115,31 +115,40 @@ router.post('/:id/:prop', async function (req, res, next) {
         var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
         if (col === 'body_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.body_en) && Utils.isTruthy(item.body)) {
-            item.body_en = await Utils.openai('gpt-5.2', `Translate the following passage into English and exclude a preface before the translation:\n${item.body}`);
-            item.body_en = '[Machine] ' + Utils.trimToEmpty(item.body_en);
+            item.body_en = await Utils.openai('gpt-5.2', `Translate the following passage into English. Return only the translation:\n${item.body}`);
+            item.body_en = '[AI] ' + Utils.trimToEmpty(item.body_en);
             item.body_en = Utils.replacePBUH(item.body_en);
             status.value = item.body_en;
             await global.query(`UPDATE hadiths SET body_en="${Utils.escSQL(item.body_en)}" WHERE id=${item.hId}`);
           }
         } else if (col === 'title_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.title_en) && Utils.isTruthy(item.title)) {
-            item.title_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English and exclude a preface before the translation:\n${item.title}`);
-            item.title_en = '[Machine] ' + Utils.trimToEmpty(item.title_en);
+            item.title_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English. Return only the translation:\n${item.title}`);
+            item.title_en = '[AI] ' + Utils.trimToEmpty(item.title_en);
             item.title_en = Utils.replacePBUH(item.title_en);
             status.value = item.title_en;
             await global.query(`UPDATE hadiths SET title_en="${Utils.escSQL(item.title_en)}" WHERE id=${item.hId}`);
+          } else if (Utils.isFalsey(item.title_en)) {
+            var sourceBody = Utils.isTruthy(item.body_en) ? item.body_en : item.body;
+            if (Utils.isTruthy(sourceBody)) {
+              item.title_en = await Utils.openai('gpt-5.2', `Generate a concise English title for the following hadith body. Return only the title:\n${sourceBody}`);
+              item.title_en = '[AI] ' + Utils.trimToEmpty(item.title_en);
+              item.title_en = Utils.replacePBUH(item.title_en);
+              status.value = item.title_en;
+              await global.query(`UPDATE hadiths SET title_en="${Utils.escSQL(item.title_en)}" WHERE id=${item.hId}`);
+            }
           }
         } else if (col === 'footnote_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.footnote_en) && Utils.isTruthy(item.footnote)) {
-            item.footnote_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English and exclude a preface before the translation:\n${item.footnote}`);
-            item.footnote_en = '[Machine] ' + Utils.trimToEmpty(item.footnote_en);
+            item.footnote_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English. Return only the translation:\n${item.footnote}`);
+            item.footnote_en = '[AI] ' + Utils.trimToEmpty(item.footnote_en);
             item.footnote_en = Utils.replacePBUH(item.footnote_en);
             status.value = item.footnote_en;
             await global.query(`UPDATE hadiths SET footnote_en="${Utils.escSQL(item.footnote_en)}" WHERE id=${item.hId}`);
           }
         } else if (col === 'chain_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.chain_en) && Utils.isTruthy(item.chain)) {
-            item.chain_en = await Utils.openai('gpt-5.2', `Extract the narrators from this chain, transliterate them using ALA-LC, and separate them using the "greator than" symbol. Instead of ibn or bint, use "b.":\n${item.chain}`);
+            item.chain_en = await Utils.openai('gpt-5.2', `Extract the narrators from this chain, transliterate them using ALA-LC, and separate them using the "greator than" symbol. Instead of ibn or bint, use "bt.":\n${item.chain}`);
             item.chain_en = Utils.trimToEmpty(item.chain_en);
             item.chain_en = Utils.replacePBUH(item.chain_en);
             status.value = item.chain_en;
@@ -170,8 +179,8 @@ router.post('/:id/:prop', async function (req, res, next) {
       if (col === 'title_en' && Utils.isFalsey(status.value)) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
         if (Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
-          heading.title_en = await Utils.openai('gpt-4o', `Translate the following title or passage into English:\n${heading.title}`);
-          heading.title_en = '[Machine] ' + Utils.trimToEmpty(heading.title_en);
+          heading.title_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English. Return only the translation:\n${heading.title}`);
+          heading.title_en = '[AI] ' + Utils.trimToEmpty(heading.title_en);
           heading.title_en = Utils.replacePBUH(heading.title_en);
           status.value = heading.title_en;
           await global.query(`UPDATE toc SET title_en="${Utils.escSQL(heading.title_en)}" WHERE id=${heading.id}`);
@@ -179,8 +188,8 @@ router.post('/:id/:prop', async function (req, res, next) {
       } else if (col === 'intro_en' && Utils.isFalsey(status.value)) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
         if (Utils.isFalsey(heading.intro_en) && Utils.isTruthy(heading.intro)) {
-          heading.intro_en = await Utils.openai('gpt-4o', `Translate the following title or passage into English:\n${heading.intro}`);
-          heading.intro_en = '[Machine] ' + Utils.trimToEmpty(heading.intro_en);
+          heading.intro_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English. Return only the translation:\n${heading.intro}`);
+          heading.intro_en = '[AI] ' + Utils.trimToEmpty(heading.intro_en);
           heading.intro_en = Utils.replacePBUH(heading.intro_en);
           status.value = heading.intro_en;
           await global.query(`UPDATE toc SET intro_en="${Utils.escSQL(heading.intro_en)}" WHERE id=${heading.id}`);
@@ -247,8 +256,8 @@ router.post('/:id/:prop', async function (req, res, next) {
         if (col === 'note_en' && Utils.isFalsey(status.value)) {
           item = new Item((await global.query(`SELECT * FROM v_hadiths_virtual WHERE hId=${ids[0]}`))[0]);
           if (Utils.isFalsey(item.note_en) && Utils.isTruthy(item.note)) {
-            item.note_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English and exclude a preface before the translation:\n${item.note}`);
-            item.note_en = '[Machine] ' + Utils.trimToEmpty(item.note_en);
+            item.note_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English. Return only the translation:\n${item.note}`);
+            item.note_en = '[AI] ' + Utils.trimToEmpty(item.note_en);
             item.note_en = Utils.replacePBUH(item.note_en);
             status.value = item.note_en;
             await global.query(`UPDATE hadiths_virtual SET note_en="${Utils.escSQL(item.note_en)}" WHERE id=${item.hId}`);
