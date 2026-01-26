@@ -123,7 +123,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           }
         } else if (col === 'title_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.title_en) && Utils.isTruthy(item.title)) {
-            item.title_en = await Utils.openai('gpt-5.2', `Translate the following title or passage into English. Return only the translation:\n${item.title}`);
+            item.title_en = await Utils.openai('gpt-5.2', `Generate a concise English title using sentence case for the following Arabic title. Return only the title:\n${item.title}`);
             item.title_en = '[AI] ' + Utils.trimToEmpty(item.title_en);
             item.title_en = Utils.replacePBUH(item.title_en);
             status.value = item.title_en;
