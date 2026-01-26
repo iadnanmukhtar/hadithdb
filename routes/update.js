@@ -129,9 +129,9 @@ router.post('/:id/:prop', async function (req, res, next) {
             status.value = item.title_en;
             await global.query(`UPDATE hadiths SET title_en="${Utils.escSQL(item.title_en)}" WHERE id=${item.hId}`);
           } else if (Utils.isFalsey(item.title_en)) {
-            var sourceBody = Utils.isTruthy(item.body_en) ? item.body_en : item.body;
+            var sourceBody = Utils.isTruthy(item.body) ? item.body : item.body_en;
             if (Utils.isTruthy(sourceBody)) {
-              item.title_en = await Utils.openai('gpt-5.2', `Generate a concise English title for the following hadith body. Return only the title:\n${sourceBody}`);
+              item.title_en = await Utils.openai('gpt-5.2', `Generate a concise English title using sentence case for the following hadith body. Return only the title:\n${sourceBody}`);
               item.title_en = '[AI] ' + Utils.trimToEmpty(item.title_en);
               item.title_en = Utils.replacePBUH(item.title_en);
               status.value = item.title_en;
