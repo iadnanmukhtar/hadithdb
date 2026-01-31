@@ -593,6 +593,10 @@ del em strong {
 	font-size: var(--f-size-ar-note);
 }
 
+.highlight {
+	background-color: yellow;
+}
+
 .h .title,
 .h .title a,
 .h .tags,

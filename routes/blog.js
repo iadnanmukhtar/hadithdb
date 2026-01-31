@@ -24,7 +24,8 @@ router.get('/', async function (req, res, next) {
         const { attributes } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
         var post = new Object(attributes);
         post.file = file.replace(/.md$/, '');
-        posts.push(post);
+        if (!post.hidden)
+          posts.push(post);
       } catch (e) {
         debug(`Unable to read ${file}`);
       }
@@ -102,7 +103,8 @@ function getPosts() {
         post.lastmod = stat.mtime;
         post.file = file.replace(/.md$/, '');
         post.html = html;
-        posts.push(post);
+        if (!(post.hidden === 'true'))
+          posts.push(post);
       } catch (e) {
         debug(e.toString());
         debug(e.stack);
@@ -136,6 +138,7 @@ function renderHtml(body) {
       },
     })
   });
+  body = body.replace(/==([^=]+)==/g, '<span class="highlight">$1</span>');
   body = body.replace(/\[![^\]]+\]/g, ''); // remove [!xyz] tags
   const html = md.render(body);
   return html;
