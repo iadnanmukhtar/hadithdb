@@ -16,6 +16,17 @@ router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
+  var pageSize = global.settings.blog.itemsPerPage || 5;
+  var offset = 0;
+  if (req.query.o) {
+    offset = parseInt(req.query.o.toString(), 10);
+    if (isNaN(offset))
+      offset = 0;
+    offset = Math.floor(offset / pageSize) * pageSize;
+  }
+  if (offset < 0)
+    offset = 0;
+
   var posts = [];
   const files = fs.readdirSync(global.settings.blog.dir);
   for (var file of files) {
@@ -34,8 +45,25 @@ router.get('/', async function (req, res, next) {
   posts.sort((a, b) => {
     return b.published - a.published;
   });
+  if (offset >= posts.length && posts.length > 0)
+    return next(createError(404, `Page ${Math.floor(offset / pageSize) + 1} of the blog does not exist`));
+
+  var pagination = {
+    offset: offset,
+    number: Math.floor(offset / pageSize) + 1,
+    hasPrev: offset > 0,
+    prevOffset: ((offset - pageSize) < 0) ? 0 : offset - pageSize,
+    hasNext: (offset + pageSize) < posts.length,
+    nextOffset: offset + pageSize,
+  };
+  if (!pagination.hasNext)
+    delete pagination.nextOffset;
+
+  posts = posts.slice(offset, offset + pageSize);
+
   res.render('blog', {
-    posts: posts
+    posts: posts,
+    pagination: pagination
   });
 
 });
@@ -143,4 +171,3 @@ function renderHtml(body) {
   const html = md.render(body);
   return html;
 }
-
