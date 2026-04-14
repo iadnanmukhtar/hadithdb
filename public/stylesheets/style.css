@@ -114,6 +114,23 @@ main.chapter {
 	z-index: 1000;
 }
 
+.site-navbar {
+	--site-header-height: 4.25rem;
+	--site-header-shrink-height: 2.125rem;
+}
+
+.site-navbar .logo,
+.site-navbar .title,
+.site-navbar .title :lang(ar),
+.site-navbar .subtitle,
+.site-navbar .subtitle :lang(ar),
+.site-navbar #icon-menu,
+.site-navbar .nav-link,
+.site-navbar>.row,
+.site-navbar .site-header-brand {
+	transition: all .25s ease;
+}
+
 #icon-menu {
 	font-size: 1.5rem;
 }
@@ -124,13 +141,45 @@ main.chapter {
 	align-items: center;
 }
 
+.site-navbar>.row {
+	height: var(--site-header-height);
+	overflow: hidden;
+}
+
 .site-header-brand {
+	align-items: center;
+	gap: 0.85rem;
+	height: 100%;
 	min-width: 0;
 }
 
 .site-header-brand>div {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	justify-content: center;
 	flex: 1 1 auto;
 	min-width: 0;
+}
+
+.site-navbar menu,
+.site-navbar menu>.nav,
+.site-navbar menu>ul,
+.site-navbar .top-nav-mobile-actions {
+	align-items: center;
+	height: 100%;
+	margin-bottom: 0;
+}
+
+.site-navbar .logo {
+	width: 56px;
+	height: 56px;
+	flex-shrink: 0;
+}
+
+.site-navbar .subtitle {
+	max-height: 2rem;
+	opacity: 1;
 }
 
 .site-header-brand .title a {
@@ -146,25 +195,42 @@ main.chapter {
 	white-space: nowrap;
 }
 
-nav.shrink .logo {
-	transition: all .25s;
-	width: 32px;
-	height: 32px;
+.site-navbar.shrink>.row {
+	height: var(--site-header-shrink-height);
 }
 
-nav.shrink .title,
-nav.shrink .title :lang(ar) {
-	transition: all .25s;
-	font-size: 0.75rem !important;
+.site-navbar.shrink .site-header-brand {
+	gap: 0.5rem;
 }
 
-nav.shrink .subtitle,
-nav.shrink .subtitle :lang(ar) {
-	transition: all .25s;
-	font-size: 0.75rem !important;
+.site-navbar.shrink .logo {
+	width: 28px;
+	height: 28px;
+}
+
+.site-navbar.shrink .title,
+.site-navbar.shrink .title :lang(ar) {
+	font-size: 0.85rem !important;
+	line-height: 1.1;
+}
+
+.site-navbar.shrink .subtitle,
+.site-navbar.shrink .subtitle :lang(ar) {
+	font-size: 0.72rem !important;
+	line-height: 1;
+}
+
+.site-navbar.shrink .subtitle {
+	max-height: 0;
+	opacity: 0;
 }
 
 @media (max-width: 768px) {
+	.site-navbar {
+		--site-header-height: 3.75rem;
+		--site-header-shrink-height: 1.9rem;
+	}
+
 	.site-header-brand {
 		flex: 1 1 auto;
 	}
@@ -188,9 +254,13 @@ nav.shrink .subtitle :lang(ar) {
 	}
 }
 
-nav.shrink #icon-menu {
-	transition: all .25s;
+.site-navbar.shrink #icon-menu {
 	font-size: 1rem !important;
+}
+
+.site-navbar.shrink .nav-link {
+	padding-top: 0;
+	padding-bottom: 0;
 }
 
 nav .nav-link {

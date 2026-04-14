@@ -1,8 +1,8 @@
-<nav class="navbar fixed-top container col-lg-8 mx-auto">
+<nav class="navbar site-navbar fixed-top container col-lg-8 mx-auto">
   <div class="row g-0">
     
     <header class="col col-md-4 d-flex site-header-brand">
-      <a href="/"><img class="logo" src="<%= site.logoVector %>" width="56" height="56" class="me-2"></a>
+      <a href="/"><img class="logo me-2" src="<%= site.logoVector %>" width="56" height="56"></a>
       <div>
         <h6 class="title fs-4 mb-0">
           <a href="/" class="text-dark text-decoration-none">
@@ -70,12 +70,6 @@
 
     <menu class="col-auto d-md-none d-block">
       <div class="nav container-fluid justify-content-end align-items-center gap-2 top-nav-mobile-actions">
-        <a class="nav-link top-nav-icon-link" href="/liked" title="Favorites" aria-label="Favorites">
-          <i class="bi bi-heart"></i>
-        </a>
-        <a class="nav-link top-nav-icon-link" href="/bookmarks" title="Bookmarks" aria-label="Bookmarks">
-          <i class="bi bi-bookmark"></i>
-        </a>
         <button type="button" class="btn btn-sm nav-auth-btn" id="nav-auth-mobile">Sign in</button>
         <a type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav">
           <i id="icon-menu" class="bi bi-list"></i>

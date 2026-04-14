@@ -8,12 +8,10 @@ $(function () {
 	setDirection($('#search-bar'));
 
 	$(window).scroll(function() {
-		if ($(document).scrollTop() > 50) {
-		  $('nav').addClass('shrink');
-		} else {
-		  $('nav').removeClass('shrink');
-		}
+		$('.site-navbar').toggleClass('shrink', $(document).scrollTop() > 50);
 	});
+
+	$('.site-navbar').toggleClass('shrink', $(document).scrollTop() > 50);
 
 	if ($('.search .form-check input:checked').length > 0) {
 		$('.search .btn i').removeClass('bi-book');
