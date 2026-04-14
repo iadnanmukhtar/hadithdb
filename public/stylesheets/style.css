@@ -120,6 +120,30 @@ main.chapter {
 
 .navbar>.row {
 	border-bottom: 1px solid var(--bs-border-color);
+	flex-wrap: nowrap;
+	align-items: center;
+}
+
+.site-header-brand {
+	min-width: 0;
+}
+
+.site-header-brand>div {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.site-header-brand .title a {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.site-header-brand .subtitle {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 nav.shrink .logo {
@@ -140,6 +164,30 @@ nav.shrink .subtitle :lang(ar) {
 	font-size: 0.75rem !important;
 }
 
+@media (max-width: 768px) {
+	.site-header-brand {
+		flex: 1 1 auto;
+	}
+
+	.site-header-brand .title {
+		font-size: 1.15rem !important;
+		line-height: 1.15;
+	}
+
+	.site-header-brand .subtitle {
+		font-size: 0.95rem !important;
+		line-height: 1.2;
+	}
+
+	.site-header-brand .subtitle :lang(ar) {
+		display: inline;
+	}
+
+	.top-nav-mobile-actions {
+		flex-wrap: nowrap;
+	}
+}
+
 nav.shrink #icon-menu {
 	transition: all .25s;
 	font-size: 1rem !important;
@@ -151,6 +199,14 @@ nav .nav-link {
 	padding: 5px 15px 0 0;
 }
 
+.top-nav-icon-link {
+	font-size: 1rem;
+}
+
+.top-nav-mobile-actions .top-nav-icon-link {
+	padding-right: 0.5rem;
+}
+
 .offcanvas-col1 .nav-link {
 	font-size: 1rem;
 }
@@ -160,10 +216,56 @@ nav .nav-link {
 	text-indent: -0.75rem;
 }
 
+.h-menu-wrap {
+	position: relative;
+}
+
+.h-menu-hint {
+	margin-bottom: 0.35rem;
+	font-size: 0.72rem;
+	color: var(--c-gray-mid);
+}
+
+.h-menu-scroller {
+	position: relative;
+}
+
+.h-menu-scroller::before,
+.h-menu-scroller::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 1.5rem;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.h-menu-scroller::before {
+	left: 0;
+	background: linear-gradient(to right, white, rgba(255, 255, 255, 0));
+}
+
+.h-menu-scroller::after {
+	right: 0;
+	background: linear-gradient(to left, white, rgba(255, 255, 255, 0));
+}
+
 .h-menu {
 	width: 100%;
-	overflow-x: scroll;
+	display: flex;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
 	font-size: 0.9rem;
+	padding-inline: 0.4rem;
+}
+
+.h-menu::-webkit-scrollbar {
+	display: none;
 }
 
 .h-menu a {
@@ -171,6 +273,12 @@ nav .nav-link {
 	border-color: var(--c-accent);
 	text-wrap: nowrap;
 	color: var(--c-gray-dark);
+}
+
+@media (min-width: 768px) {
+	.h-menu-hint {
+		display: none;
+	}
 }
 
 .text-muted {
@@ -209,18 +317,36 @@ nav .nav-link {
 	overflow-y: scroll;
 }
 
+.search-click-toggle {
+	position: relative;
+}
+
+.search-click-toggle form {
+	position: absolute;
+	top: calc(100% + 0.35rem);
+	right: 0;
+	width: min(20rem, 40vw);
+	display: none;
+	z-index: 1001;
+}
+
 .search-click-toggle .form-control {
-	width: 20vw;
+	width: 100%;
+	box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.12);
 }
 
 @media (max-width: var(--bs-breakpoint-sm)) {
-	.search-click-toggle .form-control {
-		width: 30vw;
+	.search-click-toggle form {
+		width: min(16rem, 70vw);
 	}
 }
 
+.search-click-toggle.is-open form {
+	display: block;
+}
+
 .search-click-toggle input {
-	display: none;
+	display: block;
 }
 
 .search-click-toggle i {
@@ -289,9 +415,40 @@ nav .nav-link {
 	height: auto;
 }
 
+.blog-post article,
+.blog-post .body {
+	min-width: 0;
+}
+
+.blog-post .body {
+	overflow-wrap: anywhere;
+}
+
+.blog-post .body a {
+	overflow-wrap: anywhere;
+}
+
 .blog-post p>img {
 	max-width: 100%;
 	height: auto;
+}
+
+.blog-post .body img,
+.blog-post .body video,
+.blog-post .body iframe,
+.blog-post .body svg,
+.blog-post .body canvas {
+	max-width: 100%;
+	height: auto;
+}
+
+.blog-post .body iframe,
+.blog-post .body table,
+.blog-post .body pre {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .blog-post s {
@@ -436,6 +593,12 @@ del em strong {
 
 .blog-post .footnotes s {
 	font-size: 1.25rem;
+}
+
+@media (max-width: 576px) {
+	.blog-post blockquote {
+		padding-left: 1rem;
+	}
 }
 
 .chapter-toc {
@@ -791,4 +954,3 @@ a.cmd-btn:hover {
 	}
 
 }
-

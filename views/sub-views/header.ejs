@@ -1,7 +1,7 @@
 <nav class="navbar fixed-top container col-lg-8 mx-auto">
-  <div class="row ms-1">
+  <div class="row g-0">
     
-    <header class="col-md-4 col-1 text-nowrap d-flex">
+    <header class="col col-md-4 d-flex site-header-brand">
       <a href="/"><img class="logo" src="<%= site.logoVector %>" width="56" height="56" class="me-2"></a>
       <div>
         <h6 class="title fs-4 mb-0">
@@ -37,6 +37,16 @@
             <li><a class="dropdown-item" href="/titled"><i class="bi bi-card-heading"></i> Titled</a></li>
           </ul>
         </li>
+        <li class="nav-item">
+          <a class="nav-link top-nav-icon-link" href="/liked" title="Favorites" aria-label="Favorites">
+            <i class="bi bi-heart"></i>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link top-nav-icon-link" href="/bookmarks" title="Bookmarks" aria-label="Bookmarks">
+            <i class="bi bi-bookmark"></i>
+          </a>
+        </li>
         <% if (site.admin) { %>
         <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;' : document.cookie='editMode=1;path=/;'; console.log(document.cookie); location.reload();">
             <i class="bi bi-gear<%=site.editMode ? '-fill' : ''%>"></i></a>
@@ -58,8 +68,14 @@
       
     </menu>
 
-    <menu class="col d-md-none d-block">
-      <div class="nav container-fluid justify-content-end align-items-center gap-3">
+    <menu class="col-auto d-md-none d-block">
+      <div class="nav container-fluid justify-content-end align-items-center gap-2 top-nav-mobile-actions">
+        <a class="nav-link top-nav-icon-link" href="/liked" title="Favorites" aria-label="Favorites">
+          <i class="bi bi-heart"></i>
+        </a>
+        <a class="nav-link top-nav-icon-link" href="/bookmarks" title="Bookmarks" aria-label="Bookmarks">
+          <i class="bi bi-bookmark"></i>
+        </a>
         <button type="button" class="btn btn-sm nav-auth-btn" id="nav-auth-mobile">Sign in</button>
         <a type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav">
           <i id="icon-menu" class="bi bi-list"></i>
@@ -76,7 +92,7 @@
         <form action="/">
           <input role="search" type="text" class="form-control mb-2" name="q" placeholder="Search aḥādīth..." />
         </form>
-        <div class="container row">
+        <div class="row">
           <ul class="col-7 nav flex-column offcanvas-col1">
             <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a></li>
             <li class="nav-item"><a class="nav-link" href="/books"><i class="bi bi-book"></i> Books</a></li>
@@ -113,7 +129,7 @@
       var chapter = page.context.chapter;
       var sections = chapter.sections; 
   %>
-  <nav class="row ms-1 chapter-toc">
+  <nav class="row g-0 chapter-toc">
     <%# --- TABLE OF CONTENTS --- %>
     <div class="d-flex justify-content-center">
       <% if (sections && sections.length > 0) { %>

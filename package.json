@@ -1,4 +1,29 @@
 {
+  "name": "hadithdb",
+  "version": "1.0.0",
+  "description": "Express app and database tooling for the HadithDB project.",
+  "private": true,
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "jest"
+  },
+  "keywords": [
+    "hadith",
+    "quran",
+    "blog"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iadnanmukhtar/hadithdb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iadnanmukhtar/hadithdb/issues"
+  },
+  "homepage": "https://github.com/iadnanmukhtar/hadithdb#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "adm-zip": "0.5.14",
     "axios": "1.7.2",

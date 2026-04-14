@@ -24,16 +24,3 @@ The following nine plus source books of ḥadīth are currently availble:
 |11|Ibn Ḥibbān|N/A|N/A|
 |12|al-Muʿjam al-Kabīr of Ṭabarānī|N/A|N/A|
 
-## TODO Enhancements
-- [ ]  Crowsdource translation editor
-- [ ]  Croudsource tagging
-- [ ]  Auto relate similar aḥādīth
-- [ ]  Auto populate basic tags
-- [ ]  Auto translate narrators
-- [ ]  Populate aṭrāf al-ḥadīth
-- [ ]  Link narrators to Scholars Databases
-- [ ]  Add Zawaʾid of Buṣīrī (10 additional source books)
-- [ ]  Filter search by grade
-- [ ]  Ahmad translation
-- [ ]  Darimi translation
-- [ ]  Hakim translation

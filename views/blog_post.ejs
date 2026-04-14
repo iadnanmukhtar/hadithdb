@@ -28,33 +28,35 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-  <div class="container col-lg-8 mx-auto">
-    
+  <div class="container">
     <main class="blog-post">
-
-      <article>
-        <header>
-          <h1 class="fs-3 mb-0"><strong><%= attr.title %></strong></h1>
-          <% if (attr.subtitle) { %>
-            <h2 class="fs-6 mb-0 text-body-secondary"><%= attr.subtitle %></h2>
-          <% } %>
-          <p class="fs-6 text-muted"><%= attr.published.toDateString() %></p>
-        </header>
-        <figure>
-          <img src="<%- attr.cover %>">
-        </figure>
-        <section class="body">
-         <%- body %>
-        </section>
-      </article>
-      <%- include('sub-views/comment_widget.ejs', {
-        widgetId: 'blog-comments',
-        heading: 'Share your reflection below:',
-        targetId: slugVal,
-        ref: slugVal,
-        endpoint: '/blog-comments',
-        subjectLabel: 'reflection'
-      }); %>
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+          <article>
+            <header>
+              <h1 class="fs-3 mb-0"><strong><%= attr.title %></strong></h1>
+              <% if (attr.subtitle) { %>
+                <h2 class="fs-6 mb-0 text-body-secondary"><%= attr.subtitle %></h2>
+              <% } %>
+              <p class="fs-6 text-muted"><%= attr.published.toDateString() %></p>
+            </header>
+            <figure>
+              <img class="img-fluid" src="<%- attr.cover %>" alt="<%= attr.title %> cover image">
+            </figure>
+            <section class="body">
+             <%- body %>
+            </section>
+          </article>
+          <%- include('sub-views/comment_widget.ejs', {
+            widgetId: 'blog-comments',
+            heading: 'Share your reflection below:',
+            targetId: slugVal,
+            ref: slugVal,
+            endpoint: '/blog-comments',
+            subjectLabel: 'reflection'
+          }); %>
+        </div>
+      </div>
     </main>
   </div>
 

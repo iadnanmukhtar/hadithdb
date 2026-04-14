@@ -1,5 +1,12 @@
-<div class="btn-group mb-3 h-menu text-nowrap" role="group">
-	<% for (b of books.filter(b => !b.hidden)) { %>
-	  <a class="btn btn-outline-primary text-nowrap" href="/<%= b.alias%>" title="<%= `${b.name_en} ${b.name}` %>"><%= b.shortName_en %></a>
-	<% } %>
+<div class="h-menu-wrap mb-3">
+	<div class="h-menu-hint d-md-none">
+		<i class="bi bi-arrow-left-right"></i> Swipe to browse books
+	</div>
+	<div class="h-menu-scroller">
+		<div class="btn-group h-menu text-nowrap" role="group">
+			<% for (b of books.filter(b => !b.hidden)) { %>
+			  <a class="btn btn-outline-primary text-nowrap" href="/<%= b.alias%>" title="<%= `${b.name_en} ${b.name}` %>"><%= b.shortName_en %></a>
+			<% } %>
+		</div>
+	</div>
 </div>
