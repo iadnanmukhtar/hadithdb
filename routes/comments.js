@@ -3,6 +3,7 @@
 
 const express = require('express');
 const debug = require('debug')('hadithdb:comments');
+const crypto = require('crypto');
 const Utils = require('../lib/Utils');
 const admin = require('../lib/Firebase');
 const nodemailer = require('nodemailer');
@@ -104,6 +105,38 @@ function isCommentOwner(comment, user) {
   return !comment.user_uid && emailMatch && comment.user_provider === user.provider;
 }
 
+async function getUserPhotosByUid(rows) {
+  const uids = [...new Set((rows || []).map(r => r.user_uid).filter(Boolean))];
+  if (!uids.length) return {};
+  try {
+    const result = await admin.auth().getUsers(uids.map(uid => ({ uid })));
+    return result.users.reduce((acc, userRecord) => {
+      acc[userRecord.uid] = userRecord.photoURL || null;
+      return acc;
+    }, {});
+  } catch (err) {
+    debug(`Could not load commenter photos: ${err.message}`);
+    return {};
+  }
+}
+
+function getGravatarUrl(email) {
+  const normalized = Utils.trimToEmpty(email).toLowerCase();
+  if (!normalized) return null;
+  const hash = crypto.createHash('md5').update(normalized).digest('hex');
+  return `https://www.gravatar.com/avatar/${hash}?d=mp&s=64`;
+}
+
+function buildCommentUser(row, photoMap = {}, fallbackPhoto = null) {
+  return {
+    uid: row.user_uid || null,
+    provider: row.user_provider,
+    name: row.user_name,
+    email: row.user_email,
+    photo: (row.user_uid && photoMap[row.user_uid]) || fallbackPhoto || getGravatarUrl(row.user_email)
+  };
+}
+
 async function verifyFirebase(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
@@ -117,7 +150,8 @@ async function verifyFirebase(req, res, next) {
       uid: decoded.uid,
       name: decoded.name || decoded.email || 'User',
       provider: decoded.firebase && decoded.firebase.sign_in_provider ? decoded.firebase.sign_in_provider : 'firebase',
-      email: decoded.email || null
+      email: decoded.email || null,
+      photo: decoded.picture || decoded.photoURL || null
     };
     next();
   } catch (err) {
@@ -156,6 +190,7 @@ router.get('/:hadithId', async function (req, res, next) {
     `);
     const commentIds = rows.map(r => r.id);
     const voteStats = await getVoteStats(commentIds, user ? user.uid : null);
+    const photoMap = await getUserPhotosByUid(rows);
     const comments = rows.map(r => {
       const deleted = !!r.deleted;
       const isOwner = isCommentOwner(r, user);
@@ -171,7 +206,7 @@ router.get('/:hadithId', async function (req, res, next) {
         upVote: deleted ? 0 : (stats.upVote || 0),
         downVote: deleted ? 0 : (stats.downVote || 0),
         userVote: deleted ? null : (stats.userVote || null),
-        user: { provider: r.user_provider, name: r.user_name, email: r.user_email },
+        user: buildCommentUser(r, photoMap),
         canEdit: !!(isOwner && !deleted),
         canDelete: !!(isOwner && !deleted)
       };
@@ -236,7 +271,7 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
       ts: r.createdAt,
       upVote: r.up_vote || 0,
       downVote: r.down_vote || 0,
-      user: { provider: r.user_provider, name: r.user_name, email: r.user_email },
+      user: buildCommentUser(r, {}, user.photo),
       canEdit: true,
       canDelete: true
     });
@@ -245,7 +280,7 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
       ref: r.ref_num,
       hadithId,
       text: r.text,
-      user: { provider: r.user_provider, name: r.user_name, email: r.user_email }
+      user: buildCommentUser(r, {}, user.photo)
     });
   } catch (err) {
     debug(`Error adding user comment:\n${err.stack}`);
@@ -309,7 +344,7 @@ router.put('/:commentId', verifyFirebase, async function (req, res, next) {
       upVote: vote.upVote || 0,
       downVote: vote.downVote || 0,
       userVote: vote.userVote || null,
-      user: { provider: updated.user_provider, name: updated.user_name, email: updated.user_email },
+      user: buildCommentUser(updated, {}, req.user.photo),
       canEdit: true,
       canDelete: true,
       deleted: false
@@ -363,7 +398,7 @@ router.delete('/:commentId', verifyFirebase, async function (req, res, next) {
       upVote: 0,
       downVote: 0,
       userVote: null,
-      user: { provider: r.user_provider, name: r.user_name, email: r.user_email },
+      user: buildCommentUser(r, {}, req.user.photo),
       canEdit: false,
       canDelete: false
     });

@@ -7,32 +7,50 @@
   const endpoint = typeof ctx.endpoint === 'string' && ctx.endpoint.trim() ? ctx.endpoint : '/comments';
   const pingUrl = typeof ctx.pingUrl === 'string' ? ctx.pingUrl : '';
   const subjectLabel = typeof ctx.subjectLabel === 'string' && ctx.subjectLabel.trim() ? ctx.subjectLabel : 'reflection';
-  const placeholder = typeof ctx.placeholder === 'string' ? ctx.placeholder : 'Share your thoughts ...';
+  const placeholder = typeof ctx.placeholder === 'string' ? ctx.placeholder : 'Write a comment...';
 %>
 
 <% if (targetId) { %>
   <h4 class="fs-5"><%= heading %></h4>
-  <section class="mt-3" id="<%= widgetId %>" data-ref="<%= ref %>" data-target-id="<%= targetId %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>">
-    <div class="d-flex flex-column gap-2 mb-3" id="<%= widgetId %>-auth">
-      <p class="text-muted small mb-0">Sign in from the top menu to add or reply to reflections.</p>
-      <div class="d-flex align-items-center gap-2 bg-light border rounded-3 py-2 px-3 d-none" id="<%= widgetId %>-user"></div>
-    </div>
-    <form class="mb-3" id="<%= widgetId %>-form">
-      <div class="mb-2">
-        <label class="form-label fw-semibold small mb-1" for="<%= widgetId %>-text">Your reflection</label>
-        <textarea class="form-control" id="<%= widgetId %>-text" rows="3" placeholder="<%= placeholder %>" maxlength="10000" required disabled></textarea>
+  <section class="mt-3 comment-feed" id="<%= widgetId %>" data-ref="<%= ref %>" data-target-id="<%= targetId %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>">
+    <div class="comment-feed-shell">
+      <div id="<%= widgetId %>-thread" class="comment-thread"></div>
+      <div class="comment-composer mt-3" id="<%= widgetId %>-auth">
+        <div class="comment-composer-body">
+          <div class="comment-avatar comment-avatar-composer" id="<%= widgetId %>-avatar" aria-hidden="true">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <div class="comment-composer-panel">
+            <p class="comment-auth-hint text-muted small mb-2" id="<%= widgetId %>-hint">Sign in from the top menu to add or reply to reflections.</p>
+            <div class="comment-current-user d-none" id="<%= widgetId %>-user"></div>
+            <form class="comment-form" id="<%= widgetId %>-form">
+              <div class="mb-2">
+                <label class="visually-hidden" for="<%= widgetId %>-text">Your reflection</label>
+                <textarea class="form-control comment-input" id="<%= widgetId %>-text" rows="3" placeholder="<%= placeholder %>" maxlength="10000" required disabled></textarea>
+              </div>
+              <input type="hidden" id="<%= widgetId %>-parent">
+              <div class="comment-form-toolbar">
+                <div class="comment-form-status text-muted small d-none" id="<%= widgetId %>-status"></div>
+                <div class="comment-form-buttons">
+                  <button type="button" class="btn btn-link btn-sm comment-form-link d-none" id="<%= widgetId %>-cancel-reply">Cancel reply</button>
+                  <button type="button" class="btn btn-link btn-sm comment-form-link d-none" id="<%= widgetId %>-cancel-edit">Cancel edit</button>
+                  <button type="submit" class="btn btn-sm comment-submit-btn" disabled title="Post reflection">
+                    <i class="bi bi-send-fill" aria-hidden="true"></i>
+                    <span class="visually-hidden">Post reflection</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-      <input type="hidden" id="<%= widgetId %>-parent">
-      <button type="submit" class="btn btn-primary btn-sm" disabled>Post reflection</button>
-      <button type="button" class="btn btn-link btn-sm text-decoration-none d-none" id="<%= widgetId %>-cancel-reply">Cancel reply</button>
-      <button type="button" class="btn btn-link btn-sm text-decoration-none d-none" id="<%= widgetId %>-cancel-edit">Cancel edit</button>
-    </form>
-    <div id="<%= widgetId %>-thread" class="list-group"></div>
+    </div>
     <script>
       (function () {
         const container = document.getElementById('<%= widgetId %>');
         if (!container) return;
-        const authBlock = document.getElementById('<%= widgetId %>-auth');
+        const authHint = document.getElementById('<%= widgetId %>-hint');
+        const composerAvatar = document.getElementById('<%= widgetId %>-avatar');
         const targetId = container.dataset.targetId;
         const endpoint = (container.dataset.endpoint || '/comments').replace(/\/$/, '');
         const pingUrl = container.dataset.pingUrl || '';
@@ -43,6 +61,7 @@
         const parentInput = document.getElementById('<%= widgetId %>-parent');
         const cancelReply = document.getElementById('<%= widgetId %>-cancel-reply');
         const cancelEdit = document.getElementById('<%= widgetId %>-cancel-edit');
+        const formStatus = document.getElementById('<%= widgetId %>-status');
         const submitBtn = form.querySelector('button[type="submit"]');
         const userBox = document.getElementById('<%= widgetId %>-user');
         let currentUser = null;
@@ -52,6 +71,51 @@
         let firebaseAvailable = false;
 
         if (!targetId) return;
+
+        const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (ch) => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[ch] || ch));
+
+        const getInitials = (name) => {
+          const parts = String(name || 'User').trim().split(/\s+/).filter(Boolean).slice(0, 2);
+          if (!parts.length) return 'U';
+          return parts.map((part) => part.charAt(0).toUpperCase()).join('');
+        };
+
+        const formatProvider = (provider) => {
+          const raw = String(provider || 'firebase').trim().toLowerCase();
+          if (!raw) return 'Member';
+          if (raw === 'google.com') return 'Google';
+          if (raw === 'facebook.com') return 'Facebook';
+          if (raw === 'password') return 'Email';
+          const label = raw.replace('.com', '').replace(/[-_]/g, ' ');
+          return label.charAt(0).toUpperCase() + label.slice(1);
+        };
+
+        const renderAvatarMarkup = (name, photoUrl = '') => {
+          if (photoUrl) {
+            return `<img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(name)} avatar" loading="lazy">`;
+          }
+          return `<span>${escapeHtml(getInitials(name))}</span>`;
+        };
+
+        const setFormStatus = (message = '') => {
+          formStatus.textContent = message;
+          formStatus.classList.toggle('d-none', !message);
+        };
+
+        const setSubmitButton = (mode = 'post') => {
+          const label = mode === 'edit' ? `Update ${subjectLabel}` : `Post ${subjectLabel}`;
+          submitBtn.title = label;
+          submitBtn.innerHTML = `
+            <i class="bi bi-send-fill" aria-hidden="true"></i>
+            <span class="visually-hidden">${escapeHtml(label)}</span>
+          `;
+        };
 
         const firebaseConfig = {
           apiKey: '<%= global.settings.firebase.apiKey || "" %>',
@@ -94,7 +158,7 @@
           const immediate = firebase.auth().currentUser;
           if (immediate) return immediate;
           return new Promise(resolve => {
-            const unsub = firebase.auth().onAuthStateChanged(u => {
+            const unsub = firebase.auth().onAuthStateChanged((u) => {
               unsub();
               resolve(u);
             });
@@ -107,9 +171,12 @@
           currentUser = await getActiveUser();
           if (!currentUser) {
             userBox.classList.add('d-none');
-            authBlock.querySelector('p').classList.remove('d-none');
+            userBox.innerHTML = '';
+            authHint.classList.remove('d-none');
+            composerAvatar.innerHTML = '<i class="bi bi-person-fill"></i>';
             textarea.disabled = true;
-            form.querySelector('button[type="submit"]').disabled = true;
+            submitBtn.disabled = true;
+            setSubmitButton('post');
             return;
           }
           const providerId = currentUser.providerData[0] ? currentUser.providerData[0].providerId : 'firebase';
@@ -119,20 +186,22 @@
             await onAuth({ username: currentUser.email });
             sessionStorage.setItem('hadithdb_google_login', '1');
           }
-          userBox.classList.remove('d-none');
-          authBlock.querySelector('p').classList.add('d-none');
           const name = currentUser.displayName || currentUser.email || 'User';
           const photo = currentUser.photoURL || 'https://www.gravatar.com/avatar/?d=mp&s=64';
+          userBox.classList.remove('d-none');
+          authHint.classList.add('d-none');
+          composerAvatar.innerHTML = renderAvatarMarkup(name, photo);
           userBox.innerHTML = `
-            <img src="${photo}" alt="Profile photo" class="rounded-circle" width="32" height="32">
-            <div class="d-flex flex-column lh-1">
-              <span class="fw-semibold small">${name}</span>
-              <span class="text-muted small">${providerId}</span>
+            <div class="comment-current-user-meta">
+              <span class="text-muted small">Posting as</span>
+              <span class="fw-semibold">${escapeHtml(name)}</span>
+              <span class="comment-provider-chip">${escapeHtml(formatProvider(providerId))}</span>
             </div>
-            <button type="button" class="btn btn-link btn-sm p-0 ms-auto" id="<%= widgetId %>-logout">Sign out</button>
+            <button type="button" class="btn btn-link btn-sm p-0 comment-form-link ms-auto" id="<%= widgetId %>-logout">Sign out</button>
           `;
           textarea.disabled = false;
-          form.querySelector('button[type="submit"]').disabled = false;
+          submitBtn.disabled = false;
+          setSubmitButton(editingId ? 'edit' : 'post');
           const logoutBtn = document.getElementById('<%= widgetId %>-logout');
           logoutBtn.onclick = async () => {
             if (firebaseReady && firebase.auth) {
@@ -145,76 +214,111 @@
 
         const formatDate = (ts) => {
           const d = (typeof ts === 'string' || typeof ts === 'number') ? new Date(ts) : ts;
-          return d.toLocaleString();
+          if (!(d instanceof Date) || Number.isNaN(d.getTime())) {
+            return { shortLabel: '', fullLabel: '' };
+          }
+          const diffMs = Date.now() - d.getTime();
+          const diffMinutes = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMs / 3600000);
+          const diffDays = Math.floor(diffMs / 86400000);
+          let shortLabel = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          if (diffMinutes < 1) shortLabel = 'Just now';
+          else if (diffMinutes < 60) shortLabel = `${diffMinutes}m`;
+          else if (diffHours < 24) shortLabel = `${diffHours}h`;
+          else if (diffDays < 7) shortLabel = `${diffDays}d`;
+          return {
+            shortLabel,
+            fullLabel: d.toLocaleString()
+          };
         };
 
         const resetFormState = (clearText = false) => {
           editingId = null;
           parentInput.value = '';
-          submitBtn.textContent = `Post ${subjectLabel}`;
+          setSubmitButton('post');
           cancelReply.classList.add('d-none');
           cancelEdit.classList.add('d-none');
+          setFormStatus('');
           if (clearText) textarea.value = '';
         };
 
         const renderComments = () => {
           threadEl.innerHTML = '';
           if (!comments.length) {
-            threadEl.innerHTML = '<div class="list-group-item text-muted small">No reflections yet. Be the first to share.</div>';
+            threadEl.innerHTML = '<div class="comment-empty-state small">No reflections yet. Be the first to share.</div>';
             return;
           }
           const byParent = {};
-          comments.forEach(c => {
+          comments.forEach((c) => {
             const key = c.parentId || 'root';
             if (!byParent[key]) byParent[key] = [];
             byParent[key].push(c);
           });
           const build = (parentId, depth) => {
-            (byParent[parentId || 'root'] || []).forEach(c => {
+            (byParent[parentId || 'root'] || []).forEach((c) => {
               const item = document.createElement('div');
-              item.className = 'list-group-item';
-              item.style.marginLeft = depth ? `${depth * 12}px` : '0';
+              item.className = `comment-thread-item${depth ? ' comment-thread-reply' : ''}`;
+              item.style.setProperty('--comment-depth', depth);
               const deleted = !!c.deleted;
               const upVote = typeof c.upVote === 'number' ? c.upVote : 0;
               const downVote = typeof c.downVote === 'number' ? c.downVote : 0;
               const userVote = c.userVote || null;
-              const upBtnClass = userVote === 'up' ? 'btn-success text-white' : 'btn-outline-success';
-              const downBtnClass = userVote === 'down' ? 'btn-danger text-white' : 'btn-outline-danger';
+              const userName = c.user && c.user.name ? c.user.name : 'Community Member';
+              const userPhoto = c.user && c.user.photo ? c.user.photo : '';
+              const dateMeta = formatDate(c.ts);
+              const reactionCount = upVote + downVote;
+              const reactionBadge = reactionCount > 0 ? `
+                <div class="comment-reactions-badge" title="${reactionCount} reactions">
+                  ${upVote > 0 ? '<span class="comment-reaction-icon comment-reaction-like"><i class="bi bi-hand-thumbs-up-fill"></i></span>' : ''}
+                  ${downVote > 0 ? '<span class="comment-reaction-icon comment-reaction-disagree"><i class="bi bi-hand-thumbs-down-fill"></i></span>' : ''}
+                  <span class="comment-reaction-count">${reactionCount}</span>
+                </div>
+              ` : '';
               const voteControls = deleted ? '' : `
-                <div class="btn-group" role="group" aria-label="Vote controls">
-                  <button type="button" class="btn btn-sm ${upBtnClass} comment-vote" data-id="${c.id}" data-direction="up">
-                    ▲ <span class="comment-up-count">${upVote}</span>
-                  </button>
-                  <button type="button" class="btn btn-sm ${downBtnClass} comment-vote" data-id="${c.id}" data-direction="down">
-                    ▼ <span class="comment-down-count">${downVote}</span>
-                  </button>
-                </div>
+                <button type="button" class="comment-action comment-vote${userVote === 'up' ? ' is-active' : ''}" data-id="${c.id}" data-direction="up" aria-pressed="${userVote === 'up' ? 'true' : 'false'}" aria-label="Like" title="Like">
+                  <i class="bi ${userVote === 'up' ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'}" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="comment-action comment-vote comment-action-negative${userVote === 'down' ? ' is-active' : ''}" data-id="${c.id}" data-direction="down" aria-pressed="${userVote === 'down' ? 'true' : 'false'}" aria-label="Disagree" title="Disagree">
+                  <i class="bi ${userVote === 'down' ? 'bi-hand-thumbs-down-fill' : 'bi-hand-thumbs-down'}" aria-hidden="true"></i>
+                </button>
               `;
-              const editControls = deleted ? '' : (c.canEdit ? `<button type="button" class="btn btn-link btn-sm p-0 comment-edit" data-id="${c.id}">Edit</button>` : '');
-              const deleteControls = deleted ? '' : (c.canDelete ? `<button type="button" class="btn btn-link btn-sm p-0 comment-delete text-danger" data-id="${c.id}">Delete</button>` : '');
-              const replyControls = deleted ? '' : `<button type="button" class="btn btn-link btn-sm p-0 comment-reply" data-id="${c.id}">Reply</button>`;
+              const editControls = deleted ? '' : (c.canEdit ? `<button type="button" class="comment-action comment-edit" data-id="${c.id}" aria-label="Edit" title="Edit"><i class="bi bi-pencil" aria-hidden="true"></i></button>` : '');
+              const deleteControls = deleted ? '' : (c.canDelete ? `<button type="button" class="comment-action comment-delete comment-action-delete" data-id="${c.id}" aria-label="Delete" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>` : '');
+              const replyControls = deleted ? '' : `<button type="button" class="comment-action comment-reply" data-id="${c.id}" aria-label="Reply" title="Reply"><i class="bi bi-reply" aria-hidden="true"></i></button>`;
               item.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <div><strong>${c.user.name}</strong> <span class="text-muted small">via ${c.user.provider}</span></div>
-                  <span class="text-muted small">${formatDate(c.ts)}</span>
+                <div class="comment-row">
+                  <div class="comment-avatar">${renderAvatarMarkup(userName, userPhoto)}</div>
+                  <div class="comment-entry">
+                    <div class="comment-bubble-wrap">
+                      <div class="comment-bubble">
+                        <div class="comment-meta">
+                          <div class="comment-author-wrap">
+                            <span class="comment-author">${escapeHtml(userName)}</span>
+                          </div>
+                        </div>
+                        ${deleted ? '<p class="comment-deleted">This reflection was deleted.</p>' : '<div class="comment-text"></div>'}
+                      </div>
+                      ${reactionBadge}
+                    </div>
+                    ${deleted ? '' : `<div class="comment-actions">
+                      <span class="comment-time" title="${escapeHtml(dateMeta.fullLabel)}">${escapeHtml(dateMeta.shortLabel)}</span>
+                      ${voteControls}
+                      ${replyControls}
+                      ${editControls}
+                      ${deleteControls}
+                    </div>`}
+                  </div>
                 </div>
-                ${deleted ? '<p class="mb-2 text-muted fst-italic small">This reflection was deleted.</p>' : '<p class="mb-2 comment-text"></p>'}
-                ${deleted ? '' : `<div class="d-flex align-items-center gap-2">
-                  ${voteControls}
-                  ${editControls}
-                  ${deleteControls}
-                  ${replyControls}
-                </div>`}
               `;
               if (!deleted) {
-                item.querySelector('p').innerHTML = c.html || c.text;
+                item.querySelector('.comment-text').innerHTML = c.html || c.text;
               }
               threadEl.appendChild(item);
               build(c.id, depth + 1);
             });
           };
           build(null, 0);
-          threadEl.querySelectorAll('.comment-vote').forEach(btn => {
+          threadEl.querySelectorAll('.comment-vote').forEach((btn) => {
             btn.onclick = () => {
               const commentId = parseInt(btn.dataset.id);
               const direction = btn.dataset.direction;
@@ -223,28 +327,31 @@
               }
             };
           });
-          threadEl.querySelectorAll('.comment-reply').forEach(btn => {
+          threadEl.querySelectorAll('.comment-reply').forEach((btn) => {
             btn.onclick = () => {
               resetFormState();
               parentInput.value = btn.dataset.id;
+              const parentComment = comments.find((c) => String(c.id) === btn.dataset.id);
               cancelReply.classList.remove('d-none');
+              setFormStatus(`Replying to ${parentComment && parentComment.user && parentComment.user.name ? parentComment.user.name : 'this reflection'}`);
               textarea.focus();
             };
           });
-          threadEl.querySelectorAll('.comment-edit').forEach(btn => {
+          threadEl.querySelectorAll('.comment-edit').forEach((btn) => {
             btn.onclick = () => {
               const commentId = parseInt(btn.dataset.id);
-              const comment = comments.find(c => c.id === commentId);
+              const comment = comments.find((c) => c.id === commentId);
               if (!comment) return;
               resetFormState();
               editingId = comment.id;
               textarea.value = comment.text;
-              submitBtn.textContent = `Update ${subjectLabel}`;
+              setSubmitButton('edit');
               cancelEdit.classList.remove('d-none');
+              setFormStatus('Editing your reflection');
               textarea.focus();
             };
           });
-          threadEl.querySelectorAll('.comment-delete').forEach(btn => {
+          threadEl.querySelectorAll('.comment-delete').forEach((btn) => {
             btn.onclick = () => {
               const commentId = parseInt(btn.dataset.id);
               if (Number.isNaN(commentId)) return;
@@ -258,11 +365,11 @@
         const fetchComments = async (authToken = null) => {
           try {
             const res = await fetch(listUrl, {
-              headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+              headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
             });
             if (!res.ok) throw new Error('Unable to load comments');
             const data = await res.json();
-            comments = data.map(c => ({
+            comments = data.map((c) => ({
               ...c,
               upVote: typeof c.upVote === 'number' ? c.upVote : 0,
               downVote: typeof c.downVote === 'number' ? c.downVote : 0,
@@ -272,7 +379,7 @@
               deleted: !!c.deleted
             }));
           } catch (e) {
-            threadEl.innerHTML = '<div class="list-group-item text-danger small">Failed to load comments. Please try again later.</div>';
+            threadEl.innerHTML = '<div class="comment-error-state small">Failed to load comments. Please try again later.</div>';
             return;
           }
           renderComments();
@@ -281,6 +388,7 @@
         cancelReply.onclick = () => {
           parentInput.value = '';
           cancelReply.classList.add('d-none');
+          if (!editingId) setFormStatus('');
         };
 
         cancelEdit.onclick = () => {
@@ -296,12 +404,12 @@
             const res = await fetch(`${endpoint}/${commentId}`, {
               method: 'DELETE',
               headers: {
-                'Authorization': `Bearer ${idToken}`
+                Authorization: `Bearer ${idToken}`
               }
             });
             if (!res.ok) throw new Error('Unable to delete comment');
             const data = await res.json();
-            const idx = comments.findIndex(c => c.id === data.id);
+            const idx = comments.findIndex((c) => c.id === data.id);
             if (idx >= 0) {
               comments[idx] = { ...comments[idx], ...data, deleted: true, canEdit: false, canDelete: false };
             }
@@ -316,7 +424,7 @@
         const submitVote = async (commentId, direction) => {
           const user = currentUser;
           if (!user) { renderUser(); return; }
-          const comment = comments.find(c => c.id === commentId);
+          const comment = comments.find((c) => c.id === commentId);
           if (!comment || comment.deleted) return;
           try {
             const idToken = await user.getIdToken();
@@ -324,13 +432,13 @@
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`
+                Authorization: `Bearer ${idToken}`
               },
               body: JSON.stringify({ direction })
             });
             if (!res.ok) throw new Error('Unable to record vote');
             const data = await res.json();
-            const idx = comments.findIndex(c => c.id === data.id);
+            const idx = comments.findIndex((c) => c.id === data.id);
             if (idx >= 0) {
               comments[idx].upVote = data.upVote;
               comments[idx].downVote = data.downVote;
@@ -357,7 +465,7 @@
               method: isEditing ? 'PUT' : 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`
+                Authorization: `Bearer ${idToken}`
               },
               body: JSON.stringify({
                 text,
@@ -367,7 +475,7 @@
             if (!res.ok) throw new Error(errorMsg);
             const data = await res.json();
             if (isEditing) {
-              const idx = comments.findIndex(c => c.id === data.id);
+              const idx = comments.findIndex((c) => c.id === data.id);
               if (idx >= 0) {
                 comments[idx] = { ...comments[idx], ...data, canEdit: true };
               } else {
