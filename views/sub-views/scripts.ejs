@@ -95,6 +95,10 @@
         // update element on success
         if (resBody.code == 200) {
           value = resBody.value;
+	          if ($(this).hasClass('_reload-on-success')) {
+	            window.location.reload();
+	            return;
+	          }
 	          if ($(this).data('reset') == 'true')
 	            value = '';
 	          if ($(this).is('textarea') || $(this).is('input'))

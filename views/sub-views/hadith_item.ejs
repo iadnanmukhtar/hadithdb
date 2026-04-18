@@ -206,6 +206,8 @@
 	<%# Admin  ............................................................. %>
 	<% if (site.editMode && lang === "en") { %>
 		<aside class="admin">
+		<span class="bi bi-magic"></span>&nbsp;<a class="_click _reload-on-success" title="Revise with AI" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise">Revise</a>
+		|
 		<% if (page.menu == 'Chapter' || page.menu == 'Section') { %>
 			<span class="bi bi-caret-up-square-fill"></span>&nbsp;<a class="_click" title="Move Up" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.moveup">Move Up</a>
 			|
