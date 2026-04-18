@@ -68,8 +68,50 @@
 	      return Array.from(doc.body.childNodes).map(htmlNodeToMarkdown).join('').replace(/\n{3,}/g, '\n\n').trim();
 	    };
 
+	    const setElementValue = (el, value) => {
+	      const $el = $(el);
+	      const prop = ($el.data('prop') || '').toString();
+	      const isMarkdownField = /body|intro|footnote|note/.test(prop);
+
+	      if ($el.is('textarea') || $el.is('input')) {
+	        $el.val(value);
+	      } else if ($el.is('select')) {
+	        $el.val(value);
+	      } else if (isMarkdownField) {
+	        $el.html(renderMarkdown(value));
+	      } else {
+	        $el.text(value);
+	      }
+	    };
+
+	    const applyHadithRevision = (id, revised) => {
+	      if (!id || !revised)
+	        return;
+	      const fieldMap = {
+	        title_en: 'hadith.title_en',
+	        chain: 'hadith.chain',
+	        body: 'hadith.body',
+	        chain_en: 'hadith.chain_en',
+	        body_en: 'hadith.body_en'
+	      };
+	      Object.entries(fieldMap).forEach(([key, prop]) => {
+	        if (typeof revised[key] !== 'string')
+	          return;
+	        $(`[data-id="${id}"][data-prop="${prop}"]`).each(function () {
+	          setElementValue(this, revised[key]);
+	        });
+	      });
+	    };
+
 	    async function changeListener(e) {
+	      if (e && typeof e.preventDefault === 'function')
+	        e.preventDefault();
+	      if ($(this).attr('submitting') == 'true') {
+	        e.stopPropagation();
+	        return;
+	      }
 	      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
+	        $(this).attr('submitting', 'true');
 	        var id = $(this).data('id');
 	        var prop = $(this).data('prop');
 	        var arabizi = $(this).data('arabizi');
@@ -91,26 +133,21 @@
 	          arabizi: arabizi,
 	          value: value,
         };
-        var resBody = await update(reqBody);
-        // update element on success
-        if (resBody.code == 200) {
-          value = resBody.value;
-	          if ($(this).hasClass('_reload-on-success')) {
-	            window.location.reload();
-	            return;
+        try {
+          var resBody = await update(reqBody);
+          // update element on success
+	          if (resBody.code == 200) {
+            value = resBody.value;
+	            if (propStr === 'hadith.revise')
+	              applyHadithRevision(id, resBody.revised);
+	            if ($(this).data('reset') == 'true')
+	              value = '';
+	            if (!$(this).is('select') && value !== undefined && value !== null)
+	              setElementValue(this, value);
 	          }
-	          if ($(this).data('reset') == 'true')
-	            value = '';
-	          if ($(this).is('textarea') || $(this).is('input'))
-	            $(this).val(value);
-	          else if ($(this).is('select'))
-	            void(0);
-	          else if (isMarkdownField) {
-	            $(this).html(renderMarkdown(value));
-	          } else {
-	            $(this).text(value);
-	          }
-	        }
+        } finally {
+          $(this).removeAttr('submitting');
+        }
 	      };
 	      e.stopPropagation();
 	    }
@@ -167,6 +204,8 @@
     });
 
     $('._click').each(function () {
+      if (!$(this).attr('href'))
+        $(this).attr('href', '#');
       $(this).attr('clickable', 'true');
       $(this).on('click', changeListener);
     });

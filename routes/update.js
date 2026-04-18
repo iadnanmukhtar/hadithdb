@@ -116,6 +116,13 @@ router.post('/:id/:prop', async function (req, res, next) {
           var revised = await HadithRevision.reviseHadithById(ids[0], { userId: userId });
           result = { message: 'AI revision complete' };
           status.value = 'Revised';
+          status.revised = {
+            title_en: revised.item.title_en,
+            chain: revised.item.chain,
+            body: revised.item.body,
+            chain_en: revised.item.chain_en,
+            body_en: revised.item.body_en
+          };
         } else {
           result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
           var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
