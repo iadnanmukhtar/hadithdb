@@ -68,7 +68,10 @@
       </heading>
       
       <section>
-        <p class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description"><%- book.description %></p>
+        <%
+          const bookDescription = utils.markdownToHtml(book.description) || (site.editMode ? '&hellip;' : '');
+        %>
+        <div class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description"><%- bookDescription %></div>
       </section>
 
       <% if (book.id > 0) { %>

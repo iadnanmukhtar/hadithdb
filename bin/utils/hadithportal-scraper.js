@@ -17,6 +17,7 @@ const USER_AGENT = 'Mozilla/5.0 (compatible; hadithdb-hadithportal-scraper/3.0; 
 
 const DEFAULTS = {
 	delayMs: 250,
+	pageConcurrency: 1,
 	timeoutMs: 45000,
 	startChapter: 1,
 	limitChapters: null,
@@ -75,6 +76,8 @@ function parseArgs(argv) {
 			options.limitBabs = parsePositiveInt(argv[++i], '--limit-babs');
 		} else if (arg === '--delay-ms') {
 			options.delayMs = parseNonNegativeInt(argv[++i], '--delay-ms');
+		} else if (arg === '--page-concurrency') {
+			options.pageConcurrency = parsePositiveInt(argv[++i], '--page-concurrency');
 		} else if (arg === '--timeout-ms') {
 			options.timeoutMs = parsePositiveInt(argv[++i], '--timeout-ms');
 		} else if (arg === '--cache-dir') {
@@ -125,6 +128,7 @@ Options:
   --limit-chapters N   Only visit N chapters from the start chapter
   --limit-babs N       Only process N babs total in this run
   --delay-ms N         Delay between uncached HTTP requests in milliseconds
+  --page-concurrency N  Number of bab pagination pages to fetch in parallel
   --timeout-ms N       HTTP timeout in milliseconds
   --cache-dir PATH     Cache directory for fetched HTML
   --state-file PATH    Resume/progress JSON file
@@ -665,10 +669,11 @@ function parseChapterPage(html) {
 		const href = $(el).attr('href');
 		const url = makeUrl(href);
 		const babId = extractInt(url, 'bab_id');
-		if (!babId || seen.has(babId)) {
+		const babKey = normalizeComparableUrl(url);
+		if (!url || seen.has(babKey)) {
 			return;
 		}
-		seen.add(babId);
+		seen.add(babKey);
 		babs.push({
 			seq: babs.length + 1,
 			babId: babId,
@@ -681,20 +686,15 @@ function parseChapterPage(html) {
 }
 
 async function scrapeBab(chapter, bab, options) {
-	const pagesToVisit = [bab.url];
-	const seenPages = new Set();
+	const pagesToVisit = [];
+	const queuedPages = new Set([normalizeComparableUrl(bab.url)]);
 	const introParts = [];
 	const hadithsByNum = new Map();
 	let resolvedTitle = null;
 
-	while (pagesToVisit.length > 0) {
-		const pageUrl = pagesToVisit.shift();
-		const pageKey = normalizeComparableUrl(pageUrl);
-		if (seenPages.has(pageKey)) {
-			continue;
-		}
-		seenPages.add(pageKey);
+	const pageConcurrency = Math.max(1, Number.parseInt(options.pageConcurrency, 10) || 1);
 
+	async function processPage(pageUrl) {
 		const html = await fetchHtml(pageUrl, options);
 		const parsed = parseBabPage(html, pageUrl);
 		if (!resolvedTitle && parsed.title) {
@@ -703,7 +703,8 @@ async function scrapeBab(chapter, bab, options) {
 
 		for (const link of parsed.paginationLinks) {
 			const linkKey = normalizeComparableUrl(link);
-			if (!seenPages.has(linkKey)) {
+			if (!queuedPages.has(linkKey)) {
+				queuedPages.add(linkKey);
 				pagesToVisit.push(link);
 			}
 		}
@@ -752,6 +753,12 @@ async function scrapeBab(chapter, bab, options) {
 		}
 	}
 
+	await processPage(bab.url);
+	while (pagesToVisit.length > 0) {
+		const batch = pagesToVisit.splice(0, pageConcurrency);
+		await Promise.all(batch.map(processPage));
+	}
+
 	const hadiths = Array.from(hadithsByNum.values()).sort((a, b) => a.num0 - b.num0);
 	for (const hadith of hadiths) {
 		hadith.bab = resolvedTitle || bab.title;
@@ -774,8 +781,14 @@ function parseBabPage(html, pageUrl) {
 	$('div[id^="tab_hadith_"]').each((i, el) => {
 		const panelId = $(el).attr('id') || '';
 		const hadithId = panelId.replace(/^tab_hadith_/, '').trim();
-		const takshilNode = $(el).find('.tashkeel .HadetheGeneral').first();
-		const plainNode = $(el).find('.notashkeel .HadetheGeneral').first();
+		let takshilNode = $(el).find('.tashkeel .HadetheGeneral').first();
+		let plainNode = $(el).find('.notashkeel .HadetheGeneral').first();
+		if (!takshilNode.length) {
+			takshilNode = $(el).find('.tashkeel').first();
+		}
+		if (!plainNode.length) {
+			plainNode = $(el).find('.notashkeel').first();
+		}
 		const displayText = extractNodeText($, takshilNode);
 		const plainText = extractNodeText($, plainNode) || displayText;
 		const selId = extractSelId($(el).html() || '');

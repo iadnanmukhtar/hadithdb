@@ -22,6 +22,8 @@
 	      return text;
 	    };
 
+	    const isMarkdownProp = (prop) => /body|intro|footnote|note/.test(prop) || prop === 'book.description';
+
 	    const htmlNodeToMarkdown = (node) => {
 	      if (!node) return '';
 	      if (node.nodeType === Node.TEXT_NODE)
@@ -71,7 +73,7 @@
 	    const setElementValue = (el, value) => {
 	      const $el = $(el);
 	      const prop = ($el.data('prop') || '').toString();
-	      const isMarkdownField = /body|intro|footnote|note/.test(prop);
+	      const isMarkdownField = isMarkdownProp(prop);
 
 	      if ($el.is('textarea') || $el.is('input')) {
 	        $el.val(value);
@@ -116,7 +118,7 @@
 	        var prop = $(this).data('prop');
 	        var arabizi = $(this).data('arabizi');
 	        const propStr = prop ? prop.toString() : '';
-	        const isMarkdownField = /body|intro|footnote|note/.test(propStr);
+	        const isMarkdownField = isMarkdownProp(propStr);
 	        var value = '';
 	        if ($(this).attr('type') == 'checkbox')
 	          value = $(this).prop('checked') ? "1" : "0";

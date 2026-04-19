@@ -213,6 +213,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.message = result.message;
       try {
         await reindexHeadingSubtreeByHeadingId(ids[0]);
+        await invalidateHeadingCachesByHeadingId(ids[0]);
       } catch (err) {
         debug(`${err.message}:\n${err.stack}`);
       }
@@ -353,6 +354,69 @@ async function reindexChapterSearchScope(bookId, h1) {
   if (!Number.isInteger(bookId) || bookId <= 0 || !Number.isFinite(h1))
     return;
   await reindexSearchScope(`book_id=${bookId} AND h1=${h1}`);
+}
+
+async function invalidateHeadingCachesByHeadingId(headingId) {
+  headingId = parseInt(headingId, 10);
+  if (!Number.isInteger(headingId) || headingId <= 0)
+    return;
+  var heading = (await global.query(`SELECT * FROM v_toc WHERE hId=${headingId} LIMIT 1`))[0];
+  if (!heading)
+    return;
+  invalidateBookChapterCache(heading);
+  await flushHeadingPathCaches(heading);
+}
+
+function invalidateBookChapterCache(heading) {
+  try {
+    var book = Library.instance.findBook(heading.book_id ?? heading.book_alias);
+    if (book)
+      book.chapters = undefined;
+  } catch (error) {
+    debug(`unable to invalidate in-memory chapter cache for heading ${heading.hId}: ${error.message}`);
+  }
+}
+
+async function flushHeadingPathCaches(heading) {
+  var cacheDir = `${homedir()}/.hadithdb/cache`;
+  if (!fs.existsSync(cacheDir))
+    return;
+  var prefixes = buildHeadingCachePrefixes(heading);
+  if (prefixes.length < 1)
+    return;
+  for (const filename of fs.readdirSync(cacheDir)) {
+    for (const prefix of prefixes) {
+      var normalized = `_${prefix.replace(/\//g, '_')}`;
+      if (filename === `${normalized}.html` || filename.startsWith(`${normalized}_`) || filename.startsWith(`${normalized}?`)) {
+        await Utils.flushCachedFile(`${cacheDir}/${filename}`);
+        break;
+      }
+    }
+  }
+}
+
+function buildHeadingCachePrefixes(heading) {
+  var bookAlias = Utils.trimToEmpty(heading.book_alias);
+  var h1 = normalizeHeadingNumber(heading.h1);
+  var h2 = normalizeHeadingNumber(heading.h2);
+  var prefixes = [];
+  if (bookAlias && h1) {
+    prefixes.push(`${bookAlias}/${h1}`);
+    if (parseInt(heading.level, 10) >= 2 && h2)
+      prefixes.push(`${bookAlias}/${h1}/${h2}`);
+  }
+  return prefixes;
+}
+
+function normalizeHeadingNumber(value) {
+  if (value === undefined || value === null || value === '')
+    return '';
+  var numeric = Number(value);
+  if (!Number.isFinite(numeric))
+    return `${value}`.trim();
+  if (numeric === Math.floor(numeric))
+    return `${numeric}`;
+  return `${numeric}`.replace(/\.0+$/, '');
 }
 
 async function reindexSearchScope(whereClause) {
