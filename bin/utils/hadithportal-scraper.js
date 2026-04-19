@@ -101,9 +101,9 @@ function parseArgs(argv) {
 	options.targetBookId = parsePositiveInt(positionals[1], '<db_book_id>');
 
 	if (!options.stateFile) {
-		options.stateFile = path.resolve(
-			__dirname,
-			`../../data/generated/hadithportal-book-${options.sourceBookId}-to-db-book-${options.targetBookId}.progress.json`
+		options.stateFile = path.join(
+			options.cacheDir,
+			`hadithportal-book-${options.sourceBookId}-to-db-book-${options.targetBookId}.progress.json`
 		);
 	}
 
