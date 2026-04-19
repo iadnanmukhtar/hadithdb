@@ -3,15 +3,15 @@
 
 const debug = require('debug')('hadithdb:update');
 const fs = require('fs');
-const path = require('path');
 const express = require('express');
 const createError = require('http-errors');
+const { homedir } = require('os');
 const Hadith = require('../lib/Hadith');
 const HadithRevision = require('../lib/HadithRevision');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
 const Index = require('../lib/Index');
-const { Heading, Item } = require('../lib/Model');
+const { Heading, Item, Library } = require('../lib/Model');
 
 const router = express.Router();
 
@@ -222,10 +222,30 @@ router.post('/:id/:prop', async function (req, res, next) {
       }
 
     } else if (type == 'book') {
+      var beforeBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
       var result = await global.query(`UPDATE books SET ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       status.code = 200;
       status.message = result.message;
-      await Hadith.a_reinit();
+      await Library.reloadBooks();
+      try {
+        var afterBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
+        var cacheDir = `${homedir()}/.hadithdb/cache`;
+        var bookAliases = new Set();
+        if (beforeBook && beforeBook.alias)
+          bookAliases.add(beforeBook.alias);
+        if (afterBook && afterBook.alias)
+          bookAliases.add(afterBook.alias);
+        for (const filename of fs.readdirSync(cacheDir)) {
+          for (const bookAlias of bookAliases) {
+            if (filename === `_${bookAlias}` || filename.startsWith(`_${bookAlias}_`) || filename.startsWith(`_${bookAlias}?`)) {
+              await Utils.flushCachedFile(`${cacheDir}/${filename}`);
+              break;
+            }
+          }
+        }
+      } catch (err) {
+        debug(`${err.message}:\n${err.stack}`);
+      }
 
     } else if (type == 'hadith_virtual') {
       var result = "";
