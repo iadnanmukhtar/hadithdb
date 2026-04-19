@@ -15,6 +15,7 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+server.on('clientError', onClientError);
 
 function normalizePort(val) {
   var port = parseInt(val, 10);
@@ -50,4 +51,27 @@ function onListening() {
   var addr = server.address();
   var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
   debug('Listening on ' + bind);
+}
+
+function onClientError(err, socket) {
+  if (!socket || !socket.writable) {
+    if (socket) socket.destroy();
+    return;
+  }
+  var statusCode = (err && err.code === 'HPE_HEADER_OVERFLOW') ? 431 : 400;
+  var message = statusCode === 431
+    ? 'Request Header Fields Too Large'
+    : 'Bad Request';
+  app.renderErrorPage(statusCode, message, err, null, { statusCode: statusCode }, function (renderErr, html) {
+    if (renderErr) {
+      html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${statusCode} ${message}</title></head><body><h1>${statusCode} ${message}</h1></body></html>`;
+    }
+    socket.end(
+      `HTTP/1.1 ${statusCode} ${message}\r\n` +
+      'Content-Type: text/html; charset=UTF-8\r\n' +
+      `Content-Length: ${Buffer.byteLength(html)}\r\n` +
+      'Connection: close\r\n\r\n' +
+      html
+    );
+  });
 }

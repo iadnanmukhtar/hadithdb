@@ -31,7 +31,6 @@ router.get('/do/:id', async function (req, res, next) {
       // translation requested
       var id = parseInt(req.params.id);
       await global.query(`UPDATE hadiths SET requested=(requested+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${id}`);
-      console.log(`translation requested on id ${id}`);
     } else if (req.query.cmd == 'comment') {
       // comment clicked
       var id = parseInt(req.params.id);
@@ -102,7 +101,7 @@ router.get('/', async function (req, res, next) {
 
   // search
   if (req.query.q) {
-    req.query.q = req.query.q.trim();
+    req.query.q = Search.truncateQuery(req.query.q);
     // is it a item ref number?
     if (req.query.q.match(/^([a-z]+:\d+|\d+)/)) {
       if (Library.instance.findBook(req.query.q.split(/:/)[0])) {

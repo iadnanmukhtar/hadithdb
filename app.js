@@ -7,11 +7,91 @@ const path = require('path');
 const createError = require('http-errors');
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const { STATUS_CODES } = require('http');
 const rateLimit = require('express-rate-limit').default;
 const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
 
+const wrapAsyncHandler = (handler) => {
+  if (Array.isArray(handler))
+    return handler.map(wrapAsyncHandler);
+  if (typeof handler !== 'function' || handler.length === 4)
+    return handler;
+  return function wrappedAsyncHandler(req, res, next) {
+    return Promise.resolve(handler(req, res, next)).catch(next);
+  };
+};
+
+const patchAsyncRouterMethods = () => {
+  const routerProto = Object.getPrototypeOf(express.Router());
+  const methods = ['use', 'all', 'get', 'post', 'put', 'patch', 'delete'];
+  for (const method of methods) {
+    const original = routerProto[method];
+    routerProto[method] = function patchedRouterMethod(...args) {
+      return original.apply(this, args.map(wrapAsyncHandler));
+    };
+  }
+};
+
+const isNotFoundError = (err) => {
+  if (!err || !err.message)
+    return false;
+  if (err.status === 404 || err.statusCode === 404)
+    return true;
+  if (!(err instanceof ReferenceError))
+    return false;
+  return /(^Not found:| not found$| does not exist$)/i.test(err.message);
+};
+
+const HTTP_ERROR_FRIENDLY_MESSAGES = {
+  400: 'The request could not be understood.',
+  401: 'You need to sign in to access this resource.',
+  403: 'You do not have permission to access this resource.',
+  404: 'The requested page or reference could not be found.',
+  408: 'The request took too long to complete.',
+  413: 'The request payload is too large.',
+  414: 'The requested URL is too long.',
+  429: 'Too many requests were sent. Please wait and try again.',
+  431: 'The request headers are too large. This is often caused by oversized cookies. Clear site cookies and try again.',
+  500: 'An unexpected server error occurred.',
+  502: 'A backend service returned an invalid response.',
+  503: 'A backend service is temporarily unavailable.',
+  504: 'A backend service took too long to respond.'
+};
+
+const defaultHttpErrorMessage = (statusCode, message) => {
+  if (message)
+    return message;
+  return STATUS_CODES[statusCode] || 'Error';
+};
+
+const friendlyHttpErrorMessage = (statusCode, message) => {
+  if (HTTP_ERROR_FRIENDLY_MESSAGES[statusCode])
+    return HTTP_ERROR_FRIENDLY_MESSAGES[statusCode];
+  return message || STATUS_CODES[statusCode] || 'An error occurred.';
+};
+
+const buildErrorViewLocals = (statusCode, message, error, req, res) => {
+  const finalMessage = defaultHttpErrorMessage(statusCode, message);
+  const finalReq = req || { path: '/', query: {}, cookies: {}, originalUrl: '/' };
+  const finalRes = res || { statusCode: statusCode };
+  finalRes.statusCode = statusCode;
+  return {
+    req: finalReq,
+    res: finalRes,
+    message: finalMessage,
+    error: error || createError(statusCode, finalMessage),
+    friendlyMessage: friendlyHttpErrorMessage(statusCode, finalMessage),
+    statusTitle: STATUS_CODES[statusCode] || 'Error'
+  };
+};
+
+patchAsyncRouterMethods();
+
 const app = express();
+app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, res, callback) {
+  return app.render('error', buildErrorViewLocals(statusCode, message, error, req, res), callback);
+};
 
 (async () => {
   app.set('views', path.join(__dirname, 'views'));
@@ -86,13 +166,14 @@ const app = express();
   });
 
   app.use(function (err, req, res, next) {
-    res.locals.req = req;
-    res.locals.res = res;
-    res.locals.message = err.message;
-    res.locals.error = err;
-    res.status(err.status || 500);
+    if (res.headersSent)
+      return next(err);
+    if (isNotFoundError(err))
+      err = createError(404, err.message);
+    const statusCode = err.status || err.statusCode || 500;
+    res.status(statusCode);
+    Object.assign(res.locals, buildErrorViewLocals(statusCode, err.message, err, req, res));
     res.render('error');
-    next();
   });
 
   await Hadith.a_reinit();
