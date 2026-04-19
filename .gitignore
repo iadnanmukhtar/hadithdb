@@ -11,6 +11,8 @@ data/*.db
 data/archive/*.csv
 data/archive/*.json
 data/archive/*.db
-data/temp
+data/temp/*
+data/cache/*
+cache/*
 temp/*
 *test*
