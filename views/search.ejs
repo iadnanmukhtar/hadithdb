@@ -92,6 +92,16 @@
                     <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
                     <label class="form-check-label"><%=bk.shortName_en%></label>
                   </div>
+                  <% if (bk.alias === 'quran') { %>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="b" value="sahihayn" <%= (b.indexOf('sahihayn') >= 0) ? 'checked' : '' %>>
+                    <label class="form-check-label">Saḥīḥayn</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="b" value="sixbooks" <%= (b.indexOf('sixbooks') >= 0) ? 'checked' : '' %>>
+                    <label class="form-check-label">Kutub Sittah</label>
+                  </div>
+                  <% } %>
                   <% }); %>
                   
                 </div>
@@ -114,7 +124,7 @@
 
       <% if (results.length != 1 && q) { %>
       <div class="text-center">
-        Found <%= results.length %> results in <%= b.length > 0 ? `${Array.isArray(b) ? b.join(', ') : b}` : 'all books'%>
+        Found <%= results.length %> results in <%= bookFilterLabels.length > 0 ? bookFilterLabels.join(', ') : 'all books' %>
       </div>
       <% } else if (results.length != 1) { %>
       <div class="text-center">

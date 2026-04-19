@@ -156,6 +156,7 @@ router.get('/', async function (req, res, next) {
         results: results,
         q: req.query.q,
         b: (req.query.b ? req.query.b : []),
+        bookFilterLabels: Search.describeBookFilters(req.query.b),
       });
     }
 

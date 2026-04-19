@@ -1,4 +1,9 @@
 <nav class="navbar site-navbar fixed-top container col-lg-8 mx-auto">
+  <%
+    var currentSearch = '';
+    if (req && req.query && req.query.q)
+      currentSearch = req.query.q;
+  %>
   <div class="row g-0">
     
     <header class="col col-md-4 d-flex site-header-brand">
@@ -54,7 +59,7 @@
         <% } %>
         <li class="nav-item search-click-toggle">
           <form action="/">
-          <input role="search" type="text" class="form-control search-click" name="q" placeholder="Search aḥādīth..." />
+          <input role="search" type="text" class="form-control search-click" name="q" placeholder="Search aḥādīth..." value="<%= currentSearch %>" />
           </form>
           <a class="nav-link"><i class="bi bi-search"></i></a>
         </li>
@@ -84,7 +89,7 @@
       </div>
       <div class="offcanvas-body">
         <form action="/">
-          <input role="search" type="text" class="form-control mb-2" name="q" placeholder="Search aḥādīth..." />
+          <input role="search" type="text" class="form-control mb-2" name="q" placeholder="Search aḥādīth..." value="<%= currentSearch %>" />
         </form>
         <div class="row">
           <ul class="col-7 nav flex-column offcanvas-col1">
