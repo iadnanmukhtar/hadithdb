@@ -42,6 +42,7 @@
     }
     if (typeof chapter !== 'undefined')
       page.context.chapter = chapter;
+    var displayResultCount = (typeof totalResults !== 'undefined' && totalResults > 0) ? totalResults : results.length;
     if (utils.isFalsey(q) && results.length > 0) {
       page.context.chapter = results[0].chapter;
       page.context.section = results[0].section;
@@ -124,11 +125,11 @@
 
       <% if (results.length != 1 && q) { %>
       <div class="text-center">
-        Found <%= results.length %> results in <%= bookFilterLabels.length > 0 ? bookFilterLabels.join(', ') : 'all books' %>
+        Found <%= displayResultCount %> results in <%= bookFilterLabels.length > 0 ? bookFilterLabels.join(', ') : 'all books' %>
       </div>
       <% } else if (results.length != 1) { %>
       <div class="text-center">
-        Showing <%= results.length %> results
+        Showing <%= displayResultCount %> results
       </div>
       <% } %>
       

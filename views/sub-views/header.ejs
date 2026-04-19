@@ -4,7 +4,7 @@
     if (req && req.query && req.query.q)
       currentSearch = req.query.q;
   %>
-  <div class="row g-0">
+  <div class="row g-0 site-navbar-main">
     
     <header class="col col-md-4 d-flex site-header-brand">
       <a href="/"><img class="logo me-2" src="<%= site.logoVector %>" width="56" height="56"></a>
@@ -130,7 +130,7 @@
   %>
   <nav class="row g-0 chapter-toc">
     <%# --- TABLE OF CONTENTS --- %>
-    <div class="d-flex justify-content-center">
+    <div class="col-12 d-flex justify-content-center">
       <% if (sections && sections.length > 0) { %>
         <a data-bs-toggle="collapse" href="#toc2" title="Click to show sections">Section Menu <i class="bi bi-caret-down-square"></i></a>
         <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
@@ -144,7 +144,7 @@
         <!-- <a>No sections in this chapter</a> -->
       <% } %>
     </div>
-    <detail id="toc2" class="toc2 collapse">
+    <div id="toc2" class="col-12 toc2 collapse">
       <table class="table">
         <tbody>
           <%
@@ -173,7 +173,7 @@
 					}  %>
         </tbody>
       </table>
-    </detail>
+    </div>
   </nav>
   <% } %>
   

@@ -1,11 +1,26 @@
 <%
-	hashtag = (i.book_alias + i.num).replace(/[-\:]/, '_');
+	hashtag = String(`${i.book_alias || ''}${i.num || i.num0 || i.id || ''}`).replace(/[-\:]/g, '_');
 	var _p = searchResult ? 'partial' : '';
 	var langSuff = (lang === 'en') ? '_en' : '';
 	var chapter = page.context.chapter;
     var sections = [];
+	var langData = i[lang] || {};
 	if (chapter)
 		sections = chapter.sections; 
+	const debugDocId = i.actual ? i.actual.id : i.id;
+	const debugScore = Number.isFinite(i._score) ? i._score : '';
+	function linkTitle(title) {
+		title = title || '';
+		if (!searchResult)
+			return title;
+		var parts = [];
+		if (title)
+			parts.push(title);
+		parts.push(`doc=${debugDocId}`);
+		if (debugScore !== '')
+			parts.push(`score=${debugScore}`);
+		return parts.join(' | ');
+	}
 %>
 
 <section class="col-md-6 col-sm-12 h" lang="<%=lang%>">
@@ -45,31 +60,31 @@
 
 		<%# Virtual Num %>
 		<% if (i.book_virtual) { %>
-			(<span class="_e" title="Virtual Num" data-id="<%= i.id %>" data-prop="hadith_virtual.num"><%- (i[lang].num) ? `${i[lang].num}` : '' %></span>)
+			(<span class="_e" title="Virtual Num" data-id="<%= i.id %>" data-prop="hadith_virtual.num"><%- (langData.num) ? `${langData.num}` : '' %></span>)
 		<% } %>
 
 		<%# Admin: Virtul Num 0%>
 		<% if (lang === 'en' && site.editMode) { %>
 			(<span class="_e" title="Virtual Num0" data-id="<%= i.id %>" data-prop="hadith_virtual.num0"><%- i.num0 || '&hellip;' %></span>)
-			(<span class="_e" title="Num" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.num"><%- i.actual ? i[lang].actual.num : i[lang].num %></span>)
+			(<span class="_e" title="Num" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.num"><%- i.actual ? (i[lang]?.actual?.num || i.actual?.num || i.num || '&hellip;') : (langData.num || i.num || '&hellip;') %></span>)
 		<% } %>
 
 		<%# Item Number + Chain %>
-		<b><a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.en.actual.num : i.en.num %>"><%= `${i.actual ? i[lang].actual.book_shortName : i[lang].book_shortName}:${i.actual ? i[lang].actual.num : i[lang].num}` %></a></b> –
-		<% if (i[lang].chain || site.editMode) { %>
-			<span class="_e chain <%=_p%> l3" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.chain<%=langSuff%>" data-arabizi="true"><%- i[lang].chain || `&hellip;` %></span>
+		<b><a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num %>" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>"><%= `${i.actual ? (i[lang]?.actual?.book_shortName || i.actual?.book_shortName || i.book_shortName) : (langData.book_shortName || i.book_shortName)}:${i.actual ? (i[lang]?.actual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a></b> –
+		<% if (langData.chain || site.editMode) { %>
+			<span class="_e chain <%=_p%> l3" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.chain<%=langSuff%>" data-arabizi="true"><%- langData.chain || `&hellip;` %></span>
 		<% } %>
 
 	</section>
 
 	<%# Body  .............................................................. %>
 	<%
-		const bodyMarkdown = utils.emptyIfNull(i[lang].body) || utils.emptyIfNull(i[lang].text);
+		const bodyMarkdown = utils.emptyIfNull(langData.body) || utils.emptyIfNull(langData.text);
 		const bodyHtml = utils.markdownToHtml(bodyMarkdown);
 	%>
 	<section lang="<%=lang%>" class="body <%=_p%> l5" title="Ḥadīth Body">
 		<div class="_e hadith-body-content <%=_p%>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
-		<% if (!i[lang].body) { %>
+		<% if (!langData.body) { %>
 			<div class="cmd-tr">
 				<!-- <a href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');">Request/Fix</a> translation<br/> -->
 				Translation not available.
@@ -83,8 +98,8 @@
 	</section>
 
 	<%# Footer  ............................................................ %>
-	<% if (i[lang].footnote || site.editMode) { 
-		const footnoteHtml = utils.markdownToHtml(i[lang].footnote);
+	<% if (langData.footnote || site.editMode) { 
+		const footnoteHtml = utils.markdownToHtml(langData.footnote);
 		const footnoteContent = footnoteHtml || '&hellip;';
 	%>
 		<footer lang="<%=lang%>" class="footnote _e <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true">
@@ -94,8 +109,8 @@
 
 	<% if (i.book_virtual) { %>
 		<%# Author Note  ....................................................... %>
-		<% if (i[lang].note || site.editMode) { 
-			const noteHtml = utils.markdownToHtml(i[lang].note);
+		<% if (langData.note || site.editMode) { 
+			const noteHtml = utils.markdownToHtml(langData.note);
 			const noteContent = noteHtml || '&hellip;';
 		%>
 			<aside lang="<%=lang%>" class="note _e <%=_p%> l2" title="Ḥadīth Note" data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true">
@@ -111,16 +126,16 @@
 			<% if (lang === 'en' && site.editMode) { %>
 			<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.gradeId">
 				<% global.grades.forEach(function (grade) { %>
-					<option value="<%=grade.id%>" <%=(grade.id == i.grade.id) ? 'selected' :''%>><%=grade.grade%></option>
+					<option value="<%=grade.id%>" <%=(grade.id == (i.grade && i.grade.id)) ? 'selected' :''%>><%=grade.grade%></option>
 				<% }); %>
 			</select> 
 			(<select class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.graderId">
 				<% global.graders.forEach(function (grader) { %>
-					<option value="<%=grader.id%>" <%=(grader.id == i.grader.id) ? 'selected' :''%>><%=grader.shortName_en%></option>
+					<option value="<%=grader.id%>" <%=(grader.id == (i.grader && i.grader.id)) ? 'selected' :''%>><%=grader.shortName_en%></option>
 				<% }); %>
 			</select>)
 			<% } else { %>
-			– <span><%- i[lang].grade_grade %></span>&nbsp;(<span title="<%=i[lang].grader_name%>"><%- i[lang].grader_shortName %></span>)
+			– <span><%- langData.grade_grade %></span>&nbsp;(<span title="<%=langData.grader_name%>"><%- langData.grader_shortName %></span>)
 			<% } %>
 		</em>
 		</aside>
@@ -139,12 +154,12 @@
 				</select>)
 			<% } else { %>
 				<% if (i.section) { %>
-					<a href="/<%- `${i.book_alias}/${i.section.h1}/${i.section.h2}` %>" title="<%= i[lang].h2_title %>"><%- utils.truncate(i[lang].h2_title, 30, true) || 'Section' %></a>
+					<a href="/<%- `${i.book_alias}/${i.section.h1}/${i.section.h2}` %>" title="<%= linkTitle(langData.h2_title) %>"><%- utils.truncate(langData.h2_title, 30, true) || 'Section' %></a>
 				<% } %>
 			<% } %>
 			<% if (i.chapter) { %>
 				<%= lang == 'en' ? 'in' : 'في' %> 
-				<a href="/<%- `${i.book_alias}/${i.chapter.h1}` %>" title="<%= i[lang].h1_title %>"><%- utils.truncate(i[lang].h1_title, 30, true) || 'Chapter' %></a>
+				<a href="/<%- `${i.book_alias}/${i.chapter.h1}` %>" title="<%= linkTitle(langData.h1_title) %>"><%- utils.truncate(langData.h1_title, 30, true) || 'Chapter' %></a>
 			<% } %>
 		</aside>
 	<% } %>
@@ -196,10 +211,10 @@
 		<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">0</span>
 		&nbsp;
 		<% if (!i.single) { %>
-			<span class="bi bi-chat-right-text"></span>&nbsp;<a href="/<%= i.ref %>">Reflect</a>
+			<span class="bi bi-chat-right-text"></span>&nbsp;<a href="/<%= i.ref %>" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>">Reflect</a>
 			&nbsp;
 		<% } %>
-		<span class="bi bi-box-arrow-up"></span>&nbsp;<a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.en.actual.num : i.en.num %>?sharepreview" type="button" title="Zoom In" class="icon">Share</a>
+		<span class="bi bi-box-arrow-up"></span>&nbsp;<a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num %>?sharepreview" type="button" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>" class="icon">Share</a>
 	<% } %>
 	</aside>
 

@@ -51,6 +51,17 @@ $(function () {
 	$(document).on('click', function (event) {
 		if (!$(event.target).closest('.search-click-toggle').length)
 			$('.search-click-toggle').removeClass('is-open');
+
+		var tocMenu = document.getElementById('toc2');
+		if (!tocMenu || !$(tocMenu).hasClass('show'))
+			return;
+		if ($(event.target).closest('#toc2, a[href="#toc2"], [data-bs-target="#toc2"]').length)
+			return;
+		if (window.bootstrap && window.bootstrap.Collapse) {
+			window.bootstrap.Collapse.getOrCreateInstance(tocMenu).hide();
+		} else {
+			$(tocMenu).removeClass('show');
+		}
 	});
 
 	$('[role=search]').on('input', function () {

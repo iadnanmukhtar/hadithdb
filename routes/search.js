@@ -98,6 +98,7 @@ router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   var results = [];
+  var totalResults = 0;
 
   // search
   if (req.query.q) {
@@ -120,8 +121,11 @@ router.get('/', async function (req, res, next) {
       var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
       offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
       results = await Search.a_searchText(req.query.q, req.query.b, offset);
-      if (results.length > global.settings.search.itemsPerPage)
+      totalResults = Number.isFinite(results.total) ? results.total : results.length;
+      if (results.length > global.settings.search.itemsPerPage) {
         results.next = offset + global.settings.search.itemsPerPage;
+        results.pop();
+      }
       if (offset >= global.settings.search.itemsPerPage)
         results.prev = offset - global.settings.search.itemsPerPage;
       results.map(function (hadith) {
@@ -154,6 +158,7 @@ router.get('/', async function (req, res, next) {
     } else {
       res.render('search', {
         results: results,
+        totalResults: totalResults,
         q: req.query.q,
         b: (req.query.b ? req.query.b : []),
         bookFilterLabels: Search.describeBookFilters(req.query.b),
@@ -171,6 +176,7 @@ router.get('/', async function (req, res, next) {
     res.render('index', {
       random: random,
       results: null, // results,
+      totalResults: 0,
       b: [],
     });
   }

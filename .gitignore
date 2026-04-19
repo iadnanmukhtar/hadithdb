@@ -13,6 +13,7 @@ data/archive/*.json
 data/archive/*.db
 data/temp/*
 data/cache/*
+data/generated/*
 cache/*
 temp/*
 *test*

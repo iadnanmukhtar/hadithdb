@@ -63,12 +63,12 @@ router.post('/:id/:prop', async function (req, res, next) {
       } else if (col == 'moveup' || col == 'movedn') {
         var curr = (await global.query(`SELECT * from hadiths WHERE id=${ids[0]}`))[0];
         if (curr) {
-          var prev = (await global.query(`SELECT * from hadiths WHERE ordinal < ${curr.ordinal} ORDER BY ordinal DESC LIMIT 1`))[0];
-          var next = (await global.query(`SELECT * from hadiths WHERE ordinal > ${curr.ordinal} ORDER BY ordinal ASC LIMIT 1`))[0];
+          var prev = (await global.query(`SELECT * from hadiths WHERE bookId=${curr.bookId} AND ordinal < ${curr.ordinal} ORDER BY ordinal DESC LIMIT 1`))[0];
+          var next = (await global.query(`SELECT * from hadiths WHERE bookId=${curr.bookId} AND ordinal > ${curr.ordinal} ORDER BY ordinal ASC LIMIT 1`))[0];
           var repl = null;
           if (col == 'moveup')
             repl = prev;
-          else if (col == 'moveup')
+          else if (col == 'movedn')
             repl = next;
           if (repl != null) {
             result = await global.query(`UPDATE hadiths 
@@ -81,12 +81,11 @@ router.post('/:id/:prop', async function (req, res, next) {
             await global.query(`SET @n:=0`);
             await global.query(`UPDATE hadiths SET numInChapter=(@n:=@n+1)
             WHERE bookId=${curr.bookId} AND h1=${repl.h1} ORDER by bookId, h1, ordinal`);
+            await reindexChapterSearchScope(curr.bookId, curr.h1);
+            if (Number(curr.h1) !== Number(repl.h1))
+              await reindexChapterSearchScope(curr.bookId, repl.h1);
           } else
             throw new Error("Invalid command");
-          var prevTOC = (await global.query(`SELECT * from v_toc WHERE tId=${prev.tocId} ORDER BY ordinal DESC LIMIT 1`))[0];
-          await Index.update(Heading.INDEX, prevTOC);
-          var nextTOC = (await global.query(`SELECT * from v_toc WHERE tId=${next.tocId} ORDER BY ordinal DESC LIMIT 1`))[0];
-          await Index.update(Heading.INDEX, nextTOC);
         } else
           throw new Error("Hadith not found");
 
@@ -95,9 +94,10 @@ router.post('/:id/:prop', async function (req, res, next) {
         var afterTOCId = status.value;
         result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), tocId=${status.value} WHERE id=${ids[0]}`);
         var prevTOC = (await global.query(`SELECT * from v_toc WHERE tId=${before.tocId} ORDER BY ordinal DESC LIMIT 1`))[0];
-        await Index.update(Heading.INDEX, prevTOC);
         var nextTOC = (await global.query(`SELECT * from v_toc WHERE tId=${afterTOCId} ORDER BY ordinal DESC LIMIT 1`))[0];
-        await Index.update(Heading.INDEX, nextTOC);
+        await reindexChapterSearchScope(before.bookId, before.h1);
+        if (nextTOC && (Number(before.h1) !== Number(nextTOC.h1) || Number(before.bookId) !== Number(nextTOC.book_id)))
+          await reindexChapterSearchScope(nextTOC.book_id, nextTOC.h1);
 
       } else if (col === 'add') {
 
@@ -212,11 +212,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
       try {
-        var heading = await global.query(`SELECT * from v_toc WHERE hId=${ids[0]}`);
-        heading = new Heading(heading[0]);
-        await Index.update(Heading.INDEX, heading);
-        var items = await global.query(`SELECT * FROM v_hadiths WHERE tId=${heading.id}`);
-        await Index.updateBulk(Item.INDEX, items);
+        await reindexHeadingSubtreeByHeadingId(ids[0]);
       } catch (err) {
         debug(`${err.message}:\n${err.stack}`);
       }
@@ -339,6 +335,45 @@ function sql(s) {
     return '"' + s + '"';
   }
   return null;
+}
+
+async function reindexHeadingSubtreeByHeadingId(headingId) {
+  headingId = parseInt(headingId, 10);
+  if (!Number.isInteger(headingId) || headingId <= 0)
+    return;
+  var heading = (await global.query(`SELECT * FROM v_toc WHERE hId=${headingId} LIMIT 1`))[0];
+  if (!heading)
+    return;
+  await reindexSearchScope(buildHeadingScopeWhere(heading));
+}
+
+async function reindexChapterSearchScope(bookId, h1) {
+  bookId = parseInt(bookId, 10);
+  h1 = Number(h1);
+  if (!Number.isInteger(bookId) || bookId <= 0 || !Number.isFinite(h1))
+    return;
+  await reindexSearchScope(`book_id=${bookId} AND h1=${h1}`);
+}
+
+async function reindexSearchScope(whereClause) {
+  var headings = await global.query(`SELECT * FROM v_toc WHERE ${whereClause} ORDER BY ordinal`);
+  if (headings.length > 0)
+    await Index.updateBulk(Heading.INDEX, headings);
+  var items = await global.query(`SELECT * FROM v_hadiths WHERE ${whereClause} ORDER BY ordinal`);
+  if (items.length > 0)
+    await Index.updateBulk(Item.INDEX, items);
+}
+
+function buildHeadingScopeWhere(heading) {
+  var parts = [
+    `book_id=${parseInt(heading.book_id, 10)}`,
+    `h1=${Number(heading.h1)}`
+  ];
+  if (parseInt(heading.level, 10) >= 2)
+    parts.push(`h2=${Number(heading.h2)}`);
+  if (parseInt(heading.level, 10) >= 3)
+    parts.push(`h3=${Number(heading.h3)}`);
+  return parts.join(' AND ');
 }
 
 module.exports = router;

@@ -1,153 +1,371 @@
 {
-	"properties": {
-
-
-		"hId": {
-			"type": "long"
-		},
-		"doctype": {
-			"type": "keyword"
-		},
-		"id": {
-			"type": "long"
-		},
-		"ordinal": {
-			"type": "long"
-		},
-
-
-		"book_alias": {
-			"type": "keyword"
-		},
-		"book_virtual": {
-			"type": "integer"
-		},
-		"book_id": {
-			"type": "integer"
-		},
-		"book_author": {
-			"enabled": false
-		},
-		"book_name": {
-			"enabled": false
-		},
-		"book_name_en": {
-			"enabled": false
-		},
-		"book_shortName": {
-			"enabled": false
-		},
-		"book_shortName_en": {
-			"enabled": false
-		},
-
-
-		"level": {
-			"type": "integer"
-		},
-		"path": {
-			"type": "keyword"
-		},
-		"h1": {
-			"type": "float"
-		},
-		"h1_id": {
-			"type": "long"
-		},
-		"h1_title": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "arabic"
-		},
-		"h1_title_en": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "english"
-		},
-		"h1_intro": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "arabic"
-		},
-		"h1_intro_en": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "english"
-		},
-		"h2": {
-			"type": "float"
-		},
-		"h2_id": {
-			"type": "long"
-		},
-		"h2_title": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "arabic"
-		},
-		"h2_title_en": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "english"
-		},
-		"h2_intro": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "arabic"
-		},
-		"h2_intro_en": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "english"
-		},
-		"h3": {
-			"type": "float"
-		},
-		"h3_id": {
-			"type": "long"
-		},
-		"h3_title": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "arabic"
-		},
-		"h3_title_en": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "english"
-		},
-		"h3_intro": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "arabic"
-		},
-		"h3_intro_en": {
-			"type": "text",
-			"boost": 2,
-			"analyzer": "english"
-		},
-		"h1_count": {
-			"enabled": false
-		},
-		"h1_start": {
-			"enabled": false
-		},
-		"h2_count": {
-			"enabled": false
-		},
-		"h2_start": {
-			"enabled": false
-		},
-		"h3_count": {
-			"enabled": false
-		},
-		"h3_start": {
-			"enabled": false
-		},
-
-		"numInChapter": {
-			"type": "integer"
-		}
-
-	}
+  "toc": {
+    "aliases": {},
+    "mappings": {
+      "properties": {
+        "book_alias": {
+          "type": "keyword"
+        },
+        "book_author": {
+          "type": "object",
+          "enabled": false
+        },
+        "book_id": {
+          "type": "object",
+          "enabled": false
+        },
+        "book_ordinal": {
+          "type": "integer"
+        },
+        "book_name": {
+          "type": "object",
+          "enabled": false
+        },
+        "book_name_search_ar": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "book_name_search_en": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "book_name_search_en_prefix": {
+          "type": "search_as_you_type",
+          "analyzer": "english_folded"
+        },
+        "book_name_en": {
+          "type": "object",
+          "enabled": false
+        },
+        "book_shortName": {
+          "type": "object",
+          "enabled": false
+        },
+        "book_shortName_search_ar": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "book_shortName_search_en": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "book_shortName_search_en_prefix": {
+          "type": "search_as_you_type",
+          "analyzer": "english_folded"
+        },
+        "book_shortName_en": {
+          "type": "object",
+          "enabled": false
+        },
+        "book_virtual": {
+          "type": "integer"
+        },
+        "count": {
+          "type": "long"
+        },
+        "doctype": {
+          "type": "keyword"
+        },
+        "h1": {
+          "type": "float"
+        },
+        "h1_count": {
+          "type": "object",
+          "enabled": false
+        },
+        "h1_id": {
+          "type": "long"
+        },
+        "h1_intro": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "arabic"
+        },
+        "h1_intro_en": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "english"
+        },
+        "h1_start": {
+          "type": "object",
+          "enabled": false
+        },
+        "h1_title": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "arabic"
+        },
+        "h1_title_en": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "english"
+        },
+        "h1_title_en_search": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "h1_title_en_prefix": {
+          "type": "search_as_you_type",
+          "analyzer": "english_folded"
+        },
+        "h2": {
+          "type": "float"
+        },
+        "h2_count": {
+          "type": "object",
+          "enabled": false
+        },
+        "h2_id": {
+          "type": "long"
+        },
+        "h2_intro": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "arabic"
+        },
+        "h2_intro_en": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "english"
+        },
+        "h2_start": {
+          "type": "object",
+          "enabled": false
+        },
+        "h2_title": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "arabic"
+        },
+        "h2_title_en": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "english"
+        },
+        "h2_title_en_search": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "h2_title_en_prefix": {
+          "type": "search_as_you_type",
+          "analyzer": "english_folded"
+        },
+        "h3": {
+          "type": "float"
+        },
+        "h3_count": {
+          "type": "object",
+          "enabled": false
+        },
+        "h3_id": {
+          "type": "long"
+        },
+        "h3_intro": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "arabic"
+        },
+        "h3_intro_en": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "english"
+        },
+        "h3_start": {
+          "type": "object",
+          "enabled": false
+        },
+        "h3_title": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "arabic"
+        },
+        "h3_title_en": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "english"
+        },
+        "h3_title_en_search": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "h3_title_en_prefix": {
+          "type": "search_as_you_type",
+          "analyzer": "english_folded"
+        },
+        "hId": {
+          "type": "long"
+        },
+        "id": {
+          "type": "long"
+        },
+        "incomplete": {
+          "type": "boolean"
+        },
+        "intro": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "intro_search_ar": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "intro_search_en": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "intro_en": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "lastmod": {
+          "type": "date"
+        },
+        "level": {
+          "type": "integer"
+        },
+        "nextId": {
+          "type": "long"
+        },
+        "next_path": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "next_ref": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "numInChapter": {
+          "type": "integer"
+        },
+        "ordinal": {
+          "type": "long"
+        },
+        "path": {
+          "type": "keyword"
+        },
+        "prevId": {
+          "type": "long"
+        },
+        "prev_path": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "prev_ref": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "ref": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "start": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "tId": {
+          "type": "long"
+        },
+        "title": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "title_search_ar": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "title_search_en": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "title_search_en_prefix": {
+          "type": "search_as_you_type",
+          "analyzer": "english_folded"
+        },
+        "title_en": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        }
+      }
+    },
+    "settings": {
+      "analysis": {
+        "analyzer": {
+          "english_folded": {
+            "tokenizer": "standard",
+            "filter": [
+              "lowercase",
+              "asciifolding"
+            ]
+          }
+        }
+      },
+      "index": {
+        "routing": {
+          "allocation": {
+            "include": {
+              "_tier_preference": "data_content"
+            }
+          }
+        },
+        "number_of_shards": "1",
+        "provided_name": "toc",
+        "creation_date": "1689607868042",
+        "number_of_replicas": "1",
+        "uuid": "BqZhl2AuS6yHrWxpwOu4PA",
+        "version": {
+          "created": "7170999"
+        }
+      }
+    }
+  }
 }

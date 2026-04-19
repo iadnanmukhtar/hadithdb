@@ -1,42 +1,46 @@
 <%
-	i.en.narrators = utils.emptyIfNull(i.en.chain).split(/(>|&gt;)/);
-	i.en.narrator = i.en.narrators.pop().trim();
-	i.ar.narrator = arabic.toArabic(i.en.narrator);
+	const en = i.en || {};
+	const ar = i.ar || {};
+	const enActual = en.actual || {};
+	const enChain = utils.emptyIfNull(en.chain);
+	const enNarrators = enChain.split(/(>|&gt;)/).filter(part => !part.match(/^(>|&gt;)$/) && utils.emptyIfNull(part) !== '');
+	const enNarrator = enNarrators.length > 0 ? utils.emptyIfNull(enNarrators[enNarrators.length - 1]).trim() : '';
+	const arNarrator = enNarrator ? arabic.toArabic(enNarrator) : '';
 %>
 <aside class="h modal fade" id="H<%= i.id %>" tabindex="-1">
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <header class="modal-header">
-		<h1 class="modal-title fs-5" contenteditable="true"><%= i.en.title %></h1>
+		<h1 class="modal-title fs-5" contenteditable="true"><%= en.title || '' %></h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	  </header>
       <section class="modal-body">
-		<% if (i.en.body) { %>
+		<% if (en.body) { %>
         <p>
 			<div class="text-muted">
 				<% if (i.book_virtual) { %>
-					<%= i.en.actual.book_shortName.toUpperCase() %> <%= i.en.num %>:
+					<%= String(enActual.book_shortName || i.book_shortName_en || '').toUpperCase() %> <%= en.num || i.num || '' %>:
 				<% } else { %>
-					<%= i.en.book_shortName.toUpperCase() %> <%= i.en.num %>:
+					<%= String(en.book_shortName || i.book_shortName_en || '').toUpperCase() %> <%= en.num || i.num || '' %>:
 				<% } %>
-				<% if (i.remark === 0 && i.en.narrator) { %>
-					from <em contenteditable="true"><%= i.en.narrator %></em> —
+				<% if (i.remark === 0 && enNarrator) { %>
+					from <em contenteditable="true"><%= enNarrator %></em> —
 				<% } %>
 			</div>
 			<div class="body" lang="en" contenteditable="true">
-				<%- utils.markdownToHtml(i.en.body) %>
+				<%- utils.markdownToHtml(en.body) %>
 			</div>
 		</p>
 		<% } %>
         <p class="mt-2">
 			<div class="text-muted" lang="ar">
-				<%= i.ar.book_shortName %> <%= i.ar.num %>:
-				<% if (i.remark === 0 && i.ar.narrator) { %>
-					عن <span contenteditable="true"><%= i.ar.narrator %></span> —
+				<%= ar.book_shortName || i.book_shortName || '' %> <%= ar.num || i.num || '' %>:
+				<% if (i.remark === 0 && arNarrator) { %>
+					عن <span contenteditable="true"><%= arNarrator %></span> —
 				<% } %>
 			</div>
 			<div class="body" lang="ar" contenteditable="true">
-				<%- utils.markdownToHtml(i.ar.body) %>
+				<%- utils.markdownToHtml(ar.body) %>
 			</div>
 		</p>
 		<div class="text-muted">
@@ -46,18 +50,18 @@
       <footer class="modal-footer hanging-indent">
 		<% if (i.remark === 0) { %>
 			<div class="grade">
-				<span contenteditable="true"><%= i.en.grade_grade %></span>&nbsp;(<span title="<%= i.en.grader_name %>" contenteditable="true"><%= i.en.grader_shortName %></span>)
+				<span contenteditable="true"><%= en.grade_grade || '' %></span>&nbsp;(<span title="<%= en.grader_name || '' %>" contenteditable="true"><%= en.grader_shortName || '' %></span>)
 			</div>
 		<% } %>
 		<div class="title" contenteditable="true">
-			<%= i.book_shortName_en %>
+			<%= i.book_shortName_en || '' %>
 			<% if (i.chapter) { %>
 				&gt;
-				<%- utils.truncate(i.en.h1_title, 60, true) || 'Chapter' %></a>
+				<%- utils.truncate(en.h1_title, 60, true) || 'Chapter' %>
 			<% } %>
 			<% if (i.section) { %>
 				&gt;
-				§&nbsp;<%- utils.truncate(i.en.h2_title, 60, true) || 'Section' %></a>
+				§&nbsp;<%- utils.truncate(en.h2_title, 60, true) || 'Section' %>
 			<% } %>
 		</div>
 	  </footer>

@@ -42,7 +42,7 @@ async function translate(heading) {
 			console.log(`Fix ${heading.ref}...`);
 			heading[`h${level}_title_en`] = heading[`h${level}_title_en`].replace(/^"/, '');
 			heading[`h${level}_title_en`] = heading[`h${level}_title_en`].replace(/"$/, '');
-			heading[`h${level}_title_en`] = utils.replacePBUH('[Machine] ' + utils.trimToEmpty(heading['h' + level + '_title_en']));
+			heading[`h${level}_title_en`] = utils.replacePBUH('[AI] ' + utils.trimToEmpty(heading['h' + level + '_title_en']));
 			console.log(`Update ${heading.ref}...`);
 			await global.query(`UPDATE toc SET title_en="${utils.escSQL(heading['h' + level + '_title_en'])}" WHERE id=${heading.tId}`);
 			await Index.update(Heading.INDEX, heading);

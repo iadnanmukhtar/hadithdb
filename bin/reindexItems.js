@@ -6,38 +6,47 @@ const fs = require('fs');
 const Index = require('../lib/Index');
 const { Item, Heading } = require('../lib/Model');
 
-const date = '2025-12-31';
+const date = '1999-12-31';
 
 (async () => {
 	try {
-		await reindexItems();
-		await reindexTOC();
+		await reindexChangedBooks();
 	} finally {
 		global.dbPool.end();
 		logfile('indexing complete');
 	}
 })();
 
-async function reindexItems() {
-	var items = await global.query(`SELECT * FROM v_hadiths
-		WHERE lastmod >= '${date}'
-		ORDER BY ordinal`);
-	await indexDocs(Item.INDEX, items);
+async function reindexChangedBooks() {
+	var books = await global.query(`
+		SELECT DISTINCT book_id AS id, book_alias AS alias
+		FROM (
+			SELECT book_id, book_alias FROM v_hadiths WHERE lastmod >= '${date}'
+			UNION
+			SELECT book_id, book_alias FROM v_toc WHERE lastmod >= '${date}'
+		) changed
+		ORDER BY id`);
+	logfile(`found ${books.length} books with search-index changes since ${date}`);
+	for (var i = 0; i < books.length; i++)
+		await reindexBook(books[i]);
 }
 
-async function reindexTOC() {
+async function reindexBook(book) {
+	logfile(`\n*****\nrebuilding search indexes for book ${book.alias} (${book.id})...`);
+	await Index.deleteByBook(Heading.INDEX, book);
+	await Index.deleteByBook(Item.INDEX, book);
 	var headings = await global.query(`SELECT * FROM v_toc
-		WHERE lastmod >= '${date}'
+		WHERE book_id = ${book.id}
 		ORDER BY ordinal`);
 	await indexDocs(Heading.INDEX, headings);
-	var items = await global.query(`SELECT h.* FROM toc t, v_hadiths h
-		WHERE t.id = h.tId AND t.lastmod >= '${date}'
-		ORDER BY t.ordinal`);
+	var items = await global.query(`SELECT * FROM v_hadiths
+		WHERE book_id = ${book.id}
+		ORDER BY ordinal`);
 	await indexDocs(Item.INDEX, items);
 }
 
 async function indexDocs(indexName, recs) {
-	logfile(`\n*****\nreindexing ${recs.length} records in index ${indexName}...`);
+	logfile(`reindexing ${recs.length} records in index ${indexName}...`);
 	await Index.updateBulk(indexName, recs, true);
 }
 

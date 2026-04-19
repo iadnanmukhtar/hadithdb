@@ -130,7 +130,7 @@ main.chapter {
 .site-navbar .subtitle :lang(ar),
 .site-navbar #icon-menu,
 .site-navbar .nav-link,
-.site-navbar>.row,
+.site-navbar > .site-navbar-main,
 .site-navbar .site-header-brand {
 	transition: all .25s ease;
 }
@@ -139,13 +139,13 @@ main.chapter {
 	font-size: 1.5rem;
 }
 
-.navbar>.row {
+.site-navbar > .site-navbar-main {
 	border-bottom: 1px solid var(--bs-border-color);
 	flex-wrap: nowrap;
 	align-items: center;
 }
 
-.site-navbar>.row {
+.site-navbar > .site-navbar-main {
 	height: var(--site-header-height);
 	overflow: hidden;
 }
@@ -199,7 +199,7 @@ main.chapter {
 	white-space: nowrap;
 }
 
-.site-navbar.shrink>.row {
+.site-navbar.shrink > .site-navbar-main {
 	height: var(--site-header-shrink-height);
 }
 
@@ -682,6 +682,7 @@ del em strong {
 	padding-bottom: 5px;
 	font-size: 0.85rem;
 	background-color: var(--c-ghostwhite);
+	flex-wrap: wrap;
 }
 
 .chapter-toc a {
