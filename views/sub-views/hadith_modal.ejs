@@ -27,7 +27,7 @@
 					from <em contenteditable="true"><%= enNarrator %></em> —
 				<% } %>
 			</div>
-			<div class="body" lang="en" contenteditable="true">
+			<div class="body" lang="en" contenteditable="true" data-markdown-source="<%= utils.emptyIfNull(en.body) %>">
 				<%- utils.markdownToHtml(en.body) %>
 			</div>
 		</p>
@@ -39,7 +39,7 @@
 					عن <span contenteditable="true"><%= arNarrator %></span> —
 				<% } %>
 			</div>
-			<div class="body" lang="ar" contenteditable="true">
+			<div class="body" lang="ar" contenteditable="true" data-markdown-source="<%= utils.emptyIfNull(ar.body) %>">
 				<%- utils.markdownToHtml(ar.body) %>
 			</div>
 		</p>

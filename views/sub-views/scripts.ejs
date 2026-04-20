@@ -2,11 +2,10 @@
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="/javascripts/script.js"></script> 
 
 <% if (site.editMode) { %>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
 <!-- Inline Editing -->
 <script>
   $(function () {
@@ -18,11 +17,64 @@
 	    const renderMarkdown = (text) => {
 	      if (!text) return '';
 	      if (window.marked && window.marked.parse)
-	        return window.marked.parse(text);
+	        return window.marked.parse(text).replace(/<br>/g, '</p><p>').trim();
 	      return text;
 	    };
 
+	    const normalizeMarkdownValue = (value) => (value || '').toString().replace(/&nbsp;/g, ' ').replace(/\r\n?/g, '\n');
+
 	    const isMarkdownProp = (prop) => /body|intro|footnote|note/.test(prop) || prop === 'book.description';
+	    const hasMarkdownSource = ($el) => $el.is('[data-markdown-source]');
+
+	    const getMarkdownSource = ($el) => ($el.attr('data-markdown-source') || '').toString();
+
+	    const setMarkdownSource = ($el, value) => {
+	      $el.attr('data-markdown-source', (value || '').toString());
+	    };
+
+	    const setMarkdownPreview = (el, value) => {
+	      const $el = $(el);
+	      const markdown = (value || '').toString();
+	      const emptyHtml = ($el.attr('data-markdown-empty-html') || '').toString();
+
+	      setMarkdownSource($el, markdown);
+	      $el.removeClass('markdown-editing');
+	      if (markdown)
+	        $el.html(renderMarkdown(markdown));
+	      else if (emptyHtml)
+	        $el.html(emptyHtml);
+	      else
+	        $el.html('');
+	    };
+
+	    const enterMarkdownEditMode = (el) => {
+	      const $el = $(el);
+	      if ($el.hasClass('markdown-editing'))
+	        return;
+	      $el.addClass('markdown-editing');
+	      $el.text(getMarkdownSource($el));
+	    };
+
+	    const isMarkdownBlockNode = (node) => node && node.nodeType === Node.ELEMENT_NODE && /^(p|div|ul|ol|blockquote)$/i.test(node.tagName);
+
+	    const markdownNodesToText = (nodes) => {
+	      let text = '';
+	      Array.from(nodes || []).forEach((node, idx, arr) => {
+	        const segment = htmlNodeToMarkdown(node);
+	        if (!segment)
+	          return;
+	        if (!text) {
+	          text = segment;
+	          return;
+	        }
+	        const prevNode = arr[idx - 1];
+	        if (isMarkdownBlockNode(prevNode) || isMarkdownBlockNode(node))
+	          text += `\n\n${segment}`;
+	        else
+	          text += segment;
+	      });
+	      return text;
+	    };
 
 	    const htmlNodeToMarkdown = (node) => {
 	      if (!node) return '';
@@ -31,13 +83,13 @@
 	      if (node.nodeType !== Node.ELEMENT_NODE)
 	        return '';
 	      const tag = node.tagName.toLowerCase();
-	      const children = Array.from(node.childNodes).map(htmlNodeToMarkdown).join('');
+	      const children = markdownNodesToText(node.childNodes);
 	      switch (tag) {
 	        case 'br':
-	          return '\n';
+	          return '\n\n';
 	        case 'p':
 	        case 'div':
-	          return `${children}\n\n`;
+	          return children;
 	        case 'strong':
 	        case 'b':
 	          return children ? `**${children}**` : '';
@@ -51,13 +103,13 @@
 	          return href ? `[${children || href}](${href})` : children;
 	        }
 	        case 'ul':
-	          return Array.from(node.children).map(li => `- ${htmlNodeToMarkdown(li).trim()}`).join('\n') + '\n\n';
+	          return Array.from(node.children).map(li => `- ${htmlNodeToMarkdown(li).trim()}`).join('\n');
 	        case 'ol':
-	          return Array.from(node.children).map((li, idx) => `${idx + 1}. ${htmlNodeToMarkdown(li).trim()}`).join('\n') + '\n\n';
+	          return Array.from(node.children).map((li, idx) => `${idx + 1}. ${htmlNodeToMarkdown(li).trim()}`).join('\n');
 	        case 'li':
 	          return children;
 	        case 'blockquote':
-	          return children.split(/\n/).map(line => line ? `> ${line}` : '>').join('\n') + '\n\n';
+	          return children.split(/\n/).map(line => line ? `> ${line}` : '>').join('\n');
 	        default:
 	          return children;
 	      }
@@ -67,7 +119,7 @@
 	      if (!html) return '';
 	      const parser = new DOMParser();
 	      const doc = parser.parseFromString(html, 'text/html');
-	      return Array.from(doc.body.childNodes).map(htmlNodeToMarkdown).join('').replace(/\n{3,}/g, '\n\n').trim();
+	      return markdownNodesToText(doc.body.childNodes).replace(/\n{3,}/g, '\n\n').trim();
 	    };
 
 	    const setElementValue = (el, value) => {
@@ -80,7 +132,7 @@
 	      } else if ($el.is('select')) {
 	        $el.val(value);
 	      } else if (isMarkdownField) {
-	        $el.html(renderMarkdown(value));
+	        setMarkdownPreview(el, value);
 	      } else {
 	        $el.text(value);
 	      }
@@ -108,7 +160,15 @@
 	    async function changeListener(e) {
 	      if (e && typeof e.preventDefault === 'function')
 	        e.preventDefault();
+	      const $el = $(this);
+	      const propStr = (($el.data('prop')) || '').toString();
+	      const isMarkdownField = isMarkdownProp(propStr);
 	      if ($(this).attr('submitting') == 'true') {
+	        e.stopPropagation();
+	        return;
+	      }
+	      if (isMarkdownField && $(this).attr('editing') != 'true' && $(this).attr('clickable') != 'true' && $(this).hasClass('markdown-editing')) {
+	        setMarkdownPreview(this, getMarkdownSource($el));
 	        e.stopPropagation();
 	        return;
 	      }
@@ -117,38 +177,40 @@
 	        var id = $(this).data('id');
 	        var prop = $(this).data('prop');
 	        var arabizi = $(this).data('arabizi');
-	        const propStr = prop ? prop.toString() : '';
-	        const isMarkdownField = isMarkdownProp(propStr);
 	        var value = '';
 	        if ($(this).attr('type') == 'checkbox')
 	          value = $(this).prop('checked') ? "1" : "0";
 	        else if ($(this).is('textarea') || $(this).is('select') || $(this).is('input'))
 	          value = $(this).val();
 	        else if (isMarkdownField)
-	          value = htmlToMarkdown($(this).html());
+	          value = $(this).hasClass('markdown-editing') ? htmlToMarkdown($(this).html()) : getMarkdownSource($(this)) || htmlToMarkdown($(this).html());
 	        else
 	          value = $(this).text();
-	        value = (value || '').toString().replace(/&nbsp;/g, ' ').trim();
+	        value = isMarkdownField ? normalizeMarkdownValue(value) : (value || '').toString().replace(/&nbsp;/g, ' ').trim();
+	        if (isMarkdownField)
+	          setMarkdownPreview(this, value);
 	        var reqBody = {
 	          id: id,
 	          prop: prop,
 	          arabizi: arabizi,
 	          value: value,
         };
-        try {
-          var resBody = await update(reqBody);
-          // update element on success
-	          if (resBody.code == 200) {
-            value = resBody.value;
-	            if (propStr === 'hadith.revise')
-	              applyHadithRevision(id, resBody.revised);
-	            if ($(this).data('reset') == 'true')
-	              value = '';
-	            if (!$(this).is('select') && value !== undefined && value !== null)
-	              setElementValue(this, value);
-	          }
-        } finally {
+	        try {
+	          var resBody = await update(reqBody);
+	          // update element on success
+		          if (resBody.code == 200) {
+	            if (!isMarkdownField)
+	              value = resBody.value;
+		            if (propStr === 'hadith.revise')
+		              applyHadithRevision(id, resBody.revised);
+		            if ($(this).data('reset') == 'true')
+		              value = '';
+		            if (!$(this).is('select') && value !== undefined && value !== null)
+		              setElementValue(this, isMarkdownField ? getMarkdownSource($(this)) : value);
+		          }
+	        } finally {
           $(this).removeAttr('submitting');
+          $(this).removeAttr('editing');
         }
 	      };
 	      e.stopPropagation();
@@ -196,12 +258,19 @@
       return split(term).pop();
     }
 
-    $('._e*').each(function () {
-      $(this).attr('contenteditable', 'true');
-      $(this).on('input', function () {
-        $(this).attr('editing', 'true');
-        $(this).removeClass('partial');
-      });
+	    $('._e*').each(function () {
+	      const $el = $(this);
+	      $(this).attr('contenteditable', 'true');
+	      if (isMarkdownProp(($el.data('prop') || '').toString()) && !hasMarkdownSource($el))
+	        setMarkdownSource($el, htmlToMarkdown($el.html()));
+	      $(this).on('focusin', function () {
+	        if (isMarkdownProp(($(this).data('prop') || '').toString()))
+	          enterMarkdownEditMode(this);
+	      });
+	      $(this).on('input', function () {
+	        $(this).attr('editing', 'true');
+	        $(this).removeClass('partial');
+	      });
       $(this).on('blur', changeListener);
     });
 

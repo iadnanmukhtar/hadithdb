@@ -83,7 +83,7 @@
 		const bodyHtml = utils.markdownToHtml(bodyMarkdown);
 	%>
 	<section lang="<%=lang%>" class="body <%=_p%> l5" title="Ḥadīth Body">
-		<div class="_e hadith-body-content <%=_p%>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true">
+		<div class="_e hadith-body-content <%=_p%>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= bodyMarkdown %>" data-markdown-empty-html="&hellip;">
 		<% if (!langData.body) { %>
 			<div class="cmd-tr">
 				<!-- <a href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');">Request/Fix</a> translation<br/> -->
@@ -99,10 +99,11 @@
 
 	<%# Footer  ............................................................ %>
 	<% if (langData.footnote || site.editMode) { 
+		const footnoteMarkdown = utils.emptyIfNull(langData.footnote);
 		const footnoteHtml = utils.markdownToHtml(langData.footnote);
 		const footnoteContent = footnoteHtml || '&hellip;';
 	%>
-		<footer lang="<%=lang%>" class="footnote _e <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true">
+		<footer lang="<%=lang%>" class="footnote _e <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= footnoteMarkdown %>" data-markdown-empty-html="&hellip;">
 			<%- footnoteContent %>
 		</footer>
 	<% } %>
@@ -110,10 +111,11 @@
 	<% if (i.book_virtual) { %>
 		<%# Author Note  ....................................................... %>
 		<% if (langData.note || site.editMode) { 
+			const noteMarkdown = utils.emptyIfNull(langData.note);
 			const noteHtml = utils.markdownToHtml(langData.note);
 			const noteContent = noteHtml || '&hellip;';
 		%>
-			<aside lang="<%=lang%>" class="note _e <%=_p%> l2" title="Ḥadīth Note" data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true">
+			<aside lang="<%=lang%>" class="note _e <%=_p%> l2" title="Ḥadīth Note" data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= noteMarkdown %>" data-markdown-empty-html="&hellip;">
 				<%- noteContent %>
 			</aside>
 		<% }

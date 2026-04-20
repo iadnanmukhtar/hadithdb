@@ -3,6 +3,13 @@
 $(function () {
 	'use strict';
 
+	if (window.marked && window.marked.setOptions) {
+		window.marked.setOptions({
+			gfm: true,
+			breaks: true
+		});
+	}
+
 	document.cookie.includes('admin=') ? false : $('.edit-gear').hide();
 
 	setDirection($('#search-bar'));
@@ -77,6 +84,8 @@ $(function () {
 		$('.toggle').addClass('bi-toggle-on');
 	});
 
+	initMarkdownEditablePreviews(document);
+
 });
 
 function setDirection(el) {
@@ -97,4 +106,112 @@ function cleanText(s) {
 	s = s.replace(/ؤ/g, 'ء');
 	s = s.replace(/ئ/g, 'ء');
 	return s;
+}
+
+function isMarkdownBlockNode(node) {
+	return node && node.nodeType === Node.ELEMENT_NODE && /^(p|div|ul|ol|blockquote)$/i.test(node.tagName);
+}
+
+function markdownNodesToText(nodes) {
+	var text = '';
+	Array.from(nodes || []).forEach(function (node, idx, arr) {
+		var segment = markdownNodeToText(node);
+		if (!segment)
+			return;
+		if (!text) {
+			text = segment;
+			return;
+		}
+		if (isMarkdownBlockNode(arr[idx - 1]) || isMarkdownBlockNode(node))
+			text += '\n\n' + segment;
+		else
+			text += segment;
+	});
+	return text;
+}
+
+function markdownNodeToText(node) {
+	if (!node)
+		return '';
+	if (node.nodeType === Node.TEXT_NODE)
+		return node.nodeValue;
+	if (node.nodeType !== Node.ELEMENT_NODE)
+		return '';
+	var tag = node.tagName.toLowerCase();
+	var children = markdownNodesToText(node.childNodes);
+	switch (tag) {
+	case 'br':
+		return '\n\n';
+	case 'p':
+	case 'div':
+		return children;
+	case 'strong':
+	case 'b':
+		return children ? '**' + children + '**' : '';
+	case 'em':
+	case 'i':
+		return children ? '*' + children + '*' : '';
+	case 'u':
+		return children ? '__' + children + '__' : '';
+	case 'a': {
+		var href = node.getAttribute('href') || '';
+		return href ? '[' + (children || href) + '](' + href + ')' : children;
+	}
+	case 'ul':
+		return Array.from(node.children).map(function (li) {
+			return '- ' + markdownNodeToText(li).trim();
+		}).join('\n');
+	case 'ol':
+		return Array.from(node.children).map(function (li, idx) {
+			return (idx + 1) + '. ' + markdownNodeToText(li).trim();
+		}).join('\n');
+	case 'li':
+		return children;
+	case 'blockquote':
+		return children.split(/\n/).map(function (line) {
+			return line ? '> ' + line : '>';
+		}).join('\n');
+	default:
+		return children;
+	}
+}
+
+function htmlToMarkdown(html) {
+	if (!html)
+		return '';
+	var parser = new DOMParser();
+	var doc = parser.parseFromString(html, 'text/html');
+	return markdownNodesToText(doc.body.childNodes).replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function renderMarkdownPreview(el, markdown) {
+	var emptyHtml = el.getAttribute('data-markdown-empty-html') || '';
+	el.dataset.markdownSource = markdown;
+	el.classList.remove('markdown-editing');
+	if (markdown) {
+		if (window.marked && window.marked.parse)
+			el.innerHTML = window.marked.parse(markdown).replace(/<br>/g, '</p><p>').trim();
+		else
+			el.textContent = markdown;
+	} else {
+		el.innerHTML = emptyHtml;
+	}
+}
+
+function initMarkdownEditablePreviews(root) {
+	var scope = root || document;
+	scope.querySelectorAll('[contenteditable][data-markdown-source]:not(._e)').forEach(function (el) {
+		if (el.dataset.markdownPreviewBound === 'true')
+			return;
+		el.dataset.markdownPreviewBound = 'true';
+		el.addEventListener('focusin', function () {
+			if (el.classList.contains('markdown-editing'))
+				return;
+			el.classList.add('markdown-editing');
+			el.textContent = el.dataset.markdownSource || '';
+		});
+		el.addEventListener('blur', function () {
+			renderMarkdownPreview(el, htmlToMarkdown(el.innerHTML).replace(/\r\n?/g, '\n').replace(/\u00a0/g, ' '));
+		});
+	});
 }

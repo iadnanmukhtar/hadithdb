@@ -69,9 +69,10 @@
       
       <section>
         <%
-          const bookDescription = utils.markdownToHtml(book.description) || (site.editMode ? '&hellip;' : '');
+          const bookDescriptionMarkdown = utils.emptyIfNull(book.description);
+          const bookDescription = utils.markdownToHtml(bookDescriptionMarkdown) || (site.editMode ? '&hellip;' : '');
         %>
-        <div class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description"><%- bookDescription %></div>
+        <div class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description" data-markdown-source="<%= bookDescriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- bookDescription %></div>
       </section>
 
       <% if (book.id > 0) { %>

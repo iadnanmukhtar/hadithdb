@@ -848,6 +848,10 @@ del em strong {
 	border: 0;
 }
 
+.markdown-editing {
+	white-space: pre-wrap;
+}
+
 .h .title a:hover,
 .h .tags a:hover {
 	text-decoration: underline;

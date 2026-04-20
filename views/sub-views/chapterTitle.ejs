@@ -62,7 +62,7 @@
 <% if (heading.level == 1) { %>
 <section class="chapter-intro row">
 
-  <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-arabizi="true">
+  <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(chapter.intro_en) %>" data-markdown-empty-html="&hellip;">
     <% if (chapter.intro_en || site.editMode) { 
         const introEn = utils.markdownToHtml(chapter.intro_en) || '&hellip;';
     %>
@@ -72,7 +72,7 @@
     <% } %>
   </section>
 
-  <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= chapter.id %>" data-prop="toc.intro">
+  <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= chapter.id %>" data-prop="toc.intro" data-markdown-source="<%= utils.emptyIfNull(chapter.intro) %>" data-markdown-empty-html="&hellip;">
     <% if (chapter.intro || site.editMode) { 
         const introAr = utils.markdownToHtml(chapter.intro) || '&hellip;';
     %>

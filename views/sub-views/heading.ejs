@@ -55,7 +55,7 @@
   <section class="col-12">
     <div class="row heading-intro mb-3">
 
-      <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-arabizi="true">
+      <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(heading.intro_en) %>" data-markdown-empty-html="&hellip;">
         <% if (heading.intro_en || site.editMode) { 
             const introEn = utils.markdownToHtml(heading.intro_en) || '&hellip;';
         %>
@@ -65,7 +65,7 @@
         <% } %>
       </section>
 
-      <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro">
+      <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro" data-markdown-source="<%= utils.emptyIfNull(heading.intro) %>" data-markdown-empty-html="&hellip;">
         <% if (heading.intro || site.editMode) { 
             const introAr = utils.markdownToHtml(heading.intro) || '&hellip;';
         %>
