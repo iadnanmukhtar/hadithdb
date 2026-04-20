@@ -199,14 +199,14 @@
 	          var resBody = await update(reqBody);
 	          // update element on success
 		          if (resBody.code == 200) {
-	            if (!isMarkdownField)
+	            if (resBody.value !== undefined)
 	              value = resBody.value;
 		            if (propStr === 'hadith.revise')
 		              applyHadithRevision(id, resBody.revised);
 		            if ($(this).data('reset') == 'true')
 		              value = '';
 		            if (!$(this).is('select') && value !== undefined && value !== null)
-		              setElementValue(this, isMarkdownField ? getMarkdownSource($(this)) : value);
+		              setElementValue(this, value);
 		          }
 	        } finally {
           $(this).removeAttr('submitting');
