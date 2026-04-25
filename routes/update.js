@@ -128,7 +128,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
           if (col === 'body_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.body_en) && Utils.isTruthy(item.body)) {
-            item.body_en = await Utils.openai('gpt-5.4', `Translate the following passage into English. Return only the translation:\n${item.body}`);
+            item.body_en = await Utils.openai(`Translate the following passage into English. Return only the translation:\n${item.body}`);
             item.body_en = '[AI] ' + Utils.trimToEmpty(item.body_en);
             item.body_en = Utils.replacePBUH(item.body_en);
             status.value = item.body_en;
@@ -136,7 +136,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           }
           } else if (col === 'title_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.title_en) && Utils.isTruthy(item.title)) {
-            item.title_en = await Utils.openai('gpt-5.4', `Generate a concise English title using sentence case for the following Arabic title. Return only the title:\n${item.title}`);
+            item.title_en = await Utils.openai(`Generate a concise English title using sentence case for the following Arabic title. Return only the title:\n${item.title}`);
             item.title_en = '[AI] ' + Utils.trimToEmpty(item.title_en);
             item.title_en = Utils.replacePBUH(item.title_en);
             status.value = item.title_en;
@@ -144,7 +144,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           } else if (Utils.isFalsey(item.title_en)) {
             var sourceBody = Utils.isTruthy(item.body) ? item.body : item.body_en;
             if (Utils.isTruthy(sourceBody)) {
-              item.title_en = await Utils.openai('gpt-5.4', `Generate a concise English title using sentence case for the following hadith body. Return only the title:\n${sourceBody}`);
+              item.title_en = await Utils.openai(`Generate a concise English title using sentence case for the following hadith body. Return only the title:\n${sourceBody}`);
               item.title_en = '[AI] ' + Utils.trimToEmpty(item.title_en);
               item.title_en = Utils.replacePBUH(item.title_en);
               status.value = item.title_en;
@@ -153,7 +153,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           }
           } else if (col === 'footnote_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.footnote_en) && Utils.isTruthy(item.footnote)) {
-            item.footnote_en = await Utils.openai('gpt-5.4', `Translate the following title or passage into English. Return only the translation:\n${item.footnote}`);
+            item.footnote_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${item.footnote}`);
             item.footnote_en = '[AI] ' + Utils.trimToEmpty(item.footnote_en);
             item.footnote_en = Utils.replacePBUH(item.footnote_en);
             status.value = item.footnote_en;
@@ -161,7 +161,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           }
           } else if (col === 'chain_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.chain_en) && Utils.isTruthy(item.chain)) {
-            item.chain_en = await Utils.openai('gpt-5.4', `Extract the narrators from this chain, transliterate them using ALA-LC, and separate them using the "greator than" symbol. Instead of ibn or bint, use "bt.":\n${item.chain}`);
+            item.chain_en = await Utils.openai(`Extract the narrators from this chain, transliterate them using ALA-LC, and separate them using the "greator than" symbol. Instead of ibn or bint, use "bt.":\n${item.chain}`);
             item.chain_en = Utils.trimToEmpty(item.chain_en);
             item.chain_en = Utils.replacePBUH(item.chain_en);
             status.value = item.chain_en;
@@ -193,7 +193,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       if (col === 'title_en' && Utils.isFalsey(status.value)) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
         if (Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
-          heading.title_en = await Utils.openai('gpt-5.4', `Translate the following title or passage into English. Return only the translation:\n${heading.title}`);
+          heading.title_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${heading.title}`);
           heading.title_en = '[AI] ' + Utils.trimToEmpty(heading.title_en);
           heading.title_en = Utils.replacePBUH(heading.title_en);
           status.value = heading.title_en;
@@ -202,7 +202,7 @@ router.post('/:id/:prop', async function (req, res, next) {
       } else if (col === 'intro_en' && Utils.isFalsey(status.value)) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
         if (Utils.isFalsey(heading.intro_en) && Utils.isTruthy(heading.intro)) {
-          heading.intro_en = await Utils.openai('gpt-5.4', `Translate the following title or passage into English. Return only the translation:\n${heading.intro}`);
+          heading.intro_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${heading.intro}`);
           heading.intro_en = '[AI] ' + Utils.trimToEmpty(heading.intro_en);
           heading.intro_en = Utils.replacePBUH(heading.intro_en);
           status.value = heading.intro_en;
@@ -287,7 +287,7 @@ router.post('/:id/:prop', async function (req, res, next) {
         if (col === 'note_en' && Utils.isFalsey(status.value)) {
           item = new Item((await global.query(`SELECT * FROM v_hadiths_virtual WHERE hId=${ids[0]}`))[0]);
           if (Utils.isFalsey(item.note_en) && Utils.isTruthy(item.note)) {
-            item.note_en = await Utils.openai('gpt-5.4', `Translate the following title or passage into English. Return only the translation:\n${item.note}`);
+            item.note_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${item.note}`);
             item.note_en = '[AI] ' + Utils.trimToEmpty(item.note_en);
             item.note_en = Utils.replacePBUH(item.note_en);
             status.value = item.note_en;
