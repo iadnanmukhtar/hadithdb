@@ -21,7 +21,7 @@ router.get('/', async function (req, res, next) {
   var cachedFile = `${homedir}/.hadithdb/cache/${name}.html`;
   if ('flush' in req.query)
     Utils.flushCachedFile(cachedFile);
-  if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+  if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
     res.end(fs.readFileSync(cachedFile));
     return;
@@ -60,7 +60,7 @@ router.get('/feed', async function (req, res, next) {
   var cachedFile = `${homedir}/.hadithdb/cache/${name}_feed.xml`;
   if ('flush' in req.query)
     Utils.flushCachedFile(cachedFile);
-  if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+  if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
     res.end(fs.readFileSync(cachedFile));
     return;
   }
@@ -98,7 +98,7 @@ router.get('/rss', async function (req, res, next) {
   var cachedFile = `${homedir}/.hadithdb/cache/${name}_rss.xml`;
   if ('flush' in req.query)
     Utils.flushCachedFile(cachedFile);
-  if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+  if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
     res.end(fs.readFileSync(cachedFile));
     return;
   }
