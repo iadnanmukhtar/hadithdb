@@ -7,6 +7,7 @@ const express = require('express');
 const createError = require('http-errors');
 const { homedir } = require('os');
 const Hadith = require('../lib/Hadith');
+const HadithKnowledge = require('../lib/HadithKnowledge');
 const HadithRevision = require('../lib/HadithRevision');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
@@ -178,6 +179,7 @@ router.post('/:id/:prop', async function (req, res, next) {
         var item = await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`);
         await Utils.flushCacheContaining(`${item[0].book_alias}:${item[0].num}`);
         await Index.update(Item.INDEX, item[0]);
+        await HadithKnowledge.syncForHadith(item[0], { force: isArabicKnowledgeSourceColumn(col) });
       } catch (err) {
         debug(`${err.message}:\n${err.stack}`);
       }
@@ -424,8 +426,14 @@ async function reindexSearchScope(whereClause) {
   if (headings.length > 0)
     await Index.updateBulk(Heading.INDEX, headings);
   var items = await global.query(`SELECT * FROM v_hadiths WHERE ${whereClause} ORDER BY ordinal`);
-  if (items.length > 0)
+  if (items.length > 0) {
     await Index.updateBulk(Item.INDEX, items);
+    await HadithKnowledge.syncForHadithRows(items);
+  }
+}
+
+function isArabicKnowledgeSourceColumn(col) {
+  return ['title', 'chain', 'body', 'footnote'].includes(col);
 }
 
 function buildHeadingScopeWhere(heading) {

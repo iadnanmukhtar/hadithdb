@@ -1506,6 +1506,35 @@ a.cmd-btn:hover {
 	margin-top: 6rem;
 }
 
+.chat-messages {
+	display: grid;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.chat-message {
+	border: 1px solid var(--bs-border-color);
+	border-radius: 8px;
+	line-height: 1.45;
+	padding: 0.75rem 0.9rem;
+}
+
+.chat-message-user {
+	background: #f3f8fc;
+	justify-self: end;
+	max-width: min(38rem, 92%);
+}
+
+.chat-message-assistant {
+	background: #fafafa;
+	justify-self: start;
+	max-width: min(42rem, 96%);
+}
+
+.chat-message p:last-child {
+	margin-bottom: 0;
+}
+
 .rag-search {
 	border-bottom: 1px solid var(--bs-border-color);
 	padding-bottom: 1rem;
@@ -1518,21 +1547,10 @@ a.cmd-btn:hover {
 	min-height: 1.5rem;
 }
 
-.rag-answer-panel {
-	border-bottom: 1px solid var(--bs-border-color);
-	margin-top: 1.25rem;
-	padding-bottom: 1rem;
-}
-
-.rag-answer-panel h2,
 .rag-section-heading h2 {
 	font-size: 1.1rem;
 	font-weight: 700;
 	margin: 0;
-}
-
-.rag-answer-panel #rag-answer {
-	white-space: pre-wrap;
 }
 
 .rag-layout {

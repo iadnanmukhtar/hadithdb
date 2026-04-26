@@ -7,11 +7,11 @@
   site.admin = (req.cookies.admin == admin.key);
   site.editMode = (site.admin && req.cookies.editMode == 1);
   var page = {
-    menu: 'RAG',
-    title_en: `${site.shortName} | Hadith RAG Search`,
-    subtitle_en: 'Hadith RAG Search',
+    menu: 'Chatbot',
+    title_en: `${site.shortName} | Hadith Chatbot`,
+    subtitle_en: 'Hadith Chatbot',
     subtitle: null,
-    canonical: '/rag',
+    canonical: '/chatbot',
     context: {}
   };
 %>
@@ -28,25 +28,22 @@
   <div class="container col-lg-8 mx-auto">
     <main class="rag-tool">
 
-      <form id="rag-form" class="rag-search" autocomplete="off">
+      <section id="chat-messages" class="chat-messages" aria-live="polite"></section>
+
+      <form id="rag-form" class="rag-search chatbot-composer" autocomplete="off">
         <div class="input-group">
-          <span class="input-group-text"><i class="bi bi-stars"></i></span>
+          <span class="input-group-text"><i class="bi bi-chat-dots"></i></span>
           <input id="rag-question" name="q" type="search" class="form-control" value="<%= q %>" placeholder="Ask about a hadith topic or wording...">
-          <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Search</button>
+          <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Ask</button>
         </div>
       </form>
 
       <section id="rag-status" class="rag-status" hidden></section>
 
-      <section id="rag-answer-panel" class="rag-answer-panel" hidden>
-        <h2>Answer</h2>
-        <div id="rag-answer"></div>
-      </section>
-
       <section class="rag-layout">
         <div>
           <div class="rag-section-heading">
-            <h2>Retrieved Hadith</h2>
+            <h2>Hadith Sources</h2>
             <span id="rag-count"></span>
           </div>
           <div id="rag-results" class="rag-results"></div>
@@ -59,13 +56,13 @@
   <aside id="rag-similar-panel" class="offcanvas offcanvas-end rag-similar-panel" tabindex="-1">
     <div class="offcanvas-header">
       <div>
-        <h2 class="offcanvas-title">RAG Similar Narrations</h2>
+        <h2 class="offcanvas-title">Similar Narrations</h2>
         <div id="rag-similar-count" class="rag-panel-count"></div>
       </div>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body">
-      <div id="rag-similar-empty" class="rag-empty">Select a hadith result to retrieve narrations with similar wording or meaning.</div>
+      <div id="rag-similar-empty" class="rag-empty">Select a hadith source to retrieve narrations with similar wording or meaning.</div>
       <div id="rag-similar-results"></div>
     </div>
   </aside>
@@ -78,14 +75,14 @@
       const initialQuestion = <%- JSON.stringify(q || '') %>;
       const form = document.getElementById('rag-form');
       const questionInput = document.getElementById('rag-question');
+      const chatMessagesEl = document.getElementById('chat-messages');
       const statusEl = document.getElementById('rag-status');
-      const answerPanel = document.getElementById('rag-answer-panel');
-      const answerEl = document.getElementById('rag-answer');
       const resultsEl = document.getElementById('rag-results');
       const countEl = document.getElementById('rag-count');
       const similarEmptyEl = document.getElementById('rag-similar-empty');
       const similarResultsEl = document.getElementById('rag-similar-results');
       const similarCountEl = document.getElementById('rag-similar-count');
+      const messages = [];
 
       const escapeHtml = (value) => (value || '').toString().replace(/[&<>"']/g, ch => ({
         '&': '&amp;',
@@ -105,13 +102,21 @@
         return escapeHtml(value).replace(/\n/g, '<br>');
       };
 
+      const appendMessage = (role, content) => {
+        messages.push({ role, content });
+        const bubble = document.createElement('article');
+        bubble.className = `chat-message chat-message-${role}`;
+        bubble.innerHTML = renderMarkdown(content);
+        chatMessagesEl.appendChild(bubble);
+      };
+
       const renderAnswer = (data) => {
-        answerPanel.hidden = !data.answer;
-        answerEl.innerHTML = renderMarkdown(data.answer || '');
+        if (data.answer)
+          appendMessage('assistant', data.answer);
       };
 
       const renderResults = (data) => {
-        countEl.textContent = data.count ? `${data.count} sources` : '';
+        countEl.textContent = data.count ? `${data.count} sources from ${data.source || 'HadithDB'}` : '';
         resultsEl.innerHTML = data.html || '<div class="rag-empty">No matching hadith sources found.</div>';
       };
 
@@ -129,16 +134,17 @@
           questionInput.focus();
           return;
         }
-        setStatus('Searching HadithDB...', true);
-        answerPanel.hidden = true;
+        appendMessage('user', question);
+        questionInput.value = '';
+        setStatus('Checking HadithDB sources...', true);
         similarEmptyEl.hidden = false;
         similarResultsEl.innerHTML = '';
         similarCountEl.textContent = '';
-        const response = await fetch('/rag/html', {
+        const response = await fetch('/chatbot/message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            question,
+            messages,
             generate: true
           })
         });
@@ -169,7 +175,7 @@
         if (!response.ok)
           throw new Error(data.message || data.error || 'Similar lookup failed');
         similarCountEl.textContent = data.count ? `${data.count} matches` : '';
-        similarResultsEl.innerHTML = data.html || '<div class="rag-empty">No similar narrations were found by the Arabic RAG search.</div>';
+        similarResultsEl.innerHTML = data.html || '<div class="rag-empty">No similar narrations were found by the chatbot search.</div>';
         setStatus('', false);
       };
 

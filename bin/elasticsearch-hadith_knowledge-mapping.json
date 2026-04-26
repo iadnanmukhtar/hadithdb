@@ -1,0 +1,168 @@
+{
+  "hadith_knowledge": {
+    "aliases": {},
+    "mappings": {
+      "properties": {
+        "doctype": {
+          "type": "keyword"
+        },
+        "hId": {
+          "type": "long"
+        },
+        "hadithId": {
+          "type": "long"
+        },
+        "ref": {
+          "type": "keyword"
+        },
+        "path": {
+          "type": "keyword"
+        },
+        "book_id": {
+          "type": "long"
+        },
+        "book_alias": {
+          "type": "keyword"
+        },
+        "book_name_en": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "book_shortName_en": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "ordinal": {
+          "type": "long"
+        },
+        "num": {
+          "type": "keyword"
+        },
+        "grade_grade_en": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "title": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "chain": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "body": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "footnote": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "summary_ar": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "topics_ar": {
+          "type": "text",
+          "analyzer": "arabic",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "teaching_ar": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "summary_en": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "summary_en_search": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "topics_en": {
+          "type": "text",
+          "analyzer": "english",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "topics_en_search": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "likely_questions_en": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "likely_questions_en_search": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "teaching_en": {
+          "type": "text",
+          "analyzer": "english"
+        },
+        "teaching_en_search": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "keywords_en": {
+          "type": "text",
+          "analyzer": "english",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "keywords_en_search": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "search_text_en": {
+          "type": "text",
+          "analyzer": "english_folded"
+        },
+        "source_hash": {
+          "type": "keyword"
+        },
+        "knowledge_model": {
+          "type": "keyword"
+        },
+        "knowledge_updated": {
+          "type": "date"
+        },
+        "knowledge_json": {
+          "type": "object",
+          "enabled": false
+        }
+      }
+    },
+    "settings": {
+      "analysis": {
+        "analyzer": {
+          "english_folded": {
+            "tokenizer": "standard",
+            "filter": [
+              "lowercase",
+              "asciifolding"
+            ]
+          }
+        }
+      },
+      "index": {
+        "number_of_shards": "1",
+        "number_of_replicas": "1"
+      }
+    }
+  }
+}

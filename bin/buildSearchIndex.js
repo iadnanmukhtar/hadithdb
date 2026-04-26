@@ -48,6 +48,7 @@ async function getData(indexName, book) {
 		SELECT * FROM v_${indexName}
 		WHERE
 			book_id = ${book.id}
+		AND hidden = 0
 		ORDER BY 
 			book_id, h1, numInChapter
 		-- LIMIT 10`);
@@ -70,23 +71,14 @@ async function getHadithData(book) {
 		LEFT JOIN v_hadiths n
 			ON n.ordinal = vh.ordinal + 1
 		WHERE vh.book_id = ${book.id}
-		   OR vh.ordinal = (
-				SELECT MIN(v0.ordinal) - 1
-				FROM v_hadiths v0
-				WHERE v0.book_id = ${book.id}
-			)
-		   OR vh.ordinal = (
-				SELECT MAX(v1.ordinal) + 1
-				FROM v_hadiths v1
-				WHERE v1.book_id = ${book.id}
-			)
 		ORDER BY vh.ordinal`);
 	return rows;
 }
 
 async function indexDocs(indexName, book) {
-	if (!shouldIndexDocs(indexName, book)) {
-		log(`\n*****\nskipping ${indexName} for virtual book ${book.shortName_en}; virtual books only index toc...`);
+	var skipReason = getSkipIndexReason(indexName, book);
+	if (skipReason) {
+		log(`\n*****\nskipping ${indexName} for ${book.shortName_en}; ${skipReason}...`);
 		return;
 	}
 	log(`\n*****\nindexing ${indexName} for ${book.shortName_en}...`);
@@ -105,8 +97,9 @@ async function reindexBooks(indexName, books) {
 	for (var i = 0; i < books.length; i++) {
 		log(`\n*****\nreindexing ${indexName} for ${books[i].shortName_en}...`);
 		await Index.deleteByBook(indexName, books[i]);
-		if (!shouldIndexDocs(indexName, books[i])) {
-			log(`skipping ${indexName} for virtual book ${books[i].shortName_en}; virtual books only index toc`);
+		var skipReason = getSkipIndexReason(indexName, books[i]);
+		if (skipReason) {
+			log(`skipping ${indexName} for ${books[i].shortName_en}; ${skipReason}`);
 			continue;
 		}
 		var rows = await getData(indexName, books[i]);
@@ -114,8 +107,12 @@ async function reindexBooks(indexName, books) {
 	}
 }
 
-function shouldIndexDocs(indexName, book) {
-	return !(indexName === 'hadiths' && book.virtual == 1);
+function getSkipIndexReason(indexName, book) {
+	if (book.hidden == 1)
+		return 'hidden books are not indexed';
+	if (indexName === 'hadiths' && book.virtual == 1)
+		return 'virtual books only index toc';
+	return null;
 }
 
 async function recreateIndex(indexName) {

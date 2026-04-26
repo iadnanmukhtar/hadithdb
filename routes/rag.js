@@ -2,8 +2,8 @@
 'use strict';
 
 const express = require('express');
-const debug = require('debug')('hadithdb:rag');
-const Rag = require('../lib/Rag');
+const debug = require('debug')('hadithdb:chatbot');
+const Chatbot = require('../lib/Chatbot');
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ router.use(function requireAdmin(req, res, next) {
 		return res.redirect('/');
 	return sendJson(res, 403, {
 		error: 'Forbidden',
-		message: 'RAG search is available only in admin mode',
+		message: 'Hadith chatbot is available only in admin mode',
 		status: 403
 	});
 });
@@ -32,7 +32,7 @@ router.get('/', async function (req, res) {
 	if (!question) {
 		res.setHeader('Content-Type', 'application/json');
 		res.end(JSON.stringify({
-			usage: 'GET /rag?q=your question',
+			usage: 'GET /chatbot?q=your question',
 			options: {
 				b: 'optional book alias or repeated book filters',
 				k: 'optional number of sources, 1-10',
@@ -41,7 +41,7 @@ router.get('/', async function (req, res) {
 		}));
 		return;
 	}
-	var result = await Rag.answer(question.toString(), {
+	var result = await Chatbot.answer(question.toString(), {
 		books: req.query.b,
 		topK: req.query.k ? parseInt(req.query.k.toString(), 10) : undefined,
 		generate: req.query.retrieveOnly !== '1'
@@ -51,7 +51,7 @@ router.get('/', async function (req, res) {
 });
 
 router.post('/', async function (req, res) {
-	var result = await Rag.answer(req.body?.question || req.body?.q, {
+	var result = await Chatbot.answer(req.body?.question || req.body?.q, {
 		books: req.body?.books || req.body?.b,
 		topK: req.body?.topK || req.body?.k,
 		generate: req.body?.generate !== false && req.body?.retrieveOnly !== true
@@ -62,7 +62,7 @@ router.post('/', async function (req, res) {
 
 router.post('/html', async function (req, res) {
 	try {
-		var result = await Rag.answerWithItems(req.body?.question || req.body?.q, {
+		var result = await Chatbot.answerWithItems(req.body?.question || req.body?.q, {
 			books: req.body?.books || req.body?.b,
 			topK: req.body?.topK || req.body?.k,
 			generate: req.body?.generate !== false && req.body?.retrieveOnly !== true
@@ -76,13 +76,36 @@ router.post('/html', async function (req, res) {
 		result.count = result.retrieval.length;
 		sendJson(res, 200, result);
 	} catch (err) {
-		sendJsonError(res, err, 'RAG HTML search failed');
+		sendJsonError(res, err, 'Hadith chatbot HTML search failed');
+	}
+});
+
+router.post('/message', async function (req, res) {
+	try {
+		var result = await Chatbot.chat(req.body?.messages || [{
+			role: 'user',
+			content: req.body?.question || req.body?.q
+		}], {
+			books: req.body?.books || req.body?.b,
+			topK: req.body?.topK || req.body?.k,
+			generate: req.body?.generate !== false && req.body?.retrieveOnly !== true
+		});
+		var html = await renderView(req, res, 'rag_results_fragment', {
+			items: result.items,
+			searchResult: true
+		});
+		delete result.items;
+		result.html = html;
+		result.count = result.retrieval.length;
+		sendJson(res, 200, result);
+	} catch (err) {
+		sendJsonError(res, err, 'Hadith chatbot message failed');
 	}
 });
 
 router.get('/retrieve', async function (req, res) {
 	var question = req.query.q || req.query.question;
-	var result = await Rag.retrieve(question ? question.toString() : '', {
+	var result = await Chatbot.retrieve(question ? question.toString() : '', {
 		books: req.query.b,
 		topK: req.query.k ? parseInt(req.query.k.toString(), 10) : undefined
 	});
@@ -94,7 +117,7 @@ router.get('/retrieve', async function (req, res) {
 });
 
 router.get('/similar', async function (req, res) {
-	var result = await Rag.similar({
+	var result = await Chatbot.similar({
 		id: req.query.id,
 		tocId: req.query.tocId,
 		doctype: req.query.doctype,
@@ -109,7 +132,7 @@ router.get('/similar', async function (req, res) {
 
 router.get('/similar-html', async function (req, res) {
 	try {
-		var result = await Rag.similarItems({
+		var result = await Chatbot.similarItems({
 			id: req.query.id,
 			tocId: req.query.tocId,
 			doctype: req.query.doctype,
@@ -130,7 +153,7 @@ router.get('/similar-html', async function (req, res) {
 			html: html
 		});
 	} catch (err) {
-		sendJsonError(res, err, 'RAG similar HTML failed');
+		sendJsonError(res, err, 'Hadith chatbot similar HTML failed');
 	}
 });
 
@@ -167,11 +190,11 @@ function buildRenderLocals(req) {
 		res: {},
 		site: site,
 		page: {
-			menu: 'RAG',
-			title_en: `${site.shortName} | Hadith RAG Search`,
-			subtitle_en: 'Hadith RAG Search',
+			menu: 'Chatbot',
+			title_en: `${site.shortName} | Hadith Chatbot`,
+			subtitle_en: 'Hadith Chatbot',
 			subtitle: null,
-			canonical: '/rag',
+			canonical: '/chatbot',
 			context: {
 				fromSearch: true
 			}
@@ -198,7 +221,7 @@ function sendJsonError(res, err, context) {
 	debug(`${context}: ${err.message}\n${err.stack || ''}`);
 	sendJson(res, status, {
 		error: context,
-		message: err.message || 'Unexpected RAG error',
+		message: err.message || 'Unexpected chatbot error',
 		status: status
 	});
 }
