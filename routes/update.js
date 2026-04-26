@@ -175,14 +175,9 @@ router.post('/:id/:prop', async function (req, res, next) {
 
       status.code = 200;
       status.message = result.message;
-      try {
-        var item = await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`);
-        await Utils.flushCacheContaining(`${item[0].book_alias}:${item[0].num}`);
-        await Index.update(Item.INDEX, item[0]);
-        await HadithKnowledge.syncForHadith(item[0], { force: isArabicKnowledgeSourceColumn(col) });
-      } catch (err) {
-        debug(`${err.message}:\n${err.stack}`);
-      }
+      runHadithPostUpdateTasks(ids[0], {
+        forceKnowledge: isArabicKnowledgeSourceColumn(col)
+      });
 
     } else if (type == 'tags') {
       var result = await global.query(`UPDATE tags SET ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
@@ -423,12 +418,50 @@ function normalizeHeadingNumber(value) {
 
 async function reindexSearchScope(whereClause) {
   var headings = await global.query(`SELECT * FROM v_toc WHERE ${whereClause} ORDER BY ordinal`);
-  if (headings.length > 0)
-    await Index.updateBulk(Heading.INDEX, headings);
+  if (headings.length > 0) {
+    try {
+      await Index.updateBulk(Heading.INDEX, headings);
+    } catch (err) {
+      debug(`unable to reindex headings for search scope ${whereClause}: ${err.message}\n${err.stack}`);
+    }
+  }
   var items = await global.query(`SELECT * FROM v_hadiths WHERE ${whereClause} ORDER BY ordinal`);
   if (items.length > 0) {
-    await Index.updateBulk(Item.INDEX, items);
+    try {
+      await Index.updateBulk(Item.INDEX, items);
+    } catch (err) {
+      debug(`unable to reindex hadiths for search scope ${whereClause}: ${err.message}\n${err.stack}`);
+    }
     await HadithKnowledge.syncForHadithRows(items);
+  }
+}
+
+function runHadithPostUpdateTasks(hadithId, options) {
+  options = options || {};
+  (async () => {
+    var rows = await global.query(`SELECT * FROM v_hadiths WHERE hId=${parseInt(hadithId, 10)}`);
+    var item = rows[0];
+    if (!item)
+      return;
+    await safeBackground(`flushing cache for ${item.ref}`, async () => {
+      await Utils.flushCacheContaining(`${item.book_alias}:${item.num}`);
+    });
+    await safeBackground(`reindexing hadith ${item.ref}`, async () => {
+      await Index.update(Item.INDEX, item);
+    });
+    await safeBackground(`syncing chatbot knowledge for ${item.ref}`, async () => {
+      await HadithKnowledge.syncForHadith(item, { force: options.forceKnowledge });
+    });
+  })().catch((err) => {
+    debug(`background hadith post-update failed for ${hadithId}: ${err.message}\n${err.stack}`);
+  });
+}
+
+async function safeBackground(label, fn) {
+  try {
+    await fn();
+  } catch (err) {
+    debug(`${label} failed: ${err.message}\n${err.stack}`);
   }
 }
 

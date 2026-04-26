@@ -25,9 +25,13 @@ const HadithKnowledge = require('../lib/HadithKnowledge');
 		for (var i = 0; i < rows.length; i++) {
 			var row = rows[i];
 			log(`[${i + 1}/${rows.length}] ${row.ref}`);
-			await HadithKnowledge.buildForHadith(row, {
-				model: options.model
-			});
+			try {
+				await HadithKnowledge.buildForHadith(row, {
+					model: options.model
+				});
+			} catch (err) {
+				log(`ERROR: unable to build knowledge for ${row.ref}: ${err.message}`);
+			}
 		}
 	} finally {
 		global.dbPool.end();
