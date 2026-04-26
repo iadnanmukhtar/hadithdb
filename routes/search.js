@@ -4,6 +4,7 @@
 const debug = require('debug')('hadithdb:search');
 const express = require('express');
 const createError = require('http-errors');
+const crypto = require('crypto');
 const fs = require('fs');
 const fm = require('front-matter');
 const nodeHtmlToImage = require('node-html-to-image');
@@ -18,6 +19,59 @@ const Arabic = require('../lib/Arabic');
 const { homedir } = require('os');
 
 const router = express.Router();
+const CAPTCHA_TTL_MS = 5 * 60 * 1000;
+
+function captchaSecret() {
+  return global.settings.captchaSecret || global.settings.admin.key;
+}
+
+function signCaptchaPayload(payload) {
+  return crypto
+    .createHmac('sha256', captchaSecret())
+    .update(payload)
+    .digest('base64url');
+}
+
+function createCaptchaToken(answer) {
+  const payload = Buffer.from(JSON.stringify({
+    answer: answer.toString(),
+    exp: Date.now() + CAPTCHA_TTL_MS,
+    nonce: crypto.randomBytes(12).toString('base64url')
+  })).toString('base64url');
+  return `${payload}.${signCaptchaPayload(payload)}`;
+}
+
+function verifyCaptchaToken(token, answer) {
+  if (!token || answer === undefined || answer === null)
+    return false;
+  const parts = token.toString().split('.');
+  if (parts.length !== 2)
+    return false;
+  const [payload, signature] = parts;
+  const expected = signCaptchaPayload(payload);
+  if (Buffer.byteLength(signature) !== Buffer.byteLength(expected))
+    return false;
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected)))
+    return false;
+  let decoded;
+  try {
+    decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+  } catch (err) {
+    return false;
+  }
+  if (!decoded || decoded.exp < Date.now())
+    return false;
+  return answer.toString().trim() === decoded.answer;
+}
+
+router.get('/captcha/translate', function (req, res) {
+  const a = crypto.randomInt(2, 10);
+  const b = crypto.randomInt(2, 10);
+  res.json({
+    question: `What is ${a} + ${b}?`,
+    token: createCaptchaToken(a + b)
+  });
+});
 
 router.get('/reinit', async function (req, res, next) {
   await Hadith.a_reinit();
@@ -45,6 +99,15 @@ router.all('/do/:id', async function (req, res, next) {
           revised: false,
           body_en: item.body_en,
           body_en_html: Utils.markdownToHtml(item.body_en)
+        });
+        return;
+      }
+
+      if (!verifyCaptchaToken(req.body && req.body.captchaToken, req.body && req.body.captchaAnswer)) {
+        res.status(403).json({
+          code: 403,
+          captchaRequired: true,
+          message: 'Please complete the CAPTCHA before translating.'
         });
         return;
       }

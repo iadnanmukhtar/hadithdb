@@ -231,14 +231,22 @@ function initHadithTranslateButtons(root) {
 				return;
 
 			button.disabled = true;
-			button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Translating';
+			button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Verifying';
 
 			try {
+				var captcha = await getTranslateCaptcha();
+				if (!captcha) {
+					button.disabled = false;
+					button.innerHTML = originalHtml;
+					return;
+				}
+				button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Translating';
 				var res = await fetch('/do/' + encodeURIComponent(hadithId) + '?cmd=tr', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
-					}
+					},
+					body: JSON.stringify(captcha)
 				});
 				var data = await res.json();
 				if (!res.ok)
@@ -264,6 +272,25 @@ function initHadithTranslateButtons(root) {
 			}
 		});
 	});
+}
+
+async function getTranslateCaptcha() {
+	var res = await fetch('/captcha/translate', {
+		method: 'GET',
+		headers: {
+			'Accept': 'application/json'
+		}
+	});
+	var data = await res.json();
+	if (!res.ok)
+		throw new Error(data.message || res.statusText || 'Unable to load CAPTCHA');
+	var answer = window.prompt(data.question || 'Complete the CAPTCHA');
+	if (answer === null)
+		return null;
+	return {
+		captchaToken: data.token,
+		captchaAnswer: answer
+	};
 }
 
 function cssEscape(value) {
