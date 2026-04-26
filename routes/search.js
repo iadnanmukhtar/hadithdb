@@ -10,6 +10,7 @@ const nodeHtmlToImage = require('node-html-to-image');
 const ejs = require('ejs');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
+const HadithRevision = require('../lib/HadithRevision');
 const Utils = require('../lib/Utils');
 const { Section, Chapter, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
@@ -25,12 +26,42 @@ router.get('/reinit', async function (req, res, next) {
   return;
 });
 
-router.get('/do/:id', async function (req, res, next) {
+router.all('/do/:id', async function (req, res, next) {
   try {
     if (req.query.cmd == 'tr') {
-      // translation requested
-      var id = parseInt(req.params.id);
+      var id = parseInt(req.params.id, 10);
+      if (!Number.isInteger(id) || id < 1)
+        return next(createError(400, 'Invalid hadith id'));
+
+      var item = (await global.query(`SELECT * FROM v_hadiths WHERE hId=${id}`))[0];
+      if (!item)
+        return next(createError(404, `Hadith not found: ${id}`));
+
+      if (Utils.isTruthy(item.body_en)) {
+        res.json({
+          code: 200,
+          message: 'Translation already available',
+          translated: true,
+          revised: false,
+          body_en: item.body_en,
+          body_en_html: Utils.markdownToHtml(item.body_en)
+        });
+        return;
+      }
+
       await global.query(`UPDATE hadiths SET requested=(requested+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${id}`);
+      var revised = await HadithRevision.reviseHadith(item);
+      res.json({
+        code: 200,
+        message: 'Translation complete',
+        translated: true,
+        revised: true,
+        body_en: revised.item.body_en,
+        body_en_html: Utils.markdownToHtml(revised.item.body_en),
+        chain_en: revised.item.chain_en,
+        title_en: revised.item.title_en
+      });
+      return;
     } else if (req.query.cmd == 'comment') {
       // comment clicked
       var id = parseInt(req.params.id);
@@ -41,6 +72,13 @@ router.get('/do/:id', async function (req, res, next) {
     res.end();
     return;
   } catch (err) {
+    if (req.query.cmd == 'tr' && req.method === 'POST') {
+      res.status(500).json({
+        code: 500,
+        message: err.message || 'Unable to translate hadith'
+      });
+      return;
+    }
     var message = `Error in action [${req.params.id}?${req.query.action}]`;
     debug(message + `\n${err.stack}`);
     return next(createError(500, message));

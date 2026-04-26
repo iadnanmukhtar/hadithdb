@@ -85,6 +85,7 @@ $(function () {
 	});
 
 	initMarkdownEditablePreviews(document);
+	initHadithTranslateButtons(document);
 
 });
 
@@ -214,4 +215,59 @@ function initMarkdownEditablePreviews(root) {
 			renderMarkdownPreview(el, htmlToMarkdown(el.innerHTML).replace(/\r\n?/g, '\n').replace(/\u00a0/g, ' '));
 		});
 	});
+}
+
+function initHadithTranslateButtons(root) {
+	var scope = root || document;
+	scope.querySelectorAll('.hadith-translate-btn').forEach(function (button) {
+		if (button.dataset.translateBound === 'true')
+			return;
+		button.dataset.translateBound = 'true';
+		button.addEventListener('click', async function () {
+			var hadithId = button.dataset.hadithId;
+			var placeholder = button.closest('.cmd-tr');
+			var originalHtml = button.innerHTML;
+			if (!hadithId || button.disabled)
+				return;
+
+			button.disabled = true;
+			button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Translating';
+
+			try {
+				var res = await fetch('/do/' + encodeURIComponent(hadithId) + '?cmd=tr', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+				var data = await res.json();
+				if (!res.ok)
+					throw new Error(data.message || res.statusText || 'Translation failed');
+
+				var body = document.querySelector('[data-id="' + cssEscape(hadithId) + '"][data-prop="hadith.body_en"]');
+				if (body) {
+					body.dataset.markdownSource = data.body_en || '';
+					body.innerHTML = data.body_en_html || '';
+				}
+				document.querySelectorAll('.cmd-tr[data-hadith-id="' + cssEscape(hadithId) + '"]').forEach(function (el) {
+					el.remove();
+				});
+				if (window.toastr)
+					toastr.success(data.message || 'Translation complete');
+			} catch (err) {
+				button.disabled = false;
+				button.innerHTML = originalHtml;
+				if (window.toastr)
+					toastr.error(err.message || 'Translation failed');
+				else if (placeholder)
+					placeholder.appendChild(document.createTextNode(' Translation failed.'));
+			}
+		});
+	});
+}
+
+function cssEscape(value) {
+	if (window.CSS && window.CSS.escape)
+		return window.CSS.escape(value);
+	return value.toString().replace(/["\\]/g, '\\$&');
 }

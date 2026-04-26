@@ -85,9 +85,13 @@
 	<section lang="<%=lang%>" class="body <%=_p%> l5" title="Ḥadīth Body">
 		<div class="_e hadith-body-content <%=_p%>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= bodyMarkdown %>" data-markdown-empty-html="&hellip;">
 		<% if (!langData.body) { %>
-			<div class="cmd-tr">
-				<!-- <a href="<%- `/do/${i.id}?cmd=tr` %>" onclick="alert('Thanks! We\'re on it!');">Request/Fix</a> translation<br/> -->
+			<div class="cmd-tr" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
 				Translation not available.
+				<% if (lang === 'en') { %>
+					<button type="button" class="hadith-translate-btn btn btn-sm btn-outline-secondary ms-2" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
+						<span class="bi bi-translate"></span> Translate
+					</button>
+				<% } %>
 			</div>
 		<% } %>
 			<%- bodyHtml %>
