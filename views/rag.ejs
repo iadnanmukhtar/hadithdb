@@ -5,7 +5,7 @@
 <%
   var site = new Object(global.settings.site);
   site.admin = (req.cookies.admin == admin.key);
-  site.editMode = false;
+  site.editMode = (site.admin && req.cookies.editMode == 1);
   var page = {
     menu: 'RAG',
     title_en: `${site.shortName} | Hadith RAG Search`,

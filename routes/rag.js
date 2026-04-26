@@ -7,6 +7,18 @@ const Rag = require('../lib/Rag');
 
 const router = express.Router();
 
+router.use(function requireAdmin(req, res, next) {
+	if (isAdmin(req))
+		return next();
+	if (isPageRequest(req))
+		return res.redirect('/');
+	return sendJson(res, 403, {
+		error: 'Forbidden',
+		message: 'RAG search is available only in admin mode',
+		status: 403
+	});
+});
+
 router.get('/', async function (req, res) {
 	var question = req.query.q || req.query.question;
 	if (!wantsJson(req)) {
@@ -131,6 +143,10 @@ function wantsJson(req) {
 	return accept.includes('application/json') && !accept.includes('text/html');
 }
 
+function isPageRequest(req) {
+	return req.method === 'GET' && req.path === '/' && !wantsJson(req);
+}
+
 function renderView(req, res, view, locals) {
 	locals = Object.assign(buildRenderLocals(req), locals || {});
 	return new Promise(function (resolve, reject) {
@@ -144,8 +160,8 @@ function renderView(req, res, view, locals) {
 
 function buildRenderLocals(req) {
 	var site = new Object(global.settings.site);
-	site.admin = (req.cookies.admin == global.admin.key);
-	site.editMode = false;
+	site.admin = isAdmin(req);
+	site.editMode = isEditMode(req);
 	return {
 		req: req,
 		res: {},
@@ -161,6 +177,14 @@ function buildRenderLocals(req) {
 			}
 		}
 	};
+}
+
+function isAdmin(req) {
+	return req.cookies && req.cookies.admin == global.admin.key;
+}
+
+function isEditMode(req) {
+	return isAdmin(req) && req.cookies.editMode == 1;
 }
 
 function sendJson(res, status, payload) {

@@ -147,7 +147,7 @@ main.chapter {
 
 .site-navbar > .site-navbar-main {
 	height: var(--site-header-height);
-	overflow: hidden;
+	overflow: visible;
 }
 
 .site-header-brand {
@@ -390,6 +390,10 @@ nav .nav-link {
 .dropdown-menu {
 	max-height: 11rem;
 	overflow-y: scroll;
+}
+
+.site-navbar .dropdown-menu {
+	z-index: 1002;
 }
 
 .search-click-toggle {
