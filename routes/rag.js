@@ -2,6 +2,7 @@
 'use strict';
 
 const express = require('express');
+const debug = require('debug')('hadithdb:rag');
 const Rag = require('../lib/Rag');
 
 const router = express.Router();
@@ -48,20 +49,23 @@ router.post('/', async function (req, res) {
 });
 
 router.post('/html', async function (req, res) {
-	var result = await Rag.answerWithItems(req.body?.question || req.body?.q, {
-		books: req.body?.books || req.body?.b,
-		topK: req.body?.topK || req.body?.k,
-		generate: req.body?.generate !== false && req.body?.retrieveOnly !== true
-	});
-	var html = await renderView(req, res, 'rag_results_fragment', {
-		items: result.items,
-		searchResult: true
-	});
-	delete result.items;
-	result.html = html;
-	result.count = result.retrieval.length;
-	res.setHeader('Content-Type', 'application/json');
-	res.end(JSON.stringify(result));
+	try {
+		var result = await Rag.answerWithItems(req.body?.question || req.body?.q, {
+			books: req.body?.books || req.body?.b,
+			topK: req.body?.topK || req.body?.k,
+			generate: req.body?.generate !== false && req.body?.retrieveOnly !== true
+		});
+		var html = await renderView(req, res, 'rag_results_fragment', {
+			items: result.items,
+			searchResult: true
+		});
+		delete result.items;
+		result.html = html;
+		result.count = result.retrieval.length;
+		sendJson(res, 200, result);
+	} catch (err) {
+		sendJsonError(res, err, 'RAG HTML search failed');
+	}
 });
 
 router.get('/retrieve', async function (req, res) {
@@ -92,27 +96,30 @@ router.get('/similar', async function (req, res) {
 });
 
 router.get('/similar-html', async function (req, res) {
-	var result = await Rag.similarItems({
-		id: req.query.id,
-		tocId: req.query.tocId,
-		doctype: req.query.doctype,
-		ref: req.query.ref,
-		books: req.query.b,
-		topK: req.query.k ? parseInt(req.query.k.toString(), 10) : undefined,
-		includeLinked: req.query.linked !== '0'
-	});
-	var html = await renderView(req, res, 'rag_similar_fragment', {
-		items: result.similar,
-		target: result.target,
-		query: result.query
-	});
-	res.setHeader('Content-Type', 'application/json');
-	res.end(JSON.stringify({
-		method: result.method,
-		query: result.query,
-		count: result.similar.length,
-		html: html
-	}));
+	try {
+		var result = await Rag.similarItems({
+			id: req.query.id,
+			tocId: req.query.tocId,
+			doctype: req.query.doctype,
+			ref: req.query.ref,
+			books: req.query.b,
+			topK: req.query.k ? parseInt(req.query.k.toString(), 10) : undefined,
+			includeLinked: req.query.linked !== '0'
+		});
+		var html = await renderView(req, res, 'rag_similar_fragment', {
+			items: result.similar,
+			target: result.target,
+			query: result.query
+		});
+		sendJson(res, 200, {
+			method: result.method,
+			query: result.query,
+			count: result.similar.length,
+			html: html
+		});
+	} catch (err) {
+		sendJsonError(res, err, 'RAG similar HTML failed');
+	}
 });
 
 function wantsJson(req) {
@@ -154,6 +161,22 @@ function buildRenderLocals(req) {
 			}
 		}
 	};
+}
+
+function sendJson(res, status, payload) {
+	res.status(status);
+	res.setHeader('Content-Type', 'application/json');
+	res.end(JSON.stringify(payload));
+}
+
+function sendJsonError(res, err, context) {
+	var status = err.status || err.statusCode || 500;
+	debug(`${context}: ${err.message}\n${err.stack || ''}`);
+	sendJson(res, status, {
+		error: context,
+		message: err.message || 'Unexpected RAG error',
+		status: status
+	});
 }
 
 module.exports = router;
