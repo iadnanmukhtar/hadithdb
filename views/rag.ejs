@@ -6,7 +6,6 @@
   var site = new Object(global.settings.site);
   site.admin = (req.cookies.admin == admin.key);
   site.editMode = false;
-  var selectedBooks = Array.isArray(books) ? books : (books ? [books] : []);
   var page = {
     menu: 'RAG',
     title_en: `${site.shortName} | Hadith RAG Search`,
@@ -34,38 +33,6 @@
           <span class="input-group-text"><i class="bi bi-stars"></i></span>
           <input id="rag-question" name="q" type="search" class="form-control" value="<%= q %>" placeholder="Ask about a hadith topic or wording...">
           <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Search</button>
-        </div>
-
-        <div class="rag-controls">
-          <label class="form-check form-switch">
-            <input id="rag-generate" class="form-check-input" type="checkbox" checked>
-            <span class="form-check-label">Answer with citations</span>
-          </label>
-          <label>
-            <span>Sources</span>
-            <input id="rag-top-k" class="form-control form-control-sm" type="number" min="1" max="10" value="<%= topK %>">
-          </label>
-          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#rag-book-filter">
-            <i class="bi bi-book"></i> Books
-          </button>
-        </div>
-
-        <div id="rag-book-filter" class="collapse rag-book-filter">
-          <div class="rag-book-filter-help">Leave all unchecked to search all sources.</div>
-          <label class="form-check">
-            <input class="form-check-input rag-book" type="checkbox" value="sahihayn" <%= selectedBooks.indexOf('sahihayn') >= 0 ? 'checked' : '' %>>
-            <span class="form-check-label">Saḥīḥayn</span>
-          </label>
-          <label class="form-check">
-            <input class="form-check-input rag-book" type="checkbox" value="sixbooks" <%= selectedBooks.indexOf('sixbooks') >= 0 ? 'checked' : '' %>>
-            <span class="form-check-label">Kutub Sittah</span>
-          </label>
-          <% global.books.filter(b => !b.virtual && !b.hidden).forEach(function (book) { %>
-            <label class="form-check">
-              <input class="form-check-input rag-book" type="checkbox" value="<%= book.alias %>" <%= selectedBooks.indexOf(book.alias) >= 0 ? 'checked' : '' %>>
-              <span class="form-check-label"><%= book.shortName_en %></span>
-            </label>
-          <% }); %>
         </div>
       </form>
 
@@ -111,8 +78,6 @@
       const initialQuestion = <%- JSON.stringify(q || '') %>;
       const form = document.getElementById('rag-form');
       const questionInput = document.getElementById('rag-question');
-      const generateInput = document.getElementById('rag-generate');
-      const topKInput = document.getElementById('rag-top-k');
       const statusEl = document.getElementById('rag-status');
       const answerPanel = document.getElementById('rag-answer-panel');
       const answerEl = document.getElementById('rag-answer');
@@ -122,7 +87,6 @@
       const similarResultsEl = document.getElementById('rag-similar-results');
       const similarCountEl = document.getElementById('rag-similar-count');
 
-      const selectedBooks = () => Array.from(document.querySelectorAll('.rag-book:checked')).map(el => el.value);
       const escapeHtml = (value) => (value || '').toString().replace(/[&<>"']/g, ch => ({
         '&': '&amp;',
         '<': '&lt;',
@@ -167,9 +131,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             question,
-            topK: topKInput.value,
-            books: selectedBooks(),
-            generate: generateInput.checked
+            generate: true
           })
         });
         const data = await response.json();
@@ -192,8 +154,6 @@
         } else {
           params.set('id', button.dataset.hadithId);
         }
-        params.set('k', topKInput.value || '6');
-        selectedBooks().forEach(book => params.append('b', book));
         const panel = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('rag-similar-panel'));
         panel.show();
         const response = await fetch(`/rag/similar-html?${params.toString()}`);

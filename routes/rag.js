@@ -12,9 +12,7 @@ router.get('/', async function (req, res) {
 		res.locals.req = req;
 		res.locals.res = res;
 		res.render('rag', {
-			q: question || '',
-			topK: req.query.k || 6,
-			books: req.query.b || []
+			q: question || ''
 		});
 		return;
 	}
