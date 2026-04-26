@@ -2,38 +2,44 @@
 'use strict';
 
 require('dotenv').config();
+const options = readOptions(process.argv.slice(2));
+
 require('../lib/Globals');
 const axios = require('axios');
 const fs = require('fs');
-const MySQL = require('mysql');
 const path = require('path');
 const Index = require('../lib/Index');
-
-const options = parseArgs(process.argv.slice(2));
 
 (async () => {
 	try {
 		var books;
-		if (options.bookRefs.length > 0) {
-			books = await getSpecifiedBooks(options.bookRefs);
-			log(`retrieving data to index for ${books.length} specified book(s)...`);
-			await reindexSpecifiedBooks('hadiths', books);
-			await reindexSpecifiedBooks('toc', books);
-		} else {
+		if (options.all) {
 			await recreateIndex('hadiths');
 			await recreateIndex('toc');
 			log(`retrieving data to index...`);
 			books = await global.query(`SELECT * FROM books b ORDER BY id`);
-			for (var i = 0; i < books.length; i++) {
-				await indexDocs('hadiths', books[i]);
-				await indexDocs('toc', books[i]);
-			}
+			await indexBooks(books);
+		} else {
+			books = await getBooksFromId(options.bookId);
+			log(`retrieving data to index from book id ${options.bookId} (${books.length} book(s))...`);
+			await reindexBooks('hadiths', books);
+			await reindexBooks('toc', books);
 		}
 	} finally {
 		global.dbPool.end();
 		log('indexing complete');
 	}
 })();
+
+function readOptions(argv) {
+	try {
+		return parseArgs(argv);
+	} catch (err) {
+		console.error(`Error: ${err.message}\n`);
+		printUsage();
+		process.exit(1);
+	}
+}
 
 async function getData(indexName, book) {
 	if (indexName === 'hadiths')
@@ -79,18 +85,37 @@ async function getHadithData(book) {
 }
 
 async function indexDocs(indexName, book) {
+	if (!shouldIndexDocs(indexName, book)) {
+		log(`\n*****\nskipping ${indexName} for virtual book ${book.shortName_en}; virtual books only index toc...`);
+		return;
+	}
 	log(`\n*****\nindexing ${indexName} for ${book.shortName_en}...`);
 	var rows = await getData(indexName, book);
 	await Index.updateBulk(indexName, rows, true);
 }
 
-async function reindexSpecifiedBooks(indexName, books) {
+async function indexBooks(books) {
+	for (var i = 0; i < books.length; i++) {
+		await indexDocs('hadiths', books[i]);
+		await indexDocs('toc', books[i]);
+	}
+}
+
+async function reindexBooks(indexName, books) {
 	for (var i = 0; i < books.length; i++) {
 		log(`\n*****\nreindexing ${indexName} for ${books[i].shortName_en}...`);
 		await Index.deleteByBook(indexName, books[i]);
+		if (!shouldIndexDocs(indexName, books[i])) {
+			log(`skipping ${indexName} for virtual book ${books[i].shortName_en}; virtual books only index toc`);
+			continue;
+		}
 		var rows = await getData(indexName, books[i]);
 		await Index.updateBulk(indexName, rows, true);
 	}
+}
+
+function shouldIndexDocs(indexName, book) {
+	return !(indexName === 'hadiths' && book.virtual == 1);
 }
 
 async function recreateIndex(indexName) {
@@ -169,72 +194,61 @@ function describeAxiosError(err, prefix) {
 	return new Error(`${prefix}: ${reason}`);
 }
 
-async function getSpecifiedBooks(bookRefs) {
-	var conditions = bookRefs.map(function (ref) {
-		var num = Number(ref);
-		if (Number.isInteger(num))
-			return `id=${parseInt(ref, 10)}`;
-		return `alias=${MySQL.escape(ref)}`;
-	});
+async function getBooksFromId(bookId) {
 	var books = await global.query(`
 		SELECT *
 		FROM books
-		WHERE ${conditions.join(' OR ')}
+		WHERE id >= ${bookId}
 		ORDER BY id`);
-	var foundRefs = new Set(books.map(function (book) {
-		return `${book.id}`;
-	}).concat(books.map(function (book) {
-		return `${book.alias}`;
-	})));
-	var missing = bookRefs.filter(function (ref) {
-		return !foundRefs.has(`${ref}`);
-	});
-	if (missing.length > 0)
-		throw new ReferenceError(`Not found: Book ${missing.join(', ')}`);
+	if (books.length < 1)
+		throw new ReferenceError(`Not found: Book id ${bookId} or later`);
 	return books;
 }
 
 function parseArgs(argv) {
 	var options = {
-		bookRefs: []
+		all: false,
+		bookId: null
 	};
 	for (var i = 0; i < argv.length; i++) {
 		var arg = argv[i];
-		if (arg === '--book' || arg === '-b') {
+		if (arg === '--all') {
+			options.all = true;
+		} else if (arg === '--book-id' || arg === '--from-book-id' || arg === '-b') {
 			i++;
 			if (!argv[i])
-				throw new Error(`${arg} requires one or more book ids or aliases`);
-			pushBookRefs(options.bookRefs, argv[i]);
+				throw new Error(`${arg} requires a book id`);
+			options.bookId = parseBookId(argv[i], arg);
 		} else if (arg === '--help' || arg === '-h') {
 			printUsage();
 			process.exit(0);
 		} else if (arg.startsWith('-')) {
 			throw new Error(`Unknown argument: ${arg}`);
 		} else {
-			pushBookRefs(options.bookRefs, arg);
+			throw new Error(`Unexpected positional argument: ${arg}`);
 		}
 	}
-	options.bookRefs = Array.from(new Set(options.bookRefs));
+	if (options.all && options.bookId !== null)
+		throw new Error(`Use either --all or --book-id, not both`);
+	if (!options.all && options.bookId === null)
+		throw new Error(`Missing required argument: use --all or --book-id <id>`);
 	return options;
 }
 
-function pushBookRefs(bookRefs, value) {
-	value.split(',').forEach(function (part) {
-		part = `${part}`.trim();
-		if (part)
-			bookRefs.push(part);
-	});
+function parseBookId(value, arg) {
+	var bookId = parseInt(value, 10);
+	if (!Number.isInteger(bookId) || bookId < 0 || `${bookId}` !== `${value}`.trim())
+		throw new Error(`${arg} requires a non-negative integer book id`);
+	return bookId;
 }
 
 function printUsage() {
 	console.log(
 		'Usage:\n' +
-		'  node bin/buildSearchIndex.js\n' +
-		'  node bin/buildSearchIndex.js --book 16\n' +
-		'  node bin/buildSearchIndex.js --book 16,17\n' +
-		'  node bin/buildSearchIndex.js --book bazzar --book muslim\n' +
+		'  node bin/buildSearchIndex.js --all\n' +
+		'  node bin/buildSearchIndex.js --book-id 16\n' +
 		'\n' +
-		'Without --book, recreates the full hadiths and toc indexes.\n' +
-		'With --book, deletes and rebuilds only those books in both indexes.'
+		'--all recreates the full hadiths and toc indexes, then indexes every book.\n' +
+		'--book-id deletes and rebuilds both indexes for that book id and every later book id.'
 	);
 }

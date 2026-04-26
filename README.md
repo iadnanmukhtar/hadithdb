@@ -7,6 +7,15 @@
 * Isnād and Matn are split for all aḥādīth
 * Hosted on https://hadithunlocked.com
 
+## Hadith RAG API
+The app exposes a retrieval-augmented endpoint at `/rag`.
+
+* `GET /rag?q=what did the Prophet say about intentions`
+* `GET /rag/retrieve?q=intentions&k=5` for retrieval only
+* `POST /rag` with JSON: `{ "question": "...", "topK": 6, "books": ["bukhari", "muslim"] }`
+
+Retrieval uses the existing Elasticsearch `hadiths,toc` index and returns cited local source records. If `OPENAI_API_KEY` or `settings.openAI.key` is configured, `/rag` also generates a concise answer using the OpenAI Responses API. Set `OPENAI_MODEL`, `settings.rag.model`, or `settings.openAI.model` to override the default model.
+
 ## Available Source Books
 The following nine plus source books of ḥadīth are currently availble:
 |#| Name | Graded | Translation |
@@ -23,4 +32,3 @@ The following nine plus source books of ḥadīth are currently availble:
 |10|Mustadrak al-Ḥākim|Dhahabī(ar)|N/A|
 |11|Ibn Ḥibbān|N/A|N/A|
 |12|al-Muʿjam al-Kabīr of Ṭabarānī|N/A|N/A|
-

@@ -141,6 +141,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const likesRouter = require('./routes/likes');
   const likedRouter = require('./routes/liked');
   const bookmarksRouter = require('./routes/bookmarks');
+  const ragRouter = require('./routes/rag');
 
   app.use('/tools', toolsRouter);
   app.use('/recent', highlightsRouter);
@@ -159,6 +160,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/likes', likesRouter);
   app.use('/liked', likedRouter);
   app.use('/bookmarks', bookmarksRouter);
+  app.use('/rag', ragRouter);
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {
