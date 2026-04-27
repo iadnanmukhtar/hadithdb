@@ -57,11 +57,11 @@
       <heading class="mb-2">
         <div class="row text-center justify-content-center">
           <h2 class="_e fs-3" title="<%- book.name %>" data-id="<%=book.id%>" data-prop="book.name_en" data-arabizi="true"><%- book.name_en %></h2>
-          <h2 class="_e fs-3" title="<%- book.name_en %>" data-id="<%=book.id%>" data-prop="book.name"><%- book.name %></h2>
+          <h2 class="_e fs-3 fw-bold text-center" lang="ar" dir="rtl" title="<%- book.name_en %>" data-id="<%=book.id%>" data-prop="book.name"><%- book.name %></h2>
           <% if (site.editMode) { %>
           <h3>
             <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName_en" data-arabizi="true"><%- book.shortName_en %></span>
-            <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName"><%- book.shortName %></span>
+            <span class="_e fs-5" lang="ar" dir="rtl" data-id="<%=book.id%>" data-prop="book.shortName"><%- book.shortName %></span>
           </h3>
           <% } %>
         </div>
