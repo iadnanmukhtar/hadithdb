@@ -287,10 +287,25 @@ async function getTranslateCaptcha() {
 	var answer = window.prompt(data.question || 'Complete the CAPTCHA');
 	if (answer === null)
 		return null;
-	return {
+	var captcha = {
 		captchaToken: data.token,
 		captchaAnswer: answer
 	};
+	var verifyRes = await fetch('/captcha/translate/verify', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Accept': 'application/json'
+		},
+		body: JSON.stringify(captcha)
+	});
+	var verifyData = await verifyRes.json();
+	if (!verifyRes.ok || !verifyData.verified) {
+		if (window.toastr)
+			toastr.error(verifyData.message || 'Incorrect CAPTCHA answer.');
+		return null;
+	}
+	return captcha;
 }
 
 function cssEscape(value) {

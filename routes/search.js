@@ -73,6 +73,21 @@ router.get('/captcha/translate', function (req, res) {
   });
 });
 
+router.post('/captcha/translate/verify', function (req, res) {
+  if (!verifyCaptchaToken(req.body && req.body.captchaToken, req.body && req.body.captchaAnswer)) {
+    res.status(403).json({
+      code: 403,
+      verified: false,
+      message: 'Incorrect CAPTCHA answer.'
+    });
+    return;
+  }
+  res.json({
+    code: 200,
+    verified: true
+  });
+});
+
 router.get('/reinit', async function (req, res, next) {
   await Hadith.a_reinit();
   res.write('Done');
