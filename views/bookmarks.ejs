@@ -20,13 +20,20 @@
     <main class="search-results">
       <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
         <div>
-          <h1 class="fs-4 mb-0">Bookmarked Aḥādīths</h1>
+          <h1 class="fs-4 mb-0">Bookmarks</h1>
           <p class="text-muted small mb-0">Bookmarks are saved locally on this device.</p>
         </div>
         <button type="button" class="btn btn-outline-primary btn-sm" id="clear-bookmarks-btn">Clear all</button>
       </div>
-      <div id="bookmarks-empty" class="alert alert-info">You have not bookmarked any aḥādīths yet.</div>
-      <div id="bookmarks-list" class="d-flex flex-column gap-3"></div>
+      <div id="bookmarks-empty" class="alert alert-info">You have not bookmarked any chapters, sections, or aḥādīths yet.</div>
+      <section id="heading-bookmarks-section" class="mb-4 d-none">
+        <h2 class="fs-5">Chapters and Sections</h2>
+        <div id="heading-bookmarks-list" class="d-flex flex-column gap-3"></div>
+      </section>
+      <section id="hadith-bookmarks-section" class="d-none">
+        <h2 class="fs-5">Aḥādīths</h2>
+        <div id="bookmarks-list" class="d-flex flex-column gap-3"></div>
+      </section>
     </main>
   </div>
 
@@ -36,6 +43,9 @@
 <script>
   (function () {
     const listEl = document.getElementById('bookmarks-list');
+    const listSectionEl = document.getElementById('hadith-bookmarks-section');
+    const headingListEl = document.getElementById('heading-bookmarks-list');
+    const headingSectionEl = document.getElementById('heading-bookmarks-section');
     const emptyEl = document.getElementById('bookmarks-empty');
     const clearBtn = document.getElementById('clear-bookmarks-btn');
 
@@ -49,26 +59,51 @@
 
     const load = async () => {
       const ids = (window.hadithBookmarks && window.hadithBookmarks.getAll) ? window.hadithBookmarks.getAll() : [];
-      if (!ids.length) {
-        listEl.innerHTML = '';
-        setEmpty(false);
-        return;
-      }
+      const headingIds = (window.headingBookmarks && window.headingBookmarks.getAll) ? window.headingBookmarks.getAll() : [];
+      let hadithCount = 0;
+      let headingCount = 0;
       try {
-        listEl.innerHTML = '<div class="text-muted small">Loading bookmarks...</div>';
-        const res = await fetch('/bookmarks/list', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids })
-        });
-        if (!res.ok) throw new Error('Failed to load bookmarks');
-        const data = await res.json();
-        listEl.innerHTML = data.html || '';
-        setEmpty(!!data.count);
+        if (headingIds.length) {
+          headingSectionEl.classList.remove('d-none');
+          headingListEl.innerHTML = '<div class="text-muted small">Loading chapters and sections...</div>';
+          const headingRes = await fetch('/bookmarks/list-headings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: headingIds })
+          });
+          if (!headingRes.ok) throw new Error('Failed to load chapter and section bookmarks');
+          const headingData = await headingRes.json();
+          headingCount = headingData.count || 0;
+          headingListEl.innerHTML = headingData.html || '';
+          headingSectionEl.classList.toggle('d-none', !headingCount);
+        } else {
+          headingListEl.innerHTML = '';
+          headingSectionEl.classList.add('d-none');
+        }
+        if (ids.length) {
+          listSectionEl.classList.remove('d-none');
+          listEl.innerHTML = '<div class="text-muted small">Loading aḥādīth...</div>';
+          const res = await fetch('/bookmarks/list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+          });
+          if (!res.ok) throw new Error('Failed to load hadith bookmarks');
+          const data = await res.json();
+          hadithCount = data.count || 0;
+          listEl.innerHTML = data.html || '';
+          listSectionEl.classList.toggle('d-none', !hadithCount);
+        } else {
+          listEl.innerHTML = '';
+          listSectionEl.classList.add('d-none');
+        }
+        setEmpty(!!(headingCount || hadithCount));
         if (window.refreshHadithActions) window.refreshHadithActions();
+        if (window.refreshHeadingBookmarks) window.refreshHeadingBookmarks();
       } catch (err) {
         console.warn(err);
         listEl.innerHTML = '<div class="alert alert-warning mb-0">Unable to load bookmarks. Please try again.</div>';
+        listSectionEl.classList.remove('d-none');
       }
     };
 
@@ -79,12 +114,43 @@
         } else {
           localStorage.removeItem('hadithBookmarkMap');
         }
+        if (window.headingBookmarks && window.headingBookmarks.clear) {
+          window.headingBookmarks.clear();
+        } else {
+          localStorage.removeItem('headingBookmarkMap');
+        }
         load();
       });
     }
 
+    listEl.addEventListener('click', (event) => {
+      const btn = event.target.closest('.hadith-bookmark-btn[data-hadith-id]');
+      if (!btn || !listEl.contains(btn)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      const id = parseInt(btn.dataset.hadithId, 10);
+      if (!Number.isNaN(id) && window.hadithBookmarks && window.hadithBookmarks.remove) {
+        window.hadithBookmarks.remove(id);
+      }
+    }, true);
+
+    headingListEl.addEventListener('click', (event) => {
+      const btn = event.target.closest('.heading-bookmark-btn[data-heading-id]');
+      if (!btn || !headingListEl.contains(btn)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      const id = parseInt(btn.dataset.headingId, 10);
+      if (!Number.isNaN(id) && window.headingBookmarks && window.headingBookmarks.remove) {
+        window.headingBookmarks.remove(id);
+      }
+    }, true);
+
     document.addEventListener('hadithBookmarkToggled', load);
     document.addEventListener('hadithBookmarksCleared', load);
+    document.addEventListener('headingBookmarkToggled', load);
+    document.addEventListener('headingBookmarksCleared', load);
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', load);

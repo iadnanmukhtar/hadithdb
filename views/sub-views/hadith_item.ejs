@@ -252,7 +252,9 @@
 					<input class="_e form-control border-secondary" title="Ref Num" aria-label="Ref Num" data-id="<%= i.id %>" data-prop="hadith.add" data-reset="true">
 				</div>
 		<% } else if (i.book_virtual == 1) { %>
-			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Delete" data-id="<%= i.id %>" data-prop="hadith_virtual.del">Delete</a>
+			<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Delete" data-id="<%= i.id %>" data-prop="hadith_virtual.del" data-loading-label="Deleting">
+				<span class="bi bi-trash"></span> Delete
+			</button>
 			<div class="input-group input-group-sm d-inline-flex align-middle ms-1 mb-1" style="width: 9rem;">
 				<button type="button" class="btn btn-outline-secondary" title="Add Reference" aria-label="Add Reference">
 					<span class="bi bi-file-plus-fill"></span>

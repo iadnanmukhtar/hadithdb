@@ -144,10 +144,20 @@
               <td><%- toc[i].start %></td>
               <td>C<%- toc[i].h1 %></td>
               <% if (toc[i].start) { %>
-              <td><a href="/<%- `${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a></td>
+              <td>
+                <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
+                  <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
+                </button>
+                <a href="/<%- `${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a>
+              </td>
               <td lang="ar"><a href="/<%- `${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
               <% } else { %>
-              <td class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en %></td>
+              <td>
+                <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
+                  <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
+                </button>
+                <span class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en %></span>
+              </td>
               <td lang="ar" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></td>
               <% } %>
             </tr>

@@ -17,7 +17,11 @@
     <% if (heading.page.hasNext || heading.page.number && heading.page.number > 1) { %>
     (<%- heading.page.number %>/<%- Math.ceil(chapter.count/global.settings.search.itemsPerPage)%>)
     <% } %>
-  </a></h2>
+  </a>
+  <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-heading-id="<%= chapter.id %>" title="Bookmark this chapter">
+    <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= chapter.id %>"></span>
+  </button>
+  </h2>
   
   <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="/<%=chapter.path%>">
     <%- arabic.toArabicDigits(chapter.h1 + '') %>۔
@@ -40,6 +44,9 @@
     <% } else if (heading.level == 2) { %>
       <a title="<%- chapter.title_en || 'Chapter' %>" href="/<%=chapter.path%>">Chapter <%- chapter.h1 %></a>
       &gt;
+      <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= section.id %>" title="Bookmark this section">
+        <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= section.id %>"></span>
+      </button>
       <span title="<%- section.title %>">Section <%- section.h2 %></span>
     <% } %>
   </div>

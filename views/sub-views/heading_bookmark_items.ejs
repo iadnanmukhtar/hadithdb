@@ -1,0 +1,26 @@
+<% for (const heading of headings) {
+  const type = heading.level === 1 ? 'Chapter' : (heading.level === 2 ? 'Section' : 'Subsection');
+  const ref = heading.level === 1
+    ? `${heading.h1}`
+    : `${heading.h1}.${heading.h2}${heading.h3 ? `.${heading.h3}` : ''}`;
+  const titleEn = heading.title_en || type;
+  const titleAr = heading.title || '';
+%>
+  <article class="bookmark-heading border-bottom pb-3" data-heading-id="<%= heading.id %>">
+    <div class="d-flex align-items-start gap-2">
+      <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center mt-1" data-heading-id="<%= heading.id %>" title="Remove bookmark">
+        <span class="heading-bookmark-icon bi bi-bookmark-fill text-accent" data-heading-id="<%= heading.id %>"></span>
+      </button>
+      <div class="flex-grow-1">
+        <div class="small text-muted"><%- heading.book_shortName_en %> <%- type %> <%- ref %></div>
+        <h2 class="fs-5 mb-1"><a href="/<%= heading.path %>"><%- titleEn %></a></h2>
+        <% if (titleAr) { %>
+          <div lang="ar" dir="rtl" class="fw-semibold"><a href="/<%= heading.path %>"><%- titleAr %></a></div>
+        <% } %>
+        <% if (heading.count !== undefined && heading.count !== null) { %>
+          <div class="small text-muted"><%= heading.count %> items</div>
+        <% } %>
+      </div>
+    </div>
+  </article>
+<% } %>

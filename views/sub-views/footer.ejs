@@ -19,8 +19,10 @@
 		window.hadithActionsInit = true;
 		const likedMap = {};
 		const bookmarkMap = {};
+		const headingBookmarkMap = {};
 		const LIKE_KEY = 'hadithLikedMap';
 		const BOOKMARK_KEY = 'hadithBookmarkMap';
+		const HEADING_BOOKMARK_KEY = 'headingBookmarkMap';
 
 		const loadMap = (key, target) => {
 			try {
@@ -45,8 +47,10 @@
 
 		const getButtons = () => Array.from(document.querySelectorAll('.hadith-like-btn[data-hadith-id]'));
 		const getBookmarkButtons = () => Array.from(document.querySelectorAll('.hadith-bookmark-btn[data-hadith-id]'));
+		const getHeadingBookmarkButtons = () => Array.from(document.querySelectorAll('.heading-bookmark-btn[data-heading-id]'));
 		const getIcon = (id) => document.querySelector(`.hadith-like-icon[data-hadith-id="${id}"]`);
 		const getBookmarkIcon = (id) => document.querySelector(`.hadith-bookmark-icon[data-hadith-id="${id}"]`);
+		const getHeadingBookmarkIcons = (id) => Array.from(document.querySelectorAll(`.heading-bookmark-icon[data-heading-id="${id}"]`));
 		const getCount = (id) => document.querySelector(`.hadith-like-count[data-hadith-id="${id}"]`);
 
 		const setState = (id, liked, likes) => {
@@ -59,6 +63,12 @@
 		const setBookmarkState = (id, bookmarked) => {
 			const icon = getBookmarkIcon(id);
 			if (icon) icon.className = bookmarked ? 'hadith-bookmark-icon bi bi-bookmark-fill text-accent' : 'hadith-bookmark-icon bi bi-bookmark text-accent';
+		};
+
+		const setHeadingBookmarkState = (id, bookmarked) => {
+			getHeadingBookmarkIcons(id).forEach(icon => {
+				icon.className = bookmarked ? 'heading-bookmark-icon bi bi-bookmark-fill text-accent' : 'heading-bookmark-icon bi bi-bookmark text-accent';
+			});
 		};
 
 		const requireLogin = () => {
@@ -124,6 +134,37 @@
 			}));
 		};
 
+		const removeBookmark = (id) => {
+			if (!bookmarkMap[id]) return;
+			delete bookmarkMap[id];
+			persistMap(BOOKMARK_KEY, bookmarkMap);
+			setBookmarkState(id, false);
+			document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
+				detail: { hadithId: id, bookmarked: false }
+			}));
+		};
+
+		const toggleHeadingBookmark = (id) => {
+			const bookmarked = !headingBookmarkMap[id];
+			if (bookmarked) headingBookmarkMap[id] = true;
+			else delete headingBookmarkMap[id];
+			persistMap(HEADING_BOOKMARK_KEY, headingBookmarkMap);
+			setHeadingBookmarkState(id, bookmarked);
+			document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
+				detail: { headingId: id, bookmarked }
+			}));
+		};
+
+		const removeHeadingBookmark = (id) => {
+			if (!headingBookmarkMap[id]) return;
+			delete headingBookmarkMap[id];
+			persistMap(HEADING_BOOKMARK_KEY, headingBookmarkMap);
+			setHeadingBookmarkState(id, false);
+			document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
+				detail: { headingId: id, bookmarked: false }
+			}));
+		};
+
 		const initLikes = () => {
 			const seen = new Set();
 			getButtons().forEach(btn => {
@@ -151,26 +192,51 @@
 			});
 		};
 
+		const initHeadingBookmarks = () => {
+			getHeadingBookmarkButtons().forEach(btn => {
+				const id = parseInt(btn.dataset.headingId);
+				if (Number.isNaN(id)) return;
+				setHeadingBookmarkState(id, !!headingBookmarkMap[id]);
+				if (btn.dataset.headingBookmarkInit === '1') return;
+				btn.dataset.headingBookmarkInit = '1';
+				btn.addEventListener('click', () => toggleHeadingBookmark(id));
+			});
+		};
+
 		const init = () => {
 			initLikes();
 			initBookmarks();
+			initHeadingBookmarks();
 		};
 
 		loadMap(LIKE_KEY, likedMap);
 		loadMap(BOOKMARK_KEY, bookmarkMap);
+		loadMap(HEADING_BOOKMARK_KEY, headingBookmarkMap);
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', init);
 		} else {
 			init();
 		}
 		window.refreshHadithActions = init;
+		window.refreshHeadingBookmarks = initHeadingBookmarks;
 		window.hadithBookmarks = {
 			getAll: () => Object.keys(bookmarkMap).map(id => parseInt(id, 10)).filter(id => !Number.isNaN(id)),
+			remove: removeBookmark,
 			clear: () => {
 				Object.keys(bookmarkMap).forEach(key => delete bookmarkMap[key]);
 				persistMap(BOOKMARK_KEY, bookmarkMap);
 				initBookmarks();
 				document.dispatchEvent(new CustomEvent('hadithBookmarksCleared'));
+			}
+		};
+		window.headingBookmarks = {
+			getAll: () => Object.keys(headingBookmarkMap).map(id => parseInt(id, 10)).filter(id => !Number.isNaN(id)),
+			remove: removeHeadingBookmark,
+			clear: () => {
+				Object.keys(headingBookmarkMap).forEach(key => delete headingBookmarkMap[key]);
+				persistMap(HEADING_BOOKMARK_KEY, headingBookmarkMap);
+				initHeadingBookmarks();
+				document.dispatchEvent(new CustomEvent('headingBookmarksCleared'));
 			}
 		};
 	})();

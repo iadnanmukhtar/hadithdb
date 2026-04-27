@@ -155,7 +155,7 @@ router.post('/:id/:prop', async function (req, res, next) {
           }
           } else if (col === 'footnote_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.footnote_en) && Utils.isTruthy(item.footnote)) {
-            item.footnote_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${item.footnote}`);
+            item.footnote_en = await Utils.openai(buildHadithContextTranslationPrompt(item, 'Arabic footnote', item.footnote));
             item.footnote_en = '[AI] ' + Utils.trimToEmpty(item.footnote_en);
             item.footnote_en = Utils.replacePBUH(item.footnote_en);
             status.value = item.footnote_en;
@@ -285,7 +285,7 @@ router.post('/:id/:prop', async function (req, res, next) {
         if (col === 'note_en' && Utils.isFalsey(status.value)) {
           item = new Item((await global.query(`SELECT * FROM v_hadiths_virtual WHERE hId=${ids[0]}`))[0]);
           if (Utils.isFalsey(item.note_en) && Utils.isTruthy(item.note)) {
-            item.note_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${item.note}`);
+            item.note_en = await Utils.openai(buildHadithContextTranslationPrompt(item, 'Arabic virtual hadith note', item.note));
             item.note_en = '[AI] ' + Utils.trimToEmpty(item.note_en);
             item.note_en = Utils.replacePBUH(item.note_en);
             status.value = item.note_en;
@@ -334,6 +334,23 @@ function sql(s) {
     return '"' + s + '"';
   }
   return null;
+}
+
+function buildHadithContextTranslationPrompt(item, sourceLabel, sourceText) {
+  var lines = [
+    'Translate the requested Arabic text into clear English.',
+    'Use the Arabic hadith body below only as context for meaning, pronouns, references, and terminology.',
+    'Return only the translation of the requested text, not the hadith body or any explanation.',
+    '',
+    'Arabic hadith body context:',
+    Utils.trimToEmpty(item.body)
+  ];
+  lines.push(
+    '',
+    `${sourceLabel} to translate:`,
+    Utils.trimToEmpty(sourceText)
+  );
+  return lines.join('\n');
 }
 
 async function reindexHeadingSubtreeByHeadingId(headingId) {
