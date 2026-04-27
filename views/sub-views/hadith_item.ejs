@@ -227,22 +227,38 @@
 	<%# Admin  ............................................................. %>
 	<% if (site.editMode && lang === "en") { %>
 		<aside class="admin">
-		<span class="bi bi-magic"></span>&nbsp;<a class="_click" title="Revise with AI" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise">Revise</a>
-		|
-		<% if (page.menu == 'Chapter' || page.menu == 'Section') { %>
-			<span class="bi bi-caret-up-square-fill"></span>&nbsp;<a class="_click" title="Move Up" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.moveup">Move Up</a>
-			|
-			<span class="bi bi-caret-down-square-fill"></span>&nbsp;<a class="_click" title="Move Down" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.movedn">Move Down</a>
-		<% }
-		   if (i.book_virtual == 0) { %>
-			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.del">Remove</a>
-			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Remove All Associations" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.delall">Remove All</a>
-			|
-			<span class="bi bi-file-plus-fill"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= i.id %>" data-prop="hadith.add" data-reset="true">
+			<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Revise with AI" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Revising">
+				<span class="bi bi-magic"></span> Revise
+			</button>
+			<% if (page.menu == 'Chapter' || page.menu == 'Section') { %>
+				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Move Up" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.moveup" data-loading-label="Moving">
+					<span class="bi bi-caret-up-square-fill"></span> Move Up
+				</button>
+				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Move Down" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.movedn" data-loading-label="Moving">
+					<span class="bi bi-caret-down-square-fill"></span> Move Down
+				</button>
+			<% }
+			   if (i.book_virtual == 0) { %>
+				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.del" data-loading-label="Removing">
+					<span class="bi bi-trash"></span> Remove
+				</button>
+				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove All Associations" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.delall" data-loading-label="Removing">
+					<span class="bi bi-trash"></span> Remove All
+				</button>
+				<div class="input-group input-group-sm d-inline-flex align-middle ms-1 mb-1" style="width: 9rem;">
+					<button type="button" class="btn btn-outline-secondary" title="Add Reference" aria-label="Add Reference">
+						<span class="bi bi-file-plus-fill"></span>
+					</button>
+					<input class="_e form-control border-secondary" title="Ref Num" aria-label="Ref Num" data-id="<%= i.id %>" data-prop="hadith.add" data-reset="true">
+				</div>
 		<% } else if (i.book_virtual == 1) { %>
 			<span class="bi bi-trash"></span>&nbsp;<a class="_click" title="Delete" data-id="<%= i.id %>" data-prop="hadith_virtual.del">Delete</a>
-			|
-			<span class="bi bi-file-plus-fill"></span>&nbsp;<input class="_e" title="Ref Num" data-id="<%= i.id %>" data-prop="hadith_virtual.add" data-reset="true">
+			<div class="input-group input-group-sm d-inline-flex align-middle ms-1 mb-1" style="width: 9rem;">
+				<button type="button" class="btn btn-outline-secondary" title="Add Reference" aria-label="Add Reference">
+					<span class="bi bi-file-plus-fill"></span>
+				</button>
+				<input class="_e form-control border-secondary" title="Ref Num" aria-label="Ref Num" data-id="<%= i.id %>" data-prop="hadith_virtual.add" data-reset="true">
+			</div>
 		<% } %>
 		</aside>
 	<% } %>

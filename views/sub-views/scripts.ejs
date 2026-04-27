@@ -146,7 +146,8 @@
 	        chain: 'hadith.chain',
 	        body: 'hadith.body',
 	        chain_en: 'hadith.chain_en',
-	        body_en: 'hadith.body_en'
+	        body_en: 'hadith.body_en',
+	        footnote_en: 'hadith.footnote_en'
 	      };
 	      Object.entries(fieldMap).forEach(([key, prop]) => {
 	        if (typeof revised[key] !== 'string')
@@ -174,6 +175,8 @@
 	      }
 	      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
 	        $(this).attr('submitting', 'true');
+	        const isClickableButton = $(this).attr('clickable') == 'true' && $(this).is('button');
+	        const originalButtonHtml = isClickableButton ? $(this).html() : null;
 	        var id = $(this).data('id');
 	        var prop = $(this).data('prop');
 	        var arabizi = $(this).data('arabizi');
@@ -189,29 +192,37 @@
 	        value = isMarkdownField ? normalizeMarkdownValue(value) : (value || '').toString().replace(/&nbsp;/g, ' ').trim();
 	        if (isMarkdownField)
 	          setMarkdownPreview(this, value);
+	        if (isClickableButton) {
+	          $(this).prop('disabled', true);
+	          $(this).html(`<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ${$(this).data('loading-label') || 'Working'}`);
+	        }
 	        var reqBody = {
 	          id: id,
 	          prop: prop,
 	          arabizi: arabizi,
 	          value: value,
-        };
+	        };
 	        try {
 	          var resBody = await update(reqBody);
 	          // update element on success
-		          if (resBody.code == 200) {
+	          if (resBody.code == 200) {
 	            if (resBody.value !== undefined)
 	              value = resBody.value;
-		            if (propStr === 'hadith.revise')
-		              applyHadithRevision(id, resBody.revised);
-		            if ($(this).data('reset') == 'true')
-		              value = '';
-		            if (!$(this).is('select') && value !== undefined && value !== null)
-		              setElementValue(this, value);
-		          }
+	            if (propStr === 'hadith.revise')
+	              applyHadithRevision(id, resBody.revised);
+	            if ($(this).data('reset') == 'true')
+	              value = '';
+	            if (!$(this).is('select') && value !== undefined && value !== null)
+	              setElementValue(this, value);
+	          }
 	        } finally {
-          $(this).removeAttr('submitting');
-          $(this).removeAttr('editing');
-        }
+	          if (isClickableButton) {
+	            $(this).prop('disabled', false);
+	            $(this).html(originalButtonHtml);
+	          }
+	          $(this).removeAttr('submitting');
+	          $(this).removeAttr('editing');
+	        }
 	      };
 	      e.stopPropagation();
 	    }
@@ -275,7 +286,7 @@
     });
 
     $('._click').each(function () {
-      if (!$(this).attr('href'))
+      if ($(this).is('a') && !$(this).attr('href'))
         $(this).attr('href', '#');
       $(this).attr('clickable', 'true');
       $(this).on('click', changeListener);
@@ -319,7 +330,7 @@
 
 <!-- Social Login -->
 <script type="text/javascript">
-  async function onAuth(user) {
+  async function onAuth(user, options = {}) {
       var res = {
         status: 403,
         statusText: 'Unable to login'
@@ -329,8 +340,10 @@
       });
       var resBody = JSON.parse(await res.text());
       if (res.status == 200) {
-        toastr.success('Logged in as ' + user.username);
-        window.location.reload();
+        if (!options.silent)
+          toastr.success('Logged in as ' + user.username);
+        if (options.reload !== false)
+          window.location.reload();
       } else {
         var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
         toastr.error(errMessage, `Update Error`);
@@ -355,6 +368,7 @@
 <!-- Firebase Auth (shared across pages) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   (function initFirebaseGlobal() {
     if (window.firebaseApp) return;
@@ -364,6 +378,7 @@
       projectId: '<%= global.settings.firebase.projectId || "" %>',
       appId: '<%= global.settings.firebase.appId || "" %>'
     };
+    const googleClientId = '<%= (global.settings.firebase && (global.settings.firebase.googleClientId || global.settings.firebase.clientId || global.settings.firebase.client_id)) || (global.settings.google && (global.settings.google.clientId || global.settings.google.client_id)) || "" %>';
     if (!firebaseConfig.apiKey) return;
     if (!firebase.apps?.length) {
       firebase.initializeApp(firebaseConfig);
@@ -388,7 +403,8 @@
       requireLogin: () => {
         toastr.error('Please sign in to like or comment.', 'Sign-in required');
       },
-      getUser
+      getUser,
+      googleClientId
     };
     window.firebaseApp = true;
   })();
@@ -402,6 +418,7 @@
     const mobileSlot = document.getElementById('nav-auth-mobile');
     if (!desktopSlot && !mobileSlot) return;
     window.navAuthInit = true;
+    let gsiStarted = false;
 
     const render = (user) => {
       const avatar = user && (user.photoURL || 'https://www.gravatar.com/avatar/?d=mp&s=48');
@@ -412,7 +429,7 @@
             <img src="${avatar}" alt="${name}" class="rounded-circle" width="32" height="32">
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><button type="button" class="dropdown-item nav-signout">Sign out</button></li>
+            <li><button type="button" class="dropdown-item nav-signout g_id_signout">Sign out</button></li>
           </ul>
         </div>
       `;
@@ -443,8 +460,60 @@
       }
     };
 
+    const waitForGoogleIdentity = () => new Promise(resolve => {
+      if (window.google?.accounts?.id) return resolve(window.google.accounts.id);
+      let attempts = 0;
+      const timer = setInterval(() => {
+        attempts += 1;
+        if (window.google?.accounts?.id) {
+          clearInterval(timer);
+          resolve(window.google.accounts.id);
+        } else if (attempts >= 40) {
+          clearInterval(timer);
+          resolve(null);
+        }
+      }, 100);
+    });
+
+    const signInWithGoogleCredential = async (response) => {
+      if (!response || !response.credential) return;
+      try {
+        const auth = firebase.auth();
+        const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+        const result = await auth.signInWithCredential(credential);
+        const user = result.user || auth.currentUser;
+        if (user && user.email)
+          await onAuth({ username: user.email }, { silent: true });
+      } catch (err) {
+        console.warn('Google automatic sign-in failed', err);
+      }
+    };
+
+    const startGoogleAutomaticSignIn = async () => {
+      if (gsiStarted || !window.hadithAuth?.googleClientId)
+        return;
+      gsiStarted = true;
+      const currentUser = await window.hadithAuth.getUser();
+      if (currentUser) {
+        gsiStarted = false;
+        return;
+      }
+      const googleId = await waitForGoogleIdentity();
+      if (!googleId) {
+        gsiStarted = false;
+        return;
+      }
+      googleId.initialize({
+        client_id: window.hadithAuth.googleClientId,
+        callback: signInWithGoogleCredential,
+        auto_select: true
+      });
+      googleId.prompt();
+    };
+
     const signOut = async () => {
       try {
+        window.google?.accounts?.id?.disableAutoSelect();
         await firebase.auth().signOut();
         await fetch('/login/logout', { credentials: 'same-origin' });
         document.cookie = 'admin=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
@@ -458,8 +527,13 @@
     };
 
     const auth = firebase.auth();
-    auth.onAuthStateChanged(render);
+    auth.onAuthStateChanged((user) => {
+      render(user);
+      if (!user)
+        startGoogleAutomaticSignIn();
+    });
     render(null);
+    startGoogleAutomaticSignIn();
   })();
 </script>
 

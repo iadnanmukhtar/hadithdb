@@ -197,13 +197,14 @@
               <span class="fw-semibold">${escapeHtml(name)}</span>
               <span class="comment-provider-chip">${escapeHtml(formatProvider(providerId))}</span>
             </div>
-            <button type="button" class="btn btn-link btn-sm p-0 comment-form-link ms-auto" id="<%= widgetId %>-logout">Sign out</button>
+            <button type="button" class="btn btn-link btn-sm p-0 comment-form-link ms-auto g_id_signout" id="<%= widgetId %>-logout">Sign out</button>
           `;
           textarea.disabled = false;
           submitBtn.disabled = false;
           setSubmitButton(editingId ? 'edit' : 'post');
           const logoutBtn = document.getElementById('<%= widgetId %>-logout');
           logoutBtn.onclick = async () => {
+            window.google?.accounts?.id?.disableAutoSelect();
             if (firebaseReady && firebase.auth) {
               await firebase.auth().signOut();
               currentUser = null;

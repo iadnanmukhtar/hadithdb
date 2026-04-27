@@ -122,7 +122,8 @@ router.post('/:id/:prop', async function (req, res, next) {
             chain: revised.item.chain,
             body: revised.item.body,
             chain_en: revised.item.chain_en,
-            body_en: revised.item.body_en
+            body_en: revised.item.body_en,
+            footnote_en: revised.item.footnote_en
           };
         } else {
           result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);

@@ -137,6 +137,8 @@ router.all('/do/:id', async function (req, res, next) {
         body_en: revised.item.body_en,
         body_en_html: Utils.markdownToHtml(revised.item.body_en),
         chain_en: revised.item.chain_en,
+        footnote_en: revised.item.footnote_en,
+        footnote_en_html: Utils.markdownToHtml(revised.item.footnote_en),
         title_en: revised.item.title_en
       });
       return;
