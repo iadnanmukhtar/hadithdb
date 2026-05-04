@@ -331,24 +331,35 @@
 <!-- Social Login -->
 <script type="text/javascript">
   async function onAuth(user, options = {}) {
-      var res = {
-        status: 403,
-        statusText: 'Unable to login'
-      };
-      res = await fetch(`/login/${user.username}`, {
-        method: 'GET'
-      });
-      var resBody = JSON.parse(await res.text());
-      if (res.status == 200) {
-        if (!options.silent)
-          toastr.success('Logged in as ' + user.username);
-        if (options.reload !== false)
-          window.location.reload();
-      } else {
-        var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
-        toastr.error(errMessage, `Update Error`);
+      if (window.hadithAuthLoginInFlight)
+        return window.hadithAuthLoginInFlight;
+
+      window.hadithAuthLoginInFlight = (async () => {
+        var res = {
+          status: 403,
+          statusText: 'Unable to login'
+        };
+        res = await fetch(`/login/${user.username}`, {
+          method: 'GET'
+        });
+        var resBody = JSON.parse(await res.text());
+        if (res.status == 200) {
+          if (!options.silent)
+            toastr.success('Logged in as ' + user.username);
+          if (options.reload !== false)
+            window.location.reload();
+        } else {
+          var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
+          toastr.error(errMessage, `Update Error`);
+        }
+        return resBody;
+      })();
+
+      try {
+        return await window.hadithAuthLoginInFlight;
+      } finally {
+        window.hadithAuthLoginInFlight = null;
       }
-      return resBody;
   }
 </script>
 
@@ -418,7 +429,7 @@
     const mobileSlot = document.getElementById('nav-auth-mobile');
     if (!desktopSlot && !mobileSlot) return;
     window.navAuthInit = true;
-    let gsiStarted = false;
+    let oneTapStarted = false;
 
     const render = (user) => {
       const avatar = user && (user.photoURL || 'https://www.gravatar.com/avatar/?d=mp&s=48');
@@ -429,7 +440,7 @@
             <img src="${avatar}" alt="${name}" class="rounded-circle" width="32" height="32">
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><button type="button" class="dropdown-item nav-signout g_id_signout">Sign out</button></li>
+            <li><button type="button" class="dropdown-item nav-signout">Sign out</button></li>
           </ul>
         </div>
       `;
@@ -475,38 +486,49 @@
       }, 100);
     });
 
-    const signInWithGoogleCredential = async (response) => {
+    const signInWithOneTapCredential = async (response) => {
       if (!response || !response.credential) return;
       try {
         const auth = firebase.auth();
         const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
         const result = await auth.signInWithCredential(credential);
         const user = result.user || auth.currentUser;
-        if (user && user.email)
+        if (user && user.email) {
+          sessionStorage.setItem('hadithdb_google_login', '1');
           await onAuth({ username: user.email }, { silent: true });
+        }
       } catch (err) {
-        console.warn('Google automatic sign-in failed', err);
+        console.warn('Google One Tap sign-in failed', err);
       }
     };
 
-    const startGoogleAutomaticSignIn = async () => {
-      if (gsiStarted || !window.hadithAuth?.googleClientId)
+    const startGoogleOneTap = async () => {
+      if (oneTapStarted)
         return;
-      gsiStarted = true;
+      if (!window.hadithAuth?.googleClientId) {
+        console.info('Google One Tap disabled: missing Google client id');
+        return;
+      }
+      oneTapStarted = true;
+
       const currentUser = await window.hadithAuth.getUser();
       if (currentUser) {
-        gsiStarted = false;
+        console.info('Google One Tap skipped: Firebase user is already signed in');
         return;
       }
+
       const googleId = await waitForGoogleIdentity();
       if (!googleId) {
-        gsiStarted = false;
+        console.info('Google One Tap disabled: Google Identity Services did not load');
         return;
       }
+
       googleId.initialize({
         client_id: window.hadithAuth.googleClientId,
-        callback: signInWithGoogleCredential,
-        auto_select: true
+        callback: signInWithOneTapCredential,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        itp_support: true
       });
       googleId.prompt();
     };
@@ -530,10 +552,10 @@
     auth.onAuthStateChanged((user) => {
       render(user);
       if (!user)
-        startGoogleAutomaticSignIn();
+        startGoogleOneTap();
     });
     render(null);
-    startGoogleAutomaticSignIn();
+    startGoogleOneTap();
   })();
 </script>
 
