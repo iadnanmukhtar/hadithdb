@@ -222,12 +222,12 @@ router.get('/', async function (req, res, next) {
   if (req.query.q) {
     req.query.q = Search.truncateQuery(req.query.q);
     // is it a item ref number?
-    if (req.query.q.match(/^([a-z]+:\d+|\d+)/)) {
+    if (!Search.isExpressionQuery(req.query.q) && req.query.q.match(/^([a-z]+:\d+|\d+)/)) {
       if (Library.instance.findBook(req.query.q.split(/:/)[0])) {
         res.redirect('/' + req.query.q);
         return;
       }
-    } else if (req.query.q.match(/^[a-z]+\//)) {
+    } else if (!Search.isExpressionQuery(req.query.q) && req.query.q.match(/^[a-z]+\//)) {
       if (Library.instance.findBook(req.query.q.split(/\//)[0])) {
         res.redirect('/' + req.query.q);
         return;
@@ -290,6 +290,10 @@ router.get('/', async function (req, res, next) {
     if (random.length > 0) {
       random = new Item(random[0]);
       random.single = true;
+      var admin = (req.cookies.admin == global.settings.admin.key);
+      var editMode = (admin && req.cookies.editMode == 1);
+      if (editMode)
+        await addVirtualReferences([random]);
     }
     res.render('index', {
       random: random,

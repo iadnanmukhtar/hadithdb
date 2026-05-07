@@ -4,10 +4,13 @@
 <head>
   <%
     var site = new Object(global.settings.site);
+    var isSearchResultsPage = (q && q != '');
     site.admin = (req.cookies.admin == admin.key);
     if (!locals.noadmin)
       site.editMode = (site.admin && req.cookies.editMode == 1);
     else
+      site.editMode = false;
+    if (isSearchResultsPage)
       site.editMode = false;
     
     var page = {
@@ -35,7 +38,7 @@
     }
 
     page.context = {
-      fromSearch: (q && q != '')
+      fromSearch: isSearchResultsPage
     };
     if (typeof book !== 'undefined') {
       page.context.book = book;
