@@ -191,16 +191,31 @@
 	<% } %>
 
 	<%# Books  ............................................................. %>
-	<% if (lang === 'en' && i.books) {
+	<% if (lang === 'en' && (i.books || (site.editMode && i.single && i.virtualReferences && i.virtualReferences.length))) {
 		var books = null;
-		books = i.books.replace(/[{}]/g, ' ');
-		books = books.split(/ +/).map(book => {
-			return `<a href="/${book}">${book}</a>`;
-		});
-		books = books.join(' ');
+		if (i.books) {
+			books = i.books.replace(/[{}]/g, ' ');
+			books = books.trim().split(/ +/).filter(Boolean).map(book => {
+				return `<a href="/${book}">${book}</a>`;
+			});
+			books = books.join(' ');
+		}
 		%>
 		<aside class="tags">
-			<div>also in: <%- books %></div>
+			<% if (books) { %>
+				<div>also in: <%- books %></div>
+			<% } %>
+			<% if (site.editMode && i.single && i.virtualReferences && i.virtualReferences.length) { %>
+				<div>referenced in:
+					<% i.virtualReferences.forEach((ref, idx) => { %>
+						<% if (idx > 0) { %> <span aria-hidden="true">&middot;</span> <% } %>
+						<%
+							const virtualHeadingTitle = ref.h2_title_en || ref.h1_title_en || `Chapter ${ref.h1}`;
+						%>
+						<a href="/<%= ref.path %>"><%= ref.book_shortName_en || ref.book_alias %>: <%= virtualHeadingTitle %></a>
+					<% }); %>
+				</div>
+			<% } %>
 		</aside>
 	<% } %>
 

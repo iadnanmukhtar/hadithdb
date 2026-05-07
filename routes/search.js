@@ -427,6 +427,10 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 
   results = results.map(item => new Item(item));
   results[0].single = true;
+  var admin = (req.cookies.admin == global.settings.admin.key);
+  var editMode = (admin && req.cookies.editMode == 1);
+  if (editMode)
+    await addVirtualReferences(results);
   for (var i = 0; i < results.length; i++) {
     results[i].similar = await Hadith.a_dbGetSimilarCandidates(new Item(results[i]));
     var bookSet = new Set();
@@ -496,6 +500,62 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     });
   }
 });
+
+async function addVirtualReferences(items) {
+  var ids = items
+    .map(item => parseInt(item.actual ? item.actual.id : item.hId || item.id, 10))
+    .filter(id => Number.isInteger(id));
+  ids = Array.from(new Set(ids));
+  if (ids.length < 1)
+    return;
+
+  var rows = await global.query(`
+    SELECT DISTINCT
+      hv.hadithId AS hId_ref,
+      b.id AS book_id,
+      b.alias AS book_alias,
+      b.shortName_en AS book_shortName_en,
+      hv.h1,
+      ch.title_en AS h1_title_en,
+      hv.h2,
+      sec.title_en AS h2_title_en
+    FROM hadiths_virtual hv
+    JOIN books b ON b.id = hv.bookId
+    LEFT JOIN toc ch ON ch.bookId = hv.bookId AND ch.level = 1 AND ch.h1 = hv.h1
+    LEFT JOIN toc sec ON sec.bookId = hv.bookId AND sec.level = 2 AND sec.h1 = hv.h1 AND sec.h2 = hv.h2
+    WHERE hv.hadithId IN (${ids.join(',')})
+    ORDER BY b.id, hv.h1, hv.h2`);
+  var refsByHadithId = new Map();
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var book = global.books.find(book => book.alias === row.book_alias);
+    if (book && book.hidden == 1)
+      continue;
+    if (!refsByHadithId.has(row.hId_ref))
+      refsByHadithId.set(row.hId_ref, []);
+    refsByHadithId.get(row.hId_ref).push({
+      book_alias: row.book_alias,
+      book_shortName_en: row.book_shortName_en,
+      h1: row.h1,
+      h1_title_en: row.h1_title_en,
+      h2: row.h2,
+      h2_title_en: row.h2_title_en,
+      path: buildVirtualReferencePath(row)
+    });
+  }
+
+  for (var j = 0; j < items.length; j++) {
+    var id = parseInt(items[j].actual ? items[j].actual.id : items[j].hId || items[j].id, 10);
+    items[j].virtualReferences = refsByHadithId.get(id) || [];
+  }
+}
+
+function buildVirtualReferencePath(row) {
+  var parts = [row.book_alias, row.h1];
+  if (row.h2)
+    parts.push(row.h2);
+  return parts.join('/');
+}
 
 // BOOK: TABLE OF CONTENTS
 router.get('/:bookAlias', async function (req, res, next) {
