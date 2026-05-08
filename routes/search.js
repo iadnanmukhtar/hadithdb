@@ -712,6 +712,16 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     var chapterNum = Number(Arabic.toLatinDigits(req.params.chapterNum));
     var sectionNum = Number(Arabic.toLatinDigits(req.params.sectionNum));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
+    if (bookAlias !== 'quran' && req.query.passage != undefined) {
+      delete req.query.passage;
+      var urlParts = req.url.split('?');
+      if (urlParts.length > 1) {
+        var queryParams = new URLSearchParams(urlParts[1]);
+        queryParams.delete('passage');
+        var queryString = queryParams.toString();
+        req.url = queryString ? `${urlParts[0]}?${queryString}` : urlParts[0];
+      }
+    }
 
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
     if ('flush' in req.query)
@@ -736,7 +746,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       results.push(item);
     }
 
-    if (req.query.passage != undefined) {
+    if (bookAlias === 'quran' && req.query.passage != undefined) {
 
       // cache response
       var refs = [];
