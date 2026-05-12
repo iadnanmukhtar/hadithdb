@@ -8,63 +8,89 @@
 	const arNarrator = enNarrator ? arabic.toArabic(enNarrator) : '';
 %>
 <aside class="h modal fade" id="H<%= i.id %>" tabindex="-1">
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <header class="modal-header">
-		<h1 class="modal-title fs-5" contenteditable="true"><%= en.title || '' %></h1>
+  <div class="modal-dialog modal-dialog-scrollable modal-xl hadith-share-dialog">
+    <div class="modal-content hadith-share-modal">
+      <header class="modal-header hadith-share-toolbar">
+		<h1 class="modal-title fs-5"><%= en.title || 'Share Hadith' %></h1>
+		<div class="hadith-share-actions">
+			<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-edit" title="Edit text" aria-label="Edit text" aria-pressed="false">
+				<span class="bi bi-pencil"></span>
+			</button>
+			<div class="form-check form-switch hadith-share-arabic-toggle" title="Show Arabic">
+				<input class="form-check-input hadith-share-arabic" type="checkbox" role="switch" id="H<%= i.id %>-arabic" checked>
+				<label class="form-check-label" for="H<%= i.id %>-arabic">Arabic</label>
+			</div>
+			<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-copy" title="Copy image" aria-label="Copy image">
+				<span class="bi bi-clipboard"></span>
+			</button>
+			<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-download" title="Download image" aria-label="Download image">
+				<span class="bi bi-download"></span>
+			</button>
+		</div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	  </header>
-      <section class="modal-body">
-		<% if (en.body) { %>
-        <p>
-			<div class="text-muted">
-				<% if (i.book_virtual) { %>
-					<%= String(enActual.book_shortName || i.book_shortName_en || '').toUpperCase() %> <%= en.num || i.num || '' %>:
-				<% } else { %>
-					<%= String(en.book_shortName || i.book_shortName_en || '').toUpperCase() %> <%= en.num || i.num || '' %>:
+      <section class="modal-body hadith-share-body">
+		<article class="hadith-share-card" data-share-card>
+			<div class="hadith-share-card-inner">
+				<% if (en.title) { %>
+					<h2 class="hadith-share-title share-editable" contenteditable="false"><%= en.title %></h2>
 				<% } %>
-				<% if (i.remark === 0 && enNarrator) { %>
-					from <em contenteditable="true"><%= enNarrator %></em> —
+				<% if (en.body) { %>
+					<section class="hadith-share-section" lang="en">
+						<div class="hadith-share-ref">
+							<% if (i.book_virtual) { %>
+								<%= String(enActual.book_shortName || i.book_shortName_en || '').toUpperCase() %> <%= en.num || i.num || '' %>:
+							<% } else { %>
+								<%= String(en.book_shortName || i.book_shortName_en || '').toUpperCase() %> <%= en.num || i.num || '' %>:
+							<% } %>
+							<% if (i.remark === 0 && enNarrator) { %>
+								from <em class="share-editable" contenteditable="false"><%= enNarrator %></em> —
+							<% } %>
+						</div>
+						<div class="body hadith-share-text share-editable" lang="en" contenteditable="false" data-markdown-source="<%= utils.emptyIfNull(en.body) %>">
+							<%- utils.markdownToHtml(en.body) %>
+						</div>
+					</section>
 				<% } %>
-			</div>
-			<div class="body" lang="en" contenteditable="true" data-markdown-source="<%= utils.emptyIfNull(en.body) %>">
-				<%- utils.markdownToHtml(en.body) %>
-			</div>
-		</p>
-		<% } %>
-        <p class="mt-2">
-			<div class="text-muted" lang="ar">
-				<%= ar.book_shortName || i.book_shortName || '' %> <%= ar.num || i.num || '' %>:
-				<% if (i.remark === 0 && arNarrator) { %>
-					عن <span contenteditable="true"><%= arNarrator %></span> —
+				<% if (ar.body) { %>
+					<section class="hadith-share-section hadith-share-arabic-section" lang="ar">
+						<div class="hadith-share-ref">
+							<%= ar.book_shortName || i.book_shortName || '' %> <%= ar.num || i.num || '' %>:
+							<% if (i.remark === 0 && arNarrator) { %>
+								عن <span class="share-editable" contenteditable="false"><%= arNarrator %></span> —
+							<% } %>
+						</div>
+						<div class="body hadith-share-text share-editable" lang="ar" contenteditable="false" data-markdown-source="<%= utils.emptyIfNull(ar.body) %>">
+							<%- utils.markdownToHtml(ar.body) %>
+						</div>
+					</section>
 				<% } %>
+				<footer class="hadith-share-footer">
+					<div>
+						<% if (i.remark === 0) { %>
+							<div class="grade">
+								<span class="share-editable" contenteditable="false"><%= en.grade_grade || '' %></span>&nbsp;(<span title="<%= en.grader_name || '' %>" class="share-editable" contenteditable="false"><%= en.grader_shortName || '' %></span>)
+							</div>
+						<% } %>
+						<div class="title share-editable" contenteditable="false">
+							<%= i.book_shortName_en || '' %>
+							<% if (i.chapter) { %>
+								&gt;
+								<%- utils.truncate(en.h1_title, 60, true) || 'Chapter' %>
+							<% } %>
+							<% if (i.section) { %>
+								&gt;
+								§&nbsp;<%- utils.truncate(en.h2_title, 60, true) || 'Section' %>
+							<% } %>
+						</div>
+					</div>
+					<div class="hadith-share-site">
+						hadithunlocked.com
+					</div>
+				</footer>
 			</div>
-			<div class="body" lang="ar" contenteditable="true" data-markdown-source="<%= utils.emptyIfNull(ar.body) %>">
-				<%- utils.markdownToHtml(ar.body) %>
-			</div>
-		</p>
-		<div class="text-muted">
-			<small>hadithunlocked.com</small>
-		</div>
+		</article>
 	  </section>
-      <footer class="modal-footer hanging-indent">
-		<% if (i.remark === 0) { %>
-			<div class="grade">
-				<span contenteditable="true"><%= en.grade_grade || '' %></span>&nbsp;(<span title="<%= en.grader_name || '' %>" contenteditable="true"><%= en.grader_shortName || '' %></span>)
-			</div>
-		<% } %>
-		<div class="title" contenteditable="true">
-			<%= i.book_shortName_en || '' %>
-			<% if (i.chapter) { %>
-				&gt;
-				<%- utils.truncate(en.h1_title, 60, true) || 'Chapter' %>
-			<% } %>
-			<% if (i.section) { %>
-				&gt;
-				§&nbsp;<%- utils.truncate(en.h2_title, 60, true) || 'Section' %>
-			<% } %>
-		</div>
-	  </footer>
     </div>
   </div>
 </aside>

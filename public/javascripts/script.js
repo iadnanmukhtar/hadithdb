@@ -86,6 +86,7 @@ $(function () {
 
 	initMarkdownEditablePreviews(document);
 	initHadithTranslateButtons(document);
+	initHadithShareModals(document);
 
 });
 
@@ -272,6 +273,162 @@ function initHadithTranslateButtons(root) {
 			}
 		});
 	});
+}
+
+function initHadithShareModals(root) {
+	var scope = root || document;
+	scope.querySelectorAll('.hadith-share-modal').forEach(function (modal) {
+		if (modal.dataset.shareModalBound === 'true')
+			return;
+		modal.dataset.shareModalBound = 'true';
+
+		var card = modal.querySelector('[data-share-card]');
+		var editButton = modal.querySelector('.hadith-share-edit');
+		var arabicSwitch = modal.querySelector('.hadith-share-arabic');
+		var copyButton = modal.querySelector('.hadith-share-copy');
+		var downloadButton = modal.querySelector('.hadith-share-download');
+
+		modal.addEventListener('shown.bs.modal', function () {
+			updateHadithShareArabicState(modal, card, arabicSwitch);
+			fitHadithShareCard(card);
+		});
+
+		if (editButton) {
+			editButton.addEventListener('click', function () {
+				var editing = editButton.getAttribute('aria-pressed') !== 'true';
+				editButton.setAttribute('aria-pressed', editing ? 'true' : 'false');
+				editButton.classList.toggle('active', editing);
+				editButton.title = editing ? 'Done editing' : 'Edit text';
+				editButton.setAttribute('aria-label', editing ? 'Done editing' : 'Edit text');
+				editButton.innerHTML = editing ? '<span class="bi bi-check2"></span>' : '<span class="bi bi-pencil"></span>';
+				modal.querySelectorAll('.share-editable').forEach(function (el) {
+					el.setAttribute('contenteditable', editing ? 'true' : 'false');
+				});
+				fitHadithShareCard(card);
+			});
+		}
+
+		if (arabicSwitch) {
+			arabicSwitch.addEventListener('change', function () {
+				updateHadithShareArabicState(modal, card, arabicSwitch);
+				fitHadithShareCard(card);
+			});
+		}
+
+		modal.querySelectorAll('.share-editable').forEach(function (el) {
+			el.addEventListener('input', function () {
+				fitHadithShareCard(card);
+			});
+		});
+
+		if (copyButton) {
+			copyButton.addEventListener('click', function () {
+				exportHadithShareCard(card, 'copy', copyButton);
+			});
+		}
+
+		if (downloadButton) {
+			downloadButton.addEventListener('click', function () {
+				exportHadithShareCard(card, 'download', downloadButton);
+			});
+		}
+	});
+}
+
+function updateHadithShareArabicState(modal, card, arabicSwitch) {
+	if (!modal || !card || !arabicSwitch)
+		return;
+	var showArabic = arabicSwitch.checked;
+	modal.querySelectorAll('.hadith-share-arabic-section').forEach(function (el) {
+		el.classList.toggle('d-none', !showArabic);
+	});
+	card.classList.toggle('hadith-share-english-only', !showArabic);
+}
+
+function fitHadithShareCard(card) {
+	if (!card)
+		return;
+	var inner = card.querySelector('.hadith-share-card-inner');
+	if (!inner)
+		return;
+
+	card.style.setProperty('--share-scale', '1');
+	var scale = 1;
+	var minScale = card.classList.contains('hadith-share-english-only') ? 0.58 : 0.68;
+	while (scale > minScale && inner.scrollHeight > inner.clientHeight + 1) {
+		scale -= 0.04;
+		card.style.setProperty('--share-scale', scale.toFixed(2));
+	}
+	card.classList.toggle('hadith-share-dense', scale < 0.86);
+}
+
+async function exportHadithShareCard(card, mode, button) {
+	if (!card)
+		return;
+	if (!window.html2canvas) {
+		if (window.toastr)
+			toastr.error('Image renderer is still loading. Try again in a moment.');
+		return;
+	}
+
+	var originalHtml = button ? button.innerHTML : '';
+	var originalDisabled = button ? button.disabled : false;
+	if (button) {
+		button.disabled = true;
+		button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>';
+	}
+
+	try {
+		if (document.activeElement && typeof document.activeElement.blur === 'function')
+			document.activeElement.blur();
+		fitHadithShareCard(card);
+		card.classList.add('is-exporting');
+		var cardWidth = card.getBoundingClientRect().width || 540;
+		var canvas = await window.html2canvas(card, {
+			backgroundColor: null,
+			scale: 1080 / cardWidth,
+			useCORS: true
+		});
+		if (mode === 'copy' && navigator.clipboard && window.ClipboardItem) {
+			await new Promise(function (resolve, reject) {
+				canvas.toBlob(function (blob) {
+					if (!blob) {
+						reject(new Error('Unable to render image.'));
+						return;
+					}
+					navigator.clipboard.write([
+						new ClipboardItem({
+							'image/png': blob
+						})
+					]).then(resolve).catch(reject);
+				}, 'image/png');
+			});
+			if (window.toastr)
+				toastr.success('Image copied to clipboard');
+			return;
+		}
+		downloadCanvas(canvas);
+		if (mode === 'copy' && window.toastr)
+			toastr.info('Clipboard image copy is unavailable in this browser. Downloaded PNG instead.');
+	} catch (err) {
+		if (window.toastr)
+			toastr.error(err.message || 'Unable to create image');
+	} finally {
+		card.classList.remove('is-exporting');
+		if (button) {
+			button.disabled = originalDisabled;
+			button.innerHTML = originalHtml;
+		}
+	}
+}
+
+function downloadCanvas(canvas) {
+	var link = document.createElement('a');
+	link.download = 'hadith-share.png';
+	link.href = canvas.toDataURL('image/png');
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
 }
 
 async function getTranslateCaptcha() {
