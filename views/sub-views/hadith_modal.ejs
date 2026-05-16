@@ -11,23 +11,38 @@
   <div class="modal-dialog modal-dialog-scrollable modal-xl hadith-share-dialog">
     <div class="modal-content hadith-share-modal">
       <header class="modal-header hadith-share-toolbar">
-		<h1 class="modal-title fs-5"><%= en.title || 'Share Hadith' %></h1>
 		<div class="hadith-share-actions">
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-edit" title="Edit text" aria-label="Edit text" aria-pressed="false">
-				<span class="bi bi-pencil"></span>
-			</button>
-			<div class="form-check form-switch hadith-share-arabic-toggle" title="Show Arabic">
-				<input class="form-check-input hadith-share-arabic" type="checkbox" role="switch" id="H<%= i.id %>-arabic" checked>
-				<label class="form-check-label" for="H<%= i.id %>-arabic">Arabic</label>
+			<div class="hadith-share-tool-group">
+				<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-edit" title="Edit text" aria-label="Edit text" aria-pressed="false">
+					<span class="bi bi-pencil"></span>
+				</button>
 			</div>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-copy" title="Copy image" aria-label="Copy image">
-				<span class="bi bi-clipboard"></span>
-			</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-download" title="Download image" aria-label="Download image">
-				<span class="bi bi-download"></span>
-			</button>
+			<div class="hadith-share-control-group">
+				<div class="form-check form-switch hadith-share-arabic-toggle" title="Show Arabic">
+					<input class="form-check-input hadith-share-arabic" type="checkbox" role="switch" id="H<%= i.id %>-arabic" checked>
+					<label class="form-check-label" for="H<%= i.id %>-arabic">Arabic</label>
+				</div>
+				<div class="hadith-share-size-controls" aria-label="Share image font sizes">
+					<label title="English text size">
+						<span>English</span>
+						<input class="form-range hadith-share-size" type="range" min="70" max="130" step="5" value="100" data-share-size-var="--share-english-tune">
+					</label>
+					<label title="Arabic text size">
+						<span>Arabic</span>
+						<input class="form-range hadith-share-size" type="range" min="70" max="130" step="5" value="100" data-share-size-var="--share-arabic-tune">
+					</label>
+				</div>
+			</div>
+			<div class="hadith-share-tool-group">
+				<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-copy" title="Copy image" aria-label="Copy image">
+					<span class="bi bi-clipboard"></span>
+				</button>
+				<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-download" title="Download image" aria-label="Download image">
+					<span class="bi bi-download"></span>
+				</button>
+			</div>
 		</div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	  </header>
       <section class="modal-body hadith-share-body">
 		<article class="hadith-share-card" data-share-card>

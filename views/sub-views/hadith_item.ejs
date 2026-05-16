@@ -235,7 +235,7 @@
 			<span class="bi bi-chat-right-text"></span>&nbsp;<a href="/<%= i.ref %>" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>">Reflect</a>
 			&nbsp;
 		<% } %>
-		<span class="bi bi-box-arrow-up"></span>&nbsp;<a href="/<%= i.actual ? i.actual.book_alias : i.book_alias %>:<%= i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num %>?sharepreview" type="button" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>" class="icon">Share</a>
+		<span class="bi bi-box-arrow-up"></span>&nbsp;<a href="#H<%= i.id %>" type="button" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>">Share</a>
 	<% } %>
 	</aside>
 

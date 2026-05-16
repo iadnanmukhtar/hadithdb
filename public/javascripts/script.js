@@ -282,15 +282,25 @@ function initHadithShareModals(root) {
 			return;
 		modal.dataset.shareModalBound = 'true';
 
+		var modalRoot = modal.closest('.modal') || modal;
 		var card = modal.querySelector('[data-share-card]');
 		var editButton = modal.querySelector('.hadith-share-edit');
 		var arabicSwitch = modal.querySelector('.hadith-share-arabic');
+		var sizeControls = modal.querySelectorAll('.hadith-share-size');
 		var copyButton = modal.querySelector('.hadith-share-copy');
 		var downloadButton = modal.querySelector('.hadith-share-download');
 
-		modal.addEventListener('shown.bs.modal', function () {
+		modalRoot.addEventListener('show.bs.modal', function () {
+			if (arabicSwitch)
+				arabicSwitch.checked = arabicSwitch.defaultChecked;
 			updateHadithShareArabicState(modal, card, arabicSwitch);
-			fitHadithShareCard(card);
+			updateHadithShareSizeState(card, sizeControls);
+		});
+
+		modalRoot.addEventListener('shown.bs.modal', function () {
+			updateHadithShareArabicState(modal, card, arabicSwitch);
+			updateHadithShareSizeState(card, sizeControls);
+			scheduleHadithShareCardFit(card);
 		});
 
 		if (editButton) {
@@ -304,20 +314,27 @@ function initHadithShareModals(root) {
 				modal.querySelectorAll('.share-editable').forEach(function (el) {
 					el.setAttribute('contenteditable', editing ? 'true' : 'false');
 				});
-				fitHadithShareCard(card);
+				scheduleHadithShareCardFit(card);
 			});
 		}
 
 		if (arabicSwitch) {
 			arabicSwitch.addEventListener('change', function () {
 				updateHadithShareArabicState(modal, card, arabicSwitch);
-				fitHadithShareCard(card);
+				scheduleHadithShareCardFit(card);
 			});
 		}
 
+		sizeControls.forEach(function (control) {
+			control.addEventListener('input', function () {
+				updateHadithShareSizeState(card, sizeControls);
+				scheduleHadithShareCardFit(card);
+			});
+		});
+
 		modal.querySelectorAll('.share-editable').forEach(function (el) {
 			el.addEventListener('input', function () {
-				fitHadithShareCard(card);
+				scheduleHadithShareCardFit(card);
 			});
 		});
 
@@ -335,6 +352,23 @@ function initHadithShareModals(root) {
 	});
 }
 
+function scheduleHadithShareCardFit(card) {
+	if (!card)
+		return;
+	fitHadithShareCard(card);
+	window.requestAnimationFrame(function () {
+		fitHadithShareCard(card);
+		window.requestAnimationFrame(function () {
+			fitHadithShareCard(card);
+		});
+	});
+	if (document.fonts && document.fonts.ready) {
+		document.fonts.ready.then(function () {
+			fitHadithShareCard(card);
+		}).catch(function () {});
+	}
+}
+
 function updateHadithShareArabicState(modal, card, arabicSwitch) {
 	if (!modal || !card || !arabicSwitch)
 		return;
@@ -345,6 +379,20 @@ function updateHadithShareArabicState(modal, card, arabicSwitch) {
 	card.classList.toggle('hadith-share-english-only', !showArabic);
 }
 
+function updateHadithShareSizeState(card, controls) {
+	if (!card)
+		return;
+	controls.forEach(function (control) {
+		var prop = control.dataset.shareSizeVar;
+		if (!prop)
+			return;
+		var value = Number(control.value);
+		if (!Number.isFinite(value) || value <= 0)
+			value = 100;
+		card.style.setProperty(prop, (value / 100).toFixed(2));
+	});
+}
+
 function fitHadithShareCard(card) {
 	if (!card)
 		return;
@@ -353,13 +401,18 @@ function fitHadithShareCard(card) {
 		return;
 
 	card.style.setProperty('--share-scale', '1');
+	card.classList.remove('hadith-share-dense');
 	var scale = 1;
-	var minScale = card.classList.contains('hadith-share-english-only') ? 0.58 : 0.68;
+	var minScale = card.classList.contains('hadith-share-english-only') ? 0.4 : 0.3;
 	while (scale > minScale && inner.scrollHeight > inner.clientHeight + 1) {
 		scale -= 0.04;
 		card.style.setProperty('--share-scale', scale.toFixed(2));
 	}
 	card.classList.toggle('hadith-share-dense', scale < 0.86);
+	while (scale > minScale && inner.scrollHeight > inner.clientHeight + 1) {
+		scale -= 0.02;
+		card.style.setProperty('--share-scale', scale.toFixed(2));
+	}
 }
 
 async function exportHadithShareCard(card, mode, button) {

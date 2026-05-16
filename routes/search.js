@@ -7,7 +7,6 @@ const createError = require('http-errors');
 const crypto = require('crypto');
 const fs = require('fs');
 const fm = require('front-matter');
-const nodeHtmlToImage = require('node-html-to-image');
 const ejs = require('ejs');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
@@ -464,29 +463,19 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
       res.end(Utils.toMarkdown(results));
     } else {
-      if (req.query.sharepreview !== undefined) {
-        res.render('share', {
-          book: results[0].book,
-          i: results[0]
+      if (req.query.sharepreview !== undefined || req.query.share !== undefined) {
+        var cleanParams = [];
+        Object.keys(req.query).forEach((key) => {
+          if (key === 'sharepreview' || key === 'share')
+            return;
+          var values = Array.isArray(req.query[key]) ? req.query[key] : [req.query[key]];
+          values.forEach((value) => {
+            cleanParams.push(value === '' ? encodeURIComponent(key) : `${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+          });
         });
-      } else if (req.query.share !== undefined) {
-        const html = ejs.render(fs.readFileSync(__dirname + '/../views/share.ejs', 'utf-8').toString(), {
-          req: req,
-          book: results[0].book,
-          i: results[0]
-        });
-        const image = await nodeHtmlToImage({
-          html: html,
-          type: 'png',
-          puppeteerArgs: {
-            defaultViewport: {
-              width: 680,
-              height: 680,
-            },
-          }
-        });
-        res.writeHead(200, { 'Content-Type': 'image/png' });
-        res.end(image, 'binary');
+        var cleanQuery = cleanParams.join('&');
+        var cleanUrl = req.path + (cleanQuery ? `?${cleanQuery}` : '');
+        res.redirect(302, cleanUrl || `/${results[0].ref}`);
       } else {
         res.render('search', {
           results: results,
