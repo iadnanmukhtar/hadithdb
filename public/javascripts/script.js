@@ -288,7 +288,7 @@ function initHadithShareModals(root) {
 		var arabicSwitch = modal.querySelector('.hadith-share-arabic');
 		var sizeControls = modal.querySelectorAll('.hadith-share-size');
 		var copyButton = modal.querySelector('.hadith-share-copy');
-		var downloadButton = modal.querySelector('.hadith-share-download');
+		var shareButton = modal.querySelector('.hadith-share-native');
 
 		modalRoot.addEventListener('show.bs.modal', function () {
 			if (arabicSwitch)
@@ -344,9 +344,9 @@ function initHadithShareModals(root) {
 			});
 		}
 
-		if (downloadButton) {
-			downloadButton.addEventListener('click', function () {
-				exportHadithShareCard(card, 'download', downloadButton);
+		if (shareButton) {
+			shareButton.addEventListener('click', function () {
+				exportHadithShareCard(card, 'share', shareButton);
 			});
 		}
 	});
@@ -442,25 +442,33 @@ async function exportHadithShareCard(card, mode, button) {
 			scale: 1080 / cardWidth,
 			useCORS: true
 		});
+		var blob = await canvasToBlob(canvas);
+		var filename = getHadithShareFilename(card.dataset.shareRef);
 		if (mode === 'copy' && navigator.clipboard && window.ClipboardItem) {
-			await new Promise(function (resolve, reject) {
-				canvas.toBlob(function (blob) {
-					if (!blob) {
-						reject(new Error('Unable to render image.'));
-						return;
-					}
-					navigator.clipboard.write([
-						new ClipboardItem({
-							'image/png': blob
-						})
-					]).then(resolve).catch(reject);
-				}, 'image/png');
-			});
+			await navigator.clipboard.write([
+				new ClipboardItem({
+					'image/png': blob
+				})
+			]);
 			if (window.toastr)
 				toastr.success('Image copied to clipboard');
 			return;
 		}
-		downloadCanvas(canvas, card.dataset.shareRef);
+		if (mode === 'share') {
+			var file = new File([blob], filename, { type: 'image/png' });
+			if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+				await navigator.share({
+					files: [file],
+					title: card.dataset.shareRef || 'Hadith share image'
+				});
+				return;
+			}
+			downloadBlob(blob, filename);
+			if (window.toastr)
+				toastr.info('Image sharing is unavailable in this browser. Downloaded PNG instead.');
+			return;
+		}
+		downloadBlob(blob, filename);
 		if (mode === 'copy' && window.toastr)
 			toastr.info('Clipboard image copy is unavailable in this browser. Downloaded PNG instead.');
 	} catch (err) {
@@ -475,14 +483,31 @@ async function exportHadithShareCard(card, mode, button) {
 	}
 }
 
-function downloadCanvas(canvas, ref) {
-	var link = document.createElement('a');
+function canvasToBlob(canvas) {
+	return new Promise(function (resolve, reject) {
+		canvas.toBlob(function (blob) {
+			if (!blob) {
+				reject(new Error('Unable to render image.'));
+				return;
+			}
+			resolve(blob);
+		}, 'image/png');
+	});
+}
+
+function getHadithShareFilename(ref) {
 	var filename = (ref || 'hadith-share').replace(/[^a-z0-9._:-]+/gi, '-').replace(/^-+|-+$/g, '') || 'hadith-share';
-	link.download = filename + '.png';
-	link.href = canvas.toDataURL('image/png');
+	return filename + '.png';
+}
+
+function downloadBlob(blob, filename) {
+	var link = document.createElement('a');
+	link.download = filename;
+	link.href = URL.createObjectURL(blob);
 	document.body.appendChild(link);
 	link.click();
 	link.remove();
+	URL.revokeObjectURL(link.href);
 }
 
 async function getTranslateCaptcha() {
