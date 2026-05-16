@@ -460,7 +460,7 @@ async function exportHadithShareCard(card, mode, button) {
 				toastr.success('Image copied to clipboard');
 			return;
 		}
-		downloadCanvas(canvas);
+		downloadCanvas(canvas, card.dataset.shareRef);
 		if (mode === 'copy' && window.toastr)
 			toastr.info('Clipboard image copy is unavailable in this browser. Downloaded PNG instead.');
 	} catch (err) {
@@ -475,9 +475,10 @@ async function exportHadithShareCard(card, mode, button) {
 	}
 }
 
-function downloadCanvas(canvas) {
+function downloadCanvas(canvas, ref) {
 	var link = document.createElement('a');
-	link.download = 'hadith-share.png';
+	var filename = (ref || 'hadith-share').replace(/[^a-z0-9._:-]+/gi, '-').replace(/^-+|-+$/g, '') || 'hadith-share';
+	link.download = filename + '.png';
 	link.href = canvas.toDataURL('image/png');
 	document.body.appendChild(link);
 	link.click();

@@ -6,6 +6,7 @@
 	const enNarrators = enChain.split(/(>|&gt;)/).filter(part => !part.match(/^(>|&gt;)$/) && utils.emptyIfNull(part) !== '');
 	const enNarrator = enNarrators.length > 0 ? utils.emptyIfNull(enNarrators[enNarrators.length - 1]).trim() : '';
 	const arNarrator = enNarrator ? arabic.toArabic(enNarrator) : '';
+	const shareRef = i.ref || `${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? en.actual?.num || i.actual?.num || i.num : en.num || i.num}`;
 %>
 <aside class="h modal fade" id="H<%= i.id %>" tabindex="-1">
   <div class="modal-dialog modal-dialog-scrollable modal-xl hadith-share-dialog">
@@ -45,7 +46,7 @@
 		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	  </header>
       <section class="modal-body hadith-share-body">
-		<article class="hadith-share-card" data-share-card>
+		<article class="hadith-share-card" data-share-card data-share-ref="<%= shareRef %>">
 			<div class="hadith-share-card-inner">
 				<% if (en.title) { %>
 					<h2 class="hadith-share-title share-editable" contenteditable="false"><%= en.title %></h2>
