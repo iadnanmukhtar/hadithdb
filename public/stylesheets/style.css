@@ -546,7 +546,7 @@ nav .nav-link {
 	width: min(100%, 540px);
 	aspect-ratio: 4 / 5;
 	margin: 0 auto;
-	padding: 18px;
+	padding: max(10px, calc(18px * var(--share-scale)));
 	border-radius: 8px;
 	background:
 		linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 248, 248, 0.98)),
@@ -560,7 +560,7 @@ nav .nav-link {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	padding: max(14px, calc(28px * var(--share-scale)));
+	padding: max(8px, calc(28px * var(--share-scale)));
 	border: 1px solid rgba(95, 72, 45, 0.28);
 	border-radius: 6px;
 	background: rgba(255, 255, 255, 0.82);
@@ -654,7 +654,7 @@ nav .nav-link {
 }
 
 .hadith-share-dense .hadith-share-card-inner {
-	padding: max(12px, calc(24px * var(--share-scale)));
+	padding: max(8px, calc(24px * var(--share-scale)));
 }
 
 .hadith-share-dense .hadith-share-section+.hadith-share-section {

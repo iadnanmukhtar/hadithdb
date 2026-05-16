@@ -301,6 +301,7 @@ function initHadithShareModals(root) {
 			updateHadithShareArabicState(modal, card, arabicSwitch);
 			updateHadithShareSizeState(card, sizeControls);
 			scheduleHadithShareCardFit(card);
+			scheduleHadithShareRender(card);
 		});
 
 		if (editButton) {
@@ -315,6 +316,7 @@ function initHadithShareModals(root) {
 					el.setAttribute('contenteditable', editing ? 'true' : 'false');
 				});
 				scheduleHadithShareCardFit(card);
+				invalidateHadithShareRender(card);
 			});
 		}
 
@@ -322,6 +324,7 @@ function initHadithShareModals(root) {
 			arabicSwitch.addEventListener('change', function () {
 				updateHadithShareArabicState(modal, card, arabicSwitch);
 				scheduleHadithShareCardFit(card);
+				scheduleHadithShareRender(card);
 			});
 		}
 
@@ -329,12 +332,14 @@ function initHadithShareModals(root) {
 			control.addEventListener('input', function () {
 				updateHadithShareSizeState(card, sizeControls);
 				scheduleHadithShareCardFit(card);
+				scheduleHadithShareRender(card);
 			});
 		});
 
 		modal.querySelectorAll('.share-editable').forEach(function (el) {
 			el.addEventListener('input', function () {
 				scheduleHadithShareCardFit(card);
+				scheduleHadithShareRender(card);
 			});
 		});
 
@@ -345,6 +350,7 @@ function initHadithShareModals(root) {
 		}
 
 		if (shareButton) {
+			card._shareButton = shareButton;
 			shareButton.addEventListener('click', function () {
 				exportHadithShareCard(card, 'share', shareButton);
 			});
@@ -365,8 +371,62 @@ function scheduleHadithShareCardFit(card) {
 	if (document.fonts && document.fonts.ready) {
 		document.fonts.ready.then(function () {
 			fitHadithShareCard(card);
+			scheduleHadithShareRender(card);
 		}).catch(function () {});
 	}
+}
+
+function invalidateHadithShareRender(card) {
+	if (!card)
+		return;
+	window.clearTimeout(card._shareRenderTimer);
+	card._shareBlob = null;
+	card._shareFile = null;
+	card._shareRendering = false;
+	card._shareRenderPromise = null;
+	if (card._shareButton)
+		card._shareButton.disabled = false;
+}
+
+function scheduleHadithShareRender(card) {
+	if (!card || !window.html2canvas)
+		return;
+	window.clearTimeout(card._shareRenderTimer);
+	card._shareRenderTimer = window.setTimeout(function () {
+		renderHadithShareImage(card).catch(function (err) {
+			console.warn('Unable to prepare share image', err);
+		});
+	}, 150);
+}
+
+async function renderHadithShareImage(card) {
+	if (!card || !window.html2canvas)
+		return null;
+	if (card._shareRenderPromise)
+		return card._shareRenderPromise;
+	card._shareRendering = true;
+	card._shareRenderPromise = (async function () {
+		try {
+			fitHadithShareCard(card);
+			card.classList.add('is-exporting');
+			var cardWidth = card.getBoundingClientRect().width || 540;
+			var canvas = await window.html2canvas(card, {
+				backgroundColor: null,
+				scale: 1080 / cardWidth,
+				useCORS: true
+			});
+			var blob = await canvasToBlob(canvas);
+			var filename = getHadithShareFilename(card.dataset.shareRef);
+			card._shareBlob = blob;
+			card._shareFile = window.File ? new File([blob], filename, { type: 'image/png' }) : null;
+			return blob;
+		} finally {
+			card.classList.remove('is-exporting');
+			card._shareRendering = false;
+			card._shareRenderPromise = null;
+		}
+	})();
+	return card._shareRenderPromise;
 }
 
 function updateHadithShareArabicState(modal, card, arabicSwitch) {
@@ -403,7 +463,7 @@ function fitHadithShareCard(card) {
 	card.style.setProperty('--share-scale', '1');
 	card.classList.remove('hadith-share-dense');
 	var scale = 1;
-	var minScale = card.classList.contains('hadith-share-english-only') ? 0.4 : 0.3;
+	var minScale = card.classList.contains('hadith-share-english-only') ? 0.28 : 0.2;
 	while (scale > minScale && inner.scrollHeight > inner.clientHeight + 1) {
 		scale -= 0.04;
 		card.style.setProperty('--share-scale', scale.toFixed(2));
@@ -418,6 +478,31 @@ function fitHadithShareCard(card) {
 async function exportHadithShareCard(card, mode, button) {
 	if (!card)
 		return;
+	if (mode === 'share' && card._shareFile && navigator.share && navigator.canShare && navigator.canShare({ files: [card._shareFile] })) {
+		try {
+			await navigator.share({
+				files: [card._shareFile],
+				title: card.dataset.shareRef || 'Hadith share image'
+			});
+		} catch (err) {
+			if (err && err.name === 'AbortError')
+				return;
+			if (card._shareBlob) {
+				downloadBlob(card._shareBlob, card._shareFile.name);
+				if (window.toastr)
+					toastr.info('Image sharing is unavailable in this browser. Downloaded PNG instead.');
+				return;
+			}
+			throw err;
+		}
+		return;
+	}
+	if (mode === 'share' && navigator.share && navigator.canShare && window.File && !card._shareFile) {
+		scheduleHadithShareRender(card);
+		if (window.toastr)
+			toastr.info('Preparing the image. Tap share again in a moment.');
+		return;
+	}
 	if (!window.html2canvas) {
 		if (window.toastr)
 			toastr.error('Image renderer is still loading. Try again in a moment.');
@@ -434,15 +519,7 @@ async function exportHadithShareCard(card, mode, button) {
 	try {
 		if (document.activeElement && typeof document.activeElement.blur === 'function')
 			document.activeElement.blur();
-		fitHadithShareCard(card);
-		card.classList.add('is-exporting');
-		var cardWidth = card.getBoundingClientRect().width || 540;
-		var canvas = await window.html2canvas(card, {
-			backgroundColor: null,
-			scale: 1080 / cardWidth,
-			useCORS: true
-		});
-		var blob = await canvasToBlob(canvas);
+		var blob = await renderHadithShareImage(card);
 		var filename = getHadithShareFilename(card.dataset.shareRef);
 		if (mode === 'copy' && navigator.clipboard && window.ClipboardItem) {
 			await navigator.clipboard.write([
@@ -455,8 +532,8 @@ async function exportHadithShareCard(card, mode, button) {
 			return;
 		}
 		if (mode === 'share') {
-			var file = new File([blob], filename, { type: 'image/png' });
-			if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+			var file = window.File ? new File([blob], filename, { type: 'image/png' }) : null;
+			if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
 				await navigator.share({
 					files: [file],
 					title: card.dataset.shareRef || 'Hadith share image'
@@ -472,6 +549,13 @@ async function exportHadithShareCard(card, mode, button) {
 		if (mode === 'copy' && window.toastr)
 			toastr.info('Clipboard image copy is unavailable in this browser. Downloaded PNG instead.');
 	} catch (err) {
+		if (err && err.name === 'AbortError')
+			return;
+		if (mode === 'share' && err && (err.name === 'NotAllowedError' || /not allowed|permission/i.test(err.message || ''))) {
+			if (window.toastr)
+				toastr.info('Image sharing was blocked by the browser. Try the copy button or tap Share again after the image finishes preparing.');
+			return;
+		}
 		if (window.toastr)
 			toastr.error(err.message || 'Unable to create image');
 	} finally {
