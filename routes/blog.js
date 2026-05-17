@@ -10,6 +10,7 @@ const markdownit = require('markdown-it');
 const markdownitfence = require('markdown-it-fence')
 
 const router = express.Router();
+const BLOG_PLACEHOLDER_COVER = '/images/pearls_of_the_deep.jpg';
 
 router.get('/', async function (req, res, next) {
 
@@ -35,6 +36,7 @@ router.get('/', async function (req, res, next) {
         const { attributes } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
         var post = new Object(attributes);
         post.file = file.replace(/.md$/, '');
+        applyCoverFallback(post);
         if (!post.hidden)
           posts.push(post);
       } catch (e) {
@@ -100,10 +102,11 @@ router.get('/:title', async function (req, res, next) {
   if (fs.existsSync(filename)) {
 
     const { attributes, body } = fm(fs.readFileSync(filename).toString());
+    const attr = applyCoverFallback(new Object(attributes));
     const html = renderHtml(body);
 
     res.render('blog_post', {
-      attr: attributes,
+      attr: attr,
       body: html,
       slug
     });
@@ -131,6 +134,7 @@ function getPosts() {
         post.lastmod = stat.mtime;
         post.file = file.replace(/.md$/, '');
         post.html = html;
+        applyCoverFallback(post);
         if (!(post.hidden === 'true'))
           posts.push(post);
       } catch (e) {
@@ -143,6 +147,23 @@ function getPosts() {
     return b.published - a.published;
   });
   return posts;
+}
+
+function applyCoverFallback(post) {
+  if (typeof post.cover !== 'string' || post.cover.trim().length === 0)
+    post.cover = BLOG_PLACEHOLDER_COVER;
+  else
+    post.cover = post.cover.trim();
+  post.coverUrl = absoluteCoverUrl(post.cover);
+  return post;
+}
+
+function absoluteCoverUrl(cover) {
+  if (/^https?:\/\//i.test(cover))
+    return cover;
+  if (cover.startsWith('/'))
+    return `${global.settings.site.url}${cover}`;
+  return `${global.settings.blog.url}/${cover}`;
 }
 
 function renderHtml(body) {
