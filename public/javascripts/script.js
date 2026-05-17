@@ -289,6 +289,17 @@ function initHadithShareModals(root) {
 		var sizeControls = modal.querySelectorAll('.hadith-share-size');
 		var copyButton = modal.querySelector('.hadith-share-copy');
 		var shareButton = modal.querySelector('.hadith-share-native');
+		var resizeTimer = null;
+		var handleViewportChange = function () {
+			if (!modalRoot.classList.contains('show'))
+				return;
+			if (resizeTimer)
+				window.clearTimeout(resizeTimer);
+			resizeTimer = window.setTimeout(function () {
+				scheduleHadithShareCardFit(card);
+				scheduleHadithShareRender(card);
+			}, 80);
+		};
 
 		modalRoot.addEventListener('show.bs.modal', function () {
 			if (arabicSwitch)
@@ -298,10 +309,24 @@ function initHadithShareModals(root) {
 		});
 
 		modalRoot.addEventListener('shown.bs.modal', function () {
+			window.addEventListener('resize', handleViewportChange);
+			if (window.visualViewport)
+				window.visualViewport.addEventListener('resize', handleViewportChange);
 			updateHadithShareArabicState(modal, card, arabicSwitch);
 			updateHadithShareSizeState(card, sizeControls);
 			scheduleHadithShareCardFit(card);
 			scheduleHadithShareRender(card);
+		});
+
+		modalRoot.addEventListener('hidden.bs.modal', function () {
+			if (resizeTimer) {
+				window.clearTimeout(resizeTimer);
+				resizeTimer = null;
+			}
+			window.removeEventListener('resize', handleViewportChange);
+			if (window.visualViewport)
+				window.visualViewport.removeEventListener('resize', handleViewportChange);
+			invalidateHadithShareRender(card);
 		});
 
 		if (editButton) {
