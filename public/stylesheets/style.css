@@ -637,10 +637,10 @@ nav .nav-link {
 
 .hadith-share-footer {
 	display: flex;
+	flex-direction: column;
 	flex: 0 0 auto;
-	align-items: flex-end;
-	justify-content: space-between;
-	gap: 16px;
+	align-items: stretch;
+	gap: 8px;
 	margin-top: auto;
 	padding-top: calc(15px * var(--share-scale));
 	border-top: 1px solid rgba(95, 72, 45, 0.22);
@@ -666,7 +666,6 @@ nav .nav-link {
 }
 
 .hadith-share-site {
-	flex: 0 0 auto;
 	color: var(--c-accent);
 	font-weight: 700;
 	letter-spacing: 0;
@@ -687,11 +686,21 @@ nav .nav-link {
 }
 
 @media (max-width: 575.98px) {
+	.hadith-share-root {
+		inset: 0;
+		width: 100vw;
+		height: 100vh;
+		height: 100dvh;
+		padding: 0 !important;
+	}
+
 	.modal-dialog.hadith-share-dialog {
 		width: 100vw;
 		max-width: none;
 		height: 100vh;
 		height: 100dvh;
+		min-height: 100vh;
+		min-height: 100dvh;
 		margin: 0;
 	}
 
@@ -702,6 +711,8 @@ nav .nav-link {
 		width: 100%;
 		height: 100vh;
 		height: 100dvh;
+		min-height: 100vh;
+		min-height: 100dvh;
 		max-height: none;
 		border-radius: 0;
 	}
@@ -767,7 +778,9 @@ nav .nav-link {
 	.hadith-share-dialog.modal-dialog-scrollable .hadith-share-body,
 	.hadith-share-body {
 		flex: 1 1 auto;
+		display: flex;
 		min-height: 0;
+		height: 100%;
 		padding: 0.75rem 0.6rem max(0.75rem, env(safe-area-inset-bottom));
 		overflow: auto;
 	}
@@ -775,12 +788,21 @@ nav .nav-link {
 	.hadith-share-card {
 		width: min(100%, 540px, calc((100vh - 9.25rem) * 0.8));
 		width: min(100%, 540px, calc((100dvh - 9.25rem) * 0.8));
+		max-height: 100%;
 		min-width: 0;
 		box-shadow: 0 1rem 2rem rgba(17, 17, 17, 0.24);
 	}
 
+	@supports (height: min(100%, 1px)) {
+		.hadith-share-card {
+			width: auto;
+			height: min(100%, calc((100vw - 1.2rem) * 1.25));
+			max-width: 100%;
+		}
+	}
+
 	.hadith-share-footer {
-		display: flex;
+		flex-shrink: 0;
 		gap: 0.45rem;
 		padding-top: calc(10px * var(--share-scale));
 		font-size: calc(12px * var(--share-scale) * var(--share-english-tune));

@@ -8,7 +8,7 @@
 	const arNarrator = enNarrator ? arabic.toArabic(enNarrator) : '';
 	const shareRef = i.ref || `${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? en.actual?.num || i.actual?.num || i.num : en.num || i.num}`;
 %>
-<aside class="h modal fade" id="H<%= i.id %>" tabindex="-1">
+<aside class="h modal fade hadith-share-root" id="H<%= i.id %>" tabindex="-1">
   <div class="modal-dialog modal-dialog-scrollable modal-xl hadith-share-dialog">
     <div class="modal-content hadith-share-modal">
       <header class="modal-header hadith-share-toolbar">
