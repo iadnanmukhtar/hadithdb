@@ -10,7 +10,6 @@ const { Library } = require('../lib/Model');
 
 const DEFAULT_BOOK = '16';
 const DEFAULT_TABLE = 'hadiths_sim_candidates';
-const DELETE_CHUNK_SIZE = 500;
 
 (async () => {
 	try {
@@ -41,12 +40,6 @@ const DELETE_CHUNK_SIZE = 500;
 		console.log('Loading candidate pool from all books...');
 		var candidateHadiths = await loadCandidateHadiths();
 		console.log(`Loaded ${candidateHadiths.length} candidate hadith(s).`);
-
-		if (!options.dryRun) {
-			var sourceLabel = options.id !== null ? `hadith ${options.id}` : `source book ${book.alias}`;
-			console.log(`Clearing existing rows in ${options.table} for ${sourceLabel}...`);
-			await deleteExistingRows(sourceHadiths, options.table);
-		}
 
 		var summary = await findMatches(sourceHadiths, candidateHadiths, options);
 		console.log(
@@ -104,15 +97,11 @@ ORDER BY bookId, ordinal`;
 	return Hadith.a_dbGetDisemvoweledHadiths(sql);
 }
 
-async function deleteExistingRows(sourceHadiths, tableName) {
-	var ids = sourceHadiths.map(hadith => hadith.id);
-	for (var i = 0; i < ids.length; i += DELETE_CHUNK_SIZE) {
-		var batch = ids.slice(i, i + DELETE_CHUNK_SIZE);
-		await global.query(
-			`DELETE FROM ${tableName} ` +
-			`WHERE hadithId1 IN (${batch.join(',')}) OR hadithId2 IN (${batch.join(',')})`
-		);
-	}
+async function deleteExistingRowsForSource(sourceHadith, tableName) {
+	await global.query(
+		`DELETE FROM ${tableName} ` +
+		`WHERE hadithId1=${sourceHadith.id} OR hadithId2=${sourceHadith.id}`
+	);
 }
 
 async function findMatches(sourceHadiths, candidateHadiths, options) {
@@ -156,6 +145,8 @@ async function findMatches(sourceHadiths, candidateHadiths, options) {
 		}
 
 		if (!options.dryRun && inserts.length > 0) {
+			console.log(`Replacing existing rows in ${options.table} for ${sourceRef}...`);
+			await deleteExistingRowsForSource(sourceHadith, options.table);
 			await global.query(
 				`INSERT INTO ${options.table} (hadithId1, hadithId2, rating) VALUES ${inserts.join(',')}`
 			);
