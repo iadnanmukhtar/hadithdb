@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* jslint node:true, esversion:8 */
 /*
  * Hadith Grades Parser for Shamela Book: https://old.shamela.ws/index.php/book/1734

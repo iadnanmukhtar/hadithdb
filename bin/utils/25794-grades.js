@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
  * Hadith Grades Parser for Shamela Book: https://old.shamela.ws/index.php/book/25794
  * Musnad Ahmad, Authenticated by Shaykh Arna'ūt

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* jslint node:true, esversion:9 */
 'use strict';
 
@@ -24,4 +25,3 @@ global.query = util.promisify(dbPool.query).bind(dbPool);
 	}
 	console.log('done');
 })();
-
