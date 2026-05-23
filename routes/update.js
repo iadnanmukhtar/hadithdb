@@ -341,8 +341,8 @@ router.post('/:id/:prop', async function (req, res, next) {
     }
 
   } catch (err) {
-    status.message = err.message;
-    status.code = 500;
+    status.message = updateErrorMessage(err);
+    status.code = updateErrorStatus(err);
     debug(`${status.message}:\n${err.stack}`);
   } finally {
     debug(`update status:${status.code}, id:${ids}, prop:${prop}, value:${(status.value + '').trim().substring(0, 20)}`);
@@ -362,6 +362,23 @@ function sql(s) {
     return '"' + s + '"';
   }
   return null;
+}
+
+function updateErrorStatus(err) {
+  var code = err?.status || err?.statusCode || err?.response?.status || 500;
+  code = parseInt(code, 10);
+  if (!Number.isInteger(code) || code < 400 || code > 599)
+    return 500;
+  return code;
+}
+
+function updateErrorMessage(err) {
+  var upstreamMessage = err?.response?.data?.error?.message || err?.response?.data?.message;
+  if (upstreamMessage)
+    return upstreamMessage;
+  if (err?.response?.status === 429)
+    return 'OpenAI rate limit exceeded. Wait a bit and retry.';
+  return err?.message || 'Unable to process update';
 }
 
 function similarPairsFromIds(ids) {
