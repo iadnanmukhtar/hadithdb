@@ -269,7 +269,7 @@
 						<span class="bi bi-arrow-down-circle"></span> Make Candidate
 					</button>
 				<% } %>
-				<% if (isSimilarSection) { %>
+				<% if (isSimilarSection && !i.similarSecondHopCandidate) { %>
 					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.del" data-loading-label="Removing">
 						<span class="bi bi-trash"></span> Remove
 					</button>
