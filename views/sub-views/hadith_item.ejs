@@ -264,6 +264,10 @@
 					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Make actual similar hadith" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.add" data-loading-label="Adding">
 						<span class="bi bi-check2-circle"></span> Make Similar
 					</button>
+				<% } else if (isSimilarSection && i.similarDemotable) { %>
+					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Make similar candidate" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.demote" data-loading-label="Moving">
+						<span class="bi bi-arrow-down-circle"></span> Make Candidate
+					</button>
 				<% } %>
 				<% if (isSimilarSection) { %>
 					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.del" data-loading-label="Removing">

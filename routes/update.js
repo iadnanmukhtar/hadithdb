@@ -313,6 +313,12 @@ router.post('/:id/:prop', async function (req, res, next) {
         result = await global.query(`DELETE FROM hadiths_sim_candidates
           WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
         status.value = 'Added';
+      } else if (col == 'demote') {
+        var result = await global.query(`INSERT IGNORE INTO hadiths_sim_candidates
+          (hadithId1, hadithId2, rating) VALUES (${ids[0]}, ${ids[1]}, 1)`);
+        result = await global.query(`DELETE FROM hadiths_sim
+          WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
+        status.value = 'Moved';
       } else if (col == 'del') {
         var result = await global.query(`DELETE FROM hadiths_sim_candidates 
           WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
