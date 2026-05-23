@@ -446,7 +446,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     }
     results[i].similarBooks = Array.from(bookSet);
     results[i].similarBooks.sort(function (book1, book2) {
-      return book1.id - book2.id;
+      return book1.ordinal - book2.ordinal;
     });
   }
   if (results.length > 0) {

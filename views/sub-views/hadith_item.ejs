@@ -4,6 +4,7 @@
 	var langSuff = (lang === 'en') ? '_en' : '';
 	var chapter = page.context.chapter;
     var sections = [];
+	var isSimilarSection = typeof similarSection !== 'undefined' && similarSection;
 	var langData = i[lang] || {};
 	if (chapter)
 		sections = chapter.sections; 
@@ -242,12 +243,14 @@
 	<%# Admin  ............................................................. %>
 	<% if (site.editMode && lang === "en") { %>
 		<aside class="admin">
-			<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Revise with AI" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Revising">
-				<span class="bi bi-magic"></span> Revise
-			</button>
-			<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Find similar hadith offline" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.similar" data-loading-label="Starting">
-				<span class="bi bi-search"></span> Similar
-			</button>
+			<% if (!isSimilarSection) { %>
+				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Revise with AI" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Revising">
+					<span class="bi bi-magic"></span> Revise
+				</button>
+				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Find similar hadith offline" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.similar" data-loading-label="Starting">
+					<span class="bi bi-search"></span> Similar
+				</button>
+			<% } %>
 			<% if (page.menu == 'Chapter' || page.menu == 'Section') { %>
 				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Move Up" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.moveup" data-loading-label="Moving">
 					<span class="bi bi-caret-up-square-fill"></span> Move Up
@@ -257,28 +260,38 @@
 				</button>
 			<% }
 			   if (i.book_virtual == 0) { %>
-				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.del" data-loading-label="Removing">
-					<span class="bi bi-trash"></span> Remove
-				</button>
-				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove All Associations" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.delall" data-loading-label="Removing">
-					<span class="bi bi-trash"></span> Remove All
-				</button>
-				<div class="input-group input-group-sm d-inline-flex align-middle ms-1 mb-1" style="width: 9rem;">
-					<button type="button" class="btn btn-outline-secondary" title="Add Reference" aria-label="Add Reference">
-						<span class="bi bi-file-plus-fill"></span>
+				<% if (isSimilarSection && i.similarCandidate) { %>
+					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Make actual similar hadith" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.add" data-loading-label="Adding">
+						<span class="bi bi-check2-circle"></span> Make Similar
 					</button>
-					<input class="_e form-control border-secondary" title="Ref Num" aria-label="Ref Num" data-id="<%= i.id %>" data-prop="hadith.add" data-reset="true">
-				</div>
+				<% } %>
+				<% if (isSimilarSection) { %>
+					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.del" data-loading-label="Removing">
+						<span class="bi bi-trash"></span> Remove
+					</button>
+				<% } else { %>
+					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove All Similar Hadith" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.delall" data-loading-label="Removing">
+						<span class="bi bi-trash"></span> Remove All
+					</button>
+					<div class="input-group input-group-sm d-inline-flex align-middle ms-1 mb-1" style="width: 9rem;">
+						<button type="button" class="_submit-edit btn btn-outline-secondary" title="Add Reference" aria-label="Add Reference" data-loading-label="Adding">
+							<span class="bi bi-file-plus-fill"></span>
+						</button>
+						<input class="_e form-control border-secondary" title="Ref Num" aria-label="Ref Num" data-id="<%= i.id %>" data-prop="hadith.add" data-reset="true">
+					</div>
+				<% } %>
 		<% } else if (i.book_virtual == 1) { %>
 			<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Delete" data-id="<%= i.id %>" data-prop="hadith_virtual.del" data-loading-label="Deleting">
 				<span class="bi bi-trash"></span> Delete
 			</button>
-			<div class="input-group input-group-sm d-inline-flex align-middle ms-1 mb-1" style="width: 9rem;">
-				<button type="button" class="btn btn-outline-secondary" title="Add Reference" aria-label="Add Reference">
-					<span class="bi bi-file-plus-fill"></span>
-				</button>
-				<input class="_e form-control border-secondary" title="Ref Num" aria-label="Ref Num" data-id="<%= i.id %>" data-prop="hadith_virtual.add" data-reset="true">
-			</div>
+			<% if (!isSimilarSection) { %>
+				<div class="input-group input-group-sm d-inline-flex align-middle ms-1 mb-1" style="width: 9rem;">
+					<button type="button" class="_submit-edit btn btn-outline-secondary" title="Add Reference" aria-label="Add Reference" data-loading-label="Adding">
+						<span class="bi bi-file-plus-fill"></span>
+					</button>
+					<input class="_e form-control border-secondary" title="Ref Num" aria-label="Ref Num" data-id="<%= i.id %>" data-prop="hadith_virtual.add" data-reset="true">
+				</div>
+			<% } %>
 		<% } %>
 		</aside>
 	<% } %>

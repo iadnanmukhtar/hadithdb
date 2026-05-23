@@ -177,7 +177,9 @@
 	      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
 	        $(this).attr('submitting', 'true');
 	        const isClickableButton = $(this).attr('clickable') == 'true' && $(this).is('button');
-	        const originalButtonHtml = isClickableButton ? $(this).html() : null;
+	        const $loadingButton = isClickableButton ? $(this) : $($(this).data('loadingButton'));
+	        const hasLoadingButton = $loadingButton.length && $loadingButton.is('button');
+	        const originalButtonHtml = hasLoadingButton ? $loadingButton.html() : null;
 	        var id = $(this).data('id');
 	        var prop = $(this).data('prop');
 	        var arabizi = $(this).data('arabizi');
@@ -193,9 +195,9 @@
 	        value = isMarkdownField ? normalizeMarkdownValue(value) : (value || '').toString().replace(/&nbsp;/g, ' ').trim();
 	        if (isMarkdownField)
 	          setMarkdownPreview(this, value);
-	        if (isClickableButton) {
-	          $(this).prop('disabled', true);
-	          $(this).html(`<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ${$(this).data('loading-label') || 'Working'}`);
+	        if (hasLoadingButton) {
+	          $loadingButton.prop('disabled', true);
+	          $loadingButton.html(`<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ${$loadingButton.data('loading-label') || 'Working'}`);
 	        }
 	        var reqBody = {
 	          id: id,
@@ -217,10 +219,11 @@
 	              setElementValue(this, value);
 	          }
 	        } finally {
-	          if (isClickableButton) {
-	            $(this).prop('disabled', false);
-	            $(this).html(originalButtonHtml);
+	          if (hasLoadingButton) {
+	            $loadingButton.prop('disabled', false);
+	            $loadingButton.html(originalButtonHtml);
 	          }
+	          $(this).removeData('loadingButton');
 	          $(this).removeAttr('submitting');
 	          $(this).removeAttr('editing');
 	        }
@@ -291,6 +294,22 @@
         $(this).attr('href', '#');
       $(this).attr('clickable', 'true');
       $(this).on('click', changeListener);
+    });
+
+    $('._submit-edit').each(function () {
+      $(this).on('mousedown', function (e) {
+        e.preventDefault();
+      });
+      $(this).on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const $input = $(this).siblings('._e').first();
+        if (!$input.length || $input.attr('submitting') == 'true')
+          return;
+        $input.data('loadingButton', this);
+        $input.attr('editing', 'true');
+        changeListener.call($input[0], e);
+      });
     });
 
     $(".tags ._e")

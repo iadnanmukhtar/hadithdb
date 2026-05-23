@@ -307,13 +307,21 @@ router.post('/:id/:prop', async function (req, res, next) {
 
     } else if (type == 'hadiths_sim') {
 
-      if (col == 'del') {
+      if (col == 'add') {
+        var result = await global.query(`INSERT IGNORE INTO hadiths_sim
+          (hadithId1, hadithId2) VALUES (${ids[0]}, ${ids[1]})`);
+        result = await global.query(`DELETE FROM hadiths_sim_candidates
+          WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
+        status.value = 'Added';
+      } else if (col == 'del') {
         var result = await global.query(`DELETE FROM hadiths_sim_candidates 
           WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
         result = await global.query(`DELETE FROM hadiths_sim 
           WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
       } else if (col == 'delall') {
         var result = await global.query(`DELETE FROM hadiths_sim_candidates 
+          WHERE hadithId1=${ids[0]} OR hadithId2=${ids[0]}`);
+        result = await global.query(`DELETE FROM hadiths_sim
           WHERE hadithId1=${ids[0]} OR hadithId2=${ids[0]}`);
       }
       status.code = 200;
@@ -356,7 +364,7 @@ async function startSimilarHadithProcess(hadithId) {
   var rootDir = path.resolve(__dirname, '..');
   var logDir = path.join(homedir(), '.hadithdb', 'logs');
   fs.mkdirSync(logDir, { recursive: true });
-  var logPath = path.join(logDir, `findSimilar-${hadithId}.log`);
+  var logPath = path.join(logDir, 'findSimilar.log');
   var out = fs.openSync(logPath, 'a');
   var err = fs.openSync(logPath, 'a');
   var child = null;
