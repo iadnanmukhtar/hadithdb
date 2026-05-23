@@ -177,6 +177,17 @@
 	      return nextHtml;
 	    };
 
+	    const removeSimilarHadithElement = ($button) => {
+	      const $article = $button.closest('article');
+	      if (!$article.length)
+	        return;
+	      const modalTarget = $article.find('[data-bs-target^="#H"]').first().attr('data-bs-target');
+	      $article.prev('a[id]').remove();
+	      if (modalTarget)
+	        $(modalTarget).remove();
+	      $article.remove();
+	    };
+
 	    async function changeListener(e) {
 	      if (e && typeof e.preventDefault === 'function')
 	        e.preventDefault();
@@ -198,6 +209,7 @@
 	        const $loadingButton = isClickableButton ? $(this) : $($(this).data('loadingButton'));
 	        const hasLoadingButton = $loadingButton.length && $loadingButton.is('button');
 	        let finalButtonHtml = hasLoadingButton ? $loadingButton.html() : null;
+	        let removeSimilarHadith = false;
 	        var id = $(this).data('id');
 	        var prop = $(this).data('prop');
 	        var arabizi = $(this).data('arabizi');
@@ -235,9 +247,11 @@
 	              finalButtonHtml = setSimilarToggleButton($loadingButton, true) || finalButtonHtml;
 	            else if (propStr === 'hadiths_sim.demote')
 	              finalButtonHtml = setSimilarToggleButton($loadingButton, false) || finalButtonHtml;
+	            else if (propStr === 'hadiths_sim.del')
+	              removeSimilarHadith = true;
 	            if ($(this).data('reset') == 'true')
 	              value = '';
-	            if (!$(this).is('select') && value !== undefined && value !== null)
+	            if (!removeSimilarHadith && !$(this).is('select') && value !== undefined && value !== null)
 	              setElementValue(this, value);
 	          }
 	        } finally {
@@ -245,6 +259,8 @@
 	            $loadingButton.prop('disabled', false);
 	            $loadingButton.html(finalButtonHtml);
 	          }
+	          if (removeSimilarHadith)
+	            removeSimilarHadithElement($loadingButton);
 	          $(this).removeData('loadingButton');
 	          $(this).removeAttr('submitting');
 	          $(this).removeAttr('editing');

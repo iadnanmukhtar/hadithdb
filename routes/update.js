@@ -308,16 +308,22 @@ router.post('/:id/:prop', async function (req, res, next) {
     } else if (type == 'hadiths_sim') {
 
       if (col == 'add') {
+        var simPairs = similarPairsFromIds(ids);
         var result = await global.query(`INSERT IGNORE INTO hadiths_sim
-          (hadithId1, hadithId2) VALUES (${ids[0]}, ${ids[1]})`);
-        result = await global.query(`DELETE FROM hadiths_sim_candidates
-          WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
+          (hadithId1, hadithId2) VALUES ${simPairs.map(pair => `(${pair[0]}, ${pair[1]})`).join(',')}`);
+        for (const pair of simPairs) {
+          result = await global.query(`DELETE FROM hadiths_sim_candidates
+            WHERE (hadithId1=${pair[0]} AND hadithId2=${pair[1]}) OR (hadithId1=${pair[1]} AND hadithId2=${pair[0]})`);
+        }
         status.value = 'Added';
       } else if (col == 'demote') {
+        var simPairs = similarPairsFromIds(ids);
         var result = await global.query(`INSERT IGNORE INTO hadiths_sim_candidates
-          (hadithId1, hadithId2, rating) VALUES (${ids[0]}, ${ids[1]}, 1)`);
-        result = await global.query(`DELETE FROM hadiths_sim
-          WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
+          (hadithId1, hadithId2, rating) VALUES ${simPairs.map(pair => `(${pair[0]}, ${pair[1]}, 1)`).join(',')}`);
+        for (const pair of simPairs) {
+          result = await global.query(`DELETE FROM hadiths_sim
+            WHERE (hadithId1=${pair[0]} AND hadithId2=${pair[1]}) OR (hadithId1=${pair[1]} AND hadithId2=${pair[0]})`);
+        }
         status.value = 'Moved';
       } else if (col == 'del') {
         var result = await global.query(`DELETE FROM hadiths_sim_candidates 
@@ -356,6 +362,21 @@ function sql(s) {
     return '"' + s + '"';
   }
   return null;
+}
+
+function similarPairsFromIds(ids) {
+  var pairs = [];
+  for (var i = 0; i + 1 < ids.length; i += 2) {
+    var id1 = parseInt(ids[i], 10);
+    var id2 = parseInt(ids[i + 1], 10);
+    if (!Number.isInteger(id1) || id1 <= 0 || !Number.isInteger(id2) || id2 <= 0)
+      throw new Error(`Invalid similar hadith pair: ${ids[i]},${ids[i + 1]}`);
+    if (id1 !== id2)
+      pairs.push([id1, id2]);
+  }
+  if (pairs.length < 1)
+    throw new Error('No similar hadith pair provided');
+  return pairs;
 }
 
 async function startSimilarHadithProcess(hadithId) {
