@@ -1931,13 +1931,145 @@ a.cmd-btn:hover {
 }
 
 .ui-autocomplete {
-	max-height: 100px;
+	max-height: 70vh;
 	overflow-y: auto;
 	overflow-x: hidden;
+	z-index: 1100;
 }
 
 * html .ui-autocomplete {
 	height: 100px;
+}
+
+.search-autocomplete-menu {
+	background: white;
+	border: 1px solid var(--bs-border-color);
+	border-radius: 0.35rem;
+	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.14);
+	font-size: 0.92rem;
+	padding: 0.35rem;
+}
+
+.search-autocomplete-menu .ui-menu-item-wrapper {
+	border-radius: 0.25rem;
+	padding: 0;
+}
+
+.search-autocomplete-menu .ui-state-active {
+	background: transparent;
+	border: 0;
+	color: inherit;
+	margin: 0;
+}
+
+.search-autocomplete-menu .ui-menu-item:has(.ui-state-active) {
+	background: rgba(44, 155, 229, 0.1);
+}
+
+.search-autocomplete-menu .ui-menu-item:not(:last-child) {
+	padding-bottom: 0.35rem;
+	position: relative;
+}
+
+.search-autocomplete-menu .ui-menu-item + .ui-menu-item {
+	padding-top: 0.35rem;
+}
+
+.search-autocomplete-menu .ui-menu-item:not(:last-child)::after {
+	background: var(--bs-border-color);
+	bottom: 0;
+	content: "";
+	height: 1px;
+	left: 0;
+	position: absolute;
+	right: 0;
+}
+
+.search-autocomplete-item {
+	cursor: pointer;
+	line-height: 1.32;
+	padding: 0.55rem 0.65rem;
+}
+
+.search-autocomplete-match {
+	color: var(--bs-body-color);
+	font-size: 0.98rem;
+	font-weight: 600;
+}
+
+.search-autocomplete-match mark {
+	background: rgba(255, 214, 102, 0.5);
+	border-radius: 0.12rem;
+	color: inherit;
+	padding: 0 0.08em;
+}
+
+.search-autocomplete-source {
+	color: var(--c-gray-dark);
+	font-family: "Gentium Plus", Serif;
+	font-size: 0.64rem;
+	line-height: 1.15;
+	margin-top: 0.25rem;
+}
+
+.search-autocomplete-menu .search-autocomplete-meta {
+	color: var(--c-gray-mid);
+	direction: ltr;
+	display: block;
+	font-family: "Gentium Plus", Serif;
+	font-size: 0.72rem;
+	line-height: 1.2;
+	margin-top: 0.18rem;
+	overflow: hidden;
+	text-align: left;
+}
+
+.search-autocomplete-menu .search-autocomplete-meta-en {
+	direction: ltr;
+	display: block;
+	font-family: "Gentium Plus", Serif;
+	font-size: 0.76rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.search-autocomplete-menu .search-autocomplete-meta-ar {
+	direction: rtl;
+	display: block;
+	font-family: Kitab, Serif;
+	font-size: 0.86rem;
+	margin-top: 0.08rem;
+	overflow: hidden;
+	text-align: right;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.search-autocomplete-ar {
+	font-family: Kitab, Serif;
+	text-align: right;
+}
+
+.search-autocomplete-ar .search-autocomplete-match {
+	font-family: Kitab, Serif;
+	font-size: 1.2rem;
+	font-weight: normal;
+	line-height: 1.7;
+}
+
+.search-autocomplete-ar .search-autocomplete-source {
+	direction: rtl;
+	font-family: "Gentium Plus", Serif;
+	font-size: 0.64rem;
+	line-height: 1.2;
+}
+
+.search-autocomplete-ar .search-autocomplete-meta {
+	direction: ltr;
+	font-family: "Gentium Plus", Serif;
+	font-size: 0.72rem;
+	text-align: left;
 }
 
 .rag-tool {

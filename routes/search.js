@@ -87,6 +87,22 @@ router.post('/captcha/translate/verify', function (req, res) {
   });
 });
 
+router.get('/autocomplete', async function (req, res, next) {
+  try {
+    var q = Search.truncateQuery(req.query.q || req.query.term || '');
+    var bookFilters = req.query.b || req.query['b[]'];
+    if (bookFilters && (typeof bookFilters) != 'object')
+      bookFilters = [bookFilters];
+    var suggestions = await Search.a_autocomplete(q, bookFilters, req.query.limit);
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(suggestions));
+  } catch (err) {
+    var message = `Error fetching autocomplete suggestions [${req.query.q || req.query.term}]`;
+    debug(message + `\n${err.stack}`);
+    return next(createError(500, message));
+  }
+});
+
 router.get('/reinit', async function (req, res, next) {
   await Hadith.a_reinit();
   res.write('Done');

@@ -75,6 +75,8 @@ $(function () {
 		setDirection($(this));
 	});
 
+	initSearchAutocomplete();
+
 	$('#toc2').on('hidden.bs.collapse', function (event) {
 		$('.toggle').removeClass('bi-toggle-on');
 		$('.toggle').addClass('bi-toggle-off');
@@ -97,6 +99,90 @@ function setDirection(el) {
 		else
 			el.css({ 'direction': 'ltr' });
 	}
+}
+
+function initSearchAutocomplete() {
+	if (!$.fn.autocomplete)
+		return;
+	$('input[role=search][name=q]').each(function () {
+		var input = this;
+		var $input = $(input);
+		if ($input.data('autocompleteBound'))
+			return;
+		$input.data('autocompleteBound', true);
+		$input.on('keydown', function (event) {
+			if (event.key !== 'Enter' || !$input.autocomplete('widget').is(':visible'))
+				return;
+			event.preventDefault();
+			$input.autocomplete('close');
+			input.form.submit();
+		});
+		$input.autocomplete({
+			appendTo: $input.closest('.search-click-toggle, .input-group, .offcanvas-body'),
+			delay: 180,
+			minLength: 2,
+			source: function (request, response) {
+				$.getJSON('/autocomplete', buildSearchAutocompleteParams($input, request.term))
+					.done(response)
+					.fail(function () {
+						response([]);
+					});
+			},
+			focus: function (event) {
+				event.preventDefault();
+			},
+			select: function (event, ui) {
+				event.preventDefault();
+				if (ui.item.url)
+					window.location.href = ui.item.url;
+				else
+					$input.closest('form').trigger('submit');
+			},
+			open: function () {
+				var autocomplete = $input.autocomplete('widget');
+				autocomplete.addClass('search-autocomplete-menu');
+				autocomplete.css('width', $input.outerWidth());
+				if ($input.css('direction') === 'rtl')
+					autocomplete.attr('dir', 'rtl');
+				else
+					autocomplete.attr('dir', 'ltr');
+			}
+		}).autocomplete('instance')._renderItem = function (ul, item) {
+			var $item = $('<li>');
+			var $row = $('<div>').addClass('search-autocomplete-item');
+			var isArabic = item.lang === 'ar' || /[\u0600-\u06ff]/.test(item.fragment || item.label || '');
+			var fallbackText = item.label || '';
+			if (isArabic)
+				$row.attr({ lang: 'ar', dir: 'rtl' }).addClass('search-autocomplete-ar');
+			$('<div>').addClass('search-autocomplete-match').html(item.fragment || fallbackText).appendTo($row);
+			if (item.metadata_en || item.metadata_ar) {
+				var $meta = $('<div>').addClass('search-autocomplete-meta');
+				if (item.lang === 'ar' && item.metadata_ar) {
+					$('<span>').addClass('search-autocomplete-meta-ar').attr({ lang: 'ar', dir: 'rtl' }).text(item.metadata_ar).appendTo($meta);
+					if (item.metadata_en)
+						$('<span>').addClass('search-autocomplete-meta-en').attr({ lang: 'en', dir: 'ltr' }).text(item.metadata_en).appendTo($meta);
+				} else if (item.metadata_en) {
+					$('<span>').addClass('search-autocomplete-meta-en').attr({ lang: 'en', dir: 'ltr' }).text(item.metadata_en).appendTo($meta);
+				}
+				$meta.appendTo($row);
+			}
+			return $item.append($row).appendTo(ul);
+		};
+	});
+}
+
+function buildSearchAutocompleteParams($input, term) {
+	var params = [
+		{ name: 'q', value: term },
+		{ name: 'limit', value: 10 }
+	];
+	var $filters = $input.closest('form').find('input[name=b]:checked');
+	if ($filters.length < 1)
+		$filters = $('.search input[name=b]:checked');
+	$filters.each(function () {
+		params.push({ name: 'b', value: this.value });
+	});
+	return $.param(params);
 }
 
 function cleanText(s) {
