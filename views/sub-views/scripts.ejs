@@ -159,6 +159,24 @@
 	      });
 	    };
 
+	    const setSimilarToggleButton = ($button, promoted) => {
+	      if (!$button.length)
+	        return null;
+	      const nextProp = promoted ? 'hadiths_sim.demote' : 'hadiths_sim.add';
+	      const nextTitle = promoted ? 'Make similar candidate' : 'Make actual similar hadith';
+	      const nextLoadingLabel = promoted ? 'Moving' : 'Adding';
+	      const nextHtml = promoted
+	        ? '<span class="bi bi-arrow-down-circle"></span> Make Candidate'
+	        : '<span class="bi bi-check2-circle"></span> Make Similar';
+	      $button
+	        .data('prop', nextProp)
+	        .attr('data-prop', nextProp)
+	        .data('loading-label', nextLoadingLabel)
+	        .attr('data-loading-label', nextLoadingLabel)
+	        .attr('title', nextTitle);
+	      return nextHtml;
+	    };
+
 	    async function changeListener(e) {
 	      if (e && typeof e.preventDefault === 'function')
 	        e.preventDefault();
@@ -179,7 +197,7 @@
 	        const isClickableButton = $(this).attr('clickable') == 'true' && $(this).is('button');
 	        const $loadingButton = isClickableButton ? $(this) : $($(this).data('loadingButton'));
 	        const hasLoadingButton = $loadingButton.length && $loadingButton.is('button');
-	        const originalButtonHtml = hasLoadingButton ? $loadingButton.html() : null;
+	        let finalButtonHtml = hasLoadingButton ? $loadingButton.html() : null;
 	        var id = $(this).data('id');
 	        var prop = $(this).data('prop');
 	        var arabizi = $(this).data('arabizi');
@@ -213,6 +231,10 @@
 	              value = resBody.value;
 	            if (propStr === 'hadith.revise')
 	              applyHadithRevision(id, resBody.revised);
+	            if (propStr === 'hadiths_sim.add')
+	              finalButtonHtml = setSimilarToggleButton($loadingButton, true) || finalButtonHtml;
+	            else if (propStr === 'hadiths_sim.demote')
+	              finalButtonHtml = setSimilarToggleButton($loadingButton, false) || finalButtonHtml;
 	            if ($(this).data('reset') == 'true')
 	              value = '';
 	            if (!$(this).is('select') && value !== undefined && value !== null)
@@ -221,7 +243,7 @@
 	        } finally {
 	          if (hasLoadingButton) {
 	            $loadingButton.prop('disabled', false);
-	            $loadingButton.html(originalButtonHtml);
+	            $loadingButton.html(finalButtonHtml);
 	          }
 	          $(this).removeData('loadingButton');
 	          $(this).removeAttr('submitting');
