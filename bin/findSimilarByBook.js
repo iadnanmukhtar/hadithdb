@@ -3,10 +3,10 @@
 'use strict';
 
 require('dotenv').config();
-require('../../lib/Globals');
+require('../lib/Globals');
 
-const Hadith = require('../../lib/Hadith');
-const { Library } = require('../../lib/Model');
+const Hadith = require('../lib/Hadith');
+const { Library } = require('../lib/Model');
 
 const DEFAULT_BOOK = '16';
 const DEFAULT_TABLE = 'hadiths_sim_candidates';
@@ -17,12 +17,21 @@ const DELETE_CHUNK_SIZE = 500;
 		var options = parseArgs(process.argv.slice(2));
 		global.library = await Library.init();
 
-		var book = global.library.findBook(options.book);
-		if (!book)
-			throw new ReferenceError(`Not found: Book ${options.book}`);
-
-		console.log(`Loading source hadiths from ${book.alias} (${book.id})...`);
-		var sourceHadiths = await loadSourceHadiths(book.id, options);
+		var book = null;
+		var sourceHadiths = [];
+		if (options.id !== null) {
+			console.log(`Loading source hadith ${options.id}...`);
+			sourceHadiths = await loadSourceHadithById(options.id);
+			if (sourceHadiths.length < 1)
+				throw new ReferenceError(`Not found: Hadith ${options.id}`);
+			book = global.library.findBook(sourceHadiths[0].bookId);
+		} else {
+			book = global.library.findBook(options.book);
+			if (!book)
+				throw new ReferenceError(`Not found: Book ${options.book}`);
+			console.log(`Loading source hadiths from ${book.alias} (${book.id})...`);
+			sourceHadiths = await loadSourceHadiths(book.id, options);
+		}
 		console.log(`Loaded ${sourceHadiths.length} source hadith(s).`);
 		if (sourceHadiths.length < 1) {
 			console.log('Nothing to process.');
@@ -34,7 +43,8 @@ const DELETE_CHUNK_SIZE = 500;
 		console.log(`Loaded ${candidateHadiths.length} candidate hadith(s).`);
 
 		if (!options.dryRun) {
-			console.log(`Clearing existing rows in ${options.table} for source book ${book.alias}...`);
+			var sourceLabel = options.id !== null ? `hadith ${options.id}` : `source book ${book.alias}`;
+			console.log(`Clearing existing rows in ${options.table} for ${sourceLabel}...`);
 			await deleteExistingRows(sourceHadiths, options.table);
 		}
 
@@ -70,6 +80,17 @@ ORDER BY num0, ordinal`;
 	if (options.limit !== null)
 		sql += `\nLIMIT ${options.limit}`;
 
+	return Hadith.a_dbGetDisemvoweledHadiths(sql);
+}
+
+async function loadSourceHadithById(hadithId) {
+	var sql =
+`SELECT id, bookId, ordinal, num, num0, part, body, back_ref, lastmod
+FROM hadiths
+WHERE id=${hadithId}
+  AND body IS NOT NULL
+  AND body != ''
+LIMIT 1`;
 	return Hadith.a_dbGetDisemvoweledHadiths(sql);
 }
 
@@ -167,6 +188,7 @@ function formatRef(hadith) {
 
 function parseArgs(argv) {
 	var options = {
+		id: null,
 		book: DEFAULT_BOOK,
 		fromNum0: null,
 		limit: null,
@@ -185,6 +207,11 @@ function parseArgs(argv) {
 			if (!argv[i])
 				throw new Error(`${arg} requires a book id or alias`);
 			options.book = argv[i];
+		} else if (arg === '--id') {
+			i++;
+			if (!argv[i])
+				throw new Error(`${arg} requires a hadith id`);
+			options.id = parsePositiveInteger(argv[i], arg);
 		} else if (arg === '--from' || arg === '-f') {
 			i++;
 			if (!argv[i])
@@ -220,6 +247,10 @@ function parseNum0(value, label) {
 }
 
 function parseLimit(value, label) {
+	return parsePositiveInteger(value, label);
+}
+
+function parsePositiveInteger(value, label) {
 	var parsed = parseInt(value, 10);
 	if (!Number.isInteger(parsed) || parsed < 1)
 		throw new Error(`${label} must be a positive integer, got: ${value}`);
@@ -235,10 +266,11 @@ function parseTableName(value) {
 function printUsage() {
 	console.log(
 		'Usage:\n' +
-		'  node bin/utils/findSimilarByBook.js\n' +
-		'  node bin/utils/findSimilarByBook.js --book 16\n' +
-		'  node bin/utils/findSimilarByBook.js --book bazzar --from 1 --limit 100 --dry-run\n' +
-		'  node bin/utils/findSimilarByBook.js --book 16 --table hadiths_sim_candidates --verbose\n' +
+		'  node bin/findSimilarByBook.js\n' +
+		'  node bin/findSimilarByBook.js --id 12345\n' +
+		'  node bin/findSimilarByBook.js --book 16\n' +
+		'  node bin/findSimilarByBook.js --book bazzar --from 1 --limit 100 --dry-run\n' +
+		'  node bin/findSimilarByBook.js --book 16 --table hadiths_sim_candidates --verbose\n' +
 		'\n' +
 		'Defaults to book 16 and searches each source hadith against all hadiths,\n' +
 		'including the same book, while excluding the hadith itself.'

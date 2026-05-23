@@ -5,6 +5,8 @@ const debug = require('debug')('hadithdb:update');
 const fs = require('fs');
 const express = require('express');
 const createError = require('http-errors');
+const path = require('path');
+const { spawn } = require('child_process');
 const { homedir } = require('os');
 const Hadith = require('../lib/Hadith');
 const HadithKnowledge = require('../lib/HadithKnowledge');
@@ -125,6 +127,10 @@ router.post('/:id/:prop', async function (req, res, next) {
             body_en: revised.item.body_en,
             footnote_en: revised.item.footnote_en
           };
+        } else if (col === 'similar') {
+          var child = await startSimilarHadithProcess(ids[0]);
+          result = { message: `Similar-hadith scan started as pid ${child.pid}` };
+          status.value = 'Queued';
         } else {
           result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
           var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
@@ -176,9 +182,11 @@ router.post('/:id/:prop', async function (req, res, next) {
 
       status.code = 200;
       status.message = result.message;
-      runHadithPostUpdateTasks(ids[0], {
-        forceKnowledge: isArabicKnowledgeSourceColumn(col)
-      });
+      if (col !== 'similar') {
+        runHadithPostUpdateTasks(ids[0], {
+          forceKnowledge: isArabicKnowledgeSourceColumn(col)
+        });
+      }
 
     } else if (type == 'tags') {
       var result = await global.query(`UPDATE tags SET ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
@@ -334,6 +342,37 @@ function sql(s) {
     return '"' + s + '"';
   }
   return null;
+}
+
+async function startSimilarHadithProcess(hadithId) {
+  hadithId = parseInt(hadithId, 10);
+  if (!Number.isInteger(hadithId) || hadithId <= 0)
+    throw new Error(`Invalid hadith id: ${hadithId}`);
+
+  var item = (await global.query(`SELECT id FROM hadiths WHERE id=${hadithId} LIMIT 1`))[0];
+  if (!item)
+    throw new Error(`Hadith not found: ${hadithId}`);
+
+  var rootDir = path.resolve(__dirname, '..');
+  var logDir = path.join(homedir(), '.hadithdb', 'logs');
+  fs.mkdirSync(logDir, { recursive: true });
+  var logPath = path.join(logDir, `findSimilar-${hadithId}.log`);
+  var out = fs.openSync(logPath, 'a');
+  var err = fs.openSync(logPath, 'a');
+  var child = null;
+  try {
+    child = spawn(process.execPath, ['bin/findSimilarByBook.js', '--id', String(hadithId)], {
+      cwd: rootDir,
+      detached: true,
+      stdio: ['ignore', out, err]
+    });
+  } finally {
+    fs.closeSync(out);
+    fs.closeSync(err);
+  }
+  child.unref();
+  debug(`started similar-hadith scan pid=${child.pid} id=${hadithId} log=${logPath}`);
+  return child;
 }
 
 function buildHadithContextTranslationPrompt(item, sourceLabel, sourceText) {

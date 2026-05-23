@@ -245,6 +245,9 @@
 			<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Revise with AI" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Revising">
 				<span class="bi bi-magic"></span> Revise
 			</button>
+			<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Find similar hadith offline" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.similar" data-loading-label="Starting">
+				<span class="bi bi-search"></span> Similar
+			</button>
 			<% if (page.menu == 'Chapter' || page.menu == 'Section') { %>
 				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Move Up" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.moveup" data-loading-label="Moving">
 					<span class="bi bi-caret-up-square-fill"></span> Move Up
