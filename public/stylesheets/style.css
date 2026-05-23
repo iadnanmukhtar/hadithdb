@@ -1993,8 +1993,9 @@ a.cmd-btn:hover {
 
 .search-autocomplete-match {
 	color: var(--bs-body-color);
+	font-family: "Gentium Plus", Serif;
 	font-size: 0.98rem;
-	font-weight: 600;
+	font-weight: normal;
 }
 
 .search-autocomplete-match mark {
