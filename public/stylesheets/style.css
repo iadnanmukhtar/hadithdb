@@ -795,8 +795,9 @@ nav .nav-link {
 
 	@supports (height: min(100%, 1px)) {
 		.hadith-share-card {
-			width: auto;
-			height: min(100%, calc((100vw - 1.2rem) * 1.25));
+			width: min(100%, 540px);
+			height: auto;
+			max-height: 100%;
 			max-width: 100%;
 		}
 	}

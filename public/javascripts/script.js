@@ -489,35 +489,20 @@ function fitHadithShareCard(card) {
 	card.classList.remove('hadith-share-dense');
 	var scale = 1;
 	var isMobileShare = window.matchMedia && window.matchMedia('(max-width: 575.98px)').matches;
-	var minScale = card.classList.contains('hadith-share-english-only') ? 0.28 : 0.2;
+	var minScale = card.classList.contains('hadith-share-english-only') ? 0.38 : 0.32;
 	if (isMobileShare)
-		minScale = card.classList.contains('hadith-share-english-only') ? 0.12 : 0.1;
-	while (scale > minScale && hadithShareCardOverflows(card, inner)) {
-		scale -= 0.04;
+		minScale = card.classList.contains('hadith-share-english-only') ? 0.42 : 0.34;
+	while (scale > minScale && hadithShareCardOverflows(inner)) {
+		scale -= 0.03;
 		card.style.setProperty('--share-scale', scale.toFixed(2));
 	}
 	card.classList.toggle('hadith-share-dense', scale < 0.86);
-	while (scale > minScale && hadithShareCardOverflows(card, inner)) {
-		scale -= 0.02;
-		card.style.setProperty('--share-scale', scale.toFixed(2));
-	}
 }
 
-function hadithShareCardOverflows(card, inner) {
-	if (!card || !inner)
+function hadithShareCardOverflows(inner) {
+	if (!inner)
 		return false;
-	if (inner.scrollHeight > inner.clientHeight + 1 || inner.scrollWidth > inner.clientWidth + 1)
-		return true;
-	var clipped = false;
-	card.querySelectorAll('.hadith-share-section, .hadith-share-title, .hadith-share-ref, .hadith-share-text, .hadith-share-footer').forEach(function (el) {
-		if (clipped)
-			return;
-		if (el.classList.contains('d-none'))
-			return;
-		if (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1)
-			clipped = true;
-	});
-	return clipped;
+	return inner.scrollHeight > inner.clientHeight + 8;
 }
 
 async function exportHadithShareCard(card, mode, button) {
