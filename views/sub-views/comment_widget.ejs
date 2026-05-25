@@ -183,8 +183,7 @@
           const isFirstGoogleLogin = providerId === 'google.com' && !sessionStorage.getItem('hadithdb_google_login');
           if (isFirstGoogleLogin) {
             console.log('Google sign-in detected');
-            await onAuth({ username: currentUser.email });
-            sessionStorage.setItem('hadithdb_google_login', '1');
+            await onAuth({ username: currentUser.email }, { silent: true, reload: false });
           }
           const name = currentUser.displayName || currentUser.email || 'User';
           const photo = currentUser.photoURL || 'https://www.gravatar.com/avatar/?d=mp&s=64';

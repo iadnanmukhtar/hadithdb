@@ -399,7 +399,27 @@
 
 <!-- Social Login -->
 <script type="text/javascript">
+  function getHadithCookie(name) {
+      const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\/+^]/g, '\\$&') + '=([^;]*)'));
+      return match ? decodeURIComponent(match[1]) : '';
+  }
+
+  function markHadithAuthSynced(username) {
+      if (!username) return;
+      sessionStorage.setItem('hadithdb_google_login', '1');
+      sessionStorage.setItem(`hadithdb_auth_synced:${username}`, '1');
+  }
+
   async function onAuth(user, options = {}) {
+      const username = user && user.username;
+      if (!username)
+        return { status: 400, message: 'Missing username' };
+
+      if (getHadithCookie('userId') === username) {
+        markHadithAuthSynced(username);
+        return { status: 200, userId: username, skipped: true, message: 'User already logged in' };
+      }
+
       if (window.hadithAuthLoginInFlight)
         return window.hadithAuthLoginInFlight;
 
@@ -408,13 +428,14 @@
           status: 403,
           statusText: 'Unable to login'
         };
-        res = await fetch(`/login/${user.username}`, {
+        res = await fetch(`/login/${username}`, {
           method: 'GET'
         });
         var resBody = JSON.parse(await res.text());
         if (res.status == 200) {
+          markHadithAuthSynced(username);
           if (!options.silent)
-            toastr.success('Logged in as ' + user.username);
+            toastr.success('Logged in as ' + username);
           if (options.reload !== false)
             window.location.reload();
         } else {
@@ -562,10 +583,8 @@
         const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
         const result = await auth.signInWithCredential(credential);
         const user = result.user || auth.currentUser;
-        if (user && user.email) {
-          sessionStorage.setItem('hadithdb_google_login', '1');
+        if (user && user.email)
           await onAuth({ username: user.email }, { silent: true });
-        }
       } catch (err) {
         console.warn('Google One Tap sign-in failed', err);
       }
