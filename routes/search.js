@@ -427,6 +427,8 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     var book = global.books.find(function (value) {
       return value.alias === req.params.bookAlias;
     });
+    if (await redirectVirtualHadithReference(book, req.params.num, req, res))
+      return;
     if (!book) {
       var surah = global.surahs.find(function (value) {
         return (value.alias === req.params.bookAlias || value.num == req.params.bookAlias);
@@ -564,6 +566,41 @@ function buildVirtualReferencePath(row) {
   if (row.h2)
     parts.push(row.h2);
   return parts.join('/');
+}
+
+async function redirectVirtualHadithReference(book, num, req, res) {
+  if (!book || book.virtual != 1)
+    return false;
+
+  var candidateNums = [num];
+  if (/^\d+(?:\.\d+)?$/.test(num))
+    candidateNums.push(`${num}a`);
+  else if (/^\d+(?:\.\d+)?[a-z]$/i.test(num))
+    candidateNums.push(num.replace(/[a-z]$/i, ''));
+  candidateNums = Array.from(new Set(candidateNums));
+
+  var conditions = candidateNums.map(candidate => `hv.num='${Utils.escSQL(candidate)}'`);
+  var num0 = Number(num);
+  if (Number.isFinite(num0))
+    conditions.push(`hv.num0=${num0}`);
+  var orderConditions = candidateNums.map((candidate, idx) => `WHEN hv.num='${Utils.escSQL(candidate)}' THEN ${idx}`);
+
+  var rows = await global.query(`
+    SELECT b.alias AS book_alias, h.num
+    FROM hadiths_virtual hv
+    JOIN hadiths h ON h.id = hv.hadithId
+    JOIN books b ON b.id = h.bookId
+    WHERE hv.bookId=${book.id}
+      AND (${conditions.join(' OR ')})
+    ORDER BY CASE ${orderConditions.join(' ')} ELSE ${candidateNums.length} END, hv.num0, hv.id
+    LIMIT 1`);
+  if (rows.length < 1)
+    return false;
+
+  var queryIndex = req.originalUrl.indexOf('?');
+  var queryString = queryIndex >= 0 ? req.originalUrl.substring(queryIndex) : '';
+  res.redirect(302, `/${rows[0].book_alias}:${rows[0].num}${queryString}`);
+  return true;
 }
 
 // BOOK: TABLE OF CONTENTS

@@ -12,18 +12,19 @@ const Index = require('../lib/Index');
 
 (async () => {
 	try {
+		var indexNames = getIndexNames(options);
 		var books;
 		if (options.all) {
-			await recreateIndex('hadiths');
-			await recreateIndex('toc');
-			log(`retrieving data to index...`);
+			for (var i = 0; i < indexNames.length; i++)
+				await recreateIndex(indexNames[i]);
+			log(`retrieving data to index ${formatIndexNames(indexNames)}...`);
 			books = await global.query(`SELECT * FROM books b ORDER BY id`);
-			await indexBooks(books);
+			await indexBooks(books, indexNames);
 		} else {
 			books = await getBooksFromId(options.bookId);
-			log(`retrieving data to index from book id ${options.bookId} (${books.length} book(s))...`);
-			await reindexBooks('hadiths', books);
-			await reindexBooks('toc', books);
+			log(`retrieving data to index ${formatIndexNames(indexNames)} from book id ${options.bookId} (${books.length} book(s))...`);
+			for (var j = 0; j < indexNames.length; j++)
+				await reindexBooks(indexNames[j], books);
 		}
 	} finally {
 		global.dbPool.end();
@@ -48,7 +49,6 @@ async function getData(indexName, book) {
 		SELECT * FROM v_${indexName}
 		WHERE
 			book_id = ${book.id}
-		AND hidden = 0
 		ORDER BY 
 			book_id, h1, numInChapter
 		-- LIMIT 10`);
@@ -86,10 +86,10 @@ async function indexDocs(indexName, book) {
 	await Index.updateBulk(indexName, rows, true);
 }
 
-async function indexBooks(books) {
+async function indexBooks(books, indexNames) {
 	for (var i = 0; i < books.length; i++) {
-		await indexDocs('hadiths', books[i]);
-		await indexDocs('toc', books[i]);
+		for (var j = 0; j < indexNames.length; j++)
+			await indexDocs(indexNames[j], books[i]);
 	}
 }
 
@@ -113,6 +113,16 @@ function getSkipIndexReason(indexName, book) {
 	if (indexName === 'hadiths' && book.virtual == 1)
 		return 'virtual books only index toc';
 	return null;
+}
+
+function getIndexNames(options) {
+	if (options.tocOnly)
+		return ['toc'];
+	return ['hadiths', 'toc'];
+}
+
+function formatIndexNames(indexNames) {
+	return indexNames.join(' and ');
 }
 
 async function recreateIndex(indexName) {
@@ -205,12 +215,15 @@ async function getBooksFromId(bookId) {
 function parseArgs(argv) {
 	var options = {
 		all: false,
-		bookId: null
+		bookId: null,
+		tocOnly: false
 	};
 	for (var i = 0; i < argv.length; i++) {
 		var arg = argv[i];
 		if (arg === '--all') {
 			options.all = true;
+		} else if (arg === '--toc-only' || arg === '--toc') {
+			options.tocOnly = true;
 		} else if (arg === '--book-id' || arg === '--from-book-id' || arg === '-b') {
 			i++;
 			if (!argv[i])
@@ -244,8 +257,11 @@ function printUsage() {
 		'Usage:\n' +
 		'  node bin/buildSearchIndex.js --all\n' +
 		'  node bin/buildSearchIndex.js --book-id 16\n' +
+		'  node bin/buildSearchIndex.js --all --toc-only\n' +
+		'  node bin/buildSearchIndex.js --book-id 16 --toc-only\n' +
 		'\n' +
 		'--all recreates the full hadiths and toc indexes, then indexes every book.\n' +
-		'--book-id deletes and rebuilds both indexes for that book id and every later book id.'
+		'--book-id deletes and rebuilds both indexes for that book id and every later book id.\n' +
+		'--toc-only only recreates or rebuilds the toc index.'
 	);
 }
