@@ -372,6 +372,7 @@ function initHadithShareModals(root) {
 		var card = modal.querySelector('[data-share-card]');
 		var editButton = modal.querySelector('.hadith-share-edit');
 		var arabicSwitch = modal.querySelector('.hadith-share-arabic');
+		var languageToggle = arabicSwitch ? (arabicSwitch.dataset.shareLanguageToggle || 'arabic') : 'arabic';
 		var sizeControls = modal.querySelectorAll('.hadith-share-size');
 		var copyButton = modal.querySelector('.hadith-share-copy');
 		var shareButton = modal.querySelector('.hadith-share-native');
@@ -390,7 +391,7 @@ function initHadithShareModals(root) {
 		modalRoot.addEventListener('show.bs.modal', function () {
 			if (arabicSwitch)
 				arabicSwitch.checked = arabicSwitch.defaultChecked;
-			updateHadithShareArabicState(modal, card, arabicSwitch);
+			updateHadithShareArabicState(modal, card, arabicSwitch, languageToggle);
 			updateHadithShareSizeState(card, sizeControls);
 		});
 
@@ -398,7 +399,7 @@ function initHadithShareModals(root) {
 			window.addEventListener('resize', handleViewportChange);
 			if (window.visualViewport)
 				window.visualViewport.addEventListener('resize', handleViewportChange);
-			updateHadithShareArabicState(modal, card, arabicSwitch);
+			updateHadithShareArabicState(modal, card, arabicSwitch, languageToggle);
 			updateHadithShareSizeState(card, sizeControls);
 			scheduleHadithShareCardFit(card);
 			scheduleHadithShareRender(card);
@@ -433,7 +434,7 @@ function initHadithShareModals(root) {
 
 		if (arabicSwitch) {
 			arabicSwitch.addEventListener('change', function () {
-				updateHadithShareArabicState(modal, card, arabicSwitch);
+				updateHadithShareArabicState(modal, card, arabicSwitch, languageToggle);
 				scheduleHadithShareCardFit(card);
 				scheduleHadithShareRender(card);
 			});
@@ -540,9 +541,17 @@ async function renderHadithShareImage(card) {
 	return card._shareRenderPromise;
 }
 
-function updateHadithShareArabicState(modal, card, arabicSwitch) {
+function updateHadithShareArabicState(modal, card, arabicSwitch, languageToggle) {
 	if (!modal || !card || !arabicSwitch)
 		return;
+	if (languageToggle === 'english') {
+		var showEnglish = arabicSwitch.checked;
+		modal.querySelectorAll('.quran-share-english-section').forEach(function (el) {
+			el.classList.toggle('d-none', !showEnglish);
+		});
+		card.classList.toggle('quran-share-arabic-only', !showEnglish);
+		return;
+	}
 	var showArabic = arabicSwitch.checked;
 	modal.querySelectorAll('.hadith-share-arabic-section').forEach(function (el) {
 		el.classList.toggle('d-none', !showArabic);

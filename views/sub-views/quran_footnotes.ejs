@@ -1,0 +1,41 @@
+<%
+	const footnoteItems = (locals.footnoteItems || []).filter(function (ayah) {
+		const en = ayah.en?.footnote;
+		const ar = ayah.ar?.footnote;
+		return (en && en !== 'undefined') || (ar && ar !== 'undefined');
+	});
+	const selectedAyahs = locals.selectedAyahs || [];
+	const selectedAyahRefs = selectedAyahs.length === 1 ? new Set(selectedAyahs.map(ayah => ayah.ref)) : new Set();
+	function footnoteNum(ayah, lang) {
+		const num = ayah[lang]?.num || ayah.num || '';
+		return num.split(/:/)[1] || num;
+	}
+	function selectedClass(ayah) {
+		return selectedAyahRefs.has(ayah.ref) ? ' class="quran-footnote-selected"' : '';
+	}
+%>
+<% if (footnoteItems.length > 0) { %>
+<article class="quran-footnotes">
+	<% footnoteItems.forEach(function (ayah) {
+		const enFootnote = ayah.en?.footnote;
+		const arFootnote = ayah.ar?.footnote;
+	%>
+	<div class="row quran-footnote-pair">
+		<section class="col-md-6 col-sm-12 h" lang="en">
+			<footer class="footnote">
+				<% if (enFootnote && enFootnote !== 'undefined') { %>
+					<p<%- selectedClass(ayah) %>><sup><%= footnoteNum(ayah, 'en') %></sup>&nbsp;<%= enFootnote %></p>
+				<% } %>
+			</footer>
+		</section>
+		<section class="col-md-6 col-sm-12 h" lang="ar">
+			<footer class="footnote">
+				<% if (arFootnote && arFootnote !== 'undefined') { %>
+					<p<%- selectedClass(ayah) %>><sup><%= footnoteNum(ayah, 'ar') %></sup>&nbsp;<%= arFootnote %></p>
+				<% } %>
+			</footer>
+		</section>
+	</div>
+	<% }); %>
+</article>
+<% } %>

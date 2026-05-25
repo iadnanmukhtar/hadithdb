@@ -1,7 +1,9 @@
 <article class="row">
 
-<%- include('quran_item.ejs', { site: site, page: page, passage: passage, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
+<%- include('quran_item.ejs', { site: site, page: page, passage: passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
 
-<%- include('quran_item.ejs', { site: site, page: page, passage: passage, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
+<%- include('quran_item.ejs', { site: site, page: page, passage: passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranShareId: locals.quranShareId, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
 
 </article>
+
+<%- include('quran_modal.ejs', { site: site, page: page, selectedAyahs: locals.selectedAyahs, quranShareId: locals.quranShareId }); %>

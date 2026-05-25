@@ -384,12 +384,15 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     res.end(Utils.toTSV(results, keyNames));
   } else {
 
-    if (req.query.passage != undefined) {
+    var defaultPassage = req.query.passage != undefined || req.path.startsWith('/passage:') || req.params.bookAlias === 'quran';
+    if (defaultPassage) {
       section.title_en = chapter.title_en + ` Āyāt ${surah.num}:${ayah1}–${ayah2}`;
       section.title = chapter.title + ` آيات ${Arabic.toArabicDigits(ayah1)}–${Arabic.toArabicDigits(ayah2)}`;
       res.render('section_quran', {
         section: section,
-        results: results
+        results: results,
+        selectedAyah: (ayah1 == ayah2 && results.length > 0) ? results[0] : undefined,
+        selectedAyahs: results
       });
     } else {
       res.render('section', {
@@ -406,6 +409,11 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   req.params.num = Arabic.toLatinDigits(req.params.num);
+  var quranBookAliasMatch = req.params.bookAlias.match(/^quran:(.+)$/);
+  if (quranBookAliasMatch) {
+    req.params.bookAlias = 'quran';
+    req.params.num = `${quranBookAliasMatch[1]}:${req.params.num}`;
+  }
   if (req.params.bookAlias === 'quran') {
     if (/\d+-\d+$/.test(req.params.num)) {
       var toks = req.params.num.split(/[:\-]/);
@@ -448,6 +456,15 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 
   results = results.map(item => new Item(item));
   results[0].single = true;
+  if (results[0].book_alias === 'quran'
+    && !('json' in req.query)
+    && !('tsv' in req.query)
+    && !('md' in req.query)
+    && req.query.ayat === undefined
+    && req.query.sharepreview === undefined
+    && req.query.share === undefined) {
+    return await renderQuranAyahPassage(results[0], req, res);
+  }
   var admin = (req.cookies.admin == global.settings.admin.key);
   var editMode = (admin && req.cookies.editMode == 1);
   if (editMode)
@@ -511,6 +528,24 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     });
   }
 });
+
+async function renderQuranAyahPassage(selectedAyah, req, res) {
+  var section = await Section.sectionFromRef(`${selectedAyah.book_alias}/${selectedAyah.h1}/${selectedAyah.h2}`);
+  await section.getPrev();
+  await section.getNext();
+  var chapter = await section.getChapter();
+  await chapter.getPrev();
+  await chapter.getNext();
+  await chapter.getSections();
+  var results = await section.getItems(0, 1000);
+
+  res.render('section_quran', {
+    section: section,
+    results: results,
+    selectedAyah: selectedAyah,
+    selectedAyahs: [selectedAyah]
+  });
+}
 
 async function addVirtualReferences(items) {
   var ids = items
@@ -708,6 +743,30 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       res.end(Utils.toMarkdown(results));
     } else {
 
+      if (bookAlias === 'quran' && req.query.passage != undefined) {
+        // cache response
+        var refs = [];
+        for (const item of results)
+          refs.push(item.ref);
+        Utils.indexCachedItem(refs, cachedFile);
+        var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
+          noadmin: true,
+          chapter: chapter,
+          section: chapter,
+          results: results,
+          req: req,
+          res: res
+        });
+        fs.writeFileSync(cachedFile, html);
+
+        res.render('section_quran', {
+          chapter: chapter,
+          section: chapter,
+          results: results
+        });
+        return;
+      }
+
       // cache response
       var refs = [];
       for (const item of results)
@@ -788,7 +847,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       results.push(item);
     }
 
-    if (bookAlias === 'quran' && req.query.passage != undefined) {
+    if (bookAlias === 'quran' && req.query.ayat == undefined) {
 
       // cache response
       var refs = [];

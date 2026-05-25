@@ -3,6 +3,8 @@
     var sections = [];
 	if (chapter)
 		sections = chapter.sections; 
+	var selectedAyahs = locals.selectedAyahs || (locals.selectedAyah ? [selectedAyah] : []);
+	var selectedAyahRefs = new Set(selectedAyahs.map(ayah => ayah.ref));
 %>
 
 <section class="col-md-6 col-sm-12 h" lang="<%=lang%>">
@@ -14,8 +16,16 @@
 	<section class="body passage">
 		<p>
 			<% for (var i in passage) { %>
-				<span  class="ayah">
-					<sup><%= (i == 0) ? passage[i][lang].num : passage[i][lang].num.split(/:/)[1] %></sup>&nbsp;<%= passage[i][lang].body %>&nbsp;<%- (lang === 'ar') ? '<sup>۝</sup>' : '' %>
+				<%
+					var langData = passage[i][lang] || {};
+					var ayahBody = langData.body;
+					if (ayahBody === undefined || ayahBody === null || ayahBody === 'undefined')
+						continue;
+					var ayahNum = langData.num || passage[i].num || '';
+					var ayahHref = `/${passage[i].ref}`;
+				%>
+				<span class="ayah<%= selectedAyahRefs.has(passage[i].ref) ? ' ayah-selected' : '' %>">
+					<a href="<%= ayahHref %>"><sup><%= (i == 0) ? ayahNum : (ayahNum.split(/:/)[1] || ayahNum) %></sup>&nbsp;<%= ayahBody %>&nbsp;<%- (lang === 'ar') ? '<sup>۝</sup>' : '' %></a>
 				</span>
 			<% } %>
 		</p>

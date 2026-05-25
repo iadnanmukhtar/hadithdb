@@ -622,6 +622,16 @@ nav .nav-link {
 	margin-bottom: 0;
 }
 
+.quran-share-text p,
+.quran-ayah-hero-body p {
+	margin-bottom: 0.45rem;
+}
+
+.quran-share-text p:last-child,
+.quran-ayah-hero-body p:last-child {
+	margin-bottom: 0;
+}
+
 .hadith-share-section:lang(ar) .hadith-share-ref {
 	font-family: Kitab, Serif;
 	font-size: calc(16px * var(--share-scale) * var(--share-arabic-tune));
@@ -633,6 +643,19 @@ nav .nav-link {
 	font-size: calc(25px * var(--share-scale) * var(--share-arabic-tune));
 	line-height: 1.52;
 	text-align: right;
+}
+
+.quran-share-arabic-only .hadith-share-title {
+	font-size: calc(30px * var(--share-scale) * var(--share-english-tune));
+}
+
+.quran-share-arabic-only .hadith-share-section:lang(ar) .hadith-share-ref {
+	font-size: calc(17px * var(--share-scale) * var(--share-arabic-tune));
+}
+
+.quran-share-arabic-only .hadith-share-text:lang(ar) {
+	font-size: calc(31px * var(--share-scale) * var(--share-arabic-tune));
+	line-height: 1.6;
 }
 
 .hadith-share-footer {
@@ -1240,6 +1263,88 @@ del em strong {
 .body.passage {
 	text-indent: unset;
 	text-align: justify;
+}
+
+.body.passage .ayah a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.quran-footnotes {
+	margin-top: 1rem;
+}
+
+.quran-footnote-pair+.quran-footnote-pair {
+	margin-top: 0.75rem;
+}
+
+.quran-footnotes .footnote,
+.quran-footnotes .footnote p {
+	text-indent: 0;
+}
+
+.quran-footnotes [lang="ar"] sup {
+	font-size: 0.65em;
+}
+
+.quran-footnote-selected {
+	font-weight: bold;
+}
+
+.quran-footnotes [lang="ar"] .quran-footnote-selected {
+	font-family: KitabBold, Serif;
+}
+
+.quran-ayah-hero {
+	margin: 1.5rem 0 1rem;
+	padding: 1rem 0;
+	border-top: 1px solid var(--c-ghostwhite);
+	border-bottom: 1px solid var(--c-ghostwhite);
+}
+
+.quran-ayah-hero section+section {
+	margin-top: 1rem;
+}
+
+.quran-ayah-hero-ref {
+	margin-bottom: 0.35rem;
+	color: var(--c-gray-very-dark);
+	font-weight: bold;
+}
+
+.quran-ayah-hero-body {
+	margin-bottom: 0;
+	font-size: 1.15rem;
+	line-height: 1.8;
+}
+
+.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
+.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p {
+	font-family: KitabBold, Serif;
+	font-size: 1.85rem;
+	line-height: 2.2;
+}
+
+.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p span {
+	font-size: inherit;
+}
+
+.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body sup {
+	font-size: 0.65em;
+}
+
+.quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
+	font-size: inherit;
+}
+
+.body .ayah-selected {
+	font-weight: bold;
+	color: var(--c-note);
+}
+
+.body .ayah-selected:lang(ar),
+:lang(ar) .body .ayah-selected {
+	font-family: KitabBold, Serif;
 }
 
 .body .ayah:hover {

@@ -47,7 +47,11 @@
       <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= section.id %>" title="Bookmark this section">
         <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= section.id %>"></span>
       </button>
-      <span title="<%- section.title %>">Section <%- section.h2 %></span>
+      <% if (page.context.book && page.context.book.alias === 'quran' && page.context.passage) { %>
+        <a title="<%- section.title %>" href="/<%= section.path %>">Section <%- section.h2 %></a>
+      <% } else { %>
+        <span title="<%- section.title %>">Section <%- section.h2 %></span>
+      <% } %>
     <% } %>
   </div>
 
@@ -59,7 +63,11 @@
     <% } else if (heading.level == 2) { %>
       <a title="<%- chapter.title %>" href="/<%=chapter.path%>">كتاب <%- arabic.toArabicDigits(chapter.h1) %></a>
       &gt;
-      <span title="<%- section.title %>">باب <%- arabic.toArabicDigits(section.h2) %></span>
+      <% if (page.context.book && page.context.book.alias === 'quran' && page.context.passage) { %>
+        <a title="<%- section.title %>" href="/<%= section.path %>">باب <%- arabic.toArabicDigits(section.h2) %></a>
+      <% } else { %>
+        <span title="<%- section.title %>">باب <%- arabic.toArabicDigits(section.h2) %></span>
+      <% } %>
     <% } %>
   </div>
 

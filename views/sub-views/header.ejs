@@ -139,11 +139,12 @@
     <div class="col-12 d-flex justify-content-center">
       <% if (sections && sections.length > 0) { %>
         <a data-bs-toggle="collapse" href="#toc2" title="Click to show sections">Section Menu <i class="bi bi-caret-down-square"></i></a>
-        <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
-             if (req.query.passage == undefined) { %>
-                &nbsp;|&nbsp; <a href="<%= req.path %>?passage" title="Passage View"><i class="bi bi-text-paragraph"></i> Passage</a>
+        <% if (page.context.book && page.context.book.alias === 'quran' && (page.menu === 'Chapter' || page.menu === 'Section')) {
+             var isPassage = req.query.passage != undefined || page.context.passage || (page.menu === 'Section' && req.query.ayat == undefined);
+             if (!isPassage) { %>
+                &nbsp;|&nbsp; <a href="<%= page.menu === 'Section' ? req.path : `${req.path}?passage` %>" title="Passage View"><i class="bi bi-text-paragraph"></i> Passage</a>
              <% } else { %>
-              &nbsp;|&nbsp; <a href="<%= req.path %>" title="Āyah View"><i class="bi bi-blockquote-left"></i> Āyāt</a>
+              &nbsp;|&nbsp; <a href="/<%= (page.context.section || page.context.chapter).path %>?ayat" title="Āyah View"><i class="bi bi-blockquote-left"></i> Āyāt</a>
         <%   }
            } %>
       <% } else { %>
@@ -168,6 +169,9 @@
                 <%= `§${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>
                 <%- title_en || `Section ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%=section.count%>)
               </a>
+              <% if (page.context.book && page.context.book.alias === 'quran') { %>
+                &nbsp;<a href="/<%=section.path%>" title="Passage View"><i class="bi bi-text-paragraph"></i></a>
+              <% } %>
             </td>
             <td lang="ar"><a href="/<%=section.path%>"><%- title %></a></td>
             <% } else { %>

@@ -10,19 +10,30 @@
     else
       site.editMode = false;
     
-    var book = section.book;
-    var chapter = section.chapter;    
+    var chapter = locals.chapter || section.chapter || section;
+    var book = chapter.book || section.book;
+    var selectedAyahs = locals.selectedAyahs || (locals.selectedAyah ? [locals.selectedAyah] : []);
+    var firstSelectedAyah = selectedAyahs[0];
+    var lastSelectedAyah = selectedAyahs[selectedAyahs.length - 1] || firstSelectedAyah;
+    var firstSelectedRef = firstSelectedAyah ? (firstSelectedAyah.en.num || firstSelectedAyah.num || '') : '';
+    var lastSelectedRef = lastSelectedAyah ? (lastSelectedAyah.en.num || lastSelectedAyah.num || '') : '';
+    var firstSelectedPart = firstSelectedRef.split(/:/)[1] || firstSelectedRef;
+    var lastSelectedPart = lastSelectedRef.split(/:/)[1] || lastSelectedRef;
+    var selectedTitle = firstSelectedRef && lastSelectedRef && firstSelectedRef !== lastSelectedRef ? `Quran ${firstSelectedRef}-${lastSelectedPart}` : `Quran ${firstSelectedRef}`;
+    var quranShareId = selectedAyahs.length > 0 ? `Q${(firstSelectedRef + '-' + lastSelectedPart).replace(/[^A-Za-z0-9_-]/g, '-')}` : '';
+    var footnoteItems = results;
     var page = {
       menu: 'Section',
-      title_en: `${site.shortName} | ${book.shortName_en} §${section.h1}.${section.h2} ${section.title_en || section.title}`,
+      title_en: `${site.shortName} | ${book.shortName_en} ${chapter.h1}${section.level > 1 ? ` §${section.h1}.${section.h2}` : ''} ${section.title_en || section.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
-      canonical: `/${book.alias}/${chapter.h1}/${section.h2}?passage`,
+      canonical: section.level > 1 ? `/${book.alias}/${chapter.h1}/${section.h2}` : `/${book.alias}/${chapter.h1}?passage`,
       context: {
         book: book,
         chapter: chapter,
-        section: section,
+        section: section.level > 1 ? section : undefined,
         heading: section,
+        passage: true,
         continued: false
       }
     };
@@ -47,8 +58,48 @@
       <% if (results.length > 0) { %>
         <%- include('sub-views/heading.ejs', { site: site, page: page, heading: results[0].heading }); %>
       <% } %>
+
+      <% if (selectedAyahs.length > 0) { %>
+      <section class="quran-ayah-hero row">
+        <section class="col-12" lang="ar">
+          <div class="quran-ayah-hero-body">
+            <p>
+              <% selectedAyahs.forEach(function (ayah) {
+                var ayahNum = ayah.ar.num || ayah.num || '';
+                var ayahPart = ayahNum.split(/:/)[1] || ayahNum;
+              %>
+                <span><sup><%= ayahPart %></sup>&nbsp;<%= ayah.ar.body %>&nbsp;<span class="quran-ayah-end-marker">۝</span></span>
+              <% }); %>
+            </p>
+          </div>
+        </section>
+        <section class="col-12" lang="en">
+          <div class="quran-ayah-hero-body">
+            <p>
+              <% selectedAyahs.forEach(function (ayah) {
+                var ayahNum = ayah.en.num || ayah.num || '';
+                var ayahPart = ayahNum.split(/:/)[1] || ayahNum;
+              %>
+                <span><sup><%= ayahPart %></sup>&nbsp;<%= ayah.en.body %></span>
+              <% }); %>
+            </p>
+          </div>
+        </section>
+      </section>
+      <% if (selectedAyahs.length > 0 && quranShareId) { %>
+        <aside class="tags">
+          <span class="bi bi-box-arrow-up"></span>&nbsp;<a href="#<%= quranShareId %>" type="button" title="Share selected ayah image" class="icon" data-bs-toggle="modal" data-bs-target="#<%= quranShareId %>">Share</a>
+        </aside>
+      <% } %>
+      <% } %>
                           
-      <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, main: false, title: false, searchResult: false }); %>
+      <% if (selectedAyahs.length > 1) { %>
+        <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: selectedAyahs, quranShareId: quranShareId }); %>
+      <% } else { %>
+        <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
+      <% } %>
+
+      <%- include('sub-views/quran_footnotes.ejs', { site: site, page: page, footnoteItems: footnoteItems, selectedAyahs: selectedAyahs }); %>
       
       <% if (results.length == 0 || !results[0].id) { %>
         <footer class="col-12">
