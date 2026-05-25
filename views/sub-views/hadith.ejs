@@ -4,7 +4,7 @@
 	const isSimilarSection = typeof similarSection !== 'undefined' && similarSection;
 %>
 <a id="<%= String(i.num || i.num0 || i.id || '').replace(/:/g, '-') %>"></a>
-<article class="row mt-3">
+<article class="row mt-3"<%- isSimilarSection && i.similarCandidate ? ' data-similar-candidate="true"' : '' %>>
 
 	<% if (site.editMode) { %>
 		<header class="col-12" lang="ar">

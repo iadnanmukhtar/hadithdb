@@ -7,7 +7,9 @@
 	const firstRefPart = firstRef.split(/:/)[1] || firstRef;
 	const lastRefPart = lastRef.split(/:/)[1] || lastRef;
 	const shareRef = firstRef && lastRef && firstRef !== lastRef ? `quran:${firstRef}-${lastRefPart}` : `quran:${firstRef}`;
-	const shareTitle = page.context.chapter?.title_en || firstAyah.h1_title_en || firstAyah.en?.h1_title || 'Qurʾān';
+	const surahTitle = page.context.chapter?.title_en || firstAyah.h1_title_en || firstAyah.en?.h1_title || 'Qurʾān';
+	const shareTitleRef = firstRef && lastRef && firstRef !== lastRef ? `${firstRef}-${lastRefPart}` : firstRef;
+	const shareTitle = shareTitleRef ? `${surahTitle} ${shareTitleRef}` : surahTitle;
 %>
 <% if (ayahs.length > 0) { %>
 <aside class="h modal fade hadith-share-root quran-share-root" id="<%= quranShareId %>" tabindex="-1">
@@ -55,10 +57,8 @@
 					<div class="body hadith-share-text quran-share-text share-editable" lang="ar" contenteditable="false">
 						<p>
 							<% ayahs.forEach(function (ayah) {
-								const ayahNum = ayah.ar?.num || ayah.num || '';
-								const ayahPart = ayahNum.split(/:/)[1] || ayahNum;
 							%>
-								<span><sup><%= ayahPart %></sup>&nbsp;<%= ayah.ar?.body || '' %>&nbsp;<sup>۝</sup></span>
+								<span><%= ayah.ar?.body || '' %>&nbsp;<span class="quran-ayah-end-marker">۝</span></span>
 							<% }); %>
 						</p>
 					</div>

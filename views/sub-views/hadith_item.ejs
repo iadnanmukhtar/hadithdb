@@ -270,11 +270,11 @@
 					</button>
 				<% } %>
 				<% if (isSimilarSection && i.similarRemovable) { %>
-					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove Association" data-id="<%= i.similarRemoveId1 %>,<%= i.similarRemoveId2 %>" data-prop="hadiths_sim.del" data-loading-label="Removing">
+					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %><%= i.similarRemoveId1 && i.similarRemoveId2 && (Number(i.similarRemoveId1) !== Number(i.parentId) || Number(i.similarRemoveId2) !== Number(i.actual ? i.actual.id : i.id)) ? `,${i.similarRemoveId1},${i.similarRemoveId2}` : '' %>" data-prop="hadiths_sim.del" data-loading-label="Removing">
 						<span class="bi bi-trash"></span> Remove
 					</button>
 				<% } else if (!isSimilarSection) { %>
-					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove All Similar Hadith" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.delall" data-loading-label="Removing">
+					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Remove All Similar Candidates" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.delall" data-loading-label="Removing">
 						<span class="bi bi-trash"></span> Remove All
 					</button>
 					<div class="input-group input-group-sm d-inline-flex align-middle ms-1 mb-1" style="width: 9rem;">

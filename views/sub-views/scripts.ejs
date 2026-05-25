@@ -188,6 +188,15 @@
 	      $article.remove();
 	    };
 
+	    const removeSimilarCandidateElements = ($button) => {
+	      const $similarList = $button.closest('article').nextAll('.similar-list').first();
+	      if (!$similarList.length)
+	        return;
+	      $similarList.find('article[data-similar-candidate="true"]').each(function () {
+	        removeSimilarHadithElement($(this));
+	      });
+	    };
+
 	    async function changeListener(e) {
 	      if (e && typeof e.preventDefault === 'function')
 	        e.preventDefault();
@@ -249,6 +258,8 @@
 	              finalButtonHtml = setSimilarToggleButton($loadingButton, false) || finalButtonHtml;
 	            else if (propStr === 'hadiths_sim.del')
 	              removeSimilarHadith = true;
+	            else if (propStr === 'hadiths_sim.delall')
+	              removeSimilarCandidateElements($loadingButton);
 	            if ($(this).data('reset') == 'true')
 	              value = '';
 	            if (!removeSimilarHadith && !$(this).is('select') && value !== undefined && value !== null)

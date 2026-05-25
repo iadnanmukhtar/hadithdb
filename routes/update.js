@@ -326,14 +326,18 @@ router.post('/:id/:prop', async function (req, res, next) {
         }
         status.value = 'Moved';
       } else if (col == 'del') {
-        var result = await global.query(`DELETE FROM hadiths_sim_candidates 
-          WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
-        result = await global.query(`DELETE FROM hadiths_sim 
-          WHERE (hadithId1=${ids[0]} AND hadithId2=${ids[1]}) OR (hadithId1=${ids[1]} AND hadithId2=${ids[0]})`);
+        var simPairs = similarPairsFromIds(ids);
+        var result = null;
+        result = await Hadith.a_suppressSimilarCandidate(simPairs[0][0], simPairs[0][1]);
+        for (const pair of simPairs) {
+          result = await global.query(`DELETE FROM hadiths_sim_candidates
+            WHERE (hadithId1=${pair[0]} AND hadithId2=${pair[1]}) OR (hadithId1=${pair[1]} AND hadithId2=${pair[0]})`);
+          result = await global.query(`DELETE FROM hadiths_sim
+            WHERE (hadithId1=${pair[0]} AND hadithId2=${pair[1]}) OR (hadithId1=${pair[1]} AND hadithId2=${pair[0]})`);
+        }
       } else if (col == 'delall') {
-        var result = await global.query(`DELETE FROM hadiths_sim_candidates 
-          WHERE hadithId1=${ids[0]} OR hadithId2=${ids[0]}`);
-        result = await global.query(`DELETE FROM hadiths_sim
+        result = await suppressAllVisibleSimilarCandidates(ids[0]);
+        result = await global.query(`DELETE FROM hadiths_sim_candidates
           WHERE hadithId1=${ids[0]} OR hadithId2=${ids[0]}`);
       }
       status.code = 200;
@@ -394,6 +398,21 @@ function similarPairsFromIds(ids) {
   if (pairs.length < 1)
     throw new Error('No similar hadith pair provided');
   return pairs;
+}
+
+async function suppressAllVisibleSimilarCandidates(parentId) {
+  parentId = parseInt(parentId, 10);
+  if (!Number.isInteger(parentId) || parentId <= 0)
+    return null;
+  var item = (await global.query(`SELECT * FROM v_hadiths WHERE hId=${parentId} LIMIT 1`))[0];
+  if (!item)
+    return null;
+  var candidates = await Hadith.a_dbGetSimilarCandidates(new Item(item));
+  var ids = candidates
+    .filter(candidate => candidate.similarCandidate)
+    .map(candidate => parseInt(candidate.actual ? candidate.actual.id : candidate.id, 10))
+    .filter(id => Number.isInteger(id) && id > 0);
+  return await Hadith.a_suppressSimilarCandidates(parentId, ids);
 }
 
 async function startSimilarHadithProcess(hadithId) {
