@@ -55,10 +55,6 @@
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
       
-      <% if (results.length > 0) { %>
-        <%- include('sub-views/heading.ejs', { site: site, page: page, heading: results[0].heading }); %>
-      <% } %>
-
       <% if (selectedAyahs.length > 0) { %>
       <section class="quran-ayah-hero row">
         <section class="col-12" lang="ar">
@@ -96,6 +92,9 @@
       <% if (selectedAyahs.length > 1) { %>
         <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: selectedAyahs, quranShareId: quranShareId }); %>
       <% } else { %>
+        <% if (results.length > 0) { %>
+          <%- include('sub-views/heading.ejs', { site: site, page: page, heading: results[0].heading, headingEnglishOnly: true }); %>
+        <% } %>
         <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
       <% } %>
 

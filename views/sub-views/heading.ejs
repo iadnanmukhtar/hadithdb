@@ -2,6 +2,7 @@
     var book = page.context.book;
     var chapter = page.context.chapter;
     var section = page.context.section;
+    var headingEnglishOnly = locals.headingEnglishOnly;
     if (chapter.h1 != Math.floor(chapter.h1))
       chapter.h1 = Number(chapter.h1).toFixed(2);
 %>
@@ -13,7 +14,7 @@
 
   <heading class="row heading py-2">
     
-    <h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">
+    <h3 class="<%= headingEnglishOnly ? 'col-12' : 'col-md-6 col-sm-12' %> fs-5 title" lang="en">
       <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= heading.id %>" title="Bookmark this <%= heading.level === 3 ? 'subsection' : 'section' %>">
         <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= heading.id %>"></span>
       </button>
@@ -39,6 +40,7 @@
       <% } %>
     </h3>
     
+    <% if (!headingEnglishOnly) { %>
     <h3 class="col-md-6 col-sm-12 title" lang="ar">
       <%- `${arabic.toArabicDigits(heading.h1 + '')}۔${arabic.toArabicDigits(heading.h2 + '')}` + (heading.h3 ? `۔${arabic.toArabicDigits(heading.h3+'')}` : '') %>
       <% if (page.menu === 'Chapter')  { %>
@@ -51,6 +53,7 @@
         </span>
       <% } %>
     </h3>
+    <% } %>
 
   </heading>
 
@@ -58,7 +61,7 @@
   <section class="col-12">
     <div class="row heading-intro mb-3">
 
-      <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(heading.intro_en) %>" data-markdown-empty-html="&hellip;">
+      <section class="_e <%= headingEnglishOnly ? 'col-12' : 'col-md-6 col-sm-12' %> intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(heading.intro_en) %>" data-markdown-empty-html="&hellip;">
         <% if (heading.intro_en || site.editMode) { 
             const introEn = utils.markdownToHtml(heading.intro_en) || '&hellip;';
         %>
@@ -68,6 +71,7 @@
         <% } %>
       </section>
 
+      <% if (!headingEnglishOnly) { %>
       <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro" data-markdown-source="<%= utils.emptyIfNull(heading.intro) %>" data-markdown-empty-html="&hellip;">
         <% if (heading.intro || site.editMode) { 
             const introAr = utils.markdownToHtml(heading.intro) || '&hellip;';
@@ -77,6 +81,7 @@
         </div>
         <% } %>
       </section>
+      <% } %>
 
     </div>
   </section>

@@ -12,12 +12,12 @@
 
 @font-face {
 	font-family: Arabic;
-	src: url('https://hadithunlocked.com/fonts/kd-hafs.woff2') format('woff2');
+	src: url('/fonts/kd-hafs.woff2') format('woff2');
 }
 
 @font-face {
 	font-family: ArabicBold;
-	src: url('https://hadithunlocked.com/fonts/kd-hafs.woff2') format('woff2');
+	src: url('/fonts/kd-hafs.woff2') format('woff2');
 }
 
 :root {
@@ -645,6 +645,12 @@ nav .nav-link {
 	text-align: right;
 }
 
+.quran-share-card .hadith-share-text:lang(ar),
+.quran-share-card .quran-share-text:lang(ar),
+.quran-share-card .quran-share-text:lang(ar) span {
+	font-family: Arabic, Serif;
+}
+
 .quran-share-arabic-only .hadith-share-title {
 	font-size: calc(30px * var(--share-scale) * var(--share-english-tune));
 }
@@ -1270,6 +1276,19 @@ del em strong {
 	text-decoration: none;
 }
 
+.body.passage:lang(ar),
+.body.passage:lang(ar) .ayah,
+.body.passage:lang(ar) .ayah a,
+.body.passage:lang(ar) .ayah sup {
+	font-family: Arabic, Serif;
+}
+
+.body.passage:lang(ar) .ayah-selected,
+.body.passage:lang(ar) .ayah-selected a,
+.body.passage:lang(ar) .ayah-selected sup {
+	font-family: ArabicBold, Serif;
+}
+
 .quran-footnotes {
 	margin-top: 1rem;
 }
@@ -1320,12 +1339,13 @@ del em strong {
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p {
-	font-family: KitabBold, Serif;
+	font-family: ArabicBold, Serif;
 	font-size: 1.85rem;
 	line-height: 2.2;
 }
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p span {
+	font-family: ArabicBold, Serif;
 	font-size: inherit;
 }
 
