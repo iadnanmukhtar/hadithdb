@@ -5,6 +5,14 @@
 		sections = chapter.sections; 
 	var selectedAyahs = locals.selectedAyahs || (locals.selectedAyah ? [selectedAyah] : []);
 	var selectedAyahRefs = new Set(selectedAyahs.map(ayah => ayah.ref));
+	var quranSubsections = locals.quranSubsections || [];
+	var quranSubsectionsByStart = new Map();
+	quranSubsections.forEach(function (heading) {
+		var start = (heading.start || '').toString().split(/:/).pop();
+		if (!quranSubsectionsByStart.has(start))
+			quranSubsectionsByStart.set(start, []);
+		quranSubsectionsByStart.get(start).push(heading);
+	});
 %>
 
 <section class="col-md-6 col-sm-12 h" lang="<%=lang%>">
@@ -14,7 +22,7 @@
 		<p><%= passage[0][lang].chain %></p>
 	</aside>
 	<section class="body passage">
-		<p>
+		<div class="quran-passage-flow">
 			<% for (var i in passage) { %>
 				<%
 					var langData = passage[i][lang] || {};
@@ -22,13 +30,39 @@
 					if (ayahBody === undefined || ayahBody === null || ayahBody === 'undefined')
 						continue;
 					var ayahNum = langData.num || passage[i].num || '';
+					var ayahPart = ayahNum.split(/:/)[1] || ayahNum;
+					var ayahPartLatin = arabic.toLatinDigits(ayahPart);
 					var ayahHref = `/${passage[i].ref}`;
 				%>
+				<% (quranSubsectionsByStart.get(ayahPartLatin) || []).forEach(function (heading) {
+					var subsectionTitle = (lang === 'ar') ? heading.title : heading.title_en;
+					var subsectionProp = (lang === 'ar') ? 'toc.title' : 'toc.title_en';
+					var subsectionFallback = (lang === 'ar') ? 'مقطع' : 'Subsection';
+					var subsectionStart = (heading.start || '').toString().split(/:/).pop();
+					var subsectionCount = parseInt(heading.count, 10);
+					var subsectionEnd = parseInt(subsectionStart || '0', 10) + (Number.isInteger(subsectionCount) ? subsectionCount : 1) - 1;
+				%>
+					<span<%- lang === 'en' ? ` id="S${heading.h2}-${heading.h3}"` : '' %> class="quran-subheading" lang="<%= lang %>">
+						<span class="_e" data-id="<%= heading.id %>" data-prop="<%= subsectionProp %>" data-arabizi="<%= lang === 'en' ? 'true' : '' %>"><%- subsectionTitle || subsectionFallback %></span>
+						<% if (site.editMode && lang === 'en') { %>
+							<span class="quran-subheading-controls" data-subsection-id="<%= heading.id %>">
+								<input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-range-start" value="<%= subsectionStart %>" title="Subsection start ayah">
+								<input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-range-end" value="<%= subsectionEnd %>" title="Subsection end ayah">
+								<button type="button" class="btn btn-sm btn-outline-primary quran-subsection-range-save" title="Save subsection range">
+									<span class="bi bi-save"></span>
+								</button>
+								<button type="button" class="btn btn-sm btn-outline-danger quran-subsection-delete" title="Remove subsection division">
+									<span class="bi bi-x-circle"></span>
+								</button>
+							</span>
+						<% } %>
+					</span>
+				<% }); %>
 				<span class="ayah<%= selectedAyahRefs.has(passage[i].ref) ? ' ayah-selected' : '' %>">
-					<a href="<%= ayahHref %>"><sup><%= (i == 0) ? ayahNum : (ayahNum.split(/:/)[1] || ayahNum) %></sup>&nbsp;<%= ayahBody %>&nbsp;<%- (lang === 'ar') ? '<sup>۝</sup>' : '' %></a>
+					<a href="<%= ayahHref %>" data-ayah-number="<%= ayahPart %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup>&nbsp;<%= ayahBody %>&nbsp;<%- (lang === 'ar') ? '<sup>۝</sup>' : '' %></a>
 				</span>
 			<% } %>
-		</p>
+		</div>
 	</section>
 
 </section>

@@ -93,9 +93,63 @@
         <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: selectedAyahs, quranShareId: quranShareId }); %>
       <% } else { %>
         <% if (results.length > 0) { %>
-          <%- include('sub-views/heading.ejs', { site: site, page: page, heading: results[0].heading, headingEnglishOnly: true }); %>
+          <%- include('sub-views/heading.ejs', { site: site, page: page, heading: section, headingEnglishOnly: true }); %>
+          <% if (site.editMode && book.alias === 'quran' && section && section.level === 2) {
+            var rangeHeading = section;
+            var rangeStart = (rangeHeading.start || '').toString().split(/:/).pop();
+            var rangeCount = parseInt(rangeHeading.count || results.length, 10);
+            var rangeEnd = parseInt(rangeStart || '0', 10) + (Number.isInteger(rangeCount) ? rangeCount : results.length) - 1;
+            if (!Number.isInteger(rangeEnd) || rangeEnd < parseInt(rangeStart || '0', 10))
+              rangeEnd = rangeStart;
+          %>
+            <aside class="quran-range-admin mb-3" data-heading-id="<%= rangeHeading.id %>" data-surah="<%= rangeHeading.h1 %>" data-section-path="/<%= rangeHeading.path %>">
+              <div class="d-flex flex-wrap align-items-end gap-2">
+                <label class="form-label mb-0 small">
+                  Start
+                  <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-range-start" value="<%= rangeStart %>">
+                </label>
+                <label class="form-label mb-0 small">
+                  End
+                  <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-range-end" value="<%= rangeEnd %>">
+                </label>
+                <span class="quran-range-live small text-muted">Quran <%= rangeHeading.h1 %>:<%= rangeStart %>-<%= rangeEnd %></span>
+                <button type="button" class="btn btn-sm btn-primary quran-range-save" data-loading-label="Saving">
+                  <span class="bi bi-save"></span> Save range
+                </button>
+                <a class="btn btn-sm btn-outline-secondary quran-range-open" href="/passage:<%= rangeHeading.h1 %>:<%= rangeStart %>-<%= rangeEnd %>" target="_blank" rel="noopener">
+                  <span class="bi bi-box-arrow-up-right"></span> Preview
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-danger quran-section-delete" data-loading-label="Removing">
+                  <span class="bi bi-trash"></span> Delete section
+                </button>
+              </div>
+              <div class="quran-range-preview mt-2 d-none">
+                <div class="quran-range-preview-ar" lang="ar"></div>
+                <div class="quran-range-preview-en" lang="en"></div>
+              </div>
+            </aside>
+            <aside class="quran-subsection-admin mb-3" data-heading-id="<%= rangeHeading.id %>" data-section-path="/<%= rangeHeading.path %>">
+              <div class="d-flex flex-wrap align-items-end gap-2">
+                <label class="form-label mb-0 small">
+                  Subsection start
+                  <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-start" value="<%= rangeStart %>">
+                </label>
+                <label class="form-label mb-0 small">
+                  End
+                  <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-end" value="<%= rangeStart %>">
+                </label>
+                <label class="form-label mb-0 small quran-subsection-title-wrap">
+                  Title
+                  <input type="text" class="form-control form-control-sm quran-subsection-title" value="">
+                </label>
+                <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-add" data-loading-label="Adding">
+                  <span class="bi bi-plus-circle"></span> Add subsection
+                </button>
+              </div>
+            </aside>
+          <% } %>
         <% } %>
-        <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
+        <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranSubsections: locals.quranSubsections, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
       <% } %>
 
       <%- include('sub-views/quran_footnotes.ejs', { site: site, page: page, footnoteItems: footnoteItems, selectedAyahs: selectedAyahs }); %>
@@ -113,6 +167,306 @@
   
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <% if (site.editMode) { %>
+  <script>
+    document.querySelectorAll('.quran-range-admin').forEach((container) => {
+      const startInput = container.querySelector('.quran-range-start');
+      const endInput = container.querySelector('.quran-range-end');
+      const liveLabel = container.querySelector('.quran-range-live');
+      const saveButton = container.querySelector('.quran-range-save');
+      const deleteButton = container.querySelector('.quran-section-delete');
+      const previewLink = container.querySelector('.quran-range-open');
+      const preview = container.querySelector('.quran-range-preview');
+      const previewAr = container.querySelector('.quran-range-preview-ar');
+      const previewEn = container.querySelector('.quran-range-preview-en');
+      const surah = container.dataset.surah;
+      const headingId = container.dataset.headingId;
+      let previewTimer = null;
+
+      const getRange = () => ({
+        startAyah: parseInt(startInput.value, 10),
+        endAyah: parseInt(endInput.value, 10)
+      });
+
+      const setButtonLoading = (loading) => {
+        if (!saveButton)
+          return;
+        if (loading) {
+          saveButton.dataset.originalHtml = saveButton.innerHTML;
+          saveButton.disabled = true;
+          saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Saving';
+        } else {
+          saveButton.disabled = false;
+          saveButton.innerHTML = saveButton.dataset.originalHtml || '<span class="bi bi-save"></span> Save range';
+        }
+      };
+
+      const setActionLoading = (button, label, loading) => {
+        if (!button)
+          return;
+        if (loading) {
+          button.dataset.originalHtml = button.innerHTML;
+          button.disabled = true;
+          button.innerHTML = `<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ${label}`;
+        } else {
+          button.disabled = false;
+          button.innerHTML = button.dataset.originalHtml || button.innerHTML;
+        }
+      };
+
+      const updateLive = (highlightRange = false) => {
+        const range = getRange();
+        const valid = Number.isInteger(range.startAyah) && Number.isInteger(range.endAyah) && range.startAyah > 0 && range.endAyah >= range.startAyah;
+        const href = valid ? `/passage:${surah}:${range.startAyah}-${range.endAyah}` : '#';
+        liveLabel.textContent = valid ? `Quran ${surah}:${range.startAyah}-${range.endAyah}` : 'Invalid range';
+        previewLink.href = href;
+        saveButton.disabled = !valid;
+        container.classList.toggle('is-invalid', !valid);
+        document.querySelectorAll('.body.passage .ayah').forEach((ayah) => {
+          const link = ayah.querySelector('[data-ayah-number]');
+          const ayahNumber = link ? parseInt(link.dataset.ayahNumber, 10) : NaN;
+          ayah.classList.toggle('quran-range-live-selected', highlightRange && valid && ayahNumber >= range.startAyah && ayahNumber <= range.endAyah);
+        });
+        window.clearTimeout(previewTimer);
+        if (valid)
+          previewTimer = window.setTimeout(() => updatePreview(range), 300);
+      };
+
+      const updatePreview = async (range) => {
+        try {
+          const res = await fetch(`/passage:${surah}:${range.startAyah}-${range.endAyah}?json=1`);
+          if (!res.ok)
+            throw new Error(await res.text());
+          const item = await res.json();
+          previewAr.textContent = item.body || item.ar?.body || '';
+          previewEn.textContent = item.body_en || item.en?.body || '';
+          preview.classList.toggle('d-none', !(previewAr.textContent || previewEn.textContent));
+        } catch (err) {
+          preview.classList.add('d-none');
+        }
+      };
+
+      const saveRange = async () => {
+        const range = getRange();
+        setButtonLoading(true);
+        try {
+          const res = await fetch(`/update/${headingId}/toc.passageRange`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: range })
+          });
+          const body = await res.json();
+          if (!res.ok || body.code !== 200)
+            throw new Error(body.message || res.statusText);
+          if (window.toastr)
+            toastr.success(`${body.value.start} (${body.value.count} ayahs)`, 'Quran range saved');
+          window.location.href = container.dataset.sectionPath;
+        } catch (err) {
+          if (window.toastr)
+            toastr.error(err.message, 'Quran range save failed');
+          else
+            alert(err.message);
+        } finally {
+          setButtonLoading(false);
+        }
+      };
+
+      const deleteSection = async () => {
+        if (!window.confirm('Remove this section division and its subsections? The ayahs will remain in the surah, and later sections will be renumbered.'))
+          return;
+        setActionLoading(deleteButton, 'Removing', true);
+        try {
+          const res = await fetch(`/update/${headingId}/toc.sectionDelete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: '1' })
+          });
+          const body = await res.json();
+          if (!res.ok || body.code !== 200)
+            throw new Error(body.message || res.statusText);
+          if (window.toastr)
+            toastr.success('Later sections were renumbered', 'Quran section removed');
+          window.location.href = body.value.redirectPath || `/quran/${surah}`;
+        } catch (err) {
+          if (window.toastr)
+            toastr.error(err.message, 'Quran section remove failed');
+          else
+            alert(err.message);
+        } finally {
+          setActionLoading(deleteButton, 'Removing', false);
+        }
+      };
+
+      startInput.addEventListener('input', () => updateLive(true));
+      endInput.addEventListener('input', () => updateLive(true));
+      saveButton.addEventListener('click', saveRange);
+      deleteButton.addEventListener('click', deleteSection);
+      updateLive();
+    });
+
+    document.querySelectorAll('.quran-subsection-admin').forEach((container) => {
+      const startInput = container.querySelector('.quran-subsection-start');
+      const endInput = container.querySelector('.quran-subsection-end');
+      const titleInput = container.querySelector('.quran-subsection-title');
+      const addButton = container.querySelector('.quran-subsection-add');
+      const headingId = container.dataset.headingId;
+
+      const setButtonLoading = (loading) => {
+        if (!addButton)
+          return;
+        if (loading) {
+          addButton.dataset.originalHtml = addButton.innerHTML;
+          addButton.disabled = true;
+          addButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Adding';
+        } else {
+          addButton.disabled = false;
+          addButton.innerHTML = addButton.dataset.originalHtml || '<span class="bi bi-plus-circle"></span> Add subsection';
+        }
+      };
+
+      const getRange = () => ({
+        startAyah: parseInt(startInput.value, 10),
+        endAyah: parseInt(endInput.value, 10)
+      });
+
+      const updateValid = () => {
+        const range = getRange();
+        const valid = Number.isInteger(range.startAyah) && Number.isInteger(range.endAyah) && range.startAyah > 0 && range.endAyah >= range.startAyah;
+        addButton.disabled = !valid;
+        container.classList.toggle('is-invalid', !valid);
+      };
+
+      const addSubsection = async () => {
+        const range = getRange();
+        setButtonLoading(true);
+        try {
+          const res = await fetch(`/update/${headingId}/toc.subsectionAdd`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              value: {
+                startAyah: range.startAyah,
+                endAyah: range.endAyah,
+                title_en: titleInput.value
+              }
+            })
+          });
+          const body = await res.json();
+          if (!res.ok || body.code !== 200)
+            throw new Error(body.message || res.statusText);
+          if (window.toastr)
+            toastr.success(body.value.path, 'Quran subsection added');
+          window.location.href = `${container.dataset.sectionPath}#S${body.value.h2}-${body.value.h3}`;
+        } catch (err) {
+          if (window.toastr)
+            toastr.error(err.message, 'Quran subsection add failed');
+          else
+            alert(err.message);
+        } finally {
+          setButtonLoading(false);
+        }
+      };
+
+      startInput.addEventListener('input', updateValid);
+      endInput.addEventListener('input', updateValid);
+      addButton.addEventListener('click', addSubsection);
+      updateValid();
+    });
+
+    document.querySelectorAll('.quran-subheading-controls').forEach((container) => {
+      const startInput = container.querySelector('.quran-subsection-range-start');
+      const endInput = container.querySelector('.quran-subsection-range-end');
+      const saveButton = container.querySelector('.quran-subsection-range-save');
+      const deleteButton = container.querySelector('.quran-subsection-delete');
+      const subsectionId = container.dataset.subsectionId;
+
+      const range = () => ({
+        startAyah: parseInt(startInput.value, 10),
+        endAyah: parseInt(endInput.value, 10)
+      });
+
+      const validRange = () => {
+        const next = range();
+        return Number.isInteger(next.startAyah) && Number.isInteger(next.endAyah) && next.startAyah > 0 && next.endAyah >= next.startAyah;
+      };
+
+      const updateValid = () => {
+        saveButton.disabled = !validRange();
+        container.classList.toggle('is-invalid', !validRange());
+      };
+
+      const setButtonLoading = (button, label, loading) => {
+        if (!button)
+          return;
+        if (loading) {
+          button.dataset.originalHtml = button.innerHTML;
+          button.disabled = true;
+          button.innerHTML = `<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ${label}`;
+        } else {
+          button.disabled = false;
+          button.innerHTML = button.dataset.originalHtml || button.innerHTML;
+        }
+      };
+
+      const saveRange = async () => {
+        const next = range();
+        setButtonLoading(saveButton, '', true);
+        try {
+          const res = await fetch(`/update/${subsectionId}/toc.subsectionRange`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: next })
+          });
+          const body = await res.json();
+          if (!res.ok || body.code !== 200)
+            throw new Error(body.message || res.statusText);
+          if (window.toastr)
+            toastr.success(`${body.value.start} (${body.value.count} ayahs)`, 'Quran subsection saved');
+          window.location.href = `${location.pathname}#S${body.value.h2}-${body.value.h3}`;
+        } catch (err) {
+          if (window.toastr)
+            toastr.error(err.message, 'Quran subsection save failed');
+          else
+            alert(err.message);
+        } finally {
+          setButtonLoading(saveButton, '', false);
+        }
+      };
+
+      const deleteSubsection = async () => {
+        if (!window.confirm('Remove this subsection division? The ayahs will remain in the parent section.'))
+          return;
+        setButtonLoading(deleteButton, '', true);
+        try {
+          const res = await fetch(`/update/${subsectionId}/toc.subsectionDelete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: '1' })
+          });
+          const body = await res.json();
+          if (!res.ok || body.code !== 200)
+            throw new Error(body.message || res.statusText);
+          if (window.toastr)
+            toastr.success('Ayahs remain in the parent section', 'Quran subsection removed');
+          window.location.href = location.pathname;
+        } catch (err) {
+          if (window.toastr)
+            toastr.error(err.message, 'Quran subsection remove failed');
+          else
+            alert(err.message);
+        } finally {
+          setButtonLoading(deleteButton, '', false);
+        }
+      };
+
+      startInput.addEventListener('input', updateValid);
+      endInput.addEventListener('input', updateValid);
+      saveButton.addEventListener('click', saveRange);
+      deleteButton.addEventListener('click', deleteSubsection);
+      updateValid();
+    });
+  </script>
+  <% } %>
   
 </body>
 

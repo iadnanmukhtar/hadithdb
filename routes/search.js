@@ -12,7 +12,7 @@ const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
 const HadithRevision = require('../lib/HadithRevision');
 const Utils = require('../lib/Utils');
-const { Section, Chapter, Item, Library, Record } = require('../lib/Model');
+const { Section, Chapter, Heading, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
 const Arabic = require('../lib/Arabic');
 const { homedir } = require('os');
@@ -357,6 +357,8 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   }
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
+    if (results.length < 1)
+      return res.end(JSON.stringify({}));
     var ayahs_en = [];
     var ayahs = [];
     var footnotes_en = [];
@@ -374,7 +376,6 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     results[0].body = results[0].ar.body = ayahs.join(' ').trim();
     results[0].footnote_en = results[0].en.footnote = footnotes_en.join('\n').trim();
     results[0].footnote = results[0].ar.footnote = footnotes.join('\n').trim();
-    results[0] = results.splice(0, 1);
     res.end(JSON.stringify(results[0]));
   } else if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
@@ -530,21 +531,122 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 });
 
 async function renderQuranAyahPassage(selectedAyah, req, res) {
-  var section = await Section.sectionFromRef(`${selectedAyah.book_alias}/${selectedAyah.h1}/${selectedAyah.h2}`);
+  var section = await getQuranSectionForAyah(selectedAyah);
   await section.getPrev();
   await section.getNext();
   var chapter = await section.getChapter();
   await chapter.getPrev();
   await chapter.getNext();
   await chapter.getSections();
-  var results = await section.getItems(0, 1000);
+  var results = await getQuranSectionPassageItems(section, 0, 1000);
+  var quranSubsections = await getQuranSectionSubsections(section);
 
   res.render('section_quran', {
     section: section,
     results: results,
     selectedAyah: selectedAyah,
-    selectedAyahs: [selectedAyah]
+    selectedAyahs: [selectedAyah],
+    quranSubsections: quranSubsections
   });
+}
+
+async function getQuranSectionForAyah(selectedAyah) {
+  var ayah = parseInt(selectedAyah.numInChapter || (selectedAyah.num || '').toString().split(/:/).pop(), 10);
+  var fallbackRef = `${selectedAyah.book_alias}/${selectedAyah.h1}/${selectedAyah.h2}`;
+  if (!Number.isInteger(ayah))
+    return await Section.sectionFromRef(fallbackRef);
+  var rows = await global.query(`SELECT section.*
+    FROM v_toc section
+    WHERE section.book_alias='quran'
+      AND section.level=2
+      AND section.h1=${Number(selectedAyah.h1)}
+      AND section.h2_start IS NOT NULL
+      AND section.h2_count IS NOT NULL
+      AND ${ayah} BETWEEN CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED)
+        AND CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED) + section.h2_count - 1
+    ORDER BY
+      EXISTS (
+        SELECT 1
+        FROM v_toc subsection
+        WHERE subsection.book_alias='quran'
+          AND subsection.level=3
+          AND subsection.h1=section.h1
+          AND subsection.h2=section.h2
+          AND subsection.h3_start IS NOT NULL
+          AND subsection.h3_count IS NOT NULL
+          AND ${ayah} BETWEEN CAST(SUBSTRING_INDEX(subsection.h3_start, ':', -1) AS UNSIGNED)
+            AND CAST(SUBSTRING_INDEX(subsection.h3_start, ':', -1) AS UNSIGNED) + subsection.h3_count - 1
+      ) DESC,
+      (section.h2=${Number(selectedAyah.h2)}) DESC,
+      section.h2
+    LIMIT 1`);
+  if (rows.length > 0)
+    return Heading.toLevel(rows[0]);
+  return await Section.sectionFromRef(fallbackRef);
+}
+
+async function getQuranSectionPassageItems(section, offset, size) {
+  offset = Number.isInteger(parseInt(offset, 10)) ? parseInt(offset, 10) : 0;
+  var startAyah = quranAyahFromHeadingStart(section.start);
+  var count = parseInt(section.count, 10);
+  if (!Number.isInteger(startAyah) || !Number.isInteger(count) || count < 1)
+    return await section.getItems(offset, size);
+  if (offset >= count)
+    return [];
+  if (!Number.isInteger(parseInt(size, 10)))
+    size = count - offset;
+  else
+    size = Math.min(parseInt(size, 10), count - offset);
+  section.page = {
+    offset: offset,
+    number: size > 0 ? (offset / size) + 1 : 1,
+    hasNext: offset + size < count,
+    prevOffset: Math.max(0, offset - size),
+    nextOffset: offset + size,
+    hasPrev: offset > 0
+  };
+  var queryStart = startAyah + offset;
+  var queryEnd = startAyah + count - 1;
+  var results = await Index.docsFromQueryString(
+    Item.INDEX,
+    `book_alias:quran AND h1:${Number(section.h1)} AND numInChapter:[${queryStart} TO ${queryEnd}]`,
+    0,
+    size,
+    'numInChapter'
+  );
+  return results.map(item => new Item(item));
+}
+
+function quranAyahFromHeadingStart(start) {
+  var parts = Utils.trimToEmpty(start).split(/:/);
+  return parseInt(Arabic.toLatinDigits(parts[parts.length - 1] || ''), 10);
+}
+
+function shouldRedirectQuranSurahPath(req) {
+  return req.query.json === undefined
+    && req.query.tsv === undefined
+    && req.query.md === undefined
+    && req.query.download === undefined;
+}
+
+async function firstQuranSectionNumber(surah) {
+  surah = Number(surah);
+  if (!Number.isInteger(surah) || surah <= 0)
+    return null;
+  var rows = await global.query(`SELECT MIN(h2) AS h2
+    FROM v_toc
+    WHERE book_alias='quran' AND level=2 AND h1=${surah}`);
+  var h2 = rows && rows[0] ? Number(rows[0].h2) : NaN;
+  return Number.isInteger(h2) && h2 > 0 ? h2 : null;
+}
+
+async function getQuranSectionSubsections(section) {
+  if (!section || section.book_alias !== 'quran' || parseInt(section.level, 10) !== 2)
+    return [];
+  var rows = await global.query(`SELECT * FROM v_toc
+    WHERE book_alias='quran' AND level=3 AND h1=${Number(section.h1)} AND h2=${Number(section.h2)}
+    ORDER BY ordinal, h3`);
+  return rows.map(row => Heading.toLevel(row));
 }
 
 async function addVirtualReferences(items) {
@@ -713,6 +815,11 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var bookAlias = req.params.bookAlias;
     var chapterNum = Number(Arabic.toLatinDigits(req.params.chapterNum));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
+    if (bookAlias === 'quran' && shouldRedirectQuranSurahPath(req)) {
+      var firstSectionNum = await firstQuranSectionNumber(chapterNum);
+      if (firstSectionNum)
+        return res.redirect(302, `/quran/${chapterNum}/${firstSectionNum}`);
+    }
 
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
     if ('flush' in req.query)
@@ -840,7 +947,13 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     await chapter.getPrev();
     await chapter.getNext();
     await chapter.getSections();
-    results = await section.getItems(offset);
+    if (bookAlias === 'quran' && req.query.ayat == undefined)
+      results = await getQuranSectionPassageItems(section, offset);
+    else
+      results = await section.getItems(offset);
+    var quranSubsections = (bookAlias === 'quran' && req.query.ayat == undefined)
+      ? await getQuranSectionSubsections(section)
+      : [];
     if (results.length == 0) {
       var item = new Item(section);
       item.id = item.hId = undefined;
@@ -858,6 +971,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         noadmin: true,
         section: section,
         results: results,
+        quranSubsections: quranSubsections,
         req: req,
         res: res
       });
@@ -865,7 +979,8 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
 
       res.render('section_quran', {
         section: section,
-        results: results
+        results: results,
+        quranSubsections: quranSubsections
       });
     } else {
 

@@ -195,7 +195,31 @@ router.post('/:id/:prop', async function (req, res, next) {
       await Hadith.a_reinit();
 
     } else if (type == 'toc') {
-      var result = await global.query(`UPDATE toc SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
+      var result;
+      var shouldRunDefaultHeadingTasks = true;
+      if (col === 'passageRange') {
+        result = await updateQuranPassageRange(ids[0], status.value, userId);
+        status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'subsectionAdd') {
+        result = await addQuranSubsection(ids[0], status.value, userId);
+        status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'subsectionRange') {
+        result = await updateQuranSubsectionRange(ids[0], status.value, userId);
+        status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'subsectionDelete') {
+        result = await deleteQuranSubsection(ids[0]);
+        status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'sectionDelete') {
+        result = await deleteQuranSection(ids[0]);
+        status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
+      } else {
+        result = await global.query(`UPDATE toc SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
+      }
       if (col === 'title_en' && Utils.isFalsey(status.value)) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
         if (Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
@@ -218,8 +242,10 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
       try {
-        await reindexHeadingSubtreeByHeadingId(ids[0]);
-        await invalidateHeadingCachesByHeadingId(ids[0]);
+        if (shouldRunDefaultHeadingTasks) {
+          await reindexHeadingSubtreeByHeadingId(ids[0]);
+          await invalidateHeadingCachesByHeadingId(ids[0]);
+        }
       } catch (err) {
         debug(`${err.message}:\n${err.stack}`);
       }
@@ -368,6 +394,274 @@ function sql(s) {
   return null;
 }
 
+async function updateQuranPassageRange(headingId, value, userId) {
+  headingId = parseInt(headingId, 10);
+  if (!Number.isInteger(headingId) || headingId <= 0)
+    throw createError(400, 'Invalid heading id');
+  var payload = parsePassageRangeValue(value);
+  var heading = (await global.query(`SELECT * FROM v_toc WHERE hId=${headingId} LIMIT 1`))[0];
+  if (!heading)
+    throw createError(404, 'Heading not found');
+  if (heading.book_alias !== 'quran')
+    throw createError(400, 'Passage ranges can only be set for Quran headings');
+  if (parseInt(heading.level, 10) !== 2)
+    throw createError(400, 'Passage ranges can only be set for Quran section headings');
+  var surah = parseInt(heading.h1, 10);
+  validateAyahRange(payload.startAyah, payload.endAyah, surah);
+  var rangeRows = await global.query(`SELECT COUNT(*) AS count
+    FROM hadiths
+    WHERE bookId=${parseInt(heading.book_id, 10)} AND h1=${surah} AND numInChapter BETWEEN ${payload.startAyah} AND ${payload.endAyah}`);
+  if (!rangeRows[0] || Number(rangeRows[0].count) !== (payload.endAyah - payload.startAyah + 1))
+    throw createError(400, `Ayah range ${surah}:${payload.startAyah}-${payload.endAyah} is outside this surah`);
+  var startRef = `${surah}:${payload.startAyah}`;
+  var start0 = quranNum0(surah, payload.startAyah);
+  var count = payload.endAyah - payload.startAyah + 1;
+  var updateResult = await global.query(`UPDATE toc
+    SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, start0=${start0}, count=${count}
+    WHERE id=${heading.tId || heading.id}`);
+  await reindexChapterSearchScope(heading.book_id, surah, { syncKnowledge: false, refresh: true });
+  await invalidateQuranSurahCaches(surah);
+  return {
+    message: updateResult.message,
+    value: {
+      startAyah: payload.startAyah,
+      endAyah: payload.endAyah,
+      start: startRef,
+      start0: start0,
+      count: count
+    }
+  };
+}
+
+async function addQuranSubsection(sectionHeadingId, value, userId) {
+  sectionHeadingId = parseInt(sectionHeadingId, 10);
+  if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
+    throw createError(400, 'Invalid section heading id');
+  var payload = parseSubsectionValue(value);
+  var section = (await global.query(`SELECT * FROM v_toc WHERE hId=${sectionHeadingId} LIMIT 1`))[0];
+  if (!section)
+    throw createError(404, 'Section heading not found');
+  if (section.book_alias !== 'quran')
+    throw createError(400, 'Subsections can only be added here for Quran headings');
+  if (parseInt(section.level, 10) !== 2)
+    throw createError(400, 'Subsections can only be added within a level 2 section');
+  var surah = parseInt(section.h1, 10);
+  validateAyahRange(payload.startAyah, payload.endAyah, surah);
+  validateSubsectionWithinSection(payload, section);
+  var h3 = await nextQuranSubsectionNumber(section.book_id, surah, section.h2);
+  var startRef = `${surah}:${payload.startAyah}`;
+  var start0 = quranNum0(surah, payload.startAyah);
+  var count = payload.endAyah - payload.startAyah + 1;
+  var insertOrdinal = parseInt(section.ordinal, 10);
+  if (!Number.isInteger(insertOrdinal))
+    insertOrdinal = 0;
+  var insertResult = await global.query(`INSERT INTO toc
+    (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, start0, count, lastmod_user, lastfixed)
+    VALUES
+    (${insertOrdinal}, ${parseInt(section.book_id, 10)}, 3, ${surah}, ${Number(section.h2)}, ${h3}, ${sql(payload.title_en)}, ${sql(payload.title)}, NULL, NULL, ${sql(startRef)}, ${start0}, ${count}, '${userId}', CURRENT_TIMESTAMP())`);
+  await reindexChapterSearchScope(section.book_id, surah, { syncKnowledge: false, refresh: true });
+  await invalidateQuranSurahCaches(surah);
+  return {
+    message: insertResult.message,
+    value: {
+      id: insertResult.insertId,
+      h1: surah,
+      h2: Number(section.h2),
+      h3: h3,
+      path: `quran/${surah}/${Number(section.h2)}/${h3}`,
+      start: startRef,
+      startAyah: payload.startAyah,
+      endAyah: payload.endAyah,
+      count: count
+    }
+  };
+}
+
+async function updateQuranSubsectionRange(subsectionHeadingId, value, userId) {
+  subsectionHeadingId = parseInt(subsectionHeadingId, 10);
+  if (!Number.isInteger(subsectionHeadingId) || subsectionHeadingId <= 0)
+    throw createError(400, 'Invalid subsection heading id');
+  var payload = parseSubsectionValue(value);
+  var subsection = (await global.query(`SELECT * FROM v_toc WHERE hId=${subsectionHeadingId} LIMIT 1`))[0];
+  if (!subsection)
+    throw createError(404, 'Subsection heading not found');
+  if (subsection.book_alias !== 'quran')
+    throw createError(400, 'Subsection ranges can only be adjusted here for Quran headings');
+  if (parseInt(subsection.level, 10) !== 3)
+    throw createError(400, 'Only level 3 subsection ranges can be adjusted here');
+  var section = (await global.query(`SELECT * FROM v_toc
+    WHERE book_id=${parseInt(subsection.book_id, 10)} AND level=2 AND h1=${Number(subsection.h1)} AND h2=${Number(subsection.h2)}
+    LIMIT 1`))[0];
+  if (!section)
+    throw createError(404, 'Parent section heading not found');
+  var surah = parseInt(subsection.h1, 10);
+  validateAyahRange(payload.startAyah, payload.endAyah, surah);
+  validateSubsectionWithinSection(payload, section);
+  var startRef = `${surah}:${payload.startAyah}`;
+  var start0 = quranNum0(surah, payload.startAyah);
+  var count = payload.endAyah - payload.startAyah + 1;
+  var updateResult = await global.query(`UPDATE toc
+    SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, start0=${start0}, count=${count}
+    WHERE id=${subsection.tId || subsection.id}`);
+  await reindexChapterSearchScope(subsection.book_id, surah, { syncKnowledge: false, refresh: true });
+  await invalidateQuranSurahCaches(surah);
+  return {
+    message: updateResult.message,
+    value: {
+      id: subsection.tId || subsection.id,
+      h1: surah,
+      h2: Number(subsection.h2),
+      h3: Number(subsection.h3),
+      path: `quran/${surah}/${Number(subsection.h2)}/${Number(subsection.h3)}`,
+      start: startRef,
+      startAyah: payload.startAyah,
+      endAyah: payload.endAyah,
+      count: count
+    }
+  };
+}
+
+async function deleteQuranSubsection(subsectionHeadingId) {
+  subsectionHeadingId = parseInt(subsectionHeadingId, 10);
+  if (!Number.isInteger(subsectionHeadingId) || subsectionHeadingId <= 0)
+    throw createError(400, 'Invalid subsection heading id');
+  var subsection = (await global.query(`SELECT * FROM v_toc WHERE hId=${subsectionHeadingId} LIMIT 1`))[0];
+  if (!subsection)
+    throw createError(404, 'Subsection heading not found');
+  if (subsection.book_alias !== 'quran')
+    throw createError(400, 'Subsections can only be removed here for Quran headings');
+  if (parseInt(subsection.level, 10) !== 3)
+    throw createError(400, 'Only level 3 subsection headings can be removed here');
+  var deleteResult = await global.query(`DELETE FROM toc WHERE id=${subsection.tId || subsection.id}`);
+  await Index.delete(Heading.INDEX, subsection.hId || subsection.tId || subsection.id);
+  await reindexChapterSearchScope(subsection.book_id, subsection.h1, { syncKnowledge: false, refresh: true });
+  await invalidateQuranSurahCaches(subsection.h1);
+  return {
+    message: deleteResult.message,
+    value: {
+      id: subsection.tId || subsection.id,
+      h1: Number(subsection.h1),
+      h2: Number(subsection.h2),
+      h3: Number(subsection.h3),
+      deleted: true
+    }
+  };
+}
+
+async function deleteQuranSection(sectionHeadingId) {
+  sectionHeadingId = parseInt(sectionHeadingId, 10);
+  if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
+    throw createError(400, 'Invalid section heading id');
+  var section = (await global.query(`SELECT * FROM v_toc WHERE hId=${sectionHeadingId} LIMIT 1`))[0];
+  if (!section)
+    throw createError(404, 'Section heading not found');
+  if (section.book_alias !== 'quran')
+    throw createError(400, 'Sections can only be removed here for Quran headings');
+  if (parseInt(section.level, 10) !== 2)
+    throw createError(400, 'Only level 2 section headings can be removed here');
+  var bookId = parseInt(section.book_id, 10);
+  var surah = Number(section.h1);
+  var h2 = Number(section.h2);
+  var deletedHeadings = await global.query(`SELECT hId
+    FROM v_toc
+    WHERE book_id=${bookId} AND h1=${surah} AND h2=${h2} AND level IN (2, 3)`);
+  var deleteResult = await global.query(`DELETE FROM toc
+    WHERE bookId=${bookId} AND h1=${surah} AND h2=${h2} AND level IN (2, 3)`);
+  await global.query(`UPDATE toc
+    SET h2=h2-1
+    WHERE bookId=${bookId} AND h1=${surah} AND h2>${h2} AND level IN (2, 3)`);
+  for (const heading of deletedHeadings)
+    await Index.delete(Heading.INDEX, heading.hId);
+  await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
+  await invalidateQuranSurahCaches(surah);
+  return {
+    message: deleteResult.message,
+    value: {
+      id: section.tId || section.id,
+      h1: surah,
+      h2: h2,
+      deleted: true,
+      redirectPath: `/quran/${surah}`
+    }
+  };
+}
+
+function parseSubsectionValue(value) {
+  var payload = parsePassageRangeValue(value);
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value);
+    } catch (err) {
+      value = {};
+    }
+  }
+  value = value || {};
+  payload.title_en = Utils.trimToEmpty(value.title_en || value.title || 'Subsection');
+  payload.title = Utils.trimToEmpty(value.title_ar || value.titleArabic || '');
+  return payload;
+}
+
+function validateSubsectionWithinSection(payload, section) {
+  var sectionStart = quranAyahFromHeadingStart(section.start || section.h2_start);
+  var sectionCount = parseInt(section.count || section.h2_count, 10);
+  if (!Number.isInteger(sectionStart) || !Number.isInteger(sectionCount) || sectionCount < 1)
+    return;
+  var sectionEnd = sectionStart + sectionCount - 1;
+  if (payload.startAyah < sectionStart || payload.endAyah > sectionEnd)
+    throw createError(400, `Subsection range must be within ${section.h1}:${sectionStart}-${sectionEnd}`);
+}
+
+async function nextQuranSubsectionNumber(bookId, h1, h2) {
+  var rows = await global.query(`SELECT COALESCE(MAX(h3), 0) + 1 AS h3
+    FROM toc
+    WHERE bookId=${parseInt(bookId, 10)} AND level=3 AND h1=${Number(h1)} AND h2=${Number(h2)}`);
+  return Number(rows[0].h3);
+}
+
+function parsePassageRangeValue(value) {
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value);
+    } catch (err) {
+      var match = value.match(/^\s*(\d+)\s*[-:]\s*(\d+)\s*$/);
+      if (match)
+        value = { startAyah: match[1], endAyah: match[2] };
+    }
+  }
+  value = value || {};
+  var startAyah = parseInt(Arabic.toLatinDigits(value.startAyah || value.start || value.ayah1), 10);
+  var endAyah = parseInt(Arabic.toLatinDigits(value.endAyah || value.end || value.ayah2), 10);
+  return { startAyah, endAyah };
+}
+
+function validateAyahRange(startAyah, endAyah, surah) {
+  if (!Number.isInteger(startAyah) || !Number.isInteger(endAyah) || startAyah < 1 || endAyah < startAyah)
+    throw createError(400, 'Invalid ayah range');
+  var surahInfo = global.surahs.find(item => Number(item.num) === Number(surah));
+  if (surahInfo && surahInfo.ayat && endAyah > Number(surahInfo.ayat))
+    throw createError(400, `Surah ${surah} only has ${surahInfo.ayat} ayahs`);
+}
+
+function quranNum0(surah, ayah) {
+  return Number(surah) + (Number(ayah) / 1000);
+}
+
+function quranAyahFromHeadingStart(start) {
+  var parts = Utils.trimToEmpty(start).split(/:/);
+  return parseInt(Arabic.toLatinDigits(parts[parts.length - 1] || ''), 10);
+}
+
+async function invalidateQuranSurahCaches(surah) {
+  var cacheDir = `${homedir()}/.hadithdb/cache`;
+  if (!fs.existsSync(cacheDir))
+    return;
+  var prefixes = [`_quran_${surah}`, `_passage:${surah}:`];
+  for (const filename of fs.readdirSync(cacheDir)) {
+    if (prefixes.some(prefix => filename === `${prefix}.html` || filename.startsWith(prefix) || filename.startsWith(`${prefix}?`)))
+      await Utils.flushCachedFile(`${cacheDir}/${filename}`);
+  }
+}
+
 function updateErrorStatus(err) {
   var code = err?.status || err?.statusCode || err?.response?.status || 500;
   code = parseInt(code, 10);
@@ -473,12 +767,12 @@ async function reindexHeadingSubtreeByHeadingId(headingId) {
   await reindexSearchScope(buildHeadingScopeWhere(heading));
 }
 
-async function reindexChapterSearchScope(bookId, h1) {
+async function reindexChapterSearchScope(bookId, h1, options) {
   bookId = parseInt(bookId, 10);
   h1 = Number(h1);
-  if (!Number.isInteger(bookId) || bookId <= 0 || !Number.isFinite(h1))
+  if (!Number.isInteger(bookId) || bookId < 0 || !Number.isFinite(h1))
     return;
-  await reindexSearchScope(`book_id=${bookId} AND h1=${h1}`);
+  await reindexSearchScope(`book_id=${bookId} AND h1=${h1}`, options);
 }
 
 async function invalidateHeadingCachesByHeadingId(headingId) {
@@ -544,7 +838,8 @@ function normalizeHeadingNumber(value) {
   return `${numeric}`.replace(/\.0+$/, '');
 }
 
-async function reindexSearchScope(whereClause) {
+async function reindexSearchScope(whereClause, options) {
+  options = options || {};
   var headings = await global.query(`SELECT * FROM v_toc WHERE ${whereClause} ORDER BY ordinal`);
   if (headings.length > 0) {
     try {
@@ -560,7 +855,12 @@ async function reindexSearchScope(whereClause) {
     } catch (err) {
       debug(`unable to reindex hadiths for search scope ${whereClause}: ${err.message}\n${err.stack}`);
     }
-    await HadithKnowledge.syncForHadithRows(items);
+    if (options.syncKnowledge !== false)
+      await HadithKnowledge.syncForHadithRows(items);
+  }
+  if (options.refresh) {
+    await Index.refresh(Heading.INDEX);
+    await Index.refresh(Item.INDEX);
   }
 }
 

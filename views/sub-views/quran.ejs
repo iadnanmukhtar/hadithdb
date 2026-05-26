@@ -1,9 +1,78 @@
-<article class="row">
+<%
+  var quranSubsections = (locals.quranSubsections || []).map(function (heading) {
+    var startAyah = parseInt(arabic.toLatinDigits((heading.start || '').toString().split(/:/).pop()), 10);
+    var count = parseInt(heading.count, 10);
+    heading._startAyah = startAyah;
+    heading._endAyah = Number.isInteger(count) && count > 0 ? startAyah + count - 1 : startAyah;
+    return heading;
+  }).filter(function (heading) {
+    return Number.isInteger(heading._startAyah);
+  }).sort(function (a, b) {
+    if (a._startAyah !== b._startAyah)
+      return a._startAyah - b._startAyah;
+    return (a.h3 || 0) - (b.h3 || 0);
+  });
 
-<%- include('quran_item.ejs', { site: site, page: page, passage: passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
+  function ayahNumber(item) {
+    var num = (item.en && item.en.num) || item.num || '';
+    return parseInt(arabic.toLatinDigits((num || '').toString().split(/:/).pop()), 10);
+  }
 
-<%- include('quran_item.ejs', { site: site, page: page, passage: passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranShareId: locals.quranShareId, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
+  var quranGroups = [];
+  if (quranSubsections.length > 0) {
+    var cursor = 0;
+    for (var s = 0; s < quranSubsections.length; s++) {
+      var heading = quranSubsections[s];
+      var startIndex = passage.findIndex(function (item) {
+        return ayahNumber(item) >= heading._startAyah;
+      });
+      if (startIndex < 0)
+        continue;
+      var endIndex = passage.findIndex(function (item) {
+        return ayahNumber(item) > heading._endAyah;
+      });
+      if (endIndex < 0)
+        endIndex = passage.length;
+      if (startIndex > cursor) {
+        quranGroups.push({
+          passage: passage.slice(cursor, startIndex),
+          quranSubsections: []
+        });
+      }
+      if (endIndex > startIndex) {
+        quranGroups.push({
+          passage: passage.slice(startIndex, endIndex),
+          quranSubsections: [heading]
+        });
+      }
+      cursor = Math.max(cursor, endIndex);
+    }
+    if (cursor < passage.length) {
+      quranGroups.push({
+        passage: passage.slice(cursor),
+        quranSubsections: []
+      });
+    }
+  }
+  if (quranGroups.length < 1) {
+    quranGroups = [{
+      passage: passage,
+      quranSubsections: quranSubsections
+    }];
+  }
+%>
+
+<% quranGroups.forEach(function (group) {
+  if (!group.passage || group.passage.length < 1)
+    return;
+%>
+<article class="row quran-passage-section">
+
+<%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
+
+<%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranShareId: locals.quranShareId, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
 
 </article>
+<% }); %>
 
 <%- include('quran_modal.ejs', { site: site, page: page, selectedAyahs: locals.selectedAyahs, quranShareId: locals.quranShareId }); %>
