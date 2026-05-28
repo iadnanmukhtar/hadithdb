@@ -1291,9 +1291,28 @@ del em strong {
 	text-decoration: none;
 }
 
+.body.passage .quran-ayah-body {
+	display: inline;
+}
+
+.body.passage .quran-ayah-body p {
+	display: inline;
+	margin-bottom: 0;
+}
+
+.body.passage .quran-ayah-body p+p {
+	margin-top: 0.45rem;
+}
+
+.body.passage .quran-ayah-body p+p::before {
+	content: "";
+	display: block;
+}
+
 .body.passage:lang(ar),
 .body.passage:lang(ar) .ayah,
 .body.passage:lang(ar) .ayah a,
+.body.passage:lang(ar) .quran-ayah-body,
 .body.passage:lang(ar) .ayah sup {
 	font-family: Arabic, Serif;
 }
@@ -1350,7 +1369,8 @@ del em strong {
 	line-height: 1.6;
 }
 
-.body.passage .ayah.quran-range-live-selected a {
+.body.passage .ayah.quran-range-live-selected a,
+.body.passage .ayah.quran-range-live-selected .quran-ayah-body {
 	background: rgba(var(--bs-primary-rgb), .08);
 	border-radius: .25rem;
 	color: var(--accent);
@@ -1439,7 +1459,29 @@ del em strong {
 	line-height: 2.2;
 }
 
-.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p span {
+.quran-ayah-hero-ayah+.quran-ayah-hero-ayah {
+	margin-top: 0.45rem;
+}
+
+.quran-ayah-hero-text {
+	display: inline;
+}
+
+.quran-ayah-hero-text p {
+	display: inline;
+	margin-bottom: 0;
+}
+
+.quran-ayah-hero-text p+p {
+	margin-top: 0.45rem;
+}
+
+.quran-ayah-hero-text p+p::before {
+	content: "";
+	display: block;
+}
+
+.quran-ayah-hero [lang="ar"] .quran-ayah-hero-text {
 	font-family: ArabicBold, Serif;
 	font-size: inherit;
 }

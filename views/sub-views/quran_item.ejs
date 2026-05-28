@@ -33,6 +33,9 @@
 					var ayahPart = ayahNum.split(/:/)[1] || ayahNum;
 					var ayahPartLatin = arabic.toLatinDigits(ayahPart);
 					var ayahHref = `/${passage[i].ref}`;
+					var ayahBodyMarkdown = utils.emptyIfNull(ayahBody);
+					var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
+					var ayahBodyProp = (lang === 'en') ? 'hadith.body_en' : 'hadith.body';
 				%>
 				<% (quranSubsectionsByStart.get(ayahPartLatin) || []).forEach(function (heading) {
 					var subsectionTitle = (lang === 'ar') ? heading.title : heading.title_en;
@@ -59,7 +62,11 @@
 					</span>
 				<% }); %>
 				<span class="ayah<%= selectedAyahRefs.has(passage[i].ref) ? ' ayah-selected' : '' %>">
-					<a href="<%= ayahHref %>" data-ayah-number="<%= ayahPart %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup>&nbsp;<%= ayahBody %>&nbsp;<%- (lang === 'ar') ? '<sup>۝</sup>' : '' %></a>
+					<% if (site.editMode) { %>
+						<a href="<%= ayahHref %>" data-ayah-number="<%= ayahPart %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup></a>&nbsp;<span class="_e quran-ayah-body" data-id="<%= passage[i].id %>" data-prop="<%= ayahBodyProp %>" data-arabizi="<%= lang === 'en' ? 'true' : '' %>" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"><%- ayahBodyHtml %></span>&nbsp;<%- (lang === 'ar') ? '<sup>۝</sup>' : '' %>
+					<% } else { %>
+						<a href="<%= ayahHref %>" data-ayah-number="<%= ayahPart %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup>&nbsp;<span class="quran-ayah-body"><%- ayahBodyHtml %></span>&nbsp;<%- (lang === 'ar') ? '<sup>۝</sup>' : '' %></a>
+					<% } %>
 				</span>
 			<% } %>
 		</div>

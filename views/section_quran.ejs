@@ -59,26 +59,30 @@
       <section class="quran-ayah-hero row">
         <section class="col-12" lang="ar">
           <div class="quran-ayah-hero-body">
-            <p>
-              <% selectedAyahs.forEach(function (ayah) {
+            <% selectedAyahs.forEach(function (ayah) {
                 var ayahNum = ayah.ar.num || ayah.num || '';
                 var ayahPart = ayahNum.split(/:/)[1] || ayahNum;
+                var ayahBodyMarkdown = utils.emptyIfNull(ayah.ar.body);
+                var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
               %>
-                <span><sup><%= ayahPart %></sup>&nbsp;<%= ayah.ar.body %>&nbsp;<span class="quran-ayah-end-marker">۝</span></span>
-              <% }); %>
-            </p>
+              <div class="quran-ayah-hero-ayah">
+                <sup><%= ayahPart %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker">۝</span>
+              </div>
+            <% }); %>
           </div>
         </section>
         <section class="col-12" lang="en">
           <div class="quran-ayah-hero-body">
-            <p>
-              <% selectedAyahs.forEach(function (ayah) {
+            <% selectedAyahs.forEach(function (ayah) {
                 var ayahNum = ayah.en.num || ayah.num || '';
                 var ayahPart = ayahNum.split(/:/)[1] || ayahNum;
+                var ayahBodyMarkdown = utils.emptyIfNull(ayah.en.body);
+                var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
               %>
-                <span><sup><%= ayahPart %></sup>&nbsp;<%= ayah.en.body %></span>
-              <% }); %>
-            </p>
+              <div class="quran-ayah-hero-ayah">
+                <sup><%= ayahPart %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>
+              </div>
+            <% }); %>
           </div>
         </section>
       </section>
