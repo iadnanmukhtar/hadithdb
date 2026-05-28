@@ -201,6 +201,10 @@ router.post('/:id/:prop', async function (req, res, next) {
         result = await updateQuranPassageRange(ids[0], status.value, userId);
         status.value = result.value;
         shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'sectionAdd') {
+        result = await addQuranSection(ids[0], status.value, userId);
+        status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
       } else if (col === 'subsectionAdd') {
         result = await addQuranSubsection(ids[0], status.value, userId);
         status.value = result.value;
@@ -433,6 +437,55 @@ async function updateQuranPassageRange(headingId, value, userId) {
   };
 }
 
+async function addQuranSection(anchorHeadingId, value, userId) {
+  anchorHeadingId = parseInt(anchorHeadingId, 10);
+  if (!Number.isInteger(anchorHeadingId) || anchorHeadingId <= 0)
+    throw createError(400, 'Invalid section heading id');
+  var payload = parseSectionValue(value);
+  var anchor = (await global.query(`SELECT * FROM v_toc WHERE hId=${anchorHeadingId} LIMIT 1`))[0];
+  if (!anchor)
+    throw createError(404, 'Section heading not found');
+  if (anchor.book_alias !== 'quran')
+    throw createError(400, 'Sections can only be added here for Quran headings');
+  if (parseInt(anchor.level, 10) !== 2)
+    throw createError(400, 'Sections can only be added from a level 2 Quran heading');
+  var bookId = parseInt(anchor.book_id, 10);
+  var surah = parseInt(anchor.h1, 10);
+  validateAyahRange(payload.startAyah, payload.endAyah, surah);
+  var insertH2 = Number(anchor.h2) + (payload.position === 'before' ? 0 : 1);
+  if (!Number.isInteger(insertH2) || insertH2 < 1)
+    throw createError(400, 'Invalid section position');
+  var insertOrdinal = await quranSectionInsertOrdinal(anchor, payload.position);
+  await global.query(`UPDATE toc
+    SET ordinal=ordinal+1
+    WHERE bookId=${bookId} AND ordinal>=${insertOrdinal}`);
+  await global.query(`UPDATE toc
+    SET h2=h2+1
+    WHERE bookId=${bookId} AND h1=${surah} AND h2>=${insertH2} AND level IN (2, 3)`);
+  var startRef = `${surah}:${payload.startAyah}`;
+  var start0 = quranNum0(surah, payload.startAyah);
+  var count = payload.endAyah - payload.startAyah + 1;
+  var insertResult = await global.query(`INSERT INTO toc
+    (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, start0, count, lastmod_user, lastfixed)
+    VALUES
+    (${insertOrdinal}, ${bookId}, 2, ${surah}, ${insertH2}, NULL, ${sql(payload.title_en)}, ${sql(payload.title)}, NULL, NULL, ${sql(startRef)}, ${start0}, ${count}, '${userId}', CURRENT_TIMESTAMP())`);
+  await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
+  await invalidateQuranSurahCaches(surah);
+  return {
+    message: insertResult.message,
+    value: {
+      id: insertResult.insertId,
+      h1: surah,
+      h2: insertH2,
+      path: `quran/${surah}/${insertH2}`,
+      start: startRef,
+      startAyah: payload.startAyah,
+      endAyah: payload.endAyah,
+      count: count
+    }
+  };
+}
+
 async function addQuranSubsection(sectionHeadingId, value, userId) {
   sectionHeadingId = parseInt(sectionHeadingId, 10);
   if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
@@ -599,6 +652,34 @@ function parseSubsectionValue(value) {
   payload.title_en = Utils.trimToEmpty(value.title_en || value.title || 'Subsection');
   payload.title = Utils.trimToEmpty(value.title_ar || value.titleArabic || '');
   return payload;
+}
+
+function parseSectionValue(value) {
+  var payload = parsePassageRangeValue(value);
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value);
+    } catch (err) {
+      value = {};
+    }
+  }
+  value = value || {};
+  payload.title_en = Utils.trimToEmpty(value.title_en || value.title || 'Section');
+  payload.title = Utils.trimToEmpty(value.title_ar || value.titleArabic || '');
+  payload.position = Utils.trimToEmpty(value.position).toLowerCase() === 'before' ? 'before' : 'after';
+  return payload;
+}
+
+async function quranSectionInsertOrdinal(anchor, position) {
+  var bookId = parseInt(anchor.book_id, 10);
+  var surah = Number(anchor.h1);
+  var h2 = Number(anchor.h2);
+  if (position === 'before')
+    return Number(anchor.ordinal);
+  var rows = await global.query(`SELECT COALESCE(MAX(ordinal), ${Number(anchor.ordinal)}) + 1 AS ordinal
+    FROM v_toc
+    WHERE book_id=${bookId} AND h1=${surah} AND h2=${h2} AND level IN (2, 3)`);
+  return Number(rows[0].ordinal);
 }
 
 function validateSubsectionWithinSection(payload, section) {

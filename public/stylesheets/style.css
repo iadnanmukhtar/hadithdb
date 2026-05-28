@@ -1305,6 +1305,7 @@ del em strong {
 }
 
 .quran-range-admin,
+.quran-section-admin,
 .quran-subsection-admin {
 	border: 1px solid var(--bs-border-color);
 	border-radius: .375rem;
@@ -1312,16 +1313,20 @@ del em strong {
 }
 
 .quran-range-admin input,
+.quran-section-admin .quran-section-start,
+.quran-section-admin .quran-section-end,
 .quran-subsection-admin .quran-subsection-start,
 .quran-subsection-admin .quran-subsection-end {
 	width: 5.5rem;
 }
 
+.quran-section-title-wrap,
 .quran-subsection-title-wrap {
 	min-width: 14rem;
 }
 
 .quran-range-admin.is-invalid,
+.quran-section-admin.is-invalid,
 .quran-subsection-admin.is-invalid {
 	border-color: var(--bs-danger);
 }
@@ -1457,7 +1462,8 @@ del em strong {
 	font-family: KitabBold, Serif;
 }
 
-.body .ayah:hover {
+.body .ayah:hover,
+.body .ayah-hover-pair {
 	color: #2379b1;
 	background-color: cornsilk;
 }

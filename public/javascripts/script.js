@@ -89,6 +89,7 @@ $(function () {
 	initMarkdownEditablePreviews(document);
 	initHadithTranslateButtons(document);
 	initHadithShareModals(document);
+	initQuranAyahHoverPairs(document);
 
 });
 
@@ -99,6 +100,44 @@ function setDirection(el) {
 		else
 			el.css({ 'direction': 'ltr' });
 	}
+}
+
+function initQuranAyahHoverPairs(root) {
+	var scope = root || document;
+	$(scope).find('.quran-passage-section .body.passage .ayah [data-ayah-number]').each(function () {
+		var ayah = $(this).closest('.ayah');
+		if (ayah.data('quranHoverBound'))
+			return;
+		ayah.data('quranHoverBound', true);
+		ayah.on('mouseenter focusin', function () {
+			var link = $(this).find('[data-ayah-number]').first();
+			var ayahNumber = normalizeQuranAyahNumber(link.attr('data-ayah-number'));
+			if (!ayahNumber)
+				return;
+			var section = $(this).closest('.quran-passage-section');
+			section.find('.body.passage .ayah').each(function () {
+				var otherLink = $(this).find('[data-ayah-number]').first();
+				$(this).toggleClass('ayah-hover-pair', normalizeQuranAyahNumber(otherLink.attr('data-ayah-number')) === ayahNumber);
+			});
+		});
+		ayah.on('mouseleave focusout', function () {
+			$(this).closest('.quran-passage-section').find('.ayah-hover-pair').removeClass('ayah-hover-pair');
+		});
+	});
+}
+
+function normalizeQuranAyahNumber(value) {
+	if (value === undefined || value === null)
+		return '';
+	return value.toString()
+		.replace(/[٠-٩]/g, function (digit) {
+			return '٠١٢٣٤٥٦٧٨٩'.indexOf(digit).toString();
+		})
+		.replace(/[۰-۹]/g, function (digit) {
+			return '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit).toString();
+		})
+		.replace(/^.*:/, '')
+		.replace(/\D/g, '');
 }
 
 function initSearchAutocomplete() {
