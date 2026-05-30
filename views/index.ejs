@@ -109,7 +109,18 @@
             </div>
         </div>
         
-        <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false }); %>
+        <% if (random.remark == 2) {
+          var randomAyahRef = random.en?.num || random.num || random.ref || '';
+          var randomQuranShareId = `Q${randomAyahRef.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+        %>
+          <%- include('sub-views/quran_ayah_hero.ejs', { site: site, page: page, selectedAyahs: [random] }); %>
+          <aside class="tags">
+            <span class="bi bi-box-arrow-up"></span>&nbsp;<a href="#<%= randomQuranShareId %>" type="button" title="Share random ayah image" class="icon" data-bs-toggle="modal" data-bs-target="#<%= randomQuranShareId %>">Share</a>
+          </aside>
+          <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: [random], quranShareId: randomQuranShareId }); %>
+        <% } else { %>
+          <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false }); %>
+        <% } %>
 
         <hr>
       <% } %>

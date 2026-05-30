@@ -313,6 +313,8 @@ function initSearchAutocomplete() {
 			var $row = $('<div>').addClass('search-autocomplete-item');
 			var isArabic = item.lang === 'ar' || /[\u0600-\u06ff]/.test(item.fragment || item.label || '');
 			var fallbackText = item.label || '';
+			if (item.is_quran)
+				$row.addClass('search-autocomplete-quran');
 			if (isArabic)
 				$row.attr({ lang: 'ar', dir: 'rtl' }).addClass('search-autocomplete-ar');
 			$('<div>').addClass('search-autocomplete-match').html(item.fragment || fallbackText).appendTo($row);
@@ -338,8 +340,6 @@ function buildSearchAutocompleteParams($input, term) {
 		{ name: 'limit', value: 10 }
 	];
 	var $filters = $input.closest('form').find('input[name=b]:checked');
-	if ($filters.length < 1)
-		$filters = $('.search input[name=b]:checked');
 	$filters.each(function () {
 		params.push({ name: 'b', value: this.value });
 	});

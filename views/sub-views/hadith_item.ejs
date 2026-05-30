@@ -3,8 +3,9 @@
 	var _p = searchResult ? 'partial' : '';
 	var langSuff = (lang === 'en') ? '_en' : '';
 	var chapter = page.context.chapter;
-    var sections = [];
+	var sections = [];
 	var isSimilarSection = typeof similarSection !== 'undefined' && similarSection;
+	var isQuranItem = i.remark == 2 || i.book_alias === 'quran' || (i.actual && i.actual.book_alias === 'quran');
 	var langData = i[lang] || {};
 	if (chapter)
 		sections = chapter.sections; 
@@ -24,7 +25,7 @@
 	}
 %>
 
-<section class="col-md-6 col-sm-12 h" lang="<%=lang%>">
+<section class="col-md-6 col-sm-12 h<%= isQuranItem && lang === 'ar' ? ' quran-hafs' : '' %>" lang="<%=lang%>">
 
 	<%# Chain  ............................................................. %>
 	<section lang="<%=lang%>" >

@@ -19,6 +19,53 @@ const { homedir } = require('os');
 
 const router = express.Router();
 const CAPTCHA_TTL_MS = 5 * 60 * 1000;
+const SURAH_ALIAS_NORMALIZATIONS = {
+  fatiha: 'faithah',
+  fatihah: 'faithah',
+  al_fatiha: 'faithah',
+  al_fatihah: 'faithah',
+  'al-fatiha': 'faithah',
+  'al-fatihah': 'faithah'
+};
+
+function redirectArabicDigitPath(req, res, next) {
+  if (req.method !== 'GET' && req.method !== 'HEAD')
+    return next();
+
+  var path = req.path;
+  try {
+    path = decodeURI(path);
+  } catch (err) {
+    path = req.path;
+  }
+  if (/^\/(?!passage:)[^/]+:/.test(path))
+    return next();
+
+  var normalizedPath = Arabic.toLatinDigits(path);
+  if (normalizedPath === path)
+    return next();
+
+  return res.redirect(301, `${normalizedPath}${appendOriginalQuery(req)}`);
+}
+
+function findSurah(ref) {
+  ref = SURAH_ALIAS_NORMALIZATIONS[ref] || ref;
+  return global.surahs.find(function (value) {
+    return (value.alias === ref || value.num == ref);
+  });
+}
+
+function appendOriginalQuery(req) {
+  var queryIndex = req.originalUrl.indexOf('?');
+  return queryIndex >= 0 ? req.originalUrl.substring(queryIndex) : '';
+}
+
+function redirectCanonicalReferencePath(req, res, canonicalPath) {
+  if (req.path === canonicalPath)
+    return false;
+  res.redirect(301, `${canonicalPath}${appendOriginalQuery(req)}`);
+  return true;
+}
 
 function captchaSecret() {
   return global.settings.captchaSecret || global.settings.admin.key;
@@ -86,6 +133,8 @@ router.post('/captcha/translate/verify', function (req, res) {
     verified: true
   });
 });
+
+router.use(redirectArabicDigitPath);
 
 router.get('/autocomplete', async function (req, res, next) {
   try {
@@ -333,9 +382,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   res.locals.res = res;
   ayah1 = Arabic.toLatinDigits(ayah1);
   ayah2 = Arabic.toLatinDigits(ayah2);
-  surah = global.surahs.find(function (value) {
-    return (value.alias === surah || value.num == surah);
-  });
+  surah = findSurah(surah);
   if (!surah)
     return next(createError(404, `Reference 'passage:${surah}:${ayah1}-${ayah2}' does not exist`));
   var selectedAyahs = await Index.docsFromQueryString(Item.INDEX, `book_alias:quran AND h1:${surah.num} AND numInChapter:[${ayah1} TO ${ayah2}]`, 0, ayah2 - ayah1 + 1, 'numInChapter');
@@ -425,11 +472,12 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
 router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
+  var originalNum = req.params.num;
   req.params.num = Arabic.toLatinDigits(req.params.num);
   var quranBookAliasMatch = req.params.bookAlias.match(/^quran:(.+)$/);
   if (quranBookAliasMatch) {
     req.params.bookAlias = 'quran';
-    req.params.num = `${quranBookAliasMatch[1]}:${req.params.num}`;
+    req.params.num = Arabic.toLatinDigits(`${quranBookAliasMatch[1]}:${req.params.num}`);
   }
   if (req.params.bookAlias === 'quran') {
     if (/\d+-\d+$/.test(req.params.num)) {
@@ -441,23 +489,23 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       var num = 1;
       if (toks.length > 1)
         num = toks[1];
-      surah = global.surahs.find(function (value) {
-        return (value.alias === surah || value.num == surah);
-      });
+      surah = findSurah(surah);
       if (!surah)
         return next(createError(404, `Surah '${toks[0]}' not found`));
+      if (redirectCanonicalReferencePath(req, res, `/quran:${surah.num}:${num}`))
+        return;
       req.params.num = `${surah.num}:${num}`;
     }
   } else {
+    if (originalNum !== req.params.num)
+      return res.redirect(301, `/${req.params.bookAlias}:${req.params.num}${appendOriginalQuery(req)}`);
     var book = global.books.find(function (value) {
       return value.alias === req.params.bookAlias;
     });
     if (await redirectVirtualHadithReference(book, req.params.num, req, res))
       return;
     if (!book) {
-      var surah = global.surahs.find(function (value) {
-        return (value.alias === req.params.bookAlias || value.num == req.params.bookAlias);
-      });
+      var surah = findSurah(req.params.bookAlias);
       if (surah) {
         req.params.bookAlias = 'quran';
         req.params.num = `${surah.num}:${req.params.num}`;
@@ -624,10 +672,11 @@ async function getQuranSectionsForAyahRange(surah, ayah1, ayah2, fallbackAyah) {
 
 async function getQuranSectionPassageItems(section, offset, size) {
   offset = Number.isInteger(parseInt(offset, 10)) ? parseInt(offset, 10) : 0;
-  var startAyah = quranAyahFromHeadingStart(section.start);
-  var count = parseInt(section.count, 10);
-  if (!Number.isInteger(startAyah) || !Number.isInteger(count) || count < 1)
+  var range = await getQuranHeadingAyahRange(section);
+  if (!range)
     return await section.getItems(offset, size);
+  var startAyah = range.startAyah;
+  var count = range.count;
   if (offset >= count)
     return [];
   if (!Number.isInteger(parseInt(size, 10)))
@@ -652,6 +701,35 @@ async function getQuranSectionPassageItems(section, offset, size) {
     'numInChapter'
   );
   return results.map(item => new Item(item));
+}
+
+async function getQuranHeadingAyahRange(section) {
+  var startAyah = quranAyahFromHeadingStart(section.start);
+  var count = parseInt(section.count, 10);
+  var endAyah = Number.isInteger(startAyah) && Number.isInteger(count) && count > 0
+    ? startAyah + count - 1
+    : null;
+
+  if (section && section.book_alias === 'quran' && parseInt(section.level, 10) === 2) {
+    var rows = await global.query(`SELECT start, count FROM toc
+      WHERE bookId=${Number(section.book_id)} AND level=3 AND h1=${Number(section.h1)} AND h2=${Number(section.h2)}`);
+    for (const row of rows) {
+      var subsectionStart = quranAyahFromHeadingStart(row.start);
+      var subsectionCount = parseInt(row.count, 10);
+      if (!Number.isInteger(subsectionStart) || !Number.isInteger(subsectionCount) || subsectionCount < 1)
+        continue;
+      var subsectionEnd = subsectionStart + subsectionCount - 1;
+      startAyah = Number.isInteger(startAyah) ? Math.min(startAyah, subsectionStart) : subsectionStart;
+      endAyah = Number.isInteger(endAyah) ? Math.max(endAyah, subsectionEnd) : subsectionEnd;
+    }
+  }
+
+  if (!Number.isInteger(startAyah) || !Number.isInteger(endAyah) || endAyah < startAyah)
+    return null;
+  return {
+    startAyah: startAyah,
+    count: endAyah - startAyah + 1
+  };
 }
 
 function quranAyahFromHeadingStart(start) {

@@ -45,6 +45,22 @@ body :lang(ar) {
 	direction: rtl;
 }
 
+.quran-hafs:lang(ar),
+.quran-hafs :lang(ar),
+.quran-search-item [lang="ar"],
+.quran-search-item [lang="ar"] .hadith-body-content {
+	font-family: Arabic, Serif;
+}
+
+.quran-hafs:lang(ar) b,
+.quran-hafs:lang(ar) strong,
+.quran-hafs :lang(ar) b,
+.quran-hafs :lang(ar) strong,
+.quran-search-item [lang="ar"] b,
+.quran-search-item [lang="ar"] strong {
+	font-family: ArabicBold, Serif;
+}
+
 a._click {
 	cursor: pointer;
 }
@@ -1491,6 +1507,16 @@ del em strong {
 	display: inline;
 }
 
+.quran-ayah-hero-link {
+	color: inherit;
+	text-decoration: none;
+}
+
+.quran-ayah-hero-link:hover {
+	color: inherit;
+	text-decoration: none;
+}
+
 .quran-ayah-hero-text {
 	display: inline;
 }
@@ -2374,6 +2400,12 @@ a.cmd-btn:hover {
 	font-size: 1.2rem;
 	font-weight: normal;
 	line-height: 1.7;
+}
+
+.search-autocomplete-quran.search-autocomplete-ar,
+.search-autocomplete-quran.search-autocomplete-ar .search-autocomplete-match,
+.search-autocomplete-quran .search-autocomplete-meta-ar {
+	font-family: Arabic, Serif;
 }
 
 .search-autocomplete-ar .search-autocomplete-source {
