@@ -2163,6 +2163,32 @@ del em strong {
 	padding-right: 1.5rem;
 }
 
+.toc tr.chapter td:nth-child(2) {
+	white-space: nowrap;
+}
+
+.toc-expand-btn {
+	color: var(--bs-body-color);
+	width: 1rem;
+	min-width: 1rem;
+	vertical-align: text-bottom;
+}
+
+.toc-expand-btn:hover,
+.toc-expand-btn:focus {
+	color: var(--bs-link-color);
+}
+
+.toc-expand-spacer {
+	display: inline-block;
+	width: 1rem;
+	min-width: 1rem;
+}
+
+.toc-section-number {
+	white-space: nowrap;
+}
+
 .toggle {
 	color: green;
 	text-decoration: none;

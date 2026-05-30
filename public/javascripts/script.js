@@ -91,8 +91,30 @@ $(function () {
 	initHadithShareModals(document);
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
+	initTocExpandCollapse(document);
 
 });
+
+function initTocExpandCollapse(root) {
+	var scope = root || document;
+	$(scope).find('[data-toc-toggle]').each(function () {
+		var button = $(this);
+		if (button.data('tocToggleBound'))
+			return;
+		button.data('tocToggleBound', true);
+		button.on('click', function () {
+			var targetId = button.attr('data-toc-toggle');
+			var rows = $('[data-toc-parent="' + targetId + '"]');
+			var expanded = button.attr('aria-expanded') === 'true';
+			rows.toggleClass('d-none', expanded);
+			button.attr('aria-expanded', expanded ? 'false' : 'true');
+			button.attr('title', expanded ? 'Show sections' : 'Hide sections');
+			button.find('.toc-expand-icon')
+				.toggleClass('bi-chevron-right', expanded)
+				.toggleClass('bi-chevron-down', !expanded);
+		});
+	});
+}
 
 function setDirection(el) {
 	if (el.length) {
