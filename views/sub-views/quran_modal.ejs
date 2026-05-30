@@ -69,8 +69,9 @@
 							<% ayahs.forEach(function (ayah) {
 								const ayahNum = ayah.en?.num || ayah.num || '';
 								const ayahPart = ayahNum.split(/:/)[1] || ayahNum;
+								const ayahLabel = ayahs.indexOf(ayah) === 0 ? ayahNum : ayahPart;
 							%>
-								<span><sup><%= ayahPart %></sup>&nbsp;<%= ayah.en?.body || '' %></span>
+								<span><sup><%= ayahLabel %></sup>&nbsp;<%= ayah.en?.body || '' %></span>
 							<% }); %>
 						</p>
 					</div>

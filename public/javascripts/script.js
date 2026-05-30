@@ -90,6 +90,7 @@ $(function () {
 	initHadithTranslateButtons(document);
 	initHadithShareModals(document);
 	initQuranAyahHoverPairs(document);
+	initQuranAyahSelector(document);
 
 });
 
@@ -138,6 +139,105 @@ function normalizeQuranAyahNumber(value) {
 		})
 		.replace(/^.*:/, '')
 		.replace(/\D/g, '');
+}
+
+function initQuranAyahSelector(root) {
+	var scope = root || document;
+	$(scope).find('.quran-ayah-select-toolbar').each(function () {
+		var toolbar = $(this);
+		if (toolbar.data('quranSelectBound'))
+			return;
+		toolbar.data('quranSelectBound', true);
+		var surah = toolbar.data('surah');
+		var selected = new Set();
+		var selecting = false;
+		var toggleButton = toolbar.find('.quran-ayah-select-toggle');
+		var openButton = toolbar.find('.quran-ayah-select-open');
+		var clearButton = toolbar.find('.quran-ayah-select-clear');
+		var liveLabel = toolbar.find('.quran-ayah-select-live');
+
+		var ayahElements = () => $('.quran-passage-section .body.passage .ayah').filter(function () {
+			return normalizeQuranAyahNumber($(this).find('[data-ayah-number]').first().attr('data-ayah-number'));
+		});
+		var sortedSelected = () => Array.from(selected).map(Number).sort(function (a, b) { return a - b; });
+		var selectedPath = () => {
+			var nums = sortedSelected();
+			if (nums.length < 1)
+				return '';
+			var start = nums[0];
+			var end = nums[nums.length - 1];
+			return `/quran:${surah}:${start}${end > start ? '-' + end : ''}`;
+		};
+		var update = () => {
+			ayahElements().each(function () {
+				var ayahNumber = normalizeQuranAyahNumber($(this).find('[data-ayah-number]').first().attr('data-ayah-number'));
+				$(this).toggleClass('ayah-multi-selected', selected.has(ayahNumber));
+			});
+			var nums = sortedSelected();
+			var hasSelection = nums.length > 0;
+			var label = '';
+			if (hasSelection) {
+				var start = nums[0];
+				var end = nums[nums.length - 1];
+				label = `Quran ${surah}:${start}${end > start ? '-' + end : ''}`;
+			}
+			openButton.prop('disabled', !hasSelection);
+			if (clearButton.is('button'))
+				clearButton.prop('disabled', !hasSelection);
+			liveLabel.text(label);
+		};
+		toolbar.data('selected', selected);
+		toolbar.data('update', update);
+		var setSelecting = (enabled) => {
+			$('.quran-ayah-select-toolbar').not(toolbar).data('selecting', false).removeClass('is-selecting')
+				.find('.quran-ayah-select-toggle').removeClass('btn-secondary').addClass('btn-outline-secondary');
+			selecting = enabled;
+			toolbar.data('selecting', selecting);
+			toolbar.toggleClass('is-selecting', selecting);
+			toggleButton.toggleClass('btn-secondary', selecting);
+			toggleButton.toggleClass('btn-outline-secondary', !selecting);
+			$('body').toggleClass('quran-ayah-selecting', $('.quran-ayah-select-toolbar').filter(function () {
+				return $(this).data('selecting') === true;
+			}).length > 0);
+		};
+
+		toggleButton.on('click', function () {
+			setSelecting(!selecting);
+		});
+		if (clearButton.is('button')) {
+			clearButton.on('click', function () {
+				selected.clear();
+				setSelecting(false);
+				update();
+			});
+		}
+		openButton.on('click', function () {
+			var path = selectedPath();
+			if (path)
+				window.location.href = path;
+		});
+		update();
+	});
+	$(document).off('click.quranAyahSelector').on('click.quranAyahSelector', '.quran-passage-section .body.passage .ayah', function (event) {
+		var toolbar = $('.quran-ayah-select-toolbar').filter(function () {
+			return $(this).data('selecting') === true;
+		}).first();
+		if (!toolbar.length)
+			return;
+		event.preventDefault();
+		event.stopPropagation();
+		var ayahNumber = normalizeQuranAyahNumber($(this).find('[data-ayah-number]').first().attr('data-ayah-number'));
+		if (!ayahNumber)
+			return;
+		var selected = toolbar.data('selected');
+		if (!selected)
+			return;
+		if (selected.has(ayahNumber))
+			selected.delete(ayahNumber);
+		else
+			selected.add(ayahNumber);
+		toolbar.data('update')();
+	});
 }
 
 function initSearchAutocomplete() {

@@ -338,14 +338,17 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   });
   if (!surah)
     return next(createError(404, `Reference 'passage:${surah}:${ayah1}-${ayah2}' does not exist`));
-  var results = await Index.docsFromQueryString(Item.INDEX, `book_alias:quran AND h1:${surah.num} AND numInChapter:[${ayah1} TO ${ayah2}]`, 0, ayah2 - ayah1 + 1, 'numInChapter');
-  results = results.map(item => new Item(item));
+  var selectedAyahs = await Index.docsFromQueryString(Item.INDEX, `book_alias:quran AND h1:${surah.num} AND numInChapter:[${ayah1} TO ${ayah2}]`, 0, ayah2 - ayah1 + 1, 'numInChapter');
+  selectedAyahs = selectedAyahs.map(item => new Item(item));
+  var results = selectedAyahs;
   var section;
-  if (results.length > 0) {
-    section = await results[0].getSection();
+  var chapter;
+  var quranSubsections = [];
+  if (selectedAyahs.length > 0) {
+    section = await selectedAyahs[0].getSection();
     // await section.getPrev();
     // await section.getNext();
-    var chapter = await section.getChapter();
+    chapter = await section.getChapter();
     await chapter.getPrev();
     await chapter.getNext();
     await chapter.getSections();
@@ -357,26 +360,26 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   }
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
-    if (results.length < 1)
+    if (selectedAyahs.length < 1)
       return res.end(JSON.stringify({}));
     var ayahs_en = [];
     var ayahs = [];
     var footnotes_en = [];
     var footnotes = [];
-    for (var i = 0; i < results.length; i++) {
+    for (var i = 0; i < selectedAyahs.length; i++) {
       if (i == 0)
-        ayahs_en.push(results[i].num + ' ' + results[i].en.body);
+        ayahs_en.push(selectedAyahs[i].num + ' ' + selectedAyahs[i].en.body);
       else
-        ayahs_en.push(Utils.regexExtract(results[i].num, /\d+:(\d+)/) + ' ' + results[i].en.body);
-      ayahs.push(results[i].ar.body + ' ۝ ');
-      footnotes_en.push(Utils.regexExtract(results[i].num, /\d+:(\d+)'/) + ' ' + results[i].en.footnote);
-      footnotes.push(Arabic.toArabicDigits(i) + ' ' + results[i].ar.footnote);
+        ayahs_en.push(Utils.regexExtract(selectedAyahs[i].num, /\d+:(\d+)/) + ' ' + selectedAyahs[i].en.body);
+      ayahs.push(selectedAyahs[i].ar.body + ' ۝ ');
+      footnotes_en.push(Utils.regexExtract(selectedAyahs[i].num, /\d+:(\d+)'/) + ' ' + selectedAyahs[i].en.footnote);
+      footnotes.push(Arabic.toArabicDigits(i) + ' ' + selectedAyahs[i].ar.footnote);
     }
-    results[0].body_en = results[0].en.body = ayahs_en.join(' ').trim();
-    results[0].body = results[0].ar.body = ayahs.join(' ').trim();
-    results[0].footnote_en = results[0].en.footnote = footnotes_en.join('\n').trim();
-    results[0].footnote = results[0].ar.footnote = footnotes.join('\n').trim();
-    res.end(JSON.stringify(results[0]));
+    selectedAyahs[0].body_en = selectedAyahs[0].en.body = ayahs_en.join(' ').trim();
+    selectedAyahs[0].body = selectedAyahs[0].ar.body = ayahs.join(' ').trim();
+    selectedAyahs[0].footnote_en = selectedAyahs[0].en.footnote = footnotes_en.join('\n').trim();
+    selectedAyahs[0].footnote = selectedAyahs[0].ar.footnote = footnotes.join('\n').trim();
+    res.end(JSON.stringify(selectedAyahs[0]));
   } else if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
     var keyNames = Object.keys(results[0]);
@@ -387,13 +390,26 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
 
     var defaultPassage = req.query.passage != undefined || req.path.startsWith('/passage:') || req.params.bookAlias === 'quran';
     if (defaultPassage) {
-      section.title_en = chapter.title_en + ` Āyāt ${surah.num}:${ayah1}–${ayah2}`;
-      section.title = chapter.title + ` آيات ${Arabic.toArabicDigits(ayah1)}–${Arabic.toArabicDigits(ayah2)}`;
+      var containingSections = await getQuranSectionsForAyahRange(surah.num, ayah1, ayah2, selectedAyahs[0]);
+      if (containingSections.length > 0) {
+        section = containingSections[0];
+        chapter = await section.getChapter();
+        await chapter.getPrev();
+        await chapter.getNext();
+        await chapter.getSections();
+        results = [];
+        quranSubsections = [];
+        for (const containingSection of containingSections) {
+          results.push(...(await getQuranSectionPassageItems(containingSection, 0, 1000)));
+          quranSubsections.push(...(await getQuranSectionSubsections(containingSection)));
+        }
+      }
       res.render('section_quran', {
         section: section,
         results: results,
-        selectedAyah: (ayah1 == ayah2 && results.length > 0) ? results[0] : undefined,
-        selectedAyahs: results
+        selectedAyah: (ayah1 == ayah2 && selectedAyahs.length > 0) ? selectedAyahs[0] : undefined,
+        selectedAyahs: selectedAyahs,
+        quranSubsections: quranSubsections
       });
     } else {
       res.render('section', {
@@ -583,6 +599,27 @@ async function getQuranSectionForAyah(selectedAyah) {
   if (rows.length > 0)
     return Heading.toLevel(rows[0]);
   return await Section.sectionFromRef(fallbackRef);
+}
+
+async function getQuranSectionsForAyahRange(surah, ayah1, ayah2, fallbackAyah) {
+  surah = Number(surah);
+  ayah1 = Number(ayah1);
+  ayah2 = Number(ayah2);
+  if (!Number.isInteger(surah) || !Number.isInteger(ayah1) || !Number.isInteger(ayah2))
+    return fallbackAyah ? [await getQuranSectionForAyah(fallbackAyah)] : [];
+  var rows = await global.query(`SELECT section.*
+    FROM v_toc section
+    WHERE section.book_alias='quran'
+      AND section.level=2
+      AND section.h1=${surah}
+      AND section.h2_start IS NOT NULL
+      AND section.h2_count IS NOT NULL
+      AND CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED) <= ${ayah2}
+      AND CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED) + section.h2_count - 1 >= ${ayah1}
+    ORDER BY section.h2`);
+  if (rows.length > 0)
+    return rows.map(row => Heading.toLevel(row));
+  return fallbackAyah ? [await getQuranSectionForAyah(fallbackAyah)] : [];
 }
 
 async function getQuranSectionPassageItems(section, offset, size) {

@@ -1376,6 +1376,34 @@ del em strong {
 	color: var(--accent);
 }
 
+.quran-ayah-select-toolbar {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .35rem;
+}
+
+.quran-ayah-select-btn {
+	font-size: .75rem;
+	line-height: 1.1;
+	padding: .15rem .35rem;
+}
+
+.quran-ayah-select-btn .bi {
+	font-size: .85em;
+}
+
+.quran-ayah-selecting .body.passage .ayah {
+	cursor: pointer;
+}
+
+.body.passage .ayah.ayah-multi-selected a,
+.body.passage .ayah.ayah-multi-selected .quran-ayah-body {
+	background: rgba(var(--bs-primary-rgb), .12);
+	border-radius: .25rem;
+	color: var(--accent);
+}
+
 .quran-subheading {
 	color: var(--bs-secondary-color);
 	display: block;
@@ -1459,8 +1487,8 @@ del em strong {
 	line-height: 2.2;
 }
 
-.quran-ayah-hero-ayah+.quran-ayah-hero-ayah {
-	margin-top: 0.45rem;
+.quran-ayah-hero-ayah {
+	display: inline;
 }
 
 .quran-ayah-hero-text {
