@@ -236,7 +236,7 @@
           const res = await fetch(`/passage:${surah}:${range.startAyah}-${range.endAyah}?json=1`);
           if (!res.ok)
             throw new Error(await res.text());
-          const item = await res.json();
+          const item = (await res.json())[0] || {};
           previewAr.textContent = item.body || item.ar?.body || '';
           previewEn.textContent = item.body_en || item.en?.body || '';
           preview.classList.toggle('d-none', !rangeInputFocused() || !(previewAr.textContent || previewEn.textContent));

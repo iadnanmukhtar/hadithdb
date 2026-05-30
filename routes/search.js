@@ -408,7 +408,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
     if (selectedAyahs.length < 1)
-      return res.end(JSON.stringify({}));
+      return res.end(JSON.stringify([]));
     var ayahs_en = [];
     var ayahs = [];
     var footnotes_en = [];
@@ -426,7 +426,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     selectedAyahs[0].body = selectedAyahs[0].ar.body = ayahs.join(' ').trim();
     selectedAyahs[0].footnote_en = selectedAyahs[0].en.footnote = footnotes_en.join('\n').trim();
     selectedAyahs[0].footnote = selectedAyahs[0].ar.footnote = footnotes.join('\n').trim();
-    res.end(JSON.stringify(selectedAyahs[0]));
+    res.end(JSON.stringify([selectedAyahs[0]]));
   } else if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
     var keyNames = Object.keys(results[0]);
