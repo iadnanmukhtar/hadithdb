@@ -65,7 +65,32 @@
 <% quranGroups.forEach(function (group) {
   if (!group.passage || group.passage.length < 1)
     return;
+  var groupStartAyah = ayahNumber(group.passage[0]);
+  var groupEndAyah = ayahNumber(group.passage[group.passage.length - 1]);
+  var sectionHeading = page.context.section;
+  var canMakeSubsection = site.editMode && sectionHeading && Number(sectionHeading.level) === 2 && (!group.quranSubsections || group.quranSubsections.length < 1) && Number.isInteger(groupStartAyah) && Number.isInteger(groupEndAyah);
 %>
+<% if (canMakeSubsection) { %>
+<aside class="quran-subsection-admin mb-2" data-heading-id="<%= sectionHeading.id %>" data-section-path="/<%= sectionHeading.path %>">
+  <div class="d-flex flex-wrap align-items-end gap-2">
+    <label class="form-label mb-0 small">
+      Unsectioned start
+      <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-start" value="<%= groupStartAyah %>">
+    </label>
+    <label class="form-label mb-0 small">
+      End
+      <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-end" value="<%= groupEndAyah %>">
+    </label>
+    <label class="form-label mb-0 small quran-subsection-title-wrap">
+      Title
+      <input type="text" class="form-control form-control-sm quran-subsection-title" value="">
+    </label>
+    <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-add" data-loading-label="Adding">
+      <span class="bi bi-plus-circle"></span> Make subsection
+    </button>
+  </div>
+</aside>
+<% } %>
 <article class="row quran-passage-section">
 
 <%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>

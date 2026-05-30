@@ -129,54 +129,37 @@
                 <div class="quran-range-preview-en" lang="en"></div>
               </div>
             </aside>
-            <aside class="quran-subsection-admin mb-3" data-heading-id="<%= rangeHeading.id %>" data-section-path="/<%= rangeHeading.path %>">
-              <div class="d-flex flex-wrap align-items-end gap-2">
-                <label class="form-label mb-0 small">
-                  Subsection start
-                  <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-start" value="<%= rangeStart %>">
-                </label>
-                <label class="form-label mb-0 small">
-                  End
-                  <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-end" value="<%= rangeStart %>">
-                </label>
-                <label class="form-label mb-0 small quran-subsection-title-wrap">
-                  Title
-                  <input type="text" class="form-control form-control-sm quran-subsection-title" value="">
-                </label>
-                <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-add" data-loading-label="Adding">
-                  <span class="bi bi-plus-circle"></span> Add subsection
-                </button>
-              </div>
-            </aside>
-            <aside class="quran-section-admin mb-3" data-heading-id="<%= rangeHeading.id %>" data-surah="<%= rangeHeading.h1 %>">
-              <div class="d-flex flex-wrap align-items-end gap-2">
-                <label class="form-label mb-0 small">
-                  New section
-                  <select class="form-select form-select-sm quran-section-position">
-                    <option value="after" selected>After this section</option>
-                    <option value="before">Before this section</option>
-                  </select>
-                </label>
-                <label class="form-label mb-0 small">
-                  Start
-                  <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-section-start" value="<%= rangeEnd %>">
-                </label>
-                <label class="form-label mb-0 small">
-                  End
-                  <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-section-end" value="<%= rangeEnd %>">
-                </label>
-                <label class="form-label mb-0 small quran-section-title-wrap">
-                  Title
-                  <input type="text" class="form-control form-control-sm quran-section-title" value="">
-                </label>
-                <button type="button" class="btn btn-sm btn-outline-primary quran-section-add" data-loading-label="Adding">
-                  <span class="bi bi-plus-circle"></span> Add section
-                </button>
-              </div>
-            </aside>
           <% } %>
         <% } %>
         <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranSubsections: locals.quranSubsections, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
+        <% if (site.editMode && book.alias === 'quran' && section && section.level === 2) { %>
+          <aside class="quran-section-admin mt-3 mb-3" data-heading-id="<%= rangeHeading.id %>" data-surah="<%= rangeHeading.h1 %>">
+            <div class="d-flex flex-wrap align-items-end gap-2">
+              <label class="form-label mb-0 small">
+                New section
+                <select class="form-select form-select-sm quran-section-position">
+                  <option value="after" selected>After this section</option>
+                  <option value="before">Before this section</option>
+                </select>
+              </label>
+              <label class="form-label mb-0 small">
+                Start
+                <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-section-start" value="<%= rangeEnd %>">
+              </label>
+              <label class="form-label mb-0 small">
+                End
+                <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-section-end" value="<%= rangeEnd %>">
+              </label>
+              <label class="form-label mb-0 small quran-section-title-wrap">
+                Title
+                <input type="text" class="form-control form-control-sm quran-section-title" value="">
+              </label>
+              <button type="button" class="btn btn-sm btn-outline-primary quran-section-add" data-loading-label="Adding">
+                <span class="bi bi-plus-circle"></span> Add section
+              </button>
+            </div>
+          </aside>
+        <% } %>
       <% } %>
 
       <%- include('sub-views/quran_footnotes.ejs', { site: site, page: page, footnoteItems: footnoteItems, selectedAyahs: selectedAyahs }); %>
@@ -376,7 +359,7 @@
           addButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Adding';
         } else {
           addButton.disabled = false;
-          addButton.innerHTML = addButton.dataset.originalHtml || '<span class="bi bi-plus-circle"></span> Add subsection';
+          addButton.innerHTML = addButton.dataset.originalHtml || '<span class="bi bi-plus-circle"></span> Make subsection';
         }
       };
 
