@@ -936,7 +936,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         return res.redirect(302, `/quran/${chapterNum}/${firstSectionNum}`);
     }
 
-    var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
+    var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v9' : '';
+    var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
     if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
@@ -1046,7 +1047,8 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       }
     }
 
-    var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
+    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v9' : '';
+    var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
     if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {

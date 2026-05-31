@@ -103,6 +103,18 @@
           <% } %>
         <% } %>
         <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranSubsections: locals.quranSubsections, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
+        <% if (results.length > 0 && results[0].id) { %>
+          <aside class="tags quran-passage-actions mt-2">
+            <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= results[0].id %>" title="Like this Quran passage">
+              <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= results[0].id %>"></span>
+            </button>
+            <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= results[0].id %>">0</span>
+            &nbsp;
+            <button type="button" class="quran-passage-share-btn btn btn-sm p-0 border-0 bg-transparent text-accent" title="Copy and share this Quran passage URL">
+              <span class="bi bi-box-arrow-up"></span>&nbsp;Share
+            </button>
+          </aside>
+        <% } %>
         <% if (site.editMode && book.alias === 'quran' && section && section.level === 2) { %>
           <aside class="quran-section-admin mt-3 mb-3" data-heading-id="<%= rangeHeading.id %>" data-surah="<%= rangeHeading.h1 %>">
             <div class="d-flex flex-wrap align-items-end gap-2">
@@ -132,7 +144,7 @@
           </aside>
         <% } %>
 
-      <%- include('sub-views/quran_footnotes.ejs', { site: site, page: page, footnoteItems: footnoteItems, selectedAyahs: selectedAyahs }); %>
+      <%- include('sub-views/quran_tafsirs.ejs', { site: site, page: page, footnoteItems: footnoteItems, selectedAyahs: selectedAyahs, passage: results }); %>
       
       <% if (results.length == 0 || !results[0].id) { %>
         <footer class="col-12">

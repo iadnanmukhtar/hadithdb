@@ -91,6 +91,8 @@ $(function () {
 	initHadithShareModals(document);
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
+	initQuranPassageShareLinks(document);
+	initQuranTafsirTabs(document);
 	initTocExpandCollapse(document);
 
 });
@@ -123,6 +125,154 @@ function setDirection(el) {
 		else
 			el.css({ 'direction': 'ltr' });
 	}
+}
+
+function initQuranPassageShareLinks(root) {
+	var scope = root || document;
+	$(scope).find('.quran-passage-share-btn').each(function () {
+		var button = $(this);
+		if (button.data('quranPassageShareBound'))
+			return;
+		button.data('quranPassageShareBound', true);
+		button.on('click', async function () {
+			var url = window.location.href.split('#')[0];
+			var copyError;
+			var copyPromise = copyTextToClipboard(url).catch(function (err) {
+				copyError = err;
+			});
+			try {
+				if (navigator.share) {
+					await navigator.share({
+						title: document.title,
+						url: url
+					});
+				}
+				await copyPromise;
+				if (copyError)
+					throw copyError;
+				if (window.toastr)
+					toastr.success(navigator.share ? 'Passage URL copied and shared' : 'Passage URL copied');
+			} catch (err) {
+				await copyPromise;
+				if (err && err.name === 'AbortError')
+					return;
+				if (window.toastr)
+					toastr.error(err.message || 'Unable to share passage URL');
+			}
+		});
+	});
+}
+
+function initQuranTafsirTabs(root) {
+	var scope = root || document;
+	$(scope).find('.quran-tafsirs').each(function () {
+		var container = $(this);
+		if (container.data('quranTafsirsBound'))
+			return;
+		container.data('quranTafsirsBound', true);
+		var surah = container.attr('data-surah');
+		var ayahs = (container.attr('data-ayahs') || '').split(',').filter(Boolean);
+		var ayahText = JSON.parse(container.find('.quran-tafsir-ayah-data').text() || '{}');
+		var toArabicDigits = function (value) {
+			return value.toString().replace(/\d/g, function (digit) {
+				return '٠١٢٣٤٥٦٧٨٩'[digit];
+			});
+		};
+		var appendAyahHeading = function (entryElement, ayah, inline) {
+			var heading = $('<h3>').addClass('quran-tafsir-ayah').attr({
+				lang: 'ar',
+				dir: 'rtl'
+			}).appendTo(entryElement);
+			if (inline)
+				heading.addClass('quran-tafsir-ayah-inline');
+			$('<sup>').text(toArabicDigits(`${surah}:${ayah}`)).appendTo(heading);
+			heading.append(document.createTextNode(' '));
+			$('<span>').text(ayahText[ayah] || '').appendTo(heading);
+			heading.append(document.createTextNode(' '));
+			$('<span>').addClass('quran-ayah-end-marker').text('۝').appendTo(heading);
+		};
+
+		var loadPanel = async function (panel) {
+			var src = panel.attr('data-tafsir-src');
+			var format = panel.attr('data-tafsir-format') || 'text';
+			if (!src || panel.data('tafsirLoaded') || panel.data('tafsirLoading'))
+				return;
+			panel.data('tafsirLoading', true);
+			var status = panel.find('.quran-tafsir-status');
+			var text = panel.find('.quran-tafsir-text');
+			status.text('Loading tafsir...');
+			try {
+				var payloads = await Promise.all(ayahs.map(async function (ayah) {
+					var response = await fetch(`/proxy/tafsir?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&ver=1`);
+					if (!response.ok)
+						throw new Error('Unable to load tafsir.');
+					return {
+						ayah: ayah,
+						payload: await response.json()
+					};
+				}));
+				var seen = new Set();
+				var entries = payloads.filter(function (entry) {
+					var data = entry.payload && entry.payload.data;
+					if (!data || seen.has(data))
+						return false;
+					seen.add(data);
+					return true;
+				});
+				text.empty();
+				entries.forEach(function (entry) {
+					var startAyah = Number(entry.payload.ayahs_start || entry.ayah);
+					var count = Number(entry.payload.count || 0);
+					var endAyah = startAyah + count;
+					var entryElement = $('<section>').addClass('quran-tafsir-entry').appendTo(text);
+					if (count > 0)
+						$('<p>').addClass('quran-tafsir-range').text(toArabicDigits(`${surah}:${startAyah}-${endAyah}`)).appendTo(entryElement);
+					var ayahHeadings = count > 0
+						? $('<div>').addClass('quran-tafsir-ayah-range').attr({ lang: 'ar', dir: 'rtl' }).appendTo(entryElement)
+						: entryElement;
+					for (var ayah = startAyah; ayah <= endAyah; ayah++) {
+						if (ayahText[ayah])
+							appendAyahHeading(ayahHeadings, ayah, count > 0);
+					}
+					if (format === 'html') {
+						$('<div>').addClass('quran-tafsir-html').html(entry.payload.data).appendTo(entryElement);
+					} else {
+						entry.payload.data.toString().split(/\n+/).filter(Boolean).forEach(function (paragraph) {
+							$('<p>').text(paragraph).appendTo(entryElement);
+						});
+					}
+				});
+				status.toggleClass('d-none', entries.length > 0);
+				if (entries.length < 1)
+					status.text('No tafsir text is available for this passage.');
+				panel.data('tafsirLoaded', true);
+			} catch (err) {
+				status.removeClass('d-none').text(err.message || 'Unable to load tafsir.');
+			} finally {
+				panel.data('tafsirLoading', false);
+			}
+		};
+
+		container.find('[data-bs-toggle="tab"]').on('shown.bs.tab', function (event) {
+			loadPanel($($(event.target).attr('data-bs-target')));
+		});
+		loadPanel(container.find('.quran-tafsir-panel.active'));
+	});
+}
+
+function copyTextToClipboard(text) {
+	if (navigator.clipboard && navigator.clipboard.writeText)
+		return navigator.clipboard.writeText(text);
+	var textArea = document.createElement('textarea');
+	textArea.value = text;
+	textArea.setAttribute('readonly', '');
+	textArea.style.position = 'fixed';
+	textArea.style.opacity = '0';
+	document.body.appendChild(textArea);
+	textArea.select();
+	var copied = document.execCommand('copy');
+	textArea.remove();
+	return copied ? Promise.resolve() : Promise.reject(new Error('Unable to copy passage URL'));
 }
 
 function initQuranAyahHoverPairs(root) {

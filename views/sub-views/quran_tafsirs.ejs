@@ -1,0 +1,125 @@
+<%
+	const visibleTafsirs = (global.tafsirs || []).filter(function (tafsir) {
+		return !tafsir.hidden;
+	});
+	const passageItems = locals.passage || [];
+	const firstPassageItem = passageItems[0];
+	const passageSurah = firstPassageItem
+		? ((firstPassageItem.en?.num || firstPassageItem.num || '').toString().split(/:/)[0])
+		: '';
+	const passageAyahs = passageItems.map(function (ayah) {
+		const num = ayah.en?.num || ayah.num || '';
+		return parseInt(arabic.toLatinDigits(num.toString().split(/:/).pop()), 10);
+	}).filter(Number.isInteger);
+	const passageAyahText = passageItems.reduce(function (ayahs, ayah) {
+		const num = ayah.en?.num || ayah.num || '';
+		const ayahNum = parseInt(arabic.toLatinDigits(num.toString().split(/:/).pop()), 10);
+		if (Number.isInteger(ayahNum))
+			ayahs[ayahNum] = ayah.ar?.body || ayah.body || '';
+		return ayahs;
+	}, {});
+	const tabId = `quran-tafsirs-${passageSurah}-${passageAyahs[0] || ''}`;
+	const translatedJalalaynItems = (locals.footnoteItems || []).filter(function (ayah) {
+		const footnote = ayah.en?.footnote;
+		return footnote && footnote !== 'undefined';
+	});
+	const selectedAyahRefs = new Set((locals.selectedAyahs || []).map(function (ayah) {
+		return ayah.ref;
+	}));
+	function translatedFootnoteNum(ayah) {
+		const num = ayah.en?.num || ayah.num || '';
+		return num.split(/:/)[1] || num;
+	}
+	function translatedFootnoteAyah(ayah) {
+		const num = parseInt(arabic.toLatinDigits(translatedFootnoteNum(ayah)), 10);
+		return passageAyahText[num] || '';
+	}
+	function translatedFootnoteLabel(ayah) {
+		return arabic.toArabicDigits(`${passageSurah}:${arabic.toLatinDigits(translatedFootnoteNum(ayah))}`);
+	}
+	function deathEn(tafsir) {
+		if (tafsir.death === null || tafsir.death === undefined)
+			return '';
+		if (Array.isArray(tafsir.death))
+			return `${tafsir.death.join(', ')} AH`;
+		return `${tafsir.death} AH`;
+	}
+	function deathAr(tafsir) {
+		if (tafsir.death === null || tafsir.death === undefined)
+			return '';
+		const death = Array.isArray(tafsir.death) ? tafsir.death.map(arabic.toArabicDigits).join('، ') : arabic.toArabicDigits(tafsir.death);
+		return `${death} هـ`;
+	}
+%>
+<% if (passageSurah && passageAyahs.length > 0 && (translatedJalalaynItems.length > 0 || visibleTafsirs.length > 0)) { %>
+<article class="quran-tafsirs mt-4" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>">
+	<script type="application/json" class="quran-tafsir-ayah-data"><%- JSON.stringify(passageAyahText).replace(/</g, '\\u003c') %></script>
+	<h2 class="h5">Tafsir</h2>
+	<div class="h-menu-wrap mb-3">
+		<div class="h-menu-hint d-md-none">
+			<i class="bi bi-arrow-left-right"></i> Swipe to browse tafsirs
+		</div>
+		<div class="h-menu-scroller">
+			<div class="btn-group h-menu quran-tafsir-tabs text-nowrap" role="tablist">
+				<% if (translatedJalalaynItems.length > 0) { %>
+				<button class="btn btn-outline-primary text-nowrap active" id="<%= tabId %>-jalalayn-en-tab" data-bs-toggle="tab" data-bs-target="#<%= tabId %>-jalalayn-en" type="button" role="tab" aria-controls="<%= tabId %>-jalalayn-en" aria-selected="true">
+					Jalalayn <span class="quran-tafsir-tab-lang">English</span>
+				</button>
+				<% } %>
+				<% visibleTafsirs.forEach(function (tafsir, index) { %>
+				<button class="btn btn-outline-primary text-nowrap<%= translatedJalalaynItems.length < 1 && index === 0 ? ' active' : '' %>" id="<%= tabId %>-<%= tafsir.alias %>-tab" data-bs-toggle="tab" data-bs-target="#<%= tabId %>-<%= tafsir.alias %>" type="button" role="tab" aria-controls="<%= tabId %>-<%= tafsir.alias %>" aria-selected="<%= translatedJalalaynItems.length < 1 && index === 0 ? 'true' : 'false' %>">
+					<%= tafsir.short_name_en || tafsir.author_en %>
+				</button>
+				<% }); %>
+			</div>
+		</div>
+	</div>
+	<div class="tab-content quran-tafsir-content">
+		<% if (translatedJalalaynItems.length > 0) { %>
+		<section class="tab-pane fade show active quran-tafsir-panel" id="<%= tabId %>-jalalayn-en" role="tabpanel" aria-labelledby="<%= tabId %>-jalalayn-en-tab" tabindex="0">
+			<header class="quran-tafsir-source row">
+				<section class="col-6 text-start" lang="en">
+					<strong>Translated Tafsir al-Jalalayn</strong>
+					<span>Al-Mahalli and al-Suyuti, 864, 911 AH</span>
+				</section>
+				<section class="col-6 text-end" lang="ar">
+					<strong>تفسير الجلالين</strong>
+					<span>المحلّي والسيوطي، ٨٦٤، ٩١١ هـ</span>
+				</section>
+			</header>
+			<div class="quran-tafsir-jalalayn">
+				<% translatedJalalaynItems.forEach(function (ayah) { %>
+				<section class="quran-tafsir-entry">
+					<h3 class="quran-tafsir-ayah" lang="ar" dir="rtl"><sup><%= translatedFootnoteLabel(ayah) %></sup>&nbsp;<span><%= translatedFootnoteAyah(ayah) %></span>&nbsp;<span class="quran-ayah-end-marker">۝</span></h3>
+					<div class="row quran-tafsir-jalalayn-pair">
+						<section class="col-md-6 col-sm-12" lang="en">
+							<p<%= selectedAyahRefs.has(ayah.ref) ? ' class="quran-footnote-selected"' : '' %>><%= ayah.en.footnote %></p>
+						</section>
+						<section class="col-md-6 col-sm-12" lang="ar">
+							<p<%= selectedAyahRefs.has(ayah.ref) ? ' class="quran-footnote-selected"' : '' %>><%= ayah.ar?.footnote || '' %></p>
+						</section>
+					</div>
+				</section>
+				<% }); %>
+			</div>
+		</section>
+		<% } %>
+		<% visibleTafsirs.forEach(function (tafsir, index) { %>
+		<section class="tab-pane fade quran-tafsir-panel<%= translatedJalalaynItems.length < 1 && index === 0 ? ' show active' : '' %>" id="<%= tabId %>-<%= tafsir.alias %>" role="tabpanel" aria-labelledby="<%= tabId %>-<%= tafsir.alias %>-tab" tabindex="0" data-tafsir-src="<%= tafsir.alias %>" data-tafsir-format="<%= tafsir.format || 'text' %>">
+			<header class="quran-tafsir-source row">
+				<section class="col-6 text-start" lang="en">
+					<strong><%= tafsir.name_en %></strong>
+					<span><%= tafsir.author_en %><%= deathEn(tafsir) ? `, ${deathEn(tafsir)}` : '' %></span>
+				</section>
+				<section class="col-6 text-end" lang="ar">
+					<strong><%= tafsir.name %></strong>
+					<span><%= tafsir.author %><%= deathAr(tafsir) ? `، ${deathAr(tafsir)}` : '' %></span>
+				</section>
+			</header>
+			<p class="quran-tafsir-status text-muted">Select this tab to load the tafsir.</p>
+			<div class="quran-tafsir-text" lang="ar" dir="rtl"></div>
+		</section>
+		<% }); %>
+	</div>
+</article>
+<% } %>
