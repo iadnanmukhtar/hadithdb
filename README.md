@@ -55,6 +55,16 @@ Missing Elasticsearch indexes are created from the checked-in mappings. Existing
 
 See [bin/elasticsearch-cron.md](bin/elasticsearch-cron.md) for scheduled indexing notes.
 
+Rebuild the separate local Quran commentaries index with:
+
+* `npm run build:commentaries-index`
+
+This indexes visible `books_commentaries` rows with `source='local'` and their
+`hadiths_commentary` passages into Elasticsearch `commentaries`. The rebuild
+removes stale commentary documents before indexing the current MySQL rows.
+MySQL is the authoritative source for local commentary content; no bundled
+commentary source files are required at runtime or during index rebuilds.
+
 ## Available Books and Collections
 
 The current public catalog contains 23 available books and collections: 20 source books plus 3 virtual collections. Source books contain 203,840 records, and virtual collections contain 4,755 linked records.

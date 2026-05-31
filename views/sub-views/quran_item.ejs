@@ -32,6 +32,7 @@
 					var ayahNum = langData.num || passage[i].num || '';
 					var ayahPart = ayahNum.split(/:/)[1] || ayahNum;
 					var ayahPartLatin = arabic.toLatinDigits(ayahPart);
+					var isPrefatoryAyah = arabic.toLatinDigits(ayahNum) === '1:0';
 					var ayahHref = `/${passage[i].ref}`;
 					var ayahBodyMarkdown = utils.emptyIfNull(ayahBody);
 					var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
@@ -61,7 +62,7 @@
 						<% } %>
 					</span>
 				<% }); %>
-				<span class="ayah<%= selectedAyahRefs.has(passage[i].ref) ? ' ayah-selected' : '' %>">
+				<span class="ayah<%= selectedAyahRefs.has(passage[i].ref) ? ' ayah-selected' : '' %><%= isPrefatoryAyah ? ' quran-prefatory-ayah' : '' %>">
 					<% if (site.editMode) { %>
 						<a href="<%= ayahHref %>" data-ayah-number="<%= ayahPart %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup></a>&nbsp;<span class="_e quran-ayah-body" data-id="<%= passage[i].id %>" data-prop="<%= ayahBodyProp %>" data-arabizi="<%= lang === 'en' ? 'true' : '' %>" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"><%- ayahBodyHtml %></span>&nbsp;<%- (lang === 'ar') ? '<sup>۝</sup>' : '' %>
 					<% } else { %>

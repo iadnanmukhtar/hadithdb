@@ -1,0 +1,53 @@
+{
+  "commentaries": {
+    "mappings": {
+      "properties": {
+        "id": { "type": "long" },
+        "hId": { "type": "long" },
+        "doctype": { "type": "keyword" },
+        "bookCommentaryId": { "type": "long" },
+        "commentary_alias": { "type": "keyword" },
+        "commentary_shortName": { "type": "text", "analyzer": "arabic" },
+        "commentary_shortName_en": { "type": "text", "analyzer": "english_folded" },
+        "commentary_name": { "type": "text", "analyzer": "arabic" },
+        "commentary_name_en": { "type": "text", "analyzer": "english_folded" },
+        "commentary_author": { "type": "text", "analyzer": "arabic" },
+        "commentary_author_en": { "type": "text", "analyzer": "english_folded" },
+        "commentary_author_death": { "type": "keyword" },
+        "lang": { "type": "keyword" },
+        "source": { "type": "keyword" },
+        "format": { "type": "keyword" },
+        "hadithId": { "type": "long" },
+        "surah": { "type": "short" },
+        "ayahFrom": { "type": "short" },
+        "ayahTo": { "type": "short" },
+        "passageNum": { "type": "short" },
+        "ref": { "type": "keyword" },
+        "path": { "type": "keyword" },
+        "text": { "type": "text", "analyzer": "arabic" },
+        "text_en": { "type": "text", "analyzer": "english" },
+        "footnotes": { "type": "text", "analyzer": "arabic" },
+        "footnotes_en": { "type": "text", "analyzer": "english" },
+        "created": { "type": "date" },
+        "lastmod": { "type": "date" }
+      }
+    },
+    "settings": {
+      "analysis": {
+        "analyzer": {
+          "english_folded": {
+            "tokenizer": "standard",
+            "filter": [
+              "lowercase",
+              "asciifolding"
+            ]
+          }
+        }
+      },
+      "index": {
+        "number_of_shards": "1",
+        "number_of_replicas": "1"
+      }
+    }
+  }
+}

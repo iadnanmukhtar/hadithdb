@@ -8,7 +8,8 @@
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
     "test": "jest",
-    "build:knowledge": "node ./bin/buildHadithKnowledge.js"
+    "build:knowledge": "node ./bin/buildHadithKnowledge.js",
+    "build:commentaries-index": "node ./bin/buildCommentariesIndex.js"
   },
   "keywords": [
     "hadith",

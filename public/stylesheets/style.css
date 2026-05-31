@@ -1478,6 +1478,15 @@ del em strong {
 	margin-bottom: 0;
 }
 
+.quran-tafsir-heading {
+	margin-bottom: .5rem;
+}
+
+.quran-tafsir-language-toggle .btn {
+	font-size: .8rem;
+	padding: .2rem .6rem;
+}
+
 .quran-tafsir-tab-lang {
 	color: var(--bs-secondary-color);
 	font-size: .75em;
@@ -1528,16 +1537,29 @@ del em strong {
 	color: #8e784b;
 }
 
-.quran-tafsir-jalalayn {
-	color: #8e784b;
-	font-size: .9rem;
+.quran-tafsir-text:lang(en) {
+	font-family: Serif;
+	line-height: 1.45;
 }
 
-.quran-tafsir-jalalayn-pair [lang="ar"] {
+.quran-tafsir-footnotes {
+	border-top: 1px solid var(--bs-border-color);
+	font-size: .9em;
+	margin-top: .75rem;
+	padding-top: .5rem;
+}
+
+.quran-tafsir-local-pair [lang="ar"] {
 	color: inherit;
 	font-family: Kitab, Serif;
 	line-height: 1.75;
 	text-align: justify;
+}
+
+.quran-tafsir-arabic-only {
+	font-family: Kitab, Serif;
+	line-height: 1.75;
+	text-align: right;
 }
 
 .quran-tafsir-text p:last-child {
@@ -1709,6 +1731,13 @@ del em strong {
 .body .ayah-hover-pair {
 	color: #2379b1;
 	background-color: cornsilk;
+}
+
+.body.passage .ayah.quran-prefatory-ayah,
+.body.passage .ayah.quran-prefatory-ayah a,
+.body.passage .ayah.quran-prefatory-ayah .quran-ayah-body,
+.body.passage .ayah.quran-prefatory-ayah sup {
+	color: var(--c-gray-mid);
 }
 
 .heading-intro em,
