@@ -928,6 +928,11 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
   try {
     var results = [];
     var bookAlias = req.params.bookAlias;
+    if (bookAlias === 'quran') {
+      var surah = findSurah(req.params.chapterNum);
+      if (surah && redirectCanonicalReferencePath(req, res, `/quran/${surah.num}`))
+        return;
+    }
     var chapterNum = Number(Arabic.toLatinDigits(req.params.chapterNum));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
     if (bookAlias === 'quran' && shouldRedirectQuranSurahPath(req)) {
@@ -1033,6 +1038,11 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
   try {
     var results = [];
     var bookAlias = req.params.bookAlias;
+    if (bookAlias === 'quran') {
+      var surah = findSurah(req.params.chapterNum);
+      if (surah && redirectCanonicalReferencePath(req, res, `/quran/${surah.num}/${req.params.sectionNum}`))
+        return;
+    }
     var chapterNum = Number(Arabic.toLatinDigits(req.params.chapterNum));
     var sectionNum = Number(Arabic.toLatinDigits(req.params.sectionNum));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
@@ -1152,6 +1162,11 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
 // BOOK: SECTION
 router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function (req, res, next) {
   var p = req.params;
+  if (p.bookAlias === 'quran') {
+    var surah = findSurah(p.chapterNum);
+    if (surah)
+      p.chapterNum = surah.num;
+  }
   res.redirect(301, `/${p.bookAlias}/${p.chapterNum}/${p.sectionNum}#S${p.sectionNum}-${p.subsectionNum}`);
   return;
 });
