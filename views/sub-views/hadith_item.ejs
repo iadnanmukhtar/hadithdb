@@ -224,6 +224,7 @@
 	<%# Actions  ........................................................... %>
 	<aside class="tags">
 	<% if (lang === 'en') { %>
+		<% const commentCount = i.comment_count ?? i.commented ?? i.actual?.commented ?? 0; %>
 		<button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="Bookmark this hadith">
 			<span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>"></span>
 		</button>
@@ -233,10 +234,10 @@
 		</button>
 		<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">0</span>
 		&nbsp;
-		<% if (!i.single) { %>
-			<span class="bi bi-chat-right-text"></span>&nbsp;<a href="/<%= i.ref %>" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>">Reflect</a>
-			&nbsp;
-		<% } %>
+		<a href="/<%= i.ref %>#comments" class="text-decoration-none" title="View reflections">
+			<span class="bi bi-chat-right-text"></span><span class="badge rounded-pill text-bg-secondary hadith-comment-count" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="<%= commentCount %> reflection<%= commentCount === 1 ? '' : 's' %>"><%= commentCount %></span>
+		</a>
+		&nbsp;
 		<span class="bi bi-box-arrow-up"></span>&nbsp;<a href="#H<%= i.id %>" type="button" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>">Share</a>
 	<% } %>
 	</aside>

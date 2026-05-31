@@ -32,7 +32,7 @@ router.get('/tafsir/local', async function (req, res) {
     return;
   }
   const rows = await global.query(`
-    SELECT hc.surah, hc.ayahFrom, hc.ayahTo, hc.text, hc.text_en, hc.footnotes, hc.footnotes_en
+    SELECT bc.format, hc.surah, hc.ayahFrom, hc.ayahTo, hc.text, hc.text_en, hc.footnotes, hc.footnotes_en
     FROM books_commentaries bc
     JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
     WHERE bc.alias=${global.dbPool.escape(src)}
@@ -115,8 +115,8 @@ router.get('/:url', async function (req, res, next) {
 });
 
 function renderLocalCommentary(row) {
-  const arabic = row.text ? markArabicOnlyBlocks(md.render([row.text, row.footnotes].filter(Boolean).join('\n\n'))) : '';
-  const english = row.text_en ? markArabicOnlyBlocks(md.render([row.text_en, row.footnotes_en].filter(Boolean).join('\n\n'))) : '';
+  const arabic = renderCommentaryText(row.text, row.footnotes, commentaryFormat(row.format, 'ar'));
+  const english = renderCommentaryText(row.text_en, row.footnotes_en, commentaryFormat(row.format, 'en'));
   if (arabic && english)
     return `<div class="row quran-tafsir-local-pair"><section class="col-md-6 col-sm-12" lang="en">${english}</section><section class="col-md-6 col-sm-12" lang="ar" dir="rtl">${arabic}</section></div>`;
   const sections = [];
@@ -125,6 +125,30 @@ function renderLocalCommentary(row) {
   if (english)
     sections.push(`<section lang="en">${english}</section>`);
   return sections.join('\n');
+}
+
+function commentaryFormat(format, lang) {
+  const formats = (format || 'txt').split(',').map(value => value.trim()).filter(Boolean);
+  const languageFormat = formats.find(value => value.startsWith(`${lang}:`));
+  if (languageFormat)
+    return languageFormat.slice(lang.length + 1);
+  const defaultFormat = formats.find(value => !value.includes(':'));
+  return defaultFormat || 'txt';
+}
+
+function renderCommentaryText(text, footnotes, format) {
+  if (!text)
+    return '';
+  const content = [text, footnotes].filter(Boolean).join('\n\n');
+  if (format === 'html')
+    return markArabicOnlyBlocks(content);
+  if (format === 'md')
+    return markArabicOnlyBlocks(md.render(content));
+  return markArabicOnlyBlocks(md.render(asParagraphs(content)));
+}
+
+function asParagraphs(text) {
+  return text.split(/\n+/).filter(Boolean).join('\n\n');
 }
 
 function markArabicOnlyBlocks(html) {

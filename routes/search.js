@@ -207,10 +207,7 @@ router.all('/do/:id', async function (req, res, next) {
       });
       return;
     } else if (req.query.cmd == 'comment') {
-      // comment clicked
-      var id = parseInt(req.params.id);
-      await global.query(`UPDATE hadiths SET commented=(commented+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${id}`);
-      console.log(`commented on id ${id}`);
+      // Legacy endpoint retained for older clients. Comment counts are updated when comments are saved.
     }
     res.sendStatus(204);
     res.end();

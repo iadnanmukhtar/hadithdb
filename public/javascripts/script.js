@@ -178,6 +178,21 @@ function initQuranTafsirTabs(root) {
 		var ayahText = JSON.parse(container.find('.quran-tafsir-ayah-data').text() || '{}');
 		var activeLanguage = 'en';
 		var selectedByLanguage = {};
+		var selectedTafsirStorageKey = 'quranTafsirAlias';
+		var getStoredTafsirAlias = function () {
+			try {
+				return window.sessionStorage.getItem(selectedTafsirStorageKey);
+			} catch (_err) {
+				return null;
+			}
+		};
+		var storeTafsirAlias = function (alias) {
+			try {
+				window.sessionStorage.setItem(selectedTafsirStorageKey, alias);
+			} catch (_err) {
+				// The URL hash still preserves the selected tafsir on the current page.
+			}
+		};
 		var toArabicDigits = function (value) {
 			return value.toString().replace(/\d/g, function (digit) {
 				return '٠١٢٣٤٥٦٧٨٩'[digit];
@@ -237,7 +252,7 @@ function initQuranTafsirTabs(root) {
 				tabindex: '0',
 				'data-tafsir-src': book.alias,
 				'data-tafsir-source': book.source,
-				'data-tafsir-format': book.format || 'text',
+				'data-tafsir-format': book.format || 'txt',
 				'data-tafsir-lang': book.lang
 			}).appendTo(container.find('.quran-tafsir-content'));
 			appendSourceHeader(panel, book);
@@ -260,7 +275,7 @@ function initQuranTafsirTabs(root) {
 		var loadPanel = async function (panel) {
 			var src = panel.attr('data-tafsir-src');
 			var source = panel.attr('data-tafsir-source') || 'tafsir.app';
-			var format = panel.attr('data-tafsir-format') || 'text';
+			var format = panel.attr('data-tafsir-format') || 'txt';
 			if (!src || panel.data('tafsirLoaded') || panel.data('tafsirLoading'))
 				return;
 			panel.data('tafsirLoading', true);
@@ -342,8 +357,10 @@ function initQuranTafsirTabs(root) {
 		container.on('shown.bs.tab', '[data-bs-toggle="tab"]', function (event) {
 			var hash = $(event.target).attr('data-tafsir-hash');
 			var language = $(event.target).attr('data-tafsir-lang');
-			if (hash)
+			if (hash) {
 				window.history.replaceState(null, '', `#tafsir=${encodeURIComponent(hash)}`);
+				storeTafsirAlias(hash);
+			}
 			if (language) {
 				activeLanguage = language;
 				selectedByLanguage[language] = hash;
@@ -360,11 +377,12 @@ function initQuranTafsirTabs(root) {
 		}).then(function (books) {
 			books.forEach(addCatalogTab);
 			var initialHash = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('tafsir');
+			var initialAlias = initialHash || getStoredTafsirAlias();
 			var initialTab = container.find('[data-tafsir-hash]').filter(function () {
-				return $(this).attr('data-tafsir-hash') === initialHash;
+				return $(this).attr('data-tafsir-hash') === initialAlias;
 			});
 			if (initialTab.length === 1)
-				showLanguage(initialTab.attr('data-tafsir-lang'), initialHash);
+				showLanguage(initialTab.attr('data-tafsir-lang'), initialAlias);
 			else
 				showLanguage(activeLanguage);
 		}).catch(function (err) {

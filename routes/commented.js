@@ -11,6 +11,7 @@ const Utils = require('../lib/Utils');
 
 const router = express.Router();
 const name = 'commented';
+const latestCommentedLimit = 20;
 
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
@@ -103,6 +104,8 @@ router.get('/rss', async function (req, res, next) {
     return;
   }
 
+  var results = await getList();
+
   // cache response
   var refs = [];
   for (const item of results)
@@ -117,7 +120,6 @@ router.get('/rss', async function (req, res, next) {
   });
   fs.writeFileSync(cachedFile, html);
 
-  var results = await getList();
   res.render('hadiths_list_rss', {
     results: results,
     page: getPage('/rss')
@@ -127,10 +129,19 @@ router.get('/rss', async function (req, res, next) {
 module.exports = router;
 
 async function getList() {
-  var results = await global.query(`SELECT * FROM v_hadiths WHERE hId IN 
-    (SELECT id FROM hadiths WHERE ${name} > 0)
-    ORDER BY lastfixed DESC
-    LIMIT ${global.settings.search.itemsPerPage}`);
+  var results = await global.query(`
+    SELECT vh.*, h.commented AS comment_count, comments.latest_comment_at
+    FROM hadiths h
+    JOIN v_hadiths vh ON vh.hId=h.id
+    JOIN (
+      SELECT hadithId, MAX(createdAt) AS latest_comment_at
+      FROM hadiths_comments
+      WHERE deleted IS NULL OR deleted=0
+      GROUP BY hadithId
+    ) comments ON comments.hadithId=h.id
+    WHERE h.commented > 0
+    ORDER BY comments.latest_comment_at DESC
+    LIMIT ${latestCommentedLimit}`);
   return results.map(item => new Item(item));
 }
 

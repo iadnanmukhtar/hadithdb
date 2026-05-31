@@ -48,6 +48,7 @@
 		const getButtons = () => Array.from(document.querySelectorAll('.hadith-like-btn[data-hadith-id]'));
 		const getBookmarkButtons = () => Array.from(document.querySelectorAll('.hadith-bookmark-btn[data-hadith-id]'));
 		const getHeadingBookmarkButtons = () => Array.from(document.querySelectorAll('.heading-bookmark-btn[data-heading-id]'));
+		const getCommentCountBadges = () => Array.from(document.querySelectorAll('.hadith-comment-count[data-hadith-id]'));
 		const getIcon = (id) => document.querySelector(`.hadith-like-icon[data-hadith-id="${id}"]`);
 		const getBookmarkIcon = (id) => document.querySelector(`.hadith-bookmark-icon[data-hadith-id="${id}"]`);
 		const getHeadingBookmarkIcons = (id) => Array.from(document.querySelectorAll(`.heading-bookmark-icon[data-heading-id="${id}"]`));
@@ -69,6 +70,28 @@
 			getHeadingBookmarkIcons(id).forEach(icon => {
 				icon.className = bookmarked ? 'heading-bookmark-icon bi bi-bookmark-fill text-accent' : 'heading-bookmark-icon bi bi-bookmark text-accent';
 			});
+		};
+
+		const initCommentCounts = async () => {
+			const badges = getCommentCountBadges();
+			const ids = [...new Set(badges.map(badge => parseInt(badge.dataset.hadithId)).filter(id => !Number.isNaN(id)))];
+			if (!ids.length) return;
+			try {
+				const counts = {};
+				for (let offset = 0; offset < ids.length; offset += 100) {
+					const res = await fetch(`/comments/counts?ids=${ids.slice(offset, offset + 100).join(',')}`);
+					if (!res.ok) throw new Error('Failed reflection count fetch');
+					const data = await res.json();
+					Object.assign(counts, data.counts || {});
+				}
+				badges.forEach(badge => {
+					const count = Number(counts[badge.dataset.hadithId]) || 0;
+					badge.textContent = count;
+					badge.title = `${count} reflection${count === 1 ? '' : 's'}`;
+				});
+			} catch (err) {
+				console.warn('Could not load reflection counts', err);
+			}
 		};
 
 		const requireLogin = () => {
@@ -207,6 +230,7 @@
 			initLikes();
 			initBookmarks();
 			initHeadingBookmarks();
+			initCommentCounts();
 		};
 
 		loadMap(LIKE_KEY, likedMap);
