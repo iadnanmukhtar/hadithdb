@@ -136,6 +136,8 @@ function initQuranPassageShareLinks(root) {
 		button.data('quranPassageShareBound', true);
 		button.on('click', async function () {
 			var url = window.location.href.split('#')[0];
+			if (/^#tafsir=[A-Za-z0-9_-]+$/.test(window.location.hash))
+				url += window.location.hash;
 			var copyError;
 			var copyPromise = copyTextToClipboard(url).catch(function (err) {
 				copyError = err;
@@ -254,9 +256,19 @@ function initQuranTafsirTabs(root) {
 		};
 
 		container.find('[data-bs-toggle="tab"]').on('shown.bs.tab', function (event) {
+			var hash = $(event.target).attr('data-tafsir-hash');
+			if (hash)
+				window.history.replaceState(null, '', `#tafsir=${encodeURIComponent(hash)}`);
 			loadPanel($($(event.target).attr('data-bs-target')));
 		});
-		loadPanel(container.find('.quran-tafsir-panel.active'));
+		var initialHash = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('tafsir');
+		var initialTab = container.find('[data-tafsir-hash]').filter(function () {
+			return $(this).attr('data-tafsir-hash') === initialHash;
+		});
+		if (initialTab.length === 1 && window.bootstrap && window.bootstrap.Tab)
+			window.bootstrap.Tab.getOrCreateInstance(initialTab[0]).show();
+		else
+			loadPanel(container.find('.quran-tafsir-panel.active'));
 	});
 }
 

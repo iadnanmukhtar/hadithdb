@@ -62,12 +62,12 @@
 		<div class="h-menu-scroller">
 			<div class="btn-group h-menu quran-tafsir-tabs text-nowrap" role="tablist">
 				<% if (translatedJalalaynItems.length > 0) { %>
-				<button class="btn btn-outline-primary text-nowrap active" id="<%= tabId %>-jalalayn-en-tab" data-bs-toggle="tab" data-bs-target="#<%= tabId %>-jalalayn-en" type="button" role="tab" aria-controls="<%= tabId %>-jalalayn-en" aria-selected="true">
+				<button class="btn btn-outline-primary text-nowrap active" id="<%= tabId %>-jalalayn-en-tab" data-bs-toggle="tab" data-bs-target="#<%= tabId %>-jalalayn-en" data-tafsir-hash="jalalayn-en" type="button" role="tab" aria-controls="<%= tabId %>-jalalayn-en" aria-selected="true">
 					Jalalayn <span class="quran-tafsir-tab-lang">English</span>
 				</button>
 				<% } %>
 				<% visibleTafsirs.forEach(function (tafsir, index) { %>
-				<button class="btn btn-outline-primary text-nowrap<%= translatedJalalaynItems.length < 1 && index === 0 ? ' active' : '' %>" id="<%= tabId %>-<%= tafsir.alias %>-tab" data-bs-toggle="tab" data-bs-target="#<%= tabId %>-<%= tafsir.alias %>" type="button" role="tab" aria-controls="<%= tabId %>-<%= tafsir.alias %>" aria-selected="<%= translatedJalalaynItems.length < 1 && index === 0 ? 'true' : 'false' %>">
+				<button class="btn btn-outline-primary text-nowrap<%= translatedJalalaynItems.length < 1 && index === 0 ? ' active' : '' %>" id="<%= tabId %>-<%= tafsir.alias %>-tab" data-bs-toggle="tab" data-bs-target="#<%= tabId %>-<%= tafsir.alias %>" data-tafsir-hash="<%= tafsir.alias %>" type="button" role="tab" aria-controls="<%= tabId %>-<%= tafsir.alias %>" aria-selected="<%= translatedJalalaynItems.length < 1 && index === 0 ? 'true' : 'false' %>">
 					<%= tafsir.short_name_en || tafsir.author_en %>
 				</button>
 				<% }); %>
