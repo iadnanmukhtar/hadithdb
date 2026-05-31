@@ -32,15 +32,14 @@
       <ul class="nav container-fluid justify-content-end">
         <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
+        <li class="nav-item"><a class="nav-link" href="/quran">Quran</a></li>
         <li class="nav-item"><a class="nav-link" href="/blog">Blog</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
             <li><a class="dropdown-item" href="/liked"><i class="bi bi-heart"></i> Liked</a></li>
-            <% if (site.admin) { %>
-            <li><a class="dropdown-item" href="/chatbot"><i class="bi bi-chat-dots"></i> Hadith Chatbot</a></li>
-            <% } %>
+            <li><a class="dropdown-item" href="/commented"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
             <li><a class="dropdown-item" href="/highlights"><i class="bi bi-star"></i> Highlighted</a></li>
             <li><a class="dropdown-item" href="/titled"><i class="bi bi-card-heading"></i> Titled</a></li>
           </ul>
@@ -98,13 +97,12 @@
           <ul class="col-7 nav flex-column offcanvas-col1">
             <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a></li>
             <li class="nav-item"><a class="nav-link" href="/books"><i class="bi bi-book"></i> Books</a></li>
+            <li class="nav-item"><a class="nav-link" href="/quran"><i class="bi bi-book"></i> Quran</a></li>
             <li class="nav-item"><a class="nav-link" href="/blog"><i class="bi bi-text-paragraph"></i> Blog</a></li>
             <li><hr></li>
             <li class="nav-item"><a class="nav-link" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
             <li class="nav-item"><a class="nav-link" href="/liked"><i class="bi bi-heart"></i> Liked</a></li>
-            <% if (site.admin) { %>
-            <li class="nav-item"><a class="nav-link" href="/chatbot"><i class="bi bi-chat-dots"></i> Hadith Chatbot</a></li>
-            <% } %>
+            <li class="nav-item"><a class="nav-link" href="/commented"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
             <li class="nav-item"><a class="nav-link" href="/highlights"><i class="bi bi-star"></i> Highlighted</a></li>
             <li class="nav-item"><a class="nav-link" href="/titled"><i class="bi bi-card-heading"></i> Titled</a></li>
             <% if (site.admin) { %>
