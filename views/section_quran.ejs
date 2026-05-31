@@ -144,15 +144,35 @@
           </aside>
         <% } %>
 
-      <%- include('sub-views/quran_tafsirs.ejs', { site: site, page: page, footnoteItems: footnoteItems, selectedAyahs: selectedAyahs, passage: results }); %>
+      <div class="mt-4 mb-4">
+        <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
+      </div>
+
+      <%- include('sub-views/quran_tafsirs.ejs', { site: site, page: page, section: section, footnoteItems: footnoteItems, selectedAyahs: selectedAyahs, passage: results }); %>
+
+      <div class="mt-4 mb-4">
+        <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
+      </div>
+
+      <% if (results.length > 0 && results[0].id) { %>
+        <div class="mt-4">
+          <%- include('sub-views/comment_widget.ejs', {
+            widgetId: 'quran-passage-comments',
+            heading: 'Add your own reflection on this passage below:',
+            targetId: results[0].id,
+            ref: results[0].ref,
+            endpoint: '/comments',
+            subjectLabel: 'reflection',
+            placeholder: 'Write a reflection on this Quran passage...'
+          }); %>
+        </div>
+      <% } %>
       
       <% if (results.length == 0 || !results[0].id) { %>
         <footer class="col-12">
           <p>This is an empty section.</p>
         </footer>
       <% } %>
-            
-      <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
       
     </main>
   </div>

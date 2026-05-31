@@ -1552,9 +1552,10 @@ del em strong {
 
 .quran-tafsir-entry summary {
 	cursor: pointer;
+	direction: rtl;
 	list-style: none;
 	position: relative;
-	padding-inline-end: 1.25rem;
+	padding-inline-start: 1.25rem;
 }
 
 .quran-tafsir-entry summary::-webkit-details-marker {
@@ -1563,17 +1564,16 @@ del em strong {
 
 .quran-tafsir-entry summary::after {
 	color: var(--c-gray-mid);
-	content: "\f285";
+	content: "\f284";
 	font-family: "bootstrap-icons";
 	font-size: .75rem;
-	inset-inline-end: 0;
+	inset-inline-start: 0;
 	position: absolute;
 	top: .5rem;
-	transition: transform .15s ease-in-out;
 }
 
 .quran-tafsir-entry[open] summary::after {
-	transform: rotate(90deg);
+	content: "\f282";
 }
 
 .quran-tafsir-entry:not([open]) .quran-tafsir-ayah,

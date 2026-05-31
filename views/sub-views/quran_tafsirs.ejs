@@ -11,14 +11,17 @@
 		const num = ayah.en?.num || ayah.num || '';
 		return parseInt(arabic.toLatinDigits(num.toString().split(/:/).pop()), 10);
 	}).filter(Number.isInteger);
-	const passageAyahText = passageItems.reduce(function (ayahs, ayah) {
+		const passageAyahText = passageItems.reduce(function (ayahs, ayah) {
 		const num = ayah.en?.num || ayah.num || '';
 		const ayahNum = parseInt(arabic.toLatinDigits(num.toString().split(/:/).pop()), 10);
 		if (Number.isInteger(ayahNum))
 			ayahs[ayahNum] = ayah.ar?.body || ayah.body || '';
 		return ayahs;
-	}, {});
-	const tabId = `quran-tafsirs-${passageSurah}-${passageAyahs[0] || ''}`;
+		}, {});
+		const tafsirSection = locals.section
+			? `${locals.section.h1}${locals.section.level > 1 ? `.${locals.section.h2}` : ''}`
+			: passageSurah;
+		const tabId = `quran-tafsirs-${passageSurah}-${passageAyahs[0] || ''}`;
 	const translatedJalalaynItems = (locals.footnoteItems || []).filter(function (ayah) {
 		const footnote = ayah.en?.footnote;
 		return footnote && footnote !== 'undefined';
@@ -58,7 +61,7 @@
 <% if (passageSurah && passageAyahs.length > 0 && (translatedJalalaynItems.length > 0 || visibleTafsirs.length > 0)) { %>
 <article class="quran-tafsirs mt-4" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>">
 	<script type="application/json" class="quran-tafsir-ayah-data"><%- JSON.stringify(passageAyahText).replace(/</g, '\\u003c') %></script>
-	<h2 class="h5">Tafsir</h2>
+		<h2 class="h5">Tafsir of Section <%= tafsirSection %></h2>
 	<div class="h-menu-wrap mb-3">
 		<div class="h-menu-hint d-md-none">
 			<i class="bi bi-arrow-left-right"></i> Swipe to browse tafsirs
