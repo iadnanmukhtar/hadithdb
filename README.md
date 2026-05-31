@@ -47,10 +47,11 @@ Rebuild search indexes with:
 
 * `node bin/buildSearchIndex.js --all`
 * `node bin/buildSearchIndex.js --book-id 16`
+* `node bin/buildSearchIndex.js --from-book-id 16`
 * `node bin/buildSearchIndex.js --all --toc-only`
 * `node bin/buildSearchIndex.js --book-id 16 --toc-only`
 
-`--all` recreates and indexes `hadiths` and `toc` for every book. `--book-id` reindexes that book id and every later book id. Add `--toc-only` to recreate or rebuild only the `toc` index. Hidden books are not indexed, and virtual books index only table-of-contents/search collection data.
+Missing Elasticsearch indexes are created from the checked-in mappings. Existing indexes are never deleted. `--all` reindexes every book independently. `--book-id` reindexes only the requested book id. Use `--from-book-id` to reindex that book id and every later book id. Add `--toc-only` to rebuild only the `toc` index. Hidden books are not indexed, and virtual books index only table-of-contents/search collection data.
 
 See [bin/elasticsearch-cron.md](bin/elasticsearch-cron.md) for scheduled indexing notes.
 

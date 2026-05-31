@@ -419,9 +419,11 @@ async function updateQuranPassageRange(headingId, value, userId) {
     throw createError(400, `Ayah range ${surah}:${payload.startAyah}-${payload.endAyah} is outside this surah`);
   var startRef = `${surah}:${payload.startAyah}`;
   var start0 = quranNum0(surah, payload.startAyah);
+  var endRef = `${surah}:${payload.endAyah}`;
+  var end0 = quranNum0(surah, payload.endAyah);
   var count = payload.endAyah - payload.startAyah + 1;
   var updateResult = await global.query(`UPDATE toc
-    SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, start0=${start0}, count=${count}
+    SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, end=${sql(endRef)}, start0=${start0}, end0=${end0}, count=${count}
     WHERE id=${heading.tId || heading.id}`);
   await reindexChapterSearchScope(heading.book_id, surah, { syncKnowledge: false, refresh: true });
   await invalidateQuranSurahCaches(surah);
@@ -464,11 +466,15 @@ async function addQuranSection(anchorHeadingId, value, userId) {
     WHERE bookId=${bookId} AND h1=${surah} AND h2>=${insertH2} AND level IN (2, 3)`);
   var startRef = `${surah}:${payload.startAyah}`;
   var start0 = quranNum0(surah, payload.startAyah);
+  var endRef = `${surah}:${payload.endAyah}`;
+  var end0 = quranNum0(surah, payload.endAyah);
   var count = payload.endAyah - payload.startAyah + 1;
   var insertResult = await global.query(`INSERT INTO toc
-    (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, start0, count, lastmod_user, lastfixed)
+    (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, end, start0, end0, count, lastmod_user, lastfixed)
     VALUES
-    (${insertOrdinal}, ${bookId}, 2, ${surah}, ${insertH2}, NULL, ${sql(payload.title_en)}, ${sql(payload.title)}, NULL, NULL, ${sql(startRef)}, ${start0}, ${count}, '${userId}', CURRENT_TIMESTAMP())`);
+    (${insertOrdinal}, ${bookId}, 2, ${surah}, ${insertH2}, NULL, ${sql(payload.title_en)}, ${sql(payload.title)}, NULL, NULL, ${sql(startRef)}, ${sql(endRef)}, ${start0}, ${end0}, ${count}, '${userId}', CURRENT_TIMESTAMP())`);
+  await relinkQuranAyahRangeToSection(bookId, surah, insertResult.insertId, insertH2, payload.startAyah, payload.endAyah);
+  await syncQuranSurahHadithHeadingNumbers(bookId, surah);
   await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
   await invalidateQuranSurahCaches(surah);
   return {
@@ -504,14 +510,16 @@ async function addQuranSubsection(sectionHeadingId, value, userId) {
   var h3 = await nextQuranSubsectionNumber(section.book_id, surah, section.h2);
   var startRef = `${surah}:${payload.startAyah}`;
   var start0 = quranNum0(surah, payload.startAyah);
+  var endRef = `${surah}:${payload.endAyah}`;
+  var end0 = quranNum0(surah, payload.endAyah);
   var count = payload.endAyah - payload.startAyah + 1;
   var insertOrdinal = parseInt(section.ordinal, 10);
   if (!Number.isInteger(insertOrdinal))
     insertOrdinal = 0;
   var insertResult = await global.query(`INSERT INTO toc
-    (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, start0, count, lastmod_user, lastfixed)
+    (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, end, start0, end0, count, lastmod_user, lastfixed)
     VALUES
-    (${insertOrdinal}, ${parseInt(section.book_id, 10)}, 3, ${surah}, ${Number(section.h2)}, ${h3}, ${sql(payload.title_en)}, ${sql(payload.title)}, NULL, NULL, ${sql(startRef)}, ${start0}, ${count}, '${userId}', CURRENT_TIMESTAMP())`);
+    (${insertOrdinal}, ${parseInt(section.book_id, 10)}, 3, ${surah}, ${Number(section.h2)}, ${h3}, ${sql(payload.title_en)}, ${sql(payload.title)}, NULL, NULL, ${sql(startRef)}, ${sql(endRef)}, ${start0}, ${end0}, ${count}, '${userId}', CURRENT_TIMESTAMP())`);
   await reindexChapterSearchScope(section.book_id, surah, { syncKnowledge: false, refresh: true });
   await invalidateQuranSurahCaches(surah);
   return {
@@ -552,9 +560,11 @@ async function updateQuranSubsectionRange(subsectionHeadingId, value, userId) {
   validateSubsectionWithinSection(payload, section);
   var startRef = `${surah}:${payload.startAyah}`;
   var start0 = quranNum0(surah, payload.startAyah);
+  var endRef = `${surah}:${payload.endAyah}`;
+  var end0 = quranNum0(surah, payload.endAyah);
   var count = payload.endAyah - payload.startAyah + 1;
   var updateResult = await global.query(`UPDATE toc
-    SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, start0=${start0}, count=${count}
+    SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, end=${sql(endRef)}, start0=${start0}, end0=${end0}, count=${count}
     WHERE id=${subsection.tId || subsection.id}`);
   await reindexChapterSearchScope(subsection.book_id, surah, { syncKnowledge: false, refresh: true });
   await invalidateQuranSurahCaches(surah);
@@ -615,14 +625,25 @@ async function deleteQuranSection(sectionHeadingId) {
   var bookId = parseInt(section.book_id, 10);
   var surah = Number(section.h1);
   var h2 = Number(section.h2);
+  var destination = (await global.query(`SELECT id, h2
+    FROM toc
+    WHERE bookId=${bookId} AND level=2 AND h1=${surah} AND h2<>${h2}
+    ORDER BY CASE WHEN h2<${h2} THEN 0 ELSE 1 END, ABS(h2-${h2})
+    LIMIT 1`))[0];
+  if (!destination)
+    throw createError(400, 'The only Quran section in a surah cannot be removed');
   var deletedHeadings = await global.query(`SELECT hId
     FROM v_toc
     WHERE book_id=${bookId} AND h1=${surah} AND h2=${h2} AND level IN (2, 3)`);
+  await global.query(`UPDATE hadiths
+    SET tocId=${destination.id}, h1=${surah}, h2=${destination.h2}, h3=NULL
+    WHERE bookId=${bookId} AND tocId=${section.tId || section.id}`);
   var deleteResult = await global.query(`DELETE FROM toc
     WHERE bookId=${bookId} AND h1=${surah} AND h2=${h2} AND level IN (2, 3)`);
   await global.query(`UPDATE toc
     SET h2=h2-1
     WHERE bookId=${bookId} AND h1=${surah} AND h2>${h2} AND level IN (2, 3)`);
+  await syncQuranSurahHadithHeadingNumbers(bookId, surah);
   for (const heading of deletedHeadings)
     await Index.delete(Heading.INDEX, heading.hId);
   await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
@@ -725,6 +746,26 @@ function validateAyahRange(startAyah, endAyah, surah) {
 
 function quranNum0(surah, ayah) {
   return Number(surah) + (Number(ayah) / 1000);
+}
+
+async function relinkQuranAyahRangeToSection(bookId, surah, tocId, h2, startAyah, endAyah) {
+  await global.query(`UPDATE hadiths
+    SET tocId=${parseInt(tocId, 10)}, h1=${Number(surah)}, h2=${Number(h2)}, h3=NULL
+    WHERE bookId=${parseInt(bookId, 10)} AND h1=${Number(surah)}
+      AND numInChapter BETWEEN ${Number(startAyah)} AND ${Number(endAyah)}`);
+}
+
+async function syncQuranSurahHadithHeadingNumbers(bookId, surah) {
+  var sections = await global.query(`SELECT id, h1, h2
+    FROM toc
+    WHERE bookId=${parseInt(bookId, 10)} AND level=2 AND h1=${Number(surah)}
+    ORDER BY h2`);
+  for (const section of sections) {
+    await global.query(`UPDATE hadiths
+      SET h1=${Number(section.h1)}, h2=${Number(section.h2)}, h3=NULL
+      WHERE bookId=${parseInt(bookId, 10)} AND tocId=${Number(section.id)}
+        AND NOT (h1<=>${Number(section.h1)} AND h2<=>${Number(section.h2)} AND h3<=>NULL)`);
+  }
 }
 
 function quranAyahFromHeadingStart(start) {

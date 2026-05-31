@@ -14,18 +14,16 @@ const Index = require('../lib/Index');
 	try {
 		var indexNames = getIndexNames(options);
 		var books;
+		for (var i = 0; i < indexNames.length; i++)
+			await ensureIndexExists(indexNames[i]);
 		if (options.all) {
-			for (var i = 0; i < indexNames.length; i++)
-				await recreateIndex(indexNames[i]);
 			log(`retrieving data to index ${formatIndexNames(indexNames)}...`);
 			books = await global.query(`SELECT * FROM books b ORDER BY id`);
-			await indexBooks(books, indexNames);
 		} else {
-			books = await getBooksFromId(options.bookId);
-			log(`retrieving data to index ${formatIndexNames(indexNames)} from book id ${options.bookId} (${books.length} book(s))...`);
-			for (var j = 0; j < indexNames.length; j++)
-				await reindexBooks(indexNames[j], books);
+			books = await getBooks(options);
+			log(`retrieving data to index ${formatIndexNames(indexNames)} ${formatBookScope(options)} (${books.length} book(s))...`);
 		}
+		await reindexBooks(books, indexNames);
 	} finally {
 		global.dbPool.end();
 		log('indexing complete');
@@ -75,35 +73,20 @@ async function getHadithData(book) {
 	return rows;
 }
 
-async function indexDocs(indexName, book) {
-	var skipReason = getSkipIndexReason(indexName, book);
-	if (skipReason) {
-		log(`\n*****\nskipping ${indexName} for ${book.shortName_en}; ${skipReason}...`);
-		return;
-	}
-	log(`\n*****\nindexing ${indexName} for ${book.shortName_en}...`);
-	var rows = await getData(indexName, book);
-	await Index.updateBulk(indexName, rows, true);
-}
-
-async function indexBooks(books, indexNames) {
+async function reindexBooks(books, indexNames) {
 	for (var i = 0; i < books.length; i++) {
-		for (var j = 0; j < indexNames.length; j++)
-			await indexDocs(indexNames[j], books[i]);
-	}
-}
-
-async function reindexBooks(indexName, books) {
-	for (var i = 0; i < books.length; i++) {
-		log(`\n*****\nreindexing ${indexName} for ${books[i].shortName_en}...`);
-		await Index.deleteByBook(indexName, books[i]);
-		var skipReason = getSkipIndexReason(indexName, books[i]);
-		if (skipReason) {
-			log(`skipping ${indexName} for ${books[i].shortName_en}; ${skipReason}`);
-			continue;
+		for (var j = 0; j < indexNames.length; j++) {
+			var indexName = indexNames[j];
+			log(`\n*****\nreindexing ${indexName} for ${books[i].shortName_en}...`);
+			await Index.deleteByBook(indexName, books[i]);
+			var skipReason = getSkipIndexReason(indexName, books[i]);
+			if (skipReason) {
+				log(`skipping ${indexName} for ${books[i].shortName_en}; ${skipReason}`);
+				continue;
+			}
+			var rows = await getData(indexName, books[i]);
+			await Index.updateBulk(indexName, rows, true);
 		}
-		var rows = await getData(indexName, books[i]);
-		await Index.updateBulk(indexName, rows, true);
 	}
 }
 
@@ -125,24 +108,26 @@ function formatIndexNames(indexNames) {
 	return indexNames.join(' and ');
 }
 
-async function recreateIndex(indexName) {
+async function ensureIndexExists(indexName) {
 	const indexURL = `${global.settings.search.domain}/${indexName}`;
 	const mappingFile = path.join(__dirname, `elasticsearch-${indexName}-mapping.json`);
 	const mappingDoc = JSON.parse(fs.readFileSync(mappingFile).toString());
 	const payload = buildCreateIndexPayload(mappingDoc[indexName]);
 	if (!payload)
 		throw new Error(`Mapping file ${mappingFile} does not define index '${indexName}'`);
-	log(`\n*****\nrecreating ${indexName} index from ${path.basename(mappingFile)}...`);
 	try {
-		await axios.delete(indexURL, {
+		await axios.head(indexURL, {
 			headers: {
 				'Content-Type': 'application/json'
 			}
 		});
+		log(`${indexName} index already exists`);
+		return;
 	} catch (err) {
 		if (err.response?.status !== 404)
-			throw describeAxiosError(err, `Unable to delete index '${indexName}'`);
+			throw describeAxiosError(err, `Unable to check index '${indexName}'`);
 	}
+	log(`\n*****\ncreating missing ${indexName} index from ${path.basename(mappingFile)}...`);
 	try {
 		await axios.put(indexURL, payload, {
 			headers: {
@@ -201,21 +186,27 @@ function describeAxiosError(err, prefix) {
 	return new Error(`${prefix}: ${reason}`);
 }
 
-async function getBooksFromId(bookId) {
+async function getBooks(options) {
+	var operator = options.fromBookId ? '>=' : '=';
 	var books = await global.query(`
 		SELECT *
 		FROM books
-		WHERE id >= ${bookId}
+		WHERE id ${operator} ${options.bookId}
 		ORDER BY id`);
 	if (books.length < 1)
-		throw new ReferenceError(`Not found: Book id ${bookId} or later`);
+		throw new ReferenceError(`Not found: Book id ${options.bookId}${options.fromBookId ? ' or later' : ''}`);
 	return books;
+}
+
+function formatBookScope(options) {
+	return options.fromBookId ? `from book id ${options.bookId}` : `for book id ${options.bookId}`;
 }
 
 function parseArgs(argv) {
 	var options = {
 		all: false,
 		bookId: null,
+		fromBookId: false,
 		tocOnly: false
 	};
 	for (var i = 0; i < argv.length; i++) {
@@ -229,6 +220,7 @@ function parseArgs(argv) {
 			if (!argv[i])
 				throw new Error(`${arg} requires a book id`);
 			options.bookId = parseBookId(argv[i], arg);
+			options.fromBookId = arg === '--from-book-id';
 		} else if (arg === '--help' || arg === '-h') {
 			printUsage();
 			process.exit(0);
@@ -239,9 +231,9 @@ function parseArgs(argv) {
 		}
 	}
 	if (options.all && options.bookId !== null)
-		throw new Error(`Use either --all or --book-id, not both`);
+		throw new Error(`Use either --all, --book-id, or --from-book-id`);
 	if (!options.all && options.bookId === null)
-		throw new Error(`Missing required argument: use --all or --book-id <id>`);
+		throw new Error(`Missing required argument: use --all, --book-id <id>, or --from-book-id <id>`);
 	return options;
 }
 
@@ -257,11 +249,14 @@ function printUsage() {
 		'Usage:\n' +
 		'  node bin/buildSearchIndex.js --all\n' +
 		'  node bin/buildSearchIndex.js --book-id 16\n' +
+		'  node bin/buildSearchIndex.js --from-book-id 16\n' +
 		'  node bin/buildSearchIndex.js --all --toc-only\n' +
 		'  node bin/buildSearchIndex.js --book-id 16 --toc-only\n' +
 		'\n' +
-		'--all recreates the full hadiths and toc indexes, then indexes every book.\n' +
-		'--book-id deletes and rebuilds both indexes for that book id and every later book id.\n' +
-		'--toc-only only recreates or rebuilds the toc index.'
+		'Missing indexes are created from the checked-in mappings. Existing indexes are never deleted.\n' +
+		'--all rebuilds each book independently.\n' +
+		'--book-id rebuilds only the requested book id.\n' +
+		'--from-book-id rebuilds the requested book id and every later book id.\n' +
+		'--toc-only only rebuilds the toc index.'
 	);
 }
