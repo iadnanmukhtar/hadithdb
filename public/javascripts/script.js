@@ -174,6 +174,7 @@ function initQuranTafsirTabs(root) {
 		container.data('quranTafsirsBound', true);
 		var surah = container.attr('data-surah');
 		var ayahs = (container.attr('data-ayahs') || '').split(',').filter(Boolean);
+		var selectedAyahs = (container.attr('data-selected-ayahs') || '').split(',').filter(Boolean).map(Number);
 		var ayahText = JSON.parse(container.find('.quran-tafsir-ayah-data').text() || '{}');
 		var toArabicDigits = function (value) {
 			return value.toString().replace(/\d/g, function (digit) {
@@ -192,6 +193,11 @@ function initQuranTafsirTabs(root) {
 			$('<span>').text(ayahText[ayah] || '').appendTo(heading);
 			heading.append(document.createTextNode(' '));
 			$('<span>').addClass('quran-ayah-end-marker').text('۝').appendTo(heading);
+		};
+		var overlapsSelectedAyahs = function (startAyah, endAyah) {
+			return selectedAyahs.some(function (ayah) {
+				return ayah >= startAyah && ayah <= endAyah;
+			});
 		};
 
 		var loadPanel = async function (panel) {
@@ -226,21 +232,21 @@ function initQuranTafsirTabs(root) {
 					var startAyah = Number(entry.payload.ayahs_start || entry.ayah);
 					var count = Number(entry.payload.count || 0);
 					var endAyah = startAyah + count;
-					var entryElement = $('<section>').addClass('quran-tafsir-entry').appendTo(text);
-					if (count > 0)
-						$('<p>').addClass('quran-tafsir-range').text(toArabicDigits(`${surah}:${startAyah}-${endAyah}`)).appendTo(entryElement);
+					var entryElement = $('<details>').addClass('quran-tafsir-entry').prop('open', overlapsSelectedAyahs(startAyah, endAyah)).appendTo(text);
+					var summary = $('<summary>').appendTo(entryElement);
 					var ayahHeadings = count > 0
-						? $('<div>').addClass('quran-tafsir-ayah-range').attr({ lang: 'ar', dir: 'rtl' }).appendTo(entryElement)
-						: entryElement;
+						? $('<div>').addClass('quran-tafsir-ayah-range').attr({ lang: 'ar', dir: 'rtl' }).appendTo(summary)
+						: summary;
 					for (var ayah = startAyah; ayah <= endAyah; ayah++) {
 						if (ayahText[ayah])
 							appendAyahHeading(ayahHeadings, ayah, count > 0);
 					}
 					if (format === 'html') {
-						$('<div>').addClass('quran-tafsir-html').html(entry.payload.data).appendTo(entryElement);
+						$('<div>').addClass('quran-tafsir-entry-body quran-tafsir-html').html(entry.payload.data).appendTo(entryElement);
 					} else {
+						var entryBody = $('<div>').addClass('quran-tafsir-entry-body').appendTo(entryElement);
 						entry.payload.data.toString().split(/\n+/).filter(Boolean).forEach(function (paragraph) {
-							$('<p>').text(paragraph).appendTo(entryElement);
+							$('<p>').text(paragraph).appendTo(entryBody);
 						});
 					}
 				});

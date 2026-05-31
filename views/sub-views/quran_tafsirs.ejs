@@ -26,6 +26,10 @@
 	const selectedAyahRefs = new Set((locals.selectedAyahs || []).map(function (ayah) {
 		return ayah.ref;
 	}));
+	const selectedAyahNums = (locals.selectedAyahs || []).map(function (ayah) {
+		const num = ayah.en?.num || ayah.num || '';
+		return parseInt(arabic.toLatinDigits(num.toString().split(/:/).pop()), 10);
+	}).filter(Number.isInteger);
 	function translatedFootnoteNum(ayah) {
 		const num = ayah.en?.num || ayah.num || '';
 		return num.split(/:/)[1] || num;
@@ -52,7 +56,7 @@
 	}
 %>
 <% if (passageSurah && passageAyahs.length > 0 && (translatedJalalaynItems.length > 0 || visibleTafsirs.length > 0)) { %>
-<article class="quran-tafsirs mt-4" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>">
+<article class="quran-tafsirs mt-4" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>">
 	<script type="application/json" class="quran-tafsir-ayah-data"><%- JSON.stringify(passageAyahText).replace(/</g, '\\u003c') %></script>
 	<h2 class="h5">Tafsir</h2>
 	<div class="h-menu-wrap mb-3">
@@ -89,9 +93,12 @@
 			</header>
 			<div class="quran-tafsir-jalalayn">
 				<% translatedJalalaynItems.forEach(function (ayah) { %>
-				<section class="quran-tafsir-entry">
-					<h3 class="quran-tafsir-ayah" lang="ar" dir="rtl"><sup><%= translatedFootnoteLabel(ayah) %></sup>&nbsp;<span><%= translatedFootnoteAyah(ayah) %></span>&nbsp;<span class="quran-ayah-end-marker">۝</span></h3>
-					<div class="row quran-tafsir-jalalayn-pair">
+				<% const footnoteAyahNum = parseInt(arabic.toLatinDigits(translatedFootnoteNum(ayah)), 10); %>
+				<details class="quran-tafsir-entry"<%= selectedAyahNums.includes(footnoteAyahNum) ? ' open' : '' %>>
+					<summary>
+						<h3 class="quran-tafsir-ayah" lang="ar" dir="rtl"><sup><%= translatedFootnoteLabel(ayah) %></sup>&nbsp;<span><%= translatedFootnoteAyah(ayah) %></span>&nbsp;<span class="quran-ayah-end-marker">۝</span></h3>
+					</summary>
+					<div class="row quran-tafsir-jalalayn-pair quran-tafsir-entry-body">
 						<section class="col-md-6 col-sm-12" lang="en">
 							<p<%= selectedAyahRefs.has(ayah.ref) ? ' class="quran-footnote-selected"' : '' %>><%= ayah.en.footnote %></p>
 						</section>
@@ -99,7 +106,7 @@
 							<p<%= selectedAyahRefs.has(ayah.ref) ? ' class="quran-footnote-selected"' : '' %>><%= ayah.ar?.footnote || '' %></p>
 						</section>
 					</div>
-				</section>
+				</details>
 				<% }); %>
 			</div>
 		</section>

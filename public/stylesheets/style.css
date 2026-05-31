@@ -1550,11 +1550,46 @@ del em strong {
 	padding-top: 1rem;
 }
 
-.quran-tafsir-range {
+.quran-tafsir-entry summary {
+	cursor: pointer;
+	list-style: none;
+	position: relative;
+	padding-inline-end: 1.25rem;
+}
+
+.quran-tafsir-entry summary::-webkit-details-marker {
+	display: none;
+}
+
+.quran-tafsir-entry summary::after {
 	color: var(--c-gray-mid);
-	direction: rtl;
-	font-size: .85rem;
-	margin-bottom: .25rem;
+	content: "\f285";
+	font-family: "bootstrap-icons";
+	font-size: .75rem;
+	inset-inline-end: 0;
+	position: absolute;
+	top: .5rem;
+	transition: transform .15s ease-in-out;
+}
+
+.quran-tafsir-entry[open] summary::after {
+	transform: rotate(90deg);
+}
+
+.quran-tafsir-entry:not([open]) .quran-tafsir-ayah,
+.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-range {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
+	display: inline;
+}
+
+.quran-tafsir-entry-body {
+	margin-top: .5rem;
 }
 
 .quran-tafsir-ayah:lang(ar) {
