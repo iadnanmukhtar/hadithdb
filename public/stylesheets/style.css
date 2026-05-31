@@ -2598,6 +2598,29 @@ a.cmd-btn:hover {
 	text-align: left;
 }
 
+.commentary-search-result {
+	border-bottom: 1px solid var(--bs-border-color);
+	padding-bottom: .85rem;
+}
+
+.commentary-search-fragment {
+	color: #8e784b;
+	font-family: "Gentium Plus", Serif;
+	font-size: .92rem;
+	line-height: 1.35;
+}
+
+.commentary-search-fragment mark {
+	background: rgba(255, 214, 102, .5);
+	color: inherit;
+}
+
+.commentary-search-result:lang(ar) .commentary-search-fragment {
+	font-family: Kitab, Serif;
+	font-size: 1.1rem;
+	line-height: 1.7;
+}
+
 .rag-tool {
 	margin-top: 6rem;
 }

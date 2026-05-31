@@ -1,0 +1,10 @@
+<article class="commentary-search-result mt-3" lang="<%= commentary.search_lang || commentary.lang || 'en' %>"<%- (commentary.search_lang || commentary.lang) === 'ar' ? ' dir="rtl"' : '' %>>
+	<header class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+		<h2 class="fs-5 mb-0"><a href="<%= commentary.url %>"><%- commentary.commentary_title %></a></h2>
+		<a class="small text-muted" href="<%= commentary.url %>"><%- commentary.commentary_ref %></a>
+	</header>
+	<p class="commentary-search-source small text-muted mb-1">
+		Tafsir commentary<% if (commentary.commentary_author_en) { %> by <%- commentary.commentary_author_en %><% } %>
+	</p>
+	<div class="commentary-search-fragment"><%- commentary.commentary_fragment_html %></div>
+</article>
