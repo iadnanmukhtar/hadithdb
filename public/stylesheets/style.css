@@ -1697,10 +1697,35 @@ del em strong {
 }
 
 .quran-ayah-hero {
+	position: relative;
 	margin: 1.5rem 0 1rem;
-	padding: 1rem 0;
-	border-top: 1px solid var(--c-ghostwhite);
-	border-bottom: 1px solid var(--c-ghostwhite);
+	padding: 1rem;
+	border: 1px solid var(--c-gray-dark-16);
+	border-radius: .75rem;
+	background: var(--c-white);
+	box-shadow: 0 .25rem .75rem var(--c-black-12);
+}
+
+.quran-ayah-hero-clear {
+	position: absolute;
+	top: .35rem;
+	right: .35rem;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border: 1px solid var(--c-gray-dark-16);
+	border-radius: 50%;
+	background: var(--c-ghostwhite);
+	color: var(--c-gray-very-dark);
+	text-decoration: none;
+}
+
+.quran-ayah-hero-clear:hover {
+	background: var(--c-accent-08);
+	color: var(--c-note);
 }
 
 .quran-ayah-hero section+section {

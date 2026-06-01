@@ -1,8 +1,14 @@
 <%
 	const ayahs = locals.selectedAyahs || (locals.selectedAyah ? [locals.selectedAyah] : []);
+	const clearHref = locals.clearHref;
 %>
 <% if (ayahs.length > 0) { %>
 <section class="quran-ayah-hero row">
+	<% if (clearHref) { %>
+	<a class="quran-ayah-hero-clear" href="<%= clearHref %>" title="Clear ayah selection" aria-label="Clear ayah selection">
+		<span class="bi bi-x-lg" aria-hidden="true"></span>
+	</a>
+	<% } %>
 	<section class="col-12" lang="ar">
 		<div class="quran-ayah-hero-body">
 			<% ayahs.forEach(function (ayah) {

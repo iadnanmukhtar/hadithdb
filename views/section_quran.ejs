@@ -56,7 +56,7 @@
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
       
       <% if (selectedAyahs.length > 0) { %>
-      <%- include('sub-views/quran_ayah_hero.ejs', { site: site, page: page, selectedAyahs: selectedAyahs }); %>
+      <%- include('sub-views/quran_ayah_hero.ejs', { site: site, page: page, selectedAyahs: selectedAyahs, clearHref: page.context.section ? `/${page.context.section.path}` : undefined }); %>
       <% if (selectedAyahs.length > 0 && quranShareId) { %>
         <aside class="tags">
           <span class="bi bi-box-arrow-up"></span>&nbsp;<a href="#<%= quranShareId %>" type="button" title="Share selected ayah image" class="icon" data-bs-toggle="modal" data-bs-target="#<%= quranShareId %>">Share</a>
