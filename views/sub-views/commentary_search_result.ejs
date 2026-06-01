@@ -1,10 +1,28 @@
-<article class="commentary-search-result mt-3" lang="<%= commentary.search_lang || commentary.lang || 'en' %>"<%- (commentary.search_lang || commentary.lang) === 'ar' ? ' dir="rtl"' : '' %>>
-	<header class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
-		<h2 class="fs-5 mb-0"><a href="<%= commentary.url %>"><%- commentary.commentary_title %></a></h2>
-		<a class="small text-muted" href="<%= commentary.url %>"><%- commentary.commentary_ref %></a>
-	</header>
-	<p class="commentary-search-source small text-muted mb-1">
-		Tafsir commentary<% if (commentary.commentary_author_en) { %> by <%- commentary.commentary_author_en %><% } %>
-	</p>
-	<div class="commentary-search-fragment"><%- commentary.commentary_fragment_html %></div>
+<article class="commentary-search-result row mt-3">
+	<section class="col-md-6 col-sm-12 h" lang="en">
+		<b><a href="<%= commentary.url %>"><%- commentary.commentary_ref_en %></a></b>
+	</section>
+	<section class="col-md-6 col-sm-12 h" lang="ar" dir="rtl">
+		<b><a href="<%= commentary.url %>"><%- commentary.commentary_ref_ar %></a></b>
+	</section>
+	<% if (commentary.commentary_is_bilingual) { %>
+		<div class="commentary-search-fragment col-md-6 col-sm-12" lang="en"><%- commentary.commentary_fragment_html_en %></div>
+		<div class="commentary-search-fragment col-md-6 col-sm-12" lang="ar" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
+	<% } else if (commentary.commentary_fragment_html_en) { %>
+		<div class="commentary-search-fragment col-12" lang="en"><%- commentary.commentary_fragment_html_en %></div>
+	<% } else { %>
+		<div class="commentary-search-fragment col-12" lang="ar" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
+	<% } %>
+	<% if (commentary.commentary_section_url) { %>
+		<section class="col-md-6 col-sm-12 h" lang="en">
+			<aside class="title">
+				§ <a href="<%= commentary.commentary_section_url %>"><%- utils.truncate(commentary.h2_title_en, 30, true) || 'Section' %></a>
+			</aside>
+		</section>
+		<section class="col-md-6 col-sm-12 h" lang="ar" dir="rtl">
+			<aside class="title">
+				§ <a href="<%= commentary.commentary_section_url %>"><%- utils.truncate(commentary.h2_title, 30, true) || 'مقطع' %></a>
+			</aside>
+		</section>
+	<% } %>
 </article>

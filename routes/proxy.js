@@ -137,18 +137,17 @@ function renderEditableCommentaryLanguage(row, lang) {
   const text = row[`text${suffix}`];
   const footnotes = row[`footnotes${suffix}`];
   return [
-    renderEditableCommentaryField(row.id, `text${suffix}`, text, format, lang, 'Text'),
-    renderEditableCommentaryField(row.id, `footnotes${suffix}`, footnotes, format, lang, 'Footnotes')
+    renderEditableCommentaryField(row.id, `text${suffix}`, text, format, lang),
+    renderEditableCommentaryField(row.id, `footnotes${suffix}`, footnotes, format, lang)
   ].join('\n');
 }
 
-function renderEditableCommentaryField(id, column, text, format, lang, label) {
+function renderEditableCommentaryField(id, column, text, format, lang) {
   const value = text || '';
   const attrs = `class="_e quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}"`;
-  const title = `<h4 class="quran-tafsir-editor-label">${label}</h4>`;
   if (format === 'md')
-    return `${title}<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="&hellip;">${renderCommentaryText(value, '', format) || '&hellip;'}</div>`;
-  return `${title}<textarea ${attrs} rows="12">${escapeHtml(value)}</textarea>`;
+    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="&hellip;">${renderCommentaryText(value, '', format) || '&hellip;'}</div>`;
+  return `<textarea ${attrs} rows="12">${escapeHtml(value)}</textarea>`;
 }
 
 function commentaryFormat(format, lang) {

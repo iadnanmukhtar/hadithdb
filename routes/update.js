@@ -444,6 +444,12 @@ async function commentaryIndexRowById(id) {
       hc.ayahFrom,
       hc.ayahTo,
       hc.passageNum,
+      q.h1,
+      q.h2,
+      q.h2_id,
+      q.h2_title_en,
+      q.h2_title,
+      q.path AS section_path,
       CONCAT('quran:', hc.surah, ':', hc.ayahFrom,
         IF(hc.ayahTo > hc.ayahFrom, CONCAT('-', hc.ayahTo), '')) AS ref,
       CONCAT('/quran/', hc.surah, '/', hc.ayahFrom) AS path,
@@ -455,6 +461,7 @@ async function commentaryIndexRowById(id) {
       hc.lastmod
     FROM books_commentaries bc
     JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+    JOIN v_hadiths q ON q.id=hc.hadithId
     WHERE hc.id=${parseInt(id, 10)}
       AND bc.source='local'
       AND bc.hidden=0

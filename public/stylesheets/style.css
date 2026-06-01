@@ -22,12 +22,66 @@
 
 :root {
 	--c-ghostwhite: #f8f8f8;
+	--c-ghostwhite-86: rgba(248, 248, 248, 0.86);
+	--c-ghostwhite-95: rgba(248, 248, 248, 0.95);
+	--c-ghostwhite-98: rgba(248, 248, 248, 0.98);
 	--c-accent: #2c9be5;
 	--c-speech: #1b7b00;
 	--c-note: #004a9f;
 	--c-gray-mid: #a0a0a0;
 	--c-gray-dark: #808080;
 	--c-gray-very-dark: #606060;
+	--c-white: #ffffff;
+	--c-white-transparent: rgba(255, 255, 255, 0);
+	--c-white-72: rgba(255, 255, 255, 0.72);
+	--c-white-82: rgba(255, 255, 255, 0.82);
+	--c-white-86: rgba(255, 255, 255, 0.86);
+	--c-white-98: rgba(255, 255, 255, 0.98);
+	--c-black: #000000;
+	--c-blue: blue;
+	--c-green: green;
+	--c-red: red;
+	--c-black-soft: #111111;
+	--c-black-04: rgba(17, 17, 17, 0.04);
+	--c-black-08: rgba(0, 0, 0, 0.08);
+	--c-black-12: rgba(0, 0, 0, 0.12);
+	--c-black-14: rgba(0, 0, 0, 0.14);
+	--c-black-24: rgba(17, 17, 17, 0.24);
+	--c-black-28: rgba(17, 17, 17, 0.28);
+	--c-transparent: transparent;
+	--c-highlight: yellow;
+	--c-accent-045: rgba(44, 155, 229, 0.045);
+	--c-accent-08: rgba(44, 155, 229, 0.08);
+	--c-accent-10: rgba(44, 155, 229, 0.10);
+	--c-accent-12: rgba(44, 155, 229, 0.12);
+	--c-accent-18: rgba(44, 155, 229, 0.18);
+	--c-accent-22: rgba(44, 155, 229, 0.22);
+	--c-accent-30: rgba(44, 155, 229, 0.30);
+	--c-accent-34: rgba(44, 155, 229, 0.34);
+	--c-accent-38: rgba(44, 155, 229, 0.38);
+	--c-accent-40: rgba(44, 155, 229, 0.40);
+	--c-accent-92: rgba(44, 155, 229, 0.92);
+	--c-speech-18: rgba(27, 123, 0, 0.18);
+	--c-brown: #705d38;
+	--c-brown-22: rgba(95, 72, 45, 0.22);
+	--c-brown-28: rgba(95, 72, 45, 0.28);
+	--c-brown-62: rgba(95, 72, 45, 0.62);
+	--c-gray-dark-16: rgba(128, 128, 128, 0.16);
+	--c-gray-very-dark-75: rgba(96, 96, 96, 0.75);
+	--c-highlight-soft: rgba(255, 214, 102, 0.50);
+	--c-page-soft: #f7f9fb;
+	--c-quran-soft: #e2f5ff;
+	--c-comment-bubble: #f2f3f5;
+	--c-comment-meta: #6b7280;
+	--c-comment-heart: #ff6b81;
+	--c-comment-soft: #dbe9f5;
+	--c-danger: #dc3545;
+	--c-chat-user: #f3f8fc;
+	--c-chat-assistant: #fafafa;
+	--c-link-dark: #2379b1;
+	--c-cornsilk: cornsilk;
+	--c-primary-soft-08: rgba(var(--bs-primary-rgb), .08);
+	--c-primary-soft-12: rgba(var(--bs-primary-rgb), .12);
 	--f-size-ar: 1.3rem;
 	--f-size-ar-note: 1.15rem;
 	--f-size-ar-sup: 0.8rem;
@@ -129,7 +183,7 @@ main.chapter {
 .navbar {
 	top: 0;
 	display: block;
-	background-color: white;
+	background-color: var(--c-white);
 	position: fixed;
 	z-index: 1000;
 }
@@ -334,12 +388,12 @@ nav .nav-link {
 
 .h-menu-scroller::before {
 	left: 0;
-	background: linear-gradient(to right, white, rgba(255, 255, 255, 0));
+	background: linear-gradient(to right, var(--c-white), var(--c-white-transparent));
 }
 
 .h-menu-scroller::after {
 	right: 0;
-	background: linear-gradient(to left, white, rgba(255, 255, 255, 0));
+	background: linear-gradient(to left, var(--c-white), var(--c-white-transparent));
 }
 
 .h-menu {
@@ -402,7 +456,7 @@ nav .nav-link {
 	border: 0;
 	border-radius: 8px;
 	overflow: hidden;
-	background: #f7f9fb;
+	background: var(--c-page-soft);
 }
 
 .hadith-share-toolbar {
@@ -411,15 +465,15 @@ nav .nav-link {
 	align-items: center;
 	justify-content: space-between;
 	padding: 0.75rem 1rem;
-	background: #ffffff;
-	border-bottom-color: rgba(44, 155, 229, 0.18);
+	background: var(--c-white);
+	border-bottom-color: var(--c-accent-18);
 }
 
 .hadith-share-toolbar .modal-title {
 	flex: 1 1 auto;
 	min-width: 8rem;
 	max-width: 14rem;
-	color: #111111;
+	color: var(--c-black-soft);
 	font-size: 1.2rem !important;
 	line-height: 1.16;
 }
@@ -444,9 +498,9 @@ nav .nav-link {
 
 .hadith-share-control-group {
 	padding: 0.35rem 0.45rem;
-	border: 1px solid rgba(44, 155, 229, 0.18);
+	border: 1px solid var(--c-accent-18);
 	border-radius: 8px;
-	background: rgba(248, 248, 248, 0.86);
+	background: var(--c-ghostwhite-86);
 }
 
 .hadith-share-actions .btn {
@@ -459,9 +513,9 @@ nav .nav-link {
 	height: 2rem;
 	padding: 0;
 	font-size: 1rem;
-	border-color: rgba(44, 155, 229, 0.4);
-	color: #111111;
-	background: rgba(255, 255, 255, 0.86);
+	border-color: var(--c-accent-40);
+	color: var(--c-black-soft);
+	background: var(--c-white-86);
 }
 
 .hadith-share-actions .btn:hover,
@@ -469,7 +523,7 @@ nav .nav-link {
 .hadith-share-actions .btn.active {
 	border-color: var(--c-accent);
 	background: var(--c-accent);
-	color: white;
+	color: var(--c-white);
 }
 
 .hadith-share-size-controls {
@@ -479,7 +533,7 @@ nav .nav-link {
 	padding: 0;
 	border: 0;
 	border-radius: 0;
-	background: transparent;
+	background: var(--c-transparent);
 }
 
 .hadith-share-size-controls label {
@@ -488,7 +542,7 @@ nav .nav-link {
 	align-items: center;
 	gap: 0.15rem;
 	margin: 0;
-	color: #111111;
+	color: var(--c-black-soft);
 	font-size: 0.7rem;
 	line-height: 1;
 	text-align: center;
@@ -505,28 +559,28 @@ nav .nav-link {
 .hadith-share-size-controls .form-range::-webkit-slider-runnable-track {
 	height: 0.25rem;
 	border-radius: 999px;
-	background: rgba(44, 155, 229, 0.3);
+	background: var(--c-accent-30);
 }
 
 .hadith-share-size-controls .form-range::-webkit-slider-thumb {
 	width: 0.85rem;
 	height: 0.85rem;
 	margin-top: -0.3rem;
-	border: 2px solid #ffffff;
-	box-shadow: 0 0 0 1px rgba(44, 155, 229, 0.38);
+	border: 2px solid var(--c-white);
+	box-shadow: 0 0 0 1px var(--c-accent-38);
 }
 
 .hadith-share-size-controls .form-range::-moz-range-track {
 	height: 0.25rem;
 	border-radius: 999px;
-	background: rgba(44, 155, 229, 0.3);
+	background: var(--c-accent-30);
 }
 
 .hadith-share-size-controls .form-range::-moz-range-thumb {
 	width: 0.85rem;
 	height: 0.85rem;
-	border: 2px solid #ffffff;
-	box-shadow: 0 0 0 1px rgba(44, 155, 229, 0.38);
+	border: 2px solid var(--c-white);
+	box-shadow: 0 0 0 1px var(--c-accent-38);
 }
 
 .hadith-share-arabic-toggle {
@@ -535,13 +589,13 @@ nav .nav-link {
 	gap: 0.45rem;
 	margin: 0;
 	min-height: 2rem;
-	color: #111111;
+	color: var(--c-black-soft);
 	white-space: nowrap;
 }
 
 .hadith-share-arabic-toggle .form-check-input {
 	margin: 0;
-	border-color: rgba(44, 155, 229, 0.4);
+	border-color: var(--c-accent-40);
 }
 
 .hadith-share-arabic-toggle .form-check-input:checked {
@@ -555,8 +609,8 @@ nav .nav-link {
 	justify-content: center;
 	padding: 1rem;
 	background:
-		linear-gradient(135deg, rgba(44, 155, 229, 0.92), rgba(248, 248, 248, 0.95) 42%, rgba(27, 123, 0, 0.18) 68%, rgba(95, 72, 45, 0.62)),
-		repeating-linear-gradient(45deg, rgba(17, 17, 17, 0.04) 0 1px, transparent 1px 12px);
+		linear-gradient(135deg, var(--c-accent-92), var(--c-ghostwhite-95) 42%, var(--c-speech-18) 68%, var(--c-brown-62)),
+		repeating-linear-gradient(45deg, var(--c-black-04) 0 1px, var(--c-transparent) 1px 12px);
 }
 
 .hadith-share-card {
@@ -569,10 +623,10 @@ nav .nav-link {
 	padding: max(10px, calc(18px * var(--share-scale)));
 	border-radius: 8px;
 	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 248, 248, 0.98)),
-		repeating-linear-gradient(90deg, rgba(44, 155, 229, 0.045) 0 1px, transparent 1px 14px);
-	box-shadow: 0 1.6rem 3.5rem rgba(17, 17, 17, 0.28);
-	color: #111111;
+		linear-gradient(180deg, var(--c-white-98), var(--c-ghostwhite-98)),
+		repeating-linear-gradient(90deg, var(--c-accent-045) 0 1px, var(--c-transparent) 1px 14px);
+	box-shadow: 0 1.6rem 3.5rem var(--c-black-28);
+	color: var(--c-black-soft);
 	overflow: hidden;
 }
 
@@ -581,9 +635,9 @@ nav .nav-link {
 	flex-direction: column;
 	height: 100%;
 	padding: max(8px, calc(28px * var(--share-scale)));
-	border: 1px solid rgba(95, 72, 45, 0.28);
+	border: 1px solid var(--c-brown-28);
 	border-radius: 6px;
-	background: rgba(255, 255, 255, 0.82);
+	background: var(--c-white-82);
 	overflow: hidden;
 }
 
@@ -591,14 +645,14 @@ nav .nav-link {
 	margin: 0 0 calc(16px * var(--share-scale));
 	font-size: calc(25px * var(--share-scale) * var(--share-english-tune));
 	line-height: 1.18;
-	color: #111111;
+	color: var(--c-black-soft);
 	overflow-wrap: anywhere;
 }
 
 .hadith-share-section+.hadith-share-section {
 	margin-top: calc(15px * var(--share-scale));
 	padding-top: calc(15px * var(--share-scale));
-	border-top: 1px solid rgba(44, 155, 229, 0.22);
+	border-top: 1px solid var(--c-accent-22);
 }
 
 .hadith-share-section {
@@ -689,7 +743,7 @@ nav .nav-link {
 	gap: 8px;
 	margin-top: auto;
 	padding-top: calc(15px * var(--share-scale));
-	border-top: 1px solid rgba(95, 72, 45, 0.22);
+	border-top: 1px solid var(--c-brown-22);
 	font-size: calc(14px * var(--share-scale) * var(--share-english-tune));
 	line-height: 1.25;
 }
@@ -718,7 +772,7 @@ nav .nav-link {
 }
 
 .hadith-share-card [contenteditable="true"] {
-	outline: 2px solid rgba(44, 155, 229, 0.34);
+	outline: 2px solid var(--c-accent-34);
 	outline-offset: 3px;
 	border-radius: 4px;
 }
@@ -836,7 +890,7 @@ nav .nav-link {
 		width: min(100%, 540px, calc((100dvh - 9.25rem) * 0.8));
 		max-height: 100%;
 		min-width: 0;
-		box-shadow: 0 1rem 2rem rgba(17, 17, 17, 0.24);
+		box-shadow: 0 1rem 2rem var(--c-black-24);
 	}
 
 	@supports (height: min(100%, 1px)) {
@@ -895,7 +949,7 @@ nav .nav-link {
 
 .search-click-toggle .form-control {
 	width: 100%;
-	box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.12);
+	box-shadow: 0 0.25rem 0.75rem var(--c-black-12);
 }
 
 @media (max-width: var(--bs-breakpoint-sm)) {
@@ -933,12 +987,12 @@ nav .nav-link {
 #search-bar {
 	font-size: 1.5em;
 	border-color: var(--c-accent);
-	border-right: 0 none transparent;
+	border-right: 0 none var(--c-transparent);
 }
 
 #search-bar+.btn-outline-secondary {
 	border-color: var(--c-accent);
-	border-left: 0 none transparent;
+	border-left: 0 none var(--c-transparent);
 	color: var(--c-accent);
 }
 
@@ -948,7 +1002,7 @@ nav .nav-link {
 #search-bar+.btn.show {
 	border-color: var(--c-accent);
 	background-color: var(--c-accent);
-	color: white;
+	color: var(--c-white);
 }
 
 .card-title a {
@@ -1023,7 +1077,7 @@ nav .nav-link {
 
 .blog-post s b,
 .blog-post s strong {
-	color: blue;
+	color: var(--c-blue);
 	font-family: ArabicBold, Serif;
 }
 
@@ -1139,7 +1193,7 @@ del em strong {
 .blog-post blockquote:has(p.callout) {
 	padding: 15px;
 	color: var(--bs-body-color);
-	background-color: #e2f5ff;
+	background-color: var(--c-quran-soft);
 }
 
 .blog-post blockquote.callout::first-line,
@@ -1209,7 +1263,7 @@ del em strong {
 
 .major .title,
 .major .title a {
-	color: black;
+	color: var(--c-black);
 	text-decoration: none;
 }
 
@@ -1256,7 +1310,7 @@ del em strong {
 }
 
 .h i {
-	background-color: yellow;
+	background-color: var(--c-highlight);
 	font-style: inherit;
 }
 
@@ -1388,9 +1442,9 @@ del em strong {
 
 .body.passage .ayah.quran-range-live-selected a,
 .body.passage .ayah.quran-range-live-selected .quran-ayah-body {
-	background: rgba(var(--bs-primary-rgb), .08);
+	background: var(--c-primary-soft-08);
 	border-radius: .25rem;
-	color: var(--accent);
+	color: var(--c-accent);
 }
 
 .quran-ayah-select-toolbar {
@@ -1416,9 +1470,9 @@ del em strong {
 
 .body.passage .ayah.ayah-multi-selected a,
 .body.passage .ayah.ayah-multi-selected .quran-ayah-body {
-	background: rgba(var(--bs-primary-rgb), .12);
+	background: var(--c-primary-soft-12);
 	border-radius: .25rem;
-	color: var(--accent);
+	color: var(--c-accent);
 }
 
 .quran-subheading {
@@ -1534,7 +1588,7 @@ del em strong {
 	font-size: .8rem;
 	line-height: 1.55;
 	text-align: justify;
-	color: #8e784b;
+	color: var(--c-brown);
 }
 
 .quran-tafsir-text:lang(en) {
@@ -1615,7 +1669,7 @@ del em strong {
 }
 
 .quran-tafsir-ayah:lang(ar) {
-	color: #000;
+	color: var(--c-black);
 	font-family: ArabicBold, Serif;
 	font-size: 1.45rem;
 	font-weight: bold;
@@ -1624,7 +1678,7 @@ del em strong {
 }
 
 .quran-tafsir-ayah:lang(ar) sup {
-	color: #000;
+	color: var(--c-black);
 	font-size: .65em;
 	font-weight: bold;
 }
@@ -1729,8 +1783,8 @@ del em strong {
 
 .body .ayah:hover,
 .body .ayah-hover-pair {
-	color: #2379b1;
-	background-color: cornsilk;
+	color: var(--c-link-dark);
+	background-color: var(--c-cornsilk);
 }
 
 .body.passage .ayah.quran-prefatory-ayah,
@@ -1768,7 +1822,7 @@ del em strong {
 }
 
 .highlight {
-	background-color: yellow;
+	background-color: var(--c-highlight);
 }
 
 .h .title,
@@ -1793,13 +1847,6 @@ del em strong {
 }
 
 .comment-feed {
-	--comment-accent-soft: rgba(44, 155, 229, 0.10);
-	--comment-accent-border: rgba(44, 155, 229, 0.16);
-	--comment-note-soft: rgba(0, 74, 159, 0.08);
-	--comment-speech-soft: rgba(27, 123, 0, 0.10);
-	--comment-bubble-bg: #f2f3f5;
-	--comment-meta: #6b7280;
-	--comment-ui-gray: #e7ebf1;
 	font-family: var(--bs-font-sans-serif);
 	font-size: 0.94rem;
 }
@@ -1807,7 +1854,7 @@ del em strong {
 .comment-feed-shell {
 	padding: 0;
 	border-radius: 0;
-	background: transparent;
+	background: var(--c-transparent);
 }
 
 .comment-summary {
@@ -1817,8 +1864,8 @@ del em strong {
 	gap: 1rem;
 	padding: 0 0.2rem 0.7rem;
 	margin-bottom: 0.65rem;
-	border-bottom: 1px solid rgba(44, 155, 229, 0.12);
-	color: var(--comment-meta);
+	border-bottom: 1px solid var(--c-accent-12);
+	color: var(--c-comment-meta);
 }
 
 .comment-summary-left,
@@ -1854,9 +1901,9 @@ del em strong {
 	align-items: center;
 	justify-content: center;
 	border-radius: 999px;
-	color: white;
+	color: var(--c-white);
 	font-size: 0.72rem;
-	box-shadow: 0 0 0 2px white;
+	box-shadow: 0 0 0 2px var(--c-white);
 }
 
 .comment-summary-reaction-like {
@@ -1864,7 +1911,7 @@ del em strong {
 }
 
 .comment-summary-reaction-heart {
-	background: #ff6b81;
+	background: var(--c-comment-heart);
 }
 
 .comment-composer-body,
@@ -1882,12 +1929,12 @@ del em strong {
 	align-items: center;
 	justify-content: center;
 	border-radius: 999px;
-	background: #dbe9f5;
+	background: var(--c-comment-soft);
 	color: var(--c-note);
 	font-size: 0.8rem;
 	font-weight: 700;
 	letter-spacing: 0.02em;
-	box-shadow: inset 0 0 0 1px rgba(44, 155, 229, 0.08);
+	box-shadow: inset 0 0 0 1px var(--c-accent-08);
 	overflow: hidden;
 }
 
@@ -1908,7 +1955,7 @@ del em strong {
 	padding: 0.55rem 0.8rem 0.65rem;
 	border: 0;
 	border-radius: 1.2rem;
-	background: var(--comment-bubble-bg);
+	background: var(--c-comment-bubble);
 }
 
 .comment-auth-hint {
@@ -1939,8 +1986,8 @@ del em strong {
 	align-items: center;
 	padding: 0.1rem 0.45rem;
 	border-radius: 999px;
-	background: rgba(255, 255, 255, 0.72);
-	color: var(--comment-meta);
+	background: var(--c-white-72);
+	color: var(--c-comment-meta);
 	font-size: 0.65rem;
 	font-weight: 700;
 	letter-spacing: 0.01em;
@@ -1951,19 +1998,19 @@ del em strong {
 	padding: 0;
 	border: 0;
 	border-radius: 0;
-	background: transparent;
+	background: var(--c-transparent);
 	font-size: 0.92rem;
 	line-height: 1.35;
 	resize: vertical;
 }
 
 .comment-input::placeholder {
-	color: var(--comment-meta);
+	color: var(--c-comment-meta);
 	opacity: 1;
 }
 
 .comment-input:focus {
-	background: transparent;
+	background: var(--c-transparent);
 	box-shadow: none;
 }
 
@@ -1994,7 +2041,7 @@ del em strong {
 	display: flex;
 	align-items: center;
 	gap: 0.35rem;
-	color: var(--comment-meta);
+	color: var(--c-comment-meta);
 	font-size: 0.95rem;
 }
 
@@ -2013,7 +2060,7 @@ del em strong {
 	padding: 0;
 	border-radius: 999px;
 	border: 0;
-	background: rgba(44, 155, 229, 0.18);
+	background: var(--c-accent-18);
 	color: var(--c-accent);
 	font-size: 0.82rem;
 }
@@ -2021,18 +2068,18 @@ del em strong {
 .comment-submit-btn:hover,
 .comment-submit-btn:focus {
 	background: var(--c-accent);
-	color: white;
+	color: var(--c-white);
 }
 
 .comment-submit-btn:disabled {
-	background: rgba(128, 128, 128, 0.16);
-	color: rgba(96, 96, 96, 0.75);
+	background: var(--c-gray-dark-16);
+	color: var(--c-gray-very-dark-75);
 }
 
 .comment-form-link,
 .comment-form-link:hover,
 .comment-form-link:focus {
-	color: var(--comment-meta);
+	color: var(--c-comment-meta);
 	text-decoration: none;
 	font-weight: 700;
 	font-size: 0.72rem;
@@ -2068,7 +2115,7 @@ del em strong {
 	padding: 0.55rem 0.8rem 0.65rem;
 	border: 0;
 	border-radius: 1.2rem;
-	background: var(--comment-bubble-bg);
+	background: var(--c-comment-bubble);
 }
 
 .comment-meta {
@@ -2093,7 +2140,7 @@ del em strong {
 }
 
 .comment-timestamp {
-	color: var(--comment-meta);
+	color: var(--c-comment-meta);
 	font-size: 0.74rem;
 	font-weight: 600;
 }
@@ -2120,7 +2167,7 @@ del em strong {
 	gap: 0.15rem;
 	flex-wrap: wrap;
 	padding: 0.14rem 0.7rem 0;
-	color: var(--comment-meta);
+	color: var(--c-comment-meta);
 }
 
 .comment-action {
@@ -2132,7 +2179,7 @@ del em strong {
 	height: 1.4rem;
 	padding: 0;
 	border: 0;
-	background: transparent;
+	background: var(--c-transparent);
 	color: var(--c-accent);
 	font-size: 0.92rem;
 	font-weight: 700;
@@ -2164,7 +2211,7 @@ del em strong {
 .comment-action-delete,
 .comment-action-delete:hover,
 .comment-action-delete:focus {
-	color: #dc3545;
+	color: var(--c-danger);
 }
 
 .comment-time {
@@ -2173,7 +2220,7 @@ del em strong {
 	padding-right: 0.5rem;
 	font-size: 0.8rem;
 	font-weight: 400;
-	color: var(--comment-meta);
+	color: var(--c-comment-meta);
 }
 
 .comment-reactions-badge {
@@ -2185,9 +2232,9 @@ del em strong {
 	gap: 0.15rem;
 	padding: 0.1rem 0.28rem;
 	border-radius: 999px;
-	background: white;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-	color: var(--comment-meta);
+	background: var(--c-white);
+	box-shadow: 0 2px 8px var(--c-black-08);
+	color: var(--c-comment-meta);
 	font-size: 0.64rem;
 	font-weight: 700;
 }
@@ -2199,7 +2246,7 @@ del em strong {
 	align-items: center;
 	justify-content: center;
 	border-radius: 999px;
-	color: white;
+	color: var(--c-white);
 	font-size: 0.48rem;
 }
 
@@ -2218,9 +2265,9 @@ del em strong {
 .comment-empty-state,
 .comment-error-state {
 	padding: 0.8rem 0;
-	background: transparent;
+	background: var(--c-transparent);
 	text-align: left;
-	color: var(--comment-meta);
+	color: var(--c-comment-meta);
 	font-size: 0.8rem;
 }
 
@@ -2341,7 +2388,7 @@ del em strong {
 
 .toc tr.chapter,
 .toc2 tr.chapter {
-	background-color: ghostwhite;
+	background-color: var(--c-ghostwhite);
 	font-weight: bold;
 }
 
@@ -2392,7 +2439,7 @@ del em strong {
 }
 
 .toggle {
-	color: green;
+	color: var(--c-green);
 	text-decoration: none;
 }
 
@@ -2417,32 +2464,32 @@ del em strong {
 .bi-reception-4,
 .bi-reception-3,
 .bi-reception-2 {
-	color: green;
+	color: var(--c-green);
 }
 
 .bi-reception-1,
 .bi-reception-0 {
-	color: red;
+	color: var(--c-red);
 }
 
 .bi-patch-check-fill {
-	color: #2c9be5;
+	color: var(--c-accent);
 }
 
 .cmd-tr,
 .cmd-tr a {
-	color: #a0a0a0;
+	color: var(--c-gray-mid);
 	line-height: 1.5rem;
 }
 
 .cmd-btn,
 a.cmd-btn {
-	color: #a0a0a0 !important;
+	color: var(--c-gray-mid) !important;
 	margin-left: 5px;
 }
 
 a.cmd-btn:hover {
-	color: red !important;
+	color: var(--c-red) !important;
 }
 
 .twitter-hashtag-button {
@@ -2461,10 +2508,10 @@ a.cmd-btn:hover {
 }
 
 .search-autocomplete-menu {
-	background: white;
+	background: var(--c-white);
 	border: 1px solid var(--bs-border-color);
 	border-radius: 0.35rem;
-	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.14);
+	box-shadow: 0 0.5rem 1rem var(--c-black-14);
 	font-size: 0.92rem;
 	padding: 0.35rem;
 }
@@ -2475,14 +2522,14 @@ a.cmd-btn:hover {
 }
 
 .search-autocomplete-menu .ui-state-active {
-	background: transparent;
+	background: var(--c-transparent);
 	border: 0;
 	color: inherit;
 	margin: 0;
 }
 
 .search-autocomplete-menu .ui-menu-item:has(.ui-state-active) {
-	background: rgba(44, 155, 229, 0.1);
+	background: var(--c-accent-10);
 }
 
 .search-autocomplete-menu .ui-menu-item:not(:last-child) {
@@ -2518,7 +2565,7 @@ a.cmd-btn:hover {
 }
 
 .search-autocomplete-match mark {
-	background: rgba(255, 214, 102, 0.5);
+	background: var(--c-highlight-soft);
 	border-radius: 0.12rem;
 	color: inherit;
 	padding: 0 0.08em;
@@ -2604,20 +2651,20 @@ a.cmd-btn:hover {
 }
 
 .commentary-search-fragment {
-	color: #8e784b;
+	color: var(--c-brown);
 	font-family: "Gentium Plus", Serif;
-	font-size: .92rem;
+	font-size: 0.9rem;
 	line-height: 1.35;
 }
 
 .commentary-search-fragment mark {
-	background: rgba(255, 214, 102, .5);
+	background: var(--c-highlight-soft);
 	color: inherit;
 }
 
-.commentary-search-result:lang(ar) .commentary-search-fragment {
+.commentary-search-fragment:lang(ar) {
 	font-family: Kitab, Serif;
-	font-size: 1.1rem;
+	font-size: var(--f-size-ar);
 	line-height: 1.7;
 }
 
@@ -2639,13 +2686,13 @@ a.cmd-btn:hover {
 }
 
 .chat-message-user {
-	background: #f3f8fc;
+	background: var(--c-chat-user);
 	justify-self: end;
 	max-width: min(38rem, 92%);
 }
 
 .chat-message-assistant {
-	background: #fafafa;
+	background: var(--c-chat-assistant);
 	justify-self: start;
 	max-width: min(42rem, 96%);
 }
