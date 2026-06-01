@@ -10,11 +10,13 @@ const path = require('path');
 const Index = require('../lib/Index');
 
 const INDEX = 'commentaries';
+let dbPoolEnded = false;
 
 (async () => {
 	try {
 		await ensureIndexExists();
 		const rows = await getCommentaries();
+		await endDbPool();
 		console.log(`indexing ${rows.length} local commentary passages...`);
 		await deleteExistingDocuments();
 		await Index.updateBulk(INDEX, rows, false);
@@ -24,9 +26,23 @@ const INDEX = 'commentaries';
 		console.error(`ERROR: ${err.message}`);
 		process.exitCode = 1;
 	} finally {
-		global.dbPool.end();
+		if (!dbPoolEnded)
+			await endDbPool();
 	}
 })();
+
+function endDbPool() {
+	return new Promise((resolve, reject) => {
+		global.dbPool.end(err => {
+			if (err)
+				reject(err);
+			else {
+				dbPoolEnded = true;
+				resolve();
+			}
+		});
+	});
+}
 
 async function getCommentaries() {
 	return await global.query(`

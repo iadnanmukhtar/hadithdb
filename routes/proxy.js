@@ -32,7 +32,7 @@ router.get('/tafsir/local', async function (req, res) {
     return;
   }
   const rows = await global.query(`
-    SELECT bc.format, hc.surah, hc.ayahFrom, hc.ayahTo, hc.text, hc.text_en, hc.footnotes, hc.footnotes_en
+    SELECT bc.format, hc.id, hc.surah, hc.ayahFrom, hc.ayahTo, hc.text, hc.text_en, hc.footnotes, hc.footnotes_en
     FROM books_commentaries bc
     JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
     WHERE bc.alias=${global.dbPool.escape(src)}
@@ -47,11 +47,11 @@ router.get('/tafsir/local', async function (req, res) {
     return;
   }
   const row = rows[0];
-  res.setHeader('Cache-Control', 'public, max-age=14400');
+  res.setHeader('Cache-Control', 'no-store');
   res.json({
     ayahs_start: row.ayahFrom,
     count: row.ayahTo - row.ayahFrom,
-    html: renderLocalCommentary(row)
+    html: renderLocalCommentary(row, isEditMode(req))
   });
 });
 
@@ -114,9 +114,13 @@ router.get('/:url', async function (req, res, next) {
   }
 });
 
-function renderLocalCommentary(row) {
-  const arabic = renderCommentaryText(row.text, row.footnotes, commentaryFormat(row.format, 'ar'));
-  const english = renderCommentaryText(row.text_en, row.footnotes_en, commentaryFormat(row.format, 'en'));
+function renderLocalCommentary(row, editMode) {
+  const arabic = editMode
+    ? renderEditableCommentaryLanguage(row, 'ar')
+    : renderCommentaryText(row.text, row.footnotes, commentaryFormat(row.format, 'ar'));
+  const english = editMode
+    ? renderEditableCommentaryLanguage(row, 'en')
+    : renderCommentaryText(row.text_en, row.footnotes_en, commentaryFormat(row.format, 'en'));
   if (arabic && english)
     return `<div class="row quran-tafsir-local-pair"><section class="col-md-6 col-sm-12" lang="en">${english}</section><section class="col-md-6 col-sm-12" lang="ar" dir="rtl">${arabic}</section></div>`;
   const sections = [];
@@ -127,13 +131,33 @@ function renderLocalCommentary(row) {
   return sections.join('\n');
 }
 
+function renderEditableCommentaryLanguage(row, lang) {
+  const suffix = lang === 'en' ? '_en' : '';
+  const format = commentaryFormat(row.format, lang);
+  const text = row[`text${suffix}`];
+  const footnotes = row[`footnotes${suffix}`];
+  return [
+    renderEditableCommentaryField(row.id, `text${suffix}`, text, format, lang, 'Text'),
+    renderEditableCommentaryField(row.id, `footnotes${suffix}`, footnotes, format, lang, 'Footnotes')
+  ].join('\n');
+}
+
+function renderEditableCommentaryField(id, column, text, format, lang, label) {
+  const value = text || '';
+  const attrs = `class="_e quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}"`;
+  const title = `<h4 class="quran-tafsir-editor-label">${label}</h4>`;
+  if (format === 'md')
+    return `${title}<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="&hellip;">${renderCommentaryText(value, '', format) || '&hellip;'}</div>`;
+  return `${title}<textarea ${attrs} rows="12">${escapeHtml(value)}</textarea>`;
+}
+
 function commentaryFormat(format, lang) {
-  const formats = (format || 'txt').split(',').map(value => value.trim()).filter(Boolean);
+  const formats = (format || 'md').split(',').map(value => value.trim()).filter(Boolean);
   const languageFormat = formats.find(value => value.startsWith(`${lang}:`));
   if (languageFormat)
     return languageFormat.slice(lang.length + 1);
   const defaultFormat = formats.find(value => !value.includes(':'));
-  return defaultFormat || 'txt';
+  return defaultFormat || 'md';
 }
 
 function renderCommentaryText(text, footnotes, format) {
@@ -144,11 +168,7 @@ function renderCommentaryText(text, footnotes, format) {
     return markArabicOnlyBlocks(content);
   if (format === 'md')
     return markArabicOnlyBlocks(md.render(content));
-  return markArabicOnlyBlocks(md.render(asParagraphs(content)));
-}
-
-function asParagraphs(text) {
-  return text.split(/\n+/).filter(Boolean).join('\n\n');
+  return markArabicOnlyBlocks(md.render(content));
 }
 
 function markArabicOnlyBlocks(html) {
@@ -160,6 +180,20 @@ function markArabicOnlyBlocks(html) {
       element.addClass('quran-tafsir-arabic-only').attr({ lang: 'ar', dir: 'rtl' });
   });
   return $.html();
+}
+
+function isEditMode(req) {
+  return req.cookies.admin == global.settings.admin.key && req.cookies.editMode == 1;
+}
+
+function escapeHtml(text) {
+  return (text || '').toString().replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
 }
 
 module.exports = router;

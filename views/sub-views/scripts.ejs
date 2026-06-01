@@ -26,6 +26,7 @@
 
 	    const isMarkdownProp = (prop) => /body|intro|footnote|note/.test(prop) || prop === 'book.description';
 	    const hasMarkdownSource = ($el) => $el.is('[data-markdown-source]');
+	    const isMarkdownElement = ($el) => isMarkdownProp(($el.data('prop') || '').toString()) || $el.attr('data-edit-format') === 'md';
 
 	    const getMarkdownSource = ($el) => ($el.attr('data-markdown-source') || '').toString();
 
@@ -126,7 +127,7 @@
 	    const setElementValue = (el, value) => {
 	      const $el = $(el);
 	      const prop = ($el.data('prop') || '').toString();
-	      const isMarkdownField = isMarkdownProp(prop);
+	      const isMarkdownField = isMarkdownElement($el);
 
 	      if ($el.is('textarea') || $el.is('input')) {
 	        $el.val(value);
@@ -202,7 +203,7 @@
 	        e.preventDefault();
 	      const $el = $(this);
 	      const propStr = (($el.data('prop')) || '').toString();
-	      const isMarkdownField = isMarkdownProp(propStr);
+	      const isMarkdownField = isMarkdownElement($el);
 	      if ($(this).attr('submitting') == 'true') {
 	        e.stopPropagation();
 	        return;
@@ -322,21 +323,29 @@
       return split(term).pop();
     }
 
-	    $('._e*').each(function () {
-	      const $el = $(this);
-	      $(this).attr('contenteditable', 'true');
-	      if (isMarkdownProp(($el.data('prop') || '').toString()) && !hasMarkdownSource($el))
-	        setMarkdownSource($el, htmlToMarkdown($el.html()));
-	      $(this).on('focusin', function () {
-	        if (isMarkdownProp(($(this).data('prop') || '').toString()))
-	          enterMarkdownEditMode(this);
+	    const bindInlineEditors = (scope) => {
+	      $(scope || document).find('._e').addBack('._e').each(function () {
+	        const $el = $(this);
+	        if ($el.data('inlineEditorBound'))
+	          return;
+	        $el.data('inlineEditorBound', true);
+	        if (!$el.is('textarea, input, select'))
+	          $el.attr('contenteditable', 'true');
+	        if (isMarkdownElement($el) && !hasMarkdownSource($el))
+	          setMarkdownSource($el, htmlToMarkdown($el.html()));
+	        $el.on('focusin', function () {
+	          if (isMarkdownElement($(this)))
+	            enterMarkdownEditMode(this);
+	        });
+	        $el.on('input', function () {
+	          $(this).attr('editing', 'true');
+	          $(this).removeClass('partial');
+	        });
+	        $el.on('blur', changeListener);
 	      });
-	      $(this).on('input', function () {
-	        $(this).attr('editing', 'true');
-	        $(this).removeClass('partial');
-	      });
-      $(this).on('blur', changeListener);
-    });
+	    };
+	    window.bindInlineEditors = bindInlineEditors;
+	    bindInlineEditors(document);
 
     $('._click').each(function () {
       if ($(this).is('a') && !$(this).attr('href'))

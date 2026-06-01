@@ -324,6 +324,8 @@ function initQuranTafsirTabs(root) {
 						});
 					}
 				});
+				if (window.bindInlineEditors)
+					window.bindInlineEditors(text[0]);
 				status.toggleClass('d-none', entries.length > 0);
 				if (entries.length < 1)
 					status.text('No tafsir text is available for this passage.');

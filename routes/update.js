@@ -194,6 +194,25 @@ router.post('/:id/:prop', async function (req, res, next) {
       status.message = result.message;
       await Hadith.a_reinit();
 
+    } else if (type == 'commentary') {
+      var commentaryId = parseInt(ids[0], 10);
+      var commentaryColumns = ['text', 'text_en', 'footnotes', 'footnotes_en'];
+      if (!Number.isInteger(commentaryId) || commentaryId <= 0)
+        throw createError(400, 'Invalid commentary passage id');
+      if (!commentaryColumns.includes(col))
+        throw createError(400, `Invalid commentary field '${col}'`);
+      var commentary = await commentaryIndexRowById(commentaryId);
+      if (!commentary)
+        throw createError(404, 'Local commentary passage not found');
+      var result = await global.query(`UPDATE hadiths_commentary
+        SET ${col}=${sql(status.value)}, lastmod=CURRENT_TIMESTAMP()
+        WHERE id=${commentaryId}`);
+      commentary = await commentaryIndexRowById(commentaryId);
+      await Index.update('commentaries', commentary);
+      await Index.refresh('commentaries');
+      status.code = 200;
+      status.message = result.message;
+
     } else if (type == 'toc') {
       var result;
       var shouldRunDefaultHeadingTasks = true;
@@ -396,6 +415,50 @@ function sql(s) {
     return '"' + s + '"';
   }
   return null;
+}
+
+async function commentaryIndexRowById(id) {
+  return (await global.query(`
+    SELECT
+      hc.id,
+      hc.id AS hId,
+      'commentary' AS doctype,
+      0 AS book_id,
+      0 AS book_ordinal,
+      'quran' AS book_alias,
+      bc.ordinal AS ordinal,
+      bc.id AS bookCommentaryId,
+      bc.alias AS commentary_alias,
+      bc.shortName AS commentary_shortName,
+      bc.shortName_en AS commentary_shortName_en,
+      bc.name AS commentary_name,
+      bc.name_en AS commentary_name_en,
+      bc.author AS commentary_author,
+      bc.author_en AS commentary_author_en,
+      bc.death AS commentary_author_death,
+      bc.lang,
+      bc.source,
+      bc.format,
+      hc.hadithId,
+      hc.surah,
+      hc.ayahFrom,
+      hc.ayahTo,
+      hc.passageNum,
+      CONCAT('quran:', hc.surah, ':', hc.ayahFrom,
+        IF(hc.ayahTo > hc.ayahFrom, CONCAT('-', hc.ayahTo), '')) AS ref,
+      CONCAT('/quran/', hc.surah, '/', hc.ayahFrom) AS path,
+      hc.text,
+      hc.text_en,
+      hc.footnotes,
+      hc.footnotes_en,
+      hc.created,
+      hc.lastmod
+    FROM books_commentaries bc
+    JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+    WHERE hc.id=${parseInt(id, 10)}
+      AND bc.source='local'
+      AND bc.hidden=0
+    LIMIT 1`))[0];
 }
 
 async function updateQuranPassageRange(headingId, value, userId) {
