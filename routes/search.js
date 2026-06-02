@@ -15,19 +15,12 @@ const Utils = require('../lib/Utils');
 const { Section, Chapter, Heading, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
 const Arabic = require('../lib/Arabic');
+const Books = require('../lib/Books');
+const Surahs = require('../lib/Surahs');
 const { homedir } = require('os');
 
 const router = express.Router();
 const CAPTCHA_TTL_MS = 5 * 60 * 1000;
-const SURAH_ALIAS_NORMALIZATIONS = {
-  fatiha: 'faithah',
-  fatihah: 'faithah',
-  al_fatiha: 'faithah',
-  al_fatihah: 'faithah',
-  'al-fatiha': 'faithah',
-  'al-fatihah': 'faithah'
-};
-
 function redirectArabicDigitPath(req, res, next) {
   if (req.method !== 'GET' && req.method !== 'HEAD')
     return next();
@@ -49,10 +42,7 @@ function redirectArabicDigitPath(req, res, next) {
 }
 
 function findSurah(ref) {
-  ref = SURAH_ALIAS_NORMALIZATIONS[ref] || ref;
-  return global.surahs.find(function (value) {
-    return (value.alias === ref || value.num == ref);
-  });
+  return Surahs.find(ref);
 }
 
 function appendOriginalQuery(req) {
@@ -282,6 +272,11 @@ router.get('/', async function (req, res, next) {
   // search
   if (req.query.q) {
     req.query.q = Search.truncateQuery(req.query.q);
+    var bookReference = !Search.isExpressionQuery(req.query.q) && Books.findReference(req.query.q, global.books);
+    if (bookReference) {
+      res.redirect('/' + bookReference.ref);
+      return;
+    }
     // is it a item ref number?
     if (!Search.isExpressionQuery(req.query.q) && req.query.q.match(/^([a-z]+:\d+|\d+)/)) {
       if (Library.instance.findBook(req.query.q.split(/:/)[0])) {

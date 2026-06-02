@@ -2589,6 +2589,10 @@ a.cmd-btn:hover {
 	font-weight: normal;
 }
 
+.search-autocomplete-name {
+	font-weight: bold;
+}
+
 .search-autocomplete-match mark {
 	background: var(--c-highlight-soft);
 	border-radius: 0.12rem;
@@ -2648,6 +2652,10 @@ a.cmd-btn:hover {
 	font-size: 1.2rem;
 	font-weight: normal;
 	line-height: 1.7;
+}
+
+.search-autocomplete-ar .search-autocomplete-name {
+	font-weight: bold;
 }
 
 .search-autocomplete-quran.search-autocomplete-ar,

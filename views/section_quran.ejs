@@ -489,6 +489,7 @@
       const startInput = container.querySelector('.quran-subsection-range-start');
       const endInput = container.querySelector('.quran-subsection-range-end');
       const saveButton = container.querySelector('.quran-subsection-range-save');
+      const promoteButton = container.querySelector('.quran-subsection-promote');
       const deleteButton = container.querySelector('.quran-subsection-delete');
       const subsectionId = container.dataset.subsectionId;
 
@@ -571,9 +572,36 @@
         }
       };
 
+      const promoteSubsection = async () => {
+        if (!window.confirm('Make this subsection and every following ayah a new section? The current section will end immediately before this subsection.'))
+          return;
+        setButtonLoading(promoteButton, '', true);
+        try {
+          const res = await fetch(`/update/${subsectionId}/toc.subsectionPromote`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: '1' })
+          });
+          const body = await res.json();
+          if (!res.ok || body.code !== 200)
+            throw new Error(body.message || res.statusText);
+          if (window.toastr)
+            toastr.success(body.value.path, 'Quran subsection promoted');
+          refreshAfterQuranHeadingUpdate(`/${body.value.path}`);
+        } catch (err) {
+          if (window.toastr)
+            toastr.error(err.message, 'Quran subsection promote failed');
+          else
+            alert(err.message);
+        } finally {
+          setButtonLoading(promoteButton, '', false);
+        }
+      };
+
       startInput.addEventListener('input', updateValid);
       endInput.addEventListener('input', updateValid);
       saveButton.addEventListener('click', saveRange);
+      promoteButton.addEventListener('click', promoteSubsection);
       deleteButton.addEventListener('click', deleteSubsection);
       updateValid();
     });

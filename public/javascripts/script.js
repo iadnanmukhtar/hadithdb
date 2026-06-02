@@ -594,13 +594,16 @@ function initSearchAutocomplete() {
 		}).autocomplete('instance')._renderItem = function (ul, item) {
 			var $item = $('<li>');
 			var $row = $('<div>').addClass('search-autocomplete-item');
-			var isArabic = item.lang === 'ar' || /[\u0600-\u06ff]/.test(item.fragment || item.label || '');
+			var isArabic = item.lang === 'ar';
 			var fallbackText = item.label || '';
 			if (item.is_quran)
 				$row.addClass('search-autocomplete-quran');
 			if (isArabic)
 				$row.attr({ lang: 'ar', dir: 'rtl' }).addClass('search-autocomplete-ar');
-			$('<div>').addClass('search-autocomplete-match').html(item.fragment || fallbackText).appendTo($row);
+			var $match = $('<div>').addClass('search-autocomplete-match');
+			if (item.type === 'Book' || item.type === 'Surah')
+				$match.addClass('search-autocomplete-name');
+			$match.html(item.fragment || fallbackText).appendTo($row);
 			if (item.metadata_en || item.metadata_ar) {
 				var $meta = $('<div>').addClass('search-autocomplete-meta');
 				if (item.lang === 'ar' && item.metadata_ar) {
