@@ -234,8 +234,8 @@
 		</button>
 		<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">0</span>
 		&nbsp;
-		<a href="/<%= i.ref %>#comments" class="text-decoration-none" title="View reflections">
-			<span class="bi bi-chat-right-text"></span><span class="badge rounded-pill text-bg-secondary hadith-comment-count" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="<%= commentCount %> reflection<%= commentCount === 1 ? '' : 's' %>"><%= commentCount %></span>
+		<a href="/<%= i.ref %>#comments" class="reflection-count-link text-decoration-none" title="View reflections">
+			<span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="<%= commentCount %> reflection<%= commentCount === 1 ? '' : 's' %>"><%= commentCount %></span>
 		</a>
 		&nbsp;
 		<span class="bi bi-box-arrow-up"></span>&nbsp;<a href="#H<%= i.id %>" type="button" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>">Share</a>

@@ -1,0 +1,24 @@
+<aside class="tags quran-ayah-hero-toolbar col-12">
+  <% if (selectedAyahId) { %>
+    <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= selectedAyahId %>" title="Bookmark this ayah">
+      <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= selectedAyahId %>"></span>
+    </button>
+    <span class="quran-ayah-action">
+      <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= selectedAyahId %>" title="Like this ayah">
+        <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= selectedAyahId %>"></span>
+      </button>
+      <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= selectedAyahId %>">0</span>
+    </span>
+  <% } %>
+  <% if (selectedAyahModalIndex >= 0) { %>
+    <button type="button" class="quran-ayah-modal-trigger reflection-count-link text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="reflections" title="View reflections">
+      <span class="bi bi-chat-right-text"></span><span class="hadith-comment-count fw-semibold" data-hadith-id="<%= selectedAyahId %>" title="<%= selectedAyahCommentCount %> reflection<%= selectedAyahCommentCount === 1 ? '' : 's' %>"><%= selectedAyahCommentCount %></span>
+    </button>
+    <button type="button" class="quran-ayah-modal-trigger quran-ayah-action text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="tafsirs">
+      <span class="bi bi-book"></span><span>Tafsir</span>
+    </button>
+  <% } %>
+  <a href="#<%= quranShareId %>" type="button" title="Share selected ayah image" class="quran-ayah-action icon text-decoration-none" data-bs-toggle="modal" data-bs-target="#<%= quranShareId %>">
+    <span class="bi bi-box-arrow-up"></span><span>Share</span>
+  </a>
+</aside>

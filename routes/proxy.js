@@ -9,7 +9,7 @@ const MarkdownIt = require('markdown-it');
 const markdownitFootnote = require('markdown-it-footnote');
 
 const router = express.Router();
-const md = new MarkdownIt({ html: true, linkify: true, typographer: false }).use(markdownitFootnote);
+const md = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
 
 router.get('/tafsir/books', async function (req, res) {
   const rows = await global.query(`
@@ -166,8 +166,8 @@ function renderCommentaryText(text, footnotes, format) {
   if (format === 'html')
     return markArabicOnlyBlocks(content);
   if (format === 'md')
-    return markArabicOnlyBlocks(md.render(content));
-  return markArabicOnlyBlocks(md.render(content));
+    return markArabicOnlyBlocks(md.render(content).replace(/<br>/g, '</p><p>'));
+  return markArabicOnlyBlocks(md.render(content).replace(/<br>/g, '</p><p>'));
 }
 
 function markArabicOnlyBlocks(html) {

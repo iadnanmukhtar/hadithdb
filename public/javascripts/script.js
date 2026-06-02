@@ -91,6 +91,7 @@ $(function () {
 	initHadithShareModals(document);
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
+	initQuranAyahModals(document);
 	initQuranPassageShareLinks(document);
 	initQuranTafsirTabs(document);
 	initTocExpandCollapse(document);
@@ -169,6 +170,8 @@ function initQuranTafsirTabs(root) {
 	var scope = root || document;
 	$(scope).find('.quran-tafsirs').each(function () {
 		var container = $(this);
+		if (container.closest('.quran-ayah-modal-pane.d-none').length)
+			return;
 		if (container.data('quranTafsirsBound'))
 			return;
 		container.data('quranTafsirsBound', true);
@@ -228,7 +231,7 @@ function initQuranTafsirTabs(root) {
 			}
 		};
 		var addCatalogTab = function (book) {
-			var panelId = `${container.attr('data-surah')}-${ayahs[0] || ''}-${book.alias}`;
+			var panelId = `${container.attr('data-tafsir-instance') || 'passage'}-${container.attr('data-surah')}-${ayahs[0] || ''}-${book.alias}`;
 			var tabId = `quran-tafsirs-${panelId}-tab`;
 			var targetId = `quran-tafsirs-${panelId}`;
 			if (container.find(`#${cssEscape(tabId)}`).length)
@@ -391,6 +394,159 @@ function initQuranTafsirTabs(root) {
 			container.find('.quran-tafsir-status').first().removeClass('d-none').text(err.message || 'Unable to load tafsir list.');
 		});
 	});
+}
+
+function initQuranAyahModals(root) {
+	var scope = root || document;
+	var modalStates = {};
+	$(scope).find('.quran-ayah-modal').each(function () {
+		var modal = $(this);
+		var modalType = modal.attr('data-quran-ayah-modal-type') || 'tafsirs';
+		if (modal.data('quranAyahModalBound')) {
+			modalStates[modalType] = modal.data('quranAyahModalState');
+			return;
+		}
+		modal.data('quranAyahModalBound', true);
+		var panes = modal.find('[data-quran-ayah-modal-pane]');
+		var modalBody = modal.find('.modal-body');
+		var title = modal.find('.modal-title');
+		var prevButton = modal.find('.quran-ayah-modal-prev');
+		var nextButton = modal.find('.quran-ayah-modal-next');
+		var activeIndex = 0;
+		var shown = false;
+
+		var showAyah = function (index) {
+			if (!panes.length)
+				return;
+			activeIndex = Math.max(0, Math.min(Number(index) || 0, panes.length - 1));
+			var pane = panes.filter(`[data-quran-ayah-modal-pane="${activeIndex}"]`);
+			panes.addClass('d-none');
+			pane.removeClass('d-none');
+			var ayahRef = pane.attr('data-quran-ayah-ref') || '';
+			title.text(modalType === 'reflections' ? `Reflections on Quran ${ayahRef}` : `Tafsir of Quran ${ayahRef}`);
+			prevButton.prop('disabled', activeIndex === 0);
+			nextButton.prop('disabled', activeIndex === panes.length - 1);
+			modalBody.scrollTop(0);
+			initQuranTafsirTabs(pane[0]);
+		};
+		var openAyah = function (index) {
+			showAyah(index);
+			if (window.bootstrap && window.bootstrap.Modal)
+				window.bootstrap.Modal.getOrCreateInstance(modal[0]).show();
+		};
+		var moveAyah = function (step) {
+			showAyah(activeIndex + step);
+		};
+		var rotateTafsir = function (step) {
+			var pane = panes.filter(`[data-quran-ayah-modal-pane="${activeIndex}"]`);
+			var tabs = pane.find('.quran-tafsirs [role="tab"]').filter(function () {
+				return !$(this).hasClass('d-none');
+			});
+			if (!tabs.length || !window.bootstrap || !window.bootstrap.Tab)
+				return false;
+			var current = tabs.index(tabs.filter('.active'));
+			var next = current < 0 ? 0 : (current + step + tabs.length) % tabs.length;
+			window.bootstrap.Tab.getOrCreateInstance(tabs[next]).show();
+			return true;
+		};
+
+		prevButton.on('click', function () { showAyah(activeIndex - 1); });
+		nextButton.on('click', function () { showAyah(activeIndex + 1); });
+		modal.find('.quran-ayah-modal-tafsir-prev').on('click', function () { rotateTafsir(-1); });
+		modal.find('.quran-ayah-modal-tafsir-next').on('click', function () { rotateTafsir(1); });
+		modal.on('shown.bs.modal', function () { shown = true; });
+		modal.on('hidden.bs.modal', function () { shown = false; });
+		var modalState = {
+			isShown: function () { return shown; },
+			openAyah: openAyah,
+			moveAyah: moveAyah,
+			rotateTafsir: rotateTafsir
+		};
+		modal.data('quranAyahModalState', modalState);
+		modalStates[modalType] = modalState;
+
+		showAyah(0);
+	});
+
+	if ($(document).data('quranAyahModalHandlersBound'))
+		return;
+	$(document).data('quranAyahModalHandlersBound', true);
+	var getModalState = function (type) {
+		return modalStates[type] || modalStates.tafsirs;
+	};
+	var openAyah = function (index, type) {
+		var state = getModalState(type);
+		if (state)
+			state.openAyah(index);
+	};
+
+	$(document).on('keydown.quranAyahModal', function (event) {
+			var state = Object.values(modalStates).find(function (modalState) {
+				return modalState.isShown();
+			});
+			if (!state)
+				return;
+			if ($(event.target).is('input, textarea, select'))
+				return;
+			var handled = true;
+			if (event.key === 'ArrowLeft')
+				state.moveAyah(-1);
+			else if (event.key === 'ArrowRight')
+				state.moveAyah(1);
+			else if (event.key === 'ArrowUp')
+				handled = state.rotateTafsir(-1);
+			else if (event.key === 'ArrowDown')
+				handled = state.rotateTafsir(1);
+			else
+				return;
+			if (handled)
+				event.preventDefault();
+		});
+
+		$(document).on('click.quranAyahModal', '.quran-ayah-modal-trigger', function (event) {
+			if ($('body').hasClass('quran-ayah-selecting'))
+				return;
+			event.preventDefault();
+			event.stopPropagation();
+			openAyah($(this).attr('data-quran-ayah-modal-index'), $(this).attr('data-quran-ayah-modal-type'));
+		});
+
+		var longPressTimer = null;
+		var longPressOpened = false;
+		var longPressStart = null;
+		$(document).on('pointerdown.quranAyahModal', '.quran-passage-section .ayah[data-quran-ayah-modal-index]', function (event) {
+			if (event.pointerType === 'mouse' || $('body').hasClass('quran-ayah-selecting'))
+				return;
+			var ayah = $(this);
+			longPressOpened = false;
+			longPressStart = { x: event.clientX, y: event.clientY };
+			window.clearTimeout(longPressTimer);
+			longPressTimer = window.setTimeout(function () {
+				longPressOpened = true;
+				openAyah(ayah.attr('data-quran-ayah-modal-index'));
+			}, 550);
+		});
+		$(document).on('pointerup.quranAyahModal pointercancel.quranAyahModal', '.quran-passage-section .ayah[data-quran-ayah-modal-index]', function () {
+			window.clearTimeout(longPressTimer);
+			longPressStart = null;
+		});
+		$(document).on('pointermove.quranAyahModal', '.quran-passage-section .ayah[data-quran-ayah-modal-index]', function (event) {
+			if (!longPressStart)
+				return;
+			var dx = event.clientX - longPressStart.x;
+			var dy = event.clientY - longPressStart.y;
+			if ((dx * dx) + (dy * dy) <= 144)
+				return;
+			window.clearTimeout(longPressTimer);
+			longPressStart = null;
+		});
+		$(document).on('click.quranAyahModalLongPress', '.quran-passage-section .ayah[data-quran-ayah-modal-index] a', function (event) {
+			if (!longPressOpened)
+				return;
+			event.preventDefault();
+			event.stopPropagation();
+			longPressOpened = false;
+		});
 }
 
 function copyTextToClipboard(text) {

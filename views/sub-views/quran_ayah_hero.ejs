@@ -43,5 +43,8 @@
 			<% }); %>
 		</div>
 	</section>
+	<% if (locals.toolbar) { %>
+		<%- include('quran_ayah_hero_actions.ejs', locals.toolbar); %>
+	<% } %>
 </section>
 <% } %>

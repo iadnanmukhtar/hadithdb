@@ -18,16 +18,18 @@
 	const tafsirSection = locals.section
 		? `${locals.section.h1}${locals.section.level > 1 ? `.${locals.section.h2}` : ''}`
 		: passageSurah;
+	const tafsirHeading = locals.tafsirHeading || `Tafsir of Section ${tafsirSection}`;
+	const tafsirInstance = locals.tafsirInstance || 'passage';
 	const selectedAyahNums = (locals.selectedAyahs || []).map(function (ayah) {
 		const num = ayah.en?.num || ayah.num || '';
 		return parseInt(arabic.toLatinDigits(num.toString().split(/:/).pop()), 10);
 	}).filter(Number.isInteger);
 %>
 <% if (passageSurah && passageAyahs.length > 0) { %>
-<article class="quran-tafsirs mt-4" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>">
+<article class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>">
 	<script type="application/json" class="quran-tafsir-ayah-data"><%- JSON.stringify(passageAyahText).replace(/</g, '\\u003c') %></script>
 	<div class="quran-tafsir-heading d-flex flex-wrap align-items-center justify-content-between gap-2">
-		<h2 class="h5 mb-0">Tafsir of Section <%= tafsirSection %></h2>
+		<h2 class="h5 mb-0"><%= tafsirHeading %></h2>
 		<div class="btn-group btn-group-sm quran-tafsir-language-toggle" role="group" aria-label="Tafsir language">
 			<button type="button" class="btn btn-outline-secondary" data-tafsir-language="ar">Arabic</button>
 			<button type="button" class="btn btn-outline-secondary active" data-tafsir-language="en">English</button>

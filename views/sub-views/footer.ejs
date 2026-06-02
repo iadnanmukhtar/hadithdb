@@ -49,21 +49,24 @@
 		const getBookmarkButtons = () => Array.from(document.querySelectorAll('.hadith-bookmark-btn[data-hadith-id]'));
 		const getHeadingBookmarkButtons = () => Array.from(document.querySelectorAll('.heading-bookmark-btn[data-heading-id]'));
 		const getCommentCountBadges = () => Array.from(document.querySelectorAll('.hadith-comment-count[data-hadith-id]'));
-		const getIcon = (id) => document.querySelector(`.hadith-like-icon[data-hadith-id="${id}"]`);
-		const getBookmarkIcon = (id) => document.querySelector(`.hadith-bookmark-icon[data-hadith-id="${id}"]`);
+		const getIcons = (id) => Array.from(document.querySelectorAll(`.hadith-like-icon[data-hadith-id="${id}"]`));
+		const getBookmarkIcons = (id) => Array.from(document.querySelectorAll(`.hadith-bookmark-icon[data-hadith-id="${id}"]`));
 		const getHeadingBookmarkIcons = (id) => Array.from(document.querySelectorAll(`.heading-bookmark-icon[data-heading-id="${id}"]`));
-		const getCount = (id) => document.querySelector(`.hadith-like-count[data-hadith-id="${id}"]`);
+		const getCounts = (id) => Array.from(document.querySelectorAll(`.hadith-like-count[data-hadith-id="${id}"]`));
 
 		const setState = (id, liked, likes) => {
-			const icon = getIcon(id);
-			const countEl = getCount(id);
-			if (icon) icon.className = liked ? 'hadith-like-icon bi bi-heart-fill text-danger' : 'hadith-like-icon bi bi-heart text-danger';
-			if (countEl && typeof likes === 'number') countEl.textContent = likes;
+			getIcons(id).forEach(icon => {
+				icon.className = liked ? 'hadith-like-icon bi bi-heart-fill text-danger' : 'hadith-like-icon bi bi-heart text-danger';
+			});
+			if (typeof likes === 'number') {
+				getCounts(id).forEach(countEl => countEl.textContent = likes);
+			}
 		};
 
 		const setBookmarkState = (id, bookmarked) => {
-			const icon = getBookmarkIcon(id);
-			if (icon) icon.className = bookmarked ? 'hadith-bookmark-icon bi bi-bookmark-fill text-accent' : 'hadith-bookmark-icon bi bi-bookmark text-accent';
+			getBookmarkIcons(id).forEach(icon => {
+				icon.className = bookmarked ? 'hadith-bookmark-icon bi bi-bookmark-fill text-accent' : 'hadith-bookmark-icon bi bi-bookmark text-accent';
+			});
 		};
 
 		const setHeadingBookmarkState = (id, bookmarked) => {

@@ -13,8 +13,8 @@
 <% if (targetId) { %>
   <h4 class="fs-5">
     <%= heading %>
-    <a href="#<%= widgetId %>" class="text-decoration-none" title="View reflections">
-      <span class="bi bi-chat-right-text"></span><span class="badge rounded-pill text-bg-secondary comment-widget-count" id="<%= widgetId %>-count" title="0 reflections">0</span>
+    <a href="#<%= widgetId %>" class="reflection-count-link text-decoration-none" title="View reflections">
+      <span class="bi bi-chat-right-text text-accent"></span><span class="comment-widget-count fw-semibold text-accent" id="<%= widgetId %>-count" title="0 reflections">0</span>
     </a>
   </h4>
   <section class="mt-3 comment-feed" id="<%= widgetId %>" data-ref="<%= ref %>" data-target-id="<%= targetId %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>">

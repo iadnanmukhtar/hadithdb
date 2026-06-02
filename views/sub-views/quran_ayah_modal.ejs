@@ -1,0 +1,67 @@
+<%
+  const modalAyahs = locals.passage || [];
+%>
+<% if (modalAyahs.length > 0) { %>
+<aside class="modal fade quran-ayah-modal" id="quran-ayah-tafsir-modal" tabindex="-1" aria-labelledby="quran-ayah-tafsir-modal-title" aria-hidden="true" data-quran-ayah-modal-type="tafsirs">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <header class="modal-header quran-ayah-modal-toolbar">
+        <h2 class="modal-title fs-5" id="quran-ayah-tafsir-modal-title">Quran</h2>
+        <nav class="quran-ayah-modal-nav" aria-label="Ayah and tafsir navigation">
+          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
+          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
+          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-prev" title="Previous tafsir" aria-label="Previous tafsir"><span class="bi bi-arrow-up"></span></button>
+          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-next" title="Next tafsir" aria-label="Next tafsir"><span class="bi bi-arrow-down"></span></button>
+        </nav>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </header>
+      <div class="modal-body">
+        <% modalAyahs.forEach(function (ayah, index) {
+          const ayahNum = ayah.en?.num || ayah.num || '';
+          const paneId = `quran-ayah-tafsir-modal-pane-${index}`;
+        %>
+          <article class="quran-ayah-modal-pane<%= index === 0 ? '' : ' d-none' %>" id="<%= paneId %>" data-quran-ayah-modal-pane="<%= index %>" data-quran-ayah-ref="<%= ayahNum %>">
+            <%- include('quran_tafsirs.ejs', { site: site, page: page, selectedAyahs: [ayah], passage: [ayah], tafsirHeading: `Tafsir of Quran ${ayahNum}`, tafsirInstance: paneId }); %>
+          </article>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<aside class="modal fade quran-ayah-modal" id="quran-ayah-reflections-modal" tabindex="-1" aria-labelledby="quran-ayah-reflections-modal-title" aria-hidden="true" data-quran-ayah-modal-type="reflections">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <header class="modal-header quran-ayah-modal-toolbar">
+        <h2 class="modal-title fs-5" id="quran-ayah-reflections-modal-title">Quran</h2>
+        <nav class="quran-ayah-modal-nav" aria-label="Ayah navigation">
+          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
+          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
+        </nav>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </header>
+      <div class="modal-body">
+        <% modalAyahs.forEach(function (ayah, index) {
+          const ayahNum = ayah.en?.num || ayah.num || '';
+          const paneId = `quran-ayah-reflections-modal-pane-${index}`;
+        %>
+          <article class="quran-ayah-modal-pane<%= index === 0 ? '' : ' d-none' %>" id="<%= paneId %>" data-quran-ayah-modal-pane="<%= index %>" data-quran-ayah-ref="<%= ayahNum %>">
+            <%- include('quran_ayah_hero.ejs', { site: site, page: page, selectedAyahs: [ayah] }); %>
+            <div class="mt-3">
+              <%- include('comment_widget.ejs', {
+                widgetId: `quran-ayah-comments-${index}`,
+                heading: `Reflect on Quran ${ayahNum}:`,
+                targetId: ayah.id,
+                ref: ayah.ref,
+                endpoint: '/comments',
+                subjectLabel: 'reflection',
+                placeholder: `Write a reflection on Quran ${ayahNum}...`
+              }); %>
+            </div>
+          </article>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+</aside>
+<% } %>

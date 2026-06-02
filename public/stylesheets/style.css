@@ -1464,6 +1464,82 @@ del em strong {
 	font-size: .85em;
 }
 
+.quran-ayah-modal-trigger {
+	border: 0;
+	padding: 0;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+}
+
+.quran-ayah-modal-trigger:hover,
+.quran-ayah-modal-trigger:focus {
+	color: var(--c-link-dark);
+}
+
+.body.passage .quran-ayah-number-marker,
+.body.passage .quran-ayah-number-marker sup,
+.body.passage .quran-ayah-end-marker,
+.body.passage .quran-ayah-end-marker sup {
+	color: var(--c-accent);
+	transition: color .15s ease;
+}
+
+.body.passage .quran-ayah-number-marker:hover,
+.body.passage .quran-ayah-number-marker:hover sup,
+.body.passage .quran-ayah-number-marker:focus-visible,
+.body.passage .quran-ayah-number-marker:focus-visible sup,
+.body.passage .quran-ayah-end-marker:hover,
+.body.passage .quran-ayah-end-marker:hover sup,
+.body.passage .quran-ayah-end-marker:focus-visible,
+.body.passage .quran-ayah-end-marker:focus-visible sup {
+	color: var(--c-link-dark);
+}
+
+.quran-ayah-modal .modal-content {
+	border: 0;
+	border-radius: .75rem;
+	background: var(--c-page-soft);
+}
+
+.quran-ayah-modal-toolbar {
+	align-items: center;
+	gap: .75rem;
+	background: var(--c-white);
+	border-bottom-color: var(--c-accent-18);
+}
+
+.quran-ayah-modal-toolbar .modal-title {
+	flex: 1 1 auto;
+	color: var(--c-black-soft);
+}
+
+.quran-ayah-modal-nav {
+	display: flex;
+	gap: .35rem;
+}
+
+.quran-ayah-modal-pane .quran-tafsirs {
+	margin-top: 1rem !important;
+}
+
+.quran-ayah-modal .quran-tafsir-language-toggle .btn,
+.quran-ayah-modal .quran-tafsir-source,
+.quran-ayah-modal .quran-tafsir-text,
+.quran-ayah-modal .quran-tafsir-footnotes {
+	font-size: 1rem;
+}
+
+.quran-ayah-modal .quran-tafsir-text *,
+.quran-ayah-modal .quran-tafsir-footnotes * {
+	font-size: inherit;
+}
+
+.quran-ayah-modal :lang(ar) {
+	font-size: var(--f-size-ar);
+}
+
 .quran-ayah-selecting .body.passage .ayah {
 	cursor: pointer;
 }
@@ -1806,8 +1882,10 @@ del em strong {
 	font-family: KitabBold, Serif;
 }
 
-.body .ayah:hover,
-.body .ayah-hover-pair {
+.body .ayah:hover a,
+.body .ayah:hover .quran-ayah-body,
+.body .ayah-hover-pair a,
+.body .ayah-hover-pair .quran-ayah-body {
 	color: var(--c-link-dark);
 	background-color: var(--c-cornsilk);
 }
@@ -1869,6 +1947,39 @@ del em strong {
 .h .title a:hover,
 .h .tags a:hover {
 	text-decoration: underline;
+}
+
+.quran-ayah-hero-toolbar a:hover {
+	text-decoration: none;
+}
+
+.quran-ayah-hero-toolbar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .75rem;
+	margin-top: 1rem;
+	padding-top: .75rem;
+	border-top: 1px solid var(--c-gray-dark-16);
+}
+
+.quran-ayah-action,
+.reflection-count-link {
+	display: inline-flex;
+	align-items: center;
+	gap: .25rem;
+	vertical-align: middle;
+}
+
+.quran-passage-link {
+	border: 0;
+	padding: 0;
+	background: transparent;
+	font: inherit;
+}
+
+.quran-passage-actions {
+	font-size: .9rem;
 }
 
 .comment-feed {
