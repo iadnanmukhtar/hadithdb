@@ -1,12 +1,24 @@
 <%
 	const ayahs = locals.selectedAyahs || (locals.selectedAyah ? [locals.selectedAyah] : []);
 	const clearHref = locals.clearHref;
+	const prevHref = locals.prevHref;
+	const nextHref = locals.nextHref;
 %>
 <% if (ayahs.length > 0) { %>
-<section class="quran-ayah-hero row">
+<section class="quran-ayah-hero row<%= prevHref || nextHref ? ' quran-ayah-hero-with-nav' : '' %>">
+	<% if (prevHref) { %>
+	<a class="quran-ayah-hero-nav quran-ayah-hero-prev" href="<%= prevHref %>" rel="prev" title="Previous ayah" aria-label="Previous ayah">
+		<span aria-hidden="true">&lsaquo;</span>
+	</a>
+	<% } %>
+	<% if (nextHref) { %>
+	<a class="quran-ayah-hero-nav quran-ayah-hero-next" href="<%= nextHref %>" rel="next" title="Next ayah" aria-label="Next ayah">
+		<span aria-hidden="true">&rsaquo;</span>
+	</a>
+	<% } %>
 	<% if (clearHref) { %>
 	<a class="quran-ayah-hero-clear" href="<%= clearHref %>" title="Clear ayah selection" aria-label="Clear ayah selection">
-		<span class="bi bi-x-lg" aria-hidden="true"></span>
+		<span class="bi bi-x" aria-hidden="true"></span>
 	</a>
 	<% } %>
 	<section class="col-12" lang="ar">

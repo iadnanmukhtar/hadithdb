@@ -385,6 +385,8 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   var quranSubsections = [];
   if (selectedAyahs.length > 0) {
     section = await selectedAyahs[0].getSection();
+    if (selectedAyahs.length === 1)
+      await addQuranAdjacentRefs(selectedAyahs[0]);
     // await section.getPrev();
     // await section.getNext();
     chapter = await section.getChapter();
@@ -513,6 +515,8 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 
   results = results.map(item => new Item(item));
   results[0].single = true;
+  if (results[0].book_alias === 'quran')
+    await addQuranAdjacentRefs(results[0]);
   if (results[0].book_alias === 'quran'
     && !('json' in req.query)
     && !('tsv' in req.query)
@@ -587,6 +591,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 });
 
 async function renderQuranAyahPassage(selectedAyah, req, res) {
+  await addQuranAdjacentRefs(selectedAyah);
   var section = await getQuranSectionForAyah(selectedAyah);
   await section.getPrev();
   await section.getNext();
@@ -604,6 +609,45 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
     selectedAyahs: [selectedAyah],
     quranSubsections: quranSubsections
   });
+}
+
+async function addQuranAdjacentRefs(selectedAyah) {
+  if (!selectedAyah || selectedAyah.book_alias !== 'quran')
+    return;
+  selectedAyah.prev_ref = await getQuranAdjacentRef(selectedAyah, -1);
+  selectedAyah.next_ref = await getQuranAdjacentRef(selectedAyah, 1);
+}
+
+async function getQuranAdjacentRef(selectedAyah, step) {
+  var surahNum = parseInt(selectedAyah.h1 || (selectedAyah.num || '').toString().split(/:/)[0], 10);
+  var ayahNum = parseInt(selectedAyah.numInChapter || (selectedAyah.num || '').toString().split(/:/).pop(), 10);
+  if (!Number.isInteger(surahNum) || !Number.isInteger(ayahNum) || ayahNum < 1)
+    return undefined;
+  var firstSurah = global.surahs.find(item => Number(item.num) === 1);
+  var lastSurah = global.surahs.find(item => Number(item.num) === 114);
+  if (!firstSurah || !lastSurah)
+    return undefined;
+  var targetSurahNum = surahNum;
+  var targetAyahNum = ayahNum + step;
+  if (targetAyahNum < 1) {
+    var prevSurah = global.surahs.find(item => Number(item.num) === surahNum - 1);
+    if (!prevSurah)
+      prevSurah = lastSurah;
+    targetSurahNum = Number(prevSurah.num);
+    targetAyahNum = Number(prevSurah.ayahs);
+  } else {
+    var surah = global.surahs.find(item => Number(item.num) === surahNum);
+    if (surah && targetAyahNum > Number(surah.ayahs)) {
+      var nextSurah = global.surahs.find(item => Number(item.num) === surahNum + 1);
+      if (!nextSurah)
+        nextSurah = firstSurah;
+      targetSurahNum = Number(nextSurah.num);
+      targetAyahNum = 1;
+    }
+  }
+  var ref = `quran:${targetSurahNum}:${targetAyahNum}`;
+  var rows = await Index.docsFromKeyValue(Item.INDEX, { ref: ref });
+  return rows.length > 0 ? ref : undefined;
 }
 
 async function getQuranSectionForAyah(selectedAyah) {

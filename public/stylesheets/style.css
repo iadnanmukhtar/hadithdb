@@ -1782,6 +1782,40 @@ del em strong {
 	box-shadow: 0 .25rem .75rem var(--c-black-12);
 }
 
+.quran-ayah-hero-with-nav {
+	padding-left: 3rem;
+	padding-right: 3rem;
+}
+
+.quran-ayah-hero-nav {
+	position: absolute;
+	top: 50%;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	color: var(--c-gray-very-dark);
+	font-size: 1.85rem;
+	font-weight: 400;
+	line-height: 1;
+	text-decoration: none;
+	transform: translateY(-50%);
+}
+
+.quran-ayah-hero-nav:hover {
+	color: var(--c-note);
+}
+
+.quran-ayah-hero-prev {
+	left: .5rem;
+}
+
+.quran-ayah-hero-next {
+	right: .5rem;
+}
+
 .quran-ayah-hero-clear {
 	position: absolute;
 	top: .35rem;
@@ -1792,15 +1826,13 @@ del em strong {
 	justify-content: center;
 	width: 1.75rem;
 	height: 1.75rem;
-	border: 1px solid var(--c-gray-dark-16);
-	border-radius: 50%;
-	background: var(--c-ghostwhite);
 	color: var(--c-gray-very-dark);
+	font-size: 1.5rem;
+	line-height: 1;
 	text-decoration: none;
 }
 
 .quran-ayah-hero-clear:hover {
-	background: var(--c-accent-08);
 	color: var(--c-note);
 }
 

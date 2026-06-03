@@ -21,6 +21,19 @@
     var lastSelectedPart = lastSelectedRef.split(/:/)[1] || lastSelectedRef;
     var selectedTitle = firstSelectedRef && lastSelectedRef && firstSelectedRef !== lastSelectedRef ? `Quran ${firstSelectedRef}-${lastSelectedPart}` : `Quran ${firstSelectedRef}`;
     var quranShareId = selectedAyahs.length > 0 ? `Q${(firstSelectedRef + '-' + lastSelectedPart).replace(/[^A-Za-z0-9_-]/g, '-')}` : '';
+    var selectedAyahPrevHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.prev_ref ? `/${firstSelectedAyah.prev_ref}` : undefined;
+    var selectedAyahNextHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.next_ref ? `/${firstSelectedAyah.next_ref}` : undefined;
+    if (selectedAyahs.length === 1 && firstSelectedAyah && (!selectedAyahPrevHref || !selectedAyahNextHref)) {
+      var selectedAyahIndex = results.findIndex(function (ayah) {
+        return ayah.ref === firstSelectedAyah.ref;
+      });
+      if (selectedAyahIndex >= 0) {
+        if (!selectedAyahPrevHref && results[selectedAyahIndex - 1])
+          selectedAyahPrevHref = `/${results[selectedAyahIndex - 1].ref}`;
+        if (!selectedAyahNextHref && results[selectedAyahIndex + 1])
+          selectedAyahNextHref = `/${results[selectedAyahIndex + 1].ref}`;
+      }
+    }
     var footnoteItems = results;
     var page = {
       menu: 'Section',
@@ -64,6 +77,8 @@
         page: page,
         selectedAyahs: selectedAyahs,
         clearHref: page.context.section ? `/${page.context.section.path}` : undefined,
+        prevHref: selectedAyahPrevHref,
+        nextHref: selectedAyahNextHref,
         toolbar: quranShareId ? {
           selectedAyahModalIndex: selectedAyahModalIndex,
           selectedAyahId: selectedAyahId,

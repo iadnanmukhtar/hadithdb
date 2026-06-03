@@ -93,6 +93,7 @@ $(function () {
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
 	initQuranAyahModals(document);
+	initQuranPageKeyboardNavigation(document);
 	initQuranPassageShareLinks(document);
 	initQuranTafsirTabs(document);
 	initTocExpandCollapse(document);
@@ -700,11 +701,40 @@ function initQuranAyahSelector(root) {
 			selected.add(ayahNumber);
 		toolbar.data('update')();
 	});
-}
+	}
 
-function initSearchAutocomplete() {
-	if (!$.fn.autocomplete)
-		return;
+	function initQuranPageKeyboardNavigation(root) {
+		if ($(document).data('quranPageKeyboardNavigationBound'))
+			return;
+		$(document).data('quranPageKeyboardNavigationBound', true);
+		$(document).on('keydown.quranPageKeyboardNavigation', function (event) {
+			if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+				return;
+			if ($('.modal.show').length)
+				return;
+			if ($(event.target).closest('input, textarea, select, button, [contenteditable="true"], ._e').length)
+				return;
+			var href;
+			if (event.key === 'ArrowLeft' || event.key === 'BrowserBack')
+				href = $('.quran-ayah-hero-prev').first().attr('href');
+			else if (event.key === 'ArrowRight' || event.key === 'BrowserForward')
+				href = $('.quran-ayah-hero-next').first().attr('href');
+			else if (event.key === 'ArrowUp')
+				href = $('.pagination a[rel="prev"]').first().attr('href');
+			else if (event.key === 'ArrowDown')
+				href = $('.pagination a[rel="next"]').first().attr('href');
+			else
+				return;
+			if (!href)
+				return;
+			event.preventDefault();
+			window.location.href = href;
+		});
+	}
+
+	function initSearchAutocomplete() {
+		if (!$.fn.autocomplete)
+			return;
 	$('input[role=search][name=q]').each(function () {
 		var input = this;
 		var $input = $(input);

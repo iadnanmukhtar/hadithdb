@@ -1135,7 +1135,7 @@ async function reindexSearchScope(whereClause, options) {
       debug(`unable to reindex headings for search scope ${whereClause}: ${err.message}\n${err.stack}`);
     }
   }
-  var items = await global.query(`SELECT * FROM v_hadiths WHERE ${whereClause} ORDER BY ordinal`);
+  var items = await getHadithSearchRowsWithAdjacentRefs(whereClause);
   if (items.length > 0) {
     try {
       await Index.updateBulk(Item.INDEX, items);
@@ -1154,7 +1154,7 @@ async function reindexSearchScope(whereClause, options) {
 function runHadithPostUpdateTasks(hadithId, options) {
   options = options || {};
   (async () => {
-    var rows = await global.query(`SELECT * FROM v_hadiths WHERE hId=${parseInt(hadithId, 10)}`);
+    var rows = await getHadithSearchRowsWithAdjacentRefs(`hId=${parseInt(hadithId, 10)}`);
     var item = rows[0];
     if (!item)
       return;
@@ -1170,6 +1170,42 @@ function runHadithPostUpdateTasks(hadithId, options) {
   })().catch((err) => {
     debug(`background hadith post-update failed for ${hadithId}: ${err.message}\n${err.stack}`);
   });
+}
+
+async function getHadithSearchRowsWithAdjacentRefs(whereClause) {
+  return await global.query(`
+    SELECT
+      vh.*,
+      p.hId AS prevId,
+      p.ref AS prev_ref,
+      p.path AS prev_path,
+      n.hId AS nextId,
+      n.ref AS next_ref,
+      n.path AS next_path
+    FROM (
+      SELECT *
+      FROM v_hadiths
+      WHERE ${whereClause}
+    ) vh
+    LEFT JOIN v_hadiths p
+      ON p.hId = (
+        SELECT p2.hId
+        FROM v_hadiths p2
+        WHERE p2.book_id = vh.book_id
+          AND p2.ordinal < vh.ordinal
+        ORDER BY p2.ordinal DESC
+        LIMIT 1
+      )
+    LEFT JOIN v_hadiths n
+      ON n.hId = (
+        SELECT n2.hId
+        FROM v_hadiths n2
+        WHERE n2.book_id = vh.book_id
+          AND n2.ordinal > vh.ordinal
+        ORDER BY n2.ordinal ASC
+        LIMIT 1
+      )
+    ORDER BY vh.ordinal`);
 }
 
 async function safeBackground(label, fn) {

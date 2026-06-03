@@ -66,9 +66,23 @@ async function getHadithData(book) {
 			n.path AS next_path
 		FROM v_hadiths vh
 		LEFT JOIN v_hadiths p
-			ON p.ordinal = vh.ordinal - 1
+			ON p.hId = (
+				SELECT p2.hId
+				FROM v_hadiths p2
+				WHERE p2.book_id = vh.book_id
+					AND p2.ordinal < vh.ordinal
+				ORDER BY p2.ordinal DESC
+				LIMIT 1
+			)
 		LEFT JOIN v_hadiths n
-			ON n.ordinal = vh.ordinal + 1
+			ON n.hId = (
+				SELECT n2.hId
+				FROM v_hadiths n2
+				WHERE n2.book_id = vh.book_id
+					AND n2.ordinal > vh.ordinal
+				ORDER BY n2.ordinal ASC
+				LIMIT 1
+			)
 		WHERE vh.book_id = ${book.id}
 		ORDER BY vh.ordinal`);
 	return rows;
