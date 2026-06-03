@@ -13,6 +13,11 @@
 	<% } else { %>
 		<div class="commentary-search-fragment col-12" lang="ar" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
 	<% } %>
+	<section class="col-12 h">
+		<aside class="tags">
+			<span class="bi bi-book"></span>&nbsp;<a href="<%= commentary.url %>" title="Open tafsir on the ayah page" class="icon">Tafsir</a>
+		</aside>
+	</section>
 	<% if (commentary.commentary_section_url) { %>
 		<section class="col-md-6 col-sm-12 h" lang="en">
 			<aside class="title">

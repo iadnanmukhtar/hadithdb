@@ -7,6 +7,7 @@ require('../../lib/Globals');
 const fs = require('fs');
 const path = require('path');
 const MySQL = require('mysql');
+const cheerio = require('cheerio');
 
 const TAFSIRS = {
 	'en-maarifulquran': {
@@ -22,6 +23,49 @@ const TAFSIRS = {
 		name_en: 'Tazkirul Quran',
 		author_en: 'Maulana Wahiduddin Khan',
 		directory: 'data/en-tazkirulquran'
+	},
+	'en-mokhtasar': {
+		ordinal: 6,
+		shortName_en: 'Mokhtasar',
+		shortName: 'المختصر',
+		name_en: 'al-Mukhtasar fi al-Tafsir al-Quran al-Karim',
+		name: 'المختصر في تفسير القرآن الكريم',
+		author_en: 'Tafsir Center for Quranic Studies',
+		author: 'مركز تفسير للدراسات القرآنية',
+		lang: 'en',
+		format: 'en:md,ar:md',
+		files: {
+			en: 'data/en-mokhtasar.json',
+			ar: 'data/ar-mokhtasar.json'
+		}
+	},
+	'ar-irab': {
+		ordinal: 61,
+		shortName_en: 'Irab',
+		shortName: 'الإعراب',
+		name_en: 'al-Jadwal fi Irab al-Quran',
+		name: 'الجدول في إعراب القرآن',
+		author_en: 'Mahmud Safi',
+		author: 'محمود صافي',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/irab.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'ar-qiraat': {
+		ordinal: 62,
+		shortName_en: "Qira'at",
+		shortName: 'القراءات',
+		name_en: "al-Jadwal fi Qira'at al-Quran",
+		name: 'الجدول في قراءات القرآن',
+		author_en: 'Mahmud Safi',
+		author: 'محمود صافي',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/qiraat.json',
+		column: 'text',
+		sourceFormat: 'html'
 	}
 };
 const options = readOptions(process.argv.slice(2));
@@ -74,6 +118,10 @@ async function loadQuranAyahs(connection) {
 }
 
 function loadPassages(config, quran) {
+	if (config.files)
+		return loadPairedPassages(config, quran);
+	if (config.file)
+		return loadSingleRefPassages(config, quran);
 	const directory = path.resolve(__dirname, '../..', config.directory);
 	const passages = [];
 	const seen = new Set();
@@ -96,7 +144,8 @@ function loadPassages(config, quran) {
 				hadithId: quranAyah.id,
 				surah,
 				ayah: ayah.ayah,
-				text_en: plainTextToMarkdown([quranAyah.body_en, ayah.text].filter(Boolean).join('\n\n'))
+				text_en: plainTextToMarkdown([quranAyah.body_en, ayah.text].filter(Boolean).join('\n\n')),
+				text: null
 			});
 		}
 	}
@@ -105,23 +154,99 @@ function loadPassages(config, quran) {
 	return passages;
 }
 
+function loadSingleRefPassages(config, quran) {
+	const source = loadRefMap(config.file);
+	const passages = [];
+	for (const [ref, quranAyah] of quran.entries()) {
+		const location = parseRef(ref);
+		const text = resolveRefText(source, ref, config.file, [], config.sourceFormat === 'html');
+		const passage = {
+			hadithId: quranAyah.id,
+			surah: location.surah,
+			ayah: location.ayah,
+			text: null,
+			text_en: null
+		};
+		passage[config.column || 'text'] = commentarySourceToMarkdown(text, config);
+		passages.push(passage);
+	}
+	if (passages.length !== quran.size)
+		throw new Error(`Expected ${quran.size} passages in '${config.file}', found ${passages.length}.`);
+	return passages;
+}
+
+function loadPairedPassages(config, quran) {
+	const english = loadRefMap(config.files.en);
+	const arabic = loadRefMap(config.files.ar);
+	const passages = [];
+	for (const [ref, quranAyah] of quran.entries()) {
+		const location = parseRef(ref);
+		const englishText = resolveRefText(english, ref, config.files.en);
+		const arabicText = resolveRefText(arabic, ref, config.files.ar);
+		passages.push({
+			hadithId: quranAyah.id,
+			surah: location.surah,
+			ayah: location.ayah,
+			text_en: plainTextToMarkdown([quranAyah.body_en, englishText].filter(Boolean).join('\n\n')),
+			text: plainTextToMarkdown(arabicText)
+		});
+	}
+	if (passages.length !== quran.size)
+		throw new Error(`Expected ${quran.size} passages in paired tafsir files, found ${passages.length}.`);
+	return passages;
+}
+
+function loadRefMap(relativeFile) {
+	const filename = path.resolve(__dirname, '../..', relativeFile);
+	const document = JSON.parse(fs.readFileSync(filename, 'utf8'));
+	if (!document || Array.isArray(document) || typeof document !== 'object')
+		throw new Error(`${filename} must contain a reference keyed object.`);
+	if (Object.keys(document).length !== 6236)
+		throw new Error(`${filename} must contain 6236 ayah references.`);
+	return document;
+}
+
+function resolveRefText(map, ref, sourceFile, stack = [], preserveHtml = false) {
+	const value = map[ref];
+	if (typeof value === 'string') {
+		if (stack.includes(ref))
+			throw new Error(`Circular reference in ${sourceFile}: ${stack.concat(ref).join(' -> ')}`);
+		return resolveRefText(map, value, sourceFile, stack.concat(ref), preserveHtml);
+	}
+	if (!value || typeof value.text !== 'string')
+		throw new Error(`${sourceFile} does not contain text for '${ref}'.`);
+	return preserveHtml ? value.text.trim() : htmlToText(value.text);
+}
+
+function parseRef(ref) {
+	const match = /^([0-9]+):([0-9]+)$/.exec(ref);
+	if (!match)
+		throw new Error(`Invalid Quran reference '${ref}'.`);
+	return { surah: Number(match[1]), ayah: Number(match[2]) };
+}
+
 async function upsertCommentary(connection, alias, config) {
 	await query(connection, `
 		INSERT INTO books_commentaries
-			(ordinal, alias, type, shortName_en, hidden, source, lang, format, name_en, author_en)
+			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, name, author)
 		VALUES
-			(${config.ordinal}, ${MySQL.escape(alias)}, 'tafsir', ${MySQL.escape(config.shortName_en)},
-				0, 'local', 'en', 'md', ${MySQL.escape(config.name_en)}, ${MySQL.escape(config.author_en)})
+			(${config.ordinal}, ${MySQL.escape(alias)}, 'tafsir', ${MySQL.escape(config.shortName_en)}, ${MySQL.escape(config.shortName || null)},
+				0, 'local', ${MySQL.escape(config.lang || 'en')}, ${MySQL.escape(config.format || 'md')},
+				${MySQL.escape(config.name_en)}, ${MySQL.escape(config.author_en)},
+				${MySQL.escape(config.name || null)}, ${MySQL.escape(config.author || null)})
 		ON DUPLICATE KEY UPDATE
 			ordinal=VALUES(ordinal),
 			type=VALUES(type),
 			shortName_en=VALUES(shortName_en),
+			shortName=VALUES(shortName),
 			hidden=VALUES(hidden),
 			source=VALUES(source),
 			lang=VALUES(lang),
 			format=VALUES(format),
 			name_en=VALUES(name_en),
-			author_en=VALUES(author_en)`);
+			author_en=VALUES(author_en),
+			name=VALUES(name),
+			author=VALUES(author)`);
 	const rows = await query(connection, `
 		SELECT id
 		FROM books_commentaries
@@ -141,15 +266,17 @@ async function upsertPassages(connection, bookCommentaryId, passages) {
 		${passage.ayah},
 		${passage.ayah},
 		${passage.ayah},
+		${MySQL.escape(passage.text)},
 		${MySQL.escape(passage.text_en)}
 	)`).join(',\n');
 	await query(connection, `
 		INSERT INTO hadiths_commentary
-			(bookCommentaryId, hadithId, surah, ayahFrom, ayahTo, passageNum, text_en)
+			(bookCommentaryId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en)
 		VALUES ${values}
 		ON DUPLICATE KEY UPDATE
 			hadithId=VALUES(hadithId),
 			passageNum=VALUES(passageNum),
+			text=VALUES(text),
 			text_en=VALUES(text_en)`);
 }
 
@@ -169,6 +296,79 @@ function plainTextToMarkdown(text) {
 	return text.split(/\n+/).filter(Boolean).map(line => {
 		return line.replace(/[\\`*_[\]{}()#+\-.!|<>~]/g, '\\$&');
 	}).join('\n\n');
+}
+
+function commentarySourceToMarkdown(text, config) {
+	if (config.format === 'html')
+		return text;
+	if (config.sourceFormat === 'html')
+		return htmlToMarkdown(text);
+	return plainTextToMarkdown(text);
+}
+
+function htmlToMarkdown(html) {
+	const $ = cheerio.load(html, { decodeEntities: true }, false);
+	const blocks = [];
+	const rootNodes = $('body').length ? $('body').contents().toArray() : $.root().contents().toArray();
+	for (const node of rootNodes)
+		collectMarkdownBlocks($, node, blocks);
+	return blocks.map(block => block.trim()).filter(Boolean).join('\n\n');
+}
+
+function collectMarkdownBlocks($, node, blocks) {
+	if (!node)
+		return;
+	if (node.type === 'text') {
+		const text = markdownEscape(node.data || '').trim();
+		if (text)
+			blocks.push(text);
+		return;
+	}
+	const name = (node.name || '').toLowerCase();
+	if (name === 'p') {
+		const text = renderMarkdownInline($, $(node).contents().toArray()).trim();
+		if (text)
+			blocks.push(text);
+		return;
+	}
+	if (name === 'br') {
+		blocks.push('');
+		return;
+	}
+	for (const child of $(node).contents().toArray())
+		collectMarkdownBlocks($, child, blocks);
+}
+
+function renderMarkdownInline($, nodes) {
+	return nodes.map(node => {
+		if (node.type === 'text')
+			return markdownEscape(node.data || '');
+		const name = (node.name || '').toLowerCase();
+		if (name === 'br')
+			return '\n';
+		const content = renderMarkdownInline($, $(node).contents().toArray());
+		if ((name === 'b' || name === 'strong') && content.trim())
+			return `**${content.trim()}**`;
+		return content;
+	}).join('').replace(/[ \t]+\n/g, '\n').replace(/\n[ \t]+/g, '\n');
+}
+
+function markdownEscape(text) {
+	return text.replace(/[\\`*_[\]{}()#+\-.!|<>~]/g, '\\$&');
+}
+
+function htmlToText(text) {
+	return text
+		.replace(/<br\s*\/?>/gi, '\n')
+		.replace(/<\/p>/gi, '\n')
+		.replace(/<[^>]+>/g, '')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/&amp;/g, '&')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;/g, "'")
+		.trim();
 }
 
 function readOptions(argv) {
@@ -200,7 +400,7 @@ function usage() {
 		'Each ayah stores the Quran translation first, followed by the commentary.',
 		'',
 		'Options:',
-		'  --tafsir <alias>  Load only en-maarifulquran or en-tazkirulquran',
+		'  --tafsir <alias>  Load only one configured local tafsir',
 		'  --dry-run         Validate source files without changing MySQL',
 		'  --help            Show this help'
 	].join('\n');

@@ -43,12 +43,13 @@ function readOptions(argv) {
 async function getData(indexName, book) {
 	if (indexName === 'hadiths')
 		return await getHadithData(book);
+	var orderBy = indexName === 'toc' ? 'ordinal' : 'book_id, h1, numInChapter';
 	var rows = await global.query(`
 		SELECT * FROM v_${indexName}
 		WHERE
 			book_id = ${book.id}
 		ORDER BY 
-			book_id, h1, numInChapter
+			${orderBy}
 		-- LIMIT 10`);
 	return rows;
 }

@@ -88,6 +88,7 @@ $(function () {
 
 	initMarkdownEditablePreviews(document);
 	initHadithTranslateButtons(document);
+	initHadithSharhLinks(document);
 	initHadithShareModals(document);
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
@@ -962,6 +963,42 @@ function initHadithTranslateButtons(root) {
 			}
 		});
 	});
+}
+
+function initHadithSharhLinks(root) {
+	var scope = root || document;
+	scope.querySelectorAll('.hadith-sharh-link').forEach(function (link) {
+		if (link.dataset.hadithSharhBound === 'true')
+			return;
+		link.dataset.hadithSharhBound = 'true';
+		updateHadithSharhLink(link);
+		link.addEventListener('click', function (event) {
+			updateHadithSharhLink(link);
+			if (!link.href || link.getAttribute('href') === '#')
+				event.preventDefault();
+		});
+	});
+}
+
+function updateHadithSharhLink(link) {
+	var body = link.dataset.hadithSharhBody || '';
+	var query = firstHadithSharhWords(body, 150);
+	if (!query) {
+		link.setAttribute('href', '#');
+		return;
+	}
+	link.href = `https://www.google.com/search?q=site%3Adorar.net%2Fhadith%2Fsharh+${encodeURIComponent(query)}`;
+}
+
+function firstHadithSharhWords(text, count) {
+	return (text || '').toString()
+		.replace(/<[^>]+>/g, ' ')
+		.replace(/[ًٌٍَُِّْٰـ]/g, '')
+		.replace(/\s+/g, ' ')
+		.trim()
+		.split(' ')
+		.slice(0, count)
+		.join(' ');
 }
 
 function initHadithShareModals(root) {
