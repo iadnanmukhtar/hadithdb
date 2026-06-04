@@ -90,7 +90,6 @@
       <% if (selectedAyahs.length > 0) { %>
         <% var selectedAyahModalIndex = quranAyahModalItems.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>
         <% var selectedAyahId = firstSelectedAyah && firstSelectedAyah.id; %>
-        <% var selectedAyahCommentCount = firstSelectedAyah ? (firstSelectedAyah.comment_count ?? firstSelectedAyah.commented ?? 0) : 0; %>
       <%- include('sub-views/quran_ayah_hero.ejs', {
         site: site,
         page: page,
@@ -101,7 +100,6 @@
         toolbar: quranShareId ? {
           selectedAyahModalIndex: selectedAyahModalIndex,
           selectedAyahId: selectedAyahId,
-          selectedAyahCommentCount: selectedAyahCommentCount,
           quranShareId: quranShareId
         } : undefined
       }); %>
@@ -148,7 +146,6 @@
         <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranSubsections: locals.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
         <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: quranAyahModalItems }); %>
         <% if (results.length > 0 && results[0].id) { %>
-          <% var passageCommentCount = results[0].comment_count ?? results[0].commented ?? 0; %>
           <aside class="tags quran-passage-actions mt-2">
             <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= results[0].id %>" title="Bookmark this Quran passage">
               <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= results[0].id %>"></span>
@@ -160,7 +157,7 @@
             <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= results[0].id %>">0</span>
             &nbsp;
             <a href="#quran-passage-comments" class="reflection-count-link text-decoration-none" title="View reflections">
-              <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= results[0].id %>" title="<%= passageCommentCount %> reflection<%= passageCommentCount === 1 ? '' : 's' %>"><%= passageCommentCount %></span>
+              <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= results[0].id %>" title="0 reflections">0</span>
             </a>
             &nbsp;
             <span class="bi bi-box-arrow-up text-accent"></span>&nbsp;<button type="button" class="quran-passage-share-btn quran-passage-link icon" title="Copy and share this Quran passage URL">Share</button>

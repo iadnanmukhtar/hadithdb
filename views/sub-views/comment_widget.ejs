@@ -8,6 +8,7 @@
   const pingUrl = typeof ctx.pingUrl === 'string' ? ctx.pingUrl : '';
   const subjectLabel = typeof ctx.subjectLabel === 'string' && ctx.subjectLabel.trim() ? ctx.subjectLabel : 'reflection';
   const placeholder = typeof ctx.placeholder === 'string' ? ctx.placeholder : 'Write a comment...';
+  const lazyLoad = !!ctx.lazyLoad;
 %>
 
 <% if (targetId) { %>
@@ -17,7 +18,7 @@
       <span class="bi bi-chat-right-text text-accent"></span><span class="comment-widget-count fw-semibold text-accent" id="<%= widgetId %>-count" title="0 reflections">0</span>
     </a>
   </h4>
-  <section class="mt-3 comment-feed" id="<%= widgetId %>" data-ref="<%= ref %>" data-target-id="<%= targetId %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>">
+  <section class="mt-3 comment-feed" id="<%= widgetId %>" data-ref="<%= ref %>" data-target-id="<%= targetId %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>" data-lazy-load="<%= lazyLoad ? '1' : '0' %>">
     <div class="comment-feed-shell">
       <div id="<%= widgetId %>-thread" class="comment-thread"></div>
       <div class="comment-composer mt-3" id="<%= widgetId %>-auth">
@@ -60,6 +61,7 @@
         const endpoint = (container.dataset.endpoint || '/comments').replace(/\/$/, '');
         const pingUrl = container.dataset.pingUrl || '';
         const subjectLabel = container.dataset.subjectLabel || 'reflection';
+        const lazyLoad = container.dataset.lazyLoad === '1';
         const countBadge = document.getElementById('<%= widgetId %>-count');
         const threadEl = document.getElementById('<%= widgetId %>-thread');
         const form = document.getElementById('<%= widgetId %>-form');
@@ -75,6 +77,7 @@
         let editingId = null;
         let firebaseReady = false;
         let firebaseAvailable = false;
+        let loaded = false;
 
         if (!targetId) return;
 
@@ -252,6 +255,9 @@
           const commentCount = comments.filter((comment) => !comment.deleted).length;
           countBadge.textContent = commentCount;
           countBadge.title = `${commentCount} reflection${commentCount === 1 ? '' : 's'}`;
+          document.dispatchEvent(new CustomEvent('hadithCommentCountChanged', {
+            detail: { hadithId: targetId, count: commentCount }
+          }));
           threadEl.innerHTML = '';
           if (!comments.length) {
             threadEl.innerHTML = '<div class="comment-empty-state small">No reflections yet. Be the first to share.</div>';
@@ -504,7 +510,9 @@
           }
         };
 
-        (async () => {
+        const loadWidget = async () => {
+          if (loaded) return;
+          loaded = true;
           firebaseAvailable = await waitForFirebase();
           if (firebaseAvailable) initFirebase();
           fetchComments();
@@ -526,7 +534,18 @@
           } else {
             renderUser();
           }
-        })();
+        };
+
+        document.addEventListener('hadithCommentWidgetLoad', event => {
+          if (!event.detail) return;
+          if (event.detail.widgetId === '<%= widgetId %>' || String(event.detail.hadithId) === String(targetId)) {
+            loadWidget();
+          }
+        });
+
+        if (!lazyLoad) {
+          loadWidget();
+        }
       })();
     </script>
   </section>

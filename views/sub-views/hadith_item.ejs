@@ -229,7 +229,6 @@
 	<%# Actions  ........................................................... %>
 	<aside class="tags">
 	<% if (lang === 'en') { %>
-		<% const commentCount = i.comment_count ?? i.commented ?? i.actual?.commented ?? 0; %>
 		<button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="Bookmark this hadith">
 			<span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>"></span>
 		</button>
@@ -240,7 +239,7 @@
 		<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">0</span>
 		&nbsp;
 		<a href="/<%= i.ref %>#comments" class="reflection-count-link text-decoration-none" title="View reflections">
-			<span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="<%= commentCount %> reflection<%= commentCount === 1 ? '' : 's' %>"><%= commentCount %></span>
+			<span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="0 reflections">0</span>
 		</a>
 		&nbsp;
 		<% if (quranTafsirHref && searchResult) { %>

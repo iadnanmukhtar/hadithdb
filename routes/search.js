@@ -441,8 +441,9 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         results = [];
         quranSubsections = [];
         for (const containingSection of containingSections) {
+          var containingSubsections = await getQuranSectionSubsections(containingSection);
+          quranSubsections.push(...containingSubsections);
           results.push(...(await getQuranSectionPassageItems(containingSection, 0, 1000)));
-          quranSubsections.push(...(await getQuranSectionSubsections(containingSection)));
         }
         await addQuranPassageBoundaryRefs(results);
       }
@@ -592,17 +593,19 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 });
 
 async function renderQuranAyahPassage(selectedAyah, req, res) {
-  await addQuranAdjacentRefs(selectedAyah);
   var section = await getQuranSectionForAyah(selectedAyah);
-  await section.getPrev();
-  await section.getNext();
+  await addQuranAdjacentRefs(selectedAyah);
   var chapter = await section.getChapter();
-  await chapter.getPrev();
-  await chapter.getNext();
-  await chapter.getSections();
+  await Promise.all([
+    section.getPrev(),
+    section.getNext(),
+    chapter.getPrev(),
+    chapter.getNext(),
+    chapter.getSections()
+  ]);
+  var quranSubsections = await getQuranSectionSubsections(section);
   var results = await getQuranSectionPassageItems(section, 0, 1000);
   await addQuranPassageBoundaryRefs(results);
-  var quranSubsections = await getQuranSectionSubsections(section);
 
   res.render('section_quran', {
     section: section,
@@ -664,9 +667,7 @@ async function getQuranAdjacentRef(selectedAyah, step) {
       targetAyahNum = 1;
     }
   }
-  var ref = `quran:${targetSurahNum}:${targetAyahNum}`;
-  var rows = await Index.docsFromKeyValue(Item.INDEX, { ref: ref });
-  return rows.length > 0 ? ref : undefined;
+  return `quran:${targetSurahNum}:${targetAyahNum}`;
 }
 
 async function getQuranSectionForAyah(selectedAyah) {
@@ -796,8 +797,10 @@ async function getQuranHeadingAyahRange(section) {
     : null;
 
   if (section && section.book_alias === 'quran' && parseInt(section.level, 10) === 2) {
-    var rows = await global.query(`SELECT start, count FROM toc
-      WHERE bookId=${Number(section.book_id)} AND level=3 AND h1=${Number(section.h1)} AND h2=${Number(section.h2)}`);
+    var rows = Array.isArray(section.quranSubsections)
+      ? section.quranSubsections
+      : await global.query(`SELECT start, count FROM toc
+        WHERE bookId=${Number(section.book_id)} AND level=3 AND h1=${Number(section.h1)} AND h2=${Number(section.h2)}`);
     for (const row of rows) {
       var subsectionStart = quranAyahFromHeadingStart(row.start);
       var subsectionCount = parseInt(row.count, 10);
@@ -843,10 +846,13 @@ async function firstQuranSectionNumber(surah) {
 async function getQuranSectionSubsections(section) {
   if (!section || section.book_alias !== 'quran' || parseInt(section.level, 10) !== 2)
     return [];
+  if (Array.isArray(section.quranSubsections))
+    return section.quranSubsections;
   var rows = await global.query(`SELECT * FROM v_toc
     WHERE book_alias='quran' AND level=3 AND h1=${Number(section.h1)} AND h2=${Number(section.h2)}
     ORDER BY ordinal, h3`);
-  return rows.map(row => Heading.toLevel(row));
+  section.quranSubsections = rows.map(row => Heading.toLevel(row));
+  return section.quranSubsections;
 }
 
 async function addVirtualReferences(items) {
@@ -1159,13 +1165,13 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     await chapter.getPrev();
     await chapter.getNext();
     await chapter.getSections();
+    var quranSubsections = (bookAlias === 'quran' && req.query.ayat == undefined)
+      ? await getQuranSectionSubsections(section)
+      : [];
     if (bookAlias === 'quran' && req.query.ayat == undefined)
       results = await getQuranSectionPassageItems(section, offset);
     else
       results = await section.getItems(offset);
-    var quranSubsections = (bookAlias === 'quran' && req.query.ayat == undefined)
-      ? await getQuranSectionSubsections(section)
-      : [];
     if (results.length == 0) {
       var item = new Item(section);
       item.id = item.hId = undefined;

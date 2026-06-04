@@ -466,6 +466,18 @@ function initQuranAyahModals(root) {
 					scrollActive();
 			});
 		};
+		var loadActiveCommentWidgets = function () {
+			if (!shown || modalType !== 'reflections')
+				return;
+			paneAt(activeIndex).find('.comment-feed[data-lazy-load="1"]').each(function () {
+				document.dispatchEvent(new CustomEvent('hadithCommentWidgetLoad', {
+					detail: {
+						widgetId: this.id,
+						hadithId: this.getAttribute('data-target-id')
+					}
+				}));
+			});
+		};
 
 		var showAyah = function (index) {
 			if (!panes.length)
@@ -480,6 +492,7 @@ function initQuranAyahModals(root) {
 			nextButton.prop('disabled', activeIndex === panes.length - 1 && !boundaryHref(1));
 			modalBody.scrollTop(0);
 			initQuranTafsirTabs(pane[0]);
+			loadActiveCommentWidgets();
 			scrollActiveTafsirTabs();
 		};
 		var openAyah = function (index) {
@@ -513,6 +526,7 @@ function initQuranAyahModals(root) {
 		modal.find('.quran-ayah-modal-tafsir-next').on('click', function () { rotateTafsir(1); });
 		modal.on('shown.bs.modal', function () {
 			shown = true;
+			loadActiveCommentWidgets();
 			scrollActiveTafsirTabs();
 		});
 		modal.on('hidden.bs.modal', function () { shown = false; });

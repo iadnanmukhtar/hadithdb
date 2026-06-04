@@ -20,9 +20,29 @@
 		const likedMap = {};
 		const bookmarkMap = {};
 		const headingBookmarkMap = {};
+		const loadedLikeIds = new Set();
+		const pendingLikeIds = new Set();
+		const loadingLikeIds = new Set();
+		const loadedCommentCounts = {};
+		const pendingCommentCountIds = new Set();
+		const loadingCommentCountIds = new Set();
 		const LIKE_KEY = 'hadithLikedMap';
 		const BOOKMARK_KEY = 'hadithBookmarkMap';
 		const HEADING_BOOKMARK_KEY = 'headingBookmarkMap';
+		const commentCountObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
+			entries.forEach(entry => {
+				if (!entry.isIntersecting) return;
+				commentCountObserver.unobserve(entry.target);
+				queueCommentCount(entry.target.dataset.hadithId);
+			});
+		}, { rootMargin: '250px 0px' }) : null;
+		const likeObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
+			entries.forEach(entry => {
+				if (!entry.isIntersecting) return;
+				likeObserver.unobserve(entry.target);
+				queueLikeFetch(entry.target.dataset.hadithId);
+			});
+		}, { rootMargin: '250px 0px' }) : null;
 
 		const loadMap = (key, target) => {
 			try {
@@ -75,10 +95,38 @@
 			});
 		};
 
-		const initCommentCounts = async () => {
-			const badges = getCommentCountBadges();
-			const ids = [...new Set(badges.map(badge => parseInt(badge.dataset.hadithId)).filter(id => !Number.isNaN(id)))];
+		const setCommentCount = (id, count) => {
+			const safeCount = Number(count) || 0;
+			loadedCommentCounts[id] = safeCount;
+			Array.from(document.querySelectorAll(`.hadith-comment-count[data-hadith-id="${id}"]`)).forEach(badge => {
+				badge.textContent = safeCount;
+				badge.title = `${safeCount} reflection${safeCount === 1 ? '' : 's'}`;
+			});
+		};
+
+		const scheduleCommentCountFlush = () => {
+			if (window.requestIdleCallback) {
+				window.requestIdleCallback(loadQueuedCommentCounts, { timeout: 1000 });
+			} else {
+				window.setTimeout(loadQueuedCommentCounts, 75);
+			}
+		};
+
+		const queueCommentCount = (rawId) => {
+			const id = parseInt(rawId);
+			if (Number.isNaN(id) || loadedCommentCounts[id] !== undefined || loadingCommentCountIds.has(id)) return;
+			const shouldSchedule = pendingCommentCountIds.size === 0;
+			pendingCommentCountIds.add(id);
+			if (shouldSchedule) scheduleCommentCountFlush();
+		};
+
+		const loadQueuedCommentCounts = async () => {
+			const ids = Array.from(pendingCommentCountIds).filter(id => !loadingCommentCountIds.has(id));
 			if (!ids.length) return;
+			ids.forEach(id => {
+				pendingCommentCountIds.delete(id);
+				loadingCommentCountIds.add(id);
+			});
 			try {
 				const counts = {};
 				for (let offset = 0; offset < ids.length; offset += 100) {
@@ -87,22 +135,81 @@
 					const data = await res.json();
 					Object.assign(counts, data.counts || {});
 				}
-				badges.forEach(badge => {
-					const count = Number(counts[badge.dataset.hadithId]) || 0;
-					badge.textContent = count;
-					badge.title = `${count} reflection${count === 1 ? '' : 's'}`;
-				});
+				ids.forEach(id => setCommentCount(id, counts[id]));
 			} catch (err) {
 				console.warn('Could not load reflection counts', err);
+			} finally {
+				ids.forEach(id => loadingCommentCountIds.delete(id));
 			}
 		};
+
+		const initCommentCounts = () => {
+			getCommentCountBadges().forEach(badge => {
+				const id = parseInt(badge.dataset.hadithId);
+				if (Number.isNaN(id)) return;
+				if (loadedCommentCounts[id] !== undefined) {
+					setCommentCount(id, loadedCommentCounts[id]);
+					return;
+				}
+				if (badge.dataset.commentCountLazyInit === '1') return;
+				badge.dataset.commentCountLazyInit = '1';
+				if (commentCountObserver) {
+					commentCountObserver.observe(badge);
+				} else {
+					queueCommentCount(id);
+				}
+			});
+		};
+
+		const refreshVisibleCommentCounts = () => {
+			getCommentCountBadges().forEach(badge => {
+				const box = badge.getBoundingClientRect();
+				if (box.width > 0 && box.height > 0 && box.bottom >= -250 && box.top <= window.innerHeight + 250) {
+					queueCommentCount(badge.dataset.hadithId);
+				}
+			});
+		};
+
+		document.addEventListener('shown.bs.modal', refreshVisibleCommentCounts);
+		document.addEventListener('hadithCommentCountChanged', event => {
+			const id = parseInt(event.detail && event.detail.hadithId);
+			const count = Number(event.detail && event.detail.count);
+			if (!Number.isNaN(id) && Number.isFinite(count)) {
+				setCommentCount(id, count);
+			}
+		});
 
 		const requireLogin = () => {
 			if (window.hadithAuth && window.hadithAuth.requireLogin) window.hadithAuth.requireLogin();
 			toastr.error('Please sign in to like or comment.', 'Sign-in required');
 		};
 
+		const queueLikeFetch = (rawId) => {
+			const id = parseInt(rawId);
+			if (Number.isNaN(id) || loadedLikeIds.has(id) || pendingLikeIds.has(id) || loadingLikeIds.has(id)) return;
+			pendingLikeIds.add(id);
+			const load = () => {
+				pendingLikeIds.delete(id);
+				fetchLikes(id);
+			};
+			if (window.requestIdleCallback) window.requestIdleCallback(load, { timeout: 1000 });
+			else window.setTimeout(load, 75);
+		};
+
+		const refreshVisibleLikes = () => {
+			getButtons().forEach(btn => {
+				const box = btn.getBoundingClientRect();
+				if (box.width > 0 && box.height > 0 && box.bottom >= -250 && box.top <= window.innerHeight + 250) {
+					queueLikeFetch(btn.dataset.hadithId);
+				}
+			});
+		};
+
+		document.addEventListener('shown.bs.modal', refreshVisibleLikes);
+
 		const fetchLikes = async (id) => {
+			if (loadedLikeIds.has(id) || loadingLikeIds.has(id)) return;
+			loadingLikeIds.add(id);
 			const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
 			try {
 				const res = await fetch(`/likes/${id}`, {
@@ -115,8 +222,11 @@
 					persistMap(LIKE_KEY, likedMap);
 				}
 				setState(id, !!likedMap[id], data.likes ?? 0);
+				loadedLikeIds.add(id);
 			} catch (err) {
 				console.warn('Could not load likes', err);
+			} finally {
+				loadingLikeIds.delete(id);
 			}
 		};
 
@@ -141,6 +251,7 @@
 				const data = await res.json();
 				if (typeof data.liked === 'boolean') likedMap[id] = data.liked;
 				persistMap(LIKE_KEY, likedMap);
+				loadedLikeIds.add(id);
 				setState(id, !!likedMap[id], data.likes ?? null);
 			} catch (err) {
 				console.warn('Could not like', err);
@@ -192,18 +303,18 @@
 		};
 
 		const initLikes = () => {
-			const seen = new Set();
 			getButtons().forEach(btn => {
 				const id = parseInt(btn.dataset.hadithId);
 				if (Number.isNaN(id)) return;
 				setState(id, !!likedMap[id], null);
-				if (!seen.has(id)) {
-					seen.add(id);
-					fetchLikes(id);
-				}
 				if (btn.dataset.hadithLikeInit === '1') return;
 				btn.dataset.hadithLikeInit = '1';
 				btn.addEventListener('click', () => toggleLike(id, btn));
+				if (likeObserver) {
+					likeObserver.observe(btn);
+				} else {
+					queueLikeFetch(id);
+				}
 			});
 		};
 
