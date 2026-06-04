@@ -675,6 +675,9 @@ async function getQuranSectionForAyah(selectedAyah) {
   var fallbackRef = `${selectedAyah.book_alias}/${selectedAyah.h1}/${selectedAyah.h2}`;
   if (!Number.isInteger(ayah))
     return await Section.sectionFromRef(fallbackRef);
+  var indexedSection = await getQuranSectionForAyahFromIndex(selectedAyah, ayah);
+  if (indexedSection)
+    return indexedSection;
   var rows = await global.query(`SELECT section.*
     FROM v_toc section
     WHERE section.book_alias='quran'
@@ -725,6 +728,9 @@ async function getQuranSectionsForAyahRange(surah, ayah1, ayah2, fallbackAyah) {
   ayah2 = Number(ayah2);
   if (!Number.isInteger(surah) || !Number.isInteger(ayah1) || !Number.isInteger(ayah2))
     return fallbackAyah ? [await getQuranSectionForAyah(fallbackAyah)] : [];
+  var indexedSections = await getQuranSectionsForAyahRangeFromIndex(surah, ayah1, ayah2);
+  if (indexedSections.length > 0)
+    return indexedSections;
   var rows = await global.query(`SELECT section.*
     FROM v_toc section
     WHERE section.book_alias='quran'
@@ -754,6 +760,94 @@ async function getQuranSectionsForAyahRange(surah, ayah1, ayah2, fallbackAyah) {
   if (rows.length > 0)
     return rows.map(row => Heading.toLevel(row));
   return fallbackAyah ? [await getQuranSectionForAyah(fallbackAyah)] : [];
+}
+
+async function getQuranSectionForAyahFromIndex(selectedAyah, ayah) {
+  var surah = Number(selectedAyah.h1);
+  if (!Number.isInteger(surah) || !Number.isInteger(ayah))
+    return null;
+  var headings = await getQuranSurahRangeHeadingsFromIndex(surah);
+  if (!headings)
+    return null;
+  var matches = matchingQuranSectionsForRange(headings, ayah, ayah);
+  if (matches.length < 1)
+    return null;
+  matches.sort((a, b) => {
+    if (a.subsectionMatch !== b.subsectionMatch)
+      return a.subsectionMatch ? -1 : 1;
+    if (Number(a.section.h2) === Number(selectedAyah.h2) && Number(b.section.h2) !== Number(selectedAyah.h2))
+      return -1;
+    if (Number(b.section.h2) === Number(selectedAyah.h2) && Number(a.section.h2) !== Number(selectedAyah.h2))
+      return 1;
+    return Number(a.section.h2) - Number(b.section.h2);
+  });
+  return matches[0].section;
+}
+
+async function getQuranSectionsForAyahRangeFromIndex(surah, ayah1, ayah2) {
+  var headings = await getQuranSurahRangeHeadingsFromIndex(surah);
+  if (!headings)
+    return [];
+  return matchingQuranSectionsForRange(headings, ayah1, ayah2)
+    .sort((a, b) => Number(a.section.h2) - Number(b.section.h2))
+    .map(match => match.section);
+}
+
+async function getQuranSurahRangeHeadingsFromIndex(surah) {
+  try {
+    var docs = await Index.docsFromQuery(Heading.INDEX, {
+      bool: {
+        filter: [
+          { term: { book_alias: 'quran' } },
+          { term: { h1: surah } },
+          { terms: { level: [2, 3] } }
+        ]
+      }
+    }, 0, 1000, 'level,h2,h3,ordinal');
+    var headings = docs.map(doc => Heading.toLevel(doc));
+    return {
+      sections: headings.filter(heading => Number(heading.level) === 2),
+      subsections: headings.filter(heading => Number(heading.level) === 3)
+    };
+  } catch (err) {
+    debug(`Quran heading index lookup failed for surah ${surah}: ${err.message}`);
+    return null;
+  }
+}
+
+function matchingQuranSectionsForRange(headings, ayah1, ayah2) {
+  var sections = headings.sections || [];
+  var subsections = headings.subsections || [];
+  var subsectionsByH2 = new Map();
+  subsections.forEach(subsection => {
+    var h2 = Number(subsection.h2);
+    if (!subsectionsByH2.has(h2))
+      subsectionsByH2.set(h2, []);
+    subsectionsByH2.get(h2).push(subsection);
+  });
+  return sections
+    .map(section => {
+      var sectionSubsections = subsectionsByH2.get(Number(section.h2)) || [];
+      var sectionMatch = quranHeadingOverlapsAyahRange(section, ayah1, ayah2);
+      var subsectionMatch = sectionSubsections.some(subsection => quranHeadingOverlapsAyahRange(subsection, ayah1, ayah2));
+      if (!sectionMatch && !subsectionMatch)
+        return null;
+      section.quranSubsections = sectionSubsections.sort((a, b) => Number(a.ordinal) - Number(b.ordinal) || Number(a.h3) - Number(b.h3));
+      return {
+        section: section,
+        subsectionMatch: subsectionMatch
+      };
+    })
+    .filter(Boolean);
+}
+
+function quranHeadingOverlapsAyahRange(heading, ayah1, ayah2) {
+  var startAyah = quranAyahFromHeadingStart(heading.start);
+  var count = parseInt(heading.count, 10);
+  if (!Number.isInteger(startAyah) || !Number.isInteger(count) || count < 1)
+    return false;
+  var endAyah = startAyah + count - 1;
+  return startAyah <= ayah2 && endAyah >= ayah1;
 }
 
 async function getQuranSectionPassageItems(section, offset, size) {
@@ -799,8 +893,7 @@ async function getQuranHeadingAyahRange(section) {
   if (section && section.book_alias === 'quran' && parseInt(section.level, 10) === 2) {
     var rows = Array.isArray(section.quranSubsections)
       ? section.quranSubsections
-      : await global.query(`SELECT start, count FROM toc
-        WHERE bookId=${Number(section.book_id)} AND level=3 AND h1=${Number(section.h1)} AND h2=${Number(section.h2)}`);
+      : await getQuranSectionSubsections(section);
     for (const row of rows) {
       var subsectionStart = quranAyahFromHeadingStart(row.start);
       var subsectionCount = parseInt(row.count, 10);
@@ -836,6 +929,14 @@ async function firstQuranSectionNumber(surah) {
   surah = Number(surah);
   if (!Number.isInteger(surah) || surah <= 0)
     return null;
+  var headings = await getQuranSurahRangeHeadingsFromIndex(surah);
+  if (headings && headings.sections.length > 0) {
+    var firstSection = headings.sections
+      .filter(section => Number.isInteger(Number(section.h2)))
+      .sort((a, b) => Number(a.ordinal) - Number(b.ordinal) || Number(a.h2) - Number(b.h2))[0];
+    if (firstSection)
+      return Number(firstSection.h2);
+  }
   var rows = await global.query(`SELECT MIN(h2) AS h2
     FROM v_toc
     WHERE book_alias='quran' AND level=2 AND h1=${surah}`);
@@ -848,6 +949,13 @@ async function getQuranSectionSubsections(section) {
     return [];
   if (Array.isArray(section.quranSubsections))
     return section.quranSubsections;
+  var headings = await getQuranSurahRangeHeadingsFromIndex(Number(section.h1));
+  if (headings) {
+    section.quranSubsections = headings.subsections
+      .filter(subsection => Number(subsection.h2) === Number(section.h2))
+      .sort((a, b) => Number(a.ordinal) - Number(b.ordinal) || Number(a.h3) - Number(b.h3));
+    return section.quranSubsections;
+  }
   var rows = await global.query(`SELECT * FROM v_toc
     WHERE book_alias='quran' AND level=3 AND h1=${Number(section.h1)} AND h2=${Number(section.h2)}
     ORDER BY ordinal, h3`);

@@ -7,17 +7,17 @@ const https = require('https')
 const cheerio = require('cheerio');
 const MarkdownIt = require('markdown-it');
 const markdownitFootnote = require('markdown-it-footnote');
+const Commentaries = require('../lib/Commentaries');
 
 const router = express.Router();
 const md = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
 
 router.get('/tafsir/books', async function (req, res) {
-  const rows = await global.query(`
-    SELECT alias, shortName_en, shortName, name_en, name, author_en, author,
-      death, lang, source, format, ordinal
-    FROM books_commentaries
-    WHERE hidden=0
-    ORDER BY lang, ordinal, id`);
+  if (!global.commentaries || global.commentaries.length < 1)
+    await Commentaries.loadCommentaries();
+  const rows = (global.commentaries || [])
+    .filter(row => Number(row.hidden) === 0)
+    .map(({ hidden, ...row }) => row);
   res.setHeader('Cache-Control', 'public, max-age=300');
   res.json(rows);
 });
@@ -60,14 +60,10 @@ router.get('/tafsir', async function (req, res) {
   const surah = Number(req.query.s);
   const ayah = Number(req.query.a);
   const version = Number(req.query.ver || 1);
-  const tafsirs = await global.query(`
-    SELECT alias
-    FROM books_commentaries
-    WHERE alias=${global.dbPool.escape(src)}
-      AND source='tafsir.app'
-    LIMIT 1`);
+  if (!global.commentaries || global.commentaries.length < 1)
+    await Commentaries.loadCommentaries();
 
-  if (!tafsirs.length || !Number.isInteger(surah) || surah < 1 || surah > 114 ||
+  if (!global.tafsirAppAliases.has(src) || !Number.isInteger(surah) || surah < 1 || surah > 114 ||
       !Number.isInteger(ayah) || ayah < 0 || !Number.isInteger(version) || version < 1) {
     res.status(400).json({ error: 'Invalid tafsir request.' });
     return;

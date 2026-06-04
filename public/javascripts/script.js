@@ -810,9 +810,9 @@ function initQuranAyahSelector(root) {
 				return;
 			var href;
 			if (event.key === 'ArrowLeft' || event.key === 'BrowserBack')
-				href = $('.quran-ayah-hero-prev').first().attr('href');
+				href = $('.quran-ayah-hero-prev').first().attr('href') || $('.pagination a[rel="prev"]').first().attr('href');
 			else if (event.key === 'ArrowRight' || event.key === 'BrowserForward')
-				href = $('.quran-ayah-hero-next').first().attr('href');
+				href = $('.quran-ayah-hero-next').first().attr('href') || $('.pagination a[rel="next"]').first().attr('href');
 			else if (event.key === 'ArrowUp')
 				href = $('.pagination a[rel="prev"]').first().attr('href');
 			else if (event.key === 'ArrowDown')
