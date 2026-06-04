@@ -32,6 +32,7 @@
 					var ayahNum = langData.num || passage[i].num || '';
 					var ayahPart = ayahNum.split(/:/)[1] || ayahNum;
 					var ayahPartLatin = arabic.toLatinDigits(ayahPart);
+					var ayahPartArabic = arabic.toArabicDigits(ayahPartLatin || ayahPart);
 					var ayahRefLatin = arabic.toLatinDigits((passage[i].num || ayahNum || '').toString());
 					var ayahRefParts = ayahRefLatin.split(/:/);
 					var quranCorpusAttrs = lang === 'ar' && ayahRefParts.length >= 2
@@ -51,10 +52,14 @@
 					var subsectionTitle = (lang === 'ar') ? heading.title : heading.title_en;
 					var subsectionProp = (lang === 'ar') ? 'toc.title' : 'toc.title_en';
 					var subsectionFallback = (lang === 'ar') ? 'مقطع' : 'Subsection';
+					var hasSubsectionTitle = typeof subsectionTitle === 'string'
+						? subsectionTitle.trim().length > 0
+						: subsectionTitle !== undefined && subsectionTitle !== null;
 					var subsectionStart = (heading.start || '').toString().split(/:/).pop();
 					var subsectionCount = parseInt(heading.count, 10);
 					var subsectionEnd = parseInt(subsectionStart || '0', 10) + (Number.isInteger(subsectionCount) ? subsectionCount : 1) - 1;
 				%>
+					<% if (lang !== 'ar' || hasSubsectionTitle) { %>
 					<span<%- lang === 'en' ? ` id="S${heading.h2}-${heading.h3}"` : '' %> class="quran-subheading" lang="<%= lang %>">
 						<span class="_e" data-id="<%= heading.id %>" data-prop="<%= subsectionProp %>" data-arabizi="<%= lang === 'en' ? 'true' : '' %>"><%- subsectionTitle || subsectionFallback %></span>
 						<% if (site.editMode && lang === 'en') { %>
@@ -73,12 +78,13 @@
 							</span>
 						<% } %>
 					</span>
+					<% } %>
 				<% }); %>
 				<span class="ayah<%= selectedAyahRefs.has(passage[i].ref) ? ' ayah-selected' : '' %><%= isPrefatoryAyah ? ' quran-prefatory-ayah' : '' %>"<%- ayahModalAttrs %>>
 					<% if (site.editMode) { %>
-						<button type="button" class="quran-ayah-modal-trigger<%= lang === 'en' ? ' quran-ayah-number-marker' : '' %>" data-quran-ayah-modal-index="<%= ayahModalIndex %>" data-ayah-number="<%= ayahPart %>" aria-label="Open Quran <%= ayahNum %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup></button>&nbsp;<span class="_e quran-ayah-body"<%- quranCorpusAttrs %> data-id="<%= passage[i].id %>" data-prop="<%= ayahBodyProp %>" data-arabizi="<%= lang === 'en' ? 'true' : '' %>" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"><%- ayahBodyHtml %></span><% if (lang === 'ar') { %>&nbsp;<button type="button" class="quran-ayah-modal-trigger quran-ayah-end-marker" data-quran-ayah-modal-index="<%= ayahModalIndex %>" aria-label="Open Quran <%= ayahNum %>">۝</button><% } %>
+						<% if (lang === 'en') { %><button type="button" class="quran-ayah-modal-trigger quran-ayah-number-marker" data-quran-ayah-modal-index="<%= ayahModalIndex %>" data-ayah-number="<%= ayahPart %>" aria-label="Open Quran <%= ayahNum %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup></button>&nbsp;<% } %><span class="_e quran-ayah-body"<%- quranCorpusAttrs %> data-id="<%= passage[i].id %>" data-prop="<%= ayahBodyProp %>" data-arabizi="<%= lang === 'en' ? 'true' : '' %>" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"><%- ayahBodyHtml %></span><% if (lang === 'ar') { %>&nbsp;<button type="button" class="quran-ayah-modal-trigger quran-ayah-end-marker quran-ayah-end-marker-numbered" data-quran-ayah-modal-index="<%= ayahModalIndex %>" data-ayah-number="<%= ayahPart %>" aria-label="Open Quran <%= ayahNum %>"><span class="quran-ayah-end-marker-symbol" aria-hidden="true">۝</span><span class="quran-ayah-end-marker-num" aria-hidden="true"><%= ayahPartArabic %></span></button><% } %>
 					<% } else { %>
-						<button type="button" class="quran-ayah-modal-trigger<%= lang === 'en' ? ' quran-ayah-number-marker' : '' %>" data-quran-ayah-modal-index="<%= ayahModalIndex %>" data-ayah-number="<%= ayahPart %>" aria-label="Open Quran <%= ayahNum %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup></button>&nbsp;<a href="<%= ayahHref %>"><span class="quran-ayah-body"<%- quranCorpusAttrs %>><%- ayahBodyHtml %></span></a><% if (lang === 'ar') { %>&nbsp;<button type="button" class="quran-ayah-modal-trigger quran-ayah-end-marker" data-quran-ayah-modal-index="<%= ayahModalIndex %>" aria-label="Open Quran <%= ayahNum %>">۝</button><% } %>
+						<% if (lang === 'en') { %><button type="button" class="quran-ayah-modal-trigger quran-ayah-number-marker" data-quran-ayah-modal-index="<%= ayahModalIndex %>" data-ayah-number="<%= ayahPart %>" aria-label="Open Quran <%= ayahNum %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup></button>&nbsp;<% } %><a href="<%= ayahHref %>"><span class="quran-ayah-body"<%- quranCorpusAttrs %>><%- ayahBodyHtml %></span></a><% if (lang === 'ar') { %>&nbsp;<button type="button" class="quran-ayah-modal-trigger quran-ayah-end-marker quran-ayah-end-marker-numbered" data-quran-ayah-modal-index="<%= ayahModalIndex %>" data-ayah-number="<%= ayahPart %>" aria-label="Open Quran <%= ayahNum %>"><span class="quran-ayah-end-marker-symbol" aria-hidden="true">۝</span><span class="quran-ayah-end-marker-num" aria-hidden="true"><%= ayahPartArabic %></span></button><% } %>
 					<% } %>
 				</span>
 			<% } %>

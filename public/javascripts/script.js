@@ -736,31 +736,82 @@ function annotateQuranCorpusWords(container, wordsByAyah) {
 		var words = wordsByAyah[ref];
 		if (!words || words.length < 1)
 			return;
-		target.empty().append(renderQuranCorpusWordParagraph(words));
+		annotateExistingQuranText(target[0], words);
 		target.data('quranCorpusAnnotated', true);
 	});
 }
 
-function renderQuranCorpusWordParagraph(words) {
-	var paragraph = $('<p>');
-	words.forEach(function (word, index) {
-		if (index > 0)
-			paragraph.append(document.createTextNode(' '));
-		paragraph.append(renderQuranCorpusWord(word));
-	});
-	return paragraph;
+function annotateExistingQuranText(root, words) {
+	var wordIndex = 0;
+	var pendingWord = null;
+	var pendingParts = 0;
+	var punctuationPattern = /^[\u061B\u061F\u060C\u06D6-\u06EDۖ-۩.,:;!?()[\]{}"'«»“”‘’…-]+$/;
+	var wordPartCount = function (word) {
+		return Math.max(1, ((word && word.text) || '').trim().split(/\s+/).filter(Boolean).length);
+	};
+	var nextCorpusWord = function (token) {
+		if (!token || punctuationPattern.test(token))
+			return null;
+		if (pendingWord) {
+			pendingParts -= 1;
+			var word = pendingWord;
+			if (pendingParts <= 0)
+				pendingWord = null;
+			return word;
+		}
+		if (wordIndex >= words.length)
+			return null;
+		var current = words[wordIndex];
+		wordIndex += 1;
+		var parts = wordPartCount(current);
+		if (parts > 1) {
+			pendingWord = current;
+			pendingParts = parts - 1;
+		}
+		return current;
+	};
+	var annotateTextNode = function (node) {
+		var parts = node.nodeValue.split(/(\s+)/);
+		var fragment = document.createDocumentFragment();
+		parts.forEach(function (part) {
+			if (!part)
+				return;
+			if (/^\s+$/.test(part)) {
+				fragment.appendChild(document.createTextNode(part));
+				return;
+			}
+			var word = nextCorpusWord(part);
+			fragment.appendChild(word
+				? renderQuranCorpusTooltipWord(part, word)[0]
+				: document.createTextNode(part));
+		});
+		node.parentNode.replaceChild(fragment, node);
+	};
+	var walk = function (node) {
+		if (!node)
+			return;
+		if (node.nodeType === 3) {
+			if (/\S/.test(node.nodeValue))
+				annotateTextNode(node);
+			return;
+		}
+		if (node.nodeType !== 1 || $(node).hasClass('quran-corpus-word'))
+			return;
+		Array.from(node.childNodes).forEach(walk);
+	};
+	walk(root);
 }
 
-function renderQuranCorpusWord(word) {
+function renderQuranCorpusTooltipWord(text, word) {
 	var translation = (word.translation || '').toString();
 	var grammar = (word.grammar || word.partsOfSpeech || '').toString();
 	return $('<span>').addClass('quran-corpus-word').attr({
 		'data-quran-word-translation': translation,
-		'data-quran-word': word.text || '',
+		'data-quran-word': text,
 		'data-quran-word-number': word.word || '',
 		'data-quran-word-grammar': grammar,
 		tabindex: 0
-	}).text(word.text || '');
+	}).text(text);
 }
 
 function initQuranCorpusTooltipDelay(root) {
@@ -769,18 +820,52 @@ function initQuranCorpusTooltipDelay(root) {
 	if (eventRoot.data('quranCorpusTooltipDelayBound'))
 		return;
 	eventRoot.data('quranCorpusTooltipDelayBound', true);
-	eventRoot.on('mouseenter focusin', '.quran-corpus-word', function () {
-		var word = $(this);
-		window.clearTimeout(word.data('quranCorpusTooltipTimer'));
-		word.data('quranCorpusTooltipTimer', window.setTimeout(function () {
-			word.addClass('quran-corpus-word-tooltip-ready');
-		}, 750));
-	});
-	eventRoot.on('mouseleave focusout', '.quran-corpus-word', function () {
-		var word = $(this);
+	var tooltip = $('<div class="quran-corpus-tooltip" role="tooltip" hidden></div>').appendTo(document.body);
+	var hideTooltip = function (word) {
 		window.clearTimeout(word.data('quranCorpusTooltipTimer'));
 		word.removeData('quranCorpusTooltipTimer');
 		word.removeClass('quran-corpus-word-tooltip-ready');
+		tooltip.attr('hidden', true).text('');
+	};
+	var showTooltipNow = function (word) {
+		var text = word.attr('data-quran-word-translation') || '';
+		if (!text)
+			return;
+		var rect = word[0].getBoundingClientRect();
+		tooltip.text(text).removeAttr('hidden');
+		var tooltipRect = tooltip[0].getBoundingClientRect();
+		var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+		left = Math.max(8, Math.min(left, window.innerWidth - tooltipRect.width - 8));
+		var top = rect.top - tooltipRect.height - 8;
+		if (top < 8)
+			top = rect.bottom + 8;
+		tooltip.css({ left: left + 'px', top: top + 'px' });
+		word.addClass('quran-corpus-word-tooltip-ready');
+	};
+	var showTooltip = function (word, delay) {
+		window.clearTimeout(word.data('quranCorpusTooltipTimer'));
+		word.data('quranCorpusTooltipTimer', window.setTimeout(function () {
+			showTooltipNow(word);
+		}, delay));
+	};
+	eventRoot.on('mouseenter focusin', '.quran-corpus-word', function () {
+		showTooltip($(this), 750);
+	});
+	eventRoot.on('click', '.quran-corpus-word', function (event) {
+		event.preventDefault();
+		event.stopPropagation();
+		try {
+			this.focus({ preventScroll: true });
+		} catch (err) {
+			this.focus();
+		}
+		showTooltip($(this), 0);
+	});
+	eventRoot.on('mouseleave focusout', '.quran-corpus-word', function () {
+		hideTooltip($(this));
+	});
+	$(window).on('scroll resize', function () {
+		tooltip.attr('hidden', true).text('');
 	});
 }
 

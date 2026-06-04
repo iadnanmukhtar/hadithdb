@@ -722,6 +722,10 @@ nav .nav-link {
 	font-family: Arabic, Serif;
 }
 
+.quran-share-card .quran-share-text:lang(ar) .quran-ayah-end-marker-num {
+	font-family: Arial, sans-serif;
+}
+
 .quran-share-arabic-only .hadith-share-title {
 	font-size: calc(30px * var(--share-scale) * var(--share-english-tune));
 }
@@ -1382,41 +1386,24 @@ del em strong {
 	outline: none;
 }
 
-.quran-corpus-word-tooltip-ready::after {
+.quran-corpus-tooltip {
 	background: #1f2933;
 	border: 1px solid rgba(255, 255, 255, 0.16);
+	border-radius: 4px;
 	box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
-	bottom: calc(100% + .35rem);
 	color: white;
-	content: attr(data-quran-word-translation);
 	direction: ltr;
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	font-size: .82rem;
 	font-weight: 400;
-	inset-inline-start: 50%;
 	line-height: 1.25;
 	max-width: min(14rem, 80vw);
-	min-width: max-content;
 	padding: .42rem .58rem;
 	pointer-events: none;
-	position: absolute;
+	position: fixed;
 	text-align: justify;
-	transform: translateX(-50%);
 	white-space: normal;
-	z-index: 20;
-}
-
-.quran-corpus-word-tooltip-ready::before {
-	border-color: #1f2933 transparent transparent transparent;
-	border-style: solid;
-	border-width: .32rem .32rem 0 .32rem;
-	bottom: calc(100% + .04rem);
-	content: "";
-	inset-inline-start: 50%;
-	pointer-events: none;
-	position: absolute;
-	transform: translateX(-50%);
-	z-index: 21;
+	z-index: 1080;
 }
 
 .body.passage .quran-ayah-body p {
@@ -1548,6 +1535,36 @@ del em strong {
 .body.passage .quran-ayah-end-marker:focus-visible,
 .body.passage .quran-ayah-end-marker:focus-visible sup {
 	color: var(--c-link-dark);
+}
+
+.quran-ayah-end-marker-numbered {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.2em;
+	height: 1.2em;
+	vertical-align: -0.08em;
+	line-height: 1;
+}
+
+.quran-ayah-end-marker-numbered .quran-ayah-end-marker-symbol {
+	font-size: 1.15em;
+	line-height: 1;
+}
+
+.quran-ayah-end-marker-numbered .quran-ayah-end-marker-num {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: Arial, sans-serif;
+	font-size: 0.3em;
+	font-weight: 700;
+	line-height: 1;
+	transform: translateY(0.02em);
+	pointer-events: none;
 }
 
 .quran-ayah-modal .modal-content {
@@ -1842,19 +1859,18 @@ del em strong {
 
 .quran-ayah-hero-nav {
 	position: absolute;
-	top: 50%;
+	top: 3.1rem;
 	z-index: 1;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 2rem;
-	height: 2rem;
+	width: 1.75rem;
+	height: 1.75rem;
 	color: var(--c-gray-very-dark);
-	font-size: 1.85rem;
+	font-size: 1.45rem;
 	font-weight: 400;
 	line-height: 1;
 	text-decoration: none;
-	transform: translateY(-50%);
 }
 
 .quran-ayah-hero-nav:hover {
@@ -1914,16 +1930,6 @@ del em strong {
 
 .quran-ayah-hero-ayah {
 	display: inline;
-}
-
-.quran-ayah-hero-link {
-	color: inherit;
-	text-decoration: none;
-}
-
-.quran-ayah-hero-link:hover {
-	color: inherit;
-	text-decoration: none;
 }
 
 .quran-ayah-hero-text {

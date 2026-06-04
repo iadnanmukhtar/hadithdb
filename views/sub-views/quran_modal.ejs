@@ -55,12 +55,15 @@
 				<h2 class="hadith-share-title share-editable" contenteditable="false"><%= shareTitle %></h2>
 				<section class="hadith-share-section hadith-share-arabic-section" lang="ar">
 					<div class="body hadith-share-text quran-share-text share-editable" lang="ar" contenteditable="false">
-						<p>
-							<% ayahs.forEach(function (ayah) {
-							%>
-								<span><%= ayah.ar?.body || '' %>&nbsp;<span class="quran-ayah-end-marker">۝</span></span>
-							<% }); %>
-						</p>
+							<p>
+								<% ayahs.forEach(function (ayah) {
+									const ayahNum = ayah.ar?.num || ayah.num || '';
+									const ayahPart = ayahNum.split(/:/)[1] || ayahNum;
+									const ayahPartArabic = arabic.toArabicDigits(arabic.toLatinDigits(ayahPart) || ayahPart);
+								%>
+									<span><%= ayah.ar?.body || '' %>&nbsp;<span class="quran-ayah-end-marker quran-ayah-end-marker-numbered" aria-label="Quran <%= ayahNum %>"><span class="quran-ayah-end-marker-symbol" aria-hidden="true">۝</span><span class="quran-ayah-end-marker-num" aria-hidden="true"><%= ayahPartArabic %></span></span></span>
+								<% }); %>
+							</p>
 					</div>
 				</section>
 				<section class="hadith-share-section quran-share-english-section" lang="en">
