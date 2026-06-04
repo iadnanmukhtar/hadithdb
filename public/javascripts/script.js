@@ -96,6 +96,7 @@ $(function () {
 	initQuranPageKeyboardNavigation(document);
 	initQuranPassageShareLinks(document);
 	initQuranCorpusTooltips(document);
+	initQuranCorpusTooltipDelay(document);
 	initQuranTafsirTabs(document);
 	initTocExpandCollapse(document);
 
@@ -754,13 +755,33 @@ function renderQuranCorpusWord(word) {
 	var translation = (word.translation || '').toString();
 	var grammar = (word.grammar || word.partsOfSpeech || '').toString();
 	return $('<span>').addClass('quran-corpus-word').attr({
-		title: translation,
 		'data-quran-word-translation': translation,
 		'data-quran-word': word.text || '',
 		'data-quran-word-number': word.word || '',
 		'data-quran-word-grammar': grammar,
 		tabindex: 0
 	}).text(word.text || '');
+}
+
+function initQuranCorpusTooltipDelay(root) {
+	var scope = root || document;
+	var eventRoot = scope === document ? $(document) : $(scope);
+	if (eventRoot.data('quranCorpusTooltipDelayBound'))
+		return;
+	eventRoot.data('quranCorpusTooltipDelayBound', true);
+	eventRoot.on('mouseenter focusin', '.quran-corpus-word', function () {
+		var word = $(this);
+		window.clearTimeout(word.data('quranCorpusTooltipTimer'));
+		word.data('quranCorpusTooltipTimer', window.setTimeout(function () {
+			word.addClass('quran-corpus-word-tooltip-ready');
+		}, 750));
+	});
+	eventRoot.on('mouseleave focusout', '.quran-corpus-word', function () {
+		var word = $(this);
+		window.clearTimeout(word.data('quranCorpusTooltipTimer'));
+		word.removeData('quranCorpusTooltipTimer');
+		word.removeClass('quran-corpus-word-tooltip-ready');
+	});
 }
 
 function initQuranAyahSelector(root) {

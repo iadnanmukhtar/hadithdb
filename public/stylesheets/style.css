@@ -1367,9 +1367,12 @@ del em strong {
 }
 
 .quran-corpus-word {
-	cursor: help;
 	position: relative;
 	text-decoration: none;
+}
+
+.quran-corpus-word-tooltip-ready {
+	cursor: help;
 }
 
 .quran-corpus-word:hover,
@@ -1379,8 +1382,7 @@ del em strong {
 	outline: none;
 }
 
-.quran-corpus-word:hover::after,
-.quran-corpus-word:focus-visible::after {
+.quran-corpus-word-tooltip-ready::after {
 	background: #1f2933;
 	border: 1px solid rgba(255, 255, 255, 0.16);
 	box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
@@ -1404,8 +1406,7 @@ del em strong {
 	z-index: 20;
 }
 
-.quran-corpus-word:hover::before,
-.quran-corpus-word:focus-visible::before {
+.quran-corpus-word-tooltip-ready::before {
 	border-color: #1f2933 transparent transparent transparent;
 	border-style: solid;
 	border-width: .32rem .32rem 0 .32rem;
