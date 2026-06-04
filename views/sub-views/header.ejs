@@ -155,10 +155,8 @@
           <%
 				for (var section of sections) {
 					if (section.level < 3) {
-					title_en = '';
-					if (section.title_en) 
-						title_en = utils.truncate((section.title_en+''), 75);
-					title = utils.truncate((section.title+''), 150); %>
+						title_en = utils.truncate(utils.emptyIfNull(section.title_en).toString(), 75);
+						title = utils.truncate(utils.emptyIfNull(section.title).toString(), 150); %>
           <tr class="title">
             <td><%- section.start %></td>
             <% if (section.start) { %>

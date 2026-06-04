@@ -32,6 +32,7 @@ router.post('/:id/:prop', async function (req, res, next) {
     var prop = req.params.prop;
     var type = prop.split(/\./)[0];
     var col = prop.split(/\./)[1];
+    debug(`update start id:${ids}, prop:${prop}`);
     if (status.value == '…')
       status.value = null;
     if (req.body.arabizi)
@@ -736,21 +737,29 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
     (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, end, start0, end0, count, lastmod_user, lastfixed)
     VALUES
     (${insertOrdinal}, ${bookId}, 2, ${surah}, ${insertH2}, NULL, ${sql(subsection.title_en || 'Section')}, ${sql(subsection.title)}, ${sql(subsection.intro_en)}, ${sql(subsection.intro)}, ${sql(`${surah}:${splitAyah}`)}, ${sql(`${surah}:${sectionEnd}`)}, ${quranNum0(surah, splitAyah)}, ${quranNum0(surah, sectionEnd)}, ${promotedCount}, '${userId}', CURRENT_TIMESTAMP())`);
-  await global.query(`DELETE FROM toc WHERE id=${subsection.tId || subsection.id}`);
-  var remainingSubsectionIds = movedSubsections
+  var movedSubsectionIds = movedSubsections
     .map(row => Number(row.id))
-    .filter(id => Number.isInteger(id) && id !== Number(subsection.tId || subsection.id));
-  if (remainingSubsectionIds.length > 0) {
-    await global.query(`UPDATE toc
-      SET ordinal=${insertOrdinal}, h2=${insertH2}
-      WHERE id IN (${remainingSubsectionIds.join(',')})`);
-    await renumberQuranSubsections(bookId, surah, insertH2);
+    .filter(id => Number.isInteger(id));
+  if (movedSubsectionIds.length > 0) {
+    await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: move ${movedSubsectionIds.length} subsection headings`, async () => {
+      await global.query(`UPDATE toc
+        SET ordinal=${insertOrdinal}, h2=${insertH2}
+        WHERE id IN (${movedSubsectionIds.join(',')})`);
+      await renumberQuranSubsections(bookId, surah, insertH2);
+    });
   }
-  await relinkQuranAyahRangeToSection(bookId, surah, insertResult.insertId, insertH2, splitAyah, sectionEnd);
-  await syncQuranSurahHadithHeadingNumbers(bookId, surah);
-  await Index.delete(Heading.INDEX, subsection.hId || subsection.tId || subsection.id);
-  await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
-  await invalidateQuranSurahCaches(surah);
+  await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: relink ayahs ${splitAyah}-${sectionEnd}`, async () => {
+    await relinkQuranAyahRangeToSection(bookId, surah, insertResult.insertId, insertH2, splitAyah, sectionEnd);
+  });
+  await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: sync heading numbers`, async () => {
+    await syncQuranSurahHadithHeadingNumbers(bookId, surah);
+  });
+  await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: reindex search scope`, async () => {
+    await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
+  });
+  await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: invalidate cache`, async () => {
+    await invalidateQuranSurahCaches(surah);
+  });
   return {
     message: insertResult.message,
     value: {
@@ -914,23 +923,31 @@ function quranNum0(surah, ayah) {
 }
 
 async function relinkQuranAyahRangeToSection(bookId, surah, tocId, h2, startAyah, endAyah) {
-  await global.query(`UPDATE hadiths
+  var started = Date.now();
+  debug(`quran ${surah} relink ayahs ${startAyah}-${endAyah} to section ${h2}: start`);
+  var result = await global.query(`UPDATE hadiths
     SET tocId=${parseInt(tocId, 10)}, h1=${Number(surah)}, h2=${Number(h2)}, h3=NULL
     WHERE bookId=${parseInt(bookId, 10)} AND h1=${Number(surah)}
       AND numInChapter BETWEEN ${Number(startAyah)} AND ${Number(endAyah)}`);
+  debug(`quran ${surah} relink ayahs ${startAyah}-${endAyah} to section ${h2}: done in ${Date.now() - started}ms (${result?.affectedRows ?? 'unknown'} rows)`);
 }
 
 async function syncQuranSurahHadithHeadingNumbers(bookId, surah) {
+  var started = Date.now();
+  debug(`quran ${surah} sync hadith heading numbers: start`);
   var sections = await global.query(`SELECT id, h1, h2
     FROM toc
     WHERE bookId=${parseInt(bookId, 10)} AND level=2 AND h1=${Number(surah)}
     ORDER BY h2`);
+  var affectedRows = 0;
   for (const section of sections) {
-    await global.query(`UPDATE hadiths
+    var result = await global.query(`UPDATE hadiths
       SET h1=${Number(section.h1)}, h2=${Number(section.h2)}, h3=NULL
       WHERE bookId=${parseInt(bookId, 10)} AND tocId=${Number(section.id)}
         AND NOT (h1<=>${Number(section.h1)} AND h2<=>${Number(section.h2)} AND h3<=>NULL)`);
+    affectedRows += Number(result?.affectedRows) || 0;
   }
+  debug(`quran ${surah} sync hadith heading numbers: done in ${Date.now() - started}ms (${sections.length} sections, ${affectedRows} rows)`);
 }
 
 function quranAyahFromHeadingStart(start) {
@@ -940,13 +957,22 @@ function quranAyahFromHeadingStart(start) {
 
 async function invalidateQuranSurahCaches(surah) {
   var cacheDir = `${homedir()}/.hadithdb/cache`;
-  if (!fs.existsSync(cacheDir))
+  if (!fs.existsSync(cacheDir)) {
+    debug(`quran ${surah} cache invalidation skipped: ${cacheDir} does not exist`);
     return;
-  var prefixes = [`_quran_${surah}`, `_passage:${surah}:`];
-  for (const filename of fs.readdirSync(cacheDir)) {
-    if (prefixes.some(prefix => filename === `${prefix}.html` || filename.startsWith(prefix) || filename.startsWith(`${prefix}?`)))
-      await Utils.flushCachedFile(`${cacheDir}/${filename}`);
   }
+  var prefixes = [`_quran_${surah}`, `_passage:${surah}:`];
+  var filenames = fs.readdirSync(cacheDir);
+  var matched = 0;
+  var deleted = 0;
+  for (const filename of filenames) {
+    if (prefixes.some(prefix => filename === `${prefix}.html` || filename.startsWith(prefix) || filename.startsWith(`${prefix}?`))) {
+      matched++;
+      if (await Utils.flushCachedFile(`${cacheDir}/${filename}`))
+        deleted++;
+    }
+  }
+  debug(`quran ${surah} cache invalidation scanned ${filenames.length}, matched ${matched}, deleted ${deleted}`);
 }
 
 function updateErrorStatus(err) {
@@ -964,6 +990,19 @@ function updateErrorMessage(err) {
   if (err?.response?.status === 429)
     return 'OpenAI rate limit exceeded. Wait a bit and retry.';
   return err?.message || 'Unable to process update';
+}
+
+async function timedUpdateStep(label, fn) {
+  var started = Date.now();
+  debug(`${label}: start`);
+  try {
+    var result = await fn();
+    debug(`${label}: done in ${Date.now() - started}ms`);
+    return result;
+  } catch (err) {
+    debug(`${label}: failed after ${Date.now() - started}ms: ${err.message}`);
+    throw err;
+  }
 }
 
 function similarPairsFromIds(ids) {
@@ -1127,18 +1166,28 @@ function normalizeHeadingNumber(value) {
 
 async function reindexSearchScope(whereClause, options) {
   options = options || {};
+  var started = Date.now();
+  debug(`reindex search scope start: ${whereClause}`);
   var headings = await global.query(`SELECT * FROM v_toc WHERE ${whereClause} ORDER BY ordinal`);
+  debug(`reindex search scope headings query returned ${headings.length} rows in ${Date.now() - started}ms: ${whereClause}`);
   if (headings.length > 0) {
+    var headingStarted = Date.now();
     try {
       await Index.updateBulk(Heading.INDEX, headings);
+      debug(`reindex search scope headings indexed ${headings.length} rows in ${Date.now() - headingStarted}ms: ${whereClause}`);
     } catch (err) {
       debug(`unable to reindex headings for search scope ${whereClause}: ${err.message}\n${err.stack}`);
     }
   }
+  var itemsStarted = Date.now();
+  debug(`reindex search scope items query start: ${whereClause}`);
   var items = await getHadithSearchRowsWithAdjacentRefs(whereClause);
+  debug(`reindex search scope items query returned ${items.length} rows in ${Date.now() - itemsStarted}ms: ${whereClause}`);
   if (items.length > 0) {
+    var itemIndexStarted = Date.now();
     try {
-      await Index.updateBulk(Item.INDEX, items);
+      await Index.updateBulk(Item.INDEX, items, true);
+      debug(`reindex search scope items indexed ${items.length} rows in ${Date.now() - itemIndexStarted}ms: ${whereClause}`);
     } catch (err) {
       debug(`unable to reindex hadiths for search scope ${whereClause}: ${err.message}\n${err.stack}`);
     }
@@ -1146,9 +1195,12 @@ async function reindexSearchScope(whereClause, options) {
       await HadithKnowledge.syncForHadithRows(items);
   }
   if (options.refresh) {
+    var refreshStarted = Date.now();
     await Index.refresh(Heading.INDEX);
     await Index.refresh(Item.INDEX);
+    debug(`reindex search scope refreshed indexes in ${Date.now() - refreshStarted}ms: ${whereClause}`);
   }
+  debug(`reindex search scope done in ${Date.now() - started}ms: ${whereClause}`);
 }
 
 function runHadithPostUpdateTasks(hadithId, options) {
@@ -1173,39 +1225,60 @@ function runHadithPostUpdateTasks(hadithId, options) {
 }
 
 async function getHadithSearchRowsWithAdjacentRefs(whereClause) {
+  var started = Date.now();
+  if (/\bbook_id\s*=\s*0\b/.test(whereClause)) {
+    debug(`hadith item rows using quran fast query: ${whereClause}`);
+    var quranRows = await getQuranHadithSearchRows(whereClause);
+    debug(`hadith item rows quran fast query returned ${quranRows.length} rows in ${Date.now() - started}ms: ${whereClause}`);
+    return quranRows;
+  }
+  debug(`hadith item rows using v_hadiths query: ${whereClause}`);
+  var rows = await global.query(`
+    SELECT *
+    FROM v_hadiths
+    WHERE ${whereClause}
+    ORDER BY ordinal`);
+  debug(`hadith item rows v_hadiths query returned ${rows.length} rows in ${Date.now() - started}ms: ${whereClause}`);
+  return rows;
+}
+
+async function getQuranHadithSearchRows(whereClause) {
+  var hadithWhereClause = whereClause
+    .replace(/\bhId\b/g, 'h.id')
+    .replace(/\bbook_id\b/g, 'h.bookId')
+    .replace(/\bh1\b/g, 'h.h1')
+    .replace(/\bh2\b/g, 'h.h2')
+    .replace(/\bh3\b/g, 'h.h3');
+  debug(`quran hadith item SQL where: ${hadithWhereClause}`);
   return await global.query(`
-    SELECT
-      vh.*,
-      p.hId AS prevId,
-      p.ref AS prev_ref,
-      p.path AS prev_path,
-      n.hId AS nextId,
-      n.ref AS next_ref,
-      n.path AS next_path
-    FROM (
-      SELECT *
-      FROM v_hadiths
-      WHERE ${whereClause}
-    ) vh
-    LEFT JOIN v_hadiths p
-      ON p.hId = (
-        SELECT p2.hId
-        FROM v_hadiths p2
-        WHERE p2.book_id = vh.book_id
-          AND p2.ordinal < vh.ordinal
-        ORDER BY p2.ordinal DESC
-        LIMIT 1
-      )
-    LEFT JOIN v_hadiths n
-      ON n.hId = (
-        SELECT n2.hId
-        FROM v_hadiths n2
-        WHERE n2.book_id = vh.book_id
-          AND n2.ordinal > vh.ordinal
-        ORDER BY n2.ordinal ASC
-        LIMIT 1
-      )
-    ORDER BY vh.ordinal`);
+    SELECT h.id, h.id AS hId, h.tocId AS tId, 'hadith' AS doctype,
+      CONCAT(b.alias, '/', h.h1, '/', h.h2) AS path,
+      CONCAT(b.alias, ':', h.num) AS ref,
+      b.id AS book_id, b.ordinal AS book_ordinal, b.alias AS book_alias,
+      b.shortName_en AS book_shortName_en, b.shortName AS book_shortName,
+      b.name_en AS book_name_en, b.name AS book_name,
+      b.author AS book_author, b.virtual AS book_virtual,
+      sec.level AS level,
+      ch.id AS h1_id, h.h1, ch.title_en AS h1_title_en, ch.title AS h1_title, ch.intro_en AS h1_intro_en, ch.intro AS h1_intro, ch.start AS h1_start, ch.count AS h1_count,
+      sec.id AS h2_id, h.h2, sec.title_en AS h2_title_en, sec.title AS h2_title, sec.intro_en AS h2_intro_en, sec.intro AS h2_intro, sec.start AS h2_start, sec.count AS h2_count,
+      sub.id AS h3_id, h.h3, sub.title_en AS h3_title_en, sub.title AS h3_title, sub.intro_en AS h3_intro_en, sub.intro AS h3_intro, sub.start AS h3_start, sub.count AS h3_count,
+      h.ordinal, h.numInChapter,
+      g.id AS grade_id, g.grade_en AS grade_grade_en, g.grade AS grade_grade,
+      p.id AS grader_id, p.shortName_en AS grader_shortName_en, p.shortName AS grader_shortName,
+      p.name_en AS grader_name_en, p.name AS grader_name,
+      NULL AS grade_grade_ids, NULL AS grade_grades,
+      h.verified, h.remark, h.numActual, h.num, h.num0, h.title_en, h.title, h.part_en, h.part,
+      h.chain_en, h.body_en, h.footnote_en, h.chain, h.body, h.footnote, h.text_en AS text, h.text AS text_en,
+      h.tags, h.books, h.lastmod, h.lastfixed, h.highlight, h.commented
+    FROM hadiths h
+    JOIN books b ON b.id=h.bookId
+    JOIN grades g ON g.id=h.gradeId
+    JOIN graders p ON p.id=h.graderId
+    LEFT JOIN toc ch ON ch.bookId=h.bookId AND ch.level=1 AND ch.h1=h.h1
+    LEFT JOIN toc sec ON sec.id=h.tocId
+    LEFT JOIN toc sub ON sub.bookId=h.bookId AND sub.level=3 AND sub.h1=h.h1 AND sub.h2=h.h2 AND sub.h3=h.h3
+    WHERE ${hadithWhereClause}
+    ORDER BY h.ordinal`);
 }
 
 async function safeBackground(label, fn) {
