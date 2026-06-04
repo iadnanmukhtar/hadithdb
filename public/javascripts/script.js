@@ -221,6 +221,24 @@ function initQuranTafsirTabs(root) {
 				return ayah >= startAyah && ayah <= endAyah;
 			});
 		};
+		var scrollTafsirTabIntoView = function (tab) {
+			if (!tab || !tab.length)
+				return;
+			window.requestAnimationFrame(function () {
+				var tabElement = tab[0];
+				var menuElement = tabElement.closest('.quran-tafsir-tabs');
+				if (!menuElement)
+					return;
+				var menuRect = menuElement.getBoundingClientRect();
+				var tabRect = tabElement.getBoundingClientRect();
+				var offset = tabRect.left - menuRect.left - ((menuRect.width - tabRect.width) / 2);
+				menuElement.scrollLeft += offset;
+			});
+		};
+		var scrollActiveTafsirTabIntoView = function () {
+			scrollTafsirTabIntoView(container.find('.quran-tafsir-tabs [role="tab"].active:visible').first());
+		};
+		container.data('scrollActiveTafsirTabIntoView', scrollActiveTafsirTabIntoView);
 		var appendSourceHeader = function (panel, book) {
 			var header = $('<header>').addClass('quran-tafsir-source row').appendTo(panel);
 			var english = $('<section>').addClass('col-6 text-start').attr('lang', 'en').appendTo(header);
@@ -372,6 +390,7 @@ function initQuranTafsirTabs(root) {
 				activeLanguage = language;
 				selectedByLanguage[language] = hash;
 			}
+			scrollTafsirTabIntoView($(event.target));
 			loadPanel($($(event.target).attr('data-bs-target')));
 		});
 		container.find('[data-tafsir-language]').on('click', function () {
@@ -439,6 +458,14 @@ function initQuranAyahModals(root) {
 			window.location.href = href;
 			return true;
 		};
+		var scrollActiveTafsirTabs = function () {
+			var pane = paneAt(activeIndex);
+			pane.find('.quran-tafsirs').each(function () {
+				var scrollActive = $(this).data('scrollActiveTafsirTabIntoView');
+				if (scrollActive)
+					scrollActive();
+			});
+		};
 
 		var showAyah = function (index) {
 			if (!panes.length)
@@ -453,6 +480,7 @@ function initQuranAyahModals(root) {
 			nextButton.prop('disabled', activeIndex === panes.length - 1 && !boundaryHref(1));
 			modalBody.scrollTop(0);
 			initQuranTafsirTabs(pane[0]);
+			scrollActiveTafsirTabs();
 		};
 		var openAyah = function (index) {
 			showAyah(index);
@@ -483,7 +511,10 @@ function initQuranAyahModals(root) {
 		nextButton.on('click', function () { moveAyah(1); });
 		modal.find('.quran-ayah-modal-tafsir-prev').on('click', function () { rotateTafsir(-1); });
 		modal.find('.quran-ayah-modal-tafsir-next').on('click', function () { rotateTafsir(1); });
-		modal.on('shown.bs.modal', function () { shown = true; });
+		modal.on('shown.bs.modal', function () {
+			shown = true;
+			scrollActiveTafsirTabs();
+		});
 		modal.on('hidden.bs.modal', function () { shown = false; });
 		var modalState = {
 			isShown: function () { return shown; },
@@ -508,21 +539,40 @@ function initQuranAyahModals(root) {
 		if (state)
 			state.openAyah(index);
 	};
+	var getShownModalState = function () {
+		var state = Object.values(modalStates).find(function (modalState) {
+			return modalState.isShown();
+		});
+		if (state)
+			return state;
+		var shownModal = $('.quran-ayah-modal.show').first();
+		if (!shownModal.length)
+			return null;
+		return shownModal.data('quranAyahModalState') || getModalState(shownModal.attr('data-quran-ayah-modal-type'));
+	};
+	document.addEventListener('keydown', function (event) {
+		if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+			return;
+		var state = getShownModalState();
+		if (!state)
+			return;
+		if ($(event.target).is('input, textarea, select, [contenteditable="true"]'))
+			return;
+		var handled = event.key === 'ArrowLeft' ? state.moveAyah(-1) : state.moveAyah(1);
+		if (handled) {
+			event.preventDefault();
+			event.stopPropagation();
+		}
+	}, true);
 
 	$(document).on('keydown.quranAyahModal', function (event) {
-			var state = Object.values(modalStates).find(function (modalState) {
-				return modalState.isShown();
-			});
+			var state = getShownModalState();
 			if (!state)
 				return;
 			if ($(event.target).is('input, textarea, select'))
 				return;
 			var handled = true;
-			if (event.key === 'ArrowLeft')
-				state.moveAyah(-1);
-			else if (event.key === 'ArrowRight')
-				state.moveAyah(1);
-			else if (event.key === 'ArrowUp')
+			if (event.key === 'ArrowUp')
 				handled = state.rotateTafsir(-1);
 			else if (event.key === 'ArrowDown')
 				handled = state.rotateTafsir(1);
@@ -739,7 +789,10 @@ function initQuranAyahSelector(root) {
 				return;
 			if ($('.modal.show').length)
 				return;
-			if ($(event.target).closest('input, textarea, select, button, [contenteditable="true"], ._e').length)
+			var targetInAyahHero = $(event.target).closest('.quran-ayah-hero').length > 0;
+			if (!targetInAyahHero && $(event.target).closest('input, textarea, select, button, [contenteditable="true"], ._e').length)
+				return;
+			if (targetInAyahHero && $(event.target).closest('input, textarea, select, [contenteditable="true"], ._e').length)
 				return;
 			var href;
 			if (event.key === 'ArrowLeft' || event.key === 'BrowserBack')
