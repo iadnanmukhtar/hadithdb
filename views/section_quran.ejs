@@ -54,6 +54,13 @@
       }
     }
     var footnoteItems = results;
+    var quranCorpusSection = section && section.book_alias === 'quran' && section.h1 && section.h2
+      ? {
+        surah: arabic.toLatinDigits(section.h1.toString()),
+        h2: arabic.toLatinDigits(section.h2.toString())
+      }
+      : null;
+    var quranCorpusUrl = quranCorpusSection ? `/quran-corpus/${quranCorpusSection.surah}/${quranCorpusSection.h2}` : '';
     var page = {
       menu: 'Section',
       title_en: `${site.shortName} | ${book.shortName_en} ${chapter.h1}${section.level > 1 ? ` §${section.h1}.${section.h2}` : ''} ${section.title_en || section.title}`,
@@ -81,7 +88,7 @@
   
   <div class="container col-lg-8 mx-auto">
     
-    <main class="chapter mt-10">
+    <main class="chapter mt-10"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %>>
       
       <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
       

@@ -17,6 +17,7 @@ const Index = require('../lib/Index');
 const Arabic = require('../lib/Arabic');
 const Books = require('../lib/Books');
 const Surahs = require('../lib/Surahs');
+const QuranCorpus = require('../lib/QuranCorpus');
 const { homedir } = require('os');
 
 const router = express.Router();
@@ -367,6 +368,31 @@ router.get('/passage\::surah\::ayah1-:ayah2', async function (req, res, next) {
 
 router.get('/passage\::surah\::ayah1', async function (req, res, next) {
   return await a_getPassage(req.params.surah, req.params.ayah1, req.params.ayah1, req, res, next)
+});
+
+router.get('/quran-corpus/:surah/:sectionNum', async function (req, res, next) {
+  var surah = findSurah(req.params.surah);
+  if (!surah)
+    return next(createError(404, `Surah '${req.params.surah}' not found`));
+  var sectionNum = Number(Arabic.toLatinDigits(req.params.sectionNum));
+  if (!Number.isInteger(sectionNum))
+    return next(createError(400, `Invalid Quran section '${req.params.sectionNum}'`));
+  var section = await Section.sectionFromRef(`quran/${surah.num}/${sectionNum}`);
+  var range = await getQuranHeadingAyahRange(section);
+  if (!range)
+    return next(createError(404, `Quran section ${surah.num}/${sectionNum} has no ayah range`));
+  var startAyah = range.startAyah;
+  var endAyah = startAyah + range.count - 1;
+  var rows = await QuranCorpus.wordsForRange(surah.num, startAyah, endAyah);
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.end(JSON.stringify({
+    surah: surah.num,
+    h2: sectionNum,
+    startAyah: startAyah,
+    endAyah: endAyah,
+    wordsByAyah: QuranCorpus.wordsByAyah(rows)
+  }));
 });
 
 async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
@@ -880,7 +906,8 @@ async function getQuranSectionPassageItems(section, offset, size) {
     size,
     'numInChapter'
   );
-  return results.map(item => new Item(item));
+  results = results.map(item => new Item(item));
+  return results;
 }
 
 async function getQuranHeadingAyahRange(section) {
@@ -1140,7 +1167,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         return res.redirect(302, `/quran/${chapterNum}/${firstSectionNum}`);
     }
 
-    var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v38' : '';
+    var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v40-corpus-lazy' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
@@ -1256,7 +1283,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       }
     }
 
-    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v38' : '';
+    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v40-corpus-lazy' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);

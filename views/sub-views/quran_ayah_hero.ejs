@@ -31,9 +31,14 @@
 				var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
 				var ayahRef = ayah.ref || `quran:${ayahNum}`;
 				var ayahHref = `/${ayahRef}`;
+				var ayahRefLatin = arabic.toLatinDigits((ayah.num || ayahNum || '').toString());
+				var ayahRefParts = ayahRefLatin.split(/:/);
+				var quranCorpusAttrs = ayahRefParts.length >= 2
+					? ` data-quran-ref="${ayahRefParts[0]}:${ayahRefParts[1]}" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"`
+					: '';
 			%>
 				<div class="quran-ayah-hero-ayah">
-					<a class="quran-ayah-hero-link" href="<%= ayahHref %>"><sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker">۝</span></a>
+					<a class="quran-ayah-hero-link" href="<%= ayahHref %>"><sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranCorpusAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker">۝</span></a>
 				</div>
 			<% }); %>
 		</div>

@@ -95,6 +95,7 @@ $(function () {
 	initQuranAyahModals(document);
 	initQuranPageKeyboardNavigation(document);
 	initQuranPassageShareLinks(document);
+	initQuranCorpusTooltips(document);
 	initQuranTafsirTabs(document);
 	initTocExpandCollapse(document);
 
@@ -693,6 +694,73 @@ function normalizeQuranAyahNumber(value) {
 		})
 		.replace(/^.*:/, '')
 		.replace(/\D/g, '');
+}
+
+var quranCorpusPayloadCache = {};
+
+function initQuranCorpusTooltips(root) {
+	var scope = root || document;
+	$(scope).find('[data-quran-corpus-url]').addBack('[data-quran-corpus-url]').each(function () {
+		var container = $(this);
+		if (container.data('quranCorpusBound'))
+			return;
+		container.data('quranCorpusBound', true);
+		var url = container.attr('data-quran-corpus-url');
+		if (!url)
+			return;
+		quranCorpusPayloadCache[url] = quranCorpusPayloadCache[url] || fetch(url, {
+			credentials: 'same-origin',
+			headers: { 'Accept': 'application/json' }
+		}).then(function (response) {
+			if (!response.ok)
+				throw new Error('Unable to load Quran corpus words');
+			return response.json();
+		});
+		quranCorpusPayloadCache[url]
+			.then(function (payload) {
+				annotateQuranCorpusWords(container, payload.wordsByAyah || {});
+			})
+			.catch(function () {
+				container.removeData('quranCorpusBound');
+			});
+	});
+}
+
+function annotateQuranCorpusWords(container, wordsByAyah) {
+	container.find('[data-quran-ref]').each(function () {
+		var target = $(this);
+		if (target.data('quranCorpusAnnotated'))
+			return;
+		var ref = target.attr('data-quran-ref');
+		var words = wordsByAyah[ref];
+		if (!words || words.length < 1)
+			return;
+		target.empty().append(renderQuranCorpusWordParagraph(words));
+		target.data('quranCorpusAnnotated', true);
+	});
+}
+
+function renderQuranCorpusWordParagraph(words) {
+	var paragraph = $('<p>');
+	words.forEach(function (word, index) {
+		if (index > 0)
+			paragraph.append(document.createTextNode(' '));
+		paragraph.append(renderQuranCorpusWord(word));
+	});
+	return paragraph;
+}
+
+function renderQuranCorpusWord(word) {
+	var translation = (word.translation || '').toString();
+	var grammar = (word.grammar || word.partsOfSpeech || '').toString();
+	return $('<span>').addClass('quran-corpus-word').attr({
+		title: translation,
+		'data-quran-word-translation': translation,
+		'data-quran-word': word.text || '',
+		'data-quran-word-number': word.word || '',
+		'data-quran-word-grammar': grammar,
+		tabindex: 0
+	}).text(word.text || '');
 }
 
 function initQuranAyahSelector(root) {
