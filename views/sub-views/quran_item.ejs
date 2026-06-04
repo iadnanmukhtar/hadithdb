@@ -37,7 +37,9 @@
 					var ayahBodyMarkdown = utils.emptyIfNull(ayahBody);
 					var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
 					var ayahBodyProp = (lang === 'en') ? 'hadith.body_en' : 'hadith.body';
-					var ayahModalIndex = locals.quranAyahModalItems ? locals.quranAyahModalItems.indexOf(passage[i]) : -1;
+					var ayahModalIndex = locals.quranAyahModalItems ? locals.quranAyahModalItems.findIndex(function (ayah) {
+						return ayah && passage[i] && ayah.ref === passage[i].ref;
+					}) : -1;
 					var ayahModalAttrs = ayahModalIndex >= 0 ? ` data-quran-ayah-modal-index="${ayahModalIndex}"` : '';
 				%>
 				<% (quranSubsectionsByStart.get(ayahPartLatin) || []).forEach(function (heading) {

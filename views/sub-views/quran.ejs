@@ -60,6 +60,7 @@
       quranSubsections: quranSubsections
     }];
   }
+  var quranAyahModalItems = locals.quranAyahModalItems || passage;
   var quranSelectionSurah = passage[0] ? ((passage[0].en && passage[0].en.num) || passage[0].num || '').toString().split(/:/)[0] : '';
 %>
 
@@ -115,9 +116,9 @@
 <% } %>
 <article class="row quran-passage-section">
 
-<%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: passage, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
+<%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
 
-<%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: passage, quranShareId: locals.quranShareId, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
+<%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
 
 </article>
 <% }); %>

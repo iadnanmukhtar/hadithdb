@@ -23,6 +23,25 @@
     var quranShareId = selectedAyahs.length > 0 ? `Q${(firstSelectedRef + '-' + lastSelectedPart).replace(/[^A-Za-z0-9_-]/g, '-')}` : '';
     var selectedAyahPrevHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.prev_ref ? `/${firstSelectedAyah.prev_ref}` : undefined;
     var selectedAyahNextHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.next_ref ? `/${firstSelectedAyah.next_ref}` : undefined;
+    var quranAyahModalItems = [];
+    var quranAyahModalRefs = new Set();
+    var quranAyahModalNumber = function (ayah) {
+      var num = ayah ? (ayah.numInChapter || ayah.en?.num || ayah.num || '') : '';
+      return parseInt(arabic.toLatinDigits(num.toString()).split(/:/).pop(), 10);
+    };
+    selectedAyahs.concat(results).forEach(function (ayah) {
+      if (!ayah || !ayah.ref || quranAyahModalRefs.has(ayah.ref))
+        return;
+      quranAyahModalRefs.add(ayah.ref);
+      quranAyahModalItems.push(ayah);
+    });
+    quranAyahModalItems.sort(function (a, b) {
+      var aNum = quranAyahModalNumber(a);
+      var bNum = quranAyahModalNumber(b);
+      if (!Number.isInteger(aNum) || !Number.isInteger(bNum))
+        return 0;
+      return aNum - bNum;
+    });
     if (selectedAyahs.length === 1 && firstSelectedAyah && (!selectedAyahPrevHref || !selectedAyahNextHref)) {
       var selectedAyahIndex = results.findIndex(function (ayah) {
         return ayah.ref === firstSelectedAyah.ref;
@@ -69,7 +88,7 @@
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
       
       <% if (selectedAyahs.length > 0) { %>
-        <% var selectedAyahModalIndex = results.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>
+        <% var selectedAyahModalIndex = quranAyahModalItems.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>
         <% var selectedAyahId = firstSelectedAyah && firstSelectedAyah.id; %>
         <% var selectedAyahCommentCount = firstSelectedAyah ? (firstSelectedAyah.comment_count ?? firstSelectedAyah.commented ?? 0) : 0; %>
       <%- include('sub-views/quran_ayah_hero.ejs', {
@@ -126,8 +145,8 @@
             </aside>
           <% } %>
         <% } %>
-        <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranSubsections: locals.quranSubsections, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
-        <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: results }); %>
+        <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranSubsections: locals.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
+        <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: quranAyahModalItems }); %>
         <% if (results.length > 0 && results[0].id) { %>
           <% var passageCommentCount = results[0].comment_count ?? results[0].commented ?? 0; %>
           <aside class="tags quran-passage-actions mt-2">

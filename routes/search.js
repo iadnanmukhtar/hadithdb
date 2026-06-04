@@ -444,6 +444,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
           results.push(...(await getQuranSectionPassageItems(containingSection, 0, 1000)));
           quranSubsections.push(...(await getQuranSectionSubsections(containingSection)));
         }
+        await addQuranPassageBoundaryRefs(results);
       }
       res.render('section_quran', {
         section: section,
@@ -600,6 +601,7 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
   await chapter.getNext();
   await chapter.getSections();
   var results = await getQuranSectionPassageItems(section, 0, 1000);
+  await addQuranPassageBoundaryRefs(results);
   var quranSubsections = await getQuranSectionSubsections(section);
 
   res.render('section_quran', {
@@ -616,6 +618,23 @@ async function addQuranAdjacentRefs(selectedAyah) {
     return;
   selectedAyah.prev_ref = await getQuranAdjacentRef(selectedAyah, -1);
   selectedAyah.next_ref = await getQuranAdjacentRef(selectedAyah, 1);
+}
+
+async function addQuranPassageBoundaryRefs(results) {
+  if (!results || results.length < 1)
+    return;
+  var first = results[0];
+  var last = results[results.length - 1];
+  if (first) {
+    var prevRef = await getQuranAdjacentRef(first, -1);
+    if (prevRef)
+      first.prev_ref = prevRef;
+  }
+  if (last) {
+    var nextRef = await getQuranAdjacentRef(last, 1);
+    if (nextRef)
+      last.next_ref = nextRef;
+  }
 }
 
 async function getQuranAdjacentRef(selectedAyah, step) {
@@ -662,8 +681,22 @@ async function getQuranSectionForAyah(selectedAyah) {
       AND section.h1=${Number(selectedAyah.h1)}
       AND section.h2_start IS NOT NULL
       AND section.h2_count IS NOT NULL
-      AND ${ayah} BETWEEN CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED)
-        AND CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED) + section.h2_count - 1
+      AND (
+        ${ayah} BETWEEN CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED)
+          AND CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED) + section.h2_count - 1
+        OR EXISTS (
+          SELECT 1
+          FROM v_toc subsection
+          WHERE subsection.book_alias='quran'
+            AND subsection.level=3
+            AND subsection.h1=section.h1
+            AND subsection.h2=section.h2
+            AND subsection.h3_start IS NOT NULL
+            AND subsection.h3_count IS NOT NULL
+            AND ${ayah} BETWEEN CAST(SUBSTRING_INDEX(subsection.h3_start, ':', -1) AS UNSIGNED)
+              AND CAST(SUBSTRING_INDEX(subsection.h3_start, ':', -1) AS UNSIGNED) + subsection.h3_count - 1
+        )
+      )
     ORDER BY
       EXISTS (
         SELECT 1
@@ -698,8 +731,24 @@ async function getQuranSectionsForAyahRange(surah, ayah1, ayah2, fallbackAyah) {
       AND section.h1=${surah}
       AND section.h2_start IS NOT NULL
       AND section.h2_count IS NOT NULL
-      AND CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED) <= ${ayah2}
-      AND CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED) + section.h2_count - 1 >= ${ayah1}
+      AND (
+        (
+          CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED) <= ${ayah2}
+          AND CAST(SUBSTRING_INDEX(section.h2_start, ':', -1) AS UNSIGNED) + section.h2_count - 1 >= ${ayah1}
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM v_toc subsection
+          WHERE subsection.book_alias='quran'
+            AND subsection.level=3
+            AND subsection.h1=section.h1
+            AND subsection.h2=section.h2
+            AND subsection.h3_start IS NOT NULL
+            AND subsection.h3_count IS NOT NULL
+            AND CAST(SUBSTRING_INDEX(subsection.h3_start, ':', -1) AS UNSIGNED) <= ${ayah2}
+            AND CAST(SUBSTRING_INDEX(subsection.h3_start, ':', -1) AS UNSIGNED) + subsection.h3_count - 1 >= ${ayah1}
+        )
+      )
     ORDER BY section.h2`);
   if (rows.length > 0)
     return rows.map(row => Heading.toLevel(row));
