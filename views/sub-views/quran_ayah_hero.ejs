@@ -37,9 +37,9 @@
 					? ` data-quran-ref="${ayahRefParts[0]}:${ayahRefParts[1]}" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"`
 					: '';
 				%>
-					<div class="quran-ayah-hero-ayah">
-						<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranCorpusAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahLabel %>">۝<%= ayahPartArabic %></span>
-					</div>
+						<div class="quran-ayah-hero-ayah">
+							<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranCorpusAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahLabel %>">۝<%= ayahPartArabic %></span>
+						</div>
 			<% }); %>
 		</div>
 	</section>
@@ -52,9 +52,9 @@
 				var ayahBodyMarkdown = utils.emptyIfNull(ayah.en?.body);
 				var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
 				%>
-					<div class="quran-ayah-hero-ayah">
-						<sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>
-					</div>
+						<div class="quran-ayah-hero-ayah">
+							<sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>
+						</div>
 			<% }); %>
 		</div>
 	</section>
