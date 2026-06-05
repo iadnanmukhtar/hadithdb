@@ -3,6 +3,7 @@
     var chapter = page.context.chapter;
     var section = page.context.section;
     var heading = page.context.section || chapter;
+    var isQuranChapter = book && book.alias === 'quran';
     if (chapter.h1 != Math.floor(chapter.h1))
       chapter.h1 = Number(chapter.h1).toFixed(2);
 %>
@@ -25,7 +26,7 @@
   
   <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="/<%=chapter.path%>">
     <%- arabic.toArabicDigits(chapter.h1 + '') %>۔
-    <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title">
+    <span class="_e<%= isQuranChapter ? ' quran-surah-name' : '' %>" data-id="<%= chapter.id %>" data-prop="toc.title">
       <%- chapter.title %>
     </span>
     <%- (heading.page.hasNext || heading.page.number && heading.page.number > 1) ? `ص ${arabic.toArabicDigits(heading.page.number+'')}` : `` %>

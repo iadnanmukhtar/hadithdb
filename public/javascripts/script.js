@@ -212,11 +212,11 @@ function initQuranTafsirTabs(root) {
 			}).appendTo(entryElement);
 			if (inline)
 				heading.addClass('quran-tafsir-ayah-inline');
-			$('<sup>').text(toArabicDigits(`${surah}:${ayah}`)).appendTo(heading);
+			$('<span>').addClass('quran-tafsir-ayah-ref').attr('dir', 'ltr').text(`${surah}:${ayah}`).appendTo(heading);
 			heading.append(document.createTextNode(' '));
 			$('<span>').text(ayahText[ayah] || '').appendTo(heading);
 			heading.append(document.createTextNode(' '));
-			$('<span>').addClass('quran-ayah-end-marker').text('۝').appendTo(heading);
+			$('<span>').addClass('quran-ayah-end-marker').text(`۝${toArabicDigits(ayah)}`).appendTo(heading);
 		};
 		var overlapsSelectedAyahs = function (startAyah, endAyah) {
 			return selectedAyahs.some(function (ayah) {
@@ -1051,7 +1051,7 @@ function initQuranAyahSelector(root) {
 			var $row = $('<div>').addClass('search-autocomplete-item');
 			var isArabic = item.lang === 'ar';
 			var fallbackText = item.label || '';
-			if (item.is_quran)
+			if (item.is_quran && (item.type === 'Ayah' || item.type === 'Surah'))
 				$row.addClass('search-autocomplete-quran');
 			if (isArabic)
 				$row.attr({ lang: 'ar', dir: 'rtl' }).addClass('search-autocomplete-ar');

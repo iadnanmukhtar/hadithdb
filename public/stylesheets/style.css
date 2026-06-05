@@ -11,13 +11,15 @@
 }
 
 @font-face {
-	font-family: Arabic;
-	src: url('/fonts/kd-hafs.woff2') format('woff2');
+	font-family: Quran;
+	src: url('/fonts/DigitalKhattV2.otf') format('opentype');
+	font-display: swap;
 }
 
 @font-face {
-	font-family: ArabicBold;
-	src: url('/fonts/kd-hafs.woff2') format('woff2');
+	font-family: QuranBold;
+	src: url('/fonts/DigitalKhattV2.otf') format('opentype');
+	font-display: swap;
 }
 
 :root {
@@ -101,18 +103,20 @@ body :lang(ar) {
 
 .quran-hafs:lang(ar),
 .quran-hafs :lang(ar),
-.quran-search-item [lang="ar"],
-.quran-search-item [lang="ar"] .hadith-body-content {
-	font-family: Arabic, Serif;
+.quran-hafs,
+.quran-hafs .quran-corpus-word,
+.quran-surah-name:lang(ar),
+:lang(ar) .quran-surah-name {
+	font-family: Quran, Serif;
 }
 
 .quran-hafs:lang(ar) b,
 .quran-hafs:lang(ar) strong,
 .quran-hafs :lang(ar) b,
 .quran-hafs :lang(ar) strong,
-.quran-search-item [lang="ar"] b,
-.quran-search-item [lang="ar"] strong {
-	font-family: ArabicBold, Serif;
+.quran-hafs b,
+.quran-hafs strong {
+	font-family: QuranBold, Serif;
 }
 
 a._click {
@@ -719,11 +723,7 @@ nav .nav-link {
 .quran-share-card .hadith-share-text:lang(ar),
 .quran-share-card .quran-share-text:lang(ar),
 .quran-share-card .quran-share-text:lang(ar) span {
-	font-family: Arabic, Serif;
-}
-
-.quran-share-card .quran-share-text:lang(ar) .quran-ayah-end-marker-num {
-	font-family: Arial, sans-serif;
+	font-family: Quran, Serif;
 }
 
 .quran-share-arabic-only .hadith-share-title {
@@ -1074,7 +1074,7 @@ nav .nav-link {
 
 .blog-post s {
 	direction: rtl;
-	font-family: Arabic, Serif;
+	font-family: Quran, Serif;
 	text-decoration: none !important;
 	font-size: 1.5rem;
 }
@@ -1082,7 +1082,7 @@ nav .nav-link {
 .blog-post s b,
 .blog-post s strong {
 	color: var(--c-blue);
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 }
 
 .blog-post h1:has(s),
@@ -1114,7 +1114,7 @@ nav .nav-link {
 
 .blog-post h1 s,
 .blog-post :lang(ar) h1 {
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 	font-size: 2.1rem;
 }
 
@@ -1124,7 +1124,7 @@ nav .nav-link {
 
 .blog-post h2 s,
 .blog-post :lang(ar) h2 {
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 	font-size: 1.9rem;
 }
 
@@ -1134,7 +1134,7 @@ nav .nav-link {
 
 .blog-post h3 s,
 .blog-post :lang(ar) h3 {
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 	font-size: 1.8rem;
 }
 
@@ -1144,7 +1144,7 @@ nav .nav-link {
 
 .blog-post h4 s,
 .blog-post :lang(ar) h4 {
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 	font-size: 1.7rem;
 }
 
@@ -1154,7 +1154,7 @@ nav .nav-link {
 
 .blog-post h5 s,
 .blog-post :lang(ar) h5 {
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 	font-size: 1.56rem;
 }
 
@@ -1164,7 +1164,7 @@ nav .nav-link {
 
 .blog-post h6 s,
 .blog-post :lang(ar) h6 {
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 	font-size: 1.43rem;
 }
 
@@ -1422,16 +1422,27 @@ del em strong {
 
 .body.passage:lang(ar),
 .body.passage:lang(ar) .ayah,
+.body.passage:lang(ar) .ayah .quran-corpus-word,
 .body.passage:lang(ar) .ayah a,
 .body.passage:lang(ar) .quran-ayah-body,
+.quran-passage-section [lang="ar"] .body.passage,
+.quran-passage-section [lang="ar"] .body.passage .ayah,
+.quran-passage-section [lang="ar"] .body.passage .ayah .quran-corpus-word,
+.quran-passage-section [lang="ar"] .body.passage .ayah a,
+.quran-passage-section [lang="ar"] .body.passage .quran-ayah-body,
+.quran-passage-section [lang="ar"] .ayah,
+.quran-passage-section [lang="ar"] .ayah .quran-corpus-word,
 .body.passage:lang(ar) .ayah sup {
-	font-family: Arabic, Serif;
+	font-family: Quran, Serif;
 }
 
 .body.passage:lang(ar) .ayah-selected,
 .body.passage:lang(ar) .ayah-selected a,
+.quran-passage-section [lang="ar"] .body.passage .ayah-selected,
+.quran-passage-section [lang="ar"] .body.passage .ayah-selected a,
+.quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-ayah-body,
 .body.passage:lang(ar) .ayah-selected sup {
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 }
 
 .quran-range-admin,
@@ -1519,17 +1530,26 @@ del em strong {
 }
 
 .body.passage .quran-ayah-number-marker,
-.body.passage .quran-ayah-number-marker sup,
+.body.passage .quran-ayah-number-marker sup {
+	color: var(--c-accent);
+	transition: color .15s ease;
+}
+
 .body.passage .quran-ayah-end-marker,
 .body.passage .quran-ayah-end-marker sup {
 	color: var(--c-accent);
+	font-family: Quran, Serif;
+	font-weight: 400;
 	transition: color .15s ease;
 }
 
 .body.passage .quran-ayah-number-marker:hover,
 .body.passage .quran-ayah-number-marker:hover sup,
 .body.passage .quran-ayah-number-marker:focus-visible,
-.body.passage .quran-ayah-number-marker:focus-visible sup,
+.body.passage .quran-ayah-number-marker:focus-visible sup {
+	color: var(--c-link-dark);
+}
+
 .body.passage .quran-ayah-end-marker:hover,
 .body.passage .quran-ayah-end-marker:hover sup,
 .body.passage .quran-ayah-end-marker:focus-visible,
@@ -1537,34 +1557,17 @@ del em strong {
 	color: var(--c-link-dark);
 }
 
-.quran-ayah-end-marker-numbered {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 1.2em;
-	height: 1.2em;
-	vertical-align: -0.08em;
-	line-height: 1;
+.quran-ayah-end-marker {
+	font-family: Quran, Serif;
+	font-size: 1em;
+	font-weight: 400;
+	line-height: inherit;
+	vertical-align: baseline;
 }
 
-.quran-ayah-end-marker-numbered .quran-ayah-end-marker-symbol {
-	font-size: 1.15em;
-	line-height: 1;
-}
-
-.quran-ayah-end-marker-numbered .quran-ayah-end-marker-num {
-	position: absolute;
-	inset: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-family: Arial, sans-serif;
-	font-size: 0.3em;
-	font-weight: 700;
-	line-height: 1;
-	transform: translateY(0.02em);
-	pointer-events: none;
+.quran-search-item .hadith-body-content.quran-hafs p {
+	display: inline;
+	margin-bottom: 0;
 }
 
 .quran-ayah-modal .modal-content {
@@ -1634,7 +1637,7 @@ del em strong {
 
 .quran-subheading:lang(ar) {
 	direction: rtl;
-	font-family: ArabicBold, Serif;
+	font-family: KitabBold, Serif;
 	font-size: 1.2rem;
 }
 
@@ -1816,17 +1819,26 @@ del em strong {
 
 .quran-tafsir-ayah:lang(ar) {
 	color: var(--c-black);
-	font-family: ArabicBold, Serif;
+	font-family: Quran, Serif;
 	font-size: 1.45rem;
-	font-weight: bold;
-	line-height: 2;
+	font-weight: 400;
+	line-height: 1.6;
 	margin: .25rem 0 .5rem;
 }
 
-.quran-tafsir-ayah:lang(ar) sup {
+.quran-tafsir-ayah:lang(ar) span {
+	font-family: Quran, Serif;
+	font-weight: 400;
+}
+
+.quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref {
 	color: var(--c-black);
-	font-size: .65em;
-	font-weight: bold;
+	font-family: "Gentium Plus", Serif;
+	font-size: .58em;
+	font-weight: 400;
+	line-height: 1;
+	unicode-bidi: isolate;
+	vertical-align: super;
 }
 
 .quran-tafsir-ayah-range {
@@ -1923,7 +1935,7 @@ del em strong {
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p {
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 	font-size: 1.85rem;
 	line-height: 2.2;
 }
@@ -1951,7 +1963,7 @@ del em strong {
 }
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-text {
-	font-family: ArabicBold, Serif;
+	font-family: QuranBold, Serif;
 	font-size: inherit;
 }
 
@@ -1966,12 +1978,19 @@ del em strong {
 }
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
-	font-size: inherit;
+	font-family: Quran, Serif;
+	font-size: 1.85rem;
+	font-weight: 400;
+	line-height: 2.2;
 }
 
 @media (max-width: 576px) {
 	.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
 	.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p {
+		font-size: 1.55rem;
+	}
+
+	.quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 		font-size: 1.55rem;
 	}
 }
@@ -1984,6 +2003,22 @@ del em strong {
 .body .ayah-selected:lang(ar),
 :lang(ar) .body .ayah-selected {
 	font-family: KitabBold, Serif;
+}
+
+.quran-passage-section [lang="ar"] .body .ayah-selected,
+.quran-passage-section [lang="ar"] .body .ayah-selected .quran-corpus-word,
+.quran-passage-section [lang="ar"] .body.passage .ayah-selected,
+.quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-corpus-word,
+.body.passage:lang(ar) .ayah-selected,
+.body.passage:lang(ar) .ayah-selected .quran-corpus-word {
+	font-family: QuranBold, Serif;
+}
+
+.quran-passage-section [lang="ar"] .body .ayah-selected .quran-ayah-end-marker,
+.quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-ayah-end-marker,
+.body.passage:lang(ar) .ayah-selected .quran-ayah-end-marker {
+	font-family: Quran, Serif;
+	font-weight: 400;
 }
 
 .body .ayah:hover a,
@@ -2876,7 +2911,7 @@ a.cmd-btn:hover {
 .search-autocomplete-quran.search-autocomplete-ar,
 .search-autocomplete-quran.search-autocomplete-ar .search-autocomplete-match,
 .search-autocomplete-quran .search-autocomplete-meta-ar {
-	font-family: Arabic, Serif;
+	font-family: Quran, Serif;
 }
 
 .search-autocomplete-ar .search-autocomplete-source {

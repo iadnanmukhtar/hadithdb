@@ -61,7 +61,7 @@
 									const ayahPart = ayahNum.split(/:/)[1] || ayahNum;
 									const ayahPartArabic = arabic.toArabicDigits(arabic.toLatinDigits(ayahPart) || ayahPart);
 								%>
-									<span><%= ayah.ar?.body || '' %>&nbsp;<span class="quran-ayah-end-marker quran-ayah-end-marker-numbered" aria-label="Quran <%= ayahNum %>"><span class="quran-ayah-end-marker-symbol" aria-hidden="true">۝</span><span class="quran-ayah-end-marker-num" aria-hidden="true"><%= ayahPartArabic %></span></span></span>
+									<span><%= ayah.ar?.body || '' %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahNum %>">۝<%= ayahPartArabic %></span></span>
 								<% }); %>
 							</p>
 					</div>

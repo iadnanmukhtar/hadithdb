@@ -38,7 +38,7 @@
 					: '';
 				%>
 					<div class="quran-ayah-hero-ayah">
-						<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranCorpusAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker quran-ayah-end-marker-numbered" aria-label="Quran <%= ayahLabel %>"><span class="quran-ayah-end-marker-symbol" aria-hidden="true">۝</span><span class="quran-ayah-end-marker-num" aria-hidden="true"><%= ayahPartArabic %></span></span>
+						<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranCorpusAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahLabel %>">۝<%= ayahPartArabic %></span>
 					</div>
 			<% }); %>
 		</div>
