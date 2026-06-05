@@ -852,6 +852,8 @@ function initQuranCorpusTooltipDelay(root) {
 		showTooltip($(this), 750);
 	});
 	eventRoot.on('click', '.quran-corpus-word', function (event) {
+		if ($(this).closest('.body.passage a[href]').length)
+			return;
 		event.preventDefault();
 		event.stopPropagation();
 		try {
