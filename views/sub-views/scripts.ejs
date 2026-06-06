@@ -506,9 +506,9 @@
         });
       });
     window.hadithAuth = {
-      getToken: async () => {
+      getToken: async (forceRefresh = false) => {
         const user = await getUser();
-        return user ? user.getIdToken() : null;
+        return user ? user.getIdToken(forceRefresh) : null;
       },
       requireLogin: () => {
         toastr.error('Please sign in to like or comment.', 'Sign-in required');

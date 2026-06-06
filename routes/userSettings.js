@@ -11,10 +11,16 @@ const router = express.Router();
 const MAX_SETTINGS_BYTES = 65535;
 
 async function verifyFirebase(req, res, next) {
+  const optional = req.method === 'GET' && req.query && req.query.optional === '1';
   try {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
     if (!token) {
+      if (optional) {
+        req.user = null;
+        next();
+        return;
+      }
       res.status(401).json({ error: 'Authentication required.' });
       return;
     }
@@ -28,11 +34,20 @@ async function verifyFirebase(req, res, next) {
     next();
   } catch (err) {
     debug(`Auth error: ${err.message}`);
+    if (optional) {
+      req.user = null;
+      next();
+      return;
+    }
     res.status(401).json({ error: 'Invalid authentication token.' });
   }
 }
 
 router.get('/', verifyFirebase, async function (req, res) {
+  if (!req.user) {
+    res.json({ settings: {} });
+    return;
+  }
   const settings = await UserSettings.getSettings(req.user.uid);
   res.json({ settings });
 });

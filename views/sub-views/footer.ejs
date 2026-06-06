@@ -28,6 +28,7 @@
 		const loadingCommentCountIds = new Set();
 		const LIKE_KEY = 'hadithLikedMap';
 		const USER_SETTINGS_ENDPOINT = '/user-settings';
+		const USER_SETTINGS_OPTIONAL_ENDPOINT = `${USER_SETTINGS_ENDPOINT}?optional=1`;
 		let userSettings = {};
 		let bookmarkSettingsLoaded = false;
 		const commentCountObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
@@ -119,9 +120,26 @@
 			}, 100);
 		});
 
-		const getSettingsToken = async () => {
+		const getSettingsToken = async (forceRefresh = false) => {
 			const auth = await waitForHadithAuth();
-			return auth && auth.getToken ? auth.getToken() : null;
+			return auth && auth.getToken ? auth.getToken(forceRefresh) : null;
+		};
+
+		const fetchUserSettings = async () => {
+			let token = await getSettingsToken(true);
+			if (!token) return null;
+			let res = await fetch(USER_SETTINGS_OPTIONAL_ENDPOINT, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			if (res.status === 401) {
+				token = await getSettingsToken(true);
+				if (token) {
+					res = await fetch(USER_SETTINGS_OPTIONAL_ENDPOINT, {
+						headers: { 'Authorization': `Bearer ${token}` }
+					});
+				}
+			}
+			return res;
 		};
 
 		const saveBookmarkSettings = async () => {
@@ -149,18 +167,13 @@
 		};
 
 		const loadBookmarkSettings = async () => {
-			const token = await getSettingsToken();
-			if (!token) {
-				bookmarkSettingsLoaded = true;
-				initBookmarks();
-				initHeadingBookmarks();
-				document.dispatchEvent(new CustomEvent('bookmarkSettingsLoaded'));
-				return;
-			}
 			try {
-				const res = await fetch(USER_SETTINGS_ENDPOINT, {
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
+				const res = await fetchUserSettings();
+				if (!res) return;
+				if (res.status === 401) {
+					applyBookmarkSettings({});
+					return;
+				}
 				if (!res.ok) throw new Error('Failed to load user settings');
 				const data = await res.json();
 				applyBookmarkSettings(data.settings || {});
