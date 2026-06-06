@@ -496,7 +496,7 @@
             toastr.success('Logged in as ' + username);
           const adminCookieChanged = Boolean(initialAdminCookie) !== Boolean(getHadithCookie('admin'));
           const userChanged = initialUserId !== username;
-          if (options.reload !== false && (userChanged || (!options.silent && (adminCookieChanged || resBody.admin))))
+          if (options.reload !== false && !options.silent && (userChanged || adminCookieChanged || resBody.admin))
             window.location.reload();
         } else {
           var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
