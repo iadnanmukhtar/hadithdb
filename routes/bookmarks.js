@@ -46,6 +46,8 @@ router.post('/list', async function (req, res, next) {
       editMode: false
     };
     const html = await ejs.renderFile(`${__dirname}/../views/sub-views/hadith_list_items.ejs`, {
+      req,
+      res,
       site,
       page: getPage(),
       results: ordered

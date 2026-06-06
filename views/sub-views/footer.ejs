@@ -27,8 +27,6 @@
 		const pendingCommentCountIds = new Set();
 		const loadingCommentCountIds = new Set();
 		const LIKE_KEY = 'hadithLikedMap';
-		const BOOKMARK_KEY = 'hadithBookmarkMap';
-		const HEADING_BOOKMARK_KEY = 'headingBookmarkMap';
 		const USER_SETTINGS_ENDPOINT = '/user-settings';
 		let userSettings = {};
 		let bookmarkSettingsLoaded = false;
@@ -66,21 +64,6 @@
 			} catch (err) {
 				console.warn(`Could not persist map for ${key}`, err);
 			}
-		};
-
-		const removeLegacyBookmarkStorage = () => {
-			try {
-				localStorage.removeItem(BOOKMARK_KEY);
-				localStorage.removeItem(HEADING_BOOKMARK_KEY);
-			} catch (err) {
-				console.warn('Could not clear migrated bookmark storage', err);
-			}
-		};
-
-		const readLegacyMap = (key) => {
-			const map = {};
-			loadMap(key, map);
-			return map;
 		};
 
 		const idsFromMap = (map) => Object.keys(map)
@@ -181,27 +164,6 @@
 				if (!res.ok) throw new Error('Failed to load user settings');
 				const data = await res.json();
 				applyBookmarkSettings(data.settings || {});
-				const legacyHadithBookmarks = readLegacyMap(BOOKMARK_KEY);
-				const legacyHeadingBookmarks = readLegacyMap(HEADING_BOOKMARK_KEY);
-				const legacyHadithIds = idsFromMap(legacyHadithBookmarks);
-				const legacyHeadingIds = idsFromMap(legacyHeadingBookmarks);
-				let migrated = false;
-				legacyHadithIds.forEach(id => {
-					if (!bookmarkMap[id]) {
-						bookmarkMap[id] = true;
-						migrated = true;
-					}
-				});
-				legacyHeadingIds.forEach(id => {
-					if (!headingBookmarkMap[id]) {
-						headingBookmarkMap[id] = true;
-						migrated = true;
-					}
-				});
-				if (migrated)
-					await saveBookmarkSettings();
-				if (legacyHadithIds.length || legacyHeadingIds.length)
-					removeLegacyBookmarkStorage();
 			} catch (err) {
 				console.warn('Could not load bookmark settings', err);
 				toastr.warning('Unable to load saved bookmarks.', 'Bookmarks');
