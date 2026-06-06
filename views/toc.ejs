@@ -24,6 +24,21 @@
         page.prev = `/${prevBook.alias}`;
     if (typeof nextBook != 'undefined' && nextBook)
         page.next = `/${nextBook.alias}`;
+    var quranNavigatorSurahs = [];
+    if (book.alias === 'quran') {
+      quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
+        return {
+          num: Number(surah.num),
+          name_en: surah.name_en,
+          name_ar: surah.name_ar,
+          ayahs: Number(surah.ayahs)
+        };
+      }).filter(function (surah) {
+        return Number.isInteger(surah.num);
+      }).sort(function (a, b) {
+        return a.num - b.num;
+      });
+    }
 %>
   
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -83,18 +98,40 @@
       <% } %>
 
       <aside class="h"><div class="tags">
-        <span class="bi bi-download"></span> <a href="/<%- book.alias %>?download&tsv" type="button" rel="nofollow">Download TSV</a>
+        <span class="bi bi-download"></span> <a href="<%= utils.urlFor(req, `/${book.alias}?download&tsv`) %>" type="button" rel="nofollow">Download TSV</a>
       </div></aside>
+
+      <% if (quranNavigatorSurahs.length > 0) { %>
+      <form class="quran-passage-navigator quran-toc-navigator mb-3" action="/" method="get" novalidate data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
+        <input type="hidden" name="b" value="quran">
+        <input type="hidden" name="b" value="commentaries">
+        <div class="input-group quran-passage-search-group quran-toc-search-group">
+          <input role="search" type="text" class="form-control quran-passage-search quran-toc-search-bar" placeholder="Search ayat or tafsir" aria-label="Search Quran ayat and tafsir" autocomplete="off">
+          <button type="button" class="btn btn-outline-primary quran-passage-search-submit" title="Search Quran ayat" aria-label="Search Quran ayat">
+            <span class="bi bi-search"></span>
+          </button>
+        </div>
+        <label class="form-label mb-0">
+          <input type="text" class="form-control form-control-sm quran-passage-surah" value="1" aria-label="Select Quran surah" autocomplete="off" required>
+        </label>
+        <label class="form-label mb-0">
+          <input type="text" inputmode="numeric" class="form-control form-control-sm quran-passage-ayah" value="1" aria-label="Select Quran ayah" autocomplete="off" required>
+        </label>
+        <button type="submit" class="btn btn-sm btn-outline-primary quran-passage-go">
+          <span class="bi bi-arrow-right-circle"></span> Go
+        </button>
+      </form>
+      <% } %>
 
       <% if (typeof random !== 'undefined') { %>
         <hr class="mt-3">
         <header class="row">
-          <h3 class="col-12 fs-4">Random <%= random.remark==2 ? 'āyah' : 'ḥadīth' %> in <%- book.shortName_en %> <a class="text-muted" href="<%= page.canonical %>"><i class="bi bi-arrow-clockwise"></i></a></h3>
+          <h3 class="col-12 fs-4">Random <%= random.remark==2 ? 'āyah' : 'ḥadīth' %> in <%- book.shortName_en %> <a class="text-muted" href="<%= utils.urlFor(req, page.canonical) %>"><i class="bi bi-arrow-clockwise"></i></a></h3>
         </header>
         <% if (book.alias === 'quran' && random.remark == 2) {
           var randomAyahRef = random.en?.num || random.num || random.ref || '';
           var randomAyahHrefRef = arabic.toLatinDigits(randomAyahRef.toString()).replace(/^quran:/, '');
-          var randomAyahHref = `/quran:${randomAyahHrefRef}`;
+          var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}`);
           var randomQuranShareId = `Q${randomAyahRef.replace(/[^A-Za-z0-9_-]/g, '-')}`;
         %>
           <%- include('sub-views/quran_ayah_hero.ejs', { site: site, page: page, selectedAyahs: [random] }); %>
@@ -170,9 +207,9 @@
                 <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
                   <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
                 </button>
-                <a href="/<%- `${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}` %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a>
+                <a href="<%= utils.urlFor(req, `/${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}`) %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a>
               </td>
-              <td lang="ar"><a href="/<%- `${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}` %>" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
+              <td lang="ar"><a href="<%= utils.urlFor(req, `/${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}`) %>" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
               <% } else { %>
               <td>
                 <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
@@ -195,9 +232,9 @@
               <td><span class="toc-section-number">S<%- section.h1 %>.<%- section.h2 %></span></td>
               <% if (section.path) { %>
               <td>
-                <a href="/<%- section.path %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></a>
+                <a href="<%= utils.urlFor(req, `/${section.path}`) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></a>
               </td>
-              <td lang="ar"><a href="/<%- section.path %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
+              <td lang="ar"><a href="<%= utils.urlFor(req, `/${section.path}`) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
               <% } else { %>
               <td class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></td>
               <td lang="ar" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></td>

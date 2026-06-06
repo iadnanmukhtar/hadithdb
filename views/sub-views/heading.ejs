@@ -27,11 +27,11 @@
       <% } %>
       <%- `${heading.h1}.${heading.h2}` + (heading.h3 ? `.${heading.h3}` : '') %>
       <% if (page.menu === 'Chapter')  { %>
-      <a href="/<%=heading.path%>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
+      <a href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
         <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
       </a>
       <% } else { %>
-      <span href="/<%=heading.path%>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
+      <span href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
         <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
       </span>
       <% } %>
@@ -44,11 +44,11 @@
     <h3 class="col-md-6 col-sm-12 title" lang="ar">
       <%- `${arabic.toArabicDigits(heading.h1 + '')}۔${arabic.toArabicDigits(heading.h2 + '')}` + (heading.h3 ? `۔${arabic.toArabicDigits(heading.h3+'')}` : '') %>
       <% if (page.menu === 'Chapter')  { %>
-        <a href="/<%=heading.path%>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title" data-arabizi="true">
+        <a href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title" data-arabizi="true">
           <%- heading.title || (heading.level === 3 ? 'مقطع' : 'مقطع') %>
         </a>
         <% } else { %>
-        <span href="/<%=heading.path%>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title" data-arabizi="true">
+        <span href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title" data-arabizi="true">
           <%- heading.title || (heading.level === 3 ? 'مقطع' : 'مقطع') %>
         </span>
       <% } %>

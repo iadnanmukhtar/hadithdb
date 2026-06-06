@@ -28,14 +28,14 @@
 		<section><strong>
 			<% if (toc.h2) {
 				if (displayLevel == 3) { %>
-					<a href="/<%=toc.book.alias%>/<%=toc.h1%><%=toc.h1_offset%>/<%=toc.h2%>/<%=toc.h3%>" title="<%= linkTitle(toc.h3_title_en) %>"><%= `${toc.book.shortName_en}` %> Subsection <%=toc.h1%>.<%=toc.h2%>.<%=toc.h3%></a> –
+					<a href="<%= utils.urlFor(req, `/${toc.book.alias}/${toc.h1}${toc.h1_offset}/${toc.h2}/${toc.h3}`) %>" title="<%= linkTitle(toc.h3_title_en) %>"><%= `${toc.book.shortName_en}` %> Subsection <%=toc.h1%>.<%=toc.h2%>.<%=toc.h3%></a> –
 					<span class="<%=_e%>" data-id="<%=toc.h3_id%>" data-prop="toc.title_en"><%- toc.h3_title_en || 'Subsection' %></span>
 				<% } else { %>
-					<a href="/<%=toc.path%>" title="<%= linkTitle(toc.h2_title_en) %>"><%= `${toc.book.shortName_en}` %> Section <%=toc.h1%>.<%=toc.h2%></a> –
+					<a href="<%= utils.urlFor(req, `/${toc.path}`) %>" title="<%= linkTitle(toc.h2_title_en) %>"><%= `${toc.book.shortName_en}` %> Section <%=toc.h1%>.<%=toc.h2%></a> –
 					<span class="<%=_e%>" data-id="<%=toc.h2_id%>" data-prop="toc.title_en"><%- toc.h2_title_en || 'Section' %></span>
 				<% } %>
 			<% } else if (toc.h1) { %>
-				<a href="/<%=toc.book.alias%>/<%=toc.h1%>" title="<%= linkTitle(toc.h1_title_en) %>"><%= `${toc.book.shortName_en}` %> Chapter <%=toc.h1%></a> –
+				<a href="<%= utils.urlFor(req, `/${toc.book.alias}/${toc.h1}`) %>" title="<%= linkTitle(toc.h1_title_en) %>"><%= `${toc.book.shortName_en}` %> Chapter <%=toc.h1%></a> –
 				<span class="<%=_e%>" data-id="<%=toc.h1_id%>" data-prop="toc.title_en"><%- toc.h1_title_en || 'Chapter' %></span>
 			<% } %>
 		</strong></section>

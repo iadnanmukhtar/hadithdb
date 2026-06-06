@@ -1,6 +1,34 @@
 <% 
   if (page.canonical)
     page.canonical = page.canonical.replace(/\?o=0$/, '');
+  var quranCanonicalBaseUrl = 'https://quran.islamunlocked.com';
+  var isQuranCanonicalPage = page
+    && page.canonical
+    && (
+      (page.context && page.context.book && page.context.book.alias === 'quran')
+      || page.canonical === '/quran'
+      || page.canonical.indexOf('/quran/') === 0
+      || page.canonical.indexOf('/quran:') === 0
+    );
+  function quranCanonicalPath(path) {
+    if (!path)
+      return path;
+    if (path === '/quran')
+      return '/';
+    if (path.indexOf('/quran/') === 0)
+      return path.substring('/quran'.length) || '/';
+    if (path.indexOf('/quran:') === 0)
+      return '/' + path.substring('/quran:'.length);
+    return path;
+  }
+  function canonicalUrlForPath(path) {
+    if (isQuranCanonicalPage)
+      return quranCanonicalBaseUrl + quranCanonicalPath(path);
+    return site.url + path;
+  }
+  var headCanonicalPath = isQuranCanonicalPage ? quranCanonicalPath(page.canonical) : page.canonical;
+  var headCanonicalBaseUrl = isQuranCanonicalPage ? quranCanonicalBaseUrl : site.url;
+  var headCanonicalUrl = headCanonicalBaseUrl + headCanonicalPath;
 %>
 <title><%= page.title_en %></title>
 
@@ -9,7 +37,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<link rel="stylesheet" href="/stylesheets/style.css?v=20260606-quran-passage-navigator-hero-v3-tafsir-popup-v7" rel="stylesheet">
+<link rel="stylesheet" href="/stylesheets/style.css?v=20260606-quran-search-combo-v3" rel="stylesheet">
 <% if (page.feed || page.rss) { 
   if (page.feed) { %>
     <link rel="alternate" type="application/atom+xml" title="<%= page.title_en %>" href="<%= page.feed %>" />
@@ -28,7 +56,7 @@
 <link rel="icon" href="/favicon.ico" />
 
 
-<link rel="canonical" href="<%= site.url %><%- page.canonical %>" />
+<link rel="canonical" href="<%= headCanonicalUrl %>" />
 <% 	if (page && page.menu !== 'Home') {
 		if (page.prev) { %>
 <link rel="prev" href="<%= page.prev %>" />
@@ -41,7 +69,7 @@
 <meta property="og:site_name" content="<%= site.name %>">
 <meta property="og:locale" content="en">
 <meta property="og:image" content="<%= page.cover || site.logo %>">
-<meta property="og:url" content="<%= site.url %><%- page.canonical %>">
+<meta property="og:url" content="<%= headCanonicalUrl %>">
 <meta property="og:title" content="<%= page.title_en %>">
 <meta property="og:description" content="<%= page.subtitle_en %>">
 <meta property="og:type" content="article" />
@@ -87,7 +115,7 @@
     "@type": "Book",
     "name": "<%= page.context.book.name_en %>",
     "inLanguage": "English",
-    "url": "<%= `${site.url}/${page.context.book.alias}` %>"
+    "url": "<%= canonicalUrlForPath(`/${page.context.book.alias}`) %>"
   }
 </script>
 <script type="application/ld+json">
@@ -96,7 +124,7 @@
     "@type": "Book",
     "name": "<%= page.context.book.name %>",
     "inLanguage": "Arabic",
-    "url": "<%= `${site.url}/${page.context.book.alias}` %>"
+    "url": "<%= canonicalUrlForPath(`/${page.context.book.alias}`) %>"
   }
 </script>
 <% } %>
@@ -109,9 +137,9 @@
     "name": "<%= `Chapter ${page.context.chapter.h1}: ${page.context.chapter.title_en || ''}` %>",
     "alternateName": "<%= `${page.context.book.shortName}، ${arabic.toArabicDigits(page.context.chapter.h1 + '')}- ${page.context.chapter.title || ''}` %>",
     "pageStart": "<%= page.context.chapter.start0 %>",
-    "url": "<%= page.canonical %>",
+    "url": "<%= headCanonicalUrl %>",
     "schema:isPartOf": {
-      "@id": "<%= `${site.url}/${page.context.book.alias}` %>"
+      "@id": "<%= canonicalUrlForPath(`/${page.context.book.alias}`) %>"
     }
   }
 </script>
@@ -134,19 +162,19 @@
         "@type": "ListItem",
         "position": 2,
         "name": "<%- page.context.book.name_en %>",
-        "item": "<%- `${site.url}/${page.context.book.alias}` %>"
+        "item": "<%- canonicalUrlForPath(`/${page.context.book.alias}`) %>"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": "<%= `${page.context.chapter.h1}. ${page.context.chapter.title_en || 'Chapter'}` %>",
-        "item": "<%= `${site.url}/${page.context.book.alias}/${page.context.chapter.h1}` %>"
+        "item": "<%= canonicalUrlForPath(`/${page.context.book.alias}/${page.context.chapter.h1}`) %>"
       },
       {
         "@type": "ListItem",
         "position": 4,
         "name": "<%= `${page.context.section.h2}. ${page.context.section.title_en || 'Section'}` %>",
-        "item": "<%= `${site.url}/${page.context.book.alias}/${page.context.chapter.h1}/${page.context.section.h2}` %>"
+        "item": "<%= canonicalUrlForPath(`/${page.context.book.alias}/${page.context.chapter.h1}/${page.context.section.h2}`) %>"
       }
     ]
   }
@@ -167,13 +195,13 @@
         "@type": "ListItem",
         "position": 2,
         "name": "<%= page.context.book.name_en %>",
-        "item": "<%= `${site.url}/${page.context.book.alias}` %>"
+        "item": "<%= canonicalUrlForPath(`/${page.context.book.alias}`) %>"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": "<%= `${page.context.chapter.h1}. ${page.context.chapter.title_en || 'Chapter'}` %>",
-        "item": "<%= `${site.url}/${page.context.book.alias}/${page.context.chapter.h1}` %>"
+        "item": "<%= canonicalUrlForPath(`/${page.context.book.alias}/${page.context.chapter.h1}`) %>"
       }
     ]
   }
@@ -194,7 +222,7 @@
         "@type": "ListItem",
         "position": 2,
         "name": "<%- page.context.book.name_en %>",
-        "item": "<%- `${site.url}/${page.context.book.alias}` %>"
+        "item": "<%- canonicalUrlForPath(`/${page.context.book.alias}`) %>"
       }
     ]
   }
@@ -208,16 +236,16 @@
     "@type": "Article",
     "name": "<%- `${page.context.hadiths[0].book.shortName_en} ${page.context.hadiths[0].num}` %>",
     "headline": "<%- `${page.context.hadiths[0].book.shortName_en} ${page.context.hadiths[0].num}` %>",
-    "url": "<%- `${site.url}${page.canonical}` %>",
+    "url": "<%- headCanonicalUrl %>",
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "<%- `${site.url}${page.canonical}` %>"
+      "@id": "<%- headCanonicalUrl %>"
     },
     "genre": "Hadith",
     "author": [{
         "@type": "Book",
         "name": "<%- page.context.hadiths[0].book.name_en %>",
-        "url": "<%- `${site.url}/${page.context.hadiths[0].book.alias}` %>"
+        "url": "<%- canonicalUrlForPath(`/${page.context.hadiths[0].book.alias}`) %>"
       },
       {
         "@type": "Person",

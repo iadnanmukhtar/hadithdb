@@ -73,7 +73,7 @@
     <span class="bi bi-eye"></span> View selected
   </button>
   <% if (locals.selectedAyahs && locals.selectedAyahs.length > 0 && page.context.section) { %>
-  <a class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-clear" href="/<%= page.context.section.path %>">
+  <a class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-clear" href="<%= utils.quranUrl(req, `/${page.context.section.path}`) %>">
     <span class="bi bi-x-circle"></span> Clear
   </a>
   <% } else { %>

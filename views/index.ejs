@@ -116,7 +116,7 @@
         <% if (random.remark == 2) {
           var randomAyahRef = random.en?.num || random.num || random.ref || '';
           var randomAyahHrefRef = arabic.toLatinDigits(randomAyahRef.toString()).replace(/^quran:/, '');
-          var randomAyahHref = `/quran:${randomAyahHrefRef}`;
+          var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}`);
           var randomQuranShareId = `Q${randomAyahRef.replace(/[^A-Za-z0-9_-]/g, '-')}`;
         %>
           <%- include('sub-views/quran_ayah_hero.ejs', { site: site, page: page, selectedAyahs: [random] }); %>

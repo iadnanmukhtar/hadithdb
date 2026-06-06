@@ -21,8 +21,11 @@
     var lastSelectedPart = lastSelectedRef.split(/:/)[1] || lastSelectedRef;
     var selectedTitle = firstSelectedRef && lastSelectedRef && firstSelectedRef !== lastSelectedRef ? `Quran ${firstSelectedRef}-${lastSelectedPart}` : `Quran ${firstSelectedRef}`;
     var quranShareId = selectedAyahs.length > 0 ? `Q${(firstSelectedRef + '-' + lastSelectedPart).replace(/[^A-Za-z0-9_-]/g, '-')}` : '';
-    var selectedAyahPrevHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.prev_ref ? `/${firstSelectedAyah.prev_ref}` : undefined;
-    var selectedAyahNextHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.next_ref ? `/${firstSelectedAyah.next_ref}` : undefined;
+    var selectedCanonicalRef = selectedAyahs.length > 0 && firstSelectedRef
+      ? `${firstSelectedRef}${lastSelectedRef && firstSelectedRef !== lastSelectedRef ? `-${lastSelectedPart}` : ''}`
+      : '';
+    var selectedAyahPrevHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.prev_ref ? utils.quranUrl(req, `/${firstSelectedAyah.prev_ref}`) : undefined;
+    var selectedAyahNextHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.next_ref ? utils.quranUrl(req, `/${firstSelectedAyah.next_ref}`) : undefined;
     var quranAyahModalItems = [];
     var quranAyahModalRefs = new Set();
     var quranAyahModalNumber = function (ayah) {
@@ -48,9 +51,9 @@
       });
       if (selectedAyahIndex >= 0) {
         if (!selectedAyahPrevHref && results[selectedAyahIndex - 1])
-          selectedAyahPrevHref = `/${results[selectedAyahIndex - 1].ref}`;
+          selectedAyahPrevHref = utils.quranUrl(req, `/${results[selectedAyahIndex - 1].ref}`);
         if (!selectedAyahNextHref && results[selectedAyahIndex + 1])
-          selectedAyahNextHref = `/${results[selectedAyahIndex + 1].ref}`;
+          selectedAyahNextHref = utils.quranUrl(req, `/${results[selectedAyahIndex + 1].ref}`);
       }
     }
     var footnoteItems = results;
@@ -93,14 +96,14 @@
       return surah.num === quranNavigatorSurah;
     });
     var quranNavigatorAyahCount = quranNavigatorCurrentSurah ? quranNavigatorCurrentSurah.ayahs : Math.max(results.length, quranNavigatorAyah);
-    var quranNavigatorSurahValue = quranNavigatorCurrentSurah ? `${quranNavigatorCurrentSurah.num} ${quranNavigatorCurrentSurah.name_en}` : quranNavigatorSurah;
+    var quranNavigatorSurahValue = quranNavigatorCurrentSurah ? quranNavigatorCurrentSurah.num : quranNavigatorSurah;
     var quranNavigatorAyahValue = quranNavigatorAyah;
     var page = {
       menu: 'Section',
       title_en: `${site.shortName} | ${book.shortName_en} ${chapter.h1}${section.level > 1 ? ` §${section.h1}.${section.h2}` : ''} ${section.title_en || section.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
-      canonical: section.level > 1 ? `/${book.alias}/${chapter.h1}/${section.h2}` : `/${book.alias}/${chapter.h1}?passage`,
+      canonical: selectedCanonicalRef ? `/quran:${selectedCanonicalRef}` : (section.level > 1 ? `/${book.alias}/${chapter.h1}/${section.h2}` : `/${book.alias}/${chapter.h1}?passage`),
       context: {
         book: book,
         chapter: chapter,
@@ -129,7 +132,15 @@
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
 
       <% if (quranNavigatorSurahs.length > 0) { %>
-        <form class="quran-passage-navigator mb-3" data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
+        <form class="quran-passage-navigator mb-3" action="/" method="get" novalidate data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
+          <input type="hidden" name="b" value="quran">
+          <input type="hidden" name="b" value="commentaries">
+          <div class="input-group input-group-sm quran-passage-search-group">
+            <input role="search" type="text" class="form-control quran-passage-search" placeholder="Search ayat or tafsir" aria-label="Search Quran ayat and tafsir" autocomplete="off">
+            <button type="button" class="btn btn-outline-primary quran-passage-search-submit" title="Search Quran ayat" aria-label="Search Quran ayat">
+              <span class="bi bi-search"></span>
+            </button>
+          </div>
           <label class="form-label mb-0">
             <input type="text" class="form-control form-control-sm quran-passage-surah" value="<%= quranNavigatorSurahValue %>" aria-label="Select Quran surah" autocomplete="off" required>
           </label>
@@ -149,7 +160,7 @@
         site: site,
         page: page,
         selectedAyahs: selectedAyahs,
-        clearHref: page.context.section ? `/${page.context.section.path}` : undefined,
+        clearHref: page.context.section ? utils.quranUrl(req, `/${page.context.section.path}`) : undefined,
         prevHref: selectedAyahPrevHref,
         nextHref: selectedAyahNextHref,
         toolbar: quranShareId ? {

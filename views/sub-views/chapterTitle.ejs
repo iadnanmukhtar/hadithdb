@@ -11,7 +11,7 @@
 <%# Chapter Title %>
 <heading class="row major">
 
-  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="/<%=chapter.path%>">
+  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.urlFor(req, `/${chapter.path}`) %>">
     <%- chapter.h1 %>. <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title_en" data-arabizi="true">
       <%- chapter.title_en || 'Chapter' %>
     </span>
@@ -24,7 +24,7 @@
   </button>
   </h2>
   
-  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="/<%=chapter.path%>">
+  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="<%= utils.urlFor(req, `/${chapter.path}`) %>">
     <%- arabic.toArabicDigits(chapter.h1 + '') %>۔
     <span class="_e<%= isQuranChapter ? ' quran-surah-name' : '' %>" data-id="<%= chapter.id %>" data-prop="toc.title">
       <%- chapter.title %>
@@ -38,18 +38,18 @@
 <section class="row breadcrumbs pagination">
 
   <div class="col-md-6 col-sm-12" lang="en">
-    <a title="<%- book.name_en %>" href="/<%=book.alias%>"><%- book.shortName_en %></a>
+    <a title="<%- book.name_en %>" href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName_en %></a>
     &gt;
     <% if (heading.level == 1) { %>
       <span title="<%- chapter.title %>">Chapter <%- chapter.h1 %></span>
     <% } else if (heading.level == 2) { %>
-      <a title="<%- chapter.title_en || 'Chapter' %>" href="/<%=chapter.path%>">Chapter <%- chapter.h1 %></a>
+      <a title="<%- chapter.title_en || 'Chapter' %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>">Chapter <%- chapter.h1 %></a>
       &gt;
       <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= section.id %>" title="Bookmark this section">
         <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= section.id %>"></span>
       </button>
       <% if (page.context.book && page.context.book.alias === 'quran' && page.context.passage) { %>
-        <a title="<%- section.title %>" href="/<%= section.path %>">Section <%- section.h2 %></a>
+        <a title="<%- section.title %>" href="<%= utils.urlFor(req, `/${section.path}`) %>">Section <%- section.h2 %></a>
       <% } else { %>
         <span title="<%- section.title %>">Section <%- section.h2 %></span>
       <% } %>
@@ -57,15 +57,15 @@
   </div>
 
   <div class="col-md-6 col-sm-12" lang="ar">
-    <a title="<%- book.name %>" href="/<%=book.alias%>"><%- book.shortName %></a>
+    <a title="<%- book.name %>" href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName %></a>
     &gt;
     <% if (heading.level == 1) { %>
       <span title="<%- chapter.title %>">كتاب <%- arabic.toArabicDigits(chapter.h1) %></span>
     <% } else if (heading.level == 2) { %>
-      <a title="<%- chapter.title %>" href="/<%=chapter.path%>">كتاب <%- arabic.toArabicDigits(chapter.h1) %></a>
+      <a title="<%- chapter.title %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>">كتاب <%- arabic.toArabicDigits(chapter.h1) %></a>
       &gt;
       <% if (page.context.book && page.context.book.alias === 'quran' && page.context.passage) { %>
-        <a title="<%- section.title %>" href="/<%= section.path %>">باب <%- arabic.toArabicDigits(section.h2) %></a>
+        <a title="<%- section.title %>" href="<%= utils.urlFor(req, `/${section.path}`) %>">باب <%- arabic.toArabicDigits(section.h2) %></a>
       <% } else { %>
         <span title="<%- section.title %>">باب <%- arabic.toArabicDigits(section.h2) %></span>
       <% } %>

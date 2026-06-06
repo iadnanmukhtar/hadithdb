@@ -51,10 +51,31 @@ function appendOriginalQuery(req) {
   return queryIndex >= 0 ? req.originalUrl.substring(queryIndex) : '';
 }
 
+function isQuranSubdomainRequest(req) {
+  var hostname = (req.hostname || '').toLowerCase();
+  return hostname.split('.')[0] === 'quran';
+}
+
+function quranSubdomainCanonicalPath(req, canonicalPath) {
+  if (!isQuranSubdomainRequest(req))
+    return canonicalPath;
+  if (canonicalPath === '/quran')
+    return '/';
+  if (canonicalPath.startsWith('/quran/'))
+    return canonicalPath.substring('/quran'.length) || '/';
+  if (canonicalPath.startsWith('/quran:'))
+    return `/${canonicalPath.substring('/quran:'.length)}`;
+  return canonicalPath;
+}
+
 function redirectCanonicalReferencePath(req, res, canonicalPath) {
-  if (req.path === canonicalPath)
+  var canonicalRequestPath = quranSubdomainCanonicalPath(req, canonicalPath);
+  if (req.path === canonicalRequestPath || req.quranSubdomainOriginalPath === canonicalRequestPath)
     return false;
-  res.redirect(301, `${canonicalPath}${appendOriginalQuery(req)}`);
+  var redirectPath = (!Utils.isLocalhostRequest(req) && Utils.isQuranUrlPath(canonicalPath))
+    ? Utils.quranUrl(req, canonicalPath)
+    : canonicalRequestPath;
+  res.redirect(301, `${redirectPath}${appendOriginalQuery(req)}`);
   return true;
 }
 
@@ -221,6 +242,14 @@ router.all('/do/:id', async function (req, res, next) {
 router.get('/sitemap\.txt', async function (req, res, next) {
   var txt = '';
   var domain = global.settings.site.url;
+  var quranDomain = 'https://quran.islamunlocked.com';
+  var sitemapUrl = function (alias, h1, h2) {
+    if (alias === 'quran')
+      return `${quranDomain}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
+    if (alias.indexOf('quran:') === 0)
+      return `${quranDomain}/${alias.substring('quran:'.length)}\n`;
+    return `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
+  };
   res.setHeader('content-type', 'text/plain');
   txt += `${domain}\n`;
   txt += `${domain}/books\n`;
@@ -256,8 +285,7 @@ router.get('/sitemap\.txt', async function (req, res, next) {
     var alias = results[i].alias;
     var h1 = Utils.emptyIfNull(results[i].h1).toString().replace(/\.0+$/, '');
     var h2 = Utils.emptyIfNull(results[i].h2).toString();
-    var url = `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
-    txt += url;
+    txt += sitemapUrl(alias, h1, h2);
   }
   res.end(txt);
   return;
@@ -1202,7 +1230,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     if (bookAlias === 'quran' && shouldRedirectQuranSurahPath(req)) {
       var firstSectionNum = await firstQuranSectionNumber(chapterNum);
       if (firstSectionNum)
-        return res.redirect(302, `/quran/${chapterNum}/${firstSectionNum}`);
+        return res.redirect(302, Utils.quranUrl(req, `/quran/${chapterNum}/${firstSectionNum}`));
     }
 
     var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v40-corpus-lazy' : '';

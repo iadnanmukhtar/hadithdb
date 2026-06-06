@@ -1508,7 +1508,7 @@ del em strong {
 	align-items: end;
 	display: grid;
 	gap: .5rem;
-	grid-template-columns: minmax(14rem, 1fr) minmax(7rem, .35fr) auto;
+	grid-template-columns: minmax(10rem, 1fr) minmax(3.8rem, .22fr) minmax(3.8rem, .22fr) auto;
 	margin-top: 1lh;
 	text-indent: 0;
 }
@@ -1517,14 +1517,39 @@ del em strong {
 	min-width: 0;
 }
 
-.quran-passage-navigator .form-control {
+.quran-passage-navigator > .form-label .form-control,
+.quran-passage-navigator > .quran-passage-search {
 	width: 100%;
+}
+
+.quran-passage-search-group {
+	min-width: 0;
+}
+
+.quran-toc-navigator {
+	grid-template-columns: minmax(4rem, .18fr) minmax(4rem, .18fr) auto;
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 42rem;
+}
+
+.quran-toc-search-bar {
+	border-color: var(--c-accent);
+	font-size: 1.5em;
+}
+
+.quran-toc-search-group {
+	grid-column: 1 / -1;
 }
 
 @media (max-width: 575.98px) {
 	.quran-passage-navigator {
 		gap: .35rem;
-		grid-template-columns: minmax(0, 1fr) minmax(3.8rem, .35fr) auto;
+		grid-template-columns: minmax(0, 1fr) minmax(3.2rem, .2fr) minmax(3.2rem, .2fr) auto;
+	}
+
+	.quran-toc-navigator {
+		grid-template-columns: minmax(0, 1fr) minmax(3.2rem, .2fr) minmax(3.2rem, .2fr) auto;
 	}
 
 	.quran-passage-go {

@@ -5,7 +5,7 @@
 	<div class="h-menu-scroller">
 		<div class="btn-group h-menu text-nowrap" role="group">
 			<% for (b of books.filter(b => !b.hidden)) { %>
-			  <a class="btn btn-outline-primary text-nowrap" href="/<%= b.alias%>" title="<%= `${b.name_en} ${b.name}` %>"><%= b.shortName_en %></a>
+			  <a class="btn btn-outline-primary text-nowrap" href="<%= utils.urlFor(req, `/${b.alias}`) %>" title="<%= `${b.name_en} ${b.name}` %>"><%= b.shortName_en %></a>
 			<% } %>
 		</div>
 	</div>
