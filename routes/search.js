@@ -224,7 +224,9 @@ router.all('/do/:id', async function (req, res, next) {
 router.get('/sitemap\.txt', async function (req, res, next) {
   var txt = '';
   var domain = global.settings.site.url;
-  var quranDomain = 'https://quran.islamunlocked.com';
+  var quranDomain = Utils.quranBaseUrl();
+  var quranOnly = Utils.isQuranSubdomainRequest(req);
+  var bookSitemapFilter = quranOnly ? `= 'quran'` : `<> 'quran'`;
   var sitemapUrl = function (alias, h1, h2) {
     if (alias === 'quran')
       return `${quranDomain}/quran${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
@@ -233,31 +235,34 @@ router.get('/sitemap\.txt', async function (req, res, next) {
     return `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
   };
   res.setHeader('content-type', 'text/plain');
-  txt += `${domain}\n`;
-  txt += `${domain}/books\n`;
-  txt += `${domain}/highlights\n`;
-  txt += `${domain}/titled\n`;
-  txt += `${domain}/commented\n`;
-  txt += `${domain}/requests\n`;
-  txt += `${domain}/blog\n`;
-  const files = fs.readdirSync(global.settings.blog.dir);
-  for (var file of files) {
-    if (file.endsWith('.md')) {
-      try {
-        const { attributes } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
-        txt += `${domain}/blog/${file.replace(/.md$/, '')}\n`;
-      } catch (e) {
+  if (!quranOnly) {
+    txt += `${domain}\n`;
+    txt += `${domain}/books\n`;
+    txt += `${domain}/highlights\n`;
+    txt += `${domain}/titled\n`;
+    txt += `${domain}/commented\n`;
+    txt += `${domain}/requests\n`;
+    txt += `${domain}/blog\n`;
+    const files = fs.readdirSync(global.settings.blog.dir);
+    for (var file of files) {
+      if (file.endsWith('.md')) {
+        try {
+          const { attributes } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
+          txt += `${domain}/blog/${file.replace(/.md$/, '')}\n`;
+        } catch (e) {
+        }
       }
     }
   }
   var results = await global.query(`
     select b.alias, null as h1, null as h2 from books b
+    where b.alias ${bookSitemapFilter}
     union
     select b.alias, t.h1, t.h2 from toc t, books b
-    where t.bookId = b.id and t.level < 3
+    where t.bookId = b.id and t.level < 3 and b.alias ${bookSitemapFilter}
     union
     select concat(b.alias, ':', num) as alias, null h1, null as h2 from hadiths h, books b
-    where h.bookId = b.id and h.title_en is not null
+    where h.bookId = b.id and h.title_en is not null and b.alias ${bookSitemapFilter}
     -- union
     -- select distinct 'tag' as alias,t.text_en as h1, null as h2 from tags t, hadiths_tags ht
     -- where t.id = ht.tagId
