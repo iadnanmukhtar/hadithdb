@@ -1523,11 +1523,13 @@ del em strong {
 
 @media (max-width: 575.98px) {
 	.quran-passage-navigator {
-		grid-template-columns: 1fr;
+		gap: .35rem;
+		grid-template-columns: minmax(0, 1fr) minmax(3.8rem, .35fr) auto;
 	}
 
 	.quran-passage-go {
-		width: 100%;
+		padding-left: .55rem;
+		padding-right: .55rem;
 	}
 }
 
