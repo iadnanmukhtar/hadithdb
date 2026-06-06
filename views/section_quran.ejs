@@ -61,6 +61,40 @@
       }
       : null;
     var quranCorpusUrl = quranCorpusSection ? `/quran-corpus/${quranCorpusSection.surah}/${quranCorpusSection.h2}` : '';
+    var quranNavigatorCurrent = firstSelectedAyah || results[0] || {};
+    var quranNavigatorRef = (quranNavigatorCurrent.en && quranNavigatorCurrent.en.num) || quranNavigatorCurrent.num || quranNavigatorCurrent.ref || `${section.h1 || 1}:1`;
+    quranNavigatorRef = arabic.toLatinDigits(quranNavigatorRef.toString().replace(/^quran:/, ''));
+    var quranNavigatorParts = quranNavigatorRef.split(/:/);
+    var quranNavigatorSurah = parseInt(quranNavigatorParts[0] || section.h1 || 1, 10);
+    var quranNavigatorAyah = parseInt(quranNavigatorParts[1] || quranNavigatorCurrent.numInChapter || 1, 10);
+    if (!Number.isInteger(quranNavigatorSurah))
+      quranNavigatorSurah = parseInt(section.h1 || 1, 10);
+    if (!Number.isInteger(quranNavigatorAyah))
+      quranNavigatorAyah = 1;
+    var quranNavigatorAyahCounts = new Map((global.surahs || []).map(function (surah) {
+      return [Number(surah.num), Number(surah.ayahs)];
+    }));
+    var quranNavigatorSurahSource = Array.isArray(locals.quranSurahs) && locals.quranSurahs.length > 0
+      ? locals.quranSurahs
+      : (global.surahs || []);
+    var quranNavigatorSurahs = quranNavigatorSurahSource.map(function (surah) {
+      return {
+        num: Number(surah.num),
+        name_en: surah.name_en,
+        name_ar: surah.name_ar,
+        ayahs: Number(surah.ayahs) || quranNavigatorAyahCounts.get(Number(surah.num))
+      };
+    }).filter(function (surah) {
+      return Number.isInteger(surah.num);
+    }).sort(function (a, b) {
+      return a.num - b.num;
+    });
+    var quranNavigatorCurrentSurah = quranNavigatorSurahs.find(function (surah) {
+      return surah.num === quranNavigatorSurah;
+    });
+    var quranNavigatorAyahCount = quranNavigatorCurrentSurah ? quranNavigatorCurrentSurah.ayahs : Math.max(results.length, quranNavigatorAyah);
+    var quranNavigatorSurahValue = quranNavigatorCurrentSurah ? `${quranNavigatorCurrentSurah.num} ${quranNavigatorCurrentSurah.name_en}` : quranNavigatorSurah;
+    var quranNavigatorAyahValue = quranNavigatorAyah;
     var page = {
       menu: 'Section',
       title_en: `${site.shortName} | ${book.shortName_en} ${chapter.h1}${section.level > 1 ? ` §${section.h1}.${section.h2}` : ''} ${section.title_en || section.title}`,
@@ -93,6 +127,20 @@
       <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
+
+      <% if (quranNavigatorSurahs.length > 0) { %>
+        <form class="quran-passage-navigator mb-3" data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
+          <label class="form-label mb-0">
+            <input type="text" class="form-control form-control-sm quran-passage-surah" value="<%= quranNavigatorSurahValue %>" aria-label="Select Quran surah" autocomplete="off" required>
+          </label>
+          <label class="form-label mb-0">
+            <input type="text" inputmode="numeric" class="form-control form-control-sm quran-passage-ayah" value="<%= quranNavigatorAyahValue %>" aria-label="Select Quran ayah" autocomplete="off" required>
+          </label>
+          <button type="submit" class="btn btn-sm btn-outline-primary quran-passage-go">
+            <span class="bi bi-arrow-right-circle"></span> Go
+          </button>
+        </form>
+      <% } %>
       
       <% if (selectedAyahs.length > 0) { %>
         <% var selectedAyahModalIndex = quranAyahModalItems.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>

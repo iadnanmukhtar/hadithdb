@@ -76,6 +76,7 @@ $(function () {
 	});
 
 	initSearchAutocomplete();
+	initQuranPassageNavigator();
 
 	$('#toc2').on('hidden.bs.collapse', function (event) {
 		$('.toggle').removeClass('bi-toggle-on');
@@ -216,9 +217,11 @@ function initQuranTafsirFootnotePopups(root) {
 		var content = footnoteContent(link);
 		if (!content)
 			return;
+		var tafsirText = $(link).closest('.quran-tafsir-text');
 		popup = $('<aside>').addClass('quran-tafsir-footnote-popup').attr({
 			role: 'tooltip',
-			dir: $(link).closest('.quran-tafsir-text').attr('dir') || 'auto'
+			dir: tafsirText.attr('dir') || 'auto',
+			lang: tafsirText.attr('lang') || ''
 		}).appendTo(doc.body);
 		popup.append(content);
 		positionPopup(link);
@@ -1340,6 +1343,224 @@ function buildSearchAutocompleteParams($input, term) {
 		params.push({ name: 'b', value: this.value });
 	});
 	return $.param(params);
+}
+
+function initQuranPassageNavigator() {
+	$('[data-quran-passage-navigator]').each(function () {
+		var form = this;
+		var $form = $(form);
+		if ($form.data('quranNavigatorBound'))
+			return;
+		$form.data('quranNavigatorBound', true);
+		var surahs = [];
+		try {
+			surahs = JSON.parse(form.dataset.surahs || '[]');
+		} catch (err) {
+			surahs = [];
+		}
+		var $surahInput = $form.find('.quran-passage-surah');
+		var $ayahInput = $form.find('.quran-passage-ayah');
+		var toArabicDigits = function (value) {
+			return String(value).replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[digit]);
+		};
+		var toLatinDigits = function (value) {
+			return String(value)
+				.replace(/[٠-٩]/g, digit => '٠١٢٣٤٥٦٧٨٩'.indexOf(digit))
+				.replace(/[۰-۹]/g, digit => '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit));
+		};
+		var normalizeText = function (value) {
+			return toLatinDigits(value || '').trim().toLowerCase();
+		};
+		var normalizeSearchText = function (value) {
+			return normalizeText(value)
+				.normalize('NFD')
+				.replace(/\p{Diacritic}/gu, '')
+				.replace(/[^\p{L}\p{M}\d]+/gu, ' ')
+				.replace(/\s+/g, ' ')
+				.trim();
+		};
+		var surahLabel = function (surah) {
+			return `${surah.num} / ${toArabicDigits(surah.num)} - ${surah.name_en} / ${surah.name_ar}`;
+		};
+		var surahInputLabel = function (surah) {
+			return `${surah.num} ${surah.name_en}`;
+		};
+		var ayahLabel = function (ayah) {
+			return `${ayah} / ${toArabicDigits(ayah)}`;
+		};
+		var surahMatches = function (surah, term) {
+			var normalized = normalizeSearchText(term);
+			if (!normalized)
+				return true;
+			var haystack = normalizeSearchText([
+				surah.num,
+				toArabicDigits(surah.num),
+				surah.name_en,
+				surah.name_ar,
+				surahLabel(surah)
+			].join(' '));
+			return haystack.includes(normalized);
+		};
+		var findSurah = function (value) {
+			var normalized = normalizeText(value);
+			var leadingNumber = normalized.match(/^\d+/);
+			if (leadingNumber) {
+				var numberedSurah = surahs.find(item => Number(item.num) === Number(leadingNumber[0]));
+				if (numberedSurah)
+					return numberedSurah;
+			}
+			var searchable = normalizeSearchText(value);
+			return surahs.find(function (surah) {
+				return searchable && (
+					searchable === normalizeSearchText(surah.name_en)
+					|| searchable === normalizeSearchText(surah.name_ar)
+					|| normalizeSearchText(surahLabel(surah)).includes(searchable)
+				);
+			});
+		};
+		var ayahNumber = function (value) {
+			var match = normalizeText(value).match(/\d+/);
+			return match ? Number(match[0]) : NaN;
+		};
+		var selectedSurah = function () {
+			return findSurah($surahInput.val()) || surahs[0];
+		};
+		var clampAyah = function (surah, value) {
+			var ayah = ayahNumber(value);
+			var ayahCount = Number(surah && surah.ayahs) || 1;
+			if (!Number.isInteger(ayah))
+				ayah = 1;
+			return Math.min(Math.max(ayah, 1), ayahCount);
+		};
+		var syncSurah = function () {
+			var surah = findSurah($surahInput.val());
+			if (!surah)
+				return null;
+			$surahInput.val(surahInputLabel(surah)).removeClass('is-invalid');
+			$ayahInput.val(clampAyah(surah, $ayahInput.val())).removeClass('is-invalid');
+			return surah;
+		};
+		var renderQuranSuggestion = function (ul, item, isAyah) {
+			var $item = $('<li>');
+			var $row = $('<div>').addClass('search-autocomplete-item search-autocomplete-quran');
+			$('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.label).appendTo($row);
+			if (isAyah) {
+				$('<div>').addClass('search-autocomplete-meta')
+					.append($('<span>').addClass('search-autocomplete-meta-en').text(item.metadata_en))
+					.appendTo($row);
+			} else {
+				var $meta = $('<div>').addClass('search-autocomplete-meta').appendTo($row);
+				$('<span>').addClass('search-autocomplete-meta-ar').attr({ lang: 'ar', dir: 'rtl' }).text(item.metadata_ar).appendTo($meta);
+				$('<span>').addClass('search-autocomplete-meta-en').attr({ lang: 'en', dir: 'ltr' }).text(item.metadata_en).appendTo($meta);
+			}
+			return $item.append($row).appendTo(ul);
+		};
+			if ($.fn.autocomplete) {
+				$surahInput.autocomplete({
+				appendTo: $form,
+				delay: 0,
+				minLength: 0,
+				source: function (request, response) {
+					response(surahs
+						.filter(surah => surahMatches(surah, request.term))
+						.slice(0, 12)
+						.map(surah => ({
+							label: surahLabel(surah),
+							value: surahInputLabel(surah),
+							surah: surah,
+							metadata_en: `${surah.num} ayahs: ${surah.ayahs}`,
+							metadata_ar: surah.name_ar
+						})));
+				},
+				focus: function (event) {
+					event.preventDefault();
+				},
+				select: function (event, ui) {
+					event.preventDefault();
+					$surahInput.val(ui.item.value).removeClass('is-invalid');
+					$ayahInput.val(clampAyah(ui.item.surah, $ayahInput.val())).removeClass('is-invalid').focus();
+				},
+				open: function () {
+					var autocomplete = $surahInput.autocomplete('widget');
+					autocomplete.addClass('search-autocomplete-menu quran-passage-autocomplete-menu');
+					autocomplete.css('width', $surahInput.outerWidth());
+				}
+			}).autocomplete('instance')._renderItem = function (ul, item) {
+				return renderQuranSuggestion(ul, item, false);
+			};
+			$ayahInput.autocomplete({
+				appendTo: $form,
+				delay: 0,
+				minLength: 0,
+				source: function (request, response) {
+					var surah = selectedSurah();
+					var ayahCount = Number(surah && surah.ayahs) || 1;
+					var normalized = normalizeText(request.term);
+					var requestedNumber = ayahNumber(normalized);
+					var items = [];
+					for (var ayah = 1; ayah <= ayahCount; ayah++) {
+						var label = ayahLabel(ayah);
+						if (normalized && !label.includes(normalized) && ayah !== requestedNumber)
+							continue;
+						items.push({
+							label: label,
+							value: String(ayah),
+							ayah: ayah,
+							metadata_en: surah ? `${surah.name_en} ${ayah}` : `Ayah ${ayah}`
+						});
+						if (items.length >= 20)
+							break;
+					}
+					response(items);
+				},
+				focus: function (event) {
+					event.preventDefault();
+				},
+				select: function (event, ui) {
+					event.preventDefault();
+					$ayahInput.val(ui.item.value).removeClass('is-invalid');
+				},
+				open: function () {
+					var autocomplete = $ayahInput.autocomplete('widget');
+					autocomplete.addClass('search-autocomplete-menu quran-passage-autocomplete-menu');
+					autocomplete.css('width', $ayahInput.outerWidth());
+				}
+				}).autocomplete('instance')._renderItem = function (ul, item) {
+					return renderQuranSuggestion(ul, item, true);
+				};
+				$surahInput.add($ayahInput).on('focus click', function () {
+					var $input = $(this);
+					if (!$input.data('quranNavigatorPreviousValue'))
+						$input.data('quranNavigatorPreviousValue', $input.val());
+					$input.val('');
+					$input.autocomplete('search', '');
+				});
+			}
+			$surahInput.on('change blur', function () {
+				if (!$surahInput.val())
+					$surahInput.val($surahInput.data('quranNavigatorPreviousValue') || '');
+				syncSurah();
+				$surahInput.removeData('quranNavigatorPreviousValue');
+			});
+			$ayahInput.on('change blur', function () {
+				if (!$ayahInput.val())
+					$ayahInput.val($ayahInput.data('quranNavigatorPreviousValue') || '');
+				var surah = selectedSurah();
+				$ayahInput.val(clampAyah(surah, $ayahInput.val())).removeClass('is-invalid');
+				$ayahInput.removeData('quranNavigatorPreviousValue');
+			});
+		$form.on('submit', function (event) {
+			event.preventDefault();
+			var surah = syncSurah();
+			var ayah = ayahNumber($ayahInput.val());
+			if (!surah || !Number.isInteger(ayah) || ayah < 1 || ayah > Number(surah.ayahs)) {
+				$surahInput.toggleClass('is-invalid', !surah);
+				$ayahInput.toggleClass('is-invalid', !Number.isInteger(ayah) || ayah < 1 || (surah && ayah > Number(surah.ayahs)));
+				return;
+			}
+			window.location.href = `/quran:${surah.num}:${ayah}`;
+		});
+	});
 }
 
 function cleanText(s) {

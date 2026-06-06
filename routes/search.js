@@ -457,6 +457,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
 
     var defaultPassage = req.query.passage != undefined || req.path.startsWith('/passage:') || req.params.bookAlias === 'quran';
     if (defaultPassage) {
+      var quranSurahs = await getQuranSurahsFromIndex();
       var containingSections = await getQuranSectionsForAyahRange(surah.num, ayah1, ayah2, selectedAyahs[0]);
       if (containingSections.length > 0) {
         section = containingSections[0];
@@ -478,7 +479,8 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         results: results,
         selectedAyah: (ayah1 == ayah2 && selectedAyahs.length > 0) ? selectedAyahs[0] : undefined,
         selectedAyahs: selectedAyahs,
-        quranSubsections: quranSubsections
+        quranSubsections: quranSubsections,
+        quranSurahs: quranSurahs
       });
     } else {
       res.render('section', {
@@ -632,13 +634,15 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
   var quranSubsections = await getQuranSectionSubsections(section);
   var results = await getQuranSectionPassageItems(section, 0, 1000);
   await addQuranPassageBoundaryRefs(results);
+  var quranSurahs = await getQuranSurahsFromIndex();
 
   res.render('section_quran', {
     section: section,
     results: results,
     selectedAyah: selectedAyah,
     selectedAyahs: [selectedAyah],
-    quranSubsections: quranSubsections
+    quranSubsections: quranSubsections,
+    quranSurahs: quranSurahs
   });
 }
 
@@ -838,6 +842,40 @@ async function getQuranSurahRangeHeadingsFromIndex(surah) {
   } catch (err) {
     debug(`Quran heading index lookup failed for surah ${surah}: ${err.message}`);
     return null;
+  }
+}
+
+async function getQuranSurahsFromIndex() {
+  try {
+    var docs = await Index.docsFromQuery(Heading.INDEX, {
+      bool: {
+        filter: [
+          { term: { book_alias: 'quran' } },
+          { term: { level: 1 } }
+        ]
+      }
+    }, 0, 200, 'ordinal');
+    return docs
+      .map(doc => Heading.toLevel(doc))
+      .map(heading => {
+        var fallback = findSurah(heading.h1);
+        return {
+          num: Number(heading.h1),
+          name_en: heading.title_en || fallback?.name_en || '',
+          name_ar: heading.title || fallback?.name_ar || '',
+          ayahs: Number(fallback?.ayahs)
+        };
+      })
+      .filter(surah => Number.isInteger(surah.num))
+      .sort((a, b) => a.num - b.num);
+  } catch (err) {
+    debug(`Quran surah index lookup failed: ${err.message}`);
+    return (global.surahs || []).map(surah => ({
+      num: Number(surah.num),
+      name_en: surah.name_en,
+      name_ar: surah.name_ar,
+      ayahs: Number(surah.ayahs)
+    }));
   }
 }
 
@@ -1283,7 +1321,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       }
     }
 
-    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v40-corpus-lazy' : '';
+    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v41-quran-combobox-index' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
@@ -1302,6 +1340,9 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     await chapter.getSections();
     var quranSubsections = (bookAlias === 'quran' && req.query.ayat == undefined)
       ? await getQuranSectionSubsections(section)
+      : [];
+    var quranSurahs = (bookAlias === 'quran' && req.query.ayat == undefined)
+      ? await getQuranSurahsFromIndex()
       : [];
     if (bookAlias === 'quran' && req.query.ayat == undefined)
       results = await getQuranSectionPassageItems(section, offset);
@@ -1325,6 +1366,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         section: section,
         results: results,
         quranSubsections: quranSubsections,
+        quranSurahs: quranSurahs,
         req: req,
         res: res
       });
@@ -1333,7 +1375,8 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       res.render('section_quran', {
         section: section,
         results: results,
-        quranSubsections: quranSubsections
+        quranSubsections: quranSubsections,
+        quranSurahs: quranSurahs
       });
     } else {
 
