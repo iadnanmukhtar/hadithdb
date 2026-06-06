@@ -71,33 +71,6 @@ const friendlyHttpErrorMessage = (statusCode, message) => {
   return message || STATUS_CODES[statusCode] || 'An error occurred.';
 };
 
-const isQuranSubdomainRequest = (req) => {
-  const hostname = (req.hostname || '').toLowerCase();
-  return hostname.split('.')[0] === 'quran';
-};
-
-const shouldSkipQuranSubdomainRewrite = (req) => {
-  if (!isQuranSubdomainRequest(req))
-    return true;
-  if (req.path === '/' && req.query && req.query.q !== undefined)
-    return true;
-  if (req.path === '/')
-    return false;
-  if (req.path === '/quran' || req.path.startsWith('/quran/') || req.path.startsWith('/quran:'))
-    return true;
-  if (/^\/[^/]+:/.test(req.path))
-    return true;
-  return /^\/(?:autocomplete|captcha|passage:|quran-corpus|reinit|sitemap\.txt)(?:\/|$)/.test(req.path);
-};
-
-const rewriteQuranSubdomainPath = (req, res, next) => {
-  if (!shouldSkipQuranSubdomainRewrite(req)) {
-    req.quranSubdomainOriginalPath = req.path;
-    req.url = req.url === '/' ? '/quran' : `/quran${req.url}`;
-  }
-  next();
-};
-
 const buildErrorViewLocals = (statusCode, message, error, req, res) => {
   const finalMessage = defaultHttpErrorMessage(statusCode, message);
   const finalReq = req || { path: '/', query: {}, cookies: {}, originalUrl: '/' };
@@ -193,7 +166,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/user-settings', userSettingsRouter);
   app.use('/chatbot', chatbotRouter);
   app.use('/rag', chatbotRouter);
-  app.use(rewriteQuranSubdomainPath);
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {

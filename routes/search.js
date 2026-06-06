@@ -51,30 +51,12 @@ function appendOriginalQuery(req) {
   return queryIndex >= 0 ? req.originalUrl.substring(queryIndex) : '';
 }
 
-function isQuranSubdomainRequest(req) {
-  var hostname = (req.hostname || '').toLowerCase();
-  return hostname.split('.')[0] === 'quran';
-}
-
-function quranSubdomainCanonicalPath(req, canonicalPath) {
-  if (!isQuranSubdomainRequest(req))
-    return canonicalPath;
-  if (canonicalPath === '/quran')
-    return '/';
-  if (canonicalPath.startsWith('/quran/'))
-    return canonicalPath.substring('/quran'.length) || '/';
-  if (canonicalPath.startsWith('/quran:'))
-    return `/${canonicalPath.substring('/quran:'.length)}`;
-  return canonicalPath;
-}
-
 function redirectCanonicalReferencePath(req, res, canonicalPath) {
-  var canonicalRequestPath = quranSubdomainCanonicalPath(req, canonicalPath);
-  if (req.path === canonicalRequestPath || req.quranSubdomainOriginalPath === canonicalRequestPath)
+  if (req.path === canonicalPath)
     return false;
   var redirectPath = (!Utils.isLocalhostRequest(req) && Utils.isQuranUrlPath(canonicalPath))
     ? Utils.quranUrl(req, canonicalPath)
-    : canonicalRequestPath;
+    : canonicalPath;
   res.redirect(301, `${redirectPath}${appendOriginalQuery(req)}`);
   return true;
 }
@@ -245,9 +227,9 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   var quranDomain = 'https://quran.islamunlocked.com';
   var sitemapUrl = function (alias, h1, h2) {
     if (alias === 'quran')
-      return `${quranDomain}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
+      return `${quranDomain}/quran${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
     if (alias.indexOf('quran:') === 0)
-      return `${quranDomain}/${alias.substring('quran:'.length)}\n`;
+      return `${quranDomain}/${alias}\n`;
     return `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
   };
   res.setHeader('content-type', 'text/plain');
@@ -559,8 +541,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     if (!book) {
       var surah = findSurah(req.params.bookAlias);
       if (surah) {
-        req.params.bookAlias = 'quran';
-        req.params.num = `${surah.num}:${req.params.num}`;
+        return redirectCanonicalReferencePath(req, res, `/quran:${surah.num}:${req.params.num}`);
       }
     }
   }

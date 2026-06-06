@@ -13,12 +13,6 @@
   function quranCanonicalPath(path) {
     if (!path)
       return path;
-    if (path === '/quran')
-      return '/';
-    if (path.indexOf('/quran/') === 0)
-      return path.substring('/quran'.length) || '/';
-    if (path.indexOf('/quran:') === 0)
-      return '/' + path.substring('/quran:'.length);
     return path;
   }
   function canonicalUrlForPath(path) {
