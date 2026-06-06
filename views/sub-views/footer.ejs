@@ -29,6 +29,9 @@
 		const LIKE_KEY = 'hadithLikedMap';
 		const BOOKMARK_KEY = 'hadithBookmarkMap';
 		const HEADING_BOOKMARK_KEY = 'headingBookmarkMap';
+		const USER_SETTINGS_ENDPOINT = '/user-settings';
+		let userSettings = {};
+		let bookmarkSettingsLoaded = false;
 		const commentCountObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
 			entries.forEach(entry => {
 				if (!entry.isIntersecting) return;
@@ -62,6 +65,151 @@
 				}
 			} catch (err) {
 				console.warn(`Could not persist map for ${key}`, err);
+			}
+		};
+
+		const removeLegacyBookmarkStorage = () => {
+			try {
+				localStorage.removeItem(BOOKMARK_KEY);
+				localStorage.removeItem(HEADING_BOOKMARK_KEY);
+			} catch (err) {
+				console.warn('Could not clear migrated bookmark storage', err);
+			}
+		};
+
+		const readLegacyMap = (key) => {
+			const map = {};
+			loadMap(key, map);
+			return map;
+		};
+
+		const idsFromMap = (map) => Object.keys(map)
+			.map(id => parseInt(id, 10))
+			.filter(id => Number.isInteger(id) && id > 0);
+
+		const replaceMap = (target, ids) => {
+			Object.keys(target).forEach(key => delete target[key]);
+			(Array.isArray(ids) ? ids : []).forEach(id => {
+				const parsed = parseInt(id, 10);
+				if (Number.isInteger(parsed) && parsed > 0) target[parsed] = true;
+			});
+		};
+
+		const normalizeSettings = (settings) => {
+			const source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
+			const bookmarks = source.bookmarks && typeof source.bookmarks === 'object' && !Array.isArray(source.bookmarks)
+				? source.bookmarks
+				: {};
+			return {
+				...source,
+				bookmarks: {
+					hadiths: Array.from(new Set((Array.isArray(bookmarks.hadiths) ? bookmarks.hadiths : [])
+						.map(id => parseInt(id, 10))
+						.filter(id => Number.isInteger(id) && id > 0))),
+					headings: Array.from(new Set((Array.isArray(bookmarks.headings) ? bookmarks.headings : [])
+						.map(id => parseInt(id, 10))
+						.filter(id => Number.isInteger(id) && id > 0)))
+				}
+			};
+		};
+
+		const settingsFromBookmarkMaps = () => normalizeSettings({
+			...userSettings,
+			bookmarks: {
+				hadiths: idsFromMap(bookmarkMap),
+				headings: idsFromMap(headingBookmarkMap)
+			}
+		});
+
+		const waitForHadithAuth = () => new Promise(resolve => {
+			if (window.hadithAuth && window.hadithAuth.getToken) return resolve(window.hadithAuth);
+			let attempts = 0;
+			const timer = window.setInterval(() => {
+				attempts += 1;
+				if (window.hadithAuth && window.hadithAuth.getToken) {
+					window.clearInterval(timer);
+					resolve(window.hadithAuth);
+				} else if (attempts >= 50) {
+					window.clearInterval(timer);
+					resolve(null);
+				}
+			}, 100);
+		});
+
+		const getSettingsToken = async () => {
+			const auth = await waitForHadithAuth();
+			return auth && auth.getToken ? auth.getToken() : null;
+		};
+
+		const saveBookmarkSettings = async () => {
+			const token = await getSettingsToken();
+			if (!token) return false;
+			const settings = settingsFromBookmarkMaps();
+			const res = await fetch(USER_SETTINGS_ENDPOINT, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({ settings })
+			});
+			if (!res.ok) throw new Error('Failed to save user settings');
+			const data = await res.json();
+			userSettings = normalizeSettings(data.settings || settings);
+			return true;
+		};
+
+		const applyBookmarkSettings = (settings) => {
+			userSettings = normalizeSettings(settings);
+			replaceMap(bookmarkMap, userSettings.bookmarks.hadiths);
+			replaceMap(headingBookmarkMap, userSettings.bookmarks.headings);
+		};
+
+		const loadBookmarkSettings = async () => {
+			const token = await getSettingsToken();
+			if (!token) {
+				bookmarkSettingsLoaded = true;
+				initBookmarks();
+				initHeadingBookmarks();
+				document.dispatchEvent(new CustomEvent('bookmarkSettingsLoaded'));
+				return;
+			}
+			try {
+				const res = await fetch(USER_SETTINGS_ENDPOINT, {
+					headers: { 'Authorization': `Bearer ${token}` }
+				});
+				if (!res.ok) throw new Error('Failed to load user settings');
+				const data = await res.json();
+				applyBookmarkSettings(data.settings || {});
+				const legacyHadithBookmarks = readLegacyMap(BOOKMARK_KEY);
+				const legacyHeadingBookmarks = readLegacyMap(HEADING_BOOKMARK_KEY);
+				const legacyHadithIds = idsFromMap(legacyHadithBookmarks);
+				const legacyHeadingIds = idsFromMap(legacyHeadingBookmarks);
+				let migrated = false;
+				legacyHadithIds.forEach(id => {
+					if (!bookmarkMap[id]) {
+						bookmarkMap[id] = true;
+						migrated = true;
+					}
+				});
+				legacyHeadingIds.forEach(id => {
+					if (!headingBookmarkMap[id]) {
+						headingBookmarkMap[id] = true;
+						migrated = true;
+					}
+				});
+				if (migrated)
+					await saveBookmarkSettings();
+				if (legacyHadithIds.length || legacyHeadingIds.length)
+					removeLegacyBookmarkStorage();
+			} catch (err) {
+				console.warn('Could not load bookmark settings', err);
+				toastr.warning('Unable to load saved bookmarks.', 'Bookmarks');
+			} finally {
+				bookmarkSettingsLoaded = true;
+				initBookmarks();
+				initHeadingBookmarks();
+				document.dispatchEvent(new CustomEvent('bookmarkSettingsLoaded'));
 			}
 		};
 
@@ -184,6 +332,15 @@
 			toastr.error('Please sign in to like or comment.', 'Sign-in required');
 		};
 
+		const requireBookmarkLogin = () => {
+			toastr.error('Please sign in to save bookmarks.', 'Sign-in required');
+		};
+
+		const waitForBookmarkSettingsLoad = async () => {
+			if (!bookmarkSettingsLoaded && bookmarkSettingsReady)
+				await bookmarkSettingsReady;
+		};
+
 		const queueLikeFetch = (rawId) => {
 			const id = parseInt(rawId);
 			if (Number.isNaN(id) || loadedLikeIds.has(id) || pendingLikeIds.has(id) || loadingLikeIds.has(id)) return;
@@ -260,46 +417,102 @@
 			}
 		};
 
-		const toggleBookmark = (id) => {
+		const toggleBookmark = async (id) => {
+			await waitForBookmarkSettingsLoad();
+			const token = await getSettingsToken();
+			if (!token) {
+				requireBookmarkLogin();
+				return;
+			}
 			const bookmarked = !bookmarkMap[id];
 			if (bookmarked) bookmarkMap[id] = true;
 			else delete bookmarkMap[id];
-			persistMap(BOOKMARK_KEY, bookmarkMap);
 			setBookmarkState(id, bookmarked);
 			document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
 				detail: { hadithId: id, bookmarked }
 			}));
+			try {
+				await saveBookmarkSettings();
+			} catch (err) {
+				if (bookmarked) delete bookmarkMap[id];
+				else bookmarkMap[id] = true;
+				setBookmarkState(id, !bookmarked);
+				document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
+					detail: { hadithId: id, bookmarked: !bookmarked }
+				}));
+				toastr.error('Could not save bookmark. Please try again.', 'Bookmarks');
+				console.warn('Could not save bookmark', err);
+			}
 		};
 
-		const removeBookmark = (id) => {
+		const removeBookmark = async (id) => {
+			await waitForBookmarkSettingsLoad();
 			if (!bookmarkMap[id]) return;
 			delete bookmarkMap[id];
-			persistMap(BOOKMARK_KEY, bookmarkMap);
 			setBookmarkState(id, false);
 			document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
 				detail: { hadithId: id, bookmarked: false }
 			}));
+			try {
+				await saveBookmarkSettings();
+			} catch (err) {
+				bookmarkMap[id] = true;
+				setBookmarkState(id, true);
+				document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
+					detail: { hadithId: id, bookmarked: true }
+				}));
+				toastr.error('Could not remove bookmark. Please try again.', 'Bookmarks');
+				console.warn('Could not remove bookmark', err);
+			}
 		};
 
-		const toggleHeadingBookmark = (id) => {
+		const toggleHeadingBookmark = async (id) => {
+			await waitForBookmarkSettingsLoad();
+			const token = await getSettingsToken();
+			if (!token) {
+				requireBookmarkLogin();
+				return;
+			}
 			const bookmarked = !headingBookmarkMap[id];
 			if (bookmarked) headingBookmarkMap[id] = true;
 			else delete headingBookmarkMap[id];
-			persistMap(HEADING_BOOKMARK_KEY, headingBookmarkMap);
 			setHeadingBookmarkState(id, bookmarked);
 			document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
 				detail: { headingId: id, bookmarked }
 			}));
+			try {
+				await saveBookmarkSettings();
+			} catch (err) {
+				if (bookmarked) delete headingBookmarkMap[id];
+				else headingBookmarkMap[id] = true;
+				setHeadingBookmarkState(id, !bookmarked);
+				document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
+					detail: { headingId: id, bookmarked: !bookmarked }
+				}));
+				toastr.error('Could not save bookmark. Please try again.', 'Bookmarks');
+				console.warn('Could not save heading bookmark', err);
+			}
 		};
 
-		const removeHeadingBookmark = (id) => {
+		const removeHeadingBookmark = async (id) => {
+			await waitForBookmarkSettingsLoad();
 			if (!headingBookmarkMap[id]) return;
 			delete headingBookmarkMap[id];
-			persistMap(HEADING_BOOKMARK_KEY, headingBookmarkMap);
 			setHeadingBookmarkState(id, false);
 			document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
 				detail: { headingId: id, bookmarked: false }
 			}));
+			try {
+				await saveBookmarkSettings();
+			} catch (err) {
+				headingBookmarkMap[id] = true;
+				setHeadingBookmarkState(id, true);
+				document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
+					detail: { headingId: id, bookmarked: true }
+				}));
+				toastr.error('Could not remove bookmark. Please try again.', 'Bookmarks');
+				console.warn('Could not remove heading bookmark', err);
+			}
 		};
 
 		const initLikes = () => {
@@ -348,33 +561,54 @@
 		};
 
 		loadMap(LIKE_KEY, likedMap);
-		loadMap(BOOKMARK_KEY, bookmarkMap);
-		loadMap(HEADING_BOOKMARK_KEY, headingBookmarkMap);
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', init);
 		} else {
 			init();
 		}
+		const bookmarkSettingsReady = loadBookmarkSettings();
 		window.refreshHadithActions = init;
 		window.refreshHeadingBookmarks = initHeadingBookmarks;
 		window.hadithBookmarks = {
+			ready: bookmarkSettingsReady,
 			getAll: () => Object.keys(bookmarkMap).map(id => parseInt(id, 10)).filter(id => !Number.isNaN(id)),
 			remove: removeBookmark,
-			clear: () => {
+			clear: async () => {
+				await waitForBookmarkSettingsLoad();
+				const previous = { ...bookmarkMap };
 				Object.keys(bookmarkMap).forEach(key => delete bookmarkMap[key]);
-				persistMap(BOOKMARK_KEY, bookmarkMap);
 				initBookmarks();
 				document.dispatchEvent(new CustomEvent('hadithBookmarksCleared'));
+				try {
+					await saveBookmarkSettings();
+				} catch (err) {
+					replaceMap(bookmarkMap, idsFromMap(previous));
+					initBookmarks();
+					document.dispatchEvent(new CustomEvent('hadithBookmarkToggled'));
+					toastr.error('Could not clear bookmarks. Please try again.', 'Bookmarks');
+					console.warn('Could not clear hadith bookmarks', err);
+				}
 			}
 		};
 		window.headingBookmarks = {
+			ready: bookmarkSettingsReady,
 			getAll: () => Object.keys(headingBookmarkMap).map(id => parseInt(id, 10)).filter(id => !Number.isNaN(id)),
 			remove: removeHeadingBookmark,
-			clear: () => {
+			clear: async () => {
+				await waitForBookmarkSettingsLoad();
+				const previous = { ...headingBookmarkMap };
 				Object.keys(headingBookmarkMap).forEach(key => delete headingBookmarkMap[key]);
-				persistMap(HEADING_BOOKMARK_KEY, headingBookmarkMap);
 				initHeadingBookmarks();
 				document.dispatchEvent(new CustomEvent('headingBookmarksCleared'));
+				try {
+					await saveBookmarkSettings();
+				} catch (err) {
+					replaceMap(headingBookmarkMap, idsFromMap(previous));
+					initHeadingBookmarks();
+					document.dispatchEvent(new CustomEvent('headingBookmarkToggled'));
+					toastr.error('Could not clear bookmarks. Please try again.', 'Bookmarks');
+					console.warn('Could not clear heading bookmarks', err);
+				}
 			}
 		};
 	})();

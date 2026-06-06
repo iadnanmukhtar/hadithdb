@@ -1335,6 +1335,12 @@ del em strong {
 	text-indent: 2em;
 }
 
+.quran-passage-section .h:lang(ar) .chain,
+.quran-passage-section .h:lang(ar) .chain p,
+.quran-passage-section .h:lang(ar) .chain .quran-corpus-word {
+	font-family: Quran, Serif;
+}
+
 .h .body,
 .intro,
 .heading-intro {
@@ -1817,6 +1823,24 @@ del em strong {
 	margin-top: .5rem;
 }
 
+.tafsir-setting-row[draggable="true"] {
+	cursor: grab;
+}
+
+.tafsir-setting-row.is-dragging {
+	opacity: .55;
+}
+
+.tafsir-setting-drag-handle {
+	cursor: grab;
+	font-size: 1.1rem;
+	line-height: 1;
+}
+
+.tafsir-setting-row.is-dragging .tafsir-setting-drag-handle {
+	cursor: grabbing;
+}
+
 .quran-tafsir-ayah:lang(ar) {
 	color: var(--c-black);
 	font-family: Quran, Serif;
@@ -1829,6 +1853,10 @@ del em strong {
 .quran-tafsir-ayah:lang(ar) span {
 	font-family: Quran, Serif;
 	font-weight: 400;
+}
+
+.quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text {
+	font-weight: 700;
 }
 
 .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref {
@@ -2034,6 +2062,23 @@ del em strong {
 .body.passage .ayah.quran-prefatory-ayah .quran-ayah-body,
 .body.passage .ayah.quran-prefatory-ayah sup {
 	color: var(--c-gray-mid);
+}
+
+.body.passage:lang(ar) .ayah.quran-prefatory-ayah,
+.body.passage:lang(ar) .ayah.quran-prefatory-ayah a,
+.body.passage:lang(ar) .ayah.quran-prefatory-ayah .quran-ayah-body,
+.body.passage:lang(ar) .ayah.quran-prefatory-ayah .quran-corpus-word,
+.quran-passage-section [lang="ar"] .body.passage .ayah.quran-prefatory-ayah,
+.quran-passage-section [lang="ar"] .body.passage .ayah.quran-prefatory-ayah a,
+.quran-passage-section [lang="ar"] .body.passage .ayah.quran-prefatory-ayah .quran-ayah-body,
+.quran-passage-section [lang="ar"] .body.passage .ayah.quran-prefatory-ayah .quran-corpus-word {
+	font-family: Quran, Serif;
+}
+
+.body.passage:lang(ar) .ayah.quran-prefatory-ayah .quran-ayah-end-marker,
+.quran-passage-section [lang="ar"] .body.passage .ayah.quran-prefatory-ayah .quran-ayah-end-marker {
+	font-family: Quran, Serif;
+	font-weight: 400;
 }
 
 .heading-intro em,

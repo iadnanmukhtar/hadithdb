@@ -21,7 +21,7 @@
       <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
         <div>
           <h1 class="fs-4 mb-0">Bookmarks</h1>
-          <p class="text-muted small mb-0">Bookmarks are saved locally on this device.</p>
+          <p class="text-muted small mb-0">Bookmarks are saved to your account settings.</p>
         </div>
         <button type="button" class="btn btn-outline-primary btn-sm" id="clear-bookmarks-btn">Clear all</button>
       </div>
@@ -49,6 +49,13 @@
     const emptyEl = document.getElementById('bookmarks-empty');
     const clearBtn = document.getElementById('clear-bookmarks-btn');
 
+    const waitForBookmarkSettings = async () => {
+      const promises = [];
+      if (window.hadithBookmarks && window.hadithBookmarks.ready) promises.push(window.hadithBookmarks.ready);
+      if (window.headingBookmarks && window.headingBookmarks.ready) promises.push(window.headingBookmarks.ready);
+      if (promises.length) await Promise.all(promises);
+    };
+
     const setEmpty = (hasItems) => {
       if (hasItems) {
         emptyEl.classList.add('d-none');
@@ -58,6 +65,7 @@
     };
 
     const load = async () => {
+      await waitForBookmarkSettings();
       const ids = (window.hadithBookmarks && window.hadithBookmarks.getAll) ? window.hadithBookmarks.getAll() : [];
       const headingIds = (window.headingBookmarks && window.headingBookmarks.getAll) ? window.headingBookmarks.getAll() : [];
       let hadithCount = 0;
@@ -108,16 +116,12 @@
     };
 
     if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
+      clearBtn.addEventListener('click', async () => {
         if (window.hadithBookmarks && window.hadithBookmarks.clear) {
-          window.hadithBookmarks.clear();
-        } else {
-          localStorage.removeItem('hadithBookmarkMap');
+          await window.hadithBookmarks.clear();
         }
         if (window.headingBookmarks && window.headingBookmarks.clear) {
-          window.headingBookmarks.clear();
-        } else {
-          localStorage.removeItem('headingBookmarkMap');
+          await window.headingBookmarks.clear();
         }
         load();
       });

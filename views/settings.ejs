@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<%
+    var site = new Object(global.settings.site);
+    site.admin = (req.cookies.admin == global.settings.admin.key);
+    site.editMode = false;
+%>
+
+<%- include('sub-views/head.ejs', { site: site, page: page }); %>
+
+</head>
+
+<body>
+
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+
+  <div class="container col-lg-8 mx-auto">
+    <main class="search-results">
+      <div class="mb-3">
+        <h1 class="fs-4 mb-0">My Settings</h1>
+        <p class="text-muted small mb-0" id="settings-account-status">Loading account settings...</p>
+      </div>
+
+      <section class="border-top pt-3">
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+          <div>
+            <h2 class="fs-5 mb-1">Quran Tafsirs</h2>
+            <p class="text-muted small mb-0" id="settings-tafsir-status">Loading tafsir settings...</p>
+          </div>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-tafsir-enable-all">Enable all</button>
+        </div>
+        <div id="settings-tafsir-list" class="d-flex flex-column gap-2"></div>
+      </section>
+    </main>
+  </div>
+
+<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+
+<script>
+  (function () {
+    const statusEl = document.getElementById('settings-account-status');
+    const tafsirStatusEl = document.getElementById('settings-tafsir-status');
+    const tafsirListEl = document.getElementById('settings-tafsir-list');
+    const enableAllBtn = document.getElementById('settings-tafsir-enable-all');
+    let currentUser = null;
+    let currentSettings = {};
+    let currentTafsirBooks = [];
+    let draggedTafsirRow = null;
+    let dragPreviousSettings = null;
+    let dragDropped = false;
+    let saving = false;
+
+    const renderSignedOut = () => {
+      statusEl.textContent = 'Sign in to view account settings.';
+      tafsirStatusEl.textContent = 'Sign in to choose which tafsirs appear on Quran pages.';
+      enableAllBtn.disabled = true;
+    };
+
+    const waitForHadithAuth = () => new Promise(resolve => {
+      if (window.hadithAuth && window.hadithAuth.getToken) return resolve(window.hadithAuth);
+      let attempts = 0;
+      const timer = window.setInterval(() => {
+        attempts += 1;
+        if (window.hadithAuth && window.hadithAuth.getToken) {
+          window.clearInterval(timer);
+          resolve(window.hadithAuth);
+        } else if (attempts >= 50) {
+          window.clearInterval(timer);
+          resolve(null);
+        }
+      }, 100);
+    });
+
+    const normalizeSettings = (settings) => {
+      const source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
+      const tafsirs = source.tafsirs && typeof source.tafsirs === 'object' && !Array.isArray(source.tafsirs)
+        ? source.tafsirs
+        : {};
+      return {
+        ...source,
+        tafsirs: {
+          disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
+            .map(alias => (alias || '').toString().trim())
+            .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias)))),
+          order: {
+            en: Array.from(new Set((tafsirs.order && Array.isArray(tafsirs.order.en) ? tafsirs.order.en : [])
+              .map(alias => (alias || '').toString().trim())
+              .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias)))),
+            ar: Array.from(new Set((tafsirs.order && Array.isArray(tafsirs.order.ar) ? tafsirs.order.ar : [])
+              .map(alias => (alias || '').toString().trim())
+              .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias))))
+          }
+        }
+      };
+    };
+
+    const getToken = async () => {
+      const auth = await waitForHadithAuth();
+      return auth && auth.getToken ? auth.getToken() : null;
+    };
+
+    const loadUserSettings = async () => {
+      const token = await getToken();
+      if (!token) return null;
+      const res = await fetch('/user-settings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Unable to load settings.');
+      const data = await res.json();
+      return normalizeSettings(data.settings || {});
+    };
+
+    const saveSettings = async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Sign in required.');
+      saving = true;
+      tafsirStatusEl.textContent = 'Saving tafsir settings...';
+      try {
+        const res = await fetch('/user-settings', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ settings: currentSettings })
+        });
+        if (!res.ok) throw new Error('Unable to save settings.');
+        const data = await res.json();
+        currentSettings = normalizeSettings(data.settings || currentSettings);
+      } finally {
+        saving = false;
+        updateTafsirStatus();
+      }
+    };
+
+    const updateTafsirStatus = () => {
+      const total = tafsirListEl.querySelectorAll('[data-tafsir-setting-toggle]').length;
+      const disabled = currentSettings.tafsirs.disabledAliases.length;
+      if (!currentUser) {
+        tafsirStatusEl.textContent = 'Sign in to choose which tafsirs appear on Quran pages.';
+        enableAllBtn.disabled = true;
+        return;
+      }
+      tafsirStatusEl.textContent = total
+        ? `${total - disabled} of ${total} tafsirs enabled on Quran pages.`
+        : 'No tafsirs are available.';
+      enableAllBtn.disabled = !currentUser || disabled === 0 || saving;
+    };
+
+    const orderedBooks = (books, lang) => {
+      let order = currentSettings.tafsirs.order[lang] || [];
+      if (lang === 'ar' && order.length < 1) {
+        order = [
+          'en-tafsir-jalalayn',
+          'en-tafsir-mokhtasar',
+          'en-tafsir-ibn-kathir'
+        ];
+      }
+      const index = new Map(order.map((alias, idx) => [alias, idx]));
+      const deathYear = (book) => {
+        const match = (book.death || '').toString().match(/\d+/);
+        return match ? Number(match[0]) : NaN;
+      };
+      return books
+        .filter(book => book.lang === lang)
+        .map((book, originalIndex) => ({ book, originalIndex }))
+        .sort((a, b) => {
+          const aIndex = index.has(a.book.alias) ? index.get(a.book.alias) : Number.MAX_SAFE_INTEGER;
+          const bIndex = index.has(b.book.alias) ? index.get(b.book.alias) : Number.MAX_SAFE_INTEGER;
+          if (aIndex !== bIndex) return aIndex - bIndex;
+          const aDeath = deathYear(a.book);
+          const bDeath = deathYear(b.book);
+          const aHasDeath = Number.isFinite(aDeath) && aDeath > 0;
+          const bHasDeath = Number.isFinite(bDeath) && bDeath > 0;
+          if (aHasDeath && bHasDeath && aDeath !== bDeath) return aDeath - bDeath;
+          if (aHasDeath !== bHasDeath) return aHasDeath ? -1 : 1;
+          return a.originalIndex - b.originalIndex;
+        })
+        .map(entry => entry.book);
+    };
+
+    const updateOrderFromDom = () => {
+      currentSettings = normalizeSettings({
+        ...currentSettings,
+        tafsirs: {
+          ...currentSettings.tafsirs,
+          order: {
+            en: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="en"]')).map(row => row.getAttribute('data-tafsir-alias')),
+            ar: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="ar"]')).map(row => row.getAttribute('data-tafsir-alias'))
+          }
+        }
+      });
+    };
+
+    const saveTafsirOrder = async (previousSettings) => {
+      updateOrderFromDom();
+      try {
+        await saveSettings();
+      } catch (err) {
+        currentSettings = previousSettings;
+        renderTafsirList(currentTafsirBooks);
+        if (window.toastr) toastr.error(err.message || 'Unable to save tafsir order.', 'Settings');
+      }
+    };
+
+    const orderSignature = () => JSON.stringify({
+      en: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="en"]')).map(row => row.getAttribute('data-tafsir-alias')),
+      ar: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="ar"]')).map(row => row.getAttribute('data-tafsir-alias'))
+    });
+
+    const dropTargetFor = (list, y) => {
+      const rows = Array.from(list.querySelectorAll('[data-tafsir-setting-row]:not(.is-dragging)'));
+      return rows.reduce((closest, row) => {
+        const box = row.getBoundingClientRect();
+        const offset = y - box.top - (box.height / 2);
+        if (offset < 0 && offset > closest.offset) return { offset, row };
+        return closest;
+      }, { offset: Number.NEGATIVE_INFINITY, row: null }).row;
+    };
+
+    const bindTafsirDragList = (list, lang) => {
+      list.addEventListener('dragover', event => {
+        if (!draggedTafsirRow || draggedTafsirRow.getAttribute('data-tafsir-lang') !== lang) return;
+        event.preventDefault();
+        const target = dropTargetFor(list, event.clientY);
+        if (target) list.insertBefore(draggedTafsirRow, target);
+        else list.appendChild(draggedTafsirRow);
+      });
+      list.addEventListener('drop', async event => {
+        if (!draggedTafsirRow || draggedTafsirRow.getAttribute('data-tafsir-lang') !== lang) return;
+        event.preventDefault();
+        dragDropped = true;
+        if (draggedTafsirRow.dataset.dragStartOrder !== orderSignature())
+          await saveTafsirOrder(dragPreviousSettings || normalizeSettings(currentSettings));
+      });
+    };
+
+    const renderTafsirRow = (book, disabled) => {
+      const row = document.createElement('div');
+      row.className = 'tafsir-setting-row d-flex align-items-start justify-content-between gap-3 border-bottom py-2';
+      row.draggable = !!currentUser;
+      row.setAttribute('data-tafsir-setting-row', '1');
+      row.setAttribute('data-tafsir-lang', book.lang);
+      row.setAttribute('data-tafsir-alias', book.alias);
+      row.addEventListener('dragstart', event => {
+        if (!currentUser || saving) {
+          event.preventDefault();
+          return;
+        }
+        draggedTafsirRow = row;
+        dragPreviousSettings = normalizeSettings(currentSettings);
+        dragDropped = false;
+        row.dataset.dragStartOrder = orderSignature();
+        row.classList.add('is-dragging');
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', book.alias);
+      });
+      row.addEventListener('dragend', () => {
+        row.classList.remove('is-dragging');
+        if (!dragDropped && dragPreviousSettings)
+          renderTafsirList(currentTafsirBooks);
+        draggedTafsirRow = null;
+        dragPreviousSettings = null;
+        dragDropped = false;
+      });
+
+      const text = document.createElement('span');
+      text.className = 'd-flex flex-column flex-grow-1';
+      const title = document.createElement('span');
+      const shortName = book.shortName_en || book.shortName || book.author_en || book.author || book.alias;
+      const longName = book.name_en || book.name || '';
+      title.textContent = shortName;
+      const meta = document.createElement('small');
+      meta.className = 'text-muted';
+      meta.textContent = [longName && longName !== shortName ? longName : '', book.author_en || book.author, book.death ? `d. ${book.death} AH` : '']
+        .filter(Boolean)
+        .join(', ');
+      text.appendChild(title);
+      text.appendChild(meta);
+
+      const controls = document.createElement('span');
+      controls.className = 'd-flex align-items-center gap-2';
+
+      const dragHandle = document.createElement('span');
+      dragHandle.className = 'tafsir-setting-drag-handle text-muted';
+      dragHandle.title = 'Drag to reorder';
+      dragHandle.innerHTML = '<i class="bi bi-grip-vertical" aria-hidden="true"></i>';
+
+      const toggle = document.createElement('input');
+      toggle.type = 'checkbox';
+      toggle.className = 'form-check-input mt-1';
+      toggle.checked = !disabled.has(book.alias);
+      toggle.disabled = !currentUser;
+      toggle.setAttribute('data-tafsir-setting-toggle', book.alias);
+      toggle.addEventListener('change', async () => {
+        const previousSettings = normalizeSettings(currentSettings);
+        const disabledAliases = new Set(currentSettings.tafsirs.disabledAliases);
+        if (toggle.checked) disabledAliases.delete(book.alias);
+        else disabledAliases.add(book.alias);
+        currentSettings = normalizeSettings({
+          ...currentSettings,
+          tafsirs: { ...currentSettings.tafsirs, disabledAliases: Array.from(disabledAliases) }
+        });
+        updateTafsirStatus();
+        try {
+          await saveSettings();
+        } catch (err) {
+          if (window.toastr) toastr.error(err.message || 'Unable to save tafsir settings.', 'Settings');
+          currentSettings = previousSettings;
+          renderTafsirList(currentTafsirBooks);
+        }
+      });
+
+      controls.appendChild(dragHandle);
+      controls.appendChild(toggle);
+      row.appendChild(text);
+      row.appendChild(controls);
+      return row;
+    };
+
+    const renderTafsirList = (books) => {
+      currentTafsirBooks = books;
+      const disabled = new Set(currentSettings.tafsirs.disabledAliases);
+      tafsirListEl.innerHTML = '';
+      [
+        { lang: 'en', title: 'English Tafsirs' },
+        { lang: 'ar', title: 'Arabic Tafsirs' }
+      ].forEach(group => {
+        const groupBooks = orderedBooks(books, group.lang);
+        if (!groupBooks.length) return;
+        const section = document.createElement('section');
+        section.className = 'mb-3';
+        const heading = document.createElement('h3');
+        heading.className = 'fs-6 mb-2';
+        heading.textContent = group.title;
+        const list = document.createElement('div');
+        list.className = 'd-flex flex-column';
+        list.setAttribute('data-tafsir-setting-list', group.lang);
+        groupBooks.forEach(book => list.appendChild(renderTafsirRow(book, disabled)));
+        bindTafsirDragList(list, group.lang);
+        section.appendChild(heading);
+        section.appendChild(list);
+        tafsirListEl.appendChild(section);
+      });
+      updateTafsirStatus();
+    };
+
+    const renderSettings = async () => {
+      const auth = await waitForHadithAuth();
+      currentUser = auth && auth.getUser ? await auth.getUser() : null;
+      if (!currentUser) {
+        renderSignedOut();
+        currentSettings = normalizeSettings({});
+      } else {
+        statusEl.textContent = currentUser.email || currentUser.displayName || 'Signed in';
+        currentSettings = await loadUserSettings();
+      }
+
+      try {
+        const res = await fetch('/proxy/tafsir/books');
+        if (!res.ok) throw new Error('Unable to load tafsir list.');
+        const books = await res.json();
+        renderTafsirList(books);
+      } catch (err) {
+        tafsirStatusEl.textContent = err.message || 'Unable to load tafsir settings.';
+        if (window.toastr) toastr.error(tafsirStatusEl.textContent, 'Settings');
+      }
+    };
+
+    if (enableAllBtn) {
+      enableAllBtn.addEventListener('click', async () => {
+        if (!currentUser) {
+          renderSignedOut();
+          return;
+        }
+        currentSettings = normalizeSettings({
+          ...currentSettings,
+          tafsirs: { ...currentSettings.tafsirs, disabledAliases: [] }
+        });
+        tafsirListEl.querySelectorAll('[data-tafsir-setting-toggle]').forEach(toggle => {
+          toggle.checked = true;
+        });
+        updateTafsirStatus();
+        try {
+          await saveSettings();
+        } catch (err) {
+          if (window.toastr) toastr.error(err.message || 'Unable to save tafsir settings.', 'Settings');
+        }
+      });
+    }
+
+    const load = async () => {
+      try {
+        await renderSettings();
+      } catch (err) {
+        renderSignedOut();
+        tafsirStatusEl.textContent = err.message || 'Unable to load settings.';
+        return;
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', load);
+    } else {
+      load();
+    }
+  })();
+</script>
+
+</body>
+</html>

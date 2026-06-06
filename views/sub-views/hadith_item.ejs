@@ -27,7 +27,7 @@
 		return utils.emptyIfNull(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 	}
 	const sharhBody = !isQuranItem ? plainText(i.ar?.body || '') : '';
-	const quranTafsirHref = isQuranItem && i.ref ? `/${i.ref}#tafsir` : '';
+	const quranTafsirHref = isQuranItem && i.ref ? `/${i.ref}#open-tafsir` : '';
 	const quranAyahMarkerRef = utils.emptyIfNull(i.ref || i.num || langData.num || '').replace(/^quran:/, '');
 	const quranAyahMarkerNum = (() => {
 		if (!isQuranItem || lang !== 'ar' || !searchResult)

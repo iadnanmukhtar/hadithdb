@@ -15,9 +15,9 @@ const md = new MarkdownIt({ html: true, linkify: true, typographer: false, break
 router.get('/tafsir/books', async function (req, res) {
   if (!global.commentaries || global.commentaries.length < 1)
     await Commentaries.loadCommentaries();
-  const rows = (global.commentaries || [])
+  const rows = expandBilingualLocalCommentaries((global.commentaries || [])
     .filter(row => Number(row.hidden) === 0)
-    .map(({ hidden, ...row }) => row);
+    .map(({ hidden, ...row }) => row));
   res.setHeader('Cache-Control', 'public, max-age=300');
   res.json(rows);
 });
@@ -26,8 +26,9 @@ router.get('/tafsir/local', async function (req, res) {
   const src = (req.query.src || '').toString();
   const surah = Number(req.query.s);
   const ayah = Number(req.query.a);
+  const lang = (req.query.lang || '').toString();
   if (!/^[A-Za-z0-9_-]+$/.test(src) || !Number.isInteger(surah) || surah < 1 || surah > 114 ||
-      !Number.isInteger(ayah) || ayah < 0) {
+      !Number.isInteger(ayah) || ayah < 0 || (lang && lang !== 'ar' && lang !== 'en')) {
     res.status(400).json({ error: 'Invalid local tafsir request.' });
     return;
   }
@@ -47,11 +48,16 @@ router.get('/tafsir/local', async function (req, res) {
     return;
   }
   const row = rows[0];
+  const html = renderLocalCommentary(row, isEditMode(req), lang);
+  if (lang && !html) {
+    res.status(404).json({ error: 'No local tafsir text is available for this ayah.' });
+    return;
+  }
   res.setHeader('Cache-Control', 'no-store');
   res.json({
     ayahs_start: row.ayahFrom,
     count: row.ayahTo - row.ayahFrom,
-    html: renderLocalCommentary(row, isEditMode(req))
+    html: html
   });
 });
 
@@ -110,7 +116,26 @@ router.get('/:url', async function (req, res, next) {
   }
 });
 
-function renderLocalCommentary(row, editMode) {
+function expandBilingualLocalCommentaries(rows) {
+  const expanded = [];
+  rows.forEach(row => {
+    expanded.push(row);
+    if (row.source === 'local' && row.lang === 'en' && hasCommentaryLanguageFormat(row.format, 'ar')) {
+      expanded.push({ ...row, lang: 'ar' });
+    }
+  });
+  return expanded;
+}
+
+function hasCommentaryLanguageFormat(format, lang) {
+  return (format || '').split(',').map(value => value.trim()).some(value => value.startsWith(`${lang}:`));
+}
+
+function renderLocalCommentary(row, editMode, lang) {
+  if (lang === 'ar')
+    return renderLocalCommentaryLanguage(row, editMode, 'ar');
+  if (lang === 'en')
+    return renderLocalCommentaryLanguage(row, editMode, 'en');
   const arabic = editMode
     ? renderEditableCommentaryLanguage(row, 'ar')
     : renderCommentaryText(row.text, row.footnotes, commentaryFormat(row.format, 'ar'));
@@ -125,6 +150,21 @@ function renderLocalCommentary(row, editMode) {
   if (english)
     sections.push(`<section lang="en">${english}</section>`);
   return sections.join('\n');
+}
+
+function renderLocalCommentaryLanguage(row, editMode, lang) {
+  const content = editMode
+    ? renderEditableCommentaryLanguage(row, lang)
+    : renderCommentaryText(
+      lang === 'en' ? row.text_en : row.text,
+      lang === 'en' ? row.footnotes_en : row.footnotes,
+      commentaryFormat(row.format, lang)
+    );
+  if (!content)
+    return '';
+  return lang === 'ar'
+    ? `<section lang="ar" dir="rtl">${content}</section>`
+    : `<section lang="en">${content}</section>`;
 }
 
 function renderEditableCommentaryLanguage(row, lang) {

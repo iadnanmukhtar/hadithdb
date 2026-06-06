@@ -133,6 +133,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const tagRouter = require('./routes/tag');
   const searchRouter = require('./routes/search');
   const blogRouter = require('./routes/blog');
+  const settingsRouter = require('./routes/settings');
   const loginRouter = require('./routes/login');
   const updateRouter = require('./routes/update');
   const proxyRouter = require('./routes/proxy');
@@ -141,6 +142,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const likesRouter = require('./routes/likes');
   const likedRouter = require('./routes/liked');
   const bookmarksRouter = require('./routes/bookmarks');
+  const userSettingsRouter = require('./routes/userSettings');
   const chatbotRouter = require('./routes/rag');
 
   app.use('/tools', toolsRouter);
@@ -152,6 +154,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/books', booksRouter);
   app.use('/tag', tagRouter);
   app.use('/update', updateRouter);
+  app.use('/settings', settingsRouter);
   app.use('/login', loginRouter);
   app.use('/blog', blogRouter);
   app.use('/proxy', proxyRouter);
@@ -160,6 +163,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/likes', likesRouter);
   app.use('/liked', likedRouter);
   app.use('/bookmarks', bookmarksRouter);
+  app.use('/user-settings', userSettingsRouter);
   app.use('/chatbot', chatbotRouter);
   app.use('/rag', chatbotRouter);
   app.use('/', searchRouter);

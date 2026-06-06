@@ -214,7 +214,7 @@ function initQuranTafsirTabs(root) {
 				heading.addClass('quran-tafsir-ayah-inline');
 			$('<span>').addClass('quran-tafsir-ayah-ref').attr('dir', 'ltr').text(`${surah}:${ayah}`).appendTo(heading);
 			heading.append(document.createTextNode(' '));
-			$('<span>').text(ayahText[ayah] || '').appendTo(heading);
+			$('<span>').addClass('quran-tafsir-ayah-text').text(ayahText[ayah] || '').appendTo(heading);
 			heading.append(document.createTextNode(' '));
 			$('<span>').addClass('quran-ayah-end-marker').text(`۝${toArabicDigits(ayah)}`).appendTo(heading);
 		};
@@ -253,7 +253,7 @@ function initQuranTafsirTabs(root) {
 			}
 		};
 		var addCatalogTab = function (book) {
-			var panelId = `${container.attr('data-tafsir-instance') || 'passage'}-${container.attr('data-surah')}-${ayahs[0] || ''}-${book.alias}`;
+			var panelId = `${container.attr('data-tafsir-instance') || 'passage'}-${container.attr('data-surah')}-${ayahs[0] || ''}-${book.lang}-${book.alias}`;
 			var tabId = `quran-tafsirs-${panelId}-tab`;
 			var targetId = `quran-tafsirs-${panelId}`;
 			if (container.find(`#${cssEscape(tabId)}`).length)
@@ -287,9 +287,10 @@ function initQuranTafsirTabs(root) {
 				dir: book.lang === 'ar' ? 'rtl' : 'ltr'
 			}).appendTo(panel);
 		};
-		var fetchPayload = async function (src, source, ayah) {
+		var fetchPayload = async function (src, source, ayah, language) {
 			var endpoint = source === 'local' ? '/proxy/tafsir/local' : '/proxy/tafsir';
-			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&ver=1`);
+			var languageParam = source === 'local' && language ? `&lang=${encodeURIComponent(language)}` : '';
+			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&ver=1${languageParam}`);
 			if (response.status === 404)
 				return null;
 			if (!response.ok)
@@ -311,7 +312,7 @@ function initQuranTafsirTabs(root) {
 				var payloads = await Promise.all(ayahs.map(async function (ayah) {
 					return {
 						ayah: ayah,
-						payload: await fetchPayload(src, source, ayah)
+						payload: await fetchPayload(src, source, ayah, panel.attr('data-tafsir-lang'))
 					};
 				}));
 				var seen = new Set();
@@ -372,8 +373,10 @@ function initQuranTafsirTabs(root) {
 				$(this).toggleClass('d-none', $(this).attr('data-tafsir-lang') !== language);
 			});
 			var targetAlias = preferredAlias || selectedByLanguage[language];
-			var target = targetAlias ? tabs.filter(`[data-tafsir-hash="${cssEscape(targetAlias)}"]`) : $();
-			if (target.length !== 1 || target.attr('data-tafsir-lang') !== language)
+			var target = targetAlias ? tabs.filter(function () {
+				return $(this).attr('data-tafsir-hash') === targetAlias && $(this).attr('data-tafsir-lang') === language;
+			}) : $();
+			if (target.length !== 1)
 				target = tabs.filter(function () {
 					return $(this).attr('data-tafsir-lang') === language;
 				}).first();
@@ -398,23 +401,129 @@ function initQuranTafsirTabs(root) {
 		container.find('[data-tafsir-language]').on('click', function () {
 			showLanguage($(this).attr('data-tafsir-language'));
 		});
-		fetch('/proxy/tafsir/books').then(function (response) {
-			if (!response.ok)
-				throw new Error('Unable to load tafsir list.');
-			return response.json();
-		}).then(function (books) {
-			books.forEach(addCatalogTab);
-			var initialHash = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('tafsir');
+		Promise.all([
+			fetch('/proxy/tafsir/books').then(function (response) {
+				if (!response.ok)
+					throw new Error('Unable to load tafsir list.');
+				return response.json();
+			}),
+			getQuranTafsirSettings()
+		]).then(function (results) {
+			var books = results[0];
+			var settings = results[1];
+			var disabledAliases = new Set((((settings || {}).tafsirs || {}).disabledAliases || []));
+			var tafsirOrder = (((settings || {}).tafsirs || {}).order || {});
+			var tafsirDeathYear = function (book) {
+				var match = (book.death || '').toString().match(/\d+/);
+				return match ? Number(match[0]) : NaN;
+			};
+			var defaultArabicOrder = [
+				'en-tafsir-jalalayn',
+				'en-tafsir-mokhtasar',
+				'en-tafsir-ibn-kathir'
+			];
+			var visibleBooks = books.filter(function (book) {
+				return !disabledAliases.has(book.alias);
+			}).map(function (book, originalIndex) {
+				return { book: book, originalIndex: originalIndex };
+			}).sort(function (a, b) {
+				var languageOrder = tafsirOrder[a.book.lang] || [];
+				if (a.book.lang === 'ar' && b.book.lang === 'ar' && languageOrder.length < 1)
+					languageOrder = defaultArabicOrder;
+				var aIndex = languageOrder.indexOf(a.book.alias);
+				var bIndex = languageOrder.indexOf(b.book.alias);
+				aIndex = aIndex >= 0 ? aIndex : Number.MAX_SAFE_INTEGER;
+				bIndex = bIndex >= 0 ? bIndex : Number.MAX_SAFE_INTEGER;
+				if (a.book.lang === b.book.lang && aIndex !== bIndex)
+					return aIndex - bIndex;
+				if (a.book.lang === b.book.lang) {
+					var aDeath = tafsirDeathYear(a.book);
+					var bDeath = tafsirDeathYear(b.book);
+					var aHasDeath = Number.isFinite(aDeath) && aDeath > 0;
+					var bHasDeath = Number.isFinite(bDeath) && bDeath > 0;
+					if (aHasDeath && bHasDeath && aDeath !== bDeath)
+						return aDeath - bDeath;
+					if (aHasDeath !== bHasDeath)
+						return aHasDeath ? -1 : 1;
+				}
+				return a.originalIndex - b.originalIndex;
+			}).map(function (entry) {
+				return entry.book;
+			});
+			visibleBooks.forEach(addCatalogTab);
+			if (visibleBooks.length < 1) {
+				container.find('.quran-tafsir-content').html('<p class="text-muted">All tafsirs are disabled in My Settings.</p>');
+				return;
+			}
+			var initialParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+			var initialHash = initialParams.get('tafsir') || initialParams.get('open-tafsir');
 			var initialAlias = initialHash || getStoredTafsirAlias();
 			var initialTab = container.find('[data-tafsir-hash]').filter(function () {
 				return $(this).attr('data-tafsir-hash') === initialAlias;
 			});
-			if (initialTab.length === 1)
-				showLanguage(initialTab.attr('data-tafsir-lang'), initialAlias);
+			if (initialTab.length)
+				showLanguage(initialTab.first().attr('data-tafsir-lang'), initialAlias);
 			else
 				showLanguage(activeLanguage);
 		}).catch(function (err) {
 			container.find('.quran-tafsir-status').first().removeClass('d-none').text(err.message || 'Unable to load tafsir list.');
+		});
+	});
+}
+
+function getQuranTafsirSettings() {
+	var waitForHadithAuth = function () {
+		return new Promise(function (resolve) {
+			if (window.hadithAuth && window.hadithAuth.getToken)
+				return resolve(window.hadithAuth);
+			var attempts = 0;
+			var timer = window.setInterval(function () {
+				attempts += 1;
+				if (window.hadithAuth && window.hadithAuth.getToken) {
+					window.clearInterval(timer);
+					resolve(window.hadithAuth);
+				} else if (attempts >= 50) {
+					window.clearInterval(timer);
+					resolve(null);
+				}
+			}, 100);
+		});
+	};
+		var normalizeSettings = function (settings) {
+			var source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
+			var tafsirs = source.tafsirs && typeof source.tafsirs === 'object' && !Array.isArray(source.tafsirs) ? source.tafsirs : {};
+			var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
+			return {
+				tafsirs: {
+					disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
+						.map(function (alias) { return (alias || '').toString().trim(); })
+						.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
+					order: {
+						en: Array.from(new Set((Array.isArray(order.en) ? order.en : [])
+							.map(function (alias) { return (alias || '').toString().trim(); })
+							.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
+						ar: Array.from(new Set((Array.isArray(order.ar) ? order.ar : [])
+							.map(function (alias) { return (alias || '').toString().trim(); })
+							.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })))
+					}
+				}
+			};
+		};
+	return waitForHadithAuth().then(function (auth) {
+		return auth && auth.getToken ? auth.getToken() : null;
+	}).then(function (token) {
+		if (!token)
+			return normalizeSettings({});
+		return fetch('/user-settings', {
+			headers: { 'Authorization': `Bearer ${token}` }
+		}).then(function (response) {
+			if (!response.ok)
+				return normalizeSettings({});
+			return response.json();
+		}).then(function (data) {
+			return normalizeSettings(data.settings || {});
+		}).catch(function () {
+			return normalizeSettings({});
 		});
 	});
 }
@@ -555,6 +664,14 @@ function initQuranAyahModals(root) {
 		if (state)
 			state.openAyah(index);
 	};
+	var openInitialAyahModalFromHash = function () {
+		var params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+		if (!params.has('open-tafsir'))
+			return;
+		var trigger = $('.quran-ayah-modal-trigger[data-quran-ayah-modal-type="tafsirs"]').first();
+		var index = trigger.length ? trigger.attr('data-quran-ayah-modal-index') : 0;
+		openAyah(index, 'tafsirs');
+	};
 	var getShownModalState = function () {
 		var state = Object.values(modalStates).find(function (modalState) {
 			return modalState.isShown();
@@ -642,6 +759,8 @@ function initQuranAyahModals(root) {
 			event.stopPropagation();
 			longPressOpened = false;
 		});
+
+		openInitialAyahModalFromHash();
 }
 
 function copyTextToClipboard(text) {

@@ -92,7 +92,7 @@ function getPage() {
   return {
     menu: 'Bookmarks',
     title_en: `${global.settings.site.shortName} | Bookmarks`,
-    subtitle_en: 'Saved locally on this device',
+    subtitle_en: 'Saved to your account settings',
     subtitle: null,
     canonical: '/bookmarks',
     alternate: '/bookmarks',

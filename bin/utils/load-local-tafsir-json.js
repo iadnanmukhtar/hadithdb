@@ -10,21 +10,133 @@ const MySQL = require('mysql');
 const cheerio = require('cheerio');
 
 const TAFSIRS = {
-	'en-maarifulquran': {
+	'tafsir-tabari': {
+		ordinal: 11,
+		shortName_en: 'Tabari',
+		shortName: 'الطبري',
+		name_en: 'Jami al-Bayan',
+		name: 'جامع البيان',
+		author_en: 'Ibn Jarir al-Tabari',
+		author: 'ابن جرير الطبري',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/tafsir/tabari.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'tafsir-baghawi': {
+		ordinal: 12,
+		shortName_en: 'Baghawi',
+		shortName: 'البغوي',
+		name_en: 'Maalim al-Tanzil',
+		name: 'معالم التنزيل',
+		author_en: 'al-Husayn b. Muhammad al-Farra al-Baghawi',
+		author: 'البغوي',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/tafsir/baghawi.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'tafsir-ibn-al-jawzi': {
+		ordinal: 13,
+		shortName_en: 'Ibn al-Jawzi',
+		shortName: 'ابن الجوزي',
+		name_en: 'Zad al-Masir',
+		name: 'زاد المسير',
+		author_en: 'Abd al-Rahman b. Abu Hasan Ali b. al-Jawzi',
+		author: 'ابن الجوزي',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/tafsir/ibn-al-jawzi.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'tafsir-qurtubi': {
+		ordinal: 15,
+		shortName_en: 'Qurtubi',
+		shortName: 'القرطبي',
+		name_en: 'al-Jami li-Ahkam al-Quran',
+		name: 'الجامع لأحكام القرآن',
+		author_en: 'Muhammad b. Abu Bakr al-Ansari al-Qurtubi',
+		author: 'القرطبي',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/tafsir/qurtubi.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'tafsir-ibn-ashur': {
+		ordinal: 17,
+		shortName_en: 'Ibn Ashur',
+		shortName: 'ابن عاشور',
+		name_en: 'al-Tahrir wa-al-Tanwir',
+		name: 'التحرير والتنوير',
+		author_en: 'Muhammad al-Tahir b. Ashur',
+		author: 'ابن عاشور',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/tafsir/ibn-ashur.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'tafsir-mathur': {
+		ordinal: 91,
+		shortName_en: 'Mathur',
+		shortName: 'المأثور',
+		name_en: 'Encyclopedia of Narrated Tafsir',
+		name: 'موسوعة التفسير المأثور',
+		author_en: 'al-Shatibi Institute',
+		author: 'معهد الشاطبي',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/tafsir/tafsir-al-mathur.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'tafsir-suyuti': {
+		ordinal: 92,
+		shortName_en: 'Suyuti',
+		shortName: 'السيوطي',
+		name_en: 'al-Durr al-Manthur',
+		name: 'الدر المنثور',
+		author_en: 'Jalal al-Din al-Suyuti',
+		author: 'جلال الدين السيوطي',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/tafsir/tafsir-suyuti.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'gharib-al-quran': {
+		ordinal: 93,
+		shortName_en: 'Gharib',
+		shortName: 'الغريب',
+		name_en: 'al-Siraj fi Bayan Gharib al-Quran',
+		name: 'السراج في بيان غريب القرآن',
+		author_en: 'Tafsir Center for Quranic Studies',
+		author: 'مركز تفسير للدراسات القرآنية',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/tafsir/gharib-al-quran.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'en-tafsir-maarif-al-quran': {
 		ordinal: 4,
 		shortName_en: "Ma'ariful Qur'an",
 		name_en: "Ma'ariful Qur'an",
 		author_en: 'Mufti Muhammad Shafi',
 		directory: 'data/en-maarifulquran'
 	},
-	'en-tazkirulquran': {
+	'en-tafsir-tazkir-al-quran': {
 		ordinal: 5,
 		shortName_en: 'Tazkirul Quran',
 		name_en: 'Tazkirul Quran',
 		author_en: 'Maulana Wahiduddin Khan',
 		directory: 'data/en-tazkirulquran'
 	},
-	'en-mokhtasar': {
+	'en-tafsir-mokhtasar': {
 		ordinal: 6,
 		shortName_en: 'Mokhtasar',
 		shortName: 'المختصر',
@@ -39,7 +151,7 @@ const TAFSIRS = {
 			ar: 'data/ar-mokhtasar.json'
 		}
 	},
-	'ar-irab': {
+	'irab-al-quran': {
 		ordinal: 61,
 		shortName_en: 'Irab',
 		shortName: 'الإعراب',
@@ -53,7 +165,7 @@ const TAFSIRS = {
 		column: 'text',
 		sourceFormat: 'html'
 	},
-	'ar-qiraat': {
+	'qiraat': {
 		ordinal: 62,
 		shortName_en: "Qira'at",
 		shortName: 'القراءات',
@@ -213,6 +325,8 @@ function resolveRefText(map, ref, sourceFile, stack = [], preserveHtml = false) 
 			throw new Error(`Circular reference in ${sourceFile}: ${stack.concat(ref).join(' -> ')}`);
 		return resolveRefText(map, value, sourceFile, stack.concat(ref), preserveHtml);
 	}
+	if (value && typeof value === 'object' && Object.keys(value).length === 0)
+		return '';
 	if (!value || typeof value.text !== 'string')
 		throw new Error(`${sourceFile} does not contain text for '${ref}'.`);
 	return preserveHtml ? value.text.trim() : htmlToText(value.text);
