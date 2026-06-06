@@ -5,6 +5,7 @@
   <%
     var site = new Object(global.settings.site);
     var isSearchResultsPage = (q && q != '');
+    var isQuranSearchProxy = locals.quranSearchProxy || locals.searchAction === '/quran';
     site.admin = (req.cookies.admin == admin.key);
     if (!locals.noadmin)
       site.editMode = (site.admin && req.cookies.editMode == 1);
@@ -18,7 +19,7 @@
     };
     if (q) {
         page.menu = 'Search';
-        page.title_en = `${site.shortName} | Search Results for [${q}]`;
+        page.title_en = `${isQuranSearchProxy ? 'Quran Unlocked' : site.shortName} | Search Results for [${q}]`;
         page.title = '';
         page.subtitle_en = 'Search Results';
         page.subtitle = '';
@@ -38,7 +39,8 @@
     }
 
     page.context = {
-      fromSearch: isSearchResultsPage
+      fromSearch: isSearchResultsPage,
+      quranSearchProxy: isQuranSearchProxy
     };
     if (typeof book !== 'undefined') {
       page.context.book = book;
@@ -55,12 +57,22 @@
       if (results[results.length-1].next_ref)
           page.next = `/${results[results.length-1].next_ref}`;
     } else if (results.length > 0) {
+      var searchAction = locals.searchAction || '/';
+      function searchResultsPath(offset) {
+        var params = new URLSearchParams();
+        params.append('q', q);
+        (Array.isArray(b) ? b : [b]).filter(Boolean).forEach(function (filter) {
+          params.append('b', filter);
+        });
+        params.append('o', offset);
+        return `${searchAction}?${params.toString()}`;
+      }
       if (results.prev) {
         if (results.prev != '0' && results.prev != 0)
-          page.prev = `?q=${q}&b=${b}&o=${results.prev}`;
+          page.prev = searchResultsPath(results.prev);
       }
       if (results.next)
-        page.next = `?q=${q}&b=${b}&o=${results.next}`;
+        page.next = searchResultsPath(results.next);
     }
 %>
   
@@ -76,7 +88,7 @@
     
     <main class="search-results">
       
-      <form class="form-group" action="/">
+      <form class="form-group" action="<%= locals.searchAction || '/' %>">
         <search class="search container pt-3 mb-3">
           <div class="row justify-content-md-center">
             <div class="col-md-8">

@@ -278,82 +278,107 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   return;
 });
 
-// HOME (SEARCH OR SHOW RANDOM HADITH)
-router.get('/', async function (req, res, next) {
-  res.locals.req = req;
-  res.locals.res = res;
+function normalizeRequestBookFilters(req) {
+  if (!req.query.b)
+    return [];
+  var filters = Array.isArray(req.query.b) ? req.query.b : [req.query.b];
+  filters = filters.flatMap(filter => filter.toString().split(','));
+  filters = Array.from(new Set(filters.map(filter => filter.trim()).filter(Boolean)));
+  req.query.b = filters;
+  return filters;
+}
+
+async function renderSearchResults(req, res, next, options = {}) {
   var results = [];
   var totalResults = 0;
 
-  // search
-  if (req.query.q) {
-    req.query.q = Search.truncateQuery(req.query.q);
+  req.query.q = Search.truncateQuery(req.query.q);
+  if (options.defaultBookFilters && !req.query.b)
+    req.query.b = options.defaultBookFilters.slice();
+  if (options.forceBookFilters)
+    req.query.b = options.forceBookFilters.slice();
+
+  if (options.redirectReferences !== false) {
     var bookReference = !Search.isExpressionQuery(req.query.q) && Books.findReference(req.query.q, global.books);
     if (bookReference) {
       res.redirect('/' + bookReference.ref);
-      return;
+      return true;
     }
     // is it a item ref number?
     if (!Search.isExpressionQuery(req.query.q) && req.query.q.match(/^([a-z]+:\d+|\d+)/)) {
       if (Library.instance.findBook(req.query.q.split(/:/)[0])) {
         res.redirect('/' + req.query.q);
-        return;
+        return true;
       }
     } else if (!Search.isExpressionQuery(req.query.q) && req.query.q.match(/^[a-z]+\//)) {
       if (Library.instance.findBook(req.query.q.split(/\//)[0])) {
         res.redirect('/' + req.query.q);
-        return;
+        return true;
       }
     }
-    try {
-      if (req.query.b && (typeof req.query.b) != 'object')
-        req.query.b = [req.query.b];
-      var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
-      offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
-      results = await Search.a_searchText(req.query.q, req.query.b, offset);
-      totalResults = Number.isFinite(results.total) ? results.total : results.length;
-      if (results.length > global.settings.search.itemsPerPage) {
-        results.next = offset + global.settings.search.itemsPerPage;
-        results.pop();
-      }
-      if (offset >= global.settings.search.itemsPerPage)
-        results.prev = offset - global.settings.search.itemsPerPage;
-      results.map(function (hadith) {
-        if (hadith.chapter) {
-          hadith.chapter.offset = Math.floor(hadith.numInChapter / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
-          if (hadith.chapter.offset > 0)
-            hadith.chapter.offset = '?o=' + hadith.chapter.offset;
-          else
-            hadith.chapter.offset = '';
-        }
-      });
-    } catch (err) {
-      var message = `Error searching [${req.query.q} ${req.query.b}]`;
-      debug(message + `\n${err.stack}`);
-      return next(createError(500, message));
-    }
+  }
 
-    if ('json' in req.query) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(results));
-    } else if ('tsv' in req.query) {
-      res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
-      var keyNames = Object.keys(results[0]);
-      if ('keys' in req.query)
-        keyNames = req.query.keys.split(/,/);
-      res.end(Utils.toTSV(results, keyNames));
-    } else if ('md' in req.query) {
-      res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
-      res.end(Utils.toMarkdown(results));
-    } else {
-      res.render('search', {
-        results: results,
-        totalResults: totalResults,
-        q: req.query.q,
-        b: (req.query.b ? req.query.b : []),
-        bookFilterLabels: Search.describeBookFilters(req.query.b),
-      });
+  try {
+    normalizeRequestBookFilters(req);
+    var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
+    offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
+    results = await Search.a_searchText(req.query.q, req.query.b, offset);
+    totalResults = Number.isFinite(results.total) ? results.total : results.length;
+    if (results.length > global.settings.search.itemsPerPage) {
+      results.next = offset + global.settings.search.itemsPerPage;
+      results.pop();
     }
+    if (offset >= global.settings.search.itemsPerPage)
+      results.prev = offset - global.settings.search.itemsPerPage;
+    results.map(function (hadith) {
+      if (hadith.chapter) {
+        hadith.chapter.offset = Math.floor(hadith.numInChapter / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
+        if (hadith.chapter.offset > 0)
+          hadith.chapter.offset = '?o=' + hadith.chapter.offset;
+        else
+          hadith.chapter.offset = '';
+      }
+    });
+  } catch (err) {
+    var message = `Error searching [${req.query.q} ${req.query.b}]`;
+    debug(message + `\n${err.stack}`);
+    return next(createError(500, message));
+  }
+
+  if ('json' in req.query) {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(results));
+  } else if ('tsv' in req.query) {
+    res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+    var keyNames = Object.keys(results[0] || {});
+    if ('keys' in req.query)
+      keyNames = req.query.keys.split(/,/);
+    res.end(Utils.toTSV(results, keyNames));
+  } else if ('md' in req.query) {
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.end(Utils.toMarkdown(results));
+  } else {
+    res.render('search', {
+      results: results,
+      totalResults: totalResults,
+      q: req.query.q,
+      b: (req.query.b ? req.query.b : []),
+      bookFilterLabels: Search.describeBookFilters(req.query.b),
+      searchAction: options.searchAction || '/',
+      quranSearchProxy: options.quranSearchProxy || false,
+    });
+  }
+  return true;
+}
+
+// HOME (SEARCH OR SHOW RANDOM HADITH)
+router.get('/', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
+
+  // search
+  if (req.query.q) {
+    return await renderSearchResults(req, res, next);
 
     // show random and highlighted ahadith
   } else {
@@ -1132,6 +1157,21 @@ async function redirectVirtualHadithReference(book, num, req, res) {
   res.redirect(302, `/${rows[0].book_alias}:${rows[0].num}${queryString}`);
   return true;
 }
+
+// QURAN SEARCH PROXY
+router.get('/quran', async function (req, res, next) {
+  if (!req.query.q)
+    return next();
+
+  res.locals.req = req;
+  res.locals.res = res;
+  return await renderSearchResults(req, res, next, {
+    forceBookFilters: ['quran', 'commentaries'],
+    redirectReferences: false,
+    searchAction: '/quran',
+    quranSearchProxy: true,
+  });
+});
 
 // BOOK: TABLE OF CONTENTS
 router.get('/:bookAlias', async function (req, res, next) {

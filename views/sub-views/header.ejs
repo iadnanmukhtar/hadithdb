@@ -11,7 +11,7 @@
       <div>
         <h6 class="title fs-4 mb-0">
           <a href="/" class="text-dark text-decoration-none">
-          <% if (page.context.book && page.context.book.alias === 'quran') { %>
+          <% if ((page.context.book && page.context.book.alias === 'quran') || page.context.quranSearchProxy) { %>
             Quran Unlocked
           <% } else { %>
             <%= site.name %>

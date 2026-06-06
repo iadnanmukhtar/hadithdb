@@ -10,7 +10,7 @@ $(function () {
 		});
 	}
 
-	document.cookie.includes('admin=') ? false : $('.edit-gear').hide();
+	initHadithAdminGear();
 
 	setDirection($('#search-bar'));
 
@@ -103,6 +103,76 @@ $(function () {
 	initTocExpandCollapse(document);
 
 });
+
+function getHadithCookie(name) {
+	const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\/+^]/g, '\\$&') + '=([^;]*)'));
+	return match ? decodeURIComponent(match[1]) : '';
+}
+
+function setHadithAdminMode(enabled) {
+	document.cookie = `editMode=${enabled ? '1' : '0'};path=/;`;
+	location.reload();
+}
+
+function renderHadithAdminGear() {
+	if (!getHadithCookie('admin')) {
+		$('.edit-gear').hide();
+		return;
+	}
+
+	$('.edit-gear').show();
+
+	const editMode = Boolean(document.cookie.match(/(?:^|; )editMode=1(?:;|$)/));
+	const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
+	const desktopList = document.querySelector('.site-navbar menu.d-md-block ul.nav');
+	if (desktopList && !desktopList.querySelector('.edit-gear')) {
+		const searchItem = desktopList.querySelector('.search-click-toggle');
+		const item = document.createElement('li');
+		item.className = 'nav-item edit-gear';
+		item.innerHTML = `<a class="nav-link" role="button" title="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}" aria-label="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}"><i class="bi ${icon}"></i></a>`;
+		item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
+		desktopList.insertBefore(item, searchItem || null);
+	}
+
+	const mobileList = document.querySelector('#offcanvas-topnav .offcanvas-col1');
+	if (mobileList && !mobileList.querySelector('.edit-gear')) {
+		const separator = document.createElement('li');
+		separator.className = 'edit-gear';
+		separator.innerHTML = '<hr>';
+
+		const item = document.createElement('li');
+		item.className = 'nav-item edit-gear';
+		item.innerHTML = `<a class="nav-link" role="button"><i class="bi ${icon}"></i> <strong>${editMode ? 'View' : 'Edit'}</strong></a>`;
+		item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
+
+		mobileList.appendChild(separator);
+		mobileList.appendChild(item);
+	}
+}
+
+async function syncHadithAdminCookieForCachedPage() {
+	const userId = getHadithCookie('userId');
+	if (!userId || getHadithCookie('admin'))
+		return;
+	if (getHadithCookie('adminChecked') === '1' && getHadithCookie('adminUser') !== '1')
+		return;
+
+	try {
+		const res = await fetch(`/login/${encodeURIComponent(userId)}`, { method: 'GET' });
+		if (!res.ok)
+			return;
+		const data = await res.json();
+		if (data && data.admin)
+			renderHadithAdminGear();
+	} catch (err) {
+		console.warn('Could not refresh admin mode for cached page', err);
+	}
+}
+
+function initHadithAdminGear() {
+	renderHadithAdminGear();
+	syncHadithAdminCookieForCachedPage();
+}
 
 function initTocExpandCollapse(root) {
 	var scope = root || document;
@@ -1412,7 +1482,7 @@ function submitQuranPassageSearch($input) {
 	if (!term)
 		return false;
 	$input.autocomplete('close');
-	window.location.href = `/?${$.param([
+	window.location.href = `/quran?${$.param([
 		{ name: 'q', value: term },
 		{ name: 'b', value: 'quran' },
 		{ name: 'b', value: 'commentaries' }

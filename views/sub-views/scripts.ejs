@@ -4,7 +4,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/javascripts/script.js?v=20260606-quran-passage-search-both-filters-v1"></script>
+<script src="/javascripts/script.js?v=20260606-quran-search-proxy-v1"></script>
 
 <% if (site.editMode) { %>
 <!-- Inline Editing -->
@@ -419,12 +419,59 @@
       sessionStorage.setItem(`hadithdb_auth_synced:${username}`, '1');
   }
 
+  function setHadithAdminMode(enabled) {
+      document.cookie = `editMode=${enabled ? '1' : '0'};path=/;`;
+      location.reload();
+  }
+
+  function renderHadithAdminGear() {
+      if (!getHadithCookie('admin'))
+        return;
+      const editMode = Boolean(document.cookie.match(/(?:^|; )editMode=1(?:;|$)/));
+      const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
+      const desktopList = document.querySelector('.site-navbar menu.d-md-block ul.nav');
+      if (desktopList && !desktopList.querySelector('.edit-gear')) {
+        const searchItem = desktopList.querySelector('.search-click-toggle');
+        const item = document.createElement('li');
+        item.className = 'nav-item edit-gear';
+        item.innerHTML = `<a class="nav-link" role="button" title="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}" aria-label="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}"><i class="bi ${icon}"></i></a>`;
+        item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
+        desktopList.insertBefore(item, searchItem || null);
+      }
+
+      const mobileList = document.querySelector('#offcanvas-topnav .offcanvas-col1');
+      if (mobileList && !mobileList.querySelector('.edit-gear')) {
+        const item = document.createElement('li');
+        item.className = 'nav-item edit-gear';
+        item.innerHTML = `<a class="nav-link" role="button"><i class="bi ${icon}"></i> <strong>${editMode ? 'View' : 'Edit'}</strong></a>`;
+        item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
+        const separator = document.createElement('li');
+        separator.className = 'edit-gear';
+        separator.innerHTML = '<hr>';
+        mobileList.appendChild(separator);
+        mobileList.appendChild(item);
+      }
+  }
+
+  function needsHadithAuthSync(username) {
+      if (!username)
+        return false;
+      if (getHadithCookie('userId') !== username)
+        return true;
+      if (getHadithCookie('adminUser') === '1' && !getHadithCookie('admin'))
+        return true;
+      return getHadithCookie('adminChecked') !== '1';
+  }
+
   async function onAuth(user, options = {}) {
       const username = user && user.username;
       if (!username)
         return { status: 400, message: 'Missing username' };
 
-      if (getHadithCookie('userId') === username) {
+      const initialUserId = getHadithCookie('userId');
+      const initialAdminCookie = getHadithCookie('admin');
+
+      if (initialUserId === username && initialAdminCookie && getHadithCookie('adminChecked') === '1') {
         markHadithAuthSynced(username);
         return { status: 200, userId: username, skipped: true, message: 'User already logged in' };
       }
@@ -443,9 +490,13 @@
         var resBody = JSON.parse(await res.text());
         if (res.status == 200) {
           markHadithAuthSynced(username);
+          if (resBody.admin)
+            renderHadithAdminGear();
           if (!options.silent)
             toastr.success('Logged in as ' + username);
-          if (options.reload !== false)
+          const adminCookieChanged = Boolean(initialAdminCookie) !== Boolean(getHadithCookie('admin'));
+          const userChanged = initialUserId !== username;
+          if (options.reload !== false && (userChanged || (!options.silent && (adminCookieChanged || resBody.admin))))
             window.location.reload();
         } else {
           var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
@@ -460,6 +511,8 @@
         window.hadithAuthLoginInFlight = null;
       }
   }
+
+  renderHadithAdminGear();
 </script>
 
 <!-- Buy Me a Coffee -->
@@ -637,6 +690,8 @@
         await firebase.auth().signOut();
         await fetch('/login/logout', { credentials: 'same-origin' });
         document.cookie = 'admin=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'adminUser=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'adminChecked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
         document.cookie = 'userId=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
         document.cookie = 'editMode=0;path=/;';
         location.reload();
@@ -647,10 +702,15 @@
     };
 
     const auth = firebase.auth();
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
       render(user);
-      if (!user)
+      if (user && user.email && needsHadithAuthSync(user.email)) {
+        await onAuth({ username: user.email }, { silent: true });
+      } else if (!user) {
         startGoogleOneTap();
+      } else {
+        renderHadithAdminGear();
+      }
     });
     render(null);
     startGoogleOneTap();
