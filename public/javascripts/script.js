@@ -98,6 +98,7 @@ $(function () {
 	initQuranCorpusTooltips(document);
 	initQuranCorpusTooltipDelay(document);
 	initQuranTafsirTabs(document);
+	initQuranTafsirFootnotePopups(document);
 	initTocExpandCollapse(document);
 
 });
@@ -170,6 +171,65 @@ function initQuranPassageShareLinks(root) {
 	});
 }
 
+function initQuranTafsirFootnotePopups(root) {
+	var scope = root || document;
+	var doc = scope.ownerDocument || document;
+	if ($(doc).data('quranTafsirFootnotePopupsBound'))
+		return;
+	$(doc).data('quranTafsirFootnotePopupsBound', true);
+	var popup = null;
+	var removePopup = function () {
+		if (popup) {
+			popup.remove();
+			popup = null;
+		}
+	};
+	var footnoteContent = function (link) {
+		var href = $(link).attr('href') || '';
+		if (href.charAt(0) !== '#')
+			return null;
+		var target = doc.getElementById(href.slice(1));
+		if (!target)
+			return null;
+		var content = $(target).clone();
+		content.find('.footnote-backref').remove();
+		if (!content.text().trim())
+			return null;
+		return content.children().length ? content.children() : content.contents();
+	};
+	var positionPopup = function (link) {
+		if (!popup)
+			return;
+		var rect = link.getBoundingClientRect();
+		var margin = 8;
+		var width = popup.outerWidth();
+		var height = popup.outerHeight();
+		var top = rect.top - height - margin;
+		if (top < margin)
+			top = rect.bottom + margin;
+		var left = rect.left + (rect.width / 2) - (width / 2);
+		left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+		popup.css({ left: `${left}px`, top: `${top}px` });
+	};
+	var showPopup = function (link) {
+		removePopup();
+		var content = footnoteContent(link);
+		if (!content)
+			return;
+		popup = $('<aside>').addClass('quran-tafsir-footnote-popup').attr({
+			role: 'tooltip',
+			dir: $(link).closest('.quran-tafsir-text').attr('dir') || 'auto'
+		}).appendTo(doc.body);
+		popup.append(content);
+		positionPopup(link);
+	};
+	$(doc).on('mouseenter focusin', '.quran-tafsir-text .footnote-ref a', function () {
+		showPopup(this);
+	});
+	$(doc).on('mouseleave focusout', '.quran-tafsir-text .footnote-ref a', removePopup);
+	$(window).on('scroll resize', removePopup);
+}
+
 function initQuranTafsirTabs(root) {
 	var scope = root || document;
 	$(scope).find('.quran-tafsirs').each(function () {
@@ -217,6 +277,77 @@ function initQuranTafsirTabs(root) {
 			$('<span>').addClass('quran-tafsir-ayah-text').text(ayahText[ayah] || '').appendTo(heading);
 			heading.append(document.createTextNode(' '));
 			$('<span>').addClass('quran-ayah-end-marker').text(`۝${toArabicDigits(ayah)}`).appendTo(heading);
+		};
+		var footnoteIdPart = function (value) {
+			return value.toString().replace(/[^A-Za-z0-9_-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+		};
+		var appendTextWithBracketedFootnotes = function (target, value, idPrefix) {
+			var notes = [];
+			var segments = [];
+			var text = value.toString();
+			var lastIndex = 0;
+			text.replace(/(?:\\\[|\[)(?:\\\[|\[)([\s\S]*?)(?:\\\]|\])(?:\\\]|\])/g, function (match, note, offset) {
+				if (offset > lastIndex)
+					segments.push({ text: text.slice(lastIndex, offset) });
+				note = note.trim();
+				if (note) {
+					notes.push(note);
+					segments.push({ noteIndex: notes.length });
+				}
+				lastIndex = offset + match.length;
+				return match;
+			});
+			if (lastIndex < text.length)
+				segments.push({ text: text.slice(lastIndex) });
+			if (!notes.length) {
+				text.split(/\n+/).filter(Boolean).forEach(function (paragraph) {
+					$('<p>').text(paragraph).appendTo(target);
+				});
+				return;
+			}
+			var paragraph = $('<p>').appendTo(target);
+			segments.forEach(function (segment) {
+				if (segment.text !== undefined) {
+					segment.text.split(/(\n+)/).forEach(function (part) {
+						if (!part)
+							return;
+						if (/^\n+$/.test(part)) {
+							if (paragraph.text().trim() || paragraph.children().length)
+								paragraph = $('<p>').appendTo(target);
+							return;
+						}
+						paragraph.append(document.createTextNode(part));
+					});
+					return;
+				}
+				var refId = `${idPrefix}-fnref-${segment.noteIndex}`;
+				var noteId = `${idPrefix}-fn-${segment.noteIndex}`;
+				$('<sup>').addClass('footnote-ref')
+					.append($('<a>').attr({ href: `#${noteId}`, id: refId }).text(`[${segment.noteIndex}]`))
+					.appendTo(paragraph);
+			});
+			target.children('p').filter(function () {
+				return !$(this).text().trim() && $(this).children().length < 1;
+			}).remove();
+			$('<hr>').addClass('footnotes-sep').appendTo(target);
+			var section = $('<section>').addClass('footnotes').appendTo(target);
+			var list = $('<ol>').addClass('footnotes-list').appendTo(section);
+			notes.forEach(function (note, index) {
+				var noteNumber = index + 1;
+				var item = $('<li>').addClass('footnote-item').attr('id', `${idPrefix}-fn-${noteNumber}`).appendTo(list);
+				var noteParagraphs = note.split(/\n+/).map(function (line) {
+					return line.trim();
+				}).filter(Boolean);
+				if (noteParagraphs.length < 1)
+					noteParagraphs = [''];
+				noteParagraphs.forEach(function (line, paragraphIndex) {
+					var noteParagraph = $('<p>').text(line).appendTo(item);
+					if (paragraphIndex === noteParagraphs.length - 1) {
+						noteParagraph.append(document.createTextNode(' '));
+						$('<a>').addClass('footnote-backref').attr('href', `#${idPrefix}-fnref-${noteNumber}`).html('&#8617;&#xFE0E;').appendTo(noteParagraph);
+					}
+				});
+			});
 		};
 		var overlapsSelectedAyahs = function (startAyah, endAyah) {
 			return selectedAyahs.some(function (ayah) {
@@ -345,9 +476,12 @@ function initQuranTafsirTabs(root) {
 						$('<div>').addClass('quran-tafsir-entry-body quran-tafsir-html').html(entry.payload.data).appendTo(entryElement);
 					} else {
 						var entryBody = $('<div>').addClass('quran-tafsir-entry-body').appendTo(entryElement);
-						entry.payload.data.toString().split(/\n+/).filter(Boolean).forEach(function (paragraph) {
-							$('<p>').text(paragraph).appendTo(entryBody);
-						});
+						if (panel.attr('data-tafsir-lang') === 'ar')
+							appendTextWithBracketedFootnotes(entryBody, entry.payload.data, `tafsir-${footnoteIdPart(src)}-${startAyah}`);
+						else
+							entry.payload.data.toString().split(/\n+/).filter(Boolean).forEach(function (paragraph) {
+								$('<p>').text(paragraph).appendTo(entryBody);
+							});
 					}
 				});
 				if (window.bindInlineEditors)
@@ -1401,7 +1535,7 @@ function initHadithSharhLinks(root) {
 
 function updateHadithSharhLink(link) {
 	var body = link.dataset.hadithSharhBody || '';
-	var query = firstHadithSharhWords(body, 150);
+	var query = firstHadithSharhWords(body, 25);
 	if (!query) {
 		link.setAttribute('href', '#');
 		return;

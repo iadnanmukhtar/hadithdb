@@ -1764,6 +1764,45 @@ del em strong {
 	line-height: 1.45;
 }
 
+.quran-tafsir-text .footnote-ref {
+	font-size: .62em;
+	line-height: 0;
+	vertical-align: super;
+}
+
+.quran-tafsir-text .footnote-ref a {
+	font-size: inherit;
+}
+
+.quran-tafsir-text .footnote-backref {
+	font-size: .7em;
+}
+
+.quran-tafsir-footnote-popup {
+	background: #fffaf0;
+	border: 1px solid var(--bs-border-color);
+	border-radius: .6rem;
+	box-shadow: 0 .35rem 1rem rgba(0, 0, 0, .14);
+	color: var(--c-brown);
+	font-family: Kitab, Serif;
+	font-size: .8rem;
+	line-height: 1.55;
+	max-width: min(28rem, calc(100vw - 1rem));
+	padding: .55rem .7rem;
+	pointer-events: none;
+	position: fixed;
+	text-align: start;
+	z-index: 1085;
+}
+
+.quran-tafsir-footnote-popup p {
+	margin: 0;
+}
+
+.quran-tafsir-footnote-popup p+p {
+	margin-top: .45rem;
+}
+
 .quran-tafsir-footnotes {
 	border-top: 1px solid var(--bs-border-color);
 	font-size: .9em;
