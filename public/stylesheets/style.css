@@ -1576,6 +1576,19 @@ del em strong {
 	margin-bottom: 0;
 }
 
+.commentary-search-ayah {
+	color: var(--c-black);
+	font-size: 1.35rem;
+	line-height: 1.75;
+	margin: .45rem 0 .35rem;
+}
+
+.commentary-search-ayah .quran-ayah-end-marker {
+	font-size: .82em;
+	margin-left: .15em;
+	margin-right: .35em;
+}
+
 .quran-ayah-modal .modal-content {
 	border: 0;
 	border-radius: .75rem;
@@ -2976,6 +2989,11 @@ a.cmd-btn:hover {
 .commentary-search-result {
 	border-bottom: 1px solid var(--bs-border-color);
 	padding-bottom: .85rem;
+}
+
+.commentary-search-result .h {
+	margin-bottom: .45rem;
+	margin-top: .45rem;
 }
 
 .commentary-search-fragment {

@@ -5,6 +5,14 @@
 	<section class="col-md-6 col-sm-12 h" lang="ar" dir="rtl">
 		<b><a href="<%= commentary.url %>"><%- commentary.commentary_ref_ar %></a></b>
 	</section>
+	<% if (commentary.commentary_ayahs && commentary.commentary_ayahs.length > 0) { %>
+		<section class="commentary-search-ayah quran-hafs col-12" lang="ar" dir="rtl">
+			<% commentary.commentary_ayahs.forEach(function (ayah) { %>
+				<span class="commentary-search-ayah-text"><%= ayah.text %></span>
+				<span class="quran-ayah-end-marker" aria-label="Quran ayah <%= ayah.num %>"><%= ayah.marker %></span>
+			<% }); %>
+		</section>
+	<% } %>
 	<% if (commentary.commentary_is_bilingual) { %>
 		<div class="commentary-search-fragment col-md-6 col-sm-12" lang="en"><%- commentary.commentary_fragment_html_en %></div>
 		<div class="commentary-search-fragment col-md-6 col-sm-12" lang="ar" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
@@ -13,20 +21,32 @@
 	<% } else { %>
 		<div class="commentary-search-fragment col-12" lang="ar" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
 	<% } %>
-	<section class="col-12 h">
-		<aside class="tags">
-			<span class="bi bi-book"></span>&nbsp;<a href="<%= commentary.url %>" title="Open tafsir on the ayah page" class="icon">Tafsir</a>
-		</aside>
-	</section>
 	<% if (commentary.commentary_section_url) { %>
 		<section class="col-md-6 col-sm-12 h" lang="en">
 			<aside class="title">
 				§ <a href="<%= commentary.commentary_section_url %>"><%- utils.truncate(commentary.h2_title_en, 30, true) || 'Section' %></a>
+				<% if (commentary.commentary_show_surah_en) { %>
+					in <a href="<%= commentary.commentary_surah_url || commentary.commentary_section_url %>"><%- commentary.commentary_surah_name_en %></a>
+				<% } %>
 			</aside>
 		</section>
 		<section class="col-md-6 col-sm-12 h" lang="ar" dir="rtl">
 			<aside class="title">
 				§ <a href="<%= commentary.commentary_section_url %>"><%- utils.truncate(commentary.h2_title, 30, true) || 'مقطع' %></a>
+				<% if (commentary.commentary_show_surah_ar) { %>
+					في <a href="<%= commentary.commentary_surah_url || commentary.commentary_section_url %>" class="quran-surah-name"><%- commentary.commentary_surah_name_ar %></a>
+				<% } %>
+			</aside>
+		</section>
+	<% } else if (commentary.commentary_show_surah_en || commentary.commentary_show_surah_ar) { %>
+		<section class="col-md-6 col-sm-12 h" lang="en">
+			<aside class="title">
+				§ <% if (commentary.commentary_show_surah_en) { %>in <a href="<%= commentary.commentary_surah_url || commentary.url %>"><%- commentary.commentary_surah_name_en %></a><% } %>
+			</aside>
+		</section>
+		<section class="col-md-6 col-sm-12 h" lang="ar" dir="rtl">
+			<aside class="title">
+				§ <% if (commentary.commentary_show_surah_ar) { %>في <a href="<%= commentary.commentary_surah_url || commentary.url %>" class="quran-surah-name"><%- commentary.commentary_surah_name_ar %></a><% } %>
 			</aside>
 		</section>
 	<% } %>
