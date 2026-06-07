@@ -135,21 +135,21 @@
         <form class="quran-passage-navigator mb-3" action="/" method="get" novalidate data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
           <input type="hidden" name="b" value="quran">
           <input type="hidden" name="b" value="commentaries">
-          <div class="input-group input-group-sm quran-passage-search-group">
-            <input role="search" type="text" class="form-control quran-passage-search" placeholder="Search ayat or tafsir" aria-label="Search Quran ayat and tafsir" autocomplete="off">
-            <button type="button" class="btn btn-outline-primary quran-passage-search-submit" title="Search Quran ayat" aria-label="Search Quran ayat">
-              <span class="bi bi-search"></span>
-            </button>
-          </div>
           <label class="form-label mb-0">
             <input type="text" class="form-control form-control-sm quran-passage-surah" value="<%= quranNavigatorSurahValue %>" aria-label="Select Quran surah" autocomplete="off" required>
           </label>
-          <label class="form-label mb-0">
-            <input type="text" inputmode="numeric" class="form-control form-control-sm quran-passage-ayah" value="<%= quranNavigatorAyahValue %>" aria-label="Select Quran ayah" autocomplete="off" required>
-          </label>
-          <button type="submit" class="btn btn-sm btn-outline-primary quran-passage-go">
-            <span class="bi bi-arrow-right-circle"></span> Go
-          </button>
+          <div class="input-group input-group-sm quran-passage-ayah-group">
+            <input type="text" inputmode="numeric" class="form-control quran-passage-ayah" value="<%= quranNavigatorAyahValue %>" aria-label="Select Quran ayah" autocomplete="off" required>
+            <button type="submit" class="btn btn-outline-primary quran-passage-go" title="Open ayah" aria-label="Open ayah">
+              <span class="bi bi-caret-right"></span>
+            </button>
+          </div>
+          <div class="input-group input-group-sm quran-passage-search-group">
+            <input role="search" type="text" class="form-control quran-passage-search" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off">
+            <button type="button" class="btn btn-outline-primary quran-passage-search-submit" title="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr">
+              <span class="bi bi-search"></span>
+            </button>
+          </div>
         </form>
       <% } %>
       

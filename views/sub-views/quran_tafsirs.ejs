@@ -18,12 +18,24 @@
 	const tafsirSection = locals.section
 		? `${locals.section.h1}${locals.section.level > 1 ? `.${locals.section.h2}` : ''}`
 		: passageSurah;
-	const tafsirHeading = locals.tafsirHeading || `Tafsir of Section ${tafsirSection}`;
-	const tafsirInstance = locals.tafsirInstance || 'passage';
 	const selectedAyahNums = (locals.selectedAyahs || []).map(function (ayah) {
 		const num = ayah.en?.num || ayah.num || '';
 		return parseInt(arabic.toLatinDigits(num.toString().split(/:/).pop()), 10);
 	}).filter(Number.isInteger);
+	const passageSurahInfo = (global.surahs || []).find(function (surah) {
+		return Number(surah.num) === Number(passageSurah);
+	});
+	const passageAyahHeadingNums = selectedAyahNums.length > 0 ? selectedAyahNums : passageAyahs;
+	const passageAyahHeadingStart = Math.min.apply(null, passageAyahHeadingNums);
+	const passageAyahHeadingEnd = Math.max.apply(null, passageAyahHeadingNums);
+	const passageAyahHeadingRange = passageAyahHeadingStart === passageAyahHeadingEnd
+		? passageAyahHeadingStart
+		: `${passageAyahHeadingStart}-${passageAyahHeadingEnd}`;
+	const passageTafsirHeading = passageAyahHeadingNums.length > 0
+		? `${passageSurah}:${passageAyahHeadingRange}${passageSurahInfo?.name_en ? ` ${passageSurahInfo.name_en}` : ''}`
+		: `Tafsir of Section ${tafsirSection}`;
+	const tafsirHeading = locals.tafsirHeading || passageTafsirHeading;
+	const tafsirInstance = locals.tafsirInstance || 'passage';
 %>
 <% if (passageSurah && passageAyahs.length > 0) { %>
 <article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>">

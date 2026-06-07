@@ -425,6 +425,15 @@ nav .nav-link {
 	color: var(--c-gray-dark);
 }
 
+.h-menu .btn:hover,
+.h-menu .btn:focus,
+.h-menu .btn.active,
+.h-menu .btn:active {
+	background-color: var(--c-accent);
+	border-color: var(--c-accent);
+	color: #fff;
+}
+
 @media (min-width: 768px) {
 	.h-menu-hint {
 		display: none;
@@ -1511,7 +1520,7 @@ del em strong {
 	align-items: end;
 	display: grid;
 	gap: .5rem;
-	grid-template-columns: minmax(10rem, 1fr) minmax(6rem, .36fr) minmax(3.8rem, .18fr) auto;
+	grid-template-columns: minmax(6rem, .36fr) minmax(5.5rem, .3fr) minmax(8rem, .82fr);
 	margin-top: 1lh;
 	text-indent: 0;
 }
@@ -1529,11 +1538,26 @@ del em strong {
 	min-width: 0;
 }
 
+.quran-passage-navigator .quran-passage-search-submit,
+.quran-passage-navigator .quran-passage-go {
+	border-color: var(--c-accent);
+	color: var(--c-accent);
+}
+
+.quran-passage-navigator .quran-passage-search-submit:hover,
+.quran-passage-navigator .quran-passage-search-submit:focus,
+.quran-passage-navigator .quran-passage-go:hover,
+.quran-passage-navigator .quran-passage-go:focus {
+	background-color: var(--c-accent);
+	border-color: var(--c-accent);
+	color: #fff;
+}
+
 .quran-toc-navigator {
-	grid-template-columns: minmax(6rem, .36fr) minmax(3.8rem, .18fr) auto;
+	grid-template-columns: minmax(6rem, .34fr) minmax(5rem, .24fr) minmax(12rem, 1fr);
 	margin-left: auto;
 	margin-right: auto;
-	max-width: 42rem;
+	max-width: 48rem;
 }
 
 .quran-toc-search-bar {
@@ -1541,18 +1565,62 @@ del em strong {
 	font-size: 1.5em;
 }
 
+.quran-toc-navigator .quran-passage-surah,
+.quran-toc-navigator .quran-passage-ayah,
+.quran-toc-navigator .quran-passage-go {
+	font-size: 1.5em;
+}
+
 .quran-toc-search-group {
-	grid-column: 1 / -1;
+	grid-column: auto;
+}
+
+.quran-passage-ayah-group {
+	min-width: 0;
+}
+
+.toc-book-description-summary {
+	align-items: baseline;
+	display: flex;
+	gap: .35rem;
+	margin-bottom: .5rem;
+	min-width: 0;
+}
+
+.toc-book-description-preview {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.toc-book-description-summary a {
+	color: var(--c-accent);
 }
 
 @media (max-width: 575.98px) {
 	.quran-passage-navigator {
 		gap: .35rem;
-		grid-template-columns: minmax(0, 1fr) minmax(5.2rem, .34fr) minmax(3.2rem, .18fr) auto;
+		grid-template-columns: minmax(0, 1fr) minmax(4.8rem, .3fr);
+	}
+
+	.quran-passage-search-group {
+		grid-column: 1 / -1;
+		order: -1;
 	}
 
 	.quran-toc-navigator {
-		grid-template-columns: minmax(0, 1fr) minmax(5.2rem, .34fr) minmax(3.2rem, .18fr) auto;
+		grid-template-columns: minmax(0, 1fr) minmax(4.4rem, .34fr);
+		max-width: none;
+	}
+
+	.quran-toc-search-group {
+		grid-column: 1 / -1;
+	}
+
+	.quran-toc-navigator .quran-passage-surah,
+	.quran-toc-navigator .quran-passage-ayah,
+	.quran-toc-navigator .quran-passage-go {
+		font-size: 1rem;
 	}
 
 	.quran-passage-go {
@@ -1674,7 +1742,6 @@ del em strong {
 }
 
 .quran-ayah-modal .quran-tafsir-language-toggle .btn,
-.quran-ayah-modal .quran-tafsir-source,
 .quran-ayah-modal .quran-tafsir-text,
 .quran-ayah-modal .quran-tafsir-footnotes {
 	font-size: 1rem;
@@ -1687,6 +1754,10 @@ del em strong {
 
 .quran-ayah-modal :lang(ar) {
 	font-size: var(--f-size-ar);
+}
+
+.quran-ayah-modal .quran-tafsir-source [lang="ar"] {
+	font-size: inherit;
 }
 
 .quran-ayah-selecting .body.passage .ayah {

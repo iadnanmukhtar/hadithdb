@@ -1,11 +1,18 @@
 <div class="h-menu-wrap mb-3">
+	<%
+		var currentBookAlias = typeof page !== 'undefined' && page.context && page.context.book ? page.context.book.alias : '';
+		if (!currentBookAlias && typeof req !== 'undefined' && req.path)
+			currentBookAlias = req.path.split('/').filter(Boolean)[0] || '';
+	%>
 	<div class="h-menu-hint d-md-none">
 		<i class="bi bi-arrow-left-right"></i> Swipe to browse books
 	</div>
 	<div class="h-menu-scroller">
 		<div class="btn-group h-menu text-nowrap" role="group">
-			<% for (b of books.filter(b => !b.hidden)) { %>
-			  <a class="btn btn-outline-primary text-nowrap" href="<%= utils.urlFor(req, `/${b.alias}`) %>" title="<%= `${b.name_en} ${b.name}` %>"><%= b.shortName_en %></a>
+			<% for (b of books.filter(b => !b.hidden)) {
+				var isCurrentBook = b.alias === currentBookAlias;
+			%>
+			  <a class="btn btn-outline-primary text-nowrap<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" title="<%= `${b.name_en} ${b.name}` %>"><%= b.shortName_en %></a>
 			<% } %>
 		</div>
 	</div>

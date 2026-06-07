@@ -23,7 +23,7 @@
           const nextRef = modalAyahs[index + 1]?.ref || ayah.next_ref || '';
         %>
           <article class="quran-ayah-modal-pane<%= index === 0 ? '' : ' d-none' %>" id="<%= paneId %>" data-quran-ayah-modal-pane="<%= index %>" data-quran-ayah-ref="<%= ayahNum %>" data-quran-ayah-prev-ref="<%= prevRef %>" data-quran-ayah-next-ref="<%= nextRef %>">
-            <%- include('quran_tafsirs.ejs', { site: site, page: page, selectedAyahs: [ayah], passage: [ayah], tafsirHeading: `Tafsir of Quran ${ayahNum}`, tafsirInstance: paneId }); %>
+            <%- include('quran_tafsirs.ejs', { site: site, page: page, selectedAyahs: [ayah], passage: [ayah], tafsirInstance: paneId }); %>
           </article>
         <% }); %>
       </div>

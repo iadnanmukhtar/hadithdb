@@ -77,6 +77,7 @@ $(function () {
 
 	initSearchAutocomplete();
 	initQuranPassageNavigator();
+	initBookNavScroller();
 
 	$('#toc2').on('hidden.bs.collapse', function (event) {
 		$('.toggle').removeClass('bi-toggle-on');
@@ -101,12 +102,24 @@ $(function () {
 	initQuranTafsirTabs(document);
 	initQuranTafsirFootnotePopups(document);
 	initTocExpandCollapse(document);
+	initTocInlineDescriptionExpanders(document);
 
 });
 
 function getHadithCookie(name) {
 	const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\/+^]/g, '\\$&') + '=([^;]*)'));
 	return match ? decodeURIComponent(match[1]) : '';
+}
+
+function initBookNavScroller(scope) {
+	(scope ? $(scope) : $(document)).find('.h-menu').each(function () {
+		var menu = this;
+		var current = $(menu).find('[data-current-book="true"]').get(0);
+		if (!current)
+			return;
+		var targetLeft = current.offsetLeft - ((menu.clientWidth - current.offsetWidth) / 2);
+		menu.scrollLeft = Math.max(0, targetLeft);
+	});
 }
 
 function setHadithAdminMode(enabled) {
@@ -223,6 +236,23 @@ function initTocExpandCollapse(root) {
 			button.find('.toc-expand-icon')
 				.toggleClass('bi-chevron-right', expanded)
 				.toggleClass('bi-chevron-down', !expanded);
+		});
+	});
+}
+
+function initTocInlineDescriptionExpanders(root) {
+	var scope = root || document;
+	$(scope).find('[data-toc-description-expand]').each(function () {
+		var link = $(this);
+		if (link.data('tocDescriptionExpandBound'))
+			return;
+		link.data('tocDescriptionExpandBound', true);
+		link.on('click', function (event) {
+			event.preventDefault();
+			var target = link.attr('data-toc-description-expand');
+			$(`[data-toc-description-summary="${target}"]`).addClass('d-none');
+			$(`[data-toc-description-full="${target}"]`).removeClass('d-none');
+			link.attr('aria-expanded', 'true');
 		});
 	});
 }
