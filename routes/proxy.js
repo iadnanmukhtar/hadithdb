@@ -8,57 +8,64 @@ const cheerio = require('cheerio');
 const MarkdownIt = require('markdown-it');
 const markdownitFootnote = require('markdown-it-footnote');
 const Commentaries = require('../lib/Commentaries');
+const Index = require('../lib/Index');
 
 const router = express.Router();
 const md = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
+const tafsirAppHealth = {
+  checkedAt: 0,
+  available: true
+};
+const TAFSIR_APP_HEALTH_TTL_MS = 60000;
+const TAFSIR_APP_HEALTH_TIMEOUT_MS = 3000;
 
 router.get('/tafsir/books', async function (req, res) {
   if (!global.commentaries || global.commentaries.length < 1)
     await Commentaries.loadCommentaries();
+  const tafsirAppAvailable = await isTafsirAppAvailable();
   const rows = expandBilingualLocalCommentaries((global.commentaries || [])
     .filter(row => Number(row.hidden) === 0)
+    .filter(row => tafsirAppAvailable || row.source !== 'tafsir.app')
     .map(({ hidden, ...row }) => row));
-  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.setHeader('Cache-Control', tafsirAppAvailable ? 'public, max-age=300' : 'public, max-age=60');
   res.json(rows);
 });
 
 router.get('/tafsir/local', async function (req, res) {
   const src = (req.query.src || '').toString();
   const surah = Number(req.query.s);
-  const ayah = Number(req.query.a);
+  const ayah = req.query.a === undefined ? NaN : Number(req.query.a);
+  const ayahFrom = req.query.from === undefined ? ayah : Number(req.query.from);
+  const ayahTo = req.query.to === undefined ? ayahFrom : Number(req.query.to);
   const lang = (req.query.lang || '').toString();
   if (!/^[A-Za-z0-9_-]+$/.test(src) || !Number.isInteger(surah) || surah < 1 || surah > 114 ||
-      !Number.isInteger(ayah) || ayah < 0 || (lang && lang !== 'ar' && lang !== 'en')) {
+      !Number.isInteger(ayahFrom) || ayahFrom < 0 || !Number.isInteger(ayahTo) || ayahTo < ayahFrom ||
+      (lang && lang !== 'ar' && lang !== 'en')) {
     res.status(400).json({ error: 'Invalid local tafsir request.' });
     return;
   }
-  const rows = await global.query(`
-    SELECT bc.format, hc.id, hc.surah, hc.ayahFrom, hc.ayahTo, hc.text, hc.text_en, hc.footnotes, hc.footnotes_en
-    FROM books_commentaries bc
-    JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
-    WHERE bc.alias=${global.dbPool.escape(src)}
-      AND bc.source='local'
-      AND hc.surah=${surah}
-      AND hc.ayahFrom <= ${ayah}
-      AND hc.ayahTo >= ${ayah}
-    ORDER BY hc.ayahFrom, hc.ayahTo
-    LIMIT 1`);
+  const rows = await localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo);
   if (!rows.length) {
     res.status(404).json({ error: 'No local tafsir text is available for this ayah.' });
     return;
   }
-  const row = rows[0];
-  const html = renderLocalCommentary(row, isEditMode(req), lang, src);
-  if (lang && !html) {
+  const entries = rows.map(row => {
+    const html = renderLocalCommentary(row, isEditMode(req), lang, src);
+    return {
+      ayahs_start: row.ayahFrom,
+      count: row.ayahTo - row.ayahFrom,
+      html: html
+    };
+  }).filter(entry => !lang || entry.html);
+  if (!entries.length) {
     res.status(404).json({ error: 'No local tafsir text is available for this ayah.' });
     return;
   }
   res.setHeader('Cache-Control', 'no-store');
-  res.json({
-    ayahs_start: row.ayahFrom,
-    count: row.ayahTo - row.ayahFrom,
-    html: html
-  });
+  if (req.query.from !== undefined || req.query.to !== undefined)
+    res.json({ entries: entries });
+  else
+    res.json(entries[0]);
 });
 
 router.get('/tafsir', async function (req, res) {
@@ -75,17 +82,25 @@ router.get('/tafsir', async function (req, res) {
     return;
   }
 
-  const response = await axios.get('https://tafsir.app/get.php', {
-    params: {
-      src: src,
-      s: surah,
-      a: ayah,
-      ver: version
-    },
-    timeout: 10000
-  });
-  res.setHeader('Cache-Control', 'public, max-age=2592000');
-  res.json(response.data);
+  try {
+    const response = await axios.get('https://tafsir.app/get.php', {
+      params: {
+        src: src,
+        s: surah,
+        a: ayah,
+        ver: version
+      },
+      timeout: 10000
+    });
+    markTafsirAppAvailable(true);
+    res.setHeader('Cache-Control', 'public, max-age=2592000');
+    res.json(response.data);
+  } catch (err) {
+    markTafsirAppAvailable(false);
+    debug(`tafsir.app unavailable for ${src} ${surah}:${ayah}: ${err.message}`);
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(503).json({ error: 'Remote tafsir service is unavailable. Please use a local tafsir.' });
+  }
 });
 
 router.get('/:url', async function (req, res, next) {
@@ -129,6 +144,55 @@ function expandBilingualLocalCommentaries(rows) {
 
 function hasCommentaryLanguageFormat(format, lang) {
   return (format || '').split(',').map(value => value.trim()).some(value => value.startsWith(`${lang}:`));
+}
+
+async function isTafsirAppAvailable() {
+  const now = Date.now();
+  if (now - tafsirAppHealth.checkedAt < TAFSIR_APP_HEALTH_TTL_MS)
+    return tafsirAppHealth.available;
+  try {
+    await axios.get('https://tafsir.app/get.php', {
+      params: { src: 'ibn-katheer', s: 1, a: 1, ver: 1 },
+      timeout: TAFSIR_APP_HEALTH_TIMEOUT_MS
+    });
+    markTafsirAppAvailable(true);
+  } catch (err) {
+    markTafsirAppAvailable(false);
+    debug(`tafsir.app health check failed: ${err.message}`);
+  }
+  return tafsirAppHealth.available;
+}
+
+function markTafsirAppAvailable(available) {
+  tafsirAppHealth.checkedAt = Date.now();
+  tafsirAppHealth.available = available;
+}
+
+async function localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo) {
+  const size = Math.min(1000, Math.max(1, ayahTo - ayahFrom + 21));
+  const rows = await Index.docsFromQuery('commentaries', {
+    bool: {
+      filter: [
+        { term: { doctype: 'commentary' } },
+        { term: { commentary_alias: src } },
+        { term: { source: 'local' } },
+        { term: { surah: surah } },
+        { range: { ayahFrom: { lte: ayahTo } } },
+        { range: { ayahTo: { gte: ayahFrom } } }
+      ]
+    }
+  }, 0, size, 'ayahFrom ASC, ayahTo ASC', false);
+  return rows.map(row => ({
+    format: row.format,
+    id: row.id,
+    surah: Number(row.surah),
+    ayahFrom: Number(row.ayahFrom),
+    ayahTo: Number(row.ayahTo),
+    text: row.text,
+    text_en: row.text_en,
+    footnotes: row.footnotes,
+    footnotes_en: row.footnotes_en
+  }));
 }
 
 function renderLocalCommentary(row, editMode, lang, src) {

@@ -428,6 +428,7 @@ function initQuranTafsirTabs(root) {
 		var activeLanguage = 'en';
 		var selectedByLanguage = {};
 		var selectedTafsirStorageKey = 'quranTafsirAlias';
+		var remoteTafsirsUnavailable = false;
 		var getStoredTafsirAlias = function () {
 			try {
 				return window.sessionStorage.getItem(selectedTafsirStorageKey);
@@ -606,9 +607,25 @@ function initQuranTafsirTabs(root) {
 			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&ver=1${languageParam}`);
 			if (response.status === 404)
 				return null;
+			if (!response.ok) {
+				var err = new Error('Unable to load tafsir.');
+				err.remoteUnavailable = response.status === 503 && source !== 'local';
+				throw err;
+			}
+			return await response.json();
+		};
+		var fetchLocalPayloads = async function (src, language) {
+			var endpoint = quranApiPath('/proxy/tafsir/local');
+			var languageParam = language ? `&lang=${encodeURIComponent(language)}` : '';
+			var ayahFrom = Math.min.apply(Math, ayahs);
+			var ayahTo = Math.max.apply(Math, ayahs);
+			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&from=${encodeURIComponent(ayahFrom)}&to=${encodeURIComponent(ayahTo)}${languageParam}`);
+			if (response.status === 404)
+				return [];
 			if (!response.ok)
 				throw new Error('Unable to load tafsir.');
-			return await response.json();
+			var payload = await response.json();
+			return Array.isArray(payload.entries) ? payload.entries : [payload];
 		};
 
 		var loadPanel = async function (panel) {
@@ -622,12 +639,19 @@ function initQuranTafsirTabs(root) {
 			var text = panel.find('.quran-tafsir-text');
 			status.text('Loading tafsir...');
 			try {
-				var payloads = await Promise.all(ayahs.map(async function (ayah) {
-					return {
-						ayah: ayah,
-						payload: await fetchPayload(src, source, ayah, panel.attr('data-tafsir-lang'))
-					};
-				}));
+				var payloads = source === 'local'
+					? (await fetchLocalPayloads(src, panel.attr('data-tafsir-lang'))).map(function (payload) {
+						return {
+							ayah: payload.ayahs_start,
+							payload: payload
+						};
+					})
+					: await Promise.all(ayahs.map(async function (ayah) {
+						return {
+							ayah: ayah,
+							payload: await fetchPayload(src, source, ayah, panel.attr('data-tafsir-lang'))
+						};
+					}));
 				var seen = new Set();
 				var entries = payloads.filter(function (entry) {
 					if (!entry.payload)
@@ -673,10 +697,40 @@ function initQuranTafsirTabs(root) {
 					status.text('No tafsir text is available for this passage.');
 				panel.data('tafsirLoaded', true);
 			} catch (err) {
+				if (err.remoteUnavailable) {
+					showLocalTafsirsOnly(panel.attr('data-tafsir-lang'));
+					return;
+				}
 				status.removeClass('d-none').text(err.message || 'Unable to load tafsir.');
 			} finally {
 				panel.data('tafsirLoading', false);
 			}
+		};
+		var showLocalTafsirsOnly = function (language) {
+			remoteTafsirsUnavailable = true;
+			container.find('.quran-tafsir-panel').filter(function () {
+				return ($(this).attr('data-tafsir-source') || 'tafsir.app') !== 'local';
+			}).each(function () {
+				var panel = $(this);
+				panel.removeClass('active show');
+				container.find(`[data-bs-target="#${cssEscape(panel.attr('id'))}"]`).addClass('d-none').removeClass('active');
+			});
+			var localTab = container.find('[data-tafsir-lang]').filter(function () {
+				var tab = $(this);
+				if (tab.attr('role') !== 'tab' || tab.attr('data-tafsir-lang') !== language || tab.hasClass('d-none'))
+					return false;
+				var panel = $(tab.attr('data-bs-target'));
+				return (panel.attr('data-tafsir-source') || 'tafsir.app') === 'local';
+			}).first();
+			if (localTab.length && window.bootstrap && window.bootstrap.Tab) {
+				window.bootstrap.Tab.getOrCreateInstance(localTab[0]).show();
+				return;
+			}
+			container.find('.quran-tafsir-status').removeClass('d-none').text('Remote tafsirs are unavailable. No local tafsir is available for this language.');
+		};
+		var isRemoteTafsirTab = function (tab) {
+			var panel = $(tab.attr('data-bs-target'));
+			return (panel.attr('data-tafsir-source') || 'tafsir.app') !== 'local';
 		};
 		var showLanguage = function (language, preferredAlias) {
 			activeLanguage = language;
@@ -686,15 +740,16 @@ function initQuranTafsirTabs(root) {
 				return $(this).attr('role') === 'tab';
 			});
 			tabs.each(function () {
-				$(this).toggleClass('d-none', $(this).attr('data-tafsir-lang') !== language);
+				var tab = $(this);
+				tab.toggleClass('d-none', tab.attr('data-tafsir-lang') !== language || (remoteTafsirsUnavailable && isRemoteTafsirTab(tab)));
 			});
 			var targetAlias = preferredAlias || selectedByLanguage[language];
 			var target = targetAlias ? tabs.filter(function () {
-				return $(this).attr('data-tafsir-hash') === targetAlias && $(this).attr('data-tafsir-lang') === language;
+				return $(this).attr('data-tafsir-hash') === targetAlias && $(this).attr('data-tafsir-lang') === language && !$(this).hasClass('d-none');
 			}) : $();
 			if (target.length !== 1)
 				target = tabs.filter(function () {
-					return $(this).attr('data-tafsir-lang') === language;
+					return $(this).attr('data-tafsir-lang') === language && !$(this).hasClass('d-none');
 				}).first();
 			if (target.length && window.bootstrap && window.bootstrap.Tab)
 				window.bootstrap.Tab.getOrCreateInstance(target[0]).show();
