@@ -295,8 +295,32 @@
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   <% if (site.editMode) { %>
   <script>
+    const quranEditorUrl = (path) => {
+      if (typeof quranUrl === 'function')
+        return quranUrl(path);
+      return path;
+    };
+
+    const quranEditorJson = async (res) => {
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        throw new Error(`Expected JSON from ${res.url || 'server'}, got ${text.trim().substring(0, 120) || res.statusText}`);
+      }
+    };
+
+    const quranEditorUpdateUrl = (path) => quranEditorUrl(path.replace(/^\/update\//, '/quran/update/'));
+
+    const quranEditorPost = (path, value) => fetch(quranEditorUpdateUrl(path), {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value })
+    });
+
     const refreshAfterQuranHeadingUpdate = (targetUrl) => {
-      const target = new URL(targetUrl, window.location.origin);
+      const target = new URL(quranEditorUrl(targetUrl), window.location.origin);
       if (target.pathname === window.location.pathname && target.search === window.location.search) {
         if (target.hash)
           window.location.hash = target.hash;
@@ -379,7 +403,7 @@
         try {
           if (!rangeInputFocused())
             return hidePreview();
-          const res = await fetch(`/passage:${surah}:${range.startAyah}-${range.endAyah}?json=1`);
+          const res = await fetch(quranEditorUrl(`/passage:${surah}:${range.startAyah}-${range.endAyah}?json=1`), { credentials: 'same-origin' });
           if (!res.ok)
             throw new Error(await res.text());
           const item = (await res.json())[0] || {};
@@ -395,12 +419,8 @@
         const range = getRange();
         setButtonLoading(true);
         try {
-          const res = await fetch(`/update/${headingId}/toc.passageRange`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ value: range })
-          });
-          const body = await res.json();
+          const res = await quranEditorPost(`/update/${headingId}/toc.passageRange`, range);
+          const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
@@ -421,12 +441,8 @@
           return;
         setActionLoading(deleteButton, 'Removing', true);
         try {
-          const res = await fetch(`/update/${headingId}/toc.sectionDelete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ value: '1' })
-          });
-          const body = await res.json();
+          const res = await quranEditorPost(`/update/${headingId}/toc.sectionDelete`, '1');
+          const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
@@ -495,18 +511,12 @@
         const range = getRange();
         setButtonLoading(true);
         try {
-          const res = await fetch(`/update/${headingId}/toc.subsectionAdd`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              value: {
-                startAyah: range.startAyah,
-                endAyah: range.endAyah,
-                title_en: titleInput.value
-              }
-            })
+          const res = await quranEditorPost(`/update/${headingId}/toc.subsectionAdd`, {
+            startAyah: range.startAyah,
+            endAyah: range.endAyah,
+            title_en: titleInput.value
           });
-          const body = await res.json();
+          const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
@@ -565,19 +575,13 @@
         const range = getRange();
         setButtonLoading(true);
         try {
-          const res = await fetch(`/update/${headingId}/toc.sectionAdd`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              value: {
-                startAyah: range.startAyah,
-                endAyah: range.endAyah,
-                title_en: titleInput.value,
-                position: positionInput.value
-              }
-            })
+          const res = await quranEditorPost(`/update/${headingId}/toc.sectionAdd`, {
+            startAyah: range.startAyah,
+            endAyah: range.endAyah,
+            title_en: titleInput.value,
+            position: positionInput.value
           });
-          const body = await res.json();
+          const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
@@ -639,12 +643,8 @@
         const next = range();
         setButtonLoading(saveButton, '', true);
         try {
-          const res = await fetch(`/update/${subsectionId}/toc.subsectionRange`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ value: next })
-          });
-          const body = await res.json();
+          const res = await quranEditorPost(`/update/${subsectionId}/toc.subsectionRange`, next);
+          const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
@@ -665,12 +665,8 @@
           return;
         setButtonLoading(deleteButton, '', true);
         try {
-          const res = await fetch(`/update/${subsectionId}/toc.subsectionDelete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ value: '1' })
-          });
-          const body = await res.json();
+          const res = await quranEditorPost(`/update/${subsectionId}/toc.subsectionDelete`, '1');
+          const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
@@ -691,12 +687,8 @@
           return;
         setButtonLoading(promoteButton, '', true);
         try {
-          const res = await fetch(`/update/${subsectionId}/toc.subsectionPromote`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ value: '1' })
-          });
-          const body = await res.json();
+          const res = await quranEditorPost(`/update/${subsectionId}/toc.subsectionPromote`, '1');
+          const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
