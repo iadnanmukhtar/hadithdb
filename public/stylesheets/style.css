@@ -1828,6 +1828,32 @@ del em strong {
 	margin-bottom: 0;
 }
 
+.quran-tafsirs>.h-menu-wrap {
+	background: var(--bs-body-bg, var(--c-white));
+	box-shadow: 0 1px 0 var(--bs-border-color);
+	padding: .35rem 0 .5rem;
+	position: sticky;
+	top: 4.25rem;
+	z-index: 900;
+}
+
+.quran-ayah-modal .quran-tafsirs>.h-menu-wrap {
+	background: var(--bs-modal-bg, var(--c-white));
+	box-shadow: 0 1px 0 var(--bs-border-color);
+	top: 0;
+	z-index: 5;
+}
+
+@media (max-width: 768px) {
+	.quran-tafsirs>.h-menu-wrap {
+		top: 2.625rem;
+	}
+
+	.quran-ayah-modal .quran-tafsirs>.h-menu-wrap {
+		top: 0;
+	}
+}
+
 .quran-tafsir-heading {
 	margin-bottom: .5rem;
 }
