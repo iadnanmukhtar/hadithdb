@@ -51,6 +51,11 @@ function appendOriginalQuery(req) {
   return queryIndex >= 0 ? req.originalUrl.substring(queryIndex) : '';
 }
 
+function sendCachedHtml(req, res, cachedFile) {
+  res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+  res.end(Utils.injectCachedAdminControls(fs.readFileSync(cachedFile), req));
+}
+
 function redirectCanonicalReferencePath(req, res, canonicalPath) {
   if (req.path === canonicalPath)
     return false;
@@ -1263,9 +1268,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
-    if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end(fs.readFileSync(cachedFile));
+    if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+      sendCachedHtml(req, res, cachedFile);
       return;
     }
 
@@ -1379,9 +1383,8 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
-    if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end(fs.readFileSync(cachedFile));
+    if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+      sendCachedHtml(req, res, cachedFile);
       return;
     }
 
