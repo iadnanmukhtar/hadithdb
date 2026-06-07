@@ -109,7 +109,7 @@ function verifyCaptchaToken(token, answer) {
   return answer.toString().trim() === decoded.answer;
 }
 
-router.get('/captcha/translate', function (req, res) {
+router.get(['/captcha/translate', '/quran/captcha/translate'], function (req, res) {
   const a = crypto.randomInt(2, 10);
   const b = crypto.randomInt(2, 10);
   res.json({
@@ -118,7 +118,7 @@ router.get('/captcha/translate', function (req, res) {
   });
 });
 
-router.post('/captcha/translate/verify', function (req, res) {
+router.post(['/captcha/translate/verify', '/quran/captcha/translate/verify'], function (req, res) {
   if (!verifyCaptchaToken(req.body && req.body.captchaToken, req.body && req.body.captchaAnswer)) {
     res.status(403).json({
       code: 403,
@@ -135,7 +135,7 @@ router.post('/captcha/translate/verify', function (req, res) {
 
 router.use(redirectArabicDigitPath);
 
-router.get('/autocomplete', async function (req, res, next) {
+router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, next) {
   try {
     var q = Search.truncateQuery(req.query.q || req.query.term || '');
     var bookFilters = req.query.b || req.query['b[]'];
@@ -158,7 +158,7 @@ router.get('/reinit', async function (req, res, next) {
   return;
 });
 
-router.all('/do/:id', async function (req, res, next) {
+router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
   try {
     if (req.query.cmd == 'tr') {
       var id = parseInt(req.params.id, 10);

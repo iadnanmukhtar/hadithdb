@@ -1445,7 +1445,7 @@ function initQuranAyahSelector(root) {
 			delay: 180,
 			minLength: 2,
 			source: function (request, response) {
-				$.getJSON('/autocomplete', buildSearchAutocompleteParams($input, request.term))
+				$.getJSON(quranApiPath('/autocomplete'), buildSearchAutocompleteParams($input, request.term))
 					.done(response)
 					.fail(function () {
 						response([]);
@@ -1898,7 +1898,7 @@ function initHadithTranslateButtons(root) {
 					return;
 				}
 				button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Translating';
-				var res = await fetch('/do/' + encodeURIComponent(hadithId) + '?cmd=tr', {
+				var res = await fetch(quranApiPath('/do/' + encodeURIComponent(hadithId) + '?cmd=tr'), {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
@@ -2326,7 +2326,7 @@ function downloadBlob(blob, filename) {
 }
 
 async function getTranslateCaptcha() {
-	var res = await fetch('/captcha/translate', {
+	var res = await fetch(quranApiPath('/captcha/translate'), {
 		method: 'GET',
 		headers: {
 			'Accept': 'application/json'
@@ -2342,7 +2342,7 @@ async function getTranslateCaptcha() {
 		captchaToken: data.token,
 		captchaAnswer: answer
 	};
-	var verifyRes = await fetch('/captcha/translate/verify', {
+	var verifyRes = await fetch(quranApiPath('/captcha/translate/verify'), {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

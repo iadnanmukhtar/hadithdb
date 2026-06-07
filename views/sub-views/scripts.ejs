@@ -287,8 +287,11 @@
         status: 500,
         statusText: 'Unable to execute update due to an unknown error'
       };
+      const updateUrl = (id, prop) => {
+        return hadithApiPath(`/update/${id}/${prop}`);
+      };
       if (reqBody) {
-        res = await fetch(`/update/${reqBody.id}/${reqBody.prop}`, {
+        res = await fetch(updateUrl(reqBody.id, reqBody.prop), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -388,7 +391,7 @@
       })
       .autocomplete({
         source: function( request, response ) {
-          $.getJSON('/tag/_list', {
+          $.getJSON(hadithApiPath('/tag/_list'), {
             s: extractLast( request.term )
           }, response );
         },
@@ -472,6 +475,16 @@
       if (window.location.hostname.toLowerCase().split('.')[0] === 'quran')
         return '/quran/login/logout';
       return '/login/logout';
+  }
+
+  function hadithApiPath(path) {
+      path = String(path || '');
+      if (path.charAt(0) !== '/')
+        path = `/${path}`;
+      const isQuranHost = window.location.hostname.toLowerCase().split('.')[0] === 'quran';
+      if (isQuranHost && path !== '/quran' && !path.startsWith('/quran/'))
+        return `/quran${path}`;
+      return path;
   }
 
   function needsHadithAuthSync(user) {

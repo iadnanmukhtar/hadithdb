@@ -171,6 +171,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/requests', requestsRouter);
   app.use('/books', booksRouter);
   app.use('/tag', tagRouter);
+  app.use('/quran/tag', tagRouter);
   app.use('/update', updateRouter);
   app.use('/quran/update', updateRouter);
   app.use('/settings', settingsRouter);
