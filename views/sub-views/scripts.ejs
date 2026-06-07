@@ -300,7 +300,15 @@
             value: reqBody.value,
           })
         });
-        resBody = JSON.parse(await res.text());
+        const responseText = await res.text();
+        try {
+          resBody = JSON.parse(responseText);
+        } catch (err) {
+          resBody = {
+            code: res.status,
+            message: `Expected JSON from ${res.url || 'server'}, got ${responseText.trim().substring(0, 120) || res.statusText}`
+          };
+        }
       } else {
         res.statusText = 'Update request body is not present';
       }

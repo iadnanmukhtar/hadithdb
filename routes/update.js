@@ -5,6 +5,7 @@ const debug = require('debug')('hadithdb:update');
 const fs = require('fs');
 const express = require('express');
 const createError = require('http-errors');
+const MySQL = require('mysql');
 const path = require('path');
 const { spawn } = require('child_process');
 const { homedir } = require('os');
@@ -280,26 +281,21 @@ router.post('/:id/:prop', async function (req, res, next) {
 
     } else if (type == 'book') {
       var beforeBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
-      var result = await global.query(`UPDATE books SET ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
+      var bookValueSql = (col === 'description') ? sqlPreserveWhitespace(status.value) : sql(status.value);
+      var result = await global.query(`UPDATE books SET ${col}=${bookValueSql} WHERE id=${ids[0]}`);
+      if (!result || result.affectedRows < 1)
+        throw createError(404, 'Book not found');
       status.code = 200;
       status.message = result.message;
       await Library.reloadBooks();
       try {
         var afterBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
-        var cacheDir = `${homedir()}/.hadithdb/cache`;
         var bookAliases = new Set();
         if (beforeBook && beforeBook.alias)
           bookAliases.add(beforeBook.alias);
         if (afterBook && afterBook.alias)
           bookAliases.add(afterBook.alias);
-        for (const filename of fs.readdirSync(cacheDir)) {
-          for (const bookAlias of bookAliases) {
-            if (filename === `_${bookAlias}` || filename.startsWith(`_${bookAlias}_`) || filename.startsWith(`_${bookAlias}?`)) {
-              await Utils.flushCachedFile(`${cacheDir}/${filename}`);
-              break;
-            }
-          }
-        }
+        await flushBookCaches(bookAliases);
       } catch (err) {
         debug(`${err.message}:\n${err.stack}`);
       }
@@ -420,6 +416,38 @@ function sql(s) {
     return '"' + s + '"';
   }
   return null;
+}
+
+function sqlPreserveWhitespace(s) {
+  if (s === undefined || s === null || s === '…')
+    return null;
+  s = (s + '').replace(/\u200f/g, '');
+  return MySQL.escape(s);
+}
+
+async function flushBookCaches(bookAliases) {
+  var cacheDir = `${homedir()}/.hadithdb/cache`;
+  var aliases = Array.from(bookAliases || []).filter(Boolean);
+  for (const bookAlias of aliases)
+    await Utils.flushCacheContaining(bookAlias);
+  await Utils.flushCachedFile(`${cacheDir}/_books.html`);
+  if (!fs.existsSync(cacheDir))
+    return;
+  for (const filename of fs.readdirSync(cacheDir)) {
+    if (filename === '_books' || filename === '_books.html') {
+      await Utils.flushCachedFile(`${cacheDir}/${filename}`);
+      continue;
+    }
+    for (const bookAlias of aliases) {
+      if (filename === `_${bookAlias}`
+        || filename === `_${bookAlias}.html`
+        || filename.startsWith(`_${bookAlias}_`)
+        || filename.startsWith(`_${bookAlias}?`)) {
+        await Utils.flushCachedFile(`${cacheDir}/${filename}`);
+        break;
+      }
+    }
+  }
 }
 
 async function commentaryIndexRowById(id) {
