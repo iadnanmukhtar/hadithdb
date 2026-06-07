@@ -27,6 +27,9 @@
 <title><%= page.title_en %></title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<% if (page.noindex) { %>
+<meta name="robots" content="noindex,follow">
+<% } %>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">

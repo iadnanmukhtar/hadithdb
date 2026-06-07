@@ -11,12 +11,14 @@
       site.editMode = false;
 
     var book = chapter.book;
+    var isQuranAyatView = book.alias === 'quran' && req.query.ayat !== undefined;
     var page = {
       menu: 'Chapter',
       title_en: `${site.shortName} | ${book.shortName_en} ${chapter.h1} ${chapter.title_en || chapter.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
-      canonical: `/${book.alias}/${chapter.h1}${req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : ''}`,
+      canonical: `/${book.alias}/${chapter.h1}${isQuranAyatView ? '?passage' : (req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : '')}`,
+      noindex: isQuranAyatView,
       context: {
         book: book,
         chapter: chapter,

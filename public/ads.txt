@@ -1,3 +1,2 @@
 appnexus.com, 14163, RESELLER 
-pubcenter.microsoft.com, 252903046, DIRECT
 google.com, pub-1199080602686133, DIRECT, f08c47fec0942fa0
