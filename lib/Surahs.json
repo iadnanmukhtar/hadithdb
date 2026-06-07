@@ -2,7 +2,7 @@
   {
     "num": 1,
     "alias": "faithah",
-    "name_en": "Al-Fatihah",
+    "name_en": "al-Fatihah",
     "name_ar": "الفاتحة",
     "ayahs": 7,
     "aliases": [
@@ -33,7 +33,7 @@
   {
     "num": 2,
     "alias": "baqarah",
-    "name_en": "Al-Baqarah",
+    "name_en": "al-Baqarah",
     "name_ar": "البقرة",
     "ayahs": 286,
     "aliases": [
@@ -54,7 +54,7 @@
   {
     "num": 3,
     "alias": "al_imran",
-    "name_en": "Ali 'Imran",
+    "name_en": "Al i Imran",
     "name_ar": "آل عمران",
     "ayahs": 200,
     "aliases": [
@@ -83,7 +83,7 @@
   {
     "num": 4,
     "alias": "nisa",
-    "name_en": "An-Nisa",
+    "name_en": "al-Nisa",
     "name_ar": "النساء",
     "ayahs": 176,
     "aliases": [
@@ -103,7 +103,7 @@
   {
     "num": 5,
     "alias": "maidah",
-    "name_en": "Al-Ma'idah",
+    "name_en": "al-Maidah",
     "name_ar": "المائدة",
     "ayahs": 120,
     "aliases": [
@@ -128,7 +128,7 @@
   {
     "num": 6,
     "alias": "anam",
-    "name_en": "Al-An'am",
+    "name_en": "al-Anam",
     "name_ar": "الأنعام",
     "ayahs": 165,
     "aliases": [
@@ -146,7 +146,7 @@
   {
     "num": 7,
     "alias": "araf",
-    "name_en": "Al-A'raf",
+    "name_en": "al-Aaraf",
     "name_ar": "الأعراف",
     "ayahs": 206,
     "aliases": [
@@ -166,7 +166,7 @@
   {
     "num": 8,
     "alias": "anfal",
-    "name_en": "Al-Anfal",
+    "name_en": "al-Anfal",
     "name_ar": "الأنفال",
     "ayahs": 75,
     "aliases": [
@@ -183,7 +183,7 @@
   {
     "num": 9,
     "alias": "tawbah",
-    "name_en": "At-Tawbah",
+    "name_en": "al-Tawbah",
     "name_ar": "التوبة",
     "ayahs": 129,
     "aliases": [
@@ -268,7 +268,7 @@
   {
     "num": 13,
     "alias": "rad",
-    "name_en": "Ar-Ra'd",
+    "name_en": "al-Raad",
     "name_ar": "الرعد",
     "ayahs": 43,
     "aliases": [
@@ -306,7 +306,7 @@
   {
     "num": 15,
     "alias": "hijr",
-    "name_en": "Al-Hijr",
+    "name_en": "al-Hijr",
     "name_ar": "الحجر",
     "ayahs": 99,
     "aliases": [
@@ -323,7 +323,7 @@
   {
     "num": 16,
     "alias": "nahl",
-    "name_en": "An-Nahl",
+    "name_en": "al-Nahl",
     "name_ar": "النحل",
     "ayahs": 128,
     "aliases": [
@@ -343,7 +343,7 @@
   {
     "num": 17,
     "alias": "isra",
-    "name_en": "Al-Isra",
+    "name_en": "al-Isra",
     "name_ar": "الإسراء",
     "ayahs": 111,
     "aliases": [
@@ -360,7 +360,7 @@
   {
     "num": 18,
     "alias": "kahf",
-    "name_en": "Al-Kahf",
+    "name_en": "al-Kahf",
     "name_ar": "الكهف",
     "ayahs": 110,
     "aliases": [
@@ -422,7 +422,7 @@
   {
     "num": 21,
     "alias": "anbiya",
-    "name_en": "Al-Anbiya",
+    "name_en": "al-Anbiya",
     "name_ar": "الأنبياء",
     "ayahs": 112,
     "aliases": [
@@ -441,7 +441,7 @@
   {
     "num": 22,
     "alias": "hajj",
-    "name_en": "Al-Hajj",
+    "name_en": "al-Hajj",
     "name_ar": "الحج",
     "ayahs": 78,
     "aliases": [
@@ -457,7 +457,7 @@
   {
     "num": 23,
     "alias": "muminun",
-    "name_en": "Al-Mu'minun",
+    "name_en": "al-Muminun",
     "name_ar": "المؤمنون",
     "ayahs": 118,
     "aliases": [
@@ -483,7 +483,7 @@
   {
     "num": 24,
     "alias": "nur",
-    "name_en": "An-Nur",
+    "name_en": "al-Nur",
     "name_ar": "النور",
     "ayahs": 64,
     "aliases": [
@@ -507,7 +507,7 @@
   {
     "num": 25,
     "alias": "furqan",
-    "name_en": "Al-Furqan",
+    "name_en": "al-Furqan",
     "name_ar": "الفرقان",
     "ayahs": 77,
     "aliases": [
@@ -524,7 +524,7 @@
   {
     "num": 26,
     "alias": "shuara",
-    "name_en": "Ash-Shu'ara",
+    "name_en": "al-Shuara",
     "name_ar": "الشعراء",
     "ayahs": 227,
     "aliases": [
@@ -545,7 +545,7 @@
   {
     "num": 27,
     "alias": "naml",
-    "name_en": "An-Naml",
+    "name_en": "al-Naml",
     "name_ar": "النمل",
     "ayahs": 93,
     "aliases": [
@@ -565,7 +565,7 @@
   {
     "num": 28,
     "alias": "qasas",
-    "name_en": "Al-Qasas",
+    "name_en": "al-Qasas",
     "name_ar": "القصص",
     "ayahs": 88,
     "aliases": [
@@ -581,7 +581,7 @@
   {
     "num": 29,
     "alias": "ankabut",
-    "name_en": "Al-Ankabut",
+    "name_en": "al-Ankabut",
     "name_ar": "العنكبوت",
     "ayahs": 69,
     "aliases": [
@@ -602,7 +602,7 @@
   {
     "num": 30,
     "alias": "rum",
-    "name_en": "Ar-Rum",
+    "name_en": "al-Rum",
     "name_ar": "الروم",
     "ayahs": 60,
     "aliases": [
@@ -642,7 +642,7 @@
   {
     "num": 32,
     "alias": "sajdah",
-    "name_en": "As-Sajdah",
+    "name_en": "al-Sajdah",
     "name_ar": "السجدة",
     "ayahs": 30,
     "aliases": [
@@ -669,7 +669,7 @@
   {
     "num": 33,
     "alias": "ahzab",
-    "name_en": "Al-Ahzab",
+    "name_en": "al-Ahzab",
     "name_ar": "الأحزاب",
     "ayahs": 73,
     "aliases": [
@@ -746,7 +746,7 @@
   {
     "num": 37,
     "alias": "saffat",
-    "name_en": "As-Saffat",
+    "name_en": "al-Saffat",
     "name_ar": "الصافات",
     "ayahs": 182,
     "aliases": [
@@ -784,7 +784,7 @@
   {
     "num": 39,
     "alias": "zumar",
-    "name_en": "Az-Zumar",
+    "name_en": "al-Zumar",
     "name_ar": "الزمر",
     "ayahs": 75,
     "aliases": [
@@ -838,7 +838,7 @@
   {
     "num": 42,
     "alias": "shura",
-    "name_en": "Ash-Shura",
+    "name_en": "al-Shura",
     "name_ar": "الشورى",
     "ayahs": 53,
     "aliases": [
@@ -859,7 +859,7 @@
   {
     "num": 43,
     "alias": "zukhruf",
-    "name_en": "Az-Zukhruf",
+    "name_en": "al-Zukhruf",
     "name_ar": "الزخرف",
     "ayahs": 89,
     "aliases": [
@@ -878,7 +878,7 @@
   {
     "num": 44,
     "alias": "dukhkhan",
-    "name_en": "Ad-Dukhan",
+    "name_en": "al-Dukhkhan",
     "name_ar": "الدخان",
     "ayahs": 59,
     "aliases": [
@@ -903,7 +903,7 @@
   {
     "num": 45,
     "alias": "jathiyah",
-    "name_en": "Al-Jathiyah",
+    "name_en": "al-Jathiyah",
     "name_ar": "الجاثية",
     "ayahs": 37,
     "aliases": [
@@ -927,7 +927,7 @@
   {
     "num": 46,
     "alias": "ahqaf",
-    "name_en": "Al-Ahqaf",
+    "name_en": "al-Ahqaf",
     "name_ar": "الأحقاف",
     "ayahs": 35,
     "aliases": [
@@ -961,7 +961,7 @@
   {
     "num": 48,
     "alias": "fath",
-    "name_en": "Al-Fath",
+    "name_en": "al-Fath",
     "name_ar": "الفتح",
     "ayahs": 29,
     "aliases": [
@@ -978,7 +978,7 @@
   {
     "num": 49,
     "alias": "hujurat",
-    "name_en": "Al-Hujurat",
+    "name_en": "al-Hujurat",
     "name_ar": "الحجرات",
     "ayahs": 18,
     "aliases": [
@@ -1011,7 +1011,7 @@
   {
     "num": 51,
     "alias": "dhariyat",
-    "name_en": "Adh-Dhariyat",
+    "name_en": "al-Dhariyat",
     "name_ar": "الذاريات",
     "ayahs": 60,
     "aliases": [
@@ -1033,7 +1033,7 @@
   {
     "num": 52,
     "alias": "tur",
-    "name_en": "At-Tur",
+    "name_en": "al-Tur",
     "name_ar": "الطور",
     "ayahs": 49,
     "aliases": [
@@ -1057,7 +1057,7 @@
   {
     "num": 53,
     "alias": "najm",
-    "name_en": "An-Najm",
+    "name_en": "al-Najm",
     "name_ar": "النجم",
     "ayahs": 62,
     "aliases": [
@@ -1077,7 +1077,7 @@
   {
     "num": 54,
     "alias": "qamar",
-    "name_en": "Al-Qamar",
+    "name_en": "al-Qamar",
     "name_ar": "القمر",
     "ayahs": 55,
     "aliases": [
@@ -1093,7 +1093,7 @@
   {
     "num": 55,
     "alias": "rahman",
-    "name_en": "Ar-Rahman",
+    "name_en": "al-Rahman",
     "name_ar": "الرحمن",
     "ayahs": 78,
     "aliases": [
@@ -1115,7 +1115,7 @@
   {
     "num": 56,
     "alias": "waqiah",
-    "name_en": "Al-Waqi'ah",
+    "name_en": "al-Waqiah",
     "name_ar": "الواقعة",
     "ayahs": 96,
     "aliases": [
@@ -1143,7 +1143,7 @@
   {
     "num": 57,
     "alias": "hadid",
-    "name_en": "Al-Hadid",
+    "name_en": "al-Hadid",
     "name_ar": "الحديد",
     "ayahs": 29,
     "aliases": [
@@ -1161,7 +1161,7 @@
   {
     "num": 58,
     "alias": "mujadalah",
-    "name_en": "Al-Mujadilah",
+    "name_en": "al-Mujadilah",
     "name_ar": "المجادلة",
     "ayahs": 22,
     "aliases": [
@@ -1195,7 +1195,7 @@
   {
     "num": 59,
     "alias": "hashr",
-    "name_en": "Al-Hashr",
+    "name_en": "al-Hashr",
     "name_ar": "الحشر",
     "ayahs": 24,
     "aliases": [
@@ -1212,7 +1212,7 @@
   {
     "num": 60,
     "alias": "mumtahinah",
-    "name_en": "Al-Mumtahanah",
+    "name_en": "al-Mumtahanah",
     "name_ar": "الممتحنة",
     "ayahs": 13,
     "aliases": [
@@ -1241,7 +1241,7 @@
   {
     "num": 61,
     "alias": "saff",
-    "name_en": "As-Saff",
+    "name_en": "al-Saff",
     "name_ar": "الصف",
     "ayahs": 14,
     "aliases": [
@@ -1261,7 +1261,7 @@
   {
     "num": 62,
     "alias": "jumuah",
-    "name_en": "Al-Jumu'ah",
+    "name_en": "al-Jumuah",
     "name_ar": "الجمعة",
     "ayahs": 11,
     "aliases": [
@@ -1284,7 +1284,7 @@
   {
     "num": 63,
     "alias": "munafiqun",
-    "name_en": "Al-Munafiqun",
+    "name_en": "al-Munafiqun",
     "name_ar": "المنافقون",
     "ayahs": 11,
     "aliases": [
@@ -1305,7 +1305,7 @@
   {
     "num": 64,
     "alias": "taghabun",
-    "name_en": "At-Taghabun",
+    "name_en": "al-Taghabun",
     "name_ar": "التغابن",
     "ayahs": 18,
     "aliases": [
@@ -1325,7 +1325,7 @@
   {
     "num": 65,
     "alias": "talaq",
-    "name_en": "At-Talaq",
+    "name_en": "al-Talaq",
     "name_ar": "الطلاق",
     "ayahs": 12,
     "aliases": [
@@ -1345,7 +1345,7 @@
   {
     "num": 66,
     "alias": "tahrim",
-    "name_en": "At-Tahrim",
+    "name_en": "al-Tahrim",
     "name_ar": "التحريم",
     "ayahs": 12,
     "aliases": [
@@ -1366,7 +1366,7 @@
   {
     "num": 67,
     "alias": "mulk",
-    "name_en": "Al-Mulk",
+    "name_en": "al-Mulk",
     "name_ar": "الملك",
     "ayahs": 30,
     "aliases": [
@@ -1382,7 +1382,7 @@
   {
     "num": 68,
     "alias": "qalam",
-    "name_en": "Al-Qalam",
+    "name_en": "al-Qalam",
     "name_ar": "القلم",
     "ayahs": 52,
     "aliases": [
@@ -1398,7 +1398,7 @@
   {
     "num": 69,
     "alias": "haqqah",
-    "name_en": "Al-Haqqah",
+    "name_en": "al-Haqqah",
     "name_ar": "الحاقة",
     "ayahs": 52,
     "aliases": [
@@ -1421,7 +1421,7 @@
   {
     "num": 70,
     "alias": "maarij",
-    "name_en": "Al-Ma'arij",
+    "name_en": "al-Maarij",
     "name_ar": "المعارج",
     "ayahs": 44,
     "aliases": [
@@ -1460,7 +1460,7 @@
   {
     "num": 72,
     "alias": "jinn",
-    "name_en": "Al-Jinn",
+    "name_en": "al-Jinn",
     "name_ar": "الجن",
     "ayahs": 28,
     "aliases": [
@@ -1477,7 +1477,7 @@
   {
     "num": 73,
     "alias": "muzzammil",
-    "name_en": "Al-Muzzammil",
+    "name_en": "al-Muzzammil",
     "name_ar": "المزمل",
     "ayahs": 20,
     "aliases": [
@@ -1494,7 +1494,7 @@
   {
     "num": 74,
     "alias": "muddaththir",
-    "name_en": "Al-Muddaththir",
+    "name_en": "al-Muddaththir",
     "name_ar": "المدثر",
     "ayahs": 56,
     "aliases": [
@@ -1511,7 +1511,7 @@
   {
     "num": 75,
     "alias": "qiyamah",
-    "name_en": "Al-Qiyamah",
+    "name_en": "al-Qiyamah",
     "name_ar": "القيامة",
     "ayahs": 40,
     "aliases": [
@@ -1537,7 +1537,7 @@
   {
     "num": 76,
     "alias": "insan",
-    "name_en": "Al-Insan",
+    "name_en": "al-Insan",
     "name_ar": "الإنسان",
     "ayahs": 31,
     "aliases": [
@@ -1554,7 +1554,7 @@
   {
     "num": 77,
     "alias": "mursalat",
-    "name_en": "Al-Mursalat",
+    "name_en": "al-Mursalat",
     "name_ar": "المرسلات",
     "ayahs": 50,
     "aliases": [
@@ -1573,7 +1573,7 @@
   {
     "num": 78,
     "alias": "naba",
-    "name_en": "An-Naba",
+    "name_en": "al-Naba",
     "name_ar": "النبأ",
     "ayahs": 40,
     "aliases": [
@@ -1592,7 +1592,7 @@
   {
     "num": 79,
     "alias": "naziat",
-    "name_en": "An-Nazi'at",
+    "name_en": "al-Naziaat",
     "name_ar": "النازعات",
     "ayahs": 46,
     "aliases": [
@@ -1630,7 +1630,7 @@
   {
     "num": 81,
     "alias": "takwir",
-    "name_en": "At-Takwir",
+    "name_en": "al-Takwir",
     "name_ar": "التكوير",
     "ayahs": 29,
     "aliases": [
@@ -1651,7 +1651,7 @@
   {
     "num": 82,
     "alias": "infitar",
-    "name_en": "Al-Infitar",
+    "name_en": "al-Infitar",
     "name_ar": "الانفطار",
     "ayahs": 19,
     "aliases": [
@@ -1669,7 +1669,7 @@
   {
     "num": 83,
     "alias": "mutaffifin",
-    "name_en": "Al-Mutaffifin",
+    "name_en": "al-Mutaffifin",
     "name_ar": "المطففين",
     "ayahs": 36,
     "aliases": [
@@ -1692,7 +1692,7 @@
   {
     "num": 84,
     "alias": "inshiqaq",
-    "name_en": "Al-Inshiqaq",
+    "name_en": "al-Inshiqaq",
     "name_ar": "الانشقاق",
     "ayahs": 25,
     "aliases": [
@@ -1709,7 +1709,7 @@
   {
     "num": 85,
     "alias": "buruj",
-    "name_en": "Al-Buruj",
+    "name_en": "al-Buruj",
     "name_ar": "البروج",
     "ayahs": 22,
     "aliases": [
@@ -1730,7 +1730,7 @@
   {
     "num": 86,
     "alias": "tariq",
-    "name_en": "At-Tariq",
+    "name_en": "al-Tariq",
     "name_ar": "الطارق",
     "ayahs": 17,
     "aliases": [
@@ -1750,7 +1750,7 @@
   {
     "num": 87,
     "alias": "ala",
-    "name_en": "Al-A'la",
+    "name_en": "al-Aala",
     "name_ar": "الأعلى",
     "ayahs": 19,
     "aliases": [
@@ -1768,7 +1768,7 @@
   {
     "num": 88,
     "alias": "ghashiyah",
-    "name_en": "Al-Ghashiyah",
+    "name_en": "al-Ghashiyah",
     "name_ar": "الغاشية",
     "ayahs": 26,
     "aliases": [
@@ -1791,7 +1791,7 @@
   {
     "num": 89,
     "alias": "fajr",
-    "name_en": "Al-Fajr",
+    "name_en": "al-Fajr",
     "name_ar": "الفجر",
     "ayahs": 30,
     "aliases": [
@@ -1808,7 +1808,7 @@
   {
     "num": 90,
     "alias": "balad",
-    "name_en": "Al-Balad",
+    "name_en": "al-Balad",
     "name_ar": "البلد",
     "ayahs": 20,
     "aliases": [
@@ -1824,7 +1824,7 @@
   {
     "num": 91,
     "alias": "shams",
-    "name_en": "Ash-Shams",
+    "name_en": "al-Shams",
     "name_ar": "الشمس",
     "ayahs": 15,
     "aliases": [
@@ -1843,7 +1843,7 @@
   {
     "num": 92,
     "alias": "layl",
-    "name_en": "Al-Layl",
+    "name_en": "al-Layl",
     "name_ar": "الليل",
     "ayahs": 21,
     "aliases": [
@@ -1860,7 +1860,7 @@
   {
     "num": 93,
     "alias": "dhuha",
-    "name_en": "Ad-Duha",
+    "name_en": "al-Duha",
     "name_ar": "الضحى",
     "ayahs": 11,
     "aliases": [
@@ -1885,7 +1885,7 @@
   {
     "num": 94,
     "alias": "inshirah",
-    "name_en": "Ash-Sharh",
+    "name_en": "al-Sharh",
     "name_ar": "الشرح",
     "ayahs": 8,
     "aliases": [
@@ -1908,7 +1908,7 @@
   {
     "num": 95,
     "alias": "tin",
-    "name_en": "At-Tin",
+    "name_en": "al-Tin",
     "name_ar": "التين",
     "ayahs": 8,
     "aliases": [
@@ -1929,7 +1929,7 @@
   {
     "num": 96,
     "alias": "alaq",
-    "name_en": "Al-Alaq",
+    "name_en": "al-Alaq",
     "name_ar": "العلق",
     "ayahs": 19,
     "aliases": [
@@ -1945,7 +1945,7 @@
   {
     "num": 97,
     "alias": "qadr",
-    "name_en": "Al-Qadr",
+    "name_en": "al-Qadr",
     "name_ar": "القدر",
     "ayahs": 5,
     "aliases": [
@@ -1962,7 +1962,7 @@
   {
     "num": 98,
     "alias": "bayyinah",
-    "name_en": "Al-Bayyinah",
+    "name_en": "al-Bayyinah",
     "name_ar": "البينة",
     "ayahs": 8,
     "aliases": [
@@ -1985,7 +1985,7 @@
   {
     "num": 99,
     "alias": "zilzal",
-    "name_en": "Az-Zalzalah",
+    "name_en": "al-Zalzalah",
     "name_ar": "الزلزلة",
     "ayahs": 8,
     "aliases": [
@@ -2016,7 +2016,7 @@
   {
     "num": 100,
     "alias": "adiyat",
-    "name_en": "Al-Adiyat",
+    "name_en": "al-Adiyat",
     "name_ar": "العاديات",
     "ayahs": 11,
     "aliases": [
@@ -2035,7 +2035,7 @@
   {
     "num": 101,
     "alias": "qariah",
-    "name_en": "Al-Qari'ah",
+    "name_en": "al-Qariah",
     "name_ar": "القارعة",
     "ayahs": 11,
     "aliases": [
@@ -2060,7 +2060,7 @@
   {
     "num": 102,
     "alias": "takathur",
-    "name_en": "At-Takathur",
+    "name_en": "al-Takathur",
     "name_ar": "التكاثر",
     "ayahs": 8,
     "aliases": [
@@ -2082,7 +2082,7 @@
   {
     "num": 103,
     "alias": "asr",
-    "name_en": "Al-Asr",
+    "name_en": "al-Asr",
     "name_ar": "العصر",
     "ayahs": 3,
     "aliases": [
@@ -2099,7 +2099,7 @@
   {
     "num": 104,
     "alias": "humazah",
-    "name_en": "Al-Humazah",
+    "name_en": "al-Humazah",
     "name_ar": "الهمزة",
     "ayahs": 9,
     "aliases": [
@@ -2120,7 +2120,7 @@
   {
     "num": 105,
     "alias": "fil",
-    "name_en": "Al-Fil",
+    "name_en": "al-Fil",
     "name_ar": "الفيل",
     "ayahs": 5,
     "aliases": [
@@ -2154,7 +2154,7 @@
   {
     "num": 107,
     "alias": "maun",
-    "name_en": "Al-Ma'un",
+    "name_en": "al-Maun",
     "name_ar": "الماعون",
     "ayahs": 7,
     "aliases": [
@@ -2180,7 +2180,7 @@
   {
     "num": 108,
     "alias": "kawthar",
-    "name_en": "Al-Kawthar",
+    "name_en": "al-Kawthar",
     "name_ar": "الكوثر",
     "ayahs": 3,
     "aliases": [
@@ -2198,7 +2198,7 @@
   {
     "num": 109,
     "alias": "kafirun",
-    "name_en": "Al-Kafirun",
+    "name_en": "al-Kafirun",
     "name_ar": "الكافرون",
     "ayahs": 6,
     "aliases": [
@@ -2220,7 +2220,7 @@
   {
     "num": 110,
     "alias": "nasr",
-    "name_en": "An-Nasr",
+    "name_en": "al-Nasr",
     "name_ar": "النصر",
     "ayahs": 3,
     "aliases": [
@@ -2240,7 +2240,7 @@
   {
     "num": 111,
     "alias": "masad",
-    "name_en": "Al-Masad",
+    "name_en": "al-Masad",
     "name_ar": "المسد",
     "ayahs": 5,
     "aliases": [
@@ -2256,7 +2256,7 @@
   {
     "num": 112,
     "alias": "ikhlas",
-    "name_en": "Al-Ikhlas",
+    "name_en": "al-Ikhlas",
     "name_ar": "الإخلاص",
     "ayahs": 4,
     "aliases": [
@@ -2273,7 +2273,7 @@
   {
     "num": 113,
     "alias": "falaq",
-    "name_en": "Al-Falaq",
+    "name_en": "al-Falaq",
     "name_ar": "الفلق",
     "ayahs": 5,
     "aliases": [
@@ -2289,7 +2289,7 @@
   {
     "num": 114,
     "alias": "nas",
-    "name_en": "An-Nas",
+    "name_en": "al-Nas",
     "name_ar": "الناس",
     "ayahs": 6,
     "aliases": [

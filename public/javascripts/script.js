@@ -1569,13 +1569,13 @@ function initQuranPassageNavigator() {
 				.trim();
 		};
 		var surahLabel = function (surah) {
-			return `${surah.num} / ${toArabicDigits(surah.num)} - ${surah.name_en} / ${surah.name_ar}`;
+			return `${surah.num} ${surah.name_en}`;
 		};
 		var surahInputLabel = function (surah) {
 			return `${surah.num}`;
 		};
 		var ayahLabel = function (ayah) {
-			return `${ayah} / ${toArabicDigits(ayah)}`;
+			return `${ayah}`;
 		};
 		var surahMatches = function (surah, term) {
 			var normalized = normalizeSearchText(term);
@@ -1585,8 +1585,7 @@ function initQuranPassageNavigator() {
 				surah.num,
 				toArabicDigits(surah.num),
 				surah.name_en,
-				surah.name_ar,
-				surahLabel(surah)
+				surah.name_ar
 			].join(' '));
 			return haystack.includes(normalized);
 		};
@@ -1603,6 +1602,7 @@ function initQuranPassageNavigator() {
 				return searchable && (
 					searchable === normalizeSearchText(surah.name_en)
 					|| searchable === normalizeSearchText(surah.name_ar)
+					|| searchable === normalizeSearchText(toArabicDigits(surah.num))
 					|| normalizeSearchText(surahLabel(surah)).includes(searchable)
 				);
 			});
@@ -1629,19 +1629,10 @@ function initQuranPassageNavigator() {
 			$ayahInput.val(clampAyah(surah, $ayahInput.val())).removeClass('is-invalid');
 			return surah;
 		};
-		var renderQuranSuggestion = function (ul, item, isAyah) {
+		var renderQuranSuggestion = function (ul, item) {
 			var $item = $('<li>');
 			var $row = $('<div>').addClass('search-autocomplete-item search-autocomplete-quran');
 			$('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.label).appendTo($row);
-			if (isAyah) {
-				$('<div>').addClass('search-autocomplete-meta')
-					.append($('<span>').addClass('search-autocomplete-meta-en').text(item.metadata_en))
-					.appendTo($row);
-			} else {
-				var $meta = $('<div>').addClass('search-autocomplete-meta').appendTo($row);
-				$('<span>').addClass('search-autocomplete-meta-ar').attr({ lang: 'ar', dir: 'rtl' }).text(item.metadata_ar).appendTo($meta);
-				$('<span>').addClass('search-autocomplete-meta-en').attr({ lang: 'en', dir: 'ltr' }).text(item.metadata_en).appendTo($meta);
-			}
 			return $item.append($row).appendTo(ul);
 		};
 			if ($.fn.autocomplete) {
@@ -1656,9 +1647,7 @@ function initQuranPassageNavigator() {
 						.map(surah => ({
 							label: surahLabel(surah),
 							value: surahInputLabel(surah),
-							surah: surah,
-							metadata_en: `${surah.num} ayahs: ${surah.ayahs}`,
-							metadata_ar: surah.name_ar
+							surah: surah
 						})));
 				},
 				focus: function (event) {
@@ -1675,7 +1664,7 @@ function initQuranPassageNavigator() {
 					autocomplete.css('width', $surahInput.outerWidth());
 				}
 			}).autocomplete('instance')._renderItem = function (ul, item) {
-				return renderQuranSuggestion(ul, item, false);
+				return renderQuranSuggestion(ul, item);
 			};
 			$ayahInput.autocomplete({
 				appendTo: $form,
@@ -1694,8 +1683,7 @@ function initQuranPassageNavigator() {
 						items.push({
 							label: label,
 							value: String(ayah),
-							ayah: ayah,
-							metadata_en: surah ? `${surah.name_en} ${ayah}` : `Ayah ${ayah}`
+							ayah: ayah
 						});
 						if (items.length >= 20)
 							break;
@@ -1715,7 +1703,7 @@ function initQuranPassageNavigator() {
 					autocomplete.css('width', $ayahInput.outerWidth());
 				}
 				}).autocomplete('instance')._renderItem = function (ul, item) {
-					return renderQuranSuggestion(ul, item, true);
+					return renderQuranSuggestion(ul, item);
 				};
 				$surahInput.add($ayahInput).on('focus click', function () {
 					var $input = $(this);

@@ -918,8 +918,8 @@ async function getQuranSurahsFromIndex() {
         var fallback = findSurah(heading.h1);
         return {
           num: Number(heading.h1),
-          name_en: heading.title_en || fallback?.name_en || '',
-          name_ar: heading.title || fallback?.name_ar || '',
+          name_en: fallback?.name_en || heading.title_en || '',
+          name_ar: fallback?.name_ar || heading.title || '',
           ayahs: Number(fallback?.ayahs)
         };
       })
@@ -1277,7 +1277,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         return res.redirect(302, Utils.quranUrl(req, `/quran/${chapterNum}/${firstSectionNum}`));
     }
 
-    var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v43-quran-corpus-path' : '';
+    var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v45-quran-navigator-no-ayah-meta' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
@@ -1392,7 +1392,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       }
     }
 
-    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v43-quran-corpus-path' : '';
+    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v45-quran-navigator-no-ayah-meta' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);

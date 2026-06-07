@@ -1511,7 +1511,7 @@ del em strong {
 	align-items: end;
 	display: grid;
 	gap: .5rem;
-	grid-template-columns: minmax(10rem, 1fr) minmax(3.8rem, .22fr) minmax(3.8rem, .22fr) auto;
+	grid-template-columns: minmax(10rem, 1fr) minmax(6rem, .36fr) minmax(3.8rem, .18fr) auto;
 	margin-top: 1lh;
 	text-indent: 0;
 }
@@ -1530,7 +1530,7 @@ del em strong {
 }
 
 .quran-toc-navigator {
-	grid-template-columns: minmax(4rem, .18fr) minmax(4rem, .18fr) auto;
+	grid-template-columns: minmax(6rem, .36fr) minmax(3.8rem, .18fr) auto;
 	margin-left: auto;
 	margin-right: auto;
 	max-width: 42rem;
@@ -1548,11 +1548,11 @@ del em strong {
 @media (max-width: 575.98px) {
 	.quran-passage-navigator {
 		gap: .35rem;
-		grid-template-columns: minmax(0, 1fr) minmax(3.2rem, .2fr) minmax(3.2rem, .2fr) auto;
+		grid-template-columns: minmax(0, 1fr) minmax(5.2rem, .34fr) minmax(3.2rem, .18fr) auto;
 	}
 
 	.quran-toc-navigator {
-		grid-template-columns: minmax(0, 1fr) minmax(3.2rem, .2fr) minmax(3.2rem, .2fr) auto;
+		grid-template-columns: minmax(0, 1fr) minmax(5.2rem, .34fr) minmax(3.2rem, .18fr) auto;
 	}
 
 	.quran-passage-go {
