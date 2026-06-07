@@ -5,7 +5,7 @@ const express = require('express');
 const debug = require('debug')('hadithdb:likes');
 const nodemailer = require('nodemailer');
 const Utils = require('../lib/Utils');
-const admin = require('../lib/Firebase');
+const GoogleAuth = require('../lib/GoogleAuth');
 const { homedir } = require('os');
 
 const router = express.Router();
@@ -31,7 +31,7 @@ Hadith: ${global.settings.site.url}/${payload.ref || payload.hadithId}
 Hadith ID: ${payload.hadithId}
 Likes total: ${payload.likes}
 Visitor: IP ${payload.ip || 'unknown'} | UA ${payload.ua || 'unknown'}
-User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider || 'firebase'}${payload.user.email ? ', ' + payload.user.email : ''})` : 'Unknown'}
+User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider || 'google.com'}${payload.user.email ? ', ' + payload.user.email : ''})` : 'Unknown'}
 `;
   try {
     await transport.sendMail({
@@ -45,21 +45,14 @@ User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider 
   }
 }
 
-async function verifyFirebase(req, res, next) {
+async function verifyGoogle(req, res, next) {
   try {
-    const authHeader = req.headers.authorization || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
+    const token = GoogleAuth.getBearerToken(req);
     if (!token) {
       res.status(401).json({ error: 'Authentication required.' });
       return;
     }
-    const decoded = await admin.auth().verifyIdToken(token);
-    req.user = {
-      uid: decoded.uid,
-      name: decoded.name || decoded.email || 'User',
-      provider: decoded.firebase && decoded.firebase.sign_in_provider ? decoded.firebase.sign_in_provider : 'firebase',
-      email: decoded.email || null
-    };
+    req.user = await GoogleAuth.verifyToken(token);
     next();
   } catch (err) {
     debug(`Auth error: ${err.message}`);
@@ -100,12 +93,11 @@ router.get('/:hadithId', async function (req, res, next) {
       return;
     }
     let userUid = null;
-    const authHeader = req.headers.authorization || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
+    const token = GoogleAuth.getBearerToken(req);
     if (token) {
       try {
-        const decoded = await admin.auth().verifyIdToken(token);
-        userUid = decoded.uid;
+        const user = await GoogleAuth.verifyToken(token);
+        userUid = user.uid;
       } catch (err) {
         // ignore invalid token for public fetch
       }
@@ -119,7 +111,7 @@ router.get('/:hadithId', async function (req, res, next) {
   }
 });
 
-router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
+router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
   const hadithId = parseInt(req.params.hadithId);
   if (Number.isNaN(hadithId)) {
     res.status(400).json({ error: 'Invalid hadith id' });
@@ -138,7 +130,7 @@ router.post('/:hadithId', verifyFirebase, async function (req, res, next) {
       return;
     }
     const escUid = Utils.escSQL(req.user.uid);
-    const escProvider = Utils.escSQL(req.user.provider || 'firebase');
+    const escProvider = Utils.escSQL(req.user.provider || 'google.com');
     const escName = Utils.escSQL(req.user.name || 'User');
     const escEmail = req.user.email ? Utils.escSQL(req.user.email) : null;
     const escIp = Utils.escSQL(req.clientIp || '');

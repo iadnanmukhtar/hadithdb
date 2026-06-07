@@ -4,17 +4,16 @@
 const debug = require('debug')('hadithdb:user-settings');
 const express = require('express');
 const createError = require('http-errors');
-const admin = require('../lib/Firebase');
+const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
 
 const router = express.Router();
 const MAX_SETTINGS_BYTES = 65535;
 
-async function verifyFirebase(req, res, next) {
+async function verifyGoogle(req, res, next) {
   const optional = req.method === 'GET' && req.query && req.query.optional === '1';
   try {
-    const authHeader = req.headers.authorization || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
+    const token = GoogleAuth.getBearerToken(req);
     if (!token) {
       if (optional) {
         req.user = null;
@@ -24,13 +23,7 @@ async function verifyFirebase(req, res, next) {
       res.status(401).json({ error: 'Authentication required.' });
       return;
     }
-    const decoded = await admin.auth().verifyIdToken(token);
-    req.user = {
-      uid: decoded.uid,
-      name: decoded.name || decoded.email || 'User',
-      provider: decoded.firebase && decoded.firebase.sign_in_provider ? decoded.firebase.sign_in_provider : 'firebase',
-      email: decoded.email || null
-    };
+    req.user = await GoogleAuth.verifyToken(token);
     next();
   } catch (err) {
     debug(`Auth error: ${err.message}`);
@@ -43,7 +36,7 @@ async function verifyFirebase(req, res, next) {
   }
 }
 
-router.get('/', verifyFirebase, async function (req, res) {
+router.get('/', verifyGoogle, async function (req, res) {
   if (!req.user) {
     res.json({ settings: {} });
     return;
@@ -52,7 +45,7 @@ router.get('/', verifyFirebase, async function (req, res) {
   res.json({ settings });
 });
 
-router.put('/', verifyFirebase, async function (req, res, next) {
+router.put('/', verifyGoogle, async function (req, res, next) {
   const settings = req.body && req.body.settings;
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
     next(createError(400, 'Settings must be a JSON object.'));

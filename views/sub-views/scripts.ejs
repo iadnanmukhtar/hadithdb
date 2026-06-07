@@ -425,7 +425,7 @@
   }
 
   function renderHadithAdminGear() {
-      if (!getHadithCookie('admin'))
+      if (window.hadithAdmin !== true)
         return;
       const editMode = Boolean(document.cookie.match(/(?:^|; )editMode=1(?:;|$)/));
       const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
@@ -453,14 +453,25 @@
       }
   }
 
+  function hadithLoginPath(userId) {
+      const encodedUserId = encodeURIComponent(userId);
+      if (window.location.hostname.toLowerCase().split('.')[0] === 'quran')
+        return `/quran/login/${encodedUserId}`;
+      return `/login/${encodedUserId}`;
+  }
+
+  function hadithLogoutPath() {
+      if (window.location.hostname.toLowerCase().split('.')[0] === 'quran')
+        return '/quran/login/logout';
+      return '/login/logout';
+  }
+
   function needsHadithAuthSync(username) {
       if (!username)
         return false;
       if (getHadithCookie('userId') !== username)
         return true;
-      if (getHadithCookie('adminUser') === '1' && !getHadithCookie('admin'))
-        return true;
-      return getHadithCookie('adminChecked') !== '1';
+      return window.hadithAdmin !== true && !document.querySelector('.edit-gear');
   }
 
   async function onAuth(user, options = {}) {
@@ -469,9 +480,8 @@
         return { status: 400, message: 'Missing username' };
 
       const initialUserId = getHadithCookie('userId');
-      const initialAdminCookie = getHadithCookie('admin');
 
-      if (initialUserId === username && initialAdminCookie && getHadithCookie('adminChecked') === '1') {
+      if (initialUserId === username && window.hadithAdmin === true) {
         markHadithAuthSynced(username);
         return { status: 200, userId: username, skipped: true, message: 'User already logged in' };
       }
@@ -484,19 +494,25 @@
           status: 403,
           statusText: 'Unable to login'
         };
-        res = await fetch(`/login/${username}`, {
-          method: 'GET'
+        const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+        if (!token) {
+          toastr.error('Please sign in with Google first.', 'Auth');
+          return { status: 401, message: 'Authentication required' };
+        }
+        res = await fetch(hadithLoginPath(username), {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` }
         });
         var resBody = JSON.parse(await res.text());
         if (res.status == 200) {
           markHadithAuthSynced(username);
-          if (resBody.admin)
+          window.hadithAdmin = Boolean(resBody.admin);
+          if (window.hadithAdmin)
             renderHadithAdminGear();
           if (!options.silent)
             toastr.success('Logged in as ' + username);
-          const adminCookieChanged = Boolean(initialAdminCookie) !== Boolean(getHadithCookie('admin'));
           const userChanged = initialUserId !== username;
-          if (options.reload !== false && !options.silent && (userChanged || adminCookieChanged || resBody.admin))
+          if (options.reload !== false && !options.silent && (userChanged || resBody.admin))
             window.location.reload();
         } else {
           var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
@@ -512,6 +528,7 @@
       }
   }
 
+  window.hadithAdmin = document.querySelector('.edit-gear') ? true : window.hadithAdmin;
   renderHadithAdminGear();
 </script>
 
@@ -528,48 +545,87 @@
   gtag('config', 'G-ZZFHG1L3ZX');
 </script>
 
-<!-- Firebase Auth (shared across pages) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- Google Auth (shared across pages) -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-  (function initFirebaseGlobal() {
-    if (window.firebaseApp) return;
-    const firebaseConfig = {
-      apiKey: '<%= global.settings.firebase.apiKey || "" %>',
-      authDomain: '<%= global.settings.firebase.authDomain || "" %>',
-      projectId: '<%= global.settings.firebase.projectId || "" %>',
-      appId: '<%= global.settings.firebase.appId || "" %>'
-    };
+  (function initGoogleAuthGlobal() {
+    if (window.hadithAuth) return;
     const googleClientId = '<%= (global.settings.firebase && (global.settings.firebase.googleClientId || global.settings.firebase.clientId || global.settings.firebase.client_id)) || (global.settings.google && (global.settings.google.clientId || global.settings.google.client_id)) || "" %>';
-    if (!firebaseConfig.apiKey) return;
-    if (!firebase.apps?.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((err) => {
-      console.warn('Could not set Firebase persistence to LOCAL', err);
-    });
-    const auth = firebase.auth();
-    const getUser = () =>
-      auth.currentUser ||
-      new Promise(resolve => {
-        const unsub = auth.onAuthStateChanged(u => {
-          unsub();
-          resolve(u);
-        });
-      });
+    const tokenKey = 'hadithdb_google_credential';
+    const userKey = 'hadithdb_google_user';
+    const decodeJwt = (token) => {
+      try {
+        const payload = token.split('.')[1];
+        const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const json = decodeURIComponent(atob(normalized).split('').map((c) => `%${(`00${c.charCodeAt(0).toString(16)}`).slice(-2)}`).join(''));
+        return JSON.parse(json);
+      } catch (err) {
+        return null;
+      }
+    };
+    const userFromCredential = (credential) => {
+      const payload = decodeJwt(credential);
+      if (!payload || !payload.sub) return null;
+      return {
+        uid: payload.sub,
+        email: payload.email || null,
+        displayName: payload.name || payload.email || 'User',
+        photoURL: payload.picture || 'https://www.gravatar.com/avatar/?d=mp&s=48',
+        providerData: [{ providerId: 'google.com' }],
+        getIdToken: async () => credential,
+        tokenExp: payload.exp || 0
+      };
+    };
+    const storedUser = () => {
+      const credential = localStorage.getItem(tokenKey);
+      if (!credential) return null;
+      const user = userFromCredential(credential);
+      if (!user || (user.tokenExp && user.tokenExp * 1000 <= Date.now())) {
+        localStorage.removeItem(tokenKey);
+        localStorage.removeItem(userKey);
+        return null;
+      }
+      return user;
+    };
+    const setCredential = (credential) => {
+      const user = userFromCredential(credential);
+      if (!user) return null;
+      localStorage.setItem(tokenKey, credential);
+      localStorage.setItem(userKey, JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        provider: 'google.com',
+        tokenExp: user.tokenExp
+      }));
+      document.dispatchEvent(new CustomEvent('hadithAuthChanged', { detail: { user } }));
+      return user;
+    };
+    const clearCredential = () => {
+      localStorage.removeItem(tokenKey);
+      localStorage.removeItem(userKey);
+      document.dispatchEvent(new CustomEvent('hadithAuthChanged', { detail: { user: null } }));
+    };
     window.hadithAuth = {
-      getToken: async (forceRefresh = false) => {
-        const user = await getUser();
-        return user ? user.getIdToken(forceRefresh) : null;
+      getToken: async () => {
+        const user = storedUser();
+        return user ? localStorage.getItem(tokenKey) : null;
       },
       requireLogin: () => {
         toastr.error('Please sign in to like or comment.', 'Sign-in required');
+        window.hadithAuth.prompt();
       },
-      getUser,
+      getUser: async () => storedUser(),
+      setCredential,
+      clearCredential,
+      prompt: () => {
+        if (!window.google?.accounts?.id) return false;
+        window.google.accounts.id.prompt();
+        return true;
+      },
       googleClientId
     };
-    window.firebaseApp = true;
   })();
 </script>
 
@@ -582,6 +638,8 @@
     if (!desktopSlot && !mobileSlot) return;
     window.navAuthInit = true;
     let oneTapStarted = false;
+    let googleInitialized = false;
+    let googleIdApi = null;
 
     const render = (user) => {
       const avatar = user && (user.photoURL || 'https://www.gravatar.com/avatar/?d=mp&s=48');
@@ -597,31 +655,16 @@
           </ul>
         </div>
       `;
-      const loginHtml = `<button type="button" class="btn btn-link p-0 nav-signin" title="Sign in"><i class="bi bi-person-circle fs-4"></i></button>`;
+      const loginHtml = `<div class="nav-google-signin"></div>`;
       if (desktopSlot) desktopSlot.innerHTML = user ? profileHtml : loginHtml;
       if (mobileSlot) mobileSlot.innerHTML = user ? profileHtml : loginHtml;
       attachHandlers();
+      if (!user) renderGoogleButtons();
     };
 
     const attachHandlers = () => {
-      const signinBtns = document.querySelectorAll('.nav-signin');
-      signinBtns.forEach(btn => btn.onclick = signIn);
       const signoutBtns = document.querySelectorAll('.nav-signout');
       signoutBtns.forEach(btn => btn.onclick = signOut);
-    };
-
-    const signIn = async () => {
-      try {
-        const auth = firebase.auth();
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user || auth.currentUser;
-        if (user && user.email)
-          await onAuth({ username: user.email });
-      } catch (err) {
-        toastr.error('Sign-in failed. Please try again.', 'Auth');
-        console.warn(err);
-      }
     };
 
     const waitForGoogleIdentity = () => new Promise(resolve => {
@@ -639,18 +682,49 @@
       }, 100);
     });
 
-    const signInWithOneTapCredential = async (response) => {
+    const handleGoogleCredential = async (response, options = {}) => {
       if (!response || !response.credential) return;
       try {
-        const auth = firebase.auth();
-        const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
-        const result = await auth.signInWithCredential(credential);
-        const user = result.user || auth.currentUser;
+        const user = window.hadithAuth.setCredential(response.credential);
         if (user && user.email)
-          await onAuth({ username: user.email }, { silent: true });
+          await onAuth({ username: user.email }, { silent: !!options.silent });
+        render(user);
       } catch (err) {
-        console.warn('Google One Tap sign-in failed', err);
+        toastr.error('Sign-in failed. Please try again.', 'Auth');
+        console.warn(err);
       }
+    };
+
+    const initializeGoogle = async () => {
+      if (googleInitialized) return googleIdApi;
+      if (!window.hadithAuth?.googleClientId) return null;
+      const googleId = await waitForGoogleIdentity();
+      if (!googleId) return null;
+      googleId.initialize({
+        client_id: window.hadithAuth.googleClientId,
+        callback: (response) => handleGoogleCredential(response, { silent: true }),
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        itp_support: true
+      });
+      googleInitialized = true;
+      googleIdApi = googleId;
+      return googleIdApi;
+    };
+
+    const renderGoogleButtons = async () => {
+      const googleId = await initializeGoogle();
+      if (!googleId) return;
+      document.querySelectorAll('.nav-google-signin').forEach((slot) => {
+        if (slot.dataset.rendered === '1') return;
+        slot.dataset.rendered = '1';
+        googleId.renderButton(slot, {
+          type: 'icon',
+          theme: 'outline',
+          shape: 'circle',
+          size: 'medium'
+        });
+      });
     };
 
     const startGoogleOneTap = async () => {
@@ -664,31 +738,23 @@
 
       const currentUser = await window.hadithAuth.getUser();
       if (currentUser) {
-        console.info('Google One Tap skipped: Firebase user is already signed in');
+        console.info('Google One Tap skipped: user is already signed in');
         return;
       }
 
-      const googleId = await waitForGoogleIdentity();
+      const googleId = await initializeGoogle();
       if (!googleId) {
         console.info('Google One Tap disabled: Google Identity Services did not load');
         return;
       }
-
-      googleId.initialize({
-        client_id: window.hadithAuth.googleClientId,
-        callback: signInWithOneTapCredential,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        itp_support: true
-      });
       googleId.prompt();
     };
 
     const signOut = async () => {
       try {
         window.google?.accounts?.id?.disableAutoSelect();
-        await firebase.auth().signOut();
-        await fetch('/login/logout', { credentials: 'same-origin' });
+        window.hadithAuth.clearCredential();
+        await fetch(hadithLogoutPath(), { credentials: 'same-origin' });
         document.cookie = 'admin=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
         document.cookie = 'adminUser=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
         document.cookie = 'adminChecked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
@@ -701,8 +767,8 @@
       }
     };
 
-    const auth = firebase.auth();
-    auth.onAuthStateChanged(async (user) => {
+    const syncCurrentUser = async () => {
+      const user = await window.hadithAuth.getUser();
       render(user);
       if (user && user.email && needsHadithAuthSync(user.email)) {
         await onAuth({ username: user.email }, { silent: true });
@@ -711,9 +777,10 @@
       } else {
         renderHadithAdminGear();
       }
-    });
-    render(null);
-    startGoogleOneTap();
+    };
+
+    document.addEventListener('hadithAuthChanged', syncCurrentUser);
+    syncCurrentUser();
   })();
 </script>
 

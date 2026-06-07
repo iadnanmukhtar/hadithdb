@@ -16,8 +16,8 @@ router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  const admin = (req.cookies.admin == global.settings.admin.key);
-  const editMode = (admin && req.cookies.editMode == 1);
+  const admin = (req.admin);
+  const editMode = (admin && req.editMode);
   const cachedFile = `${homedir}/.hadithdb/cache/${name}.html`;
   if ('flush' in req.query) Utils.flushCachedFile(cachedFile);
   if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
@@ -55,8 +55,8 @@ router.get('/feed', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  const admin = (req.cookies.admin == global.settings.admin.key);
-  const editMode = (admin && req.cookies.editMode == 1);
+  const admin = (req.admin);
+  const editMode = (admin && req.editMode);
   const cachedFile = `${homedir}/.hadithdb/cache/${name}_feed.xml`;
   if ('flush' in req.query) Utils.flushCachedFile(cachedFile);
   if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
@@ -93,8 +93,8 @@ router.get('/rss', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  const admin = (req.cookies.admin == global.settings.admin.key);
-  const editMode = (admin && req.cookies.editMode == 1);
+  const admin = (req.admin);
+  const editMode = (admin && req.editMode);
   const cachedFile = `${homedir}/.hadithdb/cache/${name}_rss.xml`;
   if ('flush' in req.query) Utils.flushCachedFile(cachedFile);
   if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {

@@ -75,8 +75,6 @@
         let currentUser = null;
         let comments = [];
         let editingId = null;
-        let firebaseReady = false;
-        let firebaseAvailable = false;
         let loaded = false;
 
         if (!targetId) return;
@@ -96,7 +94,7 @@
         };
 
         const formatProvider = (provider) => {
-          const raw = String(provider || 'firebase').trim().toLowerCase();
+          const raw = String(provider || 'google.com').trim().toLowerCase();
           if (!raw) return 'Member';
           if (raw === 'google.com') return 'Google';
           if (raw === 'facebook.com') return 'Facebook';
@@ -126,57 +124,24 @@
           `;
         };
 
-        const firebaseConfig = {
-          apiKey: '<%= global.settings.firebase.apiKey || "" %>',
-          authDomain: '<%= global.settings.firebase.authDomain || "" %>',
-          projectId: '<%= global.settings.firebase.projectId || "" %>',
-          appId: '<%= global.settings.firebase.appId || "" %>'
-        };
-
-        const waitForFirebase = (timeoutMs = 5000) => new Promise(resolve => {
+        const waitForHadithAuth = (timeoutMs = 5000) => new Promise(resolve => {
           const start = Date.now();
           const check = () => {
-            if (window.firebase && window.firebase.auth) return resolve(true);
+            if (window.hadithAuth && window.hadithAuth.getUser && window.hadithAuth.getToken) return resolve(window.hadithAuth);
             if (Date.now() - start > timeoutMs) return resolve(false);
             setTimeout(check, 50);
           };
           check();
         });
 
-        const initFirebase = () => {
-          if (!firebaseAvailable || firebaseReady) return;
-          if (firebase.apps && firebase.apps.length) {
-            firebaseReady = true;
-            return;
-          }
-          if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId || !firebaseConfig.appId) {
-            console.warn('Firebase config missing. Comments login disabled.');
-            return;
-          }
-          firebase.initializeApp(firebaseConfig);
-          firebaseReady = true;
-        };
-
         const getActiveUser = async () => {
-          if (!firebaseAvailable) return null;
           if (window.hadithAuth && window.hadithAuth.getUser) {
             return await window.hadithAuth.getUser();
           }
-          if (!firebaseReady) initFirebase();
-          if (!firebaseReady || !firebase.auth) return null;
-          const immediate = firebase.auth().currentUser;
-          if (immediate) return immediate;
-          return new Promise(resolve => {
-            const unsub = firebase.auth().onAuthStateChanged((u) => {
-              unsub();
-              resolve(u);
-            });
-            setTimeout(() => { unsub(); resolve(null); }, 3000);
-          });
+          return null;
         };
 
         const renderUser = async () => {
-          if (firebaseAvailable && !firebaseReady) initFirebase();
           currentUser = await getActiveUser();
           if (!currentUser) {
             userBox.classList.add('d-none');
@@ -188,7 +153,7 @@
             setSubmitButton('post');
             return;
           }
-          const providerId = currentUser.providerData[0] ? currentUser.providerData[0].providerId : 'firebase';
+          const providerId = currentUser.providerData && currentUser.providerData[0] ? currentUser.providerData[0].providerId : 'google.com';
           const isFirstGoogleLogin = providerId === 'google.com' && !sessionStorage.getItem('hadithdb_google_login');
           if (isFirstGoogleLogin) {
             console.log('Google sign-in detected');
@@ -213,11 +178,9 @@
           const logoutBtn = document.getElementById('<%= widgetId %>-logout');
           logoutBtn.onclick = async () => {
             window.google?.accounts?.id?.disableAutoSelect();
-            if (firebaseReady && firebase.auth) {
-              await firebase.auth().signOut();
-              currentUser = null;
-              renderUser();
-            }
+            if (window.hadithAuth && window.hadithAuth.clearCredential) window.hadithAuth.clearCredential();
+            currentUser = null;
+            renderUser();
           };
         };
 
@@ -513,28 +476,36 @@
         const loadWidget = async () => {
           if (loaded) return;
           loaded = true;
-          firebaseAvailable = await waitForFirebase();
-          if (firebaseAvailable) initFirebase();
+          await waitForHadithAuth();
           fetchComments();
-          if (firebaseAvailable && firebaseReady) {
-            firebase.auth().onAuthStateChanged(async (user) => {
-              await renderUser();
-              if (user) {
-                try {
-                  const token = await user.getIdToken();
-                  fetchComments(token);
-                } catch (err) {
-                  console.warn('Could not fetch comments with auth token', err);
-                  fetchComments();
-                }
-              } else {
-                fetchComments();
-              }
-            });
+          const user = await getActiveUser();
+          await renderUser();
+          if (user) {
+            try {
+              const token = await user.getIdToken();
+              fetchComments(token);
+            } catch (err) {
+              console.warn('Could not fetch comments with auth token', err);
+              fetchComments();
+            }
           } else {
-            renderUser();
+            fetchComments();
           }
         };
+
+        document.addEventListener('hadithAuthChanged', async () => {
+          await renderUser();
+          const user = await getActiveUser();
+          if (!user) {
+            fetchComments();
+            return;
+          }
+          try {
+            fetchComments(await user.getIdToken());
+          } catch (err) {
+            fetchComments();
+          }
+        });
 
         document.addEventListener('hadithCommentWidgetLoad', event => {
           if (!event.detail) return;

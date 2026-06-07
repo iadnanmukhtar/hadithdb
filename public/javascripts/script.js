@@ -115,10 +115,8 @@ function setHadithAdminMode(enabled) {
 }
 
 function renderHadithAdminGear() {
-	if (!getHadithCookie('admin')) {
-		$('.edit-gear').hide();
+	if (window.hadithAdmin !== true)
 		return;
-	}
 
 	$('.edit-gear').show();
 
@@ -150,19 +148,50 @@ function renderHadithAdminGear() {
 	}
 }
 
-async function syncHadithAdminCookieForCachedPage() {
+function hadithLoginPath(userId) {
+	var encodedUserId = encodeURIComponent(userId);
+	if (typeof isQuranSubdomainHost === 'function' && isQuranSubdomainHost(window.location.hostname))
+		return `/quran/login/${encodedUserId}`;
+	return `/login/${encodedUserId}`;
+}
+
+function waitForHadithAuth(timeoutMs) {
+	timeoutMs = timeoutMs || 3000;
+	return new Promise(function (resolve) {
+		if (window.hadithAuth && window.hadithAuth.getToken)
+			return resolve(window.hadithAuth);
+		var start = Date.now();
+		var timer = window.setInterval(function () {
+			if (window.hadithAuth && window.hadithAuth.getToken) {
+				window.clearInterval(timer);
+				resolve(window.hadithAuth);
+			} else if (Date.now() - start >= timeoutMs) {
+				window.clearInterval(timer);
+				resolve(null);
+			}
+		}, 50);
+	});
+}
+
+async function syncHadithAdminForCachedPage() {
 	const userId = getHadithCookie('userId');
-	if (!userId || getHadithCookie('admin'))
-		return;
-	if (getHadithCookie('adminChecked') === '1' && getHadithCookie('adminUser') !== '1')
+	if (!userId || window.hadithAdmin === true)
 		return;
 
 	try {
-		const res = await fetch(`/login/${encodeURIComponent(userId)}`, { method: 'GET' });
+		const auth = await waitForHadithAuth();
+		const token = auth && auth.getToken ? await auth.getToken() : null;
+		if (!token)
+			return;
+		const res = await fetch(hadithLoginPath(userId), {
+			method: 'GET',
+			headers: { Authorization: `Bearer ${token}` }
+		});
 		if (!res.ok)
 			return;
 		const data = await res.json();
-		if (data && data.admin)
+		window.hadithAdmin = Boolean(data && data.admin);
+		if (window.hadithAdmin)
 			renderHadithAdminGear();
 	} catch (err) {
 		console.warn('Could not refresh admin mode for cached page', err);
@@ -170,8 +199,9 @@ async function syncHadithAdminCookieForCachedPage() {
 }
 
 function initHadithAdminGear() {
+	window.hadithAdmin = document.querySelector('.edit-gear') ? true : window.hadithAdmin;
 	renderHadithAdminGear();
-	syncHadithAdminCookieForCachedPage();
+	syncHadithAdminForCachedPage();
 }
 
 function initTocExpandCollapse(root) {

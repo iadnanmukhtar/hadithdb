@@ -42,7 +42,7 @@ router.post('/list', async function (req, res, next) {
     const ordered = uniqueIds.map(id => byId.get(id)).filter(Boolean);
     const site = {
       ...global.settings.site,
-      admin: req.cookies.admin == global.settings.admin.key,
+      admin: req.admin,
       editMode: false
     };
     const html = await ejs.renderFile(`${__dirname}/../views/sub-views/hadith_list_items.ejs`, {

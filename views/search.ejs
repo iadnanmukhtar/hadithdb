@@ -6,9 +6,9 @@
     var site = new Object(global.settings.site);
     var isSearchResultsPage = (q && q != '');
     var isQuranSearchProxy = locals.quranSearchProxy || locals.searchAction === '/quran';
-    site.admin = (req.cookies.admin == admin.key);
+    site.admin = (req.admin);
     if (!locals.noadmin)
-      site.editMode = (site.admin && req.cookies.editMode == 1);
+      site.editMode = (site.admin && req.editMode);
     else
       site.editMode = false;
     if (isSearchResultsPage)

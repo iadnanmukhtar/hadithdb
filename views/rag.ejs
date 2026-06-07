@@ -4,8 +4,8 @@
 <head>
 <%
   var site = new Object(global.settings.site);
-  site.admin = (req.cookies.admin == admin.key);
-  site.editMode = (site.admin && req.cookies.editMode == 1);
+  site.admin = (req.admin);
+  site.editMode = (site.admin && req.editMode);
   var page = {
     menu: 'Chatbot',
     title_en: `${site.shortName} | Hadith Chatbot`,

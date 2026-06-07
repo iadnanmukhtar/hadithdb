@@ -203,11 +203,11 @@ function buildRenderLocals(req) {
 }
 
 function isAdmin(req) {
-	return req.cookies && req.cookies.admin == global.admin.key;
+	return req.admin;
 }
 
 function isEditMode(req) {
-	return isAdmin(req) && req.cookies.editMode == 1;
+	return isAdmin(req) && req.editMode;
 }
 
 function sendJson(res, status, payload) {

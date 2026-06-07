@@ -5,7 +5,7 @@ const express = require('express');
 const debugFactory = require('debug');
 const crypto = require('crypto');
 const Utils = require('../lib/Utils');
-const admin = require('../lib/Firebase');
+const GoogleAuth = require('../lib/GoogleAuth');
 const nodemailer = require('nodemailer');
 const MarkdownIt = require('markdown-it');
 
@@ -115,29 +115,14 @@ ${payload.text || '(no text found)'}
     return stats;
   }
 
-  async function getUserPhotosByUid(rows) {
-    const uids = [...new Set((rows || []).map(row => row.user_uid).filter(Boolean))];
-    if (!uids.length) return {};
+  async function verifyGoogle(req, res, next) {
     try {
-      const result = await admin.auth().getUsers(uids.map(uid => ({ uid })));
-      return result.users.reduce((photos, userRecord) => {
-        photos[userRecord.uid] = userRecord.photoURL || null;
-        return photos;
-      }, {});
-    } catch (err) {
-      debug(`Could not load commenter photos: ${err.message}`);
-      return {};
-    }
-  }
-
-  async function verifyFirebase(req, res, next) {
-    try {
-      const token = getBearerToken(req);
+      const token = GoogleAuth.getBearerToken(req);
       if (!token) {
         res.status(401).json({ error: 'Authentication required.' });
         return;
       }
-      req.user = userFromToken(await admin.auth().verifyIdToken(token), true);
+      req.user = await GoogleAuth.verifyToken(token);
       next();
     } catch (err) {
       debug(`Auth error: ${err.message}`);
@@ -152,10 +137,10 @@ ${payload.text || '(no text found)'}
     if (!target) return;
     try {
       let user = null;
-      const token = getBearerToken(req);
+      const token = GoogleAuth.getBearerToken(req);
       if (token) {
         try {
-          user = userFromToken(await admin.auth().verifyIdToken(token));
+          user = await GoogleAuth.verifyToken(token);
         } catch (err) {
           // Ignore invalid token for public fetch.
         }
@@ -167,7 +152,7 @@ ${payload.text || '(no text found)'}
         ORDER BY createdAt DESC
       `);
       const voteStats = await getVoteStats(rows.map(row => row.id), user ? user.uid : null);
-      const photoMap = await getUserPhotosByUid(rows);
+      const photoMap = {};
       res.json(rows.map(row => formatComment(row, user, photoMap, voteStats[row.id])));
     } catch (err) {
       debug(`Error loading comments:\n${err.stack}`);
@@ -175,7 +160,7 @@ ${payload.text || '(no text found)'}
     }
   });
 
-  router.post(`/:${config.targetParam}`, verifyFirebase, async function (req, res, next) {
+  router.post(`/:${config.targetParam}`, verifyGoogle, async function (req, res, next) {
     const target = getTarget(req, res);
     if (!target) return;
     const text = Utils.trimToEmpty(req.body.text);
@@ -217,7 +202,7 @@ ${payload.text || '(no text found)'}
     }
   });
 
-  router.put('/:commentId', verifyFirebase, async function (req, res, next) {
+  router.put('/:commentId', verifyGoogle, async function (req, res, next) {
     const commentId = parseCommentId(req, res);
     if (!commentId) return;
     const text = Utils.trimToEmpty(req.body.text);
@@ -251,7 +236,7 @@ ${payload.text || '(no text found)'}
     }
   });
 
-  router.delete('/:commentId', verifyFirebase, async function (req, res, next) {
+  router.delete('/:commentId', verifyGoogle, async function (req, res, next) {
     const commentId = parseCommentId(req, res);
     if (!commentId) return;
     try {
@@ -286,7 +271,7 @@ ${payload.text || '(no text found)'}
     }
   });
 
-  router.post('/:commentId/vote', verifyFirebase, async function (req, res, next) {
+  router.post('/:commentId/vote', verifyGoogle, async function (req, res, next) {
     const commentId = parseCommentId(req, res);
     if (!commentId) return;
     const direction = req.body.direction === 'up' ? 'up' : req.body.direction === 'down' ? 'down' : null;
@@ -399,26 +384,9 @@ ${payload.text || '(no text found)'}
   return router;
 }
 
-function getBearerToken(req) {
-  const authHeader = req.headers.authorization || '';
-  return authHeader.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
-}
-
-function userFromToken(decoded, includeProfile = false) {
-  return {
-    uid: decoded.uid,
-    provider: decoded.firebase && decoded.firebase.sign_in_provider ? decoded.firebase.sign_in_provider : 'firebase',
-    email: decoded.email || null,
-    ...(includeProfile ? {
-      name: decoded.name || decoded.email || 'User',
-      photo: decoded.picture || decoded.photoURL || null
-    } : {})
-  };
-}
-
 function isCommentOwner(comment, user) {
   if (!comment || !user) return false;
-  if (comment.user_uid) return comment.user_uid === user.uid;
+  if (comment.user_uid === user.uid) return true;
   return !!(comment.user_email && user.email && comment.user_email === user.email && comment.user_provider === user.provider);
 }
 

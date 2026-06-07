@@ -3,9 +3,9 @@
 <head>
 <% 
     var site = new Object(global.settings.site);
-    site.admin = (!locals.noadmin && req.cookies.admin == admin.key);
+    site.admin = (!locals.noadmin && req.admin);
     if (!locals.noadmin)
-      site.editMode = (site.admin && req.cookies.editMode == 1);
+      site.editMode = (site.admin && req.editMode);
     else
       site.editMode = false;
 

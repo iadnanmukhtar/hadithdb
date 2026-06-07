@@ -16,8 +16,8 @@ router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  var admin = (req.cookies.admin == global.settings.admin.key);
-  var editMode = (admin && req.cookies.editMode == 1);
+  var admin = (req.admin);
+  var editMode = (admin && req.editMode);
   var cachedFile = `${homedir}/.hadithdb/cache/${name}.html`;
   if ('flush' in req.query)
     Utils.flushCachedFile(cachedFile);
@@ -55,8 +55,8 @@ router.get('/feed', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  var admin = (req.cookies.admin == global.settings.admin.key);
-  var editMode = (admin && req.cookies.editMode == 1);
+  var admin = (req.admin);
+  var editMode = (admin && req.editMode);
   var cachedFile = `${homedir}/.hadithdb/cache/${name}_feed.xml`;
   if ('flush' in req.query)
     Utils.flushCachedFile(cachedFile);
@@ -93,8 +93,8 @@ router.get('/rss', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  var admin = (req.cookies.admin == global.settings.admin.key);
-  var editMode = (admin && req.cookies.editMode == 1);
+  var admin = (req.admin);
+  var editMode = (admin && req.editMode);
   var cachedFile = `${homedir}/.hadithdb/cache/${name}_rss.xml`;
   if ('flush' in req.query)
     Utils.flushCachedFile(cachedFile);

@@ -4,7 +4,7 @@
 <head>
 <%
     var site = new Object(global.settings.site);
-    site.admin = (req.cookies.admin == global.settings.admin.key);
+    site.admin = (req.admin);
     site.editMode = false;
 %>
 

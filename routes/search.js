@@ -392,8 +392,8 @@ router.get('/', async function (req, res, next) {
     if (random.length > 0) {
       random = new Item(random[0]);
       random.single = true;
-      var admin = (req.cookies.admin == global.settings.admin.key);
-      var editMode = (admin && req.cookies.editMode == 1);
+      var admin = (req.admin);
+      var editMode = (admin && req.editMode);
       if (editMode)
         await addVirtualReferences([random]);
     }
@@ -600,8 +600,8 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     && req.query.share === undefined) {
     return await renderQuranAyahPassage(results[0], req, res);
   }
-  var admin = (req.cookies.admin == global.settings.admin.key);
-  var editMode = (admin && req.cookies.editMode == 1);
+  var admin = (req.admin);
+  var editMode = (admin && req.editMode);
   if (editMode)
     await addVirtualReferences(results);
   for (var i = 0; i < results.length; i++) {
@@ -1245,8 +1245,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  var admin = (req.cookies.admin == global.settings.admin.key);
-  var editMode = (admin && req.cookies.editMode == 1);
+  var admin = (req.admin);
+  var editMode = (admin && req.editMode);
 
   try {
     var results = [];
@@ -1354,8 +1354,8 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
   res.locals.req = req;
   res.locals.res = res;
 
-  var admin = (req.cookies.admin == global.settings.admin.key);
-  var editMode = (admin && req.cookies.editMode == 1);
+  var admin = (req.admin);
+  var editMode = (admin && req.editMode);
 
   try {
     var results = [];

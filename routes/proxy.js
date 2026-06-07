@@ -270,7 +270,7 @@ function markArabicOnlyBlocks(html) {
 }
 
 function isEditMode(req) {
-  return req.cookies.admin == global.settings.admin.key && req.cookies.editMode == 1;
+  return req.admin && req.editMode;
 }
 
 function escapeHtml(text) {

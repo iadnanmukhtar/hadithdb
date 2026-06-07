@@ -11,6 +11,7 @@ const { STATUS_CODES } = require('http');
 const rateLimit = require('express-rate-limit').default;
 const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
+const UserSettings = require('./lib/UserSettings');
 
 const wrapAsyncHandler = (handler) => {
   if (Array.isArray(handler))
@@ -97,10 +98,27 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
-  app.use(requestIp.mw());
-  app.use(express.json());
-  app.use(cookieParser());
-  app.use('/', express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));
+	  app.use(requestIp.mw());
+	  app.use(express.json());
+	  app.use(cookieParser());
+	  app.use(async function resolveAdminMode(req, res, next) {
+	    if (/\.(?:css|js|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)$/i.test(req.path)) {
+	      req.admin = false;
+	      req.editMode = false;
+	      next();
+	      return;
+	    }
+	    try {
+	      req.admin = await UserSettings.isAdminUser(req.cookies && req.cookies.userId);
+	      req.editMode = req.admin && req.cookies && req.cookies.editMode == 1;
+	    } catch (err) {
+	      req.admin = false;
+	      req.editMode = false;
+	      debug(`admin mode lookup failed: ${err.message}`);
+	    }
+	    next();
+	  });
+	  app.use('/', express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));
   app.use('/blog', express.static(`${global.settings.blog.dir}`));
 
   // global redirect www
@@ -156,6 +174,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/update', updateRouter);
   app.use('/settings', settingsRouter);
   app.use('/login', loginRouter);
+  app.use('/quran/login', loginRouter);
   app.use('/blog', blogRouter);
   app.use('/proxy', proxyRouter);
   app.use('/comments', commentsRouter);

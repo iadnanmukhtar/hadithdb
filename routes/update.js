@@ -19,7 +19,7 @@ const { Heading, Item, Library } = require('../lib/Model');
 const router = express.Router();
 
 router.post('/:id/:prop', async function (req, res, next) {
-  if (global.settings.admin.key != req.cookies.admin)
+  if (!req.admin)
     return next(createError(403, "Update unauthorized"));
   var userId = req.cookies.userId;
   var status = {
