@@ -13,6 +13,8 @@ const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
 const UserSettings = require('./lib/UserSettings');
 
+const REQUEST_BODY_LIMIT = '10mb';
+
 const wrapAsyncHandler = (handler) => {
   if (Array.isArray(handler))
     return handler.map(wrapAsyncHandler);
@@ -99,7 +101,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.set('view engine', 'ejs');
 
 	  app.use(requestIp.mw());
-	  app.use(express.json());
+	  app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
+	  app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
 	  app.use(cookieParser());
 	  app.use(async function resolveAdminMode(req, res, next) {
 	    if (/\.(?:css|js|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)$/i.test(req.path)) {

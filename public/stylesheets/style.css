@@ -1977,6 +1977,21 @@ del em strong {
 	text-align: justify;
 }
 
+.quran-tafsir-translation-editor {
+	border-top: 1px dashed var(--bs-border-color);
+	margin-top: 1rem;
+	padding-top: .65rem;
+}
+
+.quran-tafsir-translation-editor summary {
+	color: var(--bs-secondary-color);
+	cursor: pointer;
+	font-family: Serif;
+	font-size: .85rem;
+	font-weight: 600;
+	margin-bottom: .5rem;
+}
+
 .quran-tafsir-arabic-only {
 	font-family: Kitab, Serif;
 	line-height: 1.75;

@@ -422,8 +422,12 @@ function initQuranTafsirTabs(root) {
 			return;
 		container.data('quranTafsirsBound', true);
 		var surah = container.attr('data-surah');
-		var ayahs = (container.attr('data-ayahs') || '').split(',').filter(Boolean);
-		var selectedAyahs = (container.attr('data-selected-ayahs') || '').split(',').filter(Boolean).map(Number);
+		var ayahs = (container.attr('data-ayahs') || '').split(',').filter(Boolean).map(Number).filter(function (ayah) {
+			return Number.isInteger(ayah) && ayah >= 0;
+		});
+		var selectedAyahs = (container.attr('data-selected-ayahs') || '').split(',').filter(Boolean).map(Number).filter(function (ayah) {
+			return Number.isInteger(ayah) && ayah >= 0;
+		});
 		var ayahText = JSON.parse(container.find('.quran-tafsir-ayah-data').text() || '{}');
 		var activeLanguage = 'en';
 		var selectedByLanguage = {};
@@ -615,6 +619,8 @@ function initQuranTafsirTabs(root) {
 			return await response.json();
 		};
 		var fetchLocalPayloads = async function (src, language) {
+			if (ayahs.length < 1)
+				return [];
 			var endpoint = quranApiPath('/proxy/tafsir/local');
 			var languageParam = language ? `&lang=${encodeURIComponent(language)}` : '';
 			var ayahFrom = Math.min.apply(Math, ayahs);

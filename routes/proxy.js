@@ -228,9 +228,18 @@ function renderLocalCommentaryLanguage(row, editMode, lang, src) {
     );
   if (!content)
     return '';
-  return lang === 'ar'
-    ? `<section lang="ar" dir="rtl">${content}</section>`
-    : `<section lang="en">${content}</section>`;
+  if (lang === 'ar') {
+    const translation = editMode ? renderCollapsedEditableTranslation(row, src) : '';
+    return `<section lang="ar" dir="rtl">${content}</section>${translation}`;
+  }
+  return `<section lang="en">${content}</section>`;
+}
+
+function renderCollapsedEditableTranslation(row, src) {
+  const english = renderEditableCommentaryLanguage(row, 'en', src);
+  if (!english)
+    return '';
+  return `<details class="quran-tafsir-translation-editor" lang="en" dir="ltr"><summary>English translation</summary>${english}</details>`;
 }
 
 function renderEditableCommentaryLanguage(row, lang, src) {
