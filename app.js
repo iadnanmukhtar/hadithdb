@@ -178,12 +178,16 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/quran/login', loginRouter);
   app.use('/blog', blogRouter);
   app.use('/proxy', proxyRouter);
+  app.use('/quran/proxy', proxyRouter);
   app.use('/comments', commentsRouter);
+  app.use('/quran/comments', commentsRouter);
   app.use('/blog-comments', blogCommentsRouter);
   app.use('/likes', likesRouter);
+  app.use('/quran/likes', likesRouter);
   app.use('/liked', likedRouter);
   app.use('/bookmarks', bookmarksRouter);
   app.use('/user-settings', userSettingsRouter);
+  app.use('/quran/user-settings', userSettingsRouter);
   app.use('/chatbot', chatbotRouter);
   app.use('/rag', chatbotRouter);
   app.use('/', searchRouter);

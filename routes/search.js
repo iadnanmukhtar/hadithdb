@@ -415,7 +415,20 @@ router.get('/passage\::surah\::ayah1', async function (req, res, next) {
   return await a_getPassage(req.params.surah, req.params.ayah1, req.params.ayah1, req, res, next)
 });
 
-router.get('/quran-corpus/:surah/:sectionNum', async function (req, res, next) {
+function setQuranCorpusCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Origin, X-Requested-With, Content-Type, Accept');
+}
+
+router.use(['/quran/corpus', '/quran-corpus'], function (req, res, next) {
+  setQuranCorpusCorsHeaders(res);
+  if (req.method === 'OPTIONS')
+    return res.sendStatus(204);
+  next();
+});
+
+router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNum'], async function (req, res, next) {
   var surah = findSurah(req.params.surah);
   if (!surah)
     return next(createError(404, `Surah '${req.params.surah}' not found`));
@@ -1264,7 +1277,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         return res.redirect(302, Utils.quranUrl(req, `/quran/${chapterNum}/${firstSectionNum}`));
     }
 
-    var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v42-bookmark-settings-optional' : '';
+    var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v43-quran-corpus-path' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
@@ -1379,7 +1392,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       }
     }
 
-    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v42-bookmark-settings-optional' : '';
+    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v43-quran-corpus-path' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);

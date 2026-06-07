@@ -21,7 +21,7 @@
 	<aside class="chain">
 		<p><%= passage[0][lang].chain %></p>
 	</aside>
-	<section class="body passage">
+	<section class="body passage<%= lang === 'ar' ? ' quran-hafs' : '' %>">
 		<div class="quran-passage-flow">
 			<% for (var i in passage) { %>
 				<%

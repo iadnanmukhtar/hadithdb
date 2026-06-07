@@ -58,8 +58,16 @@
         const authHint = document.getElementById('<%= widgetId %>-hint');
         const composerAvatar = document.getElementById('<%= widgetId %>-avatar');
         const targetId = container.dataset.targetId;
-        const endpoint = (container.dataset.endpoint || '/comments').replace(/\/$/, '');
-        const pingUrl = container.dataset.pingUrl || '';
+        const quranApiPath = (path) => {
+          path = String(path || '');
+          if (path.charAt(0) !== '/') path = `/${path}`;
+          const hostname = (window.location.hostname || '').toLowerCase();
+          if (hostname.split('.')[0] !== 'quran' || path === '/quran' || path.startsWith('/quran/')) return path;
+          return `/quran${path}`;
+        };
+        const endpoint = quranApiPath(container.dataset.endpoint || '/comments').replace(/\/$/, '');
+        const rawPingUrl = container.dataset.pingUrl || '';
+        const pingUrl = rawPingUrl ? quranApiPath(rawPingUrl) : '';
         const subjectLabel = container.dataset.subjectLabel || 'reflection';
         const lazyLoad = container.dataset.lazyLoad === '1';
         const countBadge = document.getElementById('<%= widgetId %>-count');

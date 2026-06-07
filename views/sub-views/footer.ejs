@@ -27,7 +27,14 @@
 		const pendingCommentCountIds = new Set();
 		const loadingCommentCountIds = new Set();
 		const LIKE_KEY = 'hadithLikedMap';
-		const USER_SETTINGS_ENDPOINT = '/user-settings';
+		const quranApiPath = (path) => {
+			path = String(path || '');
+			if (path.charAt(0) !== '/') path = `/${path}`;
+			const hostname = (window.location.hostname || '').toLowerCase();
+			if (hostname.split('.')[0] !== 'quran' || path === '/quran' || path.startsWith('/quran/')) return path;
+			return `/quran${path}`;
+		};
+		const USER_SETTINGS_ENDPOINT = quranApiPath('/user-settings');
 		const USER_SETTINGS_OPTIONAL_ENDPOINT = `${USER_SETTINGS_ENDPOINT}?optional=1`;
 		let userSettings = {};
 		let bookmarkSettingsLoaded = false;
@@ -253,7 +260,7 @@
 			try {
 				const counts = {};
 				for (let offset = 0; offset < ids.length; offset += 100) {
-					const res = await fetch(`/comments/counts?ids=${ids.slice(offset, offset + 100).join(',')}`);
+						const res = await fetch(quranApiPath(`/comments/counts?ids=${ids.slice(offset, offset + 100).join(',')}`));
 					if (!res.ok) throw new Error('Failed reflection count fetch');
 					const data = await res.json();
 					Object.assign(counts, data.counts || {});
@@ -344,7 +351,7 @@
 			loadingLikeIds.add(id);
 			const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
 			try {
-				const res = await fetch(`/likes/${id}`, {
+				const res = await fetch(quranApiPath(`/likes/${id}`), {
 					headers: token ? { 'Authorization': `Bearer ${token}` } : {}
 				});
 				if (!res.ok) throw new Error('Failed likes fetch');
@@ -371,7 +378,7 @@
 			}
 			try {
 				btn.disabled = true;
-				const res = await fetch(`/likes/${id}`, {
+				const res = await fetch(quranApiPath(`/likes/${id}`), {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',

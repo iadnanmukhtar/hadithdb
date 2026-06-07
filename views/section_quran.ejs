@@ -63,7 +63,7 @@
         h2: arabic.toLatinDigits(section.h2.toString())
       }
       : null;
-    var quranCorpusUrl = quranCorpusSection ? `/quran-corpus/${quranCorpusSection.surah}/${quranCorpusSection.h2}` : '';
+    var quranCorpusUrl = quranCorpusSection ? `/quran/corpus/${quranCorpusSection.surah}/${quranCorpusSection.h2}` : '';
     var quranNavigatorCurrent = firstSelectedAyah || results[0] || {};
     var quranNavigatorRef = (quranNavigatorCurrent.en && quranNavigatorCurrent.en.num) || quranNavigatorCurrent.num || quranNavigatorCurrent.ref || `${section.h1 || 1}:1`;
     quranNavigatorRef = arabic.toLatinDigits(quranNavigatorRef.toString().replace(/^quran:/, ''));

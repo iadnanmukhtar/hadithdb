@@ -1431,11 +1431,13 @@ del em strong {
 .body.passage:lang(ar) .ayah .quran-corpus-word,
 .body.passage:lang(ar) .ayah a,
 .body.passage:lang(ar) .quran-ayah-body,
+.body.passage:lang(ar) .quran-ayah-body p,
 .quran-passage-section [lang="ar"] .body.passage,
 .quran-passage-section [lang="ar"] .body.passage .ayah,
 .quran-passage-section [lang="ar"] .body.passage .ayah .quran-corpus-word,
 .quran-passage-section [lang="ar"] .body.passage .ayah a,
 .quran-passage-section [lang="ar"] .body.passage .quran-ayah-body,
+.quran-passage-section [lang="ar"] .body.passage .quran-ayah-body p,
 .quran-passage-section [lang="ar"] .ayah,
 .quran-passage-section [lang="ar"] .ayah .quran-corpus-word,
 .body.passage:lang(ar) .ayah sup {
@@ -1447,6 +1449,7 @@ del em strong {
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected,
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected a,
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-ayah-body,
+.quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-ayah-body p,
 .body.passage:lang(ar) .ayah-selected sup {
 	font-family: QuranBold, Serif;
 }

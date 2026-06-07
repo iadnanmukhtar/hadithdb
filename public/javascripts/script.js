@@ -261,6 +261,17 @@ function quranUrl(path) {
 	return path;
 }
 
+function quranApiPath(path) {
+	path = (path || '').toString();
+	if (!isQuranSubdomainHost(window.location.hostname))
+		return path;
+	if (path.charAt(0) !== '/')
+		path = '/' + path;
+	if (path === '/quran' || path.indexOf('/quran/') === 0)
+		return path;
+	return '/quran' + path;
+}
+
 function setDirection(el) {
 	if (el.length) {
 		if (el.val().match(/^[\u0600-\u06ff]+/))
@@ -558,7 +569,7 @@ function initQuranTafsirTabs(root) {
 			}).appendTo(panel);
 		};
 		var fetchPayload = async function (src, source, ayah, language) {
-			var endpoint = source === 'local' ? '/proxy/tafsir/local' : '/proxy/tafsir';
+			var endpoint = quranApiPath(source === 'local' ? '/proxy/tafsir/local' : '/proxy/tafsir');
 			var languageParam = source === 'local' && language ? `&lang=${encodeURIComponent(language)}` : '';
 			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&ver=1${languageParam}`);
 			if (response.status === 404)
@@ -675,7 +686,7 @@ function initQuranTafsirTabs(root) {
 			showLanguage($(this).attr('data-tafsir-language'));
 		});
 		Promise.all([
-			fetch('/proxy/tafsir/books').then(function (response) {
+			fetch(quranApiPath('/proxy/tafsir/books')).then(function (response) {
 				if (!response.ok)
 					throw new Error('Unable to load tafsir list.');
 				return response.json();
@@ -787,7 +798,7 @@ function getQuranTafsirSettings() {
 	}).then(function (token) {
 		if (!token)
 			return normalizeSettings({});
-		return fetch('/user-settings', {
+		return fetch(quranApiPath('/user-settings'), {
 			headers: { 'Authorization': `Bearer ${token}` }
 		}).then(function (response) {
 			if (!response.ok)
