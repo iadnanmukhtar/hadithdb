@@ -183,7 +183,9 @@ async function syncHadithAdminForCachedPage() {
 		const token = auth && auth.getToken ? await auth.getToken() : null;
 		if (!token)
 			return;
-		const res = await fetch(hadithLoginPath(userId), {
+		const user = auth && auth.getUser ? await auth.getUser() : null;
+		const loginUserId = user && user.email ? user.email : userId;
+		const res = await fetch(hadithLoginPath(loginUserId), {
 			method: 'GET',
 			headers: { Authorization: `Bearer ${token}` }
 		});

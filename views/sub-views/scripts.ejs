@@ -466,10 +466,11 @@
       return '/login/logout';
   }
 
-  function needsHadithAuthSync(username) {
-      if (!username)
+  function needsHadithAuthSync(user) {
+      if (!user)
         return false;
-      if (getHadithCookie('userId') !== username)
+      const uid = user.uid || user.userId || user.email || user.username;
+      if (uid && getHadithCookie('userId') !== uid)
         return true;
       return window.hadithAdmin !== true && !document.querySelector('.edit-gear');
   }
@@ -480,8 +481,10 @@
         return { status: 400, message: 'Missing username' };
 
       const initialUserId = getHadithCookie('userId');
+      const currentUser = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
+      const currentUid = currentUser && currentUser.uid ? currentUser.uid : username;
 
-      if (initialUserId === username && window.hadithAdmin === true) {
+      if (initialUserId === currentUid && window.hadithAdmin === true) {
         markHadithAuthSynced(username);
         return { status: 200, userId: username, skipped: true, message: 'User already logged in' };
       }
@@ -511,7 +514,7 @@
             renderHadithAdminGear();
           if (!options.silent)
             toastr.success('Logged in as ' + username);
-          const userChanged = initialUserId !== username;
+          const userChanged = initialUserId !== (resBody.userId || currentUid);
           if (options.reload !== false && !options.silent && (userChanged || resBody.admin))
             window.location.reload();
         } else {
@@ -770,7 +773,7 @@
     const syncCurrentUser = async () => {
       const user = await window.hadithAuth.getUser();
       render(user);
-      if (user && user.email && needsHadithAuthSync(user.email)) {
+      if (user && user.email && needsHadithAuthSync(user)) {
         await onAuth({ username: user.email }, { silent: true });
       } else if (!user) {
         startGoogleOneTap();
