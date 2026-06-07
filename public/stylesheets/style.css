@@ -1914,8 +1914,73 @@ del em strong {
 }
 
 .quran-tafsir-text:lang(en) {
-	font-family: Serif;
+	font-family: "Gentium Plus", Serif;
 	line-height: 1.45;
+}
+
+.quran-tafsir-text:lang(en) h1,
+.quran-tafsir-text:lang(en) h2,
+.quran-tafsir-text:lang(en) h3,
+.quran-tafsir-text:lang(en) h4,
+.quran-tafsir-text:lang(en) h5,
+.quran-tafsir-text:lang(en) h6 {
+	color: var(--c-brown);
+	font-family: "Gentium Plus", Serif;
+	font-weight: 700;
+	line-height: 1.18;
+	margin: 1.15em 0 .45em;
+}
+
+.quran-tafsir-text:lang(en) h1 {
+	font-size: 1.75em;
+}
+
+.quran-tafsir-text:lang(en) h2 {
+	font-size: 1.55em;
+}
+
+.quran-tafsir-text:lang(en) h3 {
+	font-size: 1.38em;
+}
+
+.quran-tafsir-text:lang(en) h4 {
+	font-size: 1.24em;
+}
+
+.quran-tafsir-text:lang(en) h5 {
+	font-size: 1.12em;
+}
+
+.quran-tafsir-text:lang(en) h6 {
+	font-size: 1em;
+}
+
+.quran-tafsir-text:lang(en) h1:first-child,
+.quran-tafsir-text:lang(en) h2:first-child,
+.quran-tafsir-text:lang(en) h3:first-child,
+.quran-tafsir-text:lang(en) h4:first-child,
+.quran-tafsir-text:lang(en) h5:first-child,
+.quran-tafsir-text:lang(en) h6:first-child {
+	margin-top: 0;
+}
+
+.quran-tafsir-text:lang(en) :lang(ar),
+.quran-tafsir-text:lang(en) .quran-tafsir-arabic-only,
+.quran-tafsir-text:lang(en) .quran-tafsir-arabic-only * {
+	direction: rtl;
+	font-family: Kitab, Serif;
+	text-align: right;
+}
+
+.quran-tafsir-text:lang(en) h1.quran-tafsir-arabic-only,
+.quran-tafsir-text:lang(en) h2.quran-tafsir-arabic-only,
+.quran-tafsir-text:lang(en) h3.quran-tafsir-arabic-only,
+.quran-tafsir-text:lang(en) h4.quran-tafsir-arabic-only,
+.quran-tafsir-text:lang(en) h5.quran-tafsir-arabic-only,
+.quran-tafsir-text:lang(en) h6.quran-tafsir-arabic-only {
+	font-family: KitabBold, Serif;
+	line-height: 1.5;
+	text-align: right;
 }
 
 .quran-tafsir-text .footnote-ref {

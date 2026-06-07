@@ -165,6 +165,20 @@ const TAFSIRS = {
 		column: 'text',
 		sourceFormat: 'html'
 	},
+	'irab-daas': {
+		ordinal: 63,
+		shortName_en: 'Irab (Daas)',
+		shortName: 'إعراب الدعاس',
+		name_en: 'Irab al-Quran al-Karim',
+		name: 'إعراب القرآن للدعاس',
+		author_en: 'Ahmad Ubayd al-Daas',
+		author: 'أحمد عبيد الدعاس',
+		lang: 'ar',
+		format: 'md',
+		file: 'data/irab-daas.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
 	'qiraat': {
 		ordinal: 62,
 		shortName_en: "Qira'at",
@@ -407,9 +421,10 @@ function query(connection, sql) {
 }
 
 function plainTextToMarkdown(text) {
-	return text.split(/\n+/).filter(Boolean).map(line => {
-		return line.replace(/[\\`*_[\]{}()#+\-.!|<>~]/g, '\\$&');
-	}).join('\n\n');
+	return normalizeMarkdownSource(text)
+		.split('\n\n')
+		.map(escapeMarkdownLiterals)
+		.join('\n\n');
 }
 
 function commentarySourceToMarkdown(text, config) {
@@ -429,11 +444,23 @@ function htmlToMarkdown(html) {
 	return blocks.map(block => block.trim()).filter(Boolean).join('\n\n');
 }
 
+function normalizeMarkdownSource(text) {
+	return (text || '').toString()
+		.replace(/\r\n?/g, '\n')
+		.split(/\n+/)
+		.map(line => line.trim())
+		.filter(Boolean)
+		.join('\n\n');
+}
+
 function collectMarkdownBlocks($, node, blocks) {
 	if (!node)
 		return;
 	if (node.type === 'text') {
-		const text = markdownEscape(node.data || '').trim();
+		const text = normalizeMarkdownSource(node.data || '')
+			.split('\n\n')
+			.map(escapeMarkdownLiterals)
+			.join('\n\n');
 		if (text)
 			blocks.push(text);
 		return;
@@ -443,6 +470,13 @@ function collectMarkdownBlocks($, node, blocks) {
 		const text = renderMarkdownInline($, $(node).contents().toArray()).trim();
 		if (text)
 			blocks.push(text);
+		return;
+	}
+	const heading = /^h([1-6])$/.exec(name);
+	if (heading) {
+		const text = renderMarkdownInline($, $(node).contents().toArray()).trim();
+		if (text)
+			blocks.push(`${'#'.repeat(Number(heading[1]))} ${text}`);
 		return;
 	}
 	if (name === 'br') {
@@ -456,7 +490,7 @@ function collectMarkdownBlocks($, node, blocks) {
 function renderMarkdownInline($, nodes) {
 	return nodes.map(node => {
 		if (node.type === 'text')
-			return markdownEscape(node.data || '');
+			return escapeMarkdownLiterals(node.data || '');
 		const name = (node.name || '').toLowerCase();
 		if (name === 'br')
 			return '\n';
@@ -467,8 +501,8 @@ function renderMarkdownInline($, nodes) {
 	}).join('').replace(/[ \t]+\n/g, '\n').replace(/\n[ \t]+/g, '\n');
 }
 
-function markdownEscape(text) {
-	return text.replace(/[\\`*_[\]{}()#+\-.!|<>~]/g, '\\$&');
+function escapeMarkdownLiterals(text) {
+	return (text || '').toString().replace(/([`*[\]])/g, '\\$1');
 }
 
 function htmlToText(text) {

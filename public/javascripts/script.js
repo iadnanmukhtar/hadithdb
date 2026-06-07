@@ -313,6 +313,31 @@ function setDirection(el) {
 	}
 }
 
+function quranTafsirHashParams() {
+	return new URLSearchParams(window.location.hash.replace(/^#/, ''));
+}
+
+function normalizeQuranTafsirLanguage(language) {
+	language = (language || '').toString();
+	return language === 'ar' || language === 'en' ? language : '';
+}
+
+function buildQuranTafsirHash(key, alias, language) {
+	var params = new URLSearchParams();
+	params.set(key, alias || '');
+	language = normalizeQuranTafsirLanguage(language);
+	if (language)
+		params.set('lang', language);
+	return `#${params.toString()}`;
+}
+
+function currentQuranTafsirHash() {
+	var params = quranTafsirHashParams();
+	if (!params.has('tafsir') && !params.has('open-tafsir'))
+		return '';
+	return window.location.hash;
+}
+
 function initQuranPassageShareLinks(root) {
 	var scope = root || document;
 	$(scope).find('.quran-passage-share-btn').each(function () {
@@ -322,8 +347,7 @@ function initQuranPassageShareLinks(root) {
 		button.data('quranPassageShareBound', true);
 		button.on('click', async function () {
 			var url = window.location.href.split('#')[0];
-			if (/^#tafsir=[A-Za-z0-9_-]+$/.test(window.location.hash))
-				url += window.location.hash;
+			url += currentQuranTafsirHash();
 			var copyError;
 			var copyPromise = copyTextToClipboard(url).catch(function (err) {
 				copyError = err;
@@ -765,7 +789,7 @@ function initQuranTafsirTabs(root) {
 			var hash = $(event.target).attr('data-tafsir-hash');
 			var language = $(event.target).attr('data-tafsir-lang');
 			if (hash) {
-				window.history.replaceState(null, '', `#tafsir=${encodeURIComponent(hash)}`);
+				window.history.replaceState(null, '', buildQuranTafsirHash('tafsir', hash, language));
 				storeTafsirAlias(hash);
 			}
 			if (language) {
@@ -832,14 +856,18 @@ function initQuranTafsirTabs(root) {
 				container.find('.quran-tafsir-content').html('<p class="text-muted">All tafsirs are disabled in My Settings.</p>');
 				return;
 			}
-			var initialParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+			var initialParams = quranTafsirHashParams();
 			var initialHash = initialParams.get('tafsir') || initialParams.get('open-tafsir');
+			var initialLanguage = normalizeQuranTafsirLanguage(initialParams.get('lang'));
 			var initialAlias = initialHash || getStoredTafsirAlias();
 			var initialTab = container.find('[data-tafsir-hash]').filter(function () {
-				return $(this).attr('data-tafsir-hash') === initialAlias;
+				return $(this).attr('data-tafsir-hash') === initialAlias
+					&& (!initialLanguage || $(this).attr('data-tafsir-lang') === initialLanguage);
 			});
 			if (initialTab.length)
 				showLanguage(initialTab.first().attr('data-tafsir-lang'), initialAlias);
+			else if (initialLanguage)
+				showLanguage(initialLanguage);
 			else
 				showLanguage(activeLanguage);
 		}).catch(function (err) {
@@ -930,8 +958,8 @@ function initQuranAyahModals(root) {
 			if (!ref)
 				return '';
 			var href = `/${ref.replace(/^\/+/, '')}`;
-			if (modalType === 'tafsirs' && /^#tafsir(?:=|$)/.test(window.location.hash))
-				href += window.location.hash;
+			if (modalType === 'tafsirs')
+				href += currentQuranTafsirHash();
 			return href;
 		};
 		var boundaryHref = function (step) {
@@ -1042,7 +1070,7 @@ function initQuranAyahModals(root) {
 			state.openAyah(index);
 	};
 	var openInitialAyahModalFromHash = function () {
-		var params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+		var params = quranTafsirHashParams();
 		if (!params.has('open-tafsir'))
 			return;
 		var trigger = $('.quran-ayah-modal-trigger[data-quran-ayah-modal-type="tafsirs"]').first();

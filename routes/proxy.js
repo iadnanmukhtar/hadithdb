@@ -333,7 +333,7 @@ function namespaceFootnoteIds(html, prefix) {
 
 function markArabicOnlyBlocks(html) {
   const $ = cheerio.load(html, null, false);
-  $('p, li, blockquote').each(function () {
+  $('p, li, blockquote, h1, h2, h3, h4, h5, h6').each(function () {
     const element = $(this);
     const text = element.text();
     if (/\p{Script=Arabic}/u.test(text) && !/[A-Za-z]/.test(text))
