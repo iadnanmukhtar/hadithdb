@@ -111,6 +111,8 @@ function getHadithCookie(name) {
 	return match ? decodeURIComponent(match[1]) : '';
 }
 
+var HADITH_SESSION_MAX_AGE = 60 * 60 * 24 * 90;
+
 function initBookNavScroller(scope) {
 	(scope ? $(scope) : $(document)).find('.h-menu').each(function () {
 		var menu = this;
@@ -123,7 +125,7 @@ function initBookNavScroller(scope) {
 }
 
 function setHadithAdminMode(enabled) {
-	document.cookie = `editMode=${enabled ? '1' : '0'};path=/;`;
+	document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${HADITH_SESSION_MAX_AGE};samesite=lax`;
 	location.reload();
 }
 
@@ -168,6 +170,12 @@ function hadithLoginPath(userId) {
 	return `/login/${encodedUserId}`;
 }
 
+function hadithSessionPath() {
+	if (typeof isQuranSubdomainHost === 'function' && isQuranSubdomainHost(window.location.hostname))
+		return '/quran/login/session';
+	return '/login/session';
+}
+
 function waitForHadithAuth(timeoutMs) {
 	timeoutMs = timeoutMs || 3000;
 	return new Promise(function (resolve) {
@@ -194,14 +202,20 @@ async function syncHadithAdminForCachedPage() {
 	try {
 		const auth = await waitForHadithAuth();
 		const token = auth && auth.getToken ? await auth.getToken() : null;
-		if (!token)
-			return;
-		const user = auth && auth.getUser ? await auth.getUser() : null;
-		const loginUserId = user && user.email ? user.email : userId;
-		const res = await fetch(hadithLoginPath(loginUserId), {
-			method: 'GET',
-			headers: { Authorization: `Bearer ${token}` }
-		});
+		let res;
+		if (token) {
+			const user = auth && auth.getUser ? await auth.getUser() : null;
+			const loginUserId = user && user.email ? user.email : userId;
+			res = await fetch(hadithLoginPath(loginUserId), {
+				method: 'GET',
+				headers: { Authorization: `Bearer ${token}` }
+			});
+		} else {
+			res = await fetch(hadithSessionPath(), {
+				credentials: 'same-origin',
+				headers: { 'Accept': 'application/json' }
+			});
+		}
 		if (!res.ok)
 			return;
 		const data = await res.json();
@@ -565,6 +579,37 @@ function initQuranTafsirTabs(root) {
 				return ayah >= startAyah && ayah <= endAyah;
 			});
 		};
+		var bindTafsirEntryCollapse = function (entryElement) {
+			entryElement.on('toggle', function () {
+				if (!this.open)
+					return;
+				$(this).siblings('.quran-tafsir-entry[open]').prop('open', false);
+				scrollTafsirEntryIntoView($(this));
+			});
+		};
+		var scrollTafsirEntryIntoView = function (entryElement) {
+			if (!entryElement || !entryElement.length)
+				return;
+			window.requestAnimationFrame(function () {
+				var modalBody = entryElement.closest('.modal-body');
+				if (modalBody.length) {
+					var modalBodyEl = modalBody[0];
+					var modalRect = modalBodyEl.getBoundingClientRect();
+					var entryRect = entryElement[0].getBoundingClientRect();
+					modalBodyEl.scrollTo({
+						top: modalBodyEl.scrollTop + entryRect.top - modalRect.top - 12,
+						behavior: 'smooth'
+					});
+					return;
+				}
+				var navbar = document.querySelector('.site-navbar.fixed-top');
+				var navbarOffset = navbar ? navbar.getBoundingClientRect().height : 0;
+				window.scrollTo({
+					top: window.pageYOffset + entryElement[0].getBoundingClientRect().top - navbarOffset - 12,
+					behavior: 'smooth'
+				});
+			});
+		};
 		var scrollTafsirTabIntoView = function (tab) {
 			if (!tab || !tab.length)
 				return;
@@ -698,6 +743,7 @@ function initQuranTafsirTabs(root) {
 					var count = Number(entry.payload.count || 0);
 					var endAyah = startAyah + count;
 					var entryElement = $('<details>').addClass('quran-tafsir-entry').prop('open', overlapsSelectedAyahs(startAyah, endAyah)).appendTo(text);
+					bindTafsirEntryCollapse(entryElement);
 					var summary = $('<summary>').appendTo(entryElement);
 					var ayahHeadings = count > 0
 						? $('<div>').addClass('quran-tafsir-ayah-range').attr({ lang: 'ar', dir: 'rtl' }).appendTo(summary)

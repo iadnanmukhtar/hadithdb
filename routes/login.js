@@ -7,6 +7,12 @@ const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
 
 const router = express.Router();
+const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 90;
+const SESSION_COOKIE_OPTIONS = {
+  path: '/',
+  maxAge: SESSION_MAX_AGE_MS,
+  sameSite: 'lax'
+};
 
 router.get('/logout', async function (req, res) {
   res.clearCookie('admin', { path: '/' });
@@ -20,6 +26,17 @@ router.get('/logout', async function (req, res) {
     refresh: true,
     message: 'User logged out'
   }));
+});
+
+router.get('/session', async function (req, res) {
+  const userId = req.cookies && req.cookies.userId;
+  const admin = userId ? await UserSettings.isAdminUser(userId) : false;
+  res.json({
+    status: 200,
+    loggedIn: Boolean(userId),
+    userId: userId || null,
+    admin
+  });
 });
 
 router.get('/:userId', async function (req, res, next) {
@@ -53,10 +70,10 @@ router.get('/:userId', async function (req, res, next) {
   res.clearCookie('adminChecked', { path: '/' });
   if (adminUser) {
     debug(`Admin User ${user.email} logged in`);
-    await res.cookie('userId', user.uid);
+    await res.cookie('userId', user.uid, SESSION_COOKIE_OPTIONS);
   } else {
     res.clearCookie('editMode', { path: '/' });
-    await res.cookie('userId', user.uid);
+    await res.cookie('userId', user.uid, SESSION_COOKIE_OPTIONS);
   }
   res.status(200);
   res.end(JSON.stringify({

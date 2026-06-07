@@ -2159,7 +2159,8 @@ del em strong {
 	cursor: grabbing;
 }
 
-.quran-tafsir-ayah:lang(ar) {
+.quran-tafsir-ayah:lang(ar),
+.quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) {
 	color: var(--c-black);
 	font-family: Quran, Serif;
 	font-size: 1.45rem;
@@ -2168,16 +2169,19 @@ del em strong {
 	margin: .25rem 0 .5rem;
 }
 
-.quran-tafsir-ayah:lang(ar) span {
+.quran-tafsir-ayah:lang(ar) span,
+.quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) span {
 	font-family: Quran, Serif;
 	font-weight: 400;
 }
 
-.quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text {
+.quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text,
+.quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text {
 	font-weight: 700;
 }
 
-.quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref {
+.quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref,
+.quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref {
 	color: var(--c-black);
 	font-family: "Gentium Plus", Serif;
 	font-size: .58em;

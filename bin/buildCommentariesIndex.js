@@ -10,15 +10,19 @@ const path = require('path');
 const Index = require('../lib/Index');
 
 const INDEX = 'commentaries';
+const options = readOptions(process.argv.slice(2));
 let dbPoolEnded = false;
 
 (async () => {
 	try {
 		await ensureIndexExists();
-		const rows = await getCommentaries();
+		const rows = await getCommentaries(options.alias);
 		await endDbPool();
-		console.log(`indexing ${rows.length} local commentary passages...`);
-		await deleteExistingDocuments();
+		console.log(`indexing ${rows.length} local commentary passages${options.alias ? ` for '${options.alias}'` : ''}...`);
+		if (options.alias)
+			await deleteExistingDocumentsByAlias(options.alias);
+		else
+			await deleteExistingDocuments();
 		await Index.updateBulk(INDEX, rows, false);
 		await Index.refresh(INDEX);
 		console.log('commentaries index complete');
@@ -44,7 +48,7 @@ function endDbPool() {
 	});
 }
 
-async function getCommentaries() {
+async function getCommentaries(alias) {
 	return await global.query(`
 		SELECT
 			hc.id,
@@ -92,6 +96,7 @@ async function getCommentaries() {
 		JOIN v_hadiths q ON q.id=hc.hadithId
 		WHERE bc.source='local'
 			AND bc.hidden=0
+			${alias ? `AND bc.alias=${global.dbPool.escape(alias)}` : ''}
 		ORDER BY bc.id, hc.surah, hc.ayahFrom, hc.ayahTo`);
 }
 
@@ -127,10 +132,49 @@ async function deleteExistingDocuments() {
 	}
 }
 
+async function deleteExistingDocumentsByAlias(alias) {
+	try {
+		await axios.post(`${global.settings.search.domain}/${INDEX}/_delete_by_query`, {
+			query: { term: { commentary_alias: alias } }
+		});
+	} catch (err) {
+		throw describeAxiosError(err, `Unable to clear index '${INDEX}' for '${alias}'`);
+	}
+}
+
 function describeAxiosError(err, prefix) {
 	const reason = err.response?.data?.error?.root_cause?.[0]?.reason ||
 		err.response?.data?.error?.reason ||
 		err.response?.data?.message ||
 		err.message;
 	return new Error(`${prefix}: ${reason}`);
+}
+
+function readOptions(argv) {
+	const options = { alias: null };
+	for (let i = 0; i < argv.length; i++) {
+		const arg = argv[i];
+		if (arg === '--tafsir') {
+			options.alias = argv[++i];
+			if (!options.alias)
+				throw new Error('--tafsir requires a commentary alias.');
+		} else if (arg === '--help' || arg === '-h') {
+			console.log(usage());
+			process.exit(0);
+		} else
+			throw new Error(`Unknown option '${arg}'.\n\n${usage()}`);
+	}
+	return options;
+}
+
+function usage() {
+	return [
+		'Usage: node bin/buildCommentariesIndex.js [options]',
+		'',
+		'Rebuilds the local Quran commentaries Elasticsearch index.',
+		'',
+		'Options:',
+		'  --tafsir <alias>  Reindex only one local commentary alias',
+		'  --help            Show this help'
+	].join('\n');
 }

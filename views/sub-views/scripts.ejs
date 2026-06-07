@@ -57,6 +57,8 @@
 	      $el.text(getMarkdownSource($el));
 	    };
 
+	    const isTafsirEditor = ($el) => $el.hasClass('quran-tafsir-editor');
+
 	    const isMarkdownBlockNode = (node) => node && node.nodeType === Node.ELEMENT_NODE && /^(p|div|ul|ol|blockquote)$/i.test(node.tagName);
 
 	    const markdownNodesToText = (nodes) => {
@@ -281,15 +283,15 @@
 	      e.stopPropagation();
 	    }
 
-    async function update(reqBody) {
-      var resBody = {};
-      var res = {
-        status: 500,
-        statusText: 'Unable to execute update due to an unknown error'
-      };
-      const updateUrl = (id, prop) => {
-        return hadithApiPath(`/update/${id}/${prop}`);
-      };
+	    async function update(reqBody) {
+	      var resBody = {};
+	      var res = {
+	        status: 500,
+	        statusText: 'Unable to execute update due to an unknown error'
+	      };
+	      const updateUrl = (id, prop) => {
+	        return editHadithApiPath(`/update/${id}/${prop}`);
+	      };
       if (reqBody) {
         res = await fetch(updateUrl(reqBody.id, reqBody.prop), {
           method: 'POST',
@@ -327,12 +329,21 @@
       return resBody;
     }
 
-    function split(val) {
-      return val.split(/ +/);
-    }
-    function extractLast(term) {
-      return split(term).pop();
-    }
+	    function split(val) {
+	      return val.split(/ +/);
+	    }
+	    function extractLast(term) {
+	      return split(term).pop();
+	    }
+	    function editHadithApiPath(path) {
+	      path = String(path || '');
+	      if (path.charAt(0) !== '/')
+	        path = `/${path}`;
+	      const isQuranHost = window.location.hostname.toLowerCase().split('.')[0] === 'quran';
+	      if (isQuranHost && path !== '/quran' && !path.startsWith('/quran/'))
+	        return `/quran${path}`;
+	      return path;
+	    }
 
 	    const bindInlineEditors = (scope) => {
 	      $(scope || document).find('._e').addBack('._e').each(function () {
@@ -352,8 +363,30 @@
 	          $(this).attr('editing', 'true');
 	          $(this).removeClass('partial');
 	        });
-	        $el.on('blur', changeListener);
+	        if (isTafsirEditor($el))
+	          ensureTafsirSaveButton($el);
+	        else
+	          $el.on('blur', changeListener);
 	      });
+	    };
+
+	    const ensureTafsirSaveButton = ($el) => {
+	      if ($el.next('.quran-tafsir-save').length)
+	        return;
+	      const $button = $('<button type="button" class="btn btn-sm btn-outline-primary quran-tafsir-save mt-2 mb-3"><span class="bi bi-save"></span> Save</button>');
+	      $button.on('mousedown', function (e) {
+	        e.preventDefault();
+	      });
+	      $button.on('click', function (e) {
+	        e.preventDefault();
+	        e.stopPropagation();
+	        if ($el.attr('submitting') == 'true')
+	          return;
+	        $el.data('loadingButton', this);
+	        $el.attr('editing', 'true');
+	        changeListener.call($el[0], e);
+	      });
+	      $el.after($button);
 	    };
 	    window.bindInlineEditors = bindInlineEditors;
 	    bindInlineEditors(document);
@@ -390,11 +423,11 @@
         }
       })
       .autocomplete({
-        source: function( request, response ) {
-          $.getJSON(hadithApiPath('/tag/_list'), {
-            s: extractLast( request.term )
-          }, response );
-        },
+	        source: function( request, response ) {
+	          $.getJSON(editHadithApiPath('/tag/_list'), {
+	            s: extractLast( request.term )
+	          }, response );
+	        },
         search: function() {
           var term = extractLast( $(this).val() );
           if ( term.length < 2 )
@@ -424,6 +457,8 @@
       return match ? decodeURIComponent(match[1]) : '';
   }
 
+  const HADITH_SESSION_MAX_AGE = 60 * 60 * 24 * 90;
+
   function markHadithAuthSynced(username) {
       if (!username) return;
       sessionStorage.setItem('hadithdb_google_login', '1');
@@ -431,7 +466,7 @@
   }
 
   function setHadithAdminMode(enabled) {
-      document.cookie = `editMode=${enabled ? '1' : '0'};path=/;`;
+      document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${HADITH_SESSION_MAX_AGE};samesite=lax`;
       location.reload();
   }
 
@@ -477,6 +512,12 @@
       return '/login/logout';
   }
 
+  function hadithSessionPath() {
+      if (window.location.hostname.toLowerCase().split('.')[0] === 'quran')
+        return '/quran/login/session';
+      return '/login/session';
+  }
+
   function hadithApiPath(path) {
       path = String(path || '');
       if (path.charAt(0) !== '/')
@@ -494,6 +535,26 @@
       if (uid && getHadithCookie('userId') !== uid)
         return true;
       return window.hadithAdmin !== true && !document.querySelector('.edit-gear');
+  }
+
+  async function syncHadithSessionFromCookie() {
+      try {
+        const res = await fetch(hadithSessionPath(), {
+          credentials: 'same-origin',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!res.ok)
+          return null;
+        const data = await res.json();
+        if (data && data.loggedIn) {
+          window.hadithAdmin = Boolean(data.admin);
+          if (window.hadithAdmin)
+            renderHadithAdminGear();
+        }
+        return data;
+      } catch (err) {
+        return null;
+      }
   }
 
   async function onAuth(user, options = {}) {
@@ -520,7 +581,9 @@
         };
         const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
         if (!token) {
-          toastr.error('Please sign in with Google first.', 'Auth');
+          await syncHadithSessionFromCookie();
+          if (!options.silent)
+            toastr.error('Please sign in with Google first.', 'Auth');
           return { status: 401, message: 'Authentication required' };
         }
         res = await fetch(hadithLoginPath(username), {
@@ -797,6 +860,7 @@
       if (user && user.email && needsHadithAuthSync(user)) {
         await onAuth({ username: user.email }, { silent: true });
       } else if (!user) {
+        await syncHadithSessionFromCookie();
         startGoogleOneTap();
       } else {
         renderHadithAdminGear();

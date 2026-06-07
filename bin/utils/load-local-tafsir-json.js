@@ -179,6 +179,23 @@ const TAFSIRS = {
 		column: 'text',
 		sourceFormat: 'html'
 	},
+	'ibn-adil': {
+		ordinal: 64,
+		shortName_en: 'Ibn Adil',
+		shortName: 'ابن عادل',
+		name_en: 'al-Lubab fi Ulum al-Kitab',
+		name: 'اللباب في علوم الكتاب',
+		author_en: 'Umar b. Ali b. Adil',
+		author: 'عمر بن علي بن عادل',
+		death: 880,
+		lang: 'ar',
+		format: 'md',
+		file: 'data/ibn-adil.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 25,
+		autocommit: true
+	},
 	'qiraat': {
 		ordinal: 62,
 		shortName_en: "Qira'at",
@@ -217,18 +234,35 @@ async function importTafsir(connection, alias, quran) {
 	console.log(`${options.dryRun ? 'Checking' : 'Loading'} ${passages.length} '${alias}' passages...`);
 	if (options.dryRun)
 		return;
+	if (config.autocommit)
+		return await importTafsirAutocommit(alias, config, passages);
 
 	await query(connection, 'START TRANSACTION');
 	try {
 		const bookCommentaryId = await upsertCommentary(connection, alias, config);
-		for (let offset = 0; offset < passages.length; offset += 250)
-			await upsertPassages(connection, bookCommentaryId, passages.slice(offset, offset + 250));
+		const batchSize = config.batchSize || 250;
+		for (let offset = 0; offset < passages.length; offset += batchSize) {
+			await upsertPassages(connection, bookCommentaryId, passages.slice(offset, offset + batchSize));
+			if (config.batchSize)
+				console.log(`Loaded ${Math.min(offset + batchSize, passages.length)}/${passages.length} '${alias}' passages...`);
+		}
 		await query(connection, 'COMMIT');
 		console.log(`Loaded '${alias}'.`);
 	} catch (err) {
 		await query(connection, 'ROLLBACK');
 		throw err;
 	}
+}
+
+async function importTafsirAutocommit(alias, config, passages) {
+	const bookCommentaryId = await upsertCommentary(null, alias, config);
+	const batchSize = config.batchSize || 250;
+	for (let offset = 0; offset < passages.length; offset += batchSize) {
+		await upsertPassages(null, bookCommentaryId, passages.slice(offset, offset + batchSize));
+		if (config.batchSize)
+			console.log(`Loaded ${Math.min(offset + batchSize, passages.length)}/${passages.length} '${alias}' passages...`);
+	}
+	console.log(`Loaded '${alias}'.`);
 }
 
 async function loadQuranAyahs(connection) {
@@ -356,12 +390,12 @@ function parseRef(ref) {
 async function upsertCommentary(connection, alias, config) {
 	await query(connection, `
 		INSERT INTO books_commentaries
-			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, name, author)
+			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, name, author, death)
 		VALUES
 			(${config.ordinal}, ${MySQL.escape(alias)}, 'tafsir', ${MySQL.escape(config.shortName_en)}, ${MySQL.escape(config.shortName || null)},
 				0, 'local', ${MySQL.escape(config.lang || 'en')}, ${MySQL.escape(config.format || 'md')},
 				${MySQL.escape(config.name_en)}, ${MySQL.escape(config.author_en)},
-				${MySQL.escape(config.name || null)}, ${MySQL.escape(config.author || null)})
+				${MySQL.escape(config.name || null)}, ${MySQL.escape(config.author || null)}, ${MySQL.escape(config.death || null)})
 		ON DUPLICATE KEY UPDATE
 			ordinal=VALUES(ordinal),
 			type=VALUES(type),
@@ -374,7 +408,8 @@ async function upsertCommentary(connection, alias, config) {
 			name_en=VALUES(name_en),
 			author_en=VALUES(author_en),
 			name=VALUES(name),
-			author=VALUES(author)`);
+			author=VALUES(author),
+			death=VALUES(death)`);
 	const rows = await query(connection, `
 		SELECT id
 		FROM books_commentaries
@@ -415,8 +450,10 @@ function getConnection() {
 }
 
 function query(connection, sql) {
+	if (!connection)
+		return global.query(sql);
 	return new Promise((resolve, reject) => {
-		connection.query(sql, (err, result) => err ? reject(err) : resolve(result));
+		connection.query({ sql, timeout: 120000 }, (err, result) => err ? reject(err) : resolve(result));
 	});
 }
 
