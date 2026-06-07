@@ -457,7 +457,7 @@
       return match ? decodeURIComponent(match[1]) : '';
   }
 
-  const HADITH_SESSION_MAX_AGE = 60 * 60 * 24 * 90;
+  window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 90;
 
   function markHadithAuthSynced(username) {
       if (!username) return;
@@ -466,7 +466,7 @@
   }
 
   function setHadithAdminMode(enabled) {
-      document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${HADITH_SESSION_MAX_AGE};samesite=lax`;
+      document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${window.HADITH_SESSION_MAX_AGE};samesite=lax`;
       location.reload();
   }
 

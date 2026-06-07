@@ -111,7 +111,7 @@ function getHadithCookie(name) {
 	return match ? decodeURIComponent(match[1]) : '';
 }
 
-var HADITH_SESSION_MAX_AGE = 60 * 60 * 24 * 90;
+window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 90;
 
 function initBookNavScroller(scope) {
 	(scope ? $(scope) : $(document)).find('.h-menu').each(function () {
@@ -125,7 +125,7 @@ function initBookNavScroller(scope) {
 }
 
 function setHadithAdminMode(enabled) {
-	document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${HADITH_SESSION_MAX_AGE};samesite=lax`;
+	document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${window.HADITH_SESSION_MAX_AGE};samesite=lax`;
 	location.reload();
 }
 
