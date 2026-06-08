@@ -2149,7 +2149,7 @@ function updateHadithSharhLink(link) {
 		link.setAttribute('href', '#');
 		return;
 	}
-	link.href = `https://www.google.com/search?q=site%3Adorar.net%2Fhadith%2Fsharh+${encodeURIComponent(query)}`;
+	link.href = `https://www.google.com/search?q=site%3Adorar.net+${encodeURIComponent(query)}`;
 }
 
 function firstHadithSharhWords(text, count) {
