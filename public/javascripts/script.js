@@ -160,8 +160,10 @@ function setHadithAdminMode(enabled) {
 
 function renderHadithAdminGear() {
 	if (window.hadithAdmin !== true) {
-		document.querySelectorAll('.edit-gear').forEach(function (el) { el.remove(); });
-		document.cookie = 'editMode=0;path=/;';
+		if (window.hadithAdminSessionChecked) {
+			document.querySelectorAll('.edit-gear').forEach(function (el) { el.remove(); });
+			document.cookie = 'editMode=0;path=/;';
+		}
 		return;
 	}
 
@@ -249,14 +251,18 @@ async function syncHadithAdminForCachedPage() {
 			return;
 		const data = await res.json();
 		window.hadithAdmin = Boolean(data && data.loggedIn && data.admin);
+		window.hadithAdminSessionChecked = true;
 		renderHadithAdminGear();
 	} catch (err) {
+		window.hadithAdminSessionChecked = true;
+		renderHadithAdminGear();
 		console.warn('Could not refresh admin mode for cached page', err);
 	}
 }
 
 function initHadithAdminGear() {
 	window.hadithAdmin = window.hadithAdmin === true;
+	window.hadithAdminSessionChecked = window.hadithAdmin === true;
 	renderHadithAdminGear();
 	syncHadithAdminForCachedPage();
 }

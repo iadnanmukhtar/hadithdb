@@ -4,7 +4,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/javascripts/script.js?v=20260608-admin-session-gear-v1"></script>
+<script src="/javascripts/script.js?v=20260608-admin-session-gear-v2"></script>
 
 <% if (site.editMode) { %>
 <!-- Inline Editing -->
@@ -465,6 +465,7 @@
 
   window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 90;
   window.hadithAdmin = <%= site.admin ? 'true' : 'false' %>;
+  window.hadithAdminSessionChecked = window.hadithAdmin === true;
 
   function markHadithAuthSynced(username) {
       if (!username) return;
@@ -479,8 +480,10 @@
 
   function renderHadithAdminGear() {
       if (window.hadithAdmin !== true) {
-        document.querySelectorAll('.edit-gear').forEach((el) => el.remove());
-        document.cookie = 'editMode=0;path=/;';
+        if (window.hadithAdminSessionChecked) {
+          document.querySelectorAll('.edit-gear').forEach((el) => el.remove());
+          document.cookie = 'editMode=0;path=/;';
+        }
         return;
       }
       const editMode = Boolean(document.cookie.match(/(?:^|; )editMode=1(?:;|$)/));
@@ -557,9 +560,12 @@
           return null;
         const data = await res.json();
         window.hadithAdmin = Boolean(data && data.loggedIn && data.admin);
+        window.hadithAdminSessionChecked = true;
         renderHadithAdminGear();
         return data;
       } catch (err) {
+        window.hadithAdminSessionChecked = true;
+        renderHadithAdminGear();
         return null;
       }
   }
@@ -574,10 +580,11 @@
       const currentUid = currentUser && currentUser.uid ? currentUser.uid : username;
 
       if (initialUserId === currentUid) {
-        markHadithAuthSynced(username);
-        if (window.hadithAdmin !== true)
-          await syncHadithSessionFromCookie();
-        return { status: 200, userId: username, skipped: true, message: 'User already logged in' };
+        const session = await syncHadithSessionFromCookie();
+        if (session && session.loggedIn) {
+          markHadithAuthSynced(username);
+          return { ...session, skipped: true, message: 'User already logged in' };
+        }
       }
 
       if (window.hadithAuthLoginInFlight)
