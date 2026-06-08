@@ -612,6 +612,10 @@ function initQuranTafsirTabs(root) {
 			entryElement.on('toggle', function () {
 				if (!this.open)
 					return;
+				if ($(this).data('skipInitialOpenScroll')) {
+					$(this).removeData('skipInitialOpenScroll');
+					return;
+				}
 				$(this).siblings('.quran-tafsir-entry[open]').prop('open', false);
 				scrollTafsirEntryIntoView($(this));
 			});
@@ -771,7 +775,10 @@ function initQuranTafsirTabs(root) {
 					var startAyah = Number(entry.payload.ayahs_start || entry.ayah);
 					var count = Number(entry.payload.count || 0);
 					var endAyah = startAyah + count;
-					var entryElement = $('<details>').addClass('quran-tafsir-entry').prop('open', overlapsSelectedAyahs(startAyah, endAyah)).appendTo(text);
+					var entryElement = $('<details>').addClass('quran-tafsir-entry');
+					if (overlapsSelectedAyahs(startAyah, endAyah))
+						entryElement.prop('open', true).data('skipInitialOpenScroll', true);
+					entryElement.appendTo(text);
 					bindTafsirEntryCollapse(entryElement);
 					var summary = $('<summary>').appendTo(entryElement);
 					var ayahHeadings = count > 0
