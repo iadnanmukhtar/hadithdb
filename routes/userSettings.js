@@ -13,8 +13,8 @@ const MAX_SETTINGS_BYTES = 65535;
 async function verifyGoogle(req, res, next) {
   const optional = req.method === 'GET' && req.query && req.query.optional === '1';
   try {
-    const token = GoogleAuth.getBearerToken(req);
-    if (!token) {
+    req.user = await GoogleAuth.verifyRequest(req, { allowSession: true });
+    if (!req.user) {
       if (optional) {
         req.user = null;
         next();
@@ -23,7 +23,6 @@ async function verifyGoogle(req, res, next) {
       res.status(401).json({ error: 'Authentication required.' });
       return;
     }
-    req.user = await GoogleAuth.verifyToken(token);
     next();
   } catch (err) {
     debug(`Auth error: ${err.message}`);

@@ -47,12 +47,11 @@ User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider 
 
 async function verifyGoogle(req, res, next) {
   try {
-    const token = GoogleAuth.getBearerToken(req);
-    if (!token) {
+    req.user = await GoogleAuth.verifyRequest(req, { allowSession: true });
+    if (!req.user) {
       res.status(401).json({ error: 'Authentication required.' });
       return;
     }
-    req.user = await GoogleAuth.verifyToken(token);
     next();
   } catch (err) {
     debug(`Auth error: ${err.message}`);
@@ -93,14 +92,11 @@ router.get('/:hadithId', async function (req, res, next) {
       return;
     }
     let userUid = null;
-    const token = GoogleAuth.getBearerToken(req);
-    if (token) {
-      try {
-        const user = await GoogleAuth.verifyToken(token);
-        userUid = user.uid;
-      } catch (err) {
-        // ignore invalid token for public fetch
-      }
+    try {
+      const user = await GoogleAuth.verifyRequest(req, { allowSession: true });
+      userUid = user && user.uid;
+    } catch (err) {
+      // ignore invalid token for public fetch
     }
     const likes = await getLikeCount();
     const liked = await getLikedFlag(userUid);

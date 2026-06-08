@@ -572,8 +572,10 @@
       const currentUser = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
       const currentUid = currentUser && currentUser.uid ? currentUser.uid : username;
 
-      if (initialUserId === currentUid && window.hadithAdmin === true) {
+      if (initialUserId === currentUid) {
         markHadithAuthSynced(username);
+        if (window.hadithAdmin !== true)
+          await syncHadithSessionFromCookie();
         return { status: 200, userId: username, skipped: true, message: 'User already logged in' };
       }
 
@@ -587,7 +589,11 @@
         };
         const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
         if (!token) {
-          await syncHadithSessionFromCookie();
+          const session = await syncHadithSessionFromCookie();
+          if (session && session.loggedIn) {
+            markHadithAuthSynced(username);
+            return session;
+          }
           if (!options.silent)
             toastr.error('Please sign in with Google first.', 'Auth');
           return { status: 401, message: 'Authentication required' };
@@ -646,6 +652,7 @@
     const googleClientId = '<%= (global.settings.firebase && (global.settings.firebase.googleClientId || global.settings.firebase.clientId || global.settings.firebase.client_id)) || (global.settings.google && (global.settings.google.clientId || global.settings.google.client_id)) || "" %>';
     const tokenKey = 'hadithdb_google_credential';
     const userKey = 'hadithdb_google_user';
+    let sessionUserPromise = null;
     const decodeJwt = (token) => {
       try {
         const payload = token.split('.')[1];
@@ -680,6 +687,29 @@
       }
       return user;
     };
+    const userFromSession = async () => {
+      if (!sessionUserPromise) {
+        sessionUserPromise = syncHadithSessionFromCookie().then((session) => {
+          if (!session || !session.loggedIn || !session.user) return null;
+          const user = session.user;
+          return {
+            uid: user.uid,
+            email: user.email || user.uid,
+            displayName: user.name || user.email || 'User',
+            photoURL: user.photo || 'https://www.gravatar.com/avatar/?d=mp&s=48',
+            providerData: [{ providerId: user.provider || 'google.com' }],
+            getIdToken: async () => {
+              const credentialUser = storedUser();
+              return credentialUser ? localStorage.getItem(tokenKey) : null;
+            },
+            sessionBacked: true
+          };
+        }).finally(() => {
+          setTimeout(() => { sessionUserPromise = null; }, 1000);
+        });
+      }
+      return sessionUserPromise;
+    };
     const setCredential = (credential) => {
       const user = userFromCredential(credential);
       if (!user) return null;
@@ -698,6 +728,7 @@
     const clearCredential = () => {
       localStorage.removeItem(tokenKey);
       localStorage.removeItem(userKey);
+      sessionUserPromise = null;
       document.dispatchEvent(new CustomEvent('hadithAuthChanged', { detail: { user: null } }));
     };
     window.hadithAuth = {
@@ -709,7 +740,7 @@
         toastr.error('Please sign in to like or comment.', 'Sign-in required');
         window.hadithAuth.prompt();
       },
-      getUser: async () => storedUser(),
+      getUser: async () => storedUser() || await userFromSession(),
       setCredential,
       clearCredential,
       prompt: () => {

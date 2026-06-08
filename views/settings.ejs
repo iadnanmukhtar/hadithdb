@@ -104,9 +104,9 @@
 
     const loadUserSettings = async () => {
       const token = await getToken();
-      if (!token) return null;
       const res = await fetch('/user-settings', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'same-origin',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       if (!res.ok) throw new Error('Unable to load settings.');
       const data = await res.json();
@@ -115,15 +115,15 @@
 
     const saveSettings = async () => {
       const token = await getToken();
-      if (!token) throw new Error('Sign in required.');
       saving = true;
       tafsirStatusEl.textContent = 'Saving tafsir settings...';
       try {
         const res = await fetch('/user-settings', {
           method: 'PUT',
+          credentials: 'same-origin',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
           },
           body: JSON.stringify({ settings: currentSettings })
         });

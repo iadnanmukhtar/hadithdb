@@ -132,17 +132,22 @@
 			return auth && auth.getToken ? auth.getToken(forceRefresh) : null;
 		};
 
+		const authHeaders = (token, extra = {}) => {
+			return token ? { ...extra, 'Authorization': `Bearer ${token}` } : extra;
+		};
+
 		const fetchUserSettings = async () => {
 			let token = await getSettingsToken(true);
-			if (!token) return null;
 			let res = await fetch(USER_SETTINGS_OPTIONAL_ENDPOINT, {
-				headers: { 'Authorization': `Bearer ${token}` }
+				credentials: 'same-origin',
+				headers: authHeaders(token)
 			});
 			if (res.status === 401) {
 				token = await getSettingsToken(true);
 				if (token) {
 					res = await fetch(USER_SETTINGS_OPTIONAL_ENDPOINT, {
-						headers: { 'Authorization': `Bearer ${token}` }
+						credentials: 'same-origin',
+						headers: authHeaders(token)
 					});
 				}
 			}
@@ -151,14 +156,11 @@
 
 		const saveBookmarkSettings = async () => {
 			const token = await getSettingsToken();
-			if (!token) return false;
 			const settings = settingsFromBookmarkMaps();
 			const res = await fetch(USER_SETTINGS_ENDPOINT, {
 				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${token}`
-				},
+				credentials: 'same-origin',
+				headers: authHeaders(token, { 'Content-Type': 'application/json' }),
 				body: JSON.stringify({ settings })
 			});
 			if (!res.ok) throw new Error('Failed to save user settings');
@@ -352,7 +354,8 @@
 			const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
 			try {
 				const res = await fetch(quranApiPath(`/likes/${id}`), {
-					headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+					credentials: 'same-origin',
+					headers: authHeaders(token)
 				});
 				if (!res.ok) throw new Error('Failed likes fetch');
 				const data = await res.json();
@@ -372,7 +375,8 @@
 		const toggleLike = async (id, btn) => {
 			const action = likedMap[id] ? 'unlike' : 'like';
 			const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
-			if (!token) {
+			const user = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
+			if (!token && !user) {
 				requireLogin();
 				return;
 			}
@@ -380,10 +384,8 @@
 				btn.disabled = true;
 				const res = await fetch(quranApiPath(`/likes/${id}`), {
 					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
+					credentials: 'same-origin',
+					headers: authHeaders(token, { 'Content-Type': 'application/json' }),
 					body: JSON.stringify({ action })
 				});
 				if (!res.ok) throw new Error('Failed like');
@@ -402,7 +404,8 @@
 		const toggleBookmark = async (id) => {
 			await waitForBookmarkSettingsLoad();
 			const token = await getSettingsToken();
-			if (!token) {
+			const user = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
+			if (!token && !user) {
 				requireBookmarkLogin();
 				return;
 			}
@@ -451,7 +454,8 @@
 		const toggleHeadingBookmark = async (id) => {
 			await waitForBookmarkSettingsLoad();
 			const token = await getSettingsToken();
-			if (!token) {
+			const user = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
+			if (!token && !user) {
 				requireBookmarkLogin();
 				return;
 			}

@@ -999,10 +999,9 @@ function getQuranTafsirSettings() {
 	return waitForHadithAuth().then(function (auth) {
 		return auth && auth.getToken ? auth.getToken() : null;
 	}).then(function (token) {
-		if (!token)
-			return normalizeSettings({});
 		return fetch(quranApiPath('/user-settings'), {
-			headers: { 'Authorization': `Bearer ${token}` }
+			credentials: 'same-origin',
+			headers: token ? { 'Authorization': `Bearer ${token}` } : {}
 		}).then(function (response) {
 			if (!response.ok)
 				return normalizeSettings({});

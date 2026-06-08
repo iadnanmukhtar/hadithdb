@@ -149,6 +149,11 @@
           return null;
         };
 
+        const authHeaders = async (user, extra = {}) => {
+          const token = user && user.getIdToken ? await user.getIdToken() : null;
+          return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+        };
+
         const renderUser = async () => {
           currentUser = await getActiveUser();
           if (!currentUser) {
@@ -187,6 +192,7 @@
           logoutBtn.onclick = async () => {
             window.google?.accounts?.id?.disableAutoSelect();
             if (window.hadithAuth && window.hadithAuth.clearCredential) window.hadithAuth.clearCredential();
+            await fetch(quranApiPath('/login/logout'), { credentials: 'same-origin' });
             currentUser = null;
             renderUser();
           };
@@ -386,12 +392,9 @@
           if (!user) { renderUser(); return; }
           if (!window.confirm(`Delete this ${subjectLabel}? This cannot be undone.`)) return;
           try {
-            const idToken = await user.getIdToken();
             const res = await fetch(`${endpoint}/${commentId}`, {
               method: 'DELETE',
-              headers: {
-                Authorization: `Bearer ${idToken}`
-              }
+              headers: await authHeaders(user)
             });
             if (!res.ok) throw new Error('Unable to delete comment');
             const data = await res.json();
@@ -413,13 +416,9 @@
           const comment = comments.find((c) => c.id === commentId);
           if (!comment || comment.deleted) return;
           try {
-            const idToken = await user.getIdToken();
             const res = await fetch(`${endpoint}/${commentId}/vote`, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${idToken}`
-              },
+              headers: await authHeaders(user, { 'Content-Type': 'application/json' }),
               body: JSON.stringify({ direction })
             });
             if (!res.ok) throw new Error('Unable to record vote');
@@ -445,14 +444,10 @@
           if (!text) return;
           const isEditing = !!editingId;
           try {
-            const idToken = await user.getIdToken();
             const errorMsg = isEditing ? `Unable to update ${subjectLabel}` : `Unable to post ${subjectLabel}`;
             const res = await fetch(isEditing ? `${endpoint}/${editingId}` : listUrl, {
               method: isEditing ? 'PUT' : 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${idToken}`
-              },
+              headers: await authHeaders(user, { 'Content-Type': 'application/json' }),
               body: JSON.stringify({
                 text,
                 parentId: isEditing ? null : (parentInput.value || null)

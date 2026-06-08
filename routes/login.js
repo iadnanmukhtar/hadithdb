@@ -13,11 +13,18 @@ const SESSION_COOKIE_OPTIONS = {
   maxAge: SESSION_MAX_AGE_MS,
   sameSite: 'lax'
 };
+const AUTH_SESSION_COOKIE = 'hadithSession';
+const AUTH_SESSION_COOKIE_OPTIONS = {
+  ...SESSION_COOKIE_OPTIONS,
+  httpOnly: true
+};
 
 router.get('/logout', async function (req, res) {
+  await UserSettings.clearLoginSession(req.cookies && req.cookies[AUTH_SESSION_COOKIE]);
   res.clearCookie('admin', { path: '/' });
   res.clearCookie('adminUser', { path: '/' });
   res.clearCookie('adminChecked', { path: '/' });
+  res.clearCookie(AUTH_SESSION_COOKIE, { path: '/' });
   res.clearCookie('userId', { path: '/' });
   res.clearCookie('editMode', { path: '/' });
   res.status(200);
@@ -29,13 +36,20 @@ router.get('/logout', async function (req, res) {
 });
 
 router.get('/session', async function (req, res) {
-  const userId = req.cookies && req.cookies.userId;
-  const admin = userId ? await UserSettings.isAdminUser(userId) : false;
+  const user = await UserSettings.getLoginUserBySession(req.cookies && req.cookies[AUTH_SESSION_COOKIE]);
+  const admin = user ? user.admin : false;
   res.json({
     status: 200,
-    loggedIn: Boolean(userId),
-    userId: userId || null,
-    admin
+    loggedIn: Boolean(user),
+    userId: user ? user.uid : null,
+    admin,
+    user: user ? {
+      uid: user.uid,
+      provider: user.provider,
+      name: user.name,
+      email: user.email,
+      admin
+    } : null
   });
 });
 
@@ -65,9 +79,11 @@ router.get('/:userId', async function (req, res, next) {
   }
 
   var adminUser = await UserSettings.ensureLoginUser(user);
+  const sessionToken = await UserSettings.createLoginSession(user.uid, SESSION_MAX_AGE_MS);
   res.clearCookie('admin', { path: '/' });
   res.clearCookie('adminUser', { path: '/' });
   res.clearCookie('adminChecked', { path: '/' });
+  await res.cookie(AUTH_SESSION_COOKIE, sessionToken, AUTH_SESSION_COOKIE_OPTIONS);
   if (adminUser) {
     debug(`Admin User ${user.email} logged in`);
     await res.cookie('userId', user.uid, SESSION_COOKIE_OPTIONS);

@@ -117,12 +117,11 @@ ${payload.text || '(no text found)'}
 
   async function verifyGoogle(req, res, next) {
     try {
-      const token = GoogleAuth.getBearerToken(req);
-      if (!token) {
+      req.user = await GoogleAuth.verifyRequest(req, { allowSession: true });
+      if (!req.user) {
         res.status(401).json({ error: 'Authentication required.' });
         return;
       }
-      req.user = await GoogleAuth.verifyToken(token);
       next();
     } catch (err) {
       debug(`Auth error: ${err.message}`);
@@ -137,13 +136,10 @@ ${payload.text || '(no text found)'}
     if (!target) return;
     try {
       let user = null;
-      const token = GoogleAuth.getBearerToken(req);
-      if (token) {
-        try {
-          user = await GoogleAuth.verifyToken(token);
-        } catch (err) {
-          // Ignore invalid token for public fetch.
-        }
+      try {
+        user = await GoogleAuth.verifyRequest(req, { allowSession: true });
+      } catch (err) {
+        // Ignore invalid token for public fetch.
       }
       const rows = await global.query(`
         SELECT ${selectFields}
