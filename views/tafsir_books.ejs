@@ -74,6 +74,11 @@
     var carouselTafsirs = groups.reduce(function (items, group) {
       return items.concat(group.tafsirs);
     }, []);
+    function carouselTafsirLabel(tafsir) {
+      return (tafsir.shortName_en || tafsir.shortName || tafsir.name_en || tafsir.name || tafsir.alias || '')
+        .replace(/^tafs[īi]r\s+/i, '')
+        .trim();
+    }
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -102,7 +107,7 @@
             <div class="btn-group h-menu text-nowrap" role="group">
               <% carouselTafsirs.forEach(function (tafsir) { %>
                 <a class="btn btn-outline-primary text-nowrap" href="<%= tafsirBrowseUrl(tafsir) %>" title="<%= [tafsir.name_en, tafsir.name].filter(Boolean).join(' ') %>">
-                  <%- Tafsir.displayShortName(tafsir, 'en') %>
+                  <%- carouselTafsirLabel(tafsir) %>
                 </a>
               <% }); %>
             </div>

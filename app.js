@@ -112,7 +112,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
 	      return;
 	    }
 	    try {
-	      req.admin = await UserSettings.isAdminUser(req.cookies && req.cookies.userId);
+	      const sessionUser = await UserSettings.getLoginUserBySession(req.cookies && req.cookies.hadithSession);
+	      req.admin = Boolean(sessionUser && sessionUser.admin);
 	      req.editMode = req.admin && req.cookies && req.cookies.editMode == 1;
 	    } catch (err) {
 	      req.admin = false;

@@ -159,8 +159,11 @@ function setHadithAdminMode(enabled) {
 }
 
 function renderHadithAdminGear() {
-	if (window.hadithAdmin !== true)
+	if (window.hadithAdmin !== true) {
+		document.querySelectorAll('.edit-gear').forEach(function (el) { el.remove(); });
+		document.cookie = 'editMode=0;path=/;';
 		return;
+	}
 
 	$('.edit-gear').show();
 
@@ -225,9 +228,6 @@ function waitForHadithAuth(timeoutMs) {
 
 async function syncHadithAdminForCachedPage() {
 	const userId = getHadithCookie('userId');
-	if (!userId || window.hadithAdmin === true)
-		return;
-
 	try {
 		const auth = await waitForHadithAuth();
 		const token = auth && auth.getToken ? await auth.getToken() : null;
@@ -248,16 +248,15 @@ async function syncHadithAdminForCachedPage() {
 		if (!res.ok)
 			return;
 		const data = await res.json();
-		window.hadithAdmin = Boolean(data && data.admin);
-		if (window.hadithAdmin)
-			renderHadithAdminGear();
+		window.hadithAdmin = Boolean(data && data.loggedIn && data.admin);
+		renderHadithAdminGear();
 	} catch (err) {
 		console.warn('Could not refresh admin mode for cached page', err);
 	}
 }
 
 function initHadithAdminGear() {
-	window.hadithAdmin = document.querySelector('.edit-gear') ? true : window.hadithAdmin;
+	window.hadithAdmin = window.hadithAdmin === true;
 	renderHadithAdminGear();
 	syncHadithAdminForCachedPage();
 }

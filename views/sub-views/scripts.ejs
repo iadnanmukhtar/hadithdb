@@ -4,7 +4,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/javascripts/script.js?v=20260608-tafsir-initial-open-scroll-v1"></script>
+<script src="/javascripts/script.js?v=20260608-admin-session-gear-v1"></script>
 
 <% if (site.editMode) { %>
 <!-- Inline Editing -->
@@ -464,6 +464,7 @@
   }
 
   window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 90;
+  window.hadithAdmin = <%= site.admin ? 'true' : 'false' %>;
 
   function markHadithAuthSynced(username) {
       if (!username) return;
@@ -477,8 +478,11 @@
   }
 
   function renderHadithAdminGear() {
-      if (window.hadithAdmin !== true)
+      if (window.hadithAdmin !== true) {
+        document.querySelectorAll('.edit-gear').forEach((el) => el.remove());
+        document.cookie = 'editMode=0;path=/;';
         return;
+      }
       const editMode = Boolean(document.cookie.match(/(?:^|; )editMode=1(?:;|$)/));
       const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
       const desktopList = document.querySelector('.site-navbar menu.d-md-block ul.nav');
@@ -552,11 +556,8 @@
         if (!res.ok)
           return null;
         const data = await res.json();
-        if (data && data.loggedIn) {
-          window.hadithAdmin = Boolean(data.admin);
-          if (window.hadithAdmin)
-            renderHadithAdminGear();
-        }
+        window.hadithAdmin = Boolean(data && data.loggedIn && data.admin);
+        renderHadithAdminGear();
         return data;
       } catch (err) {
         return null;
@@ -606,8 +607,7 @@
         if (res.status == 200) {
           markHadithAuthSynced(username);
           window.hadithAdmin = Boolean(resBody.admin);
-          if (window.hadithAdmin)
-            renderHadithAdminGear();
+          renderHadithAdminGear();
           if (!options.silent)
             toastr.success('Logged in as ' + username);
           const userChanged = initialUserId !== (resBody.userId || currentUid);
@@ -627,8 +627,9 @@
       }
   }
 
-  window.hadithAdmin = document.querySelector('.edit-gear') ? true : window.hadithAdmin;
+  window.hadithAdmin = window.hadithAdmin === true;
   renderHadithAdminGear();
+  syncHadithSessionFromCookie();
 </script>
 
 <!-- Buy Me a Coffee -->
