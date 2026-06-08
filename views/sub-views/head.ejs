@@ -2,14 +2,18 @@
   if (page.canonical)
     page.canonical = page.canonical.replace(/\?o=0$/, '');
   var quranCanonicalBaseUrl = 'https://quran.islamunlocked.com';
-  var isQuranCanonicalPage = page
-    && page.canonical
+  var isQuranHeadPage = page
     && (
       (page.context && page.context.book && page.context.book.alias === 'quran')
-      || page.canonical === '/quran'
-      || page.canonical.indexOf('/quran/') === 0
-      || page.canonical.indexOf('/quran:') === 0
+      || (page.context && page.context.quranSearchProxy)
+      || (page.canonical && (
+        page.canonical === '/quran'
+        || page.canonical.indexOf('/quran/') === 0
+        || page.canonical.indexOf('/quran:') === 0
+      ))
     );
+  var isQuranCanonicalPage = page && page.canonical && isQuranHeadPage;
+  var headTitle = isQuranHeadPage ? 'Quran Unlocked' : page.title_en;
   function quranCanonicalPath(path) {
     if (!path)
       return path;
@@ -24,7 +28,7 @@
   var headCanonicalBaseUrl = isQuranCanonicalPage ? quranCanonicalBaseUrl : site.url;
   var headCanonicalUrl = headCanonicalBaseUrl + headCanonicalPath;
 %>
-<title><%= page.title_en %></title>
+<title><%= headTitle %></title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <% if (page.noindex) { %>
@@ -34,7 +38,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<link rel="stylesheet" href="/stylesheets/style.css?v=20260607-tafsir-font-hierarchy-v3" rel="stylesheet">
+<link rel="stylesheet" href="/stylesheets/style.css?v=20260607-home-quran-announcement-v1" rel="stylesheet">
 <% if (page.feed || page.rss) { 
   if (page.feed) { %>
     <link rel="alternate" type="application/atom+xml" title="<%= page.title_en %>" href="<%= page.feed %>" />

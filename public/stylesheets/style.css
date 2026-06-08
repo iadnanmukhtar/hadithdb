@@ -987,6 +987,88 @@ nav .nav-link {
 	margin-left: 0.5rem;
 }
 
+.home-quran-announcement {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 1.5rem 0 1rem;
+	padding: 1rem;
+	border: 1px solid var(--c-gray-dark-16);
+	border-radius: .75rem;
+	background: var(--c-white);
+	box-shadow: 0 .25rem .75rem var(--c-black-12);
+	color: var(--c-black-soft);
+}
+
+.home-quran-announcement-text {
+	margin-bottom: 0.35rem;
+	font-size: 1.15rem;
+	font-weight: 600;
+	line-height: 1.8;
+}
+
+.home-quran-announcement-blurb {
+	font-size: 1rem;
+	line-height: 1.6;
+	color: var(--c-gray-very-dark);
+}
+
+.home-quran-announcement-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	flex-shrink: 0;
+}
+
+.home-quran-announcement-actions .btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	white-space: nowrap;
+}
+
+.home-quran-announcement-close {
+	position: absolute;
+	top: .35rem;
+	right: .35rem;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	padding: 0;
+	border: 0;
+	color: var(--c-gray-very-dark);
+	font-size: 1.5rem;
+	line-height: 1;
+	background: var(--c-transparent);
+}
+
+.home-quran-announcement-close:hover,
+.home-quran-announcement-close:focus {
+	color: var(--c-note);
+	background: var(--c-transparent);
+}
+
+@media (max-width: 575.98px) {
+	.home-quran-announcement {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.65rem;
+		margin: 1rem 0 0.75rem;
+		padding-right: 2.75rem;
+	}
+
+	.home-quran-announcement-actions {
+		width: 100%;
+		justify-content: flex-start;
+		gap: 0.35rem;
+	}
+}
+
 .form-check:hover {
 	background-color: var(--bs-border-color);
 }

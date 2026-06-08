@@ -76,6 +76,7 @@ $(function () {
 	});
 
 	initSearchAutocomplete();
+	initHomeQuranAnnouncement(document);
 	initQuranPassageNavigator();
 	initBookNavScroller();
 
@@ -105,6 +106,34 @@ $(function () {
 	initTocInlineDescriptionExpanders(document);
 
 });
+
+function initHomeQuranAnnouncement(scope) {
+	var storageKey = 'hadithHomeQuranAnnouncementClosed';
+	var announcement = (scope || document).querySelector('[data-home-quran-announcement]');
+	if (!announcement)
+		return;
+
+	try {
+		if (window.localStorage && localStorage.getItem(storageKey) === 'true') {
+			announcement.remove();
+			return;
+		}
+	} catch (err) {
+		// Storage can be unavailable in private or restricted browsing contexts.
+	}
+
+	var closeButton = announcement.querySelector('[data-home-quran-announcement-close]');
+	if (!closeButton)
+		return;
+
+	closeButton.addEventListener('click', function () {
+		try {
+			if (window.localStorage)
+				localStorage.setItem(storageKey, 'true');
+		} catch (err) {}
+		announcement.remove();
+	});
+}
 
 function getHadithCookie(name) {
 	const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\/+^]/g, '\\$&') + '=([^;]*)'));
