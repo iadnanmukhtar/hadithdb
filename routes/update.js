@@ -197,23 +197,28 @@ router.post('/:id/:prop', async function (req, res, next) {
       await Hadith.a_reinit();
 
     } else if (type == 'commentary') {
-      var commentaryId = parseInt(ids[0], 10);
       var commentaryColumns = ['text', 'text_en', 'footnotes', 'footnotes_en'];
-      if (!Number.isInteger(commentaryId) || commentaryId <= 0)
-        throw createError(400, 'Invalid commentary passage id');
       if (!commentaryColumns.includes(col))
         throw createError(400, `Invalid commentary field '${col}'`);
+      var commentaryId = ids[0] === 'new-commentary'
+        ? await createLocalCommentaryPassage(ids, col, status.value)
+        : parseInt(ids[0], 10);
+      if (!Number.isInteger(commentaryId) || commentaryId <= 0)
+        throw createError(400, 'Invalid commentary passage id');
       var commentary = await commentaryIndexRowById(commentaryId);
       if (!commentary)
         throw createError(404, 'Local commentary passage not found');
-      var result = await global.query(`UPDATE hadiths_commentary
-        SET ${col}=${sql(status.value)}, lastmod=CURRENT_TIMESTAMP()
-        WHERE id=${commentaryId}`);
+      var result = ids[0] === 'new-commentary'
+        ? { message: 'Created local commentary passage' }
+        : await global.query(`UPDATE hadiths_commentary
+          SET ${col}=${sql(status.value)}, lastmod=CURRENT_TIMESTAMP()
+          WHERE id=${commentaryId}`);
       commentary = await commentaryIndexRowById(commentaryId);
       await Index.update('commentaries', commentary);
       await Index.refresh('commentaries');
       status.code = 200;
       status.message = result.message;
+      status.id = commentaryId;
 
     } else if (type == 'toc') {
       var result;
@@ -500,6 +505,63 @@ async function commentaryIndexRowById(id) {
       AND bc.source='local'
       AND bc.hidden=0
     LIMIT 1`))[0];
+}
+
+async function createLocalCommentaryPassage(ids, col, value) {
+  if (ids.length !== 5)
+    throw createError(400, 'Invalid new commentary passage id');
+  var alias = (ids[1] || '').toString();
+  var surah = parseInt(ids[2], 10);
+  var ayahFrom = parseInt(ids[3], 10);
+  var ayahTo = parseInt(ids[4], 10);
+  if (!/^[A-Za-z0-9_-]+$/.test(alias) ||
+      !Number.isInteger(surah) || surah < 1 || surah > 114 ||
+      !Number.isInteger(ayahFrom) || ayahFrom < 0 ||
+      !Number.isInteger(ayahTo) || ayahTo < ayahFrom)
+    throw createError(400, 'Invalid new commentary passage id');
+
+  var book = (await global.query(`
+    SELECT id
+    FROM books_commentaries
+    WHERE alias=${MySQL.escape(alias)}
+      AND source='local'
+      AND hidden=0
+    LIMIT 1`))[0];
+  if (!book)
+    throw createError(404, 'Local commentary book not found');
+
+  var quranAyah = (await global.query(`
+    SELECT id
+    FROM v_hadiths
+    WHERE book_alias='quran'
+      AND h1=${surah}
+      AND num=${MySQL.escape(`${surah}:${ayahFrom}`)}
+    LIMIT 1`))[0];
+  if (!quranAyah)
+    throw createError(404, `Quran ayah not found: ${surah}:${ayahFrom}`);
+
+  await global.query(`
+    INSERT INTO hadiths_commentary
+      (bookCommentaryId, hadithId, surah, ayahFrom, ayahTo, passageNum, ${col})
+    VALUES
+      (${parseInt(book.id, 10)}, ${parseInt(quranAyah.id, 10)}, ${surah}, ${ayahFrom}, ${ayahTo}, ${ayahFrom}, ${sql(value)})
+    ON DUPLICATE KEY UPDATE
+      hadithId=VALUES(hadithId),
+      passageNum=VALUES(passageNum),
+      ${col}=VALUES(${col}),
+      lastmod=CURRENT_TIMESTAMP()`);
+
+  var row = (await global.query(`
+    SELECT id
+    FROM hadiths_commentary
+    WHERE bookCommentaryId=${parseInt(book.id, 10)}
+      AND surah=${surah}
+      AND ayahFrom=${ayahFrom}
+      AND ayahTo=${ayahTo}
+    LIMIT 1`))[0];
+  if (!row)
+    throw createError(500, 'Unable to create local commentary passage');
+  return parseInt(row.id, 10);
 }
 
 async function updateQuranPassageRange(headingId, value, userId) {

@@ -193,7 +193,7 @@ const TAFSIRS = {
 		file: 'data/ibn-adil.json',
 		column: 'text',
 		sourceFormat: 'html',
-		batchSize: 25,
+		batchSize: 250,
 		autocommit: true
 	},
 	'qiraat': {

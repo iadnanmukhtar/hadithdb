@@ -6,6 +6,7 @@ require('dotenv').config();
 require('../lib/Globals');
 const axios = require('axios');
 const fs = require('fs');
+const MySQL = require('mysql');
 const path = require('path');
 const Index = require('../lib/Index');
 
@@ -16,13 +17,14 @@ let dbPoolEnded = false;
 (async () => {
 	try {
 		await ensureIndexExists();
+		if (options.alias) {
+			await reindexCommentaryAlias(options.alias);
+			return;
+		}
 		const rows = await getCommentaries(options.alias);
 		await endDbPool();
 		console.log(`indexing ${rows.length} local commentary passages${options.alias ? ` for '${options.alias}'` : ''}...`);
-		if (options.alias)
-			await deleteExistingDocumentsByAlias(options.alias);
-		else
-			await deleteExistingDocuments();
+		await deleteExistingDocuments();
 		await Index.updateBulk(INDEX, rows, false);
 		await Index.refresh(INDEX);
 		console.log('commentaries index complete');
@@ -34,6 +36,23 @@ let dbPoolEnded = false;
 			await endDbPool();
 	}
 })();
+
+async function reindexCommentaryAlias(alias) {
+	const total = await countCommentaries(alias, true);
+	console.log(`indexing ${total} local commentary passages for '${alias}'...`);
+	await deleteExistingDocumentsByAlias(alias);
+	const batchSize = 250;
+	for (let offset = 0; offset < total; offset += batchSize) {
+		const rows = await getCommentaries(alias, batchSize, offset, true);
+		if (rows.length < 1)
+			break;
+		await Index.updateBulk(INDEX, rows, false);
+		console.log(`indexed ${Math.min(offset + rows.length, total)}/${total} '${alias}' passages on ${INDEX}`);
+	}
+	await endDbPool();
+	await Index.refresh(INDEX);
+	console.log('commentaries index complete');
+}
 
 function endDbPool() {
 	return new Promise((resolve, reject) => {
@@ -48,8 +67,20 @@ function endDbPool() {
 	});
 }
 
-async function getCommentaries(alias) {
-	return await global.query(`
+async function countCommentaries(alias, freshConnection) {
+	const sql = `
+		SELECT COUNT(*) AS total
+		FROM books_commentaries bc
+		JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+		WHERE bc.source='local'
+			AND bc.hidden=0
+			AND bc.alias=${global.dbPool.escape(alias)}`;
+	const rows = freshConnection ? await freshQuery(sql) : await global.query(sql);
+	return rows[0]?.total || 0;
+}
+
+async function getCommentaries(alias, limit, offset, freshConnection) {
+	const sql = `
 		SELECT
 			hc.id,
 			hc.id AS hId,
@@ -97,7 +128,20 @@ async function getCommentaries(alias) {
 		WHERE bc.source='local'
 			AND bc.hidden=0
 			${alias ? `AND bc.alias=${global.dbPool.escape(alias)}` : ''}
-		ORDER BY bc.id, hc.surah, hc.ayahFrom, hc.ayahTo`);
+		ORDER BY bc.id, hc.surah, hc.ayahFrom, hc.ayahTo
+		${Number.isInteger(limit) ? `LIMIT ${limit}` : ''}
+		${Number.isInteger(offset) ? `OFFSET ${offset}` : ''}`;
+	return freshConnection ? await freshQuery(sql) : await global.query(sql);
+}
+
+function freshQuery(sql) {
+	const connection = MySQL.createConnection(global.settings.mysql.connection);
+	return new Promise((resolve, reject) => {
+		connection.query({ sql, timeout: 120000 }, (err, result) => {
+			connection.destroy();
+			err ? reject(err) : resolve(result);
+		});
+	});
 }
 
 async function ensureIndexExists() {

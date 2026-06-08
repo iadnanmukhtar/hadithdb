@@ -4,7 +4,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/javascripts/script.js?v=20260607-book-nav-current-v1-tafsir-ayah-zero"></script>
+<script src="/javascripts/script.js?v=20260607-local-tafsir-empty-edit-v1"></script>
 
 <% if (site.editMode) { %>
 <!-- Inline Editing -->
@@ -263,6 +263,12 @@
 	              removeSimilarHadith = true;
 	            else if (propStr === 'hadiths_sim.delall')
 	              removeSimilarCandidateElements($loadingButton);
+	            if (resBody.id && resBody.id.toString() !== id.toString()) {
+	              $(`[data-id="${id}"]`).each(function () {
+	                $(this).data('id', resBody.id).attr('data-id', resBody.id);
+	              });
+	              id = resBody.id;
+	            }
 	            if ($(this).data('reset') == 'true')
 	              value = '';
 	            if (!removeSimilarHadith && !$(this).is('select') && value !== undefined && value !== null)

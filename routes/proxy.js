@@ -44,13 +44,18 @@ router.get('/tafsir/local', async function (req, res) {
     res.status(400).json({ error: 'Invalid local tafsir request.' });
     return;
   }
+  if (!global.commentaries || global.commentaries.length < 1)
+    await Commentaries.loadCommentaries();
   const rows = await localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo);
+  const editMode = isEditMode(req);
+  if (editMode)
+    addMissingEditableCommentaryRows(rows, src, surah, ayahFrom, ayahTo);
   if (!rows.length) {
     res.status(404).json({ error: 'No local tafsir text is available for this ayah.' });
     return;
   }
   const entries = rows.map(row => {
-    const html = renderLocalCommentary(row, isEditMode(req), lang, src);
+    const html = renderLocalCommentary(row, editMode, lang, src);
     return {
       ayahs_start: row.ayahFrom,
       count: row.ayahTo - row.ayahFrom,
@@ -193,6 +198,38 @@ async function localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo) {
     footnotes: row.footnotes,
     footnotes_en: row.footnotes_en
   }));
+}
+
+function addMissingEditableCommentaryRows(rows, src, surah, ayahFrom, ayahTo) {
+  const catalogRows = global.commentariesByAlias && global.commentariesByAlias.get(src);
+  const book = (catalogRows || []).find(row => row.source === 'local' && Number(row.hidden) === 0);
+  if (!book)
+    return;
+  const coveredAyahs = new Set();
+  rows.forEach(row => {
+    for (let ayah = row.ayahFrom; ayah <= row.ayahTo; ayah++)
+      coveredAyahs.add(ayah);
+  });
+  for (let ayah = ayahFrom; ayah <= ayahTo; ayah++) {
+    if (coveredAyahs.has(ayah))
+      continue;
+    rows.push({
+      format: book.format || 'md',
+      id: newCommentaryId(src, surah, ayah, ayah),
+      surah: surah,
+      ayahFrom: ayah,
+      ayahTo: ayah,
+      text: '',
+      text_en: '',
+      footnotes: '',
+      footnotes_en: ''
+    });
+  }
+  rows.sort((a, b) => a.ayahFrom - b.ayahFrom || a.ayahTo - b.ayahTo);
+}
+
+function newCommentaryId(src, surah, ayahFrom, ayahTo) {
+  return ['new-commentary', src, surah, ayahFrom, ayahTo].join(',');
 }
 
 function renderLocalCommentary(row, editMode, lang, src) {
