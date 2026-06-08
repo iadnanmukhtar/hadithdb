@@ -11,6 +11,7 @@ const ejs = require('ejs');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
 const HadithRevision = require('../lib/HadithRevision');
+const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const { Section, Chapter, Heading, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
@@ -279,9 +280,36 @@ router.get('/sitemap\.txt', async function (req, res, next) {
     var h2 = Utils.emptyIfNull(results[i].h2).toString();
     txt += sitemapUrl(alias, h1, h2);
   }
+  if (quranOnly)
+    txt += await quranTafsirSitemapUrls(quranDomain);
   res.end(txt);
   return;
 });
+
+async function quranTafsirSitemapUrls(quranDomain) {
+  const tafsirs = await Tafsir.visibleTafsirs();
+  const bilingualAliases = new Set(tafsirs.filter(function (tafsir) {
+    return tafsir.lang === 'en' && Tafsir.isBilingualTafsir(tafsir);
+  }).map(function (tafsir) {
+    return tafsir.alias;
+  }));
+  const visibleTafsirs = tafsirs.filter(function (tafsir) {
+    return !(tafsir.lang === 'ar' && bilingualAliases.has(tafsir.alias));
+  });
+  const urls = new Set();
+  const tafsirUrlGroups = await Promise.all(visibleTafsirs.map(async function (tafsir) {
+    const tafsirUrls = [];
+    const rootUrl = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
+    tafsirUrls.push(`${quranDomain}${rootUrl}`);
+    const passages = await Tafsir.sitemapPassages(tafsir);
+    passages.forEach(function (passage) {
+      tafsirUrls.push(`${quranDomain}${Tafsir.browseUrl(tafsir, passage.surah, passage.ayah, tafsirs)}`);
+    });
+    return tafsirUrls;
+  }));
+  tafsirUrlGroups.flat().forEach(url => urls.add(url));
+  return Array.from(urls).map(url => `${url}\n`).join('');
+}
 
 function normalizeRequestBookFilters(req) {
   if (!req.query.b)

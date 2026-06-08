@@ -25,6 +25,7 @@
     if (typeof nextBook != 'undefined' && nextBook)
         page.next = `/${nextBook.alias}`;
     var quranNavigatorSurahs = [];
+    var isQuranToc = book.alias === 'quran';
     if (book.alias === 'quran') {
       quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
         return {
@@ -209,7 +210,9 @@
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
             <tr class="chapter">
+              <% if (!isQuranToc) { %>
               <td><%- toc[i].start %></td>
+              <% } %>
               <td>
                 <% if (hasSections) { %>
                 <button type="button" class="toc-expand-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" aria-expanded="false" aria-controls="<%= chapterRowId %>" data-toc-toggle="<%= chapterRowId %>" title="Show sections">
@@ -246,7 +249,9 @@
               var sectionTitle = truncateTitle(section.title, 150);
             %>
             <tr class="title toc-section-row d-none" data-toc-parent="<%= chapterRowId %>">
+              <% if (!isQuranToc) { %>
               <td><%- section.start %></td>
+              <% } %>
               <td><span class="toc-section-number">S<%- section.h1 %>.<%- section.h2 %></span></td>
               <% if (section.path) { %>
               <td>

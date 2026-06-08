@@ -1939,6 +1939,13 @@ function initQuranPassageNavigator() {
 				$ayahInput.toggleClass('is-invalid', !Number.isInteger(ayah) || ayah < 1 || (surah && ayah > Number(surah.ayahs)));
 				return;
 			}
+			if (form.dataset.tafsirNavigatorBase) {
+				var target = `${form.dataset.tafsirNavigatorBase}/${surah.num}/${ayah}`;
+				if (form.dataset.tafsirNavigatorQuery)
+					target += `?${form.dataset.tafsirNavigatorQuery}`;
+				window.location.href = target;
+				return;
+			}
 			window.location.href = quranUrl(`/quran:${surah.num}:${ayah}`);
 		});
 	});

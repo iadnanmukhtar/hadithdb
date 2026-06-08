@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+    var site = new Object(global.settings.site);
+    site.admin = (!locals.noadmin && req.admin);
+    if (!locals.noadmin)
+      site.editMode = (site.admin && req.editMode);
+    else
+      site.editMode = false;
+
+    var tafsirTitle = Tafsir.displayShortName(tafsir, 'en');
+    var tafsirTitleAr = Tafsir.displayShortName(tafsir, 'ar');
+    var ref = `${surah.num}:${ayah}`;
+    var page = {
+      menu: 'Tafsir',
+      title_en: `${tafsirTitle} | Tafsīr of ${ref}`,
+      subtitle_en: `${tafsirTitle} · ${surah.name_en} ${ref}`,
+      subtitle: tafsirTitleAr,
+      canonical: `/quran/tafsir/${tafsir.slug || tafsir.alias}/${surah.num}/${ayah}`,
+      context: {
+        quranSearchProxy: true
+      }
+    };
+    var sourceMetaEn = [tafsir.author_en, tafsir.death ? `${tafsir.death} AH` : '', tafsir.source === 'local' ? 'Local' : 'Remote'].filter(Boolean).join(', ');
+    var sourceMetaAr = [tafsir.author, tafsir.death ? `${arabic.toArabicDigits(tafsir.death)} هـ` : '', tafsir.source === 'local' ? 'محلي' : 'خارجي'].filter(Boolean).join('، ');
+    var isBilingual = Tafsir && Tafsir.isBilingualTafsir && Tafsir.isBilingualTafsir(tafsir);
+    var textLang = isBilingual ? 'en' : tafsir.lang;
+    var textDir = isBilingual ? 'ltr' : (tafsir.lang === 'ar' ? 'rtl' : 'ltr');
+    var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
+      return {
+        num: Number(surah.num),
+        name_en: surah.name_en,
+        name_ar: surah.name_ar,
+        ayahs: Number(surah.ayahs)
+      };
+    }).filter(function (surah) {
+      return Number.isInteger(surah.num);
+    }).sort(function (a, b) {
+      return a.num - b.num;
+    });
+    var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
+    var ayahByNum = {};
+    (ayahs || []).forEach(function (item) {
+      ayahByNum[item.ayah] = item;
+    });
+%>
+
+<%- include('sub-views/head.ejs', { site: site, page: page }); %>
+</head>
+<body>
+
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+
+  <div class="container col-lg-8 mx-auto">
+    <main class="chapter mt-10 tafsir-only-page">
+      <aside class="row mb-2 pagination">
+        <div class="col-md-6 col-xs-12 text-start">
+          <% if (navigation.prev) { %>
+            &lt;&nbsp;<a href="<%= navigation.prev %>" rel="prev">Prev: <%= navigation.prevTitle %></a>
+          <% } %>
+        </div>
+        <div class="col-md-6 col-xs-12 text-end">
+          <% if (navigation.next) { %>
+            <a href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %></a>&nbsp;&gt;
+          <% } %>
+        </div>
+      </aside>
+
+      <heading class="row major tafsir-passage-title">
+        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
+          <%= surah.num %>. Surat <%= surah.name_en %>
+        </h2>
+        <h2 class="col-md-6 col-sm-12 fs-4 title text-md-end" lang="ar" dir="rtl">
+          <%= arabic.toArabicDigits(surah.num + '') %> - سورة <span class="quran-surah-name"><%= surah.name_ar %></span>
+        </h2>
+      </heading>
+
+      <section class="row breadcrumbs pagination">
+        <div class="col-md-6 col-sm-12" lang="en">
+          <a title="<%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %>" href="/books/tafsir"><%- tafsirTitle %></a>
+          &gt;
+          <a title="<%- surah.name_en %>" href="<%= tafsirPath %>/<%= surah.num %>/1">Surah <%= surah.num %></a>
+          &gt;
+          <span>Section <%= ayah %></span>
+        </div>
+        <div class="col-md-6 col-sm-12" lang="ar" dir="rtl">
+          <a title="<%- tafsir.name || tafsir.shortName || tafsir.alias %>" href="/books/tafsir"><%- tafsirTitleAr %></a>
+          &lt;
+          <a title="<%- surah.name_ar %>" href="<%= tafsirPath %>/<%= surah.num %>/1">السورة <%= arabic.toArabicDigits(surah.num + '') %></a>
+          &lt;
+          <span>باب <%= arabic.toArabicDigits(ayah + '') %></span>
+        </div>
+      </section>
+
+      <% if (quranNavigatorSurahs.length > 0) { %>
+        <form class="quran-passage-navigator mb-3" action="/" method="get" novalidate data-quran-passage-navigator data-tafsir-navigator-base="<%= tafsirPath %>" data-tafsir-navigator-query="" data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
+          <input type="hidden" name="b" value="quran">
+          <input type="hidden" name="b" value="commentaries">
+          <label class="form-label mb-0">
+            <input type="text" class="form-control form-control-sm quran-passage-surah" value="<%= surah.num %>" aria-label="Select Quran surah" autocomplete="off" required>
+          </label>
+          <div class="input-group input-group-sm quran-passage-ayah-group">
+            <input type="text" inputmode="numeric" class="form-control quran-passage-ayah" value="<%= ayah %>" aria-label="Select Quran ayah" autocomplete="off" required>
+            <button type="submit" class="btn btn-outline-primary quran-passage-go" title="Open tafsīr passage" aria-label="Open tafsīr passage">
+              <span class="bi bi-caret-right"></span>
+            </button>
+          </div>
+          <div class="input-group input-group-sm quran-passage-search-group">
+            <input role="search" type="text" class="form-control quran-passage-search" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off">
+            <button type="button" class="btn btn-outline-primary quran-passage-search-submit" title="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr">
+              <span class="bi bi-search"></span>
+            </button>
+          </div>
+        </form>
+      <% } %>
+
+      <article id="tafsir" class="quran-tafsirs mt-4">
+        <div class="tab-content quran-tafsir-content">
+          <section class="tab-pane fade show active quran-tafsir-panel" tabindex="0" data-tafsir-src="<%= tafsir.alias %>" data-tafsir-source="<%= tafsir.source %>" data-tafsir-format="<%= tafsir.format || 'txt' %>" data-tafsir-lang="<%= tafsir.lang %>">
+            <header class="quran-tafsir-source row">
+              <section class="col-6 text-start" lang="en">
+                <strong><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></strong>
+                <span><%- sourceMetaEn %></span>
+              </section>
+              <section class="col-6 text-end" lang="ar" dir="rtl">
+                <strong><%- tafsir.name || tafsir.shortName || '' %></strong>
+                <span><%- sourceMetaAr %></span>
+              </section>
+            </header>
+            <% if (!entries || entries.length < 1) { %>
+              <p class="quran-tafsir-status text-muted">No tafsīr text is available for this passage.</p>
+            <% } %>
+            <div class="quran-tafsir-text" lang="<%= textLang %>" dir="<%= textDir %>">
+              <% (entries || []).forEach(function (entry) { %>
+                <details class="quran-tafsir-entry" open>
+                  <summary>
+                    <div class="quran-tafsir-ayah-range" lang="ar" dir="rtl">
+                      <% for (var entryAyah = entry.startAyah; entryAyah <= entry.endAyah; entryAyah++) {
+                        var item = ayahByNum[entryAyah];
+                        if (!item) continue;
+                      %>
+                        <h3 class="quran-tafsir-ayah<%= entry.startAyah === entry.endAyah ? '' : ' quran-tafsir-ayah-inline' %>" lang="ar" dir="rtl">
+                          <span class="quran-tafsir-ayah-ref" dir="ltr"><%= `${surah.num}:${entryAyah}` %></span>
+                          <span class="quran-tafsir-ayah-text"><%- item.body %></span>
+                          <span class="quran-ayah-end-marker">۝<%= arabic.toArabicDigits(entryAyah + '') %></span>
+                        </h3>
+                      <% } %>
+                    </div>
+                  </summary>
+                  <div class="quran-tafsir-entry-body quran-tafsir-html">
+                    <%- entry.html %>
+                  </div>
+                </details>
+              <% }); %>
+            </div>
+          </section>
+        </div>
+      </article>
+    </main>
+  </div>
+
+<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+
+</body>
+</html>

@@ -31,7 +31,14 @@
       
       <ul class="nav container-fluid justify-content-end">
         <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Books</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
+            <li><a class="dropdown-item" href="/books"><i class="bi bi-book"></i> Ḥadīth</a></li>
+            <li><a class="dropdown-item" href="/books/tafsir"><i class="bi bi-journal-text"></i> Tafsīr</a></li>
+          </ul>
+        </li>
         <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
         <li class="nav-item"><a class="nav-link" href="/blog">Blog</a></li>
         <li class="nav-item dropdown">
@@ -96,8 +103,9 @@
         <div class="row">
           <ul class="col-7 nav flex-column offcanvas-col1">
             <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="/books"><i class="bi bi-book"></i> Books</a></li>
             <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
+            <li class="nav-item"><a class="nav-link" href="/books"><i class="bi bi-book"></i> Ḥadīth Books</a></li>
+            <li class="nav-item"><a class="nav-link" href="/books/tafsir"><i class="bi bi-journal-text"></i> Tafsīr Books</a></li>
             <li class="nav-item"><a class="nav-link" href="/blog"><i class="bi bi-text-paragraph"></i> Blog</a></li>
             <li><hr></li>
             <li class="nav-item"><a class="nav-link" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
@@ -117,7 +125,7 @@
               <% } %>
           </ul>
           <ul class="col-5 nav flex-column offcanvas-col2">
-            <% for (b of books.filter(b => !b.hidden)) { %>
+            <% for (b of books.filter(b => !b.hidden && b.alias !== 'quran')) { %>
               <li class="nav-item"><a class="nav-link" title="<%= b.shortName %>" href="<%= utils.urlFor(req, `/${b.alias}`) %>"><%= b.shortName_en %></a></li>
             <% } %>
           </ul>
@@ -131,6 +139,7 @@
       var book = page.context.book;
       var chapter = page.context.chapter;
       var sections = chapter.sections; 
+      var isQuranToc = book && book.alias === 'quran';
   %>
   <nav class="row g-0 chapter-toc">
     <%# --- TABLE OF CONTENTS --- %>
@@ -158,7 +167,9 @@
 						title_en = utils.truncate(utils.emptyIfNull(section.title_en).toString(), 75);
 						title = utils.truncate(utils.emptyIfNull(section.title).toString(), 150); %>
           <tr class="title">
+            <% if (!isQuranToc) { %>
             <td><%- section.start %></td>
+            <% } %>
             <% if (section.start) { %>
             <td>
               <a href="<%= utils.urlFor(req, `/${section.path}`) %>">

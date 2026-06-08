@@ -46,9 +46,20 @@
       }
     </script>
 
+    <div class="mb-3">
+      <input type="search" class="form-control hadith-book-filter" placeholder="Filter ḥadīth books" aria-label="Filter ḥadīth books" autocomplete="off">
+    </div>
+
     <% for (var i = 0; i < books.length; i += 2) { %>
-      <div class="row">
-        <div class="col-sm-6 mb-3">
+      <div class="row hadith-book-row">
+        <div class="col-sm-6 mb-3 hadith-book-card" data-hadith-book-filter="<%- [
+          books[i].alias,
+          books[i].name_en,
+          books[i].shortName_en,
+          books[i].author,
+          books[i].name,
+          books[i].shortName
+        ].filter(Boolean).join(' ').toLowerCase() %>">
           <div class="card">
             <div class="card-body">
               <h5 class="card-title row">
@@ -67,7 +78,14 @@
           </div>
         </div>
         <% if (i < (books.length-1)) { %>
-          <div class="col-sm-6 mb-3">
+          <div class="col-sm-6 mb-3 hadith-book-card" data-hadith-book-filter="<%- [
+            books[i+1].alias,
+            books[i+1].name_en,
+            books[i+1].shortName_en,
+            books[i+1].author,
+            books[i+1].name,
+            books[i+1].shortName
+          ].filter(Boolean).join(' ').toLowerCase() %>">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title row">
@@ -86,12 +104,44 @@
         <% } %>
       </div>
     <% } %>
+    <p class="text-muted d-none hadith-book-filter-empty">No matching ḥadīth books found.</p>
 
     </main>
   </div>
 
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+<script>
+  (function () {
+    var filter = document.querySelector('.hadith-book-filter');
+    if (!filter)
+      return;
+    var normalize = function (value) {
+      return (value || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
+    };
+    var cards = Array.from(document.querySelectorAll('.hadith-book-card'));
+    var rows = Array.from(document.querySelectorAll('.hadith-book-row'));
+    var empty = document.querySelector('.hadith-book-filter-empty');
+    filter.addEventListener('input', function () {
+      var query = normalize(filter.value);
+      var visibleCount = 0;
+      cards.forEach(function (card) {
+        var match = !query || normalize(card.dataset.hadithBookFilter).includes(query);
+        card.classList.toggle('d-none', !match);
+        if (match)
+          visibleCount += 1;
+      });
+      rows.forEach(function (row) {
+        var hasVisibleCard = Array.from(row.querySelectorAll('.hadith-book-card')).some(function (card) {
+          return !card.classList.contains('d-none');
+        });
+        row.classList.toggle('d-none', !hasVisibleCard && !!query);
+      });
+      if (empty)
+        empty.classList.toggle('d-none', visibleCount > 0 || !query);
+    });
+  })();
+</script>
 
 </body>
 </html>

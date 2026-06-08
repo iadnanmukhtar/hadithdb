@@ -137,7 +137,7 @@ async function getCommentaries(alias, limit, offset, freshConnection) {
 function freshQuery(sql) {
 	const connection = MySQL.createConnection(global.settings.mysql.connection);
 	return new Promise((resolve, reject) => {
-		connection.query({ sql, timeout: 120000 }, (err, result) => {
+		connection.query({ sql, timeout: 600000 }, (err, result) => {
 			connection.destroy();
 			err ? reject(err) : resolve(result);
 		});

@@ -4,6 +4,8 @@
     var section = page.context.section;
     var heading = page.context.section || chapter;
     var isQuranChapter = book && book.alias === 'quran';
+    var chapterBreadcrumbLabelEn = isQuranChapter ? 'Surah' : 'Chapter';
+    var chapterBreadcrumbLabelAr = isQuranChapter ? 'السورة' : 'كتاب';
     if (chapter.h1 != Math.floor(chapter.h1))
       chapter.h1 = Number(chapter.h1).toFixed(2);
 %>
@@ -41,9 +43,9 @@
     <a title="<%- book.name_en %>" href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName_en %></a>
     &gt;
     <% if (heading.level == 1) { %>
-      <span title="<%- chapter.title %>">Chapter <%- chapter.h1 %></span>
+      <span title="<%- chapter.title %>"><%- chapterBreadcrumbLabelEn %> <%- chapter.h1 %></span>
     <% } else if (heading.level == 2) { %>
-      <a title="<%- chapter.title_en || 'Chapter' %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>">Chapter <%- chapter.h1 %></a>
+      <a title="<%- chapter.title_en || chapterBreadcrumbLabelEn %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%- chapterBreadcrumbLabelEn %> <%- chapter.h1 %></a>
       &gt;
       <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= section.id %>" title="Bookmark this section">
         <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= section.id %>"></span>
@@ -60,9 +62,9 @@
     <a title="<%- book.name %>" href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName %></a>
     &gt;
     <% if (heading.level == 1) { %>
-      <span title="<%- chapter.title %>">كتاب <%- arabic.toArabicDigits(chapter.h1) %></span>
+      <span title="<%- chapter.title %>"><%- chapterBreadcrumbLabelAr %> <%- arabic.toArabicDigits(chapter.h1) %></span>
     <% } else if (heading.level == 2) { %>
-      <a title="<%- chapter.title %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>">كتاب <%- arabic.toArabicDigits(chapter.h1) %></a>
+      <a title="<%- chapter.title %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%- chapterBreadcrumbLabelAr %> <%- arabic.toArabicDigits(chapter.h1) %></a>
       &gt;
       <% if (page.context.book && page.context.book.alias === 'quran' && page.context.passage) { %>
         <a title="<%- section.title %>" href="<%= utils.urlFor(req, `/${section.path}`) %>">باب <%- arabic.toArabicDigits(section.h2) %></a>

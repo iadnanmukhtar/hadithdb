@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+    var site = new Object(global.settings.site);
+    site.admin = (!locals.noadmin && req.admin);
+    if (!locals.noadmin)
+      site.editMode = (site.admin && req.editMode);
+    else
+      site.editMode = false;
+
+    var page = {
+      menu: 'Books',
+      title_en: `${site.shortName} | Available Tafsīr Books`,
+      subtitle_en: `Available Tafsīr Books`,
+      subtitle: ``,
+      canonical: `/books/tafsir`,
+      context: {}
+    };
+    var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
+      return {
+        num: Number(surah.num),
+        name_en: surah.name_en,
+        name_ar: surah.name_ar,
+        ayahs: Number(surah.ayahs)
+      };
+    }).filter(function (surah) {
+      return Number.isInteger(surah.num);
+    }).sort(function (a, b) {
+      return a.num - b.num;
+    });
+    var tafsirBrowseUrl = function (tafsir) {
+      return utils.quranUrl(req, Tafsir.browseUrl(tafsir, tafsir.firstSurah || 1, tafsir.firstAyah || 1, tafsirs));
+    };
+    var tafsirDeathLabel = function (tafsir) {
+      var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
+      if (!death)
+        return '';
+      return /^d\./i.test(death) ? death : `d. ${death}`;
+    };
+    var tafsirDeathYear = function (tafsir) {
+      var match = utils.emptyIfNull(tafsir.death || '').toString().match(/\d+/);
+      return match ? Number(match[0]) : NaN;
+    };
+    var bilingualAliases = new Set((tafsirs || []).filter(function (tafsir) {
+      return tafsir.lang === 'en' && Tafsir.isBilingualTafsir(tafsir);
+    }).map(function (tafsir) {
+      return tafsir.alias;
+    }));
+    var groups = [
+      { key: 'en', lang: 'en', heading: 'English Tafāsīr' },
+      { key: 'ar', lang: 'ar', heading: 'Arabic Tafāsīr' }
+    ].map(function (group) {
+      group.tafsirs = (tafsirs || []).filter(function (tafsir) {
+        if (group.lang === 'ar' && bilingualAliases.has(tafsir.alias))
+          return false;
+        return tafsir.lang === group.lang;
+      }).sort(function (a, b) {
+        var aDeath = tafsirDeathYear(a);
+        var bDeath = tafsirDeathYear(b);
+        var aHasDeath = Number.isFinite(aDeath) && aDeath > 0;
+        var bHasDeath = Number.isFinite(bDeath) && bDeath > 0;
+        if (aHasDeath && bHasDeath && aDeath !== bDeath)
+          return aDeath - bDeath;
+        if (aHasDeath !== bHasDeath)
+          return aHasDeath ? -1 : 1;
+        var ordinal = Number(a.ordinal || 0) - Number(b.ordinal || 0);
+        if (ordinal !== 0)
+          return ordinal;
+        return (a.shortName_en || a.name_en || a.alias).localeCompare(b.shortName_en || b.name_en || b.alias);
+      });
+      return group;
+    });
+    var carouselTafsirs = groups.reduce(function (items, group) {
+      return items.concat(group.tafsirs);
+    }, []);
+%>
+
+<%- include('sub-views/head.ejs', { site: site, page: page }); %>
+</head>
+<body>
+
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+
+  <div class="container col-lg-8 mx-auto">
+    <main>
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Table",
+          "name" : "Available Books of Tafsīr",
+          "about": "Available Books of Tafsīr"
+        }
+      </script>
+
+      <% if (carouselTafsirs.length > 0) { %>
+        <div class="h-menu-wrap mb-3">
+          <div class="h-menu-hint d-md-none">
+            <i class="bi bi-arrow-left-right"></i> Swipe to browse tafsīr books
+          </div>
+          <div class="h-menu-scroller">
+            <div class="btn-group h-menu text-nowrap" role="group">
+              <% carouselTafsirs.forEach(function (tafsir) { %>
+                <a class="btn btn-outline-primary text-nowrap" href="<%= tafsirBrowseUrl(tafsir) %>" title="<%= [tafsir.name_en, tafsir.name].filter(Boolean).join(' ') %>">
+                  <%- Tafsir.displayShortName(tafsir, 'en') %>
+                </a>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="mb-3">
+        <input type="search" class="form-control tafsir-book-filter" placeholder="Filter tafsīr books" aria-label="Filter tafsīr books" autocomplete="off">
+      </div>
+
+      <% groups.forEach(function (group) { %>
+        <section class="mb-4 tafsir-book-section">
+          <h2 class="h4 mb-3"><%= group.heading %></h2>
+          <% if (group.tafsirs.length < 1) { %>
+            <p class="text-muted">No <%= group.heading.toLowerCase() %> are currently available.</p>
+          <% } else { %>
+            <div class="row">
+              <% group.tafsirs.forEach(function (tafsir) { %>
+                <div class="col-sm-6 mb-3 tafsir-book-card" data-tafsir-book-filter="<%- [
+                  tafsir.alias,
+                  tafsir.name_en,
+                  tafsir.shortName_en,
+                  tafsir.author_en,
+                  tafsir.name,
+                  tafsir.shortName,
+                  tafsir.author
+                ].filter(Boolean).join(' ').toLowerCase() %>">
+                  <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                      <h5 class="card-title row">
+                        <div class="col"><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></div>
+                        <div class="col text-end" lang="ar" dir="rtl"><%- tafsir.name || tafsir.shortName || '' %></div>
+                      </h5>
+                      <p class="card-text mb-3">
+                        <small class="text-muted">
+                          <%- tafsir.author_en || tafsir.author || '' %>
+                          <% if (tafsirDeathLabel(tafsir)) { %>
+                            (<%- tafsirDeathLabel(tafsir) %>)
+                          <% } %>
+                        </small>
+                      </p>
+                      <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } %>
+        </section>
+      <% }); %>
+      <p class="text-muted d-none tafsir-book-filter-empty">No matching tafsīr books found.</p>
+    </main>
+  </div>
+
+<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+<script>
+  (function () {
+    var filter = document.querySelector('.tafsir-book-filter');
+    if (!filter)
+      return;
+    var normalize = function (value) {
+      return (value || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
+    };
+    var cards = Array.from(document.querySelectorAll('.tafsir-book-card'));
+    var sections = Array.from(document.querySelectorAll('.tafsir-book-section'));
+    var empty = document.querySelector('.tafsir-book-filter-empty');
+    filter.addEventListener('input', function () {
+      var query = normalize(filter.value);
+      var visibleCount = 0;
+      cards.forEach(function (card) {
+        var match = !query || normalize(card.dataset.tafsirBookFilter).includes(query);
+        card.classList.toggle('d-none', !match);
+        if (match)
+          visibleCount += 1;
+      });
+      sections.forEach(function (section) {
+        var hasVisibleCard = Array.from(section.querySelectorAll('.tafsir-book-card')).some(function (card) {
+          return !card.classList.contains('d-none');
+        });
+        section.classList.toggle('d-none', !hasVisibleCard && !!query);
+      });
+      if (empty)
+        empty.classList.toggle('d-none', visibleCount > 0 || !query);
+    });
+  })();
+</script>
+
+</body>
+</html>
