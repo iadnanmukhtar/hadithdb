@@ -15,6 +15,48 @@
 
 <script>
 	(function () {
+		if (!window.hadithUserSettingsCache) {
+			const USER_SETTINGS_CACHE_PREFIX = 'hadithUserSettings:';
+			const settingsUserId = (user) => {
+				if (!user || typeof user !== 'object') return '';
+				return (user.uid || user.userId || user.email || user.username || '').toString();
+			};
+			const settingsCacheKey = (user) => {
+				const id = settingsUserId(user);
+				return id ? `${USER_SETTINGS_CACHE_PREFIX}${id}` : '';
+			};
+			window.hadithUserSettingsCache = {
+				read(user) {
+					const key = settingsCacheKey(user);
+					if (!key) return null;
+					try {
+						const raw = localStorage.getItem(key);
+						return raw ? JSON.parse(raw) : null;
+					} catch (err) {
+						console.warn('Could not read cached user settings', err);
+						return null;
+					}
+				},
+				write(user, settings) {
+					const key = settingsCacheKey(user);
+					if (!key) return;
+					try {
+						localStorage.setItem(key, JSON.stringify(settings || {}));
+					} catch (err) {
+						console.warn('Could not cache user settings', err);
+					}
+				},
+				clear(user) {
+					const key = settingsCacheKey(user);
+					if (!key) return;
+					try {
+						localStorage.removeItem(key);
+					} catch (err) {
+						console.warn('Could not clear cached user settings', err);
+					}
+				}
+			};
+		}
 		if (window.hadithActionsInit) return;
 		window.hadithActionsInit = true;
 		const likedMap = {};
@@ -132,6 +174,11 @@
 			return auth && auth.getToken ? auth.getToken(forceRefresh) : null;
 		};
 
+		const getSettingsUser = async () => {
+			const auth = await waitForHadithAuth();
+			return auth && auth.getUser ? auth.getUser() : null;
+		};
+
 		const authHeaders = (token, extra = {}) => {
 			return token ? { ...extra, 'Authorization': `Bearer ${token}` } : extra;
 		};
@@ -155,6 +202,7 @@
 		};
 
 		const saveBookmarkSettings = async () => {
+			const settingsUser = await getSettingsUser();
 			const token = await getSettingsToken();
 			const settings = settingsFromBookmarkMaps();
 			const res = await fetch(USER_SETTINGS_ENDPOINT, {
@@ -166,6 +214,7 @@
 			if (!res.ok) throw new Error('Failed to save user settings');
 			const data = await res.json();
 			userSettings = normalizeSettings(data.settings || settings);
+			window.hadithUserSettingsCache.write(settingsUser, userSettings);
 			return true;
 		};
 
@@ -177,6 +226,12 @@
 
 		const loadBookmarkSettings = async () => {
 			try {
+				const settingsUser = await getSettingsUser();
+				const cachedSettings = window.hadithUserSettingsCache.read(settingsUser);
+				if (cachedSettings) {
+					applyBookmarkSettings(cachedSettings);
+					return;
+				}
 				const res = await fetchUserSettings();
 				if (!res) return;
 				if (res.status === 401) {
@@ -185,7 +240,9 @@
 				}
 				if (!res.ok) throw new Error('Failed to load user settings');
 				const data = await res.json();
-				applyBookmarkSettings(data.settings || {});
+				const settings = data.settings || {};
+				applyBookmarkSettings(settings);
+				window.hadithUserSettingsCache.write(settingsUser, normalizeSettings(settings));
 			} catch (err) {
 				console.warn('Could not load bookmark settings', err);
 				toastr.warning('Unable to load saved bookmarks.', 'Bookmarks');

@@ -103,6 +103,10 @@
     };
 
     const loadUserSettings = async () => {
+      const cachedSettings = window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
+        ? window.hadithUserSettingsCache.read(currentUser)
+        : null;
+      if (cachedSettings) return normalizeSettings(cachedSettings);
       const token = await getToken();
       const res = await fetch('/user-settings', {
         credentials: 'same-origin',
@@ -110,7 +114,10 @@
       });
       if (!res.ok) throw new Error('Unable to load settings.');
       const data = await res.json();
-      return normalizeSettings(data.settings || {});
+      const settings = normalizeSettings(data.settings || {});
+      if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
+        window.hadithUserSettingsCache.write(currentUser, settings);
+      return settings;
     };
 
     const saveSettings = async () => {
@@ -130,6 +137,8 @@
         if (!res.ok) throw new Error('Unable to save settings.');
         const data = await res.json();
         currentSettings = normalizeSettings(data.settings || currentSettings);
+        if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
+          window.hadithUserSettingsCache.write(currentUser, currentSettings);
       } finally {
         saving = false;
         updateTafsirStatus();

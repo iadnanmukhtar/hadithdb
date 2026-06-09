@@ -1002,19 +1002,31 @@ function getQuranTafsirSettings() {
 			};
 		};
 	return waitForHadithAuth().then(function (auth) {
-		return auth && auth.getToken ? auth.getToken() : null;
-	}).then(function (token) {
-		return fetch(quranApiPath('/user-settings'), {
-			credentials: 'same-origin',
-			headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-		}).then(function (response) {
-			if (!response.ok)
-				return normalizeSettings({});
-			return response.json();
-		}).then(function (data) {
-			return normalizeSettings(data.settings || {});
-		}).catch(function () {
-			return normalizeSettings({});
+		return Promise.resolve(auth && auth.getUser ? auth.getUser() : null).then(function (settingsUser) {
+			var cachedSettings = window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
+				? window.hadithUserSettingsCache.read(settingsUser)
+				: null;
+			if (cachedSettings)
+				return normalizeSettings(cachedSettings);
+			return Promise.resolve(auth && auth.getToken ? auth.getToken() : null).then(function (token) {
+				return fetch(quranApiPath('/user-settings'), {
+					credentials: 'same-origin',
+					headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+				}).then(function (response) {
+					if (!response.ok)
+						return null;
+					return response.json();
+				}).then(function (data) {
+					if (!data)
+						return normalizeSettings({});
+					var settings = normalizeSettings(data.settings || {});
+					if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
+						window.hadithUserSettingsCache.write(settingsUser, data.settings || {});
+					return settings;
+				}).catch(function () {
+					return normalizeSettings({});
+				});
+			});
 		});
 	});
 }

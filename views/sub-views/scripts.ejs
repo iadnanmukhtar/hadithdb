@@ -4,7 +4,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/javascripts/script.js?v=20260608-admin-session-gear-v2"></script>
+<script src="/javascripts/script.js?v=20260608-user-settings-cache"></script>
 
 <% if (site.editMode) { %>
 <!-- Inline Editing -->
@@ -551,6 +551,12 @@
   }
 
   async function syncHadithSessionFromCookie() {
+    const now = Date.now();
+    if (window.hadithSessionSyncPromise)
+      return window.hadithSessionSyncPromise;
+    if (window.hadithSessionSyncResult && now - (window.hadithSessionSyncAt || 0) < 5000)
+      return window.hadithSessionSyncResult;
+    window.hadithSessionSyncPromise = (async () => {
       try {
         const res = await fetch(hadithSessionPath(), {
           credentials: 'same-origin',
@@ -559,6 +565,8 @@
         if (!res.ok)
           return null;
         const data = await res.json();
+        window.hadithSessionSyncResult = data;
+        window.hadithSessionSyncAt = Date.now();
         window.hadithAdmin = Boolean(data && data.loggedIn && data.admin);
         window.hadithAdminSessionChecked = true;
         renderHadithAdminGear();
@@ -567,7 +575,11 @@
         window.hadithAdminSessionChecked = true;
         renderHadithAdminGear();
         return null;
+      } finally {
+        window.hadithSessionSyncPromise = null;
       }
+    })();
+    return window.hadithSessionSyncPromise;
   }
 
   async function onAuth(user, options = {}) {

@@ -36,7 +36,9 @@ router.get('/logout', async function (req, res) {
 });
 
 router.get('/session', async function (req, res) {
-  const user = await UserSettings.getLoginUserBySession(req.cookies && req.cookies[AUTH_SESSION_COOKIE]);
+  const user = req.loginSessionChecked
+    ? req.loginUser
+    : await UserSettings.getLoginUserBySession(req.cookies && req.cookies[AUTH_SESSION_COOKIE]);
   const admin = user ? user.admin : false;
   res.json({
     status: 200,

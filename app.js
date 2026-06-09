@@ -109,14 +109,20 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
 	    if (/\.(?:css|js|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)$/i.test(req.path)) {
 	      req.admin = false;
 	      req.editMode = false;
+	      req.loginUser = null;
+	      req.loginSessionChecked = false;
 	      next();
 	      return;
 	    }
 	    try {
 	      const sessionUser = await UserSettings.getLoginUserBySession(req.cookies && req.cookies.hadithSession);
+	      req.loginUser = sessionUser;
+	      req.loginSessionChecked = true;
 	      req.admin = Boolean(sessionUser && sessionUser.admin);
 	      req.editMode = req.admin && req.cookies && req.cookies.editMode == 1;
 	    } catch (err) {
+	      req.loginUser = null;
+	      req.loginSessionChecked = true;
 	      req.admin = false;
 	      req.editMode = false;
 	      debug(`admin mode lookup failed: ${err.message}`);
