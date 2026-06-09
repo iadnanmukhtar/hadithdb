@@ -47,7 +47,7 @@
     </script>
 
     <div class="mb-3">
-      <input type="search" class="form-control hadith-book-filter" placeholder="Filter ḥadīth books" aria-label="Filter ḥadīth books" autocomplete="off">
+      <input type="search" class="form-control hadith-book-filter" placeholder="Filter ḥadīth books" aria-label="Filter ḥadīth books" autocomplete="off" autofocus>
     </div>
 
     <% for (var i = 0; i < books.length; i += 2) { %>
@@ -116,6 +116,7 @@
     var filter = document.querySelector('.hadith-book-filter');
     if (!filter)
       return;
+    filter.focus();
     var normalize = function (value) {
       return (value || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
     };

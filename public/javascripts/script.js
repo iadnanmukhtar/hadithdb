@@ -87,6 +87,7 @@ $(function () {
 	$('#toc2').on('shown.bs.collapse', function(event) {
 		$('.toggle').removeClass('bi-toggle-off');
 		$('.toggle').addClass('bi-toggle-on');
+		loadTafsirSectionMenu(event.target);
 	});
 
 	initMarkdownEditablePreviews(document);
@@ -154,7 +155,8 @@ function initBookNavScroller(scope) {
 }
 
 function setHadithAdminMode(enabled) {
-	document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${window.HADITH_SESSION_MAX_AGE};samesite=lax`;
+	var domain = window.HADITH_COOKIE_DOMAIN ? `;domain=${window.HADITH_COOKIE_DOMAIN}` : '';
+	document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${window.HADITH_SESSION_MAX_AGE};samesite=lax${domain}`;
 	location.reload();
 }
 
@@ -162,7 +164,8 @@ function renderHadithAdminGear() {
 	if (window.hadithAdmin !== true) {
 		if (window.hadithAdminSessionChecked) {
 			document.querySelectorAll('.edit-gear').forEach(function (el) { el.remove(); });
-			document.cookie = 'editMode=0;path=/;';
+			var domain = window.HADITH_COOKIE_DOMAIN ? `;domain=${window.HADITH_COOKIE_DOMAIN}` : '';
+			document.cookie = `editMode=0;path=/${domain}`;
 		}
 		return;
 	}
@@ -229,24 +232,11 @@ function waitForHadithAuth(timeoutMs) {
 }
 
 async function syncHadithAdminForCachedPage() {
-	const userId = getHadithCookie('userId');
 	try {
-		const auth = await waitForHadithAuth();
-		const token = auth && auth.getToken ? await auth.getToken() : null;
-		let res;
-		if (token) {
-			const user = auth && auth.getUser ? await auth.getUser() : null;
-			const loginUserId = user && user.email ? user.email : userId;
-			res = await fetch(hadithLoginPath(loginUserId), {
-				method: 'GET',
-				headers: { Authorization: `Bearer ${token}` }
-			});
-		} else {
-			res = await fetch(hadithSessionPath(), {
-				credentials: 'same-origin',
-				headers: { 'Accept': 'application/json' }
-			});
-		}
+		const res = await fetch(hadithSessionPath(), {
+			credentials: 'same-origin',
+			headers: { 'Accept': 'application/json' }
+		});
 		if (!res.ok)
 			return;
 		const data = await res.json();
@@ -350,6 +340,56 @@ function quranApiPath(path) {
 	if (path === '/quran' || path.indexOf('/quran/') === 0)
 		return path;
 	return '/quran' + path;
+}
+
+async function loadTafsirSectionMenu(tocElement) {
+	var $toc = $(tocElement);
+	var $menu = $toc.closest('.tafsir-section-menu[data-tafsir-section-menu-url]');
+	if (!$menu.length || $menu.data('loaded') || $menu.data('loading'))
+		return;
+	var url = $menu.attr('data-tafsir-section-menu-url');
+	if (!url)
+		return;
+	var $tbody = $toc.find('tbody').first();
+	$menu.data('loading', true);
+	$tbody.html('<tr class="title tafsir-section-menu-status"><td colspan="3" class="text-center text-muted">Loading sections...</td></tr>');
+	try {
+		var response = await fetch(quranApiPath(url), { credentials: 'same-origin' });
+		if (!response.ok)
+			throw new Error('Unable to load sections.');
+		var payload = await response.json();
+		var sections = Array.isArray(payload.sections) ? payload.sections : [];
+		$tbody.empty();
+		if (sections.length < 1) {
+			$tbody.append($('<tr>').addClass('title tafsir-section-menu-status').append(
+				$('<td>').attr('colspan', 3).addClass('text-center text-muted').text('No sections are available.')
+			));
+		} else {
+			sections.forEach(function (section) {
+				var $row = $('<tr>').addClass('title');
+				var $rangeLink = $('<a>').attr('href', section.url || '#')
+					.append(document.createTextNode(`§${section.index || ''} `))
+					.append($('<span>').text(`${section.ayahRangeLabel || 'Ayah'} ${section.rangeLabel || ''}`));
+				var $titleEnLink = $('<a>').attr('href', section.url || '#').text(section.title_en || 'Section');
+				var $titleArLink = $('<a>').attr('href', section.url || '#')
+					.append(document.createTextNode(section.title || 'باب'))
+					.append(document.createTextNode(' '))
+					.append($('<span>').text(section.rangeLabelAr || ''));
+				$row.append($('<td>').append($rangeLink));
+				$row.append($('<td>').append($titleEnLink));
+				$row.append($('<td>').attr({ lang: 'ar', dir: 'rtl' }).append($titleArLink));
+				$tbody.append($row);
+			});
+		}
+		$menu.data('loaded', true);
+	} catch (err) {
+		$tbody.html('');
+		$tbody.append($('<tr>').addClass('title tafsir-section-menu-status').append(
+			$('<td>').attr('colspan', 3).addClass('text-center text-muted').text(err.message || 'Unable to load sections.')
+		));
+	} finally {
+		$menu.data('loading', false);
+	}
 }
 
 function setDirection(el) {

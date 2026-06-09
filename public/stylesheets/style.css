@@ -1969,6 +1969,21 @@ del em strong {
 	border-bottom: 0;
 }
 
+.tafsir-only-page .quran-tafsir-source [lang="en"] strong {
+	font-size: 1.1rem;
+	line-height: 1.2;
+}
+
+.tafsir-only-page .quran-tafsir-source [lang="en"] span {
+	font-size: .95rem;
+	line-height: 1.25;
+}
+
+.tafsir-only-page .tafsir-passage-title [lang="ar"],
+.tafsir-only-page .tafsir-passage-title [lang="ar"] * {
+	font-weight: 700;
+}
+
 .quran-tafsir-source {
 	border-bottom: 1px solid var(--bs-border-color);
 	font-size: .8rem;
@@ -2242,6 +2257,10 @@ del em strong {
 	margin-top: .5rem;
 }
 
+.tafsir-only-page .quran-tafsir-entry-body {
+	margin-top: 1rem;
+}
+
 .tafsir-setting-row[draggable="true"] {
 	cursor: grab;
 }
@@ -2270,6 +2289,12 @@ del em strong {
 	margin: .25rem 0 .5rem;
 }
 
+.tafsir-only-page .quran-tafsir-ayah:lang(ar),
+.tafsir-only-page .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) {
+	font-size: 2rem;
+	margin-bottom: .85rem;
+}
+
 .quran-tafsir-ayah:lang(ar) span,
 .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) span {
 	font-family: Quran, Serif;
@@ -2279,6 +2304,11 @@ del em strong {
 .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text,
 .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text {
 	font-weight: 700;
+}
+
+.tafsir-only-page .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text,
+.tafsir-only-page .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text {
+	font-size: 1.15em;
 }
 
 .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref,
@@ -2299,6 +2329,12 @@ del em strong {
 .quran-tafsir-ayah-inline:lang(ar) {
 	display: inline;
 	margin: 0;
+}
+
+.tafsir-only-page .quran-tafsir-ayah-inline:lang(ar) {
+	display: inline;
+	margin: 0;
+	white-space: normal;
 }
 
 .quran-tafsir-ayah-inline:lang(ar)+.quran-tafsir-ayah-inline:lang(ar) {

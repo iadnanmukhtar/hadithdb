@@ -5,6 +5,7 @@ const debug = require('debug')('hadithdb:bookmarks');
 const express = require('express');
 const ejs = require('ejs');
 const { Heading, Item } = require('../lib/Model');
+const Tafsir = require('../lib/Tafsir');
 
 const router = express.Router();
 const MAX_BOOKMARKS = 100;
@@ -45,14 +46,20 @@ router.post('/list', async function (req, res, next) {
       admin: req.admin,
       editMode: false
     };
-    const html = await ejs.renderFile(`${__dirname}/../views/sub-views/hadith_list_items.ejs`, {
-      req,
-      res,
-      site,
-      page: getPage(),
-      results: ordered
+    const quranItems = ordered.filter(isQuranItem);
+    const hadithItems = ordered.filter(item => !isQuranItem(item));
+    const [quranHtml, hadithHtml] = await Promise.all([
+      renderHadithItems(req, res, site, quranItems),
+      renderHadithItems(req, res, site, hadithItems)
+    ]);
+    res.json({
+      html: quranHtml + hadithHtml,
+      count: ordered.length,
+      sections: {
+        quran: { html: quranHtml, count: quranItems.length },
+        hadiths: { html: hadithHtml, count: hadithItems.length }
+      }
     });
-    res.json({ html, count: ordered.length });
   } catch (err) {
     debug(`Error loading bookmarked hadiths: ${err.message}`);
     next(err);
@@ -77,18 +84,97 @@ router.post('/list-headings', async function (req, res, next) {
     const headings = rows.map(row => Heading.toLevel(row));
     const byId = new Map(headings.map(heading => [heading.id, heading]));
     const ordered = uniqueIds.map(id => byId.get(id)).filter(Boolean);
-    const html = await ejs.renderFile(`${__dirname}/../views/sub-views/heading_bookmark_items.ejs`, {
-      headings: ordered,
-      utils: global.utils
+    const headingHtml = await renderHeadingItems(ordered);
+    res.json({
+      html: headingHtml,
+      count: ordered.length,
+      sections: {
+        headings: { html: headingHtml, count: ordered.length }
+      }
     });
-    res.json({ html, count: ordered.length });
   } catch (err) {
     debug(`Error loading bookmarked headings: ${err.message}`);
     next(err);
   }
 });
 
+router.post('/list-tafsirs', async function (req, res, next) {
+  try {
+    const refs = Array.isArray(req.body && req.body.refs)
+      ? req.body.refs.map(ref => (ref || '').toString().trim()).filter(ref => /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(ref))
+      : [];
+    const uniqueRefs = Array.from(new Set(refs)).slice(0, MAX_BOOKMARKS);
+    if (!uniqueRefs.length) {
+      res.json({ html: '', count: 0 });
+      return;
+    }
+    const tafsirBookmarks = (await Promise.all(uniqueRefs.map(resolveTafsirBookmark))).filter(Boolean);
+    const html = await ejs.renderFile(`${__dirname}/../views/sub-views/tafsir_bookmark_items.ejs`, {
+      tafsirs: tafsirBookmarks,
+      Tafsir,
+      arabic: global.arabic,
+      utils: global.utils
+    });
+    res.json({ html, count: tafsirBookmarks.length });
+  } catch (err) {
+    debug(`Error loading bookmarked tafsirs: ${err.message}`);
+    next(err);
+  }
+});
+
 module.exports = router;
+
+function renderHadithItems(req, res, site, results) {
+  if (!results.length) return '';
+  return ejs.renderFile(`${__dirname}/../views/sub-views/hadith_list_items.ejs`, {
+      req,
+      res,
+      site,
+      page: getPage(),
+      results
+  });
+}
+
+function renderHeadingItems(headings) {
+  if (!headings.length) return '';
+  return ejs.renderFile(`${__dirname}/../views/sub-views/heading_bookmark_items.ejs`, {
+    headings,
+    utils: global.utils
+  });
+}
+
+async function resolveTafsirBookmark(ref) {
+  const [tafsirRef, surahPart, ayahPart] = ref.split(':');
+  const surahNum = Number(surahPart);
+  const ayahNum = Number(ayahPart);
+  const tafsir = await Tafsir.resolveTafsir(tafsirRef);
+  const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
+  if (!tafsir || !surah || !Number.isInteger(ayahNum) || ayahNum < 1)
+    return null;
+  let entries = [];
+  if (tafsir.source === 'local') {
+    try {
+      entries = await Tafsir.tafsirEntries(tafsir, surahNum, ayahNum);
+    } catch (err) {
+      entries = [];
+    }
+  }
+  const startAyah = entries.length ? Math.min(...entries.map(entry => Number(entry.startAyah))) : ayahNum;
+  const endAyah = entries.length ? Math.max(...entries.map(entry => Number(entry.endAyah))) : ayahNum;
+  return {
+    key: ref,
+    tafsir,
+    surah,
+    ayah: ayahNum,
+    startAyah,
+    endAyah,
+    url: Tafsir.browseUrl(tafsir, surahNum, ayahNum)
+  };
+}
+
+function isQuranItem(item) {
+  return item && (item.book_alias === 'quran' || item.remark == 2 || (item.actual && item.actual.book_alias === 'quran'));
+}
 
 function getPage() {
   return {

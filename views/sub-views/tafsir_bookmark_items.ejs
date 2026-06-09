@@ -1,0 +1,26 @@
+<% tafsirs.forEach(function (item) {
+  var tafsirTitle = Tafsir.displayShortName(item.tafsir, 'en');
+  var tafsirTitleAr = Tafsir.displayShortName(item.tafsir, 'ar');
+  var range = `${item.surah.num}:${item.startAyah}${item.endAyah > item.startAyah ? `-${item.endAyah}` : ''}`;
+  var rangeAr = arabic.toArabicDigits(range);
+%>
+  <article class="bookmark-tafsir border-bottom pb-3" data-tafsir-bookmark-key="<%= item.key %>">
+    <div class="row">
+      <section class="col-md-6 col-sm-12 h" lang="en">
+        <div class="d-flex align-items-start gap-2">
+          <button type="button" class="tafsir-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center mt-1" data-tafsir-bookmark-key="<%= item.key %>" title="Remove bookmark">
+            <span class="tafsir-bookmark-icon bi bi-bookmark-fill text-accent" data-tafsir-bookmark-key="<%= item.key %>"></span>
+          </button>
+          <div>
+            <h3 class="bookmark-tafsir-title"><a href="<%= item.url %>"><%- tafsirTitle %></a></h3>
+            <div class="bookmark-tafsir-meta"><%- item.surah.name_en %> <%- range %></div>
+          </div>
+        </div>
+      </section>
+      <section class="col-md-6 col-sm-12 h text-md-end" lang="ar" dir="rtl">
+        <h3 class="bookmark-tafsir-title"><a href="<%= item.url %>"><%- tafsirTitleAr %></a></h3>
+        <div class="bookmark-tafsir-meta"><span class="quran-surah-name"><%- item.surah.name_ar %></span> <%- rangeAr %></div>
+      </section>
+    </div>
+  </article>
+<% }); %>

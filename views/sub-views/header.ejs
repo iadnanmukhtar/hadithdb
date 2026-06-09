@@ -226,5 +226,21 @@
     </div>
   </nav>
   <% } %>
+  <% if (page.menu === 'Tafsir' && page.context.tafsirSectionMenuUrl && !(page.context.tafsirSectionMenu && page.context.tafsirSectionMenu.length > 0)) { %>
+  <nav class="row g-0 chapter-toc tafsir-section-menu" data-tafsir-section-menu-url="<%= page.context.tafsirSectionMenuUrl %>">
+    <div class="col-12 d-flex justify-content-center">
+      <a data-bs-toggle="collapse" href="#toc2" title="Click to show sections">Section Menu <i class="bi bi-caret-down-square"></i></a>
+    </div>
+    <div id="toc2" class="col-12 toc2 collapse">
+      <table class="table">
+        <tbody>
+          <tr class="title tafsir-section-menu-status">
+            <td colspan="3" class="text-center text-muted">Loading sections...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </nav>
+  <% } %>
   
 </nav>

@@ -62,6 +62,7 @@
 		const likedMap = {};
 		const bookmarkMap = {};
 		const headingBookmarkMap = {};
+		const tafsirBookmarkMap = {};
 		const loadedLikeIds = new Set();
 		const pendingLikeIds = new Set();
 		const loadingLikeIds = new Set();
@@ -120,6 +121,10 @@
 			.map(id => parseInt(id, 10))
 			.filter(id => Number.isInteger(id) && id > 0);
 
+		const tafsirRefsFromMap = (map) => Object.keys(map)
+			.map(ref => String(ref || '').trim())
+			.filter(ref => /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(ref));
+
 		const replaceMap = (target, ids) => {
 			Object.keys(target).forEach(key => delete target[key]);
 			(Array.isArray(ids) ? ids : []).forEach(id => {
@@ -127,6 +132,16 @@
 				if (Number.isInteger(parsed) && parsed > 0) target[parsed] = true;
 			});
 		};
+
+		const replaceStringMap = (target, values, pattern) => {
+			Object.keys(target).forEach(key => delete target[key]);
+			(Array.isArray(values) ? values : []).forEach(value => {
+				value = String(value || '').trim();
+				if (!pattern || pattern.test(value)) target[value] = true;
+			});
+		};
+
+		const selectorValue = (value) => (window.CSS && CSS.escape) ? CSS.escape(value) : String(value).replace(/["\\]/g, '\\$&');
 
 		const normalizeSettings = (settings) => {
 			const source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
@@ -141,7 +156,10 @@
 						.filter(id => Number.isInteger(id) && id > 0))),
 					headings: Array.from(new Set((Array.isArray(bookmarks.headings) ? bookmarks.headings : [])
 						.map(id => parseInt(id, 10))
-						.filter(id => Number.isInteger(id) && id > 0)))
+						.filter(id => Number.isInteger(id) && id > 0))),
+					tafsirs: Array.from(new Set((Array.isArray(bookmarks.tafsirs) ? bookmarks.tafsirs : [])
+						.map(ref => String(ref || '').trim())
+						.filter(ref => /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(ref))))
 				}
 			};
 		};
@@ -150,7 +168,8 @@
 			...userSettings,
 			bookmarks: {
 				hadiths: idsFromMap(bookmarkMap),
-				headings: idsFromMap(headingBookmarkMap)
+				headings: idsFromMap(headingBookmarkMap),
+				tafsirs: tafsirRefsFromMap(tafsirBookmarkMap)
 			}
 		});
 
@@ -222,6 +241,7 @@
 			userSettings = normalizeSettings(settings);
 			replaceMap(bookmarkMap, userSettings.bookmarks.hadiths);
 			replaceMap(headingBookmarkMap, userSettings.bookmarks.headings);
+			replaceStringMap(tafsirBookmarkMap, userSettings.bookmarks.tafsirs, /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/);
 		};
 
 		const loadBookmarkSettings = async () => {
@@ -250,6 +270,7 @@
 				bookmarkSettingsLoaded = true;
 				initBookmarks();
 				initHeadingBookmarks();
+				initTafsirBookmarks();
 				document.dispatchEvent(new CustomEvent('bookmarkSettingsLoaded'));
 			}
 		};
@@ -257,10 +278,12 @@
 		const getButtons = () => Array.from(document.querySelectorAll('.hadith-like-btn[data-hadith-id]'));
 		const getBookmarkButtons = () => Array.from(document.querySelectorAll('.hadith-bookmark-btn[data-hadith-id]'));
 		const getHeadingBookmarkButtons = () => Array.from(document.querySelectorAll('.heading-bookmark-btn[data-heading-id]'));
+		const getTafsirBookmarkButtons = () => Array.from(document.querySelectorAll('.tafsir-bookmark-btn[data-tafsir-bookmark-key]'));
 		const getCommentCountBadges = () => Array.from(document.querySelectorAll('.hadith-comment-count[data-hadith-id]'));
 		const getIcons = (id) => Array.from(document.querySelectorAll(`.hadith-like-icon[data-hadith-id="${id}"]`));
 		const getBookmarkIcons = (id) => Array.from(document.querySelectorAll(`.hadith-bookmark-icon[data-hadith-id="${id}"]`));
 		const getHeadingBookmarkIcons = (id) => Array.from(document.querySelectorAll(`.heading-bookmark-icon[data-heading-id="${id}"]`));
+		const getTafsirBookmarkIcons = (key) => Array.from(document.querySelectorAll(`.tafsir-bookmark-icon[data-tafsir-bookmark-key="${selectorValue(key)}"]`));
 		const getCounts = (id) => Array.from(document.querySelectorAll(`.hadith-like-count[data-hadith-id="${id}"]`));
 
 		const setState = (id, liked, likes) => {
@@ -281,6 +304,12 @@
 		const setHeadingBookmarkState = (id, bookmarked) => {
 			getHeadingBookmarkIcons(id).forEach(icon => {
 				icon.className = bookmarked ? 'heading-bookmark-icon bi bi-bookmark-fill text-accent' : 'heading-bookmark-icon bi bi-bookmark text-accent';
+			});
+		};
+
+		const setTafsirBookmarkState = (key, bookmarked) => {
+			getTafsirBookmarkIcons(key).forEach(icon => {
+				icon.className = bookmarked ? 'tafsir-bookmark-icon bi bi-bookmark-fill text-accent' : 'tafsir-bookmark-icon bi bi-bookmark text-accent';
 			});
 		};
 
@@ -558,6 +587,56 @@
 			}
 		};
 
+		const toggleTafsirBookmark = async (key) => {
+			await waitForBookmarkSettingsLoad();
+			const token = await getSettingsToken();
+			const user = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
+			if (!token && !user) {
+				requireBookmarkLogin();
+				return;
+			}
+			const bookmarked = !tafsirBookmarkMap[key];
+			if (bookmarked) tafsirBookmarkMap[key] = true;
+			else delete tafsirBookmarkMap[key];
+			setTafsirBookmarkState(key, bookmarked);
+			document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', {
+				detail: { tafsirKey: key, bookmarked }
+			}));
+			try {
+				await saveBookmarkSettings();
+			} catch (err) {
+				if (bookmarked) delete tafsirBookmarkMap[key];
+				else tafsirBookmarkMap[key] = true;
+				setTafsirBookmarkState(key, !bookmarked);
+				document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', {
+					detail: { tafsirKey: key, bookmarked: !bookmarked }
+				}));
+				toastr.error('Could not save bookmark. Please try again.', 'Bookmarks');
+				console.warn('Could not save tafsir bookmark', err);
+			}
+		};
+
+		const removeTafsirBookmark = async (key) => {
+			await waitForBookmarkSettingsLoad();
+			if (!tafsirBookmarkMap[key]) return;
+			delete tafsirBookmarkMap[key];
+			setTafsirBookmarkState(key, false);
+			document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', {
+				detail: { tafsirKey: key, bookmarked: false }
+			}));
+			try {
+				await saveBookmarkSettings();
+			} catch (err) {
+				tafsirBookmarkMap[key] = true;
+				setTafsirBookmarkState(key, true);
+				document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', {
+					detail: { tafsirKey: key, bookmarked: true }
+				}));
+				toastr.error('Could not remove bookmark. Please try again.', 'Bookmarks');
+				console.warn('Could not remove tafsir bookmark', err);
+			}
+		};
+
 		const initLikes = () => {
 			getButtons().forEach(btn => {
 				const id = parseInt(btn.dataset.hadithId);
@@ -596,10 +675,22 @@
 			});
 		};
 
+		const initTafsirBookmarks = () => {
+			getTafsirBookmarkButtons().forEach(btn => {
+				const key = String(btn.dataset.tafsirBookmarkKey || '').trim();
+				if (!/^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(key)) return;
+				setTafsirBookmarkState(key, !!tafsirBookmarkMap[key]);
+				if (btn.dataset.tafsirBookmarkInit === '1') return;
+				btn.dataset.tafsirBookmarkInit = '1';
+				btn.addEventListener('click', () => toggleTafsirBookmark(key));
+			});
+		};
+
 		const init = () => {
 			initLikes();
 			initBookmarks();
 			initHeadingBookmarks();
+			initTafsirBookmarks();
 			initCommentCounts();
 		};
 
@@ -612,6 +703,7 @@
 		const bookmarkSettingsReady = loadBookmarkSettings();
 		window.refreshHadithActions = init;
 		window.refreshHeadingBookmarks = initHeadingBookmarks;
+		window.refreshTafsirBookmarks = initTafsirBookmarks;
 		window.hadithBookmarks = {
 			ready: bookmarkSettingsReady,
 			getAll: () => Object.keys(bookmarkMap).map(id => parseInt(id, 10)).filter(id => !Number.isNaN(id)),
@@ -651,6 +743,27 @@
 					document.dispatchEvent(new CustomEvent('headingBookmarkToggled'));
 					toastr.error('Could not clear bookmarks. Please try again.', 'Bookmarks');
 					console.warn('Could not clear heading bookmarks', err);
+				}
+			}
+		};
+		window.tafsirBookmarks = {
+			ready: bookmarkSettingsReady,
+			getAll: () => tafsirRefsFromMap(tafsirBookmarkMap),
+			remove: removeTafsirBookmark,
+			clear: async () => {
+				await waitForBookmarkSettingsLoad();
+				const previous = { ...tafsirBookmarkMap };
+				Object.keys(tafsirBookmarkMap).forEach(key => delete tafsirBookmarkMap[key]);
+				initTafsirBookmarks();
+				document.dispatchEvent(new CustomEvent('tafsirBookmarksCleared'));
+				try {
+					await saveBookmarkSettings();
+				} catch (err) {
+					replaceStringMap(tafsirBookmarkMap, tafsirRefsFromMap(previous), /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/);
+					initTafsirBookmarks();
+					document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled'));
+					toastr.error('Could not clear bookmarks. Please try again.', 'Bookmarks');
+					console.warn('Could not clear tafsir bookmarks', err);
 				}
 			}
 		};

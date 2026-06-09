@@ -121,7 +121,7 @@
       <% } %>
 
       <div class="mb-3">
-        <input type="search" class="form-control tafsir-book-filter" placeholder="Filter tafsīr books" aria-label="Filter tafsīr books" autocomplete="off">
+        <input type="search" class="form-control tafsir-book-filter" placeholder="Filter tafsīr books" aria-label="Filter tafsīr books" autocomplete="off" autofocus>
       </div>
 
       <% groups.forEach(function (group) { %>
@@ -175,6 +175,7 @@
     var filter = document.querySelector('.tafsir-book-filter');
     if (!filter)
       return;
+    filter.focus();
     var normalize = function (value) {
       return (value || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
     };

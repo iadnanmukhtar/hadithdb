@@ -4,7 +4,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/javascripts/script.js?v=20260608-user-settings-cache"></script>
+<script>
+  window.HADITH_COOKIE_DOMAIN = (() => {
+    try {
+      const siteHost = new URL('<%= global.settings.site.url %>').hostname.toLowerCase();
+      const host = window.location.hostname.toLowerCase();
+      if (!siteHost || siteHost === 'localhost' || !siteHost.includes('.')) return '';
+      return (host === siteHost || host.endsWith(`.${siteHost}`)) ? `.${siteHost}` : '';
+    } catch (err) {
+      return '';
+    }
+  })();
+</script>
+<script src="/javascripts/script.js?v=20260608-admin-session-domain-v1"></script>
 
 <% if (site.editMode) { %>
 <!-- Inline Editing -->
@@ -474,7 +486,8 @@
   }
 
   function setHadithAdminMode(enabled) {
-      document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${window.HADITH_SESSION_MAX_AGE};samesite=lax`;
+      const domain = window.HADITH_COOKIE_DOMAIN ? `;domain=${window.HADITH_COOKIE_DOMAIN}` : '';
+      document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${window.HADITH_SESSION_MAX_AGE};samesite=lax${domain}`;
       location.reload();
   }
 
@@ -482,7 +495,8 @@
       if (window.hadithAdmin !== true) {
         if (window.hadithAdminSessionChecked) {
           document.querySelectorAll('.edit-gear').forEach((el) => el.remove());
-          document.cookie = 'editMode=0;path=/;';
+          const domain = window.HADITH_COOKIE_DOMAIN ? `;domain=${window.HADITH_COOKIE_DOMAIN}` : '';
+          document.cookie = `editMode=0;path=/${domain}`;
         }
         return;
       }

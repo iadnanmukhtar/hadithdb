@@ -28,8 +28,8 @@
         quranSearchProxy: true
       }
     };
-    var sourceMetaEn = [tafsir.author_en, tafsir.death ? `${tafsir.death} AH` : '', tafsir.source === 'local' ? 'Local' : 'Remote'].filter(Boolean).join(', ');
-    var sourceMetaAr = [tafsir.author, tafsir.death ? `${arabic.toArabicDigits(tafsir.death)} هـ` : '', tafsir.source === 'local' ? 'محلي' : 'خارجي'].filter(Boolean).join('، ');
+    var sourceMetaEn = [tafsir.author_en, tafsir.death ? `${tafsir.death} AH` : ''].filter(Boolean).join(', ');
+    var sourceMetaAr = [tafsir.author, tafsir.death ? `${arabic.toArabicDigits(tafsir.death)} هـ` : ''].filter(Boolean).join('، ');
     var isBilingual = Tafsir && Tafsir.isBilingualTafsir && Tafsir.isBilingualTafsir(tafsir);
     var isEnglishOnly = !isBilingual && tafsir.lang === 'en';
     var textLang = isBilingual ? 'en' : tafsir.lang;
@@ -47,36 +47,12 @@
       return a.num - b.num;
     });
     var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
+    var tafsirBookmarkKey = `${tafsir.slug || tafsir.alias}:${surah.num}:${ayah}`;
     var ayahByNum = {};
     (ayahs || []).forEach(function (item) {
       ayahByNum[item.ayah] = item;
     });
-    var tafsirSectionMenu = locals.sectionMenu || [];
-    function tafsirRangeLabel(section) {
-      return `${section.surah}:${section.ayahFrom}${section.ayahTo > section.ayahFrom ? `-${section.ayahTo}` : ''}`;
-    }
-    function tafsirRangeLabelAr(section) {
-      return arabic.toArabicDigits(tafsirRangeLabel(section));
-    }
-    function tafsirSectionTitle(section, lang) {
-      var sectionSurah = (global.surahs || []).find(function (item) {
-        return Number(item.num) === Number(section.surah);
-      });
-      if (lang === 'ar')
-        return section.title || (sectionSurah ? `سورة ${sectionSurah.name_ar}` : '');
-      return section.title_en || (sectionSurah ? `Surat ${sectionSurah.name_en}` : '');
-    }
-    page.context.tafsirSectionMenu = tafsirSectionMenu.map(function (section) {
-      return {
-        index: section.index,
-        url: `${tafsirPath}/${section.surah}/${section.ayahFrom}`,
-        rangeLabel: tafsirRangeLabel(section),
-        rangeLabelAr: tafsirRangeLabelAr(section),
-        ayahRangeLabel: section.ayahTo > section.ayahFrom ? 'Ayat' : 'Ayah',
-        title_en: utils.truncate(tafsirSectionTitle(section, 'en'), 75, true),
-        title: utils.truncate(tafsirSectionTitle(section, 'ar'), 150, true)
-      };
-    });
+    page.context.tafsirSectionMenuUrl = `${tafsirPath}/sections?surah=${surah.num}`;
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -87,7 +63,7 @@
 
   <div class="container col-lg-8 mx-auto">
     <main class="chapter mt-10 tafsir-only-page">
-      <aside class="row mb-2 pagination">
+      <aside class="row mb-3 pagination tafsir-passage-navigation">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (navigation.prev) { %>
             &lt;&nbsp;<a href="<%= navigation.prev %>" rel="prev">Prev: <%= navigation.prevTitle %></a>
@@ -114,9 +90,12 @@
       <heading class="row major tafsir-passage-title">
         <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
           <%= surah.num %>. Surat <%= surah.name_en %>
+          <button type="button" class="tafsir-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>" title="Bookmark this tafsīr passage">
+            <span class="tafsir-bookmark-icon bi bi-bookmark text-accent" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>"></span>
+          </button>
         </h2>
-        <h2 class="col-md-6 col-sm-12 fs-4 title text-md-end" lang="ar" dir="rtl">
-          <%= arabic.toArabicDigits(surah.num + '') %> - سورة <span class="quran-surah-name"><%= surah.name_ar %></span>
+        <h2 class="col-md-6 col-sm-12 fs-4 title text-md-end quran-surah-name" lang="ar" dir="rtl">
+          <%= arabic.toArabicDigits(surah.num + '') %> - سورة <%= surah.name_ar %>
         </h2>
       </heading>
 
@@ -130,9 +109,9 @@
         </div>
         <div class="col-md-6 col-sm-12" lang="ar" dir="rtl">
           <a title="<%- tafsir.name || tafsir.shortName || tafsir.alias %>" href="/quran/tafsir"><%- tafsirTitleAr %></a>
-          &lt;
+          &gt;
           <a title="<%- surah.name_ar %>" href="<%= tafsirPath %>/<%= surah.num %>/1">السورة <%= arabic.toArabicDigits(surah.num + '') %></a>
-          &lt;
+          &gt;
           <span>باب <%= arabic.toArabicDigits(ayah + '') %></span>
         </div>
       </section>
@@ -167,25 +146,25 @@
             <% } %>
             <div class="quran-tafsir-text<%= isEnglishOnly ? ' quran-tafsir-english-only' : '' %>" lang="<%= textLang %>" dir="<%= textDir %>">
               <% (entries || []).forEach(function (entry) { %>
-                <details class="quran-tafsir-entry" open>
-                  <summary>
-                    <div class="quran-tafsir-ayah-range" lang="ar" dir="rtl">
-                      <% for (var entryAyah = entry.startAyah; entryAyah <= entry.endAyah; entryAyah++) {
-                        var item = ayahByNum[entryAyah];
-                        if (!item) continue;
-                      %>
-                        <h3 class="quran-tafsir-ayah<%= entry.startAyah === entry.endAyah ? '' : ' quran-tafsir-ayah-inline' %>" lang="ar" dir="rtl">
+                <article class="quran-tafsir-entry">
+                  <div class="quran-tafsir-ayah-range" lang="ar" dir="rtl">
+                    <% for (var entryAyah = entry.startAyah; entryAyah <= entry.endAyah; entryAyah++) {
+                      var item = ayahByNum[entryAyah];
+                      if (!item) continue;
+                    %>
+                      <h3 class="quran-tafsir-ayah<%= entry.startAyah === entry.endAyah ? '' : ' quran-tafsir-ayah-inline' %>" lang="ar" dir="rtl">
+                        <% if (entryAyah === entry.startAyah) { %>
                           <span class="quran-tafsir-ayah-ref" dir="ltr"><%= `${surah.num}:${entryAyah}` %></span>
-                          <span class="quran-tafsir-ayah-text"><%- item.body %></span>
-                          <span class="quran-ayah-end-marker">۝<%= arabic.toArabicDigits(entryAyah + '') %></span>
-                        </h3>
-                      <% } %>
-                    </div>
-                  </summary>
+                        <% } %>
+                        <span class="quran-tafsir-ayah-text"><%- item.body %></span>
+                        <span class="quran-ayah-end-marker">۝<%= arabic.toArabicDigits(entryAyah + '') %></span>
+                      </h3>
+                    <% } %>
+                  </div>
                   <div class="quran-tafsir-entry-body quran-tafsir-html">
                     <%- entry.html %>
                   </div>
-                </details>
+                </article>
               <% }); %>
             </div>
           </section>

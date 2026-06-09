@@ -19,14 +19,40 @@ const AUTH_SESSION_COOKIE_OPTIONS = {
   httpOnly: true
 };
 
+function sharedCookieDomain(req) {
+  try {
+    const siteHost = new URL(global.settings.site.url).hostname.toLowerCase();
+    const reqHost = (req.hostname || '').toLowerCase();
+    if (!siteHost || siteHost === 'localhost' || !siteHost.includes('.'))
+      return null;
+    if (reqHost === siteHost || reqHost.endsWith(`.${siteHost}`))
+      return `.${siteHost}`;
+  } catch (err) {
+    return null;
+  }
+  return null;
+}
+
+function cookieOptions(req, baseOptions) {
+  const domain = sharedCookieDomain(req);
+  return domain ? { ...baseOptions, domain } : baseOptions;
+}
+
+function clearAuthCookie(res, req, name) {
+  res.clearCookie(name, { path: '/' });
+  const domain = sharedCookieDomain(req);
+  if (domain)
+    res.clearCookie(name, { path: '/', domain });
+}
+
 router.get('/logout', async function (req, res) {
   await UserSettings.clearLoginSession(req.cookies && req.cookies[AUTH_SESSION_COOKIE]);
-  res.clearCookie('admin', { path: '/' });
-  res.clearCookie('adminUser', { path: '/' });
-  res.clearCookie('adminChecked', { path: '/' });
-  res.clearCookie(AUTH_SESSION_COOKIE, { path: '/' });
-  res.clearCookie('userId', { path: '/' });
-  res.clearCookie('editMode', { path: '/' });
+  clearAuthCookie(res, req, 'admin');
+  clearAuthCookie(res, req, 'adminUser');
+  clearAuthCookie(res, req, 'adminChecked');
+  clearAuthCookie(res, req, AUTH_SESSION_COOKIE);
+  clearAuthCookie(res, req, 'userId');
+  clearAuthCookie(res, req, 'editMode');
   res.status(200);
   res.end(JSON.stringify({
     status: 200,
@@ -82,16 +108,16 @@ router.get('/:userId', async function (req, res, next) {
 
   var adminUser = await UserSettings.ensureLoginUser(user);
   const sessionToken = await UserSettings.createLoginSession(user.uid, SESSION_MAX_AGE_MS);
-  res.clearCookie('admin', { path: '/' });
-  res.clearCookie('adminUser', { path: '/' });
-  res.clearCookie('adminChecked', { path: '/' });
-  await res.cookie(AUTH_SESSION_COOKIE, sessionToken, AUTH_SESSION_COOKIE_OPTIONS);
+  clearAuthCookie(res, req, 'admin');
+  clearAuthCookie(res, req, 'adminUser');
+  clearAuthCookie(res, req, 'adminChecked');
+  await res.cookie(AUTH_SESSION_COOKIE, sessionToken, cookieOptions(req, AUTH_SESSION_COOKIE_OPTIONS));
   if (adminUser) {
     debug(`Admin User ${user.email} logged in`);
-    await res.cookie('userId', user.uid, SESSION_COOKIE_OPTIONS);
+    await res.cookie('userId', user.uid, cookieOptions(req, SESSION_COOKIE_OPTIONS));
   } else {
-    res.clearCookie('editMode', { path: '/' });
-    await res.cookie('userId', user.uid, SESSION_COOKIE_OPTIONS);
+    clearAuthCookie(res, req, 'editMode');
+    await res.cookie('userId', user.uid, cookieOptions(req, SESSION_COOKIE_OPTIONS));
   }
   res.status(200);
   res.end(JSON.stringify({
