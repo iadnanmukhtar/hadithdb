@@ -13,12 +13,20 @@
       ))
     );
   var isQuranCanonicalPage = page && page.canonical && isQuranHeadPage;
-  var headTitle = page.title_en || (isQuranHeadPage ? 'Quran Unlocked' : site.name);
+  var isQuranPathHeadPage = page
+    && (
+      (page.context && page.context.quranSearchProxy)
+      || (page.canonical && (
+        page.canonical === '/quran'
+        || page.canonical.indexOf('/quran/') === 0
+      ))
+    );
+  var headTitle = isQuranPathHeadPage ? 'Quran Unlocked' : (page.title_en || site.name);
   var headDescription = page.description_en || page.subtitle_en || site.desc || '';
-  var headSiteName = isQuranHeadPage ? 'Quran Unlocked' : site.name;
-  var headSiteUrl = isQuranHeadPage ? quranCanonicalBaseUrl : site.url;
+  var headSiteName = isQuranPathHeadPage ? 'Quran Unlocked' : site.name;
+  var headSiteUrl = isQuranPathHeadPage ? quranCanonicalBaseUrl : site.url;
   var headLogo = page.cover || site.logo;
-  if (isQuranHeadPage)
+  if (isQuranPathHeadPage)
     headLogo = headLogo.replace(site.url, quranCanonicalBaseUrl);
   function quranCanonicalPath(path) {
     if (!path)
