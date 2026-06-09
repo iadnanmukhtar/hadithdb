@@ -31,6 +31,7 @@
     var sourceMetaEn = [tafsir.author_en, tafsir.death ? `${tafsir.death} AH` : '', tafsir.source === 'local' ? 'Local' : 'Remote'].filter(Boolean).join(', ');
     var sourceMetaAr = [tafsir.author, tafsir.death ? `${arabic.toArabicDigits(tafsir.death)} هـ` : '', tafsir.source === 'local' ? 'محلي' : 'خارجي'].filter(Boolean).join('، ');
     var isBilingual = Tafsir && Tafsir.isBilingualTafsir && Tafsir.isBilingualTafsir(tafsir);
+    var isEnglishOnly = !isBilingual && tafsir.lang === 'en';
     var textLang = isBilingual ? 'en' : tafsir.lang;
     var textDir = isBilingual ? 'ltr' : (tafsir.lang === 'ar' ? 'rtl' : 'ltr');
     var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
@@ -164,7 +165,7 @@
             <% if (!entries || entries.length < 1) { %>
               <p class="quran-tafsir-status text-muted">No tafsīr text is available for this passage.</p>
             <% } %>
-            <div class="quran-tafsir-text" lang="<%= textLang %>" dir="<%= textDir %>">
+            <div class="quran-tafsir-text<%= isEnglishOnly ? ' quran-tafsir-english-only' : '' %>" lang="<%= textLang %>" dir="<%= textDir %>">
               <% (entries || []).forEach(function (entry) { %>
                 <details class="quran-tafsir-entry" open>
                   <summary>

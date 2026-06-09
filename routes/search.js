@@ -1305,7 +1305,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         return res.redirect(302, Utils.quranUrl(req, `/quran/${chapterNum}/${firstSectionNum}`));
     }
 
-    var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v62-ar-subtitle-surah' : '';
+    var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v63-no-inline-tafsir' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
@@ -1420,7 +1420,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       }
     }
 
-    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v62-ar-subtitle-surah' : '';
+    var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v63-no-inline-tafsir' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     if ('flush' in req.query)
       Utils.flushCachedFile(cachedFile);
