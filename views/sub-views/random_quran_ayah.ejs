@@ -1,0 +1,19 @@
+<%
+  var randomAyahRef = random.en?.num || random.num || random.ref || '';
+  var randomAyahHrefRef = arabic.toLatinDigits(randomAyahRef.toString()).replace(/^quran:/, '');
+  var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}`);
+  var randomQuranShareId = `Q${randomAyahRef.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+%>
+<header class="row">
+  <h3 class="col-12 fs-4">Random āyah in <%- book.shortName_en %> <button type="button" class="btn btn-link text-muted p-0 align-baseline" data-random-quran-ayah-refresh title="Load another random ayah" aria-label="Load another random ayah"><i class="bi bi-arrow-clockwise"></i></button></h3>
+</header>
+<%- include('quran_ayah_hero.ejs', { site: site, page: page, selectedAyahs: [random] }); %>
+<aside class="tags quran-ayah-hero-toolbar">
+  <a href="<%= randomAyahHref %>" title="View random ayah" class="quran-ayah-action icon text-decoration-none">
+    <span class="bi bi-book"></span><span>View</span>
+  </a>
+  <a href="#<%= randomQuranShareId %>" type="button" title="Share random ayah image" class="quran-ayah-action icon text-decoration-none" data-bs-toggle="modal" data-bs-target="#<%= randomQuranShareId %>">
+    <span class="bi bi-box-arrow-up"></span><span>Share</span>
+  </a>
+</aside>
+<%- include('quran_modal.ejs', { site: site, page: page, selectedAyahs: [random], quranShareId: randomQuranShareId }); %>

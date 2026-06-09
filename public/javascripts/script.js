@@ -77,6 +77,7 @@ $(function () {
 
 	initSearchAutocomplete();
 	initHomeQuranAnnouncement(document);
+	initRandomTocItemLoader(document);
 	initQuranPassageNavigator();
 	initBookNavScroller();
 
@@ -133,6 +134,55 @@ function initHomeQuranAnnouncement(scope) {
 				localStorage.setItem(storageKey, 'true');
 		} catch (err) {}
 		announcement.remove();
+	});
+}
+
+function initRandomTocItemLoader(scope) {
+	var root = scope || document;
+	root.querySelectorAll('[data-random-toc-item]').forEach(function (container) {
+		if (container.dataset.randomTocItemBound === 'true')
+			return;
+		container.dataset.randomTocItemBound = 'true';
+		var source = container.dataset.src || '/quran/random';
+
+		var load = async function () {
+			if (container.dataset.loading === 'true')
+				return;
+			container.dataset.loading = 'true';
+			try {
+				var url = new URL(quranApiPath(source), window.location.origin);
+				url.searchParams.set('_', Date.now().toString());
+				var response = await fetch(url.toString(), {
+					cache: 'no-store',
+					credentials: 'same-origin',
+					headers: {
+						'Accept': 'text/html'
+					}
+				});
+				if (!response.ok)
+					throw new Error('Unable to load random item');
+				container.innerHTML = await response.text();
+				initHadithTranslateButtons(container);
+				initHadithSharhLinks(container);
+				initHadithShareModals(container);
+				initQuranAyahHoverPairs(container);
+				initQuranCorpusTooltips(container);
+			} catch (err) {
+				container.remove();
+			} finally {
+				container.dataset.loading = 'false';
+			}
+		};
+
+		container.addEventListener('click', function (event) {
+			var refresh = event.target.closest('[data-random-toc-refresh], [data-random-quran-ayah-refresh]');
+			if (!refresh || !container.contains(refresh))
+				return;
+			event.preventDefault();
+			load();
+		});
+
+		load();
 	});
 }
 

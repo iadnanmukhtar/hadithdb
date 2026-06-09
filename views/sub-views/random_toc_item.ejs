@@ -1,0 +1,8 @@
+<% if (book.alias === 'quran' && random.remark == 2) { %>
+  <%- include('random_quran_ayah.ejs', { site: site, page: page, book: book, random: random }); %>
+<% } else { %>
+  <header class="row">
+    <h3 class="col-12 fs-4">Random <%= random.remark==2 ? 'āyah' : 'ḥadīth' %> in <%- book.shortName_en %> <button type="button" class="btn btn-link text-muted p-0 align-baseline" data-random-toc-refresh title="Load another random item" aria-label="Load another random item"><i class="bi bi-arrow-clockwise"></i></button></h3>
+  </header>
+  <%- include('hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: true }); %>
+<% } %>

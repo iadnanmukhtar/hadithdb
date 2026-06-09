@@ -57,6 +57,20 @@ function sendCachedHtml(req, res, cachedFile) {
   res.end(Utils.injectCachedAdminControls(fs.readFileSync(cachedFile), req));
 }
 
+function htmlCacheReqToFilename(req) {
+  var parts = req.url.split('?');
+  if (parts.length < 2)
+    return Utils.reqToFilename(req);
+
+  var params = new URLSearchParams(parts[1]);
+  params.delete('flush');
+  if (params.get('o') === '0')
+    params.delete('o');
+  var query = params.toString();
+  var url = query ? `${parts[0]}?${query}` : parts[0];
+  return url.replace(/\//g, '_');
+}
+
 function redirectCanonicalReferencePath(req, res, canonicalPath) {
   if (req.path === canonicalPath)
     return false;
@@ -1204,6 +1218,50 @@ async function redirectVirtualHadithReference(book, num, req, res) {
   return true;
 }
 
+// RANDOM BOOK TOC ITEM FRAGMENT
+router.get('/:bookAlias/random', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
+
+  var books = global.books.filter(book => {
+    return book.hidden == 0;
+  });
+  var book = books.find(function (value) {
+    return (value.alias == req.params.bookAlias || value.id == req.params.bookAlias);
+  });
+  if (!book)
+    return next(createError(404, `Book '${req.params.bookAlias}' does not exist`));
+
+  var random;
+  if (!book.virtual)
+    random = await Index.docRandomnly(Item.INDEX, `book_alias:${book.alias}`);
+  else
+    random = await Index.docRandomnly(Item.INDEX, `books:"{${book.alias}}"`);
+  if (!random || random.length < 1)
+    return next(createError(404, `Random item in ${book.shortName_en || book.alias} not found`));
+  random = new Item(random[0]);
+
+  var site = new Object(global.settings.site);
+  site.admin = false;
+  site.editMode = false;
+  var page = {
+    menu: 'Books',
+    title_en: book.alias === 'quran' ? 'Quran | Table of Contents' : `${site.name} | Contents of ${book.shortName_en}`,
+    canonical: `/${book.alias}`,
+    context: {
+      book: book
+    }
+  };
+
+  res.setHeader('Cache-Control', 'no-store');
+  res.render('sub-views/random_toc_item', {
+    book: book,
+    page: page,
+    random: random,
+    site: site
+  });
+});
+
 // QURAN SEARCH PROXY
 router.get('/quran', async function (req, res, next) {
   if (!req.query.q)
@@ -1240,6 +1298,17 @@ router.get('/:bookAlias', async function (req, res, next) {
     if (bookIdx < (books.length - 1))
       nextBook = books[bookIdx + 1];
 
+    var admin = req.admin;
+    var editMode = admin && req.editMode;
+    var cacheableHtml = !('download' in req.query) && !('json' in req.query) && !('tsv' in req.query);
+    var cachedFile = `${homedir}/.hadithdb/cache/${htmlCacheReqToFilename(req)}.html`;
+    if ('flush' in req.query)
+      await Utils.flushCachedFile(cachedFile);
+    if (cacheableHtml && !('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+      sendCachedHtml(req, res, cachedFile);
+      return;
+    }
+
     var results;
     var random;
     if ('download' in req.query && 'tsv' in req.query) {
@@ -1250,7 +1319,9 @@ router.get('/:bookAlias', async function (req, res, next) {
         results = await global.query(`SELECT * from v_hadiths_virtual WHERE book_id=${book.id} ORDER BY ordinal`);
     } else {
       results = await Library.instance.findBook(req.params.bookAlias).getChapters();
-      if (!book.virtual)
+      if (cacheableHtml) {
+        random = undefined;
+      } else if (!book.virtual)
         random = await Index.docRandomnly(Item.INDEX, `book_alias:${req.params.bookAlias}`);
       else
         random = await Index.docRandomnly(Item.INDEX, `books:"{${req.params.bookAlias}}"`);
@@ -1268,6 +1339,22 @@ router.get('/:bookAlias', async function (req, res, next) {
         keyNames = req.query.keys.split(/,/);
       res.end(Utils.toTSV(results, keyNames));
     } else {
+      if (cacheableHtml && !editMode) {
+        fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
+        var refs = [book.alias, `book:${book.alias}`];
+        await Utils.indexCachedItem(refs, cachedFile);
+        var html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, {
+          noadmin: true,
+          book: book,
+          prevBook: prevBook,
+          nextBook: nextBook,
+          toc: results,
+          random: random,
+          req: req,
+          res: res
+        });
+        fs.writeFileSync(cachedFile, html);
+      }
       res.render('toc', {
         book: book,
         prevBook: prevBook,
