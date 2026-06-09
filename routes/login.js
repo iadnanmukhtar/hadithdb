@@ -45,6 +45,44 @@ function clearAuthCookie(res, req, name) {
     res.clearCookie(name, { path: '/', domain });
 }
 
+function csrfError(req) {
+  const bodyToken = req.body && req.body.g_csrf_token;
+  const cookieToken = req.cookies && req.cookies.g_csrf_token;
+  if (!bodyToken)
+    return 'g_csrf_token not found in request body';
+  if (!cookieToken)
+    return 'g_csrf_token not found in cookie';
+  if (bodyToken !== cookieToken)
+    return 'CSRF token mismatch';
+  return null;
+}
+
+async function createLoginResponse(req, res, user) {
+  var adminUser = await UserSettings.ensureLoginUser(user);
+  const sessionToken = await UserSettings.createLoginSession(user.uid, SESSION_MAX_AGE_MS);
+  clearAuthCookie(res, req, 'admin');
+  clearAuthCookie(res, req, 'adminUser');
+  clearAuthCookie(res, req, 'adminChecked');
+  await res.cookie(AUTH_SESSION_COOKIE, sessionToken, cookieOptions(req, AUTH_SESSION_COOKIE_OPTIONS));
+  if (adminUser) {
+    debug(`Admin User ${user.email} logged in`);
+    await res.cookie('userId', user.uid, cookieOptions(req, SESSION_COOKIE_OPTIONS));
+  } else {
+    clearAuthCookie(res, req, 'editMode');
+    await res.cookie('userId', user.uid, cookieOptions(req, SESSION_COOKIE_OPTIONS));
+  }
+  res.status(200);
+  res.end(JSON.stringify({
+    status: 200,
+    userId: user.uid,
+    email: user.email,
+    photo: user.photo,
+    admin: adminUser,
+    refresh: true,
+    message: 'User logged in'
+  }));
+}
+
 router.get('/logout', async function (req, res) {
   await UserSettings.clearLoginSession(req.cookies && req.cookies[AUTH_SESSION_COOKIE]);
   clearAuthCookie(res, req, 'admin');
@@ -76,9 +114,34 @@ router.get('/session', async function (req, res) {
       provider: user.provider,
       name: user.name,
       email: user.email,
+      photo: user.photo,
       admin
     } : null
   });
+});
+
+router.post('/google', async function (req, res) {
+  const csrfMessage = csrfError(req);
+  if (csrfMessage) {
+    res.status(400).json({ status: 400, message: csrfMessage });
+    return;
+  }
+
+  const token = req.body && req.body.credential;
+  if (!token) {
+    res.status(401).json({ status: 401, message: 'Authentication required' });
+    return;
+  }
+
+  let user;
+  try {
+    user = await GoogleAuth.verifyToken(token);
+  } catch (err) {
+    res.status(401).json({ status: 401, message: 'Invalid authentication token' });
+    return;
+  }
+
+  await createLoginResponse(req, res, user);
 });
 
 router.get('/:userId', async function (req, res, next) {
@@ -106,28 +169,7 @@ router.get('/:userId', async function (req, res, next) {
     return;
   }
 
-  var adminUser = await UserSettings.ensureLoginUser(user);
-  const sessionToken = await UserSettings.createLoginSession(user.uid, SESSION_MAX_AGE_MS);
-  clearAuthCookie(res, req, 'admin');
-  clearAuthCookie(res, req, 'adminUser');
-  clearAuthCookie(res, req, 'adminChecked');
-  await res.cookie(AUTH_SESSION_COOKIE, sessionToken, cookieOptions(req, AUTH_SESSION_COOKIE_OPTIONS));
-  if (adminUser) {
-    debug(`Admin User ${user.email} logged in`);
-    await res.cookie('userId', user.uid, cookieOptions(req, SESSION_COOKIE_OPTIONS));
-  } else {
-    clearAuthCookie(res, req, 'editMode');
-    await res.cookie('userId', user.uid, cookieOptions(req, SESSION_COOKIE_OPTIONS));
-  }
-  res.status(200);
-  res.end(JSON.stringify({
-    status: 200,
-    userId: user.uid,
-    email: user.email,
-    admin: adminUser,
-    refresh: true,
-    message: 'User logged in'
-  }));
+  await createLoginResponse(req, res, user);
   return;
 
 });

@@ -475,6 +475,33 @@
       return match ? decodeURIComponent(match[1]) : '';
   }
 
+  function setHadithCookie(name, value, maxAge) {
+      const domain = window.HADITH_COOKIE_DOMAIN ? `;domain=${window.HADITH_COOKIE_DOMAIN}` : '';
+      const age = Number.isFinite(maxAge) ? `;max-age=${maxAge}` : '';
+      document.cookie = `${name}=${encodeURIComponent(value)};path=/${age};samesite=lax${domain}`;
+  }
+
+  function randomHadithToken(length = 32) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      if (window.crypto && window.crypto.getRandomValues) {
+        const values = new Uint8Array(length);
+        window.crypto.getRandomValues(values);
+        return Array.from(values, value => chars[value % chars.length]).join('');
+      }
+      let token = '';
+      for (let i = 0; i < length; i++)
+        token += chars.charAt(Math.floor(Math.random() * chars.length));
+      return token;
+  }
+
+  function ensureHadithGoogleCsrfToken() {
+      const existing = getHadithCookie('g_csrf_token');
+      if (existing) return existing;
+      const token = randomHadithToken(32);
+      setHadithCookie('g_csrf_token', token, 60 * 60);
+      return token;
+  }
+
   window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 90;
   window.hadithAdmin = <%= site.admin ? 'true' : 'false' %>;
   window.hadithAdminSessionChecked = window.hadithAdmin === true;
@@ -526,11 +553,10 @@
       }
   }
 
-  function hadithLoginPath(userId) {
-      const encodedUserId = encodeURIComponent(userId);
+  function hadithLoginPath() {
       if (window.location.hostname.toLowerCase().split('.')[0] === 'quran')
-        return `/quran/login/${encodedUserId}`;
-      return `/login/${encodedUserId}`;
+        return '/quran/login/google';
+      return '/login/google';
   }
 
   function hadithLogoutPath() {
@@ -632,9 +658,18 @@
             toastr.error('Please sign in with Google first.', 'Auth');
           return { status: 401, message: 'Authentication required' };
         }
-        res = await fetch(hadithLoginPath(username), {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` }
+        const csrfToken = ensureHadithGoogleCsrfToken();
+        res = await fetch(hadithLoginPath(), {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            credential: token,
+            g_csrf_token: csrfToken
+          })
         });
         var resBody = JSON.parse(await res.text());
         if (res.status == 200) {
@@ -777,9 +812,12 @@
       getUser: async () => storedUser() || await userFromSession(),
       setCredential,
       clearCredential,
-      prompt: () => {
+      prompt: (momentCallback) => {
         if (!window.google?.accounts?.id) return false;
-        window.google.accounts.id.prompt();
+        window.google.accounts.id.prompt((notification) => {
+          document.dispatchEvent(new CustomEvent('hadithGooglePromptMoment', { detail: { notification } }));
+          if (typeof momentCallback === 'function') momentCallback(notification);
+        });
         return true;
       },
       googleClientId
@@ -840,6 +878,37 @@
       }, 100);
     });
 
+    const promptMomentValue = (notification, methodName) => {
+      try {
+        return notification && typeof notification[methodName] === 'function'
+          ? notification[methodName]()
+          : null;
+      } catch (err) {
+        return null;
+      }
+    };
+
+    const recordOneTapMoment = (notification) => {
+      const status = {
+        displayed: !!promptMomentValue(notification, 'isDisplayed'),
+        notDisplayed: !!promptMomentValue(notification, 'isNotDisplayed'),
+        skipped: !!promptMomentValue(notification, 'isSkippedMoment'),
+        dismissed: !!promptMomentValue(notification, 'isDismissedMoment'),
+        momentType: promptMomentValue(notification, 'getMomentType'),
+        notDisplayedReason: promptMomentValue(notification, 'getNotDisplayedReason'),
+        skippedReason: promptMomentValue(notification, 'getSkippedReason'),
+        dismissedReason: promptMomentValue(notification, 'getDismissedReason')
+      };
+      window.hadithGoogleOneTapStatus = status;
+      if (status.notDisplayed || status.skipped) {
+        oneTapStarted = false;
+      }
+      if (status.notDisplayed || status.skipped || status.dismissed) {
+        console.info('Google One Tap moment', status);
+      }
+      return status;
+    };
+
     const handleGoogleCredential = async (response, options = {}) => {
       if (!response || !response.credential) return;
       try {
@@ -858,13 +927,16 @@
       if (!window.hadithAuth?.googleClientId) return null;
       const googleId = await waitForGoogleIdentity();
       if (!googleId) return null;
-      googleId.initialize({
+      const googleConfig = {
         client_id: window.hadithAuth.googleClientId,
         callback: (response) => handleGoogleCredential(response, { silent: true }),
-        auto_select: false,
+        auto_select: true,
         cancel_on_tap_outside: true,
         itp_support: true
-      });
+      };
+      if (window.HADITH_COOKIE_DOMAIN)
+        googleConfig.state_cookie_domain = window.HADITH_COOKIE_DOMAIN.replace(/^\./, '');
+      googleId.initialize(googleConfig);
       googleInitialized = true;
       googleIdApi = googleId;
       return googleIdApi;
@@ -903,9 +975,10 @@
       const googleId = await initializeGoogle();
       if (!googleId) {
         console.info('Google One Tap disabled: Google Identity Services did not load');
+        oneTapStarted = false;
         return;
       }
-      googleId.prompt();
+      googleId.prompt(recordOneTapMoment);
     };
 
     const signOut = async () => {
@@ -938,6 +1011,9 @@
       }
     };
 
+    document.addEventListener('hadithGooglePromptMoment', (event) => {
+      if (event && event.detail) recordOneTapMoment(event.detail.notification);
+    });
     document.addEventListener('hadithAuthChanged', syncCurrentUser);
     syncCurrentUser();
   })();

@@ -6,6 +6,7 @@ const debugFactory = require('debug');
 const crypto = require('crypto');
 const Utils = require('../lib/Utils');
 const GoogleAuth = require('../lib/GoogleAuth');
+const UserSettings = require('../lib/UserSettings');
 const nodemailer = require('nodemailer');
 const MarkdownIt = require('markdown-it');
 
@@ -115,6 +116,27 @@ ${payload.text || '(no text found)'}
     return stats;
   }
 
+  async function getUserPhotoMap(rows) {
+    const userIds = Array.from(new Set((rows || [])
+      .map(row => row && row.user_uid)
+      .filter(Boolean)));
+    if (!userIds.length) return {};
+    await UserSettings.ensureTable();
+    const userIdsSql = userIds.map(uid => `'${Utils.escSQL(uid)}'`).join(',');
+    const photoRows = await global.query(`
+      SELECT user_uid, user_photo
+      FROM user_settings
+      WHERE user_uid IN (${userIdsSql})
+        AND user_photo IS NOT NULL
+        AND user_photo <> ''
+    `);
+    const photoMap = {};
+    photoRows.forEach(row => {
+      photoMap[row.user_uid] = row.user_photo;
+    });
+    return photoMap;
+  }
+
   async function verifyGoogle(req, res, next) {
     try {
       req.user = await GoogleAuth.verifyRequest(req, { allowSession: true });
@@ -148,7 +170,7 @@ ${payload.text || '(no text found)'}
         ORDER BY createdAt DESC
       `);
       const voteStats = await getVoteStats(rows.map(row => row.id), user ? user.uid : null);
-      const photoMap = {};
+      const photoMap = await getUserPhotoMap(rows);
       res.json(rows.map(row => formatComment(row, user, photoMap, voteStats[row.id])));
     } catch (err) {
       debug(`Error loading comments:\n${err.stack}`);
