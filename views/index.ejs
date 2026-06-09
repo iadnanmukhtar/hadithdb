@@ -3,7 +3,7 @@
 
 <head> 
 <%
-    var site = new Object(global.settings.site);
+    var site = Object.assign({}, global.settings.site);
     site.admin = (req.admin);
     if (!locals.noadmin)
       site.editMode = (site.admin && req.editMode);
@@ -47,7 +47,7 @@
           <p class="home-quran-announcement-blurb mb-0">Read the Qurʾān organized into connected passages for better comprehension, with classical tafāsīr in English and Arabic alongside each āyah. Highlight, bookmark, and reflect on passages as you read, with sharing tools built right in. This is the Qurʾān as a living study companion.</p>
         </div>
         <div class="home-quran-announcement-actions">
-          <a class="btn btn-primary btn-sm" href="/quran/1/1">
+          <a class="btn btn-primary btn-sm" href="/quran:1:1">
             <span class="bi bi-book"></span>
             <span>Explore</span>
           </a>

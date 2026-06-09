@@ -1742,6 +1742,39 @@ del em strong {
 	color: var(--c-link-dark);
 }
 
+.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label] {
+	position: relative;
+}
+
+.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label]::after {
+	background: #1f2933;
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	border-radius: 4px;
+	box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+	bottom: calc(100% + .35rem);
+	color: #fff;
+	content: attr(data-quran-ayah-hover-label);
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font-size: .82rem;
+	font-weight: 400;
+	left: 50%;
+	line-height: 1.25;
+	opacity: 0;
+	padding: .42rem .58rem;
+	pointer-events: none;
+	position: absolute;
+	transform: translateX(-50%) translateY(.15rem);
+	transition: opacity .12s ease, transform .12s ease;
+	white-space: nowrap;
+	z-index: 5;
+}
+
+.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label]:hover::after,
+.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label]:focus-visible::after {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
 .body.passage .quran-ayah-number-marker,
 .body.passage .quran-ayah-number-marker sup {
 	color: var(--c-accent);

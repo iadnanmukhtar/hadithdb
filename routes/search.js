@@ -1241,7 +1241,7 @@ router.get('/:bookAlias/random', async function (req, res, next) {
     return next(createError(404, `Random item in ${book.shortName_en || book.alias} not found`));
   random = new Item(random[0]);
 
-  var site = new Object(global.settings.site);
+  var site = Object.assign({}, global.settings.site);
   site.admin = false;
   site.editMode = false;
   var page = {

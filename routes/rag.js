@@ -182,7 +182,7 @@ function renderView(req, res, view, locals) {
 }
 
 function buildRenderLocals(req) {
-	var site = new Object(global.settings.site);
+	var site = Object.assign({}, global.settings.site);
 	site.admin = isAdmin(req);
 	site.editMode = isEditMode(req);
 	return {

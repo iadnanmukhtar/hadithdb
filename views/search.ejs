@@ -3,7 +3,7 @@
 
 <head>
   <%
-    var site = new Object(global.settings.site);
+    var site = Object.assign({}, global.settings.site);
     var isSearchResultsPage = (q && q != '');
     var isQuranSearchProxy = locals.quranSearchProxy || locals.searchAction === '/quran';
     site.admin = (req.admin);
