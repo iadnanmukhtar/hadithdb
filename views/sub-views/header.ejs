@@ -36,7 +36,7 @@
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
             <li><a class="dropdown-item" href="/books"><i class="bi bi-book"></i> Ḥadīth</a></li>
-            <li><a class="dropdown-item" href="/books/tafsir"><i class="bi bi-journal-text"></i> Tafsīr</a></li>
+            <li><a class="dropdown-item" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-journal-text"></i> Tafsīr</a></li>
           </ul>
         </li>
         <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
@@ -105,7 +105,7 @@
             <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a></li>
             <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
             <li class="nav-item"><a class="nav-link" href="/books"><i class="bi bi-book"></i> Ḥadīth Books</a></li>
-            <li class="nav-item"><a class="nav-link" href="/books/tafsir"><i class="bi bi-journal-text"></i> Tafsīr Books</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-journal-text"></i> Tafsīr Books</a></li>
             <li class="nav-item"><a class="nav-link" href="/blog"><i class="bi bi-text-paragraph"></i> Blog</a></li>
             <li><hr></li>
             <li class="nav-item"><a class="nav-link" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
@@ -188,6 +188,39 @@
           </tr>
           <%    }
 					}  %>
+        </tbody>
+      </table>
+    </div>
+  </nav>
+  <% } %>
+
+  <% if (page.menu === 'Tafsir' && page.context.tafsirSectionMenu && page.context.tafsirSectionMenu.length > 0) { %>
+  <nav class="row g-0 chapter-toc tafsir-section-menu">
+    <div class="col-12 d-flex justify-content-center">
+      <a data-bs-toggle="collapse" href="#toc2" title="Click to show sections">Section Menu <i class="bi bi-caret-down-square"></i></a>
+    </div>
+    <div id="toc2" class="col-12 toc2 collapse">
+      <table class="table">
+        <tbody>
+          <% for (var tafsirSection of page.context.tafsirSectionMenu) { %>
+          <tr class="title">
+            <td>
+              <a href="<%= tafsirSection.url %>">
+                §<%= tafsirSection.index %>
+                <span><%= tafsirSection.ayahRangeLabel %> <%= tafsirSection.rangeLabel %></span>
+              </a>
+            </td>
+            <td>
+              <a href="<%= tafsirSection.url %>"><%- tafsirSection.title_en || 'Section' %></a>
+            </td>
+            <td lang="ar" dir="rtl">
+              <a href="<%= tafsirSection.url %>">
+                <%- tafsirSection.title || 'باب' %>
+                <span><%= tafsirSection.rangeLabelAr %></span>
+              </a>
+            </td>
+          </tr>
+          <% } %>
         </tbody>
       </table>
     </div>

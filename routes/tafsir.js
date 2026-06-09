@@ -55,6 +55,7 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
   const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
   const allTafsirs = await Tafsir.visibleTafsirs();
   const navigation = await tafsirNavigation(tafsir, entries, allTafsirs);
+  const sectionMenu = await Tafsir.sectionMenu(tafsir);
 
   res.render('tafsir_passage', {
     Tafsir: Tafsir,
@@ -62,6 +63,7 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
     ayahs: ayahs,
     entries: entries,
     navigation: navigation,
+    sectionMenu: sectionMenu,
     surah: surah,
     tafsir: tafsir
   });

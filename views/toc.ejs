@@ -10,9 +10,17 @@
     else
       site.editMode = false;
         
+    var isQuranToc = book.alias === 'quran';
+    var pageTitleEn = isQuranToc
+      ? 'Quran | Table of Contents'
+      : `${site.name} | Contents of ${book.shortName_en} (فهرس ${book.shortName})`;
+    var pageDescriptionEn = isQuranToc
+      ? 'Browse the Quran table of contents by surah and passage, with Arabic text, English translation, and tafsir.'
+      : `Browse the table of contents for ${book.name_en || book.shortName_en}.`;
     var page = {
       menu: 'Books',
-      title_en: `${site.name} | Contents of ${book.shortName_en} (فهرس ${book.shortName})`,
+      title_en: pageTitleEn,
+      description_en: pageDescriptionEn,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}`,
@@ -25,7 +33,6 @@
     if (typeof nextBook != 'undefined' && nextBook)
         page.next = `/${nextBook.alias}`;
     var quranNavigatorSurahs = [];
-    var isQuranToc = book.alias === 'quran';
     if (book.alias === 'quran') {
       quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
         return {

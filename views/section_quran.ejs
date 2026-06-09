@@ -21,6 +21,14 @@
     var lastSelectedPart = lastSelectedRef.split(/:/)[1] || lastSelectedRef;
     var selectedTitle = firstSelectedRef && lastSelectedRef && firstSelectedRef !== lastSelectedRef ? `Quran ${firstSelectedRef}-${lastSelectedPart}` : `Quran ${firstSelectedRef}`;
     var quranShareId = selectedAyahs.length > 0 ? `Q${(firstSelectedRef + '-' + lastSelectedPart).replace(/[^A-Za-z0-9_-]/g, '-')}` : '';
+    var firstPassageRef = results[0] ? (results[0].en?.num || results[0].num || results[0].ref || '') : '';
+    var lastPassageRef = results[results.length - 1] ? (results[results.length - 1].en?.num || results[results.length - 1].num || results[results.length - 1].ref || '') : firstPassageRef;
+    firstPassageRef = arabic.toLatinDigits(firstPassageRef.toString().replace(/^quran:/, ''));
+    lastPassageRef = arabic.toLatinDigits(lastPassageRef.toString().replace(/^quran:/, ''));
+    var lastPassagePart = lastPassageRef.split(/:/)[1] || lastPassageRef;
+    var quranPassageCanonicalRef = firstPassageRef && lastPassageRef && firstPassageRef !== lastPassageRef
+      ? `${firstPassageRef}-${lastPassagePart}`
+      : firstPassageRef;
     var selectedCanonicalRef = selectedAyahs.length > 0 && firstSelectedRef
       ? `${firstSelectedRef}${lastSelectedRef && firstSelectedRef !== lastSelectedRef ? `-${lastSelectedPart}` : ''}`
       : '';
@@ -98,11 +106,19 @@
     var quranNavigatorAyahCount = quranNavigatorCurrentSurah ? quranNavigatorCurrentSurah.ayahs : Math.max(results.length, quranNavigatorAyah);
     var quranNavigatorSurahValue = quranNavigatorCurrentSurah ? quranNavigatorCurrentSurah.num : quranNavigatorSurah;
     var quranNavigatorAyahValue = quranNavigatorAyah;
+    var quranSurahTitle = chapter.title_en || section.h1_title_en || (quranNavigatorCurrentSurah ? `Surat ${quranNavigatorCurrentSurah.name_en}` : `Surah ${chapter.h1}`);
+    var quranSurahTitleShort = quranSurahTitle.replace(/^(?:Surat|Surah)\s+/i, '');
+    var quranSectionTitle = section.title_en || section.title || '';
+    var quranMetaRef = selectedCanonicalRef || quranPassageCanonicalRef || `${chapter.h1}:${quranNavigatorAyahValue}`;
+    var quranSurahTitleAr = (quranNavigatorCurrentSurah && quranNavigatorCurrentSurah.name_ar) || chapter.title || section.h1_title || book.shortName;
+    var quranMetaTitle = `Quran | ${quranSurahTitleShort} ${quranMetaRef}${quranSectionTitle ? ` | ${quranSectionTitle}` : ''}`;
+    var quranMetaDescription = `Read Quran ${quranMetaRef}, ${quranSurahTitle}${quranSectionTitle ? `, ${quranSectionTitle}` : ''}, with Arabic text, English translation, and tafsir.`;
     var page = {
       menu: 'Section',
-      title_en: `${site.shortName} | ${book.shortName_en} ${chapter.h1}${section.level > 1 ? ` §${section.h1}.${section.h2}` : ''} ${section.title_en || section.title}`,
-      subtitle_en: `${book.shortName_en}`,
-      subtitle: `${book.shortName}`,
+      title_en: quranMetaTitle,
+      description_en: quranMetaDescription,
+      subtitle_en: `${quranSurahTitleShort} ${quranMetaRef}`,
+      subtitle: `${quranSurahTitleAr}`,
       canonical: selectedCanonicalRef ? `/quran:${selectedCanonicalRef}` : (section.level > 1 ? `/${book.alias}/${chapter.h1}/${section.h2}` : `/${book.alias}/${chapter.h1}?passage`),
       context: {
         book: book,

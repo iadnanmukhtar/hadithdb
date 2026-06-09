@@ -12,6 +12,7 @@ const rateLimit = require('express-rate-limit').default;
 const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
 const UserSettings = require('./lib/UserSettings');
+const Utils = require('./lib/Utils');
 
 const REQUEST_BODY_LIMIT = '10mb';
 
@@ -154,6 +155,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const booksRouter = require('./routes/books');
   const tagRouter = require('./routes/tag');
   const searchRouter = require('./routes/search');
+  const tafsirsRouter = require('./routes/tafsirs');
   const blogRouter = require('./routes/blog');
   const settingsRouter = require('./routes/settings');
   const loginRouter = require('./routes/login');
@@ -183,6 +185,10 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/login', loginRouter);
   app.use('/quran/login', loginRouter);
   app.use('/blog', blogRouter);
+  app.use('/quran/tafsirs', function (req, res) {
+    res.redirect(301, Utils.quranUrl(req, '/quran/tafsir'));
+  });
+  app.use('/quran/tafsir', tafsirsRouter);
   app.use('/quran/tafsir', tafsirRouter);
   app.use('/proxy', proxyRouter);
   app.use('/quran/proxy', proxyRouter);

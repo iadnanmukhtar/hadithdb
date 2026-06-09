@@ -12,10 +12,16 @@
     var tafsirTitle = Tafsir.displayShortName(tafsir, 'en');
     var tafsirTitleAr = Tafsir.displayShortName(tafsir, 'ar');
     var ref = `${surah.num}:${ayah}`;
+    var tafsirEntryStart = entries && entries.length ? Math.min.apply(null, entries.map(function (entry) { return Number(entry.startAyah); })) : ayah;
+    var tafsirEntryEnd = entries && entries.length ? Math.max.apply(null, entries.map(function (entry) { return Number(entry.endAyah); })) : tafsirEntryStart;
+    var tafsirMetaRef = `${surah.num}:${tafsirEntryStart}${tafsirEntryEnd > tafsirEntryStart ? `-${tafsirEntryEnd}` : ''}`;
+    var tafsirMetaTitle = `Quran | ${tafsirTitle} | ${surah.name_en} ${tafsirMetaRef}`;
+    var tafsirMetaDescription = `Read ${tafsirTitle} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
     var page = {
       menu: 'Tafsir',
-      title_en: `${tafsirTitle} | Tafsīr of ${ref}`,
-      subtitle_en: `${tafsirTitle} · ${surah.name_en} ${ref}`,
+      title_en: tafsirMetaTitle,
+      description_en: tafsirMetaDescription,
+      subtitle_en: tafsirTitle,
       subtitle: tafsirTitleAr,
       canonical: `/quran/tafsir/${tafsir.slug || tafsir.alias}/${surah.num}/${ayah}`,
       context: {
@@ -44,6 +50,32 @@
     (ayahs || []).forEach(function (item) {
       ayahByNum[item.ayah] = item;
     });
+    var tafsirSectionMenu = locals.sectionMenu || [];
+    function tafsirRangeLabel(section) {
+      return `${section.surah}:${section.ayahFrom}${section.ayahTo > section.ayahFrom ? `-${section.ayahTo}` : ''}`;
+    }
+    function tafsirRangeLabelAr(section) {
+      return arabic.toArabicDigits(tafsirRangeLabel(section));
+    }
+    function tafsirSectionTitle(section, lang) {
+      var sectionSurah = (global.surahs || []).find(function (item) {
+        return Number(item.num) === Number(section.surah);
+      });
+      if (lang === 'ar')
+        return section.title || (sectionSurah ? `سورة ${sectionSurah.name_ar}` : '');
+      return section.title_en || (sectionSurah ? `Surat ${sectionSurah.name_en}` : '');
+    }
+    page.context.tafsirSectionMenu = tafsirSectionMenu.map(function (section) {
+      return {
+        index: section.index,
+        url: `${tafsirPath}/${section.surah}/${section.ayahFrom}`,
+        rangeLabel: tafsirRangeLabel(section),
+        rangeLabelAr: tafsirRangeLabelAr(section),
+        ayahRangeLabel: section.ayahTo > section.ayahFrom ? 'Ayat' : 'Ayah',
+        title_en: utils.truncate(tafsirSectionTitle(section, 'en'), 75, true),
+        title: utils.truncate(tafsirSectionTitle(section, 'ar'), 150, true)
+      };
+    });
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -67,6 +99,17 @@
         </div>
       </aside>
 
+      <header class="quran-tafsir-source row">
+        <section class="col-6 text-start" lang="en">
+          <strong><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></strong>
+          <span><%- sourceMetaEn %></span>
+        </section>
+        <section class="col-6 text-end" lang="ar" dir="rtl">
+          <strong><%- tafsir.name || tafsir.shortName || '' %></strong>
+          <span><%- sourceMetaAr %></span>
+        </section>
+      </header>
+
       <heading class="row major tafsir-passage-title">
         <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
           <%= surah.num %>. Surat <%= surah.name_en %>
@@ -78,14 +121,14 @@
 
       <section class="row breadcrumbs pagination">
         <div class="col-md-6 col-sm-12" lang="en">
-          <a title="<%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %>" href="/books/tafsir"><%- tafsirTitle %></a>
+          <a title="<%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %>" href="/quran/tafsir"><%- tafsirTitle %></a>
           &gt;
           <a title="<%- surah.name_en %>" href="<%= tafsirPath %>/<%= surah.num %>/1">Surah <%= surah.num %></a>
           &gt;
           <span>Section <%= ayah %></span>
         </div>
         <div class="col-md-6 col-sm-12" lang="ar" dir="rtl">
-          <a title="<%- tafsir.name || tafsir.shortName || tafsir.alias %>" href="/books/tafsir"><%- tafsirTitleAr %></a>
+          <a title="<%- tafsir.name || tafsir.shortName || tafsir.alias %>" href="/quran/tafsir"><%- tafsirTitleAr %></a>
           &lt;
           <a title="<%- surah.name_ar %>" href="<%= tafsirPath %>/<%= surah.num %>/1">السورة <%= arabic.toArabicDigits(surah.num + '') %></a>
           &lt;
@@ -118,16 +161,6 @@
       <article id="tafsir" class="quran-tafsirs mt-4">
         <div class="tab-content quran-tafsir-content">
           <section class="tab-pane fade show active quran-tafsir-panel" tabindex="0" data-tafsir-src="<%= tafsir.alias %>" data-tafsir-source="<%= tafsir.source %>" data-tafsir-format="<%= tafsir.format || 'txt' %>" data-tafsir-lang="<%= tafsir.lang %>">
-            <header class="quran-tafsir-source row">
-              <section class="col-6 text-start" lang="en">
-                <strong><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></strong>
-                <span><%- sourceMetaEn %></span>
-              </section>
-              <section class="col-6 text-end" lang="ar" dir="rtl">
-                <strong><%- tafsir.name || tafsir.shortName || '' %></strong>
-                <span><%- sourceMetaAr %></span>
-              </section>
-            </header>
             <% if (!entries || entries.length < 1) { %>
               <p class="quran-tafsir-status text-muted">No tafsīr text is available for this passage.</p>
             <% } %>

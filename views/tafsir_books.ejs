@@ -8,14 +8,19 @@
       site.editMode = (site.admin && req.editMode);
     else
       site.editMode = false;
+    site.name = 'Quran Unlocked';
+    site.shortName = 'Quran';
 
     var page = {
       menu: 'Books',
-      title_en: `${site.shortName} | Available Tafsīr Books`,
-      subtitle_en: `Available Tafsīr Books`,
+      title_en: `Quran | Tafsīr Books`,
+      description_en: `Browse available tafsīr books in English and Arabic, then read tafsir passage by passage alongside Quran references.`,
+      subtitle_en: `Tafsīr Books`,
       subtitle: ``,
-      canonical: `/books/tafsir`,
-      context: {}
+      canonical: `/quran/tafsir`,
+      context: {
+        quranSearchProxy: true
+      }
     };
     var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
       return {

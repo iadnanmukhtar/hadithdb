@@ -13,7 +13,13 @@
       ))
     );
   var isQuranCanonicalPage = page && page.canonical && isQuranHeadPage;
-  var headTitle = isQuranHeadPage ? 'Quran Unlocked' : page.title_en;
+  var headTitle = page.title_en || (isQuranHeadPage ? 'Quran Unlocked' : site.name);
+  var headDescription = page.description_en || page.subtitle_en || site.desc || '';
+  var headSiteName = isQuranHeadPage ? 'Quran Unlocked' : site.name;
+  var headSiteUrl = isQuranHeadPage ? quranCanonicalBaseUrl : site.url;
+  var headLogo = page.cover || site.logo;
+  if (isQuranHeadPage)
+    headLogo = headLogo.replace(site.url, quranCanonicalBaseUrl);
   function quranCanonicalPath(path) {
     if (!path)
       return path;
@@ -31,6 +37,9 @@
 <title><%= headTitle %></title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<% if (headDescription) { %>
+<meta name="description" content="<%= headDescription %>">
+<% } %>
 <% if (page.noindex) { %>
 <meta name="robots" content="noindex,follow">
 <% } %>
@@ -67,26 +76,26 @@
 <% 		}
 	} %>
 
-<meta property="og:site_name" content="<%= site.name %>">
+<meta property="og:site_name" content="<%= headSiteName %>">
 <meta property="og:locale" content="en">
 <meta property="og:image" content="<%= page.cover || site.logo %>">
 <meta property="og:url" content="<%= headCanonicalUrl %>">
-<meta property="og:title" content="<%= page.title_en %>">
-<meta property="og:description" content="<%= page.subtitle_en %>">
+<meta property="og:title" content="<%= headTitle %>">
+<meta property="og:description" content="<%= headDescription %>">
 <meta property="og:type" content="article" />
 
-<meta property="twitter:card" content="summary">
-<meta property="twitter:image" content="<%= page.cover || site.logo %>">
-<meta property="twitter:title" content="<%= page.title_en %>">
-<meta property="twitter:description" content="<%= page.subtitle_en %>">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="<%= page.cover || site.logo %>">
+<meta name="twitter:title" content="<%= headTitle %>">
+<meta name="twitter:description" content="<%= headDescription %>">
 
 <script type="application/ld+json">
   {
     "@context": "http://schema.org",
     "@type": "Organization",
-    "name": "<%= site.name %>",
-    "url": "<%= site.url %>",
-    "logo": "<%= site.logo %>"
+    "name": "<%= headSiteName %>",
+    "url": "<%= headSiteUrl %>",
+    "logo": "<%= headLogo %>"
   }
 </script>
 
@@ -94,8 +103,8 @@
   {
     "@context": "http://schema.org",
     "@type": "WebSite",
-    "name": "<%= site.name %>",
-    "url": "<%= site.url %>"
+    "name": "<%= headSiteName %>",
+    "url": "<%= headSiteUrl %>"
 <% if (page.menu === 'Home') { %>
     , "potentialAction": {
         "@type": "SearchAction",
