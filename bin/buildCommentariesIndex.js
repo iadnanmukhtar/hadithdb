@@ -107,6 +107,8 @@ async function getCommentaries(alias, limit, offset, freshConnection) {
 			hc.ayahTo,
 			hc.passageNum,
 			q.h1,
+			q.h1_title_en,
+			q.h1_title,
 			q.h2,
 			q.h2_id,
 			q.h2_title_en,

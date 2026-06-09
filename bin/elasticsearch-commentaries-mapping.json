@@ -26,6 +26,8 @@
         "ayahFrom": { "type": "short" },
         "ayahTo": { "type": "short" },
         "passageNum": { "type": "short" },
+        "h1_title_en": { "type": "text", "analyzer": "english_folded" },
+        "h1_title": { "type": "text", "analyzer": "arabic" },
         "ref": { "type": "keyword" },
         "path": { "type": "keyword" },
         "text": { "type": "text", "analyzer": "arabic" },
