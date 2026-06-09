@@ -2014,6 +2014,11 @@ del em strong {
 	line-height: 1.55;
 }
 
+.tafsir-only-page .quran-tafsir-local-pair [lang="en"] {
+	font-size: 1rem;
+	line-height: 1.55;
+}
+
 .quran-tafsir-text:lang(en) h1,
 .quran-tafsir-text:lang(en) h2,
 .quran-tafsir-text:lang(en) h3,
