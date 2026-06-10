@@ -13,9 +13,10 @@
     var book = section.book;
     var chapter = section.chapter;
     var isQuranAyatView = book.alias === 'quran' && req.query.ayat !== undefined;
+    var pageTitlePrefix = book.alias === 'quran' ? site.shortName : utils.hadithBookTitle(book);
     var page = {
       menu: 'Section',
-      title_en: `${site.shortName} | ${book.shortName_en} §${section.h1}.${section.h2} ${section.title_en || section.title}`,
+      title_en: `${pageTitlePrefix} | ${book.shortName_en} §${section.h1}.${section.h2} ${section.title_en || section.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${chapter.h1}/${section.h2}${!isQuranAyatView && req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : ''}`,

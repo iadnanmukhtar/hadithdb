@@ -25,9 +25,10 @@
         page.subtitle = '';
     } else if (results.length > 0 && typeof book !== 'undefined') {
         page.canonical = `/${book.alias}:${results[0].num}`;
-        page.title_en = `${site.shortName} | ${book.shortName_en} (${book.shortName}) ${book.alias}:${results[0].num}`;
+        var pageTitlePrefix = book.alias === 'quran' ? site.shortName : utils.hadithBookTitle(book);
+        page.title_en = `${pageTitlePrefix} | ${book.shortName_en} (${book.shortName}) ${book.alias}:${results[0].num}`;
         if (results[0].title_en)
-          page.title_en = `${site.shortName} | ${book.alias}:${results[0].num} ${results[0].title_en}`;
+          page.title_en = `${pageTitlePrefix} | ${book.alias}:${results[0].num} ${results[0].title_en}`;
         page.title = `${book.name} ${results[0].num_ar}`;
         page.subtitle_en = `${book.shortName_en}`;
         page.subtitle = `${book.shortName}`;

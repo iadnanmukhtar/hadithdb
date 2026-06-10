@@ -113,6 +113,7 @@ $(function () {
 	initQuranTafsirTabs(document);
 	initQuranTafsirFootnotePopups(document);
 	initTocExpandCollapse(document);
+	initTocContentFilters(document);
 	initTocInlineDescriptionExpanders(document);
 
 });
@@ -341,6 +342,64 @@ function initTocExpandCollapse(root) {
 				.toggleClass('bi-chevron-right', expanded)
 				.toggleClass('bi-chevron-down', !expanded);
 		});
+	});
+}
+
+function normalizeTocFilterText(value) {
+	return (value || '')
+		.toString()
+		.toLowerCase()
+		.normalize('NFKD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+function initTocContentFilters(root) {
+	var scope = root || document;
+	$(scope).find('[data-toc-content-filter]').each(function () {
+		var input = $(this);
+		if (input.data('tocContentFilterBound'))
+			return;
+		input.data('tocContentFilterBound', true);
+
+		var table = $(input.attr('data-toc-content-filter'));
+		if (!table.length)
+			return;
+
+		var update = function () {
+			var query = normalizeTocFilterText(input.val());
+			var filtering = query.length > 0;
+			table.toggleClass('toc-filtering', filtering);
+
+			table.find('[data-toc-chapter]').each(function () {
+				var chapter = $(this);
+				var chapterId = chapter.attr('data-toc-chapter');
+				var sections = table.find('[data-toc-parent="' + chapterId + '"]');
+				var chapterMatches = normalizeTocFilterText(chapter.text()).indexOf(query) !== -1;
+				var matchingSections = sections.filter(function () {
+					return normalizeTocFilterText($(this).text()).indexOf(query) !== -1;
+				});
+				var showChapter = !filtering || chapterMatches || matchingSections.length > 0;
+
+				chapter.prop('hidden', !showChapter);
+				sections.each(function () {
+					var section = $(this);
+					if (!filtering) {
+						section.prop('hidden', false);
+						section.toggleClass('d-none', table.find('[data-toc-toggle="' + chapterId + '"]').attr('aria-expanded') !== 'true');
+						return;
+					}
+					var showSection = chapterMatches || matchingSections.filter(this).length > 0;
+					section.prop('hidden', !showSection);
+					section.toggleClass('d-none', !showSection);
+				});
+			});
+		};
+
+		input.on('input', update);
+		input.get(0).focus({ preventScroll: true });
+		update();
 	});
 }
 

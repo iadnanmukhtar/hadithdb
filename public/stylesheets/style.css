@@ -1342,6 +1342,11 @@ del em strong {
 	background-color: var(--c-ghostwhite) !important;
 }
 
+.page-content-filter .input-group-text {
+	color: var(--c-accent);
+	background-color: var(--c-ghostwhite);
+}
+
 .pagination,
 .pagination a,
 .pagination div,

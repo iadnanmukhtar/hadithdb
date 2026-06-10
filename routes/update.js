@@ -213,12 +213,10 @@ router.post('/:id/:prop', async function (req, res, next) {
         : await global.query(`UPDATE hadiths_commentary
           SET ${col}=${sql(status.value)}, lastmod=CURRENT_TIMESTAMP()
           WHERE id=${commentaryId}`);
-      commentary = await commentaryIndexRowById(commentaryId);
-      await Index.update('commentaries', commentary);
-      await Index.refresh('commentaries');
       status.code = 200;
       status.message = result.message;
       status.id = commentaryId;
+      refreshCommentaryIndexInBackground(commentaryId);
 
     } else if (type == 'toc') {
       var result;
@@ -505,6 +503,18 @@ async function commentaryIndexRowById(id) {
       AND bc.source='local'
       AND bc.hidden=0
     LIMIT 1`))[0];
+}
+
+function refreshCommentaryIndexInBackground(id) {
+  Promise.resolve().then(async function () {
+    var commentary = await commentaryIndexRowById(id);
+    if (!commentary)
+      return;
+    await Index.update('commentaries', commentary);
+    await Index.refresh('commentaries');
+  }).catch(function (err) {
+    debug(`commentary index refresh failed for ${id}: ${err.message}\n${err.stack}`);
+  });
 }
 
 async function createLocalCommentaryPassage(ids, col, value) {

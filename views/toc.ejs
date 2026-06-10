@@ -177,6 +177,13 @@
           }
         </script>
         
+        <% if (!isQuranToc) { %>
+        <div class="page-content-filter toc-content-filter input-group mb-3">
+          <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
+          <input type="search" class="form-control" placeholder="Filter chapter headings" aria-label="Filter chapter headings" autocomplete="off" data-toc-content-filter="#toc" autofocus>
+        </div>
+        <% } %>
+
         <h2 class="fs-4 mt-3">Chapters Headings</h2>
         
         <table id="toc" class="table" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.name})` %>">
@@ -206,7 +213,7 @@
           var hasSections = sections.length > 0;
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
-            <tr class="chapter">
+            <tr class="chapter" data-toc-chapter="<%= chapterRowId %>">
               <% if (!isQuranToc) { %>
               <td><%- toc[i].start %></td>
               <% } %>
