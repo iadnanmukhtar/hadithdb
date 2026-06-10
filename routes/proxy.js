@@ -12,6 +12,10 @@ const Index = require('../lib/Index');
 
 const router = express.Router();
 const md = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
+const quranBacktickMd = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
+quranBacktickMd.renderer.rules.code_inline = renderQuranBacktickToken;
+quranBacktickMd.renderer.rules.code_block = renderQuranBacktickBlock;
+quranBacktickMd.renderer.rules.fence = renderQuranBacktickBlock;
 const tafsirAppHealth = {
   checkedAt: 0,
   available: true
@@ -243,7 +247,7 @@ function renderLocalCommentary(row, editMode, lang, src) {
     : renderCommentaryText(row.text, row.footnotes, commentaryFormat(row.format, 'ar'), { bracketedFootnotes: true, footnoteIdPrefix: footnoteIdPrefix });
   const english = editMode
     ? renderEditableCommentaryLanguage(row, 'en', src)
-    : renderCommentaryText(row.text_en, row.footnotes_en, commentaryFormat(row.format, 'en'));
+    : renderCommentaryText(row.text_en, row.footnotes_en, commentaryFormat(row.format, 'en'), { quranBackticks: true });
   if (arabic && english)
     return `<div class="row quran-tafsir-local-pair"><section class="col-md-6 col-sm-12" lang="en">${english}</section><section class="col-md-6 col-sm-12" lang="ar" dir="rtl">${arabic}</section></div>`;
   const sections = [];
@@ -261,7 +265,7 @@ function renderLocalCommentaryLanguage(row, editMode, lang, src) {
       lang === 'en' ? row.text_en : row.text,
       lang === 'en' ? row.footnotes_en : row.footnotes,
       commentaryFormat(row.format, lang),
-      { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: lang === 'ar' ? commentaryFootnoteIdPrefix(src, row.id) : '' }
+      { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: lang === 'ar' ? commentaryFootnoteIdPrefix(src, row.id) : '', quranBackticks: lang === 'en' }
     );
   if (!content)
     return '';
@@ -292,9 +296,9 @@ function renderEditableCommentaryLanguage(row, lang, src) {
 
 function renderEditableCommentaryField(id, column, text, format, lang, src) {
   const value = text || '';
-  const attrs = `class="_e quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}"`;
+  const attrs = `class="_e quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}" data-edit-lang="${lang}"`;
   if (format === 'md')
-    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="&hellip;">${renderCommentaryText(value, '', format, { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: lang === 'ar' ? commentaryFootnoteIdPrefix(src, id) : '' }) || '&hellip;'}</div>`;
+    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="&hellip;">${renderCommentaryText(value, '', format, { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: lang === 'ar' ? commentaryFootnoteIdPrefix(src, id) : '', quranBackticks: lang === 'en' }) || '&hellip;'}</div>`;
   return `<textarea ${attrs} rows="12">${escapeHtml(value)}</textarea>`;
 }
 
@@ -315,8 +319,24 @@ function renderCommentaryText(text, footnotes, format, options = {}) {
     content = bracketedFootnotesToMarkdown(content);
   if (format === 'html')
     return markArabicOnlyBlocks(namespaceFootnoteIds(content, options.footnoteIdPrefix));
-  const html = md.render(content).replace(/<br>/g, '</p><p>');
+  const renderer = options.quranBackticks ? quranBacktickMd : md;
+  const html = renderer.render(content).replace(/<br>/g, '</p><p>');
   return markArabicOnlyBlocks(namespaceFootnoteIds(html, options.footnoteIdPrefix));
+}
+
+function renderQuranBacktickToken(tokens, idx) {
+  return quranBacktickSpan(tokens[idx].content);
+}
+
+function renderQuranBacktickBlock(tokens, idx) {
+  const content = (tokens[idx].content || '').replace(/\n+$/g, '');
+  if (!content)
+    return '';
+  return `<p>${content.split(/\n+/).map(quranBacktickSpan).join('<br>')}</p>\n`;
+}
+
+function quranBacktickSpan(text) {
+  return `<span class="quran-tafsir-backtick quran-hafs" lang="ar" dir="rtl">${md.utils.escapeHtml(text)}</span>`;
 }
 
 function bracketedFootnotesToMarkdown(content) {

@@ -22,6 +22,12 @@
 	font-display: swap;
 }
 
+@font-face {
+	font-family: Hafs;
+	src: url('/fonts/kd-hafs.woff2') format('woff2');
+	font-display: swap;
+}
+
 :root {
 	--c-ghostwhite: #f8f8f8;
 	--c-ghostwhite-86: rgba(248, 248, 248, 0.86);
@@ -171,7 +177,7 @@ main {
 }
 
 main.chapter {
-	margin-top: 7rem;
+	margin-top: max(7rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 }
 
 @media (max-width: var(--bs-breakpoint-sm)) {
@@ -180,7 +186,7 @@ main.chapter {
 	}
 
 	main.chapter {
-		margin-top: 5.5rem;
+		margin-top: max(5.5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 	}
 }
 
@@ -1352,6 +1358,41 @@ del em strong {
 	font-size: 1rem;
 }
 
+.pagination .pagination-nav-link {
+	display: inline-flex;
+	align-items: center;
+	max-width: 100%;
+	min-height: 1.85rem;
+	padding: 0.22rem 0.55rem;
+	border: 1px solid var(--c-accent);
+	border-radius: 0.35rem;
+	color: var(--c-accent);
+	background: var(--c-transparent);
+	font-size: 0.82rem;
+	font-weight: 600;
+	line-height: 1.25;
+	text-decoration: none;
+	overflow-wrap: anywhere;
+}
+
+.pagination .pagination-nav-link:hover,
+.pagination .pagination-nav-link:focus,
+.pagination .pagination-nav-link:active {
+	border-color: var(--c-accent);
+	background: var(--c-accent-08);
+	color: var(--c-accent);
+	text-decoration: none;
+}
+
+.pagination .pagination-nav-link:focus-visible {
+	outline: 2px solid var(--c-accent-34);
+	outline-offset: 2px;
+}
+
+.chapter > .pagination:first-child {
+	margin-top: 1rem;
+}
+
 .top a {
 	text-decoration: none;
 }
@@ -2045,7 +2086,7 @@ del em strong {
 }
 
 .quran-tafsir-text {
-	font-family: Kitab, Serif;
+	font-family: Hafs, Serif;
 	font-size: .8rem;
 	line-height: 1.55;
 	text-align: justify;
@@ -2117,8 +2158,25 @@ del em strong {
 .quran-tafsir-text:lang(en) .quran-tafsir-arabic-only,
 .quran-tafsir-text:lang(en) .quran-tafsir-arabic-only * {
 	direction: rtl;
-	font-family: Kitab, Serif;
+	font-family: Hafs, Serif;
 	text-align: right;
+}
+
+.quran-tafsir-text:lang(en) .quran-tafsir-backtick,
+.quran-tafsir-text:lang(en) .quran-tafsir-arabic-only .quran-tafsir-backtick,
+.quran-tafsir-local-pair [lang="en"] .quran-tafsir-backtick,
+.quran-tafsir-local-pair [lang="en"] .quran-tafsir-arabic-only .quran-tafsir-backtick,
+.quran-tafsir-translation-editor .quran-tafsir-backtick {
+	background: transparent;
+	color: inherit;
+	direction: rtl;
+	display: inline;
+	font-family: Hafs, Serif;
+	font-size: 1.12em;
+	padding: 0;
+	text-align: inherit;
+	unicode-bidi: isolate;
+	white-space: normal;
 }
 
 .quran-tafsir-text:lang(en) h1.quran-tafsir-arabic-only,
@@ -2127,7 +2185,7 @@ del em strong {
 .quran-tafsir-text:lang(en) h4.quran-tafsir-arabic-only,
 .quran-tafsir-text:lang(en) h5.quran-tafsir-arabic-only,
 .quran-tafsir-text:lang(en) h6.quran-tafsir-arabic-only {
-	font-family: KitabBold, Serif;
+	font-family: Hafs, Serif;
 	line-height: 1.5;
 	text-align: right;
 }
@@ -2188,6 +2246,7 @@ del em strong {
 }
 
 .quran-tafsir-footnote-popup:lang(ar) {
+	font-family: Hafs, Serif;
 	font-size: .95rem;
 	line-height: 1.45;
 	max-height: calc(.95rem * 1.45 * 7 + .9rem);
@@ -2212,7 +2271,7 @@ del em strong {
 
 .quran-tafsir-local-pair [lang="ar"] {
 	color: inherit;
-	font-family: Kitab, Serif;
+	font-family: Hafs, Serif;
 	line-height: 1.75;
 	text-align: justify;
 }
@@ -2233,7 +2292,7 @@ del em strong {
 }
 
 .quran-tafsir-arabic-only {
-	font-family: Kitab, Serif;
+	font-family: Hafs, Serif;
 	line-height: 1.75;
 	text-align: right;
 }

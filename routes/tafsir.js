@@ -12,7 +12,7 @@ const Utils = require('../lib/Utils');
 const { Item } = require('../lib/Model');
 
 const router = express.Router();
-const TAFSIR_PASSAGE_CACHE_SUFFIX = '.tafsir-v7-first-ayah-ref-only';
+const TAFSIR_PASSAGE_CACHE_SUFFIX = '.tafsir-v9-backtick-hafs';
 
 router.get('/:tafsir/sections', async function (req, res, next) {
   res.locals.req = req;
@@ -120,7 +120,9 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
   const entryEnd = entries.length ? Math.max(...entries.map(entry => entry.endAyah)) : ayahNum;
   const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
   const allTafsirs = await Tafsir.visibleTafsirs();
-  const navigation = await tafsirNavigation(tafsir, entries, allTafsirs);
+  const navigation = editMode && tafsir.source === 'local'
+    ? tafsirEditNavigation(tafsir, surahNum, ayahNum, allTafsirs)
+    : await tafsirNavigation(tafsir, entries, allTafsirs);
 
   const renderLocals = {
     Tafsir: Tafsir,
@@ -203,6 +205,38 @@ async function tafsirNavigation(tafsir, entries, tafsirs) {
     prevTitle: prev ? `${prev.surah}:${prev.ayah}` : '',
     next: next ? navigationTarget(tafsir, next.surah, next.ayah, tafsirs) : '',
     nextTitle: next ? `${next.surah}:${next.ayah}` : ''
+  };
+}
+
+function tafsirEditNavigation(tafsir, surah, ayah, tafsirs) {
+  const prev = adjacentQuranAyah(tafsir, surah, ayah, -1);
+  const next = adjacentQuranAyah(tafsir, surah, ayah, 1);
+  return {
+    prev: prev ? navigationTarget(tafsir, prev.surah, prev.ayah, tafsirs) : '',
+    prevTitle: prev ? `${prev.surah}:${prev.ayah}` : '',
+    next: next ? navigationTarget(tafsir, next.surah, next.ayah, tafsirs) : '',
+    nextTitle: next ? `${next.surah}:${next.ayah}` : ''
+  };
+}
+
+function adjacentQuranAyah(tafsir, surah, ayah, direction) {
+  surah = Number(surah);
+  ayah = Number(ayah);
+  direction = direction > 0 ? 1 : -1;
+  const currentSurah = (global.surahs || []).find(item => Number(item.num) === surah);
+  if (!currentSurah)
+    return null;
+  if (direction > 0 && ayah < Number(currentSurah.ayahs))
+    return { surah: surah, ayah: ayah + 1 };
+  if (direction < 0 && ayah > 1)
+    return { surah: surah, ayah: ayah - 1 };
+  const nextSurahNum = surah + (direction * (Number(tafsir && tafsir.surah_dir) === 1 ? -1 : 1));
+  const nextSurah = (global.surahs || []).find(item => Number(item.num) === nextSurahNum);
+  if (!nextSurah)
+    return null;
+  return {
+    surah: Number(nextSurah.num),
+    ayah: direction > 0 ? 1 : Number(nextSurah.ayahs)
   };
 }
 

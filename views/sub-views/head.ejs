@@ -21,7 +21,7 @@
         || page.canonical.indexOf('/quran/') === 0
       ))
     );
-  var headTitle = isQuranPathHeadPage ? 'Quran Unlocked' : (page.title_en || site.name);
+  var headTitle = page.title_en || (isQuranPathHeadPage ? 'Quran Unlocked' : site.name);
   var headDescription = page.description_en || page.subtitle_en || site.desc || '';
   var headSiteName = isQuranPathHeadPage ? 'Quran Unlocked' : site.name;
   var headSiteUrl = isQuranPathHeadPage ? quranCanonicalBaseUrl : site.url;
@@ -55,7 +55,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<link rel="stylesheet" href="/stylesheets/style.css?v=20260609-quran-marker-tafsir-hover-v1" rel="stylesheet">
+<link rel="stylesheet" href="/stylesheets/style.css?v=20260610-tafsir-hafs-v2" rel="stylesheet">
 <% if (page.feed || page.rss) { 
   if (page.feed) { %>
     <link rel="alternate" type="application/atom+xml" title="<%= page.title_en %>" href="<%= page.feed %>" />

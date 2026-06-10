@@ -51,12 +51,12 @@
 <aside class="row mb-3 pagination">
   <div class="col-md-6 col-xs-12 text-start">
     <% if (page.prev) { %>
-    &lt;&nbsp;<a title="<%- page.prevHeading.title_en || page.prevHeading.title %>" href="<%- utils.urlFor(req, page.prev) %>" rel="prev"><%- page.prevTitle %></a>
+    <a class="pagination-nav-link" title="<%- page.prevHeading.title_en || page.prevHeading.title %>" href="<%- utils.urlFor(req, page.prev) %>" rel="prev">&lt;&nbsp;<%- page.prevTitle %></a>
     <% } %>
   </div>
   <div class="col-md-6 col-xs-12 text-end">
     <% if (page.next) { %>
-    <a  title="<%- page.nextHeading.title_en || page.nextHeading.title %>" href="<%- utils.urlFor(req, page.next) %>" rel="next"><%- page.nextTitle %></a>&nbsp;&gt;
+    <a class="pagination-nav-link" title="<%- page.nextHeading.title_en || page.nextHeading.title %>" href="<%- utils.urlFor(req, page.next) %>" rel="next"><%- page.nextTitle %>&nbsp;&gt;</a>
     <% } %>
   </div>
 </aside>

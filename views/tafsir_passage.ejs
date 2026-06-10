@@ -15,7 +15,8 @@
     var tafsirEntryStart = entries && entries.length ? Math.min.apply(null, entries.map(function (entry) { return Number(entry.startAyah); })) : ayah;
     var tafsirEntryEnd = entries && entries.length ? Math.max.apply(null, entries.map(function (entry) { return Number(entry.endAyah); })) : tafsirEntryStart;
     var tafsirMetaRef = `${surah.num}:${tafsirEntryStart}${tafsirEntryEnd > tafsirEntryStart ? `-${tafsirEntryEnd}` : ''}`;
-    var tafsirMetaTitle = `Quran | ${tafsirTitle} | ${surah.name_en} ${tafsirMetaRef}`;
+    var tafsirTitlePair = [tafsirTitle, tafsirTitleAr].filter(Boolean).join(' ');
+    var tafsirMetaTitle = `Quran | Tafsir ${surah.name_en} ${ref} | ${tafsirTitlePair}`;
     var tafsirMetaDescription = `Read ${tafsirTitle} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
     var page = {
       menu: 'Tafsir',
@@ -66,12 +67,12 @@
       <aside class="row mb-3 pagination tafsir-passage-navigation">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (navigation.prev) { %>
-            &lt;&nbsp;<a href="<%= navigation.prev %>" rel="prev">Prev: <%= navigation.prevTitle %></a>
+            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev">&lt;&nbsp;Prev: <%= navigation.prevTitle %></a>
           <% } %>
         </div>
         <div class="col-md-6 col-xs-12 text-end">
           <% if (navigation.next) { %>
-            <a href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %></a>&nbsp;&gt;
+            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %>&nbsp;&gt;</a>
           <% } %>
         </div>
       </aside>
@@ -170,6 +171,19 @@
           </section>
         </div>
       </article>
+
+      <aside class="row mt-3 mb-3 pagination tafsir-passage-navigation">
+        <div class="col-md-6 col-xs-12 text-start">
+          <% if (navigation.prev) { %>
+            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev">&lt;&nbsp;Prev: <%= navigation.prevTitle %></a>
+          <% } %>
+        </div>
+        <div class="col-md-6 col-xs-12 text-end">
+          <% if (navigation.next) { %>
+            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %>&nbsp;&gt;</a>
+          <% } %>
+        </div>
+      </aside>
     </main>
   </div>
 

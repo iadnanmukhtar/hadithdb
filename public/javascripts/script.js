@@ -16,9 +16,12 @@ $(function () {
 
 	$(window).scroll(function() {
 		$('.site-navbar').toggleClass('shrink', $(document).scrollTop() > 50);
+		updateFixedHeaderOffset();
 	});
 
 	$('.site-navbar').toggleClass('shrink', $(document).scrollTop() > 50);
+	updateFixedHeaderOffset();
+	$(window).on('resize', updateFixedHeaderOffset);
 
 	if ($('.search .form-check input:checked').length > 0) {
 		$('.search .btn i').removeClass('bi-book');
@@ -81,13 +84,18 @@ $(function () {
 	initQuranPassageNavigator();
 	initBookNavScroller();
 
+	$('#toc2').on('show.bs.collapse', function(event) {
+		updateFixedHeaderOffset(event.target.scrollHeight);
+	});
 	$('#toc2').on('hidden.bs.collapse', function (event) {
 		$('.toggle').removeClass('bi-toggle-on');
 		$('.toggle').addClass('bi-toggle-off');
+		updateFixedHeaderOffset();
 	});
 	$('#toc2').on('shown.bs.collapse', function(event) {
 		$('.toggle').removeClass('bi-toggle-off');
 		$('.toggle').addClass('bi-toggle-on');
+		updateFixedHeaderOffset();
 		loadTafsirSectionMenu(event.target);
 	});
 
@@ -108,6 +116,14 @@ $(function () {
 	initTocInlineDescriptionExpanders(document);
 
 });
+
+function updateFixedHeaderOffset(extraHeight) {
+	var navbar = document.querySelector('.site-navbar.fixed-top');
+	if (!navbar)
+		return;
+	var height = navbar.getBoundingClientRect().height + (extraHeight || 0);
+	document.documentElement.style.setProperty('--site-fixed-header-height', `${Math.ceil(height)}px`);
+}
 
 function initHomeQuranAnnouncement(scope) {
 	var storageKey = 'hadithHomeQuranAnnouncementClosed';

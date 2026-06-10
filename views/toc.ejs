@@ -13,7 +13,7 @@
     var isQuranToc = book.alias === 'quran';
     var pageTitleEn = isQuranToc
       ? 'Quran | Table of Contents'
-      : `${site.name} | Contents of ${book.shortName_en} (فهرس ${book.shortName})`;
+      : utils.hadithBookTitle(book);
     var pageDescriptionEn = isQuranToc
       ? 'Browse the Quran table of contents by surah and passage, with Arabic text, English translation, and tafsir.'
       : `Browse the table of contents for ${book.name_en || book.shortName_en}.`;
@@ -66,12 +66,12 @@
       <aside class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (page.prev) { %>
-          &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
+          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev">&lt;&nbsp;Prev:&nbsp;<%= prevBook.shortName_en %></a>
           <% } %>
         </div>
         <div class="col-md-6 col-xs-12 text-end">
           <% if (page.next) { %>
-          <a href="<%- page.next %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
+          <a class="pagination-nav-link" href="<%- page.next %>" rel="next">Next:&nbsp;<%= nextBook.shortName_en %>&nbsp;&gt;</a>
           <% } %>
         </div>
       </aside>
@@ -271,12 +271,12 @@
       <aside class="row mt-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (page.prev) { %>
-          &lt;&nbsp;<a href="<%- page.prev %>">Prev:&nbsp;<%= prevBook.shortName_en %></a>
+          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev">&lt;&nbsp;Prev:&nbsp;<%= prevBook.shortName_en %></a>
           <% } %>
         </div>
         <div class="col-md-6 col-xs-12 text-end">
           <% if (page.next) { %>
-          <a href="<%- page.next %>">Next:&nbsp;<%= nextBook.shortName_en %></a>&nbsp;&gt;
+          <a class="pagination-nav-link" href="<%- page.next %>" rel="next">Next:&nbsp;<%= nextBook.shortName_en %>&nbsp;&gt;</a>
           <% } %>
         </div>
       </aside>

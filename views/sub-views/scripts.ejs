@@ -46,6 +46,26 @@
 	      $el.attr('data-markdown-source', (value || '').toString());
 	    };
 
+	    const isEnglishTafsirMarkdown = ($el) => isTafsirEditor($el) && $el.attr('data-edit-lang') === 'en';
+
+	    const renderEnglishTafsirMarkdown = (html) => {
+	      const $root = $('<div>').html(html || '');
+	      $root.find('pre code').each(function () {
+	        const text = $(this).text().replace(/\n+$/g, '');
+	        const $paragraph = $('<p>');
+	        text.split(/\n+/).forEach((line, index) => {
+	          if (index > 0)
+	            $paragraph.append($('<br>'));
+	          $paragraph.append($('<span>').addClass('quran-tafsir-backtick quran-hafs').attr({ lang: 'ar', dir: 'rtl' }).text(line));
+	        });
+	        $(this).closest('pre').replaceWith($paragraph);
+	      });
+	      $root.find('code').each(function () {
+	        $(this).replaceWith($('<span>').addClass('quran-tafsir-backtick quran-hafs').attr({ lang: 'ar', dir: 'rtl' }).text($(this).text()));
+	      });
+	      return $root.html();
+	    };
+
 	    const setMarkdownPreview = (el, value) => {
 	      const $el = $(el);
 	      const markdown = (value || '').toString();
@@ -53,8 +73,10 @@
 
 	      setMarkdownSource($el, markdown);
 	      $el.removeClass('markdown-editing');
-	      if (markdown)
-	        $el.html(renderMarkdown(markdown));
+	      if (markdown) {
+	        const html = renderMarkdown(markdown);
+	        $el.html(isEnglishTafsirMarkdown($el) ? renderEnglishTafsirMarkdown(html) : html);
+	      }
 	      else if (emptyHtml)
 	        $el.html(emptyHtml);
 	      else
@@ -126,6 +148,14 @@
 	          return children;
 	        case 'blockquote':
 	          return children.split(/\n/).map(line => line ? `> ${line}` : '>').join('\n');
+	        case 'code':
+	          return children ? `\`${children.replace(/`/g, '\\`')}\`` : '';
+	        case 'pre':
+	          return children ? `\`\`\`\n${children.replace(/\n+$/g, '')}\n\`\`\`` : '';
+	        case 'span':
+	          if (node.classList.contains('quran-tafsir-backtick'))
+	            return children ? `\`${children.replace(/`/g, '\\`')}\`` : '';
+	          return children;
 	        default:
 	          return children;
 	      }

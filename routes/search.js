@@ -1246,7 +1246,7 @@ router.get('/:bookAlias/random', async function (req, res, next) {
   site.editMode = false;
   var page = {
     menu: 'Books',
-    title_en: book.alias === 'quran' ? 'Quran | Table of Contents' : `${site.name} | Contents of ${book.shortName_en}`,
+    title_en: book.alias === 'quran' ? 'Quran | Table of Contents' : Utils.hadithBookTitle(book),
     canonical: `/${book.alias}`,
     context: {
       book: book
