@@ -60,6 +60,7 @@
         const targetId = container.dataset.targetId;
         const quranApiPath = (path) => {
           path = String(path || '');
+          if (/^https?:\/\//i.test(path)) return path;
           if (path.charAt(0) !== '/') path = `/${path}`;
           const hostname = (window.location.hostname || '').toLowerCase();
           if (hostname.split('.')[0] !== 'quran' || path === '/quran' || path.startsWith('/quran/')) return path;

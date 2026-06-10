@@ -458,6 +458,8 @@ function quranUrl(path) {
 
 function quranApiPath(path) {
 	path = (path || '').toString();
+	if (/^https?:\/\//i.test(path))
+		return path;
 	if (!isQuranSubdomainHost(window.location.hostname))
 		return path;
 	if (path.charAt(0) !== '/')
