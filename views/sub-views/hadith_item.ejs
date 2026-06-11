@@ -28,7 +28,7 @@
 	}
 	const sharhBody = !isQuranItem ? plainText(i.ar?.body || '') : '';
 	const itemRefPath = `/${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
-	const itemHref = isQuranItem ? utils.quranUrl(req, itemRefPath) : itemRefPath;
+	const itemHref = isQuranItem ? utils.quranUrl(req, itemRefPath) : utils.urlFor(req, itemRefPath);
 	const quranTafsirHref = isQuranItem && i.ref ? utils.quranUrl(req, `/${i.ref}#open-tafsir`) : '';
 	const quranAyahMarkerRef = utils.emptyIfNull(i.ref || i.num || langData.num || '').replace(/^quran:/, '');
 	const quranAyahMarkerNum = (() => {
@@ -248,7 +248,7 @@
 		</button>
 		<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">0</span>
 		&nbsp;
-		<a href="<%= isQuranItem ? utils.quranUrl(req, `/${i.ref}#comments`) : `/${i.ref}#comments` %>" class="reflection-count-link text-decoration-none" title="View reflections">
+		<a href="<%= isQuranItem ? utils.quranUrl(req, `/${i.ref}#comments`) : utils.urlFor(req, `/${i.ref}#comments`) %>" class="reflection-count-link text-decoration-none" title="View reflections">
 			<span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="0 reflections">0</span>
 		</a>
 		&nbsp;

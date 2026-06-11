@@ -234,7 +234,7 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
 router.get('/sitemap\.txt', async function (req, res, next) {
   var txt = '';
   var domain = global.settings.site.url;
-  var quranDomain = Utils.quranBaseUrl();
+  var quranDomain = Utils.quranBaseUrl(req);
   var quranOnly = Utils.isQuranSubdomainRequest(req);
   var bookSitemapFilter = quranOnly ? `= 'quran'` : `<> 'quran'`;
   var sitemapUrl = function (alias, h1, h2) {

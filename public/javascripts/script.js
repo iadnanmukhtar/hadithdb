@@ -469,9 +469,21 @@ function quranPath(path) {
 
 function quranUrl(path) {
 	if (!isLocalhostHost(window.location.hostname))
-		return 'https://quran.islamunlocked.com' + quranPath(path);
+		return (window.HADITH_QURAN_BASE_URL || '') + quranPath(path);
 	if (isQuranSubdomainHost(window.location.hostname))
 		return quranPath(path);
+	return path;
+}
+
+function hadithUrl(path) {
+	path = (path || '').toString();
+	if (/^https?:\/\//i.test(path))
+		return path;
+	if (!isLocalhostHost(window.location.hostname) && isQuranSubdomainHost(window.location.hostname)) {
+		if (path.charAt(0) !== '/')
+			path = '/' + path;
+		return (window.HADITH_BASE_URL || '') + path;
+	}
 	return path;
 }
 
@@ -2077,7 +2089,7 @@ function initQuranAyahSelector(root) {
 			var $widget = $input.autocomplete('widget');
 			var activeItem = $widget.is(':visible') ? $widget.find('.ui-state-active').closest('li').data('ui-autocomplete-item') : null;
 			if (activeItem && activeItem.url) {
-				window.location.href = activeItem.is_quran ? quranUrl(activeItem.url) : activeItem.url;
+				window.location.href = activeItem.is_quran ? quranUrl(activeItem.url) : hadithUrl(activeItem.url);
 				return;
 			}
 			if (suggestionOnly) {
@@ -2107,7 +2119,7 @@ function initQuranAyahSelector(root) {
 			select: function (event, ui) {
 				event.preventDefault();
 				if (ui.item.url)
-					window.location.href = ui.item.is_quran ? quranUrl(ui.item.url) : ui.item.url;
+					window.location.href = ui.item.is_quran ? quranUrl(ui.item.url) : hadithUrl(ui.item.url);
 				else if (!suggestionOnly)
 					$input.closest('form').trigger('submit');
 			},
@@ -2148,7 +2160,7 @@ function initQuranAyahSelector(root) {
 				$row.attr('role', 'link').on('mousedown click', function (event) {
 					event.preventDefault();
 					event.stopImmediatePropagation();
-					window.location.href = item.is_quran ? quranUrl(item.url) : item.url;
+					window.location.href = item.is_quran ? quranUrl(item.url) : hadithUrl(item.url);
 				});
 			}
 			return $item.append($row).appendTo(ul);

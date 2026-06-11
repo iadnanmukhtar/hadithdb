@@ -1,7 +1,7 @@
 <% 
   if (page.canonical)
     page.canonical = page.canonical.replace(/\?o=0$/, '');
-  var quranCanonicalBaseUrl = 'https://quran.islamunlocked.com';
+  var quranCanonicalBaseUrl = utils.quranBaseUrl(req);
   var isQuranHeadPage = page
     && (
       (page.context && page.context.book && page.context.book.alias === 'quran')

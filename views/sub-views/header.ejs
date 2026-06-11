@@ -7,10 +7,10 @@
   <div class="row g-0 site-navbar-main">
     
     <header class="col col-md-4 d-flex site-header-brand">
-      <a href="/"><img class="logo me-2" src="<%= site.logoVector %>" width="56" height="56"></a>
+      <a href="<%= utils.urlFor(req, '/') %>"><img class="logo me-2" src="<%= site.logoVector %>" width="56" height="56"></a>
       <div>
         <h6 class="title fs-4 mb-0">
-          <a href="/" class="text-dark text-decoration-none">
+          <a href="<%= utils.urlFor(req, '/') %>" class="text-dark text-decoration-none">
           <% if ((page.context.book && page.context.book.alias === 'quran') || page.context.quranSearchProxy) { %>
             Quran Unlocked
           <% } else { %>
@@ -30,34 +30,34 @@
     <menu class="col d-md-block d-none">
       
       <ul class="nav container-fluid justify-content-end">
-        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/') %>">Home</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Books</a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
-            <li><a class="dropdown-item" href="/books"><i class="bi bi-book"></i> Ḥadīth</a></li>
+            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/books') %>"><i class="bi bi-book"></i> Ḥadīth</a></li>
             <li><a class="dropdown-item" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-journal-text"></i> Tafsīr</a></li>
           </ul>
         </li>
         <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
-        <li class="nav-item"><a class="nav-link" href="/blog">Blog</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/blog') %>">Blog</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
-            <li><a class="dropdown-item" href="/liked"><i class="bi bi-heart"></i> Liked</a></li>
-            <li><a class="dropdown-item" href="/commented"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
-            <li><a class="dropdown-item" href="/highlights"><i class="bi bi-star"></i> Highlighted</a></li>
-            <li><a class="dropdown-item" href="/titled"><i class="bi bi-card-heading"></i> Titled</a></li>
+            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
+            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
+            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
+            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/highlights') %>"><i class="bi bi-star"></i> Highlighted</a></li>
+            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/titled') %>"><i class="bi bi-card-heading"></i> Titled</a></li>
           </ul>
         </li>
         <li class="nav-item">
-          <a class="nav-link top-nav-icon-link" href="/liked" title="Favorites" aria-label="Favorites">
+          <a class="nav-link top-nav-icon-link" href="<%= utils.urlFor(req, '/liked') %>" title="Favorites" aria-label="Favorites">
             <i class="bi bi-heart"></i>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link top-nav-icon-link" href="/bookmarks" title="Bookmarks" aria-label="Bookmarks">
+          <a class="nav-link top-nav-icon-link" href="<%= utils.urlFor(req, '/bookmarks') %>" title="Bookmarks" aria-label="Bookmarks">
             <i class="bi bi-bookmark"></i>
           </a>
         </li>
@@ -102,17 +102,17 @@
         </form>
         <div class="row">
           <ul class="col-7 nav flex-column offcanvas-col1">
-            <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/') %>"><i class="bi bi-house"></i> Home</a></li>
             <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
-            <li class="nav-item"><a class="nav-link" href="/books"><i class="bi bi-book"></i> Ḥadīth Books</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/books') %>"><i class="bi bi-book"></i> Ḥadīth Books</a></li>
             <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-journal-text"></i> Tafsīr Books</a></li>
-            <li class="nav-item"><a class="nav-link" href="/blog"><i class="bi bi-text-paragraph"></i> Blog</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/blog') %>"><i class="bi bi-text-paragraph"></i> Blog</a></li>
             <li><hr></li>
-            <li class="nav-item"><a class="nav-link" href="/bookmarks"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
-            <li class="nav-item"><a class="nav-link" href="/liked"><i class="bi bi-heart"></i> Liked</a></li>
-            <li class="nav-item"><a class="nav-link" href="/commented"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
-            <li class="nav-item"><a class="nav-link" href="/highlights"><i class="bi bi-star"></i> Highlighted</a></li>
-            <li class="nav-item"><a class="nav-link" href="/titled"><i class="bi bi-card-heading"></i> Titled</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/highlights') %>"><i class="bi bi-star"></i> Highlighted</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/titled') %>"><i class="bi bi-card-heading"></i> Titled</a></li>
             <% if (site.admin) { %>
               <li><hr></li>
               <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;max-age=7776000;samesite=lax' : document.cookie='editMode=1;path=/;max-age=7776000;samesite=lax'; console.log(document.cookie); location.reload();">
