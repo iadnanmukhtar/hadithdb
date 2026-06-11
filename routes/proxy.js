@@ -63,6 +63,7 @@ router.get('/tafsir/local', async function (req, res) {
     return {
       ayahs_start: row.ayahFrom,
       count: row.ayahTo - row.ayahFrom,
+      bilingual: commentaryRowHasBothLanguages(row),
       html: html
     };
   }).filter(entry => !lang || entry.html);
@@ -237,6 +238,8 @@ function newCommentaryId(src, surah, ayahFrom, ayahTo) {
 }
 
 function renderLocalCommentary(row, editMode, lang, src) {
+  if (lang && commentaryRowHasBothLanguages(row))
+    lang = '';
   if (lang === 'ar')
     return renderLocalCommentaryLanguage(row, editMode, 'ar', src);
   if (lang === 'en')
@@ -256,6 +259,22 @@ function renderLocalCommentary(row, editMode, lang, src) {
   if (english)
     sections.push(`<section lang="en">${english}</section>`);
   return sections.join('\n');
+}
+
+function commentaryRowHasLanguage(row, lang) {
+  if (lang === 'en')
+    return trimToEmpty(row && (row.text_en || row.footnotes_en)) !== '';
+  if (lang === 'ar')
+    return trimToEmpty(row && (row.text || row.footnotes)) !== '';
+  return false;
+}
+
+function commentaryRowHasBothLanguages(row) {
+  return commentaryRowHasLanguage(row, 'ar') && commentaryRowHasLanguage(row, 'en');
+}
+
+function trimToEmpty(value) {
+  return (value || '').toString().trim();
 }
 
 function renderLocalCommentaryLanguage(row, editMode, lang, src) {

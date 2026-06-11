@@ -12,7 +12,7 @@ const Utils = require('../lib/Utils');
 const { Item } = require('../lib/Model');
 
 const router = express.Router();
-const TAFSIR_PASSAGE_CACHE_SUFFIX = '.tafsir-v9-backtick-hafs';
+const TAFSIR_PASSAGE_CACHE_SUFFIX = '.tafsir-v11-bilingual-counterparts';
 
 router.get('/:tafsir/sections', async function (req, res, next) {
   res.locals.req = req;

@@ -31,7 +31,8 @@
     };
     var sourceMetaEn = [tafsir.author_en, tafsir.death ? `${tafsir.death} AH` : ''].filter(Boolean).join(', ');
     var sourceMetaAr = [tafsir.author, tafsir.death ? `${arabic.toArabicDigits(tafsir.death)} هـ` : ''].filter(Boolean).join('، ');
-    var isBilingual = Tafsir && Tafsir.isBilingualTafsir && Tafsir.isBilingualTafsir(tafsir);
+    var hasBilingualEntries = (entries || []).some(function (entry) { return entry.bilingual; });
+    var isBilingual = hasBilingualEntries || (Tafsir && Tafsir.isBilingualTafsir && Tafsir.isBilingualTafsir(tafsir));
     var isEnglishOnly = !isBilingual && tafsir.lang === 'en';
     var textLang = isBilingual ? 'en' : tafsir.lang;
     var textDir = isBilingual ? 'ltr' : (tafsir.lang === 'ar' ? 'rtl' : 'ltr');
@@ -154,11 +155,13 @@
                       if (!item) continue;
                     %>
                       <h3 class="quran-tafsir-ayah<%= entry.startAyah === entry.endAyah ? '' : ' quran-tafsir-ayah-inline' %>" lang="ar" dir="rtl">
-                        <% if (entryAyah === entry.startAyah) { %>
-                          <span class="quran-tafsir-ayah-ref" dir="ltr"><%= `${surah.num}:${entryAyah}` %></span>
-                        <% } %>
-                        <span class="quran-tafsir-ayah-text"><%- item.body %></span>
-                        <span class="quran-ayah-end-marker">۝<%= arabic.toArabicDigits(entryAyah + '') %></span>
+                        <a href="<%= utils.quranUrl(req, `/quran:${surah.num}:${entryAyah}`) %>" title="Read Quran <%= `${surah.num}:${entryAyah}` %>">
+                          <% if (entryAyah === entry.startAyah) { %>
+                            <span class="quran-tafsir-ayah-ref" dir="ltr"><%= `${surah.num}:${entryAyah}` %></span>
+                          <% } %>
+                          <span class="quran-tafsir-ayah-text"><%- item.body %></span>
+                          <span class="quran-ayah-end-marker">۝<%= arabic.toArabicDigits(entryAyah + '') %></span>
+                        </a>
                       </h3>
                     <% } %>
                   </div>

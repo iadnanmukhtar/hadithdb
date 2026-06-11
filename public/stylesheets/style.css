@@ -2118,9 +2118,13 @@ del em strong {
 	line-height: 1.55;
 }
 
+.quran-tafsir-local-pair [lang="en"] {
+	font-family: "Gentium Plus", Serif;
+	line-height: 1.55;
+}
+
 .tafsir-only-page .quran-tafsir-local-pair [lang="en"] {
 	font-size: 1rem;
-	line-height: 1.55;
 }
 
 .quran-tafsir-text:lang(en) h1,
@@ -2400,6 +2404,20 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .tafsir-only-page .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) {
 	font-size: 2rem;
 	margin-bottom: .85rem;
+}
+
+.quran-tafsir-ayah:lang(ar) a,
+.quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.quran-tafsir-ayah:lang(ar) a:hover,
+.quran-tafsir-ayah:lang(ar) a:focus-visible,
+.quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) a:hover,
+.quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) a:focus-visible {
+	color: var(--c-link-dark);
+	text-decoration: none;
 }
 
 .quran-tafsir-ayah:lang(ar) span,

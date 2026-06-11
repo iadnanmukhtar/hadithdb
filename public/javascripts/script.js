@@ -702,11 +702,15 @@ function initQuranTafsirTabs(root) {
 			}).appendTo(entryElement);
 			if (inline)
 				heading.addClass('quran-tafsir-ayah-inline');
-			$('<span>').addClass('quran-tafsir-ayah-ref').attr('dir', 'ltr').text(`${surah}:${ayah}`).appendTo(heading);
-			heading.append(document.createTextNode(' '));
-			$('<span>').addClass('quran-tafsir-ayah-text').text(ayahText[ayah] || '').appendTo(heading);
-			heading.append(document.createTextNode(' '));
-			$('<span>').addClass('quran-ayah-end-marker').text(`۝${toArabicDigits(ayah)}`).appendTo(heading);
+			var link = $('<a>').attr({
+				href: quranUrl(`/quran:${surah}:${ayah}`),
+				title: `Read Quran ${surah}:${ayah}`
+			}).appendTo(heading);
+			$('<span>').addClass('quran-tafsir-ayah-ref').attr('dir', 'ltr').text(`${surah}:${ayah}`).appendTo(link);
+			link.append(document.createTextNode(' '));
+			$('<span>').addClass('quran-tafsir-ayah-text').text(ayahText[ayah] || '').appendTo(link);
+			link.append(document.createTextNode(' '));
+			$('<span>').addClass('quran-ayah-end-marker').text(`۝${toArabicDigits(ayah)}`).appendTo(link);
 		};
 		var footnoteIdPart = function (value) {
 			return value.toString().replace(/[^A-Za-z0-9_-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
@@ -953,6 +957,18 @@ function initQuranTafsirTabs(root) {
 					return true;
 				});
 				text.empty();
+				var hasBilingualEntries = entries.some(function (entry) {
+					return entry.payload && entry.payload.bilingual;
+				});
+				if (hasBilingualEntries) {
+					text.attr({ lang: 'en', dir: 'ltr' });
+				} else {
+					var panelLanguage = panel.attr('data-tafsir-lang') || 'en';
+					text.attr({
+						lang: panelLanguage,
+						dir: panelLanguage === 'ar' ? 'rtl' : 'ltr'
+					});
+				}
 				entries.forEach(function (entry) {
 					var startAyah = Number(entry.payload.ayahs_start || entry.ayah);
 					var count = Number(entry.payload.count || 0);
