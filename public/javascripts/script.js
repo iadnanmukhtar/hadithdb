@@ -2187,7 +2187,8 @@ function submitQuranPassageSearch($input) {
 	if (!term)
 		return false;
 	$input.autocomplete('close');
-	window.location.href = `/?${$.param([
+	var searchPath = isQuranSubdomainHost(window.location.hostname) ? '/quran' : '/';
+	window.location.href = `${searchPath}?${$.param([
 		{ name: 'q', value: term },
 		{ name: 'b', value: 'quran' },
 		{ name: 'b', value: 'commentaries' }
