@@ -2175,7 +2175,7 @@ function submitQuranPassageSearch($input) {
 	if (!term)
 		return false;
 	$input.autocomplete('close');
-	window.location.href = `/quran?${$.param([
+	window.location.href = `/?${$.param([
 		{ name: 'q', value: term },
 		{ name: 'b', value: 'quran' },
 		{ name: 'b', value: 'commentaries' }
