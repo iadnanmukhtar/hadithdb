@@ -13,6 +13,7 @@ const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
 const UserSettings = require('./lib/UserSettings');
 const Utils = require('./lib/Utils');
+const AppMonitor = require('./lib/AppMonitor');
 
 const REQUEST_BODY_LIMIT = '10mb';
 
@@ -105,6 +106,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
 	  app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
 	  app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
 	  app.use(cookieParser());
+	  app.use(AppMonitor.middleware());
 	  app.use(async function resolveAdminMode(req, res, next) {
 	    if (/\.(?:css|js|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)$/i.test(req.path)) {
 	      req.admin = false;
@@ -168,6 +170,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const updateRouter = require('./routes/update');
   const proxyRouter = require('./routes/proxy');
   const tafsirRouter = require('./routes/tafsir');
+  const monitorRouter = require('./routes/monitor');
   const commentsRouter = require('./routes/comments');
   const blogCommentsRouter = require('./routes/blogComments');
   const likesRouter = require('./routes/likes');
@@ -198,6 +201,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/quran/tafsir', tafsirRouter);
   app.use('/proxy', proxyRouter);
   app.use('/quran/proxy', proxyRouter);
+  app.use('/monitor', monitorRouter);
   app.use('/comments', commentsRouter);
   app.use('/quran/comments', commentsRouter);
   app.use('/blog-comments', blogCommentsRouter);
@@ -221,6 +225,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     if (isNotFoundError(err))
       err = createError(404, err.message);
     const statusCode = err.status || err.statusCode || 500;
+    AppMonitor.recordError(err, req, statusCode);
     res.status(statusCode);
     Object.assign(res.locals, buildErrorViewLocals(statusCode, err.message, err, req, res));
     res.render('error');
