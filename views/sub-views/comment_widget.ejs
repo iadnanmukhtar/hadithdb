@@ -358,6 +358,7 @@
         const fetchComments = async (authToken = null) => {
           try {
             const res = await fetch(listUrl, {
+              credentials: 'same-origin',
               headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
             });
             if (!res.ok) throw new Error('Unable to load comments');
@@ -395,6 +396,7 @@
           try {
             const res = await fetch(`${endpoint}/${commentId}`, {
               method: 'DELETE',
+              credentials: 'same-origin',
               headers: await authHeaders(user)
             });
             if (!res.ok) throw new Error('Unable to delete comment');
@@ -419,6 +421,7 @@
           try {
             const res = await fetch(`${endpoint}/${commentId}/vote`, {
               method: 'POST',
+              credentials: 'same-origin',
               headers: await authHeaders(user, { 'Content-Type': 'application/json' }),
               body: JSON.stringify({ direction })
             });
@@ -448,6 +451,7 @@
             const errorMsg = isEditing ? `Unable to update ${subjectLabel}` : `Unable to post ${subjectLabel}`;
             const res = await fetch(isEditing ? `${endpoint}/${editingId}` : listUrl, {
               method: isEditing ? 'PUT' : 'POST',
+              credentials: 'same-origin',
               headers: await authHeaders(user, { 'Content-Type': 'application/json' }),
               body: JSON.stringify({
                 text,

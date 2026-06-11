@@ -169,6 +169,7 @@
         </form>
       <% } %>
       
+      <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero>
       <% if (selectedAyahs.length > 0) { %>
         <% var selectedAyahModalIndex = quranAyahModalItems.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>
         <% var selectedAyahId = firstSelectedAyah && firstSelectedAyah.id; %>
@@ -186,6 +187,7 @@
         } : undefined
       }); %>
       <% } %>
+      </div>
                           
       <% if (selectedAyahs.length > 1) { %>
         <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: selectedAyahs, quranShareId: quranShareId }); %>

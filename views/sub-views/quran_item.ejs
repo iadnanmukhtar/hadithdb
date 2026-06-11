@@ -82,7 +82,7 @@
 					</span>
 					<% } %>
 				<% }); %>
-				<span class="ayah<%= selectedAyahRefs.has(passage[i].ref) ? ' ayah-selected' : '' %><%= isPrefatoryAyah ? ' quran-prefatory-ayah' : '' %>"<%- ayahModalAttrs %>>
+				<span class="ayah<%= selectedAyahRefs.has(passage[i].ref) ? ' ayah-selected' : '' %><%= isPrefatoryAyah ? ' quran-prefatory-ayah' : '' %>" data-quran-ref="<%= ayahRefLatin %>" data-quran-href="<%= ayahHref %>"<%- ayahModalAttrs %>>
 					<% if (site.editMode) { %>
 						<% if (lang === 'en') { %><button type="button" class="quran-ayah-modal-trigger quran-ayah-number-marker"<%- ayahMarkerAttrs %> data-ayah-number="<%= ayahPart %>" aria-label="Open Tafsir for Quran <%= ayahNum %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup></button>&nbsp;<% } %><span class="_e quran-ayah-body"<%- quranCorpusAttrs %> data-id="<%= passage[i].id %>" data-prop="<%= ayahBodyProp %>" data-arabizi="<%= lang === 'en' ? 'true' : '' %>" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"><%- ayahBodyHtml %></span><% if (lang === 'ar') { %>&nbsp;<button type="button" class="quran-ayah-modal-trigger quran-ayah-end-marker"<%- ayahMarkerAttrs %> data-ayah-number="<%= ayahPart %>" aria-label="Open Tafsir for Quran <%= ayahNum %>">۝<%= ayahPartArabic %></button><% } %>
 					<% } else { %>
