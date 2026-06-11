@@ -1831,6 +1831,11 @@ del em strong {
 	transform: translateX(-50%) translateY(0);
 }
 
+.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label]:active::after {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
 .body.passage .quran-ayah-number-marker,
 .body.passage .quran-ayah-number-marker sup {
 	color: var(--c-accent);
@@ -1848,14 +1853,18 @@ del em strong {
 .body.passage .quran-ayah-number-marker:hover,
 .body.passage .quran-ayah-number-marker:hover sup,
 .body.passage .quran-ayah-number-marker:focus-visible,
-.body.passage .quran-ayah-number-marker:focus-visible sup {
+.body.passage .quran-ayah-number-marker:focus-visible sup,
+.body.passage .quran-ayah-number-marker:active,
+.body.passage .quran-ayah-number-marker:active sup {
 	color: var(--c-link-dark);
 }
 
 .body.passage .quran-ayah-end-marker:hover,
 .body.passage .quran-ayah-end-marker:hover sup,
 .body.passage .quran-ayah-end-marker:focus-visible,
-.body.passage .quran-ayah-end-marker:focus-visible sup {
+.body.passage .quran-ayah-end-marker:focus-visible sup,
+.body.passage .quran-ayah-end-marker:active,
+.body.passage .quran-ayah-end-marker:active sup {
 	color: var(--c-link-dark);
 }
 
@@ -2635,6 +2644,8 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .body .ayah:hover a,
 .body .ayah:hover .quran-ayah-body,
+.body .ayah:active a,
+.body .ayah:active .quran-ayah-body,
 .body .ayah-hover-pair a,
 .body .ayah-hover-pair .quran-ayah-body {
 	color: var(--c-link-dark);
