@@ -12,7 +12,7 @@ const Utils = require('../lib/Utils');
 const { Item } = require('../lib/Model');
 
 const router = express.Router();
-const TAFSIR_PASSAGE_CACHE_SUFFIX = '.tafsir-v11-bilingual-counterparts';
+const TAFSIR_PASSAGE_CACHE_SUFFIX = '.tafsir-v12-passage-navigation';
 
 router.get('/:tafsir/sections', async function (req, res, next) {
   res.locals.req = req;
@@ -121,9 +121,7 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
   const entryEnd = entries.length ? Math.max(...entries.map(entry => entry.endAyah)) : ayahNum;
   const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
   const allTafsirs = await Tafsir.visibleTafsirs();
-  const navigation = editMode && tafsir.source === 'local'
-    ? tafsirEditNavigation(tafsir, surahNum, ayahNum, allTafsirs)
-    : await tafsirNavigation(tafsir, entries, allTafsirs);
+  const navigation = await tafsirNavigation(tafsir, entries, allTafsirs);
 
   const renderLocals = {
     Tafsir: Tafsir,
