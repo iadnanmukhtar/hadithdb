@@ -553,6 +553,10 @@ function currentQuranTafsirHash() {
 	return window.location.hash;
 }
 
+function tafsirBrowseSlug(alias) {
+	return (alias || '').toString().replace(/^(?:(?:en|ar)-)?(?:tafsir-)?/, '');
+}
+
 function initQuranPassageShareLinks(root) {
 	var scope = root || document;
 	$(scope).find('.quran-passage-share-btn').each(function () {
@@ -1058,6 +1062,7 @@ function initQuranTafsirTabs(root) {
 			}
 			scrollTafsirTabIntoView($(event.target));
 			loadPanel($($(event.target).attr('data-bs-target')));
+			container.trigger('quranTafsirChanged');
 		});
 		container.find('[data-tafsir-language]').on('click', function () {
 			showLanguage($(this).attr('data-tafsir-language'));
@@ -1220,6 +1225,7 @@ function initQuranAyahModals(root) {
 		var title = modal.find('.modal-title');
 		var prevButton = modal.find('.quran-ayah-modal-prev');
 		var nextButton = modal.find('.quran-ayah-modal-next');
+		var tafsirExpandLink = modal.find('.quran-ayah-modal-tafsir-expand');
 		var activeIndex = 0;
 		var shown = false;
 		var paneAt = function (index) {
@@ -1244,6 +1250,33 @@ function initQuranAyahModals(root) {
 				return false;
 			window.location.href = href;
 			return true;
+		};
+		var activeTafsirBrowseHref = function () {
+			if (modalType !== 'tafsirs')
+				return '';
+			var pane = paneAt(activeIndex);
+			var tab = pane.find('.quran-tafsirs [role="tab"].active').filter(function () {
+				return !!(this.offsetWidth || this.offsetHeight || this.getClientRects().length);
+			}).first();
+			var tafsir = pane.find('.quran-tafsirs').first();
+			var alias = tab.attr('data-tafsir-hash') || '';
+			var surah = tafsir.attr('data-surah') || '';
+			var ayah = (pane.attr('data-quran-ayah-ref') || '').toString().split(':').pop();
+			if (!alias || !surah || !ayah)
+				return '';
+			var language = normalizeQuranTafsirLanguage(tab.attr('data-tafsir-lang'));
+			var href = `/quran/tafsir/${encodeURIComponent(tafsirBrowseSlug(alias))}/${encodeURIComponent(surah)}/${encodeURIComponent(ayah)}`;
+			if (language)
+				href += `?lang=${encodeURIComponent(language)}`;
+			return quranPath(href);
+		};
+		var updateTafsirExpandLink = function () {
+			if (!tafsirExpandLink.length)
+				return;
+			var href = activeTafsirBrowseHref();
+			tafsirExpandLink.attr('href', href || '#');
+			tafsirExpandLink.toggleClass('disabled', !href);
+			tafsirExpandLink.attr('aria-disabled', href ? 'false' : 'true');
 		};
 		var scrollActiveTafsirTabs = function () {
 			var pane = paneAt(activeIndex);
@@ -1281,6 +1314,7 @@ function initQuranAyahModals(root) {
 			initQuranTafsirTabs(pane[0]);
 			loadActiveCommentWidgets();
 			scrollActiveTafsirTabs();
+			updateTafsirExpandLink();
 		};
 		var openAyah = function (index) {
 			showAyah(index);
@@ -1311,10 +1345,16 @@ function initQuranAyahModals(root) {
 		nextButton.on('click', function () { moveAyah(1); });
 		modal.find('.quran-ayah-modal-tafsir-prev').on('click', function () { rotateTafsir(-1); });
 		modal.find('.quran-ayah-modal-tafsir-next').on('click', function () { rotateTafsir(1); });
+		tafsirExpandLink.on('click', function (event) {
+			if ($(this).hasClass('disabled'))
+				event.preventDefault();
+		});
+		modal.on('quranTafsirChanged', '.quran-tafsirs', updateTafsirExpandLink);
 		modal.on('shown.bs.modal', function () {
 			shown = true;
 			loadActiveCommentWidgets();
 			scrollActiveTafsirTabs();
+			updateTafsirExpandLink();
 		});
 		modal.on('hidden.bs.modal', function () { shown = false; });
 		var modalState = {
