@@ -209,6 +209,21 @@ const TAFSIRS = {
 		file: 'data/qiraat.json',
 		column: 'text',
 		sourceFormat: 'html'
+	},
+	'saadi': {
+		ordinal: 93,
+		shortName_en: 'Saadi',
+		shortName: 'السعدي',
+		name_en: 'Taysir al-Karim al-Rahman',
+		name: 'تيسير الكريم الرحمن',
+		author_en: 'Abd al-Rahman al-Saadi',
+		author: 'السعدي',
+		death: 1376,
+		lang: 'ar',
+		format: 'md',
+		file: 'data/saadi.json',
+		column: 'text',
+		sourceFormat: 'html'
 	}
 };
 const options = readOptions(process.argv.slice(2));
