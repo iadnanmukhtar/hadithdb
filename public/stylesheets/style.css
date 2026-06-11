@@ -2348,15 +2348,15 @@ del em strong {
 	content: "\f282";
 }
 
-.quran-tafsir-entry:not([open]) .quran-tafsir-ayah,
-.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-range {
+details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah,
+details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-range {
 	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
+details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	display: inline;
 }
 
