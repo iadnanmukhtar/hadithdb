@@ -61,7 +61,11 @@
     
     <main class="toc">
       
-      <%- include('sub-views/bookNav.ejs'); %> 
+      <% if (isQuranToc) { %>
+        <%- include('sub-views/tafsirBookNav.ejs', { tafsirs: tafsirs || [], Tafsir: Tafsir }); %>
+      <% } else { %>
+        <%- include('sub-views/bookNav.ejs'); %>
+      <% } %>
     
       <aside class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">

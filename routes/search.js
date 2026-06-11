@@ -1302,6 +1302,7 @@ router.get('/:bookAlias', async function (req, res, next) {
 
     var results;
     var random;
+    var tafsirs;
     if ('download' in req.query && 'tsv' in req.query) {
       debug(`downloading ${req.params.bookAlias}`);
       if (!book.virtual)
@@ -1318,6 +1319,8 @@ router.get('/:bookAlias', async function (req, res, next) {
         random = await Index.docRandomnly(Item.INDEX, `books:"{${req.params.bookAlias}}"`);
       if (random && random.length > 0)
         random = new Item(random[0]);
+      if (book.alias === 'quran')
+        tafsirs = await Tafsir.visibleTafsirs();
     }
 
     if ('json' in req.query) {
@@ -1340,6 +1343,8 @@ router.get('/:bookAlias', async function (req, res, next) {
           nextBook: nextBook,
           toc: results,
           random: random,
+          Tafsir: Tafsir,
+          tafsirs: tafsirs,
           req: req,
           res: res
         });
@@ -1351,7 +1356,9 @@ router.get('/:bookAlias', async function (req, res, next) {
         prevBook: prevBook,
         nextBook: nextBook,
         toc: results,
-        random: random
+        random: random,
+        Tafsir: Tafsir,
+        tafsirs: tafsirs
       });
     }
   } else

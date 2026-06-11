@@ -1,0 +1,43 @@
+<%
+	const tafsirBooks = Array.isArray(tafsirs) ? tafsirs : [];
+	const bilingualAliases = new Set(tafsirBooks.filter(function (tafsir) {
+		return tafsir.lang === 'en' && Tafsir.isBilingualTafsir(tafsir);
+	}).map(function (tafsir) {
+		return tafsir.alias;
+	}));
+	const orderedTafsirs = ['en', 'ar'].reduce(function (items, lang) {
+		const group = tafsirBooks.filter(function (tafsir) {
+			if (lang === 'ar' && bilingualAliases.has(tafsir.alias))
+				return false;
+			return tafsir.lang === lang;
+		}).sort(function (a, b) {
+			const ordinal = Number(a.ordinal || 0) - Number(b.ordinal || 0);
+			if (ordinal !== 0)
+				return ordinal;
+			return (a.shortName_en || a.name_en || a.alias).localeCompare(b.shortName_en || b.name_en || b.alias);
+		});
+		return items.concat(group);
+	}, []);
+	function tafsirBookHref(tafsir) {
+		return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(tafsir.slug || Tafsir.tafsirSlug(tafsir.alias))}`);
+	}
+	function tafsirBookLabel(tafsir) {
+		return Tafsir.displayShortName(tafsir, 'en')
+			.replace(/^tafs[īi]r\s+/i, '')
+			.trim();
+	}
+%>
+<% if (orderedTafsirs.length > 0) { %>
+	<div class="h-menu-wrap mb-3">
+		<div class="h-menu-hint d-md-none">
+			<i class="bi bi-arrow-left-right"></i> Swipe to browse tafsīr books
+		</div>
+		<div class="h-menu-scroller">
+			<div class="btn-group h-menu text-nowrap" role="group">
+				<% orderedTafsirs.forEach(function (tafsir) { %>
+					<a class="btn btn-outline-primary text-nowrap" href="<%= tafsirBookHref(tafsir) %>" title="<%= [tafsir.name_en, tafsir.name].filter(Boolean).join(' ') %>"><%- tafsirBookLabel(tafsir) %></a>
+				<% }); %>
+			</div>
+		</div>
+	</div>
+<% } %>
