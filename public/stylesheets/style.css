@@ -1171,7 +1171,7 @@ nav .nav-link {
 
 .blog-post s {
 	direction: rtl;
-	font-family: Quran, Serif;
+	font-family: Hafs, Serif;
 	text-decoration: none !important;
 	font-size: 1.5rem;
 }
@@ -1179,7 +1179,7 @@ nav .nav-link {
 .blog-post s b,
 .blog-post s strong {
 	color: var(--c-blue);
-	font-family: QuranBold, Serif;
+	font-family: Hafs, Serif;
 }
 
 .blog-post h1:has(s),
@@ -1205,13 +1205,18 @@ nav .nav-link {
 	text-align: left;
 }
 
+.blog-post :lang(ar) {
+	font-family: Hafs, Serif;
+}
+
 .blog-post h1 {
 	font-size: 1.75rem;
 }
 
 .blog-post h1 s,
+.blog-post h1:lang(ar),
 .blog-post :lang(ar) h1 {
-	font-family: QuranBold, Serif;
+	font-family: Hafs, Serif;
 	font-size: 2.1rem;
 }
 
@@ -1220,8 +1225,9 @@ nav .nav-link {
 }
 
 .blog-post h2 s,
+.blog-post h2:lang(ar),
 .blog-post :lang(ar) h2 {
-	font-family: QuranBold, Serif;
+	font-family: Hafs, Serif;
 	font-size: 1.9rem;
 }
 
@@ -1230,8 +1236,9 @@ nav .nav-link {
 }
 
 .blog-post h3 s,
+.blog-post h3:lang(ar),
 .blog-post :lang(ar) h3 {
-	font-family: QuranBold, Serif;
+	font-family: Hafs, Serif;
 	font-size: 1.8rem;
 }
 
@@ -1240,8 +1247,9 @@ nav .nav-link {
 }
 
 .blog-post h4 s,
+.blog-post h4:lang(ar),
 .blog-post :lang(ar) h4 {
-	font-family: QuranBold, Serif;
+	font-family: Hafs, Serif;
 	font-size: 1.7rem;
 }
 
@@ -1250,8 +1258,9 @@ nav .nav-link {
 }
 
 .blog-post h5 s,
+.blog-post h5:lang(ar),
 .blog-post :lang(ar) h5 {
-	font-family: QuranBold, Serif;
+	font-family: Hafs, Serif;
 	font-size: 1.56rem;
 }
 
@@ -1260,8 +1269,9 @@ nav .nav-link {
 }
 
 .blog-post h6 s,
+.blog-post h6:lang(ar),
 .blog-post :lang(ar) h6 {
-	font-family: QuranBold, Serif;
+	font-family: Hafs, Serif;
 	font-size: 1.43rem;
 }
 
