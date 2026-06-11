@@ -36,9 +36,9 @@ router.get('/:tag', async function (req, res, next) {
   var admin = (req.admin);
   var editMode = (admin && req.editMode);
   var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
-  if ('flush' in req.query)
+  if (Utils.shouldFlushCache(req))
     Utils.flushCachedFile(cachedFile);
-  if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
+  if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
     res.end(fs.readFileSync(cachedFile));
     return;
@@ -175,7 +175,6 @@ router.get('/:tag', async function (req, res, next) {
     var refs = [];
     for (const item of results)
       refs.push(item.ref);
-    Utils.indexCachedItem(refs, cachedFile);
     var html = await ejs.renderFile(`${__dirname}/../views/tag.ejs`, {
       noadmin: true,
       tagIds: tagIds,
@@ -186,6 +185,7 @@ router.get('/:tag', async function (req, res, next) {
       res: res
     });
     fs.writeFileSync(cachedFile, html);
+  await Utils.indexCachedItem(refs, cachedFile);
 
     res.render('tag', {
       tagIds: tagIds,

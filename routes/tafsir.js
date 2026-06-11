@@ -88,9 +88,10 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
   const cachedFile = `${homedir}/.hadithdb/cache/${tafsirReqToFilename(req)}${TAFSIR_PASSAGE_CACHE_SUFFIX}.html`;
-  if ('flush' in req.query)
+  const flushCache = Utils.shouldFlushCache(req);
+  if (flushCache)
     await Utils.flushCachedFile(cachedFile);
-  if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+  if (!flushCache && !editMode && fs.existsSync(cachedFile)) {
     sendCachedHtml(req, res, cachedFile);
     return;
   }
@@ -142,7 +143,7 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
       res: res
     });
     fs.writeFileSync(cachedFile, cachedHtml);
-    Utils.indexCachedItem(tafsirCacheRefs(tafsir, entries, surahNum, ayahNum), cachedFile);
+    await Utils.indexCachedItem(tafsirCacheRefs(tafsir, entries, surahNum, ayahNum), cachedFile);
   }
 
   res.render('tafsir_passage', renderLocals);
@@ -192,9 +193,7 @@ function sendCachedHtml(req, res, cachedFile) {
 }
 
 function tafsirReqToFilename(req) {
-  var name = `${req.baseUrl || ''}${req.url}`.replace(/\//g, '_');
-  name = name.replace(/\?o=0/g, '');
-  return name;
+  return Utils.cacheReqToFilename({ url: `${req.baseUrl || ''}${req.url}` });
 }
 
 async function tafsirNavigation(tafsir, entries, tafsirs) {

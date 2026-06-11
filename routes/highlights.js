@@ -19,9 +19,9 @@ router.get('/', async function (req, res, next) {
   var admin = (req.admin);
   var editMode = (admin && req.editMode);
   var cachedFile = `${homedir}/.hadithdb/cache/${name}.html`;
-  if ('flush' in req.query)
+  if (Utils.shouldFlushCache(req))
     Utils.flushCachedFile(cachedFile);
-  if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
+  if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
     res.end(fs.readFileSync(cachedFile));
     return;
@@ -33,7 +33,6 @@ router.get('/', async function (req, res, next) {
   var refs = [];
   for (const item of results)
     refs.push(item.ref);
-  Utils.indexCachedItem(refs, cachedFile);
   var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list.ejs`, {
     noadmin: true,
     results: results,
@@ -42,6 +41,7 @@ router.get('/', async function (req, res, next) {
     res: res
   });
   fs.writeFileSync(cachedFile, html);
+  await Utils.indexCachedItem(refs, cachedFile);
 
   res.render('hadiths_list', {
     results: results,
@@ -58,9 +58,9 @@ router.get('/feed', async function (req, res, next) {
   var admin = (req.admin);
   var editMode = (admin && req.editMode);
   var cachedFile = `${homedir}/.hadithdb/cache/${name}_feed.xml`;
-  if ('flush' in req.query)
+  if (Utils.shouldFlushCache(req))
     Utils.flushCachedFile(cachedFile);
-  if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
+  if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
     res.end(fs.readFileSync(cachedFile));
     return;
   }
@@ -71,7 +71,6 @@ router.get('/feed', async function (req, res, next) {
   var refs = [];
   for (const item of results)
     refs.push(item.ref);
-  Utils.indexCachedItem(refs, cachedFile);
   var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, {
     noadmin: true,
     results: results,
@@ -80,6 +79,7 @@ router.get('/feed', async function (req, res, next) {
     res: res
   });
   fs.writeFileSync(cachedFile, html);
+  await Utils.indexCachedItem(refs, cachedFile);
 
   res.render('hadiths_list_feed', {
     results: results,
@@ -96,9 +96,9 @@ router.get('/rss', async function (req, res, next) {
   var admin = (req.admin);
   var editMode = (admin && req.editMode);
   var cachedFile = `${homedir}/.hadithdb/cache/${name}_rss.xml`;
-  if ('flush' in req.query)
+  if (Utils.shouldFlushCache(req))
     Utils.flushCachedFile(cachedFile);
-  if (!('flush' in req.query) && !admin && !editMode && fs.existsSync(cachedFile)) {
+  if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
     res.end(fs.readFileSync(cachedFile));
     return;
   }
@@ -109,7 +109,6 @@ router.get('/rss', async function (req, res, next) {
   var refs = [];
   for (const item of results)
     refs.push(item.ref);
-  Utils.indexCachedItem(refs, cachedFile);
   var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, {
     noadmin: true,
     results: results,
@@ -118,6 +117,7 @@ router.get('/rss', async function (req, res, next) {
     res: res
   });
   fs.writeFileSync(cachedFile, html);
+  await Utils.indexCachedItem(refs, cachedFile);
 
   res.render('hadiths_list_rss', {
     results: results,

@@ -879,10 +879,16 @@ function initQuranTafsirTabs(root) {
 				dir: book.lang === 'ar' ? 'rtl' : 'ltr'
 			}).appendTo(panel);
 		};
+		var adminTafsirCacheParam = function () {
+			return window.hadithAdmin === true ? '&flush=1' : '';
+		};
+		var adminTafsirQuery = function () {
+			return window.hadithAdmin === true ? '?flush=1' : '';
+		};
 		var fetchPayload = async function (src, source, ayah, language) {
 			var endpoint = quranApiPath(source === 'local' ? '/proxy/tafsir/local' : '/proxy/tafsir');
 			var languageParam = source === 'local' && language ? `&lang=${encodeURIComponent(language)}` : '';
-			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&ver=1${languageParam}`);
+			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&ver=1${languageParam}${adminTafsirCacheParam()}`);
 			if (response.status === 404)
 				return null;
 			if (!response.ok) {
@@ -899,7 +905,7 @@ function initQuranTafsirTabs(root) {
 			var languageParam = language ? `&lang=${encodeURIComponent(language)}` : '';
 			var ayahFrom = Math.min.apply(Math, ayahs);
 			var ayahTo = Math.max.apply(Math, ayahs);
-			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&from=${encodeURIComponent(ayahFrom)}&to=${encodeURIComponent(ayahTo)}${languageParam}`);
+			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&from=${encodeURIComponent(ayahFrom)}&to=${encodeURIComponent(ayahTo)}${languageParam}${adminTafsirCacheParam()}`);
 			if (response.status === 404)
 				return [];
 			if (!response.ok)
@@ -1057,7 +1063,7 @@ function initQuranTafsirTabs(root) {
 			showLanguage($(this).attr('data-tafsir-language'));
 		});
 		Promise.all([
-			fetch(quranApiPath('/proxy/tafsir/books')).then(function (response) {
+			fetch(`${quranApiPath('/proxy/tafsir/books')}${adminTafsirQuery()}`).then(function (response) {
 				if (!response.ok)
 					throw new Error('Unable to load tafsir list.');
 				return response.json();

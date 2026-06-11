@@ -58,17 +58,7 @@ function sendCachedHtml(req, res, cachedFile) {
 }
 
 function htmlCacheReqToFilename(req) {
-  var parts = req.url.split('?');
-  if (parts.length < 2)
-    return Utils.reqToFilename(req);
-
-  var params = new URLSearchParams(parts[1]);
-  params.delete('flush');
-  if (params.get('o') === '0')
-    params.delete('o');
-  var query = params.toString();
-  var url = query ? `${parts[0]}?${query}` : parts[0];
-  return url.replace(/\//g, '_');
+  return Utils.cacheReqToFilename(req);
 }
 
 function redirectCanonicalReferencePath(req, res, canonicalPath) {
@@ -1302,9 +1292,10 @@ router.get('/:bookAlias', async function (req, res, next) {
     var editMode = admin && req.editMode;
     var cacheableHtml = !('download' in req.query) && !('json' in req.query) && !('tsv' in req.query);
     var cachedFile = `${homedir}/.hadithdb/cache/${htmlCacheReqToFilename(req)}.html`;
-    if ('flush' in req.query)
+    const flushCache = Utils.shouldFlushCache(req);
+    if (flushCache)
       await Utils.flushCachedFile(cachedFile);
-    if (cacheableHtml && !('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+    if (cacheableHtml && !flushCache && !editMode && fs.existsSync(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
     }
@@ -1342,7 +1333,6 @@ router.get('/:bookAlias', async function (req, res, next) {
       if (cacheableHtml && !editMode) {
         fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
         var refs = [book.alias, `book:${book.alias}`];
-        await Utils.indexCachedItem(refs, cachedFile);
         var html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, {
           noadmin: true,
           book: book,
@@ -1354,6 +1344,7 @@ router.get('/:bookAlias', async function (req, res, next) {
           res: res
         });
         fs.writeFileSync(cachedFile, html);
+        await Utils.indexCachedItem(refs, cachedFile);
       }
       res.render('toc', {
         book: book,
@@ -1394,9 +1385,10 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
     var cacheSuffix = (bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v63-no-inline-tafsir' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
-    if ('flush' in req.query)
+    const flushCache = Utils.shouldFlushCache(req);
+    if (flushCache)
       Utils.flushCachedFile(cachedFile);
-    if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+    if (!flushCache && !editMode && fs.existsSync(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
     }
@@ -1426,7 +1418,6 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         var refs = [];
         for (const item of results)
           refs.push(item.ref);
-        Utils.indexCachedItem(refs, cachedFile);
         var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
           noadmin: true,
           chapter: chapter,
@@ -1436,6 +1427,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
           res: res
         });
         fs.writeFileSync(cachedFile, html);
+        await Utils.indexCachedItem(refs, cachedFile);
 
         res.render('section_quran', {
           chapter: chapter,
@@ -1449,7 +1441,6 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       var refs = [];
       for (const item of results)
         refs.push(item.ref);
-      Utils.indexCachedItem(refs, cachedFile);
       var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
         noadmin: true,
         chapter: chapter,
@@ -1458,6 +1449,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         res: res
       });
       fs.writeFileSync(cachedFile, html);
+      await Utils.indexCachedItem(refs, cachedFile);
 
       res.render('chapter', {
         chapter: chapter,
@@ -1509,9 +1501,10 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
 
     var cacheSuffix = (bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v63-no-inline-tafsir' : '';
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
-    if ('flush' in req.query)
+    const flushCache = Utils.shouldFlushCache(req);
+    if (flushCache)
       Utils.flushCachedFile(cachedFile);
-    if (!('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+    if (!flushCache && !editMode && fs.existsSync(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
     }
@@ -1545,7 +1538,6 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       var refs = [];
       for (const item of results)
         refs.push(item.ref);
-      Utils.indexCachedItem(refs, cachedFile);
       var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
         noadmin: true,
         section: section,
@@ -1556,6 +1548,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         res: res
       });
       fs.writeFileSync(cachedFile, html);
+      await Utils.indexCachedItem(refs, cachedFile);
 
       res.render('section_quran', {
         section: section,
@@ -1583,7 +1576,6 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         var refs = [];
         for (const item of results)
           refs.push(item.ref);
-        Utils.indexCachedItem(refs, cachedFile);
         var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
           noadmin: true,
           section: section,
@@ -1592,6 +1584,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
           res: res
         });
         fs.writeFileSync(cachedFile, html);
+        await Utils.indexCachedItem(refs, cachedFile);
 
         res.render('section', {
           section: section,

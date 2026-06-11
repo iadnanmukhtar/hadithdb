@@ -17,9 +17,10 @@ router.get('/', async function (req, res, next) {
   const editMode = admin && req.editMode;
   const cacheableHtml = !('json' in req.query) && !('tsv' in req.query);
   const cachedFile = `${homedir}/.hadithdb/cache/${tafsirBooksReqToFilename(req)}${TAFSIR_BOOKS_CACHE_SUFFIX}.html`;
-  if ('flush' in req.query)
+  const flushCache = Utils.shouldFlushCache(req);
+  if (flushCache)
     await Utils.flushCachedFile(cachedFile);
-  if (cacheableHtml && !('flush' in req.query) && !editMode && fs.existsSync(cachedFile)) {
+  if (cacheableHtml && !flushCache && !editMode && fs.existsSync(cachedFile)) {
     sendCachedHtml(req, res, cachedFile);
     return;
   }
@@ -74,18 +75,7 @@ function sendCachedHtml(req, res, cachedFile) {
 }
 
 function tafsirBooksReqToFilename(req) {
-  var url = `${req.baseUrl || ''}${req.url}`;
-  var parts = url.split('?');
-  if (parts.length > 1) {
-    var params = new URLSearchParams(parts[1]);
-    params.delete('flush');
-    if (params.get('o') === '0')
-      params.delete('o');
-    var query = params.toString();
-    url = query ? `${parts[0]}?${query}` : parts[0];
-  }
-  var name = url.replace(/\//g, '_');
-  return name;
+  return Utils.cacheReqToFilename({ url: `${req.baseUrl || ''}${req.url}` });
 }
 
 function tafsirBookCacheRefs(tafsirs) {
