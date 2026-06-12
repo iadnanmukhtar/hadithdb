@@ -1690,6 +1690,18 @@ function initQuranDynamicPassageHero(root) {
 			$('.quran-passage-ayah').val(parts[1]);
 		}
 	};
+	var scrollSelectedAyahHeroIntoView = function (hero) {
+		if (!hero || !hero.length)
+			return;
+		window.requestAnimationFrame(function () {
+			var navbar = document.querySelector('.site-navbar.fixed-top');
+			var navbarOffset = navbar ? navbar.getBoundingClientRect().height : 0;
+			window.scrollTo({
+				top: window.pageYOffset + hero[0].getBoundingClientRect().top - navbarOffset - 12,
+				behavior: 'smooth'
+			});
+		});
+	};
 	var loadAyahHero = function (href, pushHistory) {
 		var target = new URL(href, window.location.origin);
 		var refMatch = target.pathname.match(/\/quran:(\d+):(\d+)$/);
@@ -1722,6 +1734,8 @@ function initQuranDynamicPassageHero(root) {
 			}
 			if (pushHistory && window.history && window.history.pushState)
 				window.history.pushState({ quranDynamicAyahRef: ref }, '', `${target.pathname}${target.search}${target.hash}`);
+			if (pushHistory)
+				scrollSelectedAyahHeroIntoView(hero);
 			document.title = `Quran ${ref} | ${document.title.replace(/^Quran\s+\d+:\d+(?:-\d+)?\s+\|\s+/, '')}`;
 		}).catch(function (err) {
 			if (err && err.name === 'AbortError')

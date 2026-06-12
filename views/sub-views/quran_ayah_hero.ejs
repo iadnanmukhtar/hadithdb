@@ -3,6 +3,8 @@
 	const clearHref = locals.clearHref;
 	const prevHref = locals.prevHref;
 	const nextHref = locals.nextHref;
+	const ayahHref = locals.ayahHref;
+	const linkHeroAyah = ayahHref && !(site && site.editMode);
 %>
 <% if (ayahs.length > 0) { %>
 <section class="quran-ayah-hero row<%= prevHref || nextHref ? ' quran-ayah-hero-with-nav' : '' %>">
@@ -38,7 +40,7 @@
 					: '';
 				%>
 						<div class="quran-ayah-hero-ayah">
-							<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranCorpusAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahLabel %>">۝<%= ayahPartArabic %></span>
+							<% if (linkHeroAyah) { %><a class="quran-ayah-hero-link" href="<%= ayahHref %>" title="View Quran <%= ayahLabel %>"><% } %><div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranCorpusAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahLabel %>">۝<%= ayahPartArabic %></span><% if (linkHeroAyah) { %></a><% } %>
 						</div>
 			<% }); %>
 		</div>
@@ -53,7 +55,7 @@
 				var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
 				%>
 						<div class="quran-ayah-hero-ayah">
-							<sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>
+							<% if (linkHeroAyah) { %><a class="quran-ayah-hero-link" href="<%= ayahHref %>" title="View Quran <%= ayahLabel %>"><% } %><sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div><% if (linkHeroAyah) { %></a><% } %>
 						</div>
 			<% }); %>
 		</div>

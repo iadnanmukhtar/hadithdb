@@ -18,6 +18,11 @@
       <span class="bi bi-book"></span><span>Tafsir</span>
     </button>
   <% } %>
+  <% if (locals.viewHref) { %>
+    <a href="<%= viewHref %>" title="View selected ayah" class="quran-ayah-action icon text-decoration-none">
+      <span class="bi bi-eye"></span><span>View</span>
+    </a>
+  <% } %>
   <a href="#<%= quranShareId %>" type="button" title="Share selected ayah image" class="quran-ayah-action icon text-decoration-none" data-bs-toggle="modal" data-bs-target="#<%= quranShareId %>">
     <span class="bi bi-box-arrow-up"></span><span>Share</span>
   </a>

@@ -1,5 +1,7 @@
 <%
   var randomAyahRef = random.en?.num || random.num || random.ref || '';
+  var randomAyahHrefRef = arabic.toLatinDigits(randomAyahRef.toString()).replace(/^quran:/, '');
+  var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}`);
   var randomQuranShareId = `Q${randomAyahRef.replace(/[^A-Za-z0-9_-]/g, '-')}`;
 %>
 <header class="row">
@@ -9,9 +11,11 @@
   site: site,
   page: page,
   selectedAyahs: [random],
+  ayahHref: randomAyahHref,
   toolbar: {
     selectedAyahModalIndex: 0,
     selectedAyahId: random.id,
+    viewHref: randomAyahHref,
     quranShareId: randomQuranShareId
   }
 }); %>
