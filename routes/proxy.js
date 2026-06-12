@@ -7,8 +7,8 @@ const https = require('https')
 const cheerio = require('cheerio');
 const MarkdownIt = require('markdown-it');
 const markdownitFootnote = require('markdown-it-footnote');
-const Commentaries = require('../lib/Commentaries');
 const Index = require('../lib/Index');
+const Tafsir = require('../lib/Tafsir');
 
 const router = express.Router();
 const md = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
@@ -16,22 +16,10 @@ const quranBacktickMd = new MarkdownIt({ html: true, linkify: true, typographer:
 quranBacktickMd.renderer.rules.code_inline = renderQuranBacktickToken;
 quranBacktickMd.renderer.rules.code_block = renderQuranBacktickBlock;
 quranBacktickMd.renderer.rules.fence = renderQuranBacktickBlock;
-const tafsirAppHealth = {
-  checkedAt: 0,
-  available: true
-};
-const TAFSIR_APP_HEALTH_TTL_MS = 60000;
-const TAFSIR_APP_HEALTH_TIMEOUT_MS = 3000;
 
 router.get('/tafsir/books', async function (req, res) {
-  if (!global.commentaries || global.commentaries.length < 1)
-    await Commentaries.loadCommentaries();
-  const tafsirAppAvailable = await isTafsirAppAvailable();
-  const rows = expandBilingualLocalCommentaries((global.commentaries || [])
-    .filter(row => Number(row.hidden) === 0)
-    .filter(row => tafsirAppAvailable || row.source !== 'tafsir.app')
-    .map(({ hidden, ...row }) => row));
-  res.setHeader('Cache-Control', tafsirAppAvailable ? 'public, max-age=300' : 'public, max-age=60');
+  const rows = await Tafsir.visibleTafsirs();
+  res.setHeader('Cache-Control', 'public, max-age=300');
   res.json(rows);
 });
 
@@ -48,8 +36,6 @@ router.get('/tafsir/local', async function (req, res) {
     res.status(400).json({ error: 'Invalid local tafsir request.' });
     return;
   }
-  if (!global.commentaries || global.commentaries.length < 1)
-    await Commentaries.loadCommentaries();
   const rows = await localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo);
   const editMode = isEditMode(req);
   if (editMode)
@@ -83,9 +69,6 @@ router.get('/tafsir', async function (req, res) {
   const surah = Number(req.query.s);
   const ayah = Number(req.query.a);
   const version = Number(req.query.ver || 1);
-  if (!global.commentaries || global.commentaries.length < 1)
-    await Commentaries.loadCommentaries();
-
   if (!global.tafsirAppAliases.has(src) || !Number.isInteger(surah) || surah < 1 || surah > 114 ||
       !Number.isInteger(ayah) || ayah < 0 || !Number.isInteger(version) || version < 1) {
     res.status(400).json({ error: 'Invalid tafsir request.' });
@@ -102,11 +85,9 @@ router.get('/tafsir', async function (req, res) {
       },
       timeout: 10000
     });
-    markTafsirAppAvailable(true);
     res.setHeader('Cache-Control', 'public, max-age=2592000');
     res.json(response.data);
   } catch (err) {
-    markTafsirAppAvailable(false);
     debug(`tafsir.app unavailable for ${src} ${surah}:${ayah}: ${err.message}`);
     res.setHeader('Cache-Control', 'no-store');
     res.status(503).json({ error: 'Remote tafsir service is unavailable. Please use a local tafsir.' });
@@ -140,43 +121,6 @@ router.get('/:url', async function (req, res, next) {
     throw new ReferenceError(`Proxy: ${req.params.url} ${e}`);
   }
 });
-
-function expandBilingualLocalCommentaries(rows) {
-  const expanded = [];
-  rows.forEach(row => {
-    expanded.push(row);
-    if (row.source === 'local' && row.lang === 'en' && hasCommentaryLanguageFormat(row.format, 'ar')) {
-      expanded.push({ ...row, lang: 'ar' });
-    }
-  });
-  return expanded;
-}
-
-function hasCommentaryLanguageFormat(format, lang) {
-  return (format || '').split(',').map(value => value.trim()).some(value => value.startsWith(`${lang}:`));
-}
-
-async function isTafsirAppAvailable() {
-  const now = Date.now();
-  if (now - tafsirAppHealth.checkedAt < TAFSIR_APP_HEALTH_TTL_MS)
-    return tafsirAppHealth.available;
-  try {
-    await axios.get('https://tafsir.app/get.php', {
-      params: { src: 'ibn-katheer', s: 1, a: 1, ver: 1 },
-      timeout: TAFSIR_APP_HEALTH_TIMEOUT_MS
-    });
-    markTafsirAppAvailable(true);
-  } catch (err) {
-    markTafsirAppAvailable(false);
-    debug(`tafsir.app health check failed: ${err.message}`);
-  }
-  return tafsirAppHealth.available;
-}
-
-function markTafsirAppAvailable(available) {
-  tafsirAppHealth.checkedAt = Date.now();
-  tafsirAppHealth.available = available;
-}
 
 async function localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo) {
   const size = Math.min(1000, Math.max(1, ayahTo - ayahFrom + 21));

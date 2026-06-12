@@ -288,9 +288,9 @@ router.post('/:id/:prop', async function (req, res, next) {
       var result = await global.query(`UPDATE books SET ${col}=${bookValueSql} WHERE id=${ids[0]}`);
       if (!result || result.affectedRows < 1)
         throw createError(404, 'Book not found');
+      await Library.reloadBooks();
       status.code = 200;
       status.message = result.message;
-      await Library.reloadBooks();
       try {
         var afterBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
         var bookAliases = new Set();
