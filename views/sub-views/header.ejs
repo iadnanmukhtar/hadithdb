@@ -6,6 +6,27 @@
     var navSearchAction = typeof utils.globalSearchBaseUrl === 'function'
       ? utils.globalSearchBaseUrl(req)
       : ((typeof utils.hadithBaseUrl === 'function' && utils.hadithBaseUrl(req)) || site.urlLocal || site.url || '/');
+    var requestPath = req && req.originalUrl ? req.originalUrl.split('?')[0] : (req && req.path ? req.path : '');
+    var pageMenu = page && page.menu ? page.menu : '';
+    var pageBook = page && page.context ? page.context.book : null;
+    var isQuranArea = requestPath === '/quran'
+      || requestPath.indexOf('/quran/') === 0
+      || (pageBook && pageBook.alias === 'quran')
+      || (page.context && page.context.quranSearchProxy);
+    var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
+    var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
+    var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
+    var isLikedArea = requestPath === '/liked' || requestPath.indexOf('/liked/') === 0;
+    var isCommentedArea = requestPath === '/commented' || requestPath.indexOf('/commented/') === 0;
+    var isHighlightsArea = requestPath === '/highlights' || requestPath.indexOf('/highlights/') === 0;
+    var isTitledArea = requestPath === '/titled' || requestPath.indexOf('/titled/') === 0;
+    var isMoreArea = ['/bookmarks', '/liked', '/commented', '/highlights', '/titled'].some(function (path) {
+      return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
+    });
+    var isHadithArea = !isQuranArea && !isBooksArea && !isBlogArea && !isMoreArea;
+    function activeNavAttrs(active) {
+      return active ? ' active" aria-current="page' : '';
+    }
   %>
   <div class="row g-0 site-navbar-main">
     
@@ -33,35 +54,28 @@
     <menu class="col d-md-block d-none">
       
       <ul class="nav container-fluid justify-content-end">
-        <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
-        <li class="nav-item"><a class="nav-link" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea) %>" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>">Blog</a></li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Books</a>
+          <a class="nav-link dropdown-toggle<%- activeNavAttrs(isMoreArea) %>" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
-            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/books') %>"><i class="bi bi-book"></i> Ḥadīth</a></li>
-            <li><a class="dropdown-item" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-journal-text"></i> Tafsīr</a></li>
-          </ul>
-        </li>
-        <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/blog') %>">Blog</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
-            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
-            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
-            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/highlights') %>"><i class="bi bi-star"></i> Highlighted</a></li>
-            <li><a class="dropdown-item" href="<%= utils.urlFor(req, '/titled') %>"><i class="bi bi-card-heading"></i> Titled</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isHighlightsArea) %>" href="<%= utils.urlFor(req, '/highlights') %>"><i class="bi bi-star"></i> Highlighted</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isTitledArea) %>" href="<%= utils.urlFor(req, '/titled') %>"><i class="bi bi-card-heading"></i> Titled</a></li>
           </ul>
         </li>
         <li class="nav-item">
           <a class="nav-link top-nav-icon-link" href="<%= utils.urlFor(req, '/liked') %>" title="Favorites" aria-label="Favorites">
-            <i class="bi bi-heart"></i>
+            <i class="bi bi-heart<%= isLikedArea ? '-fill' : '' %>"></i>
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link top-nav-icon-link" href="<%= utils.urlFor(req, '/bookmarks') %>" title="Bookmarks" aria-label="Bookmarks">
-            <i class="bi bi-bookmark"></i>
+            <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>"></i>
           </a>
         </li>
         <% if (site.admin) { %>
@@ -105,17 +119,16 @@
         </form>
         <div class="row">
           <ul class="col-7 nav flex-column offcanvas-col1">
-            <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
-            <li class="nav-item"><a class="nav-link" href="<%= utils.hadithBaseUrl(req) %>"><i class="bi bi-house"></i> Hadith</a></li>
-            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/books') %>"><i class="bi bi-book"></i> Ḥadīth Books</a></li>
-            <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-journal-text"></i> Tafsīr Books</a></li>
-            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/blog') %>"><i class="bi bi-text-paragraph"></i> Blog</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>"><i class="bi bi-house"></i> Hadith</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>"><i class="bi bi-journals"></i> Ḥadīth & Tafsīr Books</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>"><i class="bi bi-text-paragraph"></i> Blog</a></li>
             <li><hr></li>
-            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
-            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
-            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
-            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/highlights') %>"><i class="bi bi-star"></i> Highlighted</a></li>
-            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/titled') %>"><i class="bi bi-card-heading"></i> Titled</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHighlightsArea) %>" href="<%= utils.urlFor(req, '/highlights') %>"><i class="bi bi-star"></i> Highlighted</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isTitledArea) %>" href="<%= utils.urlFor(req, '/titled') %>"><i class="bi bi-card-heading"></i> Titled</a></li>
             <% if (site.admin) { %>
               <li><hr></li>
               <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;max-age=7776000;samesite=lax' : document.cookie='editMode=1;path=/;max-age=7776000;samesite=lax'; console.log(document.cookie); location.reload();">

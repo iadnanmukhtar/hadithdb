@@ -398,12 +398,61 @@ nav .nav-link {
 	padding: 5px 15px 0 0;
 }
 
+nav .nav-link.active,
+nav .nav-link[aria-current="page"] {
+	color: var(--c-accent);
+	font-weight: 600;
+}
+
+.dropdown-item.active,
+.dropdown-item[aria-current="page"] {
+	background-color: var(--c-accent);
+	color: var(--c-white);
+}
+
+.site-navbar .nav-link.active,
+.site-navbar .nav-link[aria-current="page"] {
+	text-decoration: underline;
+	text-decoration-thickness: 0.12em;
+	text-underline-offset: 0.35em;
+}
+
 .top-nav-icon-link {
 	font-size: 1rem;
 }
 
+.top-nav-icon-link .bi-heart-fill,
+.top-nav-icon-link .bi-bookmark-fill {
+	color: var(--c-accent);
+}
+
 .top-nav-mobile-actions .top-nav-icon-link {
 	padding-right: 0.5rem;
+}
+
+.book-catalog-section-toggle {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	color: var(--bs-heading-color);
+	display: flex;
+	font: inherit;
+	font-weight: 600;
+	gap: 0.5rem;
+	justify-content: flex-start;
+	padding: 0;
+	text-align: start;
+	width: 100%;
+}
+
+.book-catalog-section-toggle .bi {
+	color: var(--bs-secondary-color);
+	font-size: 1rem;
+	transition: transform .2s ease;
+}
+
+.book-catalog-section-toggle[aria-expanded="false"] .bi {
+	transform: rotate(-90deg);
 }
 
 .offcanvas-col1 .nav-link {

@@ -3,6 +3,7 @@
 
 const debug = require('debug')('hadithdb:books');
 const express = require('express');
+const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 
 const router = express.Router();
@@ -23,8 +24,12 @@ router.get('/', async function (req, res, next) {
       keyNames = req.query.keys.split(/,/);
     res.end(Utils.toTSV(results, keyNames));
   } else {
+    var tafsirs = await Tafsir.visibleTafsirs();
+    tafsirs = await Tafsir.withFirstPassages(tafsirs);
     res.render('books', {
-      books: results
+      books: results,
+      Tafsir: Tafsir,
+      tafsirs: tafsirs
     });
   }
 });

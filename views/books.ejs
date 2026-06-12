@@ -11,11 +11,63 @@
 
     var page = {
     menu: 'Books',
-    title_en: `${site.shortName} | Available Books`,
+    title_en: `${site.shortName} | Books`,
     subtitle_en: `Available Books`,
     subtitle: ``,
     canonical: `/books`,
     context: {}
+    };
+    var tafsirBrowseUrl = function (tafsir) {
+      return utils.quranUrl(req, Tafsir.browseUrl(tafsir, tafsir.firstSurah || 1, tafsir.firstAyah || 1, tafsirs));
+    };
+    var tafsirDeathLabel = function (tafsir) {
+      var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
+      if (!death)
+        return '';
+      return /^d\./i.test(death) ? death : `d. ${death}`;
+    };
+    var tafsirDeathYear = function (tafsir) {
+      var match = utils.emptyIfNull(tafsir.death || '').toString().match(/\d+/);
+      return match ? Number(match[0]) : NaN;
+    };
+    var bilingualAliases = new Set((tafsirs || []).filter(function (tafsir) {
+      return tafsir.lang === 'en' && Tafsir.isBilingualTafsir(tafsir);
+    }).map(function (tafsir) {
+      return tafsir.alias;
+    }));
+    var tafsirGroups = [
+      { key: 'en', lang: 'en', heading: 'English Tafāsīr' },
+      { key: 'ar', lang: 'ar', heading: 'Arabic Tafāsīr' }
+    ].map(function (group) {
+      group.tafsirs = (tafsirs || []).filter(function (tafsir) {
+        if (group.lang === 'ar' && bilingualAliases.has(tafsir.alias))
+          return false;
+        return tafsir.lang === group.lang;
+      }).sort(function (a, b) {
+        var aDeath = tafsirDeathYear(a);
+        var bDeath = tafsirDeathYear(b);
+        var aHasDeath = Number.isFinite(aDeath) && aDeath > 0;
+        var bHasDeath = Number.isFinite(bDeath) && bDeath > 0;
+        if (aHasDeath && bHasDeath && aDeath !== bDeath)
+          return aDeath - bDeath;
+        if (aHasDeath !== bHasDeath)
+          return aHasDeath ? -1 : 1;
+        var ordinal = Number(a.ordinal || 0) - Number(b.ordinal || 0);
+        if (ordinal !== 0)
+          return ordinal;
+        return (a.shortName_en || a.name_en || a.alias).localeCompare(b.shortName_en || b.name_en || b.alias);
+      });
+      return group;
+    });
+    var catalogSectionHeading = function (id, heading) {
+      return `
+        <h2 class="h4 mb-3">
+          <button class="book-catalog-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#${id}" aria-expanded="true" aria-controls="${id}">
+            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            <span>${heading}</span>
+          </button>
+        </h2>
+      `;
     };
 %>
 
@@ -41,19 +93,23 @@
       {
         "@context": "https://schema.org",
         "@type": "Table",
-        "name" : "Available Books of Ḥadīth",
-        "about": "Available Books of Ḥadīth"
+        "name" : "Available Books",
+        "about": "Available Books of Ḥadīth and Tafsīr"
       }
     </script>
 
     <div class="page-content-filter input-group mb-3">
       <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
-      <input type="search" class="form-control hadith-book-filter" placeholder="Filter ḥadīth books" aria-label="Filter ḥadīth books" autocomplete="off" autofocus>
+      <input type="search" class="form-control book-catalog-filter" placeholder="Filter ḥadīth and tafsīr books" aria-label="Filter ḥadīth and tafsīr books" autocomplete="off" autofocus>
     </div>
 
+    <section class="book-catalog-section mb-4">
+      <%- catalogSectionHeading('book-catalog-hadith', 'Ḥadīth Books') %>
+      <div id="book-catalog-hadith" class="collapse show book-catalog-section-body">
     <% for (var i = 0; i < books.length; i += 2) { %>
-      <div class="row hadith-book-row">
-        <div class="col-sm-6 mb-3 hadith-book-card" data-hadith-book-filter="<%- [
+      <div class="row book-catalog-row">
+        <div class="col-sm-6 mb-3 book-catalog-card" data-book-catalog-filter="<%- [
+          'hadith',
           books[i].alias,
           books[i].name_en,
           books[i].shortName_en,
@@ -79,7 +135,8 @@
           </div>
         </div>
         <% if (i < (books.length-1)) { %>
-          <div class="col-sm-6 mb-3 hadith-book-card" data-hadith-book-filter="<%- [
+          <div class="col-sm-6 mb-3 book-catalog-card" data-book-catalog-filter="<%- [
+            'hadith',
             books[i+1].alias,
             books[i+1].name_en,
             books[i+1].shortName_en,
@@ -105,7 +162,54 @@
         <% } %>
       </div>
     <% } %>
-    <p class="text-muted d-none hadith-book-filter-empty">No matching ḥadīth books found.</p>
+      </div>
+    </section>
+
+    <% tafsirGroups.forEach(function (group) { %>
+      <section class="book-catalog-section mb-4">
+        <% var sectionId = `book-catalog-tafsir-${group.key}`; %>
+        <%- catalogSectionHeading(sectionId, group.heading) %>
+        <div id="<%= sectionId %>" class="collapse show book-catalog-section-body">
+        <% if (group.tafsirs.length < 1) { %>
+          <p class="text-muted">No <%= group.heading.toLowerCase() %> are currently available.</p>
+        <% } else { %>
+          <div class="row">
+            <% group.tafsirs.forEach(function (tafsir) { %>
+              <div class="col-sm-6 mb-3 book-catalog-card" data-book-catalog-filter="<%- [
+                'tafsir',
+                tafsir.alias,
+                tafsir.name_en,
+                tafsir.shortName_en,
+                tafsir.author_en,
+                tafsir.name,
+                tafsir.shortName,
+                tafsir.author
+              ].filter(Boolean).join(' ').toLowerCase() %>">
+                <div class="card h-100">
+                  <div class="card-body d-flex flex-column">
+                    <h5 class="card-title row">
+                      <div class="col"><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></div>
+                      <div class="col text-end" lang="ar" dir="rtl"><%- tafsir.name || tafsir.shortName || '' %></div>
+                    </h5>
+                    <p class="card-text mb-3">
+                      <small class="text-muted">
+                        <%- tafsir.author_en || tafsir.author || '' %>
+                        <% if (tafsirDeathLabel(tafsir)) { %>
+                          (<%- tafsirDeathLabel(tafsir) %>)
+                        <% } %>
+                      </small>
+                    </p>
+                    <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } %>
+        </div>
+      </section>
+    <% }); %>
+    <p class="text-muted d-none book-catalog-filter-empty">No matching books found.</p>
 
     </main>
   </div>
@@ -114,30 +218,46 @@
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 <script>
   (function () {
-    var filter = document.querySelector('.hadith-book-filter');
+    var filter = document.querySelector('.book-catalog-filter');
     if (!filter)
       return;
     filter.focus();
     var normalize = function (value) {
       return (value || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
     };
-    var cards = Array.from(document.querySelectorAll('.hadith-book-card'));
-    var rows = Array.from(document.querySelectorAll('.hadith-book-row'));
-    var empty = document.querySelector('.hadith-book-filter-empty');
+    var cards = Array.from(document.querySelectorAll('.book-catalog-card'));
+    var rows = Array.from(document.querySelectorAll('.book-catalog-row'));
+    var sections = Array.from(document.querySelectorAll('.book-catalog-section'));
+    var empty = document.querySelector('.book-catalog-filter-empty');
     filter.addEventListener('input', function () {
       var query = normalize(filter.value);
       var visibleCount = 0;
       cards.forEach(function (card) {
-        var match = !query || normalize(card.dataset.hadithBookFilter).includes(query);
+        var match = !query || normalize(card.dataset.bookCatalogFilter).includes(query);
         card.classList.toggle('d-none', !match);
         if (match)
           visibleCount += 1;
       });
       rows.forEach(function (row) {
-        var hasVisibleCard = Array.from(row.querySelectorAll('.hadith-book-card')).some(function (card) {
+        var hasVisibleCard = Array.from(row.querySelectorAll('.book-catalog-card')).some(function (card) {
           return !card.classList.contains('d-none');
         });
         row.classList.toggle('d-none', !hasVisibleCard && !!query);
+      });
+      sections.forEach(function (section) {
+        var sectionCards = Array.from(section.querySelectorAll('.book-catalog-card'));
+        var hasVisibleCard = sectionCards.some(function (card) {
+          return !card.classList.contains('d-none');
+        });
+        section.classList.toggle('d-none', sectionCards.length > 0 && !hasVisibleCard && !!query);
+        if (query && hasVisibleCard) {
+          var sectionBody = section.querySelector('.book-catalog-section-body');
+          var sectionToggle = section.querySelector('.book-catalog-section-toggle');
+          if (sectionBody)
+            sectionBody.classList.add('show');
+          if (sectionToggle)
+            sectionToggle.setAttribute('aria-expanded', 'true');
+        }
       });
       if (empty)
         empty.classList.toggle('d-none', visibleCount > 0 || !query);

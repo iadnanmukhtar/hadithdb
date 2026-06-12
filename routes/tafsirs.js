@@ -8,7 +8,7 @@ const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 
 const router = express.Router();
-const TAFSIR_BOOKS_CACHE_SUFFIX = '.tafsir-books-v1';
+const TAFSIR_BOOKS_CACHE_SUFFIX = '.tafsir-books-v4-accent-active-nav';
 
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
@@ -26,7 +26,7 @@ router.get('/', async function (req, res, next) {
   }
 
   var tafsirs = await Tafsir.visibleTafsirs();
-  tafsirs = await withFirstPassages(tafsirs);
+  tafsirs = await Tafsir.withFirstPassages(tafsirs);
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(tafsirs));
@@ -55,19 +55,6 @@ router.get('/', async function (req, res, next) {
     });
   }
 });
-
-async function withFirstPassages(tafsirs) {
-  const firstPassagesByKey = new Map();
-  await Promise.all(tafsirs.map(async function (tafsir) {
-    const key = `${tafsir.alias}:${Number(tafsir.surah_dir) || 0}`;
-    if (!firstPassagesByKey.has(key))
-      firstPassagesByKey.set(key, Tafsir.firstPassage(tafsir));
-    const firstPassage = await firstPassagesByKey.get(key);
-    tafsir.firstSurah = firstPassage?.surah || 1;
-    tafsir.firstAyah = firstPassage?.ayah || 1;
-  }));
-  return tafsirs;
-}
 
 function sendCachedHtml(req, res, cachedFile) {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8');

@@ -10,7 +10,7 @@ const { Item } = require('../lib/Model');
 const Utils = require('../lib/Utils');
 
 const router = express.Router();
-const name = 'commented';
+const name = 'commented-v5-accent-active-nav';
 const latestCommentedLimit = 20;
 
 router.get('/', async function (req, res, next) {

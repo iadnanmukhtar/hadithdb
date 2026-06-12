@@ -10,7 +10,7 @@ const { Item } = require('../lib/Model');
 const Utils = require('../lib/Utils');
 
 const router = express.Router();
-const name = 'titled';
+const name = 'titled-v5-accent-active-nav';
 
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
