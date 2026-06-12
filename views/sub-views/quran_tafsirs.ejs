@@ -36,9 +36,10 @@
 		: `Tafsir of Section ${tafsirSection}`;
 	const tafsirHeading = locals.tafsirHeading || passageTafsirHeading;
 	const tafsirInstance = locals.tafsirInstance || 'passage';
+	const selectedTafsirAlias = locals.selectedTafsirAlias || '';
 %>
 <% if (passageSurah && passageAyahs.length > 0) { %>
-<article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>">
+<article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>"<% if (selectedTafsirAlias) { %> data-selected-tafsir="<%= selectedTafsirAlias %>"<% } %>>
 	<script type="application/json" class="quran-tafsir-ayah-data"><%- JSON.stringify(passageAyahText).replace(/</g, '\\u003c') %></script>
 	<div class="quran-tafsir-heading d-flex flex-wrap align-items-center justify-content-between gap-2">
 		<h2 class="h5 mb-0"><%= tafsirHeading %></h2>

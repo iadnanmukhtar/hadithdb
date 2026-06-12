@@ -111,6 +111,35 @@ html,
 body {
 	font-size: 13.5pt !important;
 	font-family: "Gentium Plus", Serif;
+	max-width: 100%;
+	overflow-x: hidden;
+}
+
+@media (max-width: 1199.98px) {
+	.container,
+	.container-sm,
+	.container-md,
+	.container-lg,
+	.container-xl,
+	.container-xxl {
+		width: 100%;
+		max-width: none;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+	}
+
+	.container.col-lg-8,
+	.container.col-lg-9,
+	.site-navbar.container {
+		flex: 0 0 100%;
+		width: 100%;
+		max-width: none;
+	}
+
+	.site-navbar.container {
+		padding-left: calc(var(--bs-gutter-x, 1.5rem) * .5);
+		padding-right: calc(var(--bs-gutter-x, 1.5rem) * .5);
+	}
 }
 
 body :lang(ar) {
@@ -190,6 +219,10 @@ main {
 
 main.chapter {
 	margin-top: max(7rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
+}
+
+main.chapter.tafsir-only-page {
+	margin-top: max(5.5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 }
 
 @media (max-width: var(--bs-breakpoint-sm)) {
@@ -1420,6 +1453,10 @@ del em strong {
 	margin-top: 1rem;
 }
 
+.tafsir-only-page > .tafsir-passage-navigation:first-child {
+	margin-top: 0;
+}
+
 .top a {
 	text-decoration: none;
 }
@@ -1601,6 +1638,23 @@ del em strong {
 .quran-passage-section [lang="ar"] .ayah .quran-corpus-word,
 .body.passage:lang(ar) .ayah sup {
 	font-family: QuranV1, Serif;
+}
+
+.body.passage:lang(ar),
+.body.passage:lang(ar) .ayah,
+.body.passage:lang(ar) .ayah .quran-corpus-word,
+.body.passage:lang(ar) .ayah a,
+.body.passage:lang(ar) .quran-ayah-body,
+.body.passage:lang(ar) .quran-ayah-body p,
+.quran-passage-section [lang="ar"] .body.passage,
+.quran-passage-section [lang="ar"] .body.passage .ayah,
+.quran-passage-section [lang="ar"] .body.passage .ayah .quran-corpus-word,
+.quran-passage-section [lang="ar"] .body.passage .ayah a,
+.quran-passage-section [lang="ar"] .body.passage .quran-ayah-body,
+.quran-passage-section [lang="ar"] .body.passage .quran-ayah-body p,
+.quran-passage-section [lang="ar"] .ayah,
+.quran-passage-section [lang="ar"] .ayah .quran-corpus-word {
+	font-size: calc(var(--f-size-ar) * 1.1);
 }
 
 .body.passage:lang(ar) .ayah-selected,
@@ -2142,6 +2196,45 @@ del em strong {
 .quran-tafsir-local-pair [lang="en"] {
 	font-family: "Gentium Plus", Serif;
 	line-height: 1.55;
+}
+
+.quran-tafsir-editor:not(.markdown-editing)[data-markdown-source=""] {
+	color: var(--bs-secondary-color);
+}
+
+.quran-tafsir-editor.markdown-editing:empty::before {
+	color: var(--bs-secondary-color);
+	content: attr(data-placeholder);
+	pointer-events: none;
+}
+
+.quran-tafsir-save,
+.quran-tafsir-local-pair [lang="ar"] .quran-tafsir-save,
+.quran-tafsir-text [lang="ar"] .quran-tafsir-save {
+	align-items: center;
+	direction: ltr;
+	display: inline-flex;
+	font-family: var(--bs-font-sans-serif) !important;
+	font-size: .85rem !important;
+	gap: .35rem;
+	line-height: 1.25 !important;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.quran-tafsir-save span,
+.quran-tafsir-local-pair [lang="ar"] .quran-tafsir-save span,
+.quran-tafsir-text [lang="ar"] .quran-tafsir-save span {
+	direction: ltr;
+	font-family: var(--bs-font-sans-serif) !important;
+	line-height: 1.25 !important;
+	text-align: left;
+}
+
+.quran-tafsir-save .bi {
+	font-family: "bootstrap-icons" !important;
+	font-size: 1em;
+	line-height: 1;
 }
 
 .tafsir-only-page .quran-tafsir-local-pair [lang="en"] {

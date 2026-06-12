@@ -18,7 +18,7 @@
     }
   })();
 </script>
-<script src="/javascripts/script.js?v=20260611-quran-random-actions-v1"></script>
+<script src="/javascripts/script.js?v=20260612-tafsir-passage-url-switch-v5"></script>
 
 <% if (site.editMode) { %>
 <!-- Inline Editing -->
@@ -423,7 +423,7 @@
 	    const ensureTafsirSaveButton = ($el) => {
 	      if ($el.next('.quran-tafsir-save').length)
 	        return;
-	      const $button = $('<button type="button" class="btn btn-sm btn-outline-primary quran-tafsir-save mt-2 mb-3"><span class="bi bi-save"></span> Save</button>');
+	      const $button = $('<button type="button" class="btn btn-sm btn-outline-primary quran-tafsir-save mt-2 mb-3" lang="en" dir="ltr" data-loading-label="Saving"><i class="bi bi-save" aria-hidden="true"></i><span lang="en" dir="ltr">Save</span></button>');
 	      $button.on('mousedown', function (e) {
 	        e.preventDefault();
 	      });

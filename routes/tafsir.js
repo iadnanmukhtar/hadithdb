@@ -12,7 +12,7 @@ const Utils = require('../lib/Utils');
 const { Item } = require('../lib/Model');
 
 const router = express.Router();
-const TAFSIR_PASSAGE_CACHE_SUFFIX = '.tafsir-v12-passage-navigation';
+const TAFSIR_PASSAGE_CACHE_SUFFIX = '.tafsir-v16-carousel-short-heading';
 
 router.get('/:tafsir/sections', async function (req, res, next) {
   res.locals.req = req;
@@ -199,9 +199,9 @@ async function tafsirNavigation(tafsir, entries, tafsirs) {
   const next = await Tafsir.adjacentPassage(tafsir, entries, 1);
   return {
     prev: prev ? navigationTarget(tafsir, prev.surah, prev.ayah, tafsirs) : '',
-    prevTitle: prev ? `${prev.surah}:${prev.ayah}` : '',
+    prevTitle: prev ? `§${prev.surah}.${prev.ayah}` : '',
     next: next ? navigationTarget(tafsir, next.surah, next.ayah, tafsirs) : '',
-    nextTitle: next ? `${next.surah}:${next.ayah}` : ''
+    nextTitle: next ? `§${next.surah}.${next.ayah}` : ''
   };
 }
 
@@ -210,9 +210,9 @@ function tafsirEditNavigation(tafsir, surah, ayah, tafsirs) {
   const next = adjacentQuranAyah(tafsir, surah, ayah, 1);
   return {
     prev: prev ? navigationTarget(tafsir, prev.surah, prev.ayah, tafsirs) : '',
-    prevTitle: prev ? `${prev.surah}:${prev.ayah}` : '',
+    prevTitle: prev ? `§${prev.surah}.${prev.ayah}` : '',
     next: next ? navigationTarget(tafsir, next.surah, next.ayah, tafsirs) : '',
-    nextTitle: next ? `${next.surah}:${next.ayah}` : ''
+    nextTitle: next ? `§${next.surah}.${next.ayah}` : ''
   };
 }
 

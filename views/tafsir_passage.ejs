@@ -29,13 +29,6 @@
         quranSearchProxy: true
       }
     };
-    var sourceMetaEn = [tafsir.author_en, tafsir.death ? `${tafsir.death} AH` : ''].filter(Boolean).join(', ');
-    var sourceMetaAr = [tafsir.author, tafsir.death ? `${arabic.toArabicDigits(tafsir.death)} هـ` : ''].filter(Boolean).join('، ');
-    var hasBilingualEntries = (entries || []).some(function (entry) { return entry.bilingual; });
-    var isBilingual = hasBilingualEntries || (Tafsir && Tafsir.isBilingualTafsir && Tafsir.isBilingualTafsir(tafsir));
-    var isEnglishOnly = !isBilingual && tafsir.lang === 'en';
-    var textLang = isBilingual ? 'en' : tafsir.lang;
-    var textDir = isBilingual ? 'ltr' : (tafsir.lang === 'ar' ? 'rtl' : 'ltr');
     var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
       return {
         num: Number(surah.num),
@@ -50,11 +43,6 @@
     });
     var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
     var tafsirBookmarkKey = `${tafsir.slug || tafsir.alias}:${surah.num}:${ayah}`;
-    var ayahByNum = {};
-    (ayahs || []).forEach(function (item) {
-      ayahByNum[item.ayah] = item;
-    });
-    page.context.tafsirSectionMenuUrl = `${tafsirPath}/sections?surah=${surah.num}`;
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -68,26 +56,15 @@
       <aside class="row mb-3 pagination tafsir-passage-navigation">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (navigation.prev) { %>
-            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev">&lt;&nbsp;Prev: <%= navigation.prevTitle %></a>
+            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev"><span class="bi bi-chevron-left" aria-hidden="true"></span>&nbsp;Prev: <%= navigation.prevTitle %></a>
           <% } %>
         </div>
         <div class="col-md-6 col-xs-12 text-end">
           <% if (navigation.next) { %>
-            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %>&nbsp;&gt;</a>
+            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %>&nbsp;<span class="bi bi-chevron-right" aria-hidden="true"></span></a>
           <% } %>
         </div>
       </aside>
-
-      <header class="quran-tafsir-source row">
-        <section class="col-6 text-start" lang="en">
-          <strong><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></strong>
-          <span><%- sourceMetaEn %></span>
-        </section>
-        <section class="col-6 text-end" lang="ar" dir="rtl">
-          <strong><%- tafsir.name || tafsir.shortName || '' %></strong>
-          <span><%- sourceMetaAr %></span>
-        </section>
-      </header>
 
       <heading class="row major tafsir-passage-title">
         <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
@@ -140,50 +117,25 @@
         </form>
       <% } %>
 
-      <article id="tafsir" class="quran-tafsirs mt-4">
-        <div class="tab-content quran-tafsir-content">
-          <section class="tab-pane fade show active quran-tafsir-panel" tabindex="0" data-tafsir-src="<%= tafsir.alias %>" data-tafsir-source="<%= tafsir.source %>" data-tafsir-format="<%= tafsir.format || 'txt' %>" data-tafsir-lang="<%= tafsir.lang %>">
-            <% if (!entries || entries.length < 1) { %>
-              <p class="quran-tafsir-status text-muted">No tafsīr text is available for this passage.</p>
-            <% } %>
-            <div class="quran-tafsir-text<%= isEnglishOnly ? ' quran-tafsir-english-only' : '' %>" lang="<%= textLang %>" dir="<%= textDir %>">
-              <% (entries || []).forEach(function (entry) { %>
-                <article class="quran-tafsir-entry">
-                  <div class="quran-tafsir-ayah-range" lang="ar" dir="rtl">
-                    <% for (var entryAyah = entry.startAyah; entryAyah <= entry.endAyah; entryAyah++) {
-                      var item = ayahByNum[entryAyah];
-                      if (!item) continue;
-                    %>
-                      <h3 class="quran-tafsir-ayah<%= entry.startAyah === entry.endAyah ? '' : ' quran-tafsir-ayah-inline' %>" lang="ar" dir="rtl">
-                        <a href="<%= utils.quranUrl(req, `/quran:${surah.num}:${entryAyah}`) %>" title="Read Quran <%= `${surah.num}:${entryAyah}` %>">
-                          <% if (entryAyah === entry.startAyah) { %>
-                            <span class="quran-tafsir-ayah-ref" dir="ltr"><%= `${surah.num}:${entryAyah}` %></span>
-                          <% } %>
-                          <span class="quran-tafsir-ayah-text"><%- item.body %></span>
-                          <span class="quran-ayah-end-marker">۝<%= arabic.toArabicDigits(entryAyah + '') %></span>
-                        </a>
-                      </h3>
-                    <% } %>
-                  </div>
-                  <div class="quran-tafsir-entry-body quran-tafsir-html">
-                    <%- entry.html %>
-                  </div>
-                </article>
-              <% }); %>
-            </div>
-          </section>
-        </div>
-      </article>
+      <%- include('sub-views/quran_tafsirs.ejs', {
+        site: site,
+        page: page,
+        passage: ayahs,
+        selectedAyahs: ayahs.filter(function (item) { return Number(item.ayah) === Number(ayah); }),
+        selectedTafsirAlias: tafsir.alias,
+        tafsirHeading: `${tafsirTitle} ${tafsirMetaRef}`,
+        tafsirInstance: 'passage'
+      }); %>
 
       <aside class="row mt-3 mb-3 pagination tafsir-passage-navigation">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (navigation.prev) { %>
-            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev">&lt;&nbsp;Prev: <%= navigation.prevTitle %></a>
+            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev"><span class="bi bi-chevron-left" aria-hidden="true"></span>&nbsp;Prev: <%= navigation.prevTitle %></a>
           <% } %>
         </div>
         <div class="col-md-6 col-xs-12 text-end">
           <% if (navigation.next) { %>
-            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %>&nbsp;&gt;</a>
+            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %>&nbsp;<span class="bi bi-chevron-right" aria-hidden="true"></span></a>
           <% } %>
         </div>
       </aside>

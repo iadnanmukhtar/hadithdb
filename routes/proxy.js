@@ -315,10 +315,19 @@ function renderEditableCommentaryLanguage(row, lang, src) {
 
 function renderEditableCommentaryField(id, column, text, format, lang, src) {
   const value = text || '';
-  const attrs = `class="_e quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}" data-edit-lang="${lang}"`;
+  const placeholder = commentaryFieldPlaceholder(column, lang);
+  const escapedPlaceholder = escapeHtml(placeholder);
+  const attrs = `class="_e quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}" data-edit-lang="${lang}" data-placeholder="${escapedPlaceholder}"`;
   if (format === 'md')
-    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="&hellip;">${renderCommentaryText(value, '', format, { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: lang === 'ar' ? commentaryFootnoteIdPrefix(src, id) : '', quranBackticks: lang === 'en' }) || '&hellip;'}</div>`;
-  return `<textarea ${attrs} rows="12">${escapeHtml(value)}</textarea>`;
+    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="${escapedPlaceholder}">${renderCommentaryText(value, '', format, { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: lang === 'ar' ? commentaryFootnoteIdPrefix(src, id) : '', quranBackticks: lang === 'en' }) || escapedPlaceholder}</div>`;
+  return `<textarea ${attrs} rows="12" placeholder="${escapedPlaceholder}">${escapeHtml(value)}</textarea>`;
+}
+
+function commentaryFieldPlaceholder(column, lang) {
+  const isFootnotes = column.startsWith('footnotes');
+  if (lang === 'ar')
+    return isFootnotes ? 'أدخل حواشي التفسير' : 'أدخل نص التفسير';
+  return isFootnotes ? 'Enter tafsir footnotes' : 'Enter tafsir text';
 }
 
 function commentaryFormat(format, lang) {
