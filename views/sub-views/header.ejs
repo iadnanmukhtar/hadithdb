@@ -3,6 +3,9 @@
     var currentSearch = '';
     if (req && req.query && req.query.q)
       currentSearch = req.query.q;
+    var navSearchAction = typeof utils.globalSearchBaseUrl === 'function'
+      ? utils.globalSearchBaseUrl(req)
+      : ((typeof utils.hadithBaseUrl === 'function' && utils.hadithBaseUrl(req)) || site.urlLocal || site.url || '/');
   %>
   <div class="row g-0 site-navbar-main">
     
@@ -30,7 +33,8 @@
     <menu class="col d-md-block d-none">
       
       <ul class="nav container-fluid justify-content-end">
-        <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/') %>">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Books</a>
           <ul class="dropdown-menu dropdown-menu-end">
@@ -39,7 +43,6 @@
             <li><a class="dropdown-item" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-journal-text"></i> Tafsīr</a></li>
           </ul>
         </li>
-        <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
         <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/blog') %>">Blog</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
@@ -67,7 +70,7 @@
         </li>
         <% } %>
         <li class="nav-item search-click-toggle">
-          <form action="/">
+          <form action="<%= navSearchAction %>">
           <input role="search" type="text" class="form-control search-click" name="q" placeholder="Search hadīth, āyāt, or tafāsīr..." value="<%= currentSearch %>" />
           </form>
           <a class="nav-link"><i class="bi bi-search"></i></a>
@@ -97,13 +100,13 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
       </div>
       <div class="offcanvas-body">
-        <form action="/">
+        <form action="<%= navSearchAction %>">
           <input role="search" type="text" class="form-control mb-2" name="q" placeholder="Search hadīth, āyāt, or tafāsīr..." value="<%= currentSearch %>" />
         </form>
         <div class="row">
           <ul class="col-7 nav flex-column offcanvas-col1">
-            <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/') %>"><i class="bi bi-house"></i> Home</a></li>
             <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
+            <li class="nav-item"><a class="nav-link" href="<%= utils.hadithBaseUrl(req) %>"><i class="bi bi-house"></i> Hadith</a></li>
             <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/books') %>"><i class="bi bi-book"></i> Ḥadīth Books</a></li>
             <li class="nav-item"><a class="nav-link" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-journal-text"></i> Tafsīr Books</a></li>
             <li class="nav-item"><a class="nav-link" href="<%= utils.urlFor(req, '/blog') %>"><i class="bi bi-text-paragraph"></i> Blog</a></li>

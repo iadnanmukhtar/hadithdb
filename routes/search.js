@@ -23,6 +23,22 @@ const { homedir } = require('os');
 
 const router = express.Router();
 const CAPTCHA_TTL_MS = 5 * 60 * 1000;
+
+function redirectEncodedReferencePath(req, res, next) {
+  if (req.method !== 'GET' && req.method !== 'HEAD')
+    return next();
+
+  var path = req.path;
+  if (!/%3a/i.test(path))
+    return next();
+
+  var normalizedPath = path.replace(/%3a/ig, ':');
+  if (normalizedPath === path || !/^\/(?:passage:|[^/]+:[^/]+)/.test(normalizedPath))
+    return next();
+
+  return res.redirect(301, `${normalizedPath}${appendOriginalQuery(req)}`);
+}
+
 function redirectArabicDigitPath(req, res, next) {
   if (req.method !== 'GET' && req.method !== 'HEAD')
     return next();
@@ -138,6 +154,7 @@ router.post(['/captcha/translate/verify', '/quran/captcha/translate/verify'], fu
   });
 });
 
+router.use(redirectEncodedReferencePath);
 router.use(redirectArabicDigitPath);
 
 router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, next) {
