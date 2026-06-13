@@ -18,7 +18,7 @@
 
 @font-face {
 	font-family: QuranV2;
-	src: url('/fonts/DigitalKhattV2.otf') format('opentype');
+	src: url('/fonts/DigitalKhattV1.otf') format('opentype');
 	font-display: swap;
 }
 
@@ -154,6 +154,13 @@ body :lang(ar) {
 .quran-hafs .quran-corpus-word,
 .quran-surah-name:lang(ar),
 :lang(ar) .quran-surah-name {
+	font-family: QuranV1, Serif;
+}
+
+.h:lang(ar) .body .hadith-body-content.quran-hafs,
+.h:lang(ar) .body .hadith-body-content.quran-hafs p,
+.h:lang(ar) .body .hadith-body-content.quran-hafs .quran-corpus-word,
+.h:lang(ar) .body .hadith-body-content.quran-hafs .ayah-selected {
 	font-family: QuranV1, Serif;
 }
 
@@ -1989,6 +1996,15 @@ del em strong {
 	font-weight: 400;
 	line-height: inherit;
 	vertical-align: baseline;
+}
+
+.quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs,
+.quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs p,
+.quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs .quran-corpus-word,
+.quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs .ayah,
+.quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs .ayah-selected,
+.quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs .quran-ayah-end-marker {
+	font-family: QuranV1, Serif;
 }
 
 .quran-search-item .hadith-body-content.quran-hafs p {
