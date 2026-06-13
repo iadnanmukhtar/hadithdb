@@ -19,32 +19,12 @@ const options = readOptions(process.argv.slice(2));
 			`into '${commentary.alias}' for ${rows.length} passage(s).`
 		);
 
-		let updated = 0;
-		let skipped = 0;
-		let failed = 0;
-		for (const row of rows) {
-			const ref = formatRef(row);
-			try {
-				const text = await getPassageText(row, options);
-				if (!text) {
-					skipped++;
-					console.log(`Skipped ${ref}: API returned no Arabic text.`);
-					continue;
-				}
-				if (!options.dryRun)
-					await updateRow(row.id, text);
-				updated++;
-				console.log(`${options.dryRun ? 'Would update' : 'Updated'} ${ref}.`);
-			} catch (err) {
-				failed++;
-				console.error(`ERROR ${ref}: ${err.message}`);
-			}
-		}
+		const result = await processRows(rows, options);
 		console.log(
-			`${options.dryRun ? 'Would update' : 'Updated'} ${updated} passage(s), ` +
-			`skipped ${skipped}, failed ${failed}.`
+			`${options.dryRun ? 'Would update' : 'Updated'} ${result.updated} passage(s), ` +
+			`skipped ${result.skipped}, failed ${result.failed}.`
 		);
-		if (failed)
+		if (result.failed)
 			process.exitCode = 1;
 	} catch (err) {
 		console.error(`ERROR: ${err.message}`);
@@ -53,6 +33,46 @@ const options = readOptions(process.argv.slice(2));
 		global.dbPool.end();
 	}
 })();
+
+async function processRows(rows, options) {
+	const result = {
+		updated: 0,
+		skipped: 0,
+		failed: 0
+	};
+	let next = 0;
+	const workerCount = Math.min(options.concurrency, rows.length);
+	const workers = [];
+	for (let i = 0; i < workerCount; i++) {
+		workers.push((async () => {
+			while (next < rows.length) {
+				const row = rows[next++];
+				await processRow(row, options, result);
+			}
+		})());
+	}
+	await Promise.all(workers);
+	return result;
+}
+
+async function processRow(row, options, result) {
+	const ref = formatRef(row);
+	try {
+		const text = await getPassageText(row, options);
+		if (!text) {
+			result.skipped++;
+			console.log(`Skipped ${ref}: API returned no Arabic text.`);
+			return;
+		}
+		if (!options.dryRun)
+			await updateRow(row.id, text);
+		result.updated++;
+		console.log(`${options.dryRun ? 'Would update' : 'Updated'} ${ref}.`);
+	} catch (err) {
+		result.failed++;
+		console.error(`ERROR ${ref}: ${err.message}`);
+	}
+}
 
 async function getCommentary(alias) {
 	const rows = await global.query(`
@@ -95,7 +115,8 @@ async function getPassageText(row, options) {
 
 async function getAyahText(surah, ayah, options) {
 	let lastError;
-	for (let attempt = 1; attempt <= options.retries + 1; attempt++) {
+	const maxAttempts = Math.max(options.retries, options.emptyRetries) + 1;
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		try {
 			const response = await axios.get(API_URL, {
 				params: {
@@ -106,7 +127,10 @@ async function getAyahText(surah, ayah, options) {
 				},
 				timeout: options.timeout
 			});
-			return String(response.data?.data || '').trim();
+			const text = String(response.data?.data || '').trim();
+			if (text || attempt > options.emptyRetries)
+				return text;
+			await sleep(options.retryDelay);
 		} catch (err) {
 			lastError = err;
 			if (attempt <= options.retries)
@@ -131,8 +155,10 @@ function readOptions(argv) {
 		source: 'ibn-katheer',
 		delay: 100,
 		retries: 2,
+		emptyRetries: 0,
 		retryDelay: 1000,
 		timeout: 15000,
+		concurrency: 1,
 		fromSurah: null,
 		limit: null,
 		dryRun: false,
@@ -148,10 +174,14 @@ function readOptions(argv) {
 			options.delay = nonNegativeInteger(argv, ++i, arg);
 		else if (arg === '--retries')
 			options.retries = nonNegativeInteger(argv, ++i, arg);
+		else if (arg === '--empty-retries')
+			options.emptyRetries = nonNegativeInteger(argv, ++i, arg);
 		else if (arg === '--retry-delay')
 			options.retryDelay = nonNegativeInteger(argv, ++i, arg);
 		else if (arg === '--timeout')
 			options.timeout = positiveInteger(argv, ++i, arg);
+		else if (arg === '--concurrency')
+			options.concurrency = positiveInteger(argv, ++i, arg);
 		else if (arg === '--from-surah')
 			options.fromSurah = integerInRange(argv, ++i, arg, 1, 114);
 		else if (arg === '--limit')
@@ -222,8 +252,10 @@ function usage() {
 		'  --limit <number>       Process at most this many passages',
 		'  --delay <ms>           Delay between API requests (default: 100)',
 		'  --retries <number>     Retries per API request (default: 2)',
+		'  --empty-retries <num>  Retries for empty API data responses (default: 0)',
 		'  --retry-delay <ms>     Delay between retries (default: 1000)',
 		'  --timeout <ms>         API timeout (default: 15000)',
+		'  --concurrency <number> Parallel passage workers (default: 1)',
 		'  --overwrite            Reload rows that already have Arabic text',
 		'  --dry-run              Fetch and report without updating MySQL',
 		'  --help                 Show this help'
