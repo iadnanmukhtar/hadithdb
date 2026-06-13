@@ -30,6 +30,22 @@
 	const itemRefPath = `/${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
 	const itemHref = isQuranItem ? utils.quranUrl(req, itemRefPath) : utils.urlFor(req, itemRefPath);
 	const quranTafsirHref = isQuranItem && i.ref ? utils.quranUrl(req, `/${i.ref}#open-tafsir`) : '';
+	const itemBookShortName = (() => {
+		const shortName = i.actual ? (i[lang]?.actual?.book_shortName || i.actual?.book_shortName || i.book_shortName) : (langData.book_shortName || i.book_shortName);
+		if (isQuranItem && lang === 'ar')
+			return 'مقطع';
+		return shortName;
+	})();
+	const itemSectionTitle = (() => {
+		if (isQuranItem && lang === 'ar')
+			return 'مقطع';
+		return utils.truncate(langData.h2_title, 30, true) || 'Section';
+	})();
+	const itemChapterTitle = (() => {
+		if (isQuranItem && lang === 'ar')
+			return utils.trimToEmpty(langData.h1_title) || 'سورة';
+		return utils.truncate(langData.h1_title, 30, true) || 'Chapter';
+	})();
 	const quranAyahMarkerRef = utils.emptyIfNull(i.ref || i.num || langData.num || '').replace(/^quran:/, '');
 	const quranAyahMarkerNum = (() => {
 		if (!isQuranItem || lang !== 'ar' || !searchResult)
@@ -86,7 +102,7 @@
 		<% } %>
 
 		<%# Item Number + Chain %>
-		<b><a href="<%= itemHref %>" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>"><%= `${i.actual ? (i[lang]?.actual?.book_shortName || i.actual?.book_shortName || i.book_shortName) : (langData.book_shortName || i.book_shortName)}:${i.actual ? (i[lang]?.actual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a></b> –
+		<b><a href="<%= itemHref %>" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>"><%= `${itemBookShortName}:${i.actual ? (i[lang]?.actual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a></b> –
 		<% if (langData.chain || site.editMode) { %>
 			<span class="_e chain <%=_p%> l3" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.chain<%=langSuff%>" data-arabizi="true"><%- langData.chain || `&hellip;` %></span>
 		<% } %>
@@ -166,7 +182,7 @@
 
 	<%# Nav  ............................................................... %>
 	<% if (site.editMode || ((title || i.book_virtual===1) && (i.chapter || i.section))) { %>
-		<aside class="title">
+		<aside class="title<%= isQuranItem && lang === 'ar' ? ' quran-search-title' : '' %>">
 			§ 
 			<% if (lang === 'en' && site.editMode && i.book_virtual===0 && chapter && chapter.sections) { %>
 				(<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.tocId">
@@ -175,14 +191,21 @@
 						<option value="<%=section.id%>" <%=(section.path === i.path) ? 'selected' :''%>><%=utils.truncate(section.title, 50, true, false, false)%></option>
 					<% }; %>
 				</select>)
+			<% } else if (isQuranItem && lang === 'ar') { %>
+				<% if (i.section) { %>
+					<a href="<%= utils.urlFor(req, `/${i.book_alias}/${i.section.h1}/${i.section.h2}`) %>" title="<%= linkTitle(`${itemSectionTitle} في ${itemChapterTitle}`) %>"><%- itemSectionTitle %></a>
+				<% } %>
+				<% if (i.chapter) { %>
+					في <a href="<%= utils.urlFor(req, `/${i.book_alias}/${i.chapter.h1}`) %>" title="<%= linkTitle(itemChapterTitle) %>"><%- itemChapterTitle %></a>
+				<% } %>
 			<% } else { %>
 				<% if (i.section) { %>
-					<a href="<%= utils.urlFor(req, `/${i.book_alias}/${i.section.h1}/${i.section.h2}`) %>" title="<%= linkTitle(langData.h2_title) %>"><%- utils.truncate(langData.h2_title, 30, true) || 'Section' %></a>
+					<a href="<%= utils.urlFor(req, `/${i.book_alias}/${i.section.h1}/${i.section.h2}`) %>" title="<%= linkTitle(langData.h2_title) %>"><%- itemSectionTitle %></a>
 				<% } %>
-			<% } %>
-			<% if (i.chapter) { %>
-				<%= lang == 'en' ? 'in' : 'في' %> 
-				<a href="<%= utils.urlFor(req, `/${i.book_alias}/${i.chapter.h1}`) %>" class="<%= isQuranItem && lang === 'ar' ? 'quran-surah-name' : '' %>" title="<%= linkTitle(langData.h1_title) %>"><%- utils.truncate(langData.h1_title, 30, true) || 'Chapter' %></a>
+				<% if (i.chapter) { %>
+					<%= lang == 'en' ? 'in' : 'في' %> 
+					<a href="<%= utils.urlFor(req, `/${i.book_alias}/${i.chapter.h1}`) %>" title="<%= linkTitle(langData.h1_title) %>"><%- itemChapterTitle %></a>
+				<% } %>
 			<% } %>
 		</aside>
 	<% } %>

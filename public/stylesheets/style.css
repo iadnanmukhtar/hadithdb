@@ -2007,6 +2007,11 @@ del em strong {
 	font-family: QuranV1, Serif;
 }
 
+.quran-search-item .h:lang(ar) .quran-search-title,
+.quran-search-item .h:lang(ar) .quran-search-title * {
+	font-family: Kitab, Serif;
+}
+
 .quran-search-item .hadith-body-content.quran-hafs p {
 	display: inline;
 	margin-bottom: 0;
