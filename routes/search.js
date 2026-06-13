@@ -63,6 +63,25 @@ function redirectArabicDigitPath(req, res, next) {
   return res.redirect(301, `${normalizedPath}${appendOriginalQuery(req)}`);
 }
 
+function redirectZeroOffsetQuery(req, res, next) {
+  if (req.method !== 'GET' && req.method !== 'HEAD')
+    return next();
+
+  var queryIndex = req.originalUrl.indexOf('?');
+  if (queryIndex < 0)
+    return next();
+
+  var queryParams = new URLSearchParams(req.originalUrl.substring(queryIndex + 1));
+  var offsetValues = queryParams.getAll('o');
+  if (offsetValues.length < 1 || offsetValues.some(value => value !== '0'))
+    return next();
+
+  queryParams.delete('o');
+  var queryString = queryParams.toString();
+  var cleanUrl = req.originalUrl.substring(0, queryIndex);
+  return res.redirect(301, queryString ? `${cleanUrl}?${queryString}` : cleanUrl);
+}
+
 function findSurah(ref) {
   return Surahs.find(ref);
 }
@@ -160,6 +179,7 @@ router.post(['/captcha/translate/verify', '/quran/captcha/translate/verify'], fu
 
 router.use(redirectEncodedReferencePath);
 router.use(redirectArabicDigitPath);
+router.use(redirectZeroOffsetQuery);
 
 router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, next) {
   try {
