@@ -25,9 +25,13 @@
   var headDescription = page.description_en || page.subtitle_en || site.desc || '';
   var headSiteName = isQuranPathHeadPage ? 'Quran Unlocked' : site.name;
   var headSiteUrl = isQuranPathHeadPage ? quranCanonicalBaseUrl : site.url;
-  var headLogo = page.cover || site.logo;
-  if (isQuranPathHeadPage)
-    headLogo = headLogo.replace(site.url, quranCanonicalBaseUrl);
+  var headAppLogo = isQuranHeadPage ? `${quranCanonicalBaseUrl}/images/quran-logo.png` : site.logo;
+  var headAppLogoVectorPath = isQuranHeadPage ? '/images/quran-logo2.svg' : '/images/logo2.svg';
+  var headAppLogo32Path = isQuranHeadPage ? '/images/quran-logo32.png' : '/images/logo32.png';
+  var headAppFavicon16Path = isQuranHeadPage ? '/images/quran-favicon-16x16.png' : '/images/favicon-16x16.png';
+  var headAppTouchIconPath = isQuranHeadPage ? '/images/quran-apple-touch-icon.png' : '/images/apple-touch-icon.png';
+  var headAppIcoPath = isQuranHeadPage ? '/quran-favicon.ico' : '/favicon.ico';
+  var headLogo = page.cover || headAppLogo;
   function quranCanonicalPath(path) {
     if (!path)
       return path;
@@ -68,10 +72,12 @@
   <link rel="alternate" type="application/rss+xml" title="Recent translations of beautiful and notable aḥādīth" href="<%= site.url %>/highlights/rss" />
 <% } %>
 
-<link rel="image_src" href="<%= page.cover || site.logo %>" />
-<link rel="apple-touch-icon" href="<%= page.cover || site.logo %>" />
-<link rel="icon" href="<%= page.cover || site.logo %>" />
-<link rel="icon" href="/favicon.ico" />
+<link rel="image_src" href="<%= page.cover || headAppLogo %>" />
+<link rel="icon" type="image/svg+xml" href="<%= headAppLogoVectorPath %>" />
+<link rel="icon" type="image/png" sizes="32x32" href="<%= headAppLogo32Path %>" />
+<link rel="icon" type="image/png" sizes="16x16" href="<%= headAppFavicon16Path %>" />
+<link rel="apple-touch-icon" sizes="180x180" href="<%= headAppTouchIconPath %>" />
+<link rel="icon" href="<%= headAppIcoPath %>" sizes="any" />
 
 
 <link rel="canonical" href="<%= headCanonicalUrl %>" />
@@ -86,14 +92,14 @@
 
 <meta property="og:site_name" content="<%= headSiteName %>">
 <meta property="og:locale" content="en">
-<meta property="og:image" content="<%= page.cover || site.logo %>">
+<meta property="og:image" content="<%= page.cover || headAppLogo %>">
 <meta property="og:url" content="<%= headCanonicalUrl %>">
 <meta property="og:title" content="<%= headTitle %>">
 <meta property="og:description" content="<%= headDescription %>">
 <meta property="og:type" content="article" />
 
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="<%= page.cover || site.logo %>">
+<meta name="twitter:image" content="<%= page.cover || headAppLogo %>">
 <meta name="twitter:title" content="<%= headTitle %>">
 <meta name="twitter:description" content="<%= headDescription %>">
 
