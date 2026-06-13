@@ -28,9 +28,9 @@
         book,
       }
     };
-    if (typeof prevBook != 'undefined' && prevBook)
+    if (!isQuranToc && typeof prevBook != 'undefined' && prevBook)
         page.prev = `/${prevBook.alias}`;
-    if (typeof nextBook != 'undefined' && nextBook)
+    if (!isQuranToc && typeof nextBook != 'undefined' && nextBook)
         page.next = `/${nextBook.alias}`;
     var quranNavigatorSurahs = [];
     if (book.alias === 'quran') {
@@ -67,6 +67,7 @@
         <%- include('sub-views/bookNav.ejs'); %>
       <% } %>
     
+      <% if (!isQuranToc) { %>
       <aside class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (page.prev) { %>
@@ -79,6 +80,7 @@
           <% } %>
         </div>
       </aside>
+      <% } %>
 
       <article>
       <heading class="mb-2">
@@ -172,12 +174,10 @@
           }
         </script>
         
-        <% if (!isQuranToc) { %>
         <div class="page-content-filter toc-content-filter input-group mb-3">
           <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
-          <input type="search" class="form-control" placeholder="Filter chapter headings" aria-label="Filter chapter headings" autocomplete="off" data-toc-content-filter="#toc" autofocus>
+          <input type="search" class="form-control" placeholder="Filter chapter headings" aria-label="Filter chapter headings" autocomplete="off" data-toc-content-filter="#toc"<%= isQuranToc ? '' : ' autofocus' %>>
         </div>
-        <% } %>
 
         <h2 class="fs-4 mt-3">Chapters Headings</h2>
         
@@ -270,6 +270,7 @@
       </section>
       </article>
       
+      <% if (!isQuranToc) { %>
       <aside class="row mt-2 pagination">
         <div class="col-md-6 col-xs-12 text-start">
           <% if (page.prev) { %>
@@ -282,6 +283,7 @@
           <% } %>
         </div>
       </aside>
+      <% } %>
       
     </main>
   </div>

@@ -417,7 +417,8 @@ function initTocContentFilters(root) {
 		};
 
 		input.on('input', update);
-		input.get(0).focus({ preventScroll: true });
+		if (input.is('[autofocus]'))
+			input.get(0).focus({ preventScroll: true });
 		update();
 	});
 }
