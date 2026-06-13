@@ -18,7 +18,7 @@
       title_en: `${pageTitlePrefix} | ${book.shortName_en} ${chapter.h1} ${chapter.title_en || chapter.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
-      canonical: `/${book.alias}/${chapter.h1}${isQuranAyatView ? '?passage' : (req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : '')}`,
+      canonical: `/${book.alias}/${chapter.h1}${isQuranAyatView ? '' : (req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : '')}`,
       noindex: isQuranAyatView,
       context: {
         book: book,

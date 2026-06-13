@@ -119,7 +119,7 @@
       description_en: quranMetaDescription,
       subtitle_en: `${quranSurahTitleShort} ${quranMetaRef}`,
       subtitle: `${quranSurahTitleAr}`,
-      canonical: selectedCanonicalRef ? `/quran:${selectedCanonicalRef}` : (section.level > 1 ? `/${book.alias}/${chapter.h1}/${section.h2}` : `/${book.alias}/${chapter.h1}?passage`),
+      canonical: selectedCanonicalRef ? `/quran:${selectedCanonicalRef}` : (section.level > 1 ? `/${book.alias}/${chapter.h1}/${section.h2}` : `/${book.alias}/${chapter.h1}`),
       context: {
         book: book,
         chapter: chapter,

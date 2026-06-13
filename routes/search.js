@@ -63,7 +63,7 @@ function redirectArabicDigitPath(req, res, next) {
   return res.redirect(301, `${normalizedPath}${appendOriginalQuery(req)}`);
 }
 
-function redirectZeroOffsetQuery(req, res, next) {
+function redirectCanonicalQueryParams(req, res, next) {
   if (req.method !== 'GET' && req.method !== 'HEAD')
     return next();
 
@@ -72,14 +72,38 @@ function redirectZeroOffsetQuery(req, res, next) {
     return next();
 
   var queryParams = new URLSearchParams(req.originalUrl.substring(queryIndex + 1));
+  var shouldRedirect = false;
   var offsetValues = queryParams.getAll('o');
-  if (offsetValues.length < 1 || offsetValues.some(value => value !== '0'))
+  if (offsetValues.length > 0 && offsetValues.every(value => value === '0')) {
+    queryParams.delete('o');
+    shouldRedirect = true;
+  }
+
+  var clearFragment = false;
+  if (isDefaultQuranPassagePath(req.path) && queryParams.has('passage')) {
+    queryParams.delete('passage');
+    clearFragment = true;
+    shouldRedirect = true;
+  }
+
+  if (!shouldRedirect)
     return next();
 
-  queryParams.delete('o');
   var queryString = queryParams.toString();
   var cleanUrl = req.originalUrl.substring(0, queryIndex);
-  return res.redirect(301, queryString ? `${cleanUrl}?${queryString}` : cleanUrl);
+  var redirectUrl = queryString ? `${cleanUrl}?${queryString}` : cleanUrl;
+  return res.redirect(301, clearFragment ? `${redirectUrl}#` : redirectUrl);
+}
+
+function isDefaultQuranPassagePath(path) {
+  if (/^\/quran:[^/]+:[^/]+/.test(path))
+    return true;
+
+  var parts = path.split('/').filter(Boolean);
+  if (parts[0] !== 'quran' || (parts.length !== 2 && parts.length !== 3))
+    return false;
+
+  return Boolean(findSurah(parts[1]));
 }
 
 function findSurah(ref) {
@@ -179,7 +203,7 @@ router.post(['/captcha/translate/verify', '/quran/captcha/translate/verify'], fu
 
 router.use(redirectEncodedReferencePath);
 router.use(redirectArabicDigitPath);
-router.use(redirectZeroOffsetQuery);
+router.use(redirectCanonicalQueryParams);
 
 router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, next) {
   try {
@@ -1152,32 +1176,6 @@ function quranAyahFromHeadingStart(start) {
   return parseInt(Arabic.toLatinDigits(parts[parts.length - 1] || ''), 10);
 }
 
-function shouldRedirectQuranSurahPath(req) {
-  return req.query.json === undefined
-    && req.query.tsv === undefined
-    && req.query.md === undefined
-    && req.query.download === undefined;
-}
-
-async function firstQuranSectionNumber(surah) {
-  surah = Number(surah);
-  if (!Number.isInteger(surah) || surah <= 0)
-    return null;
-  var headings = await getQuranSurahRangeHeadingsFromIndex(surah);
-  if (headings && headings.sections.length > 0) {
-    var firstSection = headings.sections
-      .filter(section => Number.isInteger(Number(section.h2)))
-      .sort((a, b) => Number(a.ordinal) - Number(b.ordinal) || Number(a.h2) - Number(b.h2))[0];
-    if (firstSection)
-      return Number(firstSection.h2);
-  }
-  var rows = await global.query(`SELECT MIN(h2) AS h2
-    FROM v_toc
-    WHERE book_alias='quran' AND level=2 AND h1=${surah}`);
-  var h2 = rows && rows[0] ? Number(rows[0].h2) : NaN;
-  return Number.isInteger(h2) && h2 > 0 ? h2 : null;
-}
-
 async function getQuranSectionSubsections(section) {
   if (!section || section.book_alias !== 'quran' || parseInt(section.level, 10) !== 2)
     return [];
@@ -1464,13 +1462,9 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     }
     var chapterNum = Number(Arabic.toLatinDigits(req.params.chapterNum));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
-    if (bookAlias === 'quran' && shouldRedirectQuranSurahPath(req)) {
-      var firstSectionNum = await firstQuranSectionNumber(chapterNum);
-      if (firstSectionNum)
-        return res.redirect(302, Utils.quranUrl(req, `/quran/${chapterNum}/${firstSectionNum}`));
-    }
 
-    var cacheSuffix = `${SHARED_LAYOUT_CACHE_SUFFIX}${(bookAlias === 'quran' && req.query.passage != undefined) ? '.tafsirs-v63-no-inline-tafsir' : ''}`;
+    var quranChapterPassage = bookAlias === 'quran' && req.query.ayat == undefined;
+    var cacheSuffix = `${SHARED_LAYOUT_CACHE_SUFFIX}${quranChapterPassage ? '.tafsirs-v63-no-inline-tafsir' : ''}`;
     var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
@@ -1500,7 +1494,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       res.end(Utils.toMarkdown(results));
     } else {
 
-      if (bookAlias === 'quran' && req.query.passage != undefined) {
+      if (quranChapterPassage) {
         // cache response
         var refs = [];
         for (const item of results)
