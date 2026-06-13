@@ -15,52 +15,52 @@
 
 <script>
 	(function () {
-			if (!window.hadithUserSettingsCache) {
-				const USER_SETTINGS_CACHE_PREFIX = 'hadithUserSettings:';
-				const USER_SETTINGS_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
-				const settingsUserId = (user) => {
-					if (!user || typeof user !== 'object') return '';
-					return (user.uid || user.userId || user.email || user.username || '').toString();
-				};
+		if (!window.hadithUserSettingsCache) {
+			const USER_SETTINGS_CACHE_PREFIX = 'hadithUserSettings:';
+			const USER_SETTINGS_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
+			const settingsUserId = (user) => {
+				if (!user || typeof user !== 'object') return '';
+				return (user.uid || user.userId || user.email || user.username || '').toString();
+			};
 			const settingsCacheKey = (user) => {
 				const id = settingsUserId(user);
 				return id ? `${USER_SETTINGS_CACHE_PREFIX}${id}` : '';
 			};
 			window.hadithUserSettingsCache = {
 				read(user) {
-						const key = settingsCacheKey(user);
-						if (!key) return null;
-						try {
-							const raw = localStorage.getItem(key);
-							if (!raw) return null;
-							const payload = JSON.parse(raw);
-							if (payload && payload.__hadithUserSettingsCache === 1) {
-								if (!Number.isFinite(payload.cachedAt) || Date.now() - payload.cachedAt > USER_SETTINGS_CACHE_MAX_AGE_MS) {
-									localStorage.removeItem(key);
-									return null;
-								}
-								return payload.settings || {};
+					const key = settingsCacheKey(user);
+					if (!key) return null;
+					try {
+						const raw = localStorage.getItem(key);
+						if (!raw) return null;
+						const payload = JSON.parse(raw);
+						if (payload && payload.__hadithUserSettingsCache === 1) {
+							if (!Number.isFinite(payload.cachedAt) || Date.now() - payload.cachedAt > USER_SETTINGS_CACHE_MAX_AGE_MS) {
+								localStorage.removeItem(key);
+								return null;
 							}
-							localStorage.removeItem(key);
-							return null;
-						} catch (err) {
-							console.warn('Could not read cached user settings', err);
-							try { localStorage.removeItem(key); } catch (_err) {}
-							return null;
+							return payload.settings || {};
 						}
-					},
-					write(user, settings) {
-						const key = settingsCacheKey(user);
-						if (!key) return;
-						try {
-							localStorage.setItem(key, JSON.stringify({
-								__hadithUserSettingsCache: 1,
-								cachedAt: Date.now(),
-								settings: settings || {}
-							}));
-						} catch (err) {
-							console.warn('Could not cache user settings', err);
-						}
+						localStorage.removeItem(key);
+						return null;
+					} catch (err) {
+						console.warn('Could not read cached user settings', err);
+						try { localStorage.removeItem(key); } catch (_err) {}
+						return null;
+					}
+				},
+				write(user, settings) {
+					const key = settingsCacheKey(user);
+					if (!key) return;
+					try {
+						localStorage.setItem(key, JSON.stringify({
+							__hadithUserSettingsCache: 1,
+							cachedAt: Date.now(),
+							settings: settings || {}
+						}));
+					} catch (err) {
+						console.warn('Could not cache user settings', err);
+					}
 				},
 				clear(user) {
 					const key = settingsCacheKey(user);

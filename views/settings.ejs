@@ -139,6 +139,8 @@
         currentSettings = normalizeSettings(data.settings || currentSettings);
         if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
           window.hadithUserSettingsCache.write(currentUser, currentSettings);
+        if (window.writeQuranDomainUserSettingsCache)
+          window.writeQuranDomainUserSettingsCache(currentUser, currentSettings).catch(() => {});
       } finally {
         saving = false;
         updateTafsirStatus();

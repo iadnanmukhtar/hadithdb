@@ -1193,6 +1193,92 @@ function initQuranTafsirTabs(root) {
 	});
 }
 
+function originFromUrl(url) {
+	try {
+		return url ? new URL(url, window.location.href).origin : '';
+	} catch (err) {
+		return '';
+	}
+}
+
+function userSettingsCacheBridgeUrl(baseUrl) {
+	try {
+		return new URL('/settings/cache-bridge', baseUrl || window.location.origin).href;
+	} catch (err) {
+		return '';
+	}
+}
+
+function requestUserSettingsCacheBridge(baseUrl, action, user, settings) {
+	var bridgeUrl = userSettingsCacheBridgeUrl(baseUrl);
+	var bridgeOrigin = originFromUrl(bridgeUrl);
+	if (!bridgeUrl || !bridgeOrigin || !user)
+		return Promise.resolve(null);
+	return new Promise(function (resolve) {
+		var requestId = `settings-cache-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+		var iframe = document.createElement('iframe');
+		var done = false;
+		var finish = function (value) {
+			if (done)
+				return;
+			done = true;
+			window.clearTimeout(timeout);
+			window.removeEventListener('message', onMessage);
+			if (iframe.parentNode)
+				iframe.parentNode.removeChild(iframe);
+			resolve(value);
+		};
+		var onMessage = function (event) {
+			var data = event.data || {};
+			if (event.origin !== bridgeOrigin || !data || data.type !== 'hadithUserSettingsCacheBridgeResponse' || data.requestId !== requestId)
+				return;
+			if (action === 'read')
+				finish(data.settings || null);
+			else
+				finish(data.ok ? (data.settings || true) : null);
+		};
+		var timeout = window.setTimeout(function () {
+			finish(null);
+		}, 1500);
+		window.addEventListener('message', onMessage);
+		iframe.style.display = 'none';
+		iframe.setAttribute('aria-hidden', 'true');
+		iframe.onload = function () {
+			try {
+				iframe.contentWindow.postMessage({
+					type: 'hadithUserSettingsCacheBridge',
+					requestId: requestId,
+					action: action,
+					user: user,
+					settings: settings || null
+				}, bridgeOrigin);
+			} catch (err) {
+				finish(null);
+			}
+		};
+		iframe.src = bridgeUrl;
+		document.body.appendChild(iframe);
+	});
+}
+
+function readHadithDomainUserSettingsCache(user) {
+	var hadithBaseUrl = window.HADITH_BASE_URL || '';
+	if (!hadithBaseUrl || originFromUrl(hadithBaseUrl) === window.location.origin)
+		return Promise.resolve(null);
+	return requestUserSettingsCacheBridge(hadithBaseUrl, 'read', user).then(function (settings) {
+		if (settings && window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
+			window.hadithUserSettingsCache.write(user, settings);
+		return settings || null;
+	});
+}
+
+window.writeQuranDomainUserSettingsCache = function (user, settings) {
+	var quranBaseUrl = window.HADITH_QURAN_BASE_URL || '';
+	if (!quranBaseUrl || originFromUrl(quranBaseUrl) === window.location.origin)
+		return Promise.resolve(null);
+	return requestUserSettingsCacheBridge(quranBaseUrl, 'write', user, settings);
+};
+
 function getQuranTafsirSettings() {
 	var waitForHadithAuth = function () {
 		return new Promise(function (resolve) {
@@ -1211,31 +1297,32 @@ function getQuranTafsirSettings() {
 			}, 100);
 		});
 	};
-		var normalizeSettings = function (settings) {
-			var source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
-			var tafsirs = source.tafsirs && typeof source.tafsirs === 'object' && !Array.isArray(source.tafsirs) ? source.tafsirs : {};
-			var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
-			return {
-				tafsirs: {
-					disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
+	var normalizeSettings = function (settings) {
+		var source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
+		var tafsirs = source.tafsirs && typeof source.tafsirs === 'object' && !Array.isArray(source.tafsirs) ? source.tafsirs : {};
+		var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
+		return {
+			tafsirs: {
+				disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
+					.map(function (alias) { return (alias || '').toString().trim(); })
+					.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
+				order: {
+					en: Array.from(new Set((Array.isArray(order.en) ? order.en : [])
 						.map(function (alias) { return (alias || '').toString().trim(); })
 						.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
-					order: {
-						en: Array.from(new Set((Array.isArray(order.en) ? order.en : [])
-							.map(function (alias) { return (alias || '').toString().trim(); })
-							.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
-						ar: Array.from(new Set((Array.isArray(order.ar) ? order.ar : [])
-							.map(function (alias) { return (alias || '').toString().trim(); })
-							.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })))
-					}
+					ar: Array.from(new Set((Array.isArray(order.ar) ? order.ar : [])
+						.map(function (alias) { return (alias || '').toString().trim(); })
+						.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })))
 				}
-			};
+			}
 		};
-		return waitForHadithAuth().then(function (auth) {
-			return Promise.resolve(auth && auth.getUser ? auth.getUser() : null).then(function (settingsUser) {
-				var cachedSettings = window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
+	};
+	return waitForHadithAuth().then(function (auth) {
+		return Promise.resolve(auth && auth.getUser ? auth.getUser() : null).then(function (settingsUser) {
+			return readHadithDomainUserSettingsCache(settingsUser).then(function (bridgedSettings) {
+				var cachedSettings = bridgedSettings || (window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
 					? window.hadithUserSettingsCache.read(settingsUser)
-					: null;
+					: null);
 				if (cachedSettings)
 					return normalizeSettings(cachedSettings);
 				return Promise.resolve(auth && auth.getToken ? auth.getToken() : null).then(function (token) {
@@ -1257,6 +1344,7 @@ function getQuranTafsirSettings() {
 						return normalizeSettings(cachedSettings || {});
 					});
 				});
+			});
 			});
 		});
 	}
