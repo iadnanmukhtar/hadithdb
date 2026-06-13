@@ -2237,7 +2237,7 @@ del em strong {
 	line-height: 1.45;
 }
 
-.tafsir-only-page .quran-tafsir-text.quran-tafsir-english-only {
+.tafsir-only-page .quran-tafsir-text:lang(en) {
 	font-size: 1rem;
 	line-height: 1.55;
 }
@@ -2390,6 +2390,14 @@ del em strong {
 .quran-tafsir-text .footnotes p {
 	font-size: .78rem;
 	line-height: 1.35;
+}
+
+.quran-tafsir-text .footnotes li {
+	margin-bottom: .45rem;
+}
+
+.quran-tafsir-text .footnotes li:last-child {
+	margin-bottom: 0;
 }
 
 .quran-tafsir-text .footnotes li::marker {

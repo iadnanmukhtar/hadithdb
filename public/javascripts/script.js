@@ -758,7 +758,7 @@ function initQuranTafsirTabs(root) {
 				return '٠١٢٣٤٥٦٧٨٩'[digit];
 			});
 		};
-		var appendAyahHeading = function (entryElement, ayah, inline) {
+		var appendAyahHeading = function (entryElement, ayah, inline, showRef) {
 			var heading = $('<h3>').addClass('quran-tafsir-ayah').attr({
 				lang: 'ar',
 				dir: 'rtl'
@@ -769,8 +769,10 @@ function initQuranTafsirTabs(root) {
 				href: quranUrl(`/quran:${surah}:${ayah}`),
 				title: `Read Quran ${surah}:${ayah}`
 			}).appendTo(heading);
-			$('<span>').addClass('quran-tafsir-ayah-ref').attr('dir', 'ltr').text(`${surah}:${ayah}`).appendTo(link);
-			link.append(document.createTextNode(' '));
+			if (showRef) {
+				$('<span>').addClass('quran-tafsir-ayah-ref').attr('dir', 'ltr').text(`${surah}:${ayah}`).appendTo(link);
+				link.append(document.createTextNode(' '));
+			}
 			$('<span>').addClass('quran-tafsir-ayah-text').text(ayahText[ayah] || '').appendTo(link);
 			link.append(document.createTextNode(' '));
 			$('<span>').addClass('quran-ayah-end-marker').text(`۝${toArabicDigits(ayah)}`).appendTo(link);
@@ -1052,9 +1054,12 @@ function initQuranTafsirTabs(root) {
 					var ayahHeadings = count > 0
 						? $('<div>').addClass('quran-tafsir-ayah-range').attr({ lang: 'ar', dir: 'rtl' }).appendTo(summary)
 						: summary;
+					var showedAyahRef = false;
 					for (var ayah = startAyah; ayah <= endAyah; ayah++) {
-						if (ayahText[ayah])
-							appendAyahHeading(ayahHeadings, ayah, count > 0);
+						if (ayahText[ayah]) {
+							appendAyahHeading(ayahHeadings, ayah, count > 0, !showedAyahRef);
+							showedAyahRef = true;
+						}
 					}
 					if (entry.payload.html !== undefined) {
 						$('<div>').addClass('quran-tafsir-entry-body quran-tafsir-html').html(entry.payload.html).appendTo(entryElement);

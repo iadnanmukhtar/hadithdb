@@ -8,7 +8,7 @@ const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 
 const router = express.Router();
-const TAFSIR_BOOKS_CACHE_SUFFIX = '.tafsir-books-v4-accent-active-nav';
+const TAFSIR_BOOKS_CACHE_SUFFIX = '.tafsir-books-v5-collapsible-sections';
 
 router.get('/', async function (req, res, next) {
   res.locals.req = req;

@@ -84,6 +84,16 @@
         .replace(/^tafs[īi]r\s+/i, '')
         .trim();
     }
+    var tafsirSectionHeading = function (id, heading) {
+      return `
+        <h2 class="h4 mb-3">
+          <button class="book-catalog-section-toggle tafsir-book-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#${id}" aria-expanded="true" aria-controls="${id}">
+            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            <span>${heading}</span>
+          </button>
+        </h2>
+      `;
+    };
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -127,7 +137,9 @@
 
       <% groups.forEach(function (group) { %>
         <section class="mb-4 tafsir-book-section">
-          <h2 class="h4 mb-3"><%= group.heading %></h2>
+          <% var sectionId = `tafsir-book-section-${group.key}`; %>
+          <%- tafsirSectionHeading(sectionId, group.heading) %>
+          <div id="<%= sectionId %>" class="collapse show tafsir-book-section-body">
           <% if (group.tafsirs.length < 1) { %>
             <p class="text-muted">No <%= group.heading.toLowerCase() %> are currently available.</p>
           <% } else { %>
@@ -163,6 +175,7 @@
               <% }); %>
             </div>
           <% } %>
+          </div>
         </section>
       <% }); %>
       <p class="text-muted d-none tafsir-book-filter-empty">No matching tafsīr books found.</p>
@@ -197,6 +210,14 @@
           return !card.classList.contains('d-none');
         });
         section.classList.toggle('d-none', !hasVisibleCard && !!query);
+        if (query && hasVisibleCard) {
+          var sectionBody = section.querySelector('.tafsir-book-section-body');
+          var sectionToggle = section.querySelector('.tafsir-book-section-toggle');
+          if (sectionBody)
+            sectionBody.classList.add('show');
+          if (sectionToggle)
+            sectionToggle.setAttribute('aria-expanded', 'true');
+        }
       });
       if (empty)
         empty.classList.toggle('d-none', visibleCount > 0 || !query);
