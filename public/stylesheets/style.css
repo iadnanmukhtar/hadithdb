@@ -462,6 +462,10 @@ nav .nav-link[aria-current="page"] {
 	transform: rotate(-90deg);
 }
 
+#offcanvas-topnav .offcanvas-body > .row {
+	margin-left: 0;
+}
+
 .offcanvas-col1 .nav-link {
 	font-size: 1rem;
 	padding-left: 0.75rem;
@@ -1637,6 +1641,11 @@ del em strong {
 	cursor: help;
 }
 
+.book-carousel-tooltip-ready,
+.tafsir-book-tooltip-ready {
+	cursor: help;
+}
+
 .quran-corpus-word:hover,
 .quran-corpus-word:focus-visible {
 	background-color: rgba(255, 214, 102, 0.28);
@@ -1659,8 +1668,8 @@ del em strong {
 	padding: .42rem .58rem;
 	pointer-events: none;
 	position: fixed;
-	text-align: justify;
-	white-space: normal;
+	text-align: left;
+	white-space: pre-line;
 	z-index: 1080;
 }
 

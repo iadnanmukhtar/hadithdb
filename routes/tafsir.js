@@ -5,7 +5,6 @@ const ejs = require('ejs');
 const express = require('express');
 const fs = require('fs');
 const { homedir } = require('os');
-const Arabic = require('../lib/Arabic');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
@@ -13,38 +12,6 @@ const { Item } = require('../lib/Model');
 
 const router = express.Router();
 const TAFSIR_PASSAGE_CACHE_SUFFIX = '.tafsir-v19-accent-active-nav';
-
-router.get('/:tafsir/sections', async function (req, res, next) {
-  res.locals.req = req;
-  res.locals.res = res;
-
-  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir, req.query.lang);
-  if (!tafsir)
-    return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
-
-  const surahNum = req.query.surah ? Number(req.query.surah) : null;
-  if (req.query.surah && (!Number.isInteger(surahNum) || surahNum < 1 || surahNum > 114))
-    return next(createError(404, `Quran surah ${req.query.surah} not found`));
-
-  const tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
-  const sections = (await Tafsir.sectionMenu(tafsir)).filter(function (section) {
-    return !surahNum || Number(section.surah) === surahNum;
-  }).map(function (section) {
-    const rangeLabel = tafsirRangeLabel(section);
-    return {
-      index: section.index,
-      url: `${tafsirPath}/${section.surah}/${section.ayahFrom}`,
-      rangeLabel: rangeLabel,
-      rangeLabelAr: Arabic.toArabicDigits(rangeLabel),
-      ayahRangeLabel: section.ayahTo > section.ayahFrom ? 'Ayat' : 'Ayah',
-      title_en: Utils.truncate(tafsirSectionTitle(section, 'en'), 75, true),
-      title: Utils.truncate(tafsirSectionTitle(section, 'ar'), 150, true)
-    };
-  });
-
-  res.setHeader('Cache-Control', 'public, max-age=3600');
-  res.json({ sections: sections });
-});
 
 router.get('/:tafsir', async function (req, res, next) {
   res.locals.req = req;
@@ -240,19 +207,6 @@ function adjacentQuranAyah(tafsir, surah, ayah, direction) {
 function navigationTarget(tafsir, surah, ayah, tafsirs) {
   const url = Tafsir.browseUrl(tafsir, surah, ayah, tafsirs);
   return Utils.quranPath(url);
-}
-
-function tafsirRangeLabel(section) {
-  return `${section.surah}:${section.ayahFrom}${section.ayahTo > section.ayahFrom ? `-${section.ayahTo}` : ''}`;
-}
-
-function tafsirSectionTitle(section, lang) {
-  const sectionSurah = (global.surahs || []).find(function (item) {
-    return Number(item.num) === Number(section.surah);
-  });
-  if (lang === 'ar')
-    return section.title || (sectionSurah ? `سورة ${sectionSurah.name_ar}` : '');
-  return section.title_en || (sectionSurah ? `Surat ${sectionSurah.name_en}` : '');
 }
 
 function tafsirCacheRefs(tafsir, entries, surah, ayah) {

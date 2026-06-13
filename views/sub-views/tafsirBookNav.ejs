@@ -26,6 +26,21 @@
 			.replace(/^tafs[īi]r\s+/i, '')
 			.trim();
 	}
+	function tafsirDeathTooltipLabel(tafsir) {
+		var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
+		if (!death)
+			return '';
+		if (!/\b(?:AH|H)\b/i.test(death) && !/هـ/u.test(death))
+			death = `${death} AH`;
+		return /^d\./i.test(death) ? death : `d. ${death}`;
+	}
+	function tafsirBookTooltip(tafsir) {
+		return [
+			tafsir.name_en || tafsir.name || tafsir.shortName_en || tafsir.shortName || tafsir.alias,
+			tafsir.author_en || tafsir.author,
+			tafsirDeathTooltipLabel(tafsir)
+		].filter(Boolean).join('\n');
+	}
 %>
 <% if (orderedTafsirs.length > 0) { %>
 	<div class="h-menu-wrap mb-3">
@@ -35,7 +50,7 @@
 		<div class="h-menu-scroller">
 			<div class="btn-group h-menu text-nowrap" role="group">
 				<% orderedTafsirs.forEach(function (tafsir) { %>
-					<a class="btn btn-outline-primary text-nowrap" href="<%= tafsirBookHref(tafsir) %>" title="<%= [tafsir.name_en, tafsir.name].filter(Boolean).join(' ') %>"><%- tafsirBookLabel(tafsir) %></a>
+					<a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= tafsirBookHref(tafsir) %>" data-tafsir-tooltip="<%= tafsirBookTooltip(tafsir) %>" data-tafsir-book-nav-item data-tafsir-alias="<%= tafsir.alias %>" data-tafsir-lang="<%= tafsir.lang %>" data-tafsir-death="<%= tafsir.death || '' %>" data-tafsir-ordinal="<%= tafsir.ordinal || 0 %>"><%- tafsirBookLabel(tafsir) %></a>
 				<% }); %>
 			</div>
 		</div>

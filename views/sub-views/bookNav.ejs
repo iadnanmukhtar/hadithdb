@@ -3,6 +3,18 @@
 		var currentBookAlias = typeof page !== 'undefined' && page.context && page.context.book ? page.context.book.alias : '';
 		if (!currentBookAlias && typeof req !== 'undefined' && req.path)
 			currentBookAlias = req.path.split('/').filter(Boolean)[0] || '';
+		var bookDeathLabel = function (book) {
+			if (!book || !book.yearOfDeath)
+				return '';
+			return `d. ${book.yearOfDeath} AH`;
+		};
+		var bookTooltip = function (book) {
+			return [
+				book.name_en || book.name || book.shortName_en || book.shortName || book.alias,
+				book.author,
+				bookDeathLabel(book)
+			].filter(Boolean).join('\n');
+		};
 	%>
 	<div class="h-menu-hint d-md-none">
 		<i class="bi bi-arrow-left-right"></i> Swipe to browse books
@@ -12,7 +24,7 @@
 			<% for (b of books.filter(b => !b.hidden)) {
 				var isCurrentBook = b.alias === currentBookAlias;
 			%>
-			  <a class="btn btn-outline-primary text-nowrap<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" title="<%= `${b.name_en} ${b.name}` %>"><%= b.shortName_en %></a>
+			  <a class="btn btn-outline-primary text-nowrap book-carousel-tooltip<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-tooltip="<%= bookTooltip(b) %>"><%= b.shortName_en %></a>
 			<% } %>
 		</div>
 	</div>

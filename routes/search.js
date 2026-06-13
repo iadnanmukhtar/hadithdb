@@ -23,9 +23,8 @@ const { homedir } = require('os');
 
 const router = express.Router();
 const CAPTCHA_TTL_MS = 5 * 60 * 1000;
-const SHARED_LAYOUT_CACHE_SUFFIX = '.accent-active-nav-v1';
+const SHARED_LAYOUT_CACHE_SUFFIX = '.accent-active-nav-v2-settings-tafsir-nav';
 const SITEMAP_CACHE_SUFFIX = '.sitemap-v2-cached-tafsir';
-const SITEMAP_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const sitemapBuilds = new Map();
 
 function redirectEncodedReferencePath(req, res, next) {
@@ -223,6 +222,7 @@ router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, n
 
 router.get('/reinit', async function (req, res, next) {
   await Hadith.a_reinit();
+  await flushMasterDataCaches();
   res.write('Done');
   res.end();
   return;
@@ -300,11 +300,11 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
 // SITEMAP
 router.get('/sitemap\.txt', async function (req, res, next) {
   res.setHeader('content-type', 'text/plain');
-  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.setHeader('Cache-Control', 'no-store');
   const quranOnly = Utils.isQuranSubdomainRequest(req);
   const cachedFile = sitemapCacheFile(quranOnly);
   const flushCache = Utils.shouldFlushCache(req);
-  if (!flushCache && sitemapCacheFresh(cachedFile)) {
+  if (!flushCache && fs.existsSync(cachedFile)) {
     res.end(fs.readFileSync(cachedFile));
     return;
   }
@@ -329,13 +329,13 @@ function sitemapCacheFile(quranOnly) {
   return `${homedir}/.hadithdb/cache/${quranOnly ? 'quran' : 'hadith'}${SITEMAP_CACHE_SUFFIX}.txt`;
 }
 
-function sitemapCacheFresh(cachedFile) {
-  try {
-    const stat = fs.statSync(cachedFile);
-    return Date.now() - stat.mtimeMs < SITEMAP_CACHE_TTL_MS;
-  } catch (err) {
-    return false;
-  }
+async function flushMasterDataCaches() {
+  await Utils.flushCachedFile(sitemapCacheFile(false));
+  await Utils.flushCachedFile(sitemapCacheFile(true));
+  await Utils.flushCacheContaining('quran');
+  await Utils.flushCacheContaining('book:quran');
+  await Utils.flushCacheContaining('tafsirs');
+  await Utils.flushCacheContaining('tafsir:books');
 }
 
 async function buildSitemapText(req) {
@@ -579,7 +579,7 @@ router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNu
   var endAyah = startAyah + range.count - 1;
   var rows = await QuranCorpus.wordsForRange(surah.num, startAyah, endAyah);
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify({
     surah: surah.num,
     h2: sectionNum,

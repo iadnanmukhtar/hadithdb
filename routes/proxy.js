@@ -19,7 +19,7 @@ quranBacktickMd.renderer.rules.fence = renderQuranBacktickBlock;
 
 router.get('/tafsir/books', async function (req, res) {
   const rows = await Tafsir.visibleTafsirs();
-  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.setHeader('Cache-Control', 'no-store');
   res.json(rows);
 });
 
@@ -85,7 +85,7 @@ router.get('/tafsir', async function (req, res) {
       },
       timeout: 10000
     });
-    res.setHeader('Cache-Control', 'public, max-age=2592000');
+    res.setHeader('Cache-Control', 'no-store');
     res.json(response.data);
   } catch (err) {
     debug(`tafsir.app unavailable for ${src} ${surah}:${ayah}: ${err.message}`);
