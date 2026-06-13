@@ -2734,14 +2734,14 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .quran-ayah-hero-body {
 	margin-bottom: 0;
 	font-size: 1.15rem;
-	line-height: 1.8;
+	line-height: 1.55;
 }
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p {
 	font-family: QuranV1, Serif;
 	font-size: 1.85rem;
-	line-height: 2.2;
+	line-height: 1.85;
 }
 
 .quran-ayah-hero-ayah {
@@ -2796,7 +2796,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	font-family: QuranV1, Serif;
 	font-size: 1.85rem;
 	font-weight: 400;
-	line-height: 2.2;
+	line-height: 1.85;
 }
 
 @media (max-width: 576px) {
