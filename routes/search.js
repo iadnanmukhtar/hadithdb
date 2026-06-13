@@ -24,6 +24,9 @@ const { homedir } = require('os');
 const router = express.Router();
 const CAPTCHA_TTL_MS = 5 * 60 * 1000;
 const SHARED_LAYOUT_CACHE_SUFFIX = '.accent-active-nav-v1';
+const SITEMAP_CACHE_SUFFIX = '.sitemap-v2-cached-tafsir';
+const SITEMAP_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const sitemapBuilds = new Map();
 
 function redirectEncodedReferencePath(req, res, next) {
   if (req.method !== 'GET' && req.method !== 'HEAD')
@@ -250,6 +253,46 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
 
 // SITEMAP
 router.get('/sitemap\.txt', async function (req, res, next) {
+  res.setHeader('content-type', 'text/plain');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  const quranOnly = Utils.isQuranSubdomainRequest(req);
+  const cachedFile = sitemapCacheFile(quranOnly);
+  const flushCache = Utils.shouldFlushCache(req);
+  if (!flushCache && sitemapCacheFresh(cachedFile)) {
+    res.end(fs.readFileSync(cachedFile));
+    return;
+  }
+  const cacheKey = quranOnly ? 'quran' : 'hadith';
+  if (!sitemapBuilds.has(cacheKey)) {
+    sitemapBuilds.set(cacheKey, buildAndCacheSitemap(req, cachedFile).finally(function () {
+      sitemapBuilds.delete(cacheKey);
+    }));
+  }
+  const txt = await sitemapBuilds.get(cacheKey);
+  res.end(txt);
+});
+
+async function buildAndCacheSitemap(req, cachedFile) {
+  const txt = await buildSitemapText(req);
+  fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
+  fs.writeFileSync(cachedFile, txt);
+  return txt;
+}
+
+function sitemapCacheFile(quranOnly) {
+  return `${homedir}/.hadithdb/cache/${quranOnly ? 'quran' : 'hadith'}${SITEMAP_CACHE_SUFFIX}.txt`;
+}
+
+function sitemapCacheFresh(cachedFile) {
+  try {
+    const stat = fs.statSync(cachedFile);
+    return Date.now() - stat.mtimeMs < SITEMAP_CACHE_TTL_MS;
+  } catch (err) {
+    return false;
+  }
+}
+
+async function buildSitemapText(req) {
   var txt = '';
   var domain = global.settings.site.url;
   var quranDomain = Utils.quranBaseUrl(req);
@@ -262,7 +305,6 @@ router.get('/sitemap\.txt', async function (req, res, next) {
       return `${quranDomain}/${alias}\n`;
     return `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
   };
-  res.setHeader('content-type', 'text/plain');
   if (!quranOnly) {
     txt += `${domain}\n`;
     txt += `${domain}/books\n`;
@@ -304,9 +346,8 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   }
   if (quranOnly)
     txt += await quranTafsirSitemapUrls(quranDomain);
-  res.end(txt);
-  return;
-});
+  return txt;
+}
 
 async function quranTafsirSitemapUrls(quranDomain) {
   const tafsirs = await Tafsir.visibleTafsirs();
@@ -319,7 +360,7 @@ async function quranTafsirSitemapUrls(quranDomain) {
     return !(tafsir.lang === 'ar' && bilingualAliases.has(tafsir.alias));
   });
   const urls = new Set();
-  const tafsirUrlGroups = await Promise.all(visibleTafsirs.map(async function (tafsir) {
+  for (const tafsir of visibleTafsirs) {
     const tafsirUrls = [];
     const rootUrl = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
     tafsirUrls.push(`${quranDomain}${rootUrl}`);
@@ -327,9 +368,8 @@ async function quranTafsirSitemapUrls(quranDomain) {
     passages.forEach(function (passage) {
       tafsirUrls.push(`${quranDomain}${Tafsir.browseUrl(tafsir, passage.surah, passage.ayah, tafsirs)}`);
     });
-    return tafsirUrls;
-  }));
-  tafsirUrlGroups.flat().forEach(url => urls.add(url));
+    tafsirUrls.forEach(url => urls.add(url));
+  }
   return Array.from(urls).map(url => `${url}\n`).join('');
 }
 
