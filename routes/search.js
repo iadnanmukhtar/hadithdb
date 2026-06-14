@@ -235,6 +235,15 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
       if (!Number.isInteger(id) || id < 1)
         return next(createError(400, 'Invalid hadith id'));
 
+      if (!verifyCaptchaToken(req.body && req.body.captchaToken, req.body && req.body.captchaAnswer)) {
+        res.status(403).json({
+          code: 403,
+          captchaRequired: true,
+          message: 'Please complete the CAPTCHA before translating.'
+        });
+        return;
+      }
+
       var item = (await global.query(`SELECT * FROM v_hadiths WHERE hId=${id}`))[0];
       if (!item)
         return next(createError(404, `Hadith not found: ${id}`));
@@ -247,15 +256,6 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
           revised: false,
           body_en: item.body_en,
           body_en_html: Utils.markdownToHtml(item.body_en)
-        });
-        return;
-      }
-
-      if (!verifyCaptchaToken(req.body && req.body.captchaToken, req.body && req.body.captchaAnswer)) {
-        res.status(403).json({
-          code: 403,
-          captchaRequired: true,
-          message: 'Please complete the CAPTCHA before translating.'
         });
         return;
       }

@@ -163,6 +163,16 @@ const buildErrorViewLocals = (statusCode, message, error, req, res) => {
   };
 };
 
+const skipsLoginSessionLookup = (req) => {
+  if (/\.(?:css|js|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)$/i.test(req.path))
+    return true;
+  if (/^\/(?:quran\/)?captcha\/translate(?:\/verify)?\/?$/.test(req.path))
+    return true;
+  if (req.query && req.query.cmd === 'tr' && /^\/(?:quran\/)?do\/[^/]+\/?$/.test(req.path))
+    return true;
+  return false;
+};
+
 patchAsyncRouterMethods();
 
 const app = express();
@@ -180,7 +190,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
 	  app.use(cookieParser());
 	  app.use(AppMonitor.middleware());
 	  app.use(async function resolveAdminMode(req, res, next) {
-	    if (/\.(?:css|js|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)$/i.test(req.path)) {
+	    if (skipsLoginSessionLookup(req)) {
 	      req.admin = false;
 	      req.editMode = false;
 	      req.loginUser = null;
