@@ -57,14 +57,14 @@
 %>
 
 <aside class="row mb-3 pagination">
-  <div class="col-md-6 col-xs-12 text-start">
+  <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
     <% if (page.prev) { %>
-    <a class="pagination-nav-link" title="<%- page.prevHeading.title_en || page.prevHeading.title %>" href="<%- utils.urlFor(req, page.prev) %>" rel="prev"><% if (isQuranPassage) { %><span class="bi bi-chevron-left" aria-hidden="true"></span><% } else { %>&lt;<% } %>&nbsp;<%- page.prevTitle %></a>
+    <a class="pagination-nav-link" title="<%- page.prevHeading.title_en || page.prevHeading.title %>" href="<%- utils.urlFor(req, page.prev) %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;<%- page.prevTitle %></span></a>
     <% } %>
   </div>
-  <div class="col-md-6 col-xs-12 text-end">
+  <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
     <% if (page.next) { %>
-    <a class="pagination-nav-link" title="<%- page.nextHeading.title_en || page.nextHeading.title %>" href="<%- utils.urlFor(req, page.next) %>" rel="next"><%- page.nextTitle %>&nbsp;<% if (isQuranPassage) { %><span class="bi bi-chevron-right" aria-hidden="true"></span><% } else { %>&gt;<% } %></a>
+    <a class="pagination-nav-link" title="<%- page.nextHeading.title_en || page.nextHeading.title %>" href="<%- utils.urlFor(req, page.next) %>" rel="next"><span class="pagination-nav-label"><%- page.nextTitle %>&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
     <% } %>
   </div>
 </aside>

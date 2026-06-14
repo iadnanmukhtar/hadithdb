@@ -1509,6 +1509,29 @@ del em strong {
 	outline-offset: 2px;
 }
 
+@media (max-width: 767.98px) {
+	.pagination .pagination-nav-slot {
+		flex: 0 0 50%;
+		max-width: 50%;
+	}
+
+	.pagination .pagination-nav-label {
+		display: none;
+	}
+
+	.pagination .pagination-nav-link {
+		justify-content: center;
+		min-width: 2.2rem;
+		min-height: 2.2rem;
+		padding: 0.35rem 0.6rem;
+	}
+
+	.pagination .pagination-nav-chevron {
+		font-size: 1rem;
+		line-height: 1;
+	}
+}
+
 .chapter > .pagination:first-child {
 	margin-top: 1rem;
 }

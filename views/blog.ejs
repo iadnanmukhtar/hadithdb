@@ -41,14 +41,14 @@
     <main class="posts">
 
       <aside class="row mb-2 pagination">
-        <div class="col-md-6 col-xs-12 text-start">
+        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
           <% if (page.prev) { %>
-          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev">&lt;&nbsp;Prev:&nbsp;Page</a>
+          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev:&nbsp;Page</span></a>
           <% } %>
         </div>
-        <div class="col-md-6 col-xs-12 text-end">
+        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
           <% if (page.next) { %>
-          <a class="pagination-nav-link" href="<%- page.next %>" rel="next">Next:&nbsp;Page&nbsp;&gt;</a>
+          <a class="pagination-nav-link" href="<%- page.next %>" rel="next"><span class="pagination-nav-label">Next:&nbsp;Page&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
           <% } %>
         </div>
       </aside>
@@ -73,14 +73,14 @@
     <% } %>
 
       <aside class="row mb-2 pagination">
-        <div class="col-md-6 col-xs-12 text-start">
+        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
           <% if (page.prev) { %>
-          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev">&lt;&nbsp;Prev:&nbsp;Page</a>
+          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev:&nbsp;Page</span></a>
           <% } %>
         </div>
-        <div class="col-md-6 col-xs-12 text-end">
+        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
           <% if (page.next) { %>
-          <a class="pagination-nav-link" href="<%- page.next %>" rel="next">Next:&nbsp;Page&nbsp;&gt;</a>
+          <a class="pagination-nav-link" href="<%- page.next %>" rel="next"><span class="pagination-nav-label">Next:&nbsp;Page&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
           <% } %>
         </div>
       </aside>

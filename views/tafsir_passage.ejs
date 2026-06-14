@@ -54,14 +54,14 @@
   <div class="container col-lg-8 mx-auto">
     <main class="chapter mt-10 tafsir-only-page">
       <aside class="row mb-3 pagination tafsir-passage-navigation">
-        <div class="col-md-6 col-xs-12 text-start">
+        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
           <% if (navigation.prev) { %>
-            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev"><span class="bi bi-chevron-left" aria-hidden="true"></span>&nbsp;Prev: <%= navigation.prevTitle %></a>
+            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev: <%= navigation.prevTitle %></span></a>
           <% } %>
         </div>
-        <div class="col-md-6 col-xs-12 text-end">
+        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
           <% if (navigation.next) { %>
-            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %>&nbsp;<span class="bi bi-chevron-right" aria-hidden="true"></span></a>
+            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next"><span class="pagination-nav-label">Next: <%= navigation.nextTitle %>&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
           <% } %>
         </div>
       </aside>
@@ -128,14 +128,14 @@
       }); %>
 
       <aside class="row mt-3 mb-3 pagination tafsir-passage-navigation">
-        <div class="col-md-6 col-xs-12 text-start">
+        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
           <% if (navigation.prev) { %>
-            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev"><span class="bi bi-chevron-left" aria-hidden="true"></span>&nbsp;Prev: <%= navigation.prevTitle %></a>
+            <a class="pagination-nav-link" href="<%= navigation.prev %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev: <%= navigation.prevTitle %></span></a>
           <% } %>
         </div>
-        <div class="col-md-6 col-xs-12 text-end">
+        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
           <% if (navigation.next) { %>
-            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next">Next: <%= navigation.nextTitle %>&nbsp;<span class="bi bi-chevron-right" aria-hidden="true"></span></a>
+            <a class="pagination-nav-link" href="<%= navigation.next %>" rel="next"><span class="pagination-nav-label">Next: <%= navigation.nextTitle %>&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
           <% } %>
         </div>
       </aside>
