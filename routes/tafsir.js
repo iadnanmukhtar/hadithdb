@@ -156,110 +156,15 @@ function sendCachedHtml(req, res, cachedFile) {
 }
 
 async function tafsirNavigation(tafsir, entries, tafsirs, surah, ayah) {
-  if (tafsir.source === 'local') {
-    const sectionNavigation = await tafsirSectionNavigation(tafsir, surah, ayah, tafsirs);
-    if (sectionNavigation && (sectionNavigation.prev || sectionNavigation.next))
-      return sectionNavigation;
-  }
-  const prev = await Tafsir.adjacentPassage(tafsir, entries, -1, { surah: surah, ayah: ayah });
-  const next = await Tafsir.adjacentPassage(tafsir, entries, 1, { surah: surah, ayah: ayah });
+  const currentRef = tafsir.source !== 'local' ? { surah: surah, ayah: ayah } : null;
+  const prev = await Tafsir.adjacentPassage(tafsir, entries, -1, currentRef);
+  const next = await Tafsir.adjacentPassage(tafsir, entries, 1, currentRef);
   return {
     prev: prev ? navigationTarget(tafsir, prev.surah, prev.ayah, tafsirs) : '',
     prevTitle: prev ? `§${prev.surah}.${prev.ayah}` : '',
     next: next ? navigationTarget(tafsir, next.surah, next.ayah, tafsirs) : '',
     nextTitle: next ? `§${next.surah}.${next.ayah}` : ''
   };
-}
-
-async function tafsirSectionNavigation(tafsir, surah, ayah, tafsirs) {
-  if (typeof global.query !== 'function')
-    return null;
-
-  const current = await currentQuranPassageHeading(surah, ayah);
-  if (!current)
-    return null;
-
-  const prev = await adjacentQuranPassageHeading(current, -1);
-  const next = await adjacentQuranPassageHeading(current, 1);
-  return {
-    prev: prev ? navigationTarget(tafsir, prev.surah, prev.ayah, tafsirs) : '',
-    prevTitle: prev ? prev.label : '',
-    next: next ? navigationTarget(tafsir, next.surah, next.ayah, tafsirs) : '',
-    nextTitle: next ? next.label : ''
-  };
-}
-
-async function currentQuranPassageHeading(surah, ayah) {
-  const rows = await global.query(`
-    SELECT h1, h2
-    FROM v_hadiths
-    WHERE book_alias='quran'
-      AND h1=${Number(surah)}
-      AND numInChapter=${Number(ayah)}
-    LIMIT 1`);
-  const row = rows[0];
-  if (!row)
-    return null;
-  const h1 = Number(row.h1);
-  const h2 = Number(row.h2);
-  if (Number.isFinite(h2) && h2 > 0)
-    return quranPassageHeadingByLevel(2, h1, h2);
-  return quranPassageHeadingByLevel(1, h1);
-}
-
-async function quranPassageHeadingByLevel(level, h1, h2) {
-  const h2Clause = Number(level) === 2 ? `AND h2=${Number(h2)}` : '';
-  const rows = await global.query(`
-    SELECT level, h1, h2, h1_start, h2_start, ordinal
-    FROM v_toc
-    WHERE book_alias='quran'
-      AND level=${Number(level)}
-      AND h1=${Number(h1)}
-      ${h2Clause}
-    ORDER BY ordinal ASC
-    LIMIT 1`);
-  return normalizeQuranPassageHeading(rows[0]);
-}
-
-async function adjacentQuranPassageHeading(current, direction) {
-  const operator = direction > 0 ? '>' : '<';
-  const order = direction > 0 ? 'ASC' : 'DESC';
-  const rows = await global.query(`
-    SELECT level, h1, h2, h1_start, h2_start, ordinal
-    FROM v_toc
-    WHERE book_alias='quran'
-      AND level=${Number(current.level)}
-      AND ordinal${operator}${Number(current.ordinal)}
-    ORDER BY ordinal ${order}
-    LIMIT 1`);
-  return normalizeQuranPassageHeading(rows[0]);
-}
-
-function normalizeQuranPassageHeading(row) {
-  if (!row)
-    return null;
-  const level = Number(row.level);
-  const h1 = Number(row.h1);
-  const h2 = Number(row.h2);
-  const start = parseQuranHeadingStart(level === 2 ? row.h2_start : row.h1_start, h1);
-  if (!start)
-    return null;
-  return {
-    level: level,
-    ordinal: Number(row.ordinal),
-    surah: start.surah,
-    ayah: start.ayah,
-    label: level === 2 && Number.isFinite(h2) ? `§${h1}.${h2}` : `§${h1}`
-  };
-}
-
-function parseQuranHeadingStart(ref, fallbackSurah) {
-  const match = String(ref || '').match(/^(\d+):(\d+)$/);
-  const surah = match ? Number(match[1]) : Number(fallbackSurah);
-  const ayah = match ? Math.max(1, Number(match[2])) : 1;
-  if (!Number.isInteger(surah) || surah < 1 || !Number.isInteger(ayah))
-    return null;
-  return { surah: surah, ayah: ayah };
 }
 
 function tafsirEditNavigation(tafsir, surah, ayah, tafsirs) {
