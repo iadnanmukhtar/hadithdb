@@ -8,7 +8,6 @@ const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 
 const router = express.Router();
-const TAFSIR_BOOKS_CACHE_SUFFIX = '.tafsir-books-v7-tooltip-meta';
 
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
@@ -16,7 +15,7 @@ router.get('/', async function (req, res, next) {
   const admin = req.admin;
   const editMode = admin && req.editMode;
   const cacheableHtml = !('json' in req.query) && !('tsv' in req.query);
-  const cachedFile = `${homedir}/.hadithdb/cache/${tafsirBooksReqToFilename(req)}${TAFSIR_BOOKS_CACHE_SUFFIX}.html`;
+  const cachedFile = Utils.htmlCacheFile(req, { includeBaseUrl: true });
   const flushCache = Utils.shouldFlushCache(req);
   if (flushCache)
     await Utils.flushCachedFile(cachedFile);
@@ -59,10 +58,6 @@ router.get('/', async function (req, res, next) {
 function sendCachedHtml(req, res, cachedFile) {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8');
   res.end(Utils.injectCachedAdminControls(fs.readFileSync(cachedFile), req));
-}
-
-function tafsirBooksReqToFilename(req) {
-  return Utils.cacheReqToFilename({ url: `${req.baseUrl || ''}${req.url}` });
 }
 
 function tafsirBookCacheRefs(tafsirs) {

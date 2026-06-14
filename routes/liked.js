@@ -10,7 +10,7 @@ const { Item } = require('../lib/Model');
 const Utils = require('../lib/Utils');
 
 const router = express.Router();
-const name = 'liked-v6-accent-active-nav';
+const name = Utils.versionedCacheName('liked');
 
 router.get('/', async function (req, res, next) {
   res.locals.req = req;

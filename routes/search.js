@@ -23,8 +23,6 @@ const { homedir } = require('os');
 
 const router = express.Router();
 const CAPTCHA_TTL_MS = 5 * 60 * 1000;
-const SHARED_LAYOUT_CACHE_SUFFIX = '.accent-active-nav-v2-settings-tafsir-nav';
-const SITEMAP_CACHE_SUFFIX = '.sitemap-v2-cached-tafsir';
 const sitemapBuilds = new Map();
 
 function redirectEncodedReferencePath(req, res, next) {
@@ -117,10 +115,6 @@ function appendOriginalQuery(req) {
 function sendCachedHtml(req, res, cachedFile) {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8');
   res.end(Utils.injectCachedAdminControls(fs.readFileSync(cachedFile), req));
-}
-
-function htmlCacheReqToFilename(req) {
-  return Utils.cacheReqToFilename(req);
 }
 
 function redirectCanonicalReferencePath(req, res, canonicalPath) {
@@ -326,7 +320,7 @@ async function buildAndCacheSitemap(req, cachedFile) {
 }
 
 function sitemapCacheFile(quranOnly) {
-  return `${homedir}/.hadithdb/cache/${quranOnly ? 'quran' : 'hadith'}${SITEMAP_CACHE_SUFFIX}.txt`;
+  return Utils.cacheFileFromFilename(quranOnly ? 'quran' : 'hadith', 'txt');
 }
 
 async function flushMasterDataCaches() {
@@ -1395,7 +1389,7 @@ router.get('/:bookAlias', async function (req, res, next) {
     var admin = req.admin;
     var editMode = admin && req.editMode;
     var cacheableHtml = !('download' in req.query) && !('json' in req.query) && !('tsv' in req.query);
-    var cachedFile = `${homedir}/.hadithdb/cache/${htmlCacheReqToFilename(req)}${SHARED_LAYOUT_CACHE_SUFFIX}.html`;
+    var cachedFile = Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
       await Utils.flushCachedFile(cachedFile);
@@ -1495,8 +1489,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     }
 
     var quranChapterPassage = bookAlias === 'quran' && req.query.ayat == undefined;
-    var cacheSuffix = `${SHARED_LAYOUT_CACHE_SUFFIX}${quranChapterPassage ? '.tafsirs-v63-no-inline-tafsir' : ''}`;
-    var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
+    var cachedFile = Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
       Utils.flushCachedFile(cachedFile);
@@ -1611,8 +1604,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       }
     }
 
-    var cacheSuffix = `${SHARED_LAYOUT_CACHE_SUFFIX}${(bookAlias === 'quran' && req.query.ayat == undefined) ? '.tafsirs-v63-no-inline-tafsir' : ''}`;
-    var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}${cacheSuffix}.html`;
+    var cachedFile = Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
       Utils.flushCachedFile(cachedFile);
