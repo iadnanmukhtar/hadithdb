@@ -1150,23 +1150,27 @@ function initQuranTafsirTabs(root) {
 		]).then(function (results) {
 			var books = results[0];
 			var settings = results[1];
-				var tafsirs = (settings || {}).tafsirs || {};
-				var disabledAliases = new Set(Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : []);
-				var tafsirOrder = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
-				var visibleBooks = books.filter(function (book) {
-					return !disabledAliases.has(book.alias);
-				}).map(function (book, originalIndex) {
-					return { book: book, originalIndex: originalIndex };
-				}).sort(function (a, b) {
+			var usePersonalizedTafsirs = settings && settings.personalized === true;
+			var tafsirs = usePersonalizedTafsirs ? ((settings || {}).tafsirs || {}) : {};
+			var disabledAliases = new Set(Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : []);
+			var tafsirOrder = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
+			var visibleBooks = books.filter(function (book) {
+				return !disabledAliases.has(book.alias);
+			}).map(function (book, originalIndex) {
+				return { book: book, originalIndex: originalIndex };
+			});
+			if (usePersonalizedTafsirs)
+				visibleBooks.sort(function (a, b) {
 					return compareTafsirPreferenceEntries(a, b, tafsirOrder);
-				}).map(function (entry) {
-					return entry.book;
 				});
+			visibleBooks = visibleBooks.map(function (entry) {
+				return entry.book;
+			});
 			visibleBooks.forEach(addCatalogTab);
-			if (visibleBooks.length < 1) {
-				container.find('.quran-tafsir-content').html('<p class="text-muted">All tafsirs are disabled in My Settings.</p>');
-				return;
-			}
+				if (visibleBooks.length < 1) {
+					container.find('.quran-tafsir-content').html('<p class="text-muted">All tafsirs are disabled in My Settings.</p>');
+					return;
+				}
 				var initialParams = quranTafsirHashParams();
 				var dedicatedUrl = dedicatedTafsirPassageUrl(initialParams.get('tafsir') || initialParams.get('open-tafsir'), initialParams.get('lang'));
 				if (dedicatedUrl && dedicatedUrl !== currentDedicatedTafsirPassageUrl()) {
@@ -1296,55 +1300,67 @@ function getQuranTafsirSettings() {
 				}
 			}, 100);
 		});
-	};
-	var normalizeSettings = function (settings) {
-		var source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
-		var tafsirs = source.tafsirs && typeof source.tafsirs === 'object' && !Array.isArray(source.tafsirs) ? source.tafsirs : {};
-		var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
-		return {
-			tafsirs: {
-				disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
-					.map(function (alias) { return (alias || '').toString().trim(); })
-					.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
-				order: {
-					en: Array.from(new Set((Array.isArray(order.en) ? order.en : [])
+		};
+		var normalizeSettings = function (settings) {
+			var source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
+			var tafsirs = source.tafsirs && typeof source.tafsirs === 'object' && !Array.isArray(source.tafsirs) ? source.tafsirs : {};
+			var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
+			return {
+				tafsirs: {
+					disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
 						.map(function (alias) { return (alias || '').toString().trim(); })
 						.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
-					ar: Array.from(new Set((Array.isArray(order.ar) ? order.ar : [])
-						.map(function (alias) { return (alias || '').toString().trim(); })
-						.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })))
+					order: {
+						en: Array.from(new Set((Array.isArray(order.en) ? order.en : [])
+							.map(function (alias) { return (alias || '').toString().trim(); })
+							.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
+						ar: Array.from(new Set((Array.isArray(order.ar) ? order.ar : [])
+							.map(function (alias) { return (alias || '').toString().trim(); })
+							.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })))
+					}
 				}
-			}
+			};
 		};
-	};
-	return waitForHadithAuth().then(function (auth) {
-		return Promise.resolve(auth && auth.getUser ? auth.getUser() : null).then(function (settingsUser) {
-			return readHadithDomainUserSettingsCache(settingsUser).then(function (bridgedSettings) {
-				var cachedSettings = bridgedSettings || (window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
-					? window.hadithUserSettingsCache.read(settingsUser)
-					: null);
-				if (cachedSettings)
-					return normalizeSettings(cachedSettings);
-				return Promise.resolve(auth && auth.getToken ? auth.getToken() : null).then(function (token) {
-					return fetch(quranApiPath('/user-settings?optional=1'), {
-						credentials: 'same-origin',
-						headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-					}).then(function (response) {
-						if (!response.ok)
-							throw new Error('Unable to load user settings.');
-						return response.json();
-					}).then(function (data) {
-						if (!data)
-							return normalizeSettings({});
-						var settings = normalizeSettings(data.settings || {});
-						if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
-							window.hadithUserSettingsCache.write(settingsUser, data.settings || {});
-						return settings;
-					}).catch(function () {
-						return normalizeSettings(cachedSettings || {});
+		var defaultSettings = function () {
+			var settings = normalizeSettings({});
+			settings.personalized = false;
+			return settings;
+		};
+		var personalizedSettings = function (settings) {
+			settings = normalizeSettings(settings);
+			settings.personalized = true;
+			return settings;
+		};
+		return waitForHadithAuth().then(function (auth) {
+			return Promise.resolve(auth && auth.getUser ? auth.getUser() : null).then(function (settingsUser) {
+				if (!settingsUser)
+					return defaultSettings();
+				return readHadithDomainUserSettingsCache(settingsUser).then(function (bridgedSettings) {
+					var cachedSettings = bridgedSettings || (window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
+						? window.hadithUserSettingsCache.read(settingsUser)
+						: null);
+					if (cachedSettings)
+						return personalizedSettings(cachedSettings);
+					return Promise.resolve(auth && auth.getToken ? auth.getToken() : null).then(function (token) {
+						return fetch(quranApiPath('/user-settings?optional=1'), {
+							credentials: 'same-origin',
+							headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+						}).then(function (response) {
+							if (!response.ok)
+								throw new Error('Unable to load user settings.');
+							return response.json();
+						}).then(function (data) {
+							if (!data)
+								return personalizedSettings({});
+							var settings = personalizedSettings(data.settings || {});
+							if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
+								window.hadithUserSettingsCache.write(settingsUser, data.settings || {});
+							return settings;
+						}).catch(function () {
+							return cachedSettings ? personalizedSettings(cachedSettings) : defaultSettings();
+						});
 					});
 				});
-			});
 			});
 		});
 	}
@@ -2242,36 +2258,70 @@ function initQuranAyahSelector(root) {
 		var scope = root || document;
 		$(scope).find('.h-menu [data-tafsir-book-nav-item]').closest('.h-menu').each(function () {
 			var menu = $(this);
-			if (menu.data('tafsirBookCarouselBound'))
-				return;
-			menu.data('tafsirBookCarouselBound', true);
-			getQuranTafsirSettings().then(function (settings) {
-				var tafsirs = (settings || {}).tafsirs || {};
-				var disabledAliases = new Set(Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : []);
-				var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
-				menu.children('[data-tafsir-book-nav-item]').each(function (index) {
-					$(this).data('tafsirBookOriginalIndex', index);
-				}).map(function () {
-					var item = $(this);
-					return {
-						item: item,
-						book: {
-							alias: item.attr('data-tafsir-alias') || '',
-							lang: item.attr('data-tafsir-lang') || '',
-							death: item.attr('data-tafsir-death') || '',
-							ordinal: Number(item.attr('data-tafsir-ordinal') || 0)
-						},
-						originalIndex: item.data('tafsirBookOriginalIndex') || 0
-					};
-				}).get().sort(function (a, b) {
-					return compareTafsirPreferenceEntries(a, b, order);
-				}).forEach(function (item) {
-					var alias = item.book.alias || '';
-					item.item.toggleClass('d-none', disabledAliases.has(alias));
-					menu.append(item.item);
-				});
-				menu.closest('.h-menu-wrap').toggleClass('d-none', menu.children('[data-tafsir-book-nav-item]:not(.d-none)').length < 1);
+			prepareTafsirBookCarousel(menu);
+			applyTafsirBookCarouselSettings(menu);
+		});
+		bindTafsirBookCarouselRefresh();
+	}
+
+	function prepareTafsirBookCarousel(menu) {
+		if (menu.data('tafsirBookCarouselBound'))
+			return;
+		menu.data('tafsirBookCarouselBound', true);
+		menu.children('[data-tafsir-book-nav-item]').each(function (index) {
+			$(this).data('tafsirBookOriginalIndex', index);
+		});
+	}
+
+	function tafsirBookCarouselEntries(menu) {
+		return menu.children('[data-tafsir-book-nav-item]').map(function () {
+			var item = $(this);
+			return {
+				item: item,
+				book: {
+					alias: item.attr('data-tafsir-alias') || '',
+					lang: item.attr('data-tafsir-lang') || '',
+					death: item.attr('data-tafsir-death') || '',
+					ordinal: Number(item.attr('data-tafsir-ordinal') || 0)
+				},
+				originalIndex: item.data('tafsirBookOriginalIndex') || 0
+			};
+		}).get();
+	}
+
+	function applyTafsirBookCarouselSettings(menu) {
+		getQuranTafsirSettings().then(function (settings) {
+			var usePersonalizedTafsirs = settings && settings.personalized === true;
+			var tafsirs = usePersonalizedTafsirs ? ((settings || {}).tafsirs || {}) : {};
+			var disabledAliases = new Set(Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : []);
+			var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
+			var entries = tafsirBookCarouselEntries(menu);
+			entries.sort(function (a, b) {
+				return usePersonalizedTafsirs
+					? compareTafsirPreferenceEntries(a, b, order)
+					: (a.originalIndex || 0) - (b.originalIndex || 0);
+			}).forEach(function (entry) {
+				var alias = entry.book.alias || '';
+				entry.item.toggleClass('d-none', disabledAliases.has(alias));
+				menu.append(entry.item);
 			});
+			menu.closest('.h-menu-wrap').toggleClass('d-none', menu.children('[data-tafsir-book-nav-item]:not(.d-none)').length < 1);
+		});
+	}
+
+	function refreshTafsirBookCarousels(root) {
+		var scope = root || document;
+		$(scope).find('.h-menu [data-tafsir-book-nav-item]').closest('.h-menu').each(function () {
+			applyTafsirBookCarouselSettings($(this));
+		});
+	}
+
+	function bindTafsirBookCarouselRefresh() {
+		if ($(document).data('tafsirBookCarouselRefreshBound'))
+			return;
+		$(document).data('tafsirBookCarouselRefreshBound', true);
+		$(document).on('hadithAuthChanged bookmarkSettingsLoaded', function () {
+			refreshTafsirBookCarousels(document);
 		});
 	}
 
