@@ -276,6 +276,9 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/login', loginRouter);
   app.use('/quran/login', loginRouter);
   app.use('/blog', blogRouter);
+  app.use('/tafsir', function (req, res) {
+    res.redirect(301, Utils.quranUrl(req, '/quran/tafsir'));
+  });
   app.use('/quran/tafsirs', function (req, res) {
     res.redirect(301, Utils.quranUrl(req, '/quran/tafsir'));
   });

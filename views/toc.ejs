@@ -61,9 +61,7 @@
     
     <main class="toc">
       
-      <% if (isQuranToc) { %>
-        <%- include('sub-views/tafsirBookNav.ejs', { tafsirs: tafsirs || [], Tafsir: Tafsir }); %>
-      <% } else { %>
+      <% if (!isQuranToc) { %>
         <%- include('sub-views/bookNav.ejs'); %>
       <% } %>
     
@@ -83,6 +81,7 @@
       <% } %>
 
       <article>
+      <% if (!isQuranToc) { %>
       <heading class="mb-2">
         <div class="row text-center justify-content-center">
           <h2 class="_e fs-3" title="<%- book.name %>" data-id="<%=book.id%>" data-prop="book.name_en" data-arabizi="true"><%- book.name_en %></h2>
@@ -95,6 +94,7 @@
           <% } %>
         </div>
 	      </heading>
+	      <% } %>
 
 	      <% if (quranNavigatorSurahs.length > 0) { %>
 	      <form class="quran-passage-navigator quran-toc-navigator mb-3" action="/" method="get" novalidate data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
@@ -118,6 +118,7 @@
 	      </form>
 	      <% } %>
 	      
+	      <% if (!isQuranToc) { %>
 	      <section>
 	        <%
 	          const bookDescriptionMarkdown = utils.emptyIfNull(book.description);
@@ -150,18 +151,28 @@
 	          <div class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description" data-markdown-source="<%= bookDescriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- bookDescription %></div>
 	        <% } %>
 	      </section>
+	      <% } %>
 	
+	      <% if (!isQuranToc) { %>
 	      <aside class="h"><div class="tags">
         <span class="bi bi-download"></span> <a href="<%= utils.urlFor(req, `/${book.alias}?download&tsv`) %>" type="button" rel="nofollow">Download TSV</a>
       </div></aside>
+	      <% } %>
 
+        <% if (!isQuranToc) { %>
         <hr class="mt-3">
+        <% } %>
+        <% if (isQuranToc) { %>
+          <%- include('sub-views/tafsirBookNav.ejs', { tafsirs: tafsirs || [], Tafsir: Tafsir }); %>
+        <% } %>
         <section data-random-toc-item data-src="<%= utils.urlFor(req, `/${book.alias}/random`) %>">
           <header class="row">
             <h3 class="col-12 fs-4">Random <%= isQuranToc ? 'āyah' : 'ḥadīth' %> in <%- book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h3>
           </header>
         </section>
+        <% if (!isQuranToc) { %>
         <hr>
+        <% } %>
 
       <section class="row">
         

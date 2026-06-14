@@ -1458,8 +1458,14 @@ del em strong {
 }
 
 .page-content-filter .input-group-text {
+	border-color: var(--c-accent);
 	color: var(--c-accent);
 	background-color: var(--c-ghostwhite);
+}
+
+.page-content-filter .form-control,
+.page-content-filter .form-control:focus {
+	border-color: var(--c-accent);
 }
 
 .pagination,
@@ -1830,6 +1836,10 @@ del em strong {
 	min-width: 0;
 }
 
+.quran-passage-navigator .form-control {
+	border-color: var(--c-accent);
+}
+
 .quran-passage-navigator .quran-passage-search-submit,
 .quran-passage-navigator .quran-passage-go {
 	border-color: var(--c-accent);
@@ -1850,11 +1860,23 @@ del em strong {
 	margin-left: auto;
 	margin-right: auto;
 	max-width: 48rem;
+	padding-top: 1rem;
 }
 
-.quran-toc-search-bar {
+.quran-toc-search-bar,
+.quran-toc-navigator .quran-passage-surah,
+.quran-toc-navigator .quran-passage-ayah {
 	border-color: var(--c-accent);
+}
+
+.quran-toc-search-bar,
+.quran-toc-navigator .quran-passage-surah,
+.quran-toc-navigator .quran-passage-ayah {
 	font-size: 1.5em;
+}
+
+.quran-toc-navigator .form-control:focus {
+	border-color: var(--c-accent);
 }
 
 .quran-toc-navigator .quran-passage-surah,
