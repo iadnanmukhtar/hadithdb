@@ -35,11 +35,16 @@
       <div class="row"> 
         <h3><%- res.statusCode %> <%- statusTitle || message %></h3>
         <p><%- friendlyMessage || message %></p>
-        <% if (suggestedPaths && suggestedPaths.length) { %>
+        <%
+          var errorSuggestedPaths = typeof suggestedPaths !== 'undefined' && suggestedPaths
+            ? suggestedPaths
+            : (typeof suggestedPath !== 'undefined' && suggestedPath ? [suggestedPath] : []);
+        %>
+        <% if (errorSuggestedPaths.length) { %>
           <p>
             Try
-            <% suggestedPaths.forEach(function (suggestedPath, index) { %>
-              <a href="<%- suggestedPath %>"><%- suggestedPath %></a><%- index < suggestedPaths.length - 1 ? ' or ' : '' %>
+            <% errorSuggestedPaths.forEach(function (suggestedPath, index) { %>
+              <a href="<%- suggestedPath %>"><%- suggestedPath %></a><%- index < errorSuggestedPaths.length - 1 ? ' or ' : '' %>
             <% }); %>.
           </p>
         <% } %>
