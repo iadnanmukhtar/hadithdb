@@ -94,6 +94,50 @@ const friendlyHttpErrorMessage = (statusCode, message) => {
   return message || STATUS_CODES[statusCode] || 'An error occurred.';
 };
 
+const appendQueryString = (path, queryString) => {
+  if (!queryString)
+    return path;
+  return `${path}?${queryString}`;
+};
+
+const requestQueryString = (req) => {
+  const queryIndex = (req.originalUrl || '').indexOf('?');
+  return queryIndex === -1 ? '' : req.originalUrl.substring(queryIndex + 1);
+};
+
+const buildNullPathSuggestion = (req, queryString) => {
+  const segments = req.path.split('/').filter(Boolean);
+  const nullIndex = segments.findIndex(segment => segment.toLowerCase() === 'null');
+  if (nullIndex === -1)
+    return null;
+  const suggestedPath = `/${segments.slice(0, nullIndex).join('/')}`;
+  const normalizedPath = suggestedPath === '/' ? '/' : suggestedPath.replace(/\/+$/, '');
+  return appendQueryString(normalizedPath, queryString);
+};
+
+const buildQuranPathSuggestions = (req, queryString) => {
+  const match = req.path.match(/^\/quran\/([^/]+)\/([^/]+)\/?$/);
+  if (!match)
+    return [];
+  const surah = match[1];
+  const ayah = match[2];
+  return [
+    appendQueryString(`/quran:${surah}:${ayah}`, queryString),
+    appendQueryString(`/quran/${surah}`, queryString)
+  ];
+};
+
+const buildErrorSuggestions = (req) => {
+  if (!req || !req.path)
+    return [];
+  const queryString = requestQueryString(req);
+  const suggestions = [
+    buildNullPathSuggestion(req, queryString),
+    ...buildQuranPathSuggestions(req, queryString)
+  ].filter(Boolean);
+  return [...new Set(suggestions)];
+};
+
 const buildErrorViewLocals = (statusCode, message, error, req, res) => {
   const finalMessage = defaultHttpErrorMessage(statusCode, message);
   const finalReq = req || {
@@ -114,7 +158,8 @@ const buildErrorViewLocals = (statusCode, message, error, req, res) => {
     message: finalMessage,
     error: error || createError(statusCode, finalMessage),
     friendlyMessage: friendlyHttpErrorMessage(statusCode, finalMessage),
-    statusTitle: STATUS_CODES[statusCode] || 'Error'
+    statusTitle: STATUS_CODES[statusCode] || 'Error',
+    suggestedPaths: statusCode === 404 ? buildErrorSuggestions(finalReq) : []
   };
 };
 
