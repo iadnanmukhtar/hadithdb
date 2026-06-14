@@ -11,35 +11,58 @@ The database stores Arabic source text, English translation fields where availab
 * Web server: `npm start`
 * Development server: `npm run dev`
 * Tests: `npm test`
-* Search backend: Elasticsearch indexes for `hadiths`, `toc`, and optional `hadith_knowledge`
+* Search backend: Elasticsearch indexes for `hadiths`, `toc`, and `commentaries`
 * Database backend: MySQL, configured through `~/.hadithdb/settings.json`
 
-## Search and Chatbot API
+## Recently Added Features
 
-The app exposes a grounded ḥadīth chatbot endpoint at `/chatbot`. The legacy `/rag` path remains available as a compatibility alias.
+Recent work has focused on making the Qurʾān and search surfaces richer, faster,
+and more tightly connected:
 
-Examples:
+* Enriched Qurʾān reading pages with tafsīr access from āyah markers, passage
+  actions, hover previews, and modal entry points.
+* Tafsīr browsing improvements, including local commentary indexing, tafsīr
+  book navigation, sticky carousel-style browsing, and clearer tafsīr passage
+  links.
+* Quran passage UX upgrades: shareable selected āyāt, previous/next navigation,
+  keyboard navigation, improved random āyah rendering, and unified DigitalKhatt
+  typography across passages, heroes, and corpus word annotations.
+* Search improvements that bring Qurʾān āyāt, headings, and tafāsīr into the
+  same search experience while keeping Qurʾān-only and commentary-only filters
+  distinct.
+* Search result refinements, including direct `Tafsīr` action links, better
+  autocomplete behavior, surah-name matching in English and Arabic, and cleaner
+  highlighting for filter-driven searches.
 
-* `GET /chatbot?q=what did the Prophet say about intentions`
-* `GET /chatbot/retrieve?q=intentions&k=5`
-* `POST /chatbot` with JSON: `{ "question": "...", "topK": 6, "books": ["bukhari", "muslim"] }`
-* `POST /chatbot/message` with JSON: `{ "messages": [{ "role": "user", "content": "..." }] }`
+## Available Local Tafsir Books
 
-Book filters use book aliases such as `bukhari`, `muslim`, `abudawud`, `tirmidhi`, `nasai`, `ibnmajah`, `ahmad`, and `malik`. The grouped aliases `sahihayn` and `sixbooks` are also supported by the retrieval layer.
+Visible local tafsīr books are stored in MySQL `books_commentaries` rows where
+`source='local'` and `hidden=0`.
 
-The chatbot retrieves cited local records from Elasticsearch. It searches the derived `hadith_knowledge` index first, then falls back to the `hadiths,toc` indexes. If `OPENAI_API_KEY` or `settings.openAI.key` is configured, `/chatbot` also generates a concise grounded answer using the OpenAI Responses API. Set `OPENAI_MODEL`, `settings.rag.model`, or `settings.openAI.model` to override the default model.
+Arabic:
 
-## Arabic-Rooted Chatbot Knowledge
+* `irab-al-quran` - al-Jadwal fi Irab al-Quran wa-Sarfih wa-Bayanih
+* `tafsir-baghawi` - Maalim al-Tanzil fi Tafsir al-Quran
+* `tafsir-tabari` - Jami al-Bayan an Tawil Ay al-Quran
+* `tafsir-ibn-al-jawzi` - Zad al-Masir fi Ilm al-Tafsir
+* `tafsir-qurtubi` - al-Jami li-Ahkam al-Quran wa-al-Mubayyin lima Tadammana min al-Sunnah wa-Ay al-Furqan
+* `tafsir-ibn-ashur` - Tahrir al-Mana al-Sadid wa-Tanwir al-Aql al-Jadid min Tafsir al-Kitab al-Majid
+* `qiraat` - al-Jadwal fi Qira'at al-Quran
+* `irab-daas` - Irab al-Quran al-Karim
+* `ibn-adil` - al-Lubab fi Ulum al-Kitab
+* `tafsir-mathur` - Mawsuat al-Tafsir al-Mathur
+* `tafsir-suyuti` - al-Durr al-Manthur fi al-Tafsir bi-al-Mathur
+* `saadi` - Taysir al-Karim al-Rahman fi Tafsir Kalam al-Mannan
 
-Raw ḥadīth wording is not always question-friendly, so the chatbot can use a derived `hadith_knowledge` layer before falling back to direct ḥadīth search. This layer is generated from Arabic source fields only: Arabic title, isnād, matn, and Arabic footnote. English fields in the `hadiths_knowledge` table are conversation/retrieval metadata, not the source of truth for answers.
+English:
 
-Build and index that layer with:
-
-* `npm run build:knowledge -- --create-index --limit 25`
-* `npm run build:knowledge -- --book-id 1 --limit 100`
-* `npm run build:knowledge -- --index-only --limit 1000`
-
-The builder creates the MySQL `hadiths_knowledge` table if needed, stores source hashes so unchanged ḥadīths are skipped, and indexes records into Elasticsearch `hadith_knowledge`. Set `OPENAI_KNOWLEDGE_MODEL`, `OPENAI_MODEL`, `settings.knowledge.model`, or `settings.openAI.model` to choose the generation model.
+* `en-easy-tajwid` - Easy Tajwid
+* `en-tafsir-mokhtasar` - al-Mukhtasar fi Tafsir al-Quran al-Karim
+* `en-tafsir-maududi` - Tafhim al-Quran
+* `en-tafsir-jalalayn` - Tafsir al-Jalalayn
+* `en-tafsir-maarif-al-quran` - Ma'ariful Qur'an
+* `en-tafsir-tazkir-al-quran` - Tadhkir al-Quran
+* `en-tafsir-ibn-kathir` - Tafsir al-Quran al-Azim
 
 ## Elasticsearch Indexing
 
