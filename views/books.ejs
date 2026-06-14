@@ -117,8 +117,8 @@
           books[i].name,
           books[i].shortName
         ].filter(Boolean).join(' ').toLowerCase() %>">
-          <div class="card">
-            <div class="card-body">
+          <div class="card h-100">
+            <div class="card-body d-flex flex-column">
               <h5 class="card-title row">
                 <div class="col"><%- books[i].name_en %></div>
                 <div class="col text-end" lang="ar"><%- books[i].name %></div>
@@ -130,7 +130,7 @@
                 <% } %>&nbsp;
                 </small>
               </p>
-              <a href="/<%- books[i].alias %>" class="btn btn-primary">Browse <%- books[i].shortName_en %></a>
+              <a href="/<%- books[i].alias %>" class="btn btn-primary w-100 mt-auto">Browse <%- books[i].shortName_en %></a>
             </div>
           </div>
         </div>
@@ -144,8 +144,8 @@
             books[i+1].name,
             books[i+1].shortName
           ].filter(Boolean).join(' ').toLowerCase() %>">
-            <div class="card">
-              <div class="card-body">
+            <div class="card h-100">
+              <div class="card-body d-flex flex-column">
                 <h5 class="card-title row">
                   <div class="col"><%- books[i+1].name_en %></div>
                   <div class="col text-end" lang="ar"><%- books[i+1].name %></div>
@@ -155,7 +155,7 @@
                   <small class="text-muted"><%- books[i+1].author %> (d. <%- books[i+1].yearOfDeath %>H)</small>
                   <% } %>&nbsp;
                 </p>
-                <a href="/<%- books[i+1].alias %>" class="btn btn-primary">Browse <%- books[i+1].shortName_en %></a>
+                <a href="/<%- books[i+1].alias %>" class="btn btn-primary w-100 mt-auto">Browse <%- books[i+1].shortName_en %></a>
               </div>
             </div>
           </div>
@@ -199,7 +199,7 @@
                         <% } %>
                       </small>
                     </p>
-                    <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
+                    <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary w-100 mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
                   </div>
                 </div>
               </div>
