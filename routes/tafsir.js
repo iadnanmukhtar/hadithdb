@@ -86,7 +86,13 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
   const entryEnd = entries.length ? Math.max(...entries.map(entry => entry.endAyah)) : ayahNum;
   const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
   const allTafsirs = await Tafsir.visibleTafsirs();
-  const navigation = await tafsirNavigation(tafsir, entries, allTafsirs, surahNum, ayahNum);
+  const navigationEntries = entries.length || tafsir.source !== 'local'
+    ? entries
+    : await Tafsir.tafsirEntries(tafsir, surahNum, ayahNum, {
+      editMode: editMode,
+      includeEmpty: true
+    });
+  const navigation = await tafsirNavigation(tafsir, navigationEntries, allTafsirs, surahNum, ayahNum);
 
   const renderLocals = {
     Tafsir: Tafsir,

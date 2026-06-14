@@ -52,7 +52,7 @@ router.get('/tafsir/local', async function (req, res) {
       bilingual: commentaryRowHasBothLanguages(row),
       html: html
     };
-  }).filter(entry => !lang || entry.html);
+  }).filter(entry => !lang || entry.html || Number.isInteger(Number(entry.ayahs_start)));
   if (!entries.length) {
     res.status(404).json({ error: 'No local tafsir text is available for this ayah.' });
     return;

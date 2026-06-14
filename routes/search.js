@@ -597,26 +597,12 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   var section;
   var chapter;
   var quranSubsections = [];
-  if (selectedAyahs.length > 0) {
-    section = await selectedAyahs[0].getSection();
-    if (selectedAyahs.length === 1)
-      await addQuranAdjacentRefs(selectedAyahs[0]);
-    // await section.getPrev();
-    // await section.getNext();
-    chapter = await section.getChapter();
-    await chapter.getPrev();
-    await chapter.getNext();
-    await chapter.getSections();
-    section.prev = section.next = undefined;
-    section.page = {
-      offset: 0,
-      number: 0
-    };
-  }
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
     if (selectedAyahs.length < 1)
       return res.end(JSON.stringify([]));
+    if (selectedAyahs.length === 1)
+      await addQuranAdjacentRefs(selectedAyahs[0]);
     var ayahs_en = [];
     var ayahs = [];
     var footnotes_en = [];
@@ -634,8 +620,25 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     selectedAyahs[0].body = selectedAyahs[0].ar.body = ayahs.join(' ').trim();
     selectedAyahs[0].footnote_en = selectedAyahs[0].en.footnote = footnotes_en.join('\n').trim();
     selectedAyahs[0].footnote = selectedAyahs[0].ar.footnote = footnotes.join('\n').trim();
-    res.end(JSON.stringify([selectedAyahs[0]]));
-  } else if ('tsv' in req.query) {
+    return res.end(JSON.stringify([selectedAyahs[0]]));
+  }
+  if (selectedAyahs.length > 0) {
+    section = await selectedAyahs[0].getSection();
+    if (selectedAyahs.length === 1)
+      await addQuranAdjacentRefs(selectedAyahs[0]);
+    // await section.getPrev();
+    // await section.getNext();
+    chapter = await section.getChapter();
+    await chapter.getPrev();
+    await chapter.getNext();
+    await chapter.getSections();
+    section.prev = section.next = undefined;
+    section.page = {
+      offset: 0,
+      number: 0
+    };
+  }
+  if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
     var keyNames = Object.keys(results[0]);
     if ('keys' in req.query)
@@ -734,6 +737,10 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   results[0].single = true;
   if (results[0].book_alias === 'quran')
     await addQuranAdjacentRefs(results[0]);
+  if (results[0].book_alias === 'quran' && 'json' in req.query) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify(results));
+  }
   if (results[0].book_alias === 'quran'
     && !('json' in req.query)
     && !('tsv' in req.query)

@@ -639,8 +639,8 @@ function initQuranTafsirFootnotePopups(root) {
 
 function initQuranTafsirTabs(root) {
 	var scope = root || document;
-	$(scope).find('.quran-tafsirs').each(function () {
-		var container = $(this);
+		$(scope).find('.quran-tafsirs').each(function () {
+			var container = $(this);
 		if (container.closest('.quran-ayah-modal-pane.d-none').length)
 			return;
 		if (container.data('quranTafsirsBound'))
@@ -654,7 +654,9 @@ function initQuranTafsirTabs(root) {
 				return Number.isInteger(ayah) && ayah >= 0;
 			});
 			var ayahText = JSON.parse(container.find('.quran-tafsir-ayah-data').text() || '{}');
-			var activeLanguage = 'en';
+			var selectedTafsirLanguage = normalizeQuranTafsirLanguage(container.attr('data-selected-tafsir-language'));
+			var activeLanguage = selectedTafsirLanguage || 'en';
+			var rendersTafsirPassagePage = (container.attr('data-tafsir-instance') || 'passage') === 'passage';
 			var selectedByLanguage = {};
 			var selectedTafsirStorageKey = 'quranTafsirAlias';
 			var remoteTafsirsUnavailable = false;
@@ -1011,12 +1013,13 @@ function initQuranTafsirTabs(root) {
 					var startAyah = Number(entry.payload.ayahs_start || entry.ayah);
 					var count = Number(entry.payload.count || 0);
 					var endAyah = startAyah + count;
-					var entryElement = $('<details>').addClass('quran-tafsir-entry');
-					if (overlapsSelectedAyahs(startAyah, endAyah))
+					var entryElement = $(rendersTafsirPassagePage ? '<article>' : '<details>').addClass('quran-tafsir-entry');
+					if (!rendersTafsirPassagePage && overlapsSelectedAyahs(startAyah, endAyah))
 						entryElement.prop('open', true).data('skipInitialOpenScroll', true);
 					entryElement.appendTo(text);
-					bindTafsirEntryCollapse(entryElement);
-					var summary = $('<summary>').appendTo(entryElement);
+					if (!rendersTafsirPassagePage)
+						bindTafsirEntryCollapse(entryElement);
+					var summary = $(rendersTafsirPassagePage ? '<header>' : '<summary>').appendTo(entryElement);
 					var ayahHeadings = count > 0
 						? $('<div>').addClass('quran-tafsir-ayah-range').attr({ lang: 'ar', dir: 'rtl' }).appendTo(summary)
 						: summary;
@@ -1179,7 +1182,7 @@ function initQuranTafsirTabs(root) {
 				}
 				var isDedicatedTafsirPassage = !!dedicatedTafsirPassageMatch();
 				var initialHash = isDedicatedTafsirPassage ? '' : (initialParams.get('tafsir') || initialParams.get('open-tafsir'));
-				var initialLanguage = isDedicatedTafsirPassage ? normalizeQuranTafsirLanguage(new URLSearchParams(window.location.search).get('lang')) : normalizeQuranTafsirLanguage(initialParams.get('lang'));
+				var initialLanguage = isDedicatedTafsirPassage ? (normalizeQuranTafsirLanguage(new URLSearchParams(window.location.search).get('lang')) || selectedTafsirLanguage) : normalizeQuranTafsirLanguage(initialParams.get('lang'));
 				var initialAlias = initialHash || preferredTafsirAlias || (isDedicatedTafsirPassage ? '' : getStoredTafsirAlias());
 			var initialTab = container.find('[data-tafsir-hash]').filter(function () {
 				return $(this).attr('data-tafsir-hash') === initialAlias
@@ -1786,6 +1789,138 @@ function quranAyahPart(ref) {
 	return ref.split(/:/).pop() || ref;
 }
 
+function quranAyahShareId(ref) {
+	return `Q${(ref || '').toString().replace(/[^A-Za-z0-9_-]/g, '-')}`;
+}
+
+function quranAyahModalIndex(ref, type) {
+	var modal = $(`.quran-ayah-modal[data-quran-ayah-modal-type="${type || 'tafsirs'}"]`).first();
+	var pane = modal.find(`[data-quran-ayah-ref="${ref}"]`).first();
+	var index = parseInt(pane.attr('data-quran-ayah-modal-pane'), 10);
+	return Number.isInteger(index) ? index : -1;
+}
+
+function quranAyahHeroToolbarHtml(ayah, shareId) {
+	var ref = quranAyahRef(ayah);
+	var selectedAyahId = parseInt(ayah && ayah.id, 10);
+	var modalIndex = quranAyahModalIndex(ref, 'tafsirs');
+	var $toolbar = $('<aside>').addClass('tags quran-ayah-hero-toolbar col-12');
+
+	if (Number.isInteger(selectedAyahId)) {
+		$('<button>').attr({
+			type: 'button',
+			'data-hadith-id': selectedAyahId,
+			title: 'Bookmark this ayah'
+		}).addClass('hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center')
+			.append($('<span>').addClass('hadith-bookmark-icon bi bi-bookmark text-accent').attr('data-hadith-id', selectedAyahId))
+			.appendTo($toolbar);
+
+		var $like = $('<span>').addClass('quran-ayah-action').appendTo($toolbar);
+		$('<button>').attr({
+			type: 'button',
+			'data-hadith-id': selectedAyahId,
+			title: 'Like this ayah'
+		}).addClass('hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center')
+			.append($('<span>').addClass('hadith-like-icon bi bi-heart text-danger').attr('data-hadith-id', selectedAyahId))
+			.appendTo($like);
+		$('<span>').addClass('hadith-like-count fw-semibold text-danger').attr('data-hadith-id', selectedAyahId).text('0').appendTo($like);
+	}
+
+	if (modalIndex >= 0) {
+		var reflectionAttrs = {
+			type: 'button',
+			'data-quran-ayah-modal-index': modalIndex,
+			'data-quran-ayah-modal-type': 'reflections',
+			title: 'View reflections'
+		};
+		var $reflections = $('<button>').attr(reflectionAttrs).addClass('quran-ayah-modal-trigger reflection-count-link text-accent').appendTo($toolbar);
+		$reflections.append($('<span>').addClass('bi bi-chat-right-text'));
+		var $count = $('<span>').addClass('hadith-comment-count fw-semibold').attr('title', '0 reflections').text('0');
+		if (Number.isInteger(selectedAyahId))
+			$count.attr('data-hadith-id', selectedAyahId);
+		$reflections.append($count);
+
+		$('<button>').attr({
+			type: 'button',
+			'data-quran-ayah-modal-index': modalIndex,
+			'data-quran-ayah-modal-type': 'tafsirs'
+		}).addClass('quran-ayah-modal-trigger quran-ayah-action text-accent')
+			.append($('<span>').addClass('bi bi-book'))
+			.append($('<span>').text('Tafsir'))
+			.appendTo($toolbar);
+	}
+
+	$('<a>').attr({
+		href: `#${shareId}`,
+		type: 'button',
+		title: 'Share selected ayah image',
+		'data-bs-toggle': 'modal',
+		'data-bs-target': `#${shareId}`
+	}).addClass('quran-ayah-action icon text-decoration-none')
+		.append($('<span>').addClass('bi bi-box-arrow-up'))
+		.append($('<span>').text('Share'))
+		.appendTo($toolbar);
+
+	return $toolbar;
+}
+
+function quranShareModalHtml(ayah, shareId) {
+	var ref = quranAyahRef(ayah);
+	var part = quranAyahPart(ref);
+	var arabicRef = ((ayah && ayah.ar && ayah.ar.num) || ref).toString();
+	var arabicPart = quranAyahPart(arabicRef);
+	var surahTitle = (ayah && (ayah.h1_title_en || (ayah.en && ayah.en.h1_title) || ayah.book_shortName_en)) || 'Qurʾān';
+	var chapterTitle = (ayah && (ayah.h1_title_en || (ayah.en && ayah.en.h1_title))) || '';
+	var shareTitle = ref ? `${surahTitle} ${ref}` : surahTitle;
+
+	var $modal = $('<aside>').addClass('h modal fade hadith-share-root quran-share-root')
+		.attr({ id: shareId, tabindex: '-1', 'data-dynamic-quran-share-modal': '1' });
+	var $dialog = $('<div>').addClass('modal-dialog modal-dialog-scrollable modal-xl hadith-share-dialog').appendTo($modal);
+	var $content = $('<div>').addClass('modal-content hadith-share-modal').appendTo($dialog);
+	var $header = $('<header>').addClass('modal-header hadith-share-toolbar').appendTo($content);
+	var $actions = $('<div>').addClass('hadith-share-actions').appendTo($header);
+	$('<div>').addClass('hadith-share-tool-group')
+		.append($('<button>').attr({ type: 'button', title: 'Edit text', 'aria-label': 'Edit text', 'aria-pressed': 'false' }).addClass('btn btn-sm btn-outline-secondary hadith-share-edit').append($('<span>').addClass('bi bi-pencil')))
+		.appendTo($actions);
+	var $controlGroup = $('<div>').addClass('hadith-share-control-group').appendTo($actions);
+	$('<div>').addClass('form-check form-switch hadith-share-arabic-toggle').attr('title', 'Show English')
+		.append($('<input>').attr({ type: 'checkbox', role: 'switch', id: `${shareId}-english`, 'data-share-language-toggle': 'english', checked: 'checked' }).addClass('form-check-input hadith-share-arabic'))
+		.append($('<label>').addClass('form-check-label').attr('for', `${shareId}-english`).text('English'))
+		.appendTo($controlGroup);
+	var $sizes = $('<div>').addClass('hadith-share-size-controls').attr('aria-label', 'Share image font sizes').appendTo($controlGroup);
+	$('<label>').attr('title', 'English text size').append($('<span>').text('English')).append($('<input>').attr({ type: 'range', min: '70', max: '130', step: '5', value: '100', 'data-share-size-var': '--share-english-tune' }).addClass('form-range hadith-share-size')).appendTo($sizes);
+	$('<label>').attr('title', 'Arabic text size').append($('<span>').text('Arabic')).append($('<input>').attr({ type: 'range', min: '70', max: '130', step: '5', value: '100', 'data-share-size-var': '--share-arabic-tune' }).addClass('form-range hadith-share-size')).appendTo($sizes);
+	$('<div>').addClass('hadith-share-tool-group')
+		.append($('<button>').attr({ type: 'button', title: 'Copy image', 'aria-label': 'Copy image' }).addClass('btn btn-sm btn-outline-secondary hadith-share-copy').append($('<span>').addClass('bi bi-clipboard')))
+		.append($('<button>').attr({ type: 'button', title: 'Share image', 'aria-label': 'Share image' }).addClass('btn btn-sm btn-outline-secondary hadith-share-native').append($('<span>').addClass('bi bi-share')))
+		.appendTo($actions);
+	$('<button>').attr({ type: 'button', 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }).addClass('btn-close').appendTo($header);
+
+	var $body = $('<section>').addClass('modal-body hadith-share-body').appendTo($content);
+	var $card = $('<article>').addClass('hadith-share-card quran-share-card').attr({ 'data-share-card': '', 'data-share-ref': `quran:${ref}` }).appendTo($body);
+	var $inner = $('<div>').addClass('hadith-share-card-inner').appendTo($card);
+	$('<h2>').addClass('hadith-share-title share-editable').attr('contenteditable', 'false').text(shareTitle).appendTo($inner);
+	var $arText = $('<div>').addClass('body hadith-share-text quran-share-text share-editable').attr({ lang: 'ar', contenteditable: 'false' });
+	$('<p>').append($('<span>').text((ayah && ayah.ar && ayah.ar.body) || '').append(document.createTextNode(' ')).append($('<span>').addClass('quran-ayah-end-marker').attr('aria-label', `Quran ${arabicRef}`).text(`۝${toArabicDigits(arabicPart)}`))).appendTo($arText);
+	$('<section>').addClass('hadith-share-section hadith-share-arabic-section').attr('lang', 'ar').append($arText).appendTo($inner);
+	var $enText = $('<div>').addClass('body hadith-share-text quran-share-text share-editable').attr({ lang: 'en', contenteditable: 'false' });
+	$('<p>').append($('<span>').append($('<sup>').text(ref)).append(document.createTextNode(' ')).append(document.createTextNode((ayah && ayah.en && ayah.en.body) || ''))).appendTo($enText);
+	$('<section>').addClass('hadith-share-section quran-share-english-section').attr('lang', 'en').append($enText).appendTo($inner);
+	var $footer = $('<footer>').addClass('hadith-share-footer').appendTo($inner);
+	$('<div>').append($('<div>').addClass('title share-editable').attr('contenteditable', 'false').text(chapterTitle ? `Qurʾān > ${chapterTitle}` : 'Qurʾān')).appendTo($footer);
+	$('<div>').addClass('hadith-share-site').text('hadithunlocked.com').appendTo($footer);
+	return $modal;
+}
+
+function ensureQuranShareModal(ayah, shareId) {
+	if (!shareId || document.getElementById(shareId))
+		return;
+	$('.quran-share-root[data-dynamic-quran-share-modal="1"]').remove();
+	$('body').append(quranShareModalHtml(ayah, shareId));
+	if (typeof initHadithShareModals === 'function')
+		initHadithShareModals(document.getElementById(shareId));
+}
+
 function quranAyahHeroHtml(ayah) {
 	if (!ayah)
 		return '';
@@ -1831,6 +1966,7 @@ function quranAyahHeroHtml(ayah) {
 	$('<sup>').text(ref).appendTo($enAyah);
 	$enAyah.append(document.createTextNode(' '));
 	$('<div>').addClass('quran-ayah-hero-text').html(renderQuranHeroMarkdown(ayah.en && ayah.en.body)).appendTo($enAyah);
+	$hero.append(quranAyahHeroToolbarHtml(ayah, quranAyahShareId(ref)));
 	return $hero;
 }
 
@@ -1890,7 +2026,10 @@ function initQuranDynamicPassageHero(root) {
 			if (!ayah)
 				throw new Error('Selected ayah was not found.');
 			var hero = $('[data-quran-selected-ayah-hero]').first();
+			ensureQuranShareModal(ayah, quranAyahShareId(ref));
 			hero.empty().append(quranAyahHeroHtml(ayah));
+			if (window.refreshHadithActions)
+				window.refreshHadithActions();
 			setSelectedPassageAyah(ref);
 			var corpusContainer = $('[data-quran-corpus-url]').first();
 			var corpusUrl = corpusContainer.attr('data-quran-corpus-url');
