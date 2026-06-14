@@ -95,7 +95,7 @@
       return items.concat(group.tafsirs);
     }, []);
     function carouselTafsirLabel(tafsir) {
-      return (tafsir.shortName_en || tafsir.shortName || tafsir.name_en || tafsir.name || tafsir.alias || '')
+      return Tafsir.rawShortName(tafsir, 'en')
         .replace(/^tafs[īi]r\s+/i, '')
         .trim();
     }
@@ -165,6 +165,8 @@
                   tafsir.name_en,
                   tafsir.shortName_en,
                   tafsir.author_en,
+                  tafsir.description,
+                  tafsir.aqidah,
                   tafsir.name,
                   tafsir.shortName,
                   tafsir.author
@@ -183,6 +185,12 @@
                           <% } %>
                         </small>
                       </p>
+                      <% if (tafsir.description) { %>
+                        <p class="card-text small"><%- tafsir.description %></p>
+                      <% } %>
+                      <% if (tafsir.aqidah) { %>
+                        <p class="card-text small text-muted mb-3">Aqidah: <%- tafsir.aqidah %></p>
+                      <% } %>
                       <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
                     </div>
                   </div>

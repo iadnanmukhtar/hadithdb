@@ -1,0 +1,131 @@
+<%
+	const href = suggestion.is_quran ? utils.quranUrl(req, suggestion.url || '/') : utils.urlFor(req, suggestion.url || '/');
+	const titleEn = suggestion.title_en || (suggestion.lang === 'en' ? suggestion.label : '') || suggestion.metadata_en || suggestion.ref || suggestion.url;
+	const titleAr = suggestion.title_ar || (suggestion.lang === 'ar' ? suggestion.label : '') || suggestion.metadata_ar || suggestion.ref || suggestion.url;
+	const metaEn = suggestion.metadata_en && suggestion.metadata_en !== titleEn ? suggestion.metadata_en : '';
+	const metaAr = suggestion.metadata_ar && suggestion.metadata_ar !== titleAr ? suggestion.metadata_ar : '';
+	const type = suggestion.suggestion_type || suggestion.type || 'Result';
+	const isBook = type === 'Book';
+	const isTafsir = type === 'Tafsir';
+	const isSurah = type === 'Surah';
+	const alias = suggestion.alias || suggestion.ref || suggestion.url || titleEn;
+	const aliasAr = suggestion.alias_ar || suggestion.shortName || titleAr || alias;
+	const bookShortNameEn = suggestion.shortName_en || suggestion.title_en || titleEn;
+	const bookShortNameAr = suggestion.shortName || suggestion.title_ar || titleAr;
+	const bookFullNameEn = suggestion.fullName_en || suggestion.name_en;
+	const bookFullNameAr = suggestion.fullName || suggestion.name;
+	function arabicTafsirAlias(value) {
+		value = (value || '').toString().replace(/\s+/g, ' ').trim();
+		if (!value)
+			return '';
+		const normalized = value
+			.normalize('NFKD')
+			.replace(/[\u0300-\u036f\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+			.trim();
+		if (!normalized.startsWith('تفسير'))
+			return value;
+		return value.split(/\s+/).slice(1).join(' ').trim() || value;
+	}
+	const tafsirAliasAr = suggestion.alias_ar || arabicTafsirAlias(suggestion.shortName) || alias;
+	function sameDisplayText(a, b) {
+		function normalize(value) {
+			return (value || '').toString()
+				.normalize('NFKD')
+				.replace(/[\u0300-\u036f\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+				.replace(/[^\p{L}\p{N}]+/gu, '')
+				.toLowerCase()
+				.trim();
+		}
+		return normalize(a) === normalize(b);
+	}
+	const surahNameEn = suggestion.surah_name_en ? `Surat ${suggestion.surah_name_en}` : titleEn.replace(/^Surah\b/, 'Surat');
+	const surahNameAr = suggestion.surah_name_ar ? `سورة ${suggestion.surah_name_ar}` : titleAr;
+	const surahNum = parseInt((suggestion.ref || suggestion.alias || '').toString().match(/(?:surah:|quran:)(\d+)/)?.[1] || (suggestion.url || '').toString().match(/\/quran\/(\d+)/)?.[1], 10);
+	const surahRef = Number.isInteger(surahNum) ? `quran:${surahNum}:1` : alias;
+	const surahLabelEn = Number.isInteger(surahNum) ? `Surah ${surahNum}` : '';
+	const surahLabelAr = Number.isInteger(surahNum) ? `سورة ${arabic.toArabicDigits(surahNum)}` : '';
+	const surahMetaEn = [suggestion.revelation_en, suggestion.ayah_count ? `${suggestion.ayah_count} Ayat` : ''].filter(Boolean).join(' | ');
+	const surahMetaAr = [suggestion.revelation_ar, suggestion.ayah_count ? `${arabic.toArabicDigits(suggestion.ayah_count)} آيات` : ''].filter(Boolean).join(' | ');
+	const nameLineEn = [suggestion.shortName_en || suggestion.title_en, suggestion.name_en].filter(Boolean).filter(function (value, index, values) {
+		return values.indexOf(value) === index;
+	}).join(' | ');
+	const nameLineAr = [suggestion.shortName || suggestion.title_ar, suggestion.name].filter(Boolean).filter(function (value, index, values) {
+		return values.indexOf(value) === index;
+	}).join(' | ');
+	function deathLabel(death, lang) {
+		death = parseInt(death, 10);
+		if (!Number.isInteger(death) || death <= 0)
+			return '';
+		return lang === 'ar' ? `(ت ${arabic.toArabicDigits(death)} هـ)` : `(d. ${death} AH)`;
+	}
+	const authorLineEn = [suggestion.author_en, deathLabel(suggestion.death, 'en')].filter(Boolean).join(' ');
+	const authorLineAr = [suggestion.author || suggestion.author_en, deathLabel(suggestion.death, 'ar')].filter(Boolean).join(' ');
+	function countLine(lang) {
+		const chapterCount = parseInt(suggestion.chapter_count, 10);
+		const hadithCount = parseInt(suggestion.hadith_count, 10);
+		if (!Number.isInteger(chapterCount) && !Number.isInteger(hadithCount))
+			return '';
+		if (lang === 'ar') {
+			return [
+				Number.isInteger(chapterCount) ? `${arabic.toArabicDigits(chapterCount)} أبواب` : '',
+				Number.isInteger(hadithCount) ? `${arabic.toArabicDigits(hadithCount)} أحاديث` : ''
+			].filter(Boolean).join(' | ');
+		}
+		return [
+			Number.isInteger(chapterCount) ? `${chapterCount} ${chapterCount === 1 ? 'Chapter' : 'Chapters'}` : '',
+			Number.isInteger(hadithCount) ? `${hadithCount} ${hadithCount === 1 ? 'Hadith' : 'Hadiths'}` : ''
+		].filter(Boolean).join(' | ');
+	}
+	const bookCountLineEn = countLine('en');
+	const bookCountLineAr = countLine('ar');
+%>
+<article class="row mt-3 search-suggestion-result">
+	<section class="col-md-6 col-sm-12 h" lang="en">
+		<% if (isBook) { %>
+			<b><a href="<%= href %>"><%- alias %></a></b>
+			<% if (bookShortNameEn) { %><aside class="title search-suggestion-book-detail"><strong><%- bookShortNameEn %></strong></aside><% } %>
+			<% if (bookFullNameEn && !sameDisplayText(bookFullNameEn, bookShortNameEn)) { %><aside class="title search-suggestion-book-detail"><%- bookFullNameEn %></aside><% } %>
+			<% if (authorLineEn) { %><aside class="title text-muted search-suggestion-book-author"><%- authorLineEn %></aside><% } %>
+		<% } else if (isTafsir) { %>
+			<b><a href="<%= href %>"><%- alias %></a></b>
+			<% if (suggestion.shortName_en || suggestion.title_en) { %><aside class="title search-suggestion-book-detail"><strong><%- suggestion.shortName_en || suggestion.title_en %></strong></aside><% } %>
+			<% if (suggestion.name_en && !sameDisplayText(suggestion.name_en, suggestion.shortName_en || suggestion.title_en)) { %><aside class="title search-suggestion-book-detail"><%- suggestion.name_en %></aside><% } %>
+			<% if (authorLineEn) { %><aside class="title text-muted search-suggestion-book-author"><%- authorLineEn %></aside><% } %>
+		<% } else if (isSurah) { %>
+			<b><a href="<%= href %>"><%- surahRef %></a></b>
+			<aside class="title search-suggestion-book-detail"><strong><%- surahNameEn %></strong></aside>
+			<% if (surahLabelEn) { %><aside class="title search-suggestion-book-detail"><%- surahLabelEn %></aside><% } %>
+			<% if (surahMetaEn) { %><aside class="title text-muted search-suggestion-book-author"><%- surahMetaEn %></aside><% } %>
+		<% } else { %>
+			<b><a href="<%= href %>"><%- titleEn %></a></b>
+			<aside class="title"><%- type %></aside>
+			<% if (metaEn) { %>
+				<aside class="title"><%- metaEn %></aside>
+			<% } %>
+		<% } %>
+	</section>
+	<section class="col-md-6 col-sm-12 h" lang="ar" dir="rtl">
+		<% if (isBook) { %>
+			<b><a href="<%= href %>"><%- aliasAr %></a></b>
+			<% if (bookShortNameAr) { %><aside class="title search-suggestion-book-detail"><strong><%- bookShortNameAr %></strong></aside><% } %>
+			<% if (bookFullNameAr && !sameDisplayText(bookFullNameAr, bookShortNameAr)) { %><aside class="title search-suggestion-book-detail"><%- bookFullNameAr %></aside><% } %>
+			<% if (authorLineAr) { %><aside class="title text-muted search-suggestion-book-author"><%- authorLineAr %></aside><% } %>
+		<% } else if (isTafsir) { %>
+			<b><a href="<%= href %>"><%- tafsirAliasAr %></a></b>
+			<% if (suggestion.shortName || suggestion.title_ar) { %><aside class="title search-suggestion-book-detail"><strong><%- suggestion.shortName || suggestion.title_ar %></strong></aside><% } %>
+			<% if (suggestion.name && !sameDisplayText(suggestion.name, suggestion.shortName || suggestion.title_ar)) { %><aside class="title search-suggestion-book-detail"><%- suggestion.name %></aside><% } %>
+			<% if (authorLineAr) { %><aside class="title text-muted search-suggestion-book-author"><%- authorLineAr %></aside><% } %>
+		<% } else if (isSurah) { %>
+			<b><a href="<%= href %>"><%- surahRef %></a></b>
+			<aside class="title search-suggestion-book-detail"><strong><%- surahNameAr %></strong></aside>
+			<% if (surahLabelAr) { %><aside class="title search-suggestion-book-detail"><%- surahLabelAr %></aside><% } %>
+			<% if (surahMetaAr) { %><aside class="title text-muted search-suggestion-book-author"><%- surahMetaAr %></aside><% } %>
+		<% } else { %>
+			<b><a href="<%= href %>"><%- titleAr %></a></b>
+			<aside class="title"><%- type %></aside>
+			<% if (metaAr) { %>
+				<aside class="title"><%- metaAr %></aside>
+			<% } %>
+		<% } %>
+	</section>
+</article>

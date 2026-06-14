@@ -2351,7 +2351,20 @@ function initQuranAyahSelector(root) {
 			if (item.type === 'Book' || item.type === 'Surah')
 				$match.addClass('search-autocomplete-name');
 			$match.html(item.fragment || fallbackText).appendTo($row);
-			if (item.metadata_en || item.metadata_ar) {
+			if (Array.isArray(item.metadata_lines) && item.metadata_lines.length) {
+				var $meta = $('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-lines');
+				item.metadata_lines.forEach(function (line) {
+					if (!line || !line.text)
+						return;
+					var lineLang = line.lang === 'ar' ? 'ar' : 'en';
+					$('<span>')
+						.addClass(lineLang === 'ar' ? 'search-autocomplete-meta-ar' : 'search-autocomplete-meta-en')
+						.attr(lineLang === 'ar' ? { lang: 'ar', dir: 'rtl' } : { lang: 'en', dir: 'ltr' })
+						.text(line.text)
+						.appendTo($meta);
+				});
+				$meta.appendTo($row);
+			} else if (item.metadata_en || item.metadata_ar) {
 				var $meta = $('<div>').addClass('search-autocomplete-meta');
 				if (item.lang === 'ar' && item.metadata_ar) {
 					$('<span>').addClass('search-autocomplete-meta-ar').attr({ lang: 'ar', dir: 'rtl' }).text(item.metadata_ar).appendTo($meta);

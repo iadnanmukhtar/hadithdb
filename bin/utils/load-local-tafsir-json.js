@@ -13,11 +13,13 @@ const TAFSIRS = {
 	'tafsir-tabari': {
 		ordinal: 11,
 		shortName_en: 'Tabari',
-		shortName: 'الطبري',
-		name_en: 'Jami al-Bayan',
-		name: 'جامع البيان',
+		shortName: 'الطَّبَرِيّ',
+		name_en: 'Jami al-Bayan an Tawil Ay al-Quran',
+		name: 'جَامِعُ البَيَانِ عَنْ تَأْوِيلِ آيِ القُرْآنِ',
 		author_en: 'Ibn Jarir al-Tabari',
-		author: 'ابن جرير الطبري',
+		author: 'مُحَمَّدُ بْنُ جَرِيرِ بْنِ يَزِيدَ الطَّبَرِيّ',
+		description: 'The foundational encyclopedic tafsir, built on transmitted reports, Arabic evidence, variant readings, and reasoned preference between interpretations. It is essential for early tafsir, isnad-based material, and the roots of later commentary.',
+		aqidah: 'Early Sunni traditionalist / Athari',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/tafsir/tabari.json',
@@ -27,11 +29,13 @@ const TAFSIRS = {
 	'tafsir-baghawi': {
 		ordinal: 12,
 		shortName_en: 'Baghawi',
-		shortName: 'البغوي',
-		name_en: 'Maalim al-Tanzil',
-		name: 'معالم التنزيل',
+		shortName: 'البَغَوِيّ',
+		name_en: 'Maalim al-Tanzil fi Tafsir al-Quran',
+		name: 'مَعَالِمُ التَّنْزِيلِ فِي تَفْسِيرِ القُرْآنِ',
 		author_en: 'al-Husayn b. Muhammad al-Farra al-Baghawi',
-		author: 'البغوي',
+		author: 'الحُسَيْنُ بْنُ مَسْعُودِ بْنِ مُحَمَّدٍ الفَرَّاءُ البَغَوِيّ',
+		description: 'A respected Sunni tafsir that combines transmitted reports with concise explanation, language, legal material, and creed-related clarity. It is often treated as a reliable middle path between narration and analysis.',
+		aqidah: 'Athari',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/tafsir/baghawi.json',
@@ -41,11 +45,13 @@ const TAFSIRS = {
 	'tafsir-ibn-al-jawzi': {
 		ordinal: 13,
 		shortName_en: 'Ibn al-Jawzi',
-		shortName: 'ابن الجوزي',
-		name_en: 'Zad al-Masir',
-		name: 'زاد المسير',
+		shortName: 'ابْنُ الجَوْزِيّ',
+		name_en: 'Zad al-Masir fi Ilm al-Tafsir',
+		name: 'زَادُ المَسِيرِ فِي عِلْمِ التَّفْسِيرِ',
 		author_en: 'Abd al-Rahman b. Abu Hasan Ali b. al-Jawzi',
-		author: 'ابن الجوزي',
+		author: 'عَبْدُ الرَّحْمَنِ بْنُ عَلِيِّ بْنِ مُحَمَّدٍ ابْنُ الجَوْزِيّ',
+		description: 'A concise but rich Hanbali tafsir that organizes earlier interpretations, language, variant opinions, and moral lessons. It is useful for seeing multiple explanations summarized with literary and preaching sensitivity.',
+		aqidah: 'Hanbali Sunni',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/tafsir/ibn-al-jawzi.json',
@@ -55,11 +61,13 @@ const TAFSIRS = {
 	'tafsir-qurtubi': {
 		ordinal: 15,
 		shortName_en: 'Qurtubi',
-		shortName: 'القرطبي',
-		name_en: 'al-Jami li-Ahkam al-Quran',
-		name: 'الجامع لأحكام القرآن',
+		shortName: 'القُرْطُبِيّ',
+		name_en: 'al-Jami li-Ahkam al-Quran wa-al-Mubayyin lima Tadammana min al-Sunnah wa-Ay al-Furqan',
+		name: 'الجَامِعُ لِأَحْكَامِ القُرْآنِ وَالمُبَيِّنُ لِمَا تَضَمَّنَهُ مِنَ السُّنَّةِ وَآيِ الفُرْقَانِ',
 		author_en: 'Muhammad b. Abu Bakr al-Ansari al-Qurtubi',
-		author: 'القرطبي',
+		author: 'مُحَمَّدُ بْنُ أَحْمَدَ بْنِ أَبِي بَكْرٍ الأَنْصَارِيُّ القُرْطُبِيّ',
+		description: 'A major Maliki tafsir especially strong in legal rulings, juristic disagreement, Arabic, readings, and practical implications. It remains one of the most important resources for Quranic ahkam.',
+		aqidah: 'Ashari',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/tafsir/qurtubi.json',
@@ -69,11 +77,13 @@ const TAFSIRS = {
 	'tafsir-ibn-ashur': {
 		ordinal: 17,
 		shortName_en: 'Ibn Ashur',
-		shortName: 'ابن عاشور',
-		name_en: 'al-Tahrir wa-al-Tanwir',
-		name: 'التحرير والتنوير',
+		shortName: 'ابْنُ عَاشُورَ',
+		name_en: 'Tahrir al-Mana al-Sadid wa-Tanwir al-Aql al-Jadid min Tafsir al-Kitab al-Majid',
+		name: 'تَحْرِيرُ المَعْنَى السَّدِيدِ وَتَنْوِيرُ العَقْلِ الجَدِيدِ مِنْ تَفْسِيرِ الكِتَابِ المَجِيدِ',
 		author_en: 'Muhammad al-Tahir b. Ashur',
-		author: 'ابن عاشور',
+		author: 'مُحَمَّدُ الطَّاهِرُ بْنُ مُحَمَّدٍ بْنِ مُحَمَّدٍ الطَّاهِرِ بْنِ عَاشُورَ',
+		description: 'A modern masterpiece emphasizing maqasid, rhetoric, coherence, language, social guidance, and legal reflection. It is especially valuable for literary analysis and for reading the Quran as a unified discourse.',
+		aqidah: 'Ashari',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/tafsir/ibn-ashur.json',
@@ -83,11 +93,13 @@ const TAFSIRS = {
 	'tafsir-mathur': {
 		ordinal: 91,
 		shortName_en: 'Mathur',
-		shortName: 'المأثور',
-		name_en: 'Encyclopedia of Narrated Tafsir',
-		name: 'موسوعة التفسير المأثور',
+		shortName: 'المَأْثُورُ',
+		name_en: 'Mawsuat al-Tafsir al-Mathur',
+		name: 'مَوْسُوعَةُ التَّفْسِيرِ المَأْثُورِ',
 		author_en: 'al-Shatibi Institute',
-		author: 'معهد الشاطبي',
+		author: 'مَعْهَدُ الإِمَامِ الشَّاطِبِيّ',
+		description: 'A contemporary encyclopedia of transmitted tafsir collecting narrations and early explanations with organized presentation. It is useful for surveying tafsir bil-mathur material across the Quran.',
+		aqidah: 'Contemporary Sunni',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/tafsir/tafsir-al-mathur.json',
@@ -97,11 +109,13 @@ const TAFSIRS = {
 	'tafsir-suyuti': {
 		ordinal: 92,
 		shortName_en: 'Suyuti',
-		shortName: 'السيوطي',
-		name_en: 'al-Durr al-Manthur',
-		name: 'الدر المنثور',
+		shortName: 'السُّيُوطِيّ',
+		name_en: 'al-Durr al-Manthur fi al-Tafsir bi-al-Mathur',
+		name: 'الدُّرُّ المَنْثُورُ فِي التَّفْسِيرِ بِالمَأْثُورِ',
 		author_en: 'Jalal al-Din al-Suyuti',
-		author: 'جلال الدين السيوطي',
+		author: 'جَلَالُ الدِّينِ عَبْدُ الرَّحْمَنِ بْنُ أَبِي بَكْرٍ السُّيُوطِيّ',
+		description: 'A major compilation of transmitted tafsir reports from hadith and earlier sources. It is valuable for locating narrations and early exegetical material, while individual reports still require hadith-critical evaluation.',
+		aqidah: 'Ashari',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/tafsir/tafsir-suyuti.json',
@@ -111,11 +125,13 @@ const TAFSIRS = {
 	'gharib-al-quran': {
 		ordinal: 93,
 		shortName_en: 'Gharib',
-		shortName: 'الغريب',
+		shortName: 'الغَرِيبُ',
 		name_en: 'al-Siraj fi Bayan Gharib al-Quran',
-		name: 'السراج في بيان غريب القرآن',
+		name: 'السِّرَاجُ فِي بَيَانِ غَرِيبِ القُرْآنِ',
 		author_en: 'Tafsir Center for Quranic Studies',
-		author: 'مركز تفسير للدراسات القرآنية',
+		author: 'مَرْكَزُ تَفْسِيرٍ لِلدِّرَاسَاتِ القُرْآنِيَّةِ',
+		description: 'A focused resource explaining uncommon Quranic vocabulary and difficult words. It is useful as a lexical aid rather than as a full verse-by-verse tafsir.',
+		aqidah: 'Contemporary Sunni',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/tafsir/gharib-al-quran.json',
@@ -126,24 +142,32 @@ const TAFSIRS = {
 		ordinal: 4,
 		shortName_en: "Ma'ariful Qur'an",
 		name_en: "Ma'ariful Qur'an",
+		name: 'مَعَارِفُ القُرْآنِ',
 		author_en: 'Mufti Muhammad Shafi',
+		description: 'A modern Hanafi-Deobandi tafsir combining explanation, legal guidance, spiritual counsel, and contemporary application. It is especially useful for practical lessons and juristic discussion in a South Asian scholarly style.',
+		aqidah: 'Maturidi',
 		directory: 'data/en-maarifulquran'
 	},
 	'en-tafsir-tazkir-al-quran': {
 		ordinal: 5,
 		shortName_en: 'Tazkirul Quran',
-		name_en: 'Tazkirul Quran',
+		name_en: 'Tadhkir al-Quran',
+		name: 'تَذْكِيرُ القُرْآنِ',
 		author_en: 'Maulana Wahiduddin Khan',
+		description: 'A modern reflective tafsir focused on reminders, moral awakening, and the Quran’s call to faith and accountability. It is less technical and more concerned with guidance and contemplation.',
+		aqidah: 'Modern Sunni',
 		directory: 'data/en-tazkirulquran'
 	},
 	'en-tafsir-mokhtasar': {
 		ordinal: 6,
 		shortName_en: 'Mokhtasar',
-		shortName: 'المختصر',
-		name_en: 'al-Mukhtasar fi al-Tafsir al-Quran al-Karim',
-		name: 'المختصر في تفسير القرآن الكريم',
+		shortName: 'المُخْتَصَرُ',
+		name_en: 'al-Mukhtasar fi Tafsir al-Quran al-Karim',
+		name: 'المُخْتَصَرُ فِي تَفْسِيرِ القُرْآنِ الكَرِيمِ',
 		author_en: 'Tafsir Center for Quranic Studies',
-		author: 'مركز تفسير للدراسات القرآنية',
+		author: 'مَرْكَزُ تَفْسِيرٍ لِلدِّرَاسَاتِ القُرْآنِيَّةِ',
+		description: 'A contemporary concise tafsir written for accessibility, clarity, and practical guidance. It summarizes meanings in plain language, avoids lengthy disputes, and is useful for quick reading alongside the Quran.',
+		aqidah: 'Contemporary Sunni',
 		lang: 'en',
 		format: 'en:md,ar:md',
 		files: {
@@ -154,11 +178,13 @@ const TAFSIRS = {
 	'irab-al-quran': {
 		ordinal: 61,
 		shortName_en: 'Irab',
-		shortName: 'الإعراب',
-		name_en: 'al-Jadwal fi Irab al-Quran',
-		name: 'الجدول في إعراب القرآن',
+		shortName: 'الإِعْرَابُ',
+		name_en: 'al-Jadwal fi Irab al-Quran wa-Sarfih wa-Bayanih',
+		name: 'الجَدْوَلُ فِي إِعْرَابِ القُرْآنِ وَصَرْفِهِ وَبَيَانِهِ',
 		author_en: 'Mahmud Safi',
-		author: 'محمود صافي',
+		author: 'مَحْمُودُ بْنُ عَبْدِ الرَّحِيمِ صَافِي',
+		description: 'A grammatical companion to the Quran that focuses on irab, morphology, and explanatory parsing. It is most useful for students analyzing sentence structure and the Arabic mechanics of the verses.',
+		aqidah: 'Sunni, not firmly classified',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/irab.json',
@@ -168,11 +194,13 @@ const TAFSIRS = {
 	'irab-daas': {
 		ordinal: 63,
 		shortName_en: 'Irab (Daas)',
-		shortName: 'إعراب الدعاس',
+		shortName: 'إِعْرَابُ الدَّعَّاسِ',
 		name_en: 'Irab al-Quran al-Karim',
-		name: 'إعراب القرآن للدعاس',
+		name: 'إِعْرَابُ القُرْآنِ الكَرِيمِ',
 		author_en: 'Ahmad Ubayd al-Daas',
-		author: 'أحمد عبيد الدعاس',
+		author: 'أَحْمَدُ عُبَيْدُ الدَّعَّاسُ',
+		description: 'A concise grammatical parsing resource for the Quran, useful for quick irab and syntactic clarification. Its focus is Arabic structure rather than broad theological or legal interpretation.',
+		aqidah: 'Sunni, not firmly classified',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/irab-daas.json',
@@ -182,11 +210,13 @@ const TAFSIRS = {
 	'ibn-adil': {
 		ordinal: 64,
 		shortName_en: 'Ibn Adil',
-		shortName: 'ابن عادل',
+		shortName: 'ابْنُ عَادِلٍ',
 		name_en: 'al-Lubab fi Ulum al-Kitab',
-		name: 'اللباب في علوم الكتاب',
+		name: 'اللُّبَابُ فِي عُلُومِ الكِتَابِ',
 		author_en: 'Umar b. Ali b. Adil',
-		author: 'عمر بن علي بن عادل',
+		author: 'عُمَرُ بْنُ عَلِيِّ بْنِ عَادِلٍ الدِّمَشْقِيُّ الحَنْبَلِيّ',
+		description: 'A large Hanbali tafsir drawing heavily on earlier sources, with attention to language, legal issues, theology, and variant interpretations. It is useful as a broad later compilation of classical material.',
+		aqidah: 'Hanbali Sunni',
 		death: 880,
 		lang: 'ar',
 		format: 'md',
@@ -199,11 +229,13 @@ const TAFSIRS = {
 	'qiraat': {
 		ordinal: 62,
 		shortName_en: "Qira'at",
-		shortName: 'القراءات',
+		shortName: 'القِرَاءَاتُ',
 		name_en: "al-Jadwal fi Qira'at al-Quran",
-		name: 'الجدول في قراءات القرآن',
+		name: 'الجَدْوَلُ فِي قِرَاءَاتِ القُرْآنِ',
 		author_en: 'Mahmud Safi',
-		author: 'محمود صافي',
+		author: 'مَحْمُودُ بْنُ عَبْدِ الرَّحِيمِ صَافِي',
+		description: 'A Quranic readings companion focused on qiraat rather than full tafsir. It helps identify variant recitations and their placement, making it useful for readers studying recitational differences alongside the text.',
+		aqidah: 'Sunni, not firmly classified',
 		lang: 'ar',
 		format: 'md',
 		file: 'data/qiraat.json',
@@ -213,11 +245,13 @@ const TAFSIRS = {
 	'saadi': {
 		ordinal: 93,
 		shortName_en: 'Saadi',
-		shortName: 'السعدي',
-		name_en: 'Taysir al-Karim al-Rahman',
-		name: 'تيسير الكريم الرحمن',
+		shortName: 'السَّعْدِيّ',
+		name_en: 'Taysir al-Karim al-Rahman fi Tafsir Kalam al-Mannan',
+		name: 'تَيْسِيرُ الكَرِيمِ الرَّحْمَنِ فِي تَفْسِيرِ كَلَامِ المَنَّانِ',
 		author_en: 'Abd al-Rahman al-Saadi',
-		author: 'السعدي',
+		author: 'عَبْدُ الرَّحْمَنِ بْنُ نَاصِرٍ السَّعْدِيّ',
+		description: 'A concise modern tafsir known for clarity, spiritual benefit, sound creed, and practical lessons. It explains the Quran in accessible language while emphasizing tawhid, guidance, and moral transformation.',
+		aqidah: 'Athari',
 		death: 1376,
 		lang: 'ar',
 		format: 'md',
@@ -405,12 +439,13 @@ function parseRef(ref) {
 async function upsertCommentary(connection, alias, config) {
 	await query(connection, `
 		INSERT INTO books_commentaries
-			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, name, author, death)
+			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, name, author, death, description, aqidah)
 		VALUES
 			(${config.ordinal}, ${MySQL.escape(alias)}, 'tafsir', ${MySQL.escape(config.shortName_en)}, ${MySQL.escape(config.shortName || null)},
 				0, 'local', ${MySQL.escape(config.lang || 'en')}, ${MySQL.escape(config.format || 'md')},
 				${MySQL.escape(config.name_en)}, ${MySQL.escape(config.author_en)},
-				${MySQL.escape(config.name || null)}, ${MySQL.escape(config.author || null)}, ${MySQL.escape(config.death || null)})
+				${MySQL.escape(config.name || null)}, ${MySQL.escape(config.author || null)}, ${MySQL.escape(config.death || null)},
+				${MySQL.escape(commentaryDescription(config))}, ${MySQL.escape(config.aqidah || null)})
 		ON DUPLICATE KEY UPDATE
 			ordinal=VALUES(ordinal),
 			type=VALUES(type),
@@ -424,7 +459,9 @@ async function upsertCommentary(connection, alias, config) {
 			author_en=VALUES(author_en),
 			name=VALUES(name),
 			author=VALUES(author),
-			death=VALUES(death)`);
+			death=VALUES(death),
+			description=VALUES(description),
+			aqidah=VALUES(aqidah)`);
 	const rows = await query(connection, `
 		SELECT id
 		FROM books_commentaries
@@ -434,6 +471,15 @@ async function upsertCommentary(connection, alias, config) {
 	if (rows.length !== 1)
 		throw new Error(`Local commentary '${alias}' was not found after upsert.`);
 	return rows[0].id;
+}
+
+function commentaryDescription(config) {
+	var description = (config.description || '').trim();
+	if (!description)
+		return null;
+	description = description.replace(/^Full title:\s*.*?\.\s*/u, '');
+	var title = [config.name_en, config.name ? `(${config.name})` : ''].filter(Boolean).join(' ').trim();
+	return title ? `Full title: ${title}. ${description}` : description;
 }
 
 async function upsertPassages(connection, bookCommentaryId, passages) {

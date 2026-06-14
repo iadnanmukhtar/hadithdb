@@ -22,9 +22,7 @@
 		return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(tafsir.slug || Tafsir.tafsirSlug(tafsir.alias))}`);
 	}
 	function tafsirBookLabel(tafsir) {
-		return Tafsir.displayShortName(tafsir, 'en')
-			.replace(/^tafs[īi]r\s+/i, '')
-			.trim();
+		return Tafsir.rawShortName(tafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();
 	}
 	function tafsirDeathTooltipLabel(tafsir) {
 		var death = utils.emptyIfNull(tafsir.death || '').toString().trim();

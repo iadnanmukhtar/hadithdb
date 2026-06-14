@@ -2931,6 +2931,15 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	text-decoration: underline;
 }
 
+.search-suggestion-result .search-suggestion-book-detail {
+	color: inherit;
+}
+
+.search-suggestion-result .search-suggestion-book-count,
+.search-suggestion-result .search-suggestion-book-author {
+	color: var(--bs-secondary-color, #6c757d);
+}
+
 .quran-ayah-hero-toolbar a:hover {
 	text-decoration: none;
 }
@@ -3721,6 +3730,11 @@ a.cmd-btn:hover {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.search-autocomplete-menu .search-autocomplete-meta-lines .search-autocomplete-meta-en,
+.search-autocomplete-menu .search-autocomplete-meta-lines .search-autocomplete-meta-ar {
+	white-space: normal;
 }
 
 .search-autocomplete-menu .search-autocomplete-meta-ar {
