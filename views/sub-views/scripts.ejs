@@ -340,14 +340,18 @@
 	        statusText: 'Unable to execute update due to an unknown error'
 	      };
 	      const updateUrl = (id, prop) => {
-	        return editHadithApiPath(`/update/${id}/${prop}`);
-	      };
+        return editHadithApiPath(`/update/${id}/${prop}`);
+      };
       if (reqBody) {
+        const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+        const headers = {
+          'Content-Type': 'application/json'
+        };
+        if (token)
+          headers.Authorization = `Bearer ${token}`;
         res = await fetch(updateUrl(reqBody.id, reqBody.prop), {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify({
             id: reqBody.id,
             prop: reqBody.prop,
@@ -537,6 +541,74 @@
   window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 90;
   window.hadithAdmin = <%= site.admin ? 'true' : 'false' %>;
   window.hadithAdminSessionChecked = window.hadithAdmin === true;
+  const HADITH_LOGIN_SESSION_CACHE_KEY = 'hadithdb_login_session';
+  const HADITH_LOGIN_SESSION_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
+
+  function normalizeHadithSessionUser(user) {
+      if (!user || typeof user !== 'object') return null;
+      const uid = (user.uid || user.userId || user.email || '').toString();
+      if (!uid) return null;
+      return {
+        uid,
+        provider: user.provider || 'google.com',
+        name: user.name || user.displayName || user.email || 'User',
+        email: user.email || null,
+        photo: user.photo || user.photoURL || null,
+        admin: Boolean(user.admin)
+      };
+  }
+
+  function readHadithLoginSessionCache() {
+      try {
+        const raw = localStorage.getItem(HADITH_LOGIN_SESSION_CACHE_KEY);
+        if (!raw) return null;
+        const payload = JSON.parse(raw);
+        if (!payload || payload.__hadithLoginSessionCache !== 1)
+          throw new Error('Unexpected login session cache payload');
+        if (!Number.isFinite(payload.cachedAt) || Date.now() - payload.cachedAt > HADITH_LOGIN_SESSION_CACHE_MAX_AGE_MS)
+          throw new Error('Expired login session cache');
+        const user = normalizeHadithSessionUser(payload.user);
+        if (!payload.loggedIn || !user)
+          throw new Error('Missing login session user');
+        const cookieUserId = getHadithCookie('userId');
+        if (cookieUserId && cookieUserId !== user.uid && cookieUserId !== user.email)
+          throw new Error('Login session cache user mismatch');
+        return {
+          status: 200,
+          loggedIn: true,
+          userId: user.uid,
+          admin: Boolean(user.admin),
+          user,
+          cached: true
+        };
+      } catch (err) {
+        try { localStorage.removeItem(HADITH_LOGIN_SESSION_CACHE_KEY); } catch (_err) {}
+        return null;
+      }
+  }
+
+  function writeHadithLoginSessionCache(session) {
+      const user = normalizeHadithSessionUser(session && (session.user || session));
+      if (!user) return;
+      try {
+        localStorage.setItem(HADITH_LOGIN_SESSION_CACHE_KEY, JSON.stringify({
+          __hadithLoginSessionCache: 1,
+          cachedAt: Date.now(),
+          loggedIn: true,
+          user
+        }));
+      } catch (err) {
+        console.warn('Could not cache login session', err);
+      }
+  }
+
+  function clearHadithLoginSessionCache() {
+      try {
+        localStorage.removeItem(HADITH_LOGIN_SESSION_CACHE_KEY);
+      } catch (err) {
+        console.warn('Could not clear login session cache', err);
+      }
+  }
 
   function markHadithAuthSynced(username) {
       if (!username) return;
@@ -597,12 +669,6 @@
       return '/login/logout';
   }
 
-  function hadithSessionPath() {
-      if (window.location.hostname.toLowerCase().split('.')[0] === 'quran')
-        return '/quran/login/session';
-      return '/login/session';
-  }
-
   function hadithApiPath(path) {
       path = String(path || '');
       if (path.charAt(0) !== '/')
@@ -619,39 +685,34 @@
       const uid = user.uid || user.userId || user.email || user.username;
       if (uid && getHadithCookie('userId') !== uid)
         return true;
+      const cachedSession = readHadithLoginSessionCache();
+      if (cachedSession && cachedSession.loggedIn && cachedSession.user) {
+        const cachedUid = cachedSession.user.uid || cachedSession.user.email;
+        if (!uid || cachedUid === uid || cachedSession.user.email === uid)
+          return false;
+      }
       return window.hadithAdmin !== true && !document.querySelector('.edit-gear');
   }
 
-  async function syncHadithSessionFromCookie() {
+  async function syncHadithSessionFromCookie(options = {}) {
     const now = Date.now();
-    if (window.hadithSessionSyncPromise)
-      return window.hadithSessionSyncPromise;
+    const cachedSession = readHadithLoginSessionCache();
+    if (cachedSession) {
+      window.hadithSessionSyncResult = cachedSession;
+      window.hadithSessionSyncAt = now;
+      window.hadithAdmin = Boolean(cachedSession.admin);
+      window.hadithAdminSessionChecked = true;
+      renderHadithAdminGear();
+      return cachedSession;
+    }
     if (window.hadithSessionSyncResult && now - (window.hadithSessionSyncAt || 0) < 5000)
       return window.hadithSessionSyncResult;
-    window.hadithSessionSyncPromise = (async () => {
-      try {
-        const res = await fetch(hadithSessionPath(), {
-          credentials: 'same-origin',
-          headers: { 'Accept': 'application/json' }
-        });
-        if (!res.ok)
-          return null;
-        const data = await res.json();
-        window.hadithSessionSyncResult = data;
-        window.hadithSessionSyncAt = Date.now();
-        window.hadithAdmin = Boolean(data && data.loggedIn && data.admin);
-        window.hadithAdminSessionChecked = true;
-        renderHadithAdminGear();
-        return data;
-      } catch (err) {
-        window.hadithAdminSessionChecked = true;
-        renderHadithAdminGear();
-        return null;
-      } finally {
-        window.hadithSessionSyncPromise = null;
-      }
-    })();
-    return window.hadithSessionSyncPromise;
+    window.hadithSessionSyncResult = null;
+    window.hadithSessionSyncAt = now;
+    window.hadithAdmin = false;
+    window.hadithAdminSessionChecked = true;
+    renderHadithAdminGear();
+    return null;
   }
 
   async function onAuth(user, options = {}) {
@@ -707,6 +768,18 @@
         if (res.status == 200) {
           markHadithAuthSynced(username);
           window.hadithAdmin = Boolean(resBody.admin);
+          writeHadithLoginSessionCache({
+            loggedIn: true,
+            admin: Boolean(resBody.admin),
+            user: resBody.user || {
+              uid: resBody.userId || currentUid,
+              provider: resBody.provider || 'google.com',
+              name: resBody.name || (currentUser && currentUser.displayName) || username,
+              email: resBody.email || username,
+              photo: resBody.photo || (currentUser && currentUser.photoURL) || null,
+              admin: Boolean(resBody.admin)
+            }
+          });
           renderHadithAdminGear();
           if (!options.silent)
             toastr.success('Logged in as ' + username);
@@ -789,6 +862,22 @@
       return user;
     };
     const userFromSession = async () => {
+      const cachedSession = readHadithLoginSessionCache();
+      if (cachedSession && cachedSession.user) {
+        const user = cachedSession.user;
+        return {
+          uid: user.uid,
+          email: user.email || user.uid,
+          displayName: user.name || user.email || 'User',
+          photoURL: user.photo || 'https://www.gravatar.com/avatar/?d=mp&s=48',
+          providerData: [{ providerId: user.provider || 'google.com' }],
+          getIdToken: async () => {
+            const credentialUser = storedUser();
+            return credentialUser ? localStorage.getItem(tokenKey) : null;
+          },
+          sessionBacked: true
+        };
+      }
       if (!sessionUserPromise) {
         sessionUserPromise = syncHadithSessionFromCookie().then((session) => {
           if (!session || !session.loggedIn || !session.user) return null;
@@ -830,6 +919,7 @@
       localStorage.removeItem(tokenKey);
       localStorage.removeItem(userKey);
       sessionUserPromise = null;
+      clearHadithLoginSessionCache();
       document.dispatchEvent(new CustomEvent('hadithAuthChanged', { detail: { user: null } }));
     };
     window.hadithAuth = {
@@ -1018,6 +1108,7 @@
         window.google?.accounts?.id?.disableAutoSelect();
         window.hadithAuth.clearCredential();
         await fetch(hadithLogoutPath(), { credentials: 'same-origin' });
+        clearHadithLoginSessionCache();
         document.cookie = 'admin=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
         document.cookie = 'adminUser=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
         document.cookie = 'adminChecked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';

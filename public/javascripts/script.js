@@ -229,6 +229,72 @@ function getHadithCookie(name) {
 
 window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 90;
 
+function normalizeHadithSessionUser(user) {
+	if (!user || typeof user !== 'object') return null;
+	var uid = (user.uid || user.userId || user.email || '').toString();
+	if (!uid) return null;
+	return {
+		uid: uid,
+		provider: user.provider || 'google.com',
+		name: user.name || user.displayName || user.email || 'User',
+		email: user.email || null,
+		photo: user.photo || user.photoURL || null,
+		admin: Boolean(user.admin)
+	};
+}
+
+function readHadithLoginSessionCache() {
+	try {
+		var raw = localStorage.getItem('hadithdb_login_session');
+		if (!raw) return null;
+		var payload = JSON.parse(raw);
+		if (!payload || payload.__hadithLoginSessionCache !== 1)
+			throw new Error('Unexpected login session cache payload');
+		if (!Number.isFinite(payload.cachedAt) || Date.now() - payload.cachedAt > 60 * 60 * 1000)
+			throw new Error('Expired login session cache');
+		var user = normalizeHadithSessionUser(payload.user);
+		if (!payload.loggedIn || !user)
+			throw new Error('Missing login session user');
+		var cookieUserId = getHadithCookie('userId');
+		if (cookieUserId && cookieUserId !== user.uid && cookieUserId !== user.email)
+			throw new Error('Login session cache user mismatch');
+		return {
+			status: 200,
+			loggedIn: true,
+			userId: user.uid,
+			admin: Boolean(user.admin),
+			user: user,
+			cached: true
+		};
+	} catch (err) {
+		try { localStorage.removeItem('hadithdb_login_session'); } catch (_err) {}
+		return null;
+	}
+}
+
+function writeHadithLoginSessionCache(session) {
+	var user = normalizeHadithSessionUser(session && (session.user || session));
+	if (!user) return;
+	try {
+		localStorage.setItem('hadithdb_login_session', JSON.stringify({
+			__hadithLoginSessionCache: 1,
+			cachedAt: Date.now(),
+			loggedIn: true,
+			user: user
+		}));
+	} catch (err) {
+		console.warn('Could not cache login session', err);
+	}
+}
+
+function clearHadithLoginSessionCache() {
+	try {
+		localStorage.removeItem('hadithdb_login_session');
+	} catch (err) {
+		console.warn('Could not clear login session cache', err);
+	}
+}
+
 function initBookNavScroller(scope) {
 	(scope ? $(scope) : $(document)).find('.h-menu').each(function () {
 		var menu = this;
@@ -293,12 +359,6 @@ function hadithLoginPath(userId) {
 	return `/login/${encodedUserId}`;
 }
 
-function hadithSessionPath() {
-	if (typeof isQuranSubdomainHost === 'function' && isQuranSubdomainHost(window.location.hostname))
-		return '/quran/login/session';
-	return '/login/session';
-}
-
 function waitForHadithAuth(timeoutMs) {
 	timeoutMs = timeoutMs || 3000;
 	return new Promise(function (resolve) {
@@ -317,23 +377,16 @@ function waitForHadithAuth(timeoutMs) {
 	});
 }
 
-async function syncHadithAdminForCachedPage() {
-	try {
-		const res = await fetch(hadithSessionPath(), {
-			credentials: 'same-origin',
-			headers: { 'Accept': 'application/json' }
-		});
-		if (!res.ok)
-			return;
-		const data = await res.json();
-		window.hadithAdmin = Boolean(data && data.loggedIn && data.admin);
+function syncHadithAdminForCachedPage() {
+	var cachedSession = readHadithLoginSessionCache();
+	if (!cachedSession) {
 		window.hadithAdminSessionChecked = true;
 		renderHadithAdminGear();
-	} catch (err) {
-		window.hadithAdminSessionChecked = true;
-		renderHadithAdminGear();
-		console.warn('Could not refresh admin mode for cached page', err);
+		return;
 	}
+	window.hadithAdmin = Boolean(cachedSession.admin);
+	window.hadithAdminSessionChecked = true;
+	renderHadithAdminGear();
 }
 
 function initHadithAdminGear() {

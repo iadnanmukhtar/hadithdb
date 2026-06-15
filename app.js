@@ -12,7 +12,6 @@ const { STATUS_CODES } = require('http');
 const rateLimit = require('express-rate-limit').default;
 const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
-const UserSettings = require('./lib/UserSettings');
 const Utils = require('./lib/Utils');
 
 const REQUEST_BODY_LIMIT = '10mb';
@@ -162,16 +161,6 @@ const buildErrorViewLocals = (statusCode, message, error, req, res) => {
   };
 };
 
-const skipsLoginSessionLookup = (req) => {
-  if (/\.(?:css|js|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)$/i.test(req.path))
-    return true;
-  if (/^\/(?:quran\/)?captcha\/translate(?:\/verify)?\/?$/.test(req.path))
-    return true;
-  if (req.query && req.query.cmd === 'tr' && /^\/(?:quran\/)?do\/[^/]+\/?$/.test(req.path))
-    return true;
-  return false;
-};
-
 patchAsyncRouterMethods();
 
 const app = express();
@@ -187,28 +176,12 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
 	  app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
 	  app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
 	  app.use(cookieParser());
-	  app.use(async function resolveAdminMode(req, res, next) {
-	    if (skipsLoginSessionLookup(req)) {
-	      req.admin = false;
-	      req.editMode = false;
-	      req.loginUser = null;
-	      req.loginSessionChecked = false;
-	      next();
-	      return;
-	    }
-	    try {
-	      const sessionUser = await UserSettings.getLoginUserBySession(req.cookies && req.cookies.hadithSession);
-	      req.loginUser = sessionUser;
-	      req.loginSessionChecked = true;
-	      req.admin = Boolean(sessionUser && sessionUser.admin);
-	      req.editMode = req.admin && req.cookies && req.cookies.editMode == 1;
-	    } catch (err) {
-	      req.loginUser = null;
-	      req.loginSessionChecked = true;
-	      req.admin = false;
-	      req.editMode = false;
-	      debug(`admin mode lookup failed: ${err.message}`);
-	    }
+	  app.use(function resolveAdminMode(req, res, next) {
+	    const editMode = req.cookies && req.cookies.editMode == 1;
+	    req.admin = editMode;
+	    req.editMode = editMode;
+	    req.loginUser = null;
+	    req.loginSessionChecked = false;
 	    next();
 	  });
 	  app.use('/', express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));

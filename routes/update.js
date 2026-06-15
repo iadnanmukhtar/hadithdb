@@ -15,14 +15,32 @@ const HadithRevision = require('../lib/HadithRevision');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
 const Index = require('../lib/Index');
+const GoogleAuth = require('../lib/GoogleAuth');
+const UserSettings = require('../lib/UserSettings');
 const { Heading, Item, Library } = require('../lib/Model');
 
 const router = express.Router();
 
-router.post('/:id/:prop', async function (req, res, next) {
-  if (!req.admin)
-    return next(createError(403, "Update unauthorized"));
-  var userId = req.cookies.userId;
+async function requireAdmin(req, res, next) {
+  let user;
+  try {
+    user = await GoogleAuth.verifyRequest(req);
+  } catch (err) {
+    return next(createError(401, 'Invalid authentication token'));
+  }
+  if (!user)
+    return next(createError(401, 'Authentication required'));
+  const admin = await UserSettings.isAdminUser(user.uid);
+  if (!admin)
+    return next(createError(403, 'Update unauthorized'));
+  req.user = user;
+  req.admin = true;
+  req.editMode = true;
+  next();
+}
+
+router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
+  var userId = req.user.uid;
   var status = {
     code: 405,
     message: 'Did not process',

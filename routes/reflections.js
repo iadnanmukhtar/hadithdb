@@ -6,12 +6,11 @@ const debugFactory = require('debug');
 const crypto = require('crypto');
 const Utils = require('../lib/Utils');
 const GoogleAuth = require('../lib/GoogleAuth');
-const UserSettings = require('../lib/UserSettings');
 const nodemailer = require('nodemailer');
 const MarkdownIt = require('markdown-it');
 
 const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
-const commonFields = 'parentId, user_uid, user_provider, user_name, user_email, text, createdAt, up_vote, down_vote, deleted';
+const commonFields = 'parentId, user_uid, user_provider, user_name, user_email, user_photo, text, createdAt, up_vote, down_vote, deleted';
 
 function createReflectionRouter(config) {
   const router = express.Router();
@@ -116,27 +115,6 @@ ${payload.text || '(no text found)'}
     return stats;
   }
 
-  async function getUserPhotoMap(rows) {
-    const userIds = Array.from(new Set((rows || [])
-      .map(row => row && row.user_uid)
-      .filter(Boolean)));
-    if (!userIds.length) return {};
-    await UserSettings.ensureTable();
-    const userIdsSql = userIds.map(uid => `'${Utils.escSQL(uid)}'`).join(',');
-    const photoRows = await global.query(`
-      SELECT user_uid, user_photo
-      FROM user_settings
-      WHERE user_uid IN (${userIdsSql})
-        AND user_photo IS NOT NULL
-        AND user_photo <> ''
-    `);
-    const photoMap = {};
-    photoRows.forEach(row => {
-      photoMap[row.user_uid] = row.user_photo;
-    });
-    return photoMap;
-  }
-
   async function verifyGoogle(req, res, next) {
     try {
       req.user = await GoogleAuth.verifyRequest(req, { allowSession: true });
@@ -170,8 +148,7 @@ ${payload.text || '(no text found)'}
         ORDER BY createdAt DESC
       `);
       const voteStats = await getVoteStats(rows.map(row => row.id), user ? user.uid : null);
-      const photoMap = await getUserPhotoMap(rows);
-      res.json(rows.map(row => formatComment(row, user, photoMap, voteStats[row.id])));
+      res.json(rows.map(row => formatComment(row, user, voteStats[row.id])));
     } catch (err) {
       debug(`Error loading comments:\n${err.stack}`);
       next(err);
@@ -204,8 +181,8 @@ ${payload.text || '(no text found)'}
       }
       const user = req.user;
       const insertRes = await global.query(`
-        INSERT INTO ${config.table} (${config.targetColumn}, parentId, user_uid, user_provider, user_name, user_email, text, createdAt, deleted)
-        VALUES (${target.sql}, ${parentId || 'NULL'}, '${Utils.escSQL(user.uid)}', '${Utils.escSQL(user.provider)}', '${Utils.escSQL(user.name)}', ${user.email ? `'${Utils.escSQL(user.email)}'` : 'NULL'}, '${Utils.escSQL(text)}', NOW(), 0)
+        INSERT INTO ${config.table} (${config.targetColumn}, parentId, user_uid, user_provider, user_name, user_email, user_photo, text, createdAt, deleted)
+        VALUES (${target.sql}, ${parentId || 'NULL'}, '${Utils.escSQL(user.uid)}', '${Utils.escSQL(user.provider)}', '${Utils.escSQL(user.name)}', ${user.email ? `'${Utils.escSQL(user.email)}'` : 'NULL'}, ${photoSql(user.photo)}, '${Utils.escSQL(text)}', NOW(), 0)
       `);
       if (config.afterCreate) await config.afterCreate(target);
       const rows = await getRowsById(insertRes.insertId);
@@ -243,7 +220,7 @@ ${payload.text || '(no text found)'}
         res.status(403).json({ error: 'You can only edit your own comment.' });
         return;
       }
-      await global.query(`UPDATE ${config.table} SET text='${Utils.escSQL(text)}' WHERE id=${commentId}`);
+      await global.query(`UPDATE ${config.table} SET text='${Utils.escSQL(text)}', user_photo=${photoSql(req.user.photo, 'user_photo')} WHERE id=${commentId}`);
       if (config.afterEdit) await config.afterEdit(row);
       const updated = (await getRowsById(commentId))[0];
       const vote = (await getVoteStats([commentId], req.user.uid))[commentId] || {};
@@ -359,11 +336,11 @@ ${payload.text || '(no text found)'}
     return {
       ...config.notificationFields(row),
       text: row.text,
-      user: buildCommentUser(row, {}, fallbackPhoto)
+      user: buildCommentUser(row, fallbackPhoto)
     };
   }
 
-  function formatComment(row, user, photoMap, vote = {}) {
+  function formatComment(row, user, vote = {}) {
     const deleted = !!row.deleted;
     return {
       id: row.id,
@@ -376,7 +353,7 @@ ${payload.text || '(no text found)'}
       upVote: deleted ? 0 : (vote.upVote || row.up_vote || 0),
       downVote: deleted ? 0 : (vote.downVote || row.down_vote || 0),
       userVote: deleted ? null : (vote.userVote || null),
-      user: buildCommentUser(row, photoMap),
+      user: buildCommentUser(row),
       canEdit: !!(isCommentOwner(row, user) && !deleted),
       canDelete: !!(isCommentOwner(row, user) && !deleted)
     };
@@ -393,7 +370,7 @@ ${payload.text || '(no text found)'}
       upVote: vote.upVote || row.up_vote || 0,
       downVote: vote.downVote || row.down_vote || 0,
       userVote: vote.userVote || null,
-      user: buildCommentUser(row, {}, fallbackPhoto),
+      user: buildCommentUser(row, fallbackPhoto),
       canEdit: true,
       canDelete: true
     };
@@ -414,13 +391,18 @@ function getGravatarUrl(email) {
   return `https://www.gravatar.com/avatar/${crypto.createHash('md5').update(normalized).digest('hex')}?d=mp&s=64`;
 }
 
-function buildCommentUser(row, photoMap = {}, fallbackPhoto = null) {
+function photoSql(photo, fallbackSql = 'NULL') {
+  const value = Utils.trimToEmpty(photo).substring(0, 1024);
+  return value ? `'${Utils.escSQL(value)}'` : fallbackSql;
+}
+
+function buildCommentUser(row, fallbackPhoto = null) {
   return {
     uid: row.user_uid || null,
     provider: row.user_provider,
     name: row.user_name,
     email: row.user_email,
-    photo: (row.user_uid && photoMap[row.user_uid]) || fallbackPhoto || getGravatarUrl(row.user_email)
+    photo: row.user_photo || fallbackPhoto || getGravatarUrl(row.user_email)
   };
 }
 

@@ -13,11 +13,6 @@ const SESSION_COOKIE_OPTIONS = {
   maxAge: SESSION_MAX_AGE_MS,
   sameSite: 'lax'
 };
-const AUTH_SESSION_COOKIE = 'hadithSession';
-const AUTH_SESSION_COOKIE_OPTIONS = {
-  ...SESSION_COOKIE_OPTIONS,
-  httpOnly: true
-};
 
 function sharedCookieDomain(req) {
   try {
@@ -59,11 +54,9 @@ function csrfError(req) {
 
 async function createLoginResponse(req, res, user) {
   var adminUser = await UserSettings.ensureLoginUser(user);
-  const sessionToken = await UserSettings.createLoginSession(user.uid, SESSION_MAX_AGE_MS);
   clearAuthCookie(res, req, 'admin');
   clearAuthCookie(res, req, 'adminUser');
   clearAuthCookie(res, req, 'adminChecked');
-  await res.cookie(AUTH_SESSION_COOKIE, sessionToken, cookieOptions(req, AUTH_SESSION_COOKIE_OPTIONS));
   if (adminUser) {
     debug(`Admin User ${user.email} logged in`);
     await res.cookie('userId', user.uid, cookieOptions(req, SESSION_COOKIE_OPTIONS));
@@ -76,19 +69,27 @@ async function createLoginResponse(req, res, user) {
     status: 200,
     userId: user.uid,
     email: user.email,
+    name: user.name,
+    provider: user.provider || 'google.com',
     photo: user.photo,
     admin: adminUser,
+    user: {
+      uid: user.uid,
+      provider: user.provider || 'google.com',
+      name: user.name,
+      email: user.email,
+      photo: user.photo,
+      admin: adminUser
+    },
     refresh: true,
     message: 'User logged in'
   }));
 }
 
 router.get('/logout', async function (req, res) {
-  await UserSettings.clearLoginSession(req.cookies && req.cookies[AUTH_SESSION_COOKIE]);
   clearAuthCookie(res, req, 'admin');
   clearAuthCookie(res, req, 'adminUser');
   clearAuthCookie(res, req, 'adminChecked');
-  clearAuthCookie(res, req, AUTH_SESSION_COOKIE);
   clearAuthCookie(res, req, 'userId');
   clearAuthCookie(res, req, 'editMode');
   res.status(200);
@@ -100,10 +101,18 @@ router.get('/logout', async function (req, res) {
 });
 
 router.get('/session', async function (req, res) {
-  const user = req.loginSessionChecked
-    ? req.loginUser
-    : await UserSettings.getLoginUserBySession(req.cookies && req.cookies[AUTH_SESSION_COOKIE]);
-  const admin = user ? user.admin : false;
+  let user = null;
+  let admin = false;
+  const token = GoogleAuth.getBearerToken(req);
+  if (token) {
+    try {
+      user = await GoogleAuth.verifyToken(token);
+      admin = await UserSettings.isAdminUser(user.uid);
+    } catch (err) {
+      user = null;
+      admin = false;
+    }
+  }
   res.json({
     status: 200,
     loggedIn: Boolean(user),

@@ -40,7 +40,6 @@ router.get('/', verifyGoogle, async function (req, res) {
     res.json({ settings: {} });
     return;
   }
-  await UserSettings.ensureLoginUser(req.user);
   const settings = await UserSettings.getSettings(req.user.uid);
   res.json({ settings });
 });
