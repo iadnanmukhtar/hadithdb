@@ -1,7 +1,8 @@
 <% 
   if (page.canonical)
     page.canonical = page.canonical.replace(/\?o=0$/, '');
-  var quranCanonicalBaseUrl = utils.quranBaseUrl(req);
+  var quranCanonicalBaseUrl = site.quranUrl || utils.quranBaseUrl(req);
+  var hadithCanonicalBaseUrl = site.url || utils.hadithBaseUrl(req);
   var isQuranHeadPage = page
     && (
       (page.context && page.context.book && page.context.book.alias === 'quran')
@@ -40,10 +41,10 @@
   function canonicalUrlForPath(path) {
     if (isQuranCanonicalPage)
       return quranCanonicalBaseUrl + quranCanonicalPath(path);
-    return site.url + path;
+    return hadithCanonicalBaseUrl + path;
   }
   var headCanonicalPath = isQuranCanonicalPage ? quranCanonicalPath(page.canonical) : page.canonical;
-  var headCanonicalBaseUrl = isQuranCanonicalPage ? quranCanonicalBaseUrl : site.url;
+  var headCanonicalBaseUrl = isQuranCanonicalPage ? quranCanonicalBaseUrl : hadithCanonicalBaseUrl;
   var headCanonicalUrl = headCanonicalBaseUrl + headCanonicalPath;
 %>
 <title><%= headTitle %></title>
