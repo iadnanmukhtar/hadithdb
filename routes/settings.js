@@ -35,7 +35,8 @@ const userSettingsCacheBridgeHtml = (req) => {
 (function () {
   'use strict';
   var ALLOWED_ORIGINS = ${JSON.stringify(allowedOrigins)};
-  var USER_SETTINGS_CACHE_PREFIX = 'hadithUserSettings:';
+  var USER_SETTINGS_CACHE_PREFIX = 'hadithdb_user_settings:';
+  var LEGACY_USER_SETTINGS_CACHE_PREFIX = 'hadithUserSettings:';
   var USER_SETTINGS_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
   var settingsUserId = function (user) {
     if (!user || typeof user !== 'object') return '';
@@ -45,23 +46,40 @@ const userSettingsCacheBridgeHtml = (req) => {
     var id = settingsUserId(user);
     return id ? USER_SETTINGS_CACHE_PREFIX + id : '';
   };
+  var legacySettingsCacheKey = function (user) {
+    var id = settingsUserId(user);
+    return id ? LEGACY_USER_SETTINGS_CACHE_PREFIX + id : '';
+  };
   var readSettings = function (user) {
     var key = settingsCacheKey(user);
+    var legacyKey = legacySettingsCacheKey(user);
     if (!key) return null;
     try {
       var raw = localStorage.getItem(key);
+      var fromLegacy = false;
+      if (!raw && legacyKey) {
+        raw = localStorage.getItem(legacyKey);
+        fromLegacy = Boolean(raw);
+      }
       if (!raw) return null;
       var payload = JSON.parse(raw);
-      if (payload && payload.__hadithUserSettingsCache === 1) {
+      if (payload && (payload.__hadithdbUserSettingsCache === 1 || payload.__hadithUserSettingsCache === 1)) {
         if (!Number.isFinite(payload.cachedAt) || Date.now() - payload.cachedAt > USER_SETTINGS_CACHE_MAX_AGE_MS) {
           localStorage.removeItem(key);
+          if (legacyKey) localStorage.removeItem(legacyKey);
           return null;
+        }
+        if (fromLegacy) {
+          localStorage.setItem(key, raw);
+          localStorage.removeItem(legacyKey);
         }
         return payload.settings || {};
       }
       localStorage.removeItem(key);
+      if (legacyKey) localStorage.removeItem(legacyKey);
     } catch (err) {
       try { localStorage.removeItem(key); } catch (_err) {}
+      try { if (legacyKey) localStorage.removeItem(legacyKey); } catch (_err) {}
     }
     return null;
   };
@@ -70,7 +88,7 @@ const userSettingsCacheBridgeHtml = (req) => {
     if (!key) return false;
     try {
       localStorage.setItem(key, JSON.stringify({
-        __hadithUserSettingsCache: 1,
+        __hadithdbUserSettingsCache: 1,
         cachedAt: Date.now(),
         settings: settings || {}
       }));
@@ -95,7 +113,9 @@ const userSettingsCacheBridgeHtml = (req) => {
       response.settings = response.ok ? readSettings(data.user) : null;
     } else if (data.action === 'clear') {
       var key = settingsCacheKey(data.user);
+      var legacyKey = legacySettingsCacheKey(data.user);
       if (key) localStorage.removeItem(key);
+      if (legacyKey) localStorage.removeItem(legacyKey);
       response.ok = true;
     } else {
       response.ok = false;

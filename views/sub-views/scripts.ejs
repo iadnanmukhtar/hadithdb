@@ -542,7 +542,6 @@
   window.hadithAdmin = <%= site.admin ? 'true' : 'false' %>;
   window.hadithAdminSessionChecked = window.hadithAdmin === true;
   const HADITH_LOGIN_SESSION_CACHE_KEY = 'hadithdb_login_session';
-  const HADITH_LOGIN_SESSION_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
 
   function normalizeHadithSessionUser(user) {
       if (!user || typeof user !== 'object') return null;
@@ -565,8 +564,6 @@
         const payload = JSON.parse(raw);
         if (!payload || payload.__hadithLoginSessionCache !== 1)
           throw new Error('Unexpected login session cache payload');
-        if (!Number.isFinite(payload.cachedAt) || Date.now() - payload.cachedAt > HADITH_LOGIN_SESSION_CACHE_MAX_AGE_MS)
-          throw new Error('Expired login session cache');
         const user = normalizeHadithSessionUser(payload.user);
         if (!payload.loggedIn || !user)
           throw new Error('Missing login session user');

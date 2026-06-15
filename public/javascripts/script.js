@@ -128,13 +128,18 @@ function updateFixedHeaderOffset(extraHeight) {
 }
 
 function initHomeQuranAnnouncement(scope) {
-	var storageKey = 'hadithHomeQuranAnnouncementClosed';
+	var storageKey = 'hadithdb_home_quran_announcement_closed';
+	var legacyStorageKey = 'hadithHomeQuranAnnouncementClosed';
 	var announcement = (scope || document).querySelector('[data-home-quran-announcement]');
 	if (!announcement)
 		return;
 
 	try {
-		if (window.localStorage && localStorage.getItem(storageKey) === 'true') {
+		if (window.localStorage && (localStorage.getItem(storageKey) === 'true' || localStorage.getItem(legacyStorageKey) === 'true')) {
+			if (localStorage.getItem(storageKey) !== 'true') {
+				localStorage.setItem(storageKey, 'true');
+				localStorage.removeItem(legacyStorageKey);
+			}
 			announcement.remove();
 			return;
 		}
@@ -148,8 +153,10 @@ function initHomeQuranAnnouncement(scope) {
 
 	closeButton.addEventListener('click', function () {
 		try {
-			if (window.localStorage)
+			if (window.localStorage) {
 				localStorage.setItem(storageKey, 'true');
+				localStorage.removeItem(legacyStorageKey);
+			}
 		} catch (err) {}
 		announcement.remove();
 	});
@@ -248,10 +255,8 @@ function readHadithLoginSessionCache() {
 		var raw = localStorage.getItem('hadithdb_login_session');
 		if (!raw) return null;
 		var payload = JSON.parse(raw);
-		if (!payload || payload.__hadithLoginSessionCache !== 1)
+		if (!payload || (payload.__hadithdbLoginSessionCache !== 1 && payload.__hadithLoginSessionCache !== 1))
 			throw new Error('Unexpected login session cache payload');
-		if (!Number.isFinite(payload.cachedAt) || Date.now() - payload.cachedAt > 60 * 60 * 1000)
-			throw new Error('Expired login session cache');
 		var user = normalizeHadithSessionUser(payload.user);
 		if (!payload.loggedIn || !user)
 			throw new Error('Missing login session user');
@@ -277,7 +282,7 @@ function writeHadithLoginSessionCache(session) {
 	if (!user) return;
 	try {
 		localStorage.setItem('hadithdb_login_session', JSON.stringify({
-			__hadithLoginSessionCache: 1,
+			__hadithdbLoginSessionCache: 1,
 			cachedAt: Date.now(),
 			loggedIn: true,
 			user: user
@@ -711,7 +716,8 @@ function initQuranTafsirTabs(root) {
 			var activeLanguage = selectedTafsirLanguage || 'en';
 			var rendersTafsirPassagePage = (container.attr('data-tafsir-instance') || 'passage') === 'passage';
 			var selectedByLanguage = {};
-			var selectedTafsirStorageKey = 'quranTafsirAlias';
+			var selectedTafsirStorageKey = 'hadithdb_quran_tafsir_alias';
+			var legacySelectedTafsirStorageKey = 'quranTafsirAlias';
 			var remoteTafsirsUnavailable = false;
 			var preferredTafsirAlias = container.attr('data-selected-tafsir') || '';
 			var tafsirUrlSlug = function (alias) {
@@ -747,7 +753,15 @@ function initQuranTafsirTabs(root) {
 			};
 			var getStoredTafsirAlias = function () {
 				try {
-					return window.sessionStorage.getItem(selectedTafsirStorageKey);
+					var alias = window.sessionStorage.getItem(selectedTafsirStorageKey);
+					if (!alias) {
+						alias = window.sessionStorage.getItem(legacySelectedTafsirStorageKey);
+						if (alias) {
+							window.sessionStorage.setItem(selectedTafsirStorageKey, alias);
+							window.sessionStorage.removeItem(legacySelectedTafsirStorageKey);
+						}
+					}
+					return alias;
 				} catch (_err) {
 					return null;
 				}
@@ -755,6 +769,7 @@ function initQuranTafsirTabs(root) {
 		var storeTafsirAlias = function (alias) {
 			try {
 				window.sessionStorage.setItem(selectedTafsirStorageKey, alias);
+				window.sessionStorage.removeItem(legacySelectedTafsirStorageKey);
 			} catch (_err) {
 				// The URL hash still preserves the selected tafsir on the current page.
 			}
