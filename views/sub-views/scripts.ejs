@@ -562,7 +562,7 @@
         const raw = localStorage.getItem(HADITH_LOGIN_SESSION_CACHE_KEY);
         if (!raw) return null;
         const payload = JSON.parse(raw);
-        if (!payload || payload.__hadithLoginSessionCache !== 1)
+        if (!payload || (payload.__hadithdbLoginSessionCache !== 1 && payload.__hadithLoginSessionCache !== 1))
           throw new Error('Unexpected login session cache payload');
         const user = normalizeHadithSessionUser(payload.user);
         if (!payload.loggedIn || !user)
@@ -589,7 +589,7 @@
       if (!user) return;
       try {
         localStorage.setItem(HADITH_LOGIN_SESSION_CACHE_KEY, JSON.stringify({
-          __hadithLoginSessionCache: 1,
+          __hadithdbLoginSessionCache: 1,
           cachedAt: Date.now(),
           loggedIn: true,
           user
