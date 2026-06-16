@@ -41,7 +41,7 @@ async function reindexCommentaryAlias(alias) {
 	const total = await countCommentaries(alias, true);
 	console.log(`indexing ${total} local commentary passages for '${alias}'...`);
 	await deleteExistingDocumentsByAlias(alias);
-	const batchSize = 250;
+	const batchSize = Number(process.env.COMMENTARY_INDEX_BATCH_SIZE || 250);
 	for (let offset = 0; offset < total; offset += batchSize) {
 		const rows = await getCommentaries(alias, batchSize, offset, true);
 		if (rows.length < 1)
@@ -98,6 +98,7 @@ async function getCommentaries(alias, limit, offset, freshConnection) {
 			bc.author AS commentary_author,
 			bc.author_en AS commentary_author_en,
 			bc.death AS commentary_author_death,
+			bc.type AS commentary_type,
 			bc.lang,
 			bc.source,
 			bc.format,

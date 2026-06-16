@@ -14,16 +14,19 @@
     <button type="button" class="quran-ayah-modal-trigger reflection-count-link text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="reflections" title="View reflections">
       <span class="bi bi-chat-right-text"></span><span class="hadith-comment-count fw-semibold" data-hadith-id="<%= selectedAyahId %>" title="0 reflections">0</span>
     </button>
-    <button type="button" class="quran-ayah-modal-trigger quran-ayah-action text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="tafsirs">
-      <span class="bi bi-book"></span><span>Tafsir</span>
+    <button type="button" class="quran-ayah-modal-trigger quran-ayah-action text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="tafsirs" title="View tafsir" aria-label="View tafsir">
+      <span class="bi bi-book"></span><span class="quran-ayah-action-label">Tafsir</span>
+    </button>
+    <button type="button" class="quran-ayah-modal-trigger quran-ayah-action text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="translations" title="View translations" aria-label="View translations">
+      <span class="bi bi-translate"></span><span class="quran-ayah-action-label">Translations</span>
     </button>
   <% } %>
   <% if (locals.viewHref) { %>
-    <a href="<%= viewHref %>" title="View selected ayah" class="quran-ayah-action icon text-decoration-none">
-      <span class="bi bi-eye"></span><span>View</span>
+    <a href="<%= viewHref %>" title="View selected ayah" aria-label="View selected ayah" class="quran-ayah-action icon text-decoration-none">
+      <span class="bi bi-eye"></span><span class="quran-ayah-action-label">View</span>
     </a>
   <% } %>
-  <a href="#<%= quranShareId %>" type="button" title="Share selected ayah image" class="quran-ayah-action icon text-decoration-none" data-bs-toggle="modal" data-bs-target="#<%= quranShareId %>">
-    <span class="bi bi-box-arrow-up"></span><span>Share</span>
+  <a href="#<%= quranShareId %>" type="button" title="Share selected ayah image" aria-label="Share selected ayah image" class="quran-ayah-action icon text-decoration-none" data-bs-toggle="modal" data-bs-target="#<%= quranShareId %>">
+    <span class="bi bi-box-arrow-up"></span><span class="quran-ayah-action-label">Share</span>
   </a>
 </aside>

@@ -1,0 +1,34 @@
+<article class="row mt-3 quran-search-item translation-search-result">
+	<section class="col-md-6 col-sm-12 h" lang="en">
+		<section lang="en">
+			<b><a href="<%= utils.quranUrl(req, translation.url) %>" title="<%- translation.translation_name %>"><%= `${translation.translation_book}:${translation.translation_ref}` %></a></b>
+			<% if (translation.translation_author) { %>
+				<span class="text-muted"> – <%- translation.translation_author %></span>
+			<% } %>
+		</section>
+		<section lang="en" class="body partial l5" title="Quran Translation">
+			<div class="hadith-body-content partial"><%- translation.translation_body_html %></div>
+		</section>
+		<% if (translation.translation_footnote_html) { %>
+			<footer lang="en" class="footnote partial l2" title="Translation Footnote"><%- translation.translation_footnote_html %></footer>
+		<% } %>
+		<aside class="title">
+			§ <% if (translation.translation_surah_name_en) { %>in <a href="<%= utils.quranUrl(req, `/quran/${translation.surah}`) %>"><%- translation.translation_surah_name_en %></a><% } %>
+		</aside>
+	</section>
+	<section class="col-md-6 col-sm-12 h" lang="ar" dir="rtl">
+		<section lang="ar">
+			<b><a href="<%= utils.quranUrl(req, translation.url) %>">مقطع:<%= arabic.toArabicDigits(arabic.toLatinDigits(translation.translation_ref) || translation.translation_ref) %></a></b>
+		</section>
+		<section class="body partial l5 quran-hafs" lang="ar" dir="rtl">
+			<div class="hadith-body-content partial quran-hafs">
+				<% (translation.translation_ayahs || []).forEach(function (ayah) { %>
+					<span><%= ayah.text %></span>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= translation.surah %>:<%= ayah.num %>"><%= ayah.marker %></span>
+				<% }); %>
+			</div>
+		</section>
+		<aside class="title quran-search-title">
+			§ <% if (translation.translation_surah_name_ar) { %>في <a href="<%= utils.quranUrl(req, `/quran/${translation.surah}`) %>" class="quran-surah-name"><%- translation.translation_surah_name_ar %></a><% } %>
+		</aside>
+	</section>
+</article>

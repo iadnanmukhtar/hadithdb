@@ -243,6 +243,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/update', updateRouter);
   app.use('/quran/update', updateRouter);
   app.use('/settings', settingsRouter);
+  app.use('/quran/settings', settingsRouter);
   app.use('/login', loginRouter);
   app.use('/quran/login', loginRouter);
   app.use('/blog', blogRouter);

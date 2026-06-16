@@ -23,6 +23,44 @@ router.get('/tafsir/books', async function (req, res) {
   res.json(rows);
 });
 
+router.get('/translations/books', async function (req, res) {
+  const rows = await Tafsir.visibleTranslations();
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(rows);
+});
+
+router.get('/translations/local', async function (req, res) {
+  const aliases = uniqueAliases((req.query.src || '').toString().split(','));
+  const surah = Number(req.query.s);
+  const ayah = req.query.a === undefined ? NaN : Number(req.query.a);
+  const ayahFrom = req.query.from === undefined ? ayah : Number(req.query.from);
+  const ayahTo = req.query.to === undefined ? ayahFrom : Number(req.query.to);
+  const lang = (req.query.lang || 'en').toString();
+  if (aliases.length < 1 || aliases.length > 100 ||
+      !Number.isInteger(surah) || surah < 1 || surah > 114 ||
+      !Number.isInteger(ayahFrom) || ayahFrom < 0 || !Number.isInteger(ayahTo) || ayahTo < ayahFrom ||
+      (lang && lang !== 'ar' && lang !== 'en')) {
+    res.status(400).json({ error: 'Invalid local translation request.' });
+    return;
+  }
+  const rows = await localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, ayahTo);
+  const editMode = isEditMode(req);
+  const entries = rows.map(row => {
+    const alias = row.commentary_alias;
+    const html = renderLocalCommentary(row, editMode, lang, alias);
+    return {
+      alias: alias,
+      ordinal: Number(row.ordinal || 0),
+      ayahs_start: row.ayahFrom,
+      count: row.ayahTo - row.ayahFrom,
+      bilingual: commentaryRowHasBothLanguages(row),
+      html: html
+    };
+  }).filter(entry => entry.alias && (!lang || entry.html || Number.isInteger(Number(entry.ayahs_start))));
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ entries: entries });
+});
+
 router.get('/tafsir/local', async function (req, res) {
   const src = (req.query.src || '').toString();
   const surah = Number(req.query.s);
@@ -149,6 +187,53 @@ async function localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo) {
   }));
 }
 
+async function localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, ayahTo) {
+  const size = Math.min(5000, Math.max(1, aliases.length * Math.max(1, ayahTo - ayahFrom + 21)));
+  const rows = await Index.docsFromQueryFields('commentaries', {
+    bool: {
+      filter: [
+        { term: { doctype: 'commentary' } },
+        { terms: { commentary_alias: aliases } },
+        { term: { source: 'local' } },
+        { term: { surah: surah } },
+        { range: { ayahFrom: { lte: ayahTo } } },
+        { range: { ayahTo: { gte: ayahFrom } } }
+      ]
+    }
+  }, [
+    'commentary_alias',
+    'ordinal',
+    'format',
+    'id',
+    'surah',
+    'ayahFrom',
+    'ayahTo',
+    'text',
+    'text_en',
+    'footnotes',
+    'footnotes_en'
+  ], 0, size, 'commentary_alias ASC, ayahFrom ASC, ayahTo ASC', false);
+  return rows.map(row => ({
+    commentary_alias: row.commentary_alias,
+    ordinal: Number(row.ordinal || 0),
+    format: row.format,
+    id: row.id,
+    surah: Number(row.surah),
+    ayahFrom: Number(row.ayahFrom),
+    ayahTo: Number(row.ayahTo),
+    text: row.text,
+    text_en: row.text_en,
+    footnotes: row.footnotes,
+    footnotes_en: row.footnotes_en
+  }));
+}
+
+function uniqueAliases(values) {
+  return Array.from(new Set((values || [])
+    .map(value => (value || '').toString().trim())
+    .filter(value => /^[A-Za-z0-9_-]+$/.test(value))));
+}
+
 function addMissingEditableCommentaryRows(rows, src, surah, ayahFrom, ayahTo) {
   const catalogRows = global.commentariesByAlias && global.commentariesByAlias.get(src);
   const book = (catalogRows || []).find(row => row.source === 'local' && Number(row.hidden) === 0);
@@ -194,7 +279,7 @@ function renderLocalCommentary(row, editMode, lang, src) {
     : renderCommentaryText(row.text, row.footnotes, commentaryFormat(row.format, 'ar'), { bracketedFootnotes: true, footnoteIdPrefix: footnoteIdPrefix });
   const english = editMode
     ? renderEditableCommentaryLanguage(row, 'en', src)
-    : renderCommentaryText(row.text_en, row.footnotes_en, commentaryFormat(row.format, 'en'), { quranBackticks: true });
+    : renderCommentaryText(row.text_en, row.footnotes_en, commentaryFormat(row.format, 'en'), { footnoteIdPrefix: footnoteIdPrefix, quranBackticks: true });
   if (arabic && english)
     return `<div class="row quran-tafsir-local-pair"><section class="col-md-6 col-sm-12" lang="en">${english}</section><section class="col-md-6 col-sm-12" lang="ar" dir="rtl">${arabic}</section></div>`;
   const sections = [];
@@ -228,7 +313,7 @@ function renderLocalCommentaryLanguage(row, editMode, lang, src) {
       lang === 'en' ? row.text_en : row.text,
       lang === 'en' ? row.footnotes_en : row.footnotes,
       commentaryFormat(row.format, lang),
-      { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: lang === 'ar' ? commentaryFootnoteIdPrefix(src, row.id) : '', quranBackticks: lang === 'en' }
+      { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: commentaryFootnoteIdPrefix(src, row.id), quranBackticks: lang === 'en' }
     );
   if (!content)
     return '';
@@ -263,7 +348,7 @@ function renderEditableCommentaryField(id, column, text, format, lang, src) {
   const escapedPlaceholder = escapeHtml(placeholder);
   const attrs = `class="_e quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}" data-edit-lang="${lang}" data-placeholder="${escapedPlaceholder}"`;
   if (format === 'md')
-    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="${escapedPlaceholder}">${renderCommentaryText(value, '', format, { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: lang === 'ar' ? commentaryFootnoteIdPrefix(src, id) : '', quranBackticks: lang === 'en' }) || escapedPlaceholder}</div>`;
+    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="${escapedPlaceholder}">${renderCommentaryText(value, '', format, { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: commentaryFootnoteIdPrefix(src, id), quranBackticks: lang === 'en' }) || escapedPlaceholder}</div>`;
   return `<textarea ${attrs} rows="12" placeholder="${escapedPlaceholder}">${escapeHtml(value)}</textarea>`;
 }
 

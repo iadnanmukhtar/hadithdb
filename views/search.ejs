@@ -177,6 +177,8 @@
           <%- include('sub-views/search_suggestion_result.ejs', { suggestion: results[i] }); %>
         <% } else if (!results[i].doctype || results[i].doctype == 'hadith') { %>
           <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], title: true, main: main, searchResult: q }); %>
+        <% } else if (results[i].doctype == 'translation') { %>
+          <%- include('sub-views/translation_search_result.ejs', { translation: results[i] }); %>
         <% } else if (results[i].doctype == 'commentary') { %>
           <%- include('sub-views/commentary_search_result.ejs', { commentary: results[i] }); %>
         <% } else { %>

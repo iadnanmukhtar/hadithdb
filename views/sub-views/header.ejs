@@ -20,7 +20,12 @@
     var isCommentedArea = requestPath === '/commented' || requestPath.indexOf('/commented/') === 0;
     var isHighlightsArea = requestPath === '/highlights' || requestPath.indexOf('/highlights/') === 0;
     var isTitledArea = requestPath === '/titled' || requestPath.indexOf('/titled/') === 0;
-    var isMoreArea = ['/bookmarks', '/liked', '/commented', '/highlights', '/titled'].some(function (path) {
+    var isSettingsArea = requestPath === '/settings' || requestPath.indexOf('/settings/') === 0
+      || requestPath === '/quran/settings' || requestPath.indexOf('/quran/settings/') === 0;
+    var settingsHref = isQuranArea || requestPath.indexOf('/quran/settings') === 0
+      ? utils.quranUrl(req, '/quran/settings')
+      : utils.urlFor(req, '/settings');
+    var isMoreArea = ['/settings', '/quran/settings', '/bookmarks', '/liked', '/commented', '/highlights', '/titled'].some(function (path) {
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
     var isHadithArea = !isQuranArea && !isBooksArea && !isBlogArea && !isMoreArea;
@@ -63,6 +68,7 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle<%- activeNavAttrs(isMoreArea) %>" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
           <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-gear"></i> My Settings</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
@@ -126,6 +132,7 @@
             <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>"><i class="bi bi-journals"></i> Ḥadīth & Tafsīr Books</a></li>
             <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>"><i class="bi bi-text-paragraph"></i> Blog</a></li>
             <li><hr></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-gear"></i> My Settings</a></li>
             <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
             <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
             <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>

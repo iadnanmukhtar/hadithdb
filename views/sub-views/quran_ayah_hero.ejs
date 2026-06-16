@@ -53,9 +53,14 @@
 				var ayahLabel = (ayahs.indexOf(ayah) === 0) ? ayahNum : ayahPart;
 				var ayahBodyMarkdown = utils.emptyIfNull(ayah.en?.body);
 				var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
+				var ayahRefLatin = arabic.toLatinDigits((ayah.num || ayahNum || '').toString());
+				var ayahRefParts = ayahRefLatin.split(/:/);
+				var quranTranslationAttrs = ayahRefParts.length >= 2
+					? ` data-quran-translation-target="1" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"`
+					: '';
 				%>
 						<div class="quran-ayah-hero-ayah">
-							<% if (linkHeroAyah) { %><a class="quran-ayah-hero-link" href="<%= ayahHref %>" title="View Quran <%= ayahLabel %>"><% } %><sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div><% if (linkHeroAyah) { %></a><% } %>
+							<% if (linkHeroAyah) { %><a class="quran-ayah-hero-link" href="<%= ayahHref %>" title="View Quran <%= ayahLabel %>"><% } %><sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranTranslationAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div> <span class="quran-translation-attribution" data-quran-translation-attribution="1">— Abdel Haleem</span><% if (linkHeroAyah) { %></a><% } %>
 						</div>
 			<% }); %>
 		</div>

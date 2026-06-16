@@ -137,6 +137,7 @@ router.get('/', async function (req, res, next) {
   try {
     res.locals.req = req;
     res.locals.res = res;
+    const settingsPath = req.baseUrl || '/settings';
     res.render('settings', {
       results: [],
       page: {
@@ -144,8 +145,8 @@ router.get('/', async function (req, res, next) {
         title_en: `${global.settings.site.shortName} | My Settings`,
         subtitle_en: 'Account settings',
         subtitle: null,
-        canonical: '/settings',
-        alternate: '/settings',
+        canonical: settingsPath,
+        alternate: settingsPath,
         feed: null,
         context: {}
       }

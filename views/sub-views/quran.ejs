@@ -120,6 +120,8 @@
 
 <%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
 
+<section class="col-12 quran-preferred-translation-footnotes d-none" lang="en"></section>
+
 </article>
 <% }); %>
 

@@ -35,7 +35,7 @@
 					var ayahPartArabic = arabic.toArabicDigits(ayahPartLatin || ayahPart);
 					var ayahRefLatin = arabic.toLatinDigits((passage[i].num || ayahNum || '').toString());
 					var ayahRefParts = ayahRefLatin.split(/:/);
-					var quranCorpusAttrs = lang === 'ar' && ayahRefParts.length >= 2
+					var quranCorpusAttrs = ayahRefParts.length >= 2
 						? ` data-quran-ref="${ayahRefParts[0]}:${ayahRefParts[1]}" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"`
 						: '';
 					var isPrefatoryAyah = arabic.toLatinDigits(ayahNum) === '1:0';

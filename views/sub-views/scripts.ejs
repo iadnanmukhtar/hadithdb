@@ -924,6 +924,15 @@
         const user = storedUser();
         return user ? localStorage.getItem(tokenKey) : null;
       },
+      requireToken: async (message = 'Please sign in with Google again to save settings.') => {
+        const user = storedUser();
+        const token = user ? localStorage.getItem(tokenKey) : null;
+        if (token) return token;
+        if (message && window.toastr)
+          toastr.error(message, 'Sign-in required');
+        window.hadithAuth.prompt();
+        return null;
+      },
       requireLogin: () => {
         toastr.error('Please sign in to like or comment.', 'Sign-in required');
         window.hadithAuth.prompt();

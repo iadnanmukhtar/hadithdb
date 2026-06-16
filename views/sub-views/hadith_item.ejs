@@ -47,6 +47,10 @@
 		return utils.truncate(langData.h1_title, 30, true) || 'Chapter';
 	})();
 	const quranAyahMarkerRef = utils.emptyIfNull(i.ref || i.num || langData.num || '').replace(/^quran:/, '');
+	const quranAyahRefParts = arabic.toLatinDigits(quranAyahMarkerRef).split(/[:/-]/).filter(Boolean);
+	const quranTranslationAttrs = isQuranItem && lang === 'en' && searchResult && quranAyahRefParts.length >= 2
+		? ` data-quran-translation-target="1" data-quran-surah="${quranAyahRefParts[0]}" data-quran-ayah="${quranAyahRefParts[1]}"`
+		: '';
 	const quranAyahMarkerNum = (() => {
 		if (!isQuranItem || lang !== 'ar' || !searchResult)
 			return '';
@@ -115,7 +119,7 @@
 		const bodyHtml = utils.markdownToHtml(bodyMarkdown);
 	%>
 	<section lang="<%=lang%>" class="body <%=_p%> l5" title="Ḥadīth Body">
-		<div class="_e hadith-body-content <%=_p%><%= isQuranItem && lang === 'ar' ? ' quran-hafs' : '' %>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= bodyMarkdown %>" data-markdown-empty-html="&hellip;">
+		<div class="_e hadith-body-content <%=_p%><%= isQuranItem && lang === 'ar' ? ' quran-hafs' : '' %>"<%- quranTranslationAttrs %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= bodyMarkdown %>" data-markdown-empty-html="&hellip;">
 		<% if (!langData.body) { %>
 			<div class="cmd-tr" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
 				Translation not available.
@@ -129,6 +133,9 @@
 				<%- bodyHtml %>
 				<% if (quranAyahMarkerNum) { %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= quranAyahMarkerRef %>">۝<%= quranAyahMarkerNum %></span><% } %>
 			</div>
+		<% if (isQuranItem && lang === 'en' && searchResult && langData.body) { %>
+			<span class="quran-translation-attribution" data-quran-translation-attribution="1">— Abdel Haleem</span>
+		<% } %>
 		<% if (lang === 'en') { %>
 			<a type="button" title="Share Image" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>"><em class="bi bi-zoom-in"></em></a>
 		<% } %>

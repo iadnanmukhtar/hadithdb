@@ -1,0 +1,52 @@
+<%
+	const passageItems = locals.passage || [];
+	const firstPassageItem = passageItems[0];
+	const passageSurah = firstPassageItem
+		? ((firstPassageItem.en?.num || firstPassageItem.num || '').toString().split(/:/)[0])
+		: '';
+	const passageAyahs = passageItems.map(function (ayah) {
+		const num = ayah.en?.num || ayah.num || '';
+		return parseInt(arabic.toLatinDigits(num.toString().split(/:/).pop()), 10);
+	}).filter(Number.isInteger);
+	const selectedAyahNums = (locals.selectedAyahs || []).map(function (ayah) {
+		const num = ayah.en?.num || ayah.num || '';
+		return parseInt(arabic.toLatinDigits(num.toString().split(/:/).pop()), 10);
+	}).filter(Number.isInteger);
+	const passageSurahInfo = (global.surahs || []).find(function (surah) {
+		return Number(surah.num) === Number(passageSurah);
+	});
+	const passageAyahHeadingNums = selectedAyahNums.length > 0 ? selectedAyahNums : passageAyahs;
+	const passageAyahHeadingStart = Math.min.apply(null, passageAyahHeadingNums);
+	const passageAyahHeadingEnd = Math.max.apply(null, passageAyahHeadingNums);
+	const passageAyahHeadingRange = passageAyahHeadingStart === passageAyahHeadingEnd
+		? passageAyahHeadingStart
+		: `${passageAyahHeadingStart}-${passageAyahHeadingEnd}`;
+	const translationHeading = passageAyahHeadingNums.length > 0
+		? `${passageSurah}:${passageAyahHeadingRange}${passageSurahInfo?.name_en ? ` ${passageSurahInfo.name_en}` : ''}`
+		: 'Translations';
+	const translationInstance = locals.translationInstance || 'passage';
+	const hideDefaultTranslation = locals.hideDefaultTranslation === true;
+	const defaultTranslationHtml = passageItems.map(function (ayah) {
+		return utils.markdownToHtml(utils.emptyIfNull(ayah.en?.body || ayah.body_en));
+	}).filter(Boolean).join('\n');
+%>
+<% if (passageSurah && passageAyahs.length > 0) { %>
+<article class="quran-translations mt-4" data-translation-instance="<%= translationInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>">
+	<div class="quran-translation-heading d-flex flex-wrap align-items-center justify-content-between gap-2">
+		<h2 class="h5 mb-0"><%= translationHeading %></h2>
+	</div>
+	<div class="quran-translation-list">
+		<% if (!hideDefaultTranslation && defaultTranslationHtml) { %>
+			<details class="quran-translation-entry quran-translation-default" lang="en" dir="ltr" data-translation-alias="default" draggable="false" open>
+				<summary class="quran-translation-source">
+					<span class="quran-translation-chevron bi bi-chevron-right" aria-hidden="true"></span>
+					<strong class="quran-translation-source-author">M. A. S. Abdel Haleem</strong>
+					<span class="quran-translation-source-title">Abdel Haleem Translation</span>
+				</summary>
+				<div class="quran-translation-text" lang="en"><%- defaultTranslationHtml %></div>
+			</details>
+		<% } %>
+		<p class="quran-translation-status text-muted">Loading translations...</p>
+	</div>
+</article>
+<% } %>
