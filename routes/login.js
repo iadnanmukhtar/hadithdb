@@ -4,14 +4,27 @@
 const debug = require('debug')('hadithdb:login');
 const express = require('express');
 const GoogleAuth = require('../lib/GoogleAuth');
+const LocalAuth = require('../lib/LocalAuth');
 const UserSettings = require('../lib/UserSettings');
+const Utils = require('../lib/Utils');
 
 const router = express.Router();
-const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 90;
+const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 365 * 10;
 const SESSION_COOKIE_OPTIONS = {
   path: '/',
   maxAge: SESSION_MAX_AGE_MS,
   sameSite: 'lax'
+};
+const LOGIN_CACHE_KEY = 'hadithdb_login_session';
+
+const originFromUrl = (url) => {
+  if (!url)
+    return null;
+  try {
+    return new URL(url).origin;
+  } catch (err) {
+    return null;
+  }
 };
 
 function sharedCookieDomain(req) {
@@ -52,8 +65,128 @@ function csrfError(req) {
   return null;
 }
 
+const loginCacheBridgeHtml = (req) => {
+  const site = global.settings && global.settings.site ? global.settings.site : {};
+  const allowedOrigins = Array.from(new Set([
+    originFromUrl(Utils.hadithBaseUrl(req)),
+    originFromUrl(Utils.quranBaseUrl(req)),
+    originFromUrl(site.url),
+    originFromUrl(site.quranUrl),
+    originFromUrl(site.urlLocal),
+    originFromUrl(site.quranUrlLocal),
+    Utils.requestOrigin(req)
+  ].filter(Boolean)));
+  return `<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Login Cache Bridge</title></head>
+<body>
+<script>
+(function () {
+  'use strict';
+  var ALLOWED_ORIGINS = ${JSON.stringify(allowedOrigins)};
+  var LOGIN_CACHE_KEY = ${JSON.stringify(LOGIN_CACHE_KEY)};
+  var normalizeUser = function (user) {
+    if (!user || typeof user !== 'object') return null;
+    var uid = (user.uid || user.userId || user.email || '').toString();
+    if (!uid) return null;
+    return {
+      uid: uid,
+      provider: user.provider || 'google.com',
+      name: user.name || user.displayName || user.email || 'User',
+      email: user.email || null,
+      photo: user.photo || user.photoURL || null,
+      admin: Boolean(user.admin)
+    };
+  };
+  var normalizeSession = function (session) {
+    var user = normalizeUser(session && (session.user || session));
+    if (!session || !session.loggedIn || !user) return null;
+    return {
+      __hadithdbLoginSessionCache: 1,
+      cachedAt: Number.isFinite(session.cachedAt) ? session.cachedAt : Date.now(),
+      loggedIn: true,
+      token: session.token || null,
+      user: user
+    };
+  };
+  var readSession = function () {
+    try {
+      var raw = localStorage.getItem(LOGIN_CACHE_KEY);
+      if (!raw) return null;
+      var payload = JSON.parse(raw);
+      if (!payload || (payload.__hadithdbLoginSessionCache !== 1 && payload.__hadithLoginSessionCache !== 1))
+        throw new Error('Unexpected login session cache payload');
+      var session = normalizeSession(payload);
+      if (!session)
+        throw new Error('Missing login session user');
+      return {
+        status: 200,
+        loggedIn: true,
+        token: session.token || null,
+        userId: session.user.uid,
+        admin: Boolean(session.user.admin),
+        user: session.user,
+        cached: true
+      };
+    } catch (err) {
+      try { localStorage.removeItem(LOGIN_CACHE_KEY); } catch (_err) {}
+      return null;
+    }
+  };
+  var writeSession = function (session) {
+    var payload = normalizeSession(session);
+    if (!payload) return false;
+    try {
+      localStorage.setItem(LOGIN_CACHE_KEY, JSON.stringify(payload));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+  window.addEventListener('message', function (event) {
+    var data = event.data || {};
+    if (!data || data.type !== 'hadithdbLoginSessionCacheBridge' || ALLOWED_ORIGINS.indexOf(event.origin) < 0)
+      return;
+    var response = {
+      type: 'hadithdbLoginSessionCacheBridgeResponse',
+      requestId: data.requestId || '',
+      action: data.action || ''
+    };
+    if (data.action === 'read') {
+      response.session = readSession();
+    } else if (data.action === 'write') {
+      response.ok = writeSession(data.session);
+      response.session = response.ok ? readSession() : null;
+    } else if (data.action === 'clear') {
+      try { localStorage.removeItem(LOGIN_CACHE_KEY); } catch (_err) {}
+      response.ok = true;
+    } else {
+      response.ok = false;
+    }
+    event.source.postMessage(response, event.origin);
+  });
+})();
+</script>
+</body>
+</html>`;
+};
+
+router.get('/cache-bridge', function (req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  res.type('html').send(loginCacheBridgeHtml(req));
+});
+
 async function createLoginResponse(req, res, user) {
   var adminUser = await UserSettings.ensureLoginUser(user);
+  const loginUser = {
+    uid: user.uid,
+    provider: user.provider || 'google.com',
+    name: user.name,
+    email: user.email,
+    photo: user.photo,
+    admin: adminUser
+  };
+  const localToken = LocalAuth.signUser(loginUser);
   clearAuthCookie(res, req, 'admin');
   clearAuthCookie(res, req, 'adminUser');
   clearAuthCookie(res, req, 'adminChecked');
@@ -73,14 +206,8 @@ async function createLoginResponse(req, res, user) {
     provider: user.provider || 'google.com',
     photo: user.photo,
     admin: adminUser,
-    user: {
-      uid: user.uid,
-      provider: user.provider || 'google.com',
-      name: user.name,
-      email: user.email,
-      photo: user.photo,
-      admin: adminUser
-    },
+    token: localToken,
+    user: loginUser,
     refresh: true,
     message: 'User logged in'
   }));
@@ -103,15 +230,13 @@ router.get('/logout', async function (req, res) {
 router.get('/session', async function (req, res) {
   let user = null;
   let admin = false;
-  const token = GoogleAuth.getBearerToken(req);
-  if (token) {
-    try {
-      user = await GoogleAuth.verifyToken(token);
-      admin = await UserSettings.isAdminUser(user.uid);
-    } catch (err) {
-      user = null;
-      admin = false;
-    }
+  try {
+    user = await GoogleAuth.verifyRequest(req);
+    if (user)
+      admin = user.admin === true || await UserSettings.isAdminUser(user.uid);
+  } catch (err) {
+    user = null;
+    admin = false;
   }
   res.json({
     status: 200,
@@ -159,17 +284,15 @@ router.get('/:userId', async function (req, res, next) {
   res.locals.res = res;
 
   const requestedUserId = (req.params.userId || '').trim();
-  const token = GoogleAuth.getBearerToken(req);
-  if (!token) {
-    res.status(401).json({ status: 401, message: 'Authentication required' });
-    return;
-  }
-
   let user;
   try {
-    user = await GoogleAuth.verifyToken(token);
+    user = await GoogleAuth.verifyRequest(req);
   } catch (err) {
     res.status(401).json({ status: 401, message: 'Invalid authentication token' });
+    return;
+  }
+  if (!user) {
+    res.status(401).json({ status: 401, message: 'Authentication required' });
     return;
   }
 

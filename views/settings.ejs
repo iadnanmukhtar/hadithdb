@@ -144,7 +144,7 @@
     const requireSaveToken = async () => {
       const auth = await waitForHadithAuth();
       if (auth && auth.requireToken)
-        return auth.requireToken('Please sign in with Google again to save settings.');
+        return auth.requireToken('Please sign in once to refresh your local session.');
       return auth && auth.getToken ? auth.getToken() : null;
     };
 
@@ -172,7 +172,7 @@
       if (!currentUser)
         throw new Error('Please sign in to save settings.');
       if (!token)
-        throw new Error('Please sign in with Google again to save settings.');
+        throw new Error('Please sign in once to refresh your local session.');
       saving = true;
       tafsirStatusEl.textContent = 'Saving tafsir settings...';
       translationStatusEl.textContent = 'Saving translation settings...';

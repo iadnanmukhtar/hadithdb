@@ -236,7 +236,19 @@ function getHadithCookie(name) {
 	return match ? decodeURIComponent(match[1]) : '';
 }
 
-window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 90;
+window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 365 * 10;
+
+function setHadithCookie(name, value, maxAge) {
+	var domain = window.HADITH_COOKIE_DOMAIN ? `;domain=${window.HADITH_COOKIE_DOMAIN}` : '';
+	var age = Number.isFinite(maxAge) ? `;max-age=${maxAge}` : '';
+	document.cookie = `${name}=${encodeURIComponent(value)};path=/${age};samesite=lax${domain}`;
+}
+
+function clearHadithCookie(name) {
+	document.cookie = `${name}=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+	if (window.HADITH_COOKIE_DOMAIN)
+		document.cookie = `${name}=;path=/;domain=${window.HADITH_COOKIE_DOMAIN};expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+}
 
 function normalizeHadithSessionUser(user) {
 	if (!user || typeof user !== 'object') return null;
@@ -262,12 +274,12 @@ function readHadithLoginSessionCache() {
 		var user = normalizeHadithSessionUser(payload.user);
 		if (!payload.loggedIn || !user)
 			throw new Error('Missing login session user');
-		var cookieUserId = getHadithCookie('userId');
-		if (cookieUserId && cookieUserId !== user.uid && cookieUserId !== user.email)
-			throw new Error('Login session cache user mismatch');
+		if (getHadithCookie('userId') !== user.uid)
+			setHadithCookie('userId', user.uid, window.HADITH_SESSION_MAX_AGE);
 		return {
 			status: 200,
 			loggedIn: true,
+			token: payload.token || null,
 			userId: user.uid,
 			admin: Boolean(user.admin),
 			user: user,
@@ -287,6 +299,7 @@ function writeHadithLoginSessionCache(session) {
 			__hadithdbLoginSessionCache: 1,
 			cachedAt: Date.now(),
 			loggedIn: true,
+			token: session.token || null,
 			user: user
 		}));
 	} catch (err) {
@@ -300,6 +313,108 @@ function clearHadithLoginSessionCache() {
 	} catch (err) {
 		console.warn('Could not clear login session cache', err);
 	}
+}
+
+function hadithLoginSessionCacheBridgeUrl(baseUrl) {
+	try {
+		return new URL('/login/cache-bridge', baseUrl || window.location.origin).href;
+	} catch (err) {
+		return '';
+	}
+}
+
+function requestHadithLoginSessionCacheBridge(baseUrl, action, session) {
+	var bridgeUrl = hadithLoginSessionCacheBridgeUrl(baseUrl);
+	var bridgeOrigin = originFromUrl(bridgeUrl);
+	if (!bridgeUrl || !bridgeOrigin || bridgeOrigin === window.location.origin)
+		return Promise.resolve(null);
+	return new Promise(function (resolve) {
+		var requestId = `login-cache-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+		var iframe = document.createElement('iframe');
+		var done = false;
+		var finish = function (value) {
+			if (done)
+				return;
+			done = true;
+			window.clearTimeout(timeout);
+			window.removeEventListener('message', onMessage);
+			if (iframe.parentNode)
+				iframe.parentNode.removeChild(iframe);
+			resolve(value);
+		};
+		var onMessage = function (event) {
+			var data = event.data || {};
+			if (event.origin !== bridgeOrigin || !data || data.type !== 'hadithdbLoginSessionCacheBridgeResponse' || data.requestId !== requestId)
+				return;
+			if (action === 'read')
+				finish(data.session || null);
+			else
+				finish(data.ok ? (data.session || true) : null);
+		};
+		var timeout = window.setTimeout(function () {
+			finish(null);
+		}, 1500);
+		window.addEventListener('message', onMessage);
+		iframe.style.display = 'none';
+		iframe.setAttribute('aria-hidden', 'true');
+		iframe.onload = function () {
+			try {
+				iframe.contentWindow.postMessage({
+					type: 'hadithdbLoginSessionCacheBridge',
+					requestId: requestId,
+					action: action,
+					session: session || null
+				}, bridgeOrigin);
+			} catch (err) {
+				finish(null);
+			}
+		};
+		iframe.src = bridgeUrl;
+		document.body.appendChild(iframe);
+	});
+}
+
+function hadithLoginSessionPeerBaseUrls() {
+	return [window.HADITH_BASE_URL || '', window.HADITH_QURAN_BASE_URL || '']
+		.filter(function (baseUrl, index, urls) {
+			var origin = originFromUrl(baseUrl);
+			return origin && origin !== window.location.origin && urls.findIndex(function (candidate) {
+				return originFromUrl(candidate) === origin;
+			}) === index;
+		});
+}
+
+function readPeerHadithLoginSessionCache() {
+	var peers = hadithLoginSessionPeerBaseUrls();
+	return peers.reduce(function (promise, baseUrl) {
+		return promise.then(function (session) {
+			if (session)
+				return session;
+			return requestHadithLoginSessionCacheBridge(baseUrl, 'read');
+		});
+	}, Promise.resolve(null)).then(function (session) {
+		if (session && session.loggedIn) {
+			writeHadithLoginSessionCache(session);
+			return readHadithLoginSessionCache();
+		}
+		return null;
+	});
+}
+
+function writePeerHadithLoginSessionCache(session) {
+	return Promise.all(hadithLoginSessionPeerBaseUrls().map(function (baseUrl) {
+		return requestHadithLoginSessionCacheBridge(baseUrl, 'write', session);
+	})).catch(function () {
+		return null;
+	});
+}
+
+function clearPeerHadithLoginSessionCache() {
+	return Promise.all(hadithLoginSessionPeerBaseUrls().map(function (baseUrl) {
+		return requestHadithLoginSessionCacheBridge(baseUrl, 'clear');
+	})).catch(function () {
+		return null;
+	});
 }
 
 function initBookNavScroller(scope) {
@@ -396,8 +511,16 @@ async function getHadithAuthToken(message) {
 function syncHadithAdminForCachedPage() {
 	var cachedSession = readHadithLoginSessionCache();
 	if (!cachedSession) {
-		window.hadithAdminSessionChecked = true;
-		renderHadithAdminGear();
+		readPeerHadithLoginSessionCache().then(function (peerSession) {
+			if (peerSession) {
+				window.hadithAdmin = Boolean(peerSession.admin);
+				window.hadithAdminSessionChecked = true;
+				renderHadithAdminGear();
+			} else {
+				window.hadithAdminSessionChecked = true;
+				renderHadithAdminGear();
+			}
+		});
 		return;
 	}
 	window.hadithAdmin = Boolean(cachedSession.admin);
@@ -1373,10 +1496,10 @@ function initQuranTranslations(root) {
 			if (!user)
 				throw new Error('Please sign in to save translation order.');
 			var token = auth && auth.requireToken
-				? await auth.requireToken('Please sign in with Google again to save translation order.')
+				? await auth.requireToken('Please sign in once to refresh your local session.')
 				: (auth && auth.getToken ? await auth.getToken() : null);
 			if (!token)
-				throw new Error('Please sign in with Google again to save translation order.');
+				throw new Error('Please sign in once to refresh your local session.');
 			var settingsResponse = await fetch(quranApiPath('/user-settings?optional=1'), {
 				credentials: 'same-origin',
 				headers: { 'Authorization': `Bearer ${token}` }

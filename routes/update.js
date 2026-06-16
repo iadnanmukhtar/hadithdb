@@ -30,7 +30,7 @@ async function requireAdmin(req, res, next) {
   }
   if (!user)
     return next(createError(401, 'Authentication required'));
-  const admin = await UserSettings.isAdminUser(user.uid);
+  const admin = user.admin === true || await UserSettings.isAdminUser(user.uid);
   if (!admin)
     return next(createError(403, 'Update unauthorized'));
   req.user = user;

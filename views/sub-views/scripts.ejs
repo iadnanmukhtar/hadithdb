@@ -517,6 +517,12 @@
       document.cookie = `${name}=${encodeURIComponent(value)};path=/${age};samesite=lax${domain}`;
   }
 
+  function clearHadithCookie(name) {
+      document.cookie = `${name}=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      if (window.HADITH_COOKIE_DOMAIN)
+        document.cookie = `${name}=;path=/;domain=${window.HADITH_COOKIE_DOMAIN};expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  }
+
   function randomHadithToken(length = 32) {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       if (window.crypto && window.crypto.getRandomValues) {
@@ -538,7 +544,7 @@
       return token;
   }
 
-  window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 90;
+  window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 365 * 10;
   window.hadithAdmin = <%= site.admin ? 'true' : 'false' %>;
   window.hadithAdminSessionChecked = window.hadithAdmin === true;
   const HADITH_LOGIN_SESSION_CACHE_KEY = 'hadithdb_login_session';
@@ -567,12 +573,12 @@
         const user = normalizeHadithSessionUser(payload.user);
         if (!payload.loggedIn || !user)
           throw new Error('Missing login session user');
-        const cookieUserId = getHadithCookie('userId');
-        if (cookieUserId && cookieUserId !== user.uid && cookieUserId !== user.email)
-          throw new Error('Login session cache user mismatch');
+        if (getHadithCookie('userId') !== user.uid)
+          setHadithCookie('userId', user.uid, window.HADITH_SESSION_MAX_AGE);
         return {
           status: 200,
           loggedIn: true,
+          token: payload.token || null,
           userId: user.uid,
           admin: Boolean(user.admin),
           user,
@@ -592,6 +598,7 @@
           __hadithdbLoginSessionCache: 1,
           cachedAt: Date.now(),
           loggedIn: true,
+          token: session.token || null,
           user
         }));
       } catch (err) {
@@ -680,14 +687,14 @@
       if (!user)
         return false;
       const uid = user.uid || user.userId || user.email || user.username;
-      if (uid && getHadithCookie('userId') !== uid)
-        return true;
       const cachedSession = readHadithLoginSessionCache();
       if (cachedSession && cachedSession.loggedIn && cachedSession.user) {
         const cachedUid = cachedSession.user.uid || cachedSession.user.email;
         if (!uid || cachedUid === uid || cachedSession.user.email === uid)
           return false;
       }
+      if (uid && getHadithCookie('userId') !== uid)
+        return true;
       return window.hadithAdmin !== true && !document.querySelector('.edit-gear');
   }
 
@@ -701,6 +708,17 @@
       window.hadithAdminSessionChecked = true;
       renderHadithAdminGear();
       return cachedSession;
+    }
+    if (typeof readPeerHadithLoginSessionCache === 'function') {
+      const peerSession = await readPeerHadithLoginSessionCache();
+      if (peerSession) {
+        window.hadithSessionSyncResult = peerSession;
+        window.hadithSessionSyncAt = now;
+        window.hadithAdmin = Boolean(peerSession.admin);
+        window.hadithAdminSessionChecked = true;
+        renderHadithAdminGear();
+        return peerSession;
+      }
     }
     if (window.hadithSessionSyncResult && now - (window.hadithSessionSyncAt || 0) < 5000)
       return window.hadithSessionSyncResult;
@@ -767,6 +785,7 @@
           window.hadithAdmin = Boolean(resBody.admin);
           writeHadithLoginSessionCache({
             loggedIn: true,
+            token: resBody.token || null,
             admin: Boolean(resBody.admin),
             user: resBody.user || {
               uid: resBody.userId || currentUid,
@@ -777,6 +796,8 @@
               admin: Boolean(resBody.admin)
             }
           });
+          if (typeof writePeerHadithLoginSessionCache === 'function')
+            writePeerHadithLoginSessionCache(readHadithLoginSessionCache());
           renderHadithAdminGear();
           if (!options.silent)
             toastr.success('Logged in as ' + username);
@@ -869,6 +890,8 @@
           photoURL: user.photo || 'https://www.gravatar.com/avatar/?d=mp&s=48',
           providerData: [{ providerId: user.provider || 'google.com' }],
           getIdToken: async () => {
+            const session = readHadithLoginSessionCache();
+            if (session && session.token) return session.token;
             const credentialUser = storedUser();
             return credentialUser ? localStorage.getItem(tokenKey) : null;
           },
@@ -886,6 +909,8 @@
             photoURL: user.photo || 'https://www.gravatar.com/avatar/?d=mp&s=48',
             providerData: [{ providerId: user.provider || 'google.com' }],
             getIdToken: async () => {
+              const session = readHadithLoginSessionCache();
+              if (session && session.token) return session.token;
               const credentialUser = storedUser();
               return credentialUser ? localStorage.getItem(tokenKey) : null;
             },
@@ -921,10 +946,14 @@
     };
     window.hadithAuth = {
       getToken: async () => {
+        const session = readHadithLoginSessionCache();
+        if (session && session.token) return session.token;
         const user = storedUser();
         return user ? localStorage.getItem(tokenKey) : null;
       },
-      requireToken: async (message = 'Please sign in with Google again to save settings.') => {
+      requireToken: async (message = 'Please sign in once to refresh your local session.') => {
+        const session = readHadithLoginSessionCache();
+        if (session && session.token) return session.token;
         const user = storedUser();
         const token = user ? localStorage.getItem(tokenKey) : null;
         if (token) return token;
@@ -1114,12 +1143,14 @@
         window.google?.accounts?.id?.disableAutoSelect();
         window.hadithAuth.clearCredential();
         await fetch(hadithLogoutPath(), { credentials: 'same-origin' });
+        if (typeof clearPeerHadithLoginSessionCache === 'function')
+          await clearPeerHadithLoginSessionCache();
         clearHadithLoginSessionCache();
-        document.cookie = 'admin=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        document.cookie = 'adminUser=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        document.cookie = 'adminChecked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        document.cookie = 'userId=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        document.cookie = 'editMode=0;path=/;';
+        clearHadithCookie('admin');
+        clearHadithCookie('adminUser');
+        clearHadithCookie('adminChecked');
+        clearHadithCookie('userId');
+        clearHadithCookie('editMode');
         location.reload();
       } catch (err) {
         toastr.error('Sign-out failed. Please try again.', 'Auth');
