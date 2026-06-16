@@ -72,9 +72,6 @@
           <button type="button" class="tafsir-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>" title="Bookmark this tafsīr passage">
             <span class="tafsir-bookmark-icon bi bi-bookmark text-accent" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>"></span>
           </button>
-          <a class="btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2 text-accent" href="<%= utils.quranUrl(req, '/quran/settings') %>" title="My Settings" aria-label="My Settings">
-            <span class="bi bi-gear"></span>
-          </a>
         </h2>
         <h2 class="col-md-6 col-sm-12 fs-4 title text-md-end quran-surah-name" lang="ar" dir="rtl">
           <%= arabic.toArabicDigits(surah.num + '') %> - سورة <%= surah.name_ar %>
@@ -127,8 +124,10 @@
         selectedAyahs: ayahs.filter(function (item) { return Number(item.ayah) === Number(ayah); }),
         selectedTafsirAlias: tafsir.alias,
         selectedTafsirLanguage: tafsir.lang,
-        tafsirHeading: `${tafsirTitle} ${tafsirMetaRef}`,
-        tafsirInstance: 'passage'
+        tafsirHeading: `${tafsirTitle} ${tafsirMetaRef}${surah.name_en ? ` ${surah.name_en}` : ''}`,
+        tafsirInstance: 'passage',
+        tafsirSettingsHref: utils.quranUrl(req, '/quran/settings'),
+        tafsirTranslationsHref: utils.quranUrl(req, `/quran/translations/${surah.num}/${ayah}`)
       }); %>
 
       <aside class="row mt-3 mb-3 pagination tafsir-passage-navigation">

@@ -38,15 +38,29 @@
 	const tafsirInstance = locals.tafsirInstance || 'passage';
 	const selectedTafsirAlias = locals.selectedTafsirAlias || '';
 	const selectedTafsirLanguage = locals.selectedTafsirLanguage || '';
+	const tafsirSettingsHref = locals.tafsirSettingsHref || '';
+	const tafsirTranslationsHref = locals.tafsirTranslationsHref || '';
 %>
 <% if (passageSurah && passageAyahs.length > 0) { %>
 <article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>"<% if (selectedTafsirAlias) { %> data-selected-tafsir="<%= selectedTafsirAlias %>"<% } %><% if (selectedTafsirLanguage) { %> data-selected-tafsir-language="<%= selectedTafsirLanguage %>"<% } %>>
 	<script type="application/json" class="quran-tafsir-ayah-data"><%- JSON.stringify(passageAyahText).replace(/</g, '\\u003c') %></script>
 	<div class="quran-tafsir-heading d-flex flex-wrap align-items-center justify-content-between gap-2">
 		<h2 class="h5 mb-0"><%= tafsirHeading %></h2>
-		<div class="btn-group btn-group-sm quran-tafsir-language-toggle" role="group" aria-label="Tafsir language">
-			<button type="button" class="btn btn-outline-secondary" data-tafsir-language="ar">Arabic</button>
-			<button type="button" class="btn btn-outline-secondary active" data-tafsir-language="en">English</button>
+		<div class="d-flex flex-wrap align-items-center gap-2">
+			<% if (tafsirTranslationsHref) { %>
+				<a class="btn btn-sm btn-outline-secondary" href="<%= tafsirTranslationsHref %>" title="Open translations page" aria-label="Open translations page">
+					<span class="bi bi-translate"></span>
+				</a>
+			<% } %>
+			<% if (tafsirSettingsHref) { %>
+				<a class="btn btn-sm btn-outline-secondary" href="<%= tafsirSettingsHref %>" title="My Settings" aria-label="My Settings">
+					<span class="bi bi-gear"></span>
+				</a>
+			<% } %>
+			<div class="btn-group btn-group-sm quran-tafsir-language-toggle" role="group" aria-label="Tafsir language">
+				<button type="button" class="btn btn-outline-secondary" data-tafsir-language="ar">Arabic</button>
+				<button type="button" class="btn btn-outline-secondary active" data-tafsir-language="en">English</button>
+			</div>
 		</div>
 	</div>
 	<div class="h-menu-wrap mb-3">
