@@ -223,6 +223,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const updateRouter = require('./routes/update');
   const proxyRouter = require('./routes/proxy');
   const tafsirRouter = require('./routes/tafsir');
+  const translationsRouter = require('./routes/translations');
   const commentsRouter = require('./routes/comments');
   const blogCommentsRouter = require('./routes/blogComments');
   const likesRouter = require('./routes/likes');
@@ -255,6 +256,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   });
   app.use('/quran/tafsir', tafsirsRouter);
   app.use('/quran/tafsir', tafsirRouter);
+  app.use('/quran/translations', translationsRouter);
   app.use('/proxy', proxyRouter);
   app.use('/quran/proxy', proxyRouter);
   app.use('/comments', commentsRouter);

@@ -9,22 +9,16 @@
     else
       site.editMode = false;
 
-    var tafsirTitle = Tafsir.displayShortName(tafsir, 'en');
-    var tafsirTitleAr = Tafsir.displayShortName(tafsir, 'ar');
     var ref = `${surah.num}:${ayah}`;
-    var tafsirEntryStart = entries && entries.length ? Math.min.apply(null, entries.map(function (entry) { return Number(entry.startAyah); })) : ayah;
-    var tafsirEntryEnd = entries && entries.length ? Math.max.apply(null, entries.map(function (entry) { return Number(entry.endAyah); })) : tafsirEntryStart;
-    var tafsirMetaRef = `${surah.num}:${tafsirEntryStart}${tafsirEntryEnd > tafsirEntryStart ? `-${tafsirEntryEnd}` : ''}`;
-    var tafsirTitlePair = [tafsirTitle, tafsirTitleAr].filter(Boolean).join(' ');
-    var tafsirMetaTitle = `Quran | Tafsir ${surah.name_en} ${ref} | ${tafsirTitlePair}`;
-    var tafsirMetaDescription = `Read ${tafsirTitle} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
+    var translationMetaTitle = `Quran | Translations ${surah.name_en} ${ref}`;
+    var translationMetaDescription = `Read Quran ${ref}, Surat ${surah.name_en}, with the translations enabled in your Quran settings.`;
     var page = {
-      menu: 'Tafsir',
-      title_en: tafsirMetaTitle,
-      description_en: tafsirMetaDescription,
-      subtitle_en: tafsirTitle,
-      subtitle: tafsirTitleAr,
-      canonical: `/quran/tafsir/${tafsir.slug || tafsir.alias}/${surah.num}/${ayah}`,
+      menu: 'Quran',
+      title_en: translationMetaTitle,
+      description_en: translationMetaDescription,
+      subtitle_en: `Quran ${ref}`,
+      subtitle: `${surah.name_ar} ${arabic.toArabicDigits(ayah + '')}`,
+      canonical: `/quran/translations/${surah.num}/${ayah}`,
       context: {
         quranSearchProxy: true
       }
@@ -41,8 +35,7 @@
     }).sort(function (a, b) {
       return a.num - b.num;
     });
-    var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
-    var tafsirBookmarkKey = `${tafsir.slug || tafsir.alias}:${surah.num}:${ayah}`;
+    var translationsPath = '/quran/translations';
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -52,7 +45,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
   <div class="container col-lg-8 mx-auto">
-    <main class="chapter mt-10 tafsir-only-page">
+    <main class="chapter mt-10 tafsir-only-page translation-only-page">
       <aside class="row mb-3 pagination tafsir-passage-navigation">
         <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
           <% if (navigation.prev) { %>
@@ -69,12 +62,6 @@
       <heading class="row major tafsir-passage-title">
         <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
           <%= surah.num %>. Surat <%= surah.name_en %>
-          <button type="button" class="tafsir-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>" title="Bookmark this tafsīr passage">
-            <span class="tafsir-bookmark-icon bi bi-bookmark text-accent" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>"></span>
-          </button>
-          <a class="btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2 text-accent" href="<%= utils.quranUrl(req, '/quran/settings') %>" title="My Settings" aria-label="My Settings">
-            <span class="bi bi-gear"></span>
-          </a>
         </h2>
         <h2 class="col-md-6 col-sm-12 fs-4 title text-md-end quran-surah-name" lang="ar" dir="rtl">
           <%= arabic.toArabicDigits(surah.num + '') %> - سورة <%= surah.name_ar %>
@@ -83,23 +70,23 @@
 
       <section class="row breadcrumbs pagination">
         <div class="col-md-6 col-sm-12" lang="en">
-          <a title="<%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %>" href="/quran/tafsir"><%- tafsirTitle %></a>
+          <a title="Quran translations" href="<%= translationsPath %>/<%= surah.num %>/1">Translations</a>
           &gt;
-          <a title="<%- surah.name_en %>" href="<%= tafsirPath %>/<%= surah.num %>/1">Surah <%= surah.num %></a>
+          <a title="<%- surah.name_en %>" href="<%= translationsPath %>/<%= surah.num %>/1">Surah <%= surah.num %></a>
           &gt;
-          <span>Section <%= ayah %></span>
+          <span>Ayah <%= ayah %></span>
         </div>
         <div class="col-md-6 col-sm-12" lang="ar" dir="rtl">
-          <a title="<%- tafsir.name || tafsir.shortName || tafsir.alias %>" href="/quran/tafsir"><%- tafsirTitleAr %></a>
+          <a title="ترجمات القرآن" href="<%= translationsPath %>/<%= surah.num %>/1">الترجمات</a>
           &gt;
-          <a title="<%- surah.name_ar %>" href="<%= tafsirPath %>/<%= surah.num %>/1">السورة <%= arabic.toArabicDigits(surah.num + '') %></a>
+          <a title="<%- surah.name_ar %>" href="<%= translationsPath %>/<%= surah.num %>/1">السورة <%= arabic.toArabicDigits(surah.num + '') %></a>
           &gt;
-          <span>باب <%= arabic.toArabicDigits(ayah + '') %></span>
+          <span>الآية <%= arabic.toArabicDigits(ayah + '') %></span>
         </div>
       </section>
 
       <% if (quranNavigatorSurahs.length > 0) { %>
-        <form class="quran-passage-navigator mb-3" action="/" method="get" novalidate data-quran-passage-navigator data-tafsir-navigator-base="<%= tafsirPath %>" data-tafsir-navigator-query="" data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
+        <form class="quran-passage-navigator mb-3" action="/" method="get" novalidate data-quran-passage-navigator data-tafsir-navigator-base="<%= translationsPath %>" data-tafsir-navigator-query="" data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
           <input type="hidden" name="b" value="quran">
           <input type="hidden" name="b" value="commentaries">
           <label class="form-label mb-0">
@@ -107,7 +94,7 @@
           </label>
           <div class="input-group input-group-sm quran-passage-ayah-group">
             <input type="text" inputmode="numeric" class="form-control quran-passage-ayah" value="<%= ayah %>" aria-label="Select Quran ayah" autocomplete="off" required>
-            <button type="submit" class="btn btn-outline-primary quran-passage-go" title="Open tafsīr passage" aria-label="Open tafsīr passage">
+            <button type="submit" class="btn btn-outline-primary quran-passage-go" title="Open translations" aria-label="Open translations">
               <span class="bi bi-caret-right"></span>
             </button>
           </div>
@@ -120,16 +107,31 @@
         </form>
       <% } %>
 
-      <%- include('sub-views/quran_tafsirs.ejs', {
+      <%- include('sub-views/quran_ayah_hero.ejs', {
+        site: site,
+        page: page,
+        selectedAyahs: ayahs,
+        linkHeroAyah: false,
+        toolbar: {
+          selectedAyahModalIndex: 0,
+          selectedAyahId: ayahs[0] && ayahs[0].id,
+          quranShareId: `Q${ref.replace(/[^A-Za-z0-9_-]/g, '-')}`,
+          hideTranslationsAction: true
+        }
+      }); %>
+
+      <%- include('sub-views/quran_translations.ejs', {
         site: site,
         page: page,
         passage: ayahs,
-        selectedAyahs: ayahs.filter(function (item) { return Number(item.ayah) === Number(ayah); }),
-        selectedTafsirAlias: tafsir.alias,
-        selectedTafsirLanguage: tafsir.lang,
-        tafsirHeading: `${tafsirTitle} ${tafsirMetaRef}`,
-        tafsirInstance: 'passage'
+        selectedAyahs: ayahs,
+        translationInstance: 'passage',
+        hideDefaultTranslation: true,
+        translationSettingsHref: utils.quranUrl(req, '/quran/settings')
       }); %>
+
+      <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: ayahs }); %>
+      <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: ayahs, quranShareId: `Q${ref.replace(/[^A-Za-z0-9_-]/g, '-')}` }); %>
 
       <aside class="row mt-3 mb-3 pagination tafsir-passage-navigation">
         <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">

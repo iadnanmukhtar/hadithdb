@@ -26,6 +26,7 @@
 		: 'Translations';
 	const translationInstance = locals.translationInstance || 'passage';
 	const hideDefaultTranslation = locals.hideDefaultTranslation === true;
+	const translationSettingsHref = locals.translationSettingsHref || '';
 	const defaultTranslationHtml = passageItems.map(function (ayah) {
 		return utils.markdownToHtml(utils.emptyIfNull(ayah.en?.body || ayah.body_en));
 	}).filter(Boolean).join('\n');
@@ -34,6 +35,11 @@
 <article class="quran-translations mt-4" data-translation-instance="<%= translationInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>">
 	<div class="quran-translation-heading d-flex flex-wrap align-items-center justify-content-between gap-2">
 		<h2 class="h5 mb-0"><%= translationHeading %></h2>
+		<% if (translationSettingsHref) { %>
+			<a class="btn btn-sm btn-outline-secondary" href="<%= translationSettingsHref %>" title="My Settings" aria-label="My Settings">
+				<span class="bi bi-gear"></span>
+			</a>
+		<% } %>
 	</div>
 	<div class="quran-translation-list">
 		<% if (!hideDefaultTranslation && defaultTranslationHtml) { %>

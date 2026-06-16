@@ -1420,9 +1420,46 @@ function initQuranTranslations(root) {
 			return Number.isInteger(ayah) && ayah >= 0;
 		});
 		var list = container.find('.quran-translation-list');
-		var disclosureState = isTranslationModal ? (modal.data('quranTranslationDisclosureState') || {}) : {};
+		var disclosureStateStorageKey = 'hadithdb_quran_translation_disclosure_state';
+		var disclosureState = $(document).data('quranTranslationDisclosureState');
+		if (!disclosureState || typeof disclosureState !== 'object' || Array.isArray(disclosureState)) {
+			disclosureState = {};
+			try {
+				var storedDisclosureState = JSON.parse(window.localStorage.getItem(disclosureStateStorageKey) || '{}');
+				if (storedDisclosureState && typeof storedDisclosureState === 'object' && !Array.isArray(storedDisclosureState))
+					disclosureState = storedDisclosureState;
+			} catch (_err) {
+				disclosureState = {};
+			}
+			$(document).data('quranTranslationDisclosureState', disclosureState);
+		}
 		if (isTranslationModal)
 			modal.data('quranTranslationDisclosureState', disclosureState);
+		var saveTranslationDisclosureState = function () {
+			try {
+				window.localStorage.setItem(disclosureStateStorageKey, JSON.stringify(disclosureState));
+			} catch (_err) {
+				// Disclosure state is still synchronized across the current page.
+			}
+		};
+		var setTranslationEntryOpen = function (entry, open) {
+			entry.data('quranTranslationDisclosureSyncing', true);
+			entry.prop('open', open);
+			window.setTimeout(function () {
+				entry.removeData('quranTranslationDisclosureSyncing');
+			}, 0);
+		};
+		var syncTranslationDisclosureEntries = function (alias, open) {
+			if (!alias)
+				return;
+			$('.quran-translation-entry[data-translation-alias]').filter(function () {
+				return $(this).attr('data-translation-alias') === alias;
+			}).each(function () {
+				var entry = $(this);
+				if (entry.prop('open') !== open)
+					setTranslationEntryOpen(entry, open);
+			});
+		};
 		var sortTranslationList = function (targetList, order) {
 			order = Array.isArray(order) ? order : [];
 			var orderIndex = new Map(order.map(function (alias, index) { return [alias, index]; }));
@@ -1443,22 +1480,24 @@ function initQuranTranslations(root) {
 				targetList.append(entry);
 			});
 		};
-		var sortLoadedModalTranslationLists = function (order) {
-			if (!isTranslationModal)
-				return;
-			modal.find('.quran-translation-list').each(function () {
+		var sortLoadedTranslationLists = function (order) {
+			$('.quran-translation-list').each(function () {
 				sortTranslationList($(this), order);
 			});
 		};
 		var bindTranslationDisclosureState = function (entry, alias, fallbackOpen) {
-			if (!isTranslationModal)
+			if (!alias)
 				return;
 			var shouldOpen = Object.prototype.hasOwnProperty.call(disclosureState, alias)
 				? disclosureState[alias] !== false
 				: fallbackOpen !== false;
-			entry.prop('open', shouldOpen);
+			setTranslationEntryOpen(entry, shouldOpen);
 			entry.on('toggle', function () {
+				if (entry.data('quranTranslationDisclosureSyncing'))
+					return;
 				disclosureState[alias] = entry.prop('open');
+				saveTranslationDisclosureState();
+				syncTranslationDisclosureEntries(alias, disclosureState[alias] !== false);
 			});
 		};
 		list.find('.quran-translation-entry[data-translation-alias]').each(function () {
@@ -1471,6 +1510,7 @@ function initQuranTranslations(root) {
 		var adminQuery = function () {
 			return window.hadithAdmin === true ? '?flush=1' : '';
 		};
+		var allTranslationBookAliases = [];
 		var waitForSettingsAuth = function () {
 			return new Promise(function (resolve) {
 				if (window.hadithAuth && window.hadithAuth.getToken)
@@ -1489,8 +1529,6 @@ function initQuranTranslations(root) {
 			});
 		};
 		var saveTranslationOrder = async function () {
-			if (!isTranslationModal)
-				return;
 			var auth = await waitForSettingsAuth();
 			var user = auth && auth.getUser ? await auth.getUser() : null;
 			if (!user)
@@ -1513,11 +1551,15 @@ function initQuranTranslations(root) {
 			var translationSettings = settings.translations && typeof settings.translations === 'object' && !Array.isArray(settings.translations)
 				? settings.translations
 				: {};
-			var order = list.find('.quran-translation-entry[data-translation-alias]').filter(function () {
+			var visibleOrder = list.find('.quran-translation-entry[data-translation-alias]').filter(function () {
 				return !$(this).hasClass('quran-translation-default');
 			}).map(function () {
 				return $(this).attr('data-translation-alias');
 			}).get().filter(Boolean);
+			var order = Array.from(new Set(visibleOrder.concat(
+				Array.isArray(translationSettings.order) ? translationSettings.order : [],
+				allTranslationBookAliases
+			).filter(Boolean)));
 			var nextSettings = Object.assign({}, settings, {
 				translations: Object.assign({}, translationSettings, { order: order })
 			});
@@ -1533,10 +1575,10 @@ function initQuranTranslations(root) {
 			var data = await response.json();
 			var savedSettings = data.settings || nextSettings;
 			updateCachedQuranUserSettings(user, savedSettings);
-			sortLoadedModalTranslationLists(savedSettings.translations && Array.isArray(savedSettings.translations.order) ? savedSettings.translations.order : order);
+			sortLoadedTranslationLists(savedSettings.translations && Array.isArray(savedSettings.translations.order) ? savedSettings.translations.order : order);
 		};
 		var bindTranslationDragSort = function () {
-			if (!isTranslationModal || list.data('quranTranslationDragBound'))
+			if (list.data('quranTranslationDragBound'))
 				return;
 			list.data('quranTranslationDragBound', true);
 			var dragged = null;
@@ -1636,24 +1678,22 @@ function initQuranTranslations(root) {
 			var source = $('<summary>').addClass('quran-translation-source').appendTo(entry);
 			$('<span>').addClass('quran-translation-chevron bi bi-chevron-right').attr('aria-hidden', 'true').appendTo(source);
 			$('<strong>').addClass('quran-translation-source-author').text(book.author_en || book.shortName_en || book.alias).appendTo(source);
-			if (isTranslationModal && !book.builtinDefault)
+			if (!book.builtinDefault)
 				$('<span>').addClass('quran-translation-drag-handle bi bi-grip-vertical').attr({ 'aria-hidden': 'true', title: 'Drag to reorder' }).appendTo(source);
 			var title = [book.name_en || book.shortName_en || book.alias, book.death ? `${book.death} AH` : ''].filter(Boolean).join(', ');
 			if (title)
 				$('<span>').addClass('quran-translation-source-title').text(title).appendTo(source);
 		};
 		var appendTranslationEntry = function (book, payload, open) {
+			var draggable = !book.builtinDefault;
 			var entry = $('<details>').addClass('quran-translation-entry').attr({
 				lang: book.lang || 'en',
 				dir: book.lang === 'ar' ? 'rtl' : 'ltr',
 				'data-translation-alias': book.alias,
-				'data-translation-ordinal': Number(book.ordinal || 0)
+				'data-translation-ordinal': Number(book.ordinal || 0),
+				draggable: draggable ? 'true' : 'false'
 			}).appendTo(list);
-			if (isTranslationModal)
-				entry.attr('draggable', 'true');
-			bindTranslationDisclosureState(entry, book.alias, isTranslationModal ? true : open);
-			if (!isTranslationModal && open)
-				entry.prop('open', true);
+			bindTranslationDisclosureState(entry, book.alias, open !== false);
 			appendTranslationSource(entry, book);
 			$('<div>').addClass('quran-translation-text').html(payload.html || payload.data || '').appendTo(entry);
 		};
@@ -1672,7 +1712,11 @@ function initQuranTranslations(root) {
 				var disabledAliases = new Set(Array.isArray(translationSettings.disabledAliases) ? translationSettings.disabledAliases : []);
 				var order = Array.isArray(translationSettings.order) ? translationSettings.order : [];
 				var orderIndex = new Map(order.map(function (alias, index) { return [alias, index]; }));
-				var visibleBooks = (Array.isArray(books) ? books : []).filter(function (book) {
+				var translationBooks = (Array.isArray(books) ? books : []).filter(function (book) {
+					return book.source === 'local';
+				});
+				allTranslationBookAliases = translationBooks.map(function (book) { return book.alias; }).filter(Boolean);
+				var visibleBooks = translationBooks.filter(function (book) {
 					return book.source === 'local' && !disabledAliases.has(book.alias);
 				}).sort(function (a, b) {
 					var aIndex = orderIndex.has(a.alias) ? orderIndex.get(a.alias) : Number.MAX_SAFE_INTEGER;
@@ -1687,7 +1731,7 @@ function initQuranTranslations(root) {
 					var payloads = payloadsByAlias.get(book.alias) || [];
 					payloads.forEach(function (payload) {
 						if (payload && (payload.html || payload.data))
-							appendTranslationEntry(book, payload, false);
+							appendTranslationEntry(book, payload, true);
 					});
 				}
 				sortTranslationList(list, order);
@@ -2069,6 +2113,7 @@ function initQuranAyahModals(root) {
 		var prevButton = modal.find('.quran-ayah-modal-prev');
 		var nextButton = modal.find('.quran-ayah-modal-next');
 		var tafsirExpandLink = modal.find('.quran-ayah-modal-tafsir-expand');
+		var translationExpandLink = modal.find('.quran-ayah-modal-translation-expand');
 		var activeIndex = 0;
 		var shown = false;
 		var returnFocusTo = null;
@@ -2122,6 +2167,25 @@ function initQuranAyahModals(root) {
 			tafsirExpandLink.toggleClass('disabled', !href);
 			tafsirExpandLink.attr('aria-disabled', href ? 'false' : 'true');
 		};
+		var activeTranslationBrowseHref = function () {
+			if (modalType !== 'translations')
+				return '';
+			var pane = paneAt(activeIndex);
+			var translation = pane.find('.quran-translations').first();
+			var surah = translation.attr('data-surah') || '';
+			var ayah = (pane.attr('data-quran-ayah-ref') || '').toString().split(':').pop();
+			if (!surah || !ayah)
+				return '';
+			return quranPath(`/quran/translations/${encodeURIComponent(surah)}/${encodeURIComponent(ayah)}`);
+		};
+		var updateTranslationExpandLink = function () {
+			if (!translationExpandLink.length)
+				return;
+			var href = activeTranslationBrowseHref();
+			translationExpandLink.attr('href', href || '#');
+			translationExpandLink.toggleClass('disabled', !href);
+			translationExpandLink.attr('aria-disabled', href ? 'false' : 'true');
+		};
 		var scrollActiveTafsirTabs = function () {
 			var pane = paneAt(activeIndex);
 			pane.find('.quran-tafsirs').each(function () {
@@ -2165,6 +2229,7 @@ function initQuranAyahModals(root) {
 			loadActiveCommentWidgets();
 			scrollActiveTafsirTabs();
 			updateTafsirExpandLink();
+			updateTranslationExpandLink();
 		};
 		var openAyah = function (index, focusTarget) {
 			modal.data('quranAyahModalOpening', true);
@@ -2201,6 +2266,10 @@ function initQuranAyahModals(root) {
 			if ($(this).hasClass('disabled'))
 				event.preventDefault();
 		});
+		translationExpandLink.on('click', function (event) {
+			if ($(this).hasClass('disabled'))
+				event.preventDefault();
+		});
 		modal.on('quranTafsirChanged', '.quran-tafsirs', updateTafsirExpandLink);
 		modal.on('shown.bs.modal', function () {
 			modal.removeData('quranAyahModalOpening');
@@ -2208,6 +2277,7 @@ function initQuranAyahModals(root) {
 			loadActiveCommentWidgets();
 			scrollActiveTafsirTabs();
 			updateTafsirExpandLink();
+			updateTranslationExpandLink();
 		});
 		modal.on('hide.bs.modal', function () {
 			if (modal[0].contains(document.activeElement))

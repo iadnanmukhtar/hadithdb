@@ -17,9 +17,11 @@
     <button type="button" class="quran-ayah-modal-trigger quran-ayah-action text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="tafsirs" title="View tafsir" aria-label="View tafsir">
       <span class="bi bi-book"></span><span class="quran-ayah-action-label">Tafsir</span>
     </button>
-    <button type="button" class="quran-ayah-modal-trigger quran-ayah-action text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="translations" title="View translations" aria-label="View translations">
-      <span class="bi bi-translate"></span><span class="quran-ayah-action-label">Translations</span>
-    </button>
+    <% if (!locals.hideTranslationsAction) { %>
+      <button type="button" class="quran-ayah-modal-trigger quran-ayah-action text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="translations" title="View translations" aria-label="View translations">
+        <span class="bi bi-translate"></span><span class="quran-ayah-action-label">Translations</span>
+      </button>
+    <% } %>
   <% } %>
   <% if (locals.viewHref) { %>
     <a href="<%= viewHref %>" title="View selected ayah" aria-label="View selected ayah" class="quran-ayah-action icon text-decoration-none">
