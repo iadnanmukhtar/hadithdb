@@ -8,6 +8,10 @@ const { Item } = require('../lib/Model');
 
 const router = express.Router();
 
+router.get('/', function (req, res) {
+  res.redirect(302, Utils.quranPath('/quran/translations/1/1'));
+});
+
 router.get('/:surah', async function (req, res, next) {
   const surahNum = Number(req.params.surah);
   const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);

@@ -14,7 +14,6 @@
     var page = {
       menu: 'Books',
       title_en: `Quran | Tafsīr Books`,
-      description_en: `Browse available tafsīr books in English and Arabic, then read tafsir passage by passage alongside Quran references.`,
       subtitle_en: `Tafsīr Books`,
       subtitle: ``,
       canonical: `/quran/tafsir`,
@@ -22,18 +21,6 @@
         quranSearchProxy: true
       }
     };
-    var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
-      return {
-        num: Number(surah.num),
-        name_en: surah.name_en,
-        name_ar: surah.name_ar,
-        ayahs: Number(surah.ayahs)
-      };
-    }).filter(function (surah) {
-      return Number.isInteger(surah.num);
-    }).sort(function (a, b) {
-      return a.num - b.num;
-    });
     var tafsirBrowseUrl = function (tafsir) {
       return utils.quranUrl(req, Tafsir.browseUrl(tafsir, tafsir.firstSurah || 1, tafsir.firstAyah || 1, tafsirs));
     };
@@ -42,21 +29,6 @@
       if (!death)
         return '';
       return /^d\./i.test(death) ? death : `d. ${death}`;
-    };
-    var tafsirDeathTooltipLabel = function (tafsir) {
-      var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
-      if (!death)
-        return '';
-      if (!/\b(?:AH|H)\b/i.test(death) && !/هـ/u.test(death))
-        death = `${death} AH`;
-      return /^d\./i.test(death) ? death : `d. ${death}`;
-    };
-    var tafsirTooltip = function (tafsir) {
-      return [
-        tafsir.name_en || tafsir.name || tafsir.shortName_en || tafsir.shortName || tafsir.alias,
-        tafsir.author_en || tafsir.author,
-        tafsirDeathTooltipLabel(tafsir)
-      ].filter(Boolean).join('\n');
     };
     var tafsirDeathYear = function (tafsir) {
       var match = utils.emptyIfNull(tafsir.death || '').toString().match(/\d+/);
@@ -91,14 +63,6 @@
       });
       return group;
     });
-    var carouselTafsirs = groups.reduce(function (items, group) {
-      return items.concat(group.tafsirs);
-    }, []);
-    function carouselTafsirLabel(tafsir) {
-      return Tafsir.rawShortName(tafsir, 'en')
-        .replace(/^tafs[īi]r\s+/i, '')
-        .trim();
-    }
     var tafsirSectionHeading = function (id, heading) {
       return `
         <h2 class="h4 mb-3">
@@ -128,23 +92,6 @@
         }
       </script>
 
-      <% if (carouselTafsirs.length > 0) { %>
-        <div class="h-menu-wrap mb-3">
-          <div class="h-menu-hint d-md-none">
-            <i class="bi bi-arrow-left-right"></i> Swipe to browse tafsīr books
-          </div>
-          <div class="h-menu-scroller">
-            <div class="btn-group h-menu text-nowrap" role="group">
-              <% carouselTafsirs.forEach(function (tafsir) { %>
-                <a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= tafsirBrowseUrl(tafsir) %>" data-tafsir-tooltip="<%= tafsirTooltip(tafsir) %>" data-tafsir-book-nav-item data-tafsir-alias="<%= tafsir.alias %>" data-tafsir-lang="<%= tafsir.lang %>" data-tafsir-death="<%= tafsir.death || '' %>" data-tafsir-ordinal="<%= tafsir.ordinal || 0 %>">
-                  <%- carouselTafsirLabel(tafsir) %>
-                </a>
-              <% }); %>
-            </div>
-          </div>
-        </div>
-      <% } %>
-
       <div class="page-content-filter input-group mb-3">
         <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
         <input type="search" class="form-control tafsir-book-filter" placeholder="Filter tafsīr books" aria-label="Filter tafsīr books" autocomplete="off" autofocus>
@@ -165,8 +112,6 @@
                   tafsir.name_en,
                   tafsir.shortName_en,
                   tafsir.author_en,
-                  tafsir.description,
-                  tafsir.aqidah,
                   tafsir.name,
                   tafsir.shortName,
                   tafsir.author
@@ -185,13 +130,7 @@
                           <% } %>
                         </small>
                       </p>
-                      <% if (tafsir.description) { %>
-                        <p class="card-text small"><%- tafsir.description %></p>
-                      <% } %>
-                      <% if (tafsir.aqidah) { %>
-                        <p class="card-text small text-muted mb-3">Aqidah: <%- tafsir.aqidah %></p>
-                      <% } %>
-                      <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
+                      <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary w-100 mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
                     </div>
                   </div>
                 </div>

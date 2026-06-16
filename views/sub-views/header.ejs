@@ -13,6 +13,8 @@
       || requestPath.indexOf('/quran/') === 0
       || (pageBook && pageBook.alias === 'quran')
       || (page.context && page.context.quranSearchProxy);
+    var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0;
+    var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0;
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
     var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
@@ -61,7 +63,14 @@
     <menu class="col d-md-block d-none">
       
       <ul class="nav container-fluid justify-content-end">
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea) %>" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle<%- activeNavAttrs(isQuranArea) %>" data-bs-toggle="dropdown" href="<%= utils.quranUrl(req, '/quran') %>" role="button" aria-expanded="false">Quran</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranArea && !isQuranTranslationsArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations/1/1') %>"><i class="bi bi-translate"></i> Translations</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-book"></i> Tafsir</a></li>
+          </ul>
+        </li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>">Blog</a></li>
@@ -128,8 +137,10 @@
         <div class="row">
           <ul class="col-7 nav flex-column offcanvas-col1">
             <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><i class="bi bi-book"></i> Quran</a></li>
-            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>"><i class="bi bi-house"></i> Hadith</a></li>
-            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>"><i class="bi bi-journals"></i> Ḥadīth & Tafsīr Books</a></li>
+            <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations/1/1') %>"><i class="bi bi-translate"></i> Translations</a></li>
+            <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-book"></i> Tafsir</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>"><i class="bi bi-book"></i> Hadith</a></li>
+            <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>"><i class="bi bi-journals"></i> Books</a></li>
             <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>"><i class="bi bi-text-paragraph"></i> Blog</a></li>
             <li><hr></li>
             <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-gear"></i> My Settings</a></li>
