@@ -23,7 +23,7 @@ router.get('/', async function (req, res, next) {
     Utils.flushCachedFile(cachedFile);
   if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-    res.end(fs.readFileSync(cachedFile));
+    res.end(Utils.injectCachedAdminControls(fs.readFileSync(cachedFile), req));
     return;
   }
 

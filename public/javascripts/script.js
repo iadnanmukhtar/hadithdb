@@ -466,7 +466,7 @@ function renderHadithAdminGear() {
 
 		const item = document.createElement('li');
 		item.className = 'nav-item edit-gear';
-		item.innerHTML = `<a class="nav-link" role="button"><i class="bi ${icon}"></i> <strong>${editMode ? 'View' : 'Edit'}</strong></a>`;
+		item.innerHTML = `<a class="nav-link" role="button"><i class="app-menu-icon bi ${icon}" aria-hidden="true"></i> <strong>${editMode ? 'View' : 'Edit'}</strong></a>`;
 		item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
 
 		mobileList.appendChild(separator);
