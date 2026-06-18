@@ -38,7 +38,7 @@ router.get('/:tag', async function (req, res, next) {
   var cachedFile = `${homedir}/.hadithdb/cache/${Utils.reqToFilename(req)}.html`;
   if (Utils.shouldFlushCache(req))
     Utils.flushCachedFile(cachedFile);
-  if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
+  if (!Utils.shouldFlushCache(req) && !editMode && fs.existsSync(cachedFile)) {
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
     res.end(Utils.readCachedHtml(cachedFile, req));
     return;
