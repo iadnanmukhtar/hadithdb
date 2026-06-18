@@ -111,7 +111,7 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
       req: req,
       res: res
     });
-    fs.writeFileSync(cachedFile, cachedHtml);
+    Utils.writeCachedHtml(cachedFile, cachedHtml);
     await Utils.indexCachedItem(tafsirCacheRefs(tafsir, entries, surahNum, ayahNum), cachedFile);
   }
 
@@ -158,7 +158,7 @@ function isSearchBackendUnavailable(err) {
 
 function sendCachedHtml(req, res, cachedFile) {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-  res.end(Utils.injectCachedAdminControls(fs.readFileSync(cachedFile), req));
+  res.end(Utils.readCachedHtml(cachedFile, req));
 }
 
 async function tafsirNavigation(tafsir, entries, tafsirs, surah, ayah) {

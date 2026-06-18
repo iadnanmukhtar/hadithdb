@@ -114,7 +114,7 @@ function appendOriginalQuery(req) {
 
 function sendCachedHtml(req, res, cachedFile) {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-  res.end(Utils.injectCachedAdminControls(fs.readFileSync(cachedFile), req));
+  res.end(Utils.readCachedHtml(cachedFile, req));
 }
 
 function redirectCanonicalReferencePath(req, res, canonicalPath) {
@@ -1453,7 +1453,7 @@ router.get('/:bookAlias', async function (req, res, next) {
           req: req,
           res: res
         });
-        fs.writeFileSync(cachedFile, html);
+        Utils.writeCachedHtml(cachedFile, html);
         await Utils.indexCachedItem(refs, cachedFile);
       }
       res.render('toc', {
@@ -1538,7 +1538,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
           req: req,
           res: res
         });
-        fs.writeFileSync(cachedFile, html);
+        Utils.writeCachedHtml(cachedFile, html);
         await Utils.indexCachedItem(refs, cachedFile);
 
         res.render('section_quran', {
@@ -1560,7 +1560,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         req: req,
         res: res
       });
-      fs.writeFileSync(cachedFile, html);
+      Utils.writeCachedHtml(cachedFile, html);
       await Utils.indexCachedItem(refs, cachedFile);
 
       res.render('chapter', {
@@ -1658,7 +1658,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         req: req,
         res: res
       });
-      fs.writeFileSync(cachedFile, html);
+      Utils.writeCachedHtml(cachedFile, html);
       await Utils.indexCachedItem(refs, cachedFile);
 
       res.render('section_quran', {
@@ -1694,7 +1694,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
           req: req,
           res: res
         });
-        fs.writeFileSync(cachedFile, html);
+        Utils.writeCachedHtml(cachedFile, html);
         await Utils.indexCachedItem(refs, cachedFile);
 
         res.render('section', {

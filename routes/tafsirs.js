@@ -45,7 +45,7 @@ router.get('/', async function (req, res, next) {
         tafsirs: tafsirs
       });
       ensureCacheDir();
-      fs.writeFileSync(cachedFile, html);
+      Utils.writeCachedHtml(cachedFile, html);
       await Utils.indexCachedItem(tafsirBookCacheRefs(tafsirs), cachedFile);
     }
     res.render('tafsir_books', {
@@ -57,7 +57,7 @@ router.get('/', async function (req, res, next) {
 
 function sendCachedHtml(req, res, cachedFile) {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-  res.end(Utils.injectCachedAdminControls(fs.readFileSync(cachedFile), req));
+  res.end(Utils.readCachedHtml(cachedFile, req));
 }
 
 function tafsirBookCacheRefs(tafsirs) {

@@ -40,7 +40,7 @@ router.get('/:tag', async function (req, res, next) {
     Utils.flushCachedFile(cachedFile);
   if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-    res.end(Utils.injectCachedAdminControls(fs.readFileSync(cachedFile), req));
+    res.end(Utils.readCachedHtml(cachedFile, req));
     return;
   }
 
@@ -184,7 +184,7 @@ router.get('/:tag', async function (req, res, next) {
       req: req,
       res: res
     });
-    fs.writeFileSync(cachedFile, html);
+    Utils.writeCachedHtml(cachedFile, html);
   await Utils.indexCachedItem(refs, cachedFile);
 
     res.render('tag', {
