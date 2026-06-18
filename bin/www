@@ -2,6 +2,7 @@
 /* jslint node:true, esversion:8 */
 'use strict';
 
+const newrelic = require('newrelic');
 require('dotenv').config();
 const app = require('../app');
 const debug = require('debug')('hadithdb:server');
