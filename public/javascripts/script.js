@@ -2550,7 +2550,7 @@ function quranAyahHeroToolbarHtml(ayah, shareId) {
 			title: 'View tafsir',
 			'aria-label': 'View tafsir'
 		}).addClass('quran-ayah-modal-trigger quran-ayah-action text-accent')
-			.append($('<span>').addClass('bi bi-book'))
+			.append($('<span>').addClass('bi bi-book-half'))
 			.append($('<span>').addClass('quran-ayah-action-label').text('Tafsir'))
 			.appendTo($toolbar);
 
@@ -3311,6 +3311,10 @@ function buildSearchAutocompleteParams($input, term) {
 	$filters.each(function () {
 		params.push({ name: 'b', value: this.value });
 	});
+	if ($input.hasClass('quran-passage-search') && !$filters.length) {
+		params.push({ name: 'b', value: 'quran' });
+		params.push({ name: 'b', value: 'commentaries' });
+	}
 	return $.param(params);
 }
 
@@ -3319,11 +3323,9 @@ function submitQuranPassageSearch($input) {
 	if (!term)
 		return false;
 	$input.autocomplete('close');
-	var searchPath = isQuranSubdomainHost(window.location.hostname) ? '/quran' : '/';
+	var searchPath = '/quran';
 	window.location.href = `${searchPath}?${$.param([
-		{ name: 'q', value: term },
-		{ name: 'b', value: 'quran' },
-		{ name: 'b', value: 'commentaries' }
+		{ name: 'q', value: term }
 	])}`;
 	return true;
 }

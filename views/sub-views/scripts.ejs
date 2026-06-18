@@ -825,6 +825,138 @@
 
 <!-- Buy Me a Coffee -->
 <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="adnanmukhtar" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+<script>
+  (function initDismissibleBuyMeCoffeeWidget() {
+    const storageKey = 'hadithdb:bmcWidgetDismissed';
+    const dismissed = () => {
+      try {
+        return window.localStorage.getItem(storageKey) === '1';
+      } catch (err) {
+        return false;
+      }
+    };
+    const rememberDismissed = () => {
+      try {
+        window.localStorage.setItem(storageKey, '1');
+      } catch (err) {
+        // Ignore private-mode or blocked storage failures.
+      }
+    };
+    const removeWidget = (widget) => {
+      if (widget && widget.parentNode)
+        widget.parentNode.removeChild(widget);
+    };
+    const dismissWidget = (widget) => {
+      rememberDismissed();
+      widget.classList.add('hadith-bmc-dismissed');
+      window.setTimeout(() => removeWidget(widget), 220);
+    };
+    const wireWidget = (widget) => {
+      if (!widget || widget.dataset.hadithBmcDismissible === '1')
+        return;
+      if (dismissed()) {
+        removeWidget(widget);
+        return;
+      }
+
+      widget.dataset.hadithBmcDismissible = '1';
+      widget.classList.add('hadith-bmc-draggable');
+
+      let startX = 0;
+      let startY = 0;
+      let currentX = 0;
+      let dragging = false;
+      let moved = false;
+      let suppressNextClick = false;
+
+      const resetDrag = () => {
+        widget.classList.remove('hadith-bmc-dragging');
+        widget.style.transform = '';
+        dragging = false;
+        moved = false;
+      };
+      const dismissDistance = () => {
+        const distanceToViewportEdge = Math.max(0, window.innerWidth - startX);
+        return Math.min(Math.max(24, widget.offsetWidth * 0.4), distanceToViewportEdge + 8);
+      };
+
+      widget.addEventListener('pointerdown', (event) => {
+        if (event.button !== undefined && event.button !== 0)
+          return;
+        startX = event.clientX;
+        startY = event.clientY;
+        currentX = 0;
+        dragging = true;
+        moved = false;
+        widget.classList.add('hadith-bmc-dragging');
+        if (widget.setPointerCapture)
+          widget.setPointerCapture(event.pointerId);
+      }, true);
+
+      const handleMove = (event) => {
+        if (!dragging)
+          return;
+        const deltaX = Math.max(0, event.clientX - startX);
+        const deltaY = Math.abs(event.clientY - startY);
+        if (deltaX < 8 && deltaY < 8)
+          return;
+        if (deltaY > deltaX)
+          return;
+        moved = true;
+        currentX = deltaX;
+        widget.style.transform = `translateX(${deltaX * 0.35}px)`;
+        event.preventDefault();
+        if (currentX >= dismissDistance()) {
+          suppressNextClick = true;
+          dismissWidget(widget);
+          widget.classList.remove('hadith-bmc-dragging');
+          dragging = false;
+          moved = false;
+        }
+      };
+
+      widget.addEventListener('pointermove', handleMove, true);
+
+      const finishDrag = (event) => {
+        if (!dragging)
+          return;
+        if (widget.releasePointerCapture) {
+          try {
+            widget.releasePointerCapture(event.pointerId);
+          } catch (err) {
+            // The browser may have already released capture.
+          }
+        }
+        if (moved && currentX >= dismissDistance()) {
+          suppressNextClick = true;
+          dismissWidget(widget);
+          return;
+        }
+        if (moved)
+          suppressNextClick = true;
+        resetDrag();
+      };
+
+      widget.addEventListener('pointerup', finishDrag, true);
+      widget.addEventListener('pointercancel', resetDrag, true);
+      document.addEventListener('pointermove', handleMove, true);
+      document.addEventListener('pointerup', finishDrag, true);
+      document.addEventListener('pointercancel', resetDrag, true);
+      widget.addEventListener('click', (event) => {
+        if (!suppressNextClick)
+          return;
+        suppressNextClick = false;
+        event.preventDefault();
+        event.stopPropagation();
+      }, true);
+    };
+
+    const scan = () => wireWidget(document.getElementById('bmc-wbtn'));
+    scan();
+    const observer = new MutationObserver(scan);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  })();
+</script>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZFHG1L3ZX"></script>

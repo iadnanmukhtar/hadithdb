@@ -1365,7 +1365,7 @@ router.get('/quran', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   return await renderSearchResults(req, res, next, {
-    forceBookFilters: ['quran', 'commentaries'],
+    defaultBookFilters: ['quran', 'commentaries'],
     redirectReferences: false,
     searchAction: '/quran',
     quranSearchProxy: true,

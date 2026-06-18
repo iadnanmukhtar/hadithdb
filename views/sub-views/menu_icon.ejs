@@ -1,0 +1,18 @@
+<%
+  var menuIconType = typeof type !== 'undefined' ? type : '';
+  var menuIconLabel = typeof label !== 'undefined' ? label : menuIconType;
+  var menuIconClass = typeof className !== 'undefined' ? className : '';
+  var menuIconBaseClass = `app-menu-icon ${menuIconClass}`.trim();
+  var menuIconSrc = '';
+  var menuIconBi = '';
+
+  if (menuIconType === 'quran')
+    menuIconSrc = '/quran-icon.svg';
+  else if (menuIconType === 'books')
+    menuIconSrc = '/books-icon.svg';
+  else if (menuIconType === 'tafsir')
+    menuIconBi = 'book-half';
+  else if (menuIconType === 'hadith')
+    menuIconBi = 'book';
+%>
+<% if (menuIconSrc) { %><img class="<%= menuIconBaseClass %> app-menu-icon-img" src="<%= menuIconSrc %>" alt="" aria-hidden="true"><% } else if (menuIconBi) { %><i class="<%= menuIconBaseClass %> bi bi-<%= menuIconBi %>" aria-hidden="true"></i><% } %>

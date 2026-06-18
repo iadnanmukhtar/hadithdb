@@ -148,9 +148,7 @@
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
 
       <% if (quranNavigatorSurahs.length > 0) { %>
-        <form class="quran-passage-navigator mb-3" action="/" method="get" novalidate data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
-          <input type="hidden" name="b" value="quran">
-          <input type="hidden" name="b" value="commentaries">
+        <form class="quran-passage-navigator mb-3" action="/quran" method="get" novalidate data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
           <label class="form-label mb-0">
             <input type="text" class="form-control form-control-sm quran-passage-surah" value="<%= quranNavigatorSurahValue %>" aria-label="Select Quran surah" autocomplete="off" required>
           </label>
@@ -302,7 +300,8 @@
       
     </main>
   </div>
-  
+
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   <% if (site.editMode) { %>

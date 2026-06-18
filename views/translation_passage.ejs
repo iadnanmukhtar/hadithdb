@@ -86,9 +86,7 @@
       </section>
 
       <% if (quranNavigatorSurahs.length > 0) { %>
-        <form class="quran-passage-navigator mb-3" action="/" method="get" novalidate data-quran-passage-navigator data-tafsir-navigator-base="<%= translationsPath %>" data-tafsir-navigator-query="" data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
-          <input type="hidden" name="b" value="quran">
-          <input type="hidden" name="b" value="commentaries">
+        <form class="quran-passage-navigator mb-3" action="/quran" method="get" novalidate data-quran-passage-navigator data-tafsir-navigator-base="<%= translationsPath %>" data-tafsir-navigator-query="" data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
           <label class="form-label mb-0">
             <input type="text" class="form-control form-control-sm quran-passage-surah" value="<%= surah.num %>" aria-label="Select Quran surah" autocomplete="off" required>
           </label>
@@ -148,6 +146,14 @@
     </main>
   </div>
 
+<%- include('sub-views/mobile_navigation.ejs', {
+  site: site,
+  page: page,
+  prev: navigation.prev,
+  next: navigation.next,
+  prevTitle: navigation.prevTitle ? `Previous: ${navigation.prevTitle}` : 'Previous',
+  nextTitle: navigation.nextTitle ? `Next: ${navigation.nextTitle}` : 'Next'
+}); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 

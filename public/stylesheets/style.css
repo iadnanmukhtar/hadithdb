@@ -405,6 +405,30 @@ nav .nav-link {
 	padding: 5px 15px 0 0;
 }
 
+.app-menu-icon {
+	color: #000 !important;
+	display: inline-block;
+	height: 1em;
+	margin-right: 0.35rem;
+	object-fit: contain;
+	vertical-align: -0.125em;
+	width: 1em;
+}
+
+.app-menu-icon-img {
+	filter: brightness(0) saturate(100%);
+}
+
+.dropdown-item.active .app-menu-icon,
+.dropdown-item[aria-current="page"] .app-menu-icon {
+	color: var(--c-white) !important;
+}
+
+.dropdown-item.active .app-menu-icon-img,
+.dropdown-item[aria-current="page"] .app-menu-icon-img {
+	filter: invert(1);
+}
+
 nav .nav-link.active,
 nav .nav-link[aria-current="page"] {
 	color: var(--c-accent);
@@ -1516,25 +1540,113 @@ del em strong {
 }
 
 @media (max-width: 767.98px) {
-	.pagination .pagination-nav-slot {
-		flex: 0 0 50%;
-		max-width: 50%;
+	body {
+		padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
 	}
 
-	.pagination .pagination-nav-label {
+	.pagination .pagination-nav-slot {
 		display: none;
 	}
 
-	.pagination .pagination-nav-link {
-		justify-content: center;
-		min-width: 2.2rem;
-		min-height: 2.2rem;
-		padding: 0.35rem 0.6rem;
+	.pagination:has(.pagination-nav-slot) {
+		display: none;
+	}
+}
+
+.mobile-bottom-nav {
+	display: none;
+}
+
+#bmc-wbtn.hadith-bmc-draggable {
+	cursor: grab;
+	touch-action: pan-y;
+	transition: opacity .18s ease, transform .18s ease;
+	will-change: transform;
+}
+
+#bmc-wbtn.hadith-bmc-dragging {
+	cursor: grabbing;
+	transition: none;
+}
+
+#bmc-wbtn.hadith-bmc-dismissed {
+	opacity: 0;
+	pointer-events: none;
+	transform: translateX(calc(100% + 2rem)) !important;
+}
+
+@media (max-width: 767.98px) {
+	.mobile-bottom-nav {
+		align-items: stretch;
+		background: var(--bs-body-bg);
+		border-top: 1px solid var(--bs-border-color);
+		bottom: 0;
+		box-shadow: 0 -0.35rem 1rem rgba(0, 0, 0, .08);
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: .25rem;
+		left: 0;
+		padding: .45rem .65rem calc(.45rem + env(safe-area-inset-bottom));
+		position: fixed;
+		right: 0;
+		z-index: 1040;
 	}
 
-	.pagination .pagination-nav-chevron {
-		font-size: 1rem;
+	#bmc-wbtn {
+		bottom: calc(5.2rem + env(safe-area-inset-bottom)) !important;
+	}
+
+	.mobile-bottom-nav-item {
+		align-items: center;
+		background: transparent;
+		border: 0;
+		border-radius: .35rem;
+		color: var(--c-accent);
+		display: inline-flex;
+		flex-direction: column;
+		font: inherit;
+		font-size: .72rem;
+		font-weight: 600;
+		gap: .12rem;
+		justify-content: center;
+		line-height: 1.15;
+		min-height: 3.15rem;
+		min-width: 0;
+		padding: .3rem .2rem;
+		text-align: center;
+		text-decoration: none;
+	}
+
+	.mobile-bottom-nav-item:hover,
+	.mobile-bottom-nav-item:focus,
+	.mobile-bottom-nav-item:active {
+		background: var(--c-accent-08);
+		color: var(--c-accent);
+		text-decoration: none;
+	}
+
+	.mobile-bottom-nav-item:focus-visible {
+		outline: 2px solid var(--c-accent-34);
+		outline-offset: 2px;
+	}
+
+	.mobile-bottom-nav-item-disabled {
+		color: var(--bs-secondary-color);
+		opacity: .45;
+		pointer-events: none;
+	}
+
+	.mobile-bottom-nav-icon {
+		font-size: 1.2rem;
 		line-height: 1;
+	}
+
+	.mobile-bottom-nav-label {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		width: 100%;
 	}
 }
 
@@ -3181,7 +3293,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 @media (max-width: 575.98px) {
 	.quran-ayah-hero-toolbar {
-		gap: .65rem;
+		gap: 1rem;
 	}
 
 	.quran-ayah-hero-toolbar .quran-ayah-action-label {

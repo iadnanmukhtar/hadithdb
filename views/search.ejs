@@ -97,11 +97,21 @@
             <div class="col-md-8">
               
               <div class="input-group mb-1">
-                <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="Search hadīth, āyāt, or tafāsīr...">
+                <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="<%= isQuranSearchProxy ? 'Search the Qurʿān or tafāsīr...' : 'Search hadīth, āyāt, or tafāsīr...' %>">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="bi bi-book"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
+                  <% if (isQuranSearchProxy) { %>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="b" value="quran" <%=(b.indexOf('quran') >= 0) ? 'checked' : ''%>>
+                    <label class="form-check-label">Quran</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="b" value="commentaries" <%= (b.indexOf('commentaries') >= 0) ? 'checked' : '' %>>
+                    <label class="form-check-label">Tafsir</label>
+                  </div>
+                  <% } else { %>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="commentaries" <%= (b.indexOf('commentaries') >= 0) ? 'checked' : '' %>>
                     <label class="form-check-label">Tafāsīr</label>
@@ -126,6 +136,7 @@
                   </div>
                   <% } %>
                   <% }); %>
+                  <% } %>
                   
                 </div>
                 <div class="caution partial l2" lang="en">
@@ -230,6 +241,7 @@
     </main>
   </div>
   
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   

@@ -1,0 +1,57 @@
+<%
+  var mobilePrev = typeof prev !== 'undefined' ? prev : page.prev;
+  var mobileNext = typeof next !== 'undefined' ? next : page.next;
+  var mobilePrevTitle = typeof prevTitle !== 'undefined' ? prevTitle : 'Previous';
+  var mobileNextTitle = typeof nextTitle !== 'undefined' ? nextTitle : 'Next';
+  var mobilePrevHref = mobilePrev && typeof utils !== 'undefined' && typeof req !== 'undefined' ? utils.urlFor(req, mobilePrev) : mobilePrev;
+  var mobileNextHref = mobileNext && typeof utils !== 'undefined' && typeof req !== 'undefined' ? utils.urlFor(req, mobileNext) : mobileNext;
+  var mobileContext = page && page.context ? page.context : {};
+  var mobileBook = mobileContext.book || {};
+  var mobileRequestPath = typeof req !== 'undefined' && req.path ? req.path : '';
+  var mobileCanonical = page && page.canonical ? page.canonical : '';
+  var mobileIsQuran = mobileContext.quranSearchProxy
+    || mobileBook.alias === 'quran'
+    || mobileRequestPath === '/quran'
+    || mobileRequestPath.indexOf('/quran/') === 0
+    || mobileCanonical === '/quran'
+    || mobileCanonical.indexOf('/quran/') === 0
+    || mobileCanonical.indexOf('/quran:') === 0;
+  var mobileHomeHref = '/';
+  if (typeof utils !== 'undefined' && typeof req !== 'undefined')
+    mobileHomeHref = mobileIsQuran ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
+%>
+
+<% if (mobilePrev || mobileNext) { %>
+<nav class="mobile-bottom-nav" aria-label="Mobile page navigation">
+  <button type="button" class="mobile-bottom-nav-item" onclick="history.back()" title="Back" aria-label="Back">
+    <span class="bi bi-arrow-left-short mobile-bottom-nav-icon" aria-hidden="true"></span>
+    <span class="mobile-bottom-nav-label">Back</span>
+  </button>
+  <a class="mobile-bottom-nav-item" href="<%- mobileHomeHref %>" title="Home" aria-label="Home">
+    <span class="bi bi-house mobile-bottom-nav-icon" aria-hidden="true"></span>
+    <span class="mobile-bottom-nav-label">Home</span>
+  </a>
+  <% if (mobilePrev) { %>
+    <a class="mobile-bottom-nav-item" href="<%- mobilePrevHref %>" rel="prev" title="<%- mobilePrevTitle %>" aria-label="Previous">
+      <span class="bi bi-chevron-left mobile-bottom-nav-icon" aria-hidden="true"></span>
+      <span class="mobile-bottom-nav-label">Prev</span>
+    </a>
+  <% } else { %>
+    <span class="mobile-bottom-nav-item mobile-bottom-nav-item-disabled" aria-disabled="true">
+      <span class="bi bi-chevron-left mobile-bottom-nav-icon" aria-hidden="true"></span>
+      <span class="mobile-bottom-nav-label">Prev</span>
+    </span>
+  <% } %>
+  <% if (mobileNext) { %>
+    <a class="mobile-bottom-nav-item" href="<%- mobileNextHref %>" rel="next" title="<%- mobileNextTitle %>" aria-label="Next">
+      <span class="bi bi-chevron-right mobile-bottom-nav-icon" aria-hidden="true"></span>
+      <span class="mobile-bottom-nav-label">Next</span>
+    </a>
+  <% } else { %>
+    <span class="mobile-bottom-nav-item mobile-bottom-nav-item-disabled" aria-disabled="true">
+      <span class="bi bi-chevron-right mobile-bottom-nav-icon" aria-hidden="true"></span>
+      <span class="mobile-bottom-nav-label">Next</span>
+    </span>
+  <% } %>
+</nav>
+<% } %>
