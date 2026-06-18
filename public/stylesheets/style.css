@@ -271,6 +271,34 @@ main.chapter.tafsir-only-page {
 	font-size: 1.5rem;
 }
 
+.nav-google-signin {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+}
+
+.nav-google-placeholder {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 1px solid #dadce0;
+	border-radius: 50%;
+	background: var(--c-white);
+	box-shadow: none;
+	cursor: pointer;
+}
+
+.nav-google-placeholder-logo {
+	width: 20px;
+	height: 20px;
+	display: block;
+}
+
 .site-navbar > .site-navbar-main {
 	border-bottom: 1px solid var(--bs-border-color);
 	flex-wrap: nowrap;
@@ -1564,6 +1592,29 @@ del em strong {
 	will-change: transform;
 }
 
+#bmc-wbtn .hadith-bmc-remove {
+	align-items: center;
+	background: rgba(0, 0, 0, .72);
+	border: 2px solid #fff;
+	border-radius: 999px;
+	color: #fff;
+	display: inline-flex;
+	font: 700 12px/1 Arial, sans-serif;
+	height: 22px;
+	justify-content: center;
+	padding: 0;
+	position: absolute;
+	right: -5px;
+	top: -5px;
+	width: 22px;
+	z-index: 1;
+}
+
+#bmc-wbtn .hadith-bmc-remove:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+
 #bmc-wbtn.hadith-bmc-dragging {
 	cursor: grabbing;
 	transition: none;
@@ -1572,7 +1623,7 @@ del em strong {
 #bmc-wbtn.hadith-bmc-dismissed {
 	opacity: 0;
 	pointer-events: none;
-	transform: translateX(calc(100% + 2rem)) !important;
+	transform: translateX(var(--hadith-bmc-dismiss-x, calc(100vw + 5rem))) !important;
 }
 
 @media (max-width: 767.98px) {
