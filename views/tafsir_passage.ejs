@@ -42,6 +42,7 @@
       return a.num - b.num;
 	    });
 	    var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
+	    var tafsirPagePath = `${tafsirPath}/${surah.num}/${ayah}`;
 	    var tafsirBookmarkKey = `${tafsir.slug || tafsir.alias}:${surah.num}:${ayah}`;
 	    var quranChapter = locals.chapter;
 	    var quranSection = locals.section;
@@ -142,6 +143,19 @@
         tafsirSettingsHref: utils.quranUrl(req, '/quran/settings'),
         tafsirTranslationsHref: utils.quranUrl(req, `/quran/translations/${surah.num}/${ayah}`)
       }); %>
+
+      <section class="mt-4">
+        <%- include('sub-views/comment_widget.ejs', {
+          widgetId: 'comments',
+          heading: `Reflect on Quran ${ref}:`,
+          targetId: ayahs[0] && ayahs[0].id,
+          ref: ayahs[0] && ayahs[0].ref,
+          endpoint: '/comments',
+          subjectLabel: 'reflection',
+          commentPrefix: `[${tafsirTitle} for Quran ${ref}](${tafsirPagePath})`,
+          placeholder: `Write a reflection on Quran ${ref}...`
+        }); %>
+      </section>
 
       <aside class="row mt-3 mb-3 pagination tafsir-passage-navigation">
         <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">

@@ -129,6 +129,13 @@ ${payload.text || '(no text found)'}
     }
   }
 
+  router.use(function noStoreReflectionResponses(req, res, next) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+  });
+
   if (config.registerExtraRoutes) config.registerExtraRoutes(router, debug);
 
   router.get(`/:${config.targetParam}`, async function (req, res, next) {

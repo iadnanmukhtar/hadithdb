@@ -394,7 +394,7 @@
 			try {
 				const counts = {};
 				for (let offset = 0; offset < ids.length; offset += 100) {
-						const res = await fetch(quranApiPath(`/comments/counts?ids=${ids.slice(offset, offset + 100).join(',')}`));
+						const res = await fetch(quranApiPath(`/comments/counts?ids=${ids.slice(offset, offset + 100).join(',')}`), { cache: 'no-store' });
 					if (!res.ok) throw new Error('Failed reflection count fetch');
 					const data = await res.json();
 					Object.assign(counts, data.counts || {});

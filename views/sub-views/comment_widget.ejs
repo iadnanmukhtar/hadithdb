@@ -8,7 +8,8 @@
   const pingUrl = typeof ctx.pingUrl === 'string' ? ctx.pingUrl : '';
   const subjectLabel = typeof ctx.subjectLabel === 'string' && ctx.subjectLabel.trim() ? ctx.subjectLabel : 'reflection';
   const placeholder = typeof ctx.placeholder === 'string' ? ctx.placeholder : 'Write a comment...';
-  const lazyLoad = !!ctx.lazyLoad;
+  const commentPrefix = typeof ctx.commentPrefix === 'string' ? ctx.commentPrefix.trim() : '';
+  const lazyLoad = ctx.lazyLoad !== false;
 %>
 
 <% if (targetId) { %>
@@ -70,6 +71,7 @@
         const rawPingUrl = container.dataset.pingUrl || '';
         const pingUrl = rawPingUrl ? quranApiPath(rawPingUrl) : '';
         const subjectLabel = container.dataset.subjectLabel || 'reflection';
+        const commentPrefix = <%- JSON.stringify(commentPrefix) %>;
         const lazyLoad = container.dataset.lazyLoad === '1';
         const countBadge = document.getElementById('<%= widgetId %>-count');
         const threadEl = document.getElementById('<%= widgetId %>-thread');
@@ -358,6 +360,7 @@
         const fetchComments = async (authToken = null) => {
           try {
             const res = await fetch(listUrl, {
+              cache: 'no-store',
               credentials: 'same-origin',
               headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
             });
@@ -396,6 +399,7 @@
           try {
             const res = await fetch(`${endpoint}/${commentId}`, {
               method: 'DELETE',
+              cache: 'no-store',
               credentials: 'same-origin',
               headers: await authHeaders(user)
             });
@@ -421,6 +425,7 @@
           try {
             const res = await fetch(`${endpoint}/${commentId}/vote`, {
               method: 'POST',
+              cache: 'no-store',
               credentials: 'same-origin',
               headers: await authHeaders(user, { 'Content-Type': 'application/json' }),
               body: JSON.stringify({ direction })
@@ -447,14 +452,16 @@
           const text = textarea.value.trim();
           if (!text) return;
           const isEditing = !!editingId;
+          const submittedText = !isEditing && commentPrefix ? `${commentPrefix}\n\n${text}` : text;
           try {
             const errorMsg = isEditing ? `Unable to update ${subjectLabel}` : `Unable to post ${subjectLabel}`;
             const res = await fetch(isEditing ? `${endpoint}/${editingId}` : listUrl, {
               method: isEditing ? 'PUT' : 'POST',
+              cache: 'no-store',
               credentials: 'same-origin',
               headers: await authHeaders(user, { 'Content-Type': 'application/json' }),
               body: JSON.stringify({
-                text,
+                text: submittedText,
                 parentId: isEditing ? null : (parentInput.value || null)
               })
             });
@@ -502,6 +509,7 @@
         };
 
         document.addEventListener('hadithAuthChanged', async () => {
+          if (!loaded) return;
           await renderUser();
           const user = await getActiveUser();
           if (!user) {
@@ -524,6 +532,17 @@
 
         if (!lazyLoad) {
           loadWidget();
+        } else if (window.location.hash === `#<%= widgetId %>`) {
+          loadWidget();
+        } else if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver((entries) => {
+            if (!entries.some(entry => entry.isIntersecting)) return;
+            observer.disconnect();
+            loadWidget();
+          }, { rootMargin: '300px 0px' });
+          observer.observe(container);
+        } else {
+          window.setTimeout(loadWidget, 250);
         }
       })();
     </script>

@@ -141,10 +141,14 @@ async function quranAyahs(surah, startAyah, endAyah) {
     rows = await quranAyahsFromDb(surah, startAyah, endAyah);
   }
   return rows.map(row => new Item(row)).map(row => ({
+    id: row.id,
+    ref: row.ref,
     num: row.num,
     ayah: Number(row.numInChapter),
     body: row.ar?.body || row.body || '',
-    body_en: row.en?.body || row.body_en || ''
+    body_en: row.en?.body || row.body_en || '',
+    en: row.en,
+    ar: row.ar
   }));
 }
 

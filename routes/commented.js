@@ -3,46 +3,25 @@
 
 const debug = require('debug')('hadithdb:commented');
 const express = require('express');
-const { homedir } = require('os');
-const fs = require('fs');
-const ejs = require('ejs');
 const { Item } = require('../lib/Model');
 const Utils = require('../lib/Utils');
 
 const router = express.Router();
-const name = Utils.versionedCacheName('commented');
+const name = 'commented';
 const latestCommentedLimit = 20;
+
+router.use(function noStoreCommentedResponses(req, res, next) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
 
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  var admin = (req.admin);
-  var editMode = (admin && req.editMode);
-  var cachedFile = `${homedir}/.hadithdb/cache/${name}.html`;
-  if (Utils.shouldFlushCache(req))
-    Utils.flushCachedFile(cachedFile);
-  if (!Utils.shouldFlushCache(req) && !editMode && fs.existsSync(cachedFile)) {
-    res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-    res.end(Utils.readCachedHtml(cachedFile, req));
-    return;
-  }
-
   var results = await getList();
-
-  // cache response
-  var refs = [];
-  for (const item of results)
-    refs.push(item.ref);
-  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list.ejs`, {
-    noadmin: true,
-    results: results,
-    page: getPage(),
-    req: req,
-    res: res
-  });
-  Utils.writeCachedHtml(cachedFile, html);
-  await Utils.indexCachedItem(refs, cachedFile);
 
   res.render('hadiths_list', {
     results: results,
@@ -56,31 +35,7 @@ router.get('/feed', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  var admin = (req.admin);
-  var editMode = (admin && req.editMode);
-  var cachedFile = `${homedir}/.hadithdb/cache/${name}_feed.xml`;
-  if (Utils.shouldFlushCache(req))
-    Utils.flushCachedFile(cachedFile);
-  if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
-    res.end(fs.readFileSync(cachedFile));
-    return;
-  }
-
   var results = await getList();
-
-  // cache response
-  var refs = [];
-  for (const item of results)
-    refs.push(item.ref);
-  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, {
-    noadmin: true,
-    results: results,
-    page: getPage('/feed'),
-    req: req,
-    res: res
-  });
-  fs.writeFileSync(cachedFile, html);
-  await Utils.indexCachedItem(refs, cachedFile);
 
   res.render('hadiths_list_feed', {
     results: results,
@@ -94,31 +49,7 @@ router.get('/rss', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  var admin = (req.admin);
-  var editMode = (admin && req.editMode);
-  var cachedFile = `${homedir}/.hadithdb/cache/${name}_rss.xml`;
-  if (Utils.shouldFlushCache(req))
-    Utils.flushCachedFile(cachedFile);
-  if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
-    res.end(fs.readFileSync(cachedFile));
-    return;
-  }
-
   var results = await getList();
-
-  // cache response
-  var refs = [];
-  for (const item of results)
-    refs.push(item.ref);
-  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_rss.ejs`, {
-    noadmin: true,
-    results: results,
-    page: getPage('/rss'),
-    req: req,
-    res: res
-  });
-  fs.writeFileSync(cachedFile, html);
-  await Utils.indexCachedItem(refs, cachedFile);
 
   res.render('hadiths_list_rss', {
     results: results,
@@ -130,17 +61,11 @@ module.exports = router;
 
 async function getList() {
   var results = await global.query(`
-    SELECT vh.*, h.commented AS comment_count, comments.latest_comment_at
+    SELECT vh.*, h.commented AS comment_count
     FROM hadiths h
     JOIN v_hadiths vh ON vh.hId=h.id
-    JOIN (
-      SELECT hadithId, MAX(createdAt) AS latest_comment_at
-      FROM hadiths_comments
-      WHERE deleted IS NULL OR deleted=0
-      GROUP BY hadithId
-    ) comments ON comments.hadithId=h.id
     WHERE h.commented > 0
-    ORDER BY comments.latest_comment_at DESC
+    ORDER BY h.commented DESC, h.lastfixed DESC, h.id DESC
     LIMIT ${latestCommentedLimit}`);
   return results.map(item => new Item(item));
 }
