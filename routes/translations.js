@@ -3,6 +3,7 @@
 const createError = require('http-errors');
 const express = require('express');
 const Index = require('../lib/Index');
+const QuranHeadings = require('../lib/QuranHeadings');
 const Utils = require('../lib/Utils');
 const { Item } = require('../lib/Model');
 
@@ -35,10 +36,17 @@ router.get('/:surah/:ayah', async function (req, res, next) {
   if (!ayah)
     return next(createError(404, `Quran ayah ${req.params.surah}:${req.params.ayah} not found`));
 
+  const [chapter, section] = await Promise.all([
+    QuranHeadings.chapter(surahNum),
+    QuranHeadings.sectionForAyah(surahNum, ayahNum)
+  ]);
+
   res.render('translation_passage', {
     ayah: ayahNum,
     ayahs: [ayah],
+    chapter: chapter,
     navigation: translationNavigation(surahNum, ayahNum),
+    section: section,
     surah: surah
   });
 });

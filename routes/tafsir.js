@@ -5,6 +5,7 @@ const ejs = require('ejs');
 const express = require('express');
 const fs = require('fs');
 const Index = require('../lib/Index');
+const QuranHeadings = require('../lib/QuranHeadings');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const { Item } = require('../lib/Model');
@@ -86,6 +87,10 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
   const entryEnd = entries.length ? Math.max(...entries.map(entry => entry.endAyah)) : ayahNum;
   const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
   const allTafsirs = await Tafsir.visibleTafsirs();
+  const [chapter, section] = await Promise.all([
+    QuranHeadings.chapter(surahNum),
+    QuranHeadings.sectionForAyah(surahNum, ayahNum)
+  ]);
   const navigationEntries = entries.length || tafsir.source !== 'local'
     ? entries
     : await Tafsir.tafsirEntries(tafsir, surahNum, ayahNum, {
@@ -98,8 +103,10 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
     Tafsir: Tafsir,
     ayah: ayahNum,
     ayahs: ayahs,
+    chapter: chapter,
     entries: entries,
     navigation: navigation,
+    section: section,
     surah: surah,
     tafsir: tafsir
   };

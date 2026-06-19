@@ -40,10 +40,16 @@
       return Number.isInteger(surah.num);
     }).sort(function (a, b) {
       return a.num - b.num;
-    });
-    var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
-    var tafsirBookmarkKey = `${tafsir.slug || tafsir.alias}:${surah.num}:${ayah}`;
-%>
+	    });
+	    var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
+	    var tafsirBookmarkKey = `${tafsir.slug || tafsir.alias}:${surah.num}:${ayah}`;
+	    var quranChapter = locals.chapter;
+	    var quranSection = locals.section;
+	    var quranChapterHref = quranChapter && quranChapter.path ? utils.quranUrl(req, `/${quranChapter.path}`) : utils.quranUrl(req, `/quran/${surah.num}`);
+	    var quranSectionHref = quranSection && quranSection.path ? utils.quranUrl(req, `/${quranSection.path}`) : '';
+	    var quranChapterTitleEn = (quranChapter && quranChapter.title_en) || `Surat ${surah.name_en}`;
+	    var quranChapterTitleAr = (quranChapter && quranChapter.title) || `سورة ${surah.name_ar}`;
+	%>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
 </head>
@@ -66,34 +72,43 @@
         </div>
       </aside>
 
-      <heading class="row major tafsir-passage-title">
-        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en">
-          <%= surah.num %>. Surat <%= surah.name_en %>
-          <button type="button" class="tafsir-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>" title="Bookmark this tafsīr passage">
-            <span class="tafsir-bookmark-icon bi bi-bookmark text-accent" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>"></span>
-          </button>
-        </h2>
-        <h2 class="col-md-6 col-sm-12 fs-4 title text-md-end quran-surah-name" lang="ar" dir="rtl">
-          <%= arabic.toArabicDigits(surah.num + '') %> - سورة <%= surah.name_ar %>
-        </h2>
-      </heading>
+	      <heading class="row major">
+	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>">
+	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
+	        </a>
+	          <button type="button" class="tafsir-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>" title="Bookmark this tafsīr passage">
+	            <span class="tafsir-bookmark-icon bi bi-bookmark text-accent" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>"></span>
+	          </button>
+	        </h2>
+	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="<%= quranChapterHref %>">
+	          <%= arabic.toArabicDigits(surah.num + '') %>۔
+	          <span<%- quranChapter ? ` class="_e quran-surah-name" data-id="${quranChapter.id}" data-prop="toc.title"` : ' class="quran-surah-name"' %>><%- quranChapterTitleAr %></span>
+	        </a></h2>
+	      </heading>
 
-      <section class="row breadcrumbs pagination">
-        <div class="col-md-6 col-sm-12" lang="en">
-          <a title="<%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %>" href="/quran/tafsir"><%- tafsirTitle %></a>
-          &gt;
-          <a title="<%- surah.name_en %>" href="<%= tafsirPath %>/<%= surah.num %>/1">Surah <%= surah.num %></a>
-          &gt;
-          <span>Section <%= ayah %></span>
-        </div>
-        <div class="col-md-6 col-sm-12" lang="ar" dir="rtl">
-          <a title="<%- tafsir.name || tafsir.shortName || tafsir.alias %>" href="/quran/tafsir"><%- tafsirTitleAr %></a>
-          &gt;
-          <a title="<%- surah.name_ar %>" href="<%= tafsirPath %>/<%= surah.num %>/1">السورة <%= arabic.toArabicDigits(surah.num + '') %></a>
-          &gt;
-          <span>باب <%= arabic.toArabicDigits(ayah + '') %></span>
-        </div>
-      </section>
+	      <section class="row breadcrumbs pagination">
+	        <div class="col-md-6 col-sm-12" lang="en">
+	          <a title="The Holy Quran" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a>
+	          &gt;
+	          <a title="<%- quranChapterTitleEn %>" href="<%= quranChapterHref %>">Surah <%= surah.num %></a>
+	          <% if (quranSection) { %>
+	            &gt;
+	            <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranSection.id %>" title="Bookmark this section">
+	              <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranSection.id %>"></span>
+	            </button>
+	            <a title="<%- quranSection.title || quranSection.title_en || 'Section' %>" href="<%= quranSectionHref %>">Section <%= quranSection.h2 %></a>
+	          <% } %>
+	        </div>
+	        <div class="col-md-6 col-sm-12" lang="ar">
+	          <a title="القرآن" href="<%= utils.quranUrl(req, '/quran') %>">القرآن</a>
+	          &gt;
+	          <a title="<%- quranChapterTitleAr %>" href="<%= quranChapterHref %>">السورة <%= arabic.toArabicDigits(surah.num + '') %></a>
+	          <% if (quranSection) { %>
+	            &gt;
+	            <a title="<%- quranSection.title || quranSection.title_en || 'باب' %>" href="<%= quranSectionHref %>">باب <%= arabic.toArabicDigits(quranSection.h2 + '') %></a>
+	          <% } %>
+	        </div>
+	      </section>
 
       <% if (quranNavigatorSurahs.length > 0) { %>
         <form class="quran-passage-navigator mb-3" action="/quran" method="get" novalidate data-quran-passage-navigator data-tafsir-navigator-base="<%= tafsirPath %>" data-tafsir-navigator-query="" data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
