@@ -30,6 +30,8 @@ router.get('/:surah/:ayah', async function (req, res, next) {
   const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
   if (!surah || !Number.isInteger(ayahNum) || ayahNum < 1 || ayahNum > Number(surah.ayahs))
     return next(createError(404, `Quran ayah ${req.params.surah}:${req.params.ayah} not found`));
+  if (Object.prototype.hasOwnProperty.call(req.query || {}, 'lang'))
+    return res.redirect(302, canonicalTranslationUrl(req, surah.num, ayahNum));
 
   const ayahs = await quranAyahs(surahNum, ayahNum, ayahNum);
   const ayah = ayahs.find(item => Number(item.ayah) === ayahNum) || ayahs[0];
@@ -50,6 +52,20 @@ router.get('/:surah/:ayah', async function (req, res, next) {
     surah: surah
   });
 });
+
+function canonicalTranslationUrl(req, surah, ayah) {
+  const params = new URLSearchParams();
+  Object.entries(req.query || {}).forEach(([key, value]) => {
+    if (key === 'lang')
+      return;
+    if (Array.isArray(value))
+      value.forEach(item => params.append(key, item));
+    else if (value !== undefined)
+      params.append(key, value);
+  });
+  const query = params.toString();
+  return Utils.quranPath(`/quran/translations/${surah}/${ayah}${query ? `?${query}` : ''}`);
+}
 
 async function quranAyahs(surah, startAyah, endAyah) {
   let rows;

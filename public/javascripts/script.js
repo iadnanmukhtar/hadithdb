@@ -106,6 +106,7 @@ $(function () {
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
 	initQuranDynamicPassageHero(document);
+	canonicalizeQuranTranslationPageUrl();
 	initQuranPreferredTranslationDisplays(document);
 	initQuranTranslations(document);
 	initQuranAyahModals(document);
@@ -727,6 +728,28 @@ function currentQuranTafsirHash() {
 	return window.location.hash;
 }
 
+function isQuranTranslationPage() {
+	return /^\/quran\/translations(?:\/|$)/.test(window.location.pathname);
+}
+
+function canonicalizeQuranTranslationPageUrl() {
+	if (!isQuranTranslationPage())
+		return;
+	var url = new URL(window.location.href);
+	var changed = false;
+	if (url.searchParams.has('lang')) {
+		url.searchParams.delete('lang');
+		changed = true;
+	}
+	var hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
+	if (hashParams.has('tafsir') || hashParams.has('open-tafsir')) {
+		url.hash = '';
+		changed = true;
+	}
+	if (changed)
+		window.history.replaceState(null, document.title, `${url.pathname}${url.search}${url.hash}`);
+}
+
 function tafsirBrowseSlug(alias) {
 	return (alias || '').toString().replace(/^(?:(?:en|ar)-)?(?:tafsir-)?/, '');
 }
@@ -1327,13 +1350,13 @@ function initQuranTafsirTabs(root) {
 			container.on('shown.bs.tab', '[data-bs-toggle="tab"]', function (event) {
 				var hash = $(event.target).attr('data-tafsir-hash');
 				var language = $(event.target).attr('data-tafsir-lang');
-				if (hash) {
-					storeTafsirAlias(hash);
-					if (dedicatedTafsirPassageMatch())
-						clearDedicatedTafsirHash();
-					else
-						window.history.replaceState(null, '', buildQuranTafsirHash('tafsir', hash, language));
-				}
+					if (hash) {
+						storeTafsirAlias(hash);
+						if (dedicatedTafsirPassageMatch())
+							clearDedicatedTafsirHash();
+						else if (!isQuranTranslationPage())
+							window.history.replaceState(null, '', buildQuranTafsirHash('tafsir', hash, language));
+					}
 				if (language) {
 					activeLanguage = language;
 					selectedByLanguage[language] = hash;
