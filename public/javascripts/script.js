@@ -1676,13 +1676,22 @@ function initQuranTranslations(root) {
 		};
 		var appendTranslationSource = function (entry, book) {
 			var source = $('<summary>').addClass('quran-translation-source').appendTo(entry);
+			var shortName = book.shortName_en || book.shortName || book.alias;
+			var authorName = book.author_en || book.author || '';
+			var bookTitle = [book.name_en || book.name || book.alias, book.death ? `${book.death} AH` : ''].filter(Boolean).join(', ');
 			$('<span>').addClass('quran-translation-chevron bi bi-chevron-right').attr('aria-hidden', 'true').appendTo(source);
-			$('<strong>').addClass('quran-translation-source-author').text(book.author_en || book.shortName_en || book.alias).appendTo(source);
+			$('<strong>').addClass('quran-translation-source-author').attr('title', shortName).text(shortName).appendTo(source);
 			if (!book.builtinDefault)
 				$('<span>').addClass('quran-translation-drag-handle bi bi-grip-vertical').attr({ 'aria-hidden': 'true', title: 'Drag to reorder' }).appendTo(source);
-			var title = [book.name_en || book.shortName_en || book.alias, book.death ? `${book.death} AH` : ''].filter(Boolean).join(', ');
-			if (title)
-				$('<span>').addClass('quran-translation-source-title').text(title).appendTo(source);
+			if (authorName || bookTitle) {
+				var subtitle = $('<span>').addClass('quran-translation-source-title')
+					.attr('title', [authorName, bookTitle].filter(Boolean).join(' '))
+					.appendTo(source);
+				if (authorName)
+					$('<span>').addClass('quran-translation-source-full-author').attr('title', authorName).text(authorName).appendTo(subtitle);
+				if (bookTitle)
+					$('<span>').addClass('quran-translation-source-book-title').attr('title', bookTitle).text(bookTitle).appendTo(subtitle);
+			}
 		};
 		var appendTranslationEntry = function (book, payload, open) {
 			var draggable = !book.builtinDefault;

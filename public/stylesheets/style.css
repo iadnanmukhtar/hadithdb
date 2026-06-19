@@ -2418,12 +2418,8 @@ del em strong {
 	}
 
 	.quran-translation-source-title {
-		display: block;
 		flex: 1 0 100%;
 		margin-left: 1.15rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	.translation-setting-title,
@@ -2601,9 +2597,33 @@ del em strong {
 }
 
 .quran-translation-source-title {
-	display: block;
+	align-items: baseline;
+	display: flex !important;
 	flex: 1 0 100%;
+	gap: .2rem;
 	margin-left: 1.15rem;
+}
+
+.quran-translation-source .quran-translation-source-full-author,
+.quran-translation-source .quran-translation-source-book-title {
+	display: inline-block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.quran-translation-source .quran-translation-source-full-author {
+	flex: 0 1 50%;
+	max-width: 50%;
+}
+
+.quran-translation-source .quran-translation-source-book-title {
+	flex: 1 1 0;
+}
+
+.quran-translation-source .quran-translation-source-full-author + .quran-translation-source-book-title {
+	margin-left: .35rem;
 }
 
 .quran-translation-entry[open] .quran-translation-source {
@@ -2615,6 +2635,7 @@ del em strong {
 .quran-translation-text {
 	font-family: "Gentium Plus", Serif;
 	line-height: 1.45;
+	margin-left: 1.15rem;
 }
 
 .quran-translation-text p:last-child {
@@ -2637,6 +2658,11 @@ del em strong {
 }
 
 .tafsir-only-page .quran-tafsir-text:lang(en) {
+	font-size: 1rem;
+	line-height: 1.55;
+}
+
+.translation-only-page .quran-translation-text:lang(en) {
 	font-size: 1rem;
 	line-height: 1.55;
 }
@@ -2792,8 +2818,8 @@ del em strong {
 .quran-tafsir-text .footnotes p,
 .quran-translation-text .footnotes,
 .quran-translation-text .footnotes p {
-	font-size: .78rem;
-	line-height: 1.35;
+	font-size: .78rem !important;
+	line-height: 1.35 !important;
 }
 
 .quran-tafsir-text .footnotes li,
@@ -2808,22 +2834,22 @@ del em strong {
 
 .quran-tafsir-text .footnotes li::marker,
 .quran-translation-text .footnotes li::marker {
-	font-size: .78rem;
-	line-height: 1.35;
+	font-size: .78rem !important;
+	line-height: 1.35 !important;
 }
 
 .quran-tafsir-text:lang(ar) .footnotes,
 .quran-tafsir-text:lang(ar) .footnotes p,
 .quran-translation-text:lang(ar) .footnotes,
 .quran-translation-text:lang(ar) .footnotes p {
-	font-size: .95rem;
-	line-height: 1.45;
+	font-size: .95rem !important;
+	line-height: 1.45 !important;
 }
 
 .quran-tafsir-text:lang(ar) .footnotes li::marker,
 .quran-translation-text:lang(ar) .footnotes li::marker {
-	font-size: .95rem;
-	line-height: 1.45;
+	font-size: .95rem !important;
+	line-height: 1.45 !important;
 }
 
 .quran-tafsir-footnote-popup {
