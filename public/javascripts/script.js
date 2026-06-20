@@ -361,6 +361,7 @@ function setHadithEditMode(enabled) {
 	} catch (err) {
 		// Ignore private-mode or blocked storage failures.
 	}
+	setHadithCookie('editMode', enabled ? '1' : '0', window.HADITH_SESSION_MAX_AGE);
 }
 
 function hadithLoginSessionCacheBridgeUrl(baseUrl) {
@@ -2466,6 +2467,7 @@ function initQuranAyahModals(root) {
 		});
 		var modalState = {
 			isShown: function () { return shown; },
+			activeIndex: function () { return activeIndex; },
 			openAyah: openAyah,
 			moveAyah: moveAyah,
 			rotateTafsir: rotateTafsir
@@ -2486,6 +2488,30 @@ function initQuranAyahModals(root) {
 		var state = getModalState(type);
 		if (state)
 			state.openAyah(index, focusTarget);
+	};
+	var switchAyahModal = function (targetType, focusTarget) {
+		var shownModal = $('.quran-ayah-modal.show').first();
+		var shownState = getShownModalState();
+		var activeIndex = shownState && shownState.activeIndex ? shownState.activeIndex() : 0;
+		if (!shownModal.length) {
+			openAyah(activeIndex, targetType, focusTarget);
+			return;
+		}
+		var currentType = shownModal.attr('data-quran-ayah-modal-type');
+		if (currentType === targetType)
+			return;
+		var targetState = getModalState(targetType);
+		if (!targetState)
+			return;
+		var openTarget = function () {
+			openAyah(activeIndex, targetType, focusTarget);
+		};
+		if (window.bootstrap && window.bootstrap.Modal) {
+			shownModal.one('hidden.bs.modal', openTarget);
+			window.bootstrap.Modal.getOrCreateInstance(shownModal[0]).hide();
+		} else {
+			openTarget();
+		}
 	};
 	var openInitialAyahModalFromHash = function () {
 		var params = quranTafsirHashParams();
@@ -2544,6 +2570,12 @@ function initQuranAyahModals(root) {
 			event.preventDefault();
 			event.stopPropagation();
 			openAyah($(this).attr('data-quran-ayah-modal-index'), $(this).attr('data-quran-ayah-modal-type'), this);
+		});
+
+		$(document).on('click.quranAyahModalSwitch', '.quran-ayah-modal-switch[data-quran-ayah-modal-switch]', function (event) {
+			event.preventDefault();
+			event.stopPropagation();
+			switchAyahModal($(this).attr('data-quran-ayah-modal-switch'), this);
 		});
 
 		var longPressTimer = null;

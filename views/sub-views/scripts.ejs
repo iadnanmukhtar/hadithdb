@@ -657,6 +657,7 @@
       } catch (err) {
         // Ignore private-mode or blocked storage failures.
       }
+      setHadithCookie('editMode', enabled ? '1' : '0', window.HADITH_SESSION_MAX_AGE);
   }
 
   function markHadithAuthSynced(username) {

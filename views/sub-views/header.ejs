@@ -99,7 +99,7 @@
           </a>
         </li>
         <% if (site.admin) { %>
-        <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(localStorage.getItem('hadithdb_edit_mode') === '1'); localStorage.setItem('hadithdb_edit_mode', editMode ? '0' : '1'); location.reload();">
+        <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;max-age=7776000;samesite=lax' : document.cookie='editMode=1;path=/;max-age=7776000;samesite=lax'; try { localStorage.setItem('hadithdb_edit_mode', editMode ? '0' : '1'); } catch (err) {} location.reload();">
             <i class="bi bi-gear<%=site.editMode ? '-fill' : ''%>"></i></a>
         </li>
         <% } %>

@@ -2255,6 +2255,7 @@ del em strong {
 
 .quran-ayah-modal-toolbar {
 	align-items: center;
+	flex-wrap: wrap;
 	gap: .75rem;
 	background: var(--c-white);
 	border-bottom-color: var(--c-accent-18);
@@ -2265,8 +2266,19 @@ del em strong {
 	color: var(--c-black-soft);
 }
 
+.quran-ayah-modal-mode-toggle {
+	flex: 0 0 auto;
+}
+
+.quran-ayah-modal-mode-toggle .btn.active {
+	background: var(--c-accent);
+	border-color: var(--c-accent);
+	color: var(--c-white);
+}
+
 .quran-ayah-modal-nav {
 	display: flex;
+	flex-wrap: wrap;
 	gap: .35rem;
 }
 

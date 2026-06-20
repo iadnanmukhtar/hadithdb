@@ -7,6 +7,10 @@
     <div class="modal-content">
       <header class="modal-header quran-ayah-modal-toolbar">
         <h2 class="modal-title fs-5" id="quran-ayah-tafsir-modal-title">Quran</h2>
+        <div class="btn-group btn-group-sm quran-ayah-modal-mode-toggle" role="group" aria-label="Quran modal view">
+          <button type="button" class="btn btn-outline-secondary active" aria-pressed="true">Tafsir</button>
+          <button type="button" class="btn btn-outline-secondary quran-ayah-modal-switch" data-quran-ayah-modal-switch="translations">Translations</button>
+        </div>
         <nav class="quran-ayah-modal-nav" aria-label="Ayah and tafsir navigation">
           <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
           <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
@@ -38,6 +42,10 @@
     <div class="modal-content">
       <header class="modal-header quran-ayah-modal-toolbar">
         <h2 class="modal-title fs-5" id="quran-ayah-translations-modal-title">Quran</h2>
+        <div class="btn-group btn-group-sm quran-ayah-modal-mode-toggle" role="group" aria-label="Quran modal view">
+          <button type="button" class="btn btn-outline-secondary quran-ayah-modal-switch" data-quran-ayah-modal-switch="tafsirs">Tafsir</button>
+          <button type="button" class="btn btn-outline-secondary active" aria-pressed="true">Translations</button>
+        </div>
         <nav class="quran-ayah-modal-nav" aria-label="Ayah navigation">
           <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
           <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
