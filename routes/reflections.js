@@ -2,7 +2,7 @@
 'use strict';
 
 const express = require('express');
-const debugFactory = require('debug');
+const debugFactory = require('../lib/Debug');
 const crypto = require('crypto');
 const Utils = require('../lib/Utils');
 const GoogleAuth = require('../lib/GoogleAuth');
@@ -30,7 +30,7 @@ function createReflectionRouter(config) {
     try {
       await getMailer().sendMail(message);
     } catch (err) {
-      debug(`${failureLabel}: ${err.message}`);
+      debug.error(`${failureLabel}: ${err.message}\n${err.stack || ''}`);
     }
   }
 
@@ -124,7 +124,7 @@ ${payload.text || '(no text found)'}
       }
       next();
     } catch (err) {
-      debug(`Auth error: ${err.message}`);
+      debug.error(`Auth error: ${err.message}\n${err.stack || ''}`);
       res.status(401).json({ error: 'Invalid authentication token.' });
     }
   }
@@ -157,7 +157,7 @@ ${payload.text || '(no text found)'}
       const voteStats = await getVoteStats(rows.map(row => row.id), user ? user.uid : null);
       res.json(rows.map(row => formatComment(row, user, voteStats[row.id])));
     } catch (err) {
-      debug(`Error loading comments:\n${err.stack}`);
+      debug.error(`Error loading comments:\n${err.stack || err.message}`);
       next(err);
     }
   });
@@ -201,7 +201,7 @@ ${payload.text || '(no text found)'}
       sendCommentEmail(comment);
       if (parentRows[0]) sendReplyEmail(comment, parentRows[0]);
     } catch (err) {
-      debug(`Error adding comment:\n${err.stack}`);
+      debug.error(`Error adding comment:\n${err.stack || err.message}`);
       next(err);
     }
   });
@@ -235,7 +235,7 @@ ${payload.text || '(no text found)'}
       const vote = (await getVoteStats([commentId], req.user.uid))[commentId] || {};
       res.json(formatSavedComment(updated, req.user.photo, vote));
     } catch (err) {
-      debug(`Error updating comment:\n${err.stack}`);
+      debug.error(`Error updating comment:\n${err.stack || err.message}`);
       next(err);
     }
   });
@@ -270,7 +270,7 @@ ${payload.text || '(no text found)'}
         canDelete: false
       });
     } catch (err) {
-      debug(`Error deleting comment:\n${err.stack}`);
+      debug.error(`Error deleting comment:\n${err.stack || err.message}`);
       next(err);
     }
   });
@@ -317,7 +317,7 @@ ${payload.text || '(no text found)'}
         voter: req.user
       });
     } catch (err) {
-      debug(`Error voting on comment:\n${err.stack}`);
+      debug.error(`Error voting on comment:\n${err.stack || err.message}`);
       next(err);
     }
   });

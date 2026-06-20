@@ -2,7 +2,7 @@
 'use strict';
 
 const express = require('express');
-const debug = require('debug')('hadithdb:chatbot');
+const debug = require('../lib/Debug')('hadithdb:Chatbot');
 const Chatbot = require('../lib/Chatbot');
 
 const router = express.Router();
@@ -218,7 +218,7 @@ function sendJson(res, status, payload) {
 
 function sendJsonError(res, err, context) {
 	var status = err.status || err.statusCode || 500;
-	debug(`${context}: ${err.message}\n${err.stack || ''}`);
+	debug.error(`${context}: ${err.message}\n${err.stack || ''}`);
 	sendJson(res, status, {
 		error: context,
 		message: err.message || 'Unexpected chatbot error',

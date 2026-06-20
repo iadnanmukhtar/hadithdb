@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:blog');
+const debug = require('../lib/Debug')('hadithdb:Blog');
 const express = require('express');
 const fs = require('fs');
 const createError = require('http-errors');
@@ -139,7 +139,7 @@ function getPosts() {
           posts.push(post);
       } catch (e) {
         debug(e.toString());
-        debug(e.stack);
+        debug.error(e.stack || e.message || e);
       }
     }
   }

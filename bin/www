@@ -5,7 +5,7 @@
 const newrelic = require('newrelic');
 require('dotenv').config();
 const app = require('../app');
-const debug = require('debug')('hadithdb:server');
+const debug = require('../lib/Debug')('hadithdb:Server');
 const http = require('http');
 
 var port = normalizePort(process.env.PORT || '3004');

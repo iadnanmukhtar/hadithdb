@@ -2,7 +2,7 @@
 'use strict';
 
 require('./lib/Globals');
-const debug = require('debug')('hadithdb:app');
+const debug = require('./lib/Debug')('hadithdb:App');
 const util = require('util');
 const path = require('path');
 const createError = require('http-errors');

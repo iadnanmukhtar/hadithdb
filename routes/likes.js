@@ -2,7 +2,7 @@
 'use strict';
 
 const express = require('express');
-const debug = require('debug')('hadithdb:likes');
+const debug = require('../lib/Debug')('hadithdb:Likes');
 const nodemailer = require('nodemailer');
 const Utils = require('../lib/Utils');
 const GoogleAuth = require('../lib/GoogleAuth');
@@ -109,7 +109,7 @@ User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider 
       text: body
     });
   } catch (e) {
-    debug(`Like email notification failed: ${e.message}`);
+    debug.error(`Like email notification failed: ${e.message}\n${e.stack || ''}`);
   }
 }
 
@@ -122,7 +122,7 @@ async function verifyGoogle(req, res, next) {
     }
     next();
   } catch (err) {
-    debug(`Auth error: ${err.message}`);
+    debug.error(`Auth error: ${err.message}\n${err.stack || ''}`);
     res.status(401).json({ error: 'Invalid authentication token.' });
   }
 }
@@ -175,7 +175,7 @@ router.get('/:hadithId', async function (req, res, next) {
     const liked = await getLikedFlag(userUid);
     res.json({ likes, liked, type });
   } catch (err) {
-    debug(`Error fetching likes:\n${err.stack}`);
+    debug.error(`Error fetching likes:\n${err.stack || err.message}`);
     next(err);
   }
 });
@@ -269,7 +269,7 @@ router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
       user: req.user || null
     });
   } catch (err) {
-    debug(`Error updating likes:\n${err.stack}`);
+    debug.error(`Error updating likes:\n${err.stack || err.message}`);
     next(err);
   }
 });

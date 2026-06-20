@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:bookmarks');
+const debug = require('../lib/Debug')('hadithdb:Bookmarks');
 const express = require('express');
 const ejs = require('ejs');
 const { Heading, Item } = require('../lib/Model');
@@ -61,7 +61,7 @@ router.post('/list', async function (req, res, next) {
       }
     });
   } catch (err) {
-    debug(`Error loading bookmarked hadiths: ${err.message}`);
+    debug.error(`Error loading bookmarked hadiths: ${err.message}\n${err.stack || ''}`);
     next(err);
   }
 });
@@ -93,7 +93,7 @@ router.post('/list-headings', async function (req, res, next) {
       }
     });
   } catch (err) {
-    debug(`Error loading bookmarked headings: ${err.message}`);
+    debug.error(`Error loading bookmarked headings: ${err.message}\n${err.stack || ''}`);
     next(err);
   }
 });
@@ -117,7 +117,7 @@ router.post('/list-tafsirs', async function (req, res, next) {
     });
     res.json({ html, count: tafsirBookmarks.length });
   } catch (err) {
-    debug(`Error loading bookmarked tafsirs: ${err.message}`);
+    debug.error(`Error loading bookmarked tafsirs: ${err.message}\n${err.stack || ''}`);
     next(err);
   }
 });

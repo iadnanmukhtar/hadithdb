@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:highlights');
+const debug = require('../lib/Debug')('hadithdb:Highlights');
 const express = require('express');
 const { homedir } = require('os');
 const fs = require('fs');

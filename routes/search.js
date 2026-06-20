@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:search');
+const debug = require('../lib/Debug')('hadithdb:Search');
 const express = require('express');
 const createError = require('http-errors');
 const crypto = require('crypto');
@@ -209,7 +209,7 @@ router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, n
     res.end(JSON.stringify(suggestions));
   } catch (err) {
     var message = `Error fetching autocomplete suggestions [${req.query.q || req.query.term}]`;
-    debug(message + `\n${err.stack}`);
+    debug.error(message + `\n${err.stack}`);
     return next(createError(500, message));
   }
 });
@@ -286,7 +286,7 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
       return;
     }
     var message = `Error in action [${req.params.id}?${req.query.action}]`;
-    debug(message + `\n${err.stack}`);
+    debug.error(message + `\n${err.stack}`);
     return next(createError(500, message));
   }
 });
@@ -476,7 +476,7 @@ async function renderSearchResults(req, res, next, options = {}) {
     });
   } catch (err) {
     var message = `Error searching [${req.query.q} ${req.query.b}]`;
-    debug(message + `\n${err.stack}`);
+    debug.error(message + `\n${err.stack}`);
     return next(createError(500, message));
   }
 
@@ -1034,7 +1034,7 @@ async function getQuranSurahRangeHeadingsFromIndex(surah) {
       subsections: headings.filter(heading => Number(heading.level) === 3)
     };
   } catch (err) {
-    debug(`Quran heading index lookup failed for surah ${surah}: ${err.message}`);
+    debug.error(`Quran heading index lookup failed for surah ${surah}: ${err.message}\n${err.stack || ''}`);
     return null;
   }
 }
@@ -1063,7 +1063,7 @@ async function getQuranSurahsFromIndex() {
       .filter(surah => Number.isInteger(surah.num))
       .sort((a, b) => a.num - b.num);
   } catch (err) {
-    debug(`Quran surah index lookup failed: ${err.message}`);
+    debug.error(`Quran surah index lookup failed: ${err.message}\n${err.stack || ''}`);
     return (global.surahs || []).map(surah => ({
       num: Number(surah.num),
       name_en: surah.name_en,
@@ -1573,7 +1573,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     if (e instanceof ReferenceError)
       return next(createError(404, e.message));
     else {
-      debug(e.stack);
+      debug.error(e.stack || e.message || e);
       return next(createError(500, e.message));
     }
   }
@@ -1710,7 +1710,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     if (e instanceof ReferenceError)
       return next(createError(404, e.message));
     else {
-      debug(e.stack);
+      debug.error(e.stack || e.message || e);
       return next(createError(500, e.message));
     }
   }

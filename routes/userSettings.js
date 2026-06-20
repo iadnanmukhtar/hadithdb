@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:user-settings');
+const debug = require('../lib/Debug')('hadithdb:UserSettings');
 const express = require('express');
 const createError = require('http-errors');
 const GoogleAuth = require('../lib/GoogleAuth');
@@ -25,7 +25,7 @@ async function verifyGoogle(req, res, next) {
     }
     next();
   } catch (err) {
-    debug(`Auth error: ${err.message}`);
+    debug.error(`Auth error: ${err.message}\n${err.stack || ''}`);
     if (optional) {
       req.user = null;
       next();

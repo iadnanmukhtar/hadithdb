@@ -1,6 +1,6 @@
 'use strict';
 
-const debug = require('debug')('hadithdb:proxy');
+const debug = require('../lib/Debug')('hadithdb:Proxy');
 const express = require('express');
 const axios = require('axios');
 const https = require('https')
@@ -18,13 +18,17 @@ quranBacktickMd.renderer.rules.code_block = renderQuranBacktickBlock;
 quranBacktickMd.renderer.rules.fence = renderQuranBacktickBlock;
 
 router.get('/tafsir/books', async function (req, res) {
+  debug('proxy tafsir books start');
   const rows = await Tafsir.visibleTafsirs();
+  debug(`proxy tafsir books done rows=${rows.length}`);
   res.setHeader('Cache-Control', 'no-store');
   res.json(rows);
 });
 
 router.get('/translations/books', async function (req, res) {
+  debug('proxy translations books start');
   const rows = await Tafsir.visibleTranslations();
+  debug(`proxy translations books done rows=${rows.length}`);
   res.setHeader('Cache-Control', 'no-store');
   res.json(rows);
 });
@@ -43,7 +47,9 @@ router.get('/translations/local', async function (req, res) {
     res.status(400).json({ error: 'Invalid local translation request.' });
     return;
   }
+  debug(`proxy local translations start aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo} lang=${lang || ''}`);
   const rows = await localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, ayahTo);
+  debug(`proxy local translations rows=${rows.length} aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo}`);
   const editMode = isEditMode(req);
   const entries = rows.map(row => {
     const alias = row.commentary_alias;
@@ -74,7 +80,9 @@ router.get('/tafsir/local', async function (req, res) {
     res.status(400).json({ error: 'Invalid local tafsir request.' });
     return;
   }
+  debug(`proxy local tafsir start alias=${src} ref=${surah}:${ayahFrom}-${ayahTo} lang=${lang || ''}`);
   const rows = await localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo);
+  debug(`proxy local tafsir rows=${rows.length} alias=${src} ref=${surah}:${ayahFrom}-${ayahTo}`);
   const editMode = isEditMode(req);
   if (editMode)
     addMissingEditableCommentaryRows(rows, src, surah, ayahFrom, ayahTo);
@@ -114,6 +122,8 @@ router.get('/tafsir', async function (req, res) {
   }
 
   try {
+    const t0 = Date.now();
+    debug(`proxy tafsir.app start alias=${src} ref=${surah}:${ayah} version=${version}`);
     const response = await axios.get('https://tafsir.app/get.php', {
       params: {
         src: src,
@@ -123,10 +133,13 @@ router.get('/tafsir', async function (req, res) {
       },
       timeout: 10000
     });
+    const elapsedMs = Date.now() - t0;
+    debug(`proxy tafsir.app done alias=${src} ref=${surah}:${ayah} status=${response.status} elapsedMs=${elapsedMs}`);
+    debug.slow('tafsir.app proxy', elapsedMs, `alias=${src} ref=${surah}:${ayah} status=${response.status}`);
     res.setHeader('Cache-Control', 'no-store');
     res.json(response.data);
   } catch (err) {
-    debug(`tafsir.app unavailable for ${src} ${surah}:${ayah}: ${err.message}`);
+    debug.error(`tafsir.app unavailable for ${src} ${surah}:${ayah}: ${err.message}\n${err.stack || ''}`);
     res.setHeader('Cache-Control', 'no-store');
     res.status(503).json({ error: 'Remote tafsir service is unavailable. Please use a local tafsir.' });
   }
@@ -146,16 +159,21 @@ router.get('/:url', async function (req, res, next) {
     var url = new URL(req.params.url);
     headers.host = url.host;
     try {
+      const t0 = Date.now();
+      debug(`generic proxy fetch start ${url.toString()}`);
       resource = await fetch(url.toString(), { method: 'GET', headers: headers, agent: agent });
       text = await resource.text();
+      const elapsedMs = Date.now() - t0;
+      debug(`generic proxy fetch done ${url.toString()} status=${resource.status} elapsedMs=${elapsedMs}`);
+      debug.slow('generic proxy fetch', elapsedMs, `${url.toString()} status=${resource.status}`);
     } catch (e) {
-      console.log(e);
+      debug.error(`generic proxy fetch failed ${url.toString()}: ${e.message}\n${e.stack || ''}`);
     }
     res.send(text);
     res.end();
     return;
   } catch (e) {
-    console.log(`Proxy: ${req.params.url} ${e}`);
+    debug.error(`Proxy: ${req.params.url} ${e.message || e}\n${e.stack || ''}`);
     throw new ReferenceError(`Proxy: ${req.params.url} ${e}`);
   }
 });

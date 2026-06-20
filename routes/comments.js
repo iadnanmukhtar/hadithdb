@@ -129,7 +129,7 @@ module.exports = createReflectionRouter({
         rows.forEach(row => counts[row.hadithId] = row.count);
         res.json({ counts });
       } catch (err) {
-        debug(`Error loading reflection counts:\n${err.stack}`);
+        debug.error(`Error loading reflection counts:\n${err.stack || err.message}`);
         next(err);
       }
     });

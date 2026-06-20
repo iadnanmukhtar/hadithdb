@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:liked');
+const debug = require('../lib/Debug')('hadithdb:Liked');
 const express = require('express');
 const { homedir } = require('os');
 const fs = require('fs');
@@ -44,7 +44,7 @@ router.get('/', async function (req, res, next) {
       page: getPage()
     });
   } catch (err) {
-    debug(`Error loading liked hadiths: ${err.message}`);
+    debug.error(`Error loading liked hadiths: ${err.message}\n${err.stack || ''}`);
     next(err);
   }
 });
@@ -82,7 +82,7 @@ router.get('/feed', async function (req, res, next) {
       page: getPage('/feed')
     });
   } catch (err) {
-    debug(`Error loading liked hadiths feed: ${err.message}`);
+    debug.error(`Error loading liked hadiths feed: ${err.message}\n${err.stack || ''}`);
     next(err);
   }
 });
@@ -120,7 +120,7 @@ router.get('/rss', async function (req, res, next) {
       page: getPage('/rss')
     });
   } catch (err) {
-    debug(`Error loading liked hadiths rss: ${err.message}`);
+    debug.error(`Error loading liked hadiths rss: ${err.message}\n${err.stack || ''}`);
     next(err);
   }
 });

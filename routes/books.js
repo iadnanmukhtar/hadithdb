@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:books');
+const debug = require('../lib/Debug')('hadithdb:Books');
 const express = require('express');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');

@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:commented');
+const debug = require('../lib/Debug')('hadithdb:Commented');
 const express = require('express');
 const { Item } = require('../lib/Model');
 const Utils = require('../lib/Utils');

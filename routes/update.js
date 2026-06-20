@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:update');
+const debug = require('../lib/Debug')('hadithdb:Update');
 const fs = require('fs');
 const express = require('express');
 const createError = require('http-errors');
@@ -297,7 +297,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           await invalidateHeadingCachesByHeadingId(ids[0]);
         }
       } catch (err) {
-        debug(`${err.message}:\n${err.stack}`);
+        debug.error(`${err.message}:\n${err.stack || ''}`);
       }
 
     } else if (type == 'book') {
@@ -318,7 +318,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           bookAliases.add(afterBook.alias);
         await flushBookCaches(bookAliases);
       } catch (err) {
-        debug(`${err.message}:\n${err.stack}`);
+        debug.error(`${err.message}:\n${err.stack || ''}`);
       }
 
     } else if (type == 'hadith_virtual') {
@@ -418,7 +418,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
   } catch (err) {
     status.message = updateErrorMessage(err);
     status.code = updateErrorStatus(err);
-    debug(`${status.message}:\n${err.stack}`);
+    debug.error(`${status.message}:\n${err.stack || ''}`);
   } finally {
     debug(`update status:${status.code}, id:${ids}, prop:${prop}, value:${(status.value + '').trim().substring(0, 20)}`);
     debug(status.message);
@@ -531,7 +531,7 @@ function refreshCommentaryIndexInBackground(id) {
     await Index.update('commentaries', commentary);
     await Index.refresh('commentaries');
   }).catch(function (err) {
-    debug(`commentary index refresh failed for ${id}: ${err.message}\n${err.stack}`);
+    debug.error(`commentary index refresh failed for ${id}: ${err.message}\n${err.stack || ''}`);
   });
 }
 
@@ -1119,7 +1119,7 @@ async function timedUpdateStep(label, fn) {
     debug(`${label}: done in ${Date.now() - started}ms`);
     return result;
   } catch (err) {
-    debug(`${label}: failed after ${Date.now() - started}ms: ${err.message}`);
+    debug.error(`${label}: failed after ${Date.now() - started}ms: ${err.message}\n${err.stack || ''}`);
     throw err;
   }
 }
@@ -1237,7 +1237,7 @@ function invalidateBookChapterCache(heading) {
     if (book)
       book.chapters = undefined;
   } catch (error) {
-    debug(`unable to invalidate in-memory chapter cache for heading ${heading.hId}: ${error.message}`);
+    debug.error(`unable to invalidate in-memory chapter cache for heading ${heading.hId}: ${error.message}\n${error.stack || ''}`);
   }
 }
 
@@ -1295,7 +1295,7 @@ async function reindexSearchScope(whereClause, options) {
       await Index.updateBulk(Heading.INDEX, headings);
       debug(`reindex search scope headings indexed ${headings.length} rows in ${Date.now() - headingStarted}ms: ${whereClause}`);
     } catch (err) {
-      debug(`unable to reindex headings for search scope ${whereClause}: ${err.message}\n${err.stack}`);
+      debug.error(`unable to reindex headings for search scope ${whereClause}: ${err.message}\n${err.stack || ''}`);
     }
   }
   var itemsStarted = Date.now();
@@ -1308,7 +1308,7 @@ async function reindexSearchScope(whereClause, options) {
       await Index.updateBulk(Item.INDEX, items, true);
       debug(`reindex search scope items indexed ${items.length} rows in ${Date.now() - itemIndexStarted}ms: ${whereClause}`);
     } catch (err) {
-      debug(`unable to reindex hadiths for search scope ${whereClause}: ${err.message}\n${err.stack}`);
+      debug.error(`unable to reindex hadiths for search scope ${whereClause}: ${err.message}\n${err.stack || ''}`);
     }
     if (options.syncKnowledge !== false)
       await HadithKnowledge.syncForHadithRows(items);
@@ -1339,7 +1339,7 @@ function runHadithPostUpdateTasks(hadithId, options) {
       await HadithKnowledge.syncForHadith(item, { force: options.forceKnowledge });
     });
   })().catch((err) => {
-    debug(`background hadith post-update failed for ${hadithId}: ${err.message}\n${err.stack}`);
+    debug.error(`background hadith post-update failed for ${hadithId}: ${err.message}\n${err.stack || ''}`);
   });
 }
 
@@ -1404,7 +1404,7 @@ async function safeBackground(label, fn) {
   try {
     await fn();
   } catch (err) {
-    debug(`${label} failed: ${err.message}\n${err.stack}`);
+    debug.error(`${label} failed: ${err.message}\n${err.stack || ''}`);
   }
 }
 

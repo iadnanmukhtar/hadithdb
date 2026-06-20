@@ -1,7 +1,7 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('debug')('hadithdb:login');
+const debug = require('../lib/Debug')('hadithdb:Login');
 const express = require('express');
 const GoogleAuth = require('../lib/GoogleAuth');
 const LocalAuth = require('../lib/LocalAuth');
