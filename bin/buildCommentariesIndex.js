@@ -9,6 +9,7 @@ const fs = require('fs');
 const MySQL = require('mysql');
 const path = require('path');
 const Index = require('../lib/Index');
+const Tafsir = require('../lib/Tafsir');
 
 const INDEX = 'commentaries';
 const options = readOptions(process.argv.slice(2));
@@ -22,6 +23,7 @@ let dbPoolEnded = false;
 			return;
 		}
 		const rows = await getCommentaries(options.alias);
+		rows.forEach(normalizeCommentaryRow);
 		await endDbPool();
 		console.log(`indexing ${rows.length} local commentary passages${options.alias ? ` for '${options.alias}'` : ''}...`);
 		await deleteExistingDocuments();
@@ -46,12 +48,20 @@ async function reindexCommentaryAlias(alias) {
 		const rows = await getCommentaries(alias, batchSize, offset, true);
 		if (rows.length < 1)
 			break;
+		rows.forEach(normalizeCommentaryRow);
 		await Index.updateBulk(INDEX, rows, false);
 		console.log(`indexed ${Math.min(offset + rows.length, total)}/${total} '${alias}' passages on ${INDEX}`);
 	}
 	await endDbPool();
 	await Index.refresh(INDEX);
 	console.log('commentaries index complete');
+}
+
+function normalizeCommentaryRow(row) {
+	['text', 'text_en', 'footnotes', 'footnotes_en'].forEach(column => {
+		row[column] = Tafsir.stripPageMarkers(row[column]);
+	});
+	return row;
 }
 
 function endDbPool() {
