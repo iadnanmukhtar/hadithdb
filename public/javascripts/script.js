@@ -985,7 +985,8 @@ function initQuranTafsirTabs(root) {
 				var match = dedicatedTafsirPassageMatch();
 				if (!match || !alias)
 					return '';
-				return `/quran/tafsir/${encodeURIComponent(tafsirUrlSlug(alias))}/${match[2]}/${match[3]}`;
+				var query = language === 'ar' || language === 'en' ? `?lang=${encodeURIComponent(language)}` : '';
+				return `/quran/tafsir/${encodeURIComponent(tafsirUrlSlug(alias))}/${match[2]}/${match[3]}${query}`;
 			};
 			var currentDedicatedTafsirPassageUrl = function () {
 				var match = dedicatedTafsirPassageMatch();

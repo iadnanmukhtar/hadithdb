@@ -22,6 +22,13 @@
         <h1 class="fs-4 mb-0">My Settings</h1>
         <p class="text-muted small mb-0" id="settings-account-status">Loading account settings...</p>
       </div>
+      <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
+        <span class="text-muted small">Settings view</span>
+        <div class="btn-group btn-group-sm settings-view-toggle" role="group" aria-label="Settings view">
+          <button type="button" class="btn btn-outline-secondary" data-settings-view="tile">Tile</button>
+          <button type="button" class="btn btn-outline-secondary" data-settings-view="full">Full</button>
+        </div>
+      </div>
 
       <section class="border-top pt-3">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
@@ -59,10 +66,21 @@
     const translationStatusEl = document.getElementById('settings-translation-status');
     const translationListEl = document.getElementById('settings-translation-list');
     const translationEnableAllBtn = document.getElementById('settings-translation-enable-all');
+    const viewButtons = Array.from(document.querySelectorAll('[data-settings-view]'));
+    const SETTINGS_VIEW_KEY = 'hadithdb:settings:view';
+    const settingsView = () => currentSettingsView === 'full' ? 'full' : 'tile';
+    const readSettingsView = () => {
+      try {
+        return window.localStorage && window.localStorage.getItem(SETTINGS_VIEW_KEY) === 'full' ? 'full' : 'tile';
+      } catch (_err) {
+        return 'tile';
+      }
+    };
     let currentUser = null;
     let currentSettings = {};
     let currentTafsirBooks = [];
     let currentTranslationBooks = [];
+    let currentSettingsView = readSettingsView();
     let draggedTafsirRow = null;
     let draggedTranslationRow = null;
     let dragPreviousSettings = null;
@@ -82,6 +100,14 @@
       translationStatusEl.textContent = 'Sign in to choose which translations appear on Quran pages.';
       enableAllBtn.disabled = true;
       translationEnableAllBtn.disabled = true;
+    };
+
+    const updateSettingsViewControls = () => {
+      viewButtons.forEach(button => {
+        const active = button.getAttribute('data-settings-view') === settingsView();
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
     };
 
     const waitForHadithAuth = () => new Promise(resolve => {
@@ -383,8 +409,22 @@
         .map(row => row.getAttribute('data-translation-alias'))
     );
 
-    const dropTargetFor = (list, y, selector) => {
+    const dropTargetFor = (list, x, y, selector) => {
       const rows = Array.from(list.querySelectorAll(`${selector}:not(.is-dragging)`));
+      if (list.classList.contains('settings-preference-list-mini')) {
+        let sameRow = false;
+        for (const row of rows) {
+          const box = row.getBoundingClientRect();
+          if (y >= box.top && y <= box.bottom) {
+            sameRow = true;
+            if (x < box.left + (box.width / 2)) return row;
+            continue;
+          }
+          if (sameRow && y < box.top) return row;
+          if (!sameRow && y < box.top + (box.height / 2)) return row;
+        }
+        return null;
+      }
       return rows.reduce((closest, row) => {
         const box = row.getBoundingClientRect();
         const offset = y - box.top - (box.height / 2);
@@ -397,7 +437,7 @@
       list.addEventListener('dragover', event => {
         if (!draggedTafsirRow || draggedTafsirRow.getAttribute('data-tafsir-lang') !== lang) return;
         event.preventDefault();
-        const target = dropTargetFor(list, event.clientY, '[data-tafsir-setting-row]:not([data-tafsir-disabled="1"])');
+        const target = dropTargetFor(list, event.clientX, event.clientY, '[data-tafsir-setting-row]:not([data-tafsir-disabled="1"])');
         if (target) list.insertBefore(draggedTafsirRow, target);
         else {
           const firstDisabled = list.querySelector('[data-tafsir-setting-row][data-tafsir-disabled="1"]');
@@ -418,7 +458,7 @@
       list.addEventListener('dragover', event => {
         if (!draggedTranslationRow) return;
         event.preventDefault();
-        const target = dropTargetFor(list, event.clientY, '[data-translation-setting-row]:not([data-translation-builtin]):not([data-translation-disabled="1"])');
+        const target = dropTargetFor(list, event.clientX, event.clientY, '[data-translation-setting-row]:not([data-translation-builtin]):not([data-translation-disabled="1"])');
         if (target) list.insertBefore(draggedTranslationRow, target);
         else {
           const firstDisabled = list.querySelector('[data-translation-setting-row][data-translation-disabled="1"]');
@@ -437,8 +477,11 @@
 
     const renderTafsirRow = (book, disabled) => {
       const row = document.createElement('div');
-      row.className = 'tafsir-setting-row d-flex align-items-start justify-content-between gap-3 border-bottom py-2';
       const isDisabled = disabled.has(book.alias);
+      const mini = settingsView() === 'tile';
+      row.className = mini
+        ? 'tafsir-setting-row settings-preference-tile d-flex flex-column gap-2'
+        : 'tafsir-setting-row d-flex align-items-start justify-content-between gap-3 border-bottom py-2';
       row.draggable = !!currentUser && !book.builtinDefault && !isDisabled;
       row.setAttribute('data-tafsir-setting-row', '1');
       row.setAttribute('data-tafsir-lang', book.lang);
@@ -468,8 +511,11 @@
       });
 
       const text = document.createElement('span');
-      text.className = 'translation-setting-text d-flex flex-column flex-grow-1';
+      text.className = mini
+        ? 'translation-setting-text settings-preference-tile-text d-flex flex-column'
+        : 'translation-setting-text d-flex flex-column flex-grow-1';
       const title = document.createElement('span');
+      title.className = 'translation-setting-title';
       const shortName = book.shortName_en || book.shortName || book.author_en || book.author || book.alias;
       const longName = book.name_en || book.name || '';
       title.textContent = shortName;
@@ -479,10 +525,13 @@
         .filter(Boolean)
         .join(', ');
       text.appendChild(title);
-      text.appendChild(meta);
+      if (!mini)
+        text.appendChild(meta);
 
       const controls = document.createElement('span');
-      controls.className = 'translation-setting-controls d-flex align-items-center gap-2';
+      controls.className = mini
+        ? 'translation-setting-controls settings-preference-tile-controls d-flex align-items-center justify-content-between gap-2'
+        : 'translation-setting-controls d-flex align-items-center gap-2';
 
       const dragHandle = document.createElement('span');
       dragHandle.className = 'tafsir-setting-drag-handle text-muted';
@@ -538,8 +587,11 @@
 
     const renderTranslationRow = (book, disabled) => {
       const row = document.createElement('div');
-      row.className = 'tafsir-setting-row d-flex align-items-start justify-content-between gap-3 border-bottom py-2';
       const isDisabled = disabled.has(book.alias);
+      const mini = settingsView() === 'tile';
+      row.className = mini
+        ? 'tafsir-setting-row settings-preference-tile d-flex flex-column gap-2'
+        : 'tafsir-setting-row d-flex align-items-start justify-content-between gap-3 border-bottom py-2';
       row.draggable = !!currentUser && !book.builtinDefault && !isDisabled;
       row.setAttribute('data-translation-setting-row', '1');
       row.setAttribute('data-translation-alias', book.alias);
@@ -570,7 +622,9 @@
       });
 
       const text = document.createElement('span');
-      text.className = 'd-flex flex-column flex-grow-1';
+      text.className = mini
+        ? 'translation-setting-text settings-preference-tile-text d-flex flex-column'
+        : 'd-flex flex-column flex-grow-1';
       const title = document.createElement('span');
       title.className = 'translation-setting-title';
       title.textContent = book.shortName_en || book.name_en || book.alias;
@@ -580,10 +634,13 @@
         .filter(Boolean)
         .join(', ');
       text.appendChild(title);
-      text.appendChild(meta);
+      if (!mini)
+        text.appendChild(meta);
 
       const controls = document.createElement('span');
-      controls.className = 'd-flex align-items-center gap-2';
+      controls.className = mini
+        ? 'translation-setting-controls settings-preference-tile-controls d-flex align-items-center justify-content-between gap-2'
+        : 'd-flex align-items-center gap-2';
 
       const dragHandle = document.createElement('span');
       dragHandle.className = 'tafsir-setting-drag-handle text-muted';
@@ -679,7 +736,9 @@
         section.className = 'mb-3';
         const body = renderSettingsSubsection(section, `settings-tafsir-${group.lang}`, group.title);
         const list = document.createElement('div');
-        list.className = 'd-flex flex-column';
+        list.className = settingsView() === 'tile'
+          ? 'settings-preference-list settings-preference-list-mini'
+          : 'settings-preference-list settings-preference-list-full d-flex flex-column';
         list.setAttribute('data-tafsir-setting-list', group.lang);
         groupBooks.forEach(book => list.appendChild(renderTafsirRow(book, disabled)));
         bindTafsirDragList(list, group.lang);
@@ -697,7 +756,9 @@
       section.className = 'mb-3';
       const body = renderSettingsSubsection(section, 'settings-translations-en', 'English Translations');
       const list = document.createElement('div');
-      list.className = 'd-flex flex-column';
+      list.className = settingsView() === 'tile'
+        ? 'settings-preference-list settings-preference-list-mini'
+        : 'settings-preference-list settings-preference-list-full d-flex flex-column';
       list.appendChild(renderTranslationRow(defaultTranslationBook, disabled));
       orderedTranslations(books).forEach(book => list.appendChild(renderTranslationRow(book, disabled)));
       bindTranslationDragList(list);
@@ -768,9 +829,7 @@
           ...currentSettings,
           translations: { ...currentSettings.translations, disabledAliases: [] }
         });
-        translationListEl.querySelectorAll('[data-translation-setting-toggle]').forEach(toggle => {
-          toggle.checked = true;
-        });
+        renderTranslationList(currentTranslationBooks);
         updateTranslationStatus();
         try {
           await saveSettings();
@@ -780,8 +839,24 @@
       });
     }
 
+    viewButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const nextView = button.getAttribute('data-settings-view') === 'full' ? 'full' : 'tile';
+        if (nextView === currentSettingsView) return;
+        currentSettingsView = nextView;
+        try {
+          if (window.localStorage)
+            window.localStorage.setItem(SETTINGS_VIEW_KEY, currentSettingsView);
+        } catch (_err) {}
+        updateSettingsViewControls();
+        renderTafsirList(currentTafsirBooks);
+        renderTranslationList(currentTranslationBooks);
+      });
+    });
+
     const load = async () => {
       try {
+        updateSettingsViewControls();
         await renderSettings();
       } catch (err) {
         renderSignedOut();

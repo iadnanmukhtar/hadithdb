@@ -1,14 +1,7 @@
 <%
 	const tafsirBooks = Array.isArray(tafsirs) ? tafsirs : [];
-	const bilingualAliases = new Set(tafsirBooks.filter(function (tafsir) {
-		return tafsir.lang === 'en' && Tafsir.isBilingualTafsir(tafsir);
-	}).map(function (tafsir) {
-		return tafsir.alias;
-	}));
 	const orderedTafsirs = ['en', 'ar'].reduce(function (items, lang) {
 		const group = tafsirBooks.filter(function (tafsir) {
-			if (lang === 'ar' && bilingualAliases.has(tafsir.alias))
-				return false;
 			return tafsir.lang === lang;
 		}).sort(function (a, b) {
 			const ordinal = Number(a.ordinal || 0) - Number(b.ordinal || 0);
@@ -19,7 +12,14 @@
 		return items.concat(group);
 	}, []);
 	function tafsirBookHref(tafsir) {
-		return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(tafsir.slug || Tafsir.tafsirSlug(tafsir.alias))}`);
+		const slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
+		const hasLanguageCollision = tafsirBooks.some(function (other) {
+			return other && other.lang !== tafsir.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
+		});
+		const query = hasLanguageCollision && (tafsir.lang === 'ar' || tafsir.lang === 'en')
+			? `?lang=${encodeURIComponent(tafsir.lang)}`
+			: '';
+		return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
 	}
 	function tafsirBookLabel(tafsir) {
 		return Tafsir.rawShortName(tafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();

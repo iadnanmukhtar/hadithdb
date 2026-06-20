@@ -277,20 +277,15 @@ async function buildSitemapText(req) {
 
 async function quranTafsirSitemapUrls(quranDomain) {
   const tafsirs = await Tafsir.visibleTafsirs();
-  const bilingualAliases = new Set(tafsirs.filter(function (tafsir) {
-    return tafsir.lang === 'en' && Tafsir.isBilingualTafsir(tafsir);
-  }).map(function (tafsir) {
-    return tafsir.alias;
-  }));
-  const visibleTafsirs = tafsirs.filter(function (tafsir) {
-    return !(tafsir.lang === 'ar' && bilingualAliases.has(tafsir.alias));
-  });
   const urls = new Set();
-  for (const tafsir of visibleTafsirs) {
+  for (const tafsir of tafsirs) {
     const tafsirUrls = [];
-    const rootUrl = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
-    tafsirUrls.push(`${quranDomain}${rootUrl}`);
     const passages = await Tafsir.sitemapPassages(tafsir);
+    const firstPassage = passages[0];
+    const rootUrl = firstPassage
+      ? Tafsir.browseUrl(tafsir, firstPassage.surah, firstPassage.ayah, tafsirs)
+      : `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
+    tafsirUrls.push(`${quranDomain}${rootUrl}`);
     passages.forEach(function (passage) {
       tafsirUrls.push(`${quranDomain}${Tafsir.browseUrl(tafsir, passage.surah, passage.ayah, tafsirs)}`);
     });

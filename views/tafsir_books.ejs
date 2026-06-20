@@ -34,18 +34,11 @@
       var match = utils.emptyIfNull(tafsir.death || '').toString().match(/\d+/);
       return match ? Number(match[0]) : NaN;
     };
-    var bilingualAliases = new Set((tafsirs || []).filter(function (tafsir) {
-      return tafsir.lang === 'en' && Tafsir.isBilingualTafsir(tafsir);
-    }).map(function (tafsir) {
-      return tafsir.alias;
-    }));
     var groups = [
       { key: 'en', lang: 'en', heading: 'English Tafāsīr' },
       { key: 'ar', lang: 'ar', heading: 'Arabic Tafāsīr' }
     ].map(function (group) {
       group.tafsirs = (tafsirs || []).filter(function (tafsir) {
-        if (group.lang === 'ar' && bilingualAliases.has(tafsir.alias))
-          return false;
         return tafsir.lang === group.lang;
       }).sort(function (a, b) {
         var aDeath = tafsirDeathYear(a);
