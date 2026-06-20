@@ -24,11 +24,27 @@
       var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
       if (!death)
         return '';
+      if (!/\b(?:AH|H)\b/i.test(death) && !/هـ/u.test(death))
+        death = `${death} AH`;
       return /^d\./i.test(death) ? death : `d. ${death}`;
     };
     var tafsirDeathYear = function (tafsir) {
       var match = utils.emptyIfNull(tafsir.death || '').toString().match(/\d+/);
       return match ? Number(match[0]) : NaN;
+    };
+    var commentaryPublicationLabel = function (book) {
+      return [
+        book && book.published_year ? `Pub. ${book.published_year}` : '',
+        book && book.publisher ? book.publisher : ''
+      ].filter(Boolean).join(', ');
+    };
+    var translationDeathLabel = function (translation) {
+      var death = utils.emptyIfNull(translation.death || '').toString().trim();
+      if (!death)
+        return '';
+      if (!/\bCE\b/i.test(death))
+        death = `${death} CE`;
+      return /^d\./i.test(death) ? death : `d. ${death}`;
     };
     var tafsirGroups = [
       { key: 'en', lang: 'en', heading: 'English Tafāsīr' },
@@ -87,13 +103,13 @@
         "@context": "https://schema.org",
         "@type": "Table",
         "name" : "Available Books",
-        "about": "Available Books of Ḥadīth and Tafsīr"
+        "about": "Available Books of Ḥadīth, Tafsīr, and Quran Translations"
       }
     </script>
 
     <div class="page-content-filter input-group mb-3">
       <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
-      <input type="search" class="form-control book-catalog-filter" placeholder="Filter ḥadīth and tafsīr books" aria-label="Filter ḥadīth and tafsīr books" autocomplete="off" autofocus>
+      <input type="search" class="form-control book-catalog-filter" placeholder="Filter ḥadīth, tafsīr, and translation books" aria-label="Filter ḥadīth, tafsīr, and translation books" autocomplete="off" autofocus>
     </div>
 
     <section class="book-catalog-section mb-4">
@@ -173,36 +189,81 @@
                 tafsir.alias,
                 tafsir.name_en,
                 tafsir.shortName_en,
-                tafsir.author_en,
-                tafsir.name,
-                tafsir.shortName,
-                tafsir.author
-              ].filter(Boolean).join(' ').toLowerCase() %>">
+	                tafsir.author_en,
+	                tafsir.name,
+	                tafsir.shortName,
+	                tafsir.author,
+	                tafsir.published_year,
+	                tafsir.publisher
+	              ].filter(Boolean).join(' ').toLowerCase() %>">
                 <div class="card h-100">
                   <div class="card-body d-flex flex-column">
                     <h5 class="card-title row">
                       <div class="col"><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></div>
                       <div class="col text-end" lang="ar" dir="rtl"><%- tafsir.name || tafsir.shortName || '' %></div>
                     </h5>
-                    <p class="card-text mb-3">
-                      <small class="text-muted">
-                        <%- tafsir.author_en || tafsir.author || '' %>
-                        <% if (tafsirDeathLabel(tafsir)) { %>
-                          (<%- tafsirDeathLabel(tafsir) %>)
-                        <% } %>
-                      </small>
-                    </p>
-                    <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary w-100 mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
-                  </div>
-                </div>
+	                    <p class="card-text mb-3">
+	                      <small class="text-muted">
+	                        <%- tafsir.author_en || tafsir.author || '' %>
+	                        <% if (tafsirDeathLabel(tafsir)) { %>
+	                          (<%- tafsirDeathLabel(tafsir) %>)
+	                        <% } %>
+	                      </small>
+	                      <% if (commentaryPublicationLabel(tafsir)) { %>
+	                        <br><small class="text-muted"><%- commentaryPublicationLabel(tafsir) %></small>
+	                      <% } %>
+	                    </p>
+	                    <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary w-100 mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
+	                  </div>
+	                </div>
               </div>
             <% }); %>
           </div>
         <% } %>
-        </div>
-      </section>
-    <% }); %>
-    <p class="text-muted d-none book-catalog-filter-empty">No matching books found.</p>
+	        </div>
+	      </section>
+	    <% }); %>
+	    <section class="book-catalog-section mb-4">
+	      <%- catalogSectionHeading('book-catalog-translations', 'English Translations') %>
+	      <div id="book-catalog-translations" class="collapse show book-catalog-section-body">
+	      <% if (!translations || translations.length < 1) { %>
+	        <p class="text-muted">No English translations are currently available.</p>
+	      <% } else { %>
+	        <div class="row">
+	          <% translations.forEach(function (translation) { %>
+	            <div class="col-sm-6 mb-3 book-catalog-card" data-book-catalog-filter="<%- [
+	              'translation',
+	              translation.alias,
+	              translation.name_en,
+	              translation.shortName_en,
+	              translation.author_en,
+	              translation.published_year,
+	              translation.publisher
+	            ].filter(Boolean).join(' ').toLowerCase() %>">
+	              <div class="card h-100">
+	                <div class="card-body d-flex flex-column">
+	                  <h5 class="card-title"><%- translation.name_en || translation.shortName_en || translation.alias %></h5>
+	                  <p class="card-text mb-3">
+	                    <small class="text-muted">
+	                      <%- translation.author_en || translation.author || '' %>
+	                      <% if (translationDeathLabel(translation)) { %>
+	                        (<%- translationDeathLabel(translation) %>)
+	                      <% } %>
+	                    </small>
+	                    <% if (commentaryPublicationLabel(translation)) { %>
+	                      <br><small class="text-muted"><%- commentaryPublicationLabel(translation) %></small>
+	                    <% } %>
+	                  </p>
+	                  <a href="<%= utils.quranUrl(req, '/quran/translations/1/1') %>" class="btn btn-primary w-100 mt-auto">Browse <%- translation.shortName_en || 'Translation' %></a>
+	                </div>
+	              </div>
+	            </div>
+	          <% }); %>
+	        </div>
+	      <% } %>
+	      </div>
+	    </section>
+	    <p class="text-muted d-none book-catalog-filter-empty">No matching books found.</p>
 
     </main>
   </div>

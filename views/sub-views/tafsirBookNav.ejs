@@ -32,13 +32,15 @@
 			death = `${death} AH`;
 		return /^d\./i.test(death) ? death : `d. ${death}`;
 	}
-	function tafsirBookTooltip(tafsir) {
-		return [
-			tafsir.name_en || tafsir.name || tafsir.shortName_en || tafsir.shortName || tafsir.alias,
-			tafsir.author_en || tafsir.author,
-			tafsirDeathTooltipLabel(tafsir)
-		].filter(Boolean).join('\n');
-	}
+		function tafsirBookTooltip(tafsir) {
+			return [
+				tafsir.name_en || tafsir.name || tafsir.shortName_en || tafsir.shortName || tafsir.alias,
+				tafsir.author_en || tafsir.author,
+				tafsirDeathTooltipLabel(tafsir),
+				tafsir.published_year ? `Pub. ${tafsir.published_year}` : '',
+				tafsir.publisher
+			].filter(Boolean).join('\n');
+		}
 %>
 <% if (orderedTafsirs.length > 0) { %>
 	<div class="h-menu-wrap mb-3">

@@ -26,10 +26,12 @@ router.get('/', async function (req, res, next) {
   } else {
     var tafsirs = await Tafsir.visibleTafsirs();
     tafsirs = await Tafsir.withFirstPassages(tafsirs);
+    var translations = await Tafsir.visibleTranslations();
     res.render('books', {
       books: results,
       Tafsir: Tafsir,
-      tafsirs: tafsirs
+      tafsirs: tafsirs,
+      translations: translations
     });
   }
 });

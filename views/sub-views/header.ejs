@@ -34,6 +34,7 @@
     var isHadithArea = !isQuranArea && !isBooksArea && !isBlogArea && !isMoreArea;
     var headerLogo = isQuranArea ? '/images/quran-logo2.svg' : '/images/logo2.svg';
     var headerLogoAlt = isQuranArea ? 'Quran Unlocked' : site.name;
+    var headerBrandHref = isQuranArea ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
     function activeNavAttrs(active) {
       return active ? ' active" aria-current="page' : '';
     }
@@ -41,11 +42,11 @@
   <div class="row g-0 site-navbar-main">
     
     <header class="col col-md-4 d-flex site-header-brand">
-      <a href="<%= utils.urlFor(req, '/') %>"><img class="logo me-2" src="<%= headerLogo %>" width="56" height="56" alt="<%= headerLogoAlt %>"></a>
+      <a href="<%= headerBrandHref %>"><img class="logo me-2" src="<%= headerLogo %>" width="56" height="56" alt="<%= headerLogoAlt %>"></a>
       <div>
         <h6 class="title fs-4 mb-0">
-          <a href="<%= utils.urlFor(req, '/') %>" class="text-dark text-decoration-none">
-          <% if ((page.context.book && page.context.book.alias === 'quran') || page.context.quranSearchProxy) { %>
+          <a href="<%= headerBrandHref %>" class="text-dark text-decoration-none">
+          <% if (isQuranArea) { %>
             Quran Unlocked
           <% } else { %>
             <%= site.name %>

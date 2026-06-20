@@ -136,6 +136,8 @@ router.get('/tafsir', async function (req, res) {
     const elapsedMs = Date.now() - t0;
     debug(`proxy tafsir.app done alias=${src} ref=${surah}:${ayah} status=${response.status} elapsedMs=${elapsedMs}`);
     debug.slow('tafsir.app proxy', elapsedMs, `alias=${src} ref=${surah}:${ayah} status=${response.status}`);
+    if (response.data && response.data.data)
+      response.data.data = Tafsir.stripPageMarkers(response.data.data);
     res.setHeader('Cache-Control', 'no-store');
     res.json(response.data);
   } catch (err) {
@@ -389,7 +391,7 @@ function commentaryFormat(format, lang) {
 function renderCommentaryText(text, footnotes, format, options = {}) {
   if (!text)
     return '';
-  let content = [text, footnotes].filter(Boolean).join('\n\n');
+  let content = [text, footnotes].filter(Boolean).map(Tafsir.stripPageMarkers).join('\n\n');
   if (options.bracketedFootnotes)
     content = bracketedFootnotesToMarkdown(content);
   if (format === 'html')

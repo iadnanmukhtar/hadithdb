@@ -869,6 +869,19 @@ nav .nav-link[aria-current="page"] {
 	margin-bottom: 0;
 }
 
+.quran-share-translation-attribution {
+	display: inline;
+	cursor: default;
+	font-size: calc(15px * var(--share-scale) * var(--share-english-tune));
+	line-height: inherit;
+	margin-left: .2em;
+}
+
+.quran-share-translation-attribution:hover,
+.quran-share-translation-attribution:focus {
+	color: var(--c-gray-mid);
+}
+
 .quran-share-text p,
 .quran-ayah-hero-body p {
 	margin-bottom: 0.45rem;
@@ -1879,7 +1892,9 @@ del em strong {
 }
 
 .book-carousel-tooltip-ready,
-.tafsir-book-tooltip-ready {
+.tafsir-book-tooltip-ready,
+.settings-book-tooltip-ready,
+.tafsir-size-tooltip-ready {
 	cursor: help;
 }
 
@@ -2521,8 +2536,31 @@ del em strong {
 
 .quran-translation-attribution {
 	color: var(--c-gray-mid);
+	cursor: pointer;
 	font-size: .92em;
 	white-space: nowrap;
+}
+
+.quran-translation-attribution:hover,
+.quran-translation-attribution:focus {
+	color: var(--c-accent);
+}
+
+.quran-translation-selector {
+	display: inline-block;
+	width: auto;
+	min-width: 8rem;
+	max-width: 14rem;
+	margin-left: .4rem;
+	vertical-align: baseline;
+}
+
+.quran-share-translation-control {
+	min-width: 8.5rem;
+}
+
+.quran-share-translation-select {
+	min-width: 8.5rem;
 }
 
 @media (max-width: 575.98px) {
@@ -2569,6 +2607,15 @@ del em strong {
 
 .quran-tafsir-tabs .active .quran-tafsir-tab-lang {
 	color: inherit;
+}
+
+.quran-tafsir-tabs [data-tafsir-disabled="1"] {
+	opacity: .62;
+}
+
+.quran-tafsir-tabs [data-tafsir-disabled="1"]:not(.active) {
+	background: var(--bs-tertiary-bg);
+	color: var(--bs-secondary-color);
 }
 
 .quran-tafsir-content {
@@ -2626,6 +2673,15 @@ del em strong {
 	color: var(--c-gray-mid);
 	font-size: .9em;
 	line-height: 1.2;
+}
+
+.quran-tafsir-enable-toggle {
+	display: inline-flex;
+	margin-top: .35rem;
+}
+
+.quran-tafsir-panel.is-disabled .quran-tafsir-text {
+	display: none;
 }
 
 .quran-translation-list {
@@ -2792,6 +2848,33 @@ del em strong {
 
 .settings-preference-tile.is-disabled {
 	order: 10;
+}
+
+.tafsir-size-indicator {
+	border-radius: 50%;
+	display: inline-block;
+	height: .48rem;
+	margin-left: .3rem;
+	vertical-align: .08em;
+	width: .48rem;
+}
+
+.tafsir-size-indicator-lg {
+	background: #dc3545;
+}
+
+.tafsir-size-indicator-md {
+	background: #ffc107;
+}
+
+.tafsir-size-indicator-sm {
+	background: #198754;
+}
+
+.settings-preference-tile .tafsir-size-indicator {
+	height: .42rem;
+	margin-left: .22rem;
+	width: .42rem;
 }
 
 .quran-translation-source-author,
@@ -3400,6 +3483,11 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 }
 
 .quran-ayah-hero-text {
+	display: inline;
+}
+
+.quran-ayah-hero-text section,
+.quran-ayah-hero-text div {
 	display: inline;
 }
 

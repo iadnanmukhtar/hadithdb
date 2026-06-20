@@ -27,6 +27,19 @@
 	const translationInstance = locals.translationInstance || 'passage';
 	const hideDefaultTranslation = locals.hideDefaultTranslation === true;
 	const translationSettingsHref = locals.translationSettingsHref || '';
+	const defaultTranslationBook = (global.commentaries || []).find(function (book) {
+		return book && book.type === 'trans' && book.source === 'default';
+	}) || {
+		shortName_en: 'Abdel Haleem',
+		name_en: 'The Qur\'an: A New Translation',
+		author_en: 'M. A. S. Abdel Haleem'
+	};
+	const defaultTranslationMeta = [
+		defaultTranslationBook.author_en || defaultTranslationBook.author,
+		defaultTranslationBook.published_year ? `Pub. ${defaultTranslationBook.published_year}` : '',
+		defaultTranslationBook.publisher || ''
+	].filter(Boolean).join(', ');
+	const defaultTranslationTitle = defaultTranslationBook.name_en || defaultTranslationBook.name || 'The Qur\'an: A New Translation';
 	const defaultTranslationHtml = passageItems.map(function (ayah) {
 		return utils.markdownToHtml(utils.emptyIfNull(ayah.en?.body || ayah.body_en));
 	}).filter(Boolean).join('\n');
@@ -46,11 +59,11 @@
 			<details class="quran-translation-entry quran-translation-default" lang="en" dir="ltr" data-translation-alias="default" draggable="false" open>
 				<summary class="quran-translation-source">
 					<span class="quran-translation-chevron bi bi-chevron-right" aria-hidden="true"></span>
-					<strong class="quran-translation-source-author" title="Abdel Haleem">Abdel Haleem</strong>
-					<span class="quran-translation-source-title" title="M. A. S. Abdel Haleem Abdel Haleem Translation">
-						<span class="quran-translation-source-full-author" title="M. A. S. Abdel Haleem">M. A. S. Abdel Haleem</span>
-						<span class="quran-translation-source-book-title" title="Abdel Haleem Translation">Abdel Haleem Translation</span>
-					</span>
+					<strong class="quran-translation-source-author" title="<%= defaultTranslationBook.shortName_en || 'Abdel Haleem' %>"><%= defaultTranslationBook.shortName_en || 'Abdel Haleem' %></strong>
+						<span class="quran-translation-source-title" title="<%= [defaultTranslationMeta, defaultTranslationTitle].filter(Boolean).join(' ') %>">
+							<span class="quran-translation-source-full-author" title="<%= defaultTranslationMeta %>"><%= defaultTranslationMeta || 'M. A. S. Abdel Haleem' %></span>
+							<span class="quran-translation-source-book-title" title="<%= defaultTranslationTitle %>"><%= defaultTranslationTitle %></span>
+						</span>
 				</summary>
 				<div class="quran-translation-text" lang="en"><%- defaultTranslationHtml %></div>
 			</details>

@@ -28,7 +28,15 @@
       var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
       if (!death)
         return '';
+      if (!/\b(?:AH|H)\b/i.test(death) && !/هـ/u.test(death))
+        death = `${death} AH`;
       return /^d\./i.test(death) ? death : `d. ${death}`;
+    };
+    var commentaryPublicationLabel = function (book) {
+      return [
+        book && book.published_year ? `Pub. ${book.published_year}` : '',
+        book && book.publisher ? book.publisher : ''
+      ].filter(Boolean).join(', ');
     };
     var tafsirDeathYear = function (tafsir) {
       var match = utils.emptyIfNull(tafsir.death || '').toString().match(/\d+/);
@@ -104,25 +112,30 @@
                   tafsir.alias,
                   tafsir.name_en,
                   tafsir.shortName_en,
-                  tafsir.author_en,
-                  tafsir.name,
-                  tafsir.shortName,
-                  tafsir.author
-                ].filter(Boolean).join(' ').toLowerCase() %>">
+	                  tafsir.author_en,
+	                  tafsir.name,
+	                  tafsir.shortName,
+	                  tafsir.author,
+	                  tafsir.published_year,
+	                  tafsir.publisher
+	                ].filter(Boolean).join(' ').toLowerCase() %>">
                   <div class="card h-100">
                     <div class="card-body d-flex flex-column">
                       <h5 class="card-title row">
                         <div class="col"><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></div>
                         <div class="col text-end" lang="ar" dir="rtl"><%- tafsir.name || tafsir.shortName || '' %></div>
                       </h5>
-                      <p class="card-text mb-3">
-                        <small class="text-muted">
-                          <%- tafsir.author_en || tafsir.author || '' %>
-                          <% if (tafsirDeathLabel(tafsir)) { %>
-                            (<%- tafsirDeathLabel(tafsir) %>)
-                          <% } %>
-                        </small>
-                      </p>
+	                      <p class="card-text mb-3">
+	                        <small class="text-muted">
+	                          <%- tafsir.author_en || tafsir.author || '' %>
+	                          <% if (tafsirDeathLabel(tafsir)) { %>
+	                            (<%- tafsirDeathLabel(tafsir) %>)
+	                          <% } %>
+	                        </small>
+	                        <% if (commentaryPublicationLabel(tafsir)) { %>
+	                          <br><small class="text-muted"><%- commentaryPublicationLabel(tafsir) %></small>
+	                        <% } %>
+	                      </p>
                       <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary w-100 mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
                     </div>
                   </div>

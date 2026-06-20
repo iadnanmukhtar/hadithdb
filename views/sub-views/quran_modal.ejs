@@ -10,6 +10,10 @@
 	const surahTitle = page.context.chapter?.title_en || firstAyah.h1_title_en || firstAyah.en?.h1_title || 'Qurʾān';
 	const shareTitleRef = firstRef && lastRef && firstRef !== lastRef ? `${firstRef}-${lastRefPart}` : firstRef;
 	const shareTitle = shareTitleRef ? `${surahTitle} ${shareTitleRef}` : surahTitle;
+	const defaultTranslationBook = (global.commentaries || []).find(function (book) {
+		return book && book.type === 'trans' && book.source === 'default';
+	}) || {};
+	const defaultTranslationShortName = defaultTranslationBook.shortName_en || defaultTranslationBook.shortName || 'Abdel Haleem';
 %>
 <% if (ayahs.length > 0) { %>
 <aside class="h modal fade hadith-share-root quran-share-root" id="<%= quranShareId %>" tabindex="-1">
@@ -27,6 +31,10 @@
 					<input class="form-check-input hadith-share-arabic" type="checkbox" role="switch" id="<%= quranShareId %>-english" data-share-language-toggle="english" checked>
 					<label class="form-check-label" for="<%= quranShareId %>-english">English</label>
 				</div>
+				<label class="quran-share-translation-control d-none" title="Translator">
+					<span class="visually-hidden">Translator</span>
+					<select class="form-select form-select-sm quran-share-translation-select" data-quran-share-translation-select="1" aria-label="Share image translator"></select>
+				</label>
 				<div class="hadith-share-size-controls" aria-label="Share image font sizes">
 					<label title="English text size">
 						<span>English</span>
@@ -67,7 +75,7 @@
 					</div>
 				</section>
 				<section class="hadith-share-section quran-share-english-section" lang="en">
-					<div class="body hadith-share-text quran-share-text share-editable" lang="en" contenteditable="false">
+					<div class="body hadith-share-text quran-share-text share-editable" lang="en" contenteditable="false" data-quran-share-translation-target="1">
 						<p>
 							<% ayahs.forEach(function (ayah) {
 								const ayahNum = ayah.en?.num || ayah.num || '';
@@ -76,6 +84,7 @@
 							%>
 								<span><sup><%= ayahLabel %></sup>&nbsp;<%= ayah.en?.body || '' %></span>
 							<% }); %>
+							<span class="quran-share-translation-attribution quran-translation-attribution" data-quran-share-translation-attribution="1" contenteditable="false">— <%= defaultTranslationShortName %></span>
 						</p>
 					</div>
 				</section>

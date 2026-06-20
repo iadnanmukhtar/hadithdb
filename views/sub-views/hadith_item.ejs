@@ -51,6 +51,10 @@
 	const quranTranslationAttrs = isQuranItem && lang === 'en' && searchResult && quranAyahRefParts.length >= 2
 		? ` data-quran-translation-target="1" data-quran-surah="${quranAyahRefParts[0]}" data-quran-ayah="${quranAyahRefParts[1]}"`
 		: '';
+	const defaultTranslationBook = (global.commentaries || []).find(function (book) {
+		return book && book.type === 'trans' && book.source === 'default';
+	}) || {};
+	const defaultTranslationShortName = defaultTranslationBook.shortName_en || defaultTranslationBook.shortName || 'Abdel Haleem';
 	const quranAyahMarkerNum = (() => {
 		if (!isQuranItem || lang !== 'ar' || !searchResult)
 			return '';
@@ -129,7 +133,7 @@
 				<% if (quranAyahMarkerNum) { %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= quranAyahMarkerRef %>">۝<%= quranAyahMarkerNum %></span><% } %>
 			</div>
 		<% if (isQuranItem && lang === 'en' && searchResult && langData.body) { %>
-			<span class="quran-translation-attribution" data-quran-translation-attribution="1">— Abdel Haleem</span>
+			<span class="quran-translation-attribution" data-quran-translation-attribution="1">— <%= defaultTranslationShortName %></span>
 		<% } %>
 		<% if (lang === 'en') { %>
 			<a type="button" title="Share Image" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>"><em class="bi bi-zoom-in"></em></a>

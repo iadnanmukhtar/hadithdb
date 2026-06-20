@@ -8,13 +8,15 @@
 				return '';
 			return `d. ${book.yearOfDeath} AH`;
 		};
-		var bookTooltip = function (book) {
-			return [
-				book.name_en || book.name || book.shortName_en || book.shortName || book.alias,
-				book.author,
-				bookDeathLabel(book)
-			].filter(Boolean).join('\n');
-		};
+			var bookTooltip = function (book) {
+				return [
+					book.name_en || book.name || book.shortName_en || book.shortName || book.alias,
+					book.author,
+					bookDeathLabel(book),
+					book.published_year ? `Pub. ${book.published_year}` : '',
+					book.publisher
+				].filter(Boolean).join('\n');
+			};
 	%>
 	<div class="h-menu-hint d-md-none">
 		<i class="bi bi-arrow-left-right"></i> Swipe to browse books

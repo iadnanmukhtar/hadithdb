@@ -195,7 +195,22 @@
       return settings;
     };
 
-    const saveSettings = async () => {
+    const clearCachedUserSettings = async () => {
+      const cacheUser = settingsCacheUser();
+      if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.clear)
+        window.hadithUserSettingsCache.clear(cacheUser);
+      window.hadithQuranUserSettingsOverride = null;
+      await Promise.all([
+        window.clearHadithDomainUserSettingsCache
+          ? window.clearHadithDomainUserSettingsCache(cacheUser).catch(() => {})
+          : Promise.resolve(null),
+        window.clearQuranDomainUserSettingsCache
+          ? window.clearQuranDomainUserSettingsCache(cacheUser).catch(() => {})
+          : Promise.resolve(null)
+      ]);
+    };
+
+    const saveSettings = async (options = {}) => {
       const token = await requireSaveToken();
       if (!currentUser)
         throw new Error('Please sign in to save settings.');
@@ -233,7 +248,9 @@
         }
         const data = await res.json();
         currentSettings = normalizeSettings(data.settings || settingsToSave);
-        if (window.updateCachedQuranUserSettings)
+        if (options.invalidateSessionCache) {
+          await clearCachedUserSettings();
+        } else if (window.updateCachedQuranUserSettings)
           window.updateCachedQuranUserSettings(currentUser, currentSettings);
         else {
           const cacheUser = settingsCacheUser();
@@ -333,7 +350,7 @@
         .map(entry => entry.book);
     };
 
-    const defaultTranslationBook = {
+    let defaultTranslationBook = {
       alias: '',
       shortName_en: 'Abdel Haleem',
       name_en: 'Abdel Haleem Translation',
@@ -375,7 +392,7 @@
     const saveTafsirOrder = async (previousSettings) => {
       updateOrderFromDom();
       try {
-        await saveSettings();
+        await saveSettings({ invalidateSessionCache: true });
       } catch (err) {
         currentSettings = previousSettings;
         renderTafsirList(currentTafsirBooks);
@@ -386,7 +403,7 @@
     const saveTranslationOrder = async (previousSettings) => {
       updateTranslationOrderFromDom();
       try {
-        await saveSettings();
+        await saveSettings({ invalidateSessionCache: true });
       } catch (err) {
         currentSettings = previousSettings;
         renderTranslationList(currentTranslationBooks);
@@ -475,6 +492,79 @@
       });
     };
 
+    const tafsirSizeLabel = (size) => {
+      if (size === 'lg') return 'Large tafsir';
+      if (size === 'md') return 'Medium tafsir';
+      if (size === 'sm') return 'Small tafsir';
+      return '';
+    };
+
+    const renderTafsirSizeIndicator = (book) => {
+      const size = (book && book.size || '').toString();
+      const label = tafsirSizeLabel(size);
+      if (!label) return null;
+      const indicator = document.createElement('span');
+      indicator.className = `tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}`;
+      indicator.title = label;
+      indicator.setAttribute('data-tafsir-size-tooltip', label);
+      indicator.setAttribute('aria-label', label);
+      indicator.setAttribute('role', 'img');
+      return indicator;
+    };
+
+    const settingBookTooltip = (book, deathSuffix) => {
+      const title = book && (book.name_en || book.name || book.shortName_en || book.shortName || book.alias);
+      const author = book && (book.author_en || book.author);
+      return [
+        title,
+        author,
+        settingBookDeathLabel(book, deathSuffix),
+        book && book.published_year ? `Pub. ${book.published_year}` : '',
+        book && book.publisher
+      ].filter(Boolean).join('\n');
+    };
+
+    const settingBookDeathLabel = (book, suffix) => {
+      let death = (book && book.death || '').toString().trim();
+      if (!death) return '';
+      if (suffix && !/\b(?:AH|CE|H)\b/i.test(death) && !/هـ/u.test(death))
+        death = `${death} ${suffix}`;
+      return /^d\./i.test(death) ? death : `d. ${death}`;
+    };
+
+    const settingBookMeta = (book, shortName, deathSuffix) => {
+      const longName = book && (book.name_en || book.name || '');
+      return [
+        longName && longName !== shortName ? longName : '',
+        book && (book.author_en || book.author),
+        settingBookDeathLabel(book, deathSuffix),
+        book && book.published_year ? `Pub. ${book.published_year}` : '',
+        book && book.publisher
+      ].filter(Boolean).join(', ');
+    };
+
+    const tafsirSettingsSlug = (book) => {
+      return (book && (book.slug || book.alias) || '').toString().replace(/^(?:(?:en|ar)-)?(?:tafsir-)?/, '');
+    };
+
+    const tafsirSettingsHref = (book) => {
+      const slug = tafsirSettingsSlug(book);
+      if (!slug) return '';
+      const hasLanguageCollision = currentTafsirBooks.some(other => {
+        return other && other !== book && other.lang !== book.lang && tafsirSettingsSlug(other) === slug;
+      });
+      const query = hasLanguageCollision && (book.lang === 'ar' || book.lang === 'en')
+        ? `?lang=${encodeURIComponent(book.lang)}`
+        : '';
+      return quranUrl(`/quran/tafsir/${encodeURIComponent(slug)}${query}`);
+    };
+
+    const translationSettingsHref = (book) => {
+      const alias = (book && book.alias || '').toString();
+      const query = alias ? `?translation=${encodeURIComponent(alias)}` : '';
+      return quranUrl(`/quran/translations/1/1${query}`);
+    };
+
     const renderTafsirRow = (book, disabled) => {
       const row = document.createElement('div');
       const isDisabled = disabled.has(book.alias);
@@ -514,16 +604,22 @@
       text.className = mini
         ? 'translation-setting-text settings-preference-tile-text d-flex flex-column'
         : 'translation-setting-text d-flex flex-column flex-grow-1';
-      const title = document.createElement('span');
-      title.className = 'translation-setting-title';
+      const title = document.createElement(mini ? 'span' : 'a');
+      title.className = mini ? 'translation-setting-title settings-book-tooltip' : 'translation-setting-title';
       const shortName = book.shortName_en || book.shortName || book.author_en || book.author || book.alias;
-      const longName = book.name_en || book.name || '';
       title.textContent = shortName;
+      if (mini) {
+        title.setAttribute('data-settings-book-tooltip', settingBookTooltip(book, 'AH'));
+        title.tabIndex = 0;
+      } else {
+        title.href = tafsirSettingsHref(book);
+      }
+      const sizeIndicator = renderTafsirSizeIndicator(book);
+      if (sizeIndicator)
+        title.appendChild(sizeIndicator);
       const meta = document.createElement('small');
       meta.className = 'text-muted';
-      meta.textContent = [longName && longName !== shortName ? longName : '', book.author_en || book.author, book.death ? `d. ${book.death} AH` : '']
-        .filter(Boolean)
-        .join(', ');
+      meta.textContent = settingBookMeta(book, shortName, 'AH');
       text.appendChild(title);
       if (!mini)
         text.appendChild(meta);
@@ -625,14 +721,19 @@
       text.className = mini
         ? 'translation-setting-text settings-preference-tile-text d-flex flex-column'
         : 'd-flex flex-column flex-grow-1';
-      const title = document.createElement('span');
-      title.className = 'translation-setting-title';
-      title.textContent = book.shortName_en || book.name_en || book.alias;
+      const title = document.createElement(mini ? 'span' : 'a');
+      title.className = mini ? 'translation-setting-title settings-book-tooltip' : 'translation-setting-title';
+      const shortName = book.shortName_en || book.name_en || book.alias;
+      title.textContent = shortName;
+      if (mini) {
+        title.setAttribute('data-settings-book-tooltip', settingBookTooltip(book, 'CE'));
+        title.tabIndex = 0;
+      } else {
+        title.href = translationSettingsHref(book);
+      }
       const meta = document.createElement('small');
       meta.className = 'translation-setting-author text-muted';
-      meta.textContent = [book.name_en && book.name_en !== title.textContent ? book.name_en : '', book.author_en, book.death ? `d. ${book.death} AH` : '']
-        .filter(Boolean)
-        .join(', ');
+      meta.textContent = settingBookMeta(book, shortName, 'CE');
       text.appendChild(title);
       if (!mini)
         text.appendChild(meta);
@@ -760,7 +861,7 @@
         ? 'settings-preference-list settings-preference-list-mini'
         : 'settings-preference-list settings-preference-list-full d-flex flex-column';
       list.appendChild(renderTranslationRow(defaultTranslationBook, disabled));
-      orderedTranslations(books).forEach(book => list.appendChild(renderTranslationRow(book, disabled)));
+      orderedTranslations(books.filter(book => book.source !== 'default')).forEach(book => list.appendChild(renderTranslationRow(book, disabled)));
       bindTranslationDragList(list);
       body.appendChild(list);
       translationListEl.appendChild(section);
@@ -792,6 +893,9 @@
         const res = await fetch(quranApiPath('/proxy/translations/books'));
         if (!res.ok) throw new Error('Unable to load translation list.');
         const books = await res.json();
+        const defaultBook = (Array.isArray(books) ? books : []).find(book => book && book.source === 'default');
+        if (defaultBook)
+          defaultTranslationBook = { ...defaultBook, alias: '', builtinDefault: true };
         renderTranslationList(books);
       } catch (err) {
         translationStatusEl.textContent = err.message || 'Unable to load translation settings.';
