@@ -361,7 +361,10 @@ function setHadithEditMode(enabled) {
 	} catch (err) {
 		// Ignore private-mode or blocked storage failures.
 	}
-	setHadithCookie('editMode', enabled ? '1' : '0', window.HADITH_SESSION_MAX_AGE);
+	if (enabled)
+		setHadithCookie('editMode', '1', window.HADITH_SESSION_MAX_AGE);
+	else
+		clearHadithCookie('editMode');
 }
 
 function hadithLoginSessionCacheBridgeUrl(baseUrl) {
@@ -481,6 +484,7 @@ function setHadithAdminMode(enabled) {
 	setHadithEditMode(enabled);
 	location.reload();
 }
+window.setHadithAdminMode = setHadithAdminMode;
 
 function renderHadithAdminGear() {
 	if (window.hadithAdmin !== true) {

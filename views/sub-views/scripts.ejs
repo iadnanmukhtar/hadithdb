@@ -657,7 +657,10 @@
       } catch (err) {
         // Ignore private-mode or blocked storage failures.
       }
-      setHadithCookie('editMode', enabled ? '1' : '0', window.HADITH_SESSION_MAX_AGE);
+      if (enabled)
+        setHadithCookie('editMode', '1', window.HADITH_SESSION_MAX_AGE);
+      else
+        clearHadithCookie('editMode');
   }
 
   function markHadithAuthSynced(username) {
@@ -670,6 +673,7 @@
       setHadithEditMode(enabled);
       location.reload();
   }
+  window.setHadithAdminMode = setHadithAdminMode;
 
   function renderHadithAdminGear() {
       if (window.hadithAdmin !== true) {
@@ -1165,10 +1169,7 @@
       clearCredential,
       prompt: (momentCallback) => {
         if (!window.google?.accounts?.id) return false;
-        window.google.accounts.id.prompt((notification) => {
-          document.dispatchEvent(new CustomEvent('hadithGooglePromptMoment', { detail: { notification } }));
-          if (typeof momentCallback === 'function') momentCallback(notification);
-        });
+        window.google.accounts.id.prompt();
         return true;
       },
       googleClientId
@@ -1187,6 +1188,7 @@
     let oneTapStarted = false;
     let googleInitialized = false;
     let googleIdApi = null;
+    let googleInitializePromise = null;
 
     const render = (user) => {
       const avatar = user && (user.photoURL || 'https://www.gravatar.com/avatar/?d=mp&s=48');
@@ -1230,9 +1232,9 @@
         btn.onclick = async () => {
           const googleId = await initializeGoogle();
           if (googleId)
-            googleId.prompt(recordOneTapMoment);
+            googleId.prompt();
           else
-            window.hadithAuth.prompt(recordOneTapMoment);
+            window.hadithAuth.prompt();
         };
       });
     };
@@ -1252,37 +1254,6 @@
       }, 100);
     });
 
-    const promptMomentValue = (notification, methodName) => {
-      try {
-        return notification && typeof notification[methodName] === 'function'
-          ? notification[methodName]()
-          : null;
-      } catch (err) {
-        return null;
-      }
-    };
-
-    const recordOneTapMoment = (notification) => {
-      const status = {
-        displayed: !!promptMomentValue(notification, 'isDisplayed'),
-        notDisplayed: !!promptMomentValue(notification, 'isNotDisplayed'),
-        skipped: !!promptMomentValue(notification, 'isSkippedMoment'),
-        dismissed: !!promptMomentValue(notification, 'isDismissedMoment'),
-        momentType: promptMomentValue(notification, 'getMomentType'),
-        notDisplayedReason: promptMomentValue(notification, 'getNotDisplayedReason'),
-        skippedReason: promptMomentValue(notification, 'getSkippedReason'),
-        dismissedReason: promptMomentValue(notification, 'getDismissedReason')
-      };
-      window.hadithGoogleOneTapStatus = status;
-      if (status.notDisplayed || status.skipped) {
-        oneTapStarted = false;
-      }
-      if (status.notDisplayed || status.skipped || status.dismissed) {
-        console.info('Google One Tap moment', status);
-      }
-      return status;
-    };
-
     const handleGoogleCredential = async (response, options = {}) => {
       if (!response || !response.credential) return;
       try {
@@ -1298,22 +1269,28 @@
 
     const initializeGoogle = async () => {
       if (googleInitialized) return googleIdApi;
+      if (googleInitializePromise) return googleInitializePromise;
       if (!window.hadithAuth?.googleClientId) return null;
-      const googleId = await waitForGoogleIdentity();
-      if (!googleId) return null;
-      const googleConfig = {
-        client_id: window.hadithAuth.googleClientId,
-        callback: (response) => handleGoogleCredential(response, { silent: true }),
-        auto_select: true,
-        cancel_on_tap_outside: true,
-        itp_support: true
-      };
-      if (window.HADITH_COOKIE_DOMAIN)
-        googleConfig.state_cookie_domain = window.HADITH_COOKIE_DOMAIN.replace(/^\./, '');
-      googleId.initialize(googleConfig);
-      googleInitialized = true;
-      googleIdApi = googleId;
-      return googleIdApi;
+      googleInitializePromise = (async () => {
+        const googleId = await waitForGoogleIdentity();
+        if (!googleId) return null;
+        const googleConfig = {
+          client_id: window.hadithAuth.googleClientId,
+          callback: (response) => handleGoogleCredential(response, { silent: true }),
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          itp_support: true
+        };
+        if (window.HADITH_COOKIE_DOMAIN)
+          googleConfig.state_cookie_domain = window.HADITH_COOKIE_DOMAIN.replace(/^\./, '');
+        googleId.initialize(googleConfig);
+        googleInitialized = true;
+        googleIdApi = googleId;
+        return googleIdApi;
+      })().finally(() => {
+        googleInitializePromise = null;
+      });
+      return googleInitializePromise;
     };
 
     const renderGoogleButtons = async () => {
@@ -1353,7 +1330,7 @@
         oneTapStarted = false;
         return;
       }
-      googleId.prompt(recordOneTapMoment);
+      googleId.prompt();
     };
 
     const signOut = async () => {
@@ -1389,9 +1366,6 @@
       }
     };
 
-    document.addEventListener('hadithGooglePromptMoment', (event) => {
-      if (event && event.detail) recordOneTapMoment(event.detail.notification);
-    });
     document.addEventListener('hadithAuthChanged', syncCurrentUser);
     syncCurrentUser();
   })();
