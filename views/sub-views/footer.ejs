@@ -137,7 +137,7 @@
 			entries.forEach(entry => {
 				if (!entry.isIntersecting) return;
 				likeObserver.unobserve(entry.target);
-				queueLikeFetch(entry.target.dataset.hadithId);
+				queueLikeFetch(entry.target.dataset.hadithId, entry.target.dataset.likeType);
 			});
 		}, { rootMargin: '250px 0px' }) : null;
 
