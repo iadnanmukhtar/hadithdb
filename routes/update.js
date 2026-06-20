@@ -17,6 +17,7 @@ const Utils = require('../lib/Utils');
 const Index = require('../lib/Index');
 const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
+const Tafsir = require('../lib/Tafsir');
 const { Heading, Item, Library } = require('../lib/Model');
 
 const router = express.Router();
@@ -218,6 +219,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var commentaryColumns = ['text', 'text_en', 'footnotes', 'footnotes_en'];
       if (!commentaryColumns.includes(col))
         throw createError(400, `Invalid commentary field '${col}'`);
+      status.value = Tafsir.stripPageMarkers(status.value);
       var commentaryId = ids[0] === 'new-commentary'
         ? await createLocalCommentaryPassage(ids, col, status.value)
         : parseInt(ids[0], 10);
