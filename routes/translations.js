@@ -4,6 +4,7 @@ const createError = require('http-errors');
 const express = require('express');
 const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
+const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const { Item } = require('../lib/Model');
 
@@ -44,6 +45,7 @@ router.get('/:surah/:ayah', async function (req, res, next) {
   ]);
 
   res.render('translation_passage', {
+    Tafsir: Tafsir,
     ayah: ayahNum,
     ayahs: [ayah],
     chapter: chapter,

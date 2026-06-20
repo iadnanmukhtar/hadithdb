@@ -79,6 +79,7 @@ $(function () {
 	});
 
 	initSearchAutocomplete();
+	initTafsirSearchFilterPills(document);
 	initHomeQuranAnnouncement(document);
 	initRandomTocItemLoader(document);
 	initQuranPassageNavigator();
@@ -4333,6 +4334,9 @@ function buildSearchAutocompleteParams($input, term) {
 	$filters.each(function () {
 		params.push({ name: 'b', value: this.value });
 	});
+	var tafsirFilter = ($input.closest('form').find('select[name=tafsir]').val() || '').trim();
+	if (tafsirFilter)
+		params.push({ name: 'tafsir', value: tafsirFilter });
 	if ($input.hasClass('quran-passage-search') && !$filters.length) {
 		params.push({ name: 'b', value: 'quran' });
 		params.push({ name: 'b', value: 'commentaries' });
@@ -4346,10 +4350,118 @@ function submitQuranPassageSearch($input) {
 		return false;
 	$input.autocomplete('close');
 	var searchPath = '/quran';
-	window.location.href = `${searchPath}?${$.param([
-		{ name: 'q', value: term }
-	])}`;
+	var params = [{ name: 'q', value: term }];
+	var $form = $input.closest('form');
+	var tafsirFilter = ($form.find('select[name=tafsir]').val() || '').trim();
+	if (tafsirFilter) {
+		params.push({ name: 'b', value: 'commentaries' });
+		params.push({ name: 'tafsir', value: tafsirFilter });
+	} else {
+		var $filters = $form.find('input[name=b]').filter(function () {
+			return this.type === 'hidden' || this.checked;
+		});
+		$filters.each(function () {
+			params.push({ name: 'b', value: this.value });
+		});
+	}
+	window.location.href = `${searchPath}?${$.param(params)}`;
 	return true;
+}
+
+function initTafsirSearchFilterPills(root) {
+	var $root = $(root || document);
+	$root.find('select[name=tafsir]').each(function () {
+		updateTafsirSearchFilterPill($(this));
+	});
+	if ($(document).data('tafsirSearchFilterPillsBound'))
+		return;
+	$(document).data('tafsirSearchFilterPillsBound', true);
+	$(document).on('change', 'select[name=tafsir]', function () {
+		updateTafsirSearchFilterPill($(this));
+	});
+	$(document).on('change', '.quran-tafsir-search-filter input[name=b]', function () {
+		updateSearchFilterIcon($(this).closest('form'));
+	});
+	$(document).on('click', '[data-tafsir-filter-clear]', function (event) {
+		event.preventDefault();
+		event.stopPropagation();
+		var $container = $(this).closest('.quran-tafsir-search-filter, .px-3, form');
+		var $select = $container.find('select[name=tafsir]').first();
+		if (!$select.length)
+			return;
+		$select.val('').trigger('change');
+		var form = $select.closest('form')[0];
+		if (form && $(form).find('input[name=q]').val()) {
+			navigateSearchFormWithoutEmptyTafsir($(form));
+		}
+	});
+	$(document).on('click', '[data-search-filter-remove]', function (event) {
+		event.preventDefault();
+		var param = this.dataset.filterParam || '';
+		var value = this.dataset.filterValue || '';
+		var url = new URL(window.location.href);
+		var params = url.searchParams;
+		if (param === 'b') {
+			var remainingFilters = [];
+			params.getAll('b').forEach(function (filterValue) {
+				filterValue.toString().split(',').forEach(function (filter) {
+					filter = filter.trim();
+					if (filter && filter !== value)
+						remainingFilters.push(filter);
+				});
+			});
+			params.delete('b');
+			remainingFilters.forEach(function (filter) {
+				params.append('b', filter);
+			});
+			if (this.dataset.removeTafsir === '1')
+				params.delete('tafsir');
+		} else if (param) {
+			params.delete(param);
+		}
+		params.delete('o');
+		window.location.href = `${url.pathname}${url.search}${url.hash}`;
+	});
+}
+
+function navigateSearchFormWithoutEmptyTafsir($form) {
+	var params = [];
+	$form.serializeArray().forEach(function (field) {
+		if (field.name === 'tafsir' && !field.value)
+			return;
+		params.push(field);
+	});
+	var action = $form.attr('action') || window.location.pathname;
+	window.location.href = `${action}?${$.param(params)}`;
+}
+
+function updateTafsirSearchFilterPill($select) {
+	var value = ($select.val() || '').trim();
+	var label = value ? $select.find('option:selected').text().trim() : '';
+	var $container = $select.closest('.quran-tafsir-search-filter, .px-3, form');
+	var $pill = $container.find('[data-tafsir-filter-pill]').first();
+	if (!$pill.length)
+		return;
+	$pill.toggleClass('d-none', !value);
+	$pill.find('[data-tafsir-filter-pill-label]').text(label);
+	updateSearchFilterIcon($select.closest('form'));
+}
+
+function updateSearchFilterIcon($form) {
+	var active = false;
+	$form.find('select[name=tafsir]').each(function () {
+		if (($(this).val() || '').trim())
+			active = true;
+	});
+	$form.find('.quran-tafsir-search-filter input[name=b]').each(function () {
+		if (this.checked)
+			active = true;
+	});
+	var $icon = $form.find('.quran-passage-filter-toggle .bi').first();
+	if (!$icon.length)
+		return;
+	$icon.toggleClass('bi-book-fill', active);
+	$icon.toggleClass('bi-book', !active);
 }
 
 function initQuranPassageNavigator() {

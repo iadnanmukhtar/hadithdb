@@ -67,6 +67,8 @@
         (Array.isArray(b) ? b : [b]).filter(Boolean).forEach(function (filter) {
           params.append('b', filter);
         });
+        if (locals.tafsirFilter)
+          params.append('tafsir', locals.tafsirFilter);
         params.append('o', offset);
         return `${searchAction}?${params.toString()}`;
       }
@@ -96,6 +98,7 @@
           <div class="row justify-content-md-center">
             <div class="col-md-8">
               
+              <% var showSearchFilterPills = q && (locals.searchFilterPills || []).length > 0; %>
               <div class="input-group mb-1">
                 <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="<%= isQuranSearchProxy ? 'Search the Qurʿān or tafāsīr...' : 'Search hadīth, āyāt, or tafāsīr...' %>">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -111,6 +114,22 @@
                     <input class="form-check-input" type="checkbox" name="b" value="commentaries" <%= (b.indexOf('commentaries') >= 0) ? 'checked' : '' %>>
                     <label class="form-check-label">Tafsir</label>
                   </div>
+                  <% if ((locals.tafsirFilterOptions || []).length > 0) { %>
+                  <% var selectedTafsirOption = locals.tafsirFilterOptions.find(function (option) { return option.selected; }); %>
+                  <div class="px-3 pb-2">
+                    <label class="form-label small mb-1" for="tafsir-search-filter">Book</label>
+                    <select id="tafsir-search-filter" class="form-select form-select-sm" name="tafsir">
+                      <option value="">All books</option>
+                      <% locals.tafsirFilterOptions.forEach(function (tafsirOption) { %>
+                      <option value="<%= tafsirOption.alias %>" <%= tafsirOption.selected ? 'selected' : '' %>><%= tafsirOption.label %></option>
+                      <% }); %>
+                    </select>
+                    <span class="quran-tafsir-filter-pill badge rounded-pill text-bg-light border <%= locals.tafsirFilter ? '' : 'd-none' %>" data-tafsir-filter-pill>
+                      <span data-tafsir-filter-pill-label><%= selectedTafsirOption ? selectedTafsirOption.label : '' %></span>
+                      <button type="button" class="btn-close" aria-label="Clear tafsīr book filter" data-tafsir-filter-clear></button>
+                    </span>
+                  </div>
+                  <% } %>
                   <% } else { %>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="commentaries" <%= (b.indexOf('commentaries') >= 0) ? 'checked' : '' %>>
@@ -139,6 +158,17 @@
                   <% } %>
                   
                 </div>
+              </div>
+              <% if (showSearchFilterPills) { %>
+              <div class="search-filter-pills search-filter-pills-underbar" data-search-filter-pills>
+                <% locals.searchFilterPills.forEach(function (pill) { %>
+                <span class="search-filter-pill badge rounded-pill text-bg-light border" data-search-filter-pill>
+                  <span><%= pill.label %></span>
+                  <button type="button" class="btn-close" aria-label="Remove <%= pill.label %> filter" data-search-filter-remove data-filter-param="<%= pill.param %>" data-filter-value="<%= pill.value %>" <%- pill.removeTafsir ? 'data-remove-tafsir="1"' : '' %>></button>
+                </span>
+                <% }); %>
+              </div>
+              <% } else if (!isQuranSearchProxy && !q) { %>
                 <div class="caution partial l2" lang="en">
                   <strong>Caution:</strong>
                   Translations of Quran and Ḥadīth may lead to possible misapplications and misinterpretations.  
@@ -147,8 +177,7 @@
                   injunctions rely on several aspects beyond what one may glean through reading individual aḥādīth.
                   </footnote>
                 </div>
-                
-              </div>
+              <% } %>
             </div>
           </div>
         </search>

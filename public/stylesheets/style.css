@@ -2059,12 +2059,67 @@ del em strong {
 	min-width: 0;
 }
 
+.quran-tafsir-search-filter {
+	min-width: 16rem;
+}
+
+.quran-tafsir-search-filter .form-select {
+	border-color: var(--c-accent);
+	color: var(--c-accent);
+}
+
+.quran-tafsir-search-filter > .form-check {
+	margin-left: .75rem;
+	margin-right: .75rem;
+}
+
+.quran-tafsir-filter-pill {
+	align-items: center;
+	color: var(--c-accent);
+	display: inline-flex;
+	gap: .35rem;
+	margin-top: .3rem;
+	max-width: 100%;
+	white-space: normal;
+}
+
+.quran-tafsir-filter-pill .btn-close {
+	font-size: .65rem;
+	height: .65rem;
+	padding: .25rem;
+	width: .65rem;
+}
+
+.search-filter-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .35rem;
+	justify-content: center;
+	margin-top: .4rem;
+}
+
+.search-filter-pill {
+	align-items: center;
+	color: var(--c-accent);
+	display: inline-flex;
+	gap: .35rem;
+	white-space: normal;
+}
+
+.search-filter-pill .btn-close {
+	font-size: .65rem;
+	height: .65rem;
+	padding: .25rem;
+	width: .65rem;
+}
+
 .quran-passage-navigator .form-control {
 	border-color: var(--c-accent);
 }
 
 .quran-passage-navigator .quran-passage-search-submit,
-.quran-passage-navigator .quran-passage-go {
+.quran-passage-navigator .quran-passage-go,
+.quran-passage-navigator .quran-passage-filter-toggle {
 	border-color: var(--c-accent);
 	color: var(--c-accent);
 }
@@ -2072,7 +2127,9 @@ del em strong {
 .quran-passage-navigator .quran-passage-search-submit:hover,
 .quran-passage-navigator .quran-passage-search-submit:focus,
 .quran-passage-navigator .quran-passage-go:hover,
-.quran-passage-navigator .quran-passage-go:focus {
+.quran-passage-navigator .quran-passage-go:focus,
+.quran-passage-navigator .quran-passage-filter-toggle:hover,
+.quran-passage-navigator .quran-passage-filter-toggle:focus {
 	background-color: var(--c-accent);
 	border-color: var(--c-accent);
 	color: #fff;

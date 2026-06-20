@@ -16,6 +16,10 @@
 	<% if (commentary.commentary_is_bilingual) { %>
 		<div class="commentary-search-fragment col-md-6 col-sm-12" lang="en"><%- commentary.commentary_fragment_html_en %></div>
 		<div class="commentary-search-fragment col-md-6 col-sm-12" lang="ar" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
+	<% } else if (commentary.search_lang === 'ar' && commentary.commentary_fragment_html_ar) { %>
+		<div class="commentary-search-fragment col-12" lang="ar" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
+	<% } else if (commentary.search_lang === 'en' && commentary.commentary_fragment_html_en) { %>
+		<div class="commentary-search-fragment col-12" lang="en"><%- commentary.commentary_fragment_html_en %></div>
 	<% } else if (commentary.commentary_fragment_html_en) { %>
 		<div class="commentary-search-fragment col-12" lang="en"><%- commentary.commentary_fragment_html_en %></div>
 	<% } else { %>

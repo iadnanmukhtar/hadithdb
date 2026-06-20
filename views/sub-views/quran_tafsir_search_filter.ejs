@@ -1,0 +1,56 @@
+<%
+  var selectedSearchTafsirAlias = locals.selectedSearchTafsirAlias || '';
+  var quranChecked = locals.quranChecked !== false;
+  var tafsirChecked = locals.tafsirChecked !== false;
+  var searchTafsirRows = locals.searchTafsirs || locals.tafsirs || [];
+  if ((!searchTafsirRows || searchTafsirRows.length < 1) && typeof Tafsir !== 'undefined' && Tafsir.visibleTafsirsSync)
+    searchTafsirRows = Tafsir.visibleTafsirsSync();
+  var seenSearchTafsirs = new Set();
+  var selectedSearchTafsirLabel = '';
+  var searchTafsirOptions = (searchTafsirRows || []).filter(function (tafsir) {
+    if (!tafsir || !tafsir.alias || seenSearchTafsirs.has(tafsir.alias))
+      return false;
+    seenSearchTafsirs.add(tafsir.alias);
+    return true;
+  }).map(function (tafsir) {
+    var label = (typeof Tafsir !== 'undefined' && Tafsir.rawShortName)
+      ? Tafsir.rawShortName(tafsir, 'en')
+      : (tafsir.shortName_en || tafsir.name_en || tafsir.alias);
+    var option = {
+      alias: tafsir.alias,
+      label: label,
+      selected: tafsir.alias === selectedSearchTafsirAlias
+    };
+    if (option.selected)
+      selectedSearchTafsirLabel = option.label;
+    return option;
+  });
+%>
+<% if (searchTafsirOptions.length > 0) { %>
+  <button class="btn btn-outline-primary dropdown-toggle quran-passage-filter-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Search filters" aria-label="Search filters">
+    <i class="bi bi-book<%= selectedSearchTafsirAlias ? '-fill' : '' %>"></i>
+  </button>
+  <div class="dropdown-menu dropdown-menu-end quran-tafsir-search-filter">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="b" value="quran" <%= quranChecked ? 'checked' : '' %>>
+      <label class="form-check-label">Quran</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="b" value="commentaries" <%= tafsirChecked ? 'checked' : '' %>>
+      <label class="form-check-label">Tafsir</label>
+    </div>
+    <div class="px-3 pb-2">
+      <label class="form-label small mb-1">Book</label>
+      <select class="form-select form-select-sm" name="tafsir" aria-label="Filter tafsīr search by book">
+        <option value="">All books</option>
+        <% searchTafsirOptions.forEach(function (tafsirOption) { %>
+          <option value="<%= tafsirOption.alias %>" <%= tafsirOption.selected ? 'selected' : '' %>><%= tafsirOption.label %></option>
+        <% }); %>
+      </select>
+      <span class="quran-tafsir-filter-pill badge rounded-pill text-bg-light border <%= selectedSearchTafsirAlias ? '' : 'd-none' %>" data-tafsir-filter-pill>
+        <span data-tafsir-filter-pill-label><%= selectedSearchTafsirLabel %></span>
+        <button type="button" class="btn-close" aria-label="Clear tafsīr book filter" data-tafsir-filter-clear></button>
+      </span>
+    </div>
+  </div>
+<% } %>

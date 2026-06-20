@@ -127,9 +127,10 @@
           </div>
           <div class="input-group input-group-sm quran-passage-search-group">
             <input role="search" type="text" class="form-control quran-passage-search" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off">
-            <button type="button" class="btn btn-outline-primary quran-passage-search-submit" title="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr">
-              <span class="bi bi-search"></span>
-            </button>
+            <%- include('sub-views/quran_tafsir_search_filter.ejs', {
+              Tafsir: Tafsir,
+              selectedSearchTafsirAlias: tafsir.alias
+            }); %>
           </div>
         </form>
       <% } %>

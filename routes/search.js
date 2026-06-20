@@ -134,7 +134,12 @@ router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, n
     var bookFilters = req.query.b || req.query['b[]'];
     if (bookFilters && (typeof bookFilters) != 'object')
       bookFilters = [bookFilters];
-    var suggestions = await Search.a_autocomplete(q, bookFilters, req.query.limit);
+    var tafsirFilter = normalizeRequestTafsirFilter(req);
+    if (tafsirFilter)
+      bookFilters = ['commentaries'];
+    var suggestions = await Search.a_autocomplete(q, bookFilters, req.query.limit, {
+      tafsirAlias: tafsirFilter
+    });
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(suggestions));
   } catch (err) {
@@ -304,6 +309,68 @@ function normalizeRequestBookFilters(req) {
   return filters;
 }
 
+function normalizeRequestTafsirFilter(req) {
+  var value = Array.isArray(req.query.tafsir) ? req.query.tafsir[0] : req.query.tafsir;
+  value = Utils.trimToEmpty(value);
+  if (!value)
+    return '';
+  var tafsir = Tafsir.visibleTafsirsSync().find(function (row) {
+    return row.alias === value || row.slug === value || Tafsir.tafsirSlug(row.alias) === value;
+  });
+  if (!tafsir) {
+    delete req.query.tafsir;
+    return '';
+  }
+  req.query.tafsir = tafsir.alias;
+  return tafsir.alias;
+}
+
+function tafsirSearchFilterOptions(selectedAlias) {
+  var seen = new Set();
+  return Tafsir.visibleTafsirsSync().filter(function (tafsir) {
+    if (!tafsir || !tafsir.alias || seen.has(tafsir.alias))
+      return false;
+    seen.add(tafsir.alias);
+    return true;
+  }).map(function (tafsir) {
+    return {
+      alias: tafsir.alias,
+      label: Tafsir.rawShortName(tafsir, 'en') || tafsir.shortName_en || tafsir.name_en || tafsir.alias,
+      selected: tafsir.alias === selectedAlias
+    };
+  });
+}
+
+function tafsirSearchFilterLabel(alias) {
+  if (!alias)
+    return '';
+  var tafsir = Tafsir.visibleTafsirsSync().find(row => row.alias === alias);
+  if (!tafsir)
+    return alias;
+  return Tafsir.rawShortName(tafsir, 'en') || tafsir.shortName_en || tafsir.name_en || alias;
+}
+
+function searchFilterPills(bookFilters, tafsirAlias) {
+  var filters = Array.isArray(bookFilters) ? bookFilters : (bookFilters ? [bookFilters] : []);
+  var pills = filters.filter(Boolean).map(function (filter) {
+    return {
+      param: 'b',
+      value: filter,
+      label: Search.describeBookFilters([filter])[0] || filter,
+      removeTafsir: filter === 'commentaries'
+    };
+  });
+  if (tafsirAlias) {
+    pills.push({
+      param: 'tafsir',
+      value: tafsirAlias,
+      label: tafsirSearchFilterLabel(tafsirAlias),
+      removeTafsir: false
+    });
+  }
+  return pills;
+}
+
 async function renderSearchResults(req, res, next, options = {}) {
   var results = [];
   var totalResults = 0;
@@ -313,6 +380,9 @@ async function renderSearchResults(req, res, next, options = {}) {
     req.query.b = options.defaultBookFilters.slice();
   if (options.forceBookFilters)
     req.query.b = options.forceBookFilters.slice();
+  var tafsirFilter = normalizeRequestTafsirFilter(req);
+  if (tafsirFilter)
+    req.query.b = ['commentaries'];
 
   if (options.redirectReferences !== false) {
     var bookReference = !Search.isExpressionQuery(req.query.q) && Books.findReference(req.query.q, global.books);
@@ -338,7 +408,9 @@ async function renderSearchResults(req, res, next, options = {}) {
     normalizeRequestBookFilters(req);
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
     offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
-    results = await Search.a_searchText(req.query.q, req.query.b, offset);
+    results = await Search.a_searchText(req.query.q, req.query.b, offset, {
+      tafsirAlias: tafsirFilter
+    });
     totalResults = Number.isFinite(results.total) ? results.total : results.length;
     if (results.length > global.settings.search.itemsPerPage) {
       results.next = offset + global.settings.search.itemsPerPage;
@@ -379,9 +451,12 @@ async function renderSearchResults(req, res, next, options = {}) {
       totalResults: totalResults,
       q: req.query.q,
       b: (req.query.b ? req.query.b : []),
-      bookFilterLabels: Search.describeBookFilters(req.query.b),
+      bookFilterLabels: Search.describeBookFilters(req.query.b).concat(tafsirFilter ? [tafsirSearchFilterLabel(tafsirFilter)] : []),
+      searchFilterPills: searchFilterPills(req.query.b, tafsirFilter),
       searchAction: options.searchAction || '/',
       quranSearchProxy: options.quranSearchProxy || false,
+      tafsirFilter: tafsirFilter,
+      tafsirFilterOptions: options.quranSearchProxy ? tafsirSearchFilterOptions(tafsirFilter) : [],
     });
   }
   return true;
@@ -547,6 +622,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         await addQuranPassageBoundaryRefs(results);
       }
       res.render('section_quran', {
+        Tafsir: Tafsir,
         section: section,
         results: results,
         selectedAyah: (ayah1 == ayah2 && selectedAyahs.length > 0) ? selectedAyahs[0] : undefined,
@@ -712,6 +788,7 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
   var quranSurahs = await getQuranSurahsFromIndex();
 
   res.render('section_quran', {
+    Tafsir: Tafsir,
     section: section,
     results: results,
     selectedAyah: selectedAyah,
@@ -1412,6 +1489,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         for (const item of results)
           refs.push(item.ref);
         var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
+          Tafsir: Tafsir,
           noadmin: true,
           chapter: chapter,
           section: chapter,
@@ -1423,6 +1501,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         await Utils.indexCachedItem(refs, cachedFile);
 
         res.render('section_quran', {
+          Tafsir: Tafsir,
           chapter: chapter,
           section: chapter,
           results: results
@@ -1531,6 +1610,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       for (const item of results)
         refs.push(item.ref);
       var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
+        Tafsir: Tafsir,
         noadmin: true,
         section: section,
         results: results,
@@ -1543,6 +1623,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       await Utils.indexCachedItem(refs, cachedFile);
 
       res.render('section_quran', {
+        Tafsir: Tafsir,
         section: section,
         results: results,
         quranSubsections: quranSubsections,
