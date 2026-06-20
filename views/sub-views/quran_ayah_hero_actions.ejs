@@ -4,10 +4,10 @@
       <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= selectedAyahId %>"></span>
     </button>
     <span class="quran-ayah-action">
-      <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= selectedAyahId %>" title="Like this ayah">
-        <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= selectedAyahId %>"></span>
+      <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= selectedAyahId %>" data-like-type="hadith" title="Like this ayah">
+        <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= selectedAyahId %>" data-like-type="hadith"></span>
       </button>
-      <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= selectedAyahId %>">0</span>
+      <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= selectedAyahId %>" data-like-type="hadith">0</span>
     </span>
   <% } %>
   <% if (selectedAyahModalIndex >= 0) { %>

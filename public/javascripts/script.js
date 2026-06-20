@@ -2725,11 +2725,12 @@ function quranAyahHeroToolbarHtml(ayah, shareId) {
 		$('<button>').attr({
 			type: 'button',
 			'data-hadith-id': selectedAyahId,
+			'data-like-type': 'hadith',
 			title: 'Like this ayah'
 		}).addClass('hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center')
-			.append($('<span>').addClass('hadith-like-icon bi bi-heart text-danger').attr('data-hadith-id', selectedAyahId))
+			.append($('<span>').addClass('hadith-like-icon bi bi-heart text-danger').attr({ 'data-hadith-id': selectedAyahId, 'data-like-type': 'hadith' }))
 			.appendTo($like);
-		$('<span>').addClass('hadith-like-count fw-semibold text-danger').attr('data-hadith-id', selectedAyahId).text('0').appendTo($like);
+		$('<span>').addClass('hadith-like-count fw-semibold text-danger').attr({ 'data-hadith-id': selectedAyahId, 'data-like-type': 'hadith' }).text('0').appendTo($like);
 	}
 
 	if (modalIndex >= 0) {

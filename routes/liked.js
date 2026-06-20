@@ -128,12 +128,14 @@ router.get('/rss', async function (req, res, next) {
 module.exports = router;
 
 async function getList() {
+  await ensureLikesTypeColumn();
   const limit = global.settings.search.itemsPerPage;
   const rows = await global.query(`
     SELECT vh.*, ll.latest_like AS sort_ts
     FROM (
       SELECT hadithId, MAX(createdAt) AS latest_like
       FROM hadiths_likes
+      WHERE \`type\`='hadith'
       GROUP BY hadithId
       ORDER BY latest_like DESC
       LIMIT ${limit}
@@ -143,6 +145,34 @@ async function getList() {
     ORDER BY ll.latest_like DESC
   `);
   return rows.map(r => new Item(r));
+}
+
+let likesTypeColumnReady;
+
+async function ensureLikesTypeColumn() {
+  if (!likesTypeColumnReady) {
+    likesTypeColumnReady = (async () => {
+      const rows = await global.query(`
+        SELECT 1
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'hadiths_likes'
+          AND COLUMN_NAME = 'type'
+        LIMIT 1
+      `);
+      if (rows && rows.length)
+        return;
+      await global.query(`
+        ALTER TABLE hadiths_likes
+        ADD COLUMN \`type\` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hadith' AFTER hadithId
+      `);
+      await global.query(`
+        CREATE INDEX ndx_hadiths_likes_type_target_user
+        ON hadiths_likes (\`type\`, hadithId, user_uid)
+      `);
+    })();
+  }
+  return likesTypeColumnReady;
 }
 
 function getPage() {

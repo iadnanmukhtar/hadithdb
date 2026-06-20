@@ -9,6 +9,72 @@ const GoogleAuth = require('../lib/GoogleAuth');
 const { homedir } = require('os');
 
 const router = express.Router();
+const LIKE_TYPES = new Set(['hadith', 'toc']);
+let likesTypeColumnReady;
+
+function normalizeLikeType(value) {
+  return LIKE_TYPES.has(value) ? value : 'hadith';
+}
+
+async function ensureLikesTypeColumn() {
+  if (!likesTypeColumnReady) {
+    likesTypeColumnReady = (async () => {
+      const rows = await global.query(`
+        SELECT 1
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'hadiths_likes'
+          AND COLUMN_NAME = 'type'
+        LIMIT 1
+      `);
+      if (rows && rows.length)
+        return;
+      await global.query(`
+        ALTER TABLE hadiths_likes
+        ADD COLUMN \`type\` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hadith' AFTER hadithId
+      `);
+      await global.query(`
+        CREATE INDEX ndx_hadiths_likes_type_target_user
+        ON hadiths_likes (\`type\`, hadithId, user_uid)
+      `);
+    })();
+  }
+  return likesTypeColumnReady;
+}
+
+async function targetForLike(type, id) {
+  if (type === 'toc') {
+    const rows = await global.query(`
+      SELECT tId AS id, path
+      FROM v_toc
+      WHERE tId=${id} OR hId=${id}
+      LIMIT 1
+    `);
+    if (!rows || !rows.length)
+      return null;
+    return {
+      id,
+      type,
+      label: 'Quran passage',
+      ref: rows[0].path || id
+    };
+  }
+  const rows = await global.query(`
+    SELECT h.id, CONCAT(b.alias, ':', h.num) AS ref_num
+    FROM hadiths h
+    JOIN books b ON h.bookId = b.id
+    WHERE h.id=${id}
+    LIMIT 1
+  `);
+  if (!rows || !rows.length)
+    return null;
+  return {
+    id,
+    type,
+    label: 'Hadith',
+    ref: rows[0].ref_num || id
+  };
+}
 
 function getMailer() {
   const mailer = nodemailer.createTransport({
@@ -24,11 +90,13 @@ async function sendLikeEmail(payload) {
   const transport = getMailer();
   if (!transport) return;
   const action = payload.action === 'unlike' ? 'unlike' : 'like';
-  const subject = `New ${action} on Hadith ${payload.ref || payload.hadithId}`;
+  const targetLabel = payload.type === 'toc' ? 'TOC passage' : 'Hadith';
+  const subject = `New ${action} on ${targetLabel} ${payload.ref || payload.hadithId}`;
   const body = `
 New ${action} received
-Hadith: ${global.settings.site.url}/${payload.ref || payload.hadithId}
-Hadith ID: ${payload.hadithId}
+Target: ${global.settings.site.url}/${payload.ref || payload.hadithId}
+Target Type: ${payload.type || 'hadith'}
+Target ID: ${payload.hadithId}
 Likes total: ${payload.likes}
 Visitor: IP ${payload.ip || 'unknown'} | UA ${payload.ua || 'unknown'}
 User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider || 'google.com'}${payload.user.email ? ', ' + payload.user.email : ''})` : 'Unknown'}
@@ -61,8 +129,10 @@ async function verifyGoogle(req, res, next) {
 
 router.get('/:hadithId', async function (req, res, next) {
   const hadithId = parseInt(req.params.hadithId);
+  const type = normalizeLikeType(req.query.type);
+  const typeEsc = Utils.escSQL(type);
   if (Number.isNaN(hadithId)) {
-    res.status(400).json({ error: 'Invalid hadith id' });
+    res.status(400).json({ error: 'Invalid target id' });
     return;
   }
   const getLikeCount = async () => {
@@ -70,6 +140,7 @@ router.get('/:hadithId', async function (req, res, next) {
       SELECT COUNT(*) AS cnt
       FROM hadiths_likes
       WHERE hadithId=${hadithId}
+        AND \`type\`='${typeEsc}'
     `);
     return rows && rows.length ? rows[0].cnt || 0 : 0;
   };
@@ -80,15 +151,17 @@ router.get('/:hadithId', async function (req, res, next) {
       SELECT 1
       FROM hadiths_likes
       WHERE hadithId=${hadithId}
+        AND \`type\`='${typeEsc}'
         AND user_uid='${uidEsc}'
       LIMIT 1
     `);
     return !!(rows && rows.length);
   };
   try {
-    const exists = await global.query(`SELECT id FROM hadiths WHERE id=${hadithId} LIMIT 1`);
-    if (!exists || !exists.length) {
-      res.status(404).json({ error: 'Hadith not found.' });
+    await ensureLikesTypeColumn();
+    const target = await targetForLike(type, hadithId);
+    if (!target) {
+      res.status(404).json({ error: 'Like target not found.' });
       return;
     }
     let userUid = null;
@@ -100,7 +173,7 @@ router.get('/:hadithId', async function (req, res, next) {
     }
     const likes = await getLikeCount();
     const liked = await getLikedFlag(userUid);
-    res.json({ likes, liked });
+    res.json({ likes, liked, type });
   } catch (err) {
     debug(`Error fetching likes:\n${err.stack}`);
     next(err);
@@ -109,22 +182,24 @@ router.get('/:hadithId', async function (req, res, next) {
 
 router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
   const hadithId = parseInt(req.params.hadithId);
+  const type = normalizeLikeType((req.body && req.body.type) || req.query.type);
+  const typeEsc = Utils.escSQL(type);
   if (Number.isNaN(hadithId)) {
-    res.status(400).json({ error: 'Invalid hadith id' });
+    res.status(400).json({ error: 'Invalid target id' });
     return;
   }
   try {
-    var ref_nums = await global.query(`SELECT CONCAT(b.alias, ':', h.num) AS ref_num FROM hadiths h, books b WHERE h.id=${hadithId} AND h.bookId = b.id LIMIT 1`);
-    await Utils.flushCacheContaining(`${ref_nums[0].ref_num}`);
+    await ensureLikesTypeColumn();
+    const target = await targetForLike(type, hadithId);
+    if (!target) {
+      res.status(404).json({ error: 'Like target not found.' });
+      return;
+    }
+    await Utils.flushCacheContaining(`${target.ref}`);
     await Utils.flushCachedFile(`${homedir}/.hadithdb/cache/liked.html`);
     await Utils.flushCachedFile(`${homedir}/.hadithdb/cache/liked_feed.xml`);
     await Utils.flushCachedFile(`${homedir}/.hadithdb/cache/liked_rss.xml`);
     const requestedAction = req.body && req.body.action === 'unlike' ? 'unlike' : 'like';
-    const exists = await global.query(`SELECT id FROM hadiths WHERE id=${hadithId} LIMIT 1`);
-    if (!exists || !exists.length) {
-      res.status(404).json({ error: 'Hadith not found.' });
-      return;
-    }
     const escUid = Utils.escSQL(req.user.uid);
     const escProvider = Utils.escSQL(req.user.provider || 'google.com');
     const escName = Utils.escSQL(req.user.name || 'User');
@@ -137,6 +212,7 @@ router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
       SELECT id
       FROM hadiths_likes
       WHERE hadithId=${hadithId}
+        AND \`type\`='${typeEsc}'
         AND user_uid='${escUid}'
       LIMIT 1
     `);
@@ -145,6 +221,7 @@ router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
         await global.query(`
           DELETE FROM hadiths_likes
           WHERE hadithId=${hadithId}
+            AND \`type\`='${typeEsc}'
             AND user_uid='${escUid}'
           LIMIT 1
         `);
@@ -156,8 +233,8 @@ router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
       }
     } else if (requestedAction === 'like') {
       await global.query(`
-        INSERT INTO hadiths_likes (hadithId, user_uid, user_provider, user_name, user_email, ip, ua, createdAt)
-        VALUES (${hadithId}, '${escUid}', '${escProvider}', '${escName}', ${escEmail ? `'${escEmail}'` : 'NULL'}, '${escIp}', '${escUa}', NOW())
+        INSERT INTO hadiths_likes (hadithId, \`type\`, user_uid, user_provider, user_name, user_email, ip, ua, createdAt)
+        VALUES (${hadithId}, '${typeEsc}', '${escUid}', '${escProvider}', '${escName}', ${escEmail ? `'${escEmail}'` : 'NULL'}, '${escIp}', '${escUa}', NOW())
       `);
       liked = true;
       action = 'like';
@@ -166,27 +243,24 @@ router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
       SELECT COUNT(*) AS cnt
       FROM hadiths_likes
       WHERE hadithId=${hadithId}
+        AND \`type\`='${typeEsc}'
     `);
     const likes = countRows && countRows.length ? countRows[0].cnt || 0 : 0;
-    const delta = liked ? 1 : (action === 'unlike' ? -1 : 0);
-    await global.query(`
-      UPDATE hadiths
-      SET likes=GREATEST(0, ${likes} ${delta ? `+ (${delta})` : ''}),
-          lastfixed = CURRENT_TIMESTAMP()
-      WHERE id=${hadithId}
-    `);
-    const rows = await global.query(`
-      SELECT CONCAT(b.alias, ':', h.num) as ref_num
-      FROM hadiths h, books b
-      WHERE h.id=${hadithId}
-        AND h.bookId = b.id
-      LIMIT 1
-    `);
-    await Utils.flushCacheContaining(`${rows[0].ref_num}`);
-    const ref = rows[0].ref_num || hadithId;
-    res.json({ likes, liked });
+    if (type === 'hadith') {
+      const delta = liked ? 1 : (action === 'unlike' ? -1 : 0);
+      await global.query(`
+        UPDATE hadiths
+        SET likes=GREATEST(0, ${likes} ${delta ? `+ (${delta})` : ''}),
+            lastfixed = CURRENT_TIMESTAMP()
+        WHERE id=${hadithId}
+      `);
+    }
+    await Utils.flushCacheContaining(`${target.ref}`);
+    const ref = target.ref || hadithId;
+    res.json({ likes, liked, type });
     sendLikeEmail({
       hadithId,
+      type,
       ref,
       likes,
       ip: req.clientIp,

@@ -332,18 +332,32 @@
 		const getHeadingBookmarkButtons = () => Array.from(document.querySelectorAll('.heading-bookmark-btn[data-heading-id]'));
 		const getTafsirBookmarkButtons = () => Array.from(document.querySelectorAll('.tafsir-bookmark-btn[data-tafsir-bookmark-key]'));
 		const getCommentCountBadges = () => Array.from(document.querySelectorAll('.hadith-comment-count[data-hadith-id]'));
-		const getIcons = (id) => Array.from(document.querySelectorAll(`.hadith-like-icon[data-hadith-id="${id}"]`));
+		const likeType = (value) => value === 'toc' ? 'toc' : 'hadith';
+		const likeKey = (id, type) => `${likeType(type)}:${id}`;
+		const getLikeElementType = (el) => likeType(el && el.dataset ? el.dataset.likeType : '');
+		const getIcons = (id, type) => Array.from(document.querySelectorAll(`.hadith-like-icon[data-hadith-id="${id}"]`)).filter(icon => getLikeElementType(icon) === likeType(type));
 		const getBookmarkIcons = (id) => Array.from(document.querySelectorAll(`.hadith-bookmark-icon[data-hadith-id="${id}"]`));
 		const getHeadingBookmarkIcons = (id) => Array.from(document.querySelectorAll(`.heading-bookmark-icon[data-heading-id="${id}"]`));
 		const getTafsirBookmarkIcons = (key) => Array.from(document.querySelectorAll(`.tafsir-bookmark-icon[data-tafsir-bookmark-key="${selectorValue(key)}"]`));
-		const getCounts = (id) => Array.from(document.querySelectorAll(`.hadith-like-count[data-hadith-id="${id}"]`));
+		const getCounts = (id, type) => Array.from(document.querySelectorAll(`.hadith-like-count[data-hadith-id="${id}"]`)).filter(count => getLikeElementType(count) === likeType(type));
 
-		const setState = (id, liked, likes) => {
-			getIcons(id).forEach(icon => {
+		const isLiked = (id, type) => {
+			const key = likeKey(id, type);
+			if (likedMap[key] !== undefined) return !!likedMap[key];
+			return likeType(type) === 'hadith' ? !!likedMap[id] : false;
+		};
+
+		const setLiked = (id, type, liked) => {
+			likedMap[likeKey(id, type)] = !!liked;
+			if (likeType(type) === 'hadith' && likedMap[id] !== undefined) delete likedMap[id];
+		};
+
+		const setState = (id, type, liked, likes) => {
+			getIcons(id, type).forEach(icon => {
 				icon.className = liked ? 'hadith-like-icon bi bi-heart-fill text-danger' : 'hadith-like-icon bi bi-heart text-danger';
 			});
 			if (typeof likes === 'number') {
-				getCounts(id).forEach(countEl => countEl.textContent = likes);
+				getCounts(id, type).forEach(countEl => countEl.textContent = likes);
 			}
 		};
 
@@ -463,13 +477,15 @@
 				await bookmarkSettingsReady;
 		};
 
-		const queueLikeFetch = (rawId) => {
+		const queueLikeFetch = (rawId, rawType) => {
 			const id = parseInt(rawId);
-			if (Number.isNaN(id) || loadedLikeIds.has(id) || pendingLikeIds.has(id) || loadingLikeIds.has(id)) return;
-			pendingLikeIds.add(id);
+			const type = likeType(rawType);
+			const key = likeKey(id, type);
+			if (Number.isNaN(id) || loadedLikeIds.has(key) || pendingLikeIds.has(key) || loadingLikeIds.has(key)) return;
+			pendingLikeIds.add(key);
 			const load = () => {
-				pendingLikeIds.delete(id);
-				fetchLikes(id);
+				pendingLikeIds.delete(key);
+				fetchLikes(id, type);
 			};
 			if (window.requestIdleCallback) window.requestIdleCallback(load, { timeout: 1000 });
 			else window.setTimeout(load, 75);
@@ -479,39 +495,43 @@
 			getButtons().forEach(btn => {
 				const box = btn.getBoundingClientRect();
 				if (box.width > 0 && box.height > 0 && box.bottom >= -250 && box.top <= window.innerHeight + 250) {
-					queueLikeFetch(btn.dataset.hadithId);
+					queueLikeFetch(btn.dataset.hadithId, btn.dataset.likeType);
 				}
 			});
 		};
 
 		document.addEventListener('shown.bs.modal', refreshVisibleLikes);
 
-		const fetchLikes = async (id) => {
-			if (loadedLikeIds.has(id) || loadingLikeIds.has(id)) return;
-			loadingLikeIds.add(id);
+		const fetchLikes = async (id, rawType) => {
+			const type = likeType(rawType);
+			const key = likeKey(id, type);
+			if (loadedLikeIds.has(key) || loadingLikeIds.has(key)) return;
+			loadingLikeIds.add(key);
 			const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
 			try {
-				const res = await fetch(quranApiPath(`/likes/${id}`), {
+				const res = await fetch(quranApiPath(`/likes/${id}?type=${encodeURIComponent(type)}`), {
 					credentials: 'same-origin',
 					headers: authHeaders(token)
 				});
 				if (!res.ok) throw new Error('Failed likes fetch');
 				const data = await res.json();
 				if (typeof data.liked === 'boolean') {
-					likedMap[id] = data.liked;
+					setLiked(id, type, data.liked);
 					persistMap(LIKE_KEY, likedMap);
 				}
-				setState(id, !!likedMap[id], data.likes ?? 0);
-				loadedLikeIds.add(id);
+				setState(id, type, isLiked(id, type), data.likes ?? 0);
+				loadedLikeIds.add(key);
 			} catch (err) {
 				console.warn('Could not load likes', err);
 			} finally {
-				loadingLikeIds.delete(id);
+				loadingLikeIds.delete(key);
 			}
 		};
 
-		const toggleLike = async (id, btn) => {
-			const action = likedMap[id] ? 'unlike' : 'like';
+		const toggleLike = async (id, rawType, btn) => {
+			const type = likeType(rawType);
+			const key = likeKey(id, type);
+			const action = isLiked(id, type) ? 'unlike' : 'like';
 			const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
 			const user = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
 			if (!token && !user) {
@@ -524,14 +544,14 @@
 					method: 'POST',
 					credentials: 'same-origin',
 					headers: authHeaders(token, { 'Content-Type': 'application/json' }),
-					body: JSON.stringify({ action })
+					body: JSON.stringify({ action, type })
 				});
 				if (!res.ok) throw new Error('Failed like');
 				const data = await res.json();
-				if (typeof data.liked === 'boolean') likedMap[id] = data.liked;
+				if (typeof data.liked === 'boolean') setLiked(id, type, data.liked);
 				persistMap(LIKE_KEY, likedMap);
-				loadedLikeIds.add(id);
-				setState(id, !!likedMap[id], data.likes ?? null);
+				loadedLikeIds.add(key);
+				setState(id, type, isLiked(id, type), data.likes ?? null);
 			} catch (err) {
 				console.warn('Could not like', err);
 			} finally {
@@ -692,15 +712,16 @@
 		const initLikes = () => {
 			getButtons().forEach(btn => {
 				const id = parseInt(btn.dataset.hadithId);
+				const type = likeType(btn.dataset.likeType);
 				if (Number.isNaN(id)) return;
-				setState(id, !!likedMap[id], null);
+				setState(id, type, isLiked(id, type), null);
 				if (btn.dataset.hadithLikeInit === '1') return;
 				btn.dataset.hadithLikeInit = '1';
-				btn.addEventListener('click', () => toggleLike(id, btn));
+				btn.addEventListener('click', () => toggleLike(id, type, btn));
 				if (likeObserver) {
 					likeObserver.observe(btn);
 				} else {
-					queueLikeFetch(id);
+					queueLikeFetch(id, type);
 				}
 			});
 		};

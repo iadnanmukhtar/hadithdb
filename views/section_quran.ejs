@@ -227,16 +227,17 @@
         <% } %>
         <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranSubsections: locals.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
         <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: quranAyahModalItems }); %>
-        <% if (results.length > 0 && results[0].id) { %>
+        <% var passageLikeId = section && section.id; %>
+        <% if (results.length > 0 && results[0].id && passageLikeId) { %>
           <aside class="tags quran-passage-actions mt-2">
             <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= results[0].id %>" title="Bookmark this Quran passage">
               <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= results[0].id %>"></span>
             </button>
             &nbsp;
-            <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= results[0].id %>" title="Like this Quran passage">
-              <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= results[0].id %>"></span>
+            <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= passageLikeId %>" data-like-type="toc" title="Like this Quran passage">
+              <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= passageLikeId %>" data-like-type="toc"></span>
             </button>
-            <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= results[0].id %>">0</span>
+            <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= passageLikeId %>" data-like-type="toc">0</span>
             &nbsp;
             <a href="#quran-passage-comments" class="reflection-count-link text-decoration-none" title="View reflections">
               <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= results[0].id %>" title="0 reflections">0</span>
