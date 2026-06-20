@@ -191,7 +191,8 @@
         <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: selectedAyahs, quranShareId: quranShareId }); %>
       <% } %>
         <% if (results.length > 0) { %>
-          <%- include('sub-views/heading.ejs', { site: site, page: page, heading: section, headingEnglishOnly: true }); %>
+          <% var quranHeadingAyahModalIndex = results[0] ? quranAyahModalItems.findIndex(ayah => ayah && ayah.ref === results[0].ref) : -1; %>
+          <%- include('sub-views/heading.ejs', { site: site, page: page, heading: section, headingEnglishOnly: true, quranHeadingAyahModalIndex: quranHeadingAyahModalIndex }); %>
           <% if (site.editMode && book.alias === 'quran' && section && section.level === 2) {
             var rangeHeading = section;
             var rangeStart = (rangeHeading.start || '').toString().split(/:/).pop();

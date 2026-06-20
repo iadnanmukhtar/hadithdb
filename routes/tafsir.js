@@ -140,16 +140,21 @@ async function quranAyahs(surah, startAyah, endAyah) {
       throw err;
     rows = await quranAyahsFromDb(surah, startAyah, endAyah);
   }
-  return rows.map(row => new Item(row)).map(row => ({
-    id: row.id,
-    ref: row.ref,
-    num: row.num,
-    ayah: Number(row.numInChapter),
-    body: row.ar?.body || row.body || '',
-    body_en: row.en?.body || row.body_en || '',
-    en: row.en,
-    ar: row.ar
-  }));
+  return rows.map(row => new Item(row)).map(row => {
+    const ayah = Number(row.numInChapter);
+    return {
+      id: row.id,
+      ref: row.ref,
+      num: row.num,
+      ayah: ayah,
+      body: row.ar?.body || row.body || '',
+      body_en: row.en?.body || row.body_en || '',
+      en: row.en,
+      ar: row.ar,
+      prev_ref: quranAdjacentRef(surah, ayah, -1),
+      next_ref: quranAdjacentRef(surah, ayah, 1)
+    };
+  });
 }
 
 async function quranAyahsFromDb(surah, startAyah, endAyah) {
@@ -214,6 +219,23 @@ function adjacentQuranAyah(tafsir, surah, ayah, direction) {
     surah: Number(nextSurah.num),
     ayah: direction > 0 ? 1 : Number(nextSurah.ayahs)
   };
+}
+
+function quranAdjacentRef(surah, ayah, direction) {
+  surah = Number(surah);
+  ayah = Number(ayah);
+  direction = direction > 0 ? 1 : -1;
+  const currentSurah = (global.surahs || []).find(item => Number(item.num) === surah);
+  if (!currentSurah)
+    return '';
+  if (direction > 0 && ayah < Number(currentSurah.ayahs))
+    return `quran:${surah}:${ayah + 1}`;
+  if (direction < 0 && ayah > 1)
+    return `quran:${surah}:${ayah - 1}`;
+  const nextSurah = (global.surahs || []).find(item => Number(item.num) === surah + direction);
+  if (!nextSurah)
+    return '';
+  return `quran:${Number(nextSurah.num)}:${direction > 0 ? 1 : Number(nextSurah.ayahs)}`;
 }
 
 function navigationTarget(tafsir, surah, ayah, tafsirs) {

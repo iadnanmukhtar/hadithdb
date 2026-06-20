@@ -82,16 +82,21 @@ async function quranAyahs(surah, startAyah, endAyah) {
       throw err;
     rows = await quranAyahsFromDb(surah, startAyah, endAyah);
   }
-  return rows.map(row => new Item(row)).map(row => ({
-    id: row.id,
-    ref: row.ref,
-    num: row.num,
-    ayah: Number(row.numInChapter),
-    body: row.ar?.body || row.body || '',
-    body_en: row.en?.body || row.body_en || '',
-    en: row.en,
-    ar: row.ar
-  }));
+  return rows.map(row => new Item(row)).map(row => {
+    const ayah = Number(row.numInChapter);
+    return {
+      id: row.id,
+      ref: row.ref,
+      num: row.num,
+      ayah: ayah,
+      body: row.ar?.body || row.body || '',
+      body_en: row.en?.body || row.body_en || '',
+      en: row.en,
+      ar: row.ar,
+      prev_ref: quranAdjacentRef(surah, ayah, -1),
+      next_ref: quranAdjacentRef(surah, ayah, 1)
+    };
+  });
 }
 
 async function quranAyahsFromDb(surah, startAyah, endAyah) {
@@ -138,6 +143,11 @@ function adjacentQuranAyah(surah, ayah, direction) {
     surah: Number(nextSurah.num),
     ayah: direction > 0 ? 1 : Number(nextSurah.ayahs)
   };
+}
+
+function quranAdjacentRef(surah, ayah, direction) {
+  const adjacent = adjacentQuranAyah(surah, ayah, direction);
+  return adjacent ? `quran:${adjacent.surah}:${adjacent.ayah}` : '';
 }
 
 module.exports = router;

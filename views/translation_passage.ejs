@@ -42,6 +42,13 @@
 	    var quranSectionHref = quranSection && quranSection.path ? utils.quranUrl(req, `/${quranSection.path}`) : '';
 	    var quranChapterTitleEn = (quranChapter && quranChapter.title_en) || `Surat ${surah.name_en}`;
 	    var quranChapterTitleAr = (quranChapter && quranChapter.title) || `سورة ${surah.name_ar}`;
+	    var quranCorpusSection = quranSection && quranSection.book_alias === 'quran' && quranSection.h1 && quranSection.h2
+	      ? {
+	        surah: arabic.toLatinDigits(quranSection.h1.toString()),
+	        h2: arabic.toLatinDigits(quranSection.h2.toString())
+	      }
+	      : null;
+	    var quranCorpusUrl = quranCorpusSection ? `/quran/corpus/${quranCorpusSection.surah}/${quranCorpusSection.h2}` : '';
 	%>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -51,7 +58,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
   <div class="container col-lg-8 mx-auto">
-    <main class="chapter mt-10 tafsir-only-page translation-only-page">
+    <main class="chapter mt-10 tafsir-only-page translation-only-page"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %>>
       <aside class="row mb-3 pagination tafsir-passage-navigation">
         <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
           <% if (navigation.prev) { %>

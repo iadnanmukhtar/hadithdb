@@ -3,6 +3,8 @@
     var chapter = page.context.chapter;
     var section = page.context.section;
     var headingEnglishOnly = locals.headingEnglishOnly;
+    var quranHeadingAyahModalIndex = Number.isInteger(locals.quranHeadingAyahModalIndex) ? locals.quranHeadingAyahModalIndex : -1;
+    var showQuranHeadingModalActions = quranHeadingAyahModalIndex >= 0;
     if (chapter.h1 != Math.floor(chapter.h1))
       chapter.h1 = Number(chapter.h1).toFixed(2);
 %>
@@ -14,29 +16,41 @@
 
   <heading class="row heading py-2">
     
-    <h3 class="<%= headingEnglishOnly ? 'col-12' : 'col-md-6 col-sm-12' %> fs-5 title" lang="en">
-      <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= heading.id %>" title="Bookmark this <%= heading.level === 3 ? 'subsection' : 'section' %>">
-        <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= heading.id %>"></span>
-      </button>
-      <% if (site.editMode) { %>
-      (<span class="_e" title="Start Num" data-id="<%= heading.id %>" data-prop="toc.start">
-        <%- heading.start || '&hellip;' %>
-      </span>) (<span class="_e" title="Start Num0" data-id="<%= heading.id %>" data-prop="toc.start0">
-        <%- heading.start0 || '&hellip;' %>
-      </span>)
-      <% } %>
-      <%- `${heading.h1}.${heading.h2}` + (heading.h3 ? `.${heading.h3}` : '') %>
-      <% if (page.menu === 'Chapter')  { %>
-      <a href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
-        <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
-      </a>
-      <% } else { %>
-      <span href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
-        <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
+    <h3 class="<%= headingEnglishOnly ? 'col-12' : 'col-md-6 col-sm-12' %> fs-5 title<%= showQuranHeadingModalActions ? ' quran-section-heading-title' : '' %>" lang="en">
+      <span class="quran-section-heading-text">
+        <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= heading.id %>" title="Bookmark this <%= heading.level === 3 ? 'subsection' : 'section' %>">
+          <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= heading.id %>"></span>
+        </button>
+        <% if (site.editMode) { %>
+        (<span class="_e" title="Start Num" data-id="<%= heading.id %>" data-prop="toc.start">
+          <%- heading.start || '&hellip;' %>
+        </span>) (<span class="_e" title="Start Num0" data-id="<%= heading.id %>" data-prop="toc.start0">
+          <%- heading.start0 || '&hellip;' %>
+        </span>)
+        <% } %>
+        <%- `${heading.h1}.${heading.h2}` + (heading.h3 ? `.${heading.h3}` : '') %>
+        <% if (page.menu === 'Chapter')  { %>
+        <a href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
+          <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
+        </a>
+        <% } else { %>
+        <span href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
+          <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
+        </span>
+        <% } %>
+        <% if (page.context.continued) { %>
+        <small class="text-muted">(contd &hellip;)</small>
+        <% } %>
       </span>
-      <% } %>
-      <% if (page.context.continued) { %>
-      <small class="text-muted">(contd &hellip;)</small>
+      <% if (showQuranHeadingModalActions) { %>
+      <span class="quran-section-heading-actions">
+        <button type="button" class="quran-ayah-modal-trigger quran-section-heading-action btn btn-sm btn-outline-secondary" data-quran-ayah-modal-index="<%= quranHeadingAyahModalIndex %>" data-quran-ayah-modal-type="tafsirs" title="View tafsir" aria-label="View tafsir">
+          <span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span>
+        </button>
+        <button type="button" class="quran-ayah-modal-trigger quran-section-heading-action btn btn-sm btn-outline-secondary" data-quran-ayah-modal-index="<%= quranHeadingAyahModalIndex %>" data-quran-ayah-modal-type="translations" title="View translations" aria-label="View translations">
+          <span class="bi bi-translate" aria-hidden="true"></span><span>Translations</span>
+        </button>
+      </span>
       <% } %>
     </h3>
     

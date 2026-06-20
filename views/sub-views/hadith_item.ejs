@@ -29,7 +29,7 @@
 	const sharhBody = !isQuranItem ? plainText(i.ar?.body || '') : '';
 	const itemRefPath = `/${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
 	const itemHref = isQuranItem ? utils.quranUrl(req, itemRefPath) : utils.urlFor(req, itemRefPath);
-	const quranTafsirHref = isQuranItem && i.ref ? utils.quranUrl(req, `/${i.ref}#open-tafsir`) : '';
+	const quranTafsirHref = isQuranItem && i.ref ? utils.quranUrl(req, `/${i.ref}`) : '';
 	const itemBookShortName = (() => {
 		const shortName = i.actual ? (i[lang]?.actual?.book_shortName || i.actual?.book_shortName || i.book_shortName) : (langData.book_shortName || i.book_shortName);
 		if (isQuranItem && lang === 'ar')
@@ -283,7 +283,7 @@
 		</a>
 		&nbsp;
 		<% if (quranTafsirHref && searchResult) { %>
-			<span class="bi bi-book-half"></span>&nbsp;<a href="<%= quranTafsirHref %>" title="Tafsir of this ayah" class="icon">Tafsir</a>
+			<span class="bi bi-book-half"></span>&nbsp;<a href="<%= quranTafsirHref %>" title="Tafsir of this ayah" class="icon" data-open-quran-tafsir="1">Tafsir</a>
 			&nbsp;
 		<% } %>
 		<% if (sharhBody) { %>

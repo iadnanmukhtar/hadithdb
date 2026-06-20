@@ -1741,6 +1741,51 @@ del em strong {
 	text-decoration: underline;
 }
 
+.quran-section-heading-title {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .5rem .75rem;
+	justify-content: space-between;
+}
+
+.quran-section-heading-text {
+	min-width: 0;
+}
+
+.quran-section-heading-actions {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: .35rem;
+}
+
+.quran-section-heading-action {
+	align-items: center;
+	display: inline-flex;
+	gap: .25rem;
+	line-height: 1.15;
+}
+
+@media (max-width: 575.98px) {
+	.quran-section-heading-title {
+		flex-wrap: nowrap;
+		gap: .5rem;
+	}
+
+	.quran-section-heading-text {
+		flex: 1 1 auto;
+	}
+
+	.quran-section-heading-actions {
+		flex: 0 0 auto;
+		flex-wrap: nowrap;
+	}
+
+	.quran-section-heading-action span:not(.bi) {
+		display: none;
+	}
+}
+
 .heading,
 .heading-intro {
 	background-color: var(--c-ghostwhite) !important;
@@ -2137,6 +2182,47 @@ del em strong {
 	color: var(--c-link-dark);
 }
 
+.quran-section-heading-action.quran-ayah-modal-trigger {
+	border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
+	padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
+	background: var(--bs-btn-bg);
+	color: var(--bs-btn-color);
+	font-size: var(--bs-btn-font-size);
+	font-weight: var(--bs-btn-font-weight);
+	line-height: var(--bs-btn-line-height);
+}
+
+.quran-section-heading-action.quran-ayah-modal-trigger:hover,
+.quran-section-heading-action.quran-ayah-modal-trigger:focus {
+	background: var(--bs-btn-hover-bg);
+	border-color: var(--bs-btn-hover-border-color);
+	color: var(--bs-btn-hover-color);
+}
+
+.quran-tafsir-heading .quran-ayah-modal-trigger.btn {
+	border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
+	padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
+	background: var(--bs-btn-bg);
+	color: var(--bs-btn-color);
+	font-size: var(--bs-btn-font-size);
+	font-weight: var(--bs-btn-font-weight);
+	line-height: var(--bs-btn-line-height);
+}
+
+.quran-tafsir-heading .quran-ayah-modal-trigger.btn:hover,
+.quran-tafsir-heading .quran-ayah-modal-trigger.btn:focus {
+	background: var(--bs-btn-hover-bg);
+	border-color: var(--bs-btn-hover-border-color);
+	color: var(--bs-btn-hover-color);
+}
+
+@media (max-width: 575.98px) {
+	.quran-section-heading-action.quran-ayah-modal-trigger {
+		padding-left: .4rem;
+		padding-right: .4rem;
+	}
+}
+
 .body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label] {
 	position: relative;
 }
@@ -2270,10 +2356,22 @@ del em strong {
 	flex: 0 0 auto;
 }
 
+.quran-ayah-modal-mode-toggle .btn {
+	align-items: center;
+	display: inline-flex;
+	gap: .25rem;
+}
+
 .quran-ayah-modal-mode-toggle .btn.active {
 	background: var(--c-accent);
 	border-color: var(--c-accent);
 	color: var(--c-white);
+}
+
+@media (max-width: 575.98px) {
+	.quran-ayah-modal-mode-toggle .btn span:not(.bi) {
+		display: none;
+	}
 }
 
 .quran-ayah-modal-nav {
@@ -2304,6 +2402,18 @@ del em strong {
 }
 
 .quran-ayah-modal .quran-tafsir-source [lang="ar"] {
+	font-size: inherit;
+}
+
+.quran-ayah-modal .quran-tafsir-ayah:lang(ar),
+.quran-ayah-modal .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) {
+	font-size: 1.85rem;
+	line-height: 1.6;
+	margin-bottom: .65rem;
+}
+
+.quran-ayah-modal .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text,
+.quran-ayah-modal .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text {
 	font-size: inherit;
 }
 
@@ -3079,6 +3189,15 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	font-size: 1.15em;
 }
 
+.quran-ayah-modal .quran-tafsir-text .quran-tafsir-ayah:lang(ar) {
+	font-size: 1.85rem !important;
+	line-height: 1.85;
+}
+
+.quran-ayah-modal .quran-tafsir-text .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text {
+	font-size: 1.85rem !important;
+}
+
 .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref,
 .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref {
 	color: var(--c-black);
@@ -3258,6 +3377,12 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 	.quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 		font-size: 1.55rem;
+	}
+
+	.quran-ayah-modal .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
+	.quran-ayah-modal .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p,
+	.quran-ayah-modal .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
+		font-size: 1.85rem;
 	}
 }
 

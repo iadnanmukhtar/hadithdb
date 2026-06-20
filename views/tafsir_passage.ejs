@@ -50,6 +50,9 @@
 	    var quranSectionHref = quranSection && quranSection.path ? utils.quranUrl(req, `/${quranSection.path}`) : '';
 	    var quranChapterTitleEn = (quranChapter && quranChapter.title_en) || `Surat ${surah.name_en}`;
 	    var quranChapterTitleAr = (quranChapter && quranChapter.title) || `سورة ${surah.name_ar}`;
+	    var quranAyahModalIndex = ayahs.findIndex(function (item) {
+	      return Number(item.ayah) === Number(ayah);
+	    });
 	%>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -141,7 +144,8 @@
         tafsirHeading: `${tafsirTitle} ${tafsirMetaRef}${surah.name_en ? ` ${surah.name_en}` : ''}`,
         tafsirInstance: 'passage',
         tafsirSettingsHref: utils.quranUrl(req, '/quran/settings'),
-        tafsirTranslationsHref: utils.quranUrl(req, `/quran/translations/${surah.num}/${ayah}`)
+        tafsirTranslationsHref: utils.quranUrl(req, `/quran/translations/${surah.num}/${ayah}`),
+        tafsirTranslationsModalIndex: quranAyahModalIndex
       }); %>
 
       <section class="mt-4">
@@ -156,6 +160,8 @@
           placeholder: `Write a reflection on Quran ${ref}...`
         }); %>
       </section>
+
+      <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: ayahs }); %>
 
       <aside class="row mt-3 mb-3 pagination tafsir-passage-navigation">
         <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
