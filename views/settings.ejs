@@ -107,6 +107,10 @@
       const translations = source.translations && typeof source.translations === 'object' && !Array.isArray(source.translations)
         ? source.translations
         : {};
+      const translationDisabledAliases = Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
+        .map(alias => (alias || '').toString().trim())
+        .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias))));
+      const translationDisabled = new Set(translationDisabledAliases);
       return {
         ...source,
         tafsirs: {
@@ -123,12 +127,10 @@
           }
         },
         translations: {
-          disabledAliases: Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
-            .map(alias => (alias || '').toString().trim())
-            .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias)))),
+          disabledAliases: translationDisabledAliases,
           order: Array.from(new Set((Array.isArray(translations.order) ? translations.order : [])
             .map(alias => (alias || '').toString().trim())
-            .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias)))),
+            .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias) && !translationDisabled.has(alias)))),
           preferredAlias: /^[A-Za-z0-9_-]+$/.test((translations.preferredAlias || '').toString().trim())
             ? translations.preferredAlias.toString().trim()
             : ''
@@ -251,6 +253,7 @@
 
     const orderedBooks = (books, lang) => {
       let order = currentSettings.tafsirs.order[lang] || [];
+      const disabled = new Set(currentSettings.tafsirs.disabledAliases || []);
       if (lang === 'ar' && order.length < 1) {
         order = [
           'en-tafsir-jalalayn',
@@ -267,6 +270,9 @@
         .filter(book => book.lang === lang)
         .map((book, originalIndex) => ({ book, originalIndex }))
         .sort((a, b) => {
+          const aDisabled = disabled.has(a.book.alias);
+          const bDisabled = disabled.has(b.book.alias);
+          if (aDisabled !== bDisabled) return aDisabled ? 1 : -1;
           const aIndex = index.has(a.book.alias) ? index.get(a.book.alias) : Number.MAX_SAFE_INTEGER;
           const bIndex = index.has(b.book.alias) ? index.get(b.book.alias) : Number.MAX_SAFE_INTEGER;
           if (aIndex !== bIndex) return aIndex - bIndex;
@@ -283,10 +289,14 @@
 
     const orderedTranslations = (books) => {
       const order = currentSettings.translations.order || [];
+      const disabled = new Set(currentSettings.translations.disabledAliases || []);
       const index = new Map(order.map((alias, idx) => [alias, idx]));
       return books
         .map((book, originalIndex) => ({ book, originalIndex }))
         .sort((a, b) => {
+          const aDisabled = disabled.has(a.book.alias);
+          const bDisabled = disabled.has(b.book.alias);
+          if (aDisabled !== bDisabled) return aDisabled ? 1 : -1;
           const aIndex = index.has(a.book.alias) ? index.get(a.book.alias) : Number.MAX_SAFE_INTEGER;
           const bIndex = index.has(b.book.alias) ? index.get(b.book.alias) : Number.MAX_SAFE_INTEGER;
           if (aIndex !== bIndex) return aIndex - bIndex;
@@ -306,24 +316,32 @@
     };
 
     const updateOrderFromDom = () => {
+      const disabled = new Set(currentSettings.tafsirs.disabledAliases || []);
       currentSettings = normalizeSettings({
         ...currentSettings,
         tafsirs: {
           ...currentSettings.tafsirs,
           order: {
-            en: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="en"]')).map(row => row.getAttribute('data-tafsir-alias')),
-            ar: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="ar"]')).map(row => row.getAttribute('data-tafsir-alias'))
+            en: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="en"]'))
+              .map(row => row.getAttribute('data-tafsir-alias'))
+              .filter(alias => alias && !disabled.has(alias)),
+            ar: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="ar"]'))
+              .map(row => row.getAttribute('data-tafsir-alias'))
+              .filter(alias => alias && !disabled.has(alias))
           }
         }
       });
     };
 
     const updateTranslationOrderFromDom = () => {
+      const disabled = new Set(currentSettings.translations.disabledAliases || []);
       currentSettings = normalizeSettings({
         ...currentSettings,
         translations: {
           ...currentSettings.translations,
-          order: Array.from(translationListEl.querySelectorAll('[data-translation-setting-row]:not([data-translation-builtin])')).map(row => row.getAttribute('data-translation-alias'))
+          order: Array.from(translationListEl.querySelectorAll('[data-translation-setting-row]:not([data-translation-builtin])'))
+            .map(row => row.getAttribute('data-translation-alias'))
+            .filter(alias => alias && !disabled.has(alias))
         }
       });
     };
@@ -351,12 +369,18 @@
     };
 
     const orderSignature = () => JSON.stringify({
-      en: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="en"]')).map(row => row.getAttribute('data-tafsir-alias')),
-      ar: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="ar"]')).map(row => row.getAttribute('data-tafsir-alias'))
+      en: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="en"]'))
+        .filter(row => row.getAttribute('data-tafsir-disabled') !== '1')
+        .map(row => row.getAttribute('data-tafsir-alias')),
+      ar: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="ar"]'))
+        .filter(row => row.getAttribute('data-tafsir-disabled') !== '1')
+        .map(row => row.getAttribute('data-tafsir-alias'))
     });
 
     const translationOrderSignature = () => JSON.stringify(
-      Array.from(translationListEl.querySelectorAll('[data-translation-setting-row]:not([data-translation-builtin])')).map(row => row.getAttribute('data-translation-alias'))
+      Array.from(translationListEl.querySelectorAll('[data-translation-setting-row]:not([data-translation-builtin])'))
+        .filter(row => row.getAttribute('data-translation-disabled') !== '1')
+        .map(row => row.getAttribute('data-translation-alias'))
     );
 
     const dropTargetFor = (list, y, selector) => {
@@ -373,9 +397,13 @@
       list.addEventListener('dragover', event => {
         if (!draggedTafsirRow || draggedTafsirRow.getAttribute('data-tafsir-lang') !== lang) return;
         event.preventDefault();
-        const target = dropTargetFor(list, event.clientY, '[data-tafsir-setting-row]');
+        const target = dropTargetFor(list, event.clientY, '[data-tafsir-setting-row]:not([data-tafsir-disabled="1"])');
         if (target) list.insertBefore(draggedTafsirRow, target);
-        else list.appendChild(draggedTafsirRow);
+        else {
+          const firstDisabled = list.querySelector('[data-tafsir-setting-row][data-tafsir-disabled="1"]');
+          if (firstDisabled) list.insertBefore(draggedTafsirRow, firstDisabled);
+          else list.appendChild(draggedTafsirRow);
+        }
       });
       list.addEventListener('drop', async event => {
         if (!draggedTafsirRow || draggedTafsirRow.getAttribute('data-tafsir-lang') !== lang) return;
@@ -390,9 +418,13 @@
       list.addEventListener('dragover', event => {
         if (!draggedTranslationRow) return;
         event.preventDefault();
-        const target = dropTargetFor(list, event.clientY, '[data-translation-setting-row]:not([data-translation-builtin])');
+        const target = dropTargetFor(list, event.clientY, '[data-translation-setting-row]:not([data-translation-builtin]):not([data-translation-disabled="1"])');
         if (target) list.insertBefore(draggedTranslationRow, target);
-        else list.appendChild(draggedTranslationRow);
+        else {
+          const firstDisabled = list.querySelector('[data-translation-setting-row][data-translation-disabled="1"]');
+          if (firstDisabled) list.insertBefore(draggedTranslationRow, firstDisabled);
+          else list.appendChild(draggedTranslationRow);
+        }
       });
       list.addEventListener('drop', async event => {
         if (!draggedTranslationRow) return;
@@ -406,12 +438,15 @@
     const renderTafsirRow = (book, disabled) => {
       const row = document.createElement('div');
       row.className = 'tafsir-setting-row d-flex align-items-start justify-content-between gap-3 border-bottom py-2';
-      row.draggable = !!currentUser && !book.builtinDefault;
+      const isDisabled = disabled.has(book.alias);
+      row.draggable = !!currentUser && !book.builtinDefault && !isDisabled;
       row.setAttribute('data-tafsir-setting-row', '1');
       row.setAttribute('data-tafsir-lang', book.lang);
       row.setAttribute('data-tafsir-alias', book.alias);
+      row.setAttribute('data-tafsir-disabled', isDisabled ? '1' : '0');
+      row.classList.toggle('is-disabled', isDisabled);
       row.addEventListener('dragstart', event => {
-        if (!currentUser || saving || book.builtinDefault) {
+        if (!currentUser || saving || book.builtinDefault || row.getAttribute('data-tafsir-disabled') === '1') {
           event.preventDefault();
           return;
         }
@@ -456,8 +491,10 @@
 
       const toggle = document.createElement('input');
       toggle.type = 'checkbox';
-      toggle.className = 'form-check-input mt-1';
-      toggle.checked = !disabled.has(book.alias);
+      toggle.className = 'form-check-input';
+      toggle.setAttribute('role', 'switch');
+      toggle.setAttribute('aria-label', `Enable ${shortName}`);
+      toggle.checked = !isDisabled;
       toggle.disabled = !currentUser || book.builtinDefault;
       toggle.setAttribute('data-tafsir-setting-toggle', book.alias);
       toggle.addEventListener('change', async () => {
@@ -465,11 +502,20 @@
         const disabledAliases = new Set(currentSettings.tafsirs.disabledAliases);
         if (toggle.checked) disabledAliases.delete(book.alias);
         else disabledAliases.add(book.alias);
+        const order = {
+          en: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="en"]'))
+            .map(row => row.getAttribute('data-tafsir-alias'))
+            .filter(alias => alias && !disabledAliases.has(alias)),
+          ar: Array.from(tafsirListEl.querySelectorAll('[data-tafsir-setting-row][data-tafsir-lang="ar"]'))
+            .map(row => row.getAttribute('data-tafsir-alias'))
+            .filter(alias => alias && !disabledAliases.has(alias))
+        };
         currentSettings = normalizeSettings({
           ...currentSettings,
-          tafsirs: { ...currentSettings.tafsirs, disabledAliases: Array.from(disabledAliases) }
+          tafsirs: { ...currentSettings.tafsirs, disabledAliases: Array.from(disabledAliases), order }
         });
         updateTafsirStatus();
+        renderTafsirList(currentTafsirBooks);
         try {
           await saveSettings();
         } catch (err) {
@@ -479,8 +525,12 @@
         }
       });
 
+      const toggleWrap = document.createElement('span');
+      toggleWrap.className = 'form-check form-switch m-0';
+      toggleWrap.appendChild(toggle);
+
       controls.appendChild(dragHandle);
-      controls.appendChild(toggle);
+      controls.appendChild(toggleWrap);
       row.appendChild(text);
       row.appendChild(controls);
       return row;
@@ -489,13 +539,16 @@
     const renderTranslationRow = (book, disabled) => {
       const row = document.createElement('div');
       row.className = 'tafsir-setting-row d-flex align-items-start justify-content-between gap-3 border-bottom py-2';
-      row.draggable = !!currentUser && !book.builtinDefault;
+      const isDisabled = disabled.has(book.alias);
+      row.draggable = !!currentUser && !book.builtinDefault && !isDisabled;
       row.setAttribute('data-translation-setting-row', '1');
       row.setAttribute('data-translation-alias', book.alias);
+      row.setAttribute('data-translation-disabled', isDisabled ? '1' : '0');
+      row.classList.toggle('is-disabled', isDisabled);
       if (book.builtinDefault)
         row.setAttribute('data-translation-builtin', '1');
       row.addEventListener('dragstart', event => {
-        if (!currentUser || saving || book.builtinDefault) {
+        if (!currentUser || saving || book.builtinDefault || row.getAttribute('data-translation-disabled') === '1') {
           event.preventDefault();
           return;
         }
@@ -539,8 +592,10 @@
 
       const toggle = document.createElement('input');
       toggle.type = 'checkbox';
-      toggle.className = 'form-check-input mt-1';
-      toggle.checked = !disabled.has(book.alias);
+      toggle.className = 'form-check-input';
+      toggle.setAttribute('role', 'switch');
+      toggle.setAttribute('aria-label', `Enable ${title.textContent}`);
+      toggle.checked = !isDisabled;
       toggle.disabled = !currentUser || book.builtinDefault;
       toggle.setAttribute('data-translation-setting-toggle', book.alias);
       toggle.addEventListener('change', async () => {
@@ -549,11 +604,15 @@
         if (toggle.checked) disabledAliases.delete(book.alias);
         else disabledAliases.add(book.alias);
         const preferredAlias = disabledAliases.has(currentSettings.translations.preferredAlias) ? '' : currentSettings.translations.preferredAlias;
+        const order = Array.from(translationListEl.querySelectorAll('[data-translation-setting-row]:not([data-translation-builtin])'))
+          .map(row => row.getAttribute('data-translation-alias'))
+          .filter(alias => alias && !disabledAliases.has(alias));
         currentSettings = normalizeSettings({
           ...currentSettings,
-          translations: { ...currentSettings.translations, disabledAliases: Array.from(disabledAliases), preferredAlias }
+          translations: { ...currentSettings.translations, disabledAliases: Array.from(disabledAliases), order, preferredAlias }
         });
         updateTranslationStatus();
+        renderTranslationList(currentTranslationBooks);
         try {
           await saveSettings();
         } catch (err) {
@@ -565,10 +624,45 @@
 
       if (!book.builtinDefault)
         controls.appendChild(dragHandle);
-      controls.appendChild(toggle);
+      const toggleWrap = document.createElement('span');
+      toggleWrap.className = 'form-check form-switch m-0';
+      toggleWrap.appendChild(toggle);
+
+      controls.appendChild(toggleWrap);
       row.appendChild(text);
       row.appendChild(controls);
       return row;
+    };
+
+    const renderSettingsSubsection = (section, id, title) => {
+      const heading = document.createElement('h3');
+      heading.className = 'fs-6 fw-bold mb-2';
+
+      const toggle = document.createElement('button');
+      toggle.className = 'book-catalog-section-toggle settings-subsection-toggle';
+      toggle.type = 'button';
+      toggle.setAttribute('data-bs-toggle', 'collapse');
+      toggle.setAttribute('data-bs-target', `#${id}`);
+      toggle.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-controls', id);
+
+      const icon = document.createElement('i');
+      icon.className = 'bi bi-chevron-down';
+      icon.setAttribute('aria-hidden', 'true');
+
+      const text = document.createElement('span');
+      text.textContent = title;
+
+      toggle.appendChild(icon);
+      toggle.appendChild(text);
+      heading.appendChild(toggle);
+      section.appendChild(heading);
+
+      const body = document.createElement('div');
+      body.id = id;
+      body.className = 'collapse show';
+      section.appendChild(body);
+      return body;
     };
 
     const renderTafsirList = (books) => {
@@ -583,16 +677,13 @@
         if (!groupBooks.length) return;
         const section = document.createElement('section');
         section.className = 'mb-3';
-        const heading = document.createElement('h3');
-        heading.className = 'fs-6 mb-2';
-        heading.textContent = group.title;
+        const body = renderSettingsSubsection(section, `settings-tafsir-${group.lang}`, group.title);
         const list = document.createElement('div');
         list.className = 'd-flex flex-column';
         list.setAttribute('data-tafsir-setting-list', group.lang);
         groupBooks.forEach(book => list.appendChild(renderTafsirRow(book, disabled)));
         bindTafsirDragList(list, group.lang);
-        section.appendChild(heading);
-        section.appendChild(list);
+        body.appendChild(list);
         tafsirListEl.appendChild(section);
       });
       updateTafsirStatus();
@@ -604,16 +695,13 @@
       translationListEl.innerHTML = '';
       const section = document.createElement('section');
       section.className = 'mb-3';
-      const heading = document.createElement('h3');
-      heading.className = 'fs-6 fw-bold mb-2';
-      heading.textContent = 'English Translations';
+      const body = renderSettingsSubsection(section, 'settings-translations-en', 'English Translations');
       const list = document.createElement('div');
       list.className = 'd-flex flex-column';
       list.appendChild(renderTranslationRow(defaultTranslationBook, disabled));
       orderedTranslations(books).forEach(book => list.appendChild(renderTranslationRow(book, disabled)));
       bindTranslationDragList(list);
-      section.appendChild(heading);
-      section.appendChild(list);
+      body.appendChild(list);
       translationListEl.appendChild(section);
       updateTranslationStatus();
     };
@@ -660,9 +748,7 @@
           ...currentSettings,
           tafsirs: { ...currentSettings.tafsirs, disabledAliases: [] }
         });
-        tafsirListEl.querySelectorAll('[data-tafsir-setting-toggle]').forEach(toggle => {
-          toggle.checked = true;
-        });
+        renderTafsirList(currentTafsirBooks);
         updateTafsirStatus();
         try {
           await saveSettings();

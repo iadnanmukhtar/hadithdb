@@ -2518,6 +2518,16 @@ del em strong {
 	padding: .45rem .65rem;
 }
 
+.quran-translation-entry.is-disabled,
+.tafsir-setting-row.is-disabled {
+	background: var(--bs-tertiary-bg);
+	opacity: .62;
+}
+
+.quran-translation-entry.is-disabled {
+	order: 10;
+}
+
 .quran-translation-source {
 	align-items: flex-start;
 	cursor: pointer;
@@ -2551,6 +2561,16 @@ del em strong {
 	flex: 0 0 auto;
 	font-size: .9rem;
 	margin-left: auto;
+}
+
+.quran-translation-entry.is-disabled .quran-translation-drag-handle,
+.tafsir-setting-row.is-disabled .tafsir-setting-drag-handle {
+	cursor: not-allowed;
+}
+
+.quran-translation-enable-toggle {
+	flex: 0 0 auto;
+	margin-left: .15rem;
 }
 
 .quran-translation-source strong,
@@ -2630,6 +2650,10 @@ del em strong {
 	border-bottom: 1px solid var(--bs-border-color);
 	margin-bottom: .45rem;
 	padding-bottom: .3rem;
+}
+
+.quran-translations[data-translation-instance="passage"] .quran-translation-source {
+	cursor: default;
 }
 
 .quran-translation-text {

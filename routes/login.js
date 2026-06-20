@@ -9,12 +9,7 @@ const UserSettings = require('../lib/UserSettings');
 const Utils = require('../lib/Utils');
 
 const router = express.Router();
-const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 365 * 10;
-const SESSION_COOKIE_OPTIONS = {
-  path: '/',
-  maxAge: SESSION_MAX_AGE_MS,
-  sameSite: 'lax'
-};
+const SESSION_MAX_AGE_MS = LocalAuth.SESSION_MAX_AGE_MS;
 const LOGIN_CACHE_KEY = 'hadithdb_login_session';
 
 const originFromUrl = (url) => {
@@ -39,11 +34,6 @@ function sharedCookieDomain(req) {
     return null;
   }
   return null;
-}
-
-function cookieOptions(req, baseOptions) {
-  const domain = sharedCookieDomain(req);
-  return domain ? { ...baseOptions, domain } : baseOptions;
 }
 
 function clearAuthCookie(res, req, name) {
@@ -101,6 +91,7 @@ const loginCacheBridgeHtml = (req) => {
   var normalizeSession = function (session) {
     var user = normalizeUser(session && (session.user || session));
     if (!session || !session.loggedIn || !user) return null;
+    if (isSessionExpired(session)) return null;
     return {
       __hadithdbLoginSessionCache: 1,
       cachedAt: Number.isFinite(session.cachedAt) ? session.cachedAt : Date.now(),
@@ -108,6 +99,26 @@ const loginCacheBridgeHtml = (req) => {
       token: session.token || null,
       user: user
     };
+  };
+  var decodeTokenPayload = function (token) {
+    try {
+      var parts = String(token || '').split('.');
+      if (parts.length < 2) return null;
+      var normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      normalized += '='.repeat((4 - normalized.length % 4) % 4);
+      return JSON.parse(decodeURIComponent(atob(normalized).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join('')));
+    } catch (err) {
+      return null;
+    }
+  };
+  var isSessionExpired = function (session) {
+    var tokenPayload = decodeTokenPayload(session && session.token);
+    if (!session || !session.token || !tokenPayload || !Number.isFinite(tokenPayload.exp)) return true;
+    if (tokenPayload.exp * 1000 <= Date.now()) return true;
+    var cachedAt = Number(session.cachedAt || 0);
+    return !Number.isFinite(cachedAt) || cachedAt <= 0 || Date.now() - cachedAt > ${SESSION_MAX_AGE_MS};
   };
   var readSession = function () {
     try {
@@ -192,10 +203,8 @@ async function createLoginResponse(req, res, user) {
   clearAuthCookie(res, req, 'adminChecked');
   if (adminUser) {
     debug(`Admin User ${user.email} logged in`);
-    await res.cookie('userId', user.uid, cookieOptions(req, SESSION_COOKIE_OPTIONS));
   } else {
     clearAuthCookie(res, req, 'editMode');
-    await res.cookie('userId', user.uid, cookieOptions(req, SESSION_COOKIE_OPTIONS));
   }
   res.status(200);
   res.end(JSON.stringify({

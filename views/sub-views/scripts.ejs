@@ -544,7 +544,7 @@
       return token;
   }
 
-  window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 365 * 10;
+  window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 30;
   window.hadithAdmin = <%= site.admin ? 'true' : 'false' %>;
   window.hadithAdminSessionChecked = window.hadithAdmin === true;
   const HADITH_LOGIN_SESSION_CACHE_KEY = 'hadithdb_login_session';
@@ -563,6 +563,30 @@
       };
   }
 
+  function decodeHadithJwtPayload(token) {
+      try {
+        const parts = String(token || '').split('.');
+        if (parts.length < 2) return null;
+        let normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        normalized += '='.repeat((4 - normalized.length % 4) % 4);
+        const json = decodeURIComponent(atob(normalized).split('').map((c) => `%${(`00${c.charCodeAt(0).toString(16)}`).slice(-2)}`).join(''));
+        return JSON.parse(json);
+      } catch (err) {
+        return null;
+      }
+  }
+
+  function isHadithLoginSessionCacheExpired(payload) {
+      const token = payload && payload.token;
+      const tokenPayload = decodeHadithJwtPayload(token);
+      if (!token || !tokenPayload || !Number.isFinite(tokenPayload.exp))
+        return true;
+      if (tokenPayload.exp * 1000 <= Date.now())
+        return true;
+      const cachedAt = Number(payload.cachedAt || 0);
+      return !Number.isFinite(cachedAt) || cachedAt <= 0 || Date.now() - cachedAt > window.HADITH_SESSION_MAX_AGE * 1000;
+  }
+
   function readHadithLoginSessionCache() {
       try {
         const raw = localStorage.getItem(HADITH_LOGIN_SESSION_CACHE_KEY);
@@ -573,8 +597,8 @@
         const user = normalizeHadithSessionUser(payload.user);
         if (!payload.loggedIn || !user)
           throw new Error('Missing login session user');
-        if (getHadithCookie('userId') !== user.uid)
-          setHadithCookie('userId', user.uid, window.HADITH_SESSION_MAX_AGE);
+        if (isHadithLoginSessionCacheExpired(payload))
+          throw new Error('Expired login session cache');
         return {
           status: 200,
           loggedIn: true,
@@ -612,6 +636,27 @@
       } catch (err) {
         console.warn('Could not clear login session cache', err);
       }
+      clearHadithCookie('admin');
+      clearHadithCookie('adminUser');
+      clearHadithCookie('adminChecked');
+      clearHadithCookie('userId');
+      clearHadithCookie('editMode');
+  }
+
+  function getHadithEditMode() {
+      try {
+        return localStorage.getItem('hadithdb_edit_mode') === '1';
+      } catch (err) {
+        return false;
+      }
+  }
+
+  function setHadithEditMode(enabled) {
+      try {
+        localStorage.setItem('hadithdb_edit_mode', enabled ? '1' : '0');
+      } catch (err) {
+        // Ignore private-mode or blocked storage failures.
+      }
   }
 
   function markHadithAuthSynced(username) {
@@ -621,8 +666,7 @@
   }
 
   function setHadithAdminMode(enabled) {
-      const domain = window.HADITH_COOKIE_DOMAIN ? `;domain=${window.HADITH_COOKIE_DOMAIN}` : '';
-      document.cookie = `editMode=${enabled ? '1' : '0'};path=/;max-age=${window.HADITH_SESSION_MAX_AGE};samesite=lax${domain}`;
+      setHadithEditMode(enabled);
       location.reload();
   }
 
@@ -630,12 +674,11 @@
       if (window.hadithAdmin !== true) {
         if (window.hadithAdminSessionChecked) {
           document.querySelectorAll('.edit-gear').forEach((el) => el.remove());
-          const domain = window.HADITH_COOKIE_DOMAIN ? `;domain=${window.HADITH_COOKIE_DOMAIN}` : '';
-          document.cookie = `editMode=0;path=/${domain}`;
+          setHadithEditMode(false);
         }
         return;
       }
-      const editMode = Boolean(document.cookie.match(/(?:^|; )editMode=1(?:;|$)/));
+      const editMode = getHadithEditMode();
       const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
       const desktopList = document.querySelector('.site-navbar menu.d-md-block ul.nav');
       if (desktopList && !desktopList.querySelector('.edit-gear')) {
@@ -693,8 +736,6 @@
         if (!uid || cachedUid === uid || cachedSession.user.email === uid)
           return false;
       }
-      if (uid && getHadithCookie('userId') !== uid)
-        return true;
       return window.hadithAdmin !== true && !document.querySelector('.edit-gear');
   }
 
@@ -735,7 +776,8 @@
       if (!username)
         return { status: 400, message: 'Missing username' };
 
-      const initialUserId = getHadithCookie('userId');
+      const initialSession = readHadithLoginSessionCache();
+      const initialUserId = initialSession && initialSession.user ? initialSession.user.uid : '';
       const currentUser = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
       const currentUid = currentUser && currentUser.uid ? currentUser.uid : username;
 

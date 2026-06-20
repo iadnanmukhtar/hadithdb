@@ -177,9 +177,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
 	  app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
 	  app.use(cookieParser());
 	  app.use(function resolveAdminMode(req, res, next) {
-	    const editMode = req.cookies && req.cookies.editMode == 1;
-	    req.admin = editMode;
-	    req.editMode = editMode;
+	    req.admin = false;
+	    req.editMode = false;
 	    req.loginUser = null;
 	    req.loginSessionChecked = false;
 	    next();

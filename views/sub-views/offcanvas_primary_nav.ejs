@@ -14,7 +14,7 @@
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isTitledArea) %>" href="<%= utils.urlFor(req, '/titled') %>"><i class="app-menu-icon bi bi-card-heading" aria-hidden="true"></i> Titled</a></li>
   <% if (site.admin) { %>
     <li><hr></li>
-    <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/editMode=1/) : false); editMode ? document.cookie='editMode=0;path=/;max-age=7776000;samesite=lax' : document.cookie='editMode=1;path=/;max-age=7776000;samesite=lax'; console.log(document.cookie); location.reload();">
+    <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(localStorage.getItem('hadithdb_edit_mode') === '1'); localStorage.setItem('hadithdb_edit_mode', editMode ? '0' : '1'); location.reload();">
       <% if (site.editMode) { %>
         <i class="app-menu-icon bi bi-gear-fill" aria-hidden="true"></i> <strong>View</strong>
       <% } else { %>

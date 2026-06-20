@@ -38,6 +38,17 @@ const userSettingsCacheBridgeHtml = (req) => {
   var USER_SETTINGS_CACHE_PREFIX = 'hadithdb_user_settings:';
   var LEGACY_USER_SETTINGS_CACHE_PREFIX = 'hadithUserSettings:';
   var USER_SETTINGS_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
+  var settingsCacheStore = function () {
+    try {
+      return window.sessionStorage || null;
+    } catch (err) {
+      return null;
+    }
+  };
+  var clearLegacySettingsCache = function (key, legacyKey) {
+    try { if (key) localStorage.removeItem(key); } catch (_err) {}
+    try { if (legacyKey) localStorage.removeItem(legacyKey); } catch (_err) {}
+  };
   var settingsUserId = function (user) {
     if (!user || typeof user !== 'object') return '';
     return (user.uid || user.userId || user.email || user.username || '').toString();
@@ -54,40 +65,34 @@ const userSettingsCacheBridgeHtml = (req) => {
     var key = settingsCacheKey(user);
     var legacyKey = legacySettingsCacheKey(user);
     if (!key) return null;
+    var store = settingsCacheStore();
+    if (!store) return null;
+    clearLegacySettingsCache(key, legacyKey);
     try {
-      var raw = localStorage.getItem(key);
-      var fromLegacy = false;
-      if (!raw && legacyKey) {
-        raw = localStorage.getItem(legacyKey);
-        fromLegacy = Boolean(raw);
-      }
+      var raw = store.getItem(key);
       if (!raw) return null;
       var payload = JSON.parse(raw);
-      if (payload && (payload.__hadithdbUserSettingsCache === 1 || payload.__hadithUserSettingsCache === 1)) {
+      if (payload && payload.__hadithdbUserSettingsCache === 1) {
         if (!Number.isFinite(payload.cachedAt) || Date.now() - payload.cachedAt > USER_SETTINGS_CACHE_MAX_AGE_MS) {
-          localStorage.removeItem(key);
-          if (legacyKey) localStorage.removeItem(legacyKey);
+          store.removeItem(key);
           return null;
-        }
-        if (fromLegacy) {
-          localStorage.setItem(key, raw);
-          localStorage.removeItem(legacyKey);
         }
         return payload.settings || {};
       }
-      localStorage.removeItem(key);
-      if (legacyKey) localStorage.removeItem(legacyKey);
+      store.removeItem(key);
     } catch (err) {
-      try { localStorage.removeItem(key); } catch (_err) {}
-      try { if (legacyKey) localStorage.removeItem(legacyKey); } catch (_err) {}
+      try { store.removeItem(key); } catch (_err) {}
     }
     return null;
   };
   var writeSettings = function (user, settings) {
     var key = settingsCacheKey(user);
     if (!key) return false;
+    var store = settingsCacheStore();
+    if (!store) return false;
     try {
-      localStorage.setItem(key, JSON.stringify({
+      clearLegacySettingsCache(key, legacySettingsCacheKey(user));
+      store.setItem(key, JSON.stringify({
         __hadithdbUserSettingsCache: 1,
         cachedAt: Date.now(),
         settings: settings || {}
@@ -114,8 +119,9 @@ const userSettingsCacheBridgeHtml = (req) => {
     } else if (data.action === 'clear') {
       var key = settingsCacheKey(data.user);
       var legacyKey = legacySettingsCacheKey(data.user);
-      if (key) localStorage.removeItem(key);
-      if (legacyKey) localStorage.removeItem(legacyKey);
+      var store = settingsCacheStore();
+      if (key && store) store.removeItem(key);
+      clearLegacySettingsCache(key, legacyKey);
       response.ok = true;
     } else {
       response.ok = false;
