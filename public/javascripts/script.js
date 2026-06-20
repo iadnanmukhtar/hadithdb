@@ -100,7 +100,6 @@ $(function () {
 	});
 
 	initMarkdownEditablePreviews(document);
-	initHadithTranslateButtons(document);
 	initHadithSharhLinks(document);
 	initHadithShareModals(document);
 	initQuranAyahHoverPairs(document);
@@ -191,7 +190,6 @@ function initRandomTocItemLoader(scope) {
 					throw new Error('Unable to load random item');
 				container.innerHTML = await response.text();
 				executeInlineScripts(container);
-				initHadithTranslateButtons(container);
 				initHadithSharhLinks(container);
 				initHadithShareModals(container);
 				initQuranAyahHoverPairs(container);
@@ -3990,63 +3988,6 @@ function initMarkdownEditablePreviews(root) {
 	});
 }
 
-function initHadithTranslateButtons(root) {
-	var scope = root || document;
-	scope.querySelectorAll('.hadith-translate-btn').forEach(function (button) {
-		if (button.dataset.translateBound === 'true')
-			return;
-		button.dataset.translateBound = 'true';
-		button.addEventListener('click', async function () {
-			var hadithId = button.dataset.hadithId;
-			var placeholder = button.closest('.cmd-tr');
-			var originalHtml = button.innerHTML;
-			if (!hadithId || button.disabled)
-				return;
-
-			button.disabled = true;
-			button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Verifying';
-
-			try {
-				var captcha = await getTranslateCaptcha();
-				if (!captcha) {
-					button.disabled = false;
-					button.innerHTML = originalHtml;
-					return;
-				}
-				button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Translating';
-				var res = await fetch(quranApiPath('/do/' + encodeURIComponent(hadithId) + '?cmd=tr'), {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(captcha)
-				});
-				var data = await res.json();
-				if (!res.ok)
-					throw new Error(data.message || res.statusText || 'Translation failed');
-
-				var body = document.querySelector('[data-id="' + cssEscape(hadithId) + '"][data-prop="hadith.body_en"]');
-				if (body) {
-					body.dataset.markdownSource = data.body_en || '';
-					body.innerHTML = data.body_en_html || '';
-				}
-				document.querySelectorAll('.cmd-tr[data-hadith-id="' + cssEscape(hadithId) + '"]').forEach(function (el) {
-					el.remove();
-				});
-				if (window.toastr)
-					toastr.success(data.message || 'Translation complete');
-			} catch (err) {
-				button.disabled = false;
-				button.innerHTML = originalHtml;
-				if (window.toastr)
-					toastr.error(err.message || 'Translation failed');
-				else if (placeholder)
-					placeholder.appendChild(document.createTextNode(' Translation failed.'));
-			}
-		});
-	});
-}
-
 function initHadithSharhLinks(root) {
 	var scope = root || document;
 	scope.querySelectorAll('.hadith-sharh-link').forEach(function (link) {
@@ -4439,40 +4380,6 @@ function downloadBlob(blob, filename) {
 	link.click();
 	link.remove();
 	URL.revokeObjectURL(link.href);
-}
-
-async function getTranslateCaptcha() {
-	var res = await fetch(quranApiPath('/captcha/translate'), {
-		method: 'GET',
-		headers: {
-			'Accept': 'application/json'
-		}
-	});
-	var data = await res.json();
-	if (!res.ok)
-		throw new Error(data.message || res.statusText || 'Unable to load CAPTCHA');
-	var answer = window.prompt(data.question || 'Complete the CAPTCHA');
-	if (answer === null)
-		return null;
-	var captcha = {
-		captchaToken: data.token,
-		captchaAnswer: answer
-	};
-	var verifyRes = await fetch(quranApiPath('/captcha/translate/verify'), {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Accept': 'application/json'
-		},
-		body: JSON.stringify(captcha)
-	});
-	var verifyData = await verifyRes.json();
-	if (!verifyRes.ok || !verifyData.verified) {
-		if (window.toastr)
-			toastr.error(verifyData.message || 'Incorrect CAPTCHA answer.');
-		return null;
-	}
-	return captcha;
 }
 
 function cssEscape(value) {

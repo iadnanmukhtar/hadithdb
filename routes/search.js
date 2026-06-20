@@ -4,13 +4,11 @@
 const debug = require('../lib/Debug')('hadithdb:Search');
 const express = require('express');
 const createError = require('http-errors');
-const crypto = require('crypto');
 const fs = require('fs');
 const fm = require('front-matter');
 const ejs = require('ejs');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
-const HadithRevision = require('../lib/HadithRevision');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const { Section, Chapter, Heading, Item, Library, Record } = require('../lib/Model');
@@ -22,7 +20,6 @@ const QuranCorpus = require('../lib/QuranCorpus');
 const { homedir } = require('os');
 
 const router = express.Router();
-const CAPTCHA_TTL_MS = 5 * 60 * 1000;
 const sitemapBuilds = new Map();
 
 function redirectEncodedReferencePath(req, res, next) {
@@ -127,73 +124,6 @@ function redirectCanonicalReferencePath(req, res, canonicalPath) {
   return true;
 }
 
-function captchaSecret() {
-  return global.settings.captchaSecret || global.settings.admin.key;
-}
-
-function signCaptchaPayload(payload) {
-  return crypto
-    .createHmac('sha256', captchaSecret())
-    .update(payload)
-    .digest('base64url');
-}
-
-function createCaptchaToken(answer) {
-  const payload = Buffer.from(JSON.stringify({
-    answer: answer.toString(),
-    exp: Date.now() + CAPTCHA_TTL_MS,
-    nonce: crypto.randomBytes(12).toString('base64url')
-  })).toString('base64url');
-  return `${payload}.${signCaptchaPayload(payload)}`;
-}
-
-function verifyCaptchaToken(token, answer) {
-  if (!token || answer === undefined || answer === null)
-    return false;
-  const parts = token.toString().split('.');
-  if (parts.length !== 2)
-    return false;
-  const [payload, signature] = parts;
-  const expected = signCaptchaPayload(payload);
-  if (Buffer.byteLength(signature) !== Buffer.byteLength(expected))
-    return false;
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected)))
-    return false;
-  let decoded;
-  try {
-    decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
-  } catch (err) {
-    return false;
-  }
-  if (!decoded || decoded.exp < Date.now())
-    return false;
-  return answer.toString().trim() === decoded.answer;
-}
-
-router.get(['/captcha/translate', '/quran/captcha/translate'], function (req, res) {
-  const a = crypto.randomInt(2, 10);
-  const b = crypto.randomInt(2, 10);
-  res.json({
-    question: `What is ${a} + ${b}?`,
-    token: createCaptchaToken(a + b)
-  });
-});
-
-router.post(['/captcha/translate/verify', '/quran/captcha/translate/verify'], function (req, res) {
-  if (!verifyCaptchaToken(req.body && req.body.captchaToken, req.body && req.body.captchaAnswer)) {
-    res.status(403).json({
-      code: 403,
-      verified: false,
-      message: 'Incorrect CAPTCHA answer.'
-    });
-    return;
-  }
-  res.json({
-    code: 200,
-    verified: true
-  });
-});
-
 router.use(redirectEncodedReferencePath);
 router.use(redirectArabicDigitPath);
 router.use(redirectCanonicalQueryParams);
@@ -225,48 +155,11 @@ router.get('/reinit', async function (req, res, next) {
 router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
   try {
     if (req.query.cmd == 'tr') {
-      var id = parseInt(req.params.id, 10);
-      if (!Number.isInteger(id) || id < 1)
-        return next(createError(400, 'Invalid hadith id'));
-
-      if (!verifyCaptchaToken(req.body && req.body.captchaToken, req.body && req.body.captchaAnswer)) {
-        res.status(403).json({
-          code: 403,
-          captchaRequired: true,
-          message: 'Please complete the CAPTCHA before translating.'
-        });
-        return;
-      }
-
-      var item = (await global.query(`SELECT * FROM v_hadiths WHERE hId=${id}`))[0];
-      if (!item)
-        return next(createError(404, `Hadith not found: ${id}`));
-
-      if (Utils.isTruthy(item.body_en)) {
-        res.json({
-          code: 200,
-          message: 'Translation already available',
-          translated: true,
-          revised: false,
-          body_en: item.body_en,
-          body_en_html: Utils.markdownToHtml(item.body_en)
-        });
-        return;
-      }
-
-      await global.query(`UPDATE hadiths SET requested=(requested+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${id}`);
-      var revised = await HadithRevision.reviseHadith(item);
-      res.json({
-        code: 200,
-        message: 'Translation complete',
-        translated: true,
-        revised: true,
-        body_en: revised.item.body_en,
-        body_en_html: Utils.markdownToHtml(revised.item.body_en),
-        chain_en: revised.item.chain_en,
-        footnote_en: revised.item.footnote_en,
-        footnote_en_html: Utils.markdownToHtml(revised.item.footnote_en),
-        title_en: revised.item.title_en
+      res.status(501).json({
+        code: 501,
+        translated: false,
+        revised: false,
+        message: 'Public hadith translation is no longer available.'
       });
       return;
     } else if (req.query.cmd == 'comment') {
@@ -278,13 +171,6 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
     res.end();
     return;
   } catch (err) {
-    if (req.query.cmd == 'tr' && req.method === 'POST') {
-      res.status(500).json({
-        code: 500,
-        message: err.message || 'Unable to translate hadith'
-      });
-      return;
-    }
     var message = `Error in action [${req.params.id}?${req.query.action}]`;
     debug.error(message + `\n${err.stack}`);
     return next(createError(500, message));

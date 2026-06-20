@@ -123,11 +123,6 @@
 		<% if (!langData.body) { %>
 			<div class="cmd-tr" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
 				Translation not available.
-				<% if (lang === 'en') { %>
-					<button type="button" class="hadith-translate-btn btn btn-sm btn-outline-secondary ms-2" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
-						<span class="bi bi-translate"></span> Translate
-					</button>
-				<% } %>
 			</div>
 		<% } %>
 				<%- bodyHtml %>
