@@ -12,7 +12,7 @@
   <% } %>
   <% if (selectedAyahModalIndex >= 0) { %>
     <button type="button" class="quran-ayah-modal-trigger reflection-count-link text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="reflections" title="View reflections">
-      <span class="bi bi-chat-right-text"></span><span class="hadith-comment-count fw-semibold" data-hadith-id="<%= selectedAyahId %>" title="0 reflections">0</span>
+      <span class="bi bi-chat-right-text"></span><span class="hadith-comment-count fw-semibold" data-hadith-id="<%= selectedAyahId %>" data-comment-type="hadith" title="0 reflections">0</span>
     </button>
     <button type="button" class="quran-ayah-modal-trigger quran-ayah-action text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="tafsirs" title="View tafsir" aria-label="View tafsir">
       <span class="bi bi-book-half"></span><span class="quran-ayah-action-label">Tafsir</span>

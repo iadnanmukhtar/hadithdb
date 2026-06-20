@@ -15,7 +15,7 @@ const commonFields = 'parentId, user_uid, user_provider, user_name, user_email, 
 function createReflectionRouter(config) {
   const router = express.Router();
   const debug = debugFactory(config.debugName);
-  const selectFields = `id, ${config.targetColumn}${config.extraSelect ? `, ${config.extraSelect}` : ''}, ${commonFields}`;
+  const selectFields = `id, ${config.targetColumn}${config.typeColumn ? `, ${config.typeColumn}` : ''}${config.extraSelect ? `, ${config.extraSelect}` : ''}, ${commonFields}`;
 
   function getMailer() {
     return nodemailer.createTransport({
@@ -139,9 +139,9 @@ ${payload.text || '(no text found)'}
   if (config.registerExtraRoutes) config.registerExtraRoutes(router, debug);
 
   router.get(`/:${config.targetParam}`, async function (req, res, next) {
-    const target = getTarget(req, res);
-    if (!target) return;
     try {
+      const target = await getTarget(req, res);
+      if (!target) return;
       let user = null;
       try {
         user = await GoogleAuth.verifyRequest(req, { allowSession: true });
@@ -151,7 +151,7 @@ ${payload.text || '(no text found)'}
       const rows = await global.query(`
         SELECT ${selectFields}
         FROM ${config.table}
-        WHERE ${config.targetColumn}=${target.sql}
+        WHERE ${targetWhere(target)}
         ORDER BY createdAt DESC
       `);
       const voteStats = await getVoteStats(rows.map(row => row.id), user ? user.uid : null);
@@ -163,8 +163,6 @@ ${payload.text || '(no text found)'}
   });
 
   router.post(`/:${config.targetParam}`, verifyGoogle, async function (req, res, next) {
-    const target = getTarget(req, res);
-    if (!target) return;
     const text = Utils.trimToEmpty(req.body.text);
     const parentId = req.body.parentId ? parseInt(req.body.parentId) : null;
     if (!text || text.length > 10000) {
@@ -176,10 +174,12 @@ ${payload.text || '(no text found)'}
       return;
     }
     try {
+      const target = await getTarget(req, res);
+      if (!target) return;
       const parentRows = parentId ? await global.query(`
         SELECT user_uid, user_provider, user_email, text
         FROM ${config.table}
-        WHERE id=${parentId} AND ${config.targetColumn}=${target.sql}
+        WHERE id=${parentId} AND ${targetWhere(target)}
         LIMIT 1
       `) : [];
       if (parentId && !parentRows.length) {
@@ -187,9 +187,11 @@ ${payload.text || '(no text found)'}
         return;
       }
       const user = req.user;
+      const typeColumn = config.typeColumn && target.type ? `, ${config.typeColumn}` : '';
+      const typeValue = config.typeColumn && target.type ? `, '${Utils.escSQL(target.type)}'` : '';
       const insertRes = await global.query(`
-        INSERT INTO ${config.table} (${config.targetColumn}, parentId, user_uid, user_provider, user_name, user_email, user_photo, text, createdAt, deleted)
-        VALUES (${target.sql}, ${parentId || 'NULL'}, '${Utils.escSQL(user.uid)}', '${Utils.escSQL(user.provider)}', '${Utils.escSQL(user.name)}', ${user.email ? `'${Utils.escSQL(user.email)}'` : 'NULL'}, ${photoSql(user.photo)}, '${Utils.escSQL(text)}', NOW(), 0)
+        INSERT INTO ${config.table} (${config.targetColumn}${typeColumn}, parentId, user_uid, user_provider, user_name, user_email, user_photo, text, createdAt, deleted)
+        VALUES (${target.sql}${typeValue}, ${parentId || 'NULL'}, '${Utils.escSQL(user.uid)}', '${Utils.escSQL(user.provider)}', '${Utils.escSQL(user.name)}', ${user.email ? `'${Utils.escSQL(user.email)}'` : 'NULL'}, ${photoSql(user.photo)}, '${Utils.escSQL(text)}', NOW(), 0)
       `);
       if (config.afterCreate) await config.afterCreate(target);
       const rows = await getRowsById(insertRes.insertId);
@@ -320,10 +322,20 @@ ${payload.text || '(no text found)'}
     }
   });
 
-  function getTarget(req, res) {
-    const target = config.parseTarget(req.params[config.targetParam]);
+  async function getTarget(req, res) {
+    if (config.prepareTargetStorage) await config.prepareTargetStorage();
+    const target = config.parseTarget(req.params[config.targetParam], req);
     if (!target) res.status(400).json({ error: config.invalidTargetError });
+    if (target && config.validateTarget && !(await config.validateTarget(target))) {
+      res.status(404).json({ error: config.targetNotFoundError || 'Comment target not found.' });
+      return null;
+    }
     return target;
+  }
+
+  function targetWhere(target) {
+    const typeClause = config.typeColumn && target.type ? ` AND ${config.typeColumn}='${Utils.escSQL(target.type)}'` : '';
+    return `${config.targetColumn}=${target.sql}${typeClause}`;
   }
 
   function parseCommentId(req, res) {

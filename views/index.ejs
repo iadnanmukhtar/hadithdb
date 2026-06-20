@@ -135,15 +135,19 @@
           var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}`);
           var randomQuranShareId = `Q${randomAyahRef.replace(/[^A-Za-z0-9_-]/g, '-')}`;
         %>
-          <%- include('sub-views/quran_ayah_hero.ejs', { site: site, page: page, selectedAyahs: [random] }); %>
-          <aside class="tags quran-ayah-hero-toolbar">
-            <a href="<%= randomAyahHref %>" title="View random ayah" aria-label="View random ayah" class="quran-ayah-action icon text-decoration-none">
-              <span class="bi bi-book"></span><span class="quran-ayah-action-label">View</span>
-            </a>
-            <a href="#<%= randomQuranShareId %>" type="button" title="Share random ayah image" aria-label="Share random ayah image" class="quran-ayah-action icon text-decoration-none" data-bs-toggle="modal" data-bs-target="#<%= randomQuranShareId %>">
-              <span class="bi bi-box-arrow-up"></span><span class="quran-ayah-action-label">Share</span>
-            </a>
-          </aside>
+          <%- include('sub-views/quran_ayah_hero.ejs', {
+            site: site,
+            page: page,
+            selectedAyahs: [random],
+            ayahHref: randomAyahHref,
+            toolbar: {
+              selectedAyahModalIndex: 0,
+              selectedAyahId: random.id,
+              viewHref: randomAyahHref,
+              quranShareId: randomQuranShareId
+            }
+          }); %>
+          <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: [random] }); %>
           <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: [random], quranShareId: randomQuranShareId }); %>
         <% } else { %>
           <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false }); %>

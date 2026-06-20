@@ -130,7 +130,7 @@
 			entries.forEach(entry => {
 				if (!entry.isIntersecting) return;
 				commentCountObserver.unobserve(entry.target);
-				queueCommentCount(entry.target.dataset.hadithId);
+				queueTypedCommentCount(entry.target.dataset.hadithId, entry.target.dataset.commentType);
 			});
 		}, { rootMargin: '250px 0px' }) : null;
 		const likeObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
@@ -380,9 +380,16 @@
 		};
 
 		const setCommentCount = (id, count) => {
+			return setTypedCommentCount(id, 'hadith', count);
+		};
+
+		const getCommentElementType = (el) => likeType(el && el.dataset ? el.dataset.commentType : '');
+
+		const setTypedCommentCount = (id, type, count) => {
+			type = likeType(type);
 			const safeCount = Number(count) || 0;
-			loadedCommentCounts[id] = safeCount;
-			Array.from(document.querySelectorAll(`.hadith-comment-count[data-hadith-id="${id}"]`)).forEach(badge => {
+			loadedCommentCounts[likeKey(id, type)] = safeCount;
+			Array.from(document.querySelectorAll(`.hadith-comment-count[data-hadith-id="${id}"]`)).filter(badge => getCommentElementType(badge) === type).forEach(badge => {
 				badge.textContent = safeCount;
 				badge.title = `${safeCount} reflection${safeCount === 1 ? '' : 's'}`;
 			});
@@ -397,42 +404,60 @@
 		};
 
 		const queueCommentCount = (rawId) => {
+			return queueTypedCommentCount(rawId, 'hadith');
+		};
+
+		const queueTypedCommentCount = (rawId, rawType) => {
 			const id = parseInt(rawId);
-			if (Number.isNaN(id) || loadedCommentCounts[id] !== undefined || loadingCommentCountIds.has(id)) return;
+			const type = likeType(rawType);
+			const key = likeKey(id, type);
+			if (Number.isNaN(id) || loadedCommentCounts[key] !== undefined || loadingCommentCountIds.has(key)) return;
 			const shouldSchedule = pendingCommentCountIds.size === 0;
-			pendingCommentCountIds.add(id);
+			pendingCommentCountIds.add(key);
 			if (shouldSchedule) scheduleCommentCountFlush();
 		};
 
 		const loadQueuedCommentCounts = async () => {
-			const ids = Array.from(pendingCommentCountIds).filter(id => !loadingCommentCountIds.has(id));
-			if (!ids.length) return;
-			ids.forEach(id => {
-				pendingCommentCountIds.delete(id);
-				loadingCommentCountIds.add(id);
+			const keys = Array.from(pendingCommentCountIds).filter(key => !loadingCommentCountIds.has(key));
+			if (!keys.length) return;
+			keys.forEach(key => {
+				pendingCommentCountIds.delete(key);
+				loadingCommentCountIds.add(key);
 			});
 			try {
-				const counts = {};
-				for (let offset = 0; offset < ids.length; offset += 100) {
-						const res = await fetch(quranApiPath(`/comments/counts?ids=${ids.slice(offset, offset + 100).join(',')}`), { cache: 'no-store' });
-					if (!res.ok) throw new Error('Failed reflection count fetch');
-					const data = await res.json();
-					Object.assign(counts, data.counts || {});
+				const grouped = keys.reduce((acc, key) => {
+					const parts = key.split(':');
+					const type = likeType(parts[0]);
+					const id = parseInt(parts[1], 10);
+					if (!Number.isNaN(id)) (acc[type] || (acc[type] = [])).push(id);
+					return acc;
+				}, {});
+				for (const type of Object.keys(grouped)) {
+					const ids = grouped[type];
+					const counts = {};
+					for (let offset = 0; offset < ids.length; offset += 100) {
+						const res = await fetch(quranApiPath(`/comments/counts?type=${encodeURIComponent(type)}&ids=${ids.slice(offset, offset + 100).join(',')}`), { cache: 'no-store' });
+						if (!res.ok) throw new Error('Failed reflection count fetch');
+						const data = await res.json();
+						Object.assign(counts, data.counts || {});
+					}
+					ids.forEach(id => setTypedCommentCount(id, type, counts[id]));
 				}
-				ids.forEach(id => setCommentCount(id, counts[id]));
 			} catch (err) {
 				console.warn('Could not load reflection counts', err);
 			} finally {
-				ids.forEach(id => loadingCommentCountIds.delete(id));
+				keys.forEach(key => loadingCommentCountIds.delete(key));
 			}
 		};
 
 		const initCommentCounts = () => {
 			getCommentCountBadges().forEach(badge => {
 				const id = parseInt(badge.dataset.hadithId);
+				const type = getCommentElementType(badge);
+				const key = likeKey(id, type);
 				if (Number.isNaN(id)) return;
-				if (loadedCommentCounts[id] !== undefined) {
-					setCommentCount(id, loadedCommentCounts[id]);
+				if (loadedCommentCounts[key] !== undefined) {
+					setTypedCommentCount(id, type, loadedCommentCounts[key]);
 					return;
 				}
 				if (badge.dataset.commentCountLazyInit === '1') return;
@@ -440,7 +465,7 @@
 				if (commentCountObserver) {
 					commentCountObserver.observe(badge);
 				} else {
-					queueCommentCount(id);
+					queueTypedCommentCount(id, type);
 				}
 			});
 		};
@@ -449,7 +474,7 @@
 			getCommentCountBadges().forEach(badge => {
 				const box = badge.getBoundingClientRect();
 				if (box.width > 0 && box.height > 0 && box.bottom >= -250 && box.top <= window.innerHeight + 250) {
-					queueCommentCount(badge.dataset.hadithId);
+					queueTypedCommentCount(badge.dataset.hadithId, badge.dataset.commentType);
 				}
 			});
 		};
@@ -457,9 +482,10 @@
 		document.addEventListener('shown.bs.modal', refreshVisibleCommentCounts);
 		document.addEventListener('hadithCommentCountChanged', event => {
 			const id = parseInt(event.detail && event.detail.hadithId);
+			const type = likeType(event.detail && event.detail.type);
 			const count = Number(event.detail && event.detail.count);
 			if (!Number.isNaN(id) && Number.isFinite(count)) {
-				setCommentCount(id, count);
+				setTypedCommentCount(id, type, count);
 			}
 		});
 

@@ -3,6 +3,7 @@
   const widgetId = typeof ctx.widgetId === 'string' ? ctx.widgetId : 'comments';
   const heading = typeof ctx.heading === 'string' ? ctx.heading : 'Add your own reflection below:';
   const targetId = typeof ctx.targetId !== 'undefined' ? ctx.targetId : '';
+  const targetType = ctx.targetType === 'toc' ? 'toc' : 'hadith';
   const ref = typeof ctx.ref !== 'undefined' ? ctx.ref : '';
   const endpoint = typeof ctx.endpoint === 'string' && ctx.endpoint.trim() ? ctx.endpoint : '/comments';
   const pingUrl = typeof ctx.pingUrl === 'string' ? ctx.pingUrl : '';
@@ -19,7 +20,7 @@
       <span class="bi bi-chat-right-text text-accent"></span><span class="comment-widget-count fw-semibold text-accent" id="<%= widgetId %>-count" title="0 reflections">0</span>
     </a>
   </h4>
-  <section class="mt-3 comment-feed" id="<%= widgetId %>" data-ref="<%= ref %>" data-target-id="<%= targetId %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>" data-lazy-load="<%= lazyLoad ? '1' : '0' %>">
+  <section class="mt-3 comment-feed" id="<%= widgetId %>" data-ref="<%= ref %>" data-target-id="<%= targetId %>" data-target-type="<%= targetType %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>" data-lazy-load="<%= lazyLoad ? '1' : '0' %>">
     <div class="comment-feed-shell">
       <div id="<%= widgetId %>-thread" class="comment-thread"></div>
       <div class="comment-composer mt-3" id="<%= widgetId %>-auth">
@@ -59,6 +60,7 @@
         const authHint = document.getElementById('<%= widgetId %>-hint');
         const composerAvatar = document.getElementById('<%= widgetId %>-avatar');
         const targetId = container.dataset.targetId;
+        const targetType = container.dataset.targetType === 'toc' ? 'toc' : 'hadith';
         const quranApiPath = (path) => {
           path = String(path || '');
           if (/^https?:\/\//i.test(path)) return path;
@@ -236,7 +238,7 @@
           countBadge.textContent = commentCount;
           countBadge.title = `${commentCount} reflection${commentCount === 1 ? '' : 's'}`;
           document.dispatchEvent(new CustomEvent('hadithCommentCountChanged', {
-            detail: { hadithId: targetId, count: commentCount }
+            detail: { hadithId: targetId, type: targetType, count: commentCount }
           }));
           threadEl.innerHTML = '';
           if (!comments.length) {
@@ -355,7 +357,8 @@
           });
         };
 
-        const listUrl = `${endpoint}/${encodeURIComponent(targetId)}`;
+        const typedTargetParam = `type=${encodeURIComponent(targetType)}`;
+        const listUrl = `${endpoint}/${encodeURIComponent(targetId)}?${typedTargetParam}`;
 
         const fetchComments = async (authToken = null) => {
           try {
@@ -461,6 +464,7 @@
               credentials: 'same-origin',
               headers: await authHeaders(user, { 'Content-Type': 'application/json' }),
               body: JSON.stringify({
+                type: targetType,
                 text: submittedText,
                 parentId: isEditing ? null : (parentInput.value || null)
               })
@@ -525,7 +529,8 @@
 
         document.addEventListener('hadithCommentWidgetLoad', event => {
           if (!event.detail) return;
-          if (event.detail.widgetId === '<%= widgetId %>' || String(event.detail.hadithId) === String(targetId)) {
+          const eventType = event.detail.type === 'toc' ? 'toc' : 'hadith';
+          if (event.detail.widgetId === '<%= widgetId %>' || (String(event.detail.hadithId) === String(targetId) && eventType === targetType)) {
             loadWidget();
           }
         });

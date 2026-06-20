@@ -2373,7 +2373,8 @@ function initQuranAyahModals(root) {
 				document.dispatchEvent(new CustomEvent('hadithCommentWidgetLoad', {
 					detail: {
 						widgetId: this.id,
-						hadithId: this.getAttribute('data-target-id')
+						hadithId: this.getAttribute('data-target-id'),
+						type: this.getAttribute('data-target-type') || 'hadith'
 					}
 				}));
 			});
@@ -2744,7 +2745,7 @@ function quranAyahHeroToolbarHtml(ayah, shareId) {
 		$reflections.append($('<span>').addClass('bi bi-chat-right-text'));
 		var $count = $('<span>').addClass('hadith-comment-count fw-semibold').attr('title', '0 reflections').text('0');
 		if (Number.isInteger(selectedAyahId))
-			$count.attr('data-hadith-id', selectedAyahId);
+			$count.attr({ 'data-hadith-id': selectedAyahId, 'data-comment-type': 'hadith' });
 		$reflections.append($count);
 
 		$('<button>').attr({

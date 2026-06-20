@@ -240,7 +240,7 @@
             <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= passageLikeId %>" data-like-type="toc">0</span>
             &nbsp;
             <a href="#quran-passage-comments" class="reflection-count-link text-decoration-none" title="View reflections">
-              <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= results[0].id %>" title="0 reflections">0</span>
+              <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= passageLikeId %>" data-comment-type="toc" title="0 reflections">0</span>
             </a>
             &nbsp;
             <span class="bi bi-box-arrow-up text-accent"></span>&nbsp;<button type="button" class="quran-passage-share-btn quran-passage-link icon" title="Copy and share this Quran passage URL">Share</button>
@@ -279,13 +279,14 @@
         <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
       </div>
 
-      <% if (results.length > 0 && results[0].id) { %>
+      <% if (results.length > 0 && passageLikeId) { %>
         <div class="mt-4">
           <%- include('sub-views/comment_widget.ejs', {
             widgetId: 'quran-passage-comments',
             heading: 'Add your own reflection on this passage below:',
-            targetId: results[0].id,
-            ref: results[0].ref,
+            targetId: passageLikeId,
+            targetType: 'toc',
+            ref: section && section.path ? section.path : results[0].ref,
             endpoint: '/comments',
             subjectLabel: 'reflection',
             placeholder: 'Write a reflection on this Quran passage...'

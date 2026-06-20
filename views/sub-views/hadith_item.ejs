@@ -279,7 +279,7 @@
 		<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-like-type="hadith">0</span>
 		&nbsp;
 		<a href="<%= isQuranItem ? utils.quranUrl(req, `/${i.ref}#comments`) : utils.urlFor(req, `/${i.ref}#comments`) %>" class="reflection-count-link text-decoration-none" title="View reflections">
-			<span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="0 reflections">0</span>
+			<span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-comment-type="hadith" title="0 reflections">0</span>
 		</a>
 		&nbsp;
 		<% if (quranTafsirHref && searchResult) { %>
