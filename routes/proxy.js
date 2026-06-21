@@ -9,6 +9,7 @@ const MarkdownIt = require('markdown-it');
 const markdownitFootnote = require('markdown-it-footnote');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
+const Books = require('../lib/Books');
 
 const router = express.Router();
 const md = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
@@ -265,6 +266,7 @@ async function localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, 
 
 async function localCommentaryRowsForAliasesFromDb(aliases, surah, ayahFrom, ayahTo, size) {
   const escapedAliases = aliases.map(alias => global.dbPool.escape(alias)).join(',');
+  const commentaryJoin = await Books.commentaryJoin('bc', 'hc');
   const rows = await global.query(`
     SELECT
       bc.alias AS commentary_alias,
@@ -278,10 +280,11 @@ async function localCommentaryRowsForAliasesFromDb(aliases, surah, ayahFrom, aya
       hc.text_en,
       hc.footnotes,
       hc.footnotes_en
-    FROM books_commentaries bc
-    JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+    FROM ${commentaryJoin.from}
+    ${commentaryJoin.join}
     WHERE bc.source='local'
       AND bc.hidden=0
+      AND ${commentaryJoin.typePredicate}
       AND bc.alias IN (${escapedAliases})
       AND hc.surah=${Number(surah)}
       AND hc.ayahFrom<=${Number(ayahTo)}

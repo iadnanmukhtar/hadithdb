@@ -18,6 +18,7 @@ const Index = require('../lib/Index');
 const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
 const Tafsir = require('../lib/Tafsir');
+const Books = require('../lib/Books');
 const { Heading, Item, Library } = require('../lib/Model');
 
 const router = express.Router();
@@ -254,16 +255,24 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         if (status.value && !['sm', 'md', 'lg'].includes(status.value))
           throw createError(400, `Invalid commentary book size '${status.value}'`);
       }
-      var beforeCommentaryBook = (await global.query(`SELECT alias FROM books_commentaries WHERE id=${commentaryBookId} LIMIT 1`))[0];
+      var commentaryBookStorage = await Books.commentaryBookStorage();
+      var beforeCommentaryBook = (await global.query(`
+        SELECT alias${commentaryBookStorage.unified ? ', legacyCommentaryBookId' : ''}
+        FROM ${commentaryBookStorage.table}
+        WHERE id=${commentaryBookId}
+        LIMIT 1`))[0];
       var commentaryBookValueSql = (col === 'description') ? sqlPreserveWhitespace(status.value) : sql(status.value);
-      var result = await global.query(`UPDATE books_commentaries SET ${col}=${commentaryBookValueSql} WHERE id=${commentaryBookId}`);
+      var result = await global.query(`UPDATE ${commentaryBookStorage.table} SET ${col}=${commentaryBookValueSql} WHERE id=${commentaryBookId}`);
       if (!result || result.affectedRows < 1)
         throw createError(404, 'Commentary book not found');
+      if (commentaryBookStorage.unified && beforeCommentaryBook && beforeCommentaryBook.legacyCommentaryBookId) {
+        await global.query(`UPDATE books_commentaries SET ${col}=${commentaryBookValueSql} WHERE id=${parseInt(beforeCommentaryBook.legacyCommentaryBookId, 10)}`);
+      }
       await Hadith.a_reinit();
       status.code = 200;
       status.message = result.message;
       try {
-        var afterCommentaryBook = (await global.query(`SELECT alias FROM books_commentaries WHERE id=${commentaryBookId} LIMIT 1`))[0];
+        var afterCommentaryBook = (await global.query(`SELECT alias FROM ${commentaryBookStorage.table} WHERE id=${commentaryBookId} LIMIT 1`))[0];
         await flushCommentaryBookCaches([beforeCommentaryBook && beforeCommentaryBook.alias, afterCommentaryBook && afterCommentaryBook.alias]);
       } catch (err) {
         debug.error(`${err.message}:\n${err.stack || ''}`);
@@ -518,6 +527,7 @@ async function flushCommentaryBookCaches(bookAliases) {
 }
 
 async function commentaryIndexRowById(id) {
+  var commentaryJoin = await Books.commentaryJoin('bc', 'hc');
   return (await global.query(`
     SELECT
       hc.id,
@@ -527,8 +537,10 @@ async function commentaryIndexRowById(id) {
       0 AS book_ordinal,
       'quran' AS book_alias,
       bc.ordinal AS ordinal,
-      bc.id AS bookCommentaryId,
+      ${commentaryJoin.legacyIdSelect},
+      ${commentaryJoin.bookIdSelect},
       bc.alias AS commentary_alias,
+      bc.type AS commentary_type,
       bc.shortName AS commentary_shortName,
       bc.shortName_en AS commentary_shortName_en,
       bc.name AS commentary_name,
@@ -560,12 +572,13 @@ async function commentaryIndexRowById(id) {
       hc.footnotes_en,
       hc.created,
       hc.lastmod
-    FROM books_commentaries bc
-    JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+    FROM ${commentaryJoin.from}
+    ${commentaryJoin.join}
     JOIN v_hadiths q ON q.id=hc.hadithId
     WHERE hc.id=${parseInt(id, 10)}
       AND bc.source='local'
       AND bc.hidden=0
+      AND ${commentaryJoin.typePredicate}
     LIMIT 1`))[0];
 }
 
@@ -594,13 +607,7 @@ async function createLocalCommentaryPassage(ids, col, value) {
       !Number.isInteger(ayahTo) || ayahTo < ayahFrom)
     throw createError(400, 'Invalid new commentary passage id');
 
-  var book = (await global.query(`
-    SELECT id
-    FROM books_commentaries
-    WHERE alias=${MySQL.escape(alias)}
-      AND source='local'
-      AND hidden=0
-    LIMIT 1`))[0];
+  var book = await Books.commentaryBookByAlias(alias);
   if (!book)
     throw createError(404, 'Local commentary book not found');
 
@@ -614,21 +621,23 @@ async function createLocalCommentaryPassage(ids, col, value) {
   if (!quranAyah)
     throw createError(404, `Quran ayah not found: ${surah}:${ayahFrom}`);
 
+  var bookColumns = await Books.commentaryPassageBookColumns(book);
   await global.query(`
     INSERT INTO hadiths_commentary
-      (bookCommentaryId, hadithId, surah, ayahFrom, ayahTo, passageNum, ${col})
+      (${bookColumns.columns.join(', ')}, hadithId, surah, ayahFrom, ayahTo, passageNum, ${col})
     VALUES
-      (${parseInt(book.id, 10)}, ${parseInt(quranAyah.id, 10)}, ${surah}, ${ayahFrom}, ${ayahTo}, ${ayahFrom}, ${sql(value)})
+      (${bookColumns.values.join(', ')}, ${parseInt(quranAyah.id, 10)}, ${surah}, ${ayahFrom}, ${ayahTo}, ${ayahFrom}, ${sql(value)})
     ON DUPLICATE KEY UPDATE
       hadithId=VALUES(hadithId),
       passageNum=VALUES(passageNum),
       ${col}=VALUES(${col}),
       lastmod=CURRENT_TIMESTAMP()`);
 
+  var bookWhere = await Books.commentaryPassageBookWhere(book);
   var row = (await global.query(`
     SELECT id
     FROM hadiths_commentary
-    WHERE bookCommentaryId=${parseInt(book.id, 10)}
+    WHERE ${bookWhere}
       AND surah=${surah}
       AND ayahFrom=${ayahFrom}
       AND ayahTo=${ayahTo}
