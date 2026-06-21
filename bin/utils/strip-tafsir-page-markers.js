@@ -60,7 +60,7 @@ function normalizedSql(column) {
 
 async function updateChangesInDb(aliases) {
   const patterns = [
-    '\\\\?\\(p\\\\?-[0-9\u0660-\u0669\u06F0-\u06F9]+\\\\?\\)',
+    '[\\\\]?[(]p[\\\\]?-[0-9\u0660-\u0669\u06F0-\u06F9]+[\\\\]?[)]',
     '<p[^>]*class=["\\\']page-num["\\\'][^>]*>[[:space:]]*صفحة[[:space:]]+[0-9\u0660-\u0669\u06F0-\u06F9]+[[:space:]]*</p>',
     '(^|\\n)[ \\t]*صفحة[ \\t]+[0-9\u0660-\u0669\u06F0-\u06F9]+[ \\t]*(?=\\n|$)',
     '\n',
