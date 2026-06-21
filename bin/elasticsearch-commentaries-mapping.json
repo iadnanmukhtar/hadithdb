@@ -10,6 +10,7 @@
         "book_alias": { "type": "keyword" },
         "ordinal": { "type": "long" },
         "bookCommentaryId": { "type": "long" },
+        "commentary_book_id": { "type": "long" },
         "commentary_alias": { "type": "keyword" },
         "lang": { "type": "keyword" },
         "source": { "type": "keyword" },
