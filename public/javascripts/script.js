@@ -1187,6 +1187,28 @@ function initQuranTafsirTabs(root) {
 					commentaryPublicationLabel(book)
 				].filter(Boolean);
 			};
+			var tafsirSizeLabel = function (book) {
+				var size = (book && book.size || '').toString();
+				if (size === 'lg')
+					return 'Large tafsir';
+				if (size === 'md')
+					return 'Medium tafsir';
+				if (size === 'sm')
+					return 'Small tafsir';
+				return '';
+			};
+			var renderTafsirSizeIndicator = function (book) {
+				var size = (book && book.size || '').toString();
+				var label = tafsirSizeLabel(book);
+				if (!label)
+					return null;
+				return $('<span>').addClass(`tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}`).attr({
+					title: label,
+					'data-tafsir-size-tooltip': label,
+					'aria-label': label,
+					role: 'img'
+				});
+			};
 			var waitForSettingsAuth = function () {
 				return new Promise(function (resolve) {
 					if (window.hadithAuth && window.hadithAuth.getToken)
@@ -1381,6 +1403,9 @@ function initQuranTafsirTabs(root) {
 					'aria-controls': targetId,
 					'aria-selected': 'false'
 				}).text(book.shortName_en || book.shortName || book.author_en || book.alias);
+				var sizeIndicator = renderTafsirSizeIndicator(book);
+				if (sizeIndicator)
+					tab.append(sizeIndicator);
 				tab.toggleClass('is-disabled', disabled);
 				if (dedicatedHref) {
 					tab.attr('href', dedicatedHref);

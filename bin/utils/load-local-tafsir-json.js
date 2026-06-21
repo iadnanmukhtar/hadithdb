@@ -229,8 +229,8 @@ const TAFSIRS = {
 	},
 	'thalabi': {
 		ordinal: 20,
-		shortName_en: 'Kashf',
-		shortName: 'الكَشْفُ',
+		shortName_en: 'Thalabi',
+		shortName: 'الثَّعْلَبِيّ',
 		name_en: 'al-Kashf wa-al-Bayan',
 		name: 'الكَشْفُ وَالبَيَانُ',
 		author_en: 'Ahmad b. Muhammad al-Thaalabi',

@@ -24,6 +24,23 @@
 	function tafsirBookLabel(tafsir) {
 		return Tafsir.rawShortName(tafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();
 	}
+	function tafsirSizeLabel(tafsir) {
+		const size = utils.emptyIfNull(tafsir.size || '').toString();
+		if (size === 'lg')
+			return 'Large tafsir';
+		if (size === 'md')
+			return 'Medium tafsir';
+		if (size === 'sm')
+			return 'Small tafsir';
+		return '';
+	}
+	function tafsirSizeIndicator(tafsir) {
+		const size = utils.emptyIfNull(tafsir.size || '').toString();
+		const label = tafsirSizeLabel(tafsir);
+		if (!label)
+			return '';
+		return `<span class="tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
+	}
 	function tafsirDeathTooltipLabel(tafsir) {
 		var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
 		if (!death)
@@ -50,7 +67,7 @@
 		<div class="h-menu-scroller">
 			<div class="btn-group h-menu text-nowrap" role="group">
 				<% orderedTafsirs.forEach(function (tafsir) { %>
-					<a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= tafsirBookHref(tafsir) %>" data-tafsir-tooltip="<%= tafsirBookTooltip(tafsir) %>" data-tafsir-book-nav-item data-tafsir-alias="<%= tafsir.alias %>" data-tafsir-lang="<%= tafsir.lang %>" data-tafsir-death="<%= tafsir.death || '' %>" data-tafsir-ordinal="<%= tafsir.ordinal || 0 %>"><%- tafsirBookLabel(tafsir) %></a>
+					<a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= tafsirBookHref(tafsir) %>" data-tafsir-tooltip="<%= tafsirBookTooltip(tafsir) %>" data-tafsir-book-nav-item data-tafsir-alias="<%= tafsir.alias %>" data-tafsir-lang="<%= tafsir.lang %>" data-tafsir-death="<%= tafsir.death || '' %>" data-tafsir-ordinal="<%= tafsir.ordinal || 0 %>"><%- tafsirBookLabel(tafsir) %><%- tafsirSizeIndicator(tafsir) %></a>
 				<% }); %>
 			</div>
 		</div>
