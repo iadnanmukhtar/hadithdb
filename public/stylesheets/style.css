@@ -489,6 +489,20 @@ nav .nav-link[aria-current="page"] {
 	padding-right: 0.5rem;
 }
 
+.book-catalog-tabs .nav-link,
+.tafsir-book-tabs .nav-link {
+	color: var(--c-accent);
+}
+
+.book-catalog-tabs .nav-link:hover,
+.book-catalog-tabs .nav-link:focus,
+.book-catalog-tabs .nav-link.active,
+.tafsir-book-tabs .nav-link:hover,
+.tafsir-book-tabs .nav-link:focus,
+.tafsir-book-tabs .nav-link.active {
+	color: var(--c-accent);
+}
+
 .book-catalog-section-toggle {
 	align-items: center;
 	background: transparent;
