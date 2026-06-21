@@ -15,8 +15,14 @@ router.get('/', async function (req, res, next) {
     return (val.hidden == 0 && val.alias !== 'quran');
   });
   if ('json' in req.query) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(results));
+    var tafsirs = await Tafsir.visibleTafsirs();
+    tafsirs = await Tafsir.withFirstPassages(tafsirs);
+    var translations = await Tafsir.visibleTranslations();
+    Utils.sendJsonDownload(res, 'hadithunlocked_books.json', {
+      books: results,
+      tafsirs: tafsirs,
+      translations: translations
+    });
   } else if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
     var keyNames = Object.keys(results[0]);

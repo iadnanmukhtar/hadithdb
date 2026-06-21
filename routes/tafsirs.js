@@ -27,8 +27,7 @@ router.get('/', async function (req, res, next) {
   var tafsirs = await Tafsir.visibleTafsirs();
   tafsirs = await Tafsir.withFirstPassages(tafsirs);
   if ('json' in req.query) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(tafsirs));
+    Utils.sendJsonDownload(res, 'hadithunlocked_quran_tafsirs.json', tafsirs);
   } else if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
     var keyNames = Object.keys(tafsirs[0] || {});
