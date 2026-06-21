@@ -11,7 +11,7 @@ const cheerio = require('cheerio');
 
 const TAFSIRS = {
 	'tafsir-tabari': {
-		ordinal: 11,
+		ordinal: 1,
 		shortName_en: 'Tabari',
 		shortName: 'الطَّبَرِيّ',
 		name_en: 'Jami al-Bayan an Tawil Ay al-Quran',
@@ -27,7 +27,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'tafsir-baghawi': {
-		ordinal: 12,
+		ordinal: 8,
 		shortName_en: 'Baghawi',
 		shortName: 'البَغَوِيّ',
 		name_en: 'Maalim al-Tanzil fi Tafsir al-Quran',
@@ -43,7 +43,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'tafsir-ibn-al-jawzi': {
-		ordinal: 13,
+		ordinal: 10,
 		shortName_en: 'Ibn al-Jawzi',
 		shortName: 'ابْنُ الجَوْزِيّ',
 		name_en: 'Zad al-Masir fi Ilm al-Tafsir',
@@ -59,7 +59,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'tafsir-qurtubi': {
-		ordinal: 15,
+		ordinal: 12,
 		shortName_en: 'Qurtubi',
 		shortName: 'القُرْطُبِيّ',
 		name_en: 'al-Jami li-Ahkam al-Quran wa-al-Mubayyin lima Tadammana min al-Sunnah wa-Ay al-Furqan',
@@ -75,7 +75,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'tafsir-ibn-ashur': {
-		ordinal: 17,
+		ordinal: 34,
 		shortName_en: 'Ibn Ashur',
 		shortName: 'ابْنُ عَاشُورَ',
 		name_en: 'Tahrir al-Mana al-Sadid wa-Tanwir al-Aql al-Jadid min Tafsir al-Kitab al-Majid',
@@ -91,7 +91,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'tafsir-mathur': {
-		ordinal: 91,
+		ordinal: 45,
 		shortName_en: 'Mathur',
 		shortName: 'المَأْثُورُ',
 		name_en: 'Mawsuat al-Tafsir al-Mathur',
@@ -107,7 +107,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'tafsir-suyuti': {
-		ordinal: 92,
+		ordinal: 24,
 		shortName_en: 'Suyuti',
 		shortName: 'السُّيُوطِيّ',
 		name_en: 'al-Durr al-Manthur fi al-Tafsir bi-al-Mathur',
@@ -123,7 +123,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'wajiz': {
-		ordinal: 9,
+		ordinal: 44,
 		shortName_en: 'Wajiz',
 		shortName: 'الوَجِيزُ',
 		name_en: 'al-Tafsir al-Wajiz',
@@ -139,7 +139,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'basit': {
-		ordinal: 37,
+		ordinal: 42,
 		shortName_en: 'Basit',
 		shortName: 'البَسِيطُ',
 		name_en: 'al-Tafsir al-Basit',
@@ -157,7 +157,7 @@ const TAFSIRS = {
 		autocommit: true
 	},
 	'ibn-atiyah': {
-		ordinal: 39,
+		ordinal: 41,
 		shortName_en: 'Ibn Atiyyah',
 		shortName: 'ابْنُ عَطِيَّةَ',
 		name_en: 'al-Muharrar al-Wajiz',
@@ -175,7 +175,7 @@ const TAFSIRS = {
 		autocommit: true
 	},
 	'wasit': {
-		ordinal: 40,
+		ordinal: 54,
 		shortName_en: 'Wasit',
 		shortName: 'الوَسِيطُ',
 		name_en: 'al-Tafsir al-Wasit',
@@ -228,7 +228,7 @@ const TAFSIRS = {
 		autocommit: true
 	},
 	'thalabi': {
-		ordinal: 38,
+		ordinal: 20,
 		shortName_en: 'Kashf',
 		shortName: 'الكَشْفُ',
 		name_en: 'al-Kashf wa-al-Bayan',
@@ -372,7 +372,7 @@ const TAFSIRS = {
 		autocommit: true
 	},
 	'gharib-al-quran': {
-		ordinal: 93,
+		ordinal: 40,
 		shortName_en: 'Gharib',
 		shortName: 'الغَرِيبُ',
 		name_en: 'al-Siraj fi Bayan Gharib al-Quran',
@@ -388,7 +388,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'en-tafsir-maarif-al-quran': {
-		ordinal: 4,
+		ordinal: 36,
 		shortName_en: "Ma'ariful Qur'an",
 		name_en: "Ma'ariful Qur'an",
 		name: 'مَعَارِفُ القُرْآنِ',
@@ -398,7 +398,7 @@ const TAFSIRS = {
 		directory: 'data/en-maarifulquran'
 	},
 	'en-tafsir-tazkir-al-quran': {
-		ordinal: 5,
+		ordinal: 39,
 		shortName_en: 'Tazkirul Quran',
 		name_en: 'Tadhkir al-Quran',
 		name: 'تَذْكِيرُ القُرْآنِ',
@@ -408,7 +408,7 @@ const TAFSIRS = {
 		directory: 'data/en-tazkirulquran'
 	},
 	'en-tafsir-mokhtasar': {
-		ordinal: 6,
+		ordinal: 46,
 		shortName_en: 'Mokhtasar',
 		shortName: 'المُخْتَصَرُ',
 		name_en: 'al-Mukhtasar fi Tafsir al-Quran al-Karim',
@@ -425,7 +425,7 @@ const TAFSIRS = {
 		}
 	},
 	'irab-al-quran': {
-		ordinal: 61,
+		ordinal: 31,
 		shortName_en: 'Irab',
 		shortName: 'الإِعْرَابُ',
 		name_en: 'al-Jadwal fi Irab al-Quran wa-Sarfih wa-Bayanih',
@@ -441,7 +441,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'irab-daas': {
-		ordinal: 63,
+		ordinal: 48,
 		shortName_en: 'Irab (Daas)',
 		shortName: 'إِعْرَابُ الدَّعَّاسِ',
 		name_en: 'Irab al-Quran al-Karim',
@@ -457,7 +457,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'ibn-adil': {
-		ordinal: 64,
+		ordinal: 21,
 		shortName_en: 'Ibn Adil',
 		shortName: 'ابْنُ عَادِلٍ',
 		name_en: 'al-Lubab fi Ulum al-Kitab',
@@ -476,7 +476,7 @@ const TAFSIRS = {
 		autocommit: true
 	},
 	'qiraat': {
-		ordinal: 62,
+		ordinal: 47,
 		shortName_en: "Qira'at",
 		shortName: 'القِرَاءَاتُ',
 		name_en: "al-Jadwal fi Qira'at al-Quran",
@@ -492,7 +492,7 @@ const TAFSIRS = {
 		sourceFormat: 'html'
 	},
 	'saadi': {
-		ordinal: 93,
+		ordinal: 32,
 		shortName_en: 'Saadi',
 		shortName: 'السَّعْدِيّ',
 		name_en: 'Taysir al-Karim al-Rahman fi Tafsir Kalam al-Mannan',
