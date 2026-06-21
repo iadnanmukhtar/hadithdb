@@ -309,6 +309,7 @@ function normalizeRequestBookFilters(req) {
     return [];
   var filters = normalizeBookFilterValues(req.query.b);
   filters = expandShortcutBookFilters(filters);
+  filters = filters.filter(isVisibleBookFilter);
   req.query.b = filters;
   return filters;
 }
@@ -369,7 +370,19 @@ function stripQuranTafsirBookFilters(filters) {
   filters = Array.isArray(filters) ? filters : [filters];
   return filters.flatMap(filter => filter.toString().split(','))
     .map(normalizeBookFilterValue)
+    .filter(isVisibleBookFilter)
     .filter(filter => filter && filter !== 'quran' && filter !== 'commentaries');
+}
+
+function isVisibleBookFilter(filter) {
+  if (!filter)
+    return false;
+  if (filter === 'toc' || filter === 'commentaries')
+    return true;
+  if (filter === 'sahihayn' || filter === 'kutubarbaah' || filter === 'sixbooks')
+    return true;
+  var book = (global.books || []).find(row => row && row.alias === filter);
+  return !!book && Number(book.hidden) !== 1;
 }
 
 function normalizeRequestTafsirFilters(req) {
@@ -399,7 +412,7 @@ function tafsirSearchFilterOptions(selectedAliases) {
   selectedAliases = Array.isArray(selectedAliases) ? selectedAliases : (selectedAliases ? [selectedAliases] : []);
   var seen = new Set();
   return Tafsir.visibleTafsirsSync().filter(function (tafsir) {
-    if (!tafsir || tafsir.source !== 'local' || !tafsir.alias || seen.has(tafsir.alias))
+    if (!tafsir || tafsir.source !== 'local' || !tafsir.alias || seen.has(tafsir.alias) || Number(tafsir.hidden) === 1)
       return false;
     seen.add(tafsir.alias);
     return true;
@@ -422,7 +435,7 @@ function compareTafsirFilterOptions(a, b) {
 function tafsirSearchFilterLabel(alias) {
   if (!alias)
     return '';
-  var tafsir = Tafsir.visibleTafsirsSync().find(row => row.alias === alias);
+  var tafsir = Tafsir.visibleTafsirsSync().find(row => row.alias === alias && Number(row.hidden) !== 1);
   if (!tafsir)
     return alias;
   return Tafsir.rawShortName(tafsir, 'en') || tafsir.shortName_en || tafsir.name_en || alias;

@@ -9,7 +9,7 @@
     searchTafsirRows = Tafsir.visibleTafsirsSync();
   var seenSearchTafsirs = new Set();
   var searchTafsirOptions = (searchTafsirRows || []).filter(function (tafsir) {
-    if (!tafsir || tafsir.source !== 'local' || !tafsir.alias || seenSearchTafsirs.has(tafsir.alias))
+    if (!tafsir || Number(tafsir.hidden) === 1 || tafsir.source !== 'local' || !tafsir.alias || seenSearchTafsirs.has(tafsir.alias))
       return false;
     seenSearchTafsirs.add(tafsir.alias);
     return true;

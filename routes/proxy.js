@@ -48,7 +48,7 @@ router.get('/translations/local', async function (req, res) {
     return;
   }
   debug(`proxy local translations start aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo} lang=${lang || ''}`);
-  const rows = await localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, ayahTo);
+  const rows = await localCommentaryRowsForAliases(aliases, surah, ayahFrom, ayahTo);
   debug(`proxy local translations rows=${rows.length} aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo}`);
   const editMode = isEditMode(req);
   const entries = rows.map(row => {
@@ -207,8 +207,23 @@ async function localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo) {
   }));
 }
 
-async function localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, ayahTo) {
+async function localCommentaryRowsForAliases(aliases, surah, ayahFrom, ayahTo) {
   const size = Math.min(5000, Math.max(1, aliases.length * Math.max(1, ayahTo - ayahFrom + 21)));
+  let rows;
+  try {
+    rows = await localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, ayahTo, size);
+  } catch (err) {
+    debug.error(`local translations index failed aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo}: ${err.message}\n${err.stack || ''}`);
+    if (!isSearchBackendUnavailable(err) || typeof global.query !== 'function')
+      throw err;
+    rows = await localCommentaryRowsForAliasesFromDb(aliases, surah, ayahFrom, ayahTo, size);
+  }
+  if (rows.length < aliases.length && typeof global.query === 'function')
+    rows = await localCommentaryRowsForAliasesFromDb(aliases, surah, ayahFrom, ayahTo, size);
+  return rows;
+}
+
+async function localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, ayahTo, size) {
   const rows = await Index.docsFromQueryFields('commentaries', {
     bool: {
       filter: [
@@ -248,10 +263,55 @@ async function localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, 
   }));
 }
 
+async function localCommentaryRowsForAliasesFromDb(aliases, surah, ayahFrom, ayahTo, size) {
+  const escapedAliases = aliases.map(alias => global.dbPool.escape(alias)).join(',');
+  const rows = await global.query(`
+    SELECT
+      bc.alias AS commentary_alias,
+      bc.ordinal,
+      bc.format,
+      hc.id,
+      hc.surah,
+      hc.ayahFrom,
+      hc.ayahTo,
+      hc.text,
+      hc.text_en,
+      hc.footnotes,
+      hc.footnotes_en
+    FROM books_commentaries bc
+    JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+    WHERE bc.source='local'
+      AND bc.hidden=0
+      AND bc.alias IN (${escapedAliases})
+      AND hc.surah=${Number(surah)}
+      AND hc.ayahFrom<=${Number(ayahTo)}
+      AND hc.ayahTo>=${Number(ayahFrom)}
+    ORDER BY bc.ordinal ASC, bc.alias ASC, hc.ayahFrom ASC, hc.ayahTo ASC
+    LIMIT ${Number(size)}`);
+  return rows.map(row => ({
+    commentary_alias: row.commentary_alias,
+    ordinal: Number(row.ordinal || 0),
+    format: row.format,
+    id: row.id,
+    surah: Number(row.surah),
+    ayahFrom: Number(row.ayahFrom),
+    ayahTo: Number(row.ayahTo),
+    text: row.text,
+    text_en: row.text_en,
+    footnotes: row.footnotes,
+    footnotes_en: row.footnotes_en
+  }));
+}
+
 function uniqueAliases(values) {
   return Array.from(new Set((values || [])
     .map(value => (value || '').toString().trim())
     .filter(value => /^[A-Za-z0-9_-]+$/.test(value))));
+}
+
+function isSearchBackendUnavailable(err) {
+  const status = err && (err.status || err.statusCode);
+  return [502, 503, 504].includes(Number(status));
 }
 
 function addMissingEditableCommentaryRows(rows, src, surah, ayahFrom, ayahTo) {
