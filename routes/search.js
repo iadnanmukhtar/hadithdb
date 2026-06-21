@@ -134,11 +134,16 @@ router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, n
     var bookFilters = req.query.b || req.query['b[]'];
     if (bookFilters && (typeof bookFilters) != 'object')
       bookFilters = [bookFilters];
-    var tafsirFilter = normalizeRequestTafsirFilter(req);
-    if (tafsirFilter)
+    bookFilters = expandShortcutBookFilters(normalizeBookFilterValues(bookFilters));
+    var quranSearchProxy = req.path.indexOf('/quran/') === 0;
+    if (!quranSearchProxy)
+      bookFilters = stripQuranTafsirBookFilters(bookFilters);
+    var tafsirFilters = quranSearchProxy ? normalizeRequestTafsirFilters(req) : [];
+    if (tafsirFilters.length > 0)
       bookFilters = ['commentaries'];
     var suggestions = await Search.a_autocomplete(q, bookFilters, req.query.limit, {
-      tafsirAlias: tafsirFilter
+      tafsirAliases: tafsirFilters,
+      excludeQuranAndTafsir: !quranSearchProxy
     });
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(suggestions));
@@ -302,33 +307,99 @@ async function quranTafsirSitemapUrls(quranDomain) {
 function normalizeRequestBookFilters(req) {
   if (!req.query.b)
     return [];
-  var filters = Array.isArray(req.query.b) ? req.query.b : [req.query.b];
-  filters = filters.flatMap(filter => filter.toString().split(','));
-  filters = Array.from(new Set(filters.map(filter => filter.trim()).filter(Boolean)));
+  var filters = normalizeBookFilterValues(req.query.b);
+  filters = expandShortcutBookFilters(filters);
   req.query.b = filters;
   return filters;
 }
 
-function normalizeRequestTafsirFilter(req) {
-  var value = Array.isArray(req.query.tafsir) ? req.query.tafsir[0] : req.query.tafsir;
-  value = Utils.trimToEmpty(value);
-  if (!value)
-    return '';
-  var tafsir = Tafsir.visibleTafsirsSync().find(function (row) {
-    return row.alias === value || row.slug === value || Tafsir.tafsirSlug(row.alias) === value;
-  });
-  if (!tafsir) {
-    delete req.query.tafsir;
-    return '';
-  }
-  req.query.tafsir = tafsir.alias;
-  return tafsir.alias;
+function normalizeBookFilterValues(filters) {
+  if (!filters)
+    return [];
+  filters = Array.isArray(filters) ? filters : [filters];
+  filters = filters.flatMap(filter => filter.toString().split(','));
+  return Array.from(new Set(filters.map(normalizeBookFilterValue).filter(Boolean)));
 }
 
-function tafsirSearchFilterOptions(selectedAlias) {
+function normalizeBookFilterValue(filter) {
+  filter = Utils.trimToEmpty(filter);
+  if (filter === 'tafsir')
+    return 'commentaries';
+  return filter;
+}
+
+function expandShortcutBookFilters(filters) {
+  var expanded = [];
+  filters.forEach(function (filter) {
+    if (filter === 'sahihayn') {
+      expanded.push('bukhari', 'muslim');
+      return;
+    }
+    if (filter === 'kutubarbaah') {
+      expanded.push('abudawud', 'tirmidhi', 'nasai', 'ibnmajah');
+      return;
+    }
+    if (filter === 'sixbooks') {
+      expanded.push('bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah');
+      return;
+    }
+    expanded.push(filter);
+  });
+  return orderBookFilters(Array.from(new Set(expanded)));
+}
+
+function orderBookFilters(filters) {
+  var priority = new Map([['toc', -1], ['commentaries', Number.MAX_SAFE_INTEGER - 1]]);
+  (global.books || []).forEach(function (book, index) {
+    if (book && book.alias)
+      priority.set(book.alias, index);
+  });
+  return filters.slice().sort(function (a, b) {
+    var orderA = priority.has(a) ? priority.get(a) : Number.MAX_SAFE_INTEGER;
+    var orderB = priority.has(b) ? priority.get(b) : Number.MAX_SAFE_INTEGER;
+    if (orderA !== orderB)
+      return orderA - orderB;
+    return a.localeCompare(b);
+  });
+}
+
+function stripQuranTafsirBookFilters(filters) {
+  if (!filters)
+    return [];
+  filters = Array.isArray(filters) ? filters : [filters];
+  return filters.flatMap(filter => filter.toString().split(','))
+    .map(normalizeBookFilterValue)
+    .filter(filter => filter && filter !== 'quran' && filter !== 'commentaries');
+}
+
+function normalizeRequestTafsirFilters(req) {
+  var values = Array.isArray(req.query.tafsir) ? req.query.tafsir : (req.query.tafsir ? [req.query.tafsir] : []);
+  values = values.flatMap(value => value.toString().split(',')).map(value => Utils.trimToEmpty(value)).filter(Boolean);
+  if (values.length < 1)
+    return [];
+  var aliases = [];
+  values.forEach(function (value) {
+    var tafsir = Tafsir.visibleTafsirsSync().find(function (row) {
+      return row.source === 'local'
+        && (row.alias === value || row.slug === value || Tafsir.tafsirSlug(row.alias) === value);
+    });
+    if (tafsir)
+      aliases.push(tafsir.alias);
+  });
+  aliases = Array.from(new Set(aliases));
+  if (aliases.length < 1) {
+    delete req.query.tafsir;
+    return [];
+  }
+  req.query.tafsir = aliases;
+  return aliases;
+}
+
+function tafsirSearchFilterOptions(selectedAliases) {
+  selectedAliases = Array.isArray(selectedAliases) ? selectedAliases : (selectedAliases ? [selectedAliases] : []);
   var seen = new Set();
   return Tafsir.visibleTafsirsSync().filter(function (tafsir) {
-    if (!tafsir || !tafsir.alias || seen.has(tafsir.alias))
+    if (!tafsir || tafsir.source !== 'local' || !tafsir.alias || seen.has(tafsir.alias))
       return false;
     seen.add(tafsir.alias);
     return true;
@@ -336,9 +407,16 @@ function tafsirSearchFilterOptions(selectedAlias) {
     return {
       alias: tafsir.alias,
       label: Tafsir.rawShortName(tafsir, 'en') || tafsir.shortName_en || tafsir.name_en || tafsir.alias,
-      selected: tafsir.alias === selectedAlias
+      selected: selectedAliases.indexOf(tafsir.alias) >= 0
     };
-  });
+  }).sort(compareTafsirFilterOptions);
+}
+
+function compareTafsirFilterOptions(a, b) {
+  var labelOrder = a.label.localeCompare(b.label, 'en', { sensitivity: 'base' });
+  if (labelOrder !== 0)
+    return labelOrder;
+  return a.alias.localeCompare(b.alias, 'en', { sensitivity: 'base' });
 }
 
 function tafsirSearchFilterLabel(alias) {
@@ -350,25 +428,35 @@ function tafsirSearchFilterLabel(alias) {
   return Tafsir.rawShortName(tafsir, 'en') || tafsir.shortName_en || tafsir.name_en || alias;
 }
 
-function searchFilterPills(bookFilters, tafsirAlias) {
+function searchFilterPills(bookFilters, tafsirAliases) {
+  tafsirAliases = Array.isArray(tafsirAliases) ? tafsirAliases : (tafsirAliases ? [tafsirAliases] : []);
   var filters = Array.isArray(bookFilters) ? bookFilters : (bookFilters ? [bookFilters] : []);
   var pills = filters.filter(Boolean).map(function (filter) {
     return {
       param: 'b',
-      value: filter,
+      value: searchFilterDisplayValue(filter),
       label: Search.describeBookFilters([filter])[0] || filter,
       removeTafsir: filter === 'commentaries'
     };
   });
-  if (tafsirAlias) {
+  tafsirAliases.forEach(function (tafsirAlias) {
     pills.push({
       param: 'tafsir',
       value: tafsirAlias,
       label: tafsirSearchFilterLabel(tafsirAlias),
       removeTafsir: false
     });
-  }
+  });
   return pills;
+}
+
+function searchFilterDisplayValues(bookFilters) {
+  var filters = Array.isArray(bookFilters) ? bookFilters : (bookFilters ? [bookFilters] : []);
+  return filters.map(searchFilterDisplayValue);
+}
+
+function searchFilterDisplayValue(filter) {
+  return filter === 'commentaries' ? 'tafsir' : filter;
 }
 
 async function renderSearchResults(req, res, next, options = {}) {
@@ -376,28 +464,30 @@ async function renderSearchResults(req, res, next, options = {}) {
   var totalResults = 0;
 
   req.query.q = Search.truncateQuery(req.query.q);
-  if (options.defaultBookFilters && !req.query.b)
-    req.query.b = options.defaultBookFilters.slice();
   if (options.forceBookFilters)
     req.query.b = options.forceBookFilters.slice();
-  var tafsirFilter = normalizeRequestTafsirFilter(req);
-  if (tafsirFilter)
+  var tafsirFilters = options.quranSearchProxy ? normalizeRequestTafsirFilters(req) : [];
+  if (!options.quranSearchProxy)
+    delete req.query.tafsir;
+  if (tafsirFilters.length > 0)
     req.query.b = ['commentaries'];
 
   if (options.redirectReferences !== false) {
     var bookReference = !Search.isExpressionQuery(req.query.q) && Books.findReference(req.query.q, global.books);
-    if (bookReference) {
+    if (bookReference && (options.quranSearchProxy || bookReference.book.alias !== 'quran')) {
       res.redirect('/' + bookReference.ref);
       return true;
     }
     // is it a item ref number?
     if (!Search.isExpressionQuery(req.query.q) && req.query.q.match(/^([a-z]+:\d+|\d+)/)) {
-      if (Library.instance.findBook(req.query.q.split(/:/)[0])) {
+      var referenceBook = Library.instance.findBook(req.query.q.split(/:/)[0]);
+      if (referenceBook && (options.quranSearchProxy || referenceBook.alias !== 'quran')) {
         res.redirect('/' + req.query.q);
         return true;
       }
     } else if (!Search.isExpressionQuery(req.query.q) && req.query.q.match(/^[a-z]+\//)) {
-      if (Library.instance.findBook(req.query.q.split(/\//)[0])) {
+      var pathReferenceBook = Library.instance.findBook(req.query.q.split(/\//)[0]);
+      if (pathReferenceBook && (options.quranSearchProxy || pathReferenceBook.alias !== 'quran')) {
         res.redirect('/' + req.query.q);
         return true;
       }
@@ -406,10 +496,16 @@ async function renderSearchResults(req, res, next, options = {}) {
 
   try {
     normalizeRequestBookFilters(req);
+    if (!options.quranSearchProxy)
+      req.query.b = stripQuranTafsirBookFilters(req.query.b);
+    var effectiveBookFilters = req.query.b;
+    if ((!effectiveBookFilters || effectiveBookFilters.length < 1) && options.defaultBookFilters)
+      effectiveBookFilters = options.defaultBookFilters.slice();
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
     offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
-    results = await Search.a_searchText(req.query.q, req.query.b, offset, {
-      tafsirAlias: tafsirFilter
+    results = await Search.a_searchText(req.query.q, effectiveBookFilters, offset, {
+      tafsirAliases: tafsirFilters,
+      excludeQuranAndTafsir: !options.quranSearchProxy
     });
     totalResults = Number.isFinite(results.total) ? results.total : results.length;
     if (results.length > global.settings.search.itemsPerPage) {
@@ -450,13 +546,14 @@ async function renderSearchResults(req, res, next, options = {}) {
       results: results,
       totalResults: totalResults,
       q: req.query.q,
-      b: (req.query.b ? req.query.b : []),
-      bookFilterLabels: Search.describeBookFilters(req.query.b).concat(tafsirFilter ? [tafsirSearchFilterLabel(tafsirFilter)] : []),
-      searchFilterPills: searchFilterPills(req.query.b, tafsirFilter),
+      b: searchFilterDisplayValues(req.query.b),
+      bookFilterLabels: Search.describeBookFilters(req.query.b).concat(tafsirFilters.map(tafsirSearchFilterLabel)),
+      searchFilterPills: searchFilterPills(req.query.b, tafsirFilters),
       searchAction: options.searchAction || '/',
       quranSearchProxy: options.quranSearchProxy || false,
-      tafsirFilter: tafsirFilter,
-      tafsirFilterOptions: options.quranSearchProxy ? tafsirSearchFilterOptions(tafsirFilter) : [],
+      tafsirFilters: tafsirFilters,
+      tafsirFilter: tafsirFilters[0] || '',
+      tafsirFilterOptions: options.quranSearchProxy ? tafsirSearchFilterOptions(tafsirFilters) : [],
     });
   }
   return true;

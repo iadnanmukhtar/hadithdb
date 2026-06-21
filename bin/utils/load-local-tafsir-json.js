@@ -122,6 +122,255 @@ const TAFSIRS = {
 		column: 'text',
 		sourceFormat: 'html'
 	},
+	'wajiz': {
+		ordinal: 9,
+		shortName_en: 'Wajiz',
+		shortName: 'الوَجِيزُ',
+		name_en: 'al-Tafsir al-Wajiz',
+		name: 'الوَجِيزُ',
+		author_en: 'Ali b. Ahmad al-Wahidi',
+		author: 'عَلِيُّ بْنُ أَحْمَدَ الوَاحِدِيّ',
+		description: 'A concise classical tafsir by al-Wahidi focused on brief explanation and clarification of Quranic meanings.',
+		aqidah: 'Ashari',
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/wajiz.json',
+		column: 'text',
+		sourceFormat: 'html'
+	},
+	'basit': {
+		ordinal: 37,
+		shortName_en: 'Basit',
+		shortName: 'البَسِيطُ',
+		name_en: 'al-Tafsir al-Basit',
+		name: 'التَّفْسِيرُ البَسِيطُ',
+		author_en: 'Ali b. Ahmad al-Wahidi',
+		author: 'عَلِيُّ بْنُ أَحْمَدَ الوَاحِدِيّ',
+		description: 'A detailed classical tafsir by al-Wahidi with linguistic discussion, transmitted explanations, and extended commentary.',
+		aqidah: 'Ashari',
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/basit.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 100,
+		autocommit: true
+	},
+	'ibn-atiyah': {
+		ordinal: 39,
+		shortName_en: 'Ibn Atiyyah',
+		shortName: 'ابْنُ عَطِيَّةَ',
+		name_en: 'al-Muharrar al-Wajiz',
+		name: 'المُحَرَّرُ الوَجِيزُ',
+		author_en: 'Abd al-Haqq b. Atiyyah',
+		author: 'عَبْدُ الحَقِّ بْنِ عَطِيَّةَ',
+		description: 'A major Andalusian tafsir combining transmitted reports, Arabic analysis, recitation material, and concise scholarly judgment.',
+		aqidah: 'Ashari',
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/Ibn-atiyyah.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 1,
+		autocommit: true
+	},
+	'wasit': {
+		ordinal: 40,
+		shortName_en: 'Wasit',
+		shortName: 'الوَسِيطُ',
+		name_en: 'al-Tafsir al-Wasit',
+		name: 'التَّفْسِيرُ الوَسِيطُ',
+		author_en: 'Muhammad Sayyid Tantawi',
+		author: 'مُحَمَّدُ سَيِّدْ طَنْطَاوِي',
+		description: 'A contemporary Arabic tafsir focused on accessible explanation, guidance, and clear presentation of Quranic meanings.',
+		aqidah: 'Contemporary Sunni',
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/wasit.json',
+		column: 'text',
+		batchSize: 25,
+		autocommit: true
+	},
+	'mawardi': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/mawardi.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'samaani': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/samaani.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'makki': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/makki.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'samarqandi': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/samarqandi.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'thalabi': {
+		ordinal: 38,
+		shortName_en: 'Kashf',
+		shortName: 'الكَشْفُ',
+		name_en: 'al-Kashf wa-al-Bayan',
+		name: 'الكَشْفُ وَالبَيَانُ',
+		author_en: 'Ahmad b. Muhammad al-Thaalabi',
+		author: 'أَحْمَدُ بْنُ مُحَمَّدِ الثَّعْلَبِيّ',
+		description: 'A broad narrative and transmitted tafsir known for collecting reports, stories, linguistic notes, and earlier interpretations. It is influential as a source for later exegetes, though its reports vary in strength and require critical handling.',
+		aqidah: 'Ashari',
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/thalabi.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'zamakhshari': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/kashaf.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'tadabbur-wa-amal': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/tadabbur-wa-amal.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'iji': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/iji.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'baydawi': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/baydawi.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'nasafi': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/nasafi.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'shawkani': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/shawkani.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'alusi': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/alusi.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'razi': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/razi.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'shanqiti': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/shanqiti.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'biqaii': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/biqaii.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'abu-hayyan': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/abu-hayyan.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'qasimi': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/qasimi.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'qinnawji': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/qinnawji.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
+	'ibn-uthaymin': {
+		lang: 'ar',
+		format: 'md',
+		file: 'temp/ibn-uthaymin.json',
+		column: 'text',
+		sourceFormat: 'html',
+		batchSize: 50,
+		autocommit: true
+	},
 	'gharib-al-quran': {
 		ordinal: 93,
 		shortName_en: 'Gharib',
@@ -273,9 +522,19 @@ const options = readOptions(process.argv.slice(2));
 		process.exitCode = 1;
 	} finally {
 		connection.release();
-		global.dbPool.end();
+		await endPool();
 	}
 })();
+
+function endPool() {
+	return new Promise(resolve => {
+		global.dbPool.end(err => {
+			if (err)
+				console.error(`WARN: MySQL pool shutdown failed: ${err.message}`);
+			resolve();
+		});
+	});
+}
 
 async function importTafsir(connection, alias, quran) {
 	const config = TAFSIRS[alias];
@@ -289,6 +548,7 @@ async function importTafsir(connection, alias, quran) {
 	await query(connection, 'START TRANSACTION');
 	try {
 		const bookCommentaryId = await upsertCommentary(connection, alias, config);
+		passages = await filterAlreadyLoadedPassages(connection, bookCommentaryId, passages, alias);
 		const batchSize = config.batchSize || 250;
 		for (let offset = 0; offset < passages.length; offset += batchSize) {
 			await upsertPassages(connection, bookCommentaryId, passages.slice(offset, offset + batchSize));
@@ -304,14 +564,34 @@ async function importTafsir(connection, alias, quran) {
 }
 
 async function importTafsirAutocommit(alias, config, passages) {
-	const bookCommentaryId = await upsertCommentary(null, alias, config);
-	const batchSize = config.batchSize || 250;
-	for (let offset = 0; offset < passages.length; offset += batchSize) {
-		await upsertPassages(null, bookCommentaryId, passages.slice(offset, offset + batchSize));
-		if (config.batchSize)
-			console.log(`Loaded ${Math.min(offset + batchSize, passages.length)}/${passages.length} '${alias}' passages...`);
+	const connection = await getConnection();
+	try {
+		const bookCommentaryId = await upsertCommentary(connection, alias, config);
+		passages = await filterAlreadyLoadedPassages(connection, bookCommentaryId, passages, alias);
+		const batchSize = config.batchSize || 250;
+		for (let offset = 0; offset < passages.length; offset += batchSize) {
+			await upsertPassages(connection, bookCommentaryId, passages.slice(offset, offset + batchSize));
+			if (config.batchSize)
+				console.log(`Loaded ${Math.min(offset + batchSize, passages.length)}/${passages.length} '${alias}' passages...`);
+		}
+	} finally {
+		connection.release();
 	}
 	console.log(`Loaded '${alias}'.`);
+}
+
+async function filterAlreadyLoadedPassages(connection, bookCommentaryId, passages, alias) {
+	const rows = await query(connection, `
+		SELECT surah, ayahFrom
+		FROM hadiths_commentary
+		WHERE bookCommentaryId=${bookCommentaryId}
+			AND text IS NOT NULL
+			AND text <> ''`);
+	const loaded = new Set(rows.map(row => `${row.surah}:${row.ayahFrom}`));
+	const pending = passages.filter(passage => !loaded.has(`${passage.surah}:${passage.ayah}`));
+	if (loaded.size)
+		console.log(`Skipping ${passages.length - pending.length}/${passages.length} already loaded '${alias}' passage(s).`);
+	return pending;
 }
 
 async function loadQuranAyahs(connection) {
@@ -437,6 +717,7 @@ function parseRef(ref) {
 }
 
 async function upsertCommentary(connection, alias, config) {
+	config = await hydrateCommentaryConfig(connection, alias, config);
 	await query(connection, `
 		INSERT INTO books_commentaries
 			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, name, author, death, description, aqidah)
@@ -471,6 +752,23 @@ async function upsertCommentary(connection, alias, config) {
 	if (rows.length !== 1)
 		throw new Error(`Local commentary '${alias}' was not found after upsert.`);
 	return rows[0].id;
+}
+
+async function hydrateCommentaryConfig(connection, alias, config) {
+	const rows = await query(connection, `
+		SELECT ordinal, shortName_en, shortName, lang, format, name_en, author_en, name, author, death, description, aqidah
+		FROM books_commentaries
+		WHERE alias=${MySQL.escape(alias)}
+		LIMIT 1`);
+	if (!rows.length)
+		return config;
+	const row = rows[0];
+	const hydrated = Object.assign({}, config);
+	for (const key of ['ordinal', 'shortName_en', 'shortName', 'lang', 'format', 'name_en', 'author_en', 'name', 'author', 'death', 'description', 'aqidah']) {
+		if (hydrated[key] === undefined || hydrated[key] === null || hydrated[key] === '')
+			hydrated[key] = row[key];
+	}
+	return hydrated;
 }
 
 function commentaryDescription(config) {
@@ -514,7 +812,7 @@ function query(connection, sql) {
 	if (!connection)
 		return global.query(sql);
 	return new Promise((resolve, reject) => {
-		connection.query({ sql, timeout: 120000 }, (err, result) => err ? reject(err) : resolve(result));
+		connection.query({ sql, timeout: 600000 }, (err, result) => err ? reject(err) : resolve(result));
 	});
 }
 

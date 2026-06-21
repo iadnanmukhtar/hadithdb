@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 require('dotenv').config();
 require('../lib/Globals');
 
@@ -6,13 +7,16 @@ const { Library } = require('../lib/Model');
 const HadithRevision = require('../lib/HadithRevision');
 
 const DEFAULT_BOOK = '16';
+const DEFAULT_PROVIDER = 'ollama';
+const DEFAULT_OLLAMA_BASE_URL = 'http://127.0.0.1:11434';
+const DEFAULT_OLLAMA_MODEL = 'gemma4';
 
 (async () => {
-	global.library = await Library.init();
-
 	var options = parseArgs(process.argv.slice(2));
+	if (!options.ref)
+		global.library = await Library.init();
 	var items = await findItems(options);
-	console.log(`Found ${items.length} hadith(s) to revise.`);
+	console.log(`Found ${items.length} hadith(s) to revise with ${revisionLabel(options)}.`);
 
 	if (options.dryRun) {
 		for (var item of items)
@@ -21,7 +25,7 @@ const DEFAULT_BOOK = '16';
 	}
 
 	for (var item of items)
-		await revise(item);
+		await revise(item, options);
 
 	process.exit();
 })().catch((e) => {
@@ -57,10 +61,15 @@ ORDER BY ${orderBy}`;
 	return global.query(sql);
 }
 
-async function revise(item) {
+async function revise(item, options) {
 	try {
 		console.log(`Revising ${item.ref}...`);
-		await HadithRevision.reviseHadith(item);
+		await HadithRevision.reviseHadith(item, {
+			provider: options.provider,
+			model: options.model,
+			baseUrl: options.baseUrl,
+			timeout: options.timeout
+		});
 		console.log(`Updated ${item.ref}`);
 	} catch (e) {
 		console.log(`${item.ref}: ${e.message}`);
@@ -73,6 +82,10 @@ function parseArgs(argv) {
 		fromNum0: null,
 		limit: null,
 		ref: null,
+		provider: process.env.HADITH_REVISION_PROVIDER || DEFAULT_PROVIDER,
+		model: null,
+		baseUrl: process.env.OLLAMA_BASE_URL || DEFAULT_OLLAMA_BASE_URL,
+		timeout: Number(process.env.OLLAMA_TIMEOUT_MS) || 300000,
 		dryRun: false
 	};
 	var positional = [];
@@ -102,6 +115,26 @@ function parseArgs(argv) {
 			if (!argv[i])
 				throw new Error(`${arg} requires a hadith ref like bazzar:2`);
 			options.ref = normalizeRef(argv[i]);
+		} else if (arg === '--provider') {
+			i++;
+			if (!argv[i])
+				throw new Error(`${arg} requires openai or ollama`);
+			options.provider = normalizeProvider(argv[i]);
+		} else if (arg === '--model') {
+			i++;
+			if (!argv[i])
+				throw new Error(`${arg} requires a model name`);
+			options.model = argv[i];
+		} else if (arg === '--base-url') {
+			i++;
+			if (!argv[i])
+				throw new Error(`${arg} requires an Ollama base URL`);
+			options.baseUrl = argv[i];
+		} else if (arg === '--timeout') {
+			i++;
+			if (!argv[i])
+				throw new Error(`${arg} requires a timeout in milliseconds`);
+			options.timeout = parseLimit(argv[i], arg);
 		} else if (arg === '--dry-run') {
 			options.dryRun = true;
 		} else if (arg.startsWith('-')) {
@@ -115,6 +148,10 @@ function parseArgs(argv) {
 
 	if (options.ref && options.fromNum0 !== null)
 		throw new Error('Use either an exact ref or a starting hadith number, not both');
+
+	options.provider = normalizeProvider(options.provider);
+	if (options.provider === 'ollama' && !options.model)
+		options.model = process.env.OLLAMA_HADITH_REVISION_MODEL || process.env.OLLAMA_MODEL || DEFAULT_OLLAMA_MODEL;
 
 	return options;
 }
@@ -161,6 +198,19 @@ function parseLimit(value, label) {
 	return parsed;
 }
 
+function normalizeProvider(value) {
+	value = `${value}`.trim().toLowerCase();
+	if (value !== 'ollama' && value !== 'openai')
+		throw new Error(`Provider must be ollama or openai, got: ${value}`);
+	return value;
+}
+
+function revisionLabel(options) {
+	if (options.provider === 'ollama')
+		return `Ollama model '${options.model}'`;
+	return `OpenAI model '${options.model || 'configured default'}'`;
+}
+
 function printUsage() {
 	console.log(
 		'Usage:\n' +
@@ -170,6 +220,13 @@ function printUsage() {
 		'  node bin/reviseHadith.js --book <id-or-alias> [--from <num0>] [--limit <n>]\n' +
 		'  node bin/reviseHadith.js --ref <book-alias:num> [--dry-run]\n' +
 		'\n' +
-		'Defaults to revising all hadith in book 16 unless you specify a ref or range.'
+		'Defaults to revising all hadith in book 16 with local Ollama model gemma4 unless you specify a ref or range.\n' +
+		'\n' +
+		'Options:\n' +
+		'  --provider <name>  ollama or openai (default: ollama)\n' +
+		'  --model <name>     Model name (default for Ollama: gemma4)\n' +
+		'  --base-url <url>   Ollama base URL (default: http://127.0.0.1:11434)\n' +
+		'  --timeout <ms>     Ollama request timeout (default: 300000)\n' +
+		'  --dry-run          List matching hadith without model calls or updates'
 	);
 }

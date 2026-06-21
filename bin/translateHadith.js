@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 require('dotenv').config();
 require('../lib/Globals');
 const utils = require('../lib/Utils');

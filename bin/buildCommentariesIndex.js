@@ -42,15 +42,20 @@ let dbPoolEnded = false;
 async function reindexCommentaryAlias(alias) {
 	const total = await countCommentaries(alias, true);
 	console.log(`indexing ${total} local commentary passages for '${alias}'...`);
-	await deleteExistingDocumentsByAlias(alias);
+	if (!options.noDelete)
+		await deleteExistingDocumentsByAlias(alias);
 	const batchSize = Number(process.env.COMMENTARY_INDEX_BATCH_SIZE || 250);
-	for (let offset = 0; offset < total; offset += batchSize) {
-		const rows = await getCommentaries(alias, batchSize, offset, true);
+	let indexed = 0;
+	let lastId = options.afterId || 0;
+	while (true) {
+		const rows = await getCommentaries(alias, batchSize, null, true, lastId);
 		if (rows.length < 1)
 			break;
 		rows.forEach(normalizeCommentaryRow);
 		await Index.updateBulk(INDEX, rows, false);
-		console.log(`indexed ${Math.min(offset + rows.length, total)}/${total} '${alias}' passages on ${INDEX}`);
+		indexed += rows.length;
+		lastId = rows[rows.length - 1].id;
+		console.log(`indexed ${Math.min(indexed, total)}/${total} '${alias}' passages on ${INDEX}`);
 	}
 	await endDbPool();
 	await Index.refresh(INDEX);
@@ -89,7 +94,9 @@ async function countCommentaries(alias, freshConnection) {
 	return rows[0]?.total || 0;
 }
 
-async function getCommentaries(alias, limit, offset, freshConnection) {
+async function getCommentaries(alias, limit, offset, freshConnection, afterId) {
+	if (Number.isInteger(afterId))
+		return getCommentariesByIdBatch(alias, limit, afterId, freshConnection);
 	const sql = `
 		SELECT
 			hc.id,
@@ -141,13 +148,96 @@ async function getCommentaries(alias, limit, offset, freshConnection) {
 		WHERE bc.source='local'
 			AND bc.hidden=0
 			${alias ? `AND bc.alias=${global.dbPool.escape(alias)}` : ''}
-		ORDER BY bc.id, hc.surah, hc.ayahFrom, hc.ayahTo
+			${Number.isInteger(afterId) && afterId > 0 ? `AND hc.id>${afterId}` : ''}
+		ORDER BY ${Number.isInteger(afterId) ? 'hc.id' : 'bc.id, hc.surah, hc.ayahFrom, hc.ayahTo'}
 		${Number.isInteger(limit) ? `LIMIT ${limit}` : ''}
 		${Number.isInteger(offset) ? `OFFSET ${offset}` : ''}`;
 	return freshConnection ? await freshQuery(sql) : await global.query(sql);
 }
 
+async function getCommentariesByIdBatch(alias, limit, afterId, freshConnection) {
+	const query = freshConnection ? freshQuery : global.query;
+	const rows = await query(`
+		SELECT
+			hc.id,
+			hc.id AS hId,
+			'commentary' AS doctype,
+			0 AS book_id,
+			0 AS book_ordinal,
+			'quran' AS book_alias,
+			bc.ordinal AS ordinal,
+			bc.id AS bookCommentaryId,
+			bc.alias AS commentary_alias,
+			bc.shortName AS commentary_shortName,
+			bc.shortName_en AS commentary_shortName_en,
+			bc.name AS commentary_name,
+			bc.name_en AS commentary_name_en,
+			bc.author AS commentary_author,
+			bc.author_en AS commentary_author_en,
+			bc.death AS commentary_author_death,
+			bc.type AS commentary_type,
+			bc.lang,
+			bc.source,
+			bc.format,
+			hc.hadithId,
+			hc.surah,
+			hc.ayahFrom,
+			hc.ayahTo,
+			hc.passageNum,
+			CONCAT('quran:', hc.surah, ':', hc.ayahFrom,
+				IF(hc.ayahTo > hc.ayahFrom, CONCAT('-', hc.ayahTo), '')) AS ref,
+			CONCAT('quran:', hc.surah, ':', hc.ayahFrom,
+				IF(hc.ayahTo > hc.ayahFrom, CONCAT('-', hc.ayahTo), '')) AS path,
+			hc.text,
+			hc.text_en,
+			hc.footnotes,
+			hc.footnotes_en,
+			hc.created,
+			hc.lastmod
+		FROM books_commentaries bc
+		JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+		WHERE bc.source='local'
+			AND bc.hidden=0
+			AND bc.alias=${global.dbPool.escape(alias)}
+			AND hc.id>${parseInt(afterId, 10)}
+		ORDER BY hc.id
+		${Number.isInteger(limit) ? `LIMIT ${limit}` : ''}`);
+	if (rows.length < 1)
+		return rows;
+	const qRows = await query(`
+		SELECT id AS qId, h1, h1_title_en, h1_title, h2, h2_id, h2_title_en, h2_title, path AS section_path
+		FROM v_hadiths
+		WHERE id IN (${rows.map(row => parseInt(row.hadithId, 10)).filter(Number.isFinite).join(',')})`);
+	const qById = new Map(qRows.map(row => [row.qId, row]));
+	rows.forEach(row => {
+		const qRow = Object.assign({}, qById.get(row.hadithId) || {});
+		delete qRow.qId;
+		Object.assign(row, qRow);
+	});
+	return rows;
+}
+
 function freshQuery(sql) {
+	const attempts = 3;
+	return freshQueryWithRetry(sql, attempts);
+}
+
+async function freshQueryWithRetry(sql, attempts) {
+	let lastError = null;
+	for (let attempt = 1; attempt <= attempts; attempt++) {
+		try {
+			return await freshQueryOnce(sql);
+		} catch (err) {
+			lastError = err;
+			if (attempt === attempts)
+				break;
+			console.warn(`fresh MySQL query failed attempt ${attempt}/${attempts}: ${err.message}; retrying`);
+		}
+	}
+	throw lastError;
+}
+
+function freshQueryOnce(sql) {
 	const connection = MySQL.createConnection(global.settings.mysql.connection);
 	return new Promise((resolve, reject) => {
 		connection.query({ sql, timeout: 600000 }, (err, result) => {
@@ -208,13 +298,19 @@ function describeAxiosError(err, prefix) {
 }
 
 function readOptions(argv) {
-	const options = { alias: null };
+	const options = { alias: null, noDelete: false, afterId: 0 };
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
 		if (arg === '--tafsir') {
 			options.alias = argv[++i];
 			if (!options.alias)
 				throw new Error('--tafsir requires a commentary alias.');
+		} else if (arg === '--no-delete') {
+			options.noDelete = true;
+		} else if (arg === '--after-id') {
+			options.afterId = parseInt(argv[++i], 10);
+			if (!Number.isFinite(options.afterId))
+				throw new Error('--after-id requires a numeric hadiths_commentary id.');
 		} else if (arg === '--help' || arg === '-h') {
 			console.log(usage());
 			process.exit(0);
@@ -232,6 +328,8 @@ function usage() {
 		'',
 		'Options:',
 		'  --tafsir <alias>  Reindex only one local commentary alias',
+		'  --no-delete       Do not delete existing docs before indexing the alias',
+		'  --after-id <id>   With --tafsir, resume rows after a hadiths_commentary id',
 		'  --help            Show this help'
 	].join('\n');
 }

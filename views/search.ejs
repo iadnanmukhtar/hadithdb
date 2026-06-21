@@ -67,8 +67,9 @@
         (Array.isArray(b) ? b : [b]).filter(Boolean).forEach(function (filter) {
           params.append('b', filter);
         });
-        if (locals.tafsirFilter)
-          params.append('tafsir', locals.tafsirFilter);
+        (locals.tafsirFilters || []).forEach(function (tafsirAlias) {
+          params.append('tafsir', tafsirAlias);
+        });
         params.append('o', offset);
         return `${searchAction}?${params.toString()}`;
       }
@@ -100,7 +101,7 @@
               
               <% var showSearchFilterPills = q && (locals.searchFilterPills || []).length > 0; %>
               <div class="input-group mb-1">
-                <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="<%= isQuranSearchProxy ? 'Search the Qurʿān or tafāsīr...' : 'Search hadīth, āyāt, or tafāsīr...' %>">
+                <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="<%= isQuranSearchProxy ? 'Search the Qurʿān or tafāsīr...' : 'Search hadīth...' %>">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="bi bi-book"></i>
                 </button>
@@ -111,49 +112,47 @@
                     <label class="form-check-label">Quran</label>
                   </div>
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="commentaries" <%= (b.indexOf('commentaries') >= 0) ? 'checked' : '' %>>
+                    <input class="form-check-input" type="checkbox" name="b" value="tafsir" <%= (b.indexOf('commentaries') >= 0 || b.indexOf('tafsir') >= 0) ? 'checked' : '' %>>
                     <label class="form-check-label">Tafsir</label>
                   </div>
                   <% if ((locals.tafsirFilterOptions || []).length > 0) { %>
-                  <% var selectedTafsirOption = locals.tafsirFilterOptions.find(function (option) { return option.selected; }); %>
-                  <div class="px-3 pb-2">
-                    <label class="form-label small mb-1" for="tafsir-search-filter">Book</label>
-                    <select id="tafsir-search-filter" class="form-select form-select-sm" name="tafsir">
-                      <option value="">All books</option>
-                      <% locals.tafsirFilterOptions.forEach(function (tafsirOption) { %>
-                      <option value="<%= tafsirOption.alias %>" <%= tafsirOption.selected ? 'selected' : '' %>><%= tafsirOption.label %></option>
-                      <% }); %>
-                    </select>
-                    <span class="quran-tafsir-filter-pill badge rounded-pill text-bg-light border <%= locals.tafsirFilter ? '' : 'd-none' %>" data-tafsir-filter-pill>
-                      <span data-tafsir-filter-pill-label><%= selectedTafsirOption ? selectedTafsirOption.label : '' %></span>
-                      <button type="button" class="btn-close" aria-label="Clear tafsīr book filter" data-tafsir-filter-clear></button>
-                    </span>
+                  <div class="dropdown-header">Tafsir Books</div>
+                  <div class="filter-list-search-wrap px-3 pb-2" data-filter-list-search>
+                    <input type="search" class="form-control form-control-sm filter-list-search" placeholder="Find book" aria-label="Find tafsir book">
                   </div>
+                  <% locals.tafsirFilterOptions.forEach(function (tafsirOption) { %>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="tafsir" value="<%= tafsirOption.alias %>" <%= tafsirOption.selected ? 'checked' : '' %>>
+                    <label class="form-check-label"><%= tafsirOption.label %></label>
+                  </div>
+                  <% }); %>
                   <% } %>
                   <% } else { %>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="commentaries" <%= (b.indexOf('commentaries') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Tafāsīr</label>
+                  <div class="dropdown-header">Hadith Books</div>
+                  <div class="filter-list-search-wrap px-3 pb-2" data-filter-list-search>
+                    <input type="search" class="form-control form-control-sm filter-list-search" placeholder="Find book" aria-label="Find hadith book">
                   </div>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="toc" <%= (b.indexOf('toc') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Ḥadīth Chapters</label>
+                    <label class="form-check-label">Chapter Headings</label>
                   </div>
-                  <% global.books.filter(b => {return !b.virtual && !b.hidden;}).forEach(bk => { %>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
-                    <label class="form-check-label"><%=bk.shortName_en%></label>
-                  </div>
-                  <% if (bk.alias === 'quran') { %>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="sahihayn" <%= (b.indexOf('sahihayn') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Saḥīḥayn</label>
+                    <label class="form-check-label">Sahihayn</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="b" value="kutubarbaah" <%= (b.indexOf('kutubarbaah') >= 0) ? 'checked' : '' %>>
+                    <label class="form-check-label">Kutub Arbaah</label>
                   </div>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="sixbooks" <%= (b.indexOf('sixbooks') >= 0) ? 'checked' : '' %>>
                     <label class="form-check-label">Kutub Sittah</label>
                   </div>
-                  <% } %>
+                  <% global.books.filter(b => {return !b.virtual && !b.hidden && b.alias !== 'quran';}).forEach(bk => { %>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
+                    <label class="form-check-label"><%=bk.shortName_en%></label>
+                  </div>
                   <% }); %>
                   <% } %>
                   

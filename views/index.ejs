@@ -63,34 +63,36 @@
             <div class="col-md-8">
               
               <div class="input-group mb-1">
-                <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" placeholder="Search hadīth, āyāt, or tafāsīr..." autofocus>
+                <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" placeholder="Search hadīth..." autofocus>
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="bi bi-book"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="commentaries" <%= (b.indexOf('commentaries') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Tafāsīr</label>
+                  <div class="dropdown-header">Hadith Books</div>
+                  <div class="filter-list-search-wrap px-3 pb-2" data-filter-list-search>
+                    <input type="search" class="form-control form-control-sm filter-list-search" placeholder="Find book" aria-label="Find hadith book">
                   </div>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="toc" <%= (b.indexOf('toc') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Ḥadīth Chapters</label>
+                    <label class="form-check-label">Chapter Headings</label>
                   </div>
-                  <% global.books.filter(b => {return !b.virtual && !b.hidden;}).forEach(bk => { %>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
-                    <label class="form-check-label"><%=bk.shortName_en%></label>
-                  </div>
-                  <% if (bk.alias === 'quran') { %>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="sahihayn" <%= (b.indexOf('sahihayn') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Saḥīḥayn</label>
+                    <label class="form-check-label">Sahihayn</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="b" value="kutubarbaah" <%= (b.indexOf('kutubarbaah') >= 0) ? 'checked' : '' %>>
+                    <label class="form-check-label">Kutub Arbaah</label>
                   </div>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="sixbooks" <%= (b.indexOf('sixbooks') >= 0) ? 'checked' : '' %>>
                     <label class="form-check-label">Kutub Sittah</label>
                   </div>
-                  <% } %>
+                  <% global.books.filter(b => {return !b.virtual && !b.hidden && b.alias !== 'quran';}).forEach(bk => { %>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
+                    <label class="form-check-label"><%=bk.shortName_en%></label>
+                  </div>
                   <% }); %>
                   
                 </div>

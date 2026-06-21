@@ -35,6 +35,7 @@
     var headerLogo = isQuranArea ? '/images/quran-logo2.svg' : '/images/logo2.svg';
     var headerLogoAlt = isQuranArea ? 'Quran Unlocked' : site.name;
     var headerBrandHref = isQuranArea ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
+    var navSearchPlaceholder = isQuranArea ? 'Search the Qurʿān or tafāsīr...' : 'Search hadīth...';
     function activeNavAttrs(active) {
       return active ? ' active" aria-current="page' : '';
     }
@@ -106,7 +107,7 @@
         <% } %>
         <li class="nav-item search-click-toggle">
           <form action="<%= navSearchAction %>">
-          <input role="search" type="text" class="form-control search-click" name="q" placeholder="Search hadīth, āyāt, or tafāsīr..." value="<%= currentSearch %>" />
+          <input role="search" type="text" class="form-control search-click" name="q" placeholder="<%= navSearchPlaceholder %>" value="<%= currentSearch %>" />
           </form>
           <a class="nav-link"><i class="bi bi-search"></i></a>
         </li>
@@ -138,7 +139,7 @@
       </div>
       <div class="offcanvas-body">
         <form action="<%= navSearchAction %>">
-          <input role="search" type="text" class="form-control mb-2" name="q" placeholder="Search hadīth, āyāt, or tafāsīr..." value="<%= currentSearch %>" />
+          <input role="search" type="text" class="form-control mb-2" name="q" placeholder="<%= navSearchPlaceholder %>" value="<%= currentSearch %>" />
         </form>
         <div class="row">
           <%- include('offcanvas_primary_nav.ejs', {

@@ -1163,6 +1163,14 @@ nav .nav-link[aria-current="page"] {
 	margin-left: 0.5rem;
 }
 
+.filter-list-search-wrap {
+	background: var(--bs-dropdown-bg, #fff);
+}
+
+.filter-list-search {
+	min-width: 12rem;
+}
+
 .home-quran-announcement {
 	position: relative;
 	display: flex;
@@ -1598,6 +1606,10 @@ del em strong {
 	display: none;
 }
 
+.mobile-bottom-nav::after {
+	display: none;
+}
+
 #bmc-wbtn.hadith-bmc-draggable {
 	cursor: grab;
 	touch-action: pan-y;
@@ -1642,7 +1654,7 @@ del em strong {
 @media (max-width: 767.98px) {
 	.mobile-bottom-nav {
 		align-items: stretch;
-		background: var(--bs-body-bg);
+		background: var(--bs-body-bg, var(--c-white));
 		border-top: 1px solid var(--bs-border-color);
 		bottom: 0;
 		box-shadow: 0 -0.35rem 1rem rgba(0, 0, 0, .08);
@@ -1653,7 +1665,20 @@ del em strong {
 		padding: .45rem .65rem calc(.45rem + env(safe-area-inset-bottom));
 		position: fixed;
 		right: 0;
+		transform: translateZ(0);
 		z-index: 1040;
+	}
+
+	.mobile-bottom-nav::after {
+		background: inherit;
+		content: "";
+		display: block;
+		height: calc(env(safe-area-inset-bottom) + 1.5rem);
+		left: 0;
+		pointer-events: none;
+		position: absolute;
+		right: 0;
+		top: 100%;
 	}
 
 	#bmc-wbtn {
