@@ -36,7 +36,7 @@ async function main() {
   if (options.dryRun || changes.length < 1)
     return;
 
-  const updated = await updateChanges(changes);
+  const updated = options.jsLoop ? await updateChanges(changes) : await updateChangesInDb(options.aliases);
   console.log(`Updated rows: ${updated}`);
 
   const remaining = (await query(`
@@ -47,6 +47,38 @@ async function main() {
     .map(row => normalizeRow(row))
     .filter(change => change.changed);
   console.log(`Rows still requiring cleanup: ${remaining.length}`);
+}
+
+function normalizedSql(column) {
+  let expr = `hc.${column}`;
+  expr = `REGEXP_REPLACE(${expr}, ?, '')`;
+  expr = `REGEXP_REPLACE(${expr}, ?, '', 1, 0, 'i')`;
+  expr = `REGEXP_REPLACE(${expr}, ?, ?)`;
+  expr = `REGEXP_REPLACE(${expr}, ?, ?)`;
+  return `TRIM(${expr})`;
+}
+
+async function updateChangesInDb(aliases) {
+  const patterns = [
+    '\\\\?\\(p\\\\?-[0-9\u0660-\u0669\u06F0-\u06F9]+\\\\?\\)',
+    '<p[^>]*class=["\\\']page-num["\\\'][^>]*>[[:space:]]*صفحة[[:space:]]+[0-9\u0660-\u0669\u06F0-\u06F9]+[[:space:]]*</p>',
+    '(^|\\n)[ \\t]*صفحة[ \\t]+[0-9\u0660-\u0669\u06F0-\u06F9]+[ \\t]*(?=\\n|$)',
+    '\n',
+    '\\n{3,}',
+    '\n\n'
+  ];
+  const normalizedColumns = COMMENTARY_COLUMNS.map(column => [column, normalizedSql(column)]);
+  const params = [];
+  normalizedColumns.forEach(() => params.push(...patterns));
+  normalizedColumns.forEach(() => params.push(...patterns));
+  const result = await query(`
+    UPDATE hadiths_commentary hc
+    JOIN books_commentaries bc ON bc.id=hc.bookCommentaryId
+    SET ${normalizedColumns.map(([column, expr]) => `hc.${column}=${expr}`).join(', ')},
+      hc.lastmod=CURRENT_TIMESTAMP()
+    WHERE ${candidatePredicate(aliases)}
+      AND (${normalizedColumns.map(([column, expr]) => `NOT (hc.${column} <=> ${expr})`).join(' OR ')})`, params);
+  return result.changedRows || result.affectedRows || 0;
 }
 
 async function updateChanges(changes) {
@@ -80,11 +112,13 @@ function summarizeChanges(changes) {
 }
 
 function readOptions(argv) {
-  const options = { aliases: [], dryRun: false };
+  const options = { aliases: [], dryRun: false, jsLoop: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run')
       options.dryRun = true;
+    else if (arg === '--js-loop')
+      options.jsLoop = true;
     else if (arg === '--tafsir' || arg === '--alias') {
       const alias = argv[++i];
       if (!alias)
@@ -109,6 +143,7 @@ function usage() {
     '  --tafsir <alias>  Limit cleanup to one tafsir alias; repeatable',
     '  --alias <alias>   Alias for --tafsir',
     '  --dry-run         Report only',
+    '  --js-loop         Apply updates row by row with the JS stripper',
     '  --help            Show this help'
   ].join('\n');
 }
