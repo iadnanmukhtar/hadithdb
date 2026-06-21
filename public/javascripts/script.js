@@ -1209,6 +1209,93 @@ function initQuranTafsirTabs(root) {
 					role: 'img'
 				});
 			};
+			var tafsirBookModalId = function (book) {
+				return `tafsir-book-modal-${footnoteIdPart(book && book.alias || 'tafsir')}-${footnoteIdPart(book && book.lang || 'all')}`;
+			};
+			var renderTafsirBookDescription = function (description) {
+				description = (description || '').toString();
+				if (!description)
+					return '';
+				if (window.marked && window.marked.parse)
+					return window.marked.parse(description).replace(/<br>/g, '</p><p>').trim();
+				return $('<div>').text(description).html();
+			};
+			var appendTafsirBookModalNames = function (target, book, language) {
+				var isArabic = language === 'ar';
+				var shortName = isArabic ? (book.shortName || book.shortName_en) : (book.shortName_en || book.shortName);
+				var fullName = isArabic ? (book.name || book.name_en) : (book.name_en || book.name);
+				var author = isArabic ? (book.author || book.author_en) : (book.author_en || book.author);
+				var meta = isArabic
+					? [
+						author,
+						book.death ? `d. ${toArabicDigits(book.death)} هـ` : '',
+						commentaryPublicationLabel(book)
+					].filter(Boolean).join('، ')
+					: commentaryMetaParts(book, 'AH').join(', ');
+				var section = $('<section>').addClass('tafsir-book-modal-name-block').attr({
+					lang: isArabic ? 'ar' : 'en',
+					dir: isArabic ? 'rtl' : 'ltr'
+				}).appendTo(target);
+				$('<h6>').addClass('mb-1').text(shortName || fullName || book.alias || '').appendTo(section);
+				if (fullName && fullName !== shortName)
+					$('<p>').addClass('mb-1 tafsir-book-modal-full-name').text(fullName).appendTo(section);
+				if (meta)
+					$('<p>').addClass('mb-0 text-muted').text(meta).appendTo(section);
+			};
+			var ensureTafsirBookModal = function (book) {
+				var modalId = tafsirBookModalId(book);
+				var existing = $(`#${cssEscape(modalId)}`);
+				if (existing.length)
+					return existing;
+				var titleId = `${modalId}-title`;
+				var title = book.shortName_en || book.shortName || book.name_en || book.name || book.alias || 'Tafsir';
+				var modal = $('<div>').addClass('modal fade tafsir-book-modal').attr({
+					id: modalId,
+					tabindex: '-1',
+					'aria-labelledby': titleId,
+					'aria-hidden': 'true'
+				}).appendTo(document.body);
+				var dialog = $('<div>').addClass('modal-dialog modal-dialog-scrollable').appendTo(modal);
+				var content = $('<div>').addClass('modal-content').appendTo(dialog);
+				var header = $('<div>').addClass('modal-header').appendTo(content);
+				$('<h5>').addClass('modal-title').attr('id', titleId).text(title).appendTo(header);
+				$('<button>').addClass('btn-close').attr({
+					type: 'button',
+					'data-bs-dismiss': 'modal',
+					'aria-label': 'Close'
+				}).appendTo(header);
+				var body = $('<div>').addClass('modal-body').appendTo(content);
+				appendTafsirBookModalNames(body, book, 'en');
+				if (book.name || book.shortName || book.author)
+					appendTafsirBookModalNames(body, book, 'ar');
+				var descriptionHtml = renderTafsirBookDescription(book.description);
+				if (descriptionHtml)
+					$('<div>').addClass('tafsir-book-modal-description mt-3').html(descriptionHtml).appendTo(body);
+				else
+					$('<p>').addClass('tafsir-book-modal-description text-muted mt-3 mb-0').text('No description is available for this tafsir.').appendTo(body);
+				return modal;
+			};
+			var openTafsirBookModal = function (book) {
+				var modal = ensureTafsirBookModal(book);
+				if (window.bootstrap && window.bootstrap.Modal)
+					window.bootstrap.Modal.getOrCreateInstance(modal[0]).show();
+			};
+			var appendTafsirBookNameTrigger = function (target, book, language) {
+				var isArabic = language === 'ar';
+				var label = isArabic
+					? (book.name || book.shortName || book.shortName_en || book.alias)
+					: (book.name_en || book.shortName_en || book.alias);
+				var trigger = $('<button>').addClass('quran-tafsir-book-modal-trigger').attr({
+					type: 'button',
+					title: 'View tafsir details',
+					'aria-label': `View details for ${label}`
+				}).text(label).appendTo(target);
+				trigger.on('mouseenter focus click', function (event) {
+					event.preventDefault();
+					openTafsirBookModal(book);
+				});
+				return trigger;
+			};
 			var waitForSettingsAuth = function () {
 				return new Promise(function (resolve) {
 					if (window.hadithAuth && window.hadithAuth.getToken)
@@ -1362,11 +1449,19 @@ function initQuranTafsirTabs(root) {
 				var header = $('<header>').addClass('quran-tafsir-source row').appendTo(panel);
 				var english = $('<section>').addClass('col-6 text-start').attr('lang', 'en').appendTo(header);
 				var arabic = $('<section>').addClass('col-6 text-end').attr('lang', 'ar').appendTo(header);
-				$('<strong>').text(book.name_en || book.shortName_en || book.alias).appendTo(english);
+				var englishTitle = $('<strong>').appendTo(english);
+				if (rendersTafsirPassagePage)
+					appendTafsirBookNameTrigger(englishTitle, book, 'en');
+				else
+					englishTitle.text(book.name_en || book.shortName_en || book.alias);
 				$('<span>').text(commentaryMetaParts(book, 'AH').join(', ')).appendTo(english);
 				appendTafsirEnableToggle(english, book);
 				if (book.name || book.author) {
-					$('<strong>').text(book.name || '').appendTo(arabic);
+					var arabicTitle = $('<strong>').appendTo(arabic);
+					if (rendersTafsirPassagePage)
+						appendTafsirBookNameTrigger(arabicTitle, book, 'ar');
+					else
+						arabicTitle.text(book.name || '');
 					$('<span>').text([
 						book.author,
 						book.death ? `d. ${toArabicDigits(book.death)} هـ` : '',

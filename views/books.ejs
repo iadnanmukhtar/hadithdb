@@ -28,9 +28,23 @@
         death = `${death} AH`;
       return /^d\./i.test(death) ? death : `d. ${death}`;
     };
+    var tafsirArabicDeathLabel = function (tafsir) {
+      var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
+      if (!death)
+        return '';
+      death = death.replace(/\b(?:AH|H)\b/ig, '').replace(/هـ/u, '').trim();
+      return `ت. ${death} هـ`;
+    };
     var tafsirDeathYear = function (tafsir) {
       var match = utils.emptyIfNull(tafsir.death || '').toString().match(/\d+/);
       return match ? Number(match[0]) : NaN;
+    };
+    var tafsirPublishedYear = function (tafsir) {
+      var match = utils.emptyIfNull(tafsir.published_year || '').toString().match(/\d+/);
+      return match ? Number(match[0]) : NaN;
+    };
+    var tafsirSortName = function (tafsir) {
+      return tafsir.shortName_en || tafsir.name_en || tafsir.shortName || tafsir.name || tafsir.alias || '';
     };
     var commentaryPublicationLabel = function (book) {
       return [
@@ -61,10 +75,17 @@
           return aDeath - bDeath;
         if (aHasDeath !== bHasDeath)
           return aHasDeath ? -1 : 1;
-        var ordinal = Number(a.ordinal || 0) - Number(b.ordinal || 0);
-        if (ordinal !== 0)
-          return ordinal;
-        return (a.shortName_en || a.name_en || a.alias).localeCompare(b.shortName_en || b.name_en || b.alias);
+        if (!aHasDeath && !bHasDeath) {
+          var aPublished = tafsirPublishedYear(a);
+          var bPublished = tafsirPublishedYear(b);
+          var aHasPublished = Number.isFinite(aPublished) && aPublished > 0;
+          var bHasPublished = Number.isFinite(bPublished) && bPublished > 0;
+          if (aHasPublished && bHasPublished && aPublished !== bPublished)
+            return bPublished - aPublished;
+          if (aHasPublished !== bHasPublished)
+            return aHasPublished ? -1 : 1;
+        }
+        return tafsirSortName(a).localeCompare(tafsirSortName(b));
       });
       return group;
     });
@@ -77,6 +98,43 @@
           </button>
         </h2>
       `;
+    };
+    var htmlToPlainText = function (value) {
+      return utils.emptyIfNull(value || '')
+        .toString()
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        .replace(/[*_`#>]+/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+    var commentaryDescriptionPreview = function (description) {
+      return htmlToPlainText(description.split(/\r?\n/).map(function (line) {
+        return line.trim();
+      }).find(Boolean) || description);
+    };
+    var commentaryDescriptionId = function (group, book) {
+      return `book-catalog-commentary-description-${group.key}-${utils.emptyIfNull(book.alias || '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
+    };
+    var bookDescriptionId = function (book) {
+      return `book-catalog-book-description-${utils.emptyIfNull(book.alias || '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
+    };
+    var tafsirSizeLabel = function (tafsir) {
+      var size = utils.emptyIfNull(tafsir && tafsir.size || '').toString();
+      if (size === 'lg')
+        return 'Large tafsir';
+      if (size === 'md')
+        return 'Medium tafsir';
+      if (size === 'sm')
+        return 'Small tafsir';
+      return '';
+    };
+    var tafsirSizeIndicator = function (tafsir) {
+      var size = utils.emptyIfNull(tafsir && tafsir.size || '').toString();
+      var label = tafsirSizeLabel(tafsir);
+      if (!label)
+        return '';
+      return `<span class="tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
     };
 %>
 
@@ -112,114 +170,198 @@
       <input type="search" class="form-control book-catalog-filter" placeholder="Filter ḥadīth, tafsīr, and translation books" aria-label="Filter ḥadīth, tafsīr, and translation books" autocomplete="off" autofocus>
     </div>
 
-    <section class="book-catalog-section mb-4">
-      <%- catalogSectionHeading('book-catalog-hadith', 'Ḥadīth Books') %>
-      <div id="book-catalog-hadith" class="collapse show book-catalog-section-body">
-    <% for (var i = 0; i < books.length; i += 2) { %>
-      <div class="row book-catalog-row">
-        <div class="col-sm-6 mb-3 book-catalog-card" data-book-catalog-filter="<%- [
-          'hadith',
-          books[i].alias,
-          books[i].name_en,
-          books[i].shortName_en,
-          books[i].author,
-          books[i].name,
-          books[i].shortName
-        ].filter(Boolean).join(' ').toLowerCase() %>">
-          <div class="card h-100">
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title row">
-                <div class="col"><%- books[i].name_en %></div>
-                <div class="col text-end" lang="ar"><%- books[i].name %></div>
-              </h5>
-              <p class="card-text">
-                  <small class="text-muted"><%- books[i].author %>
-                <% if (books[i].id > 0) { %>
-                  (d. <%- books[i].yearOfDeath %>H)
-                <% } %>&nbsp;
-                </small>
-              </p>
-              <a href="/<%- books[i].alias %>" class="btn btn-primary w-100 mt-auto">Browse <%- books[i].shortName_en %></a>
-            </div>
-          </div>
-        </div>
-        <% if (i < (books.length-1)) { %>
-          <div class="col-sm-6 mb-3 book-catalog-card" data-book-catalog-filter="<%- [
-            'hadith',
-            books[i+1].alias,
-            books[i+1].name_en,
-            books[i+1].shortName_en,
-            books[i+1].author,
-            books[i+1].name,
-            books[i+1].shortName
-          ].filter(Boolean).join(' ').toLowerCase() %>">
-            <div class="card h-100">
-              <div class="card-body d-flex flex-column">
-                <h5 class="card-title row">
-                  <div class="col"><%- books[i+1].name_en %></div>
-                  <div class="col text-end" lang="ar"><%- books[i+1].name %></div>
-                </h5>
-                <p class="card-text">
-                  <% if (books[i+1].id > 0) { %>
-                  <small class="text-muted"><%- books[i+1].author %> (d. <%- books[i+1].yearOfDeath %>H)</small>
-                  <% } %>&nbsp;
-                </p>
-                <a href="/<%- books[i+1].alias %>" class="btn btn-primary w-100 mt-auto">Browse <%- books[i+1].shortName_en %></a>
-              </div>
-            </div>
-          </div>
-        <% } %>
-      </div>
-    <% } %>
-      </div>
-    </section>
+	    <section class="book-catalog-section mb-4">
+	      <%- catalogSectionHeading('book-catalog-hadith', 'Ḥadīth Books') %>
+	      <div id="book-catalog-hadith" class="collapse show book-catalog-section-body">
+	        <div class="tafsir-book-list">
+	          <% books.forEach(function (book) { %>
+	            <%
+	              var descriptionMarkdown = utils.emptyIfNull(book.description || '');
+	              var descriptionHtml = utils.markdownToHtml(descriptionMarkdown);
+	              var descriptionPreview = commentaryDescriptionPreview(descriptionMarkdown);
+	              var descriptionId = bookDescriptionId(book);
+	              var descriptionKey = `${descriptionId}-body`;
+	            %>
+	            <article class="book-catalog-card tafsir-book-row" data-book-catalog-filter="<%- [
+	              'hadith',
+	              book.alias,
+	              book.name_en,
+	              book.shortName_en,
+	              book.author,
+	              book.name,
+	              book.shortName,
+	              book.description
+	            ].filter(Boolean).join(' ').toLowerCase() %>">
+	              <div class="tafsir-book-row-main">
+	                <div class="tafsir-book-title-pair">
+	                  <h3 class="tafsir-book-title-line mb-0">
+	                    <% if (site.editMode) { %>
+	                      <span class="_e" data-id="<%= book.id %>" data-prop="book.shortName_en"><%- book.shortName_en || book.name_en || book.alias %></span>
+	                    <% } else { %>
+	                      <a href="/<%- book.alias %>"><%- book.shortName_en || book.name_en || book.alias %></a>
+	                    <% } %>
+	                  </h3>
+	                  <% if (site.editMode || book.shortName || book.name) { %>
+	                    <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">
+	                      <% if (site.editMode) { %>
+	                        <span class="_e" data-id="<%= book.id %>" data-prop="book.shortName"><%- book.shortName || book.name || '' %></span>
+	                      <% } else { %>
+	                        <a href="/<%- book.alias %>"><%- book.shortName || book.name || '' %></a>
+	                      <% } %>
+	                    </h3>
+	                  <% } %>
+	                </div>
+	                <div class="tafsir-book-full-name">
+	                  <div <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.name_en"<% } %>><%- book.name_en || book.shortName_en || '' %></div>
+	                  <div lang="ar" dir="rtl" <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.name"<% } %>><%- book.name || book.shortName || '' %></div>
+	                </div>
+	                <div class="tafsir-book-meta text-muted">
+	                  <div>
+	                    <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.author"<% } %>><%- book.author || '' %></span>
+	                    <% if (book.id > 0) { %>
+	                      <span>(d. <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.yearOfDeath"<% } %>><%- book.yearOfDeath || '' %></span>H)</span>
+	                    <% } %>
+	                  </div>
+	                </div>
+	                <% if (site.editMode) { %>
+	                  <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
+	                    <div class="_e tafsir-book-description-editor" data-id="<%= book.id %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
+	                  </div>
+	                <% } else if (descriptionPreview || descriptionHtml) { %>
+	                  <button type="button" class="toc-book-description-summary tafsir-book-description-summary text-muted text-start" data-toc-description-summary="<%= descriptionKey %>" data-toc-description-expand="<%= descriptionKey %>" aria-expanded="false" aria-controls="<%= descriptionId %>">
+	                    <span class="toc-book-description-preview"><%= descriptionPreview %></span>
+	                    <span class="tafsir-book-description-more">More...</span>
+	                  </button>
+	                  <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full d-none" data-toc-description-full="<%= descriptionKey %>">
+	                    <%- descriptionHtml %>
+	                  </div>
+	                <% } %>
+	              </div>
+	            </article>
+	          <% }); %>
+	        </div>
+	      </div>
+	    </section>
 
-    <% tafsirGroups.forEach(function (group) { %>
-      <section class="book-catalog-section mb-4">
-        <% var sectionId = `book-catalog-tafsir-${group.key}`; %>
-        <%- catalogSectionHeading(sectionId, group.heading) %>
-        <div id="<%= sectionId %>" class="collapse show book-catalog-section-body">
-        <% if (group.tafsirs.length < 1) { %>
-          <p class="text-muted">No <%= group.heading.toLowerCase() %> are currently available.</p>
-        <% } else { %>
-          <div class="row">
-            <% group.tafsirs.forEach(function (tafsir) { %>
-              <div class="col-sm-6 mb-3 book-catalog-card" data-book-catalog-filter="<%- [
-                'tafsir',
-                tafsir.alias,
-                tafsir.name_en,
-                tafsir.shortName_en,
+	    <% tafsirGroups.forEach(function (group) { %>
+	      <section class="book-catalog-section mb-4">
+	        <% var sectionId = `book-catalog-tafsir-${group.key}`; %>
+	        <%- catalogSectionHeading(sectionId, group.heading) %>
+	        <div id="<%= sectionId %>" class="collapse show book-catalog-section-body">
+	        <% if (group.tafsirs.length < 1) { %>
+	          <p class="text-muted">No <%= group.heading.toLowerCase() %> are currently available.</p>
+	        <% } else { %>
+	          <div class="tafsir-book-list">
+	            <% group.tafsirs.forEach(function (tafsir) { %>
+	              <%
+	                var descriptionMarkdown = utils.emptyIfNull(tafsir.description || '');
+	                var descriptionHtml = utils.markdownToHtml(descriptionMarkdown);
+	                var descriptionPreview = commentaryDescriptionPreview(descriptionMarkdown);
+	                var descriptionId = commentaryDescriptionId(group, tafsir);
+	                var descriptionKey = `${descriptionId}-body`;
+	                var browseUrl = tafsirBrowseUrl(tafsir);
+	                var editableBookId = tafsir.id || '';
+	              %>
+	              <article class="book-catalog-card tafsir-book-row" data-book-catalog-filter="<%- [
+	                'tafsir',
+	                tafsir.alias,
+	                tafsir.name_en,
+	                tafsir.shortName_en,
 	                tafsir.author_en,
 	                tafsir.name,
 	                tafsir.shortName,
 	                tafsir.author,
 	                tafsir.published_year,
-	                tafsir.publisher
+	                tafsir.publisher,
+	                tafsir.description
 	              ].filter(Boolean).join(' ').toLowerCase() %>">
-                <div class="card h-100">
-                  <div class="card-body d-flex flex-column">
-                    <h5 class="card-title row">
-                      <div class="col"><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></div>
-                      <div class="col text-end" lang="ar" dir="rtl"><%- tafsir.name || tafsir.shortName || '' %></div>
-                    </h5>
-	                    <p class="card-text mb-3">
-	                      <small class="text-muted">
-	                        <%- tafsir.author_en || tafsir.author || '' %>
-	                        <% if (tafsirDeathLabel(tafsir)) { %>
-	                          (<%- tafsirDeathLabel(tafsir) %>)
+	                <div class="tafsir-book-row-main">
+	                  <div class="tafsir-book-title-pair">
+	                    <h3 class="tafsir-book-title-line mb-0">
+	                      <% if (site.editMode) { %>
+	                        <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.shortName_en"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></span>
+	                      <% } else { %>
+	                        <a href="<%= browseUrl %>"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></a>
+	                      <% } %><%- tafsirSizeIndicator(tafsir) %>
+	                    </h3>
+	                    <% if (site.editMode || tafsir.shortName || tafsir.name) { %>
+	                      <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">
+	                        <% if (site.editMode) { %>
+	                          <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.shortName"><%- tafsir.shortName || tafsir.name || '' %></span>
+	                        <% } else { %>
+	                          <a href="<%= browseUrl %>"><%- tafsir.shortName || tafsir.name || '' %></a>
 	                        <% } %>
-	                      </small>
-	                      <% if (commentaryPublicationLabel(tafsir)) { %>
-	                        <br><small class="text-muted"><%- commentaryPublicationLabel(tafsir) %></small>
-	                      <% } %>
-	                    </p>
-	                    <a href="<%= tafsirBrowseUrl(tafsir) %>" class="btn btn-primary w-100 mt-auto">Browse <%- Tafsir.displayShortName(tafsir, 'en') %></a>
+	                      </h3>
+	                    <% } %>
 	                  </div>
+	                  <% if (site.editMode || tafsir.name_en || tafsir.name) { %>
+	                    <div class="tafsir-book-full-name">
+	                      <div <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.name_en"<% } %>><%- tafsir.name_en || tafsir.name || '' %></div>
+	                      <% if (site.editMode || tafsir.name) { %>
+	                        <div lang="ar" dir="rtl" <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.name"<% } %>><%- tafsir.name %></div>
+	                      <% } %>
+	                    </div>
+	                  <% } %>
+	                  <div class="tafsir-book-meta text-muted">
+	                    <% if (site.editMode || tafsir.author_en || tafsirDeathLabel(tafsir)) { %>
+	                      <div>
+	                        <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.author_en"<% } %>><%- tafsir.author_en || tafsir.author || '' %></span>
+	                        <% if (site.editMode || tafsirDeathLabel(tafsir)) { %>
+	                          <span>(<span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.death"<% } %>><%- site.editMode ? tafsir.death : tafsirDeathLabel(tafsir) %></span>)</span>
+	                        <% } %>
+	                      </div>
+	                    <% } %>
+	                    <% if (site.editMode || tafsir.author || tafsirArabicDeathLabel(tafsir)) { %>
+	                      <div lang="ar" dir="rtl">
+	                        <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.author"<% } %>><%- tafsir.author || tafsir.author_en || '' %></span>
+	                        <% if (tafsirArabicDeathLabel(tafsir)) { %>
+	                          <span>(<%- tafsirArabicDeathLabel(tafsir) %>)</span>
+	                        <% } %>
+	                      </div>
+	                    <% } %>
+	                  </div>
+	                  <% if (site.editMode) { %>
+	                    <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
+	                      <div class="_e tafsir-book-description-editor" data-id="<%= editableBookId %>" data-prop="commentary_book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
+	                    </div>
+	                  <% } else if (descriptionPreview || descriptionHtml) { %>
+	                    <button type="button" class="toc-book-description-summary tafsir-book-description-summary text-muted text-start" data-toc-description-summary="<%= descriptionKey %>" data-toc-description-expand="<%= descriptionKey %>" aria-expanded="false" aria-controls="<%= descriptionId %>">
+	                      <span class="toc-book-description-preview"><%= descriptionPreview %></span>
+	                      <span class="tafsir-book-description-more">More...</span>
+	                    </button>
+	                    <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full d-none" data-toc-description-full="<%= descriptionKey %>">
+	                      <%- descriptionHtml %>
+	                    </div>
+	                  <% } %>
+	                  <% if (site.editMode || commentaryPublicationLabel(tafsir)) { %>
+	                    <small class="tafsir-book-publication text-muted">
+	                      <% if (site.editMode) { %>
+	                        Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.published_year"><%- tafsir.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.publisher"><%- tafsir.publisher || '' %></span>
+	                      <% } else { %>
+	                        <%- commentaryPublicationLabel(tafsir) %>
+	                      <% } %>
+	                    </small>
+	                  <% } %>
+	                  <% if (site.editMode) { %>
+	                    <div class="tafsir-book-admin-fields text-muted">
+	                      <label>Size
+	                        <select class="_e form-select form-select-sm" data-id="<%= editableBookId %>" data-prop="commentary_book.size">
+	                          <option value="" <%= !tafsir.size ? 'selected' : '' %>></option>
+	                          <option value="sm" <%= tafsir.size === 'sm' ? 'selected' : '' %>>Small</option>
+	                          <option value="md" <%= tafsir.size === 'md' ? 'selected' : '' %>>Medium</option>
+	                          <option value="lg" <%= tafsir.size === 'lg' ? 'selected' : '' %>>Large</option>
+	                        </select>
+	                      </label>
+	                      <label>Aqidah
+	                        <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.aqidah"><%- tafsir.aqidah || '' %></span>
+	                      </label>
+	                    </div>
+	                  <% } %>
 	                </div>
-              </div>
-            <% }); %>
-          </div>
-        <% } %>
+	              </article>
+	            <% }); %>
+	          </div>
+	        <% } %>
 	        </div>
 	      </section>
 	    <% }); %>
@@ -229,35 +371,74 @@
 	      <% if (!translations || translations.length < 1) { %>
 	        <p class="text-muted">No English translations are currently available.</p>
 	      <% } else { %>
-	        <div class="row">
+	        <div class="tafsir-book-list">
 	          <% translations.forEach(function (translation) { %>
-	            <div class="col-sm-6 mb-3 book-catalog-card" data-book-catalog-filter="<%- [
+	            <%
+	              var group = { key: 'translations' };
+	              var descriptionMarkdown = utils.emptyIfNull(translation.description || '');
+	              var descriptionHtml = utils.markdownToHtml(descriptionMarkdown);
+	              var descriptionPreview = commentaryDescriptionPreview(descriptionMarkdown);
+	              var descriptionId = commentaryDescriptionId(group, translation);
+	              var descriptionKey = `${descriptionId}-body`;
+	              var editableBookId = translation.id || '';
+	            %>
+	            <article class="book-catalog-card tafsir-book-row" data-book-catalog-filter="<%- [
 	              'translation',
 	              translation.alias,
 	              translation.name_en,
 	              translation.shortName_en,
 	              translation.author_en,
 	              translation.published_year,
-	              translation.publisher
+	              translation.publisher,
+	              translation.description
 	            ].filter(Boolean).join(' ').toLowerCase() %>">
-	              <div class="card h-100">
-	                <div class="card-body d-flex flex-column">
-	                  <h5 class="card-title"><%- translation.name_en || translation.shortName_en || translation.alias %></h5>
-	                  <p class="card-text mb-3">
-	                    <small class="text-muted">
-	                      <%- translation.author_en || translation.author || '' %>
-	                      <% if (translationDeathLabel(translation)) { %>
-	                        (<%- translationDeathLabel(translation) %>)
-	                      <% } %>
-	                    </small>
-	                    <% if (commentaryPublicationLabel(translation)) { %>
-	                      <br><small class="text-muted"><%- commentaryPublicationLabel(translation) %></small>
+	              <div class="tafsir-book-row-main">
+	                <div class="tafsir-book-title-pair tafsir-book-title-pair-single">
+	                  <h3 class="tafsir-book-title-line mb-0">
+	                    <% if (site.editMode) { %>
+	                      <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.shortName_en"><%- translation.shortName_en || translation.name_en || translation.alias %></span>
+	                    <% } else { %>
+	                      <a href="<%= utils.quranUrl(req, '/quran/translations/1/1') %>"><%- translation.shortName_en || translation.name_en || translation.alias %></a>
 	                    <% } %>
-	                  </p>
-	                  <a href="<%= utils.quranUrl(req, '/quran/translations/1/1') %>" class="btn btn-primary w-100 mt-auto">Browse <%- translation.shortName_en || 'Translation' %></a>
+	                  </h3>
 	                </div>
+	                <% if (site.editMode || translation.name_en) { %>
+	                  <div class="tafsir-book-full-name tafsir-book-full-name-single">
+	                    <div <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.name_en"<% } %>><%- translation.name_en %></div>
+	                  </div>
+	                <% } %>
+	                <div class="tafsir-book-meta text-muted tafsir-book-meta-single">
+	                  <div>
+	                    <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.author_en"<% } %>><%- translation.author_en || translation.author || '' %></span>
+	                    <% if (site.editMode || translationDeathLabel(translation)) { %>
+	                      <span>(<span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.death"<% } %>><%- site.editMode ? translation.death : translationDeathLabel(translation) %></span>)</span>
+	                    <% } %>
+	                  </div>
+	                </div>
+	                <% if (site.editMode) { %>
+	                  <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
+	                    <div class="_e tafsir-book-description-editor" data-id="<%= editableBookId %>" data-prop="commentary_book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
+	                  </div>
+	                <% } else if (descriptionPreview || descriptionHtml) { %>
+	                  <button type="button" class="toc-book-description-summary tafsir-book-description-summary text-muted text-start" data-toc-description-summary="<%= descriptionKey %>" data-toc-description-expand="<%= descriptionKey %>" aria-expanded="false" aria-controls="<%= descriptionId %>">
+	                    <span class="toc-book-description-preview"><%= descriptionPreview %></span>
+	                    <span class="tafsir-book-description-more">More...</span>
+	                  </button>
+	                  <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full d-none" data-toc-description-full="<%= descriptionKey %>">
+	                    <%- descriptionHtml %>
+	                  </div>
+	                <% } %>
+	                <% if (site.editMode || commentaryPublicationLabel(translation)) { %>
+	                  <small class="tafsir-book-publication text-muted">
+	                    <% if (site.editMode) { %>
+	                      Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.published_year"><%- translation.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.publisher"><%- translation.publisher || '' %></span>
+	                    <% } else { %>
+	                      <%- commentaryPublicationLabel(translation) %>
+	                    <% } %>
+	                  </small>
+	                <% } %>
 	              </div>
-	            </div>
+	            </article>
 	          <% }); %>
 	        </div>
 	      <% } %>

@@ -238,6 +238,37 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.id = commentaryId;
       refreshCommentaryIndexInBackground(commentaryId);
 
+    } else if (type == 'commentary_book') {
+      var commentaryBookColumns = [
+        'shortName_en', 'shortName', 'name_en', 'name',
+        'author_en', 'author', 'death', 'published_year',
+        'publisher', 'description', 'aqidah', 'size'
+      ];
+      if (!commentaryBookColumns.includes(col))
+        throw createError(400, `Invalid commentary book field '${col}'`);
+      var commentaryBookId = parseInt(ids[0], 10);
+      if (!Number.isInteger(commentaryBookId) || commentaryBookId <= 0)
+        throw createError(400, 'Invalid commentary book id');
+      if (col === 'size') {
+        status.value = Utils.trimToEmpty(status.value);
+        if (status.value && !['sm', 'md', 'lg'].includes(status.value))
+          throw createError(400, `Invalid commentary book size '${status.value}'`);
+      }
+      var beforeCommentaryBook = (await global.query(`SELECT alias FROM books_commentaries WHERE id=${commentaryBookId} LIMIT 1`))[0];
+      var commentaryBookValueSql = (col === 'description') ? sqlPreserveWhitespace(status.value) : sql(status.value);
+      var result = await global.query(`UPDATE books_commentaries SET ${col}=${commentaryBookValueSql} WHERE id=${commentaryBookId}`);
+      if (!result || result.affectedRows < 1)
+        throw createError(404, 'Commentary book not found');
+      await Hadith.a_reinit();
+      status.code = 200;
+      status.message = result.message;
+      try {
+        var afterCommentaryBook = (await global.query(`SELECT alias FROM books_commentaries WHERE id=${commentaryBookId} LIMIT 1`))[0];
+        await flushCommentaryBookCaches([beforeCommentaryBook && beforeCommentaryBook.alias, afterCommentaryBook && afterCommentaryBook.alias]);
+      } catch (err) {
+        debug.error(`${err.message}:\n${err.stack || ''}`);
+      }
+
     } else if (type == 'toc') {
       var result;
       var shouldRunDefaultHeadingTasks = true;
@@ -470,6 +501,19 @@ async function flushBookCaches(bookAliases) {
         break;
       }
     }
+  }
+}
+
+async function flushCommentaryBookCaches(bookAliases) {
+  var cacheDir = `${homedir()}/.hadithdb/cache`;
+  var aliases = Array.from(new Set((bookAliases || []).filter(Boolean)));
+  await Utils.flushCacheContaining('tafsirs');
+  await Utils.flushCacheContaining('tafsir:books');
+  await Utils.flushCachedFile(`${cacheDir}/_books.html`);
+  await Utils.flushCachedFile(`${cacheDir}/_books`);
+  for (const alias of aliases) {
+    await Utils.flushCacheContaining(`tafsir:${alias}`);
+    await Utils.flushCacheContaining(`translation:${alias}`);
   }
 }
 
