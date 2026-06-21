@@ -10,6 +10,7 @@ const MySQL = require('mysql');
 const path = require('path');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
+const Books = require('../lib/Books');
 
 const INDEX = 'commentaries';
 const options = readOptions(process.argv.slice(2));
@@ -83,12 +84,14 @@ function endDbPool() {
 }
 
 async function countCommentaries(alias, freshConnection) {
+	const commentaryJoin = await Books.commentaryJoin('bc', 'hc');
 	const sql = `
 		SELECT COUNT(*) AS total
-		FROM books_commentaries bc
-		JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+		FROM ${commentaryJoin.from}
+		${commentaryJoin.join}
 		WHERE bc.source='local'
 			AND bc.hidden=0
+			AND ${commentaryJoin.typePredicate}
 			AND bc.alias=${global.dbPool.escape(alias)}`;
 	const rows = freshConnection ? await freshQuery(sql) : await global.query(sql);
 	return rows[0]?.total || 0;
@@ -97,6 +100,7 @@ async function countCommentaries(alias, freshConnection) {
 async function getCommentaries(alias, limit, offset, freshConnection, afterId) {
 	if (Number.isInteger(afterId))
 		return getCommentariesByIdBatch(alias, limit, afterId, freshConnection);
+	const commentaryJoin = await Books.commentaryJoin('bc', 'hc');
 	const sql = `
 		SELECT
 			hc.id,
@@ -106,7 +110,8 @@ async function getCommentaries(alias, limit, offset, freshConnection, afterId) {
 				0 AS book_ordinal,
 				'quran' AS book_alias,
 				bc.ordinal AS ordinal,
-				bc.id AS bookCommentaryId,
+				${commentaryJoin.legacyIdSelect},
+				${commentaryJoin.bookIdSelect},
 				bc.alias AS commentary_alias,
 				bc.type AS commentary_type,
 				bc.lang,
@@ -135,11 +140,12 @@ async function getCommentaries(alias, limit, offset, freshConnection, afterId) {
 			hc.footnotes_en,
 			hc.created,
 			hc.lastmod
-		FROM books_commentaries bc
-		JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+		FROM ${commentaryJoin.from}
+		${commentaryJoin.join}
 		JOIN v_hadiths q ON q.id=hc.hadithId
 		WHERE bc.source='local'
 			AND bc.hidden=0
+			AND ${commentaryJoin.typePredicate}
 			${alias ? `AND bc.alias=${global.dbPool.escape(alias)}` : ''}
 			${Number.isInteger(afterId) && afterId > 0 ? `AND hc.id>${afterId}` : ''}
 		ORDER BY ${Number.isInteger(afterId) ? 'hc.id' : 'bc.id, hc.surah, hc.ayahFrom, hc.ayahTo'}
@@ -150,6 +156,7 @@ async function getCommentaries(alias, limit, offset, freshConnection, afterId) {
 
 async function getCommentariesByIdBatch(alias, limit, afterId, freshConnection) {
 	const query = freshConnection ? freshQuery : global.query;
+	const commentaryJoin = await Books.commentaryJoin('bc', 'hc');
 	const rows = await query(`
 		SELECT
 			hc.id,
@@ -159,7 +166,8 @@ async function getCommentariesByIdBatch(alias, limit, afterId, freshConnection) 
 				0 AS book_ordinal,
 				'quran' AS book_alias,
 				bc.ordinal AS ordinal,
-				bc.id AS bookCommentaryId,
+				${commentaryJoin.legacyIdSelect},
+				${commentaryJoin.bookIdSelect},
 				bc.alias AS commentary_alias,
 				bc.type AS commentary_type,
 				bc.lang,
@@ -180,10 +188,11 @@ async function getCommentariesByIdBatch(alias, limit, afterId, freshConnection) 
 			hc.footnotes_en,
 			hc.created,
 			hc.lastmod
-		FROM books_commentaries bc
-		JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+		FROM ${commentaryJoin.from}
+		${commentaryJoin.join}
 		WHERE bc.source='local'
 			AND bc.hidden=0
+			AND ${commentaryJoin.typePredicate}
 			AND bc.alias=${global.dbPool.escape(alias)}
 			AND hc.id>${parseInt(afterId, 10)}
 		ORDER BY hc.id
