@@ -2905,6 +2905,17 @@ del em strong {
 	text-decoration-color: currentColor;
 }
 
+.tafsir-book-hover-highlight .quran-tafsir-ayah,
+.tafsir-book-hover-highlight .quran-tafsir-ayah-text,
+.tafsir-book-hover-highlight .quran-ayah-end-marker,
+.quran-tafsir-ayah.tafsir-book-hover-highlight,
+.quran-tafsir-ayah.tafsir-book-hover-highlight .quran-tafsir-ayah-text,
+.quran-tafsir-ayah-range.tafsir-book-hover-highlight .quran-tafsir-ayah,
+.quran-tafsir-ayah-range.tafsir-book-hover-highlight .quran-tafsir-ayah-text,
+.quran-tafsir-ayah-range.tafsir-book-hover-highlight .quran-ayah-end-marker {
+	color: var(--c-accent) !important;
+}
+
 .tafsir-book-modal-name-block + .tafsir-book-modal-name-block {
 	border-top: 1px solid var(--bs-border-color);
 	margin-top: .75rem;

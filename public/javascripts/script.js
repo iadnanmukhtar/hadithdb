@@ -1280,6 +1280,10 @@ function initQuranTafsirTabs(root) {
 				if (window.bootstrap && window.bootstrap.Modal)
 					window.bootstrap.Modal.getOrCreateInstance(modal[0]).show();
 			};
+			var setTafsirBookHoverHighlight = function (target, highlighted) {
+				var panel = $(target).closest('.quran-tafsir-panel');
+				panel.toggleClass('tafsir-book-hover-highlight', highlighted);
+			};
 			var appendTafsirBookNameTrigger = function (target, book, language) {
 				var isArabic = language === 'ar';
 				var label = isArabic
@@ -1290,7 +1294,13 @@ function initQuranTafsirTabs(root) {
 					title: 'View tafsir details',
 					'aria-label': `View details for ${label}`
 				}).text(label).appendTo(target);
-				trigger.on('mouseenter focus click', function (event) {
+				trigger.on('mouseenter focus', function () {
+					setTafsirBookHoverHighlight(this, true);
+				});
+				trigger.on('mouseleave blur', function () {
+					setTafsirBookHoverHighlight(this, false);
+				});
+				trigger.on('click', function (event) {
 					event.preventDefault();
 					openTafsirBookModal(book);
 				});
