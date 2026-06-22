@@ -2238,7 +2238,7 @@ del em strong {
 
 .tafsir-book-row {
 	border-bottom: 1px solid var(--bs-border-color);
-	padding: .65rem 0;
+	padding: .8rem 0;
 }
 
 .tafsir-book-list .tafsir-book-row:first-child {
@@ -2249,7 +2249,7 @@ del em strong {
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: .25rem;
+	gap: .32rem;
 	min-width: 0;
 }
 
@@ -2257,7 +2257,7 @@ del em strong {
 .tafsir-book-full-name,
 .tafsir-book-meta {
 	display: grid;
-	gap: .2rem .9rem;
+	gap: .24rem 1rem;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	min-width: 0;
 }
@@ -2269,9 +2269,9 @@ del em strong {
 }
 
 .tafsir-book-title-line {
-	font-size: .95rem;
+	font-size: 1rem;
 	font-weight: 700;
-	line-height: 1.25;
+	line-height: 1.28;
 	min-width: 0;
 }
 
@@ -2279,7 +2279,7 @@ del em strong {
 .tafsir-book-title-line[lang="ar"],
 .tafsir-book-title-line :lang(ar),
 .tafsir-book-title-line [lang="ar"] {
-	font-size: 1.22rem !important;
+	font-size: 1.22em !important;
 	line-height: 1.35;
 }
 
@@ -2291,26 +2291,26 @@ del em strong {
 }
 
 .tafsir-book-meta {
-	font-size: .82rem;
+	font-size: .95rem;
 	line-height: 1.3;
 }
 
 .tafsir-book-full-name {
 	color: var(--bs-body-color);
-	font-size: .84rem;
-	line-height: 1.3;
+	font-size: .98rem;
+	line-height: 1.35;
 }
 
 .tafsir-book-full-name:lang(ar),
 .tafsir-book-full-name [lang="ar"],
 .tafsir-book-full-name :lang(ar) {
-	font-size: 1.08rem !important;
+	font-size: 1.18em !important;
 	line-height: 1.45;
 }
 
 .tafsir-book-meta :lang(ar),
 .tafsir-book-meta[lang="ar"] {
-	font-size: .82rem !important;
+	font-size: 1em !important;
 }
 
 .tafsir-book-description-summary {
@@ -2326,7 +2326,7 @@ del em strong {
 .tafsir-book-description-summary,
 .tafsir-book-description-full,
 .tafsir-book-publication {
-	font-size: .84rem;
+	font-size: .95rem;
 	line-height: 1.4;
 }
 
@@ -2357,7 +2357,7 @@ del em strong {
 	align-items: center;
 	display: flex;
 	flex-wrap: wrap;
-	font-size: .78rem;
+	font-size: .9rem;
 	gap: .45rem .9rem;
 	line-height: 1.3;
 }

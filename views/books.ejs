@@ -185,6 +185,7 @@
                 book.alias,
                 book.name_en,
                 book.shortName_en,
+                book.author_en,
                 book.author,
                 book.title,
                 book.shortName,
@@ -215,11 +216,16 @@
                   </div>
                   <div class="tafsir-book-meta text-muted">
                     <div>
-                      <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.author"<% } %>><%- book.author || '' %></span>
+                      <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.author_en"<% } %>><%- book.author_en || '' %></span>
                       <% if (book.id > 0) { %>
                         <span>(d. <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.death"<% } %>><%- book.death || '' %></span>H)</span>
                       <% } %>
                     </div>
+                    <% if (site.editMode || book.author) { %>
+                      <div lang="ar" dir="rtl">
+                        <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.author"<% } %>><%- book.author || '' %></span>
+                      </div>
+                    <% } %>
                   </div>
                   <% if (site.editMode) { %>
                     <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
