@@ -3,6 +3,12 @@
 		var currentBookAlias = typeof page !== 'undefined' && page.context && page.context.book ? page.context.book.alias : '';
 		if (!currentBookAlias && typeof req !== 'undefined' && req.path)
 			currentBookAlias = req.path.split('/').filter(Boolean)[0] || '';
+		var isHadithBook = function (book) {
+			return book
+				&& book.hidden == 0
+				&& book.alias !== 'quran'
+				&& (book.type || book.book_type || book.book_model || 'hadith') === 'hadith';
+		};
 		var bookDeathLabel = function (book) {
 			if (!book || !book.death)
 				return '';
@@ -23,7 +29,7 @@
 	</div>
 	<div class="h-menu-scroller">
 		<div class="btn-group h-menu text-nowrap" role="group">
-			<% for (b of books.filter(b => !b.hidden)) {
+			<% for (b of books.filter(isHadithBook)) {
 				var isCurrentBook = b.alias === currentBookAlias;
 			%>
 			  <a class="btn btn-outline-primary text-nowrap book-carousel-tooltip<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-tooltip="<%= bookTooltip(b) %>"><%= b.shortName_en %></a>

@@ -61,8 +61,8 @@
       return /^d\./i.test(death) ? death : `d. ${death}`;
     };
     var tafsirGroups = [
-      { key: 'en', lang: 'en', heading: 'English Tafāsīr' },
-      { key: 'ar', lang: 'ar', heading: 'Arabic Tafāsīr' }
+      { key: 'en', lang: 'en', heading: 'Tafsir <sup>en</sup>' },
+      { key: 'ar', lang: 'ar', heading: 'Tafsir <sup>ar</sup>' }
     ].map(function (group) {
       group.tafsirs = (tafsirs || []).filter(function (tafsir) {
         return tafsir.lang === group.lang;
@@ -162,12 +162,12 @@
 
     <section class="book-catalog-tabs-section mb-4">
       <ul class="nav nav-tabs book-catalog-tabs mb-3" role="tablist">
-        <%- catalogTabButton('book-catalog-hadith', 'Ḥadīth Books', true) %>
+        <%- catalogTabButton('book-catalog-hadith', 'Hadith', true) %>
         <% tafsirGroups.forEach(function (group) { %>
           <% var sectionId = `book-catalog-tafsir-${group.key}`; %>
           <%- catalogTabButton(sectionId, group.heading, false) %>
         <% }); %>
-        <%- catalogTabButton('book-catalog-translations', 'English Translations', false) %>
+        <%- catalogTabButton('book-catalog-translations', 'Translations <sup>en</sup>', false) %>
       </ul>
       <div class="tab-content">
         <div id="book-catalog-hadith" class="tab-pane fade show active book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-hadith-tab">

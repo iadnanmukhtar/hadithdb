@@ -57,8 +57,8 @@
       return tafsir.shortName_en || tafsir.name_en || tafsir.shortName || tafsir.title || tafsir.alias || '';
     };
     var groups = [
-      { key: 'en', lang: 'en', heading: 'English Tafāsīr' },
-      { key: 'ar', lang: 'ar', heading: 'Arabic Tafāsīr' }
+      { key: 'en', lang: 'en', heading: 'Tafsir <sup>en</sup>' },
+      { key: 'ar', lang: 'ar', heading: 'Tafsir <sup>ar</sup>' }
     ].map(function (group) {
       group.tafsirs = (tafsirs || []).filter(function (tafsir) {
         return tafsir.lang === group.lang;
