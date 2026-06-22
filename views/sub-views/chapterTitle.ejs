@@ -59,7 +59,7 @@
   </div>
 
   <div class="col-md-6 col-sm-12" lang="ar">
-    <a title="<%- book.name %>" href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName %></a>
+    <a title="<%- book.title %>" href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName %></a>
     &gt;
     <% if (heading.level == 1) { %>
       <span title="<%- chapter.title %>"><%- chapterBreadcrumbLabelAr %> <%- arabic.toArabicDigits(chapter.h1) %></span>

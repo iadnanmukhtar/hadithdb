@@ -33,7 +33,7 @@ const options = readOptions(process.argv.slice(2));
 
 		await ensureColumn();
 		await updateRows(classifiedRows);
-		console.log(`Updated ${classifiedRows.length} books_commentaries row(s).`);
+		console.log(`Updated ${classifiedRows.length} books row(s).`);
 	} catch (err) {
 		console.error(`ERROR: ${err.message}`);
 		process.exitCode = 1;
@@ -57,9 +57,9 @@ async function loadTafsirArabicSizes() {
 			bc.source,
 			COUNT(hc.id) AS row_count,
 			COALESCE(SUM(CHAR_LENGTH(COALESCE(hc.text, '')) + CHAR_LENGTH(COALESCE(hc.footnotes, ''))), 0) AS arabic_chars
-		FROM books_commentaries bc
-		LEFT JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
-		WHERE COALESCE(bc.type, 'tafsir')='tafsir'
+		FROM books bc
+		LEFT JOIN hadiths_commentary hc ON hc.bookId=bc.id
+		WHERE bc.type='tafsir'
 		GROUP BY bc.id
 		ORDER BY arabic_chars DESC, bc.id`);
 	return rows.map(row => ({
@@ -103,23 +103,23 @@ function printSummary(rows) {
 async function ensureColumn() {
 	const columns = await global.query(`
 		SHOW COLUMNS
-		FROM books_commentaries
+		FROM books
 		LIKE '${COLUMN_NAME}'`);
 	if (columns.length > 0)
 		return;
 	await global.query(`
-		ALTER TABLE books_commentaries
+		ALTER TABLE books
 		ADD COLUMN ${COLUMN_NAME} ENUM('sm', 'md', 'lg') NULL DEFAULT NULL
 		COMMENT 'DB-derived total Arabic tafsir content size class'
 		AFTER aqidah`);
-	console.log(`Added books_commentaries.${COLUMN_NAME}.`);
+	console.log(`Added books.${COLUMN_NAME}.`);
 }
 
 async function updateRows(rows) {
 	for (const row of rows) {
 		const value = row.size ? `'${row.size}'` : 'NULL';
 		await global.query(`
-			UPDATE books_commentaries
+			UPDATE books
 			SET ${COLUMN_NAME}=${value}
 			WHERE id=${row.id}`);
 	}

@@ -26,8 +26,8 @@ async function main() {
   const options = readOptions(process.argv.slice(2));
   const rows = await query(`
     SELECT bc.alias, hc.id, ${COMMENTARY_COLUMNS.map(column => `hc.${column}`).join(', ')}
-    FROM books_commentaries bc
-    JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+    FROM books bc
+    JOIN hadiths_commentary hc ON hc.bookId=bc.id
     WHERE ${candidatePredicate(options.aliases)}`);
   const changes = rows.map(row => normalizeRow(row)).filter(change => change.changed);
   console.log(`Candidate rows: ${rows.length}`);
@@ -41,8 +41,8 @@ async function main() {
 
   const remaining = (await query(`
     SELECT bc.alias, hc.id, ${COMMENTARY_COLUMNS.map(column => `hc.${column}`).join(', ')}
-    FROM books_commentaries bc
-    JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+    FROM books bc
+    JOIN hadiths_commentary hc ON hc.bookId=bc.id
     WHERE ${candidatePredicate(options.aliases)}`))
     .map(row => normalizeRow(row))
     .filter(change => change.changed);
@@ -73,7 +73,7 @@ async function updateChangesInDb(aliases) {
   normalizedColumns.forEach(() => params.push(...patterns));
   const result = await query(`
     UPDATE hadiths_commentary hc
-    JOIN books_commentaries bc ON bc.id=hc.bookCommentaryId
+    JOIN books bc ON bc.id=hc.bookId
     SET ${normalizedColumns.map(([column, expr]) => `hc.${column}=${expr}`).join(', ')},
       hc.lastmod=CURRENT_TIMESTAMP()
     WHERE ${candidatePredicate(aliases)}

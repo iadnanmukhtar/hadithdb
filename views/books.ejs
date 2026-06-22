@@ -44,7 +44,7 @@
       return match ? Number(match[0]) : NaN;
     };
     var tafsirSortName = function (tafsir) {
-      return tafsir.shortName_en || tafsir.name_en || tafsir.shortName || tafsir.name || tafsir.alias || '';
+      return tafsir.shortName_en || tafsir.name_en || tafsir.shortName || tafsir.title || tafsir.alias || '';
     };
     var commentaryPublicationLabel = function (book) {
       return [
@@ -186,7 +186,7 @@
                 book.name_en,
                 book.shortName_en,
                 book.author,
-                book.name,
+                book.title,
                 book.shortName,
                 book.description
               ].filter(Boolean).join(' ').toLowerCase() %>">
@@ -199,25 +199,25 @@
                         <a href="/<%- book.alias %>"><%- book.shortName_en || book.name_en || book.alias %></a>
                       <% } %>
                     </h3>
-                    <% if (site.editMode || book.shortName || book.name) { %>
+                    <% if (site.editMode || book.shortName || book.title) { %>
                       <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">
                         <% if (site.editMode) { %>
-                          <span class="_e" data-id="<%= book.id %>" data-prop="book.shortName"><%- book.shortName || book.name || '' %></span>
+                          <span class="_e" data-id="<%= book.id %>" data-prop="book.shortName"><%- book.shortName || book.title || '' %></span>
                         <% } else { %>
-                          <a href="/<%- book.alias %>"><%- book.shortName || book.name || '' %></a>
+                          <a href="/<%- book.alias %>"><%- book.shortName || book.title || '' %></a>
                         <% } %>
                       </h3>
                     <% } %>
                   </div>
                   <div class="tafsir-book-full-name">
                     <div <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.name_en"<% } %>><%- book.name_en || book.shortName_en || '' %></div>
-                    <div lang="ar" dir="rtl" <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.name"<% } %>><%- book.name || book.shortName || '' %></div>
+                    <div lang="ar" dir="rtl" <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.title"<% } %>><%- book.title || book.shortName || '' %></div>
                   </div>
                   <div class="tafsir-book-meta text-muted">
                     <div>
                       <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.author"<% } %>><%- book.author || '' %></span>
                       <% if (book.id > 0) { %>
-                        <span>(d. <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.yearOfDeath"<% } %>><%- book.yearOfDeath || '' %></span>H)</span>
+                        <span>(d. <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.death"<% } %>><%- book.death || '' %></span>H)</span>
                       <% } %>
                     </div>
                   </div>
@@ -263,7 +263,7 @@
                     tafsir.name_en,
                     tafsir.shortName_en,
                     tafsir.author_en,
-                    tafsir.name,
+                    tafsir.title,
                     tafsir.shortName,
                     tafsir.author,
                     tafsir.published_year,
@@ -274,41 +274,41 @@
                       <div class="tafsir-book-title-pair">
                         <h3 class="tafsir-book-title-line mb-0">
                           <% if (site.editMode) { %>
-                            <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.shortName_en"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></span>
+                            <span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></span>
                           <% } else { %>
                             <a href="<%= browseUrl %>"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></a>
                           <% } %><%- tafsirSizeIndicator(tafsir) %>
                         </h3>
-                        <% if (site.editMode || tafsir.shortName || tafsir.name) { %>
+                        <% if (site.editMode || tafsir.shortName || tafsir.title) { %>
                           <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">
                             <% if (site.editMode) { %>
-                              <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.shortName"><%- tafsir.shortName || tafsir.name || '' %></span>
+                              <span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName"><%- tafsir.shortName || tafsir.title || '' %></span>
                             <% } else { %>
-                              <a href="<%= browseUrl %>"><%- tafsir.shortName || tafsir.name || '' %></a>
+                              <a href="<%= browseUrl %>"><%- tafsir.shortName || tafsir.title || '' %></a>
                             <% } %>
                           </h3>
                         <% } %>
                       </div>
-                      <% if (site.editMode || tafsir.name_en || tafsir.name) { %>
+                      <% if (site.editMode || tafsir.name_en || tafsir.title) { %>
                         <div class="tafsir-book-full-name">
-                          <div <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.name_en"<% } %>><%- tafsir.name_en || tafsir.name || '' %></div>
-                          <% if (site.editMode || tafsir.name) { %>
-                            <div lang="ar" dir="rtl" <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.name"<% } %>><%- tafsir.name %></div>
+                          <div <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en"<% } %>><%- tafsir.name_en || tafsir.title || '' %></div>
+                          <% if (site.editMode || tafsir.title) { %>
+                            <div lang="ar" dir="rtl" <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.title"<% } %>><%- tafsir.title %></div>
                           <% } %>
                         </div>
                       <% } %>
                       <div class="tafsir-book-meta text-muted">
                         <% if (site.editMode || tafsir.author_en || tafsirDeathLabel(tafsir)) { %>
                           <div>
-                            <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.author_en"<% } %>><%- tafsir.author_en || tafsir.author || '' %></span>
+                            <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author_en"<% } %>><%- tafsir.author_en || tafsir.author || '' %></span>
                             <% if (site.editMode || tafsirDeathLabel(tafsir)) { %>
-                              <span>(<span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.death"<% } %>><%- site.editMode ? tafsir.death : tafsirDeathLabel(tafsir) %></span>)</span>
+                              <span>(<span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.death"<% } %>><%- site.editMode ? tafsir.death : tafsirDeathLabel(tafsir) %></span>)</span>
                             <% } %>
                           </div>
                         <% } %>
                         <% if (site.editMode || tafsir.author || tafsirArabicDeathLabel(tafsir)) { %>
                           <div lang="ar" dir="rtl">
-                            <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.author"<% } %>><%- tafsir.author || tafsir.author_en || '' %></span>
+                            <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author"<% } %>><%- tafsir.author || tafsir.author_en || '' %></span>
                             <% if (tafsirArabicDeathLabel(tafsir)) { %>
                               <span>(<%- tafsirArabicDeathLabel(tafsir) %>)</span>
                             <% } %>
@@ -317,7 +317,7 @@
                       </div>
                       <% if (site.editMode) { %>
                         <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
-                          <div class="_e tafsir-book-description-editor" data-id="<%= editableBookId %>" data-prop="commentary_book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
+                          <div class="_e tafsir-book-description-editor" data-id="<%= editableBookId %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
                         </div>
                       <% } else if (descriptionPreview || descriptionHtml) { %>
                         <button type="button" class="toc-book-description-summary tafsir-book-description-summary text-muted text-start" data-toc-description-summary="<%= descriptionKey %>" data-toc-description-expand="<%= descriptionKey %>" aria-expanded="false" aria-controls="<%= descriptionId %>">
@@ -331,7 +331,7 @@
                       <% if (site.editMode || commentaryPublicationLabel(tafsir)) { %>
                         <small class="tafsir-book-publication text-muted">
                           <% if (site.editMode) { %>
-                            Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.published_year"><%- tafsir.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.publisher"><%- tafsir.publisher || '' %></span>
+                            Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="book.published_year"><%- tafsir.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="book.publisher"><%- tafsir.publisher || '' %></span>
                           <% } else { %>
                             <%- commentaryPublicationLabel(tafsir) %>
                           <% } %>
@@ -340,7 +340,7 @@
                       <% if (site.editMode) { %>
                         <div class="tafsir-book-admin-fields text-muted">
                           <label>Size
-                            <select class="_e form-select form-select-sm" data-id="<%= editableBookId %>" data-prop="commentary_book.size">
+                            <select class="_e form-select form-select-sm" data-id="<%= editableBookId %>" data-prop="book.size">
                               <option value="" <%= !tafsir.size ? 'selected' : '' %>></option>
                               <option value="sm" <%= tafsir.size === 'sm' ? 'selected' : '' %>>Small</option>
                               <option value="md" <%= tafsir.size === 'md' ? 'selected' : '' %>>Medium</option>
@@ -348,7 +348,7 @@
                             </select>
                           </label>
                           <label>Aqidah
-                            <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.aqidah"><%- tafsir.aqidah || '' %></span>
+                            <span class="_e" data-id="<%= editableBookId %>" data-prop="book.aqidah"><%- tafsir.aqidah || '' %></span>
                           </label>
                         </div>
                       <% } %>
@@ -389,7 +389,7 @@
                     <div class="tafsir-book-title-pair tafsir-book-title-pair-single">
                       <h3 class="tafsir-book-title-line mb-0">
                         <% if (site.editMode) { %>
-                          <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.shortName_en"><%- translation.shortName_en || translation.name_en || translation.alias %></span>
+                          <span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en"><%- translation.shortName_en || translation.name_en || translation.alias %></span>
                         <% } else { %>
                           <a href="<%= utils.quranUrl(req, '/quran/translations/1/1') %>"><%- translation.shortName_en || translation.name_en || translation.alias %></a>
                         <% } %>
@@ -397,20 +397,20 @@
                     </div>
                     <% if (site.editMode || translation.name_en) { %>
                       <div class="tafsir-book-full-name tafsir-book-full-name-single">
-                        <div <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.name_en"<% } %>><%- translation.name_en %></div>
+                        <div <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en"<% } %>><%- translation.name_en %></div>
                       </div>
                     <% } %>
                     <div class="tafsir-book-meta text-muted tafsir-book-meta-single">
                       <div>
-                        <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.author_en"<% } %>><%- translation.author_en || translation.author || '' %></span>
+                        <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author_en"<% } %>><%- translation.author_en || translation.author || '' %></span>
                         <% if (site.editMode || translationDeathLabel(translation)) { %>
-                          <span>(<span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.death"<% } %>><%- site.editMode ? translation.death : translationDeathLabel(translation) %></span>)</span>
+                          <span>(<span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.death"<% } %>><%- site.editMode ? translation.death : translationDeathLabel(translation) %></span>)</span>
                         <% } %>
                       </div>
                     </div>
                     <% if (site.editMode) { %>
                       <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
-                        <div class="_e tafsir-book-description-editor" data-id="<%= editableBookId %>" data-prop="commentary_book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
+                        <div class="_e tafsir-book-description-editor" data-id="<%= editableBookId %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
                       </div>
                     <% } else if (descriptionPreview || descriptionHtml) { %>
                       <button type="button" class="toc-book-description-summary tafsir-book-description-summary text-muted text-start" data-toc-description-summary="<%= descriptionKey %>" data-toc-description-expand="<%= descriptionKey %>" aria-expanded="false" aria-controls="<%= descriptionId %>">
@@ -424,7 +424,7 @@
                     <% if (site.editMode || commentaryPublicationLabel(translation)) { %>
                       <small class="tafsir-book-publication text-muted">
                         <% if (site.editMode) { %>
-                          Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.published_year"><%- translation.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="commentary_book.publisher"><%- translation.publisher || '' %></span>
+                          Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="book.published_year"><%- translation.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="book.publisher"><%- translation.publisher || '' %></span>
                         <% } else { %>
                           <%- commentaryPublicationLabel(translation) %>
                         <% } %>

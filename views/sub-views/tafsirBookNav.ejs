@@ -51,7 +51,7 @@
 	}
 		function tafsirBookTooltip(tafsir) {
 			return [
-				tafsir.name_en || tafsir.name || tafsir.shortName_en || tafsir.shortName || tafsir.alias,
+				tafsir.name_en || tafsir.title || tafsir.shortName_en || tafsir.shortName || tafsir.alias,
 				tafsir.author_en || tafsir.author,
 				tafsirDeathTooltipLabel(tafsir),
 				tafsir.published_year ? `Pub. ${tafsir.published_year}` : '',

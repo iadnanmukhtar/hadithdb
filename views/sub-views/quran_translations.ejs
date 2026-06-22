@@ -39,7 +39,7 @@
 		defaultTranslationBook.published_year ? `Pub. ${defaultTranslationBook.published_year}` : '',
 		defaultTranslationBook.publisher || ''
 	].filter(Boolean).join(', ');
-	const defaultTranslationTitle = defaultTranslationBook.name_en || defaultTranslationBook.name || 'The Qur\'an: A New Translation';
+	const defaultTranslationTitle = defaultTranslationBook.name_en || defaultTranslationBook.title || 'The Qur\'an: A New Translation';
 	const defaultTranslationHtml = passageItems.map(function (ayah) {
 		return utils.markdownToHtml(utils.emptyIfNull(ayah.en?.body || ayah.body_en));
 	}).filter(Boolean).join('\n');

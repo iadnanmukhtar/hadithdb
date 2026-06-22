@@ -134,23 +134,24 @@ async function getAyahText(alias, surah, ayah) {
 async function getCommentary(alias) {
 	const rows = await global.query(`
 		SELECT *
-		FROM books_commentaries
+		FROM books
 		WHERE alias=${MySQL.escape(alias)}
+			AND type='tafsir'
 		LIMIT 1`);
 	if (rows.length !== 1)
-		throw new Error(`Commentary '${alias}' was not found in books_commentaries.`);
+		throw new Error(`Commentary '${alias}' was not found in books.`);
 	if (rows[0].lang !== 'ar')
 		throw new Error(`Commentary '${alias}' is lang='${rows[0].lang}', expected 'ar'.`);
 	return rows[0];
 }
 
-async function getExistingCounts(bookCommentaryId) {
+async function getExistingCounts(bookId) {
 	const rows = await global.query(`
 		SELECT
 			COUNT(*) AS passageCount,
 			SUM(CASE WHEN text IS NOT NULL AND text <> '' THEN 1 ELSE 0 END) AS textCount
 		FROM hadiths_commentary
-		WHERE bookCommentaryId=${bookCommentaryId}`);
+		WHERE bookId=${bookId}`);
 	return {
 		passageCount: Number(rows[0]?.passageCount || 0),
 		textCount: Number(rows[0]?.textCount || 0)
@@ -201,7 +202,7 @@ async function upsertLocalPassages(commentary, quran, document) {
 		}).join(',\n');
 		await global.query(`
 			INSERT INTO hadiths_commentary
-				(bookCommentaryId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en)
+				(bookId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en)
 			VALUES ${values}
 			ON DUPLICATE KEY UPDATE
 				hadithId=VALUES(hadithId),
@@ -212,13 +213,14 @@ async function upsertLocalPassages(commentary, quran, document) {
 	}
 }
 
-async function markCommentaryLocal(bookCommentaryId) {
+async function markCommentaryLocal(bookId) {
 	await global.query(`
-		UPDATE books_commentaries
+		UPDATE books
 		SET source='local',
 			format='md',
 			hidden=0
-		WHERE id=${bookCommentaryId}`);
+		WHERE id=${bookId}
+			AND type='tafsir'`);
 }
 
 function writeCache(cacheFile, document) {
@@ -339,7 +341,7 @@ function usage() {
 	return [
 		'Usage: node bin/utils/load-tafsir-app-local.js [options]',
 		'',
-		'Downloads tafsir.app Arabic sources, caches them, and converts their books_commentaries rows to local tafsir rows.',
+		'Downloads tafsir.app Arabic sources, caches them, and converts their books rows to local tafsir rows.',
 		'',
 		'Options:',
 		'  --tafsir <alias>       Tafsir alias to load; repeatable. Default: requested tafsirs',

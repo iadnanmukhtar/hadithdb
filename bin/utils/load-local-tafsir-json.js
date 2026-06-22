@@ -547,11 +547,11 @@ async function importTafsir(connection, alias, quran) {
 
 	await query(connection, 'START TRANSACTION');
 	try {
-		const bookCommentaryId = await upsertCommentary(connection, alias, config);
-		passages = await filterAlreadyLoadedPassages(connection, bookCommentaryId, passages, alias);
+		const bookId = await upsertCommentary(connection, alias, config);
+		passages = await filterAlreadyLoadedPassages(connection, bookId, passages, alias);
 		const batchSize = config.batchSize || 250;
 		for (let offset = 0; offset < passages.length; offset += batchSize) {
-			await upsertPassages(connection, bookCommentaryId, passages.slice(offset, offset + batchSize));
+			await upsertPassages(connection, bookId, passages.slice(offset, offset + batchSize));
 			if (config.batchSize)
 				console.log(`Loaded ${Math.min(offset + batchSize, passages.length)}/${passages.length} '${alias}' passages...`);
 		}
@@ -566,11 +566,11 @@ async function importTafsir(connection, alias, quran) {
 async function importTafsirAutocommit(alias, config, passages) {
 	const connection = await getConnection();
 	try {
-		const bookCommentaryId = await upsertCommentary(connection, alias, config);
-		passages = await filterAlreadyLoadedPassages(connection, bookCommentaryId, passages, alias);
+		const bookId = await upsertCommentary(connection, alias, config);
+		passages = await filterAlreadyLoadedPassages(connection, bookId, passages, alias);
 		const batchSize = config.batchSize || 250;
 		for (let offset = 0; offset < passages.length; offset += batchSize) {
-			await upsertPassages(connection, bookCommentaryId, passages.slice(offset, offset + batchSize));
+			await upsertPassages(connection, bookId, passages.slice(offset, offset + batchSize));
 			if (config.batchSize)
 				console.log(`Loaded ${Math.min(offset + batchSize, passages.length)}/${passages.length} '${alias}' passages...`);
 		}
@@ -580,11 +580,11 @@ async function importTafsirAutocommit(alias, config, passages) {
 	console.log(`Loaded '${alias}'.`);
 }
 
-async function filterAlreadyLoadedPassages(connection, bookCommentaryId, passages, alias) {
+async function filterAlreadyLoadedPassages(connection, bookId, passages, alias) {
 	const rows = await query(connection, `
 		SELECT surah, ayahFrom
 		FROM hadiths_commentary
-		WHERE bookCommentaryId=${bookCommentaryId}
+		WHERE bookId=${bookId}
 			AND text IS NOT NULL
 			AND text <> ''`);
 	const loaded = new Set(rows.map(row => `${row.surah}:${row.ayahFrom}`));
@@ -719,8 +719,8 @@ function parseRef(ref) {
 async function upsertCommentary(connection, alias, config) {
 	config = await hydrateCommentaryConfig(connection, alias, config);
 	await query(connection, `
-		INSERT INTO books_commentaries
-			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, name, author, death, description, aqidah)
+		INSERT INTO books
+			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, title, author, death, description, aqidah)
 		VALUES
 			(${config.ordinal}, ${MySQL.escape(alias)}, 'tafsir', ${MySQL.escape(config.shortName_en)}, ${MySQL.escape(config.shortName || null)},
 				0, 'local', ${MySQL.escape(config.lang || 'en')}, ${MySQL.escape(config.format || 'md')},
@@ -738,16 +738,17 @@ async function upsertCommentary(connection, alias, config) {
 			format=VALUES(format),
 			name_en=VALUES(name_en),
 			author_en=VALUES(author_en),
-			name=VALUES(name),
+			title=VALUES(title),
 			author=VALUES(author),
 			death=VALUES(death),
 			description=VALUES(description),
 			aqidah=VALUES(aqidah)`);
 	const rows = await query(connection, `
 		SELECT id
-		FROM books_commentaries
+		FROM books
 		WHERE alias=${MySQL.escape(alias)}
 			AND source='local'
+			AND type='tafsir'
 		LIMIT 1`);
 	if (rows.length !== 1)
 		throw new Error(`Local commentary '${alias}' was not found after upsert.`);
@@ -756,18 +757,21 @@ async function upsertCommentary(connection, alias, config) {
 
 async function hydrateCommentaryConfig(connection, alias, config) {
 	const rows = await query(connection, `
-		SELECT ordinal, shortName_en, shortName, lang, format, name_en, author_en, name, author, death, description, aqidah
-		FROM books_commentaries
+		SELECT ordinal, shortName_en, shortName, lang, format, name_en, author_en, title, author, death, description, aqidah
+		FROM books
 		WHERE alias=${MySQL.escape(alias)}
+			AND type='tafsir'
 		LIMIT 1`);
 	if (!rows.length)
 		return config;
 	const row = rows[0];
 	const hydrated = Object.assign({}, config);
-	for (const key of ['ordinal', 'shortName_en', 'shortName', 'lang', 'format', 'name_en', 'author_en', 'name', 'author', 'death', 'description', 'aqidah']) {
+	for (const key of ['ordinal', 'shortName_en', 'shortName', 'lang', 'format', 'name_en', 'author_en', 'author', 'death', 'description', 'aqidah']) {
 		if (hydrated[key] === undefined || hydrated[key] === null || hydrated[key] === '')
 			hydrated[key] = row[key];
 	}
+	if (hydrated.name === undefined || hydrated.name === null || hydrated.name === '')
+		hydrated.name = row.title;
 	return hydrated;
 }
 
@@ -780,9 +784,9 @@ function commentaryDescription(config) {
 	return title ? `Full title: ${title}. ${description}` : description;
 }
 
-async function upsertPassages(connection, bookCommentaryId, passages) {
+async function upsertPassages(connection, bookId, passages) {
 	const values = passages.map(passage => `(
-		${bookCommentaryId},
+		${bookId},
 		${passage.hadithId},
 		${passage.surah},
 		${passage.ayah},
@@ -793,7 +797,7 @@ async function upsertPassages(connection, bookCommentaryId, passages) {
 	)`).join(',\n');
 	await query(connection, `
 		INSERT INTO hadiths_commentary
-			(bookCommentaryId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en)
+			(bookId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en)
 		VALUES ${values}
 		ON DUPLICATE KEY UPDATE
 			hadithId=VALUES(hadithId),

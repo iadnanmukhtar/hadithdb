@@ -108,8 +108,8 @@ const options = readOptions(process.argv.slice(2));
 				reportDryRun(config, passages);
 				continue;
 			}
-			const bookCommentaryId = await upsertCommentary(config);
-			await upsertPassages(bookCommentaryId, config, passages);
+			const bookId = await upsertCommentary(config);
+			await upsertPassages(bookId, config, passages);
 			console.log(`Loaded ${passages.length} '${config.alias}' passage(s).`);
 		}
 	} catch (err) {
@@ -224,8 +224,8 @@ function buildPassages(sourceKey, config, document, quran) {
 
 async function upsertCommentary(config) {
 	await global.query(`
-		INSERT INTO books_commentaries
-			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, name, author, death, description, aqidah)
+		INSERT INTO books
+			(ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format, name_en, author_en, title, author, death, description, aqidah)
 		VALUES
 			(${config.ordinal}, ${MySQL.escape(config.alias)}, 'tafsir', ${MySQL.escape(config.shortName_en)}, ${MySQL.escape(config.shortName || null)},
 				0, 'local', ${MySQL.escape(config.lang)}, 'md',
@@ -243,26 +243,27 @@ async function upsertCommentary(config) {
 			format=VALUES(format),
 			name_en=VALUES(name_en),
 			author_en=VALUES(author_en),
-			name=VALUES(name),
+			title=VALUES(title),
 			author=VALUES(author),
 			death=VALUES(death),
 			description=VALUES(description),
 			aqidah=VALUES(aqidah)`);
 	const rows = await global.query(`
 		SELECT id
-		FROM books_commentaries
+		FROM books
 		WHERE alias=${MySQL.escape(config.alias)}
 			AND source='local'
+			AND type='tafsir'
 		LIMIT 1`);
 	if (rows.length !== 1)
 		throw new Error(`Local commentary '${config.alias}' was not found after upsert.`);
 	return rows[0].id;
 }
 
-async function upsertPassages(bookCommentaryId, config, passages) {
+async function upsertPassages(bookId, config, passages) {
 	for (let offset = 0; offset < passages.length; offset += options.batchSize) {
 		const values = passages.slice(offset, offset + options.batchSize).map(passage => `(
-			${bookCommentaryId},
+			${bookId},
 			${passage.hadithId},
 			${passage.surah},
 			${passage.ayah},
@@ -275,7 +276,7 @@ async function upsertPassages(bookCommentaryId, config, passages) {
 		)`).join(',\n');
 		await global.query(`
 			INSERT INTO hadiths_commentary
-				(bookCommentaryId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en, footnotes, footnotes_en)
+				(bookId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en, footnotes, footnotes_en)
 			VALUES ${values}
 			ON DUPLICATE KEY UPDATE
 				hadithId=VALUES(hadithId),

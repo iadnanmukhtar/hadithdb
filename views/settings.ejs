@@ -513,7 +513,7 @@
     };
 
     const settingBookTooltip = (book, deathSuffix) => {
-      const title = book && (book.name_en || book.name || book.shortName_en || book.shortName || book.alias);
+      const title = book && (book.name_en || book.title || book.shortName_en || book.shortName || book.alias);
       const author = book && (book.author_en || book.author);
       return [
         title,
@@ -533,7 +533,7 @@
     };
 
     const settingBookMeta = (book, shortName, deathSuffix) => {
-      const longName = book && (book.name_en || book.name || '');
+      const longName = book && (book.name_en || book.title || '');
       return [
         longName && longName !== shortName ? longName : '',
         book && (book.author_en || book.author),

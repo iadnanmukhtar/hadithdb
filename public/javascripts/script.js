@@ -1223,7 +1223,7 @@ function initQuranTafsirTabs(root) {
 			var appendTafsirBookModalNames = function (target, book, language) {
 				var isArabic = language === 'ar';
 				var shortName = isArabic ? (book.shortName || book.shortName_en) : (book.shortName_en || book.shortName);
-				var fullName = isArabic ? (book.name || book.name_en) : (book.name_en || book.name);
+				var fullName = isArabic ? (book.title || book.name_en) : (book.name_en || book.title);
 				var author = isArabic ? (book.author || book.author_en) : (book.author_en || book.author);
 				var meta = isArabic
 					? [
@@ -1248,7 +1248,7 @@ function initQuranTafsirTabs(root) {
 				if (existing.length)
 					return existing;
 				var titleId = `${modalId}-title`;
-				var title = book.shortName_en || book.shortName || book.name_en || book.name || book.alias || 'Tafsir';
+				var title = book.shortName_en || book.shortName || book.name_en || book.title || book.alias || 'Tafsir';
 				var modal = $('<div>').addClass('modal fade tafsir-book-modal').attr({
 					id: modalId,
 					tabindex: '-1',
@@ -1266,7 +1266,7 @@ function initQuranTafsirTabs(root) {
 				}).appendTo(header);
 				var body = $('<div>').addClass('modal-body').appendTo(content);
 				appendTafsirBookModalNames(body, book, 'en');
-				if (book.name || book.shortName || book.author)
+				if (book.title || book.shortName || book.author)
 					appendTafsirBookModalNames(body, book, 'ar');
 				var descriptionHtml = renderTafsirBookDescription(book.description);
 				if (descriptionHtml)
@@ -1287,7 +1287,7 @@ function initQuranTafsirTabs(root) {
 			var appendTafsirBookNameTrigger = function (target, book, language) {
 				var isArabic = language === 'ar';
 				var label = isArabic
-					? (book.name || book.shortName || book.shortName_en || book.alias)
+					? (book.title || book.shortName || book.shortName_en || book.alias)
 					: (book.name_en || book.shortName_en || book.alias);
 				var trigger = $('<button>').addClass('quran-tafsir-book-modal-trigger').attr({
 					type: 'button',
@@ -1466,12 +1466,12 @@ function initQuranTafsirTabs(root) {
 					englishTitle.text(book.name_en || book.shortName_en || book.alias);
 				$('<span>').text(commentaryMetaParts(book, 'AH').join(', ')).appendTo(english);
 				appendTafsirEnableToggle(english, book);
-				if (book.name || book.author) {
+				if (book.title || book.author) {
 					var arabicTitle = $('<strong>').appendTo(arabic);
 					if (rendersTafsirPassagePage)
 						appendTafsirBookNameTrigger(arabicTitle, book, 'ar');
 					else
-						arabicTitle.text(book.name || '');
+						arabicTitle.text(book.title || '');
 					$('<span>').text([
 						book.author,
 						book.death ? `d. ${toArabicDigits(book.death)} هـ` : '',
@@ -1480,7 +1480,7 @@ function initQuranTafsirTabs(root) {
 				}
 			};
 			var tafsirTooltipText = function (book) {
-				var fullName = book.name_en || book.name || book.shortName_en || book.shortName || book.alias || '';
+				var fullName = book.name_en || book.title || book.shortName_en || book.shortName || book.alias || '';
 				var author = book.author_en || book.author || '';
 				return [
 					fullName,
@@ -2200,7 +2200,7 @@ function initQuranTafsirTabs(root) {
 				var deathLabel = death ? (/^d\./i.test(death) ? death : `d. ${death}`) : '';
 				var publishedLabel = book.published_year ? `Pub. ${book.published_year}` : '';
 				var bookTitle = [
-					book.name_en || book.name || book.alias,
+					book.name_en || book.title || book.alias,
 					deathLabel,
 					publishedLabel,
 					book.publisher || ''

@@ -12,7 +12,7 @@ router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   var results = global.books.filter(function (val) {
-    return (val.hidden == 0 && val.alias !== 'quran');
+    return (val.hidden == 0 && val.alias !== 'quran' && (val.type || val.book_type || val.book_model || 'hadith') === 'hadith');
   });
   if ('json' in req.query) {
     var tafsirs = await Tafsir.visibleTafsirs();

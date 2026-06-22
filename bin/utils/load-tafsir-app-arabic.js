@@ -77,17 +77,18 @@ async function processRow(row, options, result) {
 async function getCommentary(alias) {
 	const rows = await global.query(`
 		SELECT id, alias
-		FROM books_commentaries
+		FROM books
 		WHERE alias=${MySQL.escape(alias)}
 			AND source='local'
+			AND type='tafsir'
 		LIMIT 1`);
 	if (rows.length !== 1)
 		throw new Error(`Local commentary '${alias}' was not found.`);
 	return rows[0];
 }
 
-async function getRows(bookCommentaryId, options) {
-	const where = [`bookCommentaryId=${bookCommentaryId}`];
+async function getRows(bookId, options) {
+	const where = [`bookId=${bookId}`];
 	if (!options.overwrite)
 		where.push(`(text IS NULL OR text='')`);
 	if (options.fromSurah !== null)
@@ -246,7 +247,7 @@ function usage() {
 		"Loads tafsir.app Arabic Ibn Kathir text into missing 'en-ibnkathir' local passages.",
 		'',
 		'Options:',
-		'  --target <alias>       Local books_commentaries alias (default: en-ibnkathir)',
+		'  --target <alias>       Local tafsir book alias (default: en-ibnkathir)',
 		'  --source <alias>       tafsir.app source alias (default: ibn-katheer)',
 		'  --from-surah <number>  Start at this surah',
 		'  --limit <number>       Process at most this many passages',

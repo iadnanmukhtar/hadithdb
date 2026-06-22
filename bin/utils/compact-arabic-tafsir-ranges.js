@@ -64,7 +64,7 @@ async function getRows(options) {
 	return global.query(`
 		SELECT
 			hc.id,
-			hc.bookCommentaryId,
+			hc.bookId,
 			bc.alias,
 			hc.hadithId,
 			hc.surah,
@@ -72,8 +72,8 @@ async function getRows(options) {
 			hc.ayahTo,
 			hc.passageNum,
 			hc.text
-		FROM books_commentaries bc
-		JOIN hadiths_commentary hc ON hc.bookCommentaryId=bc.id
+		FROM books bc
+		JOIN hadiths_commentary hc ON hc.bookId=bc.id
 		WHERE ${where.join('\n\t\t\tAND ')}
 		ORDER BY bc.id, hc.surah, hc.ayahFrom, hc.ayahTo, hc.id`);
 }
@@ -87,7 +87,7 @@ function findMergeGroups(rows) {
 			if (group && group.deleteIds.length > 0)
 				groups.push(group);
 			group = {
-				bookCommentaryId: row.bookCommentaryId,
+				bookId: row.bookId,
 				alias: row.alias,
 				surah: row.surah,
 				ayahFrom: row.ayahFrom,
@@ -110,7 +110,7 @@ function findMergeGroups(rows) {
 }
 
 function isConsecutiveMatch(group, row) {
-	return row.bookCommentaryId === group.bookCommentaryId &&
+	return row.bookId === group.bookId &&
 		row.surah === group.surah &&
 		row.ayahFrom === group.ayahTo + 1 &&
 		row.text === group.text;
@@ -160,7 +160,7 @@ async function normalizePassageNumbers(aliases) {
 	for (const alias of aliases) {
 		await global.query(`
 			UPDATE hadiths_commentary hc
-			JOIN books_commentaries bc ON bc.id=hc.bookCommentaryId
+			JOIN books bc ON bc.id=hc.bookId
 			SET hc.passageNum=hc.ayahFrom
 			WHERE bc.alias=${MySQL.escape(alias)}`);
 	}
@@ -234,7 +234,7 @@ function usage() {
 		'Usage: node bin/utils/compact-arabic-tafsir-ranges.js [options]',
 		'',
 		'Combines consecutive local Arabic tafsir rows that have exact matching Arabic text.',
-		'By default, it scans visible local books_commentaries rows with lang=ar.',
+		'By default, it scans visible local books rows with type=tafsir, source=local, and lang=ar.',
 		'',
 		'Options:',
 		'  --alias <alias>     Limit to a commentary alias; can be repeated',

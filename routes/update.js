@@ -239,45 +239,6 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.id = commentaryId;
       refreshCommentaryIndexInBackground(commentaryId);
 
-    } else if (type == 'commentary_book') {
-      var commentaryBookColumns = [
-        'shortName_en', 'shortName', 'name_en', 'name',
-        'author_en', 'author', 'death', 'published_year',
-        'publisher', 'description', 'aqidah', 'size'
-      ];
-      if (!commentaryBookColumns.includes(col))
-        throw createError(400, `Invalid commentary book field '${col}'`);
-      var commentaryBookId = parseInt(ids[0], 10);
-      if (!Number.isInteger(commentaryBookId) || commentaryBookId <= 0)
-        throw createError(400, 'Invalid commentary book id');
-      if (col === 'size') {
-        status.value = Utils.trimToEmpty(status.value);
-        if (status.value && !['sm', 'md', 'lg'].includes(status.value))
-          throw createError(400, `Invalid commentary book size '${status.value}'`);
-      }
-      var commentaryBookStorage = await Books.commentaryBookStorage();
-      var beforeCommentaryBook = (await global.query(`
-        SELECT alias${commentaryBookStorage.unified ? ', legacyCommentaryBookId' : ''}
-        FROM ${commentaryBookStorage.table}
-        WHERE id=${commentaryBookId}
-        LIMIT 1`))[0];
-      var commentaryBookValueSql = (col === 'description') ? sqlPreserveWhitespace(status.value) : sql(status.value);
-      var result = await global.query(`UPDATE ${commentaryBookStorage.table} SET ${col}=${commentaryBookValueSql} WHERE id=${commentaryBookId}`);
-      if (!result || result.affectedRows < 1)
-        throw createError(404, 'Commentary book not found');
-      if (commentaryBookStorage.unified && beforeCommentaryBook && beforeCommentaryBook.legacyCommentaryBookId) {
-        await global.query(`UPDATE books_commentaries SET ${col}=${commentaryBookValueSql} WHERE id=${parseInt(beforeCommentaryBook.legacyCommentaryBookId, 10)}`);
-      }
-      await Hadith.a_reinit();
-      status.code = 200;
-      status.message = result.message;
-      try {
-        var afterCommentaryBook = (await global.query(`SELECT alias FROM ${commentaryBookStorage.table} WHERE id=${commentaryBookId} LIMIT 1`))[0];
-        await flushCommentaryBookCaches([beforeCommentaryBook && beforeCommentaryBook.alias, afterCommentaryBook && afterCommentaryBook.alias]);
-      } catch (err) {
-        debug.error(`${err.message}:\n${err.stack || ''}`);
-      }
-
     } else if (type == 'toc') {
       var result;
       var shouldRunDefaultHeadingTasks = true;
@@ -343,12 +304,28 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       }
 
     } else if (type == 'book') {
+      var bookColumns = [
+        'shortName_en', 'shortName', 'name_en',
+        'title_en', 'title', 'author', 'author_en',
+        'death', 'published_year', 'publisher',
+        'description', 'aqidah', 'size'
+      ];
+      if (!bookColumns.includes(col))
+        throw createError(400, `Invalid book field '${col}'`);
+      if (col === 'size') {
+        status.value = Utils.trimToEmpty(status.value);
+        if (status.value && !['sm', 'md', 'lg'].includes(status.value))
+          throw createError(400, `Invalid book size '${status.value}'`);
+      }
       var beforeBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
       var bookValueSql = (col === 'description') ? sqlPreserveWhitespace(status.value) : sql(status.value);
       var result = await global.query(`UPDATE books SET ${col}=${bookValueSql} WHERE id=${ids[0]}`);
       if (!result || result.affectedRows < 1)
         throw createError(404, 'Book not found');
-      await Library.reloadBooks();
+      if (isQuranCatalogBook(beforeBook))
+        await Hadith.a_reinit();
+      else
+        await Library.reloadBooks();
       status.code = 200;
       status.message = result.message;
       try {
@@ -359,6 +336,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         if (afterBook && afterBook.alias)
           bookAliases.add(afterBook.alias);
         await flushBookCaches(bookAliases);
+        if (isQuranCatalogBook(beforeBook) || isQuranCatalogBook(afterBook))
+          await flushQuranCatalogBookCaches(bookAliases);
       } catch (err) {
         debug.error(`${err.message}:\n${err.stack || ''}`);
       }
@@ -513,7 +492,11 @@ async function flushBookCaches(bookAliases) {
   }
 }
 
-async function flushCommentaryBookCaches(bookAliases) {
+function isQuranCatalogBook(book) {
+  return book && (book.type === 'tafsir' || book.type === 'trans');
+}
+
+async function flushQuranCatalogBookCaches(bookAliases) {
   var cacheDir = `${homedir()}/.hadithdb/cache`;
   var aliases = Array.from(new Set((bookAliases || []).filter(Boolean)));
   await Utils.flushCacheContaining('tafsirs');
@@ -537,13 +520,12 @@ async function commentaryIndexRowById(id) {
       0 AS book_ordinal,
       'quran' AS book_alias,
       bc.ordinal AS ordinal,
-      ${commentaryJoin.legacyIdSelect},
       ${commentaryJoin.bookIdSelect},
       bc.alias AS commentary_alias,
       bc.type AS commentary_type,
       bc.shortName AS commentary_shortName,
       bc.shortName_en AS commentary_shortName_en,
-      bc.name AS commentary_name,
+      bc.title AS commentary_name,
       bc.name_en AS commentary_name_en,
       bc.author AS commentary_author,
       bc.author_en AS commentary_author_en,
@@ -1430,7 +1412,7 @@ async function getQuranHadithSearchRows(whereClause) {
       CONCAT(b.alias, ':', h.num) AS ref,
       b.id AS book_id, b.ordinal AS book_ordinal, b.alias AS book_alias,
       b.shortName_en AS book_shortName_en, b.shortName AS book_shortName,
-      b.name_en AS book_name_en, b.name AS book_name,
+      b.name_en AS book_name_en, b.title AS book_name,
       b.author AS book_author, b.virtual AS book_virtual,
       sec.level AS level,
       ch.id AS h1_id, h.h1, ch.title_en AS h1_title_en, ch.title AS h1_title, ch.intro_en AS h1_intro_en, ch.intro AS h1_intro, ch.start AS h1_start, ch.count AS h1_count,

@@ -1,98 +1,118 @@
 # HadithDB
 
-HadithDB is an Express application and database toolkit for browsing, searching, and citing Qurʾān and ḥadīth records. The public site is hosted at <https://hadithunlocked.com>.
+HadithDB is a website for reading, searching, and citing the Qurʾān and ḥadīth. You can browse it online at <https://hadithunlocked.com>.
 
-The database stores Arabic source text, English translation fields where available, chapter/table-of-contents metadata, grading metadata, and derived search fields. Isnād and matn are split for all ḥadīth records.
+Every record keeps the original Arabic text alongside an English translation where one is available, together with chapter listings and grading information. For ḥadīth, the chain of narrators (isnād) and the report itself (matn) are stored separately so each can be read and searched on its own.
 
-## Project Status
+## What's New
 
-* Runtime: Node.js 18+
-* App entrypoint: `app.js`
-* Web server: `npm start`
-* Development server: `npm run dev`
-* Tests: `npm test`
-* Search backend: Elasticsearch indexes for `hadiths`, `toc`, and `commentaries`
-* Database backend: MySQL, configured through `~/.hadithdb/settings.json`
+Recent work has improved the reading, browsing, and search experience across the site:
 
-## Recently Added Features
+* **Reading the Qurʾān** — each surah now opens with a consistent header across the verse, commentary, and translation views. You can like, comment on, and share a passage, move more easily to the previous or next verse, and tap a word to see its meaning.
+* **Commentary and translation** — full-page commentary and translation views, tabs for switching between commentary works, hover explanations, and the option to show Arabic and English side by side. You can turn individual works on or off and choose the order they appear in.
+* **Search** — searching now covers the Qurʾān and its commentaries as well as ḥadīth, returns Qurʾān matches faster, lets you filter to commentary results, and presents cleaner highlights and a single, unified set of suggestions.
+* **My Settings** — separate starting points for ḥadīth and Qurʾān, your commentary and translation preferences remembered across the site, and bookmarked passages saved for later.
 
-Recent work has focused on making the Qurʾān and search surfaces richer, faster,
-and more tightly connected:
+## Qurʾān Commentaries and Translations
 
-* Enriched Qurʾān reading pages with tafsīr access from āyah markers, passage
-  actions, hover previews, and modal entry points.
-* Tafsīr browsing improvements, including local commentary indexing, tafsīr
-  book navigation, sticky carousel-style browsing, and clearer tafsīr passage
-  links.
-* Quran passage UX upgrades: shareable selected āyāt, previous/next navigation,
-  keyboard navigation, improved random āyah rendering, and unified DigitalKhatt
-  typography across passages, heroes, and corpus word annotations.
-* Search improvements that bring Qurʾān āyāt, headings, and tafāsīr into the
-  same search experience while keeping Qurʾān-only and commentary-only filters
-  distinct.
-* Search result refinements, including direct `Tafsīr` action links, better
-  autocomplete behavior, surah-name matching in English and Arabic, and cleaner
-  highlighting for filter-driven searches.
+The site includes the commentary (tafsīr) and translation works listed below. Each one has a short alias used in links and an English title.
 
-## Available Local Tafsir Books
+### Bilingual tafsīr
 
-Visible local tafsīr books are stored in MySQL `books_commentaries` rows where
-`source='local'` and `hidden=0`.
+| Alias | Name |
+|---|---|
+| `ibn-kathir` | Tafsir al-Quran al-Azim |
+| `jalalayn` | Tafsir al-Jalalayn |
+| `mokhtasar` | al-Mukhtasar fi Tafsir al-Quran al-Karim |
+| `muntakhab` | al-Muntakhab fi Tafsir al-Quran |
 
-Arabic:
+### Arabic tafsīr and Qurʾān companions
 
-* `irab-al-quran` - al-Jadwal fi Irab al-Quran wa-Sarfih wa-Bayanih
-* `tafsir-baghawi` - Maalim al-Tanzil fi Tafsir al-Quran
-* `tafsir-tabari` - Jami al-Bayan an Tawil Ay al-Quran
-* `tafsir-ibn-al-jawzi` - Zad al-Masir fi Ilm al-Tafsir
-* `tafsir-qurtubi` - al-Jami li-Ahkam al-Quran wa-al-Mubayyin lima Tadammana min al-Sunnah wa-Ay al-Furqan
-* `tafsir-ibn-ashur` - Tahrir al-Mana al-Sadid wa-Tanwir al-Aql al-Jadid min Tafsir al-Kitab al-Majid
-* `qiraat` - al-Jadwal fi Qira'at al-Quran
-* `irab-daas` - Irab al-Quran al-Karim
-* `ibn-adil` - al-Lubab fi Ulum al-Kitab
-* `tafsir-mathur` - Mawsuat al-Tafsir al-Mathur
-* `tafsir-suyuti` - al-Durr al-Manthur fi al-Tafsir bi-al-Mathur
-* `saadi` - Taysir al-Karim al-Rahman fi Tafsir Kalam al-Mannan
+| Alias | Name |
+|---|---|
+| `tabari` | Jami al-Bayan an Tawil Ay al-Quran |
+| `samarqandi` | Bahr al-Ulum |
+| `abu-zamanayn` | Tafsir al-Quran al-Aziz |
+| `makki` | al-Hidayah ila Bulugh al-Nihayah |
+| `mawardi` | al-Nukat wa-al-Uyun |
+| `samaani` | Tafsir al-Quran |
+| `baghawi` | Maalim al-Tanzil fi Tafsir al-Quran |
+| `zamakhshari` | al-Kashshaf an Haqaiq Ghawamid al-Tanzil |
+| `ibn-al-jawzi` | Zad al-Masir fi Ilm al-Tafsir |
+| `razi` | Mafatih al-Ghayb |
+| `qurtubi` | al-Jami li-Ahkam al-Quran wa-al-Mubayyin |
+| `baydawi` | Anwar al-Tanzil wa-Asrar al-Tawil |
+| `nasafi` | Madarik al-Tanzil wa-Haqaiq al-Tawil |
+| `ibn-juzay` | al-Tashil li-Ulum al-Tanzil |
+| `abu-hayyan` | al-Bahr al-Muhit |
+| `thalabi` | al-Kashf wa-al-Bayan an Tafsir al-Quran |
+| `ibn-adil` | al-Lubab fi Ulum al-Kitab |
+| `biqaii` | Nazm al-Durar fi Tanasub al-Ayat wa-al-Suwar |
+| `iji` | Jami al-Bayan fi Tafsir al-Quran |
+| `suyuti-t` | al-Durr al-Manthur fi al-Tafsir bi-al-Mathur |
+| `shawkani` | Fath al-Qadir |
+| `alusi` | Ruh al-Maani |
+| `qinnawji` | Fath al-Bayan fi Maqasid al-Quran |
+| `qasimi` | Mahasin al-Tawil |
+| `irab-al-quran` | al-Jadwal fi Irab al-Quran wa-Sarfih wa-Bayanih |
+| `saadi` | Taysir al-Karim al-Rahman fi Tafsir Kalam al-Mannan |
+| `ibn-ashur` | al-Tahrir wa-al-Tanwir |
+| `shanqiti` | Adwa al-Bayan fi Idah al-Quran bi-al-Quran |
+| `ibn-uthaymin` | Tafsir al-Quran al-Karim |
+| `aysar` | Aysar al-Tafasir li-Kalam al-Ali al-Kabir |
+| `muyassar` | al-Tafsir al-Muyassar |
+| `ibn-atiyah` | al-Muharrar al-Wajiz |
+| `basit` | al-Tafsir al-Basit |
+| `tadabbur-wa-amal` | al-Quran: Tadabbur wa-Amal |
+| `wajiz` | al-Tafsir al-Wajiz |
+| `mathur` | Mawsuat al-Tafsir al-Mathur |
+| `qiraat` | al-Jadwal fi Qira'at al-Quran wa-Tawjihatih |
+| `irab-daas` | Irab al-Quran al-Karim wa-Bayanuh |
+| `shawi` | Nafahat min Tafsir al-Quran al-Karim |
+| `yasir` | al-Yasir fi Tafsir al-Quran |
+| `khadiri` | al-Siraj fi Bayan Gharib al-Quran |
+| `wasit` | al-Tafsir al-Wasit li-al-Quran al-Karim |
 
-English:
+### English translations
 
-* `en-easy-tajwid` - Easy Tajwid
-* `en-tafsir-mokhtasar` - al-Mukhtasar fi Tafsir al-Quran al-Karim
-* `en-tafsir-maududi` - Tafhim al-Quran
-* `en-tafsir-jalalayn` - Tafsir al-Jalalayn
-* `en-tafsir-maarif-al-quran` - Ma'ariful Qur'an
-* `en-tafsir-tazkir-al-quran` - Tadhkir al-Quran
-* `en-tafsir-ibn-kathir` - Tafsir al-Quran al-Azim
+| Alias | Name |
+|---|---|
+| `en-khattab` | The Clear Quran |
+| `en-saheeh-intl` | The Holy Qur'an (Saheeh International) |
+| `en-hilali-khan` | Interpretation of the Meanings of the Noble Qur'an |
+| `en-bridges` | Bridges' Translation of the Ten Qira'at of the Noble Qur'an |
+| `en-taqi-usmani` | The Meanings of the Noble Qur'an with Explanatory Notes |
+| `en-itani` | Quran in English: Clear and Easy to Read |
+| `en-bewley` | The Noble Qur'an: A New Rendering of Its Meaning in English |
+| `en-study-quran` | The Study Quran: A New Translation and Commentary |
+| `en-ghali` | Towards Understanding the Ever-glorious Qur'an |
+| `en-ahmedraza` | The Holy Quran |
+| `en-wahiduddin` | The Quran: Translation and Commentary with Parallel Arabic Text |
+| `en-qaribullah` | The Holy Qur'an |
+| `en-busool` | The Wise Qur'an: These Are the Verses of the Wise Book |
+| `en-tahir-ul-qadri` | Irfan-ul-Quran |
+| `en-rowwad` | Explanation of the Meanings of the Noble Quran |
+| `en-asad` | The Message of the Qur'an |
+| `en-sarwar` | The Holy Qur'an: The Arabic Text and English Translation |
+| `en-daryabadi` | Tafseer-e-Majidi |
+| `en-shakir` | The Qur'an |
+| `en-pickthall` | The Meaning of the Glorious Koran |
+| `en-qarai` | The Qur'an with an English Paraphrase |
 
-## Elasticsearch Indexing
+### English tafsīr
 
-Rebuild search indexes with:
+| Alias | Name |
+|---|---|
+| `en-maududi` | Tafhim al-Quran |
+| `en-maarif-al-quran` | Maarif al-Quran |
+| `en-tazkir-al-quran` | Tadhkir al-Quran |
+| `en-easy-tajwid` | Easy Tajwid |
 
-* `node bin/buildSearchIndex.js --all`
-* `node bin/buildSearchIndex.js --book-id 16`
-* `node bin/buildSearchIndex.js --from-book-id 16`
-* `node bin/buildSearchIndex.js --all --toc-only`
-* `node bin/buildSearchIndex.js --book-id 16 --toc-only`
+## Books and Collections
 
-Missing Elasticsearch indexes are created from the checked-in mappings. Existing indexes are never deleted. `--all` reindexes every book independently. `--book-id` reindexes only the requested book id. Use `--from-book-id` to reindex that book id and every later book id. Add `--toc-only` to rebuild only the `toc` index. Hidden books are not indexed, and virtual books index only table-of-contents/search collection data.
+The catalog holds 23 books and collections in all: 20 source books and 3 themed collections drawn from them. The source books together hold 203,840 records, and the collections link to another 4,755.
 
-See [bin/elasticsearch-cron.md](bin/elasticsearch-cron.md) for scheduled indexing notes.
-
-Rebuild the separate local Quran commentaries index with:
-
-* `npm run build:commentaries-index`
-
-This indexes visible `books_commentaries` rows with `source='local'` and their
-`hadiths_commentary` passages into Elasticsearch `commentaries`. The rebuild
-removes stale commentary documents before indexing the current MySQL rows.
-MySQL is the authoritative source for local commentary content; no bundled
-commentary source files are required at runtime or during index rebuilds.
-
-## Available Books and Collections
-
-The current public catalog contains 23 available books and collections: 20 source books plus 3 virtual collections. Source books contain 203,840 records, and virtual collections contain 4,755 linked records.
-
-Counts below come from the live MySQL `books`, `hadiths`, and `hadiths_virtual` tables on 2026-04-26. `English` shows records with non-empty English body text. `Graded` shows records with a grader id.
+In the table below, **Records** is the number of entries in each work, **English** is how many of those have an English translation, and **Graded** is how many carry an authenticity grading. The counts were last updated on 2026-04-26.
 
 | ID | Alias | Name | Type | Records | English | Graded | Graders |
 |---:|---|---|---|---:|---:|---:|---|

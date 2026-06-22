@@ -4,13 +4,13 @@
 		if (!currentBookAlias && typeof req !== 'undefined' && req.path)
 			currentBookAlias = req.path.split('/').filter(Boolean)[0] || '';
 		var bookDeathLabel = function (book) {
-			if (!book || !book.yearOfDeath)
+			if (!book || !book.death)
 				return '';
-			return `d. ${book.yearOfDeath} AH`;
+			return `d. ${book.death} AH`;
 		};
 			var bookTooltip = function (book) {
 				return [
-					book.name_en || book.name || book.shortName_en || book.shortName || book.alias,
+					book.name_en || book.title || book.shortName_en || book.shortName || book.alias,
 					book.author,
 					bookDeathLabel(book),
 					book.published_year ? `Pub. ${book.published_year}` : '',
