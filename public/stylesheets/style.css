@@ -503,6 +503,13 @@ nav .nav-link[aria-current="page"] {
 	color: var(--c-accent);
 }
 
+.book-catalog-tabs .nav-link.active,
+.tafsir-book-tabs .nav-link.active {
+	text-decoration: underline;
+	text-decoration-thickness: 0.12em;
+	text-underline-offset: 0.35em;
+}
+
 .book-catalog-section-toggle {
 	align-items: center;
 	background: transparent;
@@ -2270,7 +2277,7 @@ del em strong {
 
 .tafsir-book-title-line {
 	font-size: 1rem;
-	font-weight: 700;
+	font-weight: 400;
 	line-height: 1.28;
 	min-width: 0;
 }
@@ -3144,6 +3151,29 @@ del em strong {
 .settings-preference-tile .form-check-input {
 	height: .9rem;
 	width: 1.65rem;
+}
+
+.translation-preference-heart {
+	color: var(--c-gray-mid);
+	font-size: .95rem;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.translation-preference-heart:hover,
+.translation-preference-heart:focus,
+.translation-preference-heart.is-preferred {
+	color: var(--c-comment-heart);
+	text-decoration: none;
+}
+
+.translation-preference-heart:disabled {
+	color: var(--c-gray-mid);
+	opacity: .45;
+}
+
+.settings-preference-tile .translation-preference-heart {
+	font-size: .9rem;
 }
 
 .settings-preference-tile.is-disabled {

@@ -4380,7 +4380,7 @@ function initQuranAyahSelector(root) {
 			delay: 180,
 			minLength: 2,
 			source: function (request, response) {
-				$.getJSON(quranApiPath('/autocomplete'), buildSearchAutocompleteParams($input, request.term))
+				$.getJSON(searchAutocompletePath($input), buildSearchAutocompleteParams($input, request.term))
 					.done(response)
 					.fail(function () {
 						response([]);
@@ -4459,16 +4459,34 @@ function buildSearchAutocompleteParams($input, term) {
 		{ name: 'q', value: term },
 		{ name: 'limit', value: 10 }
 	];
-	var $filters = $input.closest('form').find('input[name=b]').filter(function () {
-		return this.type === 'hidden' || this.checked;
-	});
-	$filters.each(function () {
-		params.push({ name: 'b', value: this.value });
+	quranSearchBookFilterParams($input.closest('form'), isQuranSearchInput($input)).forEach(function (field) {
+		params.push(field);
 	});
 	$input.closest('form').find('input[name=tafsir]:checked').each(function () {
 		params.push({ name: 'tafsir', value: this.value });
 	});
 	return $.param(params);
+}
+
+function searchAutocompletePath($input) {
+	return quranApiPath(isQuranSearchInput($input) ? '/quran/autocomplete' : '/autocomplete');
+}
+
+function isQuranSearchInput($input) {
+	if ($input.hasClass('quran-passage-search'))
+		return true;
+	return isQuranSearchForm($input.closest('form'));
+}
+
+function isQuranSearchForm($form) {
+	var action = ($form.attr('action') || '').toString();
+	if (!action)
+		return false;
+	try {
+		return new URL(action, window.location.origin).pathname === '/quran';
+	} catch (err) {
+		return action.split('?')[0] === '/quran';
+	}
 }
 
 function submitQuranPassageSearch($input) {
@@ -4486,15 +4504,27 @@ function submitQuranPassageSearch($input) {
 			params.push({ name: 'tafsir', value: this.value });
 		});
 	} else {
-		var $filters = $form.find('input[name=b]').filter(function () {
-			return this.type === 'hidden' || this.checked;
-		});
-		$filters.each(function () {
-			params.push({ name: 'b', value: this.value });
+		quranSearchBookFilterParams($form, true).forEach(function (field) {
+			params.push(field);
 		});
 	}
 	window.location.href = `${searchPath}?${$.param(params)}`;
 	return true;
+}
+
+function quranSearchBookFilterParams($form, useQuranDefaults) {
+	var params = [];
+	var $filters = $form.find('input[name=b]').filter(function () {
+		return this.type === 'hidden' || this.checked;
+	});
+	$filters.each(function () {
+		params.push({ name: 'b', value: this.value });
+	});
+	if (useQuranDefaults && params.length < 1) {
+		params.push({ name: 'b', value: 'quran' });
+		params.push({ name: 'b', value: 'tafsir' });
+	}
+	return params;
 }
 
 function initTafsirSearchFilterPills(root) {

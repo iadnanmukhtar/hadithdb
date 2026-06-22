@@ -25,6 +25,8 @@
     var isTitledArea = requestPath === '/titled' || requestPath.indexOf('/titled/') === 0;
     var isSettingsArea = requestPath === '/settings' || requestPath.indexOf('/settings/') === 0
       || requestPath === '/quran/settings' || requestPath.indexOf('/quran/settings/') === 0;
+    if (isQuranArea)
+      navSearchAction = utils.quranUrl(req, '/quran');
     var settingsHref = isQuranArea || requestPath.indexOf('/quran/settings') === 0
       ? utils.quranUrl(req, '/quran/settings')
       : utils.urlFor(req, '/settings');

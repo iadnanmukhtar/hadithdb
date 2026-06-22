@@ -138,6 +138,8 @@ router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, n
     var quranSearchProxy = req.path.indexOf('/quran/') === 0;
     if (!quranSearchProxy)
       bookFilters = stripQuranTafsirBookFilters(bookFilters);
+    else if (bookFilters.length < 1)
+      bookFilters = ['quran', 'commentaries'];
     var tafsirFilters = quranSearchProxy ? normalizeRequestTafsirFilters(req) : [];
     if (tafsirFilters.length > 0)
       bookFilters = ['commentaries'];

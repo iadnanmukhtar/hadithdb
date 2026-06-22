@@ -565,6 +565,47 @@
       return quranUrl(`/quran/translations/1/1${query}`);
     };
 
+    const translationPreferenceAlias = (book) => {
+      return book && book.source === 'default' ? '' : (book && book.alias || '').toString();
+    };
+
+    const renderTranslationPreferenceButton = (book, isDisabled, label) => {
+      const alias = translationPreferenceAlias(book);
+      const isPreferred = (currentSettings.translations.preferredAlias || '') === alias;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `translation-preference-heart btn btn-link p-0${isPreferred ? ' is-preferred' : ''}`;
+      button.innerHTML = `<i class="bi ${isPreferred ? 'bi-heart-fill' : 'bi-heart'}" aria-hidden="true"></i>`;
+      button.title = isPreferred
+        ? `${label} is the default hero translation`
+        : `Use ${label} as the default hero translation`;
+      button.setAttribute('aria-label', button.title);
+      button.setAttribute('aria-pressed', isPreferred ? 'true' : 'false');
+      button.disabled = !currentUser || saving || isDisabled;
+      button.addEventListener('mousedown', event => event.stopPropagation());
+      button.addEventListener('click', async event => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (button.disabled) return;
+        const previousSettings = normalizeSettings(currentSettings);
+        currentSettings = normalizeSettings({
+          ...currentSettings,
+          translations: { ...currentSettings.translations, preferredAlias: alias }
+        });
+        updateTranslationStatus();
+        renderTranslationList(currentTranslationBooks);
+        try {
+          await saveSettings();
+          renderTranslationList(currentTranslationBooks);
+        } catch (err) {
+          currentSettings = previousSettings;
+          renderTranslationList(currentTranslationBooks);
+          if (window.toastr) toastr.error(err.message || 'Unable to save default translation.', 'Settings');
+        }
+      });
+      return button;
+    };
+
     const renderTafsirRow = (book, disabled) => {
       const row = document.createElement('div');
       const isDisabled = disabled.has(book.alias);
@@ -782,6 +823,7 @@
 
       if (!book.builtinDefault)
         controls.appendChild(dragHandle);
+      controls.appendChild(renderTranslationPreferenceButton(book, isDisabled, shortName));
       const toggleWrap = document.createElement('span');
       toggleWrap.className = 'form-check form-switch m-0';
       toggleWrap.appendChild(toggle);
