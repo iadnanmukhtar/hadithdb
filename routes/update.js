@@ -19,6 +19,7 @@ const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
+const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
 const { Heading, Item, Library } = require('../lib/Model');
 
 const router = express.Router();
@@ -208,6 +209,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         runHadithPostUpdateTasks(ids[0], {
           forceKnowledge: isArabicKnowledgeSourceColumn(col)
         });
+        VirtualHadithSnapshot.queueHadith(ids[0]);
       }
 
     } else if (type == 'tags') {
@@ -298,6 +300,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         if (shouldRunDefaultHeadingTasks) {
           await reindexHeadingSubtreeByHeadingId(ids[0]);
           await invalidateHeadingCachesByHeadingId(ids[0]);
+          VirtualHadithSnapshot.queueHeading(ids[0]);
         }
       } catch (err) {
         debug.error(`${err.message}:\n${err.stack || ''}`);
@@ -338,6 +341,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         await flushBookCaches(bookAliases);
         if (isQuranCatalogBook(beforeBook) || isQuranCatalogBook(afterBook))
           await flushQuranCatalogBookCaches(bookAliases);
+        if ((beforeBook && beforeBook.virtual == 1) || (afterBook && afterBook.virtual == 1))
+          VirtualHadithSnapshot.queueBook(ids[0]);
       } catch (err) {
         debug.error(`${err.message}:\n${err.stack || ''}`);
       }
@@ -380,6 +385,9 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
       } else {
         // hadith virtual
+        var curr = (await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`))[0];
+        if (!curr)
+          throw new Error("Hadith not found");
         result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
 
         if (col === 'note_en' && Utils.isFalsey(status.value)) {

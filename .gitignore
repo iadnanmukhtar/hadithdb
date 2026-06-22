@@ -4,6 +4,7 @@
 *.backup
 *.log
 .env
+.claude
 node_modules
 coverage
 data/*.csv

@@ -1483,7 +1483,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       if (!book.virtual)
         results = await global.query(`SELECT * from v_hadiths WHERE book_id=${book.id} ORDER BY ordinal`);
       else
-        results = await global.query(`SELECT * from v_hadiths_virtual WHERE book_id=${book.id} ORDER BY ordinal`);
+        results = await global.query(`SELECT * from v_hadiths_virtual_snapshot WHERE book_id=${book.id} ORDER BY ordinal`);
     } else {
       results = await Library.instance.findBook(req.params.bookAlias).getChapters();
       if (cacheableHtml) {
