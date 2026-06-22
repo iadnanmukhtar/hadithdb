@@ -13,6 +13,10 @@ const Index = require('../lib/Index');
 
 (async () => {
 	try {
+		// Populate the in-memory surah cache so toc indexing can attach surah
+		// search aliases (Index.appendQuranSurahSearchAliases -> Surahs.find).
+		// This entry point does not call Library.init, so load explicitly.
+		await require('../lib/Surahs').load();
 		var indexNames = getIndexNames(options);
 		var books;
 		for (var i = 0; i < indexNames.length; i++)

@@ -38,10 +38,9 @@
 		}
 		return normalize(a) === normalize(b);
 	}
-	const surahNameEn = suggestion.surah_name_en ? `Surat ${suggestion.surah_name_en}` : titleEn.replace(/^Surah\b/, 'Surat');
-	const surahNameAr = suggestion.surah_name_ar ? `سورة ${suggestion.surah_name_ar}` : titleAr;
+	const surahNameEn = suggestion.surah_name_en ? `Sūrat ${suggestion.surah_name_en}` : titleEn.replace(/^Surah\b/, 'Sūrat');
+	const surahNameAr = suggestion.surah_name_ar ? `سُورَة ${suggestion.surah_name_ar}` : titleAr;
 	const surahNum = parseInt((suggestion.ref || suggestion.alias || '').toString().match(/(?:surah:|quran:)(\d+)/)?.[1] || (suggestion.url || '').toString().match(/\/quran\/(\d+)/)?.[1], 10);
-	const surahRef = Number.isInteger(surahNum) ? `quran:${surahNum}:1` : alias;
 	const surahLabelEn = Number.isInteger(surahNum) ? `Surah ${surahNum}` : '';
 	const surahLabelAr = Number.isInteger(surahNum) ? `سورة ${arabic.toArabicDigits(surahNum)}` : '';
 	const surahMetaEn = [suggestion.revelation_en, suggestion.ayah_count ? `${suggestion.ayah_count} Ayat` : ''].filter(Boolean).join(' | ');
@@ -92,8 +91,7 @@
 			<% if (suggestion.name_en && !sameDisplayText(suggestion.name_en, suggestion.shortName_en || suggestion.title_en)) { %><aside class="title search-suggestion-book-detail"><%- suggestion.name_en %></aside><% } %>
 			<% if (authorLineEn) { %><aside class="title text-muted search-suggestion-book-author"><%- authorLineEn %></aside><% } %>
 		<% } else if (isSurah) { %>
-			<b><a href="<%= href %>"><%- surahRef %></a></b>
-			<aside class="title search-suggestion-book-detail"><strong><%- surahNameEn %></strong></aside>
+			<b><a href="<%= href %>"><%- surahNameEn %></a></b>
 			<% if (surahLabelEn) { %><aside class="title search-suggestion-book-detail"><%- surahLabelEn %></aside><% } %>
 			<% if (surahMetaEn) { %><aside class="title text-muted search-suggestion-book-author"><%- surahMetaEn %></aside><% } %>
 		<% } else { %>
@@ -116,8 +114,7 @@
 			<% if (suggestion.name && !sameDisplayText(suggestion.name, suggestion.shortName || suggestion.title_ar)) { %><aside class="title search-suggestion-book-detail"><%- suggestion.name %></aside><% } %>
 			<% if (authorLineAr) { %><aside class="title text-muted search-suggestion-book-author"><%- authorLineAr %></aside><% } %>
 		<% } else if (isSurah) { %>
-			<b><a href="<%= href %>"><%- surahRef %></a></b>
-			<aside class="title search-suggestion-book-detail"><strong><%- surahNameAr %></strong></aside>
+			<b><a href="<%= href %>"><%- surahNameAr %></a></b>
 			<% if (surahLabelAr) { %><aside class="title search-suggestion-book-detail"><%- surahLabelAr %></aside><% } %>
 			<% if (surahMetaAr) { %><aside class="title text-muted search-suggestion-book-author"><%- surahMetaAr %></aside><% } %>
 		<% } else { %>
