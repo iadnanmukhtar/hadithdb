@@ -538,7 +538,7 @@ function endPool() {
 
 async function importTafsir(connection, alias, quran) {
 	const config = TAFSIRS[alias];
-	const passages = loadPassages(config, quran);
+	let passages = loadPassages(config, quran);
 	console.log(`${options.dryRun ? 'Checking' : 'Loading'} ${passages.length} '${alias}' passages...`);
 	if (options.dryRun)
 		return;

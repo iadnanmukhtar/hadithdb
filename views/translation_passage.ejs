@@ -135,6 +135,7 @@
         page: page,
         selectedAyahs: ayahs,
         ayahHref: utils.quranUrl(req, `/quran:${ref}`),
+        fixedDefaultTranslation: true,
         toolbar: {
           selectedAyahModalIndex: 0,
           selectedAyahId: ayahs[0] && ayahs[0].id,
@@ -150,7 +151,6 @@
         passage: ayahs,
         selectedAyahs: ayahs,
         translationInstance: 'passage',
-        hideDefaultTranslation: true,
         translationSettingsHref: utils.quranUrl(req, '/quran/settings')
       }); %>
 

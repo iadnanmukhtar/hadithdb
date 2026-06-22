@@ -2675,6 +2675,8 @@ function initQuranPreferredTranslationDisplays(root) {
 	var scope = root || document;
 	var initializedAt = Date.now();
 	var targets = Array.from(scope.querySelectorAll('[data-quran-translation-target="1"]')).filter(function (target) {
+		if (target.getAttribute('data-quran-fixed-default-translation') === '1')
+			return false;
 		if (target.dataset.quranTranslationDisplayBound === 'true')
 			return false;
 		target.dataset.quranTranslationDisplayBound = 'true';
