@@ -102,8 +102,11 @@
               <% var showSearchFilterPills = q && (locals.searchFilterPills || []).length > 0; %>
               <div class="input-group mb-1">
                 <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" value="<%= q %>" placeholder="<%= isQuranSearchProxy ? 'Search the Qurʿān or tafāsīr...' : 'Search hadīth...' %>">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="bi bi-book"></i>
+                <button class="btn btn-outline-secondary dropdown-toggle search-filter-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-search-filter-toggle>
+                  <span class="search-filter-icon-wrap">
+                    <i class="bi bi-book"></i>
+                    <span class="search-filter-count-badge badge rounded-pill d-none" data-search-filter-count>0</span>
+                  </span>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
                   <% if (isQuranSearchProxy) { %>
@@ -116,7 +119,6 @@
                     <label class="form-check-label">Tafsir</label>
                   </div>
                   <% if ((locals.tafsirFilterOptions || []).length > 0) { %>
-                  <div class="dropdown-header">Tafsir Books</div>
                   <div class="filter-list-search-wrap px-3 pb-2" data-filter-list-search>
                     <input type="search" class="form-control form-control-sm filter-list-search" placeholder="Find book" aria-label="Find tafsir book">
                   </div>
@@ -128,7 +130,6 @@
                   <% }); %>
                   <% } %>
                   <% } else { %>
-                  <div class="dropdown-header">Hadith Books</div>
                   <div class="filter-list-search-wrap px-3 pb-2" data-filter-list-search>
                     <input type="search" class="form-control form-control-sm filter-list-search" placeholder="Find book" aria-label="Find hadith book">
                   </div>
@@ -148,7 +149,12 @@
                     <input class="form-check-input" type="checkbox" name="b" value="sixbooks" <%= (b.indexOf('sixbooks') >= 0) ? 'checked' : '' %>>
                     <label class="form-check-label">Kutub Sittah</label>
                   </div>
-                  <% global.books.filter(b => {return !b.virtual && !b.hidden && b.alias !== 'quran';}).forEach(bk => { %>
+                  <% global.books.filter(b => {
+                    return !b.virtual
+                      && !b.hidden
+                      && b.alias !== 'quran'
+                      && (b.type || b.book_type || b.book_model || 'hadith') === 'hadith';
+                  }).sort((a, b) => Number(a.ordinal || 0) - Number(b.ordinal || 0)).forEach(bk => { %>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
                     <label class="form-check-label"><%=bk.shortName_en%></label>

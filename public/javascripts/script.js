@@ -4613,16 +4613,13 @@ function quranSearchBookFilterParams($form, useQuranDefaults) {
 
 function initTafsirSearchFilterPills(root) {
 	var $root = $(root || document);
-	$root.find('input[name=tafsir]').each(function () {
+	$root.find('[data-search-filter-toggle], .quran-passage-filter-toggle').each(function () {
 		updateSearchFilterIcon($(this).closest('form'));
 	});
 	if ($(document).data('tafsirSearchFilterPillsBound'))
 		return;
 	$(document).data('tafsirSearchFilterPillsBound', true);
-	$(document).on('change', 'input[name=tafsir]', function () {
-		updateSearchFilterIcon($(this).closest('form'));
-	});
-	$(document).on('change', '.quran-tafsir-search-filter input[name=b]', function () {
+	$(document).on('change', 'input[name=tafsir], select[name=tafsir], input[name=b]', function () {
 		updateSearchFilterIcon($(this).closest('form'));
 	});
 	$(document).on('click', '[data-tafsir-filter-clear]', function (event) {
@@ -4650,12 +4647,14 @@ function initTafsirSearchFilterPills(root) {
 			params.getAll('b').forEach(function (filterValue) {
 				filterValue.toString().split(',').forEach(function (filter) {
 					filter = filter.trim();
-					if (filter && normalizeSearchBookFilterValue(filter) !== removeValue)
-						remainingFilters.push(filter);
+					expandSearchBookFilterValue(filter).forEach(function (expandedFilter) {
+						if (expandedFilter && normalizeSearchBookFilterValue(expandedFilter) !== removeValue)
+							remainingFilters.push(expandedFilter);
+					});
 				});
 			});
 			params.delete('b');
-			remainingFilters.forEach(function (filter) {
+			Array.from(new Set(remainingFilters)).forEach(function (filter) {
 				params.append('b', filter);
 			});
 			if (this.dataset.removeTafsir === '1')
@@ -4681,6 +4680,17 @@ function normalizeSearchBookFilterValue(value) {
 	return value === 'tafsir' ? 'commentaries' : value;
 }
 
+function expandSearchBookFilterValue(value) {
+	value = normalizeSearchBookFilterValue(value);
+	if (value === 'sahihayn')
+		return ['bukhari', 'muslim'];
+	if (value === 'kutubarbaah')
+		return ['abudawud', 'tirmidhi', 'nasai', 'ibnmajah'];
+	if (value === 'sixbooks')
+		return ['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah'];
+	return value ? [value] : [];
+}
+
 function navigateSearchFormWithoutEmptyTafsir($form) {
 	var params = [];
 	$form.serializeArray().forEach(function (field) {
@@ -4691,20 +4701,34 @@ function navigateSearchFormWithoutEmptyTafsir($form) {
 }
 
 function updateSearchFilterIcon($form) {
-	var active = false;
+	var activeFilterCount = searchFilterCount($form);
+	var active = activeFilterCount > 0;
+	$form.find('[data-search-filter-count]').each(function () {
+		$(this).toggleClass('d-none', !active).text(activeFilterCount);
+	});
+	$form.find('[data-search-filter-toggle] .search-filter-icon-wrap .bi').each(function () {
+		$(this).toggleClass('d-none', active);
+		this.classList.toggle('bi-book-fill', false);
+		this.classList.toggle('bi-book', true);
+	});
+}
+
+function searchFilterCount($form) {
+	var activeFilters = [];
+	$form.find('input[name=b]').each(function () {
+		if ((this.type === 'hidden' || this.checked) && (this.value || '').trim())
+			activeFilters.push(`b:${normalizeSearchBookFilterValue(this.value)}`);
+	});
 	$form.find('input[name=tafsir]').each(function () {
-		if (this.checked)
-			active = true;
+		if (this.checked && (this.value || '').trim())
+			activeFilters.push(`tafsir:${this.value}`);
 	});
-	$form.find('.quran-tafsir-search-filter input[name=b]').each(function () {
-		if (this.checked)
-			active = true;
+	$form.find('select[name=tafsir]').each(function () {
+		var value = ($(this).val() || '').toString().trim();
+		if (value)
+			activeFilters.push(`tafsir:${value}`);
 	});
-	var $icon = $form.find('.quran-passage-filter-toggle .bi').first();
-	if (!$icon.length)
-		return;
-	$icon.toggleClass('bi-book-fill', active);
-	$icon.toggleClass('bi-book', !active);
+	return Array.from(new Set(activeFilters)).length;
 }
 
 function initDropdownFilterSearch(root) {

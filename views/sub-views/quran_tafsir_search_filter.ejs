@@ -31,8 +31,11 @@
   });
 %>
 <% if (searchTafsirOptions.length > 0) { %>
-  <button class="btn btn-outline-primary dropdown-toggle quran-passage-filter-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Search filters" aria-label="Search filters">
-    <i class="bi bi-book<%= selectedSearchTafsirAliases.length > 0 ? '-fill' : '' %>"></i>
+  <button class="btn btn-outline-primary dropdown-toggle quran-passage-filter-toggle search-filter-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Search filters" aria-label="Search filters" data-search-filter-toggle>
+    <span class="search-filter-icon-wrap">
+      <i class="bi bi-book<%= selectedSearchTafsirAliases.length > 0 ? '-fill' : '' %>"></i>
+      <span class="search-filter-count-badge badge rounded-pill d-none" data-search-filter-count>0</span>
+    </span>
   </button>
   <div class="dropdown-menu dropdown-menu-end quran-tafsir-search-filter">
     <div class="form-check">
@@ -43,7 +46,6 @@
       <input class="form-check-input" type="checkbox" name="b" value="tafsir" <%= tafsirChecked ? 'checked' : '' %>>
       <label class="form-check-label">Tafsir</label>
     </div>
-    <div class="dropdown-header">Tafsir Books</div>
     <div class="filter-list-search-wrap px-3 pb-2" data-filter-list-search>
       <input type="search" class="form-control form-control-sm filter-list-search" placeholder="Find book" aria-label="Find tafsir book">
     </div>

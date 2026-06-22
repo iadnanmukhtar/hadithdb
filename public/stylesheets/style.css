@@ -1140,6 +1140,11 @@ nav .nav-link[aria-current="page"] {
 	overflow-y: scroll;
 }
 
+.search .dropdown-menu,
+.quran-tafsir-search-filter {
+	max-height: min(32rem, 72vh);
+}
+
 .site-navbar .dropdown-menu {
 	z-index: 1002;
 }
@@ -2107,6 +2112,28 @@ del em strong {
 
 .quran-tafsir-search-filter {
 	min-width: 16rem;
+}
+
+.search-filter-toggle {
+	position: relative;
+}
+
+.search-filter-icon-wrap {
+	align-items: center;
+	display: inline-flex;
+	justify-content: center;
+	line-height: 1;
+	min-width: 1.35rem;
+}
+
+.search-filter-count-badge {
+	background-color: var(--c-danger);
+	border: 2px solid #fff;
+	color: #fff;
+	font-size: .68rem;
+	line-height: 1;
+	min-width: 1.35rem;
+	padding: .2rem .36rem;
 }
 
 .quran-tafsir-search-filter .form-select {

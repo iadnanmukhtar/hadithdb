@@ -7,6 +7,7 @@
 	const type = suggestion.suggestion_type || suggestion.type || 'Result';
 	const isBook = type === 'Book';
 	const isTafsir = type === 'Tafsir';
+	const isTranslation = type === 'Translation';
 	const isSurah = type === 'Surah';
 	const alias = suggestion.alias || suggestion.ref || suggestion.url || titleEn;
 	const aliasAr = suggestion.alias_ar || suggestion.shortName || titleAr || alias;
@@ -85,7 +86,7 @@
 			<% if (bookShortNameEn) { %><aside class="title search-suggestion-book-detail"><strong><%- bookShortNameEn %></strong></aside><% } %>
 			<% if (bookFullNameEn && !sameDisplayText(bookFullNameEn, bookShortNameEn)) { %><aside class="title search-suggestion-book-detail"><%- bookFullNameEn %></aside><% } %>
 			<% if (authorLineEn) { %><aside class="title text-muted search-suggestion-book-author"><%- authorLineEn %></aside><% } %>
-		<% } else if (isTafsir) { %>
+		<% } else if (isTafsir || isTranslation) { %>
 			<b><a href="<%= href %>"><%- alias %></a></b>
 			<% if (suggestion.shortName_en || suggestion.title_en) { %><aside class="title search-suggestion-book-detail"><strong><%- suggestion.shortName_en || suggestion.title_en %></strong></aside><% } %>
 			<% if (suggestion.name_en && !sameDisplayText(suggestion.name_en, suggestion.shortName_en || suggestion.title_en)) { %><aside class="title search-suggestion-book-detail"><%- suggestion.name_en %></aside><% } %>
@@ -108,7 +109,7 @@
 			<% if (bookShortNameAr) { %><aside class="title search-suggestion-book-detail"><strong><%- bookShortNameAr %></strong></aside><% } %>
 			<% if (bookFullNameAr && !sameDisplayText(bookFullNameAr, bookShortNameAr)) { %><aside class="title search-suggestion-book-detail"><%- bookFullNameAr %></aside><% } %>
 			<% if (authorLineAr) { %><aside class="title text-muted search-suggestion-book-author"><%- authorLineAr %></aside><% } %>
-		<% } else if (isTafsir) { %>
+		<% } else if (isTafsir || isTranslation) { %>
 			<b><a href="<%= href %>"><%- tafsirAliasAr %></a></b>
 			<% if (suggestion.shortName || suggestion.title_ar) { %><aside class="title search-suggestion-book-detail"><strong><%- suggestion.shortName || suggestion.title_ar %></strong></aside><% } %>
 			<% if (suggestion.name && !sameDisplayText(suggestion.name, suggestion.shortName || suggestion.title_ar)) { %><aside class="title search-suggestion-book-detail"><%- suggestion.name %></aside><% } %>
