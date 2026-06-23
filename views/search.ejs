@@ -200,21 +200,6 @@
       </div>
       <% } %>
       
-      <% if (results.length > 0) { %>
-      <div class="row mb-2 pagination">
-        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
-          <% if (page.prev) { %>
-          <a class="pagination-nav-link" rel="prev" href="<%= page.prev %>" title="<%= page.prev %>"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev</span></a>
-          <% } %>
-        </div>
-        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
-          <% if (page.next) { %>
-            <a class="pagination-nav-link" rel="next" href="<%= page.next %>" title="<%= page.next %>"><span class="pagination-nav-label">Next&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
-            <% } %>
-          </div>
-      </div>
-      <% } %>
-      
         <% for (var i = 0; i < results.length; i++) { 
         var main = !q; %>
         
@@ -257,21 +242,6 @@
         
         <% } %>
         
-      <% if (results.length > 0) { %>
-      <div class="row mb-2 pagination">
-        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
-          <% if (page.prev) { %>
-          <a class="pagination-nav-link" rel="prev" href="<%= page.prev %>" title="<%= page.prev %>"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev</span></a>
-          <% } %>
-        </div>
-        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
-          <% if (page.next) { %>
-            <a class="pagination-nav-link" rel="next" href="<%= page.next %>" title="<%= page.next %>"><span class="pagination-nav-label">Next&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
-            <% } %>
-          </div>
-      </div>
-      <% } %>
-      
     </main>
   </div>
   

@@ -1,4 +1,66 @@
 <%
+  var mobileHeading = page && page.context ? page.context.heading : null;
+  var mobileHeadingPage = mobileHeading && mobileHeading.page ? mobileHeading.page : {};
+  var mobileIsQuranPassageContext = page
+    && page.context
+    && page.context.book
+    && page.context.book.alias === 'quran'
+    && page.context.passage;
+
+  function mobileHeadingLabel(direction, heading) {
+    if (!heading)
+      return direction === 'Prev' ? 'Previous' : 'Next';
+    if (mobileIsQuranPassageContext) {
+      if (heading.level == 1)
+        return `${direction}: §${heading.h1}`;
+      if (heading.level == 2)
+        return `${direction}: §${heading.h1}.${heading.h2}`;
+    }
+    var pageType = page && page.type ? page.type : '';
+    if (heading.level == 1)
+      return `${direction}${pageType}: ${heading.book.shortName_en} ${heading.h1}`;
+    if (heading.level == 2)
+      return `${direction}${pageType}: ${heading.book.shortName_en} §${heading.h1}.${heading.h2}`;
+    return direction === 'Prev' ? 'Previous' : 'Next';
+  }
+
+  if (page && mobileHeading && !page.prev) {
+    page.type = '';
+    if (mobileHeadingPage.hasPrev) {
+      page.type = ' Page';
+      page.prevHeading = mobileHeading;
+      page.prev = `/${mobileHeading.path}?o=${mobileHeadingPage.prevOffset}`;
+      if (typeof req !== 'undefined' && req.query && req.query.passage != undefined)
+        page.prev += '&passage';
+    } else if (mobileHeading.prev) {
+      page.prevHeading = mobileHeading.prev;
+      page.prev = `/${page.prevHeading.path}`;
+      if (typeof req !== 'undefined' && req.query && req.query.passage != undefined)
+        page.prev += '?passage';
+    }
+    if (page.prev)
+      page.prevTitle = mobileHeadingLabel('Prev', page.prevHeading);
+  }
+
+  if (page && mobileHeading && !page.next) {
+    if (!page.type)
+      page.type = '';
+    if (mobileHeadingPage.hasNext) {
+      page.type = ' Page';
+      page.nextHeading = mobileHeading;
+      page.next = `/${mobileHeading.path}?o=${mobileHeadingPage.nextOffset}`;
+      if (typeof req !== 'undefined' && req.query && req.query.passage != undefined)
+        page.next += '&passage';
+    } else if (mobileHeading.next) {
+      page.nextHeading = mobileHeading.next;
+      page.next = `/${page.nextHeading.path}`;
+      if (typeof req !== 'undefined' && req.query && req.query.passage != undefined)
+        page.next += '?passage';
+    }
+    if (page.next)
+      page.nextTitle = mobileHeadingLabel('Next', page.nextHeading);
+  }
+
   var mobilePrev = typeof prev !== 'undefined' ? prev : page.prev;
   var mobileNext = typeof next !== 'undefined' ? next : page.next;
   var mobilePrevTitle = typeof prevTitle !== 'undefined' ? prevTitle : (page.prevTitle || 'Previous');
@@ -21,8 +83,7 @@
     mobileHomeHref = mobileIsQuran ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
 %>
 
-<% if (mobilePrev || mobileNext) { %>
-<nav class="mobile-bottom-nav" aria-label="Mobile page navigation">
+<nav class="mobile-bottom-nav" aria-label="Page navigation">
   <button type="button" class="mobile-bottom-nav-item" onclick="history.back()" title="Back" aria-label="Back">
     <span class="bi bi-arrow-left-short mobile-bottom-nav-icon" aria-hidden="true"></span>
     <span class="mobile-bottom-nav-label">Back</span>
@@ -31,6 +92,14 @@
     <span class="bi bi-house mobile-bottom-nav-icon" aria-hidden="true"></span>
     <span class="mobile-bottom-nav-label">Home</span>
   </a>
+  <div class="mobile-bottom-nav-font-controls" aria-label="Font size controls">
+    <button type="button" class="mobile-bottom-nav-font-btn" data-content-font-size-decrease title="Decrease font size" aria-label="Decrease font size">
+      <span aria-hidden="true">A-</span>
+    </button>
+    <button type="button" class="mobile-bottom-nav-font-btn" data-content-font-size-increase title="Increase font size" aria-label="Increase font size">
+      <span aria-hidden="true">A+</span>
+    </button>
+  </div>
   <% if (mobilePrev) { %>
     <a class="mobile-bottom-nav-item" href="<%- mobilePrevHref %>" rel="prev" title="<%- mobilePrevTitle %>" aria-label="Previous">
       <span class="bi bi-chevron-left mobile-bottom-nav-icon" aria-hidden="true"></span>
@@ -54,4 +123,3 @@
     </span>
   <% } %>
 </nav>
-<% } %>

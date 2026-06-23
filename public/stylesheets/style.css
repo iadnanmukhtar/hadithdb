@@ -102,9 +102,32 @@
 	--c-cornsilk: cornsilk;
 	--c-primary-soft-08: rgba(var(--bs-primary-rgb), .08);
 	--c-primary-soft-12: rgba(var(--bs-primary-rgb), .12);
-	--f-size-ar: 1.3rem;
-	--f-size-ar-note: 1.15rem;
-	--f-size-ar-sup: 0.8rem;
+	--content-font-scale: 1;
+	--content-font-size-desktop: 1rem;
+	--content-font-size-mobile: 0.95rem;
+	--content-font-size: calc(var(--content-font-size-desktop) * var(--content-font-scale));
+	--content-line-height: 1.58;
+	--content-line-height-tight: 1.25;
+	--content-line-height-heading: 1.18;
+	--content-size-xs: 0.72em;
+	--content-size-sm: 0.84em;
+	--content-size-meta: 0.9em;
+	--content-size-breadcrumb: 0.92em;
+	--content-size-breadcrumb-ar: 1.06em;
+	--content-size-body: 1em;
+	--content-size-lead: 1.08em;
+	--content-size-h1: 1.72em;
+	--content-size-h2: 1.46em;
+	--content-size-h3: 1.24em;
+	--content-size-h4: 1.12em;
+	--content-size-h5: 1.02em;
+	--content-size-h6: 0.95em;
+	--f-size-ar-base: 1.3rem;
+	--f-size-ar-note-base: 1.15rem;
+	--f-size-ar-sup-base: 0.8rem;
+	--f-size-ar: calc(var(--f-size-ar-base) * var(--content-font-scale));
+	--f-size-ar-note: calc(var(--f-size-ar-note-base) * var(--content-font-scale));
+	--f-size-ar-sup: calc(var(--f-size-ar-sup-base) * var(--content-font-scale));
 }
 
 html,
@@ -221,7 +244,85 @@ sup {
 }
 
 main {
+	font-size: var(--content-font-size);
+	line-height: var(--content-line-height);
 	margin-top: 5rem;
+}
+
+main h1,
+main .h1,
+main .fs-1 {
+	font-size: var(--content-size-h1) !important;
+}
+
+main h2,
+main .h2,
+main .fs-2 {
+	font-size: var(--content-size-h2) !important;
+}
+
+main h3,
+main .h3,
+main .fs-3 {
+	font-size: var(--content-size-h3) !important;
+}
+
+main h4,
+main .h4,
+main .fs-4 {
+	font-size: var(--content-size-h4) !important;
+}
+
+main h5,
+main .h5,
+main .fs-5 {
+	font-size: var(--content-size-h5) !important;
+}
+
+main h6,
+main .h6,
+main .fs-6 {
+	font-size: var(--content-size-h6) !important;
+}
+
+main h1,
+main h2,
+main h3,
+main h4,
+main h5,
+main h6,
+main .h1,
+main .h2,
+main .h3,
+main .h4,
+main .h5,
+main .h6 {
+	line-height: var(--content-line-height-heading);
+}
+
+main p,
+main li,
+main .body,
+main .intro,
+main .card-text,
+main .alert {
+	font-size: var(--content-size-body);
+	line-height: var(--content-line-height);
+}
+
+main .form-control,
+main .form-select,
+main .btn,
+main .dropdown-menu,
+main .form-check {
+	font-size: var(--content-size-meta);
+}
+
+main small,
+main .small,
+main .text-muted,
+main .caution {
+	font-size: var(--content-size-sm);
 }
 
 main.chapter {
@@ -234,11 +335,32 @@ main.chapter.tafsir-only-page {
 
 @media (max-width: var(--bs-breakpoint-sm)) {
 	main {
+		--content-font-size: calc(var(--content-font-size-mobile) * var(--content-font-scale));
+		--content-line-height: 1.55;
+		--content-size-h1: 1.5em;
+		--content-size-h2: 1.32em;
+		--content-size-h3: 1.16em;
+		--content-size-h4: 1.08em;
+		--content-size-h5: 1em;
+		--content-size-h6: 0.95em;
 		margin-top: 3.5rem;
 	}
 
 	main.chapter {
 		margin-top: max(5.5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
+	}
+}
+
+@media (max-width: 575.98px) {
+	main {
+		--content-font-size: calc(var(--content-font-size-mobile) * var(--content-font-scale));
+		--content-line-height: 1.55;
+		--content-size-h1: 1.5em;
+		--content-size-h2: 1.32em;
+		--content-size-h3: 1.16em;
+		--content-size-h4: 1.08em;
+		--content-size-h5: 1em;
+		--content-size-h6: 0.95em;
 	}
 }
 
@@ -1214,13 +1336,13 @@ nav .nav-link[aria-current="page"] {
 
 .home-quran-announcement-text {
 	margin-bottom: 0.35rem;
-	font-size: 1.15rem;
+	font-size: var(--content-size-lead);
 	font-weight: 600;
 	line-height: 1.8;
 }
 
 .home-quran-announcement-blurb {
-	font-size: 1rem;
+	font-size: var(--content-size-body);
 	line-height: 1.6;
 	color: var(--c-gray-very-dark);
 }
@@ -1377,7 +1499,7 @@ nav .nav-link[aria-current="page"] {
 	direction: rtl;
 	font-family: Hafs, Serif;
 	text-decoration: none !important;
-	font-size: 1.5rem;
+	font-size: 1.42em;
 }
 
 .blog-post s b,
@@ -1414,69 +1536,69 @@ nav .nav-link[aria-current="page"] {
 }
 
 .blog-post h1 {
-	font-size: 1.75rem;
+	font-size: var(--content-size-h1);
 }
 
 .blog-post h1 s,
 .blog-post h1:lang(ar),
 .blog-post :lang(ar) h1 {
 	font-family: Hafs, Serif;
-	font-size: 2.1rem;
+	font-size: 1.22em;
 }
 
 .blog-post h2 {
-	font-size: 1.5rem;
+	font-size: var(--content-size-h2);
 }
 
 .blog-post h2 s,
 .blog-post h2:lang(ar),
 .blog-post :lang(ar) h2 {
 	font-family: Hafs, Serif;
-	font-size: 1.9rem;
+	font-size: 1.22em;
 }
 
 .blog-post h3 {
-	font-size: 1.4rem;
+	font-size: var(--content-size-h3);
 }
 
 .blog-post h3 s,
 .blog-post h3:lang(ar),
 .blog-post :lang(ar) h3 {
 	font-family: Hafs, Serif;
-	font-size: 1.8rem;
+	font-size: 1.22em;
 }
 
 .blog-post h4 {
-	font-size: 1.3rem;
+	font-size: var(--content-size-h4);
 }
 
 .blog-post h4 s,
 .blog-post h4:lang(ar),
 .blog-post :lang(ar) h4 {
 	font-family: Hafs, Serif;
-	font-size: 1.7rem;
+	font-size: 1.22em;
 }
 
 .blog-post h5 {
-	font-size: 1.2rem;
+	font-size: var(--content-size-h5);
 }
 
 .blog-post h5 s,
 .blog-post h5:lang(ar),
 .blog-post :lang(ar) h5 {
 	font-family: Hafs, Serif;
-	font-size: 1.56rem;
+	font-size: 1.22em;
 }
 
 .blog-post h6 {
-	font-size: 1.10rem;
+	font-size: var(--content-size-h6);
 }
 
 .blog-post h6 s,
 .blog-post h6:lang(ar),
 .blog-post :lang(ar) h6 {
 	font-family: Hafs, Serif;
-	font-size: 1.43rem;
+	font-size: 1.22em;
 }
 
 s em strong,
@@ -1518,13 +1640,13 @@ del em strong {
 
 .blog-post .footnotes,
 .blog-post .footnotes p {
-	font-size: .85rem;
+	font-size: var(--content-size-sm);
 	color: var(--c-gray-very-dark);
 	text-indent: unset;
 }
 
 .blog-post .footnotes s {
-	font-size: 1.25rem;
+	font-size: 1.22em;
 }
 
 @media (max-width: 576px) {
@@ -1537,7 +1659,7 @@ del em strong {
 	border-bottom: 1px solid var(--bs-border-color);
 	padding-top: 5px;
 	padding-bottom: 5px;
-	font-size: 0.85rem;
+	font-size: var(--content-size-sm);
 	background-color: var(--c-ghostwhite);
 	flex-wrap: wrap;
 }
@@ -1572,7 +1694,7 @@ del em strong {
 .pagination div,
 .pagination div span,
 .top a {
-	font-size: 0.85rem;
+	font-size: var(--content-size-sm);
 	color: var(--c-accent);
 }
 
@@ -1581,6 +1703,26 @@ del em strong {
 .pagination div:lang(ar),
 .pagination div:lang(ar) span {
 	font-size: 1rem;
+}
+
+.breadcrumbs.pagination {
+	font-size: var(--content-size-breadcrumb);
+	line-height: var(--content-line-height-tight);
+}
+
+.breadcrumbs.pagination a,
+.breadcrumbs.pagination div,
+.breadcrumbs.pagination div span {
+	font-size: inherit;
+}
+
+.breadcrumbs.pagination div:lang(ar) {
+	font-size: var(--content-size-breadcrumb-ar);
+}
+
+.breadcrumbs.pagination div:lang(ar) a,
+.breadcrumbs.pagination div:lang(ar) span {
+	font-size: inherit;
 }
 
 .pagination .pagination-nav-link {
@@ -1593,7 +1735,7 @@ del em strong {
 	border-radius: 0.35rem;
 	color: var(--c-accent);
 	background: var(--c-transparent);
-	font-size: 0.82rem;
+	font-size: var(--content-size-sm);
 	font-weight: 600;
 	line-height: 1.25;
 	text-decoration: none;
@@ -1634,6 +1776,126 @@ del em strong {
 
 .mobile-bottom-nav::after {
 	display: none;
+}
+
+.mobile-bottom-nav-item {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	border-radius: .35rem;
+	color: var(--c-accent);
+	display: inline-flex;
+	flex-direction: column;
+	font: inherit;
+	font-size: .72rem;
+	font-weight: 600;
+	gap: .12rem;
+	justify-content: center;
+	line-height: 1.15;
+	min-height: 3.15rem;
+	min-width: 0;
+	padding: .3rem .2rem;
+	text-align: center;
+	text-decoration: none;
+}
+
+.mobile-bottom-nav-item:hover,
+.mobile-bottom-nav-item:focus,
+.mobile-bottom-nav-item:active {
+	background: var(--c-accent-08);
+	color: var(--c-accent);
+	text-decoration: none;
+}
+
+.mobile-bottom-nav-item:focus-visible {
+	outline: 2px solid var(--c-accent-34);
+	outline-offset: 2px;
+}
+
+.mobile-bottom-nav-item-disabled {
+	color: var(--bs-secondary-color);
+	opacity: .45;
+	pointer-events: none;
+}
+
+.mobile-bottom-nav-font-controls {
+	align-items: center;
+	display: inline-flex;
+	gap: .2rem;
+	justify-content: center;
+	min-height: 3.15rem;
+	min-width: 0;
+	padding: .3rem .05rem;
+}
+
+.mobile-bottom-nav-font-btn {
+	align-items: center;
+	background: var(--c-transparent);
+	border: 1px solid var(--c-accent-30);
+	border-radius: .35rem;
+	color: var(--c-accent);
+	display: inline-flex;
+	font: inherit;
+	font-size: .72rem;
+	font-weight: 700;
+	height: 2.1rem;
+	justify-content: center;
+	line-height: 1;
+	min-width: 2rem;
+	padding: 0 .3rem;
+}
+
+.mobile-bottom-nav-font-btn:hover,
+.mobile-bottom-nav-font-btn:focus,
+.mobile-bottom-nav-font-btn:active {
+	background: var(--c-accent-08);
+	border-color: var(--c-accent);
+	color: var(--c-accent);
+}
+
+.mobile-bottom-nav-font-btn:focus-visible {
+	outline: 2px solid var(--c-accent-34);
+	outline-offset: 2px;
+}
+
+.mobile-bottom-nav-icon {
+	font-size: 1.2rem;
+	line-height: 1;
+}
+
+.mobile-bottom-nav-label {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	width: 100%;
+}
+
+@media (min-width: 768px) {
+	body:has(.mobile-bottom-nav) {
+		padding-bottom: 5.25rem;
+	}
+
+	.mobile-bottom-nav {
+		align-items: stretch;
+		background: var(--bs-body-bg, var(--c-white));
+		border: 1px solid var(--bs-border-color);
+		border-bottom: 0;
+		border-radius: .75rem .75rem 0 0;
+		bottom: 0;
+		box-shadow: 0 -0.35rem 1rem rgba(0, 0, 0, .08);
+		display: grid;
+		gap: .35rem;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		left: 50%;
+		max-width: 38rem;
+		padding: .5rem .75rem .6rem;
+		position: fixed;
+		right: auto;
+		transform: translateX(-50%);
+		width: min(38rem, calc(100vw - 2rem));
+		z-index: 1040;
+	}
 }
 
 #bmc-wbtn.hadith-bmc-draggable {
@@ -1685,7 +1947,7 @@ del em strong {
 		bottom: 0;
 		box-shadow: 0 -0.35rem 1rem rgba(0, 0, 0, .08);
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
+		grid-template-columns: repeat(5, minmax(0, 1fr));
 		gap: .25rem;
 		left: 0;
 		padding: .45rem .65rem calc(.45rem + env(safe-area-inset-bottom));
@@ -1751,6 +2013,46 @@ del em strong {
 		pointer-events: none;
 	}
 
+	.mobile-bottom-nav-font-controls {
+		align-items: center;
+		display: inline-flex;
+		gap: .2rem;
+		justify-content: center;
+		min-height: 3.15rem;
+		min-width: 0;
+		padding: .3rem .05rem;
+	}
+
+	.mobile-bottom-nav-font-btn {
+		align-items: center;
+		background: var(--c-transparent);
+		border: 1px solid var(--c-accent-30);
+		border-radius: .35rem;
+		color: var(--c-accent);
+		display: inline-flex;
+		font: inherit;
+		font-size: .72rem;
+		font-weight: 700;
+		height: 2.1rem;
+		justify-content: center;
+		line-height: 1;
+		min-width: 2rem;
+		padding: 0 .3rem;
+	}
+
+	.mobile-bottom-nav-font-btn:hover,
+	.mobile-bottom-nav-font-btn:focus,
+	.mobile-bottom-nav-font-btn:active {
+		background: var(--c-accent-08);
+		border-color: var(--c-accent);
+		color: var(--c-accent);
+	}
+
+	.mobile-bottom-nav-font-btn:focus-visible {
+		outline: 2px solid var(--c-accent-34);
+		outline-offset: 2px;
+	}
+
 	.mobile-bottom-nav-icon {
 		font-size: 1.2rem;
 		line-height: 1;
@@ -1794,6 +2096,12 @@ del em strong {
 
 .heading h3 {
 	font-weight: bolder;
+}
+
+.quran-tafsir-heading .quran-section-heading-title,
+.quran-translation-heading .quran-section-heading-title {
+	font-weight: bolder;
+	margin-bottom: .5rem !important;
 }
 
 .heading h3 a {
@@ -1878,7 +2186,7 @@ del em strong {
 .h:lang(en),
 .intro:lang(en),
 .heading-intro:lang(en) {
-	font-size: 0.9rem;
+	font-size: var(--content-size-meta);
 }
 
 .h .grade {
@@ -2077,7 +2385,7 @@ del em strong {
 
 .quran-range-preview-en {
 	color: var(--bs-secondary-color);
-	font-size: .925rem;
+	font-size: var(--content-size-meta);
 	line-height: 1.6;
 }
 
@@ -2222,7 +2530,7 @@ del em strong {
 	border-color: var(--c-accent);
 }
 
-.quran-toc-search-bar,
+.quran-toc-search-group .quran-toc-search-bar,
 .quran-toc-navigator .quran-passage-surah,
 .quran-toc-navigator .quran-passage-ayah {
 	font-size: 1.5em;
@@ -2233,13 +2541,16 @@ del em strong {
 }
 
 .quran-toc-navigator .quran-passage-surah,
-.quran-toc-navigator .quran-passage-ayah,
-.quran-toc-navigator .quran-passage-go {
+.quran-toc-navigator .quran-passage-ayah {
 	font-size: 1.5em;
 }
 
 .quran-toc-search-group {
 	grid-column: auto;
+}
+
+.quran-toc-search-group .search-filter-icon-wrap {
+	min-width: 1.35rem;
 }
 
 .quran-passage-ayah-group {
@@ -2303,7 +2614,7 @@ del em strong {
 }
 
 .tafsir-book-title-line {
-	font-size: 1rem;
+	font-size: var(--content-size-body);
 	font-weight: 400;
 	line-height: 1.28;
 	min-width: 0;
@@ -2325,13 +2636,13 @@ del em strong {
 }
 
 .tafsir-book-meta {
-	font-size: .95rem;
+	font-size: var(--content-size-meta);
 	line-height: 1.3;
 }
 
 .tafsir-book-full-name {
 	color: var(--bs-body-color);
-	font-size: .98rem;
+	font-size: var(--content-size-body);
 	line-height: 1.35;
 }
 
@@ -2360,7 +2671,7 @@ del em strong {
 .tafsir-book-description-summary,
 .tafsir-book-description-full,
 .tafsir-book-publication {
-	font-size: .95rem;
+	font-size: var(--content-size-meta);
 	line-height: 1.4;
 }
 
@@ -2440,7 +2751,9 @@ del em strong {
 
 	.quran-toc-navigator .quran-passage-surah,
 	.quran-toc-navigator .quran-passage-ayah,
-	.quran-toc-navigator .quran-passage-go {
+	.quran-toc-navigator .quran-passage-go,
+	.quran-toc-search-group .quran-toc-search-bar,
+	.quran-toc-search-group .quran-passage-filter-toggle {
 		font-size: 1rem;
 	}
 
@@ -2659,7 +2972,7 @@ del em strong {
 
 .commentary-search-ayah {
 	color: var(--c-black);
-	font-size: 1.35rem;
+	font-size: calc(1.35rem * var(--content-font-scale));
 	line-height: 1.75;
 	margin: .45rem 0 .35rem;
 }
@@ -2725,7 +3038,7 @@ del em strong {
 .quran-ayah-modal .quran-tafsir-text,
 .quran-ayah-modal .quran-translation-text,
 .quran-ayah-modal .quran-tafsir-footnotes {
-	font-size: 1rem;
+	font-size: var(--content-size-body);
 }
 
 .quran-ayah-modal .quran-tafsir-text *,
@@ -2744,7 +3057,7 @@ del em strong {
 
 .quran-ayah-modal .quran-tafsir-ayah:lang(ar),
 .quran-ayah-modal .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) {
-	font-size: 1.85rem;
+	font-size: calc(1.85rem * var(--content-font-scale));
 	line-height: 1.6;
 	margin-bottom: .65rem;
 }
@@ -2768,7 +3081,7 @@ del em strong {
 .quran-subheading {
 	color: var(--bs-secondary-color);
 	display: block;
-	font-size: .95rem;
+	font-size: 1.06em;
 	font-weight: 600;
 	line-height: 1.25;
 	margin: 0 0 .25rem;
@@ -2779,7 +3092,7 @@ del em strong {
 .quran-subheading:lang(ar) {
 	direction: rtl;
 	font-family: KitabBold, Serif;
-	font-size: 1.2rem;
+	font-size: calc(var(--f-size-ar) * 1.18);
 }
 
 .quran-subheading-controls {
@@ -2975,12 +3288,12 @@ del em strong {
 }
 
 .tafsir-only-page .quran-tafsir-source [lang="en"] strong {
-	font-size: 1.1rem;
+	font-size: var(--content-size-lead);
 	line-height: 1.2;
 }
 
 .tafsir-only-page .quran-tafsir-source [lang="en"] span {
-	font-size: .95rem;
+	font-size: var(--content-size-meta);
 	line-height: 1.25;
 }
 
@@ -2991,7 +3304,7 @@ del em strong {
 
 .quran-tafsir-source {
 	border-bottom: 1px solid var(--bs-border-color);
-	font-size: .8rem;
+	font-size: var(--content-size-sm);
 	line-height: 1.2;
 	margin-bottom: .75rem;
 	padding-bottom: .5rem;
@@ -3102,7 +3415,7 @@ del em strong {
 	cursor: pointer;
 	display: flex;
 	flex-wrap: wrap;
-	font-size: .85rem;
+	font-size: var(--content-size-sm);
 	gap: .35rem;
 	line-height: 1.25;
 	list-style: none;
@@ -3358,7 +3671,7 @@ del em strong {
 .quran-tafsir-text,
 .quran-translation-text {
 	font-family: Hafs, Serif;
-	font-size: .8rem;
+	font-size: var(--content-size-sm);
 	line-height: 1.55;
 	text-align: justify;
 	color: var(--c-brown);
@@ -3371,12 +3684,12 @@ del em strong {
 }
 
 .tafsir-only-page .quran-tafsir-text:lang(en) {
-	font-size: 1rem;
+	font-size: var(--content-size-body);
 	line-height: 1.55;
 }
 
 .translation-only-page .quran-translation-text:lang(en) {
-	font-size: 1rem;
+	font-size: var(--content-size-body);
 	line-height: 1.55;
 }
 
@@ -3425,7 +3738,7 @@ del em strong {
 }
 
 .tafsir-only-page .quran-tafsir-local-pair [lang="en"] {
-	font-size: 1rem;
+	font-size: var(--content-size-body);
 }
 
 .quran-tafsir-text:lang(en) h1,
@@ -3573,7 +3886,7 @@ del em strong {
 	box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
 	color: white;
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	font-size: .72rem;
+	font-size: var(--content-size-xs);
 	line-height: 1.25;
 	max-height: calc(.72rem * 1.25 * 7 + .9rem);
 	max-width: min(22rem, calc(100vw - 1rem));
@@ -3588,7 +3901,7 @@ del em strong {
 
 .quran-tafsir-footnote-popup:lang(ar) {
 	font-family: Hafs, Serif;
-	font-size: .84rem;
+	font-size: var(--content-size-sm);
 	line-height: 1.45;
 	max-height: calc(.84rem * 1.45 * 7 + .9rem);
 }
@@ -3607,8 +3920,8 @@ del em strong {
 	border-top: 1px solid var(--bs-border-color);
 	color: var(--c-gray-mid);
 	font-family: "Gentium Plus", Serif;
-	font-size: .92rem;
-	line-height: 1.35;
+	font-size: var(--content-size-sm);
+	line-height: 1.3;
 	margin-top: .75rem;
 	padding-top: .6rem;
 	text-indent: 0;
@@ -3668,7 +3981,7 @@ del em strong {
 	color: var(--bs-secondary-color);
 	cursor: pointer;
 	font-family: Serif;
-	font-size: .85rem;
+	font-size: var(--content-size-sm);
 	font-weight: 600;
 	margin-bottom: .5rem;
 }
@@ -3757,7 +4070,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) {
 	color: var(--c-black);
 	font-family: QuranV1, Serif;
-	font-size: 1.45rem;
+	font-size: calc(1.45rem * var(--content-font-scale));
 	font-weight: 400;
 	line-height: 1.6;
 	margin: .25rem 0 .5rem;
@@ -3765,7 +4078,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .tafsir-only-page .quran-tafsir-ayah:lang(ar),
 .tafsir-only-page .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) {
-	font-size: 2rem;
+	font-size: calc(2rem * var(--content-font-scale));
 	margin-bottom: .85rem;
 }
 
@@ -3800,12 +4113,12 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 }
 
 .quran-ayah-modal .quran-tafsir-text .quran-tafsir-ayah:lang(ar) {
-	font-size: 1.85rem !important;
+	font-size: calc(1.85rem * var(--content-font-scale)) !important;
 	line-height: 1.85;
 }
 
 .quran-ayah-modal .quran-tafsir-text .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-text {
-	font-size: 1.85rem !important;
+	font-size: calc(1.85rem * var(--content-font-scale)) !important;
 }
 
 .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref,
@@ -3913,14 +4226,14 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .quran-ayah-hero-body {
 	margin-bottom: 0;
-	font-size: 1.15rem;
+	font-size: var(--content-size-lead);
 	line-height: 1.55;
 }
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p {
 	font-family: QuranV1, Serif;
-	font-size: 1.85rem;
+	font-size: calc(1.85rem * var(--content-font-scale));
 	line-height: 1.85;
 }
 
@@ -3979,7 +4292,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	font-family: QuranV1, Serif;
-	font-size: 1.85rem;
+	font-size: calc(1.85rem * var(--content-font-scale));
 	font-weight: 400;
 	line-height: 1.85;
 }
@@ -3987,17 +4300,17 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 @media (max-width: 576px) {
 	.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
 	.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p {
-		font-size: 1.55rem;
+		font-size: calc(1.55rem * var(--content-font-scale));
 	}
 
 	.quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
-		font-size: 1.55rem;
+		font-size: calc(1.55rem * var(--content-font-scale));
 	}
 
 	.quran-ayah-modal .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
 	.quran-ayah-modal .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p,
 	.quran-ayah-modal .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
-		font-size: 1.85rem;
+		font-size: calc(1.85rem * var(--content-font-scale));
 	}
 }
 
@@ -4162,12 +4475,12 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 }
 
 .quran-passage-actions {
-	font-size: .9rem;
+	font-size: var(--content-size-meta);
 }
 
 .comment-feed {
 	font-family: var(--bs-font-sans-serif);
-	font-size: 0.94rem;
+	font-size: var(--content-size-meta);
 }
 
 .comment-feed-shell {
@@ -4201,7 +4514,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .comment-summary-item {
 	gap: 0.4rem;
-	font-size: 0.84rem;
+	font-size: var(--content-size-sm);
 	font-weight: 600;
 }
 
@@ -4279,7 +4592,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .comment-auth-hint {
 	margin-bottom: 0.4rem;
-	font-size: 0.78rem;
+	font-size: var(--content-size-sm);
 }
 
 .comment-current-user {
@@ -4296,7 +4609,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	align-items: center;
 	gap: 0.35rem;
 	flex-wrap: wrap;
-	font-size: 0.8rem;
+	font-size: var(--content-size-sm);
 }
 
 .comment-provider-chip,
@@ -4318,7 +4631,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	border: 0;
 	border-radius: 0;
 	background: var(--c-transparent);
-	font-size: 0.92rem;
+	font-size: var(--content-size-meta);
 	line-height: 1.35;
 	resize: vertical;
 }
@@ -4345,7 +4658,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	color: var(--c-note) !important;
 	font-weight: 700;
 	flex: 1 1 100%;
-	font-size: 0.75rem;
+	font-size: var(--content-size-xs);
 }
 
 .comment-form-buttons {
@@ -4451,7 +4764,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .comment-author {
 	font-weight: 700;
 	color: var(--bs-heading-color);
-	font-size: 0.82rem;
+	font-size: var(--content-size-sm);
 }
 
 .comment-provider {
@@ -4460,12 +4773,12 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .comment-timestamp {
 	color: var(--c-comment-meta);
-	font-size: 0.74rem;
+	font-size: var(--content-size-xs);
 	font-weight: 600;
 }
 
 .comment-text {
-	font-size: 0.88rem;
+	font-size: var(--content-size-meta);
 	line-height: 1.35;
 }
 
@@ -4476,7 +4789,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .comment-deleted {
 	margin-bottom: 0;
 	color: var(--c-gray-dark);
-	font-size: 0.78rem;
+	font-size: var(--content-size-sm);
 	font-style: italic;
 }
 
@@ -4537,7 +4850,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	display: inline-flex;
 	align-items: center;
 	padding-right: 0.5rem;
-	font-size: 0.8rem;
+	font-size: var(--content-size-sm);
 	font-weight: 400;
 	color: var(--c-comment-meta);
 }
@@ -4587,7 +4900,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	background: var(--c-transparent);
 	text-align: left;
 	color: var(--c-comment-meta);
-	font-size: 0.8rem;
+	font-size: var(--content-size-sm);
 }
 
 .comment-error-state {
@@ -4764,13 +5077,13 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .chapter h2:lang(ar),
 .chapter h2:lang(ar) a {
-	font-size: 1.75rem !important;
+	font-size: calc(1.75rem * var(--content-font-scale)) !important;
 	font-weight: bold;
 }
 
 .chapter h3:lang(ar),
 .chapter h3:lang(ar) a {
-	font-size: 1.5rem !important;
+	font-size: calc(1.5rem * var(--content-font-scale)) !important;
 	font-weight: bold;
 }
 

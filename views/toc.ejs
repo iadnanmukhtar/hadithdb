@@ -266,24 +266,6 @@
         <%- include('sub-views/quran_commentary_book_nav.ejs', { quranCommentaryBook: quranCommentaryBook, quranCommentaryBooks: quranCommentaryBooks, Tafsir: Tafsir }); %>
       <% } %>
 
-      <% if (showHadithBookChrome) { %>
-      <aside class="row mb-2 pagination">
-        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
-          <% if (page.prev) { %>
-          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev:&nbsp;<%= prevBook.shortName_en %></span></a>
-          <% } %>
-        </div>
-        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
-          <% if (page.next) { %>
-          <a class="pagination-nav-link" href="<%- page.next %>" rel="next"><span class="pagination-nav-label">Next:&nbsp;<%= nextBook.shortName_en %>&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
-          <% } %>
-        </div>
-      </aside>
-      <% } %>
-      <% if (quranCommentaryBook) { %>
-        <%- include('sub-views/quran_commentary_pagination.ejs', { quranCommentaryBook: quranCommentaryBook, quranCommentaryBooks: quranCommentaryBooks, Tafsir: Tafsir, className: 'mb-2' }); %>
-      <% } %>
-
       <article>
         <% if (showBookLayout) { %>
         <heading class="mb-2">
@@ -513,30 +495,10 @@
       </section>
       </article>
       
-      <% if (showHadithBookChrome) { %>
-      <aside class="row mt-2 pagination">
-        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
-          <% if (page.prev) { %>
-          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev:&nbsp;<%= prevBook.shortName_en %></span></a>
-          <% } %>
-        </div>
-        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
-          <% if (page.next) { %>
-          <a class="pagination-nav-link" href="<%- page.next %>" rel="next"><span class="pagination-nav-label">Next:&nbsp;<%= nextBook.shortName_en %>&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
-          <% } %>
-        </div>
-      </aside>
-      <% } %>
-      <% if (quranCommentaryBook) { %>
-        <%- include('sub-views/quran_commentary_pagination.ejs', { quranCommentaryBook: quranCommentaryBook, quranCommentaryBooks: quranCommentaryBooks, Tafsir: Tafsir, className: 'mt-2' }); %>
-      <% } %>
-      
     </main>
   </div>
   
-  <% if (showHadithBookChrome || quranCommentaryBook) { %>
-    <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
-  <% } %>
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   

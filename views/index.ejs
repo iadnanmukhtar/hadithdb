@@ -125,19 +125,6 @@
           <h3 class="col-12 fs-4">Random <%= random.remark==2 ? 'āyah' : 'ḥadīth' %> <a class="text-muted" href="/"><i class="bi bi-arrow-clockwise"></i></a></h3>
         </header>
         
-        <div class="row mb-2 pagination">
-          <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
-            <% if (page.prev) { %>
-            <a class="pagination-nav-link" rel="prev" href="<%= page.prev %>" title="<%= page.prev %>"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev</span></a>
-            <% } %>
-          </div>
-          <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
-            <% if (page.next) { %>
-              <a class="pagination-nav-link" rel="next" href="<%= page.next %>" title="<%= page.next %>"><span class="pagination-nav-label">Next&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
-              <% } %>
-            </div>
-        </div>
-        
         <% if (random.remark == 2) {
           var randomAyahRef = random.en?.num || random.num || random.ref || '';
           var randomAyahHrefRef = arabic.toLatinDigits(randomAyahRef.toString()).replace(/^quran:/, '');

@@ -152,8 +152,6 @@
     
     <main class="chapter mt-10"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %>>
       
-      <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
-      
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
 
       <% if (quranNavigatorSurahs.length > 0) { %>
@@ -284,10 +282,6 @@
           </aside>
         <% } %>
 
-      <div class="mt-4 mb-4">
-        <%- include('sub-views/pagination.ejs', { site: site, page: page }); %>
-      </div>
-
       <% if (results.length > 0 && passageLikeId) { %>
         <div class="mt-4">
           <%- include('sub-views/comment_widget.ejs', {
@@ -323,23 +317,39 @@
       return path;
     };
 
+    const quranEditorAuthToken = async () => {
+      if (window.hadithAuth && window.hadithAuth.getToken)
+        return await window.hadithAuth.getToken();
+      return null;
+    };
+
     const quranEditorJson = async (res) => {
       const text = await res.text();
       try {
         return JSON.parse(text);
       } catch (err) {
-        throw new Error(`Expected JSON from ${res.url || 'server'}, got ${text.trim().substring(0, 120) || res.statusText}`);
+        const fallback = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 160);
+        throw new Error(`${res.status} ${res.statusText}${fallback ? `: ${fallback}` : ''}`);
       }
     };
 
     const quranEditorUpdateUrl = (path) => quranEditorUrl(path.replace(/^\/update\//, '/quran/update/'));
 
-    const quranEditorPost = (path, value) => fetch(quranEditorUpdateUrl(path), {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value })
-    });
+    const quranEditorPost = async (path, value) => {
+      const token = await quranEditorAuthToken();
+      const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      };
+      if (token)
+        headers.Authorization = `Bearer ${token}`;
+      return fetch(quranEditorUpdateUrl(path), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers,
+        body: JSON.stringify({ value })
+      });
+    };
 
     const refreshAfterQuranHeadingUpdate = (targetUrl) => {
       const target = new URL(quranEditorUrl(targetUrl), window.location.origin);

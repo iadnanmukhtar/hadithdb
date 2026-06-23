@@ -87,6 +87,7 @@ $(function () {
 	initBookNavScroller();
 	initTafsirBookCarousels(document);
 	initQuranCommentaryTocNavigation(document);
+	initContentFontSizeControls(document);
 
 	$('#toc2').on('show.bs.collapse', function(event) {
 		updateFixedHeaderOffset(event.target.scrollHeight);
@@ -132,6 +133,74 @@ function updateFixedHeaderOffset(extraHeight) {
 		return;
 	var height = navbar.getBoundingClientRect().height + (extraHeight || 0);
 	document.documentElement.style.setProperty('--site-fixed-header-height', `${Math.ceil(height)}px`);
+}
+
+function initContentFontSizeControls(scope) {
+	var storageKey = 'hadithdb_content_font_size';
+	var step = 0.05;
+	var min = 0.85;
+	var max = 1.25;
+	var root = scope || document;
+	var controls = Array.from(root.querySelectorAll('[data-content-font-size-decrease], [data-content-font-size-increase]'));
+
+	function normalizedScale(value) {
+		var scale = parseFloat(value);
+		if (!Number.isFinite(scale))
+			return null;
+		return Math.min(max, Math.max(min, Math.round(scale * 100) / 100));
+	}
+
+	function applyScale(scale) {
+		var normalized = normalizedScale(scale);
+		if (normalized === null)
+			return;
+		document.documentElement.style.setProperty('--content-font-scale', normalized.toString());
+		controls.forEach(function (control) {
+			var isDecrease = control.hasAttribute('data-content-font-size-decrease');
+			control.disabled = isDecrease ? normalized <= min : normalized >= max;
+			control.setAttribute('aria-valuenow', Math.round(normalized * 100).toString());
+		});
+	}
+
+	function storedScale() {
+		try {
+			if (!window.localStorage)
+				return null;
+			return normalizedScale(localStorage.getItem(storageKey));
+		} catch (err) {
+			return null;
+		}
+	}
+
+	function currentScale() {
+		var stored = storedScale();
+		if (stored !== null)
+			return stored;
+		return 1;
+	}
+
+	function saveScale(scale) {
+		var normalized = normalizedScale(scale);
+		if (normalized === null)
+			return;
+		try {
+			if (window.localStorage)
+				localStorage.setItem(storageKey, normalized.toFixed(2));
+		} catch (err) {}
+		applyScale(normalized);
+	}
+
+	applyScale(currentScale());
+
+	controls.forEach(function (control) {
+		if (control.dataset.contentFontSizeBound === 'true')
+			return;
+		control.dataset.contentFontSizeBound = 'true';
+		control.addEventListener('click', function () {
+			var delta = control.hasAttribute('data-content-font-size-decrease') ? -step : step;
+			saveScale(currentScale() + delta);
+		});
+	});
 }
 
 function initHomeQuranAnnouncement(scope) {
@@ -4061,6 +4130,20 @@ function quranAyahHeroHtml(ayah, clearHref) {
 	var part = quranAyahPart(ref);
 	var arabicRef = ((ayah.ar && ayah.ar.num) || ref).toString();
 	var arabicPart = quranAyahPart(arabicRef);
+	var editMode = typeof window.bindInlineEditors === 'function';
+	var editAttrs = function (prop, source, arabizi) {
+		if (!editMode)
+			return {};
+		var attrs = {
+			'data-id': ayah.id,
+			'data-prop': prop,
+			'data-markdown-source': (source || '').toString(),
+			'data-markdown-empty-html': '…'
+		};
+		if (arabizi)
+			attrs['data-arabizi'] = 'true';
+		return attrs;
+	};
 	var previousHref = ayah.prev_ref ? quranUrl(`/${ayah.prev_ref}`) : '';
 	var nextHref = ayah.next_ref ? quranUrl(`/${ayah.next_ref}`) : '';
 	var navClass = previousHref || nextHref ? ' quran-ayah-hero-with-nav' : '';
@@ -4092,11 +4175,11 @@ function quranAyahHeroHtml(ayah, clearHref) {
 	var $arSection = $('<section>').addClass('col-12').attr('lang', 'ar').appendTo($hero);
 	var $arBody = $('<div>').addClass('quran-ayah-hero-body').appendTo($arSection);
 	var $arAyah = $('<div>').addClass('quran-ayah-hero-ayah').appendTo($arBody);
-	$('<div>').addClass('quran-ayah-hero-text').attr({
+	$('<div>').addClass(`${editMode ? '_e ' : ''}quran-ayah-hero-text`).attr(Object.assign({
 		'data-quran-ref': ref,
 		'data-quran-surah': ref.split(/:/)[0] || '',
 		'data-quran-ayah': part
-	}).html(renderQuranHeroMarkdown(ayah.ar && ayah.ar.body)).appendTo($arAyah);
+	}, editAttrs('hadith.body', ayah.ar && ayah.ar.body, false))).html(renderQuranHeroMarkdown(ayah.ar && ayah.ar.body)).appendTo($arAyah);
 	$arAyah.append(document.createTextNode(' '));
 	$('<span>').addClass('quran-ayah-end-marker').attr('aria-label', `Quran ${arabicRef}`).text(`۝${toArabicDigits(arabicPart)}`).appendTo($arAyah);
 
@@ -4105,11 +4188,11 @@ function quranAyahHeroHtml(ayah, clearHref) {
 	var $enAyah = $('<div>').addClass('quran-ayah-hero-ayah').appendTo($enBody);
 	$('<sup>').text(ref).appendTo($enAyah);
 	$enAyah.append(document.createTextNode(' '));
-	$('<div>').addClass('quran-ayah-hero-text').attr({
+	$('<div>').addClass(`${editMode ? '_e ' : ''}quran-ayah-hero-text`).attr(Object.assign({
 		'data-quran-translation-target': '1',
 		'data-quran-surah': ref.split(/:/)[0] || '',
 		'data-quran-ayah': part
-	}).html(renderQuranHeroMarkdown(ayah.en && ayah.en.body)).appendTo($enAyah);
+	}, editAttrs('hadith.body_en', ayah.en && ayah.en.body, true))).html(renderQuranHeroMarkdown(ayah.en && ayah.en.body)).appendTo($enAyah);
 	$enAyah.append(document.createTextNode(' '));
 	$('<span>').addClass('quran-translation-attribution').attr('data-quran-translation-attribution', '1').text(`— ${defaultQuranTranslationShortName()}`).appendTo($enAyah);
 	$hero.append(quranAyahHeroToolbarHtml(ayah, quranAyahShareId(ref)));
@@ -4183,6 +4266,8 @@ function initQuranDynamicPassageHero(root) {
 			var clearHref = hero.attr('data-quran-clear-href') || '';
 			ensureQuranShareModal(ayah, quranAyahShareId(ref));
 			hero.empty().append(quranAyahHeroHtml(ayah, clearHref));
+			if (typeof window.bindInlineEditors === 'function')
+				window.bindInlineEditors(hero[0]);
 			if (window.refreshHadithActions)
 				window.refreshHadithActions();
 			setSelectedPassageAyah(ref);
@@ -4423,6 +4508,8 @@ function initQuranCorpusTooltipDelay(root) {
 		showTooltip($(this), 750);
 	});
 	eventRoot.on('click', '.quran-corpus-word', function (event) {
+		if ($(this).closest('[contenteditable="true"], ._e').length)
+			return;
 		if ($(this).closest('.body.passage a[href]').length)
 			return;
 		event.preventDefault();
@@ -4557,13 +4644,13 @@ function initQuranAyahSelector(root) {
 				return;
 			var href;
 			if (event.key === 'ArrowLeft' || event.key === 'BrowserBack')
-				href = $('.quran-ayah-hero-prev').first().attr('href') || $('.pagination a[rel="prev"]').first().attr('href');
+				href = $('.quran-ayah-hero-prev').first().attr('href') || $('.mobile-bottom-nav a[rel="prev"]').first().attr('href') || $('.pagination a[rel="prev"]').first().attr('href');
 			else if (event.key === 'ArrowRight' || event.key === 'BrowserForward')
-				href = $('.quran-ayah-hero-next').first().attr('href') || $('.pagination a[rel="next"]').first().attr('href');
+				href = $('.quran-ayah-hero-next').first().attr('href') || $('.mobile-bottom-nav a[rel="next"]').first().attr('href') || $('.pagination a[rel="next"]').first().attr('href');
 			else if (event.key === 'ArrowUp')
-				href = $('.pagination a[rel="prev"]').first().attr('href');
+				href = $('.mobile-bottom-nav a[rel="prev"]').first().attr('href') || $('.pagination a[rel="prev"]').first().attr('href');
 			else if (event.key === 'ArrowDown')
-				href = $('.pagination a[rel="next"]').first().attr('href');
+				href = $('.mobile-bottom-nav a[rel="next"]').first().attr('href') || $('.pagination a[rel="next"]').first().attr('href');
 			else
 				return;
 			if (!href)

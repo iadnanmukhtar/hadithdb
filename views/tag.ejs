@@ -42,19 +42,6 @@
     
     <main class="search-results">
 
-      <aside class="row mb-2 pagination">
-        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
-          <% if (page.prev) { %>
-          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev:&nbsp;Page</span></a>
-          <% } %>
-        </div>
-        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
-          <% if (page.next) { %>
-            <a class="pagination-nav-link" href="<%- page.next %>" rel="next"><span class="pagination-nav-label">Next:&nbsp;Page&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
-          <% } %>
-        </div>
-      </aside>
-
       <header class="row">
         <h1 class="col-md-12 col-sm-12 fs-5 title" lang="en">
           <% 
@@ -88,19 +75,6 @@
       <% 
           lastGroup = results[i].groupNo; 
         } %>
-
-      <aside class="row mb-2 pagination">
-        <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
-          <% if (page.prev) { %>
-          <a class="pagination-nav-link" href="<%- page.prev %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev:&nbsp;Page</span></a>
-          <% } %>
-        </div>
-        <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next">
-          <% if (page.next) { %>
-            <a class="pagination-nav-link" href="<%- page.next %>" rel="next"><span class="pagination-nav-label">Next:&nbsp;Page&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
-          <% } %>
-        </div>
-      </aside>
 
     </main>
   </div>
