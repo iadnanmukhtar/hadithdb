@@ -3860,10 +3860,10 @@ function ensureQuranShareModal(ayah, shareId) {
 		initHadithShareModals(document.getElementById(shareId));
 }
 
-	function quranAyahHeroHtml(ayah, clearHref) {
-		if (!ayah)
-			return '';
-		var ref = quranAyahRef(ayah);
+function quranAyahHeroHtml(ayah, clearHref) {
+	if (!ayah)
+		return '';
+	var ref = quranAyahRef(ayah);
 	var part = quranAyahPart(ref);
 	var arabicRef = ((ayah.ar && ayah.ar.num) || ref).toString();
 	var arabicPart = quranAyahPart(arabicRef);
@@ -3879,23 +3879,23 @@ function ensureQuranShareModal(ayah, shareId) {
 			'aria-label': 'Previous ayah'
 		}).append($('<span>').addClass('bi bi-chevron-left').attr('aria-hidden', 'true')).appendTo($hero);
 	}
-		if (nextHref) {
-			$('<a>').addClass('quran-ayah-hero-nav quran-ayah-hero-next').attr({
-				href: nextHref,
+	if (nextHref) {
+		$('<a>').addClass('quran-ayah-hero-nav quran-ayah-hero-next').attr({
+			href: nextHref,
 			rel: 'next',
 			title: 'Next ayah',
 			'aria-label': 'Next ayah'
-			}).append($('<span>').addClass('bi bi-chevron-right').attr('aria-hidden', 'true')).appendTo($hero);
-		}
-		if (clearHref) {
-			$('<a>').addClass('quran-ayah-hero-clear').attr({
-				href: clearHref,
-				title: 'Clear ayah selection',
-				'aria-label': 'Clear ayah selection'
-			}).append($('<span>').addClass('bi bi-x').attr('aria-hidden', 'true')).appendTo($hero);
-		}
+		}).append($('<span>').addClass('bi bi-chevron-right').attr('aria-hidden', 'true')).appendTo($hero);
+	}
+	if (clearHref) {
+		$('<a>').addClass('quran-ayah-hero-clear').attr({
+			href: clearHref,
+			title: 'Clear ayah selection',
+			'aria-label': 'Clear ayah selection'
+		}).append($('<span>').addClass('bi bi-x').attr('aria-hidden', 'true')).appendTo($hero);
+	}
 
-		var $arSection = $('<section>').addClass('col-12').attr('lang', 'ar').appendTo($hero);
+	var $arSection = $('<section>').addClass('col-12').attr('lang', 'ar').appendTo($hero);
 	var $arBody = $('<div>').addClass('quran-ayah-hero-body').appendTo($arSection);
 	var $arAyah = $('<div>').addClass('quran-ayah-hero-ayah').appendTo($arBody);
 	$('<div>').addClass('quran-ayah-hero-text').attr({
@@ -3946,27 +3946,27 @@ function initQuranDynamicPassageHero(root) {
 			$('.quran-passage-ayah').val(parts[1]);
 		}
 	};
-		var scrollSelectedAyahHeroIntoView = function (hero) {
-			if (!hero || !hero.length)
-				return;
+	var scrollSelectedAyahHeroIntoView = function (hero) {
+		if (!hero || !hero.length)
+			return;
 		window.requestAnimationFrame(function () {
 			var navbar = document.querySelector('.site-navbar.fixed-top');
 			var navbarOffset = navbar ? navbar.getBoundingClientRect().height : 0;
 			window.scrollTo({
 				top: window.pageYOffset + hero[0].getBoundingClientRect().top - navbarOffset - 12,
 				behavior: 'smooth'
-				});
 			});
-		};
-		var clearSelectedAyahHero = function (href, pushHistory) {
-			$('[data-quran-selected-ayah-hero]').first().empty();
-			setSelectedPassageAyah('');
-			if (pushHistory && href && window.history && window.history.pushState)
-				window.history.pushState({ quranDynamicAyahRef: '' }, '', href);
-			document.title = document.title.replace(/^Quran\s+\d+:\d+(?:-\d+)?\s+\|\s+/, '');
-		};
-		var loadAyahHero = function (href, pushHistory) {
-			var target = new URL(href, window.location.origin);
+		});
+	};
+	var clearSelectedAyahHero = function (href, pushHistory) {
+		$('[data-quran-selected-ayah-hero]').first().empty();
+		setSelectedPassageAyah('');
+		if (pushHistory && href && window.history && window.history.pushState)
+			window.history.pushState({ quranDynamicAyahRef: '' }, '', href);
+		document.title = document.title.replace(/^Quran\s+\d+:\d+(?:-\d+)?\s+\|\s+/, '');
+	};
+	var loadAyahHero = function (href, pushHistory) {
+		var target = new URL(href, window.location.origin);
 		var refMatch = target.pathname.match(/\/quran:(\d+):(\d+)$/);
 		if (!refMatch)
 			return Promise.reject(new Error('Only single Quran ayah links can update the hero dynamically.'));
@@ -3985,10 +3985,10 @@ function initQuranDynamicPassageHero(root) {
 			var ayah = Array.isArray(data) ? data[0] : data;
 			if (!ayah)
 				throw new Error('Selected ayah was not found.');
-				var hero = $('[data-quran-selected-ayah-hero]').first();
-				var clearHref = hero.attr('data-quran-clear-href') || '';
-				ensureQuranShareModal(ayah, quranAyahShareId(ref));
-				hero.empty().append(quranAyahHeroHtml(ayah, clearHref));
+			var hero = $('[data-quran-selected-ayah-hero]').first();
+			var clearHref = hero.attr('data-quran-clear-href') || '';
+			ensureQuranShareModal(ayah, quranAyahShareId(ref));
+			hero.empty().append(quranAyahHeroHtml(ayah, clearHref));
 			if (window.refreshHadithActions)
 				window.refreshHadithActions();
 			setSelectedPassageAyah(ref);
@@ -4013,20 +4013,20 @@ function initQuranDynamicPassageHero(root) {
 		});
 	};
 
-		setSelectedPassageAyah(selectedRefFromPath());
-		$(document).on('click.quranDynamicPassageHeroClear', '[data-quran-selected-ayah-hero] .quran-ayah-hero-clear[href]', function (event) {
-			if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
-				return;
-			if ($('body').hasClass('quran-ayah-selecting'))
-				return;
-			var href = $(this).attr('href') || $('[data-quran-selected-ayah-hero]').first().attr('data-quran-clear-href') || '';
-			if (!href)
-				return;
-			event.preventDefault();
-			event.stopPropagation();
-			clearSelectedAyahHero(href, true);
-		});
-		$(document).on('click.quranDynamicPassageHero', '.quran-passage-section .body.passage .quran-ayah-hero-trigger[data-quran-href]', function (event) {
+	setSelectedPassageAyah(selectedRefFromPath());
+	$(document).on('click.quranDynamicPassageHeroClear', '[data-quran-selected-ayah-hero] .quran-ayah-hero-clear[href]', function (event) {
+		if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
+			return;
+		if ($('body').hasClass('quran-ayah-selecting'))
+			return;
+		var href = $(this).attr('href') || $('[data-quran-selected-ayah-hero]').first().attr('data-quran-clear-href') || '';
+		if (!href)
+			return;
+		event.preventDefault();
+		event.stopPropagation();
+		clearSelectedAyahHero(href, true);
+	});
+	$(document).on('click.quranDynamicPassageHero', '.quran-passage-section .body.passage .quran-ayah-hero-trigger[data-quran-href]', function (event) {
 		if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
 			return;
 		if ($('body').hasClass('quran-ayah-selecting'))
@@ -4044,11 +4044,11 @@ function initQuranDynamicPassageHero(root) {
 		});
 	});
 	window.addEventListener('popstate', function () {
-			var ref = selectedRefFromPath();
-			if (!ref) {
-				clearSelectedAyahHero('', false);
-				return;
-			}
+		var ref = selectedRefFromPath();
+		if (!ref) {
+			clearSelectedAyahHero('', false);
+			return;
+		}
 		loadAyahHero(`/quran:${ref}`, false).catch(function () {
 			setSelectedPassageAyah(ref);
 		});
