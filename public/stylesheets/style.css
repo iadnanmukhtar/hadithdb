@@ -2469,14 +2469,34 @@ del em strong {
 
 .quran-passage-translation-control {
 	max-width: min(12rem, 100%);
+	position: relative;
+}
+
+.quran-passage-translation-icon {
+	color: var(--bs-secondary-color);
+	font-size: .75rem;
+	left: .45rem;
+	line-height: 1;
+	pointer-events: none;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 2;
 }
 
 .quran-passage-translation-select {
+	border-color: var(--bs-secondary-color);
 	font-size: .75rem;
 	line-height: 1.1;
 	min-height: calc(1.5em + .35rem + 2px);
 	padding-bottom: .15rem;
+	padding-left: 1.55rem;
 	padding-top: .15rem;
+}
+
+.quran-passage-translation-select:hover,
+.quran-passage-translation-select:focus {
+	border-color: var(--bs-secondary);
 }
 
 .quran-ayah-modal-trigger,
@@ -2513,7 +2533,8 @@ del em strong {
 	color: var(--bs-btn-hover-color);
 }
 
-.quran-tafsir-heading .quran-ayah-modal-trigger.btn {
+.quran-tafsir-heading .quran-ayah-modal-trigger.btn,
+.quran-translation-heading .quran-ayah-modal-trigger.btn {
 	border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
 	padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
 	background: var(--bs-btn-bg);
@@ -2524,7 +2545,9 @@ del em strong {
 }
 
 .quran-tafsir-heading .quran-ayah-modal-trigger.btn:hover,
-.quran-tafsir-heading .quran-ayah-modal-trigger.btn:focus {
+.quran-tafsir-heading .quran-ayah-modal-trigger.btn:focus,
+.quran-translation-heading .quran-ayah-modal-trigger.btn:hover,
+.quran-translation-heading .quran-ayah-modal-trigger.btn:focus {
 	background: var(--bs-btn-hover-bg);
 	border-color: var(--bs-btn-hover-border-color);
 	color: var(--bs-btn-hover-color);
@@ -2827,6 +2850,25 @@ del em strong {
 
 .quran-tafsir-heading {
 	margin-bottom: .5rem;
+}
+
+.quran-tafsir-language-label-short {
+	display: none;
+}
+
+@media (max-width: 575.98px) {
+	.quran-tafsir-language-label-full {
+		display: none;
+	}
+
+	.quran-tafsir-language-label-short {
+		display: inline;
+	}
+
+	.quran-tafsir-language-label-short:lang(ar) {
+		font-size: .85em;
+		line-height: 1;
+	}
 }
 
 .quran-translation-heading {
