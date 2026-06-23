@@ -183,6 +183,53 @@
       var ref = quranHeadingStartRef(heading);
       return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/${ref.surah}/${ref.ayah}`);
     }
+    function quranCommentaryPaginationSlug(book) {
+      if (!book)
+        return '';
+      if (book.type === 'tafsir')
+        return book.slug || Tafsir.tafsirSlug(book.alias);
+      return book.quranBookSlug || book.alias;
+    }
+    function quranCommentaryPaginationHref(book) {
+      if (!book)
+        return '';
+      if (book.type === 'trans')
+        return utils.quranUrl(req, `/quran/${encodeURIComponent(quranCommentaryPaginationSlug(book))}`);
+      var slug = quranCommentaryPaginationSlug(book);
+      var hasLanguageCollision = quranCommentaryBooks.some(function (other) {
+        return other && other !== book && other.lang !== book.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
+      });
+      var query = hasLanguageCollision && (book.lang === 'ar' || book.lang === 'en')
+        ? `?lang=${encodeURIComponent(book.lang)}`
+        : '';
+      return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
+    }
+    function quranCommentaryPaginationLabel(book) {
+      if (!book)
+        return '';
+      if (book.type === 'trans')
+        return displayName(book.name_en || book.shortName_en || book.author_en || book.alias);
+      var rawName = Tafsir.rawShortName(book, 'en') || book.shortName_en || book.name_en || book.alias || '';
+      var name = rawName.replace(/^tafs[īi]r\s+/i, '').trim();
+      return /^tafs[īi]r\b/i.test(name) ? name : `Tafsir ${name}`;
+    }
+    if (quranCommentaryBook) {
+      var quranCommentaryCurrentIndex = quranCommentaryBooks.findIndex(function (row) {
+        return row
+          && row.alias === quranCommentaryBook.alias
+          && (!quranCommentaryBook.lang || row.lang === quranCommentaryBook.lang);
+      });
+      var quranCommentaryPrevBook = quranCommentaryCurrentIndex > 0 ? quranCommentaryBooks[quranCommentaryCurrentIndex - 1] : null;
+      var quranCommentaryNextBook = quranCommentaryCurrentIndex >= 0 && quranCommentaryCurrentIndex < quranCommentaryBooks.length - 1 ? quranCommentaryBooks[quranCommentaryCurrentIndex + 1] : null;
+      if (quranCommentaryPrevBook) {
+        page.prev = quranCommentaryPaginationHref(quranCommentaryPrevBook);
+        page.prevTitle = `Previous: ${quranCommentaryPaginationLabel(quranCommentaryPrevBook)}`;
+      }
+      if (quranCommentaryNextBook) {
+        page.next = quranCommentaryPaginationHref(quranCommentaryNextBook);
+        page.nextTitle = `Next: ${quranCommentaryPaginationLabel(quranCommentaryNextBook)}`;
+      }
+    }
     var quranNavigatorBase = '';
     var quranNavigatorQuery = '';
     var randomTocItemQueryParts = [];
@@ -487,7 +534,7 @@
     </main>
   </div>
   
-  <% if (showHadithBookChrome) { %>
+  <% if (showHadithBookChrome || quranCommentaryBook) { %>
     <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
   <% } %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>

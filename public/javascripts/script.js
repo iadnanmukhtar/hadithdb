@@ -2412,6 +2412,12 @@ function orderedSelectableQuranTranslationBooks(books, settings) {
 	return defaultBook ? [defaultBook].concat(localChoices) : localChoices;
 }
 
+function quranTranslationSelectValue(alias, books) {
+	alias = validQuranTranslationAlias(alias);
+	var defaultBook = quranDefaultTranslationBook(books);
+	return defaultBook && defaultBook.alias === alias ? '' : alias;
+}
+
 function compactQuranTranslationHtml(html) {
 	var wrapper = document.createElement('div');
 	wrapper.innerHTML = html || '';
@@ -2727,7 +2733,7 @@ function initQuranPassageTranslationSelects(root) {
 				option.textContent = quranTranslationBookLabel(book);
 				selector.appendChild(option);
 			});
-			selector.value = selectedTranslationAlias || preferredAlias || '';
+			selector.value = quranTranslationSelectValue(selectedTranslationAlias || preferredAlias || '', choices);
 			selector.addEventListener('change', function () {
 				var alias = validQuranTranslationAlias(selector.value || '');
 				selector.disabled = true;

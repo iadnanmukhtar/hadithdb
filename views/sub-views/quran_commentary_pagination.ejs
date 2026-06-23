@@ -36,7 +36,10 @@
   }
 
   const commentaryPaginationCurrentIndex = commentaryPaginationBooks.findIndex(function (book) {
-    return book && commentaryPaginationBook && book.alias === commentaryPaginationBook.alias;
+    return book
+      && commentaryPaginationBook
+      && book.alias === commentaryPaginationBook.alias
+      && (!commentaryPaginationBook.lang || book.lang === commentaryPaginationBook.lang);
   });
   const commentaryPaginationPrev = commentaryPaginationCurrentIndex > 0 ? commentaryPaginationBooks[commentaryPaginationCurrentIndex - 1] : null;
   const commentaryPaginationNext = commentaryPaginationCurrentIndex >= 0 && commentaryPaginationCurrentIndex < commentaryPaginationBooks.length - 1 ? commentaryPaginationBooks[commentaryPaginationCurrentIndex + 1] : null;

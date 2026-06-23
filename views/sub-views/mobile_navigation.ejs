@@ -1,8 +1,8 @@
 <%
   var mobilePrev = typeof prev !== 'undefined' ? prev : page.prev;
   var mobileNext = typeof next !== 'undefined' ? next : page.next;
-  var mobilePrevTitle = typeof prevTitle !== 'undefined' ? prevTitle : 'Previous';
-  var mobileNextTitle = typeof nextTitle !== 'undefined' ? nextTitle : 'Next';
+  var mobilePrevTitle = typeof prevTitle !== 'undefined' ? prevTitle : (page.prevTitle || 'Previous');
+  var mobileNextTitle = typeof nextTitle !== 'undefined' ? nextTitle : (page.nextTitle || 'Next');
   var mobilePrevHref = mobilePrev && typeof utils !== 'undefined' && typeof req !== 'undefined' ? utils.urlFor(req, mobilePrev) : mobilePrev;
   var mobileNextHref = mobileNext && typeof utils !== 'undefined' && typeof req !== 'undefined' ? utils.urlFor(req, mobileNext) : mobileNext;
   var mobileContext = page && page.context ? page.context : {};
