@@ -2467,7 +2467,8 @@ del em strong {
 	font-size: .85em;
 }
 
-.quran-ayah-modal-trigger {
+.quran-ayah-modal-trigger,
+.quran-ayah-hero-trigger {
 	border: 0;
 	padding: 0;
 	background: transparent;
@@ -2477,7 +2478,9 @@ del em strong {
 }
 
 .quran-ayah-modal-trigger:hover,
-.quran-ayah-modal-trigger:focus {
+.quran-ayah-modal-trigger:focus,
+.quran-ayah-hero-trigger:hover,
+.quran-ayah-hero-trigger:focus {
 	color: var(--c-link-dark);
 }
 
@@ -2522,11 +2525,11 @@ del em strong {
 	}
 }
 
-.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label] {
+.body.passage [data-quran-ayah-hover-label] {
 	position: relative;
 }
 
-.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label]::after {
+.body.passage [data-quran-ayah-hover-label]::after {
 	background: #1f2933;
 	border: 1px solid rgba(255, 255, 255, 0.16);
 	border-radius: 4px;
@@ -2549,13 +2552,13 @@ del em strong {
 	z-index: 5;
 }
 
-.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label]:hover::after,
-.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label]:focus-visible::after {
+.body.passage [data-quran-ayah-hover-label]:hover::after,
+.body.passage [data-quran-ayah-hover-label]:focus-visible::after {
 	opacity: 1;
 	transform: translateX(-50%) translateY(0);
 }
 
-.body.passage .quran-ayah-modal-trigger[data-quran-ayah-hover-label]:active::after {
+.body.passage [data-quran-ayah-hover-label]:active::after {
 	opacity: 1;
 	transform: translateX(-50%) translateY(0);
 }

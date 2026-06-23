@@ -165,7 +165,8 @@
         </form>
       <% } %>
       
-      <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero>
+      <% var quranSelectedAyahClearHref = page.context.section ? utils.quranUrl(req, `/${page.context.section.path}`) : undefined; %>
+      <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero<% if (quranSelectedAyahClearHref) { %> data-quran-clear-href="<%= quranSelectedAyahClearHref %>"<% } %>>
       <% if (selectedAyahs.length > 0) { %>
         <% var selectedAyahModalIndex = quranAyahModalItems.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>
         <% var selectedAyahId = firstSelectedAyah && firstSelectedAyah.id; %>
@@ -173,7 +174,7 @@
         site: site,
         page: page,
         selectedAyahs: selectedAyahs,
-        clearHref: page.context.section ? utils.quranUrl(req, `/${page.context.section.path}`) : undefined,
+        clearHref: quranSelectedAyahClearHref,
         prevHref: selectedAyahPrevHref,
         nextHref: selectedAyahNextHref,
         toolbar: quranShareId ? {
