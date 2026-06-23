@@ -66,6 +66,12 @@
 
 <% if (passage.length > 1 && quranSelectionSurah) { %>
 <aside class="quran-ayah-select-toolbar mb-2" data-surah="<%= quranSelectionSurah %>">
+  <label class="quran-passage-translation-control mb-0">
+    <span class="visually-hidden">Translation</span>
+    <select class="form-select form-select-sm quran-passage-translation-select" data-quran-passage-translation-select="1" aria-label="Translation">
+      <option value="">Haleem</option>
+    </select>
+  </label>
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-toggle">
     <span class="bi bi-check2-square"></span> Select ayat
   </button>
@@ -120,7 +126,7 @@
 
 <%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
 
-<section class="col-12 quran-preferred-translation-footnotes d-none" lang="en"></section>
+<section class="col-12 quran-preferred-translation-footnotes d-none" lang="en" data-quran-selected-translation-footnotes="1"></section>
 
 </article>
 <% }); %>
