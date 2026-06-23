@@ -5,7 +5,6 @@
 	const nextHref = locals.nextHref;
 	const ayahHref = locals.ayahHref;
 	const linkHeroAyah = ayahHref && !(site && site.editMode);
-	const fixedDefaultTranslation = locals.fixedDefaultTranslation === true;
 	const defaultTranslationBook = (global.commentaries || []).find(function (book) {
 		return book && book.type === 'trans' && book.source === 'default';
 	}) || {};
@@ -61,7 +60,7 @@
 				var ayahRefLatin = arabic.toLatinDigits((ayah.num || ayahNum || '').toString());
 				var ayahRefParts = ayahRefLatin.split(/:/);
 				var quranTranslationAttrs = ayahRefParts.length >= 2
-					? ` data-quran-translation-target="1" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"${fixedDefaultTranslation ? ' data-quran-fixed-default-translation="1"' : ''}`
+					? ` data-quran-translation-target="1" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"`
 					: '';
 				%>
 						<div class="quran-ayah-hero-ayah">

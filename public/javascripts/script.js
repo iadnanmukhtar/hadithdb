@@ -2051,6 +2051,7 @@ function initQuranTafsirTabs(root) {
 			var savedSettings = data.settings || nextSettings;
 			updateCachedQuranUserSettings(user, savedSettings);
 			updateQuranTranslationPreferenceHearts(document, savedSettings.translations && savedSettings.translations.preferredAlias || '');
+			applyQuranHeroTranslationAlias(savedSettings.translations && savedSettings.translations.preferredAlias || '', { persist: false }).catch(function () {});
 			sortLoadedTranslationLists(savedSettings.translations && Array.isArray(savedSettings.translations.order) ? savedSettings.translations.order : order);
 		};
 		var saveTranslationOrder = function () {
@@ -2517,9 +2518,7 @@ function applyQuranHeroTranslationAlias(alias, options) {
 		if (!book)
 			book = quranDefaultTranslationBook(books);
 		var selectedAlias = book && book.source !== 'default' ? book.alias : '';
-		var targets = Array.from(document.querySelectorAll('[data-quran-translation-target="1"]')).filter(function (target) {
-			return target.getAttribute('data-quran-fixed-default-translation') !== '1';
-		});
+		var targets = Array.from(document.querySelectorAll('[data-quran-translation-target="1"]'));
 		return Promise.all(targets.map(function (target) {
 			return applyQuranTranslationToTarget(target, book).catch(function () {
 				return applyQuranTranslationToTarget(target, quranDefaultTranslationBook(books));
@@ -2583,8 +2582,10 @@ function bindQuranTranslationPreferenceHearts(root, preferredAlias) {
 			updateQuranTranslationPreferenceHearts(document, alias);
 			saveQuranPreferredTranslationAlias(alias).then(function () {
 				updateQuranTranslationPreferenceHearts(document, alias);
+				return applyQuranHeroTranslationAlias(alias, { persist: false });
 			}).catch(function (err) {
 				updateQuranTranslationPreferenceHearts(document, previousAlias);
+				applyQuranHeroTranslationAlias(previousAlias, { persist: false }).catch(function () {});
 				if (window.toastr)
 					toastr.error(err.message || 'Unable to save default translation.', 'Settings');
 			});
@@ -2757,8 +2758,6 @@ function initQuranPreferredTranslationDisplays(root) {
 	var scope = root || document;
 	var initializedAt = Date.now();
 	var targets = Array.from(scope.querySelectorAll('[data-quran-translation-target="1"]')).filter(function (target) {
-		if (target.getAttribute('data-quran-fixed-default-translation') === '1')
-			return false;
 		if (target.dataset.quranTranslationDisplayBound === 'true')
 			return false;
 		target.dataset.quranTranslationDisplayBound = 'true';
