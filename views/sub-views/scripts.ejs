@@ -468,38 +468,6 @@
       });
     });
 
-    $(".tags ._e")
-      // don't navigate away from the field on tab when selecting an item
-      .on( "keydown", function( event ) {
-        if ( event.keyCode === $.ui.keyCode.TAB &&
-            $( this ).autocomplete( "instance" ).menu.active ) {
-          event.preventDefault();
-        }
-      })
-      .autocomplete({
-	        source: function( request, response ) {
-	          $.getJSON(editHadithApiPath('/tag/_list'), {
-	            s: extractLast( request.term )
-	          }, response );
-	        },
-        search: function() {
-          var term = extractLast( $(this).val() );
-          if ( term.length < 2 )
-            return false;
-        },
-        focus: function() {
-          return false;
-        },
-        select: function( event, ui ) {
-          var terms = split($(this).val());
-          terms.pop();
-          terms.push(ui.item.value);
-          terms.push('');
-          $(this).val(terms.join(' '));
-          $(this).focus().end();
-          return false;
-        }
-      });
   });
 </script> 
 <% } %> 

@@ -176,8 +176,7 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
       return;
     } else if (req.query.cmd == 'comment') {
       // Legacy endpoint retained for older clients. Comment counts are updated when comments are saved.
-      res.sendStatus(501);
-      return;
+      return next(createError(501, 'Legacy comment actions are no longer available.'));
     }
     res.sendStatus(204);
     res.end();

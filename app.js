@@ -136,7 +136,54 @@ const buildErrorSuggestions = (req) => {
   return [...new Set(suggestions)];
 };
 
+const normalizeHttpStatusCode = (statusCode) => {
+  statusCode = parseInt(statusCode, 10);
+  if (!statusCode || statusCode < 400 || statusCode > 599)
+    return 500;
+  return statusCode;
+};
+
+const wantsJsonErrorResponse = (req) => {
+  if (!req)
+    return false;
+  if (req.xhr)
+    return true;
+  if (req.query && ('json' in req.query || req.query.format === 'json'))
+    return true;
+  const accept = req.get('accept') || '';
+  if (accept.includes('application/json') && !accept.includes('text/html'))
+    return true;
+  const contentType = req.get('content-type') || '';
+  return contentType.includes('application/json');
+};
+
+const wantsFriendlyErrorRedirect = (req) => {
+  if (!req)
+    return false;
+  if (req.path === '/error')
+    return false;
+  if (wantsJsonErrorResponse(req))
+    return false;
+  const accept = req.get('accept') || '';
+  return !accept || accept.includes('text/html') || accept.includes('*/*');
+};
+
+const buildFriendlyErrorUrl = (req, statusCode, message) => {
+  const params = new URLSearchParams();
+  params.set('status', normalizeHttpStatusCode(statusCode).toString());
+  if (message)
+    params.set('message', message.toString().substring(0, 300));
+  if (req && req.originalUrl)
+    params.set('path', req.originalUrl.substring(0, 500));
+  return `/error?${params.toString()}`;
+};
+
+const friendlyErrorRedirectStatus = (req) => {
+  return req && req.method !== 'GET' && req.method !== 'HEAD' ? 303 : 302;
+};
+
 const buildErrorViewLocals = (statusCode, message, error, req, res) => {
+  statusCode = normalizeHttpStatusCode(statusCode);
   const finalMessage = defaultHttpErrorMessage(statusCode, message);
   const finalReq = req || {
     path: '/',
@@ -270,6 +317,28 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/quran/user-settings', userSettingsRouter);
   app.use('/chatbot', chatbotRouter);
   app.use('/rag', chatbotRouter);
+  app.get('/error', function (req, res) {
+    const statusCode = normalizeHttpStatusCode(req.query.status);
+    const message = typeof req.query.message === 'string'
+      ? req.query.message
+      : undefined;
+    const originalPath = typeof req.query.path === 'string' && req.query.path
+      ? req.query.path
+      : req.originalUrl;
+    const errorReq = {
+      path: originalPath.split('?')[0] || '/',
+      originalUrl: originalPath,
+      query: {},
+      cookies: req.cookies || {},
+      hostname: req.hostname,
+      headers: req.headers,
+      protocol: req.protocol,
+      get: req.get.bind(req)
+    };
+    res.status(statusCode);
+    Object.assign(res.locals, buildErrorViewLocals(statusCode, message, null, errorReq, res));
+    res.render('error');
+  });
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {
@@ -281,7 +350,9 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
       return next(err);
     if (isNotFoundError(err))
       err = createError(404, err.message);
-    const statusCode = err.status || err.statusCode || 500;
+    const statusCode = normalizeHttpStatusCode(err.status || err.statusCode || 500);
+    if (wantsFriendlyErrorRedirect(req))
+      return res.redirect(friendlyErrorRedirectStatus(req), buildFriendlyErrorUrl(req, statusCode, err.message));
     res.status(statusCode);
     Object.assign(res.locals, buildErrorViewLocals(statusCode, err.message, err, req, res));
     res.render('error');

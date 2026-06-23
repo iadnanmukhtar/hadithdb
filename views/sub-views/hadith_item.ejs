@@ -216,26 +216,6 @@
 		</aside>
 	<% } %>
 
-	<%# Tags  .............................................................. %>
-	<% if (lang === 'en' && (i.tags || site.editMode)) {
-		var tags = null;
-		if (i.tags)
-			tags = i.tags.replace(/[{}]/g, '');
-		%>
-		<aside class="tags">
-			<% if (site.editMode) { %>
-				<textarea class="_e d-inline-block w-100" placeholder="#hashtag" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.tags"><%= tags %></textarea>
-			<% } else {
-				tags = tags.split(/ +/).map(tag => {
-				return `<a href="/tag/${tag}">${tag}</a>`;
-				});
-				tags = tags.join(' ');
-			%>
-				<div><span class="bi bi-hash"></span> <%- tags %></div>
-			<% } %>
-		</aside>
-	<% } %>
-
 	<%# Books  ............................................................. %>
 	<% if (lang === 'en' && (i.books || (site.editMode && i.single && i.virtualReferences && i.virtualReferences.length))) {
 		var books = null;
