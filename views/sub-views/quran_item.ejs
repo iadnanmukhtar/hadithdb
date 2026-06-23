@@ -1,10 +1,19 @@
 <%
 	var chapter = page.context.chapter;
-    var sections = [];
+	var sections = [];
 	if (chapter)
-		sections = chapter.sections; 
+		sections = chapter.sections;
 	var selectedAyahs = locals.selectedAyahs || (locals.selectedAyah ? [selectedAyah] : []);
 	var selectedAyahRefs = new Set(selectedAyahs.map(ayah => ayah.ref));
+	var quranSelectedTranslationAlias = /^[A-Za-z0-9_-]+$/.test((req.query.translation || '').toString().trim())
+		? req.query.translation.toString().trim()
+		: '';
+	var quranPassageHref = function (path) {
+		var href = utils.quranUrl(req, path);
+		if (!quranSelectedTranslationAlias)
+			return href;
+		return `${href}${href.indexOf('?') >= 0 ? '&' : '?'}translation=${encodeURIComponent(quranSelectedTranslationAlias)}`;
+	};
 	var quranSubsections = locals.quranSubsections || [];
 	var quranSubsectionsByStart = new Map();
 	quranSubsections.forEach(function (heading) {
@@ -42,7 +51,7 @@
 						? ` data-quran-translation-target="1" data-quran-translation-display="passage" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"`
 						: '';
 					var isPrefatoryAyah = arabic.toLatinDigits(ayahNum) === '1:0';
-					var ayahHref = utils.quranUrl(req, `/${passage[i].ref}`);
+					var ayahHref = quranPassageHref(`/${passage[i].ref}`);
 					var ayahBodyMarkdown = utils.emptyIfNull(ayahBody);
 					var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
 					var ayahBodyProp = (lang === 'en') ? 'hadith.body_en' : 'hadith.body';

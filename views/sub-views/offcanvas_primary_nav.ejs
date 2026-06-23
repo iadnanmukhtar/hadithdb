@@ -1,6 +1,6 @@
 <ul class="col-7 nav flex-column offcanvas-col1">
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><%- include('menu_icon.ejs', { type: 'quran', label: 'Quran' }) %> Quran</a></li>
-  <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations/1/1') %>"><i class="app-menu-icon bi bi-translate" aria-hidden="true"></i> Translations</a></li>
+  <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations') %>"><i class="app-menu-icon bi bi-translate" aria-hidden="true"></i> Translations</a></li>
   <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><%- include('menu_icon.ejs', { type: 'tafsir', label: 'Tafsir' }) %> Tafsir</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>"><%- include('menu_icon.ejs', { type: 'hadith', label: 'Hadith' }) %> Hadith</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>"><%- include('menu_icon.ejs', { type: 'books', label: 'Books' }) %> Books</a></li>

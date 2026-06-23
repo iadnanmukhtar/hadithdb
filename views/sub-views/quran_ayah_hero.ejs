@@ -5,11 +5,22 @@
 	const nextHref = locals.nextHref;
 	const ayahHref = locals.ayahHref;
 	const linkHeroAyah = ayahHref && !(site && site.editMode);
-	const defaultTranslationBook = (global.commentaries || []).find(function (book) {
-		return book && book.type === 'trans' && book.source === 'default';
-	}) || {};
-	const defaultTranslationShortName = defaultTranslationBook.shortName_en || defaultTranslationBook.shortName || 'Abdel Haleem';
-%>
+		const defaultTranslationBook = (global.commentaries || []).find(function (book) {
+			return book && book.type === 'trans' && book.source === 'default';
+		}) || {};
+		const defaultTranslationShortName = defaultTranslationBook.shortName_en || defaultTranslationBook.shortName || 'Abdel Haleem';
+		const fixedTranslationAlias = /^[A-Za-z0-9_-]+$/.test((locals.fixedTranslationAlias || '').toString())
+			? locals.fixedTranslationAlias.toString()
+			: '';
+		const fixedTranslationBook = fixedTranslationAlias
+			? (global.commentaries || []).find(function (book) {
+				return book && book.type === 'trans' && book.alias === fixedTranslationAlias;
+			})
+			: null;
+		const heroTranslationShortName = fixedTranslationBook
+			? (fixedTranslationBook.shortName_en || fixedTranslationBook.shortName || fixedTranslationBook.name_en || fixedTranslationBook.alias)
+			: defaultTranslationShortName;
+	%>
 <% if (ayahs.length > 0) { %>
 <section class="quran-ayah-hero row<%= prevHref || nextHref ? ' quran-ayah-hero-with-nav' : '' %>">
 		<% if (prevHref) { %>
@@ -59,12 +70,14 @@
 				var ayahBodyHtml = utils.markdownToHtml(ayahBodyMarkdown);
 				var ayahRefLatin = arabic.toLatinDigits((ayah.num || ayahNum || '').toString());
 				var ayahRefParts = ayahRefLatin.split(/:/);
-				var quranTranslationAttrs = ayahRefParts.length >= 2
-					? ` data-quran-translation-target="1" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"`
-					: '';
-				%>
+					var quranTranslationAttrs = ayahRefParts.length >= 2
+						? ` data-quran-translation-target="1" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"`
+						: '';
+					if (quranTranslationAttrs && fixedTranslationAlias)
+						quranTranslationAttrs += ` data-quran-fixed-translation-alias="${fixedTranslationAlias}"`;
+					%>
 						<div class="quran-ayah-hero-ayah">
-							<% if (linkHeroAyah) { %><a class="quran-ayah-hero-link" href="<%= ayahHref %>" title="View Quran <%= ayahLabel %>"><% } %><sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranTranslationAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div> <span class="quran-translation-attribution" data-quran-translation-attribution="1">— <%= defaultTranslationShortName %></span><% if (linkHeroAyah) { %></a><% } %>
+								<% if (linkHeroAyah) { %><a class="quran-ayah-hero-link" href="<%= ayahHref %>" title="View Quran <%= ayahLabel %>"><% } %><sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranTranslationAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div> <span class="quran-translation-attribution" data-quran-translation-attribution="1">— <%= heroTranslationShortName %></span><% if (linkHeroAyah) { %></a><% } %>
 						</div>
 			<% }); %>
 		</div>

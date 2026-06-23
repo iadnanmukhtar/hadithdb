@@ -10,12 +10,13 @@
     var requestPath = req && req.originalUrl ? req.originalUrl.split('?')[0] : (req && req.path ? req.path : '');
     var pageMenu = page && page.menu ? page.menu : '';
     var pageBook = page && page.context ? page.context.book : null;
+    var pageQuranCommentaryBook = page && page.context ? page.context.quranCommentaryBook : null;
     var isQuranArea = requestPath === '/quran'
       || requestPath.indexOf('/quran/') === 0
       || (pageBook && pageBook.alias === 'quran')
       || (page.context && page.context.quranSearchProxy);
-    var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0;
-    var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0;
+    var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans');
+    var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
     var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
@@ -74,7 +75,7 @@
           <a class="nav-link dropdown-toggle<%- activeNavAttrs(isQuranArea) %>" data-bs-toggle="dropdown" href="<%= utils.quranUrl(req, '/quran') %>" role="button" aria-expanded="false">Quran</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranArea && !isQuranTranslationsArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><%- include('menu_icon.ejs', { type: 'quran', label: 'Quran' }) %> Quran</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations/1/1') %>"><i class="bi bi-translate"></i> Translations</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations') %>"><i class="bi bi-translate"></i> Translations</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><%- include('menu_icon.ejs', { type: 'tafsir', label: 'Tafsir' }) %> Tafsir</a></li>
           </ul>
         </li>

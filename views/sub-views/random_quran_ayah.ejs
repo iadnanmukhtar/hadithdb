@@ -1,17 +1,23 @@
 <%
   var randomAyahRef = random.en?.num || random.num || random.ref || '';
   var randomAyahHrefRef = arabic.toLatinDigits(randomAyahRef.toString()).replace(/^quran:/, '');
-  var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}`);
+  var randomTranslationBook = locals.quranCommentaryBook && locals.quranCommentaryBook.type === 'trans' ? locals.quranCommentaryBook : null;
+  var randomTranslationAlias = randomTranslationBook && /^[A-Za-z0-9_-]+$/.test(randomTranslationBook.alias || '') ? randomTranslationBook.alias : '';
+  var hideRandomQuranTitle = locals.hideTitle === true || (locals.req && locals.req.query && locals.req.query.hideTitle === '1');
+  var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}${randomTranslationAlias ? `?translation=${encodeURIComponent(randomTranslationAlias)}` : ''}`);
   var randomQuranShareId = `Q${randomAyahRef.replace(/[^A-Za-z0-9_-]/g, '-')}`;
 %>
+<% if (!randomTranslationBook && !hideRandomQuranTitle) { %>
 <header class="row">
   <h3 class="col-12 fs-4">Random āyah in <%- book.shortName_en %> <button type="button" class="btn btn-link text-muted p-0 align-baseline" data-random-quran-ayah-refresh title="Load another random ayah" aria-label="Load another random ayah"><i class="bi bi-arrow-clockwise"></i></button></h3>
 </header>
+<% } %>
 <%- include('quran_ayah_hero.ejs', {
   site: site,
   page: page,
   selectedAyahs: [random],
   ayahHref: randomAyahHref,
+  fixedTranslationAlias: randomTranslationAlias,
   toolbar: {
     selectedAyahModalIndex: 0,
     selectedAyahId: random.id,

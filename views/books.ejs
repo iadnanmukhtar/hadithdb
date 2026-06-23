@@ -17,8 +17,18 @@
     canonical: `/books`,
     context: {}
     };
-    var tafsirBrowseUrl = function (tafsir) {
-      return utils.quranUrl(req, Tafsir.browseUrl(tafsir, tafsir.firstSurah || 1, tafsir.firstAyah || 1, tafsirs));
+    var tafsirBookUrl = function (tafsir) {
+      var slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
+      var hasLanguageCollision = (tafsirs || []).some(function (other) {
+        return other && other !== tafsir && other.lang !== tafsir.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
+      });
+      var query = hasLanguageCollision && (tafsir.lang === 'ar' || tafsir.lang === 'en')
+        ? `?lang=${encodeURIComponent(tafsir.lang)}`
+        : '';
+      return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
+    };
+    var translationBookUrl = function (translation) {
+      return utils.quranUrl(req, `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}`);
     };
     var tafsirDeathLabel = function (tafsir) {
       var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
@@ -197,7 +207,7 @@
                       <% if (site.editMode) { %>
                         <span class="_e" data-id="<%= book.id %>" data-prop="book.shortName_en"><%- book.shortName_en || book.name_en || book.alias %></span>
                       <% } else { %>
-                        <a href="/<%- book.alias %>"><%- book.shortName_en || book.name_en || book.alias %></a>
+                        <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName_en || book.name_en || book.alias %></a>
                       <% } %>
                     </h3>
                     <% if (site.editMode || book.shortName || book.title) { %>
@@ -205,7 +215,7 @@
                         <% if (site.editMode) { %>
                           <span class="_e" data-id="<%= book.id %>" data-prop="book.shortName"><%- book.shortName || book.title || '' %></span>
                         <% } else { %>
-                          <a href="/<%- book.alias %>"><%- book.shortName || book.title || '' %></a>
+                          <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName || book.title || '' %></a>
                         <% } %>
                       </h3>
                     <% } %>
@@ -260,7 +270,7 @@
                     var descriptionPreview = commentaryDescriptionPreview(descriptionMarkdown);
                     var descriptionId = commentaryDescriptionId(group, tafsir);
                     var descriptionKey = `${descriptionId}-body`;
-                    var browseUrl = tafsirBrowseUrl(tafsir);
+                    var browseUrl = tafsirBookUrl(tafsir);
                     var editableBookId = tafsir.id || '';
                   %>
                   <article class="book-catalog-card tafsir-book-row" data-book-catalog-filter="<%- [
@@ -397,7 +407,7 @@
                         <% if (site.editMode) { %>
                           <span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en"><%- translation.shortName_en || translation.name_en || translation.alias %></span>
                         <% } else { %>
-                          <a href="<%= utils.quranUrl(req, '/quran/translations/1/1') %>"><%- translation.shortName_en || translation.name_en || translation.alias %></a>
+                          <a href="<%= translationBookUrl(translation) %>"><%- translation.shortName_en || translation.name_en || translation.alias %></a>
                         <% } %>
                       </h3>
                     </div>

@@ -1,0 +1,58 @@
+<%
+  const commentaryPaginationBook = locals.quranCommentaryBook || null;
+  const commentaryPaginationBooks = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
+
+  function commentaryPaginationSlug(book) {
+    if (!book)
+      return '';
+    if (book.type === 'tafsir')
+      return book.slug || Tafsir.tafsirSlug(book.alias);
+    return book.quranBookSlug || book.alias;
+  }
+
+  function commentaryPaginationHref(book) {
+    if (!book)
+      return '';
+    if (book.type === 'trans')
+      return utils.quranUrl(req, `/quran/${encodeURIComponent(commentaryPaginationSlug(book))}`);
+    const slug = commentaryPaginationSlug(book);
+    const hasLanguageCollision = commentaryPaginationBooks.some(function (other) {
+      return other && other !== book && other.lang !== book.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
+    });
+    const query = hasLanguageCollision && (book.lang === 'ar' || book.lang === 'en')
+      ? `?lang=${encodeURIComponent(book.lang)}`
+      : '';
+    return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
+  }
+
+  function commentaryPaginationLabel(book) {
+    if (!book)
+      return '';
+    if (book.type === 'trans')
+      return (book.name_en || book.shortName_en || book.author_en || book.alias || '').toString().trim();
+    const rawName = Tafsir.rawShortName(book, 'en') || book.shortName_en || book.name_en || book.alias || '';
+    const name = rawName.replace(/^tafs[īi]r\s+/i, '').trim();
+    return /^tafs[īi]r\b/i.test(name) ? name : `Tafsir ${name}`;
+  }
+
+  const commentaryPaginationCurrentIndex = commentaryPaginationBooks.findIndex(function (book) {
+    return book && commentaryPaginationBook && book.alias === commentaryPaginationBook.alias;
+  });
+  const commentaryPaginationPrev = commentaryPaginationCurrentIndex > 0 ? commentaryPaginationBooks[commentaryPaginationCurrentIndex - 1] : null;
+  const commentaryPaginationNext = commentaryPaginationCurrentIndex >= 0 && commentaryPaginationCurrentIndex < commentaryPaginationBooks.length - 1 ? commentaryPaginationBooks[commentaryPaginationCurrentIndex + 1] : null;
+  const commentaryPaginationKind = commentaryPaginationBook && commentaryPaginationBook.type === 'trans' ? 'trans' : 'tafsir';
+%>
+<% if (commentaryPaginationBook) { %>
+<aside class="row <%= locals.className || '' %> pagination quran-commentary-pagination" data-quran-commentary-pagination data-commentary-kind="<%= commentaryPaginationKind %>" data-current-commentary-alias="<%= commentaryPaginationBook.alias %>" data-current-commentary-lang="<%= commentaryPaginationBook.lang || '' %>">
+  <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev" data-quran-commentary-prev-slot>
+    <% if (commentaryPaginationPrev) { %>
+    <a class="pagination-nav-link" href="<%= commentaryPaginationHref(commentaryPaginationPrev) %>" rel="prev"><span class="pagination-nav-chevron bi bi-chevron-left" aria-hidden="true"></span><span class="pagination-nav-label">&nbsp;Prev:&nbsp;<%= commentaryPaginationLabel(commentaryPaginationPrev) %></span></a>
+    <% } %>
+  </div>
+  <div class="col-md-6 col-xs-12 text-end pagination-nav-slot pagination-nav-slot-next" data-quran-commentary-next-slot>
+    <% if (commentaryPaginationNext) { %>
+    <a class="pagination-nav-link" href="<%= commentaryPaginationHref(commentaryPaginationNext) %>" rel="next"><span class="pagination-nav-label">Next:&nbsp;<%= commentaryPaginationLabel(commentaryPaginationNext) %>&nbsp;</span><span class="pagination-nav-chevron bi bi-chevron-right" aria-hidden="true"></span></a>
+    <% } %>
+  </div>
+</aside>
+<% } %>

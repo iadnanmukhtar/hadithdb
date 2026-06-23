@@ -32,8 +32,17 @@
     var selectedCanonicalRef = selectedAyahs.length > 0 && firstSelectedRef
       ? `${firstSelectedRef}${lastSelectedRef && firstSelectedRef !== lastSelectedRef ? `-${lastSelectedPart}` : ''}`
       : '';
-    var selectedAyahPrevHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.prev_ref ? utils.quranUrl(req, `/${firstSelectedAyah.prev_ref}`) : undefined;
-    var selectedAyahNextHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.next_ref ? utils.quranUrl(req, `/${firstSelectedAyah.next_ref}`) : undefined;
+    var quranSelectedTranslationAlias = /^[A-Za-z0-9_-]+$/.test((req.query.translation || '').toString().trim())
+      ? req.query.translation.toString().trim()
+      : '';
+    var quranPassageHref = function (path) {
+      var href = utils.quranUrl(req, path);
+      if (!quranSelectedTranslationAlias)
+        return href;
+      return `${href}${href.indexOf('?') >= 0 ? '&' : '?'}translation=${encodeURIComponent(quranSelectedTranslationAlias)}`;
+    };
+    var selectedAyahPrevHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.prev_ref ? quranPassageHref(`/${firstSelectedAyah.prev_ref}`) : undefined;
+    var selectedAyahNextHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.next_ref ? quranPassageHref(`/${firstSelectedAyah.next_ref}`) : undefined;
     var quranAyahModalItems = [];
     var quranAyahModalRefs = new Set();
     var quranAyahModalNumber = function (ayah) {
@@ -59,9 +68,9 @@
       });
       if (selectedAyahIndex >= 0) {
         if (!selectedAyahPrevHref && results[selectedAyahIndex - 1])
-          selectedAyahPrevHref = utils.quranUrl(req, `/${results[selectedAyahIndex - 1].ref}`);
+          selectedAyahPrevHref = quranPassageHref(`/${results[selectedAyahIndex - 1].ref}`);
         if (!selectedAyahNextHref && results[selectedAyahIndex + 1])
-          selectedAyahNextHref = utils.quranUrl(req, `/${results[selectedAyahIndex + 1].ref}`);
+          selectedAyahNextHref = quranPassageHref(`/${results[selectedAyahIndex + 1].ref}`);
       }
     }
     var footnoteItems = results;

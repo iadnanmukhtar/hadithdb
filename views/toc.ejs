@@ -11,26 +11,120 @@
       site.editMode = false;
         
     var isQuranToc = book.alias === 'quran';
+    var quranCommentaryBook = locals.quranCommentaryBook;
+    var quranCommentaryBooks = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
+    var quranCommentaryBookSlug = quranCommentaryBook && (quranCommentaryBook.quranBookSlug || quranCommentaryBook.slug || quranCommentaryBook.alias);
+    function displayName(value) {
+      return (value || '').toString().replace(/\s+/g, ' ').trim();
+    }
+    function suffixDisplayName(value, suffix) {
+      value = displayName(value);
+      return new RegExp(`\\b${suffix}$`, 'i').test(value) ? value : `${value} ${suffix}`.trim();
+    }
+    function prefixDisplayName(value, prefix) {
+      value = displayName(value);
+      return new RegExp(`^${prefix}\\b`, 'i').test(value) ? value : `${prefix} ${value}`.trim();
+    }
+    function prefixArabicDisplayName(value, prefix) {
+      value = displayName(value);
+      return value.indexOf(prefix) === 0 ? value : `${prefix} ${value}`.trim();
+    }
+    function commentaryBookShortNameEn(book) {
+      return displayName(book && (book.shortName_en || book.name_en || book.shortName || book.title || book.alias));
+    }
+    function commentaryBookShortNameAr(book) {
+      return displayName(book && (book.shortName || book.title || book.shortName_en || book.name_en || book.alias));
+    }
+    function commentaryBookDisplayNameEn(book) {
+      if (!book)
+        return '';
+      if (book.type === 'trans')
+        return displayName(book.name_en || book.title || book.shortName_en || book.shortName || book.alias);
+      return prefixDisplayName(commentaryBookShortNameEn(book), 'Tafsir');
+    }
+    function commentaryBookDisplayNameAr(book) {
+      if (!book)
+        return '';
+      var shortName = commentaryBookShortNameAr(book);
+      return book.type === 'tafsir' ? prefixArabicDisplayName(shortName, 'تفسير') : shortName;
+    }
+    function commentaryBookSubtitleEn(book) {
+      if (!book || book.type !== 'trans')
+        return '';
+      return displayName(book.author_en || book.author || '');
+    }
+    function commentaryDeathLabel(book) {
+      var death = displayName(book && book.death);
+      if (!death)
+        return '';
+      if (book && book.type === 'trans') {
+        if (!/\bCE\b/i.test(death))
+          death = `${death} CE`;
+      } else if (!/\b(?:AH|H)\b/i.test(death) && !/هـ/u.test(death)) {
+        death = `${death} AH`;
+      }
+      return /^d\./i.test(death) ? death : `d. ${death}`;
+    }
+    function commentaryArabicDeathLabel(book) {
+      var death = displayName(book && book.death);
+      if (!death)
+        return '';
+      death = death.replace(/\b(?:AH|H)\b/ig, '').replace(/هـ/u, '').trim();
+      return `ت. ${death} هـ`;
+    }
+    function hasQuranCommentaryDescriptionDetails(book) {
+      if (!book)
+        return false;
+      if (book.type === 'trans')
+        return false;
+      return !!displayName(book.name_en || book.title || book.shortName_en || book.shortName || book.author_en || book.author || book.death);
+    }
+    var quranCommentaryBookLabel = quranCommentaryBook ? commentaryBookDisplayNameEn(quranCommentaryBook) : '';
+    var quranCommentaryBookTitle = quranCommentaryBook ? commentaryBookDisplayNameAr(quranCommentaryBook) : '';
+    var quranCommentaryBookSubtitleEn = quranCommentaryBook ? commentaryBookSubtitleEn(quranCommentaryBook) : '';
+    var quranCommentaryHeaderSubtitleEn = quranCommentaryBook && quranCommentaryBook.type === 'trans'
+      ? commentaryBookShortNameEn(quranCommentaryBook)
+      : quranCommentaryBookLabel;
+    var quranCommentaryBookCanonical = quranCommentaryBook
+      ? (quranCommentaryBook.type === 'trans' ? `/quran/${quranCommentaryBookSlug}` : `/quran/tafsir/${quranCommentaryBookSlug}`)
+      : '';
+    var tocDisplayBook = quranCommentaryBook || book;
+    var tocDisplayBookNameEn = quranCommentaryBook
+      ? quranCommentaryBookLabel
+      : displayName(tocDisplayBook.name_en || tocDisplayBook.shortName_en || tocDisplayBook.alias);
+    var tocDisplayBookTitle = quranCommentaryBook
+      ? (quranCommentaryBook.type === 'trans' ? '' : quranCommentaryBookTitle)
+      : displayName(tocDisplayBook.title || tocDisplayBook.shortName || '');
+    var showBookLayout = !isQuranToc || !!quranCommentaryBook;
+    var showHadithBookChrome = !isQuranToc;
+    var showRandomTocItem = !quranCommentaryBook;
+    var showRandomTocTitle = !isQuranToc && !quranCommentaryBook;
+    var quranCommentaryPageTitleEn = quranCommentaryBook && quranCommentaryBook.type === 'trans'
+      ? `Quran | ${commentaryBookShortNameEn(quranCommentaryBook)} | ${quranCommentaryBookLabel}`
+      : `Quran | ${quranCommentaryBookLabel}`;
     var pageTitleEn = isQuranToc
-      ? 'Quran | Table of Contents'
+      ? (quranCommentaryBook ? quranCommentaryPageTitleEn : 'Quran | Table of Contents')
       : utils.hadithBookTitle(book);
     var pageDescriptionEn = isQuranToc
-      ? 'Browse the Quran table of contents by surah and passage, with Arabic text, English translation, and tafsir.'
+      ? (quranCommentaryBook
+        ? `Browse the Quran table of contents with links to ${quranCommentaryBookLabel} passages.`
+        : 'Browse the Quran table of contents by surah and passage, with Arabic text, English translation, and tafsir.')
       : `Browse the table of contents for ${book.name_en || book.shortName_en}.`;
     var page = {
       menu: 'Books',
       title_en: pageTitleEn,
       description_en: pageDescriptionEn,
-      subtitle_en: `${book.shortName_en}`,
-      subtitle: `${book.shortName}`,
-      canonical: `/${book.alias}`,
+      subtitle_en: quranCommentaryBook ? quranCommentaryHeaderSubtitleEn : `${book.shortName_en}`,
+      subtitle: quranCommentaryBook ? (quranCommentaryBook.type === 'trans' ? '' : quranCommentaryBookTitle) : `${book.shortName}`,
+      canonical: quranCommentaryBook ? quranCommentaryBookCanonical : `/${book.alias}`,
       context: {
         book,
+        quranCommentaryBook,
       }
     };
-    if (!isQuranToc && typeof prevBook != 'undefined' && prevBook)
+    if (showHadithBookChrome && typeof prevBook != 'undefined' && prevBook)
         page.prev = `/${prevBook.alias}`;
-    if (!isQuranToc && typeof nextBook != 'undefined' && nextBook)
+    if (showHadithBookChrome && typeof nextBook != 'undefined' && nextBook)
         page.next = `/${nextBook.alias}`;
     var quranNavigatorSurahs = [];
     if (book.alias === 'quran') {
@@ -47,7 +141,64 @@
         return a.num - b.num;
       });
     }
-%>
+    function quranHeadingStartRef(heading) {
+      var source = heading && heading.firstSection ? heading.firstSection : heading;
+      var start = source && source.start ? source.start.toString() : '';
+      var path = source && source.path ? source.path.toString() : '';
+      var parts = arabic.toLatinDigits(start.replace(/^quran:/, '')).split(/[:/-]/).filter(Boolean);
+      if (parts.length < 2 && path) {
+        var pathParts = arabic.toLatinDigits(path.replace(/^\/?quran\/?/, '')).split(/[/:]/).filter(Boolean);
+        if (pathParts.length >= 2)
+          parts = pathParts;
+      }
+      var surah = parts[0] || (heading && heading.h1) || 1;
+      var ayah = parts[1] || 1;
+      return {
+        surah: parseInt(surah, 10) || 1,
+        ayah: parseInt(ayah, 10) || 1
+      };
+    }
+    function quranHeadingSectionRef(heading) {
+      var source = heading && heading.firstSection ? heading.firstSection : heading;
+      var path = source && source.path ? source.path.toString() : '';
+      var pathParts = path
+        ? arabic.toLatinDigits(path.replace(/^\/?quran\/?/, '')).split(/[/:]/).filter(Boolean)
+        : [];
+      var surah = (source && source.h1) || (heading && heading.h1) || pathParts[0] || 1;
+      var section = (source && source.h2) || (heading && heading.h2) || pathParts[1] || 1;
+      return {
+        surah: parseInt(arabic.toLatinDigits(surah.toString()), 10) || 1,
+        section: parseInt(arabic.toLatinDigits(section.toString()), 10) || 1
+      };
+    }
+    function quranTocHref(heading) {
+      if (!quranCommentaryBook) {
+        var targetPath = heading && heading.firstSection ? heading.firstSection.path : heading.path;
+        return utils.urlFor(req, `/${targetPath}`);
+      }
+      if (quranCommentaryBook.type === 'trans') {
+        var sectionRef = quranHeadingSectionRef(heading);
+        return utils.quranUrl(req, `/quran/${sectionRef.surah}/${sectionRef.section}?translation=${encodeURIComponent(quranCommentaryBook.alias)}`);
+      }
+      var ref = quranHeadingStartRef(heading);
+      return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/${ref.surah}/${ref.ayah}`);
+    }
+    var quranNavigatorBase = '';
+    var quranNavigatorQuery = '';
+    var randomTocItemQueryParts = [];
+    if (quranCommentaryBook) {
+      if (quranCommentaryBook.type === 'trans') {
+        quranNavigatorBase = '/quran:';
+        quranNavigatorQuery = `translation=${encodeURIComponent(quranCommentaryBook.alias)}`;
+        randomTocItemQueryParts.push(`translation=${encodeURIComponent(quranCommentaryBook.alias)}`);
+      } else {
+        quranNavigatorBase = `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}`;
+      }
+    }
+    if (isQuranToc && !quranCommentaryBook)
+      randomTocItemQueryParts.push('hideTitle=1');
+    var randomTocItemSrc = `/${book.alias}/random${randomTocItemQueryParts.length ? `?${randomTocItemQueryParts.join('&')}` : ''}`;
+	%>
   
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
   
@@ -59,13 +210,16 @@
   
   <div class="container col-lg-8 mx-auto">
     
-    <main class="toc">
+    <main class="toc"<% if (quranCommentaryBook && quranCommentaryBook.type === 'trans') { %> data-quran-selected-translation-book="<%= quranCommentaryBook.alias %>"<% } %>>
       
-      <% if (!isQuranToc) { %>
+      <% if (showHadithBookChrome) { %>
         <%- include('sub-views/bookNav.ejs'); %>
       <% } %>
-    
-      <% if (!isQuranToc) { %>
+      <% if (quranCommentaryBook) { %>
+        <%- include('sub-views/quran_commentary_book_nav.ejs', { quranCommentaryBook: quranCommentaryBook, quranCommentaryBooks: quranCommentaryBooks, Tafsir: Tafsir }); %>
+      <% } %>
+
+      <% if (showHadithBookChrome) { %>
       <aside class="row mb-2 pagination">
         <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
           <% if (page.prev) { %>
@@ -79,25 +233,33 @@
         </div>
       </aside>
       <% } %>
+      <% if (quranCommentaryBook) { %>
+        <%- include('sub-views/quran_commentary_pagination.ejs', { quranCommentaryBook: quranCommentaryBook, quranCommentaryBooks: quranCommentaryBooks, Tafsir: Tafsir, className: 'mb-2' }); %>
+      <% } %>
 
       <article>
-      <% if (!isQuranToc) { %>
-      <heading class="mb-2">
-        <div class="row text-center justify-content-center">
-          <h2 class="_e fs-3" title="<%- book.title %>" data-id="<%=book.id%>" data-prop="book.name_en" data-arabizi="true"><%- book.name_en %></h2>
-          <h2 class="_e fs-3 fw-bold text-center" lang="ar" dir="rtl" title="<%- book.name_en %>" data-id="<%=book.id%>" data-prop="book.title"><%- book.title %></h2>
-          <% if (site.editMode) { %>
-          <h3>
-            <span class="_e fs-5" data-id="<%=book.id%>" data-prop="book.shortName_en" data-arabizi="true"><%- book.shortName_en %></span>
-            <span class="_e fs-5" lang="ar" dir="rtl" data-id="<%=book.id%>" data-prop="book.shortName"><%- book.shortName %></span>
-          </h3>
-          <% } %>
-        </div>
-	      </heading>
-	      <% } %>
+        <% if (showBookLayout) { %>
+        <heading class="mb-2">
+          <div class="row text-center justify-content-center">
+            <h2 class="<%= quranCommentaryBook ? '' : '_e ' %>fs-3<%= quranCommentaryBook && quranCommentaryBook.type === 'trans' ? ' quran-translation-toc-title text-truncate w-100' : '' %>" title="<%- tocDisplayBookNameEn || tocDisplayBook.title || tocDisplayBook.name_en || '' %>"<% if (!quranCommentaryBook) { %> data-id="<%=tocDisplayBook.id%>" data-prop="book.name_en" data-arabizi="true"<% } %>><%- tocDisplayBookNameEn %></h2>
+            <% if (quranCommentaryBookSubtitleEn) { %>
+            <p class="quran-translation-toc-subtitle text-muted fs-5 mb-1"><%- quranCommentaryBookSubtitleEn %></p>
+            <% } %>
+            <% if (tocDisplayBookTitle) { %>
+            <h2 class="<%= quranCommentaryBook ? '' : '_e ' %>fs-3 fw-bold text-center" lang="ar" dir="rtl" title="<%- tocDisplayBook.name_en || '' %>"<% if (!quranCommentaryBook) { %> data-id="<%=tocDisplayBook.id%>" data-prop="book.title"<% } %>><%- tocDisplayBookTitle %></h2>
+            <% } %>
+            <% if (site.editMode && !quranCommentaryBook) { %>
+            <h3>
+              <span class="_e fs-5" data-id="<%=tocDisplayBook.id%>" data-prop="book.shortName_en" data-arabizi="true"><%- tocDisplayBook.shortName_en %></span>
+              <span class="_e fs-5" lang="ar" dir="rtl" data-id="<%=tocDisplayBook.id%>" data-prop="book.shortName"><%- tocDisplayBook.shortName %></span>
+            </h3>
+            <% } %>
+          </div>
+        </heading>
+        <% } %>
 
-	      <% if (quranNavigatorSurahs.length > 0) { %>
-	      <form class="quran-passage-navigator quran-toc-navigator mb-3" action="/quran" method="get" novalidate data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
+		      <% if (quranNavigatorSurahs.length > 0 && !quranCommentaryBook) { %>
+	      <form class="quran-passage-navigator quran-toc-navigator mb-3" action="/quran" method="get" novalidate data-quran-passage-navigator<% if (quranNavigatorBase) { %> data-tafsir-navigator-base="<%= quranNavigatorBase %>" data-tafsir-navigator-query="<%= quranNavigatorQuery %>"<% } %> data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
 	        <label class="form-label mb-0">
 	          <input type="text" class="form-control quran-passage-surah" value="1" aria-label="Select Quran surah" autocomplete="off" required>
 	        </label>
@@ -107,66 +269,93 @@
 	            <span class="bi bi-caret-right"></span>
 	          </button>
 	        </div>
-	        <div class="input-group quran-passage-search-group quran-toc-search-group">
-	          <input role="search" type="text" class="form-control quran-passage-search quran-toc-search-bar" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off" autofocus>
-	          <%- include('sub-views/quran_tafsir_search_filter.ejs', { Tafsir: typeof Tafsir !== 'undefined' ? Tafsir : undefined }); %>
-	        </div>
-	      </form>
+            <% if (!quranCommentaryBook) { %>
+            <div class="input-group quran-passage-search-group quran-toc-search-group">
+              <input role="search" type="text" class="form-control quran-passage-search quran-toc-search-bar" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off" autofocus>
+              <%- include('sub-views/quran_tafsir_search_filter.ejs', { Tafsir: typeof Tafsir !== 'undefined' ? Tafsir : undefined }); %>
+            </div>
+            <% } %>
+		      </form>
 	      <% } %>
 	      
-	      <% if (!isQuranToc) { %>
-	      <section>
-	        <%
-	          const bookDescriptionMarkdown = utils.emptyIfNull(book.description);
-	          const bookDescription = utils.markdownToHtml(bookDescriptionMarkdown) || (site.editMode ? '&hellip;' : '');
-	          const bookDescriptionPreview = bookDescriptionMarkdown
-	            .split(/\r?\n/)
-	            .map(function (line) { return line.trim(); })
+        <% if (showBookLayout) { %>
+        <section>
+          <%
+          const bookDescriptionMarkdown = utils.emptyIfNull(tocDisplayBook.description);
+          const bookDescription = utils.markdownToHtml(bookDescriptionMarkdown) || (site.editMode ? '&hellip;' : '');
+          const bookDescriptionPreview = bookDescriptionMarkdown
+            .split(/\r?\n/)
+            .map(function (line) { return line.trim(); })
 	            .find(Boolean) || '';
-	          const bookDescriptionPreviewText = bookDescriptionPreview
+          const bookDescriptionPreviewText = bookDescriptionPreview
 	            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
 	            .replace(/[*_`#>]+/g, '')
 	            .replace(/\s+/g, ' ')
 	            .trim();
-	        %>
-	        <% if (bookDescriptionPreviewText || bookDescription) { %>
-	          <p class="toc-book-description-summary text-muted" data-toc-description-summary="book-description">
-	            <span class="toc-book-description-preview"><%= bookDescriptionPreviewText %></span>
-	            <a href="#toc-book-description" data-toc-description-expand="book-description" role="button" aria-expanded="false" aria-controls="toc-book-description">More...</a>
-	          </p>
-	          <div id="toc-book-description" class="toc-book-description-full d-none" data-toc-description-full="book-description">
-	            <div class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description" data-markdown-source="<%= bookDescriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- bookDescription %></div>
-	            <% if (book.id > 0) { %>
-	              <small>
-	                Author: <span class="_e" data-id="<%=book.id%>" data-prop="book.author"><%- book.author %></span>
-	                (d. <span class="_e" data-id="<%=book.id%>" data-prop="book.death"><%- book.death %></span> H)
-	              </small>
-	            <% } %>
-	          </div>
-	        <% } else if (site.editMode) { %>
-	          <div class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description" data-markdown-source="<%= bookDescriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- bookDescription %></div>
-	        <% } %>
-	      </section>
-	      <% } %>
-	
-	      <% if (!isQuranToc) { %>
+          const quranCommentaryDescriptionDetails = hasQuranCommentaryDescriptionDetails(quranCommentaryBook);
+          const quranCommentaryDescriptionSummary = bookDescriptionPreviewText || (quranCommentaryDescriptionDetails ? 'Book details' : '');
+          %>
+          <% if (quranCommentaryDescriptionSummary || bookDescription) { %>
+          <p class="toc-book-description-summary text-muted" data-toc-description-summary="book-description">
+            <span class="toc-book-description-preview"><%= quranCommentaryDescriptionSummary %></span>
+            <a href="#toc-book-description" data-toc-description-expand="book-description" role="button" aria-expanded="false" aria-controls="toc-book-description">More...</a>
+          </p>
+          <div id="toc-book-description" class="toc-book-description-full d-none" data-toc-description-full="book-description">
+            <% if (quranCommentaryBook) { %>
+              <% if (quranCommentaryBook.type === 'tafsir') { %>
+              <div class="tafsir-book-meta text-muted mb-2">
+                <% if (quranCommentaryBook.name_en || quranCommentaryBook.shortName_en) { %>
+                <div><%- quranCommentaryBook.name_en || quranCommentaryBook.shortName_en %></div>
+                <% } %>
+                <% if (quranCommentaryBook.title || quranCommentaryBook.shortName) { %>
+                <div lang="ar" dir="rtl"><%- quranCommentaryBook.title || quranCommentaryBook.shortName %></div>
+                <% } %>
+                <% if (quranCommentaryBook.author_en || quranCommentaryBook.author || commentaryDeathLabel(quranCommentaryBook)) { %>
+                <div><%- quranCommentaryBook.author_en || quranCommentaryBook.author || '' %><% if (commentaryDeathLabel(quranCommentaryBook)) { %> (<%- commentaryDeathLabel(quranCommentaryBook) %>)<% } %></div>
+                <% } %>
+                <% if (quranCommentaryBook.author || quranCommentaryBook.author_en || commentaryArabicDeathLabel(quranCommentaryBook)) { %>
+                <div lang="ar" dir="rtl"><%- quranCommentaryBook.author || quranCommentaryBook.author_en || '' %><% if (commentaryArabicDeathLabel(quranCommentaryBook)) { %> (<%- commentaryArabicDeathLabel(quranCommentaryBook) %>)<% } %></div>
+                <% } %>
+              </div>
+              <% } %>
+              <% if (bookDescription) { %>
+              <div class="mb-1"><%- bookDescription %></div>
+              <% } %>
+            <% } else { %>
+            <div class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description" data-markdown-source="<%= bookDescriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- bookDescription %></div>
+            <% } %>
+            <% if (!quranCommentaryBook && book.id > 0) { %>
+            <small>
+              Author: <span class="_e" data-id="<%=book.id%>" data-prop="book.author"><%- book.author %></span>
+              (d. <span class="_e" data-id="<%=book.id%>" data-prop="book.death"><%- book.death %></span> H)
+            </small>
+            <% } %>
+          </div>
+          <% } else if (site.editMode && !quranCommentaryBook) { %>
+          <div class="_e mb-1" data-id="<%=book.id%>" data-prop="book.description" data-markdown-source="<%= bookDescriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- bookDescription %></div>
+          <% } %>
+        </section>
+        <% } %>
+
+        <% if (showHadithBookChrome) { %>
 	      <aside class="h"><div class="tags">
         <span class="bi bi-download"></span> <a href="<%= utils.urlFor(req, `/${book.alias}?download&tsv`) %>" type="button" rel="nofollow">Download TSV</a>
       </div></aside>
-	      <% } %>
+        <% } %>
 
-        <% if (!isQuranToc) { %>
+        <% if (showHadithBookChrome) { %>
         <hr class="mt-3">
         <% } %>
-        <% if (isQuranToc) { %>
-          <%- include('sub-views/tafsirBookNav.ejs', { tafsirs: tafsirs || [], Tafsir: Tafsir }); %>
-        <% } %>
-        <section data-random-toc-item data-src="<%= utils.urlFor(req, `/${book.alias}/random`) %>">
+        <% if (showRandomTocItem) { %>
+        <section data-random-toc-item data-src="<%= utils.urlFor(req, randomTocItemSrc) %>">
+          <% if (showRandomTocTitle) { %>
           <header class="row">
-            <h3 class="col-12 fs-4">Random <%= isQuranToc ? 'āyah' : 'ḥadīth' %> in <%- book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h3>
+            <h3 class="col-12 fs-4">Random <%= isQuranToc ? 'āyah' : 'ḥadīth' %> in <%- quranCommentaryBook ? quranCommentaryBookLabel : book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h3>
           </header>
+          <% } %>
         </section>
-        <% if (!isQuranToc) { %>
+        <% } %>
+        <% if (showHadithBookChrome) { %>
         <hr>
         <% } %>
 
@@ -216,7 +405,7 @@
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
             <tr class="chapter" data-toc-chapter="<%= chapterRowId %>">
-              <% if (!isQuranToc) { %>
+              <% if (showHadithBookChrome) { %>
               <td><%- toc[i].start %></td>
               <% } %>
               <td>
@@ -234,9 +423,9 @@
                 <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
                   <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
                 </button>
-                <a href="<%= utils.urlFor(req, `/${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}`) %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a>
+                <a href="<%= quranTocHref(toc[i]) %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a>
               </td>
-              <td lang="ar"><a href="<%= utils.urlFor(req, `/${toc[i].firstSection ? toc[i].firstSection.path : toc[i].path}`) %>" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
+              <td lang="ar"><a href="<%= quranTocHref(toc[i]) %>" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
               <% } else { %>
               <td>
                 <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
@@ -255,15 +444,15 @@
               var sectionTitle = truncateTitle(section.title, 150);
             %>
             <tr class="title toc-section-row d-none" data-toc-parent="<%= chapterRowId %>">
-              <% if (!isQuranToc) { %>
+              <% if (showHadithBookChrome) { %>
               <td><%- section.start %></td>
               <% } %>
               <td><span class="toc-section-number">S<%- section.h1 %>.<%- section.h2 %></span></td>
               <% if (section.path) { %>
               <td>
-                <a href="<%= utils.urlFor(req, `/${section.path}`) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></a>
+                <a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></a>
               </td>
-              <td lang="ar"><a href="<%= utils.urlFor(req, `/${section.path}`) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
+              <td lang="ar"><a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
               <% } else { %>
               <td class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></td>
               <td lang="ar" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></td>
@@ -277,7 +466,7 @@
       </section>
       </article>
       
-      <% if (!isQuranToc) { %>
+      <% if (showHadithBookChrome) { %>
       <aside class="row mt-2 pagination">
         <div class="col-md-6 col-xs-12 text-start pagination-nav-slot pagination-nav-slot-prev">
           <% if (page.prev) { %>
@@ -291,11 +480,14 @@
         </div>
       </aside>
       <% } %>
+      <% if (quranCommentaryBook) { %>
+        <%- include('sub-views/quran_commentary_pagination.ejs', { quranCommentaryBook: quranCommentaryBook, quranCommentaryBooks: quranCommentaryBooks, Tafsir: Tafsir, className: 'mt-2' }); %>
+      <% } %>
       
     </main>
   </div>
   
-  <% if (!isQuranToc) { %>
+  <% if (showHadithBookChrome) { %>
     <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
   <% } %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>

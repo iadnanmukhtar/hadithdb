@@ -1,14 +1,12 @@
 'use strict';
 
 const createError = require('http-errors');
-const ejs = require('ejs');
 const express = require('express');
-const fs = require('fs');
 const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
-const { Item } = require('../lib/Model');
+const { Item, Library } = require('../lib/Model');
 
 const router = express.Router();
 
@@ -20,12 +18,7 @@ router.get('/:tafsir', async function (req, res, next) {
   if (!tafsir)
     return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
 
-  const passage = await Tafsir.firstPassage(tafsir);
-  if (!passage)
-    return next(createError(404, `Tafsīr '${req.params.tafsir}' has no passages`));
-
-  const allTafsirs = await Tafsir.visibleTafsirs();
-  res.redirect(302, Utils.quranPath(Tafsir.browseUrl(tafsir, passage.surah, passage.ayah, allTafsirs)));
+  await renderTafsirBookToc(req, res, tafsir);
 });
 
 router.get('/:tafsir/:surah', async function (req, res, next) {
@@ -53,14 +46,6 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
-  const cachedFile = Utils.htmlCacheFile(req, { includeBaseUrl: true });
-  const flushCache = Utils.shouldFlushCache(req);
-  if (flushCache)
-    await Utils.flushCachedFile(cachedFile);
-  if (!flushCache && !editMode && fs.existsSync(cachedFile)) {
-    sendCachedHtml(req, res, cachedFile);
-    return;
-  }
 
   const surahNum = Number(req.params.surah);
   const ayahNum = Number(req.params.ayah);
@@ -111,19 +96,30 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
     tafsir: tafsir
   };
 
-  if (!editMode) {
-    const cachedHtml = await ejs.renderFile(`${__dirname}/../views/tafsir_passage.ejs`, {
-      ...renderLocals,
-      noadmin: true,
-      req: req,
-      res: res
-    });
-    Utils.writeCachedHtml(cachedFile, cachedHtml);
-    await Utils.indexCachedItem(tafsirCacheRefs(tafsir, entries, surahNum, ayahNum), cachedFile);
-  }
-
   res.render('tafsir_passage', renderLocals);
 });
+
+async function renderTafsirBookToc(req, res, tafsir) {
+  const quranBook = (global.books || []).find(book => book && book.alias === 'quran' && Number(book.hidden) === 0);
+  if (!quranBook)
+    throw createError(404, `Book 'quran' does not exist`);
+
+  const toc = await Library.instance.findBook('quran').getChapters();
+  const tafsirs = await Tafsir.visibleTafsirs();
+  const renderLocals = {
+    book: quranBook,
+    prevBook: null,
+    nextBook: null,
+    toc: toc,
+    random: undefined,
+    Tafsir: Tafsir,
+    tafsirs: tafsirs,
+    quranCommentaryBooks: tafsirs,
+    quranCommentaryBook: tafsir
+  };
+
+  res.render('toc', renderLocals);
+}
 
 async function quranAyahs(surah, startAyah, endAyah) {
   let rows;
@@ -170,11 +166,6 @@ async function quranAyahsFromDb(surah, startAyah, endAyah) {
 function isSearchBackendUnavailable(err) {
   const status = err && (err.status || err.statusCode);
   return [502, 503, 504].includes(Number(status));
-}
-
-function sendCachedHtml(req, res, cachedFile) {
-  res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-  res.end(Utils.readCachedHtml(cachedFile, req));
 }
 
 async function tafsirNavigation(tafsir, entries, tafsirs, surah, ayah) {
@@ -241,24 +232,6 @@ function quranAdjacentRef(surah, ayah, direction) {
 function navigationTarget(tafsir, surah, ayah, tafsirs) {
   const url = Tafsir.browseUrl(tafsir, surah, ayah, tafsirs);
   return Utils.quranPath(url);
-}
-
-function tafsirCacheRefs(tafsir, entries, surah, ayah) {
-  const refs = new Set([
-    `tafsir:${tafsir.alias}`,
-    `tafsir:${tafsir.slug || Tafsir.tafsirSlug(tafsir.alias)}`,
-    `quran:${surah}:${ayah}`
-  ]);
-  (entries || []).forEach(function (entry) {
-    const startAyah = Number(entry.startAyah);
-    const endAyah = Number(entry.endAyah);
-    if (!Number.isInteger(startAyah) || !Number.isInteger(endAyah))
-      return;
-    refs.add(`quran:${entry.surah}:${startAyah}${endAyah > startAyah ? `-${endAyah}` : ''}`);
-    for (let entryAyah = startAyah; entryAyah <= endAyah; entryAyah++)
-      refs.add(`quran:${entry.surah}:${entryAyah}`);
-  });
-  return Array.from(refs);
 }
 
 module.exports = router;

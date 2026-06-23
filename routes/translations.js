@@ -10,8 +10,24 @@ const { Item } = require('../lib/Model');
 
 const router = express.Router();
 
-router.get('/', function (req, res) {
-  res.redirect(302, Utils.quranPath('/quran/translations/1/1'));
+router.get('/', async function (req, res) {
+  res.locals.req = req;
+  res.locals.res = res;
+
+  const translations = await Tafsir.visibleTranslations();
+  if ('json' in req.query) {
+    Utils.sendJsonDownload(res, 'hadithunlocked_quran_translations.json', translations);
+  } else if ('tsv' in req.query) {
+    res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+    var keyNames = Object.keys(translations[0] || {});
+    if ('keys' in req.query)
+      keyNames = req.query.keys.split(/,/);
+    res.end(Utils.toTSV(translations, keyNames));
+  } else {
+    res.render('translation_books', {
+      translations: translations
+    });
+  }
 });
 
 router.get('/:surah', async function (req, res, next) {

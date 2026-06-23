@@ -21,8 +21,15 @@
         quranSearchProxy: true
       }
     };
-    var tafsirBrowseUrl = function (tafsir) {
-      return utils.quranUrl(req, Tafsir.browseUrl(tafsir, tafsir.firstSurah || 1, tafsir.firstAyah || 1, tafsirs));
+    var tafsirBookUrl = function (tafsir) {
+      var slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
+      var hasLanguageCollision = (tafsirs || []).some(function (other) {
+        return other && other !== tafsir && other.lang !== tafsir.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
+      });
+      var query = hasLanguageCollision && (tafsir.lang === 'ar' || tafsir.lang === 'en')
+        ? `?lang=${encodeURIComponent(tafsir.lang)}`
+        : '';
+      return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
     };
     var tafsirDeathLabel = function (tafsir) {
       var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
@@ -172,7 +179,7 @@
                     var descriptionPreview = tafsirDescriptionPreview(descriptionMarkdown);
                     var descriptionId = tafsirDescriptionId(group, tafsir);
                     var descriptionKey = `${descriptionId}-body`;
-                    var browseUrl = tafsirBrowseUrl(tafsir);
+                    var browseUrl = tafsirBookUrl(tafsir);
                     var editableBookId = tafsir.id || '';
                   %>
                   <article class="tafsir-book-card tafsir-book-row" data-tafsir-book-filter="<%= [

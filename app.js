@@ -317,6 +317,31 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/quran/user-settings', userSettingsRouter);
   app.use('/chatbot', chatbotRouter);
   app.use('/rag', chatbotRouter);
+  app.use(function redirectTranslationAliases(req, res, next) {
+    const alias = req.path.replace(/^\/+/, '').replace(/\/.*$/, '');
+    const pathRemainder = req.path.replace(/^\/+/, '').split('/').slice(1).filter(Boolean);
+    if (alias && (global.commentaries || []).some(book => book && book.type === 'trans' && book.alias === alias)) {
+      const targetPath = `/quran/${[alias].concat(pathRemainder).map(encodeURIComponent).join('/')}`;
+      return res.redirect(301, Utils.quranUrl(req, `${targetPath}${requestQueryString(req) ? `?${requestQueryString(req)}` : ''}`));
+    }
+    next();
+  });
+  app.use(function redirectTafsirAliases(req, res, next) {
+    const alias = req.path.replace(/^\/+/, '').replace(/\/.*$/, '');
+    const pathRemainder = req.path.replace(/^\/+/, '').split('/').slice(1).filter(Boolean);
+    if (alias) {
+      const isTafsirAlias = (global.commentaries || []).some(book => {
+        if (!book || book.type !== 'tafsir')
+          return false;
+        if (book.alias === alias)
+          return true;
+        return (book.alias || '').toString().replace(/^(?:(?:en|ar)-)?(?:tafsir-)?/, '') === alias;
+      });
+      if (isTafsirAlias)
+        return res.redirect(301, Utils.quranUrl(req, `/quran/tafsir/${[alias].concat(pathRemainder).map(encodeURIComponent).join('/')}${requestQueryString(req) ? `?${requestQueryString(req)}` : ''}`));
+    }
+    next();
+  });
   app.get('/error', function (req, res) {
     const statusCode = normalizeHttpStatusCode(req.query.status);
     const message = typeof req.query.message === 'string'

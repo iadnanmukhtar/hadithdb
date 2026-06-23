@@ -1404,6 +1404,17 @@ router.get('/:bookAlias/random', async function (req, res, next) {
   if (!random || random.length < 1)
     return next(createError(404, `Random item in ${book.shortName_en || book.alias} not found`));
   random = new Item(random[0]);
+  var quranCommentaryBook = null;
+  if (book.alias === 'quran' && typeof req.query.translation === 'string' && /^[A-Za-z0-9_-]+$/.test(req.query.translation)) {
+    quranCommentaryBook = (global.commentaries || []).find(function (commentaryBook) {
+      return commentaryBook
+        && Number(commentaryBook.hidden) === 0
+        && commentaryBook.type === 'trans'
+        && commentaryBook.alias === req.query.translation;
+    }) || null;
+    if (quranCommentaryBook)
+      await applyRandomQuranTranslation(random, quranCommentaryBook);
+  }
 
   var site = Object.assign({}, global.settings.site);
   site.admin = false;
@@ -1413,7 +1424,8 @@ router.get('/:bookAlias/random', async function (req, res, next) {
     title_en: book.alias === 'quran' ? 'Quran | Table of Contents' : Utils.hadithBookTitle(book),
     canonical: `/${book.alias}`,
     context: {
-      book: book
+      book: book,
+      quranCommentaryBook: quranCommentaryBook
     }
   };
 
@@ -1421,10 +1433,29 @@ router.get('/:bookAlias/random', async function (req, res, next) {
   res.render('sub-views/random_toc_item', {
     book: book,
     page: page,
+    quranCommentaryBook: quranCommentaryBook,
     random: random,
     site: site
   });
 });
+
+async function applyRandomQuranTranslation(random, translationBook) {
+  var ref = Arabic.toLatinDigits((random && (random.en?.num || random.num || random.ref) || '').toString()).replace(/^quran:/, '');
+  var parts = ref.split(/[:/-]/).filter(Boolean).map(value => Number(value));
+  var surah = parts[0];
+  var ayah = parts[1];
+  if (!Number.isInteger(surah) || !Number.isInteger(ayah))
+    return;
+  var translation = await Tafsir.localTranslationEntry(translationBook, surah, ayah).catch(function (err) {
+    debug.error(`random quran translation failed alias=${translationBook.alias} ref=${surah}:${ayah}: ${err.message}\n${err.stack || ''}`);
+    return null;
+  });
+  if (!translation || !translation.html)
+    return;
+  random.body_en = translation.html;
+  if (random.en)
+    random.en.body = translation.html;
+}
 
 // QURAN SEARCH PROXY
 router.get('/quran', async function (req, res, next) {
@@ -1539,6 +1570,66 @@ router.get('/:bookAlias', async function (req, res, next) {
     return next(createError(404, `Book '${req.params.bookAlias}' does not exist`));
 });
 
+// QURAN COMMENTARY BOOK: TABLE OF CONTENTS
+router.get('/quran/:commentaryAlias', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
+
+  var alias = (req.params.commentaryAlias || '').toString();
+  var quranCommentaryBook = await resolveQuranCommentaryBook(alias);
+  if (!quranCommentaryBook)
+    return next();
+
+  var book = global.books.find(function (value) {
+    return value && value.alias === 'quran' && value.hidden == 0;
+  });
+  if (!book)
+    return next(createError(404, `Book 'quran' does not exist`));
+
+  var results = await Library.instance.findBook('quran').getChapters();
+  var tafsirs = quranCommentaryBook.type === 'tafsir' ? await Tafsir.visibleTafsirs() : [];
+  var translations = quranCommentaryBook.type === 'trans' ? await Tafsir.visibleTranslations() : [];
+  var renderLocals = {
+    book: book,
+    prevBook: null,
+    nextBook: null,
+    toc: results,
+    random: undefined,
+    Tafsir: Tafsir,
+    tafsirs: tafsirs,
+    translations: translations,
+    quranCommentaryBooks: quranCommentaryBook.type === 'trans' ? translations : tafsirs,
+    quranCommentaryBook: quranCommentaryBook
+  };
+
+  if ('json' in req.query) {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(results));
+    return;
+  }
+  if ('tsv' in req.query) {
+    res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
+    var keyNames = Object.keys(results[0]);
+    if ('keys' in req.query)
+      keyNames = req.query.keys.split(/,/);
+    res.end(Utils.toTSV(results, keyNames));
+    return;
+  }
+
+  res.render('toc', renderLocals);
+});
+
+async function resolveQuranCommentaryBook(alias) {
+  if (!alias)
+    return null;
+  var translation = (global.commentaries || []).find(function (book) {
+    return book && Number(book.hidden) === 0 && book.type === 'trans' && book.alias === alias;
+  });
+  if (translation)
+    return { ...translation, quranBookSlug: alias };
+  return null;
+}
+
 // BOOK: CHAPTER
 router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
@@ -1561,7 +1652,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     if (bookAlias === 'quran' && shouldRedirectQuranSurahPath(req)) {
       var firstSectionNum = await firstQuranSectionNumber(chapterNum);
       if (firstSectionNum)
-        return res.redirect(302, `${Utils.quranUrl(req, `/quran/${chapterNum}/${firstSectionNum}`)}#`);
+        return res.redirect(302, `${Utils.quranUrl(req, `/quran/${chapterNum}/${firstSectionNum}`)}${appendOriginalQuery(req)}#`);
     }
 
     var quranChapterPassage = bookAlias === 'quran' && req.query.ayat == undefined;

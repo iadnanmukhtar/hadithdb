@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+    var site = Object.assign({}, global.settings.site);
+    site.admin = (!locals.noadmin && req.admin);
+    if (!locals.noadmin)
+      site.editMode = (site.admin && req.editMode);
+    else
+      site.editMode = false;
+    site.name = 'Quran Unlocked';
+    site.shortName = 'Quran';
+
+    var page = {
+      menu: 'Books',
+      title_en: `Quran | Translation Books`,
+      subtitle_en: `Translation Books`,
+      subtitle: ``,
+      canonical: `/quran/translations`,
+      context: {
+        quranSearchProxy: true
+      }
+    };
+    var translationBookUrl = function (translation) {
+      return utils.quranUrl(req, `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}`);
+    };
+    var translationDeathLabel = function (translation) {
+      var death = utils.emptyIfNull(translation.death || '').toString().trim();
+      if (!death)
+        return '';
+      if (!/\bCE\b/i.test(death))
+        death = `${death} CE`;
+      return /^d\./i.test(death) ? death : `d. ${death}`;
+    };
+    var commentaryPublicationLabel = function (book) {
+      return [
+        book && book.published_year ? `Pub. ${book.published_year}` : '',
+        book && book.publisher ? book.publisher : ''
+      ].filter(Boolean).join(', ');
+    };
+    var htmlToPlainText = function (value) {
+      return utils.emptyIfNull(value || '')
+        .toString()
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        .replace(/[*_`#>]+/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+    var translationDescriptionPreview = function (description) {
+      return htmlToPlainText(description.split(/\r?\n/).map(function (line) {
+        return line.trim();
+      }).find(Boolean) || description);
+    };
+    var translationDescriptionId = function (translation) {
+      return `translation-book-description-${utils.emptyIfNull(translation.alias || '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
+    };
+%>
+
+<%- include('sub-views/head.ejs', { site: site, page: page }); %>
+</head>
+<body>
+
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+
+  <div class="container col-lg-8 mx-auto">
+    <main>
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Table",
+          "name" : "Available Quran Translation Books",
+          "about": "Available Quran Translation Books"
+        }
+      </script>
+
+      <div class="page-content-filter input-group mb-3">
+        <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
+        <input type="search" class="form-control translation-book-filter" placeholder="Filter translation books" aria-label="Filter translation books" autocomplete="off" autofocus>
+      </div>
+
+      <section class="mb-4">
+        <% if (!translations || translations.length < 1) { %>
+          <p class="text-muted">No English translations are currently available.</p>
+        <% } else { %>
+          <div class="tafsir-book-list">
+            <% translations.forEach(function (translation) { %>
+              <%
+                var descriptionMarkdown = utils.emptyIfNull(translation.description || '');
+                var descriptionHtml = utils.markdownToHtml(descriptionMarkdown);
+                var descriptionPreview = translationDescriptionPreview(descriptionMarkdown);
+                var descriptionId = translationDescriptionId(translation);
+                var descriptionKey = `${descriptionId}-body`;
+                var editableBookId = translation.id || '';
+                var bookUrl = translationBookUrl(translation);
+              %>
+              <article class="translation-book-card tafsir-book-row" data-translation-book-filter="<%- [
+                translation.alias,
+                translation.name_en,
+                translation.shortName_en,
+                translation.author_en,
+                translation.author,
+                translation.published_year,
+                translation.publisher,
+                translation.description
+              ].filter(Boolean).join(' ').toLowerCase() %>">
+                <div class="tafsir-book-row-main">
+                  <div class="tafsir-book-title-pair tafsir-book-title-pair-single">
+                    <h3 class="tafsir-book-title-line mb-0">
+                      <% if (site.editMode) { %>
+                        <span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en"><%- translation.shortName_en || translation.name_en || translation.alias %></span>
+                      <% } else { %>
+                        <a href="<%= bookUrl %>"><%- translation.shortName_en || translation.name_en || translation.alias %></a>
+                      <% } %>
+                    </h3>
+                  </div>
+                  <% if (site.editMode || translation.name_en) { %>
+                    <div class="tafsir-book-full-name tafsir-book-full-name-single">
+                      <div <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en"<% } %>><%- translation.name_en %></div>
+                    </div>
+                  <% } %>
+                  <div class="tafsir-book-meta text-muted tafsir-book-meta-single">
+                    <div>
+                      <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author_en"<% } %>><%- translation.author_en || translation.author || '' %></span>
+                      <% if (site.editMode || translationDeathLabel(translation)) { %>
+                        <span>(<span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.death"<% } %>><%- site.editMode ? translation.death : translationDeathLabel(translation) %></span>)</span>
+                      <% } %>
+                    </div>
+                  </div>
+                  <% if (site.editMode) { %>
+                    <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
+                      <div class="_e tafsir-book-description-editor" data-id="<%= editableBookId %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
+                    </div>
+                  <% } else if (descriptionPreview || descriptionHtml) { %>
+                    <button type="button" class="toc-book-description-summary tafsir-book-description-summary text-muted text-start" data-toc-description-summary="<%= descriptionKey %>" data-toc-description-expand="<%= descriptionKey %>" aria-expanded="false" aria-controls="<%= descriptionId %>">
+                      <span class="toc-book-description-preview"><%= descriptionPreview %></span>
+                      <span class="tafsir-book-description-more">More...</span>
+                    </button>
+                    <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full d-none" data-toc-description-full="<%= descriptionKey %>">
+                      <%- descriptionHtml %>
+                    </div>
+                  <% } %>
+                  <% if (site.editMode || commentaryPublicationLabel(translation)) { %>
+                    <small class="tafsir-book-publication text-muted">
+                      <% if (site.editMode) { %>
+                        Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="book.published_year"><%- translation.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="book.publisher"><%- translation.publisher || '' %></span>
+                      <% } else { %>
+                        <%- commentaryPublicationLabel(translation) %>
+                      <% } %>
+                    </small>
+                  <% } %>
+                </div>
+              </article>
+            <% }); %>
+          </div>
+        <% } %>
+      </section>
+      <p class="text-muted d-none translation-book-filter-empty">No matching translation books found.</p>
+    </main>
+  </div>
+
+<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+<script>
+  (function () {
+    var filter = document.querySelector('.translation-book-filter');
+    if (!filter)
+      return;
+    filter.focus();
+    var normalize = function (value) {
+      return (value || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
+    };
+    var cards = Array.from(document.querySelectorAll('.translation-book-card'));
+    var empty = document.querySelector('.translation-book-filter-empty');
+    filter.addEventListener('input', function () {
+      var query = normalize(filter.value);
+      var visibleCount = 0;
+      cards.forEach(function (card) {
+        var match = !query || normalize(card.dataset.translationBookFilter).includes(query);
+        card.classList.toggle('d-none', !match);
+        if (match)
+          visibleCount += 1;
+      });
+      if (empty)
+        empty.classList.toggle('d-none', visibleCount > 0 || !query);
+    });
+  })();
+</script>
+
+</body>
+</html>
