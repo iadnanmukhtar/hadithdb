@@ -83,7 +83,7 @@ module.exports = createReflectionRouter({
     if (payload.type === 'toc')
       return {
         subject: `Quran passage ${payload.ref || payload.targetId}`,
-        url: `${global.settings.site.url}/${payload.ref || payload.targetId}`
+        url: `${global.settings.site.quranUrl || global.settings.site.url}/${payload.ref || payload.targetId}`
       };
     return {
       subject: `Hadith ${payload.ref}`,

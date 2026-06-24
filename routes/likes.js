@@ -92,9 +92,10 @@ async function sendLikeEmail(payload) {
   const action = payload.action === 'unlike' ? 'unlike' : 'like';
   const targetLabel = payload.type === 'toc' ? 'TOC passage' : 'Hadith';
   const subject = `New ${action} on ${targetLabel} ${payload.ref || payload.hadithId}`;
+  const url = itemUrl(payload);
   const body = `
 New ${action} received
-Target: ${global.settings.site.url}/${payload.ref || payload.hadithId}
+Target: ${url}
 Target Type: ${payload.type || 'hadith'}
 Target ID: ${payload.hadithId}
 Likes total: ${payload.likes}
@@ -111,6 +112,66 @@ User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider 
   } catch (e) {
     debug.error(`Like email notification failed: ${e.message}\n${e.stack || ''}`);
   }
+  if (action === 'like')
+    await sendLikeParticipantEmails(payload, url, targetLabel);
+}
+
+async function sendLikeParticipantEmails(payload, url, targetLabel) {
+  const recipients = await getLikeRecipients(payload);
+  if (!recipients.length) return;
+  const userLabel = payload.user ? `${payload.user.name || 'Someone'}` : 'Someone';
+  const body = `
+${userLabel} liked ${targetLabel} ${payload.ref || payload.hadithId}.
+${url}
+
+Likes total: ${payload.likes}
+`;
+  await Promise.all(recipients.map(recipient => sendMail({
+    from: global.settings.smtp.from,
+    to: recipient.email,
+    subject: `New like on ${targetLabel} ${payload.ref || payload.hadithId}`,
+    text: body
+  }, 'Like participant email notification failed')));
+}
+
+async function getLikeRecipients(payload) {
+  const rows = await global.query(`
+    SELECT user_uid, user_provider, user_email
+    FROM hadiths_likes
+    WHERE hadithId=${payload.hadithId}
+      AND \`type\`='${Utils.escSQL(payload.type || 'hadith')}'
+      AND user_email IS NOT NULL
+  `);
+  const seen = new Set();
+  const recipients = [];
+  rows.forEach(row => {
+    const email = Utils.trimToEmpty(row.user_email);
+    const normalized = email.toLowerCase();
+    if (!email || normalized === 'null' || seen.has(normalized) || isLikeOwner(row, payload.user)) return;
+    seen.add(normalized);
+    recipients.push({ email });
+  });
+  return recipients;
+}
+
+async function sendMail(message, failureLabel) {
+  try {
+    await getMailer().sendMail(message);
+  } catch (err) {
+    debug.error(`${failureLabel}: ${err.message}\n${err.stack || ''}`);
+  }
+}
+
+function isLikeOwner(row, user) {
+  if (!row || !user) return false;
+  if (row.user_uid === user.uid) return true;
+  return !!(row.user_email && user.email && row.user_email === user.email && row.user_provider === user.provider);
+}
+
+function itemUrl(payload) {
+  const site = global.settings && global.settings.site ? global.settings.site : {};
+  const baseUrl = payload.type === 'toc' ? (site.quranUrl || site.url || '') : (site.url || '');
+  return `${baseUrl.replace(/\/$/, '')}/${String(payload.ref || payload.hadithId).replace(/^\//, '')}`;
 }
 
 async function verifyGoogle(req, res, next) {
@@ -267,7 +328,7 @@ router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
       ua: req.get('user-agent'),
       action,
       user: req.user || null
-    });
+    }).catch(err => debug.error(`Like participant notification failed: ${err.message}\n${err.stack || ''}`));
   } catch (err) {
     debug.error(`Error updating likes:\n${err.stack || err.message}`);
     next(err);

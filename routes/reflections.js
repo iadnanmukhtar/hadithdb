@@ -50,25 +50,27 @@ ${comment.text}
     }, 'Email notification failed');
   }
 
-  async function sendReplyEmail(reply, parent) {
-    const recipient = Utils.trimToEmpty(parent.user_email);
-    if (!recipient || recipient === 'null' || isCommentOwner(parent, reply.user)) return;
+  async function sendReplyThreadEmails(reply, threadRows) {
+    const recipients = getReplyThreadRecipients(threadRows, reply.user);
+    if (!recipients.length) return;
     const subject = config.describe(reply).subject;
-    await sendMail({
-      from: reply.user.email || global.settings.smtp.from,
-      to: recipient,
-      subject: `New reply to your reflection on ${subject}`,
-      text: `
-${reply.user.name} replied to your reflection.
-${subject}: ${config.describe(reply).url}${config.replyAnchor}
-
-Your reflection:
-${parent.text}
+    const url = `${config.describe(reply).url}${config.replyAnchor}`;
+    const text = `
+${reply.user.name} replied in a reflection thread you are part of.
+${subject}: ${url}
 
 Reply:
 ${reply.text}
-`
-    }, 'Reply email notification failed');
+
+Conversation history:
+${formatThreadHistory(threadRows)}
+`;
+    await Promise.all(recipients.map(recipient => sendMail({
+      from: reply.user.email || global.settings.smtp.from,
+      to: recipient.email,
+      subject: `New reply in your reflection thread on ${subject}`,
+      text
+    }, 'Reply email notification failed')));
   }
 
   async function sendVoteEmail(payload) {
@@ -88,6 +90,8 @@ Comment snippet:
 ${payload.text || '(no text found)'}
 `
     }, 'Vote email notification failed');
+    const threadRows = await getVoteThreadRows(payload.row);
+    await sendVoteThreadEmails(payload, threadRows);
   }
 
   async function getVoteStats(commentIds, userUid = null) {
@@ -113,6 +117,119 @@ ${payload.text || '(no text found)'}
       };
     });
     return stats;
+  }
+
+  async function getReplyThreadRows(target, replyId, parentId) {
+    const rows = await global.query(`
+      SELECT id, parentId, user_uid, user_provider, user_name, user_email, text, createdAt
+      FROM ${config.table}
+      WHERE ${targetWhere(target)}
+        AND deleted=0
+      ORDER BY createdAt ASC, id ASC
+    `);
+    return getThreadRows(rows, parentId).filter(row => row.id !== replyId).concat(rows.filter(row => row.id === replyId));
+  }
+
+  async function getVoteThreadRows(row) {
+    const target = targetFromRow(row);
+    const rows = await global.query(`
+      SELECT id, parentId, user_uid, user_provider, user_name, user_email, text, createdAt
+      FROM ${config.table}
+      WHERE ${targetWhere(target)}
+        AND deleted=0
+      ORDER BY createdAt ASC, id ASC
+    `);
+    return getThreadRows(rows, row.parentId || row.id);
+  }
+
+  function getThreadRows(rows, parentId) {
+    const byId = new Map();
+    const children = new Map();
+    rows.forEach(row => {
+      byId.set(row.id, row);
+      const key = row.parentId || 'root';
+      if (!children.has(key)) children.set(key, []);
+      children.get(key).push(row);
+    });
+
+    let rootId = parentId;
+    let current = byId.get(rootId);
+    const seen = new Set();
+    while (current && current.parentId && !seen.has(current.id)) {
+      seen.add(current.id);
+      rootId = current.parentId;
+      current = byId.get(rootId);
+    }
+
+    const threadRows = [];
+    function visit(id) {
+      const row = byId.get(id);
+      if (row) threadRows.push(row);
+      (children.get(id) || []).forEach(child => visit(child.id));
+    }
+    visit(rootId);
+    return threadRows;
+  }
+
+  function getReplyThreadRecipients(threadRows, replier) {
+    const seen = new Set();
+    const recipients = [];
+    threadRows.forEach(row => {
+      const email = Utils.trimToEmpty(row.user_email);
+      const normalized = email.toLowerCase();
+      if (!email || normalized === 'null' || seen.has(normalized) || isCommentOwner(row, replier)) return;
+      seen.add(normalized);
+      recipients.push({ email, name: row.user_name || 'Community Member' });
+    });
+    return recipients;
+  }
+
+  async function sendVoteThreadEmails(payload, threadRows) {
+    const recipients = getReplyThreadRecipients(threadRows, payload.voter);
+    if (!recipients.length) return;
+    const subject = config.describe(payload).subject;
+    const url = `${config.describe(payload).url}${config.replyAnchor}`;
+    const directionLabel = payload.direction === 'down' ? 'disliked' : 'liked';
+    const text = `
+${payload.voter.name} ${directionLabel} a reflection in a thread you are part of.
+${subject}: ${url}
+
+Voted reflection:
+${indentEmailText(payload.text || '(no text found)')}
+
+Conversation history:
+${formatThreadHistory(threadRows)}
+`;
+    await Promise.all(recipients.map(recipient => sendMail({
+      from: payload.voter.email || global.settings.smtp.from,
+      to: recipient.email,
+      subject: `New ${directionLabel} reflection in your thread on ${subject}`,
+      text
+    }, 'Vote thread email notification failed')));
+  }
+
+  function targetFromRow(row) {
+    const value = row[config.targetColumn];
+    return {
+      value,
+      sql: sqlValue(value),
+      type: config.typeColumn ? (row.type || null) : null
+    };
+  }
+
+  function sqlValue(value) {
+    if (typeof value === 'number') return value;
+    return `'${Utils.escSQL(Utils.trimToEmpty(value))}'`;
+  }
+
+  function formatThreadHistory(threadRows) {
+    if (!threadRows.length) return '(no previous comments found)';
+    return threadRows.map(row => {
+      const author = row.user_name || 'Community Member';
+      const date = formatEmailDate(row.createdAt);
+      const text = Utils.trimToEmpty(row.text) || '(empty reflection)';
+      return `[${date}] ${author}:\n${indentEmailText(text)}`;
+    }).join('\n\n');
   }
 
   async function verifyGoogle(req, res, next) {
@@ -199,7 +316,11 @@ ${payload.text || '(no text found)'}
       const comment = notificationPayload(row, user.photo);
       res.status(201).json(formatSavedComment(row, user.photo));
       sendCommentEmail(comment);
-      if (parentRows[0]) sendReplyEmail(comment, parentRows[0]);
+      if (parentRows[0]) {
+        getReplyThreadRows(target, row.id, parentId)
+          .then(threadRows => sendReplyThreadEmails(comment, threadRows))
+          .catch(err => debug.error(`Reply thread notification failed: ${err.message}\n${err.stack || ''}`));
+      }
     } catch (err) {
       debug.error(`Error adding comment:\n${err.stack || err.message}`);
       next(err);
@@ -311,11 +432,12 @@ ${payload.text || '(no text found)'}
       res.json(formatVote(row, vote, direction));
       sendVoteEmail({
         ...config.notificationFields(row),
+        row,
         direction,
         commentId: row.id,
         text: row.text,
         voter: req.user
-      });
+      }).catch(err => debug.error(`Vote thread notification failed: ${err.message}\n${err.stack || ''}`));
     } catch (err) {
       debug.error(`Error voting on comment:\n${err.stack || err.message}`);
       next(err);
@@ -427,6 +549,17 @@ function buildCommentUser(row, fallbackPhoto = null) {
 
 function formatUser(user) {
   return `${user.name} (${user.provider}${user.email ? `, ${user.email}` : ''})`;
+}
+
+function formatEmailDate(value) {
+  if (!value) return 'unknown time';
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return Utils.trimToEmpty(value) || 'unknown time';
+  return date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC');
+}
+
+function indentEmailText(text) {
+  return Utils.trimToEmpty(text).split(/\r?\n/).map(line => `  ${line}`).join('\n');
 }
 
 function formatVote(row, vote = {}, direction) {

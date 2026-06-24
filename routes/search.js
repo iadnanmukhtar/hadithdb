@@ -1795,10 +1795,13 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     var quranSurahs = (bookAlias === 'quran' && req.query.ayat == undefined)
       ? await getQuranSurahsFromIndex()
       : [];
+    var selectedAyah;
     if (bookAlias === 'quran' && req.query.ayat == undefined)
       results = await getQuranSectionPassageItems(section, offset);
     else
       results = await section.getItems(offset);
+    if (bookAlias === 'quran' && req.query.ayat == undefined)
+      selectedAyah = defaultQuranSectionSelectedAyah(results, sectionNum);
     if (results.length == 0) {
       var item = new Item(section);
       item.id = item.hId = undefined;
@@ -1816,6 +1819,8 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         noadmin: true,
         section: section,
         results: results,
+        selectedAyah: selectedAyah,
+        selectedAyahs: selectedAyah ? [selectedAyah] : [],
         quranSubsections: quranSubsections,
         quranSurahs: quranSurahs,
         req: req,
@@ -1828,6 +1833,8 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         Tafsir: Tafsir,
         section: section,
         results: results,
+        selectedAyah: selectedAyah,
+        selectedAyahs: selectedAyah ? [selectedAyah] : [],
         quranSubsections: quranSubsections,
         quranSurahs: quranSurahs
       });
@@ -1880,6 +1887,15 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
   }
 
 });
+
+function defaultQuranSectionSelectedAyah(results, sectionNum) {
+  if (!Array.isArray(results) || results.length < 1 || !Number.isInteger(sectionNum))
+    return undefined;
+  return results.find(function (ayah) {
+    var ayahNum = parseInt(ayah.numInChapter || (ayah.num || ayah.ref || '').toString().split(/:/).pop(), 10);
+    return ayahNum === sectionNum;
+  });
+}
 
 // BOOK: SECTION
 router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function (req, res, next) {

@@ -1820,42 +1820,58 @@ del em strong {
 
 .mobile-bottom-nav-font-controls {
 	align-items: center;
-	display: inline-flex;
-	gap: .2rem;
+	display: grid;
+	gap: .1rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	justify-content: center;
 	min-height: 3.15rem;
 	min-width: 0;
-	padding: .3rem .05rem;
+	padding: 0;
 }
 
 .mobile-bottom-nav-font-btn {
 	align-items: center;
 	background: var(--c-transparent);
-	border: 1px solid var(--c-accent-30);
+	border: 0;
 	border-radius: .35rem;
 	color: var(--c-accent);
 	display: inline-flex;
+	flex-direction: column;
 	font: inherit;
 	font-size: .72rem;
-	font-weight: 700;
-	height: 2.1rem;
+	font-weight: 600;
+	gap: .12rem;
+	height: auto;
 	justify-content: center;
-	line-height: 1;
-	min-width: 2rem;
-	padding: 0 .3rem;
+	line-height: 1.15;
+	min-height: 3.15rem;
+	min-width: 0;
+	padding: .3rem .1rem;
+	text-align: center;
 }
 
 .mobile-bottom-nav-font-btn:hover,
 .mobile-bottom-nav-font-btn:focus,
 .mobile-bottom-nav-font-btn:active {
 	background: var(--c-accent-08);
-	border-color: var(--c-accent);
 	color: var(--c-accent);
+}
+
+.mobile-bottom-nav-font-btn:disabled {
+	color: var(--bs-secondary-color);
+	opacity: .45;
+	pointer-events: none;
 }
 
 .mobile-bottom-nav-font-btn:focus-visible {
 	outline: 2px solid var(--c-accent-34);
 	outline-offset: 2px;
+}
+
+.mobile-bottom-nav-font-icon {
+	font-size: 1rem;
+	font-weight: 700;
+	line-height: 1;
 }
 
 .mobile-bottom-nav-icon {
@@ -2015,42 +2031,58 @@ del em strong {
 
 	.mobile-bottom-nav-font-controls {
 		align-items: center;
-		display: inline-flex;
-		gap: .2rem;
+		display: grid;
+		gap: .1rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		justify-content: center;
 		min-height: 3.15rem;
 		min-width: 0;
-		padding: .3rem .05rem;
+		padding: 0;
 	}
 
 	.mobile-bottom-nav-font-btn {
 		align-items: center;
 		background: var(--c-transparent);
-		border: 1px solid var(--c-accent-30);
+		border: 0;
 		border-radius: .35rem;
 		color: var(--c-accent);
 		display: inline-flex;
+		flex-direction: column;
 		font: inherit;
 		font-size: .72rem;
-		font-weight: 700;
-		height: 2.1rem;
+		font-weight: 600;
+		gap: .12rem;
+		height: auto;
 		justify-content: center;
-		line-height: 1;
-		min-width: 2rem;
-		padding: 0 .3rem;
+		line-height: 1.15;
+		min-height: 3.15rem;
+		min-width: 0;
+		padding: .3rem .1rem;
+		text-align: center;
 	}
 
 	.mobile-bottom-nav-font-btn:hover,
 	.mobile-bottom-nav-font-btn:focus,
 	.mobile-bottom-nav-font-btn:active {
 		background: var(--c-accent-08);
-		border-color: var(--c-accent);
 		color: var(--c-accent);
+	}
+
+	.mobile-bottom-nav-font-btn:disabled {
+		color: var(--bs-secondary-color);
+		opacity: .45;
+		pointer-events: none;
 	}
 
 	.mobile-bottom-nav-font-btn:focus-visible {
 		outline: 2px solid var(--c-accent-34);
 		outline-offset: 2px;
+	}
+
+	.mobile-bottom-nav-font-icon {
+		font-size: 1rem;
+		font-weight: 700;
+		line-height: 1;
 	}
 
 	.mobile-bottom-nav-icon {
@@ -2059,11 +2091,7 @@ del em strong {
 	}
 
 	.mobile-bottom-nav-label {
-		display: block;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		width: 100%;
+		display: none;
 	}
 }
 
@@ -2800,10 +2828,12 @@ del em strong {
 .quran-passage-translation-select {
 	border-color: var(--bs-secondary-color);
 	font-size: .75rem;
+	height: calc(1.1em + .3rem + 2px);
 	line-height: 1.1;
-	min-height: calc(1.5em + .35rem + 2px);
+	min-height: calc(1.1em + .3rem + 2px);
 	padding-bottom: .15rem;
 	padding-left: 1.55rem;
+	padding-right: 1.55rem;
 	padding-top: .15rem;
 }
 

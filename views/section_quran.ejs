@@ -197,7 +197,7 @@
         <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: selectedAyahs, quranShareId: quranShareId }); %>
       <% } %>
         <% if (results.length > 0) { %>
-          <% var quranHeadingAyahModalIndex = results[0] ? quranAyahModalItems.findIndex(ayah => ayah && ayah.ref === results[0].ref) : -1; %>
+          <% var quranHeadingAyahModalIndex = selectedAyahs.length > 0 ? selectedAyahModalIndex : (results[0] ? quranAyahModalItems.findIndex(ayah => ayah && ayah.ref === results[0].ref) : -1); %>
           <%- include('sub-views/heading.ejs', { site: site, page: page, heading: section, headingEnglishOnly: true, quranHeadingAyahModalIndex: quranHeadingAyahModalIndex }); %>
           <% if (site.editMode && book.alias === 'quran' && section && section.level === 2) {
             var rangeHeading = section;
@@ -233,7 +233,7 @@
           <% } %>
         <% } %>
         <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranSubsections: locals.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
-        <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: quranAyahModalItems }); %>
+        <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: quranAyahModalItems, activeIndex: selectedAyahs.length > 0 ? selectedAyahModalIndex : 0 }); %>
         <% var passageLikeId = section && section.id; %>
         <% if (results.length > 0 && results[0].id && passageLikeId) { %>
           <aside class="tags quran-passage-actions mt-2">

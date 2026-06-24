@@ -141,7 +141,7 @@ function initContentFontSizeControls(scope) {
 	var min = 0.85;
 	var max = 1.25;
 	var root = scope || document;
-	var controls = Array.from(root.querySelectorAll('[data-content-font-size-decrease], [data-content-font-size-increase]'));
+	var controls = Array.from(root.querySelectorAll('[data-content-font-size-decrease], [data-content-font-size-reset], [data-content-font-size-increase]'));
 
 	function normalizedScale(value) {
 		var scale = parseFloat(value);
@@ -157,7 +157,9 @@ function initContentFontSizeControls(scope) {
 		document.documentElement.style.setProperty('--content-font-scale', normalized.toString());
 		controls.forEach(function (control) {
 			var isDecrease = control.hasAttribute('data-content-font-size-decrease');
-			control.disabled = isDecrease ? normalized <= min : normalized >= max;
+			var isIncrease = control.hasAttribute('data-content-font-size-increase');
+			var isReset = control.hasAttribute('data-content-font-size-reset');
+			control.disabled = isDecrease ? normalized <= min : (isIncrease ? normalized >= max : isReset && normalized === 1);
 			control.setAttribute('aria-valuenow', Math.round(normalized * 100).toString());
 		});
 	}
@@ -190,6 +192,14 @@ function initContentFontSizeControls(scope) {
 		applyScale(normalized);
 	}
 
+	function resetScale() {
+		try {
+			if (window.localStorage)
+				localStorage.removeItem(storageKey);
+		} catch (err) {}
+		applyScale(1);
+	}
+
 	applyScale(currentScale());
 
 	controls.forEach(function (control) {
@@ -197,6 +207,10 @@ function initContentFontSizeControls(scope) {
 			return;
 		control.dataset.contentFontSizeBound = 'true';
 		control.addEventListener('click', function () {
+			if (control.hasAttribute('data-content-font-size-reset')) {
+				resetScale();
+				return;
+			}
 			var delta = control.hasAttribute('data-content-font-size-decrease') ? -step : step;
 			saveScale(currentScale() + delta);
 		});
