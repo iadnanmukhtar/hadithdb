@@ -21,6 +21,7 @@ const { homedir } = require('os');
 
 const router = express.Router();
 const sitemapBuilds = new Map();
+const SITEMAP_PAGE_SIZE = 50000;
 
 function redirectEncodedReferencePath(req, res, next) {
   if (req.method !== 'GET' && req.method !== 'HEAD')
@@ -192,12 +193,40 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
 router.get('/sitemap\.txt', async function (req, res, next) {
   res.setHeader('content-type', 'text/plain');
   res.setHeader('Cache-Control', 'no-store');
+  const urls = await sitemapUrls(req);
+  res.end(sitemapText(urls));
+});
+
+router.get('/sitemap\.xml', async function (req, res, next) {
+  res.setHeader('content-type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  const urls = await sitemapUrls(req);
+  res.end(sitemapXml(urls));
+});
+
+router.get('/sitemap-:page(\\d+)\.xml', async function (req, res, next) {
+  res.setHeader('content-type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  const page = Number(req.params.page);
+  if (!Number.isInteger(page) || page < 1)
+    return next(createError(404, `Sitemap page ${req.params.page} not found`));
+  const urls = await sitemapUrls(req);
+  const start = (page - 1) * SITEMAP_PAGE_SIZE;
+  const pagedUrls = urls.slice(start, start + SITEMAP_PAGE_SIZE);
+  if (pagedUrls.length < 1)
+    return next(createError(404, `Sitemap page ${page} not found`));
+  res.end(sitemapXml(pagedUrls));
+});
+
+async function sitemapUrls(req) {
   const quranOnly = Utils.isQuranSubdomainRequest(req);
   const cachedFile = sitemapCacheFile(quranOnly);
   const flushCache = Utils.shouldFlushCache(req);
   if (!flushCache && fs.existsSync(cachedFile)) {
-    res.end(fs.readFileSync(cachedFile));
-    return;
+    const cachedText = fs.readFileSync(cachedFile);
+    const cachedUrls = sitemapTextToUrls(cachedText);
+    if (!sitemapCacheNeedsRebuild(cachedUrls))
+      return cachedUrls;
   }
   const cacheKey = quranOnly ? 'quran' : 'hadith';
   if (!sitemapBuilds.has(cacheKey)) {
@@ -206,8 +235,8 @@ router.get('/sitemap\.txt', async function (req, res, next) {
     }));
   }
   const txt = await sitemapBuilds.get(cacheKey);
-  res.end(txt);
-});
+  return sitemapTextToUrls(txt);
+}
 
 async function buildAndCacheSitemap(req, cachedFile) {
   const txt = await buildSitemapText(req);
@@ -218,6 +247,37 @@ async function buildAndCacheSitemap(req, cachedFile) {
 
 function sitemapCacheFile(quranOnly) {
   return Utils.cacheFileFromFilename(quranOnly ? 'quran' : 'hadith', 'txt');
+}
+
+function sitemapText(urls) {
+  return urls.map(url => `${url}\n`).join('');
+}
+
+function sitemapTextToUrls(txt) {
+  return txt.toString().split(/\r?\n/).map(url => url.trim()).filter(Boolean);
+}
+
+function sitemapCacheNeedsRebuild(urls) {
+  return urls.some(url => !/^https?:\/\//i.test(url));
+}
+
+function sitemapXml(urls) {
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    urls.map(url => `  <url><loc>${escapeSitemapXml(url)}</loc></url>`).join('\n'),
+    '</urlset>',
+    ''
+  ].join('\n');
+}
+
+function escapeSitemapXml(value) {
+  return Utils.emptyIfNull(value).toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 async function flushMasterDataCaches() {
