@@ -204,8 +204,8 @@ router.get('/sitemap\.xml', async function (req, res, next) {
   res.end(sitemapXml(urls));
 });
 
-router.get('/sitemap-:page(\\d+)\.xml', async function (req, res, next) {
-  res.setHeader('content-type', 'application/xml; charset=utf-8');
+router.get('/sitemap-:page(\\d+)\.txt', async function (req, res, next) {
+  res.setHeader('content-type', 'text/plain');
   res.setHeader('Cache-Control', 'no-store');
   const page = Number(req.params.page);
   if (!Number.isInteger(page) || page < 1)
@@ -215,7 +215,7 @@ router.get('/sitemap-:page(\\d+)\.xml', async function (req, res, next) {
   const pagedUrls = urls.slice(start, start + SITEMAP_PAGE_SIZE);
   if (pagedUrls.length < 1)
     return next(createError(404, `Sitemap page ${page} not found`));
-  res.end(sitemapXml(pagedUrls));
+  res.end(sitemapText(pagedUrls));
 });
 
 async function sitemapUrls(req) {
