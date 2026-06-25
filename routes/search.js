@@ -232,7 +232,7 @@ async function flushMasterDataCaches() {
 async function buildSitemapText(req) {
   var txt = '';
   var domain = global.settings.site.url;
-  var quranDomain = Utils.quranBaseUrl(req);
+  var quranDomain = quranSitemapBaseUrl(req);
   var quranOnly = Utils.isQuranSubdomainRequest(req);
   var bookSitemapFilter = quranOnly ? `= 'quran'` : `<> 'quran'`;
   var sitemapUrl = function (alias, h1, h2) {
@@ -284,6 +284,12 @@ async function buildSitemapText(req) {
   if (quranOnly)
     txt += await quranCommentarySitemapUrls(quranDomain);
   return txt;
+}
+
+function quranSitemapBaseUrl(req) {
+  const site = global.settings && global.settings.site ? global.settings.site : {};
+  const baseUrl = site.quranUrl || Utils.quranBaseUrl(req);
+  return Utils.emptyIfNull(baseUrl).toString().replace(/\/+$/, '');
 }
 
 async function quranCommentarySitemapUrls(quranDomain) {
