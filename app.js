@@ -5,6 +5,7 @@ require('./lib/Globals');
 const debug = require('./lib/Debug')('hadithdb:App');
 const util = require('util');
 const path = require('path');
+const net = require('net');
 const createError = require('http-errors');
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -15,6 +16,27 @@ const Hadith = require('./lib/Hadith');
 const Utils = require('./lib/Utils');
 
 const REQUEST_BODY_LIMIT = '10mb';
+const DYNAMIC_REQUEST_LIMIT_WINDOW_MS = 1000;
+const DYNAMIC_REQUEST_LIMIT_PER_IP = 20;
+
+const normalizedIp = (ip) => {
+  if (!ip)
+    return '';
+  return ip.toString().replace(/^::ffff:/, '').toLowerCase();
+};
+
+const isLoopbackIp = (ip) => {
+  ip = normalizedIp(ip);
+  if (!ip)
+    return false;
+  if (ip === 'localhost' || ip === '::1' || ip === '0:0:0:0:0:0:0:1')
+    return true;
+  if (net.isIPv4(ip))
+    return ip === '127.0.0.1' || ip.startsWith('127.');
+  return false;
+};
+
+const requestRateLimitIp = req => req.clientIp || req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
 
 const installTimestampedErrorLogging = () => {
   if (console.__hadithdbTimestampedErrors)
@@ -234,6 +256,17 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
 	  app.use('/', express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));
   app.use('/blog', express.static(`${global.settings.blog.dir}`));
 
+  const dynamicRequestLimiter = rateLimit({
+    windowMs: DYNAMIC_REQUEST_LIMIT_WINDOW_MS,
+    limit: DYNAMIC_REQUEST_LIMIT_PER_IP,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: requestRateLimitIp,
+    skip: req => isLoopbackIp(requestRateLimitIp(req)),
+    message: 'Too many requests. Please wait and try again.'
+  });
+  app.use(dynamicRequestLimiter);
+
   // global redirect www
   app.all('/*', function (req, res, next) {
     if (/^www\./.test(req.hostname)) {
@@ -242,18 +275,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     }
     next();
   })
-
-  // const limiter = rateLimit({
-  //   keyGenerator: req => {
-  //     debug('ip address: ' + req.clientIp);
-  //     return req.clientIp;
-  //   },
-  //   standardHeaders: true,
-  //   legacyHeaders: false,
-  //   windowMs: 60000,
-  //   max: 50,
-  // });
-  // app.use(limiter);
 
   const toolsRouter = require('./routes/tools');
   const highlightsRouter = require('./routes/highlights');

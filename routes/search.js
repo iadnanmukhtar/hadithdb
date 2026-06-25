@@ -197,11 +197,19 @@ router.get('/sitemap\.txt', async function (req, res, next) {
   res.end(sitemapText(urls));
 });
 
+router.get('/quran/sitemap\.txt', function (req, res) {
+  res.redirect(301, quranSitemapUrl(req, '/sitemap.txt'));
+});
+
 router.get('/sitemap\.xml', async function (req, res, next) {
   res.setHeader('content-type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   const urls = await sitemapUrls(req);
   res.end(sitemapXml(urls));
+});
+
+router.get('/quran/sitemap\.xml', function (req, res) {
+  res.redirect(301, quranSitemapUrl(req, '/sitemap.xml'));
 });
 
 router.get('/sitemap-:page(\\d+)\.txt', async function (req, res, next) {
@@ -216,6 +224,10 @@ router.get('/sitemap-:page(\\d+)\.txt', async function (req, res, next) {
   if (pagedUrls.length < 1)
     return next(createError(404, `Sitemap page ${page} not found`));
   res.end(sitemapText(pagedUrls));
+});
+
+router.get('/quran/sitemap-:page(\\d+)\.txt', function (req, res) {
+  res.redirect(301, quranSitemapUrl(req, `/sitemap-${req.params.page}.txt`));
 });
 
 async function sitemapUrls(req) {
@@ -350,6 +362,10 @@ function quranSitemapBaseUrl(req) {
   const site = global.settings && global.settings.site ? global.settings.site : {};
   const baseUrl = site.quranUrl || quranSitemapRequestOrigin(req) || Utils.quranBaseUrl(req);
   return Utils.emptyIfNull(baseUrl).toString().replace(/\/+$/, '');
+}
+
+function quranSitemapUrl(req, path) {
+  return `${quranSitemapBaseUrl(req)}${path}`;
 }
 
 function quranSitemapRequestOrigin(req) {
