@@ -288,8 +288,29 @@ async function buildSitemapText(req) {
 
 function quranSitemapBaseUrl(req) {
   const site = global.settings && global.settings.site ? global.settings.site : {};
-  const baseUrl = site.quranUrl || Utils.quranBaseUrl(req);
+  const baseUrl = site.quranUrl || quranSitemapRequestOrigin(req) || Utils.quranBaseUrl(req);
   return Utils.emptyIfNull(baseUrl).toString().replace(/\/+$/, '');
+}
+
+function quranSitemapRequestOrigin(req) {
+  const host = req && typeof req.get === 'function'
+    ? (req.get('x-forwarded-host') || req.get('host') || '')
+    : (req && req.headers ? (req.headers['x-forwarded-host'] || req.headers.host || '') : '');
+  const cleanHost = Utils.emptyIfNull(Array.isArray(host) ? host[0] : host)
+    .toString()
+    .split(',')[0]
+    .trim();
+  if (!cleanHost)
+    return '';
+  const forwardedProto = req && typeof req.get === 'function'
+    ? req.get('x-forwarded-proto')
+    : (req && req.headers ? req.headers['x-forwarded-proto'] : '');
+  const proto = Utils.emptyIfNull(Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto)
+    .toString()
+    .split(',')[0]
+    .trim()
+    || (Utils.isLocalhostRequest(req) ? (req && req.protocol ? req.protocol : 'http') : 'https');
+  return `${proto.replace(/:$/, '')}://${cleanHost}`;
 }
 
 async function quranCommentarySitemapUrls(quranDomain) {
