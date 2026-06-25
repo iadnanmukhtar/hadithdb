@@ -15,6 +15,7 @@ const { Section, Chapter, Heading, Item, Library, Record } = require('../lib/Mod
 const Index = require('../lib/Index');
 const Arabic = require('../lib/Arabic');
 const Books = require('../lib/Books');
+const BookDownloads = require('../lib/BookDownloads');
 const Surahs = require('../lib/Surahs');
 const QuranCorpus = require('../lib/QuranCorpus');
 const { homedir } = require('os');
@@ -1600,6 +1601,10 @@ async function applyRandomQuranTranslation(random, translationBook) {
 }
 
 // QURAN SEARCH PROXY
+router.get('/:bookAlias.:format(json|epub)', BookDownloads.sendHadithBook);
+
+router.get('/quran/:translationAlias.:format(json|epub)', BookDownloads.sendTranslationBook);
+
 router.get('/quran', async function (req, res, next) {
   if (!req.query.q)
     return next();
@@ -1625,6 +1630,10 @@ router.get('/:bookAlias', async function (req, res, next) {
     return (value.alias == req.params.bookAlias || value.id == req.params.bookAlias);
   });
   if (book) {
+    if ('download' in req.query && ('json' in req.query || 'epub' in req.query)) {
+      req.params.format = 'epub' in req.query ? 'epub' : 'json';
+      return BookDownloads.sendHadithBook(req, res, next);
+    }
     var prevBook = null;
     var nextBook = null;
     var bookIdx = books.findIndex(function (value, index, arr) {
@@ -1637,7 +1646,7 @@ router.get('/:bookAlias', async function (req, res, next) {
 
     var admin = req.admin;
     var editMode = admin && req.editMode;
-    var cacheableHtml = !('download' in req.query) && !('json' in req.query) && !('tsv' in req.query);
+    var cacheableHtml = !('download' in req.query) && !('json' in req.query) && !('tsv' in req.query) && !('epub' in req.query);
     var cachedFile = Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
@@ -1650,7 +1659,7 @@ router.get('/:bookAlias', async function (req, res, next) {
     var results;
     var random;
     var tafsirs;
-    if ('download' in req.query && 'tsv' in req.query) {
+    if ('download' in req.query && ('json' in req.query || 'epub' in req.query || 'tsv' in req.query)) {
       debug(`downloading ${req.params.bookAlias}`);
       if (!book.virtual)
         results = await global.query(`SELECT * from v_hadiths WHERE book_id=${book.id} ORDER BY ordinal`);
@@ -1670,7 +1679,11 @@ router.get('/:bookAlias', async function (req, res, next) {
         tafsirs = await Tafsir.visibleTafsirs();
     }
 
-    if ('json' in req.query) {
+    if ('download' in req.query && 'json' in req.query) {
+      Utils.sendJsonDownload(res, `hadithunlocked_${Utils.safeFilename(book.alias)}.json`, results);
+    } else if ('download' in req.query && 'epub' in req.query) {
+      Utils.sendEpubDownload(res, `hadithunlocked_${Utils.safeFilename(book.alias)}.epub`, book, results);
+    } else if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results));
     } else if ('tsv' in req.query) {
@@ -1686,6 +1699,7 @@ router.get('/:bookAlias', async function (req, res, next) {
         var html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, {
           noadmin: true,
           book: book,
+          BookDownloads: BookDownloads,
           prevBook: prevBook,
           nextBook: nextBook,
           toc: results,
@@ -1700,6 +1714,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       }
       res.render('toc', {
         book: book,
+        BookDownloads: BookDownloads,
         prevBook: prevBook,
         nextBook: nextBook,
         toc: results,
@@ -1733,6 +1748,7 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
   var translations = quranCommentaryBook.type === 'trans' ? await Tafsir.visibleTranslations() : [];
   var renderLocals = {
     book: book,
+    BookDownloads: BookDownloads,
     prevBook: null,
     nextBook: null,
     toc: results,

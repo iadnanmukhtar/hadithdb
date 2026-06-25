@@ -6,6 +6,7 @@ const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
+const BookDownloads = require('../lib/BookDownloads');
 const { Item, Library } = require('../lib/Model');
 
 const router = express.Router();
@@ -85,6 +86,7 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
   const navigation = await tafsirNavigation(tafsir, navigationEntries, allTafsirs, surahNum, ayahNum);
 
   const renderLocals = {
+    BookDownloads: BookDownloads,
     Tafsir: Tafsir,
     ayah: ayahNum,
     ayahs: ayahs,
@@ -108,6 +110,7 @@ async function renderTafsirBookToc(req, res, tafsir) {
   const tafsirs = await Tafsir.visibleTafsirs();
   const renderLocals = {
     book: quranBook,
+    BookDownloads: BookDownloads,
     prevBook: null,
     nextBook: null,
     toc: toc,

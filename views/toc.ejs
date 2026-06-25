@@ -14,6 +14,10 @@
     var quranCommentaryBook = locals.quranCommentaryBook;
     var quranCommentaryBooks = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
     var quranCommentaryBookSlug = quranCommentaryBook && (quranCommentaryBook.quranBookSlug || quranCommentaryBook.slug || quranCommentaryBook.alias);
+    var bookDownloadLinks = locals.BookDownloads ? locals.BookDownloads.relativeDownloadLinks(quranCommentaryBook || book) : {
+      json: `/${book.alias}.json`,
+      epub: `/${book.alias}.epub`
+    };
     function displayName(value) {
       return (value || '').toString().replace(/\s+/g, ' ').trim();
     }
@@ -366,9 +370,10 @@
         </section>
         <% } %>
 
-        <% if (showHadithBookChrome) { %>
+        <% if (showBookLayout) { %>
 	      <aside class="h"><div class="tags">
-        <span class="bi bi-download"></span> <a href="<%= utils.urlFor(req, `/${book.alias}?download&tsv`) %>" type="button" rel="nofollow">Download TSV</a>
+        <a class="book-download-link me-3" href="<%= bookDownloadLinks.json %>" type="button" rel="nofollow"><span class="bi bi-filetype-json"></span> Download JSON</a>
+        <a class="book-download-link" href="<%= bookDownloadLinks.epub %>" type="button" rel="nofollow"><span class="bi bi-book"></span> Download EPUB</a>
       </div></aside>
         <% } %>
 
@@ -390,14 +395,12 @@
 
       <section class="row">
         
-        <script type="application/ld+json">
-          {
-            "@context": "https://schema.org",
-            "@type": "Table",
-            "name": "<%- `Chapters Headings for ${book.name_en} (فهرس ${book.title})` %>",
-            "about": "<%- `Chapters Headings for ${book.name_en} (فهرس ${book.title})` %>"
-          }
-        </script>
+        <%- utils.jsonLdScript({
+          '@context': 'https://schema.org',
+          '@type': 'Table',
+          name: `Chapters Headings for ${book.name_en} (فهرس ${book.title})`,
+          about: `Chapters Headings for ${book.name_en} (فهرس ${book.title})`
+        }) %>
         
         <div class="page-content-filter toc-content-filter input-group mb-3">
           <span class="input-group-text bi bi-filter" aria-hidden="true"></span>

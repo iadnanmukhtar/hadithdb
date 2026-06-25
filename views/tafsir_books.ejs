@@ -31,6 +31,9 @@
         : '';
       return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
     };
+    var downloadLinksFor = function (book) {
+      return BookDownloads.relativeDownloadLinks(book);
+    };
     var tafsirDeathLabel = function (tafsir) {
       var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
       if (!death)
@@ -143,14 +146,12 @@
 
   <div class="container col-lg-8 mx-auto">
     <main>
-      <script type="application/ld+json">
-        {
-          "@context": "https://schema.org",
-          "@type": "Table",
-          "name" : "Available Books of Tafsīr",
-          "about": "Available Books of Tafsīr"
-        }
-      </script>
+      <%- utils.jsonLdScript({
+        '@context': 'https://schema.org',
+        '@type': 'Table',
+        name: 'Available Books of Tafsīr',
+        about: 'Available Books of Tafsīr'
+      }) %>
 
       <div class="page-content-filter input-group mb-3">
         <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
@@ -238,6 +239,13 @@
                             <% } %>
                           </div>
                         <% } %>
+                      </div>
+                      <%
+                        var tafsirDownloadLinks = downloadLinksFor(tafsir);
+                      %>
+                      <div class="book-download-links">
+                        <a href="<%= tafsirDownloadLinks.json %>" rel="nofollow" title="Download JSON" aria-label="Download JSON for <%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %>"><span class="bi bi-filetype-json"></span><span>JSON</span></a>
+                        <a href="<%= tafsirDownloadLinks.epub %>" rel="nofollow" title="Download EPUB" aria-label="Download EPUB for <%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %>"><span class="bi bi-book"></span><span>EPUB</span></a>
                       </div>
                       <% if (site.editMode) { %>
                         <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">

@@ -1,6 +1,19 @@
 <% 
+  function cleanCanonicalPath(path) {
+    if (!path)
+      return path;
+    var parts = path.toString().split('?');
+    if (parts.length < 2)
+      return path;
+    var params = new URLSearchParams(parts.slice(1).join('?'));
+    params.delete('flush');
+    if (params.get('o') === '0')
+      params.delete('o');
+    var query = params.toString();
+    return query ? `${parts[0]}?${query}` : parts[0];
+  }
   if (page.canonical)
-    page.canonical = page.canonical.replace(/\?o=0$/, '');
+    page.canonical = cleanCanonicalPath(page.canonical);
   var quranCanonicalBaseUrl = site.quranUrl || utils.quranBaseUrl(req);
   var hadithCanonicalBaseUrl = site.url || utils.hadithBaseUrl(req);
   var isQuranHeadPage = page
@@ -24,8 +37,8 @@
     );
   var headTitle = page.title_en || (isQuranPathHeadPage ? 'Quran Unlocked' : site.name);
   var headDescription = page.description_en || page.subtitle_en || site.desc || '';
-  var headSiteName = isQuranPathHeadPage ? 'Quran Unlocked' : site.name;
-  var headSiteUrl = isQuranPathHeadPage ? quranCanonicalBaseUrl : site.url;
+  var headSiteName = isQuranHeadPage ? 'Quran Unlocked' : site.name;
+  var headSiteUrl = isQuranHeadPage ? quranCanonicalBaseUrl : site.url;
   var headAppLogo = isQuranHeadPage ? `${quranCanonicalBaseUrl}/images/quran-logo.png` : site.logo;
   var headAppLogoVectorPath = isQuranHeadPage ? '/images/quran-logo2.svg' : '/images/logo2.svg';
   var headAppLogo32Path = isQuranHeadPage ? '/images/quran-logo32.png' : '/images/logo32.png';
@@ -46,6 +59,42 @@
   var headCanonicalPath = isQuranCanonicalPage ? quranCanonicalPath(page.canonical) : page.canonical;
   var headCanonicalBaseUrl = isQuranCanonicalPage ? quranCanonicalBaseUrl : hadithCanonicalBaseUrl;
   var headCanonicalUrl = headCanonicalBaseUrl + headCanonicalPath;
+  var pageContext = page.context || {};
+  var contextBook = pageContext.book;
+  var contextChapter = pageContext.chapter;
+  var contextSection = pageContext.section;
+  var isQuranBookContext = contextBook && contextBook.alias === 'quran';
+  var contextCatalogName = isQuranBookContext ? 'Quran' : 'Books';
+  var contextCatalogUrl = isQuranBookContext ? `${quranCanonicalBaseUrl}/quran` : `${site.url}/books`;
+  function chapterLabel(chapter) {
+    return isQuranBookContext ? `Surah ${chapter.h1}` : `Chapter ${chapter.h1}`;
+  }
+  function sectionLabel(section) {
+    return isQuranBookContext ? `Section ${section.h2}` : `Section ${section.h2}`;
+  }
+  function breadcrumbItem(position, name, item) {
+    return {
+      '@type': 'ListItem',
+      position: position,
+      name: name,
+      item: item
+    };
+  }
+  function contextBookUrl(book) {
+    if (!book || !book.alias)
+      return '';
+    return canonicalUrlForPath(`/${book.alias}`);
+  }
+  function contextChapterUrl(book, chapter) {
+    if (!book || !book.alias || chapter === undefined)
+      return '';
+    return canonicalUrlForPath(`/${book.alias}/${chapter.h1}`);
+  }
+  function contextSectionUrl(book, chapter, section) {
+    if (!book || !book.alias || chapter === undefined || section === undefined)
+      return '';
+    return canonicalUrlForPath(`/${book.alias}/${chapter.h1}/${section.h2}`);
+  }
 %>
 <title><%= headTitle %></title>
 
@@ -104,179 +153,111 @@
 <meta name="twitter:title" content="<%= headTitle %>">
 <meta name="twitter:description" content="<%= headDescription %>">
 
-<script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "Organization",
-    "name": "<%= headSiteName %>",
-    "url": "<%= headSiteUrl %>",
-    "logo": "<%= headLogo %>"
-  }
-</script>
+<%- utils.jsonLdScript({
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: headSiteName,
+  url: headSiteUrl,
+  logo: headLogo
+}) %>
 
-<script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "WebSite",
-    "name": "<%= headSiteName %>",
-    "url": "<%= headSiteUrl %>"
-<% if (page.menu === 'Home') { %>
-    , "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "<%= site.url %>/?q={search_term_string}"
-        },
-        "query-input": "required name=search_term_string"
+<%
+  var websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: headSiteName,
+    url: headSiteUrl
+  };
+  if (page.menu === 'Home') {
+    websiteJsonLd.potentialAction = {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${site.url}/?q={search_term_string}`
+      },
+      'query-input': 'required name=search_term_string'
+    };
+  }
+%>
+<%- utils.jsonLdScript(websiteJsonLd) %>
+
+<% if (contextBook !== undefined) { %>
+<%- utils.jsonLdScript({
+  '@context': 'https://schema.org',
+  '@type': 'Book',
+  name: contextBook.name_en || contextBook.shortName_en || contextBook.alias || contextBook.name || contextBook.shortName,
+  inLanguage: 'English',
+  url: contextBookUrl(contextBook) || headCanonicalUrl
+}) %>
+<% if (contextBook.title || contextBook.name || contextBook.shortName) { %>
+<%- utils.jsonLdScript({
+  '@context': 'https://schema.org',
+  '@type': 'Book',
+  name: contextBook.title || contextBook.name || contextBook.shortName,
+  inLanguage: 'Arabic',
+  url: contextBookUrl(contextBook) || headCanonicalUrl
+}) %>
+<% } %>
+<% } %>
+
+<% if (contextBook !== undefined && contextChapter !== undefined) { %>
+<%- utils.jsonLdScript({
+  '@context': 'https://schema.org',
+  '@type': 'Chapter',
+  name: `${chapterLabel(contextChapter)}: ${contextChapter.title_en || ''}`.trim(),
+  alternateName: `${contextBook.shortName || contextBook.name || ''}، ${arabic.toArabicDigits(contextChapter.h1 + '')}- ${contextChapter.title || ''}`.trim(),
+  pageStart: contextChapter.start0,
+  url: headCanonicalUrl,
+  isPartOf: {
+    '@id': contextBookUrl(contextBook) || headCanonicalUrl
+  }
+}) %>
+<% } %>
+
+<%
+  var breadcrumbItems = [];
+  if (contextBook !== undefined) {
+    breadcrumbItems.push(breadcrumbItem(1, contextCatalogName, contextCatalogUrl));
+    if (!isQuranBookContext)
+      breadcrumbItems.push(breadcrumbItem(2, contextBook.name_en || contextBook.shortName_en || contextBook.alias || contextBook.name || contextBook.shortName, contextBookUrl(contextBook) || headCanonicalUrl));
+    if (contextChapter !== undefined) {
+      breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, `${contextChapter.h1}. ${contextChapter.title_en || chapterLabel(contextChapter)}`, contextChapterUrl(contextBook, contextChapter) || headCanonicalUrl));
     }
-<% } %>
-  }
-</script>
-
-<% if (page.context.book !== undefined) { %>
-<script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "Book",
-    "name": "<%= page.context.book.name_en %>",
-    "inLanguage": "English",
-    "url": "<%= canonicalUrlForPath(`/${page.context.book.alias}`) %>"
-  }
-</script>
-<script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "Book",
-    "name": "<%= page.context.book.title %>",
-    "inLanguage": "Arabic",
-    "url": "<%= canonicalUrlForPath(`/${page.context.book.alias}`) %>"
-  }
-</script>
-<% } %>
-
-<% if (page.context.book !== undefined && page.context.chapter !== undefined) { %>
-<script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "Chapter",
-    "name": "<%= `Chapter ${page.context.chapter.h1}: ${page.context.chapter.title_en || ''}` %>",
-    "alternateName": "<%= `${page.context.book.shortName}، ${arabic.toArabicDigits(page.context.chapter.h1 + '')}- ${page.context.chapter.title || ''}` %>",
-    "pageStart": "<%= page.context.chapter.start0 %>",
-    "url": "<%= headCanonicalUrl %>",
-    "schema:isPartOf": {
-      "@id": "<%= canonicalUrlForPath(`/${page.context.book.alias}`) %>"
+    if (contextSection !== undefined) {
+      breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, `${contextSection.h2}. ${contextSection.title_en || sectionLabel(contextSection)}`, contextSectionUrl(contextBook, contextChapter, contextSection) || headCanonicalUrl));
     }
   }
-</script>
+%>
+<% if (breadcrumbItems.length > 0) { %>
+<%- utils.jsonLdScript({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  name: breadcrumbItems.map(function (item) { return item.name; }).join(' > '),
+  itemListElement: breadcrumbItems
+}) %>
 <% } %>
 
-<% if ( page.context.book !== undefined &&  page.context.chapter !== undefined && 
-	    page.context.section !== undefined) { %>
-<script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "BreadcrumbList",
-    "name": "Books &gt; <%= page.context.book.name_en %> &gt; Chapter <%= page.context.chapter.h1 %>  &gt; Section <%= page.context.section.h2 %>",
-    "itemListElement": [{
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Books",
-        "item": "<%- `${site.url}/books` %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "<%- page.context.book.name_en %>",
-        "item": "<%- canonicalUrlForPath(`/${page.context.book.alias}`) %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "<%= `${page.context.chapter.h1}. ${page.context.chapter.title_en || 'Chapter'}` %>",
-        "item": "<%= canonicalUrlForPath(`/${page.context.book.alias}/${page.context.chapter.h1}`) %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 4,
-        "name": "<%= `${page.context.section.h2}. ${page.context.section.title_en || 'Section'}` %>",
-        "item": "<%= canonicalUrlForPath(`/${page.context.book.alias}/${page.context.chapter.h1}/${page.context.section.h2}`) %>"
-      }
-    ]
-  }
-</script>
-<% } else if ( page.context.book !== undefined &&  page.context.chapter !== undefined) { %>
-<script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "BreadcrumbList",
-    "name": "Books &gt; <%= page.context.book.name_en %> &gt; Chapter <%= page.context.chapter.h1 %>",
-    "itemListElement": [{
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Books",
-        "item": "<%- `${site.url}/books` %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "<%= page.context.book.name_en %>",
-        "item": "<%= canonicalUrlForPath(`/${page.context.book.alias}`) %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "<%= `${page.context.chapter.h1}. ${page.context.chapter.title_en || 'Chapter'}` %>",
-        "item": "<%= canonicalUrlForPath(`/${page.context.book.alias}/${page.context.chapter.h1}`) %>"
-      }
-    ]
-  }
-</script>
-<% } else if ( page.context.book !== undefined) { %>
-<script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "BreadcrumbList",
-    "name": "Books &gt; <%= page.context.book.name_en %>",
-    "itemListElement": [{
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Books",
-        "item": "<%- `${site.url}/books` %>"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "<%- page.context.book.name_en %>",
-        "item": "<%- canonicalUrlForPath(`/${page.context.book.alias}`) %>"
-      }
-    ]
-  }
-</script>
-<% } %>
-
-<% if (page.context.hadiths && !page.context.fromSearch) { %>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "name": "<%- `${page.context.hadiths[0].book.shortName_en} ${page.context.hadiths[0].num}` %>",
-    "headline": "<%- `${page.context.hadiths[0].book.shortName_en} ${page.context.hadiths[0].num}` %>",
-    "url": "<%- headCanonicalUrl %>",
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": "<%- headCanonicalUrl %>"
+<% if (pageContext.hadiths && !pageContext.fromSearch && pageContext.hadiths[0]) { %>
+<%- utils.jsonLdScript({
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  name: `${pageContext.hadiths[0].book.shortName_en} ${pageContext.hadiths[0].num}`,
+  headline: `${pageContext.hadiths[0].book.shortName_en} ${pageContext.hadiths[0].num}`,
+  url: headCanonicalUrl,
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': headCanonicalUrl
+  },
+  genre: 'Hadith',
+  author: [{
+      '@type': 'Book',
+      name: pageContext.hadiths[0].book.name_en,
+      url: canonicalUrlForPath(`/${pageContext.hadiths[0].book.alias}`)
     },
-    "genre": "Hadith",
-    "author": [{
-        "@type": "Book",
-        "name": "<%- page.context.hadiths[0].book.name_en %>",
-        "url": "<%- canonicalUrlForPath(`/${page.context.hadiths[0].book.alias}`) %>"
-      },
-      {
-        "@type": "Person",
-        "name": "<%- page.context.hadiths[0].book.author %>"
-      }
-    ]
-  }
-</script>
+    {
+      '@type': 'Person',
+      name: pageContext.hadiths[0].book.author
+    }
+  ]
+}) %>
 <% } %>

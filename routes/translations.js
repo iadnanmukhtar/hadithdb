@@ -6,6 +6,7 @@ const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
+const BookDownloads = require('../lib/BookDownloads');
 const { Item } = require('../lib/Model');
 
 const router = express.Router();
@@ -25,6 +26,7 @@ router.get('/', async function (req, res) {
     res.end(Utils.toTSV(translations, keyNames));
   } else {
     res.render('translation_books', {
+      BookDownloads: BookDownloads,
       translations: translations
     });
   }

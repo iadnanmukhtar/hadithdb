@@ -5,6 +5,7 @@ const debug = require('../lib/Debug')('hadithdb:Books');
 const express = require('express');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
+const BookDownloads = require('../lib/BookDownloads');
 
 const router = express.Router();
 
@@ -34,6 +35,7 @@ router.get('/', async function (req, res, next) {
     tafsirs = await Tafsir.withFirstPassages(tafsirs);
     var translations = await Tafsir.visibleTranslations();
     res.render('books', {
+      BookDownloads: BookDownloads,
       books: results,
       Tafsir: Tafsir,
       tafsirs: tafsirs,

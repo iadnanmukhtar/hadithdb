@@ -657,6 +657,36 @@ nav .nav-link[aria-current="page"] {
 	transform: rotate(-90deg);
 }
 
+.book-download-links {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.875rem;
+	margin-top: 0.35rem;
+}
+
+.book-download-links a,
+.book-download-link {
+	align-items: center;
+	color: var(--c-accent);
+	display: inline-flex;
+	gap: 0.25rem;
+	text-decoration: none;
+}
+
+.book-download-links a:hover,
+.book-download-links a:focus,
+.book-download-link:hover,
+.book-download-link:focus {
+	color: var(--c-accent);
+	text-decoration: underline;
+}
+
+.book-download-links .bi,
+.book-download-link .bi {
+	color: var(--c-accent);
+}
+
 #offcanvas-topnav .offcanvas-body > .row {
 	margin-left: 0;
 }

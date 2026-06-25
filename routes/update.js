@@ -84,6 +84,9 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           var tag = await global.query(`SELECT * FROM tags WHERE text_en="${tags[i]}"`);
           await global.query(`INSERT IGNORE INTO hadiths_tags (hadithId, tagId) VALUES (${ids[0]}, ${tag[0].id})`);
         }
+        var tagged = (await global.query(`SELECT bookId FROM hadiths WHERE id=${ids[0]} LIMIT 1`))[0];
+        if (tagged)
+          await Books.touchBookContentLastmodById(tagged.bookId);
         await Hadith.a_reinit();
 
       } else if (col == 'moveup' || col == 'movedn') {
@@ -107,6 +110,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
             await global.query(`SET @n:=0`);
             await global.query(`UPDATE hadiths SET numInChapter=(@n:=@n+1)
             WHERE bookId=${curr.bookId} AND h1=${repl.h1} ORDER by bookId, h1, ordinal`);
+            await Books.touchBookContentLastmodById(curr.bookId);
             await reindexChapterSearchScope(curr.bookId, curr.h1);
             if (Number(curr.h1) !== Number(repl.h1))
               await reindexChapterSearchScope(curr.bookId, repl.h1);
@@ -239,6 +243,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
       status.id = commentaryId;
+      await Books.touchBookContentLastmodById(commentary.bookId);
       refreshCommentaryIndexInBackground(commentaryId);
 
     } else if (type == 'toc') {
@@ -322,7 +327,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       }
       var beforeBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
       var bookValueSql = (col === 'description') ? sqlPreserveWhitespace(status.value) : sql(status.value);
-      var result = await global.query(`UPDATE books SET ${col}=${bookValueSql} WHERE id=${ids[0]}`);
+      await Books.ensureBookContentLastmodColumn();
+      var result = await global.query(`UPDATE books SET ${col}=${bookValueSql}, content_lastmod=CURRENT_TIMESTAMP() WHERE id=${ids[0]}`);
       if (!result || result.affectedRows < 1)
         throw createError(404, 'Book not found');
       if (isQuranCatalogBook(beforeBook))
@@ -1272,6 +1278,7 @@ async function invalidateHeadingCachesByHeadingId(headingId) {
   var heading = (await global.query(`SELECT * FROM v_toc WHERE hId=${headingId} LIMIT 1`))[0];
   if (!heading)
     return;
+  await Books.touchBookContentLastmodById(heading.book_id);
   invalidateBookChapterCache(heading);
   await flushHeadingPathCaches(heading);
 }
@@ -1375,6 +1382,7 @@ function runHadithPostUpdateTasks(hadithId, options) {
     if (!item)
       return;
     await safeBackground(`flushing cache for ${item.ref}`, async () => {
+      await Books.touchBookContentLastmodById(item.book_id);
       await Utils.flushCacheContaining(`${item.book_alias}:${item.num}`);
     });
     await safeBackground(`reindexing hadith ${item.ref}`, async () => {

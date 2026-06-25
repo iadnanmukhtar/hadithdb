@@ -3,8 +3,11 @@
 const express = require('express');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
+const BookDownloads = require('../lib/BookDownloads');
 
 const router = express.Router();
+
+router.get('/:tafsirAlias.:format(json|epub)', BookDownloads.sendTafsirBook);
 
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
@@ -22,6 +25,7 @@ router.get('/', async function (req, res, next) {
     res.end(Utils.toTSV(tafsirs, keyNames));
   } else {
     res.render('tafsir_books', {
+      BookDownloads: BookDownloads,
       Tafsir: Tafsir,
       tafsirs: tafsirs
     });

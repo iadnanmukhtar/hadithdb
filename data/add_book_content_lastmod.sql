@@ -1,0 +1,2 @@
+ALTER TABLE books
+ADD COLUMN content_lastmod datetime DEFAULT CURRENT_TIMESTAMP;

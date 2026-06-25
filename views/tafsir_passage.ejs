@@ -43,6 +43,10 @@
 	    });
 	    var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
 	    var tafsirPagePath = `${tafsirPath}/${surah.num}/${ayah}`;
+	    var tafsirDownloadLinks = locals.BookDownloads ? locals.BookDownloads.relativeDownloadLinks(tafsir) : {
+	      json: `${tafsirPath}.json`,
+	      epub: `${tafsirPath}.epub`
+	    };
 	    var tafsirBookmarkKey = `${tafsir.slug || tafsir.alias}:${surah.num}:${ayah}`;
 	    var quranChapter = locals.chapter;
 	    var quranSection = locals.section;
@@ -100,6 +104,11 @@
 	          <% } %>
 	        </div>
 	      </section>
+
+	      <aside class="h mb-3"><div class="tags">
+	        <a class="book-download-link me-3" href="<%= tafsirDownloadLinks.json %>" type="button" rel="nofollow"><span class="bi bi-filetype-json"></span> Download JSON</a>
+	        <a class="book-download-link" href="<%= tafsirDownloadLinks.epub %>" type="button" rel="nofollow"><span class="bi bi-book"></span> Download EPUB</a>
+	      </div></aside>
 
       <% if (quranNavigatorSurahs.length > 0) { %>
         <form class="quran-passage-navigator mb-3" action="/quran" method="get" novalidate data-quran-passage-navigator data-tafsir-navigator-base="<%= tafsirPath %>" data-tafsir-navigator-query="" data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">

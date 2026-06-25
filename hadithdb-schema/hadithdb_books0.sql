@@ -37,6 +37,7 @@ CREATE TABLE `books` (
   `description` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `virtual` tinyint DEFAULT '0',
   `hidden` tinyint DEFAULT '0',
+  `content_lastmod` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `book_alias_idx` (`alias`),
   UNIQUE KEY `book_shortname_idx` (`shortName_en`)
