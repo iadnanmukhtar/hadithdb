@@ -282,27 +282,66 @@ async function buildSitemapText(req) {
     txt += sitemapUrl(alias, h1, h2);
   }
   if (quranOnly)
-    txt += await quranTafsirSitemapUrls(quranDomain);
+    txt += await quranCommentarySitemapUrls(quranDomain);
   return txt;
 }
 
-async function quranTafsirSitemapUrls(quranDomain) {
-  const tafsirs = await Tafsir.visibleTafsirs();
-  const urls = new Set();
-  for (const tafsir of tafsirs) {
-    const tafsirUrls = [];
-    const passages = await Tafsir.sitemapPassages(tafsir);
-    const firstPassage = passages[0];
-    const rootUrl = firstPassage
-      ? Tafsir.browseUrl(tafsir, firstPassage.surah, firstPassage.ayah, tafsirs)
-      : `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
-    tafsirUrls.push(`${quranDomain}${rootUrl}`);
-    passages.forEach(function (passage) {
-      tafsirUrls.push(`${quranDomain}${Tafsir.browseUrl(tafsir, passage.surah, passage.ayah, tafsirs)}`);
-    });
-    tafsirUrls.forEach(url => urls.add(url));
-  }
+async function quranCommentarySitemapUrls(quranDomain) {
+  const urls = new Set([
+    `${quranDomain}/quran/translations`,
+    `${quranDomain}/quran/tafsir`
+  ]);
+  await addQuranTranslationSitemapUrls(urls, quranDomain);
+  await addQuranTafsirSitemapUrls(urls, quranDomain);
   return Array.from(urls).map(url => `${url}\n`).join('');
+}
+
+async function addQuranTranslationSitemapUrls(urls, quranDomain) {
+  const translations = await Tafsir.visibleTranslations();
+  translations.forEach(function (translation) {
+    urls.add(`${quranDomain}/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}`);
+  });
+  quranAyahRefs().forEach(function (ref) {
+    urls.add(`${quranDomain}/quran/translations/${ref.surah}/${ref.ayah}`);
+  });
+}
+
+async function addQuranTafsirSitemapUrls(urls, quranDomain) {
+  const tafsirs = await Tafsir.visibleTafsirs();
+  for (const tafsir of tafsirs) {
+    urls.add(`${quranDomain}${quranTafsirBookTocUrl(tafsir, tafsirs)}`);
+    const passages = await Tafsir.sitemapPassages(tafsir, { source: 'db' });
+    passages.forEach(function (passage) {
+      urls.add(`${quranDomain}${Tafsir.browseUrl(tafsir, passage.surah, passage.ayah, tafsirs)}`);
+    });
+  }
+}
+
+function quranTafsirBookTocUrl(tafsir, tafsirs) {
+  const slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
+  const hasLanguageCollision = (tafsirs || []).some(function (other) {
+    return other && other !== tafsir && other.lang !== tafsir.lang
+      && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
+  });
+  const query = hasLanguageCollision && (tafsir.lang === 'ar' || tafsir.lang === 'en')
+    ? `?lang=${encodeURIComponent(tafsir.lang)}`
+    : '';
+  return `/quran/tafsir/${encodeURIComponent(slug)}${query}`;
+}
+
+function quranAyahRefs() {
+  return (global.surahs || []).flatMap(function (surah) {
+    const surahNum = Number(surah.num);
+    const ayahCount = Number(surah.ayahs);
+    if (!Number.isInteger(surahNum) || !Number.isInteger(ayahCount) || ayahCount < 1)
+      return [];
+    return Array.from({ length: ayahCount }, function (_, index) {
+      return {
+        surah: surahNum,
+        ayah: index + 1
+      };
+    });
+  });
 }
 
 function normalizeRequestBookFilters(req) {
