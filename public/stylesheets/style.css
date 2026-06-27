@@ -2859,23 +2859,23 @@ del em strong {
 }
 
 .quran-passage-display-btn.is-active {
-	background-color: var(--bs-secondary);
-	border-color: var(--bs-secondary);
-	color: #fff;
+	background-color: var(--bs-secondary) !important;
+	border-color: var(--bs-secondary) !important;
+	color: #fff !important;
 }
 
 .quran-passage-display-btn:not(.is-active) {
-	background-color: var(--bs-secondary-bg);
-	border-color: var(--bs-secondary);
-	color: var(--bs-secondary-color);
+	background-color: transparent !important;
+	border-color: var(--bs-secondary) !important;
+	color: var(--bs-secondary) !important;
 	opacity: .72;
 }
 
 .quran-passage-display-btn:not(.is-active):hover,
 .quran-passage-display-btn:not(.is-active):focus {
-	background-color: var(--bs-secondary-bg);
-	border-color: var(--bs-secondary);
-	color: var(--bs-secondary-color);
+	background-color: transparent !important;
+	border-color: var(--bs-secondary) !important;
+	color: var(--bs-secondary) !important;
 }
 
 .quran-passage-translation-control {
