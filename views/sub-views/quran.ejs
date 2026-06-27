@@ -64,7 +64,7 @@
   var quranSelectionSurah = passage[0] ? ((passage[0].en && passage[0].en.num) || passage[0].num || '').toString().split(/:/)[0] : '';
 %>
 
-<% if (passage.length > 1 && quranSelectionSurah) { %>
+<% if (passage.length > 0 && quranSelectionSurah) { %>
 <aside class="quran-ayah-select-toolbar mb-2" data-surah="<%= quranSelectionSurah %>">
   <label class="quran-passage-translation-control mb-0">
     <span class="visually-hidden">Translation</span>
@@ -73,22 +73,32 @@
       <option value="">Haleem</option>
     </select>
   </label>
+  <div class="btn-group btn-group-sm quran-passage-display-toggle" role="group" aria-label="Quran passage display">
+    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-display-btn is-active" data-quran-passage-display-toggle="translation" aria-pressed="true" title="Show translation" aria-label="Show translation">
+      <span class="bi bi-translate"></span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-display-btn is-active" data-quran-passage-display-toggle="arabic" aria-pressed="true" title="Show Quran Arabic" aria-label="Show Quran Arabic">
+      <span class="bi bi-journal-text"></span>
+    </button>
+  </div>
+  <% if (passage.length > 1) { %>
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-toggle">
     <span class="bi bi-check2-square"></span> Select ayat
   </button>
-  <button type="button" class="btn btn-sm btn-primary quran-ayah-select-btn quran-ayah-select-open" disabled>
+  <button type="button" class="btn btn-sm btn-primary quran-ayah-select-btn quran-ayah-select-open" disabled hidden>
     <span class="bi bi-eye"></span> View selected
   </button>
   <% if (locals.selectedAyahs && locals.selectedAyahs.length > 0 && page.context.section) { %>
-  <a class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-clear" href="<%= utils.quranUrl(req, `/${page.context.section.path}`) %>">
+  <a class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-clear" href="<%= utils.quranUrl(req, `/${page.context.section.path}`) %>" hidden>
     <span class="bi bi-x-circle"></span> Clear
   </a>
   <% } else { %>
-  <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-clear" disabled>
+  <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-clear" disabled hidden>
     <span class="bi bi-x-circle"></span> Clear
   </button>
   <% } %>
   <span class="quran-ayah-select-live small text-muted"></span>
+  <% } %>
 </aside>
 <% } %>
 

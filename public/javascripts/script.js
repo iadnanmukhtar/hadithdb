@@ -113,6 +113,7 @@ $(function () {
 	initQuranSelectedTranslationBookPreference(document);
 	initQuranPreferredTranslationDisplays(document);
 	initQuranPassageTranslationSelects(document);
+	initQuranPassageDisplayToggles(document);
 	initQuranTranslations(document);
 	initQuranAyahModals(document);
 	initQuranPageKeyboardNavigation(document);
@@ -2791,6 +2792,89 @@ function setQuranPassageTranslationSelectValue(alias) {
 	});
 }
 
+function quranPassageDisplayStorageKey() {
+	return 'hadithdb.quranPassageDisplay';
+}
+
+function storedQuranPassageDisplay() {
+	var fallback = { translation: true, arabic: true };
+	try {
+		var stored = JSON.parse(window.localStorage.getItem(quranPassageDisplayStorageKey()) || '{}');
+		var state = {
+			translation: stored.translation !== false,
+			arabic: stored.arabic !== false
+		};
+		if (!state.translation && !state.arabic)
+			return fallback;
+		return state;
+	} catch (err) {
+		return fallback;
+	}
+}
+
+function storeQuranPassageDisplay(state) {
+	try {
+		window.localStorage.setItem(quranPassageDisplayStorageKey(), JSON.stringify({
+			translation: state.translation !== false,
+			arabic: state.arabic !== false
+		}));
+	} catch (err) {}
+}
+
+function applyQuranPassageDisplay(state) {
+	state = {
+		translation: state && state.translation !== false,
+		arabic: state && state.arabic !== false
+	};
+	if (!state.translation && !state.arabic)
+		state.translation = true;
+	document.querySelectorAll('.quran-passage-section').forEach(function (section) {
+		section.classList.toggle('quran-hide-translation', !state.translation);
+		section.classList.toggle('quran-hide-arabic', !state.arabic);
+	});
+	document.querySelectorAll('[data-quran-passage-display-toggle]').forEach(function (button) {
+		var target = button.getAttribute('data-quran-passage-display-toggle');
+		var active = target === 'arabic' ? state.arabic : state.translation;
+		button.classList.toggle('is-active', active);
+		button.setAttribute('aria-pressed', active ? 'true' : 'false');
+		button.setAttribute('title', active
+			? (target === 'arabic' ? 'Hide Quran Arabic' : 'Hide translation')
+			: (target === 'arabic' ? 'Show Quran Arabic' : 'Show translation'));
+		button.setAttribute('aria-label', button.getAttribute('title'));
+	});
+	return state;
+}
+
+function initQuranPassageDisplayToggles(root) {
+	var scope = root || document;
+	var buttons = Array.from(scope.querySelectorAll('[data-quran-passage-display-toggle]')).filter(function (button) {
+		if (button.dataset.quranPassageDisplayBound === 'true')
+			return false;
+		button.dataset.quranPassageDisplayBound = 'true';
+		return true;
+	});
+	if (document.querySelectorAll('.quran-passage-section').length < 1 || buttons.length < 1)
+		return;
+	var state = applyQuranPassageDisplay(storedQuranPassageDisplay());
+	buttons.forEach(function (button) {
+		button.addEventListener('click', function () {
+			var target = button.getAttribute('data-quran-passage-display-toggle');
+			var next = {
+				translation: state.translation,
+				arabic: state.arabic
+			};
+			if (target === 'arabic')
+				next.arabic = !next.arabic;
+			else
+				next.translation = !next.translation;
+			if (!next.translation && !next.arabic)
+				return;
+			state = applyQuranPassageDisplay(next);
+			storeQuranPassageDisplay(state);
+		});
+	});
+}
+
 function initQuranPassageTranslationSelects(root) {
 	var scope = root || document;
 	var selectors = Array.from(scope.querySelectorAll('[data-quran-passage-translation-select="1"]')).filter(function (selector) {
@@ -4158,24 +4242,31 @@ function quranAyahHeroHtml(ayah, clearHref) {
 			attrs['data-arabizi'] = 'true';
 		return attrs;
 	};
-	var previousHref = ayah.prev_ref ? quranUrl(`/${ayah.prev_ref}`) : '';
-	var nextHref = ayah.next_ref ? quranUrl(`/${ayah.next_ref}`) : '';
+	var passageHero = document.querySelector('[data-quran-selected-ayah-hero]');
+	var previousHref = passageHero && passageHero.getAttribute('data-quran-prev-href')
+		? passageHero.getAttribute('data-quran-prev-href')
+		: (ayah.prev_ref ? quranUrl(`/${ayah.prev_ref}`) : '');
+	var nextHref = passageHero && passageHero.getAttribute('data-quran-next-href')
+		? passageHero.getAttribute('data-quran-next-href')
+		: (ayah.next_ref ? quranUrl(`/${ayah.next_ref}`) : '');
+	var previousLabel = passageHero && passageHero.getAttribute('data-quran-prev-href') ? 'Previous passage' : 'Previous ayah';
+	var nextLabel = passageHero && passageHero.getAttribute('data-quran-next-href') ? 'Next passage' : 'Next ayah';
 	var navClass = previousHref || nextHref ? ' quran-ayah-hero-with-nav' : '';
 	var $hero = $('<section>').addClass(`quran-ayah-hero row${navClass}`).attr('data-dynamic-quran-ayah-hero', '1');
 	if (previousHref) {
 		$('<a>').addClass('quran-ayah-hero-nav quran-ayah-hero-prev').attr({
 			href: previousHref,
 			rel: 'prev',
-			title: 'Previous ayah',
-			'aria-label': 'Previous ayah'
+			title: previousLabel,
+			'aria-label': previousLabel
 		}).append($('<span>').addClass('bi bi-chevron-left').attr('aria-hidden', 'true')).appendTo($hero);
 	}
 	if (nextHref) {
 		$('<a>').addClass('quran-ayah-hero-nav quran-ayah-hero-next').attr({
 			href: nextHref,
 			rel: 'next',
-			title: 'Next ayah',
-			'aria-label': 'Next ayah'
+			title: nextLabel,
+			'aria-label': nextLabel
 		}).append($('<span>').addClass('bi bi-chevron-right').attr('aria-hidden', 'true')).appendTo($hero);
 	}
 	if (clearHref) {
@@ -4598,6 +4689,8 @@ function initQuranAyahSelector(root) {
 			toolbar.toggleClass('is-selecting', selecting);
 			toggleButton.toggleClass('btn-secondary', selecting);
 			toggleButton.toggleClass('btn-outline-secondary', !selecting);
+			openButton.prop('hidden', !selecting);
+			clearButton.prop('hidden', !selecting);
 			$('body').toggleClass('quran-ayah-selecting', $('.quran-ayah-select-toolbar').filter(function () {
 				return $(this).data('selecting') === true;
 			}).length > 0);

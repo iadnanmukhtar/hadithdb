@@ -41,8 +41,8 @@
         return href;
       return `${href}${href.indexOf('?') >= 0 ? '&' : '?'}translation=${encodeURIComponent(quranSelectedTranslationAlias)}`;
     };
-    var selectedAyahPrevHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.prev_ref ? quranPassageHref(`/${firstSelectedAyah.prev_ref}`) : undefined;
-    var selectedAyahNextHref = selectedAyahs.length === 1 && firstSelectedAyah && firstSelectedAyah.next_ref ? quranPassageHref(`/${firstSelectedAyah.next_ref}`) : undefined;
+    var selectedAyahPrevHref;
+    var selectedAyahNextHref;
     var quranAyahModalItems = [];
     var quranAyahModalRefs = new Set();
     var quranAyahModalNumber = function (ayah) {
@@ -62,17 +62,6 @@
         return 0;
       return aNum - bNum;
     });
-    if (selectedAyahs.length === 1 && firstSelectedAyah && (!selectedAyahPrevHref || !selectedAyahNextHref)) {
-      var selectedAyahIndex = results.findIndex(function (ayah) {
-        return ayah.ref === firstSelectedAyah.ref;
-      });
-      if (selectedAyahIndex >= 0) {
-        if (!selectedAyahPrevHref && results[selectedAyahIndex - 1])
-          selectedAyahPrevHref = quranPassageHref(`/${results[selectedAyahIndex - 1].ref}`);
-        if (!selectedAyahNextHref && results[selectedAyahIndex + 1])
-          selectedAyahNextHref = quranPassageHref(`/${results[selectedAyahIndex + 1].ref}`);
-      }
-    }
     var footnoteItems = results;
     var quranCorpusSection = section && section.book_alias === 'quran' && section.h1 && section.h2
       ? {
@@ -138,6 +127,39 @@
         continued: false
       }
     };
+    var quranPassageHeadingLabel = function (direction, heading) {
+      if (!heading)
+        return direction;
+      if (heading.level == 1)
+        return `${direction}:&nbsp;§${heading.h1}`;
+      if (heading.level == 2)
+        return `${direction}:&nbsp;§${heading.h1}.${heading.h2}`;
+      return direction;
+    };
+    if (section.page && section.page.hasPrev) {
+      page.type = ' Page';
+      page.prevHeading = section;
+      page.prev = `/${section.path}?o=${section.page.prevOffset}`;
+    } else if (section.prev) {
+      page.prevHeading = section.prev;
+      page.prev = `/${page.prevHeading.path}`;
+    }
+    if (page.prev) {
+      page.prevTitle = quranPassageHeadingLabel('Prev', page.prevHeading);
+      selectedAyahPrevHref = quranPassageHref(page.prev);
+    }
+    if (section.page && section.page.hasNext) {
+      page.type = ' Page';
+      page.nextHeading = section;
+      page.next = `/${section.path}?o=${section.page.nextOffset}`;
+    } else if (section.next) {
+      page.nextHeading = section.next;
+      page.next = `/${page.nextHeading.path}`;
+    }
+    if (page.next) {
+      page.nextTitle = quranPassageHeadingLabel('Next', page.nextHeading);
+      selectedAyahNextHref = quranPassageHref(page.next);
+    }
   %>
   
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -173,7 +195,7 @@
       <% } %>
       
       <% var quranSelectedAyahClearHref = page.context.section ? utils.quranUrl(req, `/${page.context.section.path}`) : undefined; %>
-      <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero<% if (quranSelectedAyahClearHref) { %> data-quran-clear-href="<%= quranSelectedAyahClearHref %>"<% } %>>
+      <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero<% if (quranSelectedAyahClearHref) { %> data-quran-clear-href="<%= quranSelectedAyahClearHref %>"<% } %><% if (selectedAyahPrevHref) { %> data-quran-prev-href="<%= selectedAyahPrevHref %>"<% } %><% if (selectedAyahNextHref) { %> data-quran-next-href="<%= selectedAyahNextHref %>"<% } %>>
       <% if (selectedAyahs.length > 0) { %>
         <% var selectedAyahModalIndex = quranAyahModalItems.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>
         <% var selectedAyahId = firstSelectedAyah && firstSelectedAyah.id; %>
@@ -184,6 +206,8 @@
         clearHref: quranSelectedAyahClearHref,
         prevHref: selectedAyahPrevHref,
         nextHref: selectedAyahNextHref,
+        prevLabel: 'Previous passage',
+        nextLabel: 'Next passage',
         toolbar: quranShareId ? {
           selectedAyahModalIndex: selectedAyahModalIndex,
           selectedAyahId: selectedAyahId,

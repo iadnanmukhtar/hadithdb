@@ -2290,6 +2290,18 @@ del em strong {
 	margin-top: .5lh;
 }
 
+.quran-passage-section.quran-hide-translation .h:lang(en),
+.quran-passage-section.quran-hide-arabic .h:lang(ar) {
+	display: none;
+}
+
+.quran-passage-section.quran-hide-translation .h:lang(ar),
+.quran-passage-section.quran-hide-arabic .h:lang(en) {
+	flex: 0 0 100%;
+	max-width: 100%;
+	width: 100%;
+}
+
 .body.passage .ayah a {
 	color: inherit;
 	text-decoration: none;
@@ -2836,6 +2848,26 @@ del em strong {
 
 .quran-ayah-select-btn .bi {
 	font-size: .85em;
+}
+
+.quran-passage-display-toggle {
+	flex: 0 0 auto;
+}
+
+.quran-passage-display-btn {
+	min-width: 2rem;
+}
+
+.quran-passage-display-btn.is-active {
+	background-color: var(--bs-secondary);
+	border-color: var(--bs-secondary);
+	color: #fff;
+}
+
+.quran-passage-display-btn:not(.is-active) {
+	background-color: var(--bs-secondary-bg);
+	color: var(--bs-secondary-color);
+	opacity: .72;
 }
 
 .quran-passage-translation-control {

@@ -3,6 +3,8 @@
 	const clearHref = locals.clearHref;
 	const prevHref = locals.prevHref;
 	const nextHref = locals.nextHref;
+	const prevLabel = locals.prevLabel || 'Previous ayah';
+	const nextLabel = locals.nextLabel || 'Next ayah';
 	const ayahHref = locals.ayahHref;
 	const linkHeroAyah = ayahHref && !(site && site.editMode);
 		const defaultTranslationBook = (global.commentaries || []).find(function (book) {
@@ -24,12 +26,12 @@
 <% if (ayahs.length > 0) { %>
 <section class="quran-ayah-hero row<%= prevHref || nextHref ? ' quran-ayah-hero-with-nav' : '' %>">
 		<% if (prevHref) { %>
-		<a class="quran-ayah-hero-nav quran-ayah-hero-prev" href="<%= prevHref %>" rel="prev" title="Previous ayah" aria-label="Previous ayah">
+		<a class="quran-ayah-hero-nav quran-ayah-hero-prev" href="<%= prevHref %>" rel="prev" title="<%= prevLabel %>" aria-label="<%= prevLabel %>">
 			<span class="bi bi-chevron-left" aria-hidden="true"></span>
 		</a>
 		<% } %>
 		<% if (nextHref) { %>
-		<a class="quran-ayah-hero-nav quran-ayah-hero-next" href="<%= nextHref %>" rel="next" title="Next ayah" aria-label="Next ayah">
+		<a class="quran-ayah-hero-nav quran-ayah-hero-next" href="<%= nextHref %>" rel="next" title="<%= nextLabel %>" aria-label="<%= nextLabel %>">
 			<span class="bi bi-chevron-right" aria-hidden="true"></span>
 		</a>
 	<% } %>

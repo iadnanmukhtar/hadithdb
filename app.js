@@ -38,6 +38,11 @@ const isLoopbackIp = (ip) => {
 
 const requestRateLimitIp = req => req.clientIp || req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
 
+const envFlagEnabled = (name) => {
+  const value = (process.env[name] || '').toString().trim().toLowerCase();
+  return ['1', 'true', 'yes', 'on'].includes(value);
+};
+
 const installTimestampedErrorLogging = () => {
   if (console.__hadithdbTimestampedErrors)
     return;
@@ -256,16 +261,18 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
 	  app.use('/', express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));
   app.use('/blog', express.static(`${global.settings.blog.dir}`));
 
-  const dynamicRequestLimiter = rateLimit({
-    windowMs: DYNAMIC_REQUEST_LIMIT_WINDOW_MS,
-    limit: DYNAMIC_REQUEST_LIMIT_PER_IP,
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: requestRateLimitIp,
-    skip: req => isLoopbackIp(requestRateLimitIp(req)),
-    message: 'Too many requests. Please wait and try again.'
-  });
-  app.use(dynamicRequestLimiter);
+  if (envFlagEnabled('THROTTLE')) {
+    const dynamicRequestLimiter = rateLimit({
+      windowMs: DYNAMIC_REQUEST_LIMIT_WINDOW_MS,
+      limit: DYNAMIC_REQUEST_LIMIT_PER_IP,
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: requestRateLimitIp,
+      skip: req => isLoopbackIp(requestRateLimitIp(req)),
+      message: 'Too many requests. Please wait and try again.'
+    });
+    app.use(dynamicRequestLimiter);
+  }
 
   // global redirect www
   app.all('/*', function (req, res, next) {
