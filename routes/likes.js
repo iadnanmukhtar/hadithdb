@@ -16,6 +16,14 @@ function normalizeLikeType(value) {
   return LIKE_TYPES.has(value) ? value : 'hadith';
 }
 
+function parsePositiveId(value) {
+  value = (value || '').toString();
+  if (!/^\d+$/.test(value))
+    return NaN;
+  const id = Number(value);
+  return Number.isSafeInteger(id) && id > 0 ? id : NaN;
+}
+
 async function ensureLikesTypeColumn() {
   if (!likesTypeColumnReady) {
     likesTypeColumnReady = (async () => {
@@ -189,11 +197,11 @@ async function verifyGoogle(req, res, next) {
 }
 
 router.get('/:hadithId', async function (req, res, next) {
-  const hadithId = parseInt(req.params.hadithId);
+  const hadithId = parsePositiveId(req.params.hadithId);
   const type = normalizeLikeType(req.query.type);
   const typeEsc = Utils.escSQL(type);
-  if (Number.isNaN(hadithId)) {
-    res.status(400).json({ error: 'Invalid target id' });
+  if (!Number.isInteger(hadithId) || hadithId < 1) {
+    res.status(400).json({ error: `Invalid route parameter 'hadithId=${req.params.hadithId}': value must be a positive integer` });
     return;
   }
   const getLikeCount = async () => {
@@ -242,11 +250,11 @@ router.get('/:hadithId', async function (req, res, next) {
 });
 
 router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
-  const hadithId = parseInt(req.params.hadithId);
+  const hadithId = parsePositiveId(req.params.hadithId);
   const type = normalizeLikeType((req.body && req.body.type) || req.query.type);
   const typeEsc = Utils.escSQL(type);
-  if (Number.isNaN(hadithId)) {
-    res.status(400).json({ error: 'Invalid target id' });
+  if (!Number.isInteger(hadithId) || hadithId < 1) {
+    res.status(400).json({ error: `Invalid route parameter 'hadithId=${req.params.hadithId}': value must be a positive integer` });
     return;
   }
   try {

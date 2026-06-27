@@ -446,8 +446,12 @@ ${formatThreadHistory(threadRows)}
 
   async function getTarget(req, res) {
     if (config.prepareTargetStorage) await config.prepareTargetStorage();
-    const target = config.parseTarget(req.params[config.targetParam], req);
-    if (!target) res.status(400).json({ error: config.invalidTargetError });
+    const rawTargetParam = req.params[config.targetParam];
+    const target = config.parseTarget(rawTargetParam, req);
+    if (!target) {
+      res.status(400).json({ error: `${config.invalidTargetError}: ${config.targetParam}=${rawTargetParam}` });
+      return null;
+    }
     if (target && config.validateTarget && !(await config.validateTarget(target))) {
       res.status(404).json({ error: config.targetNotFoundError || 'Comment target not found.' });
       return null;
@@ -461,9 +465,10 @@ ${formatThreadHistory(threadRows)}
   }
 
   function parseCommentId(req, res) {
-    const commentId = parseInt(req.params.commentId);
-    if (Number.isNaN(commentId)) {
-      res.status(400).json({ error: 'Invalid comment id' });
+    const rawCommentId = (req.params.commentId || '').toString();
+    const commentId = /^\d+$/.test(rawCommentId) ? Number(rawCommentId) : NaN;
+    if (!Number.isInteger(commentId) || commentId < 1) {
+      res.status(400).json({ error: `Invalid route parameter 'commentId=${rawCommentId}': value must be a positive integer` });
       return null;
     }
     return commentId;

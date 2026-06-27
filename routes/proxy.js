@@ -2,8 +2,8 @@
 
 const debug = require('../lib/Debug')('hadithdb:Proxy');
 const express = require('express');
+const createError = require('http-errors');
 const axios = require('axios');
-const https = require('https')
 const cheerio = require('cheerio');
 const MarkdownIt = require('markdown-it');
 const markdownitFootnote = require('markdown-it-footnote');
@@ -12,11 +12,30 @@ const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
 
 const router = express.Router();
+const GENERIC_PROXY_ALLOWED_HOSTS = new Set(
+  (process.env.GENERIC_PROXY_ALLOWED_HOSTS || 'masjidal.com')
+    .split(',')
+    .map(host => host.trim().toLowerCase())
+    .filter(Boolean)
+);
+const GENERIC_PROXY_TIMEOUT_MS = 10000;
 const md = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
 const quranBacktickMd = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
 quranBacktickMd.renderer.rules.code_inline = renderQuranBacktickToken;
 quranBacktickMd.renderer.rules.code_block = renderQuranBacktickBlock;
 quranBacktickMd.renderer.rules.fence = renderQuranBacktickBlock;
+
+function validQuranRange(surah, ayahFrom, ayahTo, allowZero) {
+  const surahInfo = (global.surahs || []).find(item => Number(item.num) === Number(surah));
+  const ayahCount = Number(surahInfo && (surahInfo.ayahs || surahInfo.ayat));
+  const minAyah = allowZero ? 0 : 1;
+  return !!surahInfo
+    && Number.isInteger(ayahFrom)
+    && Number.isInteger(ayahTo)
+    && ayahFrom >= minAyah
+    && ayahTo >= ayahFrom
+    && ayahTo <= ayahCount;
+}
 
 router.get('/tafsir/books', async function (req, res) {
   debug('proxy tafsir books start');
@@ -44,6 +63,7 @@ router.get('/translations/local', async function (req, res) {
   if (aliases.length < 1 || aliases.length > 100 ||
       !Number.isInteger(surah) || surah < 1 || surah > 114 ||
       !Number.isInteger(ayahFrom) || ayahFrom < 0 || !Number.isInteger(ayahTo) || ayahTo < ayahFrom ||
+      !validQuranRange(surah, ayahFrom, ayahTo, true) ||
       (lang && lang !== 'ar' && lang !== 'en')) {
     res.status(400).json({ error: 'Invalid local translation request.' });
     return;
@@ -77,6 +97,7 @@ router.get('/tafsir/local', async function (req, res) {
   const lang = (req.query.lang || '').toString();
   if (!/^[A-Za-z0-9_-]+$/.test(src) || !Number.isInteger(surah) || surah < 1 || surah > 114 ||
       !Number.isInteger(ayahFrom) || ayahFrom < 0 || !Number.isInteger(ayahTo) || ayahTo < ayahFrom ||
+      !validQuranRange(surah, ayahFrom, ayahTo, true) ||
       (lang && lang !== 'ar' && lang !== 'en')) {
     res.status(400).json({ error: 'Invalid local tafsir request.' });
     return;
@@ -117,7 +138,7 @@ router.get('/tafsir', async function (req, res) {
   const ayah = Number(req.query.a);
   const version = Number(req.query.ver || 1);
   if (!global.tafsirAppAliases.has(src) || !Number.isInteger(surah) || surah < 1 || surah > 114 ||
-      !Number.isInteger(ayah) || ayah < 0 || !Number.isInteger(version) || version < 1) {
+      !Number.isInteger(ayah) || ayah < 0 || !validQuranRange(surah, ayah, ayah, true) || !Number.isInteger(version) || version < 1) {
     res.status(400).json({ error: 'Invalid tafsir request.' });
     return;
   }
@@ -153,33 +174,60 @@ router.get('/:url', async function (req, res, next) {
   res.locals.res = res;
   debug(`Proxy: ${req.params.url}`);
   try {
-    const agent = new https.Agent({
-      rejectUnauthorized: false
-    });
     var resource;
     var text;
-    var headers = req.headers;
     var url = new URL(req.params.url);
-    headers.host = url.host;
+    if (url.protocol !== 'https:')
+      return next(createError(400, `Invalid route parameter 'url=${req.params.url}': proxy URL must use https`));
+    if (!isAllowedGenericProxyHost(url.hostname))
+      return next(createError(403, `Proxy host is not allowed`));
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), GENERIC_PROXY_TIMEOUT_MS);
     try {
       const t0 = Date.now();
       debug(`generic proxy fetch start ${url.toString()}`);
-      resource = await fetch(url.toString(), { method: 'GET', headers: headers, agent: agent });
+      resource = await fetch(url.toString(), {
+        method: 'GET',
+        redirect: 'follow',
+        signal: controller.signal,
+        headers: {
+          'accept': req.get('accept') || '*/*',
+          'user-agent': 'hadithdb-proxy/1.0'
+        }
+      });
       text = await resource.text();
       const elapsedMs = Date.now() - t0;
       debug(`generic proxy fetch done ${url.toString()} status=${resource.status} elapsedMs=${elapsedMs}`);
       debug.slow('generic proxy fetch', elapsedMs, `${url.toString()} status=${resource.status}`);
     } catch (e) {
       debug.error(`generic proxy fetch failed ${url.toString()}: ${e.message}\n${e.stack || ''}`);
+      return next(createError(502, 'Proxy fetch failed'));
+    } finally {
+      clearTimeout(timeout);
     }
+    res.status(resource.status);
+    res.setHeader('Cache-Control', 'no-store');
+    const contentType = resource.headers.get('content-type');
+    if (contentType)
+      res.setHeader('Content-Type', contentType);
     res.send(text);
-    res.end();
     return;
   } catch (e) {
     debug.error(`Proxy: ${req.params.url} ${e.message || e}\n${e.stack || ''}`);
-    throw new ReferenceError(`Proxy: ${req.params.url} ${e}`);
+    return next(createError(400, `Invalid route parameter 'url=${req.params.url}': proxy URL must be absolute`));
   }
 });
+
+function isAllowedGenericProxyHost(hostname) {
+  hostname = (hostname || '').toLowerCase();
+  if (!hostname || GENERIC_PROXY_ALLOWED_HOSTS.size === 0)
+    return false;
+  for (const allowed of GENERIC_PROXY_ALLOWED_HOSTS) {
+    if (hostname === allowed || hostname.endsWith(`.${allowed}`))
+      return true;
+  }
+  return false;
+}
 
 async function localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo) {
   const size = Math.min(1000, Math.max(1, ayahTo - ayahFrom + 21));

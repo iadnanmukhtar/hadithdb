@@ -64,14 +64,15 @@ module.exports = createReflectionRouter({
   typeColumn: '`type`',
   extraSelect: 'ref_num',
   replyAnchor: '#comments',
-  invalidTargetError: 'Invalid hadith id',
+  invalidTargetError: 'Invalid route parameter',
   targetNotFoundError: 'Comment target not found.',
   prepareTargetStorage: ensureCommentsTypeColumn,
   validateTarget: targetExists,
   parseTarget(value, req) {
-    const hadithId = parseInt(value);
+    value = (value || '').toString();
+    const hadithId = /^\d+$/.test(value) ? Number(value) : NaN;
     const type = normalizeCommentType((req.body && req.body.type) || req.query.type);
-    return Number.isNaN(hadithId) ? null : { value: hadithId, sql: hadithId, type };
+    return (!Number.isSafeInteger(hadithId) || hadithId < 1) ? null : { value: hadithId, sql: hadithId, type };
   },
   responseFields(row) {
     return { ref: row.ref_num, type: row.type || 'hadith' };

@@ -8,9 +8,11 @@
     site.editMode = false;
 
     var subtitle_en = `Error ${res.statusCode} `;
+    var safeStatusTitle = statusTitle || 'Error';
+    var safePublicMessage = publicMessage || friendlyMessage || 'An error occurred.';
     var page = {
       menu: 'Error',
-      title_en: `${site.shortName} | Error: ${res.statusCode} ${utils.emptyIfNull(message)} `,
+      title_en: `${site.shortName} | Error ${res.statusCode} ${safeStatusTitle} `,
       subtitle_en: subtitle_en,
       subtitle: null,
       canonical: '/',
@@ -33,27 +35,8 @@
       <%- include('sub-views/bookNav.ejs'); %> 
 
       <div class="row"> 
-        <h3><%- res.statusCode %> <%- statusTitle || message %></h3>
-        <p><%- friendlyMessage || message %></p>
-        <%
-          var errorSuggestedPaths = typeof suggestedPaths !== 'undefined' && suggestedPaths
-            ? suggestedPaths
-            : (typeof suggestedPath !== 'undefined' && suggestedPath ? [suggestedPath] : []);
-        %>
-        <% if (errorSuggestedPaths.length) { %>
-          <p>
-            Try
-            <% errorSuggestedPaths.forEach(function (suggestedPath, index) { %>
-              <a href="<%- suggestedPath %>"><%- suggestedPath %></a><%- index < errorSuggestedPaths.length - 1 ? ' or ' : '' %>
-            <% }); %>.
-          </p>
-        <% } %>
-        <% if (message && friendlyMessage && message !== friendlyMessage) { %>
-          <p class="text-muted"><small><%- message %></small></p>
-        <% } %>
-        <% if (res.statusCode >= 500) { %>
-          <pre><%- error.stack %></pre>
-        <% } %>
+        <h3><%- res.statusCode %> <%- safeStatusTitle %></h3>
+        <p><%- safePublicMessage %></p>
 
       </div>
     </main>

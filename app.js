@@ -18,6 +18,8 @@ const Utils = require('./lib/Utils');
 const REQUEST_BODY_LIMIT = '10mb';
 const DYNAMIC_REQUEST_LIMIT_WINDOW_MS = 1000;
 const DYNAMIC_REQUEST_LIMIT_PER_IP = 20;
+const MAX_REQUEST_URL_LENGTH = 4096;
+const BLOCKED_HTTP_METHODS = new Set(['TRACE', 'TRACK']);
 
 const normalizedIp = (ip) => {
   if (!ip)
@@ -41,6 +43,32 @@ const requestRateLimitIp = req => req.clientIp || req.ip || (req.socket && req.s
 const envFlagEnabled = (name) => {
   const value = (process.env[name] || '').toString().trim().toLowerCase();
   return ['1', 'true', 'yes', 'on'].includes(value);
+};
+
+const sameSiteSecurityHeaders = (req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.setHeader('Permissions-Policy', [
+    'camera=()',
+    'microphone=()',
+    'geolocation=()',
+    'payment=()',
+    'usb=()'
+  ].join(', '));
+  if (req.secure)
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  next();
+};
+
+const rejectUnsafeRequestShape = (req, res, next) => {
+  if (BLOCKED_HTTP_METHODS.has(req.method))
+    return next(createError(405, 'HTTP method not allowed'));
+  if ((req.originalUrl || '').length > MAX_REQUEST_URL_LENGTH)
+    return next(createError(414, 'Request URL is too long'));
+  next();
 };
 
 const installTimestampedErrorLogging = () => {
@@ -195,13 +223,9 @@ const wantsFriendlyErrorRedirect = (req) => {
   return !accept || accept.includes('text/html') || accept.includes('*/*');
 };
 
-const buildFriendlyErrorUrl = (req, statusCode, message) => {
+const buildFriendlyErrorUrl = (req, statusCode) => {
   const params = new URLSearchParams();
   params.set('status', normalizeHttpStatusCode(statusCode).toString());
-  if (message)
-    params.set('message', message.toString().substring(0, 300));
-  if (req && req.originalUrl)
-    params.set('path', req.originalUrl.substring(0, 500));
   return `/error?${params.toString()}`;
 };
 
@@ -228,6 +252,7 @@ const buildErrorViewLocals = (statusCode, message, error, req, res) => {
     res: finalRes,
     utils: Utils,
     message: finalMessage,
+    publicMessage: friendlyHttpErrorMessage(statusCode),
     error: error || createError(statusCode, finalMessage),
     friendlyMessage: friendlyHttpErrorMessage(statusCode, finalMessage),
     statusTitle: STATUS_CODES[statusCode] || 'Error',
@@ -238,6 +263,8 @@ const buildErrorViewLocals = (statusCode, message, error, req, res) => {
 patchAsyncRouterMethods();
 
 const app = express();
+app.disable('x-powered-by');
+app.set('trust proxy', 'loopback');
 app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, res, callback) {
   return app.render('error', buildErrorViewLocals(statusCode, message, error, req, res), callback);
 };
@@ -247,6 +274,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.set('view engine', 'ejs');
 
 	  app.use(requestIp.mw());
+    app.use(sameSiteSecurityHeaders);
+    app.use(rejectUnsafeRequestShape);
 	  app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
 	  app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
 	  app.use(cookieParser());
@@ -258,7 +287,13 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
 	    req.loginSessionChecked = false;
 	    next();
 	  });
-	  app.use('/', express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));
+	  app.use('/', express.static(path.join(__dirname, 'public'), {
+      dotfiles: 'ignore',
+      fallthrough: true,
+      setHeaders(res) {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+      }
+    }));
   app.use('/blog', express.static(`${global.settings.blog.dir}`));
 
   if (envFlagEnabled('THROTTLE')) {
@@ -267,7 +302,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
       limit: DYNAMIC_REQUEST_LIMIT_PER_IP,
       standardHeaders: true,
       legacyHeaders: false,
-      keyGenerator: requestRateLimitIp,
       skip: req => isLoopbackIp(requestRateLimitIp(req)),
       message: 'Too many requests. Please wait and try again.'
     });
@@ -372,15 +406,9 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   });
   app.get('/error', function (req, res) {
     const statusCode = normalizeHttpStatusCode(req.query.status);
-    const message = typeof req.query.message === 'string'
-      ? req.query.message
-      : undefined;
-    const originalPath = typeof req.query.path === 'string' && req.query.path
-      ? req.query.path
-      : req.originalUrl;
     const errorReq = {
-      path: originalPath.split('?')[0] || '/',
-      originalUrl: originalPath,
+      path: '/error',
+      originalUrl: '/error',
       query: {},
       cookies: req.cookies || {},
       hostname: req.hostname,
@@ -389,7 +417,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
       get: req.get.bind(req)
     };
     res.status(statusCode);
-    Object.assign(res.locals, buildErrorViewLocals(statusCode, message, null, errorReq, res));
+    Object.assign(res.locals, buildErrorViewLocals(statusCode, undefined, null, errorReq, res));
     res.render('error');
   });
   app.use('/', searchRouter);
@@ -404,8 +432,14 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     if (isNotFoundError(err))
       err = createError(404, err.message);
     const statusCode = normalizeHttpStatusCode(err.status || err.statusCode || 500);
+    if (wantsJsonErrorResponse(req)) {
+      return res.status(statusCode).json({
+        error: STATUS_CODES[statusCode] || 'Error',
+        message: friendlyHttpErrorMessage(statusCode)
+      });
+    }
     if (wantsFriendlyErrorRedirect(req))
-      return res.redirect(friendlyErrorRedirectStatus(req), buildFriendlyErrorUrl(req, statusCode, err.message));
+      return res.redirect(friendlyErrorRedirectStatus(req), buildFriendlyErrorUrl(req, statusCode));
     res.status(statusCode);
     Object.assign(res.locals, buildErrorViewLocals(statusCode, err.message, err, req, res));
     res.render('error');
