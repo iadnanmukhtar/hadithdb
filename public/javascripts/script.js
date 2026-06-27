@@ -3167,8 +3167,11 @@ function originFromUrl(url) {
 
 function userSettingsCacheBridgeUrl(baseUrl) {
 	try {
-		var path = window.location.pathname.indexOf('/quran/') === 0 ? '/quran/settings/cache-bridge' : '/settings/cache-bridge';
-		return new URL(path, baseUrl || window.location.origin).href;
+		var targetBaseUrl = baseUrl || window.location.origin;
+		var targetOrigin = originFromUrl(targetBaseUrl);
+		var quranOrigin = originFromUrl(window.HADITH_QURAN_BASE_URL || '');
+		var path = targetOrigin && quranOrigin && targetOrigin === quranOrigin ? '/quran/settings/cache-bridge' : '/settings/cache-bridge';
+		return new URL(path, targetBaseUrl).href;
 	} catch (err) {
 		return '';
 	}
@@ -3177,7 +3180,7 @@ function userSettingsCacheBridgeUrl(baseUrl) {
 function requestUserSettingsCacheBridge(baseUrl, action, user, settings) {
 	var bridgeUrl = userSettingsCacheBridgeUrl(baseUrl);
 	var bridgeOrigin = originFromUrl(bridgeUrl);
-	if (!bridgeUrl || !bridgeOrigin || !user)
+	if (!bridgeUrl || !bridgeOrigin || bridgeOrigin === window.location.origin || !user)
 		return Promise.resolve(null);
 	return new Promise(function (resolve) {
 		var requestId = `settings-cache-${Date.now()}-${Math.random().toString(36).slice(2)}`;
