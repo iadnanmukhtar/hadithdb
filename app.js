@@ -2,7 +2,8 @@
 'use strict';
 
 require('./lib/Globals');
-const debug = require('./lib/Debug')('hadithdb:App');
+const Debug = require('./lib/Debug');
+const debug = Debug('hadithdb:App');
 const util = require('util');
 const path = require('path');
 const net = require('net');
@@ -273,21 +274,22 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
-	  app.use(requestIp.mw());
-    app.use(sameSiteSecurityHeaders);
-    app.use(rejectUnsafeRequestShape);
-	  app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
-	  app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
-	  app.use(cookieParser());
-	  app.use(function resolveAdminMode(req, res, next) {
-	    const editMode = req.cookies && req.cookies.editMode == 1;
-	    req.admin = editMode;
-	    req.editMode = editMode;
-	    req.loginUser = null;
-	    req.loginSessionChecked = false;
-	    next();
-	  });
-	  app.use('/', express.static(path.join(__dirname, 'public'), {
+  app.use(requestIp.mw());
+  app.use(Debug.requestContextMiddleware);
+  app.use(sameSiteSecurityHeaders);
+  app.use(rejectUnsafeRequestShape);
+  app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
+  app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
+  app.use(cookieParser());
+  app.use(function resolveAdminMode(req, res, next) {
+    const editMode = req.cookies && req.cookies.editMode == 1;
+    req.admin = editMode;
+    req.editMode = editMode;
+    req.loginUser = null;
+    req.loginSessionChecked = false;
+    next();
+  });
+  app.use('/', express.static(path.join(__dirname, 'public'), {
       dotfiles: 'ignore',
       fallthrough: true,
       setHeaders(res) {
