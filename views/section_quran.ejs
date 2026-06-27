@@ -172,7 +172,7 @@
   
   <div class="container col-lg-8 mx-auto">
     
-    <main class="chapter mt-10"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %>>
+    <main class="chapter mt-10"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %> data-quran-infinite-passage="1" data-quran-surah="<%= chapter.h1 %>" data-quran-current-url="<%= req.originalUrl || req.url || req.path %>"<% if (page.prev) { %> data-quran-prev-url="<%= selectedAyahPrevHref || quranPassageHref(page.prev) %>" data-quran-prev-title="<%= (page.prevTitle || 'Previous').replace(/&nbsp;/g, ' ') %>"<% } %><% if (page.next) { %> data-quran-next-url="<%= selectedAyahNextHref || quranPassageHref(page.next) %>" data-quran-next-title="<%= (page.nextTitle || 'Next').replace(/&nbsp;/g, ' ') %>"<% } %>>
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
 

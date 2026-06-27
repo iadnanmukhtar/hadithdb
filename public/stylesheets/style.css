@@ -375,6 +375,7 @@ main.chapter.tafsir-only-page {
 .site-navbar {
 	--site-header-height: 4.25rem;
 	--site-header-shrink-height: 2.125rem;
+	transition: opacity .22s ease, transform .22s ease;
 }
 
 .site-navbar .logo,
@@ -509,6 +510,26 @@ main.chapter.tafsir-only-page {
 .site-navbar.shrink .subtitle {
 	max-height: 0;
 	opacity: 0;
+}
+
+body.quran-passage-nav-faded .site-navbar,
+body.quran-passage-nav-faded .mobile-bottom-nav {
+	opacity: 0;
+	pointer-events: none;
+}
+
+body.quran-passage-nav-faded .site-navbar {
+	transform: translateY(-0.5rem);
+}
+
+body.quran-passage-nav-faded .mobile-bottom-nav {
+	transform: translateX(-50%) translateY(0.5rem);
+}
+
+@media (max-width: 767.98px) {
+	body.quran-passage-nav-faded .mobile-bottom-nav {
+		transform: translateY(0.5rem);
+	}
 }
 
 @media (max-width: 768px) {
@@ -1826,6 +1847,7 @@ del em strong {
 
 .mobile-bottom-nav {
 	display: none;
+	transition: opacity .22s ease, transform .22s ease;
 }
 
 .mobile-bottom-nav::after {
@@ -2312,6 +2334,22 @@ del em strong {
 
 .quran-passage-section+.quran-passage-section {
 	margin-top: .5lh;
+}
+
+.quran-infinite-page {
+	border-top: 1px solid var(--bs-border-color);
+	margin-top: 2rem;
+	padding-top: 1rem;
+}
+
+.quran-infinite-status {
+	min-height: 1.5rem;
+	padding: 1rem 0;
+	text-align: center;
+}
+
+.quran-infinite-sentinel {
+	height: 1px;
 }
 
 .quran-passage-section.quran-hide-translation .h:lang(en),
