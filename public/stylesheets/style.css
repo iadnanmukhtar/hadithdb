@@ -513,21 +513,26 @@ main.chapter.tafsir-only-page {
 }
 
 body.quran-passage-nav-faded .site-navbar,
-body.quran-passage-nav-faded .mobile-bottom-nav {
+body.quran-passage-nav-faded .mobile-bottom-nav,
+body.reader-infinite-nav-faded .site-navbar,
+body.reader-infinite-nav-faded .mobile-bottom-nav {
 	opacity: 0;
 	pointer-events: none;
 }
 
-body.quran-passage-nav-faded .site-navbar {
+body.quran-passage-nav-faded .site-navbar,
+body.reader-infinite-nav-faded .site-navbar {
 	transform: translateY(-0.5rem);
 }
 
-body.quran-passage-nav-faded .mobile-bottom-nav {
+body.quran-passage-nav-faded .mobile-bottom-nav,
+body.reader-infinite-nav-faded .mobile-bottom-nav {
 	transform: translateX(-50%) translateY(0.5rem);
 }
 
 @media (max-width: 767.98px) {
-	body.quran-passage-nav-faded .mobile-bottom-nav {
+	body.quran-passage-nav-faded .mobile-bottom-nav,
+	body.reader-infinite-nav-faded .mobile-bottom-nav {
 		transform: translateY(0.5rem);
 	}
 }
@@ -2336,19 +2341,26 @@ del em strong {
 	margin-top: .5lh;
 }
 
-.quran-infinite-page {
+.quran-infinite-page,
+.reader-infinite-page {
 	border-top: 1px solid var(--bs-border-color);
 	margin-top: 2rem;
 	padding-top: 1rem;
 }
 
-.quran-infinite-status {
+.quran-infinite-status,
+.reader-infinite-status {
 	min-height: 1.5rem;
 	padding: 1rem 0;
 	text-align: center;
 }
 
-.quran-infinite-sentinel {
+.infinite-load-fallback-link {
+	font-weight: 600;
+}
+
+.quran-infinite-sentinel,
+.reader-infinite-sentinel {
 	height: 1px;
 }
 

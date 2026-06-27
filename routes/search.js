@@ -60,6 +60,20 @@ function visibleBookByAlias(value) {
   }) || null;
 }
 
+async function applySameBookHeadingNavigation(heading) {
+  if (!heading || !heading.book_alias || !Number.isFinite(Number(heading.ordinal)))
+    return heading;
+  var level = Number(heading.level);
+  if (level !== 1 && level !== 2)
+    return heading;
+  var baseQuery = `book_alias:${heading.book_alias} AND level:${level}`;
+  var prev = await Index.docsFromQueryString(Heading.INDEX, `${baseQuery} AND ordinal:<${heading.ordinal}`, 0, 1, 'ordinal DESC');
+  var next = await Index.docsFromQueryString(Heading.INDEX, `${baseQuery} AND ordinal:>${heading.ordinal}`, 0, 1, 'ordinal ASC');
+  heading.prev = prev.length > 0 ? Heading.toLevel(prev[0]) : null;
+  heading.next = next.length > 0 ? Heading.toLevel(next[0]) : null;
+  return heading;
+}
+
 function validQuranAyah(surah, ayah) {
   surah = findSurah(surah);
   ayah = parseQuranAyahParam(ayah);
@@ -138,10 +152,8 @@ function redirectCanonicalQueryParams(req, res, next) {
     shouldRedirect = true;
   }
 
-  var clearFragment = false;
   if (isDefaultQuranPassagePath(req.path) && queryParams.has('passage')) {
     queryParams.delete('passage');
-    clearFragment = true;
     shouldRedirect = true;
   }
 
@@ -151,7 +163,7 @@ function redirectCanonicalQueryParams(req, res, next) {
   var queryString = queryParams.toString();
   var cleanUrl = req.originalUrl.substring(0, queryIndex);
   var redirectUrl = queryString ? `${cleanUrl}?${queryString}` : cleanUrl;
-  return res.redirect(301, clearFragment ? `${redirectUrl}#` : redirectUrl);
+  return res.redirect(301, redirectUrl);
 }
 
 function isDefaultQuranPassagePath(path) {
@@ -1480,6 +1492,25 @@ function shouldRedirectQuranSurahPath(req) {
     && req.query.download === undefined;
 }
 
+function shouldRedirectHadithChapterPath(req) {
+  return req.query.json === undefined
+    && req.query.tsv === undefined
+    && req.query.md === undefined
+    && req.query.download === undefined
+    && req.query.epub === undefined;
+}
+
+function appendChapterSectionRedirectQuery(req) {
+  var queryIndex = req.originalUrl.indexOf('?');
+  if (queryIndex < 0)
+    return '';
+  var queryParams = new URLSearchParams(req.originalUrl.substring(queryIndex + 1));
+  queryParams.delete('o');
+  queryParams.delete('passage');
+  var queryString = queryParams.toString();
+  return queryString ? `?${queryString}` : '';
+}
+
 async function firstQuranSectionNumber(surah) {
   surah = Number(surah);
   if (!Number.isInteger(surah) || surah <= 0)
@@ -1893,7 +1924,14 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     if (bookAlias === 'quran' && shouldRedirectQuranSurahPath(req)) {
       var firstSectionNum = await firstQuranSectionNumber(chapterNum);
       if (firstSectionNum)
-        return res.redirect(302, `${Utils.quranUrl(req, `/quran/${chapterNum}/${firstSectionNum}`)}${appendOriginalQuery(req)}#`);
+        return res.redirect(302, `${Utils.quranUrl(req, `/quran/${chapterNum}/${firstSectionNum}`)}${appendOriginalQuery(req)}`);
+    }
+
+    var chapter = await Chapter.chapterFromRef(`${bookAlias}/${chapterNum}`);
+    if (bookAlias !== 'quran' && shouldRedirectHadithChapterPath(req)) {
+      var firstSection = await chapter.getFirstSection();
+      if (firstSection && firstSection.path)
+        return res.redirect(301, `/${firstSection.path}${appendChapterSectionRedirectQuery(req)}`);
     }
 
     var quranChapterPassage = bookAlias === 'quran' && req.query.ayat == undefined;
@@ -1906,9 +1944,9 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       return;
     }
 
-    var chapter = await Chapter.chapterFromRef(`${bookAlias}/${chapterNum}`);
     await chapter.getPrev();
     await chapter.getNext();
+    await applySameBookHeadingNavigation(chapter);
     await chapter.getSections();
     results = await chapter.getItems(offset);
 
@@ -2036,6 +2074,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     var section = await Section.sectionFromRef(`${bookAlias}/${chapterNum}/${sectionNum}`);
     await section.getPrev();
     await section.getNext();
+    await applySameBookHeadingNavigation(section);
     var chapter = await section.getChapter();
     await chapter.getPrev();
     await chapter.getNext();

@@ -27,6 +27,54 @@
         continued: false
       }
     };
+    var readerInfiniteEnabled = book.alias !== 'quran';
+    function readerHeadingLabel(direction, heading) {
+      if (!heading)
+        return direction === 'Prev' ? 'Previous' : 'Next';
+      var pageType = page && page.type ? page.type : '';
+      if (heading.level == 1)
+        return `${direction}${pageType}: ${heading.book.shortName_en} ${heading.h1}`;
+      if (heading.level == 2)
+        return `${direction}${pageType}: ${heading.book.shortName_en} §${heading.h1}.${heading.h2}`;
+      return direction === 'Prev' ? 'Previous' : 'Next';
+    }
+    if (readerInfiniteEnabled) {
+      var readerHeading = page.context.heading;
+      var readerHeadingPage = readerHeading && readerHeading.page ? readerHeading.page : {};
+      page.type = '';
+      if (readerHeadingPage.hasPrev) {
+        page.type = ' Page';
+        page.prevHeading = readerHeading;
+        page.prev = `/${readerHeading.path}?o=${readerHeadingPage.prevOffset}`;
+        if (req.query.passage != undefined)
+          page.prev += '&passage';
+      } else if (readerHeading && readerHeading.prev) {
+        page.prevHeading = readerHeading.prev;
+        page.prev = `/${page.prevHeading.path}`;
+        if (req.query.passage != undefined)
+          page.prev += '?passage';
+      }
+      if (page.prev)
+        page.prevTitle = readerHeadingLabel('Prev', page.prevHeading);
+      if (readerHeadingPage.hasNext) {
+        page.type = ' Page';
+        page.nextHeading = readerHeading;
+        page.next = `/${readerHeading.path}?o=${readerHeadingPage.nextOffset}`;
+        if (req.query.passage != undefined)
+          page.next += '&passage';
+      } else if (readerHeading && readerHeading.next) {
+        page.nextHeading = readerHeading.next;
+        page.next = `/${page.nextHeading.path}`;
+        if (req.query.passage != undefined)
+          page.next += '?passage';
+      }
+      if (page.next)
+        page.nextTitle = readerHeadingLabel('Next', page.nextHeading);
+    }
+    var readerCurrentUrl = req.originalUrl || req.url || req.path;
+    var readerPrevUrl = readerInfiniteEnabled && page.prev ? utils.urlFor(req, page.prev) : '';
+    var readerNextUrl = readerInfiniteEnabled && page.next ? utils.urlFor(req, page.next) : '';
+    var readerContextKey = `${book.alias}:${chapter.h1}`;
   %>
   
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -39,7 +87,7 @@
   
   <div class="container col-lg-8 mx-auto">
     
-    <main class="chapter mt-10">
+    <main class="chapter mt-10"<% if (readerInfiniteEnabled) { %> data-reader-infinite="hadith-chapter" data-reader-context-key="<%= readerContextKey %>" data-reader-current-url="<%= readerCurrentUrl %>"<% if (readerPrevUrl) { %> data-reader-prev-url="<%= readerPrevUrl %>" data-reader-prev-title="<%= page.prevTitle || 'Previous' %>"<% } %><% if (readerNextUrl) { %> data-reader-next-url="<%= readerNextUrl %>" data-reader-next-title="<%= page.nextTitle || 'Next' %>"<% } %><% } %>>
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
               

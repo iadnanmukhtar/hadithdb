@@ -57,6 +57,12 @@
 	    var quranAyahModalIndex = ayahs.findIndex(function (item) {
 	      return Number(item.ayah) === Number(ayah);
 	    });
+	    var tafsirReaderNavigation = typeof navigation !== 'undefined' ? navigation : {};
+	    var tafsirReaderCurrentUrl = req.originalUrl || req.url || req.path;
+	    var tafsirReaderPrevUrl = tafsirReaderNavigation.prev || '';
+	    var tafsirReaderNextUrl = tafsirReaderNavigation.next || '';
+	    var tafsirReaderPrevTitle = tafsirReaderNavigation.prevTitle ? `Previous: ${tafsirReaderNavigation.prevTitle}` : 'Previous';
+	    var tafsirReaderNextTitle = tafsirReaderNavigation.nextTitle ? `Next: ${tafsirReaderNavigation.nextTitle}` : 'Next';
 	%>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -66,7 +72,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
   <div class="container col-lg-8 mx-auto">
-    <main class="chapter mt-10 tafsir-only-page">
+    <main class="chapter mt-10 tafsir-only-page" data-reader-infinite="tafsir" data-reader-context-key="<%= surah.num %>" data-reader-current-url="<%= tafsirReaderCurrentUrl %>"<% if (tafsirReaderPrevUrl) { %> data-reader-prev-url="<%= tafsirReaderPrevUrl %>" data-reader-prev-title="<%= tafsirReaderPrevTitle %>"<% } %><% if (tafsirReaderNextUrl) { %> data-reader-next-url="<%= tafsirReaderNextUrl %>" data-reader-next-title="<%= tafsirReaderNextTitle %>"<% } %>>
 	      <heading class="row major">
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>">
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
@@ -166,10 +172,10 @@
 <%- include('sub-views/mobile_navigation.ejs', {
   site: site,
   page: page,
-  prev: navigation.prev,
-  next: navigation.next,
-  prevTitle: navigation.prevTitle ? `Previous: ${navigation.prevTitle}` : 'Previous',
-  nextTitle: navigation.nextTitle ? `Next: ${navigation.nextTitle}` : 'Next'
+  prev: tafsirReaderNavigation.prev,
+  next: tafsirReaderNavigation.next,
+  prevTitle: tafsirReaderPrevTitle,
+  nextTitle: tafsirReaderNextTitle
 }); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
