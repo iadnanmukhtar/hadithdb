@@ -3,6 +3,7 @@
     var chapter = page.context.chapter;
     var section = page.context.section;
     var heading = page.context.section || chapter;
+    var headingPage = heading && heading.page ? heading.page : {};
     var isQuranChapter = book && book.alias === 'quran';
     var chapterBreadcrumbLabelEn = isQuranChapter ? 'Surah' : 'Chapter';
     var chapterBreadcrumbLabelAr = isQuranChapter ? 'السورة' : 'كتاب';
@@ -17,8 +18,8 @@
     <%- chapter.h1 %>. <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title_en" data-arabizi="true">
       <%- chapter.title_en || 'Chapter' %>
     </span>
-    <% if (heading.page.hasNext || heading.page.number && heading.page.number > 1) { %>
-    (<%- heading.page.number %>/<%- Math.ceil(chapter.count/global.settings.search.itemsPerPage)%>)
+    <% if (headingPage.hasNext || headingPage.number && headingPage.number > 1) { %>
+    (<%- headingPage.number %>/<%- Math.ceil(chapter.count/global.settings.search.itemsPerPage)%>)
     <% } %>
   </a>
   <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-heading-id="<%= chapter.id %>" title="Bookmark this chapter">
@@ -31,7 +32,7 @@
     <span class="_e<%= isQuranChapter ? ' quran-surah-name' : '' %>" data-id="<%= chapter.id %>" data-prop="toc.title">
       <%- chapter.title %>
     </span>
-    <%- (heading.page.hasNext || heading.page.number && heading.page.number > 1) ? `ص ${arabic.toArabicDigits(heading.page.number+'')}` : `` %>
+    <%- (headingPage.hasNext || headingPage.number && headingPage.number > 1) ? `ص ${arabic.toArabicDigits(headingPage.number+'')}` : `` %>
   </a></h2>
 
 </heading>
