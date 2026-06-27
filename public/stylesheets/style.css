@@ -2866,8 +2866,16 @@ del em strong {
 
 .quran-passage-display-btn:not(.is-active) {
 	background-color: var(--bs-secondary-bg);
+	border-color: var(--bs-secondary);
 	color: var(--bs-secondary-color);
 	opacity: .72;
+}
+
+.quran-passage-display-btn:not(.is-active):hover,
+.quran-passage-display-btn:not(.is-active):focus {
+	background-color: var(--bs-secondary-bg);
+	border-color: var(--bs-secondary);
+	color: var(--bs-secondary-color);
 }
 
 .quran-passage-translation-control {
