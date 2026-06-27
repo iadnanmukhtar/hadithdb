@@ -4134,8 +4134,10 @@ function initQuranShareTranslationSelect(modal, card) {
 		var books = results[0];
 		var settings = results[1] || {};
 		var selected = selector.value;
+		var selectedTranslationAlias = quranSelectedTranslationAliasFromLocation() || storedQuranSelectedTranslationAlias();
 		selector.innerHTML = '';
-		orderedSelectableQuranTranslationBooks(books, settings).forEach(function (book) {
+		var choices = orderedSelectableQuranTranslationBooks(books, settings);
+		choices.forEach(function (book) {
 			var option = document.createElement('option');
 			option.value = book.source === 'default' ? '' : book.alias;
 			option.textContent = quranTranslationBookLabel(book);
@@ -4144,9 +4146,11 @@ function initQuranShareTranslationSelect(modal, card) {
 		var overridePreferredAlias = window.hadithQuranUserSettingsOverride && window.hadithQuranUserSettingsOverride.translations
 			? window.hadithQuranUserSettingsOverride.translations.preferredAlias || ''
 			: '';
-		selector.value = selected || overridePreferredAlias || settings.translations && settings.translations.preferredAlias || '';
-		if (selector.value)
-			applyQuranShareTranslation(modal, card, selector.value).catch(function () {});
+		selector.value = quranTranslationSelectValue(
+			selectedTranslationAlias || overridePreferredAlias || settings.translations && settings.translations.preferredAlias || selected || '',
+			choices
+		);
+		applyQuranShareTranslation(modal, card, selector.value).catch(function () {});
 	}).catch(function () {});
 }
 
@@ -5754,6 +5758,8 @@ function initHadithShareModals(root) {
 		modalRoot.addEventListener('show.bs.modal', function () {
 			if (arabicSwitch)
 				arabicSwitch.checked = arabicSwitch.defaultChecked;
+			if (modalRoot.classList.contains('quran-share-root'))
+				initQuranShareTranslationSelect(modal, card);
 			updateHadithShareArabicState(modal, card, arabicSwitch, languageToggle);
 			updateHadithShareSizeState(card, sizeControls);
 		});
