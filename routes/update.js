@@ -150,6 +150,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
             title_en: revised.item.title_en,
             chain: revised.item.chain,
             body: revised.item.body,
+            footnote: revised.item.footnote,
             chain_en: revised.item.chain_en,
             body_en: revised.item.body_en,
             footnote_en: revised.item.footnote_en

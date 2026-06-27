@@ -9,7 +9,7 @@ const HadithRevision = require('../lib/HadithRevision');
 const DEFAULT_BOOK = '16';
 const DEFAULT_PROVIDER = 'ollama';
 const DEFAULT_OLLAMA_BASE_URL = 'http://127.0.0.1:11434';
-const DEFAULT_OLLAMA_MODEL = 'gemma4';
+const DEFAULT_OLLAMA_MODEL = 'hf.co/goodasdgood/SILMA-9B-Instruct-v1.0-IQ4_NL-GGUF:latest';
 
 (async () => {
 	var options = parseArgs(process.argv.slice(2));
@@ -68,7 +68,8 @@ async function revise(item, options) {
 			provider: options.provider,
 			model: options.model,
 			baseUrl: options.baseUrl,
-			timeout: options.timeout
+			timeout: options.timeout,
+			syncKnowledge: false
 		});
 		console.log(`Updated ${item.ref}`);
 	} catch (e) {
@@ -220,11 +221,11 @@ function printUsage() {
 		'  node bin/reviseHadith.js --book <id-or-alias> [--from <num0>] [--limit <n>]\n' +
 		'  node bin/reviseHadith.js --ref <book-alias:num> [--dry-run]\n' +
 		'\n' +
-		'Defaults to revising all hadith in book 16 with local Ollama model gemma4 unless you specify a ref or range.\n' +
+		`Defaults to revising all hadith in book 16 with local Ollama model ${DEFAULT_OLLAMA_MODEL} unless you specify a ref or range.\n` +
 		'\n' +
 		'Options:\n' +
 		'  --provider <name>  ollama or openai (default: ollama)\n' +
-		'  --model <name>     Model name (default for Ollama: gemma4)\n' +
+		`  --model <name>     Model name (default for Ollama: ${DEFAULT_OLLAMA_MODEL})\n` +
 		'  --base-url <url>   Ollama base URL (default: http://127.0.0.1:11434)\n' +
 		'  --timeout <ms>     Ollama request timeout (default: 300000)\n' +
 		'  --dry-run          List matching hadith without model calls or updates'
