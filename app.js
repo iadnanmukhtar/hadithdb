@@ -15,6 +15,8 @@ const rateLimit = require('express-rate-limit').default;
 const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
 const Utils = require('./lib/Utils');
+const PaymentConfig = require('./lib/PaymentConfig');
+const ContentTranslations = require('./lib/ContentTranslations');
 
 const REQUEST_BODY_LIMIT = '10mb';
 const DYNAMIC_REQUEST_LIMIT_WINDOW_MS = 1000;
@@ -47,6 +49,9 @@ const envFlagEnabled = (name) => {
 };
 
 const sameSiteSecurityHeaders = (req, res, next) => {
+  const paymentPolicy = PaymentConfig.isEnabled()
+    ? 'payment=(self "https://js.stripe.com" "https://checkout.stripe.com")'
+    : 'payment=()';
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -56,7 +61,7 @@ const sameSiteSecurityHeaders = (req, res, next) => {
     'camera=()',
     'microphone=()',
     'geolocation=()',
-    'payment=()',
+    paymentPolicy,
     'usb=()'
   ].join(', '));
   if (req.secure)
@@ -70,6 +75,11 @@ const rejectUnsafeRequestShape = (req, res, next) => {
   if ((req.originalUrl || '').length > MAX_REQUEST_URL_LENGTH)
     return next(createError(414, 'Request URL is too long'));
   next();
+};
+
+const preserveStripeWebhookRawBody = (req, res, buf) => {
+  if (req.path === '/payments/webhook' || req.path === '/quran/payments/webhook')
+    req.rawBody = Buffer.from(buf);
 };
 
 const installTimestampedErrorLogging = () => {
@@ -278,9 +288,14 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use(Debug.requestContextMiddleware);
   app.use(sameSiteSecurityHeaders);
   app.use(rejectUnsafeRequestShape);
-  app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
+  app.use(express.json({ limit: REQUEST_BODY_LIMIT, verify: preserveStripeWebhookRawBody }));
   app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
   app.use(cookieParser());
+  app.use(function exposeFeatureFlags(req, res, next) {
+    res.locals.paymentFeatureEnabled = PaymentConfig.isEnabled();
+    res.locals.contentTranslationEstimateFields = ContentTranslations.estimateFields;
+    next();
+  });
   app.use(function resolveAdminMode(req, res, next) {
     const editMode = req.cookies && req.cookies.editMode == 1;
     req.admin = editMode;
@@ -341,6 +356,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const likedRouter = require('./routes/liked');
   const bookmarksRouter = require('./routes/bookmarks');
   const userSettingsRouter = require('./routes/userSettings');
+  const paymentsRouter = require('./routes/payments');
+  const contentTranslationsRouter = require('./routes/contentTranslations');
   const chatbotRouter = require('./routes/rag');
 
   app.use('/tools', toolsRouter);
@@ -379,6 +396,10 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/bookmarks', bookmarksRouter);
   app.use('/user-settings', userSettingsRouter);
   app.use('/quran/user-settings', userSettingsRouter);
+  app.use('/payments', paymentsRouter);
+  app.use('/quran/payments', paymentsRouter);
+  app.use('/content-translations', contentTranslationsRouter);
+  app.use('/quran/content-translations', contentTranslationsRouter);
   app.use('/chatbot', chatbotRouter);
   app.use('/rag', chatbotRouter);
   app.use(function redirectTranslationAliases(req, res, next) {

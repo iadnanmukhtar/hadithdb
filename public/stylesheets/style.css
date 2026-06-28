@@ -3471,7 +3471,147 @@ del em strong {
 	min-width: 8.5rem;
 }
 
+.hadith-share-language-control,
+.hadith-share-language-select {
+	min-width: 8.5rem;
+}
+
+.content-translation-control {
+	display: block;
+	max-width: 100%;
+	margin: .45rem 0 .75rem;
+	padding: .35rem 0;
+	color: var(--bs-body-color);
+	direction: ltr !important;
+	font-family: var(--bs-body-font-family) !important;
+	font-size: 16px !important;
+	line-height: 1.35;
+	text-align: left !important;
+}
+
+.content-translate-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: .25rem;
+	direction: ltr !important;
+	font-family: var(--bs-body-font-family) !important;
+	font-size: .9em !important;
+	min-width: 6.75rem;
+	text-align: center !important;
+	white-space: nowrap;
+}
+
+.content-translate-button .content-translate-button-icon {
+	direction: ltr !important;
+	font-family: "bootstrap-icons" !important;
+	font-size: 1em !important;
+	line-height: 1 !important;
+}
+
+.content-translate-button .content-translate-button-label {
+	direction: ltr !important;
+	font-family: inherit !important;
+	font-size: inherit !important;
+	line-height: inherit !important;
+	text-align: inherit !important;
+}
+
+.tafsir-only-page .content-translation-control-tafsir {
+	font-size: 16px !important;
+	line-height: 1.35 !important;
+	margin: .35rem 0 .45rem;
+	padding: 0;
+}
+
+.tafsir-only-page .content-translate-button-tafsir {
+	font-size: .9em !important;
+	line-height: 1.5 !important;
+	padding: .25rem .5rem !important;
+}
+
+.content-translation-revise-button {
+	min-width: 0;
+	padding-left: 0;
+	padding-right: 0;
+	text-decoration: none;
+}
+
+.content-translation-revise-button:hover,
+.content-translation-revise-button:focus {
+	text-decoration: underline;
+}
+
+.content-translation-modal .modal-content {
+	border-radius: .45rem;
+}
+
+.content-translation-modal-copy,
+.content-translation-modal-note {
+	color: var(--bs-secondary-color);
+	font-size: .95rem;
+	line-height: 1.4;
+}
+
+.content-translation-modal-estimate {
+	display: flex;
+	flex-direction: column;
+	gap: .15rem;
+	margin-bottom: .75rem;
+	padding: .65rem .75rem;
+	border-left: 3px solid var(--c-accent);
+	background: var(--bs-tertiary-bg, rgba(0, 0, 0, .04));
+}
+
+.content-translation-modal-balance {
+	display: flex;
+	flex-direction: column;
+	gap: .15rem;
+	margin-bottom: .75rem;
+}
+
+.content-translation-modal-points {
+	font-size: 1rem;
+	line-height: 1.25;
+}
+
+.content-translation-modal-balance-value {
+	font-size: 1rem;
+	line-height: 1.25;
+}
+
+.content-translation-modal-words,
+.content-translation-modal-status,
+.content-translation-modal-wallet {
+	color: var(--bs-secondary-color);
+	font-size: .9rem;
+	line-height: 1.3;
+}
+
+.content-translation-modal-purchase {
+	margin-bottom: .75rem;
+	padding: .75rem;
+	border: 1px solid var(--bs-border-color);
+	border-radius: .4rem;
+}
+
+.content-translation-modal-auto {
+	margin-bottom: .5rem;
+}
+
+.content-translation-modal-wallet {
+	margin-bottom: 0;
+}
+
+.content-translation-modal-note {
+	margin-bottom: 0;
+}
+
 @media (max-width: 575.98px) {
+	.content-translate-button {
+		width: auto;
+	}
+
 	.quran-translation-source {
 		align-items: flex-start;
 		flex-wrap: wrap;
@@ -3742,6 +3882,52 @@ del em strong {
 	background: var(--bs-secondary);
 	border-color: var(--bs-secondary);
 	color: var(--bs-white);
+}
+
+.settings-language-field {
+	max-width: 16rem;
+}
+
+.settings-payment-panel {
+	display: grid;
+	gap: .75rem;
+	grid-template-columns: minmax(8rem, 10rem) minmax(14rem, 1fr);
+	align-items: start;
+}
+
+.settings-payment-balance {
+	display: flex;
+	flex-direction: column;
+	gap: .1rem;
+	border: 1px solid var(--bs-border-color);
+	border-radius: .35rem;
+	padding: .6rem .75rem;
+	background: var(--bs-body-bg);
+}
+
+.settings-payment-balance strong {
+	font-size: 1.45rem;
+	line-height: 1.1;
+}
+
+.settings-payment-auto,
+.settings-payment-ledger {
+	grid-column: 1 / -1;
+}
+
+.settings-payment-buy select,
+.settings-payment-auto select {
+	min-width: 13rem;
+}
+
+.settings-payment-auto input[type="number"] {
+	width: 7rem;
+}
+
+@media (max-width: 575.98px) {
+	.settings-payment-panel {
+		grid-template-columns: 1fr;
+	}
 }
 
 .settings-preference-list-mini {
@@ -4280,6 +4466,26 @@ del em strong {
 
 .quran-tafsir-entry[open] summary::after {
 	content: "\f282";
+}
+
+.tafsir-only-page .quran-tafsir-entry .content-translation-control {
+	direction: ltr !important;
+	font-family: var(--bs-body-font-family) !important;
+	font-size: 16px !important;
+	line-height: 1.35;
+	margin: .35rem 0 .45rem;
+	padding: 0;
+	text-align: left !important;
+}
+
+.tafsir-only-page .quran-tafsir-entry .content-translate-button {
+	direction: ltr !important;
+	font-family: var(--bs-body-font-family);
+	font-size: .9em !important;
+	line-height: 1.5 !important;
+	min-width: 6.75rem;
+	padding: .25rem .5rem !important;
+	text-align: center !important;
 }
 
 details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah,

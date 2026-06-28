@@ -7,6 +7,7 @@
 	const enNarrator = enNarrators.length > 0 ? utils.emptyIfNull(enNarrators[enNarrators.length - 1]).trim() : '';
 	const arNarrator = enNarrator ? arabic.toArabic(enNarrator) : '';
 	const shareRef = i.ref || `${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? en.actual?.num || i.actual?.num || i.num : en.num || i.num}`;
+	const paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
 %>
 <aside class="h modal fade hadith-share-root" id="H<%= i.id %>" tabindex="-1">
   <div class="modal-dialog modal-dialog-scrollable modal-xl hadith-share-dialog">
@@ -23,6 +24,12 @@
 					<input class="form-check-input hadith-share-arabic" type="checkbox" role="switch" id="H<%= i.id %>-arabic" checked>
 					<label class="form-check-label" for="H<%= i.id %>-arabic">Arabic</label>
 				</div>
+				<% if (paymentFeatureEnabled) { %>
+				<label class="hadith-share-language-control" title="Share language">
+					<span class="visually-hidden">Share language</span>
+					<select class="form-select form-select-sm hadith-share-language-select" data-share-language-select="1" data-share-language-default="en" aria-label="Share language"></select>
+				</label>
+				<% } %>
 				<div class="hadith-share-size-controls" aria-label="Share image font sizes">
 					<label title="English text size">
 						<span>English</span>
@@ -46,12 +53,12 @@
 		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	  </header>
       <section class="modal-body hadith-share-body">
-		<article class="hadith-share-card" data-share-card data-share-ref="<%= shareRef %>">
+		<article class="hadith-share-card" data-share-card data-share-ref="<%= shareRef %>"<% if (paymentFeatureEnabled) { %> data-share-generated-item-type="hadith" data-share-generated-item-id="<%= i.actual ? i.actual.id : i.id %>"<% } %>>
 			<div class="hadith-share-card-inner">
-				<% if (en.title) { %>
-					<h2 class="hadith-share-title share-editable" contenteditable="false"><%= en.title %></h2>
+				<% if (en.title || ar.title) { %>
+					<h2 class="hadith-share-title share-editable" contenteditable="false" data-share-generated-title="1"><%= en.title %></h2>
 				<% } %>
-				<% if (en.body) { %>
+				<% if (en.body || ar.body) { %>
 					<section class="hadith-share-section" lang="en">
 						<div class="hadith-share-ref">
 							<% if (i.book_virtual) { %>
@@ -63,7 +70,7 @@
 								from <em class="share-editable" contenteditable="false"><%= enNarrator %></em> —
 							<% } %>
 						</div>
-						<div class="body hadith-share-text share-editable" lang="en" contenteditable="false" data-markdown-source="<%= utils.emptyIfNull(en.body) %>">
+						<div class="body hadith-share-text share-editable" lang="en" contenteditable="false" data-share-generated-body="1" data-markdown-source="<%= utils.emptyIfNull(en.body) %>">
 							<%- utils.markdownToHtml(en.body) %>
 						</div>
 					</section>

@@ -106,6 +106,8 @@ $(function () {
 	initMarkdownEditablePreviews(document);
 	initHadithSharhLinks(document);
 	initHadithShareModals(document);
+	initHadithContentTranslationControls(document);
+	resumePendingContentTranslationCheckout();
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
 	initStickyFooterScrollFade(document);
@@ -311,6 +313,7 @@ function initRandomTocItemLoader(scope) {
 				executeInlineScripts(container);
 				initHadithSharhLinks(container);
 				initHadithShareModals(container);
+				initHadithContentTranslationControls(container);
 				initQuranAyahHoverPairs(container);
 				initQuranPreferredTranslationDisplays(container);
 				initQuranCorpusTooltips(container);
@@ -1796,10 +1799,11 @@ function initQuranTafsirTabs(root) {
 							showedAyahRef = true;
 						}
 					}
+					var generatedBody = null;
 					if (entry.payload.html !== undefined) {
-						$('<div>').addClass('quran-tafsir-entry-body quran-tafsir-html').html(entry.payload.html).appendTo(entryElement);
+						generatedBody = $('<div>').addClass('quran-tafsir-entry-body quran-tafsir-html').html(entry.payload.html).appendTo(entryElement);
 					} else if (format === 'html') {
-						$('<div>').addClass('quran-tafsir-entry-body quran-tafsir-html').html(entry.payload.data).appendTo(entryElement);
+						generatedBody = $('<div>').addClass('quran-tafsir-entry-body quran-tafsir-html').html(entry.payload.data).appendTo(entryElement);
 					} else {
 						var entryBody = $('<div>').addClass('quran-tafsir-entry-body').appendTo(entryElement);
 						if (panel.attr('data-tafsir-lang') === 'ar')
@@ -1808,7 +1812,10 @@ function initQuranTafsirTabs(root) {
 							entry.payload.data.toString().split(/\n+/).filter(Boolean).forEach(function (paragraph) {
 								$('<p>').text(paragraph).appendTo(entryBody);
 							});
+						generatedBody = entryBody;
 					}
+					if (source === 'local' && entry.payload.id)
+						appendContentTranslationControl(summary, generatedBody, 'tafsir', entry.payload.id, panel.attr('data-tafsir-lang') || 'en');
 				});
 				if (window.bindInlineEditors)
 					window.bindInlineEditors(text[0]);
@@ -5834,6 +5841,7 @@ function initQuranInfinitePassageNavigation(root) {
 		initQuranPassageDisplayToggles(chunk[0]);
 		initQuranPassageAudioControls(chunk[0]);
 		initHadithShareModals(chunk[0]);
+		initHadithContentTranslationControls(chunk[0]);
 		initQuranAyahModals(document);
 		initQuranCorpusTooltips(chunk[0]);
 		initQuranPassageShareLinks(chunk[0]);
@@ -6104,6 +6112,7 @@ function initReaderInfiniteNavigation(root) {
 			initMarkdownEditablePreviews(chunk);
 			initHadithSharhLinks(chunk);
 			initHadithShareModals(chunk);
+			initHadithContentTranslationControls(chunk);
 			if (mode === 'tafsir') {
 				initDropdownFilterSearch(chunk);
 				initTafsirSearchFilterPills(chunk);
@@ -7614,6 +7623,879 @@ function firstHadithSharhWords(text, count) {
 		.join(' ');
 }
 
+var contentTranslationConfigPromise = null;
+var preferredContentLanguagePromise = null;
+var contentTranslationModalState = null;
+var CONTENT_TRANSLATION_PENDING_CHECKOUT_KEY = 'hadithdb_pending_content_translation_checkout';
+var contentTranslationAuthRefreshBound = false;
+
+function paymentFeatureEnabled() {
+	return window.HADITH_PAYMENT_FEATURE_ENABLED === true;
+}
+
+function contentTranslationConfig() {
+	if (!paymentFeatureEnabled())
+		return Promise.resolve({ languages: [], pricing: null });
+	if (!contentTranslationConfigPromise) {
+		contentTranslationConfigPromise = fetch(quranApiPath('/content-translations/languages'), {
+			credentials: 'same-origin'
+		}).then(function (response) {
+			if (!response.ok)
+				throw new Error('Unable to load languages.');
+			return response.json();
+		}).then(function (payload) {
+			return {
+				languages: Array.isArray(payload && payload.languages) ? payload.languages : [],
+				pricing: payload && payload.pricing ? payload.pricing : null
+			};
+		}).catch(function () {
+			return {
+				languages: [{ code: 'en', label: 'English', dir: 'ltr' }],
+				pricing: { translatePointsPer1000Words: 25, translateMinimumPoints: 5 }
+			};
+		});
+	}
+	return contentTranslationConfigPromise;
+}
+
+function contentTranslationLanguages() {
+	return contentTranslationConfig().then(function (config) {
+		return config.languages || [];
+	});
+}
+
+function preferredContentLanguage() {
+	if (preferredContentLanguagePromise)
+		return preferredContentLanguagePromise;
+	preferredContentLanguagePromise = waitForHadithAuth().then(function (auth) {
+		return Promise.resolve(auth && auth.getToken ? auth.getToken() : null).then(function (token) {
+			if (!token)
+				return 'en';
+			return fetch(quranApiPath('/user-settings?optional=1'), {
+				credentials: 'same-origin',
+				headers: { 'Authorization': `Bearer ${token}` }
+			}).then(function (response) {
+				if (!response.ok)
+					return 'en';
+				return response.json();
+			}).then(function (payload) {
+				var settings = payload && payload.settings && typeof payload.settings === 'object' && !Array.isArray(payload.settings) ? payload.settings : {};
+				var profile = settings.profile && typeof settings.profile === 'object' && !Array.isArray(settings.profile) ? settings.profile : {};
+				return (profile.preferredLanguage || 'en').toString();
+			}).catch(function () {
+				return 'en';
+			});
+		});
+	});
+	return preferredContentLanguagePromise;
+}
+
+function renderShareGeneratedMarkdown(value) {
+	value = (value || '').toString();
+	if (!value)
+		return '';
+	if (window.marked && window.marked.parse)
+		return window.marked.parse(value).replace(/<br>/g, '</p><p>').trim();
+	return $('<div>').text(value).html();
+}
+
+function preserveGeneratedShareDefaults(modal) {
+	if (!modal)
+		return;
+	modal.querySelectorAll('[data-share-generated-title], [data-share-generated-body]').forEach(function (target) {
+		if (target.dataset.shareGeneratedDefaultHtml === undefined)
+			target.dataset.shareGeneratedDefaultHtml = target.innerHTML || '';
+		if (target.dataset.shareGeneratedDefaultLang === undefined)
+			target.dataset.shareGeneratedDefaultLang = target.getAttribute('lang') || 'en';
+	});
+}
+
+async function contentTranslationRequest(itemType, itemId, language, mode, estimateOnly) {
+	if (!paymentFeatureEnabled())
+		throw new Error('Content translation is disabled.');
+	if (!itemType || !itemId)
+		throw new Error('This item cannot be translated.');
+	var token = await getHadithAuthToken('Please sign in to translate this text.');
+	if (!token)
+		throw new Error('Please sign in to translate this text.');
+	var endpoint = estimateOnly ? '/content-translations/estimate' : '/content-translations';
+	var method = estimateOnly ? 'GET' : 'POST';
+	var url = new URL(quranApiPath(endpoint), window.location.origin);
+	if (estimateOnly) {
+		url.searchParams.set('type', itemType);
+		url.searchParams.set('id', itemId);
+		url.searchParams.set('lang', language);
+		url.searchParams.set('mode', mode || 'translate');
+	}
+	var response = await fetch(url.toString(), {
+		method: method,
+		credentials: 'same-origin',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${token}`
+		},
+		body: estimateOnly ? undefined : JSON.stringify({
+			itemType: itemType,
+			itemId: itemId,
+			targetLanguage: language,
+			mode: mode || 'translate'
+		})
+	});
+	if (!response.ok) {
+		var message = estimateOnly ? 'Unable to estimate translation points.' : 'Unable to translate text.';
+		try {
+			var payload = await response.json();
+			message = payload && (payload.message || payload.error) || message;
+		} catch (_err) {}
+		throw new Error(message);
+	}
+	return response.json();
+}
+
+async function contentTranslationPaymentRequest(path, options, message) {
+	options = options || {};
+	var token = await getHadithAuthToken(message || 'Please sign in to continue.');
+	if (!token)
+		throw new Error('Please sign in to continue.');
+	var response = await fetch(quranApiPath(path), {
+		credentials: 'same-origin',
+		...options,
+		headers: {
+			...(options.headers || {}),
+			'Authorization': `Bearer ${token}`,
+			...(options.method && options.method !== 'GET' ? { 'Content-Type': 'application/json' } : {})
+		}
+	});
+	if (!response.ok) {
+		var errorMessage = 'Payment request failed.';
+		try {
+			var payload = await response.json();
+			errorMessage = payload && (payload.message || payload.error) || errorMessage;
+		} catch (_err) {}
+		throw new Error(errorMessage);
+	}
+	return response.json();
+}
+
+async function contentTranslationPaymentSummary() {
+	return contentTranslationPaymentRequest('/payments/summary', { method: 'GET' }, 'Please sign in to view your points.');
+}
+
+function contentTranslationFormatMoney(amount, currency) {
+	amount = Number(amount || 0);
+	currency = (currency || 'usd').toString().toUpperCase();
+	try {
+		return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency }).format(amount / 100);
+	} catch (_err) {
+		return `${currency} ${(amount / 100).toFixed(2)}`;
+	}
+}
+
+function contentTranslationPackageLabel(pkg) {
+	if (!pkg)
+		return '';
+	return `${(Number(pkg.points) || 0).toLocaleString()} points - ${contentTranslationFormatMoney(pkg.amount, pkg.currency)}`;
+}
+
+function contentTranslationCheckoutReturnPath() {
+	var url = new URL(window.location.href);
+	url.searchParams.delete('translation_payment');
+	url.searchParams.delete('session_id');
+	return `${url.pathname}${url.search || ''}${url.hash || ''}`;
+}
+
+function savePendingContentTranslationCheckout(state, language) {
+	try {
+		sessionStorage.setItem(CONTENT_TRANSLATION_PENDING_CHECKOUT_KEY, JSON.stringify({
+			itemType: state.itemType,
+			itemId: state.itemId,
+			language: language,
+			points: state.estimate && state.estimate.points || 0,
+			createdAt: Date.now()
+		}));
+	} catch (_err) {}
+}
+
+function readPendingContentTranslationCheckout() {
+	try {
+		var payload = JSON.parse(sessionStorage.getItem(CONTENT_TRANSLATION_PENDING_CHECKOUT_KEY) || 'null');
+		if (!payload || Date.now() - Number(payload.createdAt || 0) > 30 * 60 * 1000)
+			return null;
+		return payload;
+	} catch (_err) {
+		return null;
+	}
+}
+
+function clearPendingContentTranslationCheckout() {
+	try {
+		sessionStorage.removeItem(CONTENT_TRANSLATION_PENDING_CHECKOUT_KEY);
+	} catch (_err) {}
+}
+
+async function generatedShareRequest(card, language, mode, estimateOnly) {
+	return contentTranslationRequest(
+		card && card.getAttribute('data-share-generated-item-type'),
+		card && card.getAttribute('data-share-generated-item-id'),
+		language,
+		mode,
+		estimateOnly
+	);
+}
+
+function restoreGeneratedShareDefaults(modal) {
+	(modal || document).querySelectorAll('[data-share-generated-title], [data-share-generated-body]').forEach(function (target) {
+		if (target.dataset.shareGeneratedDefaultHtml !== undefined)
+			target.innerHTML = target.dataset.shareGeneratedDefaultHtml;
+		if (target.dataset.shareGeneratedDefaultLang)
+			target.setAttribute('lang', target.dataset.shareGeneratedDefaultLang);
+		target.removeAttribute('dir');
+	});
+}
+
+function applyGeneratedShareContent(modal, card, result) {
+	var content = result && result.content || {};
+	var language = result && result.targetLanguage || {};
+	var dir = language.dir === 'rtl' ? 'rtl' : 'ltr';
+	var lang = language.code || '';
+	var title = modal.querySelector('[data-share-generated-title]');
+	var body = modal.querySelector('[data-share-generated-body]');
+	if (title && content.title) {
+		title.innerHTML = $('<div>').text(content.title).html();
+		title.setAttribute('lang', lang);
+		title.setAttribute('dir', dir);
+	}
+	if (body && (content.body || content.text)) {
+		body.innerHTML = renderShareGeneratedMarkdown(content.body || content.text);
+		body.setAttribute('lang', lang);
+		body.setAttribute('dir', dir);
+	}
+	if (result && Number(result.points) > 0 && window.toastr)
+		toastr.success(`${Number(result.points).toLocaleString()} points used.`, 'Translation');
+}
+
+function hadithContentTranslationScope(target) {
+	var node = target && target.jquery ? target[0] : target;
+	return node ? $(node).closest('[data-content-translation-scope="hadith"]') : $();
+}
+
+function preserveHadithContentTranslationScope(target) {
+	var scope = hadithContentTranslationScope(target);
+	if (!scope.length)
+		return;
+	scope.find('[data-content-translation-field]').each(function () {
+		if (this.dataset.contentTranslationDefaultHtml === undefined)
+			this.dataset.contentTranslationDefaultHtml = this.innerHTML || '';
+		if (this.dataset.contentTranslationDefaultLang === undefined)
+			this.dataset.contentTranslationDefaultLang = this.getAttribute('lang') || '';
+		if (this.dataset.contentTranslationDefaultDir === undefined)
+			this.dataset.contentTranslationDefaultDir = this.getAttribute('dir') || '';
+	});
+}
+
+function resetHadithContentTranslationScope(target) {
+	var scope = hadithContentTranslationScope(target);
+	if (!scope.length)
+		return false;
+	scope.find('[data-content-translation-field]').each(function () {
+		if (this.dataset.contentTranslationDefaultHtml !== undefined)
+			this.innerHTML = this.dataset.contentTranslationDefaultHtml;
+		if (this.dataset.contentTranslationDefaultLang)
+			this.setAttribute('lang', this.dataset.contentTranslationDefaultLang);
+		else
+			this.removeAttribute('lang');
+		if (this.dataset.contentTranslationDefaultDir)
+			this.setAttribute('dir', this.dataset.contentTranslationDefaultDir);
+		else
+			this.removeAttribute('dir');
+	});
+	return true;
+}
+
+function initGeneratedShareLanguageSelect(modal, card) {
+	if (!paymentFeatureEnabled())
+		return;
+	var selector = modal ? modal.querySelector('[data-share-language-select="1"]') : null;
+	if (!selector || !card)
+		return;
+	if (selector.dataset.shareLanguageBound === 'true')
+		return;
+	selector.dataset.shareLanguageBound = 'true';
+	preserveGeneratedShareDefaults(modal);
+	Promise.all([contentTranslationLanguages(), preferredContentLanguage()]).then(function (results) {
+		var languages = results[0];
+		var preferred = results[1] || selector.getAttribute('data-share-language-default') || 'en';
+		selector.innerHTML = '';
+		languages.forEach(function (language) {
+			var option = document.createElement('option');
+			option.value = language.code;
+			option.textContent = language.label || language.code.toUpperCase();
+			selector.appendChild(option);
+		});
+		selector.value = languages.some(function (language) { return language.code === preferred; }) ? preferred : 'en';
+		if (selector.value !== 'en')
+			selector.dispatchEvent(new Event('change'));
+	});
+	selector.addEventListener('change', async function () {
+		var language = selector.value || 'en';
+		if (language === 'en') {
+			restoreGeneratedShareDefaults(modal);
+			scheduleHadithShareCardFit(card);
+			scheduleHadithShareRender(card);
+			return;
+		}
+		try {
+			selector.disabled = true;
+			var estimate = await generatedShareRequest(card, language, 'translate', true);
+			if (Number(estimate.points || 0) > 0 && !window.confirm(`Generate this translation for ${Number(estimate.points).toLocaleString()} points?`)) {
+				selector.value = 'en';
+				restoreGeneratedShareDefaults(modal);
+				return;
+			}
+			var result = await generatedShareRequest(card, language, 'translate', false);
+			applyGeneratedShareContent(modal, card, result);
+			scheduleHadithShareCardFit(card);
+			scheduleHadithShareRender(card);
+		} catch (err) {
+			selector.value = 'en';
+			restoreGeneratedShareDefaults(modal);
+			if (window.toastr)
+				toastr.error(err.message || 'Unable to translate share text.', 'Translation');
+		} finally {
+			selector.disabled = false;
+		}
+	});
+}
+
+function applyHadithContentTranslationResult(target, result, fallbackLanguage) {
+	var scope = hadithContentTranslationScope(target);
+	if (!scope.length)
+		return false;
+	var content = result && result.content || {};
+	var targetLanguage = result && result.targetLanguage || {};
+	var lang = targetLanguage.code || fallbackLanguage || '';
+	var dir = targetLanguage.dir === 'rtl' ? 'rtl' : 'ltr';
+	var renderers = {
+		title: function (value) { return $('<div>').text(value || '').html(); },
+		chain: function (value) { return $('<div>').text(value || '').html(); },
+		body: renderShareGeneratedMarkdown,
+		footnote: renderShareGeneratedMarkdown
+	};
+	var applied = false;
+	Object.keys(renderers).forEach(function (field) {
+		var value = content[field];
+		if (!value)
+			return;
+		scope.find(`[data-content-translation-field="${field}"]`).each(function () {
+			if (this.hasAttribute('data-markdown-source'))
+				this.setAttribute('data-markdown-source', value || '');
+			this.innerHTML = renderers[field](value);
+			if (lang)
+				this.setAttribute('lang', lang);
+			this.setAttribute('dir', dir);
+			applied = true;
+		});
+	});
+	return applied;
+}
+
+function applyContentTranslationResult(target, result, fallbackLanguage) {
+	if (applyHadithContentTranslationResult(target, result, fallbackLanguage)) {
+		if (result && Number(result.points) > 0 && window.toastr)
+			toastr.success(`${Number(result.points).toLocaleString()} points used.`, 'Translation');
+		return;
+	}
+	var content = result && result.content || {};
+	var text = [content.text || content.body || '', content.footnotes || content.footnote || ''].filter(Boolean).join('\n\n');
+	var targetLanguage = result && result.targetLanguage || {};
+	target.html(renderShareGeneratedMarkdown(text));
+	target.attr({
+		lang: targetLanguage.code || fallbackLanguage || '',
+		dir: targetLanguage.dir === 'rtl' ? 'rtl' : 'ltr'
+	});
+	if (result && Number(result.points) > 0 && window.toastr)
+		toastr.success(`${Number(result.points).toLocaleString()} points used.`, 'Translation');
+}
+
+function contentTranslationWordCount(value) {
+	value = (value || '').toString()
+		.replace(/(?:^|\n)[ \t]*\[\^[^\]\n]+\]:[^\n]*(?:\n[ \t]+[^\n]*)*/g, ' ')
+		.replace(/\[\^[^\]\n]+\]/g, ' ')
+		.replace(/[`*_>#()[\]{}|~!?,.;:"“”‘’،؛؟]+/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
+	if (!value)
+		return 0;
+	var words = value.match(/[\p{L}\p{M}\p{N}]+(?:[-'][\p{L}\p{M}\p{N}]+)*/gu);
+	return words ? words.length : 0;
+}
+
+function contentTranslationPointText(points) {
+	points = Math.max(0, Math.floor(Number(points) || 0));
+	if (points === 0)
+		return 'No points needed';
+	return points === 1 ? '1 point' : `${points.toLocaleString()} points`;
+}
+
+function contentTranslationEstimateFromWords(wordCount, pricing) {
+	wordCount = Math.max(0, Math.floor(Number(wordCount) || 0));
+	if (wordCount < 1)
+		return { points: 0, wordCount: 0 };
+	pricing = pricing || {};
+	var per1000 = Number(pricing.translatePointsPer1000Words || 25);
+	var minimum = Number(pricing.translateMinimumPoints || 5);
+	if (!Number.isFinite(per1000) || per1000 <= 0)
+		per1000 = 25;
+	if (!Number.isFinite(minimum) || minimum < 0)
+		minimum = 5;
+	return {
+		points: Math.max(Math.floor(minimum), Math.ceil((wordCount / 1000) * per1000)),
+		wordCount: wordCount
+	};
+}
+
+function contentTranslationLocalEstimate(target, config) {
+	var scope = hadithContentTranslationScope(target);
+	var source = scope.length ? scope : target;
+	var attrPoints = Number(source.attr('data-content-translation-points'));
+	var attrWords = Number(source.attr('data-content-translation-word-count'));
+	if (Number.isFinite(attrPoints) && attrPoints >= 0) {
+		return {
+			points: Math.floor(attrPoints),
+			wordCount: Number.isFinite(attrWords) && attrWords >= 0 ? Math.floor(attrWords) : 0
+		};
+	}
+	var text = target.attr('data-markdown-source') || target.text() || '';
+	return contentTranslationEstimateFromWords(contentTranslationWordCount(text), config && config.pricing);
+}
+
+function ensureContentTranslationModal() {
+	var existing = $('#content-translation-modal');
+	if (existing.length)
+		return existing;
+	var modal = $('<aside>').addClass('modal fade content-translation-modal').attr({
+		id: 'content-translation-modal',
+		tabindex: '-1',
+		'aria-labelledby': 'content-translation-modal-title',
+		'aria-hidden': 'true'
+	});
+	var dialog = $('<div>').addClass('modal-dialog modal-dialog-centered').appendTo(modal);
+	var content = $('<div>').addClass('modal-content').appendTo(dialog);
+	var header = $('<div>').addClass('modal-header').appendTo(content);
+	var title = $('<h5>').addClass('modal-title').attr('id', 'content-translation-modal-title').appendTo(header);
+	$('<span>').addClass('bi bi-translate me-2').attr('aria-hidden', 'true').appendTo(title);
+	$('<span>').text('Translate with points').appendTo(title);
+	$('<button>').addClass('btn-close').attr({
+		type: 'button',
+		'data-bs-dismiss': 'modal',
+		'aria-label': 'Close'
+	}).appendTo(header);
+	var body = $('<div>').addClass('modal-body').appendTo(content);
+	$('<p>').addClass('content-translation-modal-copy').text('Choose a language and translate this text using points. Your preferred language is selected when available.').appendTo(body);
+	var field = $('<div>').addClass('mb-3').appendTo(body);
+	$('<label>').addClass('form-label').attr('for', 'content-translation-modal-language').text('Language').appendTo(field);
+	$('<select>').addClass('form-select content-translation-modal-language').attr({
+		id: 'content-translation-modal-language',
+		'aria-label': 'Translation language'
+	}).appendTo(field);
+	var estimate = $('<div>').addClass('content-translation-modal-estimate').appendTo(body);
+	$('<strong>').addClass('content-translation-modal-points').attr('aria-live', 'polite').text('Estimated points').appendTo(estimate);
+	$('<span>').addClass('content-translation-modal-words').text('Based on content size.').appendTo(estimate);
+	var balance = $('<div>').addClass('content-translation-modal-balance').appendTo(body);
+	$('<strong>').addClass('content-translation-modal-balance-value').attr('aria-live', 'polite').text('Checking points...').appendTo(balance);
+	$('<span>').addClass('content-translation-modal-status').text('Loading your point balance.').appendTo(balance);
+	var purchase = $('<div>').addClass('content-translation-modal-purchase').prop('hidden', true).appendTo(body);
+	var packageField = $('<div>').addClass('mb-3').appendTo(purchase);
+	$('<label>').addClass('form-label').attr('for', 'content-translation-modal-package').text('Point package').appendTo(packageField);
+	$('<select>').addClass('form-select content-translation-modal-package').attr({
+		id: 'content-translation-modal-package',
+		'aria-label': 'Point package'
+	}).appendTo(packageField);
+	var recharge = $('<div>').addClass('form-check form-switch content-translation-modal-auto').appendTo(purchase);
+	$('<input>').addClass('form-check-input').attr({
+		type: 'checkbox',
+		role: 'switch',
+		id: 'content-translation-modal-auto-recharge'
+	}).appendTo(recharge);
+	$('<label>').addClass('form-check-label').attr('for', 'content-translation-modal-auto-recharge').text('Auto-recharge when points run low').appendTo(recharge);
+	$('<p>').addClass('content-translation-modal-wallet').text('Secure checkout supports Apple Pay and Google Pay when available on this device. After payment, translation resumes automatically.').appendTo(purchase);
+	$('<p>').addClass('content-translation-modal-note').text('Points are calculated from word count.').appendTo(body);
+	var footer = $('<div>').addClass('modal-footer').appendTo(content);
+	$('<button>').addClass('btn btn-outline-secondary').attr({
+		type: 'button',
+		'data-bs-dismiss': 'modal'
+	}).addClass('content-translation-modal-cancel').text('Cancel').appendTo(footer);
+	$('<button>').addClass('btn btn-primary content-translation-modal-submit').attr('type', 'button').text('Translate').appendTo(footer);
+	$('body').append(modal);
+	modal.on('hide.bs.modal', function (event) {
+		if (contentTranslationModalState && contentTranslationModalState.busy === true) {
+			event.preventDefault();
+			event.stopImmediatePropagation();
+		}
+	});
+	modal.find('.content-translation-modal-language').on('change', function () {
+		updateContentTranslationModalEstimate();
+	});
+	modal.find('.content-translation-modal-package, .content-translation-modal-auto .form-check-input').on('change', function () {
+		updateContentTranslationModalEstimate();
+	});
+	modal.find('.content-translation-modal-submit').on('click', submitContentTranslationModal);
+	return modal;
+}
+
+function updateContentTranslationModalEstimate() {
+	var modal = $('#content-translation-modal');
+	var state = contentTranslationModalState || {};
+	var estimate = state.estimate || { points: 0, wordCount: 0 };
+	var balance = Number(state.balance);
+	var hasBalance = Number.isFinite(balance);
+	var shortfall = hasBalance ? Math.max(0, Math.floor(Number(estimate.points || 0) - balance)) : 0;
+	var enough = hasBalance && shortfall === 0;
+	var canBuy = contentTranslationPackages(state).length > 0;
+	var label = contentTranslationPointText(estimate.points);
+	var words = Math.max(0, Math.floor(Number(estimate.wordCount) || 0));
+	if (state.busy === true) {
+		modal.find('.content-translation-modal-submit').prop('disabled', true);
+		return;
+	}
+	modal.find('.content-translation-modal-points').text(`Estimated: ${label}`);
+	modal.find('.content-translation-modal-words').text(words === 1 ? 'Based on 1 word.' : `Based on ${words.toLocaleString()} words.`);
+	if (hasBalance)
+		modal.find('.content-translation-modal-balance-value').text(balance === 1 ? '1 point remaining' : `${balance.toLocaleString()} points remaining`);
+	else
+		modal.find('.content-translation-modal-balance-value').text('Sign in to see points remaining');
+	if (!hasBalance) {
+		modal.find('.content-translation-modal-status').text('Sign in to translate or buy points.');
+	} else if (enough) {
+		modal.find('.content-translation-modal-status').text('You have enough points to translate now.');
+	} else if (canBuy) {
+		modal.find('.content-translation-modal-status').text(`You need ${shortfall.toLocaleString()} more ${shortfall === 1 ? 'point' : 'points'} to translate.`);
+	} else {
+		modal.find('.content-translation-modal-status').text(`You need ${shortfall.toLocaleString()} more ${shortfall === 1 ? 'point' : 'points'}, but no point package is configured.`);
+	}
+	modal.find('.content-translation-modal-purchase').prop('hidden', !hasBalance || enough || !canBuy);
+	var submit = modal.find('.content-translation-modal-submit');
+	submit.text(!hasBalance
+		? 'Sign in to continue'
+		: (enough ? (estimate.points > 0 ? `Translate for ${label}` : 'Translate') : 'Buy points and translate'));
+	submit.prop('disabled', modal.find('.content-translation-modal-language').prop('disabled') || (hasBalance && !enough && !canBuy));
+}
+
+function contentTranslationPackages(state) {
+	var config = state && state.paymentConfig || {};
+	return Array.isArray(config.packages) ? config.packages : [];
+}
+
+function populateContentTranslationPackages(modal, state) {
+	var packages = contentTranslationPackages(state);
+	var selector = modal.find('.content-translation-modal-package');
+	var profile = state && state.profile || {};
+	var estimate = state && state.estimate || {};
+	var balance = Number(state && state.balance);
+	var shortfall = Number.isFinite(balance) ? Math.max(0, Number(estimate.points || 0) - balance) : 0;
+	selector.empty();
+	packages.forEach(function (pkg) {
+		$('<option>').attr('value', pkg.id).text(contentTranslationPackageLabel(pkg)).appendTo(selector);
+	});
+	var preferred = packages.find(function (pkg) {
+		return pkg.id === profile.autoRechargePackageId;
+	}) || packages.find(function (pkg) {
+		return Number(pkg.points || 0) >= shortfall;
+	}) || packages[0];
+	if (preferred)
+		selector.val(preferred.id);
+	selector.prop('disabled', packages.length < 1);
+	modal.find('.content-translation-modal-auto .form-check-input').prop('checked', profile.autoRechargeEnabled === true);
+}
+
+function populateContentTranslationModalLanguages(modal, languages, preferred, currentLanguage) {
+	var selector = modal.find('.content-translation-modal-language');
+	selector.empty();
+	languages.forEach(function (language) {
+		if (!language || !language.code)
+			return;
+		$('<option>').attr('value', language.code).text(language.label || language.code.toUpperCase()).appendTo(selector);
+	});
+	if (languages.some(function (language) { return language.code === preferred; }))
+		selector.val(preferred);
+	else if (languages.some(function (language) { return language.code === currentLanguage; }))
+		selector.val(currentLanguage);
+	else if (languages.length)
+		selector.val(languages[0].code);
+	selector.prop('disabled', !languages.length);
+	modal.find('.content-translation-modal-submit').prop('disabled', !languages.length);
+}
+
+function openContentTranslationModal(options) {
+	var modal = ensureContentTranslationModal();
+	var target = options.target;
+	contentTranslationModalState = {
+		target: target,
+		defaultHtml: target.html() || '',
+		itemType: options.itemType,
+		itemId: options.itemId,
+		currentLanguage: options.currentLanguage || 'en',
+		balance: null,
+		profile: null,
+		paymentConfig: null,
+		estimate: contentTranslationLocalEstimate(target, null)
+	};
+	modal.find('.content-translation-modal-language').prop('disabled', true).empty().append($('<option>').text('Loading languages...'));
+	modal.find('.content-translation-modal-package').prop('disabled', true).empty();
+	modal.find('.content-translation-modal-submit').prop('disabled', true);
+	updateContentTranslationModalEstimate();
+	contentTranslationConfig().then(function (config) {
+		config = config || {};
+		contentTranslationModalState.estimate = contentTranslationLocalEstimate(target, config);
+		populateContentTranslationModalLanguages(modal, config.languages || [], contentTranslationModalState.currentLanguage, contentTranslationModalState.currentLanguage);
+		updateContentTranslationModalEstimate();
+		preferredContentLanguage().then(function (preferred) {
+			var languages = config.languages || [];
+			var selector = modal.find('.content-translation-modal-language');
+			if (preferred && languages.some(function (language) { return language.code === preferred; }))
+				selector.val(preferred);
+		});
+	}).catch(function () {
+		modal.find('.content-translation-modal-language').empty().append($('<option>').text('Languages unavailable'));
+		modal.find('.content-translation-modal-submit').prop('disabled', true);
+	});
+	contentTranslationPaymentSummary().then(function (summary) {
+		contentTranslationModalState.balance = Number(summary && summary.balance);
+		contentTranslationModalState.profile = summary && summary.profile || {};
+		contentTranslationModalState.paymentConfig = summary && summary.config || {};
+		populateContentTranslationPackages(modal, contentTranslationModalState);
+		updateContentTranslationModalEstimate();
+	}).catch(function (err) {
+		contentTranslationModalState.balance = null;
+		contentTranslationModalState.profile = null;
+		contentTranslationModalState.paymentConfig = null;
+		modal.find('.content-translation-modal-status').text(err.message || 'Sign in to view your points.');
+		updateContentTranslationModalEstimate();
+	});
+	if (window.bootstrap && window.bootstrap.Modal)
+		window.bootstrap.Modal.getOrCreateInstance(modal[0]).show();
+	else
+		modal.show();
+}
+
+async function submitContentTranslationModal() {
+	var modal = $('#content-translation-modal');
+	var state = contentTranslationModalState;
+	if (!state || !state.target || !state.itemType || !state.itemId)
+		return;
+	var selector = modal.find('.content-translation-modal-language');
+	var submit = modal.find('.content-translation-modal-submit');
+	var language = selector.val() || '';
+	if (!language) {
+		if (window.toastr)
+			toastr.info('Choose a language first.', 'Translation');
+		return;
+	}
+	try {
+		selector.prop('disabled', true);
+		submit.prop('disabled', true);
+		if (!Number.isFinite(Number(state.balance))) {
+			modal.find('.content-translation-modal-status').text('Checking your point balance...');
+			var summary = await contentTranslationPaymentSummary();
+			state.balance = Number(summary && summary.balance);
+			state.profile = summary && summary.profile || {};
+			state.paymentConfig = summary && summary.config || {};
+			populateContentTranslationPackages(modal, state);
+			updateContentTranslationModalEstimate();
+		}
+		if (Number(state.balance || 0) >= Number(state.estimate && state.estimate.points || 0)) {
+			await translateContentTranslationModal(language);
+			return;
+		}
+		await startContentTranslationCheckout(language);
+	} catch (err) {
+		if (!resetHadithContentTranslationScope(state.target))
+			state.target.html(state.defaultHtml);
+		if (window.toastr)
+			toastr.error(err.message || 'Unable to translate text.', 'Translation');
+	} finally {
+		selector.prop('disabled', false);
+		submit.prop('disabled', false);
+		updateContentTranslationModalEstimate();
+	}
+}
+
+function setContentTranslationModalBusy(modal, busy, statusText, submitText) {
+	modal = modal && modal.jquery ? modal : $('#content-translation-modal');
+	if (contentTranslationModalState)
+		contentTranslationModalState.busy = busy === true;
+	modal.toggleClass('is-busy', busy === true);
+	modal.find('.btn-close, .content-translation-modal-cancel').prop('disabled', busy === true);
+	if (statusText)
+		modal.find('.content-translation-modal-status').text(statusText);
+	if (busy !== true)
+		return;
+	modal.find('.content-translation-modal-language, .content-translation-modal-package, .content-translation-modal-auto .form-check-input').prop('disabled', true);
+	modal.find('.content-translation-modal-submit').prop('disabled', true).text(submitText || 'Working...');
+}
+
+function waitForContentTranslationPaint() {
+	return new Promise(function (resolve) {
+		if (window.requestAnimationFrame)
+			window.requestAnimationFrame(function () { resolve(); });
+		else
+			window.setTimeout(resolve, 0);
+	});
+}
+
+async function translateContentTranslationModal(language) {
+	var modal = $('#content-translation-modal');
+	var state = contentTranslationModalState;
+	setContentTranslationModalBusy(modal, true, 'Translation in progress...', 'Translating...');
+	try {
+		var result = await contentTranslationRequest(state.itemType, state.itemId, language, 'translate', false);
+		applyContentTranslationResult(state.target, result, language);
+		await waitForContentTranslationPaint();
+		setContentTranslationModalBusy(modal, false);
+		if (window.bootstrap && window.bootstrap.Modal)
+			window.bootstrap.Modal.getOrCreateInstance(modal[0]).hide();
+		else
+			modal.hide();
+	} catch (err) {
+		setContentTranslationModalBusy(modal, false);
+		throw err;
+	}
+}
+
+async function startContentTranslationCheckout(language) {
+	var modal = $('#content-translation-modal');
+	var state = contentTranslationModalState;
+	var packageId = modal.find('.content-translation-modal-package').val() || '';
+	if (!packageId)
+		throw new Error('Choose a point package to continue.');
+	savePendingContentTranslationCheckout(state, language);
+	modal.find('.content-translation-modal-status').text('Opening secure checkout...');
+	var session = await contentTranslationPaymentRequest('/payments/checkout', {
+		method: 'POST',
+		body: JSON.stringify({
+			packageId: packageId,
+			autoRecharge: modal.find('.content-translation-modal-auto .form-check-input').prop('checked') === true,
+			autoRechargeThreshold: state.profile && state.profile.autoRechargeThreshold || undefined,
+			returnPath: contentTranslationCheckoutReturnPath()
+		})
+	}, 'Please sign in to buy points.');
+	if (!session || !session.url)
+		throw new Error('Unable to start checkout.');
+	window.location.href = session.url;
+}
+
+async function resumePendingContentTranslationCheckout() {
+	if (!paymentFeatureEnabled())
+		return;
+	var params = new URLSearchParams(window.location.search || '');
+	var status = params.get('translation_payment') || '';
+	var sessionId = params.get('session_id') || '';
+	if (!status)
+		return;
+	params.delete('translation_payment');
+	params.delete('session_id');
+	var cleanUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash || ''}`;
+	window.history.replaceState(null, document.title, cleanUrl);
+	if (status !== 'success') {
+		if (window.toastr)
+			toastr.info('Payment was cancelled.', 'Translation');
+		return;
+	}
+	var pending = readPendingContentTranslationCheckout();
+	if (!pending || !/^cs_(?:test|live)_/.test(sessionId)) {
+		if (window.toastr)
+			toastr.success('Payment confirmed.', 'Translation');
+		return;
+	}
+	try {
+		await contentTranslationPaymentRequest(`/payments/checkout-session/${encodeURIComponent(sessionId)}`, { method: 'POST' }, 'Please sign in to confirm your payment.');
+		var target = $(`[data-content-translation-item-type="${pending.itemType}"][data-content-translation-item-id]`).filter(function () {
+			return $(this).attr('data-content-translation-item-id') === String(pending.itemId);
+		}).first();
+		if (!target.length) {
+			if (window.toastr)
+				toastr.success('Payment confirmed. Reopen the item to translate it.', 'Translation');
+			return;
+		}
+		if (window.toastr)
+			toastr.info('Translation in progress...', 'Translation');
+		preserveHadithContentTranslationScope(target);
+		var result = await contentTranslationRequest(pending.itemType, pending.itemId, pending.language, 'translate', false);
+		applyContentTranslationResult(target, result, pending.language);
+		clearPendingContentTranslationCheckout();
+	} catch (err) {
+		if (window.toastr)
+			toastr.error(err.message || 'Unable to finish translation.', 'Translation');
+	}
+}
+
+function appendContentTranslationControl(container, target, itemType, itemId, currentLanguage) {
+	if (!paymentFeatureEnabled())
+		return;
+	if (!container || !target || !target.length || !itemType || !itemId)
+		return;
+	if (target.data('contentTranslationControlBound'))
+		return;
+	target.data('contentTranslationControlBound', true);
+	preserveHadithContentTranslationScope(target);
+	var existingTranslation = target.attr('data-content-translation-existing') === 'true';
+	var label = existingTranslation ? 'Revise or Translate' : 'Translate';
+	var itemClass = itemType.toString().replace(/[^a-z0-9_-]/gi, '').toLowerCase();
+	var control = $('<div>').addClass(`content-translation-control content-translation-control-${itemClass}`).attr('title', existingTranslation ? 'Revise translation with points' : 'Translate with points');
+	if (existingTranslation)
+		control.addClass('content-translation-auth-only').prop('hidden', true);
+	$('<button>').addClass((existingTranslation ? 'btn btn-sm btn-link text-muted content-translate-button content-translation-revise-button' : 'btn btn-sm btn-primary content-translate-button') + ` content-translate-button-${itemClass}`).attr({
+		type: 'button',
+		title: label,
+		'aria-label': label
+	}).append($('<span>').addClass('bi bi-translate content-translate-button-icon').attr('aria-hidden', 'true')).append(' ').append($('<span>').addClass('content-translate-button-label').text(label)).on('click', function () {
+		openContentTranslationModal({
+			target: target,
+			itemType: itemType,
+			itemId: itemId,
+			currentLanguage: currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || 'en'
+		});
+	}).appendTo(control);
+	$(container).append(control);
+}
+
+async function refreshContentTranslationAuthControls() {
+	var controls = $('.content-translation-auth-only');
+	if (!controls.length)
+		return;
+	var user = null;
+	try {
+		var auth = await waitForHadithAuth();
+		user = auth && auth.getUser ? await auth.getUser() : null;
+	} catch (_err) {
+		user = null;
+	}
+	controls.prop('hidden', !user);
+}
+
+function bindContentTranslationAuthRefresh() {
+	if (contentTranslationAuthRefreshBound)
+		return;
+	contentTranslationAuthRefreshBound = true;
+	document.addEventListener('hadithAuthChanged', function () {
+		refreshContentTranslationAuthControls();
+	});
+}
+
+function initHadithContentTranslationControls(root) {
+	if (!paymentFeatureEnabled())
+		return;
+	bindContentTranslationAuthRefresh();
+	var scope = root || document;
+	$(scope).find('[data-content-translation-item-type="hadith"][data-content-translation-item-id]').each(function () {
+		var target = $(this);
+		var itemId = target.attr('data-content-translation-item-id');
+		var container = target.closest('[data-content-translation-container="1"]');
+		appendContentTranslationControl(container.length ? container : target.parent(), target, 'hadith', itemId, target.attr('data-content-translation-language') || target.attr('lang') || 'en');
+	});
+	refreshContentTranslationAuthControls();
+}
+
 function initHadithShareModals(root) {
 	var scope = root || document;
 	scope.querySelectorAll('.hadith-share-modal').forEach(function (modal) {
@@ -7644,6 +8526,8 @@ function initHadithShareModals(root) {
 		modalRoot.addEventListener('show.bs.modal', function () {
 			if (arabicSwitch)
 				arabicSwitch.checked = arabicSwitch.defaultChecked;
+			if (card && card.getAttribute('data-share-generated-item-type'))
+				initGeneratedShareLanguageSelect(modal, card);
 			if (modalRoot.classList.contains('quran-share-root'))
 				initQuranShareTranslationSelect(modal, card);
 			updateHadithShareArabicState(modal, card, arabicSwitch, languageToggle);

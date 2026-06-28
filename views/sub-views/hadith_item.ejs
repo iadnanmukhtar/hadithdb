@@ -6,6 +6,7 @@
 	var sections = [];
 	var isSimilarSection = typeof similarSection !== 'undefined' && similarSection;
 	var isQuranItem = i.remark == 2 || i.book_alias === 'quran' || (i.actual && i.actual.book_alias === 'quran');
+	var paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
 	var langData = i[lang] || {};
 	if (chapter)
 		sections = chapter.sections; 
@@ -112,7 +113,7 @@
 		<%# Item Number + Chain %>
 		<b><a href="<%= itemHref %>" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>"><%= `${itemBookShortName}:${i.actual ? (i[lang]?.actual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a></b> –
 		<% if (langData.chain || site.editMode) { %>
-			<span class="_e chain <%=_p%> l3" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.chain<%=langSuff%>" data-arabizi="true"><%- langData.chain || `&hellip;` %></span>
+			<span class="_e chain <%=_p%> l3" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.chain<%=langSuff%>" data-arabizi="true"<% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="chain"<% } %>><%- langData.chain || `&hellip;` %></span>
 		<% } %>
 
 	</section>
@@ -121,22 +122,26 @@
 	<%
 		const bodyMarkdown = utils.emptyIfNull(langData.body) || utils.emptyIfNull(langData.text);
 		const bodyHtml = utils.markdownToHtml(bodyMarkdown);
+		const enableHadithContentTranslation = paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en';
 	%>
-	<section lang="<%=lang%>" class="body <%=_p%> l5" title="Ḥadīth Body">
-		<div class="_e hadith-body-content <%=_p%><%= isQuranItem && lang === 'ar' ? ' quran-hafs' : '' %>"<%- quranTranslationAttrs %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= bodyMarkdown %>" data-markdown-empty-html="&hellip;">
+	<section lang="<%=lang%>" class="body <%=_p%> l5" title="Ḥadīth Body"<% if (enableHadithContentTranslation) { %> data-content-translation-container="1"<% } %>>
+		<div class="_e hadith-body-content <%=_p%><%= isQuranItem && lang === 'ar' ? ' quran-hafs' : '' %>"<%- quranTranslationAttrs %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.body<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= bodyMarkdown %>" data-markdown-empty-html="&hellip;"<% if (enableHadithContentTranslation) { %> data-content-translation-item-type="hadith" data-content-translation-item-id="<%= i.actual ? i.actual.id : i.id %>" data-content-translation-language="en" data-content-translation-field="body" data-content-translation-existing="<%= bodyMarkdown ? 'true' : 'false' %>"<% } %>>
 		<% if (!langData.body) { %>
-			<div class="cmd-tr" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
-				Translation not available.
-			</div>
+			<% if (enableHadithContentTranslation) { %>
+				<div class="cmd-tr" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
+					No translation yet.
+				</div>
+			<% } else { %>
+				<div class="cmd-tr" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
+					No translation available
+				</div>
+			<% } %>
 		<% } %>
 				<%- bodyHtml %>
 				<% if (quranAyahMarkerNum) { %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= quranAyahMarkerRef %>">۝<%= quranAyahMarkerNum %></span><% } %>
 			</div>
 		<% if (isQuranItem && lang === 'en' && searchResult && langData.body) { %>
 			<span class="quran-translation-attribution" data-quran-translation-attribution="1">— <%= defaultTranslationShortName %></span>
-		<% } %>
-		<% if (lang === 'en') { %>
-			<a type="button" title="Share Image" class="icon" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>"><em class="bi bi-zoom-in"></em></a>
 		<% } %>
 	</section>
 
@@ -146,7 +151,7 @@
 		const footnoteHtml = utils.markdownToHtml(langData.footnote);
 		const footnoteContent = footnoteHtml || '&hellip;';
 	%>
-		<footer lang="<%=lang%>" class="footnote _e <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= footnoteMarkdown %>" data-markdown-empty-html="&hellip;">
+		<footer lang="<%=lang%>" class="footnote _e <%=_p%> l2" title="Ḥadīth Footnote" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.footnote<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= footnoteMarkdown %>" data-markdown-empty-html="&hellip;"<% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="footnote"<% } %>>
 			<%- footnoteContent %>
 		</footer>
 	<% } %>

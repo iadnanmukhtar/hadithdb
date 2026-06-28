@@ -59,6 +59,7 @@
     "request-ip": "3.3.0",
     "sqlite3": "^5.1.7",
     "string-similarity": "4.0.4",
+    "stripe": "^22.3.0",
     "sync-request": "6.1.0"
   },
   "devDependencies": {

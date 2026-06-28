@@ -6,6 +6,7 @@
     var site = Object.assign({}, global.settings.site);
     site.admin = (req.admin);
     site.editMode = false;
+    var paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -30,7 +31,63 @@
         </div>
       </div>
 
+      <section class="border-top pt-3" id="settings-payments-section" <%= paymentFeatureEnabled ? '' : 'hidden' %>>
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+          <div>
+            <h2 class="fs-5 fw-bold mb-1">Profile</h2>
+            <p class="text-muted small mb-0" id="settings-profile-status">Loading profile settings...</p>
+          </div>
+        </div>
+        <label class="form-label settings-language-field">
+          <span class="small text-muted d-block mb-1">Preferred language</span>
+          <select class="form-select form-select-sm" id="settings-preferred-language"></select>
+        </label>
+      </section>
+
       <section class="border-top pt-3">
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+          <div>
+            <h2 class="fs-5 fw-bold mb-1">Payments</h2>
+            <p class="text-muted small mb-0" id="settings-payment-status">Loading payment settings...</p>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-payment-manage">Manage payments</button>
+          </div>
+        </div>
+        <div class="settings-payment-panel">
+          <div class="settings-payment-balance">
+            <span class="text-muted small">Points</span>
+            <strong id="settings-payment-balance">0</strong>
+          </div>
+          <div class="settings-payment-buy d-flex align-items-end gap-2 flex-wrap">
+            <label class="form-label mb-0">
+              <span class="small text-muted d-block mb-1">Buy points</span>
+              <select class="form-select form-select-sm" id="settings-payment-package"></select>
+            </label>
+            <button type="button" class="btn btn-primary btn-sm" id="settings-payment-buy">Buy</button>
+          </div>
+          <div class="settings-payment-auto">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="settings-auto-recharge-enabled">
+              <label class="form-check-label" for="settings-auto-recharge-enabled">Auto-recharge</label>
+            </div>
+            <div class="d-flex align-items-end gap-2 flex-wrap mt-2">
+              <label class="form-label mb-0">
+                <span class="small text-muted d-block mb-1">When below</span>
+                <input type="number" min="0" step="1" class="form-control form-control-sm" id="settings-auto-recharge-threshold">
+              </label>
+              <label class="form-label mb-0">
+                <span class="small text-muted d-block mb-1">Recharge pack</span>
+                <select class="form-select form-select-sm" id="settings-auto-recharge-package"></select>
+              </label>
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-auto-recharge-save">Save</button>
+            </div>
+          </div>
+          <div id="settings-payment-ledger" class="settings-payment-ledger small text-muted"></div>
+        </div>
+      </section>
+
+      <section class="border-top pt-3 mt-3">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Translations</h2>
@@ -67,6 +124,18 @@
     const translationStatusEl = document.getElementById('settings-translation-status');
     const translationListEl = document.getElementById('settings-translation-list');
     const translationEnableAllBtn = document.getElementById('settings-translation-enable-all');
+    const profileStatusEl = document.getElementById('settings-profile-status');
+    const preferredLanguageSelect = document.getElementById('settings-preferred-language');
+    const paymentStatusEl = document.getElementById('settings-payment-status');
+    const paymentBalanceEl = document.getElementById('settings-payment-balance');
+    const paymentPackageSelect = document.getElementById('settings-payment-package');
+    const paymentBuyBtn = document.getElementById('settings-payment-buy');
+    const paymentManageBtn = document.getElementById('settings-payment-manage');
+    const autoRechargeEnabledEl = document.getElementById('settings-auto-recharge-enabled');
+    const autoRechargeThresholdEl = document.getElementById('settings-auto-recharge-threshold');
+    const autoRechargePackageSelect = document.getElementById('settings-auto-recharge-package');
+    const autoRechargeSaveBtn = document.getElementById('settings-auto-recharge-save');
+    const paymentLedgerEl = document.getElementById('settings-payment-ledger');
     const viewButtons = Array.from(document.querySelectorAll('[data-settings-view]'));
     const SETTINGS_VIEW_KEY = 'hadithdb:settings:view';
     const settingsView = () => currentSettingsView === 'full' ? 'full' : 'tile';
@@ -81,12 +150,15 @@
     let currentSettings = {};
     let currentTafsirBooks = [];
     let currentTranslationBooks = [];
+    let currentLanguages = [];
+    let currentPaymentSummary = null;
     let currentSettingsView = readSettingsView();
     let draggedTafsirRow = null;
     let draggedTranslationRow = null;
     let dragPreviousSettings = null;
     let dragDropped = false;
     let saving = false;
+    const paymentFeatureEnabled = <%- JSON.stringify(paymentFeatureEnabled) %>;
 
     const settingsCacheUser = () => currentUser
       ? {
@@ -97,10 +169,19 @@
 
     const renderSignedOut = () => {
       statusEl.textContent = 'Sign in to view account settings.';
+      profileStatusEl.textContent = 'Sign in to choose your preferred language.';
+      paymentStatusEl.textContent = 'Sign in to buy and manage points.';
       tafsirStatusEl.textContent = 'Sign in to choose which tafsirs appear on Quran pages.';
       translationStatusEl.textContent = 'Sign in to choose which translations appear on Quran pages.';
       enableAllBtn.disabled = true;
       translationEnableAllBtn.disabled = true;
+      preferredLanguageSelect.disabled = true;
+      paymentBuyBtn.disabled = true;
+      paymentManageBtn.disabled = true;
+      autoRechargeEnabledEl.disabled = true;
+      autoRechargeThresholdEl.disabled = true;
+      autoRechargePackageSelect.disabled = true;
+      autoRechargeSaveBtn.disabled = true;
     };
 
     const updateSettingsViewControls = () => {
@@ -134,12 +215,21 @@
       const translations = source.translations && typeof source.translations === 'object' && !Array.isArray(source.translations)
         ? source.translations
         : {};
+      const profile = source.profile && typeof source.profile === 'object' && !Array.isArray(source.profile)
+        ? source.profile
+        : {};
       const translationDisabledAliases = Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
         .map(alias => (alias || '').toString().trim())
         .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias))));
       const translationDisabled = new Set(translationDisabledAliases);
+      const languageCodes = new Set((currentLanguages || []).map(language => language.code));
+      const preferredLanguage = (profile.preferredLanguage || profile.language || '').toString().trim().toLowerCase();
       return {
         ...source,
+        profile: {
+          ...profile,
+          preferredLanguage: languageCodes.has(preferredLanguage) ? preferredLanguage : (currentLanguages[0] && currentLanguages[0].code || 'en')
+        },
         tafsirs: {
           disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
             .map(alias => (alias || '').toString().trim())
@@ -265,6 +355,197 @@
         updateTafsirStatus();
         updateTranslationStatus();
       }
+    };
+
+    const languageLabel = (language) => language && (language.label || language.name || language.code || '').toString() || '';
+
+    const renderProfileSettings = () => {
+      preferredLanguageSelect.innerHTML = '';
+      (currentLanguages || []).forEach(language => {
+        const option = document.createElement('option');
+        option.value = language.code;
+        option.textContent = languageLabel(language);
+        preferredLanguageSelect.appendChild(option);
+      });
+      const preferred = currentSettings.profile && currentSettings.profile.preferredLanguage || 'en';
+      preferredLanguageSelect.value = preferred;
+      preferredLanguageSelect.disabled = !currentUser || saving || currentLanguages.length < 1;
+      profileStatusEl.textContent = currentUser
+        ? `Preferred language: ${languageLabel(currentLanguages.find(language => language.code === preferred)) || preferred.toUpperCase()}.`
+        : 'Sign in to choose your preferred language.';
+    };
+
+    const savePreferredLanguage = async () => {
+      if (!currentUser) {
+        renderSignedOut();
+        return;
+      }
+      const previousSettings = normalizeSettings(currentSettings);
+      currentSettings = normalizeSettings({
+        ...currentSettings,
+        profile: { ...currentSettings.profile, preferredLanguage: preferredLanguageSelect.value || 'en' }
+      });
+      renderProfileSettings();
+      try {
+        await saveSettings({ invalidateSessionCache: true });
+        renderProfileSettings();
+      } catch (err) {
+        currentSettings = previousSettings;
+        renderProfileSettings();
+        if (window.toastr) toastr.error(err.message || 'Unable to save preferred language.', 'Settings');
+      }
+    };
+
+    const formatMoney = (amount, currency) => {
+      amount = Number(amount || 0);
+      currency = (currency || 'usd').toString().toUpperCase();
+      try {
+        return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount / 100);
+      } catch (_err) {
+        return `${currency} ${(amount / 100).toFixed(2)}`;
+      }
+    };
+
+    const pointPackageLabel = (pkg) => {
+      if (!pkg) return '';
+      return `${(Number(pkg.points) || 0).toLocaleString()} points - ${formatMoney(pkg.amount, pkg.currency)}`;
+    };
+
+    const paymentHeaders = async (json = false) => {
+      const token = await requireSaveToken();
+      if (!token)
+        throw new Error('Please sign in once to refresh your local session.');
+      return {
+        ...(json ? { 'Content-Type': 'application/json' } : {}),
+        'Authorization': `Bearer ${token}`
+      };
+    };
+
+    const paymentFetch = async (path, options = {}) => {
+      const res = await fetch(quranApiPath(path), {
+        credentials: 'same-origin',
+        ...options,
+        headers: {
+          ...(options.headers || {}),
+          ...(await paymentHeaders(options.method && options.method !== 'GET'))
+        }
+      });
+      if (!res.ok) {
+        let message = 'Payment request failed.';
+        try {
+          const data = await res.json();
+          message = data && (data.message || data.error) || message;
+        } catch (_err) {}
+        throw new Error(message);
+      }
+      return res.json();
+    };
+
+    const populatePackageSelect = (select, packages, selectedId) => {
+      select.innerHTML = '';
+      (packages || []).forEach(pkg => {
+        const option = document.createElement('option');
+        option.value = pkg.id;
+        option.textContent = pointPackageLabel(pkg);
+        select.appendChild(option);
+      });
+      if (selectedId)
+        select.value = selectedId;
+    };
+
+    const renderPaymentLedger = (ledger) => {
+      if (!Array.isArray(ledger) || ledger.length < 1) {
+        paymentLedgerEl.textContent = 'No point activity yet.';
+        return;
+      }
+      paymentLedgerEl.innerHTML = '';
+      ledger.slice(0, 5).forEach(row => {
+        const line = document.createElement('div');
+        const delta = Number(row.delta_points || 0);
+        line.textContent = `${delta > 0 ? '+' : ''}${delta.toLocaleString()} points - ${row.reason || 'points'} - ${new Date(row.createdAt).toLocaleDateString()}`;
+        paymentLedgerEl.appendChild(line);
+      });
+    };
+
+    const renderPayments = () => {
+      if (!paymentFeatureEnabled) {
+        currentPaymentSummary = { config: { enabled: false }, ledger: [] };
+        paymentBalanceEl.textContent = '0';
+        paymentBuyBtn.disabled = true;
+        paymentManageBtn.disabled = true;
+        autoRechargeEnabledEl.disabled = true;
+        autoRechargeThresholdEl.disabled = true;
+        autoRechargePackageSelect.disabled = true;
+        autoRechargeSaveBtn.disabled = true;
+        paymentStatusEl.textContent = 'Payments are disabled.';
+        renderPaymentLedger([]);
+        return;
+      }
+      const summary = currentPaymentSummary || {};
+      const config = summary.config || {};
+      const packages = Array.isArray(config.packages) ? config.packages : [];
+      const profile = summary.profile || {};
+      paymentBalanceEl.textContent = (Number(summary.balance || 0)).toLocaleString();
+      populatePackageSelect(paymentPackageSelect, packages, profile.autoRechargePackageId);
+      populatePackageSelect(autoRechargePackageSelect, packages, profile.autoRechargePackageId);
+      autoRechargeEnabledEl.checked = profile.autoRechargeEnabled === true;
+      autoRechargeThresholdEl.value = Number.isFinite(Number(profile.autoRechargeThreshold)) ? Number(profile.autoRechargeThreshold) : 0;
+      const disabled = !currentUser || config.enabled !== true || packages.length < 1 || saving;
+      paymentBuyBtn.disabled = disabled;
+      paymentManageBtn.disabled = !currentUser || config.enabled !== true || saving;
+      autoRechargeEnabledEl.disabled = disabled;
+      autoRechargeThresholdEl.disabled = disabled;
+      autoRechargePackageSelect.disabled = disabled;
+      autoRechargeSaveBtn.disabled = disabled;
+      if (!currentUser)
+        paymentStatusEl.textContent = 'Sign in to buy and manage points.';
+      else if (config.enabled !== true)
+        paymentStatusEl.textContent = 'Payments are not configured.';
+      else
+        paymentStatusEl.textContent = profile.lastPaymentError || 'Buy points for translation and auto-recharge.';
+      renderPaymentLedger(summary.ledger || []);
+    };
+
+    const loadPayments = async () => {
+      if (!paymentFeatureEnabled) {
+        renderPayments();
+        return;
+      }
+      if (!currentUser) {
+        renderPayments();
+        return;
+      }
+      currentPaymentSummary = await paymentFetch('/payments/summary', { method: 'GET' });
+      renderPayments();
+    };
+
+    const reconcileCheckoutReturn = async () => {
+      if (!paymentFeatureEnabled)
+        return;
+      const params = new URLSearchParams(window.location.search || '');
+      const sessionId = params.get('session_id') || '';
+      if (params.get('payment') !== 'success' || !/^cs_(?:test|live)_/.test(sessionId))
+        return;
+      paymentStatusEl.textContent = 'Confirming payment...';
+      await paymentFetch(`/payments/checkout-session/${encodeURIComponent(sessionId)}`, { method: 'POST' });
+      params.delete('payment');
+      params.delete('session_id');
+      const nextUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash || ''}`;
+      window.history.replaceState(null, document.title, nextUrl);
+    };
+
+    const startCheckout = async (options = {}) => {
+      const payload = {
+        packageId: options.packageId || paymentPackageSelect.value || autoRechargePackageSelect.value,
+        autoRecharge: options.autoRecharge === true,
+        autoRechargeThreshold: options.autoRechargeThreshold || autoRechargeThresholdEl.value
+      };
+      const session = await paymentFetch('/payments/checkout', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      if (session && session.url)
+        window.location.href = session.url;
     };
 
     const updateTafsirStatus = () => {
@@ -913,12 +1194,31 @@
     const renderSettings = async () => {
       const auth = await waitForHadithAuth();
       currentUser = auth && auth.getUser ? await auth.getUser() : null;
+      try {
+        const languageRes = await fetch(quranApiPath('/payments/languages'));
+        if (languageRes.ok) {
+          const languageData = await languageRes.json();
+          currentLanguages = Array.isArray(languageData.languages) ? languageData.languages : [];
+        }
+      } catch (_err) {
+        currentLanguages = [];
+      }
       if (!currentUser) {
         renderSignedOut();
         currentSettings = normalizeSettings({});
       } else {
         statusEl.textContent = currentUser.email || currentUser.displayName || 'Signed in';
         currentSettings = await loadUserSettings();
+      }
+      currentSettings = normalizeSettings(currentSettings);
+      renderProfileSettings();
+
+      try {
+        await reconcileCheckoutReturn();
+        await loadPayments();
+      } catch (err) {
+        paymentStatusEl.textContent = err.message || 'Unable to load payment settings.';
+        if (window.toastr && currentUser) toastr.error(paymentStatusEl.textContent, 'Payments');
       }
 
       try {
@@ -961,6 +1261,76 @@
           await saveSettings();
         } catch (err) {
           if (window.toastr) toastr.error(err.message || 'Unable to save tafsir settings.', 'Settings');
+        }
+      });
+    }
+
+    if (preferredLanguageSelect) {
+      preferredLanguageSelect.addEventListener('change', savePreferredLanguage);
+    }
+
+    if (paymentBuyBtn) {
+      paymentBuyBtn.addEventListener('click', async () => {
+        try {
+          paymentBuyBtn.disabled = true;
+          paymentStatusEl.textContent = 'Starting checkout...';
+          await startCheckout({
+            packageId: paymentPackageSelect.value,
+            autoRecharge: autoRechargeEnabledEl.checked,
+            autoRechargeThreshold: autoRechargeThresholdEl.value
+          });
+        } catch (err) {
+          paymentStatusEl.textContent = err.message || 'Unable to start checkout.';
+          paymentBuyBtn.disabled = false;
+          if (window.toastr) toastr.error(paymentStatusEl.textContent, 'Payments');
+        }
+      });
+    }
+
+    if (paymentManageBtn) {
+      paymentManageBtn.addEventListener('click', async () => {
+        try {
+          paymentManageBtn.disabled = true;
+          paymentStatusEl.textContent = 'Opening payment management...';
+          const session = await paymentFetch('/payments/portal', { method: 'POST' });
+          if (session && session.url)
+            window.location.href = session.url;
+        } catch (err) {
+          paymentStatusEl.textContent = err.message || 'Unable to open payment management.';
+          paymentManageBtn.disabled = false;
+          if (window.toastr) toastr.error(paymentStatusEl.textContent, 'Payments');
+        }
+      });
+    }
+
+    if (autoRechargeSaveBtn) {
+      autoRechargeSaveBtn.addEventListener('click', async () => {
+        try {
+          autoRechargeSaveBtn.disabled = true;
+          paymentStatusEl.textContent = 'Saving auto-recharge...';
+          const result = await paymentFetch('/payments/auto-recharge', {
+            method: 'PUT',
+            body: JSON.stringify({
+              enabled: autoRechargeEnabledEl.checked,
+              thresholdPoints: autoRechargeThresholdEl.value,
+              packageId: autoRechargePackageSelect.value
+            })
+          });
+          if (result && result.requiresCheckout) {
+            await startCheckout({
+              packageId: result.checkoutPackageId || autoRechargePackageSelect.value,
+              autoRecharge: true,
+              autoRechargeThreshold: autoRechargeThresholdEl.value
+            });
+            return;
+          }
+          await loadPayments();
+          if (window.toastr) toastr.success('Auto-recharge settings saved.', 'Payments');
+        } catch (err) {
+          paymentStatusEl.textContent = err.message || 'Unable to save auto-recharge.';
+          if (window.toastr) toastr.error(paymentStatusEl.textContent, 'Payments');
+        } finally {
+          autoRechargeSaveBtn.disabled = false;
         }
       });
     }

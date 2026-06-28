@@ -168,6 +168,7 @@ router.get('/tafsir/local', async function (req, res) {
   const entries = rows.map(row => {
     const html = renderLocalCommentary(row, editMode, lang, src);
     return {
+      id: row.id,
       ayahs_start: row.ayahFrom,
       count: row.ayahTo - row.ayahFrom,
       bilingual: commentaryRowHasBothLanguages(row),
