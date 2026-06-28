@@ -1,0 +1,29 @@
+<%
+  var audioGroup = locals.audioGroup;
+  var audioLabel = audioGroup && audioGroup._headingAudioLabel ? audioGroup._headingAudioLabel : 'passage';
+  var audioControlClass = locals.audioControlClass || '';
+%>
+<div class="quran-passage-audio-control <%= audioControlClass %>" data-quran-passage-audio="1" data-quran-audio-scope="<%= audioGroup._audioScopeId %>" data-surah="<%= quranSelectionSurah %>" data-from="<%= audioGroup._audioStartAyah %>" data-to="<%= audioGroup._audioEndAyah %>">
+  <div class="btn-group btn-group-sm" role="group" aria-label="Quran <%= audioLabel %> audio">
+    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-audio-play" data-quran-passage-audio-play title="Play <%= audioLabel %>" aria-label="Play <%= audioLabel %>">
+      <span class="bi bi-play-fill"></span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-audio-pause" data-quran-passage-audio-pause title="Pause audio" aria-label="Pause audio" disabled>
+      <span class="bi bi-pause-fill"></span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-audio-stop" data-quran-passage-audio-stop title="Stop audio" aria-label="Stop audio" disabled>
+      <span class="bi bi-stop-fill"></span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-audio-repeat" data-quran-passage-audio-repeat title="Repeat <%= audioLabel %>" aria-label="Repeat <%= audioLabel %>" aria-pressed="false">
+      <span class="bi bi-repeat"></span>
+    </button>
+  </div>
+  <label class="quran-passage-reciter-control mb-0">
+    <span class="visually-hidden">Reciter</span>
+    <span class="bi bi-mic-fill quran-passage-reciter-icon" aria-hidden="true"></span>
+    <select class="form-select form-select-sm quran-passage-reciter-select" data-quran-passage-reciter-select="1" aria-label="Reciter">
+      <option value="juhani">Juhani</option>
+    </select>
+  </label>
+  <span class="visually-hidden" aria-live="polite" data-quran-passage-audio-status></span>
+</div>

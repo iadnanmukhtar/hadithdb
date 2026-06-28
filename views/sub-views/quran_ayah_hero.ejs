@@ -7,6 +7,20 @@
 	const nextLabel = locals.nextLabel || 'Next ayah';
 	const ayahHref = locals.ayahHref;
 	const linkHeroAyah = ayahHref && !(site && site.editMode);
+	function heroAyahAudioRef(ayah) {
+		var raw = ayah && (ayah.num || ayah.en?.num || ayah.ar?.num || ayah.ref || '');
+		raw = arabic.toLatinDigits((raw || '').toString()).replace(/^quran:/, '');
+		var parts = raw.split(/[:/-]/).filter(Boolean);
+		return {
+			surah: parts[0] || '',
+			ayah: parts[1] || ''
+		};
+	}
+	const firstHeroAudioRef = heroAyahAudioRef(ayahs[0]);
+	const heroToolbar = locals.toolbar ? Object.assign({}, locals.toolbar, {
+		audioSurah: firstHeroAudioRef.surah,
+		audioAyah: firstHeroAudioRef.ayah
+	}) : null;
 		const defaultTranslationBook = (global.commentaries || []).find(function (book) {
 			return book && book.type === 'trans' && book.source === 'default';
 		}) || {};
@@ -24,7 +38,7 @@
 			: defaultTranslationShortName;
 	%>
 <% if (ayahs.length > 0) { %>
-<section class="quran-ayah-hero row<%= prevHref || nextHref ? ' quran-ayah-hero-with-nav' : '' %>">
+<section class="quran-ayah-hero row<%= prevHref || nextHref ? ' quran-ayah-hero-with-nav' : '' %>"<% if (firstHeroAudioRef.surah && firstHeroAudioRef.ayah) { %> data-quran-hero-audio="1" data-surah="<%= firstHeroAudioRef.surah %>" data-ayah="<%= firstHeroAudioRef.ayah %>"<% } %>>
 		<% if (prevHref) { %>
 		<a class="quran-ayah-hero-nav quran-ayah-hero-prev" href="<%= prevHref %>" rel="prev" title="<%= prevLabel %>" aria-label="<%= prevLabel %>">
 			<span class="bi bi-chevron-left" aria-hidden="true"></span>
@@ -87,8 +101,8 @@
 			<% } %>
 		</div>
 	</section>
-	<% if (locals.toolbar) { %>
-		<%- include('quran_ayah_hero_actions.ejs', locals.toolbar); %>
+	<% if (heroToolbar) { %>
+		<%- include('quran_ayah_hero_actions.ejs', heroToolbar); %>
 	<% } %>
 </section>
 <% } %>

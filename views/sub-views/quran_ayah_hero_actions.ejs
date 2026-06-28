@@ -10,6 +10,11 @@
       <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= selectedAyahId %>" data-like-type="hadith">0</span>
     </span>
   <% } %>
+  <% if (locals.audioSurah && locals.audioAyah) { %>
+    <button type="button" class="quran-ayah-action icon text-accent" data-quran-hero-audio-play="1" data-surah="<%= audioSurah %>" data-ayah="<%= audioAyah %>" title="Play selected ayah" aria-label="Play selected ayah">
+      <span class="bi bi-play-fill"></span><span class="quran-ayah-action-label">Play</span>
+    </button>
+  <% } %>
   <% if (selectedAyahModalIndex >= 0) { %>
     <button type="button" class="quran-ayah-modal-trigger reflection-count-link text-accent" data-quran-ayah-modal-index="<%= selectedAyahModalIndex %>" data-quran-ayah-modal-type="reflections" title="View reflections">
       <span class="bi bi-chat-right-text"></span><span class="hadith-comment-count fw-semibold" data-hadith-id="<%= selectedAyahId %>" data-comment-type="hadith" title="0 reflections">0</span>
@@ -24,11 +29,11 @@
     <% } %>
   <% } %>
   <% if (locals.viewHref) { %>
-    <a href="<%= viewHref %>" title="View selected ayah" aria-label="View selected ayah" class="quran-ayah-action icon text-decoration-none">
+    <a href="<%= viewHref %>" title="View selected ayah" aria-label="View selected ayah" class="quran-ayah-action icon text-accent text-decoration-none">
       <span class="bi bi-eye"></span><span class="quran-ayah-action-label">View</span>
     </a>
   <% } %>
-  <a href="#<%= quranShareId %>" type="button" title="Share selected ayah image" aria-label="Share selected ayah image" class="quran-ayah-action icon text-decoration-none" data-bs-toggle="modal" data-bs-target="#<%= quranShareId %>">
+  <a href="#<%= quranShareId %>" type="button" title="Share selected ayah image" aria-label="Share selected ayah image" class="quran-ayah-action icon text-accent text-decoration-none" data-bs-toggle="modal" data-bs-target="#<%= quranShareId %>">
     <span class="bi bi-box-arrow-up"></span><span class="quran-ayah-action-label">Share</span>
   </a>
 </aside>

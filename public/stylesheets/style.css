@@ -2931,6 +2931,39 @@ del em strong {
 	font-size: .85em;
 }
 
+.quran-passage-audio-control {
+	align-items: center;
+	display: inline-flex;
+	flex: 0 1 auto;
+	gap: .3rem;
+	min-width: 0;
+}
+
+.quran-mobile-audio-toolbar {
+	align-items: center;
+	display: flex;
+	justify-content: flex-end;
+	margin: .15rem 0 .4rem;
+}
+
+.quran-heading-audio-toolbar {
+	align-items: center;
+	margin-top: .35rem;
+}
+
+.quran-passage-audio-control.is-playing .quran-passage-audio-play {
+	background-color: var(--c-accent) !important;
+	border-color: var(--c-accent) !important;
+	color: #fff !important;
+}
+
+.quran-passage-audio-control.is-paused .quran-passage-audio-pause,
+.quran-passage-audio-control.is-repeating .quran-passage-audio-repeat {
+	background-color: var(--bs-secondary) !important;
+	border-color: var(--bs-secondary) !important;
+	color: #fff !important;
+}
+
 .quran-passage-display-toggle {
 	flex: 0 0 auto;
 }
@@ -2964,6 +2997,11 @@ del em strong {
 	position: relative;
 }
 
+.quran-passage-reciter-control {
+	max-width: min(13.5rem, 100%);
+	position: relative;
+}
+
 .quran-passage-translation-icon {
 	color: var(--bs-secondary-color);
 	font-size: .75rem;
@@ -2976,7 +3014,20 @@ del em strong {
 	z-index: 2;
 }
 
-.quran-passage-translation-select {
+.quran-passage-reciter-icon {
+	color: var(--bs-secondary-color);
+	font-size: .75rem;
+	left: .45rem;
+	line-height: 1;
+	pointer-events: none;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 2;
+}
+
+.quran-passage-translation-select,
+.quran-passage-reciter-select {
 	border-color: var(--bs-secondary-color);
 	font-size: .75rem;
 	height: calc(1.1em + .3rem + 2px);
@@ -2989,11 +3040,14 @@ del em strong {
 }
 
 .quran-passage-translation-select:hover,
-.quran-passage-translation-select:focus {
+.quran-passage-translation-select:focus,
+.quran-passage-reciter-select:hover,
+.quran-passage-reciter-select:focus {
 	border-color: var(--bs-secondary);
 }
 
 .quran-ayah-modal-trigger,
+.quran-ayah-action[type="button"],
 .quran-ayah-hero-trigger {
 	border: 0;
 	padding: 0;
@@ -3005,6 +3059,8 @@ del em strong {
 
 .quran-ayah-modal-trigger:hover,
 .quran-ayah-modal-trigger:focus,
+.quran-ayah-action[type="button"]:hover,
+.quran-ayah-action[type="button"]:focus,
 .quran-ayah-hero-trigger:hover,
 .quran-ayah-hero-trigger:focus {
 	color: var(--c-link-dark);
@@ -4566,6 +4622,8 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .body .ayah:hover .quran-ayah-body,
 .body .ayah:active a,
 .body .ayah:active .quran-ayah-body,
+.body .ayah.quran-audio-active-ayah a,
+.body .ayah.quran-audio-active-ayah .quran-ayah-body,
 .body .ayah-hover-pair a,
 .body .ayah-hover-pair .quran-ayah-body {
 	color: var(--c-link-dark);
@@ -4658,6 +4716,28 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 }
 
 .quran-ayah-hero-toolbar a:hover {
+	text-decoration: none;
+}
+
+.quran-ayah-hero-toolbar a.quran-ayah-action,
+.quran-ayah-hero-toolbar button.quran-ayah-action,
+.quran-ayah-hero-toolbar .reflection-count-link {
+	border: 0;
+	padding: 0;
+	background: transparent;
+	color: var(--c-accent);
+	cursor: pointer;
+	font: inherit;
+	text-decoration: none;
+}
+
+.quran-ayah-hero-toolbar a.quran-ayah-action:hover,
+.quran-ayah-hero-toolbar a.quran-ayah-action:focus,
+.quran-ayah-hero-toolbar button.quran-ayah-action:hover,
+.quran-ayah-hero-toolbar button.quran-ayah-action:focus,
+.quran-ayah-hero-toolbar .reflection-count-link:hover,
+.quran-ayah-hero-toolbar .reflection-count-link:focus {
+	color: var(--c-link-dark);
 	text-decoration: none;
 }
 

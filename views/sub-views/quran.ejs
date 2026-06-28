@@ -62,10 +62,24 @@
   }
   var quranAyahModalItems = locals.quranAyahModalItems || passage;
   var quranSelectionSurah = passage[0] ? ((passage[0].en && passage[0].en.num) || passage[0].num || '').toString().split(/:/)[0] : '';
+  var quranHasSelectedAyahHero = locals.selectedAyahs && locals.selectedAyahs.length > 0;
+  var quranSelectedAyahClearHref = quranHasSelectedAyahHero && page.context.section ? utils.quranUrl(req, `/${page.context.section.path}`) : '';
+  quranGroups.forEach(function (group, index) {
+    var groupAudioAyahs = group.passage.map(ayahNumber).filter(function (num) {
+      return Number.isInteger(num) && num > 0;
+    });
+    group._audioStartAyah = groupAudioAyahs.length > 0 ? groupAudioAyahs[0] : NaN;
+    group._audioEndAyah = groupAudioAyahs.length > 0 ? groupAudioAyahs[groupAudioAyahs.length - 1] : NaN;
+    group._hasSubsection = group.quranSubsections && group.quranSubsections.length > 0;
+    group._hasHeadingAudio = (group._hasSubsection || quranSubsections.length < 1) && Number.isInteger(group._audioStartAyah) && Number.isInteger(group._audioEndAyah);
+    group._headingAudioLabel = group._hasSubsection ? 'subsection' : 'section';
+    group._audioScopeId = group._hasHeadingAudio ? `quran-audio-${index}` : '';
+  });
+  var quranInlineAudioGroup = quranGroups[0] && quranGroups[0]._hasHeadingAudio ? quranGroups[0] : null;
 %>
 
 <% if (passage.length > 0 && quranSelectionSurah) { %>
-<aside class="quran-ayah-select-toolbar mb-2" data-surah="<%= quranSelectionSurah %>">
+<aside class="quran-ayah-select-toolbar mb-2<%= quranHasSelectedAyahHero ? ' has-selected-ayah-hero' : '' %>" data-surah="<%= quranSelectionSurah %>">
   <label class="quran-passage-translation-control mb-0">
     <span class="visually-hidden">Translation</span>
     <span class="bi bi-translate quran-passage-translation-icon" aria-hidden="true"></span>
@@ -82,14 +96,14 @@
     </button>
   </div>
   <% if (passage.length > 1) { %>
-  <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-toggle">
+  <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-toggle"<% if (quranHasSelectedAyahHero) { %> hidden<% } %>>
     <span class="bi bi-check2-square"></span> Select ayat
   </button>
   <button type="button" class="btn btn-sm btn-primary quran-ayah-select-btn quran-ayah-select-open" disabled hidden>
     <span class="bi bi-eye"></span> View selected
   </button>
-  <% if (locals.selectedAyahs && locals.selectedAyahs.length > 0 && page.context.section) { %>
-  <a class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-clear" href="<%= utils.quranUrl(req, `/${page.context.section.path}`) %>" hidden>
+  <% if (quranSelectedAyahClearHref) { %>
+  <a class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-clear" href="<%= quranSelectedAyahClearHref %>"<% if (!quranHasSelectedAyahHero) { %> hidden<% } %>>
     <span class="bi bi-x-circle"></span> Clear
   </a>
   <% } else { %>
@@ -98,6 +112,9 @@
   </button>
   <% } %>
   <span class="quran-ayah-select-live small text-muted"></span>
+  <% } %>
+  <% if (quranInlineAudioGroup) { %>
+  <%- include('quran_audio_control.ejs', { audioGroup: quranInlineAudioGroup, quranSelectionSurah: quranSelectionSurah, audioControlClass: 'ms-md-auto d-none d-md-inline-flex' }); %>
   <% } %>
 </aside>
 <% } %>
@@ -109,6 +126,7 @@
   var groupEndAyah = ayahNumber(group.passage[group.passage.length - 1]);
   var sectionHeading = page.context.section;
   var canMakeSubsection = site.editMode && sectionHeading && Number(sectionHeading.level) === 2 && (!group.quranSubsections || group.quranSubsections.length < 1) && Number.isInteger(groupStartAyah) && Number.isInteger(groupEndAyah);
+  var renderHeadingAudioRow = group._hasHeadingAudio && group !== quranInlineAudioGroup;
 %>
 <% if (canMakeSubsection) { %>
 <aside class="quran-subsection-admin mb-2" data-heading-id="<%= sectionHeading.id %>" data-section-path="/<%= sectionHeading.path %>">
@@ -131,9 +149,22 @@
   </div>
 </aside>
 <% } %>
-<article class="row quran-passage-section">
+<% if (renderHeadingAudioRow) { %>
+<aside class="row quran-heading-audio-toolbar quran-desktop-audio-toolbar mb-1 d-none d-md-flex">
+  <div class="col-md-6 col-sm-12 ms-md-auto d-flex justify-content-md-end">
+    <%- include('quran_audio_control.ejs', { audioGroup: group, quranSelectionSurah: quranSelectionSurah }); %>
+  </div>
+</aside>
+<% } %>
+<article class="row quran-passage-section"<%- group._audioScopeId ? ` data-quran-audio-scope="${group._audioScopeId}"` : '' %>>
 
 <%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
+
+<% if (group._hasHeadingAudio) { %>
+<aside class="col-12 quran-mobile-audio-toolbar d-md-none">
+  <%- include('quran_audio_control.ejs', { audioGroup: group, quranSelectionSurah: quranSelectionSurah, audioControlClass: 'quran-mobile-audio-control' }); %>
+</aside>
+<% } %>
 
 <%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, lang: 'ar', main: main, title: title, searchResult: searchResult }); %>
 

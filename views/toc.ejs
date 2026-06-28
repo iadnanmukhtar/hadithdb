@@ -427,6 +427,34 @@
           return title;
         }
 
+        function quranHeadingAyahRangeLabel(heading) {
+          var startParts = arabic.toLatinDigits((heading.start || '').toString()).split(/:/);
+          var startSurah = parseInt(startParts[0], 10);
+          var startAyah = parseInt(startParts[1], 10);
+          if (!Number.isInteger(startSurah) || !Number.isInteger(startAyah))
+            return '';
+          var count = parseInt(arabic.toLatinDigits((heading.count || '').toString()), 10);
+          var endParts = arabic.toLatinDigits((heading.end || '').toString()).split(/:/);
+          var endSurah = parseInt(endParts[0], 10);
+          var endAyah = parseInt(endParts[1], 10);
+          if (!Number.isInteger(endAyah) && Number.isInteger(count) && count > 0)
+            endAyah = startAyah + count - 1;
+          if (!Number.isInteger(endSurah))
+            endSurah = startSurah;
+          if (!Number.isInteger(endAyah) || endAyah < startAyah)
+            return `${startSurah}:${startAyah}`;
+          if (endSurah !== startSurah)
+            return `${startSurah}:${startAyah}-${endSurah}:${endAyah}`;
+          return endAyah === startAyah ? `${startSurah}:${startAyah}` : `${startSurah}:${startAyah}-${endAyah}`;
+        }
+
+        function tocSectionNumberLabel(section) {
+          if (!isQuranToc)
+            return `S${section.h1}.${section.h2}`;
+          var rangeLabel = quranHeadingAyahRangeLabel(section);
+          return `P${section.h2}${rangeLabel ? ` ${rangeLabel}` : ''}`;
+        }
+
         for (var i = 0; i < toc.length; i++) {
           toc[i].h1 = formatHeadingNumber(toc[i].h1);
           toc[i].h2 = formatHeadingNumber(toc[i].h2);
@@ -479,7 +507,7 @@
               <% if (showHadithBookChrome) { %>
               <td><%- section.start %></td>
               <% } %>
-              <td><span class="toc-section-number">S<%- section.h1 %>.<%- section.h2 %></span></td>
+              <td><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
               <% if (section.path) { %>
               <td>
                 <a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></a>

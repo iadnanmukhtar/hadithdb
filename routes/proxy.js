@@ -5,6 +5,8 @@ const express = require('express');
 const createError = require('http-errors');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const fs = require('fs');
+const path = require('path');
 const MarkdownIt = require('markdown-it');
 const markdownitFootnote = require('markdown-it-footnote');
 const Index = require('../lib/Index');
@@ -19,6 +21,17 @@ const GENERIC_PROXY_ALLOWED_HOSTS = new Set(
     .filter(Boolean)
 );
 const GENERIC_PROXY_TIMEOUT_MS = 10000;
+const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+const LOCAL_QURAN_AUDIO_RECITERS = Object.freeze([
+  Object.freeze({
+    id: 'juhani',
+    slug: 'juhani',
+    aliases: Object.freeze(['johani', 'juhani', '7']),
+    shortName: 'Juhani',
+    reciter_name: 'Abdullaah Awwad al-Juhani',
+    label: 'Juhani'
+  })
+]);
 const md = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
 const quranBacktickMd = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
 quranBacktickMd.renderer.rules.code_inline = renderQuranBacktickToken;
@@ -36,6 +49,46 @@ function validQuranRange(surah, ayahFrom, ayahTo, allowZero) {
     && ayahTo >= ayahFrom
     && ayahTo <= ayahCount;
 }
+
+router.get('/quran-audio/recitations', function (req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({
+    recitations: LOCAL_QURAN_AUDIO_RECITERS.map(reciter => ({
+      id: reciter.id,
+      shortName: reciter.shortName,
+      reciter_name: reciter.reciter_name,
+      label: reciter.label
+    }))
+  });
+});
+
+router.get('/quran-audio/passage', function (req, res) {
+  const surah = Number(req.query.s);
+  const ayahFrom = Number(req.query.from);
+  const ayahTo = req.query.to === undefined ? ayahFrom : Number(req.query.to);
+  const reciter = localQuranAudioReciter(req.query.reciter || req.query.recitation_id || req.query.recitationId || 'juhani');
+  if (!reciter || !Number.isInteger(surah) || !Number.isInteger(ayahFrom) || !Number.isInteger(ayahTo) ||
+      !validQuranRange(surah, ayahFrom, ayahTo, false)) {
+    res.status(400).json({ error: 'Invalid Quran audio request.' });
+    return;
+  }
+
+  const result = localQuranAudioPassage(reciter, surah, ayahFrom, ayahTo);
+  if (result.audio.length < 1) {
+    res.status(404).json({ error: 'No Quran audio is available for this passage.' });
+    return;
+  }
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({
+    reciter: reciter.id,
+    reciterName: reciter.reciter_name,
+    surah: surah,
+    from: ayahFrom,
+    to: ayahTo,
+    audio: result.audio,
+    missing: result.missing
+  });
+});
 
 router.get('/tafsir/books', async function (req, res) {
   debug('proxy tafsir books start');
@@ -227,6 +280,42 @@ function isAllowedGenericProxyHost(hostname) {
       return true;
   }
   return false;
+}
+
+function localQuranAudioReciter(value) {
+  const key = trimToEmpty(value || 'juhani').toLowerCase();
+  return LOCAL_QURAN_AUDIO_RECITERS.find(reciter => reciter.aliases.indexOf(key) !== -1) || null;
+}
+
+function localQuranAudioPassage(reciter, surah, ayahFrom, ayahTo) {
+  const audio = [];
+  const missing = [];
+  for (let ayah = ayahFrom; ayah <= ayahTo; ayah += 1) {
+    const filename = `${padQuranAudioNumber(surah)}${padQuranAudioNumber(ayah)}.mp3`;
+    const relativeUrl = `/audio/${reciter.slug}/${filename}`;
+    const filePath = path.join(PUBLIC_DIR, 'audio', reciter.slug, filename);
+    if (fs.existsSync(filePath)) {
+      audio.push({
+        verseKey: `${surah}:${ayah}`,
+        ayah: ayah,
+        url: relativeUrl
+      });
+    } else {
+      missing.push({
+        verseKey: `${surah}:${ayah}`,
+        ayah: ayah,
+        filename: filename
+      });
+    }
+  }
+  return {
+    audio: audio,
+    missing: missing
+  };
+}
+
+function padQuranAudioNumber(value) {
+  return String(value).padStart(3, '0');
 }
 
 async function localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo) {
