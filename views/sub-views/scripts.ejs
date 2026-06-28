@@ -35,6 +35,22 @@
 	        return window.marked.parse(text).replace(/<br>/g, '</p><p>').trim();
 	      return text;
 	    };
+	    const stripQuranDisplayFootnotes = (value) => (value || '').toString()
+	      .replace(/\r\n?/g, '\n')
+	      .replace(/(?:^|\n)[ \t]*\[\^[^\]\n]+\]:[^\n]*(?:\n[ \t]+[^\n]*)*/g, '\n')
+	      .replace(/\[\^[^\]\n]+\]/g, '')
+	      .replace(/(?:\\\[|\[)(?:\\\[|\[)([\s\S]*?)(?:\\\]|\])(?:\\\]|\])/g, '')
+	      .replace(/[ \t]+\n/g, '\n')
+	      .replace(/\n{3,}/g, '\n\n')
+	      .trim();
+	    const stripQuranDisplayFootnoteHtml = (html) => {
+	      const wrapper = document.createElement('div');
+	      wrapper.innerHTML = html || '';
+	      wrapper.querySelectorAll('.footnote-ref, .footnotes-sep, .footnotes, .footnote, hr').forEach((node) => node.remove());
+	      return wrapper.innerHTML.trim();
+	    };
+	    const renderQuranCompactMarkdown = (text) => stripQuranDisplayFootnoteHtml(renderMarkdown(stripQuranDisplayFootnotes(text)));
+	    const isQuranCompactMarkdownElement = ($el) => $el.hasClass('quran-ayah-hero-text');
 
 	    const normalizeMarkdownValue = (value) => (value || '').toString().replace(/&nbsp;/g, ' ').replace(/\r\n?/g, '\n');
 
@@ -76,7 +92,7 @@
 	      setMarkdownSource($el, markdown);
 	      $el.removeClass('markdown-editing');
 	      if (markdown) {
-	        const html = renderMarkdown(markdown);
+	        const html = isQuranCompactMarkdownElement($el) ? renderQuranCompactMarkdown(markdown) : renderMarkdown(markdown);
 	        $el.html(isEnglishTafsirMarkdown($el) ? renderEnglishTafsirMarkdown(html) : html);
 	      }
 	      else if (emptyHtml)

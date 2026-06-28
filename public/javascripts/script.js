@@ -2540,12 +2540,43 @@ function quranTranslationSelectValue(alias, books) {
 	return defaultBook && defaultBook.alias === alias ? '' : alias;
 }
 
-function compactQuranTranslationHtml(html) {
-	var wrapper = document.createElement('div');
-	wrapper.innerHTML = html || '';
-	wrapper.querySelectorAll('.footnotes, .footnote, hr').forEach(function (node) {
+function stripQuranDisplayFootnoteMarkdown(value) {
+	return (value || '').toString()
+		.replace(/\r\n?/g, '\n')
+		.replace(/(?:^|\n)[ \t]*\[\^[^\]\n]+\]:[^\n]*(?:\n[ \t]+[^\n]*)*/g, '\n')
+		.replace(/\[\^[^\]\n]+\]/g, '')
+		.replace(/(?:\\\[|\[)(?:\\\[|\[)([\s\S]*?)(?:\\\]|\])(?:\\\]|\])/g, '')
+		.replace(/[ \t]+\n/g, '\n')
+		.replace(/\n{3,}/g, '\n\n')
+		.trim();
+}
+
+function removeQuranDisplayFootnoteNodes(root) {
+	if (!root)
+		return;
+	root.querySelectorAll('.footnote-ref, .footnotes-sep, .footnotes, .footnote, hr').forEach(function (node) {
 		node.remove();
 	});
+}
+
+function stripQuranDisplayFootnoteHtml(html) {
+	var wrapper = document.createElement('div');
+	wrapper.innerHTML = html || '';
+	removeQuranDisplayFootnoteNodes(wrapper);
+	return wrapper.innerHTML.trim();
+}
+
+function compactQuranPlainText(value) {
+	var wrapper = document.createElement('div');
+	var text = stripQuranDisplayFootnoteMarkdown(value);
+	wrapper.innerHTML = stripQuranDisplayFootnoteHtml(text);
+	return (wrapper.textContent || '').replace(/\s+/g, ' ').trim();
+}
+
+function compactQuranTranslationHtml(html) {
+	var wrapper = document.createElement('div');
+	wrapper.innerHTML = stripQuranDisplayFootnoteMarkdown(html);
+	removeQuranDisplayFootnoteNodes(wrapper);
 	return wrapper.innerHTML;
 }
 
@@ -3980,12 +4011,12 @@ function normalizeQuranAyahNumber(value) {
 }
 
 function renderQuranHeroMarkdown(value) {
-	value = (value || '').toString();
+	value = stripQuranDisplayFootnoteMarkdown(value);
 	if (!value)
 		return '';
 	if (window.marked && window.marked.parse)
-		return window.marked.parse(value).replace(/<br>/g, '</p><p>').trim();
-	return $('<div>').text(value).html();
+		return stripQuranDisplayFootnoteHtml(window.marked.parse(value).replace(/<br>/g, '</p><p>').trim());
+	return $('<div>').text(compactQuranPlainText(value)).html();
 }
 
 function toArabicDigits(value) {
@@ -4134,11 +4165,11 @@ function quranShareModalHtml(ayah, shareId) {
 	var $inner = $('<div>').addClass('hadith-share-card-inner').appendTo($card);
 	$('<h2>').addClass('hadith-share-title share-editable').attr('contenteditable', 'false').text(shareTitle).appendTo($inner);
 	var $arText = $('<div>').addClass('body hadith-share-text quran-share-text share-editable').attr({ lang: 'ar', contenteditable: 'false' });
-	$('<p>').append($('<span>').text((ayah && ayah.ar && ayah.ar.body) || '').append(document.createTextNode(' ')).append($('<span>').addClass('quran-ayah-end-marker').attr('aria-label', `Quran ${arabicRef}`).text(`۝${toArabicDigits(arabicPart)}`))).appendTo($arText);
+	$('<p>').append($('<span>').text(compactQuranPlainText(ayah && ayah.ar && ayah.ar.body)).append(document.createTextNode(' ')).append($('<span>').addClass('quran-ayah-end-marker').attr('aria-label', `Quran ${arabicRef}`).text(`۝${toArabicDigits(arabicPart)}`))).appendTo($arText);
 	$('<section>').addClass('hadith-share-section hadith-share-arabic-section').attr('lang', 'ar').append($arText).appendTo($inner);
 	var $enText = $('<div>').addClass('body hadith-share-text quran-share-text share-editable').attr({ lang: 'en', contenteditable: 'false', 'data-quran-share-translation-target': '1' });
 	$('<p>')
-		.append($('<span>').append($('<sup>').text(ref)).append(document.createTextNode(' ')).append(document.createTextNode((ayah && ayah.en && ayah.en.body) || '')))
+		.append($('<span>').append($('<sup>').text(ref)).append(document.createTextNode(' ')).append(document.createTextNode(compactQuranPlainText(ayah && ayah.en && ayah.en.body))))
 		.append(document.createTextNode(' '))
 		.append($('<span>').addClass('quran-share-translation-attribution quran-translation-attribution').attr({ 'data-quran-share-translation-attribution': '1', contenteditable: 'false' }).text(`— ${defaultQuranTranslationShortName()}`))
 		.appendTo($enText);

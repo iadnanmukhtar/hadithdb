@@ -69,7 +69,7 @@
 									const ayahPart = ayahNum.split(/:/)[1] || ayahNum;
 									const ayahPartArabic = arabic.toArabicDigits(arabic.toLatinDigits(ayahPart) || ayahPart);
 								%>
-									<span><%= ayah.ar?.body || '' %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahNum %>">۝<%= ayahPartArabic %></span></span>
+										<span><%= utils.quranDisplayText(ayah.ar?.body) %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahNum %>">۝<%= ayahPartArabic %></span></span>
 								<% }); %>
 							</p>
 					</div>
@@ -82,7 +82,7 @@
 								const ayahPart = ayahNum.split(/:/)[1] || ayahNum;
 								const ayahLabel = ayahs.indexOf(ayah) === 0 ? ayahNum : ayahPart;
 							%>
-								<span><sup><%= ayahLabel %></sup>&nbsp;<%= ayah.en?.body || '' %></span>
+									<span><sup><%= ayahLabel %></sup>&nbsp;<%= utils.quranDisplayText(ayah.en?.body) %></span>
 							<% }); %>
 							<span class="quran-share-translation-attribution quran-translation-attribution" data-quran-share-translation-attribution="1" contenteditable="false">— <%= defaultTranslationShortName %></span>
 						</p>
