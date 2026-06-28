@@ -8,10 +8,6 @@
     <div class="modal-content">
       <header class="modal-header quran-ayah-modal-toolbar">
         <h2 class="modal-title fs-5" id="quran-ayah-tafsir-modal-title">Quran</h2>
-        <div class="btn-group btn-group-sm quran-ayah-modal-mode-toggle" role="group" aria-label="Quran modal view">
-          <button type="button" class="btn btn-outline-secondary active" aria-pressed="true"><span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span></button>
-          <button type="button" class="btn btn-outline-secondary quran-ayah-modal-switch" data-quran-ayah-modal-switch="translations"><span class="bi bi-translate" aria-hidden="true"></span><span>Translations</span></button>
-        </div>
         <nav class="quran-ayah-modal-nav" aria-label="Ayah and tafsir navigation">
           <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
           <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
@@ -30,7 +26,7 @@
           const nextRef = modalAyahs[index + 1]?.ref || ayah.next_ref || '';
         %>
           <article class="quran-ayah-modal-pane<%= index === activeIndex ? '' : ' d-none' %>" id="<%= paneId %>" data-quran-ayah-modal-pane="<%= index %>" data-quran-ayah-ref="<%= ayahNum %>" data-quran-ayah-prev-ref="<%= prevRef %>" data-quran-ayah-next-ref="<%= nextRef %>">
-            <%- include('quran_tafsirs.ejs', { site: site, page: page, selectedAyahs: [ayah], passage: [ayah], tafsirInstance: paneId }); %>
+            <%- include('quran_tafsirs.ejs', { site: site, page: page, selectedAyahs: [ayah], passage: [ayah], tafsirInstance: paneId, showAyahModalModeToggle: true }); %>
           </article>
         <% }); %>
       </div>
@@ -43,10 +39,6 @@
     <div class="modal-content">
       <header class="modal-header quran-ayah-modal-toolbar">
         <h2 class="modal-title fs-5" id="quran-ayah-translations-modal-title">Quran</h2>
-        <div class="btn-group btn-group-sm quran-ayah-modal-mode-toggle" role="group" aria-label="Quran modal view">
-          <button type="button" class="btn btn-outline-secondary quran-ayah-modal-switch" data-quran-ayah-modal-switch="tafsirs"><span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span></button>
-          <button type="button" class="btn btn-outline-secondary active" aria-pressed="true"><span class="bi bi-translate" aria-hidden="true"></span><span>Translations</span></button>
-        </div>
         <nav class="quran-ayah-modal-nav" aria-label="Ayah navigation">
           <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
           <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
@@ -69,7 +61,7 @@
         %>
           <article class="quran-ayah-modal-pane<%= index === activeIndex ? '' : ' d-none' %>" id="<%= paneId %>" data-quran-ayah-modal-pane="<%= index %>" data-quran-ayah-ref="<%= ayahNum %>" data-quran-ayah-prev-ref="<%= prevRef %>" data-quran-ayah-next-ref="<%= nextRef %>">
             <%- include('quran_ayah_hero.ejs', { site: site, page: page, selectedAyahs: [ayah], ayahHref: translationAyahHref }); %>
-            <%- include('quran_translations.ejs', { site: site, page: page, selectedAyahs: [ayah], passage: [ayah], translationInstance: paneId }); %>
+            <%- include('quran_translations.ejs', { site: site, page: page, selectedAyahs: [ayah], passage: [ayah], translationInstance: paneId, showAyahModalModeToggle: true }); %>
           </article>
         <% }); %>
       </div>

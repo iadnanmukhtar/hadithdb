@@ -2615,7 +2615,12 @@ function quranTranslationTextFromPayload(payload) {
 }
 
 function quranTranslationTargetHolder(target) {
-	return target ? target.closest('.quran-ayah-hero-ayah, .body, .quran-share-english-section') || target.parentElement : null;
+	if (!target)
+		return null;
+	var rangeHolder = target.closest('.quran-ayah-hero-body[data-quran-translation-attribution-scope="range"]');
+	if (rangeHolder)
+		return rangeHolder;
+	return target.closest('.quran-ayah-hero-ayah, .body, .quran-share-english-section') || target.parentElement;
 }
 
 function quranTranslationTargetRef(target) {
@@ -3065,7 +3070,8 @@ function initQuranTranslationAttributionSelectors(root) {
 					if (otherSelector === selector)
 						return;
 					otherSelector.classList.add('d-none');
-					var otherHolder = quranTranslationTargetHolder(otherSelector.closest('.quran-ayah-hero-ayah, .body')?.querySelector('[data-quran-translation-target="1"]'));
+					var otherTargetRoot = otherSelector.closest('[data-quran-translation-attribution-scope="range"], .quran-ayah-hero-ayah, .body');
+					var otherHolder = quranTranslationTargetHolder(otherTargetRoot?.querySelector('[data-quran-translation-target="1"]'));
 					var otherAttribution = otherHolder ? otherHolder.querySelector('[data-quran-translation-attribution="1"]') : null;
 					if (otherAttribution)
 						otherAttribution.classList.remove('d-none');

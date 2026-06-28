@@ -63,7 +63,7 @@
 		</div>
 	</section>
 	<section class="col-12" lang="en">
-		<div class="quran-ayah-hero-body">
+		<div class="quran-ayah-hero-body"<% if (ayahs.length > 1) { %> data-quran-translation-attribution-scope="range"<% } %>>
 			<% ayahs.forEach(function (ayah) {
 				var ayahNum = ayah.en?.num || ayah.num || '';
 				var ayahPart = ayahNum.split(/:/)[1] || ayahNum;
@@ -78,10 +78,13 @@
 					if (quranTranslationAttrs && fixedTranslationAlias)
 						quranTranslationAttrs += ` data-quran-fixed-translation-alias="${fixedTranslationAlias}"`;
 					%>
-						<div class="quran-ayah-hero-ayah">
-								<% if (linkHeroAyah) { %><a class="quran-ayah-hero-link" href="<%= ayahHref %>" title="View Quran <%= ayahLabel %>"><% } %><sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranTranslationAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div> <span class="quran-translation-attribution" data-quran-translation-attribution="1">— <%= heroTranslationShortName %></span><% if (linkHeroAyah) { %></a><% } %>
-						</div>
+					<div class="quran-ayah-hero-ayah">
+							<% if (linkHeroAyah) { %><a class="quran-ayah-hero-link" href="<%= ayahHref %>" title="View Quran <%= ayahLabel %>"><% } %><sup><%= ayahLabel %></sup>&nbsp;<div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranTranslationAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body_en" data-arabizi="true" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div><% if (ayahs.length === 1) { %> <span class="quran-translation-attribution" data-quran-translation-attribution="1">— <%= heroTranslationShortName %></span><% } %><% if (linkHeroAyah) { %></a><% } %>
+					</div>
 			<% }); %>
+			<% if (ayahs.length > 1) { %>
+				<span class="quran-translation-attribution quran-translation-attribution-range" data-quran-translation-attribution="1">— <%= heroTranslationShortName %></span>
+			<% } %>
 		</div>
 	</section>
 	<% if (locals.toolbar) { %>

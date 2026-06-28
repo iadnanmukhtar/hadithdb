@@ -41,6 +41,7 @@
 	const tafsirSettingsHref = locals.tafsirSettingsHref || '';
 	const tafsirTranslationsHref = locals.tafsirTranslationsHref || '';
 	const tafsirTranslationsModalIndex = Number.isInteger(locals.tafsirTranslationsModalIndex) ? locals.tafsirTranslationsModalIndex : -1;
+	const showAyahModalModeToggle = locals.showAyahModalModeToggle === true;
 %>
 <% if (passageSurah && passageAyahs.length > 0) { %>
 <article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>"<% if (selectedTafsirAlias) { %> data-selected-tafsir="<%= selectedTafsirAlias %>"<% } %><% if (selectedTafsirLanguage) { %> data-selected-tafsir-language="<%= selectedTafsirLanguage %>"<% } %>>
@@ -62,6 +63,12 @@
 					<a class="quran-section-heading-action btn btn-sm btn-outline-secondary" href="<%= tafsirSettingsHref %>" title="My Settings" aria-label="My Settings">
 						<span class="bi bi-gear" aria-hidden="true"></span>
 					</a>
+				<% } %>
+				<% if (showAyahModalModeToggle) { %>
+					<span class="btn-group btn-group-sm quran-ayah-modal-mode-toggle" role="group" aria-label="Quran modal view">
+						<button type="button" class="btn btn-outline-secondary active" aria-pressed="true"><span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span></button>
+						<button type="button" class="btn btn-outline-secondary quran-ayah-modal-switch" data-quran-ayah-modal-switch="translations"><span class="bi bi-translate" aria-hidden="true"></span><span>Translations</span></button>
+					</span>
 				<% } %>
 				<span class="btn-group btn-group-sm quran-tafsir-language-toggle" role="group" aria-label="Tafsir language">
 					<button type="button" class="btn btn-outline-secondary" data-tafsir-language="ar"><span class="quran-tafsir-language-label-full">Arabic</span><span class="quran-tafsir-language-label-short" lang="ar" dir="rtl">ع</span></button>

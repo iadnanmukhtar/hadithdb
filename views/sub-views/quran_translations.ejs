@@ -27,6 +27,7 @@
 	const translationInstance = locals.translationInstance || 'passage';
 	const hideDefaultTranslation = locals.hideDefaultTranslation === true;
 	const translationSettingsHref = locals.translationSettingsHref || '';
+	const showAyahModalModeToggle = locals.showAyahModalModeToggle === true;
 	const defaultTranslationBook = (global.commentaries || []).find(function (book) {
 		return book && book.type === 'trans' && book.source === 'default';
 	}) || {
@@ -49,17 +50,25 @@
 		<heading class="quran-translation-heading row heading py-2">
 			<h2 class="col-12 fs-5 title quran-section-heading-title mb-0" lang="en">
 				<span class="quran-section-heading-text"><%= translationHeading %></span>
-				<% if (translationSettingsHref) { %>
+				<% if (translationSettingsHref || showAyahModalModeToggle) { %>
 					<span class="quran-section-heading-actions">
-						<a class="quran-section-heading-action btn btn-sm btn-outline-secondary" href="<%= utils.quranUrl(req, `/quran:${passageSurah}:${passageAyahHeadingStart}`) %>" title="Passage View" aria-label="Passage View">
-							<span class="bi bi-text-paragraph" aria-hidden="true"></span><span>Passage</span>
-						</a>
-						<button type="button" class="quran-section-heading-action btn btn-sm btn-outline-secondary quran-ayah-modal-trigger" data-quran-ayah-modal-index="0" data-quran-ayah-modal-type="tafsirs" title="View tafsir" aria-label="View tafsir">
-							<span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span>
-						</button>
-						<a class="quran-section-heading-action btn btn-sm btn-outline-secondary" href="<%= translationSettingsHref %>" title="My Settings" aria-label="My Settings">
-							<span class="bi bi-gear" aria-hidden="true"></span>
-						</a>
+						<% if (translationSettingsHref) { %>
+							<a class="quran-section-heading-action btn btn-sm btn-outline-secondary" href="<%= utils.quranUrl(req, `/quran:${passageSurah}:${passageAyahHeadingStart}`) %>" title="Passage View" aria-label="Passage View">
+								<span class="bi bi-text-paragraph" aria-hidden="true"></span><span>Passage</span>
+							</a>
+							<button type="button" class="quran-section-heading-action btn btn-sm btn-outline-secondary quran-ayah-modal-trigger" data-quran-ayah-modal-index="0" data-quran-ayah-modal-type="tafsirs" title="View tafsir" aria-label="View tafsir">
+								<span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span>
+							</button>
+							<a class="quran-section-heading-action btn btn-sm btn-outline-secondary" href="<%= translationSettingsHref %>" title="My Settings" aria-label="My Settings">
+								<span class="bi bi-gear" aria-hidden="true"></span>
+							</a>
+						<% } %>
+						<% if (showAyahModalModeToggle) { %>
+							<span class="btn-group btn-group-sm quran-ayah-modal-mode-toggle" role="group" aria-label="Quran modal view">
+								<button type="button" class="btn btn-outline-secondary quran-ayah-modal-switch" data-quran-ayah-modal-switch="tafsirs"><span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span></button>
+								<button type="button" class="btn btn-outline-secondary active" aria-pressed="true"><span class="bi bi-translate" aria-hidden="true"></span><span>Translations</span></button>
+							</span>
+						<% } %>
 					</span>
 				<% } %>
 			</h2>
