@@ -71,7 +71,7 @@ router.get('/translations/local', async function (req, res) {
   debug(`proxy local translations start aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo} lang=${lang || ''}`);
   const rows = await localCommentaryRowsForAliases(aliases, surah, ayahFrom, ayahTo);
   debug(`proxy local translations rows=${rows.length} aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo}`);
-  const editMode = isEditMode(req);
+  const editMode = isEditMode(req) && (req.query.render || '').toString() !== 'reader';
   const entries = rows.map(row => {
     const alias = row.commentary_alias;
     const html = renderLocalCommentary(row, editMode, lang, alias);

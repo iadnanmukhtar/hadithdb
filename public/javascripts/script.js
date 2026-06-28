@@ -2692,6 +2692,26 @@ function storeDefaultQuranTranslationTarget(target) {
 		target.dataset.quranDefaultTranslationHtml = target.innerHTML || '';
 	if (target.dataset.quranDefaultTranslationMarkdown === undefined)
 		target.dataset.quranDefaultTranslationMarkdown = target.dataset.markdownSource || '';
+	if (target.dataset.quranDefaultTranslationEditableClass === undefined)
+		target.dataset.quranDefaultTranslationEditableClass = target.classList.contains('_e') ? '1' : '0';
+	if (target.dataset.quranDefaultTranslationContenteditable === undefined && target.hasAttribute('contenteditable'))
+		target.dataset.quranDefaultTranslationContenteditable = target.getAttribute('contenteditable') || 'true';
+}
+
+function setQuranTranslationTargetEditable(target, editable) {
+	if (!target || target.dataset.quranDefaultTranslationEditableClass !== '1')
+		return;
+	if (editable) {
+		target.classList.add('_e');
+		target.setAttribute('contenteditable', target.dataset.quranDefaultTranslationContenteditable || 'true');
+		target.removeAttribute('aria-readonly');
+		return;
+	}
+	target.classList.remove('_e');
+	target.setAttribute('contenteditable', 'false');
+	target.setAttribute('aria-readonly', 'true');
+	target.removeAttribute('editing');
+	target.removeAttribute('submitting');
 }
 
 function setQuranTranslationAttribution(target, label, alias) {
@@ -2712,7 +2732,7 @@ function setQuranTranslationAttribution(target, label, alias) {
 }
 
 function fetchQuranLocalTranslation(book, surah, ayah) {
-	return fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(book.alias)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&lang=${encodeURIComponent(book.lang || 'en')}${window.hadithAdmin === true ? '&flush=1' : ''}`)
+	return fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(book.alias)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&lang=${encodeURIComponent(book.lang || 'en')}&render=reader${window.hadithAdmin === true ? '&flush=1' : ''}`)
 		.then(function (response) {
 			if (!response.ok)
 				throw new Error('Unable to load selected translation.');
@@ -2724,11 +2744,13 @@ function applyQuranTranslationToTarget(target, book) {
 	storeDefaultQuranTranslationTarget(target);
 	var alias = book && book.source !== 'default' ? book.alias : '';
 	if (!book || book.source === 'default') {
+		setQuranTranslationTargetEditable(target, true);
 		target.innerHTML = target.dataset.quranDefaultTranslationHtml || '';
 		target.dataset.markdownSource = target.dataset.quranDefaultTranslationMarkdown || '';
 		setQuranTranslationAttribution(target, defaultQuranTranslationShortName(), alias);
 		return Promise.resolve();
 	}
+	setQuranTranslationTargetEditable(target, false);
 	var ref = quranTranslationTargetRef(target);
 	if (!ref.surah || !ref.ayah)
 		return Promise.resolve();
