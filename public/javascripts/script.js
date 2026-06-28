@@ -3027,6 +3027,8 @@ var quranPassageAudioState = {
 	index: 0,
 	paused: false,
 	playlist: [],
+	preloadAudio: null,
+	preloadedUrl: '',
 	repeat: false,
 	requestId: 0
 };
@@ -3560,6 +3562,59 @@ function advanceQuranPassageAudio() {
 	playCurrentQuranPassageAudio();
 }
 
+function resetQuranPassageAudioPreload() {
+	quranPassageAudioState.preloadedUrl = '';
+	var preloadAudio = quranPassageAudioState.preloadAudio;
+	if (!preloadAudio)
+		return;
+	try {
+		preloadAudio.pause();
+		preloadAudio.removeAttribute('src');
+		preloadAudio.load();
+	} catch (_err) {}
+}
+
+function quranPassageAudioPreloadElement() {
+	if (quranPassageAudioState.preloadAudio)
+		return quranPassageAudioState.preloadAudio;
+	var audio = new Audio();
+	audio.preload = 'auto';
+	quranPassageAudioState.preloadAudio = audio;
+	return audio;
+}
+
+function quranPassageAudioNextItem() {
+	var playlist = quranPassageAudioState.playlist;
+	if (!playlist || playlist.length < 2)
+		return null;
+	var nextIndex = quranPassageAudioState.index + 1;
+	if (nextIndex >= playlist.length) {
+		if (!quranPassageAudioState.repeat)
+			return null;
+		nextIndex = 0;
+	}
+	return playlist[nextIndex] || null;
+}
+
+function preloadNextQuranPassageAudio() {
+	var item = quranPassageAudioNextItem();
+	var url = item && item.url ? item.url.toString() : '';
+	if (!url || url === quranPassageAudioState.preloadedUrl)
+		return;
+	var currentAudio = quranPassageAudioState.audio;
+	if (currentAudio && currentAudio.src && new URL(currentAudio.src, window.location.origin).pathname === new URL(url, window.location.origin).pathname)
+		return;
+	resetQuranPassageAudioPreload();
+	try {
+		var preloadAudio = quranPassageAudioPreloadElement();
+		preloadAudio.src = url;
+		quranPassageAudioState.preloadedUrl = url;
+		preloadAudio.load();
+	} catch (_err) {
+		quranPassageAudioState.preloadedUrl = '';
+	}
+}
+
 function quranPassageAudioElement() {
 	if (quranPassageAudioState.audio)
 		return quranPassageAudioState.audio;
@@ -3593,6 +3648,7 @@ function quranPassageAudioElement() {
 		setQuranPassageAudioPlaying(quranPassageAudioState.control, true);
 		setQuranPassageAudioStatus(quranPassageAudioState.control, item && item.verseKey ? `Playing ${item.verseKey}` : 'Playing');
 		setQuranPassageAudioHighlight(quranPassageAudioState.control, item);
+		preloadNextQuranPassageAudio();
 	});
 	quranPassageAudioState.audio = audio;
 	return audio;
@@ -3615,6 +3671,7 @@ function playCurrentQuranPassageAudio() {
 	audio.currentTime = 0;
 	quranPassageAudioState.paused = false;
 	setQuranPassageAudioPlaying(control, true);
+	preloadNextQuranPassageAudio();
 	var playPromise = audio.play();
 	if (playPromise && playPromise.catch) {
 		playPromise.catch(function (err) {
@@ -3661,6 +3718,7 @@ function stopQuranPassageAudio(control) {
 		quranPassageAudioState.audio.removeAttribute('src');
 		quranPassageAudioState.audio.load();
 	}
+	resetQuranPassageAudioPreload();
 	quranPassageAudioState.control = null;
 	quranPassageAudioState.errorCount = 0;
 	quranPassageAudioState.index = 0;
@@ -3730,6 +3788,7 @@ function startQuranPassageAudio(control, options) {
 	quranPassageAudioState.index = 0;
 	quranPassageAudioState.paused = false;
 	quranPassageAudioState.playlist = [];
+	resetQuranPassageAudioPreload();
 	quranPassageAudioState.repeat = quranPassageAudioRepeatEnabled(control);
 	setQuranPassageAudioLoading(control, true);
 	setQuranPassageAudioStatus(control, 'Loading');
