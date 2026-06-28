@@ -167,7 +167,7 @@ Options:
   --book-id, -b <id>   Restrict to a book id
   --from-id <id>       Start from a hadith id
   --id <id>            Build one hadith id
-  --model <name>       Override OPENAI_KNOWLEDGE_MODEL / OPENAI_MODEL
+  --model <name>       Override settings.knowledge.model / settings.openAI.model
   --help, -h           Show this help
 
 Examples:
