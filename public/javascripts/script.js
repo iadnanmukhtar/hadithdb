@@ -108,6 +108,7 @@ $(function () {
 	initHadithShareModals(document);
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
+	initStickyFooterScrollFade(document);
 	initQuranInfinitePassageNavigation(document);
 	initReaderInfiniteNavigation(document);
 	initQuranDynamicPassageHero(document);
@@ -129,6 +130,29 @@ $(function () {
 	initTocInlineDescriptionExpanders(document);
 
 });
+
+function initStickyFooterScrollFade(root) {
+	var scope = root || document;
+	if (!$(scope).find('.mobile-bottom-nav').addBack('.mobile-bottom-nav').length)
+		return;
+	if ($(document).data('stickyFooterScrollFadeBound'))
+		return;
+	$(document).data('stickyFooterScrollFadeBound', true);
+	var scrollTimer = null;
+	var clearFooterFade = function () {
+		document.body.classList.remove('sticky-footer-scroll-faded');
+	};
+	var fadeFooter = function () {
+		document.body.classList.add('sticky-footer-scroll-faded');
+		window.clearTimeout(scrollTimer);
+		scrollTimer = window.setTimeout(clearFooterFade, 300);
+	};
+	window.addEventListener('scroll', fadeFooter, { passive: true });
+	window.addEventListener('scrollend', function () {
+		window.clearTimeout(scrollTimer);
+		clearFooterFade();
+	}, { passive: true });
+}
 
 function updateFixedHeaderOffset(extraHeight) {
 	var navbar = document.querySelector('.site-navbar.fixed-top');

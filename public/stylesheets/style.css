@@ -530,9 +530,16 @@ body.reader-infinite-nav-faded .mobile-bottom-nav {
 	transform: translateX(-50%) translateY(0.5rem);
 }
 
+body.sticky-footer-scroll-faded .mobile-bottom-nav {
+	opacity: 0;
+	pointer-events: none;
+	transform: translateX(-50%) translateY(0.5rem);
+}
+
 @media (max-width: 767.98px) {
 	body.quran-passage-nav-faded .mobile-bottom-nav,
-	body.reader-infinite-nav-faded .mobile-bottom-nav {
+	body.reader-infinite-nav-faded .mobile-bottom-nav,
+	body.sticky-footer-scroll-faded .mobile-bottom-nav {
 		transform: translateY(0.5rem);
 	}
 }
