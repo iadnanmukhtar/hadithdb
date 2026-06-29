@@ -82,6 +82,11 @@
 								<button type="button" class="btn btn-sm btn-outline-primary quran-subsection-promote" title="Make this subsection and the remaining ayat a new section">
 									<span class="bi bi-arrow-up-square"></span>
 								</button>
+								<% if (heading.hasNextQuranSubsection) { %>
+									<button type="button" class="btn btn-sm btn-outline-primary quran-subsection-merge" title="Merge with next subsection and retitle">
+										<span class="bi bi-intersect"></span>
+									</button>
+								<% } %>
 								<button type="button" class="btn btn-sm btn-outline-danger quran-subsection-delete" title="Remove subsection division">
 									<span class="bi bi-x-circle"></span>
 								</button>

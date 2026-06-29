@@ -12,6 +12,10 @@
       return a._startAyah - b._startAyah;
     return (a.h3 || 0) - (b.h3 || 0);
   });
+  quranSubsections.forEach(function (heading, index) {
+    var next = quranSubsections[index + 1];
+    heading.hasNextQuranSubsection = !!next && Number(next.h2) === Number(heading.h2);
+  });
 
   function ayahNumber(item) {
     var num = (item.en && item.en.num) || item.num || '';

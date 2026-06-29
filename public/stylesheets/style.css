@@ -2945,6 +2945,11 @@ del em strong {
 	min-width: 0;
 }
 
+.quran-passage-audio-control:not(.is-playing) .quran-passage-audio-pause,
+.quran-passage-audio-control:not(.is-playing) .quran-passage-audio-stop {
+	display: none;
+}
+
 .quran-mobile-audio-toolbar {
 	align-items: center;
 	display: flex;
@@ -3383,7 +3388,10 @@ del em strong {
 }
 
 .quran-subheading-controls input {
-	width: 4.75rem;
+	min-width: 0;
+	padding-inline: .25rem;
+	text-align: center;
+	width: 3.25rem;
 }
 
 .quran-footnotes {

@@ -664,6 +664,7 @@
       const endInput = container.querySelector('.quran-subsection-range-end');
       const saveButton = container.querySelector('.quran-subsection-range-save');
       const promoteButton = container.querySelector('.quran-subsection-promote');
+      const mergeButton = container.querySelector('.quran-subsection-merge');
       const deleteButton = container.querySelector('.quran-subsection-delete');
       const subsectionId = container.dataset.subsectionId;
 
@@ -760,10 +761,34 @@
         }
       };
 
+      const mergeSubsection = async () => {
+        if (!window.confirm('Merge this subsection with the next subsection and generate a new title?'))
+          return;
+        setButtonLoading(mergeButton, '', true);
+        try {
+          const res = await quranEditorPost(`/update/${subsectionId}/toc.subsectionMerge`, '1');
+          const body = await quranEditorJson(res);
+          if (!res.ok || body.code !== 200)
+            throw new Error(body.message || res.statusText);
+          if (window.toastr)
+            toastr.success(body.value.title_en || body.value.path, 'Quran subsections merged');
+          refreshAfterQuranHeadingUpdate(`${location.pathname}#S${body.value.h2}-${body.value.h3}`);
+        } catch (err) {
+          if (window.toastr)
+            toastr.error(err.message, 'Quran subsection merge failed');
+          else
+            alert(err.message);
+        } finally {
+          setButtonLoading(mergeButton, '', false);
+        }
+      };
+
       startInput.addEventListener('input', updateValid);
       endInput.addEventListener('input', updateValid);
       saveButton.addEventListener('click', saveRange);
       promoteButton.addEventListener('click', promoteSubsection);
+      if (mergeButton)
+        mergeButton.addEventListener('click', mergeSubsection);
       deleteButton.addEventListener('click', deleteSubsection);
       updateValid();
     });

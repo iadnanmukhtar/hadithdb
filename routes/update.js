@@ -274,6 +274,10 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         result = await promoteQuranSubsection(ids[0], userId);
         status.value = result.value;
         shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'subsectionMerge') {
+        result = await mergeQuranSubsectionWithNext(ids[0], userId);
+        status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
       } else if (col === 'sectionDelete') {
         result = await deleteQuranSection(ids[0]);
         status.value = result.value;
@@ -283,7 +287,9 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       }
       if (col === 'title_en' && Utils.isFalsey(status.value)) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
-        if (Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
+        if (isQuranThemeHeading(heading)) {
+          status.value = await generateAndSaveQuranHeadingTitle(heading, col, userId);
+        } else if (col === 'title_en' && Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
           heading.title_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${heading.title}`);
           heading.title_en = '[AI] ' + Utils.trimToEmpty(heading.title_en);
           heading.title_en = Utils.replacePBUH(heading.title_en);
@@ -888,6 +894,17 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
   var sourceEnd = splitAyah - 1;
   var sourceCount = sourceEnd - sectionStart + 1;
   var promotedCount = sectionEnd - splitAyah + 1;
+  var promotedTitleEn = await generateQuranHeadingTitle({
+    ...subsection,
+    level: 2,
+    h2: insertH2,
+    h3: null,
+    start: `${surah}:${splitAyah}`,
+    end: `${surah}:${sectionEnd}`,
+    count: promotedCount,
+    title_en: subsection.title_en || subsection.h3_title_en,
+    title: subsection.title || subsection.h3_title
+  }, 'title_en');
   var insertOrdinal = await quranSectionInsertOrdinal(section, 'after');
   var movedSubsections = await global.query(`SELECT id
     FROM toc
@@ -907,7 +924,7 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
   var insertResult = await global.query(`INSERT INTO toc
     (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, end, start0, end0, count, lastmod_user, lastfixed)
     VALUES
-    (${insertOrdinal}, ${bookId}, 2, ${surah}, ${insertH2}, NULL, ${sql(subsection.title_en || 'Section')}, ${sql(subsection.title)}, ${sql(subsection.intro_en)}, ${sql(subsection.intro)}, ${sql(`${surah}:${splitAyah}`)}, ${sql(`${surah}:${sectionEnd}`)}, ${quranNum0(surah, splitAyah)}, ${quranNum0(surah, sectionEnd)}, ${promotedCount}, '${userId}', CURRENT_TIMESTAMP())`);
+    (${insertOrdinal}, ${bookId}, 2, ${surah}, ${insertH2}, NULL, ${sql(promotedTitleEn)}, NULL, ${sql(subsection.intro_en)}, ${sql(subsection.intro)}, ${sql(`${surah}:${splitAyah}`)}, ${sql(`${surah}:${sectionEnd}`)}, ${quranNum0(surah, splitAyah)}, ${quranNum0(surah, sectionEnd)}, ${promotedCount}, '${userId}', CURRENT_TIMESTAMP())`);
   var movedSubsectionIds = movedSubsections
     .map(row => Number(row.id))
     .filter(id => Number.isInteger(id));
@@ -941,7 +958,79 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
       start: `${surah}:${splitAyah}`,
       startAyah: splitAyah,
       endAyah: sectionEnd,
-      count: promotedCount
+      count: promotedCount,
+      title_en: promotedTitleEn
+    }
+  };
+}
+
+async function mergeQuranSubsectionWithNext(subsectionHeadingId, userId) {
+  subsectionHeadingId = parseInt(subsectionHeadingId, 10);
+  if (!Number.isInteger(subsectionHeadingId) || subsectionHeadingId <= 0)
+    throw createError(400, 'Invalid subsection heading id');
+  var subsection = (await global.query(`SELECT * FROM v_toc WHERE hId=${subsectionHeadingId} LIMIT 1`))[0];
+  if (!subsection)
+    throw createError(404, 'Subsection heading not found');
+  if (subsection.book_alias !== 'quran')
+    throw createError(400, 'Subsections can only be merged here for Quran headings');
+  if (parseInt(subsection.level, 10) !== 3)
+    throw createError(400, 'Only level 3 subsection headings can be merged here');
+  var bookId = parseInt(subsection.book_id, 10);
+  var surah = Number(subsection.h1);
+  var h2 = Number(subsection.h2);
+  var startAyah = quranAyahFromHeadingStart(subsection.start || subsection.h3_start);
+  if (!Number.isInteger(startAyah))
+    throw createError(400, 'The subsection range is incomplete');
+  var next = (await global.query(`SELECT id AS hId, id AS tId, id, bookId AS book_id, level, h1, h2, h3, title_en, title, intro_en, intro, start, count
+    FROM toc
+    WHERE bookId=${bookId} AND level=3 AND h1=${surah} AND h2=${h2}
+      AND CAST(SUBSTRING_INDEX(start, ':', -1) AS UNSIGNED)>${startAyah}
+    ORDER BY CAST(SUBSTRING_INDEX(start, ':', -1) AS UNSIGNED), h3
+    LIMIT 1`))[0];
+  if (!next)
+    throw createError(400, 'No following subsection is available to merge');
+  var nextEndAyah = quranHeadingEndAyah(next);
+  if (!Number.isInteger(startAyah) || !Number.isInteger(nextEndAyah) || nextEndAyah < startAyah)
+    throw createError(400, 'The subsection ranges are incomplete');
+  var count = nextEndAyah - startAyah + 1;
+  var mergedHeading = {
+    ...subsection,
+    start: `${surah}:${startAyah}`,
+    end: `${surah}:${nextEndAyah}`,
+    start0: quranNum0(surah, startAyah),
+    end0: quranNum0(surah, nextEndAyah),
+    count: count,
+    merge_source_title_en: subsection.title_en || subsection.h3_title_en,
+    merge_source_title: subsection.title || subsection.h3_title,
+    merge_next_title_en: next.title_en,
+    merge_next_title: next.title
+  };
+  var title_en = await generateQuranHeadingTitle(mergedHeading, 'title_en');
+  var updateResult = await global.query(`UPDATE toc
+    SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(),
+      title_en=${sql(title_en)}, title=NULL,
+      end=${sql(`${surah}:${nextEndAyah}`)}, end0=${quranNum0(surah, nextEndAyah)}, count=${count}
+    WHERE id=${subsection.tId || subsection.id}`);
+  await global.query(`DELETE FROM toc WHERE id=${next.tId || next.id}`);
+  await Index.delete(Heading.INDEX, next.hId || next.tId || next.id);
+  await renumberQuranSubsections(bookId, surah, h2);
+  await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
+  await invalidateQuranSurahCaches(surah);
+  return {
+    message: updateResult.message,
+    value: {
+      id: subsection.tId || subsection.id,
+      h1: surah,
+      h2: h2,
+      h3: Number(subsection.h3),
+      path: `quran/${surah}/${h2}/${Number(subsection.h3)}`,
+      start: `${surah}:${startAyah}`,
+      startAyah: startAyah,
+      endAyah: nextEndAyah,
+      count: count,
+      title_en: title_en,
+      title: null,
+      mergedId: next.tId || next.id
     }
   };
 }
@@ -1091,6 +1180,119 @@ function validateAyahRange(startAyah, endAyah, surah) {
 
 function quranNum0(surah, ayah) {
   return Number(surah) + (Number(ayah) / 1000);
+}
+
+function quranHeadingEndAyah(heading) {
+  var explicitEnd = quranAyahFromHeadingStart(heading.end || heading.h3_end || heading.h2_end);
+  if (Number.isInteger(explicitEnd))
+    return explicitEnd;
+  var startAyah = quranAyahFromHeadingStart(heading.start || heading.h3_start || heading.h2_start);
+  var count = parseInt(heading.count || heading.h3_count || heading.h2_count, 10);
+  if (Number.isInteger(startAyah) && Number.isInteger(count) && count > 0)
+    return startAyah + count - 1;
+  return NaN;
+}
+
+function isQuranThemeHeading(heading) {
+  return heading && heading.book_alias === 'quran' && [2, 3].includes(parseInt(heading.level, 10));
+}
+
+async function generateAndSaveQuranHeadingTitle(heading, col, userId) {
+  if (!isQuranThemeHeading(heading))
+    return '';
+  var title = await generateQuranHeadingTitle(heading, col);
+  await global.query(`UPDATE toc
+    SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(title)}
+    WHERE id=${heading.tId || heading.id}`);
+  return title;
+}
+
+async function generateQuranHeadingTitle(heading, col) {
+  if (col !== 'title_en')
+    return '';
+  var title = Utils.trimToEmpty(await Utils.openai(await buildQuranHeadingTitlePrompt(heading, col)));
+  title = title
+    .replace(/^["'“”‘’]+|["'“”‘’]+$/g, '')
+    .replace(/\s*[.۔]\s*$/g, '')
+    .trim();
+  title = Utils.replacePBUH(title);
+  return title ? `[AI] ${title.replace(/^\[AI\]\s*/i, '')}` : '[AI] Section';
+}
+
+async function buildQuranHeadingTitlePrompt(heading, col) {
+  var surah = Number(heading.h1);
+  var startAyah = quranAyahFromHeadingStart(heading.start || heading.h3_start || heading.h2_start);
+  var endAyah = quranHeadingEndAyah(heading);
+  var ayahRows = [];
+  if (Number.isInteger(startAyah) && Number.isInteger(endAyah)) {
+    ayahRows = await global.query(`SELECT num, body_en, body
+      FROM hadiths
+      WHERE bookId=${parseInt(heading.book_id, 10)} AND h1=${surah}
+        AND numInChapter BETWEEN ${startAyah} AND ${endAyah}
+      ORDER BY numInChapter
+      LIMIT 40`);
+  }
+  var parent = parseInt(heading.level, 10) === 3
+    ? (await global.query(`SELECT h2_title_en AS title_en, h2_title AS title
+      FROM v_toc
+      WHERE book_id=${parseInt(heading.book_id, 10)} AND level=2 AND h1=${surah} AND h2=${Number(heading.h2)}
+      LIMIT 1`))[0]
+    : null;
+  var headingLevel = parseInt(heading.level, 10);
+  var h2StyleWhere = Number.isFinite(Number(heading.h2)) ? ` AND h2<${Number(heading.h2)}` : '';
+  var siblingRows = headingLevel === 3
+    ? await global.query(`SELECT h3, h3_title_en AS title_en, h3_title AS title, h3_start AS start, h3_count AS count
+      FROM v_toc
+      WHERE book_id=${parseInt(heading.book_id, 10)} AND level=3 AND h1=${surah} AND h2=${Number(heading.h2)}
+      ORDER BY CAST(SUBSTRING_INDEX(h3_start, ':', -1) AS UNSIGNED), h3
+      LIMIT 30`)
+    : await global.query(`SELECT h2, h2_title_en AS title_en, h2_title AS title, h2_start AS start, h2_count AS count
+      FROM v_toc
+      WHERE book_id=${parseInt(heading.book_id, 10)} AND level=2 AND h1=${surah}${h2StyleWhere}
+      ORDER BY h2 DESC
+      LIMIT 12`);
+  var language = 'English';
+  var style = 'Return only one concise English title in sentence case. Do not add punctuation.';
+  var lines = [
+    `Create a ${language} Quran ${headingLevel === 3 ? 'h3 subsection' : 'h2 section'} title.`,
+    style,
+    'Base the title primarily on the actual ayat text in the target range.',
+    headingLevel === 3
+      ? 'Use the parent and neighboring headings only to match tone, scope, and naming style.'
+      : 'Use the previous h2 headings only to match tone, scope, and naming style.',
+    'Do not simply copy, combine, or paraphrase old subsection titles unless that is what the ayat themselves support.',
+    '',
+    `Surah: ${surah}`,
+    `Range: ${surah}:${startAyah}-${endAyah}`,
+    '',
+    'Ayat text to title:',
+  ];
+  ayahRows.forEach(row => {
+    var text = row.body_en || row.body;
+    lines.push(`${row.num}: ${Utils.trimToEmpty(text).replace(/\s+/g, ' ')}`);
+  });
+  lines.push(
+    '',
+    'Heading style context:',
+    `Current title English: ${Utils.trimToEmpty(heading.title_en)}`,
+    `Current title Arabic: ${Utils.trimToEmpty(heading.title)}`
+  );
+  if (heading.merge_source_title_en || heading.merge_next_title_en || heading.merge_source_title || heading.merge_next_title) {
+    lines.push(
+      `Merged title 1 English: ${Utils.trimToEmpty(heading.merge_source_title_en)}`,
+      `Merged title 1 Arabic: ${Utils.trimToEmpty(heading.merge_source_title)}`,
+      `Merged title 2 English: ${Utils.trimToEmpty(heading.merge_next_title_en)}`,
+      `Merged title 2 Arabic: ${Utils.trimToEmpty(heading.merge_next_title)}`
+    );
+  }
+  if (parent)
+    lines.push(`Parent h2 English: ${Utils.trimToEmpty(parent.title_en)}`, `Parent h2 Arabic: ${Utils.trimToEmpty(parent.title)}`);
+  lines.push('', headingLevel === 3 ? 'Neighboring themes:' : 'Previous h2 heading style:');
+  siblingRows.forEach(row => {
+    var number = row.h3 || row.h2 || '';
+    lines.push(`- ${number}: ${Utils.trimToEmpty(row.title_en)} / ${Utils.trimToEmpty(row.title)} (${row.start || ''}, ${row.count || ''} ayahs)`);
+  });
+  return lines.join('\n');
 }
 
 async function relinkQuranAyahRangeToSection(bookId, surah, tocId, h2, startAyah, endAyah) {
