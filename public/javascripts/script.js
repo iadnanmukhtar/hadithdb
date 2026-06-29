@@ -2935,6 +2935,9 @@ function applyQuranPassageDisplay(state) {
 	};
 	if (!state.translation && !state.arabic)
 		state.translation = true;
+	document.documentElement.classList.toggle('quran-hide-arabic-audio', !state.arabic);
+	if (!state.arabic && typeof quranPassageAudioState !== 'undefined' && quranPassageAudioState.control)
+		stopQuranPassageAudio(quranPassageAudioState.control);
 	document.querySelectorAll('.quran-passage-section').forEach(function (section) {
 		section.classList.toggle('quran-hide-translation', !state.translation);
 		section.classList.toggle('quran-hide-arabic', !state.arabic);
@@ -2948,6 +2951,11 @@ function applyQuranPassageDisplay(state) {
 			? (target === 'arabic' ? 'Hide Quran Arabic' : 'Hide translation')
 			: (target === 'arabic' ? 'Show Quran Arabic' : 'Show translation'));
 		button.setAttribute('aria-label', button.getAttribute('title'));
+		var icon = button.querySelector('.bi');
+		if (icon) {
+			icon.classList.toggle('bi-eye', active);
+			icon.classList.toggle('bi-eye-slash', !active);
+		}
 	});
 	return state;
 }

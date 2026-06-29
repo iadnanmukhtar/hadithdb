@@ -84,6 +84,9 @@
 
 <% if (passage.length > 0 && quranSelectionSurah) { %>
 <aside class="quran-ayah-select-toolbar mb-2<%= quranHasSelectedAyahHero ? ' has-selected-ayah-hero' : '' %>" data-surah="<%= quranSelectionSurah %>">
+  <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-display-btn quran-passage-view-btn quran-passage-view-btn-translation is-active" data-quran-passage-display-toggle="translation" aria-pressed="true" title="Hide translation" aria-label="Hide translation">
+    <span class="bi bi-eye" aria-hidden="true"></span>
+  </button>
   <label class="quran-passage-translation-control mb-0">
     <span class="visually-hidden">Translation</span>
     <span class="bi bi-translate quran-passage-translation-icon" aria-hidden="true"></span>
@@ -91,14 +94,6 @@
       <option value="">Haleem</option>
     </select>
   </label>
-  <div class="btn-group btn-group-sm quran-passage-display-toggle" role="group" aria-label="Quran passage display">
-    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-display-btn is-active" data-quran-passage-display-toggle="translation" aria-pressed="true" title="Show translation" aria-label="Show translation">
-      <span class="bi bi-translate"></span>
-    </button>
-    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-display-btn is-active" data-quran-passage-display-toggle="arabic" aria-pressed="true" title="Show Quran Arabic" aria-label="Show Quran Arabic">
-      <span class="bi bi-journal-text"></span>
-    </button>
-  </div>
   <% if (passage.length > 1) { %>
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-toggle"<% if (quranHasSelectedAyahHero) { %> hidden<% } %>>
     <span class="bi bi-check2-square"></span> Select ayat
@@ -117,9 +112,14 @@
   <% } %>
   <span class="quran-ayah-select-live small text-muted"></span>
   <% } %>
+  <span class="quran-passage-toolbar-end">
   <% if (quranInlineAudioGroup) { %>
-  <%- include('quran_audio_control.ejs', { audioGroup: quranInlineAudioGroup, quranSelectionSurah: quranSelectionSurah, audioControlClass: 'ms-md-auto d-none d-md-inline-flex' }); %>
+  <%- include('quran_audio_control.ejs', { audioGroup: quranInlineAudioGroup, quranSelectionSurah: quranSelectionSurah, audioControlClass: 'd-none d-md-inline-flex' }); %>
   <% } %>
+    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-display-btn quran-passage-view-btn quran-passage-view-btn-arabic is-active" dir="rtl" data-quran-passage-display-toggle="arabic" aria-pressed="true" title="Hide Quran Arabic" aria-label="Hide Quran Arabic">
+      <span class="bi bi-eye" aria-hidden="true"></span>
+    </button>
+  </span>
 </aside>
 <% } %>
 

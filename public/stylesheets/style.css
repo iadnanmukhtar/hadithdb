@@ -2378,6 +2378,7 @@ del em strong {
 }
 
 .quran-passage-section.quran-hide-translation .h:lang(en),
+.quran-passage-section.quran-hide-translation .quran-preferred-translation-footnotes,
 .quran-passage-section.quran-hide-arabic .h:lang(ar) {
 	display: none;
 }
@@ -2927,6 +2928,14 @@ del em strong {
 	gap: .35rem;
 }
 
+.quran-passage-toolbar-end {
+	align-items: center;
+	display: inline-flex;
+	flex: 0 0 auto;
+	gap: .35rem;
+	margin-left: auto;
+}
+
 .quran-ayah-select-btn {
 	font-size: .75rem;
 	line-height: 1.1;
@@ -2943,6 +2952,12 @@ del em strong {
 	flex: 0 1 auto;
 	gap: .3rem;
 	min-width: 0;
+}
+
+.quran-hide-arabic-audio .quran-heading-audio-toolbar,
+.quran-hide-arabic-audio .quran-mobile-audio-toolbar,
+.quran-hide-arabic-audio [data-quran-passage-audio="1"] {
+	display: none !important;
 }
 
 .quran-passage-audio-control:not(.is-playing) .quran-passage-audio-pause,
@@ -2981,6 +2996,12 @@ del em strong {
 
 .quran-passage-display-btn {
 	min-width: 2rem;
+}
+
+.quran-passage-view-btn {
+	align-items: center;
+	display: inline-flex;
+	justify-content: center;
 }
 
 .quran-passage-display-btn.is-active {
