@@ -50,6 +50,7 @@
 	    var quranSectionHref = quranSection && quranSection.path ? utils.quranUrl(req, `/${quranSection.path}`) : '';
 	    var quranChapterTitleEn = (quranChapter && quranChapter.title_en) || `Surat ${surah.name_en}`;
 	    var quranChapterTitleAr = (quranChapter && quranChapter.title) || `سورة ${surah.name_ar}`;
+	    var quranChapterSurahNameGlyph = !site.editMode ? utils.quranSurahNameLigature(surah.num) : '';
 	    var quranAyahModalIndex = ayahs.findIndex(function (item) {
 	      return Number(item.ayah) === Number(ayah);
 	    });
@@ -79,7 +80,7 @@
 	        </h2>
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="<%= quranChapterHref %>">
 	          <%= arabic.toArabicDigits(surah.num + '') %>۔
-	          <span<%- quranChapter ? ` class="_e quran-surah-name" data-id="${quranChapter.id}" data-prop="toc.title"` : ' class="quran-surah-name"' %>><%- quranChapterTitleAr %></span>
+	          <span<%- quranChapter ? ` class="_e ${quranChapterSurahNameGlyph ? 'quran-surah-name-font' : 'quran-surah-name'}" data-id="${quranChapter.id}" data-prop="toc.title"` : ` class="${quranChapterSurahNameGlyph ? 'quran-surah-name-font' : 'quran-surah-name'}"` %><% if (quranChapterSurahNameGlyph) { %> title="<%= quranChapterTitleAr %>" aria-label="<%= quranChapterTitleAr %>"<% } %>><%- quranChapterSurahNameGlyph || quranChapterTitleAr %></span>
 	        </a></h2>
 	      </heading>
 

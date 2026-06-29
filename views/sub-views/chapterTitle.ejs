@@ -9,6 +9,7 @@
     var chapterBreadcrumbLabelAr = isQuranChapter ? 'السورة' : 'كتاب';
     if (chapter.h1 != Math.floor(chapter.h1))
       chapter.h1 = Number(chapter.h1).toFixed(2);
+    var quranSurahNameGlyph = isQuranChapter && !site.editMode ? utils.quranSurahNameLigature(chapter.h1) : '';
 %>
 
 <%# Chapter Title %>
@@ -29,8 +30,8 @@
   
   <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="<%= utils.urlFor(req, `/${chapter.path}`) %>">
     <%- arabic.toArabicDigits(chapter.h1 + '') %>۔
-    <span class="_e<%= isQuranChapter ? ' quran-surah-name' : '' %>" data-id="<%= chapter.id %>" data-prop="toc.title">
-      <%- chapter.title %>
+    <span class="_e<%= quranSurahNameGlyph ? ' quran-surah-name-font' : (isQuranChapter ? ' quran-surah-name' : '') %>" data-id="<%= chapter.id %>" data-prop="toc.title"<% if (quranSurahNameGlyph) { %> title="<%= chapter.title %>" aria-label="<%= chapter.title %>"<% } %>>
+      <%- quranSurahNameGlyph || chapter.title %>
     </span>
     <%- (headingPage.hasNext || headingPage.number && headingPage.number > 1) ? `ص ${arabic.toArabicDigits(headingPage.number+'')}` : `` %>
   </a></h2>

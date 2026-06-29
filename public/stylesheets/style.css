@@ -40,6 +40,12 @@
 	font-display: swap;
 }
 
+@font-face {
+	font-family: SurahNameV2;
+	src: url('/fonts/surah-name-v2.woff2') format('woff2');
+	font-display: swap;
+}
+
 :root {
 	--c-ghostwhite: #f8f8f8;
 	--c-ghostwhite-86: rgba(248, 248, 248, 0.86);
@@ -3188,6 +3194,26 @@ del em strong {
 	vertical-align: baseline;
 }
 
+.quran-surah-name-font,
+.quran-surah-name-font:lang(ar),
+:lang(ar) .quran-surah-name-font {
+	direction: ltr;
+	display: inline-block;
+	font-family: SurahNameV2, Serif;
+	font-feature-settings: "liga" 1, "clig" 1;
+	font-variant-ligatures: common-ligatures contextual;
+	letter-spacing: 0;
+	line-height: 1;
+	text-transform: none;
+	unicode-bidi: isolate;
+	vertical-align: middle;
+}
+
+.chapter heading.major h2:lang(ar) .quran-surah-name-font {
+	font-size: 1.625em;
+	line-height: 0.75;
+}
+
 .quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs,
 .quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs p,
 .quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs .quran-corpus-word,
@@ -5781,7 +5807,7 @@ a.cmd-btn:hover {
 .search-autocomplete-quran.search-autocomplete-ar,
 .search-autocomplete-quran.search-autocomplete-ar .search-autocomplete-match,
 .search-autocomplete-quran .search-autocomplete-meta-ar {
-	font-family: QuranV1, Serif;
+	font-family: Kitab, Serif;
 }
 
 .search-autocomplete-ar .search-autocomplete-source {

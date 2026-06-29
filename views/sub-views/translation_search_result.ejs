@@ -28,7 +28,7 @@
 			</div>
 		</section>
 		<aside class="title quran-search-title">
-			§ <% if (translation.translation_surah_name_ar) { %>في <a href="<%= utils.quranUrl(req, `/quran/${translation.surah}`) %>" class="quran-surah-name"><%- translation.translation_surah_name_ar %></a><% } %>
+			§ <% if (translation.translation_surah_name_ar) { %>في <a href="<%= utils.quranUrl(req, `/quran/${translation.surah}`) %>"><%- translation.translation_surah_name_ar %></a><% } %>
 		</aside>
 	</section>
 </article>

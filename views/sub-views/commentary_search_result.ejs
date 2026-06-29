@@ -38,7 +38,7 @@
 			<aside class="title">
 				§ <a href="<%= utils.quranUrl(req, commentary.commentary_section_url) %>"><%- utils.truncate(commentary.h2_title, 30, true) || 'مقطع' %></a>
 				<% if (commentary.commentary_show_surah_ar) { %>
-					في <a href="<%= utils.quranUrl(req, commentary.commentary_surah_url || commentary.commentary_section_url) %>" class="quran-surah-name"><%- commentary.commentary_surah_name_ar %></a>
+					في <a href="<%= utils.quranUrl(req, commentary.commentary_surah_url || commentary.commentary_section_url) %>"><%- commentary.commentary_surah_name_ar %></a>
 				<% } %>
 			</aside>
 		</section>
@@ -50,7 +50,7 @@
 		</section>
 		<section class="col-md-6 col-sm-12 h" lang="ar" dir="rtl">
 			<aside class="title">
-				§ <% if (commentary.commentary_show_surah_ar) { %>في <a href="<%= utils.quranUrl(req, commentary.commentary_surah_url || commentary.url) %>" class="quran-surah-name"><%- commentary.commentary_surah_name_ar %></a><% } %>
+				§ <% if (commentary.commentary_show_surah_ar) { %>في <a href="<%= utils.quranUrl(req, commentary.commentary_surah_url || commentary.url) %>"><%- commentary.commentary_surah_name_ar %></a><% } %>
 			</aside>
 		</section>
 	<% } %>
