@@ -293,6 +293,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use(cookieParser());
   app.use(function exposeFeatureFlags(req, res, next) {
     res.locals.paymentFeatureEnabled = PaymentConfig.isEnabled();
+    res.locals.tafsirTranslationFeatureEnabled = PaymentConfig.contentTranslationEnabledForItemType('tafsir');
     res.locals.contentTranslationEstimateFields = ContentTranslations.estimateFields;
     next();
   });

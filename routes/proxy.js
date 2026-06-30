@@ -13,6 +13,7 @@ const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
 const ContentTranslations = require('../lib/ContentTranslations');
+const PaymentConfig = require('../lib/PaymentConfig');
 
 const router = express.Router();
 const GENERIC_PROXY_ALLOWED_HOSTS = new Set(
@@ -166,17 +167,20 @@ router.get('/tafsir/local', async function (req, res) {
     res.status(404).json({ error: 'No local tafsir text is available for this ayah.' });
     return;
   }
+  const tafsirTranslationsEnabled = PaymentConfig.contentTranslationEnabledForItemType('tafsir');
   const entries = rows.map(row => {
-    const translationEstimate = localCommentaryTranslationEstimate(row);
+    const translationEstimate = tafsirTranslationsEnabled ? localCommentaryTranslationEstimate(row) : null;
     const html = renderLocalCommentary(row, editMode, lang, src);
     return {
       id: row.id,
       ayahs_start: row.ayahFrom,
       count: row.ayahTo - row.ayahFrom,
       bilingual: commentaryRowHasBothLanguages(row),
-      translation_points: translationEstimate.points,
-      translation_word_count: translationEstimate.wordCount,
-      translation_existing: localCommentaryTranslationExisting(row, lang),
+      ...(translationEstimate ? {
+        translation_points: translationEstimate.points,
+        translation_word_count: translationEstimate.wordCount,
+        translation_existing: localCommentaryTranslationExisting(row, lang)
+      } : {}),
       html: html
     };
   }).filter(entry => !lang || entry.html || Number.isInteger(Number(entry.ayahs_start)));

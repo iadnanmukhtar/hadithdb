@@ -1099,6 +1099,7 @@ function initQuranTafsirTabs(root) {
 			var remoteTafsirsUnavailable = false;
 			var preferredTafsirAlias = container.attr('data-selected-tafsir') || '';
 			var allTafsirBookAliases = { en: [], ar: [] };
+			var englishLocalTafsirAliasBySlug = {};
 			var tafsirUrlSlug = function (alias) {
 				return (alias || '').toString().replace(/^(?:(?:en|ar)-)?(?:tafsir-)?/, '');
 			};
@@ -1721,6 +1722,33 @@ function initQuranTafsirTabs(root) {
 				payload.html = stripTafsirPageMarkers(payload.html);
 			return payload;
 		};
+		var localTafsirPayloadRangeKey = function (payload) {
+			if (!payload)
+				return '';
+			return `${Number(payload.ayahs_start) || 0}:${Number(payload.count) || 0}`;
+		};
+		var mergeLocalEnglishTranslationPayloads = function (payloads, englishPayloads) {
+			if (!Array.isArray(payloads) || !Array.isArray(englishPayloads) || englishPayloads.length < 1)
+				return payloads;
+			var englishByRange = new Map();
+			englishPayloads.forEach(function (payload) {
+				if (payload && payload.html)
+					englishByRange.set(localTafsirPayloadRangeKey(payload), payload);
+			});
+			return payloads.map(function (payload) {
+				if (!payload || payload.bilingual || !payload.html)
+					return payload;
+				var english = englishByRange.get(localTafsirPayloadRangeKey(payload));
+				if (!english || !english.html || english.html === payload.html)
+					return payload;
+				return Object.assign({}, payload, {
+					bilingual: true,
+					html: `<div class="row quran-tafsir-local-pair"><div class="col-md-6 col-sm-12">${english.html}</div><div class="col-md-6 col-sm-12">${payload.html}</div></div>`,
+					translation_existing: true,
+					content_translation_language: 'en'
+				});
+			});
+		};
 
 		var loadPanel = async function (panel) {
 			var src = panel.attr('data-tafsir-src');
@@ -1738,8 +1766,9 @@ function initQuranTafsirTabs(root) {
 			var text = panel.find('.quran-tafsir-text');
 			status.text('Loading tafsir...');
 			try {
+				var panelLanguage = panel.attr('data-tafsir-lang') || 'en';
 				var payloads = source === 'local'
-					? (await fetchLocalPayloads(src, panel.attr('data-tafsir-lang'))).map(function (payload) {
+					? (await fetchLocalPayloads(src, panelLanguage)).map(function (payload) {
 						return {
 							ayah: payload.ayahs_start,
 							payload: payload
@@ -1748,9 +1777,22 @@ function initQuranTafsirTabs(root) {
 					: await Promise.all(ayahs.map(async function (ayah) {
 						return {
 							ayah: ayah,
-							payload: cleanTafsirPayload(await fetchPayload(src, source, ayah, panel.attr('data-tafsir-lang')))
+							payload: cleanTafsirPayload(await fetchPayload(src, source, ayah, panelLanguage))
 						};
 					}));
+				if (source === 'local' && panelLanguage === 'ar') {
+					var englishTranslationAlias = englishLocalTafsirAliasBySlug[tafsirUrlSlug(src)] || '';
+					if (englishTranslationAlias && englishTranslationAlias !== src) {
+						var englishPayloads = await fetchLocalPayloads(englishTranslationAlias, 'en');
+						var mergedPayloads = mergeLocalEnglishTranslationPayloads(
+							payloads.map(function (entry) { return entry.payload; }),
+							englishPayloads
+						);
+						payloads = payloads.map(function (entry, index) {
+							return Object.assign({}, entry, { payload: mergedPayloads[index] || entry.payload });
+						});
+					}
+				}
 				payloads.forEach(function (entry) {
 					if (entry && entry.payload)
 						cleanTafsirPayload(entry.payload);
@@ -1788,6 +1830,7 @@ function initQuranTafsirTabs(root) {
 					var tafsirTranslationWordCount = Math.max(0, Math.floor(Number(entry.payload.translation_word_count) || 0));
 					var tafsirTranslationExisting = entry.payload.translation_existing === true || entry.payload.translation_existing === 'true';
 					var tafsirTranslationItemId = (entry.payload.id || '').toString();
+					var tafsirContentLanguage = entry.payload.content_translation_language || panel.attr('data-tafsir-lang') || 'en';
 					var hasTafsirTranslationItem = source === 'local' && /^\d+$/.test(tafsirTranslationItemId);
 					if (hasTafsirTranslationItem) {
 						entryElement.attr({
@@ -1833,12 +1876,12 @@ function initQuranTafsirTabs(root) {
 							'data-content-translation-field': 'body',
 							'data-content-translation-item-type': 'tafsir',
 							'data-content-translation-item-id': tafsirTranslationItemId,
-							'data-content-translation-language': panel.attr('data-tafsir-lang') || 'en',
+							'data-content-translation-language': tafsirContentLanguage,
 							'data-content-translation-existing': tafsirTranslationExisting ? 'true' : 'false',
 							'data-content-translation-points': tafsirTranslationPoints,
 							'data-content-translation-word-count': tafsirTranslationWordCount
 						});
-						appendContentTranslationControl(summary, generatedBody, 'tafsir', tafsirTranslationItemId, panel.attr('data-tafsir-lang') || 'en');
+						appendContentTranslationControl(summary, generatedBody, 'tafsir', tafsirTranslationItemId, tafsirContentLanguage);
 						appendedContentTranslationControl = true;
 					}
 				});
@@ -1965,9 +2008,12 @@ function initQuranTafsirTabs(root) {
 			var disabledAliases = new Set(Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : []);
 			var tafsirOrder = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
 			allTafsirBookAliases = { en: [], ar: [] };
+			englishLocalTafsirAliasBySlug = {};
 			(Array.isArray(books) ? books : []).forEach(function (book) {
 				if (book && (book.lang === 'en' || book.lang === 'ar') && book.alias)
 					allTafsirBookAliases[book.lang].push(book.alias);
+				if (book && book.lang === 'en' && book.source === 'local' && book.alias)
+					englishLocalTafsirAliasBySlug[book.slug || tafsirUrlSlug(book.alias)] = book.alias;
 			});
 			var visibleBooks = (Array.isArray(books) ? books : []).filter(function (book) {
 				return !disabledAliases.has(book.alias);
@@ -7677,6 +7723,15 @@ function paymentFeatureEnabled() {
 	return window.HADITH_PAYMENT_FEATURE_ENABLED === true;
 }
 
+function contentTranslationFeatureEnabled(itemType) {
+	if (!paymentFeatureEnabled())
+		return false;
+	itemType = (itemType || '').toString().trim().toLowerCase();
+	if (itemType === 'tafsir')
+		return window.HADITH_TAFSIR_TRANSLATION_ENABLED !== false;
+	return true;
+}
+
 function contentTranslationLanguageSort(a, b) {
 	var aLabel = (a && (a.label || a.code) || '').toString();
 	var bLabel = (b && (b.label || b.code) || '').toString();
@@ -7832,7 +7887,7 @@ function preserveGeneratedShareDefaults(modal) {
 }
 
 async function contentTranslationRequest(itemType, itemId, language, mode, estimateOnly, extra) {
-	if (!paymentFeatureEnabled())
+	if (!contentTranslationFeatureEnabled(itemType))
 		throw new Error('Content translation is disabled.');
 	if (!itemType || !itemId)
 		throw new Error('This item cannot be translated.');
@@ -7881,7 +7936,7 @@ function contentTranslationAvailableKey(itemType, itemId) {
 }
 
 async function contentTranslationAvailableRequest(itemType, itemId, force) {
-	if (!paymentFeatureEnabled())
+	if (!contentTranslationFeatureEnabled(itemType))
 		return { translations: [] };
 	var key = contentTranslationAvailableKey(itemType, itemId);
 	if (!force && contentTranslationAvailablePromises[key])
@@ -8729,6 +8784,11 @@ async function submitContentTranslationModal() {
 	var state = contentTranslationModalState;
 	if (!state || !state.target || !state.itemType || !state.itemId)
 		return;
+	if (!contentTranslationFeatureEnabled(state.itemType)) {
+		if (window.toastr)
+			toastr.info('Content translation is disabled.', 'Translation');
+		return;
+	}
 	var selector = modal.find('.content-translation-modal-language');
 	var submit = modal.find('.content-translation-modal-submit');
 	var language = selector.val() || '';
@@ -8866,6 +8926,13 @@ async function resumePendingContentTranslationCheckout() {
 			toastr.info('Payment authorization was released. Reopen the item to translate it.', 'Translation');
 		return;
 	}
+	if (!contentTranslationFeatureEnabled(pending.itemType)) {
+		await cancelPendingContentTranslationCheckout(sessionId, pending);
+		clearPendingContentTranslationCheckout();
+		if (window.toastr)
+			toastr.info('Payment authorization was released because translation is disabled.', 'Translation');
+		return;
+	}
 	if (status)
 		savePendingContentTranslationCheckout(pending, pending.language, { checkoutSessionId: sessionId });
 	contentTranslationCheckoutResumeInProgress = true;
@@ -8903,7 +8970,7 @@ async function resumePendingContentTranslationCheckout() {
 }
 
 function appendContentTranslationControl(container, target, itemType, itemId, currentLanguage) {
-	if (!paymentFeatureEnabled())
+	if (!contentTranslationFeatureEnabled(itemType))
 		return;
 	if (!container || !target || !target.length || !itemType || !itemId)
 		return;

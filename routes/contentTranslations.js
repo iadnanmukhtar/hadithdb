@@ -87,6 +87,9 @@ router.get('/languages', async function (req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.json({
     enabled,
+    features: {
+      tafsir: enabled && PaymentConfig.contentTranslationEnabledForItemType('tafsir')
+    },
     pricing: enabled ? {
       translatePointsPer1000Words: PaymentConfig.pointsPer1000Words('translate'),
       translateMinimumPoints: PaymentConfig.minimumPoints('translate')

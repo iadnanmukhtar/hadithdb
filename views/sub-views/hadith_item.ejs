@@ -281,7 +281,7 @@
 		<% } %>
 
 		<%# Admin  ............................................................. %>
-		<% if (site.editMode && lang === "en" && !isSimilarSection) { %>
+		<% if (site.editMode && lang === "en") { %>
 		<aside class="admin">
 			<% if (!isSimilarSection) { %>
 				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Revise with AI" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Revising">
