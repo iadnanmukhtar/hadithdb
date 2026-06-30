@@ -11,7 +11,7 @@
       <div class="rag-match-type"><%= item.matchType === 'linked' ? 'Linked match' : 'Search match' %></div>
     <% } %>
     <% if (!item.doctype || item.doctype == 'hadith') { %>
-      <%- include('sub-views/hadith.ejs', { site: site, page: page, i: item, title: true, main: main, searchResult: false }); %>
+      <%- include('sub-views/hadith.ejs', { site: site, page: page, i: item, title: true, main: main, searchResult: false, similarSection: true }); %>
     <% } else { %>
       <%- include('sub-views/toc.ejs', { site: site, page: page, toc: item, title: true, main: main, searchResult: false }); %>
     <% } %>

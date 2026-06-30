@@ -143,7 +143,11 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           status.value = (status.value && status.value !== '') ? 1 : 0;
 
         if (col === 'revise') {
-          var revised = await HadithRevision.reviseHadithById(ids[0], { userId: userId });
+          var revised = await HadithRevision.reviseHadithById(ids[0], {
+            userId: userId,
+            forceArabicRevision: true,
+            source: 'admin_revise'
+          });
           result = { message: 'AI revision complete' };
           status.value = 'Revised';
           status.revised = {

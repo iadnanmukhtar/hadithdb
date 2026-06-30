@@ -12,6 +12,7 @@ const markdownitFootnote = require('markdown-it-footnote');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
+const ContentTranslations = require('../lib/ContentTranslations');
 
 const router = express.Router();
 const GENERIC_PROXY_ALLOWED_HOSTS = new Set(
@@ -166,12 +167,16 @@ router.get('/tafsir/local', async function (req, res) {
     return;
   }
   const entries = rows.map(row => {
+    const translationEstimate = localCommentaryTranslationEstimate(row);
     const html = renderLocalCommentary(row, editMode, lang, src);
     return {
       id: row.id,
       ayahs_start: row.ayahFrom,
       count: row.ayahTo - row.ayahFrom,
       bilingual: commentaryRowHasBothLanguages(row),
+      translation_points: translationEstimate.points,
+      translation_word_count: translationEstimate.wordCount,
+      translation_existing: localCommentaryTranslationExisting(row, lang),
       html: html
     };
   }).filter(entry => !lang || entry.html || Number.isInteger(Number(entry.ayahs_start)));
@@ -521,6 +526,25 @@ function commentaryRowHasLanguage(row, lang) {
 
 function commentaryRowHasBothLanguages(row) {
   return commentaryRowHasLanguage(row, 'ar') && commentaryRowHasLanguage(row, 'en');
+}
+
+function localCommentaryTranslationFields(row) {
+  return {
+    text: trimToEmpty(row && row.text) || trimToEmpty(row && row.text_en),
+    footnotes: trimToEmpty(row && row.footnotes) || trimToEmpty(row && row.footnotes_en)
+  };
+}
+
+function localCommentaryTranslationEstimate(row) {
+  return ContentTranslations.estimateFields(localCommentaryTranslationFields(row), 'translate');
+}
+
+function localCommentaryTranslationExisting(row, lang) {
+  if (lang === 'ar')
+    return false;
+  if (lang === 'en')
+    return commentaryRowHasLanguage(row, 'en');
+  return commentaryRowHasLanguage(row, 'en');
 }
 
 function trimToEmpty(value) {

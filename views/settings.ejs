@@ -23,14 +23,6 @@
         <h1 class="fs-4 mb-0">My Settings</h1>
         <p class="text-muted small mb-0" id="settings-account-status">Loading account settings...</p>
       </div>
-      <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
-        <span class="text-muted small">Settings view</span>
-        <div class="btn-group btn-group-sm settings-view-toggle" role="group" aria-label="Settings view">
-          <button type="button" class="btn btn-outline-secondary" data-settings-view="tile">Tile</button>
-          <button type="button" class="btn btn-outline-secondary" data-settings-view="full">Full</button>
-        </div>
-      </div>
-
       <section class="border-top pt-3" id="settings-profile-section">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
           <div>
@@ -39,8 +31,7 @@
           </div>
         </div>
         <label class="form-label settings-language-field">
-          <span class="small text-muted d-block mb-1">Preferred language</span>
-          <select class="form-select form-select-sm" id="settings-preferred-language"></select>
+          <select class="form-select form-select-sm" id="settings-preferred-language" aria-label="Preferred language"></select>
         </label>
       </section>
 
@@ -93,7 +84,16 @@
             <h2 class="fs-5 fw-bold mb-1">Quran Translations</h2>
             <p class="text-muted small mb-0" id="settings-translation-status">Loading translation settings...</p>
           </div>
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-translation-enable-all">Enable all</button>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="d-flex align-items-center gap-2">
+              <span class="text-muted small">Settings view</span>
+              <div class="btn-group btn-group-sm settings-view-toggle" role="group" aria-label="Settings view">
+                <button type="button" class="btn btn-outline-secondary" data-settings-view="tile">Tile</button>
+                <button type="button" class="btn btn-outline-secondary" data-settings-view="full">Full</button>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-translation-enable-all">Enable all</button>
+          </div>
         </div>
         <div id="settings-translation-list" class="d-flex flex-column gap-2"></div>
       </section>
@@ -159,6 +159,10 @@
     let dragDropped = false;
     let saving = false;
     const paymentFeatureEnabled = <%- JSON.stringify(paymentFeatureEnabled) %>;
+    const supportedPreferredLanguageCodes = new Set([
+      'en', 'zh', 'hi', 'es', 'fr', 'ar', 'bn', 'pt', 'ru', 'id', 'ur', 'de', 'ja', 'pcm', 'mr', 'te',
+      'tr', 'ta', 'vi', 'yue', 'wuu', 'ko', 'fa', 'ha', 'th', 'gu', 'kn', 'it', 'pa', 'ml', 'he'
+    ]);
 
     const settingsCacheUser = () => currentUser
       ? {
@@ -358,6 +362,25 @@
     };
 
     const languageLabel = (language) => language && (language.label || language.name || language.code || '').toString() || '';
+    const languageSort = (a, b) => {
+      const labelCompare = languageLabel(a).localeCompare(languageLabel(b), undefined, { sensitivity: 'base' });
+      return labelCompare !== 0 ? labelCompare : ((a && a.code || '').toString()).localeCompare((b && b.code || '').toString());
+    };
+    const normalizeSettingsLanguages = (languages) => {
+      const seen = new Set();
+      return (Array.isArray(languages) ? languages : []).map(language => {
+        const code = (language && language.code || '').toString().trim().toLowerCase();
+        if (!supportedPreferredLanguageCodes.has(code) || seen.has(code))
+          return null;
+        seen.add(code);
+        return {
+          ...language,
+          code,
+          label: languageLabel(language) || code.toUpperCase(),
+          dir: language && language.dir === 'rtl' ? 'rtl' : 'ltr'
+        };
+      }).filter(Boolean).sort(languageSort);
+    };
 
     const renderProfileSettings = () => {
       preferredLanguageSelect.innerHTML = '';
@@ -365,13 +388,18 @@
         const option = document.createElement('option');
         option.value = language.code;
         option.textContent = languageLabel(language);
+        option.dir = language.dir === 'rtl' ? 'rtl' : 'ltr';
+        option.dataset.contentLanguage = language.code;
         preferredLanguageSelect.appendChild(option);
       });
       const preferred = currentSettings.profile && currentSettings.profile.preferredLanguage || 'en';
       preferredLanguageSelect.value = preferred;
+      const preferredLanguage = currentLanguages.find(language => language.code === preferred);
+      preferredLanguageSelect.dir = preferredLanguage && preferredLanguage.dir === 'rtl' ? 'rtl' : 'ltr';
+      preferredLanguageSelect.dataset.contentLanguage = preferredLanguage && preferredLanguage.code || preferred;
       preferredLanguageSelect.disabled = !currentUser || saving || currentLanguages.length < 1;
       profileStatusEl.textContent = currentUser
-        ? `Preferred language: ${languageLabel(currentLanguages.find(language => language.code === preferred)) || preferred.toUpperCase()}.`
+        ? 'Choose the language used for default Quran translation and tafsir ordering.'
         : 'Sign in to choose your preferred language.';
     };
 
@@ -1198,7 +1226,7 @@
         const languageRes = await fetch(quranApiPath('/payments/languages'));
         if (languageRes.ok) {
           const languageData = await languageRes.json();
-          currentLanguages = Array.isArray(languageData.languages) ? languageData.languages : [];
+          currentLanguages = normalizeSettingsLanguages(languageData.languages);
         }
       } catch (_err) {
         currentLanguages = [];

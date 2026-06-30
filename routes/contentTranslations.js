@@ -35,7 +35,8 @@ function requestPayload(req) {
     itemType: (req.body && (req.body.itemType || req.body.type)) || (req.query && (req.query.itemType || req.query.type)),
     itemId: (req.body && (req.body.itemId || req.body.id)) || (req.query && (req.query.itemId || req.query.id)),
     targetLanguage: (req.body && (req.body.targetLanguage || req.body.language || req.body.lang)) || (req.query && (req.query.targetLanguage || req.query.language || req.query.lang)),
-    mode: (req.body && req.body.mode) || (req.query && req.query.mode) || 'translate'
+    mode: (req.body && req.body.mode) || (req.query && req.query.mode) || 'translate',
+    checkoutSessionId: (req.body && req.body.checkoutSessionId) || (req.query && req.query.checkoutSessionId)
   };
 }
 
@@ -52,21 +53,19 @@ router.get('/estimate', requirePaymentsEnabled, requireUser, async function (req
   res.json(estimate);
 });
 
+router.get('/available', requirePaymentsEnabled, async function (req, res) {
+  const payload = requestPayload(req);
+  const result = await ContentTranslations.available(payload.itemType, payload.itemId);
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(result);
+});
+
 router.post('/', requirePaymentsEnabled, requireUser, async function (req, res, next) {
   const payload = requestPayload(req);
   try {
-    let result;
-    try {
-      result = await ContentTranslations.translate(req.user, payload.itemType, payload.itemId, payload.targetLanguage, payload.mode);
-    } catch (err) {
-      if (Number(err.status || err.statusCode) !== 402)
-        throw err;
-      const recharge = await Payments.maybeAutoRecharge(req.user);
-      if (!recharge || recharge.credited !== true)
-        throw err;
-      result = await ContentTranslations.translate(req.user, payload.itemType, payload.itemId, payload.targetLanguage, payload.mode);
-      result.autoRecharge = recharge;
-    }
+    const result = await ContentTranslations.translate(req.user, payload.itemType, payload.itemId, payload.targetLanguage, payload.mode, {
+      checkoutSessionId: payload.checkoutSessionId
+    });
     if (!result.cached && result.points > 0)
       result.autoRecharge = result.autoRecharge || await Payments.maybeAutoRecharge(req.user);
     result.balance = await UserPoints.balance(req.user);
@@ -74,22 +73,25 @@ router.post('/', requirePaymentsEnabled, requireUser, async function (req, res, 
     res.json(result);
   } catch (err) {
     if (Number(err.status || err.statusCode) === 402) {
-      res.status(402).json({ error: 'Not enough points.', message: err.message || 'Not enough points.' });
+      res.status(402).json({ error: err.message || 'Payment required.', message: err.message || 'Payment required.' });
       return;
     }
+    debug.error(`content translation request failed type=${payload.itemType || ''} id=${payload.itemId || ''} lang=${payload.targetLanguage || ''} mode=${payload.mode || 'translate'}: ${err.message}\n${err.stack || ''}`);
     next(err);
   }
 });
 
-router.get('/languages', function (req, res) {
+router.get('/languages', async function (req, res) {
+  const enabled = PaymentConfig.isEnabled();
+  const languages = enabled ? (await PaymentConfig.loadLanguages()).filter(language => language.code !== 'ar') : [];
   res.setHeader('Cache-Control', 'no-store');
   res.json({
-    enabled: PaymentConfig.isEnabled(),
-    pricing: PaymentConfig.isEnabled() ? {
+    enabled,
+    pricing: enabled ? {
       translatePointsPer1000Words: PaymentConfig.pointsPer1000Words('translate'),
       translateMinimumPoints: PaymentConfig.minimumPoints('translate')
     } : null,
-    languages: PaymentConfig.isEnabled() ? ContentTranslations.supportedLanguages() : []
+    languages
   });
 });
 

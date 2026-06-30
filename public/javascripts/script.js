@@ -1778,11 +1778,25 @@ function initQuranTafsirTabs(root) {
 						dir: panelLanguage === 'ar' ? 'rtl' : 'ltr'
 					});
 				}
+				var appendedContentTranslationControl = false;
 				entries.forEach(function (entry) {
 					var startAyah = Number(entry.payload.ayahs_start || entry.ayah);
 					var count = Number(entry.payload.count || 0);
 					var endAyah = startAyah + count;
 					var entryElement = $(rendersCollapsibleEntries ? '<details>' : '<article>').addClass('quran-tafsir-entry');
+					var tafsirTranslationPoints = Math.max(0, Math.floor(Number(entry.payload.translation_points) || 0));
+					var tafsirTranslationWordCount = Math.max(0, Math.floor(Number(entry.payload.translation_word_count) || 0));
+					var tafsirTranslationExisting = entry.payload.translation_existing === true || entry.payload.translation_existing === 'true';
+					var tafsirTranslationItemId = (entry.payload.id || '').toString();
+					var hasTafsirTranslationItem = source === 'local' && /^\d+$/.test(tafsirTranslationItemId);
+					if (hasTafsirTranslationItem) {
+						entryElement.attr({
+							'data-content-translation-scope': 'tafsir',
+							'data-content-translation-item-id': tafsirTranslationItemId,
+							'data-content-translation-points': tafsirTranslationPoints,
+							'data-content-translation-word-count': tafsirTranslationWordCount
+						});
+					}
 					if (rendersCollapsibleEntries && overlapsSelectedAyahs(startAyah, endAyah))
 						entryElement.prop('open', true).data('skipInitialOpenScroll', true);
 					entryElement.appendTo(text);
@@ -1814,9 +1828,24 @@ function initQuranTafsirTabs(root) {
 							});
 						generatedBody = entryBody;
 					}
-					if (source === 'local' && entry.payload.id)
-						appendContentTranslationControl(summary, generatedBody, 'tafsir', entry.payload.id, panel.attr('data-tafsir-lang') || 'en');
+					if (hasTafsirTranslationItem) {
+						generatedBody.attr({
+							'data-content-translation-field': 'body',
+							'data-content-translation-item-type': 'tafsir',
+							'data-content-translation-item-id': tafsirTranslationItemId,
+							'data-content-translation-language': panel.attr('data-tafsir-lang') || 'en',
+							'data-content-translation-existing': tafsirTranslationExisting ? 'true' : 'false',
+							'data-content-translation-points': tafsirTranslationPoints,
+							'data-content-translation-word-count': tafsirTranslationWordCount
+						});
+						appendContentTranslationControl(summary, generatedBody, 'tafsir', tafsirTranslationItemId, panel.attr('data-tafsir-lang') || 'en');
+						appendedContentTranslationControl = true;
+					}
 				});
+				if (appendedContentTranslationControl) {
+					refreshContentTranslationAuthControls();
+					resumePendingContentTranslationCheckout();
+				}
 				if (window.bindInlineEditors)
 					window.bindInlineEditors(text[0]);
 				status.toggleClass('d-none', entries.length > 0);
@@ -7636,9 +7665,89 @@ var preferredContentLanguagePromise = null;
 var contentTranslationModalState = null;
 var CONTENT_TRANSLATION_PENDING_CHECKOUT_KEY = 'hadithdb_pending_content_translation_checkout';
 var contentTranslationAuthRefreshBound = false;
+var contentTranslationAvailablePromises = {};
+var contentTranslationAvailableObserver = null;
+var contentTranslationCheckoutResumeInProgress = false;
+var CONTENT_TRANSLATION_SUPPORTED_LANGUAGE_CODES = new Set([
+	'en', 'zh', 'hi', 'es', 'fr', 'ar', 'bn', 'pt', 'ru', 'id', 'ur', 'de', 'ja', 'pcm', 'mr', 'te',
+	'tr', 'ta', 'vi', 'yue', 'wuu', 'ko', 'fa', 'ha', 'th', 'gu', 'kn', 'it', 'pa', 'ml', 'he'
+]);
 
 function paymentFeatureEnabled() {
 	return window.HADITH_PAYMENT_FEATURE_ENABLED === true;
+}
+
+function contentTranslationLanguageSort(a, b) {
+	var aLabel = (a && (a.label || a.code) || '').toString();
+	var bLabel = (b && (b.label || b.code) || '').toString();
+	var labelCompare = aLabel.localeCompare(bLabel, undefined, { sensitivity: 'base' });
+	if (labelCompare !== 0)
+		return labelCompare;
+	return (a && a.code || '').toString().localeCompare((b && b.code || '').toString());
+}
+
+function normalizeContentTranslationLanguages(languages) {
+	var seen = new Set();
+	return (Array.isArray(languages) ? languages : []).map(function (language) {
+		if (!language || !language.code)
+			return null;
+		var code = language.code.toString().trim().toLowerCase();
+		if (!CONTENT_TRANSLATION_SUPPORTED_LANGUAGE_CODES.has(code) || seen.has(code))
+			return null;
+		seen.add(code);
+		return Object.assign({}, language, {
+			code: code,
+			label: (language.label || language.name || code.toUpperCase()).toString(),
+			dir: language.dir === 'rtl' ? 'rtl' : 'ltr',
+			fontClass: (language.fontClass || language.font_class || '').toString()
+		});
+	}).filter(Boolean).sort(contentTranslationLanguageSort);
+}
+
+function setContentLanguageAttributes(target, language, fallbackLanguage) {
+	target = target && target.jquery ? target : $(target);
+	if (!target.length)
+		return;
+	language = language || {};
+	var code = (language.code || fallbackLanguage || '').toString().trim().toLowerCase();
+	var known = contentTranslationKnownLanguage(code);
+	var dir = language.dir || known.dir || 'ltr';
+	var fontClass = language.fontClass || known.fontClass || '';
+	var previousFontClass = target.attr('data-content-language-font-class') || '';
+	if (previousFontClass)
+		target.removeClass(previousFontClass);
+	if (!code) {
+		target.removeAttr('data-content-language-font-class');
+		return;
+	}
+	target.attr({
+		lang: code,
+		dir: dir === 'rtl' ? 'rtl' : 'ltr',
+		'data-content-language': code
+	});
+	if (fontClass) {
+		target.attr('data-content-language-font-class', fontClass);
+		target.addClass(fontClass);
+	} else {
+		target.removeAttr('data-content-language-font-class');
+	}
+}
+
+function setContentTranslationContainerLanguage(target, language, fallbackLanguage) {
+	target = target && target.jquery ? target : $(target);
+	if (!target.length)
+		return;
+	var containers = $();
+	target.each(function () {
+		var node = $(this);
+		containers = containers
+			.add(node.closest('[data-content-translation-container="1"], section[lang], header[lang], footer[lang]').first())
+			.add(node.closest('.quran-tafsir-entry-body, .quran-translation-text, [data-quran-translation-display="passage"]').first())
+			.add(node.closest('.quran-tafsir-entry').first());
+	});
+	containers.each(function () {
+		setContentLanguageAttributes(this, language, fallbackLanguage);
+	});
 }
 
 function contentTranslationConfig() {
@@ -7652,15 +7761,19 @@ function contentTranslationConfig() {
 				throw new Error('Unable to load languages.');
 			return response.json();
 		}).then(function (payload) {
-			return {
-				languages: Array.isArray(payload && payload.languages) ? payload.languages : [],
+			var config = {
+				languages: normalizeContentTranslationLanguages(payload && payload.languages).filter(function (language) { return language.code !== 'ar'; }),
 				pricing: payload && payload.pricing ? payload.pricing : null
 			};
+			contentTranslationConfigPromise.__contentTranslationResolvedConfig = config;
+			return config;
 		}).catch(function () {
-			return {
-				languages: [{ code: 'en', label: 'English', dir: 'ltr' }],
+			var fallback = {
+				languages: [{ code: 'en', label: 'English', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }],
 				pricing: { translatePointsPer1000Words: 25, translateMinimumPoints: 5 }
 			};
+			contentTranslationConfigPromise.__contentTranslationResolvedConfig = fallback;
+			return fallback;
 		});
 	}
 	return contentTranslationConfigPromise;
@@ -7718,7 +7831,7 @@ function preserveGeneratedShareDefaults(modal) {
 	});
 }
 
-async function contentTranslationRequest(itemType, itemId, language, mode, estimateOnly) {
+async function contentTranslationRequest(itemType, itemId, language, mode, estimateOnly, extra) {
 	if (!paymentFeatureEnabled())
 		throw new Error('Content translation is disabled.');
 	if (!itemType || !itemId)
@@ -7735,6 +7848,14 @@ async function contentTranslationRequest(itemType, itemId, language, mode, estim
 		url.searchParams.set('lang', language);
 		url.searchParams.set('mode', mode || 'translate');
 	}
+	var body = {
+		itemType: itemType,
+		itemId: itemId,
+		targetLanguage: language,
+		mode: mode || 'translate'
+	};
+	if (!estimateOnly && extra && typeof extra === 'object')
+		body = Object.assign(body, extra);
 	var response = await fetch(url.toString(), {
 		method: method,
 		credentials: 'same-origin',
@@ -7742,12 +7863,7 @@ async function contentTranslationRequest(itemType, itemId, language, mode, estim
 			'Content-Type': 'application/json',
 			'Authorization': `Bearer ${token}`
 		},
-		body: estimateOnly ? undefined : JSON.stringify({
-			itemType: itemType,
-			itemId: itemId,
-			targetLanguage: language,
-			mode: mode || 'translate'
-		})
+		body: estimateOnly ? undefined : JSON.stringify(body)
 	});
 	if (!response.ok) {
 		var message = estimateOnly ? 'Unable to estimate translation points.' : 'Unable to translate text.';
@@ -7758,6 +7874,31 @@ async function contentTranslationRequest(itemType, itemId, language, mode, estim
 		throw new Error(message);
 	}
 	return response.json();
+}
+
+function contentTranslationAvailableKey(itemType, itemId) {
+	return `${itemType || ''}:${itemId || ''}`;
+}
+
+async function contentTranslationAvailableRequest(itemType, itemId, force) {
+	if (!paymentFeatureEnabled())
+		return { translations: [] };
+	var key = contentTranslationAvailableKey(itemType, itemId);
+	if (!force && contentTranslationAvailablePromises[key])
+		return contentTranslationAvailablePromises[key];
+	var url = new URL(quranApiPath('/content-translations/available'), window.location.origin);
+	url.searchParams.set('type', itemType);
+	url.searchParams.set('id', itemId);
+	contentTranslationAvailablePromises[key] = fetch(url.toString(), {
+		credentials: 'same-origin'
+	}).then(function (response) {
+		if (!response.ok)
+			throw new Error('Unable to load available translations.');
+		return response.json();
+	}).catch(function () {
+		return { translations: [] };
+	});
+	return contentTranslationAvailablePromises[key];
 }
 
 async function contentTranslationPaymentRequest(path, options, message) {
@@ -7812,15 +7953,17 @@ function contentTranslationCheckoutReturnPath() {
 	return `${url.pathname}${url.search || ''}${url.hash || ''}`;
 }
 
-function savePendingContentTranslationCheckout(state, language) {
+function savePendingContentTranslationCheckout(state, language, extra) {
+	state = state || {};
+	extra = extra || {};
 	try {
-		sessionStorage.setItem(CONTENT_TRANSLATION_PENDING_CHECKOUT_KEY, JSON.stringify({
+		sessionStorage.setItem(CONTENT_TRANSLATION_PENDING_CHECKOUT_KEY, JSON.stringify(Object.assign({
 			itemType: state.itemType,
 			itemId: state.itemId,
 			language: language,
-			points: state.estimate && state.estimate.points || 0,
-			createdAt: Date.now()
-		}));
+			points: state.estimate && state.estimate.points || state.points || 0,
+			createdAt: state.createdAt || Date.now()
+		}, extra)));
 	} catch (_err) {}
 }
 
@@ -7841,6 +7984,22 @@ function clearPendingContentTranslationCheckout() {
 	} catch (_err) {}
 }
 
+async function cancelPendingContentTranslationCheckout(sessionId, pending) {
+	if (!sessionId || !/^cs_(?:test|live)_/.test(sessionId))
+		return;
+	try {
+		await contentTranslationPaymentRequest(`/payments/content-translation-checkout/${encodeURIComponent(sessionId)}`, {
+			method: 'DELETE',
+			body: JSON.stringify({
+				itemType: pending && pending.itemType,
+				itemId: pending && pending.itemId,
+				targetLanguage: pending && pending.language,
+				mode: 'translate'
+			})
+		}, 'Please sign in to release payment authorization.');
+	} catch (_err) {}
+}
+
 async function generatedShareRequest(card, language, mode, estimateOnly) {
 	return contentTranslationRequest(
 		card && card.getAttribute('data-share-generated-item-type'),
@@ -7858,6 +8017,10 @@ function restoreGeneratedShareDefaults(modal) {
 		if (target.dataset.shareGeneratedDefaultLang)
 			target.setAttribute('lang', target.dataset.shareGeneratedDefaultLang);
 		target.removeAttribute('dir');
+		if (target.getAttribute('data-content-language-font-class'))
+			target.classList.remove(target.getAttribute('data-content-language-font-class'));
+		target.removeAttribute('data-content-language');
+		target.removeAttribute('data-content-language-font-class');
 	});
 }
 
@@ -7870,13 +8033,11 @@ function applyGeneratedShareContent(modal, card, result) {
 	var body = modal.querySelector('[data-share-generated-body]');
 	if (title && content.title) {
 		title.innerHTML = $('<div>').text(content.title).html();
-		title.setAttribute('lang', lang);
-		title.setAttribute('dir', dir);
+		setContentLanguageAttributes(title, { code: lang, dir: dir, fontClass: language.fontClass }, lang);
 	}
 	if (body && (content.body || content.text)) {
 		body.innerHTML = renderShareGeneratedMarkdown(content.body || content.text);
-		body.setAttribute('lang', lang);
-		body.setAttribute('dir', dir);
+		setContentLanguageAttributes(body, { code: lang, dir: dir, fontClass: language.fontClass }, lang);
 	}
 	if (result && Number(result.points) > 0 && window.toastr)
 		toastr.success(`${Number(result.points).toLocaleString()} points used.`, 'Translation');
@@ -7884,7 +8045,7 @@ function applyGeneratedShareContent(modal, card, result) {
 
 function hadithContentTranslationScope(target) {
 	var node = target && target.jquery ? target[0] : target;
-	return node ? $(node).closest('[data-content-translation-scope="hadith"]') : $();
+	return node ? $(node).closest('[data-content-translation-scope]') : $();
 }
 
 function preserveHadithContentTranslationScope(target) {
@@ -7898,6 +8059,10 @@ function preserveHadithContentTranslationScope(target) {
 			this.dataset.contentTranslationDefaultLang = this.getAttribute('lang') || '';
 		if (this.dataset.contentTranslationDefaultDir === undefined)
 			this.dataset.contentTranslationDefaultDir = this.getAttribute('dir') || '';
+		if (this.dataset.contentTranslationDefaultContentLanguage === undefined)
+			this.dataset.contentTranslationDefaultContentLanguage = this.getAttribute('data-content-language') || '';
+		if (this.dataset.contentTranslationDefaultFontClass === undefined)
+			this.dataset.contentTranslationDefaultFontClass = this.getAttribute('data-content-language-font-class') || '';
 	});
 }
 
@@ -7916,6 +8081,19 @@ function resetHadithContentTranslationScope(target) {
 			this.setAttribute('dir', this.dataset.contentTranslationDefaultDir);
 		else
 			this.removeAttribute('dir');
+		if (this.getAttribute('data-content-language-font-class'))
+			this.classList.remove(this.getAttribute('data-content-language-font-class'));
+		if (this.dataset.contentTranslationDefaultContentLanguage)
+			this.setAttribute('data-content-language', this.dataset.contentTranslationDefaultContentLanguage);
+		else
+			this.removeAttribute('data-content-language');
+		if (this.dataset.contentTranslationDefaultFontClass) {
+			this.setAttribute('data-content-language-font-class', this.dataset.contentTranslationDefaultFontClass);
+			this.classList.add(this.dataset.contentTranslationDefaultFontClass);
+		} else {
+			this.removeAttribute('data-content-language-font-class');
+		}
+		setContentTranslationContainerLanguage(this, contentTranslationKnownLanguage(this.getAttribute('lang') || 'en'), this.getAttribute('lang') || 'en');
 	});
 	return true;
 }
@@ -7938,14 +8116,18 @@ function initGeneratedShareLanguageSelect(modal, card) {
 			var option = document.createElement('option');
 			option.value = language.code;
 			option.textContent = language.label || language.code.toUpperCase();
+			option.dir = language.dir === 'rtl' ? 'rtl' : 'ltr';
+			option.dataset.contentLanguage = language.code;
 			selector.appendChild(option);
 		});
 		selector.value = languages.some(function (language) { return language.code === preferred; }) ? preferred : 'en';
+		setContentLanguageAttributes(selector, languages.find(function (language) { return language.code === selector.value; }), selector.value);
 		if (selector.value !== 'en')
 			selector.dispatchEvent(new Event('change'));
 	});
 	selector.addEventListener('change', async function () {
 		var language = selector.value || 'en';
+		setContentLanguageAttributes(selector, contentTranslationKnownLanguage(language), language);
 		if (language === 'en') {
 			restoreGeneratedShareDefaults(modal);
 			scheduleHadithShareCardFit(card);
@@ -7991,38 +8173,286 @@ function applyHadithContentTranslationResult(target, result, fallbackLanguage) {
 	};
 	var applied = false;
 	Object.keys(renderers).forEach(function (field) {
-		var value = content[field];
-		if (!value)
+		if (!Object.prototype.hasOwnProperty.call(content, field))
 			return;
+		var value = content[field] || '';
 		scope.find(`[data-content-translation-field="${field}"]`).each(function () {
 			if (this.hasAttribute('data-markdown-source'))
 				this.setAttribute('data-markdown-source', value || '');
 			this.innerHTML = renderers[field](value);
-			if (lang)
-				this.setAttribute('lang', lang);
-			this.setAttribute('dir', dir);
+			setContentLanguageAttributes(this, { code: lang, dir: dir, fontClass: targetLanguage.fontClass }, lang);
+			setContentTranslationContainerLanguage(this, { code: lang, dir: dir, fontClass: targetLanguage.fontClass }, lang);
 			applied = true;
 		});
 	});
 	return applied;
 }
 
+function markContentTranslationTargetTranslated(target) {
+	target = target && target.jquery ? target : $(target);
+	if (!target.length)
+		return;
+	target.attr('data-content-translation-existing', 'true');
+	var itemClass = (target.attr('data-content-translation-item-type') || '').toString().replace(/[^a-z0-9_-]/gi, '').toLowerCase();
+	var row = ensureContentTranslationActionsRow(target);
+	var control = row.find(itemClass ? `.content-translation-control-${itemClass}` : '.content-translation-control').first();
+	if (!control.length)
+		return;
+	var label = 'Revise or Translate';
+	control.attr('title', 'Revise translation with points').addClass('content-translation-auth-only').prop('hidden', false);
+	control.find('.content-translate-button').first().addClass('content-translation-revise-button').attr({
+		title: label,
+		'aria-label': label
+	}).find('.content-translate-button-label').text(label);
+	refreshContentTranslationAuthControls();
+}
+
 function applyContentTranslationResult(target, result, fallbackLanguage) {
+	var targetLanguage = result && result.targetLanguage || {};
+	var lang = targetLanguage.code || fallbackLanguage || '';
 	if (applyHadithContentTranslationResult(target, result, fallbackLanguage)) {
+		target.attr('data-content-translation-language', lang);
+		markContentTranslationTargetTranslated(target);
 		if (result && Number(result.points) > 0 && window.toastr)
 			toastr.success(`${Number(result.points).toLocaleString()} points used.`, 'Translation');
 		return;
 	}
 	var content = result && result.content || {};
 	var text = [content.text || content.body || '', content.footnotes || content.footnote || ''].filter(Boolean).join('\n\n');
-	var targetLanguage = result && result.targetLanguage || {};
 	target.html(renderShareGeneratedMarkdown(text));
-	target.attr({
-		lang: targetLanguage.code || fallbackLanguage || '',
-		dir: targetLanguage.dir === 'rtl' ? 'rtl' : 'ltr'
-	});
+	setContentLanguageAttributes(target, targetLanguage, fallbackLanguage);
+	setContentTranslationContainerLanguage(target, targetLanguage, fallbackLanguage);
+	target.attr('data-content-translation-language', lang);
+	markContentTranslationTargetTranslated(target);
 	if (result && Number(result.points) > 0 && window.toastr)
 		toastr.success(`${Number(result.points).toLocaleString()} points used.`, 'Translation');
+}
+
+function contentTranslationResultOption(result, fallbackLanguage) {
+	var language = result && result.targetLanguage || {};
+	var code = language.code || fallbackLanguage || '';
+	var content = result && result.content || {};
+	if (!code || !Object.values(content).some(Boolean))
+		return null;
+	var known = contentTranslationKnownLanguage(code);
+	return {
+		code: known.code || code,
+		label: language.label || known.label || code.toUpperCase(),
+		dir: language.dir || known.dir || 'ltr',
+		fontClass: language.fontClass || known.fontClass || '',
+		source: 'translation',
+		content: content
+	};
+}
+
+function contentTranslationKnownLanguage(code) {
+	code = (code || '').toString();
+	var fallback = { code: code, label: code.toUpperCase(), dir: 'ltr', fontClass: '' };
+	if (!code)
+		return fallback;
+	var configPromise = contentTranslationConfigPromise;
+	if (!configPromise)
+		return fallback;
+	var cached = configPromise.__contentTranslationResolvedConfig;
+	if (!cached || !Array.isArray(cached.languages))
+		return fallback;
+	return cached.languages.find(function (language) { return language.code === code; }) || fallback;
+}
+
+function ensureContentTranslationActionsRow(target) {
+	target = target && target.jquery ? target : $(target);
+	if (!target.length)
+		return $();
+	var row = target.data('contentTranslationActionsRow');
+	if (row && row.length)
+		return row;
+	row = target.next('.content-translation-actions-row');
+	if (!row.length) {
+		row = $('<div>').addClass('content-translation-actions-row');
+		target.after(row);
+	}
+	row.attr({
+		lang: 'en',
+		dir: 'ltr'
+	}).css({
+		direction: 'ltr',
+		textAlign: 'left'
+	});
+	target.data('contentTranslationActionsRow', row);
+	return row;
+}
+
+function setNeutralLanguageSelectDisplay(selector) {
+	selector = selector && selector.jquery ? selector : $(selector);
+	if (!selector.length)
+		return;
+	var previousFontClass = selector.attr('data-content-language-font-class') || '';
+	if (previousFontClass)
+		selector.removeClass(previousFontClass);
+	selector.attr({
+		lang: 'en',
+		dir: 'ltr'
+	});
+	selector.css({
+		direction: 'ltr',
+		textAlign: 'left'
+	});
+	selector.removeAttr('data-content-language data-content-language-font-class');
+}
+
+function setUnderItemLanguageSelectDirection(selector) {
+	setNeutralLanguageSelectDisplay(selector);
+}
+
+function chooseAvailableContentTranslationLanguage(translations, requestedLanguage) {
+	translations = Array.isArray(translations) ? translations : [];
+	requestedLanguage = (requestedLanguage || '').toString().trim().toLowerCase();
+	if (requestedLanguage && requestedLanguage !== 'en' && translations.some(function (translation) { return translation.code === requestedLanguage; }))
+		return requestedLanguage;
+	return 'en';
+}
+
+function availableContentTranslationOptions(translations) {
+	var options = Array.isArray(translations) ? translations.slice() : [];
+	if (!options.some(function (translation) { return translation.code === 'en'; })) {
+		var english = contentTranslationKnownLanguage('en');
+		options.push({
+			code: 'en',
+			label: english.label && english.label !== 'EN' ? english.label : 'English',
+			dir: 'ltr',
+			fontClass: english.fontClass || 'content-language-latin',
+			source: 'placeholder',
+			content: null,
+			unavailable: true
+		});
+	}
+	return options.sort(contentTranslationLanguageSort);
+}
+
+function applyAvailableContentTranslation(target, translation) {
+	if (!translation)
+		return;
+	if (translation.code === 'en' && (!translation.content || !Object.values(translation.content).some(Boolean)) && resetHadithContentTranslationScope(target)) {
+		target.attr('data-content-translation-language', 'en');
+		return;
+	}
+	if (!translation.content || !Object.values(translation.content).some(Boolean))
+		return;
+	applyContentTranslationResult(target, {
+		content: translation.content,
+		targetLanguage: translation
+	}, translation.code);
+	target.attr('data-content-translation-language', translation.code);
+}
+
+function renderAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage, translations) {
+	target = target && target.jquery ? target : $(target);
+	if (!target.length)
+		return;
+	translations = normalizeContentTranslationLanguages(translations).filter(function (translation) {
+		return translation && translation.code && translation.code !== 'ar' && translation.content && Object.values(translation.content).some(Boolean);
+	});
+	var unique = translations;
+	var options = availableContentTranslationOptions(unique);
+	target.data('contentTranslationAvailableTranslations', options);
+	currentLanguage = chooseAvailableContentTranslationLanguage(unique, currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || '');
+	var selectedTranslation = unique.find(function (translation) { return translation.code === currentLanguage; });
+	applyAvailableContentTranslation(target, selectedTranslation);
+	var row = ensureContentTranslationActionsRow(target);
+	var switcher = target.data('contentTranslationLanguageSwitcher');
+	if (!switcher || !switcher.length) {
+		switcher = $('<div>').addClass('content-translation-language-switcher').attr({
+			lang: 'en',
+			dir: 'ltr',
+			'data-content-translation-language-switcher': contentTranslationAvailableKey(itemType, itemId)
+		});
+		$('<select>').addClass('form-select form-select-sm content-translation-language-select').attr('aria-label', 'Language').appendTo(switcher);
+		target.data('contentTranslationLanguageSwitcher', switcher);
+		switcher.find('select').on('change', function () {
+			var translations = target.data('contentTranslationAvailableTranslations') || [];
+			var selected = translations.find(function (translation) { return translation.code === this.value; }, this);
+			if (!selected)
+				return;
+			if (selected.code === 'en') {
+				applyAvailableContentTranslation(target, selected);
+			} else if (selected.content && Object.values(selected.content).some(Boolean)) {
+				applyAvailableContentTranslation(target, selected);
+			}
+			setUnderItemLanguageSelectDirection(this);
+		});
+	}
+	if (row.length && switcher.parent()[0] !== row[0])
+		row.prepend(switcher);
+	var selector = switcher.find('select');
+	selector.empty();
+	options.forEach(function (translation) {
+		$('<option>').attr({
+			value: translation.code,
+			dir: 'ltr',
+			'data-content-translation-unavailable': translation.unavailable === true ? '1' : '0'
+		}).text(translation.label || translation.code.toUpperCase()).appendTo(selector);
+	});
+	selector.val(currentLanguage);
+	setUnderItemLanguageSelectDirection(selector);
+}
+
+function upsertAvailableContentTranslation(target, itemType, itemId, result, fallbackLanguage) {
+	var option = contentTranslationResultOption(result, fallbackLanguage);
+	if (!option)
+		return;
+	var translations = target.data('contentTranslationAvailableTranslations') || [];
+	translations = translations.filter(function (translation) {
+		return translation && translation.code !== option.code;
+	});
+	translations.push(option);
+	renderAvailableContentTranslationSelector(target, itemType, itemId, option.code, translations);
+}
+
+async function loadAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage, force) {
+	target = target && target.jquery ? target : $(target);
+	if (!target.length || !itemType || !itemId)
+		return;
+	var payload = await contentTranslationAvailableRequest(itemType, itemId, force);
+	var requestedLanguage = currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || '';
+	var known = target.data('contentTranslationAvailableTranslations') || [];
+	var fetched = payload && Array.isArray(payload.translations) ? payload.translations : [];
+	renderAvailableContentTranslationSelector(target, itemType, itemId, requestedLanguage, known.concat(fetched));
+}
+
+function scheduleAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage) {
+	target = target && target.jquery ? target : $(target);
+	if (!target.length || target.data('contentTranslationAvailableBound'))
+		return;
+	target.data('contentTranslationAvailableBound', true);
+	currentLanguage = currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || 'en';
+	target.attr({
+		'data-content-translation-item-type': itemType,
+		'data-content-translation-item-id': itemId,
+		'data-content-translation-language': currentLanguage
+	});
+	renderAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage, target.data('contentTranslationAvailableTranslations') || []);
+	if (!('IntersectionObserver' in window)) {
+		loadAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage, false);
+		return;
+	}
+	if (!contentTranslationAvailableObserver) {
+		contentTranslationAvailableObserver = new IntersectionObserver(function (entries) {
+			entries.forEach(function (entry) {
+				if (!entry.isIntersecting)
+					return;
+				contentTranslationAvailableObserver.unobserve(entry.target);
+				var node = $(entry.target);
+				loadAvailableContentTranslationSelector(
+					node,
+					node.attr('data-content-translation-item-type'),
+					node.attr('data-content-translation-item-id'),
+					node.attr('data-content-translation-language') || node.attr('lang') || 'en',
+					false
+				);
+			});
+		}, { rootMargin: '200px 0px' });
+	}
+	contentTranslationAvailableObserver.observe(target[0]);
 }
 
 function contentTranslationWordCount(value) {
@@ -8126,7 +8556,7 @@ function ensureContentTranslationModal() {
 		id: 'content-translation-modal-auto-recharge'
 	}).appendTo(recharge);
 	$('<label>').addClass('form-check-label').attr('for', 'content-translation-modal-auto-recharge').text('Auto-recharge when points run low').appendTo(recharge);
-	$('<p>').addClass('content-translation-modal-wallet').text('Secure checkout supports Apple Pay and Google Pay when available on this device. After payment, translation resumes automatically.').appendTo(purchase);
+	$('<p>').addClass('content-translation-modal-wallet').text('Secure checkout supports Apple Pay and Google Pay when available on this device. Payment is completed only after translation succeeds.').appendTo(purchase);
 	$('<p>').addClass('content-translation-modal-note').text('Points are calculated from word count.').appendTo(body);
 	var footer = $('<div>').addClass('modal-footer').appendTo(content);
 	$('<button>').addClass('btn btn-outline-secondary').attr({
@@ -8142,6 +8572,7 @@ function ensureContentTranslationModal() {
 		}
 	});
 	modal.find('.content-translation-modal-language').on('change', function () {
+		setNeutralLanguageSelectDisplay(this);
 		updateContentTranslationModalEstimate();
 	});
 	modal.find('.content-translation-modal-package, .content-translation-modal-auto .form-check-input').on('change', function () {
@@ -8218,11 +8649,15 @@ function populateContentTranslationPackages(modal, state) {
 
 function populateContentTranslationModalLanguages(modal, languages, preferred, currentLanguage) {
 	var selector = modal.find('.content-translation-modal-language');
+	languages = normalizeContentTranslationLanguages(languages);
 	selector.empty();
 	languages.forEach(function (language) {
 		if (!language || !language.code)
 			return;
-		$('<option>').attr('value', language.code).text(language.label || language.code.toUpperCase()).appendTo(selector);
+		$('<option>').attr({
+			value: language.code,
+			dir: 'ltr'
+		}).text(language.label || language.code.toUpperCase()).appendTo(selector);
 	});
 	if (languages.some(function (language) { return language.code === preferred; }))
 		selector.val(preferred);
@@ -8230,6 +8665,7 @@ function populateContentTranslationModalLanguages(modal, languages, preferred, c
 		selector.val(currentLanguage);
 	else if (languages.length)
 		selector.val(languages[0].code);
+	setNeutralLanguageSelectDisplay(selector);
 	selector.prop('disabled', !languages.length);
 	modal.find('.content-translation-modal-submit').prop('disabled', !languages.length);
 }
@@ -8260,8 +8696,10 @@ function openContentTranslationModal(options) {
 		preferredContentLanguage().then(function (preferred) {
 			var languages = config.languages || [];
 			var selector = modal.find('.content-translation-modal-language');
-			if (preferred && languages.some(function (language) { return language.code === preferred; }))
+			if (preferred && languages.some(function (language) { return language.code === preferred; })) {
 				selector.val(preferred);
+				setNeutralLanguageSelectDisplay(selector);
+			}
 		});
 	}).catch(function () {
 		modal.find('.content-translation-modal-language').empty().append($('<option>').text('Languages unavailable'));
@@ -8358,6 +8796,8 @@ async function translateContentTranslationModal(language) {
 	try {
 		var result = await contentTranslationRequest(state.itemType, state.itemId, language, 'translate', false);
 		applyContentTranslationResult(state.target, result, language);
+		upsertAvailableContentTranslation(state.target, state.itemType, state.itemId, result, language);
+		loadAvailableContentTranslationSelector(state.target, state.itemType, state.itemId, language, true);
 		await waitForContentTranslationPaint();
 		setContentTranslationModalBusy(modal, false);
 		if (window.bootstrap && window.bootstrap.Modal)
@@ -8378,12 +8818,16 @@ async function startContentTranslationCheckout(language) {
 		throw new Error('Choose a point package to continue.');
 	savePendingContentTranslationCheckout(state, language);
 	modal.find('.content-translation-modal-status').text('Opening secure checkout...');
-	var session = await contentTranslationPaymentRequest('/payments/checkout', {
+	var session = await contentTranslationPaymentRequest('/payments/content-translation-checkout', {
 		method: 'POST',
 		body: JSON.stringify({
 			packageId: packageId,
 			autoRecharge: modal.find('.content-translation-modal-auto .form-check-input').prop('checked') === true,
 			autoRechargeThreshold: state.profile && state.profile.autoRechargeThreshold || undefined,
+			itemType: state.itemType,
+			itemId: state.itemId,
+			targetLanguage: language,
+			mode: 'translate',
 			returnPath: contentTranslationCheckoutReturnPath()
 		})
 	}, 'Please sign in to buy points.');
@@ -8395,45 +8839,66 @@ async function startContentTranslationCheckout(language) {
 async function resumePendingContentTranslationCheckout() {
 	if (!paymentFeatureEnabled())
 		return;
+	if (contentTranslationCheckoutResumeInProgress)
+		return;
 	var params = new URLSearchParams(window.location.search || '');
 	var status = params.get('translation_payment') || '';
-	var sessionId = params.get('session_id') || '';
-	if (!status)
+	var pending = readPendingContentTranslationCheckout();
+	var sessionId = params.get('session_id') || pending && pending.checkoutSessionId || '';
+	if (!status && !(pending && pending.checkoutSessionId))
 		return;
-	params.delete('translation_payment');
-	params.delete('session_id');
-	var cleanUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash || ''}`;
-	window.history.replaceState(null, document.title, cleanUrl);
-	if (status !== 'success') {
+	if (status) {
+		params.delete('translation_payment');
+		params.delete('session_id');
+		var cleanUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash || ''}`;
+		window.history.replaceState(null, document.title, cleanUrl);
+	}
+	if (status && status !== 'success') {
+		clearPendingContentTranslationCheckout();
 		if (window.toastr)
 			toastr.info('Payment was cancelled.', 'Translation');
 		return;
 	}
-	var pending = readPendingContentTranslationCheckout();
 	if (!pending || !/^cs_(?:test|live)_/.test(sessionId)) {
+		await cancelPendingContentTranslationCheckout(sessionId, pending);
+		clearPendingContentTranslationCheckout();
 		if (window.toastr)
-			toastr.success('Payment confirmed.', 'Translation');
+			toastr.info('Payment authorization was released. Reopen the item to translate it.', 'Translation');
 		return;
 	}
+	if (status)
+		savePendingContentTranslationCheckout(pending, pending.language, { checkoutSessionId: sessionId });
+	contentTranslationCheckoutResumeInProgress = true;
 	try {
-		await contentTranslationPaymentRequest(`/payments/checkout-session/${encodeURIComponent(sessionId)}`, { method: 'POST' }, 'Please sign in to confirm your payment.');
 		var target = $(`[data-content-translation-item-type="${pending.itemType}"][data-content-translation-item-id]`).filter(function () {
 			return $(this).attr('data-content-translation-item-id') === String(pending.itemId);
 		}).first();
 		if (!target.length) {
+			if (pending.itemType === 'tafsir') {
+				savePendingContentTranslationCheckout(pending, pending.language, { checkoutSessionId: sessionId });
+				return;
+			}
+			await cancelPendingContentTranslationCheckout(sessionId, pending);
+			clearPendingContentTranslationCheckout();
 			if (window.toastr)
-				toastr.success('Payment confirmed. Reopen the item to translate it.', 'Translation');
+				toastr.info('Payment authorization was released. Reopen the item to translate it.', 'Translation');
 			return;
 		}
 		if (window.toastr)
 			toastr.info('Translation in progress...', 'Translation');
 		preserveHadithContentTranslationScope(target);
-		var result = await contentTranslationRequest(pending.itemType, pending.itemId, pending.language, 'translate', false);
+		var result = await contentTranslationRequest(pending.itemType, pending.itemId, pending.language, 'translate', false, {
+			checkoutSessionId: sessionId
+		});
 		applyContentTranslationResult(target, result, pending.language);
+		upsertAvailableContentTranslation(target, pending.itemType, pending.itemId, result, pending.language);
+		loadAvailableContentTranslationSelector(target, pending.itemType, pending.itemId, pending.language, true);
 		clearPendingContentTranslationCheckout();
 	} catch (err) {
 		if (window.toastr)
 			toastr.error(err.message || 'Unable to finish translation.', 'Translation');
+	} finally {
+		contentTranslationCheckoutResumeInProgress = false;
 	}
 }
 
@@ -8449,13 +8914,20 @@ function appendContentTranslationControl(container, target, itemType, itemId, cu
 	var existingTranslation = target.attr('data-content-translation-existing') === 'true';
 	var label = existingTranslation ? 'Revise or Translate' : 'Translate';
 	var itemClass = itemType.toString().replace(/[^a-z0-9_-]/gi, '').toLowerCase();
-	var control = $('<div>').addClass(`content-translation-control content-translation-control-${itemClass}`).attr('title', existingTranslation ? 'Revise translation with points' : 'Translate with points');
+	var row = ensureContentTranslationActionsRow(target);
+	var control = $('<div>').addClass(`content-translation-control content-translation-control-${itemClass}`).attr({
+		title: existingTranslation ? 'Revise translation with points' : 'Translate with points',
+		lang: 'en',
+		dir: 'ltr'
+	});
 	if (existingTranslation)
 		control.addClass('content-translation-auth-only').prop('hidden', true);
-	$('<button>').addClass((existingTranslation ? 'btn btn-sm btn-link text-muted content-translate-button content-translation-revise-button' : 'btn btn-sm btn-primary content-translate-button') + ` content-translate-button-${itemClass}`).attr({
+	$('<button>').addClass((existingTranslation ? 'btn btn-sm btn-primary content-translate-button content-translation-revise-button' : 'btn btn-sm btn-primary content-translate-button') + ` content-translate-button-${itemClass}`).attr({
 		type: 'button',
 		title: label,
-		'aria-label': label
+		'aria-label': label,
+		lang: 'en',
+		dir: 'ltr'
 	}).append($('<span>').addClass('bi bi-translate content-translate-button-icon').attr('aria-hidden', 'true')).append(' ').append($('<span>').addClass('content-translate-button-label').text(label)).on('click', function () {
 		openContentTranslationModal({
 			target: target,
@@ -8464,7 +8936,11 @@ function appendContentTranslationControl(container, target, itemType, itemId, cu
 			currentLanguage: currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || 'en'
 		});
 	}).appendTo(control);
-	$(container).append(control);
+	scheduleAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || 'en');
+	if (row.length)
+		row.append(control);
+	else
+		$(container).append(control);
 }
 
 async function refreshContentTranslationAuthControls() {

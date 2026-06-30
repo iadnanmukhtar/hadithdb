@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Gentium+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Gentium+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&family=Vazirmatn:wght@400;500;600;700&display=swap');
 
 @font-face {
 	font-family: Kitab;
@@ -134,6 +134,26 @@
 	--f-size-ar: calc(var(--f-size-ar-base) * var(--content-font-scale));
 	--f-size-ar-note: calc(var(--f-size-ar-note-base) * var(--content-font-scale));
 	--f-size-ar-sup: calc(var(--f-size-ar-sup-base) * var(--content-font-scale));
+	--content-language-latin-font: "Gentium Plus", Georgia, "Times New Roman", serif;
+	--content-language-arabic-font: "Noto Naskh Arabic", "Scheherazade New", Amiri, Kitab, serif;
+	--content-language-urdu-font: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Noto Naskh Arabic", serif;
+	--content-language-urdu-line-height: 2.05;
+	--content-language-persian-font: Vazirmatn, "Noto Naskh Arabic", "Scheherazade New", Tahoma, serif;
+	--content-language-persian-line-height: 1.85;
+	--content-language-hebrew-font: "New Peninim MT", "Noto Serif Hebrew", "Times New Roman", serif;
+	--content-language-cjk-font: "Hiragino Mincho ProN", "Songti SC", "Noto Serif CJK SC", "Yu Mincho", serif;
+	--content-language-japanese-font: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+	--content-language-korean-font: "Apple SD Gothic Neo", "Noto Serif KR", "Nanum Myeongjo", serif;
+	--content-language-cyrillic-font: "Gentium Plus", Georgia, "Times New Roman", serif;
+	--content-language-devanagari-font: "Kohinoor Devanagari", "Noto Serif Devanagari", serif;
+	--content-language-bengali-font: "Kohinoor Bangla", "Noto Serif Bengali", serif;
+	--content-language-gurmukhi-font: "Gurmukhi MN", "Noto Serif Gurmukhi", serif;
+	--content-language-gujarati-font: "Gujarati Sangam MN", "Noto Serif Gujarati", serif;
+	--content-language-kannada-font: "Kannada Sangam MN", "Noto Serif Kannada", serif;
+	--content-language-malayalam-font: "Malayalam Sangam MN", "Noto Serif Malayalam", serif;
+	--content-language-tamil-font: "Tamil Sangam MN", "Noto Serif Tamil", serif;
+	--content-language-telugu-font: "Telugu Sangam MN", "Noto Serif Telugu", serif;
+	--content-language-thai-font: "Thonburi", "Noto Serif Thai", serif;
 }
 
 html,
@@ -3531,17 +3551,37 @@ del em strong {
 	min-width: 8.5rem;
 }
 
-.content-translation-control {
-	display: block;
+.content-translation-actions-row {
+	align-items: center;
+	direction: ltr !important;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .35rem;
+	justify-content: flex-start;
+	margin: .25rem 0 .65rem;
 	max-width: 100%;
-	margin: .45rem 0 .75rem;
-	padding: .35rem 0;
+	padding: 0;
+	text-align: left !important;
+	unicode-bidi: isolate !important;
+}
+
+.content-translation-actions-row,
+.content-translation-actions-row * {
+	font-family: var(--bs-body-font-family) !important;
+}
+
+.content-translation-control {
+	display: inline-flex;
+	max-width: 100%;
+	margin: 0;
+	padding: 0;
 	color: var(--bs-body-color);
 	direction: ltr !important;
 	font-family: var(--bs-body-font-family) !important;
 	font-size: 16px !important;
 	line-height: 1.35;
 	text-align: left !important;
+	unicode-bidi: isolate !important;
 }
 
 .content-translate-button {
@@ -3551,9 +3591,12 @@ del em strong {
 	gap: .25rem;
 	direction: ltr !important;
 	font-family: var(--bs-body-font-family) !important;
-	font-size: .9em !important;
-	min-width: 6.75rem;
+	font-size: .82em !important;
+	line-height: 1.35 !important;
+	min-width: 0;
+	padding: .18rem .45rem !important;
 	text-align: center !important;
+	unicode-bidi: isolate !important;
 	white-space: nowrap;
 }
 
@@ -3575,30 +3618,235 @@ del em strong {
 .tafsir-only-page .content-translation-control-tafsir {
 	font-size: 16px !important;
 	line-height: 1.35 !important;
-	margin: .35rem 0 .45rem;
+	margin: 0;
 	padding: 0;
 }
 
 .tafsir-only-page .content-translate-button-tafsir {
-	font-size: .9em !important;
-	line-height: 1.5 !important;
-	padding: .25rem .5rem !important;
+	font-size: .82em !important;
+	line-height: 1.35 !important;
+	min-width: 0;
+	padding: .18rem .45rem !important;
 }
 
 .content-translation-revise-button {
+	font-size: .82em !important;
+	line-height: 1.35 !important;
 	min-width: 0;
-	padding-left: 0;
-	padding-right: 0;
+	padding: .18rem .45rem !important;
 	text-decoration: none;
 }
 
 .content-translation-revise-button:hover,
 .content-translation-revise-button:focus {
-	text-decoration: underline;
+	text-decoration: none;
+}
+
+.content-language-latin,
+.content-language-latin *,
+[data-content-language="en"],
+[data-content-language="en"] *,
+[data-content-language="es"],
+[data-content-language="es"] *,
+[data-content-language="fr"],
+[data-content-language="fr"] *,
+[data-content-language="pt"],
+[data-content-language="pt"] *,
+[data-content-language="id"],
+[data-content-language="id"] *,
+[data-content-language="de"],
+[data-content-language="de"] *,
+[data-content-language="pcm"],
+[data-content-language="pcm"] *,
+[data-content-language="ha"],
+[data-content-language="ha"] *,
+[data-content-language="it"],
+[data-content-language="it"] *,
+[data-content-language="tr"],
+[data-content-language="tr"] *,
+[data-content-language="vi"],
+[data-content-language="vi"] * {
+	font-family: var(--content-language-latin-font);
+}
+
+.content-language-arabic,
+.content-language-arabic *,
+[data-content-language="ar"],
+[data-content-language="ar"] * {
+	font-family: var(--content-language-arabic-font);
+}
+
+.content-language-urdu,
+.content-language-urdu *,
+[data-content-language="ur"],
+[data-content-language="ur"] * {
+	font-family: var(--content-language-urdu-font);
+	line-height: var(--content-language-urdu-line-height);
+}
+
+.content-language-persian,
+.content-language-persian *,
+[data-content-language="fa"],
+[data-content-language="fa"] * {
+	font-family: var(--content-language-persian-font);
+	line-height: var(--content-language-persian-line-height);
+}
+
+.content-language-hebrew,
+.content-language-hebrew *,
+[data-content-language="he"],
+[data-content-language="he"] * {
+	font-family: var(--content-language-hebrew-font);
+}
+
+.content-language-cjk,
+.content-language-cjk *,
+[data-content-language="zh"],
+[data-content-language="zh"] *,
+[data-content-language="yue"],
+[data-content-language="yue"] *,
+[data-content-language="wuu"],
+[data-content-language="wuu"] * {
+	font-family: var(--content-language-cjk-font);
+}
+
+.content-language-japanese,
+.content-language-japanese *,
+[data-content-language="ja"],
+[data-content-language="ja"] * {
+	font-family: var(--content-language-japanese-font);
+}
+
+.content-language-korean,
+.content-language-korean *,
+[data-content-language="ko"],
+[data-content-language="ko"] * {
+	font-family: var(--content-language-korean-font);
+}
+
+.content-language-cyrillic,
+.content-language-cyrillic *,
+[data-content-language="ru"],
+[data-content-language="ru"] * {
+	font-family: var(--content-language-cyrillic-font);
+}
+
+.content-language-devanagari,
+.content-language-devanagari *,
+[data-content-language="hi"],
+[data-content-language="hi"] *,
+[data-content-language="mr"],
+[data-content-language="mr"] * {
+	font-family: var(--content-language-devanagari-font);
+}
+
+.content-language-bengali,
+.content-language-bengali *,
+[data-content-language="bn"],
+[data-content-language="bn"] * {
+	font-family: var(--content-language-bengali-font);
+}
+
+.content-language-gurmukhi,
+.content-language-gurmukhi *,
+[data-content-language="pa"],
+[data-content-language="pa"] * {
+	font-family: var(--content-language-gurmukhi-font);
+}
+
+.content-language-gujarati,
+.content-language-gujarati *,
+[data-content-language="gu"],
+[data-content-language="gu"] * {
+	font-family: var(--content-language-gujarati-font);
+}
+
+.content-language-kannada,
+.content-language-kannada *,
+[data-content-language="kn"],
+[data-content-language="kn"] * {
+	font-family: var(--content-language-kannada-font);
+}
+
+.content-language-malayalam,
+.content-language-malayalam *,
+[data-content-language="ml"],
+[data-content-language="ml"] * {
+	font-family: var(--content-language-malayalam-font);
+}
+
+.content-language-tamil,
+.content-language-tamil *,
+[data-content-language="ta"],
+[data-content-language="ta"] * {
+	font-family: var(--content-language-tamil-font);
+}
+
+.content-language-telugu,
+.content-language-telugu *,
+[data-content-language="te"],
+[data-content-language="te"] * {
+	font-family: var(--content-language-telugu-font);
+}
+
+.content-language-thai,
+.content-language-thai *,
+[data-content-language="th"],
+[data-content-language="th"] * {
+	font-family: var(--content-language-thai-font);
+}
+
+[data-content-language="ar"].quran-hafs,
+[data-content-language="ar"] .quran-hafs,
+[data-content-language="ar"] .quran-hafs *,
+[data-content-language="ar"] .quran-corpus-word,
+[data-content-language="ar"] .quran-surah-name {
+	font-family: QuranV1, Serif;
+}
+
+.content-translation-language-switcher {
+	display: inline-flex;
+	margin: 0;
+	padding: 0;
+	direction: ltr !important;
+	font-family: var(--bs-body-font-family) !important;
+	font-size: .72rem !important;
+	line-height: 1.2;
+	text-align: left !important;
+	unicode-bidi: isolate !important;
+}
+
+.content-translation-language-select {
+	width: auto;
+	min-width: 5.75rem;
+	max-width: 9rem;
+	direction: ltr !important;
+	padding-top: .05rem;
+	padding-bottom: .05rem;
+	font-size: inherit !important;
+	line-height: 1.2 !important;
+	text-align: left !important;
+	text-align-last: left !important;
+	unicode-bidi: isolate !important;
+}
+
+.content-translation-language-select option {
+	direction: ltr !important;
+	text-align: left !important;
+	unicode-bidi: isolate !important;
 }
 
 .content-translation-modal .modal-content {
 	border-radius: .45rem;
+}
+
+.content-translation-modal-language,
+.content-translation-modal-language option {
+	direction: ltr !important;
+	font-family: var(--bs-body-font-family) !important;
+	text-align: left !important;
+	text-align-last: left !important;
+	unicode-bidi: isolate !important;
 }
 
 .content-translation-modal-copy,
@@ -4528,19 +4776,30 @@ del em strong {
 	font-family: var(--bs-body-font-family) !important;
 	font-size: 16px !important;
 	line-height: 1.35;
-	margin: .35rem 0 .45rem;
+	margin: 0;
 	padding: 0;
 	text-align: left !important;
+}
+
+.tafsir-only-page .quran-tafsir-entry .content-translation-actions-row {
+	margin: .35rem 0 .45rem;
 }
 
 .tafsir-only-page .quran-tafsir-entry .content-translate-button {
 	direction: ltr !important;
 	font-family: var(--bs-body-font-family);
-	font-size: .9em !important;
-	line-height: 1.5 !important;
-	min-width: 6.75rem;
-	padding: .25rem .5rem !important;
+	font-size: .82em !important;
+	line-height: 1.35 !important;
+	min-width: 0;
+	padding: .18rem .45rem !important;
 	text-align: center !important;
+}
+
+.tafsir-only-page .quran-tafsir-entry .content-translation-revise-button {
+	font-size: .82em !important;
+	line-height: 1.35 !important;
+	min-width: 0;
+	padding: .18rem .45rem !important;
 }
 
 details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah,

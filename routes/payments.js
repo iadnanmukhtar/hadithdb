@@ -66,6 +66,27 @@ router.post('/checkout', requirePaymentsEnabled, requireUser, async function (re
   res.json(session);
 });
 
+router.post('/content-translation-checkout', requirePaymentsEnabled, requireUser, async function (req, res) {
+  const session = await Payments.createContentTranslationCheckoutSession(req.user, req, {
+    packageId: req.body && req.body.packageId,
+    autoRecharge: req.body && req.body.autoRecharge === true,
+    autoRechargeThreshold: req.body && req.body.autoRechargeThreshold,
+    returnPath: req.body && req.body.returnPath,
+    itemType: req.body && req.body.itemType,
+    itemId: req.body && req.body.itemId,
+    targetLanguage: req.body && req.body.targetLanguage,
+    mode: req.body && req.body.mode
+  });
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(session);
+});
+
+router.delete('/content-translation-checkout/:sessionId', requirePaymentsEnabled, requireUser, async function (req, res) {
+  const result = await Payments.cancelContentTranslationCheckout(req.user, req.params.sessionId, req.body || {});
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(result);
+});
+
 router.post('/portal', requirePaymentsEnabled, requireUser, async function (req, res) {
   const session = await Payments.createBillingPortalSession(req.user, req);
   res.setHeader('Cache-Control', 'no-store');
@@ -103,11 +124,12 @@ router.post('/webhook', requirePaymentsEnabled, async function (req, res, next) 
   }
 });
 
-router.get('/languages', function (req, res) {
+router.get('/languages', async function (req, res) {
+  const languages = await PaymentConfig.loadLanguages();
   res.setHeader('Cache-Control', 'no-store');
   res.json({
     defaultLanguage: PaymentConfig.defaultLanguage(),
-    languages: PaymentConfig.supportedLanguages()
+    languages
   });
 });
 
