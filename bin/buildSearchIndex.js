@@ -23,8 +23,11 @@ const Index = require('../lib/Index');
 		for (var i = 0; i < indexNames.length; i++)
 			await ensureIndexExists(indexNames[i]);
 		if (indexNames.includes('hadiths')) {
-			var viewUpdate = await HadithTranslationIndexView.ensureView();
-			log(`v_hadiths translation columns ${viewUpdate.updated ? 'updated' : 'ready'} for ${viewUpdate.languages.length} language(s)`);
+			var viewUpdate = await HadithTranslationIndexView.ensureBaseView();
+			if (viewUpdate.updated)
+				log('v_hadiths restored to base view without generated translation columns');
+			var translationIndexFields = await HadithTranslationIndexView.loadIndexFields();
+			log(`hadith translation index fields ready for ${translationIndexFields.languages.length} language(s)`);
 		}
 		if (options.all) {
 			log(`retrieving data to index ${formatIndexNames(indexNames)}...`);

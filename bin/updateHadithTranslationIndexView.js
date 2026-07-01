@@ -10,8 +10,9 @@ const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 (async function main() {
 	try {
 		const force = process.argv.includes('--force');
-		const result = await HadithTranslationIndexView.ensureView({ force, forceLanguages: true });
-		console.log(`v_hadiths translation columns ${result.updated ? 'updated' : 'ready'} for ${result.languages.length} language(s), ${result.columns.length} column(s).`);
+		const result = await HadithTranslationIndexView.ensureBaseView({ force });
+		const fields = await HadithTranslationIndexView.loadIndexFields({ forceLanguages: true });
+		console.log(`v_hadiths base view ${result.updated ? 'restored' : 'ready'}; translated hadith index fields are loaded separately for ${fields.languages.length} language(s).`);
 	} finally {
 		global.dbPool.end();
 	}

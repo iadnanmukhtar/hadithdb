@@ -10,6 +10,7 @@
     "test": "jest",
     "build:knowledge": "node ./bin/buildHadithKnowledge.js",
     "build:commentaries-index": "node ./bin/buildCommentariesIndex.js",
+    "migrate:books:mongo": "node ./bin/migrateBooksToMongo.js",
     "update:hadith-translation-view": "node ./bin/updateHadithTranslationIndexView.js"
   },
   "keywords": [
@@ -53,6 +54,7 @@
     "markdown-it-wikilinks": "1.4.0",
     "marked": "^13.0.2",
     "marked-bidi": "^1.0.10",
+    "mongodb": "6.20.0",
     "mysql": "2.18.1",
     "natural": "^7.1.0",
     "newrelic": "^14.1.0",
