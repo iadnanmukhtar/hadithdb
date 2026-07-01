@@ -1743,6 +1743,7 @@ function initQuranTafsirTabs(root) {
 					return payload;
 				return Object.assign({}, payload, {
 					bilingual: true,
+					arabic_html: payload.html,
 					html: `<div class="row quran-tafsir-local-pair"><div class="col-md-6 col-sm-12">${english.html}</div><div class="col-md-6 col-sm-12">${payload.html}</div></div>`,
 					translation_existing: true,
 					content_translation_language: 'en'
@@ -1870,6 +1871,10 @@ function initQuranTafsirTabs(root) {
 								$('<p>').text(paragraph).appendTo(entryBody);
 							});
 						generatedBody = entryBody;
+					}
+					if (entry.payload.arabic_html) {
+						generatedBody.data('tafsirArabicHtml', entry.payload.arabic_html);
+						generatedBody.attr('data-tafsir-preserve-arabic', '1');
 					}
 					if (hasTafsirTranslationItem) {
 						generatedBody.attr({
@@ -8262,9 +8267,67 @@ function markContentTranslationTargetTranslated(target) {
 	refreshContentTranslationAuthControls();
 }
 
+function tafsirArabicHtmlForTranslationTarget(target) {
+	target = target && target.jquery ? target : $(target);
+	if (!target.length)
+		return '';
+	var stored = target.data('tafsirArabicHtml');
+	if (stored)
+		return stored.toString();
+	var section = target.find('.quran-tafsir-local-pair [lang="ar"]').last();
+	if (!section.length)
+		section = target.find('[lang="ar"][dir="rtl"]').last();
+	if (!section.length)
+		return '';
+	stored = section.html() || '';
+	if (stored) {
+		target.data('tafsirArabicHtml', stored);
+		target.attr('data-tafsir-preserve-arabic', '1');
+	}
+	return stored;
+}
+
+function applyTafsirContentTranslationResult(target, result, fallbackLanguage) {
+	target = target && target.jquery ? target : $(target);
+	if (!target.length || target.attr('data-content-translation-item-type') !== 'tafsir')
+		return false;
+	var arabicHtml = tafsirArabicHtmlForTranslationTarget(target);
+	if (!arabicHtml)
+		return false;
+	var content = result && result.content || {};
+	var text = [content.text || content.body || '', content.footnotes || content.footnote || ''].filter(Boolean).join('\n\n');
+	if (!text)
+		return false;
+	var targetLanguage = result && result.targetLanguage || {};
+	var lang = targetLanguage.code || fallbackLanguage || target.attr('data-content-translation-language') || 'en';
+	var pair = $('<div>').addClass('row quran-tafsir-local-pair');
+	var translationSection = $('<section>').addClass('col-md-6 col-sm-12').html(renderShareGeneratedMarkdown(text)).appendTo(pair);
+	setContentLanguageAttributes(translationSection, targetLanguage, lang);
+	$('<section>').addClass('col-md-6 col-sm-12').attr({
+		lang: 'ar',
+		dir: 'rtl'
+	}).html(arabicHtml).appendTo(pair);
+	target.empty().append(pair);
+	target.data('tafsirArabicHtml', arabicHtml);
+	target.attr({
+		'data-tafsir-preserve-arabic': '1',
+		'data-content-translation-language': lang,
+		lang: 'en',
+		dir: 'ltr'
+	});
+	return true;
+}
+
 function applyContentTranslationResult(target, result, fallbackLanguage) {
 	var targetLanguage = result && result.targetLanguage || {};
 	var lang = targetLanguage.code || fallbackLanguage || '';
+	if (applyTafsirContentTranslationResult(target, result, fallbackLanguage)) {
+		target.attr('data-content-translation-language', lang);
+		markContentTranslationTargetTranslated(target);
+		if (result && Number(result.points) > 0 && window.toastr)
+			toastr.success(`${Number(result.points).toLocaleString()} points used.`, 'Translation');
+		return;
+	}
 	if (applyHadithContentTranslationResult(target, result, fallbackLanguage)) {
 		target.attr('data-content-translation-language', lang);
 		markContentTranslationTargetTranslated(target);

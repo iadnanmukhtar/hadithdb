@@ -170,18 +170,20 @@ router.get('/tafsir/local', async function (req, res) {
   const tafsirTranslationsEnabled = PaymentConfig.contentTranslationEnabledForItemType('tafsir');
   const entries = rows.map(row => {
     const translationEstimate = tafsirTranslationsEnabled ? localCommentaryTranslationEstimate(row) : null;
-    const html = renderLocalCommentary(row, editMode, lang, src);
+    const rendered = renderLocalCommentaryResult(row, editMode, lang, src);
     return {
       id: row.id,
       ayahs_start: row.ayahFrom,
       count: row.ayahTo - row.ayahFrom,
-      bilingual: commentaryRowHasBothLanguages(row),
+      bilingual: rendered.bilingual,
+      ...(rendered.contentTranslationLanguage ? { content_translation_language: rendered.contentTranslationLanguage } : {}),
+      ...(rendered.arabicHtml ? { arabic_html: rendered.arabicHtml } : {}),
       ...(translationEstimate ? {
         translation_points: translationEstimate.points,
         translation_word_count: translationEstimate.wordCount,
         translation_existing: localCommentaryTranslationExisting(row, lang)
       } : {}),
-      html: html
+      html: rendered.html
     };
   }).filter(entry => !lang || entry.html || Number.isInteger(Number(entry.ayahs_start)));
   if (!entries.length) {
@@ -343,6 +345,7 @@ async function localCommentaryRowsFromIndex(src, surah, ayahFrom, ayahTo) {
     }
   }, 0, size, 'ayahFrom ASC, ayahTo ASC', false);
   return rows.map(row => ({
+    ...row,
     format: row.format,
     id: row.id,
     surah: Number(row.surah),
@@ -383,7 +386,7 @@ async function localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, 
         { range: { ayahTo: { gte: ayahFrom } } }
       ]
     }
-  }, [
+  }, localCommentaryIndexFields([
     'commentary_alias',
     'ordinal',
     'format',
@@ -395,8 +398,9 @@ async function localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, 
     'text_en',
     'footnotes',
     'footnotes_en'
-  ], 0, size, 'commentary_alias ASC, ayahFrom ASC, ayahTo ASC', false);
+  ]), 0, size, 'commentary_alias ASC, ayahFrom ASC, ayahTo ASC', false);
   return rows.map(row => ({
+    ...row,
     commentary_alias: row.commentary_alias,
     ordinal: Number(row.ordinal || 0),
     format: row.format,
@@ -409,6 +413,18 @@ async function localCommentaryRowsForAliasesFromIndex(aliases, surah, ayahFrom, 
     footnotes: row.footnotes,
     footnotes_en: row.footnotes_en
   }));
+}
+
+function localCommentaryIndexFields(baseFields) {
+  const fields = new Set(baseFields || []);
+  PaymentConfig.supportedLanguages().forEach(language => {
+    const code = normalizeTranslationLanguageCode(language && language.code);
+    if (!code || code === 'ar' || code === 'en')
+      return;
+    fields.add(`text_${code}`);
+    fields.add(`footnote_${code}`);
+  });
+  return Array.from(fields);
 }
 
 async function localCommentaryRowsForAliasesFromDb(aliases, surah, ayahFrom, ayahTo, size) {
@@ -497,27 +513,65 @@ function newCommentaryId(src, surah, ayahFrom, ayahTo) {
 }
 
 function renderLocalCommentary(row, editMode, lang, src) {
-  if (lang && commentaryRowHasBothLanguages(row))
-    lang = '';
-  if (lang === 'ar')
-    return renderLocalCommentaryLanguage(row, editMode, 'ar', src);
-  if (lang === 'en')
-    return renderLocalCommentaryLanguage(row, editMode, 'en', src);
+  return renderLocalCommentaryResult(row, editMode, lang, src).html;
+}
+
+function renderLocalCommentaryResult(row, editMode, lang, src) {
+  lang = normalizeTranslationLanguageCode(lang);
+  if (lang === 'en' && !commentaryRowHasBothLanguages(row)) {
+    const html = renderLocalCommentaryLanguage(row, editMode, 'en', src);
+    return {
+      html: html,
+      bilingual: false,
+      contentTranslationLanguage: html ? 'en' : ''
+    };
+  }
+  const translation = localCommentaryAvailableTranslation(row, lang === 'ar' ? 'en' : lang || 'en');
+  if (commentaryRowHasLanguage(row, 'ar') && translation) {
+    const arabicHtml = renderLocalCommentaryArabicContent(row, editMode, src);
+    const translationHtml = renderLocalCommentaryTranslationContent(row, editMode, translation, src);
+    if (arabicHtml && translationHtml) {
+      return {
+        html: renderLocalCommentaryPair(arabicHtml, translationHtml, translation),
+        bilingual: true,
+        contentTranslationLanguage: translation.code,
+        arabicHtml: arabicHtml
+      };
+    }
+  }
+  if (lang === 'ar') {
+    const html = renderLocalCommentaryLanguage(row, editMode, 'ar', src);
+    return {
+      html: html,
+      bilingual: false,
+      contentTranslationLanguage: html ? 'en' : '',
+      arabicHtml: html ? renderLocalCommentaryArabicContent(row, editMode, src) : ''
+    };
+  }
   const footnoteIdPrefix = commentaryFootnoteIdPrefix(src, row.id);
-  const arabic = editMode
-    ? renderEditableCommentaryLanguage(row, 'ar', src)
-    : renderCommentaryText(row.text, row.footnotes, commentaryFormat(row.format, 'ar'), { bracketedFootnotes: true, footnoteIdPrefix: footnoteIdPrefix });
+  const arabic = renderLocalCommentaryArabicContent(row, editMode, src);
   const english = editMode
     ? renderEditableCommentaryLanguage(row, 'en', src)
     : renderCommentaryText(row.text_en, row.footnotes_en, commentaryFormat(row.format, 'en'), { footnoteIdPrefix: footnoteIdPrefix, quranBackticks: true });
-  if (arabic && english)
-    return `<div class="row quran-tafsir-local-pair"><section class="col-md-6 col-sm-12" lang="en">${english}</section><section class="col-md-6 col-sm-12" lang="ar" dir="rtl">${arabic}</section></div>`;
+  if (arabic && english) {
+    return {
+      html: renderLocalCommentaryPair(arabic, english, localCommentaryLanguageMetadata('en')),
+      bilingual: true,
+      contentTranslationLanguage: 'en',
+      arabicHtml: arabic
+    };
+  }
   const sections = [];
   if (arabic)
     sections.push(`<section lang="ar" dir="rtl">${arabic}</section>`);
   if (english)
     sections.push(`<section lang="en">${english}</section>`);
-  return sections.join('\n');
+  return {
+    html: sections.join('\n'),
+    bilingual: false,
+    contentTranslationLanguage: english ? 'en' : (arabic ? 'en' : ''),
+    arabicHtml: arabic || ''
+  };
 }
 
 function commentaryRowHasLanguage(row, lang) {
@@ -532,6 +586,73 @@ function commentaryRowHasBothLanguages(row) {
   return commentaryRowHasLanguage(row, 'ar') && commentaryRowHasLanguage(row, 'en');
 }
 
+function commentaryRowGeneratedTranslationCodes(row) {
+  const seen = new Set();
+  Object.keys(row || {}).forEach(key => {
+    const match = key.match(/^(?:text|footnote)_([a-z][a-z0-9]{1,15})$/);
+    const code = normalizeTranslationLanguageCode(match && match[1]);
+    if (!code || code === 'ar' || code === 'en' || seen.has(code))
+      return;
+    if (trimToEmpty(row[`text_${code}`]) || trimToEmpty(row[`footnote_${code}`]))
+      seen.add(code);
+  });
+  return Array.from(seen).sort();
+}
+
+function localCommentaryAvailableTranslation(row, preferredLang) {
+  const codes = [];
+  const seen = new Set();
+  const add = code => {
+    code = normalizeTranslationLanguageCode(code);
+    if (!code || code === 'ar' || seen.has(code))
+      return;
+    seen.add(code);
+    codes.push(code);
+  };
+  add(preferredLang);
+  add('en');
+  commentaryRowGeneratedTranslationCodes(row).forEach(add);
+  for (const code of codes) {
+    const fields = localCommentaryLanguageFields(row, code);
+    if (trimToEmpty(fields.text) || trimToEmpty(fields.footnotes))
+      return {
+        ...localCommentaryLanguageMetadata(code),
+        text: fields.text,
+        footnotes: fields.footnotes
+      };
+  }
+  return null;
+}
+
+function localCommentaryLanguageFields(row, code) {
+  code = normalizeTranslationLanguageCode(code);
+  if (code === 'en') {
+    return {
+      text: row && row.text_en,
+      footnotes: row && row.footnotes_en
+    };
+  }
+  return {
+    text: row && row[`text_${code}`],
+    footnotes: row && row[`footnote_${code}`]
+  };
+}
+
+function localCommentaryLanguageMetadata(code) {
+  code = normalizeTranslationLanguageCode(code);
+  const language = PaymentConfig.languageMetadata(code) || {};
+  return {
+    code: code,
+    dir: language.dir === 'rtl' ? 'rtl' : 'ltr',
+    fontClass: language.fontClass || ''
+  };
+}
+
+function normalizeTranslationLanguageCode(code) {
+  code = trimToEmpty(code).toLowerCase();
+  return /^[a-z][a-z0-9]{1,15}$/.test(code) ? code : '';
+}
+
 function localCommentaryTranslationFields(row) {
   return {
     text: trimToEmpty(row && row.text) || trimToEmpty(row && row.text_en),
@@ -544,11 +665,12 @@ function localCommentaryTranslationEstimate(row) {
 }
 
 function localCommentaryTranslationExisting(row, lang) {
+  lang = normalizeTranslationLanguageCode(lang);
   if (lang === 'ar')
-    return false;
+    return !!localCommentaryAvailableTranslation(row, 'en');
   if (lang === 'en')
     return commentaryRowHasLanguage(row, 'en');
-  return commentaryRowHasLanguage(row, 'en');
+  return !!localCommentaryAvailableTranslation(row, lang || 'en');
 }
 
 function trimToEmpty(value) {
@@ -571,6 +693,42 @@ function renderLocalCommentaryLanguage(row, editMode, lang, src) {
     return `<section lang="ar" dir="rtl">${content}</section>${translation}`;
   }
   return `<section lang="en">${content}</section>`;
+}
+
+function renderLocalCommentaryArabicContent(row, editMode, src) {
+  return editMode
+    ? renderEditableCommentaryLanguage(row, 'ar', src)
+    : renderCommentaryText(
+      row.text,
+      row.footnotes,
+      commentaryFormat(row.format, 'ar'),
+      { bracketedFootnotes: true, footnoteIdPrefix: commentaryFootnoteIdPrefix(src, row.id) }
+    );
+}
+
+function renderLocalCommentaryTranslationContent(row, editMode, translation, src) {
+  if (!translation)
+    return '';
+  if (translation.code === 'en' && editMode)
+    return renderEditableCommentaryLanguage(row, 'en', src);
+  return renderCommentaryText(
+    translation.text,
+    translation.footnotes,
+    commentaryFormat(row.format, 'en'),
+    {
+      footnoteIdPrefix: commentaryFootnoteIdPrefix(src, `${row.id}-${translation.code}`),
+      quranBackticks: true,
+      markArabicOnlyBlocks: translation.code === 'en'
+    }
+  );
+}
+
+function renderLocalCommentaryPair(arabicHtml, translationHtml, translation) {
+  const lang = escapeHtml((translation && translation.code) || 'en');
+  const dir = translation && translation.dir === 'rtl' ? 'rtl' : 'ltr';
+  const fontClass = trimToEmpty(translation && translation.fontClass).replace(/[^A-Za-z0-9_-]+/g, ' ');
+  const classes = ['col-md-6 col-sm-12', fontClass].filter(Boolean).join(' ');
+  return `<div class="row quran-tafsir-local-pair"><section class="${escapeHtml(classes)}" lang="${lang}" dir="${dir}">${translationHtml}</section><section class="col-md-6 col-sm-12" lang="ar" dir="rtl">${arabicHtml}</section></div>`;
 }
 
 function renderCollapsedEditableTranslation(row, src) {
@@ -624,10 +782,16 @@ function renderCommentaryText(text, footnotes, format, options = {}) {
   if (options.bracketedFootnotes)
     content = bracketedFootnotesToMarkdown(content);
   if (format === 'html')
-    return markArabicOnlyBlocks(namespaceFootnoteIds(content, options.footnoteIdPrefix));
+    return maybeMarkArabicOnlyBlocks(namespaceFootnoteIds(content, options.footnoteIdPrefix), options);
   const renderer = options.quranBackticks ? quranBacktickMd : md;
   const html = renderer.render(content).replace(/<br>/g, '</p><p>');
-  return markArabicOnlyBlocks(namespaceFootnoteIds(html, options.footnoteIdPrefix));
+  return maybeMarkArabicOnlyBlocks(namespaceFootnoteIds(html, options.footnoteIdPrefix), options);
+}
+
+function maybeMarkArabicOnlyBlocks(html, options) {
+  if (options && options.markArabicOnlyBlocks === false)
+    return html;
+  return markArabicOnlyBlocks(html);
 }
 
 function renderQuranBacktickToken(tokens, idx) {
