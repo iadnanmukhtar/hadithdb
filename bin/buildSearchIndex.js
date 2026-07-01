@@ -9,6 +9,7 @@ require('../lib/Globals');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const Index = require('../lib/Index');
 
 (async () => {
@@ -21,6 +22,10 @@ const Index = require('../lib/Index');
 		var books;
 		for (var i = 0; i < indexNames.length; i++)
 			await ensureIndexExists(indexNames[i]);
+		if (indexNames.includes('hadiths')) {
+			var viewUpdate = await HadithTranslationIndexView.ensureView();
+			log(`v_hadiths translation columns ${viewUpdate.updated ? 'updated' : 'ready'} for ${viewUpdate.languages.length} language(s)`);
+		}
 		if (options.all) {
 			log(`retrieving data to index ${formatIndexNames(indexNames)}...`);
 			books = await global.query(`SELECT * FROM books b ORDER BY id`);
@@ -60,22 +65,12 @@ async function getData(indexName, book) {
 }
 
 async function getHadithData(book) {
+	// Index.updateBulk(..., true) derives prev/next refs from this ordered book-scoped row list.
 	var rows = await global.query(`
-		SELECT
-			vh.*,
-			p.hId AS prevId,
-			p.ref AS prev_ref,
-			p.path AS prev_path,
-			n.hId AS nextId,
-			n.ref AS next_ref,
-			n.path AS next_path
-		FROM v_hadiths vh
-		LEFT JOIN v_hadiths p
-			ON p.ordinal = vh.ordinal - 1
-		LEFT JOIN v_hadiths n
-			ON n.ordinal = vh.ordinal + 1
-		WHERE vh.book_id = ${book.id}
-		ORDER BY vh.ordinal`);
+		SELECT *
+		FROM v_hadiths
+		WHERE book_id = ${book.id}
+		ORDER BY ordinal`);
 	return rows;
 }
 

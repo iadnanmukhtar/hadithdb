@@ -9,7 +9,8 @@
     "dev": "nodemon --exec \"node -r dotenv/config -r newrelic\" ./bin/www",
     "test": "jest",
     "build:knowledge": "node ./bin/buildHadithKnowledge.js",
-    "build:commentaries-index": "node ./bin/buildCommentariesIndex.js"
+    "build:commentaries-index": "node ./bin/buildCommentariesIndex.js",
+    "update:hadith-translation-view": "node ./bin/updateHadithTranslationIndexView.js"
   },
   "keywords": [
     "hadith",

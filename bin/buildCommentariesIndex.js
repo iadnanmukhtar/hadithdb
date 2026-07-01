@@ -11,14 +11,17 @@ const path = require('path');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
+const CommentaryTranslationIndexFields = require('../lib/CommentaryTranslationIndexFields');
 
 const INDEX = 'commentaries';
 const options = readOptions(process.argv.slice(2));
 let dbPoolEnded = false;
+let translationIndexFields = Object.freeze({ languages: [], columns: [], selectSql: '', joinSql: '' });
 
 (async () => {
 	try {
 		await ensureIndexExists();
+		translationIndexFields = await CommentaryTranslationIndexFields.loadIndexFields();
 		if (options.alias) {
 			await reindexCommentaryAlias(options.alias);
 			return;
@@ -64,7 +67,7 @@ async function reindexCommentaryAlias(alias) {
 }
 
 function normalizeCommentaryRow(row) {
-	['text', 'text_en', 'footnotes', 'footnotes_en'].forEach(column => {
+	['text', 'text_en', 'footnotes', 'footnotes_en', ...translationIndexFields.columns].forEach(column => {
 		row[column] = Tafsir.stripPageMarkers(row[column]);
 	});
 	return row;
@@ -136,12 +139,14 @@ async function getCommentaries(alias, limit, offset, freshConnection, afterId) {
 			hc.text,
 			hc.text_en,
 			hc.footnotes,
-			hc.footnotes_en,
+			hc.footnotes_en
+			${translationIndexFields.selectSql ? `,\n\t\t\t${translationIndexFields.selectSql}` : ''},
 			hc.created,
 			hc.lastmod
 		FROM ${commentaryJoin.from}
 		${commentaryJoin.join}
 		JOIN v_hadiths q ON q.id=hc.hadithId
+		${translationIndexFields.joinSql}
 		WHERE bc.source='local'
 			AND bc.hidden=0
 			AND ${commentaryJoin.typePredicate}
@@ -183,11 +188,13 @@ async function getCommentariesByIdBatch(alias, limit, afterId, freshConnection) 
 			hc.text,
 			hc.text_en,
 			hc.footnotes,
-			hc.footnotes_en,
+			hc.footnotes_en
+			${translationIndexFields.selectSql ? `,\n\t\t\t${translationIndexFields.selectSql}` : ''},
 			hc.created,
 			hc.lastmod
 		FROM ${commentaryJoin.from}
 		${commentaryJoin.join}
+		${translationIndexFields.joinSql}
 		WHERE bc.source='local'
 			AND bc.hidden=0
 			AND ${commentaryJoin.typePredicate}

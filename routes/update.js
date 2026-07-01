@@ -14,6 +14,7 @@ const HadithKnowledge = require('../lib/HadithKnowledge');
 const HadithRevision = require('../lib/HadithRevision');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
+const CommentaryTranslationIndexFields = require('../lib/CommentaryTranslationIndexFields');
 const Index = require('../lib/Index');
 const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
@@ -23,6 +24,7 @@ const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
 const { Heading, Item, Library } = require('../lib/Model');
 
 const router = express.Router();
+let commentaryTranslationIndexFieldsPromise = null;
 
 async function requireAdmin(req, res, next) {
   let user;
@@ -535,8 +537,12 @@ async function flushQuranCatalogBookCaches(bookAliases) {
 }
 
 async function commentaryIndexRowById(id) {
+  id = parseInt(id, 10);
+  if (!Number.isInteger(id) || id <= 0)
+    return null;
+  var translationIndexFields = await loadCommentaryTranslationIndexFields();
   var commentaryJoin = await Books.commentaryJoin('bc', 'hc');
-  return (await global.query(`
+  var row = (await global.query(`
     SELECT
       hc.id,
       hc.id AS hId,
@@ -576,17 +582,35 @@ async function commentaryIndexRowById(id) {
       hc.text,
       hc.text_en,
       hc.footnotes,
-      hc.footnotes_en,
+      hc.footnotes_en
+      ${translationIndexFields.selectSql ? `,\n      ${translationIndexFields.selectSql}` : ''},
       hc.created,
       hc.lastmod
     FROM ${commentaryJoin.from}
     ${commentaryJoin.join}
     JOIN v_hadiths q ON q.id=hc.hadithId
-    WHERE hc.id=${parseInt(id, 10)}
+    ${translationIndexFields.joinSql}
+    WHERE hc.id=${id}
       AND bc.source='local'
       AND bc.hidden=0
       AND ${commentaryJoin.typePredicate}
     LIMIT 1`))[0];
+  if (row) {
+    ['text', 'text_en', 'footnotes', 'footnotes_en', ...translationIndexFields.columns].forEach(column => {
+      row[column] = Tafsir.stripPageMarkers(row[column]);
+    });
+  }
+  return row;
+}
+
+function loadCommentaryTranslationIndexFields() {
+  if (!commentaryTranslationIndexFieldsPromise) {
+    commentaryTranslationIndexFieldsPromise = CommentaryTranslationIndexFields.loadIndexFields().catch(err => {
+      commentaryTranslationIndexFieldsPromise = null;
+      throw err;
+    });
+  }
+  return commentaryTranslationIndexFieldsPromise;
 }
 
 function refreshCommentaryIndexInBackground(id) {
