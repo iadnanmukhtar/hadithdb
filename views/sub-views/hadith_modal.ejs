@@ -20,28 +20,29 @@
 				</button>
 			</div>
 			<div class="hadith-share-control-group">
-				<div class="form-check form-switch hadith-share-arabic-toggle" title="Show Arabic">
-					<input class="form-check-input hadith-share-arabic" type="checkbox" role="switch" id="H<%= i.id %>-arabic" checked>
-					<label class="form-check-label" for="H<%= i.id %>-arabic">Arabic</label>
-				</div>
 				<% if (paymentFeatureEnabled) { %>
-				<label class="hadith-share-language-control" title="Share language">
-					<span class="visually-hidden">Share language</span>
-					<select class="form-select form-select-sm hadith-share-language-select" data-share-language-select="1" data-share-language-default="en" aria-label="Share language"></select>
-				</label>
+				<div class="dropdown hadith-share-language-control" title="Share languages">
+					<button class="btn btn-sm btn-outline-secondary dropdown-toggle hadith-share-language-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" data-share-language-toggle-button="1">
+						Translations
+					</button>
+					<div class="dropdown-menu dropdown-menu-end hadith-share-language-menu" data-share-language-menu="1" aria-label="Share languages"></div>
+				</div>
 				<% } %>
 				<div class="hadith-share-size-controls" aria-label="Share image font sizes">
-					<label title="English text size">
-						<span>English</span>
-						<input class="form-range hadith-share-size" type="range" min="70" max="130" step="5" value="100" data-share-size-var="--share-english-tune">
-					</label>
 					<label title="Arabic text size">
 						<span>Arabic</span>
-						<input class="form-range hadith-share-size" type="range" min="70" max="130" step="5" value="100" data-share-size-var="--share-arabic-tune">
+						<input class="form-range hadith-share-size" type="range" min="0" max="130" step="5" value="100" data-share-size-var="--share-arabic-tune" data-share-size-disable-target="arabic">
+					</label>
+					<label title="Translation text size">
+						<span>Translation</span>
+						<input class="form-range hadith-share-size" type="range" min="0" max="130" step="5" value="100" data-share-size-var="--share-translation-tune" data-share-size-disable-target="translation">
 					</label>
 				</div>
 			</div>
 			<div class="hadith-share-tool-group">
+				<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-copy-text" title="Copy text" aria-label="Copy text">
+					<span class="bi bi-card-text"></span>
+				</button>
 				<button type="button" class="btn btn-sm btn-outline-secondary hadith-share-copy" title="Copy image" aria-label="Copy image">
 					<span class="bi bi-clipboard"></span>
 				</button>
@@ -58,8 +59,21 @@
 				<% if (en.title || ar.title) { %>
 					<h2 class="hadith-share-title share-editable" contenteditable="false" data-share-generated-title="1"><%= en.title %></h2>
 				<% } %>
+				<% if (ar.body) { %>
+					<section class="hadith-share-section hadith-share-arabic-section" lang="ar">
+						<div class="hadith-share-ref">
+							<%= ar.book_shortName || i.book_shortName || '' %> <%= ar.num || i.num || '' %>:
+							<% if (i.remark === 0 && arNarrator) { %>
+								عن <span class="share-editable" contenteditable="false"><%= arNarrator %></span> —
+							<% } %>
+						</div>
+						<div class="body hadith-share-text share-editable" lang="ar" contenteditable="false" data-markdown-source="<%= utils.emptyIfNull(ar.body) %>">
+							<%- utils.markdownToHtml(ar.body) %>
+						</div>
+					</section>
+				<% } %>
 				<% if (en.body || ar.body) { %>
-					<section class="hadith-share-section" lang="en">
+					<section class="hadith-share-section hadith-share-translation-section" lang="en" data-share-copy-section="translation">
 						<div class="hadith-share-ref">
 							<% if (i.book_virtual) { %>
 								<%= String(enActual.book_shortName || i.book_shortName_en || '').toUpperCase() %> <%= en.num || i.num || '' %>:
@@ -72,19 +86,6 @@
 						</div>
 						<div class="body hadith-share-text share-editable" lang="en" contenteditable="false" data-share-generated-body="1" data-markdown-source="<%= utils.emptyIfNull(en.body) %>">
 							<%- utils.markdownToHtml(en.body) %>
-						</div>
-					</section>
-				<% } %>
-				<% if (ar.body) { %>
-					<section class="hadith-share-section hadith-share-arabic-section" lang="ar">
-						<div class="hadith-share-ref">
-							<%= ar.book_shortName || i.book_shortName || '' %> <%= ar.num || i.num || '' %>:
-							<% if (i.remark === 0 && arNarrator) { %>
-								عن <span class="share-editable" contenteditable="false"><%= arNarrator %></span> —
-							<% } %>
-						</div>
-						<div class="body hadith-share-text share-editable" lang="ar" contenteditable="false" data-markdown-source="<%= utils.emptyIfNull(ar.body) %>">
-							<%- utils.markdownToHtml(ar.body) %>
 						</div>
 					</section>
 				<% } %>

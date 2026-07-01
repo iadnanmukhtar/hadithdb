@@ -8103,6 +8103,132 @@ function applyGeneratedShareContent(modal, card, result) {
 		toastr.success(`${Number(result.points).toLocaleString()} points used.`, 'Translation');
 }
 
+function generatedShareTranslationSectionId(code) {
+	return `share-generated-translation-${(code || '').toString().replace(/[^a-z0-9_-]/gi, '').toLowerCase()}`;
+}
+
+function generatedShareTranslationContentHtml(content) {
+	content = content || {};
+	var parts = [];
+	if (content.title)
+		parts.push(`<strong>${$('<div>').text(content.title).html()}</strong>`);
+	if (content.body || content.text)
+		parts.push(renderShareGeneratedMarkdown(content.body || content.text));
+	if (content.footnote || content.footnotes)
+		parts.push(renderShareGeneratedMarkdown(content.footnote || content.footnotes));
+	return parts.filter(Boolean).join('\n');
+}
+
+function generatedShareTranslationLabel(translation) {
+	return translation && (translation.label || translation.code && translation.code.toUpperCase()) || '';
+}
+
+function upsertGeneratedShareTranslationSection(modal, card, translation) {
+	if (!modal || !card || !translation || !translation.code)
+		return;
+	var code = translation.code;
+	var sectionId = generatedShareTranslationSectionId(code);
+	var existing = modal.querySelector(`[data-share-generated-translation-section="${code}"]`);
+	if (!translation.content || !Object.values(translation.content).some(Boolean)) {
+		if (existing)
+			existing.remove();
+		return;
+	}
+	var footer = card.querySelector('.hadith-share-footer');
+	var section = existing || document.createElement('section');
+	section.className = 'hadith-share-section hadith-share-translation-section hadith-share-generated-translation-section';
+	section.setAttribute('data-share-generated-translation-section', code);
+	section.setAttribute('data-share-copy-section', 'translation');
+	section.id = sectionId;
+	setContentLanguageAttributes(section, translation, code);
+	var label = generatedShareTranslationLabel(translation);
+	section.innerHTML = `
+		<div class="hadith-share-ref share-editable" contenteditable="false">${$('<div>').text(label).html()}</div>
+		<div class="body hadith-share-text share-editable" lang="${$('<div>').text(code).html()}" contenteditable="false" data-share-copy-body="1">${generatedShareTranslationContentHtml(translation.content)}</div>
+	`;
+	if (!existing)
+		card.querySelector('.hadith-share-card-inner').insertBefore(section, footer || null);
+}
+
+function removeGeneratedShareTranslationSection(modal, code) {
+	var section = modal ? modal.querySelector(`[data-share-generated-translation-section="${code}"]`) : null;
+	if (section)
+		section.remove();
+}
+
+function selectedGeneratedShareTranslations(modal) {
+	return Array.from(modal ? modal.querySelectorAll('[data-share-language-option]:checked') : []).map(function (input) {
+		return input.value;
+	}).filter(Boolean);
+}
+
+function updateGeneratedShareLanguageToggle(modal) {
+	var button = modal ? modal.querySelector('[data-share-language-toggle-button="1"]') : null;
+	if (!button)
+		return;
+	var selected = selectedGeneratedShareTranslations(modal);
+	button.textContent = selected.length < 1 ? 'Translations' : `${selected.length} selected`;
+}
+
+function renderGeneratedShareLanguageMenu(modal, card, translations) {
+	var menu = modal ? modal.querySelector('[data-share-language-menu="1"]') : null;
+	if (!menu)
+		return;
+	translations = normalizeContentTranslationLanguages(translations).filter(function (translation) {
+		return translation && translation.code && translation.code !== 'ar' && translation.content && Object.values(translation.content).some(Boolean);
+	});
+	menu.innerHTML = '';
+	if (translations.length < 1) {
+		var empty = document.createElement('div');
+		empty.className = 'dropdown-item-text text-muted small';
+		empty.textContent = 'No translations available';
+		menu.appendChild(empty);
+		updateGeneratedShareLanguageToggle(modal);
+		return;
+	}
+	translations.forEach(function (translation) {
+		var id = `${modal.closest('.modal') && modal.closest('.modal').id || card.getAttribute('data-share-generated-item-id') || 'share'}-${translation.code}-share-language`;
+		var wrap = document.createElement('div');
+		wrap.className = 'form-check';
+		var input = document.createElement('input');
+		input.className = 'form-check-input';
+		input.type = 'checkbox';
+		input.id = id;
+		input.value = translation.code;
+		input.setAttribute('data-share-language-option', '1');
+		input.checked = translation.code === 'en';
+		var label = document.createElement('label');
+		label.className = 'form-check-label';
+		label.htmlFor = id;
+		label.textContent = generatedShareTranslationLabel(translation);
+		wrap.appendChild(input);
+		wrap.appendChild(label);
+		menu.appendChild(wrap);
+		var applySelection = function () {
+			if (translation.code === 'en') {
+				var defaultSection = modal.querySelector('[data-share-generated-body="1"]');
+				defaultSection = defaultSection ? defaultSection.closest('.hadith-share-section') : null;
+				if (defaultSection)
+					defaultSection.classList.toggle('d-none', !input.checked);
+			} else if (input.checked) {
+				upsertGeneratedShareTranslationSection(modal, card, translation);
+			} else {
+				removeGeneratedShareTranslationSection(modal, translation.code);
+			}
+		};
+		if (input.checked && translation.code !== 'en')
+			upsertGeneratedShareTranslationSection(modal, card, translation);
+		input.addEventListener('change', function () {
+			applySelection();
+			updateGeneratedShareLanguageToggle(modal);
+			scheduleHadithShareCardFit(card);
+			scheduleHadithShareRender(card);
+		});
+		applySelection();
+	});
+	updateGeneratedShareLanguageToggle(modal);
+}
+
 function hadithContentTranslationScope(target) {
 	var node = target && target.jquery ? target[0] : target;
 	return node ? $(node).closest('[data-content-translation-scope]') : $();
@@ -8161,59 +8287,23 @@ function resetHadithContentTranslationScope(target) {
 function initGeneratedShareLanguageSelect(modal, card) {
 	if (!paymentFeatureEnabled())
 		return;
-	var selector = modal ? modal.querySelector('[data-share-language-select="1"]') : null;
-	if (!selector || !card)
+	var menu = modal ? modal.querySelector('[data-share-language-menu="1"]') : null;
+	if (!menu || !card)
 		return;
-	if (selector.dataset.shareLanguageBound === 'true')
+	if (menu.dataset.shareLanguageBound === 'true')
 		return;
-	selector.dataset.shareLanguageBound = 'true';
+	menu.dataset.shareLanguageBound = 'true';
 	preserveGeneratedShareDefaults(modal);
-	Promise.all([contentTranslationLanguages(), preferredContentLanguage()]).then(function (results) {
-		var languages = results[0];
-		var preferred = results[1] || selector.getAttribute('data-share-language-default') || 'en';
-		selector.innerHTML = '';
-		languages.forEach(function (language) {
-			var option = document.createElement('option');
-			option.value = language.code;
-			option.textContent = language.label || language.code.toUpperCase();
-			option.dir = language.dir === 'rtl' ? 'rtl' : 'ltr';
-			option.dataset.contentLanguage = language.code;
-			selector.appendChild(option);
-		});
-		selector.value = languages.some(function (language) { return language.code === preferred; }) ? preferred : 'en';
-		setContentLanguageAttributes(selector, languages.find(function (language) { return language.code === selector.value; }), selector.value);
-		if (selector.value !== 'en')
-			selector.dispatchEvent(new Event('change'));
-	});
-	selector.addEventListener('change', async function () {
-		var language = selector.value || 'en';
-		setContentLanguageAttributes(selector, contentTranslationKnownLanguage(language), language);
-		if (language === 'en') {
-			restoreGeneratedShareDefaults(modal);
-			scheduleHadithShareCardFit(card);
-			scheduleHadithShareRender(card);
-			return;
-		}
-		try {
-			selector.disabled = true;
-			var estimate = await generatedShareRequest(card, language, 'translate', true);
-			if (Number(estimate.points || 0) > 0 && !window.confirm(`Generate this translation for ${Number(estimate.points).toLocaleString()} points?`)) {
-				selector.value = 'en';
-				restoreGeneratedShareDefaults(modal);
-				return;
-			}
-			var result = await generatedShareRequest(card, language, 'translate', false);
-			applyGeneratedShareContent(modal, card, result);
-			scheduleHadithShareCardFit(card);
-			scheduleHadithShareRender(card);
-		} catch (err) {
-			selector.value = 'en';
-			restoreGeneratedShareDefaults(modal);
-			if (window.toastr)
-				toastr.error(err.message || 'Unable to translate share text.', 'Translation');
-		} finally {
-			selector.disabled = false;
-		}
+	contentTranslationAvailableRequest(
+		card.getAttribute('data-share-generated-item-type'),
+		card.getAttribute('data-share-generated-item-id'),
+		false
+	).then(function (payload) {
+		renderGeneratedShareLanguageMenu(modal, card, payload && payload.translations || []);
+		scheduleHadithShareCardFit(card);
+		scheduleHadithShareRender(card);
+	}).catch(function () {
+		renderGeneratedShareLanguageMenu(modal, card, []);
 	});
 }
 
@@ -9123,6 +9213,7 @@ function initHadithShareModals(root) {
 		var arabicSwitch = modal.querySelector('.hadith-share-arabic');
 		var languageToggle = arabicSwitch ? (arabicSwitch.dataset.shareLanguageToggle || 'arabic') : 'arabic';
 		var sizeControls = modal.querySelectorAll('.hadith-share-size');
+		var copyTextButton = modal.querySelector('.hadith-share-copy-text');
 		var copyButton = modal.querySelector('.hadith-share-copy');
 		var shareButton = modal.querySelector('.hadith-share-native');
 		var resizeTimer = null;
@@ -9216,6 +9307,12 @@ function initHadithShareModals(root) {
 		if (copyButton) {
 			copyButton.addEventListener('click', function () {
 				exportHadithShareCard(card, 'copy', copyButton);
+			});
+		}
+
+		if (copyTextButton) {
+			copyTextButton.addEventListener('click', function () {
+				copyHadithShareCardText(card, copyTextButton);
 			});
 		}
 
@@ -9325,7 +9422,33 @@ function updateHadithShareSizeState(card, controls) {
 		if (!prop)
 			return;
 		var value = Number(control.value);
-		if (!Number.isFinite(value) || value <= 0)
+		if (!Number.isFinite(value))
+			value = 100;
+		if (control.dataset.shareSizeDisableTarget === 'arabic') {
+			var hideArabic = value <= 0;
+			var modal = card.closest('.hadith-share-modal') || document;
+			modal.querySelectorAll('.hadith-share-arabic-section').forEach(function (section) {
+				section.classList.toggle('d-none', hideArabic);
+			});
+			card.classList.toggle('hadith-share-english-only', hideArabic);
+			if (hideArabic) {
+				card.style.setProperty(prop, '1.00');
+				return;
+			}
+		}
+		if (control.dataset.shareSizeDisableTarget === 'translation') {
+			var hideTranslations = value <= 0;
+			var translationModal = card.closest('.hadith-share-modal') || document;
+			translationModal.querySelectorAll('.hadith-share-translation-section').forEach(function (section) {
+				section.classList.toggle('d-none', hideTranslations);
+			});
+			card.classList.toggle('hadith-share-arabic-only', hideTranslations);
+			if (hideTranslations) {
+				card.style.setProperty(prop, '1.00');
+				return;
+			}
+		}
+		if (value <= 0)
 			value = 100;
 		card.style.setProperty(prop, (value / 100).toFixed(2));
 	});
@@ -9443,6 +9566,61 @@ async function exportHadithShareCard(card, mode, button) {
 			toastr.error(err.message || 'Unable to create image');
 	} finally {
 		card.classList.remove('is-exporting');
+		if (button) {
+			button.disabled = originalDisabled;
+			button.innerHTML = originalHtml;
+		}
+	}
+}
+
+function plainTextFromShareSection(section) {
+	if (!section || section.classList.contains('d-none'))
+		return '';
+	var copyBody = section.querySelector('[data-share-copy-body="1"]') || section.querySelector('.hadith-share-text');
+	var text = copyBody ? copyBody.innerText : section.innerText;
+	return (text || '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function hadithShareCardText(card) {
+	if (!card)
+		return '';
+	var lines = [];
+	var title = card.querySelector('.hadith-share-title');
+	if (title && !title.classList.contains('d-none') && (title.innerText || '').trim())
+		lines.push(title.innerText.trim());
+	card.querySelectorAll('.hadith-share-section').forEach(function (section) {
+		var text = plainTextFromShareSection(section);
+		if (text)
+			lines.push(text);
+	});
+	var ref = card.getAttribute('data-share-ref') || '';
+	if (ref)
+		lines.push(ref);
+	lines.push('hadithunlocked.com');
+	return lines.filter(Boolean).join('\n\n');
+}
+
+async function copyHadithShareCardText(card, button) {
+	var text = hadithShareCardText(card);
+	if (!text) {
+		if (window.toastr)
+			toastr.error('No text available to copy.');
+		return;
+	}
+	var originalHtml = button ? button.innerHTML : '';
+	var originalDisabled = button ? button.disabled : false;
+	if (button) {
+		button.disabled = true;
+		button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>';
+	}
+	try {
+		await copyTextToClipboard(text);
+		if (window.toastr)
+			toastr.success('Text copied to clipboard');
+	} catch (err) {
+		if (window.toastr)
+			toastr.error('Unable to copy text.');
+	} finally {
 		if (button) {
 			button.disabled = originalDisabled;
 			button.innerHTML = originalHtml;
