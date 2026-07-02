@@ -666,8 +666,84 @@ nav .nav-link[aria-current="page"] {
 	color: var(--c-accent);
 }
 
+.top-nav-desktop-actions {
+	column-gap: 0.9rem;
+}
+
+.top-nav-desktop-actions > .nav-item > .nav-link {
+	padding-right: 0;
+}
+
+.top-nav-language-item {
+	align-items: center;
+	display: flex;
+}
+
+.global-content-language-dropdown {
+	direction: ltr !important;
+	font-family: inherit !important;
+	text-align: left;
+}
+
+.global-content-language-dropdown * {
+	font-family: inherit !important;
+}
+
+.global-content-language-toggle {
+	align-items: center;
+	display: inline-flex;
+	font-size: 0.75rem;
+	font-weight: 600;
+	justify-content: center;
+	line-height: 1.2;
+	min-width: 2.9rem;
+	padding: 0.1rem 0.25rem;
+	text-transform: uppercase;
+	width: 2.9rem;
+}
+
+.global-content-language-toggle.dropdown-toggle::after {
+	margin-left: 0.22rem;
+}
+
+.global-content-language-menu {
+	max-height: min(70vh, 28rem);
+	min-width: 12rem;
+	overflow-y: auto;
+}
+
+.global-content-language-option {
+	align-items: baseline;
+	display: flex;
+	gap: 0.55rem;
+}
+
+.global-content-language-code {
+	font-size: 0.78rem;
+	font-weight: 700;
+	min-width: 2.4rem;
+	text-transform: uppercase;
+}
+
+.global-content-language-name {
+	flex: 1 1 auto;
+}
+
+.site-navbar.shrink .global-content-language-toggle {
+	font-size: 0.7rem;
+	min-width: 2.75rem;
+	padding-bottom: 0;
+	padding-top: 0;
+	width: 2.75rem;
+}
+
 .top-nav-mobile-actions .top-nav-icon-link {
 	padding-right: 0.5rem;
+}
+
+.top-nav-mobile-actions .global-content-language-toggle {
+	min-width: 2.75rem;
+	width: 2.75rem;
 }
 
 .book-catalog-tabs .nav-link,
@@ -842,6 +918,22 @@ nav .nav-link[aria-current="page"] {
 .icon {
 	color: var(--c-accent);
 	text-indent: 0;
+}
+
+.hadith-share-action-link {
+	background: var(--c-accent) !important;
+	border-color: var(--c-accent) !important;
+	color: var(--c-white) !important;
+	text-decoration: none !important;
+	vertical-align: baseline;
+}
+
+.hadith-share-action-link:hover,
+.hadith-share-action-link:focus,
+.hadith-share-action-link:active {
+	background: var(--c-accent-92) !important;
+	border-color: var(--c-accent) !important;
+	color: var(--c-white) !important;
 }
 
 .text-accent {
@@ -3851,6 +3943,10 @@ del em strong {
 	line-height: 1.2;
 	text-align: left !important;
 	unicode-bidi: isolate !important;
+}
+
+.admin-content-translation-panel:not(.d-none) {
+	display: contents;
 }
 
 .content-translation-language-select {

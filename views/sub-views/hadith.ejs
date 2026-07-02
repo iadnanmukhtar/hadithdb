@@ -4,7 +4,8 @@
 	const isSimilarSection = typeof similarSection !== 'undefined' && similarSection;
 	const isQuranItem = i.remark == 2 || i.book_alias === 'quran' || (i.actual && i.actual.book_alias === 'quran');
 	const paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
-	const enableHadithContentTranslation = paymentFeatureEnabled && !site.editMode && !isQuranItem && !isSimilarSection;
+	const enableHadithContentLanguage = paymentFeatureEnabled && !site.editMode && !isQuranItem;
+	const enableHadithContentTranslation = enableHadithContentLanguage && !isSimilarSection;
 	const contentTranslationItemId = i.actual ? i.actual.id : i.id;
 	const contentTranslationSourceFields = {
 		title: utils.emptyIfNull(ar.title) || utils.emptyIfNull(en.title),
@@ -17,7 +18,7 @@
 		: { points: 0, wordCount: 0 };
 %>
 <a id="<%= String(i.num || i.num0 || i.id || '').replace(/:/g, '-') %>"></a>
-<article class="row mt-3<%= isQuranItem ? ' quran-search-item' : '' %>"<%- isSimilarSection && i.similarCandidate ? ' data-similar-candidate="true"' : '' %><% if (enableHadithContentTranslation) { %> data-content-translation-scope="hadith" data-content-translation-item-id="<%= contentTranslationItemId %>" data-content-translation-points="<%= contentTranslationEstimate.points %>" data-content-translation-word-count="<%= contentTranslationEstimate.wordCount %>"<% } %>>
+<article class="row mt-3<%= isQuranItem ? ' quran-search-item' : '' %>"<%- isSimilarSection && i.similarCandidate ? ' data-similar-candidate="true"' : '' %><% if (enableHadithContentLanguage) { %> data-content-translation-scope="hadith" data-content-translation-item-id="<%= contentTranslationItemId %>"<% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% if (enableHadithContentTranslation) { %> data-content-translation-points="<%= contentTranslationEstimate.points %>" data-content-translation-word-count="<%= contentTranslationEstimate.wordCount %>"<% } %><% } %>>
 
 	<% if (site.editMode) { %>
 		<header class="col-12" lang="ar">
@@ -26,10 +27,42 @@
 	<% } %>
 
 	<%# Title  ............................................................. %>
-	<% if (en.title || site.editMode) { %>
-		<header class="col-12" lang="en">
-			<h1 lang="en" class="_e fs-5" title="Ḥadīth Title" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.title_en" data-arabizi="true"<% if (enableHadithContentTranslation) { %> data-content-translation-field="title"<% } %>><%- en.title || `&hellip;` %></h4>
-		</header>
+	<% if (site.editMode && Array.isArray(i.contentTranslations) && i.contentTranslations.length) { %>
+		<div class="col-12 admin-content-translation-switcher content-translation-language-switcher mb-2" lang="en" dir="ltr">
+			<label class="visually-hidden" for="admin-content-translation-<%= i.actual ? i.actual.id : i.id %>">Translation language</label>
+			<select id="admin-content-translation-<%= i.actual ? i.actual.id : i.id %>" class="form-select form-select-sm content-translation-language-select" data-admin-content-translation-select="1" aria-label="Translation language">
+				<option value="en" selected>EN</option>
+				<% i.contentTranslations.forEach(function (translation) { %>
+					<% if (translation && translation.code) { %>
+						<option value="<%= translation.code %>"><%= translation.label || translation.code.toUpperCase() %></option>
+					<% } %>
+				<% }); %>
+			</select>
+		</div>
+		<div class="admin-content-translation-panel" data-admin-content-translation-panel="en">
+			<% if (en.title || site.editMode) { %>
+				<header class="col-12" lang="en">
+					<h1 lang="en" class="_e fs-5" title="Ḥadīth Title" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.title_en" data-arabizi="true"><%- en.title || `&hellip;` %></h4>
+				</header>
+			<% } %>
+		</div>
+		<% i.contentTranslations.forEach(function (translation) { %>
+			<% if (translation && translation.code) { %>
+				<div class="admin-content-translation-panel d-none" data-admin-content-translation-panel="<%= translation.code %>">
+					<% if (translation.title || site.editMode) { %>
+						<header class="col-12<%= translation.fontClass ? ` ${translation.fontClass}` : '' %>" lang="<%= translation.code %>" dir="<%= translation.dir || 'ltr' %>" data-content-language="<%= translation.code %>"<% if (translation.fontClass) { %> data-content-language-font-class="<%= translation.fontClass %>"<% } %>>
+							<h1 lang="<%= translation.code %>" dir="<%= translation.dir || 'ltr' %>" data-content-language="<%= translation.code %>"<% if (translation.fontClass) { %> data-content-language-font-class="<%= translation.fontClass %>"<% } %> class="_e fs-5<%= translation.fontClass ? ` ${translation.fontClass}` : '' %>" title="Ḥadīth Title (<%= translation.label || translation.code.toUpperCase() %>)" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="content_translation.<%= translation.code %>.title" data-arabizi="false"><%- translation.title || `&hellip;` %></h1>
+						</header>
+					<% } %>
+				</div>
+			<% } %>
+		<% }); %>
+	<% } else { %>
+		<% if (en.title || site.editMode) { %>
+			<header class="col-12" lang="en">
+				<h1 lang="en" class="_e fs-5" title="Ḥadīth Title" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.title_en" data-arabizi="true"<% if (enableHadithContentLanguage) { %> data-content-translation-field="title"<% } %>><%- en.title || `&hellip;` %></h4>
+			</header>
+		<% } %>
 	<% } %>
 	<% if (ar.title || site.editMode) { %>
 		<header class="col-12" lang="ar">
@@ -37,7 +70,20 @@
 		</header>
 	<% } %>
 
-	<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'en', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection }); %>
+	<% if (site.editMode && Array.isArray(i.contentTranslations) && i.contentTranslations.length) { %>
+		<div class="admin-content-translation-panel" data-admin-content-translation-panel="en">
+			<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'en', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection }); %>
+		</div>
+		<% i.contentTranslations.forEach(function (translation) { %>
+			<% if (translation && translation.code) { %>
+				<div class="admin-content-translation-panel d-none" data-admin-content-translation-panel="<%= translation.code %>">
+					<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: translation.code, main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection }); %>
+				</div>
+			<% } %>
+		<% }); %>
+	<% } else { %>
+		<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'en', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection }); %>
+	<% } %>
 
 	<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'ar', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection }); %>
 

@@ -362,6 +362,11 @@
     };
 
     const languageLabel = (language) => language && (language.label || language.name || language.code || '').toString() || '';
+    const languageOptionLabel = (language) => {
+      const code = (language && language.code || '').toString().trim().toUpperCase();
+      const label = languageLabel(language) || code;
+      return code && label && label.toUpperCase() !== code ? `${code} ${label}` : (label || code);
+    };
     const languageSort = (a, b) => {
       const labelCompare = languageLabel(a).localeCompare(languageLabel(b), undefined, { sensitivity: 'base' });
       return labelCompare !== 0 ? labelCompare : ((a && a.code || '').toString()).localeCompare((b && b.code || '').toString());
@@ -387,7 +392,7 @@
       (currentLanguages || []).forEach(language => {
         const option = document.createElement('option');
         option.value = language.code;
-        option.textContent = languageLabel(language);
+        option.textContent = languageOptionLabel(language);
         option.dir = language.dir === 'rtl' ? 'rtl' : 'ltr';
         option.dataset.contentLanguage = language.code;
         preferredLanguageSelect.appendChild(option);
@@ -416,6 +421,10 @@
       renderProfileSettings();
       try {
         await saveSettings({ invalidateSessionCache: true });
+        if (window.setGlobalContentLanguage)
+          window.setGlobalContentLanguage(preferredLanguageSelect.value || 'en');
+        else if (window.sessionStorage)
+          sessionStorage.setItem('hadithdb_content_language', preferredLanguageSelect.value || 'en');
         renderProfileSettings();
       } catch (err) {
         currentSettings = previousSettings;

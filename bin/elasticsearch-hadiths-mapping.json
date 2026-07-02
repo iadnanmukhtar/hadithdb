@@ -4053,6 +4053,11 @@
           }
         },
         "number_of_shards": "1",
+        "mapping": {
+          "total_fields": {
+            "limit": "2000"
+          }
+        },
         "provided_name": "hadiths",
         "creation_date": "1689544334755",
         "number_of_replicas": "1",

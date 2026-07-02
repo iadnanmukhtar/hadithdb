@@ -174,6 +174,8 @@ function sanitizeIndexSettings(settings) {
 			clean.index.number_of_shards = settings.index.number_of_shards;
 		if (settings.index.number_of_replicas !== undefined)
 			clean.index.number_of_replicas = settings.index.number_of_replicas;
+		if (settings.index.mapping?.total_fields?.limit !== undefined)
+			clean.index.mapping = { total_fields: { limit: settings.index.mapping.total_fields.limit } };
 		if (settings.index.routing)
 			clean.index.routing = settings.index.routing;
 		if (Object.keys(clean.index).length < 1)

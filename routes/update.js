@@ -2,6 +2,7 @@
 'use strict';
 
 const debug = require('../lib/Debug')('hadithdb:Update');
+const crypto = require('crypto');
 const fs = require('fs');
 const express = require('express');
 const createError = require('http-errors');
@@ -16,8 +17,10 @@ const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
 const CommentaryTranslationIndexFields = require('../lib/CommentaryTranslationIndexFields');
 const Index = require('../lib/Index');
+const PaymentConfig = require('../lib/PaymentConfig');
 const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
+const UserPoints = require('../lib/UserPoints');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
 const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
@@ -54,15 +57,24 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
   try {
     var ids = req.params.id.split(/,/);
     var prop = req.params.prop;
-    var type = prop.split(/\./)[0];
-    var col = prop.split(/\./)[1];
+    var propParts = prop.split(/\./);
+    var type = propParts[0];
+    var col = propParts[1];
     debug(`update start id:${ids}, prop:${prop}`);
     if (status.value == '…')
       status.value = null;
     if (req.body.arabizi)
       status.value = Utils.emptyIfNull(Arabic.arabizi2ALALC(status.value)).trim();
 
-    if (type == 'hadith') {
+    if (type == 'content_translation') {
+      var translationResult = await updateHadithContentTranslation(ids[0], col, propParts[2], status.value, userId);
+      await updateHadithSearchAfterContentTranslation(ids[0]);
+      status.code = 200;
+      status.message = translationResult.message;
+      status.value = translationResult.value;
+      runHadithKnowledgePostUpdateTask(ids[0], { forceKnowledge: false });
+
+    } else if (type == 'hadith') {
       var result = "";
 
       if (col == 'tags') {
@@ -492,6 +504,91 @@ function sqlPreserveWhitespace(s) {
     return null;
   s = (s + '').replace(/\u200f/g, '');
   return MySQL.escape(s);
+}
+
+async function updateHadithContentTranslation(hadithId, languageCode, field, value, userId) {
+  hadithId = parseInt(hadithId, 10);
+  if (!Number.isInteger(hadithId) || hadithId <= 0)
+    throw createError(400, 'Invalid hadith id');
+  languageCode = Utils.trimToEmpty(languageCode).toLowerCase();
+  field = Utils.trimToEmpty(field).toLowerCase();
+  if (languageCode === 'en' || languageCode === 'ar')
+    throw createError(400, 'Use the base hadith fields for Arabic and English edits');
+  if (!['title', 'chain', 'body', 'footnote'].includes(field))
+    throw createError(400, `Invalid translation field '${field}'`);
+  await PaymentConfig.loadLanguages();
+  var language = PaymentConfig.supportedLanguage(languageCode);
+  if (!language)
+    throw createError(400, `Unsupported language '${languageCode}'`);
+  var hadith = (await global.query(`SELECT id, bookId FROM hadiths WHERE id=${hadithId} LIMIT 1`))[0];
+  if (!hadith)
+    throw createError(404, 'Hadith not found');
+  await UserPoints.ensureTables();
+  var content = await latestHadithContentTranslation(hadithId, languageCode);
+  content[field] = normalizeHadithContentTranslationValue(field, value);
+  var sourceHash = crypto.createHash('sha256')
+    .update(JSON.stringify({ source: 'admin_content_translation', itemType: 'hadith', itemId: String(hadithId), targetLanguage: languageCode }))
+    .digest('hex');
+  await global.query(`
+    INSERT INTO user_content_translations
+      (user_uid, item_type, item_id, target_language, mode, source_hash, content_json, model, points_charged)
+    VALUES
+      (${MySQL.escape(userId)}, 'hadith', ${MySQL.escape(String(hadithId))}, ${MySQL.escape(languageCode)}, 'translate', ${MySQL.escape(sourceHash)},
+       CAST(${MySQL.escape(JSON.stringify(content))} AS JSON), 'admin-edit', 0)
+    ON DUPLICATE KEY UPDATE
+      content_json=VALUES(content_json),
+      model=VALUES(model),
+      points_charged=VALUES(points_charged),
+      updatedAt=CURRENT_TIMESTAMP`);
+  await Books.touchBookContentLastmodById(hadith.bookId);
+  return {
+    message: 'Updated translation',
+    value: content[field]
+  };
+}
+
+function normalizeHadithContentTranslationValue(field, value) {
+  if (field === 'body' || field === 'footnote')
+    return Utils.htmlToMarkdown(value);
+  return Utils.trimToEmpty(value);
+}
+
+async function latestHadithContentTranslation(hadithId, languageCode) {
+  var rows = await global.query(`
+    SELECT content_json
+    FROM user_content_translations
+    WHERE item_type='hadith'
+      AND item_id=${MySQL.escape(String(hadithId))}
+      AND target_language=${MySQL.escape(languageCode)}
+      AND mode='translate'
+    ORDER BY updatedAt DESC, id DESC
+    LIMIT 1`);
+  if (!rows.length)
+    return { title: '', chain: '', body: '', footnote: '' };
+  var content = rows[0].content_json;
+  if (typeof content !== 'object' || Buffer.isBuffer(content)) {
+    try {
+      content = JSON.parse(content ? content.toString() : '{}');
+    } catch (_err) {
+      content = {};
+    }
+  }
+  return {
+    title: Utils.trimToEmpty(content.title),
+    chain: Utils.trimToEmpty(content.chain),
+    body: Utils.htmlToMarkdown(content.body),
+    footnote: Utils.htmlToMarkdown(content.footnote)
+  };
+}
+
+async function updateHadithSearchAfterContentTranslation(hadithId) {
+  var item = await hadithSearchRowById(hadithId);
+  if (!item)
+    return;
+  await Books.touchBookContentLastmodById(item.book_id);
+  await Utils.flushCacheContaining(`${item.book_alias}:${item.num}`);
+  await Index.update(Item.INDEX, item);
+  await Index.refresh(Item.INDEX);
 }
 
 async function flushBookCaches(bookAliases) {
@@ -1385,7 +1482,14 @@ function updateErrorStatus(err) {
 }
 
 function updateErrorMessage(err) {
+  var upstreamError = err?.response?.data?.error;
+  var upstreamReason = upstreamError?.root_cause?.[0]?.reason || upstreamError?.reason;
+  var upstreamCause = upstreamError?.caused_by?.reason;
   var upstreamMessage = err?.response?.data?.error?.message || err?.response?.data?.message;
+  if (upstreamReason && upstreamCause && upstreamReason !== upstreamCause)
+    return `${upstreamReason}: ${upstreamCause}`;
+  if (upstreamReason || upstreamCause)
+    return upstreamReason || upstreamCause;
   if (upstreamMessage)
     return upstreamMessage;
   if (err?.response?.status === 429)
@@ -1608,8 +1712,7 @@ async function reindexSearchScope(whereClause, options) {
 function runHadithPostUpdateTasks(hadithId, options) {
   options = options || {};
   (async () => {
-    var rows = await getHadithSearchRowsWithAdjacentRefs(`hId=${parseInt(hadithId, 10)}`);
-    var item = rows[0];
+    var item = await hadithSearchRowById(hadithId);
     if (!item)
       return;
     await safeBackground(`flushing cache for ${item.ref}`, async () => {
@@ -1625,6 +1728,28 @@ function runHadithPostUpdateTasks(hadithId, options) {
   })().catch((err) => {
     debug.error(`background hadith post-update failed for ${hadithId}: ${err.message}\n${err.stack || ''}`);
   });
+}
+
+function runHadithKnowledgePostUpdateTask(hadithId, options) {
+  options = options || {};
+  (async () => {
+    var item = await hadithSearchRowById(hadithId);
+    if (!item)
+      return;
+    await safeBackground(`syncing chatbot knowledge for ${item.ref}`, async () => {
+      await HadithKnowledge.syncForHadith(item, { force: options.forceKnowledge });
+    });
+  })().catch((err) => {
+    debug.error(`background hadith knowledge update failed for ${hadithId}: ${err.message}\n${err.stack || ''}`);
+  });
+}
+
+async function hadithSearchRowById(hadithId) {
+  var id = parseInt(hadithId, 10);
+  if (!Number.isInteger(id) || id <= 0)
+    return null;
+  var rows = await getHadithSearchRowsWithAdjacentRefs(`hId=${id}`);
+  return rows[0] || null;
 }
 
 async function getHadithSearchRowsWithAdjacentRefs(whereClause) {

@@ -3,6 +3,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  if (!window.marked) {
+    document.write('<script src="/vendor/marked/marked.min.js"><\/script>');
+  }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
   window.HADITH_BASE_URL = <%- JSON.stringify(utils.hadithBaseUrl(req)) %>;
@@ -59,6 +64,19 @@
 	    const isMarkdownProp = (prop) => /body|intro|footnote|note/.test(prop) || prop === 'book.description';
 	    const hasMarkdownSource = ($el) => $el.is('[data-markdown-source]');
 	    const isMarkdownElement = ($el) => isMarkdownProp(($el.data('prop') || '').toString()) || $el.attr('data-edit-format') === 'md';
+	    const rtlLanguageCodes = new Set(['ar', 'fa', 'he', 'ur']);
+	    const editingDirectionForLanguage = (lang) => rtlLanguageCodes.has((lang || '').toString().toLowerCase()) ? 'rtl' : 'ltr';
+	    const applyInlineEditorLanguageContext = ($el) => {
+	      const $context = $el.closest('[data-content-language], [lang], [dir]');
+	      const lang = ($el.attr('lang') || $el.attr('data-content-language') || $context.attr('data-content-language') || $context.attr('lang') || '').toString().toLowerCase();
+	      if (lang) {
+	        $el.attr('lang', lang);
+	        $el.attr('data-content-language', lang);
+	      }
+	      const dir = ($el.attr('dir') || $context.attr('dir') || editingDirectionForLanguage(lang)).toString().toLowerCase();
+	      if (dir === 'rtl' || dir === 'ltr')
+	        $el.attr('dir', dir);
+	    };
 
 	    const getMarkdownSource = ($el) => ($el.attr('data-markdown-source') || '').toString();
 
@@ -424,6 +442,7 @@
 	        if ($el.data('inlineEditorBound'))
 	          return;
 	        $el.data('inlineEditorBound', true);
+	        applyInlineEditorLanguageContext($el);
 	        if (!$el.is('textarea, input, select'))
 	          $el.attr('contenteditable', 'true');
 	        if (isMarkdownElement($el) && !hasMarkdownSource($el))
@@ -440,6 +459,25 @@
 	          ensureTafsirSaveButton($el);
 	        else
 	          $el.on('blur', changeListener);
+	      });
+	    };
+
+	    const bindAdminContentTranslationSwitchers = (scope) => {
+	      $(scope || document).find('[data-admin-content-translation-select="1"]').addBack('[data-admin-content-translation-select="1"]').each(function () {
+	        const $select = $(this);
+	        if ($select.data('adminContentTranslationSwitcherBound'))
+	          return;
+	        $select.data('adminContentTranslationSwitcherBound', true);
+	        $select.on('change', function () {
+	          const code = ($(this).val() || '').toString();
+	          const $article = $(this).closest('article');
+	          const $panels = $article.find('[data-admin-content-translation-panel]');
+	          $panels.addClass('d-none');
+	          const $active = $panels.filter(function () {
+	            return ($(this).attr('data-admin-content-translation-panel') || '').toString() === code;
+	          }).removeClass('d-none');
+	          bindInlineEditors($active);
+	        });
 	      });
 	    };
 
@@ -463,6 +501,13 @@
 	    };
 	    window.bindInlineEditors = bindInlineEditors;
 	    bindInlineEditors(document);
+	    bindAdminContentTranslationSwitchers(document);
+	    if (window.selectAdminContentTranslationLanguage && window.readGlobalContentLanguage)
+	      window.selectAdminContentTranslationLanguage(window.readGlobalContentLanguage());
+	    document.addEventListener('hadithContentLanguageChanged', (event) => {
+	      if (window.selectAdminContentTranslationLanguage)
+	        window.selectAdminContentTranslationLanguage(event.detail && event.detail.language);
+	    });
 
     $('._click').each(function () {
       if ($(this).is('a') && !$(this).attr('href'))

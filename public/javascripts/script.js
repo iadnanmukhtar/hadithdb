@@ -106,6 +106,7 @@ $(function () {
 	initMarkdownEditablePreviews(document);
 	initHadithSharhLinks(document);
 	initHadithShareModals(document);
+	initGlobalContentLanguageSelect(document);
 	initHadithContentTranslationControls(document);
 	resumePendingContentTranslationCheckout();
 	initQuranAyahHoverPairs(document);
@@ -7648,10 +7649,7 @@ function renderMarkdownPreview(el, markdown) {
 	el.dataset.markdownSource = markdown;
 	el.classList.remove('markdown-editing');
 	if (markdown) {
-		if (window.marked && window.marked.parse)
-			el.innerHTML = window.marked.parse(markdown).replace(/<br>/g, '</p><p>').trim();
-		else
-			el.textContent = markdown;
+		el.innerHTML = renderClientMarkdown(markdown);
 	} else {
 		el.innerHTML = emptyHtml;
 	}
@@ -7719,9 +7717,42 @@ var contentTranslationAuthRefreshBound = false;
 var contentTranslationAvailablePromises = {};
 var contentTranslationAvailableObserver = null;
 var contentTranslationCheckoutResumeInProgress = false;
+var GLOBAL_CONTENT_LANGUAGE_KEY = 'hadithdb_content_language';
 var CONTENT_TRANSLATION_SUPPORTED_LANGUAGE_CODES = new Set([
 	'en', 'zh', 'hi', 'es', 'fr', 'ar', 'bn', 'pt', 'ru', 'id', 'ur', 'de', 'ja', 'pcm', 'mr', 'te',
 	'tr', 'ta', 'vi', 'yue', 'wuu', 'ko', 'fa', 'ha', 'th', 'gu', 'kn', 'it', 'pa', 'ml', 'he'
+]);
+var GLOBAL_CONTENT_LANGUAGE_DEFAULTS = Object.freeze([
+	Object.freeze({ code: 'bn', label: 'Bengali', dir: 'ltr', script: 'Bengali', fontClass: 'content-language-bengali' }),
+	Object.freeze({ code: 'yue', label: 'Chinese (Cantonese)', dir: 'ltr', script: 'Han', fontClass: 'content-language-cjk' }),
+	Object.freeze({ code: 'zh', label: 'Chinese (Mandarin)', dir: 'ltr', script: 'Han', fontClass: 'content-language-cjk' }),
+	Object.freeze({ code: 'wuu', label: 'Chinese (Wu)', dir: 'ltr', script: 'Han', fontClass: 'content-language-cjk' }),
+	Object.freeze({ code: 'en', label: 'English', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'fr', label: 'French', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'de', label: 'German', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'gu', label: 'Gujarati', dir: 'ltr', script: 'Gujarati', fontClass: 'content-language-gujarati' }),
+	Object.freeze({ code: 'ha', label: 'Hausa', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'he', label: 'Hebrew', dir: 'rtl', script: 'Hebrew', fontClass: 'content-language-hebrew' }),
+	Object.freeze({ code: 'hi', label: 'Hindi', dir: 'ltr', script: 'Devanagari', fontClass: 'content-language-devanagari' }),
+	Object.freeze({ code: 'id', label: 'Indonesian', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'it', label: 'Italian', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'ja', label: 'Japanese', dir: 'ltr', script: 'Japanese', fontClass: 'content-language-japanese' }),
+	Object.freeze({ code: 'kn', label: 'Kannada', dir: 'ltr', script: 'Kannada', fontClass: 'content-language-kannada' }),
+	Object.freeze({ code: 'ko', label: 'Korean', dir: 'ltr', script: 'Hangul', fontClass: 'content-language-korean' }),
+	Object.freeze({ code: 'ml', label: 'Malayalam', dir: 'ltr', script: 'Malayalam', fontClass: 'content-language-malayalam' }),
+	Object.freeze({ code: 'mr', label: 'Marathi', dir: 'ltr', script: 'Devanagari', fontClass: 'content-language-devanagari' }),
+	Object.freeze({ code: 'pcm', label: 'Nigerian Pidgin', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'fa', label: 'Persian', dir: 'rtl', script: 'Arabic', fontClass: 'content-language-persian' }),
+	Object.freeze({ code: 'pt', label: 'Portuguese', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'pa', label: 'Punjabi', dir: 'ltr', script: 'Gurmukhi', fontClass: 'content-language-gurmukhi' }),
+	Object.freeze({ code: 'ru', label: 'Russian', dir: 'ltr', script: 'Cyrillic', fontClass: 'content-language-cyrillic' }),
+	Object.freeze({ code: 'es', label: 'Spanish', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'ta', label: 'Tamil', dir: 'ltr', script: 'Tamil', fontClass: 'content-language-tamil' }),
+	Object.freeze({ code: 'te', label: 'Telugu', dir: 'ltr', script: 'Telugu', fontClass: 'content-language-telugu' }),
+	Object.freeze({ code: 'th', label: 'Thai', dir: 'ltr', script: 'Thai', fontClass: 'content-language-thai' }),
+	Object.freeze({ code: 'tr', label: 'Turkish', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
+	Object.freeze({ code: 'ur', label: 'Urdu', dir: 'rtl', script: 'Arabic', fontClass: 'content-language-urdu' }),
+	Object.freeze({ code: 'vi', label: 'Vietnamese', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' })
 ]);
 
 function paymentFeatureEnabled() {
@@ -7744,6 +7775,113 @@ function contentTranslationLanguageSort(a, b) {
 	if (labelCompare !== 0)
 		return labelCompare;
 	return (a && a.code || '').toString().localeCompare((b && b.code || '').toString());
+}
+
+function escapeClientMarkdownHtml(value) {
+	return $('<div>').text(value || '').html();
+}
+
+function renderClientInlineMarkdownFallback(value) {
+	return escapeClientMarkdownHtml(value)
+		.replace(/`([^`\n]+)`/g, '<code>$1</code>')
+		.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>')
+		.replace(/__([\s\S]+?)__/g, '<strong>$1</strong>')
+		.replace(/(^|[^\*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
+		.replace(/(^|[^_])_([^_\n]+)_/g, '$1<em>$2</em>')
+		.replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" rel="nofollow noopener" target="_blank">$1</a>');
+}
+
+function renderClientMarkdownFallback(value) {
+	value = (value || '').toString().replace(/\r\n?/g, '\n').trim();
+	if (!value)
+		return '';
+	return value.split(/\n{2,}/).map(function (block) {
+		var lines = block.split('\n');
+		if (lines.every(function (line) { return /^[ \t]*[-*+][ \t]+/.test(line); })) {
+			return '<ul>' + lines.map(function (line) {
+				return '<li>' + renderClientInlineMarkdownFallback(line.replace(/^[ \t]*[-*+][ \t]+/, '')) + '</li>';
+			}).join('') + '</ul>';
+		}
+		if (lines.every(function (line) { return /^[ \t]*\d+\.[ \t]+/.test(line); })) {
+			return '<ol>' + lines.map(function (line) {
+				return '<li>' + renderClientInlineMarkdownFallback(line.replace(/^[ \t]*\d+\.[ \t]+/, '')) + '</li>';
+			}).join('') + '</ol>';
+		}
+		return '<p>' + renderClientInlineMarkdownFallback(block).replace(/\n/g, '<br>') + '</p>';
+	}).join('\n');
+}
+
+function normalizeClientMarkdownForRendering(value) {
+	return (value || '').toString()
+		.replace(/\*\*([^\n*]*?\S)\s+\*\*/g, '**$1**')
+		.replace(/\*([^\n*]*?\S)\s+\*/g, '*$1*')
+		.replace(/__([^\n_]*?\S)\s+__/g, '__$1__')
+		.replace(/_([^\n_]*?\S)\s+_/g, '_$1_');
+}
+
+function renderClientMarkdown(value) {
+	value = normalizeClientMarkdownForRendering(value);
+	if (!value)
+		return '';
+	if (window.marked && window.marked.parse)
+		return window.marked.parse(value).replace(/<br>/g, '</p><p>').trim();
+	return renderClientMarkdownFallback(value);
+}
+
+function normalizeGlobalContentLanguage(code) {
+	code = (code || '').toString().trim().toLowerCase();
+	if (!CONTENT_TRANSLATION_SUPPORTED_LANGUAGE_CODES.has(code) || code === 'ar')
+		return 'en';
+	return code;
+}
+
+function readGlobalContentLanguage() {
+	try {
+		return normalizeGlobalContentLanguage(window.sessionStorage && sessionStorage.getItem(GLOBAL_CONTENT_LANGUAGE_KEY) || 'en');
+	} catch (_err) {
+		return 'en';
+	}
+}
+
+function writeGlobalContentLanguage(code) {
+	try {
+		if (window.sessionStorage)
+			sessionStorage.setItem(GLOBAL_CONTENT_LANGUAGE_KEY, normalizeGlobalContentLanguage(code));
+		if (window.localStorage)
+			localStorage.removeItem(GLOBAL_CONTENT_LANGUAGE_KEY);
+	} catch (_err) {}
+}
+
+function hasStoredGlobalContentLanguage() {
+	try {
+		return !!(window.sessionStorage && sessionStorage.getItem(GLOBAL_CONTENT_LANGUAGE_KEY));
+	} catch (_err) {
+		return false;
+	}
+}
+
+function resolveInitialGlobalContentLanguage() {
+	if (hasStoredGlobalContentLanguage())
+		return Promise.resolve(readGlobalContentLanguage());
+	return preferredContentLanguage().then(function (language) {
+		language = normalizeGlobalContentLanguage(language || 'en');
+		writeGlobalContentLanguage(language);
+		return language;
+	});
+}
+
+function syncGlobalContentLanguageSelects(code) {
+	code = normalizeGlobalContentLanguage(code);
+	$('[data-global-content-language-dropdown="1"]').each(function () {
+		var dropdown = $(this);
+		dropdown.attr('data-global-content-language-current', code);
+		dropdown.find('[data-global-content-language-button="1"]').text(code.toUpperCase());
+		dropdown.find('[data-global-content-language-option]').each(function () {
+			var option = $(this);
+			var active = option.attr('data-global-content-language-option') === code;
+			option.toggleClass('active', active).attr('aria-current', active ? 'true' : null);
+		});
+	});
 }
 
 function normalizeContentTranslationLanguages(languages) {
@@ -7872,12 +8010,7 @@ function preferredContentLanguage() {
 }
 
 function renderShareGeneratedMarkdown(value) {
-	value = (value || '').toString();
-	if (!value)
-		return '';
-	if (window.marked && window.marked.parse)
-		return window.marked.parse(value).replace(/<br>/g, '</p><p>').trim();
-	return $('<div>').text(value).html();
+	return renderClientMarkdown(value);
 }
 
 function preserveGeneratedShareDefaults(modal) {
@@ -8170,12 +8303,50 @@ function updateGeneratedShareLanguageToggle(modal) {
 	button.textContent = selected.length < 1 ? 'Translations' : `${selected.length} selected`;
 }
 
-function renderGeneratedShareLanguageMenu(modal, card, translations) {
+function applyGeneratedShareLanguageSelection(modal, card) {
+	if (!modal || !card)
+		return;
+	var translationsByCode = modal._shareGeneratedTranslationsByCode || {};
+	Array.from(modal.querySelectorAll('[data-share-language-option]')).forEach(function (input) {
+		var code = input.value || '';
+		if (code === 'en') {
+			var defaultSection = modal.querySelector('[data-share-generated-body="1"]');
+			defaultSection = defaultSection ? defaultSection.closest('.hadith-share-section') : null;
+			if (defaultSection)
+				defaultSection.classList.toggle('d-none', !input.checked);
+		} else if (input.checked && translationsByCode[code]) {
+			upsertGeneratedShareTranslationSection(modal, card, translationsByCode[code]);
+		} else {
+			removeGeneratedShareTranslationSection(modal, code);
+		}
+	});
+	updateGeneratedShareLanguageToggle(modal);
+}
+
+function selectGeneratedShareDefaultLanguage(modal, card, requestedLanguage) {
+	var inputs = Array.from(modal ? modal.querySelectorAll('[data-share-language-option]') : []);
+	if (!inputs.length)
+		return;
+	var available = inputs.map(function (input) {
+		return { code: input.value };
+	});
+	var selectedLanguage = chooseAvailableContentTranslationLanguage(available, requestedLanguage || readGlobalContentLanguage());
+	inputs.forEach(function (input) {
+		input.checked = input.value === selectedLanguage;
+	});
+	applyGeneratedShareLanguageSelection(modal, card);
+}
+
+function renderGeneratedShareLanguageMenu(modal, card, translations, requestedLanguage) {
 	var menu = modal ? modal.querySelector('[data-share-language-menu="1"]') : null;
 	if (!menu)
 		return;
 	translations = normalizeContentTranslationLanguages(translations).filter(function (translation) {
 		return translation && translation.code && translation.code !== 'ar' && translation.content && Object.values(translation.content).some(Boolean);
+	});
+	modal._shareGeneratedTranslationsByCode = {};
+	translations.forEach(function (translation) {
+		modal._shareGeneratedTranslationsByCode[translation.code] = translation;
 	});
 	menu.innerHTML = '';
 	if (translations.length < 1) {
@@ -8196,7 +8367,6 @@ function renderGeneratedShareLanguageMenu(modal, card, translations) {
 		input.id = id;
 		input.value = translation.code;
 		input.setAttribute('data-share-language-option', '1');
-		input.checked = translation.code === 'en';
 		var label = document.createElement('label');
 		label.className = 'form-check-label';
 		label.htmlFor = id;
@@ -8204,29 +8374,13 @@ function renderGeneratedShareLanguageMenu(modal, card, translations) {
 		wrap.appendChild(input);
 		wrap.appendChild(label);
 		menu.appendChild(wrap);
-		var applySelection = function () {
-			if (translation.code === 'en') {
-				var defaultSection = modal.querySelector('[data-share-generated-body="1"]');
-				defaultSection = defaultSection ? defaultSection.closest('.hadith-share-section') : null;
-				if (defaultSection)
-					defaultSection.classList.toggle('d-none', !input.checked);
-			} else if (input.checked) {
-				upsertGeneratedShareTranslationSection(modal, card, translation);
-			} else {
-				removeGeneratedShareTranslationSection(modal, translation.code);
-			}
-		};
-		if (input.checked && translation.code !== 'en')
-			upsertGeneratedShareTranslationSection(modal, card, translation);
 		input.addEventListener('change', function () {
-			applySelection();
-			updateGeneratedShareLanguageToggle(modal);
+			applyGeneratedShareLanguageSelection(modal, card);
 			scheduleHadithShareCardFit(card);
 			scheduleHadithShareRender(card);
 		});
-		applySelection();
 	});
-	updateGeneratedShareLanguageToggle(modal);
+	selectGeneratedShareDefaultLanguage(modal, card, requestedLanguage || readGlobalContentLanguage());
 }
 
 function hadithContentTranslationScope(target) {
@@ -8290,20 +8444,25 @@ function initGeneratedShareLanguageSelect(modal, card) {
 	var menu = modal ? modal.querySelector('[data-share-language-menu="1"]') : null;
 	if (!menu || !card)
 		return;
-	if (menu.dataset.shareLanguageBound === 'true')
+	if (menu.dataset.shareLanguageBound === 'true') {
+		selectGeneratedShareDefaultLanguage(modal, card, readGlobalContentLanguage());
 		return;
+	}
 	menu.dataset.shareLanguageBound = 'true';
 	preserveGeneratedShareDefaults(modal);
-	contentTranslationAvailableRequest(
-		card.getAttribute('data-share-generated-item-type'),
-		card.getAttribute('data-share-generated-item-id'),
-		false
-	).then(function (payload) {
-		renderGeneratedShareLanguageMenu(modal, card, payload && payload.translations || []);
+	Promise.all([
+		resolveInitialGlobalContentLanguage(),
+		contentTranslationAvailableRequest(
+			card.getAttribute('data-share-generated-item-type'),
+			card.getAttribute('data-share-generated-item-id'),
+			false
+		)
+	]).then(function (results) {
+		renderGeneratedShareLanguageMenu(modal, card, results[1] && results[1].translations || [], results[0]);
 		scheduleHadithShareCardFit(card);
 		scheduleHadithShareRender(card);
 	}).catch(function () {
-		renderGeneratedShareLanguageMenu(modal, card, []);
+		renderGeneratedShareLanguageMenu(modal, card, [], readGlobalContentLanguage());
 	});
 }
 
@@ -8512,6 +8671,113 @@ function setUnderItemLanguageSelectDirection(selector) {
 	setNeutralLanguageSelectDisplay(selector);
 }
 
+function globalContentLanguageOptions(configLanguages) {
+	var byCode = {};
+	normalizeContentTranslationLanguages(GLOBAL_CONTENT_LANGUAGE_DEFAULTS).forEach(function (language) {
+		byCode[language.code] = language;
+	});
+	normalizeContentTranslationLanguages(configLanguages).forEach(function (language) {
+		byCode[language.code] = language;
+	});
+	if (!byCode.en)
+		byCode.en = { code: 'en', label: 'English', dir: 'ltr', fontClass: 'content-language-latin' };
+	return Object.values(byCode).sort(contentTranslationLanguageSort);
+}
+
+function populateGlobalContentLanguageSelects(languages) {
+	var selected = readGlobalContentLanguage();
+	var options = globalContentLanguageOptions(languages);
+	$('[data-global-content-language-dropdown="1"]').each(function () {
+		var dropdown = $(this);
+		var menu = dropdown.find('[data-global-content-language-menu="1"]').first();
+		var current = dropdown.attr('data-global-content-language-current') || selected;
+		menu.empty();
+		options.forEach(function (language) {
+			var option = $('<button>').addClass('dropdown-item global-content-language-option').attr({
+				type: 'button',
+				'data-global-content-language-option': language.code,
+				title: language.label || language.code.toUpperCase()
+			});
+			$('<span>').addClass('global-content-language-code').text(language.code.toUpperCase()).appendTo(option);
+			$('<span>').addClass('global-content-language-name').text(language.label || language.code.toUpperCase()).appendTo(option);
+			option.appendTo(menu);
+		});
+		dropdown.attr('data-global-content-language-current', normalizeGlobalContentLanguage(current));
+	});
+	syncGlobalContentLanguageSelects(selected);
+}
+
+function selectAdminContentTranslationLanguage(code) {
+	code = normalizeGlobalContentLanguage(code);
+	$('[data-admin-content-translation-select="1"]').each(function () {
+		var select = $(this);
+		var next = 'en';
+		select.find('option').each(function () {
+			if ($(this).attr('value') === code)
+				next = code;
+		});
+		if (select.val() !== next)
+			select.val(next).trigger('change');
+	});
+}
+
+function applyGlobalContentLanguage(root, code, force) {
+	code = normalizeGlobalContentLanguage(code);
+	var scope = root || document;
+	$(scope).find('[data-content-translation-item-type][data-content-translation-item-id]').addBack('[data-content-translation-item-type][data-content-translation-item-id]').each(function () {
+		var target = $(this);
+		var itemType = target.attr('data-content-translation-item-type');
+		var itemId = target.attr('data-content-translation-item-id');
+		if (!itemType || !itemId)
+			return;
+		preserveHadithContentTranslationScope(target);
+		target.attr({
+			'data-content-translation-language': code,
+			'data-content-translation-preferred-language': code
+		});
+		var translations = target.data('contentTranslationAvailableTranslations');
+		if (Array.isArray(translations) && translations.length) {
+			renderAvailableContentTranslationSelector(target, itemType, itemId, code, translations);
+			return;
+		}
+		loadAvailableContentTranslationSelector(target, itemType, itemId, code, force === true);
+	});
+	selectAdminContentTranslationLanguage(code);
+}
+
+function setGlobalContentLanguage(code, options) {
+	code = normalizeGlobalContentLanguage(code);
+	options = options || {};
+	writeGlobalContentLanguage(code);
+	syncGlobalContentLanguageSelects(code);
+	applyGlobalContentLanguage(document, code, options.force === true);
+	document.dispatchEvent(new CustomEvent('hadithContentLanguageChanged', { detail: { language: code } }));
+}
+
+function initGlobalContentLanguageSelect(root) {
+	var scope = root || document;
+	var dropdowns = $(scope).find('[data-global-content-language-dropdown="1"]').addBack('[data-global-content-language-dropdown="1"]');
+	if (!dropdowns.length)
+		return;
+	populateGlobalContentLanguageSelects([]);
+	dropdowns.each(function () {
+		var dropdown = $(this);
+		if (dropdown.data('globalContentLanguageBound'))
+			return;
+		dropdown.data('globalContentLanguageBound', true);
+		dropdown.on('click', '[data-global-content-language-option]', function () {
+			setGlobalContentLanguage($(this).attr('data-global-content-language-option'));
+		});
+	});
+	contentTranslationLanguages().then(function (languages) {
+		resolveInitialGlobalContentLanguage().then(function (language) {
+			populateGlobalContentLanguageSelects(languages);
+			syncGlobalContentLanguageSelects(language);
+			applyGlobalContentLanguage(document, language, false);
+		});
+	});
+}
+
 function chooseAvailableContentTranslationLanguage(translations, requestedLanguage) {
 	translations = Array.isArray(translations) ? translations : [];
 	requestedLanguage = (requestedLanguage || '').toString().trim().toLowerCase();
@@ -8557,15 +8823,19 @@ function renderAvailableContentTranslationSelector(target, itemType, itemId, cur
 	target = target && target.jquery ? target : $(target);
 	if (!target.length)
 		return;
+	currentLanguage = normalizeGlobalContentLanguage(currentLanguage || target.attr('data-content-translation-preferred-language') || target.attr('data-content-translation-language') || readGlobalContentLanguage() || target.attr('lang') || '');
+	target.attr('data-content-translation-preferred-language', currentLanguage);
 	translations = normalizeContentTranslationLanguages(translations).filter(function (translation) {
 		return translation && translation.code && translation.code !== 'ar' && translation.content && Object.values(translation.content).some(Boolean);
 	});
 	var unique = translations;
 	var options = availableContentTranslationOptions(unique);
 	target.data('contentTranslationAvailableTranslations', options);
-	currentLanguage = chooseAvailableContentTranslationLanguage(unique, currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || '');
-	var selectedTranslation = unique.find(function (translation) { return translation.code === currentLanguage; });
+	currentLanguage = chooseAvailableContentTranslationLanguage(unique, currentLanguage);
+	var selectedTranslation = options.find(function (translation) { return translation.code === currentLanguage; });
 	applyAvailableContentTranslation(target, selectedTranslation);
+	if (target.attr('data-content-translation-auto-only') === 'true')
+		return;
 	var row = ensureContentTranslationActionsRow(target);
 	var switcher = target.data('contentTranslationLanguageSwitcher');
 	if (!switcher || !switcher.length) {
@@ -8621,7 +8891,7 @@ async function loadAvailableContentTranslationSelector(target, itemType, itemId,
 	if (!target.length || !itemType || !itemId)
 		return;
 	var payload = await contentTranslationAvailableRequest(itemType, itemId, force);
-	var requestedLanguage = currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || '';
+	var requestedLanguage = currentLanguage || target.attr('data-content-translation-preferred-language') || readGlobalContentLanguage() || target.attr('data-content-translation-language') || target.attr('lang') || '';
 	var known = target.data('contentTranslationAvailableTranslations') || [];
 	var fetched = payload && Array.isArray(payload.translations) ? payload.translations : [];
 	renderAvailableContentTranslationSelector(target, itemType, itemId, requestedLanguage, known.concat(fetched));
@@ -8632,11 +8902,12 @@ function scheduleAvailableContentTranslationSelector(target, itemType, itemId, c
 	if (!target.length || target.data('contentTranslationAvailableBound'))
 		return;
 	target.data('contentTranslationAvailableBound', true);
-	currentLanguage = currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || 'en';
+	currentLanguage = currentLanguage || target.attr('data-content-translation-preferred-language') || readGlobalContentLanguage() || target.attr('data-content-translation-language') || target.attr('lang') || 'en';
 	target.attr({
 		'data-content-translation-item-type': itemType,
 		'data-content-translation-item-id': itemId,
-		'data-content-translation-language': currentLanguage
+		'data-content-translation-language': currentLanguage,
+		'data-content-translation-preferred-language': currentLanguage
 	});
 	renderAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage, target.data('contentTranslationAvailableTranslations') || []);
 	if (!('IntersectionObserver' in window)) {
@@ -8654,7 +8925,7 @@ function scheduleAvailableContentTranslationSelector(target, itemType, itemId, c
 					node,
 					node.attr('data-content-translation-item-type'),
 					node.attr('data-content-translation-item-id'),
-					node.attr('data-content-translation-language') || node.attr('lang') || 'en',
+					node.attr('data-content-translation-preferred-language') || readGlobalContentLanguage() || node.attr('data-content-translation-language') || node.attr('lang') || 'en',
 					false
 				);
 			});
@@ -9129,6 +9400,7 @@ function appendContentTranslationControl(container, target, itemType, itemId, cu
 		return;
 	if (target.data('contentTranslationControlBound'))
 		return;
+	currentLanguage = currentLanguage || readGlobalContentLanguage() || target.attr('data-content-translation-language') || target.attr('lang') || 'en';
 	target.data('contentTranslationControlBound', true);
 	preserveHadithContentTranslationScope(target);
 	var existingTranslation = target.attr('data-content-translation-existing') === 'true';
@@ -9153,10 +9425,10 @@ function appendContentTranslationControl(container, target, itemType, itemId, cu
 			target: target,
 			itemType: itemType,
 			itemId: itemId,
-			currentLanguage: currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || 'en'
+			currentLanguage: target.attr('data-content-translation-language') || currentLanguage || readGlobalContentLanguage() || target.attr('lang') || 'en'
 		});
 	}).appendTo(control);
-	scheduleAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage || target.attr('data-content-translation-language') || target.attr('lang') || 'en');
+	scheduleAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage);
 	if (row.length)
 		row.append(control);
 	else
@@ -9194,8 +9466,13 @@ function initHadithContentTranslationControls(root) {
 	$(scope).find('[data-content-translation-item-type="hadith"][data-content-translation-item-id]').each(function () {
 		var target = $(this);
 		var itemId = target.attr('data-content-translation-item-id');
+		if (target.attr('data-content-translation-auto-only') === 'true') {
+			preserveHadithContentTranslationScope(target);
+			loadAvailableContentTranslationSelector(target, 'hadith', itemId, readGlobalContentLanguage() || target.attr('data-content-translation-preferred-language') || target.attr('data-content-translation-language') || target.attr('lang') || 'en', false);
+			return;
+		}
 		var container = target.closest('[data-content-translation-container="1"]');
-		appendContentTranslationControl(container.length ? container : target.parent(), target, 'hadith', itemId, target.attr('data-content-translation-language') || target.attr('lang') || 'en');
+		appendContentTranslationControl(container.length ? container : target.parent(), target, 'hadith', itemId, readGlobalContentLanguage() || target.attr('data-content-translation-language') || target.attr('lang') || 'en');
 	});
 	refreshContentTranslationAuthControls();
 }

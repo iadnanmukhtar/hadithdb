@@ -312,6 +312,9 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
         res.setHeader('X-Content-Type-Options', 'nosniff');
       }
     }));
+  app.get('/vendor/marked/marked.min.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'node_modules/marked/marked.min.js'));
+  });
   app.use('/blog', express.static(`${global.settings.blog.dir}`));
 
   if (envFlagEnabled('THROTTLE')) {
