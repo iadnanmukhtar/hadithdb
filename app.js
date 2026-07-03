@@ -34,6 +34,7 @@ const REQUEST_BODY_LIMIT = '10mb';
 const DYNAMIC_REQUEST_LIMIT_WINDOW_MS = 1000;
 const DYNAMIC_REQUEST_LIMIT_PER_IP = 20;
 const MAX_REQUEST_URL_LENGTH = 4096;
+const FRIENDLY_ERROR_REF_MAX_LENGTH = 512;
 const BLOCKED_HTTP_METHODS = new Set(['TRACE', 'TRACK']);
 
 const normalizedIp = (ip) => {
@@ -188,6 +189,17 @@ const requestQueryString = (req) => {
   return queryIndex === -1 ? '' : req.originalUrl.substring(queryIndex + 1);
 };
 
+const truncatedFriendlyErrorRef = (req) => {
+  if (!req)
+    return '';
+  const originalUrl = (req.originalUrl || req.url || '').toString().replace(/[\x00-\x1f\x7f]/g, '');
+  if (!originalUrl || originalUrl === '/error')
+    return '';
+  if (originalUrl.length <= FRIENDLY_ERROR_REF_MAX_LENGTH)
+    return originalUrl;
+  return `${originalUrl.substring(0, FRIENDLY_ERROR_REF_MAX_LENGTH - 3)}...`;
+};
+
 const buildNullPathSuggestion = (req, queryString) => {
   const segments = req.path.split('/').filter(Boolean);
   const nullIndex = segments.findIndex(segment => segment.toLowerCase() === 'null');
@@ -208,6 +220,19 @@ const buildQuranPathSuggestions = (req, queryString) => {
     appendQueryString(`/quran:${surah}:${ayah}`, queryString),
     appendQueryString(`/quran/${surah}`, queryString)
   ];
+};
+
+const buildQuranHostRedirectPath = (req) => {
+  const match = req.path.match(/^\/quran\/([1-9]\d*)\/([1-9]\d*)\/?$/);
+  if (!match)
+    return req.originalUrl;
+  const surahNum = Number(match[1]);
+  const ayahNum = Number(match[2]);
+  const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
+  const ayahCount = Number(surah && (surah.ayahs || surah.ayat));
+  if (!surah || !Number.isInteger(ayahNum) || ayahNum < 1 || ayahNum > ayahCount)
+    return req.originalUrl;
+  return appendQueryString(`/quran:${surahNum}:${ayahNum}`, requestQueryString(req));
 };
 
 const buildErrorSuggestions = (req) => {
@@ -256,6 +281,9 @@ const wantsFriendlyErrorRedirect = (req) => {
 const buildFriendlyErrorUrl = (req, statusCode) => {
   const params = new URLSearchParams();
   params.set('status', normalizeHttpStatusCode(statusCode).toString());
+  const ref = truncatedFriendlyErrorRef(req);
+  if (ref)
+    params.set('ref', ref);
   return `/error?${params.toString()}`;
 };
 
@@ -357,6 +385,17 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     }
     next();
   })
+
+  app.all('/*', function redirectQuranPathsToQuranHost(req, res, next) {
+    if (req.method !== 'GET' && req.method !== 'HEAD')
+      return next();
+    if (Utils.isLocalhostRequest(req) || Utils.isQuranSubdomainRequest(req) || !Utils.isQuranUrlPath(req.path))
+      return next();
+    const quranBaseUrl = Utils.quranBaseUrl(req);
+    if (!quranBaseUrl || Utils.requestMatchesBaseUrl(req, quranBaseUrl))
+      return next();
+    return res.redirect(301, Utils.quranUrl(req, buildQuranHostRedirectPath(req)));
+  });
 
   const toolsRouter = require('./routes/tools');
   const highlightsRouter = require('./routes/highlights');
