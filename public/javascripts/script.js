@@ -13,6 +13,7 @@ $(function () {
 	initHadithAdminGear();
 	initDropdownFilterSearch(document);
 	initReadOnlyInlineEditorGuards(document);
+	initSearchPlainTextPaste();
 
 	setDirection($('#search-bar'));
 
@@ -881,6 +882,25 @@ function initReadOnlyInlineEditorGuards(root) {
 	var scope = root || document;
 	$(scope).find('._e[contenteditable="true"], [data-prop][contenteditable="true"]').addBack('._e[contenteditable="true"], [data-prop][contenteditable="true"]').each(function () {
 		this.setAttribute('contenteditable', 'false');
+	});
+}
+
+function initSearchPlainTextPaste() {
+	$(document).on('paste', 'input[role=search][name=q], .quran-passage-search', function (event) {
+		var originalEvent = event.originalEvent || event;
+		var clipboard = originalEvent.clipboardData || window.clipboardData;
+		if (!clipboard || typeof clipboard.getData !== 'function')
+			return;
+		var text = clipboard.getData('text/plain');
+		if (typeof text !== 'string')
+			return;
+		event.preventDefault();
+		this.value = text.trim();
+		if (typeof this.setSelectionRange === 'function') {
+			var end = this.value.length;
+			this.setSelectionRange(end, end);
+		}
+		$(this).trigger('input');
 	});
 }
 

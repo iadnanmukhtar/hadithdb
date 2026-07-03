@@ -188,7 +188,7 @@
             </button>
           </div>
           <div class="input-group input-group-sm quran-passage-search-group">
-            <input role="search" type="text" class="form-control quran-passage-search" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off">
+            <input role="search" type="text" class="form-control quran-passage-search" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off" autocapitalize="none" spellcheck="false">
             <%- include('sub-views/quran_tafsir_search_filter.ejs', { Tafsir: typeof Tafsir !== 'undefined' ? Tafsir : undefined }); %>
           </div>
         </form>
