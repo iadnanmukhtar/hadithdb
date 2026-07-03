@@ -211,6 +211,52 @@ function redirectCanonicalReferencePath(req, res, canonicalPath) {
   return true;
 }
 
+function requestWantsJson(req) {
+  if ('json' in req.query)
+    return true;
+  if (req.xhr)
+    return true;
+  var accept = (req.get('accept') || '').toLowerCase();
+  return accept.includes('application/json') && !accept.includes('text/html');
+}
+
+function itemPathForLegacyTranslation(item) {
+  var path = item && (item.ref || item.path || '');
+  if (!path && item && item.book_alias && item.num)
+    path = `${item.book_alias}:${item.num}`;
+  path = (path || '').toString().trim();
+  if (!path)
+    return '';
+  return path.charAt(0) === '/' ? path : `/${path}`;
+}
+
+function addLegacyTranslationParams(path, itemId) {
+  var parts = path.match(/^([^?#]*)(\?[^#]*)?(#.*)?$/);
+  var pathname = parts ? parts[1] : path;
+  var query = parts && parts[2] ? parts[2].substring(1) : '';
+  var hash = parts && parts[3] ? parts[3] : '';
+  var params = new URLSearchParams(query);
+  params.set('translate', '1');
+  params.set('translateItem', itemId.toString());
+  params.set('translateType', 'hadith');
+  var queryString = params.toString();
+  return `${pathname}${queryString ? `?${queryString}` : ''}${hash}`;
+}
+
+async function legacyTranslationItemUrl(req) {
+  var itemId = parsePositiveIntegerParam(req.params.id);
+  if (!Number.isInteger(itemId))
+    throw createError(400, routeParameterMessage('id', req.params.id, 'id must be a positive integer'));
+  var rows = await Index.docsFromKeyValue(Item.INDEX, { hId: itemId }, 0, 1);
+  if (rows.length < 1)
+    return null;
+  var item = new Item(rows[0]);
+  var path = itemPathForLegacyTranslation(item);
+  if (!path)
+    return null;
+  return Utils.urlFor(req, addLegacyTranslationParams(path, itemId));
+}
+
 router.use(rejectUnsafePathContent);
 router.use(redirectEncodedReferencePath);
 router.use(redirectArabicDigitPath);
@@ -254,15 +300,29 @@ router.get('/reinit', async function (req, res, next) {
 
 router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
   try {
-    if (req.query.cmd == 'tr') {
-      res.status(501).json({
-        code: 501,
-        translated: false,
-        revised: false,
-        message: 'Public hadith translation is no longer available.'
-      });
+    var cmd = (req.query.cmd || req.body?.cmd || '').toString();
+    if (cmd === 'tr') {
+      var itemUrl = await legacyTranslationItemUrl(req);
+      if (!itemUrl)
+        return next(createError(404, `Item ${req.params.id} not found`));
+      if (requestWantsJson(req)) {
+        res.status(410).json({
+          code: 410,
+          legacy: true,
+          translated: false,
+          revised: false,
+          itemType: 'hadith',
+          itemId: parsePositiveIntegerParam(req.params.id),
+          itemUrl: itemUrl,
+          replacement: itemUrl,
+          contentTranslationEndpoint: '/content-translations',
+          message: 'Legacy translation links now open the item translation workflow.'
+        });
+        return;
+      }
+      res.redirect(302, itemUrl);
       return;
-    } else if (req.query.cmd == 'comment') {
+    } else if (cmd === 'comment') {
       // Legacy endpoint retained for older clients. Comment counts are updated when comments are saved.
       return next(createError(501, 'Legacy comment actions are no longer available.'));
     }

@@ -6092,12 +6092,6 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	color: var(--c-accent);
 }
 
-.cmd-tr,
-.cmd-tr a {
-	color: var(--c-gray-mid);
-	line-height: 1.5rem;
-}
-
 .cmd-btn,
 a.cmd-btn {
 	color: var(--c-gray-mid) !important;

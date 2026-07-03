@@ -144,21 +144,9 @@
 		const bodyMarkdown = utils.emptyIfNull(langData.body) || utils.emptyIfNull(langData.text);
 		const bodyHtml = utils.markdownToHtml(bodyMarkdown);
 		const enableHadithContentLanguage = paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en';
-		const enableHadithContentTranslation = enableHadithContentLanguage && !isSimilarSection;
 	%>
 	<section lang="<%=lang%>" class="body <%=_p%> l5<%= contentTranslationClass %>" title="Ḥadīth Body"<%- contentTranslationAttrs %><% if (enableHadithContentLanguage) { %> data-content-translation-container="1"<% } %>>
 		<div class="_e hadith-body-content <%=_p%><%= isQuranItem && lang === 'ar' ? ' quran-hafs' : '' %><%= contentTranslationClass %>"<%- quranTranslationAttrs %><%- contentTranslationAttrs %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="<%= editProp('body') %>" data-arabizi="<%= isContentTranslationLang ? 'false' : 'true' %>" data-markdown-source="<%= bodyMarkdown %>" data-markdown-empty-html="&hellip;"<% if (enableHadithContentLanguage) { %> data-content-translation-item-type="hadith" data-content-translation-item-id="<%= i.actual ? i.actual.id : i.id %>" data-content-translation-language="en" data-content-translation-field="body" data-content-translation-existing="<%= bodyMarkdown ? 'true' : 'false' %>"<% if (isContentTranslationBrowse) { %> data-content-translation-show-control="true"<% } %><% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% } %>>
-		<% if (!langData.body) { %>
-			<% if (enableHadithContentTranslation) { %>
-				<div class="cmd-tr" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
-					No translation yet.
-				</div>
-			<% } else { %>
-				<div class="cmd-tr" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>">
-					No translation available
-				</div>
-			<% } %>
-		<% } %>
 				<%- bodyHtml %>
 				<% if (quranAyahMarkerNum) { %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= quranAyahMarkerRef %>">۝<%= quranAyahMarkerNum %></span><% } %>
 			</div>

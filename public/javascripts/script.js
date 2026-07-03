@@ -108,6 +108,7 @@ $(function () {
 	initHadithShareModals(document);
 	initGlobalContentLanguageSelect(document);
 	initHadithContentTranslationControls(document);
+	initLegacyHadithTranslationLink();
 	resumePendingContentTranslationCheckout();
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
@@ -9481,6 +9482,63 @@ function initHadithContentTranslationControls(root) {
 		appendContentTranslationControl(container.length ? container : target.parent(), target, 'hadith', itemId, readGlobalContentLanguage() || target.attr('data-content-translation-language') || target.attr('lang') || 'en');
 	});
 	refreshContentTranslationAuthControls();
+}
+
+function initLegacyHadithTranslationLink() {
+	if (!paymentFeatureEnabled())
+		return;
+	var params = new URLSearchParams(window.location.search || '');
+	if (params.get('translate') !== '1')
+		return;
+	var itemType = (params.get('translateType') || 'hadith').toString().toLowerCase();
+	if (itemType !== 'hadith')
+		return;
+	var itemId = (params.get('translateItem') || '').toString();
+	var attempts = 0;
+	var maxAttempts = 20;
+
+	function clearLegacyParams() {
+		params.delete('translate');
+		params.delete('translateItem');
+		params.delete('translateType');
+		var cleanUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash || ''}`;
+		window.history.replaceState(null, document.title, cleanUrl);
+	}
+
+	function findTarget() {
+		var targets = $('[data-content-translation-item-type="hadith"][data-content-translation-item-id]');
+		if (!itemId)
+			return targets.first();
+		return targets.filter(function () {
+			return $(this).attr('data-content-translation-item-id') === itemId;
+		}).first();
+	}
+
+	function tryOpen() {
+		var target = findTarget();
+		if (target.length) {
+			clearLegacyParams();
+			if (target[0].scrollIntoView)
+				target[0].scrollIntoView({ block: 'center' });
+			openContentTranslationModal({
+				target: target,
+				itemType: 'hadith',
+				itemId: itemId || target.attr('data-content-translation-item-id'),
+				currentLanguage: target.attr('data-content-translation-language') || readGlobalContentLanguage() || target.attr('lang') || 'en'
+			});
+			return;
+		}
+		attempts += 1;
+		if (attempts < maxAttempts) {
+			window.setTimeout(tryOpen, 100);
+			return;
+		}
+		clearLegacyParams();
+		if (window.toastr)
+			toastr.info('Translation controls are unavailable for this item.', 'Translation');
+	}
+
+	window.setTimeout(tryOpen, 0);
 }
 
 function initHadithShareModals(root) {
