@@ -28,17 +28,6 @@
 
 	<%# Title  ............................................................. %>
 	<% if (site.editMode && Array.isArray(i.contentTranslations) && i.contentTranslations.length) { %>
-		<div class="col-12 admin-content-translation-switcher content-translation-language-switcher mb-2" lang="en" dir="ltr">
-			<label class="visually-hidden" for="admin-content-translation-<%= i.actual ? i.actual.id : i.id %>">Translation language</label>
-			<select id="admin-content-translation-<%= i.actual ? i.actual.id : i.id %>" class="form-select form-select-sm content-translation-language-select" data-admin-content-translation-select="1" aria-label="Translation language">
-				<option value="en" selected>EN</option>
-				<% i.contentTranslations.forEach(function (translation) { %>
-					<% if (translation && translation.code) { %>
-						<option value="<%= translation.code %>"><%= translation.label || translation.code.toUpperCase() %></option>
-					<% } %>
-				<% }); %>
-			</select>
-		</div>
 		<div class="admin-content-translation-panel" data-admin-content-translation-panel="en">
 			<% if (en.title || site.editMode) { %>
 				<header class="col-12" lang="en">
@@ -72,12 +61,12 @@
 
 	<% if (site.editMode && Array.isArray(i.contentTranslations) && i.contentTranslations.length) { %>
 		<div class="admin-content-translation-panel" data-admin-content-translation-panel="en">
-			<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'en', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection }); %>
+			<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'en', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection, adminContentTranslationOptions: i.contentTranslations, adminContentTranslationSelected: 'en', adminContentTranslationItemId: contentTranslationItemId }); %>
 		</div>
 		<% i.contentTranslations.forEach(function (translation) { %>
 			<% if (translation && translation.code) { %>
 				<div class="admin-content-translation-panel d-none" data-admin-content-translation-panel="<%= translation.code %>">
-					<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: translation.code, main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection }); %>
+					<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: translation.code, main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection, adminContentTranslationOptions: i.contentTranslations, adminContentTranslationSelected: translation.code, adminContentTranslationItemId: contentTranslationItemId }); %>
 				</div>
 			<% } %>
 		<% }); %>

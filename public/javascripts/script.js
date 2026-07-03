@@ -8633,10 +8633,14 @@ function ensureContentTranslationActionsRow(target) {
 	var row = target.data('contentTranslationActionsRow');
 	if (row && row.length)
 		return row;
-	row = target.next('.content-translation-actions-row');
+	var itemColumn = target.closest('section.h');
+	var footnote = itemColumn.children('footer.footnote').first();
+	var bodySection = target.closest('section.body');
+	var anchor = footnote.length ? footnote : (bodySection.length ? bodySection : target);
+	row = anchor.next('.content-translation-actions-row');
 	if (!row.length) {
 		row = $('<div>').addClass('content-translation-actions-row');
-		target.after(row);
+		anchor.after(row);
 	}
 	row.attr({
 		lang: 'en',

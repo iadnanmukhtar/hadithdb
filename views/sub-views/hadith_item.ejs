@@ -22,6 +22,10 @@
 	var langActual = !isContentTranslationLang && i[lang] ? i[lang].actual : null;
 	var langDir = langData.dir || (['ar', 'fa', 'he', 'ur'].includes(lang) ? 'rtl' : 'ltr');
 	var langFontClass = langData.fontClass || '';
+	var adminContentTranslationOptionsList = Array.isArray(typeof adminContentTranslationOptions !== 'undefined' ? adminContentTranslationOptions : null) ? adminContentTranslationOptions : [];
+	var adminContentTranslationSelectedCode = (typeof adminContentTranslationSelected !== 'undefined' ? adminContentTranslationSelected : lang) || 'en';
+	var adminContentTranslationId = typeof adminContentTranslationItemId !== 'undefined' ? adminContentTranslationItemId : (i.actual ? i.actual.id : i.id);
+	var showAdminContentTranslationSwitcher = site.editMode && lang !== 'ar' && adminContentTranslationOptionsList.length;
 	var contentTranslationAttrs = isContentTranslationLang ? ` dir="${langDir}" data-content-language="${lang}"${langFontClass ? ` data-content-language-font-class="${langFontClass}"` : ''}` : '';
 	var contentTranslationClass = isContentTranslationLang && langFontClass ? ` ${langFontClass}` : '';
 	if (chapter)
@@ -171,6 +175,22 @@
 		<footer lang="<%=lang%>" class="footnote _e <%=_p%> l2<%= contentTranslationClass %>" title="Ḥadīth Footnote"<%- contentTranslationAttrs %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="<%= editProp('footnote') %>" data-arabizi="<%= isContentTranslationLang ? 'false' : 'true' %>" data-markdown-source="<%= footnoteMarkdown %>" data-markdown-empty-html="&hellip;"<% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="footnote"<% } %>>
 			<%- footnoteContent %>
 		</footer>
+	<% } %>
+
+	<% if (showAdminContentTranslationSwitcher) { %>
+		<div class="content-translation-actions-row admin-content-translation-actions-row">
+			<div class="admin-content-translation-switcher content-translation-language-switcher" lang="en" dir="ltr">
+				<label class="visually-hidden" for="admin-content-translation-<%= adminContentTranslationId %>-<%= lang %>">Translation language</label>
+				<select id="admin-content-translation-<%= adminContentTranslationId %>-<%= lang %>" class="form-select form-select-sm content-translation-language-select" data-admin-content-translation-select="1" aria-label="Translation language">
+					<option value="en" <%= adminContentTranslationSelectedCode === 'en' ? 'selected' : '' %>>English</option>
+					<% adminContentTranslationOptionsList.forEach(function (translation) { %>
+						<% if (translation && translation.code) { %>
+							<option value="<%= translation.code %>" <%= adminContentTranslationSelectedCode === translation.code ? 'selected' : '' %>><%= translation.label || translation.code.toUpperCase() %></option>
+						<% } %>
+					<% }); %>
+				</select>
+			</div>
+		</div>
 	<% } %>
 
 	<% if (i.book_virtual) { %>

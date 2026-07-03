@@ -471,6 +471,7 @@
 	        $select.on('change', function () {
 	          const code = ($(this).val() || '').toString();
 	          const $article = $(this).closest('article');
+	          $article.find('[data-admin-content-translation-select="1"]').val(code);
 	          const $panels = $article.find('[data-admin-content-translation-panel]');
 	          $panels.addClass('d-none');
 	          const $active = $panels.filter(function () {
