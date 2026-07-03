@@ -6,6 +6,33 @@
 	function editProp(field) {
 		return isContentTranslationLang ? `content_translation.${lang}.${field}` : `hadith.${field}${langSuff}`;
 	}
+	function editClass(classes) {
+		return `${site.editMode ? '_e ' : ''}${classes || ''}`.trim();
+	}
+	function attrValue(value) {
+		return utils.emptyIfNull(value)
+			.replace(/&/g, '&amp;')
+			.replace(/"/g, '&quot;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;');
+	}
+	function editAttrs(field, options) {
+		if (!site.editMode)
+			return '';
+		options = options || {};
+		const id = options.id || (i.actual ? i.actual.id : i.id);
+		const prop = options.prop || editProp(field);
+		const arabizi = options.arabizi;
+		const markdown = options.markdown;
+		const emptyHtml = options.emptyHtml;
+		return [
+			`data-id="${attrValue(id)}"`,
+			`data-prop="${attrValue(prop)}"`,
+			arabizi !== undefined ? `data-arabizi="${attrValue(arabizi)}"` : '',
+			markdown !== undefined ? `data-markdown-source="${attrValue(markdown)}"` : '',
+			emptyHtml !== undefined ? `data-markdown-empty-html="${attrValue(emptyHtml)}"` : ''
+		].filter(Boolean).join(' ');
+	}
 	function contentTranslationForLang(code) {
 		if (!Array.isArray(i.contentTranslations))
 			return {};
@@ -122,7 +149,7 @@
 
 		<%# Virtual Num %>
 		<% if (i.book_virtual) { %>
-			(<span class="_e" title="Virtual Num" data-id="<%= i.id %>" data-prop="hadith_virtual.num"><%- (langData.num) ? `${langData.num}` : '' %></span>)
+			(<span<% if (site.editMode) { %> class="_e" data-id="<%= i.id %>" data-prop="hadith_virtual.num"<% } %> title="Virtual Num"><%- (langData.num) ? `${langData.num}` : '' %></span>)
 		<% } %>
 
 		<%# Admin: Virtul Num 0%>
@@ -134,7 +161,7 @@
 		<%# Item Number + Chain %>
 		<b><a href="<%= itemHref %>" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>"><%= `${itemBookShortName}:${i.actual ? (langActual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a></b> –
 		<% if (langData.chain || site.editMode) { %>
-			<span class="_e chain <%=_p%> l3" title="Ḥadīth Chain" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="<%= editProp('chain') %>" data-arabizi="<%= isContentTranslationLang ? 'false' : 'true' %>"<% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="chain"<% } %>><%- langData.chain || `&hellip;` %></span>
+			<span class="<%= editClass(`chain ${_p} l3`) %>" title="Ḥadīth Chain"<%- site.editMode ? ` ${editAttrs('chain', { arabizi: isContentTranslationLang ? 'false' : 'true' })}` : '' %><% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="chain"<% } %>><%- langData.chain || `&hellip;` %></span>
 		<% } %>
 
 	</section>
@@ -146,7 +173,7 @@
 		const enableHadithContentLanguage = paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en';
 	%>
 	<section lang="<%=lang%>" class="body <%=_p%> l5<%= contentTranslationClass %>" title="Ḥadīth Body"<%- contentTranslationAttrs %><% if (enableHadithContentLanguage) { %> data-content-translation-container="1"<% } %>>
-		<div class="_e hadith-body-content <%=_p%><%= isQuranItem && lang === 'ar' ? ' quran-hafs' : '' %><%= contentTranslationClass %>"<%- quranTranslationAttrs %><%- contentTranslationAttrs %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="<%= editProp('body') %>" data-arabizi="<%= isContentTranslationLang ? 'false' : 'true' %>" data-markdown-source="<%= bodyMarkdown %>" data-markdown-empty-html="&hellip;"<% if (enableHadithContentLanguage) { %> data-content-translation-item-type="hadith" data-content-translation-item-id="<%= i.actual ? i.actual.id : i.id %>" data-content-translation-language="en" data-content-translation-field="body" data-content-translation-existing="<%= bodyMarkdown ? 'true' : 'false' %>"<% if (isContentTranslationBrowse) { %> data-content-translation-show-control="true"<% } %><% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% } %>>
+		<div class="<%= editClass(`hadith-body-content ${_p}${isQuranItem && lang === 'ar' ? ' quran-hafs' : ''}${contentTranslationClass}`) %>"<%- quranTranslationAttrs %><%- contentTranslationAttrs %><%- site.editMode ? ` ${editAttrs('body', { arabizi: isContentTranslationLang ? 'false' : 'true', markdown: bodyMarkdown, emptyHtml: '&hellip;' })}` : '' %><% if (!site.editMode && bodyMarkdown) { %> data-markdown-source="<%= bodyMarkdown %>"<% } %><% if (enableHadithContentLanguage) { %> data-content-translation-item-type="hadith" data-content-translation-item-id="<%= i.actual ? i.actual.id : i.id %>" data-content-translation-language="en" data-content-translation-field="body" data-content-translation-existing="<%= bodyMarkdown ? 'true' : 'false' %>"<% if (isContentTranslationBrowse) { %> data-content-translation-show-control="true"<% } %><% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% } %>>
 				<%- bodyHtml %>
 				<% if (quranAyahMarkerNum) { %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= quranAyahMarkerRef %>">۝<%= quranAyahMarkerNum %></span><% } %>
 			</div>
@@ -161,7 +188,7 @@
 		const footnoteHtml = utils.markdownToHtml(langData.footnote);
 		const footnoteContent = footnoteHtml || '&hellip;';
 	%>
-		<footer lang="<%=lang%>" class="footnote _e <%=_p%> l2<%= contentTranslationClass %>" title="Ḥadīth Footnote"<%- contentTranslationAttrs %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="<%= editProp('footnote') %>" data-arabizi="<%= isContentTranslationLang ? 'false' : 'true' %>" data-markdown-source="<%= footnoteMarkdown %>" data-markdown-empty-html="&hellip;"<% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="footnote"<% } %>>
+		<footer lang="<%=lang%>" class="<%= editClass(`footnote ${_p} l2${contentTranslationClass}`) %>" title="Ḥadīth Footnote"<%- contentTranslationAttrs %><%- site.editMode ? ` ${editAttrs('footnote', { arabizi: isContentTranslationLang ? 'false' : 'true', markdown: footnoteMarkdown, emptyHtml: '&hellip;' })}` : '' %><% if (!site.editMode && footnoteMarkdown) { %> data-markdown-source="<%= footnoteMarkdown %>"<% } %><% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="footnote"<% } %>>
 			<%- footnoteContent %>
 		</footer>
 	<% } %>
@@ -190,7 +217,7 @@
 			const noteHtml = utils.markdownToHtml(langData.note);
 			const noteContent = noteHtml || '&hellip;';
 		%>
-			<aside lang="<%=lang%>" class="note _e <%=_p%> l2" title="Ḥadīth Note" data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= noteMarkdown %>" data-markdown-empty-html="&hellip;">
+			<aside lang="<%=lang%>" class="<%= editClass(`note ${_p} l2`) %>" title="Ḥadīth Note"<% if (site.editMode) { %> data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= noteMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>>
 				<%- noteContent %>
 			</aside>
 		<% }

@@ -12,6 +12,7 @@ $(function () {
 
 	initHadithAdminGear();
 	initDropdownFilterSearch(document);
+	initReadOnlyInlineEditorGuards(document);
 
 	setDirection($('#search-bar'));
 
@@ -874,6 +875,13 @@ function setDirection(el) {
 		else
 			el.css({ 'direction': 'ltr' });
 	}
+}
+
+function initReadOnlyInlineEditorGuards(root) {
+	var scope = root || document;
+	$(scope).find('._e[contenteditable="true"], [data-prop][contenteditable="true"]').addBack('._e[contenteditable="true"], [data-prop][contenteditable="true"]').each(function () {
+		this.setAttribute('contenteditable', 'false');
+	});
 }
 
 var quranTafsirStorageKeys = {

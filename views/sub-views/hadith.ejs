@@ -17,6 +17,9 @@
 	const contentTranslationEstimate = enableHadithContentTranslation && locals.contentTranslationEstimateFields
 		? locals.contentTranslationEstimateFields(contentTranslationSourceFields, 'translate')
 		: { points: 0, wordCount: 0 };
+	function editClass(classes) {
+		return `${site.editMode ? '_e ' : ''}${classes || ''}`.trim();
+	}
 %>
 <a id="<%= String(i.num || i.num0 || i.id || '').replace(/:/g, '-') %>"></a>
 <article class="row mt-3<%= isQuranItem ? ' quran-search-item' : '' %>"<%- isSimilarSection && i.similarCandidate ? ' data-similar-candidate="true"' : '' %><% if (enableHadithContentLanguage) { %> data-content-translation-scope="hadith" data-content-translation-item-id="<%= contentTranslationItemId %>"<% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% if (enableHadithContentTranslation) { %> data-content-translation-points="<%= contentTranslationEstimate.points %>" data-content-translation-word-count="<%= contentTranslationEstimate.wordCount %>"<% } %><% } %>>
@@ -50,13 +53,13 @@
 	<% } else { %>
 		<% if (en.title || site.editMode) { %>
 			<header class="col-12" lang="en">
-				<h1 lang="en" class="_e fs-5" title="Ḥadīth Title" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.title_en" data-arabizi="true"<% if (enableHadithContentLanguage) { %> data-content-translation-field="title"<% } %>><%- en.title || `&hellip;` %></h4>
+				<h1 lang="en" class="<%= editClass('fs-5') %>" title="Ḥadīth Title"<% if (site.editMode) { %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.title_en" data-arabizi="true"<% } %><% if (enableHadithContentLanguage) { %> data-content-translation-field="title"<% } %>><%- en.title || `&hellip;` %></h4>
 			</header>
 		<% } %>
 	<% } %>
 	<% if (ar.title || site.editMode) { %>
 		<header class="col-12" lang="ar">
-			<h1 lang="ar" class="_e fs-5" title="ذكر الحديث" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.title"><strong><%- ar.title || `&hellip;` %></strong></h4>
+			<h1 lang="ar" class="<%= editClass('fs-5') %>" title="ذكر الحديث"<% if (site.editMode) { %> data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.title"<% } %>><strong><%- ar.title || `&hellip;` %></strong></h4>
 		</header>
 	<% } %>
 
