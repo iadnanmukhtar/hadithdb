@@ -2443,6 +2443,32 @@ del em strong {
 	margin-bottom: 2rem;
 }
 
+.search-results .h-menu-wrap,
+.search-results .caution,
+.search-results article > header,
+.search-results .h .title,
+.search-results .h .tags,
+.search-results .h .admin,
+.search-results .h .grade,
+.search-results .h .content-translation-actions-row,
+.search-results article > h4,
+.search-results .comment-feed,
+.mobile-bottom-nav,
+body > footer,
+.ui-autocomplete,
+.ui-helper-hidden-accessible {
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.search-results .h .chain,
+.search-results .h .hadith-body-content,
+.search-results .h .footnote,
+.search-results .h .note {
+	-webkit-user-select: text;
+	user-select: text;
+}
+
 .h:lang(ar) {
 	margin-top: 0.5rem;
 }
@@ -6145,6 +6171,19 @@ a.cmd-btn:hover {
 	overflow-y: auto;
 	overflow-x: hidden;
 	z-index: 1100;
+}
+
+.ui-helper-hidden-accessible {
+	border: 0;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
 }
 
 * html .ui-autocomplete {
