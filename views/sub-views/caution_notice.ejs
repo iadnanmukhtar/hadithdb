@@ -1,0 +1,17 @@
+<%
+  var cautionKey = typeof key === 'string' && key ? key : 'site-caution-notice';
+  var cautionFullId = typeof id === 'string' && id ? id : `${cautionKey}-full`;
+%>
+<div class="caution caution-notice" lang="en">
+  <button type="button" class="toc-book-description-summary tafsir-book-description-summary caution-notice-summary text-muted text-start" data-toc-description-summary="<%= cautionKey %>" data-toc-description-expand="<%= cautionKey %>" aria-expanded="false" aria-controls="<%= cautionFullId %>">
+    <span class="toc-book-description-preview caution-notice-preview"><strong>Caution:</strong> Translations of Quran and Ḥadīth may lead to possible misapplications and misinterpretations.</span>
+    <span class="tafsir-book-description-more">More...</span>
+  </button>
+  <div id="<%= cautionFullId %>" class="toc-book-description-full tafsir-book-description-full caution-notice-full d-none" data-toc-description-full="<%= cautionKey %>">
+    <strong>Caution:</strong>
+    Translations of Quran and Ḥadīth may lead to possible misapplications and misinterpretations.
+    This site is intended for students of sacred knowledge that are proficient in comprehending
+    classical Arabic and have a strong foundation in Islamic sciences. Also note that religious
+    injunctions rely on several aspects beyond what one may glean through reading individual aḥādīth.
+  </div>
+</div>

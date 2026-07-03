@@ -1623,6 +1623,40 @@ nav .nav-link[aria-current="page"] {
 	margin-top: 5px;
 }
 
+.caution .caution-notice-summary,
+.caution .caution-notice-full {
+	font-size: inherit;
+	line-height: 1.4;
+}
+
+.caution-notice {
+	max-width: 100%;
+	min-width: 0;
+}
+
+.input-group > .caution-notice {
+	flex: 0 0 100%;
+	width: 100%;
+}
+
+.caution .caution-notice-summary {
+	margin-bottom: 0;
+	max-width: 100%;
+}
+
+.caution .caution-notice-full {
+	color: var(--c-gray-mid);
+}
+
+.caution .caution-notice-preview {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.caution .tafsir-book-description-more {
+	white-space: nowrap;
+}
+
 #search-bar {
 	font-size: 1.5em;
 	border-color: var(--c-accent);
