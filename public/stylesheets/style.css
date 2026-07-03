@@ -3969,6 +3969,35 @@ del em strong {
 	unicode-bidi: isolate !important;
 }
 
+.content-translation-language-switcher.quran-passage-translation-control {
+	max-width: min(12rem, 100%);
+	position: relative;
+}
+
+.content-translation-language-switcher .quran-passage-translation-icon {
+	left: .45rem;
+}
+
+.content-translation-language-select.quran-passage-translation-select {
+	border-color: var(--bs-secondary-color);
+	font-size: .9rem !important;
+	height: calc(1.1em + .3rem + 2px);
+	line-height: 1.1 !important;
+	max-width: 100%;
+	min-height: calc(1.1em + .3rem + 2px);
+	min-width: 8rem;
+	padding-bottom: .15rem;
+	padding-left: 1.55rem;
+	padding-right: 1.55rem;
+	padding-top: .15rem;
+	width: 100%;
+}
+
+.content-translation-language-select.quran-passage-translation-select:hover,
+.content-translation-language-select.quran-passage-translation-select:focus {
+	border-color: var(--bs-secondary);
+}
+
 .content-translation-modal .modal-content {
 	border-radius: .45rem;
 }

@@ -8843,12 +8843,14 @@ function renderAvailableContentTranslationSelector(target, itemType, itemId, cur
 	var row = ensureContentTranslationActionsRow(target);
 	var switcher = target.data('contentTranslationLanguageSwitcher');
 	if (!switcher || !switcher.length) {
-		switcher = $('<div>').addClass('content-translation-language-switcher').attr({
+		switcher = $('<label>').addClass('content-translation-language-switcher quran-passage-translation-control mb-0').attr({
 			lang: 'en',
 			dir: 'ltr',
 			'data-content-translation-language-switcher': contentTranslationAvailableKey(itemType, itemId)
 		});
-		$('<select>').addClass('form-select form-select-sm content-translation-language-select').attr('aria-label', 'Language').appendTo(switcher);
+		$('<span>').addClass('visually-hidden').text('Language').appendTo(switcher);
+		$('<span>').addClass('bi bi-translate quran-passage-translation-icon').attr('aria-hidden', 'true').appendTo(switcher);
+		$('<select>').addClass('form-select form-select-sm content-translation-language-select quran-passage-translation-select').attr('aria-label', 'Language').appendTo(switcher);
 		target.data('contentTranslationLanguageSwitcher', switcher);
 		switcher.find('select').on('change', function () {
 			var translations = target.data('contentTranslationAvailableTranslations') || [];
