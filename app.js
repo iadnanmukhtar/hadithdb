@@ -1,6 +1,12 @@
 // @ts-check
 'use strict';
 
+let newrelic = null;
+try {
+  newrelic = require('newrelic');
+} catch (err) {
+  debugNewRelicLoadError(err);
+}
 require('./lib/Globals');
 const Debug = require('./lib/Debug');
 const debug = Debug('hadithdb:App');
@@ -17,6 +23,12 @@ const Hadith = require('./lib/Hadith');
 const Utils = require('./lib/Utils');
 const PaymentConfig = require('./lib/PaymentConfig');
 const ContentTranslations = require('./lib/ContentTranslations');
+
+function debugNewRelicLoadError(err) {
+  if (!process.env.DEBUG || !process.env.DEBUG.split(',').some(pattern => pattern.trim() === 'hadithdb:App'))
+    return;
+  console.warn('New Relic agent API is unavailable:', err && err.message ? err.message : err);
+}
 
 const REQUEST_BODY_LIMIT = '10mb';
 const DYNAMIC_REQUEST_LIMIT_WINDOW_MS = 1000;
@@ -274,6 +286,7 @@ const buildErrorViewLocals = (statusCode, message, error, req, res) => {
 patchAsyncRouterMethods();
 
 const app = express();
+app.locals.newrelic = newrelic;
 app.disable('x-powered-by');
 app.set('trust proxy', 'loopback');
 app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, res, callback) {

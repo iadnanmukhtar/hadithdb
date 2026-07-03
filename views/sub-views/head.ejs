@@ -96,6 +96,9 @@
     return canonicalUrlForPath(`/${book.alias}/${chapter.h1}/${section.h2}`);
   }
 %>
+<% if (typeof newrelic !== 'undefined' && newrelic && typeof newrelic.getBrowserTimingHeader === 'function') { %>
+<%- newrelic.getBrowserTimingHeader() %>
+<% } %>
 <title><%= headTitle %></title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
