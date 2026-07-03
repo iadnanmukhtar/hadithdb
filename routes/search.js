@@ -201,6 +201,15 @@ function sendCachedHtml(req, res, cachedFile) {
   res.end(Utils.readCachedHtml(cachedFile, req));
 }
 
+function cachedRenderLocals(res, locals) {
+  return Object.assign(
+    {},
+    res.app ? res.app.locals : {},
+    res.locals || {},
+    locals || {}
+  );
+}
+
 function redirectCanonicalReferencePath(req, res, canonicalPath) {
   if (req.path === canonicalPath)
     return false;
@@ -1872,7 +1881,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       if (cacheableHtml && !editMode) {
         fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
         var refs = [book.alias, `book:${book.alias}`];
-        var html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, {
+        var html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, cachedRenderLocals(res, {
           noadmin: true,
           book: book,
           BookDownloads: BookDownloads,
@@ -1884,7 +1893,7 @@ router.get('/:bookAlias', async function (req, res, next) {
           tafsirs: tafsirs,
           req: req,
           res: res
-        });
+        }));
         Utils.writeCachedHtml(cachedFile, html);
         await Utils.indexCachedItem(refs, cachedFile);
       }
@@ -2041,7 +2050,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         var refs = [];
         for (const item of results)
           refs.push(item.ref);
-        var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
+        var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, cachedRenderLocals(res, {
           Tafsir: Tafsir,
           noadmin: true,
           chapter: chapter,
@@ -2049,7 +2058,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
           results: results,
           req: req,
           res: res
-        });
+        }));
         Utils.writeCachedHtml(cachedFile, html);
         await Utils.indexCachedItem(refs, cachedFile);
 
@@ -2066,13 +2075,13 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       var refs = [];
       for (const item of results)
         refs.push(item.ref);
-      var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, {
+      var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, cachedRenderLocals(res, {
         noadmin: true,
         chapter: chapter,
         results: results,
         req: req,
         res: res
-      });
+      }));
       Utils.writeCachedHtml(cachedFile, html);
       await Utils.indexCachedItem(refs, cachedFile);
 
@@ -2178,7 +2187,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       var refs = [];
       for (const item of results)
         refs.push(item.ref);
-      var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, {
+      var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, cachedRenderLocals(res, {
         Tafsir: Tafsir,
         noadmin: true,
         section: section,
@@ -2188,7 +2197,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         quranSurahs: quranSurahs,
         req: req,
         res: res
-      });
+      }));
       Utils.writeCachedHtml(cachedFile, html);
       await Utils.indexCachedItem(refs, cachedFile);
 
@@ -2220,13 +2229,13 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
         var refs = [];
         for (const item of results)
           refs.push(item.ref);
-        var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, {
+        var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, cachedRenderLocals(res, {
           noadmin: true,
           section: section,
           results: results,
           req: req,
           res: res
-        });
+        }));
         Utils.writeCachedHtml(cachedFile, html);
         await Utils.indexCachedItem(refs, cachedFile);
 
