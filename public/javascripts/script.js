@@ -9418,7 +9418,7 @@ function appendContentTranslationControl(container, target, itemType, itemId, cu
 		lang: 'en',
 		dir: 'ltr'
 	});
-	if (existingTranslation)
+	if (existingTranslation && target.attr('data-content-translation-show-control') !== 'true')
 		control.addClass('content-translation-auth-only').prop('hidden', true);
 	$('<button>').addClass((existingTranslation ? 'btn btn-sm btn-primary content-translate-button content-translation-revise-button' : 'btn btn-sm btn-primary content-translate-button') + ` content-translate-button-${itemClass}`).attr({
 		type: 'button',

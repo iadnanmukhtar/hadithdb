@@ -4,6 +4,7 @@
 	const isSimilarSection = typeof similarSection !== 'undefined' && similarSection;
 	const isQuranItem = i.remark == 2 || i.book_alias === 'quran' || (i.actual && i.actual.book_alias === 'quran');
 	const paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
+	const isContentTranslationBrowse = typeof contentTranslationBrowse !== 'undefined' && contentTranslationBrowse;
 	const enableHadithContentLanguage = paymentFeatureEnabled && !site.editMode && !isQuranItem;
 	const enableHadithContentTranslation = enableHadithContentLanguage && !isSimilarSection;
 	const contentTranslationItemId = i.actual ? i.actual.id : i.id;
@@ -71,10 +72,10 @@
 			<% } %>
 		<% }); %>
 	<% } else { %>
-		<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'en', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection }); %>
+		<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'en', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection, contentTranslationBrowse: isContentTranslationBrowse }); %>
 	<% } %>
 
-	<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'ar', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection }); %>
+	<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'ar', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection, contentTranslationBrowse: isContentTranslationBrowse }); %>
 
 	<% if (i.single) { %>
 		<%- include('comment_widget.ejs', {
