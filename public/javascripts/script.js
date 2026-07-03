@@ -8102,6 +8102,23 @@ function contentTranslationAvailableKey(itemType, itemId) {
 	return `${itemType || ''}:${itemId || ''}`;
 }
 
+function contentTranslationAvailableFromElement(card) {
+	if (!card || !card.getAttribute)
+		return null;
+	var encoded = card.getAttribute('data-content-available-translations') || card.getAttribute('data-share-available-translations');
+	if (!encoded)
+		return null;
+	try {
+		var translations = JSON.parse(encoded);
+		translations = normalizeContentTranslationLanguages(translations).filter(function (translation) {
+			return translation && translation.code && translation.content && Object.values(translation.content).some(Boolean);
+		});
+		return { translations: translations };
+	} catch (_err) {
+		return null;
+	}
+}
+
 async function contentTranslationAvailableRequest(itemType, itemId, force) {
 	if (!contentTranslationFeatureEnabled(itemType))
 		return { translations: [] };
@@ -8481,11 +8498,13 @@ function initGeneratedShareLanguageSelect(modal, card) {
 	preserveGeneratedShareDefaults(modal);
 	Promise.all([
 		resolveInitialGlobalContentLanguage(),
-		contentTranslationAvailableRequest(
-			card.getAttribute('data-share-generated-item-type'),
-			card.getAttribute('data-share-generated-item-id'),
-			false
-		)
+		Promise.resolve(contentTranslationAvailableFromElement(card)).then(function (available) {
+			return available || contentTranslationAvailableRequest(
+				card.getAttribute('data-share-generated-item-type'),
+				card.getAttribute('data-share-generated-item-id'),
+				false
+			);
+		})
 	]).then(function (results) {
 		renderGeneratedShareLanguageMenu(modal, card, results[1] && results[1].translations || [], results[0]);
 		scheduleHadithShareCardFit(card);
@@ -8925,7 +8944,8 @@ async function loadAvailableContentTranslationSelector(target, itemType, itemId,
 	target = target && target.jquery ? target : $(target);
 	if (!target.length || !itemType || !itemId)
 		return;
-	var payload = await contentTranslationAvailableRequest(itemType, itemId, force);
+	var embedded = !force && itemType === 'hadith' ? contentTranslationAvailableFromElement(target[0]) : null;
+	var payload = embedded || await contentTranslationAvailableRequest(itemType, itemId, force);
 	var requestedLanguage = currentLanguage || target.attr('data-content-translation-preferred-language') || readGlobalContentLanguage() || target.attr('data-content-translation-language') || target.attr('lang') || '';
 	var known = target.data('contentTranslationAvailableTranslations') || [];
 	var fetched = payload && Array.isArray(payload.translations) ? payload.translations : [];
@@ -8944,11 +8964,17 @@ function scheduleAvailableContentTranslationSelector(target, itemType, itemId, c
 		'data-content-translation-language': currentLanguage,
 		'data-content-translation-preferred-language': currentLanguage
 	});
-	renderAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage, target.data('contentTranslationAvailableTranslations') || []);
+	var embedded = itemType === 'hadith' ? contentTranslationAvailableFromElement(target[0]) : null;
+	var initialTranslations = embedded && Array.isArray(embedded.translations)
+		? embedded.translations
+		: target.data('contentTranslationAvailableTranslations') || [];
+	renderAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage, initialTranslations);
 	if (!('IntersectionObserver' in window)) {
 		loadAvailableContentTranslationSelector(target, itemType, itemId, currentLanguage, false);
 		return;
 	}
+	if (embedded && itemType === 'hadith')
+		return;
 	if (!contentTranslationAvailableObserver) {
 		contentTranslationAvailableObserver = new IntersectionObserver(function (entries) {
 			entries.forEach(function (entry) {

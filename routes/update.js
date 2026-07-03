@@ -13,6 +13,7 @@ const { homedir } = require('os');
 const Hadith = require('../lib/Hadith');
 const HadithKnowledge = require('../lib/HadithKnowledge');
 const HadithRevision = require('../lib/HadithRevision');
+const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
 const CommentaryTranslationIndexFields = require('../lib/CommentaryTranslationIndexFields');
@@ -540,6 +541,7 @@ async function updateHadithContentTranslation(hadithId, languageCode, field, val
       model=VALUES(model),
       points_charged=VALUES(points_charged),
       updatedAt=CURRENT_TIMESTAMP`);
+  await HadithTranslationIndexView.refreshAvailability(hadithId);
   await Books.touchBookContentLastmodById(hadith.bookId);
   return {
     message: 'Updated translation',

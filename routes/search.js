@@ -4,6 +4,7 @@
 const debug = require('../lib/Debug')('hadithdb:Search');
 const express = require('express');
 const createError = require('http-errors');
+const rateLimit = require('express-rate-limit').default;
 const fs = require('fs');
 const fm = require('front-matter');
 const ejs = require('ejs');
@@ -23,6 +24,39 @@ const { homedir } = require('os');
 const router = express.Router();
 const sitemapBuilds = new Map();
 const SITEMAP_PAGE_SIZE = 50000;
+const SEARCH_RATE_LIMIT_WINDOW_MS = 1000;
+const DEFAULT_SEARCH_RATE_LIMIT_RPS = 100;
+
+function envPositiveInteger(name, fallback) {
+  var value = Number.parseInt((process.env[name] || '').toString().trim(), 10);
+  return Number.isSafeInteger(value) && value > 0 ? value : fallback;
+}
+
+const SEARCH_RATE_LIMIT_PER_IP = envPositiveInteger('THROTTLE_RPS', DEFAULT_SEARCH_RATE_LIMIT_RPS);
+
+function requestRateLimitIp(req) {
+  return req.clientIp || req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
+}
+
+function skipSearchRateLimit(req) {
+  return Utils.isLocalhostRequest(req);
+}
+
+const searchRequestLimiter = rateLimit({
+  windowMs: SEARCH_RATE_LIMIT_WINDOW_MS,
+  limit: SEARCH_RATE_LIMIT_PER_IP,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: requestRateLimitIp,
+  skip: skipSearchRateLimit,
+  message: 'Too many search requests. Please wait and try again.'
+});
+
+function throttleSearchRequest(req, res, next) {
+  if (!req.query.q && !req.query.term)
+    return next();
+  return searchRequestLimiter(req, res, next);
+}
 
 function parsePositiveIntegerParam(value) {
   var normalized = Arabic.toLatinDigits((value || '').toString());
@@ -271,7 +305,7 @@ router.use(redirectEncodedReferencePath);
 router.use(redirectArabicDigitPath);
 router.use(redirectCanonicalQueryParams);
 
-router.get(['/autocomplete', '/quran/autocomplete'], async function (req, res, next) {
+router.get(['/autocomplete', '/quran/autocomplete'], searchRequestLimiter, async function (req, res, next) {
   try {
     var q = Search.truncateQuery(req.query.q || req.query.term || '');
     var bookFilters = req.query.b || req.query['b[]'];
@@ -872,7 +906,7 @@ async function renderSearchResults(req, res, next, options = {}) {
 }
 
 // HOME (SEARCH OR SHOW RANDOM HADITH)
-router.get('/', async function (req, res, next) {
+router.get('/', throttleSearchRequest, async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
@@ -1794,7 +1828,7 @@ router.get('/:bookAlias.:format(json|epub)', BookDownloads.sendHadithBook);
 
 router.get('/quran/:translationAlias.:format(json|epub)', BookDownloads.sendTranslationBook);
 
-router.get('/quran', async function (req, res, next) {
+router.get('/quran', throttleSearchRequest, async function (req, res, next) {
   if (!req.query.q)
     return next();
 

@@ -5,9 +5,11 @@
 const path = require('path');
 const util = require('util');
 const sqlite3 = require('sqlite3');
+const Hadith = require('../../lib/Hadith');
 require('../../lib/Globals');
 
 const DEFAULT_BATCH_SIZE = 250;
+const DEFAULT_DUPLICATE_WINDOW = 100;
 
 async function main() {
 	const options = parseArgs(process.argv.slice(2));
@@ -15,7 +17,7 @@ async function main() {
 	const detected = await detectShamelaTables(source, options);
 	const mainRow = (await sqliteGet(source, 'SELECT * FROM Main LIMIT 1')) || {};
 	const headings = buildHeadings(await sqliteAll(source, `SELECT id, lvl, sub, tit FROM ${quoteSqliteIdentifier(detected.tocTable)} ORDER BY id`));
-	const hadiths = buildHadiths(await sqliteAll(source, `SELECT id, hno, part, page, nass FROM ${quoteSqliteIdentifier(detected.textTable)} ORDER BY id`), headings);
+	const hadiths = buildHadiths(await sqliteAll(source, `SELECT id, hno, part, page, nass FROM ${quoteSqliteIdentifier(detected.textTable)} ORDER BY id`), headings, options);
 
 	applyHeadingStats(headings, hadiths);
 	console.log(`Prepared ${headings.length} headings and ${hadiths.length} hadith rows from ${options.source}`);
@@ -107,10 +109,10 @@ function buildHeadings(rows) {
 	});
 }
 
-function buildHadiths(rows, headings) {
+function buildHadiths(rows, headings, options) {
 	const segments = buildHadithSegments(rows);
-	assertNoDuplicateExplicitNumbers(segments);
-	applyUnnumberedVersions(segments);
+	assertRepeatedNumbersAreNearby(segments, options.duplicateWindow);
+	applyRepeatedNumberVersions(segments);
 
 	const numInChapter = new Map();
 	const hadiths = [];
@@ -120,6 +122,11 @@ function buildHadiths(rows, headings) {
 			throw new Error(`No heading found for hadith ${segment.num}`);
 		const current = (numInChapter.get(heading.key) || 0) + 1;
 		numInChapter.set(heading.key, current);
+		const split = Hadith.splitHadithText({
+			bookId: 'shamela',
+			num: segment.num,
+			text: segment.text
+		}) || { text: segment.text };
 		hadiths.push({
 			ordinal: segment.ordinal,
 			headingKey: heading.key,
@@ -132,8 +139,8 @@ function buildHadiths(rows, headings) {
 			num0: segment.num0,
 			baseNum: segment.baseNum,
 			text: segment.text,
-			chain: null,
-			body: segment.text,
+			chain: split.chain || null,
+			body: split.body || segment.text,
 			part: segment.part,
 			page: segment.page
 		});
@@ -167,14 +174,54 @@ function buildHadithSegments(rows) {
 		} else if (rowNum) {
 			segments.push(segmentFromRow(row, rowNum, text, true));
 			previousNumberedNum = rowNum;
-		} else if (previousNumberedNum) {
-			segments.push(segmentFromRow(row, previousNumberedNum, text, false));
+		} else if (segments.length > 0) {
+			appendContinuation(segments[segments.length - 1], row, text);
 		}
 	}
 	segments.forEach((segment, index) => {
 		segment.ordinal = index + 1;
 	});
 	return segments;
+}
+
+function appendContinuation(segment, row, text) {
+	segment.text = cleanHadithBody(`${segment.text}\n${text}`);
+	if (!segment.part && row.part)
+		segment.part = row.part;
+	if (!segment.page && row.page)
+		segment.page = row.page;
+}
+
+function assertRepeatedNumbersAreNearby(segments, duplicateWindow) {
+	const byNum = new Map();
+	for (const segment of segments) {
+		const arr = byNum.get(segment.baseNum) || [];
+		arr.push(segment);
+		byNum.set(segment.baseNum, arr);
+	}
+	const distant = [];
+	for (const [baseNum, arr] of byNum.entries()) {
+		if (arr.length < 2)
+			continue;
+		const sourceIds = arr.map(segment => segment.sourceId);
+		const min = Math.min(...sourceIds);
+		const max = Math.max(...sourceIds);
+		if ((max - min) <= duplicateWindow)
+			continue;
+		distant.push({
+			baseNum,
+			distance: max - min,
+			sourceIds,
+			previews: arr.slice(0, 3).map(segment => segment.text.slice(0, 120).replace(/\s+/g, ' '))
+		});
+	}
+	if (distant.length < 1)
+		return;
+	const preview = distant.slice(0, 25)
+		.map(row => `${row.baseNum}: source rows ${row.sourceIds.join(', ')} distance=${row.distance} :: ${row.previews.join(' | ')}`)
+		.join('\n');
+	const remaining = distant.length > 25 ? `\n... ${distant.length - 25} more distant repeated number(s)` : '';
+	throw new Error(`Repeated hadith numbers farther than ${duplicateWindow} source rows apart; refusing to auto-version them.\n${preview}${remaining}`);
 }
 
 function segmentFromRow(row, baseNum, text, explicitlyNumbered) {
@@ -191,33 +238,7 @@ function segmentFromRow(row, baseNum, text, explicitlyNumbered) {
 	};
 }
 
-function assertNoDuplicateExplicitNumbers(segments) {
-	const explicitByNum = new Map();
-	for (const segment of segments) {
-		if (!segment.explicitlyNumbered)
-			continue;
-		const arr = explicitByNum.get(segment.baseNum) || [];
-		arr.push(segment);
-		explicitByNum.set(segment.baseNum, arr);
-	}
-	const duplicates = Array.from(explicitByNum.entries())
-		.filter(([, arr]) => arr.length > 1)
-		.map(([num, arr]) => ({
-			num,
-			sourceIds: arr.map(segment => segment.sourceId),
-			previews: arr.slice(0, 3).map(segment => segment.text.slice(0, 120).replace(/\s+/g, ' '))
-		}));
-	if (duplicates.length < 1)
-		return;
-
-	const preview = duplicates.slice(0, 25)
-		.map(row => `${row.num}: source rows ${row.sourceIds.join(', ')} :: ${row.previews.join(' | ')}`)
-		.join('\n');
-	const remaining = duplicates.length > 25 ? `\n... ${duplicates.length - 25} more duplicate explicit number(s)` : '';
-	throw new Error(`Duplicate explicit hadith numbers found; refusing to auto-version them.\n${preview}${remaining}`);
-}
-
-function applyUnnumberedVersions(segments) {
+function applyRepeatedNumberVersions(segments) {
 	const byNum = new Map();
 	for (const segment of segments) {
 		const arr = byNum.get(segment.baseNum) || [];
@@ -225,7 +246,7 @@ function applyUnnumberedVersions(segments) {
 		byNum.set(segment.baseNum, arr);
 	}
 	for (const [baseNum, arr] of byNum.entries()) {
-		if (!arr.some(segment => !segment.explicitlyNumbered))
+		if (arr.length < 2)
 			continue;
 		arr.forEach((segment, index) => {
 			segment.num = `${baseNum}${versionSuffix(index)}`;
@@ -603,7 +624,8 @@ function parseArgs(argv) {
 		description: '',
 		hidden: false,
 		dryRun: false,
-		batchSize: DEFAULT_BATCH_SIZE
+		batchSize: DEFAULT_BATCH_SIZE,
+		duplicateWindow: DEFAULT_DUPLICATE_WINDOW
 	};
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
@@ -627,6 +649,7 @@ function parseArgs(argv) {
 		else if (arg === '--death') options.death = parsePositiveInt(requiredValue(argv, ++i, arg), arg);
 		else if (arg === '--description') options.description = requiredValue(argv, ++i, arg);
 		else if (arg === '--batch-size') options.batchSize = parsePositiveInt(requiredValue(argv, ++i, arg), arg);
+		else if (arg === '--duplicate-window') options.duplicateWindow = parsePositiveInt(requiredValue(argv, ++i, arg), arg);
 		else if (arg === '--help') usage(0);
 		else throw new Error(`Unknown argument: ${arg}`);
 	}
@@ -674,6 +697,7 @@ Options:
   --description <text>    Override description from Main metadata.
   --hidden                Import as hidden.
   --dry-run               Parse and print a preview without writing MySQL.
+  --duplicate-window <n>  Refuse repeated numbers farther apart than n source rows. Default: 100.
 
 Example:
   node bin/utils/import-shamela-book.js --source temp/سنن\\ الدارقطني.db --alias daraqutni --book-id 23 --book-number 9771 --ordinal 54 --short-name-en Daraqutni --short-name الدارقطني --name-en "Sunan al-Daraqutni" --title "سنن الدارقطني" --author-en "Abu al-Hasan Ali ibn Umar al-Daraqutni"`);
