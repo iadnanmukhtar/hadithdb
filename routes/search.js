@@ -32,6 +32,16 @@ function parsePositiveIntegerParam(value) {
   return Number.isSafeInteger(numeric) && numeric > 0 ? numeric : NaN;
 }
 
+function parseHadithHeadingNumberParam(value) {
+  var normalized = Arabic.toLatinDigits((value || '').toString());
+  if (!/^(?:0|[1-9]\d*)(?:\.\d+)?$/.test(normalized))
+    return null;
+  var numeric = Number(normalized);
+  if (!Number.isFinite(numeric) || numeric < 0)
+    return null;
+  return numeric.toString();
+}
+
 function parseQuranAyahParam(value) {
   var normalized = Arabic.toLatinDigits((value || '').toString());
   if (!/^\d+$/.test(normalized))
@@ -1915,9 +1925,11 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       if (surah && redirectCanonicalReferencePath(req, res, `/quran/${surah.num}`))
         return;
     }
-    var chapterNum = parsePositiveIntegerParam(req.params.chapterNum);
-    if (!Number.isInteger(chapterNum))
-      return next(createError(bookAlias === 'quran' ? 404 : 400, routeParameterMessage('chapterNum', req.params.chapterNum, 'chapter must be a positive integer')));
+    var chapterNum = bookAlias === 'quran'
+      ? parsePositiveIntegerParam(req.params.chapterNum)
+      : parseHadithHeadingNumberParam(req.params.chapterNum);
+    if (bookAlias === 'quran' ? !Number.isInteger(chapterNum) : !chapterNum)
+      return next(createError(bookAlias === 'quran' ? 404 : 400, routeParameterMessage('chapterNum', req.params.chapterNum, bookAlias === 'quran' ? 'chapter must be a positive integer' : 'chapter must be a non-negative number')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
       return next(createError(404, `Quran surah ${chapterNum} not found`));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
@@ -2042,10 +2054,12 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       if (surah && redirectCanonicalReferencePath(req, res, `/quran/${surah.num}/${req.params.sectionNum}`))
         return;
     }
-    var chapterNum = parsePositiveIntegerParam(req.params.chapterNum);
+    var chapterNum = bookAlias === 'quran'
+      ? parsePositiveIntegerParam(req.params.chapterNum)
+      : parseHadithHeadingNumberParam(req.params.chapterNum);
     var sectionNum = parsePositiveIntegerParam(req.params.sectionNum);
-    if (!Number.isInteger(chapterNum))
-      return next(createError(bookAlias === 'quran' ? 404 : 400, routeParameterMessage('chapterNum', req.params.chapterNum, 'chapter must be a positive integer')));
+    if (bookAlias === 'quran' ? !Number.isInteger(chapterNum) : !chapterNum)
+      return next(createError(bookAlias === 'quran' ? 404 : 400, routeParameterMessage('chapterNum', req.params.chapterNum, bookAlias === 'quran' ? 'chapter must be a positive integer' : 'chapter must be a non-negative number')));
     if (!Number.isInteger(sectionNum))
       return next(createError(400, routeParameterMessage('sectionNum', req.params.sectionNum, 'section must be a positive integer')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
@@ -2189,16 +2203,18 @@ router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function 
       return next(createError(404, `Quran surah ${p.chapterNum} not found`));
     p.chapterNum = surah.num;
   }
-  var chapterNum = parsePositiveIntegerParam(p.chapterNum);
+  var chapterNum = p.bookAlias === 'quran'
+    ? parsePositiveIntegerParam(p.chapterNum)
+    : parseHadithHeadingNumberParam(p.chapterNum);
   var sectionNum = parsePositiveIntegerParam(p.sectionNum);
   var subsectionNum = parsePositiveIntegerParam(p.subsectionNum);
-  if (!Number.isInteger(chapterNum))
-    return next(createError(400, routeParameterMessage('chapterNum', p.chapterNum, 'chapter must be a positive integer')));
+  if (p.bookAlias === 'quran' ? !Number.isInteger(chapterNum) : !chapterNum)
+    return next(createError(400, routeParameterMessage('chapterNum', p.chapterNum, p.bookAlias === 'quran' ? 'chapter must be a positive integer' : 'chapter must be a non-negative number')));
   if (!Number.isInteger(sectionNum))
     return next(createError(400, routeParameterMessage('sectionNum', p.sectionNum, 'section must be a positive integer')));
   if (!Number.isInteger(subsectionNum))
     return next(createError(400, routeParameterMessage('subsectionNum', p.subsectionNum, 'subsection must be a positive integer')));
-  res.redirect(301, `/${p.bookAlias}/${p.chapterNum}/${p.sectionNum}#S${p.sectionNum}-${p.subsectionNum}`);
+  res.redirect(301, `/${p.bookAlias}/${chapterNum}/${sectionNum}#S${sectionNum}-${subsectionNum}`);
   return;
 });
 
