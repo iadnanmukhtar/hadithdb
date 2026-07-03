@@ -7931,6 +7931,27 @@ function normalizeContentTranslationLanguages(languages) {
 	}).filter(Boolean).sort(contentTranslationLanguageSort);
 }
 
+function contentTranslationContentFromOption(translation) {
+	var content = translation && translation.content;
+	if (content && typeof content === 'object')
+		return content;
+	content = {};
+	['title', 'chain', 'body', 'footnote', 'text', 'footnotes'].forEach(function (field) {
+		if (translation && translation[field])
+			content[field] = translation[field];
+	});
+	return content;
+}
+
+function normalizeAvailableContentTranslations(translations) {
+	return normalizeContentTranslationLanguages(translations).map(function (translation) {
+		var content = contentTranslationContentFromOption(translation);
+		return Object.assign({}, translation, { content: content });
+	}).filter(function (translation) {
+		return translation && translation.code && translation.code !== 'ar' && translation.content && Object.values(translation.content).some(Boolean);
+	});
+}
+
 function setContentLanguageAttributes(target, language, fallbackLanguage) {
 	target = target && target.jquery ? target : $(target);
 	if (!target.length)
@@ -8110,9 +8131,7 @@ function contentTranslationAvailableFromElement(card) {
 		return null;
 	try {
 		var translations = JSON.parse(encoded);
-		translations = normalizeContentTranslationLanguages(translations).filter(function (translation) {
-			return translation && translation.code && translation.content && Object.values(translation.content).some(Boolean);
-		});
+		translations = normalizeAvailableContentTranslations(translations);
 		return { translations: translations };
 	} catch (_err) {
 		return null;
@@ -8387,9 +8406,7 @@ function renderGeneratedShareLanguageMenu(modal, card, translations, requestedLa
 	var menu = modal ? modal.querySelector('[data-share-language-menu="1"]') : null;
 	if (!menu)
 		return;
-	translations = normalizeContentTranslationLanguages(translations).filter(function (translation) {
-		return translation && translation.code && translation.code !== 'ar' && translation.content && Object.values(translation.content).some(Boolean);
-	});
+	translations = normalizeAvailableContentTranslations(translations);
 	modal._shareGeneratedTranslationsByCode = {};
 	translations.forEach(function (translation) {
 		modal._shareGeneratedTranslationsByCode[translation.code] = translation;
@@ -8877,9 +8894,7 @@ function renderAvailableContentTranslationSelector(target, itemType, itemId, cur
 		return;
 	currentLanguage = normalizeGlobalContentLanguage(currentLanguage || target.attr('data-content-translation-preferred-language') || target.attr('data-content-translation-language') || readGlobalContentLanguage() || target.attr('lang') || '');
 	target.attr('data-content-translation-preferred-language', currentLanguage);
-	translations = normalizeContentTranslationLanguages(translations).filter(function (translation) {
-		return translation && translation.code && translation.code !== 'ar' && translation.content && Object.values(translation.content).some(Boolean);
-	});
+	translations = normalizeAvailableContentTranslations(translations);
 	var unique = translations;
 	var options = availableContentTranslationOptions(unique);
 	target.data('contentTranslationAvailableTranslations', options);
