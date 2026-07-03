@@ -170,6 +170,13 @@ const friendlyHttpErrorMessage = (statusCode, message) => {
   return message || STATUS_CODES[statusCode] || 'An error occurred.';
 };
 
+const logHttpError = (statusCode, err) => {
+  const statusTitle = STATUS_CODES[statusCode] || 'Error';
+  const message = err && err.message ? err.message : statusTitle;
+  const stack = statusCode >= 500 && err && err.stack ? `\n${err.stack}` : '';
+  debug.error(`HTTP ${statusCode} ${statusTitle}: ${message}${stack}`);
+};
+
 const appendQueryString = (path, queryString) => {
   if (!queryString)
     return path;
@@ -472,6 +479,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     if (isNotFoundError(err))
       err = createError(404, err.message);
     const statusCode = normalizeHttpStatusCode(err.status || err.statusCode || 500);
+    logHttpError(statusCode, err);
     if (wantsJsonErrorResponse(req)) {
       return res.status(statusCode).json({
         error: STATUS_CODES[statusCode] || 'Error',
