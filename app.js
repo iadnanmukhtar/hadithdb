@@ -270,12 +270,20 @@ const wantsJsonErrorResponse = (req) => {
 const wantsFriendlyErrorRedirect = (req) => {
   if (!req)
     return false;
-  if (req.path === '/error')
+  if (req.path === '/error' || req.path === '/quran/error')
     return false;
   if (wantsJsonErrorResponse(req))
     return false;
   const accept = req.get('accept') || '';
   return !accept || accept.includes('text/html') || accept.includes('*/*');
+};
+
+const isQuranFriendlyErrorRequest = (req) => {
+  return !!req && (
+    Utils.isQuranSubdomainRequest(req)
+    || Utils.isQuranUrlPath(req.path)
+    || Utils.isQuranUrlPath(req.originalUrl || req.url)
+  );
 };
 
 const buildFriendlyErrorUrl = (req, statusCode) => {
@@ -284,7 +292,8 @@ const buildFriendlyErrorUrl = (req, statusCode) => {
   const ref = truncatedFriendlyErrorRef(req);
   if (ref)
     params.set('ref', ref);
-  return `/error?${params.toString()}`;
+  const errorPath = isQuranFriendlyErrorRequest(req) ? '/quran/error' : '/error';
+  return `${errorPath}?${params.toString()}`;
 };
 
 const friendlyErrorRedirectStatus = (req) => {
@@ -490,11 +499,11 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     }
     next();
   });
-  app.get('/error', function (req, res) {
+  app.get(['/error', '/quran/error'], function (req, res) {
     const statusCode = normalizeHttpStatusCode(req.query.status);
     const errorReq = {
-      path: '/error',
-      originalUrl: '/error',
+      path: req.path === '/quran/error' ? '/quran/error' : '/error',
+      originalUrl: req.path === '/quran/error' ? '/quran/error' : '/error',
       query: {},
       cookies: req.cookies || {},
       hostname: req.hostname,
