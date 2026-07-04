@@ -8699,9 +8699,10 @@ function ensureContentTranslationActionsRow(target) {
 	if (row && row.length)
 		return row;
 	var itemColumn = target.closest('section.h');
+	var placementAnchor = itemColumn.children('[data-content-translation-actions-anchor="1"]').first();
 	var footnote = itemColumn.children('footer.footnote').first();
 	var bodySection = target.closest('section.body');
-	var anchor = footnote.length ? footnote : (bodySection.length ? bodySection : target);
+	var anchor = placementAnchor.length ? placementAnchor : (footnote.length ? footnote : (bodySection.length ? bodySection : target));
 	row = anchor.next('.content-translation-actions-row');
 	if (!row.length) {
 		row = $('<div>').addClass('content-translation-actions-row');

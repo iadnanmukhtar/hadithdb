@@ -195,6 +195,19 @@
 		</footer>
 	<% } %>
 
+	<% if (i.book_virtual) { %>
+		<%# Author Note  ....................................................... %>
+		<% if (langData.note || site.editMode) {
+			const noteMarkdown = utils.emptyIfNull(langData.note);
+			const noteHtml = utils.markdownToHtml(langData.note);
+			const noteContent = noteHtml || '&hellip;';
+		%>
+			<aside lang="<%=lang%>" class="<%= editClass(`note ${_p} l2`) %>" title="Ḥadīth Note"<% if (lang === 'en') { %> data-content-translation-actions-anchor="1"<% } %><% if (site.editMode) { %> data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= noteMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>>
+				<%- noteContent %>
+			</aside>
+		<% }
+	} %>
+
 	<% if (showAdminContentTranslationSwitcher) { %>
 		<div class="content-translation-actions-row admin-content-translation-actions-row">
 			<label class="admin-content-translation-switcher content-translation-language-switcher quran-passage-translation-control mb-0" lang="en" dir="ltr">
@@ -211,19 +224,6 @@
 			</label>
 		</div>
 	<% } %>
-
-	<% if (i.book_virtual) { %>
-		<%# Author Note  ....................................................... %>
-		<% if (langData.note || site.editMode) { 
-			const noteMarkdown = utils.emptyIfNull(langData.note);
-			const noteHtml = utils.markdownToHtml(langData.note);
-			const noteContent = noteHtml || '&hellip;';
-		%>
-			<aside lang="<%=lang%>" class="<%= editClass(`note ${_p} l2`) %>" title="Ḥadīth Note"<% if (site.editMode) { %> data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= noteMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>>
-				<%- noteContent %>
-			</aside>
-		<% }
-	} %>
 
 	<%# Grade  ............................................................. %>
 	<% if (i.remark == 0 && !isContentTranslationLang) { %>
