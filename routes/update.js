@@ -418,16 +418,22 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         var curr = (await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`))[0];
         if (!curr)
           throw new Error("Hadith not found");
-        result = await global.query(`UPDATE hadiths_virtual SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
+        result = await queryWithMysqlLockRetry(
+          `UPDATE hadiths_virtual SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`,
+          `hadith_virtual.${col} id=${ids[0]}`
+        );
 
         if (col === 'note_en' && Utils.isFalsey(status.value)) {
-          item = new Item((await global.query(`SELECT * FROM v_hadiths_virtual WHERE hId=${ids[0]}`))[0]);
+          var item = new Item((await global.query(`SELECT * FROM v_hadiths_virtual WHERE hId=${ids[0]}`))[0]);
           if (Utils.isFalsey(item.note_en) && Utils.isTruthy(item.note)) {
             item.note_en = await Utils.openai(buildHadithContextTranslationPrompt(item, 'Arabic virtual hadith note', item.note));
             item.note_en = '[AI] ' + Utils.trimToEmpty(item.note_en);
             item.note_en = Utils.replacePBUH(item.note_en);
             status.value = item.note_en;
-            await global.query(`UPDATE hadiths_virtual SET note_en="${Utils.escSQL(item.note_en)}" WHERE id=${item.hId}`);
+            await queryWithMysqlLockRetry(
+              `UPDATE hadiths_virtual SET note_en="${Utils.escSQL(item.note_en)}" WHERE id=${item.hId}`,
+              `hadith_virtual.note_en generated id=${item.hId}`
+            );
           }
         }
 
@@ -477,7 +483,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
   } catch (err) {
     status.message = updateErrorMessage(err);
     status.code = updateErrorStatus(err);
-    debug.error(`${status.message}:\n${err.stack || ''}`);
+    var valuePreview = Utils.trimToEmpty(status.value).substring(0, 120);
+    debug.error(`update failed id:${ids || req.params.id}, prop:${prop || req.params.prop}, value:${valuePreview}: ${status.message}\n${err.stack || ''}`);
   } finally {
     debug(`update status:${status.code}, id:${ids}, prop:${prop}, value:${(status.value + '').trim().substring(0, 20)}`);
     debug(status.message);
@@ -503,6 +510,40 @@ function sqlPreserveWhitespace(s) {
     return null;
   s = (s + '').replace(/\u200f/g, '');
   return MySQL.escape(s);
+}
+
+async function queryWithMysqlLockRetry(sqlText, label, options) {
+  options = options || {};
+  var attempts = parseInt(options.attempts || 3, 10);
+  var delayMs = parseInt(options.delayMs || 75, 10);
+  attempts = Number.isInteger(attempts) && attempts > 0 ? attempts : 3;
+  delayMs = Number.isFinite(delayMs) && delayMs >= 0 ? delayMs : 75;
+  var lastErr;
+  for (var attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await global.query(sqlText);
+    } catch (err) {
+      lastErr = err;
+      if (!isTransientMysqlLockError(err) || attempt >= attempts)
+        throw err;
+      debug.error(`retrying transient mysql lock error ${attempt}/${attempts} for ${label || 'query'}: ${err.code || err.errno || ''} ${err.message}`);
+      await sleepMs(delayMs * attempt);
+    }
+  }
+  throw lastErr;
+}
+
+function isTransientMysqlLockError(err) {
+  if (!err)
+    return false;
+  return err.code === 'ER_LOCK_DEADLOCK'
+    || err.code === 'ER_LOCK_WAIT_TIMEOUT'
+    || err.errno === 1213
+    || err.errno === 1205;
+}
+
+function sleepMs(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function updateHadithContentTranslation(hadithId, languageCode, field, value, userId) {
