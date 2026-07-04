@@ -4009,6 +4009,15 @@ body > footer,
 	display: contents;
 }
 
+.admin-content-translation-panel > [class*="col-"] {
+	box-sizing: border-box;
+	flex-shrink: 0;
+	margin-top: var(--bs-gutter-y);
+	max-width: 100%;
+	padding-left: calc(var(--bs-gutter-x) * .5);
+	padding-right: calc(var(--bs-gutter-x) * .5);
+}
+
 .content-translation-language-select {
 	width: auto;
 	min-width: 5.75rem;
