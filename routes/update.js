@@ -11,7 +11,6 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { homedir } = require('os');
 const Hadith = require('../lib/Hadith');
-const HadithKnowledge = require('../lib/HadithKnowledge');
 const HadithRevision = require('../lib/HadithRevision');
 const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const Arabic = require('../lib/Arabic');
@@ -73,7 +72,6 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.code = 200;
       status.message = translationResult.message;
       status.value = translationResult.value;
-      runHadithKnowledgePostUpdateTask(ids[0], { forceKnowledge: false });
 
     } else if (type == 'hadith') {
       var result = "";
@@ -1699,8 +1697,6 @@ async function reindexSearchScope(whereClause, options) {
     } catch (err) {
       debug.error(`unable to reindex hadiths for search scope ${whereClause}: ${err.message}\n${err.stack || ''}`);
     }
-    if (options.syncKnowledge !== false)
-      await HadithKnowledge.syncForHadithRows(items);
   }
   if (options.refresh) {
     var refreshStarted = Date.now();
@@ -1724,25 +1720,8 @@ function runHadithPostUpdateTasks(hadithId, options) {
     await safeBackground(`reindexing hadith ${item.ref}`, async () => {
       await Index.update(Item.INDEX, item);
     });
-    await safeBackground(`syncing chatbot knowledge for ${item.ref}`, async () => {
-      await HadithKnowledge.syncForHadith(item, { force: options.forceKnowledge });
-    });
   })().catch((err) => {
     debug.error(`background hadith post-update failed for ${hadithId}: ${err.message}\n${err.stack || ''}`);
-  });
-}
-
-function runHadithKnowledgePostUpdateTask(hadithId, options) {
-  options = options || {};
-  (async () => {
-    var item = await hadithSearchRowById(hadithId);
-    if (!item)
-      return;
-    await safeBackground(`syncing chatbot knowledge for ${item.ref}`, async () => {
-      await HadithKnowledge.syncForHadith(item, { force: options.forceKnowledge });
-    });
-  })().catch((err) => {
-    debug.error(`background hadith knowledge update failed for ${hadithId}: ${err.message}\n${err.stack || ''}`);
   });
 }
 

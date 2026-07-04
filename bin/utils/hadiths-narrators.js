@@ -256,6 +256,8 @@ function splitHadith(row) {
         chain = textToks.slice(0, diff).join(' ').trim();
         body = textToks.slice(diff).join(' ').trim();
     }
+    chain = global.utils.replaceRA(global.utils.replacePBUH(chain)).replace(/\s+/g, ' ').trim();
+    body = global.utils.replaceRA(global.utils.replacePBUH(body)).replace(/\s+/g, ' ').trim();
 
     if (chain === (row.chain || '') && body === (row.body || ''))
         return null;
@@ -268,11 +270,7 @@ function splitHadith(row) {
 function normalizeTextForSplit(text) {
     text = text || '';
     text = text.replace(/[\:\"\'،۔ـ\-\.\,]/g, '');
-    text = text.replaceAll('رضى الله عنها', '');
-    text = text.replaceAll('رضى الله عنهما', '');
-    text = text.replaceAll('رضى الله عنهم', '');
-    text = text.replaceAll('رضى الله عنه', '');
-    text = text.replaceAll('صلى الله عليه وسلم', 'ﷺ');
+    text = global.utils.replaceRA(text).replace(/ؓ/g, '');
     return text.replace(/\s+/g, ' ').trim();
 }
 
