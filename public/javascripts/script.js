@@ -480,6 +480,10 @@ function getHadithEditMode() {
 	}
 }
 
+function shouldFlushQuranProxyCache() {
+	return window.hadithAdmin === true && (window.hadithEditMode === true || getHadithCookie('editMode') === '1');
+}
+
 function setHadithEditMode(enabled) {
 	try {
 		localStorage.setItem('hadithdb_edit_mode', enabled ? '1' : '0');
@@ -1705,10 +1709,10 @@ function initQuranTafsirTabs(root) {
 			panel.find('[data-tafsir-enable-toggle]').prop('checked', !disabled);
 		};
 		var adminTafsirCacheParam = function () {
-			return window.hadithAdmin === true ? '&flush=1' : '';
+			return shouldFlushQuranProxyCache() ? '&flush=1' : '';
 		};
 		var adminTafsirQuery = function () {
-			return window.hadithAdmin === true ? '?flush=1' : '';
+			return shouldFlushQuranProxyCache() ? '?flush=1' : '';
 		};
 		var fetchPayload = async function (src, source, ayah, language) {
 			var endpoint = quranApiPath(source === 'local' ? '/proxy/tafsir/local' : '/proxy/tafsir');
@@ -2204,10 +2208,10 @@ function initQuranTafsirTabs(root) {
 			bindTranslationDisclosureState(entry, entry.attr('data-translation-alias'), true);
 		});
 		var adminCacheParam = function () {
-			return window.hadithAdmin === true ? '&flush=1' : '';
+			return shouldFlushQuranProxyCache() ? '&flush=1' : '';
 		};
 			var adminQuery = function () {
-				return window.hadithAdmin === true ? '?flush=1' : '';
+				return shouldFlushQuranProxyCache() ? '?flush=1' : '';
 			};
 			var allTranslationBookAliases = [];
 			var selectedTranslationAlias = quranSelectedTranslationAliasFromLocation();
@@ -2588,7 +2592,7 @@ var quranTranslationBooksPromise = null;
 
 function quranTranslationBooks() {
 	if (!quranTranslationBooksPromise) {
-		quranTranslationBooksPromise = fetch(`${quranApiPath('/proxy/translations/books')}${window.hadithAdmin === true ? '?flush=1' : ''}`)
+		quranTranslationBooksPromise = fetch(`${quranApiPath('/proxy/translations/books')}${shouldFlushQuranProxyCache() ? '?flush=1' : ''}`)
 			.then(function (response) {
 				if (!response.ok)
 					throw new Error('Unable to load translation list.');
@@ -2853,7 +2857,7 @@ function setQuranTranslationAttribution(target, label, alias) {
 }
 
 function fetchQuranLocalTranslation(book, surah, ayah) {
-	return fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(book.alias)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&lang=${encodeURIComponent(book.lang || 'en')}&render=reader${window.hadithAdmin === true ? '&flush=1' : ''}`)
+	return fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(book.alias)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&lang=${encodeURIComponent(book.lang || 'en')}&render=reader${shouldFlushQuranProxyCache() ? '&flush=1' : ''}`)
 		.then(function (response) {
 			if (!response.ok)
 				throw new Error('Unable to load selected translation.');
@@ -5406,7 +5410,7 @@ function applyQuranShareTranslation(modal, card, alias) {
 		var parts = quranShareRefParts(card);
 		if (!parts.surah || !parts.ayahFrom)
 			return;
-		return fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(book.alias)}&s=${encodeURIComponent(parts.surah)}&from=${encodeURIComponent(parts.ayahFrom)}&to=${encodeURIComponent(parts.ayahTo)}&lang=${encodeURIComponent(book.lang || 'en')}${window.hadithAdmin === true ? '&flush=1' : ''}`)
+		return fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(book.alias)}&s=${encodeURIComponent(parts.surah)}&from=${encodeURIComponent(parts.ayahFrom)}&to=${encodeURIComponent(parts.ayahTo)}&lang=${encodeURIComponent(book.lang || 'en')}${shouldFlushQuranProxyCache() ? '&flush=1' : ''}`)
 			.then(function (response) {
 				if (!response.ok)
 					throw new Error('Unable to load selected translation.');

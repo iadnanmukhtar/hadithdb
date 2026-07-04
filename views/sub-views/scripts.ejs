@@ -579,6 +579,7 @@
 
   window.HADITH_SESSION_MAX_AGE = window.HADITH_SESSION_MAX_AGE || 60 * 60 * 24 * 30;
   window.hadithAdmin = <%= site.admin ? 'true' : 'false' %>;
+  window.hadithEditMode = <%= site.editMode ? 'true' : 'false' %>;
   window.hadithAdminSessionChecked = window.hadithAdmin === true;
   const HADITH_LOGIN_SESSION_CACHE_KEY = 'hadithdb_login_session';
 
