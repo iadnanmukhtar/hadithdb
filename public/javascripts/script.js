@@ -2614,7 +2614,7 @@ function quranTranslationFootnoteIdPart(value) {
 }
 
 function quranSelectedTranslationFootnoteHolder(target) {
-	return target ? target.closest('.quran-passage-section')?.querySelector('[data-quran-selected-translation-footnotes="1"]') : null;
+	return target ? target.closest('.quran-passage-section')?.querySelector('[data-quran-selected-translation-footnotes="1"]') || null : null;
 }
 
 function clearQuranSelectedTranslationFootnotes(root) {
@@ -2802,6 +2802,16 @@ function applyQuranTranslationEntryToTarget(target, book, entry) {
 	setQuranTranslationAttribution(target, quranTranslationBookLabel(book), alias);
 }
 
+function clearMergedQuranTranslationContinuationTarget(target, book) {
+	if (!target)
+		return;
+	target.innerHTML = '';
+	target.dataset.markdownSource = '';
+	var alias = book && book.source !== 'default' ? book.alias : '';
+	if (alias !== undefined)
+		target.dataset.quranTranslationAlias = alias || '';
+}
+
 function applyQuranTranslationToTarget(target, book) {
 	storeDefaultQuranTranslationTarget(target);
 	var alias = book && book.source !== 'default' ? book.alias : '';
@@ -2869,17 +2879,33 @@ function applyQuranTranslationToTargets(targets, book) {
 				return Promise.resolve();
 			return fetchQuranLocalTranslationRange(book, surah, ayahFrom, ayahTo).then(function (payload) {
 				var entries = Array.isArray(payload && payload.entries) ? payload.entries : [payload];
-				var entriesByAyah = new Map();
-				entries.filter(Boolean).forEach(function (payloadEntry) {
+				var targetsByAyah = new Map();
+				surahTargets.forEach(function (target) {
+					targetsByAyah.set(quranTranslationTargetAyahNumber(target), target);
+				});
+				entries.filter(Boolean).sort(function (a, b) {
+					var aStart = Number(a.ayahs_start);
+					var bStart = Number(b.ayahs_start);
+					if (aStart !== bStart)
+						return aStart - bStart;
+					return Number(a.count || 0) - Number(b.count || 0);
+				}).forEach(function (payloadEntry) {
 					var start = Number(payloadEntry.ayahs_start);
 					var count = Math.max(0, Number(payloadEntry.count) || 0);
 					if (!Number.isInteger(start))
 						return;
-					for (var ayah = start; ayah <= start + count; ayah++)
-						entriesByAyah.set(ayah, payloadEntry);
-				});
-				surahTargets.forEach(function (target) {
-					applyQuranTranslationEntryToTarget(target, book, entriesByAyah.get(quranTranslationTargetAyahNumber(target)));
+					var coveredTargets = [];
+					for (var ayah = start; ayah <= start + count; ayah++) {
+						var coveredTarget = targetsByAyah.get(ayah);
+						if (coveredTarget)
+							coveredTargets.push(coveredTarget);
+					}
+					if (coveredTargets.length < 1)
+						return;
+					applyQuranTranslationEntryToTarget(coveredTargets[0], book, payloadEntry);
+					coveredTargets.slice(1).forEach(function (target) {
+						clearMergedQuranTranslationContinuationTarget(target, book);
+					});
 				});
 			});
 		}));

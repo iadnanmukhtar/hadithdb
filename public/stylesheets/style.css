@@ -2529,8 +2529,11 @@ body > footer,
 	margin-top: 0;
 }
 
-.quran-passage-section+.quran-passage-section {
-	margin-top: .5lh;
+.quran-passage-separator {
+	border: 0;
+	border-top: 1px solid var(--bs-border-color);
+	margin: 1.4rem 0;
+	opacity: .8;
 }
 
 .quran-infinite-page,
