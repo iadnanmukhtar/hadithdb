@@ -495,21 +495,22 @@
         const loadWidget = async () => {
           if (loaded) return;
           loaded = true;
+          container.dataset.commentWidgetLoading = '1';
           await waitForHadithAuth();
-          fetchComments();
           const user = await getActiveUser();
           await renderUser();
           if (user) {
             try {
               const token = await user.getIdToken();
-              fetchComments(token);
+              await fetchComments(token);
             } catch (err) {
               console.warn('Could not fetch comments with auth token', err);
-              fetchComments();
+              await fetchComments();
             }
           } else {
-            fetchComments();
+            await fetchComments();
           }
+          container.dataset.commentWidgetLoaded = '1';
         };
 
         document.addEventListener('hadithAuthChanged', async () => {

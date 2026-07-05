@@ -496,108 +496,6 @@ function setHadithEditMode(enabled) {
 		clearHadithCookie('editMode');
 }
 
-function hadithLoginSessionCacheBridgeUrl(baseUrl) {
-	try {
-		return new URL('/login/cache-bridge', baseUrl || window.location.origin).href;
-	} catch (err) {
-		return '';
-	}
-}
-
-function requestHadithLoginSessionCacheBridge(baseUrl, action, session) {
-	var bridgeUrl = hadithLoginSessionCacheBridgeUrl(baseUrl);
-	var bridgeOrigin = originFromUrl(bridgeUrl);
-	if (!bridgeUrl || !bridgeOrigin || bridgeOrigin === window.location.origin)
-		return Promise.resolve(null);
-	return new Promise(function (resolve) {
-		var requestId = `login-cache-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-		var iframe = document.createElement('iframe');
-		var done = false;
-		var finish = function (value) {
-			if (done)
-				return;
-			done = true;
-			window.clearTimeout(timeout);
-			window.removeEventListener('message', onMessage);
-			if (iframe.parentNode)
-				iframe.parentNode.removeChild(iframe);
-			resolve(value);
-		};
-		var onMessage = function (event) {
-			var data = event.data || {};
-			if (event.origin !== bridgeOrigin || !data || data.type !== 'hadithdbLoginSessionCacheBridgeResponse' || data.requestId !== requestId)
-				return;
-			if (action === 'read')
-				finish(data.session || null);
-			else
-				finish(data.ok ? (data.session || true) : null);
-		};
-		var timeout = window.setTimeout(function () {
-			finish(null);
-		}, 1500);
-		window.addEventListener('message', onMessage);
-		iframe.style.display = 'none';
-		iframe.setAttribute('aria-hidden', 'true');
-		iframe.onload = function () {
-			try {
-				iframe.contentWindow.postMessage({
-					type: 'hadithdbLoginSessionCacheBridge',
-					requestId: requestId,
-					action: action,
-					session: session || null
-				}, bridgeOrigin);
-			} catch (err) {
-				finish(null);
-			}
-		};
-		iframe.src = bridgeUrl;
-		document.body.appendChild(iframe);
-	});
-}
-
-function hadithLoginSessionPeerBaseUrls() {
-	return [window.HADITH_BASE_URL || '', window.HADITH_QURAN_BASE_URL || '']
-		.filter(function (baseUrl, index, urls) {
-			var origin = originFromUrl(baseUrl);
-			return origin && origin !== window.location.origin && urls.findIndex(function (candidate) {
-				return originFromUrl(candidate) === origin;
-			}) === index;
-		});
-}
-
-function readPeerHadithLoginSessionCache() {
-	var peers = hadithLoginSessionPeerBaseUrls();
-	return peers.reduce(function (promise, baseUrl) {
-		return promise.then(function (session) {
-			if (session)
-				return session;
-			return requestHadithLoginSessionCacheBridge(baseUrl, 'read');
-		});
-	}, Promise.resolve(null)).then(function (session) {
-		if (session && session.loggedIn) {
-			writeHadithLoginSessionCache(session);
-			return readHadithLoginSessionCache();
-		}
-		return null;
-	});
-}
-
-function writePeerHadithLoginSessionCache(session) {
-	return Promise.all(hadithLoginSessionPeerBaseUrls().map(function (baseUrl) {
-		return requestHadithLoginSessionCacheBridge(baseUrl, 'write', session);
-	})).catch(function () {
-		return null;
-	});
-}
-
-function clearPeerHadithLoginSessionCache() {
-	return Promise.all(hadithLoginSessionPeerBaseUrls().map(function (baseUrl) {
-		return requestHadithLoginSessionCacheBridge(baseUrl, 'clear');
-	})).catch(function () {
-		return null;
-	});
-}
-
 function initBookNavScroller(scope) {
 	(scope ? $(scope) : $(document)).find('.h-menu').each(function () {
 		var menu = this;
@@ -691,16 +589,8 @@ async function getHadithAuthToken(message) {
 function syncHadithAdminForCachedPage() {
 	var cachedSession = readHadithLoginSessionCache();
 	if (!cachedSession) {
-		readPeerHadithLoginSessionCache().then(function (peerSession) {
-			if (peerSession) {
-				window.hadithAdmin = Boolean(peerSession.admin);
-				window.hadithAdminSessionChecked = true;
-				renderHadithAdminGear();
-			} else {
-				window.hadithAdminSessionChecked = true;
-				renderHadithAdminGear();
-			}
-		});
+		window.hadithAdminSessionChecked = true;
+		renderHadithAdminGear();
 		return;
 	}
 	window.hadithAdmin = Boolean(cachedSession.admin);
@@ -1111,6 +1001,9 @@ function initQuranTafsirTabs(root) {
 		$(scope).find('.quran-tafsirs').each(function () {
 			var container = $(this);
 		if (container.closest('.quran-ayah-modal-pane.d-none').length)
+			return;
+		var modal = container.closest('.quran-ayah-modal');
+		if (modal.length && !modal.hasClass('show') && !modal.data('quranAyahModalOpening'))
 			return;
 		if (container.data('quranTafsirsBound'))
 			return;
@@ -2865,6 +2758,50 @@ function fetchQuranLocalTranslation(book, surah, ayah) {
 		});
 }
 
+var quranLocalTranslationRangePromises = new Map();
+
+function fetchQuranLocalTranslationRange(book, surah, ayahFrom, ayahTo) {
+	var alias = book && book.alias || '';
+	var lang = book && book.lang || 'en';
+	var from = Number(ayahFrom);
+	var to = Number(ayahTo);
+	var flush = shouldFlushQuranProxyCache();
+	var cacheKeyPrefix = `${alias}|${surah}|${lang}|${flush ? 'flush' : 'cache'}|`;
+	var coveringPromise = null;
+	quranLocalTranslationRangePromises.forEach(function (promise, key) {
+		if (coveringPromise || key.indexOf(cacheKeyPrefix) !== 0)
+			return;
+		var parts = key.slice(cacheKeyPrefix.length).split('-').map(Number);
+		if (parts.length === 2 && parts[0] <= from && parts[1] >= to)
+			coveringPromise = promise;
+	});
+	if (coveringPromise)
+		return coveringPromise;
+	var cacheKey = `${cacheKeyPrefix}${from}-${to}`;
+	var requestPromise = fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(alias)}&s=${encodeURIComponent(surah)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&lang=${encodeURIComponent(lang)}&render=reader${flush ? '&flush=1' : ''}`)
+		.then(function (response) {
+			if (!response.ok)
+				throw new Error('Unable to load selected translation.');
+			return response.json();
+		});
+	quranLocalTranslationRangePromises.set(cacheKey, requestPromise);
+	return requestPromise.catch(function (err) {
+		quranLocalTranslationRangePromises.delete(cacheKey);
+		throw err;
+	});
+}
+
+function applyQuranTranslationEntryToTarget(target, book, entry) {
+	if (!entry || !(entry.html || entry.data))
+		return;
+	var alias = book && book.source !== 'default' ? book.alias : '';
+	target.innerHTML = target.getAttribute('data-quran-translation-display') === 'passage'
+		? quranPassageTranslationHtml(entry.html || entry.data, target, alias)
+		: compactQuranHeroTranslationHtml(entry.html || entry.data);
+	target.dataset.markdownSource = entry.data || '';
+	setQuranTranslationAttribution(target, quranTranslationBookLabel(book), alias);
+}
+
 function applyQuranTranslationToTarget(target, book) {
 	storeDefaultQuranTranslationTarget(target);
 	var alias = book && book.source !== 'default' ? book.alias : '';
@@ -2881,14 +2818,72 @@ function applyQuranTranslationToTarget(target, book) {
 		return Promise.resolve();
 	return fetchQuranLocalTranslation(book, ref.surah, ref.ayah).then(function (payload) {
 		var entry = Array.isArray(payload && payload.entries) ? payload.entries[0] : payload;
-		if (!entry || !(entry.html || entry.data))
-			return;
-		target.innerHTML = target.getAttribute('data-quran-translation-display') === 'passage'
-			? quranPassageTranslationHtml(entry.html || entry.data, target, alias)
-			: compactQuranHeroTranslationHtml(entry.html || entry.data);
-		target.dataset.markdownSource = entry.data || '';
-		setQuranTranslationAttribution(target, quranTranslationBookLabel(book), alias);
+		applyQuranTranslationEntryToTarget(target, book, entry);
 	});
+}
+
+function quranTranslationTargetAyahNumber(target) {
+	var ref = quranTranslationTargetRef(target);
+	var ayah = Number(ref.ayah);
+	return Number.isInteger(ayah) && ayah >= 0 ? ayah : NaN;
+}
+
+function quranTranslationTargetPassageScope(target) {
+	return target && target.closest('.quran-passage-section, [data-quran-selected-ayah-hero], .quran-share-root, .quran-ayah-modal-pane') || target;
+}
+
+function applyQuranTranslationToTargets(targets, book) {
+	targets = Array.isArray(targets) ? targets : [];
+	if (!book || book.source === 'default')
+		return Promise.all(targets.map(function (target) {
+			return applyQuranTranslationToTarget(target, book);
+		}));
+	var targetsByPassage = new Map();
+	targets.forEach(function (target) {
+		storeDefaultQuranTranslationTarget(target);
+		setQuranTranslationTargetEditable(target, false);
+		var ref = quranTranslationTargetRef(target);
+		var ayah = quranTranslationTargetAyahNumber(target);
+		if (!ref.surah || !Number.isInteger(ayah))
+			return;
+		var passageScope = quranTranslationTargetPassageScope(target);
+		if (!targetsByPassage.has(passageScope))
+			targetsByPassage.set(passageScope, []);
+		targetsByPassage.get(passageScope).push(target);
+	});
+	return Promise.all(Array.from(targetsByPassage.values()).map(function (passageTargets) {
+		var targetsBySurah = new Map();
+		passageTargets.forEach(function (target) {
+			var ref = quranTranslationTargetRef(target);
+			if (!targetsBySurah.has(ref.surah))
+				targetsBySurah.set(ref.surah, []);
+			targetsBySurah.get(ref.surah).push(target);
+		});
+		return Promise.all(Array.from(targetsBySurah.entries()).map(function (entry) {
+			var surah = entry[0];
+			var surahTargets = entry[1];
+			var ayahs = surahTargets.map(quranTranslationTargetAyahNumber).filter(Number.isInteger);
+			var ayahFrom = Math.min.apply(Math, ayahs);
+			var ayahTo = Math.max.apply(Math, ayahs);
+			if (!Number.isInteger(ayahFrom) || !Number.isInteger(ayahTo))
+				return Promise.resolve();
+			return fetchQuranLocalTranslationRange(book, surah, ayahFrom, ayahTo).then(function (payload) {
+				var entries = Array.isArray(payload && payload.entries) ? payload.entries : [payload];
+				var entriesByAyah = new Map();
+				entries.filter(Boolean).forEach(function (payloadEntry) {
+					var start = Number(payloadEntry.ayahs_start);
+					var count = Math.max(0, Number(payloadEntry.count) || 0);
+					if (!Number.isInteger(start))
+						return;
+					for (var ayah = start; ayah <= start + count; ayah++)
+						entriesByAyah.set(ayah, payloadEntry);
+				});
+				surahTargets.forEach(function (target) {
+					applyQuranTranslationEntryToTarget(target, book, entriesByAyah.get(quranTranslationTargetAyahNumber(target)));
+				});
+			});
+		}));
+	}));
 }
 
 var QURAN_SELECTED_TRANSLATION_STORAGE_KEY = 'hadithdb.quran.selectedTranslationAlias';
@@ -2936,11 +2931,9 @@ function applyQuranHeroTranslationAlias(alias, options) {
 		var root = options.root || document;
 		var targets = Array.from(root.querySelectorAll('[data-quran-translation-target="1"]'));
 		clearQuranSelectedTranslationFootnotes(root);
-		return Promise.all(targets.map(function (target) {
-			return applyQuranTranslationToTarget(target, book).catch(function () {
-				return applyQuranTranslationToTarget(target, quranDefaultTranslationBook(books));
-			});
-		})).then(function () {
+		return applyQuranTranslationToTargets(targets, book).catch(function () {
+			return applyQuranTranslationToTargets(targets, quranDefaultTranslationBook(books));
+		}).then(function () {
 			if (options.persist)
 				saveQuranPreferredTranslationAlias(selectedAlias).catch(function (err) {
 					if (window.toastr)
@@ -4298,6 +4291,11 @@ function initQuranPreferredTranslationDisplays(root) {
 	var initializedAt = Date.now();
 	var selectedTranslationAlias = quranSelectedTranslationAliasFromLocation();
 	var targets = Array.from(scope.querySelectorAll('[data-quran-translation-target="1"]')).filter(function (target) {
+		var modal = target.closest('.quran-ayah-modal');
+		if (modal && !modal.classList.contains('show') && $(modal).data('quranAyahModalOpening') !== true)
+			return false;
+		if (target.closest('.quran-ayah-modal-pane.d-none'))
+			return false;
 		if (target.dataset.quranTranslationDisplayBound === 'true')
 			return false;
 		target.dataset.quranTranslationDisplayBound = 'true';
@@ -4343,70 +4341,6 @@ function originFromUrl(url) {
 	}
 }
 
-function userSettingsCacheBridgeUrl(baseUrl) {
-	try {
-		var targetBaseUrl = baseUrl || window.location.origin;
-		var targetOrigin = originFromUrl(targetBaseUrl);
-		var quranOrigin = originFromUrl(window.HADITH_QURAN_BASE_URL || '');
-		var path = targetOrigin && quranOrigin && targetOrigin === quranOrigin ? '/quran/settings/cache-bridge' : '/settings/cache-bridge';
-		return new URL(path, targetBaseUrl).href;
-	} catch (err) {
-		return '';
-	}
-}
-
-function requestUserSettingsCacheBridge(baseUrl, action, user, settings) {
-	var bridgeUrl = userSettingsCacheBridgeUrl(baseUrl);
-	var bridgeOrigin = originFromUrl(bridgeUrl);
-	if (!bridgeUrl || !bridgeOrigin || bridgeOrigin === window.location.origin || !user)
-		return Promise.resolve(null);
-	return new Promise(function (resolve) {
-		var requestId = `settings-cache-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-		var iframe = document.createElement('iframe');
-		var done = false;
-		var finish = function (value) {
-			if (done)
-				return;
-			done = true;
-			window.clearTimeout(timeout);
-			window.removeEventListener('message', onMessage);
-			if (iframe.parentNode)
-				iframe.parentNode.removeChild(iframe);
-			resolve(value);
-		};
-		var onMessage = function (event) {
-			var data = event.data || {};
-			if (event.origin !== bridgeOrigin || !data || data.type !== 'hadithUserSettingsCacheBridgeResponse' || data.requestId !== requestId)
-				return;
-			if (action === 'read')
-				finish(data.settings || null);
-			else
-				finish(data.ok ? (data.settings || true) : null);
-		};
-		var timeout = window.setTimeout(function () {
-			finish(null);
-		}, 1500);
-		window.addEventListener('message', onMessage);
-		iframe.style.display = 'none';
-		iframe.setAttribute('aria-hidden', 'true');
-		iframe.onload = function () {
-			try {
-				iframe.contentWindow.postMessage({
-					type: 'hadithUserSettingsCacheBridge',
-					requestId: requestId,
-					action: action,
-					user: user,
-					settings: settings || null
-				}, bridgeOrigin);
-			} catch (err) {
-				finish(null);
-			}
-		};
-		iframe.src = bridgeUrl;
-		document.body.appendChild(iframe);
-	});
-}
-
 function userSettingsCacheUser(user) {
 	if (!user || typeof user !== 'object')
 		return null;
@@ -4416,13 +4350,14 @@ function userSettingsCacheUser(user) {
 	};
 }
 
+var quranTafsirSettingsPromise = null;
+
 function updateCachedQuranUserSettings(user, settings) {
 	var cacheUser = userSettingsCacheUser(user);
 	if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
 		window.hadithUserSettingsCache.write(cacheUser, settings || {});
 	window.hadithQuranUserSettingsOverride = settings || null;
-	if (window.writeQuranDomainUserSettingsCache)
-		window.writeQuranDomainUserSettingsCache(cacheUser, settings || {}).catch(function () {});
+	quranTafsirSettingsPromise = null;
 }
 
 window.updateCachedQuranUserSettings = updateCachedQuranUserSettings;
@@ -4439,38 +4374,6 @@ function responseErrorMessage(response, fallback) {
 		}
 	});
 }
-
-function readHadithDomainUserSettingsCache(user) {
-	var hadithBaseUrl = window.HADITH_BASE_URL || '';
-	if (!hadithBaseUrl || originFromUrl(hadithBaseUrl) === window.location.origin)
-		return Promise.resolve(null);
-	return requestUserSettingsCacheBridge(hadithBaseUrl, 'read', user).then(function (settings) {
-		if (settings && window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
-			window.hadithUserSettingsCache.write(user, settings);
-		return settings || null;
-	});
-}
-
-window.clearHadithDomainUserSettingsCache = function (user) {
-	var hadithBaseUrl = window.HADITH_BASE_URL || '';
-	if (!hadithBaseUrl || originFromUrl(hadithBaseUrl) === window.location.origin)
-		return Promise.resolve(null);
-	return requestUserSettingsCacheBridge(hadithBaseUrl, 'clear', user);
-};
-
-window.writeQuranDomainUserSettingsCache = function (user, settings) {
-	var quranBaseUrl = window.HADITH_QURAN_BASE_URL || '';
-	if (!quranBaseUrl || originFromUrl(quranBaseUrl) === window.location.origin)
-		return Promise.resolve(null);
-	return requestUserSettingsCacheBridge(quranBaseUrl, 'write', user, settings);
-};
-
-window.clearQuranDomainUserSettingsCache = function (user) {
-	var quranBaseUrl = window.HADITH_QURAN_BASE_URL || '';
-	if (!quranBaseUrl || originFromUrl(quranBaseUrl) === window.location.origin)
-		return Promise.resolve(null);
-	return requestUserSettingsCacheBridge(quranBaseUrl, 'clear', user);
-};
 
 function getQuranTafsirSettings() {
 	var waitForHadithAuth = function () {
@@ -4489,86 +4392,90 @@ function getQuranTafsirSettings() {
 				}
 			}, 100);
 		});
-		};
-		var normalizeSettings = function (settings) {
-			var source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
-			var tafsirs = source.tafsirs && typeof source.tafsirs === 'object' && !Array.isArray(source.tafsirs) ? source.tafsirs : {};
-			var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
-			var translations = source.translations && typeof source.translations === 'object' && !Array.isArray(source.translations) ? source.translations : {};
-			var translationDisabledAliases = Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
-				.map(function (alias) { return (alias || '').toString().trim(); })
-				.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })));
-			var translationDisabled = new Set(translationDisabledAliases);
-			return {
-				tafsirs: {
-					disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
+	};
+	var normalizeSettings = function (settings) {
+		var source = settings && typeof settings === 'object' && !Array.isArray(settings) ? settings : {};
+		var tafsirs = source.tafsirs && typeof source.tafsirs === 'object' && !Array.isArray(source.tafsirs) ? source.tafsirs : {};
+		var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
+		var translations = source.translations && typeof source.translations === 'object' && !Array.isArray(source.translations) ? source.translations : {};
+		var translationDisabledAliases = Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
+			.map(function (alias) { return (alias || '').toString().trim(); })
+			.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })));
+		var translationDisabled = new Set(translationDisabledAliases);
+		return {
+			tafsirs: {
+				disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
+					.map(function (alias) { return (alias || '').toString().trim(); })
+					.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
+				order: {
+					en: Array.from(new Set((Array.isArray(order.en) ? order.en : [])
 						.map(function (alias) { return (alias || '').toString().trim(); })
 						.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
-					order: {
-						en: Array.from(new Set((Array.isArray(order.en) ? order.en : [])
-							.map(function (alias) { return (alias || '').toString().trim(); })
-							.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); }))),
-						ar: Array.from(new Set((Array.isArray(order.ar) ? order.ar : [])
-							.map(function (alias) { return (alias || '').toString().trim(); })
-							.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })))
-					}
-				},
-				translations: {
-					disabledAliases: translationDisabledAliases,
-					order: Array.from(new Set((Array.isArray(translations.order) ? translations.order : [])
+					ar: Array.from(new Set((Array.isArray(order.ar) ? order.ar : [])
 						.map(function (alias) { return (alias || '').toString().trim(); })
-						.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias) && !translationDisabled.has(alias); }))),
-					preferredAlias: /^[A-Za-z0-9_-]+$/.test((translations.preferredAlias || '').toString().trim())
-						? translations.preferredAlias.toString().trim()
-						: ''
+						.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })))
 				}
-			};
+			},
+			translations: {
+				disabledAliases: translationDisabledAliases,
+				order: Array.from(new Set((Array.isArray(translations.order) ? translations.order : [])
+					.map(function (alias) { return (alias || '').toString().trim(); })
+					.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias) && !translationDisabled.has(alias); }))),
+				preferredAlias: /^[A-Za-z0-9_-]+$/.test((translations.preferredAlias || '').toString().trim())
+					? translations.preferredAlias.toString().trim()
+					: ''
+			}
 		};
-		var defaultSettings = function () {
-			var settings = normalizeSettings({});
-			settings.translations.preferredAlias = storedQuranSelectedTranslationAlias();
-			settings.personalized = false;
-			return settings;
-		};
-		var personalizedSettings = function (settings) {
-			settings = normalizeSettings(settings);
-			settings.personalized = true;
-			return settings;
-		};
-		if (window.hadithQuranUserSettingsOverride)
-			return Promise.resolve(personalizedSettings(window.hadithQuranUserSettingsOverride));
-		return waitForHadithAuth().then(function (auth) {
-			return Promise.resolve(auth && auth.getUser ? auth.getUser() : null).then(function (settingsUser) {
-				if (!settingsUser)
+	};
+	var defaultSettings = function () {
+		var settings = normalizeSettings({});
+		settings.translations.preferredAlias = storedQuranSelectedTranslationAlias();
+		settings.personalized = false;
+		return settings;
+	};
+	var personalizedSettings = function (settings) {
+		settings = normalizeSettings(settings);
+		settings.personalized = true;
+		return settings;
+	};
+	if (window.hadithQuranUserSettingsOverride)
+		return Promise.resolve(personalizedSettings(window.hadithQuranUserSettingsOverride));
+	if (quranTafsirSettingsPromise)
+		return quranTafsirSettingsPromise;
+	quranTafsirSettingsPromise = waitForHadithAuth().then(function (auth) {
+		return Promise.resolve(auth && auth.getUser ? auth.getUser() : null).then(function (settingsUser) {
+			if (!settingsUser)
+				return defaultSettings();
+			var cachedSettings = window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
+				? window.hadithUserSettingsCache.read(settingsUser)
+				: null;
+			if (cachedSettings)
+				return personalizedSettings(cachedSettings);
+			return Promise.resolve(auth && auth.getToken ? auth.getToken() : null).then(function (token) {
+				return fetch(quranApiPath('/user-settings?optional=1'), {
+					credentials: 'same-origin',
+					headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+				}).then(function (response) {
+					if (!response.ok)
+						throw new Error('Unable to load user settings.');
+					return response.json();
+				}).then(function (data) {
+					if (!data)
+						return personalizedSettings({});
+					var settings = personalizedSettings(data.settings || {});
+					updateCachedQuranUserSettings(settingsUser, data.settings || {});
+					return settings;
+				}).catch(function () {
 					return defaultSettings();
-				return readHadithDomainUserSettingsCache(settingsUser).then(function (bridgedSettings) {
-					var cachedSettings = bridgedSettings || (window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
-						? window.hadithUserSettingsCache.read(settingsUser)
-						: null);
-					if (cachedSettings)
-						return personalizedSettings(cachedSettings);
-					return Promise.resolve(auth && auth.getToken ? auth.getToken() : null).then(function (token) {
-						return fetch(quranApiPath('/user-settings?optional=1'), {
-							credentials: 'same-origin',
-							headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-						}).then(function (response) {
-							if (!response.ok)
-								throw new Error('Unable to load user settings.');
-							return response.json();
-						}).then(function (data) {
-							if (!data)
-								return personalizedSettings({});
-							var settings = personalizedSettings(data.settings || {});
-							updateCachedQuranUserSettings(settingsUser, data.settings || {});
-							return settings;
-						}).catch(function () {
-							return cachedSettings ? personalizedSettings(cachedSettings) : defaultSettings();
-						});
-					});
 				});
 			});
 		});
-	}
+	}).catch(function (err) {
+		quranTafsirSettingsPromise = null;
+		throw err;
+	});
+	return quranTafsirSettingsPromise;
+}
 
 	function tafsirPreferenceLanguageRank(lang) {
 		if (lang === 'en')
@@ -4851,10 +4758,13 @@ function initQuranAyahModals(root) {
 				nextButton.prop('disabled', activeIndex === panes.length - 1 && !boundaryRef(1));
 			}
 			modalBody.scrollTop(0);
-			initQuranTafsirTabs(pane[0]);
-			initQuranTranslations(pane[0]);
-			loadActiveCommentWidgets();
-			scrollActiveTafsirTabs();
+			if (shown || modal.data('quranAyahModalOpening')) {
+				initQuranPreferredTranslationDisplays(pane[0]);
+				initQuranTafsirTabs(pane[0]);
+				initQuranTranslations(pane[0]);
+				loadActiveCommentWidgets();
+				scrollActiveTafsirTabs();
+			}
 			updateTafsirExpandLink();
 			updateTranslationExpandLink();
 		};
@@ -5703,7 +5613,7 @@ function initQuranInfinitePassageNavigation(root) {
 		return;
 	main.data('quranInfinitePassageBound', true);
 
-	var prefetchAhead = 3;
+	var prefetchAhead = 1;
 	var ensuring = false;
 	var loadingPromise = null;
 	var retryAfter = 0;
@@ -5782,6 +5692,7 @@ function initQuranInfinitePassageNavigation(root) {
 		var marker = pageMarkers()[currentPageIndex()];
 		if (!marker)
 			return;
+		activateInfinitePassageLazyLoaders(marker);
 		var prevHref = marker.getAttribute('data-quran-prev-url') || '';
 		var nextHref = marker.getAttribute('data-quran-next-url') || '';
 		setMobileBottomNavLink('prev', prevHref, marker.getAttribute('data-quran-prev-title') || 'Previous');
@@ -5807,6 +5718,16 @@ function initQuranInfinitePassageNavigation(root) {
 			updateInfiniteNavigation();
 			ensureLoadedAhead();
 		});
+	};
+	var activateInfinitePassageLazyLoaders = function (marker) {
+		if (!marker || marker.getAttribute('data-quran-infinite-page') !== '1' || marker.getAttribute('data-quran-infinite-lazy-bound') === '1')
+			return;
+		marker.setAttribute('data-quran-infinite-lazy-bound', '1');
+		initQuranPreferredTranslationDisplays(marker);
+		initQuranPassageTranslationSelects(marker);
+		initQuranPassageAudioControls(marker);
+		initQuranCorpusTooltips(marker);
+		initQuranPassageShareLinks(marker);
 	};
 	var normalizeModalRef = function (ref) {
 		return (ref || '').toString().replace(/^\/+/, '').replace(/^quran:/, '');
@@ -5958,15 +5879,10 @@ function initQuranInfinitePassageNavigation(root) {
 		chunk.insertBefore(status);
 		initQuranAyahHoverPairs(chunk[0]);
 		initQuranAyahSelector(chunk[0]);
-		initQuranPreferredTranslationDisplays(chunk[0]);
-		initQuranPassageTranslationSelects(chunk[0]);
 		initQuranPassageDisplayToggles(chunk[0]);
-		initQuranPassageAudioControls(chunk[0]);
 		initHadithShareModals(chunk[0]);
 		initHadithContentTranslationControls(chunk[0]);
 		initQuranAyahModals(document);
-		initQuranCorpusTooltips(chunk[0]);
-		initQuranPassageShareLinks(chunk[0]);
 		if (typeof window.bindInlineEditors === 'function')
 			window.bindInlineEditors(chunk[0]);
 		if (window.refreshHadithActions)

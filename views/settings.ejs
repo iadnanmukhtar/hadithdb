@@ -295,14 +295,6 @@
       if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.clear)
         window.hadithUserSettingsCache.clear(cacheUser);
       window.hadithQuranUserSettingsOverride = null;
-      await Promise.all([
-        window.clearHadithDomainUserSettingsCache
-          ? window.clearHadithDomainUserSettingsCache(cacheUser).catch(() => {})
-          : Promise.resolve(null),
-        window.clearQuranDomainUserSettingsCache
-          ? window.clearQuranDomainUserSettingsCache(cacheUser).catch(() => {})
-          : Promise.resolve(null)
-      ]);
     };
 
     const saveSettings = async (options = {}) => {
@@ -351,8 +343,6 @@
           const cacheUser = settingsCacheUser();
           if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
             window.hadithUserSettingsCache.write(cacheUser, currentSettings);
-          if (window.writeQuranDomainUserSettingsCache)
-            window.writeQuranDomainUserSettingsCache(cacheUser, currentSettings).catch(() => {});
         }
       } finally {
         saving = false;

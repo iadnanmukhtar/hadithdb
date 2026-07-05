@@ -789,17 +789,6 @@
       renderHadithAdminGear();
       return cachedSession;
     }
-    if (typeof readPeerHadithLoginSessionCache === 'function') {
-      const peerSession = await readPeerHadithLoginSessionCache();
-      if (peerSession) {
-        window.hadithSessionSyncResult = peerSession;
-        window.hadithSessionSyncAt = now;
-        window.hadithAdmin = Boolean(peerSession.admin);
-        window.hadithAdminSessionChecked = true;
-        renderHadithAdminGear();
-        return peerSession;
-      }
-    }
     if (window.hadithSessionSyncResult && now - (window.hadithSessionSyncAt || 0) < 5000)
       return window.hadithSessionSyncResult;
     window.hadithSessionSyncResult = null;
@@ -877,8 +866,6 @@
               admin: Boolean(resBody.admin)
             }
           });
-          if (typeof writePeerHadithLoginSessionCache === 'function')
-            writePeerHadithLoginSessionCache(readHadithLoginSessionCache());
           renderHadithAdminGear();
           if (!options.silent)
             toastr.success('Logged in as ' + username);
@@ -1372,8 +1359,6 @@
         window.google?.accounts?.id?.disableAutoSelect();
         window.hadithAuth.clearCredential();
         await fetch(hadithLogoutPath(), { credentials: 'same-origin' });
-        if (typeof clearPeerHadithLoginSessionCache === 'function')
-          await clearPeerHadithLoginSessionCache();
         clearHadithLoginSessionCache();
         clearHadithCookie('admin');
         clearHadithCookie('adminUser');

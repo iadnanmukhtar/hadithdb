@@ -18,8 +18,6 @@ Disallow: /login/
 Disallow: /quran/login/
 Disallow: /payments/
 Disallow: /quran/payments/
-Disallow: /settings/cache-bridge
-Disallow: /quran/settings/cache-bridge
 Disallow: /update/
 Disallow: /quran/update/
 Disallow: /chatbot/

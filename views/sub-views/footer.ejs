@@ -334,6 +334,10 @@
 		const getCommentCountBadges = () => Array.from(document.querySelectorAll('.hadith-comment-count[data-hadith-id]'));
 		const likeType = (value) => value === 'toc' ? 'toc' : 'hadith';
 		const likeKey = (id, type) => `${likeType(type)}:${id}`;
+		const commentWidgetOwnsCount = (id, type) => Array.from(document.querySelectorAll('.comment-feed[data-target-id][data-target-type]')).some(feed => {
+			return String(feed.dataset.targetId) === String(id)
+				&& likeType(feed.dataset.targetType) === likeType(type);
+		});
 		const getLikeElementType = (el) => likeType(el && el.dataset ? el.dataset.likeType : '');
 		const getIcons = (id, type) => Array.from(document.querySelectorAll(`.hadith-like-icon[data-hadith-id="${id}"]`)).filter(icon => getLikeElementType(icon) === likeType(type));
 		const getBookmarkIcons = (id) => Array.from(document.querySelectorAll(`.hadith-bookmark-icon[data-hadith-id="${id}"]`));
@@ -411,6 +415,7 @@
 			const id = parseInt(rawId);
 			const type = likeType(rawType);
 			const key = likeKey(id, type);
+			if (commentWidgetOwnsCount(id, type)) return;
 			if (Number.isNaN(id) || loadedCommentCounts[key] !== undefined || loadingCommentCountIds.has(key)) return;
 			const shouldSchedule = pendingCommentCountIds.size === 0;
 			pendingCommentCountIds.add(key);
@@ -418,7 +423,18 @@
 		};
 
 		const loadQueuedCommentCounts = async () => {
-			const keys = Array.from(pendingCommentCountIds).filter(key => !loadingCommentCountIds.has(key));
+			const keys = Array.from(pendingCommentCountIds).filter(key => {
+				const parts = key.split(':');
+				const type = likeType(parts[0]);
+				const id = parseInt(parts[1], 10);
+				return loadedCommentCounts[key] === undefined && !loadingCommentCountIds.has(key) && !commentWidgetOwnsCount(id, type);
+			});
+			Array.from(pendingCommentCountIds).forEach(key => {
+				const parts = key.split(':');
+				const type = likeType(parts[0]);
+				const id = parseInt(parts[1], 10);
+				if (loadedCommentCounts[key] !== undefined || commentWidgetOwnsCount(id, type)) pendingCommentCountIds.delete(key);
+			});
 			if (!keys.length) return;
 			keys.forEach(key => {
 				pendingCommentCountIds.delete(key);
