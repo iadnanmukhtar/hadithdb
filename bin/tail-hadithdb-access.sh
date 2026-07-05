@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 set -euo pipefail
 
 log_file="${1:-/var/log/nginx/hadithunlocked-access.log}"
@@ -8,7 +8,7 @@ if [[ ! -r "$log_file" ]]; then
 fi
 
 printf "status\tip\tuser_agent\trequest\n"
-tail -f "$log_file" | awk -F'"' '
+tail -F "$log_file" | awk -F'"' '
 {
   split($1, prefix, " ")
   split($3, status_parts, " ")
