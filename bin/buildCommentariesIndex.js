@@ -12,6 +12,7 @@ const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
 const CommentaryTranslationIndexFields = require('../lib/CommentaryTranslationIndexFields');
+const SearchHttp = require('../lib/SearchHttp');
 
 const INDEX = 'commentaries';
 const options = readOptions(process.argv.slice(2));
@@ -250,7 +251,7 @@ function freshQueryOnce(sql) {
 async function ensureIndexExists() {
 	const indexURL = `${global.settings.search.domain}/${INDEX}`;
 	try {
-		await axios.head(indexURL);
+		await axios.head(indexURL, SearchHttp.axiosConfig());
 		console.log(`${INDEX} index already exists`);
 		return;
 	} catch (err) {
@@ -263,7 +264,7 @@ async function ensureIndexExists() {
 		throw new Error(`Mapping file ${mappingFile} does not define index '${INDEX}'`);
 	console.log(`creating missing ${INDEX} index from ${path.basename(mappingFile)}...`);
 	try {
-		await axios.put(indexURL, mappingDoc[INDEX]);
+		await axios.put(indexURL, mappingDoc[INDEX], SearchHttp.axiosConfig());
 	} catch (err) {
 		throw describeAxiosError(err, `Unable to create index '${INDEX}'`);
 	}
@@ -273,7 +274,7 @@ async function deleteExistingDocuments() {
 	try {
 		await axios.post(`${global.settings.search.domain}/${INDEX}/_delete_by_query`, {
 			query: { match_all: {} }
-		});
+		}, SearchHttp.axiosConfig());
 	} catch (err) {
 		throw describeAxiosError(err, `Unable to clear index '${INDEX}'`);
 	}
@@ -283,7 +284,7 @@ async function deleteExistingDocumentsByAlias(alias) {
 	try {
 		await axios.post(`${global.settings.search.domain}/${INDEX}/_delete_by_query`, {
 			query: { term: { commentary_alias: alias } }
-		});
+		}, SearchHttp.axiosConfig());
 	} catch (err) {
 		throw describeAxiosError(err, `Unable to clear index '${INDEX}' for '${alias}'`);
 	}

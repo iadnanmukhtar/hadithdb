@@ -16,6 +16,7 @@ require('../lib/Globals');
 const axios = require('axios');
 const Utils = require('../lib/Utils');
 const Index = require('../lib/Index');
+const SearchHttp = require('../lib/SearchHttp');
 const { Item } = require('../lib/Model');
 
 const phrase = process.argv[2];
@@ -64,6 +65,7 @@ async function searchHadithIds(queryText) {
 			from,
 			size
 		}, {
+			...SearchHttp.axiosConfig(),
 			headers: { 'Content-Type': 'application/json' }
 		});
 		const hits = res.data && res.data.hits && Array.isArray(res.data.hits.hits) ? res.data.hits.hits : [];

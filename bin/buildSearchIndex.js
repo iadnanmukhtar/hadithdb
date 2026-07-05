@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const Index = require('../lib/Index');
+const SearchHttp = require('../lib/SearchHttp');
 
 (async () => {
 	try {
@@ -120,11 +121,11 @@ async function ensureIndexExists(indexName) {
 	if (!payload)
 		throw new Error(`Mapping file ${mappingFile} does not define index '${indexName}'`);
 	try {
-		await axios.head(indexURL, {
+		await axios.head(indexURL, SearchHttp.axiosConfig({
 			headers: {
 				'Content-Type': 'application/json'
 			}
-		});
+		}));
 		log(`${indexName} index already exists`);
 		return;
 	} catch (err) {
@@ -133,11 +134,11 @@ async function ensureIndexExists(indexName) {
 	}
 	log(`\n*****\ncreating missing ${indexName} index from ${path.basename(mappingFile)}...`);
 	try {
-		await axios.put(indexURL, payload, {
+		await axios.put(indexURL, payload, SearchHttp.axiosConfig({
 			headers: {
 				'Content-Type': 'application/json'
 			}
-		});
+		}));
 	} catch (err) {
 		throw describeAxiosError(err, `Unable to create index '${indexName}'`);
 	}
