@@ -126,6 +126,35 @@ function validQuranAyah(surah, ayah) {
   return !!surah && Number.isInteger(ayah) && ayah >= 1 && ayah <= ayahCount;
 }
 
+function validQuranTranslationAlias(value) {
+  value = (value || '').toString().trim();
+  return /^[A-Za-z0-9_-]+$/.test(value) ? value : '';
+}
+
+function visibleQuranTranslationByAlias(alias) {
+  alias = validQuranTranslationAlias(alias);
+  if (!alias)
+    return null;
+  return (global.commentaries || []).find(function (book) {
+    return book && Number(book.hidden) === 0 && book.type === 'trans' && book.alias === alias;
+  }) || null;
+}
+
+function appendQueryExcluding(req, target, excludedKeys) {
+  var excluded = new Set(excludedKeys || []);
+  var params = new URLSearchParams();
+  Object.entries(req.query || {}).forEach(function ([key, value]) {
+    if (excluded.has(key))
+      return;
+    if (Array.isArray(value))
+      value.forEach(item => params.append(key, item));
+    else if (value !== undefined)
+      params.append(key, value);
+  });
+  var query = params.toString();
+  return query ? `${target}${target.indexOf('?') >= 0 ? '&' : '?'}${query}` : target;
+}
+
 function routeParameterMessage(name, value, reason) {
   return `Invalid route parameter '${name}=${value}'${reason ? `: ${reason}` : ''}`;
 }
@@ -2137,8 +2166,21 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
 });
 
+router.get('/quran/:translationAlias/:chapterNum/:sectionNum', async function (req, res, next) {
+  var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
+  if (!translation || translation.source !== 'local')
+    return next();
+  req.params.bookAlias = 'quran';
+  req.quranSelectedTranslationAlias = translation.alias;
+  req.quranTranslationAliasRoute = true;
+  req.query.translation = translation.alias;
+  return renderBookSection(req, res, next);
+});
+
 // BOOK: SECTION
-router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next) {
+router.get('/:bookAlias/:chapterNum/:sectionNum', renderBookSection);
+
+async function renderBookSection(req, res, next) {
 
   res.locals.req = req;
   res.locals.res = res;
@@ -2153,7 +2195,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     if (!book)
       return next(createError(404, `Book '${bookAlias}' does not exist`));
     bookAlias = book.alias;
-    if (bookAlias === 'quran') {
+    if (bookAlias === 'quran' && !req.quranSelectedTranslationAlias) {
       var surah = findSurah(req.params.chapterNum);
       if (surah && redirectCanonicalReferencePath(req, res, `/quran/${surah.num}/${req.params.sectionNum}`))
         return;
@@ -2168,6 +2210,17 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       return next(createError(400, routeParameterMessage('sectionNum', req.params.sectionNum, 'section must be a positive integer')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
       return next(createError(404, `Quran surah ${chapterNum} not found`));
+    var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
+    var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
+    if (bookAlias === 'quran' && selectedTranslation && selectedTranslation.source === 'local' && !req.quranTranslationCanonicalPath) {
+      var canonicalTranslationPath = `/quran/${encodeURIComponent(selectedTranslation.alias)}/${chapterNum}/${sectionNum}`;
+      if (req.quranTranslationAliasRoute)
+        req.quranTranslationCanonicalPath = canonicalTranslationPath;
+      else {
+        var canonicalTranslationUrl = appendQueryExcluding(req, Utils.quranUrl(req, canonicalTranslationPath), ['translation']);
+        return res.redirect(301, canonicalTranslationUrl);
+      }
+    }
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
     if (bookAlias !== 'quran' && req.query.passage != undefined) {
       delete req.query.passage;
@@ -2210,6 +2263,12 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
       results = await section.getItems(offset);
     if (isQuranPassageSection && results.length == 0)
       return next(createError(404, `${queryParameterMessage('o', offset, `Quran section ${chapterNum}/${sectionNum} does not have content at that offset`)}`));
+    if (isQuranPassageSection && selectedTranslation && selectedTranslation.source === 'local') {
+      await applySelectedQuranTranslation(results, selectedTranslation, chapterNum);
+      req.quranServerRenderedTranslationAlias = selectedTranslation.alias;
+    } else if (isQuranPassageSection) {
+      req.quranServerRenderedTranslationAlias = '';
+    }
     if (results.length == 0) {
       var item = new Item(section);
       item.id = item.hId = undefined;
@@ -2292,7 +2351,28 @@ router.get('/:bookAlias/:chapterNum/:sectionNum', async function (req, res, next
     }
   }
 
-});
+}
+
+async function applySelectedQuranTranslation(items, translation, surah) {
+  await Promise.all((items || []).map(async function (item) {
+    var ayah = parseQuranAyahParam(item && (item.numInChapter || item.en?.num || item.num || item.ref || ''));
+    if (!Number.isInteger(ayah))
+      ayah = parseQuranAyahParam((item && (item.en?.num || item.num || item.ref) || '').toString().split(/:/).pop());
+    if (!Number.isInteger(ayah))
+      return;
+    var entry = await Tafsir.localTranslationEntry(translation, surah, ayah).catch(function (err) {
+      debug.error(`selected quran translation render failed alias=${translation.alias} ref=${surah}:${ayah}: ${err.message}\n${err.stack || ''}`);
+      return null;
+    });
+    if (!entry || !entry.html)
+      return;
+    if (!item.en)
+      item.en = {};
+    item.en.body = entry.html;
+    item.body_en = entry.html;
+    item.quranTranslationAlias = translation.alias;
+  }));
+}
 
 // BOOK: SECTION
 router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function (req, res, next) {

@@ -182,7 +182,7 @@
       }
       if (quranCommentaryBook.type === 'trans') {
         var sectionRef = quranHeadingSectionRef(heading);
-        return utils.quranUrl(req, `/quran/${sectionRef.surah}/${sectionRef.section}?translation=${encodeURIComponent(quranCommentaryBook.alias)}`);
+        return utils.quranUrl(req, `/quran/${encodeURIComponent(quranCommentaryBook.alias)}/${sectionRef.surah}/${sectionRef.section}`);
       }
       var ref = quranHeadingStartRef(heading);
       return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/${ref.surah}/${ref.ayah}`);
@@ -239,9 +239,7 @@
     var randomTocItemQueryParts = [];
     if (quranCommentaryBook) {
       if (quranCommentaryBook.type === 'trans') {
-        quranNavigatorBase = '/quran:';
-        quranNavigatorQuery = `translation=${encodeURIComponent(quranCommentaryBook.alias)}`;
-        randomTocItemQueryParts.push(`translation=${encodeURIComponent(quranCommentaryBook.alias)}`);
+        quranNavigatorBase = `/quran/${encodeURIComponent(quranCommentaryBook.alias)}`;
       } else {
         quranNavigatorBase = `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}`;
       }

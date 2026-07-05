@@ -32,10 +32,15 @@
     var selectedCanonicalRef = selectedAyahs.length > 0 && firstSelectedRef
       ? `${firstSelectedRef}${lastSelectedRef && firstSelectedRef !== lastSelectedRef ? `-${lastSelectedPart}` : ''}`
       : '';
-    var quranSelectedTranslationAlias = /^[A-Za-z0-9_-]+$/.test((req.query.translation || '').toString().trim())
-      ? req.query.translation.toString().trim()
+    var quranSelectedTranslationAlias = /^[A-Za-z0-9_-]+$/.test((req.quranSelectedTranslationAlias || req.query.translation || '').toString().trim())
+      ? (req.quranSelectedTranslationAlias || req.query.translation).toString().trim()
       : '';
     var quranPassageHref = function (path) {
+      if (quranSelectedTranslationAlias) {
+        var quranSectionMatch = path.toString().match(/^\/?quran\/(\d+)\/(\d+)(.*)$/);
+        if (quranSectionMatch)
+          return utils.quranUrl(req, `/quran/${encodeURIComponent(quranSelectedTranslationAlias)}/${quranSectionMatch[1]}/${quranSectionMatch[2]}${quranSectionMatch[3] || ''}`);
+      }
       var href = utils.quranUrl(req, path);
       if (!quranSelectedTranslationAlias)
         return href;
@@ -117,7 +122,7 @@
       description_en: quranMetaDescription,
       subtitle_en: `${quranSurahTitleShort} ${quranMetaRef}`,
       subtitle: `${quranSurahTitleAr}`,
-      canonical: selectedCanonicalRef ? `/quran:${selectedCanonicalRef}` : (section.level > 1 ? `/${book.alias}/${chapter.h1}/${section.h2}` : `/${book.alias}/${chapter.h1}`),
+      canonical: req.quranTranslationCanonicalPath || (selectedCanonicalRef ? `/quran:${selectedCanonicalRef}` : (section.level > 1 ? `/${book.alias}/${chapter.h1}/${section.h2}` : `/${book.alias}/${chapter.h1}`)),
       context: {
         book: book,
         chapter: chapter,

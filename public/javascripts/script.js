@@ -2895,10 +2895,39 @@ function validQuranTranslationAlias(value) {
 
 function quranSelectedTranslationAliasFromLocation() {
 	try {
-		return validQuranTranslationAlias(new URLSearchParams(window.location.search).get('translation') || '');
+		var queryAlias = validQuranTranslationAlias(new URLSearchParams(window.location.search).get('translation') || '');
+		if (queryAlias)
+			return queryAlias;
+		var pathMatch = window.location.pathname.match(/^\/quran\/([^/]+)\/\d+\/\d+(?:\/|$)/);
+		var alias = pathMatch ? validQuranTranslationAlias(decodeURIComponent(pathMatch[1] || '')) : '';
+		return alias && !/^\d+$/.test(alias) && !['tafsir', 'translations', 'corpus', 'settings', 'login', 'proxy', 'comments', 'user-settings'].includes(alias)
+			? alias
+			: '';
 	} catch (_err) {
 		return '';
 	}
+}
+
+function quranCurrentPassagePartsFromLocation() {
+	var path = window.location.pathname || '';
+	var aliasMatch = path.match(/^\/quran\/[^/]+\/(\d+)\/(\d+)(?:\/|$)/);
+	var plainMatch = path.match(/^\/quran\/(\d+)\/(\d+)(?:\/|$)/);
+	var match = aliasMatch || plainMatch;
+	return match ? { surah: match[1], passage: match[2] } : null;
+}
+
+function quranTranslationPassageUrl(alias) {
+	alias = validQuranTranslationAlias(alias);
+	var parts = quranCurrentPassagePartsFromLocation();
+	if (!parts)
+		return '';
+	var path = alias
+		? `/quran/${encodeURIComponent(alias)}/${parts.surah}/${parts.passage}`
+		: `/quran/${parts.surah}/${parts.passage}`;
+	var params = new URLSearchParams(window.location.search || '');
+	params.delete('translation');
+	var query = params.toString();
+	return quranUrl(`${path}${query ? `?${query}` : ''}`);
 }
 
 function storedQuranSelectedTranslationAlias() {
@@ -3122,14 +3151,28 @@ function initQuranPassageTranslationSelects(root) {
 				option.textContent = quranTranslationBookLabel(book);
 				selector.appendChild(option);
 			});
-			selector.value = quranTranslationSelectValue(selectedTranslationAlias || preferredAlias || '', choices);
+			var preferredSelectValue = quranTranslationSelectValue(preferredAlias || '', choices);
+			if (!selectedTranslationAlias && preferredSelectValue) {
+				var preferredUrl = quranTranslationPassageUrl(preferredSelectValue);
+				if (preferredUrl) {
+					window.location.replace(preferredUrl);
+					return;
+				}
+			}
+			selector.value = quranTranslationSelectValue(selectedTranslationAlias || '', choices);
 			selector.addEventListener('change', function () {
 				var alias = validQuranTranslationAlias(selector.value || '');
 				selector.disabled = true;
 				window.quranTranslationUserSelectedAt = Date.now();
 				setQuranPassageTranslationSelectValue(alias);
-				applyQuranHeroTranslationAlias(alias, { persist: true }).then(function () {
+				saveQuranPreferredTranslationAlias(alias).then(function () {
 					updateQuranTranslationPreferenceHearts(document, alias);
+					var targetUrl = quranTranslationPassageUrl(alias);
+					if (targetUrl) {
+						window.location.href = targetUrl;
+						return;
+					}
+					return applyQuranHeroTranslationAlias(alias, { persist: false });
 				}).catch(function (err) {
 					if (window.toastr)
 						toastr.error(err.message || 'Unable to load selected translation.', 'Settings');
@@ -4307,6 +4350,37 @@ function initQuranPreferredTranslationDisplays(root) {
 		storeDefaultQuranTranslationTarget(target);
 		setQuranTranslationAttribution(target, defaultQuranTranslationShortName(), '');
 	});
+	var hasServerRenderedTranslation = targets.every(function (target) {
+		return target.dataset.quranTranslationServerRendered === '1'
+			&& validQuranTranslationAlias(target.dataset.quranFixedTranslationAlias || '') === selectedTranslationAlias;
+	});
+	if (hasServerRenderedTranslation) {
+		var syncServerRenderedTranslation = function (book) {
+			var label = selectedTranslationAlias ? quranTranslationBookLabel(book) : defaultQuranTranslationShortName();
+			clearQuranSelectedTranslationFootnotes(scope);
+			targets.forEach(function (target) {
+				setQuranTranslationTargetEditable(target, !selectedTranslationAlias);
+				target.innerHTML = quranPassageTranslationHtml(target.innerHTML || '', target, selectedTranslationAlias);
+				setQuranTranslationAttribution(target, label, selectedTranslationAlias);
+			});
+			updateQuranTranslationPreferenceHearts(document, selectedTranslationAlias);
+		};
+		(selectedTranslationAlias ? quranTranslationBooks().then(function (books) {
+			var book = books.find(function (candidate) {
+				return candidate && candidate.alias === selectedTranslationAlias;
+			}) || { alias: selectedTranslationAlias };
+			syncServerRenderedTranslation(book);
+		}) : Promise.resolve().then(function () {
+			syncServerRenderedTranslation(null);
+		})).catch(function () {
+			targets.forEach(function (target) {
+				setQuranTranslationAttribution(target, defaultQuranTranslationShortName(), '');
+			});
+		}).finally(function () {
+			initQuranTranslationAttributionSelectors(scope);
+		});
+		return;
+	}
 	getQuranTafsirSettings().then(function (settings) {
 		if (window.quranTranslationUserSelectedAt && window.quranTranslationUserSelectedAt > initializedAt)
 			return null;
