@@ -13,6 +13,11 @@ const UserPoints = require('../lib/UserPoints');
 
 const router = express.Router();
 
+router.use(function noIndexContentTranslationResponses(req, res, next) {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
+
 async function requireUser(req, res, next) {
   try {
     let user = await GoogleAuth.verifyRequest(req, { allowSession: true });
@@ -56,7 +61,7 @@ router.get('/estimate', requirePaymentsEnabled, requireUser, async function (req
 router.get('/available', requirePaymentsEnabled, async function (req, res) {
   const payload = requestPayload(req);
   const result = await ContentTranslations.available(payload.itemType, payload.itemId);
-  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=600');
   res.json(result);
 });
 
@@ -84,7 +89,7 @@ router.post('/', requirePaymentsEnabled, requireUser, async function (req, res, 
 router.get('/languages', async function (req, res) {
   const enabled = PaymentConfig.isEnabled();
   const languages = enabled ? (await PaymentConfig.loadLanguages()).filter(language => language.code !== 'ar') : [];
-  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=3600');
   res.json({
     enabled,
     features: {

@@ -40,6 +40,35 @@ quranBacktickMd.renderer.rules.code_inline = renderQuranBacktickToken;
 quranBacktickMd.renderer.rules.code_block = renderQuranBacktickBlock;
 quranBacktickMd.renderer.rules.fence = renderQuranBacktickBlock;
 
+function setApiNoIndex(res) {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+}
+
+function setStableProxyCache(req, res, maxAgeSeconds) {
+  setApiNoIndex(res);
+  if (req.query && 'flush' in req.query)
+    res.setHeader('Cache-Control', 'no-store');
+  else
+    res.setHeader('Cache-Control', `public, max-age=${maxAgeSeconds}, stale-while-revalidate=${maxAgeSeconds}`);
+}
+
+function setPrivateProxyCache(res) {
+  setApiNoIndex(res);
+  res.setHeader('Cache-Control', 'no-store');
+}
+
+function setPublicProxyContentCache(req, res, maxAgeSeconds, isPrivate) {
+  if (isPrivate || (req.query && 'flush' in req.query))
+    setPrivateProxyCache(res);
+  else
+    setStableProxyCache(req, res, maxAgeSeconds);
+}
+
+router.use(function noIndexProxyResponses(req, res, next) {
+  setApiNoIndex(res);
+  next();
+});
+
 function validQuranRange(surah, ayahFrom, ayahTo, allowZero) {
   const surahInfo = (global.surahs || []).find(item => Number(item.num) === Number(surah));
   const ayahCount = Number(surahInfo && (surahInfo.ayahs || surahInfo.ayat));
@@ -53,7 +82,7 @@ function validQuranRange(surah, ayahFrom, ayahTo, allowZero) {
 }
 
 router.get('/quran-audio/recitations', function (req, res) {
-  res.setHeader('Cache-Control', 'no-store');
+  setStableProxyCache(req, res, 24 * 60 * 60);
   res.json({
     recitations: LOCAL_QURAN_AUDIO_RECITERS.map(reciter => ({
       id: reciter.id,
@@ -80,7 +109,7 @@ router.get('/quran-audio/passage', function (req, res) {
     res.status(404).json({ error: 'No Quran audio is available for this passage.' });
     return;
   }
-  res.setHeader('Cache-Control', 'no-store');
+  setStableProxyCache(req, res, 24 * 60 * 60);
   res.json({
     reciter: reciter.id,
     reciterName: reciter.reciter_name,
@@ -96,7 +125,7 @@ router.get('/tafsir/books', async function (req, res) {
   debug('proxy tafsir books start');
   const rows = await Tafsir.visibleTafsirs();
   debug(`proxy tafsir books done rows=${rows.length}`);
-  res.setHeader('Cache-Control', 'no-store');
+  setStableProxyCache(req, res, 60 * 60);
   res.json(rows);
 });
 
@@ -104,7 +133,7 @@ router.get('/translations/books', async function (req, res) {
   debug('proxy translations books start');
   const rows = await Tafsir.visibleTranslations();
   debug(`proxy translations books done rows=${rows.length}`);
-  res.setHeader('Cache-Control', 'no-store');
+  setStableProxyCache(req, res, 60 * 60);
   res.json(rows);
 });
 
@@ -139,7 +168,7 @@ router.get('/translations/local', async function (req, res) {
       html: html
     };
   }).filter(entry => entry.alias && (!lang || entry.html || Number.isInteger(Number(entry.ayahs_start))));
-  res.setHeader('Cache-Control', 'no-store');
+  setPublicProxyContentCache(req, res, 6 * 60 * 60, editMode);
   res.json({ entries: entries });
 });
 
@@ -190,7 +219,7 @@ router.get('/tafsir/local', async function (req, res) {
     res.status(404).json({ error: 'No local tafsir text is available for this ayah.' });
     return;
   }
-  res.setHeader('Cache-Control', 'no-store');
+  setPublicProxyContentCache(req, res, 6 * 60 * 60, editMode);
   if (req.query.from !== undefined || req.query.to !== undefined)
     res.json({ entries: entries });
   else
@@ -225,11 +254,11 @@ router.get('/tafsir', async function (req, res) {
     debug.slow('tafsir.app proxy', elapsedMs, `alias=${src} ref=${surah}:${ayah} status=${response.status}`);
     if (response.data && response.data.data)
       response.data.data = Tafsir.stripPageMarkers(response.data.data);
-    res.setHeader('Cache-Control', 'no-store');
+    setPublicProxyContentCache(req, res, 24 * 60 * 60, false);
     res.json(response.data);
   } catch (err) {
     debug.error(`tafsir.app unavailable for ${src} ${surah}:${ayah}: ${err.message}\n${err.stack || ''}`);
-    res.setHeader('Cache-Control', 'no-store');
+    setPrivateProxyCache(res);
     res.status(503).json({ error: 'Remote tafsir service is unavailable. Please use a local tafsir.' });
   }
 });
@@ -271,7 +300,7 @@ router.get('/:url', async function (req, res, next) {
       clearTimeout(timeout);
     }
     res.status(resource.status);
-    res.setHeader('Cache-Control', 'no-store');
+    setPrivateProxyCache(res);
     const contentType = resource.headers.get('content-type');
     if (contentType)
       res.setHeader('Content-Type', contentType);

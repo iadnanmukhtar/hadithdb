@@ -12,12 +12,10 @@ const Debug = require('./lib/Debug');
 const debug = Debug('hadithdb:App');
 const util = require('util');
 const path = require('path');
-const net = require('net');
 const createError = require('http-errors');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const { STATUS_CODES } = require('http');
-const rateLimit = require('express-rate-limit').default;
 const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
 const Utils = require('./lib/Utils');
@@ -31,35 +29,9 @@ function debugNewRelicLoadError(err) {
 }
 
 const REQUEST_BODY_LIMIT = '10mb';
-const DYNAMIC_REQUEST_LIMIT_WINDOW_MS = 1000;
-const DYNAMIC_REQUEST_LIMIT_PER_IP = 20;
 const MAX_REQUEST_URL_LENGTH = 4096;
 const FRIENDLY_ERROR_REF_MAX_LENGTH = 512;
 const BLOCKED_HTTP_METHODS = new Set(['TRACE', 'TRACK']);
-
-const normalizedIp = (ip) => {
-  if (!ip)
-    return '';
-  return ip.toString().replace(/^::ffff:/, '').toLowerCase();
-};
-
-const isLoopbackIp = (ip) => {
-  ip = normalizedIp(ip);
-  if (!ip)
-    return false;
-  if (ip === 'localhost' || ip === '::1' || ip === '0:0:0:0:0:0:0:1')
-    return true;
-  if (net.isIPv4(ip))
-    return ip === '127.0.0.1' || ip.startsWith('127.');
-  return false;
-};
-
-const requestRateLimitIp = req => req.clientIp || req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
-
-const envFlagEnabled = (name) => {
-  const value = (process.env[name] || '').toString().trim().toLowerCase();
-  return ['1', 'true', 'yes', 'on'].includes(value);
-};
 
 const sameSiteSecurityHeaders = (req, res, next) => {
   const paymentPolicy = PaymentConfig.isEnabled()
@@ -373,18 +345,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     res.sendFile(path.join(__dirname, 'node_modules/marked/marked.min.js'));
   });
   app.use('/blog', express.static(`${global.settings.blog.dir}`));
-
-  if (envFlagEnabled('THROTTLE')) {
-    const dynamicRequestLimiter = rateLimit({
-      windowMs: DYNAMIC_REQUEST_LIMIT_WINDOW_MS,
-      limit: DYNAMIC_REQUEST_LIMIT_PER_IP,
-      standardHeaders: true,
-      legacyHeaders: false,
-      skip: req => isLoopbackIp(requestRateLimitIp(req)),
-      message: 'Too many requests. Please wait and try again.'
-    });
-    app.use(dynamicRequestLimiter);
-  }
 
   // global redirect www
   app.all('/*', function (req, res, next) {

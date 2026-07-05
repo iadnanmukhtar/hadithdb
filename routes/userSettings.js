@@ -10,6 +10,12 @@ const UserSettings = require('../lib/UserSettings');
 const router = express.Router();
 const MAX_SETTINGS_BYTES = 65535;
 
+router.use(function noIndexUserSettingsResponses(req, res, next) {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
 async function verifyGoogle(req, res, next) {
   const optional = req.method === 'GET' && req.query && req.query.optional === '1';
   try {

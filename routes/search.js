@@ -24,7 +24,7 @@ const { homedir } = require('os');
 const router = express.Router();
 const sitemapBuilds = new Map();
 const SITEMAP_PAGE_SIZE = 50000;
-const SEARCH_RATE_LIMIT_WINDOW_MS = 1000;
+const DEFAULT_SEARCH_RATE_LIMIT_WINDOW_MS = 1000;
 const DEFAULT_SEARCH_RATE_LIMIT_RPS = 100;
 
 function envPositiveInteger(name, fallback) {
@@ -32,7 +32,8 @@ function envPositiveInteger(name, fallback) {
   return Number.isSafeInteger(value) && value > 0 ? value : fallback;
 }
 
-const SEARCH_RATE_LIMIT_PER_IP = envPositiveInteger('THROTTLE_RPS', DEFAULT_SEARCH_RATE_LIMIT_RPS);
+const SEARCH_RATE_LIMIT_PER_IP = envPositiveInteger('SEARCH_THROTTLE_RPS', DEFAULT_SEARCH_RATE_LIMIT_RPS);
+const SEARCH_RATE_LIMIT_WINDOW_MS = envPositiveInteger('SEARCH_THROTTLE_WINDOW_MS', DEFAULT_SEARCH_RATE_LIMIT_WINDOW_MS);
 
 function requestRateLimitIp(req) {
   return req.clientIp || req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
