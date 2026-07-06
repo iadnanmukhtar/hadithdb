@@ -3121,6 +3121,10 @@ body > footer,
 		padding-left: .55rem;
 		padding-right: .55rem;
 	}
+
+	.quran-toc-search-group .quran-toc-search-bar {
+		font-size: 1.5em;
+	}
 }
 
 .quran-ayah-select-toolbar {
