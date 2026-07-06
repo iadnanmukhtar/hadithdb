@@ -2391,19 +2391,22 @@ del em strong {
 .quran-section-heading-title {
 	align-items: center;
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	gap: .5rem .75rem;
-	justify-content: space-between;
+	justify-content: flex-start;
 }
 
 .quran-section-heading-text {
+	flex: 1 1 auto;
 	min-width: 0;
 }
 
 .quran-section-heading-actions {
 	display: inline-flex;
-	flex-wrap: wrap;
+	flex: 0 0 auto;
+	flex-wrap: nowrap;
 	gap: .35rem;
+	margin-left: auto;
 }
 
 .quran-section-heading-action {
@@ -2415,7 +2418,6 @@ del em strong {
 
 @media (max-width: 575.98px) {
 	.quran-section-heading-title {
-		flex-wrap: nowrap;
 		gap: .5rem;
 	}
 

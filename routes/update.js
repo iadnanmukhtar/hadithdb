@@ -483,7 +483,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
   } catch (err) {
     status.message = updateErrorMessage(err);
     status.code = updateErrorStatus(err);
-    var valuePreview = Utils.trimToEmpty(status.value).substring(0, 120);
+    var valuePreview = Utils.trimToEmpty(status.value + '').substring(0, 120);
     debug.error(`update failed id:${ids || req.params.id}, prop:${prop || req.params.prop}, value:${valuePreview}: ${status.message}\n${err.stack || ''}`);
   } finally {
     debug(`update status:${status.code}, id:${ids}, prop:${prop}, value:${(status.value + '').trim().substring(0, 20)}`);
@@ -1049,24 +1049,40 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
     LIMIT 1`))[0];
   if (!section)
     throw createError(404, 'Parent section heading not found');
-  var sectionStart = quranAyahFromHeadingStart(section.start || section.h2_start);
-  var sectionCount = parseInt(section.count || section.h2_count, 10);
+  var rawSection = (await global.query(`SELECT start, end, count
+    FROM toc
+    WHERE id=${section.tId || section.id}
+    LIMIT 1`))[0] || {};
+  var sectionStart = quranAyahFromHeadingStart(rawSection.start || section.start || section.h2_start);
+  var sectionEnd = quranHeadingEndAyah({
+    start: rawSection.start || section.start || section.h2_start,
+    end: rawSection.end,
+    count: rawSection.count || section.count || section.h2_count
+  });
   var splitAyah = quranAyahFromHeadingStart(subsection.start || subsection.h3_start);
-  if (!Number.isInteger(sectionStart) || !Number.isInteger(sectionCount) || sectionCount < 1 || !Number.isInteger(splitAyah))
+  if (!Number.isInteger(sectionStart) || !Number.isInteger(sectionEnd) || !Number.isInteger(splitAyah))
     throw createError(400, 'The section range is incomplete');
-  var sectionEnd = sectionStart + sectionCount - 1;
   if (splitAyah <= sectionStart || splitAyah > sectionEnd)
     throw createError(400, 'Choose a subsection that starts after the first ayah of its parent section');
+  var nextSection = (await global.query(`SELECT start
+    FROM toc
+    WHERE bookId=${bookId} AND level=2 AND h1=${surah} AND h2>${sourceH2}
+    ORDER BY h2
+    LIMIT 1`))[0];
+  var nextSectionStart = nextSection ? quranAyahFromHeadingStart(nextSection.start) : NaN;
+  var promotedEnd = sectionEnd;
+  if (Number.isInteger(nextSectionStart) && nextSectionStart > splitAyah && nextSectionStart <= sectionEnd)
+    promotedEnd = nextSectionStart - 1;
   var sourceEnd = splitAyah - 1;
   var sourceCount = sourceEnd - sectionStart + 1;
-  var promotedCount = sectionEnd - splitAyah + 1;
+  var promotedCount = promotedEnd - splitAyah + 1;
   var promotedTitleEn = await generateQuranHeadingTitle({
     ...subsection,
     level: 2,
     h2: insertH2,
     h3: null,
     start: `${surah}:${splitAyah}`,
-    end: `${surah}:${sectionEnd}`,
+    end: `${surah}:${promotedEnd}`,
     count: promotedCount,
     title_en: subsection.title_en || subsection.h3_title_en,
     title: subsection.title || subsection.h3_title
@@ -1076,6 +1092,7 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
     FROM toc
     WHERE bookId=${bookId} AND level=3 AND h1=${surah} AND h2=${sourceH2}
       AND CAST(SUBSTRING_INDEX(start, ':', -1) AS UNSIGNED) >= ${splitAyah}
+      AND CAST(SUBSTRING_INDEX(start, ':', -1) AS UNSIGNED) <= ${promotedEnd}
     ORDER BY start0, h3`);
   await global.query(`UPDATE toc
     SET ordinal=ordinal+1
@@ -1090,7 +1107,7 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
   var insertResult = await global.query(`INSERT INTO toc
     (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, end, start0, end0, count, lastmod_user, lastfixed)
     VALUES
-    (${insertOrdinal}, ${bookId}, 2, ${surah}, ${insertH2}, NULL, ${sql(promotedTitleEn)}, NULL, ${sql(subsection.intro_en)}, ${sql(subsection.intro)}, ${sql(`${surah}:${splitAyah}`)}, ${sql(`${surah}:${sectionEnd}`)}, ${quranNum0(surah, splitAyah)}, ${quranNum0(surah, sectionEnd)}, ${promotedCount}, '${userId}', CURRENT_TIMESTAMP())`);
+    (${insertOrdinal}, ${bookId}, 2, ${surah}, ${insertH2}, NULL, ${sql(promotedTitleEn)}, NULL, ${sql(subsection.intro_en)}, ${sql(subsection.intro)}, ${sql(`${surah}:${splitAyah}`)}, ${sql(`${surah}:${promotedEnd}`)}, ${quranNum0(surah, splitAyah)}, ${quranNum0(surah, promotedEnd)}, ${promotedCount}, '${userId}', CURRENT_TIMESTAMP())`);
   var movedSubsectionIds = movedSubsections
     .map(row => Number(row.id))
     .filter(id => Number.isInteger(id));
@@ -1102,8 +1119,8 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
       await renumberQuranSubsections(bookId, surah, insertH2);
     });
   }
-  await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: relink ayahs ${splitAyah}-${sectionEnd}`, async () => {
-    await relinkQuranAyahRangeToSection(bookId, surah, insertResult.insertId, insertH2, splitAyah, sectionEnd);
+  await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: relink ayahs ${splitAyah}-${promotedEnd}`, async () => {
+    await relinkQuranAyahRangeToSection(bookId, surah, insertResult.insertId, insertH2, splitAyah, promotedEnd);
   });
   await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: sync heading numbers`, async () => {
     await syncQuranSurahHadithHeadingNumbers(bookId, surah);
@@ -1123,7 +1140,7 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
       path: `quran/${surah}/${insertH2}`,
       start: `${surah}:${splitAyah}`,
       startAyah: splitAyah,
-      endAyah: sectionEnd,
+      endAyah: promotedEnd,
       count: promotedCount,
       title_en: promotedTitleEn
     }

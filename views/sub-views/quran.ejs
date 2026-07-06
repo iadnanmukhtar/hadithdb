@@ -2,8 +2,11 @@
   var quranSubsections = (locals.quranSubsections || []).map(function (heading) {
     var startAyah = parseInt(arabic.toLatinDigits((heading.start || '').toString().split(/:/).pop()), 10);
     var count = parseInt(heading.count, 10);
+    var endAyah = parseInt(arabic.toLatinDigits((heading.end || '').toString().split(/:/).pop()), 10);
     heading._startAyah = startAyah;
-    heading._endAyah = Number.isInteger(count) && count > 0 ? startAyah + count - 1 : startAyah;
+    if (!Number.isInteger(endAyah) && Number.isInteger(count) && count > 0)
+      endAyah = startAyah + count - 1;
+    heading._endAyah = Number.isInteger(endAyah) && endAyah >= startAyah ? endAyah : startAyah;
     return heading;
   }).filter(function (heading) {
     return Number.isInteger(heading._startAyah);
@@ -31,9 +34,7 @@
       var nextHeading = quranSubsections[s + 1];
       var groupEndAyah = heading._endAyah;
       if (nextHeading && Number.isInteger(nextHeading._startAyah) && nextHeading._startAyah > heading._startAyah)
-        groupEndAyah = Math.max(groupEndAyah, nextHeading._startAyah - 1);
-      else if (!nextHeading && Number.isInteger(passageEndAyah))
-        groupEndAyah = Math.max(groupEndAyah, passageEndAyah);
+        groupEndAyah = Math.min(groupEndAyah, nextHeading._startAyah - 1);
       var startIndex = passage.findIndex(function (item) {
         return ayahNumber(item) >= heading._startAyah;
       });

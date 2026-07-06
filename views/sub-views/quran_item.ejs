@@ -74,7 +74,11 @@
 						: subsectionTitle !== undefined && subsectionTitle !== null;
 					var subsectionStart = (heading.start || '').toString().split(/:/).pop();
 					var subsectionCount = parseInt(heading.count, 10);
-					var subsectionEnd = parseInt(subsectionStart || '0', 10) + (Number.isInteger(subsectionCount) ? subsectionCount : 1) - 1;
+					var subsectionEnd = parseInt((heading.end || '').toString().split(/:/).pop(), 10);
+					if (!Number.isInteger(subsectionEnd) && Number.isInteger(subsectionCount) && subsectionCount > 0)
+						subsectionEnd = parseInt(subsectionStart || '0', 10) + subsectionCount - 1;
+					if (!Number.isInteger(subsectionEnd) || subsectionEnd < parseInt(subsectionStart || '0', 10))
+						subsectionEnd = parseInt(subsectionStart || '0', 10);
 				%>
 					<% if (lang !== 'ar' || hasSubsectionTitle) { %>
 					<span<%- lang === 'en' ? ` id="S${heading.h2}-${heading.h3}"` : '' %> class="quran-subheading" lang="<%= lang %>">

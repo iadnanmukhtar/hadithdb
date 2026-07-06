@@ -1477,6 +1477,7 @@ async function getQuranSurahRangeHeadingsFromIndex(surah) {
         ]
       }
     }, 0, 1000, 'level,h2,h3,ordinal');
+    docs = await attachQuranRawHeadingRanges(surah, docs);
     var headings = docs.map(doc => Heading.toLevel(doc));
     return {
       sections: headings.filter(heading => Number(heading.level) === 2),
@@ -1486,6 +1487,48 @@ async function getQuranSurahRangeHeadingsFromIndex(surah) {
     debug.error(`Quran heading index lookup failed for surah ${surah}: ${err.message}\n${err.stack || ''}`);
     return null;
   }
+}
+
+async function attachQuranRawHeadingRanges(surah, docs) {
+  if (!Array.isArray(docs) || docs.length < 1 || !Number.isInteger(Number(surah)))
+    return docs;
+  try {
+    var rows = await global.query(`SELECT t.id, t.level, t.start, t.end, t.start0, t.end0, t.count
+      FROM toc t
+      JOIN books b ON b.id=t.bookId
+      WHERE b.alias='quran' AND t.h1=${Number(surah)} AND t.level IN (2, 3)`);
+    var rangesById = new Map(rows.map(row => [Number(row.id), row]));
+    return docs.map(doc => {
+      var range = rangesById.get(Number(doc.tId || doc.hId || doc.id));
+      if (!range)
+        return doc;
+      var derivedCount = quranHeadingRangeCount(range.start, range.end);
+      var count = Number.isInteger(derivedCount) && derivedCount > 0
+        ? derivedCount
+        : parseInt(range.count, 10);
+      var levelPrefix = `h${Number(range.level)}`;
+      doc.start = range.start;
+      doc.end = range.end;
+      doc.start0 = range.start0;
+      doc.end0 = range.end0;
+      doc.count = count;
+      doc[`${levelPrefix}_start`] = range.start;
+      doc[`${levelPrefix}_end`] = range.end;
+      doc[`${levelPrefix}_count`] = count;
+      return doc;
+    });
+  } catch (err) {
+    debug.error(`Quran raw heading range lookup failed for surah ${surah}: ${err.message}\n${err.stack || ''}`);
+    return docs;
+  }
+}
+
+function quranHeadingRangeCount(start, end) {
+  var startAyah = quranAyahFromHeadingStart(start);
+  var endAyah = quranAyahFromHeadingStart(end);
+  return Number.isInteger(startAyah) && Number.isInteger(endAyah) && endAyah >= startAyah
+    ? endAyah - startAyah + 1
+    : NaN;
 }
 
 async function getQuranSurahsFromIndex() {
@@ -1551,9 +1594,13 @@ function matchingQuranSectionsForRange(headings, ayah1, ayah2) {
 function quranHeadingOverlapsAyahRange(heading, ayah1, ayah2) {
   var startAyah = quranAyahFromHeadingStart(heading.start);
   var count = parseInt(heading.count, 10);
-  if (!Number.isInteger(startAyah) || !Number.isInteger(count) || count < 1)
+  var endAyah = quranAyahFromHeadingStart(heading.end);
+  if (!Number.isInteger(startAyah))
     return false;
-  var endAyah = startAyah + count - 1;
+  if (!Number.isInteger(endAyah) && Number.isInteger(count) && count > 0)
+    endAyah = startAyah + count - 1;
+  if (!Number.isInteger(endAyah) || endAyah < startAyah)
+    return false;
   return startAyah <= ayah2 && endAyah >= ayah1;
 }
 
@@ -1596,9 +1643,9 @@ async function getQuranSectionPassageItems(section, offset, size) {
 async function getQuranHeadingAyahRange(section) {
   var startAyah = quranAyahFromHeadingStart(section.start);
   var count = parseInt(section.count, 10);
-  var endAyah = Number.isInteger(startAyah) && Number.isInteger(count) && count > 0
-    ? startAyah + count - 1
-    : null;
+  var endAyah = quranAyahFromHeadingStart(section.end);
+  if (!Number.isInteger(endAyah) && Number.isInteger(startAyah) && Number.isInteger(count) && count > 0)
+    endAyah = startAyah + count - 1;
 
   if (section && section.book_alias === 'quran' && parseInt(section.level, 10) === 2) {
     var rows = Array.isArray(section.quranSubsections)
@@ -1607,9 +1654,13 @@ async function getQuranHeadingAyahRange(section) {
     for (const row of rows) {
       var subsectionStart = quranAyahFromHeadingStart(row.start);
       var subsectionCount = parseInt(row.count, 10);
-      if (!Number.isInteger(subsectionStart) || !Number.isInteger(subsectionCount) || subsectionCount < 1)
+      var subsectionEnd = quranAyahFromHeadingStart(row.end);
+      if (!Number.isInteger(subsectionStart))
         continue;
-      var subsectionEnd = subsectionStart + subsectionCount - 1;
+      if (!Number.isInteger(subsectionEnd) && Number.isInteger(subsectionCount) && subsectionCount > 0)
+        subsectionEnd = subsectionStart + subsectionCount - 1;
+      if (!Number.isInteger(subsectionEnd) || subsectionEnd < subsectionStart)
+        continue;
       startAyah = Number.isInteger(startAyah) ? Math.min(startAyah, subsectionStart) : subsectionStart;
       endAyah = Number.isInteger(endAyah) ? Math.max(endAyah, subsectionEnd) : subsectionEnd;
     }
