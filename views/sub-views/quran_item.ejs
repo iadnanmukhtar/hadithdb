@@ -65,47 +65,6 @@
 					var ayahHoverLabelRef = arabic.toLatinDigits((ayahNum || '').toString());
 					var ayahMarkerAttrs = ` data-quran-href="${ayahHref}" data-quran-ayah-hover-label="Study ${ayahHoverLabelRef}" title="Study ${ayahHoverLabelRef}"`;
 				%>
-				<% (quranSubsectionsByStart.get(ayahPartLatin) || []).forEach(function (heading) {
-					var subsectionTitle = (lang === 'ar') ? heading.title : heading.title_en;
-					var subsectionProp = (lang === 'ar') ? 'toc.title' : 'toc.title_en';
-					var subsectionFallback = (lang === 'ar') ? 'مقطع' : 'Subsection';
-					var hasSubsectionTitle = typeof subsectionTitle === 'string'
-						? subsectionTitle.trim().length > 0
-						: subsectionTitle !== undefined && subsectionTitle !== null;
-					var subsectionStart = (heading.start || '').toString().split(/:/).pop();
-					var subsectionCount = parseInt(heading.count, 10);
-					var subsectionEnd = parseInt((heading.end || '').toString().split(/:/).pop(), 10);
-					if (!Number.isInteger(subsectionEnd) && Number.isInteger(subsectionCount) && subsectionCount > 0)
-						subsectionEnd = parseInt(subsectionStart || '0', 10) + subsectionCount - 1;
-					if (!Number.isInteger(subsectionEnd) || subsectionEnd < parseInt(subsectionStart || '0', 10))
-						subsectionEnd = parseInt(subsectionStart || '0', 10);
-				%>
-					<% if (lang !== 'ar' || hasSubsectionTitle) { %>
-					<span<%- lang === 'en' ? ` id="S${heading.h2}-${heading.h3}"` : '' %> class="quran-subheading" lang="<%= lang %>">
-						<span class="_e" data-id="<%= heading.id %>" data-prop="<%= subsectionProp %>" data-arabizi="<%= lang === 'en' ? 'true' : '' %>"><%- subsectionTitle || subsectionFallback %></span>
-						<% if (site.editMode && lang === 'en') { %>
-							<span class="quran-subheading-controls" data-subsection-id="<%= heading.id %>">
-								<input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-range-start" value="<%= subsectionStart %>" title="Subsection start ayah">
-								<input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-range-end" value="<%= subsectionEnd %>" title="Subsection end ayah">
-								<button type="button" class="btn btn-sm btn-outline-primary quran-subsection-range-save" title="Save subsection range">
-									<span class="bi bi-save"></span>
-								</button>
-								<button type="button" class="btn btn-sm btn-outline-primary quran-subsection-promote" title="Make this subsection and the remaining ayat a new section">
-									<span class="bi bi-arrow-up-square"></span>
-								</button>
-								<% if (heading.hasNextQuranSubsection) { %>
-									<button type="button" class="btn btn-sm btn-outline-primary quran-subsection-merge" title="Merge with next subsection and retitle">
-										<span class="bi bi-intersect"></span>
-									</button>
-								<% } %>
-								<button type="button" class="btn btn-sm btn-outline-danger quran-subsection-delete" title="Remove subsection division">
-									<span class="bi bi-x-circle"></span>
-								</button>
-							</span>
-						<% } %>
-					</span>
-					<% } %>
-				<% }); %>
 				<span class="ayah<%= selectedAyahRefs.has(passage[i].ref) ? ' ayah-selected' : '' %><%= isPrefatoryAyah ? ' quran-prefatory-ayah' : '' %>" data-quran-ref="<%= ayahRefLatin %>" data-quran-href="<%= ayahHref %>">
 					<% if (site.editMode) { %>
 						<% if (lang === 'en') { %><button type="button" class="quran-ayah-hero-trigger quran-ayah-number-marker"<%- ayahMarkerAttrs %> data-ayah-number="<%= ayahPart %>" aria-label="Study Quran <%= ayahNum %>"><sup><%= (i == 0) ? ayahNum : ayahPart %></sup></button>&nbsp;<% } %><span class="_e quran-ayah-body"<%- lang === 'en' ? quranTranslationAttrs : quranCorpusAttrs %> data-id="<%= passage[i].id %>" data-prop="<%= ayahBodyProp %>" data-arabizi="<%= lang === 'en' ? 'true' : '' %>" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"><%- ayahBodyHtml %></span><% if (lang === 'ar') { %>&nbsp;<button type="button" class="quran-ayah-hero-trigger quran-ayah-end-marker"<%- ayahMarkerAttrs %> data-ayah-number="<%= ayahPart %>" aria-label="Study Quran <%= ayahNum %>">۝<%= ayahPartArabic %></button><% } %>
