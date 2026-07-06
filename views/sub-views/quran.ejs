@@ -169,6 +169,43 @@
 </aside>
 <% } %>
 <article class="row quran-passage-section"<%- group._audioScopeId ? ` data-quran-audio-scope="${group._audioScopeId}"` : '' %>>
+<% if (group._hasSubsection && group.quranSubsections && group.quranSubsections.length > 0) { 
+  var isolatedHeading = group.quranSubsections[0];
+  var isolatedHeadingTitle = isolatedHeading.title_en || isolatedHeading.title || 'Subsection';
+  var isolatedHeadingStart = (isolatedHeading.start || '').toString().split(/:/).pop();
+  var isolatedHeadingCount = parseInt(isolatedHeading.count, 10);
+  var isolatedHeadingEnd = parseInt((isolatedHeading.end || '').toString().split(/:/).pop(), 10);
+  if (!Number.isInteger(isolatedHeadingEnd) && Number.isInteger(isolatedHeadingCount) && isolatedHeadingCount > 0)
+    isolatedHeadingEnd = parseInt(isolatedHeadingStart || '0', 10) + isolatedHeadingCount - 1;
+  if (!Number.isInteger(isolatedHeadingEnd) || isolatedHeadingEnd < parseInt(isolatedHeadingStart || '0', 10))
+    isolatedHeadingEnd = parseInt(isolatedHeadingStart || '0', 10);
+%>
+<aside class="col-12 quran-subheading-isolated-row mb-1">
+  <span class="quran-subheading quran-subheading-isolated" lang="en" dir="ltr">
+    <span class="_e" data-id="<%= isolatedHeading.id %>" data-prop="toc.title_en" data-arabizi="true"><%- isolatedHeadingTitle %></span>
+    <% if (site.editMode) { %>
+      <span class="quran-subheading-controls" data-subsection-id="<%= isolatedHeading.id %>">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-range-start" value="<%= isolatedHeadingStart %>" title="Subsection start ayah">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-range-end" value="<%= isolatedHeadingEnd %>" title="Subsection end ayah">
+        <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-range-save" title="Save subsection range">
+          <span class="bi bi-save"></span>
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-promote" title="Make this subsection and the remaining ayat a new section">
+          <span class="bi bi-arrow-up-square"></span>
+        </button>
+        <% if (isolatedHeading.hasNextQuranSubsection) { %>
+          <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-merge" title="Merge with next subsection and retitle">
+            <span class="bi bi-intersect"></span>
+          </button>
+        <% } %>
+        <button type="button" class="btn btn-sm btn-outline-danger quran-subsection-delete" title="Remove subsection division">
+          <span class="bi bi-x-circle"></span>
+        </button>
+      </span>
+    <% } %>
+  </span>
+</aside>
+<% } %>
 
 <%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
 

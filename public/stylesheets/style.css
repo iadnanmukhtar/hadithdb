@@ -3601,6 +3601,14 @@ body > footer,
 	text-indent: 0;
 }
 
+.quran-subheading-isolated-row {
+	display: none;
+}
+
+.quran-passage-section.quran-hide-translation .quran-subheading-isolated-row {
+	display: block;
+}
+
 .quran-subheading:lang(ar) {
 	direction: rtl;
 	font-family: KitabBold, Serif;
