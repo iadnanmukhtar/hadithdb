@@ -19,6 +19,7 @@ const Books = require('../lib/Books');
 const BookDownloads = require('../lib/BookDownloads');
 const Surahs = require('../lib/Surahs');
 const QuranCorpus = require('../lib/QuranCorpus');
+const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const { homedir } = require('os');
 
 const router = express.Router();
@@ -1999,6 +2000,7 @@ router.get('/:bookAlias', async function (req, res, next) {
         results = await global.query(`SELECT * from v_hadiths_virtual_snapshot WHERE book_id=${book.id} ORDER BY ordinal`);
     } else {
       results = await Library.instance.findBook(book.alias).getChapters();
+      var quranJuzRows = book.alias === 'quran' ? await QuranTocSubdivisions.juzRows() : [];
       if (cacheableHtml) {
         random = undefined;
       } else if (!book.virtual)
@@ -2031,6 +2033,8 @@ router.get('/:bookAlias', async function (req, res, next) {
         var html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, cachedRenderLocals(res, {
           noadmin: true,
           book: book,
+          surahs: global.surahs || [],
+          quranJuzRows: quranJuzRows,
           BookDownloads: BookDownloads,
           prevBook: prevBook,
           nextBook: nextBook,
@@ -2046,6 +2050,8 @@ router.get('/:bookAlias', async function (req, res, next) {
       }
       res.render('toc', {
         book: book,
+        surahs: global.surahs || [],
+        quranJuzRows: quranJuzRows,
         BookDownloads: BookDownloads,
         prevBook: prevBook,
         nextBook: nextBook,
@@ -2080,6 +2086,7 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
   var translations = quranCommentaryBook.type === 'trans' ? await Tafsir.visibleTranslations() : [];
   var renderLocals = {
     book: book,
+    surahs: global.surahs || [],
     BookDownloads: BookDownloads,
     prevBook: null,
     nextBook: null,

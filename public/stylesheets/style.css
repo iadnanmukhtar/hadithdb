@@ -767,6 +767,35 @@ nav .nav-link[aria-current="page"] {
 	text-underline-offset: 0.35em;
 }
 
+.quran-juz-surah-list {
+	font-size: 0.9rem;
+	line-height: 1.5;
+	max-width: 100%;
+	overflow-wrap: anywhere;
+	white-space: normal !important;
+	word-break: normal;
+}
+
+#toc-juz {
+	table-layout: fixed;
+	width: 100%;
+}
+
+#toc-juz td:first-child {
+	width: 4.5rem;
+}
+
+#toc-juz td:nth-child(3) {
+	width: 9rem;
+}
+
+#toc-juz .quran-juz-surah-link,
+#toc-juz .quran-juz-surah-list a {
+	overflow-wrap: anywhere;
+	white-space: normal;
+	word-break: break-word;
+}
+
 .book-catalog-section-toggle {
 	align-items: center;
 	background: transparent;
