@@ -2,6 +2,8 @@
 
 const createError = require('http-errors');
 const express = require('express');
+const ejs = require('ejs');
+const fs = require('fs');
 const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
 const Tafsir = require('../lib/Tafsir');
@@ -43,16 +45,24 @@ router.get('/:tafsir/:surah', async function (req, res, next) {
   res.redirect(302, Utils.quranPath(Tafsir.browseUrl(tafsir, passage.surah, passage.ayah, allTafsirs)));
 });
 
-router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
+router.get('/:tafsir/:surah/:section', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
+  const cachedFile = cachedRequestFile(req);
+  const flushCache = Utils.shouldFlushCache(req);
+  if (flushCache)
+    await Utils.flushCachedFile(cachedFile);
+  if (!flushCache && !editMode && fs.existsSync(cachedFile)) {
+    sendCachedHtml(req, res, cachedFile);
+    return;
+  }
 
   const surahNum = Number(req.params.surah);
-  const ayahNum = Number(req.params.ayah);
+  const ayahNum = Number(req.params.section);
   const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
   if (!surah || !Number.isInteger(ayahNum) || ayahNum < 1 || ayahNum > Number(surah.ayahs))
-    return next(createError(404, `Quran ayah ${req.params.surah}:${req.params.ayah} not found`));
+    return next(createError(404, `Quran ayah ${req.params.surah}:${req.params.section} not found`));
 
   const tafsir = await Tafsir.resolveTafsir(req.params.tafsir, req.query.lang);
   if (!tafsir)
@@ -97,6 +107,20 @@ router.get('/:tafsir/:surah/:ayah', async function (req, res, next) {
     surah: surah,
     tafsir: tafsir
   };
+
+  if (!editMode) {
+    const refs = [
+      `quran:${surahNum}:${ayahNum}`,
+      `tafsir:${tafsir.alias}`,
+      `tafsir:${tafsir.slug || Tafsir.tafsirSlug(tafsir.alias)}`
+    ];
+    const html = await ejs.renderFile(`${__dirname}/../views/tafsir_passage.ejs`, cachedRenderLocals(res, {
+      noadmin: true,
+      ...renderLocals
+    }));
+    Utils.writeCachedHtml(cachedFile, html);
+    await Utils.indexCachedItem(refs, cachedFile);
+  }
 
   res.render('tafsir_passage', renderLocals);
 });
@@ -235,6 +259,27 @@ function quranAdjacentRef(surah, ayah, direction) {
 function navigationTarget(tafsir, surah, ayah, tafsirs) {
   const url = Tafsir.browseUrl(tafsir, surah, ayah, tafsirs);
   return Utils.quranPath(url);
+}
+
+function sendCachedHtml(req, res, cachedFile) {
+  res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+  res.end(Utils.readCachedHtml(cachedFile, req));
+}
+
+function cachedRenderLocals(res, locals) {
+  return Object.assign(
+    {},
+    res.app ? res.app.locals : {},
+    res.locals || {},
+    locals || {}
+  );
+}
+
+function cachedRequestFile(req) {
+  return Utils.cacheFileFromFilename(Utils.cacheReqToFilename({
+    ...req,
+    url: req.originalUrl || req.url || ''
+  }), 'html');
 }
 
 module.exports = router;
