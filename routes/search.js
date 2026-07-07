@@ -2228,6 +2228,24 @@ router.get('/quran/:translationAlias/:chapterNum/:sectionNum', async function (r
   return renderBookSection(req, res, next);
 });
 
+router.get('/quran/:translationAlias/:chapterNum', async function (req, res, next) {
+  var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
+  if (!translation || translation.source !== 'local')
+    return next();
+  var surah = parsePositiveIntegerParam(req.params.chapterNum);
+  if (!Number.isInteger(surah))
+    return next(createError(404, `Quran surah ${req.params.chapterNum} not found`));
+  var first = await Tafsir.firstPassageInSurah(translation, surah).catch(function (err) {
+    debug.error(`quran translation first passage redirect failed alias=${translation.alias} surah=${surah}: ${err.message}\n${err.stack || ''}`);
+    return null;
+  });
+  if (!first || !Number.isInteger(Number(first.ayah)))
+    return next(createError(404, `Quran surah ${surah} has no passages for translation ${translation.alias}`));
+  req.quranSelectedTranslationAlias = translation.alias;
+  var targetPath = `/quran/${encodeURIComponent(translation.alias)}/${surah}/${Number(first.ayah)}`;
+  return res.redirect(302, Utils.quranPath(targetPath));
+});
+
 // BOOK: SECTION
 router.get('/:bookAlias/:chapterNum/:sectionNum', renderBookSection);
 
@@ -2405,6 +2423,23 @@ async function renderBookSection(req, res, next) {
 }
 
 async function applySelectedQuranTranslation(items, translation, surah) {
+  var firstItem = (items || [])[0];
+  if (firstItem && (firstItem.chain_en || firstItem.en?.chain)) {
+    var basmalahEntry = await Tafsir.localTranslationEntry(translation, 1, 1).catch(function (err) {
+      debug.error(`selected quran translation basmalah render failed alias=${translation.alias}: ${err.message}\n${err.stack || ''}`);
+      return null;
+    });
+    var basmalahHtml = basmalahEntry && basmalahEntry.html ? basmalahEntry.html : '';
+    if (Number(surah) !== 1)
+      basmalahHtml = Utils.stripQuranDisplayFootnoteHtml(basmalahHtml);
+    var basmalahText = basmalahHtml ? Utils.htmlToMarkdown(basmalahHtml) : '';
+    if (basmalahText) {
+      if (!firstItem.en)
+        firstItem.en = {};
+      firstItem.en.chain = basmalahText;
+      firstItem.chain_en = basmalahText;
+    }
+  }
   await Promise.all((items || []).map(async function (item) {
     var ayah = parseQuranAyahParam(item && (item.numInChapter || item.en?.num || item.num || item.ref || ''));
     if (!Number.isInteger(ayah))

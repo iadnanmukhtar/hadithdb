@@ -3602,11 +3602,19 @@ body > footer,
 }
 
 .quran-subheading-isolated-row {
-	display: none;
+	display: block;
 }
 
-.quran-passage-section.quran-hide-translation .quran-subheading-isolated-row {
-	display: block;
+.quran-subheading-isolated-row > div {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: .75rem;
+}
+
+.quran-subheading-isolated-audio {
+	flex: 0 0 auto;
+	margin-left: auto;
 }
 
 .quran-subheading:lang(ar) {

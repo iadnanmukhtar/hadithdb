@@ -2802,6 +2802,15 @@ function applyQuranTranslationEntryToTarget(target, book, entry) {
 	setQuranTranslationAttribution(target, quranTranslationBookLabel(book), alias);
 }
 
+function quranPrefatoryTranslationEntry(entry, surah) {
+	if (!entry || Number(surah) === 1)
+		return entry;
+	return Object.assign({}, entry, {
+		html: compactQuranTranslationHtml(entry.html || entry.data || ''),
+		data: stripQuranDisplayFootnoteMarkdown(entry.data || '')
+	});
+}
+
 function clearMergedQuranTranslationContinuationTarget(target, book) {
 	if (!target)
 		return;
@@ -2826,8 +2835,12 @@ function applyQuranTranslationToTarget(target, book) {
 	var ref = quranTranslationTargetRef(target);
 	if (!ref.surah || !ref.ayah)
 		return Promise.resolve();
-	return fetchQuranLocalTranslation(book, ref.surah, ref.ayah).then(function (payload) {
+	var requestSurah = ref.ayah === '0' ? '1' : ref.surah;
+	var requestAyah = ref.ayah === '0' ? '1' : ref.ayah;
+	return fetchQuranLocalTranslation(book, requestSurah, requestAyah).then(function (payload) {
 		var entry = Array.isArray(payload && payload.entries) ? payload.entries[0] : payload;
+		if (ref.ayah === '0')
+			entry = quranPrefatoryTranslationEntry(entry, ref.surah);
 		applyQuranTranslationEntryToTarget(target, book, entry);
 	});
 }
@@ -2848,8 +2861,26 @@ function applyQuranTranslationToTargets(targets, book) {
 		return Promise.all(targets.map(function (target) {
 			return applyQuranTranslationToTarget(target, book);
 		}));
+	var prefatoryTargets = targets.filter(function (target) {
+		return quranTranslationTargetAyahNumber(target) === 0;
+	});
+	var regularTargets = targets.filter(function (target) {
+		return quranTranslationTargetAyahNumber(target) !== 0;
+	});
 	var targetsByPassage = new Map();
-	targets.forEach(function (target) {
+	var prefatoryPromises = prefatoryTargets.map(function (target) {
+		storeDefaultQuranTranslationTarget(target);
+		setQuranTranslationTargetEditable(target, false);
+		var ref = quranTranslationTargetRef(target);
+		if (!ref.surah)
+			return Promise.resolve();
+		return fetchQuranLocalTranslation(book, '1', '1').then(function (payload) {
+			var entry = Array.isArray(payload && payload.entries) ? payload.entries[0] : payload;
+			entry = quranPrefatoryTranslationEntry(entry, ref.surah);
+			applyQuranTranslationEntryToTarget(target, book, entry);
+		});
+	});
+	regularTargets.forEach(function (target) {
 		storeDefaultQuranTranslationTarget(target);
 		setQuranTranslationTargetEditable(target, false);
 		var ref = quranTranslationTargetRef(target);
@@ -2861,7 +2892,7 @@ function applyQuranTranslationToTargets(targets, book) {
 			targetsByPassage.set(passageScope, []);
 		targetsByPassage.get(passageScope).push(target);
 	});
-	return Promise.all(Array.from(targetsByPassage.values()).map(function (passageTargets) {
+	var passagePromises = Array.from(targetsByPassage.values()).map(function (passageTargets) {
 		var targetsBySurah = new Map();
 		passageTargets.forEach(function (target) {
 			var ref = quranTranslationTargetRef(target);
@@ -2909,7 +2940,8 @@ function applyQuranTranslationToTargets(targets, book) {
 				});
 			});
 		}));
-	}));
+	});
+	return Promise.all(prefatoryPromises.concat(passagePromises));
 }
 
 var QURAN_SELECTED_TRANSLATION_STORAGE_KEY = 'hadithdb.quran.selectedTranslationAlias';
