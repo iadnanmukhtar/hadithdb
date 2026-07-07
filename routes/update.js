@@ -641,16 +641,17 @@ async function flushBookCaches(bookAliases) {
   if (!fs.existsSync(cacheDir))
     return;
   for (const filename of fs.readdirSync(cacheDir)) {
-    if (filename === '_books' || filename === '_books.html') {
-      await Utils.flushCachedFile(`${cacheDir}/${filename}`);
+    const cachedName = cacheBaseName(filename);
+    if (cachedName === '_books' || cachedName === '_books.html') {
+      await Utils.flushCachedFile(`${cacheDir}/${cachedName}`);
       continue;
     }
     for (const bookAlias of aliases) {
-      if (filename === `_${bookAlias}`
-        || filename === `_${bookAlias}.html`
-        || filename.startsWith(`_${bookAlias}_`)
-        || filename.startsWith(`_${bookAlias}?`)) {
-        await Utils.flushCachedFile(`${cacheDir}/${filename}`);
+      if (cachedName === `_${bookAlias}`
+        || cachedName === `_${bookAlias}.html`
+        || cachedName.startsWith(`_${bookAlias}_`)
+        || cachedName.startsWith(`_${bookAlias}?`)) {
+        await Utils.flushCachedFile(`${cacheDir}/${cachedName}`);
         break;
       }
     }
@@ -961,7 +962,7 @@ async function updateQuranSubsectionRange(subsectionHeadingId, value, userId) {
   if (!Number.isInteger(subsectionHeadingId) || subsectionHeadingId <= 0)
     throw createError(400, 'Invalid subsection heading id');
   var payload = parseSubsectionValue(value);
-  var subsection = (await global.query(`SELECT * FROM v_toc WHERE hId=${subsectionHeadingId} LIMIT 1`))[0];
+  var subsection = await quranSubsectionFromId(subsectionHeadingId);
   if (!subsection)
     throw createError(404, 'Subsection heading not found');
   if (subsection.book_alias !== 'quran')
@@ -1002,11 +1003,21 @@ async function updateQuranSubsectionRange(subsectionHeadingId, value, userId) {
   };
 }
 
+async function quranSubsectionFromId(subsectionHeadingId) {
+  subsectionHeadingId = parseInt(subsectionHeadingId, 10);
+  if (!Number.isInteger(subsectionHeadingId) || subsectionHeadingId <= 0)
+    return null;
+  return (await global.query(`SELECT * FROM v_toc
+    WHERE book_alias='quran' AND level=3
+      AND (hId=${subsectionHeadingId} OR tId=${subsectionHeadingId} OR id=${subsectionHeadingId})
+    LIMIT 1`))[0] || null;
+}
+
 async function deleteQuranSubsection(subsectionHeadingId) {
   subsectionHeadingId = parseInt(subsectionHeadingId, 10);
   if (!Number.isInteger(subsectionHeadingId) || subsectionHeadingId <= 0)
     throw createError(400, 'Invalid subsection heading id');
-  var subsection = (await global.query(`SELECT * FROM v_toc WHERE hId=${subsectionHeadingId} LIMIT 1`))[0];
+  var subsection = await quranSubsectionFromId(subsectionHeadingId);
   if (!subsection)
     throw createError(404, 'Subsection heading not found');
   if (subsection.book_alias !== 'quran')
@@ -1033,7 +1044,7 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
   subsectionHeadingId = parseInt(subsectionHeadingId, 10);
   if (!Number.isInteger(subsectionHeadingId) || subsectionHeadingId <= 0)
     throw createError(400, 'Invalid subsection heading id');
-  var subsection = (await global.query(`SELECT * FROM v_toc WHERE hId=${subsectionHeadingId} LIMIT 1`))[0];
+  var subsection = await quranSubsectionFromId(subsectionHeadingId);
   if (!subsection)
     throw createError(404, 'Subsection heading not found');
   if (subsection.book_alias !== 'quran')
@@ -1151,7 +1162,7 @@ async function mergeQuranSubsectionWithNext(subsectionHeadingId, userId) {
   subsectionHeadingId = parseInt(subsectionHeadingId, 10);
   if (!Number.isInteger(subsectionHeadingId) || subsectionHeadingId <= 0)
     throw createError(400, 'Invalid subsection heading id');
-  var subsection = (await global.query(`SELECT * FROM v_toc WHERE hId=${subsectionHeadingId} LIMIT 1`))[0];
+  var subsection = await quranSubsectionFromId(subsectionHeadingId);
   if (!subsection)
     throw createError(404, 'Subsection heading not found');
   if (subsection.book_alias !== 'quran')
@@ -1522,9 +1533,10 @@ async function invalidateQuranSurahCaches(surah) {
   var matched = 0;
   var deleted = 0;
   for (const filename of filenames) {
-    if (prefixes.some(prefix => filename === `${prefix}.html` || filename.startsWith(prefix) || filename.startsWith(`${prefix}?`))) {
+    const cachedName = cacheBaseName(filename);
+    if (prefixes.some(prefix => cachedName === `${prefix}.html` || cachedName.startsWith(prefix) || cachedName.startsWith(`${prefix}?`))) {
       matched++;
-      if (await Utils.flushCachedFile(`${cacheDir}/${filename}`))
+      if (await Utils.flushCachedFile(`${cacheDir}/${cachedName}`))
         deleted++;
     }
   }
@@ -1696,12 +1708,19 @@ async function flushHeadingPathCaches(heading) {
   for (const filename of fs.readdirSync(cacheDir)) {
     for (const prefix of prefixes) {
       var normalized = `_${prefix.replace(/\//g, '_')}`;
-      if (filename === `${normalized}.html` || filename.startsWith(`${normalized}_`) || filename.startsWith(`${normalized}?`)) {
-        await Utils.flushCachedFile(`${cacheDir}/${filename}`);
+      const cachedName = cacheBaseName(filename);
+      if (cachedName === `${normalized}.html` || cachedName.startsWith(`${normalized}_`) || cachedName.startsWith(`${normalized}?`)) {
+        await Utils.flushCachedFile(`${cacheDir}/${cachedName}`);
         break;
       }
     }
   }
+}
+
+function cacheBaseName(filename) {
+  return filename && filename.endsWith(Utils.CACHE_GZIP_SUFFIX)
+    ? filename.slice(0, -Utils.CACHE_GZIP_SUFFIX.length)
+    : filename;
 }
 
 function buildHeadingCachePrefixes(heading) {

@@ -232,7 +232,9 @@
             var rangeHeading = section;
             var rangeStart = (rangeHeading.start || '').toString().split(/:/).pop();
             var rangeCount = parseInt(rangeHeading.count || results.length, 10);
-            var rangeEnd = parseInt(rangeStart || '0', 10) + (Number.isInteger(rangeCount) ? rangeCount : results.length) - 1;
+            var rangeEnd = parseInt((rangeHeading.end || '').toString().split(/:/).pop(), 10);
+            if (!Number.isInteger(rangeEnd))
+              rangeEnd = parseInt(rangeStart || '0', 10) + (Number.isInteger(rangeCount) ? rangeCount : results.length) - 1;
             if (!Number.isInteger(rangeEnd) || rangeEnd < parseInt(rangeStart || '0', 10))
               rangeEnd = rangeStart;
           %>

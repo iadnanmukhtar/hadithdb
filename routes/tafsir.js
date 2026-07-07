@@ -53,7 +53,7 @@ router.get('/:tafsir/:surah/:section', async function (req, res, next) {
   const flushCache = Utils.shouldFlushCache(req);
   if (flushCache)
     await Utils.flushCachedFile(cachedFile);
-  if (!flushCache && !editMode && fs.existsSync(cachedFile)) {
+  if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
     sendCachedHtml(req, res, cachedFile);
     return;
   }
@@ -262,8 +262,7 @@ function navigationTarget(tafsir, surah, ayah, tafsirs) {
 }
 
 function sendCachedHtml(req, res, cachedFile) {
-  res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-  res.end(Utils.readCachedHtml(cachedFile, req));
+  Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8');
 }
 
 function cachedRenderLocals(res, locals) {

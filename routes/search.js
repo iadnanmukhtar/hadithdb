@@ -261,8 +261,7 @@ function appendOriginalQuery(req) {
 }
 
 function sendCachedHtml(req, res, cachedFile) {
-  res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-  res.end(Utils.readCachedHtml(cachedFile, req));
+  Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8');
 }
 
 function cachedRenderLocals(res, locals) {
@@ -454,8 +453,8 @@ async function sitemapUrls(req) {
   const quranOnly = Utils.isQuranSubdomainRequest(req);
   const cachedFile = sitemapCacheFile(quranOnly);
   const flushCache = Utils.shouldFlushCache(req);
-  if (!flushCache && fs.existsSync(cachedFile)) {
-    const cachedText = fs.readFileSync(cachedFile);
+  if (!flushCache && Utils.cachedTextPathForRead(cachedFile)) {
+    const cachedText = Utils.readCachedTextFile(cachedFile);
     const cachedUrls = sitemapTextToUrls(cachedText);
     if (!sitemapCacheNeedsRebuild(cachedUrls))
       return cachedUrls;
@@ -473,7 +472,7 @@ async function sitemapUrls(req) {
 async function buildAndCacheSitemap(req, cachedFile) {
   const txt = await buildSitemapText(req);
   fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
-  fs.writeFileSync(cachedFile, txt);
+  Utils.writeCachedTextFile(cachedFile, txt);
   return txt;
 }
 
@@ -1103,7 +1102,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         results = [];
         quranSubsections = [];
         for (const containingSection of containingSections) {
-          var containingSubsections = await getQuranSectionSubsections(containingSection);
+          var containingSubsections = await getQuranSectionSubsections(containingSection, { reconcileWithDb: !!(req.admin && req.editMode) });
           quranSubsections.push(...containingSubsections);
           results.push(...(await getQuranSectionPassageItems(containingSection, 0, 1000)));
         }
@@ -1273,7 +1272,7 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
     chapter.getNext(),
     chapter.getSections()
   ]);
-  var quranSubsections = await getQuranSectionSubsections(section);
+  var quranSubsections = await getQuranSectionSubsections(section, { reconcileWithDb: !!(req.admin && req.editMode) });
   var results = await getQuranSectionPassageItems(section, 0, 1000);
   await addQuranPassageBoundaryRefs(results);
   var quranSurahs = await getQuranSurahsFromIndex();
@@ -1466,7 +1465,7 @@ async function getQuranSectionsForAyahRangeFromIndex(surah, ayah1, ayah2) {
     .map(match => match.section);
 }
 
-async function getQuranSurahRangeHeadingsFromIndex(surah) {
+async function getQuranSurahRangeHeadingsFromIndex(surah, options = {}) {
   try {
     var docs = await Index.docsFromQuery(Heading.INDEX, {
       bool: {
@@ -1477,7 +1476,8 @@ async function getQuranSurahRangeHeadingsFromIndex(surah) {
         ]
       }
     }, 0, 1000, 'level,h2,h3,ordinal');
-    docs = await attachQuranRawHeadingRanges(surah, docs);
+    if (options.reconcileWithDb === true)
+      docs = await attachQuranRawHeadingRanges(surah, docs);
     var headings = docs.map(doc => Heading.toLevel(doc));
     return {
       sections: headings.filter(heading => Number(heading.level) === 2),
@@ -1501,7 +1501,7 @@ async function attachQuranRawHeadingRanges(surah, docs) {
     return docs.map(doc => {
       var range = rangesById.get(Number(doc.tId || doc.hId || doc.id));
       if (!range)
-        return doc;
+        return null;
       var derivedCount = quranHeadingRangeCount(range.start, range.end);
       var count = Number.isInteger(derivedCount) && derivedCount > 0
         ? derivedCount
@@ -1516,11 +1516,43 @@ async function attachQuranRawHeadingRanges(surah, docs) {
       doc[`${levelPrefix}_end`] = range.end;
       doc[`${levelPrefix}_count`] = count;
       return doc;
-    });
+    }).filter(Boolean);
   } catch (err) {
     debug.error(`Quran raw heading range lookup failed for surah ${surah}: ${err.message}\n${err.stack || ''}`);
     return docs;
   }
+}
+
+async function attachQuranRawHeadingRangeToHeading(heading) {
+  if (!heading || heading.book_alias !== 'quran' || ![2, 3].includes(Number(heading.level)))
+    return heading;
+  var headingId = Number(heading.tId || heading.hId || heading.id);
+  if (!Number.isInteger(headingId) || headingId <= 0)
+    return heading;
+  try {
+    var row = (await global.query(`SELECT id, level, start, end, start0, end0, count
+      FROM toc
+      WHERE id=${headingId}
+      LIMIT 1`))[0];
+    if (!row)
+      return heading;
+    var derivedCount = quranHeadingRangeCount(row.start, row.end);
+    var count = Number.isInteger(derivedCount) && derivedCount > 0
+      ? derivedCount
+      : parseInt(row.count, 10);
+    var levelPrefix = `h${Number(row.level)}`;
+    heading.start = row.start;
+    heading.end = row.end;
+    heading.start0 = row.start0;
+    heading.end0 = row.end0;
+    heading.count = count;
+    heading[`${levelPrefix}_start`] = row.start;
+    heading[`${levelPrefix}_end`] = row.end;
+    heading[`${levelPrefix}_count`] = count;
+  } catch (err) {
+    debug.error(`Quran raw heading range lookup failed for heading ${headingId}: ${err.message}\n${err.stack || ''}`);
+  }
+  return heading;
 }
 
 function quranHeadingRangeCount(start, end) {
@@ -1724,12 +1756,12 @@ async function firstQuranSectionNumber(surah) {
   return Number.isInteger(h2) && h2 > 0 ? h2 : null;
 }
 
-async function getQuranSectionSubsections(section) {
+async function getQuranSectionSubsections(section, options = {}) {
   if (!section || section.book_alias !== 'quran' || parseInt(section.level, 10) !== 2)
     return [];
   if (Array.isArray(section.quranSubsections))
     return section.quranSubsections;
-  var headings = await getQuranSurahRangeHeadingsFromIndex(Number(section.h1));
+  var headings = await getQuranSurahRangeHeadingsFromIndex(Number(section.h1), options);
   if (headings) {
     section.quranSubsections = headings.subsections
       .filter(subsection => Number(subsection.h2) === Number(section.h2))
@@ -1951,7 +1983,7 @@ router.get('/:bookAlias', async function (req, res, next) {
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
       await Utils.flushCachedFile(cachedFile);
-    if (cacheableHtml && !flushCache && !editMode && fs.existsSync(cachedFile)) {
+    if (cacheableHtml && !flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
     }
@@ -2135,7 +2167,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
       Utils.flushCachedFile(cachedFile);
-    if (!flushCache && !editMode && fs.existsSync(cachedFile)) {
+    if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
     }
@@ -2306,12 +2338,14 @@ async function renderBookSection(req, res, next) {
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
       Utils.flushCachedFile(cachedFile);
-    if (!flushCache && !editMode && fs.existsSync(cachedFile)) {
+    if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
     }
 
     var section = await Section.sectionFromRef(`${bookAlias}/${chapterNum}/${sectionNum}`);
+    if (editMode && bookAlias === 'quran')
+      await attachQuranRawHeadingRangeToHeading(section);
     await section.getPrev();
     await section.getNext();
     await applySameBookHeadingNavigation(section);
@@ -2321,7 +2355,7 @@ async function renderBookSection(req, res, next) {
     await chapter.getSections();
     var isQuranPassageSection = bookAlias === 'quran' && req.query.ayat == undefined;
     var quranSubsections = isQuranPassageSection
-      ? await getQuranSectionSubsections(section)
+      ? await getQuranSectionSubsections(section, { reconcileWithDb: editMode })
       : [];
     var quranSurahs = isQuranPassageSection
       ? await getQuranSurahsFromIndex()

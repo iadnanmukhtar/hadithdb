@@ -4,7 +4,6 @@
 const debug = require('../lib/Debug')('hadithdb:Titled');
 const express = require('express');
 const { homedir } = require('os');
-const fs = require('fs');
 const ejs = require('ejs');
 const { Item } = require('../lib/Model');
 const Utils = require('../lib/Utils');
@@ -22,9 +21,8 @@ router.get('/', async function (req, res, next) {
   var cachedFile = `${homedir}/.hadithdb/cache/${name}.html`;
   if (Utils.shouldFlushCache(req))
     Utils.flushCachedFile(cachedFile);
-  if (!Utils.shouldFlushCache(req) && !editMode && fs.existsSync(cachedFile)) {
-    res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-    res.end(Utils.readCachedHtml(cachedFile, req));
+  if (!Utils.shouldFlushCache(req) && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8');
     return;
   }
 
@@ -61,8 +59,8 @@ router.get('/feed', async function (req, res, next) {
   var cachedFile = `${homedir}/.hadithdb/cache/${name}_feed.xml`;
   if (Utils.shouldFlushCache(req))
     Utils.flushCachedFile(cachedFile);
-  if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
-    res.end(fs.readFileSync(cachedFile));
+  if (!Utils.shouldFlushCache(req) && !admin && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    Utils.sendCachedTextFile(res, req, cachedFile, 'application/atom+xml; charset=UTF-8');
     return;
   }
 
@@ -79,7 +77,7 @@ router.get('/feed', async function (req, res, next) {
     req: req,
     res: res
   });
-  fs.writeFileSync(cachedFile, html);
+  Utils.writeCachedTextFile(cachedFile, html);
   await Utils.indexCachedItem(refs, cachedFile);
 
   res.render('hadiths_list_feed', {
@@ -99,8 +97,8 @@ router.get('/rss', async function (req, res, next) {
   var cachedFile = `${homedir}/.hadithdb/cache/${name}_rss.xml`;
   if (Utils.shouldFlushCache(req))
     Utils.flushCachedFile(cachedFile);
-  if (!Utils.shouldFlushCache(req) && !admin && !editMode && fs.existsSync(cachedFile)) {
-    res.end(fs.readFileSync(cachedFile));
+  if (!Utils.shouldFlushCache(req) && !admin && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    Utils.sendCachedTextFile(res, req, cachedFile, 'application/rss+xml; charset=UTF-8');
     return;
   }
 
@@ -117,7 +115,7 @@ router.get('/rss', async function (req, res, next) {
     req: req,
     res: res
   });
-  fs.writeFileSync(cachedFile, html);
+  Utils.writeCachedTextFile(cachedFile, html);
   await Utils.indexCachedItem(refs, cachedFile);
 
   res.render('hadiths_list_rss', {
