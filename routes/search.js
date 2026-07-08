@@ -1980,6 +1980,9 @@ router.get('/:bookAlias', async function (req, res, next) {
     var admin = req.admin;
     var editMode = admin && req.editMode;
     var cacheableHtml = !('download' in req.query) && !('json' in req.query) && !('tsv' in req.query) && !('epub' in req.query);
+    const quranTocDefaultView = req.params.bookAlias === 'quran'
+      ? (req.query.toc || req.query.view || req.query.tab || (req.query.flush ? 'juz' : 'surahs'))
+      : 'surahs';
     var cachedFile = Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
@@ -2048,6 +2051,7 @@ router.get('/:bookAlias', async function (req, res, next) {
           book: book,
           surahs: global.surahs || [],
           quranJuzRows: quranJuzRows,
+          quranTocDefaultView: quranTocDefaultView,
           BookDownloads: BookDownloads,
           prevBook: prevBook,
           nextBook: nextBook,
@@ -2065,6 +2069,7 @@ router.get('/:bookAlias', async function (req, res, next) {
         book: book,
         surahs: global.surahs || [],
         quranJuzRows: quranJuzRows,
+        quranTocDefaultView: quranTocDefaultView,
         BookDownloads: BookDownloads,
         prevBook: prevBook,
         nextBook: nextBook,

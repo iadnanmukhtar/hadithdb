@@ -146,6 +146,9 @@
       });
     }
     var quranTocSectionViews = book.alias === 'quran' && !quranCommentaryBook;
+    var quranTocDefaultView = (locals.quranTocDefaultView || 'surahs').toString();
+    if (!['surahs', 'juz', 'manzils'].includes(quranTocDefaultView))
+      quranTocDefaultView = 'surahs';
     var quranJuzRows = Array.isArray(locals.quranJuzRows) ? locals.quranJuzRows : [];
     var quranManzilStarts = [
       { view: 'manzils', num: 1, startSurah: 1, startAyah: 1, name: 'Manzil 1' },
@@ -522,18 +525,18 @@
         <% if (quranTocSectionViews) { %>
         <ul class="nav nav-tabs book-catalog-tabs mb-3" id="quran-toc-view-tabs" role="tablist">
           <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="toc-tab-surahs" data-bs-toggle="tab" data-bs-target="#toc-view-surahs" type="button" role="tab" aria-controls="toc-view-surahs" aria-selected="true">Surahs</button>
+            <button class="nav-link <%= quranTocDefaultView === 'surahs' ? 'active' : '' %>" id="toc-tab-surahs" data-bs-toggle="tab" data-bs-target="#toc-view-surahs" type="button" role="tab" aria-controls="toc-view-surahs" aria-selected="<%= quranTocDefaultView === 'surahs' ? 'true' : 'false' %>">Surahs</button>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link" id="toc-tab-juz" data-bs-toggle="tab" data-bs-target="#toc-view-juz" type="button" role="tab" aria-controls="toc-view-juz" aria-selected="false">Juz/Siparas</button>
+            <button class="nav-link <%= quranTocDefaultView === 'juz' ? 'active' : '' %>" id="toc-tab-juz" data-bs-toggle="tab" data-bs-target="#toc-view-juz" type="button" role="tab" aria-controls="toc-view-juz" aria-selected="<%= quranTocDefaultView === 'juz' ? 'true' : 'false' %>">Juz/Siparas</button>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link" id="toc-tab-manzils" data-bs-toggle="tab" data-bs-target="#toc-view-manzils" type="button" role="tab" aria-controls="toc-view-manzils" aria-selected="false">Manzils</button>
+            <button class="nav-link <%= quranTocDefaultView === 'manzils' ? 'active' : '' %>" id="toc-tab-manzils" data-bs-toggle="tab" data-bs-target="#toc-view-manzils" type="button" role="tab" aria-controls="toc-view-manzils" aria-selected="<%= quranTocDefaultView === 'manzils' ? 'true' : 'false' %>">Manzils</button>
           </li>
         </ul>
 
         <div class="tab-content" id="quran-toc-view-content">
-          <div class="tab-pane fade show active" id="toc-view-surahs" role="tabpanel" aria-labelledby="toc-tab-surahs">
+          <div class="tab-pane fade <%= quranTocDefaultView === 'surahs' ? 'show active' : '' %>" id="toc-view-surahs" role="tabpanel" aria-labelledby="toc-tab-surahs">
             <div class="page-content-filter toc-content-filter input-group mb-3">
               <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
               <input type="search" class="form-control" placeholder="Filter surahs" aria-label="Filter surahs" autocomplete="off" data-toc-content-filter="#toc-surahs">
@@ -611,7 +614,7 @@
               </tbody>
             </table>
           </div>
-          <div class="tab-pane fade" id="toc-view-juz" role="tabpanel" aria-labelledby="toc-tab-juz">
+          <div class="tab-pane fade <%= quranTocDefaultView === 'juz' ? 'show active' : '' %>" id="toc-view-juz" role="tabpanel" aria-labelledby="toc-tab-juz">
             <div class="page-content-filter toc-content-filter input-group mb-3">
               <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
               <input type="search" class="form-control" placeholder="Filter Juz/Siparas" aria-label="Filter Juz/Siparas" autocomplete="off" data-toc-content-filter="#toc-juz">
@@ -638,7 +641,7 @@
               </tbody>
             </table>
           </div>
-          <div class="tab-pane fade" id="toc-view-manzils" role="tabpanel" aria-labelledby="toc-tab-manzils">
+          <div class="tab-pane fade <%= quranTocDefaultView === 'manzils' ? 'show active' : '' %>" id="toc-view-manzils" role="tabpanel" aria-labelledby="toc-tab-manzils">
             <div class="page-content-filter toc-content-filter input-group mb-3">
               <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
               <input type="search" class="form-control" placeholder="Filter Manzils" aria-label="Filter Manzils" autocomplete="off" data-toc-content-filter="#toc-manzils">
