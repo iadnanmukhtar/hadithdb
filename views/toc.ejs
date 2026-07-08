@@ -145,10 +145,10 @@
         return a.num - b.num;
       });
     }
-    var quranTocSectionViews = book.alias === 'quran' && !quranCommentaryBook;
-    var quranTocDefaultView = (locals.quranTocDefaultView || 'surahs').toString();
+    var quranTocSectionViews = book.alias === 'quran' && (!quranCommentaryBook || quranCommentaryBook.type === 'tafsir');
+    var quranTocDefaultView = (locals.quranTocDefaultView || 'juz').toString();
     if (!['surahs', 'juz', 'manzils'].includes(quranTocDefaultView))
-      quranTocDefaultView = 'surahs';
+      quranTocDefaultView = 'juz';
     var quranJuzRows = Array.isArray(locals.quranJuzRows) ? locals.quranJuzRows : [];
     var quranManzilStarts = [
       { view: 'manzils', num: 1, startSurah: 1, startAyah: 1, name: 'Manzil 1' },
@@ -185,14 +185,21 @@
     function quranTocStartRefLabel(item) {
       return `${quranTocSurahDisplayName(item.startSurah)} ${item.startSurah}:${item.startAyah}`;
     }
+    function quranTocPassageHref(surah, ayah) {
+      surah = Number(surah) || 1;
+      ayah = Number(ayah) || 1;
+      if (quranCommentaryBook && quranCommentaryBook.type === 'tafsir')
+        return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/${surah}/${ayah}`);
+      return utils.quranUrl(req, `/quran/${surah}/${ayah}`);
+    }
     function quranTocStartHref(item) {
-      return utils.quranUrl(req, `/quran/${Number(item.startSurah)}/${Number(item.startAyah)}`);
+      return quranTocPassageHref(item.startSurah, item.startAyah);
     }
     function quranJuzStartHref(juz) {
       var parts = (juz && juz.start ? juz.start.toString() : '').split(':');
       var surah = parseInt(parts[0], 10) || 1;
       var ayah = parseInt(parts[1], 10) || 1;
-      return utils.quranUrl(req, `/quran/${surah}/${ayah}`);
+      return quranTocPassageHref(surah, ayah);
     }
     function quranJuzSurahLinks(juz) {
       var mapping = juz && juz.quran_verse_mapping && typeof juz.quran_verse_mapping === 'object' ? juz.quran_verse_mapping : {};
@@ -204,7 +211,7 @@
         return {
           surah: Number(surahNum),
           range: range,
-          href: utils.quranUrl(req, `/quran/${Number(surahNum)}/${firstAyah}`),
+          href: quranTocPassageHref(surahNum, firstAyah),
           name_en: quranTocSurahName(surahNum)
         };
       });
@@ -219,7 +226,7 @@
       for (var surahNum = Number(manzil.startSurah); surahNum <= endSurah; surahNum++) {
         links.push({
           surah: surahNum,
-          href: utils.quranUrl(req, `/quran/${surahNum}/1`),
+          href: quranTocPassageHref(surahNum, 1),
           name_en: quranTocSurahName(surahNum)
         });
       }
@@ -525,10 +532,10 @@
         <% if (quranTocSectionViews) { %>
         <ul class="nav nav-tabs book-catalog-tabs mb-3" id="quran-toc-view-tabs" role="tablist">
           <li class="nav-item" role="presentation">
-            <button class="nav-link <%= quranTocDefaultView === 'surahs' ? 'active' : '' %>" id="toc-tab-surahs" data-bs-toggle="tab" data-bs-target="#toc-view-surahs" type="button" role="tab" aria-controls="toc-view-surahs" aria-selected="<%= quranTocDefaultView === 'surahs' ? 'true' : 'false' %>">Surahs</button>
+            <button class="nav-link <%= quranTocDefaultView === 'juz' ? 'active' : '' %>" id="toc-tab-juz" data-bs-toggle="tab" data-bs-target="#toc-view-juz" type="button" role="tab" aria-controls="toc-view-juz" aria-selected="<%= quranTocDefaultView === 'juz' ? 'true' : 'false' %>">Juz/Siparas</button>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link <%= quranTocDefaultView === 'juz' ? 'active' : '' %>" id="toc-tab-juz" data-bs-toggle="tab" data-bs-target="#toc-view-juz" type="button" role="tab" aria-controls="toc-view-juz" aria-selected="<%= quranTocDefaultView === 'juz' ? 'true' : 'false' %>">Juz/Siparas</button>
+            <button class="nav-link <%= quranTocDefaultView === 'surahs' ? 'active' : '' %>" id="toc-tab-surahs" data-bs-toggle="tab" data-bs-target="#toc-view-surahs" type="button" role="tab" aria-controls="toc-view-surahs" aria-selected="<%= quranTocDefaultView === 'surahs' ? 'true' : 'false' %>">Surahs</button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link <%= quranTocDefaultView === 'manzils' ? 'active' : '' %>" id="toc-tab-manzils" data-bs-toggle="tab" data-bs-target="#toc-view-manzils" type="button" role="tab" aria-controls="toc-view-manzils" aria-selected="<%= quranTocDefaultView === 'manzils' ? 'true' : 'false' %>">Manzils</button>
@@ -536,6 +543,33 @@
         </ul>
 
         <div class="tab-content" id="quran-toc-view-content">
+          <div class="tab-pane fade <%= quranTocDefaultView === 'juz' ? 'show active' : '' %>" id="toc-view-juz" role="tabpanel" aria-labelledby="toc-tab-juz">
+            <div class="page-content-filter toc-content-filter input-group mb-3">
+              <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
+              <input type="search" class="form-control" placeholder="Filter Juz/Siparas" aria-label="Filter Juz/Siparas" autocomplete="off" data-toc-content-filter="#toc-juz">
+            </div>
+            <h2 class="fs-4 mt-2">Juz/Siparas</h2>
+            <table id="toc-juz" class="table" title="<%- `Juz and Siparas for ${book.name_en} (فهرس ${book.title})` %>">
+              <tbody>
+                <% for (var j = 0; j < quranJuzRows.length; j++) {
+                  var juz = quranJuzRows[j];
+                  var juzSurahLinks = quranJuzSurahLinks(juz);
+                %>
+                <tr class="chapter" data-toc-chapter="toc-juz-<%= juz.num %>" data-toc-view="juz">
+                  <td>Juz <%- juz.num %></td>
+                  <td class="quran-juz-surah-list">
+                    <% for (var linkIndex = 0; linkIndex < juzSurahLinks.length; linkIndex++) {
+                      var surahLink = juzSurahLinks[linkIndex];
+                    %>
+                    <span class="quran-juz-surah-link"><a href="<%= surahLink.href %>"><%- surahLink.name_en %></a></span><%= linkIndex < juzSurahLinks.length - 1 ? ', ' : '' %>
+                    <% } %>
+                  </td>
+                  <td lang="ar" dir="rtl"><a href="<%= quranJuzStartHref(juz) %>"><%- juz.title || '' %></a></td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
           <div class="tab-pane fade <%= quranTocDefaultView === 'surahs' ? 'show active' : '' %>" id="toc-view-surahs" role="tabpanel" aria-labelledby="toc-tab-surahs">
             <div class="page-content-filter toc-content-filter input-group mb-3">
               <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
@@ -611,33 +645,6 @@
                   <% }
               }
               %>
-              </tbody>
-            </table>
-          </div>
-          <div class="tab-pane fade <%= quranTocDefaultView === 'juz' ? 'show active' : '' %>" id="toc-view-juz" role="tabpanel" aria-labelledby="toc-tab-juz">
-            <div class="page-content-filter toc-content-filter input-group mb-3">
-              <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
-              <input type="search" class="form-control" placeholder="Filter Juz/Siparas" aria-label="Filter Juz/Siparas" autocomplete="off" data-toc-content-filter="#toc-juz">
-            </div>
-            <h2 class="fs-4 mt-2">Juz/Siparas</h2>
-            <table id="toc-juz" class="table" title="<%- `Juz and Siparas for ${book.name_en} (فهرس ${book.title})` %>">
-              <tbody>
-                <% for (var j = 0; j < quranJuzRows.length; j++) {
-                  var juz = quranJuzRows[j];
-                  var juzSurahLinks = quranJuzSurahLinks(juz);
-                %>
-                <tr class="chapter" data-toc-chapter="toc-juz-<%= juz.num %>" data-toc-view="juz">
-                  <td>Juz <%- juz.num %></td>
-                  <td class="quran-juz-surah-list">
-                    <% for (var linkIndex = 0; linkIndex < juzSurahLinks.length; linkIndex++) {
-                      var surahLink = juzSurahLinks[linkIndex];
-                    %>
-                    <span class="quran-juz-surah-link"><a href="<%= surahLink.href %>"><%- surahLink.name_en %></a></span><%= linkIndex < juzSurahLinks.length - 1 ? ', ' : '' %>
-                    <% } %>
-                  </td>
-                  <td lang="ar" dir="rtl"><a href="<%= quranJuzStartHref(juz) %>"><%- juz.title || '' %></a></td>
-                </tr>
-                <% } %>
               </tbody>
             </table>
           </div>
