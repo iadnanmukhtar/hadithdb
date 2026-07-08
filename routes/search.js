@@ -1983,7 +1983,20 @@ router.get('/:bookAlias', async function (req, res, next) {
     var cachedFile = Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache)
-      await Utils.flushCachedFile(cachedFile);
+      await Promise.all([
+        Utils.flushCachedFile(cachedFile),
+        req.params.bookAlias === 'quran'
+          ? Promise.all([
+            Utils.flushCacheContaining('quran'),
+            Utils.flushCacheContaining('book:quran')
+          ])
+          : Promise.resolve()
+      ]);
+    if (flushCache) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
     if (cacheableHtml && !flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
