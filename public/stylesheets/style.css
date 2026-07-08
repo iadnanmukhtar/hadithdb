@@ -776,21 +776,57 @@ nav .nav-link[aria-current="page"] {
 	word-break: normal;
 }
 
-#toc-juz {
+#toc-juz,
+#toc-manzils {
 	table-layout: fixed;
 	width: 100%;
 }
 
-#toc-juz td:first-child {
-	width: 4.5rem;
+#toc-surahs {
+	table-layout: fixed;
+	width: 100%;
 }
 
-#toc-juz td:nth-child(3) {
-	width: 9rem;
+#toc-surahs td:first-child {
+	width: 6.5rem;
+}
+
+#toc-surahs td:nth-child(2) {
+	width: auto;
+}
+
+#toc-surahs td:nth-child(3) {
+	width: 11rem;
+}
+
+#toc-juz td:first-child,
+#toc-manzils td:first-child {
+	width: 4rem;
+}
+
+#toc-juz td:nth-child(3),
+#toc-manzils td:nth-child(3) {
+	width: 7rem;
+}
+
+#toc-juz td:nth-child(2),
+#toc-manzils td:nth-child(2) {
+	width: auto;
+}
+
+#toc-surahs td:first-child,
+#toc-surahs td:last-child,
+#toc-juz td:first-child,
+#toc-juz td:last-child,
+#toc-manzils td:first-child,
+#toc-manzils td:last-child {
+	white-space: nowrap;
 }
 
 #toc-juz .quran-juz-surah-link,
-#toc-juz .quran-juz-surah-list a {
+#toc-juz .quran-juz-surah-list a,
+#toc-manzils .quran-juz-surah-link,
+#toc-manzils .quran-juz-surah-list a {
 	overflow-wrap: anywhere;
 	white-space: normal;
 	word-break: break-word;

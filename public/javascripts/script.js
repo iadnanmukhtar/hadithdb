@@ -5987,7 +5987,7 @@ function initQuranInfinitePassageNavigation(root) {
 		remoteChildren.forEach(function (node) {
 			if (!node.matches || nodes.indexOf(node) >= 0)
 				return;
-			if (node.matches('.quran-heading-audio-toolbar') || node.matches('.quran-passage-section') || node.matches('.quran-passage-actions') || node.matches('.quran-share-root'))
+			if (node.matches('.quran-heading-audio-toolbar') || node.matches('.quran-passage-section') || node.matches('.quran-passage-actions') || node.matches('.quran-share-root') || node.matches('.quran-passage-separator'))
 				nodes.push(node);
 		});
 		if (nodes.length < 1)
@@ -6017,6 +6017,8 @@ function initQuranInfinitePassageNavigation(root) {
 		initQuranAyahModals(document);
 		if (typeof window.bindInlineEditors === 'function')
 			window.bindInlineEditors(chunk[0]);
+		if (typeof window.initQuranSubheadingAdminControls === 'function')
+			window.initQuranSubheadingAdminControls(chunk[0]);
 		if (window.refreshHadithActions)
 			window.refreshHadithActions();
 		nextUrl = remoteMain.getAttribute('data-quran-next-url') || '';
