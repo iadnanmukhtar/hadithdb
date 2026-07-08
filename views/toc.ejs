@@ -206,6 +206,22 @@
         };
       });
     }
+    function quranManzilSurahLinks(manzilIndex) {
+      var manzil = quranManzilStarts[manzilIndex];
+      if (!manzil)
+        return [];
+      var nextManzil = quranManzilStarts[manzilIndex + 1];
+      var endSurah = nextManzil ? Number(nextManzil.startSurah) - 1 : 114;
+      var links = [];
+      for (var surahNum = Number(manzil.startSurah); surahNum <= endSurah; surahNum++) {
+        links.push({
+          surah: surahNum,
+          href: utils.quranUrl(req, `/quran/${surahNum}/1`),
+          name_en: quranTocSurahName(surahNum)
+        });
+      }
+      return links;
+    }
     function quranHeadingStartRef(heading) {
       var source = heading && heading.firstSection ? heading.firstSection : heading;
       var start = source && source.start ? source.start.toString() : '';
@@ -613,9 +629,7 @@
                     <% for (var linkIndex = 0; linkIndex < juzSurahLinks.length; linkIndex++) {
                       var surahLink = juzSurahLinks[linkIndex];
                     %>
-                    <span class="quran-juz-surah-link">
-                      <a href="<%= surahLink.href %>"><%- surahLink.name_en %></a>
-                    </span><%= linkIndex < juzSurahLinks.length - 1 ? ', ' : '' %>
+                    <span class="quran-juz-surah-link"><a href="<%= surahLink.href %>"><%- surahLink.name_en %></a></span><%= linkIndex < juzSurahLinks.length - 1 ? ', ' : '' %>
                     <% } %>
                   </td>
                   <td lang="ar" dir="rtl"><a href="<%= quranJuzStartHref(juz) %>"><%- juz.title || '' %></a></td>
@@ -634,10 +648,17 @@
               <tbody>
                 <% for (var m = 0; m < quranManzilStarts.length; m++) {
                   var manzil = quranManzilStarts[m];
+                  var manzilSurahLinks = quranManzilSurahLinks(m);
                 %>
                 <tr class="chapter" data-toc-chapter="toc-manzil-<%= manzil.num %>" data-toc-view="manzils">
                   <td><%- `${manzil.name}` %></td>
-                  <td><a href="<%= quranTocStartHref(manzil) %>" class="_e" data-arabizi="true"><%- quranTocStartRefLabel(manzil) %></a></td>
+                  <td class="quran-juz-surah-list">
+                    <% for (var manzilLinkIndex = 0; manzilLinkIndex < manzilSurahLinks.length; manzilLinkIndex++) {
+                      var manzilSurahLink = manzilSurahLinks[manzilLinkIndex];
+                    %>
+                    <span class="quran-juz-surah-link"><a href="<%= manzilSurahLink.href %>"><%- manzilSurahLink.name_en %></a></span><%= manzilLinkIndex < manzilSurahLinks.length - 1 ? ', ' : '' %>
+                    <% } %>
+                  </td>
                   <td lang="ar" dir="rtl"><a href="<%= quranTocStartHref(manzil) %>"><%- quranTocSurahArabicName(manzil.startSurah) %></a></td>
                 </tr>
                 <% } %>

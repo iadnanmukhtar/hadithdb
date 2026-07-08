@@ -666,7 +666,11 @@
       updateValid();
     });
 
-    document.querySelectorAll('.quran-subheading-controls').forEach((container) => {
+    window.initQuranSubheadingAdminControls = (root = document) => {
+    root.querySelectorAll('.quran-subheading-controls').forEach((container) => {
+      if (container.dataset.quranSubheadingAdminBound === 'true')
+        return;
+      container.dataset.quranSubheadingAdminBound = 'true';
       const startInput = container.querySelector('.quran-subsection-range-start');
       const endInput = container.querySelector('.quran-subsection-range-end');
       const saveButton = container.querySelector('.quran-subsection-range-save');
@@ -799,6 +803,8 @@
       deleteButton.addEventListener('click', deleteSubsection);
       updateValid();
     });
+    };
+    window.initQuranSubheadingAdminControls(document);
   </script>
   <% } %>
   
