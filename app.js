@@ -30,7 +30,7 @@ function debugNewRelicLoadError(err) {
 
 const REQUEST_BODY_LIMIT = '10mb';
 const MAX_REQUEST_URL_LENGTH = 4096;
-const FRIENDLY_ERROR_REF_MAX_LENGTH = 512;
+const FRIENDLY_ERROR_REF_MAX_LENGTH = 80;
 const BLOCKED_HTTP_METHODS = new Set(['TRACE', 'TRACK']);
 
 const sameSiteSecurityHeaders = (req, res, next) => {
@@ -225,6 +225,24 @@ const normalizeHttpStatusCode = (statusCode) => {
   return statusCode;
 };
 
+const decodeSafeUrlComponent = (value) => {
+  if (!value)
+    return '';
+  try {
+    return decodeURIComponent(value);
+  } catch (err) {
+    debug(`unable to decode error ref=${value}: ${err.message}`);
+    return value;
+  }
+};
+
+const encodeErrorRefForPath = (req) => {
+  const ref = truncatedFriendlyErrorRef(req);
+  if (!ref)
+    return '';
+  return encodeURIComponent(ref).replace(/%2F/gi, '/').replace(/^\/+/, '');
+};
+
 const wantsJsonErrorResponse = (req) => {
   if (!req)
     return false;
@@ -259,13 +277,11 @@ const isQuranFriendlyErrorRequest = (req) => {
 };
 
 const buildFriendlyErrorUrl = (req, statusCode) => {
-  const params = new URLSearchParams();
-  params.set('status', normalizeHttpStatusCode(statusCode).toString());
-  const ref = truncatedFriendlyErrorRef(req);
-  if (ref)
-    params.set('ref', ref);
   const errorPath = isQuranFriendlyErrorRequest(req) ? '/quran/error' : '/error';
-  return `${errorPath}?${params.toString()}`;
+  const encodedRef = encodeErrorRefForPath(req);
+  if (encodedRef)
+    return `${errorPath}/${normalizeHttpStatusCode(statusCode)}/${encodedRef}`;
+  return `${errorPath}/${normalizeHttpStatusCode(statusCode)}`;
 };
 
 const friendlyErrorRedirectStatus = (req) => {
@@ -459,11 +475,24 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     }
     next();
   });
-  app.get(['/error', '/quran/error'], function (req, res) {
-    const statusCode = normalizeHttpStatusCode(req.query.status);
+  app.get(['/error', '/quran/error', '/error/:status', '/error/:status/*', '/quran/error/:status', '/quran/error/:status/*'], function (req, res) {
+    const suffix = (req.path || '').replace(/^\/quran\/error\/?/, '').replace(/^\/error\/?/, '');
+    const parts = suffix.split('/').filter(Boolean);
+    let statusCode = normalizeHttpStatusCode(req.query.status);
+    let errorRef = '';
+    if (parts[0] && /^\d{3}$/.test(parts[0])) {
+      statusCode = normalizeHttpStatusCode(parts.shift());
+      if (parts[0])
+        errorRef = decodeSafeUrlComponent(parts.join('/'));
+    } else if (parts[0]) {
+      statusCode = normalizeHttpStatusCode('404');
+      errorRef = `/${parts.join('/')}`;
+    }
+    if (!errorRef && typeof req.query.ref === 'string')
+      errorRef = req.query.ref;
     const errorReq = {
-      path: req.path === '/quran/error' ? '/quran/error' : '/error',
-      originalUrl: req.path === '/quran/error' ? '/quran/error' : '/error',
+      path: req.path,
+      originalUrl: errorRef || req.path,
       query: {},
       cookies: req.cookies || {},
       hostname: req.hostname,
@@ -472,7 +501,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
       get: req.get.bind(req)
     };
     res.status(statusCode);
-    Object.assign(res.locals, buildErrorViewLocals(statusCode, undefined, null, errorReq, res));
+    Object.assign(res.locals, buildErrorViewLocals(statusCode, undefined, null, errorReq, res), { errorRef: errorRef });
     res.render('error');
   });
   app.use('/', searchRouter);

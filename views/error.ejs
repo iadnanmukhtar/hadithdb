@@ -45,6 +45,22 @@
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+<script>
+  (function reportErrorToGoogleAnalytics() {
+    const statusCode = Number(<%= Number(res.statusCode) || 500 %>);
+    const errorRef = <%= JSON.stringify(typeof errorRef === 'string' ? errorRef : '') %>;
+    const isServerError = statusCode >= 500;
+    if (typeof gtag !== 'function')
+      return;
+    gtag('event', 'http_error', {
+      event_category: 'server_error',
+      event_label: errorRef || window.location.pathname,
+      status: statusCode,
+      ref: errorRef || window.location.pathname,
+      fatal: isServerError
+    });
+  })();
+</script>
 
 </body>
 </html>
