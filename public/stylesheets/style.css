@@ -788,12 +788,12 @@ nav .nav-link[aria-current="page"] {
 }
 
 #toc-surahs td:first-child {
-	width: 5rem;
+	width: 6.5em;
 }
 
 #toc-surahs td:nth-child(2) {
 	width: auto;
-	padding-left: 0.75rem;
+	padding-left: 0.75em;
 	white-space: normal !important;
 	overflow-wrap: anywhere;
 	word-break: normal;
@@ -803,9 +803,12 @@ nav .nav-link[aria-current="page"] {
 	width: 8rem;
 }
 
-#toc-juz td:first-child,
-#toc-manzils td:first-child {
+#toc-juz td:first-child {
 	width: 4rem;
+}
+
+#toc-manzils td:first-child {
+	width: 4em;
 }
 
 #toc-juz td:nth-child(3),
@@ -819,7 +822,7 @@ nav .nav-link[aria-current="page"] {
 }
 
 #toc-manzils td:nth-child(2) {
-	padding-left: 0.75rem;
+	padding-left: 0.75em;
 }
 
 #toc-surahs td:first-child,

@@ -145,7 +145,7 @@
         return a.num - b.num;
       });
     }
-    var quranTocSectionViews = book.alias === 'quran' && (!quranCommentaryBook || quranCommentaryBook.type === 'tafsir');
+    var quranTocSectionViews = book.alias === 'quran' && (!quranCommentaryBook || ['tafsir', 'trans'].includes(quranCommentaryBook.type));
     var quranTocDefaultView = (locals.quranTocDefaultView || 'juz').toString();
     if (!['surahs', 'juz', 'manzils'].includes(quranTocDefaultView))
       quranTocDefaultView = 'juz';
@@ -279,6 +279,8 @@
       surah = Number(surah) || 1;
       ayah = Number(ayah) || 1;
       var section = quranSectionFromAyah(surah, ayah);
+      if (quranCommentaryBook && quranCommentaryBook.type === 'trans')
+        return utils.quranUrl(req, `/quran/${encodeURIComponent(quranCommentaryBook.alias)}/${surah}/${section}`);
       if (quranCommentaryBook && quranCommentaryBook.type === 'tafsir')
         return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/${surah}/${section}`);
       return utils.quranUrl(req, `/quran/${surah}/${section}`);

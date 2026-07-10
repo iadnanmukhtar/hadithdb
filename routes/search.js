@@ -2122,15 +2122,17 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
   var results = await Library.instance.findBook('quran').getChapters();
   var tafsirs = quranCommentaryBook.type === 'tafsir' ? await Tafsir.visibleTafsirs() : [];
   var translations = quranCommentaryBook.type === 'trans' ? await Tafsir.visibleTranslations() : [];
-  var quranJuzRows = quranCommentaryBook.type === 'tafsir' ? await QuranTocSubdivisions.juzRows() : [];
-  var quranManzilRows = quranCommentaryBook.type === 'tafsir' ? await QuranTocSubdivisions.manzilRows() : [];
-  var quranSectionRangesBySurah = quranCommentaryBook.type === 'tafsir' ? await QuranTocSubdivisions.quranSectionRangesBySurah() : {};
+  var quranJuzRows = await QuranTocSubdivisions.juzRows();
+  var quranManzilRows = await QuranTocSubdivisions.manzilRows();
+  var quranSectionRangesBySurah = await QuranTocSubdivisions.quranSectionRangesBySurah();
+  var quranTocDefaultView = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
   var renderLocals = {
     book: book,
     surahs: global.surahs || [],
     quranJuzRows: quranJuzRows,
     quranManzilRows: quranManzilRows,
     quranSectionRangesBySurah: quranSectionRangesBySurah,
+    quranTocDefaultView: quranTocDefaultView,
     BookDownloads: BookDownloads,
     prevBook: null,
     nextBook: null,
