@@ -845,6 +845,7 @@ async function updateQuranPassageRange(headingId, value, userId) {
   var updateResult = await global.query(`UPDATE toc
     SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, end=${sql(endRef)}, start0=${start0}, end0=${end0}, count=${count}
     WHERE id=${heading.tId || heading.id}`);
+  QuranTocSubdivisions.invalidateSectionRanges();
   await reindexChapterSearchScope(heading.book_id, surah, { syncKnowledge: false, refresh: true });
   await invalidateQuranSurahCaches(surah);
   return {
