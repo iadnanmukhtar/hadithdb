@@ -24,6 +24,7 @@ const UserPoints = require('../lib/UserPoints');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
 const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
+const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const { Heading, Item, Library } = require('../lib/Model');
 
 const router = express.Router();
@@ -1523,6 +1524,7 @@ function quranAyahFromHeadingStart(start) {
 }
 
 async function invalidateQuranSurahCaches(surah) {
+  QuranTocSubdivisions.invalidateSectionRanges();
   var cacheDir = `${homedir()}/.hadithdb/cache`;
   if (!fs.existsSync(cacheDir)) {
     debug(`quran ${surah} cache invalidation skipped: ${cacheDir} does not exist`);
