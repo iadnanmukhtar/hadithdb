@@ -646,7 +646,7 @@ function quranTafsirBookTocUrl(tafsir, tafsirs) {
     return other && other !== tafsir && other.lang !== tafsir.lang
       && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
   });
-  const query = hasLanguageCollision && (tafsir.lang === 'ar' || tafsir.lang === 'en')
+  const query = hasLanguageCollision && tafsir.lang
     ? `?lang=${encodeURIComponent(tafsir.lang)}`
     : '';
   return `/quran/tafsir/${encodeURIComponent(slug)}${query}`;
@@ -2017,6 +2017,8 @@ router.get('/:bookAlias', async function (req, res, next) {
     } else {
       results = await Library.instance.findBook(book.alias).getChapters();
       var quranJuzRows = book.alias === 'quran' ? await QuranTocSubdivisions.juzRows() : [];
+      var quranManzilRows = book.alias === 'quran' ? await QuranTocSubdivisions.manzilRows() : [];
+      var quranSectionRangesBySurah = book.alias === 'quran' ? await QuranTocSubdivisions.quranSectionRangesBySurah() : {};
       if (cacheableHtml) {
         random = undefined;
       } else if (!book.virtual)
@@ -2051,6 +2053,8 @@ router.get('/:bookAlias', async function (req, res, next) {
           book: book,
           surahs: global.surahs || [],
           quranJuzRows: quranJuzRows,
+          quranManzilRows: quranManzilRows,
+          quranSectionRangesBySurah: quranSectionRangesBySurah,
           quranTocDefaultView: quranTocDefaultView,
           BookDownloads: BookDownloads,
           prevBook: prevBook,
@@ -2069,6 +2073,8 @@ router.get('/:bookAlias', async function (req, res, next) {
         book: book,
         surahs: global.surahs || [],
         quranJuzRows: quranJuzRows,
+        quranManzilRows: quranManzilRows,
+        quranSectionRangesBySurah: quranSectionRangesBySurah,
         quranTocDefaultView: quranTocDefaultView,
         BookDownloads: BookDownloads,
         prevBook: prevBook,
@@ -2102,9 +2108,15 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
   var results = await Library.instance.findBook('quran').getChapters();
   var tafsirs = quranCommentaryBook.type === 'tafsir' ? await Tafsir.visibleTafsirs() : [];
   var translations = quranCommentaryBook.type === 'trans' ? await Tafsir.visibleTranslations() : [];
+  var quranJuzRows = quranCommentaryBook.type === 'tafsir' ? await QuranTocSubdivisions.juzRows() : [];
+  var quranManzilRows = quranCommentaryBook.type === 'tafsir' ? await QuranTocSubdivisions.manzilRows() : [];
+  var quranSectionRangesBySurah = quranCommentaryBook.type === 'tafsir' ? await QuranTocSubdivisions.quranSectionRangesBySurah() : {};
   var renderLocals = {
     book: book,
     surahs: global.surahs || [],
+    quranJuzRows: quranJuzRows,
+    quranManzilRows: quranManzilRows,
+    quranSectionRangesBySurah: quranSectionRangesBySurah,
     BookDownloads: BookDownloads,
     prevBook: null,
     nextBook: null,
@@ -2189,9 +2201,9 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
     var quranChapterPassage = bookAlias === 'quran' && req.query.ayat == undefined;
     var cachedFile = Utils.htmlCacheFile(req);
-    const flushCache = Utils.shouldFlushCache(req);
-    if (flushCache)
-      Utils.flushCachedFile(cachedFile);
+	const flushCache = Utils.shouldFlushCache(req);
+	if (flushCache)
+	  await Utils.flushCachedFile(cachedFile);
     if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
@@ -2360,9 +2372,9 @@ async function renderBookSection(req, res, next) {
     }
 
     var cachedFile = Utils.htmlCacheFile(req);
-    const flushCache = Utils.shouldFlushCache(req);
-    if (flushCache)
-      Utils.flushCachedFile(cachedFile);
+	const flushCache = Utils.shouldFlushCache(req);
+	if (flushCache)
+	  await Utils.flushCachedFile(cachedFile);
     if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;

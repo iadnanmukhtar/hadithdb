@@ -150,15 +150,40 @@
     if (!['surahs', 'juz', 'manzils'].includes(quranTocDefaultView))
       quranTocDefaultView = 'juz';
     var quranJuzRows = Array.isArray(locals.quranJuzRows) ? locals.quranJuzRows : [];
-    var quranManzilStarts = [
-      { view: 'manzils', num: 1, startSurah: 1, startAyah: 1, name: 'Manzil 1' },
-      { view: 'manzils', num: 2, startSurah: 5, startAyah: 1, name: 'Manzil 2' },
-      { view: 'manzils', num: 3, startSurah: 10, startAyah: 1, name: 'Manzil 3' },
-      { view: 'manzils', num: 4, startSurah: 17, startAyah: 1, name: 'Manzil 4' },
-      { view: 'manzils', num: 5, startSurah: 26, startAyah: 1, name: 'Manzil 5' },
-      { view: 'manzils', num: 6, startSurah: 37, startAyah: 1, name: 'Manzil 6' },
-      { view: 'manzils', num: 7, startSurah: 50, startAyah: 1, name: 'Manzil 7' }
-    ];
+    var quranManzilRows = Array.isArray(locals.quranManzilRows) ? locals.quranManzilRows : [];
+    var quranSectionRangesBySurah = (locals.quranSectionRangesBySurah && typeof locals.quranSectionRangesBySurah === 'object')
+      ? locals.quranSectionRangesBySurah
+      : {};
+    var quranSurahJuzPassages = {};
+    for (var juzIndex = 0; juzIndex < quranJuzRows.length; juzIndex++) {
+      var juzRow = quranJuzRows[juzIndex];
+      var mapping = juzRow && juzRow.quran_verse_mapping && typeof juzRow.quran_verse_mapping === 'object' ? juzRow.quran_verse_mapping : {};
+      var keys = Object.keys(mapping);
+      var juzNum = parseInt(juzRow && juzRow.num, 10);
+      if (!Number.isInteger(juzNum) || juzNum <= 0)
+        juzNum = juzIndex + 1;
+      for (var mappingIndex = 0; mappingIndex < keys.length; mappingIndex++) {
+        var mappedSurah = parseInt(keys[mappingIndex], 10);
+        if (!Number.isInteger(mappedSurah) || mappedSurah <= 0)
+          continue;
+        var rangeValue = (mapping[keys[mappingIndex]] || '').toString();
+        var firstSegment = rangeValue.split(',')[0] || '';
+        var parsedAyah = parseInt(firstSegment.split('-')[0], 10);
+        var startAyah = Number.isInteger(parsedAyah) && parsedAyah > 0 ? parsedAyah : 1;
+        quranSurahJuzPassages[mappedSurah] = quranSurahJuzPassages[mappedSurah] || [];
+        quranSurahJuzPassages[mappedSurah].push({
+          juz: juzNum,
+          ayah: startAyah
+        });
+      }
+    }
+    Object.keys(quranSurahJuzPassages).forEach(function (surahPassageKey) {
+      quranSurahJuzPassages[surahPassageKey].sort(function (a, b) {
+        if (a.juz !== b.juz)
+          return a.juz - b.juz;
+        return a.ayah - b.ayah;
+      });
+    });
     function quranSurahLookup(num) {
       return quranNavigatorSurahs.find(function (row) {
         return row.num === Number(num);
@@ -185,15 +210,84 @@
     function quranTocStartRefLabel(item) {
       return `${quranTocSurahDisplayName(item.startSurah)} ${item.startSurah}:${item.startAyah}`;
     }
+    function quranTocSurahFirstPassageAyah(surah) {
+      surah = Number(surah) || 1;
+      var passages = quranSurahJuzPassages[surah];
+      if (!Array.isArray(passages) || passages.length === 0)
+        return 1;
+      return passages[0].ayah || 1;
+    }
+    function quranTocSurahPassageAyahInJuz(surah, juzNum) {
+      surah = Number(surah) || 1;
+      var passages = quranSurahJuzPassages[surah];
+      var juz = Number(juzNum);
+      if (!Array.isArray(passages) || passages.length === 0)
+        return 1;
+      if (passages.length === 1)
+        return passages[0].ayah || 1;
+      var exact = passages.find(function (entry) {
+        return entry.juz === juz;
+      });
+      return exact && Number.isInteger(exact.ayah) && exact.ayah > 0
+        ? exact.ayah
+        : passages[0].ayah || 1;
+    }
+    function quranTocSurahCutsAcrossJuz(surah) {
+      surah = Number(surah) || 1;
+      var passages = quranSurahJuzPassages[surah];
+      return Array.isArray(passages) && passages.length > 1;
+    }
+    function quranTocRelevantPassage(surah, juzNum) {
+      if (quranTocSurahCutsAcrossJuz(surah))
+        return quranTocSurahPassageAyahInJuz(surah, juzNum);
+      return quranTocSurahFirstPassageAyah(surah);
+    }
+    function quranTocNormalizeQuranPath(path) {
+      path = (path || '').toString().trim();
+      if (!path)
+        return '/quran';
+      if (path.charAt(0) === '/')
+        path = path.substring(1);
+      if (/^quran:/.test(path))
+        path = path.replace(/^quran:/, 'quran/');
+      path = path.replace(/:/g, '/');
+      if (/^quran\/|^\d+\//.test(path))
+        return `/${path}`;
+      return `/quran/${path}`;
+    }
+    function quranSectionFromAyah(surah, ayah) {
+      surah = Number(surah) || 1;
+      ayah = Number(ayah) || 1;
+      var ranges = Array.isArray(quranSectionRangesBySurah[surah]) ? quranSectionRangesBySurah[surah] : [];
+      if (!Array.isArray(ranges) || ranges.length === 0)
+        return ayah;
+      for (var rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
+        var sectionRange = ranges[rangeIndex];
+        if (ayah >= sectionRange.start && ayah <= sectionRange.end)
+          return sectionRange.section;
+      }
+      var fallback = ranges[0];
+      for (var fallbackIndex = ranges.length - 1; fallbackIndex >= 0; fallbackIndex--) {
+        if (ayah >= ranges[fallbackIndex].start) {
+          fallback = ranges[fallbackIndex];
+          break;
+        }
+      }
+      return fallback && Number.isInteger(fallback.section) ? fallback.section : ayah;
+    }
     function quranTocPassageHref(surah, ayah) {
       surah = Number(surah) || 1;
       ayah = Number(ayah) || 1;
+      var section = quranSectionFromAyah(surah, ayah);
       if (quranCommentaryBook && quranCommentaryBook.type === 'tafsir')
-        return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/${surah}/${ayah}`);
-      return utils.quranUrl(req, `/quran/${surah}/${ayah}`);
+        return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/${surah}/${section}`);
+      return utils.quranUrl(req, `/quran/${surah}/${section}`);
     }
     function quranTocStartHref(item) {
-      return quranTocPassageHref(item.startSurah, item.startAyah);
+      var fallbackAyah = 1;
+      return quranTocPassageHref(item.startSurah, quranCommentaryBook && quranCommentaryBook.type === 'tafsir'
+        ? Number(item.startAyah) || fallbackAyah
+        : 1);
     }
     function quranJuzStartHref(juz) {
       var parts = (juz && juz.start ? juz.start.toString() : '').split(':');
@@ -207,7 +301,10 @@
         return Number(a) - Number(b);
       }).map(function (surahNum) {
         var range = (mapping[surahNum] || '').toString();
-        var firstAyah = parseInt(range.split('-')[0], 10) || 1;
+        var firstAyah = parseInt(range.split(',')[0].split('-')[0], 10) || 1;
+        var juzNum = parseInt(juz && juz.num, 10);
+        var relevanceAyah = quranTocRelevantPassage(surahNum, juzNum);
+        firstAyah = Number.isInteger(relevanceAyah) ? relevanceAyah : firstAyah;
         return {
           surah: Number(surahNum),
           range: range,
@@ -216,17 +313,26 @@
         };
       });
     }
-    function quranManzilSurahLinks(manzilIndex) {
-      var manzil = quranManzilStarts[manzilIndex];
+    function quranManzilSurahLinks(manzil, manzilIndex) {
       if (!manzil)
         return [];
-      var nextManzil = quranManzilStarts[manzilIndex + 1];
-      var endSurah = nextManzil ? Number(nextManzil.startSurah) - 1 : 114;
+      var nextManzil = quranManzilRows[manzilIndex + 1];
+      var startSurah = Number(manzil.startSurah) || 1;
+      var endSurah = Number.isSafeInteger(parseInt(nextManzil && nextManzil.startSurah, 10)) && nextManzil.startSurah > 0
+        ? Number(nextManzil.startSurah) - 1
+        : 114;
+      if (!Number.isSafeInteger(startSurah) || startSurah > endSurah)
+        return [];
+      if (startSurah < 1)
+        startSurah = 1;
+      if (endSurah > 114)
+        endSurah = 114;
       var links = [];
-      for (var surahNum = Number(manzil.startSurah); surahNum <= endSurah; surahNum++) {
+      for (var surahNum = startSurah; surahNum <= endSurah; surahNum++) {
+        var firstPassageAyah = 1;
         links.push({
           surah: surahNum,
-          href: quranTocPassageHref(surahNum, 1),
+          href: quranTocPassageHref(surahNum, firstPassageAyah),
           name_en: quranTocSurahName(surahNum)
         });
       }
@@ -265,7 +371,7 @@
     function quranTocHref(heading) {
       if (!quranCommentaryBook) {
         var targetPath = heading && heading.firstSection ? heading.firstSection.path : heading.path;
-        return utils.urlFor(req, `/${targetPath}`);
+        return utils.urlFor(req, quranTocNormalizeQuranPath(targetPath));
       }
       if (quranCommentaryBook.type === 'trans') {
         var sectionRef = quranHeadingSectionRef(heading);
@@ -290,7 +396,7 @@
       var hasLanguageCollision = quranCommentaryBooks.some(function (other) {
         return other && other !== book && other.lang !== book.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
       });
-      var query = hasLanguageCollision && (book.lang === 'ar' || book.lang === 'en')
+      var query = hasLanguageCollision && book.lang
         ? `?lang=${encodeURIComponent(book.lang)}`
         : '';
       return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
@@ -656,9 +762,9 @@
             <h2 class="fs-4 mt-2">Manzils</h2>
             <table id="toc-manzils" class="table" title="<%- `Manzils for ${book.name_en} (فهرس ${book.title})` %>">
               <tbody>
-                <% for (var m = 0; m < quranManzilStarts.length; m++) {
-                  var manzil = quranManzilStarts[m];
-                  var manzilSurahLinks = quranManzilSurahLinks(m);
+                <% for (var m = 0; m < quranManzilRows.length; m++) {
+                  var manzil = quranManzilRows[m];
+                  var manzilSurahLinks = quranManzilSurahLinks(manzil, m);
                 %>
                 <tr class="chapter" data-toc-chapter="toc-manzil-<%= manzil.num %>" data-toc-view="manzils">
                   <td><%- `${manzil.name}` %></td>

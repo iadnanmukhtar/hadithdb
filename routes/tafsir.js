@@ -134,11 +134,15 @@ async function renderTafsirBookToc(req, res, tafsir) {
   const toc = await Library.instance.findBook('quran').getChapters();
   const tafsirs = await Tafsir.visibleTafsirs();
   const quranJuzRows = await QuranTocSubdivisions.juzRows();
+  const quranManzilRows = await QuranTocSubdivisions.manzilRows();
+  const quranSectionRangesBySurah = await QuranTocSubdivisions.quranSectionRangesBySurah();
   const quranTocDefaultView = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
   const renderLocals = {
     book: quranBook,
     surahs: global.surahs || [],
     quranJuzRows: quranJuzRows,
+    quranManzilRows: quranManzilRows,
+    quranSectionRangesBySurah: quranSectionRangesBySurah,
     quranTocDefaultView: quranTocDefaultView,
     BookDownloads: BookDownloads,
     prevBook: null,
