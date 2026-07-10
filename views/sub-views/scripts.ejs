@@ -327,6 +327,9 @@
 	          prop: prop,
 	          arabizi: arabizi,
 	          value: value,
+	          quranSectionPath: propStr === 'toc.title_en' && !$el.closest('.quran-subheading').length
+	            ? window.location.pathname
+	            : '',
 	        };
 	        try {
 	          var resBody = await update(reqBody);
@@ -394,6 +397,7 @@
             prop: reqBody.prop,
             arabizi: reqBody.arabizi,
             value: reqBody.value,
+            quranSectionPath: reqBody.quranSectionPath,
           })
         });
         const responseText = await res.text();

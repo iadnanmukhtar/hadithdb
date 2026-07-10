@@ -268,6 +268,14 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
     } else if (type == 'toc') {
       var result;
       var shouldRunDefaultHeadingTasks = true;
+      var tocHeadingId = ids[0];
+      if (col === 'title_en' && req.body.quranSectionPath) {
+        var canonicalQuranSection = await quranSectionFromPath(req.body.quranSectionPath);
+        if (canonicalQuranSection) {
+          tocHeadingId = canonicalQuranSection.tId || canonicalQuranSection.id;
+          status.id = Number(tocHeadingId);
+        }
+      }
       if (col === 'passageRange') {
         result = await updateQuranPassageRange(ids[0], status.value, userId);
         status.value = result.value;
@@ -305,10 +313,10 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         status.value = result.value;
         shouldRunDefaultHeadingTasks = false;
       } else {
-        result = await global.query(`UPDATE toc SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
+        result = await global.query(`UPDATE toc SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${tocHeadingId}`);
       }
       if (col === 'title_en' && Utils.isFalsey(status.value)) {
-        var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
+        var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${tocHeadingId}`))[0]);
         if (isQuranThemeHeading(heading)) {
           status.value = await generateAndSaveQuranHeadingTitle(heading, col, userId);
           await reindexChapterSearchScope(heading.book_id, heading.h1, {
@@ -339,9 +347,9 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.message = result.message;
       try {
         if (shouldRunDefaultHeadingTasks) {
-          await reindexHeadingSubtreeByHeadingId(ids[0]);
-          await invalidateHeadingCachesByHeadingId(ids[0]);
-          VirtualHadithSnapshot.queueHeading(ids[0]);
+          await reindexHeadingSubtreeByHeadingId(tocHeadingId);
+          await invalidateHeadingCachesByHeadingId(tocHeadingId);
+          VirtualHadithSnapshot.queueHeading(tocHeadingId);
         }
       } catch (err) {
         debug.error(`${err.message}:\n${err.stack || ''}`);
@@ -1050,6 +1058,17 @@ async function quranSectionFromId(sectionHeadingId, location) {
   return (await global.query(`SELECT * FROM v_toc
     WHERE book_alias='quran' AND level=2
       AND (hId=${sectionHeadingId} OR tId=${sectionHeadingId} OR id=${sectionHeadingId})
+    LIMIT 1`))[0] || null;
+}
+
+async function quranSectionFromPath(path) {
+  var parts = Utils.trimToEmpty(path).split('?')[0].split('/').filter(Boolean);
+  var h2 = parseInt(parts.pop(), 10);
+  var surah = parseInt(parts.pop(), 10);
+  if (!Number.isInteger(surah) || !Number.isInteger(h2) || surah <= 0 || h2 <= 0)
+    return null;
+  return (await global.query(`SELECT * FROM v_toc
+    WHERE book_alias='quran' AND level=2 AND h1=${surah} AND h2=${h2}
     LIMIT 1`))[0] || null;
 }
 
