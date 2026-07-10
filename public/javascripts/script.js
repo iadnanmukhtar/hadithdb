@@ -5355,7 +5355,7 @@ function quranShareModalHtml(ayah, shareId) {
 	var $brand = $('<div>').addClass('hadith-share-brand').appendTo($footer);
 	$('<div>').addClass('hadith-share-site share-editable').attr({ contenteditable: 'false', 'data-share-site-editor': '1' }).text('hadithunlocked.com').appendTo($brand);
 	$('<div>').addClass('hadith-share-logo').attr('data-share-logo', '')
-		.append($('<img>').attr({ src: '/images/quran-logo2.svg', alt: 'Quran Unlocked', loading: 'lazy' }))
+		.append($('<img>').attr({ src: '/images/quran-logo2.svg', width: '34', height: '34', alt: 'Quran Unlocked', loading: 'lazy' }))
 		.append($('<button>').attr({ type: 'button', 'aria-label': 'Remove logo', title: 'Remove logo' }).addClass('hadith-share-logo-remove').append($('<span>').addClass('bi bi-x')))
 		.appendTo($brand);
 	return $modal;
