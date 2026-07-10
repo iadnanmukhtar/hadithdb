@@ -850,7 +850,7 @@ async function updateQuranPassageRange(headingId, value, userId) {
     SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, end=${sql(endRef)}, start0=${start0}, end0=${end0}, count=${count}
     WHERE id=${heading.tId || heading.id}`);
   QuranTocSubdivisions.invalidateSectionRanges();
-  await reindexChapterSearchScope(heading.book_id, surah, { syncKnowledge: false, refresh: true });
+  await reindexChapterSearchScope(heading.book_id, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true });
   await invalidateQuranSurahCaches(surah);
   return {
     message: updateResult.message,
@@ -1173,7 +1173,7 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
     await syncQuranSurahHadithHeadingNumbers(bookId, surah);
   });
   await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: reindex search scope`, async () => {
-    await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
+    await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true });
   });
   await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: invalidate cache`, async () => {
     await invalidateQuranSurahCaches(surah);
@@ -1346,7 +1346,7 @@ async function demoteQuranSection(sectionHeadingId, userId) {
     await syncQuranSurahHadithHeadingNumbers(bookId, surah);
   });
   await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: reindex search scope`, async () => {
-    await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
+    await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true });
   });
   await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: invalidate cache`, async () => {
     await invalidateQuranSurahCaches(surah);
@@ -1884,6 +1884,9 @@ async function reindexChapterSearchScope(bookId, h1, options) {
   h1 = Number(h1);
   if (!Number.isInteger(bookId) || bookId < 0 || !Number.isFinite(h1))
     return;
+  options = Object.assign({}, options || {}, {
+    headingQueryString: `book_id:${bookId} AND h1:${h1}`
+  });
   await reindexSearchScope(`book_id=${bookId} AND h1=${h1}`, options);
 }
 
@@ -1964,6 +1967,19 @@ async function reindexSearchScope(whereClause, options) {
   debug(`reindex search scope start: ${whereClause}`);
   var headings = await global.query(`SELECT * FROM v_toc WHERE ${whereClause} ORDER BY ordinal`);
   debug(`reindex search scope headings query returned ${headings.length} rows in ${Date.now() - started}ms: ${whereClause}`);
+  if (options.replaceHeadings && options.headingQueryString) {
+    var indexedHeadings = await Index.docsFromQueryString(Heading.INDEX, options.headingQueryString, 0, 1000);
+    var currentHeadingIds = new Set(headings
+      .map(heading => Number(heading.hId || heading.tId || heading.id))
+      .filter(Number.isInteger));
+    var staleHeadingIds = indexedHeadings
+      .map(heading => Number(heading.id || heading.hId || heading.tId))
+      .filter(id => Number.isInteger(id) && !currentHeadingIds.has(id));
+    for (const staleHeadingId of [...new Set(staleHeadingIds)])
+      await Index.delete(Heading.INDEX, staleHeadingId);
+    if (staleHeadingIds.length > 0)
+      debug(`reindex search scope removed ${new Set(staleHeadingIds).size} stale headings: ${whereClause}`);
+  }
   if (headings.length > 0) {
     var headingStarted = Date.now();
     try {

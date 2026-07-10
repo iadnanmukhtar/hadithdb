@@ -406,6 +406,16 @@
       window.location.href = `${target.pathname}${target.search}${target.hash}`;
     };
 
+    const quranSectionCoordinates = (container) => {
+      const parts = (container.dataset.sectionPath || '').split('/').filter(Boolean);
+      const h2 = Number(parts.pop());
+      const h1 = Number(parts.pop());
+      return {
+        h1: Number.isInteger(h1) ? h1 : Number(container.dataset.surah),
+        h2: Number.isInteger(h2) ? h2 : Number(container.dataset.h2)
+      };
+    };
+
     window.initQuranRangeAdminControls = (root = document) => {
     root.querySelectorAll('.quran-range-admin').forEach((container) => {
       if (container.dataset.quranRangeAdminBound === 'true')
@@ -498,12 +508,13 @@
 
       const saveRange = async () => {
         const range = getRange();
+        const coordinates = quranSectionCoordinates(container);
         setButtonLoading(true);
         try {
           const res = await quranEditorPost(`/update/${headingId}/toc.passageRange`, {
             ...range,
-            h1: Number(surah),
-            h2: Number(container.dataset.h2)
+            h1: coordinates.h1,
+            h2: coordinates.h2
           });
           const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
@@ -620,14 +631,15 @@
 
       const addSubsection = async () => {
         const range = getRange();
+        const coordinates = quranSectionCoordinates(container);
         setButtonLoading(true);
         try {
           const res = await quranEditorPost(`/update/${headingId}/toc.subsectionAdd`, {
             startAyah: range.startAyah,
             endAyah: range.endAyah,
             title_en: titleInput.value,
-            h1: Number(container.dataset.surah),
-            h2: Number(container.dataset.h2)
+            h1: coordinates.h1,
+            h2: coordinates.h2
           });
           const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
