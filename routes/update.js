@@ -311,6 +311,13 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
         if (isQuranThemeHeading(heading)) {
           status.value = await generateAndSaveQuranHeadingTitle(heading, col, userId);
+          await reindexChapterSearchScope(heading.book_id, heading.h1, {
+            syncKnowledge: false,
+            refresh: true,
+            replaceHeadings: true
+          });
+          await invalidateQuranSurahCaches(heading.h1);
+          shouldRunDefaultHeadingTasks = false;
         } else if (col === 'title_en' && Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
           heading.title_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${heading.title}`);
           heading.title_en = '[AI] ' + Utils.trimToEmpty(heading.title_en);
