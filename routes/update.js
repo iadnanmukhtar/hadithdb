@@ -1020,15 +1020,6 @@ async function quranSubsectionFromId(subsectionHeadingId) {
 }
 
 async function quranSectionFromId(sectionHeadingId, location) {
-  sectionHeadingId = parseInt(sectionHeadingId, 10);
-  if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
-    return null;
-  var section = (await global.query(`SELECT * FROM v_toc
-    WHERE book_alias='quran' AND level=2
-      AND (hId=${sectionHeadingId} OR tId=${sectionHeadingId} OR id=${sectionHeadingId})
-    LIMIT 1`))[0];
-  if (section)
-    return section;
   if (typeof location === 'string') {
     try {
       location = JSON.parse(location);
@@ -1039,10 +1030,19 @@ async function quranSectionFromId(sectionHeadingId, location) {
   location = location || {};
   var surah = parseInt(location.h1 || location.surah, 10);
   var h2 = parseInt(location.h2 || location.section, 10);
-  if (!Number.isInteger(surah) || !Number.isInteger(h2) || surah <= 0 || h2 <= 0)
+  if (Number.isInteger(surah) && Number.isInteger(h2) && surah > 0 && h2 > 0) {
+    var locatedSection = (await global.query(`SELECT * FROM v_toc
+      WHERE book_alias='quran' AND level=2 AND h1=${surah} AND h2=${h2}
+      LIMIT 1`))[0];
+    if (locatedSection)
+      return locatedSection;
+  }
+  sectionHeadingId = parseInt(sectionHeadingId, 10);
+  if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
     return null;
   return (await global.query(`SELECT * FROM v_toc
-    WHERE book_alias='quran' AND level=2 AND h1=${surah} AND h2=${h2}
+    WHERE book_alias='quran' AND level=2
+      AND (hId=${sectionHeadingId} OR tId=${sectionHeadingId} OR id=${sectionHeadingId})
     LIMIT 1`))[0] || null;
 }
 
@@ -1165,6 +1165,9 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
   }
   await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: relink ayahs ${splitAyah}-${promotedEnd}`, async () => {
     await relinkQuranAyahRangeToSection(bookId, surah, insertResult.insertId, insertH2, splitAyah, promotedEnd);
+  });
+  await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: normalize heading ranges`, async () => {
+    await normalizeQuranSurahHeadingRanges(bookId, surah, userId);
   });
   await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: sync heading numbers`, async () => {
     await syncQuranSurahHadithHeadingNumbers(bookId, surah);
@@ -1336,6 +1339,9 @@ async function demoteQuranSection(sectionHeadingId, userId) {
   await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: relink ayahs ${currentStart}-${currentEnd}`, async () => {
     await relinkQuranAyahRangeToSection(bookId, surah, previousId, previousH2, currentStart, currentEnd);
   });
+  await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: normalize heading ranges`, async () => {
+    await normalizeQuranSurahHeadingRanges(bookId, surah, userId);
+  });
   await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: sync heading numbers`, async () => {
     await syncQuranSurahHadithHeadingNumbers(bookId, surah);
   });
@@ -1478,6 +1484,78 @@ async function renumberQuranSubsections(bookId, h1, h2) {
   for (var i = 0; i < rows.length; i++) {
     await global.query(`UPDATE toc SET h3=${i + 1} WHERE id=${Number(rows[i].id)}`);
   }
+}
+
+async function normalizeQuranSurahHeadingRanges(bookId, surah, userId) {
+  bookId = parseInt(bookId, 10);
+  surah = Number(surah);
+  var sections = await global.query(`SELECT id, h2, ordinal, start, end, count
+    FROM toc
+    WHERE bookId=${bookId} AND level=2 AND h1=${surah}
+    ORDER BY h2, id`);
+  var surahInfo = (global.surahs || []).find(item => Number(item.num) === surah);
+  var surahEnd = Number(surahInfo && (surahInfo.ayat || surahInfo.ayahs));
+  var sectionRanges = [];
+  for (var i = 0; i < sections.length; i++) {
+    var section = sections[i];
+    var startAyah = quranAyahFromHeadingStart(section.start);
+    var nextStart = i + 1 < sections.length ? quranAyahFromHeadingStart(sections[i + 1].start) : NaN;
+    var endAyah = Number.isInteger(nextStart) && nextStart > startAyah
+      ? nextStart - 1
+      : quranHeadingEndAyah(section);
+    if (i === sections.length - 1 && Number.isInteger(surahEnd) && surahEnd >= startAyah)
+      endAyah = surahEnd;
+    if (!Number.isInteger(startAyah) || !Number.isInteger(endAyah) || endAyah < startAyah)
+      continue;
+    await global.query(`UPDATE toc
+      SET end=${sql(`${surah}:${endAyah}`)}, end0=${quranNum0(surah, endAyah)}, count=${endAyah - startAyah + 1}, lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP()
+      WHERE id=${Number(section.id)}`);
+    sectionRanges.push({
+      id: Number(section.id),
+      h2: Number(section.h2),
+      ordinal: Number(section.ordinal),
+      start: startAyah,
+      end: endAyah
+    });
+  }
+
+  var subsections = await global.query(`SELECT id, h2, h3, ordinal, start, end, count
+    FROM toc
+    WHERE bookId=${bookId} AND level=3 AND h1=${surah}
+    ORDER BY start0, h2, h3, id`);
+  var assigned = [];
+  for (const subsection of subsections) {
+    var subsectionStart = quranAyahFromHeadingStart(subsection.start);
+    var parent = sectionRanges.find(range => Number.isInteger(subsectionStart) && subsectionStart >= range.start && subsectionStart <= range.end);
+    if (!parent)
+      continue;
+    assigned.push({
+      ...subsection,
+      startAyah: subsectionStart,
+      parent: parent
+    });
+  }
+  for (const parent of sectionRanges) {
+    var children = assigned
+      .filter(row => row.parent.id === parent.id)
+      .sort((a, b) => a.startAyah - b.startAyah || Number(a.h3) - Number(b.h3) || Number(a.id) - Number(b.id));
+    for (var childIndex = 0; childIndex < children.length; childIndex++) {
+      var child = children[childIndex];
+      var childEnd = quranHeadingEndAyah(child);
+      var nextChildStart = childIndex + 1 < children.length ? children[childIndex + 1].startAyah : NaN;
+      var maximumEnd = Number.isInteger(nextChildStart) ? nextChildStart - 1 : parent.end;
+      if (!Number.isInteger(childEnd) || childEnd < child.startAyah)
+        childEnd = maximumEnd;
+      else
+        childEnd = Math.min(childEnd, maximumEnd);
+      await global.query(`UPDATE toc
+        SET ordinal=${parent.ordinal}, h2=${parent.h2}, h3=${childIndex + 1},
+          end=${sql(`${surah}:${childEnd}`)}, end0=${quranNum0(surah, childEnd)}, count=${childEnd - child.startAyah + 1},
+          lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP()
+        WHERE id=${Number(child.id)}`);
+    }
+  }
+  QuranTocSubdivisions.invalidateSectionRanges();
 }
 
 function parsePassageRangeValue(value) {
