@@ -1990,6 +1990,7 @@ router.get('/:bookAlias', async function (req, res, next) {
         Utils.flushCachedFile(cachedFile),
         req.params.bookAlias === 'quran'
           ? Promise.all([
+            flushQuranTocDiskCacheVariants(),
             Utils.flushCacheContaining('quran'),
             Utils.flushCacheContaining('book:quran')
           ])
@@ -2088,6 +2089,19 @@ router.get('/:bookAlias', async function (req, res, next) {
   } else
     return next(createError(404, `Book '${req.params.bookAlias}' does not exist`));
 });
+
+async function flushQuranTocDiskCacheVariants() {
+  var cacheDir = `${homedir}/.hadithdb/cache`;
+  if (!fs.existsSync(cacheDir))
+    return;
+  for (const filename of fs.readdirSync(cacheDir)) {
+    var cachedName = filename.endsWith(Utils.CACHE_GZIP_SUFFIX)
+      ? filename.slice(0, -Utils.CACHE_GZIP_SUFFIX.length)
+      : filename;
+    if (/^_quran(?:[?.]|$)/.test(cachedName))
+      await Utils.flushCachedFile(`${cacheDir}/${cachedName}`);
+  }
+}
 
 // QURAN COMMENTARY BOOK: TABLE OF CONTENTS
 router.get('/quran/:commentaryAlias', async function (req, res, next) {
