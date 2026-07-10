@@ -260,6 +260,9 @@
                 <button type="button" class="btn btn-sm btn-primary quran-range-save" data-loading-label="Saving">
                   <span class="bi bi-save"></span> Save range
                 </button>
+                <button type="button" class="btn btn-sm btn-outline-primary quran-surah-reindex" data-loading-label="Reindexing" title="Replace this Surah's Elasticsearch documents from the database">
+                  <span class="bi bi-arrow-repeat"></span> Reindex surah
+                </button>
                 <% if (Number(rangeHeading.h2) > 1) { %>
                   <button type="button" class="btn btn-sm btn-outline-primary quran-section-demote" data-loading-label="Demoting" title="Demote this passage to a subsection of the preceding passage">
                     <span class="bi bi-arrow-down-square"></span> Demote to subsection
@@ -425,6 +428,7 @@
       const endInput = container.querySelector('.quran-range-end');
       const liveLabel = container.querySelector('.quran-range-live');
       const saveButton = container.querySelector('.quran-range-save');
+      const reindexButton = container.querySelector('.quran-surah-reindex');
       const demoteButton = container.querySelector('.quran-section-demote');
       const deleteButton = container.querySelector('.quran-section-delete');
       const preview = container.querySelector('.quran-range-preview');
@@ -557,9 +561,10 @@
       const demoteSection = async () => {
         if (!window.confirm('Demote this passage to a subsection of the preceding passage? Its ayahs and existing subsections will move under that passage.'))
           return;
+        const coordinates = quranSectionCoordinates(container);
         setActionLoading(demoteButton, 'Demoting', true);
         try {
-          const res = await quranEditorPost(`/update/${headingId}/toc.sectionDemote`, '1');
+          const res = await quranEditorPost(`/update/${headingId}/toc.sectionDemote`, coordinates);
           const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
@@ -576,6 +581,27 @@
         }
       };
 
+      const reindexSurah = async () => {
+        const coordinates = quranSectionCoordinates(container);
+        setActionLoading(reindexButton, 'Reindexing', true);
+        try {
+          const res = await quranEditorPost(`/update/${headingId}/toc.surahReindex`, coordinates);
+          const body = await quranEditorJson(res);
+          if (!res.ok || body.code !== 200)
+            throw new Error(body.message || res.statusText);
+          if (window.toastr)
+            toastr.success(`Surah ${body.value.h1}`, 'Quran surah reindexed');
+          refreshAfterQuranHeadingUpdate(`/${body.value.path}`);
+        } catch (err) {
+          if (window.toastr)
+            toastr.error(err.message, 'Quran surah reindex failed');
+          else
+            alert(err.message);
+        } finally {
+          setActionLoading(reindexButton, 'Reindexing', false);
+        }
+      };
+
       startInput.addEventListener('input', () => updateLive(true));
       endInput.addEventListener('input', () => updateLive(true));
       startInput.addEventListener('focus', () => updateLive(false));
@@ -589,6 +615,7 @@
           hidePreview();
       }, 0));
       saveButton.addEventListener('click', saveRange);
+      reindexButton.addEventListener('click', reindexSurah);
       if (demoteButton)
         demoteButton.addEventListener('click', demoteSection);
       deleteButton.addEventListener('click', deleteSection);

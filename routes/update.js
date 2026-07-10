@@ -305,7 +305,11 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         status.value = result.value;
         shouldRunDefaultHeadingTasks = false;
       } else if (col === 'sectionDemote') {
-        result = await demoteQuranSection(ids[0], userId);
+        result = await demoteQuranSection(ids[0], status.value, userId);
+        status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'surahReindex') {
+        result = await reindexQuranSurah(ids[0], status.value);
         status.value = result.value;
         shouldRunDefaultHeadingTasks = false;
       } else if (col === 'sectionDelete') {
@@ -879,6 +883,29 @@ async function updateQuranPassageRange(headingId, value, userId) {
   };
 }
 
+async function reindexQuranSurah(sectionHeadingId, value) {
+  var section = await quranSectionFromId(sectionHeadingId, value);
+  if (!section)
+    throw createError(404, 'Section heading not found');
+  var bookId = parseInt(section.book_id, 10);
+  var surah = Number(section.h1);
+  await reindexChapterSearchScope(bookId, surah, {
+    syncKnowledge: false,
+    refresh: true,
+    replaceHeadings: true,
+    replaceItems: true
+  });
+  await invalidateQuranSurahCaches(surah);
+  return {
+    message: `Reindexed Quran Surah ${surah}`,
+    value: {
+      h1: surah,
+      h2: Number(section.h2),
+      path: `quran/${surah}/${Number(section.h2)}`
+    }
+  };
+}
+
 async function addQuranSection(anchorHeadingId, value, userId) {
   anchorHeadingId = parseInt(anchorHeadingId, 10);
   if (!Number.isInteger(anchorHeadingId) || anchorHeadingId <= 0)
@@ -1291,14 +1318,11 @@ async function mergeQuranSubsectionWithNext(subsectionHeadingId, userId) {
   };
 }
 
-async function demoteQuranSection(sectionHeadingId, userId) {
+async function demoteQuranSection(sectionHeadingId, value, userId) {
   sectionHeadingId = parseInt(sectionHeadingId, 10);
   if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
     throw createError(400, 'Invalid section heading id');
-  var section = (await global.query(`SELECT * FROM v_toc
-    WHERE book_alias='quran' AND level=2
-      AND (hId=${sectionHeadingId} OR tId=${sectionHeadingId} OR id=${sectionHeadingId})
-    LIMIT 1`))[0];
+  var section = await quranSectionFromId(sectionHeadingId, value);
   if (!section)
     throw createError(404, 'Section heading not found');
   var bookId = parseInt(section.book_id, 10);
@@ -1918,6 +1942,14 @@ async function reindexChapterSearchScope(bookId, h1, options) {
           { term: { h1: h1 } }
         ]
       }
+    },
+    itemQuery: {
+      bool: {
+        filter: [
+          { term: { book_id: bookId } },
+          { term: { h1: h1 } }
+        ]
+      }
     }
   });
   await reindexSearchScope(`book_id=${bookId} AND h1=${h1}`, options);
@@ -2000,19 +2032,8 @@ async function reindexSearchScope(whereClause, options) {
   debug(`reindex search scope start: ${whereClause}`);
   var headings = await global.query(`SELECT * FROM v_toc WHERE ${whereClause} ORDER BY ordinal`);
   debug(`reindex search scope headings query returned ${headings.length} rows in ${Date.now() - started}ms: ${whereClause}`);
-  if (options.replaceHeadings && options.headingQuery) {
-    var indexedHeadings = await Index.docsFromQuery(Heading.INDEX, options.headingQuery, 0, 1000);
-    var currentHeadingIds = new Set(headings
-      .map(heading => Number(heading.hId || heading.tId || heading.id))
-      .filter(Number.isInteger));
-    var staleHeadingIds = indexedHeadings
-      .map(heading => Number(heading.id || heading.hId || heading.tId))
-      .filter(id => Number.isInteger(id) && !currentHeadingIds.has(id));
-    for (const staleHeadingId of [...new Set(staleHeadingIds)])
-      await Index.delete(Heading.INDEX, staleHeadingId);
-    if (staleHeadingIds.length > 0)
-      debug(`reindex search scope removed ${new Set(staleHeadingIds).size} stale headings: ${whereClause}`);
-  }
+  if (options.replaceHeadings && options.headingQuery)
+    await Index.deleteByQuery(Heading.INDEX, options.headingQuery);
   if (headings.length > 0) {
     var headingStarted = Date.now();
     try {
@@ -2026,6 +2047,8 @@ async function reindexSearchScope(whereClause, options) {
   debug(`reindex search scope items query start: ${whereClause}`);
   var items = await getHadithSearchRowsWithAdjacentRefs(whereClause);
   debug(`reindex search scope items query returned ${items.length} rows in ${Date.now() - itemsStarted}ms: ${whereClause}`);
+  if (options.replaceItems && options.itemQuery)
+    await Index.deleteByQuery(Item.INDEX, options.itemQuery);
   if (items.length > 0) {
     var itemIndexStarted = Date.now();
     try {
