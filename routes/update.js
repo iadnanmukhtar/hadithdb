@@ -1885,7 +1885,14 @@ async function reindexChapterSearchScope(bookId, h1, options) {
   if (!Number.isInteger(bookId) || bookId < 0 || !Number.isFinite(h1))
     return;
   options = Object.assign({}, options || {}, {
-    headingQueryString: `book_id:${bookId} AND h1:${h1}`
+    headingQuery: {
+      bool: {
+        filter: [
+          { term: { book_id: bookId } },
+          { term: { h1: h1 } }
+        ]
+      }
+    }
   });
   await reindexSearchScope(`book_id=${bookId} AND h1=${h1}`, options);
 }
@@ -1967,8 +1974,8 @@ async function reindexSearchScope(whereClause, options) {
   debug(`reindex search scope start: ${whereClause}`);
   var headings = await global.query(`SELECT * FROM v_toc WHERE ${whereClause} ORDER BY ordinal`);
   debug(`reindex search scope headings query returned ${headings.length} rows in ${Date.now() - started}ms: ${whereClause}`);
-  if (options.replaceHeadings && options.headingQueryString) {
-    var indexedHeadings = await Index.docsFromQueryString(Heading.INDEX, options.headingQueryString, 0, 1000);
+  if (options.replaceHeadings && options.headingQuery) {
+    var indexedHeadings = await Index.docsFromQuery(Heading.INDEX, options.headingQuery, 0, 1000);
     var currentHeadingIds = new Set(headings
       .map(heading => Number(heading.hId || heading.tId || heading.id))
       .filter(Number.isInteger));
