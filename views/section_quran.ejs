@@ -246,7 +246,7 @@
             if (!Number.isInteger(rangeEnd) || rangeEnd < parseInt(rangeStart || '0', 10))
               rangeEnd = rangeStart;
           %>
-            <aside class="quran-range-admin mb-3" data-heading-id="<%= rangeHeading.id %>" data-surah="<%= rangeHeading.h1 %>" data-section-path="/<%= rangeHeading.path %>">
+            <aside class="quran-range-admin mb-3" data-heading-id="<%= rangeHeading.id %>" data-surah="<%= rangeHeading.h1 %>" data-h2="<%= rangeHeading.h2 %>" data-section-path="/<%= rangeHeading.path %>">
               <div class="d-flex flex-wrap align-items-end gap-2">
                 <label class="form-label mb-0 small">
                   Start
@@ -500,7 +500,11 @@
         const range = getRange();
         setButtonLoading(true);
         try {
-          const res = await quranEditorPost(`/update/${headingId}/toc.passageRange`, range);
+          const res = await quranEditorPost(`/update/${headingId}/toc.passageRange`, {
+            ...range,
+            h1: Number(surah),
+            h2: Number(container.dataset.h2)
+          });
           const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
@@ -621,7 +625,9 @@
           const res = await quranEditorPost(`/update/${headingId}/toc.subsectionAdd`, {
             startAyah: range.startAyah,
             endAyah: range.endAyah,
-            title_en: titleInput.value
+            title_en: titleInput.value,
+            h1: Number(container.dataset.surah),
+            h2: Number(container.dataset.h2)
           });
           const body = await quranEditorJson(res);
           if (!res.ok || body.code !== 200)

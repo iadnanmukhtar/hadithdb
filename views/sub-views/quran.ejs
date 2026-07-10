@@ -141,7 +141,7 @@
   var renderHeadingAudioRow = group._hasHeadingAudio && group !== quranInlineAudioGroup;
 %>
 <% if (canMakeSubsection) { %>
-<aside class="quran-subsection-admin mb-2" data-heading-id="<%= sectionHeading.id %>" data-section-path="/<%= sectionHeading.path %>">
+<aside class="quran-subsection-admin mb-2" data-heading-id="<%= sectionHeading.id %>" data-surah="<%= sectionHeading.h1 %>" data-h2="<%= sectionHeading.h2 %>" data-section-path="/<%= sectionHeading.path %>">
   <div class="d-flex flex-wrap align-items-end gap-2">
     <label class="form-label mb-0 small">
       Unsectioned start

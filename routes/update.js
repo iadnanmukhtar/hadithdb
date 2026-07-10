@@ -827,7 +827,7 @@ async function updateQuranPassageRange(headingId, value, userId) {
   if (!Number.isInteger(headingId) || headingId <= 0)
     throw createError(400, 'Invalid heading id');
   var payload = parsePassageRangeValue(value);
-  var heading = await quranSectionFromId(headingId);
+  var heading = await quranSectionFromId(headingId, value);
   if (!heading)
     throw createError(404, 'Heading not found');
   if (heading.book_alias !== 'quran')
@@ -922,7 +922,7 @@ async function addQuranSubsection(sectionHeadingId, value, userId) {
   if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
     throw createError(400, 'Invalid section heading id');
   var payload = parseSubsectionValue(value);
-  var section = await quranSectionFromId(sectionHeadingId);
+  var section = await quranSectionFromId(sectionHeadingId, value);
   if (!section)
     throw createError(404, 'Section heading not found');
   if (section.book_alias !== 'quran')
@@ -1019,13 +1019,30 @@ async function quranSubsectionFromId(subsectionHeadingId) {
     LIMIT 1`))[0] || null;
 }
 
-async function quranSectionFromId(sectionHeadingId) {
+async function quranSectionFromId(sectionHeadingId, location) {
   sectionHeadingId = parseInt(sectionHeadingId, 10);
   if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
     return null;
-  return (await global.query(`SELECT * FROM v_toc
+  var section = (await global.query(`SELECT * FROM v_toc
     WHERE book_alias='quran' AND level=2
       AND (hId=${sectionHeadingId} OR tId=${sectionHeadingId} OR id=${sectionHeadingId})
+    LIMIT 1`))[0];
+  if (section)
+    return section;
+  if (typeof location === 'string') {
+    try {
+      location = JSON.parse(location);
+    } catch (err) {
+      location = {};
+    }
+  }
+  location = location || {};
+  var surah = parseInt(location.h1 || location.surah, 10);
+  var h2 = parseInt(location.h2 || location.section, 10);
+  if (!Number.isInteger(surah) || !Number.isInteger(h2) || surah <= 0 || h2 <= 0)
+    return null;
+  return (await global.query(`SELECT * FROM v_toc
+    WHERE book_alias='quran' AND level=2 AND h1=${surah} AND h2=${h2}
     LIMIT 1`))[0] || null;
 }
 
