@@ -296,6 +296,10 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         result = await mergeQuranSubsectionWithNext(ids[0], userId);
         status.value = result.value;
         shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'sectionDemote') {
+        result = await demoteQuranSection(ids[0], userId);
+        status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
       } else if (col === 'sectionDelete') {
         result = await deleteQuranSection(ids[0]);
         status.value = result.value;
@@ -1227,6 +1231,105 @@ async function mergeQuranSubsectionWithNext(subsectionHeadingId, userId) {
       title_en: title_en,
       title: null,
       mergedId: next.tId || next.id
+    }
+  };
+}
+
+async function demoteQuranSection(sectionHeadingId, userId) {
+  sectionHeadingId = parseInt(sectionHeadingId, 10);
+  if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
+    throw createError(400, 'Invalid section heading id');
+  var section = (await global.query(`SELECT * FROM v_toc
+    WHERE book_alias='quran' AND level=2
+      AND (hId=${sectionHeadingId} OR tId=${sectionHeadingId} OR id=${sectionHeadingId})
+    LIMIT 1`))[0];
+  if (!section)
+    throw createError(404, 'Section heading not found');
+  var bookId = parseInt(section.book_id, 10);
+  var surah = Number(section.h1);
+  var currentH2 = Number(section.h2);
+  var currentId = Number(section.tId || section.id);
+  var previous = (await global.query(`SELECT * FROM v_toc
+    WHERE book_id=${bookId} AND level=2 AND h1=${surah} AND h2<${currentH2}
+    ORDER BY h2 DESC
+    LIMIT 1`))[0];
+  if (!previous)
+    throw createError(400, 'The first section in a surah cannot be demoted');
+  var previousId = Number(previous.tId || previous.id);
+  var previousH2 = Number(previous.h2);
+  var rawRows = await global.query(`SELECT * FROM toc WHERE id IN (${previousId}, ${currentId})`);
+  var currentRaw = rawRows.find(row => Number(row.id) === currentId) || {};
+  var previousRaw = rawRows.find(row => Number(row.id) === previousId) || {};
+  var currentStart = quranAyahFromHeadingStart(currentRaw.start || section.h2_start);
+  var currentEnd = quranHeadingEndAyah({
+    start: currentRaw.start || section.h2_start,
+    end: currentRaw.end || section.h2_end,
+    count: currentRaw.count || section.h2_count
+  });
+  var previousStart = quranAyahFromHeadingStart(previousRaw.start || previous.h2_start);
+  if (!Number.isInteger(currentStart) || !Number.isInteger(currentEnd) || !Number.isInteger(previousStart))
+    throw createError(400, 'The section ranges are incomplete');
+  if (currentStart <= previousStart || currentEnd < currentStart)
+    throw createError(400, 'The section ranges cannot be demoted in their current order');
+
+  var currentSubsections = await global.query(`SELECT * FROM toc
+    WHERE bookId=${bookId} AND level=3 AND h1=${surah} AND h2=${currentH2}
+    ORDER BY start0, h3, id`);
+  var demotedSubsection = currentSubsections.find(row => quranAyahFromHeadingStart(row.start) === currentStart);
+  var demotedSubsectionId = demotedSubsection ? Number(demotedSubsection.id) : null;
+  if (currentSubsections.length > 0) {
+    await global.query(`UPDATE toc
+      SET ordinal=${Number(previousRaw.ordinal || previous.ordinal)}, h2=${previousH2}, lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP()
+      WHERE bookId=${bookId} AND level=3 AND h1=${surah} AND h2=${currentH2}`);
+  }
+  if (!demotedSubsectionId) {
+    var nextSubsectionStart = currentSubsections
+      .map(row => quranAyahFromHeadingStart(row.start))
+      .find(start => Number.isInteger(start) && start > currentStart);
+    var demotedEnd = Number.isInteger(nextSubsectionStart) ? nextSubsectionStart - 1 : currentEnd;
+    var h3 = await nextQuranSubsectionNumber(bookId, surah, previousH2);
+    var insertResult = await global.query(`INSERT INTO toc
+      (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, end, start0, end0, count, lastmod_user, lastfixed)
+      VALUES
+      (${Number(previousRaw.ordinal || previous.ordinal)}, ${bookId}, 3, ${surah}, ${previousH2}, ${h3}, ${sql(currentRaw.title_en || section.h2_title_en)}, ${sql(currentRaw.title || section.h2_title)}, ${sql(currentRaw.intro_en || section.h2_intro_en)}, ${sql(currentRaw.intro || section.h2_intro)}, ${sql(`${surah}:${currentStart}`)}, ${sql(`${surah}:${demotedEnd}`)}, ${quranNum0(surah, currentStart)}, ${quranNum0(surah, demotedEnd)}, ${demotedEnd - currentStart + 1}, '${userId}', CURRENT_TIMESTAMP())`);
+    demotedSubsectionId = Number(insertResult.insertId);
+  }
+
+  var previousEnd = currentEnd;
+  await global.query(`UPDATE toc
+    SET end=${sql(`${surah}:${previousEnd}`)}, end0=${quranNum0(surah, previousEnd)}, count=${previousEnd - previousStart + 1}, lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP()
+    WHERE id=${previousId}`);
+  await global.query(`DELETE FROM toc WHERE id=${currentId}`);
+  await global.query(`UPDATE toc
+    SET h2=h2-1
+    WHERE bookId=${bookId} AND h1=${surah} AND h2>${currentH2} AND level IN (2, 3)`);
+  await renumberQuranSubsections(bookId, surah, previousH2);
+  var demotedRow = (await global.query(`SELECT h3 FROM toc WHERE id=${demotedSubsectionId} LIMIT 1`))[0];
+  var demotedH3 = demotedRow ? Number(demotedRow.h3) : 1;
+  await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: relink ayahs ${currentStart}-${currentEnd}`, async () => {
+    await relinkQuranAyahRangeToSection(bookId, surah, previousId, previousH2, currentStart, currentEnd);
+  });
+  await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: sync heading numbers`, async () => {
+    await syncQuranSurahHadithHeadingNumbers(bookId, surah);
+  });
+  await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: reindex search scope`, async () => {
+    await reindexChapterSearchScope(bookId, surah, { syncKnowledge: false, refresh: true });
+  });
+  await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: invalidate cache`, async () => {
+    await invalidateQuranSurahCaches(surah);
+  });
+  return {
+    message: 'Quran section demoted',
+    value: {
+      id: demotedSubsectionId,
+      h1: surah,
+      h2: previousH2,
+      h3: demotedH3,
+      path: `quran/${surah}/${previousH2}`,
+      start: `${surah}:${currentStart}`,
+      startAyah: currentStart,
+      endAyah: currentEnd,
+      count: currentEnd - currentStart + 1
     }
   };
 }

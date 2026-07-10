@@ -6022,8 +6022,10 @@ function initQuranInfinitePassageNavigation(root) {
 		initQuranAyahModals(document);
 		if (typeof window.bindInlineEditors === 'function')
 			window.bindInlineEditors(chunk[0]);
-		if (typeof window.initQuranSubheadingAdminControls === 'function')
-			window.initQuranSubheadingAdminControls(chunk[0]);
+        if (typeof window.initQuranSubheadingAdminControls === 'function')
+          window.initQuranSubheadingAdminControls(chunk[0]);
+        if (typeof window.initQuranRangeAdminControls === 'function')
+          window.initQuranRangeAdminControls(chunk[0]);
 		if (window.refreshHadithActions)
 			window.refreshHadithActions();
 		nextUrl = remoteMain.getAttribute('data-quran-next-url') || '';

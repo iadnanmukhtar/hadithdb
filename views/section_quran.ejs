@@ -260,6 +260,11 @@
                 <button type="button" class="btn btn-sm btn-primary quran-range-save" data-loading-label="Saving">
                   <span class="bi bi-save"></span> Save range
                 </button>
+                <% if (Number(rangeHeading.h2) > 1) { %>
+                  <button type="button" class="btn btn-sm btn-outline-primary quran-section-demote" data-loading-label="Demoting" title="Demote this passage to a subsection of the preceding passage">
+                    <span class="bi bi-arrow-down-square"></span> Demote to subsection
+                  </button>
+                <% } %>
                 <button type="button" class="btn btn-sm btn-outline-danger quran-section-delete" data-loading-label="Removing">
                   <span class="bi bi-trash"></span> Delete section
                 </button>
@@ -401,11 +406,16 @@
       window.location.href = `${target.pathname}${target.search}${target.hash}`;
     };
 
-    document.querySelectorAll('.quran-range-admin').forEach((container) => {
+    window.initQuranRangeAdminControls = (root = document) => {
+    root.querySelectorAll('.quran-range-admin').forEach((container) => {
+      if (container.dataset.quranRangeAdminBound === 'true')
+        return;
+      container.dataset.quranRangeAdminBound = 'true';
       const startInput = container.querySelector('.quran-range-start');
       const endInput = container.querySelector('.quran-range-end');
       const liveLabel = container.querySelector('.quran-range-live');
       const saveButton = container.querySelector('.quran-range-save');
+      const demoteButton = container.querySelector('.quran-section-demote');
       const deleteButton = container.querySelector('.quran-section-delete');
       const preview = container.querySelector('.quran-range-preview');
       const previewAr = container.querySelector('.quran-range-preview-ar');
@@ -529,6 +539,28 @@
         }
       };
 
+      const demoteSection = async () => {
+        if (!window.confirm('Demote this passage to a subsection of the preceding passage? Its ayahs and existing subsections will move under that passage.'))
+          return;
+        setActionLoading(demoteButton, 'Demoting', true);
+        try {
+          const res = await quranEditorPost(`/update/${headingId}/toc.sectionDemote`, '1');
+          const body = await quranEditorJson(res);
+          if (!res.ok || body.code !== 200)
+            throw new Error(body.message || res.statusText);
+          if (window.toastr)
+            toastr.success(`${body.value.start} (${body.value.count} ayahs)`, 'Quran section demoted');
+          refreshAfterQuranHeadingUpdate(`/${body.value.path}#S${body.value.h2}-${body.value.h3}`);
+        } catch (err) {
+          if (window.toastr)
+            toastr.error(err.message, 'Quran section demote failed');
+          else
+            alert(err.message);
+        } finally {
+          setActionLoading(demoteButton, 'Demoting', false);
+        }
+      };
+
       startInput.addEventListener('input', () => updateLive(true));
       endInput.addEventListener('input', () => updateLive(true));
       startInput.addEventListener('focus', () => updateLive(false));
@@ -542,9 +574,13 @@
           hidePreview();
       }, 0));
       saveButton.addEventListener('click', saveRange);
+      if (demoteButton)
+        demoteButton.addEventListener('click', demoteSection);
       deleteButton.addEventListener('click', deleteSection);
       updateLive();
     });
+    };
+    window.initQuranRangeAdminControls(document);
 
     document.querySelectorAll('.quran-subsection-admin').forEach((container) => {
       const startInput = container.querySelector('.quran-subsection-start');
