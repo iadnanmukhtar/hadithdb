@@ -5352,11 +5352,11 @@ function quranShareModalHtml(ayah, shareId) {
 		.appendTo($inner);
 	var $footer = $('<footer>').addClass('hadith-share-footer').appendTo($inner);
 	$('<div>').append($('<div>').addClass('title share-editable').attr('contenteditable', 'false').text(chapterTitle ? `Qurʾān > ${chapterTitle}` : 'Qurʾān')).appendTo($footer);
-	var $brand = $('<div>').addClass('hadith-share-brand').appendTo($footer);
+	var $brand = $('<div>').addClass('hadith-share-brand').attr('style', 'display:flex;align-items:center;justify-content:space-between;gap:9px;width:100%;min-width:0;').appendTo($footer);
 	$('<div>').addClass('hadith-share-site share-editable').attr({ contenteditable: 'false', 'data-share-site-editor': '1' }).text('hadithunlocked.com').appendTo($brand);
-	$('<div>').addClass('hadith-share-logo').attr('data-share-logo', '')
-		.append($('<img>').attr({ src: '/images/quran-logo2.svg', width: '34', height: '34', alt: 'Quran Unlocked', loading: 'lazy' }))
-		.append($('<button>').attr({ type: 'button', 'aria-label': 'Remove logo', title: 'Remove logo' }).addClass('hadith-share-logo-remove').append($('<span>').addClass('bi bi-x')))
+	$('<div>').addClass('hadith-share-logo').attr({ 'data-share-logo': '', style: 'position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:34px;height:34px;max-width:34px;max-height:34px;' })
+		.append($('<img>').attr({ src: '/images/quran-logo2.svg', width: '34', height: '34', alt: 'Quran Unlocked', loading: 'lazy', style: 'display:block;width:34px;height:34px;max-width:34px;max-height:34px;object-fit:contain;' }))
+		.append($('<button>').attr({ type: 'button', 'aria-label': 'Remove logo', title: 'Remove logo', hidden: 'hidden', style: 'display:none;position:absolute;top:-8px;right:-8px;width:20px;height:20px;padding:0;border:1px solid #cfc7bc;border-radius:999px;background:#fff;color:#333;line-height:1;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.16);' }).addClass('hadith-share-logo-remove').append($('<span>').addClass('bi bi-x')))
 		.appendTo($brand);
 	return $modal;
 }
@@ -9736,6 +9736,7 @@ function initHadithShareModals(root) {
 				editButton.setAttribute('aria-pressed', editing ? 'true' : 'false');
 				editButton.classList.toggle('active', editing);
 				card.classList.toggle('hadith-share-editing', editing);
+				setHadithShareLogoRemoveControls(modal, editing);
 				editButton.title = editing ? 'Done editing' : 'Edit text';
 				editButton.setAttribute('aria-label', editing ? 'Done editing' : 'Edit text');
 				editButton.innerHTML = editing ? '<span class="bi bi-check2"></span>' : '<span class="bi bi-pencil"></span>';
@@ -9807,6 +9808,13 @@ function initHadithShareModals(root) {
 	});
 }
 
+function setHadithShareLogoRemoveControls(modal, visible) {
+	(modal || document).querySelectorAll('.hadith-share-logo-remove').forEach(function (button) {
+		button.hidden = !visible;
+		button.style.display = visible ? 'inline-flex' : 'none';
+	});
+}
+
 function scheduleHadithShareCardFit(card) {
 	if (!card)
 		return;
@@ -9855,9 +9863,17 @@ async function renderHadithShareImage(card) {
 		return card._shareRenderPromise;
 	card._shareRendering = true;
 	card._shareRenderPromise = (async function () {
+		var modal = card.closest('.hadith-share-modal');
+		var visibleLogoRemoveButtons = Array.from(modal ? modal.querySelectorAll('.hadith-share-logo-remove') : []).filter(function (button) {
+			return !button.hidden && button.style.display !== 'none';
+		});
 		try {
 			fitHadithShareCard(card);
 			card.classList.add('is-exporting');
+			visibleLogoRemoveButtons.forEach(function (button) {
+				button.hidden = true;
+				button.style.display = 'none';
+			});
 			var cardWidth = card.getBoundingClientRect().width || 540;
 			var canvas = await window.html2canvas(card, {
 				backgroundColor: null,
@@ -9870,6 +9886,10 @@ async function renderHadithShareImage(card) {
 			card._shareFile = window.File ? new File([blob], filename, { type: 'image/png' }) : null;
 			return blob;
 		} finally {
+			visibleLogoRemoveButtons.forEach(function (button) {
+				button.hidden = false;
+				button.style.display = 'inline-flex';
+			});
 			card.classList.remove('is-exporting');
 			card._shareRendering = false;
 			card._shareRenderPromise = null;
