@@ -25,6 +25,7 @@ const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
 const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
+const Surahs = require('../lib/Surahs');
 const { Heading, Item, Library } = require('../lib/Model');
 
 const router = express.Router();
@@ -889,21 +890,67 @@ async function reindexQuranSurah(sectionHeadingId, value) {
     throw createError(404, 'Section heading not found');
   var bookId = parseInt(section.book_id, 10);
   var surah = Number(section.h1);
-  await reindexChapterSearchScope(bookId, surah, {
+  var surahs = [surah - 1, surah, surah + 1]
+    .filter(value => Number.isInteger(value) && value >= 1 && value <= 114);
+  var book = (global.books || []).find(item => Number(item.id) === bookId);
+  var bookFilter = book && book.alias
+    ? { term: { book_alias: book.alias } }
+    : { term: { book_id: bookId } };
+  var searchQuery = {
+    bool: {
+      filter: [
+        bookFilter,
+        { terms: { h1: surahs } }
+      ]
+    }
+  };
+  await reindexSearchScope(`book_id=${bookId} AND h1 IN (${surahs.join(',')})`, {
     syncKnowledge: false,
     refresh: true,
     replaceHeadings: true,
-    replaceItems: true
+    replaceItems: true,
+    headingQuery: searchQuery,
+    itemQuery: searchQuery
   });
-  await invalidateQuranSurahCaches(surah);
+  for (const affectedSurah of surahs)
+    await invalidateQuranSurahCaches(affectedSurah);
+  await invalidateQuranTocCaches();
+  await rebuildQuranInMemoryCaches();
   return {
-    message: `Reindexed Quran Surah ${surah}`,
+    message: `Reindexed Quran Surahs ${surahs.join(', ')}`,
     value: {
       h1: surah,
       h2: Number(section.h2),
-      path: `quran/${surah}/${Number(section.h2)}`
+      path: `quran/${surah}/${Number(section.h2)}`,
+      reindexedSurahs: surahs
     }
   };
+}
+
+async function invalidateQuranTocCaches() {
+  var cacheDir = `${homedir()}/.hadithdb/cache`;
+  if (!fs.existsSync(cacheDir))
+    return;
+  var filenames = fs.readdirSync(cacheDir);
+  for (const filename of filenames) {
+    var cachedName = cacheBaseName(filename);
+    if (!isCurrentQuranCacheFile(cachedName))
+      continue;
+    var cacheKey = cachedName.slice(0, -`${Utils.cacheSuffix()}.html`.length);
+    if (cacheKey === '_quran' || !/_\d+(?:_|$|\?)/.test(cacheKey))
+      await Utils.flushCachedFile(`${cacheDir}/${cachedName}`);
+  }
+}
+
+async function rebuildQuranInMemoryCaches() {
+  QuranTocSubdivisions.invalidateAll();
+  await Surahs.load();
+  var quranBook = Library.instance.findBook('quran');
+  if (quranBook) {
+    quranBook.chapters = undefined;
+    await quranBook.getChapters();
+  }
+  await QuranTocSubdivisions.preload();
 }
 
 async function addQuranSection(anchorHeadingId, value, userId) {
@@ -1789,19 +1836,28 @@ async function invalidateQuranSurahCaches(surah) {
     debug(`quran ${surah} cache invalidation skipped: ${cacheDir} does not exist`);
     return;
   }
-  var prefixes = [`_quran_${surah}`, `_passage:${surah}:`];
+  var surahPattern = new RegExp(`_${Number(surah)}(?:_|$|\\?)`);
   var filenames = fs.readdirSync(cacheDir);
   var matched = 0;
   var deleted = 0;
   for (const filename of filenames) {
     const cachedName = cacheBaseName(filename);
-    if (prefixes.some(prefix => cachedName === `${prefix}.html` || cachedName.startsWith(prefix) || cachedName.startsWith(`${prefix}?`))) {
+    var currentQuranSurahCache = isCurrentQuranCacheFile(cachedName)
+      && surahPattern.test(cachedName.slice(0, -`${Utils.cacheSuffix()}.html`.length));
+    var currentPassageCache = cachedName.startsWith(`_passage:${surah}:`)
+      && cachedName.endsWith(`${Utils.cacheSuffix()}.html`);
+    if (currentQuranSurahCache || currentPassageCache) {
       matched++;
       if (await Utils.flushCachedFile(`${cacheDir}/${cachedName}`))
         deleted++;
     }
   }
   debug(`quran ${surah} cache invalidation scanned ${filenames.length}, matched ${matched}, deleted ${deleted}`);
+}
+
+function isCurrentQuranCacheFile(cachedName) {
+  return cachedName.startsWith('_quran')
+    && cachedName.endsWith(`${Utils.cacheSuffix()}.html`);
 }
 
 function updateErrorStatus(err) {
