@@ -827,7 +827,7 @@ async function updateQuranPassageRange(headingId, value, userId) {
   if (!Number.isInteger(headingId) || headingId <= 0)
     throw createError(400, 'Invalid heading id');
   var payload = parsePassageRangeValue(value);
-  var heading = (await global.query(`SELECT * FROM v_toc WHERE hId=${headingId} LIMIT 1`))[0];
+  var heading = await quranSectionFromId(headingId);
   if (!heading)
     throw createError(404, 'Heading not found');
   if (heading.book_alias !== 'quran')
@@ -869,7 +869,7 @@ async function addQuranSection(anchorHeadingId, value, userId) {
   if (!Number.isInteger(anchorHeadingId) || anchorHeadingId <= 0)
     throw createError(400, 'Invalid section heading id');
   var payload = parseSectionValue(value);
-  var anchor = (await global.query(`SELECT * FROM v_toc WHERE hId=${anchorHeadingId} LIMIT 1`))[0];
+  var anchor = await quranSectionFromId(anchorHeadingId);
   if (!anchor)
     throw createError(404, 'Section heading not found');
   if (anchor.book_alias !== 'quran')
@@ -922,7 +922,7 @@ async function addQuranSubsection(sectionHeadingId, value, userId) {
   if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
     throw createError(400, 'Invalid section heading id');
   var payload = parseSubsectionValue(value);
-  var section = (await global.query(`SELECT * FROM v_toc WHERE hId=${sectionHeadingId} LIMIT 1`))[0];
+  var section = await quranSectionFromId(sectionHeadingId);
   if (!section)
     throw createError(404, 'Section heading not found');
   if (section.book_alias !== 'quran')
@@ -1016,6 +1016,16 @@ async function quranSubsectionFromId(subsectionHeadingId) {
   return (await global.query(`SELECT * FROM v_toc
     WHERE book_alias='quran' AND level=3
       AND (hId=${subsectionHeadingId} OR tId=${subsectionHeadingId} OR id=${subsectionHeadingId})
+    LIMIT 1`))[0] || null;
+}
+
+async function quranSectionFromId(sectionHeadingId) {
+  sectionHeadingId = parseInt(sectionHeadingId, 10);
+  if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
+    return null;
+  return (await global.query(`SELECT * FROM v_toc
+    WHERE book_alias='quran' AND level=2
+      AND (hId=${sectionHeadingId} OR tId=${sectionHeadingId} OR id=${sectionHeadingId})
     LIMIT 1`))[0] || null;
 }
 
@@ -1338,7 +1348,7 @@ async function deleteQuranSection(sectionHeadingId) {
   sectionHeadingId = parseInt(sectionHeadingId, 10);
   if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
     throw createError(400, 'Invalid section heading id');
-  var section = (await global.query(`SELECT * FROM v_toc WHERE hId=${sectionHeadingId} LIMIT 1`))[0];
+  var section = await quranSectionFromId(sectionHeadingId);
   if (!section)
     throw createError(404, 'Section heading not found');
   if (section.book_alias !== 'quran')
