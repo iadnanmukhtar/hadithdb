@@ -62,10 +62,10 @@
 				<% } %>
 				<% if (ar.body) { %>
 					<section class="hadith-share-section hadith-share-arabic-section" lang="ar">
-						<div class="hadith-share-ref">
+						<div class="hadith-share-ref share-editable" contenteditable="false" data-share-ref-editor="1">
 							<%= ar.book_shortName || i.book_shortName || '' %> <%= ar.num || i.num || '' %>:
 							<% if (i.remark === 0 && arNarrator) { %>
-								عن <span class="share-editable" contenteditable="false"><%= arNarrator %></span> —
+								عن <span><%= arNarrator %></span> —
 							<% } %>
 						</div>
 						<div class="body hadith-share-text share-editable" lang="ar" contenteditable="false" data-markdown-source="<%= utils.emptyIfNull(ar.body) %>">
@@ -75,14 +75,14 @@
 				<% } %>
 				<% if (en.body || ar.body) { %>
 					<section class="hadith-share-section hadith-share-translation-section" lang="en" data-share-copy-section="translation">
-						<div class="hadith-share-ref">
+						<div class="hadith-share-ref share-editable" contenteditable="false" data-share-ref-editor="1">
 							<% if (i.book_virtual) { %>
 								<%= String(enActual.book_shortName || i.book_shortName_en || '').toUpperCase() %> <%= en.num || i.num || '' %>:
 							<% } else { %>
 								<%= String(en.book_shortName || i.book_shortName_en || '').toUpperCase() %> <%= en.num || i.num || '' %>:
 							<% } %>
 							<% if (i.remark === 0 && enNarrator) { %>
-								from <em class="share-editable" contenteditable="false"><%= enNarrator %></em> —
+								from <em><%= enNarrator %></em> —
 							<% } %>
 						</div>
 						<div class="body hadith-share-text share-editable" lang="en" contenteditable="false" data-share-generated-body="1" data-markdown-source="<%= utils.emptyIfNull(en.body) %>">
@@ -93,15 +93,15 @@
 				<footer class="hadith-share-footer">
 					<div>
 						<% if (i.remark === 0) { %>
-							<div class="grade">
-								<span class="share-editable" contenteditable="false"><%= en.grade_grade || '' %></span>&nbsp;(<span title="<%= en.grader_name || '' %>" class="share-editable" contenteditable="false"><%= en.grader_shortName || '' %></span>)
+							<div class="grade share-editable" contenteditable="false">
+								<span><%= en.grade_grade || '' %></span>&nbsp;(<span title="<%= en.grader_name || '' %>"><%= en.grader_shortName || '' %></span>)
 							</div>
 						<% } %>
 						<div class="title share-editable" contenteditable="false">
 							<%= i.book_shortName_en || '' %>
 							<% if (i.chapter) { %>
-								&gt;
-								<%- utils.truncate(en.h1_title, 60, true) || 'Chapter' %>
+							&gt;
+							<%- utils.truncate(en.h1_title, 60, true) || 'Chapter' %>
 							<% } %>
 							<% if (i.section) { %>
 								&gt;
@@ -109,8 +109,16 @@
 							<% } %>
 						</div>
 					</div>
-					<div class="hadith-share-site">
-						hadithunlocked.com
+					<div class="hadith-share-brand">
+						<div class="hadith-share-site share-editable" contenteditable="false" data-share-site-editor="1">
+							hadithunlocked.com
+						</div>
+						<div class="hadith-share-logo" data-share-logo>
+							<img src="/images/logo2.svg" alt="Hadith Unlocked" loading="lazy">
+							<button type="button" class="hadith-share-logo-remove" aria-label="Remove logo" title="Remove logo">
+								<span class="bi bi-x"></span>
+							</button>
+						</div>
 					</div>
 				</footer>
 			</div>

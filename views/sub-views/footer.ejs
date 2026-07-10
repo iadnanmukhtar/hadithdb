@@ -39,6 +39,10 @@
 				const id = settingsUserId(user);
 				return id ? `${USER_SETTINGS_CACHE_PREFIX}${id}` : '';
 			};
+			window.hadithUserSettingsShouldBypassCache = () => {
+				const path = window.location && window.location.pathname ? window.location.pathname : '';
+				return path === '/bookmarks' || path === '/bookmarks/';
+			};
 			const legacySettingsCacheKey = (user) => {
 				const id = settingsUserId(user);
 				return id ? `${LEGACY_USER_SETTINGS_CACHE_PREFIX}${id}` : '';
@@ -106,6 +110,13 @@
 		const bookmarkMap = {};
 		const headingBookmarkMap = {};
 		const tafsirBookmarkMap = {};
+		const bookmarkMetadata = {
+			hadiths: {},
+			headings: {},
+			tafsirs: {}
+		};
+		const BOOKMARK_METADATA_SETTINGS_KEY = 'bookmarkMetadata';
+		const BOOKMARK_METADATA_MAX_ENTRIES = 500;
 		const loadedLikeIds = new Set();
 		const pendingLikeIds = new Set();
 		const loadingLikeIds = new Set();
@@ -200,6 +211,9 @@
 			const bookmarks = source.bookmarks && typeof source.bookmarks === 'object' && !Array.isArray(source.bookmarks)
 				? source.bookmarks
 				: {};
+			const storedMetadata = source[BOOKMARK_METADATA_SETTINGS_KEY] && typeof source[BOOKMARK_METADATA_SETTINGS_KEY] === 'object' && !Array.isArray(source[BOOKMARK_METADATA_SETTINGS_KEY])
+				? source[BOOKMARK_METADATA_SETTINGS_KEY]
+				: {};
 			return {
 				...source,
 				bookmarks: {
@@ -211,7 +225,12 @@
 						.filter(id => Number.isInteger(id) && id > 0))),
 					tafsirs: Array.from(new Set((Array.isArray(bookmarks.tafsirs) ? bookmarks.tafsirs : [])
 						.map(ref => String(ref || '').trim())
-						.filter(ref => /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(ref))))
+						.filter(ref => /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(ref)))),
+				},
+				bookmarkMetadata: {
+					hadiths: normalizeBookmarkMetadata(storedMetadata.hadiths),
+					headings: normalizeBookmarkMetadata(storedMetadata.headings),
+					tafsirs: normalizeBookmarkMetadata(storedMetadata.tafsirs)
 				}
 			};
 		};
@@ -222,6 +241,11 @@
 				hadiths: idsFromMap(bookmarkMap),
 				headings: idsFromMap(headingBookmarkMap),
 				tafsirs: tafsirRefsFromMap(tafsirBookmarkMap)
+			},
+			[BOOKMARK_METADATA_SETTINGS_KEY]: {
+				hadiths: bookmarkMetadata.hadiths,
+				headings: bookmarkMetadata.headings,
+				tafsirs: bookmarkMetadata.tafsirs
 			}
 		});
 
@@ -294,12 +318,18 @@
 			replaceMap(bookmarkMap, userSettings.bookmarks.hadiths);
 			replaceMap(headingBookmarkMap, userSettings.bookmarks.headings);
 			replaceStringMap(tafsirBookmarkMap, userSettings.bookmarks.tafsirs, /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/);
+			bookmarkMetadata.hadiths = normalizeBookmarkMetadata(userSettings.bookmarkMetadata && userSettings.bookmarkMetadata.hadiths);
+			bookmarkMetadata.headings = normalizeBookmarkMetadata(userSettings.bookmarkMetadata && userSettings.bookmarkMetadata.headings);
+			bookmarkMetadata.tafsirs = normalizeBookmarkMetadata(userSettings.bookmarkMetadata && userSettings.bookmarkMetadata.tafsirs);
+			pruneBookmarkMetadata('hadiths', userSettings.bookmarks.hadiths);
+			pruneBookmarkMetadata('headings', userSettings.bookmarks.headings);
+			pruneBookmarkMetadata('tafsirs', userSettings.bookmarks.tafsirs);
 		};
 
 		const loadBookmarkSettings = async () => {
 			try {
 				const settingsUser = await getSettingsUser();
-				const cachedSettings = window.hadithUserSettingsCache.read(settingsUser);
+				const cachedSettings = window.hadithUserSettingsShouldBypassCache && window.hadithUserSettingsShouldBypassCache() ? null : window.hadithUserSettingsCache.read(settingsUser);
 				if (cachedSettings) {
 					applyBookmarkSettings(cachedSettings);
 					return;
@@ -388,6 +418,124 @@
 		};
 
 		const getCommentElementType = (el) => likeType(el && el.dataset ? el.dataset.commentType : '');
+
+		const textMetadataValue = (value) => {
+			if (value === undefined || value === null) return '';
+			return String(value)
+				.replace(/\s+/g, ' ')
+				.trim();
+		};
+
+		const normalizeBookmarkMetadata = (raw) => {
+			if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+			const normalized = {};
+			Object.keys(raw).forEach((key) => {
+				const value = raw[key];
+				if (!value || typeof value !== 'object' || Array.isArray(value))
+					return;
+				const title = textMetadataValue(value.title);
+				const titleAr = textMetadataValue(value.titleAr);
+				const ref = textMetadataValue(value.ref);
+				const url = textMetadataValue(value.url);
+				const type = textMetadataValue(value.type);
+				const body = textMetadataValue(value.body);
+				const bodyAr = textMetadataValue(value.bodyAr);
+				const range = textMetadataValue(value.range);
+				const entry = {};
+				if (title) entry.title = title;
+				if (titleAr) entry.titleAr = titleAr;
+				if (ref) entry.ref = ref;
+				if (url) entry.url = url;
+				if (type) entry.type = type;
+				if (body) entry.body = body;
+				if (bodyAr) entry.bodyAr = bodyAr;
+				if (range) entry.range = range;
+				if (Object.keys(entry).length) normalized[String(key)] = entry;
+			});
+			return normalized;
+		};
+
+		const cloneBookmarkMetadata = (category) => {
+			const source = bookmarkMetadata[category] || {};
+			return Object.keys(source).reduce((acc, key) => {
+				acc[key] = { ...source[key] };
+				return acc;
+			}, {});
+		};
+
+		const restoreBookmarkMetadata = (category, entries) => {
+			bookmarkMetadata[category] = {};
+			Object.keys(entries || {}).forEach(key => {
+				bookmarkMetadata[category][key] = { ...(entries[key] || {}) };
+			});
+		};
+
+		const pruneBookmarkMetadata = (category, validIds) => {
+			const valid = new Set((Array.isArray(validIds) ? validIds : []).map(id => String(id)));
+			const source = bookmarkMetadata[category];
+			if (!source) return;
+			Object.keys(source).forEach((id) => {
+				if (!valid.has(id)) delete source[id];
+			});
+		};
+
+		const syncBookmarkMetadataState = (category, key, value) => {
+			if (!bookmarkMetadata[category]) return;
+			const id = String(key);
+			const normalized = normalizeBookmarkMetadata({ [id]: value })[id];
+			if (!normalized) {
+				delete bookmarkMetadata[category][id];
+				return;
+			}
+			bookmarkMetadata[category][id] = normalized;
+		};
+
+		const setBookmarkMetadata = (category, key, value) => {
+			if (!bookmarkMetadata[category]) return;
+			syncBookmarkMetadataState(category, key, value);
+			if (value) truncateMetadataMap(category);
+		};
+
+		const truncateMetadataMap = (category) => {
+			const source = bookmarkMetadata[category];
+			if (!source) return;
+			const ids = Object.keys(source);
+			while (ids.length > BOOKMARK_METADATA_MAX_ENTRIES) {
+				const removedId = ids.shift();
+				delete source[removedId];
+			}
+		};
+
+		const resolveBookmarkMetadataFromButton = (button, fallback = {}) => {
+			if (!button) return fallback;
+			const fromDataset = {
+				ref: textMetadataValue(button.dataset.bookmarkRef),
+				title: textMetadataValue(button.dataset.bookmarkTitle),
+				titleAr: textMetadataValue(button.dataset.bookmarkTitleAr),
+				url: textMetadataValue(button.dataset.bookmarkUrl),
+				type: textMetadataValue(button.dataset.bookmarkType),
+				body: textMetadataValue(button.dataset.bookmarkBody),
+				bodyAr: textMetadataValue(button.dataset.bookmarkBodyAr),
+				range: textMetadataValue(button.dataset.bookmarkRange)
+			};
+			if (fromDataset.title || fromDataset.titleAr || fromDataset.ref || fromDataset.url || fromDataset.type || fromDataset.body || fromDataset.bodyAr || fromDataset.range) return fromDataset;
+			const container = button.closest('article, section, tr, .chapter, .heading, .row') || button.parentElement;
+			if (!container) return fallback;
+			const anchor = container.querySelector('a[href]');
+			const title = textMetadataValue(anchor && anchor.title ? anchor.title : (anchor ? anchor.textContent : ''));
+			const linkRef = textMetadataValue(anchor ? anchor.getAttribute('href') : '');
+			const resolved = {
+				ref: fromDataset.ref || linkRef || title,
+				title: fromDataset.title || textMetadataValue(anchor ? anchor.textContent : ''),
+				titleAr: fromDataset.titleAr,
+				url: fromDataset.url || linkRef,
+				type: fromDataset.type,
+				body: fromDataset.body,
+				bodyAr: fromDataset.bodyAr,
+				range: fromDataset.range
+			};
+			return resolved.title || resolved.ref ? resolved : fallback;
+		};
 
 		const setTypedCommentCount = (id, type, count) => {
 			type = likeType(type);
@@ -601,7 +749,7 @@
 			}
 		};
 
-		const toggleBookmark = async (id) => {
+		const toggleBookmark = async (id, btn) => {
 			await waitForBookmarkSettingsLoad();
 			const token = await getSettingsToken();
 			const user = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
@@ -609,22 +757,35 @@
 				requireBookmarkLogin();
 				return;
 			}
-			const bookmarked = !bookmarkMap[id];
-			if (bookmarked) bookmarkMap[id] = true;
-			else delete bookmarkMap[id];
+			const previous = {
+				bookmarked: !!bookmarkMap[id],
+				meta: bookmarkMetadata.hadiths[String(id)] && { ...bookmarkMetadata.hadiths[String(id)] }
+			};
+			const bookmarked = !previous.bookmarked;
+			const metadata = resolveBookmarkMetadataFromButton(btn, { ref: String(id) });
+			if (bookmarked) {
+				bookmarkMap[id] = true;
+				setBookmarkMetadata('hadiths', id, metadata);
+			} else {
+				delete bookmarkMap[id];
+				delete bookmarkMetadata.hadiths[String(id)];
+			}
 			setBookmarkState(id, bookmarked);
-			document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
-				detail: { hadithId: id, bookmarked }
-			}));
+			document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', { detail: { hadithId: id, bookmarked } }));
 			try {
 				await saveBookmarkSettings();
 			} catch (err) {
-				if (bookmarked) delete bookmarkMap[id];
-				else bookmarkMap[id] = true;
-				setBookmarkState(id, !bookmarked);
-				document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
-					detail: { hadithId: id, bookmarked: !bookmarked }
-				}));
+				if (previous.bookmarked) {
+					bookmarkMap[id] = true;
+					setBookmarkMetadata('hadiths', id, previous.meta);
+					setBookmarkState(id, true);
+					document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', { detail: { hadithId: id, bookmarked: true } }));
+				} else {
+					delete bookmarkMap[id];
+					delete bookmarkMetadata.hadiths[String(id)];
+					setBookmarkState(id, false);
+					document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', { detail: { hadithId: id, bookmarked: false } }));
+				}
 				toastr.error('Could not save bookmark. Please try again.', 'Bookmarks');
 				console.warn('Could not save bookmark', err);
 			}
@@ -633,7 +794,9 @@
 		const removeBookmark = async (id) => {
 			await waitForBookmarkSettingsLoad();
 			if (!bookmarkMap[id]) return;
+			const previousMeta = bookmarkMetadata.hadiths[String(id)] && { ...bookmarkMetadata.hadiths[String(id)] };
 			delete bookmarkMap[id];
+			delete bookmarkMetadata.hadiths[String(id)];
 			setBookmarkState(id, false);
 			document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
 				detail: { hadithId: id, bookmarked: false }
@@ -642,6 +805,9 @@
 				await saveBookmarkSettings();
 			} catch (err) {
 				bookmarkMap[id] = true;
+				if (previousMeta) {
+					setBookmarkMetadata('hadiths', id, previousMeta);
+				}
 				setBookmarkState(id, true);
 				document.dispatchEvent(new CustomEvent('hadithBookmarkToggled', {
 					detail: { hadithId: id, bookmarked: true }
@@ -651,7 +817,7 @@
 			}
 		};
 
-		const toggleHeadingBookmark = async (id) => {
+		const toggleHeadingBookmark = async (id, btn) => {
 			await waitForBookmarkSettingsLoad();
 			const token = await getSettingsToken();
 			const user = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
@@ -659,22 +825,35 @@
 				requireBookmarkLogin();
 				return;
 			}
-			const bookmarked = !headingBookmarkMap[id];
-			if (bookmarked) headingBookmarkMap[id] = true;
-			else delete headingBookmarkMap[id];
+			const previous = {
+				bookmarked: !!headingBookmarkMap[id],
+				meta: bookmarkMetadata.headings[String(id)] && { ...bookmarkMetadata.headings[String(id)] }
+			};
+			const bookmarked = !previous.bookmarked;
+			const metadata = resolveBookmarkMetadataFromButton(btn, { ref: String(id) });
+			if (bookmarked) {
+				headingBookmarkMap[id] = true;
+				setBookmarkMetadata('headings', id, metadata);
+			} else {
+				delete headingBookmarkMap[id];
+				delete bookmarkMetadata.headings[String(id)];
+			}
 			setHeadingBookmarkState(id, bookmarked);
-			document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
-				detail: { headingId: id, bookmarked }
-			}));
+			document.dispatchEvent(new CustomEvent('headingBookmarkToggled', { detail: { headingId: id, bookmarked } }));
 			try {
 				await saveBookmarkSettings();
 			} catch (err) {
-				if (bookmarked) delete headingBookmarkMap[id];
-				else headingBookmarkMap[id] = true;
-				setHeadingBookmarkState(id, !bookmarked);
-				document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
-					detail: { headingId: id, bookmarked: !bookmarked }
-				}));
+				if (previous.bookmarked) {
+					headingBookmarkMap[id] = true;
+					setBookmarkMetadata('headings', id, previous.meta);
+					setHeadingBookmarkState(id, true);
+					document.dispatchEvent(new CustomEvent('headingBookmarkToggled', { detail: { headingId: id, bookmarked: true } }));
+				} else {
+					delete headingBookmarkMap[id];
+					delete bookmarkMetadata.headings[String(id)];
+					setHeadingBookmarkState(id, false);
+					document.dispatchEvent(new CustomEvent('headingBookmarkToggled', { detail: { headingId: id, bookmarked: false } }));
+				}
 				toastr.error('Could not save bookmark. Please try again.', 'Bookmarks');
 				console.warn('Could not save heading bookmark', err);
 			}
@@ -683,7 +862,9 @@
 		const removeHeadingBookmark = async (id) => {
 			await waitForBookmarkSettingsLoad();
 			if (!headingBookmarkMap[id]) return;
+			const previousMeta = bookmarkMetadata.headings[String(id)] && { ...bookmarkMetadata.headings[String(id)] };
 			delete headingBookmarkMap[id];
+			delete bookmarkMetadata.headings[String(id)];
 			setHeadingBookmarkState(id, false);
 			document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
 				detail: { headingId: id, bookmarked: false }
@@ -692,6 +873,9 @@
 				await saveBookmarkSettings();
 			} catch (err) {
 				headingBookmarkMap[id] = true;
+				if (previousMeta) {
+					setBookmarkMetadata('headings', id, previousMeta);
+				}
 				setHeadingBookmarkState(id, true);
 				document.dispatchEvent(new CustomEvent('headingBookmarkToggled', {
 					detail: { headingId: id, bookmarked: true }
@@ -701,7 +885,7 @@
 			}
 		};
 
-		const toggleTafsirBookmark = async (key) => {
+		const toggleTafsirBookmark = async (key, btn) => {
 			await waitForBookmarkSettingsLoad();
 			const token = await getSettingsToken();
 			const user = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
@@ -709,22 +893,35 @@
 				requireBookmarkLogin();
 				return;
 			}
-			const bookmarked = !tafsirBookmarkMap[key];
-			if (bookmarked) tafsirBookmarkMap[key] = true;
-			else delete tafsirBookmarkMap[key];
+			const previous = {
+				bookmarked: !!tafsirBookmarkMap[key],
+				meta: bookmarkMetadata.tafsirs[key] && { ...bookmarkMetadata.tafsirs[key] }
+			};
+			const bookmarked = !previous.bookmarked;
+			const metadata = resolveBookmarkMetadataFromButton(btn, { ref: key });
+			if (bookmarked) {
+				tafsirBookmarkMap[key] = true;
+				setBookmarkMetadata('tafsirs', key, metadata);
+			} else {
+				delete tafsirBookmarkMap[key];
+				delete bookmarkMetadata.tafsirs[key];
+			}
 			setTafsirBookmarkState(key, bookmarked);
-			document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', {
-				detail: { tafsirKey: key, bookmarked }
-			}));
+			document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', { detail: { tafsirKey: key, bookmarked } }));
 			try {
 				await saveBookmarkSettings();
 			} catch (err) {
-				if (bookmarked) delete tafsirBookmarkMap[key];
-				else tafsirBookmarkMap[key] = true;
-				setTafsirBookmarkState(key, !bookmarked);
-				document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', {
-					detail: { tafsirKey: key, bookmarked: !bookmarked }
-				}));
+				if (previous.bookmarked) {
+					tafsirBookmarkMap[key] = true;
+					setBookmarkMetadata('tafsirs', key, previous.meta);
+					setTafsirBookmarkState(key, true);
+					document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', { detail: { tafsirKey: key, bookmarked: true } }));
+				} else {
+					delete tafsirBookmarkMap[key];
+					delete bookmarkMetadata.tafsirs[key];
+					setTafsirBookmarkState(key, false);
+					document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', { detail: { tafsirKey: key, bookmarked: false } }));
+				}
 				toastr.error('Could not save bookmark. Please try again.', 'Bookmarks');
 				console.warn('Could not save tafsir bookmark', err);
 			}
@@ -733,7 +930,9 @@
 		const removeTafsirBookmark = async (key) => {
 			await waitForBookmarkSettingsLoad();
 			if (!tafsirBookmarkMap[key]) return;
+			const previousMeta = bookmarkMetadata.tafsirs[key] && { ...bookmarkMetadata.tafsirs[key] };
 			delete tafsirBookmarkMap[key];
+			delete bookmarkMetadata.tafsirs[key];
 			setTafsirBookmarkState(key, false);
 			document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', {
 				detail: { tafsirKey: key, bookmarked: false }
@@ -742,6 +941,9 @@
 				await saveBookmarkSettings();
 			} catch (err) {
 				tafsirBookmarkMap[key] = true;
+				if (previousMeta) {
+					setBookmarkMetadata('tafsirs', key, previousMeta);
+				}
 				setTafsirBookmarkState(key, true);
 				document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled', {
 					detail: { tafsirKey: key, bookmarked: true }
@@ -775,30 +977,30 @@
 				setBookmarkState(id, !!bookmarkMap[id]);
 				if (btn.dataset.hadithBookmarkInit === '1') return;
 				btn.dataset.hadithBookmarkInit = '1';
-				btn.addEventListener('click', () => toggleBookmark(id));
+				btn.addEventListener('click', () => toggleBookmark(id, btn));
 			});
 		};
 
 		const initHeadingBookmarks = () => {
 			getHeadingBookmarkButtons().forEach(btn => {
-				const id = parseInt(btn.dataset.headingId);
-				if (Number.isNaN(id)) return;
-				setHeadingBookmarkState(id, !!headingBookmarkMap[id]);
-				if (btn.dataset.headingBookmarkInit === '1') return;
-				btn.dataset.headingBookmarkInit = '1';
-				btn.addEventListener('click', () => toggleHeadingBookmark(id));
-			});
+			const id = parseInt(btn.dataset.headingId);
+			if (Number.isNaN(id)) return;
+			setHeadingBookmarkState(id, !!headingBookmarkMap[id]);
+			if (btn.dataset.headingBookmarkInit === '1') return;
+			btn.dataset.headingBookmarkInit = '1';
+			btn.addEventListener('click', () => toggleHeadingBookmark(id, btn));
+		});
 		};
 
 		const initTafsirBookmarks = () => {
 			getTafsirBookmarkButtons().forEach(btn => {
-				const key = String(btn.dataset.tafsirBookmarkKey || '').trim();
-				if (!/^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(key)) return;
-				setTafsirBookmarkState(key, !!tafsirBookmarkMap[key]);
-				if (btn.dataset.tafsirBookmarkInit === '1') return;
-				btn.dataset.tafsirBookmarkInit = '1';
-				btn.addEventListener('click', () => toggleTafsirBookmark(key));
-			});
+			const key = String(btn.dataset.tafsirBookmarkKey || '').trim();
+			if (!/^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(key)) return;
+			setTafsirBookmarkState(key, !!tafsirBookmarkMap[key]);
+			if (btn.dataset.tafsirBookmarkInit === '1') return;
+			btn.dataset.tafsirBookmarkInit = '1';
+			btn.addEventListener('click', () => toggleTafsirBookmark(key, btn));
+		});
 		};
 
 		const init = () => {
@@ -822,17 +1024,31 @@
 		window.hadithBookmarks = {
 			ready: bookmarkSettingsReady,
 			getAll: () => Object.keys(bookmarkMap).map(id => parseInt(id, 10)).filter(id => !Number.isNaN(id)),
+			getAllWithMeta: () => Object.keys(bookmarkMap).map(id => ({
+				id: parseInt(id, 10),
+				...bookmarkMetadata.hadiths[id]
+			})).filter(item => !Number.isNaN(item.id)),
+			mergeMetadata: async (entries) => {
+				await waitForBookmarkSettingsLoad();
+				Object.keys(entries || {}).forEach(id => {
+					if (bookmarkMap[id]) setBookmarkMetadata('hadiths', id, entries[id]);
+				});
+				await saveBookmarkSettings();
+			},
 			remove: removeBookmark,
 			clear: async () => {
 				await waitForBookmarkSettingsLoad();
 				const previous = { ...bookmarkMap };
+				const previousMetadata = cloneBookmarkMetadata('hadiths');
 				Object.keys(bookmarkMap).forEach(key => delete bookmarkMap[key]);
+				bookmarkMetadata.hadiths = {};
 				initBookmarks();
 				document.dispatchEvent(new CustomEvent('hadithBookmarksCleared'));
 				try {
 					await saveBookmarkSettings();
 				} catch (err) {
 					replaceMap(bookmarkMap, idsFromMap(previous));
+					restoreBookmarkMetadata('hadiths', previousMetadata);
 					initBookmarks();
 					document.dispatchEvent(new CustomEvent('hadithBookmarkToggled'));
 					toastr.error('Could not clear bookmarks. Please try again.', 'Bookmarks');
@@ -843,17 +1059,31 @@
 		window.headingBookmarks = {
 			ready: bookmarkSettingsReady,
 			getAll: () => Object.keys(headingBookmarkMap).map(id => parseInt(id, 10)).filter(id => !Number.isNaN(id)),
+			getAllWithMeta: () => Object.keys(headingBookmarkMap).map(id => ({
+				id: parseInt(id, 10),
+				...bookmarkMetadata.headings[id]
+			})).filter(item => !Number.isNaN(item.id)),
+			mergeMetadata: async (entries) => {
+				await waitForBookmarkSettingsLoad();
+				Object.keys(entries || {}).forEach(id => {
+					if (headingBookmarkMap[id]) setBookmarkMetadata('headings', id, entries[id]);
+				});
+				await saveBookmarkSettings();
+			},
 			remove: removeHeadingBookmark,
 			clear: async () => {
 				await waitForBookmarkSettingsLoad();
 				const previous = { ...headingBookmarkMap };
+				const previousMetadata = cloneBookmarkMetadata('headings');
 				Object.keys(headingBookmarkMap).forEach(key => delete headingBookmarkMap[key]);
+				bookmarkMetadata.headings = {};
 				initHeadingBookmarks();
 				document.dispatchEvent(new CustomEvent('headingBookmarksCleared'));
 				try {
 					await saveBookmarkSettings();
 				} catch (err) {
 					replaceMap(headingBookmarkMap, idsFromMap(previous));
+					restoreBookmarkMetadata('headings', previousMetadata);
 					initHeadingBookmarks();
 					document.dispatchEvent(new CustomEvent('headingBookmarkToggled'));
 					toastr.error('Could not clear bookmarks. Please try again.', 'Bookmarks');
@@ -864,17 +1094,31 @@
 		window.tafsirBookmarks = {
 			ready: bookmarkSettingsReady,
 			getAll: () => tafsirRefsFromMap(tafsirBookmarkMap),
+			getAllWithMeta: () => tafsirRefsFromMap(tafsirBookmarkMap).map(key => ({
+				key,
+				...bookmarkMetadata.tafsirs[key]
+			})),
+			mergeMetadata: async (entries) => {
+				await waitForBookmarkSettingsLoad();
+				Object.keys(entries || {}).forEach(key => {
+					if (tafsirBookmarkMap[key]) setBookmarkMetadata('tafsirs', key, entries[key]);
+				});
+				await saveBookmarkSettings();
+			},
 			remove: removeTafsirBookmark,
 			clear: async () => {
 				await waitForBookmarkSettingsLoad();
 				const previous = { ...tafsirBookmarkMap };
+				const previousMetadata = cloneBookmarkMetadata('tafsirs');
 				Object.keys(tafsirBookmarkMap).forEach(key => delete tafsirBookmarkMap[key]);
+				bookmarkMetadata.tafsirs = {};
 				initTafsirBookmarks();
 				document.dispatchEvent(new CustomEvent('tafsirBookmarksCleared'));
 				try {
 					await saveBookmarkSettings();
 				} catch (err) {
 					replaceStringMap(tafsirBookmarkMap, tafsirRefsFromMap(previous), /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/);
+					restoreBookmarkMetadata('tafsirs', previousMetadata);
 					initTafsirBookmarks();
 					document.dispatchEvent(new CustomEvent('tafsirBookmarkToggled'));
 					toastr.error('Could not clear bookmarks. Please try again.', 'Bookmarks');

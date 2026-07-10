@@ -666,7 +666,13 @@
                   <td class="quran-juz-surah-list">
                     <% for (var linkIndex = 0; linkIndex < juzSurahLinks.length; linkIndex++) {
                       var surahLink = juzSurahLinks[linkIndex];
+                      var showJuzBookmark = linkIndex === 0 && Number.isInteger(parseInt(juz && juz.id, 10));
                     %>
+                    <% if (showJuzBookmark) { %>
+                    <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= juz.id %>" data-bookmark-type="quran-range" data-bookmark-ref="juz:<%= juz.num %>" data-bookmark-title="Juz <%= juz.num %>" data-bookmark-title-ar="<%= juz.title || '' %>" data-bookmark-url="<%= quranJuzStartHref(juz) %>" title="Bookmark this juz">
+                      <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= juz.id %>"></span>
+                    </button>
+                    <% } %>
                     <span class="quran-juz-surah-link"><a href="<%= surahLink.href %>"><%- surahLink.name_en %></a></span><%= linkIndex < juzSurahLinks.length - 1 ? ', ' : '' %>
                     <% } %>
                   </td>
@@ -710,7 +716,7 @@
                     </td>
                     <% if (toc[i].start) { %>
                     <td>
-                      <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
+                      <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" data-bookmark-type="<%= book.alias === 'quran' ? 'surah' : 'chapter' %>" data-bookmark-ref="<%= book.alias === 'quran' ? `quran:${toc[i].h1}` : `${book.alias}:${toc[i].h1}` %>" data-bookmark-title="<%= toc[i].title_en || title_en || 'Chapter' %>" data-bookmark-title-ar="<%= toc[i].title || title || '' %>" data-bookmark-url="<%= quranTocHref(toc[i]) %>" title="Bookmark this chapter">
                         <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
                       </button>
                       <a href="<%= quranTocHref(toc[i]) %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a>
@@ -718,7 +724,7 @@
                     <td lang="ar"><a href="<%= quranTocHref(toc[i]) %>" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
                     <% } else { %>
                     <td>
-                      <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
+                      <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" data-bookmark-type="<%= book.alias === 'quran' ? 'surah' : 'chapter' %>" data-bookmark-ref="<%= book.alias === 'quran' ? `quran:${toc[i].h1}` : `${book.alias}:${toc[i].h1}` %>" data-bookmark-title="<%= toc[i].title_en || title_en || 'Chapter' %>" data-bookmark-title-ar="<%= toc[i].title || title || '' %>" title="Bookmark this chapter">
                         <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
                       </button>
                       <span class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en %></span>
@@ -771,7 +777,13 @@
                   <td class="quran-juz-surah-list">
                     <% for (var manzilLinkIndex = 0; manzilLinkIndex < manzilSurahLinks.length; manzilLinkIndex++) {
                       var manzilSurahLink = manzilSurahLinks[manzilLinkIndex];
+                      var showManzilBookmark = manzilLinkIndex === 0 && Number.isInteger(parseInt(manzil && manzil.id, 10));
                     %>
+                    <% if (showManzilBookmark) { %>
+                    <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= manzil.id %>" data-bookmark-type="quran-range" data-bookmark-ref="manzil:<%= manzil.num %>" data-bookmark-title="<%= manzil.name %>" data-bookmark-title-ar="<%= quranTocSurahArabicName(manzil.startSurah) %>" data-bookmark-url="<%= quranTocStartHref(manzil) %>" title="Bookmark this manzil">
+                      <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= manzil.id %>"></span>
+                    </button>
+                    <% } %>
                     <span class="quran-juz-surah-link"><a href="<%= manzilSurahLink.href %>"><%- manzilSurahLink.name_en %></a></span><%= manzilLinkIndex < manzilSurahLinks.length - 1 ? ', ' : '' %>
                     <% } %>
                   </td>
@@ -818,7 +830,7 @@
               </td>
               <% if (toc[i].start) { %>
               <td>
-                <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
+                <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" data-bookmark-type="<%= book.alias === 'quran' ? 'surah' : 'chapter' %>" data-bookmark-ref="<%= book.alias === 'quran' ? `quran:${toc[i].h1}` : `${book.alias}:${toc[i].h1}` %>" data-bookmark-title="<%= toc[i].title_en || title_en || 'Chapter' %>" data-bookmark-title-ar="<%= toc[i].title || title || '' %>" data-bookmark-url="<%= quranTocHref(toc[i]) %>" title="Bookmark this chapter">
                   <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
                 </button>
                 <a href="<%= quranTocHref(toc[i]) %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a>
@@ -826,7 +838,7 @@
               <td lang="ar"><a href="<%= quranTocHref(toc[i]) %>" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
               <% } else { %>
               <td>
-                <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" title="Bookmark this chapter">
+                <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" data-bookmark-type="<%= book.alias === 'quran' ? 'surah' : 'chapter' %>" data-bookmark-ref="<%= book.alias === 'quran' ? `quran:${toc[i].h1}` : `${book.alias}:${toc[i].h1}` %>" data-bookmark-title="<%= toc[i].title_en || title_en || 'Chapter' %>" data-bookmark-title-ar="<%= toc[i].title || title || '' %>" title="Bookmark this chapter">
                   <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
                 </button>
                 <span class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en %></span>

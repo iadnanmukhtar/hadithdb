@@ -64,7 +64,7 @@
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
 	        </a>
 	        <% if (quranChapter) { %>
-	          <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-heading-id="<%= quranChapter.id %>" title="Bookmark this chapter">
+	          <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-heading-id="<%= quranChapter.id %>" data-bookmark-type="surah" data-bookmark-ref="quran:<%= surah.num %>" data-bookmark-title="<%= quranChapterTitleEn %>" data-bookmark-title-ar="<%= quranChapterTitleAr %>" data-bookmark-url="<%= quranChapterHref %>" title="Bookmark this chapter">
 	            <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranChapter.id %>"></span>
 	          </button>
 	        <% } %>
@@ -82,7 +82,7 @@
 	          <a title="<%- quranChapterTitleEn %>" href="<%= quranChapterHref %>">Surah <%= surah.num %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranSection.id %>" title="Bookmark this section">
+	            <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranSection.id %>" data-bookmark-type="section" data-bookmark-ref="quran:<%= surah.num %>.<%= quranSection.h2 %>" data-bookmark-title="<%= quranSection.title_en || `Section ${quranSection.h2}` %>" data-bookmark-title-ar="<%= quranSection.title || '' %>" data-bookmark-url="<%= quranSectionHref %>" title="Bookmark this section">
 	              <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranSection.id %>"></span>
 	            </button>
 	            <a title="<%- quranSection.title || quranSection.title_en || 'Section' %>" href="<%= quranSectionHref %>">Section <%= quranSection.h2 %></a>

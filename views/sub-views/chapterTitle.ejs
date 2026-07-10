@@ -23,7 +23,7 @@
     (<%- headingPage.number %>/<%- Math.ceil(chapter.count/global.settings.search.itemsPerPage)%>)
     <% } %>
   </a>
-  <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-heading-id="<%= chapter.id %>" title="Bookmark this chapter">
+  <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-heading-id="<%= chapter.id %>" data-bookmark-type="<%= isQuranChapter ? 'surah' : 'chapter' %>" data-bookmark-ref="<%= isQuranChapter ? `quran:${chapter.h1}` : `${book.alias}:${chapter.h1}` %>" data-bookmark-title="<%= chapter.title_en || chapterBreadcrumbLabelEn %>" data-bookmark-title-ar="<%= chapter.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${chapter.path}`) %>" title="Bookmark this chapter">
     <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= chapter.id %>"></span>
   </button>
   </h2>
@@ -49,7 +49,7 @@
     <% } else if (heading.level == 2) { %>
       <a title="<%- chapter.title_en || chapterBreadcrumbLabelEn %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%- chapterBreadcrumbLabelEn %> <%- chapter.h1 %></a>
       &gt;
-      <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= section.id %>" title="Bookmark this section">
+      <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= section.id %>" data-bookmark-type="section" data-bookmark-ref="<%= `${book.alias}:${chapter.h1}.${section.h2}` %>" data-bookmark-title="<%= section.title_en || `Section ${section.h2}` %>" data-bookmark-title-ar="<%= section.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${section.path}`) %>" title="Bookmark this section">
         <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= section.id %>"></span>
       </button>
       <% if (page.context.book && page.context.book.alias === 'quran' && page.context.passage) { %>

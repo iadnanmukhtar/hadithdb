@@ -1,6 +1,6 @@
 <aside class="tags quran-ayah-hero-toolbar col-12">
   <% if (selectedAyahId) { %>
-    <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= selectedAyahId %>" title="Bookmark this ayah">
+    <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= selectedAyahId %>" data-bookmark-type="quran" data-bookmark-ref="<%= locals.bookmarkRef || selectedAyahId %>" data-bookmark-title="<%= locals.bookmarkTitle || `Quran ayah ${selectedAyahId}` %>" data-bookmark-body="<%= locals.bookmarkBody || '' %>" data-bookmark-body-ar="<%= locals.bookmarkBodyAr || '' %>" data-bookmark-url="<%= locals.bookmarkUrl || locals.viewHref || '' %>" title="Bookmark this ayah">
       <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= selectedAyahId %>"></span>
     </button>
     <span class="quran-ayah-action">

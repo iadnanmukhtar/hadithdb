@@ -79,6 +79,8 @@
 	const sharhBody = !isQuranItem ? plainText(i.ar?.body || '') : '';
 	const itemRefPath = `/${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
 	const itemHref = isQuranItem ? utils.quranUrl(req, itemRefPath) : utils.urlFor(req, itemRefPath);
+	const bookmarkRef = `${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
+	const bookmarkTitle = langData.title || i.title_en || i.title || bookmarkRef;
 	const quranTafsirHref = isQuranItem && i.ref ? utils.quranUrl(req, `/${i.ref}`) : '';
 	const itemBookShortName = (() => {
 		const shortName = i.actual ? (langActual?.book_shortName || i.actual?.book_shortName || i.book_shortName) : (langData.book_shortName || i.book_shortName);
@@ -310,7 +312,7 @@
 		<% if (!isSimilarSection) { %>
 		<aside class="tags">
 	<% if (lang === 'en') { %>
-		<button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" title="Bookmark this hadith">
+		<button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-bookmark-type="<%= isQuranItem ? 'quran' : 'hadith' %>" data-bookmark-ref="<%= isQuranItem ? (i.ref || bookmarkRef) : bookmarkRef %>" data-bookmark-title="<%= bookmarkTitle %>" data-bookmark-body="<%= isQuranItem ? utils.emptyIfNull(langData.body) : '' %>" data-bookmark-body-ar="<%= isQuranItem ? utils.emptyIfNull(i.ar && i.ar.body) : '' %>" data-bookmark-url="<%= itemHref %>" title="Bookmark this hadith">
 			<span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>"></span>
 		</button>
 		&nbsp;

@@ -204,6 +204,9 @@
       <% if (selectedAyahs.length > 0) { %>
         <% var selectedAyahModalIndex = quranAyahModalItems.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>
         <% var selectedAyahId = firstSelectedAyah && firstSelectedAyah.id; %>
+        <% var selectedBookmarkRef = selectedCanonicalRef ? `quran:${selectedCanonicalRef}` : ''; %>
+        <% var selectedBookmarkBody = selectedAyahs.map(ayah => utils.emptyIfNull(ayah.en && ayah.en.body)).filter(Boolean).join(' '); %>
+        <% var selectedBookmarkBodyAr = selectedAyahs.map(ayah => utils.emptyIfNull(ayah.ar && ayah.ar.body)).filter(Boolean).join(' '); %>
       <%- include('sub-views/quran_ayah_hero.ejs', {
         site: site,
         page: page,
@@ -216,6 +219,11 @@
         toolbar: quranShareId ? {
           selectedAyahModalIndex: selectedAyahModalIndex,
           selectedAyahId: selectedAyahId,
+          bookmarkRef: selectedBookmarkRef,
+          bookmarkTitle: selectedTitle,
+          bookmarkBody: selectedBookmarkBody,
+          bookmarkBodyAr: selectedBookmarkBodyAr,
+          bookmarkUrl: selectedBookmarkRef ? utils.quranUrl(req, `/${selectedBookmarkRef}`) : '',
           quranShareId: quranShareId
         } : undefined
       }); %>
@@ -268,7 +276,7 @@
         <% var passageLikeId = section && section.id; %>
         <% if (results.length > 0 && results[0].id && passageLikeId) { %>
           <aside class="tags quran-passage-actions mt-2">
-            <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= results[0].id %>" title="Bookmark this Quran passage">
+            <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= results[0].id %>" data-bookmark-type="quran" data-bookmark-ref="quran:<%= quranPassageCanonicalRef %>" data-bookmark-title="Quran <%= quranPassageCanonicalRef %>" data-bookmark-body="<%= results.map(item => utils.emptyIfNull(item.en && item.en.body)).filter(Boolean).join(' ') %>" data-bookmark-body-ar="<%= results.map(item => utils.emptyIfNull(item.ar && item.ar.body)).filter(Boolean).join(' ') %>" data-bookmark-url="<%= utils.quranUrl(req, `/quran:${quranPassageCanonicalRef}`) %>" title="Bookmark this Quran passage">
               <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= results[0].id %>"></span>
             </button>
             &nbsp;

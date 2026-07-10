@@ -6,6 +6,7 @@ const express = require('express');
 const ejs = require('ejs');
 const { Heading, Item } = require('../lib/Model');
 const Tafsir = require('../lib/Tafsir');
+const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 
 const router = express.Router();
 const MAX_BOOKMARKS = 100;
@@ -122,7 +123,155 @@ router.post('/list-tafsirs', async function (req, res, next) {
   }
 });
 
+router.post('/metadata', async function (req, res, next) {
+  try {
+    const hadithIds = uniquePositiveIds(req.body && req.body.hadithIds);
+    const headingIds = uniquePositiveIds(req.body && req.body.headingIds);
+    const tafsirRefs = uniqueTafsirRefs(req.body && req.body.tafsirRefs);
+    const [hadiths, headings, tafsirs] = await Promise.all([
+      metadataForHadiths(hadithIds),
+      metadataForHeadings(headingIds),
+      metadataForTafsirs(tafsirRefs)
+    ]);
+    res.json({ hadiths, headings, tafsirs });
+  } catch (err) {
+    debug.error(`Error loading bookmark metadata: ${err.message}\n${err.stack || ''}`);
+    next(err);
+  }
+});
+
 module.exports = router;
+
+function uniquePositiveIds(values) {
+  const ids = Array.isArray(values)
+    ? values.map(id => parseInt(id, 10)).filter(id => Number.isInteger(id) && id > 0)
+    : [];
+  return Array.from(new Set(ids)).slice(0, MAX_BOOKMARKS);
+}
+
+function uniqueTafsirRefs(values) {
+  const refs = Array.isArray(values)
+    ? values.map(ref => (ref || '').toString().trim()).filter(ref => /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(ref))
+    : [];
+  return Array.from(new Set(refs)).slice(0, MAX_BOOKMARKS);
+}
+
+function clean(value) {
+  return (value || '').toString().replace(/\s+/g, ' ').trim();
+}
+
+async function metadataForHadiths(ids) {
+  if (!ids.length) return {};
+  const rows = await global.query(`
+    SELECT hId, book_alias, book_shortName_en, num, ref, title_en, title, body_en, body
+    FROM v_hadiths
+    WHERE hId IN (${ids.join(',')})
+  `);
+  return rows.reduce((acc, row) => {
+    const isQuran = row.book_alias === 'quran' || clean(row.ref).startsWith('quran:');
+    const ref = isQuran ? clean(row.ref || row.num) : `${row.book_alias}:${clean(row.num)}`;
+    const entry = {
+      type: isQuran ? 'quran' : 'hadith',
+      ref,
+      title: clean(row.title_en) || ref,
+      url: isQuran ? `/${ref}` : `/${row.book_alias}:${clean(row.num)}`
+    };
+    if (isQuran) {
+      entry.body = clean(row.body_en);
+      entry.bodyAr = clean(row.body);
+    }
+    acc[String(row.hId)] = entry;
+    return acc;
+  }, {});
+}
+
+async function metadataForHeadings(ids) {
+  if (!ids.length) return {};
+  const [rows, quranSubdivisions, manzilRows] = await Promise.all([
+    global.query(`
+      SELECT id, hId, tId, book_alias, ref, path, h1, h1_title_en, h1_title, h2, h2_title_en, h2_title, h3, h3_title_en, h3_title, level
+      FROM v_toc
+      WHERE id IN (${ids.join(',')})
+         OR hId IN (${ids.join(',')})
+         OR tId IN (${ids.join(',')})
+    `),
+    global.query(`
+      SELECT id, quran_subdivision, h1 AS num, title_en, title, start
+      FROM toc
+      WHERE bookId=(SELECT id FROM books WHERE alias='quran' LIMIT 1)
+        AND quran_subdivision IN ('juz', 'manzil')
+        AND id IN (${ids.join(',')})
+    `),
+    QuranTocSubdivisions.manzilRows()
+  ]);
+  const metadata = quranSubdivisions.reduce((acc, row) => {
+    addQuranDivisionMetadata(acc, row, clean(row.quran_subdivision));
+    return acc;
+  }, {});
+  (manzilRows || [])
+    .filter(row => ids.includes(Number(row.id)))
+    .forEach(row => addQuranDivisionMetadata(metadata, row, 'manzil'));
+  return rows.reduce((acc, row) => {
+    if (metadata[String(row.id)]) return acc;
+    const level = Number(row.level);
+    const isSurah = row.book_alias === 'quran' && level === 1;
+    const title = level >= 3
+      ? clean(row.h3_title_en)
+      : (level >= 2 ? clean(row.h2_title_en) : clean(row.h1_title_en));
+    const titleAr = level >= 3
+      ? clean(row.h3_title)
+      : (level >= 2 ? clean(row.h2_title) : clean(row.h1_title));
+    const ref = isSurah
+      ? `quran:${clean(row.h1)}`
+      : (clean(row.ref) || `${row.book_alias}:${clean(row.h1)}${row.h2 ? `.${clean(row.h2)}` : ''}${row.h3 ? `.${clean(row.h3)}` : ''}`);
+    const entry = {
+      type: isSurah ? 'surah' : (level === 1 ? 'chapter' : (level === 2 ? 'section' : 'subsection')),
+      ref,
+      title: title || ref,
+      titleAr,
+      url: row.path ? `/${row.path}` : ''
+    };
+    [row.id, row.hId, row.tId].forEach((key) => {
+      if (Number.isInteger(Number(key)) && Number(key) > 0) acc[String(key)] = entry;
+    });
+    return acc;
+  }, metadata);
+}
+
+function addQuranDivisionMetadata(acc, row, subdivision) {
+  const num = clean(row.num);
+  const isJuz = subdivision === 'juz';
+  const ref = `${subdivision}:${num}`;
+  const startParts = clean(row.start).split(':');
+  const startRef = startParts.length >= 2 ? `quran:${startParts[0]}:${startParts[1]}` : '';
+  const startUrl = startParts.length >= 2 ? `/quran:${startParts[0]}:${startParts[1]}` : '';
+  acc[String(row.id)] = {
+    type: 'quran-range',
+    ref,
+    startRef,
+    title: isJuz ? `Juz ${num}` : `Manzil ${num}`,
+    titleAr: clean(row.title),
+    url: startUrl
+  };
+}
+
+async function metadataForTafsirs(refs) {
+  if (!refs.length) return {};
+  const entries = await Promise.all(refs.map(resolveTafsirBookmark));
+  return entries.filter(Boolean).reduce((acc, item) => {
+    const alias = item.tafsir.slug || item.tafsir.alias;
+    const range = `${item.surah.num}:${item.startAyah}${item.endAyah > item.startAyah ? `-${item.endAyah}` : ''}`;
+    acc[item.key] = {
+      type: 'tafsir',
+      ref: `quran:${range}`,
+      range,
+      title: Tafsir.displayShortName(item.tafsir, 'en'),
+      titleAr: Tafsir.displayShortName(item.tafsir, 'ar'),
+      url: Tafsir.browseUrl(item.tafsir, item.surah.num, item.ayah) || `/quran/tafsir/${alias}/${item.surah.num}/${item.ayah}`
+    };
+    return acc;
+  }, {});
+}
 
 function renderHadithItems(req, res, site, results) {
   if (!results.length) return '';

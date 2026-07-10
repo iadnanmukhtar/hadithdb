@@ -22,6 +22,18 @@
     padding-top: 1.25rem;
     margin-top: 1.25rem;
   }
+  .bookmark-section:not(.d-none) {
+    margin-top: 1.25rem;
+  }
+  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section:not(.d-none),
+  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
+  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
+  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
+  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
+  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none) {
+    border-top: 0;
+    margin-top: 0;
+  }
   .bookmark-section-header {
     display: flex;
     align-items: baseline;
@@ -41,6 +53,57 @@
   .bookmark-section-count {
     color: #6c757d;
     font-size: .85rem;
+    white-space: nowrap;
+  }
+  .bookmark-compact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .65rem;
+  }
+  .bookmark-compact-content {
+    min-width: 0;
+  }
+  .bookmark-compact-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.3;
+    margin: 0 0 .25rem 0;
+  }
+  .bookmark-compact-title a {
+    text-decoration: none;
+    color: inherit;
+    transition: color .15s ease;
+  }
+  .bookmark-compact-title a:hover,
+  .bookmark-compact-title a:focus {
+    color: var(--c-note);
+    text-decoration: underline;
+  }
+  .bookmark-compact-ref {
+    color: #6c757d;
+    font-size: .85rem;
+  }
+  .bookmark-compact-ar {
+    color: #6c757d;
+    margin-top: .15rem;
+    text-align: right;
+    width: 100%;
+  }
+  .bookmark-compact-body {
+    color: #4f5b66;
+    font-size: .95rem;
+    line-height: 1.45;
+    margin-top: .3rem;
+  }
+  .bookmark-quran-ayah {
+    color: var(--c-black);
+    font-size: calc(1.35rem * var(--content-font-scale));
+    line-height: 1.8;
+    text-align: right;
+  }
+  .bookmark-quran-ayah .quran-ayah-end-marker {
+    font-size: inherit;
+    line-height: inherit;
     white-space: nowrap;
   }
   .bookmark-list {
@@ -115,9 +178,25 @@
         <div class="bookmark-list" data-bookmark-list="tafsirs"></div>
       </section>
 
+      <section class="bookmark-section d-none" data-bookmark-section="surahs">
+        <div class="bookmark-section-header">
+          <h2 class="bookmark-section-title">Surahs</h2>
+          <span class="bookmark-section-count" data-bookmark-section-count="surahs">0 saved</span>
+        </div>
+        <div class="bookmark-list" data-bookmark-list="surahs"></div>
+      </section>
+
+      <section class="bookmark-section d-none" data-bookmark-section="quranRanges">
+        <div class="bookmark-section-header">
+          <h2 class="bookmark-section-title">Quran Divisions</h2>
+          <span class="bookmark-section-count" data-bookmark-section-count="quranRanges">0 saved</span>
+        </div>
+        <div class="bookmark-list" data-bookmark-list="quranRanges"></div>
+      </section>
+
       <section class="bookmark-section d-none" data-bookmark-section="headings">
         <div class="bookmark-section-header">
-          <h2 class="bookmark-section-title">Chapters</h2>
+          <h2 class="bookmark-section-title">Hadith Chapters</h2>
           <span class="bookmark-section-count" data-bookmark-section-count="headings">0 saved</span>
         </div>
         <div class="bookmark-list" data-bookmark-list="headings"></div>
@@ -139,13 +218,22 @@
 
 <script>
   (function () {
-    const sectionKeys = ['quran', 'tafsirs', 'headings', 'hadiths'];
+    const sectionKeys = ['quran', 'tafsirs', 'surahs', 'quranRanges', 'headings', 'hadiths'];
     const sectionEls = Object.fromEntries(sectionKeys.map(key => [key, document.querySelector(`[data-bookmark-section="${key}"]`)]));
     const listEls = Object.fromEntries(sectionKeys.map(key => [key, document.querySelector(`[data-bookmark-list="${key}"]`)]));
     const sectionCountEls = Object.fromEntries(sectionKeys.map(key => [key, document.querySelector(`[data-bookmark-section-count="${key}"]`)]));
     const loadingEl = document.getElementById('bookmarks-loading');
     const emptyEl = document.getElementById('bookmarks-empty');
     const clearBtn = document.getElementById('clear-bookmarks-btn');
+    let metadataBackfillDone = false;
+    const quranSurahs = <%- JSON.stringify((global.surahs || []).map(function (surah) {
+      return {
+        num: Number(surah.num),
+        name_en: surah.name_en || '',
+        name_ar: surah.name_ar || '',
+        ayahs: Number(surah.ayahs) || 0
+      };
+    }).filter(function (surah) { return Number.isInteger(surah.num); })) %>;
 
     const pluralizeSaved = (count) => `${count} saved`;
 
@@ -157,78 +245,350 @@
       if (promises.length) await Promise.all(promises);
     };
 
-    const setSection = (key, html, count) => {
+    const text = (value, fallback = '') => {
+      if (value === null || value === undefined) return fallback;
+      return String(value);
+    };
+
+    const isQuranUrl = (value) => /^\/quran(?:\/|$)/i.test(text(value).trim()) || /^https?:\/\/[^/]*quran[^/]*\//i.test(text(value).trim());
+
+    const quranRef = (value) => {
+      value = text(value).trim().replace(/^quran:/i, '');
+      const match = value.match(/^(\d{1,3}):(\d{1,3})(?:-(\d{1,3}))?$/);
+      return match ? `quran:${match[1]}:${match[2]}${match[3] ? `-${match[3]}` : ''}` : '';
+    };
+
+    const toArabicDigits = (value) => text(value).replace(/[0-9]/g, digit => '٠١٢٣٤٥٦٧٨٩'[Number(digit)]);
+
+    const ayahMarkerNumber = (value) => {
+      const ref = quranRef(value);
+      const match = ref.match(/^quran:\d{1,3}:(\d{1,3})(?:-(\d{1,3}))?$/i);
+      return match ? (match[2] || match[1]) : '';
+    };
+
+    const tafsirRef = (value) => {
+      value = text(value).trim().replace(/^quran:/i, '');
+      if (/^\d{1,3}:\d{1,3}(?:-\d{1,3})?$/.test(value)) return quranRef(value);
+      const parts = value.split(':');
+      if (parts.length < 3) return '';
+      const range = text(parts[3] || '').trim();
+      return range ? quranRef(`${parts[1]}:${range}`) : quranRef(`${parts[1]}:${parts[2]}`);
+    };
+
+    const surahForRef = (value) => {
+      const match = text(value).match(/(?:quran:)?(\d{1,3})(?::|$)/i);
+      if (!match) return null;
+      return quranSurahs.find(surah => Number(surah.num) === Number(match[1])) || null;
+    };
+
+    const quranPassageTitle = (value) => {
+      const ref = quranRef(value);
+      if (!ref) return '';
+      const surah = surahForRef(ref);
+      if (!surah) return ref;
+      return `${surah.name_en || `Surah ${surah.num}`} ${ref.replace(/^quran:/i, '')}`;
+    };
+
+    const quranStartTitle = (item) => {
+      const source = text(item && (item.startRef || item.url || item.ref || ''), '');
+      const match = source.match(/quran:(\d{1,3}):(\d{1,3})/i);
+      if (!match) return '';
+      const ref = `quran:${match[1]}:${match[2]}`;
+      const surah = surahForRef(ref);
+      return `${surah && surah.name_en ? surah.name_en : `Surah ${match[1]}`} ${match[1]}:${match[2]}`;
+    };
+
+    const headingTitle = (item) => {
+      const type = text(item.type).toLowerCase();
+      const ref = text(item.ref || item.title || item.id);
+      const surah = type === 'surah' || /^quran:\d{1,3}$/i.test(ref.trim()) ? surahForRef(ref) : null;
+      if (surah) return { title: surah.name_en || `Surah ${surah.num}`, titleAr: surah.name_ar || '', ref: `${surah.name_en || `Surah ${surah.num}`} ${surah.num}:1` };
+      const juz = ref.trim().match(/^juz:(\d{1,3})$/i);
+      if (juz) return { title: `Juz ${juz[1]}`, titleAr: text(item.titleAr || '', ''), ref: quranStartTitle(item) || `juz:${juz[1]}` };
+      const manzil = ref.trim().match(/^manzil:(\d{1,3})$/i);
+      if (manzil) return { title: `Manzil ${manzil[1]}`, titleAr: text(item.titleAr || '', ''), ref: quranStartTitle(item) || `manzil:${manzil[1]}` };
+      const hadithChapter = ref.trim().match(/^([A-Za-z0-9_-]+):([0-9]+(?:\.[0-9]+){0,2})$/);
+      const displayRef = hadithChapter
+        ? `${hadithChapter[1].charAt(0).toUpperCase()}${hadithChapter[1].slice(1)} ${hadithChapter[2]}`
+        : ref;
+      return {
+        title: text(item.title || item.ref || item.id, ''),
+        titleAr: text(item.titleAr || '', ''),
+        ref: text(displayRef || item.id, '')
+      };
+    };
+
+    const classifyHadithBookmark = (item) => {
+      const type = text(item && item.type).toLowerCase();
+      if (type === 'quran' || type === 'ayah' || type === 'passage') return 'quran';
+      if (type === 'hadith' || type === 'hadiths') return 'hadiths';
+      if (quranRef(item && item.ref)) return 'quran';
+      if (isQuranUrl(item && item.url)) return 'quran';
+      return 'hadiths';
+    };
+
+    const makeNode = (tag, className, value) => {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (value !== undefined && value !== null) el.textContent = value;
+      return el;
+    };
+
+    const makeRemoveButton = (section, value) => {
+      if (section === 'headings' || section === 'surahs' || section === 'quranRanges') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center';
+        btn.dataset.headingId = String(value);
+        btn.title = 'Remove bookmark';
+        const icon = document.createElement('span');
+        icon.className = 'heading-bookmark-icon bi bi-bookmark-fill text-accent';
+        icon.dataset.headingId = String(value);
+        btn.appendChild(icon);
+        return btn;
+      }
+      if (section === 'tafsirs') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tafsir-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center';
+        btn.dataset.tafsirBookmarkKey = String(value);
+        btn.title = 'Remove bookmark';
+        const icon = document.createElement('span');
+        icon.className = 'tafsir-bookmark-icon bi bi-bookmark-fill text-accent';
+        icon.dataset.tafsirBookmarkKey = String(value);
+        btn.appendChild(icon);
+        return btn;
+      }
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center';
+      btn.dataset.hadithId = String(value);
+      btn.title = 'Remove bookmark';
+      const icon = document.createElement('span');
+      icon.className = 'hadith-bookmark-icon bi bi-bookmark-fill text-accent';
+      icon.dataset.hadithId = String(value);
+      btn.appendChild(icon);
+      return btn;
+    };
+
+    const makeBookmarkItem = (section, item) => {
+      const entry = document.createElement('article');
+      entry.className = 'bookmark-compact-item';
+
+      const idOrKey = section === 'tafsirs' ? item.key : item.id;
+      const button = makeRemoveButton(section, idOrKey);
+
+      const content = makeNode('div', 'bookmark-compact-content');
+      const headingMeta = (section === 'headings' || section === 'surahs' || section === 'quranRanges') ? headingTitle(item) : null;
+      const quranDisplayRef = section === 'quran' ? quranRef(item.ref || item.title) : '';
+      const quranDisplayTitle = section === 'quran' ? quranPassageTitle(item.ref || item.title) : '';
+      const tafsirDisplayRef = section === 'tafsirs' ? tafsirRef(item.range || item.key) : '';
+      const titleText = headingMeta
+        ? headingMeta.title
+        : text(quranDisplayTitle || item.title || quranDisplayRef || tafsirDisplayRef || item.ref || item.key || text(idOrKey || ''), '');
+      const titleAr = headingMeta ? headingMeta.titleAr : text(item.titleAr || '', '');
+      const refText = headingMeta
+        ? headingMeta.ref
+        : text(quranDisplayRef || tafsirDisplayRef || item.ref || (section === 'tafsirs' ? item.key : text(idOrKey || '')), '');
+      const title = makeNode('h3', 'bookmark-compact-title');
+      if (item.url) {
+        const link = document.createElement('a');
+        link.href = item.url;
+        link.rel = 'noopener noreferrer';
+        link.textContent = titleText;
+        title.appendChild(link);
+      } else {
+        title.textContent = titleText;
+      }
+      const ref = makeNode('div', 'bookmark-compact-ref', refText);
+      content.appendChild(title);
+      if (titleAr) {
+        const ar = makeNode('div', 'bookmark-compact-ar', titleAr);
+        ar.lang = 'ar';
+        ar.dir = 'rtl';
+        content.appendChild(ar);
+      }
+      if (refText) content.appendChild(ref);
+      if (item.bodyAr) {
+        const bodyAr = makeNode('div', section === 'quran' ? 'bookmark-compact-body bookmark-quran-ayah quran-hafs' : 'bookmark-compact-body');
+        bodyAr.lang = 'ar';
+        bodyAr.dir = 'rtl';
+        bodyAr.appendChild(document.createTextNode(item.bodyAr));
+        const markerNumber = section === 'quran' ? ayahMarkerNumber(item.ref || item.title) : '';
+        if (markerNumber) {
+          bodyAr.appendChild(document.createTextNode(' '));
+          const marker = makeNode('span', 'quran-ayah-end-marker', `۝${toArabicDigits(markerNumber)}`);
+          marker.setAttribute('aria-label', `Quran ${text(item.ref || '')}`);
+          bodyAr.appendChild(marker);
+        }
+        content.appendChild(bodyAr);
+      }
+      if (item.body) {
+        content.appendChild(makeNode('div', 'bookmark-compact-body', item.body));
+      }
+
+      entry.appendChild(button);
+      entry.appendChild(content);
+      return entry;
+    };
+
+    const sortBookmarks = (items, section) => {
+      const ordered = [...items];
+      if (section === 'tafsirs') {
+        ordered.sort((a, b) => String(a.key || '').localeCompare(String(b.key || '')));
+      } else {
+        ordered.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+      }
+      return ordered;
+    };
+
+    const setSection = (key, nodes, count) => {
       if (!sectionEls[key] || !listEls[key]) return;
       const safeCount = parseInt(count, 10) || 0;
-      listEls[key].innerHTML = html || '';
+      listEls[key].innerHTML = '';
+      (nodes || []).forEach(node => listEls[key].appendChild(node));
       sectionEls[key].dataset.bookmarkCount = safeCount;
       sectionEls[key].classList.toggle('d-none', safeCount < 1);
       if (sectionCountEls[key]) sectionCountEls[key].textContent = pluralizeSaved(safeCount);
     };
 
     const resetSections = () => {
-      sectionKeys.forEach(key => setSection(key, '', 0));
+      sectionKeys.forEach(key => setSection(key, [], 0));
     };
 
-    const getSection = (data, key) => {
-      return data && data.sections && data.sections[key]
-        ? data.sections[key]
-        : { html: '', count: 0 };
+    const buildSections = (hadithItems, headingItems, tafsirItems) => {
+      const grouped = {
+        quran: [],
+        hadiths: [],
+        surahs: [],
+        quranRanges: [],
+        headings: [],
+        tafsirs: []
+      };
+      (hadithItems || []).forEach(item => {
+        const key = classifyHadithBookmark(item);
+        if (key !== 'quran' && key !== 'hadiths') return;
+        if (Number.isFinite(Number(item.id))) grouped[key].push(item);
+      });
+      (headingItems || []).forEach(item => {
+        if (!Number.isFinite(Number(item.id))) return;
+        const type = text(item.type).toLowerCase();
+        const ref = text(item.ref).toLowerCase();
+        if (type === 'surah' || /^quran:\d{1,3}$/.test(ref)) {
+          grouped.surahs.push(item);
+          return;
+        }
+        if (type === 'quran-range' || /^(juz|manzil):\d{1,3}$/.test(ref)) {
+          grouped.quranRanges.push(item);
+          return;
+        }
+        grouped.headings.push(item);
+      });
+      (tafsirItems || []).forEach(item => {
+        if (text(item.key)) grouped.tafsirs.push(item);
+      });
+      return {
+        quran: { items: sortBookmarks(grouped.quran, 'quran'), count: grouped.quran.length },
+        hadiths: { items: sortBookmarks(grouped.hadiths, 'hadiths'), count: grouped.hadiths.length },
+        surahs: { items: sortBookmarks(grouped.surahs, 'surahs'), count: grouped.surahs.length },
+        quranRanges: { items: sortBookmarks(grouped.quranRanges, 'quranRanges'), count: grouped.quranRanges.length },
+        headings: { items: sortBookmarks(grouped.headings, 'headings'), count: grouped.headings.length },
+        tafsirs: { items: sortBookmarks(grouped.tafsirs, 'tafsirs'), count: grouped.tafsirs.length }
+      };
+    };
+
+    const isWeakValue = (value, fallback) => {
+      value = text(value).trim();
+      fallback = text(fallback).trim();
+      return !value || (fallback && value === fallback);
+    };
+
+    const isWeakQuranDivisionMetadata = (item) => {
+      const type = text(item && item.type).toLowerCase();
+      const ref = text(item && item.ref).toLowerCase();
+      const title = text(item && item.title).trim();
+      if (type !== 'quran-range' && !/^(juz|manzil):\d{1,3}$/.test(ref)) return false;
+      return !title || /^\d{1,3}$/.test(title) || !quranStartTitle(item);
+    };
+
+    const backfillMissingMetadata = async (hadithItems, headingItems, tafsirItems) => {
+      if (metadataBackfillDone) return false;
+      metadataBackfillDone = true;
+      const hadithIds = (hadithItems || [])
+        .filter(item => isWeakValue(item.title, item.id) || isWeakValue(item.ref, item.id))
+        .map(item => item.id);
+      const headingIds = (headingItems || [])
+        .filter(item => isWeakValue(item.title, item.id) || !text(item.titleAr) || isWeakQuranDivisionMetadata(item))
+        .map(item => item.id);
+      const tafsirRefs = (tafsirItems || [])
+        .filter(item => isWeakValue(item.title, item.key) || !text(item.range || item.ref))
+        .map(item => item.key);
+      if (!hadithIds.length && !headingIds.length && !tafsirRefs.length) return false;
+      const res = await fetch('/bookmarks/metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hadithIds, headingIds, tafsirRefs })
+      });
+      if (!res.ok) return false;
+      const metadata = await res.json();
+      let wrote = false;
+      if (metadata.hadiths && Object.keys(metadata.hadiths).length && window.hadithBookmarks && window.hadithBookmarks.mergeMetadata) {
+        await window.hadithBookmarks.mergeMetadata(metadata.hadiths);
+        wrote = true;
+      }
+      if (metadata.headings && Object.keys(metadata.headings).length && window.headingBookmarks && window.headingBookmarks.mergeMetadata) {
+        await window.headingBookmarks.mergeMetadata(metadata.headings);
+        wrote = true;
+      }
+      if (metadata.tafsirs && Object.keys(metadata.tafsirs).length && window.tafsirBookmarks && window.tafsirBookmarks.mergeMetadata) {
+        await window.tafsirBookmarks.mergeMetadata(metadata.tafsirs);
+        wrote = true;
+      }
+      return wrote;
     };
 
     const load = async () => {
       await waitForBookmarkSettings();
-      const hadithIds = (window.hadithBookmarks && window.hadithBookmarks.getAll) ? window.hadithBookmarks.getAll() : [];
-      const headingIds = (window.headingBookmarks && window.headingBookmarks.getAll) ? window.headingBookmarks.getAll() : [];
-      const tafsirRefs = (window.tafsirBookmarks && window.tafsirBookmarks.getAll) ? window.tafsirBookmarks.getAll() : [];
+      let hadithItems = (window.hadithBookmarks && window.hadithBookmarks.getAllWithMeta)
+        ? window.hadithBookmarks.getAllWithMeta()
+        : [];
+      let headingItems = (window.headingBookmarks && window.headingBookmarks.getAllWithMeta)
+        ? window.headingBookmarks.getAllWithMeta()
+        : [];
+      let tafsirItems = (window.tafsirBookmarks && window.tafsirBookmarks.getAllWithMeta)
+        ? window.tafsirBookmarks.getAllWithMeta()
+        : [];
+      let metadataBackfilled = false;
+      try {
+        metadataBackfilled = await backfillMissingMetadata(hadithItems, headingItems, tafsirItems);
+      } catch (err) {
+        console.warn('Unable to backfill bookmark metadata.', err);
+      }
+      if (metadataBackfilled) {
+        hadithItems = window.hadithBookmarks && window.hadithBookmarks.getAllWithMeta ? window.hadithBookmarks.getAllWithMeta() : [];
+        headingItems = window.headingBookmarks && window.headingBookmarks.getAllWithMeta ? window.headingBookmarks.getAllWithMeta() : [];
+        tafsirItems = window.tafsirBookmarks && window.tafsirBookmarks.getAllWithMeta ? window.tafsirBookmarks.getAllWithMeta() : [];
+      }
+      const sections = buildSections(hadithItems, headingItems, tafsirItems);
 
       resetSections();
       loadingEl.classList.remove('d-none');
       emptyEl.classList.add('d-none');
 
-      if (!hadithIds.length && !headingIds.length && !tafsirRefs.length) {
+      if (!sections.quran.count && !sections.surahs.count && !sections.quranRanges.count && !sections.hadiths.count && !sections.headings.count && !sections.tafsirs.count) {
         loadingEl.classList.add('d-none');
         emptyEl.classList.remove('d-none');
         return;
       }
 
       try {
-        if (hadithIds.length) {
-          const res = await fetch('/bookmarks/list', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ids: hadithIds })
-          });
-          if (!res.ok) throw new Error('Failed to load passage and hadith bookmarks');
-          const data = await res.json();
-          const quran = getSection(data, 'quran');
-          const hadiths = getSection(data, 'hadiths');
-          setSection('quran', quran.html, quran.count);
-          setSection('hadiths', hadiths.html, hadiths.count);
-        }
-
-        if (headingIds.length) {
-          const headingRes = await fetch('/bookmarks/list-headings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ids: headingIds })
-          });
-          if (!headingRes.ok) throw new Error('Failed to load chapter and section bookmarks');
-          const headingData = await headingRes.json();
-          const headings = getSection(headingData, 'headings');
-          setSection('headings', headings.html, headings.count);
-        }
-
-        if (tafsirRefs.length) {
-          const tafsirRes = await fetch('/bookmarks/list-tafsirs', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refs: tafsirRefs })
-          });
-          if (!tafsirRes.ok) throw new Error('Failed to load tafsīr bookmarks');
-          const tafsirData = await tafsirRes.json();
-          setSection('tafsirs', tafsirData.html, tafsirData.count);
-        }
+        sectionKeys.forEach((key) => {
+          setSection(
+            key,
+            sections[key].items.map(item => makeBookmarkItem(key, item)),
+            sections[key].count
+          );
+        });
 
         const total = sectionKeys.reduce((sum, key) => sum + (parseInt(sectionEls[key]?.dataset.bookmarkCount || '0', 10) || 0), 0);
         emptyEl.classList.toggle('d-none', total > 0);

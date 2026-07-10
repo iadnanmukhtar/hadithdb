@@ -5352,7 +5352,12 @@ function quranShareModalHtml(ayah, shareId) {
 		.appendTo($inner);
 	var $footer = $('<footer>').addClass('hadith-share-footer').appendTo($inner);
 	$('<div>').append($('<div>').addClass('title share-editable').attr('contenteditable', 'false').text(chapterTitle ? `Qurʾān > ${chapterTitle}` : 'Qurʾān')).appendTo($footer);
-	$('<div>').addClass('hadith-share-site').text('hadithunlocked.com').appendTo($footer);
+	var $brand = $('<div>').addClass('hadith-share-brand').appendTo($footer);
+	$('<div>').addClass('hadith-share-site share-editable').attr({ contenteditable: 'false', 'data-share-site-editor': '1' }).text('hadithunlocked.com').appendTo($brand);
+	$('<div>').addClass('hadith-share-logo').attr('data-share-logo', '')
+		.append($('<img>').attr({ src: '/images/quran-logo2.svg', alt: 'Quran Unlocked', loading: 'lazy' }))
+		.append($('<button>').attr({ type: 'button', 'aria-label': 'Remove logo', title: 'Remove logo' }).addClass('hadith-share-logo-remove').append($('<span>').addClass('bi bi-x')))
+		.appendTo($brand);
 	return $modal;
 }
 
@@ -9730,6 +9735,7 @@ function initHadithShareModals(root) {
 				var editing = editButton.getAttribute('aria-pressed') !== 'true';
 				editButton.setAttribute('aria-pressed', editing ? 'true' : 'false');
 				editButton.classList.toggle('active', editing);
+				card.classList.toggle('hadith-share-editing', editing);
 				editButton.title = editing ? 'Done editing' : 'Edit text';
 				editButton.setAttribute('aria-label', editing ? 'Done editing' : 'Edit text');
 				editButton.innerHTML = editing ? '<span class="bi bi-check2"></span>' : '<span class="bi bi-pencil"></span>';
@@ -9764,6 +9770,17 @@ function initHadithShareModals(root) {
 
 		modal.querySelectorAll('.share-editable').forEach(function (el) {
 			el.addEventListener('input', function () {
+				updateHadithShareMetadataFromEditable(modal, card);
+				scheduleHadithShareCardFit(card);
+				scheduleHadithShareRender(card);
+			});
+		});
+
+		modal.querySelectorAll('.hadith-share-logo-remove').forEach(function (button) {
+			button.addEventListener('click', function () {
+				var logo = button.closest('[data-share-logo]');
+				if (logo)
+					logo.remove();
 				scheduleHadithShareCardFit(card);
 				scheduleHadithShareRender(card);
 			});
@@ -10046,6 +10063,33 @@ function plainTextFromShareSection(section) {
 	return (text || '').replace(/\n{3,}/g, '\n\n').trim();
 }
 
+function updateHadithShareMetadataFromEditable(modal, card) {
+	if (!card)
+		return;
+	if (!modal)
+		modal = card.closest('.hadith-share-modal');
+	if (!modal)
+		return;
+	var refEditors = modal.querySelectorAll('[data-share-ref-editor="1"]');
+	var ref = '';
+	var fallbackRef = '';
+	Array.from(refEditors).forEach(function (editor) {
+		var candidate = (editor.innerText || '').trim().replace(/\s+/g, ' ');
+		if (!candidate)
+			return;
+		if (!fallbackRef)
+			fallbackRef = candidate;
+		if (editor.offsetParent !== null)
+			ref = candidate;
+	});
+	ref = (ref || fallbackRef || '').trim();
+	if (ref) {
+		card.setAttribute('data-share-ref', ref);
+		return;
+	}
+	card.setAttribute('data-share-ref', card.getAttribute('data-share-ref') || '');
+}
+
 function hadithShareCardText(card) {
 	if (!card)
 		return '';
@@ -10061,7 +10105,9 @@ function hadithShareCardText(card) {
 	var ref = card.getAttribute('data-share-ref') || '';
 	if (ref)
 		lines.push(ref);
-	lines.push('hadithunlocked.com');
+	var site = card.querySelector('.hadith-share-site');
+	var siteName = (site && (site.innerText || '').trim()) || 'hadithunlocked.com';
+	lines.push(siteName);
 	return lines.filter(Boolean).join('\n\n');
 }
 
