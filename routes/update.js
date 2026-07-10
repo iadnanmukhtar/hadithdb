@@ -1934,11 +1934,15 @@ async function reindexChapterSearchScope(bookId, h1, options) {
   h1 = Number(h1);
   if (!Number.isInteger(bookId) || bookId < 0 || !Number.isFinite(h1))
     return;
+  var book = (global.books || []).find(item => Number(item.id) === bookId);
+  var bookFilter = book && book.alias
+    ? { term: { book_alias: book.alias } }
+    : { term: { book_id: bookId } };
   options = Object.assign({}, options || {}, {
     headingQuery: {
       bool: {
         filter: [
-          { term: { book_id: bookId } },
+          bookFilter,
           { term: { h1: h1 } }
         ]
       }
@@ -1946,7 +1950,7 @@ async function reindexChapterSearchScope(bookId, h1, options) {
     itemQuery: {
       bool: {
         filter: [
-          { term: { book_id: bookId } },
+          bookFilter,
           { term: { h1: h1 } }
         ]
       }
