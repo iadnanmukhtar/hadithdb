@@ -285,10 +285,15 @@ function cachedRenderLocals(res, locals) {
 }
 
 function cachedRequestFile(req) {
-  return Utils.cacheFileFromFilename(Utils.cacheReqToFilename({
+  const filename = Utils.cacheReqToFilename({
     ...req,
     url: req.originalUrl || req.url || ''
-  }), 'html');
+  });
+  return Utils.cacheFileFromFilename(
+    filename,
+    'html',
+    req.params.tafsir
+  );
 }
 
 module.exports = router;
