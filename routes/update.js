@@ -310,7 +310,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         status.value = result.value;
         shouldRunDefaultHeadingTasks = false;
       } else if (col === 'surahReindex') {
-        result = await reindexQuranSurah(ids[0], status.value);
+        result = await reindexQuranSurah(ids[0], status.value, userId);
         status.value = result.value;
         shouldRunDefaultHeadingTasks = false;
       } else if (col === 'sectionDelete') {
@@ -869,8 +869,11 @@ async function updateQuranPassageRange(headingId, value, userId) {
   var updateResult = await global.query(`UPDATE toc
     SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, end=${sql(endRef)}, start0=${start0}, end0=${end0}, count=${count}
     WHERE id=${heading.tId || heading.id}`);
+  await normalizeQuranSurahHeadingRanges(heading.book_id, surah, userId, { deleteOrphanSubsections: true });
+  await relinkQuranSurahAyahsToSections(heading.book_id, surah);
+  await syncQuranSurahHadithHeadingNumbers(heading.book_id, surah);
   QuranTocSubdivisions.invalidateSectionRanges();
-  await reindexChapterSearchScope(heading.book_id, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true });
+  await reindexChapterSearchScope(heading.book_id, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true, replaceItems: true });
   await invalidateQuranSurahCaches(surah);
   return {
     message: updateResult.message,
@@ -884,7 +887,7 @@ async function updateQuranPassageRange(headingId, value, userId) {
   };
 }
 
-async function reindexQuranSurah(sectionHeadingId, value) {
+async function reindexQuranSurah(sectionHeadingId, value, userId) {
   var section = await quranSectionFromId(sectionHeadingId, value);
   if (!section)
     throw createError(404, 'Section heading not found');
@@ -904,6 +907,11 @@ async function reindexQuranSurah(sectionHeadingId, value) {
       ]
     }
   };
+  for (const affectedSurah of surahs) {
+    await normalizeQuranSurahHeadingRanges(bookId, affectedSurah, userId, { deleteOrphanSubsections: true });
+    await relinkQuranSurahAyahsToSections(bookId, affectedSurah);
+    await syncQuranSurahHadithHeadingNumbers(bookId, affectedSurah);
+  }
   await reindexSearchScope(`book_id=${bookId} AND h1 IN (${surahs.join(',')})`, {
     syncKnowledge: false,
     refresh: true,
@@ -1080,7 +1088,8 @@ async function updateQuranSubsectionRange(subsectionHeadingId, value, userId) {
   var updateResult = await global.query(`UPDATE toc
     SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, end=${sql(endRef)}, start0=${start0}, end0=${end0}, count=${count}
     WHERE id=${subsection.tId || subsection.id}`);
-  await reindexChapterSearchScope(subsection.book_id, surah, { syncKnowledge: false, refresh: true });
+  await normalizeQuranSurahHeadingRanges(subsection.book_id, surah, userId, { deleteOrphanSubsections: true });
+  await reindexChapterSearchScope(subsection.book_id, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true });
   await invalidateQuranSurahCaches(surah);
   return {
     message: updateResult.message,
@@ -1583,7 +1592,8 @@ async function renumberQuranSubsections(bookId, h1, h2) {
   }
 }
 
-async function normalizeQuranSurahHeadingRanges(bookId, surah, userId) {
+async function normalizeQuranSurahHeadingRanges(bookId, surah, userId, options) {
+  options = options || {};
   bookId = parseInt(bookId, 10);
   surah = Number(surah);
   var sections = await global.query(`SELECT id, h2, ordinal, start, end, count
@@ -1596,6 +1606,8 @@ async function normalizeQuranSurahHeadingRanges(bookId, surah, userId) {
   for (var i = 0; i < sections.length; i++) {
     var section = sections[i];
     var startAyah = quranAyahFromHeadingStart(section.start);
+    if (i === 0 && Number.isInteger(startAyah))
+      startAyah = 1;
     var nextStart = i + 1 < sections.length ? quranAyahFromHeadingStart(sections[i + 1].start) : NaN;
     var endAyah = Number.isInteger(nextStart) && nextStart > startAyah
       ? nextStart - 1
@@ -1605,7 +1617,8 @@ async function normalizeQuranSurahHeadingRanges(bookId, surah, userId) {
     if (!Number.isInteger(startAyah) || !Number.isInteger(endAyah) || endAyah < startAyah)
       continue;
     await global.query(`UPDATE toc
-      SET end=${sql(`${surah}:${endAyah}`)}, end0=${quranNum0(surah, endAyah)}, count=${endAyah - startAyah + 1}, lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP()
+      SET start=${sql(`${surah}:${startAyah}`)}, start0=${quranNum0(surah, startAyah)},
+        end=${sql(`${surah}:${endAyah}`)}, end0=${quranNum0(surah, endAyah)}, count=${endAyah - startAyah + 1}, lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP()
       WHERE id=${Number(section.id)}`);
     sectionRanges.push({
       id: Number(section.id),
@@ -1621,16 +1634,33 @@ async function normalizeQuranSurahHeadingRanges(bookId, surah, userId) {
     WHERE bookId=${bookId} AND level=3 AND h1=${surah}
     ORDER BY start0, h2, h3, id`);
   var assigned = [];
+  var orphanSubsectionIds = [];
   for (const subsection of subsections) {
     var subsectionStart = quranAyahFromHeadingStart(subsection.start);
-    var parent = sectionRanges.find(range => Number.isInteger(subsectionStart) && subsectionStart >= range.start && subsectionStart <= range.end);
-    if (!parent)
+    var subsectionEnd = quranHeadingEndAyah(subsection);
+    var assignedParent = sectionRanges.find(range => Number(range.h2) === Number(subsection.h2));
+    var parent = options.deleteOrphanSubsections
+      ? assignedParent
+      : sectionRanges.find(range => Number.isInteger(subsectionStart) && subsectionStart >= range.start && subsectionStart <= range.end);
+    var outsideParent = !parent
+      || !Number.isInteger(subsectionStart)
+      || subsectionStart < parent.start
+      || subsectionStart > parent.end
+      || (Number.isInteger(subsectionEnd) && subsectionEnd < subsectionStart);
+    if (outsideParent) {
+      if (options.deleteOrphanSubsections)
+        orphanSubsectionIds.push(Number(subsection.id));
       continue;
+    }
     assigned.push({
       ...subsection,
       startAyah: subsectionStart,
       parent: parent
     });
+  }
+  if (orphanSubsectionIds.length > 0) {
+    await global.query(`DELETE FROM toc WHERE id IN (${orphanSubsectionIds.join(',')})`);
+    debug(`quran ${surah} deleted ${orphanSubsectionIds.length} orphan subsection headings`);
   }
   for (const parent of sectionRanges) {
     var children = assigned
@@ -1653,6 +1683,20 @@ async function normalizeQuranSurahHeadingRanges(bookId, surah, userId) {
     }
   }
   QuranTocSubdivisions.invalidateSectionRanges();
+}
+
+async function relinkQuranSurahAyahsToSections(bookId, surah) {
+  var sections = await global.query(`SELECT id, h2, start, end, count
+    FROM toc
+    WHERE bookId=${parseInt(bookId, 10)} AND level=2 AND h1=${Number(surah)}
+    ORDER BY h2, id`);
+  for (const section of sections) {
+    var startAyah = quranAyahFromHeadingStart(section.start);
+    var endAyah = quranHeadingEndAyah(section);
+    if (!Number.isInteger(startAyah) || !Number.isInteger(endAyah) || endAyah < startAyah)
+      continue;
+    await relinkQuranAyahRangeToSection(bookId, surah, section.id, section.h2, startAyah, endAyah);
+  }
 }
 
 function parsePassageRangeValue(value) {

@@ -1703,25 +1703,6 @@ async function getQuranHeadingAyahRange(section) {
   if (!Number.isInteger(endAyah) && Number.isInteger(startAyah) && Number.isInteger(count) && count > 0)
     endAyah = startAyah + count - 1;
 
-  if (section && section.book_alias === 'quran' && parseInt(section.level, 10) === 2) {
-    var rows = Array.isArray(section.quranSubsections)
-      ? section.quranSubsections
-      : await getQuranSectionSubsections(section);
-    for (const row of rows) {
-      var subsectionStart = quranAyahFromHeadingStart(row.start);
-      var subsectionCount = parseInt(row.count, 10);
-      var subsectionEnd = quranAyahFromHeadingStart(row.end);
-      if (!Number.isInteger(subsectionStart))
-        continue;
-      if (!Number.isInteger(subsectionEnd) && Number.isInteger(subsectionCount) && subsectionCount > 0)
-        subsectionEnd = subsectionStart + subsectionCount - 1;
-      if (!Number.isInteger(subsectionEnd) || subsectionEnd < subsectionStart)
-        continue;
-      startAyah = Number.isInteger(startAyah) ? Math.min(startAyah, subsectionStart) : subsectionStart;
-      endAyah = Number.isInteger(endAyah) ? Math.max(endAyah, subsectionEnd) : subsectionEnd;
-    }
-  }
-
   if (!Number.isInteger(startAyah) || !Number.isInteger(endAyah) || endAyah < startAyah)
     return null;
   return {
