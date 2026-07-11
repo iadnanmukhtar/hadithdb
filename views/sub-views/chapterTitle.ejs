@@ -7,6 +7,10 @@
     var isQuranChapter = book && book.alias === 'quran';
     var chapterBreadcrumbLabelEn = isQuranChapter ? 'Surah' : 'Chapter';
     var chapterBreadcrumbLabelAr = isQuranChapter ? 'السورة' : 'كتاب';
+    var quranChapterSurah = isQuranChapter ? (global.surahs || []).find(function (surah) {
+      return Number(surah.num) === Number(chapter.h1);
+    }) : null;
+    var quranChapterRevelation = quranChapterSurah && /^mad/i.test((quranChapterSurah.revelation_en || '').toString()) ? 'madani' : 'makki';
     if (chapter.h1 != Math.floor(chapter.h1))
       chapter.h1 = Number(chapter.h1).toFixed(2);
     var quranSurahNameGlyph = isQuranChapter && !site.editMode ? utils.quranSurahNameLigature(chapter.h1) : '';
@@ -23,6 +27,9 @@
     (<%- headingPage.number %>/<%- Math.ceil(chapter.count/global.settings.search.itemsPerPage)%>)
     <% } %>
   </a>
+  <% if (isQuranChapter) { %>
+  <span class="quran-revelation-icon quran-revelation-icon-<%= quranChapterRevelation %>" role="img" aria-label="<%= quranChapterRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= quranChapterRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span>
+  <% } %>
   <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-heading-id="<%= chapter.id %>" data-bookmark-type="<%= isQuranChapter ? 'surah' : 'chapter' %>" data-bookmark-ref="<%= isQuranChapter ? `quran:${chapter.h1}` : `${book.alias}:${chapter.h1}` %>" data-bookmark-title="<%= chapter.title_en || chapterBreadcrumbLabelEn %>" data-bookmark-title-ar="<%= chapter.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${chapter.path}`) %>" title="Bookmark this chapter">
     <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= chapter.id %>"></span>
   </button>

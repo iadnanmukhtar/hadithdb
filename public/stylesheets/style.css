@@ -791,6 +791,28 @@ nav .nav-link[aria-current="page"] {
 	width: 6.5em;
 }
 
+.quran-revelation-icon {
+	display: inline-block;
+	width: 1.1em;
+	height: 1.1em;
+	margin-left: 0.3em;
+	vertical-align: -0.15em;
+	background-color: #444;
+	-webkit-mask: center / contain no-repeat url('/images/makki.svg');
+	mask: center / contain no-repeat url('/images/makki.svg');
+}
+
+.quran-revelation-icon-madani {
+	background-color: #198754;
+	-webkit-mask-image: url('/images/madani.svg');
+	mask-image: url('/images/madani.svg');
+}
+
+.quran-juz-surah-link .quran-revelation-icon {
+	margin-left: 0;
+	margin-right: 0.3em;
+}
+
 #toc-surahs td:nth-child(2) {
 	width: auto;
 	padding-left: 0.75em;

@@ -137,7 +137,8 @@
           num: Number(surah.num),
           name_en: surah.name_en,
           name_ar: surah.name_ar,
-          ayahs: Number(surah.ayahs)
+          ayahs: Number(surah.ayahs),
+          revelation_en: surah.revelation_en
         };
       }).filter(function (surah) {
         return Number.isInteger(surah.num);
@@ -206,6 +207,10 @@
       if (!surah)
         return '';
       return surah.name_ar || '';
+    }
+    function quranTocSurahRevelation(num) {
+      var surah = quranSurahLookup(num);
+      return surah && /^mad/i.test((surah.revelation_en || '').toString()) ? 'madani' : 'makki';
     }
     function quranTocStartRefLabel(item) {
       return `${quranTocSurahDisplayName(item.startSurah)} ${item.startSurah}:${item.startAyah}`;
@@ -685,7 +690,8 @@
                       <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= juz.id %>"></span>
                     </button>
                     <% } %>
-                    <span class="quran-juz-surah-link"><a href="<%= surahLink.href %>"><%- surahLink.name_en %></a></span><%= linkIndex < juzSurahLinks.length - 1 ? ', ' : '' %>
+                    <% var juzSurahRevelation = quranTocSurahRevelation(surahLink.surah); %>
+                    <span class="quran-juz-surah-link"><span class="quran-revelation-icon quran-revelation-icon-<%= juzSurahRevelation %>" role="img" aria-label="<%= juzSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= juzSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span><a href="<%= surahLink.href %>"><%- surahLink.name_en %></a></span><%= linkIndex < juzSurahLinks.length - 1 ? ', ' : '' %>
                     <% } %>
                   </td>
                   <td lang="ar" dir="rtl"><a href="<%= quranJuzStartHref(juz) %>"><%- juz.title || '' %></a></td>
@@ -726,11 +732,13 @@
                       <% } %>
                       Surah <%- toc[i].h1 %>
                     </td>
+                    <% var surahRevelation = quranTocSurahRevelation(toc[i].h1); %>
                     <% if (toc[i].start) { %>
                     <td>
                       <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" data-bookmark-type="<%= book.alias === 'quran' ? 'surah' : 'chapter' %>" data-bookmark-ref="<%= book.alias === 'quran' ? `quran:${toc[i].h1}` : `${book.alias}:${toc[i].h1}` %>" data-bookmark-title="<%= toc[i].title_en || title_en || 'Chapter' %>" data-bookmark-title-ar="<%= toc[i].title || title || '' %>" data-bookmark-url="<%= quranTocHref(toc[i]) %>" title="Bookmark this chapter">
                         <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
                       </button>
+                      <span class="quran-revelation-icon quran-revelation-icon-<%= surahRevelation %>" role="img" aria-label="<%= surahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= surahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span>
                       <a href="<%= quranTocHref(toc[i]) %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a>
                     </td>
                     <td lang="ar"><a href="<%= quranTocHref(toc[i]) %>" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
@@ -739,6 +747,7 @@
                       <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= toc[i].id %>" data-bookmark-type="<%= book.alias === 'quran' ? 'surah' : 'chapter' %>" data-bookmark-ref="<%= book.alias === 'quran' ? `quran:${toc[i].h1}` : `${book.alias}:${toc[i].h1}` %>" data-bookmark-title="<%= toc[i].title_en || title_en || 'Chapter' %>" data-bookmark-title-ar="<%= toc[i].title || title || '' %>" title="Bookmark this chapter">
                         <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= toc[i].id %>"></span>
                       </button>
+                      <span class="quran-revelation-icon quran-revelation-icon-<%= surahRevelation %>" role="img" aria-label="<%= surahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= surahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span>
                       <span class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en %></span>
                     </td>
                     <td lang="ar" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></td>
@@ -796,7 +805,8 @@
                       <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= manzil.id %>"></span>
                     </button>
                     <% } %>
-                    <span class="quran-juz-surah-link"><a href="<%= manzilSurahLink.href %>"><%- manzilSurahLink.name_en %></a></span><%= manzilLinkIndex < manzilSurahLinks.length - 1 ? ', ' : '' %>
+                    <% var manzilSurahRevelation = quranTocSurahRevelation(manzilSurahLink.surah); %>
+                    <span class="quran-juz-surah-link"><span class="quran-revelation-icon quran-revelation-icon-<%= manzilSurahRevelation %>" role="img" aria-label="<%= manzilSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= manzilSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span><a href="<%= manzilSurahLink.href %>"><%- manzilSurahLink.name_en %></a></span><%= manzilLinkIndex < manzilSurahLinks.length - 1 ? ', ' : '' %>
                     <% } %>
                   </td>
                   <td lang="ar" dir="rtl"><a href="<%= quranManzilStartHref(manzil) %>"><%- quranTocSurahArabicName(manzil.startSurah) %></a></td>
