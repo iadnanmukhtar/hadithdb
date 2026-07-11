@@ -20,6 +20,7 @@ const BookDownloads = require('../lib/BookDownloads');
 const Surahs = require('../lib/Surahs');
 const QuranCorpus = require('../lib/QuranCorpus');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
+const QuranHeadings = require('../lib/QuranHeadings');
 const { homedir } = require('os');
 
 const router = express.Router();
@@ -1008,6 +1009,22 @@ router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNu
   var startAyah = range.startAyah;
   var endAyah = startAyah + range.count - 1;
   var rows = await QuranCorpus.wordsForRange(surah.num, startAyah, endAyah);
+  var juzStartsByAyah = {};
+  (await QuranTocSubdivisions.juzRows()).forEach(function (juz) {
+    var start = (juz.visual_start || juz.start || '').toString();
+    var parts = start.split(':');
+    if (Number(parts[0]) !== Number(surah.num))
+      return;
+    var juzStartAyah = Number(parts[1]);
+    if (juzStartAyah < startAyah || juzStartAyah > endAyah)
+      return;
+    var title = (juz.title || '').toString().trim();
+    juzStartsByAyah[start] = {
+      num: Number(juz.num),
+      title: title,
+      wordCount: Math.max(1, title.split(/\s+/).filter(Boolean).length)
+    };
+  });
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify({
@@ -1015,7 +1032,8 @@ router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNu
     h2: sectionNum,
     startAyah: startAyah,
     endAyah: endAyah,
-    wordsByAyah: QuranCorpus.wordsByAyah(rows)
+    wordsByAyah: QuranCorpus.wordsByAyah(rows),
+    juzStartsByAyah: juzStartsByAyah
   }));
 });
 
@@ -2104,6 +2122,47 @@ async function flushQuranTocDiskCacheVariants() {
 }
 
 // QURAN COMMENTARY BOOK: TABLE OF CONTENTS
+router.get('/quran/juz/:number', async function (req, res, next) {
+  var juzNumber = parsePositiveIntegerParam(req.params.number);
+  var juzRows = await QuranTocSubdivisions.juzRows();
+  var juz = Number.isInteger(juzNumber)
+    ? juzRows.find(function (row) { return Number(row.num) === juzNumber; })
+    : null;
+  if (!juz)
+    return next(createError(404, `Quran juz '${req.params.number}' not found`));
+
+  var startParts = (juz.start || '').toString().split(':');
+  var surah = Number(startParts[0]);
+  var ayah = Number(startParts[1]);
+  if (!Number.isInteger(surah) || !Number.isInteger(ayah))
+    return next(createError(404, `Quran juz ${juzNumber} has no valid start reference`));
+
+  var section = await QuranHeadings.sectionForAyah(surah, ayah);
+  if (!section || !Number.isInteger(Number(section.h2)))
+    return next(createError(404, `No Quran passage contains the start of juz ${juzNumber}`));
+
+  var target = Utils.quranUrl(req, `/quran/${surah}/${Number(section.h2)}`);
+  return res.redirect(302, `${target}${appendOriginalQuery(req)}`);
+});
+
+router.get('/quran/manzil/:number', async function (req, res, next) {
+  var manzilNumber = parsePositiveIntegerParam(req.params.number);
+  var manzilRows = await QuranTocSubdivisions.manzilRows();
+  var manzil = Number.isInteger(manzilNumber)
+    ? manzilRows.find(function (row) { return Number(row.num) === manzilNumber; })
+    : null;
+  if (!manzil)
+    return next(createError(404, `Quran manzil '${req.params.number}' not found`));
+
+  var startParts = (manzil.start || '').toString().split(':');
+  var surah = Number(startParts[0]);
+  if (!Number.isInteger(surah) || !findSurah(surah))
+    return next(createError(404, `Quran manzil ${manzilNumber} has no valid start surah`));
+
+  var target = Utils.quranUrl(req, `/quran/${surah}`);
+  return res.redirect(302, `${target}${appendOriginalQuery(req)}`);
+});
+
 router.get('/quran/:commentaryAlias', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
@@ -2300,6 +2359,55 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     }
   }
 
+});
+
+router.get('/quran/:translationAlias/juz/:number', async function (req, res, next) {
+  var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
+  if (!translation)
+    return next();
+  var juzNumber = parsePositiveIntegerParam(req.params.number);
+  var juz = Number.isInteger(juzNumber)
+    ? (await QuranTocSubdivisions.juzRows()).find(function (row) { return Number(row.num) === juzNumber; })
+    : null;
+  if (!juz)
+    return next(createError(404, `Quran juz '${req.params.number}' not found`));
+  var start = (juz.start || '').toString().split(':');
+  var surah = Number(start[0]);
+  var ayah = Number(start[1]);
+  var section = await QuranHeadings.sectionForAyah(surah, ayah);
+  if (!section)
+    return next(createError(404, `No Quran passage contains the start of juz ${juzNumber}`));
+  var target;
+  if (translation.source === 'local') {
+    target = Utils.quranUrl(req, `/quran/${encodeURIComponent(translation.alias)}/${surah}/${Number(section.h2)}`);
+    return res.redirect(302, `${target}${appendOriginalQuery(req)}`);
+  }
+  target = Utils.quranUrl(req, `/quran/${surah}/${Number(section.h2)}`);
+  var query = new URLSearchParams(req.query);
+  query.set('translation', translation.alias);
+  return res.redirect(302, `${target}?${query.toString()}`);
+});
+
+router.get('/quran/:translationAlias/manzil/:number', async function (req, res, next) {
+  var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
+  if (!translation)
+    return next();
+  var manzilNumber = parsePositiveIntegerParam(req.params.number);
+  var manzil = Number.isInteger(manzilNumber)
+    ? (await QuranTocSubdivisions.manzilRows()).find(function (row) { return Number(row.num) === manzilNumber; })
+    : null;
+  if (!manzil)
+    return next(createError(404, `Quran manzil '${req.params.number}' not found`));
+  var surah = Number((manzil.start || '').toString().split(':')[0]);
+  var target;
+  if (translation.source === 'local') {
+    target = Utils.quranUrl(req, `/quran/${encodeURIComponent(translation.alias)}/${surah}`);
+    return res.redirect(302, `${target}${appendOriginalQuery(req)}`);
+  }
+  target = Utils.quranUrl(req, `/quran/${surah}`);
+  var query = new URLSearchParams(req.query);
+  query.set('translation', translation.alias);
+  return res.redirect(302, `${target}?${query.toString()}`);
 });
 
 router.get('/quran/:translationAlias/:chapterNum/:sectionNum', async function (req, res, next) {

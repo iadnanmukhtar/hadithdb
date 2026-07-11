@@ -14,6 +14,47 @@ const { Item, Library } = require('../lib/Model');
 
 const router = express.Router();
 
+function originalQuery(req) {
+  const originalUrl = (req.originalUrl || '').toString();
+  const index = originalUrl.indexOf('?');
+  return index >= 0 ? originalUrl.slice(index) : '';
+}
+
+router.get('/:tafsir/juz/:number', async function (req, res, next) {
+  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir, req.query.lang);
+  if (!tafsir)
+    return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
+  const number = Number(req.params.number);
+  const juz = Number.isInteger(number) && number > 0
+    ? (await QuranTocSubdivisions.juzRows()).find(row => Number(row.num) === number)
+    : null;
+  if (!juz)
+    return next(createError(404, `Quran juz '${req.params.number}' not found`));
+  const start = (juz.start || '').toString().split(':');
+  const surah = Number(start[0]);
+  const ayah = Number(start[1]);
+  const section = await QuranHeadings.sectionForAyah(surah, ayah);
+  if (!section)
+    return next(createError(404, `No Quran passage contains the start of juz ${number}`));
+  const slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
+  return res.redirect(302, `${Utils.quranPath(`/quran/tafsir/${encodeURIComponent(slug)}/${surah}/${Number(section.h2)}`)}${originalQuery(req)}`);
+});
+
+router.get('/:tafsir/manzil/:number', async function (req, res, next) {
+  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir, req.query.lang);
+  if (!tafsir)
+    return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
+  const number = Number(req.params.number);
+  const manzil = Number.isInteger(number) && number > 0
+    ? (await QuranTocSubdivisions.manzilRows()).find(row => Number(row.num) === number)
+    : null;
+  if (!manzil)
+    return next(createError(404, `Quran manzil '${req.params.number}' not found`));
+  const surah = Number((manzil.start || '').toString().split(':')[0]);
+  const slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
+  return res.redirect(302, `${Utils.quranPath(`/quran/tafsir/${encodeURIComponent(slug)}/${surah}`)}${originalQuery(req)}`);
+});
+
 router.get('/:tafsir', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;

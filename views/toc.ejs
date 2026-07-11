@@ -292,10 +292,20 @@
         : 1);
     }
     function quranJuzStartHref(juz) {
-      var parts = (juz && juz.start ? juz.start.toString() : '').split(':');
-      var surah = parseInt(parts[0], 10) || 1;
-      var ayah = parseInt(parts[1], 10) || 1;
-      return quranTocPassageHref(surah, ayah);
+      var juzNum = parseInt(juz && juz.num, 10) || 1;
+      if (quranCommentaryBook && quranCommentaryBook.type === 'trans')
+        return utils.quranUrl(req, `/quran/${encodeURIComponent(quranCommentaryBook.alias)}/juz/${juzNum}`);
+      if (quranCommentaryBook && quranCommentaryBook.type === 'tafsir')
+        return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/juz/${juzNum}`);
+      return utils.quranUrl(req, `/quran/juz/${juzNum}`);
+    }
+    function quranManzilStartHref(manzil) {
+      var manzilNum = parseInt(manzil && manzil.num, 10) || 1;
+      if (quranCommentaryBook && quranCommentaryBook.type === 'trans')
+        return utils.quranUrl(req, `/quran/${encodeURIComponent(quranCommentaryBook.alias)}/manzil/${manzilNum}`);
+      if (quranCommentaryBook && quranCommentaryBook.type === 'tafsir')
+        return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/manzil/${manzilNum}`);
+      return utils.quranUrl(req, `/quran/manzil/${manzilNum}`);
     }
     function quranJuzSurahLinks(juz) {
       var mapping = juz && juz.quran_verse_mapping && typeof juz.quran_verse_mapping === 'object' ? juz.quran_verse_mapping : {};
@@ -664,7 +674,7 @@
                   var juzSurahLinks = quranJuzSurahLinks(juz);
                 %>
                 <tr class="chapter" data-toc-chapter="toc-juz-<%= juz.num %>" data-toc-view="juz">
-                  <td>Juz <%- juz.num %></td>
+                  <td><a href="<%= quranJuzStartHref(juz) %>">Juz <%- juz.num %></a></td>
                   <td class="quran-juz-surah-list">
                     <% for (var linkIndex = 0; linkIndex < juzSurahLinks.length; linkIndex++) {
                       var surahLink = juzSurahLinks[linkIndex];
@@ -775,21 +785,21 @@
                   var manzilSurahLinks = quranManzilSurahLinks(manzil, m);
                 %>
                 <tr class="chapter" data-toc-chapter="toc-manzil-<%= manzil.num %>" data-toc-view="manzils">
-                  <td><%- `${manzil.name}` %></td>
+                  <td><a href="<%= quranManzilStartHref(manzil) %>"><%- `${manzil.name}` %></a></td>
                   <td class="quran-juz-surah-list">
                     <% for (var manzilLinkIndex = 0; manzilLinkIndex < manzilSurahLinks.length; manzilLinkIndex++) {
                       var manzilSurahLink = manzilSurahLinks[manzilLinkIndex];
                       var showManzilBookmark = manzilLinkIndex === 0 && Number.isInteger(parseInt(manzil && manzil.id, 10));
                     %>
                     <% if (showManzilBookmark) { %>
-                    <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= manzil.id %>" data-bookmark-type="quran-range" data-bookmark-ref="manzil:<%= manzil.num %>" data-bookmark-title="<%= manzil.name %>" data-bookmark-title-ar="<%= quranTocSurahArabicName(manzil.startSurah) %>" data-bookmark-url="<%= quranTocStartHref(manzil) %>" title="Bookmark this manzil">
+                    <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= manzil.id %>" data-bookmark-type="quran-range" data-bookmark-ref="manzil:<%= manzil.num %>" data-bookmark-title="<%= manzil.name %>" data-bookmark-title-ar="<%= quranTocSurahArabicName(manzil.startSurah) %>" data-bookmark-url="<%= quranManzilStartHref(manzil) %>" title="Bookmark this manzil">
                       <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= manzil.id %>"></span>
                     </button>
                     <% } %>
                     <span class="quran-juz-surah-link"><a href="<%= manzilSurahLink.href %>"><%- manzilSurahLink.name_en %></a></span><%= manzilLinkIndex < manzilSurahLinks.length - 1 ? ', ' : '' %>
                     <% } %>
                   </td>
-                  <td lang="ar" dir="rtl"><a href="<%= quranTocStartHref(manzil) %>"><%- quranTocSurahArabicName(manzil.startSurah) %></a></td>
+                  <td lang="ar" dir="rtl"><a href="<%= quranManzilStartHref(manzil) %>"><%- quranTocSurahArabicName(manzil.startSurah) %></a></td>
                 </tr>
                 <% } %>
               </tbody>

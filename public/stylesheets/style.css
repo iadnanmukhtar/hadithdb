@@ -2829,6 +2829,11 @@ body > footer,
 	font-size: calc(var(--f-size-ar) * 1.1);
 }
 
+.quran-passage-section [lang="ar"] .body.passage .ayah .quran-corpus-word.quran-juz-start-word {
+	font-size: calc(var(--f-size-ar) * 1.4);
+	line-height: 1;
+}
+
 .body.passage:lang(ar) .ayah-selected,
 .body.passage:lang(ar) .ayah-selected a,
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected,

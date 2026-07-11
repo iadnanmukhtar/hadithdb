@@ -5670,7 +5670,7 @@ function initQuranDynamicPassageHero(root) {
 				initQuranCorpusTooltips(corpusContainer[0]);
 			if (corpusUrl && quranCorpusPayloadCache[corpusUrl]) {
 				quranCorpusPayloadCache[corpusUrl].then(function (payload) {
-					annotateQuranCorpusWords(hero, payload.wordsByAyah || {});
+					annotateQuranCorpusWords(hero, payload.wordsByAyah || {}, payload.juzStartsByAyah || {});
 				});
 			}
 			if (pushHistory && window.history && window.history.pushState)
@@ -6472,7 +6472,7 @@ function initQuranCorpusTooltips(root) {
 		});
 		quranCorpusPayloadCache[url]
 			.then(function (payload) {
-				annotateQuranCorpusWords(container, payload.wordsByAyah || {});
+				annotateQuranCorpusWords(container, payload.wordsByAyah || {}, payload.juzStartsByAyah || {});
 			})
 			.catch(function () {
 				container.removeData('quranCorpusBound');
@@ -6480,7 +6480,7 @@ function initQuranCorpusTooltips(root) {
 	});
 }
 
-function annotateQuranCorpusWords(container, wordsByAyah) {
+function annotateQuranCorpusWords(container, wordsByAyah, juzStartsByAyah) {
 	container.find('[data-quran-ref]').each(function () {
 		var target = $(this);
 		if (target.data('quranCorpusAnnotated'))
@@ -6490,6 +6490,13 @@ function annotateQuranCorpusWords(container, wordsByAyah) {
 		if (!words || words.length < 1)
 			return;
 		annotateExistingQuranText(target[0], words);
+		var juzStart = (juzStartsByAyah || {})[ref];
+		if (juzStart) {
+			target.find('.quran-corpus-word').slice(0, Number(juzStart.wordCount) || 1)
+				.addClass('quran-juz-start-word')
+				.attr('data-quran-juz', juzStart.num || '')
+				.attr('title', 'Beginning of Juz ' + (juzStart.num || ''));
+		}
 		target.data('quranCorpusAnnotated', true);
 	});
 }
