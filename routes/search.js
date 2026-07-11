@@ -1063,6 +1063,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
       await addQuranAdjacentRefs(selectedAyahs[0]);
     var ayahs_en = [];
     var ayahs = [];
+    var original_ayahs = [];
     var footnotes_en = [];
     var footnotes = [];
     for (var i = 0; i < selectedAyahs.length; i++) {
@@ -1070,12 +1071,16 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         ayahs_en.push(selectedAyahs[i].num + ' ' + selectedAyahs[i].en.body);
       else
         ayahs_en.push(Utils.regexExtract(selectedAyahs[i].num, /\d+:(\d+)/) + ' ' + selectedAyahs[i].en.body);
-      ayahs.push(selectedAyahs[i].ar.body + ' ۝ ');
+      var originalArabicBody = selectedAyahs[i].ar.body;
+      var arabicJsonBody = selectedAyahs[i].body_ar_alt || originalArabicBody;
+      ayahs.push(arabicJsonBody + ' ۝ ');
+      original_ayahs.push(originalArabicBody + ' ۝ ');
       footnotes_en.push(Utils.regexExtract(selectedAyahs[i].num, /\d+:(\d+)'/) + ' ' + selectedAyahs[i].en.footnote);
       footnotes.push(Arabic.toArabicDigits(i) + ' ' + selectedAyahs[i].ar.footnote);
     }
     selectedAyahs[0].body_en = selectedAyahs[0].en.body = ayahs_en.join(' ').trim();
     selectedAyahs[0].body = selectedAyahs[0].ar.body = ayahs.join(' ').trim();
+    selectedAyahs[0].body_ar_alt = selectedAyahs[0].ar.body_alt = original_ayahs.join(' ').trim();
     selectedAyahs[0].footnote_en = selectedAyahs[0].en.footnote = footnotes_en.join('\n').trim();
     selectedAyahs[0].footnote = selectedAyahs[0].ar.footnote = footnotes.join('\n').trim();
     return res.end(JSON.stringify([selectedAyahs[0]]));

@@ -165,6 +165,10 @@
           "boost": 2,
           "analyzer": "arabic"
         },
+        "body_ar_alt": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
         "body_en": {
           "type": "text",
           "boost": 2,
