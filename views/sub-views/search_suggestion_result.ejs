@@ -46,6 +46,8 @@
 	const surahLabelAr = Number.isInteger(surahNum) ? `سورة ${arabic.toArabicDigits(surahNum)}` : '';
 	const surahMetaEn = [suggestion.revelation_en, suggestion.ayah_count ? `${suggestion.ayah_count} Ayat` : ''].filter(Boolean).join(' | ');
 	const surahMetaAr = [suggestion.revelation_ar, suggestion.ayah_count ? `${arabic.toArabicDigits(suggestion.ayah_count)} آيات` : ''].filter(Boolean).join(' | ');
+	const quranSuggestionRevelation = /^mad/i.test((suggestion.revelation_en || '').toString()) ? 'madani' : 'makki';
+	const quranSuggestionRevelationLabel = quranSuggestionRevelation === 'madani' ? 'Madani' : 'Makki';
 	const nameLineEn = [suggestion.shortName_en || suggestion.title_en, suggestion.name_en].filter(Boolean).filter(function (value, index, values) {
 		return values.indexOf(value) === index;
 	}).join(' | ');
@@ -92,7 +94,7 @@
 			<% if (suggestion.name_en && !sameDisplayText(suggestion.name_en, suggestion.shortName_en || suggestion.title_en)) { %><aside class="title search-suggestion-book-detail"><%- suggestion.name_en %></aside><% } %>
 			<% if (authorLineEn) { %><aside class="title text-muted search-suggestion-book-author"><%- authorLineEn %></aside><% } %>
 		<% } else if (isSurah) { %>
-			<b><a href="<%= href %>"><%- surahNameEn %></a></b>
+			<b><span class="quran-revelation-icon quran-revelation-icon-<%= quranSuggestionRevelation %> quran-revelation-icon-before" role="img" aria-label="<%= quranSuggestionRevelationLabel %>" title="<%= quranSuggestionRevelationLabel %>"></span><a href="<%= href %>"><%- surahNameEn %></a></b>
 			<% if (surahLabelEn) { %><aside class="title search-suggestion-book-detail"><%- surahLabelEn %></aside><% } %>
 			<% if (surahMetaEn) { %><aside class="title text-muted search-suggestion-book-author"><%- surahMetaEn %></aside><% } %>
 		<% } else { %>

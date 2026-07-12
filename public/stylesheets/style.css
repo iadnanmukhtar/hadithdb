@@ -813,6 +813,11 @@ nav .nav-link[aria-current="page"] {
 	margin-right: 0.3em;
 }
 
+.quran-revelation-icon-before {
+	margin-left: 0;
+	margin-right: 0.3em;
+}
+
 #toc-surahs td:nth-child(2) {
 	width: auto;
 	padding-left: 0.75em;

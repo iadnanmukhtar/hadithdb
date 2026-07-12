@@ -7,6 +7,15 @@
 			((toc.h1 !== null && toc.h1 !== undefined && toc.h1 !== '') ? 1 : toc.level));
 	const debugDocId = toc.id ?? toc.tId ?? toc.hId ?? toc._id ?? '';
 	const debugScore = Number.isFinite(toc._score) ? toc._score : '';
+	const isQuranSearchResult = searchResult && (toc.book_alias === 'quran' || (toc.book && toc.book.alias === 'quran'));
+	const quranSearchSurah = isQuranSearchResult ? (global.surahs || []).find(function (surah) { return Number(surah.num) === Number(toc.h1); }) : null;
+	const quranSearchRevelation = quranSearchSurah && /^mad/i.test((quranSearchSurah.revelation_en || '').toString()) ? 'madani' : 'makki';
+	function quranSearchRevelationIcon() {
+		if (!isQuranSearchResult)
+			return '';
+		const label = quranSearchRevelation === 'madani' ? 'Madani' : 'Makki';
+		return `<span class="quran-revelation-icon quran-revelation-icon-${quranSearchRevelation} quran-revelation-icon-before" role="img" aria-label="${label}" title="${label}"></span>`;
+	}
 	function linkTitle(title) {
 		title = title || '';
 		if (!searchResult)
@@ -36,7 +45,7 @@
 				<% } %>
 			<% } else if (toc.h1) { %>
 				<a href="<%= utils.urlFor(req, `/${toc.book.alias}/${toc.h1}`) %>" title="<%= linkTitle(toc.h1_title_en) %>"><%= `${toc.book.shortName_en}` %> Chapter <%=toc.h1%></a> –
-				<span class="<%=_e%>" data-id="<%=toc.h1_id%>" data-prop="toc.title_en"><%- toc.h1_title_en || 'Chapter' %></span>
+				<%- quranSearchRevelationIcon() %><span class="<%=_e%>" data-id="<%=toc.h1_id%>" data-prop="toc.title_en"><%- toc.h1_title_en || 'Chapter' %></span>
 			<% } %>
 		</strong></section>
 		<% if (site.editMode || toc.h1_intro_en || toc.h2_intro_en || toc.h3_intro_en ) { %>
@@ -75,7 +84,7 @@
 					<% } %>
 				<% } %>
 				<% if (toc.h1) { %>
-					in <a href="/<%=toc.book_alias%>/<%=toc.h1%>" title="<%= linkTitle(toc.h1_title_en) %>"><%- utils.truncate(toc.h1_title_en, 30, true) || 'Chapter' %></a>
+					in <%- quranSearchRevelationIcon() %><a href="/<%=toc.book_alias%>/<%=toc.h1%>" title="<%= linkTitle(toc.h1_title_en) %>"><%- utils.truncate(toc.h1_title_en, 30, true) || 'Chapter' %></a>
 				<% } %>
 			</section>
 		<% } %>

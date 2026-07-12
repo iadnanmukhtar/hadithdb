@@ -100,6 +100,8 @@
 	})();
 	const quranAyahMarkerRef = utils.emptyIfNull(i.ref || i.num || langData.num || '').replace(/^quran:/, '');
 	const quranAyahRefParts = arabic.toLatinDigits(quranAyahMarkerRef).split(/[:/-]/).filter(Boolean);
+	const quranSearchSurah = isQuranItem && searchResult ? (global.surahs || []).find(function (surah) { return Number(surah.num) === Number(quranAyahRefParts[0] || i.h1); }) : null;
+	const quranSearchRevelation = quranSearchSurah && /^mad/i.test((quranSearchSurah.revelation_en || '').toString()) ? 'madani' : 'makki';
 	const quranTranslationAttrs = isQuranItem && lang === 'en' && searchResult && quranAyahRefParts.length >= 2
 		? ` data-quran-translation-target="1" data-quran-surah="${quranAyahRefParts[0]}" data-quran-ayah="${quranAyahRefParts[1]}"`
 		: '';
@@ -273,6 +275,7 @@
 				<% } %>
 				<% if (i.chapter) { %>
 					<%= lang == 'en' ? 'in' : 'في' %> 
+					<% if (isQuranItem && lang === 'en' && searchResult) { const revelationLabel = quranSearchRevelation === 'madani' ? 'Madani' : 'Makki'; %><span class="quran-revelation-icon quran-revelation-icon-<%= quranSearchRevelation %> quran-revelation-icon-before" role="img" aria-label="<%= revelationLabel %>" title="<%= revelationLabel %>"></span><% } %>
 					<a href="<%= utils.urlFor(req, `/${i.book_alias}/${i.chapter.h1}`) %>" title="<%= linkTitle(langData.h1_title) %>"><%- itemChapterTitle %></a>
 				<% } %>
 			<% } %>
