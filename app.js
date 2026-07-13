@@ -207,6 +207,25 @@ const buildQuranHostRedirectPath = (req) => {
   return appendQueryString(`/quran:${surahNum}:${ayahNum}`, requestQueryString(req));
 };
 
+const quranPrefixedHadithPath = (requestPath) => {
+  const match = (requestPath || '').match(/^\/quran\/([^/:]+)(?=\/|:|$)/);
+  if (!match)
+    return '';
+  let alias;
+  try {
+    alias = decodeURIComponent(match[1]);
+  } catch (err) {
+    return '';
+  }
+  const book = (global.books || []).find(item => item
+    && Number(item.hidden) === 0
+    && item.alias === alias
+    && item.alias !== 'quran'
+    && item.type !== 'tafsir'
+    && item.type !== 'trans');
+  return book ? requestPath.substring('/quran'.length) : '';
+};
+
 const buildErrorSuggestions = (req) => {
   if (!req || !req.path)
     return [];
@@ -374,6 +393,9 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.all('/*', function redirectQuranPathsToQuranHost(req, res, next) {
     if (req.method !== 'GET' && req.method !== 'HEAD')
       return next();
+    const hadithPath = quranPrefixedHadithPath(req.path);
+    if (hadithPath)
+      return res.redirect(301, appendQueryString(Utils.urlFor(req, hadithPath), requestQueryString(req)));
     if (Utils.isLocalhostRequest(req) || Utils.isQuranSubdomainRequest(req) || !Utils.isQuranUrlPath(req.path))
       return next();
     const quranBaseUrl = Utils.quranBaseUrl(req);
