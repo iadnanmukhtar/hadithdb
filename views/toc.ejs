@@ -388,7 +388,10 @@
     function quranTocHref(heading) {
       if (!quranCommentaryBook) {
         var targetPath = heading && heading.firstSection ? heading.firstSection.path : heading.path;
-        return utils.urlFor(req, quranTocNormalizeQuranPath(targetPath));
+        if (isQuranToc)
+          return utils.urlFor(req, quranTocNormalizeQuranPath(targetPath));
+        targetPath = (targetPath || '').toString();
+        return utils.urlFor(req, targetPath.charAt(0) === '/' ? targetPath : `/${targetPath}`);
       }
       if (quranCommentaryBook.type === 'trans') {
         var sectionRef = quranHeadingSectionRef(heading);
