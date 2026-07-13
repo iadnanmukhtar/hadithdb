@@ -936,7 +936,7 @@ async function reindexQuranSurah(sectionHeadingId, value, userId) {
 }
 
 async function invalidateQuranTocCaches() {
-  var cacheDir = `${homedir()}/.hadithdb/cache`;
+  var cacheDir = Utils.cacheBookDirectory('quran', 'quran');
   if (!fs.existsSync(cacheDir))
     return;
   var filenames = fs.readdirSync(cacheDir);
@@ -944,7 +944,7 @@ async function invalidateQuranTocCaches() {
     var cachedName = cacheBaseName(filename);
     if (!isCurrentQuranCacheFile(cachedName))
       continue;
-    var cacheKey = cachedName.slice(0, -`${Utils.cacheSuffix()}.html`.length);
+    var cacheKey = cachedName.slice(0, -'.html'.length);
     if (cacheKey === '_quran' || !/_\d+(?:_|$|\?)/.test(cacheKey))
       await Utils.flushCachedFile(`${cacheDir}/${cachedName}`);
   }
@@ -1875,7 +1875,7 @@ function quranAyahFromHeadingStart(start) {
 
 async function invalidateQuranSurahCaches(surah) {
   QuranTocSubdivisions.invalidateSectionRanges();
-  var cacheDir = `${homedir()}/.hadithdb/cache`;
+  var cacheDir = Utils.cacheBookDirectory('quran', 'quran');
   if (!fs.existsSync(cacheDir)) {
     debug(`quran ${surah} cache invalidation skipped: ${cacheDir} does not exist`);
     return;
@@ -1887,9 +1887,9 @@ async function invalidateQuranSurahCaches(surah) {
   for (const filename of filenames) {
     const cachedName = cacheBaseName(filename);
     var currentQuranSurahCache = isCurrentQuranCacheFile(cachedName)
-      && surahPattern.test(cachedName.slice(0, -`${Utils.cacheSuffix()}.html`.length));
+      && surahPattern.test(cachedName.slice(0, -'.html'.length));
     var currentPassageCache = cachedName.startsWith(`_passage:${surah}:`)
-      && cachedName.endsWith(`${Utils.cacheSuffix()}.html`);
+      && cachedName.endsWith('.html');
     if (currentQuranSurahCache || currentPassageCache) {
       matched++;
       if (await Utils.flushCachedFile(`${cacheDir}/${cachedName}`))
@@ -1901,7 +1901,7 @@ async function invalidateQuranSurahCaches(surah) {
 
 function isCurrentQuranCacheFile(cachedName) {
   return cachedName.startsWith('_quran')
-    && cachedName.endsWith(`${Utils.cacheSuffix()}.html`);
+    && cachedName.endsWith('.html');
 }
 
 function updateErrorStatus(err) {
@@ -2082,7 +2082,8 @@ function invalidateBookChapterCache(heading) {
 }
 
 async function flushHeadingPathCaches(heading) {
-  var cacheDir = `${homedir()}/.hadithdb/cache`;
+  var bookAlias = Utils.trimToEmpty(heading.book_alias);
+  var cacheDir = Utils.cacheBookDirectory(bookAlias, bookAlias === 'quran' ? 'quran' : 'hadith');
   if (!fs.existsSync(cacheDir))
     return;
   var prefixes = buildHeadingCachePrefixes(heading);

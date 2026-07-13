@@ -330,10 +330,14 @@ function cachedRequestFile(req) {
     ...req,
     url: req.originalUrl || req.url || ''
   });
+  const tafsir = (global.commentaries || []).find(book => book
+    && book.type === 'tafsir'
+    && (book.alias === req.params.tafsir || book.slug === req.params.tafsir));
   return Utils.cacheFileFromFilename(
     filename,
     'html',
-    req.params.tafsir
+    tafsir && tafsir.alias || req.params.tafsir,
+    'tafsir'
   );
 }
 

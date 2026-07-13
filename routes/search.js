@@ -2095,7 +2095,7 @@ router.get('/:bookAlias', async function (req, res, next) {
 });
 
 async function flushQuranTocDiskCacheVariants() {
-  var cacheDir = `${homedir}/.hadithdb/cache`;
+  var cacheDir = Utils.cacheBookDirectory('quran', 'quran');
   if (!fs.existsSync(cacheDir))
     return;
   for (const filename of fs.readdirSync(cacheDir)) {
