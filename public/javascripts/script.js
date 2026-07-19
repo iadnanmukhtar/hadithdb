@@ -5508,15 +5508,10 @@ function quranAyahHeroHtml(ayah, clearHref, passageHero) {
 			attrs['data-arabizi'] = 'true';
 		return attrs;
 	};
-	var heroContainer = passageHero ? $(passageHero)[0] : document.querySelector('[data-quran-selected-ayah-hero]');
-	var previousHref = heroContainer && heroContainer.getAttribute('data-quran-prev-href')
-		? heroContainer.getAttribute('data-quran-prev-href')
-		: (ayah.prev_ref ? quranUrl(`/${ayah.prev_ref}`) : '');
-	var nextHref = heroContainer && heroContainer.getAttribute('data-quran-next-href')
-		? heroContainer.getAttribute('data-quran-next-href')
-		: (ayah.next_ref ? quranUrl(`/${ayah.next_ref}`) : '');
-	var previousLabel = heroContainer && heroContainer.getAttribute('data-quran-prev-href') ? 'Previous passage' : 'Previous ayah';
-	var nextLabel = heroContainer && heroContainer.getAttribute('data-quran-next-href') ? 'Next passage' : 'Next ayah';
+	var previousHref = ayah.prev_ref ? quranUrl(`/${ayah.prev_ref}`) : '';
+	var nextHref = ayah.next_ref ? quranUrl(`/${ayah.next_ref}`) : '';
+	var previousLabel = 'Previous ayah';
+	var nextLabel = 'Next ayah';
 	var navClass = previousHref || nextHref ? ' quran-ayah-hero-with-nav' : '';
 	var $hero = $('<section>').addClass(`quran-ayah-hero row${navClass}`).attr('data-dynamic-quran-ayah-hero', '1');
 	var audioRef = quranAudioRefParts(ref);
@@ -5725,6 +5720,28 @@ function initQuranDynamicPassageHero(root) {
 		event.preventDefault();
 		event.stopPropagation();
 		loadAyahHero(href, true, heroForTrigger(this)).catch(function (err) {
+			if (window.toastr)
+				toastr.error(err.message || 'Unable to update selected ayah.');
+			else
+				window.location.href = href;
+		});
+	});
+	$(document).on('click.quranDynamicPassageHeroNav', '[data-quran-selected-ayah-hero] .quran-ayah-hero-nav[href]', function (event) {
+		if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
+			return;
+		var href = $(this).attr('href') || '';
+		var target = new URL(href, window.location.origin);
+		var refMatch = target.pathname.match(/\/quran:(\d+):(\d+)$/);
+		if (!refMatch)
+			return;
+		var ref = `${refMatch[1]}:${refMatch[2]}`;
+		var hero = $(this).closest('[data-quran-selected-ayah-hero]');
+		var passageScope = hero.closest('[data-quran-infinite-page="1"], [data-quran-infinite-passage="1"]');
+		if (!passageScope.find(`.ayah[data-quran-ref="${ref}"]`).length)
+			return;
+		event.preventDefault();
+		event.stopPropagation();
+		loadAyahHero(href, true, hero).catch(function (err) {
 			if (window.toastr)
 				toastr.error(err.message || 'Unable to update selected ayah.');
 			else

@@ -48,6 +48,12 @@
     };
     var selectedAyahPrevHref;
     var selectedAyahNextHref;
+    var selectedAyahHeroPrevHref = firstSelectedAyah && firstSelectedAyah.prev_ref
+      ? quranPassageHref(`/${firstSelectedAyah.prev_ref}`)
+      : undefined;
+    var selectedAyahHeroNextHref = lastSelectedAyah && lastSelectedAyah.next_ref
+      ? quranPassageHref(`/${lastSelectedAyah.next_ref}`)
+      : undefined;
     var quranAyahModalItems = [];
     var quranAyahModalRefs = new Set();
     var quranAyahModalNumber = function (ayah) {
@@ -200,7 +206,7 @@
       <% } %>
       
       <% var quranSelectedAyahClearHref = page.context.section ? utils.quranUrl(req, `/${page.context.section.path}`) : undefined; %>
-      <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero<% if (quranSelectedAyahClearHref) { %> data-quran-clear-href="<%= quranSelectedAyahClearHref %>"<% } %><% if (selectedAyahPrevHref) { %> data-quran-prev-href="<%= selectedAyahPrevHref %>"<% } %><% if (selectedAyahNextHref) { %> data-quran-next-href="<%= selectedAyahNextHref %>"<% } %>>
+      <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero<% if (quranSelectedAyahClearHref) { %> data-quran-clear-href="<%= quranSelectedAyahClearHref %>"<% } %>>
       <% if (selectedAyahs.length > 0) { %>
         <% var selectedAyahModalIndex = quranAyahModalItems.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>
         <% var selectedAyahId = firstSelectedAyah && firstSelectedAyah.id; %>
@@ -212,10 +218,10 @@
         page: page,
         selectedAyahs: selectedAyahs,
         clearHref: quranSelectedAyahClearHref,
-        prevHref: selectedAyahPrevHref,
-        nextHref: selectedAyahNextHref,
-        prevLabel: 'Previous passage',
-        nextLabel: 'Next passage',
+        prevHref: selectedAyahHeroPrevHref,
+        nextHref: selectedAyahHeroNextHref,
+        prevLabel: 'Previous ayah',
+        nextLabel: 'Next ayah',
         toolbar: quranShareId ? {
           selectedAyahModalIndex: selectedAyahModalIndex,
           selectedAyahId: selectedAyahId,
