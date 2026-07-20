@@ -185,30 +185,41 @@
   %>
   <nav class="row g-0 chapter-toc">
     <%# --- TABLE OF CONTENTS --- %>
-    <div class="col-12 d-flex justify-content-center">
+    <div class="col-12 chapter-toc-toolbar">
       <% if (sections && sections.length > 0) { %>
-        <a data-bs-toggle="collapse" href="#toc2" title="Click to show sections">Section Menu <i class="bi bi-caret-down-square"></i></a>
-        <% if (page.context.book && page.context.book.alias === 'quran' && (page.menu === 'Chapter' || page.menu === 'Section')) {
-             var isPassage = req.query.passage != undefined || page.context.passage || (page.menu === 'Section' && req.query.ayat == undefined);
-             if (!isPassage) { %>
-                &nbsp;|&nbsp; <a href="<%= page.menu === 'Section' ? req.path : `${req.path}?passage` %>" title="Passage View"><i class="bi bi-text-paragraph"></i> Passage</a>
-             <% } else { %>
-              &nbsp;|&nbsp; <a href="<%= utils.urlFor(req, `/${(page.context.section || page.context.chapter).path}?ayat`) %>" title="Āyah View"><i class="bi bi-blockquote-left"></i> Āyāt</a>
-        <%   }
-           } %>
+        <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="Show sections">
+          <i class="bi bi-list-ul" aria-hidden="true"></i>
+          <span>Sections</span>
+          <% if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
+          <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
+        </a>
+        <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
+             var quranSectionPath = utils.quranUrl(req, `/${(page.context.section || page.context.chapter).path}`);
+             var quranReaderMode = requestPath.indexOf('/quran/page/') === 0 ? 'mushaf' : (req.query.ayat !== undefined ? 'ayah' : 'passage');
+             var quranMappedPage = page.context.section && page.context.section.mushafPage;
+        %>
+          <span class="chapter-toc-reader-modes">
+            <%- include('quran_reader_modes.ejs', {
+              readerMode: quranReaderMode,
+              passageHref: quranSectionPath,
+              ayahHref: `${quranSectionPath}?ayat`,
+              mushafHref: utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`)
+            }); %>
+          </span>
+        <% } %>
       <% } else { %>
         <!-- <a>No sections in this chapter</a> -->
       <% } %>
     </div>
-    <div id="toc2" class="col-12 toc2 collapse">
-      <table class="table">
+    <div id="toc2" class="col-12 toc2 collapse chapter-toc-panel">
+      <table class="table chapter-toc-table">
         <tbody>
           <%
 				for (var section of sections) {
 					if (section.level < 3) {
 						title_en = utils.truncate(utils.emptyIfNull(section.title_en).toString(), 75);
 						title = utils.truncate(utils.emptyIfNull(section.title).toString(), 150); %>
-          <tr class="title">
+          <tr class="title<%= page.context.section && Number(page.context.section.h2) === Number(section.h2) ? ' is-current' : '' %>">
             <% if (!isQuranToc) { %>
             <td><%- section.start %></td>
             <% } %>

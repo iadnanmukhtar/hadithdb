@@ -21,6 +21,7 @@ const Surahs = require('../lib/Surahs');
 const QuranCorpus = require('../lib/QuranCorpus');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranHeadings = require('../lib/QuranHeadings');
+const QuranMushaf = require('../lib/QuranMushaf');
 const { homedir } = require('os');
 
 const router = express.Router();
@@ -1119,6 +1120,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
       var containingSections = await getQuranSectionsForAyahRange(surah.num, ayah1, ayah2, selectedAyahs[0]);
       if (containingSections.length > 0) {
         section = containingSections[0];
+        section.mushafPage = await QuranMushaf.pageForRef(surah.num, ayah1);
         chapter = await section.getChapter();
         await chapter.getPrev();
         await chapter.getNext();
@@ -1287,6 +1289,9 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 
 async function renderQuranAyahPassage(selectedAyah, req, res) {
   var section = await getQuranSectionForAyah(selectedAyah);
+  var selectedSurah = Number(selectedAyah.h1 || (selectedAyah.num || '').toString().split(/:/)[0]);
+  var selectedAyahNumber = Number(selectedAyah.numInChapter || (selectedAyah.num || '').toString().split(/:/).pop());
+  section.mushafPage = await QuranMushaf.pageForRef(selectedSurah, selectedAyahNumber);
   await addQuranAdjacentRefs(selectedAyah);
   var chapter = await section.getChapter();
   await Promise.all([
@@ -1960,6 +1965,121 @@ router.get('/quran', throttleSearchRequest, async function (req, res, next) {
   });
 });
 
+async function renderQuranMushafPage(req, res, next, options) {
+  var pageNumber = Number(options.pageNumber);
+  var mushaf = await QuranMushaf.page(pageNumber);
+  if (!mushaf)
+    return next(createError(404, `Mushaf page '${pageNumber}' not found`));
+  var juzStarts = {};
+  var juzRows = await QuranTocSubdivisions.juzRows();
+  juzRows.forEach(function (juz) {
+    var ref = (juz.visual_start || juz.start || '').toString();
+    if (!ref)
+      return;
+    juzStarts[ref] = {
+      num: Number(juz.num),
+      wordCount: Math.max(1, (juz.title || '').toString().trim().split(/\s+/).filter(Boolean).length)
+    };
+  });
+  Object.keys(juzStarts).forEach(function (ref) {
+    var start = juzStarts[ref];
+    var words = mushaf.lines.flatMap(line => line.words || []).filter(function (word) {
+      return !word.is_ayah_marker && `${word.surah}:${word.ayah}` === ref;
+    });
+    words.slice(0, start.wordCount).forEach(function (word, index) {
+      word.juzStart = start.num;
+      word.juzStartFirst = index === 0;
+    });
+  });
+  var subsectionRangesBySurah = await QuranTocSubdivisions.quranSubsectionRangesBySurah();
+  var passageToneBySubsection = {};
+  var subsectionIndex = 0;
+  Object.keys(subsectionRangesBySurah).map(Number).sort(function (a, b) { return a - b; }).forEach(function (surah) {
+    subsectionRangesBySurah[surah].forEach(function (range) {
+      passageToneBySubsection[`${surah}:${range.section}:${range.subsection}`] = subsectionIndex % 2;
+      subsectionIndex += 1;
+    });
+  });
+  mushaf.lines.flatMap(line => line.words || []).forEach(function (word) {
+    var ranges = subsectionRangesBySurah[Number(word.surah)] || [];
+    var range = ranges.find(function (candidate) {
+      return Number(word.ayah) >= candidate.start && Number(word.ayah) <= candidate.end;
+    });
+    if (range)
+      word.passageTone = passageToneBySubsection[`${word.surah}:${range.section}:${range.subsection}`];
+  });
+  var firstWord = mushaf.lines.flatMap(line => line.words || []).find(word => !word.is_ayah_marker);
+  var firstSurah = firstWord && (global.surahs || []).find(function (surah) {
+    return Number(surah.num) === Number(firstWord.surah);
+  });
+  var firstJuz = firstWord && juzRows.slice().sort(function (a, b) { return Number(a.num) - Number(b.num); }).filter(function (juz) {
+    var parts = (juz.start || '').toString().split(':');
+    var startSurah = Number(parts[0]);
+    var startAyah = Number(parts[1]);
+    return startSurah < Number(firstWord.surah) || (startSurah === Number(firstWord.surah) && startAyah <= Number(firstWord.ayah));
+  }).pop();
+  var audioRanges = [];
+  mushaf.lines.flatMap(line => line.words || []).forEach(function (word) {
+    var surah = Number(word.surah);
+    var ayah = Number(word.ayah);
+    if (!Number.isInteger(surah) || !Number.isInteger(ayah))
+      return;
+    var range = audioRanges[audioRanges.length - 1];
+    if (!range || range.surah !== surah) {
+      audioRanges.push({ surah: surah, from: ayah, to: ayah });
+      return;
+    }
+    range.from = Math.min(range.from, ayah);
+    range.to = Math.max(range.to, ayah);
+  });
+  var pageContext = {
+    book: options.book,
+    chapter: options.chapter,
+    section: options.section,
+    passage: true
+  };
+  return res.render('quran_mushaf', {
+    mushaf: mushaf,
+    audioRanges: audioRanges,
+    firstRef: firstWord ? `${firstWord.surah}:${firstWord.ayah}` : '',
+    firstSurah: firstSurah,
+    firstJuz: firstJuz,
+    page: {
+      menu: 'Section',
+      title_en: `Quran Mushaf Page ${pageNumber}`,
+      description_en: `Read page ${pageNumber} of the Quran in the 15-line Digital Khatt Mushaf.`,
+      canonical: `/quran/page/${pageNumber}`,
+      context: pageContext
+    }
+  });
+}
+
+router.get('/quran/page/:page', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
+  var pageNumber = parsePositiveIntegerParam(req.params.page);
+  if (!Number.isInteger(pageNumber))
+    return next(createError(400, routeParameterMessage('page', req.params.page, 'Mushaf page must be a positive integer')));
+  var mappedSection = await QuranMushaf.sectionForPage(pageNumber);
+  if (!mappedSection)
+    return next(createError(404, `A Quran section was not found for Mushaf page ${pageNumber}`));
+  var book = visibleBookByAlias('quran');
+  var section = await Section.sectionFromRef(`quran/${mappedSection.surah}/${mappedSection.h2}`);
+  await section.getPrev();
+  await section.getNext();
+  var chapter = await section.getChapter();
+  await chapter.getPrev();
+  await chapter.getNext();
+  await chapter.getSections();
+  section.mushafPage = pageNumber;
+  return renderQuranMushafPage(req, res, next, {
+    pageNumber: pageNumber,
+    book: book,
+    chapter: chapter,
+    section: section
+  });
+});
+
 // BOOK: TABLE OF CONTENTS
 router.get('/:bookAlias', async function (req, res, next) {
   res.locals.req = req;
@@ -2260,15 +2380,21 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         return res.redirect(301, `/${firstSection.path}${appendChapterSectionRedirectQuery(req)}`);
     }
 
-    var quranChapterPassage = bookAlias === 'quran' && req.query.ayat == undefined;
+    var isQuranAyahSectionRequest = bookAlias === 'quran' && req.query.ayat !== undefined;
+    var quranChapterPassage = bookAlias === 'quran' && !isQuranAyahSectionRequest;
     var cachedFile = Utils.htmlCacheFile(req);
 	const flushCache = Utils.shouldFlushCache(req);
-	if (flushCache)
+	if (flushCache || isQuranAyahSectionRequest)
 	  await Utils.flushCachedFile(cachedFile);
-    if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    if (!flushCache && !isQuranAyahSectionRequest && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
     }
+	if (isQuranAyahSectionRequest) {
+	  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+	  res.setHeader('Pragma', 'no-cache');
+	  res.setHeader('Expires', '0');
+	}
 
     await chapter.getPrev();
     await chapter.getNext();
@@ -2481,13 +2607,19 @@ async function renderBookSection(req, res, next) {
       }
     }
 
+    var isQuranAyahSectionRequest = bookAlias === 'quran' && req.query.ayat !== undefined;
     var cachedFile = Utils.htmlCacheFile(req);
 	const flushCache = Utils.shouldFlushCache(req);
-	if (flushCache)
+	if (flushCache || isQuranAyahSectionRequest)
 	  await Utils.flushCachedFile(cachedFile);
-    if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    if (!flushCache && !isQuranAyahSectionRequest && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
       sendCachedHtml(req, res, cachedFile);
       return;
+    }
+    if (isQuranAyahSectionRequest) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
     }
 
     var section = await Section.sectionFromRef(`${bookAlias}/${chapterNum}/${sectionNum}`);
@@ -2500,6 +2632,16 @@ async function renderBookSection(req, res, next) {
     await chapter.getPrev();
     await chapter.getNext();
     await chapter.getSections();
+    if (bookAlias === 'quran') {
+      var sectionStartAyah = quranAyahFromHeadingStart(section.start);
+      if (sectionStartAyah === 0)
+        sectionStartAyah = 1;
+      section.mushafPage = await QuranMushaf.pageForSection(chapterNum, sectionNum, sectionStartAyah);
+      if (!section.mushafPage)
+        return next(createError(404, `A Mushaf page was not found for Quran section ${chapterNum}/${sectionNum}`));
+      if (req.query.mushaf !== undefined)
+        return res.redirect(302, Utils.quranUrl(req, `/quran/page/${section.mushafPage}`));
+    }
     var isQuranPassageSection = bookAlias === 'quran' && req.query.ayat == undefined;
     var quranSubsections = isQuranPassageSection
       ? await getQuranSectionSubsections(section, { reconcileWithDb: editMode })
@@ -2569,19 +2711,20 @@ async function renderBookSection(req, res, next) {
         res.end(Utils.toMarkdown(results));
       } else {
 
-        // cache response
-        var refs = [];
-        for (const item of results)
-          refs.push(item.ref);
-        var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, cachedRenderLocals(res, {
-          noadmin: true,
-          section: section,
-          results: results,
-          req: req,
-          res: res
-        }));
-        Utils.writeCachedHtml(cachedFile, html);
-        await Utils.indexCachedItem(refs, cachedFile);
+        if (!isQuranAyahSectionRequest) {
+          var refs = [];
+          for (const item of results)
+            refs.push(item.ref);
+          var html = await ejs.renderFile(`${__dirname}/../views/section.ejs`, cachedRenderLocals(res, {
+            noadmin: true,
+            section: section,
+            results: results,
+            req: req,
+            res: res
+          }));
+          Utils.writeCachedHtml(cachedFile, html);
+          await Utils.indexCachedItem(refs, cachedFile);
+        }
 
         res.render('section', {
           section: section,

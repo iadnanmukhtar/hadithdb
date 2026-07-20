@@ -3,7 +3,7 @@
   var audioLabel = audioGroup && audioGroup._headingAudioLabel ? audioGroup._headingAudioLabel : 'passage';
   var audioControlClass = locals.audioControlClass || '';
 %>
-<div class="quran-passage-audio-control <%= audioControlClass %>" data-quran-passage-audio="1" data-quran-audio-scope="<%= audioGroup._audioScopeId %>" data-surah="<%= quranSelectionSurah %>" data-from="<%= audioGroup._audioStartAyah %>" data-to="<%= audioGroup._audioEndAyah %>">
+<div class="quran-passage-audio-control <%= audioControlClass %>" data-quran-passage-audio="1" data-quran-audio-scope="<%= audioGroup._audioScopeId %>" data-surah="<%= quranSelectionSurah %>" data-from="<%= audioGroup._audioStartAyah %>" data-to="<%= audioGroup._audioEndAyah %>"<% if (locals.audioRanges && locals.audioRanges.length) { %> data-quran-audio-ranges="<%= JSON.stringify(locals.audioRanges) %>"<% } %>>
   <div class="btn-group btn-group-sm" role="group" aria-label="Quran <%= audioLabel %> audio">
     <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-audio-play" data-quran-passage-audio-play title="Play <%= audioLabel %>" aria-label="Play <%= audioLabel %>">
       <span class="bi bi-play-fill"></span>

@@ -25,6 +25,7 @@ const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
 const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
+const QuranMushaf = require('../lib/QuranMushaf');
 const Surahs = require('../lib/Surahs');
 const { Heading, Item, Library } = require('../lib/Model');
 
@@ -872,9 +873,11 @@ async function updateQuranPassageRange(headingId, value, userId) {
   await normalizeQuranSurahHeadingRanges(heading.book_id, surah, userId, { deleteOrphanSubsections: true });
   await relinkQuranSurahAyahsToSections(heading.book_id, surah);
   await syncQuranSurahHadithHeadingNumbers(heading.book_id, surah);
+  await QuranMushaf.syncSectionMappings(surah);
   QuranTocSubdivisions.invalidateSectionRanges();
   await reindexChapterSearchScope(heading.book_id, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true, replaceItems: true });
   await invalidateQuranSurahCaches(surah);
+  await invalidateQuranMushafPageCaches(surah);
   return {
     message: updateResult.message,
     value: {
@@ -1091,6 +1094,7 @@ async function updateQuranSubsectionRange(subsectionHeadingId, value, userId) {
   await normalizeQuranSurahHeadingRanges(subsection.book_id, surah, userId, { deleteOrphanSubsections: true });
   await reindexChapterSearchScope(subsection.book_id, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true });
   await invalidateQuranSurahCaches(surah);
+  await invalidateQuranMushafPageCaches(surah);
   return {
     message: updateResult.message,
     value: {
@@ -1897,6 +1901,41 @@ async function invalidateQuranSurahCaches(surah) {
     }
   }
   debug(`quran ${surah} cache invalidation scanned ${filenames.length}, matched ${matched}, deleted ${deleted}`);
+}
+
+async function invalidateQuranMushafPageCaches(surah) {
+  surah = Number(surah);
+  var surahInfo = (global.surahs || []).find(item => Number(item.num) === surah);
+  var ayahCount = Number(surahInfo && (surahInfo.ayahs || surahInfo.ayat));
+  if (!Number.isInteger(surah) || !Number.isInteger(ayahCount) || ayahCount < 1)
+    return;
+  var firstPage = await QuranMushaf.pageForRef(surah, 1);
+  var lastPage = await QuranMushaf.pageForRef(surah, ayahCount);
+  if (!Number.isInteger(firstPage) || !Number.isInteger(lastPage))
+    return;
+  var affectedPages = new Set();
+  for (var page = Math.min(firstPage, lastPage); page <= Math.max(firstPage, lastPage); page++)
+    affectedPages.add(page);
+  var cacheDirectories = [
+    `${homedir()}/.hadithdb/cache`,
+    Utils.cacheBookDirectory('quran', 'quran')
+  ];
+  var matched = 0;
+  var deleted = 0;
+  for (const cacheDir of cacheDirectories) {
+    if (!fs.existsSync(cacheDir))
+      continue;
+    for (const filename of fs.readdirSync(cacheDir)) {
+      var cachedName = cacheBaseName(filename);
+      var match = cachedName.match(/^_quran_page_(\d+)(?:\D|$)/);
+      if (!match || !affectedPages.has(Number(match[1])))
+        continue;
+      matched++;
+      if (await Utils.flushCachedFile(`${cacheDir}/${cachedName}`))
+        deleted++;
+    }
+  }
+  debug(`quran ${surah} Mushaf cache invalidation pages ${firstPage}-${lastPage}, matched ${matched}, deleted ${deleted}`);
 }
 
 function isCurrentQuranCacheFile(cachedName) {

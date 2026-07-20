@@ -46,6 +46,12 @@
 	font-display: swap;
 }
 
+@font-face {
+	font-family: 'surah-header';
+	src: url('/fonts/qcf-surah-header.woff2') format('woff2');
+	font-display: swap;
+}
+
 :root {
 	--c-ghostwhite: #f8f8f8;
 	--c-ghostwhite-86: rgba(248, 248, 248, 0.86);
@@ -640,7 +646,7 @@ nav .nav-link {
 
 nav .nav-link.active,
 nav .nav-link[aria-current="page"] {
-	color: var(--c-accent);
+	color: inherit;
 	font-weight: 600;
 }
 
@@ -2064,27 +2070,462 @@ del em strong {
 	}
 }
 
+.quran-reader-modes .btn {
+	align-items: center;
+	display: inline-flex;
+	font-size: 0.68rem;
+	gap: 0.22rem;
+	line-height: 1.1;
+	padding: 0.2rem 0.38rem;
+	white-space: nowrap;
+}
+
+.quran-reader-modes .btn.active {
+	background-color: var(--c-accent);
+	border-color: var(--c-accent);
+	color: white;
+}
+
+main.quran-mushaf-reader {
+	margin-top: max(7rem, calc(var(--site-fixed-header-height, 0px) + 2rem)) !important;
+}
+
+.quran-mushaf-page {
+	margin-bottom: 3rem;
+	scroll-margin-top: 5rem;
+}
+
+.quran-mushaf-page-heading {
+	align-items: center;
+	display: grid;
+	font-family: "Gentium Plus", Serif;
+	font-size: 0.8rem;
+	grid-template-columns: 1fr auto 1fr;
+	line-height: 1.2;
+	margin-bottom: 0.35rem;
+	width: 100%;
+}
+
+.quran-mushaf-page-meta {
+	align-items: center;
+	display: flex;
+	flex-direction: row;
+	gap: 0.25rem;
+	grid-column: 3;
+	grid-row: 1;
+	justify-self: end;
+	letter-spacing: normal;
+	color: var(--c-gray-dark);
+	text-align: right;
+	white-space: nowrap;
+}
+
+.quran-mushaf-page-meta form,
+.quran-mushaf-page-meta label {
+	display: inline;
+	margin: 0;
+}
+
+.quran-mushaf-page-meta input,
+.quran-mushaf-surah-picker-toggle {
+	appearance: textfield;
+	background: transparent;
+	border: 0;
+	border-bottom: 1px dotted transparent;
+	color: inherit;
+	font: inherit;
+	line-height: inherit;
+	padding: 0;
+	text-align: center;
+}
+
+.quran-mushaf-page-meta input:hover,
+.quran-mushaf-page-meta input:focus,
+.quran-mushaf-surah-picker-toggle:hover,
+.quran-mushaf-surah-picker-toggle:focus {
+	border-bottom-color: currentColor;
+	outline: none;
+}
+
+.quran-mushaf-page-meta input {
+	width: 1.7rem;
+}
+
+.quran-mushaf-surah-picker-toggle {
+	cursor: pointer;
+	direction: rtl;
+	text-align: right;
+}
+
+.quran-mushaf-page-meta input::-webkit-inner-spin-button,
+.quran-mushaf-page-meta input::-webkit-outer-spin-button {
+	appearance: none;
+	margin: 0;
+}
+
+.quran-mushaf-page-heading .quran-mushaf-surah-picker:lang(ar) {
+	font-family: Kitab, Serif;
+	font-size: 0.8rem !important;
+	line-height: 1.2;
+}
+
+.quran-mushaf-surah-picker-dropdown {
+	display: inline-block;
+	position: relative;
+}
+
+.quran-mushaf-page-heading .quran-mushaf-surah-picker-label,
+.quran-mushaf-page-heading .quran-mushaf-surah-picker-label:lang(ar) {
+	border-bottom: 1px dotted transparent;
+	display: inline-block;
+	font-family: Kitab, Serif !important;
+	font-size: 0.8rem !important;
+	font-weight: normal !important;
+	line-height: 1.2 !important;
+}
+
+.quran-mushaf-surah-picker-dropdown:hover .quran-mushaf-surah-picker-label,
+.quran-mushaf-surah-picker-dropdown:focus-within .quran-mushaf-surah-picker-label {
+	border-bottom-color: currentColor;
+}
+
+.quran-mushaf-page-heading .quran-mushaf-surah-picker-toggle {
+	border: 0;
+	inset: 0;
+	padding: 0;
+	position: absolute;
+	width: 100%;
+}
+
+.quran-mushaf-surah-picker-toggle::after {
+	display: none;
+}
+
+.quran-mushaf-surah-picker-menu {
+	font-family: Kitab, Serif;
+	font-size: 0.8rem !important;
+	max-height: min(65vh, 28rem);
+	max-width: calc(100vw - 2rem);
+	min-width: 14em;
+	overflow-y: auto;
+	width: max-content;
+}
+
+.quran-mushaf-surah-picker-menu .dropdown-item,
+.quran-mushaf-surah-picker-menu .dropdown-item span,
+.quran-mushaf-surah-picker-menu .dropdown-item span:lang(ar) {
+	font-size: 0.8rem !important;
+	line-height: 1.2;
+}
+
+.quran-mushaf-surah-picker-menu .dropdown-item {
+	display: grid;
+	gap: 0.65em;
+	grid-template-columns: 2.5em 1fr;
+	text-align: right;
+}
+
+.quran-mushaf-surah-option-number {
+	direction: ltr;
+	font-family: "Gentium Plus", Serif;
+	text-align: left;
+}
+
+.quran-mushaf-page-number {
+	color: var(--c-gray-dark);
+	font-size: 0.8rem;
+	grid-column: 2;
+	grid-row: 1;
+	letter-spacing: 0.08em;
+	text-align: center;
+}
+
+.quran-mushaf-page-number form {
+	display: inline-block;
+}
+
+.quran-mushaf-page-number input {
+	appearance: textfield;
+	background: transparent;
+	border: 0;
+	border-bottom: 1px dotted transparent;
+	color: inherit;
+	font: inherit;
+	letter-spacing: inherit;
+	padding: 0.05rem 0.15rem;
+	text-align: center;
+	width: 3.5rem;
+}
+
+.quran-mushaf-page-number input:hover,
+.quran-mushaf-page-number input:focus {
+	border-bottom-color: currentColor;
+	outline: none;
+}
+
+.quran-mushaf-page-number input::-webkit-inner-spin-button,
+.quran-mushaf-page-number input::-webkit-outer-spin-button {
+	appearance: none;
+	margin: 0;
+}
+
+.quran-mushaf-page-toolbar {
+	direction: ltr;
+	font-family: "Gentium Plus", Serif;
+	font-size: 1rem;
+	grid-column: 1;
+	grid-row: 1;
+	justify-self: start;
+	line-height: normal;
+	margin: 0 !important;
+	text-align: left;
+}
+
+.quran-mushaf-sheet,
+.quran-mushaf-sheet.quran-hafs:lang(ar) {
+	background: var(--bs-body-bg);
+	border: 1px solid var(--bs-border-color);
+	border-radius: 0.35rem;
+	box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.06);
+	font-family: QuranV1, Serif;
+	font-size: clamp(1.55rem, 3.15vw, 2.45rem);
+	line-height: 1.95;
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 33rem;
+	min-width: 33rem;
+	padding: clamp(1rem, 3vw, 2.5rem);
+	width: 100%;
+}
+
+.quran-mushaf-line {
+	align-items: center;
+	display: flex;
+	gap: 0.14em;
+	justify-content: space-between;
+	min-height: 1.95em;
+	white-space: nowrap;
+}
+
+.quran-mushaf-line.is-centered,
+.quran-mushaf-line-surah_name,
+.quran-mushaf-line-basmallah {
+	justify-content: center;
+}
+
+.quran-mushaf-sheet.quran-hafs .quran-mushaf-surah-name,
+.quran-mushaf-sheet.quran-hafs .quran-mushaf-surah-name:lang(ar) {
+	display: block;
+	font-family: 'surah-header', Serif;
+	font-size: 8rem;
+	line-height: 0.75;
+	text-align: center;
+	width: 100%;
+}
+
+.quran-mushaf-line-surah_name {
+	line-height: 0.75;
+	min-height: 6.5rem;
+	width: 100%;
+}
+
+.quran-mushaf-basmallah {
+	font-size: 0.9em;
+}
+
+.quran-mushaf-page .quran-corpus-word.quran-juz-start-word {
+	font-size: 1.27em;
+	line-height: 1;
+}
+
+.quran-juz-start-first-word::before {
+	content: "۞";
+	display: inline-block;
+	font-size: 0.8em;
+	margin-inline-end: 0.2em;
+}
+
+.quran-mushaf-passage-tone-0 {
+	color: var(--c-black);
+}
+
+.quran-mushaf-passage-tone-1 {
+	color: saddlebrown;
+}
+
+.quran-mushaf-page .quran-corpus-word,
+.quran-mushaf-ayah-marker {
+	cursor: pointer;
+}
+
+.quran-mushaf-ayah-marker {
+	background: none;
+	border: 0;
+	color: inherit;
+	font: inherit;
+	line-height: inherit;
+	padding: 0;
+	text-decoration: none;
+	transition: color 0.15s ease;
+}
+
+.quran-mushaf-page .quran-mushaf-ayah-marker.quran-mushaf-passage-tone-0 {
+	color: var(--c-black);
+}
+
+.quran-mushaf-page .quran-mushaf-ayah-marker.quran-mushaf-passage-tone-1 {
+	color: saddlebrown;
+}
+
+.quran-mushaf-page .quran-corpus-word:focus,
+.quran-mushaf-page .quran-corpus-word:hover {
+	background-color: var(--c-cornsilk);
+	border-radius: 0.15em;
+	color: var(--c-link-dark);
+	outline: none;
+}
+
+.quran-mushaf-page .quran-mushaf-ayah-marker:focus,
+.quran-mushaf-page .quran-mushaf-ayah-marker:hover {
+	color: var(--c-link-dark);
+	outline: none;
+}
+
+.quran-mushaf-page .quran-audio-active-ayah {
+	background-color: var(--c-cornsilk);
+	border-radius: 0.15em;
+	color: var(--c-link-dark);
+}
+
+.quran-mushaf-page .quran-mushaf-ayah-marker.quran-audio-active-ayah {
+	color: var(--c-link-dark);
+}
+
+@media (max-width: 576px) {
+	.quran-mushaf-reader {
+		padding-left: 0.35rem;
+		padding-right: 0.35rem;
+	}
+
+	.quran-mushaf-toolbar {
+		align-items: stretch !important;
+		flex-direction: column;
+	}
+
+	.quran-mushaf-sheet,
+	.quran-mushaf-sheet.quran-hafs:lang(ar) {
+		font-size: clamp(1.05rem, 4.25vw, 1.45rem);
+		padding: 0.75rem 0.35rem;
+	}
+}
+
 .chapter-toc {
 	border-bottom: 1px solid var(--bs-border-color);
-	padding-top: 5px;
-	padding-bottom: 5px;
+	padding: 0.38rem 0.75rem;
 	font-size: var(--content-size-sm);
 	background-color: var(--c-ghostwhite);
 	flex-wrap: wrap;
 }
 
-.chapter-toc a {
+.chapter-toc a:not(.btn) {
 	color: var(--c-accent);
 }
 
-.chapter-toc .collapse {
+.chapter-toc-toolbar {
+	align-items: center;
+	display: flex;
+	gap: 0.55rem;
+	justify-content: center;
+}
+
+.chapter-toc-toggle {
+	align-items: center;
+	border: 1px solid var(--bs-border-color);
+	border-radius: 999px;
+	display: inline-flex;
+	font-size: 0.76rem;
+	font-weight: 600;
+	gap: 0.32rem;
+	line-height: 1;
+	padding: 0.28rem 0.5rem;
+	text-decoration: none;
+}
+
+.chapter-toc-toggle:hover,
+.chapter-toc-toggle[aria-expanded="true"] {
+	background: var(--c-primary-soft-08);
+}
+
+.chapter-toc-current {
+	color: var(--bs-secondary-color);
+	font-size: 0.68rem;
+	font-weight: 400;
+}
+
+.chapter-toc-chevron {
+	font-size: 0.62rem;
+	transition: transform 0.2s ease;
+}
+
+.chapter-toc-toggle[aria-expanded="true"] .chapter-toc-chevron {
+	transform: rotate(180deg);
+}
+
+.chapter-toc-reader-modes {
+	display: inline-flex;
+}
+
+.chapter-toc .chapter-toc-panel {
 	max-height: 50vh !important;
-	overflow-y: scroll;
+	overflow-y: auto;
+	padding-top: 0.5rem;
+	scrollbar-gutter: stable;
 }
 
 .chapter-toc tr,
 .chapter-toc td {
 	background-color: var(--c-ghostwhite) !important;
+}
+
+.chapter-toc-table {
+	margin: 0 auto;
+	max-width: 64rem;
+}
+
+.chapter-toc-table td {
+	border-color: color-mix(in srgb, var(--bs-border-color) 60%, transparent);
+	padding: 0.48rem 0.6rem;
+	vertical-align: middle;
+}
+
+.chapter-toc-table tr:hover td,
+.chapter-toc-table tr.is-current td {
+	background-color: var(--c-primary-soft-08) !important;
+}
+
+.chapter-toc-table tr.is-current td:first-child {
+	box-shadow: inset 0.18rem 0 var(--c-accent);
+}
+
+@media (max-width: 576px) {
+	.chapter-toc {
+		padding-left: 0.35rem;
+		padding-right: 0.35rem;
+	}
+
+	.chapter-toc-toolbar {
+		gap: 0.35rem;
+		justify-content: space-between;
+	}
+
+	.quran-reader-modes .btn {
+		font-size: 0.62rem;
+		padding: 0.18rem 0.3rem;
+	}
+
+	.quran-reader-modes .btn i {
+		display: none;
+	}
 }
 
 .page-content-filter .input-group-text {
