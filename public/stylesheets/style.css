@@ -2414,8 +2414,21 @@ main.quran-mushaf-reader {
 
 	.quran-mushaf-sheet,
 	.quran-mushaf-sheet.quran-hafs:lang(ar) {
-		font-size: clamp(1.05rem, 4.25vw, 1.45rem);
+		box-sizing: border-box;
+		font-size: clamp(0.75rem, 3.75vw, 1.25rem);
+		max-width: calc(100vw - 0.7rem);
+		min-width: 0;
 		padding: 0.75rem 0.35rem;
+		width: 100%;
+	}
+
+	.quran-mushaf-sheet.quran-hafs .quran-mushaf-surah-name,
+	.quran-mushaf-sheet.quran-hafs .quran-mushaf-surah-name:lang(ar) {
+		font-size: clamp(3.5rem, 17.6vw, 5.8rem);
+	}
+
+	.quran-mushaf-line-surah_name {
+		min-height: clamp(2.9rem, 14.4vw, 4.75rem);
 	}
 }
 
