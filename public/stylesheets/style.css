@@ -2234,6 +2234,7 @@ main.quran-mushaf-reader {
 .quran-mushaf-page-number {
 	color: var(--c-gray-dark);
 	font-size: 0.8rem;
+	font-weight: 700;
 	grid-column: 2;
 	grid-row: 1;
 	letter-spacing: 0.08em;
@@ -2296,6 +2297,14 @@ main.quran-mushaf-reader {
 	min-width: 33rem;
 	padding: clamp(1rem, 3vw, 2.5rem);
 	width: 100%;
+}
+
+.quran-mushaf-sheet.quran-hafs.quran-mushaf-sheet-odd:lang(ar) {
+	background-image: linear-gradient(to right, rgba(108, 117, 125, 0.22) 0, rgba(108, 117, 125, 0.09) 1.25rem, transparent 3.5rem);
+}
+
+.quran-mushaf-sheet.quran-hafs.quran-mushaf-sheet-even:lang(ar) {
+	background-image: linear-gradient(to left, rgba(108, 117, 125, 0.22) 0, rgba(108, 117, 125, 0.09) 1.25rem, transparent 3.5rem);
 }
 
 .quran-mushaf-line {

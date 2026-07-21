@@ -7,13 +7,7 @@
   "scripts": {
     "start": "node -r dotenv/config -r newrelic ./bin/www",
     "dev": "nodemon --exec \"node -r dotenv/config -r newrelic\" ./bin/www",
-    "test": "jest",
-    "build:knowledge": "node ./bin/buildHadithKnowledge.js",
-    "build:commentaries-index": "node ./bin/buildCommentariesIndex.js",
-    "import:quran-mushaf": "node ./bin/importQuranMushaf.js",
-    "migrate:books:mongo": "node ./bin/migrateBooksToMongo.js",
-    "update:hadith-translation-availability": "node ./bin/updateHadithTranslationAvailability.js",
-    "update:hadith-translation-view": "node ./bin/updateHadithTranslationIndexView.js"
+    "test": "jest"
   },
   "keywords": [
     "hadith",
