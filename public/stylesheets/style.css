@@ -568,6 +568,13 @@ body.sticky-footer-scroll-faded .mobile-bottom-nav {
 	transform: translateX(-50%) translateY(0.5rem);
 }
 
+body.quran-passage-nav-faded .quran-audio-translation-marquee,
+body.reader-infinite-nav-faded .quran-audio-translation-marquee,
+body.sticky-footer-scroll-faded .quran-audio-translation-marquee {
+	opacity: 0;
+	pointer-events: none;
+}
+
 @media (max-width: 767.98px) {
 	body.quran-passage-nav-faded .mobile-bottom-nav,
 	body.reader-infinite-nav-faded .mobile-bottom-nav,
@@ -2670,6 +2677,42 @@ main.quran-mushaf-reader {
 	transition: opacity .22s ease, transform .22s ease;
 }
 
+.quran-audio-translation-marquee {
+	align-items: center;
+	background: var(--bs-body-bg, var(--c-white));
+	border: 1px solid var(--bs-border-color);
+	border-bottom: 0;
+	border-radius: .5rem .5rem 0 0;
+	box-shadow: 0 -.2rem .65rem rgba(0, 0, 0, .06);
+	color: var(--bs-body-color);
+	display: flex;
+	font-size: .95rem;
+	height: 2.35rem;
+	left: 50%;
+	line-height: 1.25;
+	max-width: 38rem;
+	overflow: hidden;
+	position: fixed;
+	transform: translateX(-50%);
+	transition: opacity .22s ease;
+	white-space: nowrap;
+	width: min(38rem, calc(100vw - 2rem));
+	z-index: 1040;
+}
+
+.quran-audio-translation-marquee[hidden] {
+	display: none;
+}
+
+.quran-audio-translation-marquee-track {
+	display: inline-block;
+	flex: none;
+	padding: 0 .75rem;
+	unicode-bidi: plaintext;
+	white-space: nowrap;
+	will-change: transform;
+}
+
 .mobile-bottom-nav::after {
 	display: none;
 }
@@ -2852,6 +2895,16 @@ main.quran-mushaf-reader {
 }
 
 @media (max-width: 767.98px) {
+	.quran-audio-translation-marquee {
+		border-left: 0;
+		border-radius: 0;
+		border-right: 0;
+		font-size: .9rem;
+		left: 0;
+		transform: translateZ(0);
+		width: 100%;
+	}
+
 	.mobile-bottom-nav {
 		align-items: stretch;
 		background: var(--bs-body-bg, var(--c-white));
@@ -2993,6 +3046,10 @@ main.quran-mushaf-reader {
 
 body:has(.mobile-bottom-nav) {
 	padding-bottom: calc(3.25rem + env(safe-area-inset-bottom)) !important;
+}
+
+body:has(.quran-audio-translation-marquee:not([hidden])) {
+	padding-bottom: calc(5.6rem + env(safe-area-inset-bottom)) !important;
 }
 
 .mobile-bottom-nav {
