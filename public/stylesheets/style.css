@@ -2413,13 +2413,14 @@ main.quran-mushaf-reader {
 }
 
 .quran-mushaf-page .quran-audio-active-ayah {
-	background-color: var(--c-cornsilk);
+	background-color: var(--c-cornsilk) !important;
 	border-radius: 0.15em;
-	color: var(--c-link-dark);
+	color: var(--c-link-dark) !important;
 }
 
 .quran-mushaf-page .quran-mushaf-ayah-marker.quran-audio-active-ayah {
-	color: var(--c-link-dark);
+	background-color: var(--c-cornsilk) !important;
+	color: var(--c-link-dark) !important;
 }
 
 @media (max-width: 1024px) {
