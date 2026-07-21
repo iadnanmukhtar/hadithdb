@@ -2087,7 +2087,7 @@ del em strong {
 }
 
 main.quran-mushaf-reader {
-	margin-top: max(7rem, calc(var(--site-fixed-header-height, 0px) + 2rem)) !important;
+	margin-top: 9rem !important;
 }
 
 .quran-mushaf-page {
@@ -2358,6 +2358,11 @@ main.quran-mushaf-reader {
 	cursor: pointer;
 }
 
+.quran-mushaf-page .quran-mushaf-ayah-selected {
+	background-color: var(--c-cornsilk);
+	border-radius: 0.15em;
+}
+
 .quran-mushaf-ayah-marker {
 	background: none;
 	border: 0;
@@ -2401,7 +2406,7 @@ main.quran-mushaf-reader {
 	color: var(--c-link-dark);
 }
 
-@media (max-width: 576px) {
+@media (max-width: 1024px) {
 	.quran-mushaf-reader {
 		padding-left: 0.35rem;
 		padding-right: 0.35rem;
@@ -2414,21 +2419,39 @@ main.quran-mushaf-reader {
 
 	.quran-mushaf-sheet,
 	.quran-mushaf-sheet.quran-hafs:lang(ar) {
+		-webkit-text-size-adjust: none;
 		box-sizing: border-box;
-		font-size: clamp(0.75rem, 3.75vw, 1.25rem);
-		max-width: calc(100vw - 0.7rem);
+		font-size: var(--quran-mushaf-mobile-font-size, 1rem) !important;
+		max-width: 95vw;
 		min-width: 0;
 		padding: 0.75rem 0.35rem;
+		text-size-adjust: none;
 		width: 100%;
+	}
+
+	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) {
+		font-size: var(--quran-mushaf-mobile-font-size, 1rem) !important;
+	}
+
+	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) .quran-corpus-word,
+	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) .quran-mushaf-ayah-marker {
+		font-size: var(--quran-mushaf-mobile-font-size, 1rem) !important;
 	}
 
 	.quran-mushaf-sheet.quran-hafs .quran-mushaf-surah-name,
 	.quran-mushaf-sheet.quran-hafs .quran-mushaf-surah-name:lang(ar) {
-		font-size: clamp(3.5rem, 17.6vw, 5.8rem);
+		font-size: clamp(4rem, 24vw, 8rem) !important;
 	}
 
 	.quran-mushaf-line-surah_name {
-		min-height: clamp(2.9rem, 14.4vw, 4.75rem);
+		min-height: clamp(3.25rem, 18vw, 6rem);
+	}
+}
+
+@media (max-width: 1024px) and (orientation: landscape) {
+	.quran-mushaf-sheet,
+	.quran-mushaf-sheet.quran-hafs:lang(ar) {
+		max-width: 33rem;
 	}
 }
 
@@ -2957,6 +2980,39 @@ main.quran-mushaf-reader {
 	.mobile-bottom-nav-label {
 		display: none;
 	}
+}
+
+body:has(.mobile-bottom-nav) {
+	padding-bottom: calc(3.25rem + env(safe-area-inset-bottom)) !important;
+}
+
+.mobile-bottom-nav {
+	gap: 0.15rem;
+	padding: 0.2rem 0.45rem calc(0.2rem + env(safe-area-inset-bottom));
+}
+
+.mobile-bottom-nav-item,
+.mobile-bottom-nav-font-controls,
+.mobile-bottom-nav-font-btn {
+	min-height: 2.35rem;
+}
+
+.mobile-bottom-nav-item,
+.mobile-bottom-nav-font-btn {
+	padding-bottom: 0.1rem;
+	padding-top: 0.1rem;
+}
+
+.mobile-bottom-nav-icon {
+	font-size: 1rem;
+}
+
+.mobile-bottom-nav-font-icon {
+	font-size: 0.85rem;
+}
+
+.mobile-bottom-nav-label {
+	display: none;
 }
 
 .chapter > .pagination:first-child {
@@ -3791,6 +3847,10 @@ body > footer,
 .quran-passage-audio-control:not(.is-playing) .quran-passage-audio-pause,
 .quran-passage-audio-control:not(.is-playing) .quran-passage-audio-stop {
 	display: none;
+}
+
+.quran-audio-global-active .quran-mushaf-page .quran-passage-audio-stop {
+	display: inline-block;
 }
 
 .quran-mobile-audio-toolbar {

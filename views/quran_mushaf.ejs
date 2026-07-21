@@ -15,21 +15,21 @@
             var mushafAudioGroup = { _audioScopeId: `quran-page-${mushaf.number}`, _audioStartAyah: audioRanges[0].from, _audioEndAyah: audioRanges[audioRanges.length - 1].to, _headingAudioLabel: `page ${mushaf.number}` };
           %>
             <aside class="quran-ayah-select-toolbar quran-mushaf-page-toolbar" lang="en" dir="ltr">
-              <%- include('sub-views/quran_audio_control.ejs', { audioGroup: mushafAudioGroup, quranSelectionSurah: audioRanges[0].surah, audioRanges: audioRanges }); %>
+              <%- include('sub-views/quran_audio_control.ejs', { audioGroup: mushafAudioGroup, quranSelectionSurah: audioRanges[0].surah, audioRanges: audioRanges, repeatRanges: subsectionAudioRanges }); %>
             </aside>
           <% } %>
           <span class="quran-mushaf-page-meta">
-            <% if (firstJuz) { %><form data-quran-mushaf-juz-form><label>Juz <span class="visually-hidden">number</span><input type="number" inputmode="numeric" min="1" max="30" value="<%= firstJuz.num %>" aria-label="Juz number. Enter a Juz from 1 through 30."></label></form><% } %>
+            <% if (firstJuz) { %><form data-quran-mushaf-juz-form><label>Juz <span class="visually-hidden">number</span><input type="text" inputmode="text" enterkeyhint="go" value="<%= firstJuz.num %>" aria-label="Juz number. Enter a Juz from 1 through 30."></label></form><% } %>
             <% if (firstJuz && firstSurah) { %><span aria-hidden="true">·</span><% } %>
             <% if (firstSurah) { %>
               <span class="quran-mushaf-surah-picker" lang="ar" dir="rtl"><span class="dropdown quran-mushaf-surah-picker-dropdown"><span class="quran-mushaf-surah-picker-label">سُورَةُ <%= firstSurah.name_ar || firstSurah.name_en || firstSurah.num %></span><button type="button" class="quran-mushaf-surah-picker-toggle dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose a Surah"></button><ul class="dropdown-menu quran-mushaf-surah-picker-menu" dir="rtl"><% (global.surahs || []).forEach(function (surah) { %><li><a class="dropdown-item<%= Number(surah.num) === Number(firstSurah.num) ? ' active' : '' %>" href="<%= utils.quranUrl(req, `/quran/${surah.num}?mushaf`) %>"<% if (Number(surah.num) === Number(firstSurah.num)) { %> aria-current="true"<% } %>><span class="quran-mushaf-surah-option-number"><%= surah.num %></span><span><%= surah.name_ar || surah.name_en || surah.num %></span></a></li><% }); %></ul></span></span>
               <span aria-hidden="true">·</span>
-              <form data-quran-mushaf-surah-form><label><span class="visually-hidden">Surah number</span><input type="number" inputmode="numeric" min="1" max="114" value="<%= firstSurah.num %>" aria-label="Surah number. Enter a Surah from 1 through 114."></label></form>
+              <form data-quran-mushaf-surah-form><label><span class="visually-hidden">Surah number</span><input type="text" inputmode="text" enterkeyhint="go" value="<%= firstSurah.num %>" aria-label="Surah number. Enter a Surah from 1 through 114."></label></form>
             <% } %>
           </span>
           <span class="quran-mushaf-page-number">
             <form action="/quran/page" data-quran-mushaf-page-form>
-              <label><span class="visually-hidden">Open Mushaf page 2 through <%= mushaf.info.number_of_pages %></span><input type="number" inputmode="numeric" min="2" max="<%= mushaf.info.number_of_pages %>" value="<%= mushaf.number %>" aria-label="Mushaf page <%= mushaf.number %>. Enter a page from 2 through <%= mushaf.info.number_of_pages %>." title="Enter a page from 2 through <%= mushaf.info.number_of_pages %>"></label>
+              <label><span class="visually-hidden">Open Mushaf page 2 through <%= mushaf.info.number_of_pages %></span><input type="text" inputmode="text" enterkeyhint="go" value="<%= mushaf.number %>" aria-label="Mushaf page <%= mushaf.number %>. Enter a page from 2 through <%= mushaf.info.number_of_pages %>." title="Enter a page from 2 through <%= mushaf.info.number_of_pages %>"></label>
             </form>
           </span>
         </header>

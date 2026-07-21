@@ -474,7 +474,8 @@ async function sitemapUrls(req) {
 
 async function buildAndCacheSitemap(req, cachedFile) {
   const txt = await buildSitemapText(req);
-  fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
+  if (Utils.diskCacheEnabled())
+    fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
   Utils.writeCachedTextFile(cachedFile, txt);
   return txt;
 }
@@ -2032,6 +2033,28 @@ async function renderQuranMushafPage(req, res, next, options) {
     range.from = Math.min(range.from, ayah);
     range.to = Math.max(range.to, ayah);
   });
+  var subsectionAudioRanges = [];
+  var subsectionAudioRangeKeys = new Set();
+  mushaf.lines.flatMap(line => line.words || []).forEach(function (word) {
+    var surah = Number(word.surah);
+    var ayah = Number(word.ayah);
+    var range = (subsectionRangesBySurah[surah] || []).find(function (candidate) {
+      return ayah >= candidate.start && ayah <= candidate.end;
+    });
+    if (!range)
+      return;
+    var key = `${surah}:${range.section}:${range.subsection}`;
+    if (subsectionAudioRangeKeys.has(key))
+      return;
+    subsectionAudioRangeKeys.add(key);
+    subsectionAudioRanges.push({
+      surah: surah,
+      from: range.start,
+      to: range.end,
+      section: range.section,
+      subsection: range.subsection
+    });
+  });
   var pageContext = {
     book: options.book,
     chapter: options.chapter,
@@ -2041,6 +2064,7 @@ async function renderQuranMushafPage(req, res, next, options) {
   return res.render('quran_mushaf', {
     mushaf: mushaf,
     audioRanges: audioRanges,
+    subsectionAudioRanges: subsectionAudioRanges,
     firstRef: firstWord ? `${firstWord.surah}:${firstWord.ayah}` : '',
     firstSurah: firstSurah,
     firstJuz: firstJuz,
@@ -2171,7 +2195,8 @@ router.get('/:bookAlias', async function (req, res, next) {
       res.end(Utils.toTSV(results, keyNames));
     } else {
       if (cacheableHtml && !editMode) {
-        fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
+        if (Utils.diskCacheEnabled())
+          fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
         var refs = [book.alias, `book:${book.alias}`];
         var html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, cachedRenderLocals(res, {
           noadmin: true,
