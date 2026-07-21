@@ -15,6 +15,7 @@
             var mushafAudioGroup = { _audioScopeId: `quran-page-${mushaf.number}`, _audioStartAyah: audioRanges[0].from, _audioEndAyah: audioRanges[audioRanges.length - 1].to, _headingAudioLabel: `page ${mushaf.number}` };
           %>
             <aside class="quran-ayah-select-toolbar quran-mushaf-page-toolbar" lang="en" dir="ltr">
+              <button type="button" class="quran-mushaf-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-quran-mushaf-bookmark-page="<%= mushaf.number %>" title="Bookmark Mushaf page <%= mushaf.number %>" aria-label="Bookmark Mushaf page <%= mushaf.number %>"><span class="quran-mushaf-bookmark-icon bi bi-bookmark text-accent" aria-hidden="true"></span></button>
               <%- include('sub-views/quran_audio_control.ejs', { audioGroup: mushafAudioGroup, quranSelectionSurah: audioRanges[0].surah, audioRanges: audioRanges, repeatRanges: subsectionAudioRanges }); %>
             </aside>
           <% } %>

@@ -30,7 +30,8 @@
   .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
   .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
   .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
-  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none) {
+  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
+  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none) {
     border-top: 0;
     margin-top: 0;
   }
@@ -151,7 +152,7 @@
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
           <div>
             <h1 class="fs-3 mb-1">Bookmarks</h1>
-            <p class="text-muted mb-0">Saved Quran passages, tafsir passages, hadith chapters, and hadiths.</p>
+            <p class="text-muted mb-0">Saved Quran pages and passages, tafsir passages, hadith chapters, and hadiths.</p>
           </div>
           <button type="button" class="btn btn-outline-primary btn-sm" id="clear-bookmarks-btn">
             <i class="bi bi-trash3 me-1"></i>Clear all
@@ -161,6 +162,14 @@
 
       <div id="bookmarks-loading" class="text-muted mt-3 d-none">Loading...</div>
       <div id="bookmarks-empty" class="alert alert-info mt-3 d-none">You have not bookmarked any content yet.</div>
+
+      <section class="bookmark-section d-none" data-bookmark-section="mushafPages">
+        <div class="bookmark-section-header">
+          <h2 class="bookmark-section-title">Quran Pages</h2>
+          <span class="bookmark-section-count" data-bookmark-section-count="mushafPages">0 saved</span>
+        </div>
+        <div class="bookmark-list" data-bookmark-list="mushafPages"></div>
+      </section>
 
       <section class="bookmark-section d-none" data-bookmark-section="quran">
         <div class="bookmark-section-header">
@@ -218,7 +227,7 @@
 
 <script>
   (function () {
-    const sectionKeys = ['quran', 'tafsirs', 'surahs', 'quranRanges', 'headings', 'hadiths'];
+    const sectionKeys = ['mushafPages', 'quran', 'tafsirs', 'surahs', 'quranRanges', 'headings', 'hadiths'];
     const sectionEls = Object.fromEntries(sectionKeys.map(key => [key, document.querySelector(`[data-bookmark-section="${key}"]`)]));
     const listEls = Object.fromEntries(sectionKeys.map(key => [key, document.querySelector(`[data-bookmark-list="${key}"]`)]));
     const sectionCountEls = Object.fromEntries(sectionKeys.map(key => [key, document.querySelector(`[data-bookmark-section-count="${key}"]`)]));
@@ -242,6 +251,7 @@
       if (window.hadithBookmarks && window.hadithBookmarks.ready) promises.push(window.hadithBookmarks.ready);
       if (window.headingBookmarks && window.headingBookmarks.ready) promises.push(window.headingBookmarks.ready);
       if (window.tafsirBookmarks && window.tafsirBookmarks.ready) promises.push(window.tafsirBookmarks.ready);
+      if (window.mushafPageBookmark && window.mushafPageBookmark.ready) promises.push(window.mushafPageBookmark.ready);
       if (promises.length) await Promise.all(promises);
     };
 
@@ -335,6 +345,17 @@
     };
 
     const makeRemoveButton = (section, value) => {
+      if (section === 'mushafPages') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'quran-mushaf-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center';
+        btn.dataset.quranMushafBookmarkPage = String(value);
+        btn.title = 'Remove bookmark';
+        const icon = document.createElement('span');
+        icon.className = 'quran-mushaf-bookmark-icon bi bi-bookmark-fill text-accent';
+        btn.appendChild(icon);
+        return btn;
+      }
       if (section === 'headings' || section === 'surahs' || section === 'quranRanges') {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -456,7 +477,7 @@
       sectionKeys.forEach(key => setSection(key, [], 0));
     };
 
-    const buildSections = (hadithItems, headingItems, tafsirItems) => {
+    const buildSections = (hadithItems, headingItems, tafsirItems, mushafPage) => {
       const grouped = {
         quran: [],
         hadiths: [],
@@ -465,6 +486,16 @@
         headings: [],
         tafsirs: []
       };
+      if (Number.isInteger(mushafPage) && mushafPage >= 1 && mushafPage <= 604) {
+        grouped.mushafPages = [{
+          id: mushafPage,
+          title: `Mushaf Page ${mushafPage}`,
+          ref: `Quran page ${mushafPage}`,
+          url: `/quran/page/${mushafPage}`
+        }];
+      } else {
+        grouped.mushafPages = [];
+      }
       (hadithItems || []).forEach(item => {
         const key = classifyHadithBookmark(item);
         if (key !== 'quran' && key !== 'hadiths') return;
@@ -488,6 +519,7 @@
         if (text(item.key)) grouped.tafsirs.push(item);
       });
       return {
+        mushafPages: { items: grouped.mushafPages, count: grouped.mushafPages.length },
         quran: { items: sortBookmarks(grouped.quran, 'quran'), count: grouped.quran.length },
         hadiths: { items: sortBookmarks(grouped.hadiths, 'hadiths'), count: grouped.hadiths.length },
         surahs: { items: sortBookmarks(grouped.surahs, 'surahs'), count: grouped.surahs.length },
@@ -558,6 +590,9 @@
       let tafsirItems = (window.tafsirBookmarks && window.tafsirBookmarks.getAllWithMeta)
         ? window.tafsirBookmarks.getAllWithMeta()
         : [];
+      const mushafPage = window.mushafPageBookmark && window.mushafPageBookmark.get
+        ? window.mushafPageBookmark.get()
+        : null;
       let metadataBackfilled = false;
       try {
         metadataBackfilled = await backfillMissingMetadata(hadithItems, headingItems, tafsirItems);
@@ -569,13 +604,13 @@
         headingItems = window.headingBookmarks && window.headingBookmarks.getAllWithMeta ? window.headingBookmarks.getAllWithMeta() : [];
         tafsirItems = window.tafsirBookmarks && window.tafsirBookmarks.getAllWithMeta ? window.tafsirBookmarks.getAllWithMeta() : [];
       }
-      const sections = buildSections(hadithItems, headingItems, tafsirItems);
+      const sections = buildSections(hadithItems, headingItems, tafsirItems, mushafPage);
 
       resetSections();
       loadingEl.classList.remove('d-none');
       emptyEl.classList.add('d-none');
 
-      if (!sections.quran.count && !sections.surahs.count && !sections.quranRanges.count && !sections.hadiths.count && !sections.headings.count && !sections.tafsirs.count) {
+      if (!sectionKeys.some(key => sections[key] && sections[key].count)) {
         loadingEl.classList.add('d-none');
         emptyEl.classList.remove('d-none');
         return;
@@ -616,11 +651,25 @@
         if (window.tafsirBookmarks && window.tafsirBookmarks.clear) {
           await window.tafsirBookmarks.clear();
         }
+        if (window.mushafPageBookmark && window.mushafPageBookmark.clear) {
+          await window.mushafPageBookmark.clear();
+        }
         load();
       });
     }
 
     document.addEventListener('click', (event) => {
+      const mushafBtn = event.target.closest('.quran-mushaf-bookmark-btn[data-quran-mushaf-bookmark-page]');
+      if (mushafBtn && document.querySelector('.bookmarks-page')?.contains(mushafBtn)) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        if (window.mushafPageBookmark && window.mushafPageBookmark.remove) {
+          window.mushafPageBookmark.remove();
+        }
+        return;
+      }
+
       const hadithBtn = event.target.closest('.hadith-bookmark-btn[data-hadith-id]');
       if (hadithBtn && document.querySelector('.bookmarks-page')?.contains(hadithBtn)) {
         event.preventDefault();
@@ -663,6 +712,7 @@
     document.addEventListener('headingBookmarksCleared', load);
     document.addEventListener('tafsirBookmarkToggled', load);
     document.addEventListener('tafsirBookmarksCleared', load);
+    document.addEventListener('mushafPageBookmarkToggled', load);
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', load);

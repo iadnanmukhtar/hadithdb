@@ -110,6 +110,7 @@
 		const bookmarkMap = {};
 		const headingBookmarkMap = {};
 		const tafsirBookmarkMap = {};
+		let mushafBookmarkPage = null;
 		const bookmarkMetadata = {
 			hadiths: {},
 			headings: {},
@@ -226,6 +227,10 @@
 					tafsirs: Array.from(new Set((Array.isArray(bookmarks.tafsirs) ? bookmarks.tafsirs : [])
 						.map(ref => String(ref || '').trim())
 						.filter(ref => /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/.test(ref)))),
+					mushafPage: (() => {
+						const page = parseInt(bookmarks.mushafPage, 10);
+						return Number.isInteger(page) && page >= 1 && page <= 604 ? page : null;
+					})()
 				},
 				bookmarkMetadata: {
 					hadiths: normalizeBookmarkMetadata(storedMetadata.hadiths),
@@ -240,7 +245,8 @@
 			bookmarks: {
 				hadiths: idsFromMap(bookmarkMap),
 				headings: idsFromMap(headingBookmarkMap),
-				tafsirs: tafsirRefsFromMap(tafsirBookmarkMap)
+				tafsirs: tafsirRefsFromMap(tafsirBookmarkMap),
+				mushafPage: mushafBookmarkPage
 			},
 			[BOOKMARK_METADATA_SETTINGS_KEY]: {
 				hadiths: bookmarkMetadata.hadiths,
@@ -318,6 +324,7 @@
 			replaceMap(bookmarkMap, userSettings.bookmarks.hadiths);
 			replaceMap(headingBookmarkMap, userSettings.bookmarks.headings);
 			replaceStringMap(tafsirBookmarkMap, userSettings.bookmarks.tafsirs, /^[A-Za-z0-9_-]+:[0-9]{1,3}:[0-9]{1,3}$/);
+			mushafBookmarkPage = userSettings.bookmarks.mushafPage;
 			bookmarkMetadata.hadiths = normalizeBookmarkMetadata(userSettings.bookmarkMetadata && userSettings.bookmarkMetadata.hadiths);
 			bookmarkMetadata.headings = normalizeBookmarkMetadata(userSettings.bookmarkMetadata && userSettings.bookmarkMetadata.headings);
 			bookmarkMetadata.tafsirs = normalizeBookmarkMetadata(userSettings.bookmarkMetadata && userSettings.bookmarkMetadata.tafsirs);
@@ -361,6 +368,7 @@
 		const getBookmarkButtons = () => Array.from(document.querySelectorAll('.hadith-bookmark-btn[data-hadith-id]'));
 		const getHeadingBookmarkButtons = () => Array.from(document.querySelectorAll('.heading-bookmark-btn[data-heading-id]'));
 		const getTafsirBookmarkButtons = () => Array.from(document.querySelectorAll('.tafsir-bookmark-btn[data-tafsir-bookmark-key]'));
+		const getMushafBookmarkButtons = () => Array.from(document.querySelectorAll('.quran-mushaf-bookmark-btn[data-quran-mushaf-bookmark-page]'));
 		const getCommentCountBadges = () => Array.from(document.querySelectorAll('.hadith-comment-count[data-hadith-id]'));
 		const likeType = (value) => value === 'toc' ? 'toc' : 'hadith';
 		const likeKey = (id, type) => `${likeType(type)}:${id}`;
@@ -410,6 +418,17 @@
 		const setTafsirBookmarkState = (key, bookmarked) => {
 			getTafsirBookmarkIcons(key).forEach(icon => {
 				icon.className = bookmarked ? 'tafsir-bookmark-icon bi bi-bookmark-fill text-accent' : 'tafsir-bookmark-icon bi bi-bookmark text-accent';
+			});
+		};
+
+		const setMushafBookmarkState = () => {
+			getMushafBookmarkButtons().forEach(button => {
+				const page = parseInt(button.dataset.quranMushafBookmarkPage, 10);
+				const bookmarked = page === mushafBookmarkPage;
+				const icon = button.querySelector('.quran-mushaf-bookmark-icon');
+				if (icon) icon.className = bookmarked ? 'quran-mushaf-bookmark-icon bi bi-bookmark-fill text-accent' : 'quran-mushaf-bookmark-icon bi bi-bookmark text-accent';
+				button.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
+				button.title = `${bookmarked ? 'Remove bookmark from' : 'Bookmark'} Mushaf page ${page}`;
 			});
 		};
 
@@ -953,6 +972,48 @@
 			}
 		};
 
+		const toggleMushafBookmark = async (page, button) => {
+			await waitForBookmarkSettingsLoad();
+			const token = await getSettingsToken();
+			const user = window.hadithAuth && window.hadithAuth.getUser ? await window.hadithAuth.getUser() : null;
+			if (!token && !user) {
+				requireBookmarkLogin();
+				return;
+			}
+			const previousPage = mushafBookmarkPage;
+			mushafBookmarkPage = previousPage === page ? null : page;
+			setMushafBookmarkState();
+			button.disabled = true;
+			try {
+				await saveBookmarkSettings();
+				document.dispatchEvent(new CustomEvent('mushafPageBookmarkToggled', { detail: { page: mushafBookmarkPage, previousPage } }));
+			} catch (err) {
+				mushafBookmarkPage = previousPage;
+				setMushafBookmarkState();
+				toastr.error('Could not save bookmark. Please try again.', 'Bookmarks');
+				console.warn('Could not save Mushaf page bookmark', err);
+			} finally {
+				button.disabled = false;
+			}
+		};
+
+		const removeMushafBookmark = async () => {
+			await waitForBookmarkSettingsLoad();
+			if (!mushafBookmarkPage) return;
+			const previousPage = mushafBookmarkPage;
+			mushafBookmarkPage = null;
+			setMushafBookmarkState();
+			try {
+				await saveBookmarkSettings();
+				document.dispatchEvent(new CustomEvent('mushafPageBookmarkToggled', { detail: { page: null, previousPage } }));
+			} catch (err) {
+				mushafBookmarkPage = previousPage;
+				setMushafBookmarkState();
+				toastr.error('Could not remove bookmark. Please try again.', 'Bookmarks');
+				console.warn('Could not remove Mushaf page bookmark', err);
+			}
+		};
+
 		const initLikes = () => {
 			getButtons().forEach(btn => {
 				const id = parseInt(btn.dataset.hadithId);
@@ -1003,11 +1064,22 @@
 		});
 		};
 
+		const initMushafBookmark = () => {
+			setMushafBookmarkState();
+			getMushafBookmarkButtons().forEach(btn => {
+				const page = parseInt(btn.dataset.quranMushafBookmarkPage, 10);
+				if (!Number.isInteger(page) || page < 1 || page > 604 || btn.dataset.quranMushafBookmarkInit === '1') return;
+				btn.dataset.quranMushafBookmarkInit = '1';
+				btn.addEventListener('click', () => toggleMushafBookmark(page, btn));
+			});
+		};
+
 		const init = () => {
 			initLikes();
 			initBookmarks();
 			initHeadingBookmarks();
 			initTafsirBookmarks();
+			initMushafBookmark();
 			initCommentCounts();
 		};
 
@@ -1091,7 +1163,7 @@
 				}
 			}
 		};
-		window.tafsirBookmarks = {
+	window.tafsirBookmarks = {
 			ready: bookmarkSettingsReady,
 			getAll: () => tafsirRefsFromMap(tafsirBookmarkMap),
 			getAllWithMeta: () => tafsirRefsFromMap(tafsirBookmarkMap).map(key => ({
@@ -1125,6 +1197,12 @@
 					console.warn('Could not clear tafsir bookmarks', err);
 				}
 			}
+		};
+		window.mushafPageBookmark = {
+			ready: bookmarkSettingsReady,
+			get: () => mushafBookmarkPage,
+			remove: removeMushafBookmark,
+			clear: removeMushafBookmark
 		};
 	})();
 </script>

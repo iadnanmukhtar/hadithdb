@@ -576,9 +576,21 @@ async function buildSitemapText(req) {
     var h2 = Utils.emptyIfNull(results[i].h2).toString();
     txt += sitemapUrl(alias, h1, h2);
   }
-  if (quranOnly)
+  if (quranOnly) {
+    txt += await quranMushafSitemapUrls(quranDomain);
     txt += await quranCommentarySitemapUrls(quranDomain);
+  }
   return txt;
+}
+
+async function quranMushafSitemapUrls(quranDomain) {
+  const info = await QuranMushaf.info();
+  const pageCount = Number(info && info.number_of_pages);
+  if (!Number.isInteger(pageCount) || pageCount < 1)
+    return '';
+  return Array.from({ length: pageCount }, function (_, index) {
+    return `${quranDomain}/quran/page/${index + 1}\n`;
+  }).join('');
 }
 
 function quranSitemapBaseUrl(req) {
@@ -2077,6 +2089,10 @@ async function renderQuranMushafPage(req, res, next, options) {
     }
   });
 }
+
+router.get('/quran/page', function (req, res) {
+  return res.redirect(302, Utils.quranUrl(req, '/quran/page/1'));
+});
 
 router.get('/quran/page/:page', async function (req, res, next) {
   res.locals.req = req;

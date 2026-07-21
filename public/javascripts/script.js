@@ -5851,6 +5851,8 @@ function initQuranMushafInfinite(root) {
 			reader.insertBefore(importedPage, sentinel);
 			fitQuranMushafPage(importedPage);
 			initQuranMushafAyahSelection(importedPage);
+			if (window.refreshHadithActions)
+				window.refreshHadithActions();
 			importedPage.style.removeProperty('visibility');
 			initQuranPassageAudioControls(importedPage);
 			if (pageObserver)
