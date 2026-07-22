@@ -145,6 +145,10 @@ function initStickyFooterScrollFade(root) {
 	var scope = root || document;
 	if (!$(scope).find('.mobile-bottom-nav').addBack('.mobile-bottom-nav').length)
 		return;
+	if ($(scope).find('[data-quran-mushaf-reader]').addBack('[data-quran-mushaf-reader]').length) {
+		document.body.classList.remove('sticky-footer-scroll-faded');
+		return;
+	}
 	if ($(document).data('stickyFooterScrollFadeBound'))
 		return;
 	$(document).data('stickyFooterScrollFadeBound', true);
@@ -5846,57 +5850,6 @@ function quranAyahHeroHtml(ayah, clearHref, passageHero) {
 	return $hero;
 }
 
-function fitQuranMushafPage(page) {
-	if (!page)
-		return;
-	var sheet = page.querySelector('.quran-mushaf-sheet');
-	if (!sheet)
-		return;
-	if (!window.matchMedia('(max-width: 1024px), (hover: none) and (pointer: coarse) and (max-width: 1366px)').matches) {
-		page.style.removeProperty('--quran-mushaf-ui-scale');
-		sheet.style.removeProperty('--quran-mushaf-mobile-font-size');
-		return;
-	}
-	var lines = Array.from(sheet.querySelectorAll('.quran-mushaf-line:not(.quran-mushaf-line-surah_name)'));
-	if (!lines.length)
-		return;
-	var rootFontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
-	var minimum = rootFontSize * 0.6;
-	var maximum = Math.max(rootFontSize * 1.3, sheet.clientWidth * (2.45 / 33));
-	var uiScale = Math.min(1.6, Math.max(0.8, sheet.clientWidth / (rootFontSize * 33)));
-	page.style.setProperty('--quran-mushaf-ui-scale', uiScale.toFixed(3));
-	var fits = function (fontSize) {
-		sheet.style.setProperty('--quran-mushaf-mobile-font-size', `${fontSize}px`);
-		return lines.every(function (line) {
-			var lineRect = line.getBoundingClientRect();
-			var children = Array.from(line.children);
-			if (!children.length)
-				return true;
-			var left = Math.min.apply(null, children.map(function (child) { return child.getBoundingClientRect().left; }));
-			var right = Math.max.apply(null, children.map(function (child) { return child.getBoundingClientRect().right; }));
-			return left >= lineRect.left - 0.5 && right <= lineRect.right + 0.5;
-		});
-	};
-	if (fits(maximum))
-		return;
-	for (var iteration = 0; iteration < 9; iteration += 1) {
-		var candidate = (minimum + maximum) / 2;
-		if (fits(candidate))
-			minimum = candidate;
-		else
-			maximum = candidate;
-	}
-	sheet.style.setProperty('--quran-mushaf-mobile-font-size', `${minimum * 0.985}px`);
-}
-
-function fitQuranMushafPages(root) {
-	var scope = root || document;
-	var pages = scope.matches && scope.matches('[data-quran-mushaf-page]')
-		? [scope]
-		: Array.from(scope.querySelectorAll('[data-quran-mushaf-page]'));
-	pages.forEach(fitQuranMushafPage);
-}
-
 function initQuranMushafAyahSelection(root) {
 	var scope = root || document;
 	if (document.documentElement.dataset.quranMushafOutsideSelectionBound !== '1') {
@@ -5974,12 +5927,6 @@ function initQuranMushafInfinite(root) {
 	if (!reader || reader.dataset.quranMushafBound === '1')
 		return;
 	reader.dataset.quranMushafBound = '1';
-	var fittedViewportWidth = window.innerWidth;
-	var fitInitialPages = function () { fitQuranMushafPages(reader); };
-	if (document.fonts && document.fonts.ready)
-		document.fonts.ready.then(function () { window.requestAnimationFrame(fitInitialPages); });
-	else
-		window.requestAnimationFrame(fitInitialPages);
 	var sentinel = reader.querySelector('[data-quran-mushaf-sentinel]');
 	var loading = false;
 	var pageInstance = 0;
@@ -6045,7 +5992,6 @@ function initQuranMushafInfinite(root) {
 			}
 			importedPage.style.visibility = 'hidden';
 			reader.insertBefore(importedPage, sentinel);
-			fitQuranMushafPage(importedPage);
 			initQuranMushafAyahSelection(importedPage);
 			if (window.refreshHadithActions)
 				window.refreshHadithActions();
@@ -6108,18 +6054,8 @@ function initQuranMushafInfinite(root) {
 		if (pendingPageNumber)
 			schedulePageUrlUpdate(pendingPageNumber);
 	}, { passive: true });
-	var resizeFrame = null;
 	window.addEventListener('resize', function () {
 		maybeLoadNextPage();
-		if (Math.abs(window.innerWidth - fittedViewportWidth) < 2)
-			return;
-		fittedViewportWidth = window.innerWidth;
-		if (resizeFrame)
-			window.cancelAnimationFrame(resizeFrame);
-		resizeFrame = window.requestAnimationFrame(function () {
-			resizeFrame = null;
-			fitQuranMushafPages(reader);
-		});
 	});
 	loadNextPage().then(function () { window.requestAnimationFrame(maybeLoadNextPage); });
 	reader.quranMushafLoadNext = loadNextPage;
@@ -7172,15 +7108,6 @@ function initQuranCorpusTooltipDelay(root) {
 		if (!text)
 			return;
 		var rect = word[0].getBoundingClientRect();
-		var mushafPage = word.closest('.quran-mushaf-page');
-		var mushafUiScale = mushafPage.length
-			? window.getComputedStyle(mushafPage[0]).getPropertyValue('--quran-mushaf-ui-scale').trim()
-			: '';
-		tooltip.toggleClass('quran-mushaf-corpus-tooltip', mushafPage.length > 0);
-		if (mushafUiScale)
-			tooltip[0].style.setProperty('--quran-mushaf-tooltip-scale', mushafUiScale);
-		else
-			tooltip[0].style.removeProperty('--quran-mushaf-tooltip-scale');
 		tooltip.text(text).removeAttr('hidden').data('quranCorpusTooltipTarget', word[0]);
 		var tooltipRect = tooltip[0].getBoundingClientRect();
 		var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
