@@ -145,10 +145,6 @@ function initStickyFooterScrollFade(root) {
 	var scope = root || document;
 	if (!$(scope).find('.mobile-bottom-nav').addBack('.mobile-bottom-nav').length)
 		return;
-	if ($(scope).find('[data-quran-mushaf-reader]').addBack('[data-quran-mushaf-reader]').length) {
-		document.body.classList.remove('sticky-footer-scroll-faded');
-		return;
-	}
 	if ($(document).data('stickyFooterScrollFadeBound'))
 		return;
 	$(document).data('stickyFooterScrollFadeBound', true);
@@ -5851,17 +5847,24 @@ function quranAyahHeroHtml(ayah, clearHref, passageHero) {
 }
 
 function fitQuranMushafPage(page) {
-	if (!page || !window.matchMedia('(max-width: 1024px)').matches)
+	if (!page)
 		return;
 	var sheet = page.querySelector('.quran-mushaf-sheet');
 	if (!sheet)
 		return;
+	if (!window.matchMedia('(max-width: 1024px), (hover: none) and (pointer: coarse) and (max-width: 1366px)').matches) {
+		page.style.removeProperty('--quran-mushaf-ui-scale');
+		sheet.style.removeProperty('--quran-mushaf-mobile-font-size');
+		return;
+	}
 	var lines = Array.from(sheet.querySelectorAll('.quran-mushaf-line:not(.quran-mushaf-line-surah_name)'));
 	if (!lines.length)
 		return;
 	var rootFontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
 	var minimum = rootFontSize * 0.6;
-	var maximum = rootFontSize * 1.3;
+	var maximum = Math.max(rootFontSize * 1.3, sheet.clientWidth * (2.45 / 33));
+	var uiScale = Math.min(1.6, Math.max(0.8, sheet.clientWidth / (rootFontSize * 33)));
+	page.style.setProperty('--quran-mushaf-ui-scale', uiScale.toFixed(3));
 	var fits = function (fontSize) {
 		sheet.style.setProperty('--quran-mushaf-mobile-font-size', `${fontSize}px`);
 		return lines.every(function (line) {
@@ -7169,6 +7172,15 @@ function initQuranCorpusTooltipDelay(root) {
 		if (!text)
 			return;
 		var rect = word[0].getBoundingClientRect();
+		var mushafPage = word.closest('.quran-mushaf-page');
+		var mushafUiScale = mushafPage.length
+			? window.getComputedStyle(mushafPage[0]).getPropertyValue('--quran-mushaf-ui-scale').trim()
+			: '';
+		tooltip.toggleClass('quran-mushaf-corpus-tooltip', mushafPage.length > 0);
+		if (mushafUiScale)
+			tooltip[0].style.setProperty('--quran-mushaf-tooltip-scale', mushafUiScale);
+		else
+			tooltip[0].style.removeProperty('--quran-mushaf-tooltip-scale');
 		tooltip.text(text).removeAttr('hidden').data('quranCorpusTooltipTarget', word[0]);
 		var tooltipRect = tooltip[0].getBoundingClientRect();
 		var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
