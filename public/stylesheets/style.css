@@ -2291,13 +2291,14 @@ main.quran-mushaf-reader {
 
 .quran-mushaf-sheet,
 .quran-mushaf-sheet.quran-hafs:lang(ar) {
+	--quran-mushaf-line-height: 1.95;
 	background: var(--bs-body-bg);
 	border: 1px solid var(--bs-border-color);
 	border-radius: 0.35rem;
 	box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.06);
 	font-family: QuranV1, Serif;
 	font-size: clamp(1.55rem, 3.15vw, 2.45rem);
-	line-height: 1.95;
+	line-height: var(--quran-mushaf-line-height);
 	margin-left: auto;
 	margin-right: auto;
 	max-width: 33rem;
@@ -2319,6 +2320,7 @@ main.quran-mushaf-reader {
 	display: flex;
 	gap: 0.14em;
 	justify-content: space-between;
+	line-height: var(--quran-mushaf-line-height);
 	min-height: 1.95em;
 	white-space: nowrap;
 }
@@ -2467,8 +2469,8 @@ main.quran-mushaf-reader {
 	}
 }
 
-/* Viewport-derived sizes stay consistent page to page while reserving room for page chrome. */
-@media (max-width: 767.98px) and (orientation: portrait) {
+/* The reference reader uses stepped portrait sizes; each step stays fixed page to page. */
+@media (max-width: 575.98px) and (orientation: portrait) {
 	.quran-mushaf-sheet,
 	.quran-mushaf-sheet.quran-hafs:lang(ar) {
 		/* (100dvh - 15rem) / 12 lines / 1.95 line-height */
@@ -2476,20 +2478,30 @@ main.quran-mushaf-reader {
 	}
 }
 
+@media (min-width: 576px) and (max-width: 767.98px) and (orientation: portrait) {
+	.quran-mushaf-sheet,
+	.quran-mushaf-sheet.quran-hafs:lang(ar) {
+		--quran-mushaf-mobile-font-size: 1.45rem;
+	}
+}
+
 @media (max-width: 1023.98px) and (max-height: 600px) and (orientation: landscape) {
 	.quran-mushaf-sheet,
 	.quran-mushaf-sheet.quran-hafs:lang(ar) {
-		/* (100dvh - 14rem) / 5 lines / 1.95 line-height */
-		--quran-mushaf-mobile-font-size: clamp(0.7rem, calc(10.2564dvh - 1.4359rem), 1.1rem);
-		max-width: 95vw;
+		--quran-mushaf-mobile-font-size: clamp(1.25rem, 2.6vw, 1.55rem);
+		max-width: min(38rem, 72vw);
+	}
+
+	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) {
+		gap: 0.14em;
+		justify-content: space-between;
 	}
 }
 
 @media (min-width: 768px) and (max-width: 1366px) and (orientation: portrait) {
 	.quran-mushaf-sheet,
 	.quran-mushaf-sheet.quran-hafs:lang(ar) {
-		/* (100dvh - 16rem) / 15 lines / 1.95 line-height */
-		--quran-mushaf-mobile-font-size: clamp(1rem, calc(3.4188dvh - 0.547rem), 1.55rem);
+		--quran-mushaf-mobile-font-size: clamp(1.65rem, 4vw, 2.4rem);
 	}
 }
 
