@@ -2083,6 +2083,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     page: {
       menu: 'Section',
       title_en: `Quran Mushaf Page ${pageNumber}`,
+      subtitle_en: `Page ${pageNumber}`,
       description_en: `Read page ${pageNumber} of the Quran in the 15-line Digital Khatt Mushaf.`,
       canonical: `/quran/page/${pageNumber}`,
       context: pageContext
