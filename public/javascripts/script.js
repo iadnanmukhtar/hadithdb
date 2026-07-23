@@ -3882,6 +3882,54 @@ function clearQuranPassageAudioHighlight(control) {
 			ayah.classList.remove('quran-audio-active-ayah');
 		});
 	});
+	refreshQuranMushafAyahBackgrounds(scopes);
+}
+
+function refreshQuranMushafAyahBackgrounds(scopes) {
+	var roots = Array.isArray(scopes) ? scopes : [scopes || document];
+	window.requestAnimationFrame(function () {
+		var pages = new Set();
+		roots.forEach(function (root) {
+			if (!root)
+				return;
+			if (root.matches && root.matches('[data-quran-mushaf-page]'))
+				pages.add(root);
+			root.querySelectorAll && root.querySelectorAll('[data-quran-mushaf-page]').forEach(function (page) {
+				pages.add(page);
+			});
+			var containingPage = root.closest && root.closest('[data-quran-mushaf-page]');
+			if (containingPage)
+				pages.add(containingPage);
+		});
+		pages.forEach(function (page) {
+			page.querySelectorAll('.quran-mushaf-ayah-highlight-bg').forEach(function (background) {
+				background.remove();
+			});
+			var groups = new Map();
+			page.querySelectorAll('[data-quran-ref].quran-mushaf-ayah-selected, [data-quran-ref].quran-audio-active-ayah').forEach(function (element) {
+				var line = element.closest('.quran-mushaf-line');
+				var ref = element.getAttribute('data-quran-ref') || '';
+				if (!line || !ref)
+					return;
+				var key = `${line.getAttribute('data-line-number') || Array.from(line.parentNode.children).indexOf(line)}:${ref}`;
+				if (!groups.has(key))
+					groups.set(key, { line: line, elements: [] });
+				groups.get(key).elements.push(element);
+			});
+			groups.forEach(function (group) {
+				var lineRect = group.line.getBoundingClientRect();
+				var rects = group.elements.map(function (element) { return element.getBoundingClientRect(); });
+				var left = Math.max(0, Math.min.apply(null, rects.map(function (rect) { return rect.left; })) - lineRect.left);
+				var right = Math.max(0, lineRect.right - Math.max.apply(null, rects.map(function (rect) { return rect.right; })));
+				var background = document.createElement('span');
+				background.className = 'quran-mushaf-ayah-highlight-bg';
+				background.setAttribute('aria-hidden', 'true');
+				background.style.left = `${left}px`;
+				background.style.right = `${right}px`;
+				group.line.insertBefore(background, group.line.firstChild);
+			});
+		});
+	});
 }
 
 function setQuranPassageAudioHighlight(control, item) {
@@ -3896,6 +3944,7 @@ function setQuranPassageAudioHighlight(control, item) {
 			ayah.classList.toggle('quran-audio-active-ayah', ayahRef === ref);
 		});
 	});
+	refreshQuranMushafAyahBackgrounds(scopes);
 	scrollQuranPassageAudioAyahIntoView(scopes, ref);
 }
 
@@ -5850,6 +5899,9 @@ function initQuranMushafAyahSelection(root) {
 	var scope = root || document;
 	if (document.documentElement.dataset.quranMushafOutsideSelectionBound !== '1') {
 		document.documentElement.dataset.quranMushafOutsideSelectionBound = '1';
+		window.addEventListener('resize', function () {
+			refreshQuranMushafAyahBackgrounds([document]);
+		}, { passive: true });
 		document.addEventListener('click', function (event) {
 			if (event.target.closest('.quran-mushaf-page [data-quran-ref]'))
 				return;
@@ -5859,6 +5911,7 @@ function initQuranMushafAyahSelection(root) {
 					element.classList.remove('quran-mushaf-ayah-selected');
 				});
 			});
+			refreshQuranMushafAyahBackgrounds([document]);
 		});
 	}
 	var pages = scope.matches && scope.matches('[data-quran-mushaf-page]')
@@ -5868,12 +5921,39 @@ function initQuranMushafAyahSelection(root) {
 		if (page.dataset.quranMushafAyahSelectionBound === '1')
 			return;
 		page.dataset.quranMushafAyahSelectionBound = '1';
+		var hoverClearTimer = null;
+		var setHoverRef = function (ref) {
+			page.querySelectorAll('[data-quran-ref]').forEach(function (element) {
+				element.classList.toggle('quran-mushaf-ayah-hover', !!ref && element.getAttribute('data-quran-ref') === ref);
+			});
+		};
 		var setSelectedRef = function (ref) {
 			page.dataset.quranMushafSelectedRef = ref || '';
 			page.querySelectorAll('[data-quran-ref]').forEach(function (element) {
 				element.classList.toggle('quran-mushaf-ayah-selected', !!ref && element.getAttribute('data-quran-ref') === ref);
 			});
+			refreshQuranMushafAyahBackgrounds([page]);
 		};
+		page.addEventListener('pointerover', function (event) {
+			var target = event.target.closest('.quran-corpus-word[data-quran-ref], .quran-mushaf-ayah-marker[data-quran-ref]');
+			if (target && page.contains(target)) {
+				window.clearTimeout(hoverClearTimer);
+				setHoverRef(target.getAttribute('data-quran-ref') || '');
+			}
+		});
+		page.addEventListener('pointerout', function (event) {
+			var nextTarget = event.relatedTarget && event.relatedTarget.closest
+				? event.relatedTarget.closest('.quran-corpus-word[data-quran-ref], .quran-mushaf-ayah-marker[data-quran-ref]')
+				: null;
+			window.clearTimeout(hoverClearTimer);
+			if (nextTarget && page.contains(nextTarget)) {
+				setHoverRef(nextTarget.getAttribute('data-quran-ref') || '');
+				return;
+			}
+			hoverClearTimer = window.setTimeout(function () {
+				setHoverRef('');
+			}, 30);
+		});
 		page.addEventListener('click', function (event) {
 			var target = event.target.closest('.quran-corpus-word[data-quran-ref]');
 			if (!target || !page.contains(target) || target.closest('.quran-mushaf-line-basmallah'))
@@ -5887,6 +5967,7 @@ function initQuranMushafAyahSelection(root) {
 					element.classList.remove('quran-mushaf-ayah-selected');
 				});
 			});
+			refreshQuranMushafAyahBackgrounds([document]);
 			setSelectedRef(page.dataset.quranMushafSelectedRef === ref ? '' : ref);
 		});
 	});

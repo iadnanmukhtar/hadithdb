@@ -2322,7 +2322,23 @@ main.quran-mushaf-reader {
 	justify-content: space-between;
 	line-height: var(--quran-mushaf-line-height);
 	min-height: 1.95em;
+	position: relative;
 	white-space: nowrap;
+}
+
+.quran-mushaf-line > :not(.quran-mushaf-ayah-highlight-bg) {
+	position: relative;
+	z-index: 1;
+}
+
+.quran-mushaf-ayah-highlight-bg {
+	background-color: var(--c-cornsilk);
+	border-radius: 0.15em;
+	bottom: 0.12em;
+	pointer-events: none;
+	position: absolute;
+	top: 0.12em;
+	z-index: 0;
 }
 
 .quran-mushaf-line.is-centered,
@@ -2377,8 +2393,12 @@ main.quran-mushaf-reader {
 }
 
 .quran-mushaf-page .quran-mushaf-ayah-selected {
-	background-color: var(--c-cornsilk);
-	border-radius: 0.15em;
+	background-color: transparent;
+	color: var(--c-link-dark) !important;
+}
+
+.quran-mushaf-page .quran-mushaf-ayah-hover {
+	color: var(--c-link-dark) !important;
 }
 
 .quran-mushaf-ayah-marker {
@@ -2400,11 +2420,10 @@ main.quran-mushaf-reader {
 	color: saddlebrown;
 }
 
-.quran-mushaf-page .quran-corpus-word:focus,
-.quran-mushaf-page .quran-corpus-word:hover {
-	background-color: var(--c-cornsilk);
-	border-radius: 0.15em;
-	color: var(--c-link-dark);
+.quran-mushaf-page .quran-corpus-word:hover,
+.quran-mushaf-page .quran-corpus-word:focus-visible {
+	background-color: rgba(255, 214, 102, 0.28) !important;
+	border-radius: 3px;
 	outline: none;
 }
 
@@ -2415,13 +2434,12 @@ main.quran-mushaf-reader {
 }
 
 .quran-mushaf-page .quran-audio-active-ayah {
-	background-color: var(--c-cornsilk) !important;
-	border-radius: 0.15em;
+	background-color: transparent !important;
 	color: var(--c-link-dark) !important;
 }
 
 .quran-mushaf-page .quran-mushaf-ayah-marker.quran-audio-active-ayah {
-	background-color: var(--c-cornsilk) !important;
+	background-color: transparent !important;
 	color: var(--c-link-dark) !important;
 }
 
