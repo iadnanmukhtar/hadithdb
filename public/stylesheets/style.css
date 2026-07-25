@@ -4119,8 +4119,33 @@ body > footer,
 }
 
 .quran-passage-reciter-control {
-	max-width: min(13.5rem, 100%);
+	align-self: stretch;
+	display: inline-flex;
+	flex: 0 0 auto;
 	position: relative;
+}
+
+.quran-passage-reciter-toggle {
+	align-items: center;
+	display: inline-flex;
+	height: 100%;
+	justify-content: center;
+}
+
+.quran-passage-reciter-toggle::after {
+	display: none;
+}
+
+.quran-passage-reciter-menu {
+	font-size: .75rem;
+	max-height: min(65vh, 22rem);
+	max-width: calc(100vw - 1rem);
+	min-width: max-content;
+	overflow-y: auto;
+}
+
+.quran-passage-reciter-menu .dropdown-item {
+	font-size: .75rem;
 }
 
 .quran-passage-translation-icon {
@@ -4135,20 +4160,7 @@ body > footer,
 	z-index: 2;
 }
 
-.quran-passage-reciter-icon {
-	color: var(--bs-secondary-color);
-	font-size: .75rem;
-	left: .45rem;
-	line-height: 1;
-	pointer-events: none;
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	z-index: 2;
-}
-
-.quran-passage-translation-select,
-.quran-passage-reciter-select {
+.quran-passage-translation-select {
 	border-color: var(--bs-secondary-color);
 	font-size: .75rem;
 	height: calc(1.1em + .3rem + 2px);
@@ -4161,9 +4173,7 @@ body > footer,
 }
 
 .quran-passage-translation-select:hover,
-.quran-passage-translation-select:focus,
-.quran-passage-reciter-select:hover,
-.quran-passage-reciter-select:focus {
+.quran-passage-translation-select:focus {
 	border-color: var(--bs-secondary);
 }
 

@@ -22,6 +22,8 @@ const QuranCorpus = require('../lib/QuranCorpus');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranHeadings = require('../lib/QuranHeadings');
 const QuranMushaf = require('../lib/QuranMushaf');
+const GoogleAuth = require('../lib/GoogleAuth');
+const UserSettings = require('../lib/UserSettings');
 const { homedir } = require('os');
 
 const router = express.Router();
@@ -2143,8 +2145,24 @@ async function renderQuranMushafPage(req, res, next, options) {
   });
 }
 
-router.get('/quran/page', function (req, res) {
-  return res.redirect(302, Utils.quranUrl(req, '/quran/page/1'));
+router.get('/quran/page', async function (req, res) {
+  var pageNumber = 1;
+  res.setHeader('Cache-Control', 'private, no-store');
+  var bookmarkedPage = parsePositiveIntegerParam(req.cookies && req.cookies.quranMushafBookmarkPage);
+  if (Number.isInteger(bookmarkedPage) && bookmarkedPage <= 604)
+    pageNumber = bookmarkedPage;
+  try {
+    var user = await GoogleAuth.verifyRequest(req, { allowSession: true });
+    if (user) {
+      var settings = await UserSettings.getSettings(user.uid);
+      var authenticatedBookmark = settings && settings.bookmarks && settings.bookmarks.mushafPage;
+      if (Number.isInteger(authenticatedBookmark) && authenticatedBookmark >= 1 && authenticatedBookmark <= 604)
+        pageNumber = authenticatedBookmark;
+    }
+  } catch (err) {
+    debug(`Could not resolve the Mushaf bookmark: ${err.message}`);
+  }
+  return res.redirect(302, Utils.quranUrl(req, `/quran/page/${pageNumber}`));
 });
 
 router.get('/quran/page/:page', async function (req, res, next) {

@@ -284,6 +284,14 @@
 			return token ? { ...extra, 'Authorization': `Bearer ${token}` } : extra;
 		};
 
+		const syncMushafBookmarkCookie = () => {
+			if (Number.isInteger(mushafBookmarkPage) && mushafBookmarkPage >= 1 && mushafBookmarkPage <= 604) {
+				setHadithCookie('quranMushafBookmarkPage', mushafBookmarkPage, window.HADITH_SESSION_MAX_AGE);
+			} else {
+				clearHadithCookie('quranMushafBookmarkPage');
+			}
+		};
+
 		const fetchUserSettings = async () => {
 			let token = await getSettingsToken(true);
 			let res = await fetch(USER_SETTINGS_OPTIONAL_ENDPOINT, {
@@ -331,6 +339,7 @@
 			pruneBookmarkMetadata('hadiths', userSettings.bookmarks.hadiths);
 			pruneBookmarkMetadata('headings', userSettings.bookmarks.headings);
 			pruneBookmarkMetadata('tafsirs', userSettings.bookmarks.tafsirs);
+			syncMushafBookmarkCookie();
 		};
 
 		const loadBookmarkSettings = async () => {
@@ -422,6 +431,7 @@
 		};
 
 		const setMushafBookmarkState = () => {
+			syncMushafBookmarkCookie();
 			getMushafBookmarkButtons().forEach(button => {
 				const page = parseInt(button.dataset.quranMushafBookmarkPage, 10);
 				const bookmarked = page === mushafBookmarkPage;

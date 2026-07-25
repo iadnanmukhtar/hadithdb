@@ -4,6 +4,15 @@
   var audioControlClass = locals.audioControlClass || '';
 %>
 <div class="quran-passage-audio-control <%= audioControlClass %>" data-quran-passage-audio="1" data-quran-audio-scope="<%= audioGroup._audioScopeId %>" data-surah="<%= quranSelectionSurah %>" data-from="<%= audioGroup._audioStartAyah %>" data-to="<%= audioGroup._audioEndAyah %>"<% if (locals.audioRanges && locals.audioRanges.length) { %> data-quran-audio-ranges="<%= JSON.stringify(locals.audioRanges) %>"<% } %><% if (locals.repeatRanges && locals.repeatRanges.length) { %> data-quran-audio-repeat-ranges="<%= JSON.stringify(locals.repeatRanges) %>"<% } %>>
+  <span class="dropdown quran-passage-reciter-control">
+    <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-passage-reciter-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose reciter" title="Choose reciter">
+      <span class="bi bi-mic-fill" aria-hidden="true"></span>
+    </button>
+    <select class="visually-hidden quran-passage-reciter-select" data-quran-passage-reciter-select="1" aria-label="Reciter" tabindex="-1">
+      <option value="juhani">Juhani</option>
+    </select>
+    <ul class="dropdown-menu quran-passage-reciter-menu" data-quran-passage-reciter-menu="1"></ul>
+  </span>
   <div class="btn-group btn-group-sm" role="group" aria-label="Quran <%= audioLabel %> audio">
     <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-audio-play" data-quran-passage-audio-play title="Play <%= audioLabel %>" aria-label="Play <%= audioLabel %>">
       <span class="bi bi-play-fill"></span>
@@ -18,12 +27,5 @@
       <span class="bi bi-repeat"></span>
     </button>
   </div>
-  <label class="quran-passage-reciter-control mb-0" hidden>
-    <span class="visually-hidden">Reciter</span>
-    <span class="bi bi-mic-fill quran-passage-reciter-icon" aria-hidden="true"></span>
-    <select class="form-select form-select-sm quran-passage-reciter-select" data-quran-passage-reciter-select="1" aria-label="Reciter">
-      <option value="juhani">Juhani</option>
-    </select>
-  </label>
   <span class="visually-hidden" aria-live="polite" data-quran-passage-audio-status></span>
 </div>

@@ -77,7 +77,7 @@
           <a class="nav-link dropdown-toggle<%- activeNavAttrs(isQuranArea) %>" data-bs-toggle="dropdown" href="<%= utils.quranUrl(req, '/quran') %>" role="button" aria-expanded="false">Quran</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranArea && !isQuranTranslationsArea && !isQuranTafsirArea && !isQuranMushafArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><%- include('menu_icon.ejs', { type: 'quran', label: 'Quran' }) %> Quran</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isQuranMushafArea) %>" href="<%= utils.quranUrl(req, '/quran/page/1') %>"><i class="bi bi-book"></i> Mushaf</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranMushafArea) %>" href="<%= utils.quranUrl(req, '/quran/page') %>"><i class="bi bi-book"></i> Mushaf</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations') %>"><i class="bi bi-translate"></i> Translations</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><%- include('menu_icon.ejs', { type: 'tafsir', label: 'Tafsir' }) %> Tafsir</a></li>
           </ul>

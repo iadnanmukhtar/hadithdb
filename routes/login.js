@@ -83,6 +83,7 @@ router.get('/logout', async function (req, res) {
   clearAuthCookie(res, req, 'adminChecked');
   clearAuthCookie(res, req, 'userId');
   clearAuthCookie(res, req, 'editMode');
+  clearAuthCookie(res, req, 'quranMushafBookmarkPage');
   res.status(200);
   res.end(JSON.stringify({
     status: 200,

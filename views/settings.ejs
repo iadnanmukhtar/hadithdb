@@ -79,19 +79,30 @@
       </section>
 
       <section class="border-top pt-3 mt-3">
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+          <div>
+            <h2 class="fs-5 fw-bold mb-1">Quran Audio</h2>
+            <p class="text-muted small mb-0" id="settings-reciter-status">Choose your favorite reciter.</p>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-reciter-enable-all">Enable all</button>
+            <span class="text-muted small">Settings view</span>
+            <div class="btn-group btn-group-sm settings-view-toggle" role="group" aria-label="Settings view">
+              <button type="button" class="btn btn-outline-secondary" data-settings-view="tile">Tile</button>
+              <button type="button" class="btn btn-outline-secondary" data-settings-view="full">Full</button>
+            </div>
+          </div>
+        </div>
+        <div id="settings-reciter-list" class="mt-3"></div>
+      </section>
+
+      <section class="border-top pt-3 mt-3">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Translations</h2>
             <p class="text-muted small mb-0" id="settings-translation-status">Loading translation settings...</p>
           </div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <div class="d-flex align-items-center gap-2">
-              <span class="text-muted small">Settings view</span>
-              <div class="btn-group btn-group-sm settings-view-toggle" role="group" aria-label="Settings view">
-                <button type="button" class="btn btn-outline-secondary" data-settings-view="tile">Tile</button>
-                <button type="button" class="btn btn-outline-secondary" data-settings-view="full">Full</button>
-              </div>
-            </div>
             <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-translation-enable-all">Enable all</button>
           </div>
         </div>
@@ -124,6 +135,9 @@
     const translationStatusEl = document.getElementById('settings-translation-status');
     const translationListEl = document.getElementById('settings-translation-list');
     const translationEnableAllBtn = document.getElementById('settings-translation-enable-all');
+    const reciterStatusEl = document.getElementById('settings-reciter-status');
+    const reciterListEl = document.getElementById('settings-reciter-list');
+    const reciterEnableAllBtn = document.getElementById('settings-reciter-enable-all');
     const profileStatusEl = document.getElementById('settings-profile-status');
     const preferredLanguageSelect = document.getElementById('settings-preferred-language');
     const paymentStatusEl = document.getElementById('settings-payment-status');
@@ -150,6 +164,7 @@
     let currentSettings = {};
     let currentTafsirBooks = [];
     let currentTranslationBooks = [];
+    let currentRecitations = [];
     let currentLanguages = [];
     let currentPaymentSummary = null;
     let currentSettingsView = readSettingsView();
@@ -177,6 +192,8 @@
       paymentStatusEl.textContent = 'Sign in to buy and manage points.';
       tafsirStatusEl.textContent = 'Sign in to choose which tafsirs appear on Quran pages.';
       translationStatusEl.textContent = 'Sign in to choose which translations appear on Quran pages.';
+      reciterStatusEl.textContent = 'Sign in to choose your favorite reciter.';
+      reciterEnableAllBtn.disabled = true;
       enableAllBtn.disabled = true;
       translationEnableAllBtn.disabled = true;
       preferredLanguageSelect.disabled = true;
@@ -219,6 +236,9 @@
       const translations = source.translations && typeof source.translations === 'object' && !Array.isArray(source.translations)
         ? source.translations
         : {};
+      const audio = source.audio && typeof source.audio === 'object' && !Array.isArray(source.audio)
+        ? source.audio
+        : {};
       const profile = source.profile && typeof source.profile === 'object' && !Array.isArray(source.profile)
         ? source.profile
         : {};
@@ -255,6 +275,14 @@
           preferredAlias: /^[A-Za-z0-9_-]+$/.test((translations.preferredAlias || '').toString().trim())
             ? translations.preferredAlias.toString().trim()
             : ''
+        },
+        audio: {
+          disabledReciters: Array.from(new Set((Array.isArray(audio.disabledReciters) ? audio.disabledReciters : [])
+            .map(alias => (alias || '').toString().trim())
+            .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias)))),
+          preferredReciter: /^[A-Za-z0-9_-]+$/.test((audio.preferredReciter || '').toString().trim())
+            ? audio.preferredReciter.toString().trim()
+            : 'juhani'
         }
       };
     };
@@ -306,6 +334,7 @@
       saving = true;
       tafsirStatusEl.textContent = 'Saving tafsir settings...';
       translationStatusEl.textContent = 'Saving translation settings...';
+      reciterStatusEl.textContent = 'Saving favorite reciter...';
       const settingsToSave = normalizeSettings(currentSettings);
       delete settingsToSave.personalized;
       try {
@@ -346,6 +375,7 @@
         }
       } finally {
         saving = false;
+        reciterStatusEl.textContent = 'Choose your favorite reciter.';
         updateTafsirStatus();
         updateTranslationStatus();
       }
@@ -1218,6 +1248,129 @@
       updateTranslationStatus();
     };
 
+    const renderReciterList = () => {
+      if (!reciterListEl) return;
+      reciterListEl.innerHTML = '';
+      const list = document.createElement('div');
+      list.className = settingsView() === 'tile'
+        ? 'settings-preference-list settings-preference-list-mini'
+        : 'settings-preference-list settings-preference-list-full d-flex flex-column';
+      currentRecitations.forEach(recitation => {
+        const slug = (recitation.id || recitation.slug || '').toString();
+        const label = (recitation.label || recitation.shortName || slug).toString();
+        const fullName = (recitation.reciter_name || label).toString();
+        const disabled = currentSettings.audio.disabledReciters.includes(slug);
+        const preferred = currentSettings.audio.preferredReciter === slug;
+        const mini = settingsView() === 'tile';
+        const row = document.createElement('div');
+        row.className = mini
+          ? 'reciter-setting-row settings-preference-tile d-flex flex-column gap-2'
+          : 'reciter-setting-row d-flex align-items-center justify-content-between gap-3 border-bottom py-2';
+        row.classList.toggle('is-preferred', preferred);
+        row.classList.toggle('is-disabled', disabled);
+
+        const text = document.createElement('span');
+        text.className = mini
+          ? 'translation-setting-text settings-preference-tile-text d-flex flex-column'
+          : 'translation-setting-text d-flex flex-column flex-grow-1';
+        const title = document.createElement('span');
+        title.className = 'translation-setting-title';
+        title.textContent = mini ? label : fullName;
+        if (mini)
+          title.title = fullName;
+        const meta = document.createElement('small');
+        meta.className = 'text-muted';
+        meta.textContent = label !== fullName ? label : 'Quran reciter';
+        text.appendChild(title);
+        if (!mini)
+          text.appendChild(meta);
+
+        const favorite = document.createElement('button');
+        favorite.type = 'button';
+        favorite.className = `translation-preference-heart btn btn-link p-0${preferred ? ' is-preferred' : ''}`;
+        favorite.innerHTML = `<i class="bi ${preferred ? 'bi-heart-fill' : 'bi-heart'}" aria-hidden="true"></i>`;
+        favorite.title = preferred ? `${fullName} is your favorite reciter` : `Choose ${fullName} as your favorite reciter`;
+        favorite.setAttribute('aria-label', favorite.title);
+        favorite.setAttribute('aria-pressed', preferred ? 'true' : 'false');
+        favorite.disabled = !currentUser || saving || disabled;
+        favorite.addEventListener('click', async () => {
+          if (favorite.disabled || preferred) return;
+          const previousSettings = normalizeSettings(currentSettings);
+          currentSettings = normalizeSettings({
+            ...currentSettings,
+            audio: { ...currentSettings.audio, preferredReciter: slug }
+          });
+          renderReciterList();
+          try {
+            await saveSettings();
+            try {
+              window.localStorage && window.localStorage.setItem('hadithdb.quranPassageRecitationId', slug);
+            } catch (_err) {}
+            renderReciterList();
+            if (window.toastr) toastr.success('Favorite reciter saved.', 'Settings');
+          } catch (err) {
+            currentSettings = previousSettings;
+            renderReciterList();
+            if (window.toastr) toastr.error(err.message || 'Unable to save favorite reciter.', 'Settings');
+          }
+        });
+
+        const toggle = document.createElement('input');
+        toggle.type = 'checkbox';
+        toggle.className = 'form-check-input';
+        toggle.setAttribute('role', 'switch');
+        toggle.setAttribute('aria-label', `Enable ${fullName}`);
+        toggle.checked = !disabled;
+        toggle.disabled = !currentUser || saving;
+        toggle.addEventListener('change', async () => {
+          const previousSettings = normalizeSettings(currentSettings);
+          const disabledReciters = new Set(currentSettings.audio.disabledReciters);
+          if (toggle.checked) disabledReciters.delete(slug);
+          else disabledReciters.add(slug);
+          const enabled = currentRecitations.filter(item => !disabledReciters.has((item.id || item.slug || '').toString()));
+          let preferredReciter = currentSettings.audio.preferredReciter;
+          if (disabledReciters.has(preferredReciter))
+            preferredReciter = enabled.some(item => (item.id || item.slug) === 'juhani')
+              ? 'juhani'
+              : (enabled[0] && (enabled[0].id || enabled[0].slug) || '');
+          currentSettings = normalizeSettings({
+            ...currentSettings,
+            audio: {
+              ...currentSettings.audio,
+              disabledReciters: Array.from(disabledReciters),
+              preferredReciter
+            }
+          });
+          renderReciterList();
+          try {
+            await saveSettings();
+            try {
+              window.localStorage && window.localStorage.setItem('hadithdb.quranPassageRecitationId', preferredReciter);
+            } catch (_err) {}
+            renderReciterList();
+          } catch (err) {
+            currentSettings = previousSettings;
+            renderReciterList();
+            if (window.toastr) toastr.error(err.message || 'Unable to save reciter settings.', 'Settings');
+          }
+        });
+        const toggleWrap = document.createElement('span');
+        toggleWrap.className = 'form-check form-switch m-0';
+        toggleWrap.appendChild(toggle);
+        const controls = document.createElement('span');
+        controls.className = mini
+          ? 'translation-setting-controls settings-preference-tile-controls d-flex align-items-center justify-content-between gap-2'
+          : 'translation-setting-controls d-flex align-items-center gap-2';
+        controls.appendChild(favorite);
+        controls.appendChild(toggleWrap);
+
+        row.appendChild(text);
+        row.appendChild(controls);
+        list.appendChild(row);
+      });
+      reciterListEl.appendChild(list);
+    };
+
     const renderSettings = async () => {
       const auth = await waitForHadithAuth();
       currentUser = auth && auth.getUser ? await auth.getUser() : null;
@@ -1239,6 +1392,19 @@
       }
       currentSettings = normalizeSettings(currentSettings);
       renderProfileSettings();
+      reciterEnableAllBtn.disabled = !currentUser;
+
+      try {
+        const recitationRes = await fetch(quranApiPath('/proxy/quran-audio/recitations'), { cache: 'no-store' });
+        if (!recitationRes.ok) throw new Error('Unable to load reciters.');
+        const recitationData = await recitationRes.json();
+        currentRecitations = Array.isArray(recitationData.recitations) ? recitationData.recitations : [];
+        if (!currentRecitations.some(recitation => (recitation.id || recitation.slug) === currentSettings.audio.preferredReciter))
+          currentSettings.audio.preferredReciter = 'juhani';
+        renderReciterList();
+      } catch (err) {
+        reciterStatusEl.textContent = err.message || 'Unable to load reciters.';
+      }
 
       try {
         await reconcileCheckoutReturn();
@@ -1294,6 +1460,26 @@
 
     if (preferredLanguageSelect) {
       preferredLanguageSelect.addEventListener('change', savePreferredLanguage);
+    }
+
+    if (reciterEnableAllBtn) {
+      reciterEnableAllBtn.addEventListener('click', async () => {
+        if (!currentUser) {
+          renderSignedOut();
+          return;
+        }
+        currentSettings = normalizeSettings({
+          ...currentSettings,
+          audio: { ...currentSettings.audio, disabledReciters: [] }
+        });
+        renderReciterList();
+        try {
+          await saveSettings();
+          renderReciterList();
+        } catch (err) {
+          if (window.toastr) toastr.error(err.message || 'Unable to enable reciters.', 'Settings');
+        }
+      });
     }
 
     if (paymentBuyBtn) {
@@ -1392,6 +1578,7 @@
             window.localStorage.setItem(SETTINGS_VIEW_KEY, currentSettingsView);
         } catch (_err) {}
         updateSettingsViewControls();
+        renderReciterList();
         renderTafsirList(currentTafsirBooks);
         renderTranslationList(currentTranslationBooks);
       });
