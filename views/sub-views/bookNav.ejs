@@ -1,6 +1,10 @@
 <div class="h-menu-wrap mb-3">
 	<%
 		var currentBookAlias = typeof page !== 'undefined' && page.context && page.context.book ? page.context.book.alias : '';
+		var bookNavRequestPath = typeof req !== 'undefined' && req.originalUrl ? req.originalUrl.split('?')[0] : '';
+		var isQuranBookNav = typeof req !== 'undefined' && req.quranArea === true
+			|| bookNavRequestPath === '/quran'
+			|| bookNavRequestPath.indexOf('/quran/') === 0;
 		if (!currentBookAlias && typeof req !== 'undefined' && req.path)
 			currentBookAlias = req.path.split('/').filter(Boolean)[0] || '';
 		var isHadithBook = function (book) {
@@ -25,15 +29,32 @@
 			};
 	%>
 	<div class="h-menu-hint d-md-none">
-		<i class="bi bi-arrow-left-right"></i> Swipe to browse books
+		<i class="bi bi-arrow-left-right"></i> Swipe to browse <%= isQuranBookNav ? 'tafsīr books' : 'books' %>
 	</div>
 	<div class="h-menu-scroller">
 		<div class="btn-group h-menu text-nowrap" role="group">
-			<% for (b of books.filter(isHadithBook)) {
+			<% if (isQuranBookNav) {
+				var carouselTafsirs = Array.isArray(locals.quranNavTafsirs) ? locals.quranNavTafsirs : [];
+				for (var carouselTafsir of carouselTafsirs) {
+					var carouselTafsirLabel = Tafsir.rawShortName(carouselTafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();
+					var carouselTafsirSlug = carouselTafsir.slug || Tafsir.tafsirSlug(carouselTafsir.alias);
+					var carouselTafsirHasLanguageCollision = carouselTafsirs.some(function (other) {
+						return other && other !== carouselTafsir && other.lang !== carouselTafsir.lang
+							&& (other.slug || Tafsir.tafsirSlug(other.alias)) === carouselTafsirSlug;
+					});
+					var carouselTafsirQuery = carouselTafsirHasLanguageCollision && (carouselTafsir.lang === 'ar' || carouselTafsir.lang === 'en')
+						? `?lang=${encodeURIComponent(carouselTafsir.lang)}`
+						: '';
+			%>
+			  <a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(carouselTafsirSlug)}${carouselTafsirQuery}`) %>" data-tafsir-tooltip="<%= bookTooltip(carouselTafsir) %>" data-tafsir-book-nav-item data-tafsir-alias="<%= carouselTafsir.alias %>" data-tafsir-lang="<%= carouselTafsir.lang || '' %>"><%= carouselTafsirLabel %></a>
+			<% }
+			} else {
+			  for (b of books.filter(isHadithBook)) {
 				var isCurrentBook = b.alias === currentBookAlias;
 			%>
 			  <a class="btn btn-outline-primary text-nowrap book-carousel-tooltip<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-tooltip="<%= bookTooltip(b) %>"><%= b.shortName_en %></a>
-			<% } %>
+			<% }
+			} %>
 		</div>
 	</div>
 </div>

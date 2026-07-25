@@ -943,6 +943,47 @@ nav .nav-link[aria-current="page"] {
 	margin-left: 0;
 }
 
+.offcanvas-quick-actions {
+	display: flex;
+	gap: 0;
+	justify-content: space-between;
+	margin: 0.25rem 0 0.85rem;
+	max-width: 100%;
+	overflow: hidden;
+	padding: 0.15rem 0 0.35rem;
+	width: 100%;
+}
+
+.offcanvas-quick-action {
+	align-items: center;
+	color: var(--bs-heading-color);
+	display: inline-flex;
+	flex: 0 0 auto;
+	min-width: 0;
+	padding: 0.4rem 0;
+	text-align: center;
+	text-decoration: none;
+}
+
+.offcanvas-quick-action .bi {
+	color: var(--c-accent);
+	font-size: 1.25rem;
+	line-height: 1;
+}
+
+.offcanvas-quick-action:hover,
+.offcanvas-quick-action:focus,
+.offcanvas-quick-action.active,
+.offcanvas-quick-action[aria-current="page"] {
+	color: var(--c-accent);
+	text-decoration: none;
+}
+
+.offcanvas-quick-action.active,
+.offcanvas-quick-action[aria-current="page"] {
+	font-weight: 600;
+}
+
 .offcanvas-col1 .nav-link {
 	font-size: 1rem;
 	padding-left: 0.75rem;

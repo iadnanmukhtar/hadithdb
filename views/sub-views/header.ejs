@@ -11,7 +11,8 @@
     var pageMenu = page && page.menu ? page.menu : '';
     var pageBook = page && page.context ? page.context.book : null;
     var pageQuranCommentaryBook = page && page.context ? page.context.quranCommentaryBook : null;
-    var isQuranArea = requestPath === '/quran'
+    var isQuranArea = req && req.quranArea === true
+      || requestPath === '/quran'
       || requestPath.indexOf('/quran/') === 0
       || (pageBook && pageBook.alias === 'quran')
       || (page.context && page.context.quranSearchProxy);
@@ -150,6 +151,26 @@
         <form action="<%= navSearchAction %>">
           <input role="search" type="text" class="form-control mb-2" name="q" placeholder="<%= navSearchPlaceholder %>" value="<%= currentSearch %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
         </form>
+        <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">
+          <a class="offcanvas-quick-action<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>" title="My Bookmarks" aria-label="My Bookmarks">
+            <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>" aria-hidden="true"></i>
+          </a>
+          <a class="offcanvas-quick-action<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>" title="Liked" aria-label="Liked">
+            <i class="bi bi-heart<%= isLikedArea ? '-fill' : '' %>" aria-hidden="true"></i>
+          </a>
+          <a class="offcanvas-quick-action<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>" title="Latest Reflections" aria-label="Latest Reflections">
+            <i class="bi bi-chat-right-text" aria-hidden="true"></i>
+          </a>
+          <a class="offcanvas-quick-action<%- activeNavAttrs(isHighlightsArea) %>" href="<%= utils.urlFor(req, '/highlights') %>" title="Highlighted" aria-label="Highlighted">
+            <i class="bi bi-star<%= isHighlightsArea ? '-fill' : '' %>" aria-hidden="true"></i>
+          </a>
+          <a class="offcanvas-quick-action<%- activeNavAttrs(isTitledArea) %>" href="<%= utils.urlFor(req, '/titled') %>" title="Titled" aria-label="Titled">
+            <i class="bi bi-card-heading" aria-hidden="true"></i>
+          </a>
+          <a class="offcanvas-quick-action<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>" title="My Settings" aria-label="My Settings">
+            <i class="bi bi-gear<%= isSettingsArea ? '-fill' : '' %>" aria-hidden="true"></i>
+          </a>
+        </div>
         <div class="row">
           <%- include('offcanvas_primary_nav.ejs', {
             activeNavAttrs: activeNavAttrs,
@@ -169,9 +190,38 @@
             settingsHref: settingsHref
           }) %>
           <ul class="col-5 nav flex-column offcanvas-col2">
-            <% for (b of books.filter(b => !b.hidden && b.alias !== 'quran')) { %>
-              <li class="nav-item"><a class="nav-link" title="<%= b.shortName %>" href="<%= utils.urlFor(req, `/${b.alias}`) %>"><%= b.shortName_en %></a></li>
-            <% } %>
+            <% if (isQuranArea) {
+              var railTafsirs = Array.isArray(locals.quranNavTafsirs) ? locals.quranNavTafsirs : [];
+              for (var railTafsir of railTafsirs) {
+                var railTafsirLabel = Tafsir.rawShortName(railTafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();
+                var railTafsirSlug = railTafsir.slug || Tafsir.tafsirSlug(railTafsir.alias);
+                var railTafsirHasLanguageCollision = railTafsirs.some(function (other) {
+                  return other && other !== railTafsir && other.lang !== railTafsir.lang
+                    && (other.slug || Tafsir.tafsirSlug(other.alias)) === railTafsirSlug;
+                });
+                var railTafsirQuery = railTafsirHasLanguageCollision && (railTafsir.lang === 'ar' || railTafsir.lang === 'en')
+                  ? `?lang=${encodeURIComponent(railTafsir.lang)}`
+                  : '';
+            %>
+              <li class="nav-item"><a class="nav-link" title="<%= railTafsir.name_en || railTafsirLabel %>" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(railTafsirSlug)}${railTafsirQuery}`) %>"><%= railTafsirLabel %></a></li>
+            <% }
+            } else {
+              var railHadithBooks = books.filter(function (book) {
+                return book
+                  && Number(book.hidden) === 0
+                  && book.alias !== 'quran'
+                  && (book.type || book.book_type || book.book_model || 'hadith') === 'hadith';
+              }).slice().sort(function (a, b) {
+                return (a.shortName_en || a.name_en || a.alias || '').localeCompare(
+                  b.shortName_en || b.name_en || b.alias || '',
+                  'en',
+                  { sensitivity: 'base' }
+                );
+              });
+              for (b of railHadithBooks) { %>
+                <li class="nav-item"><a class="nav-link" title="<%= b.shortName %>" href="<%= utils.urlFor(req, `/${b.alias}`) %>"><%= b.shortName_en %></a></li>
+              <% }
+            } %>
           </ul>
         </div>
       </div>

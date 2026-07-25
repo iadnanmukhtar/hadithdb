@@ -18,6 +18,7 @@ const cookieParser = require('cookie-parser');
 const { STATUS_CODES } = require('http');
 const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
+const Tafsir = require('./lib/Tafsir');
 const Utils = require('./lib/Utils');
 const PaymentConfig = require('./lib/PaymentConfig');
 const ContentTranslations = require('./lib/ContentTranslations');
@@ -359,6 +360,12 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     res.locals.paymentFeatureEnabled = PaymentConfig.isEnabled();
     res.locals.tafsirTranslationFeatureEnabled = PaymentConfig.contentTranslationEnabledForItemType('tafsir');
     res.locals.contentTranslationEstimateFields = ContentTranslations.estimateFields;
+    res.locals.quranNavTafsirs = Tafsir.visibleTafsirsSync().slice().sort(function (a, b) {
+      const aLabel = Tafsir.rawShortName(a, 'en') || a.shortName_en || a.name_en || a.alias || '';
+      const bLabel = Tafsir.rawShortName(b, 'en') || b.shortName_en || b.name_en || b.alias || '';
+      return aLabel.localeCompare(bLabel, 'en', { sensitivity: 'base' });
+    });
+    res.locals.Tafsir = Tafsir;
     next();
   });
   app.use(function resolveAdminMode(req, res, next) {
@@ -515,6 +522,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     const errorReq = {
       path: req.path,
       originalUrl: errorRef || req.path,
+      quranArea: req.path === '/quran/error' || req.path.indexOf('/quran/error/') === 0,
       query: {},
       cookies: req.cookies || {},
       hostname: req.hostname,

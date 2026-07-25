@@ -1946,7 +1946,6 @@ function initQuranTafsirTabs(root) {
 			var usePersonalizedTafsirs = settings && settings.personalized === true;
 			var tafsirs = usePersonalizedTafsirs ? ((settings || {}).tafsirs || {}) : {};
 			var disabledAliases = new Set(Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : []);
-			var tafsirOrder = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
 			allTafsirBookAliases = { en: [], ar: [] };
 			englishLocalTafsirAliasBySlug = {};
 			(Array.isArray(books) ? books : []).forEach(function (book) {
@@ -1960,10 +1959,7 @@ function initQuranTafsirTabs(root) {
 			}).map(function (book, originalIndex) {
 				return { book: Object.assign({}, book, { disabled: disabledAliases.has(book.alias) }), originalIndex: originalIndex };
 			});
-			if (usePersonalizedTafsirs)
-				visibleBooks.sort(function (a, b) {
-					return compareTafsirPreferenceEntries(a, b, tafsirOrder);
-				});
+			visibleBooks.sort(compareTafsirAlphabeticalEntries);
 			visibleBooks = visibleBooks.map(function (entry) {
 				return entry.book;
 				});
@@ -4995,6 +4991,17 @@ function getQuranTafsirSettings() {
 		return (a.originalIndex || 0) - (b.originalIndex || 0);
 	}
 
+	function compareTafsirAlphabeticalEntries(a, b) {
+		var aBook = a && a.book || {};
+		var bBook = b && b.book || {};
+		var aLabel = (a && a.label || aBook.shortName_en || aBook.name_en || aBook.author_en || aBook.alias || '').toString().replace(/^tafs[īi]r\s+/i, '').trim();
+		var bLabel = (b && b.label || bBook.shortName_en || bBook.name_en || bBook.author_en || bBook.alias || '').toString().replace(/^tafs[īi]r\s+/i, '').trim();
+		var labelOrder = aLabel.localeCompare(bLabel, 'en', { sensitivity: 'base' });
+		if (labelOrder !== 0)
+			return labelOrder;
+		return (aBook.lang || '').localeCompare(bBook.lang || '', 'en', { sensitivity: 'base' });
+	}
+
 function initQuranAyahModals(root) {
 	var scope = root || document;
 	var modalStates = $(document).data('quranAyahModalStates') || {};
@@ -7640,6 +7647,7 @@ function initQuranAyahSelector(root) {
 					death: item.attr('data-tafsir-death') || '',
 					ordinal: Number(item.attr('data-tafsir-ordinal') || 0)
 				},
+				label: item.text().trim(),
 				originalIndex: item.data('tafsirBookOriginalIndex') || 0
 			};
 		}).get();
@@ -7650,13 +7658,8 @@ function initQuranAyahSelector(root) {
 			var usePersonalizedTafsirs = settings && settings.personalized === true;
 			var tafsirs = usePersonalizedTafsirs ? ((settings || {}).tafsirs || {}) : {};
 			var disabledAliases = new Set(Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : []);
-			var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
 			var entries = tafsirBookCarouselEntries(menu);
-			entries.sort(function (a, b) {
-				return usePersonalizedTafsirs
-					? compareTafsirPreferenceEntries(a, b, order)
-					: (a.originalIndex || 0) - (b.originalIndex || 0);
-			}).forEach(function (entry) {
+			entries.sort(compareTafsirAlphabeticalEntries).forEach(function (entry) {
 				var alias = entry.book.alias || '';
 				entry.item.toggleClass('d-none', disabledAliases.has(alias));
 				menu.append(entry.item);
@@ -7724,14 +7727,9 @@ function initQuranAyahSelector(root) {
 			if (kind === 'tafsir') {
 				var tafsirs = personalized && settings.tafsirs && typeof settings.tafsirs === 'object' && !Array.isArray(settings.tafsirs) ? settings.tafsirs : {};
 				var tafsirDisabled = new Set(Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : []);
-				var tafsirOrder = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
 				return entries.filter(function (entry) {
 					return !tafsirDisabled.has(entry.book.alias) || quranCommentaryEntryIsCurrent(entry, currentAlias, currentLang);
-				}).sort(function (a, b) {
-					return personalized
-						? compareTafsirPreferenceEntries(a, b, tafsirOrder)
-						: (a.originalIndex || 0) - (b.originalIndex || 0);
-				});
+				}).sort(compareTafsirAlphabeticalEntries);
 			}
 			if (kind === 'trans') {
 				var translations = personalized && settings.translations && typeof settings.translations === 'object' && !Array.isArray(settings.translations) ? settings.translations : {};
