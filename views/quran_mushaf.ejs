@@ -44,7 +44,7 @@
         <% } else { line.words.forEach(function (word) {
           var ref = `${word.surah}:${word.ayah}`;
           if (word.is_ayah_marker) { %>
-            <a class="quran-ayah-end-marker quran-mushaf-ayah-marker quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %>" data-quran-ref="<%= ref %>" href="<%= utils.quranUrl(req, `/quran:${ref}`) %>" aria-label="Actions for Quran <%= ref %>" aria-haspopup="menu" aria-expanded="false" title="Quran <%= ref %> actions">۝<%= arabic.toArabicDigits(word.ayah) %></a>
+            <a class="quran-ayah-end-marker quran-mushaf-ayah-marker quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %>" data-quran-ayah-actions="1" data-quran-ref="<%= ref %>" href="<%= utils.quranUrl(req, `/quran:${ref}`) %>" aria-label="Actions for Quran <%= ref %>" aria-haspopup="menu" aria-expanded="false" title="Quran <%= ref %> actions">۝<%= arabic.toArabicDigits(word.ayah) %></a>
           <% } else { %>
             <span class="quran-corpus-word quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %><%= word.juzStart ? ' quran-juz-start-word' : '' %><%= word.juzStartFirst ? ' quran-juz-start-first-word' : '' %>" data-quran-ref="<%= ref %>" data-quran-word="<%= word.text %>" data-quran-word-number="<%= word.word %>" data-quran-word-translation="<%= word.meaning_en || '' %>" data-quran-word-grammar="<%= word.grammar_parts_of_speech || word.parts_of_speech || '' %>"<% if (word.juzStart) { %> data-quran-juz="<%= word.juzStart %>" title="Beginning of Juz <%= word.juzStart %>"<% } %> tabindex="0"><%= word.text %></span>
           <% }

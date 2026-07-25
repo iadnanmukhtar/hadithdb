@@ -5994,7 +5994,11 @@ function initQuranMushafAyahMarkerActions(root) {
 	menu.innerHTML = '<a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-view><span class="bi bi-eye" aria-hidden="true"></span> View</a><button type="button" class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-play><span class="bi bi-play-fill" aria-hidden="true"></span> Play</button>';
 	document.body.appendChild(menu);
 	var activeMarker = null;
+	var markerShowTimer = null;
+	var markerHideTimer = null;
 	var closeMenu = function (restoreFocus) {
+		window.clearTimeout(markerShowTimer);
+		window.clearTimeout(markerHideTimer);
 		if (activeMarker)
 			activeMarker.setAttribute('aria-expanded', 'false');
 		menu.hidden = true;
@@ -6013,8 +6017,72 @@ function initQuranMushafAyahMarkerActions(root) {
 		menu.style.left = `${Math.round(left)}px`;
 		menu.style.top = `${Math.round(top)}px`;
 	};
+	var showMenu = function (marker, focusAction) {
+		window.clearTimeout(markerShowTimer);
+		window.clearTimeout(markerHideTimer);
+		if (activeMarker && activeMarker !== marker)
+			activeMarker.setAttribute('aria-expanded', 'false');
+		activeMarker = marker;
+		activeMarker.setAttribute('aria-expanded', 'true');
+		var view = menu.querySelector('[data-quran-mushaf-ayah-view]');
+		view.setAttribute('href', marker.getAttribute('href') || marker.getAttribute('data-quran-href') || '#');
+		view.setAttribute('aria-label', `View Quran ${marker.getAttribute('data-quran-ref') || ''}`);
+		menu.hidden = false;
+		positionMenu(marker);
+		if (focusAction)
+			view.focus();
+	};
+	var scheduleMenuClose = function () {
+		window.clearTimeout(markerHideTimer);
+		markerHideTimer = window.setTimeout(function () {
+			closeMenu(false);
+		}, 120);
+	};
+	document.addEventListener('pointerover', function (event) {
+		var marker = event.target.closest('[data-quran-ayah-actions="1"][data-quran-ref]');
+		if (!marker)
+			return;
+		window.clearTimeout(markerHideTimer);
+		if (activeMarker === marker && !menu.hidden)
+			return;
+		window.clearTimeout(markerShowTimer);
+		markerShowTimer = window.setTimeout(function () {
+			showMenu(marker, false);
+		}, 750);
+	});
+	document.addEventListener('pointerout', function (event) {
+		var marker = event.target.closest('[data-quran-ayah-actions="1"][data-quran-ref]');
+		if (!marker)
+			return;
+		if (event.relatedTarget && (marker.contains(event.relatedTarget) || menu.contains(event.relatedTarget)))
+			return;
+		window.clearTimeout(markerShowTimer);
+		if (activeMarker === marker)
+			scheduleMenuClose();
+	});
+	document.addEventListener('focusin', function (event) {
+		var marker = event.target.closest('[data-quran-ayah-actions="1"][data-quran-ref]');
+		if (!marker)
+			return;
+		window.clearTimeout(markerShowTimer);
+		markerShowTimer = window.setTimeout(function () {
+			showMenu(marker, false);
+		}, 750);
+	});
+	document.addEventListener('focusout', function (event) {
+		var marker = event.target.closest('[data-quran-ayah-actions="1"][data-quran-ref]');
+		if (!marker || (event.relatedTarget && menu.contains(event.relatedTarget)))
+			return;
+		window.clearTimeout(markerShowTimer);
+		if (activeMarker === marker)
+			scheduleMenuClose();
+	});
+	menu.addEventListener('pointerenter', function () {
+		window.clearTimeout(markerHideTimer);
+	});
+	menu.addEventListener('pointerleave', scheduleMenuClose);
 	document.addEventListener('click', function (event) {
-		var marker = event.target.closest('.quran-mushaf-ayah-marker[data-quran-ref]');
+		var marker = event.target.closest('[data-quran-ayah-actions="1"][data-quran-ref]');
 		if (marker) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -6022,16 +6090,7 @@ function initQuranMushafAyahMarkerActions(root) {
 				closeMenu(false);
 				return;
 			}
-			if (activeMarker)
-				activeMarker.setAttribute('aria-expanded', 'false');
-			activeMarker = marker;
-			activeMarker.setAttribute('aria-expanded', 'true');
-			var view = menu.querySelector('[data-quran-mushaf-ayah-view]');
-			view.setAttribute('href', marker.getAttribute('href') || '#');
-			view.setAttribute('aria-label', `View Quran ${marker.getAttribute('data-quran-ref') || ''}`);
-			menu.hidden = false;
-			positionMenu(marker);
-			view.focus();
+			showMenu(marker, true);
 			return;
 		}
 		var play = event.target.closest('[data-quran-mushaf-ayah-play]');
@@ -6040,6 +6099,8 @@ function initQuranMushafAyahMarkerActions(root) {
 			var ref = quranAudioRefParts(activeMarker.getAttribute('data-quran-ref') || '');
 			var page = activeMarker.closest('[data-quran-mushaf-page]');
 			var control = page && page.querySelector('[data-quran-passage-audio="1"]');
+			if (!control)
+				control = matchingQuranPassageAudioControl(ref);
 			closeMenu(false);
 			if (control && Number.isInteger(ref.surah) && Number.isInteger(ref.ayah)) {
 				startQuranPassageAudio(control, {
@@ -6384,6 +6445,8 @@ function initQuranDynamicPassageHero(root) {
 	});
 	$(document).on('click.quranDynamicPassageHero', '.quran-passage-section .body.passage .quran-ayah-hero-trigger[data-quran-href], .quran-mushaf-page .quran-ayah-hero-trigger[data-quran-href]', function (event) {
 		if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
+			return;
+		if ($(this).is('[data-quran-ayah-actions="1"]'))
 			return;
 		if ($('body').hasClass('quran-ayah-selecting'))
 			return;
@@ -7247,7 +7310,7 @@ function annotateExistingQuranText(root, words) {
 				annotateTextNode(node);
 			return;
 		}
-		if (node.nodeType !== 1 || $(node).hasClass('quran-corpus-word'))
+		if (node.nodeType !== 1 || $(node).is('.quran-corpus-word, .quran-ayah-end-marker, .quran-ayah-number-marker'))
 			return;
 		Array.from(node.childNodes).forEach(walk);
 	};

@@ -1069,10 +1069,25 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   var section;
   var chapter;
   var quranSubsections = [];
-  if ('json' in req.query) {
-    res.setHeader('Content-Type', 'application/json');
+  if ('json' in req.query || 'md' in req.query) {
+    res.setHeader('Content-Type', 'json' in req.query ? 'application/json' : 'text/markdown; charset=utf-8');
     if (selectedAyahs.length < 1)
-      return res.end(JSON.stringify([]));
+      return res.end('json' in req.query ? JSON.stringify([]) : '');
+    var sourceArabicRows = await query(
+      `SELECT numInChapter, body, body_ar_alt
+       FROM hadiths
+       WHERE bookId = 0
+         AND numInChapter BETWEEN ${ayah1} AND ${ayah2}
+         AND num IN (${selectedAyahs.map(item => `'${surah.num}:${Number(item.numInChapter)}'`).join(', ')})`
+    );
+    var sourceArabicByAyah = new Map(sourceArabicRows.map(row => [Number(row.numInChapter), row]));
+    selectedAyahs.forEach(item => {
+      var sourceArabic = sourceArabicByAyah.get(Number(item.numInChapter));
+      if (!sourceArabic)
+        return;
+      item.body = item.ar.body = sourceArabic.body;
+      item.body_ar_alt = item.ar.body_alt = sourceArabic.body_ar_alt;
+    });
     if (selectedAyahs.length === 1)
       await addQuranAdjacentRefs(selectedAyahs[0]);
     var ayahs_en = [];
@@ -1097,7 +1112,11 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     selectedAyahs[0].body_ar_alt = selectedAyahs[0].ar.body_alt = original_ayahs.join(' ').trim();
     selectedAyahs[0].footnote_en = selectedAyahs[0].en.footnote = footnotes_en.join('\n').trim();
     selectedAyahs[0].footnote = selectedAyahs[0].ar.footnote = footnotes.join('\n').trim();
-    return res.end(JSON.stringify([selectedAyahs[0]]));
+    if ('json' in req.query) {
+      escapeQuranMarkdownFields(selectedAyahs[0]);
+      return res.end(JSON.stringify([selectedAyahs[0]]));
+    }
+    return res.end(Utils.toMarkdown([selectedAyahs[0]]));
   }
   if (selectedAyahs.length > 0) {
     section = await selectedAyahs[0].getSection();
@@ -1223,9 +1242,26 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   results[0].single = true;
   if (results[0].book_alias === 'quran')
     await addQuranAdjacentRefs(results[0]);
-  if (results[0].book_alias === 'quran' && 'json' in req.query) {
-    res.setHeader('Content-Type', 'application/json');
-    return res.end(JSON.stringify(results));
+  if (results[0].book_alias === 'quran' && ('json' in req.query || 'md' in req.query)) {
+    var sourceArabicRows = await query(
+      `SELECT body, body_ar_alt
+       FROM hadiths
+       WHERE bookId = 0
+         AND id = ${Number(results[0].id)}
+       LIMIT 1`
+    );
+    if (sourceArabicRows.length > 0) {
+      var sourceArabic = sourceArabicRows[0];
+      results[0].body = results[0].ar.body = sourceArabic.body_ar_alt || sourceArabic.body;
+      results[0].body_ar_alt = results[0].ar.body_alt = sourceArabic.body;
+    }
+    if ('json' in req.query) {
+      escapeQuranMarkdownFields(results[0]);
+      res.setHeader('Content-Type', 'application/json');
+      return res.end(JSON.stringify(results));
+    }
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    return res.end(Utils.toMarkdown(results));
   }
   if (results[0].book_alias === 'quran'
     && !('json' in req.query)
@@ -1328,6 +1364,22 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
     quranSubsections: quranSubsections,
     quranSurahs: quranSurahs
   });
+}
+
+function escapeQuranMarkdownFields(item) {
+  ['body', 'body_ar_alt', 'body_en', 'footnote', 'footnote_en'].forEach(field => {
+    item[field] = Utils.escapeMarkdownText(item[field]);
+  });
+  if (item.ar) {
+    ['body', 'body_alt', 'footnote'].forEach(field => {
+      item.ar[field] = Utils.escapeMarkdownText(item.ar[field]);
+    });
+  }
+  if (item.en) {
+    ['body', 'footnote'].forEach(field => {
+      item.en[field] = Utils.escapeMarkdownText(item.en[field]);
+    });
+  }
 }
 
 async function addQuranAdjacentRefs(selectedAyah) {
