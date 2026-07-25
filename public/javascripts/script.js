@@ -120,6 +120,7 @@ $(function () {
 	initQuranMushafInfinite(document);
 	initQuranMushafAyahSelection(document);
 	initQuranMushafAyahMarkerActions(document);
+	initQuranMushafSurahPicker(document);
 	initQuranDynamicPassageHero(document);
 	canonicalizeQuranTranslationPageUrl();
 	initQuranSelectedTranslationBookPreference(document);
@@ -6137,6 +6138,24 @@ function initQuranMushafAyahMarkerActions(root) {
 		if (!menu.hidden && activeMarker)
 			positionMenu(activeMarker);
 	}, { passive: true });
+}
+
+function initQuranMushafSurahPicker(root) {
+	if (document.documentElement.dataset.quranMushafSurahPickerBound === '1')
+		return;
+	document.documentElement.dataset.quranMushafSurahPickerBound = '1';
+	document.addEventListener('shown.bs.dropdown', function (event) {
+		var dropdown = event.target.closest && event.target.closest('.quran-mushaf-surah-picker-dropdown');
+		var menu = dropdown && dropdown.querySelector('.quran-mushaf-surah-picker-menu');
+		var active = menu && menu.querySelector('.dropdown-item.active, .dropdown-item[aria-current="true"]');
+		if (!menu || !active)
+			return;
+		window.requestAnimationFrame(function () {
+			var menuRect = menu.getBoundingClientRect();
+			var activeRect = active.getBoundingClientRect();
+			menu.scrollTop += activeRect.top - menuRect.top - ((menu.clientHeight - activeRect.height) / 2);
+		});
+	});
 }
 
 function updateQuranMushafFooterPageLinks(pageNumber) {

@@ -2157,7 +2157,9 @@ router.get('/quran/page/:page', async function (req, res, next) {
   if (!mappedSection)
     return next(createError(404, `A Quran section was not found for Mushaf page ${pageNumber}`));
   var book = visibleBookByAlias('quran');
-  var section = await Section.sectionFromRef(`quran/${mappedSection.surah}/${mappedSection.h2}`);
+  var section = Number(mappedSection.level) === 2
+    ? Heading.toLevel(mappedSection)
+    : await Section.sectionFromRef(`quran/${mappedSection.surah}/${mappedSection.h2}`);
   await section.getPrev();
   await section.getNext();
   var chapter = await section.getChapter();

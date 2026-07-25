@@ -910,10 +910,12 @@ async function reindexQuranSurah(sectionHeadingId, value, userId) {
       ]
     }
   };
+  var mushafMappingCounts = {};
   for (const affectedSurah of surahs) {
     await normalizeQuranSurahHeadingRanges(bookId, affectedSurah, userId, { deleteOrphanSubsections: true });
     await relinkQuranSurahAyahsToSections(bookId, affectedSurah);
     await syncQuranSurahHadithHeadingNumbers(bookId, affectedSurah);
+    mushafMappingCounts[affectedSurah] = await QuranMushaf.syncSectionMappings(affectedSurah);
   }
   await reindexSearchScope(`book_id=${bookId} AND h1 IN (${surahs.join(',')})`, {
     syncKnowledge: false,
@@ -923,8 +925,10 @@ async function reindexQuranSurah(sectionHeadingId, value, userId) {
     headingQuery: searchQuery,
     itemQuery: searchQuery
   });
-  for (const affectedSurah of surahs)
+  for (const affectedSurah of surahs) {
     await invalidateQuranSurahCaches(affectedSurah);
+    await invalidateQuranMushafPageCaches(affectedSurah);
+  }
   await invalidateQuranTocCaches();
   await rebuildQuranInMemoryCaches();
   return {
@@ -933,7 +937,8 @@ async function reindexQuranSurah(sectionHeadingId, value, userId) {
       h1: surah,
       h2: Number(section.h2),
       path: `quran/${surah}/${Number(section.h2)}`,
-      reindexedSurahs: surahs
+      reindexedSurahs: surahs,
+      mushafMappingCounts: mushafMappingCounts
     }
   };
 }
