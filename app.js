@@ -322,6 +322,8 @@ const buildErrorViewLocals = (statusCode, message, error, req, res) => {
   };
   const finalRes = res || { statusCode: statusCode };
   finalRes.statusCode = statusCode;
+  if (typeof finalRes.setHeader === 'function')
+    finalRes.setHeader('X-Robots-Tag', 'noindex, nofollow');
   return {
     req: finalReq,
     res: finalRes,

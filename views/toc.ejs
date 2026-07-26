@@ -103,11 +103,11 @@
     var showHadithBookChrome = !isQuranToc;
     var showRandomTocItem = !quranCommentaryBook;
     var showRandomTocTitle = !isQuranToc && !quranCommentaryBook;
-    var quranCommentaryPageTitleEn = quranCommentaryBook && quranCommentaryBook.type === 'trans'
-      ? `Quran | ${commentaryBookShortNameEn(quranCommentaryBook)} | ${quranCommentaryBookLabel}`
-      : `Quran | ${quranCommentaryBookLabel}`;
+    var quranCommentaryPageTitleEn = quranCommentaryBook
+      ? `${quranCommentaryBook.type === 'tafsir' ? prefixDisplayName(commentaryBookShortNameEn(quranCommentaryBook), 'Tafsir') : displayName(quranCommentaryBook.name_en || quranCommentaryBook.title || quranCommentaryBook.shortName_en || quranCommentaryBook.alias)}${displayName(quranCommentaryBook.author_en || quranCommentaryBook.author) ? ` | ${displayName(quranCommentaryBook.author_en || quranCommentaryBook.author)}` : ''}`
+      : '';
     var pageTitleEn = isQuranToc
-      ? (quranCommentaryBook ? quranCommentaryPageTitleEn : 'Quran | Table of Contents')
+      ? (quranCommentaryBook ? quranCommentaryPageTitleEn : 'Quran Unlocked | Table of Contents')
       : utils.hadithBookTitle(book);
     var pageDescriptionEn = isQuranToc
       ? (quranCommentaryBook

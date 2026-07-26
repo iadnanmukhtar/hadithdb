@@ -13,7 +13,7 @@
     var subtitle_en = `${tagIds.join('+')}`;
     var page = {
       menu: 'Tag',
-      title_en: `${site.shortName} | Aḥādith with tags ${subtitle_en}`,
+      title_en: `Hadiths Tagged ${subtitle_en}`,
       subtitle_en: subtitle_en,
       subtitle: null,
       canonical: `/tag/${tagIds.join('+')}`,
@@ -22,7 +22,7 @@
     if (results.offset) {
       page.canonical += `?o=${results.offset}`;
       if (results.pg && results.pg > 1)
-        page.title_en += ` P${results.pg}`;
+        page.title_en += ` | Page ${results.pg}`;
     }
     if (results.page.hasPrev)
       page.prev = `/tag/${tagIds.join('+')}?o=${results.page.prevOffset}`;

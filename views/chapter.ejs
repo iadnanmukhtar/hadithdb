@@ -12,10 +12,12 @@
 
     var book = chapter.book;
     var isQuranAyatView = book.alias === 'quran' && req.query.ayat !== undefined;
-    var pageTitlePrefix = book.alias === 'quran' ? site.shortName : utils.hadithBookTitle(book);
+    var chapterPageNumber = chapter.page && chapter.page.number && (chapter.page.hasNext || chapter.page.number > 1)
+      ? `, pg. ${chapter.page.number}`
+      : '';
     var page = {
       menu: 'Chapter',
-      title_en: `${pageTitlePrefix} | ${book.shortName_en} ${chapter.h1} ${chapter.title_en || chapter.title}`,
+      title_en: `${book.shortName_en} §${chapter.h1}${chapterPageNumber} | ${chapter.title_en || chapter.title}`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${chapter.h1}${isQuranAyatView ? '' : (req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : '')}`,

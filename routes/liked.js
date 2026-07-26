@@ -176,7 +176,7 @@ async function ensureLikesTypeColumn() {
 function getPage() {
   return {
     menu: 'Liked',
-    title_en: `${global.settings.site.shortName} | Recently Liked Aḥādīths`,
+    title_en: `Recently Liked Hadiths`,
     subtitle_en: 'Aḥādīths with recent likes',
     subtitle: null,
     canonical: `/${name}`,

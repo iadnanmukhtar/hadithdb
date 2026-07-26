@@ -73,7 +73,7 @@ async function getList() {
 function getPage(route) {
   return {
     menu: 'Recently Commented',
-    title_en: `${global.settings.site.shortName} | Recently Commented`,
+    title_en: `Recently Commented Hadiths`,
     subtitle_en: 'Aḥādīth that have been recently commented on',
     subtitle: null,
     canonical: `/${name}${route ? route : ''}`,

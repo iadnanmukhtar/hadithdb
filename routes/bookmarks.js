@@ -328,7 +328,7 @@ function isQuranItem(item) {
 function getPage() {
   return {
     menu: 'Bookmarks',
-    title_en: `${global.settings.site.shortName} | Bookmarks`,
+    title_en: `Bookmarks`,
     subtitle_en: 'Saved to your account settings',
     subtitle: null,
     canonical: '/bookmarks',

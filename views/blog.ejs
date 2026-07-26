@@ -10,7 +10,7 @@
 
     var page = {
       menu: 'Blog',
-      title_en: `${site.name} Blog`,
+      title_en: `Pearls of the Deep Blog`,
       subtitle_en: `Blog Posts`,
       subtitle: ``,
       canonical: `/blog`,
@@ -21,7 +21,7 @@
     if (pagination.offset) {
       page.canonical += `?o=${pagination.offset}`;
       if (pagination.hasNext || pagination.number > 1)
-        page.title_en += ` P${pagination.number}`;
+        page.title_en += ` | Page ${pagination.number}`;
     }
     if (pagination.hasPrev)
       page.prev = `/blog?o=${pagination.prevOffset}`;

@@ -12,9 +12,11 @@
     var safePublicMessage = publicMessage || friendlyMessage || 'An error occurred.';
     var page = {
       menu: 'Error',
-      title_en: `${site.shortName} | Error ${res.statusCode} ${safeStatusTitle} `,
+      title_en: `Error ${res.statusCode} | ${safeStatusTitle}`,
       subtitle_en: subtitle_en,
       subtitle: null,
+      noindex: true,
+      nofollow: true,
       canonical: '/',
       context: {},
     };

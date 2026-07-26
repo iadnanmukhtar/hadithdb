@@ -118,9 +118,37 @@
     var quranSurahTitle = chapter.title_en || section.h1_title_en || (quranNavigatorCurrentSurah ? `Surat ${quranNavigatorCurrentSurah.name_en}` : `Surah ${chapter.h1}`);
     var quranSurahTitleShort = quranSurahTitle.replace(/^(?:Surat|Surah)\s+/i, '');
     var quranSectionTitle = section.title_en || section.title || '';
+    var quranHeadingAyah = function (heading) {
+      var ref = heading && (heading.start || heading.ref || heading.num);
+      var match = (ref || '').toString().match(/(?:^|:)(\d+)$/);
+      return match ? Number(match[1]) : NaN;
+    };
+    var firstSelectedAyahNumber = Number(firstSelectedPart);
+    var selectedSubsection = Array.isArray(locals.quranSubsections)
+      ? locals.quranSubsections.filter(function (heading) {
+        var start = quranHeadingAyah(heading);
+        return Number.isInteger(start) && start <= firstSelectedAyahNumber;
+      }).sort(function (a, b) {
+        return quranHeadingAyah(b) - quranHeadingAyah(a);
+      })[0]
+      : null;
+    var quranSelectedHeadingTitle = selectedSubsection
+      ? (selectedSubsection.title_en || selectedSubsection.h3_title_en || selectedSubsection.title || selectedSubsection.h3_title)
+      : quranSectionTitle;
     var quranMetaRef = selectedCanonicalRef || quranPassageCanonicalRef || `${chapter.h1}:${quranNavigatorAyahValue}`;
     var quranSurahTitleAr = (quranNavigatorCurrentSurah && quranNavigatorCurrentSurah.name_ar) || chapter.title || section.h1_title || book.shortName;
-    var quranMetaTitle = `Quran | ${quranSurahTitleShort} ${quranMetaRef}${quranSectionTitle ? ` | ${quranSectionTitle}` : ''}`;
+    var selectedTranslationBook = (global.commentaries || []).find(function (commentary) {
+      return commentary && commentary.type === 'trans' && commentary.alias === quranSelectedTranslationAlias;
+    });
+    var quranTranslationSurname = utils.englishAuthorSurname(selectedTranslationBook);
+    var quranMetaTitle;
+    if (selectedAyahs.length === 1) {
+      quranMetaTitle = `Surah ${quranSurahTitleShort} ${quranMetaRef}${quranSelectedHeadingTitle ? ` | ${quranSelectedHeadingTitle}` : ''}`;
+    } else if (selectedAyahs.length > 1) {
+      quranMetaTitle = `Surah ${quranSurahTitleShort} ${quranMetaRef} | §${section.h1}.${section.h2}${quranSelectedHeadingTitle ? ` ${quranSelectedHeadingTitle}` : ''}`;
+    } else {
+      quranMetaTitle = `Surah ${quranSurahTitleShort} §${section.h1}.${section.h2}${quranTranslationSurname ? ` | ${quranTranslationSurname}` : ''}${quranSectionTitle ? ` | ${quranSectionTitle}` : ''}`;
+    }
     var quranMetaDescription = `Read Quran ${quranMetaRef}, ${quranSurahTitle}${quranSectionTitle ? `, ${quranSectionTitle}` : ''}, with Arabic text, English translation, and tafsir.`;
     var page = {
       menu: 'Section',
@@ -134,6 +162,7 @@
         chapter: chapter,
         section: section.level > 1 ? section : undefined,
         heading: section,
+        quranCommentaryBook: selectedTranslationBook,
         passage: true,
         continued: false
       }

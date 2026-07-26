@@ -3881,8 +3881,8 @@ function setMobileFooterAudioMode(enabled) {
 		});
 		var buttons = [
 			createMobileFooterAudioButton('prev', 'bi-skip-backward-fill', 'Prev', 'Previous Quran verse'),
-			createMobileFooterAudioButton('play', 'bi-play-fill', 'Play', 'Play Quran audio'),
 			createMobileFooterAudioButton('repeat', 'bi-repeat', 'Repeat', 'Repeat Quran passage'),
+			createMobileFooterAudioButton('play', 'bi-play-fill', 'Play', 'Play Quran audio'),
 			createMobileFooterAudioButton('stop', 'bi-stop-fill', 'Stop', 'Stop Quran audio'),
 			createMobileFooterAudioButton('next', 'bi-skip-forward-fill', 'Next', 'Next Quran verse')
 		];
@@ -3920,12 +3920,12 @@ function syncMobileFooterAudioControls() {
 	var playing = control.classList.contains('is-playing') && !quranPassageAudioState.paused;
 	buttons[0].disabled = loading || quranPassageAudioState.index <= 0;
 	buttons[1].disabled = loading;
-	buttons[1].setAttribute('title', playing ? 'Pause Quran audio' : 'Play Quran audio');
-	buttons[1].setAttribute('aria-label', playing ? 'Pause Quran audio' : 'Play Quran audio');
-	buttons[1].innerHTML = `<span class="bi ${playing ? 'bi-pause-fill' : 'bi-play-fill'} mobile-bottom-nav-icon" aria-hidden="true"></span><span class="mobile-bottom-nav-label">${playing ? 'Pause' : 'Play'}</span>`;
+	buttons[1].classList.toggle('is-active', quranPassageAudioState.repeat);
+	buttons[1].setAttribute('aria-pressed', quranPassageAudioState.repeat ? 'true' : 'false');
 	buttons[2].disabled = loading;
-	buttons[2].classList.toggle('is-active', quranPassageAudioState.repeat);
-	buttons[2].setAttribute('aria-pressed', quranPassageAudioState.repeat ? 'true' : 'false');
+	buttons[2].setAttribute('title', playing ? 'Pause Quran audio' : 'Play Quran audio');
+	buttons[2].setAttribute('aria-label', playing ? 'Pause Quran audio' : 'Play Quran audio');
+	buttons[2].innerHTML = `<span class="bi ${playing ? 'bi-pause-fill' : 'bi-play-fill'} mobile-bottom-nav-icon" aria-hidden="true"></span><span class="mobile-bottom-nav-label">${playing ? 'Pause' : 'Play'}</span>`;
 	buttons[3].disabled = false;
 	buttons[4].disabled = loading || quranPassageAudioState.playlist.length < 1;
 }
@@ -6553,7 +6553,30 @@ function updateQuranMushafFooterPageLinks(pageNumber) {
 	});
 }
 
-function updateQuranMushafVisiblePage(pageNumber) {
+function updateLazyReaderDocumentTitle(title) {
+	title = (title || '').toString().trim();
+	if (!title)
+		return;
+	document.title = title;
+	var ogTitle = document.querySelector('meta[property="og:title"]');
+	var twitterTitle = document.querySelector('meta[name="twitter:title"]');
+	if (ogTitle)
+		ogTitle.setAttribute('content', title);
+	if (twitterTitle)
+		twitterTitle.setAttribute('content', title);
+	document.querySelectorAll('script[type="application/ld+json"]').forEach(function (script) {
+		try {
+			var data = JSON.parse(script.textContent || '');
+			if (data && data['@type'] === 'WebPage') {
+				data.name = title;
+				data.headline = title;
+				script.textContent = JSON.stringify(data);
+			}
+		} catch (err) {}
+	});
+}
+
+function updateQuranMushafVisiblePage(pageNumber, pageElement) {
 	pageNumber = parseInt(pageNumber, 10);
 	if (!Number.isInteger(pageNumber) || pageNumber < 1 || pageNumber > 604)
 		return;
@@ -6561,7 +6584,8 @@ function updateQuranMushafVisiblePage(pageNumber) {
 	var subtitle = document.querySelector('.site-header-brand [data-page-subtitle]');
 	if (subtitle)
 		subtitle.textContent = `Page ${pageNumber}`;
-	document.title = `Quran Mushaf Page ${pageNumber}`;
+	pageElement = pageElement || document.querySelector(`[data-quran-mushaf-page="${pageNumber}"]`);
+	updateLazyReaderDocumentTitle(pageElement && pageElement.getAttribute('data-page-title'));
 }
 
 function initQuranMushafInfinite(root) {
@@ -6594,7 +6618,7 @@ function initQuranMushafInfinite(root) {
 				var pageNumber = entry.target.getAttribute('data-quran-mushaf-page');
 				if (!pageNumber)
 					return;
-				updateQuranMushafVisiblePage(pageNumber);
+				updateQuranMushafVisiblePage(pageNumber, entry.target);
 				schedulePageUrlUpdate(pageNumber);
 			});
 		}, { rootMargin: '-35% 0px -35% 0px', threshold: [0, 0.25, 0.5, 0.75] });
@@ -6602,7 +6626,8 @@ function initQuranMushafInfinite(root) {
 	}
 	var initialPage = reader.querySelector('[data-quran-mushaf-page]');
 	if (initialPage)
-		updateQuranMushafVisiblePage(initialPage.getAttribute('data-quran-mushaf-page'));
+		initialPage.setAttribute('data-page-title', document.title);
+		updateQuranMushafVisiblePage(initialPage.getAttribute('data-quran-mushaf-page'), initialPage);
 	var loadNextPage = function () {
 		var nextUrl = reader.getAttribute('data-next-url') || '';
 		if (!nextUrl || loading)
@@ -6622,6 +6647,7 @@ function initQuranMushafInfinite(root) {
 				throw new Error('The next Mushaf page was not found.');
 			var pageNumber = page.getAttribute('data-quran-mushaf-page');
 			var importedPage = document.importNode(page, true);
+			importedPage.setAttribute('data-page-title', parsed.title || '');
 			pageInstance += 1;
 			var originalScope = importedPage.getAttribute('data-quran-audio-scope') || '';
 			if (originalScope) {
@@ -6914,6 +6940,7 @@ function initQuranInfinitePassageNavigation(root) {
 	var sentinel = $('<div class="quran-infinite-sentinel" aria-hidden="true"></div>').appendTo(main);
 	var initialAnchor = $('<span class="quran-infinite-url-marker" aria-hidden="true" data-quran-infinite-anchor="1"></span>').attr({
 		'data-quran-url': currentUrl,
+		'data-page-title': document.title,
 		'data-quran-surah': lastSurah,
 		'data-quran-prev-url': main.attr('data-quran-prev-url') || '',
 		'data-quran-prev-title': main.attr('data-quran-prev-title') || 'Previous',
@@ -6984,11 +7011,12 @@ function initQuranInfinitePassageNavigation(root) {
 		setMobileBottomNavLink('next', nextHref, marker.getAttribute('data-quran-next-title') || 'Next');
 	};
 	var updateInfiniteUrl = function () {
-		if (!window.history || !window.history.replaceState)
-			return;
 		var marker = pageMarkers()[currentPageIndex()];
 		var url = marker && marker.getAttribute('data-quran-url');
 		var normalized = normalizeQuranInfiniteUrl(url);
+		updateLazyReaderDocumentTitle(marker && marker.getAttribute('data-page-title'));
+		if (!window.history || !window.history.replaceState)
+			return;
 		if (!url || !normalized || normalized === activeUrl)
 			return;
 		activeUrl = normalized;
@@ -7097,6 +7125,7 @@ function initQuranInfinitePassageNavigation(root) {
 		var remoteCorpusUrl = remoteMain.getAttribute('data-quran-corpus-url') || '';
 		var chunk = $('<section class="quran-infinite-page" data-quran-infinite-page="1"></section>').attr({
 			'data-quran-url': remoteMain.getAttribute('data-quran-current-url') || url,
+			'data-page-title': parsed.title || '',
 			'data-quran-surah': remoteSurah,
 			'data-quran-prev-url': remoteMain.getAttribute('data-quran-prev-url') || '',
 			'data-quran-prev-title': remoteMain.getAttribute('data-quran-prev-title') || 'Previous',
@@ -7285,6 +7314,7 @@ function initReaderInfiniteNavigation(root) {
 		var initialAnchor = $('<span class="reader-infinite-url-marker" aria-hidden="true" data-reader-infinite-anchor="1"></span>').attr({
 			'data-reader-mode': mode,
 			'data-reader-url': currentUrl,
+			'data-page-title': document.title,
 			'data-reader-context-key': lastContextKey,
 			'data-reader-prev-url': main.attr('data-reader-prev-url') || '',
 			'data-reader-prev-title': main.attr('data-reader-prev-title') || 'Previous',
@@ -7357,11 +7387,12 @@ function initReaderInfiniteNavigation(root) {
 			setMobileBottomNavLink('next', nextHref, marker.getAttribute('data-reader-next-title') || 'Next');
 		};
 		var updateInfiniteUrl = function () {
-			if (!window.history || !window.history.replaceState)
-				return;
 			var marker = pageMarkers()[currentPageIndex()];
 			var url = marker && marker.getAttribute('data-reader-url');
 			var normalized = normalizeReaderInfiniteUrl(url);
+			updateLazyReaderDocumentTitle(marker && marker.getAttribute('data-page-title'));
+			if (!window.history || !window.history.replaceState)
+				return;
 			if (!url || !normalized || normalized === activeUrl)
 				return;
 			activeUrl = normalized;
@@ -7464,6 +7495,7 @@ function initReaderInfiniteNavigation(root) {
 			var chunk = $('<section class="reader-infinite-page" data-reader-infinite-page="1"></section>').attr({
 				'data-reader-mode': mode,
 				'data-reader-url': remoteUrl,
+				'data-page-title': parsed.title || '',
 				'data-reader-context-key': remoteContextKey,
 				'data-reader-prev-url': remoteMain.getAttribute('data-reader-prev-url') || '',
 				'data-reader-prev-title': remoteMain.getAttribute('data-reader-prev-title') || 'Previous',

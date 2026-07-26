@@ -191,7 +191,7 @@ function buildRenderLocals(req) {
 		site: site,
 		page: {
 			menu: 'Chatbot',
-			title_en: `${site.shortName} | Hadith Chatbot`,
+			title_en: `Hadith Chatbot`,
 			subtitle_en: 'Hadith Chatbot',
 			subtitle: null,
 			canonical: '/chatbot',

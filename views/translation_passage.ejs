@@ -10,7 +10,8 @@
       site.editMode = false;
 
     var ref = `${surah.num}:${ayah}`;
-    var translationMetaTitle = `Quran | Translations ${surah.name_en} ${ref}`;
+    var translationHeadingTitle = (locals.section && (locals.section.title_en || locals.section.title)) || '';
+    var translationMetaTitle = `Surah ${surah.name_en} ${ref}${translationHeadingTitle ? ` | ${translationHeadingTitle}` : ''} | Quran Translations`;
     var translationMetaDescription = `Read Quran ${ref}, Surat ${surah.name_en}, with the translations enabled in your Quran settings.`;
     var page = {
       menu: 'Quran',

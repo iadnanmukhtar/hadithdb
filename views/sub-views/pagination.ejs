@@ -17,8 +17,6 @@
 
     if (heading.page.offset) {
       page.canonical += `?o=${heading.page.offset}`;
-      if (heading.page.number && (heading.page.hasNext || heading.page.number > 1))
-        page.title_en += ` P${heading.page.number}`;
     }
 
     page.type = '';

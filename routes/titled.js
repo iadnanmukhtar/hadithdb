@@ -137,7 +137,7 @@ async function getList() {
 function getPage(route) {
   return {
     menu: 'Recently Titled',
-    title_en: `${global.settings.site.shortName} | Recently Titled`,
+    title_en: `Recently Titled Hadiths`,
     subtitle_en: 'Aḥādīth recently summarized by a title',
     subtitle: null,
     canonical: `/${name}${route ? route : ''}`,

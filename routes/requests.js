@@ -138,7 +138,7 @@ async function getList() {
 function getPage(route) {
   return {
     menu: 'Translation Requests',
-    title_en: `${global.settings.site.shortName} | Translation Requests`,
+    title_en: `Hadith Translation Requests`,
     subtitle_en: 'Translations of aḥādīth requested to be translated',
     subtitle: null,
     canonical: `/${name}${route ? route : ''}`,

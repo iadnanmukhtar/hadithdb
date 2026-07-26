@@ -853,6 +853,7 @@ function searchFilterDisplayValue(filter) {
 }
 
 async function renderSearchResults(req, res, next, options = {}) {
+  res.setHeader('X-Robots-Tag', 'noindex, follow');
   var results = [];
   var totalResults = 0;
 
@@ -2176,6 +2177,11 @@ async function renderQuranMushafPage(req, res, next, options) {
     section: options.section,
     passage: true
   };
+  var firstPageAudioRange = audioRanges[0];
+  var lastPageAudioRange = audioRanges[audioRanges.length - 1];
+  var pageAyahRange = firstPageAudioRange && lastPageAudioRange
+    ? `${firstPageAudioRange.surah}:${firstPageAudioRange.from}-${lastPageAudioRange.surah}:${lastPageAudioRange.to}`
+    : '';
   return res.render('quran_mushaf', {
     mushaf: mushaf,
     audioRanges: audioRanges,
@@ -2186,7 +2192,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     firstJuz: firstJuz,
     page: {
       menu: 'Section',
-      title_en: `Quran Mushaf Page ${pageNumber}`,
+      title_en: `Quran Mushaf Page ${pageNumber}${pageAyahRange ? ` | Ayat ${pageAyahRange}` : ''}`,
       subtitle_en: `Page ${pageNumber}`,
       description_en: `Read page ${pageNumber} of the Quran in the 15-line Digital Khatt Mushaf.`,
       canonical: `/quran/page/${pageNumber}`,

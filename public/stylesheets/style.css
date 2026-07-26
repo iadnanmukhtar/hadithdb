@@ -4119,6 +4119,10 @@ body > footer,
 	display: none !important;
 }
 
+.quran-passage-audio-repeat {
+	display: none !important;
+}
+
 .quran-passage-audio-control:not(.is-playing):not(.is-paused) .quran-passage-audio-stop {
 	display: none;
 }

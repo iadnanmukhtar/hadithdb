@@ -15,7 +15,7 @@ router.get('/', async function (req, res, next) {
       results: [],
       page: {
         menu: 'My Settings',
-        title_en: `${isQuranSettings ? 'Quran' : global.settings.site.shortName} | My Settings`,
+        title_en: `${isQuranSettings ? 'Quran ' : ''}Settings`,
         subtitle_en: 'Account settings',
         subtitle: null,
         canonical: settingsPath,

@@ -138,7 +138,7 @@ async function getList() {
 function getPage(route) {
   return {
     menu: 'Highlights',
-    title_en: `${global.settings.site.shortName} | Notable Aḥādīths`,
+    title_en: `Notable Hadiths`,
     subtitle_en: 'Recent translations of beautiful and notable aḥādīth',
     subtitle: null,
     canonical: `/${name}${route ? route : ''}`,

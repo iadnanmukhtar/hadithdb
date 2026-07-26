@@ -10,13 +10,14 @@
       site.editMode = false;
 
     var tafsirTitle = Tafsir.displayShortName(tafsir, 'en');
+    var tafsirPassageTitle = tafsirTitle.replace(/^Tafsir\s+/i, '');
     var tafsirTitleAr = Tafsir.displayShortName(tafsir, 'ar');
     var ref = `${surah.num}:${ayah}`;
     var tafsirEntryStart = entries && entries.length ? Math.min.apply(null, entries.map(function (entry) { return Number(entry.startAyah); })) : ayah;
     var tafsirEntryEnd = entries && entries.length ? Math.max.apply(null, entries.map(function (entry) { return Number(entry.endAyah); })) : tafsirEntryStart;
     var tafsirMetaRef = `${surah.num}:${tafsirEntryStart}${tafsirEntryEnd > tafsirEntryStart ? `-${tafsirEntryEnd}` : ''}`;
-    var tafsirTitlePair = [tafsirTitle, tafsirTitleAr].filter(Boolean).join(' ');
-    var tafsirMetaTitle = `Quran | Tafsir ${surah.name_en} ${ref} | ${tafsirTitlePair}`;
+    var tafsirSectionIdentifier = section && section.h1 && section.h2 ? ` §${section.h1}.${section.h2}` : '';
+    var tafsirMetaTitle = `Tafsir ${tafsirPassageTitle}${tafsirSectionIdentifier} | Ayat ${tafsirMetaRef}`;
     var tafsirMetaDescription = `Read ${tafsirTitle} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
     var page = {
       menu: 'Tafsir',
@@ -26,7 +27,8 @@
       subtitle: tafsirTitleAr,
       canonical: `/quran/tafsir/${tafsir.slug || tafsir.alias}/${surah.num}/${ayah}`,
       context: {
-        quranSearchProxy: true
+        quranSearchProxy: true,
+        commentaryBook: tafsir
       }
     };
     var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
