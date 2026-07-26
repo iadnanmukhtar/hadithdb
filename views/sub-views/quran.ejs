@@ -179,7 +179,7 @@
     <span class="quran-subheading quran-subheading-isolated" lang="en" dir="ltr">
       <span class="_e" data-id="<%= isolatedHeading.id %>" data-prop="toc.title_en" data-arabizi="true"><%- isolatedHeadingTitle %></span>
       <% if (site.editMode) { %>
-        <span class="quran-subheading-controls" data-subsection-id="<%= isolatedHeading.id %>">
+        <span class="quran-subheading-controls" data-subsection-id="<%= isolatedHeading.id %>" data-surah="<%= isolatedHeading.h1 %>">
           <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-range-start" value="<%= isolatedHeadingStart %>" title="Subsection start ayah">
           <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-range-end" value="<%= isolatedHeadingEnd %>" title="Subsection end ayah">
           <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-range-save" title="Save subsection range">

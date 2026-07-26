@@ -2709,6 +2709,11 @@ function quranTranslationTargetRef(target) {
 	};
 }
 
+function isQuranOriginalPrefatoryTranslationTarget(target) {
+	var ref = quranTranslationTargetRef(target);
+	return Number(ref.surah) === 1 && Number(ref.ayah) === 0;
+}
+
 function storeDefaultQuranTranslationTarget(target) {
 	if (!target)
 		return;
@@ -2841,6 +2846,8 @@ function applyQuranTranslationToTarget(target, book) {
 	var ref = quranTranslationTargetRef(target);
 	if (!ref.surah || !ref.ayah)
 		return Promise.resolve();
+	if (isQuranOriginalPrefatoryTranslationTarget(target))
+		return Promise.resolve();
 	var requestSurah = ref.ayah === '0' ? '1' : ref.surah;
 	var requestAyah = ref.ayah === '0' ? '1' : ref.ayah;
 	return fetchQuranLocalTranslation(book, requestSurah, requestAyah).then(function (payload) {
@@ -2877,6 +2884,8 @@ function applyQuranTranslationToTargets(targets, book) {
 	var prefatoryPromises = prefatoryTargets.map(function (target) {
 		storeDefaultQuranTranslationTarget(target);
 		setQuranTranslationTargetEditable(target, false);
+		if (isQuranOriginalPrefatoryTranslationTarget(target))
+			return Promise.resolve();
 		var ref = quranTranslationTargetRef(target);
 		if (!ref.surah)
 			return Promise.resolve();

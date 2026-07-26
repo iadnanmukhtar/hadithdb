@@ -1616,7 +1616,7 @@ async function normalizeQuranSurahHeadingRanges(bookId, surah, userId, options) 
     var section = sections[i];
     var startAyah = quranAyahFromHeadingStart(section.start);
     if (i === 0 && Number.isInteger(startAyah))
-      startAyah = 1;
+      startAyah = surah === 1 ? 0 : 1;
     var nextStart = i + 1 < sections.length ? quranAyahFromHeadingStart(sections[i + 1].start) : NaN;
     var endAyah = Number.isInteger(nextStart) && nextStart > startAyah
       ? nextStart - 1
@@ -1719,13 +1719,21 @@ function parsePassageRangeValue(value) {
     }
   }
   value = value || {};
-  var startAyah = parseInt(Arabic.toLatinDigits(value.startAyah || value.start || value.ayah1), 10);
-  var endAyah = parseInt(Arabic.toLatinDigits(value.endAyah || value.end || value.ayah2), 10);
+  var firstRangeValue = function (keys) {
+    for (const key of keys) {
+      if (value[key] !== undefined && value[key] !== null && value[key].toString().trim() !== '')
+        return value[key];
+    }
+    return '';
+  };
+  var startAyah = parseInt(Arabic.toLatinDigits(firstRangeValue(['startAyah', 'start', 'ayah1'])), 10);
+  var endAyah = parseInt(Arabic.toLatinDigits(firstRangeValue(['endAyah', 'end', 'ayah2'])), 10);
   return { startAyah, endAyah };
 }
 
 function validateAyahRange(startAyah, endAyah, surah) {
-  if (!Number.isInteger(startAyah) || !Number.isInteger(endAyah) || startAyah < 1 || endAyah < startAyah)
+  var minimumAyah = Number(surah) === 1 ? 0 : 1;
+  if (!Number.isInteger(startAyah) || !Number.isInteger(endAyah) || startAyah < minimumAyah || endAyah < startAyah)
     throw createError(400, 'Invalid ayah range');
   var surahInfo = global.surahs.find(item => Number(item.num) === Number(surah));
   if (surahInfo && surahInfo.ayat && endAyah > Number(surahInfo.ayat))

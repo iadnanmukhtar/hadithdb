@@ -2034,6 +2034,9 @@ router.get('/quran', throttleSearchRequest, async function (req, res, next) {
 
 async function renderQuranMushafPage(req, res, next, options) {
   var pageNumber = Number(options.pageNumber);
+  res.setHeader('Cache-Control', Utils.shouldFlushCache(req)
+    ? 'no-store'
+    : 'public, max-age=0, must-revalidate');
   var mushaf = await QuranMushaf.page(pageNumber);
   if (!mushaf)
     return next(createError(404, `Mushaf page '${pageNumber}' not found`));
@@ -2058,6 +2061,7 @@ async function renderQuranMushafPage(req, res, next, options) {
       word.juzStartFirst = index === 0;
     });
   });
+  var sectionRangesBySurah = await QuranTocSubdivisions.quranSectionRangesBySurah();
   var subsectionRangesBySurah = await QuranTocSubdivisions.quranSubsectionRangesBySurah();
   var passageToneBySubsection = {};
   var subsectionIndex = 0;
@@ -2101,9 +2105,54 @@ async function renderQuranMushafPage(req, res, next, options) {
   });
   var subsectionAudioRanges = [];
   var subsectionAudioRangeKeys = new Set();
+  var pagePassages = [];
+  var pagePassagesByKey = new Map();
+  var pageSubsectionKeys = new Set();
   mushaf.lines.flatMap(line => line.words || []).forEach(function (word) {
     var surah = Number(word.surah);
     var ayah = Number(word.ayah);
+    var sectionRange = (sectionRangesBySurah[surah] || []).find(function (candidate) {
+      return ayah >= candidate.start && ayah <= candidate.end;
+    });
+    if (sectionRange) {
+      var passageKey = `${surah}:${sectionRange.section}`;
+      var passageStartAyah = Math.max(1, sectionRange.start);
+      var passageStartsHere = ayah === passageStartAyah;
+      var startingSubsections = (subsectionRangesBySurah[surah] || []).filter(function (subsection) {
+        return subsection.section === sectionRange.section && ayah === Math.max(1, subsection.start);
+      });
+      if (passageStartsHere || startingSubsections.length > 0) {
+        var pagePassage = pagePassagesByKey.get(passageKey);
+        if (!pagePassage) {
+          pagePassage = {
+          surah: surah,
+          section: sectionRange.section,
+          title_en: sectionRange.title_en,
+          title: sectionRange.title,
+            showPassageTitle: passageStartsHere,
+            subsections: []
+          };
+          pagePassagesByKey.set(passageKey, pagePassage);
+          pagePassages.push(pagePassage);
+        } else if (passageStartsHere) {
+          pagePassage.showPassageTitle = true;
+        }
+        startingSubsections.forEach(function (subsection) {
+          var subsectionKey = `${surah}:${subsection.section}:${subsection.subsection}`;
+          if (!pageSubsectionKeys.has(subsectionKey)) {
+            pageSubsectionKeys.add(subsectionKey);
+            pagePassage.subsections.push({
+              surah: surah,
+              section: subsection.section,
+              subsection: subsection.subsection,
+              start: subsection.start,
+              title_en: subsection.title_en,
+              title: subsection.title
+            });
+          }
+        });
+      }
+    }
     var range = (subsectionRangesBySurah[surah] || []).find(function (candidate) {
       return ayah >= candidate.start && ayah <= candidate.end;
     });
@@ -2131,6 +2180,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     mushaf: mushaf,
     audioRanges: audioRanges,
     subsectionAudioRanges: subsectionAudioRanges,
+    pagePassages: pagePassages,
     firstRef: firstWord ? `${firstWord.surah}:${firstWord.ayah}` : '',
     firstSurah: firstSurah,
     firstJuz: firstJuz,
@@ -2883,6 +2933,10 @@ async function applySelectedQuranTranslation(items, translation, surah) {
     if (!Number.isInteger(ayah))
       ayah = parseQuranAyahParam((item && (item.en?.num || item.num || item.ref) || '').toString().split(/:/).pop());
     if (!Number.isInteger(ayah))
+      return;
+    // 1:0 is the Quran's prefatory invocation, not 1:1. Local translations
+    // do not have a matching entry, so retain its built-in translation.
+    if (Number(surah) === 1 && ayah === 0)
       return;
     var entry = await Tafsir.localTranslationEntry(translation, surah, ayah).catch(function (err) {
       debug.error(`selected quran translation render failed alias=${translation.alias} ref=${surah}:${ayah}: ${err.message}\n${err.stack || ''}`);

@@ -58,6 +58,24 @@
         </div>
         <% } %>
       <% }); %>
+        <% if (pagePassages && pagePassages.length) { %>
+        <footer class="quran-mushaf-page-footer" lang="en" dir="ltr">
+          <p class="quran-mushaf-page-passage">
+          <% pagePassages.forEach(function (passage) {
+            var passageTitle = passage.title_en || passage.title || `Passage ${passage.section}`;
+          %>
+            <% if (passage.showPassageTitle) { %>
+            <span class="quran-mushaf-page-passage-ref"><%= passage.surah %>.<%= passage.section %></span>
+            <a class="quran-mushaf-page-passage-title" href="<%= utils.quranUrl(req, `/quran/${passage.surah}/${passage.section}`) %>"><%= passageTitle %></a>;
+            <% } %><% (passage.subsections || []).forEach(function (subsection) {
+              var subsectionTitle = subsection.title_en || subsection.title || `Subsection ${subsection.subsection}`;
+            %>
+            <span class="quran-mushaf-page-subsection-ref"><%= subsection.surah %>:<%= subsection.start %></span>
+            <a href="<%= utils.quranUrl(req, `/quran/${subsection.surah}/${subsection.section}/${subsection.subsection}`) %>"><%= subsectionTitle %></a>;<% }); %>
+          <% }); %>
+          </p>
+        </footer>
+        <% } %>
       </section>
     </article>
     <div class="quran-mushaf-sentinel text-center py-4" data-quran-mushaf-sentinel role="status" aria-live="polite"></div>

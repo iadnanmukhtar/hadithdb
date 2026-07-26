@@ -483,7 +483,8 @@
 
       const updateLive = (highlightRange = false) => {
         const range = getRange();
-        const valid = Number.isInteger(range.startAyah) && Number.isInteger(range.endAyah) && range.startAyah > 0 && range.endAyah >= range.startAyah;
+        const minimumAyah = Number(surah) === 1 ? 0 : 1;
+        const valid = Number.isInteger(range.startAyah) && Number.isInteger(range.endAyah) && range.startAyah >= minimumAyah && range.endAyah >= range.startAyah;
         liveLabel.textContent = valid ? `Quran ${surah}:${range.startAyah}-${range.endAyah}` : 'Invalid range';
         saveButton.disabled = !valid;
         container.classList.toggle('is-invalid', !valid);
@@ -656,7 +657,8 @@
 
       const updateValid = () => {
         const range = getRange();
-        const valid = Number.isInteger(range.startAyah) && Number.isInteger(range.endAyah) && range.startAyah > 0 && range.endAyah >= range.startAyah;
+        const minimumAyah = Number(container.dataset.surah) === 1 ? 0 : 1;
+        const valid = Number.isInteger(range.startAyah) && Number.isInteger(range.endAyah) && range.startAyah >= minimumAyah && range.endAyah >= range.startAyah;
         addButton.disabled = !valid;
         container.classList.toggle('is-invalid', !valid);
       };
@@ -723,7 +725,8 @@
 
       const updateValid = () => {
         const range = getRange();
-        const valid = Number.isInteger(range.startAyah) && Number.isInteger(range.endAyah) && range.startAyah > 0 && range.endAyah >= range.startAyah;
+        const minimumAyah = Number(container.dataset.surah) === 1 ? 0 : 1;
+        const valid = Number.isInteger(range.startAyah) && Number.isInteger(range.endAyah) && range.startAyah >= minimumAyah && range.endAyah >= range.startAyah;
         addButton.disabled = !valid;
         container.classList.toggle('is-invalid', !valid);
       };
@@ -780,7 +783,8 @@
 
       const validRange = () => {
         const next = range();
-        return Number.isInteger(next.startAyah) && Number.isInteger(next.endAyah) && next.startAyah > 0 && next.endAyah >= next.startAyah;
+        const minimumAyah = Number(container.dataset.surah) === 1 ? 0 : 1;
+        return Number.isInteger(next.startAyah) && Number.isInteger(next.endAyah) && next.startAyah >= minimumAyah && next.endAyah >= next.startAyah;
       };
 
       const updateValid = () => {

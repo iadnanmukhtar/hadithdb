@@ -2372,6 +2372,49 @@ main.quran-mushaf-reader {
 	z-index: 1;
 }
 
+.quran-mushaf-page-footer {
+	border-top: 1px solid var(--bs-border-color);
+	font-family: "Gentium Plus", Serif;
+	font-size: 0.8rem;
+	line-height: 1.35;
+	margin-top: 0.65rem;
+	padding-top: 0.45rem;
+	position: relative;
+	z-index: 1;
+}
+
+.quran-mushaf-page-passage {
+	margin: 0 0 0.3rem;
+}
+
+.quran-mushaf-page-passage:last-child {
+	margin-bottom: 0;
+}
+
+.quran-mushaf-page-passage-ref,
+.quran-mushaf-page-subsection-ref {
+	color: var(--c-gray-dark);
+	font-size: 0.72rem;
+	white-space: nowrap;
+}
+
+.quran-mushaf-page-passage a,
+.quran-mushaf-page-subsection a {
+	color: var(--c-link-dark);
+	text-decoration: none;
+}
+
+.quran-mushaf-page-passage .quran-mushaf-page-passage-title {
+	font-weight: 700;
+}
+
+.quran-mushaf-page-passage a:hover,
+.quran-mushaf-page-passage a:focus-visible,
+.quran-mushaf-page-subsection a:hover,
+.quran-mushaf-page-subsection a:focus-visible {
+	text-decoration: underline;
+}
+
 .quran-mushaf-ayah-highlight-bg {
 	background-color: var(--c-cornsilk);
 	border-radius: 0.15em;
