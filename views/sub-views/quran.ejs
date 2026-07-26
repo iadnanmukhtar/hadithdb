@@ -95,13 +95,16 @@
   <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-display-btn quran-passage-view-btn quran-passage-view-btn-translation is-active" data-quran-passage-display-toggle="translation" aria-pressed="true" title="Hide translation" aria-label="Hide translation">
     <span class="bi bi-eye" aria-hidden="true"></span>
   </button>
-  <label class="quran-passage-translation-control mb-0">
-    <span class="visually-hidden">Translation</span>
-    <span class="bi bi-translate quran-passage-translation-icon" aria-hidden="true"></span>
-    <select class="form-select form-select-sm quran-passage-translation-select" data-quran-passage-translation-select="1" aria-label="Translation">
+  <span class="dropdown quran-passage-translation-control quran-dynamic-translation-control">
+    <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn dropdown-toggle quran-dynamic-translation-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose translation" title="Choose translation">
+      <span class="bi bi-translate" aria-hidden="true"></span>
+      <span data-quran-dynamic-translation-label>Haleem</span>
+    </button>
+    <select class="visually-hidden" data-quran-passage-translation-select="1" aria-label="Translation" tabindex="-1">
       <option value="">Haleem</option>
     </select>
-  </label>
+    <ul class="dropdown-menu quran-passage-reciter-menu" data-quran-audio-translation-menu="1"></ul>
+  </span>
   <% if (passage.length > 1) { %>
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-toggle"<% if (quranHasSelectedAyahHero) { %> hidden<% } %>>
     <span class="bi bi-check2-square"></span> Select ayat

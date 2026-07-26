@@ -4,6 +4,17 @@
   var audioControlClass = locals.audioControlClass || '';
 %>
 <div class="quran-passage-audio-control <%= audioControlClass %>" data-quran-passage-audio="1" data-quran-audio-scope="<%= audioGroup._audioScopeId %>" data-surah="<%= quranSelectionSurah %>" data-from="<%= audioGroup._audioStartAyah %>" data-to="<%= audioGroup._audioEndAyah %>"<% if (locals.audioRanges && locals.audioRanges.length) { %> data-quran-audio-ranges="<%= JSON.stringify(locals.audioRanges) %>"<% } %><% if (locals.repeatRanges && locals.repeatRanges.length) { %> data-quran-audio-repeat-ranges="<%= JSON.stringify(locals.repeatRanges) %>"<% } %>>
+  <% if (locals.showTranslationSelect) { %>
+  <span class="dropdown quran-passage-reciter-control quran-audio-translation-control">
+    <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-passage-reciter-toggle quran-audio-translation-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose translation" title="Choose translation">
+      <span class="bi bi-translate" aria-hidden="true"></span>
+    </button>
+    <select class="visually-hidden" data-quran-audio-translation-select="1" aria-label="Translation" tabindex="-1">
+      <option value="">Abdel Haleem</option>
+    </select>
+    <ul class="dropdown-menu quran-passage-reciter-menu quran-audio-translation-menu" data-quran-audio-translation-menu="1"></ul>
+  </span>
+  <% } %>
   <span class="dropdown quran-passage-reciter-control">
     <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-passage-reciter-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose reciter" title="Choose reciter">
       <span class="bi bi-mic-fill" aria-hidden="true"></span>
@@ -16,9 +27,6 @@
   <div class="btn-group btn-group-sm" role="group" aria-label="Quran <%= audioLabel %> audio">
     <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-audio-play" data-quran-passage-audio-play title="Play <%= audioLabel %>" aria-label="Play <%= audioLabel %>">
       <span class="bi bi-play-fill"></span>
-    </button>
-    <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-audio-pause" data-quran-passage-audio-pause title="Pause audio" aria-label="Pause audio" disabled>
-      <span class="bi bi-pause-fill"></span>
     </button>
     <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-audio-stop" data-quran-passage-audio-stop title="Stop audio" aria-label="Stop audio" disabled>
       <span class="bi bi-stop-fill"></span>

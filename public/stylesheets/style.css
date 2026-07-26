@@ -2882,6 +2882,10 @@ main.quran-mushaf-reader {
 	display: none;
 }
 
+.quran-audio-translation-marquee.is-static {
+	justify-content: center;
+}
+
 .quran-audio-translation-marquee-track {
 	display: inline-block;
 	flex: none;
@@ -2889,6 +2893,16 @@ main.quran-mushaf-reader {
 	unicode-bidi: plaintext;
 	white-space: nowrap;
 	will-change: transform;
+}
+
+.quran-audio-translation-marquee-attribution {
+	color: var(--bs-secondary-color);
+	margin-inline-end: .4rem;
+	unicode-bidi: isolate;
+}
+
+.quran-audio-translation-marquee-text {
+	unicode-bidi: isolate;
 }
 
 .mobile-bottom-nav::after {
@@ -3257,6 +3271,19 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 
 .mobile-bottom-nav-label {
 	display: none;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-audio-controls {
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-audio-controls > :not(.mobile-bottom-nav-audio-item) {
+	display: none !important;
+}
+
+.mobile-bottom-nav-audio-item.is-active {
+	background: var(--c-accent-08);
+	color: var(--c-accent);
 }
 
 .chapter > .pagination:first-child {
@@ -4088,8 +4115,11 @@ body > footer,
 	display: none !important;
 }
 
-.quran-passage-audio-control:not(.is-playing) .quran-passage-audio-pause,
-.quran-passage-audio-control:not(.is-playing) .quran-passage-audio-stop {
+.quran-passage-audio-pause {
+	display: none !important;
+}
+
+.quran-passage-audio-control:not(.is-playing):not(.is-paused) .quran-passage-audio-stop {
 	display: none;
 }
 
@@ -4159,6 +4189,19 @@ body > footer,
 .quran-passage-translation-control {
 	max-width: min(12rem, 100%);
 	position: relative;
+}
+
+.quran-dynamic-translation-toggle {
+	align-items: center;
+	display: inline-flex;
+	gap: .35rem;
+	max-width: 100%;
+}
+
+.quran-dynamic-translation-toggle [data-quran-dynamic-translation-label] {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .quran-passage-reciter-control {
