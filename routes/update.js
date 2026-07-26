@@ -908,7 +908,7 @@ async function reindexQuranSurah(sectionHeadingId, value, userId) {
   var bookFilter = book && book.alias
     ? { term: { book_alias: book.alias } }
     : { term: { book_id: bookId } };
-  var searchQuery = {
+  var itemSearchQuery = {
     bool: {
       filter: [
         bookFilter,
@@ -928,14 +928,19 @@ async function reindexQuranSurah(sectionHeadingId, value, userId) {
     refresh: true,
     replaceHeadings: true,
     replaceItems: true,
-    headingQuery: searchQuery,
-    itemQuery: searchQuery
+    // A section edit can shift the ordinal of every later Quran heading.
+    // Replacing only the selected Surah and its neighbours leaves stale later
+    // headings able to win the global ordinal-based prev/next query.
+    headingWhereClause: `book_id=${bookId}`,
+    headingQuery: bookFilter,
+    itemQuery: itemSearchQuery
   });
   for (const affectedSurah of surahs) {
     await invalidateQuranSurahCaches(affectedSurah);
     await invalidateQuranMushafPageCaches(affectedSurah);
   }
   await invalidateQuranTocCaches();
+  await invalidateAllQuranNavigationCaches();
   await rebuildQuranInMemoryCaches();
   return {
     message: `Reindexed Quran Surahs ${surahs.join(', ')}`,
@@ -962,6 +967,27 @@ async function invalidateQuranTocCaches() {
     if (cacheKey === '_quran' || !/_\d+(?:_|$|\?)/.test(cacheKey))
       await Utils.flushCachedFile(`${cacheDir}/${cachedName}`);
   }
+}
+
+async function invalidateAllQuranNavigationCaches() {
+  var cacheDir = Utils.cacheBookDirectory('quran', 'quran');
+  if (!fs.existsSync(cacheDir))
+    return;
+  var filenames = fs.readdirSync(cacheDir);
+  var matched = 0;
+  var deleted = 0;
+  for (const filename of filenames) {
+    var cachedName = cacheBaseName(filename);
+    if (!isCurrentQuranCacheFile(cachedName))
+      continue;
+    var cacheKey = cachedName.slice(0, -'.html'.length);
+    if (!/_\d+(?:_|$|\?)/.test(cacheKey))
+      continue;
+    matched++;
+    if (await Utils.flushCachedFile(`${cacheDir}/${cachedName}`))
+      deleted++;
+  }
+  debug(`quran navigation cache invalidation scanned ${filenames.length}, matched ${matched}, deleted ${deleted}`);
 }
 
 async function rebuildQuranInMemoryCaches() {
@@ -2224,8 +2250,9 @@ async function reindexSearchScope(whereClause, options) {
   options = options || {};
   var started = Date.now();
   debug(`reindex search scope start: ${whereClause}`);
-  var headings = await global.query(`SELECT * FROM v_toc WHERE ${whereClause} ORDER BY ordinal`);
-  debug(`reindex search scope headings query returned ${headings.length} rows in ${Date.now() - started}ms: ${whereClause}`);
+  var headingWhereClause = options.headingWhereClause || whereClause;
+  var headings = await global.query(`SELECT * FROM v_toc WHERE ${headingWhereClause} ORDER BY ordinal`);
+  debug(`reindex search scope headings query returned ${headings.length} rows in ${Date.now() - started}ms: ${headingWhereClause}`);
   if (options.replaceHeadings && options.headingQuery)
     await Index.deleteByQuery(Heading.INDEX, options.headingQuery);
   if (headings.length > 0) {
