@@ -331,6 +331,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
             replaceHeadings: true
           });
           await invalidateQuranSurahCaches(heading.h1);
+          await invalidateQuranMushafHeadingPageCaches(heading);
           shouldRunDefaultHeadingTasks = false;
         } else if (col === 'title_en' && Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
           heading.title_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${heading.title}`);
@@ -354,7 +355,12 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       try {
         if (shouldRunDefaultHeadingTasks) {
           await reindexHeadingSubtreeByHeadingId(tocHeadingId);
-          await invalidateHeadingCachesByHeadingId(tocHeadingId);
+          var invalidatedHeading = await invalidateHeadingCachesByHeadingId(tocHeadingId);
+          if (['title', 'title_en'].includes(col) && isQuranThemeHeading(invalidatedHeading)) {
+            QuranTocSubdivisions.invalidateSectionRanges();
+            await invalidateQuranSurahCaches(invalidatedHeading.h1);
+            await invalidateQuranMushafHeadingPageCaches(invalidatedHeading);
+          }
           VirtualHadithSnapshot.queueHeading(tocHeadingId);
         }
       } catch (err) {
@@ -1929,6 +1935,32 @@ async function invalidateQuranMushafPageCaches(surah) {
   var affectedPages = new Set();
   for (var page = Math.min(firstPage, lastPage); page <= Math.max(firstPage, lastPage); page++)
     affectedPages.add(page);
+  await invalidateQuranMushafPageNumberCaches(affectedPages, `surah ${surah}`);
+}
+
+async function invalidateQuranMushafHeadingPageCaches(heading) {
+  if (!isQuranThemeHeading(heading))
+    return;
+  var surah = Number(heading.h1);
+  var startAyah = Math.max(1, quranAyahFromHeadingStart(heading.start || heading.h3_start || heading.h2_start));
+  var parsedEndAyah = quranHeadingEndAyah(heading);
+  var endAyah = Number.isInteger(parsedEndAyah) ? Math.max(startAyah, parsedEndAyah) : startAyah;
+  var firstPage = await QuranMushaf.pageForRef(surah, startAyah);
+  var lastPage = await QuranMushaf.pageForRef(surah, endAyah);
+  if (!Number.isInteger(firstPage) || !Number.isInteger(lastPage))
+    return;
+  var affectedPages = new Set();
+  for (var page = Math.min(firstPage, lastPage); page <= Math.max(firstPage, lastPage); page++)
+    affectedPages.add(page);
+  var headingLabel = `${surah}.${Number(heading.h2)}`;
+  if (Number(heading.level) === 3)
+    headingLabel += `.${Number(heading.h3)}`;
+  await invalidateQuranMushafPageNumberCaches(affectedPages, `heading ${headingLabel}`);
+}
+
+async function invalidateQuranMushafPageNumberCaches(affectedPages, label) {
+  if (!(affectedPages instanceof Set) || affectedPages.size < 1)
+    return;
   var cacheDirectories = [
     `${homedir()}/.hadithdb/cache`,
     Utils.cacheBookDirectory('quran', 'quran')
@@ -1948,7 +1980,8 @@ async function invalidateQuranMushafPageCaches(surah) {
         deleted++;
     }
   }
-  debug(`quran ${surah} Mushaf cache invalidation pages ${firstPage}-${lastPage}, matched ${matched}, deleted ${deleted}`);
+  var pageNumbers = Array.from(affectedPages).sort((a, b) => a - b);
+  debug(`quran Mushaf cache invalidation ${label || ''} pages ${pageNumbers.join(',')}, matched ${matched}, deleted ${deleted}`);
 }
 
 function isCurrentQuranCacheFile(cachedName) {
@@ -2115,12 +2148,16 @@ async function invalidateHeadingCachesByHeadingId(headingId) {
   headingId = parseInt(headingId, 10);
   if (!Number.isInteger(headingId) || headingId <= 0)
     return;
-  var heading = (await global.query(`SELECT * FROM v_toc WHERE hId=${headingId} LIMIT 1`))[0];
-  if (!heading)
-    return;
-  await Books.touchBookContentLastmodById(heading.book_id);
-  invalidateBookChapterCache(heading);
-  await flushHeadingPathCaches(heading);
+  var headings = await global.query(`SELECT * FROM v_toc WHERE hId=${headingId}
+    ORDER BY book_virtual, book_id`);
+  if (headings.length < 1)
+    return null;
+  for (const heading of headings) {
+    await Books.touchBookContentLastmodById(heading.book_id);
+    invalidateBookChapterCache(heading);
+    await flushHeadingPathCaches(heading);
+  }
+  return headings.find(heading => Number(heading.book_virtual) !== 1) || headings[0];
 }
 
 function invalidateBookChapterCache(heading) {
