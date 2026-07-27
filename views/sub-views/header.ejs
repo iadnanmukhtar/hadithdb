@@ -238,15 +238,21 @@
       var chapter = page.context.chapter;
       var sections = chapter.sections; 
       var isQuranToc = book && book.alias === 'quran';
+      var isQuranMushafSectionMenu = requestPath.indexOf('/quran/page/') === 0
+        && Array.isArray(locals.quranHeaderJuzLinks)
+        && locals.quranHeaderJuzLinks.length > 0;
+      var currentMushafHeaderJuz = isQuranMushafSectionMenu
+        ? locals.quranHeaderJuzLinks.find(function (juz) { return juz.current; })
+        : null;
   %>
   <nav class="row g-0 chapter-toc">
     <%# --- TABLE OF CONTENTS --- %>
     <div class="col-12 chapter-toc-toolbar">
       <% if (sections && sections.length > 0) { %>
-        <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="Show sections">
+        <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="<%= isQuranMushafSectionMenu ? 'Show juz' : 'Show sections' %>">
           <i class="bi bi-list-ul" aria-hidden="true"></i>
-          <span>Sections</span>
-          <% if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
+          <span><%= isQuranMushafSectionMenu ? 'Juz' : 'Sections' %></span>
+          <% if (isQuranMushafSectionMenu && currentMushafHeaderJuz) { %><span class="chapter-toc-current" data-quran-mushaf-current-juz><%= currentMushafHeaderJuz.num %> · <%= currentMushafHeaderJuz.progress %>%</span><% } else if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
           <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
         </a>
         <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
@@ -270,6 +276,7 @@
     <div id="toc2" class="col-12 toc2 collapse chapter-toc-panel">
       <table class="table chapter-toc-table">
         <tbody>
+          <% if (!isQuranMushafSectionMenu) { %>
           <%
 				for (var section of sections) {
 					if (section.level < 3) {
@@ -297,6 +304,46 @@
           </tr>
           <%    }
 					}  %>
+          <% } %>
+          <% if (isQuranMushafSectionMenu) { %>
+          <% for (var mushafHeaderJuz of locals.quranHeaderJuzLinks) { %>
+          <tr class="title<%= mushafHeaderJuz.current ? ' is-current' : '' %>" data-quran-mushaf-header-juz="<%= mushafHeaderJuz.num %>" data-quran-mushaf-juz-start-page="<%= mushafHeaderJuz.startPage %>" data-quran-mushaf-juz-end-page="<%= mushafHeaderJuz.endPage %>">
+            <td><a href="<%= mushafHeaderJuz.href %>"<% if (mushafHeaderJuz.current) { %> aria-current="page"<% } %>>Juz <%= mushafHeaderJuz.num %></a></td>
+            <td lang="ar" dir="rtl"><a href="<%= mushafHeaderJuz.href %>"<% if (mushafHeaderJuz.current) { %> aria-current="page"<% } %>><%- mushafHeaderJuz.title || '' %></a></td>
+          </tr>
+          <% } %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </nav>
+  <% } %>
+
+  <% if (requestPath === '/quran' && !pageQuranCommentaryBook && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
+  <nav class="row g-0 chapter-toc">
+    <div class="col-12 chapter-toc-toolbar">
+      <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="Show juz sections">
+        <i class="bi bi-list-ul" aria-hidden="true"></i>
+        <span>Juz</span>
+        <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
+      </a>
+      <span class="chapter-toc-reader-modes">
+        <%- include('quran_reader_modes.ejs', {
+          passageHref: utils.quranUrl(req, '/quran/1'),
+          ayahHref: `${utils.quranUrl(req, '/quran/1')}?ayat`,
+          mushafHref: utils.quranUrl(req, '/quran/page/1')
+        }); %>
+      </span>
+    </div>
+    <div id="toc2" class="col-12 toc2 collapse chapter-toc-panel">
+      <table class="table chapter-toc-table">
+        <tbody>
+          <% for (var quranHeaderJuz of (Array.isArray(locals.quranHeaderJuzLinks) ? locals.quranHeaderJuzLinks : [])) { %>
+          <tr class="title">
+            <td><a href="<%= quranHeaderJuz.href %>">Juz <%= quranHeaderJuz.num %></a></td>
+            <td lang="ar" dir="rtl"><a href="<%= quranHeaderJuz.href %>"><%- quranHeaderJuz.title || '' %></a></td>
+          </tr>
+          <% } %>
         </tbody>
       </table>
     </div>

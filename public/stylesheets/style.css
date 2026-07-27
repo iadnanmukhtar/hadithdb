@@ -361,6 +361,10 @@ main.chapter {
 	margin-top: max(7rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 }
 
+main.quran-toc-reader-modes {
+	margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
+}
+
 main.chapter.tafsir-only-page {
 	margin-top: max(5.5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 }

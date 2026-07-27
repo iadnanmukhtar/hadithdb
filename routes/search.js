@@ -266,7 +266,7 @@ function appendOriginalQuery(req) {
 }
 
 function sendCachedHtml(req, res, cachedFile) {
-  Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8');
+  return Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8');
 }
 
 function cachedRenderLocals(res, locals) {
@@ -2090,6 +2090,30 @@ async function renderQuranMushafPage(req, res, next, options) {
     var startAyah = Number(parts[1]);
     return startSurah < Number(firstWord.surah) || (startSurah === Number(firstWord.surah) && startAyah <= Number(firstWord.ayah));
   }).pop();
+  var quranHeaderJuzLinks = (await Promise.all(juzRows.map(async function (juz) {
+    var startParts = (juz.start || '').toString().split(':');
+    var startSurah = Number(startParts[0]);
+    var startAyah = Number(startParts[1]);
+    var startPage = await QuranMushaf.pageForRef(startSurah, startAyah);
+    if (!Number.isInteger(startPage))
+      return null;
+    return {
+      num: Number(juz.num),
+      title: juz.title,
+      href: Utils.quranUrl(req, `/quran/page/${startPage}`),
+      startPage: startPage,
+      current: !!firstJuz && Number(firstJuz.num) === Number(juz.num)
+    };
+  }))).filter(Boolean);
+  quranHeaderJuzLinks.forEach(function (juz, index) {
+    var nextJuz = quranHeaderJuzLinks[index + 1];
+    juz.endPage = nextJuz ? nextJuz.startPage - 1 : Number(mushaf.info.number_of_pages);
+    if (juz.current) {
+      var completedPages = Math.max(1, pageNumber - juz.startPage + 1);
+      var totalPages = Math.max(1, juz.endPage - juz.startPage + 1);
+      juz.progress = Math.max(0, Math.min(100, Math.round((completedPages / totalPages) * 100)));
+    }
+  });
   var audioRanges = [];
   mushaf.lines.flatMap(line => line.words || []).forEach(function (word) {
     var surah = Number(word.surah);
@@ -2210,6 +2234,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     firstRef: firstWord ? `${firstWord.surah}:${firstWord.ayah}` : '',
     firstSurah: firstSurah,
     firstJuz: firstJuz,
+    quranHeaderJuzLinks: quranHeaderJuzLinks,
     page: {
       menu: 'Section',
       title_en: `Quran Mushaf Page ${pageNumber}${pageAyahRange ? ` | Ayat ${pageAyahRange}` : ''}`,
@@ -2315,8 +2340,9 @@ router.get('/:bookAlias', async function (req, res, next) {
       res.setHeader('Expires', '0');
     }
     if (cacheableHtml && !flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
-      sendCachedHtml(req, res, cachedFile);
-      return;
+      if (sendCachedHtml(req, res, cachedFile))
+        return;
+      await Utils.flushCachedFile(cachedFile);
     }
 
     var results;
@@ -2577,8 +2603,9 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 	if (flushCache || isQuranAyahSectionRequest)
 	  await Utils.flushCachedFile(cachedFile);
     if (!flushCache && !isQuranAyahSectionRequest && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
-      sendCachedHtml(req, res, cachedFile);
-      return;
+      if (sendCachedHtml(req, res, cachedFile))
+        return;
+      await Utils.flushCachedFile(cachedFile);
     }
 	if (isQuranAyahSectionRequest) {
 	  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
@@ -2803,8 +2830,9 @@ async function renderBookSection(req, res, next) {
 	if (flushCache || isQuranAyahSectionRequest)
 	  await Utils.flushCachedFile(cachedFile);
     if (!flushCache && !isQuranAyahSectionRequest && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
-      sendCachedHtml(req, res, cachedFile);
-      return;
+      if (sendCachedHtml(req, res, cachedFile))
+        return;
+      await Utils.flushCachedFile(cachedFile);
     }
     if (isQuranAyahSectionRequest) {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');

@@ -460,6 +460,17 @@
     if (isQuranToc && !quranCommentaryBook)
       randomTocItemQueryParts.push('hideTitle=1');
     var randomTocItemSrc = `/${book.alias}/random${randomTocItemQueryParts.length ? `?${randomTocItemQueryParts.join('&')}` : ''}`;
+    var quranHeaderJuzLinks = isQuranToc && !quranCommentaryBook
+      ? quranJuzRows.map(function (juz) {
+        return {
+          num: parseInt(juz && juz.num, 10),
+          title: juz && juz.title,
+          href: quranJuzStartHref(juz)
+        };
+      }).filter(function (juz) {
+        return Number.isInteger(juz.num) && juz.num >= 1 && juz.num <= 30;
+      })
+      : [];
 	%>
   
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -468,11 +479,11 @@
 
 <body>
   
-  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/header.ejs', { site: site, page: page, quranHeaderJuzLinks: quranHeaderJuzLinks }); %>
   
   <div class="container col-lg-8 mx-auto">
     
-    <main class="toc"<% if (quranCommentaryBook && quranCommentaryBook.type === 'trans') { %> data-quran-selected-translation-book="<%= quranCommentaryBook.alias %>"<% } %>>
+    <main class="toc<%= isQuranToc && !quranCommentaryBook ? ' quran-toc-reader-modes' : '' %>"<% if (quranCommentaryBook && quranCommentaryBook.type === 'trans') { %> data-quran-selected-translation-book="<%= quranCommentaryBook.alias %>"<% } %>>
       
       <% if (showHadithBookChrome) { %>
         <%- include('sub-views/bookNav.ejs'); %>
