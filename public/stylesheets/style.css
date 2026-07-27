@@ -3274,7 +3274,14 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 }
 
 .mobile-bottom-nav.mobile-bottom-nav-audio-controls {
-	grid-template-columns: repeat(6, minmax(0, 1fr));
+	align-items: stretch;
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-audio-controls > .mobile-bottom-nav-audio-item {
+	flex: 1 1 0;
+	min-width: 0;
 }
 
 .mobile-bottom-nav.mobile-bottom-nav-audio-controls > :not(.mobile-bottom-nav-audio-item) {
