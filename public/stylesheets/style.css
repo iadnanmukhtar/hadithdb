@@ -3274,7 +3274,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 }
 
 .mobile-bottom-nav.mobile-bottom-nav-audio-controls {
-	grid-template-columns: repeat(5, minmax(0, 1fr));
+	grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .mobile-bottom-nav.mobile-bottom-nav-audio-controls > :not(.mobile-bottom-nav-audio-item) {
@@ -3284,6 +3284,13 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .mobile-bottom-nav-audio-item.is-active {
 	background: var(--c-accent-08);
 	color: var(--c-accent);
+}
+
+.mobile-bottom-nav-speed-value {
+	font-size: 0.72rem;
+	font-weight: 600;
+	line-height: 1;
+	white-space: nowrap;
 }
 
 .chapter > .pagination:first-child {
