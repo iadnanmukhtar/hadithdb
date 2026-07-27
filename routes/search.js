@@ -2165,10 +2165,30 @@ async function renderQuranMushafPage(req, res, next, options) {
     subsectionAudioRangeKeys.add(key);
     subsectionAudioRanges.push({
       surah: surah,
-      from: range.start,
+      from: Math.max(1, range.start),
       to: range.end,
       section: range.section,
       subsection: range.subsection
+    });
+  });
+  var sectionAudioRangeKeys = new Set();
+  mushaf.lines.flatMap(line => line.words || []).forEach(function (word) {
+    var surah = Number(word.surah);
+    var ayah = Number(word.ayah);
+    var range = (sectionRangesBySurah[surah] || []).find(function (candidate) {
+      return ayah >= candidate.start && ayah <= candidate.end;
+    });
+    if (!range)
+      return;
+    var key = `${surah}:${range.section}`;
+    if (sectionAudioRangeKeys.has(key))
+      return;
+    sectionAudioRangeKeys.add(key);
+    subsectionAudioRanges.push({
+      surah: surah,
+      from: Math.max(1, range.start),
+      to: range.end,
+      section: range.section
     });
   });
   var pageContext = {
