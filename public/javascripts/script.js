@@ -3962,14 +3962,21 @@ function quranPassageAudioPlaybackRateOption() {
 	}) || quranPassageAudioPlaybackRates[0];
 }
 
+function applyQuranPassageAudioPlaybackRate(audio) {
+	if (!audio)
+		return;
+	var rate = quranPassageAudioPlaybackRateOption().value;
+	audio.defaultPlaybackRate = rate;
+	audio.playbackRate = rate;
+}
+
 function setQuranPassageAudioPlaybackRate(rate) {
 	var option = quranPassageAudioPlaybackRates.find(function (candidate) {
 		return candidate.value === Number(rate);
 	}) || quranPassageAudioPlaybackRates[0];
 	quranPassageAudioState.playbackRate = option.value;
 	storeQuranPassageAudioPlaybackRate(option.value);
-	if (quranPassageAudioState.audio)
-		quranPassageAudioState.audio.playbackRate = option.value;
+	applyQuranPassageAudioPlaybackRate(quranPassageAudioState.audio);
 	syncMobileFooterAudioControls();
 	var item = quranPassageAudioState.playlist[quranPassageAudioState.index];
 	if (quranPassageAudioState.control && item)
@@ -4568,12 +4575,17 @@ function clearQuranPassageAudioPreloadSource() {
 
 function quranPassageAudioElement() {
 	if (quranPassageAudioState.audio) {
-		quranPassageAudioState.audio.playbackRate = quranPassageAudioState.playbackRate;
+		applyQuranPassageAudioPlaybackRate(quranPassageAudioState.audio);
 		return quranPassageAudioState.audio;
 	}
 	var audio = new Audio();
 	audio.preload = 'none';
-	audio.playbackRate = quranPassageAudioState.playbackRate;
+	applyQuranPassageAudioPlaybackRate(audio);
+	audio.addEventListener('ratechange', function () {
+		var selectedRate = quranPassageAudioPlaybackRateOption().value;
+		if (Math.abs(audio.playbackRate - selectedRate) > 0.001)
+			applyQuranPassageAudioPlaybackRate(audio);
+	});
 	audio.addEventListener('ended', function () {
 		hideQuranAudioTranslationMarquee();
 		if (!quranPassageAudioState.control || quranPassageAudioState.playlist.length < 1)
@@ -4608,6 +4620,7 @@ function quranPassageAudioElement() {
 		preloadNextQuranPassageAudio();
 	});
 	audio.addEventListener('loadedmetadata', function () {
+		applyQuranPassageAudioPlaybackRate(audio);
 		if (!audio.paused && quranPassageAudioState.control) {
 			var item = quranPassageAudioState.playlist[quranPassageAudioState.index];
 			showQuranAudioTranslationMarquee(item);
@@ -4665,6 +4678,7 @@ function playCurrentQuranPassageAudio() {
 	var beginPlayback = function () {
 		if (quranPassageAudioState.requestId !== requestId || quranPassageAudioState.control !== control)
 			return;
+		applyQuranPassageAudioPlaybackRate(audio);
 		audio.currentTime = Math.max(0, Number(item.startMs) || 0) / 1000;
 		var playPromise = audio.play();
 		if (playPromise && playPromise.catch) {
@@ -4708,6 +4722,7 @@ function resumeQuranPassageAudio(control) {
 	if (!activeControl || quranPassageAudioState.control !== activeControl || !quranPassageAudioState.audio)
 		return;
 	var audio = quranPassageAudioState.audio;
+	applyQuranPassageAudioPlaybackRate(audio);
 	quranPassageAudioState.paused = false;
 	setQuranPassageAudioPlaying(activeControl, true);
 	var requestId = quranPassageAudioState.requestId;
