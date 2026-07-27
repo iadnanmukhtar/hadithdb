@@ -8,10 +8,91 @@ Every record keeps the original Arabic text alongside an English translation whe
 
 Recent work has improved the reading, browsing, and search experience across the site:
 
-* **Reading the Qurʾān** — each surah now opens with a consistent header across the verse, commentary, and translation views. You can like, comment on, and share a passage, move more easily to the previous or next verse, and tap a word to see its meaning.
-* **Commentary and translation** — full-page commentary and translation views, tabs for switching between commentary works, hover explanations, and the option to show Arabic and English side by side. You can turn individual works on or off and choose the order they appear in.
+* **Reading the Qurʾān** — move naturally between Passage, Ayat, and Mushaf views while the site keeps your place. You can like, comment on, bookmark, and share a passage, move easily between verses and sections, and tap a word to see its meaning.
+* **The 15-line Mushaf** — read all 604 pages in a responsive, page-faithful Digital Khatt layout with infinite scrolling, Quranic surah headers, interactive words and ayah markers, page bookmarks, passage-aware coloring, and continuous recitation.
+* **Commentary and translation** — full-page commentary and translation views, tabs for switching between commentary works, hover explanations, dynamic translation selection, and the option to show Arabic and English side by side. You can turn individual works on or off and choose the order they appear in.
+* **Qurʾān audio** — choose a reciter, begin from a selected ayah, continue across page boundaries, repeat a passage or subsection, and control playback speed without losing synchronized ayah highlighting or translation captions.
 * **Search** — searching now covers the Qurʾān and its commentaries as well as ḥadīth, returns Qurʾān matches faster, lets you filter to commentary results, and presents cleaner highlights and a single, unified set of suggestions.
-* **My Settings** — separate starting points for ḥadīth and Qurʾān, your commentary and translation preferences remembered across the site, and bookmarked passages saved for later.
+* **My Settings** — separate starting points for ḥadīth and Qurʾān, remembered commentary, translation, and reciter preferences, and bookmarked passages and Mushaf pages saved for later.
+
+## Quran Unlocked
+
+**Read the Qurʾān as a book, explore it as a study text, and hear it as a continuous recitation—all in one place.** Quran Unlocked combines a responsive 15-line Mushaf with word-level learning, passage structure, trusted translations and tafsīr, personalized audio, and tools for saving and sharing what matters.
+
+Open the Mushaf and begin where you left off. Tap a word for its meaning, select an ayah to read its translation, or let the recitation carry you seamlessly across pages. When you want to go deeper, switch instantly to a focused ayah or a structured passage without losing your place.
+
+## Qurʾān Features
+
+### Three connected reading modes
+
+* **Passage** presents the Qurʾān in titled sections and subsections for thematic reading.
+* **Ayat** focuses the reading experience on individual verses and the ayah hero view.
+* **Mushaf** reproduces the familiar 15-line, page-by-page reading experience.
+* The mode links, page subtitle, URL, previous/next links, and related passage automatically follow the content currently in view during infinite scrolling.
+* Direct navigation is available by surah, ayah, passage, subsection, juz, manzil, Mushaf page, and search result.
+
+### A responsive Digital Khatt Mushaf
+
+* All **604 pages** use Digital Khatt Quran text in a page-faithful 15-line layout.
+* Pages load continuously with vertical infinite scroll; after page 604, reading can continue again from page 1.
+* The layout scales for desktop, portrait phones, and landscape phones without changing through the normal text-size controls or bleeding beyond the page.
+* Qurʾānic surah headers use the QCF header font. A new surah opens with its header and basmalah kept with the beginning of the surah; Surah 9 correctly omits the basmalah.
+* Subtle inner-edge shading distinguishes odd and even pages like an open printed book.
+* Alternating black and saddle-brown text reveals h3 subsection boundaries while preserving the Quranic styling of ayah markers.
+* Each page identifies its page number, juz, surah number, and Arabic surah name. Page, juz, and surah numbers are directly editable, while the custom surah picker opens at the current surah.
+* The page footer links the passage and subsection titles that actually begin on that page, making the Mushaf’s thematic structure visible without repeating earlier headings.
+* `/quran/page` resumes at the bookmarked Mushaf page, or page 1 when no page bookmark exists.
+
+### Interactive Arabic and ayah tools
+
+* Hovering over a word highlights it using the same interaction language in Passage and Mushaf views.
+* Clicking a Quran word reveals corpus information and its word-level translation. In the Mushaf it also toggles selection of the complete ayah.
+* Selected and audio-playing ayat use a full-ayah highlight and the established Quran passage colors rather than disconnected word boxes.
+* Clicking elsewhere clears the selected ayah.
+* Ayah markers offer the same compact **View** and **Play** actions in Passage and Mushaf modes. View opens the focused ayah; Play begins recitation from that marker.
+* Clicking an ayah, word, or marker displays its selected translation in the footer marquee, even when audio is not playing.
+* Juz starts are marked with `۞`, and Quran metadata such as sajdah markers can be rendered alongside the standard ayah marker.
+
+### Continuous, passage-aware audio
+
+* Recitation uses continuous surah recordings with ayah timing segments, avoiding the audible breaks caused by stitching together separate per-ayah files.
+* Playback continues across lazy-loaded Mushaf pages and passage boundaries while the current ayah remains highlighted.
+* Audio begins at the selected ayah; without a selection it begins at the top of the current page or passage.
+* Repeat is a true toggle. It repeats the current h3 subsection, falling back to its h2 passage, even when that range crosses a page boundary.
+* The active reciter can be changed during playback. Available reciters are alphabetized, can be enabled or disabled in My Settings, and the preferred reciter is remembered.
+* The sticky audio footer provides previous, repeat, play/pause, stop, speed, and next controls in one non-wrapping row.
+* Playback speeds are **x1, x1.25, x1.5, x2.0, x2.5, and x3**. The selected rate is retained for the browser session and reapplied after stop, resume, source changes, and page transitions.
+* A translation marquee appears above the sticky footer during playback. It identifies the reciter, translation, and ayah reference, honors LTR and RTL translations, scrolls long text, and adjusts its timing to the selected playback speed.
+
+### Translations, tafsīr, and study
+
+* Change the active translation directly from Passage or Mushaf controls.
+* Show or hide Arabic and translation text independently on passage pages.
+* Open available translations, bilingual tafsīr, Arabic tafsīr, and English tafsīr for an ayah without leaving the reading workflow.
+* Tafsīr tabs, translation disclosures, footnote popups, hover explanations, and side-by-side Arabic/English layouts support both quick reading and deeper study.
+* My Settings controls the preferred translation and reciter, enabled translations, tafsīrs and reciters, and the display order of translation and tafsīr works.
+* Translation choices are synchronized across passage text, the ayah hero, Mushaf controls, share cards, and the audio/selection marquee.
+
+### Navigation, saving, and sharing
+
+* Infinite Passage and Mushaf readers update their canonical reading context as the user scrolls.
+* The compact sticky footer provides back, Quran home, text controls, and context-aware previous/next navigation; in Mushaf mode those links move by page.
+* A single Mushaf page bookmark is maintained at a time, appears on the Bookmarks page, and determines the default `/quran/page` destination.
+* Quran passages and ayat support bookmarks, likes, comments, reflections, and shareable image cards with selectable translations.
+* Keyboard navigation and accessible labels complement touch, mouse, and mobile controls.
+
+### Search, downloads, and integration
+
+* Unified search covers Arabic and translated Qurʾān text, translations, and tafsīr, with autocomplete, filters, highlighting, and direct verse navigation.
+* Quran content is addressable through stable ayah, range, passage, subsection, juz, manzil, translation, tafsīr, and Mushaf-page URLs.
+* Machine-readable JSON and Markdown responses support individual ayat and ranges, while translation and Quran downloads are available in JSON or EPUB where provided.
+* Quran passages, commentary pages, translations, and all Mushaf pages are included in the sitemap.
+
+### Editorial and performance support
+
+* Passage and subsection ranges can be edited and reindexed while maintaining their Passage-to-Mushaf mapping.
+* Heading, range, and title changes invalidate the related Passage and Mushaf caches so stale section references are not retained.
+* Mushaf page data and section mappings use in-memory and search caches where appropriate, with disk-cache versioning and explicit flush support for updated content.
 
 ## Qurʾān Commentaries and Translations
 
