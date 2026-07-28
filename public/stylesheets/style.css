@@ -2480,6 +2480,38 @@ main.quran-mushaf-reader {
 	cursor: pointer;
 }
 
+.quran-memorize-page:not(.quran-memorize-show-all) .quran-mushaf-line:not(.quran-mushaf-line-basmallah) .quran-corpus-word:not(.quran-memorize-word-revealed):not(.quran-memorize-ayah-revealed) {
+	color: transparent !important;
+	text-decoration: underline;
+	text-decoration-color: var(--bs-border-color);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.22em;
+	text-shadow: none !important;
+}
+
+.quran-memorize-page .quran-corpus-word {
+	transition: color 0.2s linear;
+}
+
+.quran-memorize-page .quran-corpus-word.quran-memorize-word-revealed,
+.quran-memorize-page .quran-corpus-word.quran-memorize-ayah-revealed,
+.quran-memorize-page.quran-memorize-show-all .quran-corpus-word {
+	color: var(--c-black) !important;
+	text-decoration: none;
+}
+
+.quran-memorize-page .quran-corpus-word.quran-mushaf-passage-tone-1.quran-memorize-word-revealed,
+.quran-memorize-page .quran-corpus-word.quran-mushaf-passage-tone-1.quran-memorize-ayah-revealed,
+.quran-memorize-page.quran-memorize-show-all .quran-corpus-word.quran-mushaf-passage-tone-1 {
+	color: saddlebrown !important;
+}
+
+.quran-memorize-page .quran-corpus-word:hover,
+.quran-memorize-page .quran-corpus-word:focus-visible {
+	background-color: transparent !important;
+	outline: 1px dotted var(--bs-border-color);
+}
+
 .quran-mushaf-page .quran-mushaf-ayah-selected {
 	background-color: transparent;
 	color: var(--c-link-dark) !important;

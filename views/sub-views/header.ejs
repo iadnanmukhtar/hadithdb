@@ -257,7 +257,7 @@
         </a>
         <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
              var quranSectionPath = utils.quranUrl(req, `/${(page.context.section || page.context.chapter).path}`);
-             var quranReaderMode = requestPath.indexOf('/quran/page/') === 0 ? 'mushaf' : (req.query.ayat !== undefined ? 'ayah' : 'passage');
+             var quranReaderMode = requestPath.indexOf('/quran/page/') === 0 ? (req.query.memorize !== undefined ? 'memorize' : 'mushaf') : (req.query.ayat !== undefined ? 'ayah' : 'passage');
              var quranMappedPage = page.context.section && page.context.section.mushafPage;
         %>
           <span class="chapter-toc-reader-modes">
@@ -265,7 +265,8 @@
               readerMode: quranReaderMode,
               passageHref: quranSectionPath,
               ayahHref: `${quranSectionPath}?ayat`,
-              mushafHref: utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`)
+              mushafHref: utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`),
+              memorizeHref: `${utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`)}?memorize`
             }); %>
           </span>
         <% } %>
@@ -331,7 +332,8 @@
         <%- include('quran_reader_modes.ejs', {
           passageHref: utils.quranUrl(req, '/quran/1'),
           ayahHref: `${utils.quranUrl(req, '/quran/1')}?ayat`,
-          mushafHref: utils.quranUrl(req, '/quran/page/1')
+          mushafHref: utils.quranUrl(req, '/quran/page/1'),
+          memorizeHref: `${utils.quranUrl(req, '/quran/page/1')}?memorize`
         }); %>
       </span>
     </div>

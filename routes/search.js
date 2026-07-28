@@ -2034,6 +2034,7 @@ router.get('/quran', throttleSearchRequest, async function (req, res, next) {
 });
 
 async function renderQuranMushafPage(req, res, next, options) {
+  var memorize = req.query.memorize !== undefined;
   var pageNumber = Number(options.pageNumber);
   res.setHeader('Cache-Control', Utils.shouldFlushCache(req)
     ? 'no-store'
@@ -2227,6 +2228,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     ? `${firstPageAudioRange.surah}:${firstPageAudioRange.from}-${lastPageAudioRange.surah}:${lastPageAudioRange.to}`
     : '';
   return res.render('quran_mushaf', {
+    memorize: memorize,
     mushaf: mushaf,
     audioRanges: audioRanges,
     subsectionAudioRanges: subsectionAudioRanges,
@@ -2237,10 +2239,10 @@ async function renderQuranMushafPage(req, res, next, options) {
     quranHeaderJuzLinks: quranHeaderJuzLinks,
     page: {
       menu: 'Section',
-      title_en: `Quran Mushaf Page ${pageNumber}${pageAyahRange ? ` | Ayat ${pageAyahRange}` : ''}`,
+      title_en: `Quran ${memorize ? 'Memorize' : 'Mushaf'} Page ${pageNumber}${pageAyahRange ? ` | Ayat ${pageAyahRange}` : ''}`,
       subtitle_en: `Page ${pageNumber}`,
-      description_en: `Read page ${pageNumber} of the Quran in the 15-line Digital Khatt Mushaf.`,
-      canonical: `/quran/page/${pageNumber}`,
+      description_en: `${memorize ? 'Memorize' : 'Read'} page ${pageNumber} of the Quran in the 15-line Digital Khatt Mushaf.`,
+      canonical: `/quran/page/${pageNumber}${memorize ? '?memorize' : ''}`,
       context: pageContext
     }
   });
