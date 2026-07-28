@@ -37,7 +37,9 @@ router.get('/pages/:page', async function (req, res) {
 
 router.put('/pages/:page', async function (req, res) {
   const settings = await UserSettings.getSettings(req.user.uid);
-  const page = await QuranMemorization.save(req.user.uid, req.params.page, req.body && req.body.status, settings);
+  const page = await QuranMemorization.save(req.user.uid, req.params.page, req.body && req.body.status, settings, {
+    reviewed: !req.body || req.body.reviewed !== false
+  });
   res.json({ page });
 });
 

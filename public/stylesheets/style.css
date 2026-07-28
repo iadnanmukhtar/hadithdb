@@ -2360,6 +2360,11 @@ main.quran-mushaf-reader {
 	background-image: linear-gradient(to left, rgba(108, 117, 125, 0.22) 0, rgba(108, 117, 125, 0.09) 1.25rem, transparent 3.5rem);
 }
 
+[data-quran-review-reader] .quran-mushaf-sheet,
+[data-quran-review-reader] .quran-mushaf-sheet.quran-hafs:lang(ar) {
+	background-color: color-mix(in srgb, var(--bs-body-bg) 96%, #4c8fc7 4%);
+}
+
 .quran-mushaf-line {
 	align-items: center;
 	display: flex;
@@ -2420,6 +2425,16 @@ main.quran-mushaf-reader {
 	gap: .4rem;
 	justify-content: flex-end;
 	white-space: nowrap;
+}
+
+.quran-memorize-rating-buttons .btn {
+	font-size: .72rem;
+	line-height: 1.2;
+	padding: .18rem .38rem;
+}
+
+.quran-memorize-rating-buttons .quran-memorize-core-memory {
+	min-width: 1.85rem;
 }
 
 .quran-memorize-skip {

@@ -62,10 +62,10 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 ### Spaced-repetition review
 
 * Every Mushaf page begins in **To Do**. Signed-in users can change a page at any time to **Hard**, **Good**, **Easy**, or back to **To Do** from the bottom-right controls in Memorize view.
-* **Hard** pages are due immediately. **Good** and **Easy** pages return after their configured intervals, which default to **7 days** and **14 days** and can be changed under **My Settings → Quran Memorization**.
+* **Hard** pages are due immediately. **Good** and **Easy** pages return after their configured intervals, which default to **7 days** and **14 days** and can be changed under **My Settings → Quran Memorization**. Each time a page remains Easy in Review, its previous interval doubles up to a maximum of one year.
 * **To Do** pages are not included in Review. Returning a page to To Do removes it from the active memorization list without discarding its review history.
 * Select **Review** from the Quran menu or reader-mode controls to open `/quran/review`. Rating a reviewed page saves the new schedule and advances to the next due page; **Skip** advances without changing the page status.
-* `/quran/progress` shows only pages currently being memorized—those marked Hard, Good, or Easy—together with their status, next review date, and review count.
+* `/quran/progress` shows pages currently being memorized together with an editable status, next review date, and review count. A page can be marked **Core Memory** with the brain control in Memorize, Review, or Memorization Progress. Core Memory means the page is considered memorized and is excluded from every future Review queue; the status remains visible and reversible in Memorization Progress.
 * If no pages are being memorized, Review opens **Memorization Progress**. If active pages exist but none are due, Review reports that the current queue is complete.
 * Memorization progress and scheduling are stored per signed-in user in MySQL so they remain available across sessions and devices.
 

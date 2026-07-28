@@ -6805,10 +6805,12 @@ function initQuranMemorizeView(root) {
 			}
 			window.location.href = '/quran/review?complete=1';
 		};
-		if (rating) {
+		if (rating && !reviewMode) {
 			memorizationRequest(`/pages/${encodeURIComponent(pageNumber)}`).then(function (result) {
 				if (result.page) markRating(result.page.status);
 			}).catch(function () {});
+		}
+		if (rating) {
 			rating.addEventListener('click', function (event) {
 				var statusButton = event.target.closest('[data-quran-memorize-status]');
 				var skipButton = event.target.closest('[data-quran-memorize-skip]');
@@ -7337,6 +7339,8 @@ function updateQuranMushafVisiblePage(pageNumber, pageElement) {
 function initQuranMushafInfinite(root) {
 	var reader = (root || document).querySelector('[data-quran-mushaf-reader]');
 	if (!reader || reader.dataset.quranMushafBound === '1')
+		return;
+	if (reader.hasAttribute('data-quran-review-reader'))
 		return;
 	reader.dataset.quranMushafBound = '1';
 	var sentinel = reader.querySelector('[data-quran-mushaf-sentinel]');

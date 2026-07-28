@@ -6,7 +6,7 @@
 </head>
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
-  <main class="container col-xl-7 col-lg-8 mx-auto quran-mushaf-reader<%= memorize ? ' quran-memorize-reader' : '' %> mt-10" data-quran-mushaf-reader<% if (memorize) { %> data-quran-memorize-reader="1"<% } %> data-next-url="<%= `/quran/page/${mushaf.number < mushaf.info.number_of_pages ? mushaf.number + 1 : 1}${memorize ? '?memorize' : ''}` %>">
+  <main class="container col-xl-7 col-lg-8 mx-auto quran-mushaf-reader<%= memorize ? ' quran-memorize-reader' : '' %> mt-10" data-quran-mushaf-reader<% if (memorize) { %> data-quran-memorize-reader="1"<% } %><% if (req.query.review !== undefined) { %> data-quran-review-reader="1"<% } %> data-next-url="<%= `/quran/page/${mushaf.number < mushaf.info.number_of_pages ? mushaf.number + 1 : 1}${memorize ? '?memorize' : ''}` %>">
     <article class="quran-mushaf-page<%= memorize ? ' quran-memorize-page' : '' %>" data-quran-mushaf-page="<%= mushaf.number %>"<% if (memorize) { %> data-quran-memorize-page="1" data-quran-memorize-auto-hide="false"<% } %> data-quran-infinite-page="1" data-quran-audio-scope="quran-page-<%= mushaf.number %>">
       <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero data-quran-clear-href="/quran/page/<%= mushaf.number %>"></div>
       <section class="quran-mushaf-sheet quran-hafs quran-mushaf-sheet-<%= Number(mushaf.number) % 2 === 0 ? 'even' : 'odd' %>" lang="ar" dir="rtl">
