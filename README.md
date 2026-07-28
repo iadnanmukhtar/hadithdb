@@ -62,7 +62,7 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * The active reciter can be changed during playback. Available reciters are alphabetized, can be enabled or disabled in My Settings, and the preferred reciter is remembered.
 * The sticky audio footer provides previous, repeat, play/pause, stop, speed, and next controls in one non-wrapping row.
 * Playback speeds are **x1, x1.25, x1.5, x2.0, x2.5, and x3**. The selected rate is retained for the browser session and reapplied after stop, resume, source changes, and page transitions.
-* A translation marquee appears above the sticky footer during playback. It identifies the reciter, translation, and ayah reference, honors LTR and RTL translations, scrolls long text, and adjusts its timing to the selected playback speed.
+* A translation marquee appears above the sticky footer during playback. It identifies the reciter and translation once, uses unobtrusive superscript ayah references, honors LTR and RTL translations, and streams consecutive translations separated by a spaced dot—starting each entry from the center as its audio segment begins.
 
 ### Translations, tafsīr, and study
 
@@ -93,6 +93,25 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * Passage and subsection ranges can be edited and reindexed while maintaining their Passage-to-Mushaf mapping.
 * Heading, range, and title changes invalidate the related Passage and Mushaf caches so stale section references are not retained.
 * Mushaf page data and section mappings use in-memory and search caches where appropriate, with disk-cache versioning and explicit flush support for updated content.
+
+## Qurʾān Reciters
+
+The site includes the continuous, ayah-synchronized recitations listed below. Each one has a short alias used internally for audio selection and saved preferences.
+
+| Alias | Reciter |
+|---|---|
+| `abbad` | Fares Abbad |
+| `alili` | Aziz Alili |
+| `banna` | Mahmoud Ali al-Banna |
+| `dusari` | Yasir al-Dusari |
+| `husari` | Mahmud Khalil al-Husari |
+| `jalil` | Khalid al-Jalil |
+| `juhani` | Abdullah Awwad al-Juhani |
+| `minshawi` | Muhammed Siddiq al-Minshawi |
+| `qatami` | Nasser al-Qatami |
+| `shuraym` | Saud al-Shuraym |
+| `sudays` | Abd al-Rahman al-Sudays |
+| `yasir` | Sahl Yasin |
 
 ## Qurʾān Commentaries and Translations
 

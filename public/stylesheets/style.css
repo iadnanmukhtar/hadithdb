@@ -2891,18 +2891,45 @@ main.quran-mushaf-reader {
 }
 
 .quran-audio-translation-marquee-track {
-	display: inline-block;
+	align-items: center;
+	display: inline-flex;
 	flex: none;
-	padding: 0 .75rem;
+	padding-inline-start: .75rem;
 	unicode-bidi: plaintext;
 	white-space: nowrap;
 	will-change: transform;
+}
+
+.quran-audio-translation-marquee-entry {
+	align-items: center;
+	display: inline-flex;
+	flex: none;
+	white-space: nowrap;
+}
+
+.quran-audio-translation-marquee-entry.is-audio-active .quran-audio-translation-marquee-ayah {
+	color: var(--c-link-dark);
 }
 
 .quran-audio-translation-marquee-attribution {
 	color: var(--bs-secondary-color);
 	margin-inline-end: .4rem;
 	unicode-bidi: isolate;
+}
+
+.quran-audio-translation-marquee-ayah {
+	align-items: center;
+	display: inline-flex;
+}
+
+.quran-audio-translation-marquee-reference {
+	color: var(--c-accent);
+	font-size: .75em;
+	line-height: 0;
+	margin-inline-end: .4rem;
+	position: relative;
+	top: -.5em;
+	vertical-align: baseline;
 }
 
 .quran-audio-translation-marquee-text {
