@@ -20,6 +20,7 @@
     var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
     var isQuranMushafArea = requestPath === '/quran/page' || requestPath.indexOf('/quran/page/') === 0;
     var isQuranMemorizeArea = isQuranMushafArea && req.query.memorize !== undefined;
+    var isQuranReviewArea = requestPath === '/quran/review' || requestPath === '/quran/progress' || (isQuranMemorizeArea && req.query.review !== undefined);
     var isQuranStudyArea = /^\/quran\/\d+(?:\/|$)/.test(requestPath);
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
@@ -83,7 +84,8 @@
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranMushafArea && !isQuranMemorizeArea) %>" href="<%= utils.quranUrl(req, '/quran/page') %>"><i class="bi bi-book"></i> Mushaf</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations') %>"><i class="bi bi-translate"></i> Translations</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-book-half"></i> Tafsir</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isQuranMemorizeArea) %>" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>"><i class="bi bi-eye-slash"></i> Memorize</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranMemorizeArea && !isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>"><i class="bi bi-eye-slash"></i> Memorize</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-arrow-repeat"></i> Review</a></li>
           </ul>
         </li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
@@ -182,6 +184,7 @@
             isQuranStudyArea: isQuranStudyArea,
             isQuranMushafArea: isQuranMushafArea,
             isQuranMemorizeArea: isQuranMemorizeArea,
+            isQuranReviewArea: isQuranReviewArea,
             isQuranTranslationsArea: isQuranTranslationsArea,
             isQuranTafsirArea: isQuranTafsirArea,
             isHadithArea: isHadithArea,
@@ -260,7 +263,7 @@
         </a>
         <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
              var quranSectionPath = utils.quranUrl(req, `/${(page.context.section || page.context.chapter).path}`);
-             var quranReaderMode = requestPath.indexOf('/quran/page/') === 0 ? (req.query.memorize !== undefined ? 'memorize' : 'mushaf') : (req.query.ayat !== undefined ? 'ayah' : 'passage');
+             var quranReaderMode = requestPath.indexOf('/quran/page/') === 0 ? (req.query.review !== undefined ? 'review' : (req.query.memorize !== undefined ? 'memorize' : 'mushaf')) : (req.query.ayat !== undefined ? 'ayah' : 'passage');
              var quranMappedPage = page.context.section && page.context.section.mushafPage;
         %>
           <span class="chapter-toc-reader-modes">

@@ -2399,6 +2399,49 @@ main.quran-mushaf-reader {
 	justify-content: flex-start;
 }
 
+.quran-memorize-page-footer {
+	align-items: flex-start;
+	display: flex;
+	justify-content: space-between;
+	gap: .75rem;
+}
+
+.quran-memorize-rating {
+	align-items: flex-end;
+	display: flex;
+	flex-direction: column;
+	gap: .35rem;
+	margin-left: auto;
+}
+
+.quran-memorize-rating-buttons {
+	align-items: center;
+	display: flex;
+	gap: .4rem;
+	justify-content: flex-end;
+	white-space: nowrap;
+}
+
+.quran-memorize-skip {
+	background: transparent;
+	background-image: none;
+}
+
+.quran-memorize-list-link {
+	font-size: .8rem;
+}
+
+@media (max-width: 575.98px) {
+	.quran-memorize-page-footer {
+		overflow-x: auto;
+	}
+
+	.quran-memorize-rating {
+		align-items: stretch;
+		flex: 0 0 auto;
+	}
+}
+
 .quran-mushaf-page-passage-ref,
 .quran-mushaf-page-subsection-ref {
 	color: var(--c-gray-dark);

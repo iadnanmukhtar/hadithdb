@@ -6770,6 +6770,81 @@ function initQuranMemorizeView(root) {
 			return;
 		page.dataset.quranMemorizeBound = '1';
 		var wordTimers = new WeakMap();
+		var rating = page.querySelector('[data-quran-memorize-rating]');
+		var ratingStatus = rating && rating.querySelector('[data-quran-memorize-save-status]');
+		var pageNumber = rating && rating.getAttribute('data-page-number');
+		var reviewMode = new URLSearchParams(window.location.search).has('review');
+		var memorizationRequest = async function (path, options) {
+			var auth = window.hadithAuth;
+			var token = auth && auth.getToken ? await auth.getToken() : null;
+			if (!token && auth && auth.requireToken)
+				token = await auth.requireToken('Please sign in to save memorization progress.');
+			if (!token)
+				throw new Error('Please sign in to save memorization progress.');
+			var requestOptions = Object.assign({ credentials: 'same-origin' }, options || {});
+			requestOptions.headers = Object.assign({}, requestOptions.headers || {}, { 'Authorization': `Bearer ${token}` });
+			var response = await fetch(quranApiPath(`/memorization${path}`), requestOptions);
+			var data = await response.json().catch(function () { return {}; });
+			if (!response.ok)
+				throw new Error(data.error || 'Unable to save memorization progress.');
+			return data;
+		};
+		var markRating = function (status) {
+			if (!rating) return;
+			rating.querySelectorAll('[data-quran-memorize-status]').forEach(function (button) {
+				var active = button.getAttribute('data-quran-memorize-status') === status;
+				button.classList.toggle('active', active);
+				button.setAttribute('aria-pressed', active ? 'true' : 'false');
+			});
+		};
+		var openNextReview = async function () {
+			var result = await memorizationRequest(`/next?exclude=${encodeURIComponent(pageNumber)}`);
+			if (result.page && result.page.page_number) {
+				window.location.href = `/quran/page/${result.page.page_number}?memorize&review`;
+				return;
+			}
+			window.location.href = '/quran/review?complete=1';
+		};
+		if (rating) {
+			memorizationRequest(`/pages/${encodeURIComponent(pageNumber)}`).then(function (result) {
+				if (result.page) markRating(result.page.status);
+			}).catch(function () {});
+			rating.addEventListener('click', function (event) {
+				var statusButton = event.target.closest('[data-quran-memorize-status]');
+				var skipButton = event.target.closest('[data-quran-memorize-skip]');
+				if (!statusButton && !skipButton) return;
+				event.preventDefault();
+				if (skipButton) {
+					if (ratingStatus) ratingStatus.textContent = 'Skipped.';
+					if (reviewMode) {
+						openNextReview().catch(function (err) {
+							if (ratingStatus) ratingStatus.textContent = err.message;
+						});
+					} else {
+						var currentPage = Math.max(1, parseInt(pageNumber, 10) || 1);
+						var nextPage = currentPage >= 604 ? 1 : currentPage + 1;
+						window.location.href = `/quran/page/${nextPage}?memorize`;
+					}
+					return;
+				}
+				var status = statusButton.getAttribute('data-quran-memorize-status');
+				rating.querySelectorAll('button').forEach(function (button) { button.disabled = true; });
+				if (ratingStatus) ratingStatus.textContent = 'Saving...';
+				memorizationRequest(`/pages/${encodeURIComponent(pageNumber)}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ status: status })
+				}).then(function (result) {
+					markRating(result.page && result.page.status || status);
+					if (ratingStatus) ratingStatus.textContent = 'Saved.';
+					if (reviewMode) return openNextReview();
+				}).catch(function (err) {
+					if (ratingStatus) ratingStatus.textContent = err.message;
+				}).finally(function () {
+					rating.querySelectorAll('button').forEach(function (button) { button.disabled = false; });
+				});
+			});
+		}
 		var storedAutoHide = false;
 		try {
 			storedAutoHide = window.sessionStorage && window.sessionStorage.getItem(autoHideStorageKey) === 'true';
@@ -7183,7 +7258,7 @@ function updateLazyReaderDocumentTitle(title) {
 function copyQuranReaderModeHrefs(source, target) {
 	if (!source || !target)
 		return;
-	['passage', 'ayat', 'mushaf', 'memorize'].forEach(function (mode) {
+	['passage', 'ayat', 'mushaf', 'memorize', 'review'].forEach(function (mode) {
 		var link = source.querySelector(`[data-quran-reader-mode-link="${mode}"]`);
 		var href = link && link.getAttribute('href');
 		if (href)
@@ -7194,7 +7269,7 @@ function copyQuranReaderModeHrefs(source, target) {
 function updateQuranReaderModeHrefs(marker) {
 	if (!marker)
 		return;
-	['passage', 'ayat', 'mushaf', 'memorize'].forEach(function (mode) {
+	['passage', 'ayat', 'mushaf', 'memorize', 'review'].forEach(function (mode) {
 		var href = marker.getAttribute(`data-quran-reader-${mode}-href`);
 		if (!href)
 			return;

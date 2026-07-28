@@ -79,6 +79,26 @@
       </section>
 
       <section class="border-top pt-3 mt-3">
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+          <div>
+            <h2 class="fs-5 fw-bold mb-1">Quran Memorization</h2>
+            <p class="text-muted small mb-0" id="settings-memorization-status">Choose when pages marked Good or Easy return for review.</p>
+          </div>
+        </div>
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <label class="form-label mb-0">
+            <span class="small text-muted d-block mb-1">Good: review again after</span>
+            <span class="input-group input-group-sm"><input class="form-control" type="number" min="1" max="365" id="settings-good-review-days"><span class="input-group-text">days</span></span>
+          </label>
+          <label class="form-label mb-0">
+            <span class="small text-muted d-block mb-1">Easy: review again after</span>
+            <span class="input-group input-group-sm"><input class="form-control" type="number" min="1" max="365" id="settings-easy-review-days"><span class="input-group-text">days</span></span>
+          </label>
+          <button type="button" class="btn btn-primary btn-sm" id="settings-memorization-save">Save</button>
+        </div>
+      </section>
+
+      <section class="border-top pt-3 mt-3">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Audio</h2>
@@ -138,6 +158,10 @@
     const reciterStatusEl = document.getElementById('settings-reciter-status');
     const reciterListEl = document.getElementById('settings-reciter-list');
     const reciterEnableAllBtn = document.getElementById('settings-reciter-enable-all');
+    const memorizationStatusEl = document.getElementById('settings-memorization-status');
+    const goodReviewDaysEl = document.getElementById('settings-good-review-days');
+    const easyReviewDaysEl = document.getElementById('settings-easy-review-days');
+    const memorizationSaveBtn = document.getElementById('settings-memorization-save');
     const profileStatusEl = document.getElementById('settings-profile-status');
     const preferredLanguageSelect = document.getElementById('settings-preferred-language');
     const paymentStatusEl = document.getElementById('settings-payment-status');
@@ -242,6 +266,13 @@
       const profile = source.profile && typeof source.profile === 'object' && !Array.isArray(source.profile)
         ? source.profile
         : {};
+      const memorization = source.memorization && typeof source.memorization === 'object' && !Array.isArray(source.memorization)
+        ? source.memorization
+        : {};
+      const reviewDays = (value, fallback) => {
+        const parsed = parseInt(value, 10);
+        return Number.isInteger(parsed) && parsed >= 1 && parsed <= 365 ? parsed : fallback;
+      };
       const translationDisabledAliases = Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
         .map(alias => (alias || '').toString().trim())
         .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias))));
@@ -283,6 +314,10 @@
           preferredReciter: /^[A-Za-z0-9_-]+$/.test((audio.preferredReciter || '').toString().trim())
             ? audio.preferredReciter.toString().trim()
             : 'juhani'
+        },
+        memorization: {
+          goodReviewDays: reviewDays(memorization.goodReviewDays, 7),
+          easyReviewDays: reviewDays(memorization.easyReviewDays, 14)
         }
       };
     };
@@ -1391,6 +1426,11 @@
         currentSettings = await loadUserSettings();
       }
       currentSettings = normalizeSettings(currentSettings);
+      goodReviewDaysEl.value = currentSettings.memorization.goodReviewDays;
+      easyReviewDaysEl.value = currentSettings.memorization.easyReviewDays;
+      goodReviewDaysEl.disabled = !currentUser;
+      easyReviewDaysEl.disabled = !currentUser;
+      memorizationSaveBtn.disabled = !currentUser;
       renderProfileSettings();
       reciterEnableAllBtn.disabled = !currentUser;
 
@@ -1461,6 +1501,29 @@
     if (preferredLanguageSelect) {
       preferredLanguageSelect.addEventListener('change', savePreferredLanguage);
     }
+
+    memorizationSaveBtn.addEventListener('click', async () => {
+      if (!currentUser) return renderSignedOut();
+      currentSettings = normalizeSettings({
+        ...currentSettings,
+        memorization: {
+          goodReviewDays: goodReviewDaysEl.value,
+          easyReviewDays: easyReviewDaysEl.value
+        }
+      });
+      goodReviewDaysEl.value = currentSettings.memorization.goodReviewDays;
+      easyReviewDaysEl.value = currentSettings.memorization.easyReviewDays;
+      memorizationSaveBtn.disabled = true;
+      memorizationStatusEl.textContent = 'Saving review schedule...';
+      try {
+        await saveSettings();
+        memorizationStatusEl.textContent = 'Review schedule saved.';
+      } catch (err) {
+        memorizationStatusEl.textContent = err.message || 'Unable to save review schedule.';
+      } finally {
+        memorizationSaveBtn.disabled = false;
+      }
+    });
 
     if (reciterEnableAllBtn) {
       reciterEnableAllBtn.addEventListener('click', async () => {

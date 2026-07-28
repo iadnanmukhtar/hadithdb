@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<% var site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: false }); %>
+<head>
+  <%- include('sub-views/head.ejs', { site: site, page: page }); %>
+</head>
+<body>
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+  <main class="container col-lg-8 mx-auto mt-10">
+    <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+      <h1 class="fs-4 mb-0">Memorization Progress</h1>
+      <a class="btn btn-primary btn-sm" href="<%= utils.quranUrl(req, '/quran/review') %>">Start Review</a>
+    </div>
+    <p id="quran-memorization-pages-status" class="text-muted">Loading memorized pages...</p>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle" hidden id="quran-memorization-pages-table">
+        <thead><tr><th>Page</th><th>Status</th><th>Next review</th><th>Reviews</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <script>
+    (async function () {
+      const status = document.getElementById('quran-memorization-pages-status');
+      const table = document.getElementById('quran-memorization-pages-table');
+      const labels = { todo: 'To Do', hard: 'Hard', good: 'Good', easy: 'Easy' };
+      const colors = { todo: 'secondary', hard: 'danger', good: 'primary', easy: 'success' };
+      try {
+        let attempts = 0;
+        while ((!window.hadithAuth || !window.hadithAuth.getToken) && attempts < 50) {
+          await new Promise(resolve => window.setTimeout(resolve, 100));
+          attempts += 1;
+        }
+        let token = window.hadithAuth && await window.hadithAuth.getToken();
+        if (!token && window.hadithAuth && window.hadithAuth.requireToken)
+          token = await window.hadithAuth.requireToken('Please sign in to view memorized pages.');
+        if (!token) throw new Error('Please sign in to view memorized pages.');
+        const response = await fetch(quranApiPath('/memorization/pages'), {
+          credentials: 'same-origin',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const responseText = await response.text();
+        let data = {};
+        try {
+          data = responseText ? JSON.parse(responseText) : {};
+        } catch (_err) {
+          throw new Error('The memorization service returned an invalid response.');
+        }
+        if (!response.ok) throw new Error(data.error || 'Unable to load memorized pages.');
+        const activePages = data.pages.filter(page => page.status !== 'todo');
+        status.textContent = activePages.length
+          ? `${activePages.length} page${activePages.length === 1 ? '' : 's'} being memorized.`
+          : 'No pages are currently being memorized.';
+        table.hidden = activePages.length === 0;
+        table.querySelector('tbody').innerHTML = activePages.map(page => {
+          const date = page.next_review_at ? new Date(page.next_review_at) : null;
+          const next = page.due ? 'Due now' : (date ? date.toLocaleDateString() : '—');
+          return `<tr><td><a href="/quran/page/${page.page_number}?memorize">${page.page_number}</a></td><td><span class="badge text-bg-${colors[page.status] || 'secondary'}">${labels[page.status] || page.status}</span></td><td>${next}</td><td>${page.review_count || 0}</td></tr>`;
+        }).join('');
+      } catch (err) {
+        status.textContent = err.message;
+      }
+    }());
+  </script>
+</body>
+</html>

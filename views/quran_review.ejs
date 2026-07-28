@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<% var site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: false }); %>
+<head>
+  <%- include('sub-views/head.ejs', { site: site, page: page }); %>
+</head>
+<body>
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+  <main class="container col-lg-7 mx-auto mt-10">
+    <h1 class="fs-4">Quran Review</h1>
+    <p id="quran-review-status" class="text-muted"><%= req.query.complete !== undefined ? 'You have completed all reviews that are due.' : 'Finding the next page due for review...' %></p>
+    <p><a class="btn btn-primary" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>">Open Memorize</a>
+      <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/progress') %>">Memorization Progress</a></p>
+  </main>
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <% if (req.query.complete === undefined) { %>
+  <script>
+    (async function () {
+      const status = document.getElementById('quran-review-status');
+      try {
+        let attempts = 0;
+        while ((!window.hadithAuth || !window.hadithAuth.getToken) && attempts < 50) {
+          await new Promise(resolve => window.setTimeout(resolve, 100));
+          attempts += 1;
+        }
+        let token = window.hadithAuth && await window.hadithAuth.getToken();
+        if (!token && window.hadithAuth && window.hadithAuth.requireToken)
+          token = await window.hadithAuth.requireToken('Please sign in to review memorized pages.');
+        if (!token) throw new Error('Please sign in to review memorized pages.');
+        const response = await fetch(quranApiPath('/memorization/next'), {
+          credentials: 'same-origin',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to load reviews.');
+        if (data.page && data.page.page_number)
+          window.location.replace(`/quran/page/${data.page.page_number}?memorize&review`);
+        else if (!data.hasPages)
+          window.location.replace('/quran/progress');
+        else
+          status.textContent = 'You have completed all reviews that are due.';
+      } catch (err) {
+        status.textContent = err.message;
+      }
+    }());
+  </script>
+  <% } %>
+</body>
+</html>

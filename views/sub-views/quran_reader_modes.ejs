@@ -2,9 +2,11 @@
   var modePassageHref = locals.passageHref || utils.quranUrl(req, req.path);
   var modeMushafHref = locals.mushafHref || `${utils.quranUrl(req, req.path)}?mushaf`;
   var modeMemorizeHref = locals.memorizeHref || `${modeMushafHref}${modeMushafHref.indexOf('?') >= 0 ? '&' : '?'}memorize`;
+  var modeReviewHref = locals.reviewHref || utils.quranUrl(req, '/quran/review');
 %>
 <span class="quran-reader-modes btn-group btn-group-sm" role="group" aria-label="Quran reading mode">
   <a class="btn btn-outline-secondary<%= locals.readerMode === 'passage' ? ' active' : '' %>" data-quran-reader-mode-link="passage" href="<%= modePassageHref %>" title="Study"<% if (locals.readerMode === 'passage') { %> aria-current="page"<% } %>><i class="bi bi-text-paragraph" aria-hidden="true"></i><span>Study</span></a>
   <a class="btn btn-outline-secondary<%= locals.readerMode === 'mushaf' ? ' active' : '' %>" data-quran-reader-mode-link="mushaf" href="<%= modeMushafHref %>" title="Mushaf view"<% if (locals.readerMode === 'mushaf') { %> aria-current="page"<% } %>><i class="bi bi-book" aria-hidden="true"></i><span>Mushaf</span></a>
   <a class="btn btn-outline-secondary<%= locals.readerMode === 'memorize' ? ' active' : '' %>" data-quran-reader-mode-link="memorize" href="<%= modeMemorizeHref %>" title="Memorize view"<% if (locals.readerMode === 'memorize') { %> aria-current="page"<% } %>><i class="bi bi-eye-slash" aria-hidden="true"></i><span>Memorize</span></a>
+  <a class="btn btn-outline-secondary<%= locals.readerMode === 'review' ? ' active' : '' %>" data-quran-reader-mode-link="review" href="<%= modeReviewHref %>" title="Review memorized pages"<% if (locals.readerMode === 'review') { %> aria-current="page"<% } %>><i class="bi bi-arrow-repeat" aria-hidden="true"></i><span>Review</span></a>
 </span>

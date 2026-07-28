@@ -2033,6 +2033,40 @@ router.get('/quran', throttleSearchRequest, async function (req, res, next) {
   });
 });
 
+router.get('/quran/review', function (req, res) {
+  res.locals.req = req;
+  res.locals.res = res;
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.render('quran_review', {
+    page: {
+      menu: 'Quran',
+      title_en: 'Quran Memorization Review',
+      description_en: 'Review Quran pages using spaced repetition.',
+      canonical: '/quran/review',
+      context: { quranSearchProxy: true }
+    }
+  });
+});
+
+router.get('/quran/memorization-pages', function (req, res) {
+  res.redirect(301, Utils.quranUrl(req, '/quran/progress'));
+});
+
+router.get('/quran/progress', function (req, res) {
+  res.locals.req = req;
+  res.locals.res = res;
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.render('quran_memorization_pages', {
+    page: {
+      menu: 'Quran',
+      title_en: 'Memorization Progress',
+      description_en: 'View all Quran pages and their memorization status.',
+      canonical: '/quran/progress',
+      context: { quranSearchProxy: true }
+    }
+  });
+});
+
 async function renderQuranMushafPage(req, res, next, options) {
   var memorize = req.query.memorize !== undefined;
   var pageNumber = Number(options.pageNumber);

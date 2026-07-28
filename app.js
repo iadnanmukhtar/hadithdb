@@ -435,6 +435,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const likedRouter = require('./routes/liked');
   const bookmarksRouter = require('./routes/bookmarks');
   const userSettingsRouter = require('./routes/userSettings');
+  const quranMemorizationRouter = require('./routes/quranMemorization');
   const paymentsRouter = require('./routes/payments');
   const contentTranslationsRouter = require('./routes/contentTranslations');
   const chatbotRouter = require('./routes/rag');
@@ -475,6 +476,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/bookmarks', bookmarksRouter);
   app.use('/user-settings', userSettingsRouter);
   app.use('/quran/user-settings', userSettingsRouter);
+  app.use('/memorization', quranMemorizationRouter);
+  app.use('/quran/memorization', quranMemorizationRouter);
   app.use('/payments', paymentsRouter);
   app.use('/quran/payments', paymentsRouter);
   app.use('/content-translations', contentTranslationsRouter);

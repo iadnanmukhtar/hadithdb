@@ -13,7 +13,7 @@
         <header class="quran-mushaf-page-heading" lang="en" dir="ltr">
           <% if (memorize) { %>
             <aside class="quran-mushaf-page-toolbar" lang="en" dir="ltr">
-              <%- include('sub-views/quran_memorize_controls.ejs', { pageNumber: mushaf.number }); %>
+              <%- include('sub-views/quran_memorize_controls.ejs', { pageNumber: mushaf.number, showRating: false }); %>
             </aside>
           <% } else if (audioRanges.length) {
             var mushafAudioGroup = { _audioScopeId: `quran-page-${mushaf.number}`, _audioStartAyah: audioRanges[0].from, _audioEndAyah: audioRanges[audioRanges.length - 1].to, _headingAudioLabel: `page ${mushaf.number}` };
@@ -64,7 +64,7 @@
       <% }); %>
         <% if (memorize) { %>
         <footer class="quran-mushaf-page-footer quran-memorize-page-footer" lang="en" dir="ltr">
-          <%- include('sub-views/quran_memorize_controls.ejs', { pageNumber: mushaf.number }); %>
+          <%- include('sub-views/quran_memorize_controls.ejs', { pageNumber: mushaf.number, showRating: true }); %>
         </footer>
         <% } else if (pagePassages && pagePassages.length) { %>
         <footer class="quran-mushaf-page-footer" lang="en" dir="ltr">

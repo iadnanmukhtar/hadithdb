@@ -4,3 +4,20 @@
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn" data-quran-memorize-ayah-hide aria-label="Hide one ayah on page <%= pageNumber %>" title="Hide one ayah"><span class="bi bi-dash" aria-hidden="true"></span></button>
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn" data-quran-memorize-ayah-reveal aria-label="Reveal one ayah on page <%= pageNumber %>" title="Reveal one ayah"><span class="bi bi-plus" aria-hidden="true"></span></button>
 </div>
+<% if (locals.showRating) { %>
+<div class="quran-memorize-rating" data-quran-memorize-rating data-page-number="<%= pageNumber %>">
+  <div class="quran-memorize-rating-buttons">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Memorization status for page <%= pageNumber %>">
+      <button type="button" class="btn btn-outline-success" data-quran-memorize-status="easy">Easy</button>
+      <button type="button" class="btn btn-outline-primary" data-quran-memorize-status="good">Good</button>
+      <button type="button" class="btn btn-outline-danger" data-quran-memorize-status="hard">Hard</button>
+      <button type="button" class="btn btn-outline-secondary" data-quran-memorize-status="todo">To Do</button>
+    </div>
+    <% if (req.query.review !== undefined) { %>
+    <button type="button" class="btn btn-sm btn-outline-secondary quran-memorize-skip" data-quran-memorize-skip>Skip</button>
+    <% } %>
+  </div>
+  <a class="quran-memorize-list-link" href="/quran/progress">Memorization Progress</a>
+  <span class="small text-muted" data-quran-memorize-save-status aria-live="polite"></span>
+</div>
+<% } %>
