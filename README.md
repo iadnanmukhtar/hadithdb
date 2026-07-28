@@ -48,9 +48,11 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 
 * Open a Mushaf page with `?memorize`, such as `/quran/page/1?memorize`, or select **Memorize** from the Quran reading-mode controls.
 * Hidden words retain their exact Digital Khatt width and placement and are individually underlined, preserving the page-faithful 15-line layout. Surah headers, the basmalah, and ayah markers remain visible.
-* Clicking a hidden word reveals it for **two seconds** before it fades back to an underlined blank.
+* Clicking a hidden word reveals it for **two seconds** before it fades back to an underlined blank by default.
 * Clicking an ayah marker toggles that complete ayah between visible text and blanks without changing the other ayat.
-* The page-header **View/Hide** control reveals every word on that page or returns the page to blanks. Hiding also clears individual word and ayah reveals.
+* Alt-clicking, Option-clicking, Command-clicking, or Control-clicking an ayah marker toggles that ayah and all earlier ayat on the Mushaf page between visible text and blanks.
+* The page-header **Page** control reveals every word on that page or returns the page to blanks. Hiding also clears individual word and ayah reveals.
+* The **Word** control determines whether individually clicked words disappear after two seconds or remain visible. Auto-hide is on by default.
 * Each page keeps its own state as additional pages load through infinite scrolling, and Memorize mode remains active through page, surah, juz, URL, and previous/next navigation.
 * Audio, reciter and translation controls, the translation marquee, and word-translation tooltips are intentionally omitted so the view remains focused on recall.
 

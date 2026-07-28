@@ -13,7 +13,8 @@
         <header class="quran-mushaf-page-heading" lang="en" dir="ltr">
           <% if (memorize) { %>
             <aside class="quran-ayah-select-toolbar quran-mushaf-page-toolbar" lang="en" dir="ltr">
-              <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn d-inline-flex align-items-center gap-1" data-quran-memorize-toggle aria-pressed="false" aria-label="View all words on page <%= mushaf.number %>" title="View all words"><span class="bi bi-eye" data-quran-memorize-toggle-icon aria-hidden="true"></span><span data-quran-memorize-toggle-label>View</span></button>
+              <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn d-inline-flex align-items-center gap-1" data-quran-memorize-all-toggle aria-pressed="false" aria-label="View all words on page <%= mushaf.number %>" title="View all words"><span class="bi bi-eye-slash" data-quran-memorize-all-toggle-icon aria-hidden="true"></span><span>Page</span></button>
+              <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn d-inline-flex align-items-center gap-1 active" data-quran-memorize-autohide-toggle aria-pressed="true" aria-label="Turn off clicked word auto-hide on page <%= mushaf.number %>" title="Clicked words hide after two seconds"><span class="bi bi-clock-history" aria-hidden="true"></span><span>Word</span></button>
             </aside>
           <% } else if (audioRanges.length) {
             var mushafAudioGroup = { _audioScopeId: `quran-page-${mushaf.number}`, _audioStartAyah: audioRanges[0].from, _audioEndAyah: audioRanges[audioRanges.length - 1].to, _headingAudioLabel: `page ${mushaf.number}` };
@@ -48,7 +49,7 @@
         <% } else { line.words.forEach(function (word) {
           var ref = `${word.surah}:${word.ayah}`;
           if (word.is_ayah_marker) { %>
-            <a class="quran-ayah-end-marker quran-mushaf-ayah-marker quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %>" data-quran-ayah-actions="1" data-quran-ref="<%= ref %>" href="<%= utils.quranUrl(req, `/quran:${ref}`) %>" aria-label="Actions for Quran <%= ref %>" aria-haspopup="menu" aria-expanded="false" title="Quran <%= ref %> actions">۝<%= arabic.toArabicDigits(word.ayah) %></a>
+            <a class="quran-ayah-end-marker quran-mushaf-ayah-marker quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %>"<% if (!memorize) { %> data-quran-ayah-actions="1"<% } %> data-quran-ref="<%= ref %>" href="<%= utils.quranUrl(req, `/quran:${ref}`) %>" aria-label="<%= memorize ? 'Toggle Quran ' + ref + '; modifier click toggles this and previous ayahs' : 'Actions for Quran ' + ref %>"<% if (!memorize) { %> aria-haspopup="menu" aria-expanded="false"<% } %> title="<%= memorize ? 'Toggle Quran ' + ref + '; Alt, Option, Command, or Control-click this and previous ayahs' : 'Quran ' + ref + ' actions' %>">۝<%= arabic.toArabicDigits(word.ayah) %></a>
           <% } else { %>
             <span class="quran-corpus-word quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %><%= word.juzStart ? ' quran-juz-start-word' : '' %><%= word.juzStartFirst ? ' quran-juz-start-first-word' : '' %>" data-quran-ref="<%= ref %>" data-quran-word="<%= word.text %>" data-quran-word-number="<%= word.word %>" data-quran-word-translation="<%= word.meaning_en || '' %>" data-quran-word-grammar="<%= word.grammar_parts_of_speech || word.parts_of_speech || '' %>"<% if (word.juzStart) { %> data-quran-juz="<%= word.juzStart %>" title="Beginning of Juz <%= word.juzStart %>"<% } %> tabindex="0"><%= word.text %></span>
           <% }

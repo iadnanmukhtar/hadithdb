@@ -2481,6 +2481,8 @@ main.quran-mushaf-reader {
 }
 
 .quran-memorize-page:not(.quran-memorize-show-all) .quran-mushaf-line:not(.quran-mushaf-line-basmallah) .quran-corpus-word:not(.quran-memorize-word-revealed):not(.quran-memorize-ayah-revealed) {
+	background-color: rgba(108, 117, 125, 0.04) !important;
+	border-radius: 0.12em;
 	color: transparent !important;
 	text-decoration: underline;
 	text-decoration-color: var(--bs-border-color);
@@ -2491,6 +2493,20 @@ main.quran-mushaf-reader {
 
 .quran-memorize-page .quran-corpus-word {
 	transition: color 0.2s linear;
+}
+
+.quran-mushaf-page-toolbar [data-quran-memorize-all-toggle]:not(.active):hover,
+.quran-mushaf-page-toolbar [data-quran-memorize-autohide-toggle]:not(.active):hover {
+	background-color: transparent !important;
+	border-color: var(--bs-secondary) !important;
+	color: var(--bs-secondary) !important;
+}
+
+.quran-mushaf-page-toolbar [data-quran-memorize-all-toggle].active:hover,
+.quran-mushaf-page-toolbar [data-quran-memorize-autohide-toggle].active:hover {
+	background-color: var(--bs-secondary) !important;
+	border-color: var(--bs-secondary) !important;
+	color: white !important;
 }
 
 .quran-memorize-page .quran-corpus-word.quran-memorize-word-revealed,

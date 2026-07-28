@@ -6774,13 +6774,37 @@ function initQuranMemorizeView(root) {
 			if (existingTimer)
 				window.clearTimeout(existingTimer);
 			word.classList.add('quran-memorize-word-revealed');
+			if (page.dataset.quranMemorizeAutoHide === 'false') {
+				wordTimers.delete(word);
+				return;
+			}
 			wordTimers.set(word, window.setTimeout(function () {
 				word.classList.remove('quran-memorize-word-revealed');
 				wordTimers.delete(word);
 			}, 2000));
 		};
 		page.addEventListener('click', function (event) {
-			var toggle = event.target.closest('[data-quran-memorize-toggle]');
+			var autoHideToggle = event.target.closest('[data-quran-memorize-autohide-toggle]');
+			if (autoHideToggle && page.contains(autoHideToggle)) {
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				var autoHide = page.dataset.quranMemorizeAutoHide === 'false';
+				page.dataset.quranMemorizeAutoHide = autoHide ? 'true' : 'false';
+				autoHideToggle.classList.toggle('active', autoHide);
+				autoHideToggle.setAttribute('aria-pressed', autoHide ? 'true' : 'false');
+				autoHideToggle.setAttribute('aria-label', `${autoHide ? 'Turn off' : 'Turn on'} clicked word auto-hide on page ${page.getAttribute('data-quran-mushaf-page') || ''}`.trim());
+				autoHideToggle.setAttribute('title', autoHide ? 'Clicked words hide after two seconds' : 'Clicked words stay visible');
+				page.querySelectorAll('.quran-memorize-word-revealed').forEach(function (word) {
+					var timer = wordTimers.get(word);
+					if (timer)
+						window.clearTimeout(timer);
+					wordTimers.delete(word);
+					if (autoHide)
+						revealWord(word);
+				});
+				return;
+			}
+			var toggle = event.target.closest('[data-quran-memorize-all-toggle]');
 			if (toggle && page.contains(toggle)) {
 				event.preventDefault();
 				event.stopImmediatePropagation();
@@ -6793,16 +6817,14 @@ function initQuranMemorizeView(root) {
 				});
 				var showAll = !page.classList.contains('quran-memorize-show-all');
 				page.classList.toggle('quran-memorize-show-all', showAll);
+				toggle.classList.toggle('active', showAll);
 				toggle.setAttribute('aria-pressed', showAll ? 'true' : 'false');
 				toggle.setAttribute('aria-label', `${showAll ? 'Hide' : 'View'} all words on page ${page.getAttribute('data-quran-mushaf-page') || ''}`.trim());
 				toggle.setAttribute('title', `${showAll ? 'Hide' : 'View'} all words`);
-				var label = toggle.querySelector('[data-quran-memorize-toggle-label]');
-				var icon = toggle.querySelector('[data-quran-memorize-toggle-icon]');
-				if (label)
-					label.textContent = showAll ? 'Hide' : 'View';
+				var icon = toggle.querySelector('[data-quran-memorize-all-toggle-icon]');
 				if (icon) {
-					icon.classList.toggle('bi-eye', !showAll);
-					icon.classList.toggle('bi-eye-slash', showAll);
+					icon.classList.toggle('bi-eye', showAll);
+					icon.classList.toggle('bi-eye-slash', !showAll);
 				}
 				return;
 			}
@@ -6811,8 +6833,25 @@ function initQuranMemorizeView(root) {
 				event.preventDefault();
 				event.stopImmediatePropagation();
 				var ref = marker.getAttribute('data-quran-ref');
+				var targetRefs = [ref];
+				if (event.altKey || event.metaKey || event.ctrlKey) {
+					var previousRefs = [];
+					page.querySelectorAll('.quran-corpus-word[data-quran-ref], .quran-mushaf-ayah-marker[data-quran-ref]').forEach(function (element) {
+						if (element === marker)
+							return;
+						if (marker.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING)
+							return;
+						if (!element.classList.contains('quran-corpus-word') || element.closest('.quran-mushaf-line-basmallah'))
+							return;
+						var previousRef = element.getAttribute('data-quran-ref');
+						if (previousRef && previousRef !== ref && previousRefs.indexOf(previousRef) < 0)
+							previousRefs.push(previousRef);
+					});
+					targetRefs = previousRefs.concat(ref);
+				}
 				var ayahWords = Array.from(page.querySelectorAll('.quran-corpus-word[data-quran-ref]')).filter(function (word) {
-					return word.getAttribute('data-quran-ref') === ref;
+					return targetRefs.indexOf(word.getAttribute('data-quran-ref')) >= 0
+						&& !word.closest('.quran-mushaf-line-basmallah');
 				});
 				var hideAyah = ayahWords.length > 0 && ayahWords.every(function (word) {
 					return word.classList.contains('quran-memorize-ayah-revealed');
@@ -6825,7 +6864,8 @@ function initQuranMemorizeView(root) {
 					word.classList.remove('quran-memorize-word-revealed');
 					word.classList.toggle('quran-memorize-ayah-revealed', !hideAyah);
 				});
-				marker.setAttribute('aria-expanded', 'false');
+				if (marker.hasAttribute('aria-expanded'))
+					marker.setAttribute('aria-expanded', 'false');
 				return;
 			}
 			var word = event.target.closest('.quran-corpus-word[data-quran-ref]');
@@ -6910,7 +6950,7 @@ function initQuranMushafAyahMarkerActions(root) {
 	};
 	document.addEventListener('pointerover', function (event) {
 		var marker = event.target.closest('[data-quran-ayah-actions="1"][data-quran-ref]');
-		if (!marker)
+		if (!marker || marker.closest('[data-quran-memorize-page]'))
 			return;
 		window.clearTimeout(markerHideTimer);
 		if (activeMarker === marker && !menu.hidden)
@@ -6932,7 +6972,7 @@ function initQuranMushafAyahMarkerActions(root) {
 	});
 	document.addEventListener('focusin', function (event) {
 		var marker = event.target.closest('[data-quran-ayah-actions="1"][data-quran-ref]');
-		if (!marker)
+		if (!marker || marker.closest('[data-quran-memorize-page]'))
 			return;
 		window.clearTimeout(markerShowTimer);
 		markerShowTimer = window.setTimeout(function () {
