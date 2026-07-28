@@ -8,7 +8,7 @@ Every record keeps the original Arabic text alongside an English translation whe
 
 Recent work has improved the reading, browsing, and search experience across the site:
 
-* **Reading the Qurʾān** — move naturally between Passage, Ayat, Mushaf, and Memorize views while the site keeps your place. You can like, comment on, bookmark, and share a passage, move easily between verses and sections, and use the page-faithful Mushaf as a memorization exercise.
+* **Reading the Qurʾān** — move naturally between Passage, Ayat, Mushaf, Memorize, and Review views while the site keeps your place. You can like, comment on, bookmark, and share a passage, move easily between verses and sections, and use the page-faithful Mushaf with database-backed spaced repetition.
 * **The 15-line Mushaf** — read all 604 pages in a responsive, page-faithful Digital Khatt layout with infinite scrolling, Quranic surah headers, interactive words and ayah markers, page bookmarks, passage-aware coloring, and continuous recitation.
 * **Commentary and translation** — full-page commentary and translation views, tabs for switching between commentary works, hover explanations, dynamic translation selection, and the option to show Arabic and English side by side. You can turn individual works on or off and choose the order they appear in.
 * **Qurʾān audio** — choose a reciter, begin from a selected ayah, continue across page boundaries, repeat a passage or subsection, and control playback speed without losing synchronized ayah highlighting or translation captions.
@@ -23,12 +23,13 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 
 ## Qurʾān Features
 
-### Four connected reading modes
+### Five connected reading modes
 
 * **Passage** presents the Qurʾān in titled sections and subsections for thematic reading.
 * **Ayat** focuses the reading experience on individual verses and the ayah hero view.
 * **Mushaf** reproduces the familiar 15-line, page-by-page reading experience.
 * **Memorize** keeps the Digital Khatt Mushaf font and 15-line page layout while replacing ordinary words with underlined blanks. The basmalah and ayah markers remain visible.
+* **Review** tests due Mushaf pages using the saved Hard, Good, and Easy spaced-repetition schedule.
 * The mode links, page subtitle, URL, previous/next links, and related passage automatically follow the content currently in view during infinite scrolling.
 * Direct navigation is available by surah, ayah, passage, subsection, juz, manzil, Mushaf page, and search result.
 
@@ -57,6 +58,16 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * The plus and minus controls reveal the next hidden ayah or hide the most recently revealed ayah, one ayah at a time.
 * Each page keeps its own state as additional pages load through infinite scrolling, and Memorize mode remains active through page, surah, juz, URL, and previous/next navigation.
 * Audio, reciter and translation controls, the translation marquee, and word-translation tooltips are intentionally omitted so the view remains focused on recall.
+
+### Spaced-repetition review
+
+* Every Mushaf page begins in **To Do**. Signed-in users can change a page at any time to **Hard**, **Good**, **Easy**, or back to **To Do** from the bottom-right controls in Memorize view.
+* **Hard** pages are due immediately. **Good** and **Easy** pages return after their configured intervals, which default to **7 days** and **14 days** and can be changed under **My Settings → Quran Memorization**.
+* **To Do** pages are not included in Review. Returning a page to To Do removes it from the active memorization list without discarding its review history.
+* Select **Review** from the Quran menu or reader-mode controls to open `/quran/review`. Rating a reviewed page saves the new schedule and advances to the next due page; **Skip** advances without changing the page status.
+* `/quran/progress` shows only pages currently being memorized—those marked Hard, Good, or Easy—together with their status, next review date, and review count.
+* If no pages are being memorized, Review opens **Memorization Progress**. If active pages exist but none are due, Review reports that the current queue is complete.
+* Memorization progress and scheduling are stored per signed-in user in MySQL so they remain available across sessions and devices.
 
 ### Interactive Arabic and ayah tools
 
