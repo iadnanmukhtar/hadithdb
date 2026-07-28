@@ -111,7 +111,7 @@ The site includes the continuous, ayah-synchronized recitations listed below. Ea
 | `qatami` | Nasser al-Qatami |
 | `shuraym` | Saud al-Shuraym |
 | `sudays` | Abd al-Rahman al-Sudays |
-| `yasir` | Sahl Yasin |
+| `yasin` | Sahl Yasin |
 
 ## Qurʾān Commentaries and Translations
 

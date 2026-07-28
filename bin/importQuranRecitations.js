@@ -13,7 +13,7 @@ const SOURCES = [
 	{ directory: 'banna', slug: 'banna', name: 'Al-Banna', reciter: 'Mahmoud Ali al-Banna' },
 	{ directory: 'jalil', slug: 'jalil', name: 'Al-Jalil', reciter: 'Khalid al-Jalil' },
 	{ directory: 'qatami', slug: 'qatami', name: 'Al-Qatami', reciter: 'Nasser al-Qatami' },
-	{ directory: 'yasir', slug: 'yasir', name: 'Yasin', reciter: 'Sahl Yasin' }
+	{ directory: 'yasir', slug: 'yasin', name: 'Yasin', reciter: 'Sahl Yasin' }
 ];
 const MAX_SEGMENT_OVERLAP_MS = 250;
 const TRACK_DURATION_TOLERANCE_MS = 2000;
