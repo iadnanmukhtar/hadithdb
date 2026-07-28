@@ -9,12 +9,18 @@
   <main class="container col-lg-8 mx-auto mt-10">
     <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
       <h1 class="fs-4 mb-0">Memorization Progress</h1>
-      <a class="btn btn-primary btn-sm" href="<%= utils.quranUrl(req, '/quran/review') %>">Start Review</a>
+      <a class="btn btn-primary btn-sm" href="<%= utils.quranUrl(req, '/quran/review?start=1') %>">Start Review</a>
     </div>
-    <p id="quran-memorization-pages-status" class="text-muted">Loading memorized pages...</p>
-    <div class="table-responsive">
-      <table class="table table-sm align-middle" hidden id="quran-memorization-pages-table">
-        <thead><tr><th>Page</th><th>Status</th><th>Next review</th><th>Reviews</th></tr></thead>
+    <% if (req.query.complete !== undefined) { %><p class="alert alert-success py-2">You have completed all reviews that are due.</p><% } %>
+    <p id="quran-memorization-pages-status" class="text-muted small">Loading memorized pages...</p>
+    <div class="page-content-filter input-group input-group-sm mb-3 memorization-progress-filter">
+      <span class="input-group-text"><i class="bi bi-filter" aria-hidden="true"></i></span>
+      <input type="search" class="form-control" id="quran-memorization-pages-filter" placeholder="Filter by page, Surah, status, ayah, or opening words" aria-label="Filter memorization progress" autocomplete="off">
+      <button type="button" class="btn btn-outline-secondary" id="quran-memorization-pages-filter-clear" aria-label="Clear progress filter" hidden><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="table-responsive memorization-progress-table-wrap">
+      <table class="table table-hover align-middle mb-0 memorization-progress-table" hidden id="quran-memorization-pages-table">
+        <thead><tr><th>Page</th><th>Status</th><th>Starts in</th><th>Opening words</th><th>Next review</th><th>Reviews</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -26,21 +32,40 @@
     (async function () {
       const status = document.getElementById('quran-memorization-pages-status');
       const table = document.getElementById('quran-memorization-pages-table');
-      const labels = { todo: 'To Do', hard: 'Hard', good: 'Good', easy: 'Easy', never: 'Core Memory' };
+      const filter = document.getElementById('quran-memorization-pages-filter');
+      const filterClear = document.getElementById('quran-memorization-pages-filter-clear');
+      const labels = { todo: 'To Do', hard: 'Hard', good: 'Good', easy: 'Easy', never: 'Core' };
+      const statusClass = value => `is-${value === 'never' ? 'core' : value}`;
+      const escapeHtml = value => (value ?? '').toString().replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[character]));
       const statusOptions = page => ['hard', 'good', 'easy', 'never', 'todo'].map(value =>
         `<option value="${value}"${page.status === value ? ' selected' : ''}>${labels[value]}</option>`
       ).join('');
       const nextReview = page => {
         if (page.status === 'never') return 'No review';
         const date = page.next_review_at ? new Date(page.next_review_at) : null;
-        return page.due ? 'Due now' : (date ? date.toLocaleDateString() : '—');
+        return page.due ? 'Due now' : (date ? date.toLocaleDateString(undefined, {
+          month: 'numeric',
+          day: 'numeric',
+          year: '2-digit'
+        }) : '—');
       };
       const updateSummary = () => {
-        const count = table.querySelectorAll('tbody tr').length;
-        status.textContent = count
-          ? `${count} page${count === 1 ? '' : 's'} being memorized.`
-          : 'No pages are currently being memorized.';
-        table.hidden = count === 0;
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        const visible = rows.filter(row => !row.hidden).length;
+        status.textContent = visible
+          ? (visible === rows.length
+            ? `${visible} page${visible === 1 ? '' : 's'} being memorized.`
+            : `${visible} of ${rows.length} pages being memorized.`)
+          : (rows.length ? 'No pages match this filter.' : 'No pages are currently being memorized.');
+        table.hidden = rows.length === 0;
+      };
+      const ayahRange = page => {
+        if (!page.start_surah || !page.start_ayah || !page.end_surah || !page.end_ayah) return '—';
+        return page.start_surah === page.end_surah
+          ? `${page.start_surah}:${page.start_ayah}–${page.end_ayah}`
+          : `${page.start_surah}:${page.start_ayah}–${page.end_surah}:${page.end_ayah}`;
       };
       try {
         let attempts = 0;
@@ -66,9 +91,23 @@
         if (!response.ok) throw new Error(data.error || 'Unable to load memorized pages.');
         const activePages = data.pages.filter(page => page.status !== 'todo');
         table.querySelector('tbody').innerHTML = activePages.map(page => {
-          return `<tr data-progress-page="${page.page_number}"><td><a href="/quran/page/${page.page_number}?memorize">${page.page_number}</a></td><td><select class="form-select form-select-sm" data-progress-status aria-label="Memorization status for page ${page.page_number}">${statusOptions(page)}</select></td><td data-progress-next-review>${nextReview(page)}</td><td data-progress-review-count>${page.review_count || 0}</td></tr>`;
+          return `<tr data-progress-page="${page.page_number}"><td><a class="memorization-progress-page-link" href="/quran/page/${page.page_number}?memorize">${page.page_number}</a></td><td><select class="form-select form-select-sm ${statusClass(page.status)}" data-progress-status aria-label="Memorization status for page ${page.page_number}">${statusOptions(page)}</select></td><td class="memorization-progress-reference"><span class="memorization-progress-surah">${escapeHtml(page.start_surah_name || `Surah ${page.start_surah || ''}`)}</span><span class="visually-hidden">${escapeHtml(page.start_surah_alternate_names || '')}</span><span class="memorization-progress-ayah-range">${escapeHtml(ayahRange(page))}</span></td><td class="memorization-progress-opening" lang="ar" dir="rtl">${escapeHtml(page.opening_words || '—')}</td><td class="text-nowrap" data-progress-next-review>${escapeHtml(nextReview(page))}</td><td class="text-center" data-progress-review-count>${page.review_count || 0}</td></tr>`;
         }).join('');
         updateSummary();
+        const applyFilter = () => {
+          const query = filter.value.trim().toLocaleLowerCase();
+          table.querySelectorAll('tbody tr').forEach(row => {
+            row.hidden = Boolean(query) && !row.textContent.toLocaleLowerCase().includes(query);
+          });
+          filterClear.hidden = !query;
+          updateSummary();
+        };
+        filter.addEventListener('input', applyFilter);
+        filterClear.addEventListener('click', () => {
+          filter.value = '';
+          applyFilter();
+          filter.focus();
+        });
         table.addEventListener('change', async event => {
           const select = event.target.closest('[data-progress-status]');
           if (!select) return;
@@ -93,6 +132,8 @@
               updateSummary();
               return;
             }
+            select.classList.remove('is-hard', 'is-good', 'is-easy', 'is-core', 'is-todo');
+            select.classList.add(statusClass(saved.page.status));
             row.querySelector('[data-progress-next-review]').textContent = nextReview(saved.page);
             row.querySelector('[data-progress-review-count]').textContent = saved.page.review_count || 0;
           } catch (err) {

@@ -2446,6 +2446,103 @@ main.quran-mushaf-reader {
 	font-size: .8rem;
 }
 
+.memorization-progress-filter {
+	max-width: 40rem;
+}
+
+.memorization-progress-table-wrap {
+	background: var(--bs-body-bg);
+	border: 1px solid var(--bs-border-color);
+	border-radius: .55rem;
+	box-shadow: 0 .18rem .8rem rgba(0, 0, 0, .045);
+}
+
+.memorization-progress-table {
+	font-size: .84rem;
+}
+
+.memorization-progress-table thead th {
+	background: color-mix(in srgb, var(--bs-body-bg) 94%, var(--bs-secondary-bg) 6%);
+	border-bottom-width: 1px;
+	color: var(--c-gray-dark);
+	font-size: .72rem;
+	letter-spacing: .025em;
+	padding: .65rem .7rem;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.memorization-progress-table tbody td {
+	padding: .65rem .7rem;
+}
+
+.memorization-progress-page-link {
+	align-items: center;
+	background: var(--bs-secondary-bg);
+	border-radius: 50%;
+	display: inline-flex;
+	font-weight: 700;
+	height: 2.1rem;
+	justify-content: center;
+	text-decoration: none;
+	width: 2.1rem;
+}
+
+.memorization-progress-surah {
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.memorization-progress-reference {
+	white-space: nowrap;
+}
+
+.memorization-progress-ayah-range {
+	color: var(--c-gray-dark);
+	display: block;
+	font-size: .76rem;
+	font-weight: 400;
+	margin-top: .08rem;
+}
+
+.memorization-progress-opening,
+.memorization-progress-table .memorization-progress-opening:lang(ar) {
+	font-family: Kitab, Serif;
+	font-size: .86rem;
+	line-height: 1.5;
+	max-width: 17rem;
+	min-width: 11rem;
+}
+
+.memorization-progress-table [data-progress-status] {
+	font-weight: 600;
+	min-width: 5.5rem;
+}
+
+.memorization-progress-table [data-progress-status].is-easy {
+	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-success) 10%);
+	border-color: color-mix(in srgb, var(--bs-border-color) 55%, var(--bs-success) 45%);
+	color: var(--bs-success-text-emphasis);
+}
+
+.memorization-progress-table [data-progress-status].is-good {
+	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-primary) 10%);
+	border-color: color-mix(in srgb, var(--bs-border-color) 55%, var(--bs-primary) 45%);
+	color: var(--bs-primary-text-emphasis);
+}
+
+.memorization-progress-table [data-progress-status].is-hard {
+	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-danger) 10%);
+	border-color: color-mix(in srgb, var(--bs-border-color) 55%, var(--bs-danger) 45%);
+	color: var(--bs-danger-text-emphasis);
+}
+
+.memorization-progress-table [data-progress-status].is-core {
+	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, #6f42c1 10%);
+	border-color: color-mix(in srgb, var(--bs-border-color) 55%, #6f42c1 45%);
+	color: color-mix(in srgb, var(--bs-body-color) 65%, #6f42c1 35%);
+}
+
 @media (max-width: 575.98px) {
 	.quran-memorize-page-footer {
 		overflow-x: auto;

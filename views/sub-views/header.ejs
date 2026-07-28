@@ -20,7 +20,7 @@
     var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
     var isQuranMushafArea = requestPath === '/quran/page' || requestPath.indexOf('/quran/page/') === 0;
     var isQuranMemorizeArea = isQuranMushafArea && req.query.memorize !== undefined;
-    var isQuranReviewArea = requestPath === '/quran/review' || requestPath === '/quran/progress' || (isQuranMemorizeArea && req.query.review !== undefined);
+    var isQuranReviewArea = requestPath === '/quran/review' || (isQuranMemorizeArea && req.query.review !== undefined);
     var isQuranStudyArea = /^\/quran\/\d+(?:\/|$)/.test(requestPath);
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';

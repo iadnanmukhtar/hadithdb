@@ -10,7 +10,7 @@
     <h1 class="fs-4">Quran Review</h1>
     <p id="quran-review-status" class="text-muted"><%= req.query.complete !== undefined ? 'You have completed all reviews that are due.' : 'Finding the next page due for review...' %></p>
     <p><a class="btn btn-primary" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>">Open Memorize</a>
-      <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/progress') %>">Memorization Progress</a></p>
+      <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/review') %>">Memorization Progress</a></p>
   </main>
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
@@ -38,9 +38,9 @@
         if (data.page && data.page.page_number)
           window.location.replace(`/quran/page/${data.page.page_number}?memorize&review`);
         else if (!data.hasPages)
-          window.location.replace('/quran/progress');
+          window.location.replace('/quran/review');
         else
-          status.textContent = 'You have completed all reviews that are due.';
+          window.location.replace('/quran/review?complete=1');
       } catch (err) {
         status.textContent = err.message;
       }
