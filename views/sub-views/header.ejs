@@ -19,6 +19,7 @@
     var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans');
     var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
     var isQuranMushafArea = requestPath === '/quran/page' || requestPath.indexOf('/quran/page/') === 0;
+    var isQuranMemorizeArea = isQuranMushafArea && req.query.memorize !== undefined;
     var isQuranStudyArea = /^\/quran\/\d+(?:\/|$)/.test(requestPath);
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
@@ -79,9 +80,10 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranArea && !isQuranStudyArea && !isQuranTranslationsArea && !isQuranTafsirArea && !isQuranMushafArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><%- include('menu_icon.ejs', { type: 'quran', label: 'Quran' }) %> Quran</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranStudyArea) %>" href="<%= utils.quranUrl(req, '/quran/1') %>"><i class="bi bi-text-paragraph"></i> Study</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isQuranMushafArea) %>" href="<%= utils.quranUrl(req, '/quran/page') %>"><i class="bi bi-book"></i> Mushaf</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranMushafArea && !isQuranMemorizeArea) %>" href="<%= utils.quranUrl(req, '/quran/page') %>"><i class="bi bi-book"></i> Mushaf</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations') %>"><i class="bi bi-translate"></i> Translations</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-book-half"></i> Tafsir</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranMemorizeArea) %>" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>"><i class="bi bi-eye-slash"></i> Memorize</a></li>
           </ul>
         </li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
@@ -179,6 +181,7 @@
             isQuranArea: isQuranArea,
             isQuranStudyArea: isQuranStudyArea,
             isQuranMushafArea: isQuranMushafArea,
+            isQuranMemorizeArea: isQuranMemorizeArea,
             isQuranTranslationsArea: isQuranTranslationsArea,
             isQuranTafsirArea: isQuranTafsirArea,
             isHadithArea: isHadithArea,
@@ -294,7 +297,7 @@
                 <%- title_en || `Section ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%=section.count%>)
               </a>
               <% if (page.context.book && page.context.book.alias === 'quran') { %>
-                &nbsp;<a href="<%= utils.urlFor(req, `/${section.path}`) %>" title="Passage View"><i class="bi bi-text-paragraph"></i></a>
+                &nbsp;<a href="<%= utils.urlFor(req, `/${section.path}`) %>" title="Study"><i class="bi bi-text-paragraph"></i></a>
               <% } %>
             </td>
             <td lang="ar"><a href="<%= utils.urlFor(req, `/${section.path}`) %>"><%- title %></a></td>

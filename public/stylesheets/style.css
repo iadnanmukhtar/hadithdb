@@ -2395,6 +2395,10 @@ main.quran-mushaf-reader {
 	margin-bottom: 0;
 }
 
+.quran-memorize-page-footer .quran-memorize-controls {
+	justify-content: flex-start;
+}
+
 .quran-mushaf-page-passage-ref,
 .quran-mushaf-page-subsection-ref {
 	color: var(--c-gray-dark);

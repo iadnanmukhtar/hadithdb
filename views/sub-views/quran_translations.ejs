@@ -53,8 +53,8 @@
 				<% if (translationSettingsHref || showAyahModalModeToggle) { %>
 					<span class="quran-section-heading-actions">
 						<% if (translationSettingsHref) { %>
-							<a class="quran-section-heading-action btn btn-sm btn-outline-secondary" href="<%= utils.quranUrl(req, `/quran:${passageSurah}:${passageAyahHeadingStart}`) %>" title="Passage View" aria-label="Passage View">
-								<span class="bi bi-text-paragraph" aria-hidden="true"></span><span>Passage</span>
+							<a class="quran-section-heading-action btn btn-sm btn-outline-secondary" href="<%= utils.quranUrl(req, `/quran:${passageSurah}:${passageAyahHeadingStart}`) %>" title="Study" aria-label="Study">
+								<span class="bi bi-text-paragraph" aria-hidden="true"></span><span>Study</span>
 							</a>
 							<button type="button" class="quran-section-heading-action btn btn-sm btn-outline-secondary quran-ayah-modal-trigger" data-quran-ayah-modal-index="0" data-quran-ayah-modal-type="tafsirs" title="View tafsir" aria-label="View tafsir">
 								<span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span>

@@ -46,13 +46,15 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 
 ### Memorize view
 
-* Open a Mushaf page with `?memorize`, such as `/quran/page/1?memorize`, or select **Memorize** from the Quran reading-mode controls.
+* Open a Mushaf page with `?memorize`, such as `/quran/page/1?memorize`, select **Memorize** from the Quran reading-mode controls, or use the **Memorize** item after **Tafsir** in the Quran menu.
 * Hidden words retain their exact Digital Khatt width and placement and are individually underlined, preserving the page-faithful 15-line layout. Surah headers, the basmalah, and ayah markers remain visible.
-* Clicking a hidden word reveals it for **two seconds** before it fades back to an underlined blank by default.
+* Clicking a hidden word reveals it; clicking that visible word hides it immediately. When Word auto-hide is enabled, a clicked word fades back to an underlined blank after **two seconds**.
 * Clicking an ayah marker toggles that complete ayah between visible text and blanks without changing the other ayat.
 * Alt-clicking, Option-clicking, Command-clicking, or Control-clicking an ayah marker toggles that ayah and all earlier ayat on the Mushaf page between visible text and blanks.
-* The page-header **Page** control reveals every word on that page or returns the page to blanks. Hiding also clears individual word and ayah reveals.
-* The **Word** control determines whether individually clicked words disappear after two seconds or remain visible. Auto-hide is on by default.
+* Icon-only **Page** and **Word auto-hide** controls appear at both the top and bottom of each page. The bottom controls replace the passage and subpassage headings in Memorize mode.
+* The **Page** control reveals every word on that page or returns the page to blanks. Hiding also clears individual word and ayah reveals.
+* The **Word auto-hide** control determines whether individually clicked words disappear after two seconds or remain visible. Auto-hide is off by default, and its setting is remembered for the browser session.
+* The plus and minus controls reveal the next hidden ayah or hide the most recently revealed ayah, one ayah at a time.
 * Each page keeps its own state as additional pages load through infinite scrolling, and Memorize mode remains active through page, surah, juz, URL, and previous/next navigation.
 * Audio, reciter and translation controls, the translation marquee, and word-translation tooltips are intentionally omitted so the view remains focused on recall.
 

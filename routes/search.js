@@ -2265,7 +2265,7 @@ router.get('/quran/page', async function (req, res) {
   } catch (err) {
     debug(`Could not resolve the Mushaf bookmark: ${err.message}`);
   }
-  return res.redirect(302, Utils.quranUrl(req, `/quran/page/${pageNumber}`));
+  return res.redirect(302, Utils.quranUrl(req, `/quran/page/${pageNumber}${req.query.memorize !== undefined ? '?memorize' : ''}`));
 });
 
 router.get('/quran/page/:page', async function (req, res, next) {
