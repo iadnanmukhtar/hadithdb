@@ -6777,7 +6777,7 @@ function initQuranMemorizeView(root) {
 			wordTimers.set(word, window.setTimeout(function () {
 				word.classList.remove('quran-memorize-word-revealed');
 				wordTimers.delete(word);
-			}, 3000));
+			}, 2000));
 		};
 		page.addEventListener('click', function (event) {
 			var toggle = event.target.closest('[data-quran-memorize-toggle]');
