@@ -34,7 +34,7 @@
       const table = document.getElementById('quran-memorization-pages-table');
       const filter = document.getElementById('quran-memorization-pages-filter');
       const filterClear = document.getElementById('quran-memorization-pages-filter-clear');
-      const labels = { todo: 'To Do', hard: 'Hard', good: 'Good', easy: 'Easy', never: 'Core' };
+      const labels = { todo: 'Later', hard: 'Hard', good: 'Good', easy: 'Easy', never: 'Core' };
       const statusClass = value => `is-${value === 'never' ? 'core' : value}`;
       const escapeHtml = value => (value ?? '').toString().replace(/[&<>"']/g, character => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'

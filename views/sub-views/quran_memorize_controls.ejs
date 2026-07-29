@@ -18,7 +18,7 @@
       <button type="button" class="btn btn-dark" data-quran-memorize-again>Again</button>
       <% } %>
       <% if (req.query.review === undefined) { %>
-      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-secondary' : 'btn-outline-secondary' %>" data-quran-memorize-status="todo">To Do</button>
+      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-secondary' : 'btn-outline-secondary' %>" data-quran-memorize-status="todo">Later</button>
       <% } %>
     </div>
     <% if (req.query.review !== undefined) { %>
