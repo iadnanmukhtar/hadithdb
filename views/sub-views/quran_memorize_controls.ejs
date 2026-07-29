@@ -8,14 +8,21 @@
 <div class="quran-memorize-rating" data-quran-memorize-rating data-page-number="<%= pageNumber %>">
   <div class="quran-memorize-rating-buttons">
     <div class="btn-group btn-group-sm" role="group" aria-label="Memorization status for page <%= pageNumber %>">
+      <% if (req.query.review === undefined) { %>
       <button type="button" class="btn btn-outline-dark quran-memorize-core-memory" data-quran-memorize-status="never" aria-label="Mark page <%= pageNumber %> as Core Memory" title="Core Memory — memorized and never reviewed"><span aria-hidden="true">🧠</span></button>
-      <button type="button" class="btn btn-outline-success" data-quran-memorize-status="easy">Easy</button>
-      <button type="button" class="btn btn-outline-primary" data-quran-memorize-status="good">Good</button>
-      <button type="button" class="btn btn-outline-danger" data-quran-memorize-status="hard">Hard</button>
-      <button type="button" class="btn btn-outline-secondary" data-quran-memorize-status="todo">To Do</button>
+      <% } %>
+      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-success' : 'btn-outline-success' %>" data-quran-memorize-status="easy">Easy</button>
+      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-primary' : 'btn-outline-primary' %>" data-quran-memorize-status="good">Good</button>
+      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-danger' : 'btn-outline-danger' %>" data-quran-memorize-status="hard">Hard</button>
+      <% if (req.query.review !== undefined) { %>
+      <button type="button" class="btn btn-dark" data-quran-memorize-again>Again</button>
+      <% } %>
+      <% if (req.query.review === undefined) { %>
+      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-secondary' : 'btn-outline-secondary' %>" data-quran-memorize-status="todo">To Do</button>
+      <% } %>
     </div>
     <% if (req.query.review !== undefined) { %>
-    <button type="button" class="btn btn-sm btn-outline-secondary quran-memorize-skip" data-quran-memorize-skip>Skip</button>
+    <button type="button" class="btn btn-sm btn-secondary quran-memorize-skip" data-quran-memorize-skip>Skip</button>
     <% } %>
   </div>
   <a class="quran-memorize-list-link" href="/quran/review">Memorization Progress</a>

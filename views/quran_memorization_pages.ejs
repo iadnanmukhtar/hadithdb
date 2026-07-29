@@ -9,9 +9,9 @@
   <main class="container col-lg-8 mx-auto mt-10">
     <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
       <h1 class="fs-4 mb-0">Memorization Progress</h1>
-      <a class="btn btn-primary btn-sm" href="<%= utils.quranUrl(req, '/quran/review?start=1') %>">Start Review</a>
+      <a class="btn btn-primary btn-sm" href="<%= utils.quranUrl(req, '/quran/review?start=1&reset=1') %>">Start Review</a>
     </div>
-    <% if (req.query.complete !== undefined) { %><p class="alert alert-success py-2">You have completed all reviews that are due.</p><% } %>
+    <% if (req.query.complete !== undefined) { %><p class="alert alert-success py-2"><%= req.query.limit ? `Review session complete — ${parseInt(req.query.limit, 10) || 0} Good/Easy pages reviewed, plus all selected Hard pages.` : 'You have completed the available reviews.' %></p><% } %>
     <p id="quran-memorization-pages-status" class="text-muted small">Loading memorized pages...</p>
     <div class="page-content-filter input-group input-group-sm mb-3 memorization-progress-filter">
       <span class="input-group-text"><i class="bi bi-filter" aria-hidden="true"></i></span>

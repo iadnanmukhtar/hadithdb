@@ -44,11 +44,22 @@ router.put('/pages/:page', async function (req, res) {
 });
 
 router.get('/next', async function (req, res) {
-  const [page, hasPages] = await Promise.all([
-    QuranMemorization.nextDue(req.user.uid, req.query.exclude),
-    QuranMemorization.hasActivePages(req.user.uid)
-  ]);
-  res.json({ page, hasPages });
+  const settings = await UserSettings.getSettings(req.user.uid);
+  const reviewLimit = settings.memorization.reviewLimit;
+  const reviewed = Math.max(0, parseInt(req.query.reviewed, 10) || 0);
+  const hasPages = await QuranMemorization.hasActivePages(req.user.uid);
+  const excludedPages = (req.query.exclude || '').toString().split(',').slice(0, 604);
+  if (reviewed >= reviewLimit) {
+    const hardPage = await QuranMemorization.nextDue(req.user.uid, excludedPages, settings, { hardOnly: true });
+    if (hardPage) {
+      res.json({ page: hardPage, hasPages, limitReached: false, reviewLimit });
+      return;
+    }
+    res.json({ page: null, hasPages, limitReached: true, reviewLimit });
+    return;
+  }
+  const page = await QuranMemorization.nextDue(req.user.uid, excludedPages, settings);
+  res.json({ page, hasPages, limitReached: false, reviewLimit });
 });
 
 router.use(function (err, req, res, next) {

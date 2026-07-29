@@ -1704,6 +1704,11 @@ nav .nav-link[aria-current="page"] {
 	z-index: 1002;
 }
 
+.site-navbar .top-nav-desktop-actions > .nav-item.dropdown > .dropdown-menu {
+	max-height: none;
+	overflow-y: visible;
+}
+
 .search-click-toggle {
 	position: relative;
 }
@@ -2365,6 +2370,30 @@ main.quran-mushaf-reader {
 	background-color: color-mix(in srgb, var(--bs-body-bg) 96%, #4c8fc7 4%);
 }
 
+.quran-review-loading-page {
+	min-height: calc(100vh - 10rem);
+	position: relative;
+}
+
+.quran-review-loading {
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	justify-content: center;
+	left: 50%;
+	position: absolute;
+	text-align: center;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: min(24rem, calc(100% - 2rem));
+}
+
+.quran-review-loading .spinner-border {
+	height: 3rem;
+	width: 3rem;
+}
+
 .quran-mushaf-line {
 	align-items: center;
 	display: flex;
@@ -2438,7 +2467,6 @@ main.quran-mushaf-reader {
 }
 
 .quran-memorize-skip {
-	background: transparent;
 	background-image: none;
 }
 
@@ -2541,6 +2569,29 @@ main.quran-mushaf-reader {
 	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, #6f42c1 10%);
 	border-color: color-mix(in srgb, var(--bs-border-color) 55%, #6f42c1 45%);
 	color: color-mix(in srgb, var(--bs-body-color) 65%, #6f42c1 35%);
+}
+
+.settings-section-header {
+	align-items: center !important;
+	cursor: default;
+}
+
+.settings-section-toggle {
+	flex: 0 0 auto;
+	margin-left: auto;
+}
+
+.settings-section-toggle .bi {
+	display: inline-block;
+	transition: transform .15s ease;
+}
+
+.settings-section-toggle[aria-expanded="true"] .bi {
+	transform: rotate(180deg);
+}
+
+.settings-section-content {
+	padding-bottom: .25rem;
 }
 
 @media (max-width: 575.98px) {
@@ -2654,15 +2705,17 @@ main.quran-mushaf-reader {
 	transition: color 0.2s linear;
 }
 
-.quran-mushaf-page-toolbar [data-quran-memorize-all-toggle]:not(.active):hover,
-.quran-mushaf-page-toolbar [data-quran-memorize-autohide-toggle]:not(.active):hover {
+.quran-memorize-controls [data-quran-memorize-all-toggle]:not(.active):hover,
+.quran-memorize-controls [data-quran-memorize-autohide-toggle]:not(.active):hover,
+.quran-memorize-controls [data-quran-memorize-ayah-reveal]:hover,
+.quran-memorize-controls [data-quran-memorize-ayah-hide]:hover {
 	background-color: transparent !important;
 	border-color: var(--bs-secondary) !important;
 	color: var(--bs-secondary) !important;
 }
 
-.quran-mushaf-page-toolbar [data-quran-memorize-all-toggle].active:hover,
-.quran-mushaf-page-toolbar [data-quran-memorize-autohide-toggle].active:hover {
+.quran-memorize-controls [data-quran-memorize-all-toggle].active:hover,
+.quran-memorize-controls [data-quran-memorize-autohide-toggle].active:hover {
 	background-color: var(--bs-secondary) !important;
 	border-color: var(--bs-secondary) !important;
 	color: white !important;
@@ -3524,6 +3577,49 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 
 .mobile-bottom-nav.mobile-bottom-nav-audio-controls > :not(.mobile-bottom-nav-audio-item) {
 	display: none !important;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-review-controls {
+	align-items: stretch;
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-review-controls > :not(.quran-memorize-rating-buttons) {
+	display: none !important;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-review-controls .quran-memorize-rating-buttons {
+	display: grid;
+	flex: 1 1 auto;
+	gap: .25rem;
+	grid-template-columns: minmax(0, 5fr) minmax(2.8rem, 1fr);
+	width: 100%;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-review-controls .btn-group {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	width: 100%;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-review-controls .btn {
+	align-items: center;
+	display: inline-flex;
+	font-size: .72rem;
+	font-weight: 600;
+	justify-content: center;
+	line-height: 1.1;
+	min-height: 2.35rem;
+	padding: .2rem .25rem;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-review-controls .btn-success,
+.mobile-bottom-nav.mobile-bottom-nav-review-controls .btn-primary,
+.mobile-bottom-nav.mobile-bottom-nav-review-controls .btn-danger,
+.mobile-bottom-nav.mobile-bottom-nav-review-controls .btn-secondary,
+.mobile-bottom-nav.mobile-bottom-nav-review-controls .btn-dark {
+	color: #fff;
 }
 
 .mobile-bottom-nav-audio-item.is-active {

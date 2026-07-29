@@ -6774,6 +6774,81 @@ function initQuranMemorizeView(root) {
 		var ratingStatus = rating && rating.querySelector('[data-quran-memorize-save-status]');
 		var pageNumber = rating && rating.getAttribute('data-page-number');
 		var reviewMode = new URLSearchParams(window.location.search).has('review');
+		var reviewSourceStatus = new URLSearchParams(window.location.search).get('reviewStatus');
+		var ratingButtons = rating && rating.querySelector('.quran-memorize-rating-buttons');
+		if (reviewMode && ratingButtons) {
+			var stickyFooter = document.querySelector('.mobile-bottom-nav');
+			if (stickyFooter) {
+				stickyFooter.classList.add('mobile-bottom-nav-review-controls');
+				stickyFooter.setAttribute('aria-label', 'Review page rating');
+				stickyFooter.appendChild(ratingButtons);
+			}
+		}
+		var reviewCountStorageKey = 'hadithdb.quranReviewSessionCount';
+		var reviewPagesStorageKey = 'hadithdb.quranReviewSessionPages';
+		var reviewAgainStorageKey = 'hadithdb.quranReviewSessionAgain';
+		var reviewCount = function () {
+			try {
+				return Math.max(0, parseInt(window.sessionStorage && window.sessionStorage.getItem(reviewCountStorageKey), 10) || 0);
+			} catch (_err) {
+				return 0;
+			}
+		};
+		var incrementReviewCount = function () {
+			var nextCount = reviewCount() + 1;
+			try {
+				if (window.sessionStorage)
+					window.sessionStorage.setItem(reviewCountStorageKey, String(nextCount));
+			} catch (_err) {}
+			return nextCount;
+		};
+		var reviewedPages = function () {
+			try {
+				var stored = JSON.parse(window.sessionStorage && window.sessionStorage.getItem(reviewPagesStorageKey) || '[]');
+				return Array.isArray(stored) ? stored.map(Number).filter(function (page) {
+					return Number.isInteger(page) && page >= 1 && page <= 604;
+				}) : [];
+			} catch (_err) {
+				return [];
+			}
+		};
+		var rememberReviewedPage = function () {
+			var pages = Array.from(new Set(reviewedPages().concat([Number(pageNumber)])));
+			try {
+				if (window.sessionStorage)
+					window.sessionStorage.setItem(reviewPagesStorageKey, JSON.stringify(pages));
+			} catch (_err) {}
+		};
+		var againPages = function () {
+			try {
+				var stored = JSON.parse(window.sessionStorage && window.sessionStorage.getItem(reviewAgainStorageKey) || '[]');
+				return Array.isArray(stored) ? stored.map(Number).filter(function (page) {
+					return Number.isInteger(page) && page >= 1 && page <= 604;
+				}) : [];
+			} catch (_err) {
+				return [];
+			}
+		};
+		var saveAgainPages = function (pages) {
+			try {
+				if (window.sessionStorage)
+					window.sessionStorage.setItem(reviewAgainStorageKey, JSON.stringify(pages));
+			} catch (_err) {}
+		};
+		var queueAgainPage = function () {
+			var current = Number(pageNumber);
+			saveAgainPages(againPages().filter(function (page) { return page !== current; }).concat([current]));
+		};
+		var removeAgainPage = function () {
+			var current = Number(pageNumber);
+			saveAgainPages(againPages().filter(function (page) { return page !== current; }));
+		};
+		var openAgainReview = function () {
+			var nextPage = againPages()[0];
+			if (!nextPage) return false;
+			window.location.href = `/quran/page/${nextPage}?memorize&review&reviewStatus=hard&reviewRepeat=1`;
+			return true;
+		};
 		var memorizationRequest = async function (path, options) {
 			var auth = window.hadithAuth;
 			var token = auth && auth.getToken ? await auth.getToken() : null;
@@ -6798,11 +6873,18 @@ function initQuranMemorizeView(root) {
 			});
 		};
 		var openNextReview = async function () {
-			var result = await memorizationRequest(`/next?exclude=${encodeURIComponent(pageNumber)}`);
-			if (result.page && result.page.page_number) {
-				window.location.href = `/quran/page/${result.page.page_number}?memorize&review`;
+			var excluded = Array.from(new Set(reviewedPages().concat([Number(pageNumber)]))).join(',');
+			var result = await memorizationRequest(`/next?exclude=${encodeURIComponent(excluded)}&reviewed=${reviewCount()}`);
+			if (result.limitReached) {
+				if (openAgainReview()) return;
+				window.location.href = `/quran/review?complete=1&limit=${encodeURIComponent(result.reviewLimit || '')}`;
 				return;
 			}
+			if (result.page && result.page.page_number) {
+				window.location.href = `/quran/page/${result.page.page_number}?memorize&review&reviewStatus=${encodeURIComponent(result.page.status || '')}`;
+				return;
+			}
+			if (openAgainReview()) return;
 			window.location.href = '/quran/review?complete=1';
 		};
 		if (rating && !reviewMode) {
@@ -6810,15 +6892,18 @@ function initQuranMemorizeView(root) {
 				if (result.page) markRating(result.page.status);
 			}).catch(function () {});
 		}
-		if (rating) {
-			rating.addEventListener('click', function (event) {
+		if (ratingButtons) {
+			ratingButtons.addEventListener('click', function (event) {
 				var statusButton = event.target.closest('[data-quran-memorize-status]');
 				var skipButton = event.target.closest('[data-quran-memorize-skip]');
-				if (!statusButton && !skipButton) return;
+				var againButton = event.target.closest('[data-quran-memorize-again]');
+				if (!statusButton && !skipButton && !againButton) return;
 				event.preventDefault();
 				if (skipButton) {
 					if (ratingStatus) ratingStatus.textContent = 'Skipped.';
 					if (reviewMode) {
+						removeAgainPage();
+						rememberReviewedPage();
 						openNextReview().catch(function (err) {
 							if (ratingStatus) ratingStatus.textContent = err.message;
 						});
@@ -6829,8 +6914,8 @@ function initQuranMemorizeView(root) {
 					}
 					return;
 				}
-				var status = statusButton.getAttribute('data-quran-memorize-status');
-				rating.querySelectorAll('button').forEach(function (button) { button.disabled = true; });
+				var status = againButton ? 'hard' : statusButton.getAttribute('data-quran-memorize-status');
+				ratingButtons.querySelectorAll('button').forEach(function (button) { button.disabled = true; });
 				if (ratingStatus) ratingStatus.textContent = 'Saving...';
 				memorizationRequest(`/pages/${encodeURIComponent(pageNumber)}`, {
 					method: 'PUT',
@@ -6839,11 +6924,20 @@ function initQuranMemorizeView(root) {
 				}).then(function (result) {
 					markRating(result.page && result.page.status || status);
 					if (ratingStatus) ratingStatus.textContent = 'Saved.';
-					if (reviewMode) return openNextReview();
+					if (reviewMode) {
+						if (againButton)
+							queueAgainPage();
+						else
+							removeAgainPage();
+						rememberReviewedPage();
+						if (reviewSourceStatus !== 'hard')
+							incrementReviewCount();
+						return openNextReview();
+					}
 				}).catch(function (err) {
 					if (ratingStatus) ratingStatus.textContent = err.message;
 				}).finally(function () {
-					rating.querySelectorAll('button').forEach(function (button) { button.disabled = false; });
+					ratingButtons.querySelectorAll('button').forEach(function (button) { button.disabled = false; });
 				});
 			});
 		}

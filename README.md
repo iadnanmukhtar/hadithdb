@@ -1,6 +1,6 @@
 # HadithDB
 
-HadithDB is a website for reading, searching, and citing the Qurʾān and ḥadīth. You can browse it online at <https://hadithunlocked.com>.
+HadithDB (Hadith Unlocked) is a website for reading, searching, and citing the Quran and ḥadīth. You can browse it online at <https://hadithunlocked.com>.
 
 Every record keeps the original Arabic text alongside an English translation where one is available, together with chapter listings and grading information. For ḥadīth, the chain of narrators (isnād) and the report itself (matn) are stored separately so each can be read and searched on its own.
 
@@ -8,24 +8,24 @@ Every record keeps the original Arabic text alongside an English translation whe
 
 Recent work has improved the reading, browsing, and search experience across the site:
 
-* **Reading the Qurʾān** — move naturally between Passage, Ayat, Mushaf, Memorize, and Review views while the site keeps your place. You can like, comment on, bookmark, and share a passage, move easily between verses and sections, and use the page-faithful Mushaf with database-backed spaced repetition.
+* **Reading the Quran** — move naturally between Passage, Ayat, Mushaf, Memorize, and Review views while the site keeps your place. You can like, comment on, bookmark, and share a passage, move easily between verses and sections, and use the page-faithful Mushaf with database-backed spaced repetition.
 * **The 15-line Mushaf** — read all 604 pages in a responsive, page-faithful Digital Khatt layout with infinite scrolling, Quranic surah headers, interactive words and ayah markers, page bookmarks, passage-aware coloring, and continuous recitation.
 * **Commentary and translation** — full-page commentary and translation views, tabs for switching between commentary works, hover explanations, dynamic translation selection, and the option to show Arabic and English side by side. You can turn individual works on or off and choose the order they appear in.
-* **Qurʾān audio** — choose a reciter, begin from a selected ayah, continue across page boundaries, repeat a passage or subsection, and control playback speed without losing synchronized ayah highlighting or translation captions.
-* **Search** — searching now covers the Qurʾān and its commentaries as well as ḥadīth, returns Qurʾān matches faster, lets you filter to commentary results, and presents cleaner highlights and a single, unified set of suggestions.
-* **My Settings** — separate starting points for ḥadīth and Qurʾān, remembered commentary, translation, and reciter preferences, and bookmarked passages and Mushaf pages saved for later.
+* **Quran audio** — choose a reciter, begin from a selected ayah, continue across page boundaries, repeat a passage or subsection, and control playback speed without losing synchronized ayah highlighting or translation captions.
+* **Search** — searching now covers the Quran and its commentaries as well as ḥadīth, returns Quran matches faster, lets you filter to commentary results, and presents cleaner highlights and a single, unified set of suggestions.
+* **My Settings** — separate starting points for ḥadīth and Quran, remembered commentary, translation, and reciter preferences, and bookmarked passages and Mushaf pages saved for later.
 
 ## Quran Unlocked
 
-**Read the Qurʾān as a book, explore it as a study text, and hear it as a continuous recitation—all in one place.** Quran Unlocked combines a responsive 15-line Mushaf with word-level learning, passage structure, trusted translations and tafsīr, personalized audio, and tools for saving and sharing what matters.
+**Read the Quran as a book, explore it as a study text, and hear it as a continuous recitation—all in one place.** Quran Unlocked combines a responsive 15-line Mushaf with word-level learning, passage structure, trusted translations and tafsīr, personalized audio, and tools for saving and sharing what matters.
 
 Open the Mushaf and begin where you left off. Tap a word for its meaning, select an ayah to read its translation, or let the recitation carry you seamlessly across pages. Switch to Memorize to test recall against the same 15-line page layout, or move instantly to a focused ayah or structured passage without losing your place.
 
-## Qurʾān Features
+## Quran Features
 
 ### Five connected reading modes
 
-* **Passage** presents the Qurʾān in titled sections and subsections for thematic reading.
+* **Passage** presents the Quran in titled sections and subsections for thematic reading.
 * **Ayat** focuses the reading experience on individual verses and the ayah hero view.
 * **Mushaf** reproduces the familiar 15-line, page-by-page reading experience.
 * **Memorize** keeps the Digital Khatt Mushaf font and 15-line page layout while replacing ordinary words with underlined blanks. The basmalah and ayah markers remain visible.
@@ -38,7 +38,7 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * All **604 pages** use Digital Khatt Quran text in a page-faithful 15-line layout.
 * Pages load continuously with vertical infinite scroll; after page 604, reading can continue again from page 1.
 * The layout scales for desktop, portrait phones, and landscape phones without changing through the normal text-size controls or bleeding beyond the page.
-* Qurʾānic surah headers use the QCF header font. A new surah opens with its header and basmalah kept with the beginning of the surah; Surah 9 correctly omits the basmalah.
+* Quranic surah headers use the QCF header font. A new surah opens with its header and basmalah kept with the beginning of the surah; Surah 9 correctly omits the basmalah.
 * Subtle inner-edge shading distinguishes odd and even pages like an open printed book.
 * Alternating black and saddle-brown text reveals h3 subsection boundaries while preserving the Quranic styling of ayah markers.
 * Each page identifies its page number, juz, surah number, and Arabic surah name. Page, juz, and surah numbers are directly editable, while the custom surah picker opens at the current surah.
@@ -59,12 +59,13 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * Each page keeps its own state as additional pages load through infinite scrolling, and Memorize mode remains active through page, surah, juz, URL, and previous/next navigation.
 * Audio, reciter and translation controls, the translation marquee, and word-translation tooltips are intentionally omitted so the view remains focused on recall.
 
-### Spaced-repetition review
+### Quran spaced-repetition review
 
 * Every Mushaf page begins in **To Do**. Signed-in users can change a page at any time to **Hard**, **Good**, **Easy**, or back to **To Do** from the bottom-right controls in Memorize view.
-* **Hard** pages are due immediately. **Good** and **Easy** pages return after their configured intervals, which default to **7 days** and **14 days** and can be changed under **My Settings → Quran Memorization**. Each time a page remains Easy in Review, its previous interval doubles up to a maximum of one year.
+* Every unreviewed **Hard** page is included at the start of each new session without consuming the session limit. **Good** and **Easy** pages are ordered by their configured intervals, which default to **7 days** and **14 days** and can be changed under **My Settings → Quran Memorization**. If the due queue is shorter than the session limit, Review fills the remaining slots with the next scheduled active pages. Daily review sessions default to **5 Good/Easy pages**, and the same settings section lets users prioritize Good or Easy pages, use the nearest review date, follow page order, or shuffle the queue. Each time a page remains Easy in Review, its previous interval doubles up to a maximum of one year.
 * **To Do** pages are not included in Review. Returning a page to To Do removes it from the active memorization list without discarding its review history.
 * Select **Review** from the Quran menu or reader-mode controls to open the combined `/quran/review` page. It shows Memorization Progress and provides a **Start Review** action for the due-page queue. Rating a reviewed page saves the new schedule and advances to the next due page; **Skip** advances without changing the page status.
+* Selecting **Again** marks the page Hard and places it at the end of the current session for another attempt. Selecting Again on the retry moves it to the end again.
 * The combined Review page lists pages currently being memorized together with an editable status, next review date, and review count. A page can be marked **Core Memory** with the brain control in Memorize, Review, or Memorization Progress. Core Memory means the page is considered memorized and is excluded from every future Review queue; the status remains visible and reversible in Memorization Progress.
 * If no pages are being memorized, Review opens **Memorization Progress**. If active pages exist but none are due, Review reports that the current queue is complete.
 * Memorization progress and scheduling are stored per signed-in user in MySQL so they remain available across sessions and devices.
@@ -109,7 +110,7 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 
 ### Search, downloads, and integration
 
-* Unified search covers Arabic and translated Qurʾān text, translations, and tafsīr, with autocomplete, filters, highlighting, and direct verse navigation.
+* Unified search covers Arabic and translated Quran text, translations, and tafsīr, with autocomplete, filters, highlighting, and direct verse navigation.
 * Quran content is addressable through stable ayah, range, passage, subsection, juz, manzil, translation, tafsīr, and Mushaf-page URLs.
 * Machine-readable JSON and Markdown responses support individual ayat and ranges, while translation and Quran downloads are available in JSON or EPUB where provided.
 * Quran passages, commentary pages, translations, and all Mushaf pages are included in the sitemap.
@@ -120,7 +121,7 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * Heading, range, and title changes invalidate the related Passage and Mushaf caches so stale section references are not retained.
 * Mushaf page data and section mappings use in-memory and search caches where appropriate, with disk-cache versioning and explicit flush support for updated content.
 
-## Qurʾān Reciters
+## Quran Reciters
 
 The site includes the continuous, ayah-synchronized recitations listed below. Each one has a short alias used internally for audio selection and saved preferences.
 
@@ -139,7 +140,7 @@ The site includes the continuous, ayah-synchronized recitations listed below. Ea
 | `sudays` | Abd al-Rahman al-Sudays |
 | `yasin` | Sahl Yasin |
 
-## Qurʾān Commentaries and Translations
+## Quran Commentaries and Translations
 
 The site includes the commentary (tafsīr) and translation works listed below. Each one has a short alias used in links and an English title.
 
@@ -152,7 +153,7 @@ The site includes the commentary (tafsīr) and translation works listed below. E
 | `mokhtasar` | al-Mukhtasar fi Tafsir al-Quran al-Karim |
 | `muntakhab` | al-Muntakhab fi Tafsir al-Quran |
 
-### Arabic tafsīr and Qurʾān companions
+### Arabic tafsīr and Quran companions
 
 | Alias | Name |
 |---|---|
@@ -242,7 +243,7 @@ In the table below, **Records** is the number of entries in each work, **English
 
 | ID | Alias | Name | Type | Records | English | Graded | Graders |
 |---:|---|---|---|---:|---:|---:|---|
-| 0 | `quran` | The Holy Qurʾān | Source | 6,236 | 6,236 | 0 | N/A |
+| 0 | `quran` | The Holy Quran | Source | 6,236 | 6,236 | 0 | N/A |
 | 57 | `ibnrajab50` | Jāmiʿ al-ʿUlūm wa-al-Ḥikam | Virtual | 93 | N/A | N/A | N/A |
 | 61 | `riyad` | Riyāḍ al-Ṣāliḥīn min Kalām Sayyid al-Mursalīn | Virtual | 2,755 | N/A | N/A | N/A |
 | 15 | `adab` | al-Adab al-Mufrad | Source | 1,326 | 1,326 | 1,326 | Albānī, Arnaʾūṭ |

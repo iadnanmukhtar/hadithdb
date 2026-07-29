@@ -82,10 +82,24 @@
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Memorization</h2>
-            <p class="text-muted small mb-0" id="settings-memorization-status">Choose when pages marked Good or Easy return for review.</p>
+            <p class="text-muted small mb-0" id="settings-memorization-status">Choose the size, order, and timing of Quran review sessions.</p>
           </div>
         </div>
         <div class="d-flex align-items-end gap-3 flex-wrap">
+          <label class="form-label mb-0">
+            <span class="small text-muted d-block mb-1">Good/Easy pages per session</span>
+            <input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-review-limit">
+          </label>
+          <label class="form-label mb-0">
+            <span class="small text-muted d-block mb-1">Review order</span>
+            <select class="form-select form-select-sm" id="settings-review-order">
+              <option value="hard_good_easy">Hard → Good → Easy</option>
+              <option value="hard_easy_good">Hard → Easy → Good</option>
+              <option value="due_first">Oldest due first</option>
+              <option value="page_order">Quran page order</option>
+              <option value="random">Random</option>
+            </select>
+          </label>
           <label class="form-label mb-0">
             <span class="small text-muted d-block mb-1">Good: review again after</span>
             <span class="input-group input-group-sm"><input class="form-control" type="number" min="1" max="365" id="settings-good-review-days"><span class="input-group-text">days</span></span>
@@ -148,6 +162,30 @@
 
 <script>
   (function () {
+    document.querySelectorAll('main.search-results > section').forEach((section, index) => {
+      const header = section.firstElementChild;
+      if (!header || !header.querySelector('h2')) return;
+      const content = document.createElement('div');
+      content.className = 'settings-section-content';
+      content.id = `settings-section-content-${index + 1}`;
+      Array.from(section.children).slice(1).forEach(child => content.appendChild(child));
+      content.hidden = true;
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'btn btn-sm btn-outline-secondary settings-section-toggle';
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-controls', content.id);
+      toggle.innerHTML = '<span class="visually-hidden">Show section</span><i class="bi bi-chevron-down" aria-hidden="true"></i>';
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        toggle.querySelector('.visually-hidden').textContent = expanded ? 'Show section' : 'Hide section';
+        content.hidden = expanded;
+      });
+      header.classList.add('settings-section-header');
+      header.appendChild(toggle);
+      section.appendChild(content);
+    });
     const statusEl = document.getElementById('settings-account-status');
     const tafsirStatusEl = document.getElementById('settings-tafsir-status');
     const tafsirListEl = document.getElementById('settings-tafsir-list');
@@ -161,6 +199,8 @@
     const memorizationStatusEl = document.getElementById('settings-memorization-status');
     const goodReviewDaysEl = document.getElementById('settings-good-review-days');
     const easyReviewDaysEl = document.getElementById('settings-easy-review-days');
+    const reviewLimitEl = document.getElementById('settings-review-limit');
+    const reviewOrderEl = document.getElementById('settings-review-order');
     const memorizationSaveBtn = document.getElementById('settings-memorization-save');
     const profileStatusEl = document.getElementById('settings-profile-status');
     const preferredLanguageSelect = document.getElementById('settings-preferred-language');
@@ -273,6 +313,11 @@
         const parsed = parseInt(value, 10);
         return Number.isInteger(parsed) && parsed >= 1 && parsed <= 365 ? parsed : fallback;
       };
+      const reviewLimit = value => {
+        const parsed = parseInt(value, 10);
+        return Number.isInteger(parsed) && parsed >= 1 && parsed <= 200 ? parsed : 5;
+      };
+      const reviewOrders = new Set(['hard_good_easy', 'hard_easy_good', 'due_first', 'page_order', 'random']);
       const translationDisabledAliases = Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
         .map(alias => (alias || '').toString().trim())
         .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias))));
@@ -317,7 +362,9 @@
         },
         memorization: {
           goodReviewDays: reviewDays(memorization.goodReviewDays, 7),
-          easyReviewDays: reviewDays(memorization.easyReviewDays, 14)
+          easyReviewDays: reviewDays(memorization.easyReviewDays, 14),
+          reviewLimit: reviewLimit(memorization.reviewLimit),
+          reviewOrder: reviewOrders.has(memorization.reviewOrder) ? memorization.reviewOrder : 'hard_good_easy'
         }
       };
     };
@@ -1428,8 +1475,12 @@
       currentSettings = normalizeSettings(currentSettings);
       goodReviewDaysEl.value = currentSettings.memorization.goodReviewDays;
       easyReviewDaysEl.value = currentSettings.memorization.easyReviewDays;
+      reviewLimitEl.value = currentSettings.memorization.reviewLimit;
+      reviewOrderEl.value = currentSettings.memorization.reviewOrder;
       goodReviewDaysEl.disabled = !currentUser;
       easyReviewDaysEl.disabled = !currentUser;
+      reviewLimitEl.disabled = !currentUser;
+      reviewOrderEl.disabled = !currentUser;
       memorizationSaveBtn.disabled = !currentUser;
       renderProfileSettings();
       reciterEnableAllBtn.disabled = !currentUser;
@@ -1508,11 +1559,15 @@
         ...currentSettings,
         memorization: {
           goodReviewDays: goodReviewDaysEl.value,
-          easyReviewDays: easyReviewDaysEl.value
+          easyReviewDays: easyReviewDaysEl.value,
+          reviewLimit: reviewLimitEl.value,
+          reviewOrder: reviewOrderEl.value
         }
       });
       goodReviewDaysEl.value = currentSettings.memorization.goodReviewDays;
       easyReviewDaysEl.value = currentSettings.memorization.easyReviewDays;
+      reviewLimitEl.value = currentSettings.memorization.reviewLimit;
+      reviewOrderEl.value = currentSettings.memorization.reviewOrder;
       memorizationSaveBtn.disabled = true;
       memorizationStatusEl.textContent = 'Saving review schedule...';
       try {

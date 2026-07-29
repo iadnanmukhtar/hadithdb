@@ -6,9 +6,16 @@
 </head>
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
-  <main class="container col-lg-7 mx-auto mt-10">
+  <main class="container col-lg-7 mx-auto mt-10<%= req.query.complete === undefined ? ' quran-review-loading-page' : '' %>">
     <h1 class="fs-4">Quran Review</h1>
-    <p id="quran-review-status" class="text-muted"><%= req.query.complete !== undefined ? 'You have completed all reviews that are due.' : 'Finding the next page due for review...' %></p>
+    <% if (req.query.complete === undefined) { %>
+    <div class="quran-review-loading" id="quran-review-loading" role="status" aria-live="polite">
+      <span class="spinner-border text-primary" aria-hidden="true"></span>
+      <p id="quran-review-status" class="text-muted mb-0">Loading your next review page...</p>
+    </div>
+    <% } else { %>
+    <p id="quran-review-status" class="text-muted">You have completed all reviews that are due.</p>
+    <% } %>
     <p><a class="btn btn-primary" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>">Open Memorize</a>
       <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/review') %>">Memorization Progress</a></p>
   </main>
@@ -20,6 +27,23 @@
     (async function () {
       const status = document.getElementById('quran-review-status');
       try {
+        const reviewCountStorageKey = 'hadithdb.quranReviewSessionCount';
+        const reviewPagesStorageKey = 'hadithdb.quranReviewSessionPages';
+        const reviewAgainStorageKey = 'hadithdb.quranReviewSessionAgain';
+        <% if (req.query.start !== undefined || req.query.reset !== undefined) { %>
+        if (window.sessionStorage) {
+          window.sessionStorage.setItem(reviewCountStorageKey, '0');
+          window.sessionStorage.setItem(reviewPagesStorageKey, '[]');
+          window.sessionStorage.setItem(reviewAgainStorageKey, '[]');
+        }
+        <% } %>
+        const reviewed = Math.max(0, parseInt(window.sessionStorage && window.sessionStorage.getItem(reviewCountStorageKey), 10) || 0);
+        let excludedPages = [];
+        try {
+          const storedPages = JSON.parse(window.sessionStorage && window.sessionStorage.getItem(reviewPagesStorageKey) || '[]');
+          if (Array.isArray(storedPages))
+            excludedPages = storedPages.map(Number).filter(page => Number.isInteger(page) && page >= 1 && page <= 604);
+        } catch (_err) {}
         let attempts = 0;
         while ((!window.hadithAuth || !window.hadithAuth.getToken) && attempts < 50) {
           await new Promise(resolve => window.setTimeout(resolve, 100));
@@ -29,19 +53,24 @@
         if (!token && window.hadithAuth && window.hadithAuth.requireToken)
           token = await window.hadithAuth.requireToken('Please sign in to review memorized pages.');
         if (!token) throw new Error('Please sign in to review memorized pages.');
-        const response = await fetch(quranApiPath('/memorization/next'), {
+        const response = await fetch(quranApiPath(`/memorization/next?reviewed=${reviewed}&exclude=${encodeURIComponent(excludedPages.join(','))}`), {
           credentials: 'same-origin',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Unable to load reviews.');
-        if (data.page && data.page.page_number)
-          window.location.replace(`/quran/page/${data.page.page_number}?memorize&review`);
+        if (data.limitReached)
+          window.location.replace(`/quran/review?complete=1&limit=${encodeURIComponent(data.reviewLimit || '')}`);
+        else if (data.page && data.page.page_number)
+          window.location.replace(`/quran/page/${data.page.page_number}?memorize&review&reviewStatus=${encodeURIComponent(data.page.status || '')}`);
         else if (!data.hasPages)
           window.location.replace('/quran/review');
         else
           window.location.replace('/quran/review?complete=1');
       } catch (err) {
+        const loading = document.getElementById('quran-review-loading');
+        const spinner = loading && loading.querySelector('.spinner-border');
+        if (spinner) spinner.hidden = true;
         status.textContent = err.message;
       }
     }());
