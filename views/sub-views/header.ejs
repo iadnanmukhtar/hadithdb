@@ -1,9 +1,6 @@
 <!--hadithdb-cache:header:start-->
 <nav class="navbar site-navbar fixed-top container col-lg-8 mx-auto">
   <%
-    var currentSearch = '';
-    if (req && req.query && req.query.q)
-      currentSearch = req.query.q;
     var navSearchAction = typeof utils.globalSearchBaseUrl === 'function'
       ? utils.globalSearchBaseUrl(req)
       : ((typeof utils.hadithBaseUrl === 'function' && utils.hadithBaseUrl(req)) || site.urlLocal || site.url || '/');
@@ -122,7 +119,7 @@
         <% } %>
         <li class="nav-item search-click-toggle">
           <form action="<%= navSearchAction %>">
-          <input role="search" type="text" class="form-control search-click" name="q" placeholder="<%= navSearchPlaceholder %>" value="<%= currentSearch %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
+          <input role="search" type="text" class="form-control search-click" name="q" placeholder="<%= navSearchPlaceholder %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
           </form>
           <a class="nav-link"><i class="bi bi-search"></i></a>
         </li>
@@ -155,7 +152,7 @@
       </div>
       <div class="offcanvas-body">
         <form action="<%= navSearchAction %>">
-          <input role="search" type="text" class="form-control mb-2" name="q" placeholder="<%= navSearchPlaceholder %>" value="<%= currentSearch %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
+          <input role="search" type="text" class="form-control mb-2" name="q" placeholder="<%= navSearchPlaceholder %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
         </form>
         <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">
           <a class="offcanvas-quick-action<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>" title="My Bookmarks" aria-label="My Bookmarks">

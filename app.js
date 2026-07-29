@@ -438,7 +438,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const quranMemorizationRouter = require('./routes/quranMemorization');
   const paymentsRouter = require('./routes/payments');
   const contentTranslationsRouter = require('./routes/contentTranslations');
-  const chatbotRouter = require('./routes/rag');
 
   app.use('/tools', toolsRouter);
   app.use('/recent', highlightsRouter);
@@ -482,8 +481,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/quran/payments', paymentsRouter);
   app.use('/content-translations', contentTranslationsRouter);
   app.use('/quran/content-translations', contentTranslationsRouter);
-  app.use('/chatbot', chatbotRouter);
-  app.use('/rag', chatbotRouter);
   app.use(function redirectTranslationAliases(req, res, next) {
     const alias = req.path.replace(/^\/+/, '').replace(/\/.*$/, '');
     const pathRemainder = req.path.replace(/^\/+/, '').split('/').slice(1).filter(Boolean);
