@@ -1320,7 +1320,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
         });
         var cleanQuery = cleanParams.join('&');
         var cleanUrl = req.path + (cleanQuery ? `?${cleanQuery}` : '');
-        res.redirect(302, cleanUrl || `/${results[0].ref}`);
+        res.redirect(301, cleanUrl || `/${results[0].ref}`);
       } else {
         res.render('search', {
           results: results,
