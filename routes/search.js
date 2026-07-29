@@ -1000,6 +1000,7 @@ function setQuranCorpusCorsHeaders(res) {
 
 router.use(['/quran/corpus', '/quran-corpus'], function (req, res, next) {
   setQuranCorpusCorsHeaders(res);
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   if (req.method === 'OPTIONS')
     return res.sendStatus(204);
   next();
