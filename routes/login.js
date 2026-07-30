@@ -136,6 +136,7 @@ router.post('/google', async function (req, res) {
   try {
     user = await GoogleAuth.verifyToken(token);
   } catch (err) {
+    debug.error(`Google sign-in failed: ${err.message}\n${err.stack || ''}`);
     res.status(401).json({ status: 401, message: 'Invalid authentication token' });
     return;
   }
@@ -153,6 +154,7 @@ router.get('/:userId', async function (req, res, next) {
   try {
     user = await GoogleAuth.verifyRequest(req);
   } catch (err) {
+    debug.error(`Login verification failed: ${err.message}\n${err.stack || ''}`);
     res.status(401).json({ status: 401, message: 'Invalid authentication token' });
     return;
   }

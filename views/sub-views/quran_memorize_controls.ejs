@@ -6,7 +6,10 @@
 </div>
 <% if (locals.showRating) { %>
 <div class="quran-memorize-rating" data-quran-memorize-rating data-page-number="<%= pageNumber %>">
-  <div class="quran-memorize-rating-buttons">
+  <% if (req.query.review === undefined) { %>
+  <button type="button" class="btn btn-sm btn-primary quran-memorize-start" data-quran-memorize-start>Memorize Page</button>
+  <% } %>
+  <div class="quran-memorize-rating-buttons"<% if (req.query.review === undefined) { %> hidden<% } %>>
     <div class="btn-group btn-group-sm" role="group" aria-label="Memorization status for page <%= pageNumber %>">
       <% if (req.query.review === undefined) { %>
       <button type="button" class="btn btn-outline-dark quran-memorize-core-memory" data-quran-memorize-status="never" aria-label="Mark page <%= pageNumber %> as Core Memory" title="Core Memory — memorized and never reviewed"><span aria-hidden="true">🧠</span></button>

@@ -21,6 +21,7 @@ router.use(async function (req, res, next) {
     if (!req.user) return res.status(401).json({ error: 'Please sign in to save memorization progress.' });
     next();
   } catch (err) {
+    debug.error(`Auth error: ${err.message}\n${err.stack || ''}`);
     res.status(401).json({ error: 'Please sign in to save memorization progress.' });
   }
 });

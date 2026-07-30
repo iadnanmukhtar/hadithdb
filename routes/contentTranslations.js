@@ -78,6 +78,7 @@ router.post('/', requirePaymentsEnabled, requireUser, async function (req, res, 
     res.json(result);
   } catch (err) {
     if (Number(err.status || err.statusCode) === 402) {
+      debug.error(`content translation payment error type=${payload.itemType || ''} id=${payload.itemId || ''} lang=${payload.targetLanguage || ''} mode=${payload.mode || 'translate'}: ${err.message}\n${err.stack || ''}`);
       res.status(402).json({ error: err.message || 'Payment required.', message: err.message || 'Payment required.' });
       return;
     }

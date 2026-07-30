@@ -6772,6 +6772,7 @@ function initQuranMemorizeView(root) {
 		var wordTimers = new WeakMap();
 		var rating = page.querySelector('[data-quran-memorize-rating]');
 		var ratingStatus = rating && rating.querySelector('[data-quran-memorize-save-status]');
+		var memorizeStartButton = rating && rating.querySelector('[data-quran-memorize-start]');
 		var pageNumber = rating && rating.getAttribute('data-page-number');
 		var reviewMode = new URLSearchParams(window.location.search).has('review');
 		var reviewSourceStatus = new URLSearchParams(window.location.search).get('reviewStatus');
@@ -6872,6 +6873,21 @@ function initQuranMemorizeView(root) {
 				button.setAttribute('aria-pressed', active ? 'true' : 'false');
 			});
 		};
+		var showMemorizationControls = function (memorizationPage) {
+			if (reviewMode || !ratingButtons) return;
+			var hasBeenReviewed = Number(memorizationPage && memorizationPage.review_count) > 0;
+			var activelyMemorizing = memorizationPage && memorizationPage.status !== 'todo';
+			ratingButtons.hidden = !hasBeenReviewed || !activelyMemorizing;
+			if (memorizeStartButton) {
+				memorizeStartButton.hidden = hasBeenReviewed && activelyMemorizing;
+				memorizeStartButton.disabled = false;
+				var enrolled = !hasBeenReviewed && memorizationPage && memorizationPage.status !== 'todo';
+				memorizeStartButton.dataset.quranMemorizeEnrolled = enrolled ? 'true' : 'false';
+				memorizeStartButton.textContent = enrolled ? 'Remove Memorization' : 'Memorize Page';
+				memorizeStartButton.classList.toggle('btn-primary', !enrolled);
+				memorizeStartButton.classList.toggle('btn-outline-danger', enrolled);
+			}
+		};
 		var openNextReview = async function () {
 			var excluded = Array.from(new Set(reviewedPages().concat([Number(pageNumber)]))).join(',');
 			var result = await memorizationRequest(`/next?exclude=${encodeURIComponent(excluded)}&reviewed=${reviewCount()}`);
@@ -6889,8 +6905,38 @@ function initQuranMemorizeView(root) {
 		};
 		if (rating && !reviewMode) {
 			memorizationRequest(`/pages/${encodeURIComponent(pageNumber)}`).then(function (result) {
-				if (result.page) markRating(result.page.status);
+				if (result.page) {
+					markRating(result.page.status);
+					showMemorizationControls(result.page);
+				}
 			}).catch(function () {});
+		}
+		if (memorizeStartButton) {
+			memorizeStartButton.addEventListener('click', function (event) {
+				event.preventDefault();
+				var removing = memorizeStartButton.dataset.quranMemorizeEnrolled === 'true';
+				memorizeStartButton.disabled = true;
+				memorizeStartButton.textContent = removing ? 'Removing...' : 'Adding...';
+				if (ratingStatus) ratingStatus.textContent = removing ? 'Removing from Review...' : 'Adding to Review...';
+				memorizationRequest(`/pages/${encodeURIComponent(pageNumber)}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ status: removing ? 'todo' : 'hard', reviewed: false })
+				}).then(function (result) {
+					if (ratingStatus) ratingStatus.textContent = '';
+					showMemorizationControls(result.page);
+					if (window.toastr) {
+						if (removing)
+							window.toastr.info('This page was returned to Later and removed from the review schedule.', 'Page removed from Review');
+						else
+							window.toastr.success('This page is now scheduled. Open Quran Review when you are ready to test it.', 'Page added to Review');
+					}
+				}).catch(function (err) {
+					memorizeStartButton.disabled = false;
+					memorizeStartButton.textContent = removing ? 'Remove Memorization' : 'Memorize Page';
+					if (ratingStatus) ratingStatus.textContent = err.message;
+				});
+			});
 		}
 		if (ratingButtons) {
 			ratingButtons.addEventListener('click', function (event) {
@@ -6920,7 +6966,7 @@ function initQuranMemorizeView(root) {
 				memorizationRequest(`/pages/${encodeURIComponent(pageNumber)}`, {
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ status: status })
+					body: JSON.stringify({ status: status, reviewed: reviewMode })
 				}).then(function (result) {
 					markRating(result.page && result.page.status || status);
 					if (ratingStatus) ratingStatus.textContent = 'Saved.';
@@ -6933,6 +6979,12 @@ function initQuranMemorizeView(root) {
 						if (reviewSourceStatus !== 'hard')
 							incrementReviewCount();
 						return openNextReview();
+					}
+					showMemorizationControls(result.page);
+					if (status === 'todo') {
+						if (ratingStatus) ratingStatus.textContent = '';
+						if (window.toastr)
+							window.toastr.info('This page was returned to Later and removed from the review schedule.', 'Page removed from Review');
 					}
 				}).catch(function (err) {
 					if (ratingStatus) ratingStatus.textContent = err.message;
