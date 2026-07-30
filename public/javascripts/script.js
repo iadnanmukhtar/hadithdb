@@ -7048,6 +7048,303 @@ function initQuranMemorizeView(root) {
 				word.classList.toggle('quran-memorize-ayah-revealed', revealed);
 			});
 		};
+		var recitationRecorder = null;
+		var recitationStream = null;
+		var recitationSegmentTimer = null;
+		var recitationAudioContext = null;
+		var recitationSilenceFrame = null;
+		var recitationLastSpeechAt = 0;
+		var recitationSegmentHadSpeech = false;
+		var recitationSessionStopping = false;
+		var recitationProcessing = Promise.resolve();
+		var recitationMimeType = '';
+		var recitationStatus = page.querySelector('[data-quran-recitation-feedback]');
+		var announceRecitation = function (message, type, showToast) {
+			if (recitationStatus)
+				recitationStatus.textContent = message;
+			if (showToast !== false && window.toastr) {
+				var toast = window.toastr[type] || window.toastr.info;
+				toast.call(window.toastr, message, 'Recitation');
+			}
+		};
+		var recitationWords = function () {
+			return Array.from(page.querySelectorAll('.quran-corpus-word[data-quran-word]'));
+		};
+		var normalizeRecitationText = function (text) {
+			return (text || '').toString().normalize('NFKD')
+				.replace(/[\u0610-\u061A\u0640\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+				.replace(/[ٱأإآ]/g, 'ا')
+				.replace(/ؤ/g, 'و')
+				.replace(/[ئىي]/g, 'ي')
+				.replace(/ة/g, 'ه')
+				.replace(/ء/g, '')
+				.replace(/[^\u0621-\u063A\u0641-\u064A\s]/g, ' ')
+				.replace(/\s+/g, ' ')
+				.trim();
+		};
+		var clearRecitationResult = function () {
+			recitationWords().forEach(function (word) {
+				word.classList.remove('quran-recitation-correct', 'quran-recitation-missed', 'quran-recitation-different');
+			});
+		};
+		var alignRecitation = function (transcript) {
+			var wordElements = recitationWords();
+			var expected = wordElements.map(function (word) {
+				return normalizeRecitationText(word.getAttribute('data-quran-word'));
+			});
+			var spoken = normalizeRecitationText(transcript).split(' ').filter(Boolean);
+			if (!spoken.length)
+				return { matched: 0, missed: 0, different: 0, extra: 0, spoken: 0 };
+			var rows = expected.length + 1;
+			var cols = spoken.length + 1;
+			var costs = Array.from({ length: rows }, function () { return new Array(cols).fill(0); });
+			var steps = Array.from({ length: rows }, function () { return new Array(cols).fill(null); });
+			for (var j = 1; j < cols; j++) {
+				costs[0][j] = j;
+				steps[0][j] = 'insert';
+			}
+			for (var i = 1; i < rows; i++) {
+				costs[i][0] = 0;
+				steps[i][0] = 'start';
+				for (var k = 1; k < cols; k++) {
+					var same = expected[i - 1] === spoken[k - 1];
+					var choices = [
+						{ cost: costs[i - 1][k - 1] + (same ? 0 : 1), step: same ? 'match' : 'substitute' },
+						{ cost: costs[i - 1][k] + 1, step: 'delete' },
+						{ cost: costs[i][k - 1] + 1, step: 'insert' }
+					].sort(function (a, b) { return a.cost - b.cost; });
+					costs[i][k] = choices[0].cost;
+					steps[i][k] = choices[0].step;
+				}
+			}
+			var end = 0;
+			for (var row = 1; row < rows; row++) {
+				if (costs[row][spoken.length] < costs[end][spoken.length])
+					end = row;
+			}
+			var operations = [];
+			var traceI = end;
+			var traceJ = spoken.length;
+			while (traceJ > 0) {
+				var step = steps[traceI][traceJ];
+				if (step === 'match' || step === 'substitute') {
+					operations.push({ type: step, expected: traceI - 1 });
+					traceI -= 1;
+					traceJ -= 1;
+				} else if (step === 'delete') {
+					operations.push({ type: step, expected: traceI - 1 });
+					traceI -= 1;
+				} else {
+					operations.push({ type: 'insert' });
+					traceJ -= 1;
+				}
+			}
+			operations.reverse();
+			var result = { matched: 0, missed: 0, different: 0, extra: 0, spoken: spoken.length };
+			operations.forEach(function (operation) {
+				if (operation.type === 'insert') {
+					result.extra += 1;
+					return;
+				}
+				var word = wordElements[operation.expected];
+				if (!word) return;
+				word.classList.remove('quran-recitation-correct', 'quran-recitation-missed', 'quran-recitation-different');
+				if (operation.type === 'match') {
+					word.classList.add('quran-recitation-correct', 'quran-memorize-word-revealed');
+					result.matched += 1;
+				} else if (operation.type === 'delete') {
+					word.classList.add('quran-recitation-missed', 'quran-memorize-word-revealed');
+					result.missed += 1;
+				} else {
+					word.classList.add('quran-recitation-different', 'quran-memorize-word-revealed');
+					result.different += 1;
+				}
+			});
+			return result;
+		};
+		var syncRecitationControls = function (recording) {
+			page.querySelectorAll('[data-quran-recitation-toggle]').forEach(function (control) {
+				control.classList.toggle('active', recording);
+				control.setAttribute('aria-pressed', recording ? 'true' : 'false');
+				control.setAttribute('aria-label', `${recording ? 'Stop' : 'Start checking'} recitation on page ${page.getAttribute('data-quran-mushaf-page') || ''}`.trim());
+				control.setAttribute('title', recording ? 'Stop and check recitation' : 'Check recitation');
+				var icon = control.querySelector('[data-quran-recitation-icon]');
+				if (icon) {
+					icon.classList.toggle('bi-mic', !recording);
+					icon.classList.toggle('bi-record-circle-fill', recording);
+				}
+			});
+		};
+		var finishRecitationStream = function () {
+			if (recitationSegmentTimer)
+				window.clearTimeout(recitationSegmentTimer);
+			recitationSegmentTimer = null;
+			if (recitationSilenceFrame)
+				window.cancelAnimationFrame(recitationSilenceFrame);
+			recitationSilenceFrame = null;
+			if (recitationAudioContext)
+				recitationAudioContext.close().catch(function () {});
+			recitationAudioContext = null;
+			if (recitationStream)
+				recitationStream.getTracks().forEach(function (track) { track.stop(); });
+			recitationStream = null;
+			recitationRecorder = null;
+			recitationSessionStopping = false;
+			syncRecitationControls(false);
+		};
+		var submitRecitation = async function (blob) {
+			if (!blob || blob.size < 1000)
+				throw new Error('No recitation was heard. Please try again.');
+			var auth = window.hadithAuth;
+			var token = auth && auth.getToken ? await auth.getToken() : null;
+			if (!token && auth && auth.requireToken)
+				token = await auth.requireToken('Please sign in to check your recitation.');
+			if (!token)
+				throw new Error('Please sign in to check your recitation.');
+			var pageNumber = page.getAttribute('data-quran-mushaf-page');
+			var response = await fetch(quranApiPath(`/memorization/pages/${encodeURIComponent(pageNumber)}/transcribe`), {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': blob.type || 'audio/webm'
+				},
+				body: blob
+			});
+			var data = await response.json().catch(function () { return {}; });
+			if (!response.ok)
+				throw new Error(data.error || 'Unable to check the recitation.');
+			var result = alignRecitation(data.text);
+			if (!result.spoken || !result.matched) {
+				announceRecitation('I could not confidently find that recitation on this page. Please try a shorter passage.', 'warning', false);
+				return;
+			}
+			var issues = result.missed + result.different + result.extra;
+			announceRecitation(issues === 0
+				? `${result.matched} words matched in order.`
+				: `${result.matched} matched; ${result.missed} missed; ${result.different} different; ${result.extra} extra or repeated.`,
+				issues === 0 ? 'success' : 'warning',
+				false);
+		};
+		var enqueueRecitationSegment = function (blob) {
+			recitationProcessing = recitationProcessing.then(function () {
+				return submitRecitation(blob);
+			}).catch(function (err) {
+				announceRecitation(err.message, 'error');
+			});
+		};
+		var beginRecitationSegment = function () {
+			if (!recitationStream || recitationSessionStopping)
+				return;
+			var chunks = [];
+			recitationSegmentHadSpeech = false;
+			var recorder = recitationMimeType
+				? new MediaRecorder(recitationStream, { mimeType: recitationMimeType })
+				: new MediaRecorder(recitationStream);
+			recitationRecorder = recorder;
+			recorder.addEventListener('dataavailable', function (event) {
+				if (event.data && event.data.size)
+					chunks.push(event.data);
+			});
+			recorder.addEventListener('stop', function () {
+				if (recitationSegmentTimer)
+					window.clearTimeout(recitationSegmentTimer);
+				recitationSegmentTimer = null;
+				var blob = new Blob(chunks, { type: recorder.mimeType || recitationMimeType || 'audio/webm' });
+				if (recitationSegmentHadSpeech && blob.size >= 1000)
+					enqueueRecitationSegment(blob);
+				if (recitationSessionStopping)
+					finishRecitationStream();
+				else
+					beginRecitationSegment();
+			}, { once: true });
+			recorder.start(500);
+			recitationSegmentTimer = window.setTimeout(function () {
+				if (recorder.state === 'recording')
+					recorder.stop();
+			}, 12000);
+		};
+		var stopRecitationSession = function () {
+			if (!recitationStream || recitationSessionStopping)
+				return;
+			recitationSessionStopping = true;
+			if (recitationSegmentTimer)
+				window.clearTimeout(recitationSegmentTimer);
+			recitationSegmentTimer = null;
+			if (recitationSilenceFrame)
+				window.cancelAnimationFrame(recitationSilenceFrame);
+			recitationSilenceFrame = null;
+			if (recitationRecorder && recitationRecorder.state === 'recording')
+				recitationRecorder.stop();
+			else
+				finishRecitationStream();
+		};
+		var monitorRecitationSilence = function () {
+			if (!recitationAudioContext || !recitationStream)
+				return;
+			var analyser = recitationAudioContext.createAnalyser();
+			analyser.fftSize = 2048;
+			var source = recitationAudioContext.createMediaStreamSource(recitationStream);
+			source.connect(analyser);
+			var samples = new Uint8Array(analyser.fftSize);
+			var inspectAudio = function () {
+				if (!recitationStream || recitationSessionStopping)
+					return;
+				analyser.getByteTimeDomainData(samples);
+				var energy = 0;
+				for (var i = 0; i < samples.length; i++) {
+					var amplitude = (samples[i] - 128) / 128;
+					energy += amplitude * amplitude;
+				}
+				var rms = Math.sqrt(energy / samples.length);
+				if (rms >= 0.015) {
+					recitationLastSpeechAt = Date.now();
+					recitationSegmentHadSpeech = true;
+				} else if (Date.now() - recitationLastSpeechAt >= 10000) {
+					stopRecitationSession();
+					return;
+				}
+				recitationSilenceFrame = window.requestAnimationFrame(inspectAudio);
+			};
+			recitationSilenceFrame = window.requestAnimationFrame(inspectAudio);
+		};
+		var startRecitation = async function () {
+			if (!window.MediaRecorder || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia)
+				throw new Error('Audio recording is not supported by this browser.');
+			clearRecitationResult();
+			announceRecitation('Listening continuously… Recording will stop after 10 seconds of silence or when you press stop.', 'info');
+			recitationStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			var preferredTypes = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'];
+			recitationMimeType = preferredTypes.find(function (type) {
+				return !window.MediaRecorder.isTypeSupported || window.MediaRecorder.isTypeSupported(type);
+			}) || '';
+			recitationSessionStopping = false;
+			recitationProcessing = Promise.resolve();
+			recitationLastSpeechAt = Date.now();
+			var AudioContext = window.AudioContext || window.webkitAudioContext;
+			if (AudioContext) {
+				recitationAudioContext = new AudioContext();
+				if (recitationAudioContext.state === 'suspended')
+					await recitationAudioContext.resume();
+				monitorRecitationSilence();
+			}
+			beginRecitationSegment();
+			syncRecitationControls(true);
+		};
+		page.querySelectorAll('[data-quran-recitation-toggle]').forEach(function (control) {
+			control.addEventListener('click', function (event) {
+				event.preventDefault();
+				event.stopPropagation();
+				if (recitationStream) {
+					stopRecitationSession();
+					return;
+				}
+				startRecitation().catch(function (err) {
+					finishRecitationStream();
+					announceRecitation(err.message, 'error');
+				});
+			});
+		});
 		syncAutoHideControls(storedAutoHide);
 		syncAllControls(false);
 		page.addEventListener('click', function (event) {

@@ -2732,6 +2732,51 @@ main.quran-mushaf-reader {
 	color: saddlebrown !important;
 }
 
+.quran-memorize-page .quran-corpus-word.quran-recitation-correct {
+	background-color: rgba(var(--bs-success-rgb), 0.18) !important;
+	color: var(--bs-success-text-emphasis) !important;
+}
+
+.quran-memorize-page .quran-corpus-word.quran-recitation-missed {
+	background-color: rgba(var(--bs-warning-rgb), 0.28) !important;
+	color: var(--bs-warning-text-emphasis) !important;
+}
+
+.quran-memorize-page .quran-corpus-word.quran-recitation-different {
+	background-color: rgba(var(--bs-danger-rgb), 0.18) !important;
+	color: var(--bs-danger-text-emphasis) !important;
+}
+
+.quran-recitation-toggle,
+.quran-recitation-toggle:hover,
+.quran-recitation-toggle:focus-visible {
+	background-color: var(--bs-danger) !important;
+	border-color: var(--bs-danger) !important;
+	color: white !important;
+}
+
+.quran-recitation-toggle.active [data-quran-recitation-icon] {
+	animation: quran-recitation-pulse 1s ease-in-out infinite;
+}
+
+@keyframes quran-recitation-pulse {
+	0%, 100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.35;
+		transform: scale(1.3);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.quran-recitation-toggle.active [data-quran-recitation-icon] {
+		animation: none;
+		opacity: 0.55;
+	}
+}
+
 .quran-memorize-page .quran-corpus-word:hover,
 .quran-memorize-page .quran-corpus-word:focus-visible {
 	background-color: transparent !important;
@@ -4441,6 +4486,10 @@ body > footer,
 	font-size: .75rem;
 	line-height: 1.1;
 	padding: .15rem .35rem;
+}
+
+.quran-memorize-controls .quran-ayah-select-btn {
+	font-size: .72rem;
 }
 
 .quran-ayah-select-btn .bi {

@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+
+service_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+venv_dir=${QURAN_ASR_VENV:-"$service_dir/.venv"}
+
+if [ -n "${QURAN_ASR_PYTHON:-}" ]; then
+  python_bin=$QURAN_ASR_PYTHON
+elif command -v python3.12 >/dev/null 2>&1; then
+  python_bin=python3.12
+elif command -v python3.11 >/dev/null 2>&1; then
+  python_bin=python3.11
+else
+  echo "Python 3.11 or 3.12 is required. Set QURAN_ASR_PYTHON to its executable." >&2
+  exit 1
+fi
+
+if [ ! -x "$venv_dir/bin/python" ]; then
+  "$python_bin" -m venv "$venv_dir"
+fi
+
+"$venv_dir/bin/python" -m pip install --upgrade pip
+"$venv_dir/bin/python" -m pip install -r "$service_dir/requirements.txt"
+
+printf 'Quran ASR environment installed at %s\n' "$venv_dir"

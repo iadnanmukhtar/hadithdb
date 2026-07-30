@@ -3,6 +3,9 @@
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn" data-quran-memorize-autohide-toggle aria-pressed="false" aria-label="Turn on clicked word auto-hide on page <%= pageNumber %>" title="Clicked words stay visible"><span class="bi bi-clock-history" aria-hidden="true"></span></button>
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn" data-quran-memorize-ayah-hide aria-label="Hide one ayah on page <%= pageNumber %>" title="Hide one ayah"><span class="bi bi-dash" aria-hidden="true"></span></button>
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn" data-quran-memorize-ayah-reveal aria-label="Reveal one ayah on page <%= pageNumber %>" title="Reveal one ayah"><span class="bi bi-plus" aria-hidden="true"></span></button>
+  <% if (quranRecitationFeedbackEnabled) { %>
+  <button type="button" class="btn btn-sm btn-danger text-white quran-ayah-select-btn quran-recitation-toggle" data-quran-recitation-toggle aria-pressed="false" aria-label="Start checking recitation on page <%= pageNumber %>" title="Check recitation"><span class="bi bi-mic" data-quran-recitation-icon aria-hidden="true"></span></button>
+  <% } %>
 </div>
 <% if (locals.showRating) { %>
 <div class="quran-memorize-rating" data-quran-memorize-rating data-page-number="<%= pageNumber %>">
@@ -30,5 +33,8 @@
   </div>
   <a class="quran-memorize-list-link" href="/quran/review">Memorization Progress</a>
   <span class="small text-muted" data-quran-memorize-save-status aria-live="polite"></span>
+  <% if (quranRecitationFeedbackEnabled) { %>
+  <span class="visually-hidden" data-quran-recitation-feedback role="status" aria-live="polite"></span>
+  <% } %>
 </div>
 <% } %>

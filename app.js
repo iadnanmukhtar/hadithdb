@@ -22,6 +22,7 @@ const Tafsir = require('./lib/Tafsir');
 const Utils = require('./lib/Utils');
 const PaymentConfig = require('./lib/PaymentConfig');
 const ContentTranslations = require('./lib/ContentTranslations');
+const QuranRecitationFeedback = require('./lib/QuranRecitationFeedback');
 
 function debugNewRelicLoadError(err) {
   if (!process.env.DEBUG || !process.env.DEBUG.split(',').some(pattern => pattern.trim() === 'hadithdb:App'))
@@ -45,7 +46,7 @@ const sameSiteSecurityHeaders = (req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   res.setHeader('Permissions-Policy', [
     'camera=()',
-    'microphone=()',
+    QuranRecitationFeedback.isEnabled() ? 'microphone=(self)' : 'microphone=()',
     'geolocation=()',
     paymentPolicy,
     'usb=()'
@@ -362,6 +363,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     res.locals.paymentFeatureEnabled = PaymentConfig.isEnabled();
     res.locals.tafsirTranslationFeatureEnabled = PaymentConfig.contentTranslationEnabledForItemType('tafsir');
     res.locals.contentTranslationEstimateFields = ContentTranslations.estimateFields;
+    res.locals.quranRecitationFeedbackEnabled = QuranRecitationFeedback.isEnabled();
     res.locals.quranNavTafsirs = Tafsir.visibleTafsirsSync().slice().sort(function (a, b) {
       const aLabel = Tafsir.rawShortName(a, 'en') || a.shortName_en || a.name_en || a.alias || '';
       const bLabel = Tafsir.rawShortName(b, 'en') || b.shortName_en || b.name_en || b.alias || '';

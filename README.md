@@ -58,6 +58,26 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * The plus and minus controls reveal the next hidden ayah or hide the most recently revealed ayah, one ayah at a time.
 * Each page keeps its own state as additional pages load through infinite scrolling, and Memorize mode remains active through page, surah, juz, URL, and previous/next navigation.
 * Audio, reciter and translation controls, the translation marquee, and word-translation tooltips are intentionally omitted so the view remains focused on recall.
+* Optional recitation feedback records a short passage, sends it to a separately configured self-hosted Quran speech-recognition service, and highlights matched, missed, different, and repeated words. It does not change Review ratings automatically.
+
+#### Self-hosted recitation feedback
+
+Recitation feedback is disabled unless it is enabled in `~/.hadithdb/settings.json`. It does not use the site's personal OpenAI key. A self-hosted Quran speech-recognition service is included under [`services/quran-asr`](services/quran-asr/README.md); configure HadithDB to call it:
+
+```json
+{
+  "quran": {
+    "recitationFeedback": {
+      "enabled": true,
+      "endpoint": "http://127.0.0.1:8010/transcribe",
+      "model": "tarteel-ai/whisper-base-ar-quran",
+      "token": "replace-with-a-long-random-value"
+    }
+  }
+}
+```
+
+The endpoint receives `multipart/form-data` containing `file`, `language`, `prompt`, `page`, and optional `model` fields. It must return JSON in the form `{ "text": "recognized Arabic words" }`. Keep `enabled` false, or omit the section, to remove the microphone controls and restore the global `microphone=()` browser permission policy.
 
 ### Quran spaced-repetition review
 

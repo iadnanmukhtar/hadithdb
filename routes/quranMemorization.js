@@ -2,12 +2,21 @@
 'use strict';
 
 const express = require('express');
+const rateLimit = require('express-rate-limit').default;
 const debug = require('../lib/Debug')('hadithdb:QuranMemorization');
 const GoogleAuth = require('../lib/GoogleAuth');
 const QuranMemorization = require('../lib/QuranMemorization');
 const UserSettings = require('../lib/UserSettings');
+const QuranRecitationFeedback = require('../lib/QuranRecitationFeedback');
 
 const router = express.Router();
+const recitationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many recitation checks. Please wait and try again.' }
+});
 
 router.use(function (req, res, next) {
   res.setHeader('Cache-Control', 'no-store');
@@ -35,6 +44,17 @@ router.get('/pages/:page', async function (req, res) {
   const page = await QuranMemorization.get(req.user.uid, req.params.page);
   res.json({ page });
 });
+
+router.post('/pages/:page/transcribe',
+  recitationLimiter,
+  express.raw({ type: ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'application/octet-stream'], limit: '8mb' }),
+  async function (req, res) {
+    const pageNumber = Number(req.params.page);
+    if (!Number.isInteger(pageNumber) || pageNumber < 1 || pageNumber > 604)
+      return res.status(400).json({ error: 'A valid Mushaf page is required.' });
+    const result = await QuranRecitationFeedback.transcribe(pageNumber, req.body, req.get('content-type') || 'audio/webm');
+    res.json(result);
+  });
 
 router.put('/pages/:page', async function (req, res) {
   const settings = await UserSettings.getSettings(req.user.uid);
@@ -66,7 +86,9 @@ router.get('/next', async function (req, res) {
 router.use(function (err, req, res, next) {
   debug.error(`${req.method} ${req.originalUrl}: ${err.message}\n${err.stack || ''}`);
   if (res.headersSent) return next(err);
-  res.status(500).json({ error: err.message || 'Unable to load memorization progress.' });
+  const status = Number(err.status || err.statusCode);
+  res.status(Number.isInteger(status) && status >= 400 && status <= 599 ? status : 500)
+    .json({ error: err.message || 'Unable to load memorization progress.' });
 });
 
 module.exports = router;

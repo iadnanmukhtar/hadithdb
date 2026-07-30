@@ -1,0 +1,23 @@
+#!/bin/sh
+set -eu
+
+service_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+venv_dir=${QURAN_ASR_VENV:-"$service_dir/.venv"}
+
+if [ -n "${QURAN_ASR_PYTHON:-}" ]; then
+  python_bin=$QURAN_ASR_PYTHON
+elif command -v python3.12 >/dev/null 2>&1; then
+  python_bin=python3.12
+elif command -v python3.11 >/dev/null 2>&1; then
+  python_bin=python3.11
+else
+  echo "Python 3.11 or 3.12 is required. Set QURAN_ASR_PYTHON to its executable." >&2
+  exit 1
+fi
+
+if [ ! -x "$venv_dir/bin/python" ]; then
+  QURAN_ASR_PYTHON="$python_bin" QURAN_ASR_VENV="$venv_dir" "$service_dir/setup"
+fi
+
+cd "$service_dir"
+exec "$venv_dir/bin/python" -m uvicorn quran_asr.app:app --host 127.0.0.1 --port "${QURAN_ASR_PORT:-8010}"

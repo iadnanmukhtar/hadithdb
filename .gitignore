@@ -6,6 +6,10 @@
 .env
 .claude
 node_modules
+services/quran-asr/.venv/
+services/quran-asr/models/
+__pycache__/
+*.py[cod]
 coverage
 data/*.csv
 data/*.db
