@@ -3,6 +3,17 @@ set -eu
 
 service_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 venv_dir=${QURAN_ASR_VENV:-"$service_dir/.venv"}
+install_nemo=${QURAN_ASR_INSTALL_NEMO:-0}
+
+if [ "${1:-}" = "--nemo" ]; then
+  install_nemo=1
+  shift
+fi
+
+if [ "$#" -ne 0 ]; then
+  echo "Usage: ./setup [--nemo]" >&2
+  exit 2
+fi
 
 if [ -n "${QURAN_ASR_PYTHON:-}" ]; then
   python_bin=$QURAN_ASR_PYTHON
@@ -15,11 +26,37 @@ else
   exit 1
 fi
 
+python_version=$("$python_bin" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+case "$python_version" in
+  3.11|3.12) ;;
+  *)
+    echo "Unsupported Python $python_version from $python_bin. Quran ASR requires Python 3.11 or 3.12." >&2
+    echo "Set QURAN_ASR_PYTHON to a supported executable, for example python3.12." >&2
+    exit 1
+    ;;
+esac
+
+if [ -x "$venv_dir/bin/python" ]; then
+  venv_version=$("$venv_dir/bin/python" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+  case "$venv_version" in
+    3.11|3.12) ;;
+    *)
+      echo "The existing environment at $venv_dir uses unsupported Python $venv_version." >&2
+      echo "Move or remove that environment, then run setup again with Python 3.11 or 3.12." >&2
+      exit 1
+      ;;
+  esac
+fi
+
 if [ ! -x "$venv_dir/bin/python" ]; then
   "$python_bin" -m venv "$venv_dir"
 fi
 
 "$venv_dir/bin/python" -m pip install --upgrade pip
 "$venv_dir/bin/python" -m pip install -r "$service_dir/requirements.txt"
+
+if [ "$install_nemo" = "1" ]; then
+  "$venv_dir/bin/python" -m pip install -r "$service_dir/requirements-nemo.txt"
+fi
 
 printf 'Quran ASR environment installed at %s\n' "$venv_dir"

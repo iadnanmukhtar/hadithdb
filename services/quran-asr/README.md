@@ -31,6 +31,16 @@ cd services/quran-asr
 ./setup
 ```
 
+The installer accepts only Python 3.11 or 3.12. If more than one Python is
+installed, select one explicitly:
+
+```sh
+QURAN_ASR_PYTHON=python3.12 ./setup
+```
+
+The default setup installs only the dependencies needed by the ungated
+Transformers model. This avoids the much larger NeMo dependency stack.
+
 Set a private service token and start the service:
 
 ```sh
@@ -42,9 +52,11 @@ On the first start, Transformers downloads the default checkpoint. After it is
 cached, the service requires no model-account traffic.
 
 To use the gated FastConformer after the repository owner approves access,
-authenticate with `.venv/bin/hf auth login`, then set:
+install the optional NeMo dependencies, authenticate with
+`.venv/bin/hf auth login`, then set:
 
 ```sh
+./setup --nemo
 export QURAN_ASR_MODEL='Muno459/fastconformer-quran'
 export QURAN_ASR_BACKEND='nemo'
 ```
