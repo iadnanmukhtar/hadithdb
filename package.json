@@ -8,9 +8,7 @@
     "start": "node -r dotenv/config -r newrelic ./bin/www",
     "dev": "nodemon --exec \"node -r dotenv/config -r newrelic\" ./bin/www",
     "quran-asr": "./services/quran-asr/run",
-    "quran-memorization-optimize": "node ./bin/optimizeQuranMemorizationSchema.js",
-    "test": "jest",
-    "init:quran-fsrs6": "node ./bin/initializeQuranMemorizationFsrs6.js"
+    "test": "jest"
   },
   "keywords": [
     "hadith",
