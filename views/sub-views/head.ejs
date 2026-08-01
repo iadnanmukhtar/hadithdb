@@ -5,11 +5,15 @@
     var parts = path.toString().split('?');
     if (parts.length < 2)
       return path;
-    var params = new URLSearchParams(parts.slice(1).join('?'));
+    var rawQuery = parts.slice(1).join('?');
+    var hasBareHelp = /(?:^|&)help(?:&|$)/.test(rawQuery);
+    var params = new URLSearchParams(rawQuery);
     params.delete('flush');
     if (params.get('o') === '0')
       params.delete('o');
     var query = params.toString();
+    if (hasBareHelp)
+      query = query.replace(/(^|&)help=(?=&|$)/, '$1help');
     return query ? `${parts[0]}?${query}` : parts[0];
   }
   if (page.canonical)

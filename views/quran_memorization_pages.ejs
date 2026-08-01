@@ -1,10 +1,14 @@
 <!doctype html>
 <html lang="en">
-<% var site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: false }); %>
+<%
+  var site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: false });
+  var helpView = req.query.help !== undefined;
+  var helpUrl = utils.quranUrl(req, '/quran/review?help');
+%>
 <head><%- include('sub-views/head.ejs', { site: site, page: page }); %></head>
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
-  <main class="container col-lg-8 mx-auto mt-10 quran-memorization-welcome" id="quran-memorization-welcome" hidden>
+  <main class="container col-lg-8 mx-auto mt-10 quran-memorization-welcome" id="quran-memorization-welcome"<% if (!helpView) { %> hidden<% } %>>
     <section class="quran-memorization-welcome-hero text-center mx-auto">
       <span class="quran-memorization-welcome-icon" aria-hidden="true"><i class="bi bi-book"></i></span>
       <p class="text-primary fw-semibold small mb-2"><span class="badge rounded-pill text-bg-primary me-1">FSRS 6</span> Spaced repetition for Quran hifz</p>
@@ -84,7 +88,8 @@
       <div><h1 class="fs-4 mb-1">Memorization Progress</h1><p class="text-muted small mb-0">Longer surahs are grouped by Mushaf page. Short surahs are shown as a whole.</p></div>
       <div class="d-flex align-items-center gap-2">
         <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#quran-fsrs-settings-modal"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Review settings</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#quran-memorization-help-modal"><i class="bi bi-question-circle me-1" aria-hidden="true"></i> How it works</button>
+        <a class="btn btn-outline-secondary btn-sm" href="<%= helpUrl %>"><i class="bi bi-question-circle me-1" aria-hidden="true"></i> How it works</a>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="quran-memorization-share" data-share-url="<%= helpUrl %>"><i class="bi bi-box-arrow-up me-1" aria-hidden="true"></i> Share</button>
         <div class="dropdown">
           <button type="button" class="btn btn-primary btn-sm dropdown-toggle" id="quran-start-review" data-bs-toggle="dropdown" aria-expanded="false"><span id="quran-start-review-label">Start Review</span></button>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quran-start-review">
@@ -124,7 +129,7 @@
       </table>
     </div>
   </main>
-  <main class="container mt-10 text-center" id="quran-memorization-auth-loading" aria-live="polite">
+  <main class="container mt-10 text-center" id="quran-memorization-auth-loading" aria-live="polite"<% if (helpView) { %> hidden<% } %>>
     <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
     <span class="visually-hidden">Loading Quran memorization…</span>
   </main>
@@ -173,6 +178,7 @@
       const surahReviewStatus = document.getElementById('quran-surah-review-status');
       const pausedSessionsSection = document.getElementById('quran-paused-review-sessions');
       const pausedSessionsList = document.getElementById('quran-paused-review-session-list');
+      const shareButton = document.getElementById('quran-memorization-share');
       const reviewHeatmapWrap = document.querySelector('.quran-review-heatmap-wrap');
       const reviewHeatmap = document.getElementById('quran-review-heatmap');
       const reviewHeatmapDetail = document.getElementById('quran-review-heatmap-detail');
@@ -186,12 +192,24 @@
       const welcome = document.getElementById('quran-memorization-welcome');
       const progress = document.getElementById('quran-memorization-progress');
       if (loading) loading.hidden = true;
+      if (<%= helpView ? 'true' : 'false' %>) {
+        document.title = 'Memorize the Quran';
+        if (token) {
+          const signInButton = document.getElementById('quran-memorization-sign-in');
+          if (signInButton) {
+            signInButton.dataset.authenticated = '1';
+            signInButton.innerHTML = '<i class="bi bi-bar-chart-line me-1" aria-hidden="true"></i> Open my memorization progress';
+          }
+        }
+        return;
+      }
       if (!token) {
         document.title = 'Memorize the Quran';
         if (welcome) welcome.hidden = false;
         return;
       }
       if (progress) progress.hidden = false;
+      if (shareButton) shareButton.addEventListener('click',async()=>{const url=new URL(shareButton.dataset.shareUrl,window.location.origin).href;try{if(navigator.share){await navigator.share({title:'Memorize the Quran',text:'Memorize and review Quran ayat with adaptive spaced repetition.',url});if(window.toastr)toastr.success('Quran memorization guide shared');return;}await copyTextToClipboard(url);if(window.toastr)toastr.success('Quran memorization guide URL copied');}catch(err){if(err&&err.name==='AbortError')return;if(window.toastr)toastr.error(err.message||'Unable to share the Quran memorization guide');}});
       const request = async (path, options = {}) => { const response=await fetch(quranApiPath(`/memorization${path}`),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load memorization progress.'); return data; };
       const userSettingsRequest = async (options={}) => { const response=await fetch(quranApiPath('/user-settings'),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load settings.'); return data; };
       let reviewUserSettings=null;
@@ -579,6 +597,10 @@
       const button = document.getElementById('quran-memorization-sign-in');
       if (!button) return;
       button.addEventListener('click', async function () {
+        if (button.dataset.authenticated === '1') {
+          window.location.assign(quranUrl('/quran/review'));
+          return;
+        }
         button.disabled = true;
         for (let attempt = 0; attempt < 50 && (!window.hadithAuth || !window.hadithAuth.openSignIn); attempt += 1)
           await new Promise(resolve => window.setTimeout(resolve, 100));
@@ -592,7 +614,7 @@
       });
       document.addEventListener('hadithAuthChanged', function (event) {
         if (!(event.detail && event.detail.user)) return;
-        window.setTimeout(function () { window.location.reload(); }, 1800);
+        window.setTimeout(function () { window.location.assign(quranUrl('/quran/review')); }, 1800);
       });
     }());
   </script>

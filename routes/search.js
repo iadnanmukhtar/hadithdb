@@ -485,7 +485,8 @@ async function sitemapUrls(req) {
   if (!flushCache && Utils.cachedTextPathForRead(cachedFile)) {
     const cachedText = Utils.readCachedTextFile(cachedFile);
     const cachedUrls = sitemapTextToUrls(cachedText);
-    if (!sitemapCacheNeedsRebuild(cachedUrls))
+    const requiredUrls = quranOnly ? quranPublicSitemapUrlList(quranSitemapBaseUrl(req)) : [];
+    if (!sitemapCacheNeedsRebuild(cachedUrls, requiredUrls))
       return cachedUrls;
   }
   const cacheKey = quranOnly ? 'quran' : 'hadith';
@@ -518,8 +519,9 @@ function sitemapTextToUrls(txt) {
   return txt.toString().split(/\r?\n/).map(url => url.trim()).filter(Boolean);
 }
 
-function sitemapCacheNeedsRebuild(urls) {
-  return urls.some(url => !/^https?:\/\//i.test(url));
+function sitemapCacheNeedsRebuild(urls, requiredUrls = []) {
+  return urls.some(url => !/^https?:\/\//i.test(url))
+    || requiredUrls.some(url => !urls.includes(url));
 }
 
 function sitemapXml(urls) {
@@ -603,10 +605,22 @@ async function buildSitemapText(req) {
     txt += sitemapUrl(alias, h1, h2);
   }
   if (quranOnly) {
+    txt += quranPublicSitemapUrls(quranDomain);
     txt += await quranMushafSitemapUrls(quranDomain);
     txt += await quranCommentarySitemapUrls(quranDomain);
   }
   return txt;
+}
+
+function quranPublicSitemapUrlList(quranDomain) {
+  return [
+    `${quranDomain}/quran/review`,
+    `${quranDomain}/quran/review?help`
+  ];
+}
+
+function quranPublicSitemapUrls(quranDomain) {
+  return quranPublicSitemapUrlList(quranDomain).map(url => `${url}\n`).join('');
 }
 
 async function quranMushafSitemapUrls(quranDomain) {
@@ -2062,15 +2076,18 @@ router.get('/quran/review', function (req, res) {
   res.locals.req = req;
   res.locals.res = res;
   res.setHeader('Cache-Control', 'private, no-store');
-  const startReview = req.query.start !== undefined || req.query.continue !== undefined;
+  const helpView = req.query.help !== undefined;
+  const startReview = !helpView && (req.query.start !== undefined || req.query.continue !== undefined);
   res.render(startReview ? 'quran_review' : 'quran_memorization_pages', {
     page: {
       menu: 'Quran',
-      title_en: startReview ? 'Quran Memorization Review' : 'Memorization Progress',
+      title_en: startReview ? 'Quran Memorization Review' : (helpView ? 'Memorize the Quran' : 'Memorization Progress'),
       description_en: startReview
         ? 'Review Quran ayat using spaced repetition.'
-        : 'View Quran memorization progress or begin a guided spaced-review practice.',
-      canonical: '/quran/review',
+        : (helpView
+          ? 'Memorize and review Quran ayat with an adaptive FSRS 6 spaced-repetition experience.'
+          : 'View Quran memorization progress or begin a guided spaced-review practice.'),
+      canonical: helpView ? '/quran/review?help' : '/quran/review',
       context: { quranSearchProxy: true }
     }
   });
