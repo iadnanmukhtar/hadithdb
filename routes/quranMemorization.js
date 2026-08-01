@@ -245,6 +245,11 @@ router.get('/review/sessions/paused', async function (req, res) {
   res.json({ sessions });
 });
 
+router.get('/review/sessions/open', async function (req, res) {
+  const sessions = await QuranAyahMemorization.openReviewSessions(req.user.uid);
+  res.json({ sessions });
+});
+
 router.post('/review/sessions/:session/pause', async function (req, res) {
   const session = await QuranAyahMemorization.pauseReviewSession(req.user.uid, req.params.session);
   res.json({ session });
@@ -257,11 +262,6 @@ router.post('/review/sessions/:session/resume', async function (req, res) {
 
 router.post('/review/sessions/:session/end', async function (req, res) {
   const session = await QuranAyahMemorization.endReviewSession(req.user.uid, req.params.session);
-  res.json({ session });
-});
-
-router.delete('/review/sessions/:session', async function (req, res) {
-  const session = await QuranAyahMemorization.deletePausedReviewSession(req.user.uid, req.params.session);
   res.json({ session });
 });
 

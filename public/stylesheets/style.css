@@ -3001,6 +3001,11 @@ main.quran-mushaf-reader {
 	padding: .65rem .75rem;
 }
 
+.quran-paused-review-session.is-active {
+	background: color-mix(in srgb, var(--bs-body-bg) 94%, var(--bs-primary) 6%);
+	border-color: color-mix(in srgb, var(--bs-border-color) 52%, var(--bs-primary) 48%);
+}
+
 .quran-paused-review-session > div {
 	display: flex;
 	flex-direction: column;
@@ -3015,11 +3020,15 @@ main.quran-mushaf-reader {
 	gap: .35rem;
 }
 
-.quran-paused-review-delete {
-	align-items: center;
-	display: inline-flex;
-	justify-content: center;
-	min-width: 2rem;
+@media (max-width: 575.98px) {
+	.quran-paused-review-session {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.quran-paused-review-session > .quran-paused-review-session-actions {
+		flex-wrap: wrap;
+	}
 }
 
 .quran-surah-review-autocomplete-menu {
@@ -3028,12 +3037,12 @@ main.quran-mushaf-reader {
 	z-index: 1080;
 }
 
-.quran-review-loading-page {
+.page-loading-page {
 	min-height: calc(100vh - 10rem);
 	position: relative;
 }
 
-.quran-review-loading {
+.page-loading {
 	align-items: center;
 	display: flex;
 	flex-direction: column;
@@ -3047,9 +3056,38 @@ main.quran-mushaf-reader {
 	width: min(24rem, calc(100% - 2rem));
 }
 
-.quran-review-loading .spinner-border {
+.page-loading .spinner-border {
 	height: 3rem;
 	width: 3rem;
+}
+
+.page-loading-transition {
+	align-items: center;
+	background: color-mix(in srgb, var(--bs-body-bg) 94%, transparent);
+	bottom: 0;
+	display: flex;
+	flex-direction: column;
+	font-family: var(--bs-body-font-family);
+	gap: .75rem;
+	justify-content: center;
+	left: 0;
+	position: fixed;
+	right: 0;
+	top: 0;
+	z-index: 2000;
+}
+
+.page-loading-transition[hidden] {
+	display: none;
+}
+
+.page-loading-transition .spinner-border {
+	height: 3rem;
+	width: 3rem;
+}
+
+.page-is-transitioning {
+	overflow: hidden;
 }
 
 .quran-mushaf-line {

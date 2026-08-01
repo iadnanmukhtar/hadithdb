@@ -6985,6 +6985,41 @@ function initQuranMushafAyahSelection(root) {
 	});
 }
 
+function showPageLoading(message) {
+	var loading = document.getElementById('page-loading-transition');
+	if (!loading) {
+		loading = document.createElement('div');
+		loading.id = 'page-loading-transition';
+		loading.className = 'page-loading-transition';
+		loading.setAttribute('role', 'status');
+		loading.setAttribute('aria-live', 'polite');
+		loading.innerHTML = '<span class="spinner-border text-primary" aria-hidden="true"></span><span data-page-loading-message></span>';
+		document.body.appendChild(loading);
+	}
+	var copy = loading.querySelector('[data-page-loading-message]');
+	if (copy) copy.textContent = message || 'Loading...';
+	loading.hidden = false;
+	document.documentElement.classList.add('page-is-transitioning');
+}
+
+window.showPageLoading = showPageLoading;
+window.navigateWithPageLoading = function (url, message, replace) {
+	showPageLoading(message);
+	// Give the browser a chance to paint the loading state before unloading the page.
+	window.setTimeout(function () {
+		window.location[replace ? 'replace' : 'assign'](url);
+	}, 120);
+};
+window.hidePageLoading = function () {
+	var loading = document.getElementById('page-loading-transition');
+	if (loading) loading.hidden = true;
+	document.documentElement.classList.remove('page-is-transitioning');
+};
+// Compatibility aliases for older cached inline Quran templates.
+window.showQuranReviewLoading = window.showPageLoading;
+window.navigateWithQuranReviewLoading = window.navigateWithPageLoading;
+window.hideQuranReviewLoading = window.hidePageLoading;
+
 function initQuranMemorizeReviewLauncher(root) {
 	var modal = (root || document).querySelector('#quran-memorize-review-modal');
 	if (!modal || modal.dataset.quranMemorizeReviewBound === '1') return;
@@ -7127,14 +7162,16 @@ function initQuranMemorizeReviewLauncher(root) {
 		}
 		submit.disabled = true;
 		status.textContent = scope === 'page' ? `Preparing Mushaf page ${currentPage}...` : 'Preparing the Surah Review...';
+		showQuranReviewLoading('Preparing your review...');
 		try {
 			var token = await getToken();
 			if (!token) throw new Error('Please sign in to start a Quran review.');
 			var response = await fetch(quranApiPath('/memorization/review/sessions'), { method: 'POST', credentials: 'same-origin', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 			var data = await response.json().catch(function () { return {}; });
 			if (!response.ok) throw new Error(data.error || 'Unable to start this review.');
-			window.location.assign(quranUrl('/quran/review?continue=1'));
+			window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'), 'Loading your review...');
 		} catch (err) {
+			window.hideQuranReviewLoading();
 			status.textContent = err.message || 'Unable to start this review.';
 			submit.disabled = false;
 		}
@@ -8732,7 +8769,7 @@ function initQuranAyahReview(root) {
 					});
 					var data = await response.json().catch(function () { return {}; });
 					if (!response.ok) throw new Error(data.error || `Unable to ${action} this review session.`);
-					window.location.assign(quranUrl(`/quran/review?${action === 'pause' ? 'paused' : 'ended'}=1`));
+					window.navigateWithQuranReviewLoading(quranUrl(`/quran/review?${action === 'pause' ? 'paused' : 'ended'}=1`), action === 'pause' ? 'Pausing your review...' : 'Ending your review...');
 				} catch (err) {
 					if (status) status.textContent = err.message;
 					if (window.toastr) window.toastr.error(err.message, 'Review session');
@@ -8782,7 +8819,7 @@ function initQuranAyahReview(root) {
 					var undoRef = `${undoData.surah_number}:${undoData.ayah_number}`;
 					reviewedRefs.delete(undoRef);
 					syncUndoReview(null);
-					window.location.assign(quranUrl(`/quran/page/${undoAyah.page_number || 1}?review=${undoRef}`));
+					window.navigateWithPageLoading(quranUrl(`/quran/page/${undoAyah.page_number || 1}?review=${undoRef}`), 'Loading the previous āyah...');
 				} catch (err) {
 					undoInProgress = false;
 					if (status) status.textContent = err.message;
@@ -8860,17 +8897,17 @@ function initQuranAyahReview(root) {
 					if (!nextReview.response.ok)
 						throw new Error(nextReview.data.error || 'Unable to load the next review.');
 					if (nextReview.data.complete || !nextReview.data.ayah) {
-						window.location.assign(quranUrl('/quran/review?complete=1'));
+						window.navigateWithQuranReviewLoading(quranUrl('/quran/review?complete=1'), 'Finishing your review...');
 						return;
 					}
 					var nextAyah = nextReview.data.ayah;
 					var nextQuery = [`review=${nextAyah.surah_number}:${nextAyah.ayah_number}`];
 					if (nextAyah.retry) nextQuery.push('reviewRetry=1');
-					window.location.assign(quranUrl(`/quran/page/${nextAyah.page_number || 1}?${nextQuery.join('&')}`));
+					window.navigateWithQuranReviewLoading(quranUrl(`/quran/page/${nextAyah.page_number || 1}?${nextQuery.join('&')}`), 'Loading the next āyah...');
 				} catch (_nextErr) {
 					// The grade is already saved. Fall back to the existing recovery
 					// loader, which can resume the current persisted queue safely.
-					window.location.assign(quranUrl('/quran/review?continue=1'));
+					window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'), 'Loading the next āyah...');
 				}
 			} catch (err) {
 				restoreReviewedAyah();

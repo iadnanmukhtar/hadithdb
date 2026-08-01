@@ -57,6 +57,11 @@ function requiredText(value, label) {
 	return value;
 }
 
+function editionText(edition, value, label) {
+	const text = requiredText(value, label);
+	return edition.slug === 'warsh' ? text.replace(/۞\s*/gu, '').trim() : text;
+}
+
 function loadEdition(edition) {
 	const ayahSource = readJson(edition.ayahFile);
 	const wordSource = readJson(edition.wordFile);
@@ -70,7 +75,7 @@ function loadEdition(edition) {
 		const ayah = positiveInteger(row && row.ayah, `${edition.name} ayah ${key} ayah`);
 		if (key !== `${surah}:${ayah}` || row.verse_key !== key)
 			throw new Error(`${edition.name} ayah key mismatch at ${key}`);
-		return { ref: key, surah, ayah, source_id: positiveInteger(row.id, `${edition.name} ayah ${key} id`), text: requiredText(row.text, `${edition.name} ayah ${key}`) };
+		return { ref: key, surah, ayah, source_id: positiveInteger(row.id, `${edition.name} ayah ${key} id`), text: editionText(edition, row.text, `${edition.name} ayah ${key}`) };
 	}).sort((a, b) => a.surah - b.surah || a.ayah - b.ayah);
 
 	const words = Object.entries(wordSource).map(([key, row]) => {
@@ -79,7 +84,7 @@ function loadEdition(edition) {
 		const word = positiveInteger(row && row.word, `${edition.name} word ${key} position`);
 		if (key !== `${surah}:${ayah}:${word}` || row.location !== key)
 			throw new Error(`${edition.name} word key mismatch at ${key}`);
-		return { surah, ayah, word, source_id: positiveInteger(row.id, `${edition.name} word ${key} id`), text: requiredText(row.text, `${edition.name} word ${key}`) };
+		return { surah, ayah, word, source_id: positiveInteger(row.id, `${edition.name} word ${key} id`), text: editionText(edition, row.text, `${edition.name} word ${key}`) };
 	}).sort((a, b) => a.surah - b.surah || a.ayah - b.ayah || a.word - b.word);
 
 	const wordsByAyah = new Map();

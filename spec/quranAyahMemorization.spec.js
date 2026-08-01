@@ -663,14 +663,15 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(query.mock.calls.map(call => call[0].match(/lifecycle_state='([^']+)'/)[1])).toEqual([
         'learning', 'relearning', 'weak', 'review'
       ]);
-      expect(query.mock.calls[0][0]).toContain('LIMIT 3 FOR UPDATE');
-      expect(query.mock.calls[1][0]).toContain('LIMIT 4 FOR UPDATE');
-      expect(query.mock.calls[2][0]).toContain('LIMIT 3 FOR UPDATE');
+      expect(query.mock.calls[0][0]).toContain('LIMIT 10 FOR UPDATE');
+      expect(query.mock.calls[1][0]).toContain('LIMIT 10 FOR UPDATE');
+      expect(query.mock.calls[2][0]).toContain('LIMIT 10 FOR UPDATE');
       expect(query.mock.calls[3][0]).toContain('LIMIT 10 FOR UPDATE');
+      expect(query.mock.calls.slice(0, 4).every(call => call[0].includes('CASE WHEN fsrs_state=0 THEN 1 ELSE 0 END'))).toBe(true);
     });
 
     test('lets one due category use otherwise unused overall capacity', async () => {
-      const memorized = rows('review', 10, 2);
+      const memorized = rows('review', 10, 2).map(row => ({ ...row, fsrs_state:2 }));
       const query = jest.fn()
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([])
@@ -683,6 +684,20 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(result.relearning).toEqual([]);
       expect(result.weak).toEqual([]);
       expect(result.memorized).toEqual(memorized);
+      expect(result.fresh).toBe(false);
+    });
+
+    test('uses spare session capacity for overdue Learning cards beyond the category cap', async () => {
+      const overdueLearning = rows('learning', 4, 2).map(row => ({ ...row, fsrs_state:2 }));
+      const query = jest.fn()
+        .mockResolvedValueOnce(overdueLearning)
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([]);
+
+      const result = await QuranAyahMemorization.selectReviewSessionItems(query, 'user-1', 10, limits, order);
+
+      expect(result.learning).toEqual(overdueLearning);
       expect(result.fresh).toBe(false);
     });
 
@@ -708,6 +723,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(result.fresh).toBe(true);
       expect(query).toHaveBeenCalledTimes(7);
       expect(query.mock.calls.slice(4).every(call => call[0].includes('next_review_at>NOW()'))).toBe(true);
+      expect(query.mock.calls.slice(4).every(call => call[0].includes('CASE WHEN fsrs_state=0 THEN 0 ELSE 1 END'))).toBe(true);
       expect(query.mock.calls.slice(4).some(call => call[0].includes("lifecycle_state='relearning'"))).toBe(false);
     });
 
@@ -764,6 +780,37 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(result.items).toEqual(ordered);
       expect(query.mock.calls[0][0]).not.toContain('AND surah_number=');
       expect(query.mock.calls[0][0]).toContain('(surah_number,ayah_number) IN ((8,75),(9,1))');
+    });
+  });
+
+  describe('review session switching', () => {
+    test('pauses the active session before resuming the selected paused session', async () => {
+      const query = jest.fn()
+        .mockResolvedValueOnce([
+          { session_id: 'active-session', paused_at: null },
+          { session_id: 'paused-session', paused_at: new Date('2026-08-01T12:00:00Z') }
+        ])
+        .mockResolvedValueOnce({ affectedRows: 1 })
+        .mockResolvedValueOnce({ affectedRows: 1 });
+
+      await expect(QuranAyahMemorization.switchReviewSession(query, 'user-1', 'paused-session')).resolves.toEqual({
+        session_id: 'paused-session',
+        resumed: true,
+        switched_from_session_ids: ['active-session']
+      });
+      expect(query).toHaveBeenCalledTimes(3);
+      expect(query.mock.calls[1][0]).toContain('SET paused_at=NOW()');
+      expect(query.mock.calls[2][0]).toContain('paused_at=NULL');
+    });
+
+    test('keeps the selected active session active', async () => {
+      const query = jest.fn().mockResolvedValueOnce([{ session_id: 'active-session', paused_at: null }]);
+      await expect(QuranAyahMemorization.switchReviewSession(query, 'user-1', 'active-session')).resolves.toEqual({
+        session_id: 'active-session',
+        resumed: true,
+        switched_from_session_ids: []
+      });
+      expect(query).toHaveBeenCalledTimes(1);
     });
   });
 });

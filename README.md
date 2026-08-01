@@ -138,7 +138,7 @@ Memorize mode also places a **Review** button beneath each Mushaf page. Its cont
 
 Page and Surah Reviews are not constrained by Due now, regular category caps, or the optional time budget. They continue until every included āyah has been graded or skipped. Again, Hard, Good, and Easy are recorded as real FSRS assessments, so grading a Core or Paused āyah can return it to scheduled memorization according to the result. Skip advances without changing the āyah's state, schedule, or review history.
 
-The Mushaf review footer can pause a Page or Surah Review without losing its current āyah or queue position, or end it while preserving completed review history. Paused sessions are stored in the database and can be resumed or deleted across devices from Memorization Progress. Deleting a paused session removes its remaining queue while retaining completed FSRS review history.
+The Mushaf review footer can pause a Page or Surah Review without losing its current āyah or queue position, or end it while preserving completed review history. Memorization Progress lists the active session together with paused sessions. Continuing the active session or switching to a paused session is explicit; switching atomically pauses the current session before resuming the selected one. Any active or paused session can be ended. Ending closes its remaining queue while retaining completed FSRS review history.
 
 FSRS 6 settings are available in My Settings and in a modal on `/quran/review`:
 
