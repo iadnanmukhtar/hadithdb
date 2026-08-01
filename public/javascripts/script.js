@@ -3653,6 +3653,29 @@ function showQuranAudioTranslationMarquee(item, options) {
 			setQuranAudioTranslationMarqueeActiveVerse(verseKey);
 		if (options.selection && overflowWidth <= 0)
 			return;
+		if (!options.selection && quranPassageAudioState.singleAyah && queue.length === 1 && overflowWidth <= 0) {
+			var shortEntry = track.querySelector('[data-quran-audio-verse-key]');
+			var shortEntryRect = shortEntry && shortEntry.getBoundingClientRect();
+			var shortMarqueeRect = marquee.getBoundingClientRect();
+			var shortRtl = queue[0].translation.direction === 'rtl';
+			var shortStartEdge = shortRtl ? shortEntryRect.right : shortEntryRect.left;
+			var shortStartTransform = shortMarqueeRect.left + shortMarqueeRect.width / 2 - shortStartEdge;
+			var shortTravelWidth = shortEntryRect.width;
+			var shortSeconds = quranAudioTranslationMarqueeSeconds(item, true, audio, queue[0].translation);
+			marquee.dataset.quranAudioPlaybackRate = playbackRate.toString();
+			marquee.dataset.quranAudioMarqueeDurationMs = Math.round(shortSeconds * 1000).toString();
+			quranAudioTranslationMarqueeState.animation = track.animate([
+				{ transform: `translateX(${shortStartTransform}px)` },
+				{ transform: `translateX(${shortStartTransform + (shortRtl ? shortTravelWidth : -shortTravelWidth)}px)` }
+			], {
+				duration: shortSeconds * 1000,
+				easing: 'linear',
+				fill: 'forwards'
+			});
+			if (audio && (quranPassageAudioState.paused || audio.paused))
+				quranAudioTranslationMarqueeState.animation.pause();
+			return;
+		}
 		if (!options.selection && queue.length === 1 && overflowWidth > 0) {
 			var singleSeconds = quranAudioTranslationMarqueeSeconds(item, true, audio, queue[0].translation);
 			var singleRtl = queue[0].translation.direction === 'rtl';
