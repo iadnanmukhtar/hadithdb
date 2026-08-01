@@ -114,6 +114,8 @@ Signed-out visitors see a concise Quran memorization introduction with a sign-in
 
 During a recall attempt, the sticky controls record a result rather than changing a permanent status directly:
 
+Review pages after page 1 show the final Arabic line of the preceding Mushaf page in a compact, always-visible continuity strip above the current page. The strip is non-interactive and excluded from concealment, grading, memorization-state controls, and audio selection.
+
 | Result | Scheduling meaning |
 |---|---|
 | **Again** | Recall failed; keep Learning or Weak in its current state, move Memorized to Relearning, and allow one retry near the end of this session |

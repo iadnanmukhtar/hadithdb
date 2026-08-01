@@ -2380,6 +2380,45 @@ main.quran-mushaf-reader {
 	background-color: color-mix(in srgb, var(--bs-body-bg) 96%, #4c8fc7 4%);
 }
 
+.quran-review-page-continuity {
+	background: color-mix(in srgb, var(--bs-body-bg) 97%, #4c8fc7 3%);
+	border: 1px solid color-mix(in srgb, var(--bs-border-color) 82%, #4c8fc7 18%);
+	border-radius: .35rem;
+	box-sizing: border-box;
+	font-size: 1.12rem;
+	margin: 0 auto .55rem;
+	max-width: 33rem;
+	min-width: 33rem;
+	overflow: hidden;
+	padding: .38rem clamp(1rem, 3vw, 2.5rem) .48rem;
+	width: 100%;
+}
+
+.quran-review-page-continuity-label {
+	color: var(--bs-secondary-color);
+	display: block;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font-size: .55rem;
+	line-height: 1;
+	margin-bottom: .22rem;
+	text-align: left;
+}
+
+.quran-review-page-continuity-line {
+	align-items: center;
+	display: flex;
+	gap: .14em;
+	justify-content: space-between;
+	line-height: 1.55;
+	min-height: 1.55em;
+	white-space: nowrap;
+}
+
+.quran-review-page-continuity-marker {
+	color: var(--bs-secondary-color);
+	font-size: .82em;
+}
+
 .quran-ayah-state-select {
 	display: none !important;
 }
@@ -4608,6 +4647,13 @@ main.quran-mushaf-reader {
 		width: 100%;
 	}
 
+	.quran-review-page-continuity {
+		font-size: var(--quran-mushaf-mobile-font-size, 1rem);
+		max-width: 95vw;
+		min-width: 0;
+		padding: .38rem .65rem .45rem;
+	}
+
 	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) {
 		font-size: var(--quran-mushaf-mobile-font-size, 1rem) !important;
 	}
@@ -4646,6 +4692,10 @@ main.quran-mushaf-reader {
 	.quran-mushaf-sheet,
 	.quran-mushaf-sheet.quran-hafs:lang(ar) {
 		--quran-mushaf-mobile-font-size: clamp(1.25rem, 2.6vw, 1.55rem);
+		max-width: min(38rem, 72vw);
+	}
+
+	.quran-review-page-continuity {
 		max-width: min(38rem, 72vw);
 	}
 

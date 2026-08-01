@@ -2198,6 +2198,14 @@ async function renderQuranMushafPage(req, res, next, options) {
   var mushaf = await QuranMushaf.page(pageNumber);
   if (!mushaf)
     return next(createError(404, `Mushaf page '${pageNumber}' not found`));
+  var previousMushaf = review && pageNumber > 1
+    ? await QuranMushaf.page(pageNumber - 1)
+    : null;
+  var reviewPreviousLine = previousMushaf
+    ? previousMushaf.lines.slice().reverse().find(function (line) {
+      return line.line_type === 'ayah' && Array.isArray(line.words) && line.words.length > 0;
+    }) || null
+    : null;
   var juzStarts = {};
   var juzRows = await QuranTocSubdivisions.juzRows();
   juzRows.forEach(function (juz) {
@@ -2398,6 +2406,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     review: review,
     reviewRef: reviewRef,
     reviewRetry: req.query.reviewRetry !== undefined,
+    reviewPreviousLine: reviewPreviousLine,
     mushaf: mushaf,
     audioRanges: audioRanges,
     subsectionAudioRanges: subsectionAudioRanges,
