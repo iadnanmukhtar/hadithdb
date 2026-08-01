@@ -2550,7 +2550,8 @@ main.quran-mushaf-reader {
 	border-bottom: 1px solid rgba(255, 255, 255, .16);
 }
 
-.quran-ayah-reveal-option .bi {
+.quran-ayah-reveal-option .bi,
+.quran-ayah-play-option .bi {
 	align-items: center;
 	display: inline-flex;
 	flex: 0 0 .52rem;
@@ -5310,6 +5311,17 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 
 .mobile-bottom-nav.mobile-bottom-nav-review-controls > :not(.quran-memorize-rating-buttons) {
 	display: none !important;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-review-controls.mobile-bottom-nav-audio-controls > .mobile-bottom-nav-audio-item {
+	display: inline-flex !important;
+}
+
+@media (min-width: 768px) {
+	body:has(.mobile-bottom-nav-review-controls) .quran-audio-translation-marquee {
+		max-width: 34rem;
+		width: min(34rem, calc(100vw - 2rem));
+	}
 }
 
 .mobile-bottom-nav.mobile-bottom-nav-review-controls .quran-memorize-rating-buttons {
