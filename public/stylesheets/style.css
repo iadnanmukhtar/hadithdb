@@ -8592,6 +8592,8 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-hero-ayah {
 
 .quran-ayah-hero a.quran-ayah-hero-link {
 	color: inherit;
+	font-size: inherit;
+	line-height: inherit;
 	text-decoration: none;
 }
 
@@ -9627,7 +9629,8 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	font-size: small;
 }
 
-.toc2 tr[data-quran-mushaf-juz-href] {
+.toc2 tr[data-quran-mushaf-juz-href],
+.toc2 tr[data-quran-menu-href] {
 	cursor: pointer;
 }
 

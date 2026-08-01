@@ -128,7 +128,7 @@ $(function () {
 	initQuranMemorizeReviewLauncher(document);
 	initQuranSelectionTranslationMarquee(document);
 	initQuranMushafSurahPicker(document);
-	initQuranMushafJuzRows(document);
+	initQuranMenuRows(document);
 	initQuranDynamicPassageHero(document);
 	canonicalizeQuranTranslationPageUrl();
 	initQuranSelectedTranslationBookPreference(document);
@@ -9177,13 +9177,13 @@ function scrollQuranMushafJuzMenuToCurrent() {
 	panel.scrollTop = Math.max(0, current.offsetTop - ((panel.clientHeight - current.offsetHeight) / 2));
 }
 
-function initQuranMushafJuzRows(root) {
-	var rows = root.querySelectorAll('[data-quran-mushaf-juz-href]');
+function initQuranMenuRows(root) {
+	var rows = root.querySelectorAll('[data-quran-mushaf-juz-href], [data-quran-menu-href]');
 	rows.forEach(function (row) {
 		row.addEventListener('click', function (event) {
 			if (event.target.closest('a, button, input, select, textarea'))
 				return;
-			var href = row.getAttribute('data-quran-mushaf-juz-href');
+			var href = row.getAttribute('data-quran-mushaf-juz-href') || row.getAttribute('data-quran-menu-href');
 			if (!href)
 				return;
 			if (event.metaKey || event.ctrlKey || event.shiftKey)
