@@ -7010,6 +7010,19 @@ window.navigateWithPageLoading = function (url, message, replace) {
 		window.location[replace ? 'replace' : 'assign'](url);
 	}, 120);
 };
+window.navigateWithPageNotice = function (url, notice, loadingMessage) {
+	showPageLoading(loadingMessage);
+	window.setTimeout(function () {
+		var target = new URL(url, window.location.href);
+		if (target.origin !== window.location.origin) {
+			window.location.assign(target.href);
+			return;
+		}
+		var state = Object.assign({}, window.history.state || {}, { pageNotice: notice || null });
+		window.history.pushState(state, '', `${target.pathname}${target.search}${target.hash}`);
+		window.location.reload();
+	}, 120);
+};
 window.hidePageLoading = function () {
 	var loading = document.getElementById('page-loading-transition');
 	if (loading) loading.hidden = true;
@@ -8769,7 +8782,10 @@ function initQuranAyahReview(root) {
 					});
 					var data = await response.json().catch(function () { return {}; });
 					if (!response.ok) throw new Error(data.error || `Unable to ${action} this review session.`);
-					window.navigateWithQuranReviewLoading(quranUrl(`/quran/review?${action === 'pause' ? 'paused' : 'ended'}=1`), action === 'pause' ? 'Pausing your review...' : 'Ending your review...');
+					window.navigateWithPageNotice(quranUrl('/quran/review'), action === 'pause'
+						? { type:'info', title:'Review paused', message:'Resume it whenever you are ready.' }
+						: { type:'info', title:'Review ended', message:'Completed reviews remain saved.' },
+						action === 'pause' ? 'Pausing your review...' : 'Ending your review...');
 				} catch (err) {
 					if (status) status.textContent = err.message;
 					if (window.toastr) window.toastr.error(err.message, 'Review session');
@@ -8897,7 +8913,9 @@ function initQuranAyahReview(root) {
 					if (!nextReview.response.ok)
 						throw new Error(nextReview.data.error || 'Unable to load the next review.');
 					if (nextReview.data.complete || !nextReview.data.ayah) {
-						window.navigateWithQuranReviewLoading(quranUrl('/quran/review?complete=1'), 'Finishing your review...');
+						window.navigateWithPageNotice(quranUrl('/quran/review'),
+							{ type:'success', title:'Review complete', message:'You completed this review session.' },
+							'Finishing your review...');
 						return;
 					}
 					var nextAyah = nextReview.data.ayah;

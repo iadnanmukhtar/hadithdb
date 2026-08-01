@@ -98,9 +98,6 @@
         </div>
       </div>
     </div>
-    <% if (req.query.complete !== undefined) { %><p class="alert alert-success py-2">Review session complete.</p><% } %>
-    <% if (req.query.paused !== undefined) { %><p class="alert alert-info py-2">Review session paused. Resume it below whenever you are ready.</p><% } %>
-    <% if (req.query.ended !== undefined) { %><p class="alert alert-secondary py-2">Review session ended. Completed reviews remain saved.</p><% } %>
     <section class="quran-paused-review-sessions mb-3" id="quran-open-review-sessions" aria-labelledby="quran-open-review-sessions-title" hidden>
       <div class="d-flex justify-content-between align-items-baseline gap-2 mb-2 flex-wrap"><h2 class="fs-6 fw-bold mb-0" id="quran-open-review-sessions-title">Your review sessions</h2><span class="small text-muted">Continue, switch, or end a session</span></div>
       <div class="quran-paused-review-session-list" id="quran-open-review-session-list"></div>
@@ -184,6 +181,27 @@
       const reviewHeatmapDetail = document.getElementById('quran-review-heatmap-detail');
       const surahCatalog = <%- JSON.stringify((global.surahs || []).map(function (surah) { return { number: Number(surah.num), english: surah.name_en || '', arabic: surah.name_ar || '', aliases: surah.aliases || [] }; })) %>;
       const escapeHtml = value => (value ?? '').toString().replace(/[&<>"']/g, character => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
+      const legacyNotice = <%- JSON.stringify(req.query.complete !== undefined
+        ? { type:'success', title:'Review complete', message:'You completed this review session.' }
+        : req.query.paused !== undefined
+          ? { type:'info', title:'Review paused', message:'Resume it whenever you are ready.' }
+          : req.query.ended !== undefined
+            ? { type:'info', title:'Review ended', message:'Completed reviews remain saved.' }
+            : null) %>;
+      const historyNotice = window.history.state && window.history.state.pageNotice;
+      const pageNotice = historyNotice || legacyNotice;
+      if (pageNotice) {
+        const cleanUrl = new URL(window.location.href);
+        ['complete','paused','ended'].forEach(key => cleanUrl.searchParams.delete(key));
+        const cleanState = Object.assign({}, window.history.state || {});
+        delete cleanState.pageNotice;
+        window.history.replaceState(cleanState, '', `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+        window.setTimeout(() => {
+          if (!window.toastr) return;
+          const method = typeof window.toastr[pageNotice.type] === 'function' ? pageNotice.type : 'info';
+          window.toastr[method](pageNotice.message, pageNotice.title);
+        }, 0);
+      }
       const openingWords = (value, maximum = 4) => { const words=(value||'').trim().split(/\s+/).filter(Boolean); return `${words.slice(0,maximum).join(' ')}${words.length>maximum?' …':''}`; };
       const waitForAuth = async () => { for (let i=0; i<50 && (!window.hadithAuth || !window.hadithAuth.getToken); i++) await new Promise(resolve => setTimeout(resolve,100)); return window.hadithAuth; };
       const auth = await waitForAuth();

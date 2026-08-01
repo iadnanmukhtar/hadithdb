@@ -15,9 +15,9 @@
         <div class="quran-review-page-continuity-line">
           <% reviewPreviousLine.words.forEach(function (word) { %>
             <% if (word.is_ayah_marker) { %>
-            <span class="quran-review-page-continuity-marker" aria-label="End of Quran <%= word.surah %>:<%= word.ayah %>">۝<%= arabic.toArabicDigits(word.ayah) %></span>
+            <span class="quran-review-page-continuity-marker quran-ayah-end-marker" data-quran-script-text="marker" data-quran-ref="<%= word.surah %>:<%= word.ayah %>" data-quran-marker-text="۝<%= arabic.toArabicDigits(word.ayah) %>" aria-label="End of Quran <%= word.surah %>:<%= word.ayah %>">۝<%= arabic.toArabicDigits(word.ayah) %></span>
             <% } else { %>
-            <span class="quran-review-page-continuity-word"><%= word.text %></span>
+            <span class="quran-review-page-continuity-word" data-quran-script-text="word-exact" data-quran-ref="<%= word.surah %>:<%= word.ayah %>" data-quran-word="<%= word.text %>" data-quran-word-number="<%= word.word %>"><%= word.text %></span>
             <% } %>
           <% }); %>
         </div>
@@ -119,5 +119,46 @@
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <% if (review && reviewPreviousLine) { %>
+  <script>
+    (function () {
+      var context = document.querySelector('.quran-review-page-continuity');
+      if (!context || typeof getQuranTafsirSettings !== 'function')
+        return;
+      getQuranTafsirSettings().then(function (settings) {
+        var script = normalizeQuranScriptChoice(settings && settings.quran && settings.quran.script) || 'uthmani';
+        updateQuranAyahMarkersForScript(context, script);
+        if (script === 'uthmani')
+          return;
+        var words = Array.from(context.querySelectorAll('[data-quran-script-text="word-exact"][data-quran-ref][data-quran-word-number]'));
+        var refs = Array.from(new Set(words.map(function (word) { return word.getAttribute('data-quran-ref'); }).filter(Boolean)));
+        if (refs.length < 1)
+          return;
+        return fetch(`${quranApiPath(`/quran/script/${encodeURIComponent(script)}`)}?refs=${encodeURIComponent(refs.join(','))}`, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { 'Accept': 'application/json' }
+        }).then(function (response) {
+          if (!response.ok)
+            throw new Error('Unable to load the selected Quran script.');
+          return response.json();
+        }).then(function (payload) {
+          words.forEach(function (word) {
+            var ref = word.getAttribute('data-quran-ref') || '';
+            var wordNumber = Number(word.getAttribute('data-quran-word-number'));
+            var sourceWord = Array.from(payload.wordsByAyah && payload.wordsByAyah[ref] || []).find(function (candidate) {
+              return Number(candidate.word) === wordNumber;
+            });
+            if (!sourceWord)
+              return;
+            word.textContent = sourceWord.text;
+            word.setAttribute('data-quran-word', sourceWord.text);
+            word.setAttribute('data-quran-script-applied', script);
+          });
+        });
+      }).catch(function () {});
+    }());
+  </script>
+  <% } %>
 </body>
 </html>

@@ -26,6 +26,7 @@
   <script>
     (async function () {
       const status = document.getElementById('quran-review-status');
+      window.history.replaceState(window.history.state, '', quranUrl('/quran/review'));
       try {
         let attempts = 0;
         while ((!window.hadithAuth || !window.hadithAuth.getToken) && attempts < 50) {
@@ -80,7 +81,11 @@
           throw new Error(data.error || 'Unable to load reviews.');
         }
         if (data.complete || !data.ayah) {
-          window.location.replace(quranUrl('/quran/review?complete=1'));
+          const state = Object.assign({}, window.history.state || {}, {
+            pageNotice: { type:'success', title:'Review complete', message:'You completed this review session.' }
+          });
+          window.history.replaceState(state, '', quranUrl('/quran/review'));
+          window.location.reload();
           return;
         }
         const ayah = data.ayah;
