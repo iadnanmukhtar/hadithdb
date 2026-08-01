@@ -116,6 +116,7 @@ $(function () {
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
 	initStickyFooterScrollFade(document);
+	initBlogInfiniteScroll(document);
 	initQuranInfinitePassageNavigation(document);
 	initReaderInfiniteNavigation(document);
 	initQuranMushafInfinite(document);
@@ -149,6 +150,117 @@ $(function () {
 	initTocInlineDescriptionExpanders(document);
 
 });
+
+function initBlogInfiniteScroll(root) {
+	var scope = root || document;
+	$(scope).find('[data-blog-infinite]').addBack('[data-blog-infinite]').each(function () {
+		var main = $(this);
+		if (main.data('blogInfiniteBound'))
+			return;
+		main.data('blogInfiniteBound', true);
+
+		var status = main.siblings('[data-blog-infinite-status]').first();
+		var sentinel = main.siblings('[data-blog-infinite-sentinel]').first();
+		var nextUrl = main.attr('data-blog-next-url') || '';
+		var loadingPromise = null;
+		var loadedUrls = new Set();
+		var currentUrl = main.attr('data-blog-current-url') || `${window.location.pathname}${window.location.search}`;
+		loadedUrls.add(normalizeReaderInfiniteUrl(currentUrl));
+
+		var renderMobilePaginationLink = function (direction, href) {
+			var attribute = direction === 'prev' ? 'data-mobile-bottom-nav-prev' : 'data-mobile-bottom-nav-next';
+			var current = document.querySelector(`[${attribute}]`);
+			if (!current)
+				return;
+			var replacement = document.createElement(href ? 'a' : 'span');
+			replacement.className = `mobile-bottom-nav-item${href ? '' : ' mobile-bottom-nav-item-disabled'}`;
+			replacement.innerHTML = current.innerHTML;
+			replacement.setAttribute(attribute, '');
+			if (href) {
+				replacement.setAttribute('href', href);
+				replacement.setAttribute('rel', direction);
+				replacement.setAttribute('title', direction === 'prev' ? 'Previous' : 'Next');
+				replacement.setAttribute('aria-label', direction === 'prev' ? 'Previous' : 'Next');
+			} else {
+				replacement.setAttribute('aria-disabled', 'true');
+			}
+			current.replaceWith(replacement);
+		};
+
+		var appendBlogPage = function (html, targetUrl) {
+			var parsed = new DOMParser().parseFromString(html, 'text/html');
+			var remoteMain = parsed.querySelector('[data-blog-infinite]');
+			if (!remoteMain)
+				throw new Error('Next blog page was not found.');
+
+			var remoteUrl = remoteMain.getAttribute('data-blog-current-url') || targetUrl;
+			var pageNumber = remoteMain.getAttribute('data-blog-page-number') || '';
+			var chunk = $('<section class="blog-infinite-page" data-blog-infinite-page="1"></section>').attr({
+				'data-blog-url': remoteUrl,
+				'data-blog-page-number': pageNumber,
+				'aria-label': pageNumber ? `Blog page ${pageNumber}` : 'More blog posts'
+			});
+			Array.from(remoteMain.children).forEach(function (node) {
+				chunk[0].appendChild(document.importNode(node, true));
+			});
+			if (!chunk.children().length)
+				throw new Error('Next blog page did not include any posts.');
+			chunk.appendTo(main);
+
+			var prevUrl = remoteMain.getAttribute('data-blog-prev-url') || '';
+			nextUrl = remoteMain.getAttribute('data-blog-next-url') || '';
+			if (nextUrl)
+				main.attr('data-blog-next-url', nextUrl);
+			else
+				main.removeAttr('data-blog-next-url');
+			renderMobilePaginationLink('prev', prevUrl);
+			renderMobilePaginationLink('next', nextUrl);
+			return chunk[0];
+		};
+
+		var loadNext = function () {
+			if (loadingPromise)
+				return loadingPromise;
+			if (!nextUrl)
+				return Promise.resolve(false);
+			var targetUrl = nextUrl;
+			var normalized = normalizeReaderInfiniteUrl(targetUrl);
+			if (!normalized || loadedUrls.has(normalized)) {
+				nextUrl = '';
+				return Promise.resolve(false);
+			}
+			status.removeAttr('data-infinite-load-error').text('Loading more blog posts...');
+			loadingPromise = fetch(targetUrl, {
+				credentials: 'same-origin',
+				headers: { 'Accept': 'text/html' }
+			}).then(function (response) {
+				if (!response.ok)
+					throw new Error('Unable to load more blog posts.');
+				return response.text();
+			}).then(function (html) {
+				appendBlogPage(html, targetUrl);
+				loadedUrls.add(normalized);
+				status.text('');
+				return true;
+			}).catch(function (err) {
+				showInfiniteLoadFailure(status, err && err.message ? err.message : 'Unable to load more blog posts.', targetUrl, 'Open next blog page');
+				return false;
+			}).finally(function () {
+				loadingPromise = null;
+			});
+			return loadingPromise;
+		};
+
+		main[0].blogInfiniteLoadNext = loadNext;
+		if ('IntersectionObserver' in window && sentinel.length) {
+			var observer = new IntersectionObserver(function (entries) {
+				if (entries.some(function (entry) { return entry.isIntersecting; }))
+					loadNext();
+			}, { rootMargin: '1200px 0px' });
+			observer.observe(sentinel[0]);
+		}
+	});
+}
 
 function initStickyFooterScrollFade(root) {
 	var scope = root || document;

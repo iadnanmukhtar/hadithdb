@@ -41,7 +41,7 @@
 
   <div class="container col-lg-8 mx-auto">
 
-    <main class="posts">
+    <main class="posts" data-blog-infinite="1" data-blog-current-url="<%= req.originalUrl || req.url || '/blog' %>" data-blog-page-number="<%= pagination.number %>"<% if (page.prev) { %> data-blog-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-blog-next-url="<%= page.next %>"<% } %>>
 
     <% for (var i = 0; i < posts.length; i++) { %>
 
@@ -63,6 +63,9 @@
     <% } %>
 
     </main>
+
+    <div class="reader-infinite-status text-muted small" data-blog-infinite-status aria-live="polite"></div>
+    <div class="reader-infinite-sentinel" data-blog-infinite-sentinel aria-hidden="true"></div>
   </div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
