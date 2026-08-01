@@ -197,6 +197,15 @@ router.post('/ayahs/:surah/:ayah/reviews', async function (req, res) {
   res.json(result);
 });
 
+router.post('/review/sessions/:session/undo', async function (req, res) {
+  const result = await QuranAyahMemorization.undoSessionReview(
+    req.user.uid,
+    req.params.session,
+    req.body && req.body.attempt_token
+  );
+  res.json(result);
+});
+
 router.get('/collections/:collection', async function (req, res) {
   const ayahs = await QuranAyahMemorization.collection(req.user.uid, req.params.collection);
   res.json({ ayahs });

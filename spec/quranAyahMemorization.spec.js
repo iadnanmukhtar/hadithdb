@@ -55,6 +55,27 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     expect(QuranAyahMemorization.REVIEW_GRADES.has('core')).toBe(false);
   });
 
+  test('captures the exact memory and queue state needed to undo a review grade', () => {
+    const snapshot = QuranAyahMemorization.reviewUndoSnapshot({
+      lifecycle_state: 'weak', stability: 1.6, difficulty: 5.1, review_count: 3,
+      next_review_at: new Date('2026-08-01T12:00:00Z'), row_version: 8,
+      unrelated: 'not persisted'
+    }, {
+      item_state: 'queued', attempts: 0, current_token: 'attempt-token',
+      presented_at: new Date('2026-07-31T12:00:00Z'), last_attempt_token: null,
+      unrelated: 'not persisted'
+    });
+    expect(snapshot.memory).toMatchObject({
+      lifecycle_state: 'weak', stability: 1.6, difficulty: 5.1,
+      review_count: 3, row_version: 8
+    });
+    expect(snapshot.item).toMatchObject({
+      item_state: 'queued', attempts: 0, current_token: 'attempt-token', last_attempt_token: null
+    });
+    expect(snapshot.memory).not.toHaveProperty('unrelated');
+    expect(snapshot.item).not.toHaveProperty('unrelated');
+  });
+
   test('treats Core as memorized while removing it from scheduled review', () => {
     const memorizedAt = new Date('2026-07-01T12:00:00Z');
     const values = QuranAyahMemorization.stateUpdateValues({

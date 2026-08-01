@@ -6956,7 +6956,7 @@ function initQuranAyahMemorization(root) {
 		stateMenu.setAttribute('role', 'menu');
 		stateMenu.setAttribute('lang', 'en');
 		stateMenu.setAttribute('dir', 'ltr');
-		stateMenu.setAttribute('aria-label', 'Ayah memorization state');
+		stateMenu.setAttribute('aria-label', 'Ayah memorization actions');
 		stateMenu.hidden = true;
 		selectableStateOptions.forEach(function (state) {
 			var option = document.createElement('button');
@@ -6976,6 +6976,17 @@ function initQuranAyahMemorization(root) {
 			stateMenu.appendChild(option);
 		});
 		document.body.appendChild(stateMenu);
+	}
+	var revealAyahOption = stateMenu.querySelector('[data-quran-ayah-reveal-option]');
+	if (!revealAyahOption) {
+		revealAyahOption = document.createElement('button');
+		revealAyahOption.type = 'button';
+		revealAyahOption.className = 'quran-ayah-state-option quran-ayah-reveal-option';
+		revealAyahOption.setAttribute('data-quran-ayah-reveal-option', '1');
+		revealAyahOption.setAttribute('role', 'menuitem');
+		revealAyahOption.tabIndex = -1;
+		revealAyahOption.innerHTML = '<span class="bi bi-eye" aria-hidden="true"></span><span>Reveal Ayah</span>';
+		stateMenu.insertBefore(revealAyahOption, stateMenu.firstChild);
 	}
 	var surahStateMenu = document.querySelector('[data-quran-surah-state-menu]');
 	if (!surahStateMenu) {
@@ -7163,7 +7174,10 @@ function initQuranAyahMemorization(root) {
 			stateControl.dataset.currentState = state;
 			var trigger = stateControl.querySelector('[data-quran-ayah-state-toggle]');
 			if (!trigger) return;
-			trigger.setAttribute('aria-label', `Change memorization state for Quran ${ref}. Current state: ${label}`);
+			var actionLabel = stateControl.closest('[data-quran-review-reader]')
+				? 'Change memorization state'
+				: 'Memorization actions';
+			trigger.setAttribute('aria-label', `${actionLabel} for Quran ${ref}. Current state: ${label}`);
 			var current = trigger.querySelector('[data-quran-ayah-state-current]');
 			if (current) current.textContent = label;
 		});
@@ -7320,10 +7334,13 @@ function initQuranAyahMemorization(root) {
 		activeStateControl = stateControl;
 		var ref = stateControl.getAttribute('data-quran-state-ref');
 		var state = control.dataset.currentState || control.value || 'later';
+		var reviewMode = Boolean(stateControl.closest('[data-quran-review-reader]'));
 		trigger.setAttribute('aria-expanded', 'true');
-		stateMenu.setAttribute('aria-label', `Memorization state for Quran ${ref}`);
+		stateMenu.setAttribute('aria-label', `${reviewMode ? 'Memorization state' : 'Memorization actions'} for Quran ${ref}`);
 		stateMenu.setAttribute('data-quran-state-ref', ref);
 		syncStateMenu(state);
+		revealAyahOption.hidden = reviewMode;
+		revealAyahOption.disabled = control.disabled;
 		stateMenu.querySelectorAll('[data-quran-ayah-state-option]').forEach(function (option) {
 			option.disabled = control.disabled;
 		});
@@ -7431,7 +7448,7 @@ function initQuranAyahMemorization(root) {
 			trigger.setAttribute('aria-haspopup', 'menu');
 			trigger.setAttribute('aria-expanded', 'false');
 			trigger.setAttribute('aria-controls', stateMenu.id);
-			trigger.setAttribute('aria-label', `Change memorization state for Quran ${ref}. Current state: Later`);
+			trigger.setAttribute('aria-label', `${marker.closest('[data-quran-review-reader]') ? 'Change memorization state' : 'Memorization actions'} for Quran ${ref}. Current state: Later`);
 			trigger.innerHTML = '<span class="bi bi-chevron-down" aria-hidden="true"></span><span class="visually-hidden" data-quran-ayah-state-current>Later</span>';
 			var control = document.createElement('select');
 			control.className = 'quran-ayah-state-select';
@@ -7582,6 +7599,20 @@ function initQuranAyahMemorization(root) {
 					showStateMenu(stateControl, event.detail === 0);
 				return;
 			}
+			var revealOption = event.target.closest && event.target.closest('[data-quran-ayah-reveal-option]');
+			if (revealOption && stateMenu.contains(revealOption) && activeStateControl) {
+				event.preventDefault();
+				var revealRef = activeStateControl.getAttribute('data-quran-state-ref') || '';
+				closeStateMenu(true);
+				document.querySelectorAll('[data-quran-memorize-page]').forEach(function (memorizePage) {
+					var hasRef = Array.from(memorizePage.querySelectorAll('.quran-corpus-word[data-quran-ref]')).some(function (word) {
+						return word.getAttribute('data-quran-ref') === revealRef && !word.closest('.quran-mushaf-line-basmallah');
+					});
+					if (hasRef) memorizePage.dispatchEvent(new CustomEvent('quranMemorizeRevealAyah', { detail: { ref: revealRef } }));
+				});
+				announce(`Quran ${revealRef} revealed.`);
+				return;
+			}
 			var option = event.target.closest && event.target.closest('[data-quran-ayah-state-option]');
 			if (option && stateMenu.contains(option) && activeStateControl) {
 				event.preventDefault();
@@ -7612,7 +7643,7 @@ function initQuranAyahMemorization(root) {
 				closeStateMenu(false);
 				return;
 			}
-			var options = Array.from(stateMenu.querySelectorAll('[data-quran-ayah-state-option]:not(:disabled)'));
+			var options = Array.from(stateMenu.querySelectorAll('[data-quran-ayah-reveal-option]:not([hidden]):not(:disabled), [data-quran-ayah-state-option]:not(:disabled)'));
 			var index = options.indexOf(document.activeElement);
 			var nextIndex = null;
 			if (event.key === 'ArrowDown') nextIndex = index < 0 ? 0 : (index + 1) % options.length;
@@ -8267,6 +8298,11 @@ function initQuranMemorizeView(root) {
 			}
 			revealWord(word);
 		});
+		page.addEventListener('quranMemorizeRevealAyah', function (event) {
+			var ref = event.detail && event.detail.ref || '';
+			if (!ref) return;
+			setAyahRevealed(ref, true);
+		});
 		page.addEventListener('keydown', function (event) {
 			if (event.key !== 'Enter' && event.key !== ' ')
 				return;
@@ -8296,6 +8332,11 @@ function initQuranAyahReview(root) {
 		var presentedAt = Date.now();
 		var help = rating.querySelector('.quran-ayah-review-help');
 		var buttons = rating.querySelector('.quran-ayah-review-buttons');
+		var revealControls = rating.querySelector('[data-quran-review-reveal-controls]');
+		var gradeControls = rating.querySelector('[data-quran-review-grade-controls]');
+		var undoButton = rating.querySelector('[data-quran-review-undo]');
+		var undoAttemptToken = '';
+		var undoInProgress = false;
 		var status = rating.querySelector('[data-quran-review-status]');
 		var sessionActions = rating.querySelector('.quran-review-session-actions');
 		var footer = document.querySelector('.mobile-bottom-nav');
@@ -8328,6 +8369,20 @@ function initQuranAyahReview(root) {
 			answerSnapshot = null;
 			if (page) delete page.dataset.quranReviewAnswerRevealed;
 		};
+		var syncReviewControls = function (revealed) {
+			if (revealControls) revealControls.hidden = revealed;
+			if (gradeControls) gradeControls.hidden = !revealed;
+		};
+		var syncUndoReview = function (undoableReview) {
+			undoAttemptToken = undoableReview && undoableReview.attempt_token || '';
+			if (undoButton) undoButton.disabled = !undoAttemptToken;
+		};
+		var enableReviewButtons = function () {
+			if (buttons) buttons.querySelectorAll('button').forEach(function (item) { item.disabled = false; });
+			if (undoButton) undoButton.disabled = !undoAttemptToken;
+		};
+		syncReviewControls(false);
+		syncUndoReview(null);
 		var revealReviewContextAyahs = function () {
 			if (!page) return;
 			var targetParts = ref.split(':').map(Number);
@@ -8363,12 +8418,13 @@ function initQuranAyahReview(root) {
 				throw new Error('The active review attempt could not be restored.');
 			sessionId = data.session_id;
 			attemptToken = data.attempt_token;
+			syncUndoReview(data.undoable_review);
 			if (!Array.isArray(data.reviewed_refs)) data.reviewed_refs = [];
 			data.reviewed_refs.forEach(function (reviewedRef) {
 				if (/^\d+:\d+$/.test(reviewedRef)) reviewedRefs.add(reviewedRef);
 			});
 			revealReviewContextAyahs();
-			if (buttons) buttons.querySelectorAll('button').forEach(function (item) { item.disabled = false; });
+			enableReviewButtons();
 			if (sessionActions) sessionActions.querySelectorAll('button').forEach(function (item) { item.disabled = false; });
 		};
 		if (help && !help.id) help.id = `quran-ayah-review-help-${ref.replace(':', '-')}`;
@@ -8405,7 +8461,7 @@ function initQuranAyahReview(root) {
 					if (status) status.textContent = err.message;
 					if (window.toastr) window.toastr.error(err.message, 'Review session');
 					sessionActions.querySelectorAll('button').forEach(function (item) { item.disabled = false; });
-					if (buttons) buttons.querySelectorAll('button').forEach(function (item) { item.disabled = false; });
+					enableReviewButtons();
 				}
 			});
 		}
@@ -8429,13 +8485,60 @@ function initQuranAyahReview(root) {
 		}
 		if (!buttons) return;
 		buttons.addEventListener('click', async function (event) {
+			var undoControl = event.target.closest('[data-quran-review-undo]');
+			if (undoControl && !undoControl.disabled && undoAttemptToken && sessionId) {
+				event.preventDefault();
+				undoInProgress = true;
+				buttons.querySelectorAll('button').forEach(function (item) { item.disabled = true; });
+				if (status) status.textContent = 'Undoing the last review grade...';
+				try {
+					var undoAuth = window.hadithAuth;
+					var undoToken = undoAuth && undoAuth.getToken ? await undoAuth.getToken() : null;
+					if (!undoToken) throw new Error('Please sign in to undo this review grade.');
+					var undoResponse = await fetch(quranApiPath(`/memorization/review/sessions/${encodeURIComponent(sessionId)}/undo`), {
+						method: 'POST', credentials: 'same-origin',
+						headers: { 'Authorization': `Bearer ${undoToken}`, 'Content-Type': 'application/json' },
+						body: JSON.stringify({ attempt_token: undoAttemptToken })
+					});
+					var undoData = await undoResponse.json().catch(function () { return {}; });
+					if (!undoResponse.ok) throw new Error(undoData.error || 'Unable to undo this review grade.');
+					var undoAyah = undoData.ayah || {};
+					var undoRef = `${undoData.surah_number}:${undoData.ayah_number}`;
+					reviewedRefs.delete(undoRef);
+					syncUndoReview(null);
+					window.location.assign(quranUrl(`/quran/page/${undoAyah.page_number || 1}?review=${undoRef}`));
+				} catch (err) {
+					undoInProgress = false;
+					if (status) status.textContent = err.message;
+					if (window.toastr) window.toastr.error(err.message || 'Unable to undo this review grade.', 'Review not changed');
+					enableReviewButtons();
+				}
+				return;
+			}
+			var revealButton = event.target.closest('[data-quran-review-reveal]');
+			if (revealButton && !revealButton.disabled) {
+				event.preventDefault();
+				if (!revealReviewedAyah()) {
+					if (status) status.textContent = 'Unable to reveal this āyah.';
+					return;
+				}
+				syncReviewControls(true);
+				if (status) status.textContent = 'Āyah revealed. Grade your recall.';
+				var firstGrade = gradeControls && gradeControls.querySelector('[data-quran-review-grade]');
+				if (firstGrade) firstGrade.focus();
+				return;
+			}
 			var button = event.target.closest('[data-quran-review-grade]');
 			if (!button || button.disabled) return;
 			event.preventDefault();
 			var grade = button.getAttribute('data-quran-review-grade');
+			if (grade !== 'skip' && (!page || page.dataset.quranReviewAnswerRevealed !== '1')) {
+				if (status) status.textContent = 'Reveal the āyah before grading.';
+				return;
+			}
 			buttons.querySelectorAll('button').forEach(function (item) { item.disabled = true; });
-			var revealedAt = grade === 'skip' || !revealReviewedAyah() ? 0 : Date.now();
-			if (status) status.textContent = grade === 'skip' ? 'Skipping...' : 'Saving review and showing the ayah...';
+			var revealedAt = grade === 'skip' ? 0 : Date.now();
+			if (status) status.textContent = grade === 'skip' ? 'Skipping...' : 'Saving review...';
 			try {
 				var auth = window.hadithAuth;
 				var token = auth && auth.getToken ? await auth.getToken() : null;
@@ -8456,6 +8559,7 @@ function initQuranAyahReview(root) {
 				});
 				var data = await response.json().catch(function () { return {}; });
 				if (!response.ok) throw new Error(data.error || 'Unable to save this review.');
+				if (data.undoable_review) syncUndoReview(data.undoable_review);
 				// Resolve the next persisted queue item while the graded āyah remains
 				// visible. This removes the intermediate /quran/review redirect and
 				// hides most of the next-card lookup behind the required reveal delay.
@@ -8473,6 +8577,7 @@ function initQuranAyahReview(root) {
 					var revealDelay = Math.max(0, 1800 - (Date.now() - revealedAt));
 					if (revealDelay) await new Promise(function (resolve) { window.setTimeout(resolve, revealDelay); });
 				}
+				if (undoInProgress) return;
 				try {
 					var nextReview = await nextReviewPromise;
 					if (nextReview.error) throw nextReview.error;
@@ -8493,9 +8598,10 @@ function initQuranAyahReview(root) {
 				}
 			} catch (err) {
 				restoreReviewedAyah();
+				syncReviewControls(false);
 				if (status) status.textContent = err.message;
 				if (window.toastr) window.toastr.error(err.message || 'Unable to save this review.', 'Review not saved');
-				buttons.querySelectorAll('button').forEach(function (item) { item.disabled = false; });
+				enableReviewButtons();
 			}
 		});
 	});

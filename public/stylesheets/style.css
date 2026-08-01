@@ -459,6 +459,15 @@ main.chapter.tafsir-only-page {
 	display: block;
 }
 
+.nav-google-signin [role="button"] svg {
+	width: 18px;
+	height: 18px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
 .site-navbar > .site-navbar-main {
 	border-bottom: 1px solid var(--bs-border-color);
 	flex-wrap: nowrap;
@@ -2537,6 +2546,17 @@ main.quran-mushaf-reader {
 	width: .52rem;
 }
 
+.quran-ayah-reveal-option {
+	border-bottom: 1px solid rgba(255, 255, 255, .16);
+}
+
+.quran-ayah-reveal-option .bi {
+	align-items: center;
+	display: inline-flex;
+	flex: 0 0 .52rem;
+	justify-content: center;
+}
+
 .quran-ayah-state-option[data-quran-ayah-state-option="learning"],
 .quran-ayah-state-option[data-quran-surah-state-option="learning"],
 .quran-ayah-state-option[data-quran-page-state-option="learning"],
@@ -2689,6 +2709,7 @@ main.quran-mushaf-reader {
 }
 
 .quran-memorization-preview-card {
+	container-type: inline-size;
 	min-width: 0;
 	margin: 0;
 	overflow: hidden;
@@ -2698,7 +2719,7 @@ main.quran-mushaf-reader {
 	box-shadow: 0 .7rem 1.8rem color-mix(in srgb, var(--bs-body-color) 9%, transparent);
 }
 
-.quran-memorization-preview-card img {
+.quran-memorization-preview-card > img {
 	display: block;
 	width: 100%;
 	height: auto;
@@ -2706,19 +2727,107 @@ main.quran-mushaf-reader {
 	background: color-mix(in srgb, var(--bs-primary) 5%, var(--bs-body-bg));
 }
 
+.quran-memorization-preview-visual {
+	display: flex;
+	flex-direction: column;
+	gap: 3.2cqw;
+	width: 100%;
+	aspect-ratio: 2 / 3;
+	padding: 6.5cqw 5.3cqw 5.8cqw;
+	overflow: hidden;
+}
+
+.quran-memorization-preview-visual-memorize {
+	background: #edf5ff;
+}
+
+.quran-memorization-preview-visual-review {
+	background: #eef6fb;
+}
+
+.quran-memorization-preview-visual-progress {
+	background: #f2efff;
+}
+
+.quran-memorization-preview-concept {
+	display: grid;
+	gap: 1.1cqw;
+	color: #17202b;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.quran-memorization-preview-concept .quran-memorization-preview-kicker {
+	color: #0d6efd;
+	font-size: clamp(.5rem, 3.4cqw, 1.375rem);
+	font-weight: 700;
+	letter-spacing: .01em;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.quran-memorization-preview-visual-progress .quran-memorization-preview-kicker {
+	color: #7041c9;
+}
+
+.quran-memorization-preview-concept strong {
+	font-size: clamp(.78rem, 5.3cqw, 2.125rem);
+	font-weight: 800;
+	line-height: 1.08;
+}
+
+.quran-memorization-preview-concept > span:last-child {
+	color: #5d6772;
+	font-size: clamp(.5rem, 2.8cqw, 1.125rem);
+	font-weight: 500;
+	line-height: 1.2;
+}
+
+.quran-memorization-preview-screenshot {
+	flex: 0 0 auto;
+	width: 100%;
+	aspect-ratio: 572 / 722;
+	overflow: hidden;
+	border-radius: clamp(.55rem, 4cqw, 1.55rem);
+	background: #fff;
+	box-shadow: 0 1.9cqw 4.4cqw rgba(16, 45, 83, .16);
+}
+
+.quran-memorization-preview-screenshot img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.quran-memorization-preview-visual-memorize .quran-memorization-preview-screenshot img {
+	object-position: center top;
+}
+
+.quran-memorization-preview-visual-review .quran-memorization-preview-screenshot img {
+	object-position: center bottom;
+}
+
+.quran-memorization-preview-visual-progress .quran-memorization-preview-screenshot img {
+	object-position: center bottom;
+}
+
 .quran-memorization-preview-card figcaption {
 	display: grid;
 	gap: .2rem;
 	padding: .9rem 1rem 1rem;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .quran-memorization-preview-card figcaption strong {
 	font-size: .95rem;
+	font-weight: 750;
+	line-height: 1.2;
 }
 
 .quran-memorization-preview-card figcaption span {
 	color: var(--bs-secondary-color);
 	font-size: .78rem;
+	font-weight: 500;
 	line-height: 1.35;
 }
 
@@ -3251,11 +3360,6 @@ main.quran-mushaf-reader {
 	font-size: .72rem;
 	line-height: 1.45;
 	margin: 0;
-}
-
-.quran-memorization-help-distinction {
-	font-size: .72rem;
-	padding: .6rem .75rem;
 }
 
 .quran-memorization-help-grades th {
@@ -5212,7 +5316,11 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	display: grid;
 	flex: 1 1 auto;
 	gap: .35rem;
-	grid-template-columns: minmax(0, 4fr) minmax(3.15rem, .8fr);
+	grid-template-columns: minmax(0, 4fr) minmax(2.5rem, .42fr) minmax(2.5rem, .42fr);
+	width: 100%;
+}
+
+.mobile-bottom-nav.mobile-bottom-nav-review-controls [data-quran-review-reveal-controls]:not([hidden]) .btn {
 	width: 100%;
 }
 
@@ -5233,6 +5341,10 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	line-height: 1.1;
 	min-height: 2.15rem;
 	padding: .2rem .25rem;
+}
+
+.quran-review-icon-action .bi {
+	font-size: .9rem;
 }
 
 .mobile-bottom-nav.mobile-bottom-nav-review-controls .btn-success,

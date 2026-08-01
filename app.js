@@ -19,6 +19,7 @@ const { STATUS_CODES } = require('http');
 const requestIp = require('request-ip');
 const Hadith = require('./lib/Hadith');
 const Tafsir = require('./lib/Tafsir');
+const TafsirAliasPaths = require('./lib/TafsirAliasPaths');
 const Utils = require('./lib/Utils');
 const PaymentConfig = require('./lib/PaymentConfig');
 const ContentTranslations = require('./lib/ContentTranslations');
@@ -413,6 +414,9 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.all('/*', function redirectQuranPathsToQuranHost(req, res, next) {
     if (req.method !== 'GET' && req.method !== 'HEAD')
       return next();
+    const tafsirPath = TafsirAliasPaths.canonicalPath(req.path, global.commentaries);
+    if (tafsirPath)
+      return res.redirect(301, Utils.quranUrl(req, appendQueryString(tafsirPath, requestQueryString(req))));
     const hadithPath = quranPrefixedHadithPath(req.path);
     if (hadithPath)
       return res.redirect(301, appendQueryString(Utils.urlFor(req, hadithPath), requestQueryString(req)));
@@ -502,22 +506,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     if (alias && (global.commentaries || []).some(book => book && book.type === 'trans' && book.alias === alias)) {
       const targetPath = `/quran/${[alias].concat(pathRemainder).map(encodeURIComponent).join('/')}`;
       return res.redirect(301, Utils.quranUrl(req, `${targetPath}${requestQueryString(req) ? `?${requestQueryString(req)}` : ''}`));
-    }
-    next();
-  });
-  app.use(function redirectTafsirAliases(req, res, next) {
-    const alias = req.path.replace(/^\/+/, '').replace(/\/.*$/, '');
-    const pathRemainder = req.path.replace(/^\/+/, '').split('/').slice(1).filter(Boolean);
-    if (alias) {
-      const isTafsirAlias = (global.commentaries || []).some(book => {
-        if (!book || book.type !== 'tafsir')
-          return false;
-        if (book.alias === alias)
-          return true;
-        return (book.alias || '').toString().replace(/^(?:(?:en|ar)-)?(?:tafsir-)?/, '') === alias;
-      });
-      if (isTafsirAlias)
-        return res.redirect(301, Utils.quranUrl(req, `/quran/tafsir/${[alias].concat(pathRemainder).map(encodeURIComponent).join('/')}${requestQueryString(req) ? `?${requestQueryString(req)}` : ''}`));
     }
     next();
   });

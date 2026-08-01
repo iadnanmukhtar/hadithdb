@@ -1,75 +1,49 @@
 <%
   const helpPrefix = locals.helpIdPrefix || 'quran-memorization-help';
 %>
-<p class="lead fs-6">Learn each ayah at your pace, then let FSRS 6 bring it back as its predicted recall approaches your chosen memory goal. Learning begins as a New card. Choosing Weak, Memorized, or Core is already a memory assessment, so FSRS initializes the ayah from that stated strength instead of treating it as unknown. Your progress, FSRS memory model, and review history are saved to your account across devices.</p>
+<p class="lead fs-6">Learn each ayah at your pace, then let FSRS 6 schedule reviews from the grades you give. Your progress and review history stay synced across devices.</p>
 
 <section aria-labelledby="<%= helpPrefix %>-steps">
   <h3 id="<%= helpPrefix %>-steps">A simple memorization routine</h3>
   <ol class="quran-memorization-help-steps">
-    <li><span>1</span><div><strong>Begin in Memorize</strong><p>Choose an ayah, page, or surah and mark it Learning while you read, repeat, and recite it. It joins the New-card pool for your next bounded Review session.</p></div></li>
-    <li><span>2</span><div><strong>Practice the new ayah</strong><p>Learning cards appear first. Two successful Good reviews, or one Easy review, graduate the ayah to Memorized while FSRS 6 learns its stability and difficulty.</p></div></li>
-    <li><span>3</span><div><strong>Review a bounded selection</strong><p>Each session balances scheduled Weak, Relearning, and Memorized ayat with gradually admitted New Learning ayat within your category limits.</p></div></li>
-    <li><span>4</span><div><strong>Grade honestly</strong><p>Your Again, Hard, Good, or Easy result adjusts the next review date. Skip leaves the schedule unchanged.</p></div></li>
+    <li><span>1</span><div><strong>Begin in Memorize</strong><p>Choose an ayah, page, or surah and mark it Learning while you read, repeat, and recite it.</p></div></li>
+    <li><span>2</span><div><strong>Review new and due ayat</strong><p>Learning cards appear first, followed by a limited selection of scheduled reviews.</p></div></li>
+    <li><span>3</span><div><strong>Reveal, then grade honestly</strong><p>Select Reveal to see the current āyah, then choose Again, Hard, Good, or Easy to adjust its next review date. Undo restores the most recent grade and its prior FSRS schedule. Skip leaves the schedule unchanged.</p></div></li>
+    <li><span>4</span><div><strong>Keep practicing</strong><p>One Easy review or two successful Good reviews move a Learning ayah to Memorized. FSRS continues adapting its schedule after that.</p></div></li>
   </ol>
-</section>
-
-<section aria-labelledby="<%= helpPrefix %>-learning-steps">
-  <h3 id="<%= helpPrefix %>-learning-steps">How a Learning ayah progresses</h3>
-  <p class="text-muted small">Learning is a temporary new-card phase. The grade you choose determines its next step.</p>
-  <div class="table-responsive">
-    <table class="table table-sm align-middle quran-memorization-help-grades mb-0">
-      <thead><tr><th scope="col">Grade</th><th scope="col">Result</th><th scope="col">Next review</th></tr></thead>
-      <tbody>
-        <tr><th scope="row"><span class="is-again">Again</span></th><td>Reset Learning progress and queue one more attempt near the end of this session.</td><td>About 10 minutes to 1 day</td></tr>
-        <tr><th scope="row"><span class="is-hard">Hard</span></th><td>Remain Learning because recall required significant effort.</td><td>About 1 to 2 days</td></tr>
-        <tr><th scope="row"><span class="is-good">Good</span></th><td>The first Good records progress. The second Good graduates the ayah to Memorized.</td><td>About 3 to 4 days at first</td></tr>
-        <tr><th scope="row"><span class="is-easy">Easy</span></th><td>Graduate directly to Memorized.</td><td>About 6 to 7 days at first</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="text-muted small mt-2">You may also change an ayah, page, or short surah to another selectable memorization state at any time.</p>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-fsrs">
   <h3 id="<%= helpPrefix %>-fsrs">How FSRS 6 schedules reviews</h3>
-  <p>FSRS 6 estimates an ayah's memory stability, difficulty, and probability of recall from its initial assessment and subsequent grade history. Your <strong>Target Memory Goal</strong> is the recall percentage FSRS aims to preserve. The 90% default balances retention and workload. Higher targets schedule more reviews.</p>
-  <ul>
-    <li><strong>Initial Memory Strength</strong> adjusts the first interval for Again, Hard, Good, and Easy.</li>
-    <li><strong>Review Interval Multiplier</strong> makes successful intervals grow conservatively, normally, or aggressively.</li>
-    <li><strong>Lapse Recovery Speed</strong> controls how much stability is retained after Again.</li>
-    <li><strong>Personalize Algorithm</strong> analyzes at least 100 of your graded reviews and tunes the 21 FSRS 6 parameters. Run it about once a month as your history grows.</li>
-  </ul>
-  <p class="text-muted small">FSRS automatically handles difficulty damping, mean reversion, and same-day review smoothing. These mathematical controls stay out of the settings interface.</p>
+  <p>FSRS 6 uses your grade history to choose the next review date. Again brings an ayah back sooner; Hard, Good, and Easy produce progressively longer intervals.</p>
+  <p class="mt-2">Your <strong>target memory goal</strong> controls how often reviews return. A higher target increases the workload. The defaults are a good starting point, and review settings let you adjust the session size or personalize the schedule later.</p>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-limits">
   <h3 id="<%= helpPrefix %>-limits">What enters a review session</h3>
-  <p><strong>Due Today</strong> counts established FSRS cards whose scheduled date has arrived. <strong>New</strong> counts Learning ayat that have not received an FSRS assessment yet. Weak, Memorized, and Core are initialized immediately from the state chosen by the user. Learning, Relearning, Weak, and Memorized each have a separate maximum within the overall session limit. The defaults are 10 ayat total, with maximums of 3 Learning, 4 Relearning, 3 Weak, and 10 Memorized. These are caps, not required quotas. The scheduler admits New Learning cards gradually, shares available slots fairly across eligible categories, then presents all selected Learning ayat first.</p>
-  <p class="mt-2">Later, Core, and Paused never enter regular Review. When no āyāt are due, starting a fresh session may include upcoming Learning, Weak, and Memorized āyāt. Relearning āyāt wait for their scheduled recovery date. You can change every limit in My Settings under Quran Memorization or from Review settings on the Memorization Progress page.</p>
+  <p>Starting a review selects due ayat and a limited number of new Learning ayat within your session settings. Learning ayat appear first. Later, Core, and Paused ayat do not enter regular Review.</p>
+  <p class="mt-2">When nothing is due, a new session may include upcoming active ayat. Change the session size and category limits in Quran memorization settings or review settings.</p>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-surah-review">
   <h3 id="<%= helpPrefix %>-surah-review">Reviewing a page or surah</h3>
-  <p>From any Memorize page, select <strong>Review</strong> beneath the Mushaf. Choose <strong>Just this page</strong> to review every non-Later āyah on the current Mushaf page, even when the page contains parts of multiple surahs. The page is saved as its own review session and follows Quran order.</p>
-  <p class="mt-2">Choose <strong>A surah</strong> in the same dialog to start a Surah Review without leaving the Mushaf first. You can also open <strong>Start Review</strong> from Memorization Progress and choose <strong>Surah Review</strong>. Find a surah by its English or Arabic name, alternate name, or number. Suggestions show how many āyāt are available and how many Mushaf pages the surah spans.</p>
-  <p class="mt-2"><strong>All memorized āyāt</strong> is the first option. It includes every āyah in the selected surah that is not Later: Learning, Weak, Relearning, Memorized, Core, and Paused. For a surah longer than three Mushaf pages, you may instead review its first 1, 2, 3, 4, 5, 10, or 20 pages. Choices longer than the selected surah are hidden. A shorter surah automatically uses all memorized āyāt.</p>
-  <p class="mt-2">Page and Surah Reviews are deliberate extra practice, so Due Today, regular category caps, and the optional time budget do not limit them. The queue follows Quran order and continues until every included āyah is graded or skipped. Again, Hard, Good, and Easy are recorded as real FSRS assessments. Grading a Core or Paused āyah can return it to scheduled memorization according to the result, while Skip leaves its state and schedule unchanged.</p>
-  <p class="mt-2">Use <strong>Pause Session</strong> in the Mushaf footer to keep your place in a Page or Surah Review and resume later from Memorization Progress. Use <strong>End Session</strong> to stop the remaining queue while preserving reviews already completed. A saved paused session can also be deleted without deleting its completed FSRS history.</p>
+  <p>From a Memorize page, select <strong>Review</strong>, then choose <strong>just this page</strong> or <strong>a surah</strong>. You can also start a surah review from the Memorization Progress page.</p>
+  <p class="mt-2">Page and surah reviews follow Quran order and are not limited by what is due today, regular session caps, or the time budget. Grades update the schedule; Skip leaves it unchanged.</p>
+  <p class="mt-2">Pause the session to save your place, or end it to stop while preserving completed reviews.</p>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-states">
   <h3 id="<%= helpPrefix %>-states">Memorization states</h3>
   <p class="text-muted small">A state describes where an ayah is in your memorization journey. It is different from the grade you give a single review.</p>
   <dl class="quran-memorization-help-states">
-    <div class="is-learning"><dt><span aria-hidden="true"></span>Learning</dt><dd>A new FSRS card that is still being learned. It has first priority when admitted to Review and graduates after one Easy or two successful Good reviews.</dd></div>
-    <div class="is-weak"><dt><span aria-hidden="true"></span>Weak</dt><dd>You can recite the complete ayah, but recall is fragile. FSRS initializes or resets its memory estimate like an initial Hard assessment, giving it higher difficulty, lower stability, and a short first interval. Its review history remains intact.</dd></div>
-    <div class="is-relearning"><dt><span aria-hidden="true"></span>Relearning</dt><dd>A previously Memorized ayah received Again. The app assigns this temporary recovery state and prioritizes it when its FSRS recovery interval is due. The next successful Hard, Good, or Easy result returns it to Memorized.</dd></div>
-    <div class="is-review"><dt><span aria-hidden="true"></span>Memorized</dt><dd>You can recite the complete ayah independently. Selecting it initializes FSRS like Good; later grades adapt its difficulty, stability, and review interval.</dd></div>
-    <div class="is-core"><dt><span aria-hidden="true"></span>Core</dt><dd>The ayah is firmly retained like a childhood rhyme. Selecting it initializes FSRS like Easy, but Core has no scheduled reviews unless you later change its state.</dd></div>
-    <div class="is-suspended"><dt><span aria-hidden="true"></span>Paused</dt><dd>Learning and reviews are temporarily stopped without deleting the ayah’s history or previous state.</dd></div>
-    <div class="is-later"><dt><span aria-hidden="true"></span>Later</dt><dd>The default for untouched ayat, or an ayah removed from active memorization. It never enters Review.</dd></div>
+    <div class="is-learning"><dt><span aria-hidden="true"></span>Learning</dt><dd>The ayah is still being learned and enters Review as a new card.</dd></div>
+    <div class="is-weak"><dt><span aria-hidden="true"></span>Weak</dt><dd>You can recite the ayah, but recall is fragile and should return sooner.</dd></div>
+    <div class="is-relearning"><dt><span aria-hidden="true"></span>Relearning</dt><dd>A temporary recovery state assigned automatically after Again on a Memorized ayah.</dd></div>
+    <div class="is-review"><dt><span aria-hidden="true"></span>Memorized</dt><dd>You can recite the complete ayah independently and it remains in scheduled Review.</dd></div>
+    <div class="is-core"><dt><span aria-hidden="true"></span>Core</dt><dd>The ayah is firmly retained and does not enter regular Review.</dd></div>
+    <div class="is-suspended"><dt><span aria-hidden="true"></span>Paused</dt><dd>Learning and reviews are temporarily stopped without deleting history.</dd></div>
+    <div class="is-later"><dt><span aria-hidden="true"></span>Later</dt><dd>The ayah is not part of active memorization or Review.</dd></div>
   </dl>
-  <div class="alert alert-primary quran-memorization-help-distinction mb-0" role="note"><strong>Weak or Relearning?</strong> Choose Weak when you believe recall is fragile. Relearning is not selectable; the app assigns it temporarily after Again on a Memorized ayah.</div>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-grades">
@@ -77,10 +51,10 @@
   <div class="table-responsive">
     <table class="table table-sm align-middle quran-memorization-help-grades mb-0">
       <tbody>
-        <tr><th scope="row"><span class="is-again">Again</span></th><td>You could not complete the ayah without reading it or receiving help. A Learning ayah resets its progress. A previously Memorized ayah enters automatic Relearning. FSRS reduces its stability, and Again queues one more attempt near the end of this session.</td></tr>
-        <tr><th scope="row"><span class="is-hard">Hard</span></th><td>You recalled it independently, but with significant hesitation. This counts as a completed review and does not repeat in the same session.</td></tr>
-        <tr><th scope="row"><span class="is-good">Good</span></th><td>You recalled it with ordinary effort. The scheduler advances Learning or lengthens the interval for an established card.</td></tr>
-        <tr><th scope="row"><span class="is-easy">Easy</span></th><td>Recall was fluent and effortless. The scheduler graduates Learning immediately or gives an established card a longer interval.</td></tr>
+        <tr><th scope="row"><span class="is-again">Again</span></th><td>You could not complete the ayah without reading or help. It returns sooner and may appear once more near the end of the session.</td></tr>
+        <tr><th scope="row"><span class="is-hard">Hard</span></th><td>You recalled it independently with significant hesitation. It receives a shorter interval.</td></tr>
+        <tr><th scope="row"><span class="is-good">Good</span></th><td>You recalled it with ordinary effort. It receives a longer interval.</td></tr>
+        <tr><th scope="row"><span class="is-easy">Easy</span></th><td>Recall was fluent and effortless. It receives the longest interval.</td></tr>
         <tr><th scope="row"><span class="is-skip">Skip</span></th><td>Move on without grading the ayah or changing its schedule.</td></tr>
       </tbody>
     </table>
