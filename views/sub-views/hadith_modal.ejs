@@ -7,6 +7,9 @@
 	const enNarrator = enNarrators.length > 0 ? utils.emptyIfNull(enNarrators[enNarrators.length - 1]).trim() : '';
 	const arNarrator = enNarrator ? arabic.toArabic(enNarrator) : '';
 	const shareRef = i.ref || `${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? en.actual?.num || i.actual?.num || i.num : en.num || i.num}`;
+	const quranShareRef = ((i.actual ? i.actual.book_alias : i.book_alias) === 'quran' || /^quran:/.test(shareRef))
+		? arabic.toLatinDigits(shareRef.toString().replace(/^quran:/, ''))
+		: '';
 	const paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
 	const shareContentTranslations = Array.isArray(i.contentTranslations) ? i.contentTranslations : [];
 %>
@@ -68,7 +71,7 @@
 								عن <span><%= arNarrator %></span> —
 							<% } %>
 						</div>
-						<div class="body hadith-share-text share-editable" lang="ar" contenteditable="false" data-markdown-source="<%= utils.emptyIfNull(ar.body) %>">
+						<div class="body hadith-share-text share-editable" lang="ar" contenteditable="false" data-markdown-source="<%= utils.emptyIfNull(ar.body) %>"<% if (quranShareRef) { %> data-quran-script-text="ayah" data-quran-ref="<%= quranShareRef %>"<% } %>>
 							<%- utils.markdownToHtml(ar.body) %>
 						</div>
 					</section>

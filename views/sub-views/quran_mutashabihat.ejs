@@ -46,7 +46,7 @@
 					%>
 					<article class="quran-mutashabihat-match" data-quran-ref="<%= ayahRef %>">
 						<a class="quran-mutashabihat-match-ref" href="<%= ayahHref %>"><%= ayahRef %></a>
-						<div class="quran-mutashabihat-match-arabic" lang="ar"><div><%- arabicBody %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahRef %>">۝<%= ayahMarker %></span></div>
+						<div class="quran-mutashabihat-match-arabic" lang="ar"><div data-quran-script-text="ayah" data-quran-ref="<%= ayahRef %>"><%- arabicBody %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahRef %>">۝<%= ayahMarker %></span></div>
 						<div class="quran-mutashabihat-match-translation" lang="en"><%- englishBody %></div>
 					</article>
 					<% }); %>

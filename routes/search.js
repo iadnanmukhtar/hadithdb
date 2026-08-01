@@ -19,6 +19,7 @@ const Books = require('../lib/Books');
 const BookDownloads = require('../lib/BookDownloads');
 const Surahs = require('../lib/Surahs');
 const QuranCorpus = require('../lib/QuranCorpus');
+const QuranScripts = require('../lib/QuranScripts');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranHeadings = require('../lib/QuranHeadings');
 const QuranMushaf = require('../lib/QuranMushaf');
@@ -262,6 +263,11 @@ function redirectCanonicalQueryParams(req, res, next) {
     shouldRedirect = true;
   }
 
+  if (isQuranReadingPath(req.path) && queryParams.has('translation')) {
+    queryParams.delete('translation');
+    shouldRedirect = true;
+  }
+
   if (!shouldRedirect)
     return next();
 
@@ -280,6 +286,13 @@ function isDefaultQuranPassagePath(path) {
     return false;
 
   return Boolean(findSurah(parts[1]));
+}
+
+function isQuranReadingPath(path) {
+  if (isDefaultQuranPassagePath(path))
+    return true;
+  return /^\/quran\/\d+\/?$/.test(path)
+    || /^\/quran\/[A-Za-z0-9_-]+\/\d+(?:\/\d+(?:\/\d+)?)?\/?$/.test(path);
 }
 
 function findSurah(ref) {
@@ -1046,6 +1059,19 @@ router.use(['/quran/corpus', '/quran-corpus'], function (req, res, next) {
   next();
 });
 
+router.get('/quran/script/:script', async function (req, res, next) {
+  var script = QuranScripts.normalizeSlug(req.params.script);
+  if (!script)
+    return next(createError(404, `Quran script '${req.params.script}' not found`));
+  var refs = QuranScripts.normalizeRefs(req.query.refs);
+  if (refs.length < 1)
+    return next(createError(400, 'At least one valid Quran reference is required'));
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.end(JSON.stringify(await QuranScripts.passage(script, refs)));
+});
+
 router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNum'], async function (req, res, next) {
   var surah = findSurah(req.params.surah);
   if (!surah)
@@ -1067,6 +1093,29 @@ router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNu
   var startAyah = range.startAyah;
   var endAyah = startAyah + range.count - 1;
   var rows = await QuranCorpus.wordsForRange(surah.num, startAyah, endAyah);
+  var wordsByAyah = QuranCorpus.wordsByAyah(rows);
+  var requestedScript = (req.query.script || '').toString().trim().toLowerCase();
+  if (requestedScript && requestedScript !== 'uthmani') {
+    var script = QuranScripts.normalizeSlug(requestedScript);
+    if (!script)
+      return next(createError(400, `Unsupported Quran script '${requestedScript}'`));
+    var refs = [];
+    for (var ayah = startAyah; ayah <= endAyah; ayah++)
+      refs.push(`${surah.num}:${ayah}`);
+    var scriptPassage = await QuranScripts.passage(script, refs);
+    Object.keys(scriptPassage.wordsByAyah).forEach(function (ref) {
+      var sourceWords = scriptPassage.wordsByAyah[ref].slice();
+      if (script === 'indo-pak' && sourceWords.length > 0 && /[\uE000-\uF8FF]/u.test(sourceWords[sourceWords.length - 1].text || ''))
+        sourceWords.pop();
+      var semanticWords = wordsByAyah[ref] || [];
+      wordsByAyah[ref] = sourceWords.map(function (word, index) {
+        return Object.assign({}, semanticWords[index] || {}, {
+          word: word.word,
+          text: word.text
+        });
+      });
+    });
+  }
   var juzStartsByAyah = {};
   (await QuranTocSubdivisions.juzRows()).forEach(function (juz) {
     var start = (juz.visual_start || juz.start || '').toString();
@@ -1090,7 +1139,7 @@ router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNu
     h2: sectionNum,
     startAyah: startAyah,
     endAyah: endAyah,
-    wordsByAyah: QuranCorpus.wordsByAyah(rows),
+    wordsByAyah: wordsByAyah,
     juzStartsByAyah: juzStartsByAyah
   }));
 });
@@ -2890,12 +2939,10 @@ router.get('/quran/:translationAlias/juz/:number', async function (req, res, nex
   var target;
   if (translation.source === 'local') {
     target = Utils.quranUrl(req, `/quran/${encodeURIComponent(translation.alias)}/${surah}/${Number(section.h2)}`);
-    return res.redirect(302, `${target}${appendOriginalQuery(req)}`);
+    return res.redirect(302, appendQueryExcluding(req, target, ['translation']));
   }
   target = Utils.quranUrl(req, `/quran/${surah}/${Number(section.h2)}`);
-  var query = new URLSearchParams(req.query);
-  query.set('translation', translation.alias);
-  return res.redirect(302, `${target}?${query.toString()}`);
+  return res.redirect(302, appendQueryExcluding(req, target, ['translation']));
 });
 
 router.get('/quran/:translationAlias/manzil/:number', async function (req, res, next) {
@@ -2912,12 +2959,10 @@ router.get('/quran/:translationAlias/manzil/:number', async function (req, res, 
   var target;
   if (translation.source === 'local') {
     target = Utils.quranUrl(req, `/quran/${encodeURIComponent(translation.alias)}/${surah}`);
-    return res.redirect(302, `${target}${appendOriginalQuery(req)}`);
+    return res.redirect(302, appendQueryExcluding(req, target, ['translation']));
   }
   target = Utils.quranUrl(req, `/quran/${surah}`);
-  var query = new URLSearchParams(req.query);
-  query.set('translation', translation.alias);
-  return res.redirect(302, `${target}?${query.toString()}`);
+  return res.redirect(302, appendQueryExcluding(req, target, ['translation']));
 });
 
 router.get('/quran/:translationAlias/:chapterNum/:sectionNum', async function (req, res, next) {

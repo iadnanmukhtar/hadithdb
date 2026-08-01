@@ -19,7 +19,7 @@
 		<article class="quran-similar-ayah" data-quran-ref="<%= ayahRef %>">
 			<a class="quran-similar-ayah-ref" href="<%= ayahHref %>"><%= ayahRef %></a>
 			<div class="quran-similar-ayah-arabic" lang="ar">
-				<div class="quran-similar-ayah-arabic-body"><%- arabicBody %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahRef %>">۝<%= ayahMarker %></span>
+				<div class="quran-similar-ayah-arabic-body" data-quran-script-text="ayah" data-quran-ref="<%= ayahRef %>"><%- arabicBody %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahRef %>">۝<%= ayahMarker %></span>
 			</div>
 			<div class="quran-similar-ayah-translation" lang="en"><%- englishBody %></div>
 			<footer>Match: <%= matchedWords %> <%= matchedWords === 1 ? 'word' : 'words' %> · Coverage: <%= Number.isInteger(coverage) ? coverage : coverage.toFixed(2) %>% · Similarity: <%= Number.isInteger(score) ? score : score.toFixed(2) %>%</footer>

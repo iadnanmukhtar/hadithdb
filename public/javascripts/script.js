@@ -141,7 +141,13 @@ $(function () {
 	initQuranAyahModals(document);
 	initQuranPageKeyboardNavigation(document);
 	initQuranPassageShareLinks(document);
-	initQuranCorpusTooltips(document);
+	initQuranScriptSwitchers(document);
+	initQuranScriptPreference(document).then(function () {
+		initQuranCorpusTooltips(document);
+	}).catch(function () {
+		initQuranCorpusTooltips(document);
+	});
+	initQuranScriptMutationObserver();
 	initQuranCorpusTooltipDelay(document);
 	initQuranTafsirTabs(document);
 	initQuranTafsirFootnotePopups(document);
@@ -451,7 +457,11 @@ function initRandomTocItemLoader(scope) {
 				initHadithContentTranslationControls(container);
 				initQuranAyahHoverPairs(container);
 				initQuranPreferredTranslationDisplays(container);
-				initQuranCorpusTooltips(container);
+				initQuranScriptPreference(container).then(function () {
+					initQuranCorpusTooltips(container);
+				}).catch(function () {
+					initQuranCorpusTooltips(container);
+				});
 				initQuranAyahModals(container);
 				initQuranPassageShareLinks(container);
 				if (window.refreshHadithActions)
@@ -1230,7 +1240,10 @@ function initQuranTafsirTabs(root) {
 				$('<span>').addClass('quran-tafsir-ayah-ref').attr('dir', 'ltr').text(`${surah}:${ayah}`).appendTo(link);
 				link.append(document.createTextNode(' '));
 			}
-			$('<span>').addClass('quran-tafsir-ayah-text').text(ayahText[ayah] || '').appendTo(link);
+			$('<span>').addClass('quran-tafsir-ayah-text').attr({
+				'data-quran-script-text': 'ayah',
+				'data-quran-ref': `${surah}:${ayah}`
+			}).text(ayahText[ayah] || '').appendTo(link);
 			link.append(document.createTextNode(' '));
 			$('<span>').addClass('quran-ayah-end-marker').text(`۝${toArabicDigits(ayah)}`).appendTo(link);
 		};
@@ -5818,11 +5831,16 @@ function getQuranTafsirSettings() {
 		var order = tafsirs.order && typeof tafsirs.order === 'object' && !Array.isArray(tafsirs.order) ? tafsirs.order : {};
 		var translations = source.translations && typeof source.translations === 'object' && !Array.isArray(source.translations) ? source.translations : {};
 		var audio = source.audio && typeof source.audio === 'object' && !Array.isArray(source.audio) ? source.audio : {};
+		var quran = source.quran && typeof source.quran === 'object' && !Array.isArray(source.quran) ? source.quran : {};
+		var quranScript = ['uthmani', 'indo-pak', 'warsh'].indexOf((quran.script || '').toString().toLowerCase()) >= 0
+			? quran.script.toString().toLowerCase()
+			: 'uthmani';
 		var translationDisabledAliases = Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
 			.map(function (alias) { return (alias || '').toString().trim(); })
 			.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })));
 		var translationDisabled = new Set(translationDisabledAliases);
 		return {
+			quran: { script: quranScript },
 			tafsirs: {
 				disabledAliases: Array.from(new Set((Array.isArray(tafsirs.disabledAliases) ? tafsirs.disabledAliases : [])
 					.map(function (alias) { return (alias || '').toString().trim(); })
@@ -6646,7 +6664,7 @@ function quranShareModalHtml(ayah, shareId) {
 	var $inner = $('<div>').addClass('hadith-share-card-inner').appendTo($card);
 	$('<h2>').addClass('hadith-share-title share-editable').attr('contenteditable', 'false').text(shareTitle).appendTo($inner);
 	var $arText = $('<div>').addClass('body hadith-share-text quran-share-text share-editable').attr({ lang: 'ar', contenteditable: 'false' });
-	$('<p>').append($('<span>').text(compactQuranPlainText(ayah && ayah.ar && ayah.ar.body)).append(document.createTextNode(' ')).append($('<span>').addClass('quran-ayah-end-marker').attr('aria-label', `Quran ${arabicRef}`).text(`۝${toArabicDigits(arabicPart)}`))).appendTo($arText);
+	$('<p>').append($('<span>').attr({ 'data-quran-script-text': 'ayah', 'data-quran-ref': ref }).text(compactQuranPlainText(ayah && ayah.ar && ayah.ar.body)).append(document.createTextNode(' ')).append($('<span>').addClass('quran-ayah-end-marker').attr('aria-label', `Quran ${arabicRef}`).text(`۝${toArabicDigits(arabicPart)}`))).appendTo($arText);
 	$('<section>').addClass('hadith-share-section hadith-share-arabic-section').attr('lang', 'ar').append($arText).appendTo($inner);
 	var $enText = $('<div>').addClass('body hadith-share-text quran-share-text share-editable').attr({ lang: 'en', contenteditable: 'false', 'data-quran-share-translation-target': '1' });
 	$('<p>')
@@ -6790,6 +6808,7 @@ function ensureQuranShareModal(ayah, shareId) {
 		return;
 	$('.quran-share-root[data-dynamic-quran-share-modal="1"]').remove();
 	$('body').append(quranShareModalHtml(ayah, shareId));
+	initQuranScriptPreference(document.getElementById(shareId)).catch(function () {});
 	if (typeof initHadithShareModals === 'function')
 		initHadithShareModals(document.getElementById(shareId));
 }
@@ -6857,6 +6876,7 @@ function quranAyahHeroHtml(ayah, clearHref, passageHero) {
 	var $arBody = $('<div>').addClass('quran-ayah-hero-body').appendTo($arSection);
 	var $arAyah = $('<div>').addClass('quran-ayah-hero-ayah').appendTo($arBody);
 	$('<div>').addClass(`${editMode ? '_e ' : ''}quran-ayah-hero-text`).attr(Object.assign({
+		'data-quran-script-text': 'ayah',
 		'data-quran-ref': ref,
 		'data-quran-surah': ref.split(/:/)[0] || '',
 		'data-quran-ayah': part
@@ -9263,6 +9283,7 @@ function initQuranMushafInfinite(root) {
 			}
 			importedPage.style.visibility = 'hidden';
 			reader.insertBefore(importedPage, sentinel);
+			initQuranScriptPreference(importedPage).catch(function () {});
 			initQuranMemorizeView(importedPage);
 			initQuranMushafAyahSelection(importedPage);
 			if (window.refreshHadithActions)
@@ -9422,7 +9443,11 @@ function initQuranDynamicPassageHero(root) {
 				corpusContainer = $('[data-quran-corpus-url]').first();
 			var corpusUrl = corpusContainer.attr('data-quran-corpus-url');
 			if (corpusContainer.length)
-				initQuranCorpusTooltips(corpusContainer[0]);
+				initQuranScriptPreference(corpusContainer[0]).then(function () {
+					initQuranCorpusTooltips(corpusContainer[0]);
+				}).catch(function () {
+					initQuranCorpusTooltips(corpusContainer[0]);
+				});
 			if (corpusUrl && quranCorpusPayloadCache[corpusUrl]) {
 				quranCorpusPayloadCache[corpusUrl].then(function (payload) {
 					annotateQuranCorpusWords(hero, payload.wordsByAyah || {}, payload.juzStartsByAyah || {});
@@ -9646,7 +9671,11 @@ function initQuranInfinitePassageNavigation(root) {
 		initQuranPreferredTranslationDisplays(marker);
 		initQuranPassageTranslationSelects(marker);
 		initQuranPassageAudioControls(marker);
-		initQuranCorpusTooltips(marker);
+		initQuranScriptPreference(marker).then(function () {
+			initQuranCorpusTooltips(marker);
+		}).catch(function () {
+			initQuranCorpusTooltips(marker);
+		});
 		initQuranPassageShareLinks(marker);
 	};
 	var normalizeModalRef = function (ref) {
@@ -9802,6 +9831,7 @@ function initQuranInfinitePassageNavigation(root) {
 		initQuranAyahHoverPairs(chunk[0]);
 		initQuranAyahSelector(chunk[0]);
 		initQuranPassageDisplayToggles(chunk[0]);
+		initQuranScriptPreference(chunk[0]).catch(function () {});
 		initHadithShareModals(chunk[0]);
 		initHadithContentTranslationControls(chunk[0]);
 		initQuranAyahModals(document);
@@ -10239,6 +10269,291 @@ function quranSurahFromInfiniteUrl(url) {
 }
 
 var quranCorpusPayloadCache = {};
+var quranScriptPayloadCache = {};
+
+function quranScriptDisplayText(text, script) {
+	text = (text || '').toString();
+	if (script === 'indo-pak') {
+		text = text.replace(/\s+\S*[\uE000-\uF8FF]\S*\s*$/u, '');
+		text = text.replace(/\s+۝\S*\s*$/u, '');
+	}
+	return text.trim();
+}
+
+function updateQuranAyahMarkersForScript(root, script) {
+	var scope = root || document;
+	var markers = Array.from(scope.querySelectorAll ? scope.querySelectorAll('.quran-ayah-end-marker') : []);
+	if (scope.matches && scope.matches('.quran-ayah-end-marker'))
+		markers.unshift(scope);
+	markers.forEach(function (marker) {
+		if (marker.childElementCount > 0)
+			return;
+		var originalText = marker.getAttribute('data-quran-marker-text');
+		if (!originalText) {
+			originalText = marker.textContent || '';
+			if (originalText.indexOf('۝') !== 0)
+				return;
+			marker.setAttribute('data-quran-marker-text', originalText);
+		}
+		marker.textContent = script === 'warsh' ? originalText.replace(/^۝/, '') : originalText;
+	});
+}
+
+function replaceQuranScriptWordNodes(nodes, sourceWords, script) {
+	nodes = Array.from(nodes || []);
+	if (sourceWords === undefined)
+		return;
+	sourceWords = Array.from(sourceWords || []);
+	if (script === 'indo-pak' && sourceWords.length > 0 && (/^[۝]/u.test(sourceWords[sourceWords.length - 1].text || '') || /[\uE000-\uF8FF]/u.test(sourceWords[sourceWords.length - 1].text || '')))
+		sourceWords.pop();
+	if (nodes.length < 1)
+		return;
+	if (sourceWords.length < 1) {
+		nodes.forEach(function (node) { node.remove(); });
+		return;
+	}
+	while (nodes.length < sourceWords.length) {
+		var clone = nodes[nodes.length - 1].cloneNode(false);
+		clone.removeAttribute('data-quran-word-translation');
+		clone.removeAttribute('data-quran-word-grammar');
+		nodes[nodes.length - 1].after(clone);
+		nodes.push(clone);
+	}
+	while (nodes.length > sourceWords.length) {
+		nodes.pop().remove();
+	}
+	nodes.forEach(function (node, index) {
+		var word = sourceWords[index];
+		node.textContent = word.text;
+		node.setAttribute('data-quran-word', word.text);
+		node.setAttribute('data-quran-word-number', word.word);
+		node.setAttribute('data-quran-script-applied', script);
+	});
+}
+
+function applyQuranScriptPayload(root, script, payload) {
+	var scope = root || document;
+	var ayahsByRef = payload && payload.ayahsByRef || {};
+	var wordsByAyah = payload && payload.wordsByAyah || {};
+	$(scope).find('[data-quran-script-text="ayah"][data-quran-ref]').addBack('[data-quran-script-text="ayah"][data-quran-ref]').each(function () {
+		if (this.classList.contains('_e'))
+			return;
+		var ref = this.getAttribute('data-quran-ref') || '';
+		if (!Object.prototype.hasOwnProperty.call(ayahsByRef, ref))
+			return;
+		var text = quranScriptDisplayText(ayahsByRef[ref], script);
+		this.textContent = text;
+		this.setAttribute('data-quran-script-applied', script);
+		var ayah = this.closest('.ayah, .quran-ayah-hero-ayah');
+		if (ayah)
+			ayah.classList.toggle('quran-script-empty-ayah', !text);
+	});
+	$(scope).find('[data-quran-script-text="range"][data-quran-refs]').addBack('[data-quran-script-text="range"][data-quran-refs]').each(function () {
+		var rangeRefs = (this.getAttribute('data-quran-refs') || '').split(',').filter(Boolean);
+		var texts = rangeRefs.filter(function (ref) {
+			return Object.prototype.hasOwnProperty.call(ayahsByRef, ref);
+		}).map(function (ref) {
+			return quranScriptDisplayText(ayahsByRef[ref], script);
+		}).filter(Boolean);
+		if (texts.length < 1)
+			return;
+		this.textContent = texts.join(' ');
+		this.setAttribute('data-quran-script-applied', script);
+	});
+	var pages = $(scope).find('[data-quran-mushaf-page]').addBack('[data-quran-mushaf-page]').get();
+	pages.forEach(function (page) {
+		var refs = new Set(Array.from(page.querySelectorAll('[data-quran-script-text="word"][data-quran-ref]')).map(function (word) {
+			return word.getAttribute('data-quran-ref');
+		}).filter(Boolean));
+		refs.forEach(function (ref) {
+			var selector = `[data-quran-script-text="word"][data-quran-ref="${cssEscape(ref)}"]`;
+			var mainWords = Array.from(page.querySelectorAll(selector)).filter(function (word) {
+				return !word.closest('.quran-mushaf-line-basmallah');
+			});
+			replaceQuranScriptWordNodes(mainWords, wordsByAyah[ref], script);
+		});
+		page.querySelectorAll('.quran-mushaf-line-basmallah').forEach(function (line) {
+			replaceQuranScriptWordNodes(line.querySelectorAll('[data-quran-script-text="word"][data-quran-ref]'), wordsByAyah['1:1'], script);
+		});
+	});
+}
+
+function initQuranScriptPreference(root) {
+	var scope = root || document;
+	var refs = Array.from(new Set($(scope)
+		.find('[data-quran-script-text][data-quran-ref], [data-quran-script-text][data-quran-refs]')
+		.addBack('[data-quran-script-text][data-quran-ref], [data-quran-script-text][data-quran-refs]')
+		.map(function () { return [this.getAttribute('data-quran-ref'), ...(this.getAttribute('data-quran-refs') || '').split(',')]; })
+		.get()
+		.flat()
+		.filter(function (ref) { return /^\d{1,3}:\d{1,3}$/.test(ref || ''); })));
+	return getQuranTafsirSettings().then(function (settings) {
+		var script = settings && settings.quran && settings.quran.script || 'uthmani';
+		document.body.classList.remove('quran-script-indo-pak', 'quran-script-warsh');
+		document.body.dataset.quranScript = script;
+		updateQuranAyahMarkersForScript(scope, script);
+		if (script === 'uthmani' || refs.length < 1)
+			return script;
+		document.body.classList.add(`quran-script-${script}`);
+		var cacheKey = `${script}:${refs.slice().sort().join(',')}`;
+		quranScriptPayloadCache[cacheKey] = quranScriptPayloadCache[cacheKey] || fetch(
+			`${quranApiPath(`/quran/script/${encodeURIComponent(script)}`)}?refs=${encodeURIComponent(refs.join(','))}`,
+			{ credentials: 'same-origin', cache: 'no-store', headers: { 'Accept': 'application/json' } }
+		).then(function (response) {
+			if (!response.ok)
+				throw new Error('Unable to load the selected Quran script.');
+			return response.json();
+		});
+		return quranScriptPayloadCache[cacheKey].then(function (payload) {
+			applyQuranScriptPayload(scope, script, payload);
+			return script;
+		});
+	});
+}
+
+function normalizeQuranScriptChoice(value) {
+	value = (value || '').toString().trim().toLowerCase();
+	return ['uthmani', 'indo-pak', 'warsh'].indexOf(value) >= 0 ? value : '';
+}
+
+function quranScriptChoiceLabel(script) {
+	return { uthmani: 'Uthmani', 'indo-pak': 'Indo-Pak', warsh: 'Warsh' }[script] || 'Script';
+}
+
+function saveQuranScriptChoice(script) {
+	script = normalizeQuranScriptChoice(script);
+	if (!script)
+		return Promise.reject(new Error('Unsupported Quran script.'));
+	return waitForHadithAuthClient().then(function (auth) {
+		if (!auth)
+			throw new Error('Please sign in to save your Quran script.');
+		return Promise.resolve(auth.requireToken
+			? auth.requireToken('Please sign in to save your Quran script.')
+			: (auth.getToken ? auth.getToken() : null)).then(function (token) {
+			if (!token)
+				throw new Error('Please sign in to save your Quran script.');
+			return fetch(quranApiPath('/user-settings?optional=1'), {
+				credentials: 'same-origin',
+				headers: { 'Authorization': `Bearer ${token}` }
+			}).then(function (response) {
+				if (!response.ok)
+					return responseErrorMessage(response, 'Unable to load settings.').then(function (message) { throw new Error(message); });
+				return response.json();
+			}).then(function (data) {
+				var settings = data && data.settings && typeof data.settings === 'object' && !Array.isArray(data.settings) ? data.settings : {};
+				var nextSettings = Object.assign({}, settings, {
+					quran: Object.assign({}, settings.quran || {}, { script: script })
+				});
+				delete nextSettings.personalized;
+				return fetch(quranApiPath('/user-settings'), {
+					method: 'PUT',
+					credentials: 'same-origin',
+					headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+					body: JSON.stringify({ settings: nextSettings })
+				}).then(function (response) {
+					if (!response.ok)
+						return responseErrorMessage(response, 'Unable to save Quran script.').then(function (message) { throw new Error(message); });
+					return response.json();
+				}).then(function (saved) {
+					return Promise.resolve(auth.getUser ? auth.getUser() : null).then(function (user) {
+						updateCachedQuranUserSettings(user, saved.settings || nextSettings);
+						return saved.settings || nextSettings;
+					});
+				});
+			});
+		});
+	});
+}
+
+function updateQuranScriptSwitcher(switcher, script) {
+	script = normalizeQuranScriptChoice(script) || 'uthmani';
+	var label = switcher.querySelector('[data-quran-script-label]');
+	if (label)
+		label.textContent = quranScriptChoiceLabel(script);
+	switcher.querySelectorAll('[data-quran-script-choice]').forEach(function (choice) {
+		var selected = choice.getAttribute('data-quran-script-choice') === script;
+		choice.classList.toggle('active', selected);
+		choice.setAttribute('aria-checked', selected ? 'true' : 'false');
+		choice.setAttribute('role', 'menuitemradio');
+	});
+}
+
+function initQuranScriptSwitchers(root) {
+	var scope = root || document;
+	var switchers = Array.from(scope.querySelectorAll('[data-quran-script-switcher]'));
+	if (scope.matches && scope.matches('[data-quran-script-switcher]'))
+		switchers.unshift(scope);
+	if (switchers.length < 1)
+		return;
+	getQuranTafsirSettings().then(function (settings) {
+		var currentScript = normalizeQuranScriptChoice(settings && settings.quran && settings.quran.script) || 'uthmani';
+		switchers.forEach(function (switcher) {
+			updateQuranScriptSwitcher(switcher, currentScript);
+			if (switcher.dataset.quranScriptSwitcherBound === '1')
+				return;
+			switcher.dataset.quranScriptSwitcherBound = '1';
+			switcher.addEventListener('click', function (event) {
+				var choice = event.target.closest('[data-quran-script-choice]');
+				if (!choice || !switcher.contains(choice))
+					return;
+				var nextScript = normalizeQuranScriptChoice(choice.getAttribute('data-quran-script-choice'));
+				if (!nextScript || nextScript === (document.body.dataset.quranScript || currentScript))
+					return;
+				var controls = Array.from(document.querySelectorAll('[data-quran-script-choice]'));
+				controls.forEach(function (control) { control.disabled = true; });
+				var labels = Array.from(document.querySelectorAll('[data-quran-script-label]'));
+				labels.forEach(function (label) { label.textContent = 'Saving…'; });
+				saveQuranScriptChoice(nextScript).then(function () {
+					window.location.reload();
+				}).catch(function (err) {
+					controls.forEach(function (control) { control.disabled = false; });
+					document.querySelectorAll('[data-quran-script-switcher]').forEach(function (item) {
+						updateQuranScriptSwitcher(item, document.body.dataset.quranScript || currentScript);
+					});
+					if (window.toastr)
+						toastr.error(err.message || 'Unable to save Quran script.', 'Quran script');
+				});
+			});
+		});
+	}).catch(function () {
+		switchers.forEach(function (switcher) { updateQuranScriptSwitcher(switcher, 'uthmani'); });
+	});
+}
+
+function initQuranScriptMutationObserver() {
+	if (!document.body || document.body.dataset.quranScriptObserverBound === '1')
+		return;
+	document.body.dataset.quranScriptObserverBound = '1';
+	var pendingRoots = new Set();
+	var scheduled = false;
+	var flush = function () {
+		scheduled = false;
+		var roots = Array.from(pendingRoots);
+		pendingRoots.clear();
+		roots.forEach(function (root) {
+			initQuranScriptPreference(root).catch(function () {});
+		});
+	};
+	new MutationObserver(function (mutations) {
+		mutations.forEach(function (mutation) {
+			mutation.addedNodes.forEach(function (node) {
+				if (node.nodeType !== 1)
+					return;
+				var marked = node.matches && node.matches('[data-quran-script-text][data-quran-ref], [data-quran-script-text][data-quran-refs]')
+					? node
+					: node.querySelector && node.querySelector('[data-quran-script-text][data-quran-ref], [data-quran-script-text][data-quran-refs]');
+				if (!marked || marked.getAttribute('data-quran-script-applied') === document.body.dataset.quranScript)
+					return;
+				var root = node.closest && node.closest('.quran-tafsirs, .quran-share-root, .quran-ayah-hero, .bookmark-list, [data-quran-infinite-page], [data-random-toc-item]');
+				pendingRoots.add(root || node);
+			});
+		});
+		if (!scheduled && pendingRoots.size > 0) {
+			scheduled = true;
+			window.setTimeout(flush, 0);
+		}
+	}).observe(document.body, { childList: true, subtree: true });
+}
 
 function initQuranCorpusTooltips(root) {
 	var scope = root || document;
@@ -10250,6 +10565,12 @@ function initQuranCorpusTooltips(root) {
 		var url = container.attr('data-quran-corpus-url');
 		if (!url)
 			return;
+		var script = document.body.dataset.quranScript || 'uthmani';
+		if (script !== 'uthmani') {
+			var scriptUrl = new URL(url, window.location.origin);
+			scriptUrl.searchParams.set('script', script);
+			url = `${scriptUrl.pathname}${scriptUrl.search}`;
+		}
 		quranCorpusPayloadCache[url] = quranCorpusPayloadCache[url] || fetch(url, {
 			credentials: 'same-origin',
 			headers: { 'Accept': 'application/json' }

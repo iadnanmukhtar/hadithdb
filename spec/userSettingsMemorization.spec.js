@@ -5,6 +5,16 @@ const UserSettings = require('../lib/UserSettings');
 const { default_w: defaultFsrsWeights } = require('ts-fsrs');
 
 describe('Quran ayah review settings normalization', () => {
+  test.each([
+    [undefined, 'uthmani'],
+    ['uthmani', 'uthmani'],
+    ['indo-pak', 'indo-pak'],
+    ['warsh', 'warsh'],
+    ['invalid', 'uthmani']
+  ])('normalizes Quran script %s to %s', (script, expected) => {
+    expect(UserSettings.normalizeSettings({ quran: { script } }).quran.script).toBe(expected);
+  });
+
   test('uses bounded-session defaults', () => {
     expect(UserSettings.normalizeSettings({}).memorization).toMatchObject({
       schemaVersion: 1,

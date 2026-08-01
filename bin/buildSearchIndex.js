@@ -75,7 +75,27 @@ async function getHadithData(book) {
 		FROM v_hadiths
 		WHERE book_id = ${book.id}
 		ORDER BY ordinal`);
+	if (Number(book.id) === 0)
+		await attachQuranScriptWords(rows);
 	return rows;
+}
+
+async function attachQuranScriptWords(rows) {
+	const byRef = new Map((rows || []).map(row => [row.num, row]));
+	const words = await global.query(`
+		SELECT script_slug, surah, ayah, word, text
+		FROM quran_corpus_script_words
+		WHERE script_slug IN ('indo-pak', 'warsh')
+		ORDER BY script_slug, surah, ayah, word`);
+	words.forEach(word => {
+		const row = byRef.get(`${word.surah}:${word.ayah}`);
+		if (!row)
+			return;
+		const field = word.script_slug === 'indo-pak' ? 'quran_words_indopak' : 'quran_words_warsh';
+		if (!row[field])
+			row[field] = [];
+		row[field].push(word.text);
+	});
 }
 
 async function reindexBooks(books, indexNames) {
@@ -127,6 +147,7 @@ async function ensureIndexExists(indexName) {
 			}
 		}));
 		log(`${indexName} index already exists`);
+		await ensureIndexMapping(indexName, mappingDoc[indexName]);
 		return;
 	} catch (err) {
 		if (err.response?.status !== 404)
@@ -141,6 +162,29 @@ async function ensureIndexExists(indexName) {
 		}));
 	} catch (err) {
 		throw describeAxiosError(err, `Unable to create index '${indexName}'`);
+	}
+}
+
+async function ensureIndexMapping(indexName, indexConfig) {
+	const properties = indexConfig && indexConfig.mappings && indexConfig.mappings.properties;
+	if (!properties)
+		return;
+	try {
+		const mappingResponse = await axios.get(`${global.settings.search.domain}/${indexName}/_mapping`, SearchHttp.axiosConfig());
+		const current = mappingResponse.data?.[indexName]?.mappings?.properties || {};
+		const missing = {};
+		Object.keys(properties).forEach(field => {
+			if (!Object.prototype.hasOwnProperty.call(current, field))
+				missing[field] = properties[field];
+		});
+		if (Object.keys(missing).length < 1)
+			return;
+		await axios.put(`${global.settings.search.domain}/${indexName}/_mapping`, { properties: missing }, SearchHttp.axiosConfig({
+			headers: { 'Content-Type': 'application/json' }
+		}));
+		log(`added ${Object.keys(missing).length} field(s) to ${indexName} mapping`);
+	} catch (err) {
+		throw describeAxiosError(err, `Unable to update mapping for index '${indexName}'`);
 	}
 }
 

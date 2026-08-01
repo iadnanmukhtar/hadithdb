@@ -78,6 +78,23 @@
         </div>
       </section>
 
+      <section class="border-top pt-3 mt-3" id="settings-quran-reading-section">
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+          <div>
+            <h2 class="fs-5 fw-bold mb-1">Quran Reading</h2>
+            <p class="text-muted small mb-0" id="settings-quran-script-status">Choose the script used for Quran āyāt and words.</p>
+          </div>
+        </div>
+        <label class="form-label mb-0">
+          <span class="small d-block mb-1">Quran script</span>
+          <select class="form-select form-select-sm" id="settings-quran-script">
+            <option value="uthmani">Uthmani</option>
+            <option value="indo-pak">Indo-Pak</option>
+            <option value="warsh">Warsh</option>
+          </select>
+        </label>
+      </section>
+
       <section class="border-top pt-3 mt-3">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
           <div>
@@ -204,6 +221,8 @@
     const reciterStatusEl = document.getElementById('settings-reciter-status');
     const reciterListEl = document.getElementById('settings-reciter-list');
     const reciterEnableAllBtn = document.getElementById('settings-reciter-enable-all');
+    const quranScriptStatusEl = document.getElementById('settings-quran-script-status');
+    const quranScriptSelect = document.getElementById('settings-quran-script');
     const memorizationStatusEl = document.getElementById('settings-memorization-status');
     const reviewLimitEl = document.getElementById('settings-review-limit');
     const learningLimitEl = document.getElementById('settings-learning-limit');
@@ -274,10 +293,12 @@
       tafsirStatusEl.textContent = 'Sign in to choose which tafsirs appear on Quran pages.';
       translationStatusEl.textContent = 'Sign in to choose which translations appear on Quran pages.';
       reciterStatusEl.textContent = 'Sign in to choose your favorite reciter.';
+      quranScriptStatusEl.textContent = 'Sign in to choose your Quran script.';
       reciterEnableAllBtn.disabled = true;
       enableAllBtn.disabled = true;
       translationEnableAllBtn.disabled = true;
       preferredLanguageSelect.disabled = true;
+      quranScriptSelect.disabled = true;
       paymentBuyBtn.disabled = true;
       paymentManageBtn.disabled = true;
       autoRechargeEnabledEl.disabled = true;
@@ -326,6 +347,12 @@
       const memorization = source.memorization && typeof source.memorization === 'object' && !Array.isArray(source.memorization)
         ? source.memorization
         : {};
+      const quran = source.quran && typeof source.quran === 'object' && !Array.isArray(source.quran)
+        ? source.quran
+        : {};
+      const quranScript = ['uthmani', 'indo-pak', 'warsh'].includes((quran.script || '').toString().toLowerCase())
+        ? quran.script.toString().toLowerCase()
+        : 'uthmani';
       const reviewLimit = value => {
         const parsed = parseInt(value, 10);
         return Number.isInteger(parsed) && parsed >= 1 && parsed <= 200 ? parsed : 10;
@@ -350,6 +377,7 @@
       const preferredLanguage = (profile.preferredLanguage || profile.language || '').toString().trim().toLowerCase();
       return {
         ...source,
+        quran: { ...quran, script: quranScript },
         profile: {
           ...profile,
           preferredLanguage: languageCodes.has(preferredLanguage) ? preferredLanguage : (currentLanguages[0] && currentLanguages[0].code || 'en')
@@ -1509,6 +1537,8 @@
         currentSettings = await loadUserSettings();
       }
       currentSettings = normalizeSettings(currentSettings);
+      quranScriptSelect.value = currentSettings.quran.script;
+      quranScriptSelect.disabled = !currentUser;
       reviewLimitEl.value = currentSettings.memorization.reviewLimit;
       learningLimitEl.value = currentSettings.memorization.learningLimit;
       relearningLimitEl.value = currentSettings.memorization.relearningLimit;
@@ -1598,6 +1628,30 @@
 
     if (preferredLanguageSelect) {
       preferredLanguageSelect.addEventListener('change', savePreferredLanguage);
+    }
+
+    if (quranScriptSelect) {
+      quranScriptSelect.addEventListener('change', async () => {
+        if (!currentUser) return renderSignedOut();
+        const previousSettings = normalizeSettings(currentSettings);
+        currentSettings = normalizeSettings({
+          ...currentSettings,
+          quran: { ...currentSettings.quran, script: quranScriptSelect.value }
+        });
+        quranScriptSelect.disabled = true;
+        quranScriptStatusEl.textContent = 'Saving Quran script...';
+        try {
+          await saveSettings();
+          quranScriptStatusEl.textContent = 'Quran script saved. It will be used on Quran pages.';
+        } catch (err) {
+          currentSettings = previousSettings;
+          quranScriptSelect.value = currentSettings.quran.script;
+          quranScriptStatusEl.textContent = 'Unable to save Quran script.';
+          if (window.toastr) toastr.error(err.message || 'Unable to save Quran script.', 'Settings');
+        } finally {
+          quranScriptSelect.disabled = !currentUser;
+        }
+      });
     }
 
     memorizationSaveBtn.addEventListener('click', async () => {

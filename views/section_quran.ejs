@@ -41,18 +41,15 @@
         if (quranSectionMatch)
           return utils.quranUrl(req, `/quran/${encodeURIComponent(quranSelectedTranslationAlias)}/${quranSectionMatch[1]}/${quranSectionMatch[2]}${quranSectionMatch[3] || ''}`);
       }
-      var href = utils.quranUrl(req, path);
-      if (!quranSelectedTranslationAlias)
-        return href;
-      return `${href}${href.indexOf('?') >= 0 ? '&' : '?'}translation=${encodeURIComponent(quranSelectedTranslationAlias)}`;
+      return utils.quranUrl(req, path);
     };
     var selectedAyahPrevHref;
     var selectedAyahNextHref;
     var selectedAyahHeroPrevHref = firstSelectedAyah && firstSelectedAyah.prev_ref
-      ? quranPassageHref(`/${firstSelectedAyah.prev_ref}`)
+      ? utils.quranUrl(req, `/${firstSelectedAyah.prev_ref}`)
       : undefined;
     var selectedAyahHeroNextHref = lastSelectedAyah && lastSelectedAyah.next_ref
-      ? quranPassageHref(`/${lastSelectedAyah.next_ref}`)
+      ? utils.quranUrl(req, `/${lastSelectedAyah.next_ref}`)
       : undefined;
     var quranAyahModalItems = [];
     var quranAyahModalRefs = new Set();

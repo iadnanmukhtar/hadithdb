@@ -20,6 +20,8 @@ data/temp/*
 data/cache/*
 data/generated/*
 cache/*
+tmp
+tmp/*
 temp
 temp/*
 *test*

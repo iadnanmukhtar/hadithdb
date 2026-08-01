@@ -35,6 +35,52 @@
 }
 
 @font-face {
+	font-family: QuranIndoPak;
+	src: url('/fonts/DigitalKhattIndoPak.woff2') format('woff2');
+	font-display: swap;
+}
+
+@font-face {
+	font-family: QuranWarsh;
+	src: url('/fonts/warsh.woff2') format('woff2');
+	font-display: swap;
+}
+
+.quran-script-indopak {
+	font-family: QuranIndoPak, serif;
+}
+
+.quran-script-warsh {
+	font-family: QuranWarsh, serif;
+}
+
+body.quran-script-indo-pak .quran-hafs,
+body.quran-script-indo-pak .quran-ayah-body,
+body.quran-script-indo-pak .quran-ayah-hero-text,
+body.quran-script-indo-pak .quran-share-text:lang(ar),
+body.quran-script-indo-pak .quran-tafsir-ayah,
+body.quran-script-indo-pak [data-quran-script-text],
+body.quran-script-indo-pak .quran-corpus-word,
+body.quran-script-indo-pak .quran-ayah-end-marker {
+	font-family: QuranIndoPak, serif !important;
+}
+
+body.quran-script-warsh .quran-hafs,
+body.quran-script-warsh .quran-ayah-body,
+body.quran-script-warsh .quran-ayah-hero-text,
+body.quran-script-warsh .quran-share-text:lang(ar),
+body.quran-script-warsh .quran-tafsir-ayah,
+body.quran-script-warsh [data-quran-script-text],
+body.quran-script-warsh .quran-corpus-word,
+body.quran-script-warsh .quran-ayah-end-marker {
+	font-family: QuranWarsh, serif !important;
+}
+
+.quran-script-empty-ayah {
+	display: none;
+}
+
+@font-face {
 	font-family: Hafs;
 	src: url('/fonts/kd-hafs.woff2') format('woff2');
 	font-display: swap;
@@ -2150,6 +2196,34 @@ del em strong {
 .quran-reader-modes .btn.active {
 	background-color: var(--c-accent);
 	border-color: var(--c-accent);
+	color: white;
+}
+
+.quran-reader-modes .quran-script-switcher > .dropdown-menu {
+	font-size: 0.78rem;
+	min-width: 7.5rem;
+}
+
+.quran-reader-modes .quran-script-switcher > .btn {
+	border-color: var(--c-speech);
+	color: var(--c-speech);
+}
+
+.quran-reader-modes .quran-script-switcher > .btn:hover,
+.quran-reader-modes .quran-script-switcher > .btn:focus,
+.quran-reader-modes .quran-script-switcher > .btn.show {
+	background-color: var(--c-speech);
+	border-color: var(--c-speech);
+	color: var(--c-white);
+}
+
+.quran-reader-modes .quran-script-switcher .dropdown-item {
+	font-family: "Gentium Plus", serif;
+	padding: 0.3rem 0.65rem;
+}
+
+.quran-reader-modes .quran-script-switcher .dropdown-item.active {
+	background-color: var(--c-speech);
 	color: white;
 }
 
@@ -8470,6 +8544,14 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	display: inline;
 }
 
+body.quran-script-indo-pak .quran-ayah-hero [lang="ar"] .quran-ayah-hero-ayah {
+	font-size: 1.045em;
+}
+
+body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-hero-ayah {
+	font-size: 1.096em;
+}
+
 .quran-ayah-hero a.quran-ayah-hero-link {
 	color: inherit;
 	text-decoration: none;
@@ -8493,6 +8575,14 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .quran-ayah-hero-text p {
 	display: inline;
 	margin-bottom: 0;
+}
+
+body.quran-script-indo-pak .quran-ayah-hero [lang="ar"] .quran-ayah-hero-text p,
+body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-hero-text p,
+body.quran-script-indo-pak .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker,
+body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
+	font-family: inherit;
+	font-size: inherit;
 }
 
 .quran-ayah-hero-text p+p {

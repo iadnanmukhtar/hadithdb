@@ -66,10 +66,11 @@
 							<p>
 								<% ayahs.forEach(function (ayah) {
 									const ayahNum = ayah.ar?.num || ayah.num || '';
+									const ayahRef = arabic.toLatinDigits((ayah.num || ayah.en?.num || ayahNum).toString());
 									const ayahPart = ayahNum.split(/:/)[1] || ayahNum;
 									const ayahPartArabic = arabic.toArabicDigits(arabic.toLatinDigits(ayahPart) || ayahPart);
 								%>
-										<span><%= utils.quranDisplayText(ayah.ar?.body) %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahNum %>">۝<%= ayahPartArabic %></span></span>
+										<span><span data-quran-script-text="ayah" data-quran-ref="<%= ayahRef %>"><%= utils.quranDisplayText(ayah.ar?.body) %></span>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahNum %>">۝<%= ayahPartArabic %></span></span>
 								<% }); %>
 							</p>
 					</div>

@@ -169,6 +169,22 @@
           "type": "text",
           "analyzer": "arabic"
         },
+        "body_indopak": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "body_warsh": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "quran_words_indopak": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
+        "quran_words_warsh": {
+          "type": "text",
+          "analyzer": "arabic"
+        },
         "body_en": {
           "type": "text",
           "boost": 2,

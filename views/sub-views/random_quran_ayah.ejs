@@ -4,7 +4,7 @@
   var randomTranslationBook = locals.quranCommentaryBook && locals.quranCommentaryBook.type === 'trans' ? locals.quranCommentaryBook : null;
   var randomTranslationAlias = randomTranslationBook && /^[A-Za-z0-9_-]+$/.test(randomTranslationBook.alias || '') ? randomTranslationBook.alias : '';
   var hideRandomQuranTitle = locals.hideTitle === true || (locals.req && locals.req.query && locals.req.query.hideTitle === '1');
-  var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}${randomTranslationAlias ? `?translation=${encodeURIComponent(randomTranslationAlias)}` : ''}`);
+  var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}`);
   var randomQuranShareId = `Q${randomAyahRef.replace(/[^A-Za-z0-9_-]/g, '-')}`;
 %>
 <% if (!randomTranslationBook && !hideRandomQuranTitle) { %>

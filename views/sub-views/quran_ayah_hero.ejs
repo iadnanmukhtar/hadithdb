@@ -69,6 +69,8 @@
 				var quranCorpusAttrs = ayahRefParts.length >= 2
 					? ` data-quran-ref="${ayahRefParts[0]}:${ayahRefParts[1]}" data-quran-surah="${ayahRefParts[0]}" data-quran-ayah="${ayahRefParts[1]}"`
 					: '';
+				if (quranCorpusAttrs)
+					quranCorpusAttrs += ' data-quran-script-text="ayah"';
 				%>
 						<div class="quran-ayah-hero-ayah">
 							<% if (linkHeroAyah) { %><a class="quran-ayah-hero-link" href="<%= ayahHref %>" title="View Quran <%= ayahLabel %>"><% } %><div class="<%= site.editMode ? '_e ' : '' %>quran-ayah-hero-text"<%- quranCorpusAttrs %><% if (site.editMode) { %> data-id="<%= ayah.id %>" data-prop="hadith.body" data-markdown-source="<%= ayahBodyMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>><%- ayahBodyHtml %></div>&nbsp;<span class="quran-ayah-end-marker" data-quran-ref="<%= ayahRefLatin %>" aria-label="Quran <%= ayahLabel %>">۝<%= ayahPartArabic %></span><% if (linkHeroAyah) { %></a><% } %>

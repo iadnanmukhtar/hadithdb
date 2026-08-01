@@ -268,6 +268,17 @@
       return match ? `quran:${match[1]}:${match[2]}${match[3] ? `-${match[3]}` : ''}` : '';
     };
 
+    const quranRefs = (value) => {
+      const ref = quranRef(value);
+      const match = ref.match(/^quran:(\d{1,3}):(\d{1,3})(?:-(\d{1,3}))?$/i);
+      if (!match) return [];
+      const surah = Number(match[1]);
+      const from = Number(match[2]);
+      const to = Number(match[3] || match[2]);
+      if (to < from || to - from > 299) return [];
+      return Array.from({ length: to - from + 1 }, (_, index) => `${surah}:${from + index}`);
+    };
+
     const toArabicDigits = (value) => text(value).replace(/[0-9]/g, digit => '٠١٢٣٤٥٦٧٨٩'[Number(digit)]);
 
     const ayahMarkerNumber = (value) => {
@@ -434,7 +445,16 @@
         const bodyAr = makeNode('div', section === 'quran' ? 'bookmark-compact-body bookmark-quran-ayah quran-hafs' : 'bookmark-compact-body');
         bodyAr.lang = 'ar';
         bodyAr.dir = 'rtl';
-        bodyAr.appendChild(document.createTextNode(item.bodyAr));
+        const scriptRefs = section === 'quran' ? quranRefs(item.ref || item.title) : [];
+        const bodyText = makeNode('span', '', item.bodyAr);
+        if (scriptRefs.length === 1) {
+          bodyText.dataset.quranScriptText = 'ayah';
+          bodyText.dataset.quranRef = scriptRefs[0];
+        } else if (scriptRefs.length > 1) {
+          bodyText.dataset.quranScriptText = 'range';
+          bodyText.dataset.quranRefs = scriptRefs.join(',');
+        }
+        bodyAr.appendChild(bodyText);
         const markerNumber = section === 'quran' ? ayahMarkerNumber(item.ref || item.title) : '';
         const bookmarkRefMatch = section === 'quran' ? quranRef(item.ref || item.title).match(/^quran:(\d+):(\d+)(?:-(\d+))?$/i) : null;
         const bookmarkMarkerRef = bookmarkRefMatch ? `${Number(bookmarkRefMatch[1])}:${Number(bookmarkRefMatch[3] || bookmarkRefMatch[2])}` : '';
