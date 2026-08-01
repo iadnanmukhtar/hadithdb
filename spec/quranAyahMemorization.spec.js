@@ -55,6 +55,33 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     expect(QuranAyahMemorization.REVIEW_GRADES.has('core')).toBe(false);
   });
 
+  test('uses every ayah in Surahs 1, 113, and 114 as the new-user Learning set', () => {
+    const refs = QuranAyahMemorization.defaultLearningRefs();
+    expect(refs).toHaveLength(18);
+    expect(refs[0]).toEqual({ surah: 1, ayah: 1 });
+    expect(refs[6]).toEqual({ surah: 1, ayah: 7 });
+    expect(refs[7]).toEqual({ surah: 113, ayah: 1 });
+    expect(refs[11]).toEqual({ surah: 113, ayah: 5 });
+    expect(refs[12]).toEqual({ surah: 114, ayah: 1 });
+    expect(refs[17]).toEqual({ surah: 114, ayah: 6 });
+  });
+
+  test('seeds the starter Learning ayat only when the user has no memorization rows', async () => {
+    const existingQuery = jest.fn().mockResolvedValue([{ found: 1 }]);
+    await expect(QuranAyahMemorization.seedDefaultLearningAyat(existingQuery, 'existing-user')).resolves.toBe(0);
+    expect(existingQuery).toHaveBeenCalledTimes(1);
+
+    const newUserQuery = jest.fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce({ affectedRows: 18 });
+    await expect(QuranAyahMemorization.seedDefaultLearningAyat(newUserQuery, 'new-user')).resolves.toBe(18);
+    expect(newUserQuery).toHaveBeenCalledTimes(2);
+    expect(newUserQuery.mock.calls[1][0]).toContain('INSERT IGNORE INTO quran_ayah_memorization');
+    expect(newUserQuery.mock.calls[1][0]).toContain("1,1,'learning','started',UTC_TIMESTAMP(),UTC_TIMESTAMP()");
+    expect(newUserQuery.mock.calls[1][0]).toContain("113,1,'learning','started',UTC_TIMESTAMP(),UTC_TIMESTAMP()");
+    expect(newUserQuery.mock.calls[1][0]).toContain("114,6,'learning','started',UTC_TIMESTAMP(),UTC_TIMESTAMP()");
+  });
+
   test('captures the exact memory and queue state needed to undo a review grade', () => {
     const snapshot = QuranAyahMemorization.reviewUndoSnapshot({
       lifecycle_state: 'weak', stability: 1.6, difficulty: 5.1, review_count: 3,
@@ -474,6 +501,22 @@ describe('QuranAyahMemorization public ayah helpers', () => {
         review_count: 10
       });
     });
+
+    test('uses the database due result when application and database clocks differ', () => {
+      const result = QuranAyahMemorization.buildProgressGroups(definitions(), [
+        {
+          surah_number: 1,
+          ayah_number: 1,
+          lifecycle_state: 'review',
+          fsrs_state: 2,
+          next_review_at: '2026-08-01T17:28:59.000Z',
+          is_due_now: 1,
+          review_count: 1
+        }
+      ], '2026-08-01T13:00:00.000Z');
+
+      expect(result[0].due_count).toBe(1);
+    });
   });
 
   describe('FSRS 6 scheduling', () => {
@@ -567,9 +610,11 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       });
     });
 
-    test('allows exactly one Again retry for a Learning review item', () => {
+    test('caps Again at two grades for the same review item in one session', () => {
+      expect(QuranAyahMemorization.MAX_AGAIN_GRADES_PER_SESSION_ITEM).toBe(2);
       expect(QuranAyahMemorization.shouldQueueReviewRetry('again', 0)).toBe(true);
       expect(QuranAyahMemorization.shouldQueueReviewRetry('again', 1)).toBe(false);
+      expect(QuranAyahMemorization.shouldQueueReviewRetry('again', 2)).toBe(false);
       expect(QuranAyahMemorization.shouldQueueReviewRetry('hard', 0)).toBe(false);
     });
 

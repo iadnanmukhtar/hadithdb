@@ -2082,10 +2082,11 @@ router.get('/quran/review', function (req, res) {
     page: {
       menu: 'Quran',
       title_en: startReview ? 'Quran Memorization Review' : (helpView ? 'Memorize the Quran' : 'Memorization Progress'),
+      subtitle_en: 'Memorization',
       description_en: startReview
         ? 'Review Quran ayat using spaced repetition.'
         : (helpView
-          ? 'Memorize and review Quran ayat with an adaptive FSRS 6 spaced-repetition experience.'
+          ? 'Memorize the Quran and keep it fresh with adaptive, well-timed reviews.'
           : 'View Quran memorization progress or begin a guided spaced-review practice.'),
       canonical: helpView ? '/quran/review?help' : '/quran/review',
       context: { quranSearchProxy: true }

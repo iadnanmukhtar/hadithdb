@@ -11,9 +11,9 @@
   <main class="container col-lg-8 mx-auto mt-10 quran-memorization-welcome" id="quran-memorization-welcome"<% if (!helpView) { %> hidden<% } %>>
     <section class="quran-memorization-welcome-hero text-center mx-auto">
       <span class="quran-memorization-welcome-icon" aria-hidden="true"><i class="bi bi-book"></i></span>
-      <p class="text-primary fw-semibold small mb-2"><span class="badge rounded-pill text-bg-primary me-1">FSRS 6</span> Spaced repetition for Quran hifz</p>
+      <p class="text-primary fw-semibold small mb-2"><span class="badge rounded-pill text-bg-primary me-1">Adaptive review</span> Spaced repetition for Quran hifz</p>
       <h1 class="fs-2 mb-3">Keep your Quran memorization fresh</h1>
-      <p class="lead text-muted mx-auto mb-4">The app uses the Free Spaced Repetition Scheduler (FSRS) 6 to schedule each ayah as its predicted recall approaches your memory goal, strengthening recall and keeping your hifz fresh in your mind.</p>
+      <p class="lead text-muted mx-auto mb-4">The app brings each āyah back for review before it is likely to fade. Your answers adjust future timing, helping keep your hifz strong without unnecessary repetition.</p>
       <div class="d-flex justify-content-center gap-2 flex-wrap">
         <button type="button" class="btn btn-primary" id="quran-memorization-sign-in"><i class="bi bi-person-circle me-1" aria-hidden="true"></i> Sign in to begin memorizing</button>
         <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/page') %>">Explore the Mushaf</a>
@@ -22,7 +22,7 @@
     </section>
     <section class="row g-3 quran-memorization-welcome-features" aria-label="How Quran memorization works">
       <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-journal-bookmark text-primary" aria-hidden="true"></i><h2 class="fs-6">Learn at your pace</h2><p>Choose the ayat and surahs you want to learn and record each stage of your memorization.</p></article></div>
-      <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-arrow-repeat text-primary" aria-hidden="true"></i><h2 class="fs-6">Adaptive FSRS 6 reviews</h2><p>FSRS introduces Learning ayat as new cards, then adapts every review from your recall history before memory has a chance to fade.</p></article></div>
+      <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-arrow-repeat text-primary" aria-hidden="true"></i><h2 class="fs-6">Reviews that adapt</h2><p>Learning āyāt appear first, then review timing adjusts to your recall so you can focus on what needs attention.</p></article></div>
       <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-bar-chart-line text-primary" aria-hidden="true"></i><h2 class="fs-6">See your progress</h2><p>Track learning, weak, memorized, and Core ayat from a progress view organized by surah and Mushaf page.</p></article></div>
     </section>
     <section class="quran-memorization-preview-section" aria-labelledby="quran-memorization-preview-title">
@@ -50,13 +50,13 @@
             <div class="quran-memorization-preview-concept">
               <span class="quran-memorization-preview-kicker">Review</span>
               <strong>Recall before memory fades</strong>
-              <span>Focused FSRS reviews keep every āyah fresh.</span>
+              <span>Focused reviews keep every āyah fresh.</span>
             </div>
             <div class="quran-memorization-preview-screenshot">
-              <img src="/images/quran/memorization-review-preview.png" width="640" height="960" loading="lazy" alt="Review mode using the original Mushaf page 599 screenshot, with earlier Quran context visible, the current āyah concealed in place, later text faded, and sticky FSRS grading buttons">
+              <img src="/images/quran/memorization-review-preview.png" width="640" height="960" loading="lazy" alt="Review mode using the original Mushaf page 599 screenshot, with earlier Quran context visible, the current āyah concealed in place, later text faded, and sticky recall grading buttons">
             </div>
           </div>
-          <figcaption><strong>Review with focus</strong><span>Recall in Quran order, then let FSRS schedule the next review.</span></figcaption>
+          <figcaption><strong>Review with focus</strong><span>Recall in Quran order, then let the app choose the next review time.</span></figcaption>
         </figure>
         <figure class="quran-memorization-preview-card" role="listitem">
           <div class="quran-memorization-preview-visual quran-memorization-preview-visual-progress">
@@ -75,7 +75,7 @@
     </section>
     <article class="quran-memorization-help-article text-start mx-auto" aria-labelledby="quran-memorization-help-article-title">
       <header class="quran-memorization-help-article-header">
-        <p class="quran-memorization-help-kicker mb-1"><span class="badge rounded-pill text-bg-primary">FSRS 6</span> Quran memorization guide</p>
+        <p class="quran-memorization-help-kicker mb-1"><span class="badge rounded-pill text-bg-primary">How it works</span> Quran memorization guide</p>
         <h2 class="fs-4 mb-0" id="quran-memorization-help-article-title">How Quran memorization works</h2>
       </header>
       <div class="quran-memorization-help-body">
@@ -85,11 +85,10 @@
   </main>
   <main class="container col-lg-8 mx-auto mt-10 quran-ayah-progress-page" id="quran-memorization-progress" hidden>
     <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
-      <div><h1 class="fs-4 mb-1">Memorization Progress</h1><p class="text-muted small mb-0">Longer surahs are grouped by Mushaf page. Short surahs are shown as a whole.</p></div>
-      <div class="d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#quran-fsrs-settings-modal"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Review settings</button>
-        <a class="btn btn-outline-secondary btn-sm" href="<%= helpUrl %>"><i class="bi bi-question-circle me-1" aria-hidden="true"></i> How it works</a>
-        <button type="button" class="btn btn-outline-secondary btn-sm" id="quran-memorization-share" data-share-url="<%= helpUrl %>"><i class="bi bi-box-arrow-up me-1" aria-hidden="true"></i> Share</button>
+      <div><h1 class="fs-4 mb-1">Memorization Progress</h1><p class="text-muted small mb-0">Track every memorized āyah, see what is due now, and begin a guided review. Progress is organized by surah and Mushaf page.</p></div>
+      <div class="d-flex align-items-center justify-content-end gap-2 ms-auto quran-progress-actions">
+        <button type="button" class="btn btn-outline-secondary btn-sm quran-progress-secondary-action" data-bs-toggle="modal" data-bs-target="#quran-fsrs-settings-modal" aria-label="Review settings" title="Review settings"><i class="bi bi-sliders" aria-hidden="true"></i><span class="quran-progress-secondary-action-label">Review settings</span></button>
+        <a class="btn btn-outline-secondary btn-sm quran-progress-secondary-action" href="<%= helpUrl %>" aria-label="How Quran memorization works" title="How it works"><i class="bi bi-question-circle" aria-hidden="true"></i><span class="quran-progress-secondary-action-label">How it works</span></a>
         <div class="dropdown">
           <button type="button" class="btn btn-primary btn-sm dropdown-toggle" id="quran-start-review" data-bs-toggle="dropdown" aria-expanded="false"><span id="quran-start-review-label">Start Review</span></button>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quran-start-review">
@@ -113,7 +112,7 @@
       <div class="quran-review-stat-row" id="quran-review-stat-row"><span><strong>Daily average</strong> <b data-review-stat="daily_average">0</b> ayat</span><span><strong>Days learned</strong> <b data-review-stat="days_learned_percent">0%</b></span><span><strong>Longest streak</strong> <b data-review-stat="longest_streak">0 days</b></span><span><strong>Current streak</strong> <b data-review-stat="current_streak">0 days</b></span></div>
     </section>
     <section class="quran-memorization-summary mb-3" aria-label="Memorization totals">
-      <% [['due_today','Due today'],['new','New'],['learning','Learning'],['weak','Weak'],['relearning','Relearning'],['review','Memorized'],['core','Core'],['suspended','Paused'],['later','Later']].forEach(function (item) { %>
+      <% [['due_today','Due now'],['learning','Learning'],['weak','Weak'],['review','Memorized'],['core','Core'],['suspended','Paused'],['later','Later']].forEach(function (item) { %>
       <button type="button" class="card text-start quran-progress-summary-card" data-progress-filter="<%= item[0] %>" aria-pressed="false"<% if (item[0] === 'later') { %> disabled title="Untouched ayat are counted here but are not listed"<% } %>><span class="quran-progress-summary-label"><%= item[1] %></span><strong class="quran-progress-summary-count" data-progress-count="<%= item[0] %>">—</strong></button>
       <% }); %>
     </section>
@@ -178,7 +177,6 @@
       const surahReviewStatus = document.getElementById('quran-surah-review-status');
       const pausedSessionsSection = document.getElementById('quran-paused-review-sessions');
       const pausedSessionsList = document.getElementById('quran-paused-review-session-list');
-      const shareButton = document.getElementById('quran-memorization-share');
       const reviewHeatmapWrap = document.querySelector('.quran-review-heatmap-wrap');
       const reviewHeatmap = document.getElementById('quran-review-heatmap');
       const reviewHeatmapDetail = document.getElementById('quran-review-heatmap-detail');
@@ -209,7 +207,6 @@
         return;
       }
       if (progress) progress.hidden = false;
-      if (shareButton) shareButton.addEventListener('click',async()=>{const url=new URL(shareButton.dataset.shareUrl,window.location.origin).href;try{if(navigator.share){await navigator.share({title:'Memorize the Quran',text:'Memorize and review Quran ayat with adaptive spaced repetition.',url});if(window.toastr)toastr.success('Quran memorization guide shared');return;}await copyTextToClipboard(url);if(window.toastr)toastr.success('Quran memorization guide URL copied');}catch(err){if(err&&err.name==='AbortError')return;if(window.toastr)toastr.error(err.message||'Unable to share the Quran memorization guide');}});
       const request = async (path, options = {}) => { const response=await fetch(quranApiPath(`/memorization${path}`),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load memorization progress.'); return data; };
       const userSettingsRequest = async (options={}) => { const response=await fetch(quranApiPath('/user-settings'),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load settings.'); return data; };
       let reviewUserSettings=null;
@@ -220,7 +217,7 @@
       fsrsControls.save.addEventListener('click',async()=>{fsrsControls.save.disabled=true;fsrsControls.status.textContent='Saving...';try{const existing=reviewUserSettings&&reviewUserSettings.memorization||{};const fsrs=existing.fsrs||{};const data=await userSettingsRequest({method:'PUT',body:{settings:{...reviewUserSettings,memorization:{...existing,reviewLimit:fsrsControls.sessionLimit.value,reviewTimeBudgetMinutes:fsrsControls.timeBudget.value,learningLimit:fsrsControls.learningLimit.value,relearningLimit:fsrsControls.relearningLimit.value,weakLimit:fsrsControls.weakLimit.value,memorizedLimit:fsrsControls.memorizedLimit.value,reviewOrder:fsrsControls.queueOrder.value,fsrs:{...fsrs,targetRetention:Number(fsrsControls.retention.value),learningSpeed:fsrsControls.learningSpeed.value,intervalGrowth:fsrsControls.growth.value,lapseRecovery:fsrsControls.lapse.value}}}}});reviewUserSettings=data.settings;await cacheReviewSettings(reviewUserSettings);populateFsrsControls(reviewUserSettings);fsrsControls.status.textContent='Review settings saved.';const modal=bootstrap.Modal.getInstance(document.getElementById('quran-fsrs-settings-modal'));if(modal)modal.hide();}catch(err){fsrsControls.status.textContent=err.message;}finally{fsrsControls.save.disabled=false;}});
       fsrsControls.optimize.addEventListener('click',async()=>{fsrsControls.optimize.disabled=true;fsrsControls.status.textContent='Analyzing your review history...';try{const data=await request('/fsrs/optimize',{method:'POST'});reviewUserSettings=reviewUserSettings||{};reviewUserSettings.memorization={...(reviewUserSettings.memorization||{}),fsrs:data.fsrs};await cacheReviewSettings(reviewUserSettings);populateFsrsControls(reviewUserSettings);fsrsControls.status.textContent=`Personalized from ${Number(data.review_count).toLocaleString()} reviews.`;}catch(err){fsrsControls.status.textContent=err.message;}finally{fsrsControls.optimize.disabled=false;}});
       const scrollHeatmapToToday=()=>{if(!reviewHeatmapWrap)return;window.requestAnimationFrame(()=>{reviewHeatmapWrap.scrollLeft=reviewHeatmapWrap.scrollWidth;});};
-      const renderReviewStats=stats=>{const activity=new Map((stats.activity||[]).map(day=>[day.date,day]));const today=new Date(`${stats.today}T12:00:00`);const start=new Date(today);start.setDate(start.getDate()-364-start.getDay());const end=new Date(today);const maximum=Math.max(1,...Array.from(activity.values()).map(day=>Number(day.reviews)||0));const cells=[];for(let date=new Date(start);date<=end;date.setDate(date.getDate()+1)){const key=date.toISOString().slice(0,10);const day=activity.get(key);const count=day?Number(day.reviews)||0:0;const seconds=day?Number(day.seconds)||0:0;const level=count?Math.max(1,Math.min(4,Math.ceil((count/maximum)*4))):0;cells.push(`<button type="button" class="quran-review-heatmap-cell level-${level}" data-review-date="${key}" data-review-count="${count}" data-review-seconds="${seconds}" tabindex="${key===stats.today?'0':'-1'}" aria-label="${key}: ${count} review${count===1?'':'s'}"></button>`);}reviewHeatmap.innerHTML=cells.join('');scrollHeatmapToToday();document.getElementById('quran-review-today-summary').textContent=`Studied ${stats.studied_today} ${stats.studied_today===1?'āyah':'āyāt'} in ${stats.seconds_today} seconds today (${stats.seconds_per_card_today}s/āyah)`;document.querySelector('[data-review-stat="daily_average"]').textContent=stats.daily_average;document.querySelector('[data-review-stat="days_learned_percent"]').textContent=`${stats.days_learned_percent}%`;document.querySelector('[data-review-stat="longest_streak"]').textContent=`${stats.longest_streak} day${stats.longest_streak===1?'':'s'}`;document.querySelector('[data-review-stat="current_streak"]').textContent=`${stats.current_streak} day${stats.current_streak===1?'':'s'}`;};
+      const renderReviewStats=stats=>{const activity=new Map((stats.activity||[]).map(day=>[day.date,day]));const today=new Date(`${stats.today}T12:00:00`);const start=new Date(today);start.setDate(start.getDate()-364-start.getDay());const end=new Date(today);const maximum=Math.max(1,...Array.from(activity.values()).map(day=>Number(day.reviews)||0));const localDateKey=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;const cells=[];for(let date=new Date(start);date<=end;date.setDate(date.getDate()+1)){const key=localDateKey(date);const day=activity.get(key);const count=day?Number(day.reviews)||0:0;const seconds=day?Number(day.seconds)||0:0;const level=count?Math.max(1,Math.min(4,Math.ceil((count/maximum)*4))):0;cells.push(`<button type="button" class="quran-review-heatmap-cell level-${level}" data-review-date="${key}" data-review-count="${count}" data-review-seconds="${seconds}" tabindex="${key===stats.today?'0':'-1'}" aria-label="${key}: ${count} review${count===1?'':'s'}"></button>`);}reviewHeatmap.innerHTML=cells.join('');scrollHeatmapToToday();document.getElementById('quran-review-today-summary').textContent=`Studied ${stats.studied_today} ${stats.studied_today===1?'āyah':'āyāt'} in ${stats.seconds_today} seconds today (${stats.seconds_per_card_today}s/āyah)`;document.querySelector('[data-review-stat="daily_average"]').textContent=stats.daily_average;document.querySelector('[data-review-stat="days_learned_percent"]').textContent=`${stats.days_learned_percent}%`;document.querySelector('[data-review-stat="longest_streak"]').textContent=`${stats.longest_streak} day${stats.longest_streak===1?'':'s'}`;document.querySelector('[data-review-stat="current_streak"]').textContent=`${stats.current_streak} day${stats.current_streak===1?'':'s'}`;};
       let selectedHeatmapCell=null;
       const heatmapDetailText=cell=>{const count=Number(cell.dataset.reviewCount)||0;const seconds=Number(cell.dataset.reviewSeconds)||0;const date=new Date(`${cell.dataset.reviewDate}T12:00:00`).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});if(!count)return `${date}: No reviews.`;const average=Math.round(seconds/count);return `${date}: ${count} ${count===1?'āyah':'āyāt'} reviewed in ${seconds} seconds (${average}s/āyah).`;};
       const showHeatmapDetail=cell=>{if(!cell)return;reviewHeatmapDetail.textContent=heatmapDetailText(cell);};
@@ -401,9 +398,10 @@
           return `<article class="quran-paused-review-session"><div><strong>${escapeHtml(title)}</strong><span class="small text-muted">${escapeHtml(scope)} · ${Number(session.remaining_count).toLocaleString()} ${Number(session.remaining_count)===1?'āyah':'āyāt'} remaining${date?` · Paused ${escapeHtml(date)}`:''}</span></div><div class="quran-paused-review-session-actions"><button type="button" class="btn btn-sm btn-primary" data-resume-review-session="${escapeHtml(session.session_id)}"><span class="bi bi-play-fill" aria-hidden="true"></span> Resume</button><button type="button" class="btn btn-sm btn-outline-danger quran-paused-review-delete" data-delete-review-session="${escapeHtml(session.session_id)}" aria-label="Delete ${escapeHtml(title)}" title="Delete paused session"><span class="bi bi-trash" aria-hidden="true"></span></button></div></article>`;
         }).join('');
       };
-      const requestedStage = <%- JSON.stringify(['learning','weak','review','core','relearning','suspended','due_today','new'].includes(req.query.status) ? req.query.status : '') %>;
+      const requestedStage = <%- JSON.stringify(req.query.status === 'new' ? 'learning' : ['learning','weak','review','core','suspended','due_today'].includes(req.query.status) ? req.query.status : '') %>;
+      const requestedLegacyNewStage = <%= req.query.status === 'new' ? 'true' : 'false' %>;
       let selectedStage = requestedStage;
-      const tileLabel = value => value==='due_today'?'Due today':value==='new'?'New':labels[value]||value;
+      const tileLabel = value => value==='due_today'?'Due now':labels[value]||value;
       const updateTileSelection = () => document.querySelectorAll('[data-progress-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.progressFilter===selectedStage)));
       const updateStageUrl = () => {
         const url = new URL(window.location.href);
@@ -411,11 +409,12 @@
         else url.searchParams.delete('status');
         window.history.replaceState({}, '', url);
       };
+      if(requestedLegacyNewStage) updateStageUrl();
       const render = () => {
         closeGroupStateMenu(false);
         const query=filter.value.trim().toLocaleLowerCase();
         const visible=groups.filter(group => {
-          const matchesStage=!selectedStage || (selectedStage==='due_today' ? Number(group.due_count)>0 : selectedStage==='new' ? Number(group.new_count)>0 : countFor(group,selectedStage)>0);
+          const matchesStage=!selectedStage || (selectedStage==='due_today' ? Number(group.due_count)>0 : countFor(group,selectedStage)>0);
           const activeStages=stageOrder.filter(state=>countFor(group,state)>0).map(state=>labels[state]).join(' ');
           const aliases=Array.isArray(group.surah_alternate_names)?group.surah_alternate_names.join(' '):(group.surah_alternate_names||'');
           const surahNumbers=Array.isArray(group.surah_numbers)?group.surah_numbers.join(' '):(group.surah_number||'');
@@ -435,7 +434,7 @@
           bySurah.get(surahNumber).groups.push(group);
         });
         table.querySelector('tbody').innerHTML=Array.from(bySurah.values()).sort((left,right)=>left.number-right.number).map(surahGroup=>{
-          const surahAyat=surahGroup.groups.reduce((total,group)=>total+(selectedStage==='due_today'?Math.max(0,Number(group.due_count)||0):selectedStage==='new'?Math.max(0,Number(group.new_count)||0):selectedStage?countFor(group,selectedStage):totalFor(group)),0);
+          const surahAyat=surahGroup.groups.reduce((total,group)=>total+(selectedStage==='due_today'?Math.max(0,Number(group.due_count)||0):selectedStage?countFor(group,selectedStage):totalFor(group)),0);
           const unitCount=surahGroup.groups.length;
           const hasWholeSurah=surahGroup.groups.some(group=>group.group_type==='surah');
           const unitSummary=hasWholeSurah?'whole surah':`${unitCount} page${unitCount===1?'':'s'}`;
@@ -467,7 +466,7 @@
         if(visible.length){
           const surahs=bySurah.size;
           const pages=visible.length;
-          const ayat=visible.reduce((total,group)=>total+(selectedStage==='due_today' ? Math.max(0,Number(group.due_count)||0) : selectedStage==='new' ? Math.max(0,Number(group.new_count)||0) : selectedStage ? countFor(group,selectedStage) : totalFor(group)),0);
+          const ayat=visible.reduce((total,group)=>total+(selectedStage==='due_today' ? Math.max(0,Number(group.due_count)||0) : selectedStage ? countFor(group,selectedStage) : totalFor(group)),0);
           status.textContent=`${surahs} surah${surahs===1?'':'s'} with ${pages} memorization unit${pages===1?'':'s'}, covering ${ayat.toLocaleString()} ${ayat===1?'āyah':'āyāt'}${selectedStage?` with ${tileLabel(selectedStage)}`:''}.`;
         } else status.textContent='No memorization groups match this view.';
         clear.hidden=!query;
@@ -475,7 +474,7 @@
       const loadProgress = async () => {
         const [progressData,activeData,pausedData]=await Promise.all([request('/progress/groups'),request('/review/sessions/active'),request('/review/sessions/paused')]);
         Object.entries(progressData.progress||{}).forEach(([key,value])=>{ const element=document.querySelector(`[data-progress-count="${key}"]`); if(element) element.textContent=Number(value).toLocaleString(); });
-        const dueToday=Math.max(0,Number(progressData.progress&&progressData.progress.due_today)||0);
+        const dueNow=Math.max(0,Number(progressData.progress&&progressData.progress.due_today)||0);
         groups=Array.isArray(progressData.groups)?progressData.groups:[];
         const activeSession=activeData&&activeData.session;
         renderPausedSessions(pausedData&&pausedData.sessions);
@@ -492,7 +491,7 @@
             regularReview.setAttribute('aria-label',`Continue the active review of Mushaf page ${activeSession.review_page_number}`);
           }else{
             regularReviewLabel.textContent='Regular Review';
-            regularReview.setAttribute('aria-label',activeSession?`Regular Review, ${dueToday?`${dueToday} ${dueToday===1?'āyah':'āyāt'} due today`:'session in progress'}`:'Regular Review');
+            regularReview.setAttribute('aria-label',activeSession?`Regular Review, ${dueNow?`${dueNow} ${dueNow===1?'āyah':'āyāt'} due now`:'session in progress'}`:'Regular Review');
           }
         }
         populateSurahReviews();

@@ -8472,6 +8472,7 @@ function initQuranAyahReview(root) {
 		var sessionId = '';
 		var attemptToken = '';
 		var reviewedRefs = new Set();
+		var localReviewDayStart = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).toISOString();
 		var presentedAt = Date.now();
 		var help = rating.querySelector('.quran-ayah-review-help');
 		var buttons = rating.querySelector('.quran-ayah-review-buttons');
@@ -8551,7 +8552,7 @@ function initQuranAyahReview(root) {
 			if (!token) return;
 			var parts = ref.split(':');
 			if (parts.length !== 2) return;
-			var response = await fetch(quranApiPath(`/memorization/review/active/${parts[0]}/${parts[1]}/reviewed`), {
+			var response = await fetch(quranApiPath(`/memorization/review/active/${parts[0]}/${parts[1]}/reviewed?day_start=${encodeURIComponent(localReviewDayStart)}`), {
 				credentials: 'same-origin',
 				headers: { 'Authorization': `Bearer ${token}` }
 			});
@@ -8706,7 +8707,7 @@ function initQuranAyahReview(root) {
 				// Resolve the next persisted queue item while the graded āyah remains
 				// visible. This removes the intermediate /quran/review redirect and
 				// hides most of the next-card lookup behind the required reveal delay.
-				var nextReviewPromise = fetch(quranApiPath(`/memorization/review/sessions/${encodeURIComponent(sessionId)}/next`), {
+				var nextReviewPromise = fetch(quranApiPath(`/memorization/review/sessions/${encodeURIComponent(sessionId)}/next?day_start=${encodeURIComponent(localReviewDayStart)}`), {
 					credentials: 'same-origin',
 					headers: { 'Authorization': `Bearer ${token}` }
 				}).then(async function (nextResponse) {

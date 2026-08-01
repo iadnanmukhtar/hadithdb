@@ -1085,7 +1085,7 @@
 <script>
   (function initGoogleAuthGlobal() {
     if (window.hadithAuth) return;
-    const googleClientId = '<%= (global.settings.firebase && (global.settings.firebase.googleClientId || global.settings.firebase.clientId || global.settings.firebase.client_id)) || (global.settings.google && (global.settings.google.clientId || global.settings.google.client_id)) || "" %>';
+    const googleClientId = '<%= (global.settings.google && (global.settings.google.clientId || global.settings.google.client_id)) || "" %>';
     const tokenKey = 'hadithdb_google_credential';
     const userKey = 'hadithdb_google_user';
     let sessionUserPromise = null;

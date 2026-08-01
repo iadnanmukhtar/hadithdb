@@ -3156,7 +3156,7 @@ main.quran-mushaf-reader {
 @media (min-width: 992px) {
 	.quran-memorization-state-legend ul {
 		display: grid;
-		grid-template-columns: repeat(7, minmax(0, 1fr));
+		grid-template-columns: repeat(6, minmax(0, 1fr));
 	}
 
 	.quran-memorization-state-pill {
@@ -3682,7 +3682,7 @@ main.quran-mushaf-reader {
 .quran-memorization-summary {
 	display: grid;
 	gap: .45rem;
-	grid-template-columns: repeat(8, minmax(0, 1fr));
+	grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .settings-fsrs-card,
@@ -3974,11 +3974,36 @@ main.quran-mushaf-reader {
 	border-color: color-mix(in srgb, var(--bs-border-color) 55%, var(--bs-secondary) 45%);
 }
 
+.quran-progress-secondary-action-label {
+	margin-inline-start: .25rem;
+}
+
 @media (max-width: 767.98px) {
+	.quran-progress-secondary-action {
+		align-items: center;
+		display: inline-flex;
+		height: 2.25rem;
+		justify-content: center;
+		padding: 0;
+		width: 2.25rem;
+	}
+
+	.quran-progress-secondary-action .bi {
+		font-size: 1rem;
+		line-height: 1;
+	}
+
+	.quran-progress-secondary-action-label {
+		display: none;
+	}
+
 	.quran-memorization-summary {
 		gap: .35rem;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
+		grid-template-columns: repeat(12, minmax(0, 1fr));
 	}
+
+	.quran-progress-summary-card:nth-child(-n+3) { grid-column: span 4; }
+	.quran-progress-summary-card:nth-child(n+4) { grid-column: span 3; }
 
 	.quran-progress-summary-card {
 		min-height: 2.85rem;
@@ -4157,8 +4182,11 @@ main.quran-mushaf-reader {
 
 @media (min-width: 768px) and (max-width: 991.98px) {
 	.quran-memorization-summary {
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-template-columns: repeat(12, minmax(0, 1fr));
 	}
+
+	.quran-progress-summary-card:nth-child(-n+4) { grid-column: span 3; }
+	.quran-progress-summary-card:nth-child(n+5) { grid-column: span 4; }
 }
 
 .settings-section-header {

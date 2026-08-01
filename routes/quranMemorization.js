@@ -293,14 +293,15 @@ router.get('/review/active/:surah/:ayah/reviewed', async function (req, res) {
   const state = await QuranAyahMemorization.activeSessionReviewState(
     req.user.uid,
     req.params.surah,
-    req.params.ayah
+    req.params.ayah,
+    req.query.day_start
   );
   if (!state) return res.status(404).json({ error: 'This ayah is not the active review item.' });
   res.json(state);
 });
 
 router.get('/review/sessions/:session/next', async function (req, res) {
-  const result = await QuranAyahMemorization.nextSessionItem(req.user.uid, req.params.session);
+  const result = await QuranAyahMemorization.nextSessionItem(req.user.uid, req.params.session, req.query.day_start);
   res.json(result);
 });
 

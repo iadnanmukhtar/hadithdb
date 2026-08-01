@@ -65,7 +65,9 @@
           window.location.replace('/quran/review');
           return;
         }
-        const response = await fetch(quranApiPath(`/memorization/review/sessions/${encodeURIComponent(sessionId)}/next`), {
+        const now = new Date();
+        const localReviewDayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        const response = await fetch(quranApiPath(`/memorization/review/sessions/${encodeURIComponent(sessionId)}/next?day_start=${encodeURIComponent(localReviewDayStart)}`), {
           credentials: 'same-origin',
           headers: { 'Authorization': `Bearer ${token}` }
         });
