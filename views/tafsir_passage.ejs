@@ -18,7 +18,8 @@
     var tafsirMetaRef = `${surah.num}:${tafsirEntryStart}${tafsirEntryEnd > tafsirEntryStart ? `-${tafsirEntryEnd}` : ''}`;
     var tafsirSectionIdentifier = section && section.h1 && section.h2 ? ` §${section.h1}.${section.h2}` : '';
     var tafsirMetaTitle = `Tafsir ${tafsirPassageTitle}${tafsirSectionIdentifier} | Ayat ${tafsirMetaRef}`;
-    var tafsirMetaDescription = `Read ${tafsirTitle} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
+    var tafsirAuthor = tafsir.author_en || tafsir.author || '';
+    var tafsirMetaDescription = `Read ${tafsirTitle}${tafsirAuthor ? ` by ${tafsirAuthor}` : ''} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
     var page = {
       menu: 'Tafsir',
       title_en: tafsirMetaTitle,

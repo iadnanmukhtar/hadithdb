@@ -138,6 +138,7 @@ function getPage(route) {
   return {
     menu: 'Recently Titled',
     title_en: `Recently Titled Hadiths`,
+    description_en: 'Browse recently titled hadith with concise summaries, Arabic source text, English translations, and collection references.',
     subtitle_en: 'Aḥādīth recently summarized by a title',
     subtitle: null,
     canonical: `/${name}${route ? route : ''}`,

@@ -2078,17 +2078,20 @@ router.get('/quran/review', function (req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   const helpView = req.query.help !== undefined;
   const startReview = !helpView && (req.query.start !== undefined || req.query.continue !== undefined);
+  if (!helpView)
+    res.setHeader('X-Robots-Tag', 'noindex, follow');
   res.render(startReview ? 'quran_review' : 'quran_memorization_pages', {
     page: {
       menu: 'Quran',
       title_en: startReview ? 'Quran Memorization Review' : (helpView ? 'Memorize the Quran' : 'Memorization Progress'),
       subtitle_en: 'Memorization',
       description_en: startReview
-        ? 'Review Quran ayat using spaced repetition.'
+        ? 'Review memorized Quran ayat with focused recall and adaptive spaced repetition that responds to your answers.'
         : (helpView
-          ? 'Memorize the Quran and keep it fresh with adaptive, well-timed reviews.'
-          : 'View Quran memorization progress or begin a guided spaced-review practice.'),
+          ? 'Memorize the Quran ayah by ayah with focused Mushaf practice, adaptive spaced repetition, review scheduling, and progress tracking.'
+          : 'View your Quran memorization progress, due ayat, recent activity, and adaptive review schedule.'),
       canonical: helpView ? '/quran/review?help' : '/quran/review',
+      noindex: !helpView,
       context: { quranSearchProxy: true }
     }
   });
@@ -2309,6 +2312,16 @@ async function renderQuranMushafPage(req, res, next, options) {
   var pageAyahRange = firstPageAudioRange && lastPageAudioRange
     ? `${firstPageAudioRange.surah}:${firstPageAudioRange.from}-${lastPageAudioRange.surah}:${lastPageAudioRange.to}`
     : '';
+  var mushafPageTitle = review
+    ? `Quran Review ${reviewRef || pageAyahRange || `Page ${pageNumber}`} | Mushaf Page ${pageNumber}`
+    : `Quran ${memorize ? 'Memorize' : 'Mushaf'} Page ${pageNumber}${pageAyahRange ? ` | Ayat ${pageAyahRange}` : ''}`;
+  var mushafPageDescription = review
+    ? `Review Quran ${reviewRef || pageAyahRange || `page ${pageNumber}`} with focused recall in the Digital Khatt Mushaf and adaptive spaced repetition.`
+    : (memorize
+      ? `Practice memorizing Quran page ${pageNumber}${pageAyahRange ? `, ayat ${pageAyahRange}` : ''}, in the 15-line Digital Khatt Mushaf with focused hide-and-reveal controls.`
+      : `Read Quran page ${pageNumber}${pageAyahRange ? `, ayat ${pageAyahRange}` : ''}, in the 15-line Digital Khatt Arabic Mushaf.`);
+  if (review)
+    res.setHeader('X-Robots-Tag', 'noindex, follow');
   return res.render('quran_mushaf', {
     memorize: memorize,
     review: review,
@@ -2324,10 +2337,11 @@ async function renderQuranMushafPage(req, res, next, options) {
     quranHeaderJuzLinks: quranHeaderJuzLinks,
     page: {
       menu: 'Section',
-      title_en: `Quran ${memorize ? 'Memorize' : 'Mushaf'} Page ${pageNumber}${pageAyahRange ? ` | Ayat ${pageAyahRange}` : ''}`,
+      title_en: mushafPageTitle,
       subtitle_en: `Page ${pageNumber}`,
-      description_en: `${memorize ? 'Memorize' : 'Read'} page ${pageNumber} of the Quran in the 15-line Digital Khatt Mushaf.`,
-      canonical: `/quran/page/${pageNumber}${memorize ? '?memorize' : ''}`,
+      description_en: mushafPageDescription,
+      canonical: review ? '/quran/review' : `/quran/page/${pageNumber}${memorize ? '?memorize' : ''}`,
+      noindex: review,
       context: pageContext
     }
   });

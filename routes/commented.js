@@ -74,6 +74,7 @@ function getPage(route) {
   return {
     menu: 'Recently Commented',
     title_en: `Recently Commented Hadiths`,
+    description_en: 'Explore hadith with recent reader reflections and comments, alongside Arabic source text, English translations, and references.',
     subtitle_en: 'Aḥādīth that have been recently commented on',
     subtitle: null,
     canonical: `/${name}${route ? route : ''}`,

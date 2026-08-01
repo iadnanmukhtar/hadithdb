@@ -139,6 +139,7 @@ function getPage(route) {
   return {
     menu: 'Highlights',
     title_en: `Notable Hadiths`,
+    description_en: 'Browse recent English translations of notable and beautiful hadith, with Arabic source text, references, and narration context.',
     subtitle_en: 'Recent translations of beautiful and notable aḥādīth',
     subtitle: null,
     canonical: `/${name}${route ? route : ''}`,

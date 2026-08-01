@@ -6,6 +6,7 @@
     var site = Object.assign({}, global.settings.site);
     var isSearchResultsPage = (q && q != '');
     var isQuranSearchProxy = locals.quranSearchProxy || locals.searchAction === '/quran';
+    var searchAction = locals.searchAction || '/';
     site.admin = (req.admin);
     if (!locals.noadmin)
       site.editMode = (site.admin && req.editMode);
@@ -20,6 +21,8 @@
     if (q) {
         page.menu = 'Search';
         page.title_en = `Search Results for ${q}`;
+        page.description_en = `Search results for “${q}”${isQuranSearchProxy ? ' across the Quran and tafsir' : ' across the hadith collection'}.`;
+        page.canonical = searchAction;
         page.noindex = true;
         page.title = '';
         page.subtitle_en = 'Search Results';
@@ -30,12 +33,15 @@
           || (results[0].section && (results[0].section.title_en || results[0].section.h2_title_en))
           || results[0].h2_title_en
           || '';
+        var hadithMetaHeadingTitle = utils.truncate(hadithHeadingTitle, 65, true);
         page.title_en = `${book.shortName_en} ${results[0].num}${hadithHeadingTitle ? ` | ${hadithHeadingTitle}` : ''}`;
+        page.description_en = `Read ${book.shortName_en} ${results[0].num}${hadithMetaHeadingTitle ? `, ${hadithMetaHeadingTitle}` : ''}, with Arabic text, English translation, source references, and related narrations.`;
         page.title = `${book.title} ${results[0].num_ar}`;
         page.subtitle_en = `${book.shortName_en}`;
         page.subtitle = `${book.shortName}`;
     } else {
       page.title_en = `${site.shortName}`;
+      page.description_en = site.desc;
       page.title = '';
       page.subtitle_en = 'Home';
       page.subtitle = '';
@@ -62,7 +68,6 @@
       if (results[results.length-1].next_ref)
           page.next = `/${results[results.length-1].next_ref}`;
     } else if (results.length > 0) {
-      var searchAction = locals.searchAction || '/';
       function searchResultsPath(offset) {
         var params = new URLSearchParams();
         params.append('q', q);

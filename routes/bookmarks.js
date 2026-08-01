@@ -15,6 +15,7 @@ router.get('/', async function (req, res, next) {
   try {
     res.locals.req = req;
     res.locals.res = res;
+    res.setHeader('X-Robots-Tag', 'noindex, follow');
     res.render('bookmarks', {
       results: [],
       page: getPage()
@@ -329,11 +330,13 @@ function getPage() {
   return {
     menu: 'Bookmarks',
     title_en: `Bookmarks`,
+    description_en: 'View and manage your saved Quran passages, tafsir passages, hadith, and reading locations.',
     subtitle_en: 'Saved to your account settings',
     subtitle: null,
     canonical: '/bookmarks',
     alternate: '/bookmarks',
     feed: null,
+    noindex: true,
     context: {}
   };
 }

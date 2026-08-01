@@ -139,6 +139,7 @@ function getPage(route) {
   return {
     menu: 'Translation Requests',
     title_en: `Hadith Translation Requests`,
+    description_en: 'Browse requested hadith passages that have recently received English translations, with Arabic source text and references.',
     subtitle_en: 'Translations of aḥādīth requested to be translated',
     subtitle: null,
     canonical: `/${name}${route ? route : ''}`,

@@ -164,6 +164,12 @@ const requestQueryString = (req) => {
   return queryIndex === -1 ? '' : req.originalUrl.substring(queryIndex + 1);
 };
 
+const canonicalBlogPath = (path) => {
+  if (!path || !/^\/blog(?:\/blog)+(?:\/|$)/.test(path))
+    return null;
+  return path.replace(/^\/blog(?:\/blog)+/, '/blog');
+};
+
 const truncatedFriendlyErrorRef = (req) => {
   if (!req)
     return '';
@@ -400,6 +406,12 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.get('/vendor/marked/marked.min.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'node_modules/marked/marked.min.js'));
   });
+  app.use(function redirectDuplicatedBlogPaths(req, res, next) {
+    const canonicalPath = canonicalBlogPath(req.path);
+    if (!canonicalPath)
+      return next();
+    return res.redirect(301, appendQueryString(canonicalPath, requestQueryString(req)));
+  });
   app.use('/blog', express.static(`${global.settings.blog.dir}`));
 
   // global redirect www
@@ -432,7 +444,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     return res.redirect(301, Utils.quranUrl(req, buildQuranHostRedirectPath(req)));
   });
 
-  const toolsRouter = require('./routes/tools');
   const highlightsRouter = require('./routes/highlights');
   const requestsRouter = require('./routes/requests');
   const commentedRouter = require('./routes/commented');
@@ -458,7 +469,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const paymentsRouter = require('./routes/payments');
   const contentTranslationsRouter = require('./routes/contentTranslations');
 
-  app.use('/tools', toolsRouter);
   app.use('/recent', highlightsRouter);
   app.use('/highlights', highlightsRouter);
   app.use('/commented', commentedRouter);

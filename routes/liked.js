@@ -177,7 +177,8 @@ function getPage() {
   return {
     menu: 'Liked',
     title_en: `Recently Liked Hadiths`,
-    subtitle_en: 'Aḥādīths with recent likes',
+    description_en: 'Discover hadith recently appreciated by readers, with Arabic source text, English translations, and collection references.',
+    subtitle_en: 'Aḥādīth with recent likes',
     subtitle: null,
     canonical: `/${name}`,
     alternate: `/${name}`,

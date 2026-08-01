@@ -111,9 +111,9 @@
       : utils.hadithBookTitle(book);
     var pageDescriptionEn = isQuranToc
       ? (quranCommentaryBook
-        ? `Browse the Quran table of contents with links to ${quranCommentaryBookLabel} passages.`
+        ? `Browse ${quranCommentaryBookLabel}${displayName(quranCommentaryBook.author_en || quranCommentaryBook.author) ? ` by ${displayName(quranCommentaryBook.author_en || quranCommentaryBook.author)}` : ''}, organized by Quran surah and passage.`
         : 'Browse the Quran table of contents by surah and passage, with Arabic text, English translation, and tafsir.')
-      : `Browse the table of contents for ${book.name_en || book.shortName_en}.`;
+      : `Browse the table of contents for ${book.name_en || book.shortName_en}, with chapter and section links to Arabic hadith and English translations.`;
     var page = {
       menu: 'Books',
       title_en: pageTitleEn,

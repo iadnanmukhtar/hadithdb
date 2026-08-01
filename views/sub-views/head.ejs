@@ -7,6 +7,7 @@
       return path;
     var rawQuery = parts.slice(1).join('?');
     var hasBareHelp = /(?:^|&)help(?:&|$)/.test(rawQuery);
+    var hasBareMemorize = /(?:^|&)memorize(?:&|$)/.test(rawQuery);
     var params = new URLSearchParams(rawQuery);
     params.delete('flush');
     if (params.get('o') === '0')
@@ -14,6 +15,8 @@
     var query = params.toString();
     if (hasBareHelp)
       query = query.replace(/(^|&)help=(?=&|$)/, '$1help');
+    if (hasBareMemorize)
+      query = query.replace(/(^|&)memorize=(?=&|$)/, '$1memorize');
     return query ? `${parts[0]}?${query}` : parts[0];
   }
   if (page.canonical)
@@ -40,7 +43,7 @@
       ))
     );
   var headTitle = page.title_en || (isQuranPathHeadPage ? 'Quran Unlocked' : site.name);
-  var headDescription = page.description_en || page.subtitle_en || site.desc || '';
+  var headDescription = page.description_en || site.desc || '';
   var headSiteName = isQuranHeadPage ? 'Quran Unlocked' : site.name;
   var headSiteUrl = isQuranHeadPage ? quranCanonicalBaseUrl : site.url;
   var headAppLogo = isQuranHeadPage ? `${quranCanonicalBaseUrl}/images/quran-logo.png` : site.logo;

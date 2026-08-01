@@ -20,5 +20,6 @@ data/temp/*
 data/cache/*
 data/generated/*
 cache/*
+temp
 temp/*
 *test*

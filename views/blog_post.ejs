@@ -11,9 +11,10 @@
     var page = {
       menu: 'Blog Post',
       title_en: `Pearls | ${attr.title}`,
+      description_en: attr.description || attr.subtitle || site.desc,
       subtitle_en: attr.subtitle || 'Blog Post',
       subtitle: null,
-      canonical: `${req.path}`,
+      canonical: `/${slugVal}`,
       feed: `${site.url}/feed`,
       cover: encodeURI(attr.coverUrl),
       context: {},

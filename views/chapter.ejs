@@ -15,9 +15,11 @@
     var chapterPageNumber = chapter.page && chapter.page.number && (chapter.page.hasNext || chapter.page.number > 1)
       ? `, pg. ${chapter.page.number}`
       : '';
+    var chapterMetaTitle = utils.truncate(chapter.title_en || chapter.title || '', 55, true);
     var page = {
       menu: 'Chapter',
       title_en: `${book.shortName_en} §${chapter.h1}${chapterPageNumber} | ${chapter.title_en || chapter.title}`,
+      description_en: `Read ${book.name_en || book.shortName_en} chapter ${chapter.h1}${chapterMetaTitle ? `, ${chapterMetaTitle}` : ''}, with Arabic text, English translation, and source references.`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
       canonical: `/${book.alias}/${chapter.h1}${isQuranAyatView ? '' : (req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : '')}`,
