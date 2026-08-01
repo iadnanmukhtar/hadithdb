@@ -28,6 +28,15 @@ describe('Utils Quran URLs', () => {
       .toBe('https://quran.example.test/quran/1');
   });
 
+  test('uses the production Hadith host for Hadith links requested on the Quran host', () => {
+    global.settings = { site: {} };
+    const req = { hostname: 'quran.islamunlocked.com' };
+
+    expect(Utils.hadithBaseUrl(req)).toBe('https://hadithunlocked.com');
+    expect(Utils.urlFor(req, '/bukhari/1/1'))
+      .toBe('https://hadithunlocked.com/bukhari/1/1');
+  });
+
   test('keeps localhost Quran URLs on the current origin', () => {
     global.settings = { site: {} };
     const req = {

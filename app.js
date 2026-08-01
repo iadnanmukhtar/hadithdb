@@ -209,8 +209,17 @@ const buildQuranHostRedirectPath = (req) => {
   return appendQueryString(`/quran:${surahNum}:${ayahNum}`, requestQueryString(req));
 };
 
-const quranPrefixedHadithPath = (requestPath) => {
-  const match = (requestPath || '').match(/^\/quran\/([^/:]+)(?=\/|:|$)/);
+const visibleHadithBookForAlias = (alias) => {
+  return (global.books || []).find(item => item
+    && Number(item.hidden) === 0
+    && item.alias === alias
+    && item.alias !== 'quran'
+    && item.type !== 'tafsir'
+    && item.type !== 'trans');
+};
+
+const hadithBookPath = (requestPath) => {
+  const match = (requestPath || '').match(/^\/([^/:]+)(?=\/|:|$)/);
   if (!match)
     return '';
   let alias;
@@ -219,13 +228,13 @@ const quranPrefixedHadithPath = (requestPath) => {
   } catch (err) {
     return '';
   }
-  const book = (global.books || []).find(item => item
-    && Number(item.hidden) === 0
-    && item.alias === alias
-    && item.alias !== 'quran'
-    && item.type !== 'tafsir'
-    && item.type !== 'trans');
-  return book ? requestPath.substring('/quran'.length) : '';
+  return visibleHadithBookForAlias(alias) ? requestPath : '';
+};
+
+const quranPrefixedHadithPath = (requestPath) => {
+  if (!(requestPath || '').startsWith('/quran/'))
+    return '';
+  return hadithBookPath(requestPath.substring('/quran'.length));
 };
 
 const buildErrorSuggestions = (req) => {
@@ -407,7 +416,11 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     const hadithPath = quranPrefixedHadithPath(req.path);
     if (hadithPath)
       return res.redirect(301, appendQueryString(Utils.urlFor(req, hadithPath), requestQueryString(req)));
-    if (Utils.isLocalhostRequest(req) || Utils.isQuranSubdomainRequest(req) || !Utils.isQuranUrlPath(req.path))
+    const canonicalHadithPath = hadithBookPath(req.path);
+    const hadithBaseUrl = Utils.hadithBaseUrl(req);
+    if (canonicalHadithPath && hadithBaseUrl && !Utils.requestMatchesBaseUrl(req, hadithBaseUrl))
+      return res.redirect(301, appendQueryString(`${hadithBaseUrl}${canonicalHadithPath}`, requestQueryString(req)));
+    if (Utils.isLocalhostRequest(req) || !Utils.isQuranUrlPath(req.path))
       return next();
     const quranBaseUrl = Utils.quranBaseUrl(req);
     if (!quranBaseUrl || Utils.requestMatchesBaseUrl(req, quranBaseUrl))
