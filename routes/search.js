@@ -22,6 +22,8 @@ const QuranCorpus = require('../lib/QuranCorpus');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranHeadings = require('../lib/QuranHeadings');
 const QuranMushaf = require('../lib/QuranMushaf');
+const QuranSimilarAyahs = require('../lib/QuranSimilarAyahs');
+const QuranMutashabihat = require('../lib/QuranMutashabihat');
 const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
 const { homedir } = require('os');
@@ -1187,6 +1189,14 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   } else {
 
     var defaultPassage = req.query.passage != undefined || req.path.startsWith('/passage:') || req.params.bookAlias === 'quran';
+    var similarAyahs = [];
+    var mutashabihatPhrases = [];
+    if (defaultPassage && selectedAyahs.length === 1) {
+      [similarAyahs, mutashabihatPhrases] = await Promise.all([
+        loadQuranSimilarAyahs(selectedAyahs[0], req),
+        loadQuranMutashabihat(selectedAyahs[0], req)
+      ]);
+    }
     if (selectedAyahs.length < 1)
       return next(createError(404, `Route parameters 'surah=${surah.num}', 'ayah1=${ayah1}'${ayah2 !== ayah1 ? `, and 'ayah2=${ayah2}'` : ''} did not match any Quran ayat`));
     if (defaultPassage) {
@@ -1214,6 +1224,8 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         results: results,
         selectedAyah: (ayah1 == ayah2 && selectedAyahs.length > 0) ? selectedAyahs[0] : undefined,
         selectedAyahs: selectedAyahs,
+        similarAyahs: similarAyahs,
+        mutashabihatPhrases: mutashabihatPhrases,
         quranSubsections: quranSubsections,
         quranSurahs: quranSurahs
       });
@@ -1396,6 +1408,10 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
   var results = await getQuranSectionPassageItems(section, 0, 1000);
   await addQuranPassageBoundaryRefs(results);
   var quranSurahs = await getQuranSurahsFromIndex();
+  var [similarAyahs, mutashabihatPhrases] = await Promise.all([
+    loadQuranSimilarAyahs(selectedAyah, req),
+    loadQuranMutashabihat(selectedAyah, req)
+  ]);
 
   res.render('section_quran', {
     Tafsir: Tafsir,
@@ -1403,9 +1419,64 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
     results: results,
     selectedAyah: selectedAyah,
     selectedAyahs: [selectedAyah],
+    similarAyahs: similarAyahs,
+    mutashabihatPhrases: mutashabihatPhrases,
     quranSubsections: quranSubsections,
     quranSurahs: quranSurahs
   });
+}
+
+async function loadQuranSimilarAyahs(selectedAyah, req) {
+  var rows = await QuranSimilarAyahs.forAyah(selectedAyah);
+  var items = rows.map(row => new Item(row));
+  var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
+  var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
+  if (!selectedTranslation || selectedTranslation.source !== 'local')
+    return items;
+  var bySurah = new Map();
+  items.forEach(function (item) {
+    var surah = Number((item.num || '').toString().split(':')[0]);
+    if (!Number.isInteger(surah))
+      return;
+    if (!bySurah.has(surah))
+      bySurah.set(surah, []);
+    bySurah.get(surah).push(item);
+  });
+  await Promise.all(Array.from(bySurah.entries()).map(function ([surah, ayahs]) {
+    return applySelectedQuranTranslation(ayahs, selectedTranslation, surah, { dbFallbackOnUnavailable: false });
+  }));
+  return items;
+}
+
+async function loadQuranMutashabihat(selectedAyah, req) {
+  var phrases = await QuranMutashabihat.forAyah(selectedAyah);
+  var itemsById = new Map();
+  phrases.forEach(function (phrase) {
+    phrase.matches.forEach(function (match) {
+      var item = new Item(match.document);
+      match.item = item;
+      var id = Number(item.hId || item.id);
+      if (Number.isInteger(id))
+        itemsById.set(id, item);
+    });
+  });
+  var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
+  var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
+  if (selectedTranslation && selectedTranslation.source === 'local') {
+    var bySurah = new Map();
+    itemsById.forEach(function (item) {
+      var surah = Number((item.num || '').toString().split(':')[0]);
+      if (!Number.isInteger(surah))
+        return;
+      if (!bySurah.has(surah))
+        bySurah.set(surah, []);
+      bySurah.get(surah).push(item);
+    });
+    await Promise.all(Array.from(bySurah.entries()).map(function ([surah, ayahs]) {
+      return applySelectedQuranTranslation(ayahs, selectedTranslation, surah, { dbFallbackOnUnavailable: false });
+    }));
+  }
+  return phrases;
 }
 
 function escapeQuranMarkdownFields(item) {
@@ -3065,10 +3136,10 @@ async function renderBookSection(req, res, next) {
 
 }
 
-async function applySelectedQuranTranslation(items, translation, surah) {
+async function applySelectedQuranTranslation(items, translation, surah, options = {}) {
   var firstItem = (items || [])[0];
   if (firstItem && (firstItem.chain_en || firstItem.en?.chain)) {
-    var basmalahEntry = await Tafsir.localTranslationEntry(translation, 1, 1).catch(function (err) {
+    var basmalahEntry = await Tafsir.localTranslationEntry(translation, 1, 1, options).catch(function (err) {
       debug.error(`selected quran translation basmalah render failed alias=${translation.alias}: ${err.message}\n${err.stack || ''}`);
       return null;
     });
@@ -3093,7 +3164,7 @@ async function applySelectedQuranTranslation(items, translation, surah) {
     // do not have a matching entry, so retain its built-in translation.
     if (Number(surah) === 1 && ayah === 0)
       return;
-    var entry = await Tafsir.localTranslationEntry(translation, surah, ayah).catch(function (err) {
+    var entry = await Tafsir.localTranslationEntry(translation, surah, ayah, options).catch(function (err) {
       debug.error(`selected quran translation render failed alias=${translation.alias} ref=${surah}:${ayah}: ${err.message}\n${err.stack || ''}`);
       return null;
     });

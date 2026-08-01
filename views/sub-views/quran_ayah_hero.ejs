@@ -104,5 +104,11 @@
 	<% if (heroToolbar) { %>
 		<%- include('quran_ayah_hero_actions.ejs', heroToolbar); %>
 	<% } %>
+	<% if (ayahs.length === 1 && Array.isArray(locals.similarAyahs) && locals.similarAyahs.length > 0) { %>
+		<%- include('quran_similar_ayahs.ejs', { similarAyahs: locals.similarAyahs }); %>
+	<% } %>
+	<% if (ayahs.length === 1 && Array.isArray(locals.mutashabihatPhrases) && locals.mutashabihatPhrases.length > 0) { %>
+		<%- include('quran_mutashabihat.ejs', { selectedAyah: ayahs[0], phrases: locals.mutashabihatPhrases }); %>
+	<% } %>
 </section>
 <% } %>

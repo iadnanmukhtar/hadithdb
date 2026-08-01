@@ -1,0 +1,59 @@
+<%
+	function phraseText(ayah, range) {
+		var markdown = utils.emptyIfNull(ayah && ayah.ar && ayah.ar.body);
+		var words = markdown
+			.replace(/<[^>]*>/g, ' ')
+			.replace(/[\*_`]/g, '')
+			.trim()
+			.split(/\s+/)
+			.filter(Boolean);
+		var from = Number(range && range[0]);
+		var to = Number(range && range[1]);
+		if (!Number.isInteger(from) || !Number.isInteger(to) || from < 1 || to < from)
+			return '';
+		return words.slice(from - 1, to).join(' ');
+	}
+	function plural(count, singular, pluralForm) {
+		return `${count} ${Number(count) === 1 ? singular : pluralForm}`;
+	}
+%>
+<details class="quran-mutashabihat col-12">
+	<summary>
+		<span class="bi bi-subtract" aria-hidden="true"></span>
+		<span>Similar phrases <span class="quran-mutashabihat-name">(Mutashābihāt)</span></span>
+		<span class="quran-mutashabihat-count"><%= phrases.length %></span>
+	</summary>
+	<div class="quran-mutashabihat-list">
+		<% phrases.forEach(function (phrase) {
+			var sourceRange = phrase.sourceRanges[0] || [phrase.sourceWordFrom, phrase.sourceWordTo];
+			var sourcePhraseText = phraseText(selectedAyah, sourceRange);
+		%>
+		<article class="quran-mutashabihat-phrase" data-mutashabihat-phrase-id="<%= phrase.id %>">
+			<div class="quran-mutashabihat-phrase-text" lang="ar"><%= sourcePhraseText || `Quran words ${sourceRange[0]}–${sourceRange[1]}` %></div>
+			<footer>Repeated <%= plural(phrase.occurrenceCount, 'time', 'times') %> in <%= plural(phrase.ayahCount, 'ayah', 'ayat') %> across <%= plural(phrase.surahCount, 'surah', 'surahs') %>.</footer>
+			<% if (phrase.matches.length > 0) { %>
+			<details class="quran-mutashabihat-matches">
+				<summary>View matching ayat <span><%= phrase.matches.length %></span></summary>
+				<div class="quran-mutashabihat-match-list">
+					<% phrase.matches.forEach(function (match) {
+						var ayah = match.item;
+						var ayahRef = arabic.toLatinDigits((ayah.en?.num || ayah.num || '').toString());
+						var ayahPart = ayahRef.split(':')[1] || ayahRef;
+						var ayahMarker = arabic.toArabicDigits(ayahPart);
+						var ayahHref = utils.quranUrl(req, `/quran:${ayahRef}`);
+						var arabicBody = utils.quranDisplayMarkdownToHtml(utils.emptyIfNull(ayah.ar?.body));
+						var englishBody = utils.quranDisplayMarkdownToHtml(utils.emptyIfNull(ayah.en?.body));
+					%>
+					<article class="quran-mutashabihat-match" data-quran-ref="<%= ayahRef %>">
+						<a class="quran-mutashabihat-match-ref" href="<%= ayahHref %>"><%= ayahRef %></a>
+						<div class="quran-mutashabihat-match-arabic" lang="ar"><div><%- arabicBody %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahRef %>">۝<%= ayahMarker %></span></div>
+						<div class="quran-mutashabihat-match-translation" lang="en"><%- englishBody %></div>
+					</article>
+					<% }); %>
+				</div>
+			</details>
+			<% } %>
+		</article>
+		<% }); %>
+	</div>
+</details>

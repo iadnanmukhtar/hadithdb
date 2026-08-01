@@ -1,0 +1,29 @@
+<details class="quran-similar-ayahs col-12">
+	<summary>
+		<span class="bi bi-intersect" aria-hidden="true"></span>
+		<span>Similar ayat</span>
+		<span class="quran-similar-ayahs-count"><%= similarAyahs.length %></span>
+	</summary>
+	<div class="quran-similar-ayahs-list">
+		<% similarAyahs.forEach(function (ayah) {
+			var ayahRef = arabic.toLatinDigits((ayah.en?.num || ayah.num || '').toString());
+			var ayahPart = ayahRef.split(':')[1] || ayahRef;
+			var ayahMarker = arabic.toArabicDigits(ayahPart);
+			var ayahHref = utils.quranUrl(req, `/quran:${ayahRef}`);
+			var arabicBody = utils.quranDisplayMarkdownToHtml(utils.emptyIfNull(ayah.ar?.body));
+			var englishBody = utils.quranDisplayMarkdownToHtml(utils.emptyIfNull(ayah.en?.body));
+			var matchedWords = Number(ayah.similar_matched_words_count);
+			var coverage = Number(ayah.similar_coverage);
+			var score = Number(ayah.similar_score);
+		%>
+		<article class="quran-similar-ayah" data-quran-ref="<%= ayahRef %>">
+			<a class="quran-similar-ayah-ref" href="<%= ayahHref %>"><%= ayahRef %></a>
+			<div class="quran-similar-ayah-arabic" lang="ar">
+				<div class="quran-similar-ayah-arabic-body"><%- arabicBody %></div>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahRef %>">۝<%= ayahMarker %></span>
+			</div>
+			<div class="quran-similar-ayah-translation" lang="en"><%- englishBody %></div>
+			<footer>Match: <%= matchedWords %> <%= matchedWords === 1 ? 'word' : 'words' %> · Coverage: <%= Number.isInteger(coverage) ? coverage : coverage.toFixed(2) %>% · Similarity: <%= Number.isInteger(score) ? score : score.toFixed(2) %>%</footer>
+		</article>
+		<% }); %>
+	</div>
+</details>

@@ -8652,6 +8652,223 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 	border-top: 1px solid var(--c-gray-dark-16);
 }
 
+.quran-similar-ayahs {
+	margin-top: .85rem;
+	padding-top: .75rem;
+	border-top: 1px solid var(--c-gray-dark-16);
+}
+
+.quran-similar-ayahs > summary {
+	display: flex;
+	align-items: center;
+	gap: .4rem;
+	color: var(--c-accent);
+	cursor: pointer;
+	font-weight: 600;
+	list-style: none;
+}
+
+.quran-similar-ayahs > summary::-webkit-details-marker {
+	display: none;
+}
+
+.quran-similar-ayahs > summary::after {
+	content: "\F282";
+	margin-left: auto;
+	font-family: bootstrap-icons;
+	font-weight: 400;
+	transition: transform .15s ease-in-out;
+}
+
+.quran-similar-ayahs[open] > summary::after {
+	transform: rotate(180deg);
+}
+
+.quran-similar-ayahs-count {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.4rem;
+	height: 1.4rem;
+	padding: 0 .35rem;
+	border-radius: 999px;
+	background: var(--c-gray-dark-16);
+	font-size: .8em;
+}
+
+.quran-similar-ayahs-list {
+	display: grid;
+	gap: .85rem;
+	margin-top: .85rem;
+}
+
+.quran-similar-ayah {
+	padding: .85rem;
+	border: 1px solid var(--c-gray-dark-16);
+	border-radius: .55rem;
+	background: var(--c-white);
+}
+
+.quran-similar-ayah-ref {
+	display: inline-block;
+	margin-bottom: .35rem;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.quran-similar-ayah-arabic {
+	font-family: QuranV1, Serif;
+	font-size: calc(1.55rem * var(--content-font-scale));
+	line-height: 1.8;
+	text-align: right;
+}
+
+.quran-similar-ayah-arabic p,
+.quran-similar-ayah-translation p {
+	display: inline;
+	margin: 0;
+}
+
+.quran-similar-ayah-arabic-body {
+	display: inline;
+}
+
+.quran-similar-ayah-translation {
+	margin-top: .35rem;
+	font-size: var(--content-size-body);
+	line-height: 1.55;
+}
+
+.quran-similar-ayah footer {
+	margin-top: .55rem;
+	color: var(--c-gray-mid);
+	font-size: var(--content-size-meta);
+}
+
+.quran-mutashabihat {
+	margin-top: .85rem;
+	padding-top: .75rem;
+	border-top: 1px solid var(--c-gray-dark-16);
+}
+
+.quran-mutashabihat > summary,
+.quran-mutashabihat-matches > summary {
+	display: flex;
+	align-items: center;
+	gap: .4rem;
+	color: var(--c-accent);
+	cursor: pointer;
+	font-weight: 600;
+	list-style: none;
+}
+
+.quran-mutashabihat > summary::-webkit-details-marker,
+.quran-mutashabihat-matches > summary::-webkit-details-marker {
+	display: none;
+}
+
+.quran-mutashabihat > summary::after,
+.quran-mutashabihat-matches > summary::after {
+	content: "\F282";
+	margin-left: auto;
+	font-family: bootstrap-icons;
+	font-weight: 400;
+	transition: transform .15s ease-in-out;
+}
+
+.quran-mutashabihat[open] > summary::after,
+.quran-mutashabihat-matches[open] > summary::after {
+	transform: rotate(180deg);
+}
+
+.quran-mutashabihat-name {
+	font-weight: 400;
+}
+
+.quran-mutashabihat-count,
+.quran-mutashabihat-matches > summary span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.4rem;
+	height: 1.4rem;
+	padding: 0 .35rem;
+	border-radius: 999px;
+	background: var(--c-gray-dark-16);
+	font-size: .8em;
+}
+
+.quran-mutashabihat-list {
+	display: grid;
+	gap: .85rem;
+	margin-top: .85rem;
+}
+
+.quran-mutashabihat-phrase {
+	padding: .85rem;
+	border: 1px solid var(--c-gray-dark-16);
+	border-radius: .55rem;
+	background: var(--c-white);
+}
+
+.quran-mutashabihat-phrase-text {
+	font-family: QuranV1, Serif;
+	font-size: calc(1.4rem * var(--content-font-scale));
+	line-height: 1.75;
+	text-align: right;
+}
+
+.quran-mutashabihat-phrase > footer {
+	margin-top: .35rem;
+	color: var(--c-gray-mid);
+	font-size: var(--content-size-meta);
+}
+
+.quran-mutashabihat-matches {
+	margin-top: .65rem;
+	padding-top: .65rem;
+	border-top: 1px solid var(--c-gray-dark-16);
+}
+
+.quran-mutashabihat-match-list {
+	display: grid;
+	gap: .75rem;
+	margin-top: .75rem;
+}
+
+.quran-mutashabihat-match {
+	padding: .75rem;
+	border-radius: .45rem;
+	background: var(--c-ghostwhite);
+}
+
+.quran-mutashabihat-match-ref {
+	display: inline-block;
+	margin-bottom: .3rem;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.quran-mutashabihat-match-arabic {
+	font-family: QuranV1, Serif;
+	font-size: calc(1.45rem * var(--content-font-scale));
+	line-height: 1.8;
+	text-align: right;
+}
+
+.quran-mutashabihat-match-arabic > div,
+.quran-mutashabihat-match-arabic p,
+.quran-mutashabihat-match-translation p {
+	display: inline;
+	margin: 0;
+}
+
+.quran-mutashabihat-match-translation {
+	margin-top: .35rem;
+	font-size: var(--content-size-body);
+	line-height: 1.55;
+}
+
 .quran-ayah-action,
 .reflection-count-link {
 	display: inline-flex;
