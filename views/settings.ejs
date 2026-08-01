@@ -82,34 +82,42 @@
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Memorization</h2>
-            <p class="text-muted small mb-0" id="settings-memorization-status">Choose the size, order, and timing of Quran review sessions.</p>
+            <p class="text-muted small mb-0" id="settings-memorization-status">Tune FSRS scheduling and the size of each review session.</p>
           </div>
+          <a class="btn btn-outline-primary btn-sm" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-bar-chart-line me-1" aria-hidden="true"></i> Memorization Progress</a>
         </div>
-        <div class="d-flex align-items-end gap-3 flex-wrap">
-          <label class="form-label mb-0">
-            <span class="small text-muted d-block mb-1">Good/Easy pages per session</span>
-            <input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-review-limit">
-          </label>
-          <label class="form-label mb-0">
-            <span class="small text-muted d-block mb-1">Review order</span>
-            <select class="form-select form-select-sm" id="settings-review-order">
-              <option value="hard_good_easy">Hard → Good → Easy</option>
-              <option value="hard_easy_good">Hard → Easy → Good</option>
-              <option value="due_first">Oldest due first</option>
-              <option value="page_order">Quran page order</option>
-              <option value="random">Random</option>
-            </select>
-          </label>
-          <label class="form-label mb-0">
-            <span class="small text-muted d-block mb-1">Good: review again after</span>
-            <span class="input-group input-group-sm"><input class="form-control" type="number" min="1" max="365" id="settings-good-review-days"><span class="input-group-text">days</span></span>
-          </label>
-          <label class="form-label mb-0">
-            <span class="small text-muted d-block mb-1">Easy: review again after</span>
-            <span class="input-group input-group-sm"><input class="form-control" type="number" min="1" max="365" id="settings-easy-review-days"><span class="input-group-text">days</span></span>
-          </label>
-          <button type="button" class="btn btn-primary btn-sm" id="settings-memorization-save">Save</button>
+        <div class="settings-fsrs-card">
+          <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
+            <div><h3 class="fs-6 fw-bold mb-1"><i class="bi bi-brain me-1" aria-hidden="true"></i> FSRS 6 settings</h3><p class="small text-muted mb-0">Tune how strongly Quran ayat are retained. Difficulty and same-day smoothing stay automatic.</p></div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Algorithm</button>
+          </div>
+          <div class="row g-2">
+            <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Target Memory Goal</span><select class="form-select form-select-sm" id="settings-fsrs-retention"><option value="0.8">80% relaxed</option><option value="0.85">85% balanced</option><option value="0.9">90% recommended</option><option value="0.92">92% high mastery</option><option value="0.95">95% exam prep</option></select></label>
+            <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Initial Memory Strength</span><select class="form-select form-select-sm" id="settings-fsrs-learning-speed"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option></select></label>
+            <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Review Interval Multiplier</span><select class="form-select form-select-sm" id="settings-fsrs-growth"><option value="conservative">Conservative</option><option value="standard">Standard</option><option value="aggressive">Aggressive</option></select></label>
+            <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Lapse Recovery Speed</span><select class="form-select form-select-sm" id="settings-fsrs-lapse"><option value="mild">Mild</option><option value="standard">Standard</option><option value="strict">Strict</option></select></label>
+          </div>
+          <p class="small text-muted mt-2 mb-0" id="settings-fsrs-status">Personalize after at least 100 reviews, then about once a month as your history grows.</p>
         </div>
+        <div class="memorization-session-settings mt-3">
+          <div class="mb-2"><h3 class="fs-6 fw-bold mb-1">Review session</h3><p class="small text-muted mb-0">FSRS determines when each ayah is due. These controls determine how much work enters one session.</p></div>
+          <div class="d-flex align-items-end gap-3 flex-wrap">
+            <label class="form-label mb-0"><span class="small d-block mb-1">Maximum ayat per session</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-review-limit"></label>
+            <label class="form-label mb-0"><span class="small d-block mb-1">Optional time budget</span><span class="input-group input-group-sm"><input class="form-control" type="number" min="0" max="240" id="settings-review-time-budget"><span class="input-group-text">minutes</span></span></label>
+          </div>
+          <details class="memorization-advanced-settings mt-3">
+            <summary><span><strong>Advanced session limits</strong><small>Category caps and queue order</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+            <p class="small text-muted mt-3 mb-2">Each category cap is applied within the overall ayat limit. Relearning is assigned automatically after Again on a Memorized ayah; it is not a user-selectable state.</p>
+            <div class="row g-2">
+              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Learning ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-learning-limit"></label>
+              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Relearning ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-relearning-limit"></label>
+              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Weak ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-weak-limit"></label>
+              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Memorized ayat</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-memorized-limit"></label>
+              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Order within each queue</span><select class="form-select form-select-sm" id="settings-review-order"><option value="due_first">Oldest due first</option><option value="quran_order">Quran order</option><option value="random">Random</option></select></label>
+            </div>
+          </details>
+        </div>
+        <div class="d-flex justify-content-end mt-3"><button type="button" class="btn btn-primary btn-sm" id="settings-memorization-save">Save Quran Memorization</button></div>
       </section>
 
       <section class="border-top pt-3 mt-3">
@@ -197,11 +205,20 @@
     const reciterListEl = document.getElementById('settings-reciter-list');
     const reciterEnableAllBtn = document.getElementById('settings-reciter-enable-all');
     const memorizationStatusEl = document.getElementById('settings-memorization-status');
-    const goodReviewDaysEl = document.getElementById('settings-good-review-days');
-    const easyReviewDaysEl = document.getElementById('settings-easy-review-days');
     const reviewLimitEl = document.getElementById('settings-review-limit');
+    const learningLimitEl = document.getElementById('settings-learning-limit');
+    const relearningLimitEl = document.getElementById('settings-relearning-limit');
+    const weakLimitEl = document.getElementById('settings-weak-limit');
+    const memorizedLimitEl = document.getElementById('settings-memorized-limit');
+    const reviewTimeBudgetEl = document.getElementById('settings-review-time-budget');
     const reviewOrderEl = document.getElementById('settings-review-order');
     const memorizationSaveBtn = document.getElementById('settings-memorization-save');
+    const fsrsRetentionEl = document.getElementById('settings-fsrs-retention');
+    const fsrsLearningSpeedEl = document.getElementById('settings-fsrs-learning-speed');
+    const fsrsGrowthEl = document.getElementById('settings-fsrs-growth');
+    const fsrsLapseEl = document.getElementById('settings-fsrs-lapse');
+    const fsrsOptimizeBtn = document.getElementById('settings-fsrs-optimize');
+    const fsrsStatusEl = document.getElementById('settings-fsrs-status');
     const profileStatusEl = document.getElementById('settings-profile-status');
     const preferredLanguageSelect = document.getElementById('settings-preferred-language');
     const paymentStatusEl = document.getElementById('settings-payment-status');
@@ -309,15 +326,22 @@
       const memorization = source.memorization && typeof source.memorization === 'object' && !Array.isArray(source.memorization)
         ? source.memorization
         : {};
-      const reviewDays = (value, fallback) => {
-        const parsed = parseInt(value, 10);
-        return Number.isInteger(parsed) && parsed >= 1 && parsed <= 365 ? parsed : fallback;
-      };
       const reviewLimit = value => {
         const parsed = parseInt(value, 10);
-        return Number.isInteger(parsed) && parsed >= 1 && parsed <= 200 ? parsed : 5;
+        return Number.isInteger(parsed) && parsed >= 1 && parsed <= 200 ? parsed : 10;
       };
-      const reviewOrders = new Set(['hard_good_easy', 'hard_easy_good', 'due_first', 'page_order', 'random']);
+      const categoryLimit = (value, fallback, maximum) => {
+        const parsed = parseInt(value, 10);
+        return Number.isInteger(parsed) && parsed >= 1 && parsed <= maximum ? parsed : fallback;
+      };
+      const reviewTimeBudget = value => {
+        const parsed = parseInt(value, 10);
+        return Number.isInteger(parsed) && parsed >= 0 && parsed <= 240 ? parsed : 0;
+      };
+      const reviewOrders = new Set(['due_first', 'quran_order', 'random']);
+      const fsrsSource = memorization.fsrs && typeof memorization.fsrs === 'object' && !Array.isArray(memorization.fsrs) ? memorization.fsrs : {};
+      const fsrsChoice = (value, choices, fallback) => choices.includes(value) ? value : fallback;
+      const targetRetention = Math.max(0.8, Math.min(0.95, Number(fsrsSource.targetRetention) || 0.9));
       const translationDisabledAliases = Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
         .map(alias => (alias || '').toString().trim())
         .filter(alias => /^[A-Za-z0-9_-]+$/.test(alias))));
@@ -361,10 +385,22 @@
             : 'juhani'
         },
         memorization: {
-          goodReviewDays: reviewDays(memorization.goodReviewDays, 7),
-          easyReviewDays: reviewDays(memorization.easyReviewDays, 14),
+          ...memorization,
           reviewLimit: reviewLimit(memorization.reviewLimit),
-          reviewOrder: reviewOrders.has(memorization.reviewOrder) ? memorization.reviewOrder : 'hard_good_easy'
+          learningLimit: categoryLimit(memorization.learningLimit, 3, 50),
+          relearningLimit: categoryLimit(memorization.relearningLimit, 4, 50),
+          weakLimit: categoryLimit(memorization.weakLimit, 3, 50),
+          memorizedLimit: categoryLimit(memorization.memorizedLimit, 10, 200),
+          reviewTimeBudgetMinutes: reviewTimeBudget(memorization.reviewTimeBudgetMinutes),
+          reviewOrder: reviewOrders.has(memorization.reviewOrder) ? memorization.reviewOrder : 'due_first',
+          fsrs: {
+            targetRetention: targetRetention,
+            learningSpeed: fsrsChoice(fsrsSource.learningSpeed, ['slow','normal','fast'], 'normal'),
+            intervalGrowth: fsrsChoice(fsrsSource.intervalGrowth, ['conservative','standard','aggressive'], 'standard'),
+            lapseRecovery: fsrsChoice(fsrsSource.lapseRecovery, ['mild','standard','strict'], 'standard'),
+            parameters: Array.isArray(fsrsSource.parameters) && fsrsSource.parameters.length === 21 ? fsrsSource.parameters : null,
+            optimizedAt: fsrsSource.optimizedAt || null
+          }
         }
       };
     };
@@ -1263,7 +1299,7 @@
       toggle.type = 'button';
       toggle.setAttribute('data-bs-toggle', 'collapse');
       toggle.setAttribute('data-bs-target', `#${id}`);
-      toggle.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-expanded', 'false');
       toggle.setAttribute('aria-controls', id);
 
       const icon = document.createElement('i');
@@ -1280,7 +1316,7 @@
 
       const body = document.createElement('div');
       body.id = id;
-      body.className = 'collapse show';
+      body.className = 'collapse';
       section.appendChild(body);
       return body;
     };
@@ -1473,14 +1509,25 @@
         currentSettings = await loadUserSettings();
       }
       currentSettings = normalizeSettings(currentSettings);
-      goodReviewDaysEl.value = currentSettings.memorization.goodReviewDays;
-      easyReviewDaysEl.value = currentSettings.memorization.easyReviewDays;
       reviewLimitEl.value = currentSettings.memorization.reviewLimit;
+      learningLimitEl.value = currentSettings.memorization.learningLimit;
+      relearningLimitEl.value = currentSettings.memorization.relearningLimit;
+      weakLimitEl.value = currentSettings.memorization.weakLimit;
+      memorizedLimitEl.value = currentSettings.memorization.memorizedLimit;
+      reviewTimeBudgetEl.value = currentSettings.memorization.reviewTimeBudgetMinutes;
       reviewOrderEl.value = currentSettings.memorization.reviewOrder;
-      goodReviewDaysEl.disabled = !currentUser;
-      easyReviewDaysEl.disabled = !currentUser;
+      fsrsRetentionEl.value = String(currentSettings.memorization.fsrs.targetRetention);
+      fsrsLearningSpeedEl.value = currentSettings.memorization.fsrs.learningSpeed;
+      fsrsGrowthEl.value = currentSettings.memorization.fsrs.intervalGrowth;
+      fsrsLapseEl.value = currentSettings.memorization.fsrs.lapseRecovery;
       reviewLimitEl.disabled = !currentUser;
+      learningLimitEl.disabled = !currentUser;
+      relearningLimitEl.disabled = !currentUser;
+      weakLimitEl.disabled = !currentUser;
+      memorizedLimitEl.disabled = !currentUser;
+      reviewTimeBudgetEl.disabled = !currentUser;
       reviewOrderEl.disabled = !currentUser;
+      [fsrsRetentionEl,fsrsLearningSpeedEl,fsrsGrowthEl,fsrsLapseEl,fsrsOptimizeBtn].forEach(element => { element.disabled = !currentUser; });
       memorizationSaveBtn.disabled = !currentUser;
       renderProfileSettings();
       reciterEnableAllBtn.disabled = !currentUser;
@@ -1558,15 +1605,29 @@
       currentSettings = normalizeSettings({
         ...currentSettings,
         memorization: {
-          goodReviewDays: goodReviewDaysEl.value,
-          easyReviewDays: easyReviewDaysEl.value,
+          ...currentSettings.memorization,
           reviewLimit: reviewLimitEl.value,
-          reviewOrder: reviewOrderEl.value
+          learningLimit: learningLimitEl.value,
+          relearningLimit: relearningLimitEl.value,
+          weakLimit: weakLimitEl.value,
+          memorizedLimit: memorizedLimitEl.value,
+          reviewTimeBudgetMinutes: reviewTimeBudgetEl.value,
+          reviewOrder: reviewOrderEl.value,
+          fsrs: {
+            ...currentSettings.memorization.fsrs,
+            targetRetention: fsrsRetentionEl.value,
+            learningSpeed: fsrsLearningSpeedEl.value,
+            intervalGrowth: fsrsGrowthEl.value,
+            lapseRecovery: fsrsLapseEl.value
+          }
         }
       });
-      goodReviewDaysEl.value = currentSettings.memorization.goodReviewDays;
-      easyReviewDaysEl.value = currentSettings.memorization.easyReviewDays;
       reviewLimitEl.value = currentSettings.memorization.reviewLimit;
+      learningLimitEl.value = currentSettings.memorization.learningLimit;
+      relearningLimitEl.value = currentSettings.memorization.relearningLimit;
+      weakLimitEl.value = currentSettings.memorization.weakLimit;
+      memorizedLimitEl.value = currentSettings.memorization.memorizedLimit;
+      reviewTimeBudgetEl.value = currentSettings.memorization.reviewTimeBudgetMinutes;
       reviewOrderEl.value = currentSettings.memorization.reviewOrder;
       memorizationSaveBtn.disabled = true;
       memorizationStatusEl.textContent = 'Saving review schedule...';
@@ -1577,6 +1638,25 @@
         memorizationStatusEl.textContent = err.message || 'Unable to save review schedule.';
       } finally {
         memorizationSaveBtn.disabled = false;
+      }
+    });
+
+    fsrsOptimizeBtn.addEventListener('click', async () => {
+      if (!currentUser) return renderSignedOut();
+      const token = await requireSaveToken();
+      fsrsOptimizeBtn.disabled = true;
+      fsrsStatusEl.textContent = 'Analyzing your review history...';
+      try {
+        const response = await fetch(quranApiPath('/memorization/fsrs/optimize'), { method:'POST', credentials:'same-origin', headers:{ Authorization:`Bearer ${token}` } });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Unable to personalize FSRS.');
+        currentSettings = normalizeSettings({ ...currentSettings, memorization:{ ...currentSettings.memorization, fsrs:data.fsrs } });
+        await clearCachedUserSettings();
+        fsrsStatusEl.textContent = `Personalized from ${Number(data.review_count).toLocaleString()} reviews.`;
+      } catch (err) {
+        fsrsStatusEl.textContent = err.message || 'Unable to personalize FSRS.';
+      } finally {
+        fsrsOptimizeBtn.disabled = false;
       }
     });
 

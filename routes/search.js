@@ -90,6 +90,30 @@ function parseQuranAyahParam(value) {
   return Number.isSafeInteger(numeric) ? numeric : NaN;
 }
 
+function normalizeQuranReviewRef(value) {
+  var candidate = Array.isArray(value) ? value[0] : value;
+  var match = Arabic.toLatinDigits((candidate || '').toString()).match(/^(\d{1,3}):(\d{1,3})$/);
+  if (!match)
+    return '';
+  var surahNumber = Number(match[1]);
+  var ayahNumber = Number(match[2]);
+  if (!Number.isInteger(surahNumber) || !Number.isInteger(ayahNumber)
+    || surahNumber < 1 || surahNumber > 114 || ayahNumber < 1)
+    return '';
+  var surah = (global.surahs || []).find(function (item) { return Number(item.num) === surahNumber; });
+  var ayahCount = quranAyahCount(surah);
+  if (Number.isInteger(ayahCount) && ayahCount > 0 && ayahNumber > ayahCount)
+    return '';
+  return `${surahNumber}:${ayahNumber}`;
+}
+
+function compactQuranReviewQuery(req, reviewRef) {
+  var parts = [`review=${reviewRef}`];
+  if (req.query.reviewRetry !== undefined)
+    parts.push('reviewRetry=1');
+  return parts.join('&');
+}
+
 function quranAyahCount(surah) {
   return Number(surah && (surah.ayahs || surah.ayat));
 }
@@ -2038,14 +2062,14 @@ router.get('/quran/review', function (req, res) {
   res.locals.req = req;
   res.locals.res = res;
   res.setHeader('Cache-Control', 'private, no-store');
-  const startReview = req.query.start !== undefined;
+  const startReview = req.query.start !== undefined || req.query.continue !== undefined;
   res.render(startReview ? 'quran_review' : 'quran_memorization_pages', {
     page: {
       menu: 'Quran',
       title_en: startReview ? 'Quran Memorization Review' : 'Memorization Progress',
       description_en: startReview
-        ? 'Review Quran pages using spaced repetition.'
-        : 'View Quran memorization progress and begin reviewing due pages.',
+        ? 'Review Quran ayat using spaced repetition.'
+        : 'View Quran memorization progress or begin a guided spaced-review practice.',
       canonical: '/quran/review',
       context: { quranSearchProxy: true }
     }
@@ -2061,11 +2085,24 @@ router.get('/quran/progress', function (req, res) {
 });
 
 async function renderQuranMushafPage(req, res, next, options) {
-  var memorize = req.query.memorize !== undefined;
+  var reviewRef = normalizeQuranReviewRef(req.query.reviewRef) || normalizeQuranReviewRef(req.query.review);
+  var review = req.query.review !== undefined || Boolean(reviewRef);
+  var memorize = req.query.memorize !== undefined || review;
   var pageNumber = Number(options.pageNumber);
-  res.setHeader('Cache-Control', Utils.shouldFlushCache(req)
-    ? 'no-store'
-    : 'public, max-age=0, must-revalidate');
+  var redundantReviewQuery = reviewRef && (
+    req.query.reviewRef !== undefined
+    || req.query.memorize !== undefined
+    || req.query.reviewState !== undefined
+    || req.query.review === ''
+    || req.query.reviewMode !== undefined
+    || req.query.reviewPrevious !== undefined
+    || req.query.reviewNext !== undefined
+  );
+  if (redundantReviewQuery)
+    return res.redirect(302, Utils.quranUrl(req, `/quran/page/${pageNumber}?${compactQuranReviewQuery(req, reviewRef)}`));
+  res.setHeader('Cache-Control', review
+    ? 'private, no-store'
+    : (Utils.shouldFlushCache(req) ? 'no-store' : 'public, max-age=0, must-revalidate'));
   var mushaf = await QuranMushaf.page(pageNumber);
   if (!mushaf)
     return next(createError(404, `Mushaf page '${pageNumber}' not found`));
@@ -2256,6 +2293,9 @@ async function renderQuranMushafPage(req, res, next, options) {
     : '';
   return res.render('quran_mushaf', {
     memorize: memorize,
+    review: review,
+    reviewRef: reviewRef,
+    reviewRetry: req.query.reviewRetry !== undefined,
     mushaf: mushaf,
     audioRanges: audioRanges,
     subsectionAudioRanges: subsectionAudioRanges,

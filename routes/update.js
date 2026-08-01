@@ -1313,7 +1313,7 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
       await renumberQuranSubsections(bookId, surah, insertH2);
     });
   }
-  await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: relink ayahs ${splitAyah}-${promotedEnd}`, async () => {
+  await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: relink āyāt ${splitAyah}-${promotedEnd}`, async () => {
     await relinkQuranAyahRangeToSection(bookId, surah, insertResult.insertId, insertH2, splitAyah, promotedEnd);
   });
   await timedUpdateStep(`quran ${surah} promote subsection ${subsectionHeadingId}: normalize heading ranges`, async () => {
@@ -1483,7 +1483,7 @@ async function demoteQuranSection(sectionHeadingId, value, userId) {
   await renumberQuranSubsections(bookId, surah, previousH2);
   var demotedRow = (await global.query(`SELECT h3 FROM toc WHERE id=${demotedSubsectionId} LIMIT 1`))[0];
   var demotedH3 = demotedRow ? Number(demotedRow.h3) : 1;
-  await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: relink ayahs ${currentStart}-${currentEnd}`, async () => {
+  await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: relink āyāt ${currentStart}-${currentEnd}`, async () => {
     await relinkQuranAyahRangeToSection(bookId, surah, previousId, previousH2, currentStart, currentEnd);
   });
   await timedUpdateStep(`quran ${surah} demote section ${sectionHeadingId}: normalize heading ranges`, async () => {
@@ -1769,7 +1769,7 @@ function validateAyahRange(startAyah, endAyah, surah) {
     throw createError(400, 'Invalid ayah range');
   var surahInfo = global.surahs.find(item => Number(item.num) === Number(surah));
   if (surahInfo && surahInfo.ayat && endAyah > Number(surahInfo.ayat))
-    throw createError(400, `Surah ${surah} only has ${surahInfo.ayat} ayahs`);
+    throw createError(400, `Surah ${surah} only has ${surahInfo.ayat} āyāt`);
 }
 
 function quranNum0(surah, ayah) {
@@ -1884,19 +1884,19 @@ async function buildQuranHeadingTitlePrompt(heading, col) {
   lines.push('', headingLevel === 3 ? 'Neighboring themes:' : 'Previous h2 heading style:');
   siblingRows.forEach(row => {
     var number = row.h3 || row.h2 || '';
-    lines.push(`- ${number}: ${Utils.trimToEmpty(row.title_en)} / ${Utils.trimToEmpty(row.title)} (${row.start || ''}, ${row.count || ''} ayahs)`);
+    lines.push(`- ${number}: ${Utils.trimToEmpty(row.title_en)} / ${Utils.trimToEmpty(row.title)} (${row.start || ''}, ${row.count || ''} āyāt)`);
   });
   return lines.join('\n');
 }
 
 async function relinkQuranAyahRangeToSection(bookId, surah, tocId, h2, startAyah, endAyah) {
   var started = Date.now();
-  debug(`quran ${surah} relink ayahs ${startAyah}-${endAyah} to section ${h2}: start`);
+  debug(`quran ${surah} relink āyāt ${startAyah}-${endAyah} to section ${h2}: start`);
   var result = await global.query(`UPDATE hadiths
     SET tocId=${parseInt(tocId, 10)}, h1=${Number(surah)}, h2=${Number(h2)}, h3=NULL
     WHERE bookId=${parseInt(bookId, 10)} AND h1=${Number(surah)}
       AND numInChapter BETWEEN ${Number(startAyah)} AND ${Number(endAyah)}`);
-  debug(`quran ${surah} relink ayahs ${startAyah}-${endAyah} to section ${h2}: done in ${Date.now() - started}ms (${result?.affectedRows ?? 'unknown'} rows)`);
+  debug(`quran ${surah} relink āyāt ${startAyah}-${endAyah} to section ${h2}: done in ${Date.now() - started}ms (${result?.affectedRows ?? 'unknown'} rows)`);
 }
 
 async function syncQuranSurahHadithHeadingNumbers(bookId, surah) {

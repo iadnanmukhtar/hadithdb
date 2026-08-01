@@ -602,7 +602,7 @@ async function loadQuranAyahs(connection) {
 			AND num REGEXP '^[0-9]+:[1-9][0-9]*$'`);
 	const quran = new Map(rows.map(row => [row.num, row]));
 	if (quran.size !== 6236)
-		throw new Error(`Expected 6236 Quran ayahs, found ${quran.size}.`);
+		throw new Error(`Expected 6236 Quran āyāt, found ${quran.size}.`);
 	return quran;
 }
 
@@ -618,7 +618,7 @@ function loadPassages(config, quran) {
 		const filename = path.join(directory, `${surah}.json`);
 		const document = JSON.parse(fs.readFileSync(filename, 'utf8'));
 		if (!Array.isArray(document.ayahs))
-			throw new Error(`${filename} does not contain an ayahs array.`);
+			throw new Error(`${filename} does not contain an "ayahs" array.`);
 		for (const ayah of document.ayahs) {
 			const ref = `${surah}:${ayah.ayah}`;
 			const quranAyah = quran.get(ref);

@@ -559,7 +559,7 @@
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
-            toastr.success(`${body.value.start} (${body.value.count} ayahs)`, 'Quran range saved');
+            toastr.success(`${body.value.start} (${body.value.count} āyāt)`, 'Quran range saved');
           refreshAfterQuranHeadingUpdate(container.dataset.sectionPath);
         } catch (err) {
           if (window.toastr)
@@ -572,7 +572,7 @@
       };
 
       const deleteSection = async () => {
-        if (!window.confirm('Remove this section division and its subsections? The ayahs will remain in the surah, and later sections will be renumbered.'))
+        if (!window.confirm('Remove this section division and its subsections? The āyāt will remain in the surah, and later sections will be renumbered.'))
           return;
         setActionLoading(deleteButton, 'Removing', true);
         try {
@@ -594,7 +594,7 @@
       };
 
       const demoteSection = async () => {
-        if (!window.confirm('Demote this passage to a subsection of the preceding passage? Its ayahs and existing subsections will move under that passage.'))
+        if (!window.confirm('Demote this passage to a subsection of the preceding passage? Its āyāt and existing subsections will move under that passage.'))
           return;
         const coordinates = quranSectionCoordinates(container);
         setActionLoading(demoteButton, 'Demoting', true);
@@ -604,7 +604,7 @@
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
-            toastr.success(`${body.value.start} (${body.value.count} ayahs)`, 'Quran section demoted');
+            toastr.success(`${body.value.start} (${body.value.count} āyāt)`, 'Quran section demoted');
           refreshAfterQuranHeadingUpdate(`/${body.value.path}#S${body.value.h2}-${body.value.h3}`);
         } catch (err) {
           if (window.toastr)
@@ -843,7 +843,7 @@
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
-            toastr.success(`${body.value.start} (${body.value.count} ayahs)`, 'Quran subsection saved');
+            toastr.success(`${body.value.start} (${body.value.count} āyāt)`, 'Quran subsection saved');
           refreshAfterQuranHeadingUpdate(`${location.pathname}#S${body.value.h2}-${body.value.h3}`);
         } catch (err) {
           if (window.toastr)
@@ -856,7 +856,7 @@
       };
 
       const deleteSubsection = async () => {
-        if (!window.confirm('Remove this subsection division? The ayahs will remain in the parent section.'))
+        if (!window.confirm('Remove this subsection division? The āyāt will remain in the parent section.'))
           return;
         setButtonLoading(deleteButton, '', true);
         try {
@@ -865,7 +865,7 @@
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
-            toastr.success('Ayahs remain in the parent section', 'Quran subsection removed');
+            toastr.success('Āyāt remain in the parent section', 'Quran subsection removed');
           refreshAfterQuranHeadingUpdate(location.pathname);
         } catch (err) {
           if (window.toastr)

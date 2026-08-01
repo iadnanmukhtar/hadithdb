@@ -1,0 +1,41 @@
+<div class="modal fade" id="quran-fsrs-settings-modal" tabindex="-1" aria-labelledby="quran-fsrs-settings-title" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><div><h2 class="modal-title fs-5" id="quran-fsrs-settings-title"><i class="bi bi-brain me-1" aria-hidden="true"></i> FSRS 6 and review settings</h2><p class="small text-muted mb-0">Scheduling and session controls in one place</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body">
+        <p>FSRS 6 estimates how difficult each ayah is, how stable it is in memory, and when its recall probability will reach your target. The mathematical difficulty controls and same-day smoothing run automatically.</p>
+        <div class="row g-3">
+          <label class="col-sm-6 form-label"><strong class="d-block mb-1">Target Memory Goal</strong><select class="form-select" id="review-fsrs-retention"><option value="0.8">80% relaxed</option><option value="0.85">85% balanced</option><option value="0.9">90% recommended</option><option value="0.92">92% high mastery</option><option value="0.95">95% exam prep</option></select><span class="form-text">Higher retention means more frequent reviews.</span></label>
+          <label class="col-sm-6 form-label"><strong class="d-block mb-1">Initial Memory Strength</strong><select class="form-select" id="review-fsrs-learning-speed"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option></select><span class="form-text">Sets the starting intervals for new ayat.</span></label>
+          <label class="col-sm-6 form-label"><strong class="d-block mb-1">Review Interval Multiplier</strong><select class="form-select" id="review-fsrs-growth"><option value="conservative">Conservative</option><option value="standard">Standard</option><option value="aggressive">Aggressive</option></select><span class="form-text">Controls how quickly successful review intervals grow.</span></label>
+          <label class="col-sm-6 form-label"><strong class="d-block mb-1">Lapse Recovery Speed</strong><select class="form-select" id="review-fsrs-lapse"><option value="mild">Mild</option><option value="standard">Standard</option><option value="strict">Strict</option></select><span class="form-text">Controls how much stability is retained after Again.</span></label>
+        </div>
+        <div class="alert alert-light border small mt-3 mb-0"><strong>First review guide:</strong> Again returns soon, Hard is about 1 to 2 days, Good about 3 to 4 days, and Easy about 6 to 7 days. FSRS then adapts each interval from your actual history.</div>
+        <hr class="my-4">
+        <section aria-labelledby="review-session-settings-title">
+          <h3 class="fs-6 fw-bold mb-1" id="review-session-settings-title">Review session</h3>
+          <p class="small text-muted">FSRS determines when each ayah is due. These controls determine how much work enters one session.</p>
+          <div class="row g-3">
+            <label class="col-sm-6 form-label"><strong class="d-block mb-1">Maximum ayat per session</strong><input class="form-control" type="number" min="1" max="200" id="review-session-limit"></label>
+            <label class="col-sm-6 form-label"><strong class="d-block mb-1">Optional time budget</strong><span class="input-group"><input class="form-control" type="number" min="0" max="240" id="review-time-budget"><span class="input-group-text">minutes</span></span></label>
+          </div>
+          <details class="memorization-advanced-settings mt-2">
+            <summary><span><strong>Advanced session limits</strong><small>Category caps and queue order</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+            <p class="small text-muted mt-3 mb-2">Each category cap is applied within the overall ayat limit. Relearning is assigned automatically after Again on a Memorized ayah.</p>
+            <div class="row g-3">
+              <label class="col-sm-6 form-label"><strong class="d-block mb-1">Maximum Learning ayat</strong><input class="form-control" type="number" min="1" max="50" id="review-learning-limit"></label>
+              <label class="col-sm-6 form-label"><strong class="d-block mb-1">Maximum Relearning ayat</strong><input class="form-control" type="number" min="1" max="50" id="review-relearning-limit"></label>
+              <label class="col-sm-6 form-label"><strong class="d-block mb-1">Maximum Weak ayat</strong><input class="form-control" type="number" min="1" max="50" id="review-weak-limit"></label>
+              <label class="col-sm-6 form-label"><strong class="d-block mb-1">Maximum Memorized ayat</strong><input class="form-control" type="number" min="1" max="200" id="review-memorized-limit"></label>
+              <label class="col-sm-6 form-label"><strong class="d-block mb-1">Order within each queue</strong><select class="form-select" id="review-queue-order"><option value="due_first">Oldest due first</option><option value="quran_order">Quran order</option><option value="random">Random</option></select></label>
+            </div>
+          </details>
+        </section>
+      </div>
+      <div class="modal-footer d-flex flex-column align-items-stretch gap-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap"><button type="button" class="btn btn-outline-secondary" id="review-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Algorithm</button><span class="small text-muted" id="review-fsrs-status">Best after 100 or more reviews.</span></div>
+        <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" id="review-fsrs-save">Save Settings</button></div>
+      </div>
+    </div>
+  </div>
+</div>

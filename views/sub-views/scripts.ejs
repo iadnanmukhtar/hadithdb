@@ -908,7 +908,13 @@
       ))
     );
 %>
-<% if (!hideBuyMeCoffee) { %>
+<% if (hideBuyMeCoffee) { %>
+<script>
+  document.querySelectorAll('[data-buy-me-coffee]').forEach(function (element) {
+    element.remove();
+  });
+</script>
+<% } else { %>
 <!-- Buy Me a Coffee -->
 <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="adnanmukhtar" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 <script>
@@ -1270,11 +1276,10 @@
       signoutBtns.forEach(btn => btn.onclick = signOut);
       document.querySelectorAll('.nav-google-placeholder').forEach(btn => {
         btn.onclick = async () => {
-          const googleId = await initializeGoogle();
-          if (googleId)
-            googleId.prompt();
-          else
-            window.hadithAuth.prompt();
+          const opened = window.hadithAuth.openSignIn
+            ? await window.hadithAuth.openSignIn()
+            : false;
+          if (!opened) window.hadithAuth.prompt();
         };
       });
     };
@@ -1331,6 +1336,13 @@
         googleInitializePromise = null;
       });
       return googleInitializePromise;
+    };
+
+    window.hadithAuth.openSignIn = async (momentCallback) => {
+      const googleId = await initializeGoogle();
+      if (!googleId) return false;
+      googleId.prompt(momentCallback);
+      return true;
     };
 
     const renderGoogleButtons = async () => {

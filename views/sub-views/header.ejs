@@ -16,8 +16,8 @@
     var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans');
     var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
     var isQuranMushafArea = requestPath === '/quran/page' || requestPath.indexOf('/quran/page/') === 0;
-    var isQuranMemorizeArea = isQuranMushafArea && req.query.memorize !== undefined;
-    var isQuranReviewArea = requestPath === '/quran/review' || (isQuranMemorizeArea && req.query.review !== undefined);
+    var isQuranReviewArea = requestPath === '/quran/review' || (isQuranMushafArea && (req.query.review !== undefined || req.query.reviewRef !== undefined));
+    var isQuranMemorizeArea = isQuranMushafArea && (req.query.memorize !== undefined || isQuranReviewArea);
     var isQuranStudyArea = /^\/quran\/\d+(?:\/|$)/.test(requestPath);
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
@@ -76,7 +76,7 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle<%- activeNavAttrs(isQuranArea) %>" data-bs-toggle="dropdown" href="<%= utils.quranUrl(req, '/quran') %>" role="button" aria-expanded="false">Quran</a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item<%- activeNavAttrs(isQuranArea && !isQuranStudyArea && !isQuranTranslationsArea && !isQuranTafsirArea && !isQuranMushafArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><%- include('menu_icon.ejs', { type: 'quran', label: 'Quran' }) %> Quran</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranArea && !isQuranStudyArea && !isQuranTranslationsArea && !isQuranTafsirArea && !isQuranMushafArea && !isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><%- include('menu_icon.ejs', { type: 'quran', label: 'Quran' }) %> Quran</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranStudyArea) %>" href="<%= utils.quranUrl(req, '/quran/1') %>"><i class="bi bi-text-paragraph"></i> Study</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranMushafArea && !isQuranMemorizeArea) %>" href="<%= utils.quranUrl(req, '/quran/page') %>"><i class="bi bi-book"></i> Mushaf</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations') %>"><i class="bi bi-translate"></i> Translations</a></li>
@@ -104,6 +104,7 @@
             <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>"></i>
           </a>
         </li>
+        <% if (!isQuranArea) { %>
         <li class="nav-item top-nav-language-item">
           <div class="dropdown global-content-language-dropdown" data-global-content-language-dropdown="1">
             <button id="global-content-language-select" class="btn btn-sm btn-outline-secondary dropdown-toggle global-content-language-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Content language" title="Content language" data-global-content-language-button="1">EN</button>
@@ -112,6 +113,7 @@
             </div>
           </div>
         </li>
+        <% } %>
         <% if (site.admin) { %>
         <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/(?:^|; )editMode=1(?:;|$)/) : false); if (window.setHadithAdminMode) { setHadithAdminMode(!editMode); } else { try { localStorage.setItem('hadithdb_edit_mode', editMode ? '0' : '1'); } catch (err) {} if (editMode) { document.cookie='editMode=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT'; if (window.HADITH_COOKIE_DOMAIN) document.cookie='editMode=;path=/;domain='+window.HADITH_COOKIE_DOMAIN+';expires=Thu, 01 Jan 1970 00:00:00 GMT'; } else { var domain=window.HADITH_COOKIE_DOMAIN ? ';domain='+window.HADITH_COOKIE_DOMAIN : ''; document.cookie='editMode=1;path=/;max-age=7776000;samesite=lax'+domain; } location.reload(); }">
             <i class="bi bi-gear<%=site.editMode ? '-fill' : ''%>"></i></a>
@@ -131,12 +133,14 @@
 
     <menu class="col-auto d-md-none d-block">
       <div class="nav container-fluid justify-content-end align-items-center gap-2 top-nav-mobile-actions">
+        <% if (!isQuranArea) { %>
         <div class="dropdown global-content-language-dropdown" data-global-content-language-dropdown="1">
           <button id="global-content-language-select-mobile" class="btn btn-sm btn-outline-secondary dropdown-toggle global-content-language-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Content language" title="Content language" data-global-content-language-button="1">EN</button>
           <div class="dropdown-menu dropdown-menu-end global-content-language-menu" data-global-content-language-menu="1" aria-labelledby="global-content-language-select-mobile">
             <button class="dropdown-item global-content-language-option active" type="button" data-global-content-language-option="en"><span class="global-content-language-code">EN</span><span class="global-content-language-name">English</span></button>
           </div>
         </div>
+        <% } %>
         <button type="button" class="btn btn-sm nav-auth-btn" id="nav-auth-mobile">Sign in</button>
         <button type="button" class="btn btn-link p-0 border-0 top-nav-menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav" aria-controls="offcanvas-topnav" aria-label="Open menu">
           <i id="icon-menu" class="bi bi-list"></i>
@@ -260,7 +264,7 @@
         </a>
         <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
              var quranSectionPath = utils.quranUrl(req, `/${(page.context.section || page.context.chapter).path}`);
-             var quranReaderMode = requestPath.indexOf('/quran/page/') === 0 ? (req.query.review !== undefined ? 'review' : (req.query.memorize !== undefined ? 'memorize' : 'mushaf')) : (req.query.ayat !== undefined ? 'ayah' : 'passage');
+             var quranReaderMode = requestPath.indexOf('/quran/page/') === 0 ? (isQuranReviewArea ? 'review' : (isQuranMemorizeArea ? 'memorize' : 'mushaf')) : (req.query.ayat !== undefined ? 'ayah' : 'passage');
              var quranMappedPage = page.context.section && page.context.section.mushafPage;
         %>
           <span class="chapter-toc-reader-modes">
@@ -311,7 +315,7 @@
           <% } %>
           <% if (isQuranMushafSectionMenu) { %>
           <% for (var mushafHeaderJuz of locals.quranHeaderJuzLinks) { %>
-          <tr class="title<%= mushafHeaderJuz.current ? ' is-current' : '' %>" data-quran-mushaf-header-juz="<%= mushafHeaderJuz.num %>" data-quran-mushaf-juz-start-page="<%= mushafHeaderJuz.startPage %>" data-quran-mushaf-juz-end-page="<%= mushafHeaderJuz.endPage %>">
+          <tr class="title<%= mushafHeaderJuz.current ? ' is-current' : '' %>" data-quran-mushaf-header-juz="<%= mushafHeaderJuz.num %>" data-quran-mushaf-juz-href="<%= mushafHeaderJuz.href %>" data-quran-mushaf-juz-start-page="<%= mushafHeaderJuz.startPage %>" data-quran-mushaf-juz-end-page="<%= mushafHeaderJuz.endPage %>">
             <td><a href="<%= mushafHeaderJuz.href %>"<% if (mushafHeaderJuz.current) { %> aria-current="page"<% } %>>Juz <%= mushafHeaderJuz.num %></a></td>
             <td lang="ar" dir="rtl"><a href="<%= mushafHeaderJuz.href %>"<% if (mushafHeaderJuz.current) { %> aria-current="page"<% } %>><%- mushafHeaderJuz.title || '' %></a></td>
           </tr>

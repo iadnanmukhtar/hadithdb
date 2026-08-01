@@ -11,10 +11,10 @@
     <% if (req.query.complete === undefined) { %>
     <div class="quran-review-loading" id="quran-review-loading" role="status" aria-live="polite">
       <span class="spinner-border text-primary" aria-hidden="true"></span>
-      <p id="quran-review-status" class="text-muted mb-0">Loading your next review page...</p>
+      <p id="quran-review-status" class="text-muted mb-0">Loading your next ayah...</p>
     </div>
     <% } else { %>
-    <p id="quran-review-status" class="text-muted">You have completed all reviews that are due.</p>
+    <p id="quran-review-status" class="text-muted">You have completed this review session.</p>
     <% } %>
     <p><a class="btn btn-primary" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>">Open Memorize</a>
       <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/review') %>">Memorization Progress</a></p>
@@ -27,46 +27,64 @@
     (async function () {
       const status = document.getElementById('quran-review-status');
       try {
-        const reviewCountStorageKey = 'hadithdb.quranReviewSessionCount';
-        const reviewPagesStorageKey = 'hadithdb.quranReviewSessionPages';
-        const reviewAgainStorageKey = 'hadithdb.quranReviewSessionAgain';
-        <% if (req.query.start !== undefined || req.query.reset !== undefined) { %>
-        if (window.sessionStorage) {
-          window.sessionStorage.setItem(reviewCountStorageKey, '0');
-          window.sessionStorage.setItem(reviewPagesStorageKey, '[]');
-          window.sessionStorage.setItem(reviewAgainStorageKey, '[]');
-        }
-        <% } %>
-        const reviewed = Math.max(0, parseInt(window.sessionStorage && window.sessionStorage.getItem(reviewCountStorageKey), 10) || 0);
-        let excludedPages = [];
-        try {
-          const storedPages = JSON.parse(window.sessionStorage && window.sessionStorage.getItem(reviewPagesStorageKey) || '[]');
-          if (Array.isArray(storedPages))
-            excludedPages = storedPages.map(Number).filter(page => Number.isInteger(page) && page >= 1 && page <= 604);
-        } catch (_err) {}
         let attempts = 0;
         while ((!window.hadithAuth || !window.hadithAuth.getToken) && attempts < 50) {
           await new Promise(resolve => window.setTimeout(resolve, 100));
           attempts += 1;
         }
         let token = window.hadithAuth && await window.hadithAuth.getToken();
-        if (!token && window.hadithAuth && window.hadithAuth.requireToken)
-          token = await window.hadithAuth.requireToken('Please sign in to review memorized pages.');
-        if (!token) throw new Error('Please sign in to review memorized pages.');
-        const response = await fetch(quranApiPath(`/memorization/next?reviewed=${reviewed}&exclude=${encodeURIComponent(excludedPages.join(','))}`), {
+        if (!token) {
+          window.location.replace(quranUrl('/quran/review?signedOut=1'));
+          return;
+        }
+        const startSession = async () => {
+          const response = await fetch(quranApiPath('/memorization/review/sessions'), {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: '{}'
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.error || 'Unable to start a review session.');
+          return data.session && data.session.session_id;
+        };
+        let sessionId = '';
+        <% if (req.query.start !== undefined || req.query.reset !== undefined) { %>
+        sessionId = await startSession();
+        <% } else { %>
+        const activeResponse = await fetch(quranApiPath('/memorization/review/sessions/active'), {
           credentials: 'same-origin',
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Unable to load reviews.');
-        if (data.limitReached)
-          window.location.replace(`/quran/review?complete=1&limit=${encodeURIComponent(data.reviewLimit || '')}`);
-        else if (data.page && data.page.page_number)
-          window.location.replace(`/quran/page/${data.page.page_number}?memorize&review&reviewStatus=${encodeURIComponent(data.page.status || '')}`);
-        else if (!data.hasPages)
+        const activeData = await activeResponse.json().catch(() => ({}));
+        if (!activeResponse.ok) throw new Error(activeData.error || 'Unable to resume the review session.');
+        sessionId = activeData.session && activeData.session.session_id;
+        if (!sessionId) sessionId = await startSession();
+        <% } %>
+        if (!sessionId) {
           window.location.replace('/quran/review');
-        else
-          window.location.replace('/quran/review?complete=1');
+          return;
+        }
+        const response = await fetch(quranApiPath(`/memorization/review/sessions/${encodeURIComponent(sessionId)}/next`), {
+          credentials: 'same-origin',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          if (response.status === 404 || response.status === 409) {
+            window.location.replace(quranUrl('/quran/review'));
+            return;
+          }
+          throw new Error(data.error || 'Unable to load reviews.');
+        }
+        if (data.complete || !data.ayah) {
+          window.location.replace(quranUrl('/quran/review?complete=1'));
+          return;
+        }
+        const ayah = data.ayah;
+        const query = [`review=${ayah.surah_number}:${ayah.ayah_number}`];
+        if (ayah.retry) query.push('reviewRetry=1');
+        window.location.replace(quranUrl(`/quran/page/${ayah.page_number || 1}?${query.join('&')}`));
       } catch (err) {
         const loading = document.getElementById('quran-review-loading');
         const spinner = loading && loading.querySelector('.spinner-border');

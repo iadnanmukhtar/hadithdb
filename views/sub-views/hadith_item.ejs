@@ -100,6 +100,11 @@
 	})();
 	const quranAyahMarkerRef = utils.emptyIfNull(i.ref || i.num || langData.num || '').replace(/^quran:/, '');
 	const quranAyahRefParts = arabic.toLatinDigits(quranAyahMarkerRef).split(/[:/-]/).filter(Boolean);
+	const canonicalQuranAyahRef = isQuranItem && quranAyahRefParts.length === 2
+		&& Number(quranAyahRefParts[0]) >= 1 && Number(quranAyahRefParts[1]) >= 1
+		? `${Number(quranAyahRefParts[0])}:${Number(quranAyahRefParts[1])}`
+		: '';
+	const quranMemorizationAttrs = canonicalQuranAyahRef ? ` data-quran-ref="${canonicalQuranAyahRef}"` : '';
 	const quranSearchSurah = isQuranItem && searchResult ? (global.surahs || []).find(function (surah) { return Number(surah.num) === Number(quranAyahRefParts[0] || i.h1); }) : null;
 	const quranSearchRevelation = quranSearchSurah && /^mad/i.test((quranSearchSurah.revelation_en || '').toString()) ? 'madani' : 'makki';
 	const quranTranslationAttrs = isQuranItem && lang === 'en' && searchResult && quranAyahRefParts.length >= 2
@@ -110,9 +115,9 @@
 	}) || {};
 	const defaultTranslationShortName = defaultTranslationBook.shortName_en || defaultTranslationBook.shortName || 'Abdel Haleem';
 	const quranAyahMarkerNum = (() => {
-		if (!isQuranItem || lang !== 'ar' || !searchResult)
+		if (!canonicalQuranAyahRef || lang !== 'ar')
 			return '';
-		const ayahPart = quranAyahMarkerRef.split(/[:/-]/).filter(Boolean).pop() || '';
+		const ayahPart = canonicalQuranAyahRef.split(':')[1] || '';
 		return ayahPart ? arabic.toArabicDigits(arabic.toLatinDigits(ayahPart) || ayahPart) : '';
 	})();
 %>
@@ -179,9 +184,9 @@
 		const contentAvailableTranslations = enableHadithContentLanguage && Array.isArray(i.contentTranslations) ? JSON.stringify(i.contentTranslations) : '';
 	%>
 	<section lang="<%=lang%>" class="body <%=_p%> l5<%= contentTranslationClass %>" title="Ḥadīth Body"<%- contentTranslationAttrs %><% if (enableHadithContentLanguage) { %> data-content-translation-container="1"<% } %>>
-		<div class="<%= editClass(`hadith-body-content ${_p}${isQuranItem && lang === 'ar' ? ' quran-hafs' : ''}${contentTranslationClass}`) %>"<%- quranTranslationAttrs %><%- contentTranslationAttrs %><%- site.editMode ? ` ${editAttrs('body', { arabizi: isContentTranslationLang ? 'false' : 'true', markdown: bodyMarkdown, emptyHtml: '&hellip;' })}` : '' %><% if (!site.editMode && bodyMarkdown) { %> data-markdown-source="<%= bodyMarkdown %>"<% } %><% if (enableHadithContentLanguage) { %> data-content-translation-item-type="hadith" data-content-translation-item-id="<%= i.actual ? i.actual.id : i.id %>" data-content-translation-language="en" data-content-translation-field="body" data-content-translation-existing="<%= bodyMarkdown ? 'true' : 'false' %>" data-content-available-translations="<%= contentAvailableTranslations %>"<% if (isContentTranslationBrowse) { %> data-content-translation-show-control="true"<% } %><% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% } %>>
+		<div class="<%= editClass(`hadith-body-content ${_p}${isQuranItem && lang === 'ar' ? ' quran-hafs' : ''}${contentTranslationClass}`) %>"<%- quranMemorizationAttrs %><%- quranTranslationAttrs %><%- contentTranslationAttrs %><%- site.editMode ? ` ${editAttrs('body', { arabizi: isContentTranslationLang ? 'false' : 'true', markdown: bodyMarkdown, emptyHtml: '&hellip;' })}` : '' %><% if (!site.editMode && bodyMarkdown) { %> data-markdown-source="<%= bodyMarkdown %>"<% } %><% if (enableHadithContentLanguage) { %> data-content-translation-item-type="hadith" data-content-translation-item-id="<%= i.actual ? i.actual.id : i.id %>" data-content-translation-language="en" data-content-translation-field="body" data-content-translation-existing="<%= bodyMarkdown ? 'true' : 'false' %>" data-content-available-translations="<%= contentAvailableTranslations %>"<% if (isContentTranslationBrowse) { %> data-content-translation-show-control="true"<% } %><% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% } %>>
 				<%- bodyHtml %>
-				<% if (quranAyahMarkerNum) { %>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= quranAyahMarkerRef %>">۝<%= quranAyahMarkerNum %></span><% } %>
+				<% if (quranAyahMarkerNum) { %>&nbsp;<button type="button" class="quran-ayah-hero-trigger quran-ayah-end-marker" data-quran-ayah-actions="1" data-quran-ref="<%= canonicalQuranAyahRef %>" data-quran-href="<%= itemHref %>" aria-haspopup="menu" aria-expanded="false" aria-label="Actions for Quran <%= canonicalQuranAyahRef %>">۝<%= quranAyahMarkerNum %></button><% } %>
 			</div>
 		<% if (isQuranItem && lang === 'en' && searchResult && langData.body) { %>
 			<span class="quran-translation-attribution" data-quran-translation-attribution="1">— <%= defaultTranslationShortName %></span>

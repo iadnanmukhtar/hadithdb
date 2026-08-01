@@ -7,34 +7,27 @@
   <button type="button" class="btn btn-sm btn-danger text-white quran-ayah-select-btn quran-recitation-toggle" data-quran-recitation-toggle aria-pressed="false" aria-label="Start checking recitation on page <%= pageNumber %>" title="Check recitation"><span class="bi bi-mic" data-quran-recitation-icon aria-hidden="true"></span></button>
   <% } %>
 </div>
-<% if (locals.showRating) { %>
-<div class="quran-memorize-rating" data-quran-memorize-rating data-page-number="<%= pageNumber %>">
-  <% if (req.query.review === undefined) { %>
-  <button type="button" class="btn btn-sm btn-primary quran-memorize-start" data-quran-memorize-start>Memorize Page</button>
-  <% } %>
-  <div class="quran-memorize-rating-buttons"<% if (req.query.review === undefined) { %> hidden<% } %>>
-    <div class="btn-group btn-group-sm" role="group" aria-label="Memorization status for page <%= pageNumber %>">
-      <% if (req.query.review === undefined) { %>
-      <button type="button" class="btn btn-outline-dark quran-memorize-core-memory" data-quran-memorize-status="never" aria-label="Mark page <%= pageNumber %> as Core Memory" title="Core Memory — memorized and never reviewed"><span aria-hidden="true">🧠</span></button>
-      <% } %>
-      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-success' : 'btn-outline-success' %>" data-quran-memorize-status="easy">Easy</button>
-      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-primary' : 'btn-outline-primary' %>" data-quran-memorize-status="good">Good</button>
-      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-danger' : 'btn-outline-danger' %>" data-quran-memorize-status="hard">Hard</button>
-      <% if (req.query.review !== undefined) { %>
-      <button type="button" class="btn btn-dark" data-quran-memorize-again>Again</button>
-      <% } %>
-      <% if (req.query.review === undefined) { %>
-      <button type="button" class="btn <%= req.query.review !== undefined ? 'btn-secondary' : 'btn-outline-secondary' %>" data-quran-memorize-status="todo">Later</button>
-      <% } %>
+<% if (locals.showRating && locals.review && locals.reviewRef) { %>
+<div class="quran-memorize-rating quran-ayah-review-rating" data-quran-ayah-review-rating data-quran-ref="<%= reviewRef %>" data-review-retry="<%= reviewRetry ? '1' : '0' %>">
+  <div class="quran-ayah-review-copy">
+    <% if (reviewRetry) { %><span class="badge text-bg-secondary">One-time retry</span><% } %>
+    <div class="quran-review-session-actions" role="group" aria-label="Review session actions">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-quran-review-session-pause disabled><span class="bi bi-pause-fill" aria-hidden="true"></span> Pause Session</button>
+      <button type="button" class="btn btn-sm btn-outline-danger" data-quran-review-session-end disabled><span class="bi bi-stop-fill" aria-hidden="true"></span> End Session</button>
     </div>
-    <% if (req.query.review !== undefined) { %>
-    <button type="button" class="btn btn-sm btn-secondary quran-memorize-skip" data-quran-memorize-skip>Skip</button>
-    <% } %>
   </div>
-  <a class="quran-memorize-list-link" href="/quran/review">Memorization Progress</a>
-  <span class="small text-muted" data-quran-memorize-save-status aria-live="polite"></span>
-  <% if (quranRecitationFeedbackEnabled) { %>
-  <span class="visually-hidden" data-quran-recitation-feedback role="status" aria-live="polite"></span>
-  <% } %>
+  <div class="quran-memorize-rating-buttons quran-ayah-review-buttons">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Recall result for Quran <%= reviewRef %>">
+      <button type="button" class="btn btn-dark" data-quran-review-grade="again">Again</button>
+      <button type="button" class="btn btn-danger" data-quran-review-grade="hard">Hard</button>
+      <button type="button" class="btn btn-primary" data-quran-review-grade="good">Good</button>
+      <button type="button" class="btn btn-success" data-quran-review-grade="easy">Easy</button>
+    </div>
+    <button type="button" class="btn btn-sm btn-secondary quran-memorize-skip" data-quran-review-grade="skip">Skip</button>
+  </div>
+  <span class="small text-muted" data-quran-review-status aria-live="polite"></span>
+  <% if (quranRecitationFeedbackEnabled) { %><span class="visually-hidden" data-quran-recitation-feedback role="status" aria-live="polite"></span><% } %>
 </div>
+<% } else if (locals.showRating) { %>
+<div class="quran-memorize-rating quran-memorize-launch-actions"><a class="btn btn-sm btn-outline-secondary quran-memorize-list-link" href="/quran/review"><span class="bi bi-bar-chart-line" aria-hidden="true"></span> Progress</a><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#quran-memorize-review-modal" data-quran-memorize-review-page="<%= pageNumber %>"><span class="bi bi-arrow-repeat" aria-hidden="true"></span> Review</button><% if (quranRecitationFeedbackEnabled) { %><span class="visually-hidden" data-quran-recitation-feedback role="status" aria-live="polite"></span><% } %></div>
 <% } %>

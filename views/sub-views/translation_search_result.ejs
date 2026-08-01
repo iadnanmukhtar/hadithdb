@@ -23,7 +23,8 @@
 		<section class="body partial l5 quran-hafs" lang="ar" dir="rtl">
 			<div class="hadith-body-content partial quran-hafs">
 				<% (translation.translation_ayahs || []).forEach(function (ayah) { %>
-					<span><%= ayah.text %></span>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= translation.surah %>:<%= ayah.num %>"><%= ayah.marker %></span>
+					<% var translationAyahRef = `${Number(translation.surah)}:${Number(arabic.toLatinDigits(ayah.num))}`; %>
+					<span class="ayah" data-quran-ref="<%= translationAyahRef %>"><span data-quran-ref="<%= translationAyahRef %>"><%= ayah.text %></span>&nbsp;<button type="button" class="quran-ayah-hero-trigger quran-ayah-end-marker" data-quran-ayah-actions="1" data-quran-ref="<%= translationAyahRef %>" data-quran-href="<%= utils.quranUrl(req, `/quran:${translationAyahRef}`) %>" aria-haspopup="menu" aria-expanded="false" aria-label="Actions for Quran <%= translationAyahRef %>"><%= ayah.marker %></button></span>
 				<% }); %>
 			</div>
 		</section>

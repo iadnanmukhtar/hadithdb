@@ -1,151 +1,572 @@
 <!doctype html>
 <html lang="en">
 <% var site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: false }); %>
-<head>
-  <%- include('sub-views/head.ejs', { site: site, page: page }); %>
-</head>
+<head><%- include('sub-views/head.ejs', { site: site, page: page }); %></head>
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
-  <main class="container col-lg-8 mx-auto mt-10">
-    <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-      <h1 class="fs-4 mb-0">Memorization Progress</h1>
-      <a class="btn btn-primary btn-sm" href="<%= utils.quranUrl(req, '/quran/review?start=1&reset=1') %>">Start Review</a>
+  <main class="container col-lg-8 mx-auto mt-10 quran-memorization-welcome" id="quran-memorization-welcome" hidden>
+    <section class="quran-memorization-welcome-hero text-center mx-auto">
+      <span class="quran-memorization-welcome-icon" aria-hidden="true"><i class="bi bi-book"></i></span>
+      <p class="text-primary fw-semibold small mb-2"><span class="badge rounded-pill text-bg-primary me-1">FSRS 6</span> Spaced repetition for Quran hifz</p>
+      <h1 class="fs-2 mb-3">Keep your Quran memorization fresh</h1>
+      <p class="lead text-muted mx-auto mb-4">The app uses the Free Spaced Repetition Scheduler (FSRS) 6 to schedule each ayah as its predicted recall approaches your memory goal, strengthening recall and keeping your hifz fresh in your mind.</p>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <button type="button" class="btn btn-primary" id="quran-memorization-sign-in"><i class="bi bi-person-circle me-1" aria-hidden="true"></i> Sign in to begin memorizing</button>
+        <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/page') %>">Explore the Mushaf</a>
+      </div>
+      <p class="small text-muted mt-3 mb-0">Your memorization progress is saved securely to your account and stays available across your devices.</p>
+    </section>
+    <section class="row g-3 quran-memorization-welcome-features" aria-label="How Quran memorization works">
+      <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-journal-bookmark text-primary" aria-hidden="true"></i><h2 class="fs-6">Learn at your pace</h2><p>Choose the ayat and surahs you want to learn and record each stage of your memorization.</p></article></div>
+      <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-arrow-repeat text-primary" aria-hidden="true"></i><h2 class="fs-6">Adaptive FSRS 6 reviews</h2><p>FSRS introduces Learning ayat as new cards, then adapts every review from your recall history before memory has a chance to fade.</p></article></div>
+      <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-bar-chart-line text-primary" aria-hidden="true"></i><h2 class="fs-6">See your progress</h2><p>Track learning, weak, memorized, and Core ayat from a progress view organized by surah and Mushaf page.</p></article></div>
+    </section>
+    <section class="quran-memorization-preview-section" aria-labelledby="quran-memorization-preview-title">
+      <header class="quran-memorization-preview-header text-center mx-auto">
+        <p class="text-primary fw-semibold small mb-2">Designed for focused Quran practice</p>
+        <h2 class="fs-4 mb-2" id="quran-memorization-preview-title">Memorize, review, and see your progress</h2>
+        <p class="text-muted mb-0">A calm Mushaf experience for every stage of your memorization.</p>
+      </header>
+      <div class="quran-memorization-preview-gallery" role="list" aria-label="Quran memorization screen previews">
+        <figure class="quran-memorization-preview-card" role="listitem">
+          <img src="/images/quran/memorization-memorize-preview.svg" width="640" height="960" loading="lazy" alt="Memorize mode showing Quran āyāt with learning states and a page memorization summary">
+          <figcaption><strong>Memorize with clarity</strong><span>Choose the state of each āyah as your hifz becomes stronger.</span></figcaption>
+        </figure>
+        <figure class="quran-memorization-preview-card" role="listitem">
+          <img src="/images/quran/memorization-review-preview.svg" width="640" height="960" loading="lazy" alt="Review mode showing revealed Quran context, a concealed review āyah, and FSRS grading buttons">
+          <figcaption><strong>Review with focus</strong><span>Recall in Quran order, then let FSRS schedule the next review.</span></figcaption>
+        </figure>
+        <figure class="quran-memorization-preview-card" role="listitem">
+          <img src="/images/quran/memorization-progress-preview.svg" width="640" height="960" loading="lazy" alt="Memorization Progress showing review activity, state totals, and pages grouped by surah">
+          <figcaption><strong>See every step</strong><span>Follow activity, due reviews, and memorization states across the Quran.</span></figcaption>
+        </figure>
+      </div>
+    </section>
+    <article class="quran-memorization-help-article text-start mx-auto" aria-labelledby="quran-memorization-help-article-title">
+      <header class="quran-memorization-help-article-header">
+        <p class="quran-memorization-help-kicker mb-1"><span class="badge rounded-pill text-bg-primary">FSRS 6</span> Quran memorization guide</p>
+        <h2 class="fs-4 mb-0" id="quran-memorization-help-article-title">How Quran memorization works</h2>
+      </header>
+      <div class="quran-memorization-help-body">
+        <%- include('sub-views/quran_memorization_help_content.ejs', { helpIdPrefix: 'quran-memorization-help-article' }); %>
+      </div>
+    </article>
+  </main>
+  <main class="container col-lg-8 mx-auto mt-10 quran-ayah-progress-page" id="quran-memorization-progress" hidden>
+    <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
+      <div><h1 class="fs-4 mb-1">Memorization Progress</h1><p class="text-muted small mb-0">Longer surahs are grouped by Mushaf page. Short surahs are shown as a whole.</p></div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#quran-fsrs-settings-modal"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Review settings</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#quran-memorization-help-modal"><i class="bi bi-question-circle me-1" aria-hidden="true"></i> How it works</button>
+        <div class="dropdown">
+          <button type="button" class="btn btn-primary btn-sm dropdown-toggle" id="quran-start-review" data-bs-toggle="dropdown" aria-expanded="false"><span id="quran-start-review-label">Start Review</span></button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quran-start-review">
+            <li><a class="dropdown-item" id="quran-start-regular-review" href="<%= utils.quranUrl(req, '/quran/review?continue=1') %>"><i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i><span id="quran-start-regular-review-label">Regular Review</span></a></li>
+            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#quran-surah-review-modal"><i class="bi bi-book me-2" aria-hidden="true"></i>Surah Review</button></li>
+          </ul>
+        </div>
+      </div>
     </div>
-    <% if (req.query.complete !== undefined) { %><p class="alert alert-success py-2"><%= req.query.limit ? `Review session complete — ${parseInt(req.query.limit, 10) || 0} Good/Easy pages reviewed, plus all selected Hard pages.` : 'You have completed the available reviews.' %></p><% } %>
-    <p id="quran-memorization-pages-status" class="text-muted small">Loading memorized pages...</p>
+    <% if (req.query.complete !== undefined) { %><p class="alert alert-success py-2">Review session complete.</p><% } %>
+    <% if (req.query.paused !== undefined) { %><p class="alert alert-info py-2">Review session paused. Resume it below whenever you are ready.</p><% } %>
+    <% if (req.query.ended !== undefined) { %><p class="alert alert-secondary py-2">Review session ended. Completed reviews remain saved.</p><% } %>
+    <section class="quran-paused-review-sessions mb-3" id="quran-paused-review-sessions" aria-labelledby="quran-paused-review-sessions-title" hidden>
+      <div class="d-flex justify-content-between align-items-baseline gap-2 mb-2"><h2 class="fs-6 fw-bold mb-0" id="quran-paused-review-sessions-title">Paused review sessions</h2><span class="small text-muted">Resume exactly where you stopped</span></div>
+      <div class="quran-paused-review-session-list" id="quran-paused-review-session-list"></div>
+    </section>
+    <section class="quran-review-activity mb-3" aria-labelledby="quran-review-activity-title">
+      <div class="d-flex justify-content-between gap-2 align-items-baseline flex-wrap"><h2 class="fs-6 fw-bold mb-1" id="quran-review-activity-title">Review activity</h2><p class="small mb-1" id="quran-review-today-summary">Loading review activity...</p></div>
+      <div class="quran-review-heatmap-wrap" aria-label="Review activity for the past year"><div class="quran-review-heatmap" id="quran-review-heatmap"></div></div>
+      <p class="quran-review-heatmap-detail small text-muted mb-2" id="quran-review-heatmap-detail" role="status" aria-live="polite">Hover over or tap a day to see its review activity.</p>
+      <div class="quran-review-stat-row" id="quran-review-stat-row"><span><strong>Daily average</strong> <b data-review-stat="daily_average">0</b> ayat</span><span><strong>Days learned</strong> <b data-review-stat="days_learned_percent">0%</b></span><span><strong>Longest streak</strong> <b data-review-stat="longest_streak">0 days</b></span><span><strong>Current streak</strong> <b data-review-stat="current_streak">0 days</b></span></div>
+    </section>
+    <section class="quran-memorization-summary mb-3" aria-label="Memorization totals">
+      <% [['due_today','Due today'],['new','New'],['learning','Learning'],['weak','Weak'],['relearning','Relearning'],['review','Memorized'],['core','Core'],['suspended','Paused'],['later','Later']].forEach(function (item) { %>
+      <button type="button" class="card text-start quran-progress-summary-card" data-progress-filter="<%= item[0] %>" aria-pressed="false"<% if (item[0] === 'later') { %> disabled title="Untouched ayat are counted here but are not listed"<% } %>><span class="quran-progress-summary-label"><%= item[1] %></span><strong class="quran-progress-summary-count" data-progress-count="<%= item[0] %>">—</strong></button>
+      <% }); %>
+    </section>
     <div class="page-content-filter input-group input-group-sm mb-3 memorization-progress-filter">
       <span class="input-group-text"><i class="bi bi-filter" aria-hidden="true"></i></span>
-      <input type="search" class="form-control" id="quran-memorization-pages-filter" placeholder="Filter by page, Surah, status, ayah, or opening words" aria-label="Filter memorization progress" autocomplete="off">
-      <button type="button" class="btn btn-outline-secondary" id="quran-memorization-pages-filter-clear" aria-label="Clear progress filter" hidden><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      <input type="search" class="form-control" id="quran-ayah-progress-filter" placeholder="Filter by page, Juz, Surah, state, or Arabic text" aria-label="Filter memorization progress by page, Juz, Surah, state, or Arabic text" autocomplete="off">
+      <button type="button" class="btn btn-outline-secondary" id="quran-ayah-progress-filter-clear" aria-label="Clear progress filter" hidden><i class="bi bi-x-lg" aria-hidden="true"></i></button>
     </div>
+    <p id="quran-ayah-progress-status" class="text-muted small" role="status" aria-live="polite">Loading ayah progress...</p>
     <div class="table-responsive memorization-progress-table-wrap">
-      <table class="table table-hover align-middle mb-0 memorization-progress-table" hidden id="quran-memorization-pages-table">
-        <thead><tr><th>Page</th><th>Status</th><th>Starts in</th><th>Opening words</th><th>Next review</th><th>Reviews</th></tr></thead>
-        <tbody></tbody>
+      <table class="table table-hover align-middle mb-0 memorization-progress-table" id="quran-ayah-progress-table" hidden>
+        <thead><tr><th>Unit</th><th>State</th><th>Starting ayah</th><th>Next review</th><th>Reviews</th></tr></thead><tbody></tbody>
       </table>
     </div>
   </main>
+  <main class="container mt-10 text-center" id="quran-memorization-auth-loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+    <span class="visually-hidden">Loading Quran memorization…</span>
+  </main>
+  <div class="modal fade" id="quran-surah-review-modal" tabindex="-1" aria-labelledby="quran-surah-review-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form class="modal-content" id="quran-surah-review-form">
+        <header class="modal-header"><h2 class="modal-title fs-5" id="quran-surah-review-title">Start a Surah Review</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></header>
+        <div class="modal-body">
+          <label class="form-label" for="quran-surah-review-input"><strong>Surah</strong></label>
+          <input type="search" class="form-control" id="quran-surah-review-input" placeholder="Type a surah name or number" aria-label="Choose a surah by English name, Arabic name, or number" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+          <input type="hidden" id="quran-surah-review-select" value="">
+          <div class="mt-3" id="quran-surah-review-page-choice" hidden>
+            <label class="form-label" for="quran-surah-review-page-limit"><strong>How much would you like to review?</strong></label>
+            <select class="form-select" id="quran-surah-review-page-limit"></select>
+            <p class="form-text mb-0">Pages start from the beginning of the surah. Choose All memorized āyāt to review every āyah that is not Later.</p>
+          </div>
+          <p class="form-text mb-0 mt-3">Reviews every memorization state except Later in Quran order. Regular session limits and the time budget do not apply.</p>
+          <p class="small text-muted mt-3 mb-0" id="quran-surah-review-status" role="status" aria-live="polite"></p>
+        </div>
+        <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary" id="quran-surah-review-start">Start Surah Review</button></footer>
+      </form>
+    </div>
+  </div>
+  <%- include('sub-views/quran_memorization_help_modal.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/quran_fsrs_settings_modal.ejs', { site: site, page: page }); %>
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   <script>
     (async function () {
-      const status = document.getElementById('quran-memorization-pages-status');
-      const table = document.getElementById('quran-memorization-pages-table');
-      const filter = document.getElementById('quran-memorization-pages-filter');
-      const filterClear = document.getElementById('quran-memorization-pages-filter-clear');
-      const labels = { todo: 'Later', hard: 'Hard', good: 'Good', easy: 'Easy', never: 'Core' };
-      const statusClass = value => `is-${value === 'never' ? 'core' : value}`;
-      const escapeHtml = value => (value ?? '').toString().replace(/[&<>"']/g, character => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[character]));
-      const statusOptions = page => ['hard', 'good', 'easy', 'never', 'todo'].map(value =>
-        `<option value="${value}"${page.status === value ? ' selected' : ''}>${labels[value]}</option>`
-      ).join('');
-      const nextReview = page => {
-        if (page.status === 'never') return 'No review';
-        const date = page.next_review_at ? new Date(page.next_review_at) : null;
-        return page.due ? 'Due now' : (date ? date.toLocaleDateString(undefined, {
-          month: 'numeric',
-          day: 'numeric',
-          year: '2-digit'
-        }) : '—');
-      };
-      const updateSummary = () => {
-        const rows = Array.from(table.querySelectorAll('tbody tr'));
-        const visible = rows.filter(row => !row.hidden).length;
-        status.textContent = visible
-          ? (visible === rows.length
-            ? `${visible} page${visible === 1 ? '' : 's'} being memorized.`
-            : `${visible} of ${rows.length} pages being memorized.`)
-          : (rows.length ? 'No pages match this filter.' : 'No pages are currently being memorized.');
-        table.hidden = rows.length === 0;
-      };
-      const ayahRange = page => {
-        if (!page.start_surah || !page.start_ayah || !page.end_surah || !page.end_ayah) return '—';
-        return page.start_surah === page.end_surah
-          ? `${page.start_surah}:${page.start_ayah}–${page.end_ayah}`
-          : `${page.start_surah}:${page.start_ayah}–${page.end_surah}:${page.end_ayah}`;
-      };
-      try {
-        let attempts = 0;
-        while ((!window.hadithAuth || !window.hadithAuth.getToken) && attempts < 50) {
-          await new Promise(resolve => window.setTimeout(resolve, 100));
-          attempts += 1;
-        }
-        let token = window.hadithAuth && await window.hadithAuth.getToken();
-        if (!token && window.hadithAuth && window.hadithAuth.requireToken)
-          token = await window.hadithAuth.requireToken('Please sign in to view memorized pages.');
-        if (!token) throw new Error('Please sign in to view memorized pages.');
-        const response = await fetch(quranApiPath('/memorization/pages'), {
-          credentials: 'same-origin',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const responseText = await response.text();
-        let data = {};
-        try {
-          data = responseText ? JSON.parse(responseText) : {};
-        } catch (_err) {
-          throw new Error('The memorization service returned an invalid response.');
-        }
-        if (!response.ok) throw new Error(data.error || 'Unable to load memorized pages.');
-        const activePages = data.pages.filter(page => page.status !== 'todo');
-        table.querySelector('tbody').innerHTML = activePages.map(page => {
-          return `<tr data-progress-page="${page.page_number}"><td><a class="memorization-progress-page-link" href="/quran/page/${page.page_number}?memorize">${page.page_number}</a></td><td><select class="form-select form-select-sm ${statusClass(page.status)}" data-progress-status aria-label="Memorization status for page ${page.page_number}">${statusOptions(page)}</select></td><td class="memorization-progress-reference"><span class="memorization-progress-surah">${escapeHtml(page.start_surah_name || `Surah ${page.start_surah || ''}`)}</span><span class="visually-hidden">${escapeHtml(page.start_surah_alternate_names || '')}</span><span class="memorization-progress-ayah-range">${escapeHtml(ayahRange(page))}</span></td><td class="memorization-progress-opening" lang="ar" dir="rtl">${escapeHtml(page.opening_words || '—')}</td><td class="text-nowrap" data-progress-next-review>${escapeHtml(nextReview(page))}</td><td class="text-center" data-progress-review-count>${page.review_count || 0}</td></tr>`;
-        }).join('');
-        updateSummary();
-        const applyFilter = () => {
-          const query = filter.value.trim().toLocaleLowerCase();
-          table.querySelectorAll('tbody tr').forEach(row => {
-            row.hidden = Boolean(query) && !row.textContent.toLocaleLowerCase().includes(query);
-          });
-          filterClear.hidden = !query;
-          updateSummary();
-        };
-        filter.addEventListener('input', applyFilter);
-        filterClear.addEventListener('click', () => {
-          filter.value = '';
-          applyFilter();
-          filter.focus();
-        });
-        table.addEventListener('change', async event => {
-          const select = event.target.closest('[data-progress-status]');
-          if (!select) return;
-          const row = select.closest('[data-progress-page]');
-          const pageNumber = row && row.getAttribute('data-progress-page');
-          const previousStatus = activePages.find(page => String(page.page_number) === pageNumber)?.status || '';
-          select.disabled = true;
-          try {
-            const saveResponse = await fetch(quranApiPath(`/memorization/pages/${pageNumber}`), {
-              method: 'PUT',
-              credentials: 'same-origin',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({ status: select.value, reviewed: false })
-            });
-            const saved = await saveResponse.json();
-            if (!saveResponse.ok) throw new Error(saved.error || 'Unable to update memorization status.');
-            if (saved.page.status === 'todo') {
-              row.remove();
-              updateSummary();
-              return;
-            }
-            select.classList.remove('is-hard', 'is-good', 'is-easy', 'is-core', 'is-todo');
-            select.classList.add(statusClass(saved.page.status));
-            row.querySelector('[data-progress-next-review]').textContent = nextReview(saved.page);
-            row.querySelector('[data-progress-review-count]').textContent = saved.page.review_count || 0;
-          } catch (err) {
-            select.value = previousStatus;
-            status.textContent = err.message || 'Unable to update memorization status.';
-          } finally {
-            select.disabled = false;
-          }
-        });
-      } catch (err) {
-        status.textContent = err.message;
+      const labels = { later: 'Later', learning: 'Learning', weak: 'Weak', review: 'Memorized', core: 'Core', relearning: 'Relearning', suspended: 'Paused' };
+      const stageOrder = ['learning', 'weak', 'review', 'core', 'relearning', 'suspended'];
+      const status = document.getElementById('quran-ayah-progress-status');
+      const table = document.getElementById('quran-ayah-progress-table');
+      const filter = document.getElementById('quran-ayah-progress-filter');
+      const clear = document.getElementById('quran-ayah-progress-filter-clear');
+      const startReviewLabel = document.getElementById('quran-start-review-label');
+      const regularReview = document.getElementById('quran-start-regular-review');
+      const regularReviewLabel = document.getElementById('quran-start-regular-review-label');
+      const surahReviewForm = document.getElementById('quran-surah-review-form');
+      const surahReviewInput = document.getElementById('quran-surah-review-input');
+      const surahReviewSelect = document.getElementById('quran-surah-review-select');
+      const surahReviewPageChoice = document.getElementById('quran-surah-review-page-choice');
+      const surahReviewPageLimit = document.getElementById('quran-surah-review-page-limit');
+      const surahReviewStart = document.getElementById('quran-surah-review-start');
+      const surahReviewStatus = document.getElementById('quran-surah-review-status');
+      const pausedSessionsSection = document.getElementById('quran-paused-review-sessions');
+      const pausedSessionsList = document.getElementById('quran-paused-review-session-list');
+      const reviewHeatmapWrap = document.querySelector('.quran-review-heatmap-wrap');
+      const reviewHeatmap = document.getElementById('quran-review-heatmap');
+      const reviewHeatmapDetail = document.getElementById('quran-review-heatmap-detail');
+      const surahCatalog = <%- JSON.stringify((global.surahs || []).map(function (surah) { return { number: Number(surah.num), english: surah.name_en || '', arabic: surah.name_ar || '', aliases: surah.aliases || [] }; })) %>;
+      const escapeHtml = value => (value ?? '').toString().replace(/[&<>"']/g, character => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
+      const openingWords = (value, maximum = 4) => { const words=(value||'').trim().split(/\s+/).filter(Boolean); return `${words.slice(0,maximum).join(' ')}${words.length>maximum?' …':''}`; };
+      const waitForAuth = async () => { for (let i=0; i<50 && (!window.hadithAuth || !window.hadithAuth.getToken); i++) await new Promise(resolve => setTimeout(resolve,100)); return window.hadithAuth; };
+      const auth = await waitForAuth();
+      const token = auth && await auth.getToken();
+      const loading = document.getElementById('quran-memorization-auth-loading');
+      const welcome = document.getElementById('quran-memorization-welcome');
+      const progress = document.getElementById('quran-memorization-progress');
+      if (loading) loading.hidden = true;
+      if (!token) {
+        document.title = 'Memorize the Quran';
+        if (welcome) welcome.hidden = false;
+        return;
       }
+      if (progress) progress.hidden = false;
+      const request = async (path, options = {}) => { const response=await fetch(quranApiPath(`/memorization${path}`),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load memorization progress.'); return data; };
+      const userSettingsRequest = async (options={}) => { const response=await fetch(quranApiPath('/user-settings'),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load settings.'); return data; };
+      let reviewUserSettings=null;
+      const fsrsControls={retention:document.getElementById('review-fsrs-retention'),learningSpeed:document.getElementById('review-fsrs-learning-speed'),growth:document.getElementById('review-fsrs-growth'),lapse:document.getElementById('review-fsrs-lapse'),sessionLimit:document.getElementById('review-session-limit'),timeBudget:document.getElementById('review-time-budget'),learningLimit:document.getElementById('review-learning-limit'),relearningLimit:document.getElementById('review-relearning-limit'),weakLimit:document.getElementById('review-weak-limit'),memorizedLimit:document.getElementById('review-memorized-limit'),queueOrder:document.getElementById('review-queue-order'),save:document.getElementById('review-fsrs-save'),optimize:document.getElementById('review-fsrs-optimize'),status:document.getElementById('review-fsrs-status')};
+      const cacheReviewSettings=async settings=>{if(!window.hadithUserSettingsCache)return;const user=auth.getUser?await auth.getUser():null;if(window.hadithUserSettingsCache.clear)window.hadithUserSettingsCache.clear(user);if(settings&&window.hadithUserSettingsCache.write)window.hadithUserSettingsCache.write(user,settings);};
+      const populateFsrsControls=settings=>{const memorization=settings&&settings.memorization||{};const fsrs=memorization.fsrs||{};fsrsControls.retention.value=String(fsrs.targetRetention||0.9);fsrsControls.learningSpeed.value=fsrs.learningSpeed||'normal';fsrsControls.growth.value=fsrs.intervalGrowth||'standard';fsrsControls.lapse.value=fsrs.lapseRecovery||'standard';fsrsControls.sessionLimit.value=memorization.reviewLimit||10;fsrsControls.timeBudget.value=memorization.reviewTimeBudgetMinutes||0;fsrsControls.learningLimit.value=memorization.learningLimit||3;fsrsControls.relearningLimit.value=memorization.relearningLimit||4;fsrsControls.weakLimit.value=memorization.weakLimit||3;fsrsControls.memorizedLimit.value=memorization.memorizedLimit||10;fsrsControls.queueOrder.value=memorization.reviewOrder||'due_first';if(fsrs.optimizedAt)fsrsControls.status.textContent=`Last personalized ${new Date(fsrs.optimizedAt).toLocaleDateString()}.`;};
+      const loadFsrsSettings=async()=>{const data=await userSettingsRequest();reviewUserSettings=data.settings||{};populateFsrsControls(reviewUserSettings);};
+      fsrsControls.save.addEventListener('click',async()=>{fsrsControls.save.disabled=true;fsrsControls.status.textContent='Saving...';try{const existing=reviewUserSettings&&reviewUserSettings.memorization||{};const fsrs=existing.fsrs||{};const data=await userSettingsRequest({method:'PUT',body:{settings:{...reviewUserSettings,memorization:{...existing,reviewLimit:fsrsControls.sessionLimit.value,reviewTimeBudgetMinutes:fsrsControls.timeBudget.value,learningLimit:fsrsControls.learningLimit.value,relearningLimit:fsrsControls.relearningLimit.value,weakLimit:fsrsControls.weakLimit.value,memorizedLimit:fsrsControls.memorizedLimit.value,reviewOrder:fsrsControls.queueOrder.value,fsrs:{...fsrs,targetRetention:Number(fsrsControls.retention.value),learningSpeed:fsrsControls.learningSpeed.value,intervalGrowth:fsrsControls.growth.value,lapseRecovery:fsrsControls.lapse.value}}}}});reviewUserSettings=data.settings;await cacheReviewSettings(reviewUserSettings);populateFsrsControls(reviewUserSettings);fsrsControls.status.textContent='Review settings saved.';const modal=bootstrap.Modal.getInstance(document.getElementById('quran-fsrs-settings-modal'));if(modal)modal.hide();}catch(err){fsrsControls.status.textContent=err.message;}finally{fsrsControls.save.disabled=false;}});
+      fsrsControls.optimize.addEventListener('click',async()=>{fsrsControls.optimize.disabled=true;fsrsControls.status.textContent='Analyzing your review history...';try{const data=await request('/fsrs/optimize',{method:'POST'});reviewUserSettings=reviewUserSettings||{};reviewUserSettings.memorization={...(reviewUserSettings.memorization||{}),fsrs:data.fsrs};await cacheReviewSettings(reviewUserSettings);populateFsrsControls(reviewUserSettings);fsrsControls.status.textContent=`Personalized from ${Number(data.review_count).toLocaleString()} reviews.`;}catch(err){fsrsControls.status.textContent=err.message;}finally{fsrsControls.optimize.disabled=false;}});
+      const scrollHeatmapToToday=()=>{if(!reviewHeatmapWrap)return;window.requestAnimationFrame(()=>{reviewHeatmapWrap.scrollLeft=reviewHeatmapWrap.scrollWidth;});};
+      const renderReviewStats=stats=>{const activity=new Map((stats.activity||[]).map(day=>[day.date,day]));const today=new Date(`${stats.today}T12:00:00`);const start=new Date(today);start.setDate(start.getDate()-364-start.getDay());const end=new Date(today);const maximum=Math.max(1,...Array.from(activity.values()).map(day=>Number(day.reviews)||0));const cells=[];for(let date=new Date(start);date<=end;date.setDate(date.getDate()+1)){const key=date.toISOString().slice(0,10);const day=activity.get(key);const count=day?Number(day.reviews)||0:0;const seconds=day?Number(day.seconds)||0:0;const level=count?Math.max(1,Math.min(4,Math.ceil((count/maximum)*4))):0;cells.push(`<button type="button" class="quran-review-heatmap-cell level-${level}" data-review-date="${key}" data-review-count="${count}" data-review-seconds="${seconds}" tabindex="${key===stats.today?'0':'-1'}" aria-label="${key}: ${count} review${count===1?'':'s'}"></button>`);}reviewHeatmap.innerHTML=cells.join('');scrollHeatmapToToday();document.getElementById('quran-review-today-summary').textContent=`Studied ${stats.studied_today} ${stats.studied_today===1?'āyah':'āyāt'} in ${stats.seconds_today} seconds today (${stats.seconds_per_card_today}s/āyah)`;document.querySelector('[data-review-stat="daily_average"]').textContent=stats.daily_average;document.querySelector('[data-review-stat="days_learned_percent"]').textContent=`${stats.days_learned_percent}%`;document.querySelector('[data-review-stat="longest_streak"]').textContent=`${stats.longest_streak} day${stats.longest_streak===1?'':'s'}`;document.querySelector('[data-review-stat="current_streak"]').textContent=`${stats.current_streak} day${stats.current_streak===1?'':'s'}`;};
+      let selectedHeatmapCell=null;
+      const heatmapDetailText=cell=>{const count=Number(cell.dataset.reviewCount)||0;const seconds=Number(cell.dataset.reviewSeconds)||0;const date=new Date(`${cell.dataset.reviewDate}T12:00:00`).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});if(!count)return `${date}: No reviews.`;const average=Math.round(seconds/count);return `${date}: ${count} ${count===1?'āyah':'āyāt'} reviewed in ${seconds} seconds (${average}s/āyah).`;};
+      const showHeatmapDetail=cell=>{if(!cell)return;reviewHeatmapDetail.textContent=heatmapDetailText(cell);};
+      reviewHeatmap.addEventListener('mouseover',event=>{const cell=event.target.closest('[data-review-date]');if(cell)showHeatmapDetail(cell);});
+      reviewHeatmap.addEventListener('mouseout',event=>{if(event.relatedTarget&&event.relatedTarget.closest&&event.relatedTarget.closest('[data-review-date]'))return;if(selectedHeatmapCell)showHeatmapDetail(selectedHeatmapCell);else reviewHeatmapDetail.textContent='Hover over or tap a day to see its review activity.';});
+      reviewHeatmap.addEventListener('focusin',event=>{const cell=event.target.closest('[data-review-date]');if(cell)showHeatmapDetail(cell);});
+      reviewHeatmap.addEventListener('click',event=>{const cell=event.target.closest('[data-review-date]');if(!cell)return;selectedHeatmapCell=cell;reviewHeatmap.querySelectorAll('.is-selected').forEach(item=>item.classList.remove('is-selected'));cell.classList.add('is-selected');showHeatmapDetail(cell);});
+      reviewHeatmap.addEventListener('keydown',event=>{const cell=event.target.closest('[data-review-date]');if(!cell)return;const cells=Array.from(reviewHeatmap.querySelectorAll('[data-review-date]'));const index=cells.indexOf(cell);const offset={ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1}[event.key];if(!offset)return;const next=cells[index+offset];if(!next)return;event.preventDefault();cell.tabIndex=-1;next.tabIndex=0;next.focus();showHeatmapDetail(next);});
+      const browserTimeZone=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
+      Promise.all([loadFsrsSettings(),request(`/review/stats?timezone=${encodeURIComponent(browserTimeZone)}`).then(data=>renderReviewStats(data.stats))]).catch(err=>{fsrsControls.status.textContent=err.message;});
+      window.addEventListener('resize',scrollHeatmapToToday,{passive:true});
+      const countFor = (group, state) => Math.max(0, Number(group.counts && group.counts[state]) || 0);
+      const totalFor = group => stageOrder.reduce((total, state) => total + countFor(group, state), 0);
+      const groupState = group => {
+        const memberCount=Math.max(0,Number(group.member_count)||0);
+        const activeStates=stageOrder.filter(state=>countFor(group,state)>0);
+        const laterCount=Math.max(0,memberCount-totalFor(group));
+        if(laterCount===memberCount) return 'later';
+        if(activeStates.length===1&&countFor(group,activeStates[0])===memberCount) return activeStates[0];
+        return 'mixed';
+      };
+      const groupStateControl = group => {
+        const current=groupState(group);
+        const currentLabel=current==='mixed'?'Mixed':labels[current]||'Later';
+        const activeAyahCount=Math.max(0,Number(group.active_ayah_count)||totalFor(group));
+        const unitType=group.group_type==='surah'?'short surah':'page';
+        return `<button type="button" class="quran-memorization-state-pill memorization-progress-group-state is-${escapeHtml(current)}" data-progress-group-state="${escapeHtml(group.group_key||'')}" data-current-state="${escapeHtml(current)}" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-progress-group-state-menu" aria-label="Change the memorization state for this ${unitType}. Current state: ${escapeHtml(currentLabel)}, ${activeAyahCount} ${activeAyahCount===1?'āyah':'āyāt'}"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>${escapeHtml(currentLabel)}</strong><span class="quran-page-state-count">${activeAyahCount.toLocaleString()}</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button>`;
+      };
+      const groupStateOptions=['learning','weak','review','core','suspended','later'];
+      const groupStateDescriptions={learning:'Actively memorizing',weak:'Memorized with fragile recall',review:'Strong recall under review',core:'No scheduled reviews',suspended:'Temporarily inactive',later:'Remove from memorization'};
+      const groupStateMenu=document.createElement('div');
+      groupStateMenu.id='quran-progress-group-state-menu';
+      groupStateMenu.className='quran-ayah-state-menu memorization-progress-group-state-menu';
+      groupStateMenu.setAttribute('role','menu');
+      groupStateMenu.setAttribute('lang','en');
+      groupStateMenu.setAttribute('dir','ltr');
+      groupStateMenu.setAttribute('aria-label','Page memorization state');
+      groupStateMenu.hidden=true;
+      groupStateOptions.forEach(state=>{
+        const option=document.createElement('button');
+        option.type='button';
+        option.className='quran-ayah-state-option';
+        option.dataset.progressGroupStateOption=state;
+        option.setAttribute('role','menuitemradio');
+        option.setAttribute('aria-checked','false');
+        option.setAttribute('aria-label',`${labels[state]}: ${groupStateDescriptions[state]}`);
+        option.title=groupStateDescriptions[state];
+        option.tabIndex=-1;
+        const dot=document.createElement('span');
+        dot.className='quran-ayah-state-option-dot';
+        dot.setAttribute('aria-hidden','true');
+        option.append(dot,document.createTextNode(labels[state]));
+        groupStateMenu.appendChild(option);
+      });
+      document.body.appendChild(groupStateMenu);
+      let activeGroupStateTrigger=null;
+      const closeGroupStateMenu=restoreFocus=>{
+        if(activeGroupStateTrigger) activeGroupStateTrigger.setAttribute('aria-expanded','false');
+        groupStateMenu.hidden=true;
+        if(restoreFocus&&activeGroupStateTrigger&&activeGroupStateTrigger.isConnected) activeGroupStateTrigger.focus();
+        activeGroupStateTrigger=null;
+      };
+      const positionGroupStateMenu=trigger=>{
+        const triggerRect=trigger.getBoundingClientRect();
+        const menuRect=groupStateMenu.getBoundingClientRect();
+        let left=triggerRect.left;
+        left=Math.max(8,Math.min(left,window.innerWidth-menuRect.width-8));
+        let top=triggerRect.bottom+6;
+        if(top+menuRect.height>window.innerHeight-8) top=Math.max(8,triggerRect.top-menuRect.height-6);
+        groupStateMenu.style.left=`${Math.round(left)}px`;
+        groupStateMenu.style.top=`${Math.round(top)}px`;
+      };
+      const showGroupStateMenu=(trigger,focusOption)=>{
+        if(!trigger||trigger.disabled) return;
+        if(activeGroupStateTrigger&&activeGroupStateTrigger!==trigger) activeGroupStateTrigger.setAttribute('aria-expanded','false');
+        activeGroupStateTrigger=trigger;
+        const current=trigger.dataset.currentState||'mixed';
+        groupStateMenu.setAttribute('aria-label',trigger.getAttribute('aria-label')||'Page memorization state');
+        groupStateMenu.querySelectorAll('[data-progress-group-state-option]').forEach(option=>{
+          const selected=option.dataset.progressGroupStateOption===current;
+          option.classList.toggle('is-current',selected);
+          option.setAttribute('aria-checked',selected?'true':'false');
+          option.disabled=false;
+        });
+        trigger.setAttribute('aria-expanded','true');
+        groupStateMenu.hidden=false;
+        positionGroupStateMenu(trigger);
+        if(focusOption){
+          const currentOption=groupStateMenu.querySelector('.is-current')||groupStateMenu.querySelector('[data-progress-group-state-option]');
+          if(currentOption) currentOption.focus();
+        }
+      };
+      const nextReview = group => {
+        const due=Number(group.due_count)||0;
+        if(due>0) return `<span class="memorization-progress-due">Due now${due>1?` (${due})`:''}</span>`;
+        if(!group.next_review_at) return '—';
+        const date=new Date(group.next_review_at);
+        return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString(undefined,{month:'numeric',day:'numeric',year:'2-digit'});
+      };
+      let groups = [];
+      let surahReviewChoices = new Map();
+      let surahReviewAutocompleteBound = false;
+      const latinDigits=value=>(value||'').toString().replace(/[٠-٩]/g,digit=>'٠١٢٣٤٥٦٧٨٩'.indexOf(digit)).replace(/[۰-۹]/g,digit=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(digit));
+      const normalizeSurahSearch=value=>latinDigits(value).toLocaleLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/[^\p{L}\p{M}\d]+/gu,' ').replace(/\s+/g,' ').trim();
+      const surahReviewMatches=(choice,term)=>{
+        const query=normalizeSurahSearch(term);
+        if(!query)return true;
+        const catalog=surahCatalog.find(item=>item.number===choice.number)||{};
+        return normalizeSurahSearch([choice.number,catalog.english||choice.name,catalog.arabic||'',...[].concat(catalog.aliases||[],choice.aliases||[])].join(' ')).includes(query);
+      };
+      const chooseSurahReview=choice=>{
+        if(!choice)return;
+        surahReviewSelect.value=String(choice.number);
+        surahReviewInput.value=`${choice.number}. ${choice.name}`;
+        surahReviewInput.classList.remove('is-invalid');
+        surahReviewStatus.textContent='';
+        updateSurahPageChoice();
+      };
+      const bindSurahReviewAutocomplete=()=>{
+        if(surahReviewAutocompleteBound||!window.jQuery||!jQuery.fn.autocomplete)return;
+        surahReviewAutocompleteBound=true;
+        const $input=jQuery(surahReviewInput);
+        $input.autocomplete({
+          appendTo:surahReviewForm.querySelector('.modal-body'),delay:0,minLength:0,
+          source:(request,response)=>response(Array.from(surahReviewChoices.values()).filter(choice=>surahReviewMatches(choice,request.term)).slice(0,12).map(choice=>({label:`${choice.number}. ${choice.name}`,value:`${choice.number}. ${choice.name}`,choice}))),
+          focus:event=>event.preventDefault(),
+          select:(event,ui)=>{event.preventDefault();chooseSurahReview(ui.item.choice);},
+          open:()=>{$input.autocomplete('widget').addClass('search-autocomplete-menu quran-surah-review-autocomplete-menu').css('width',$input.outerWidth());}
+        }).autocomplete('instance')._renderItem=function(ul,item){
+          const choice=item.choice;
+          const catalog=surahCatalog.find(entry=>entry.number===choice.number)||{};
+          const $row=jQuery('<div>').addClass('search-autocomplete-item search-autocomplete-quran');
+          jQuery('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.label).appendTo($row);
+          const $meta=jQuery('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-lines');
+          if(catalog.arabic)jQuery('<span>').addClass('search-autocomplete-meta-ar').attr({lang:'ar',dir:'rtl'}).text(catalog.arabic).appendTo($meta);
+          jQuery('<span>').addClass('search-autocomplete-meta-en').text(`${choice.count.toLocaleString()} ${choice.count===1?'āyah':'āyāt'} available · ${choice.pages.length} page${choice.pages.length===1?'':'s'}`).appendTo($meta);
+          $meta.appendTo($row);
+          return jQuery('<li>').append($row).appendTo(ul);
+        };
+        $input.on('focus',()=>{if(!$input.autocomplete('widget').is(':visible'))$input.autocomplete('search',$input.val());});
+        $input.on('input',()=>{surahReviewSelect.value='';surahReviewInput.classList.remove('is-invalid');surahReviewPageChoice.hidden=true;surahReviewPageLimit.required=false;});
+      };
+      const updateSurahPageChoice=()=>{
+        const choice=surahReviewChoices.get(Number(surahReviewSelect.value));
+        const needsChoice=choice&&choice.pages.length>3;
+        surahReviewPageChoice.hidden=!needsChoice;
+        surahReviewPageLimit.required=false;
+        if(!needsChoice){surahReviewPageLimit.innerHTML='';return;}
+        const pageChoices=[1,2,3,4,5,10,20].filter(count=>count<=choice.pages.length);
+        surahReviewPageLimit.innerHTML=`<option value="all">All memorized āyāt</option>`+pageChoices.map(count=>`<option value="${count}">${count} page${count===1?'':'s'}</option>`).join('');
+      };
+      const populateSurahReviews=()=>{
+        const surahs=new Map();
+        groups.forEach(group=>{
+          const number=Math.max(1,Number(group.surah_number)||Number(group.start_surah_number)||1);
+          if(!surahs.has(number))surahs.set(number,{number,name:group.surah_name||`Surah ${number}`,aliases:group.surah_alternate_names||[],count:0,pageCount:0});
+          const surah=surahs.get(number);
+          surah.count+=totalFor(group);
+          surah.pageCount=Math.max(surah.pageCount,Number(group.surah_page_count)||1);
+        });
+        const options=Array.from(surahs.values()).map(surah=>({...surah,pages:Array.from({length:surah.pageCount},(_,index)=>index+1)})).filter(surah=>surah.count>0).sort((left,right)=>left.number-right.number);
+        surahReviewChoices=new Map(options.map(surah=>[surah.number,surah]));
+        surahReviewStart.disabled=!options.length;
+        surahReviewStatus.textContent=options.length?'':'No surahs currently have āyāt available for Review.';
+        bindSurahReviewAutocomplete();
+        updateSurahPageChoice();
+      };
+      const renderPausedSessions=sessions=>{
+        const paused=Array.isArray(sessions)?sessions:[];
+        pausedSessionsSection.hidden=!paused.length;
+        pausedSessionsList.innerHTML=paused.map(session=>{
+          const isSurah=session.session_mode==='surah';
+          const isPage=session.session_mode==='page';
+          const title=isSurah?`${session.surah_name||`Surah ${session.review_surah_number}`} Review`:isPage?`Mushaf Page ${session.review_page_number} Review`:'Regular Review';
+          const scope=isSurah&&Number(session.review_page_limit)>0?`First ${Number(session.review_page_limit)} page${Number(session.review_page_limit)===1?'':'s'}`:isSurah?'All memorized āyāt':isPage?'Single Mushaf page':'Scheduled session';
+          const pausedAt=new Date(session.paused_at);
+          const date=Number.isNaN(pausedAt.getTime())?'':pausedAt.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+          return `<article class="quran-paused-review-session"><div><strong>${escapeHtml(title)}</strong><span class="small text-muted">${escapeHtml(scope)} · ${Number(session.remaining_count).toLocaleString()} ${Number(session.remaining_count)===1?'āyah':'āyāt'} remaining${date?` · Paused ${escapeHtml(date)}`:''}</span></div><div class="quran-paused-review-session-actions"><button type="button" class="btn btn-sm btn-primary" data-resume-review-session="${escapeHtml(session.session_id)}"><span class="bi bi-play-fill" aria-hidden="true"></span> Resume</button><button type="button" class="btn btn-sm btn-outline-danger quran-paused-review-delete" data-delete-review-session="${escapeHtml(session.session_id)}" aria-label="Delete ${escapeHtml(title)}" title="Delete paused session"><span class="bi bi-trash" aria-hidden="true"></span></button></div></article>`;
+        }).join('');
+      };
+      const requestedStage = <%- JSON.stringify(['learning','weak','review','core','relearning','suspended','due_today','new'].includes(req.query.status) ? req.query.status : '') %>;
+      let selectedStage = requestedStage;
+      const tileLabel = value => value==='due_today'?'Due today':value==='new'?'New':labels[value]||value;
+      const updateTileSelection = () => document.querySelectorAll('[data-progress-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.progressFilter===selectedStage)));
+      const updateStageUrl = () => {
+        const url = new URL(window.location.href);
+        if (selectedStage) url.searchParams.set('status', selectedStage);
+        else url.searchParams.delete('status');
+        window.history.replaceState({}, '', url);
+      };
+      const render = () => {
+        closeGroupStateMenu(false);
+        const query=filter.value.trim().toLocaleLowerCase();
+        const visible=groups.filter(group => {
+          const matchesStage=!selectedStage || (selectedStage==='due_today' ? Number(group.due_count)>0 : selectedStage==='new' ? Number(group.new_count)>0 : countFor(group,selectedStage)>0);
+          const activeStages=stageOrder.filter(state=>countFor(group,state)>0).map(state=>labels[state]).join(' ');
+          const aliases=Array.isArray(group.surah_alternate_names)?group.surah_alternate_names.join(' '):(group.surah_alternate_names||'');
+          const surahNumbers=Array.isArray(group.surah_numbers)?group.surah_numbers.join(' '):(group.surah_number||'');
+          const juzNumbers=(Array.isArray(group.juz_numbers)?group.juz_numbers:[]).map(Number).filter(Number.isInteger);
+          const juzReferences=juzNumbers.map(number=>`Juz ${number} Juz' ${number} Juz’ ${number} جزء ${number}`).join(' ');
+          const openingArabic=group.opening_arabic||'';
+          const openingSearchable=group.opening_searchable||'';
+          const haystack=`${group.unit_label||''} ${group.page_number||''} ${juzReferences} ${surahNumbers} ${group.start_reference||''} ${group.surah_name||''} ${aliases} ${activeStages} ${openingArabic} ${openingSearchable}`.toLocaleLowerCase();
+          const juzQuery=query.match(/^(?:juz(?:['’])?|جزء)\s*(\d{1,2})$/u);
+          const matchesQuery=!query || (juzQuery ? juzNumbers.includes(Number(juzQuery[1])) : haystack.includes(query));
+          return matchesStage && matchesQuery;
+        });
+        const bySurah=new Map();
+        visible.forEach(group=>{
+          const surahNumber=Math.max(1,Number(group.surah_number)||Number(group.start_surah_number)||1);
+          if(!bySurah.has(surahNumber)) bySurah.set(surahNumber,{number:surahNumber,name:group.surah_name||`Surah ${surahNumber}`,groups:[]});
+          bySurah.get(surahNumber).groups.push(group);
+        });
+        table.querySelector('tbody').innerHTML=Array.from(bySurah.values()).sort((left,right)=>left.number-right.number).map(surahGroup=>{
+          const surahAyat=surahGroup.groups.reduce((total,group)=>total+(selectedStage==='due_today'?Math.max(0,Number(group.due_count)||0):selectedStage==='new'?Math.max(0,Number(group.new_count)||0):selectedStage?countFor(group,selectedStage):totalFor(group)),0);
+          const unitCount=surahGroup.groups.length;
+          const hasWholeSurah=surahGroup.groups.some(group=>group.group_type==='surah');
+          const unitSummary=hasWholeSurah?'whole surah':`${unitCount} page${unitCount===1?'':'s'}`;
+          const heading=`<tr class="memorization-progress-surah-group" data-progress-surah="${surahGroup.number}"><th colspan="5"><span class="memorization-progress-surah-number">${surahGroup.number}</span><span class="memorization-progress-surah-name">${escapeHtml(surahGroup.name)}</span><span class="memorization-progress-surah-summary">${unitSummary} · ${surahAyat.toLocaleString()} ${surahAyat===1?'āyah':'āyāt'}</span></th></tr>`;
+          const rows=surahGroup.groups.sort((left,right)=>Number(left.page_number)-Number(right.page_number)).map(group=>{
+            const page=Number(group.page_number);
+            const pageNumber=Number.isInteger(page)&&page>=1&&page<=604?page:1;
+            const unitLabel=group.group_type==='surah'?'Whole surah':`Page ${pageNumber}`;
+            const groupKey=group.group_key||`surah-page:${surahGroup.number}:${pageNumber}`;
+            const startReference=/^\d+:\d+$/.test(group.start_reference||'')?group.start_reference:'';
+            const stageReferences=group.stage_start_references||{};
+            const stagePages=group.stage_start_pages||{};
+            const firstLearningReference=/^\d+:\d+$/.test(stageReferences.learning||'')?stageReferences.learning:'';
+            const firstLearningPage=Number(stagePages.learning);
+            const targetPage=selectedStage==='learning'&&Number.isInteger(firstLearningPage)&&firstLearningPage>=1&&firstLearningPage<=604?firstLearningPage:pageNumber;
+            const learningTarget=selectedStage==='learning'&&firstLearningReference?`&learningRef=${encodeURIComponent(firstLearningReference)}`:'';
+            const linkLabel=`Open ${unitLabel} in ${surahGroup.name} to view or change individual ayah states`;
+            const rowJuzValues=(Array.isArray(group.juz_numbers)?group.juz_numbers:[]).map(Number).filter(Number.isInteger);
+            const rowJuzNumbers=rowJuzValues.join(' ');
+            const juzLabel=rowJuzValues.length?`Juz ${rowJuzValues.join(', ')}`:'';
+            const referenceLabel=[juzLabel,startReference].filter(Boolean).join(' · ');
+            const openingArabic=openingWords(group.opening_arabic||'—');
+            const openingSearchable=group.opening_searchable||'';
+            return `<tr class="memorization-progress-group" data-progress-group="${escapeHtml(groupKey)}" data-progress-juz="${escapeHtml(rowJuzNumbers)}"><td class="memorization-progress-unit"><a class="memorization-progress-unit-link" href="/quran/page/${targetPage}?memorize${learningTarget}" aria-label="${escapeHtml(linkLabel)}" title="${escapeHtml(linkLabel)}">${escapeHtml(unitLabel)}</a></td><td class="memorization-progress-stage-counts">${groupStateControl(group)}</td><td class="memorization-progress-start"><div class="memorization-progress-opening" lang="ar" dir="rtl">${escapeHtml(openingArabic)}${openingSearchable?`<span hidden aria-hidden="true" data-progress-opening-searchable>${escapeHtml(openingSearchable)}</span>`:''}</div><span class="memorization-progress-start-reference" dir="ltr">${referenceLabel?`<span class="text-muted">${escapeHtml(referenceLabel)}</span>`:''}</span></td><td class="memorization-progress-next-review text-nowrap">${nextReview(group)}</td><td class="memorization-progress-review-count text-center">${Math.max(0,Number(group.review_count)||0).toLocaleString()}</td></tr>`;
+          }).join('');
+          return heading+rows;
+        }).join('');
+        table.hidden=!visible.length;
+        if(visible.length){
+          const surahs=bySurah.size;
+          const pages=visible.length;
+          const ayat=visible.reduce((total,group)=>total+(selectedStage==='due_today' ? Math.max(0,Number(group.due_count)||0) : selectedStage==='new' ? Math.max(0,Number(group.new_count)||0) : selectedStage ? countFor(group,selectedStage) : totalFor(group)),0);
+          status.textContent=`${surahs} surah${surahs===1?'':'s'} with ${pages} memorization unit${pages===1?'':'s'}, covering ${ayat.toLocaleString()} ${ayat===1?'āyah':'āyāt'}${selectedStage?` with ${tileLabel(selectedStage)}`:''}.`;
+        } else status.textContent='No memorization groups match this view.';
+        clear.hidden=!query;
+      };
+      const loadProgress = async () => {
+        const [progressData,activeData,pausedData]=await Promise.all([request('/progress/groups'),request('/review/sessions/active'),request('/review/sessions/paused')]);
+        Object.entries(progressData.progress||{}).forEach(([key,value])=>{ const element=document.querySelector(`[data-progress-count="${key}"]`); if(element) element.textContent=Number(value).toLocaleString(); });
+        const dueToday=Math.max(0,Number(progressData.progress&&progressData.progress.due_today)||0);
+        groups=Array.isArray(progressData.groups)?progressData.groups:[];
+        const activeSession=activeData&&activeData.session;
+        renderPausedSessions(pausedData&&pausedData.sessions);
+        if(regularReview){
+          regularReview.href=quranUrl(`/quran/review?${activeSession?'continue':'start'}=1`);
+          startReviewLabel.textContent=activeSession?'Continue Review':'Start Review';
+          if(activeSession&&activeSession.session_mode==='surah'){
+            const selectedSurah=groups.find(group=>Number(group.surah_number)===Number(activeSession.review_surah_number));
+            const surahName=selectedSurah&&selectedSurah.surah_name||`Surah ${activeSession.review_surah_number}`;
+            regularReviewLabel.textContent=`Continue ${surahName} Review`;
+            regularReview.setAttribute('aria-label',`Continue the active review of ${surahName}`);
+          }else if(activeSession&&activeSession.session_mode==='page'){
+            regularReviewLabel.textContent=`Continue Page ${activeSession.review_page_number} Review`;
+            regularReview.setAttribute('aria-label',`Continue the active review of Mushaf page ${activeSession.review_page_number}`);
+          }else{
+            regularReviewLabel.textContent='Regular Review';
+            regularReview.setAttribute('aria-label',activeSession?`Regular Review, ${dueToday?`${dueToday} ${dueToday===1?'āyah':'āyāt'} due today`:'session in progress'}`:'Regular Review');
+          }
+        }
+        populateSurahReviews();
+        updateTileSelection();
+        render();
+      };
+      try { await loadProgress(); } catch(err) { status.textContent=err.message; return; }
+      surahReviewForm.addEventListener('submit',async event=>{
+        event.preventDefault();
+        const surahNumber=Number(surahReviewSelect.value);
+        if(!Number.isInteger(surahNumber)){surahReviewInput.classList.add('is-invalid');surahReviewStatus.textContent='Choose a surah from the suggestions.';surahReviewInput.focus();return;}
+        const choice=surahReviewChoices.get(surahNumber);
+        const needsPageChoice=choice&&choice.pages.length>3;
+        const selectedLimit=surahReviewPageLimit.value;
+        const pageLimit=needsPageChoice&&selectedLimit!=='all'?Number(selectedLimit):null;
+        surahReviewStart.disabled=true;
+        surahReviewStatus.textContent=pageLimit?`Preparing a ${pageLimit}-page Surah Review...`:'Preparing all memorized āyāt...';
+        try{
+          await request('/review/sessions',{method:'POST',body:{mode:'surah',surah_number:surahNumber,page_limit:pageLimit}});
+          window.location.assign(quranUrl('/quran/review?continue=1'));
+        }catch(err){surahReviewStatus.textContent=err.message;surahReviewStart.disabled=false;}
+      });
+      document.querySelectorAll('[data-progress-filter]:not(:disabled)').forEach(button=>button.addEventListener('click',()=>{selectedStage=selectedStage===button.dataset.progressFilter?'':button.dataset.progressFilter;updateStageUrl();updateTileSelection();render();}));
+      filter.addEventListener('input',render); clear.addEventListener('click',()=>{filter.value='';render();filter.focus();});
+      document.addEventListener('click',async event=>{
+        const resume=event.target.closest&&event.target.closest('[data-resume-review-session]');
+        if(resume&&pausedSessionsList.contains(resume)){
+          event.preventDefault();
+          resume.disabled=true;
+          try{
+            await request(`/review/sessions/${encodeURIComponent(resume.dataset.resumeReviewSession)}/resume`,{method:'POST'});
+            window.location.assign(quranUrl('/quran/review?continue=1'));
+          }catch(err){resume.disabled=false;if(window.toastr)window.toastr.error(err.message,'Unable to resume review');else status.textContent=err.message;}
+          return;
+        }
+        const remove=event.target.closest&&event.target.closest('[data-delete-review-session]');
+        if(remove&&pausedSessionsList.contains(remove)){
+          event.preventDefault();
+          if(!window.confirm('Delete this paused review session? Completed reviews will remain saved, but this session and its remaining queue will be removed.'))return;
+          remove.disabled=true;
+          try{
+            await request(`/review/sessions/${encodeURIComponent(remove.dataset.deleteReviewSession)}`,{method:'DELETE'});
+            await loadProgress();
+            if(window.toastr)window.toastr.success('Paused review session deleted.');
+          }catch(err){remove.disabled=false;if(window.toastr)window.toastr.error(err.message,'Unable to delete review');else status.textContent=err.message;}
+          return;
+        }
+        const trigger=event.target.closest&&event.target.closest('[data-progress-group-state]');
+        if(trigger&&table.contains(trigger)){
+          event.preventDefault();
+          if(!groupStateMenu.hidden&&activeGroupStateTrigger===trigger) closeGroupStateMenu(true);
+          else showGroupStateMenu(trigger,event.detail===0);
+          return;
+        }
+        const option=event.target.closest&&event.target.closest('[data-progress-group-state-option]');
+        if(option&&groupStateMenu.contains(option)&&activeGroupStateTrigger){
+          event.preventDefault();
+          const activeTrigger=activeGroupStateTrigger;
+          const next=option.dataset.progressGroupStateOption;
+          const current=activeTrigger.dataset.currentState||'mixed';
+          const groupKey=activeTrigger.dataset.progressGroupState;
+          closeGroupStateMenu(true);
+          if(!next||next===current) return;
+          activeTrigger.disabled=true;
+          activeTrigger.setAttribute('aria-busy','true');
+          groupStateMenu.querySelectorAll('[data-progress-group-state-option]').forEach(item=>{item.disabled=true;});
+          try {
+            await request('/progress/groups/state',{method:'PUT',body:{group_key:groupKey,lifecycle_state:next}});
+            await loadProgress();
+          } catch(err) {
+            if(window.toastr) window.toastr.error(err.message);
+            else status.textContent=err.message;
+            render();
+          } finally {
+            if(activeTrigger.isConnected){activeTrigger.disabled=false;activeTrigger.removeAttribute('aria-busy');}
+          }
+          return;
+        }
+        if(!groupStateMenu.hidden&&!groupStateMenu.contains(event.target)) closeGroupStateMenu(false);
+      });
+      groupStateMenu.addEventListener('keydown',event=>{
+        if(groupStateMenu.hidden) return;
+        if(event.key==='Escape'){event.preventDefault();closeGroupStateMenu(true);return;}
+        if(event.key==='Tab'){closeGroupStateMenu(false);return;}
+        const options=Array.from(groupStateMenu.querySelectorAll('[data-progress-group-state-option]:not(:disabled)'));
+        const index=options.indexOf(document.activeElement);
+        let nextIndex=null;
+        if(event.key==='ArrowDown') nextIndex=index<0?0:(index+1)%options.length;
+        if(event.key==='ArrowUp') nextIndex=index<0?options.length-1:(index-1+options.length)%options.length;
+        if(event.key==='Home') nextIndex=0;
+        if(event.key==='End') nextIndex=options.length-1;
+        if(nextIndex===null||!options.length) return;
+        event.preventDefault();
+        options[nextIndex].focus();
+      });
+      window.addEventListener('scroll',()=>{if(!groupStateMenu.hidden) closeGroupStateMenu(false);},{passive:true});
+      window.addEventListener('resize',()=>{if(!groupStateMenu.hidden&&activeGroupStateTrigger) positionGroupStateMenu(activeGroupStateTrigger);},{passive:true});
+    }());
+  </script>
+  <script>
+    (function () {
+      const button = document.getElementById('quran-memorization-sign-in');
+      if (!button) return;
+      button.addEventListener('click', async function () {
+        button.disabled = true;
+        for (let attempt = 0; attempt < 50 && (!window.hadithAuth || !window.hadithAuth.openSignIn); attempt += 1)
+          await new Promise(resolve => window.setTimeout(resolve, 100));
+        const opened = window.hadithAuth && window.hadithAuth.openSignIn
+          ? await window.hadithAuth.openSignIn()
+          : false;
+        if (!opened) {
+          if (window.toastr) window.toastr.error('Google sign-in is not available yet. Please try again.', 'Sign-in unavailable');
+        }
+        window.setTimeout(function () { button.disabled = false; }, 1200);
+      });
+      document.addEventListener('hadithAuthChanged', function (event) {
+        if (!(event.detail && event.detail.user)) return;
+        window.setTimeout(function () { window.location.reload(); }, 1800);
+      });
     }());
   </script>
 </body>

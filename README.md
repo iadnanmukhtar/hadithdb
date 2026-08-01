@@ -29,7 +29,7 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * **Ayat** focuses the reading experience on individual verses and the ayah hero view.
 * **Mushaf** reproduces the familiar 15-line, page-by-page reading experience.
 * **Memorize** keeps the Digital Khatt Mushaf font and 15-line page layout while replacing ordinary words with underlined blanks. The basmalah and ayah markers remain visible.
-* **Review** tests due Mushaf pages using the saved Hard, Good, and Easy spaced-repetition schedule.
+* **Review** tests due ayat using an ayah-level spaced-repetition schedule. Learning ayat enter the queue first and progress through short new-card steps before graduating to Memorized.
 * The mode links, page subtitle, URL, previous/next links, and related passage automatically follow the content currently in view during infinite scrolling.
 * Direct navigation is available by surah, ayah, passage, subsection, juz, manzil, Mushaf page, and search result.
 
@@ -54,7 +54,7 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * Alt-clicking, Option-clicking, Command-clicking, or Control-clicking an ayah marker toggles that ayah and all earlier ayat on the Mushaf page between visible text and blanks.
 * Icon-only **Page** and **Word auto-hide** controls appear at both the top and bottom of each page. The bottom controls replace the passage and subpassage headings in Memorize mode.
 * The **Page** control reveals every word on that page or returns the page to blanks. Hiding also clears individual word and ayah reveals.
-* The **Word auto-hide** control determines whether individually clicked words disappear after two seconds or remain visible. Auto-hide is off by default, and its setting is remembered for the browser session.
+* The **Word auto-hide** control determines whether individually clicked words disappear after two seconds or remain visible. Auto-hide is off by default and remains a page-local display control; it is not stored as memorization progress in the browser.
 * The plus and minus controls reveal the next hidden ayah or hide the most recently revealed ayah, one ayah at a time.
 * Each page keeps its own state as additional pages load through infinite scrolling, and Memorize mode remains active through page, surah, juz, URL, and previous/next navigation.
 * Audio, reciter and translation controls, the translation marquee, and word-translation tooltips are intentionally omitted so the view remains focused on recall.
@@ -79,16 +79,87 @@ Recitation feedback is disabled unless it is enabled in `~/.hadithdb/settings.js
 
 The endpoint receives `multipart/form-data` containing `file`, `language`, `prompt`, `page`, and optional `model` fields. It must return JSON in the form `{ "text": "recognized Arabic words" }`. Keep `enabled` false, or omit the section, to remove the microphone controls and restore the global `microphone=()` browser permission policy.
 
-### Quran spaced-repetition review
+### Ayah-level memorization and spaced review
 
-* Every Mushaf page begins in **Later**, meaning it has not yet been attempted for memorization. An untouched page shows a single **Memorize Page** action; selecting it adds the page to Review as an unreviewed Hard page and confirms the next step with a toast. Until its first review, the action changes to **Remove Memorization**, which returns the page to Later and removes it from the schedule. The full status controls appear in Memorize after the page has been reviewed at least once.
-* Every unreviewed **Hard** page is included at the start of each new session without consuming the session limit. **Good** and **Easy** pages are ordered by their configured intervals, which default to **7 days** and **14 days** and can be changed under **My Settings → Quran Memorization**. If the due queue is shorter than the session limit, Review fills the remaining slots with the next scheduled active pages. Daily review sessions default to **5 Good/Easy pages**, and the same settings section lets users prioritize Good or Easy pages, use the nearest review date, follow page order, or shuffle the queue. Each time a page remains Easy in Review, its previous interval doubles up to a maximum of one year.
-* **Later** pages are not included in Review. Selecting Later functions as **Remove Memorization**: it removes the page from the active review schedule, restores the **Memorize Page** action, and preserves its review history.
-* Select **Review** from the Quran menu or reader-mode controls to open the combined `/quran/review` page. It shows Memorization Progress and provides a **Start Review** action for the due-page queue. Rating a reviewed page saves the new schedule and advances to the next due page; **Skip** advances without changing the page status.
-* Selecting **Again** marks the page Hard and places it at the end of the current session for another attempt. Selecting Again on the retry moves it to the end again.
-* The combined Review page lists pages currently being memorized together with an editable status, next review date, and review count. A page can be marked **Core Memory** with the brain control in Memorize, Review, or Memorization Progress. Core Memory means the page is considered memorized and is excluded from every future Review queue; the status remains visible and reversible in Memorization Progress.
-* If no pages are being memorized, Review opens **Memorization Progress**. If active pages exist but none are due, Review reports that the current queue is complete.
-* Memorization progress and scheduling are stored per signed-in user in MySQL so they remain available across sessions and devices.
+Memorization identity is the surah and ayah reference, not a Mushaf page. Page numbers remain useful for navigation, but every ayah has its own lifecycle, schedule, and append-only review history. Untouched ayat behave as **Later** without creating 6,236 rows for every user.
+
+The seven lifecycle states are deliberately separate from review grades:
+
+| State | Meaning |
+|---|---|
+| **Later** | Memorization has not started, or the ayah was removed from active memorization |
+| **Learning** | Memorization has started but the complete ayah is not yet independently recitable |
+| **Weak** | The ayah is memorized, but the user intentionally keeps it on short review intervals because recall is not yet strong |
+| **Memorized** | The complete ayah is memorized and remains under spaced review |
+| **Core** | The ayah is firmly retained like core childhood memory; it is considered memorized and is never scheduled for review |
+| **Relearning** | A recall review failed, so the scheduler temporarily placed the ayah in a bounded recovery sequence |
+| **Paused** | Learning or review is temporarily suspended without deleting its schedule or history |
+
+* Signed-in readers can change the lifecycle state from the dropdown beside each visible ayah marker without an extra confirmation dialog. The same control works on initial and lazily inserted Quran content, updates the complete ayah treatment immediately, and announces the reference and state to assistive technology. A failed save restores the prior state, while the summary beneath each Memorize page explains all seven states and shows the live ayah count in each one. In Memorize mode, the state dropdown beside a surah heading applies Later, Learning, Weak, Memorized, Core, Relearning, or Paused to every canonical ayah in that surah; it displays Mixed when the āyāt do not share one state. Signed-out readers are not shown a control that could imply local persistence.
+* Selecting **Learning** creates a New FSRS 6 card, admits it gradually within the Learning and overall session caps, and gives admitted Learning cards the highest queue priority. Again resets learning progress, Hard keeps it Learning, two successful Good reviews graduate it, and Easy graduates it immediately. The first intervals are approximately 10 minutes to 1 day for Again, 1 to 2 days for Hard, 3 to 4 days for Good, and 6 to 7 days for Easy before FSRS adapts them from review history. The user can still mark it Weak or Memorized directly. The Learning summary tile on **Memorization Progress** filters to groups containing Learning ayat and links each group directly to its first Learning ayah in Memorize mode.
+* Selecting **Weak** is an explicit memory assessment, not New-card enrollment. FSRS initializes or resets the ayah like an initial Hard result, with lower stability, higher difficulty, and a short first interval. Existing review history remains intact. Review results keep it Weak, including an Again retry, until the user explicitly decides recall is strong enough to mark it Memorized.
+* Selecting **Memorized** explicitly confirms that the complete ayah can be recited independently. FSRS initializes or resets it like an initial Good result, records the memorization date, and schedules its first recall from that strength. Memorized is not a terminal archive: the scheduler continues adapting the interval after each review.
+* **Core** initializes or resets the FSRS estimate like an initial Easy result, records a memorization date, retains review history, clears the next review date, and never enters a regular Review session. It can still be included deliberately in a custom Surah Review or changed back to Memorized if spaced review is wanted later.
+* **Weak** is a deliberate user classification: the ayah is memorized but should remain on short reviews until the user promotes it to Memorized. **Relearning** is scheduler-driven after an Again result and returns to Memorized after the recovery sequence succeeds.
+* **Later**, **Core**, and **Paused** āyāt never enter regular Learning or Review queues. A custom Surah Review can deliberately include Core and Paused; Later is always excluded. Moving an āyah to any of these states preserves its review history; Paused also retains its prior lifecycle state for a later resumption. **Relearning** remains distinct from Later because it represents an āyah that was memorized previously and then failed recall.
+* Memorize and Review use subtle amber, blue, green, purple, coral, and gray accents for Learning, Weak, Memorized, Core, Relearning, and Paused. The regular Mushaf does not show memorization-state highlights. Where accents are shown, the full ayah is treated without reducing Arabic-text contrast, and the marker also exposes a textual state so color is not the only cue.
+
+Select **Review** to open `/quran/review`, which combines Memorization Progress with the session launcher. Progress reports Later, Learning, Weak, Memorized, Core, Relearning, Paused, New, and Due Today against the canonical 6,236 ayat rather than counting stored rows alone. Due Today includes initialized FSRS cards whose scheduled time has arrived; New includes Learning ayat without an FSRS assessment. Weak, Memorized, and Core are initialized immediately from the user's stated memory strength. The active-progress table groups Mushaf pages beneath each surah and shows a shared page under every surah it contains; each row counts only that surah's ayat on the page and shows its per-stage totals and Arabic opening words without a translation.
+
+The top of the signed-in Review page shows a one-year review activity heatmap, today's reviewed ayat and elapsed review time, daily average, percentage of days learned, longest streak, and current streak. These statistics are calculated from the server-side review history and grouped into calendar days using the current browser's timezone, so late-evening reviews stay on the user's local day while progress remains consistent across devices.
+
+Signed-out visitors see a concise Quran memorization introduction with a sign-in invitation, a prominent explanation of how the Free Spaced Repetition Scheduler (FSRS) 6 keeps Quran hifz fresh, progress-tracking benefits, and a link to explore the Mushaf. Memorization Progress and review-session controls are shown only after authentication.
+
+During a recall attempt, the sticky controls record a result rather than changing a permanent status directly:
+
+| Result | Scheduling meaning |
+|---|---|
+| **Again** | Recall failed; keep Learning or Weak in its current state, move Memorized to Relearning, and allow one retry near the end of this session |
+| **Hard** | Recall succeeded independently with significant hesitation; use a shorter next interval |
+| **Good** | Recall succeeded with ordinary effort; use the normal next interval |
+| **Easy** | Recall was fluent and effortless; use a longer next interval |
+| **Skip** | Advance without changing lifecycle, strength, schedule, or review history |
+
+The help text reserves Again for an attempt that required reading the ayah or receiving its missing continuation; Hard still means the complete ayah was recalled independently. An Again retry is offered at most once, preventing an unlimited same-session loop.
+
+Regular review sessions are persisted and bounded. They admit eligible Learning, Relearning, Weak, and Memorized āyāt under separate category caps, allocate the overall limit fairly across nonempty categories, and present Learning first. New Learning cards enter gradually under the Learning cap instead of inflating Due Today. Any one-time Again retries follow the original queue; Core āyāt are not admitted to regular sessions. An āyah cannot reappear after a grade or Skip unless it entered that retry slot. **My Settings → Quran Memorization** and the **Review settings** modal configure the maximum total āyāt per session (default 10), optional time budget, and a collapsed Advanced session limits group containing the Learning (3), Relearning (4), Weak (3), and Memorized (10) category caps and queue order.
+
+#### Page and surah review
+
+The **Start Review** menu offers a custom **Surah Review** for deliberate practice outside the regular due queue. Its autocomplete accepts English names, Arabic names, Arabic or Latin surah numbers, and alternate names. Suggestions use the Quran search result style and show the surah number, English name, Arabic name, available āyāt, and Mushaf page count.
+
+Memorize mode also places a **Review** button beneath each Mushaf page. Its contextual dialog offers **Just this page** or **A surah**. Just this page creates a persisted Page Review containing every non-Later āyah on that exact Mushaf page, including pages shared by multiple surahs. A surah opens the same searchable Surah Review workflow and page-count choices without requiring the user to return to Memorization Progress first.
+
+**All memorized āyāt** is the first scope choice. It includes every āyah in the selected surah except Later, including Learning, Weak, Relearning, Memorized, Core, and Paused. For surahs longer than three Mushaf pages, the user may instead choose the first 1, 2, 3, 4, 5, 10, or 20 pages; choices longer than the selected surah are hidden. Shorter surahs use all memorized āyāt automatically. The server persists the selected āyāt as a Quran-order session snapshot.
+
+Page and Surah Reviews are not constrained by Due Today, regular category caps, or the optional time budget. They continue until every included āyah has been graded or skipped. Again, Hard, Good, and Easy are recorded as real FSRS assessments, so grading a Core or Paused āyah can return it to scheduled memorization according to the result. Skip advances without changing the āyah's state, schedule, or review history.
+
+The Mushaf review footer can pause a Page or Surah Review without losing its current āyah or queue position, or end it while preserving completed review history. Paused sessions are stored in the database and can be resumed or deleted across devices from Memorization Progress. Deleting a paused session removes its remaining queue while retaining completed FSRS review history.
+
+FSRS 6 settings are available in My Settings and in a modal on `/quran/review`:
+
+* **Target Memory Goal** ranges from 80% to 95% and defaults to the recommended 90%. Raising it increases review frequency.
+* **Initial Memory Strength** adjusts the first intervals for new ayat.
+* **Review Interval Multiplier** offers conservative, standard, and aggressive stability growth.
+* **Lapse Recovery Speed** offers mild, standard, and strict stability penalties after Again.
+* **Personalize Algorithm** uses the official FSRS optimizer after at least 100 graded reviews. It trains all 21 FSRS 6 parameters from the user's append-only history and is intended to be rerun about monthly.
+
+Difficulty damping, mean reversion, and same-day review smoothing are handled automatically. The simplified controls transform the default or personalized parameter vector and do not expose the underlying mathematical weights.
+
+Review deliberately uses one focused ayah workflow rather than separate Individual Ayah and Connected Recitation modes. A grade applies only to the scheduled ayah. The current target, preceding ayat, and ayat already completed during review remain fully visible for Quran context, while future unreviewed ayat stay muted. Review sessions and API responses no longer store or return a display mode or fetch separate adjacent-ayah context. Legacy review-mode URL parameters are redirected to the canonical `?review=surah:ayah` form.
+
+Selecting Again, Hard, Good, or Easy immediately reveals the scheduled ayah and keeps it visible briefly after the review is saved before advancing to the next ayah. Every ayah that precedes the current Review target on its Mushaf page is always revealed so the passage remains in Quran order. Ayat already graded during the current day's review work also remain revealed whenever they are visible on a later Review page, even if Start Review created a replacement session; unreviewed ayat after the current target and Again-retry answers remain concealed until their turn is completed. The active session, current attempt, review history, and revealed-review list are restored from authenticated server data after navigation, reload, or switching devices; memorization state is never managed in browser storage. Skip advances immediately without revealing, grading, or permanently revealing the answer.
+
+Scheduling uses FSRS 6 with its 21-parameter model and trainable forgetting-curve decay. The per-user, per-ayah card stores FSRS state, stability, difficulty, scheduled interval, learning-step position, review and lapse counts, the latest grade, and last and next review times. Recall attempts are appended to a separate history table for statistics and parameter optimization; moving an ayah to Later, Core, or Paused never deletes those events.
+
+This is an initial ayah-level FSRS deployment, not an upgrade from an earlier ayah scheduler. Initialize the tables and replace every existing user's Quran memorization settings with the canonical FSRS 6 defaults by running `npm run init:quran-fsrs6`. The initializer preserves unrelated user settings. Use `npm run init:quran-fsrs6 -- --dry-run` to preview how many user rows will be updated without creating tables or writing settings.
+
+The memorization tables use case-sensitive ASCII user identifiers and composite indexes for exact ayah lookup, due-review selection, recently reviewed ayat, active sessions, and persisted session queues. Existing installations can preview and apply the schema optimization with:
+
+```sh
+npm run quran-memorization-optimize
+npm run quran-memorization-optimize -- --apply
+```
 
 ### Interactive Arabic and ayah tools
 

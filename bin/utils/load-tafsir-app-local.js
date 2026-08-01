@@ -166,7 +166,7 @@ async function loadQuranAyahs() {
 			AND num REGEXP '^[0-9]+:[1-9][0-9]*$'
 		ORDER BY id`);
 	if (rows.length !== 6236)
-		throw new Error(`Expected 6236 Quran ayahs, found ${rows.length}.`);
+		throw new Error(`Expected 6236 Quran āyāt, found ${rows.length}.`);
 	return rows.map(row => {
 		const location = parseRef(row.num);
 		return {

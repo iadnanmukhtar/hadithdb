@@ -15,8 +15,9 @@
 	<% if (commentary.commentary_ayahs && commentary.commentary_ayahs.length > 0) { %>
 		<section class="commentary-search-ayah quran-hafs col-12" lang="ar" dir="rtl">
 			<% commentary.commentary_ayahs.forEach(function (ayah) { %>
-				<span class="commentary-search-ayah-text"><%= ayah.text %></span>
-				<span class="quran-ayah-end-marker" aria-label="Quran ayah <%= ayah.num %>"><%= ayah.marker %></span>
+				<% var commentaryAyahRef = `${Number(commentary.surah)}:${Number(arabic.toLatinDigits(ayah.num))}`; %>
+				<span class="ayah" data-quran-ref="<%= commentaryAyahRef %>"><span class="commentary-search-ayah-text" data-quran-ref="<%= commentaryAyahRef %>"><%= ayah.text %></span>
+				<button type="button" class="quran-ayah-hero-trigger quran-ayah-end-marker" data-quran-ayah-actions="1" data-quran-ref="<%= commentaryAyahRef %>" data-quran-href="<%= utils.quranUrl(req, `/quran:${commentaryAyahRef}`) %>" aria-haspopup="menu" aria-expanded="false" aria-label="Actions for Quran <%= commentaryAyahRef %>"><%= ayah.marker %></button></span>
 			<% }); %>
 		</section>
 	<% } %>

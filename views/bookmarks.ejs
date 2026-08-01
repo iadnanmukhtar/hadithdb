@@ -436,10 +436,19 @@
         bodyAr.dir = 'rtl';
         bodyAr.appendChild(document.createTextNode(item.bodyAr));
         const markerNumber = section === 'quran' ? ayahMarkerNumber(item.ref || item.title) : '';
+        const bookmarkRefMatch = section === 'quran' ? quranRef(item.ref || item.title).match(/^quran:(\d+):(\d+)(?:-(\d+))?$/i) : null;
+        const bookmarkMarkerRef = bookmarkRefMatch ? `${Number(bookmarkRefMatch[1])}:${Number(bookmarkRefMatch[3] || bookmarkRefMatch[2])}` : '';
+        if (bookmarkRefMatch && !bookmarkRefMatch[3]) bodyAr.dataset.quranRef = bookmarkMarkerRef;
         if (markerNumber) {
           bodyAr.appendChild(document.createTextNode(' '));
-          const marker = makeNode('span', 'quran-ayah-end-marker', `۝${toArabicDigits(markerNumber)}`);
-          marker.setAttribute('aria-label', `Quran ${text(item.ref || '')}`);
+          const marker = makeNode('button', 'quran-ayah-hero-trigger quran-ayah-end-marker', `۝${toArabicDigits(markerNumber)}`);
+          marker.type = 'button';
+          marker.dataset.quranAyahActions = '1';
+          marker.dataset.quranRef = bookmarkMarkerRef;
+          marker.dataset.quranHref = quranUrl(`/quran:${bookmarkMarkerRef}`);
+          marker.setAttribute('aria-haspopup', 'menu');
+          marker.setAttribute('aria-expanded', 'false');
+          marker.setAttribute('aria-label', `Actions for Quran ${bookmarkMarkerRef}`);
           bodyAr.appendChild(marker);
         }
         content.appendChild(bodyAr);

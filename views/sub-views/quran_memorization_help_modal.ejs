@@ -1,0 +1,20 @@
+<aside class="modal fade quran-memorization-help-modal" id="quran-memorization-help-modal" tabindex="-1" aria-labelledby="quran-memorization-help-title" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <article class="modal-content">
+      <header class="modal-header">
+        <div>
+          <p class="quran-memorization-help-kicker mb-1"><span class="badge rounded-pill text-bg-primary">FSRS 6</span> Quran memorization guide</p>
+          <h2 class="modal-title fs-5" id="quran-memorization-help-title">How Quran memorization works</h2>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </header>
+      <div class="modal-body quran-memorization-help-body">
+        <%- include('quran_memorization_help_content.ejs', { helpIdPrefix: 'quran-memorization-help' }); %>
+      </div>
+      <footer class="modal-footer">
+        <a class="btn btn-sm btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/settings') %>"><i class="bi bi-gear me-1" aria-hidden="true"></i> Memorization settings</a>
+        <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Got it</button>
+      </footer>
+    </article>
+  </div>
+</aside>
