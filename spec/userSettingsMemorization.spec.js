@@ -15,6 +15,12 @@ describe('Quran ayah review settings normalization', () => {
     expect(UserSettings.normalizeSettings({ quran: { script } }).quran.script).toBe(expected);
   });
 
+  test('keeps only supported permanently dismissed Quran tours', () => {
+    expect(UserSettings.normalizeSettings({
+      quran: { dismissedHelpTours: ['memorize', 'study', 'memorize', 'unknown', null] }
+    }).quran.dismissedHelpTours).toEqual(['memorize', 'study']);
+  });
+
   test('uses bounded-session defaults', () => {
     expect(UserSettings.normalizeSettings({}).memorization).toMatchObject({
       schemaVersion: 1,

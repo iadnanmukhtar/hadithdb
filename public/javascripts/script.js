@@ -9280,17 +9280,104 @@ function initPageHelpTips(root) {
 		try { return window.localStorage || null; }
 		catch (_err) { return null; }
 	};
-	var wasDismissed = function () {
+	var wasDismissedLocally = function () {
 		var session = sessionStorage();
 		var permanent = permanentStorage();
 		try { return Boolean(session && session.getItem(sessionStorageKey) || permanent && permanent.getItem(permanentStorageKey)); }
 		catch (_err) { return false; }
+	};
+	var wasPermanentlyDismissedLocally = function () {
+		var permanent = permanentStorage();
+		try { return Boolean(permanent && permanent.getItem(permanentStorageKey)); }
+		catch (_err) { return false; }
+	};
+	var waitForAuth = function () {
+		return new Promise(function (resolve) {
+			if (window.hadithAuth && window.hadithAuth.getUser) {
+				resolve(window.hadithAuth);
+				return;
+			}
+			var attempts = 0;
+			var timer = window.setInterval(function () {
+				attempts += 1;
+				if (window.hadithAuth && window.hadithAuth.getUser) {
+					window.clearInterval(timer);
+					resolve(window.hadithAuth);
+				} else if (attempts >= 50) {
+					window.clearInterval(timer);
+					resolve(null);
+				}
+			}, 100);
+		});
+	};
+	var loadUserSettings = function (fresh) {
+		return waitForAuth().then(function (auth) {
+			return Promise.resolve(auth && auth.getUser ? auth.getUser() : null).then(function (user) {
+				if (!user) return { auth: auth, user: null, settings: null };
+				var cached = !fresh && window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
+					? window.hadithUserSettingsCache.read(user)
+					: null;
+				if (cached) return { auth: auth, user: user, settings: cached };
+				return Promise.resolve(auth.getToken ? auth.getToken() : null).then(function (token) {
+					return fetch(quranApiPath('/user-settings?optional=1'), {
+						credentials: 'same-origin',
+						cache: 'no-store',
+						headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+					}).then(function (response) {
+						if (!response.ok) throw new Error('Unable to load tour preferences.');
+						return response.json();
+					}).then(function (data) {
+						var settings = data && data.settings || {};
+						updateCachedQuranUserSettings(user, settings);
+						return { auth: auth, user: user, token: token, settings: settings };
+					});
+				});
+			});
+		});
+	};
+	var wasDismissedForUser = function () {
+		return loadUserSettings(true).then(function (context) {
+			var quran = context.settings && context.settings.quran;
+			return Boolean(quran && Array.isArray(quran.dismissedHelpTours) && quran.dismissedHelpTours.indexOf(mode) >= 0);
+		}).catch(function () { return false; });
+	};
+	var savePermanentDismissal = function () {
+		return loadUserSettings(true).then(function (context) {
+			if (!context.user || !context.settings) return;
+			var quran = context.settings.quran && typeof context.settings.quran === 'object'
+				? context.settings.quran
+				: {};
+			var existingDismissed = Array.isArray(quran.dismissedHelpTours) ? quran.dismissedHelpTours : [];
+			if (existingDismissed.indexOf(mode) >= 0) return;
+			var dismissed = Array.from(new Set(existingDismissed.concat(mode)));
+			var nextSettings = Object.assign({}, context.settings, {
+				quran: Object.assign({}, quran, { dismissedHelpTours: dismissed })
+			});
+			return Promise.resolve(context.token || (context.auth && context.auth.getToken ? context.auth.getToken() : null)).then(function (token) {
+				return fetch(quranApiPath('/user-settings'), {
+					method: 'PUT',
+					credentials: 'same-origin',
+					headers: Object.assign({ 'Content-Type': 'application/json' }, token ? { 'Authorization': `Bearer ${token}` } : {}),
+					body: JSON.stringify({ settings: nextSettings })
+				}).then(function (response) {
+					if (!response.ok) throw new Error('Unable to save tour preference.');
+					return response.json();
+				}).then(function (data) {
+					updateCachedQuranUserSettings(context.user, data.settings || nextSettings);
+				});
+			});
+		});
 	};
 	var rememberDismissal = function (dismissal) {
 		var storage = dismissal === 'permanent' ? permanentStorage() : sessionStorage();
 		var key = dismissal === 'permanent' ? permanentStorageKey : sessionStorageKey;
 		try { if (storage) storage.setItem(key, '1'); }
 		catch (_err) {}
+		if (dismissal === 'permanent') {
+			savePermanentDismissal().catch(function (err) {
+				if (window.toastr) window.toastr.error(err.message || 'Unable to save tour preference.', 'Preference not saved');
+			});
+		}
 	};
 	var visibleTarget = function (selector) {
 		return Array.from(document.querySelectorAll(selector || '')).find(function (candidate) {
@@ -9573,7 +9660,7 @@ function initPageHelpTips(root) {
 			+ '</div><div class="quran-help-tips-dismiss-actions">'
 			+ '<button type="button" class="btn btn-sm btn-link" data-quran-help-tips-dismiss aria-label="Dismiss this tour for the current browser session">Hide for now</button>'
 			+ '<span aria-hidden="true">·</span>'
-			+ '<button type="button" class="btn btn-sm btn-link" data-quran-help-tips-dismiss-permanent aria-label="Stop showing this tour automatically">Don\'t show again</button>'
+			+ '<button type="button" class="btn btn-sm btn-link" data-quran-help-tips-dismiss-permanent aria-label="Permanently stop showing this tour automatically for your account">Don\'t show again</button>'
 			+ '</div></div></section>';
 		document.body.appendChild(tour);
 		tour.addEventListener('click', function (event) {
@@ -9605,7 +9692,13 @@ function initPageHelpTips(root) {
 		event.preventDefault();
 		startTour();
 	});
-	if (!wasDismissed()) window.setTimeout(startTour, 450);
+	if (wasPermanentlyDismissedLocally()) {
+		savePermanentDismissal().catch(function () {});
+	} else if (!wasDismissedLocally()) {
+		wasDismissedForUser().then(function (dismissed) {
+			if (!dismissed && !wasDismissedLocally()) window.setTimeout(startTour, 450);
+		});
+	}
 }
 
 function initQuranMushafAyahMarkerActions(root) {
