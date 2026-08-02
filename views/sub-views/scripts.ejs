@@ -506,6 +506,18 @@
 	    };
 	    window.bindInlineEditors = bindInlineEditors;
 	    bindInlineEditors(document);
+	    const inlineEditorObserver = new MutationObserver((mutations) => {
+	      mutations.forEach((mutation) => {
+	        mutation.addedNodes.forEach((node) => {
+	          if (node.nodeType !== Node.ELEMENT_NODE)
+	            return;
+	          const $node = $(node);
+	          if ($node.is('._e') || $node.find('._e').length)
+	            bindInlineEditors(node);
+	        });
+	      });
+	    });
+	    inlineEditorObserver.observe(document.body, { childList: true, subtree: true });
 	    bindAdminContentTranslationSwitchers(document);
 	    if (window.selectAdminContentTranslationLanguage && window.readGlobalContentLanguage)
 	      window.selectAdminContentTranslationLanguage(window.readGlobalContentLanguage());

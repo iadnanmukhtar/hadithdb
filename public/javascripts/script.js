@@ -3637,7 +3637,7 @@ function quranAudioTranslationMarqueeEntry(item, translation, reciter, includeCr
 		var attribution = document.createElement('span');
 		attribution.className = 'quran-audio-translation-marquee-attribution';
 		attribution.dir = 'ltr';
-		attribution.textContent = `${reciter} · ${translator} ·`;
+		attribution.textContent = `${[reciter, translator].filter(Boolean).join(' · ')} ·`;
 		entry.appendChild(attribution);
 	}
 	var ayah = document.createElement('span');
@@ -3723,7 +3723,7 @@ function showQuranAudioTranslationMarquee(item, options) {
 		if (!marquee || !track)
 			return;
 		track.innerHTML = '';
-		var reciter = quranPassageAudioReciterLabel(quranPassageAudioState.control);
+		var reciter = options.selection ? '' : quranPassageAudioReciterLabel(quranPassageAudioState.control);
 		var translator = queue[0].translation.translator || defaultQuranTranslationShortName();
 		var attributionSignature = `${reciter}|${translator}`;
 		var includeCredits = !!options.selection
