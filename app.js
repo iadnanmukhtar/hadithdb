@@ -401,12 +401,13 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/', express.static(path.join(__dirname, 'public'), {
       dotfiles: 'ignore',
       fallthrough: true,
+      cacheControl: false,
       setHeaders(res) {
         res.setHeader('X-Content-Type-Options', 'nosniff');
       }
     }));
   app.get('/vendor/marked/marked.min.js', (req, res) => {
-    res.sendFile(path.join(__dirname, 'node_modules/marked/marked.min.js'));
+    res.sendFile(path.join(__dirname, 'node_modules/marked/marked.min.js'), { cacheControl: false });
   });
   app.use(function redirectDuplicatedBlogPaths(req, res, next) {
     const canonicalPath = canonicalBlogPath(req.path);
@@ -414,7 +415,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
       return next();
     return res.redirect(301, appendQueryString(canonicalPath, requestQueryString(req)));
   });
-  app.use('/blog', express.static(`${global.settings.blog.dir}`));
+  app.use('/blog', express.static(`${global.settings.blog.dir}`, { cacheControl: false }));
 
   // global redirect www
   app.all('/*', function (req, res, next) {

@@ -61,7 +61,6 @@ router.get('/estimate', requirePaymentsEnabled, requireUser, async function (req
 router.get('/available', requirePaymentsEnabled, async function (req, res) {
   const payload = requestPayload(req);
   const result = await ContentTranslations.available(payload.itemType, payload.itemId);
-  res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=600');
   res.json(result);
 });
 
@@ -90,7 +89,6 @@ router.post('/', requirePaymentsEnabled, requireUser, async function (req, res, 
 router.get('/languages', async function (req, res) {
   const enabled = PaymentConfig.isEnabled();
   const languages = enabled ? (await PaymentConfig.loadLanguages()).filter(language => language.code !== 'ar') : [];
-  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=3600');
   res.json({
     enabled,
     features: {

@@ -1767,7 +1767,7 @@ function initQuranTafsirTabs(root) {
 		var fetchPayload = async function (src, source, ayah, language) {
 			var endpoint = quranApiPath(source === 'local' ? '/proxy/tafsir/local' : '/proxy/tafsir');
 			var languageParam = source === 'local' && language ? `&lang=${encodeURIComponent(language)}` : '';
-			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&ver=1${languageParam}${adminTafsirCacheParam()}`);
+			var response = await fetch(`${endpoint}?src=${encodeURIComponent(src)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}${languageParam}${adminTafsirCacheParam()}`);
 			if (response.status === 404)
 				return null;
 			if (!response.ok) {

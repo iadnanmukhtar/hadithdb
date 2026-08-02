@@ -2242,9 +2242,10 @@ async function renderQuranMushafPage(req, res, next, options) {
   );
   if (redundantReviewQuery)
     return res.redirect(302, Utils.quranUrl(req, `/quran/page/${pageNumber}?${compactQuranReviewQuery(req, reviewRef)}`));
-  res.setHeader('Cache-Control', review
-    ? 'private, no-store'
-    : (Utils.shouldFlushCache(req) ? 'no-store' : 'public, max-age=0, must-revalidate'));
+  if (review)
+    res.setHeader('Cache-Control', 'private, no-store');
+  else if (Utils.shouldFlushCache(req))
+    res.setHeader('Cache-Control', 'no-store');
   var mushaf = await QuranMushaf.page(pageNumber);
   if (!mushaf)
     return next(createError(404, `Mushaf page '${pageNumber}' not found`));
@@ -2566,7 +2567,7 @@ router.get('/:bookAlias', async function (req, res, next) {
           : Promise.resolve()
       ]);
     if (flushCache) {
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
     }
@@ -2839,7 +2840,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       await Utils.flushCachedFile(cachedFile);
     }
 	if (isQuranAyahSectionRequest) {
-	  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+	  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 	  res.setHeader('Pragma', 'no-cache');
 	  res.setHeader('Expires', '0');
 	}
@@ -3062,7 +3063,7 @@ async function renderBookSection(req, res, next) {
       await Utils.flushCachedFile(cachedFile);
     }
     if (isQuranAyahSectionRequest) {
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
     }

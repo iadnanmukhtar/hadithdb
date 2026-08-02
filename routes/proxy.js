@@ -34,12 +34,10 @@ function setApiNoIndex(res) {
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
 }
 
-function setStableProxyCache(req, res, maxAgeSeconds) {
+function setStableProxyCache(req, res) {
   setApiNoIndex(res);
   if (req.query && 'flush' in req.query)
     res.setHeader('Cache-Control', 'no-store');
-  else
-    res.setHeader('Cache-Control', `public, max-age=${maxAgeSeconds}, stale-while-revalidate=${maxAgeSeconds}`);
 }
 
 function setPrivateProxyCache(res) {
@@ -47,11 +45,11 @@ function setPrivateProxyCache(res) {
   res.setHeader('Cache-Control', 'no-store');
 }
 
-function setPublicProxyContentCache(req, res, maxAgeSeconds, isPrivate) {
+function setPublicProxyContentCache(req, res, isPrivate) {
   if (isPrivate || (req.query && 'flush' in req.query))
     setPrivateProxyCache(res);
   else
-    setStableProxyCache(req, res, maxAgeSeconds);
+    setStableProxyCache(req, res);
 }
 
 router.use(function noIndexProxyResponses(req, res, next) {
@@ -72,7 +70,7 @@ function validQuranRange(surah, ayahFrom, ayahTo, allowZero) {
 }
 
 router.get('/quran-audio/recitations', async function (req, res) {
-  setStableProxyCache(req, res, 24 * 60 * 60);
+  setStableProxyCache(req, res);
   res.json({
     recitations: await QuranRecitations.list()
   });
@@ -94,7 +92,7 @@ router.get('/quran-audio/passage', async function (req, res) {
     res.status(404).json({ error: 'No Quran audio is available for this passage.' });
     return;
   }
-  setStableProxyCache(req, res, 24 * 60 * 60);
+  setStableProxyCache(req, res);
   res.json({
     reciter: reciter,
     surah: surah,
@@ -109,7 +107,7 @@ router.get('/tafsir/books', async function (req, res) {
   debug('proxy tafsir books start');
   const rows = await Tafsir.visibleTafsirs();
   debug(`proxy tafsir books done rows=${rows.length}`);
-  setStableProxyCache(req, res, 60 * 60);
+  setStableProxyCache(req, res);
   res.json(rows);
 });
 
@@ -117,7 +115,7 @@ router.get('/translations/books', async function (req, res) {
   debug('proxy translations books start');
   const rows = await Tafsir.visibleTranslations();
   debug(`proxy translations books done rows=${rows.length}`);
-  setStableProxyCache(req, res, 60 * 60);
+  setStableProxyCache(req, res);
   res.json(rows);
 });
 
@@ -152,7 +150,7 @@ router.get('/translations/local', async function (req, res) {
       html: html
     };
   }).filter(entry => entry.alias && (!lang || entry.html || Number.isInteger(Number(entry.ayahs_start))));
-  setPublicProxyContentCache(req, res, 6 * 60 * 60, editMode);
+  setPublicProxyContentCache(req, res, editMode);
   res.json({ entries: entries });
 });
 
@@ -203,7 +201,7 @@ router.get('/tafsir/local', async function (req, res) {
     res.status(404).json({ error: 'No local tafsir text is available for this ayah.' });
     return;
   }
-  setPublicProxyContentCache(req, res, 6 * 60 * 60, editMode);
+  setPublicProxyContentCache(req, res, editMode);
   if (req.query.from !== undefined || req.query.to !== undefined)
     res.json({ entries: entries });
   else
@@ -238,7 +236,7 @@ router.get('/tafsir', async function (req, res) {
     debug.slow('tafsir.app proxy', elapsedMs, `alias=${src} ref=${surah}:${ayah} status=${response.status}`);
     if (response.data && response.data.data)
       response.data.data = Tafsir.stripPageMarkers(response.data.data);
-    setPublicProxyContentCache(req, res, 24 * 60 * 60, false);
+    setPublicProxyContentCache(req, res, false);
     res.json(response.data);
   } catch (err) {
     debug.error(`tafsir.app unavailable for ${src} ${surah}:${ayah}: ${err.message}\n${err.stack || ''}`);

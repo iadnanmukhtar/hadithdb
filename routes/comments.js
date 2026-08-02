@@ -108,7 +108,7 @@ module.exports = createReflectionRouter({
   registerExtraRoutes(router, debug) {
     router.get('/counts', async function (req, res, next) {
       res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-      res.setHeader('Cache-Control', 'private, max-age=60');
+      res.setHeader('Cache-Control', 'private');
       const ids = [...new Set((req.query.ids || '').toString().split(',').map(Number).filter(Number.isInteger))];
       const type = normalizeCommentType(req.query.type);
       if (!ids.length || ids.length > 100 || ids.some(id => id < 1)) {
