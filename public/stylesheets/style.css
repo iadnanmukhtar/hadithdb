@@ -3478,6 +3478,10 @@ main.quran-mushaf-reader {
 	--quran-state-legend-color: #adb5bd;
 }
 
+.quran-memorization-state-pill.is-again {
+	--quran-state-legend-color: #16191d;
+}
+
 .quran-memorization-state-pill.is-learning {
 	--quran-state-legend-color: var(--quran-memory-learning);
 }

@@ -8790,6 +8790,7 @@ function initQuranAyahReview(root) {
 		var syncSessionProgress = function (session) {
 			if (!session) return;
 			var categories = {
+				again: { label: 'Again', total: 'again_queued', backlog: true },
 				learning: { label: 'Learning', completed: 'learning_completed', total: 'learning_queued' },
 				relearning: { label: 'Weak recovery', completed: 'relearning_completed', total: 'relearning_queued' },
 				weak: { label: 'Weak', completed: 'weak_completed', total: 'weak_queued' },
@@ -8800,16 +8801,18 @@ function initQuranAyahReview(root) {
 			document.querySelectorAll('[data-quran-review-session-total]').forEach(function (element) {
 				element.textContent = `${Math.max(0, Number(session.completed) || 0).toLocaleString()}/${Math.max(0, Number(session.queued) || 0).toLocaleString()} āyāt`;
 			});
-			document.querySelectorAll('[data-quran-review-session-category]').forEach(function (pill) {
+				document.querySelectorAll('[data-quran-review-session-category]').forEach(function (pill) {
 				var category = categories[pill.getAttribute('data-quran-review-session-category')];
 				if (!category) return;
-				var completed = Math.max(0, Number(session[category.completed]) || 0);
 				var total = Math.max(0, Number(session[category.total]) || 0);
 				pill.hidden = total < 1;
-				pill.title = `${category.label}: ${completed} of ${total} complete`;
+				var completed = category.backlog ? null : Math.max(0, Number(session[category.completed]) || 0);
+				pill.title = category.backlog
+					? `${category.label}: ${total} queued`
+					: `${category.label}: ${completed} of ${total} complete`;
 				pill.setAttribute('aria-label', pill.title);
 				var count = pill.querySelector('[data-quran-review-session-category-count]');
-				if (count) count.textContent = `${completed}/${total}`;
+				if (count) count.textContent = category.backlog ? total.toLocaleString() : `${completed}/${total}`;
 			});
 		};
 		var enableReviewButtons = function () {
