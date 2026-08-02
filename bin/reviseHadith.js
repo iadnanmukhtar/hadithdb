@@ -6,12 +6,15 @@ const MySQL = require('mysql');
 const { Library } = require('../lib/Model');
 const HadithRevision = require('../lib/HadithRevision');
 
-const DEFAULT_BOOK = '16';
 const DEFAULT_PROVIDER = 'ollama';
 const DEFAULT_OLLAMA_BASE_URL = 'http://127.0.0.1:11434';
-const DEFAULT_OLLAMA_MODEL = 'hf.co/goodasdgood/SILMA-9B-Instruct-v1.0-IQ4_NL-GGUF:latest';
+const DEFAULT_OLLAMA_MODEL = 'qwen3.5:4b';
 
 (async () => {
+	if (process.argv.length === 2) {
+		printUsage();
+		process.exit(1);
+	}
 	var options = parseArgs(process.argv.slice(2));
 	if (!options.ref)
 		global.library = await Library.init();
@@ -46,6 +49,8 @@ async function findItems(options) {
 		if (!book)
 			throw new ReferenceError(`Not found: Book ${options.book}`);
 		where.push(`book_id=${book.id}`);
+		if (options.h1 !== null)
+			where.push(`h1=${options.h1}`);
 		if (options.fromNum0 !== null)
 			where.push(`num0 >= ${options.fromNum0}`);
 	}
@@ -79,7 +84,8 @@ async function revise(item, options) {
 
 function parseArgs(argv) {
 	var options = {
-		book: DEFAULT_BOOK,
+		book: null,
+		h1: null,
 		fromNum0: null,
 		limit: null,
 		ref: null,
@@ -106,6 +112,11 @@ function parseArgs(argv) {
 			if (!argv[i])
 				throw new Error(`${arg} requires a numeric hadith number`);
 			options.fromNum0 = parseNum0(argv[i], arg);
+		} else if (arg === '--h1') {
+			i++;
+			if (!argv[i])
+				throw new Error(`${arg} requires a chapter number`);
+			options.h1 = parseH1(argv[i], arg);
 		} else if (arg === '--limit' || arg === '-l') {
 			i++;
 			if (!argv[i])
@@ -149,6 +160,10 @@ function parseArgs(argv) {
 
 	if (options.ref && options.fromNum0 !== null)
 		throw new Error('Use either an exact ref or a starting hadith number, not both');
+	if (options.ref && options.h1 !== null)
+		throw new Error('Use either an exact ref or an H1 chapter, not both');
+	if (!options.ref && !options.book)
+		throw new Error('--book is required unless --ref is specified');
 
 	options.provider = normalizeProvider(options.provider);
 	if (options.provider === 'ollama' && !options.model)
@@ -199,6 +214,13 @@ function parseLimit(value, label) {
 	return parsed;
 }
 
+function parseH1(value, label) {
+	var parsed = Number(value);
+	if (!Number.isInteger(parsed) || parsed < 0)
+		throw new Error(`${label} must be a non-negative integer, got: ${value}`);
+	return parsed;
+}
+
 function normalizeProvider(value) {
 	value = `${value}`.trim().toLowerCase();
 	if (value !== 'ollama' && value !== 'openai')
@@ -215,15 +237,17 @@ function revisionLabel(options) {
 function printUsage() {
 	console.log(
 		'Usage:\n' +
-		'  node bin/reviseHadith.js\n' +
-		'  node bin/reviseHadith.js <from-num0> [limit]\n' +
 		'  node bin/reviseHadith.js <book-alias:num>\n' +
-		'  node bin/reviseHadith.js --book <id-or-alias> [--from <num0>] [--limit <n>]\n' +
+		'  node bin/reviseHadith.js --book <id-or-alias> [--h1 <number>] [--from <num0>] [--limit <n>]\n' +
 		'  node bin/reviseHadith.js --ref <book-alias:num> [--dry-run]\n' +
 		'\n' +
-		`Defaults to revising all hadith in book 16 with local Ollama model ${DEFAULT_OLLAMA_MODEL} unless you specify a ref or range.\n` +
+		`A book is required for batch revision. By default, revisions use local Ollama model ${DEFAULT_OLLAMA_MODEL}.\n` +
 		'\n' +
 		'Options:\n' +
+		'  --book, -b <book>  Required book id or alias for batch revision\n' +
+		'  --h1 <number>       Revise only hadith in this H1 chapter\n' +
+		'  --from, -f <num>    Start at this hadith number within the selected scope\n' +
+		'  --limit, -l <n>     Revise at most this many hadith\n' +
 		'  --provider <name>  ollama or openai (default: ollama)\n' +
 		`  --model <name>     Model name (default for Ollama: ${DEFAULT_OLLAMA_MODEL})\n` +
 		'  --base-url <url>   Ollama base URL (default: http://127.0.0.1:11434)\n' +
