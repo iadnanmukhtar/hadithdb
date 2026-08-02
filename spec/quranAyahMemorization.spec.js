@@ -35,11 +35,11 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       weak: 'Weak',
       review: 'Memorized',
       core: 'Core',
-      relearning: 'Relearning',
+      relearning: 'Weak',
       suspended: 'Paused'
     });
     expect(QuranAyahMemorization.STATE_DESCRIPTIONS.weak).toBe('Memorized, with recall assessed as fragile');
-    expect(QuranAyahMemorization.STATE_DESCRIPTIONS.relearning).toBe('Automatic recovery after Again on a Memorized ayah');
+    expect(QuranAyahMemorization.STATE_DESCRIPTIONS.relearning).toBe('Weak recall under automatic recovery after Again');
   });
 
   test('keeps review outcomes separate from lifecycle states', () => {
@@ -53,6 +53,21 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     expect(QuranAyahMemorization.LIFECYCLE_STATES.has('hard')).toBe(false);
     expect(QuranAyahMemorization.LIFECYCLE_STATES.has('again')).toBe(false);
     expect(QuranAyahMemorization.REVIEW_GRADES.has('core')).toBe(false);
+  });
+
+  test('only lets enrolled ayat be paused or moved to Later by the user', () => {
+    const allowed = QuranAyahMemorization.userStateTransitionAllowed;
+    expect(allowed('later', 'learning')).toBe(true);
+    expect(allowed('later', 'weak')).toBe(true);
+    expect(allowed('later', 'review')).toBe(true);
+    expect(allowed('later', 'core')).toBe(true);
+    expect(allowed('later', 'suspended')).toBe(false);
+    expect(allowed('learning', 'suspended')).toBe(true);
+    expect(allowed('review', 'later')).toBe(true);
+    expect(allowed('weak', 'review')).toBe(false);
+    expect(allowed('review', 'core')).toBe(false);
+    expect(allowed('core', 'learning')).toBe(false);
+    expect(allowed('suspended', 'weak')).toBe(false);
   });
 
   test('uses every ayah in Surahs 1, 113, and 114 as the new-user Learning set', () => {
@@ -460,7 +475,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     test('counts active stages once and leaves Later rows out of grouped progress', () => {
       const result = QuranAyahMemorization.buildProgressGroups(definitions(), [
         { surah_number: 1, ayah_number: 1, lifecycle_state: 'learning', fsrs_state: 0, review_count: 0 },
-        { surah_number: 1, ayah_number: 2, lifecycle_state: 'review', fsrs_state: 2, next_review_at: '2026-07-30T12:00:00Z', review_count: 2 },
+        { surah_number: 1, ayah_number: 2, lifecycle_state: 'relearning', fsrs_state: 2, next_review_at: '2026-07-30T12:00:00Z', review_count: 2 },
         { surah_number: 2, ayah_number: 1, lifecycle_state: 'review', fsrs_state: 2, next_review_at: '2026-08-03T12:00:00Z', review_count: 3 },
         { surah_number: 2, ayah_number: 2, lifecycle_state: 'later', review_count: 5 },
         { surah_number: 3, ayah_number: 1, lifecycle_state: 'suspended', next_review_at: '2026-07-29T12:00:00Z', review_count: 4 },
@@ -470,9 +485,9 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(result).toHaveLength(3);
       expect(result[0]).toMatchObject({
         group_key: 'surah:1',
-        counts: { learning: 1, weak: 0, review: 1, core: 0, relearning: 0, suspended: 0 },
-        stage_start_references: { learning: '1:1', review: '1:2' },
-        stage_start_pages: { learning: 1, review: 1 },
+        counts: { learning: 1, weak: 1, review: 0, core: 0, relearning: 0, suspended: 0 },
+        stage_start_references: { learning: '1:1', weak: '1:2' },
+        stage_start_pages: { learning: 1, weak: 1 },
         active_ayah_count: 2,
         member_count: 2,
         due_count: 1,
@@ -550,7 +565,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(good.interval).toBeLessThan(easy.interval);
     });
 
-    test('keeps Weak under user control while FSRS updates its memory model', () => {
+    test('keeps Weak after Again or an initial Good while Easy graduates it', () => {
       const weakAyah = { ...reviewedAyah(), lifecycle_state: 'weak', stability: 0.5, difficulty: 7 };
       const again = schedule(weakAyah, 'again');
       const good = schedule(weakAyah, 'good');
@@ -558,7 +573,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
 
       expect(again).toMatchObject({ lifecycle_state: 'weak', lapse_count: 1 });
       expect(good.lifecycle_state).toBe('weak');
-      expect(easy.lifecycle_state).toBe('weak');
+      expect(easy.lifecycle_state).toBe('review');
       expect(good.stability).toBeGreaterThan(again.stability);
       expect(easy.stability).toBeGreaterThan(good.stability);
     });
@@ -625,6 +640,15 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(recovered.interval).toBeGreaterThanOrEqual(1);
     });
 
+    test('graduates Weak after one Easy or two consecutive Good reviews', () => {
+      const weak = { ...reviewedAyah(), lifecycle_state:'weak', consecutive_successes:0 };
+      expect(schedule(weak, 'good').lifecycle_state).toBe('weak');
+      expect(schedule({ ...weak, consecutive_successes:1 }, 'good').lifecycle_state).toBe('review');
+      expect(schedule(weak, 'easy').lifecycle_state).toBe('review');
+      expect(schedule(weak, 'hard').lifecycle_state).toBe('weak');
+      expect(schedule(weak, 'again').lifecycle_state).toBe('weak');
+    });
+
     test('applies target retention and simplified FSRS parameter presets', () => {
       const standard = schedule(reviewedAyah(), 'good');
       const highRetention = schedule(reviewedAyah(), 'good', { targetRetention:0.95 });
@@ -643,6 +667,19 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     }));
     const limits = { learning: 3, relearning: 4, weak: 3, memorized: 10 };
     const order = 'next_review_at, surah_number, ayah_number';
+
+    test('enrolls Later ayat in a custom review scope as Learning cards', async () => {
+      const query = jest.fn().mockResolvedValue({ affectedRows:3 });
+
+      await QuranAyahMemorization.enrollReviewScope(query, 'user-1', ['2:1', '2:2', '2:3']);
+
+      expect(query).toHaveBeenCalledTimes(1);
+      const statement = query.mock.calls[0][0];
+      expect(statement).toContain("('user-1',2,1,'learning','started'");
+      expect(statement).toContain("('user-1',2,3,'learning','started'");
+      expect(statement).toContain("lifecycle_state=IF(lifecycle_state='later','learning',lifecycle_state)");
+      expect(statement).toContain("row_version=row_version+IF(lifecycle_state='later',1,0)");
+    });
 
     test('allocates independent category caps fairly under the overall limit', async () => {
       const query = jest.fn()
@@ -684,6 +721,21 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(result.relearning).toEqual([]);
       expect(result.weak).toEqual([]);
       expect(result.memorized).toEqual(memorized);
+      expect(result.fresh).toBe(false);
+    });
+
+    test('includes due Weak ayat in regular review sessions', async () => {
+      const weak = rows('weak', 2, 3).map(row => ({ ...row, fsrs_state:2 }));
+      const query = jest.fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(weak)
+        .mockResolvedValueOnce([]);
+
+      const result = await QuranAyahMemorization.selectReviewSessionItems(query, 'user-1', 10, limits, order);
+
+      expect(result.weak).toEqual(weak);
+      expect(result.scheduled).toEqual(weak);
       expect(result.fresh).toBe(false);
     });
 

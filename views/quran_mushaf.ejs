@@ -6,7 +6,7 @@
 </head>
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
-  <main class="container col-xl-7 col-lg-8 mx-auto quran-mushaf-reader<%= memorize ? ' quran-memorize-reader' : '' %> mt-10" data-quran-mushaf-reader<% if (memorize) { %> data-quran-memorize-reader="1"<% } %><% if (review) { %> data-quran-review-reader="1"<% } %> data-next-url="<%= `/quran/page/${mushaf.number < mushaf.info.number_of_pages ? mushaf.number + 1 : 1}${memorize ? '?memorize' : ''}` %>">
+  <main class="container col-xl-7 col-lg-8 mx-auto quran-mushaf-reader<%= memorize ? ' quran-memorize-reader' : '' %> mt-10" data-quran-mushaf-reader data-page-help-tour="<%= memorize ? (review ? 'review' : 'memorize') : 'mushaf' %>"<% if (memorize) { %> data-quran-memorize-reader="1"<% } %><% if (review) { %> data-quran-review-reader="1"<% } %> data-next-url="<%= `/quran/page/${mushaf.number < mushaf.info.number_of_pages ? mushaf.number + 1 : 1}${memorize ? '?memorize' : ''}` %>">
     <article class="quran-mushaf-page<%= memorize ? ' quran-memorize-page' : '' %>" data-quran-mushaf-page="<%= mushaf.number %>"<% if (memorize) { %> data-quran-memorize-page="1" data-quran-memorize-auto-hide="false"<% } %> data-quran-infinite-page="1" data-quran-audio-scope="quran-page-<%= mushaf.number %>">
       <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero data-quran-clear-href="/quran/page/<%= mushaf.number %>"></div>
       <% if (review && reviewPreviousLine) { %>
@@ -60,7 +60,7 @@
           var memorizationSurahName = (surah && (surah.name_en || surah.name_ar)) || `Surah ${line.surah_number}`;
         %>
           <span class="quran-mushaf-surah-name" title="<%= (surah && surah.name_ar) || `سورة ${line.surah_number}` %>" aria-label="<%= (surah && surah.name_ar) || `سورة ${line.surah_number}` %>"><%= utils.quranQcfSurahHeaderGlyph(line.surah_number) %></span>
-          <% if (memorize && !review) { %><button type="button" class="quran-mushaf-surah-state-toggle" data-quran-surah-state="<%= line.surah_number %>" data-quran-surah-name="<%= memorizationSurahName %>" aria-haspopup="menu" aria-expanded="false" aria-label="Change memorization state for <%= memorizationSurahName %>. Current state: Later" lang="en" dir="ltr" hidden><span data-quran-surah-state-current>Later</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button><% } %>
+          <% if (memorize && !review) { %><button type="button" class="quran-mushaf-surah-state-toggle" data-quran-surah-state="<%= line.surah_number %>" data-quran-surah-name="<%= memorizationSurahName %>" aria-haspopup="menu" aria-expanded="false" aria-label="Set the initial memorization self-assessment for <%= memorizationSurahName %>. Current state: Later" lang="en" dir="ltr" hidden><span data-quran-surah-state-current>Later</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button><% } %>
         <% } else { line.words.forEach(function (word) {
           var ref = `${word.surah}:${word.ayah}`;
           if (word.is_ayah_marker) { %>
@@ -83,7 +83,7 @@
           <%- include('sub-views/quran_memorize_controls.ejs', { pageNumber: mushaf.number, showRating: true }); %>
         </footer>
         <aside class="quran-memorization-state-legend" aria-labelledby="quran-memorization-state-legend-<%= mushaf.number %>" lang="en" dir="ltr" data-quran-page-state-summary>
-          <div class="quran-memorization-state-legend-heading"><h2 id="quran-memorization-state-legend-<%= mushaf.number %>">Page memorization <span data-quran-page-state-total>—</span></h2><div class="quran-memorization-state-legend-actions"><% if (!review) { %><button type="button" class="quran-mushaf-page-state-toggle" data-quran-page-state="<%= mushaf.number %>" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-page-state-menu" aria-label="Change memorization state for Mushaf page <%= mushaf.number %>. Current state: Later" hidden><span data-quran-page-state-current>Later</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button><% } %><button type="button" class="quran-memorization-help-trigger" data-bs-toggle="modal" data-bs-target="#quran-memorization-help-modal"><i class="bi bi-question-circle" aria-hidden="true"></i> How it works</button></div></div>
+          <div class="quran-memorization-state-legend-heading"><h2 id="quran-memorization-state-legend-<%= mushaf.number %>">Page memorization <span data-quran-page-state-total>—</span></h2><div class="quran-memorization-state-legend-actions"><% if (!review) { %><button type="button" class="quran-mushaf-page-state-toggle" data-quran-page-state="<%= mushaf.number %>" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-page-state-menu" aria-label="Set the initial memorization self-assessment for Mushaf page <%= mushaf.number %>. Current state: Later" hidden><span data-quran-page-state-current>Later</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button><% } %><button type="button" class="quran-memorization-help-trigger" data-page-help-tour-trigger="<%= review ? 'review' : 'memorize' %>"><i class="bi bi-lightbulb" aria-hidden="true"></i> Show tips</button><button type="button" class="quran-memorization-help-trigger" data-bs-toggle="modal" data-bs-target="#quran-memorization-help-modal"><i class="bi bi-question-circle" aria-hidden="true"></i> How it works</button></div></div>
           <ul>
             <li class="quran-memorization-state-pill is-learning" title="Actively memorizing"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Learning</strong><span class="visually-hidden">Actively memorizing</span></li>
             <li class="quran-memorization-state-pill is-weak" title="Memorized with short reviews"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Weak</strong><span class="visually-hidden">Memorized with short reviews</span></li>
@@ -116,7 +116,7 @@
     <div class="quran-mushaf-sentinel text-center py-4" data-quran-mushaf-sentinel role="status" aria-live="polite"></div>
   </main>
   <% if (memorize) { %><%- include('sub-views/quran_memorization_help_modal.ejs', { site: site, page: page }); %><% if (!review) { %><%- include('sub-views/quran_memorize_review_modal.ejs', { site: site, page: page }); %><% } %><% } %>
-  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page, helpTour: memorize ? (review ? 'review' : 'memorize') : 'mushaf' }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   <% if (review && reviewPreviousLine) { %>

@@ -21,7 +21,7 @@
       <p class="small text-muted mt-3 mb-0">Your memorization progress is saved securely to your account and stays available across your devices.</p>
     </section>
     <section class="row g-3 quran-memorization-welcome-features" aria-label="How Quran memorization works">
-      <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-journal-bookmark text-primary" aria-hidden="true"></i><h2 class="fs-6">Learn at your pace</h2><p>Choose the ayat and surahs you want to learn and record each stage of your memorization.</p></article></div>
+      <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-journal-bookmark text-primary" aria-hidden="true"></i><h2 class="fs-6">Learn at your pace</h2><p>Choose the āyāt and surahs you want to learn, assess them once, and let daily Review manage their progress.</p></article></div>
       <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-arrow-repeat text-primary" aria-hidden="true"></i><h2 class="fs-6">Reviews that adapt</h2><p>Learning āyāt appear first, then review timing adjusts to your recall so you can focus on what needs attention.</p></article></div>
       <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-bar-chart-line text-primary" aria-hidden="true"></i><h2 class="fs-6">See your progress</h2><p>Track learning, weak, memorized, and Core ayat from a progress view organized by surah and Mushaf page.</p></article></div>
     </section>
@@ -37,13 +37,13 @@
             <div class="quran-memorization-preview-concept">
               <span class="quran-memorization-preview-kicker">Memorize</span>
               <strong>Build your hifz, āyah by āyah</strong>
-              <span>Set each memory state as your recall grows.</span>
+              <span>Assess each āyah once, then practice as Review guides you.</span>
             </div>
             <div class="quran-memorization-preview-screenshot">
               <img src="/images/quran/memorization-memorize-preview.png" width="640" height="960" loading="lazy" alt="Cropped Memorize mode screenshot of Mushaf page 600, with the original surah headings, basmalahs, Core controls, hidden word placeholders, and page controls">
             </div>
           </div>
-          <figcaption><strong>Memorize with clarity</strong><span>Choose the state of each āyah as your hifz becomes stronger.</span></figcaption>
+          <figcaption><strong>Memorize with clarity</strong><span>Give each Later āyah an honest starting assessment.</span></figcaption>
         </figure>
         <figure class="quran-memorization-preview-card" role="listitem">
           <div class="quran-memorization-preview-visual quran-memorization-preview-visual-review">
@@ -142,9 +142,9 @@
           <div class="mt-3" id="quran-surah-review-page-choice" hidden>
             <label class="form-label" for="quran-surah-review-page-limit"><strong>How much would you like to review?</strong></label>
             <select class="form-select" id="quran-surah-review-page-limit"></select>
-            <p class="form-text mb-0">Pages start from the beginning of the surah. Choose All memorized āyāt to review every āyah that is not Later.</p>
+            <p class="form-text mb-0">Pages start from the beginning of the surah. Choose All āyāt to review the complete surah.</p>
           </div>
-          <p class="form-text mb-0 mt-3">Reviews every memorization state except Later in Quran order. Regular session limits and the time budget do not apply.</p>
+          <p class="form-text mb-0 mt-3">The selected scope is reviewed in Quran order. Later āyāt become Learning cards and are added to your schedule. Regular session limits and the time budget do not apply.</p>
           <p class="small text-muted mt-3 mb-0" id="quran-surah-review-status" role="status" aria-live="polite"></p>
         </div>
         <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary" id="quran-surah-review-start">Start Surah Review</button></footer>
@@ -158,8 +158,8 @@
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   <script>
     (async function () {
-      const labels = { later: 'Later', learning: 'Learning', weak: 'Weak', review: 'Memorized', core: 'Core', relearning: 'Relearning', suspended: 'Paused' };
-      const stageOrder = ['learning', 'weak', 'review', 'core', 'relearning', 'suspended'];
+      const labels = { later: 'Later', learning: 'Learning', weak: 'Weak', review: 'Memorized', core: 'Core', relearning: 'Weak', suspended: 'Paused' };
+      const stageOrder = ['learning', 'weak', 'review', 'core', 'suspended'];
       const status = document.getElementById('quran-ayah-progress-status');
       const table = document.getElementById('quran-ayah-progress-table');
       const filter = document.getElementById('quran-ayah-progress-filter');
@@ -265,10 +265,11 @@
         const currentLabel=current==='mixed'?'Mixed':labels[current]||'Later';
         const activeAyahCount=Math.max(0,Number(group.active_ayah_count)||totalFor(group));
         const unitType=group.group_type==='surah'?'short surah':'page';
-        return `<button type="button" class="quran-memorization-state-pill memorization-progress-group-state is-${escapeHtml(current)}" data-progress-group-state="${escapeHtml(group.group_key||'')}" data-current-state="${escapeHtml(current)}" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-progress-group-state-menu" aria-label="Change the memorization state for this ${unitType}. Current state: ${escapeHtml(currentLabel)}, ${activeAyahCount} ${activeAyahCount===1?'āyah':'āyāt'}"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>${escapeHtml(currentLabel)}</strong><span class="quran-page-state-count">${activeAyahCount.toLocaleString()}</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button>`;
+        const actionLabel='Pause these āyāt or move them to Later';
+        return `<button type="button" class="quran-memorization-state-pill memorization-progress-group-state is-${escapeHtml(current)}" data-progress-group-state="${escapeHtml(group.group_key||'')}" data-current-state="${escapeHtml(current)}" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-progress-group-state-menu" aria-label="${actionLabel} for this ${unitType}. Current state: ${escapeHtml(currentLabel)}, ${activeAyahCount} ${activeAyahCount===1?'āyah':'āyāt'}"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>${escapeHtml(currentLabel)}</strong><span class="quran-page-state-count">${activeAyahCount.toLocaleString()}</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button>`;
       };
-      const groupStateOptions=['learning','weak','review','core','suspended','later'];
-      const groupStateDescriptions={learning:'Actively memorizing',weak:'Memorized with fragile recall',review:'Strong recall under review',core:'No scheduled reviews',suspended:'Temporarily inactive',later:'Remove from memorization'};
+      const groupStateOptions=['suspended','later'];
+      const groupStateDescriptions={suspended:'Temporarily inactive',later:'Remove from memorization'};
       const groupStateMenu=document.createElement('div');
       groupStateMenu.id='quran-progress-group-state-menu';
       groupStateMenu.className='quran-ayah-state-menu memorization-progress-group-state-menu';
@@ -318,7 +319,8 @@
         const current=trigger.dataset.currentState||'mixed';
         groupStateMenu.setAttribute('aria-label',trigger.getAttribute('aria-label')||'Page memorization state');
         groupStateMenu.querySelectorAll('[data-progress-group-state-option]').forEach(option=>{
-          const selected=option.dataset.progressGroupStateOption===current;
+          const optionState=option.dataset.progressGroupStateOption;
+          const selected=optionState===current;
           option.classList.toggle('is-current',selected);
           option.setAttribute('aria-checked',selected?'true':'false');
           option.disabled=false;
@@ -327,7 +329,7 @@
         groupStateMenu.hidden=false;
         positionGroupStateMenu(trigger);
         if(focusOption){
-          const currentOption=groupStateMenu.querySelector('.is-current')||groupStateMenu.querySelector('[data-progress-group-state-option]');
+          const currentOption=groupStateMenu.querySelector('.is-current:not([hidden])')||groupStateMenu.querySelector('[data-progress-group-state-option]:not([hidden])');
           if(currentOption) currentOption.focus();
         }
       };
@@ -388,7 +390,7 @@
         surahReviewPageLimit.required=false;
         if(!needsChoice){surahReviewPageLimit.innerHTML='';return;}
         const pageChoices=[1,2,3,4,5,10,20].filter(count=>count<=choice.pages.length);
-        surahReviewPageLimit.innerHTML=`<option value="all">All memorized āyāt</option>`+pageChoices.map(count=>`<option value="${count}">${count} page${count===1?'':'s'}</option>`).join('');
+        surahReviewPageLimit.innerHTML=`<option value="all">All āyāt</option>`+pageChoices.map(count=>`<option value="${count}">${count} page${count===1?'':'s'}</option>`).join('');
       };
       const populateSurahReviews=()=>{
         const surahs=new Map();
@@ -413,7 +415,7 @@
           const isSurah=session.session_mode==='surah';
           const isPage=session.session_mode==='page';
           const title=isSurah?`${session.surah_name||`Surah ${session.review_surah_number}`} Review`:isPage?`Mushaf Page ${session.review_page_number} Review`:'Regular Review';
-          const scope=isSurah&&Number(session.review_page_limit)>0?`First ${Number(session.review_page_limit)} page${Number(session.review_page_limit)===1?'':'s'}`:isSurah?'All memorized āyāt':isPage?'Single Mushaf page':'Scheduled session';
+          const scope=isSurah&&Number(session.review_page_limit)>0?`First ${Number(session.review_page_limit)} page${Number(session.review_page_limit)===1?'':'s'}`:isSurah?'All āyāt':isPage?'Single Mushaf page':'Scheduled session';
           const pausedAt=new Date(session.paused_at);
           const date=Number.isNaN(pausedAt.getTime())?'':pausedAt.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
           const active=Boolean(session.is_active);
@@ -537,7 +539,7 @@
         const selectedLimit=surahReviewPageLimit.value;
         const pageLimit=needsPageChoice&&selectedLimit!=='all'?Number(selectedLimit):null;
         surahReviewStart.disabled=true;
-        surahReviewStatus.textContent=pageLimit?`Preparing a ${pageLimit}-page Surah Review...`:'Preparing all memorized āyāt...';
+        surahReviewStatus.textContent=pageLimit?`Preparing a ${pageLimit}-page Surah Review...`:'Preparing all āyāt...';
         if(window.showQuranReviewLoading)window.showQuranReviewLoading('Preparing your review...');
         try{
           await request('/review/sessions',{method:'POST',body:{mode:'surah',surah_number:surahNumber,page_limit:pageLimit}});
@@ -609,7 +611,7 @@
         if(groupStateMenu.hidden) return;
         if(event.key==='Escape'){event.preventDefault();closeGroupStateMenu(true);return;}
         if(event.key==='Tab'){closeGroupStateMenu(false);return;}
-        const options=Array.from(groupStateMenu.querySelectorAll('[data-progress-group-state-option]:not(:disabled)'));
+        const options=Array.from(groupStateMenu.querySelectorAll('[data-progress-group-state-option]:not([hidden]):not(:disabled)'));
         const index=options.indexOf(document.activeElement);
         let nextIndex=null;
         if(event.key==='ArrowDown') nextIndex=index<0?0:(index+1)%options.length;

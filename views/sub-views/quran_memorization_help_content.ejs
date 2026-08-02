@@ -1,22 +1,22 @@
 <%
   const helpPrefix = locals.helpIdPrefix || 'quran-memorization-help';
 %>
-<p class="lead fs-6">Learn each āyah at your pace, then let the app schedule reviews from the recall grades you give. Your progress and review history stay synced across devices.</p>
+<p class="lead fs-6">Assess each āyah once, then let daily Review manage its learning stage and schedule from the recall grades you give. Your progress and review history stay synced across devices.</p>
 
 <section aria-labelledby="<%= helpPrefix %>-steps">
   <h3 id="<%= helpPrefix %>-steps">A simple memorization routine</h3>
   <ol class="quran-memorization-help-steps">
-    <li><span>1</span><div><strong>Begin in Memorize</strong><p>New accounts begin with Surahs al-Fātiḥah, al-Falaq, and al-Nās in Learning. Choose any other āyah, page, or surah and mark it Learning while you read, repeat, and recite it. The āyah marker menu can reveal it or play it with your default reciter; Play also reveals the complete āyah automatically.</p></div></li>
-    <li><span>2</span><div><strong>Review new and due ayat</strong><p>Learning cards appear first, followed by a limited selection of scheduled reviews.</p></div></li>
-    <li><span>3</span><div><strong>Reveal, then grade honestly</strong><p>The final line of the preceding Mushaf page stays visible above the review page to support page-to-page continuity. Select Reveal to see the current āyah, then choose Again, Hard, Good, or Easy to adjust its next review date. Undo restores the most recent grade and previous review date. Skip leaves the schedule unchanged.</p></div></li>
-    <li><span>4</span><div><strong>Keep practicing</strong><p>One Easy review or two successful Good reviews move a Learning āyah to Memorized. The timing continues adapting as you review.</p></div></li>
+    <li><span>1</span><div><strong>Assess it once in Memorize</strong><p>For an āyah, page, or surah that is still Later, choose the starting level that honestly matches your present recall: Learning, Weak, Memorized, or Core. This is the only time you select its learning stage. The āyah marker menu can also reveal or play the complete āyah while you practice.</p></div></li>
+    <li><span>2</span><div><strong>Review new and due āyāt</strong><p>Start Review for the Learning āyāt and scheduled reviews selected for the session. Learning āyāt appear first. After enrollment, your only manual state choices are Paused or Later; Review grades handle all other stage changes.</p></div></li>
+    <li><span>3</span><div><strong>Recall, reveal, then grade</strong><p>The final line of the preceding Mushaf page stays visible above the review page to support page-to-page continuity. Recite the complete āyah before selecting Reveal, then grade how independently you recalled it. Undo restores the most recent grade and previous review date. Skip leaves its stage and schedule unchanged.</p></div></li>
+    <li><span>4</span><div><strong>Let Review manage progress</strong><p>Again and Hard keep Learning or Weak āyāt in their current stage. One Easy review or two consecutive Good reviews move them to Memorized. Again on a Memorized āyah places it in Weak recovery until you recall it successfully. Every grade also updates its next review date.</p></div></li>
   </ol>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-fsrs">
   <h3 id="<%= helpPrefix %>-fsrs">How review timing adapts</h3>
-  <p>The app uses your recall history to choose the next review date. Again brings an āyah back sooner; Hard, Good, and Easy produce progressively longer intervals.</p>
-  <p class="mt-2">Your <strong>target memory goal</strong> controls how often reviews return. A higher target increases the workload. The defaults are a good starting point, and review settings let you adjust the session size or personalize the schedule later.</p>
+  <p>The app uses FSRS 6 to estimate each āyah's difficulty and memory strength from your grades and the time between reviews. There is no fixed day-by-day ladder: Again brings an āyah back sooner, while Hard, Good, and Easy usually produce progressively longer intervals as its recall becomes stronger.</p>
+  <p class="mt-2">Your <strong>target memory goal</strong> controls how often reviews return. A higher target increases the workload. The defaults are a good starting point; after at least 100 graded reviews, you can personalize the timing from Review settings using your own history.</p>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-limits">
@@ -28,20 +28,20 @@
 <section aria-labelledby="<%= helpPrefix %>-surah-review">
   <h3 id="<%= helpPrefix %>-surah-review">Reviewing a page or surah</h3>
   <p>From a Memorize page, select <strong>Review</strong>, then choose <strong>just this page</strong> or <strong>a surah</strong>. You can also start a surah review from the Memorization Progress page.</p>
-  <p class="mt-2">Page and surah reviews follow Quran order and are not limited by what is due now, regular session caps, or the time budget. Grades update the schedule; Skip leaves it unchanged.</p>
+  <p class="mt-2">Page and surah reviews follow Quran order and are not limited by what is due now, regular session caps, or the time budget. Starting the review moves Later āyāt in the selected scope to Learning and adds them to the schedule. Grades update the schedule; Skip leaves the newly enrolled āyah in Learning.</p>
   <p class="mt-2">The Progress page lists your active and paused sessions. Switching reviews automatically pauses the current session and resumes the selected one. You can end any active or paused session while preserving its completed reviews.</p>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-states">
   <h3 id="<%= helpPrefix %>-states">Memorization states</h3>
-  <p class="text-muted small">A state describes where an ayah is in your memorization journey. It is different from the grade you give a single review.</p>
+  <p class="text-muted small">For a Later āyah, choose one starting state as your initial self-assessment. After that, the app changes its learning state from your Review grades. You can only pause it or return it to Later manually.</p>
   <dl class="quran-memorization-help-states">
-    <div class="is-learning"><dt><span aria-hidden="true"></span>Learning</dt><dd>The ayah is still being learned and enters Review as a new card.</dd></div>
-    <div class="is-weak"><dt><span aria-hidden="true"></span>Weak</dt><dd>You can recite the ayah, but recall is fragile and should return sooner.</dd></div>
-    <div class="is-review"><dt><span aria-hidden="true"></span>Memorized</dt><dd>You can recite the complete ayah independently and it remains in scheduled Review. After Again, the scheduler may temporarily place it in recovery until it is recalled successfully.</dd></div>
-    <div class="is-core"><dt><span aria-hidden="true"></span>Core</dt><dd>The ayah is firmly retained and does not enter regular Review.</dd></div>
+    <div class="is-learning"><dt><span aria-hidden="true"></span>Learning</dt><dd>You are still learning the āyah. It enters Review as a new card and stays here until an Easy review or two consecutive Good reviews.</dd></div>
+    <div class="is-weak"><dt><span aria-hidden="true"></span>Weak</dt><dd>You can recite the āyah, but recall is fragile. It stays in scheduled Review and returns sooner. Recovery after Again on a Memorized āyah is also shown here.</dd></div>
+    <div class="is-review"><dt><span aria-hidden="true"></span>Memorized</dt><dd>You can recite the complete āyah independently. It remains in scheduled Review so the app can maintain it and adapt its timing.</dd></div>
+    <div class="is-core"><dt><span aria-hidden="true"></span>Core</dt><dd>The āyah is firmly retained and does not enter regular Review.</dd></div>
     <div class="is-suspended"><dt><span aria-hidden="true"></span>Paused</dt><dd>Learning and reviews are temporarily stopped without deleting history.</dd></div>
-    <div class="is-later"><dt><span aria-hidden="true"></span>Later</dt><dd>The ayah is not part of active memorization or Review.</dd></div>
+    <div class="is-later"><dt><span aria-hidden="true"></span>Later</dt><dd>The āyah is not part of active memorization or Review. Choose this when you want to learn it later.</dd></div>
   </dl>
 </section>
 
@@ -50,11 +50,11 @@
   <div class="table-responsive">
     <table class="table table-sm align-middle quran-memorization-help-grades mb-0">
       <tbody>
-        <tr><th scope="row"><span class="is-again">Again</span></th><td>You could not complete the ayah without reading or help. It may return once near the end of the session. Again can therefore be graded at most twice for the same ayah in one session.</td></tr>
-        <tr><th scope="row"><span class="is-hard">Hard</span></th><td>You recalled it independently with significant hesitation. It receives a shorter interval.</td></tr>
-        <tr><th scope="row"><span class="is-good">Good</span></th><td>You recalled it with ordinary effort. It receives a longer interval.</td></tr>
-        <tr><th scope="row"><span class="is-easy">Easy</span></th><td>Recall was fluent and effortless. It receives the longest interval.</td></tr>
-        <tr><th scope="row"><span class="is-skip">Skip</span></th><td>Move on without grading the ayah or changing its schedule.</td></tr>
+        <tr><th scope="row"><span class="is-again">Again</span></th><td>You could not complete the āyah without reading or help. It returns sooner and may appear once more near the end of this session. On a Memorized āyah, it begins Weak recovery.</td></tr>
+        <tr><th scope="row"><span class="is-hard">Hard</span></th><td>You recalled it independently with significant hesitation. It stays in Learning or Weak when applicable and receives a shorter interval.</td></tr>
+        <tr><th scope="row"><span class="is-good">Good</span></th><td>You recalled it with ordinary effort. It usually receives a longer interval; two consecutive Good reviews move Learning or Weak to Memorized.</td></tr>
+        <tr><th scope="row"><span class="is-easy">Easy</span></th><td>Recall was fluent and effortless. It usually receives the longest interval and immediately moves Learning or Weak to Memorized.</td></tr>
+        <tr><th scope="row"><span class="is-skip">Skip</span></th><td>Move on without grading the āyah or changing its learning stage or schedule.</td></tr>
       </tbody>
     </table>
   </div>

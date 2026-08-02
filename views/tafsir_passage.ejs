@@ -73,7 +73,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
   <div class="container col-lg-8 mx-auto">
-    <main class="chapter mt-10 tafsir-only-page" data-reader-infinite="tafsir" data-reader-context-key="<%= surah.num %>" data-reader-current-url="<%= tafsirReaderCurrentUrl %>"<% if (tafsirReaderPrevUrl) { %> data-reader-prev-url="<%= tafsirReaderPrevUrl %>" data-reader-prev-title="<%= tafsirReaderPrevTitle %>"<% } %><% if (tafsirReaderNextUrl) { %> data-reader-next-url="<%= tafsirReaderNextUrl %>" data-reader-next-title="<%= tafsirReaderNextTitle %>"<% } %>>
+    <main class="chapter mt-10 tafsir-only-page" data-page-help-tour="tafsir" data-reader-infinite="tafsir" data-reader-context-key="<%= surah.num %>" data-reader-current-url="<%= tafsirReaderCurrentUrl %>"<% if (tafsirReaderPrevUrl) { %> data-reader-prev-url="<%= tafsirReaderPrevUrl %>" data-reader-prev-title="<%= tafsirReaderPrevTitle %>"<% } %><% if (tafsirReaderNextUrl) { %> data-reader-next-url="<%= tafsirReaderNextUrl %>" data-reader-next-title="<%= tafsirReaderNextTitle %>"<% } %>>
 	      <heading class="row major">
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>">
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
@@ -172,7 +172,8 @@
   prev: tafsirReaderNavigation.prev,
   next: tafsirReaderNavigation.next,
   prevTitle: tafsirReaderPrevTitle,
-  nextTitle: tafsirReaderNextTitle
+  nextTitle: tafsirReaderNextTitle,
+  helpTour: 'tafsir'
 }); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
