@@ -7003,6 +7003,13 @@ function showPageLoading(message) {
 	document.documentElement.classList.add('page-is-transitioning');
 }
 
+function trackQuranAnalyticsEvent(eventName, parameters) {
+	if (typeof window.gtag !== 'function') return;
+	window.gtag('event', eventName, Object.assign({ event_category: 'quran_memorization' }, parameters || {}));
+}
+
+window.trackQuranAnalyticsEvent = trackQuranAnalyticsEvent;
+
 window.showPageLoading = showPageLoading;
 window.navigateWithPageLoading = function (url, message, replace) {
 	showPageLoading(message);
@@ -7183,6 +7190,19 @@ function initQuranMemorizeReviewLauncher(root) {
 			var response = await fetch(quranApiPath('/memorization/review/sessions'), { method: 'POST', credentials: 'same-origin', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 			var data = await response.json().catch(function () { return {}; });
 			if (!response.ok) throw new Error(data.error || 'Unable to start this review.');
+			trackQuranAnalyticsEvent('quran_review_session_start', {
+				session_mode: data.session && data.session.session_mode || scope,
+				mushaf_page: data.session && data.session.review_page_number || undefined,
+				surah_number: data.session && data.session.review_surah_number || undefined,
+				page_limit: data.session && data.session.review_page_limit || undefined,
+				ayah_count: data.session && data.session.queued || 0
+			});
+			if (data.session && Number(data.session.enrolled_count) > 0) trackQuranAnalyticsEvent('quran_memorization_enroll', {
+				enrollment_scope: scope,
+				enrolled_ayah_count: Number(data.session.enrolled_count),
+				mushaf_page: data.session.review_page_number || undefined,
+				surah_number: data.session.review_surah_number || undefined
+			});
 			window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'), 'Loading your review...');
 		} catch (err) {
 			window.hideQuranReviewLoading();
@@ -7214,7 +7234,8 @@ function initQuranAyahMemorization(root) {
 	var stateOptions = ['learning', 'weak', 'review', 'core', 'suspended', 'later'];
 	var selectableStateOptions = ['learning', 'weak', 'review', 'core', 'suspended', 'later'];
 	var initialAssessmentStateOptions = ['learning', 'weak', 'review', 'core', 'later'];
-	var enrolledStateOptions = ['suspended', 'later'];
+	var enrolledAyahStateOptions = ['core', 'suspended', 'later'];
+	var enrolledBulkStateOptions = ['core', 'suspended', 'later'];
 	var stateCache = window.quranAyahMemorizationStateCache = window.quranAyahMemorizationStateCache || new Map();
 	var surahStateCache = window.quranSurahStateCache = window.quranSurahStateCache || new Map();
 	var tokenPromise = window.quranAyahMemorizationTokenPromise;
@@ -7382,10 +7403,15 @@ function initQuranAyahMemorization(root) {
 			option.setAttribute('aria-checked', current ? 'true' : 'false');
 		});
 	};
-	var allowedStateOptions = function (state) {
+	var allowedAyahStateOptions = function (state) {
 		if (state === 'later') return initialAssessmentStateOptions;
 		if (!state) return ['later'];
-		return enrolledStateOptions;
+		return enrolledAyahStateOptions;
+	};
+	var allowedBulkStateOptions = function (state) {
+		if (state === 'later') return initialAssessmentStateOptions;
+		if (!state) return ['later'];
+		return enrolledBulkStateOptions;
 	};
 	var updatePageStateSummary = function (page) {
 		if (!page) return;
@@ -7654,7 +7680,7 @@ function initQuranAyahMemorization(root) {
 		if (revealAyahLabel) revealAyahLabel.textContent = ayahIsRevealed ? 'Hide' : 'Reveal';
 		stateMenu.querySelectorAll('[data-quran-ayah-state-option]').forEach(function (option) {
 			var optionState = option.getAttribute('data-quran-ayah-state-option');
-			option.hidden = allowedStateOptions(state).indexOf(optionState) === -1;
+			option.hidden = allowedAyahStateOptions(state).indexOf(optionState) === -1;
 			option.disabled = control.disabled;
 		});
 		stateMenu.hidden = false;
@@ -7678,7 +7704,7 @@ function initQuranAyahMemorization(root) {
 		surahStateMenu.querySelectorAll('[data-quran-surah-state-option]').forEach(function (option) {
 			var optionState = option.getAttribute('data-quran-surah-state-option');
 			var current = optionState === state;
-			option.hidden = allowedStateOptions(state).indexOf(optionState) === -1;
+			option.hidden = allowedBulkStateOptions(state).indexOf(optionState) === -1;
 			option.classList.toggle('is-current', current);
 			option.setAttribute('aria-checked', current ? 'true' : 'false');
 			option.disabled = trigger.disabled;
@@ -7704,7 +7730,7 @@ function initQuranAyahMemorization(root) {
 		pageStateMenu.querySelectorAll('[data-quran-page-state-option]').forEach(function (option) {
 			var optionState = option.getAttribute('data-quran-page-state-option');
 			var current = optionState === state;
-			option.hidden = allowedStateOptions(state).indexOf(optionState) === -1;
+			option.hidden = allowedBulkStateOptions(state).indexOf(optionState) === -1;
 			option.classList.toggle('is-current', current);
 			option.setAttribute('aria-checked', current ? 'true' : 'false');
 			option.disabled = trigger.disabled;
@@ -7834,6 +7860,10 @@ function initQuranAyahMemorization(root) {
 					});
 					var pageData = await pageResponse.json().catch(function () { return {}; });
 					if (!pageResponse.ok) throw new Error(pageData.error || 'Unable to update this Mushaf page.');
+					if (currentPageState === 'later' && ['learning', 'weak', 'review'].includes(nextPageState)) trackQuranAnalyticsEvent('quran_memorization_enroll', {
+						enrollment_scope: 'page', mushaf_page: pageNumber,
+						enrolled_ayah_count: Number(pageData.changed_count || pageData.ayah_count || 0), initial_state: nextPageState
+					});
 					var affectedSurahs = new Set();
 					(pageData.ayahs || []).forEach(function (record) {
 						var ref = `${record.surah_number}:${record.ayah_number}`;
@@ -7887,6 +7917,10 @@ function initQuranAyahMemorization(root) {
 					});
 					var data = await response.json().catch(function () { return {}; });
 					if (!response.ok) throw new Error(data.error || 'Unable to update this surah.');
+					if (currentSurahState === 'later' && ['learning', 'weak', 'review'].includes(nextSurahState)) trackQuranAnalyticsEvent('quran_memorization_enroll', {
+						enrollment_scope: 'surah', surah_number: surahNumber,
+						enrolled_ayah_count: Number(data.changed_count || data.ayah_count || 0), initial_state: nextSurahState
+					});
 					(data.ayahs || []).forEach(function (record) {
 						var ref = `${record.surah_number}:${record.ayah_number}`;
 						stateCache.set(ref, record);
@@ -8074,6 +8108,10 @@ function initQuranAyahMemorization(root) {
 				});
 				var data = await response.json().catch(function () { return {}; });
 				if (!response.ok) throw new Error(data.error || 'Unable to update this ayah.');
+				if (previous === 'later' && ['learning', 'weak', 'review'].includes(data.ayah.lifecycle_state)) trackQuranAnalyticsEvent('quran_memorization_enroll', {
+					enrollment_scope: 'ayah', surah_number: Number(parts[0]), ayah_number: Number(parts[1]),
+					enrolled_ayah_count: 1, initial_state: data.ayah.lifecycle_state
+				});
 				stateCache.set(ref, data.ayah);
 				applyState(ref, data.ayah);
 				adjustSurahStateStatus(ref, previous, data.ayah.lifecycle_state);
@@ -8762,6 +8800,10 @@ function initQuranAyahReview(root) {
 				throw new Error('The active review attempt could not be restored.');
 			sessionId = data.session_id;
 			attemptToken = data.attempt_token;
+			trackQuranAnalyticsEvent('quran_review_item_presented', {
+				mushaf_page: Number(page && page.getAttribute('data-quran-mushaf-page')) || undefined,
+				surah_number: Number(parts[0]), ayah_number: Number(parts[1])
+			});
 			syncUndoReview(data.undoable_review);
 			if (!Array.isArray(data.reviewed_refs)) data.reviewed_refs = [];
 			data.reviewed_refs.forEach(function (reviewedRef) {
@@ -8906,6 +8948,10 @@ function initQuranAyahReview(root) {
 				});
 				var data = await response.json().catch(function () { return {}; });
 				if (!response.ok) throw new Error(data.error || 'Unable to save this review.');
+				trackQuranAnalyticsEvent('quran_review_grade', {
+					mushaf_page: Number(page && page.getAttribute('data-quran-mushaf-page')) || undefined,
+					surah_number: Number(parts[0]), ayah_number: Number(parts[1]), review_grade: grade
+				});
 				if (data.undoable_review) syncUndoReview(data.undoable_review);
 				// Resolve the next persisted queue item while the graded āyah remains
 				// visible. This removes the intermediate /quran/review redirect and
@@ -11092,6 +11138,7 @@ function initQuranScriptPreference(root) {
 		var script = settings && settings.quran && settings.quran.script || 'uthmani';
 		document.body.classList.remove('quran-script-indo-pak', 'quran-script-warsh');
 		document.body.dataset.quranScript = script;
+		trackQuranScriptDefault(script, 'resolved');
 		updateQuranAyahMarkersForScript(scope, script);
 		if (script === 'uthmani' || refs.length < 1)
 			return script;
@@ -11116,6 +11163,21 @@ function normalizeQuranScriptChoice(value) {
 	value = (value || '').toString().trim().toLowerCase();
 	return ['uthmani', 'indo-pak', 'warsh'].indexOf(value) >= 0 ? value : '';
 }
+
+function trackQuranScriptDefault(value, source) {
+	var script = normalizeQuranScriptChoice(value) || 'uthmani';
+	if (typeof window.gtag !== 'function') return;
+	window.gtag('set', 'user_properties', { quran_script_default: script });
+	if (document.documentElement.dataset.quranScriptAnalytics === script) return;
+	document.documentElement.dataset.quranScriptAnalytics = script;
+	trackQuranAnalyticsEvent('quran_script_default', {
+		quran_script: script,
+		preference_source: source || 'resolved',
+		non_interaction: true
+	});
+}
+
+window.trackQuranScriptDefault = trackQuranScriptDefault;
 
 function quranScriptChoiceLabel(script) {
 	return { uthmani: 'Uthmani', 'indo-pak': 'Indo-Pak', warsh: 'Warsh' }[script] || 'Script';

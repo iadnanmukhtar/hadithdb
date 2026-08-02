@@ -209,8 +209,8 @@
       const loading = document.getElementById('quran-memorization-auth-loading');
       const welcome = document.getElementById('quran-memorization-welcome');
       const progress = document.getElementById('quran-memorization-progress');
-      if (loading) loading.hidden = true;
       if (<%= helpView ? 'true' : 'false' %>) {
+        if (loading) loading.hidden = true;
         document.title = 'Memorize the Quran';
         if (token) {
           const signInButton = document.getElementById('quran-memorization-sign-in');
@@ -222,11 +222,11 @@
         return;
       }
       if (!token) {
+        if (loading) loading.hidden = true;
         document.title = 'Memorize the Quran';
         if (welcome) welcome.hidden = false;
         return;
       }
-      if (progress) progress.hidden = false;
       const request = async (path, options = {}) => { const response=await fetch(quranApiPath(`/memorization${path}`),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load memorization progress.'); return data; };
       const userSettingsRequest = async (options={}) => { const response=await fetch(quranApiPath('/user-settings'),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load settings.'); return data; };
       let reviewUserSettings=null;
@@ -248,7 +248,7 @@
       reviewHeatmap.addEventListener('click',event=>{const cell=event.target.closest('[data-review-date]');if(!cell)return;selectedHeatmapCell=cell;reviewHeatmap.querySelectorAll('.is-selected').forEach(item=>item.classList.remove('is-selected'));cell.classList.add('is-selected');showHeatmapDetail(cell);});
       reviewHeatmap.addEventListener('keydown',event=>{const cell=event.target.closest('[data-review-date]');if(!cell)return;const cells=Array.from(reviewHeatmap.querySelectorAll('[data-review-date]'));const index=cells.indexOf(cell);const offset={ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1}[event.key];if(!offset)return;const next=cells[index+offset];if(!next)return;event.preventDefault();cell.tabIndex=-1;next.tabIndex=0;next.focus();showHeatmapDetail(next);});
       const browserTimeZone=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
-      Promise.all([loadFsrsSettings(),request(`/review/stats?timezone=${encodeURIComponent(browserTimeZone)}`).then(data=>renderReviewStats(data.stats))]).catch(err=>{fsrsControls.status.textContent=err.message;});
+      const supportingDataPromise=Promise.all([loadFsrsSettings(),request(`/review/stats?timezone=${encodeURIComponent(browserTimeZone)}`).then(data=>renderReviewStats(data.stats))]).catch(err=>{fsrsControls.status.textContent=err.message;});
       window.addEventListener('resize',scrollHeatmapToToday,{passive:true});
       const countFor = (group, state) => Math.max(0, Number(group.counts && group.counts[state]) || 0);
       const totalFor = group => stageOrder.reduce((total, state) => total + countFor(group, state), 0);
@@ -268,8 +268,8 @@
         const actionLabel='Pause these āyāt or move them to Later';
         return `<button type="button" class="quran-memorization-state-pill memorization-progress-group-state is-${escapeHtml(current)}" data-progress-group-state="${escapeHtml(group.group_key||'')}" data-current-state="${escapeHtml(current)}" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-progress-group-state-menu" aria-label="${actionLabel} for this ${unitType}. Current state: ${escapeHtml(currentLabel)}, ${activeAyahCount} ${activeAyahCount===1?'āyah':'āyāt'}"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>${escapeHtml(currentLabel)}</strong><span class="quran-page-state-count">${activeAyahCount.toLocaleString()}</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button>`;
       };
-      const groupStateOptions=['suspended','later'];
-      const groupStateDescriptions={suspended:'Temporarily inactive',later:'Remove from memorization'};
+      const groupStateOptions=['core','suspended','later'];
+      const groupStateDescriptions={core:'No scheduled reviews',suspended:'Temporarily inactive',later:'Remove from memorization'};
       const groupStateMenu=document.createElement('div');
       groupStateMenu.id='quran-progress-group-state-menu';
       groupStateMenu.className='quran-ayah-state-menu memorization-progress-group-state-menu';
@@ -529,7 +529,16 @@
         updateTileSelection();
         render();
       };
-      try { await loadProgress(); } catch(err) { status.textContent=err.message; return; }
+      try {
+        await Promise.all([loadProgress(),supportingDataPromise]);
+        if(progress) progress.hidden=false;
+        if(loading) loading.hidden=true;
+      } catch(err) {
+        if(progress) progress.hidden=false;
+        if(loading) loading.hidden=true;
+        status.textContent=err.message;
+        return;
+      }
       surahReviewForm.addEventListener('submit',async event=>{
         event.preventDefault();
         const surahNumber=Number(surahReviewSelect.value);
@@ -542,7 +551,10 @@
         surahReviewStatus.textContent=pageLimit?`Preparing a ${pageLimit}-page Surah Review...`:'Preparing all āyāt...';
         if(window.showQuranReviewLoading)window.showQuranReviewLoading('Preparing your review...');
         try{
-          await request('/review/sessions',{method:'POST',body:{mode:'surah',surah_number:surahNumber,page_limit:pageLimit}});
+          const sessionData=await request('/review/sessions',{method:'POST',body:{mode:'surah',surah_number:surahNumber,page_limit:pageLimit}});
+          const session=sessionData.session||{};
+          if(window.trackQuranAnalyticsEvent)window.trackQuranAnalyticsEvent('quran_review_session_start',{session_mode:'surah',surah_number:surahNumber,page_limit:pageLimit||undefined,ayah_count:Number(session.queued)||0});
+          if(window.trackQuranAnalyticsEvent&&Number(session.enrolled_count)>0)window.trackQuranAnalyticsEvent('quran_memorization_enroll',{enrollment_scope:'surah',surah_number:surahNumber,enrolled_ayah_count:Number(session.enrolled_count)});
           if(window.navigateWithQuranReviewLoading)window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'),'Loading your review...');
           else window.location.assign(quranUrl('/quran/review?continue=1'));
         }catch(err){if(window.hideQuranReviewLoading)window.hideQuranReviewLoading();surahReviewStatus.textContent=err.message;surahReviewStart.disabled=false;}
@@ -557,6 +569,7 @@
           if(window.showQuranReviewLoading)window.showQuranReviewLoading(resume.textContent.includes('Switch')?'Switching reviews...':'Loading your review...');
           try{
             await request(`/review/sessions/${encodeURIComponent(resume.dataset.resumeReviewSession)}/resume`,{method:'POST'});
+            if(window.trackQuranAnalyticsEvent)window.trackQuranAnalyticsEvent('quran_review_session_resume',{resume_source:'progress'});
             if(window.navigateWithQuranReviewLoading)window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'),resume.textContent.includes('Switch')?'Switching reviews...':'Loading your review...');
             else window.location.assign(quranUrl('/quran/review?continue=1'));
           }catch(err){if(window.hideQuranReviewLoading)window.hideQuranReviewLoading();resume.disabled=false;if(window.toastr)window.toastr.error(err.message,'Unable to resume review');else status.textContent=err.message;}

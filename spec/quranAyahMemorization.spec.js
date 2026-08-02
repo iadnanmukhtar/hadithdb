@@ -55,7 +55,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     expect(QuranAyahMemorization.REVIEW_GRADES.has('core')).toBe(false);
   });
 
-  test('only lets enrolled ayat be paused or moved to Later by the user', () => {
+  test('only lets enrolled ayat be marked Core, Paused, or Later by the user', () => {
     const allowed = QuranAyahMemorization.userStateTransitionAllowed;
     expect(allowed('later', 'learning')).toBe(true);
     expect(allowed('later', 'weak')).toBe(true);
@@ -65,9 +65,18 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     expect(allowed('learning', 'suspended')).toBe(true);
     expect(allowed('review', 'later')).toBe(true);
     expect(allowed('weak', 'review')).toBe(false);
-    expect(allowed('review', 'core')).toBe(false);
+    expect(allowed('review', 'core')).toBe(true);
     expect(allowed('core', 'learning')).toBe(false);
     expect(allowed('suspended', 'weak')).toBe(false);
+  });
+
+  test('only lets enrolled pages and surahs be marked Core, Paused, or Later', () => {
+    const allowed = QuranAyahMemorization.bulkStateTransitionAllowed;
+    expect(allowed('review', 'core')).toBe(true);
+    expect(allowed('weak', 'suspended')).toBe(true);
+    expect(allowed('learning', 'later')).toBe(true);
+    expect(allowed('review', 'weak')).toBe(false);
+    expect(allowed('core', 'learning')).toBe(false);
   });
 
   test('uses every ayah in Surahs 1, 113, and 114 as the new-user Learning set', () => {
@@ -560,9 +569,45 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       const easy = schedule(reviewedAyah(), 'easy');
 
       expect(again).toMatchObject({ lifecycle_state: 'relearning', lapse_count: 1, fsrs_state: 2 });
-      expect(hard).toMatchObject({ lifecycle_state: 'review', lapse_count: 0 });
+      expect(hard).toMatchObject({ lifecycle_state: 'weak', lapse_count: 0 });
+      expect(hard.difficulty).toBeGreaterThan(6);
       expect(hard.interval).toBeLessThan(good.interval);
       expect(good.interval).toBeLessThan(easy.interval);
+    });
+
+    test('updates recall difficulty from grades and uses it to shorten difficult ayah intervals', () => {
+      const again = schedule(reviewedAyah(), 'again');
+      const hard = schedule(reviewedAyah(), 'hard');
+      const good = schedule(reviewedAyah(), 'good');
+      const easy = schedule(reviewedAyah(), 'easy');
+      expect(again.difficulty).toBeGreaterThan(hard.difficulty);
+      expect(hard.difficulty).toBeGreaterThan(good.difficulty);
+      expect(good.difficulty).toBeGreaterThan(easy.difficulty);
+
+      const easyRecall = schedule({ ...reviewedAyah(), difficulty:2 }, 'good');
+      const difficultRecall = schedule({ ...reviewedAyah(), difficulty:8 }, 'good');
+      expect(difficultRecall.stability).toBeLessThan(easyRecall.stability);
+      expect(difficultRecall.interval).toBeLessThan(easyRecall.interval);
+    });
+
+    test('classifies scheduled ayat with FSRS difficulty greater than 6 as Weak', () => {
+      const difficult = schedule({ ...reviewedAyah(), difficulty:6.2 }, 'good');
+      const manageable = schedule({ ...reviewedAyah(), difficulty:6 }, 'good');
+      expect(difficult.difficulty).toBeGreaterThan(6);
+      expect(difficult.lifecycle_state).toBe('weak');
+      expect(manageable.difficulty).toBeLessThanOrEqual(6);
+      expect(manageable.lifecycle_state).toBe('review');
+    });
+
+    test('graduates exceptionally stable, very-low-difficulty ayat to Core and clears their schedule', () => {
+      const core = schedule({ ...reviewedAyah(), stability:800, difficulty:1.5 }, 'good');
+      const notStableEnough = schedule({ ...reviewedAyah(), stability:700, difficulty:1.5 }, 'good');
+      const tooDifficult = schedule({ ...reviewedAyah(), stability:800, difficulty:2.1 }, 'good');
+      expect(core).toMatchObject({ lifecycle_state:'core', due:null, interval:0, scheduled_days:0 });
+      expect(core.stability).toBeGreaterThan(730);
+      expect(core.difficulty).toBeLessThan(2);
+      expect(notStableEnough.lifecycle_state).toBe('review');
+      expect(tooDifficult.lifecycle_state).toBe('review');
     });
 
     test('keeps Weak after Again or an initial Good while Easy graduates it', () => {
@@ -633,10 +678,11 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(QuranAyahMemorization.shouldQueueReviewRetry('hard', 0)).toBe(false);
     });
 
-    test('returns Relearning to Memorized after a successful recovery review', () => {
+    test('returns Relearning to Weak while recall difficulty remains high', () => {
       const relearning = { ...reviewedAyah(), lifecycle_state:'relearning', stability:0.4, difficulty:8, lapse_count:1 };
       const recovered = schedule(relearning, 'good');
-      expect(recovered).toMatchObject({ lifecycle_state: 'review', consecutive_successes: 1 });
+      expect(recovered).toMatchObject({ lifecycle_state: 'weak', consecutive_successes: 1 });
+      expect(recovered.difficulty).toBeGreaterThan(6);
       expect(recovered.interval).toBeGreaterThanOrEqual(1);
     });
 
@@ -669,12 +715,15 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     const order = 'next_review_at, surah_number, ayah_number';
 
     test('enrolls Later ayat in a custom review scope as Learning cards', async () => {
-      const query = jest.fn().mockResolvedValue({ affectedRows:3 });
+      const query = jest.fn()
+        .mockResolvedValueOnce([{ lifecycle_state:'review' }])
+        .mockResolvedValueOnce({ affectedRows:3 });
 
-      await QuranAyahMemorization.enrollReviewScope(query, 'user-1', ['2:1', '2:2', '2:3']);
+      await expect(QuranAyahMemorization.enrollReviewScope(query, 'user-1', ['2:1', '2:2', '2:3'])).resolves.toBe(2);
 
-      expect(query).toHaveBeenCalledTimes(1);
-      const statement = query.mock.calls[0][0];
+      expect(query).toHaveBeenCalledTimes(2);
+      expect(query.mock.calls[0][0]).toContain('FOR UPDATE');
+      const statement = query.mock.calls[1][0];
       expect(statement).toContain("('user-1',2,1,'learning','started'");
       expect(statement).toContain("('user-1',2,3,'learning','started'");
       expect(statement).toContain("lifecycle_state=IF(lifecycle_state='later','learning',lifecycle_state)");

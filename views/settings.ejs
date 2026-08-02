@@ -1642,6 +1642,7 @@
         quranScriptStatusEl.textContent = 'Saving Quran script...';
         try {
           await saveSettings();
+          if (window.trackQuranScriptDefault) window.trackQuranScriptDefault(currentSettings.quran.script, 'settings_change');
           quranScriptStatusEl.textContent = 'Quran script saved. It will be used on Quran pages.';
         } catch (err) {
           currentSettings = previousSettings;

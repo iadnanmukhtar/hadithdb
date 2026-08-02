@@ -47,6 +47,10 @@
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok) throw new Error(data.error || 'Unable to start a review session.');
+          if (window.trackQuranAnalyticsEvent) window.trackQuranAnalyticsEvent('quran_review_session_start', {
+            session_mode: data.session && data.session.session_mode || 'regular',
+            ayah_count: data.session && data.session.queued || 0
+          });
           return data.session && data.session.session_id;
         };
         let sessionId = '';
@@ -60,6 +64,10 @@
         const activeData = await activeResponse.json().catch(() => ({}));
         if (!activeResponse.ok) throw new Error(activeData.error || 'Unable to resume the review session.');
         sessionId = activeData.session && activeData.session.session_id;
+        if (sessionId && window.trackQuranAnalyticsEvent) window.trackQuranAnalyticsEvent('quran_review_session_resume', {
+          resume_source: 'review_route',
+          session_mode: activeData.session.session_mode || 'regular'
+        });
         if (!sessionId) sessionId = await startSession();
         <% } %>
         if (!sessionId) {

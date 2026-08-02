@@ -24,6 +24,7 @@ const Utils = require('./lib/Utils');
 const PaymentConfig = require('./lib/PaymentConfig');
 const ContentTranslations = require('./lib/ContentTranslations');
 const QuranRecitationFeedback = require('./lib/QuranRecitationFeedback');
+const GoogleAnalytics = require('./lib/GoogleAnalytics');
 
 function debugNewRelicLoadError(err) {
   if (!process.env.DEBUG || !process.env.DEBUG.split(',').some(pattern => pattern.trim() === 'hadithdb:App'))
@@ -358,6 +359,7 @@ patchAsyncRouterMethods();
 
 const app = express();
 app.locals.newrelic = newrelic;
+app.locals.googleAnalyticsTagId = GoogleAnalytics.googleAnalyticsTagId;
 app.disable('x-powered-by');
 app.set('trust proxy', 'loopback');
 app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, res, callback) {
