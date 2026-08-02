@@ -3890,6 +3890,19 @@ function showQuranSelectionTranslationMarquee(ref) {
 	}, { selection: true });
 }
 
+function showQuranRevealedWordTranslation(word) {
+	if (!word) return;
+	document.dispatchEvent(new CustomEvent('quranRevealedWordTranslation', {
+		detail: { action: 'show', target: word }
+	}));
+}
+
+function hideQuranRevealedWordTranslation(word) {
+	document.dispatchEvent(new CustomEvent('quranRevealedWordTranslation', {
+		detail: { action: 'hide', target: word || null }
+	}));
+}
+
 function hideQuranSelectionTranslationMarquee() {
 	if (!quranPassageAudioState.control)
 		hideQuranAudioTranslationMarquee();
@@ -8209,12 +8222,15 @@ function initQuranMemorizeView(root) {
 			if (existingTimer)
 				window.clearTimeout(existingTimer);
 			word.classList.add('quran-memorize-word-revealed');
+			hideQuranAudioTranslationMarquee();
+			showQuranRevealedWordTranslation(word);
 			if (page.dataset.quranMemorizeAutoHide === 'false') {
 				wordTimers.delete(word);
 				return;
 			}
 			wordTimers.set(word, window.setTimeout(function () {
 				word.classList.remove('quran-memorize-word-revealed');
+				hideQuranRevealedWordTranslation(word);
 				wordTimers.delete(word);
 			}, 2000));
 		};
@@ -8256,10 +8272,13 @@ function initQuranMemorizeView(root) {
 				if (timer)
 					window.clearTimeout(timer);
 				wordTimers.delete(word);
+				hideQuranRevealedWordTranslation(word);
 				word.classList.remove('quran-memorize-word-revealed');
 				word.classList.toggle('quran-memorize-ayah-revealed', revealed);
 			});
 			setReviewAyahRevealed(ref, revealed);
+			if (revealed) showQuranSelectionTranslationMarquee(ref);
+			else if (quranAudioTranslationMarqueeState.activeVerseKey === ref) hideQuranAudioTranslationMarquee();
 		};
 		var recitationRecorder = null;
 		var recitationStream = null;
@@ -8664,6 +8683,7 @@ function initQuranMemorizeView(root) {
 					window.clearTimeout(wordTimer);
 				wordTimers.delete(word);
 				word.classList.remove('quran-memorize-word-revealed', 'quran-memorize-ayah-revealed');
+				hideQuranRevealedWordTranslation(word);
 				return;
 			}
 			revealWord(word);
@@ -8740,6 +8760,7 @@ function initQuranAyahReview(root) {
 				word.classList.add('quran-memorize-ayah-revealed');
 			});
 			page.dataset.quranReviewAnswerRevealed = '1';
+			showQuranSelectionTranslationMarquee(ref);
 			return true;
 		};
 		var restoreReviewedAyah = function () {
@@ -8750,6 +8771,7 @@ function initQuranAyahReview(root) {
 			});
 			answerSnapshot = null;
 			if (page) delete page.dataset.quranReviewAnswerRevealed;
+			if (quranAudioTranslationMarqueeState.activeVerseKey === ref) hideQuranAudioTranslationMarquee();
 		};
 		var syncReviewControls = function (revealed) {
 			if (revealControls) revealControls.hidden = revealed;
@@ -11594,6 +11616,19 @@ function initQuranCorpusTooltipDelay(root) {
 			showTooltipNow(word);
 		}, delay));
 	};
+	eventRoot.on('quranRevealedWordTranslation', function (event) {
+		var detail = event.originalEvent && event.originalEvent.detail || {};
+		var target = detail.target;
+		if (detail.action === 'hide') {
+			var activeTarget = tooltip.data('quranCorpusTooltipTarget');
+			if (!target || activeTarget === target) hideTooltip($(target || activeTarget || []));
+			return;
+		}
+		if (!target || !target.matches || !target.matches('.quran-corpus-word[data-quran-word-translation]')) return;
+		var activeTarget = tooltip.data('quranCorpusTooltipTarget');
+		if (activeTarget && activeTarget !== target) hideTooltip($(activeTarget));
+		showTooltip($(target), 0);
+	});
 	eventRoot.on('mouseenter focusin', tooltipTargetSelector, function () {
 		if ($(this).closest('[data-quran-memorize-page]').length) {
 			hideTooltip($(this));
