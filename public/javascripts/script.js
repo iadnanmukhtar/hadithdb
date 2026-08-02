@@ -8787,6 +8787,31 @@ function initQuranAyahReview(root) {
 			undoAttemptToken = undoableReview && undoableReview.attempt_token || '';
 			if (undoButton) undoButton.disabled = !undoAttemptToken;
 		};
+		var syncSessionProgress = function (session) {
+			if (!session) return;
+			var categories = {
+				learning: { label: 'Learning', completed: 'learning_completed', total: 'learning_queued' },
+				relearning: { label: 'Weak recovery', completed: 'relearning_completed', total: 'relearning_queued' },
+				weak: { label: 'Weak', completed: 'weak_completed', total: 'weak_queued' },
+				review: { label: 'Memorized', completed: 'memorized_completed', total: 'memorized_queued' },
+				core: { label: 'Core', completed: 'core_completed', total: 'core_queued' },
+				suspended: { label: 'Paused', completed: 'paused_completed', total: 'paused_queued' }
+			};
+			document.querySelectorAll('[data-quran-review-session-total]').forEach(function (element) {
+				element.textContent = `${Math.max(0, Number(session.completed) || 0).toLocaleString()}/${Math.max(0, Number(session.queued) || 0).toLocaleString()} āyāt`;
+			});
+			document.querySelectorAll('[data-quran-review-session-category]').forEach(function (pill) {
+				var category = categories[pill.getAttribute('data-quran-review-session-category')];
+				if (!category) return;
+				var completed = Math.max(0, Number(session[category.completed]) || 0);
+				var total = Math.max(0, Number(session[category.total]) || 0);
+				pill.hidden = total < 1;
+				pill.title = `${category.label}: ${completed} of ${total} complete`;
+				pill.setAttribute('aria-label', pill.title);
+				var count = pill.querySelector('[data-quran-review-session-category-count]');
+				if (count) count.textContent = `${completed}/${total}`;
+			});
+		};
 		var enableReviewButtons = function () {
 			if (buttons) buttons.querySelectorAll('button').forEach(function (item) { item.disabled = false; });
 			if (undoButton) undoButton.disabled = !undoAttemptToken;
@@ -8833,6 +8858,7 @@ function initQuranAyahReview(root) {
 				surah_number: Number(parts[0]), ayah_number: Number(parts[1])
 			});
 			syncUndoReview(data.undoable_review);
+			syncSessionProgress(data.session_progress);
 			if (!Array.isArray(data.reviewed_refs)) data.reviewed_refs = [];
 			data.reviewed_refs.forEach(function (reviewedRef) {
 				if (/^\d+:\d+$/.test(reviewedRef)) reviewedRefs.add(reviewedRef);

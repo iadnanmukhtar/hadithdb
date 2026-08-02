@@ -2,6 +2,7 @@
 'use strict';
 
 const QuranAyahMemorization = require('../lib/QuranAyahMemorization');
+const QuranFsrs = require('../lib/QuranFsrs');
 
 describe('QuranAyahMemorization public ayah helpers', () => {
   let originalSurahs;
@@ -209,7 +210,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     }
   });
 
-  test('initializes an ungraded Weak ayah from a Hard FSRS assessment', () => {
+  test('initializes an ungraded Weak ayah as a bounded new card', () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-07-31T12:00:00Z'));
     try {
       expect(QuranAyahMemorization.stateUpdateValues({
@@ -221,10 +222,10 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       }, 'weak')).toMatchObject({
         lifecycle_state: 'weak',
         learning_progress: 'partial',
-        stability: 1.6,
-        difficulty: 5.11217071,
-        next_review_at: new Date('2026-08-02T12:00:00Z'),
-        fsrs_state: 2,
+        stability: 0,
+        difficulty: 7,
+        next_review_at: null,
+        fsrs_state: 0,
         fsrs_version: 6
       });
     } finally {
@@ -532,6 +533,14 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       });
     });
 
+    test('does not count a new Weak card as due before bounded admission', () => {
+      const result = QuranAyahMemorization.buildProgressGroups(definitions(), [
+        { surah_number: 1, ayah_number: 1, lifecycle_state: 'weak', fsrs_state: 0, review_count: 0, stability: 0, difficulty: 0 }
+      ], '2026-07-31T12:00:00Z');
+
+      expect(result[0]).toMatchObject({ due_count: 0, new_count: 1 });
+    });
+
     test('uses the database due result when application and database clocks differ', () => {
       const result = QuranAyahMemorization.buildProgressGroups(definitions(), [
         {
@@ -708,6 +717,14 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       const aggressive = schedule(reviewedAyah(), 'good', { intervalGrowth:'aggressive' });
       expect(highRetention.interval).toBeLessThanOrEqual(standard.interval);
       expect(conservative.stability).toBeLessThan(aggressive.stability);
+    });
+
+    test('shortens existing stability intervals when target retention increases', () => {
+      const relaxed = QuranFsrs.intervalForStability(100, { targetRetention: 0.8 });
+      const standard = QuranFsrs.intervalForStability(100, { targetRetention: 0.9 });
+      const mastery = QuranFsrs.intervalForStability(100, { targetRetention: 0.95 });
+      expect(relaxed).toBeGreaterThan(standard);
+      expect(standard).toBeGreaterThan(mastery);
     });
   });
 

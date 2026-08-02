@@ -519,6 +519,7 @@
           if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
             window.hadithUserSettingsCache.write(cacheUser, currentSettings);
         }
+        return data;
       } finally {
         saving = false;
         reciterStatusEl.textContent = 'Choose your favorite reciter.';
@@ -1687,8 +1688,11 @@
       memorizationSaveBtn.disabled = true;
       memorizationStatusEl.textContent = 'Saving review schedule...';
       try {
-        await saveSettings();
-        memorizationStatusEl.textContent = 'Review schedule saved.';
+        const data = await saveSettings();
+        const reschedule = data && data.memorization_reschedule;
+        memorizationStatusEl.textContent = reschedule
+          ? `Review schedule saved. ${Number(reschedule.rescheduled_count).toLocaleString()} review dates recalculated; ${Number(reschedule.due_now).toLocaleString()} due now.`
+          : 'Review schedule saved.';
       } catch (err) {
         memorizationStatusEl.textContent = err.message || 'Unable to save review schedule.';
       } finally {

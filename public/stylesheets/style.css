@@ -2754,9 +2754,13 @@ main.quran-mushaf-reader {
 	opacity: .28;
 }
 
-[data-quran-review-reader] .quran-review-target-ayah {
+[data-quran-review-reader] [data-quran-mushaf-page] .quran-review-target-ayah:not(.quran-ayah-review-rating) {
 	box-shadow: inset 0 -.12em 0 color-mix(in srgb, var(--bs-primary) 55%, transparent);
 	opacity: 1;
+}
+
+[data-quran-review-reader] .quran-ayah-review-rating.quran-review-target-ayah {
+	box-shadow: none;
 }
 
 [data-quran-review-reader] [data-quran-mushaf-page] [data-quran-ref].quran-review-session-revealed:not(.quran-ayah-state-select) {
@@ -3500,6 +3504,39 @@ main.quran-mushaf-reader {
 
 .quran-memorization-state-pill.is-mixed {
 	--quran-state-legend-color: var(--bs-secondary);
+}
+
+[data-quran-review-session-progress] .quran-memorization-state-pill {
+	font-variant-numeric: tabular-nums;
+	justify-content: center;
+	min-width: 7rem;
+	padding-inline: .55rem;
+}
+
+[data-quran-review-session-progress] .quran-memorization-state-pill strong {
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font-size: .64rem;
+}
+
+.quran-memorization-state-legend ul[data-quran-review-session-progress] {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+	width: 100%;
+}
+
+[data-quran-review-session-progress] .quran-memorization-state-pill[hidden] {
+	display: none !important;
+}
+
+@media (max-width: 575.98px) {
+	.quran-memorization-state-legend ul[data-quran-review-session-progress] {
+		grid-template-columns: repeat(auto-fit, minmax(5.75rem, 1fr));
+	}
+
+	[data-quran-review-session-progress] .quran-memorization-state-pill {
+		min-width: 0;
+		padding-inline: .4rem;
+	}
 }
 
 .quran-memorization-help-modal .modal-content {

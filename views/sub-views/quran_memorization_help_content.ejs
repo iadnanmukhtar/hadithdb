@@ -16,7 +16,6 @@
 <section aria-labelledby="<%= helpPrefix %>-fsrs">
   <h3 id="<%= helpPrefix %>-fsrs">How review timing adapts</h3>
   <p>The app uses FSRS 6 to estimate each āyah's difficulty and memory strength from your grades and the time between reviews. There is no fixed day-by-day ladder: Again brings an āyah back sooner, while Hard, Good, and Easy usually produce progressively longer intervals as its recall becomes stronger.</p>
-  <p class="mt-2">Your <strong>target memory goal</strong> controls how often reviews return. A higher target increases the workload. The defaults are a good starting point; after at least 100 graded reviews, you can personalize the timing from Review settings using your own history.</p>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-limits">
@@ -58,4 +57,34 @@
       </tbody>
     </table>
   </div>
+</section>
+
+<section aria-labelledby="<%= helpPrefix %>-settings">
+  <h3 id="<%= helpPrefix %>-settings">Review settings explained</h3>
+  <p>These settings control when reviews return and how many āyāt enter a regular review session. Page and surah reviews deliberately ignore regular-session limits so you can complete the selected scope.</p>
+
+  <h4 class="fs-6 mt-3">Review timing</h4>
+  <dl>
+    <dt>Target Memory Goal</dt><dd>The percentage of scheduled āyāt you aim to recall successfully. Raising it shortens intervals and can increase Due now; lowering it permits longer intervals. Changing it immediately recalculates every active, initialized review date without adding artificial review history.</dd>
+    <dt>Initial Memory Strength</dt><dd>Sets the starting stability and first intervals for newly assessed Weak, Memorized, or Core āyāt. It does not rewrite the history or current strength of cards you have already reviewed.</dd>
+    <dt>Review Interval Multiplier</dt><dd>Controls how quickly stability and intervals grow after successful reviews. Conservative returns successful āyāt sooner, Standard provides the normal balance, and Aggressive spaces them farther apart.</dd>
+    <dt>Lapse Recovery Speed</dt><dd>Controls how much established memory strength is retained after Again. Strict shortens recovery intervals more sharply, Standard uses the normal penalty, and Mild preserves more previous strength.</dd>
+    <dt>Personalize Review Timing</dt><dd>Analyzes at least 100 of your graded reviews and tunes the underlying timing parameters to your recall history. Run it occasionally as your history grows; the understandable controls above remain available.</dd>
+  </dl>
+
+  <h4 class="fs-6 mt-3">Review session</h4>
+  <dl>
+    <dt>Maximum āyāt per session</dt><dd>The overall limit for one regular review session. Category limits below operate inside this maximum, so the session never exceeds it.</dd>
+    <dt>Optional time budget</dt><dd>Stops admitting more work after the configured number of minutes. Set it to zero when you do not want a time limit.</dd>
+  </dl>
+
+  <h4 class="fs-6 mt-3">Advanced session limits</h4>
+  <dl>
+    <dt>Maximum Learning āyāt</dt><dd>Limits newly enrolled and still-learning āyāt admitted to one regular session. Learning appears first, but overdue Learning precedes brand-new Learning.</dd>
+    <dt>Maximum Weak recovery āyāt</dt><dd>Limits previously Memorized āyāt that entered automatic recovery after Again. They appear as Weak to the user while recovery is managed internally.</dd>
+    <dt>Maximum Weak āyāt</dt><dd>Limits scheduled āyāt whose recall is currently fragile or whose calculated difficulty remains above the Weak threshold.</dd>
+    <dt>Maximum Memorized āyāt</dt><dd>Limits established Memorized āyāt admitted for maintenance review.</dd>
+    <dt>Order within each queue</dt><dd>Oldest due first prioritizes the most overdue work, Quran order follows surah and āyah sequence, and Random shuffles cards within each category. Learning, Weak recovery, Weak, and Memorized category priority still applies.</dd>
+  </dl>
+  <p class="text-muted small mb-0">Due now is the complete eligible backlog, not the size of the next session. A session can therefore finish while more āyāt remain due because the overall limit, category limits, or time budget was reached.</p>
 </section>

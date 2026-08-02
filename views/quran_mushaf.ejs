@@ -83,7 +83,14 @@
           <%- include('sub-views/quran_memorize_controls.ejs', { pageNumber: mushaf.number, showRating: true }); %>
         </footer>
         <aside class="quran-memorization-state-legend" aria-labelledby="quran-memorization-state-legend-<%= mushaf.number %>" lang="en" dir="ltr" data-quran-page-state-summary>
-          <div class="quran-memorization-state-legend-heading"><h2 id="quran-memorization-state-legend-<%= mushaf.number %>">Page memorization <span data-quran-page-state-total>—</span></h2><div class="quran-memorization-state-legend-actions"><% if (!review) { %><button type="button" class="quran-mushaf-page-state-toggle" data-quran-page-state="<%= mushaf.number %>" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-page-state-menu" aria-label="Set the initial memorization self-assessment for Mushaf page <%= mushaf.number %>. Current state: Later" hidden><span data-quran-page-state-current>Later</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button><% } %><button type="button" class="quran-memorization-help-trigger" data-page-help-tour-trigger="<%= review ? 'review' : 'memorize' %>"><i class="bi bi-lightbulb" aria-hidden="true"></i> Show tips</button><button type="button" class="quran-memorization-help-trigger" data-bs-toggle="modal" data-bs-target="#quran-memorization-help-modal"><i class="bi bi-question-circle" aria-hidden="true"></i> How it works</button></div></div>
+          <div class="quran-memorization-state-legend-heading"><h2 id="quran-memorization-state-legend-<%= mushaf.number %>"><%= review ? 'Session progress' : 'Page memorization' %> <span <%= review ? 'data-quran-review-session-total' : 'data-quran-page-state-total' %>>—</span></h2><div class="quran-memorization-state-legend-actions"><% if (!review) { %><button type="button" class="quran-mushaf-page-state-toggle" data-quran-page-state="<%= mushaf.number %>" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-page-state-menu" aria-label="Set the initial memorization self-assessment for Mushaf page <%= mushaf.number %>. Current state: Later" hidden><span data-quran-page-state-current>Later</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button><% } %><button type="button" class="quran-memorization-help-trigger" data-page-help-tour-trigger="<%= review ? 'review' : 'memorize' %>"><i class="bi bi-lightbulb" aria-hidden="true"></i> Show tips</button><button type="button" class="quran-memorization-help-trigger" data-bs-toggle="modal" data-bs-target="#quran-memorization-help-modal"><i class="bi bi-question-circle" aria-hidden="true"></i> How it works</button></div></div>
+          <% if (review) { %>
+          <ul data-quran-review-session-progress aria-label="Review session progress">
+            <% [['learning','Learning'],['relearning','Weak recovery'],['weak','Weak'],['review','Memorized'],['core','Core'],['suspended','Paused']].forEach(function (item) { %>
+            <li class="quran-memorization-state-pill is-<%= item[0] %>" data-quran-review-session-category="<%= item[0] %>" hidden><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong><%= item[1] %></strong><span class="quran-page-state-count" data-quran-review-session-category-count>—</span></li>
+            <% }); %>
+          </ul>
+          <% } else { %>
           <ul>
             <li class="quran-memorization-state-pill is-learning" title="Actively memorizing"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Learning</strong><span class="visually-hidden">Actively memorizing</span></li>
             <li class="quran-memorization-state-pill is-weak" title="Memorized with short reviews"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Weak</strong><span class="visually-hidden">Memorized with short reviews</span></li>
@@ -92,6 +99,7 @@
             <li class="quran-memorization-state-pill is-suspended" title="Temporarily inactive"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Paused</strong><span class="visually-hidden">Temporarily inactive</span></li>
             <li class="quran-memorization-state-pill is-later" title="Not started yet"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Later</strong><span class="visually-hidden">Not started yet</span></li>
           </ul>
+          <% } %>
         </aside>
         <% } else if (pagePassages && pagePassages.length) { %>
         <footer class="quran-mushaf-page-footer" lang="en" dir="ltr">

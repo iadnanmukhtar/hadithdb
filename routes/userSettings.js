@@ -6,6 +6,7 @@ const express = require('express');
 const createError = require('http-errors');
 const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
+const QuranAyahMemorization = require('../lib/QuranAyahMemorization');
 
 const router = express.Router();
 const MAX_SETTINGS_BYTES = 65535;
@@ -60,8 +61,14 @@ router.put('/', verifyGoogle, async function (req, res, next) {
     next(createError(413, 'Settings payload is too large.'));
     return;
   }
+  const previous = await UserSettings.getSettings(req.user.uid);
+  const previousRetention = Number(previous && previous.memorization && previous.memorization.fsrs && previous.memorization.fsrs.targetRetention);
   const saved = await UserSettings.saveSettings(req.user, settings);
-  res.json({ settings: saved });
+  const nextRetention = Number(saved && saved.memorization && saved.memorization.fsrs && saved.memorization.fsrs.targetRetention);
+  const memorizationReschedule = previousRetention !== nextRetention
+    ? await QuranAyahMemorization.rescheduleForTargetRetention(req.user.uid, saved.memorization.fsrs)
+    : null;
+  res.json({ settings: saved, memorization_reschedule: memorizationReschedule });
 });
 
 module.exports = router;

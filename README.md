@@ -156,6 +156,8 @@ Review initially shows Reveal instead of the recall grades. Selecting Reveal dis
 
 Scheduling uses FSRS 6 with its 21-parameter model and trainable forgetting-curve decay. The per-user, per-ayah card stores FSRS state, stability, difficulty, scheduled interval, learning-step position, review and lapse counts, the latest grade, and last and next review times. Recall attempts are appended to a separate history table for statistics and parameter optimization; moving an ayah to Later, Core, or Paused never deletes those events.
 
+Changing Target Memory Goal bulk-reschedules every initialized Learning, Weak, Memorized, and automatic-recovery card from its existing stability and last review time. The update changes stored review dates and Due now immediately without fabricating grades or review-history entries. Core, Paused, Later, and ungraded new Learning cards are not rewritten.
+
 Google Analytics records privacy-safe Quran memorization events without account identifiers: `quran_review_session_start`, `quran_review_session_resume`, `quran_review_item_presented`, and `quran_review_grade` measure review participation and Mushaf pages reviewed. `quran_memorization_enroll` records successful first-time enrollment conversions with an `enrollment_scope` of `ayah`, `page`, or `surah` and the number of newly enrolled āyāt. Mark `quran_memorization_enroll` as a key event in Google Analytics to report it as a conversion.
 
 The `quran_script_default` event and `quran_script_default` user property measure unique users by their resolved Quran script preference: `uthmani`, `indo-pak`, or `warsh`. The event is emitted once per page for the resolved default and again only when the preference changes on that page; no account identifier is included.
