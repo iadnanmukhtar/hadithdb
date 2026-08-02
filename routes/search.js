@@ -1453,6 +1453,7 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
     chapter.getNext(),
     chapter.getSections()
   ]);
+  await applySameBookHeadingNavigation(section);
   var quranSubsections = await getQuranSectionSubsections(section, { reconcileWithDb: !!(req.admin && req.editMode) });
   var results = await getQuranSectionPassageItems(section, 0, 1000);
   await addQuranPassageBoundaryRefs(results);
