@@ -11630,7 +11630,13 @@ function initQuranCorpusTooltipDelay(root) {
 		showTooltip($(target), 0);
 	});
 	eventRoot.on('mouseenter focusin', tooltipTargetSelector, function () {
-		if ($(this).closest('[data-quran-memorize-page]').length) {
+		var memorizePage = $(this).closest('[data-quran-memorize-page]');
+		var revealedInMemorize = !memorizePage.length
+			|| memorizePage.hasClass('quran-memorize-show-all')
+			|| $(this).hasClass('quran-memorize-word-revealed')
+			|| $(this).hasClass('quran-memorize-ayah-revealed')
+			|| $(this).hasClass('quran-review-session-revealed');
+		if (!revealedInMemorize) {
 			hideTooltip($(this));
 			return;
 		}
