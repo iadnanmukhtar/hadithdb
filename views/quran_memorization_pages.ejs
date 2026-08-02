@@ -121,7 +121,7 @@
     <p id="quran-ayah-progress-status" class="text-muted small" role="status" aria-live="polite">Loading ayah progress...</p>
     <div class="table-responsive memorization-progress-table-wrap">
       <table class="table table-hover align-middle mb-0 memorization-progress-table" id="quran-ayah-progress-table" hidden>
-        <thead><tr><th>Unit</th><th>State</th><th>Starting ayah</th><th>Next review</th><th>Reviews</th></tr></thead><tbody></tbody>
+        <thead><tr><th><button type="button" class="memorization-progress-sort" data-progress-sort="unit">Unit</button></th><th><button type="button" class="memorization-progress-sort" data-progress-sort="state">State</button></th><th><button type="button" class="memorization-progress-sort" data-progress-sort="start">Starting ayah</button></th><th><button type="button" class="memorization-progress-sort" data-progress-sort="next">Next review</button></th><th><button type="button" class="memorization-progress-sort" data-progress-sort="reviews">Reviews</button></th><th><button type="button" class="memorization-progress-sort" data-progress-sort="difficulty">Difficulty</button></th><th><button type="button" class="memorization-progress-sort" data-progress-sort="stability">Stability</button></th></tr></thead><tbody></tbody>
       </table>
     </div>
   </main>
@@ -432,6 +432,8 @@
       const requestedStage = <%- JSON.stringify(req.query.status === 'new' ? 'learning' : ['learning','weak','review','core','suspended','due_today'].includes(req.query.status) ? req.query.status : '') %>;
       const requestedLegacyNewStage = <%= req.query.status === 'new' ? 'true' : 'false' %>;
       let selectedStage = requestedStage;
+      let sortKey = 'unit';
+      let sortDirection = 1;
       const tileLabel = value => value==='due_today'?'Due now':labels[value]||value;
       const updateTileSelection = () => document.querySelectorAll('[data-progress-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.progressFilter===selectedStage)));
       const updateStageUrl = () => {
@@ -441,6 +443,18 @@
         window.history.replaceState({}, '', url);
       };
       if(requestedLegacyNewStage) updateStageUrl();
+      const numericRef=value=>{const parts=String(value||'').split(':').map(Number);return (parts[0]||0)*1000+(parts[1]||0);};
+      const sortValue=(group,key)=>({
+        unit:Number(group.page_number)||0,
+        state:stageOrder.findIndex(state=>countFor(group,state)>0),
+        start:numericRef(group.start_reference),
+        next:group.next_review_at?new Date(group.next_review_at).getTime():Number.POSITIVE_INFINITY,
+        reviews:Number(group.review_count)||0,
+        difficulty:group.average_difficulty==null?Number.POSITIVE_INFINITY:Number(group.average_difficulty),
+        stability:group.average_stability==null?Number.POSITIVE_INFINITY:Number(group.average_stability)
+      })[key];
+      const compareGroups=(left,right)=>{const a=sortValue(left,sortKey),b=sortValue(right,sortKey);if(a<b)return -sortDirection;if(a>b)return sortDirection;return (Number(left.page_number)-Number(right.page_number))||numericRef(left.start_reference)-numericRef(right.start_reference);};
+      const updateSortHeaders=()=>document.querySelectorAll('[data-progress-sort]').forEach(button=>{const active=button.dataset.progressSort===sortKey;button.classList.toggle('is-active',active);button.setAttribute('aria-sort',active?(sortDirection===1?'ascending':'descending'):'none');button.dataset.sortDirection=active?(sortDirection===1?'ascending':'descending'):'';});
       const render = () => {
         closeGroupStateMenu(false);
         const query=filter.value.trim().toLocaleLowerCase();
@@ -469,8 +483,8 @@
           const unitCount=surahGroup.groups.length;
           const hasWholeSurah=surahGroup.groups.some(group=>group.group_type==='surah');
           const unitSummary=hasWholeSurah?'whole surah':`${unitCount} page${unitCount===1?'':'s'}`;
-          const heading=`<tr class="memorization-progress-surah-group" data-progress-surah="${surahGroup.number}"><th colspan="5"><span class="memorization-progress-surah-number">${surahGroup.number}</span><span class="memorization-progress-surah-name">${escapeHtml(surahGroup.name)}</span><span class="memorization-progress-surah-summary">${unitSummary} · ${surahAyat.toLocaleString()} ${surahAyat===1?'āyah':'āyāt'}</span></th></tr>`;
-          const rows=surahGroup.groups.sort((left,right)=>Number(left.page_number)-Number(right.page_number)).map(group=>{
+          const heading=`<tr class="memorization-progress-surah-group" data-progress-surah="${surahGroup.number}"><th colspan="7"><span class="memorization-progress-surah-number">${surahGroup.number}</span><span class="memorization-progress-surah-name">${escapeHtml(surahGroup.name)}</span><span class="memorization-progress-surah-summary">${unitSummary} · ${surahAyat.toLocaleString()} ${surahAyat===1?'āyah':'āyāt'}</span></th></tr>`;
+          const rows=surahGroup.groups.sort(compareGroups).map(group=>{
             const page=Number(group.page_number);
             const pageNumber=Number.isInteger(page)&&page>=1&&page<=604?page:1;
             const unitLabel=group.group_type==='surah'?'Whole surah':`Page ${pageNumber}`;
@@ -489,7 +503,9 @@
             const referenceLabel=[juzLabel,startReference].filter(Boolean).join(' · ');
             const openingArabic=openingWords(group.opening_arabic||'—');
             const openingSearchable=group.opening_searchable||'';
-            return `<tr class="memorization-progress-group" data-progress-group="${escapeHtml(groupKey)}" data-progress-juz="${escapeHtml(rowJuzNumbers)}"><td class="memorization-progress-unit"><a class="memorization-progress-unit-link" href="/quran/page/${targetPage}?memorize${learningTarget}" aria-label="${escapeHtml(linkLabel)}" title="${escapeHtml(linkLabel)}">${escapeHtml(unitLabel)}</a></td><td class="memorization-progress-stage-counts">${groupStateControl(group)}</td><td class="memorization-progress-start"><div class="memorization-progress-opening" lang="ar" dir="rtl">${escapeHtml(openingArabic)}${openingSearchable?`<span hidden aria-hidden="true" data-progress-opening-searchable>${escapeHtml(openingSearchable)}</span>`:''}</div><span class="memorization-progress-start-reference" dir="ltr">${referenceLabel?`<span class="text-muted">${escapeHtml(referenceLabel)}</span>`:''}</span></td><td class="memorization-progress-next-review text-nowrap">${nextReview(group)}</td><td class="memorization-progress-review-count text-center">${Math.max(0,Number(group.review_count)||0).toLocaleString()}</td></tr>`;
+            const difficulty=group.average_difficulty==null?'—':Number(group.average_difficulty).toFixed(1);
+            const stability=group.average_stability==null?'—':`${Number(group.average_stability).toFixed(1)}d`;
+            return `<tr class="memorization-progress-group" data-progress-group="${escapeHtml(groupKey)}" data-progress-juz="${escapeHtml(rowJuzNumbers)}"><td class="memorization-progress-unit"><a class="memorization-progress-unit-link" href="/quran/page/${targetPage}?memorize${learningTarget}" aria-label="${escapeHtml(linkLabel)}" title="${escapeHtml(linkLabel)}">${escapeHtml(unitLabel)}</a></td><td class="memorization-progress-stage-counts">${groupStateControl(group)}</td><td class="memorization-progress-start"><div class="memorization-progress-opening" lang="ar" dir="rtl">${escapeHtml(openingArabic)}${openingSearchable?`<span hidden aria-hidden="true" data-progress-opening-searchable>${escapeHtml(openingSearchable)}</span>`:''}</div><span class="memorization-progress-start-reference" dir="ltr">${referenceLabel?`<span class="text-muted">${escapeHtml(referenceLabel)}</span>`:''}</span></td><td class="memorization-progress-next-review text-nowrap">${nextReview(group)}</td><td class="memorization-progress-review-count text-center">${Math.max(0,Number(group.review_count)||0).toLocaleString()}</td><td class="memorization-progress-difficulty text-center">${difficulty}</td><td class="memorization-progress-stability text-center">${stability}</td></tr>`;
           }).join('');
           return heading+rows;
         }).join('');
@@ -501,6 +517,7 @@
           status.textContent=`${surahs} surah${surahs===1?'':'s'} with ${pages} memorization unit${pages===1?'':'s'}, covering ${ayat.toLocaleString()} ${ayat===1?'āyah':'āyāt'}${selectedStage?` with ${tileLabel(selectedStage)}`:''}.`;
         } else status.textContent='No memorization groups match this view.';
         clear.hidden=!query;
+        updateSortHeaders();
       };
       const loadProgress = async () => {
         const [progressData,activeData,openData]=await Promise.all([request('/progress/groups'),request('/review/sessions/active'),request('/review/sessions/open')]);
@@ -560,6 +577,7 @@
         }catch(err){if(window.hideQuranReviewLoading)window.hideQuranReviewLoading();surahReviewStatus.textContent=err.message;surahReviewStart.disabled=false;}
       });
       document.querySelectorAll('[data-progress-filter]:not(:disabled)').forEach(button=>button.addEventListener('click',()=>{selectedStage=selectedStage===button.dataset.progressFilter?'':button.dataset.progressFilter;updateStageUrl();updateTileSelection();render();}));
+      document.querySelectorAll('[data-progress-sort]').forEach(button=>button.addEventListener('click',()=>{const nextKey=button.dataset.progressSort;if(sortKey===nextKey)sortDirection*=-1;else{sortKey=nextKey;sortDirection=1;}render();}));
       filter.addEventListener('input',render); clear.addEventListener('click',()=>{filter.value='';render();filter.focus();});
       document.addEventListener('click',async event=>{
         const resume=event.target.closest&&event.target.closest('[data-resume-review-session]');

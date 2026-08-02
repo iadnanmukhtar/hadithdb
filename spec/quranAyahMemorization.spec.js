@@ -483,12 +483,12 @@ describe('QuranAyahMemorization public ayah helpers', () => {
 
     test('counts active stages once and leaves Later rows out of grouped progress', () => {
       const result = QuranAyahMemorization.buildProgressGroups(definitions(), [
-        { surah_number: 1, ayah_number: 1, lifecycle_state: 'learning', fsrs_state: 0, review_count: 0 },
-        { surah_number: 1, ayah_number: 2, lifecycle_state: 'relearning', fsrs_state: 2, next_review_at: '2026-07-30T12:00:00Z', review_count: 2 },
-        { surah_number: 2, ayah_number: 1, lifecycle_state: 'review', fsrs_state: 2, next_review_at: '2026-08-03T12:00:00Z', review_count: 3 },
+        { surah_number: 1, ayah_number: 1, lifecycle_state: 'learning', fsrs_state: 0, review_count: 0, stability: 0, difficulty: 0 },
+        { surah_number: 1, ayah_number: 2, lifecycle_state: 'relearning', fsrs_state: 2, next_review_at: '2026-07-30T12:00:00Z', review_count: 2, stability: 2, difficulty: 8 },
+        { surah_number: 2, ayah_number: 1, lifecycle_state: 'review', fsrs_state: 2, next_review_at: '2026-08-03T12:00:00Z', review_count: 3, stability: 10, difficulty: 4 },
         { surah_number: 2, ayah_number: 2, lifecycle_state: 'later', review_count: 5 },
-        { surah_number: 3, ayah_number: 1, lifecycle_state: 'suspended', next_review_at: '2026-07-29T12:00:00Z', review_count: 4 },
-        { surah_number: 3, ayah_number: 2, lifecycle_state: 'core', next_review_at: '2026-07-28T12:00:00Z', review_count: 6 }
+        { surah_number: 3, ayah_number: 1, lifecycle_state: 'suspended', next_review_at: '2026-07-29T12:00:00Z', review_count: 4, stability: 20, difficulty: 6 },
+        { surah_number: 3, ayah_number: 2, lifecycle_state: 'core', next_review_at: '2026-07-28T12:00:00Z', review_count: 6, stability: 30, difficulty: 8 }
       ], '2026-07-31T12:00:00Z');
 
       expect(result).toHaveLength(3);
@@ -498,8 +498,10 @@ describe('QuranAyahMemorization public ayah helpers', () => {
         stage_start_references: { learning: '1:1', weak: '1:2' },
         stage_start_pages: { learning: 1, weak: 1 },
         active_ayah_count: 2,
+        average_difficulty: 8,
+        average_stability: 2,
         member_count: 2,
-        due_count: 1,
+        due_count: 2,
         new_count: 1,
         next_review_at: '2026-07-30T12:00:00Z',
         review_count: 2
@@ -512,7 +514,9 @@ describe('QuranAyahMemorization public ayah helpers', () => {
         active_ayah_count: 1,
         due_count: 0,
         next_review_at: '2026-08-03T12:00:00Z',
-        review_count: 3
+        review_count: 3,
+        average_difficulty: 6,
+        average_stability: 20
       });
       expect(result[2]).toMatchObject({
         group_key: 'surah-page:3:2',
@@ -522,7 +526,9 @@ describe('QuranAyahMemorization public ayah helpers', () => {
         active_ayah_count: 2,
         due_count: 0,
         next_review_at: null,
-        review_count: 10
+        review_count: 10,
+        average_difficulty: 6,
+        average_stability: 20
       });
     });
 

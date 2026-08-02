@@ -3852,6 +3852,29 @@ main.quran-mushaf-reader {
 	white-space: nowrap;
 }
 
+.memorization-progress-sort {
+	align-items: center;
+	background: none;
+	border: 0;
+	color: inherit;
+	display: inline-flex;
+	font: inherit;
+	gap: .25rem;
+	letter-spacing: inherit;
+	padding: 0;
+	text-transform: inherit;
+}
+
+.memorization-progress-sort::after {
+	content: "↕";
+	font-size: .7rem;
+	opacity: .42;
+}
+
+.memorization-progress-sort.is-active::after { content: "↑"; opacity: 1; }
+.memorization-progress-sort.is-active[data-sort-direction="descending"]::after { content: "↓"; }
+.memorization-progress-sort:focus-visible { border-radius: .15rem; outline: 2px solid var(--bs-primary); outline-offset: 2px; }
+
 .memorization-progress-table tbody td {
 	padding: .65rem .7rem;
 }
@@ -4374,7 +4397,8 @@ main.quran-mushaf-reader {
 		grid-template-areas:
 			"unit stages"
 			"next start"
-			"reviews start";
+			"reviews start"
+			"difficulty stability";
 		grid-template-columns: minmax(5.2rem, .8fr) minmax(0, 1.2fr);
 		margin-bottom: .24rem;
 		padding: .4rem .46rem;
@@ -4470,6 +4494,13 @@ main.quran-mushaf-reader {
 		color: var(--c-gray-dark);
 		content: "Reviews: ";
 	}
+
+	.quran-ayah-progress-page .memorization-progress-difficulty,
+	.quran-ayah-progress-page .memorization-progress-stability { font-size: .64rem; margin-top: .08rem; }
+	.quran-ayah-progress-page .memorization-progress-difficulty { grid-area: difficulty; text-align: left !important; }
+	.quran-ayah-progress-page .memorization-progress-stability { grid-area: stability; text-align: right !important; }
+	.quran-ayah-progress-page .memorization-progress-difficulty::before { color: var(--c-gray-dark); content: "Difficulty: "; }
+	.quran-ayah-progress-page .memorization-progress-stability::before { color: var(--c-gray-dark); content: "Stability: "; }
 }
 
 @media (min-width: 768px) and (max-width: 991.98px) {
