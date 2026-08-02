@@ -624,7 +624,13 @@ function getHadithEditMode() {
 }
 
 function shouldFlushQuranProxyCache() {
-	return window.hadithAdmin === true && (window.hadithEditMode === true || getHadithCookie('editMode') === '1');
+	var requestFlush = false;
+	try {
+		requestFlush = new URLSearchParams(window.location.search).has('flush');
+	} catch (err) {
+		requestFlush = /(?:^|[?&])flush(?:=|&|$)/.test(window.location.search || '');
+	}
+	return requestFlush || (window.hadithAdmin === true && (window.hadithEditMode === true || getHadithCookie('editMode') === '1'));
 }
 
 function setHadithEditMode(enabled) {

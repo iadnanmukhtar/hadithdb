@@ -262,10 +262,10 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           SET ${col}=${sql(status.value)}, lastmod=CURRENT_TIMESTAMP()
           WHERE id=${commentaryId}`);
       status.code = 200;
-      status.message = result.message;
       status.id = commentaryId;
       await Books.touchBookContentLastmodById(commentary.bookId);
-      refreshCommentaryIndexInBackground(commentaryId);
+      await refreshCommentaryIndex(commentaryId);
+      status.message = `${result.message}; reindexed local commentary passage`;
 
     } else if (type == 'toc') {
       var result;
@@ -784,16 +784,12 @@ function loadCommentaryTranslationIndexFields() {
   return commentaryTranslationIndexFieldsPromise;
 }
 
-function refreshCommentaryIndexInBackground(id) {
-  Promise.resolve().then(async function () {
-    var commentary = await commentaryIndexRowById(id);
-    if (!commentary)
-      return;
-    await Index.update('commentaries', commentary);
-    await Index.refresh('commentaries');
-  }).catch(function (err) {
-    debug.error(`commentary index refresh failed for ${id}: ${err.message}\n${err.stack || ''}`);
-  });
+async function refreshCommentaryIndex(id) {
+  var commentary = await commentaryIndexRowById(id);
+  if (!commentary)
+    throw createError(404, 'Local commentary passage not found after update');
+  await Index.update('commentaries', commentary);
+  await Index.refresh('commentaries');
 }
 
 async function createLocalCommentaryPassage(ids, col, value) {
