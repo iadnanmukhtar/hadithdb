@@ -7198,7 +7198,8 @@ function initQuranMemorizeReviewLauncher(root) {
 				surahInput.classList.add('is-invalid'); status.textContent = 'Choose a surah from the suggestions.'; surahInput.focus(); return;
 			}
 			var reviewTypeInput = form.querySelector('input[name="quran-memorize-surah-review-type"]:checked');
-			body = { mode: 'surah', surah_number: selectedSurah, review_type: reviewTypeInput ? reviewTypeInput.value : 'regular' };
+			var reviewUnitInput = form.querySelector('input[name="quran-memorize-surah-review-unit"]:checked');
+			body = { mode: 'surah', surah_number: selectedSurah, review_type: reviewTypeInput ? reviewTypeInput.value : 'regular', review_unit: reviewUnitInput ? reviewUnitInput.value : 'ayah' };
 		}
 		submit.disabled = true;
 		status.textContent = scope === 'page' ? `Preparing Mushaf page ${currentPage}...` : 'Preparing the Surah Review...';
@@ -8738,6 +8739,7 @@ function initQuranAyahReview(root) {
 		if (rating.dataset.quranAyahReviewBound === '1') return;
 		rating.dataset.quranAyahReviewBound = '1';
 		var ref = rating.getAttribute('data-quran-ref') || '';
+		var reviewTargetRefs = new Set([ref]);
 		var sessionId = '';
 		var attemptToken = '';
 		var reviewedRefs = new Set();
@@ -8755,9 +8757,9 @@ function initQuranAyahReview(root) {
 		var footer = document.querySelector('.mobile-bottom-nav');
 		var answerSnapshot = null;
 		var revealReviewedAyah = function () {
-			if (!page) return false;
-			var words = Array.from(page.querySelectorAll('.quran-corpus-word[data-quran-ref]')).filter(function (word) {
-				return word.getAttribute('data-quran-ref') === ref && !word.closest('.quran-mushaf-line-basmallah');
+			if (!reviewReader) return false;
+			var words = Array.from(reviewReader.querySelectorAll('.quran-corpus-word[data-quran-ref]')).filter(function (word) {
+				return reviewTargetRefs.has(word.getAttribute('data-quran-ref')) && !word.closest('.quran-mushaf-line-basmallah');
 			});
 			if (!words.length) return false;
 			answerSnapshot = words.map(function (word) {
@@ -8827,7 +8829,7 @@ function initQuranAyahReview(root) {
 		syncReviewControls(false);
 		syncUndoReview(null);
 		var revealReviewContextAyahs = function () {
-			if (!page) return;
+			if (!reviewReader) return;
 			var targetParts = ref.split(':').map(Number);
 			var isBeforeTarget = function (elementRef) {
 				var elementParts = elementRef.split(':').map(Number);
@@ -8835,9 +8837,9 @@ function initQuranAyahReview(root) {
 				return elementParts[0] < targetParts[0]
 					|| (elementParts[0] === targetParts[0] && elementParts[1] < targetParts[1]);
 			};
-			page.querySelectorAll('.quran-corpus-word[data-quran-ref], .quran-ayah-end-marker[data-quran-ref]').forEach(function (element) {
+			reviewReader.querySelectorAll('.quran-corpus-word[data-quran-ref], .quran-ayah-end-marker[data-quran-ref]').forEach(function (element) {
 				var elementRef = element.getAttribute('data-quran-ref');
-				if (elementRef === ref
+				if (reviewTargetRefs.has(elementRef)
 					|| (!isBeforeTarget(elementRef) && !reviewedRefs.has(elementRef))
 					|| element.closest('.quran-mushaf-line-basmallah')) return;
 				element.classList.add('quran-review-session-revealed');
@@ -8861,6 +8863,11 @@ function initQuranAyahReview(root) {
 				throw new Error('The active review attempt could not be restored.');
 			sessionId = data.session_id;
 			attemptToken = data.attempt_token;
+			if (data.passage && Array.isArray(data.passage.refs) && data.passage.refs.length)
+				reviewTargetRefs = new Set(data.passage.refs);
+			if (reviewReader) reviewReader.querySelectorAll('[data-quran-ref]').forEach(function (element) {
+				element.classList.toggle('quran-review-target-ayah', reviewTargetRefs.has(element.getAttribute('data-quran-ref')));
+			});
 			trackQuranAnalyticsEvent('quran_review_item_presented', {
 				mushaf_page: Number(page && page.getAttribute('data-quran-mushaf-page')) || undefined,
 				surah_number: Number(parts[0]), ayah_number: Number(parts[1])
@@ -8917,10 +8924,11 @@ function initQuranAyahReview(root) {
 			});
 		}
 		var page = rating.closest('[data-quran-mushaf-page]');
+		var reviewReader = rating.closest('[data-quran-mushaf-reader]') || page;
 		if (page) {
 			page.setAttribute('data-quran-review-ref', ref);
 			page.querySelectorAll('[data-quran-ref]').forEach(function (element) {
-				element.classList.toggle('quran-review-target-ayah', element.getAttribute('data-quran-ref') === ref);
+				element.classList.toggle('quran-review-target-ayah', reviewTargetRefs.has(element.getAttribute('data-quran-ref')));
 			});
 			revealReviewContextAyahs();
 			syncReviewedAyahsFromSession().catch(function (err) {
@@ -8969,12 +8977,16 @@ function initQuranAyahReview(root) {
 			var revealButton = event.target.closest('[data-quran-review-reveal]');
 			if (revealButton && !revealButton.disabled) {
 				event.preventDefault();
+				if (reviewReader && reviewReader.quranMushafReviewPagesReady) {
+					if (status) status.textContent = 'Loading the complete passage…';
+					await reviewReader.quranMushafReviewPagesReady;
+				}
 				if (!revealReviewedAyah()) {
 					if (status) status.textContent = 'Unable to reveal this āyah.';
 					return;
 				}
 				syncReviewControls(true);
-				if (status) status.textContent = 'Āyah revealed. Grade your recall.';
+				if (status) status.textContent = reviewTargetRefs.size > 1 ? 'Passage revealed. Grade your recall.' : 'Āyah revealed. Grade your recall.';
 				var firstGrade = gradeControls && gradeControls.querySelector('[data-quran-review-grade]');
 				if (firstGrade) firstGrade.focus();
 				return;
@@ -8988,7 +9000,6 @@ function initQuranAyahReview(root) {
 				return;
 			}
 			buttons.querySelectorAll('button').forEach(function (item) { item.disabled = true; });
-			var revealedAt = grade === 'skip' ? 0 : Date.now();
 			if (status) status.textContent = grade === 'skip' ? 'Skipping...' : 'Saving review...';
 			try {
 				var auth = window.hadithAuth;
@@ -9005,6 +9016,7 @@ function initQuranAyahReview(root) {
 						grade: grade,
 						session_id: sessionId,
 						attempt_token: attemptToken,
+						day_start: localReviewDayStart,
 						duration_seconds: Math.max(0, Math.round((Date.now() - presentedAt) / 1000))
 					})
 				});
@@ -9018,34 +9030,24 @@ function initQuranAyahReview(root) {
 				// Resolve the next persisted queue item while the graded āyah remains
 				// visible. This removes the intermediate /quran/review redirect and
 				// hides most of the next-card lookup behind the required reveal delay.
-				var nextReviewPromise = fetch(quranApiPath(`/memorization/review/sessions/${encodeURIComponent(sessionId)}/next?day_start=${encodeURIComponent(localReviewDayStart)}`), {
-					credentials: 'same-origin',
-					headers: { 'Authorization': `Bearer ${token}` }
-				}).then(async function (nextResponse) {
-					var nextData = await nextResponse.json().catch(function () { return {}; });
-					return { response: nextResponse, data: nextData };
-				}).catch(function (error) { return { error: error }; });
 				if (grade !== 'skip') reviewedRefs.add(ref);
-				if (revealedAt) {
-					var gradeLabel = grade.charAt(0).toUpperCase() + grade.slice(1);
-					if (status) status.textContent = `${gradeLabel} saved. Showing the ayah before continuing...`;
-					var revealDelay = Math.max(0, 1800 - (Date.now() - revealedAt));
-					if (revealDelay) await new Promise(function (resolve) { window.setTimeout(resolve, revealDelay); });
-				}
+				if (status) status.textContent = 'Saved. Loading the next review…';
 				if (undoInProgress) return;
 				try {
-					var nextReview = await nextReviewPromise;
-					if (nextReview.error) throw nextReview.error;
-					if (!nextReview.response.ok)
-						throw new Error(nextReview.data.error || 'Unable to load the next review.');
-					if (nextReview.data.complete || !nextReview.data.ayah) {
+					if (!data.next_review) throw new Error(data.next_review_error || 'Unable to load the next review.');
+					var nextData = data.next_review;
+					if (nextData.complete || !nextData.ayah) {
 						window.navigateWithPageNotice(quranUrl('/quran/review'),
 							{ type:'success', title:'Review complete', message:'You completed this review session.', scrollToTop:true },
 							'Finishing your review...');
 						return;
 					}
-					var nextAyah = nextReview.data.ayah;
+					var nextAyah = nextData.ayah;
 					var nextQuery = [`review=${nextAyah.surah_number}:${nextAyah.ayah_number}`];
+					if (nextData.passage && Array.isArray(nextData.passage.ayahs)) {
+						var passageEndPage = Math.max.apply(null, nextData.passage.ayahs.map(function (item) { return Number(item.page_number) || 0; }));
+						if (passageEndPage > Number(nextAyah.page_number || 1)) nextQuery.push(`reviewPassageEndPage=${passageEndPage}`);
+					}
 					if (nextAyah.retry) nextQuery.push('reviewRetry=1');
 					window.navigateWithQuranReviewLoading(quranUrl(`/quran/page/${nextAyah.page_number || 1}?${nextQuery.join('&')}`), 'Loading the next āyah...');
 				} catch (_nextErr) {
@@ -10131,7 +10133,8 @@ function initQuranMushafInfinite(root) {
 	var reader = (root || document).querySelector('[data-quran-mushaf-reader]');
 	if (!reader || reader.dataset.quranMushafBound === '1')
 		return;
-	if (reader.hasAttribute('data-quran-review-reader'))
+	var reviewPassageEndPage = Math.max(0, Number(new URLSearchParams(window.location.search).get('reviewPassageEndPage')) || 0);
+	if (reader.hasAttribute('data-quran-review-reader') && !reviewPassageEndPage)
 		return;
 	reader.dataset.quranMushafBound = '1';
 	var sentinel = reader.querySelector('[data-quran-mushaf-sentinel]');
@@ -10196,6 +10199,8 @@ function initQuranMushafInfinite(root) {
 				throw new Error('The next Mushaf page was not found.');
 			var pageNumber = page.getAttribute('data-quran-mushaf-page');
 			var importedPage = document.importNode(page, true);
+			if (reader.hasAttribute('data-quran-review-reader'))
+				importedPage.querySelectorAll('.quran-memorize-rating').forEach(function (controls) { controls.remove(); });
 			importedPage.setAttribute('data-page-title', parsed.title || '');
 			copyQuranReaderModeHrefs(parsed, importedPage);
 			pageInstance += 1;
@@ -10278,7 +10283,15 @@ function initQuranMushafInfinite(root) {
 	window.addEventListener('resize', function () {
 		maybeLoadNextPage();
 	});
-	loadNextPage().then(function () { window.requestAnimationFrame(maybeLoadNextPage); });
+	var loadReviewPassagePages = function () {
+		if (!reviewPassageEndPage) return loadNextPage().then(function () { window.requestAnimationFrame(maybeLoadNextPage); });
+		var loadedPages = Array.from(reader.querySelectorAll('[data-quran-mushaf-page]')).map(function (page) {
+			return Number(page.getAttribute('data-quran-mushaf-page')) || 0;
+		});
+		if (Math.max.apply(null, loadedPages) >= reviewPassageEndPage) return Promise.resolve();
+		return loadNextPage().then(loadReviewPassagePages);
+	};
+	reader.quranMushafReviewPagesReady = loadReviewPassagePages();
 	reader.quranMushafLoadNext = loadNextPage;
 }
 

@@ -753,11 +753,13 @@ describe('QuranAyahMemorization public ayah helpers', () => {
 
     test('requires the two supported Surah Review types without page limits', () => {
       expect(QuranAyahMemorization.reviewSessionRequest({ mode:'surah', surahNumber:2, reviewType:'regular' })).toMatchObject({
-        mode:'surah', surahNumber:2, reviewType:'regular', pageLimit:0
+        mode:'surah', reviewUnit:'ayah', surahNumber:2, reviewType:'regular', pageLimit:0
       });
-      expect(QuranAyahMemorization.reviewSessionRequest({ mode:'surah', surahNumber:2, reviewType:'all' })).toMatchObject({
-        mode:'surah', surahNumber:2, reviewType:'all', pageLimit:null
+      expect(QuranAyahMemorization.reviewSessionRequest({ mode:'surah', surahNumber:2, reviewType:'all', reviewUnit:'passage' })).toMatchObject({
+        mode:'surah', reviewUnit:'passage', surahNumber:2, reviewType:'all', pageLimit:null
       });
+      expect(() => QuranAyahMemorization.reviewSessionRequest({ mode:'surah', surahNumber:2, reviewType:'all', reviewUnit:'page' }))
+        .toThrow('Choose āyah-by-āyah or passage-by-passage review');
       expect(() => QuranAyahMemorization.reviewSessionRequest({ mode:'surah', surahNumber:2, pageLimit:3 }))
         .toThrow('Choose Review all āyāt or Regular review');
     });

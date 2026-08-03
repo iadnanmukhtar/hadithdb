@@ -144,6 +144,10 @@
             <label><input class="form-check-input" type="radio" name="quran-surah-review-type" value="regular" checked> <span><strong>Regular review</strong><small>Follow the existing āyah schedules for this surah</small></span></label>
             <label><input class="form-check-input" type="radio" name="quran-surah-review-type" value="all"> <span><strong>Review all āyāt</strong><small>Add every āyah in this surah to your schedule</small></span></label>
           </div></fieldset>
+          <fieldset class="mt-3"><legend class="form-label"><strong>Review unit</strong></legend><div class="quran-memorize-review-scope">
+            <label><input class="form-check-input" type="radio" name="quran-surah-review-unit" value="ayah" checked> <span><strong>Āyah by āyah</strong><small>Reveal and grade each āyah separately</small></span></label>
+            <label><input class="form-check-input" type="radio" name="quran-surah-review-unit" value="passage"> <span><strong>Passage by passage</strong><small>Review a Study passage as a batch of scheduled āyāt</small></span></label>
+          </div></fieldset>
           <p class="small text-muted mt-3 mb-0" id="quran-surah-review-status" role="status" aria-live="polite"></p>
         </div>
         <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary" id="quran-surah-review-start">Start Surah Review</button></footer>
@@ -620,11 +624,12 @@
         const surahNumber=Number(surahReviewSelect.value);
         if(!Number.isInteger(surahNumber)){surahReviewInput.classList.add('is-invalid');surahReviewStatus.textContent='Choose a surah from the suggestions.';surahReviewInput.focus();return;}
         const reviewType=(surahReviewForm.querySelector('input[name="quran-surah-review-type"]:checked')||{}).value||'regular';
+        const reviewUnit=(surahReviewForm.querySelector('input[name="quran-surah-review-unit"]:checked')||{}).value||'ayah';
         surahReviewStart.disabled=true;
         surahReviewStatus.textContent=reviewType==='all'?'Preparing all āyāt...':'Preparing the scheduled āyāt...';
         if(window.showQuranReviewLoading)window.showQuranReviewLoading('Preparing your review...');
         try{
-          const sessionData=await request('/review/sessions',{method:'POST',body:{mode:'surah',surah_number:surahNumber,review_type:reviewType}});
+          const sessionData=await request('/review/sessions',{method:'POST',body:{mode:'surah',surah_number:surahNumber,review_type:reviewType,review_unit:reviewUnit}});
           const session=sessionData.session||{};
           if(window.trackQuranAnalyticsEvent)window.trackQuranAnalyticsEvent('quran_review_session_start',{session_mode:'surah',surah_number:surahNumber,review_type:reviewType,ayah_count:Number(session.queued)||0});
           if(window.trackQuranAnalyticsEvent&&Number(session.enrolled_count)>0)window.trackQuranAnalyticsEvent('quran_memorization_enroll',{enrollment_scope:'surah',surah_number:surahNumber,enrolled_ayah_count:Number(session.enrolled_count)});

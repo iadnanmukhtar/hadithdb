@@ -218,6 +218,18 @@ router.post('/ayahs/:surah/:ayah/reviews', async function (req, res) {
       fsrs: settings.memorization && settings.memorization.fsrs
     }
   );
+  if (req.body && req.body.session_id) {
+    try {
+      result.next_review = await QuranAyahMemorization.nextSessionItem(
+        req.user.uid,
+        req.body.session_id,
+        req.body.day_start
+      );
+    } catch (err) {
+      result.next_review = null;
+      result.next_review_error = err.message || 'Unable to select the next review.';
+    }
+  }
   res.json(result);
 });
 
@@ -254,6 +266,7 @@ router.post('/review/sessions', async function (req, res) {
     mode: req.body && req.body.mode,
     surahNumber: req.body && req.body.surah_number,
     reviewType: req.body && req.body.review_type,
+    reviewUnit: req.body && req.body.review_unit,
     pageNumber: req.body && req.body.page_number
   });
   res.status(201).json({ session });

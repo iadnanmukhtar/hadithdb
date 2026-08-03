@@ -100,6 +100,10 @@
         }
         const ayah = data.ayah;
         const query = [`review=${ayah.surah_number}:${ayah.ayah_number}`];
+        if (data.passage && Array.isArray(data.passage.ayahs)) {
+          const endPage = Math.max(...data.passage.ayahs.map(item => Number(item.page_number) || 0));
+          if (endPage > Number(ayah.page_number || 1)) query.push(`reviewPassageEndPage=${endPage}`);
+        }
         if (ayah.retry) query.push('reviewRetry=1');
         window.location.replace(quranUrl(`/quran/page/${ayah.page_number || 1}?${query.join('&')}`));
       } catch (err) {
