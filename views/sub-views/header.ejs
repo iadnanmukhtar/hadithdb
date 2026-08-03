@@ -141,6 +141,15 @@
           </div>
         </div>
         <% } %>
+        <a class="nav-link top-nav-icon-link" href="<%= utils.urlFor(req, '/bookmarks') %>" title="Bookmarks" aria-label="Bookmarks">
+          <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>"></i>
+        </a>
+        <div class="search-click-toggle">
+          <form action="<%= navSearchAction %>">
+            <input role="search" type="text" class="form-control search-click" name="q" placeholder="<%= navSearchPlaceholder %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
+          </form>
+          <a class="nav-link top-nav-icon-link" role="button" title="Search" aria-label="Search"><i class="bi bi-search"></i></a>
+        </div>
         <button type="button" class="btn btn-sm nav-auth-btn" id="nav-auth-mobile">Sign in</button>
         <button type="button" class="btn btn-link p-0 border-0 top-nav-menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav" aria-controls="offcanvas-topnav" aria-label="Open menu">
           <i id="icon-menu" class="bi bi-list"></i>
