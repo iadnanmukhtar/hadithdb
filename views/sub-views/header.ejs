@@ -40,6 +40,8 @@
     var headerLogo = isQuranArea ? '/images/quran-logo2.svg' : '/images/logo2.svg';
     var headerLogoAlt = isQuranArea ? 'Quran Unlocked' : site.name;
     var headerBrandHref = isQuranArea ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
+    var alternateModeLabel = isQuranArea ? 'Hadith' : 'Quran';
+    var alternateModeHref = isQuranArea ? utils.hadithBaseUrl(req) : utils.quranUrl(req, '/quran');
     var navSearchPlaceholder = isQuranArea ? 'Search the Qurʿān or tafāsīr...' : 'Search hadīth...';
     function activeNavAttrs(active) {
       return active ? ' active" aria-current="page' : '';
@@ -48,7 +50,12 @@
   <div class="row g-0 site-navbar-main">
     
     <header class="col col-md-4 d-flex site-header-brand">
-      <a href="<%= headerBrandHref %>"><img class="logo me-2" src="<%= headerLogo %>" width="56" height="56" alt="<%= headerLogoAlt %>"></a>
+      <span class="site-header-logo-wrap">
+        <a href="<%= headerBrandHref %>"><img class="logo" src="<%= headerLogo %>" width="56" height="56" alt="<%= headerLogoAlt %>"></a>
+        <a class="site-mode-switch" href="<%= alternateModeHref %>" aria-label="Switch to <%= alternateModeLabel %>" title="Switch to <%= alternateModeLabel %>">
+          <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+        </a>
+      </span>
       <div>
         <h6 class="title fs-4 mb-0">
           <a href="<%= headerBrandHref %>" class="text-dark text-decoration-none">

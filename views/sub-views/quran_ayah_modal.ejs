@@ -1,19 +1,22 @@
 <%
   const modalAyahs = locals.passage || [];
   const activeIndex = Number.isInteger(locals.activeIndex) && locals.activeIndex >= 0 ? locals.activeIndex : 0;
+  const usePassagePageModalLayout = locals.usePassagePageModalLayout === true;
 %>
 <% if (modalAyahs.length > 0) { %>
 <aside class="modal fade quran-ayah-modal" id="quran-ayah-tafsir-modal" tabindex="-1" aria-labelledby="quran-ayah-tafsir-modal-title" aria-hidden="true" data-quran-ayah-modal-type="tafsirs">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+  <div class="modal-dialog <%= usePassagePageModalLayout ? 'quran-ayah-modal-passage-dialog' : 'modal-xl' %> modal-dialog-scrollable">
     <div class="modal-content">
       <header class="modal-header quran-ayah-modal-toolbar">
         <h2 class="modal-title fs-5" id="quran-ayah-tafsir-modal-title">Quran</h2>
-        <nav class="quran-ayah-modal-nav" aria-label="Ayah and tafsir navigation">
-          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
-          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
-          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-prev" title="Previous tafsir" aria-label="Previous tafsir"><span class="bi bi-arrow-up"></span></button>
-          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-next" title="Next tafsir" aria-label="Next tafsir"><span class="bi bi-arrow-down"></span></button>
-          <a class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-expand disabled" href="#" title="Open selected tafsir page" aria-label="Open selected tafsir page" aria-disabled="true"><span class="bi bi-arrows-fullscreen"></span></a>
+        <nav class="quran-ayah-modal-nav" aria-label="Tafsir actions">
+          <% if (!usePassagePageModalLayout) { %>
+            <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-prev" title="Previous tafsir" aria-label="Previous tafsir"><span class="bi bi-arrow-up"></span></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-next" title="Next tafsir" aria-label="Next tafsir"><span class="bi bi-arrow-down"></span></button>
+          <% } %>
+          <a class="btn <%= usePassagePageModalLayout ? 'btn-primary quran-ayah-modal-full-page' : 'btn-sm btn-outline-secondary' %> quran-ayah-modal-tafsir-expand disabled" href="#" title="Open selected tafsir as a full page" aria-label="Open selected tafsir as a full page" aria-disabled="true"><span class="bi bi-arrows-fullscreen" aria-hidden="true"></span><% if (usePassagePageModalLayout) { %><span>Full page</span><% } %></a>
           <a class="btn btn-sm btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/settings') %>" title="Quran settings" aria-label="Quran settings"><span class="bi bi-gear"></span></a>
         </nav>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -35,14 +38,16 @@
 </aside>
 
 <aside class="modal fade quran-ayah-modal" id="quran-ayah-translations-modal" tabindex="-1" aria-labelledby="quran-ayah-translations-modal-title" aria-hidden="true" data-quran-ayah-modal-type="translations">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+  <div class="modal-dialog <%= usePassagePageModalLayout ? 'quran-ayah-modal-passage-dialog' : 'modal-xl' %> modal-dialog-scrollable">
     <div class="modal-content">
       <header class="modal-header quran-ayah-modal-toolbar">
         <h2 class="modal-title fs-5" id="quran-ayah-translations-modal-title">Quran</h2>
-        <nav class="quran-ayah-modal-nav" aria-label="Ayah navigation">
-          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
-          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
-          <a class="btn btn-sm btn-outline-secondary quran-ayah-modal-translation-expand disabled" href="#" title="Open translations page" aria-label="Open translations page" aria-disabled="true"><span class="bi bi-arrows-fullscreen"></span></a>
+        <nav class="quran-ayah-modal-nav" aria-label="Translation actions">
+          <% if (!usePassagePageModalLayout) { %>
+            <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
+          <% } %>
+          <a class="btn <%= usePassagePageModalLayout ? 'btn-primary quran-ayah-modal-full-page' : 'btn-sm btn-outline-secondary' %> quran-ayah-modal-translation-expand disabled" href="#" title="Open translations as a full page" aria-label="Open translations as a full page" aria-disabled="true"><span class="bi bi-arrows-fullscreen" aria-hidden="true"></span><% if (usePassagePageModalLayout) { %><span>Full page</span><% } %></a>
           <a class="btn btn-sm btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/settings') %>" title="Quran settings" aria-label="Quran settings"><span class="bi bi-gear"></span></a>
         </nav>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -53,7 +58,7 @@
           const ayahRefLatin = arabic.toLatinDigits(ayahNum.toString());
           const ayahRefParts = ayahRefLatin.split(/:/);
           const translationAyahHref = ayahRefParts.length >= 2
-            ? utils.quranUrl(req, `/quran/translations/${ayahRefParts[0]}/${ayahRefParts[1]}`)
+            ? utils.quranUrl(req, `/quran/translations/quran:${ayahRefParts[0]}:${ayahRefParts[1]}`)
             : '';
           const paneId = `quran-ayah-translations-modal-pane-${index}`;
           const prevRef = modalAyahs[index - 1]?.ref || ayah.prev_ref || '';
@@ -70,14 +75,16 @@
 </aside>
 
 <aside class="modal fade quran-ayah-modal" id="quran-ayah-reflections-modal" tabindex="-1" aria-labelledby="quran-ayah-reflections-modal-title" aria-hidden="true" data-quran-ayah-modal-type="reflections">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+  <div class="modal-dialog <%= usePassagePageModalLayout ? 'quran-ayah-modal-passage-dialog' : 'modal-xl' %> modal-dialog-scrollable">
     <div class="modal-content">
       <header class="modal-header quran-ayah-modal-toolbar">
         <h2 class="modal-title fs-5" id="quran-ayah-reflections-modal-title">Quran</h2>
-        <nav class="quran-ayah-modal-nav" aria-label="Ayah navigation">
-          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
-          <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
-        </nav>
+        <% if (!usePassagePageModalLayout) { %>
+          <nav class="quran-ayah-modal-nav" aria-label="Ayah navigation">
+            <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
+          </nav>
+        <% } %>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </header>
       <div class="modal-body">

@@ -695,7 +695,7 @@ async function addQuranTranslationSitemapUrls(urls, quranDomain) {
     urls.add(`${quranDomain}/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}`);
   });
   quranAyahRefs().forEach(function (ref) {
-    urls.add(`${quranDomain}/quran/translations/${ref.surah}/${ref.ayah}`);
+    urls.add(`${quranDomain}/quran/translations/quran:${ref.surah}:${ref.ayah}`);
   });
 }
 

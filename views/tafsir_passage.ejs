@@ -144,7 +144,7 @@
         tafsirHeading: `${tafsirTitle} ${tafsirMetaRef}${surah.name_en ? ` ${surah.name_en}` : ''}`,
         tafsirInstance: 'passage',
         tafsirSettingsHref: utils.quranUrl(req, '/quran/settings'),
-        tafsirTranslationsHref: utils.quranUrl(req, `/quran/translations/${surah.num}/${ayah}`),
+        tafsirTranslationsHref: utils.quranUrl(req, `/quran/translations/quran:${surah.num}:${ayah}`),
         tafsirTranslationsModalIndex: quranAyahModalIndex
       }); %>
 

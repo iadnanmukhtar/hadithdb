@@ -6184,7 +6184,7 @@ function initQuranAyahModals(root) {
 			var ayah = (pane.attr('data-quran-ayah-ref') || '').toString().split(':').pop();
 			if (!surah || !ayah)
 				return '';
-			return quranPath(`/quran/translations/${encodeURIComponent(surah)}/${encodeURIComponent(ayah)}`);
+			return quranPath(`/quran/translations/quran:${encodeURIComponent(surah)}:${encodeURIComponent(ayah)}`);
 		};
 		var updateTranslationExpandLink = function () {
 			if (!translationExpandLink.length)

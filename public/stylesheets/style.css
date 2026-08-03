@@ -412,7 +412,9 @@ main.quran-toc-reader-modes {
 	margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 }
 
-main.quran-review-top-offset {
+main.quran-review-top-offset,
+main.quran-mushaf-reader,
+body:has(.site-navbar .chapter-toc) main {
 	margin-top: max(9rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem)) !important;
 }
 
@@ -536,6 +538,42 @@ main.chapter.tafsir-only-page {
 	min-width: 0;
 }
 
+.site-header-logo-wrap {
+	display: block;
+	flex: 0 0 auto;
+	position: relative;
+}
+
+.site-header-logo-wrap > a:first-child {
+	display: block;
+}
+
+.site-mode-switch {
+	align-items: center;
+	background: var(--c-accent);
+	border: 2px solid var(--c-white);
+	border-radius: 50%;
+	bottom: -0.25rem;
+	box-shadow: 0 1px 4px var(--c-black-12);
+	color: var(--c-white);
+	display: inline-flex;
+	font-size: 0.65rem;
+	height: 1.45rem;
+	justify-content: center;
+	position: absolute;
+	right: -0.4rem;
+	text-decoration: none;
+	width: 1.45rem;
+	z-index: 1;
+}
+
+.site-mode-switch:hover,
+.site-mode-switch:focus-visible {
+	background: var(--c-accent-dark, var(--c-accent));
+	color: var(--c-white);
+	transform: scale(1.08);
+}
+
 .site-header-brand>div {
 	display: flex;
 	flex: 1 1 auto;
@@ -589,6 +627,14 @@ main.chapter.tafsir-only-page {
 .site-navbar.shrink .logo {
 	width: 28px;
 	height: 28px;
+}
+
+.site-navbar.shrink .site-mode-switch {
+	bottom: -0.2rem;
+	font-size: 0.5rem;
+	height: 1rem;
+	right: -0.3rem;
+	width: 1rem;
 }
 
 .site-navbar.shrink .title,
@@ -2229,10 +2275,6 @@ del em strong {
 .quran-reader-modes .quran-script-switcher .dropdown-item.active {
 	background-color: var(--c-speech);
 	color: white;
-}
-
-main.quran-mushaf-reader {
-	margin-top: 9rem !important;
 }
 
 .quran-mushaf-page {
@@ -7080,6 +7122,48 @@ body > footer,
 
 .quran-ayah-modal-nav::-webkit-scrollbar {
 	display: none;
+}
+
+.quran-ayah-modal-passage-dialog {
+	max-width: calc(100% - 1rem);
+}
+
+@media (min-width: 576px) {
+	.quran-ayah-modal-passage-dialog {
+		max-width: 540px;
+	}
+}
+
+@media (min-width: 768px) {
+	.quran-ayah-modal-passage-dialog {
+		max-width: 720px;
+	}
+}
+
+@media (min-width: 992px) {
+	.quran-ayah-modal-passage-dialog {
+		max-width: 960px;
+	}
+}
+
+@media (min-width: 1200px) {
+	.quran-ayah-modal-passage-dialog {
+		max-width: 1140px;
+	}
+}
+
+@media (min-width: 1400px) {
+	.quran-ayah-modal-passage-dialog {
+		max-width: 1320px;
+	}
+}
+
+.quran-ayah-modal-full-page {
+	align-items: center;
+	display: inline-flex;
+	font-weight: 600;
+	gap: .4rem;
+	white-space: nowrap;
 }
 
 .quran-ayah-modal-pane .quran-tafsirs {

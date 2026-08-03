@@ -32,23 +32,16 @@ router.get('/', async function (req, res) {
   }
 });
 
-router.get('/:surah', async function (req, res, next) {
-  const surahNum = Number(req.params.surah);
-  const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
-  if (!surah)
-    return next(createError(404, `Quran surah ${req.params.surah} not found`));
-  res.redirect(302, Utils.quranPath(`/quran/translations/${surah.num}/1`));
-});
-
-router.get('/:surah/:ayah', async function (req, res, next) {
+router.get('/:ref', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  const surahNum = Number(req.params.surah);
-  const ayahNum = Number(req.params.ayah);
+  const refMatch = /^quran:(\d+):(\d+)$/.exec(req.params.ref);
+  const surahNum = refMatch ? Number(refMatch[1]) : NaN;
+  const ayahNum = refMatch ? Number(refMatch[2]) : NaN;
   const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
   if (!surah || !Number.isInteger(ayahNum) || ayahNum < 1 || ayahNum > Number(surah.ayahs))
-    return next(createError(404, `Quran ayah ${req.params.surah}:${req.params.ayah} not found`));
+    return next(createError(404, `Quran ayah ${req.params.ref} not found`));
   if (Object.prototype.hasOwnProperty.call(req.query || {}, 'lang'))
     return res.redirect(302, canonicalTranslationUrl(req, surah.num, ayahNum));
 
@@ -84,7 +77,7 @@ function canonicalTranslationUrl(req, surah, ayah) {
       params.append(key, value);
   });
   const query = params.toString();
-  return Utils.quranPath(`/quran/translations/${surah}/${ayah}${query ? `?${query}` : ''}`);
+  return Utils.quranPath(`/quran/translations/quran:${surah}:${ayah}${query ? `?${query}` : ''}`);
 }
 
 async function quranAyahs(surah, startAyah, endAyah) {
@@ -138,9 +131,9 @@ function translationNavigation(surah, ayah) {
   const prev = adjacentQuranAyah(surah, ayah, -1);
   const next = adjacentQuranAyah(surah, ayah, 1);
   return {
-    prev: prev ? Utils.quranPath(`/quran/translations/${prev.surah}/${prev.ayah}`) : '',
+    prev: prev ? Utils.quranPath(`/quran/translations/quran:${prev.surah}:${prev.ayah}`) : '',
     prevTitle: prev ? `§${prev.surah}.${prev.ayah}` : '',
-    next: next ? Utils.quranPath(`/quran/translations/${next.surah}/${next.ayah}`) : '',
+    next: next ? Utils.quranPath(`/quran/translations/quran:${next.surah}:${next.ayah}`) : '',
     nextTitle: next ? `§${next.surah}.${next.ayah}` : ''
   };
 }

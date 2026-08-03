@@ -313,7 +313,7 @@
           <% } %>
         <% } %>
         <%- include('sub-views/quran.ejs', { site: site, page: page, passage: results, readerRef: quranNavigatorRef, selectedAyah: locals.selectedAyah, selectedAyahs: selectedAyahs, quranSubsections: locals.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: quranShareId, main: false, title: false, searchResult: false }); %>
-        <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: quranAyahModalItems, activeIndex: selectedAyahs.length > 0 ? selectedAyahModalIndex : 0 }); %>
+        <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: quranAyahModalItems, activeIndex: selectedAyahs.length > 0 ? selectedAyahModalIndex : 0, usePassagePageModalLayout: true }); %>
         <% var passageLikeId = section && section.id; %>
         <% if (results.length > 0 && results[0].id && passageLikeId) { %>
           <aside class="tags quran-passage-actions mt-2">

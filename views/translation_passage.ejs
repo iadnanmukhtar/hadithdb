@@ -19,7 +19,7 @@
       description_en: translationMetaDescription,
       subtitle_en: `Quran ${ref}`,
       subtitle: `${surah.name_ar} ${arabic.toArabicDigits(ayah + '')}`,
-      canonical: `/quran/translations/${surah.num}/${ayah}`,
+      canonical: `/quran/translations/quran:${surah.num}:${ayah}`,
       context: {
         quranSearchProxy: true
       }
@@ -36,7 +36,7 @@
 	    }).sort(function (a, b) {
 	      return a.num - b.num;
 	    });
-	    var translationsPath = '/quran/translations';
+	    var translationsPath = '/quran/translations/quran:';
 	    var quranChapter = locals.chapter;
 	    var quranSection = locals.section;
 	    var quranChapterHref = quranChapter && quranChapter.path ? utils.quranUrl(req, `/${quranChapter.path}`) : utils.quranUrl(req, `/quran/${surah.num}`);
