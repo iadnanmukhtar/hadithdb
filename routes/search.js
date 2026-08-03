@@ -500,9 +500,11 @@ async function sitemapUrls(req) {
   if (!flushCache && Utils.cachedTextPathForRead(cachedFile)) {
     const cachedText = Utils.readCachedTextFile(cachedFile);
     const cachedUrls = sitemapTextToUrls(cachedText);
+    const siteUrls = sitemapUrlsForSite(cachedUrls, quranOnly);
     const requiredUrls = quranOnly ? quranPublicSitemapUrlList(quranSitemapBaseUrl(req)) : [];
-    if (!sitemapCacheNeedsRebuild(cachedUrls, requiredUrls))
-      return cachedUrls;
+    const hasWrongSiteUrls = siteUrls.length !== cachedUrls.length;
+    if (!hasWrongSiteUrls && !sitemapCacheNeedsRebuild(cachedUrls, requiredUrls))
+      return siteUrls;
   }
   const cacheKey = quranOnly ? 'quran' : 'hadith';
   if (!sitemapBuilds.has(cacheKey)) {
@@ -511,7 +513,36 @@ async function sitemapUrls(req) {
     }));
   }
   const txt = await sitemapBuilds.get(cacheKey);
-  return sitemapTextToUrls(txt);
+  return sitemapUrlsForSite(sitemapTextToUrls(txt), quranOnly);
+}
+
+function sitemapUrlsForSite(urls, quranOnly) {
+  if (quranOnly)
+    return urls.filter(quranRelatedSitemapUrl);
+  const commentaryAliases = new Set((global.commentaries || [])
+    .filter(book => book && (book.type === 'tafsir' || book.type === 'trans'))
+    .map(book => Utils.emptyIfNull(book.alias).toString()));
+  return urls.filter(url => hadithSitemapUrl(url, commentaryAliases));
+}
+
+function quranRelatedSitemapUrl(url) {
+  try {
+    return new URL(url).pathname.startsWith('/quran');
+  } catch (e) {
+    return false;
+  }
+}
+
+function hadithSitemapUrl(url, commentaryAliases) {
+  try {
+    const pathname = new URL(url).pathname;
+    if (pathname.startsWith('/quran') || pathname === '/tafsir' || pathname.startsWith('/tafsir/'))
+      return false;
+    const firstSegment = decodeURIComponent(pathname.split('/')[1] || '').split(':')[0];
+    return !commentaryAliases.has(firstSegment);
+  } catch (e) {
+    return false;
+  }
 }
 
 async function buildAndCacheSitemap(req, cachedFile) {
@@ -572,7 +603,9 @@ async function buildSitemapText(req) {
   var domain = global.settings.site.url;
   var quranDomain = quranSitemapBaseUrl(req);
   var quranOnly = Utils.isQuranSubdomainRequest(req);
-  var bookSitemapFilter = quranOnly ? `= 'quran'` : `<> 'quran'`;
+  var bookSitemapFilter = quranOnly
+    ? `b.alias = 'quran'`
+    : `b.alias <> 'quran' AND COALESCE(b.type, 'hadith') = 'hadith'`;
   var sitemapUrl = function (alias, h1, h2) {
     if (alias === 'quran')
       return `${quranDomain}/quran${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
@@ -601,13 +634,13 @@ async function buildSitemapText(req) {
   }
   var results = await global.query(`
     select b.alias, null as h1, null as h2 from books b
-    where b.alias ${bookSitemapFilter}
+    where ${bookSitemapFilter}
     union
     select b.alias, t.h1, t.h2 from toc t, books b
-    where t.bookId = b.id and t.level < 3 and b.alias ${bookSitemapFilter}
+    where t.bookId = b.id and t.level < 3 and ${bookSitemapFilter}
     union
     select concat(b.alias, ':', num) as alias, null h1, null as h2 from hadiths h, books b
-    where h.bookId = b.id and h.title_en is not null and b.alias ${bookSitemapFilter}
+    where h.bookId = b.id and h.title_en is not null and ${bookSitemapFilter}
     -- union
     -- select distinct 'tag' as alias,t.text_en as h1, null as h2 from tags t, hadiths_tags ht
     -- where t.id = ht.tagId
