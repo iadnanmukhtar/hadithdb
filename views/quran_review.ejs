@@ -6,7 +6,7 @@
 </head>
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
-  <main class="container col-lg-7 mx-auto mt-10<%= req.query.complete === undefined ? ' page-loading-page' : '' %>">
+  <main class="container col-lg-7 mx-auto mt-10 quran-review-top-offset<%= req.query.complete === undefined ? ' page-loading-page' : '' %>">
     <h1 class="fs-4">Quran Review</h1>
     <% if (req.query.complete === undefined) { %>
     <div class="page-loading" id="quran-review-loading" role="status" aria-live="polite">

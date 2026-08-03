@@ -156,6 +156,30 @@ router.put('/surahs/:surah/core', async function (req, res) {
   res.json(result);
 });
 
+router.post('/onboarding', async function (req, res) {
+  const knownValues = req.body && req.body.known_surahs;
+  if (knownValues !== undefined && !Array.isArray(knownValues)) {
+    const err = new Error('Known surahs must be a list.');
+    err.status = 400;
+    throw err;
+  }
+  const knownSurahs = Array.from(new Set((knownValues || []).map(Number)));
+  if (knownSurahs.length > 114 || knownSurahs.some(surah => !QuranAyahMemorization.parseRef(surah, 1))) {
+    const err = new Error('Choose valid surahs that you know by heart.');
+    err.status = 400;
+    throw err;
+  }
+  const known = [];
+  for (const surah of knownSurahs)
+    known.push(await QuranAyahMemorization.markSurahCore(req.user.uid, surah));
+  const learning = await QuranAyahMemorization.enrollLearningAyahs(
+    req.user.uid,
+    req.body && req.body.learning_surah,
+    req.body && req.body.learning_ayah_count
+  );
+  res.json({ known_surahs: known.map(result => result.surah_number), learning });
+});
+
 router.post('/ayahs/:surah/:ayah/activity', async function (req, res) {
   const ayah = await QuranAyahMemorization.recordLearningActivity(
     req.user.uid,

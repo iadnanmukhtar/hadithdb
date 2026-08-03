@@ -91,7 +91,7 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle<%- activeNavAttrs(isMoreArea) %>" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-gear"></i> My Settings</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-sliders"></i> My Settings</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
@@ -175,7 +175,7 @@
             <i class="bi bi-card-heading" aria-hidden="true"></i>
           </a>
           <a class="offcanvas-quick-action<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>" title="My Settings" aria-label="My Settings">
-            <i class="bi bi-gear<%= isSettingsArea ? '-fill' : '' %>" aria-hidden="true"></i>
+            <i class="bi bi-sliders" aria-hidden="true"></i>
           </a>
         </div>
         <div class="row">
@@ -337,7 +337,7 @@
   </nav>
   <% } %>
 
-  <% if (requestPath === '/quran' && !pageQuranCommentaryBook && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
+  <% if ((requestPath === '/quran' || requestPath === '/quran/review') && !pageQuranCommentaryBook && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
   <nav class="row g-0 chapter-toc">
     <div class="col-12 chapter-toc-toolbar">
       <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="Show juz sections">
@@ -347,6 +347,7 @@
       </a>
       <span class="chapter-toc-reader-modes">
         <%- include('quran_reader_modes.ejs', {
+          readerMode: requestPath === '/quran/review' ? 'review' : undefined,
           passageHref: utils.quranUrl(req, '/quran/1'),
           ayahHref: `${utils.quranUrl(req, '/quran/1')}?ayat`,
           mushafHref: utils.quranUrl(req, '/quran/page/1'),

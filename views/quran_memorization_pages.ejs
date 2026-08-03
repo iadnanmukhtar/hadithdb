@@ -8,7 +8,7 @@
 <head><%- include('sub-views/head.ejs', { site: site, page: page }); %></head>
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
-  <main class="container col-lg-8 mx-auto mt-10 quran-memorization-welcome" id="quran-memorization-welcome"<% if (!helpView) { %> hidden<% } %>>
+  <main class="container col-lg-8 mx-auto mt-10 quran-review-top-offset quran-memorization-welcome" id="quran-memorization-welcome"<% if (!helpView) { %> hidden<% } %>>
     <section class="quran-memorization-welcome-hero text-center mx-auto">
       <span class="quran-memorization-welcome-icon" aria-hidden="true"><i class="bi bi-book"></i></span>
       <p class="text-primary fw-semibold small mb-2"><span class="badge rounded-pill text-bg-primary me-1">Adaptive review</span> Spaced repetition for Quran hifz</p>
@@ -83,12 +83,13 @@
       </div>
     </article>
   </main>
-  <main class="container col-lg-8 mx-auto mt-10 quran-ayah-progress-page" id="quran-memorization-progress" hidden>
+  <main class="container col-lg-8 mx-auto mt-10 quran-review-top-offset quran-ayah-progress-page" id="quran-memorization-progress" hidden>
     <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
       <div><h1 class="fs-4 mb-1">Memorization Progress</h1><p class="text-muted small mb-0">Track every memorized āyah, see what is due now, and begin a guided review. Progress is organized by surah and Mushaf page.</p></div>
       <div class="d-flex align-items-center justify-content-end gap-2 ms-auto quran-progress-actions">
         <button type="button" class="btn btn-outline-secondary btn-sm quran-progress-secondary-action" data-bs-toggle="modal" data-bs-target="#quran-fsrs-settings-modal" aria-label="Review settings" title="Review settings"><i class="bi bi-sliders" aria-hidden="true"></i><span class="quran-progress-secondary-action-label">Review settings</span></button>
         <a class="btn btn-outline-secondary btn-sm quran-progress-secondary-action" href="<%= helpUrl %>" aria-label="How Quran memorization works" title="How it works"><i class="bi bi-question-circle" aria-hidden="true"></i><span class="quran-progress-secondary-action-label">How it works</span></a>
+        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#quran-get-started-modal"><i class="bi bi-stars me-1" aria-hidden="true"></i>Get Started</button>
         <div class="dropdown">
           <button type="button" class="btn btn-primary btn-sm dropdown-toggle" id="quran-start-review" data-bs-toggle="dropdown" aria-expanded="false"><span id="quran-start-review-label">Start Review</span></button>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quran-start-review">
@@ -125,7 +126,7 @@
       </table>
     </div>
   </main>
-  <main class="container mt-10 text-center page-loading-page" id="quran-memorization-auth-loading"<% if (helpView) { %> hidden<% } %>>
+  <main class="container mt-10 quran-review-top-offset text-center page-loading-page" id="quran-memorization-auth-loading"<% if (helpView) { %> hidden<% } %>>
     <div class="page-loading" role="status" aria-live="polite">
       <span class="spinner-border text-primary" aria-hidden="true"></span>
       <span class="text-muted">Loading Quran memorization...</span>
@@ -148,6 +149,33 @@
           <p class="small text-muted mt-3 mb-0" id="quran-surah-review-status" role="status" aria-live="polite"></p>
         </div>
         <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary" id="quran-surah-review-start">Start Surah Review</button></footer>
+      </form>
+    </div>
+  </div>
+  <div class="modal fade" id="quran-get-started-modal" tabindex="-1" aria-labelledby="quran-get-started-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form class="modal-content" id="quran-get-started-form">
+        <header class="modal-header"><h2 class="modal-title fs-5" id="quran-get-started-title">Get started memorizing</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></header>
+        <div class="modal-body">
+          <section id="quran-get-started-known-step">
+            <p class="fw-bold mb-1">What surahs do you know by heart?</p>
+            <p class="small text-muted">Add any complete surahs you can already recite. They will be recorded as Core.</p>
+            <label class="form-label" for="quran-get-started-known-input">Known surahs</label>
+            <input type="search" class="form-control" id="quran-get-started-known-input" placeholder="Type a surah name or number" autocomplete="off" autocapitalize="none" spellcheck="false">
+            <div class="d-flex flex-wrap gap-2 mt-2" id="quran-get-started-known-list" aria-live="polite"></div>
+          </section>
+          <section id="quran-get-started-learning-step" hidden>
+            <p class="fw-bold mb-1">What surah do you want to memorize?</p>
+            <p class="small text-muted">Choose one surah to begin with.</p>
+            <label class="form-label" for="quran-get-started-learning-input">Surah to memorize</label>
+            <input type="search" class="form-control" id="quran-get-started-learning-input" placeholder="Type a surah name or number" autocomplete="off" autocapitalize="none" spellcheck="false">
+            <input type="hidden" id="quran-get-started-learning-surah">
+            <div class="alert alert-warning small mt-3 mb-0" id="quran-get-started-long-warning" hidden><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>This surah is longer than one Mushaf page. Start with a manageable number of āyāt. In Memorize view, move through the surah and add more āyāt to Learning whenever you are ready.</div>
+            <div class="mt-3" id="quran-get-started-ayah-choice" hidden><label class="form-label" for="quran-get-started-ayah-count"><strong>How many āyāt would you like to start with?</strong></label><select class="form-select" id="quran-get-started-ayah-count"></select></div>
+          </section>
+          <p class="small text-muted mt-3 mb-0" id="quran-get-started-status" role="status" aria-live="polite"></p>
+        </div>
+        <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-success" id="quran-get-started-continue">Continue</button><button type="submit" class="btn btn-success" id="quran-get-started-submit" hidden>Start Review</button></footer>
       </form>
     </div>
   </div>
@@ -174,12 +202,26 @@
       const surahReviewPageLimit = document.getElementById('quran-surah-review-page-limit');
       const surahReviewStart = document.getElementById('quran-surah-review-start');
       const surahReviewStatus = document.getElementById('quran-surah-review-status');
+      const getStartedModal=document.getElementById('quran-get-started-modal');
+      const getStartedForm=document.getElementById('quran-get-started-form');
+      const getStartedKnownStep=document.getElementById('quran-get-started-known-step');
+      const getStartedLearningStep=document.getElementById('quran-get-started-learning-step');
+      const getStartedKnownInput=document.getElementById('quran-get-started-known-input');
+      const getStartedKnownList=document.getElementById('quran-get-started-known-list');
+      const getStartedLearningInput=document.getElementById('quran-get-started-learning-input');
+      const getStartedLearningSurah=document.getElementById('quran-get-started-learning-surah');
+      const getStartedWarning=document.getElementById('quran-get-started-long-warning');
+      const getStartedAyahChoice=document.getElementById('quran-get-started-ayah-choice');
+      const getStartedAyahCount=document.getElementById('quran-get-started-ayah-count');
+      const getStartedStatus=document.getElementById('quran-get-started-status');
+      const getStartedContinue=document.getElementById('quran-get-started-continue');
+      const getStartedSubmit=document.getElementById('quran-get-started-submit');
       const reviewSessionsSection = document.getElementById('quran-open-review-sessions');
       const reviewSessionsList = document.getElementById('quran-open-review-session-list');
       const reviewHeatmapWrap = document.querySelector('.quran-review-heatmap-wrap');
       const reviewHeatmap = document.getElementById('quran-review-heatmap');
       const reviewHeatmapDetail = document.getElementById('quran-review-heatmap-detail');
-      const surahCatalog = <%- JSON.stringify((global.surahs || []).map(function (surah) { return { number: Number(surah.num), english: surah.name_en || '', arabic: surah.name_ar || '', aliases: surah.aliases || [] }; })) %>;
+      const surahCatalog = <%- JSON.stringify((global.surahs || []).map(function (surah) { return { number: Number(surah.num), english: surah.name_en || '', arabic: surah.name_ar || '', aliases: surah.aliases || [], ayahs: Number(surah.ayahs) || 0 }; })) %>;
       const escapeHtml = value => (value ?? '').toString().replace(/[&<>"']/g, character => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
       const legacyNotice = <%- JSON.stringify(req.query.complete !== undefined
         ? { type:'success', title:'Review complete', message:'You completed this review session.' }
@@ -408,6 +450,37 @@
         bindSurahReviewAutocomplete();
         updateSurahPageChoice();
       };
+      const knownSurahs=new Map();
+      const onboardingChoice=surah=>{
+        const matchingGroups=groups.filter(group=>Number(group.surah_number)===surah.number||Number(group.start_surah_number)===surah.number);
+        return {...surah,name:surah.english||`Surah ${surah.number}`,pages:Math.max(1,...matchingGroups.map(group=>Number(group.surah_page_count)||1)),firstPage:Math.min(...matchingGroups.map(group=>Number(group.page_number)||605))};
+      };
+      const renderKnownSurahs=()=>{getStartedKnownList.innerHTML=Array.from(knownSurahs.values()).map(choice=>`<button type="button" class="btn btn-sm btn-outline-success" data-remove-known-surah="${choice.number}" aria-label="Remove ${escapeHtml(choice.name)}">${choice.number}. ${escapeHtml(choice.name)} <i class="bi bi-x" aria-hidden="true"></i></button>`).join('');};
+      const chooseLearningSurah=choice=>{
+        getStartedLearningSurah.value=String(choice.number);getStartedLearningInput.value=`${choice.number}. ${choice.name}`;getStartedLearningInput.classList.remove('is-invalid');
+        getStartedWarning.hidden=choice.pages<=1;getStartedAyahChoice.hidden=false;
+        const suggested=[1,2,3,5,7,10,15,20].filter(count=>count<choice.ayahs);
+        getStartedAyahCount.innerHTML=suggested.map(count=>`<option value="${count}">${count} ${count===1?'āyah':'āyāt'}</option>`).join('')+`<option value="${choice.ayahs}">All ${choice.ayahs} āyāt</option>`;
+        getStartedAyahCount.value=String(suggested.find(count=>count>=5)||choice.ayahs);getStartedStatus.textContent='';
+      };
+      const bindOnboardingAutocomplete=(input,onSelect)=>{
+        if(!window.jQuery||!jQuery.fn.autocomplete||input.dataset.autocompleteBound==='1')return;
+        input.dataset.autocompleteBound='1';const $input=jQuery(input);
+        $input.autocomplete({appendTo:getStartedForm.querySelector('.modal-body'),delay:0,minLength:0,source:(request,response)=>response(surahCatalog.map(onboardingChoice).filter(choice=>surahReviewMatches(choice,request.term)).slice(0,12).map(choice=>({label:`${choice.number}. ${choice.name}`,value:`${choice.number}. ${choice.name}`,choice}))),focus:event=>event.preventDefault(),select:(event,ui)=>{event.preventDefault();onSelect(ui.item.choice);},open:()=>{$input.autocomplete('widget').addClass('search-autocomplete-menu quran-surah-review-autocomplete-menu').css('width',$input.outerWidth());}}).autocomplete('instance')._renderItem=function(ul,item){const choice=item.choice;const row=jQuery('<div>').addClass('search-autocomplete-item search-autocomplete-quran');jQuery('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.label).appendTo(row);const meta=jQuery('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-lines');if(choice.arabic)jQuery('<span>').addClass('search-autocomplete-meta-ar').attr({lang:'ar',dir:'rtl'}).text(choice.arabic).appendTo(meta);jQuery('<span>').addClass('search-autocomplete-meta-en').text(`${choice.ayahs} āyāt · ${choice.pages} Mushaf page${choice.pages===1?'':'s'}`).appendTo(meta);meta.appendTo(row);return jQuery('<li>').append(row).appendTo(ul);};
+        $input.on('focus',()=>{if(!$input.autocomplete('widget').is(':visible'))$input.autocomplete('search',$input.val());});
+      };
+      bindOnboardingAutocomplete(getStartedKnownInput,choice=>{knownSurahs.set(choice.number,choice);getStartedKnownInput.value='';renderKnownSurahs();window.setTimeout(()=>getStartedKnownInput.focus(),0);});
+      bindOnboardingAutocomplete(getStartedLearningInput,chooseLearningSurah);
+      getStartedKnownList.addEventListener('click',event=>{const button=event.target.closest('[data-remove-known-surah]');if(!button)return;knownSurahs.delete(Number(button.dataset.removeKnownSurah));renderKnownSurahs();});
+      getStartedContinue.addEventListener('click',()=>{getStartedKnownStep.hidden=true;getStartedLearningStep.hidden=false;getStartedContinue.hidden=true;getStartedSubmit.hidden=false;getStartedLearningInput.focus();});
+      getStartedModal.addEventListener('hidden.bs.modal',()=>{getStartedKnownStep.hidden=false;getStartedLearningStep.hidden=true;getStartedContinue.hidden=false;getStartedSubmit.hidden=true;getStartedLearningInput.value='';getStartedLearningSurah.value='';getStartedAyahChoice.hidden=true;getStartedWarning.hidden=true;getStartedStatus.textContent='';});
+      getStartedLearningInput.addEventListener('input',()=>{getStartedLearningSurah.value='';getStartedAyahChoice.hidden=true;getStartedWarning.hidden=true;getStartedLearningInput.classList.remove('is-invalid');});
+      getStartedForm.addEventListener('submit',async event=>{
+        event.preventDefault();const surahNumber=Number(getStartedLearningSurah.value);const choice=surahCatalog.map(onboardingChoice).find(item=>item.number===surahNumber);
+        if(!choice){getStartedLearningInput.classList.add('is-invalid');getStartedStatus.textContent='Choose a surah from the suggestions.';getStartedLearningInput.focus();return;}
+        getStartedSubmit.disabled=true;getStartedStatus.textContent='Saving your starting point and preparing your review...';
+        try{const known=Array.from(knownSurahs.keys()).filter(number=>number!==surahNumber);const data=await request('/onboarding',{method:'POST',body:{known_surahs:known,learning_surah:surahNumber,learning_ayah_count:Number(getStartedAyahCount.value)}});if(window.trackQuranAnalyticsEvent)window.trackQuranAnalyticsEvent('quran_memorization_get_started',{known_surah_count:known.length,surah_number:surahNumber,enrolled_ayah_count:Number(data.learning&&data.learning.enrolled_count)||0});const sessionData=await request('/review/sessions',{method:'POST',body:{mode:'regular'}});const session=sessionData.session||{};if(window.trackQuranAnalyticsEvent)window.trackQuranAnalyticsEvent('quran_review_session_start',{session_mode:'regular',start_source:'onboarding',ayah_count:Number(session.queued)||0});window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'),'Loading your review...');}catch(err){if(window.hideQuranReviewLoading)window.hideQuranReviewLoading();getStartedStatus.textContent=err.message;getStartedSubmit.disabled=false;}
+      });
       const renderReviewSessions=sessions=>{
         const open=Array.isArray(sessions)?sessions:[];
         reviewSessionsSection.hidden=!open.length;

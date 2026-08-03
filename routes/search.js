@@ -2193,7 +2193,21 @@ router.get('/quran', throttleSearchRequest, async function (req, res, next) {
   });
 });
 
-router.get('/quran/review', function (req, res) {
+async function quranReviewHeaderJuzLinks(req) {
+  const rows = await QuranTocSubdivisions.juzRows();
+  return (await Promise.all(rows.map(async function (juz) {
+    const parts = (juz.start || '').toString().split(':');
+    const pageNumber = await QuranMushaf.pageForRef(Number(parts[0]), Number(parts[1]));
+    if (!Number.isInteger(pageNumber)) return null;
+    return {
+      num: Number(juz.num),
+      title: juz.title,
+      href: Utils.quranUrl(req, `/quran/page/${pageNumber}`)
+    };
+  }))).filter(Boolean);
+}
+
+router.get('/quran/review', async function (req, res) {
   res.locals.req = req;
   res.locals.res = res;
   res.setHeader('Cache-Control', 'private, no-store');
@@ -2201,7 +2215,9 @@ router.get('/quran/review', function (req, res) {
   const startReview = !helpView && (req.query.start !== undefined || req.query.continue !== undefined);
   if (!helpView)
     res.setHeader('X-Robots-Tag', 'noindex, follow');
+  const quranHeaderJuzLinks = await quranReviewHeaderJuzLinks(req);
   res.render(startReview ? 'quran_review' : 'quran_memorization_pages', {
+    quranHeaderJuzLinks: quranHeaderJuzLinks,
     page: {
       menu: 'Quran',
       title_en: startReview ? 'Quran Memorization Review' : (helpView ? 'Memorize the Quran' : 'Memorization Progress'),

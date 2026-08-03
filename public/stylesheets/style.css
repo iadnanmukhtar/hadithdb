@@ -412,6 +412,10 @@ main.quran-toc-reader-modes {
 	margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 }
 
+main.quran-review-top-offset {
+	margin-top: max(9rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem)) !important;
+}
+
 main.chapter.tafsir-only-page {
 	margin-top: max(5.5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 }
@@ -4330,29 +4334,25 @@ main.quran-mushaf-reader {
 	border-color: color-mix(in srgb, var(--bs-border-color) 55%, var(--bs-secondary) 45%);
 }
 
+.quran-progress-secondary-action {
+	align-items: center;
+	display: inline-flex;
+	height: 2.25rem;
+	justify-content: center;
+	padding: 0;
+	width: 2.25rem;
+}
+
+.quran-progress-secondary-action .bi {
+	font-size: 1rem;
+	line-height: 1;
+}
+
 .quran-progress-secondary-action-label {
-	margin-inline-start: .25rem;
+	display: none;
 }
 
 @media (max-width: 767.98px) {
-	.quran-progress-secondary-action {
-		align-items: center;
-		display: inline-flex;
-		height: 2.25rem;
-		justify-content: center;
-		padding: 0;
-		width: 2.25rem;
-	}
-
-	.quran-progress-secondary-action .bi {
-		font-size: 1rem;
-		line-height: 1;
-	}
-
-	.quran-progress-secondary-action-label {
-		display: none;
-	}
-
 	.quran-memorization-summary {
 		gap: .35rem;
 		grid-template-columns: repeat(12, minmax(0, 1fr));
