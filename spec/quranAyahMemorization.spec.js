@@ -880,6 +880,24 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(query).toHaveBeenCalledTimes(4);
     });
 
+    test('applies the normal ayah schedule within a Surah Review scope', async () => {
+      const due = [{ surah_number:2, ayah_number:3, lifecycle_state:'review', fsrs_state:2 }];
+      const refs = ['2:1', '2:2', '2:3'];
+      const query = jest.fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(due);
+
+      const result = await QuranAyahMemorization.selectReviewSessionItems(query, 'user-1', 10, limits, order, refs);
+
+      expect(result.memorized).toEqual(due);
+      expect(result.fresh).toBe(false);
+      expect(query).toHaveBeenCalledTimes(4);
+      expect(query.mock.calls.every(call => call[0].includes('(surah_number,ayah_number) IN ((2,1),(2,2),(2,3))'))).toBe(true);
+      expect(query.mock.calls.every(call => call[0].includes('next_review_at<=NOW()'))).toBe(true);
+    });
+
     test('queues every non-Later ayah in a Surah Review without category caps', async () => {
       const ordered = [
         { surah_number: 2, ayah_number: 1, lifecycle_state: 'review', fsrs_state: 2 },
