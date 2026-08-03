@@ -26,7 +26,6 @@ describe('Quran ayah review settings normalization', () => {
       schemaVersion: 1,
       reviewLimit: 10,
       learningLimit: 3,
-      relearningLimit: 4,
       weakLimit: 3,
       memorizedLimit: 10,
       reviewTimeBudgetMinutes: 0,
@@ -55,7 +54,6 @@ describe('Quran ayah review settings normalization', () => {
       memorization: {
         reviewLimit: '200',
         learningLimit: '50',
-        relearningLimit: '50',
         weakLimit: '50',
         memorizedLimit: '200',
         reviewTimeBudgetMinutes: '240',
@@ -66,7 +64,6 @@ describe('Quran ayah review settings normalization', () => {
     expect(memorization).toMatchObject({
       reviewLimit: 200,
       learningLimit: 50,
-      relearningLimit: 50,
       weakLimit: 50,
       memorizedLimit: 200,
       reviewTimeBudgetMinutes: 240,
@@ -79,7 +76,6 @@ describe('Quran ayah review settings normalization', () => {
       memorization: {
         reviewLimit: 0,
         learningLimit: 0,
-        relearningLimit: 51,
         weakLimit: 51,
         memorizedLimit: 201,
         reviewTimeBudgetMinutes: 241,
@@ -90,12 +86,17 @@ describe('Quran ayah review settings normalization', () => {
     expect(memorization).toMatchObject({
       reviewLimit: 10,
       learningLimit: 3,
-      relearningLimit: 4,
       weakLimit: 3,
       memorizedLimit: 10,
       reviewTimeBudgetMinutes: 0,
       reviewOrder: 'due_first'
     });
+  });
+
+  test('migrates the retired Weak recovery limit when no Weak limit was saved', () => {
+    const memorization = UserSettings.normalizeSettings({ memorization: { relearningLimit:'7' } }).memorization;
+    expect(memorization.weakLimit).toBe(7);
+    expect(memorization).not.toHaveProperty('relearningLimit');
   });
 
   test('discards the retired review mode from legacy settings', () => {

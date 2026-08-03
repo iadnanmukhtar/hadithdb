@@ -21,13 +21,14 @@
 <section aria-labelledby="<%= helpPrefix %>-limits">
   <h3 id="<%= helpPrefix %>-limits">What enters a review session</h3>
   <p>Starting a review selects due ayat and a limited number of new Learning ayat within your session settings. Learning ayat appear first. Later, Core, and Paused ayat do not enter regular Review.</p>
-  <p class="mt-2">When nothing is due, a new session may include upcoming active ayat. Change the session size and category limits in Quran memorization settings or review settings.</p>
+  <p class="mt-2">When nothing is due, a new session may include upcoming active ayat. Change the session size and category limits in Quran memorization settings or review settings. The Maximum Weak āyāt setting is shared by fragile Weak āyāt and Memorized āyāt recovering after Again.</p>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-surah-review">
   <h3 id="<%= helpPrefix %>-surah-review">Reviewing a page or surah</h3>
   <p>From a Memorize page, select <strong>Review</strong>, then choose <strong>just this page</strong> or <strong>a surah</strong>. You can also start a surah review from the Memorization Progress page.</p>
-  <p class="mt-2">Page and surah reviews follow Quran order and are not limited by what is due now, regular session caps, or the time budget. Starting the review moves Later āyāt in the selected scope to Learning and adds them to the schedule. Grades update the schedule; Skip leaves the newly enrolled āyah in Learning.</p>
+  <p class="mt-2">For a surah, choose <strong>Regular review</strong> to follow the existing āyah schedules without enrolling or changing untouched āyāt. Choose <strong>Review all āyāt</strong> to add every missing or Later āyah in the surah to the schedule as Learning and place the complete surah in the session. Āyāt already enrolled keep their current state and schedule when the session starts.</p>
+  <p class="mt-2">Page Review and Review all āyāt follow Quran order and are not limited by what is due now, regular session caps, or the time budget. Regular review for a surah uses the normal scheduler and limits. Grades update the schedule; Skip leaves the āyah unchanged.</p>
   <p class="mt-2">The Progress page lists your active and paused sessions. Switching reviews automatically pauses the current session and resumes the selected one. You can end any active or paused session while preserving its completed reviews.</p>
 </section>
 
@@ -61,7 +62,7 @@
 
 <section aria-labelledby="<%= helpPrefix %>-settings">
   <h3 id="<%= helpPrefix %>-settings">Review settings explained</h3>
-  <p>These settings control when reviews return and how many āyāt enter a regular review session. Page and surah reviews deliberately ignore regular-session limits so you can complete the selected scope.</p>
+  <p>These settings control when reviews return and how many āyāt enter a regular review session. Page Review and Review all āyāt deliberately ignore regular-session limits so you can complete the selected scope; Regular review for a surah uses them.</p>
 
   <h4 class="fs-6 mt-3">Review timing</h4>
   <dl>
@@ -81,10 +82,9 @@
   <h4 class="fs-6 mt-3">Advanced session limits</h4>
   <dl>
     <dt>Maximum Learning āyāt</dt><dd>Limits newly enrolled and still-learning āyāt admitted to one regular session. Learning appears first, but overdue Learning precedes brand-new Learning.</dd>
-    <dt>Maximum Weak recovery āyāt</dt><dd>Limits previously Memorized āyāt that entered automatic recovery after Again. They appear as Weak to the user while recovery is managed internally.</dd>
-    <dt>Maximum Weak āyāt</dt><dd>Limits scheduled āyāt whose recall is currently fragile or whose calculated difficulty remains above the Weak threshold.</dd>
+    <dt>Maximum Weak āyāt</dt><dd>Sets one combined limit for fragile scheduled āyāt and previously Memorized āyāt recovering after Again.</dd>
     <dt>Maximum Memorized āyāt</dt><dd>Limits established Memorized āyāt admitted for maintenance review.</dd>
-    <dt>Order within each queue</dt><dd>Oldest due first prioritizes the most overdue work, Quran order follows surah and āyah sequence, and Random shuffles cards within each category. Learning, Weak recovery, Weak, and Memorized category priority still applies.</dd>
+    <dt>Order within each queue</dt><dd>Oldest due first prioritizes the most overdue work, Quran order follows surah and āyah sequence, and Random shuffles cards within each category. Learning, Weak recovery, fragile Weak, and Memorized priority still applies, while both Weak queues share the same maximum.</dd>
   </dl>
   <p class="text-muted small mb-0">Due now is the complete eligible backlog, not the size of the next session. A session can therefore finish while more āyāt remain due because the overall limit, category limits, or time budget was reached.</p>
 </section>

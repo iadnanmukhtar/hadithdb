@@ -100,7 +100,7 @@
       </div>
     </div>
     <section class="quran-paused-review-sessions mb-3" id="quran-open-review-sessions" aria-labelledby="quran-open-review-sessions-title" hidden>
-      <div class="d-flex justify-content-between align-items-baseline gap-2 mb-2 flex-wrap"><h2 class="fs-6 fw-bold mb-0" id="quran-open-review-sessions-title">Your review sessions</h2><span class="small text-muted">Continue, switch, or end a session</span></div>
+      <div class="d-flex justify-content-between align-items-baseline gap-2 mb-2 flex-wrap"><h2 class="fs-6 fw-bold mb-0" id="quran-open-review-sessions-title">Your review sessions</h2><span class="small text-muted">Resume or end a session</span></div>
       <div class="quran-paused-review-session-list" id="quran-open-review-session-list"></div>
     </section>
     <section class="quran-review-activity mb-3" aria-labelledby="quran-review-activity-title">
@@ -140,12 +140,10 @@
           <label class="form-label" for="quran-surah-review-input"><strong>Surah</strong></label>
           <input type="search" class="form-control" id="quran-surah-review-input" placeholder="Type a surah name or number" aria-label="Choose a surah by English name, Arabic name, or number" autocomplete="off" autocapitalize="none" spellcheck="false" required>
           <input type="hidden" id="quran-surah-review-select" value="">
-          <div class="mt-3" id="quran-surah-review-page-choice" hidden>
-            <label class="form-label" for="quran-surah-review-page-limit"><strong>How much would you like to review?</strong></label>
-            <select class="form-select" id="quran-surah-review-page-limit"></select>
-            <p class="form-text mb-0">Pages start from the beginning of the surah. Choose All āyāt to review the complete surah.</p>
-          </div>
-          <p class="form-text mb-0 mt-3">The selected scope is reviewed in Quran order. Later āyāt become Learning cards and are added to your schedule. Regular session limits and the time budget do not apply.</p>
+          <fieldset class="mt-3"><legend class="form-label"><strong>Review type</strong></legend><div class="quran-memorize-review-scope">
+            <label><input class="form-check-input" type="radio" name="quran-surah-review-type" value="regular" checked> <span><strong>Regular review</strong><small>Follow the existing āyah schedules for this surah</small></span></label>
+            <label><input class="form-check-input" type="radio" name="quran-surah-review-type" value="all"> <span><strong>Review all āyāt</strong><small>Add every āyah in this surah to your schedule</small></span></label>
+          </div></fieldset>
           <p class="small text-muted mt-3 mb-0" id="quran-surah-review-status" role="status" aria-live="polite"></p>
         </div>
         <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary" id="quran-surah-review-start">Start Surah Review</button></footer>
@@ -200,8 +198,6 @@
       const surahReviewForm = document.getElementById('quran-surah-review-form');
       const surahReviewInput = document.getElementById('quran-surah-review-input');
       const surahReviewSelect = document.getElementById('quran-surah-review-select');
-      const surahReviewPageChoice = document.getElementById('quran-surah-review-page-choice');
-      const surahReviewPageLimit = document.getElementById('quran-surah-review-page-limit');
       const surahReviewStart = document.getElementById('quran-surah-review-start');
       const surahReviewStatus = document.getElementById('quran-surah-review-status');
       const getStartedModal=document.getElementById('quran-get-started-modal');
@@ -226,7 +222,7 @@
       const surahCatalog = <%- JSON.stringify((global.surahs || []).map(function (surah) { return { number: Number(surah.num), english: surah.name_en || '', arabic: surah.name_ar || '', aliases: surah.aliases || [], ayahs: Number(surah.ayahs) || 0 }; })) %>;
       const escapeHtml = value => (value ?? '').toString().replace(/[&<>"']/g, character => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
       const legacyNotice = <%- JSON.stringify(req.query.complete !== undefined
-        ? { type:'success', title:'Review complete', message:'You completed this review session.' }
+        ? { type:'success', title:'Review complete', message:'You completed this review session.', scrollToTop:true }
         : req.query.paused !== undefined
           ? { type:'info', title:'Review paused', message:'Resume it whenever you are ready.' }
           : req.query.ended !== undefined
@@ -234,6 +230,10 @@
             : null) %>;
       const historyNotice = window.history.state && window.history.state.pageNotice;
       const pageNotice = historyNotice || legacyNotice;
+      if (pageNotice && pageNotice.scrollToTop) {
+        if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+        window.scrollTo(0, 0);
+      }
       if (pageNotice) {
         const cleanUrl = new URL(window.location.href);
         ['complete','paused','ended'].forEach(key => cleanUrl.searchParams.delete(key));
@@ -273,12 +273,12 @@
       }
       const request = async (path, options = {}) => { const response=await fetch(quranApiPath(`/memorization${path}`),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load memorization progress.'); return data; };
       const userSettingsRequest = async (options={}) => { const response=await fetch(quranApiPath('/user-settings'),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load settings.'); return data; };
+      const fsrsControls={retention:document.getElementById('review-fsrs-retention'),learningSpeed:document.getElementById('review-fsrs-learning-speed'),growth:document.getElementById('review-fsrs-growth'),lapse:document.getElementById('review-fsrs-lapse'),sessionLimit:document.getElementById('review-session-limit'),timeBudget:document.getElementById('review-time-budget'),learningLimit:document.getElementById('review-learning-limit'),weakLimit:document.getElementById('review-weak-limit'),memorizedLimit:document.getElementById('review-memorized-limit'),queueOrder:document.getElementById('review-queue-order'),save:document.getElementById('review-fsrs-save'),optimize:document.getElementById('review-fsrs-optimize'),status:document.getElementById('review-fsrs-status')};
+      const populateFsrsControls=settings=>{const memorization=settings&&settings.memorization||{};const fsrs=memorization.fsrs||{};fsrsControls.retention.value=String(fsrs.targetRetention||0.9);fsrsControls.learningSpeed.value=fsrs.learningSpeed||'normal';fsrsControls.growth.value=fsrs.intervalGrowth||'standard';fsrsControls.lapse.value=fsrs.lapseRecovery||'standard';fsrsControls.sessionLimit.value=memorization.reviewLimit||10;fsrsControls.timeBudget.value=memorization.reviewTimeBudgetMinutes||0;fsrsControls.learningLimit.value=memorization.learningLimit||3;fsrsControls.weakLimit.value=memorization.weakLimit||3;fsrsControls.memorizedLimit.value=memorization.memorizedLimit||10;fsrsControls.queueOrder.value=memorization.reviewOrder||'due_first';if(fsrs.optimizedAt)fsrsControls.status.textContent=`Last personalized ${new Date(fsrs.optimizedAt).toLocaleDateString()}.`;};
       let reviewUserSettings=null;
-      const fsrsControls={retention:document.getElementById('review-fsrs-retention'),learningSpeed:document.getElementById('review-fsrs-learning-speed'),growth:document.getElementById('review-fsrs-growth'),lapse:document.getElementById('review-fsrs-lapse'),sessionLimit:document.getElementById('review-session-limit'),timeBudget:document.getElementById('review-time-budget'),learningLimit:document.getElementById('review-learning-limit'),relearningLimit:document.getElementById('review-relearning-limit'),weakLimit:document.getElementById('review-weak-limit'),memorizedLimit:document.getElementById('review-memorized-limit'),queueOrder:document.getElementById('review-queue-order'),save:document.getElementById('review-fsrs-save'),optimize:document.getElementById('review-fsrs-optimize'),status:document.getElementById('review-fsrs-status')};
       const cacheReviewSettings=async settings=>{if(!window.hadithUserSettingsCache)return;const user=auth.getUser?await auth.getUser():null;if(window.hadithUserSettingsCache.clear)window.hadithUserSettingsCache.clear(user);if(settings&&window.hadithUserSettingsCache.write)window.hadithUserSettingsCache.write(user,settings);};
-      const populateFsrsControls=settings=>{const memorization=settings&&settings.memorization||{};const fsrs=memorization.fsrs||{};fsrsControls.retention.value=String(fsrs.targetRetention||0.9);fsrsControls.learningSpeed.value=fsrs.learningSpeed||'normal';fsrsControls.growth.value=fsrs.intervalGrowth||'standard';fsrsControls.lapse.value=fsrs.lapseRecovery||'standard';fsrsControls.sessionLimit.value=memorization.reviewLimit||10;fsrsControls.timeBudget.value=memorization.reviewTimeBudgetMinutes||0;fsrsControls.learningLimit.value=memorization.learningLimit||3;fsrsControls.relearningLimit.value=memorization.relearningLimit||4;fsrsControls.weakLimit.value=memorization.weakLimit||3;fsrsControls.memorizedLimit.value=memorization.memorizedLimit||10;fsrsControls.queueOrder.value=memorization.reviewOrder||'due_first';if(fsrs.optimizedAt)fsrsControls.status.textContent=`Last personalized ${new Date(fsrs.optimizedAt).toLocaleDateString()}.`;};
       const loadFsrsSettings=async()=>{const data=await userSettingsRequest();reviewUserSettings=data.settings||{};populateFsrsControls(reviewUserSettings);};
-      fsrsControls.save.addEventListener('click',async()=>{fsrsControls.save.disabled=true;fsrsControls.status.textContent='Saving...';try{const existing=reviewUserSettings&&reviewUserSettings.memorization||{};const fsrs=existing.fsrs||{};const data=await userSettingsRequest({method:'PUT',body:{settings:{...reviewUserSettings,memorization:{...existing,reviewLimit:fsrsControls.sessionLimit.value,reviewTimeBudgetMinutes:fsrsControls.timeBudget.value,learningLimit:fsrsControls.learningLimit.value,relearningLimit:fsrsControls.relearningLimit.value,weakLimit:fsrsControls.weakLimit.value,memorizedLimit:fsrsControls.memorizedLimit.value,reviewOrder:fsrsControls.queueOrder.value,fsrs:{...fsrs,targetRetention:Number(fsrsControls.retention.value),learningSpeed:fsrsControls.learningSpeed.value,intervalGrowth:fsrsControls.growth.value,lapseRecovery:fsrsControls.lapse.value}}}}});reviewUserSettings=data.settings;await cacheReviewSettings(reviewUserSettings);populateFsrsControls(reviewUserSettings);const recalculated=data.memorization_reschedule;fsrsControls.status.textContent=recalculated?`${Number(recalculated.rescheduled_count).toLocaleString()} review dates recalculated; ${Number(recalculated.due_now).toLocaleString()} due now.`:'Review settings saved.';if(recalculated)await loadProgress();const modal=bootstrap.Modal.getInstance(document.getElementById('quran-fsrs-settings-modal'));if(modal)modal.hide();}catch(err){fsrsControls.status.textContent=err.message;}finally{fsrsControls.save.disabled=false;}});
+      fsrsControls.save.addEventListener('click',async()=>{fsrsControls.save.disabled=true;fsrsControls.status.textContent='Saving...';try{const existing=reviewUserSettings&&reviewUserSettings.memorization||{};const fsrs=existing.fsrs||{};const data=await userSettingsRequest({method:'PUT',body:{settings:{...reviewUserSettings,memorization:{...existing,reviewLimit:fsrsControls.sessionLimit.value,reviewTimeBudgetMinutes:fsrsControls.timeBudget.value,learningLimit:fsrsControls.learningLimit.value,weakLimit:fsrsControls.weakLimit.value,memorizedLimit:fsrsControls.memorizedLimit.value,reviewOrder:fsrsControls.queueOrder.value,fsrs:{...fsrs,targetRetention:Number(fsrsControls.retention.value),learningSpeed:fsrsControls.learningSpeed.value,intervalGrowth:fsrsControls.growth.value,lapseRecovery:fsrsControls.lapse.value}}}}});reviewUserSettings=data.settings;await cacheReviewSettings(reviewUserSettings);populateFsrsControls(reviewUserSettings);const recalculated=data.memorization_reschedule;fsrsControls.status.textContent=recalculated?`${Number(recalculated.rescheduled_count).toLocaleString()} review dates recalculated; ${Number(recalculated.due_now).toLocaleString()} due now.`:'Review settings saved.';if(recalculated)await loadProgress();const modal=bootstrap.Modal.getInstance(document.getElementById('quran-fsrs-settings-modal'));if(modal)modal.hide();}catch(err){fsrsControls.status.textContent=err.message;}finally{fsrsControls.save.disabled=false;}});
       fsrsControls.optimize.addEventListener('click',async()=>{fsrsControls.optimize.disabled=true;fsrsControls.status.textContent='Analyzing your review history...';try{const data=await request('/fsrs/optimize',{method:'POST'});reviewUserSettings=reviewUserSettings||{};reviewUserSettings.memorization={...(reviewUserSettings.memorization||{}),fsrs:data.fsrs};await cacheReviewSettings(reviewUserSettings);populateFsrsControls(reviewUserSettings);fsrsControls.status.textContent=`Personalized from ${Number(data.review_count).toLocaleString()} reviews.`;}catch(err){fsrsControls.status.textContent=err.message;}finally{fsrsControls.optimize.disabled=false;}});
       const scrollHeatmapToToday=()=>{if(!reviewHeatmapWrap)return;window.requestAnimationFrame(()=>{reviewHeatmapWrap.scrollLeft=reviewHeatmapWrap.scrollWidth;});};
       const reviewDuration=totalSeconds=>{const seconds=Math.max(0,Math.round(Number(totalSeconds)||0));if(seconds<60)return `${seconds} second${seconds===1?'':'s'}`;const totalMinutes=Math.round(seconds/60);if(totalMinutes<60)return `${totalMinutes} minute${totalMinutes===1?'':'s'}`;const hours=Math.floor(totalMinutes/60);const minutes=totalMinutes%60;return `${hours} hour${hours===1?'':'s'}${minutes?` ${minutes} minute${minutes===1?'':'s'}`:''}`;};
@@ -401,7 +401,6 @@
         surahReviewInput.value=`${choice.number}. ${choice.name}`;
         surahReviewInput.classList.remove('is-invalid');
         surahReviewStatus.textContent='';
-        updateSurahPageChoice();
       };
       const bindSurahReviewAutocomplete=()=>{
         if(surahReviewAutocompleteBound||!window.jQuery||!jQuery.fn.autocomplete)return;
@@ -420,37 +419,19 @@
           jQuery('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.label).appendTo($row);
           const $meta=jQuery('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-lines');
           if(catalog.arabic)jQuery('<span>').addClass('search-autocomplete-meta-ar').attr({lang:'ar',dir:'rtl'}).text(catalog.arabic).appendTo($meta);
-          jQuery('<span>').addClass('search-autocomplete-meta-en').text(`${choice.count.toLocaleString()} ${choice.count===1?'āyah':'āyāt'} available · ${choice.pages.length} page${choice.pages.length===1?'':'s'}`).appendTo($meta);
+          jQuery('<span>').addClass('search-autocomplete-meta-en').text(`${choice.ayahs.toLocaleString()} ${choice.ayahs===1?'āyah':'āyāt'}`).appendTo($meta);
           $meta.appendTo($row);
           return jQuery('<li>').append($row).appendTo(ul);
         };
         $input.on('focus',()=>{if(!$input.autocomplete('widget').is(':visible'))$input.autocomplete('search',$input.val());});
-        $input.on('input',()=>{surahReviewSelect.value='';surahReviewInput.classList.remove('is-invalid');surahReviewPageChoice.hidden=true;surahReviewPageLimit.required=false;});
-      };
-      const updateSurahPageChoice=()=>{
-        const choice=surahReviewChoices.get(Number(surahReviewSelect.value));
-        const needsChoice=choice&&choice.pages.length>3;
-        surahReviewPageChoice.hidden=!needsChoice;
-        surahReviewPageLimit.required=false;
-        if(!needsChoice){surahReviewPageLimit.innerHTML='';return;}
-        const pageChoices=[1,2,3,4,5,10,20].filter(count=>count<=choice.pages.length);
-        surahReviewPageLimit.innerHTML=`<option value="all">All āyāt</option>`+pageChoices.map(count=>`<option value="${count}">${count} page${count===1?'':'s'}</option>`).join('');
+        $input.on('input',()=>{surahReviewSelect.value='';surahReviewInput.classList.remove('is-invalid');});
       };
       const populateSurahReviews=()=>{
-        const surahs=new Map();
-        groups.forEach(group=>{
-          const number=Math.max(1,Number(group.surah_number)||Number(group.start_surah_number)||1);
-          if(!surahs.has(number))surahs.set(number,{number,name:group.surah_name||`Surah ${number}`,aliases:group.surah_alternate_names||[],count:0,pageCount:0});
-          const surah=surahs.get(number);
-          surah.count+=totalFor(group);
-          surah.pageCount=Math.max(surah.pageCount,Number(group.surah_page_count)||1);
-        });
-        const options=Array.from(surahs.values()).map(surah=>({...surah,pages:Array.from({length:surah.pageCount},(_,index)=>index+1)})).filter(surah=>surah.count>0).sort((left,right)=>left.number-right.number);
+        const options=surahCatalog.map(surah=>({number:surah.number,name:surah.english||`Surah ${surah.number}`,aliases:surah.aliases||[],ayahs:surah.ayahs})).sort((left,right)=>left.number-right.number);
         surahReviewChoices=new Map(options.map(surah=>[surah.number,surah]));
         surahReviewStart.disabled=!options.length;
         surahReviewStatus.textContent=options.length?'':'No surahs currently have āyāt available for Review.';
         bindSurahReviewAutocomplete();
-        updateSurahPageChoice();
       };
       const knownSurahs=new Map();
       const onboardingChoice=surah=>{
@@ -490,13 +471,12 @@
           const isSurah=session.session_mode==='surah';
           const isPage=session.session_mode==='page';
           const title=isSurah?`${session.surah_name||`Surah ${session.review_surah_number}`} Review`:isPage?`Mushaf Page ${session.review_page_number} Review`:'Regular Review';
-          const scope=isSurah&&Number(session.review_page_limit)>0?`First ${Number(session.review_page_limit)} page${Number(session.review_page_limit)===1?'':'s'}`:isSurah?'All āyāt':isPage?'Single Mushaf page':'Scheduled session';
+          const scope=isSurah&&session.review_page_limit!==null&&Number(session.review_page_limit)===0?'Regular scheduled review':isSurah?'All āyāt':isPage?'Single Mushaf page':'Scheduled session';
           const pausedAt=new Date(session.paused_at);
           const date=Number.isNaN(pausedAt.getTime())?'':pausedAt.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
           const active=Boolean(session.is_active);
           const state=active?'Active':date?`Paused ${date}`:'Paused';
-          const primaryLabel=active?'Continue':'Switch to';
-          return `<article class="quran-paused-review-session${active?' is-active':''}"><div><span class="d-flex align-items-center gap-2"><strong>${escapeHtml(title)}</strong><span class="badge ${active?'text-bg-primary':'text-bg-secondary'}">${escapeHtml(state)}</span></span><span class="small text-muted">${escapeHtml(scope)} · ${Number(session.remaining_count).toLocaleString()} ${Number(session.remaining_count)===1?'āyah':'āyāt'} remaining</span></div><div class="quran-paused-review-session-actions"><button type="button" class="btn btn-sm btn-primary" data-resume-review-session="${escapeHtml(session.session_id)}"><span class="bi bi-play-fill" aria-hidden="true"></span> ${primaryLabel}</button><button type="button" class="btn btn-sm btn-outline-danger" data-end-review-session="${escapeHtml(session.session_id)}" aria-label="End ${escapeHtml(title)}" title="End review session"><span class="bi bi-stop-fill" aria-hidden="true"></span> End</button></div></article>`;
+          return `<article class="quran-paused-review-session${active?' is-active':''}"><div><span class="d-flex align-items-center gap-2"><strong>${escapeHtml(title)}</strong><span class="badge ${active?'text-bg-primary':'text-bg-secondary'}">${escapeHtml(state)}</span></span><span class="small text-muted">${escapeHtml(scope)} · ${Number(session.remaining_count).toLocaleString()} ${Number(session.remaining_count)===1?'āyah':'āyāt'} remaining</span></div><div class="quran-paused-review-session-actions"><button type="button" class="btn btn-sm btn-primary" data-resume-review-session="${escapeHtml(session.session_id)}"><span class="bi bi-play-fill" aria-hidden="true"></span> Resume</button><button type="button" class="btn btn-sm btn-outline-danger" data-end-review-session="${escapeHtml(session.session_id)}" aria-label="End ${escapeHtml(title)}" title="End review session"><span class="bi bi-stop-fill" aria-hidden="true"></span> End</button></div></article>`;
         }).join('');
       };
       regularReview.addEventListener('click',event=>{
@@ -639,17 +619,14 @@
         event.preventDefault();
         const surahNumber=Number(surahReviewSelect.value);
         if(!Number.isInteger(surahNumber)){surahReviewInput.classList.add('is-invalid');surahReviewStatus.textContent='Choose a surah from the suggestions.';surahReviewInput.focus();return;}
-        const choice=surahReviewChoices.get(surahNumber);
-        const needsPageChoice=choice&&choice.pages.length>3;
-        const selectedLimit=surahReviewPageLimit.value;
-        const pageLimit=needsPageChoice&&selectedLimit!=='all'?Number(selectedLimit):null;
+        const reviewType=(surahReviewForm.querySelector('input[name="quran-surah-review-type"]:checked')||{}).value||'regular';
         surahReviewStart.disabled=true;
-        surahReviewStatus.textContent=pageLimit?`Preparing a ${pageLimit}-page Surah Review...`:'Preparing all āyāt...';
+        surahReviewStatus.textContent=reviewType==='all'?'Preparing all āyāt...':'Preparing the scheduled āyāt...';
         if(window.showQuranReviewLoading)window.showQuranReviewLoading('Preparing your review...');
         try{
-          const sessionData=await request('/review/sessions',{method:'POST',body:{mode:'surah',surah_number:surahNumber,page_limit:pageLimit}});
+          const sessionData=await request('/review/sessions',{method:'POST',body:{mode:'surah',surah_number:surahNumber,review_type:reviewType}});
           const session=sessionData.session||{};
-          if(window.trackQuranAnalyticsEvent)window.trackQuranAnalyticsEvent('quran_review_session_start',{session_mode:'surah',surah_number:surahNumber,page_limit:pageLimit||undefined,ayah_count:Number(session.queued)||0});
+          if(window.trackQuranAnalyticsEvent)window.trackQuranAnalyticsEvent('quran_review_session_start',{session_mode:'surah',surah_number:surahNumber,review_type:reviewType,ayah_count:Number(session.queued)||0});
           if(window.trackQuranAnalyticsEvent&&Number(session.enrolled_count)>0)window.trackQuranAnalyticsEvent('quran_memorization_enroll',{enrollment_scope:'surah',surah_number:surahNumber,enrolled_ayah_count:Number(session.enrolled_count)});
           if(window.navigateWithQuranReviewLoading)window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'),'Loading your review...');
           else window.location.assign(quranUrl('/quran/review?continue=1'));
@@ -663,11 +640,11 @@
         if(resume&&reviewSessionsList.contains(resume)){
           event.preventDefault();
           resume.disabled=true;
-          if(window.showQuranReviewLoading)window.showQuranReviewLoading(resume.textContent.includes('Switch')?'Switching reviews...':'Loading your review...');
+          if(window.showQuranReviewLoading)window.showQuranReviewLoading('Resuming review...');
           try{
             await request(`/review/sessions/${encodeURIComponent(resume.dataset.resumeReviewSession)}/resume`,{method:'POST'});
             if(window.trackQuranAnalyticsEvent)window.trackQuranAnalyticsEvent('quran_review_session_resume',{resume_source:'progress'});
-            if(window.navigateWithQuranReviewLoading)window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'),resume.textContent.includes('Switch')?'Switching reviews...':'Loading your review...');
+            if(window.navigateWithQuranReviewLoading)window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'),'Resuming review...');
             else window.location.assign(quranUrl('/quran/review?continue=1'));
           }catch(err){if(window.hideQuranReviewLoading)window.hideQuranReviewLoading();resume.disabled=false;if(window.toastr)window.toastr.error(err.message,'Unable to resume review');else status.textContent=err.message;}
           return;

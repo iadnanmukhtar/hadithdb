@@ -90,9 +90,11 @@
         }
         if (data.complete || !data.ayah) {
           const state = Object.assign({}, window.history.state || {}, {
-            pageNotice: { type:'success', title:'Review complete', message:'You completed this review session.' }
+            pageNotice: { type:'success', title:'Review complete', message:'You completed this review session.', scrollToTop:true }
           });
           window.history.replaceState(state, '', quranUrl('/quran/review'));
+          if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+          window.scrollTo(0, 0);
           window.location.reload();
           return;
         }

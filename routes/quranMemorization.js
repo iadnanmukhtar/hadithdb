@@ -253,7 +253,7 @@ router.post('/review/sessions', async function (req, res) {
   const session = await QuranAyahMemorization.startReviewSession(req.user.uid, settings, {
     mode: req.body && req.body.mode,
     surahNumber: req.body && req.body.surah_number,
-    pageLimit: req.body && req.body.page_limit,
+    reviewType: req.body && req.body.review_type,
     pageNumber: req.body && req.body.page_number
   });
   res.status(201).json({ session });

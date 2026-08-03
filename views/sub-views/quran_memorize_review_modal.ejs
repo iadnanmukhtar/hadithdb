@@ -10,27 +10,26 @@
           <legend class="form-label fw-bold">What would you like to review?</legend>
           <div class="quran-memorize-review-scope">
             <label><input class="form-check-input" type="radio" name="quran-memorize-review-scope" value="page" checked> <span><strong>Just this page</strong><small data-quran-memorize-review-page-label>Current Mushaf page</small></span></label>
-            <label><input class="form-check-input" type="radio" name="quran-memorize-review-scope" value="surah"> <span><strong>A surah</strong><small>Choose a surah and review length</small></span></label>
+            <label><input class="form-check-input" type="radio" name="quran-memorize-review-scope" value="surah"> <span><strong>A surah</strong><small>Choose scheduled or all āyāt</small></span></label>
           </div>
         </fieldset>
         <div class="mt-3" data-quran-memorize-review-surah-fields hidden>
           <label class="form-label fw-bold" for="quran-memorize-review-surah-input">Surah</label>
           <input type="search" class="form-control" id="quran-memorize-review-surah-input" data-quran-memorize-review-surah-input placeholder="Type a surah name or number" aria-label="Choose a surah by English name, Arabic name, or number" autocomplete="off" autocapitalize="none" spellcheck="false">
           <input type="hidden" data-quran-memorize-review-surah-number>
-          <div class="mt-3" data-quran-memorize-review-page-choice hidden>
-            <label class="form-label fw-bold" for="quran-memorize-review-page-limit">How much would you like to review?</label>
-            <select class="form-select" id="quran-memorize-review-page-limit" data-quran-memorize-review-page-limit></select>
-            <p class="form-text mb-0">Pages start from the beginning of the surah. All āyāt reviews the complete surah.</p>
-          </div>
+          <fieldset class="mt-3"><legend class="form-label fw-bold">Review type</legend><div class="quran-memorize-review-scope">
+            <label><input class="form-check-input" type="radio" name="quran-memorize-surah-review-type" value="regular" checked> <span><strong>Regular review</strong><small>Follow the existing āyah schedules</small></span></label>
+            <label><input class="form-check-input" type="radio" name="quran-memorize-surah-review-type" value="all"> <span><strong>Review all āyāt</strong><small>Add every āyah to your schedule</small></span></label>
+          </div></fieldset>
         </div>
-        <p class="small text-muted mt-3 mb-0">The review follows Quran order and continues until each included āyah is graded or skipped. Later āyāt in the selected scope become Learning cards and are added to your schedule.</p>
+        <p class="small text-muted mt-3 mb-0">Review all āyāt enrolls untouched āyāt as Learning. Regular review keeps the surah’s existing schedule unchanged.</p>
         <p class="small text-muted mt-2 mb-0" data-quran-memorize-review-status role="status" aria-live="polite"></p>
       </div>
       <footer class="modal-footer">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="submit" class="btn btn-primary" data-quran-memorize-review-submit>Start Review</button>
       </footer>
-      <script type="application/json" data-quran-memorize-review-surah-catalog><%- JSON.stringify((global.surahs || []).map(function (surah) { return { number: Number(surah.num), english: surah.name_en || '', arabic: surah.name_ar || '', aliases: surah.aliases || [] }; })).replace(/</g, '\\u003c') %></script>
+      <script type="application/json" data-quran-memorize-review-surah-catalog><%- JSON.stringify((global.surahs || []).map(function (surah) { return { number: Number(surah.num), english: surah.name_en || '', arabic: surah.name_ar || '', aliases: surah.aliases || [], ayahs: Number(surah.ayahs) || 0 }; })).replace(/</g, '\\u003c') %></script>
     </form>
   </div>
 </aside>

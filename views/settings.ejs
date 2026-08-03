@@ -124,10 +124,9 @@
           </div>
           <details class="memorization-advanced-settings mt-3">
             <summary><span><strong>Advanced session limits</strong><small>Category caps and queue order</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
-            <p class="small text-muted mt-3 mb-2">Each category cap is applied within the overall ayat limit. Weak recovery is assigned automatically after Again on a Memorized ayah and appears in the Weak bucket.</p>
+            <p class="small text-muted mt-3 mb-2">Each category cap is applied within the overall ayat limit. The Weak limit includes both fragile āyāt and previously Memorized āyāt recovering after Again.</p>
             <div class="row g-2">
               <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Learning ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-learning-limit"></label>
-              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Weak recovery ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-relearning-limit"></label>
               <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Weak ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-weak-limit"></label>
               <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Memorized ayat</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-memorized-limit"></label>
               <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Order within each queue</span><select class="form-select form-select-sm" id="settings-review-order"><option value="due_first">Oldest due first</option><option value="quran_order">Quran order</option><option value="random">Random</option></select></label>
@@ -226,7 +225,6 @@
     const memorizationStatusEl = document.getElementById('settings-memorization-status');
     const reviewLimitEl = document.getElementById('settings-review-limit');
     const learningLimitEl = document.getElementById('settings-learning-limit');
-    const relearningLimitEl = document.getElementById('settings-relearning-limit');
     const weakLimitEl = document.getElementById('settings-weak-limit');
     const memorizedLimitEl = document.getElementById('settings-memorized-limit');
     const reviewTimeBudgetEl = document.getElementById('settings-review-time-budget');
@@ -416,7 +414,6 @@
           ...memorization,
           reviewLimit: reviewLimit(memorization.reviewLimit),
           learningLimit: categoryLimit(memorization.learningLimit, 3, 50),
-          relearningLimit: categoryLimit(memorization.relearningLimit, 4, 50),
           weakLimit: categoryLimit(memorization.weakLimit, 3, 50),
           memorizedLimit: categoryLimit(memorization.memorizedLimit, 10, 200),
           reviewTimeBudgetMinutes: reviewTimeBudget(memorization.reviewTimeBudgetMinutes),
@@ -1542,7 +1539,6 @@
       quranScriptSelect.disabled = !currentUser;
       reviewLimitEl.value = currentSettings.memorization.reviewLimit;
       learningLimitEl.value = currentSettings.memorization.learningLimit;
-      relearningLimitEl.value = currentSettings.memorization.relearningLimit;
       weakLimitEl.value = currentSettings.memorization.weakLimit;
       memorizedLimitEl.value = currentSettings.memorization.memorizedLimit;
       reviewTimeBudgetEl.value = currentSettings.memorization.reviewTimeBudgetMinutes;
@@ -1553,7 +1549,6 @@
       fsrsLapseEl.value = currentSettings.memorization.fsrs.lapseRecovery;
       reviewLimitEl.disabled = !currentUser;
       learningLimitEl.disabled = !currentUser;
-      relearningLimitEl.disabled = !currentUser;
       weakLimitEl.disabled = !currentUser;
       memorizedLimitEl.disabled = !currentUser;
       reviewTimeBudgetEl.disabled = !currentUser;
@@ -1664,7 +1659,6 @@
           ...currentSettings.memorization,
           reviewLimit: reviewLimitEl.value,
           learningLimit: learningLimitEl.value,
-          relearningLimit: relearningLimitEl.value,
           weakLimit: weakLimitEl.value,
           memorizedLimit: memorizedLimitEl.value,
           reviewTimeBudgetMinutes: reviewTimeBudgetEl.value,
@@ -1680,7 +1674,6 @@
       });
       reviewLimitEl.value = currentSettings.memorization.reviewLimit;
       learningLimitEl.value = currentSettings.memorization.learningLimit;
-      relearningLimitEl.value = currentSettings.memorization.relearningLimit;
       weakLimitEl.value = currentSettings.memorization.weakLimit;
       memorizedLimitEl.value = currentSettings.memorization.memorizedLimit;
       reviewTimeBudgetEl.value = currentSettings.memorization.reviewTimeBudgetMinutes;

@@ -748,26 +748,51 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       ayah_number: index + 1,
       lifecycle_state: state
     }));
-    const limits = { learning: 3, relearning: 4, weak: 3, memorized: 10 };
+    const limits = { learning: 3, weak: 3, memorized: 10 };
     const order = 'next_review_at, surah_number, ayah_number';
+
+    test('requires the two supported Surah Review types without page limits', () => {
+      expect(QuranAyahMemorization.reviewSessionRequest({ mode:'surah', surahNumber:2, reviewType:'regular' })).toMatchObject({
+        mode:'surah', surahNumber:2, reviewType:'regular', pageLimit:0
+      });
+      expect(QuranAyahMemorization.reviewSessionRequest({ mode:'surah', surahNumber:2, reviewType:'all' })).toMatchObject({
+        mode:'surah', surahNumber:2, reviewType:'all', pageLimit:null
+      });
+      expect(() => QuranAyahMemorization.reviewSessionRequest({ mode:'surah', surahNumber:2, pageLimit:3 }))
+        .toThrow('Choose Review all āyāt or Regular review');
+    });
 
     test('enrolls Later ayat in a custom review scope as Learning cards', async () => {
       const query = jest.fn()
-        .mockResolvedValueOnce([{ lifecycle_state:'review' }])
-        .mockResolvedValueOnce({ affectedRows:3 });
+        .mockResolvedValueOnce([
+          { surah_number:2, ayah_number:1, lifecycle_state:'review' },
+          { surah_number:2, ayah_number:2, lifecycle_state:'later' }
+        ])
+        .mockResolvedValueOnce({ affectedRows:2 });
 
       await expect(QuranAyahMemorization.enrollReviewScope(query, 'user-1', ['2:1', '2:2', '2:3'])).resolves.toBe(2);
 
       expect(query).toHaveBeenCalledTimes(2);
       expect(query.mock.calls[0][0]).toContain('FOR UPDATE');
       const statement = query.mock.calls[1][0];
-      expect(statement).toContain("('user-1',2,1,'learning','started'");
+      expect(statement).not.toContain("('user-1',2,1,'learning','started'");
+      expect(statement).toContain("('user-1',2,2,'learning','started'");
       expect(statement).toContain("('user-1',2,3,'learning','started'");
       expect(statement).toContain("lifecycle_state=IF(lifecycle_state='later','learning',lifecycle_state)");
       expect(statement).toContain("row_version=row_version+IF(lifecycle_state='later',1,0)");
     });
 
-    test('allocates independent category caps fairly under the overall limit', async () => {
+    test('does not issue an enrollment write when every scoped ayah is already enrolled', async () => {
+      const query = jest.fn().mockResolvedValueOnce([
+        { surah_number:2, ayah_number:1, lifecycle_state:'learning' },
+        { surah_number:2, ayah_number:2, lifecycle_state:'review' }
+      ]);
+
+      await expect(QuranAyahMemorization.enrollReviewScope(query, 'user-1', ['2:1', '2:2'])).resolves.toBe(0);
+      expect(query).toHaveBeenCalledTimes(1);
+    });
+
+    test('shares one Weak cap across recovery and fragile ayat', async () => {
       const query = jest.fn()
         .mockResolvedValueOnce(rows('learning', 3, 1))
         .mockResolvedValueOnce(rows('relearning', 4, 2))
@@ -777,9 +802,10 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       const result = await QuranAyahMemorization.selectReviewSessionItems(query, 'user-1', 10, limits, order);
 
       expect(result.learning).toHaveLength(3);
-      expect(result.relearning).toHaveLength(3);
-      expect(result.weak).toHaveLength(2);
-      expect(result.memorized).toHaveLength(2);
+      expect(result.relearning).toHaveLength(2);
+      expect(result.weak).toHaveLength(1);
+      expect(result.memorized).toHaveLength(4);
+      expect(result.relearning.length + result.weak.length).toBe(3);
       expect(result.scheduled).toEqual(result.weak.concat(result.memorized));
       expect(result.fresh).toBe(false);
       expect(query).toHaveBeenCalledTimes(4);

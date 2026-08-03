@@ -3073,7 +3073,10 @@ del em strong {
 	display: flex;
 	gap: .75rem;
 	justify-content: space-between;
+	min-width: 0;
 	padding: .65rem .75rem;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .quran-paused-review-session.is-active {
@@ -3096,13 +3099,30 @@ del em strong {
 }
 
 @media (max-width: 575.98px) {
+	.quran-paused-review-sessions > .d-flex {
+		align-items: flex-start !important;
+		flex-direction: column;
+		gap: .1rem !important;
+	}
+
 	.quran-paused-review-session {
-		align-items: center;
+		align-items: stretch;
+		flex-direction: column;
+		gap: .55rem;
 	}
 
 	.quran-paused-review-session > .quran-paused-review-session-actions {
 		flex-wrap: nowrap;
-		margin-inline-start: auto;
+		margin-inline-start: 0;
+		width: 100%;
+	}
+
+	.quran-paused-review-session-actions .btn {
+		white-space: nowrap;
+	}
+
+	.quran-paused-review-session-actions .btn-primary {
+		flex: 1 1 auto;
 	}
 }
 
