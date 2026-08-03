@@ -275,6 +275,20 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     }
   });
 
+  test('converts a preserved ISO learning date when moving Later back to Learning', () => {
+    const values = QuranAyahMemorization.stateUpdateValues({
+      lifecycle_state: 'later',
+      learning_progress: null,
+      learning_started_at: '2026-08-03T12:15:20Z',
+      stability: 0,
+      difficulty: 5,
+      review_count: 0
+    }, 'learning');
+
+    expect(values.learning_started_at).toEqual(new Date('2026-08-03T12:15:20Z'));
+    expect(values.learning_started_at).toBeInstanceOf(Date);
+  });
+
   test('only treats invariant-safe Core rows as unchanged in a whole-surah update', () => {
     const clean = {
       lifecycle_state: 'core',
