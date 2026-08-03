@@ -17,8 +17,8 @@ describe('Quran ayah review settings normalization', () => {
 
   test('keeps only supported permanently dismissed Quran tours', () => {
     expect(UserSettings.normalizeSettings({
-      quran: { dismissedHelpTours: ['memorize', 'study', 'memorize', 'unknown', null] }
-    }).quran.dismissedHelpTours).toEqual(['memorize', 'study']);
+      quran: { dismissedHelpTours: ['memorize', 'progress', 'study', 'memorize', 'unknown', null] }
+    }).quran.dismissedHelpTours).toEqual(['memorize', 'progress', 'study']);
   });
 
   test('uses bounded-session defaults', () => {

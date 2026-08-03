@@ -183,7 +183,7 @@
   </div>
   <%- include('sub-views/quran_memorization_help_modal.ejs', { site: site, page: page }); %>
   <%- include('sub-views/quran_fsrs_settings_modal.ejs', { site: site, page: page }); %>
-  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page, helpTour: helpView ? '' : 'progress' }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   <script>
