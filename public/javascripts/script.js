@@ -14,6 +14,7 @@ $(function () {
 	initDropdownFilterSearch(document);
 	initReadOnlyInlineEditorGuards(document);
 	initSearchPlainTextPaste();
+	initQuranSearchReturnMode();
 
 	setDirection($('#search-bar'));
 
@@ -6929,6 +6930,18 @@ function initQuranMushafAyahSelection(root) {
 			refreshQuranMushafAyahBackgrounds([document]);
 		}, { passive: true });
 		document.addEventListener('click', function (event) {
+			var searchAyah = event.target.closest('[data-quran-ref].quran-mushaf-search-ayah');
+			if (!searchAyah) {
+				document.querySelectorAll('.quran-mushaf-search-ayah').forEach(function (element) {
+					element.classList.remove('quran-mushaf-search-ayah', 'quran-audio-active-ayah');
+				});
+				var url = new URL(window.location.href);
+				if (url.searchParams.has('ayah') && window.history && window.history.replaceState) {
+					url.searchParams.delete('ayah');
+					window.history.replaceState(window.history.state || {}, '', `${url.pathname}${url.search}${url.hash}`);
+				}
+				refreshQuranMushafAyahBackgrounds([document]);
+			}
 			if (event.target.closest('.quran-mushaf-page [data-quran-ref]'))
 				return;
 			document.querySelectorAll('[data-quran-mushaf-page]').forEach(function (page) {
@@ -10132,8 +10145,12 @@ function initQuranMushafInfinite(root) {
 			window.clearTimeout(pageUrlTimer);
 		pageUrlTimer = window.setTimeout(function () {
 			pageUrlTimer = null;
-			var memorizeSuffix = reader.hasAttribute('data-quran-memorize-reader') ? '?memorize' : '';
-			var nextLocation = `/quran/page/${pendingPageNumber}${memorizeSuffix}`;
+			var querySuffix = reader.hasAttribute('data-quran-memorize-reader') ? '?memorize' : '';
+			var selectedRef = new URLSearchParams(window.location.search).get('ayah') || '';
+			var pendingPage = reader.querySelector(`[data-quran-mushaf-page="${pendingPageNumber}"]`);
+			if (!querySuffix && /^\d+:\d+$/.test(selectedRef) && pendingPage && pendingPage.querySelector(`[data-quran-ref="${selectedRef}"]`))
+				querySuffix = `?ayah=${encodeURIComponent(selectedRef)}`;
+			var nextLocation = `/quran/page/${pendingPageNumber}${querySuffix}`;
 			if (pendingPageNumber && window.history && window.history.replaceState && `${window.location.pathname}${window.location.search}` !== nextLocation)
 				window.history.replaceState({ quranMushafPage: Number(pendingPageNumber) }, '', nextLocation);
 			pendingPageNumber = '';
@@ -10274,7 +10291,13 @@ function initQuranDynamicPassageHero(root) {
 	var pendingRequest = null;
 	var selectedRefFromPath = function () {
 		var match = window.location.pathname.match(/\/quran:(\d+):(\d+)(?:-\d+)?$/);
-		return match ? `${match[1]}:${match[2]}` : '';
+		if (match)
+			return `${match[1]}:${match[2]}`;
+		if (/\/quran\/page\/\d+$/.test(window.location.pathname)) {
+			var queryRef = new URLSearchParams(window.location.search).get('ayah') || '';
+			return /^\d+:\d+$/.test(queryRef) ? queryRef : '';
+		}
+		return '';
 	};
 	var setSelectedPassageAyah = function (ref) {
 		ref = (ref || '').toString();
@@ -10286,6 +10309,20 @@ function initQuranDynamicPassageHero(root) {
 			$('.quran-passage-surah').val(parts[0]);
 			$('.quran-passage-ayah').val(parts[1]);
 		}
+	};
+	var setMushafSearchAyahHighlight = function (ref) {
+		if (!/^\/quran\/page\/\d+$/.test(window.location.pathname))
+			return false;
+		document.querySelectorAll('[data-quran-mushaf-page]').forEach(function (page) {
+			page.querySelectorAll('[data-quran-ref]').forEach(function (element) {
+				var matches = !!ref && element.getAttribute('data-quran-ref') === ref;
+				if (element.classList.contains('quran-mushaf-search-ayah') || matches)
+					element.classList.toggle('quran-audio-active-ayah', matches);
+				element.classList.toggle('quran-mushaf-search-ayah', matches);
+			});
+		});
+		refreshQuranMushafAyahBackgrounds([document]);
+		return true;
 	};
 	var scrollSelectedAyahHeroIntoView = function (hero) {
 		if (!hero || !hero.length)
@@ -10398,7 +10435,9 @@ function initQuranDynamicPassageHero(root) {
 		detail.promise = Promise.resolve();
 	});
 
-	setSelectedPassageAyah(selectedRefFromPath());
+	var initialSelectedRef = selectedRefFromPath();
+	setSelectedPassageAyah(initialSelectedRef);
+	setMushafSearchAyahHighlight(initialSelectedRef);
 	$(document).on('click.quranDynamicPassageHeroClear', '[data-quran-selected-ayah-hero] .quran-ayah-hero-clear[href]', function (event) {
 		if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
 			return;
@@ -10468,6 +10507,8 @@ function initQuranDynamicPassageHero(root) {
 	});
 	window.addEventListener('popstate', function () {
 		var ref = selectedRefFromPath();
+		if (setMushafSearchAyahHighlight(ref))
+			return;
 		if (!ref) {
 			clearSelectedAyahHero('', false);
 			return;
@@ -12175,7 +12216,7 @@ function initQuranAyahSelector(root) {
 			var $widget = $input.autocomplete('widget');
 			var activeItem = $widget.is(':visible') ? $widget.find('.ui-state-active').closest('li').data('ui-autocomplete-item') : null;
 			if (activeItem && activeItem.url) {
-				window.location.href = activeItem.is_quran ? quranUrl(activeItem.url) : hadithUrl(activeItem.url);
+				window.location.href = searchAutocompleteDestination($input, activeItem);
 				return;
 			}
 			if (suggestionOnly) {
@@ -12205,7 +12246,7 @@ function initQuranAyahSelector(root) {
 			select: function (event, ui) {
 				event.preventDefault();
 				if (ui.item.url)
-					window.location.href = ui.item.is_quran ? quranUrl(ui.item.url) : hadithUrl(ui.item.url);
+					window.location.href = searchAutocompleteDestination($input, ui.item);
 				else if (!suggestionOnly)
 					$input.closest('form').trigger('submit');
 			},
@@ -12259,12 +12300,21 @@ function initQuranAyahSelector(root) {
 				$row.attr('role', 'link').on('mousedown click', function (event) {
 					event.preventDefault();
 					event.stopImmediatePropagation();
-					window.location.href = item.is_quran ? quranUrl(item.url) : hadithUrl(item.url);
+					window.location.href = searchAutocompleteDestination($input, item);
 				});
 			}
 			return $item.append($row).appendTo(ul);
 		};
 	});
+}
+
+function searchAutocompleteDestination($input, item) {
+	if (!item.is_quran)
+		return hadithUrl(item.url);
+	var url = item.url.toString();
+	if ($input.closest('form').find('input[name="mode"][value="mushaf"]').length)
+		url += `${url.includes('?') ? '&' : '?'}mushaf`;
+	return quranUrl(url);
 }
 
 function buildSearchAutocompleteParams($input, term) {
@@ -12309,6 +12359,7 @@ function submitQuranPassageSearch($input) {
 	$input.autocomplete('close');
 	var searchPath = '/quran';
 	var params = [{ name: 'q', value: term }];
+	params.push({ name: 'mode', value: 'study' });
 	var $form = $input.closest('form');
 	var $tafsirFilters = $form.find('input[name=tafsir]:checked');
 	if ($tafsirFilters.length > 0) {
@@ -12323,6 +12374,30 @@ function submitQuranPassageSearch($input) {
 	}
 	window.location.href = `${searchPath}?${$.param(params)}`;
 	return true;
+}
+
+function initQuranSearchReturnMode() {
+	var path = window.location.pathname;
+	var mode = '';
+	if (/^\/quran\/page(?:\/\d+)?$/.test(path) || path === '/quran/review')
+		mode = 'mushaf';
+	else if (/^\/quran\/\d+(?:\/|$)/.test(path))
+		mode = 'study';
+	if (!mode)
+		return;
+	document.querySelectorAll('form').forEach(function (form) {
+		var action = form.getAttribute('action') || '';
+		if (new URL(action || window.location.href, window.location.origin).pathname !== '/quran')
+			return;
+		var input = form.querySelector('input[name="mode"]');
+		if (!input) {
+			input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = 'mode';
+			form.appendChild(input);
+		}
+		input.value = mode;
+	});
 }
 
 function quranSearchBookFilterParams($form, useQuranDefaults) {

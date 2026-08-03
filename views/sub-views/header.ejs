@@ -19,6 +19,7 @@
     var isQuranReviewArea = requestPath === '/quran/review' || (isQuranMushafArea && (req.query.review !== undefined || req.query.reviewRef !== undefined));
     var isQuranMemorizeArea = isQuranMushafArea && (req.query.memorize !== undefined || isQuranReviewArea);
     var isQuranStudyArea = /^\/quran\/\d+(?:\/|$)/.test(requestPath);
+    var quranSearchReturnMode = isQuranMushafArea || isQuranReviewArea ? 'mushaf' : (isQuranStudyArea ? 'study' : '');
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
     var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
@@ -128,6 +129,7 @@
         <% } %>
         <li class="nav-item search-click-toggle">
           <form action="<%= navSearchAction %>">
+          <% if (quranSearchReturnMode) { %><input type="hidden" name="mode" value="<%= quranSearchReturnMode %>"><% } %>
           <input role="search" type="text" class="form-control search-click" name="q" placeholder="<%= navSearchPlaceholder %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
           </form>
           <a class="nav-link"><i class="bi bi-search"></i></a>
@@ -153,6 +155,7 @@
         </a>
         <div class="search-click-toggle">
           <form action="<%= navSearchAction %>">
+            <% if (quranSearchReturnMode) { %><input type="hidden" name="mode" value="<%= quranSearchReturnMode %>"><% } %>
             <input role="search" type="text" class="form-control search-click" name="q" placeholder="<%= navSearchPlaceholder %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
           </form>
           <a class="nav-link top-nav-icon-link" role="button" title="Search" aria-label="Search"><i class="bi bi-search"></i></a>
@@ -172,6 +175,7 @@
       </div>
       <div class="offcanvas-body">
         <form action="<%= navSearchAction %>">
+          <% if (quranSearchReturnMode) { %><input type="hidden" name="mode" value="<%= quranSearchReturnMode %>"><% } %>
           <input role="search" type="text" class="form-control mb-2" name="q" placeholder="<%= navSearchPlaceholder %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
         </form>
         <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">

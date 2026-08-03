@@ -78,7 +78,10 @@
 	}
 	const sharhBody = !isQuranItem ? plainText(i.ar?.body || '') : '';
 	const itemRefPath = `/${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
-	const itemHref = isQuranItem ? utils.quranUrl(req, itemRefPath) : utils.urlFor(req, itemRefPath);
+	const quranSearchReturnMode = searchResult && (req.query.mode === 'mushaf' || req.query.mode === 'study') ? req.query.mode : '';
+	const itemHref = isQuranItem
+		? utils.quranUrl(req, `${itemRefPath}${quranSearchReturnMode === 'mushaf' ? '?mushaf' : ''}`)
+		: utils.urlFor(req, itemRefPath);
 	const bookmarkRef = `${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
 	const bookmarkTitle = langData.title || i.title_en || i.title || bookmarkRef;
 	const quranTafsirHref = isQuranItem && i.ref ? utils.quranUrl(req, `/${i.ref}`) : '';

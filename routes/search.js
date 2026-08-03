@@ -1345,6 +1345,17 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   results[0].single = true;
   if (results[0].book_alias === 'quran')
     await addQuranAdjacentRefs(results[0]);
+  if (results[0].book_alias === 'quran'
+    && req.query.mushaf !== undefined
+    && !('json' in req.query)
+    && !('md' in req.query)) {
+    var selectedSurah = Number(results[0].h1 || (results[0].num || '').toString().split(/:/)[0]);
+    var selectedAyah = Number(results[0].numInChapter || (results[0].num || '').toString().split(/:/).pop());
+    var selectedPage = await QuranMushaf.pageForRef(selectedSurah, selectedAyah);
+    if (!Number.isInteger(selectedPage))
+      return next(createError(404, `A Mushaf page was not found for Quran ayah ${selectedSurah}:${selectedAyah}`));
+    return res.redirect(302, Utils.quranUrl(req, `/quran/page/${selectedPage}?ayah=${selectedSurah}:${selectedAyah}`));
+  }
   if (results[0].book_alias === 'quran' && ('json' in req.query || 'md' in req.query)) {
     var sourceArabicRows = await query(
       `SELECT body, body_ar_alt
@@ -2265,6 +2276,11 @@ async function renderQuranMushafPage(req, res, next, options) {
   var mushaf = await QuranMushaf.page(pageNumber);
   if (!mushaf)
     return next(createError(404, `Mushaf page '${pageNumber}' not found`));
+  var selectedAyahRef = /^\d+:\d+$/.test((req.query.ayah || '').toString()) ? req.query.ayah.toString() : '';
+  if (selectedAyahRef && !mushaf.lines.some(function (line) {
+    return (line.words || []).some(function (word) { return `${word.surah}:${word.ayah}` === selectedAyahRef; });
+  }))
+    selectedAyahRef = '';
   var previousMushaf = review && pageNumber > 1
     ? await QuranMushaf.page(pageNumber - 1)
     : null;
@@ -2474,6 +2490,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     reviewRef: reviewRef,
     reviewRetry: req.query.reviewRetry !== undefined,
     reviewPreviousLine: reviewPreviousLine,
+    selectedAyahRef: selectedAyahRef,
     mushaf: mushaf,
     audioRanges: audioRanges,
     subsectionAudioRanges: subsectionAudioRanges,

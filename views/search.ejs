@@ -77,6 +77,8 @@
         (locals.tafsirFilters || []).forEach(function (tafsirAlias) {
           params.append('tafsir', tafsirAlias);
         });
+        if (req.query.mode === 'mushaf' || req.query.mode === 'study')
+          params.append('mode', req.query.mode);
         params.append('o', offset);
         return `${searchAction}?${params.toString()}`;
       }
@@ -102,6 +104,7 @@
     <main class="search-results">
       
       <form class="form-group" action="<%= locals.searchAction || '/' %>">
+        <% if (req.query.mode === 'mushaf' || req.query.mode === 'study') { %><input type="hidden" name="mode" value="<%= req.query.mode %>"><% } %>
         <search class="search container pt-3 mb-3">
           <div class="row justify-content-md-center">
             <div class="col-md-8">
