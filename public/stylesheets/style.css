@@ -139,6 +139,8 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--c-accent-38: rgba(44, 155, 229, 0.38);
 	--c-accent-40: rgba(44, 155, 229, 0.40);
 	--c-accent-92: rgba(44, 155, 229, 0.92);
+	--bs-primary: var(--c-accent);
+	--bs-primary-rgb: 44, 155, 229;
 	--c-speech-18: rgba(27, 123, 0, 0.18);
 	--c-brown: #705d38;
 	--c-brown-22: rgba(95, 72, 45, 0.22);
@@ -207,6 +209,29 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--content-language-tamil-font: "Tamil Sangam MN", "Noto Serif Tamil", serif;
 	--content-language-telugu-font: "Telugu Sangam MN", "Noto Serif Telugu", serif;
 	--content-language-thai-font: "Thonburi", "Noto Serif Thai", serif;
+}
+
+.btn-primary {
+	--bs-btn-bg: var(--c-accent);
+	--bs-btn-border-color: var(--c-accent);
+	--bs-btn-hover-bg: color-mix(in srgb, var(--c-accent) 86%, black);
+	--bs-btn-hover-border-color: color-mix(in srgb, var(--c-accent) 82%, black);
+	--bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+	--bs-btn-active-bg: color-mix(in srgb, var(--c-accent) 78%, black);
+	--bs-btn-active-border-color: color-mix(in srgb, var(--c-accent) 74%, black);
+	--bs-btn-disabled-bg: var(--c-accent);
+	--bs-btn-disabled-border-color: var(--c-accent);
+}
+
+.btn-outline-primary {
+	--bs-btn-color: var(--c-accent);
+	--bs-btn-border-color: var(--c-accent);
+	--bs-btn-hover-bg: var(--c-accent);
+	--bs-btn-hover-border-color: var(--c-accent);
+	--bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+	--bs-btn-active-bg: var(--c-accent);
+	--bs-btn-active-border-color: var(--c-accent);
+	--bs-btn-disabled-color: var(--c-accent);
 }
 
 html,
@@ -2686,7 +2711,7 @@ del em strong {
 .quran-ayah-state-option.is-current,
 .quran-ayah-state-option.is-current:hover,
 .quran-ayah-state-option.is-current:focus-visible {
-	background: var(--bs-primary, #0d6efd);
+	background: var(--bs-primary, var(--c-accent));
 	color: white;
 }
 
@@ -2921,7 +2946,7 @@ del em strong {
 }
 
 .quran-memorization-preview-concept .quran-memorization-preview-kicker {
-	color: #0d6efd;
+	color: var(--c-accent);
 	font-size: clamp(.5rem, 3.4cqw, 1.375rem);
 	font-weight: 700;
 	letter-spacing: .01em;
@@ -3072,12 +3097,12 @@ del em strong {
 
 @media (max-width: 575.98px) {
 	.quran-paused-review-session {
-		align-items: stretch;
-		flex-direction: column;
+		align-items: center;
 	}
 
 	.quran-paused-review-session > .quran-paused-review-session-actions {
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
+		margin-inline-start: auto;
 	}
 }
 
@@ -3271,7 +3296,7 @@ del em strong {
 }
 
 .quran-mushaf-page-state-toggle:focus-visible {
-	box-shadow: 0 0 0 .12rem color-mix(in srgb, #0d6efd 45%, transparent);
+	box-shadow: 0 0 0 .12rem color-mix(in srgb, var(--c-accent) 45%, transparent);
 }
 
 .quran-mushaf-page-state-toggle:disabled {
@@ -3763,7 +3788,7 @@ del em strong {
 
 .quran-memorization-help-grades .is-again { background: #16191d; }
 .quran-memorization-help-grades .is-hard { background: #dc3545; }
-.quran-memorization-help-grades .is-good { background: #0d6efd; }
+.quran-memorization-help-grades .is-good { background: var(--c-accent); }
 .quran-memorization-help-grades .is-easy { background: #198754; }
 .quran-memorization-help-grades .is-skip { background: #6c757d; }
 
@@ -3903,7 +3928,7 @@ del em strong {
 
 @media (max-width: 575.98px) {
 	.quran-memorize-launch-actions {
-		justify-content: space-between;
+		justify-content: flex-end;
 		width: 100%;
 	}
 
@@ -4620,9 +4645,13 @@ del em strong {
 
 @media (max-width: 575.98px) {
 	.quran-memorize-page-footer {
-		align-items: stretch;
-		grid-template-columns: 1fr;
+		align-items: center;
+		grid-template-columns: auto minmax(0, 1fr);
 		overflow: visible;
+	}
+
+	.quran-memorize-page-footer .quran-memorize-controls {
+		flex-wrap: nowrap;
 	}
 
 	.quran-memorize-rating {
@@ -4757,7 +4786,7 @@ del em strong {
 }
 
 .quran-mushaf-surah-state-toggle:focus-visible {
-	box-shadow: 0 0 0 .12rem color-mix(in srgb, #0d6efd 45%, transparent);
+	box-shadow: 0 0 0 .12rem color-mix(in srgb, var(--c-accent) 45%, transparent);
 }
 
 .quran-mushaf-surah-state-toggle:disabled {

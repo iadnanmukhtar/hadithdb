@@ -9598,6 +9598,10 @@ function initPageHelpTips(root) {
 		document.querySelectorAll('[data-quran-help-tour-assessment-preview]').forEach(function (menu) {
 			menu.removeAttribute('data-quran-help-tour-assessment-preview');
 		});
+		document.querySelectorAll('[data-quran-help-tour-temporary-trigger]').forEach(function (trigger) {
+			if (!trigger.hasAttribute('data-current-state')) trigger.hidden = true;
+			trigger.removeAttribute('data-quran-help-tour-temporary-trigger');
+		});
 	};
 	var openMemorizationMenu = function (type, requiredState) {
 		var menuSelectors = {
@@ -9622,12 +9626,22 @@ function initPageHelpTips(root) {
 		}
 		if (!menuSelector || !triggerSelector)
 			return Promise.resolve();
-		return waitForCondition(function () { return Boolean(visibleTarget(triggerSelector) || visibleTarget(baseTriggerSelector)); }, 10000).then(function () {
+		return waitForCondition(function () {
+			return Boolean(visibleTarget(triggerSelector) || visibleTarget(baseTriggerSelector)
+				|| type === 'surah' && document.querySelector(baseTriggerSelector));
+		}, 1200).then(function () {
+			closeMemorizationMenus();
 			var trigger = visibleTarget(triggerSelector);
 			var assessmentPreview = requiredState === 'later' && !trigger;
 			if (!trigger && assessmentPreview) trigger = visibleTarget(baseTriggerSelector);
+			if (!trigger && assessmentPreview && type === 'surah') {
+				trigger = document.querySelector(baseTriggerSelector);
+				if (trigger) {
+					trigger.hidden = false;
+					trigger.setAttribute('data-quran-help-tour-temporary-trigger', '1');
+				}
+			}
 			if (!trigger) return;
-			closeMemorizationMenus();
 			trigger.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
 			return new Promise(function (resolve) {
 				window.setTimeout(function () {
