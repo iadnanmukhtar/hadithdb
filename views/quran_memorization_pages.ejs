@@ -159,10 +159,11 @@
         <div class="modal-body">
           <section id="quran-get-started-known-step">
             <p class="fw-bold mb-1">What surahs do you know by heart?</p>
-            <p class="small text-muted">Add any complete surahs you can already recite. They will be recorded as Core.</p>
+            <p class="small text-muted">Add any complete surahs you can already recite.</p>
             <label class="form-label" for="quran-get-started-known-input">Known surahs</label>
             <input type="search" class="form-control" id="quran-get-started-known-input" placeholder="Type a surah name or number" autocomplete="off" autocapitalize="none" spellcheck="false">
             <div class="d-flex flex-wrap gap-2 mt-2" id="quran-get-started-known-list" aria-live="polite"></div>
+            <div class="alert alert-light border small mt-3 mb-0"><i class="bi bi-lightbulb text-primary me-1" aria-hidden="true"></i><strong>Already memorized.</strong> These surahs will be recorded as Core and will not be included in scheduled Review because you know them by heart.</div>
           </section>
           <section id="quran-get-started-learning-step" hidden>
             <p class="fw-bold mb-1">What surah do you want to memorize?</p>
@@ -170,7 +171,8 @@
             <label class="form-label" for="quran-get-started-learning-input">Surah to memorize</label>
             <input type="search" class="form-control" id="quran-get-started-learning-input" placeholder="Type a surah name or number" autocomplete="off" autocapitalize="none" spellcheck="false">
             <input type="hidden" id="quran-get-started-learning-surah">
-            <div class="alert alert-warning small mt-3 mb-0" id="quran-get-started-long-warning" hidden><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>This surah is longer than one Mushaf page. Start with a manageable number of āyāt. In Memorize view, move through the surah and add more āyāt to Learning whenever you are ready.</div>
+            <div class="alert alert-light border small mt-3 mb-0"><i class="bi bi-lightbulb text-primary me-1" aria-hidden="true"></i><strong>Start small.</strong> Choose a manageable number of āyāt that you can learn consistently. As you progress, open the Memorize page and mark more āyāt as <strong>Learn</strong>.</div>
+            <div class="alert alert-warning small mt-3 mb-0" id="quran-get-started-long-warning" hidden><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>This surah is longer than one Mushaf page, so begin with only the number of āyāt you are ready to learn now.</div>
             <div class="mt-3" id="quran-get-started-ayah-choice" hidden><label class="form-label" for="quran-get-started-ayah-count"><strong>How many āyāt would you like to start with?</strong></label><select class="form-select" id="quran-get-started-ayah-count"></select></div>
           </section>
           <p class="small text-muted mt-3 mb-0" id="quran-get-started-status" role="status" aria-live="polite"></p>
@@ -621,7 +623,11 @@
       };
       try {
         await Promise.all([loadProgress(),supportingDataPromise]);
-        if(progress) progress.hidden=false;
+        if(progress) {
+          progress.hidden=false;
+          progress.setAttribute('data-page-help-tour','progress');
+          if(window.initPageHelpTips) window.initPageHelpTips(progress);
+        }
         if(loading) loading.hidden=true;
       } catch(err) {
         if(progress) progress.hidden=false;

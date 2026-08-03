@@ -7241,6 +7241,15 @@ function initQuranAyahMemorization(root) {
 		relearning: 'Weak',
 		suspended: 'Paused'
 	};
+	var stateOptionLabels = {
+		later: 'Learn later',
+		learning: 'Learn',
+		weak: 'Weak',
+		review: 'Memorized',
+		core: 'Know by heart',
+		relearning: 'Weak',
+		suspended: 'Pause learning'
+	};
 	var stateDescriptions = {
 		later: 'Not currently being memorized',
 		learning: 'Still learning the complete ayah',
@@ -7276,14 +7285,14 @@ function initQuranAyahMemorization(root) {
 			option.setAttribute('data-quran-ayah-state-option', state);
 			option.setAttribute('role', 'menuitemradio');
 			option.setAttribute('aria-checked', 'false');
-			option.setAttribute('aria-label', `${stateLabels[state]}: ${stateDescriptions[state]}`);
+			option.setAttribute('aria-label', `${stateOptionLabels[state]}: ${stateDescriptions[state]}`);
 			option.title = stateDescriptions[state];
 			option.tabIndex = -1;
 			var stateDot = document.createElement('span');
 			stateDot.className = 'quran-ayah-state-option-dot';
 			stateDot.setAttribute('aria-hidden', 'true');
 			option.appendChild(stateDot);
-			option.appendChild(document.createTextNode(stateLabels[state]));
+			option.appendChild(document.createTextNode(stateOptionLabels[state]));
 			stateMenu.appendChild(option);
 		});
 		document.body.appendChild(stateMenu);
@@ -7333,7 +7342,7 @@ function initQuranAyahMemorization(root) {
 			stateDot.className = 'quran-ayah-state-option-dot';
 			stateDot.setAttribute('aria-hidden', 'true');
 			option.appendChild(stateDot);
-			option.appendChild(document.createTextNode(stateLabels[state]));
+			option.appendChild(document.createTextNode(stateOptionLabels[state]));
 			surahStateMenu.appendChild(option);
 		});
 		document.body.appendChild(surahStateMenu);
@@ -7361,7 +7370,7 @@ function initQuranAyahMemorization(root) {
 			stateDot.className = 'quran-ayah-state-option-dot';
 			stateDot.setAttribute('aria-hidden', 'true');
 			option.appendChild(stateDot);
-			option.appendChild(document.createTextNode(stateLabels[state]));
+			option.appendChild(document.createTextNode(stateOptionLabels[state]));
 			pageStateMenu.appendChild(option);
 		});
 		document.body.appendChild(pageStateMenu);
@@ -8272,7 +8281,7 @@ function initQuranMemorizeView(root) {
 					element.classList.toggle('quran-review-session-revealed', revealed);
 			});
 		};
-		var setAyahRevealed = function (ref, revealed) {
+		var setAyahRevealed = function (ref, revealed, showTranslation) {
 			ayahWordsForRef(ref).forEach(function (word) {
 				var timer = wordTimers.get(word);
 				if (timer)
@@ -8283,8 +8292,17 @@ function initQuranMemorizeView(root) {
 				word.classList.toggle('quran-memorize-ayah-revealed', revealed);
 			});
 			setReviewAyahRevealed(ref, revealed);
-			if (revealed) showQuranSelectionTranslationMarquee(ref);
+			if (revealed && showTranslation !== false) showQuranSelectionTranslationMarquee(ref);
 			else if (quranAudioTranslationMarqueeState.activeVerseKey === ref) hideQuranAudioTranslationMarquee();
+		};
+		var materializePageReveal = function () {
+			if (!page.classList.contains('quran-memorize-show-all')) return;
+			var refs = Array.from(page.querySelectorAll('.quran-mushaf-ayah-marker[data-quran-ref]')).map(function (marker) {
+				return marker.getAttribute('data-quran-ref');
+			}).filter(Boolean);
+			Array.from(new Set(refs)).forEach(function (ref) { setAyahRevealed(ref, true, false); });
+			page.classList.remove('quran-memorize-show-all');
+			syncAllControls(false);
 		};
 		var recitationRecorder = null;
 		var recitationStream = null;
@@ -8626,13 +8644,7 @@ function initQuranMemorizeView(root) {
 				var refs = Array.from(page.querySelectorAll('.quran-mushaf-ayah-marker[data-quran-ref]')).map(function (marker) {
 					return marker.getAttribute('data-quran-ref');
 				}).filter(Boolean);
-				if (page.classList.contains('quran-memorize-show-all')) {
-					refs.forEach(function (ayahRef) {
-						setAyahRevealed(ayahRef, true);
-					});
-					page.classList.remove('quran-memorize-show-all');
-					syncAllControls(false);
-				}
+				materializePageReveal();
 				var revealOne = ayahStep.hasAttribute('data-quran-memorize-ayah-reveal');
 				var stepRefs = revealOne ? refs : refs.slice().reverse();
 				var stepRef = stepRefs.find(function (ayahRef) {
@@ -8649,6 +8661,7 @@ function initQuranMemorizeView(root) {
 			if (marker && page.contains(marker)) {
 				event.preventDefault();
 				event.stopImmediatePropagation();
+				materializePageReveal();
 				var ref = marker.getAttribute('data-quran-ref');
 				var targetRefs = [ref];
 				if (event.altKey || event.metaKey || event.ctrlKey) {
@@ -8683,6 +8696,7 @@ function initQuranMemorizeView(root) {
 				return;
 			event.preventDefault();
 			event.stopImmediatePropagation();
+			materializePageReveal();
 			if (word.classList.contains('quran-memorize-word-revealed') || word.classList.contains('quran-memorize-ayah-revealed')) {
 				var wordTimer = wordTimers.get(word);
 				if (wordTimer)
@@ -8698,16 +8712,7 @@ function initQuranMemorizeView(root) {
 			var ref = event.detail && event.detail.ref || '';
 			if (!ref) return;
 			var revealed = !(event.detail && event.detail.revealed === false);
-			if (!revealed && page.classList.contains('quran-memorize-show-all')) {
-				var pageRefs = Array.from(page.querySelectorAll('.quran-mushaf-ayah-marker[data-quran-ref]')).map(function (marker) {
-					return marker.getAttribute('data-quran-ref');
-				}).filter(Boolean);
-				Array.from(new Set(pageRefs)).forEach(function (ayahRef) {
-					setAyahRevealed(ayahRef, true);
-				});
-				page.classList.remove('quran-memorize-show-all');
-				syncAllControls(false);
-			}
+			if (!revealed) materializePageReveal();
 			setAyahRevealed(ref, revealed);
 		});
 		page.addEventListener('keydown', function (event) {
@@ -9067,7 +9072,7 @@ function initPageHelpTips(root) {
 	if (!owner || owner.dataset.pageHelpTipsBound === '1') return;
 	owner.dataset.pageHelpTipsBound = '1';
 	var mode = owner.getAttribute('data-page-help-tour') || '';
-	var labels = { mushaf: 'Mushaf', memorize: 'Memorize', review: 'Review', study: 'Study', tafsir: 'Tafsir' };
+	var labels = { mushaf: 'Mushaf', memorize: 'Memorize', review: 'Review', progress: 'Review summary', study: 'Study', tafsir: 'Tafsir' };
 	if (!labels[mode]) return;
 	var sessionStorageKey = `hadithdb.pageHelpTour.session.${mode}`;
 	var permanentStorageKey = `hadithdb.pageHelpTour.permanent.${mode}`;
@@ -9151,6 +9156,30 @@ function initPageHelpTips(root) {
 			selector: '.quran-review-session-actions'
 		}
 	],
+	progress: [
+		{
+			title: 'See your review activity',
+			copy: 'Your activity history shows how consistently you are reviewing and how your practice is building over time.',
+			selector: '.quran-review-activity'
+		},
+		{
+			title: 'Understand what needs attention',
+			copy: 'Use the summary cards to see what is due now and how many āyāt are Learning, Weak, Memorized, Core, Paused, or Later.',
+			selector: '.quran-memorization-summary'
+		},
+		{
+			title: 'Find your memorization progress',
+			copy: 'Filter by page, Juz, surah, state, or Arabic text to quickly find the āyāt you want to check.',
+			selector: '.memorization-progress-filter'
+		},
+		{
+			title: 'Begin your hifz journey',
+			copy: 'Select **Get Started** to choose what you already know and what you want to learn first.',
+			selector: '#quran-memorization-progress [data-bs-target="#quran-get-started-modal"]',
+			action: 'click-target',
+			actionLabel: 'Get started'
+		}
+	],
 	memorize: [
 		{
 			title: 'Practice with hidden text',
@@ -9159,28 +9188,28 @@ function initPageHelpTips(root) {
 		},
 		{
 			title: 'Begin your hifz journey',
-			copy: 'For an āyah marked **Later**, open its chevron and honestly assess your current recall: **Learning**, **Weak**, **Memorized**, or **Core**. This one-time self-assessment tells the app where your hifz journey should begin. The same menu can **Play** or **Reveal** the āyah while you practice.',
+			copy: 'For an āyah you have not started, open its chevron and honestly assess your current recall: **Learn**, **Weak**, **Memorized**, or **Know by heart**. This one-time self-assessment tells the app where your hifz journey should begin. The same menu can **Play**, **Reveal**, or **Hide** the āyah while you practice.',
 			selector: '[data-quran-ayah-state-menu]',
 			requiresMemorizationMenu: 'ayah',
 			requiresMemorizationState: 'later'
 		},
 		{
 			title: 'Assess a complete surah',
-			copy: 'When every āyah in a surah is still **Later**, use the surah dropdown to give the complete surah one starting assessment. Confirm **Learning**, **Weak**, **Memorized**, or **Core**, then work through its āyāt.',
+			copy: 'When you have not started any āyah in a surah, use the surah dropdown to give the complete surah one starting assessment. Choose **Learn**, **Weak**, **Memorized**, or **Know by heart**, then work through its āyāt.',
 			selector: '[data-quran-surah-state-menu]',
 			requiresMemorizationMenu: 'surah',
 			requiresMemorizationState: 'later'
 		},
 		{
 			title: 'Let Review manage progress',
-			copy: 'Your self-assessment is the only time you choose a learning stage. After enrollment, do not move the āyah between **Learning**, **Weak**, **Memorized**, or **Core** yourself. Complete daily **Review** sessions and the app will update its stage and schedule from your grades.',
+			copy: 'Your self-assessment is the only time you choose a starting stage. After enrollment, Review updates Learning, Weak, and Memorized from your grades. You can still choose **Know by heart**, **Pause learning**, or **Learn later** when needed.',
 			selector: '[data-quran-ayah-state-menu]',
 			requiresMemorizationMenu: 'ayah',
 			requiresMemorizationState: 'enrolled'
 		},
 		{
-			title: 'Pause or learn it later',
-			copy: 'After enrollment, these are your only manual changes. Choose **Paused** to take the āyah out of learning and review temporarily, or **Later** to remove it from the current plan until you are ready to assess it again.',
+			title: 'Pause learning or learn later',
+			copy: 'After enrollment, choose **Pause learning** to stop reviews temporarily without losing history, or **Learn later** to remove the āyah from the current plan. Choose **Know by heart** when it no longer needs scheduled Review.',
 			selector: '[data-quran-ayah-state-menu]',
 			requiresMemorizationMenu: 'ayah',
 			requiresMemorizationState: 'enrolled'
@@ -9654,7 +9683,7 @@ function initPageHelpTips(root) {
 			renderCopy(copy, step.copy);
 			progress.textContent = `${currentStep + 1} of ${steps.length}`;
 			back.hidden = currentStep === 0;
-			next.textContent = currentStep === steps.length - 1 ? 'Done' : 'Next';
+			next.textContent = currentStep === steps.length - 1 ? (step.actionLabel || 'Done') : 'Next';
 			activeTarget = visibleTarget(step.selector);
 			if (activeTarget && activeTarget.scrollIntoView)
 				activeTarget.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
@@ -9734,7 +9763,12 @@ function initPageHelpTips(root) {
 				return;
 			}
 			if (event.target.closest('[data-quran-help-tips-next]')) {
-				if (currentStep === steps.length - 1) closeTour('session');
+				if (currentStep === steps.length - 1) {
+					var finalStep = steps[currentStep];
+					var finalTarget = activeTarget;
+					closeTour('session');
+					if (finalStep.action === 'click-target' && finalTarget) finalTarget.click();
+				}
 				else showStep(currentStep + 1);
 			}
 		});
