@@ -1358,6 +1358,15 @@
       return true;
     };
 
+    window.hadithAuth.renderSignInButton = async (element, options = {}) => {
+      if (!element) return false;
+      const googleId = await initializeGoogle();
+      if (!googleId) return false;
+      element.innerHTML = '';
+      googleId.renderButton(element, options);
+      return true;
+    };
+
     const renderGoogleButtons = async () => {
       const googleId = await initializeGoogle();
       if (!googleId) return;

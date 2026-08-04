@@ -16,6 +16,7 @@
       <p class="lead text-muted mx-auto mb-4">The app brings each āyah back for review before it is likely to fade. Your answers adjust future timing, helping keep your hifz strong without unnecessary repetition.</p>
       <div class="d-flex justify-content-center gap-2 flex-wrap">
         <button type="button" class="btn btn-primary" id="quran-memorization-sign-in"><i class="bi bi-person-circle me-1" aria-hidden="true"></i> Sign in to begin memorizing</button>
+        <div id="quran-memorization-google-sign-in" hidden></div>
         <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/page') %>">Explore the Mushaf</a>
       </div>
       <p class="small text-muted mt-3 mb-0">Your memorization progress is saved securely to your account and stays available across your devices.</p>
@@ -745,9 +746,10 @@
     }());
   </script>
   <script>
-    (function () {
+    (async function () {
       const button = document.getElementById('quran-memorization-sign-in');
       if (!button) return;
+      const googleButton = document.getElementById('quran-memorization-google-sign-in');
       button.addEventListener('click', async function () {
         if (button.dataset.authenticated === '1') {
           window.location.assign(quranUrl('/quran/review'));
@@ -764,6 +766,22 @@
         }
         window.setTimeout(function () { button.disabled = false; }, 1200);
       });
+      const token = window.hadithAuth && window.hadithAuth.getToken
+        ? await window.hadithAuth.getToken()
+        : null;
+      if (!token && googleButton && window.hadithAuth && window.hadithAuth.renderSignInButton) {
+        const rendered = await window.hadithAuth.renderSignInButton(googleButton, {
+          type: 'standard',
+          theme: 'filled_blue',
+          shape: 'pill',
+          size: 'large',
+          text: 'signin_with'
+        });
+        if (rendered) {
+          googleButton.hidden = false;
+          button.hidden = true;
+        }
+      }
       document.addEventListener('hadithAuthChanged', function (event) {
         if (!(event.detail && event.detail.user)) return;
         window.setTimeout(function () { window.location.assign(quranUrl('/quran/review')); }, 1800);
