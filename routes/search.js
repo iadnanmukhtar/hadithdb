@@ -32,6 +32,7 @@ const { homedir } = require('os');
 const router = express.Router();
 const sitemapBuilds = new Map();
 const SITEMAP_PAGE_SIZE = 50000;
+const QURAN_SITEMAP_CACHE_VERSION = 2;
 const DEFAULT_SEARCH_RATE_LIMIT_WINDOW_MS = 1000;
 const DEFAULT_SEARCH_RATE_LIMIT_RPS = 100;
 
@@ -554,7 +555,7 @@ async function buildAndCacheSitemap(req, cachedFile) {
 }
 
 function sitemapCacheFile(quranOnly) {
-  return Utils.cacheFileFromFilename(quranOnly ? 'quran' : 'hadith', 'txt');
+  return Utils.cacheFileFromFilename(quranOnly ? `quran-v${QURAN_SITEMAP_CACHE_VERSION}` : 'hadith', 'txt');
 }
 
 function sitemapText(urls) {
