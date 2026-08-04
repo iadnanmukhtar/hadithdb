@@ -764,6 +764,20 @@ describe('QuranAyahMemorization public ayah helpers', () => {
         .toThrow('Choose Review all āyāt or Regular review');
     });
 
+    test('accepts finite and forward-continuing passage and page reviews', () => {
+      expect(QuranAyahMemorization.reviewSessionRequest({ mode:'passage', startRef:'2:255' })).toMatchObject({
+        mode:'passage', startRef:'2:255', surahNumber:2, continueForward:false
+      });
+      expect(QuranAyahMemorization.reviewSessionRequest({ mode:'passage', startRef:'2:255', continueForward:true })).toMatchObject({
+        mode:'passage', startRef:'2:255', continueForward:true
+      });
+      expect(QuranAyahMemorization.reviewSessionRequest({ mode:'page', pageNumber:42, continueForward:true })).toMatchObject({
+        mode:'page', pageNumber:42, continueForward:true
+      });
+      expect(() => QuranAyahMemorization.reviewSessionRequest({ mode:'passage', startRef:'2:999' }))
+        .toThrow('A valid Quran ayah is required');
+    });
+
     test('enrolls Later ayat in a custom review scope as Learning cards', async () => {
       const query = jest.fn()
         .mockResolvedValueOnce([

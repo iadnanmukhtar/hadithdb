@@ -7110,22 +7110,16 @@ function initQuranMemorizeReviewLauncher(root) {
 	if (!modal || modal.dataset.quranMemorizeReviewBound === '1') return;
 	modal.dataset.quranMemorizeReviewBound = '1';
 	var form = modal.querySelector('[data-quran-memorize-review-form]');
-	var surahFields = modal.querySelector('[data-quran-memorize-review-surah-fields]');
-	var surahInput = modal.querySelector('[data-quran-memorize-review-surah-input]');
-	var surahNumber = modal.querySelector('[data-quran-memorize-review-surah-number]');
-	var pageLabel = modal.querySelector('[data-quran-memorize-review-page-label]');
+	var ayahFields = modal.querySelector('[data-quran-memorize-review-ayah-fields]');
+	var durationFields = modal.querySelector('[data-quran-memorize-review-duration-fields]');
+	var ayahLabel = modal.querySelector('[data-quran-memorize-review-ayah-label]');
+	var scopeEndLabel = modal.querySelector('[data-quran-memorize-review-scope-end]');
+	var continueLabel = modal.querySelector('[data-quran-memorize-review-continue-label]');
 	var status = modal.querySelector('[data-quran-memorize-review-status]');
 	var submit = modal.querySelector('[data-quran-memorize-review-submit]');
-	var catalogNode = modal.querySelector('[data-quran-memorize-review-surah-catalog]');
-	var catalog = [];
-	try { catalog = JSON.parse(catalogNode && catalogNode.textContent || '[]'); } catch (_err) {}
-	var choices = new Map();
-	var choicesPromise = null;
 	var currentPage = null;
-	var defaultSurah = null;
-	var normalizeSearch = function (value) {
-		return (value || '').toString().toLocaleLowerCase().normalize('NFD').replace(/[\u064B-\u065F\u0670]/g, '').replace(/\p{Diacritic}/gu, '').replace(/[^\p{L}\p{M}\d]+/gu, ' ').replace(/\s+/g, ' ').trim();
-	};
+	var currentRef = null;
+	var launcherMode = 'page';
 	var getToken = async function () {
 		for (var attempt = 0; attempt < 30 && (!window.hadithAuth || !window.hadithAuth.getToken); attempt += 1)
 			await new Promise(function (resolve) { window.setTimeout(resolve, 100); });
@@ -7134,103 +7128,35 @@ function initQuranMemorizeReviewLauncher(root) {
 			token = await window.hadithAuth.requireToken('Please sign in to start a Quran review.');
 		return token;
 	};
-	var selectedScope = function () {
-		var selected = form.querySelector('input[name="quran-memorize-review-scope"]:checked');
-		return selected ? selected.value : 'page';
-	};
-	var updateScope = function () {
-		var useSurah = selectedScope() === 'surah';
-		surahFields.hidden = !useSurah;
-		if (useSurah && surahInput) window.setTimeout(function () { surahInput.focus(); }, 100);
-	};
-	var chooseSurah = function (choice) {
-		if (!choice) return;
-		surahNumber.value = String(choice.number);
-		surahInput.value = `${choice.number}. ${choice.name}`;
-		surahInput.classList.remove('is-invalid');
-		status.textContent = '';
-	};
-	var bindAutocomplete = function () {
-		if (!window.jQuery || !jQuery.fn.autocomplete || surahInput.dataset.quranAutocompleteBound === '1') return;
-		surahInput.dataset.quranAutocompleteBound = '1';
-		var $input = jQuery(surahInput);
-		$input.autocomplete({
-			appendTo: modal.querySelector('.modal-body'), delay: 0, minLength: 0,
-			source: function (request, response) {
-				var query = normalizeSearch(request.term);
-				response(Array.from(choices.values()).filter(function (choice) {
-					return !query || normalizeSearch([choice.number, choice.name, choice.arabic].concat(choice.aliases || []).join(' ')).includes(query);
-				}).slice(0, 12).map(function (choice) { return { label: `${choice.number}. ${choice.name}`, value: `${choice.number}. ${choice.name}`, choice: choice }; }));
-			},
-			focus: function (event) { event.preventDefault(); },
-			select: function (event, ui) { event.preventDefault(); chooseSurah(ui.item.choice); },
-			open: function () { $input.autocomplete('widget').addClass('search-autocomplete-menu quran-surah-review-autocomplete-menu').css('width', $input.outerWidth()); }
-		}).autocomplete('instance')._renderItem = function (ul, item) {
-			var choice = item.choice;
-			var row = jQuery('<div>').addClass('search-autocomplete-item search-autocomplete-quran');
-			jQuery('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.label).appendTo(row);
-			var meta = jQuery('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-lines');
-			if (choice.arabic) jQuery('<span>').addClass('search-autocomplete-meta-ar').attr({ lang: 'ar', dir: 'rtl' }).text(choice.arabic).appendTo(meta);
-			jQuery('<span>').addClass('search-autocomplete-meta-en').text(`${choice.ayahs.toLocaleString()} ${choice.ayahs === 1 ? 'āyah' : 'āyāt'}`).appendTo(meta);
-			meta.appendTo(row);
-			return jQuery('<li>').append(row).appendTo(ul);
-		};
-		$input.on('focus', function () { if (!$input.autocomplete('widget').is(':visible')) $input.autocomplete('search', $input.val()); });
-		$input.on('input', function () { surahNumber.value = ''; surahInput.classList.remove('is-invalid'); });
-	};
-	var loadChoices = async function () {
-		if (choicesPromise) return choicesPromise;
-		choicesPromise = (async function () {
-			status.textContent = 'Loading available surahs...';
-			var token = await getToken();
-			if (!token) throw new Error('Please sign in to start a Quran review.');
-			var response = await fetch(quranApiPath('/memorization/progress/groups'), { credentials: 'same-origin', headers: { 'Authorization': `Bearer ${token}` } });
-			var data = await response.json().catch(function () { return {}; });
-			if (!response.ok) throw new Error(data.error || 'Unable to load available surahs.');
-			var bySurah = new Map();
-			(data.groups || []).forEach(function (group) {
-				var number = Math.max(1, Number(group.surah_number) || Number(group.start_surah_number) || 1);
-				if (!bySurah.has(number)) bySurah.set(number, { count: 0, pages: 0 });
-				var entry = bySurah.get(number);
-				['learning', 'weak', 'relearning', 'review', 'core', 'suspended'].forEach(function (state) { entry.count += Math.max(0, Number(group.counts && group.counts[state]) || 0); });
-				entry.pages = Math.max(entry.pages, Number(group.surah_page_count) || 1);
-			});
-			catalog.forEach(function (surah) {
-				choices.set(Number(surah.number), { number: Number(surah.number), name: surah.english || `Surah ${surah.number}`, arabic: surah.arabic || '', aliases: surah.aliases || [], ayahs: Number(surah.ayahs) || 0 });
-			});
-			bindAutocomplete();
-			status.textContent = choices.size ? '' : 'No surahs currently have āyāt available for Review.';
-			if (defaultSurah && choices.has(defaultSurah)) chooseSurah(choices.get(defaultSurah));
-		}()).catch(function (err) { choicesPromise = null; throw err; });
-		return choicesPromise;
-	};
-	form.querySelectorAll('input[name="quran-memorize-review-scope"]').forEach(function (input) { input.addEventListener('change', updateScope); });
 	modal.addEventListener('show.bs.modal', function (event) {
 		var trigger = event.relatedTarget;
+		launcherMode = trigger && trigger.getAttribute('data-quran-memorize-review-ref') ? 'passage' : 'page';
+		currentRef = launcherMode === 'passage' ? trigger.getAttribute('data-quran-memorize-review-ref') : null;
+		var finiteDurationInput = form.querySelector('input[name="quran-memorize-review-duration"][value="scope"]');
+		if (finiteDurationInput) finiteDurationInput.checked = true;
 		currentPage = Math.max(1, Number(trigger && trigger.getAttribute('data-quran-memorize-review-page')) || 1);
-		pageLabel.textContent = `Mushaf page ${currentPage}`;
-		var page = document.querySelector(`[data-quran-mushaf-page="${currentPage}"]`);
-		var firstRef = page && page.querySelector('[data-quran-ref]');
-		defaultSurah = Math.max(1, Number((firstRef && firstRef.getAttribute('data-quran-ref') || '').split(':')[0]) || 1);
+		ayahFields.hidden = launcherMode !== 'passage';
+		durationFields.hidden = false;
+		if (launcherMode === 'passage') {
+			ayahLabel.textContent = `Quran ${currentRef}`;
+			scopeEndLabel.textContent = 'Until this passage is complete';
+			continueLabel.textContent = 'Continue into following passages as you reach them';
+		} else {
+			scopeEndLabel.textContent = 'Until this page is complete';
+			continueLabel.textContent = 'Continue into following pages as you reach them';
+		}
 		status.textContent = '';
-		updateScope();
-		loadChoices().catch(function (err) { status.textContent = err.message; });
 	});
 	form.addEventListener('submit', async function (event) {
 		event.preventDefault();
-		var scope = selectedScope();
-		var body = scope === 'page' ? { mode: 'page', page_number: currentPage } : null;
-		if (scope === 'surah') {
-			var selectedSurah = Number(surahNumber.value);
-			if (!Number.isInteger(selectedSurah) || !choices.has(selectedSurah)) {
-				surahInput.classList.add('is-invalid'); status.textContent = 'Choose a surah from the suggestions.'; surahInput.focus(); return;
-			}
-			var reviewTypeInput = form.querySelector('input[name="quran-memorize-surah-review-type"]:checked');
-			var reviewUnitInput = form.querySelector('input[name="quran-memorize-surah-review-unit"]:checked');
-			body = { mode: 'surah', surah_number: selectedSurah, review_type: reviewTypeInput ? reviewTypeInput.value : 'regular', review_unit: reviewUnitInput ? reviewUnitInput.value : 'ayah' };
-		}
+		var scope = launcherMode;
+		var durationInput = form.querySelector('input[name="quran-memorize-review-duration"]:checked');
+		var continueForward = durationInput && durationInput.value === 'session';
+		var body = scope === 'passage'
+			? { mode: 'passage', start_ref: currentRef, continue_forward: continueForward }
+			: scope === 'page' ? { mode: 'page', page_number: currentPage, continue_forward: continueForward } : null;
 		submit.disabled = true;
-		status.textContent = scope === 'page' ? `Preparing Mushaf page ${currentPage}...` : 'Preparing the Surah Review...';
+		status.textContent = scope === 'page' ? `Preparing Mushaf page ${currentPage}...` : scope === 'passage' ? `Preparing the passage from Quran ${currentRef}...` : 'Preparing the Surah Review...';
 		showQuranReviewLoading('Preparing your review...');
 		try {
 			var token = await getToken();
@@ -7347,6 +7273,18 @@ function initQuranAyahMemorization(root) {
 		playAyahOption.tabIndex = -1;
 		playAyahOption.innerHTML = '<span class="bi bi-play-fill" aria-hidden="true"></span><span>Play</span>';
 		stateMenu.insertBefore(playAyahOption, revealAyahOption);
+	}
+	var reviewAyahOption = stateMenu.querySelector('[data-quran-ayah-review-option]');
+	if (!reviewAyahOption) {
+		reviewAyahOption = document.createElement('button');
+		reviewAyahOption.type = 'button';
+		reviewAyahOption.className = 'quran-ayah-state-option quran-ayah-review-option';
+		reviewAyahOption.setAttribute('data-quran-ayah-review-option', '1');
+		reviewAyahOption.setAttribute('role', 'menuitem');
+		reviewAyahOption.tabIndex = -1;
+		reviewAyahOption.innerHTML = '<span class="bi bi-arrow-repeat" aria-hidden="true"></span><span>Review</span>';
+		var firstStateOption = stateMenu.querySelector('[data-quran-ayah-state-option]');
+		stateMenu.insertBefore(reviewAyahOption, firstStateOption);
 	}
 	var surahStateMenu = document.querySelector('[data-quran-surah-state-menu]');
 	if (!surahStateMenu) {
@@ -8036,6 +7974,19 @@ function initQuranAyahMemorization(root) {
 				if (startQuranAyahAudio(playRef)) announce(`Playing and revealing Quran ${playRef}.`);
 				return;
 			}
+			var reviewOption = event.target.closest && event.target.closest('[data-quran-ayah-review-option]');
+			if (reviewOption && stateMenu.contains(reviewOption) && activeStateControl) {
+				event.preventDefault();
+				var reviewRef = activeStateControl.getAttribute('data-quran-state-ref') || '';
+				closeStateMenu(true);
+				var reviewModal = document.getElementById('quran-memorize-review-modal');
+				if (reviewModal && window.bootstrap && bootstrap.Modal) {
+					var reviewTrigger = document.createElement('button');
+					reviewTrigger.setAttribute('data-quran-memorize-review-ref', reviewRef);
+					bootstrap.Modal.getOrCreateInstance(reviewModal).show(reviewTrigger);
+				}
+				return;
+			}
 			var option = event.target.closest && event.target.closest('[data-quran-ayah-state-option]');
 			if (option && stateMenu.contains(option) && activeStateControl) {
 				event.preventDefault();
@@ -8066,7 +8017,7 @@ function initQuranAyahMemorization(root) {
 				closeStateMenu(false);
 				return;
 			}
-			var options = Array.from(stateMenu.querySelectorAll('[data-quran-ayah-play-option]:not([hidden]):not(:disabled), [data-quran-ayah-reveal-option]:not([hidden]):not(:disabled), [data-quran-ayah-state-option]:not([hidden]):not(:disabled)'));
+			var options = Array.from(stateMenu.querySelectorAll('[data-quran-ayah-play-option]:not([hidden]):not(:disabled), [data-quran-ayah-reveal-option]:not([hidden]):not(:disabled), [data-quran-ayah-review-option]:not([hidden]):not(:disabled), [data-quran-ayah-state-option]:not([hidden]):not(:disabled)'));
 			var index = options.indexOf(document.activeElement);
 			var nextIndex = null;
 			if (event.key === 'ArrowDown') nextIndex = index < 0 ? 0 : (index + 1) % options.length;

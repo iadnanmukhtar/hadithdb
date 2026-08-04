@@ -267,7 +267,9 @@ router.post('/review/sessions', async function (req, res) {
     surahNumber: req.body && req.body.surah_number,
     reviewType: req.body && req.body.review_type,
     reviewUnit: req.body && req.body.review_unit,
-    pageNumber: req.body && req.body.page_number
+    pageNumber: req.body && req.body.page_number,
+    startRef: req.body && req.body.start_ref,
+    continueForward: req.body && req.body.continue_forward
   });
   res.status(201).json({ session });
 });
