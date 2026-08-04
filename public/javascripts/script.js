@@ -8715,6 +8715,8 @@ function initQuranMemorizeView(root) {
 				var hideAyah = ayahWords.length > 0 && ayahWords.every(function (word) {
 					return word.classList.contains('quran-memorize-ayah-revealed');
 				});
+				if (hideAyah && page.dataset.quranReviewAnswerRevealed === '1')
+					return;
 				targetRefs.forEach(function (targetRef) { setAyahRevealed(targetRef, !hideAyah); });
 				if (marker.hasAttribute('aria-expanded'))
 					marker.setAttribute('aria-expanded', 'false');
@@ -8727,6 +8729,8 @@ function initQuranMemorizeView(root) {
 			event.stopImmediatePropagation();
 			materializePageReveal();
 			if (word.classList.contains('quran-memorize-word-revealed') || word.classList.contains('quran-memorize-ayah-revealed')) {
+				if (page.dataset.quranReviewAnswerRevealed === '1')
+					return;
 				var wordTimer = wordTimers.get(word);
 				if (wordTimer)
 					window.clearTimeout(wordTimer);
@@ -8741,6 +8745,7 @@ function initQuranMemorizeView(root) {
 			var ref = event.detail && event.detail.ref || '';
 			if (!ref) return;
 			var revealed = !(event.detail && event.detail.revealed === false);
+			if (!revealed && page.dataset.quranReviewAnswerRevealed === '1') return;
 			if (!revealed) materializePageReveal();
 			setAyahRevealed(ref, revealed);
 		});
