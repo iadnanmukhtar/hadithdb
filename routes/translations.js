@@ -32,6 +32,16 @@ router.get('/', async function (req, res) {
   }
 });
 
+router.get('/:surah/:ayah', function (req, res, next) {
+  const surahNum = Number(req.params.surah);
+  const ayahNum = Number(req.params.ayah);
+  const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
+  if (!surah || !Number.isInteger(surahNum) || !Number.isInteger(ayahNum) ||
+      ayahNum < 1 || ayahNum > Number(surah.ayahs))
+    return next(createError(404, `Quran ayah ${req.params.surah}:${req.params.ayah} not found`));
+  return res.redirect(301, canonicalTranslationUrl(req, surahNum, ayahNum));
+});
+
 router.get('/:ref', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;

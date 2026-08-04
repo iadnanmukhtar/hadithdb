@@ -32,6 +32,7 @@ const { homedir } = require('os');
 const router = express.Router();
 const sitemapBuilds = new Map();
 const SITEMAP_PAGE_SIZE = 50000;
+const SITEMAP_COMMENTARY_CONCURRENCY = 6;
 const DEFAULT_SEARCH_RATE_LIMIT_WINDOW_MS = 1000;
 const DEFAULT_SEARCH_RATE_LIMIT_RPS = 100;
 
@@ -741,13 +742,20 @@ async function addQuranTranslationSitemapUrls(urls, quranDomain) {
 
 async function addQuranTafsirSitemapUrls(urls, quranDomain) {
   const tafsirs = await Tafsir.visibleTafsirs();
-  for (const tafsir of tafsirs) {
+  const passagesByTafsir = [];
+  for (let offset = 0; offset < tafsirs.length; offset += SITEMAP_COMMENTARY_CONCURRENCY) {
+    const batch = tafsirs.slice(offset, offset + SITEMAP_COMMENTARY_CONCURRENCY);
+    const passages = await Promise.all(batch.map(function (tafsir) {
+      return Tafsir.sitemapPassages(tafsir, { source: 'db' });
+    }));
+    passagesByTafsir.push(...passages);
+  }
+  tafsirs.forEach(function (tafsir, index) {
     urls.add(`${quranDomain}${quranTafsirBookTocUrl(tafsir, tafsirs)}`);
-    const passages = await Tafsir.sitemapPassages(tafsir, { source: 'db' });
-    passages.forEach(function (passage) {
+    passagesByTafsir[index].forEach(function (passage) {
       urls.add(`${quranDomain}${Tafsir.passageUrl(tafsir, passage.surah, passage.ayah, passage.endAyah, tafsirs)}`);
     });
-  }
+  });
 }
 
 function quranTafsirBookTocUrl(tafsir, tafsirs) {
