@@ -2886,6 +2886,11 @@ del em strong {
 	margin-block: clamp(2.75rem, 7vw, 4.75rem);
 }
 
+.quran-ayah-hero.quran-memorization-preview-ayah {
+	max-width: 48rem;
+	margin: 0 auto clamp(2rem, 5vw, 3.5rem);
+}
+
 .quran-memorization-preview-header {
 	max-width: 38rem;
 	margin-bottom: 1.5rem;
