@@ -501,7 +501,7 @@ async function sitemapUrls(req) {
     const cachedText = Utils.readCachedTextFile(cachedFile);
     const cachedUrls = sitemapTextToUrls(cachedText);
     const siteUrls = sitemapUrlsForSite(cachedUrls, quranOnly);
-    const requiredUrls = quranOnly ? quranPublicSitemapUrlList(quranSitemapBaseUrl(req)) : [];
+    const requiredUrls = quranOnly ? quranRequiredSitemapUrlList(quranSitemapBaseUrl(req)) : [];
     const hasWrongSiteUrls = siteUrls.length !== cachedUrls.length;
     if (!hasWrongSiteUrls && !sitemapCacheNeedsRebuild(cachedUrls, requiredUrls))
       return siteUrls;
@@ -566,8 +566,9 @@ function sitemapTextToUrls(txt) {
 }
 
 function sitemapCacheNeedsRebuild(urls, requiredUrls = []) {
+  const urlSet = new Set(urls);
   return urls.some(url => !/^https?:\/\//i.test(url))
-    || requiredUrls.some(url => !urls.includes(url));
+    || requiredUrls.some(url => !urlSet.has(url));
 }
 
 function sitemapXml(urls) {
@@ -665,6 +666,12 @@ function quranPublicSitemapUrlList(quranDomain) {
     `${quranDomain}/quran/review`,
     `${quranDomain}/quran/review?help`
   ];
+}
+
+function quranRequiredSitemapUrlList(quranDomain) {
+  return quranPublicSitemapUrlList(quranDomain).concat(quranAyahRefs().map(function (ref) {
+    return `${quranDomain}/quran/translations/quran:${ref.surah}:${ref.ayah}`;
+  }));
 }
 
 function quranPublicSitemapUrls(quranDomain) {
