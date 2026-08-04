@@ -38,15 +38,8 @@
 				for (var carouselTafsir of carouselTafsirs) {
 					var carouselTafsirLabel = Tafsir.rawShortName(carouselTafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();
 					var carouselTafsirSlug = carouselTafsir.slug || Tafsir.tafsirSlug(carouselTafsir.alias);
-					var carouselTafsirHasLanguageCollision = carouselTafsirs.some(function (other) {
-						return other && other !== carouselTafsir && other.lang !== carouselTafsir.lang
-							&& (other.slug || Tafsir.tafsirSlug(other.alias)) === carouselTafsirSlug;
-					});
-					var carouselTafsirQuery = carouselTafsirHasLanguageCollision && (carouselTafsir.lang === 'ar' || carouselTafsir.lang === 'en')
-						? `?lang=${encodeURIComponent(carouselTafsir.lang)}`
-						: '';
 			%>
-			  <a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(carouselTafsirSlug)}${carouselTafsirQuery}`) %>" data-tafsir-tooltip="<%= bookTooltip(carouselTafsir) %>" data-tafsir-book-nav-item data-tafsir-alias="<%= carouselTafsir.alias %>" data-tafsir-lang="<%= carouselTafsir.lang || '' %>"><%= carouselTafsirLabel %></a>
+			  <a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(carouselTafsirSlug)}`) %>" data-tafsir-tooltip="<%= bookTooltip(carouselTafsir) %>" data-tafsir-book-nav-item data-tafsir-alias="<%= carouselTafsir.alias %>" data-tafsir-lang="<%= carouselTafsir.lang || '' %>"><%= carouselTafsirLabel %></a>
 			<% }
 			} else {
 			  for (b of books.filter(isHadithBook)) {

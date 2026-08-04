@@ -14,6 +14,15 @@ const { Item, Library } = require('../lib/Model');
 
 const router = express.Router();
 
+router.use(function removeTafsirLanguageQuery(req, res, next) {
+  if (req.method !== 'GET' && req.method !== 'HEAD' || req.query.lang === undefined)
+    return next();
+  const query = new URLSearchParams(req.query);
+  query.delete('lang');
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return res.redirect(301, `${Utils.quranPath(`${req.baseUrl}${req.path}`)}${suffix}`);
+});
+
 function originalQuery(req) {
   const originalUrl = (req.originalUrl || '').toString();
   const index = originalUrl.indexOf('?');
@@ -21,7 +30,7 @@ function originalQuery(req) {
 }
 
 router.get('/:tafsir/juz/:number', async function (req, res, next) {
-  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir, req.query.lang);
+  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
     return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
   const number = Number(req.params.number);
@@ -41,7 +50,7 @@ router.get('/:tafsir/juz/:number', async function (req, res, next) {
 });
 
 router.get('/:tafsir/manzil/:number', async function (req, res, next) {
-  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir, req.query.lang);
+  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
     return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
   const number = Number(req.params.number);
@@ -59,18 +68,21 @@ router.get('/:tafsir', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir, req.query.lang);
+  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
     return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
 
   await renderTafsirBookToc(req, res, tafsir);
 });
 
+router.get('/:tafsir/quran\::surah\::start-:end', renderTafsirPassage);
+router.get('/:tafsir/quran\::surah\::start', renderTafsirPassage);
+
 router.get('/:tafsir/:surah', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
 
-  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir, req.query.lang);
+  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
     return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
 
@@ -84,29 +96,24 @@ router.get('/:tafsir/:surah', async function (req, res, next) {
     return next(createError(404, `${tafsir.shortName_en || tafsir.alias} has no passages for Surah ${surahNum}`));
 
   const allTafsirs = await Tafsir.visibleTafsirs();
-  res.redirect(302, Utils.quranPath(Tafsir.browseUrl(tafsir, passage.surah, passage.ayah, allTafsirs)));
+  res.redirect(302, Utils.quranPath(Tafsir.passageUrl(tafsir, passage.surah, passage.ayah, passage.endAyah, allTafsirs)));
 });
 
-router.get('/:tafsir/:surah/:section', async function (req, res, next) {
+router.get('/:tafsir/:surah/:section', renderTafsirPassage);
+
+async function renderTafsirPassage(req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
-  const cachedFile = cachedRequestFile(req);
-  const flushCache = Utils.shouldFlushCache(req);
-  if (flushCache)
-    await Utils.flushCachedFile(cachedFile);
-  if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
-    sendCachedHtml(req, res, cachedFile);
-    return;
-  }
 
   const surahNum = Number(req.params.surah);
-  const ayahNum = Number(req.params.section);
+  const ayahNum = Number(req.params.start || req.params.section);
+  const requestedEnd = req.params.end === undefined ? ayahNum : Number(req.params.end);
   const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
-  if (!surah || !Number.isInteger(ayahNum) || ayahNum < 1 || ayahNum > Number(surah.ayahs))
-    return next(createError(404, `Quran ayah ${req.params.surah}:${req.params.section} not found`));
+  if (!surah || !Number.isInteger(ayahNum) || !Number.isInteger(requestedEnd) || ayahNum < 1 || requestedEnd < ayahNum || requestedEnd > Number(surah.ayahs))
+    return next(createError(404, `Quran passage ${req.params.surah}:${req.params.start || req.params.section}${req.params.end ? `-${req.params.end}` : ''} not found`));
 
-  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir, req.query.lang);
+  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
     return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
 
@@ -123,8 +130,28 @@ router.get('/:tafsir/:surah/:section', async function (req, res, next) {
 
   const entryStart = entries.length ? Math.min(...entries.map(entry => entry.startAyah)) : ayahNum;
   const entryEnd = entries.length ? Math.max(...entries.map(entry => entry.endAyah)) : ayahNum;
-  const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
   const allTafsirs = await Tafsir.visibleTafsirs();
+  const canonicalPath = Tafsir.passageUrl(tafsir, surahNum, entryStart, entryEnd, allTafsirs);
+  const canonicalUrl = new URL(canonicalPath, 'https://quran.islamunlocked.com');
+  const canonicalPathname = canonicalUrl.pathname;
+  const requestPathname = new URL(req.originalUrl || req.url, 'https://quran.islamunlocked.com').pathname;
+  if (requestPathname !== canonicalPathname) {
+    const query = new URLSearchParams(req.query);
+    if (canonicalUrl.searchParams.has('lang'))
+      query.set('lang', canonicalUrl.searchParams.get('lang'));
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return res.redirect(301, `${Utils.quranPath(canonicalPathname)}${suffix}`);
+  }
+
+  const cachedFile = cachedRequestFile(req);
+  const flushCache = Utils.shouldFlushCache(req);
+  if (flushCache)
+    await Utils.flushCachedFile(cachedFile);
+  if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    sendCachedHtml(req, res, cachedFile);
+    return;
+  }
+  const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
   const [chapter, section] = await Promise.all([
     QuranHeadings.chapter(surahNum),
     QuranHeadings.sectionForAyah(surahNum, ayahNum)
@@ -165,7 +192,7 @@ router.get('/:tafsir/:surah/:section', async function (req, res, next) {
   }
 
   res.render('tafsir_passage', renderLocals);
-});
+}
 
 async function renderTafsirBookToc(req, res, tafsir) {
   const quranBook = (global.books || []).find(book => book && book.alias === 'quran' && Number(book.hidden) === 0);
@@ -177,6 +204,7 @@ async function renderTafsirBookToc(req, res, tafsir) {
   const quranJuzRows = await QuranTocSubdivisions.juzRows();
   const quranManzilRows = await QuranTocSubdivisions.manzilRows();
   const quranSectionRangesBySurah = await QuranTocSubdivisions.quranSectionRangesBySurah();
+  const quranTafsirPassages = await Tafsir.sitemapPassages(tafsir, { source: 'db' });
   const quranTocDefaultView = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
   const renderLocals = {
     book: quranBook,
@@ -184,6 +212,7 @@ async function renderTafsirBookToc(req, res, tafsir) {
     quranJuzRows: quranJuzRows,
     quranManzilRows: quranManzilRows,
     quranSectionRangesBySurah: quranSectionRangesBySurah,
+    quranTafsirPassages: quranTafsirPassages,
     quranTocDefaultView: quranTocDefaultView,
     BookDownloads: BookDownloads,
     prevBook: null,

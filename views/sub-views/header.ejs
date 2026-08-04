@@ -225,15 +225,8 @@
               for (var railTafsir of railTafsirs) {
                 var railTafsirLabel = Tafsir.rawShortName(railTafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();
                 var railTafsirSlug = railTafsir.slug || Tafsir.tafsirSlug(railTafsir.alias);
-                var railTafsirHasLanguageCollision = railTafsirs.some(function (other) {
-                  return other && other !== railTafsir && other.lang !== railTafsir.lang
-                    && (other.slug || Tafsir.tafsirSlug(other.alias)) === railTafsirSlug;
-                });
-                var railTafsirQuery = railTafsirHasLanguageCollision && (railTafsir.lang === 'ar' || railTafsir.lang === 'en')
-                  ? `?lang=${encodeURIComponent(railTafsir.lang)}`
-                  : '';
             %>
-              <li class="nav-item"><a class="nav-link" title="<%= railTafsir.name_en || railTafsirLabel %>" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(railTafsirSlug)}${railTafsirQuery}`) %>"><%= railTafsirLabel %></a></li>
+              <li class="nav-item"><a class="nav-link" title="<%= railTafsir.name_en || railTafsirLabel %>" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(railTafsirSlug)}`) %>"><%= railTafsirLabel %></a></li>
             <% }
             } else {
               var railHadithBooks = books.filter(function (book) {

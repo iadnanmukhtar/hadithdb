@@ -275,8 +275,18 @@
       if (quranCommentaryBook && quranCommentaryBook.type === 'trans')
         return utils.quranUrl(req, `/quran/${encodeURIComponent(quranCommentaryBook.alias)}/${surah}/${section}`);
       if (quranCommentaryBook && quranCommentaryBook.type === 'tafsir')
-        return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/${surah}/${section}`);
+        return quranTafsirPassageHref(surah, ayah);
       return utils.quranUrl(req, `/quran/${surah}/${section}`);
+    }
+    function quranTafsirPassageHref(surah, ayah) {
+      var passages = Array.isArray(locals.quranTafsirPassages) ? locals.quranTafsirPassages : [];
+      var passage = passages.find(function (item) {
+        var end = Number(item.endAyah) || Number(item.ayah);
+        return Number(item.surah) === Number(surah) && Number(item.ayah) <= Number(ayah) && end >= Number(ayah);
+      });
+      var start = passage ? Number(passage.ayah) : Number(ayah);
+      var end = passage ? (Number(passage.endAyah) || start) : start;
+      return utils.quranUrl(req, Tafsir.passageUrl(quranCommentaryBook, surah, start, end, quranCommentaryBooks));
     }
     function quranTocStartHref(item) {
       var fallbackAyah = 1;
@@ -386,7 +396,7 @@
         return utils.quranUrl(req, `/quran/${encodeURIComponent(quranCommentaryBook.alias)}/${sectionRef.surah}/${sectionRef.section}`);
       }
       var ref = quranHeadingStartRef(heading);
-      return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(quranCommentaryBookSlug)}/${ref.surah}/${ref.ayah}`);
+      return quranTafsirPassageHref(ref.surah, ref.ayah);
     }
     function quranCommentaryPaginationSlug(book) {
       if (!book)
@@ -401,13 +411,7 @@
       if (book.type === 'trans')
         return utils.quranUrl(req, `/quran/${encodeURIComponent(quranCommentaryPaginationSlug(book))}`);
       var slug = quranCommentaryPaginationSlug(book);
-      var hasLanguageCollision = quranCommentaryBooks.some(function (other) {
-        return other && other !== book && other.lang !== book.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
-      });
-      var query = hasLanguageCollision && book.lang
-        ? `?lang=${encodeURIComponent(book.lang)}`
-        : '';
-      return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
+      return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
     }
     function quranCommentaryPaginationLabel(book) {
       if (!book)

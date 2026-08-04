@@ -13,13 +13,7 @@
 	}, []);
 	function tafsirBookHref(tafsir) {
 		const slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
-		const hasLanguageCollision = tafsirBooks.some(function (other) {
-			return other && other.lang !== tafsir.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
-		});
-		const query = hasLanguageCollision && (tafsir.lang === 'ar' || tafsir.lang === 'en')
-			? `?lang=${encodeURIComponent(tafsir.lang)}`
-			: '';
-		return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
+		return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
 	}
 	function tafsirBookLabel(tafsir) {
 		return Tafsir.rawShortName(tafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();

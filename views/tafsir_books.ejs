@@ -24,13 +24,7 @@
     };
     var tafsirBookUrl = function (tafsir) {
       var slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
-      var hasLanguageCollision = (tafsirs || []).some(function (other) {
-        return other && other !== tafsir && other.lang !== tafsir.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
-      });
-      var query = hasLanguageCollision && (tafsir.lang === 'ar' || tafsir.lang === 'en')
-        ? `?lang=${encodeURIComponent(tafsir.lang)}`
-        : '';
-      return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
+      return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
     };
     var downloadLinksFor = function (book) {
       return BookDownloads.relativeDownloadLinks(book);

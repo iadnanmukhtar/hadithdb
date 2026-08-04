@@ -16,13 +16,7 @@
     if (book.type === 'trans')
       return utils.quranUrl(req, `/quran/${encodeURIComponent(commentaryPaginationSlug(book))}`);
     const slug = commentaryPaginationSlug(book);
-    const hasLanguageCollision = commentaryPaginationBooks.some(function (other) {
-      return other && other !== book && other.lang !== book.lang && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
-    });
-    const query = hasLanguageCollision && (book.lang === 'ar' || book.lang === 'en')
-      ? `?lang=${encodeURIComponent(book.lang)}`
-      : '';
-    return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}${query}`);
+    return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
   }
 
   function commentaryPaginationLabel(book) {

@@ -26,7 +26,7 @@
       description_en: tafsirMetaDescription,
       subtitle_en: tafsirTitle,
       subtitle: tafsirTitleAr,
-      canonical: `/quran/tafsir/${tafsir.slug || tafsir.alias}/${surah.num}/${ayah}`,
+      canonical: Tafsir.passageUrl(tafsir, surah.num, tafsirEntryStart, tafsirEntryEnd),
       context: {
         quranSearchProxy: true,
         commentaryBook: tafsir
@@ -45,7 +45,7 @@
       return a.num - b.num;
 	    });
 	    var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
-	    var tafsirPagePath = `${tafsirPath}/${surah.num}/${ayah}`;
+	    var tafsirPagePath = Tafsir.passageUrl(tafsir, surah.num, tafsirEntryStart, tafsirEntryEnd);
 	    var tafsirBookmarkKey = `${tafsir.slug || tafsir.alias}:${surah.num}:${ayah}`;
 	    var quranChapter = locals.chapter;
 	    var quranSection = locals.section;
@@ -138,7 +138,7 @@
         site: site,
         page: page,
         passage: ayahs,
-        selectedAyahs: ayahs.filter(function (item) { return Number(item.ayah) === Number(ayah); }),
+        selectedAyahs: ayahs,
         selectedTafsirAlias: tafsir.alias,
         selectedTafsirLanguage: tafsir.lang,
         tafsirHeading: `${tafsirTitle} ${tafsirMetaRef}${surah.name_en ? ` ${surah.name_en}` : ''}`,

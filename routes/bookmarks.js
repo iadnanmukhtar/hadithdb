@@ -268,7 +268,7 @@ async function metadataForTafsirs(refs) {
       range,
       title: Tafsir.displayShortName(item.tafsir, 'en'),
       titleAr: Tafsir.displayShortName(item.tafsir, 'ar'),
-      url: Tafsir.browseUrl(item.tafsir, item.surah.num, item.ayah) || `/quran/tafsir/${alias}/${item.surah.num}/${item.ayah}`
+      url: Tafsir.passageUrl(item.tafsir, item.surah.num, item.startAyah, item.endAyah) || `/quran/tafsir/${alias}/quran:${range}`
     };
     return acc;
   }, {});
@@ -318,7 +318,7 @@ async function resolveTafsirBookmark(ref) {
     ayah: ayahNum,
     startAyah,
     endAyah,
-    url: Tafsir.browseUrl(tafsir, surahNum, ayahNum)
+    url: Tafsir.passageUrl(tafsir, surahNum, startAyah, endAyah)
   };
 }
 

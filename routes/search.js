@@ -745,21 +745,14 @@ async function addQuranTafsirSitemapUrls(urls, quranDomain) {
     urls.add(`${quranDomain}${quranTafsirBookTocUrl(tafsir, tafsirs)}`);
     const passages = await Tafsir.sitemapPassages(tafsir, { source: 'db' });
     passages.forEach(function (passage) {
-      urls.add(`${quranDomain}${Tafsir.browseUrl(tafsir, passage.surah, passage.ayah, tafsirs)}`);
+      urls.add(`${quranDomain}${Tafsir.passageUrl(tafsir, passage.surah, passage.ayah, passage.endAyah, tafsirs)}`);
     });
   }
 }
 
 function quranTafsirBookTocUrl(tafsir, tafsirs) {
   const slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
-  const hasLanguageCollision = (tafsirs || []).some(function (other) {
-    return other && other !== tafsir && other.lang !== tafsir.lang
-      && (other.slug || Tafsir.tafsirSlug(other.alias)) === slug;
-  });
-  const query = hasLanguageCollision && tafsir.lang
-    ? `?lang=${encodeURIComponent(tafsir.lang)}`
-    : '';
-  return `/quran/tafsir/${encodeURIComponent(slug)}${query}`;
+  return `/quran/tafsir/${encodeURIComponent(slug)}`;
 }
 
 function quranAyahRefs() {

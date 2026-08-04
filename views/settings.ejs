@@ -1033,13 +1033,7 @@
     const tafsirSettingsHref = (book) => {
       const slug = tafsirSettingsSlug(book);
       if (!slug) return '';
-      const hasLanguageCollision = currentTafsirBooks.some(other => {
-        return other && other !== book && other.lang !== book.lang && tafsirSettingsSlug(other) === slug;
-      });
-      const query = hasLanguageCollision && (book.lang === 'ar' || book.lang === 'en')
-        ? `?lang=${encodeURIComponent(book.lang)}`
-        : '';
-      return quranUrl(`/quran/tafsir/${encodeURIComponent(slug)}${query}`);
+      return quranUrl(`/quran/tafsir/${encodeURIComponent(slug)}`);
     };
 
     const translationSettingsHref = (book) => {

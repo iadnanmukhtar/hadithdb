@@ -959,6 +959,26 @@ var quranTafsirStorageKeys = {
 	open: 'hadithdb_quran_tafsir_open',
 	legacyAlias: 'quranTafsirAlias'
 };
+var quranTafsirBooksPromise = null;
+
+function getQuranTafsirBooks(query) {
+	var request = function () {
+		return fetch(`${quranApiPath('/proxy/tafsir/books')}${query || ''}`).then(function (response) {
+			if (!response.ok)
+				throw new Error('Unable to load tafsir list.');
+			return response.json();
+		});
+	};
+	if (query)
+		return request();
+	if (!quranTafsirBooksPromise) {
+		quranTafsirBooksPromise = request().catch(function (err) {
+			quranTafsirBooksPromise = null;
+			throw err;
+		});
+	}
+	return quranTafsirBooksPromise;
+}
 
 function quranTafsirSessionStorage() {
 	try {
@@ -1188,15 +1208,16 @@ function initQuranTafsirTabs(root) {
 			var dedicatedTafsirPassageTarget = function () {
 				if ((container.attr('data-tafsir-instance') || 'passage') !== 'passage')
 					return null;
-				var match = window.location.pathname.match(/^\/quran\/tafsir\/([^/]+)\/(\d+)\/(\d+)\/?$/);
+				var match = window.location.pathname.match(/^\/quran\/tafsir\/([^/]+)\/quran:(\d+):(\d+)(?:-(\d+))?\/?$/);
 				var targetSurah = container.attr('data-surah') || surah;
 				var targetAyah = (selectedAyahs[0] || ayahs[0] || '').toString();
 				if (!targetSurah || !targetAyah)
 					return null;
 				return {
 					slug: match ? match[1] : tafsirUrlSlug(preferredTafsirAlias),
-					surah: targetSurah,
-					ayah: targetAyah
+					surah: match ? match[2] : targetSurah,
+					ayah: match ? match[3] : targetAyah,
+					endAyah: match ? (match[4] || match[3]) : targetAyah
 				};
 			};
 			var dedicatedTafsirPassageMatch = function () {
@@ -1206,14 +1227,15 @@ function initQuranTafsirTabs(root) {
 				var target = dedicatedTafsirPassageTarget();
 				if (!target || !alias)
 					return '';
-				var query = language === 'ar' || language === 'en' ? `?lang=${encodeURIComponent(language)}` : '';
-				return `/quran/tafsir/${encodeURIComponent(tafsirUrlSlug(alias))}/${encodeURIComponent(target.surah)}/${encodeURIComponent(target.ayah)}${query}`;
+				var range = target.endAyah !== target.ayah ? `${target.ayah}-${target.endAyah}` : target.ayah;
+				return `/quran/tafsir/${encodeURIComponent(tafsirUrlSlug(alias))}/quran:${encodeURIComponent(target.surah)}:${range}`;
 			};
 			var currentDedicatedTafsirPassageUrl = function () {
 				var target = dedicatedTafsirPassageTarget();
 				if (!target || !target.slug)
 					return '';
-				return `/quran/tafsir/${encodeURIComponent(target.slug)}/${encodeURIComponent(target.surah)}/${encodeURIComponent(target.ayah)}`;
+				var range = target.endAyah !== target.ayah ? `${target.ayah}-${target.endAyah}` : target.ayah;
+				return `/quran/tafsir/${encodeURIComponent(target.slug)}/quran:${encodeURIComponent(target.surah)}:${range}`;
 			};
 			var clearDedicatedTafsirHash = function () {
 				if (dedicatedTafsirPassageMatch() && (window.location.hash || window.location.search))
@@ -1230,7 +1252,7 @@ function initQuranTafsirTabs(root) {
 			var tafsirAyahHeadingHref = function (alias, ayah) {
 				if (rendersTafsirPassagePage || !alias)
 					return quranUrl(`/quran:${surah}:${ayah}`);
-				return quranUrl(`/quran/tafsir/${encodeURIComponent(tafsirUrlSlug(alias))}/${encodeURIComponent(surah)}/${encodeURIComponent(ayah)}`);
+				return quranUrl(`/quran/tafsir/${encodeURIComponent(tafsirUrlSlug(alias))}/quran:${encodeURIComponent(surah)}:${encodeURIComponent(ayah)}`);
 			};
 			var appendAyahHeading = function (entryElement, ayah, inline, showRef, alias) {
 				var heading = $('<h3>').addClass('quran-tafsir-ayah').attr({
@@ -1893,6 +1915,12 @@ function initQuranTafsirTabs(root) {
 					seen.add(signature);
 					return true;
 				});
+				if (entries.length > 0) {
+					var rangeStarts = entries.map(function (entry) { return Number(entry.payload.ayahs_start || entry.ayah); });
+					var rangeEnds = entries.map(function (entry, index) { return rangeStarts[index] + Number(entry.payload.count || 0); });
+					panel.attr({ 'data-tafsir-range-start': Math.min.apply(Math, rangeStarts), 'data-tafsir-range-end': Math.max.apply(Math, rangeEnds) });
+					container.trigger('quranTafsirChanged');
+				}
 				text.empty();
 				var hasBilingualEntries = entries.some(function (entry) {
 					return entry.payload && entry.payload.bilingual;
@@ -2084,11 +2112,7 @@ function initQuranTafsirTabs(root) {
 				showLanguage(language);
 			});
 			Promise.all([
-				fetch(`${quranApiPath('/proxy/tafsir/books')}${adminTafsirQuery()}`).then(function (response) {
-					if (!response.ok)
-						throw new Error('Unable to load tafsir list.');
-				return response.json();
-			}),
+				getQuranTafsirBooks(adminTafsirQuery()),
 			getQuranTafsirSettings()
 		]).then(function (results) {
 			var books = results[0];
@@ -6165,7 +6189,11 @@ function initQuranAyahModals(root) {
 			var ayah = (pane.attr('data-quran-ayah-ref') || '').toString().split(':').pop();
 			if (!alias || !surah || !ayah)
 				return '';
-			var href = `/quran/tafsir/${encodeURIComponent(tafsirBrowseSlug(alias))}/${encodeURIComponent(surah)}/${encodeURIComponent(ayah)}`;
+			var panel = tab.attr('aria-controls') ? pane.find(`#${tab.attr('aria-controls')}`) : $();
+			var startAyah = panel.attr('data-tafsir-range-start') || ayah;
+			var endAyah = panel.attr('data-tafsir-range-end') || startAyah;
+			var range = endAyah !== startAyah ? `${startAyah}-${endAyah}` : startAyah;
+			var href = `/quran/tafsir/${encodeURIComponent(tafsirBrowseSlug(alias))}/quran:${encodeURIComponent(surah)}:${range}`;
 			return quranPath(href);
 		};
 		var updateTafsirExpandLink = function () {
@@ -10921,7 +10949,7 @@ function initReaderInfiniteNavigation(root) {
 		main.data('readerInfiniteBound', true);
 
 		var mode = main.attr('data-reader-infinite') || '';
-		var prefetchAhead = 3;
+		var prefetchAhead = mode === 'tafsir' ? 1 : 3;
 		var ensuring = false;
 		var loadingPromise = null;
 		var retryAfter = 0;
@@ -12809,7 +12837,7 @@ function initQuranPassageNavigator() {
 			if (form.dataset.tafsirNavigatorBase) {
 				var target = form.dataset.tafsirNavigatorBase.endsWith(':')
 					? `${form.dataset.tafsirNavigatorBase}${surah.num}:${ayah}`
-					: `${form.dataset.tafsirNavigatorBase}/${surah.num}/${ayah}`;
+					: `${form.dataset.tafsirNavigatorBase}/quran:${surah.num}:${ayah}`;
 				if (form.dataset.tafsirNavigatorQuery)
 					target += `?${form.dataset.tafsirNavigatorQuery}`;
 				window.location.href = target;
