@@ -1191,6 +1191,8 @@ function initQuranTafsirTabs(root) {
 				return Number.isInteger(ayah) && ayah >= 0;
 			});
 			var ayahText = JSON.parse(container.find('.quran-tafsir-ayah-data').text() || '{}');
+			var initialTafsirData = JSON.parse(container.find('.quran-tafsir-initial-data').text() || 'null');
+			var initialTafsirBooks = JSON.parse(container.find('.quran-tafsir-books-data').text() || 'null');
 			var selectedTafsirLanguage = normalizeQuranTafsirLanguage(container.attr('data-selected-tafsir-language'));
 			var activeLanguage = selectedTafsirLanguage || getStoredQuranTafsirLanguage() || 'en';
 			var rendersTafsirPassagePage = (container.attr('data-tafsir-instance') || 'passage') === 'passage';
@@ -1875,7 +1877,17 @@ function initQuranTafsirTabs(root) {
 			status.text('Loading tafsir...');
 			try {
 				var panelLanguage = panel.attr('data-tafsir-lang') || 'en';
-				var payloads = source === 'local'
+				var initialPayloads = initialTafsirData
+					&& initialTafsirData.alias === src
+					&& initialTafsirData.lang === panelLanguage
+					&& Array.isArray(initialTafsirData.entries)
+					? initialTafsirData.entries
+					: null;
+				var payloads = initialPayloads
+					? initialPayloads.map(function (payload) {
+						return { ayah: payload.ayahs_start, payload: payload };
+					})
+					: source === 'local'
 					? (await fetchLocalPayloads(src, panelLanguage)).map(function (payload) {
 						return {
 							ayah: payload.ayahs_start,
@@ -2112,8 +2124,13 @@ function initQuranTafsirTabs(root) {
 				showLanguage(language);
 			});
 			Promise.all([
-				getQuranTafsirBooks(adminTafsirQuery()),
-			getQuranTafsirSettings()
+				Array.isArray(initialTafsirBooks) ? Promise.resolve(initialTafsirBooks) : getQuranTafsirBooks(adminTafsirQuery()),
+				Promise.race([
+					getQuranTafsirSettings(),
+					new Promise(function (resolve) {
+						window.setTimeout(function () { resolve({ personalized: false, tafsirs: {} }); }, 500);
+					})
+				])
 		]).then(function (results) {
 			var books = results[0];
 			var settings = results[1];

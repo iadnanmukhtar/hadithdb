@@ -42,10 +42,31 @@
 	const tafsirTranslationsHref = locals.tafsirTranslationsHref || '';
 	const tafsirTranslationsModalIndex = Number.isInteger(locals.tafsirTranslationsModalIndex) ? locals.tafsirTranslationsModalIndex : -1;
 	const showAyahModalModeToggle = locals.showAyahModalModeToggle === true;
+	const initialTafsirBook = locals.selectedTafsirBook || null;
+	const initialTafsirEntries = Array.isArray(locals.initialTafsirEntries) ? locals.initialTafsirEntries : [];
+	const initialTafsirBooks = Array.isArray(locals.tafsirBooks) ? locals.tafsirBooks : [];
+	const safeJson = function (value) {
+		return JSON.stringify(value).replace(/</g, '\\u003c');
+	};
 %>
 <% if (passageSurah && passageAyahs.length > 0) { %>
 <article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>"<% if (selectedTafsirAlias) { %> data-selected-tafsir="<%= selectedTafsirAlias %>"<% } %><% if (selectedTafsirLanguage) { %> data-selected-tafsir-language="<%= selectedTafsirLanguage %>"<% } %>>
 	<script type="application/json" class="quran-tafsir-ayah-data"><%- JSON.stringify(passageAyahText).replace(/</g, '\\u003c') %></script>
+	<% if (initialTafsirBooks.length > 0) { %><script type="application/json" class="quran-tafsir-books-data"><%- safeJson(initialTafsirBooks) %></script><% } %>
+	<% if (initialTafsirBook) { %><script type="application/json" class="quran-tafsir-initial-data"><%- safeJson({
+		alias: initialTafsirBook.alias,
+		lang: initialTafsirBook.lang,
+		entries: initialTafsirEntries.map(function (entry) {
+			return {
+				ayahs_start: entry.startAyah,
+				count: Math.max(0, Number(entry.endAyah) - Number(entry.startAyah)),
+				html: entry.html,
+				bilingual: entry.bilingual,
+				arabic_html: entry.arabicHtml,
+				content_translation_language: entry.contentTranslationLanguage
+			};
+		})
+	}) %></script><% } %>
 	<heading class="quran-tafsir-heading row heading py-2">
 		<h2 class="col-12 fs-5 title quran-section-heading-title mb-0" lang="en">
 			<span class="quran-section-heading-text"><%= tafsirHeading %></span>

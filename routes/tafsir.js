@@ -172,6 +172,7 @@ async function renderTafsirPassage(req, res, next) {
     chapter: chapter,
     entries: entries,
     navigation: navigation,
+    tafsirBooks: allTafsirs,
     section: section,
     surah: surah,
     tafsir: tafsir
