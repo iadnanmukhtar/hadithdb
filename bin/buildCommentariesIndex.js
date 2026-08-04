@@ -11,6 +11,7 @@ const path = require('path');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
+const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const CommentaryTranslationIndexFields = require('../lib/CommentaryTranslationIndexFields');
 const SearchHttp = require('../lib/SearchHttp');
 
@@ -21,6 +22,10 @@ let translationIndexFields = Object.freeze({ languages: [], columns: [], selectS
 
 (async () => {
 	try {
+		// Globals starts this preload without exposing its promise. Awaiting the
+		// idempotent preload here prevents this one-shot script from closing the
+		// shared pool while the metadata queries are still in flight.
+		await QuranTocSubdivisions.preload();
 		await ensureIndexExists();
 		translationIndexFields = await CommentaryTranslationIndexFields.loadIndexFields();
 		if (options.alias) {

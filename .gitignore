@@ -19,6 +19,7 @@ data/archive/*.db
 data/temp/*
 data/cache/*
 data/generated/*
+data/tafsir/*
 cache/*
 tmp
 tmp/*

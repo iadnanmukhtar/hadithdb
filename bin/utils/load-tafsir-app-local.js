@@ -15,6 +15,20 @@ const DEFAULT_ALIASES = ['aysar-altafasir', 'muyassar', 'altasheel', 'zimneen'];
 const ALIAS_MAP = {
 	aysar: 'aysar-altafasir'
 };
+const SOURCE_ALIAS_MAP = {
+	'abu-zamanayn': 'zimneen',
+	basit: 'albaseet',
+	baydawi: 'albaydawee',
+	'ibn-juzay': 'altasheel',
+	'ibn-uthaymin': 'ibn-uthaymeen',
+	khadiri: 'siraaj-ghareeb',
+	nasafi: 'alnasafi',
+	qinnawji: 'fath-albayan',
+	qiraat: 'qiraat-almawsoah',
+	shanqiti: 'adwaa-albayan',
+	'suyuti-t': 'aldur-almanthoor',
+	wajiz: 'alwajeez'
+};
 const options = readOptions(process.argv.slice(2));
 
 (async () => {
@@ -33,24 +47,29 @@ const options = readOptions(process.argv.slice(2));
 async function loadTafsir(alias, quran) {
 	const commentary = await getCommentary(alias);
 	const existing = await getExistingCounts(commentary.id);
-	if (!options.overwrite && commentary.source === 'local' && existing.passageCount === quran.length && existing.textCount === quran.length) {
+	const targetAyahs = options.missingOnly ? await getUncoveredAyahs(commentary.id, quran) : quran;
+	if (targetAyahs.length === 0) {
+		console.log(`Skipping '${alias}': no uncovered Quran ayahs.`);
+		return;
+	}
+	if (!options.missingOnly && !options.overwrite && commentary.source === 'local' && existing.passageCount === quran.length && existing.textCount === quran.length) {
 		console.log(`Skipping '${alias}': already local with ${existing.textCount} populated passage(s).`);
 		return;
 	}
 
 	const cacheFile = path.join(CACHE_DIR, `${alias}.json`);
-	const document = await loadOrDownload(alias, quran, cacheFile);
-	const populatedRefs = countPopulatedRefs(document);
-	if (!options.overwrite && commentary.source === 'local' && existing.passageCount === populatedRefs && existing.textCount === populatedRefs) {
+	const document = await loadOrDownload(alias, targetAyahs, cacheFile);
+	const populatedRefs = countPopulatedRefs(document, targetAyahs);
+	if (!options.missingOnly && !options.overwrite && commentary.source === 'local' && existing.passageCount === populatedRefs && existing.textCount === populatedRefs) {
 		console.log(`Skipping '${alias}': already local with ${existing.textCount} populated passage(s).`);
 		return;
 	}
 	if (options.dryRun) {
-		console.log(`Checked '${alias}': ${Object.keys(document).length} cached passage(s), ${populatedRefs} populated.`);
+		console.log(`Checked '${alias}': ${targetAyahs.length} target passage(s), ${populatedRefs} populated upstream.`);
 		return;
 	}
 
-	await upsertLocalPassages(commentary, quran, document);
+	await upsertLocalPassages(commentary, targetAyahs, document);
 	await markCommentaryLocal(commentary.id);
 	const updated = await getExistingCounts(commentary.id);
 	console.log(`Loaded '${alias}' locally: ${updated.textCount}/${updated.passageCount} populated passage(s).`);
@@ -66,9 +85,10 @@ async function loadOrDownload(alias, quran, cacheFile) {
 	}
 
 	console.log(`Downloading ${missing.length} '${alias}' passage(s) from tafsir.app...`);
-	await downloadMissing(alias, missing, document, cacheFile);
-	if (Object.keys(document).length !== quran.length)
-		throw new Error(`Expected ${quran.length} cached '${alias}' passages, found ${Object.keys(document).length}.`);
+	await downloadMissing(SOURCE_ALIAS_MAP[alias] || alias, missing, document, cacheFile, alias);
+	const uncached = quran.filter(ayah => !Object.prototype.hasOwnProperty.call(document, ayah.ref));
+	if (uncached.length)
+		throw new Error(`Expected all ${quran.length} target '${alias}' passages to be cached; ${uncached.length} remain missing.`);
 	return document;
 }
 
@@ -81,7 +101,7 @@ function readCache(cacheFile) {
 	return document;
 }
 
-async function downloadMissing(alias, missing, document, cacheFile) {
+async function downloadMissing(sourceAlias, missing, document, cacheFile, localAlias) {
 	let next = 0;
 	let completed = 0;
 	const total = missing.length;
@@ -91,12 +111,12 @@ async function downloadMissing(alias, missing, document, cacheFile) {
 		workers.push((async () => {
 			while (next < missing.length) {
 				const ayah = missing[next++];
-				const text = await getAyahText(alias, ayah.surah, ayah.ayah);
+				const text = await getAyahText(sourceAlias, ayah.surah, ayah.ayah);
 				document[ayah.ref] = { text };
 				completed++;
 				if (completed % options.saveEvery === 0 || completed === total) {
 					writeCache(cacheFile, document);
-					console.log(`Downloaded ${completed}/${total} '${alias}' passage(s)...`);
+					console.log(`Downloaded ${completed}/${total} '${localAlias}' passage(s)...`);
 				}
 				if (options.delay)
 					await sleep(options.delay);
@@ -158,6 +178,20 @@ async function getExistingCounts(bookId) {
 	};
 }
 
+async function getUncoveredAyahs(bookId, quran) {
+	const rows = await global.query(`
+		SELECT surah, ayahFrom, ayahTo
+		FROM hadiths_commentary
+		WHERE bookId=${bookId}
+			AND TRIM(COALESCE(text, ''))<>''`);
+	const covered = new Set();
+	for (const row of rows) {
+		for (let ayah = Number(row.ayahFrom); ayah <= Number(row.ayahTo); ayah++)
+			covered.add(`${Number(row.surah)}:${ayah}`);
+	}
+	return quran.filter(ayah => !covered.has(ayah.ref));
+}
+
 async function loadQuranAyahs() {
 	const rows = await global.query(`
 		SELECT id, num
@@ -200,6 +234,10 @@ async function upsertLocalPassages(commentary, quran, document) {
 				NULL
 			)`;
 		}).join(',\n');
+		const textUpdate = options.overwrite
+			? 'text=VALUES(text)'
+			: "text=IF(TRIM(COALESCE(text, ''))='', VALUES(text), text)";
+		const textEnUpdate = options.overwrite ? 'text_en=VALUES(text_en)' : 'text_en=text_en';
 		await global.query(`
 			INSERT INTO hadiths_commentary
 				(bookId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en)
@@ -207,8 +245,8 @@ async function upsertLocalPassages(commentary, quran, document) {
 			ON DUPLICATE KEY UPDATE
 				hadithId=VALUES(hadithId),
 				passageNum=VALUES(passageNum),
-				text=VALUES(text),
-				text_en=VALUES(text_en)`);
+				${textUpdate},
+				${textEnUpdate}`);
 		console.log(`Stored ${Math.min(offset + batchSize, populated.length)}/${populated.length} populated '${commentary.alias}' passage(s)...`);
 	}
 }
@@ -234,8 +272,8 @@ function sortRefs(document) {
 	}, {});
 }
 
-function countPopulatedRefs(document) {
-	return Object.keys(document).filter(ref => {
+function countPopulatedRefs(document, ayahs) {
+	return ayahs.map(ayah => ayah.ref).filter(ref => {
 		const text = document[ref]?.text;
 		return typeof text === 'string' && text.trim();
 	}).length;
@@ -269,6 +307,7 @@ function readOptions(argv) {
 		saveEvery: 100,
 		batchSize: 250,
 		overwrite: false,
+		missingOnly: false,
 		dryRun: false
 	};
 	for (let i = 0; i < argv.length; i++) {
@@ -291,6 +330,8 @@ function readOptions(argv) {
 			options.batchSize = positiveInteger(argv, ++i, arg);
 		else if (arg === '--overwrite')
 			options.overwrite = true;
+		else if (arg === '--missing-only')
+			options.missingOnly = true;
 		else if (arg === '--dry-run')
 			options.dryRun = true;
 		else if (arg === '--help' || arg === '-h') {
@@ -353,6 +394,7 @@ function usage() {
 		'  --save-every <num>     Cache checkpoint size (default: 100)',
 		'  --batch-size <num>     MySQL insert batch size (default: 250)',
 		'  --overwrite            Re-store rows even if the tafsir is already local',
+		'  --missing-only         Request only ayahs not covered by populated local passages',
 		'  --dry-run              Download/validate cache without writing MySQL',
 		'  --help                 Show this help'
 	].join('\n');

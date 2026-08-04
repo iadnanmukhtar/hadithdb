@@ -196,7 +196,7 @@ router.get('/tafsir/local', async function (req, res) {
       } : {}),
       html: rendered.html
     };
-  }).filter(entry => !lang || entry.html || Number.isInteger(Number(entry.ayahs_start)));
+  }).filter(entry => editMode || entry.html);
   if (!entries.length) {
     res.status(404).json({ error: 'No local tafsir text is available for this ayah.' });
     return;
