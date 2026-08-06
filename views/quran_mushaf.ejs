@@ -87,7 +87,7 @@
           <% if (review) { %>
           <ul data-quran-review-session-progress aria-label="Review session progress">
             <li class="quran-memorization-state-pill is-again" data-quran-review-session-category="again" hidden><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Again</strong><span class="quran-page-state-count" data-quran-review-session-category-count>—</span></li>
-            <% [['learning','Learning'],['relearning','Weak recovery'],['weak','Weak'],['review','Memorized'],['core','Core'],['suspended','Paused']].forEach(function (item) { %>
+            <% [['learning','Learning'],['weak','Weak'],['review','Mem'],['core','Core'],['suspended','Paused']].forEach(function (item) { %>
             <li class="quran-memorization-state-pill is-<%= item[0] %>" data-quran-review-session-category="<%= item[0] %>" hidden><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong><%= item[1] %></strong><span class="quran-page-state-count" data-quran-review-session-category-count>—</span></li>
             <% }); %>
           </ul>

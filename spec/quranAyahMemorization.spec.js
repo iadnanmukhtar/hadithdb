@@ -56,6 +56,21 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     expect(QuranAyahMemorization.REVIEW_GRADES.has('core')).toBe(false);
   });
 
+  test('keeps scheduled ayat together and in Quran order within each surah', () => {
+    const items = [
+      { surah_number: 2, ayah_number: 10, lifecycle_state: 'learning' },
+      { surah_number: 3, ayah_number: 4, lifecycle_state: 'relearning' },
+      { surah_number: 2, ayah_number: 3, lifecycle_state: 'weak' },
+      { surah_number: 3, ayah_number: 1, lifecycle_state: 'review' },
+      { surah_number: 2, ayah_number: 7, lifecycle_state: 'review' }
+    ];
+
+    expect(QuranAyahMemorization.orderReviewItemsBySurah(items).map(item =>
+      `${item.surah_number}:${item.ayah_number}`)).toEqual([
+      '2:3', '2:7', '2:10', '3:1', '3:4'
+    ]);
+  });
+
   test('only lets enrolled ayat be marked Core, Paused, or Later by the user', () => {
     const allowed = QuranAyahMemorization.userStateTransitionAllowed;
     expect(allowed('later', 'learning')).toBe(true);

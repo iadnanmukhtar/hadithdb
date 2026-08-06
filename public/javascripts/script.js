@@ -8848,13 +8848,17 @@ function initQuranAyahReview(root) {
 		var syncSessionProgress = function (session) {
 			if (!session) return;
 			var categories = {
-				again: { label: 'Again', total: 'again_queued', backlog: true },
-				learning: { label: 'Learning', completed: 'learning_completed', total: 'learning_queued' },
-				relearning: { label: 'Weak recovery', completed: 'relearning_completed', total: 'relearning_queued' },
-				weak: { label: 'Weak', completed: 'weak_completed', total: 'weak_queued' },
-				review: { label: 'Memorized', completed: 'memorized_completed', total: 'memorized_queued' },
-				core: { label: 'Core', completed: 'core_completed', total: 'core_queued' },
-				suspended: { label: 'Paused', completed: 'paused_completed', total: 'paused_queued' }
+				again: { label: 'Again', totals: ['again_queued'], backlog: true },
+				learning: { label: 'Learning', completed: ['learning_completed'], totals: ['learning_queued'] },
+				weak: { label: 'Weak', completed: ['relearning_completed', 'weak_completed'], totals: ['relearning_queued', 'weak_queued'] },
+				review: { label: 'Mem', completed: ['memorized_completed'], totals: ['memorized_queued'] },
+				core: { label: 'Core', completed: ['core_completed'], totals: ['core_queued'] },
+				suspended: { label: 'Paused', completed: ['paused_completed'], totals: ['paused_queued'] }
+			};
+			var sessionCount = function (keys) {
+				return keys.reduce(function (total, key) {
+					return total + Math.max(0, Number(session[key]) || 0);
+				}, 0);
 			};
 			document.querySelectorAll('[data-quran-review-session-total]').forEach(function (element) {
 				element.textContent = `${Math.max(0, Number(session.completed) || 0).toLocaleString()}/${Math.max(0, Number(session.queued) || 0).toLocaleString()} āyāt`;
@@ -8862,9 +8866,9 @@ function initQuranAyahReview(root) {
 				document.querySelectorAll('[data-quran-review-session-category]').forEach(function (pill) {
 				var category = categories[pill.getAttribute('data-quran-review-session-category')];
 				if (!category) return;
-				var total = Math.max(0, Number(session[category.total]) || 0);
+				var total = sessionCount(category.totals);
 				pill.hidden = total < 1;
-				var completed = category.backlog ? null : Math.max(0, Number(session[category.completed]) || 0);
+				var completed = category.backlog ? null : sessionCount(category.completed);
 				pill.title = category.backlog
 					? `${category.label}: ${total} queued`
 					: `${category.label}: ${completed} of ${total} complete`;
