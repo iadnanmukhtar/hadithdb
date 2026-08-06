@@ -71,6 +71,24 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     ]);
   });
 
+  test('introduces small passages from other surahs into a regular review candidate queue', () => {
+    const rows = [
+      ...Array.from({ length: 8 }, (_, index) => ({ surah_number: 2, ayah_number: index + 1 })),
+      ...Array.from({ length: 4 }, (_, index) => ({ surah_number: 18, ayah_number: index + 1 })),
+      ...Array.from({ length: 2 }, (_, index) => ({ surah_number: 72, ayah_number: index + 1 }))
+    ];
+
+    expect(QuranAyahMemorization.diversifyReviewCandidatesBySurah(rows, 3).map(item =>
+      `${item.surah_number}:${item.ayah_number}`)).toEqual([
+      '2:1', '2:2', '2:3',
+      '18:1', '18:2', '18:3',
+      '72:1', '72:2',
+      '2:4', '2:5', '2:6',
+      '18:4',
+      '2:7', '2:8'
+    ]);
+  });
+
   test('only lets enrolled ayat be marked Core, Paused, or Later by the user', () => {
     const allowed = QuranAyahMemorization.userStateTransitionAllowed;
     expect(allowed('later', 'learning')).toBe(true);
@@ -860,10 +878,10 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(query.mock.calls.map(call => call[0].match(/lifecycle_state='([^']+)'/)[1])).toEqual([
         'learning', 'relearning', 'weak', 'review'
       ]);
-      expect(query.mock.calls[0][0]).toContain('LIMIT 10 FOR UPDATE');
-      expect(query.mock.calls[1][0]).toContain('LIMIT 10 FOR UPDATE');
-      expect(query.mock.calls[2][0]).toContain('LIMIT 10 FOR UPDATE');
-      expect(query.mock.calls[3][0]).toContain('LIMIT 10 FOR UPDATE');
+      expect(query.mock.calls[0][0]).toContain('LIMIT 300 FOR UPDATE');
+      expect(query.mock.calls[1][0]).toContain('LIMIT 300 FOR UPDATE');
+      expect(query.mock.calls[2][0]).toContain('LIMIT 300 FOR UPDATE');
+      expect(query.mock.calls[3][0]).toContain('LIMIT 300 FOR UPDATE');
       expect(query.mock.calls.slice(0, 4).every(call => call[0].includes('CASE WHEN fsrs_state=0 THEN 1 ELSE 0 END'))).toBe(true);
     });
 
