@@ -774,8 +774,25 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(QuranAyahMemorization.reviewSessionRequest({ mode:'page', pageNumber:42, continueForward:true })).toMatchObject({
         mode:'page', pageNumber:42, continueForward:true
       });
+      expect(QuranAyahMemorization.reviewSessionRequest({ mode:'page', pageNumber:42, reviewUnit:'passage' })).toMatchObject({
+        mode:'page', reviewUnit:'passage'
+      });
+      expect(QuranAyahMemorization.reviewSessionRequest({ mode:'surah', surahNumber:2, reviewType:'all', reviewUnit:'passage', continueForward:true })).toMatchObject({
+        mode:'surah', reviewUnit:'passage', continueForward:true
+      });
       expect(() => QuranAyahMemorization.reviewSessionRequest({ mode:'passage', startRef:'2:999' }))
         .toThrow('A valid Quran ayah is required');
+    });
+
+    test('groups passage review items by each ayah own surah', () => {
+      const keys = QuranAyahMemorization.passageKeysForItems([
+        { surah_number: 8, ayah_number: 75 },
+        { surah_number: 9, ayah_number: 1 }
+      ], {
+        8: [{ section: 10, start: 70, end: 75 }],
+        9: [{ section: 1, start: 1, end: 6 }]
+      }, {});
+      expect(keys).toEqual(['h2:8:10:70-75', 'h2:9:1:1-6']);
     });
 
     test('enrolls Later ayat in a custom review scope as Learning cards', async () => {

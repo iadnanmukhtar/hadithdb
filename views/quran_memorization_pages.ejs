@@ -121,7 +121,7 @@
           <button type="button" class="btn btn-primary btn-sm dropdown-toggle" id="quran-start-review" data-bs-toggle="dropdown" aria-expanded="false"><span id="quran-start-review-label">Start Review</span></button>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quran-start-review">
             <li><a class="dropdown-item" id="quran-start-regular-review" href="<%= utils.quranUrl(req, '/quran/review?continue=1') %>"><i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i><span id="quran-start-regular-review-label">Regular Review</span></a></li>
-            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#quran-surah-review-modal"><i class="bi bi-book me-2" aria-hidden="true"></i>Surah Review</button></li>
+            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#quran-memorize-review-modal" data-quran-review-start-kind="surah"><i class="bi bi-book me-2" aria-hidden="true"></i>Surah Review</button></li>
           </ul>
         </div>
       </div>
@@ -159,28 +159,7 @@
       <span class="text-muted">Loading Quran memorization...</span>
     </div>
   </main>
-  <div class="modal fade" id="quran-surah-review-modal" tabindex="-1" aria-labelledby="quran-surah-review-title" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <form class="modal-content" id="quran-surah-review-form">
-        <header class="modal-header"><h2 class="modal-title fs-5" id="quran-surah-review-title">Start a Surah Review</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></header>
-        <div class="modal-body">
-          <label class="form-label" for="quran-surah-review-input"><strong>Surah</strong></label>
-          <input type="search" class="form-control" id="quran-surah-review-input" placeholder="Type a surah name or number" aria-label="Choose a surah by English name, Arabic name, or number" autocomplete="off" autocapitalize="none" spellcheck="false" required>
-          <input type="hidden" id="quran-surah-review-select" value="">
-          <fieldset class="mt-3"><legend class="form-label"><strong>Review type</strong></legend><div class="quran-memorize-review-scope">
-            <label><input class="form-check-input" type="radio" name="quran-surah-review-type" value="regular" checked> <span><strong>Regular review</strong><small>Follow the existing āyah schedules for this surah</small></span></label>
-            <label><input class="form-check-input" type="radio" name="quran-surah-review-type" value="all"> <span><strong>Review all āyāt</strong><small>Add every āyah in this surah to your schedule</small></span></label>
-          </div></fieldset>
-          <fieldset class="mt-3"><legend class="form-label"><strong>Review unit</strong></legend><div class="quran-memorize-review-scope">
-            <label><input class="form-check-input" type="radio" name="quran-surah-review-unit" value="ayah" checked> <span><strong>Āyah by āyah</strong><small>Reveal and grade each āyah separately</small></span></label>
-            <label><input class="form-check-input" type="radio" name="quran-surah-review-unit" value="passage"> <span><strong>Passage by passage</strong><small>Review a Study passage as a batch of scheduled āyāt</small></span></label>
-          </div></fieldset>
-          <p class="small text-muted mt-3 mb-0" id="quran-surah-review-status" role="status" aria-live="polite"></p>
-        </div>
-        <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary" id="quran-surah-review-start">Start Surah Review</button></footer>
-      </form>
-    </div>
-  </div>
+  <%- include('sub-views/quran_memorize_review_modal.ejs', { site: site, page: page }); %>
   <div class="modal fade" id="quran-get-started-modal" tabindex="-1" aria-labelledby="quran-get-started-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <form class="modal-content" id="quran-get-started-form">
@@ -226,11 +205,6 @@
       const startReviewLabel = document.getElementById('quran-start-review-label');
       const regularReview = document.getElementById('quran-start-regular-review');
       const regularReviewLabel = document.getElementById('quran-start-regular-review-label');
-      const surahReviewForm = document.getElementById('quran-surah-review-form');
-      const surahReviewInput = document.getElementById('quran-surah-review-input');
-      const surahReviewSelect = document.getElementById('quran-surah-review-select');
-      const surahReviewStart = document.getElementById('quran-surah-review-start');
-      const surahReviewStatus = document.getElementById('quran-surah-review-status');
       const getStartedModal=document.getElementById('quran-get-started-modal');
       const getStartedForm=document.getElementById('quran-get-started-form');
       const getStartedKnownStep=document.getElementById('quran-get-started-known-step');
@@ -416,8 +390,6 @@
         return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString(undefined,{month:'numeric',day:'numeric',year:'2-digit'});
       };
       let groups = [];
-      let surahReviewChoices = new Map();
-      let surahReviewAutocompleteBound = false;
       const latinDigits=value=>(value||'').toString().replace(/[٠-٩]/g,digit=>'٠١٢٣٤٥٦٧٨٩'.indexOf(digit)).replace(/[۰-۹]/g,digit=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(digit));
       const normalizeSurahSearch=value=>latinDigits(value).toLocaleLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/[^\p{L}\p{M}\d]+/gu,' ').replace(/\s+/g,' ').trim();
       const surahReviewMatches=(choice,term)=>{
@@ -425,44 +397,6 @@
         if(!query)return true;
         const catalog=surahCatalog.find(item=>item.number===choice.number)||{};
         return normalizeSurahSearch([choice.number,catalog.english||choice.name,catalog.arabic||'',...[].concat(catalog.aliases||[],choice.aliases||[])].join(' ')).includes(query);
-      };
-      const chooseSurahReview=choice=>{
-        if(!choice)return;
-        surahReviewSelect.value=String(choice.number);
-        surahReviewInput.value=`${choice.number}. ${choice.name}`;
-        surahReviewInput.classList.remove('is-invalid');
-        surahReviewStatus.textContent='';
-      };
-      const bindSurahReviewAutocomplete=()=>{
-        if(surahReviewAutocompleteBound||!window.jQuery||!jQuery.fn.autocomplete)return;
-        surahReviewAutocompleteBound=true;
-        const $input=jQuery(surahReviewInput);
-        $input.autocomplete({
-          appendTo:surahReviewForm.querySelector('.modal-body'),delay:0,minLength:0,
-          source:(request,response)=>response(Array.from(surahReviewChoices.values()).filter(choice=>surahReviewMatches(choice,request.term)).slice(0,12).map(choice=>({label:`${choice.number}. ${choice.name}`,value:`${choice.number}. ${choice.name}`,choice}))),
-          focus:event=>event.preventDefault(),
-          select:(event,ui)=>{event.preventDefault();chooseSurahReview(ui.item.choice);},
-          open:()=>{$input.autocomplete('widget').addClass('search-autocomplete-menu quran-surah-review-autocomplete-menu').css('width',$input.outerWidth());}
-        }).autocomplete('instance')._renderItem=function(ul,item){
-          const choice=item.choice;
-          const catalog=surahCatalog.find(entry=>entry.number===choice.number)||{};
-          const $row=jQuery('<div>').addClass('search-autocomplete-item search-autocomplete-quran');
-          jQuery('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.label).appendTo($row);
-          const $meta=jQuery('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-lines');
-          if(catalog.arabic)jQuery('<span>').addClass('search-autocomplete-meta-ar').attr({lang:'ar',dir:'rtl'}).text(catalog.arabic).appendTo($meta);
-          jQuery('<span>').addClass('search-autocomplete-meta-en').text(`${choice.ayahs.toLocaleString()} ${choice.ayahs===1?'āyah':'āyāt'}`).appendTo($meta);
-          $meta.appendTo($row);
-          return jQuery('<li>').append($row).appendTo(ul);
-        };
-        $input.on('focus',()=>{if(!$input.autocomplete('widget').is(':visible'))$input.autocomplete('search',$input.val());});
-        $input.on('input',()=>{surahReviewSelect.value='';surahReviewInput.classList.remove('is-invalid');});
-      };
-      const populateSurahReviews=()=>{
-        const options=surahCatalog.map(surah=>({number:surah.number,name:surah.english||`Surah ${surah.number}`,aliases:surah.aliases||[],ayahs:surah.ayahs})).sort((left,right)=>left.number-right.number);
-        surahReviewChoices=new Map(options.map(surah=>[surah.number,surah]));
-        surahReviewStart.disabled=!options.length;
-        surahReviewStatus.textContent=options.length?'':'No surahs currently have āyāt available for Review.';
-        bindSurahReviewAutocomplete();
       };
       const knownSurahs=new Map();
       const onboardingChoice=surah=>{
@@ -628,7 +562,6 @@
             regularReview.setAttribute('aria-label',activeSession?`Regular Review, ${dueNow?`${dueNow} ${dueNow===1?'āyah':'āyāt'} due now`:'session in progress'}`:'Regular Review');
           }
         }
-        populateSurahReviews();
         updateTileSelection();
         render();
       };
@@ -646,24 +579,6 @@
         status.textContent=err.message;
         return;
       }
-      surahReviewForm.addEventListener('submit',async event=>{
-        event.preventDefault();
-        const surahNumber=Number(surahReviewSelect.value);
-        if(!Number.isInteger(surahNumber)){surahReviewInput.classList.add('is-invalid');surahReviewStatus.textContent='Choose a surah from the suggestions.';surahReviewInput.focus();return;}
-        const reviewType=(surahReviewForm.querySelector('input[name="quran-surah-review-type"]:checked')||{}).value||'regular';
-        const reviewUnit=(surahReviewForm.querySelector('input[name="quran-surah-review-unit"]:checked')||{}).value||'ayah';
-        surahReviewStart.disabled=true;
-        surahReviewStatus.textContent=reviewType==='all'?'Preparing all āyāt...':'Preparing the scheduled āyāt...';
-        if(window.showQuranReviewLoading)window.showQuranReviewLoading('Preparing your review...');
-        try{
-          const sessionData=await request('/review/sessions',{method:'POST',body:{mode:'surah',surah_number:surahNumber,review_type:reviewType,review_unit:reviewUnit}});
-          const session=sessionData.session||{};
-          if(window.trackQuranAnalyticsEvent)window.trackQuranAnalyticsEvent('quran_review_session_start',{session_mode:'surah',surah_number:surahNumber,review_type:reviewType,ayah_count:Number(session.queued)||0});
-          if(window.trackQuranAnalyticsEvent&&Number(session.enrolled_count)>0)window.trackQuranAnalyticsEvent('quran_memorization_enroll',{enrollment_scope:'surah',surah_number:surahNumber,enrolled_ayah_count:Number(session.enrolled_count)});
-          if(window.navigateWithQuranReviewLoading)window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'),'Loading your review...');
-          else window.location.assign(quranUrl('/quran/review?continue=1'));
-        }catch(err){if(window.hideQuranReviewLoading)window.hideQuranReviewLoading();surahReviewStatus.textContent=err.message;surahReviewStart.disabled=false;}
-      });
       document.querySelectorAll('[data-progress-filter]:not(:disabled)').forEach(button=>button.addEventListener('click',()=>{selectedStage=selectedStage===button.dataset.progressFilter?'':button.dataset.progressFilter;updateStageUrl();updateTileSelection();render();}));
       document.querySelectorAll('[data-progress-sort]').forEach(button=>button.addEventListener('click',()=>{const nextKey=button.dataset.progressSort;if(sortKey===nextKey)sortDirection*=-1;else{sortKey=nextKey;sortDirection=1;}render();}));
       filter.addEventListener('input',render); clear.addEventListener('click',()=>{filter.value='';render();filter.focus();});
