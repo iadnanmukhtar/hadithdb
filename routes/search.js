@@ -3043,11 +3043,12 @@ router.get('/quran/:translationAlias/manzil/:number', async function (req, res, 
 
 router.get('/quran/:translationAlias/:chapterNum/:sectionNum', async function (req, res, next) {
   var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
-  if (!translation || translation.source !== 'local')
+  if (!translation || !['default', 'local'].includes(translation.source))
     return next();
   req.params.bookAlias = 'quran';
   req.quranSelectedTranslationAlias = translation.alias;
   req.quranTranslationAliasRoute = true;
+  req.quranTranslationCanonicalPath = `/quran/${encodeURIComponent(translation.alias)}/${req.params.chapterNum}/${req.params.sectionNum}`;
   req.query.translation = translation.alias;
   return renderBookSection(req, res, next);
 });

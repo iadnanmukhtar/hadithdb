@@ -1,0 +1,21 @@
+{
+	"rida": {
+		"alias": "rida",
+		"ordinal": 101,
+		"id": null,
+		"shortName_en": "al-Manar",
+		"shortName": "المنار",
+		"name_en": "Tafsir al-Manar",
+		"name": "تفسير المنار",
+		"author_en": "Muhammad Rashid Rida",
+		"author": "مُحَمَّدُ رَشِيدٌ الرِّضَا",
+		"description": "Classical Arabic tafsir by Muhammad Rashid Rida.",
+		"format": "md",
+		"lang": "ar",
+		"parser": {
+			"startPage": 27,
+			"maxSurah": 12,
+			"minTocMatchRatio": 0.9
+		}
+	}
+}
