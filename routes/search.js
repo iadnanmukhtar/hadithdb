@@ -1281,7 +1281,8 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     var defaultPassage = req.query.passage != undefined || req.path.startsWith('/passage:') || req.params.bookAlias === 'quran';
     var similarAyahs = [];
     var mutashabihatPhrases = [];
-    if (defaultPassage && selectedAyahs.length === 1) {
+    const isSingleAyahPassage = ayah1 === ayah2 && selectedAyahs.length === 1;
+    if (defaultPassage && isSingleAyahPassage) {
       [similarAyahs, mutashabihatPhrases] = await Promise.all([
         loadQuranSimilarAyahs(selectedAyahs[0], req),
         loadQuranMutashabihat(selectedAyahs[0], req)

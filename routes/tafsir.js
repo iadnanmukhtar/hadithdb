@@ -117,6 +117,19 @@ async function renderTafsirPassage(req, res, next) {
   if (!tafsir)
     return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
 
+  // Canonical passage URLs encode the complete tafsir entry range. Check their
+  // disk cache before loading the tafsir entry merely to rediscover that range.
+  // Legacy /:surah/:section URLs still need the lookup below so they can be
+  // redirected to the correct canonical passage.
+  const cachedFile = cachedRequestFile(req);
+  const flushCache = Utils.shouldFlushCache(req);
+  if (flushCache)
+    await Utils.flushCachedFile(cachedFile);
+  if (req.params.start !== undefined && !flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    sendCachedHtml(req, res, cachedFile);
+    return;
+  }
+
   let entries;
   try {
     entries = await Tafsir.tafsirEntries(tafsir, surahNum, ayahNum, {
@@ -143,10 +156,6 @@ async function renderTafsirPassage(req, res, next) {
     return res.redirect(301, `${Utils.quranPath(canonicalPathname)}${suffix}`);
   }
 
-  const cachedFile = cachedRequestFile(req);
-  const flushCache = Utils.shouldFlushCache(req);
-  if (flushCache)
-    await Utils.flushCachedFile(cachedFile);
   if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
     sendCachedHtml(req, res, cachedFile);
     return;
