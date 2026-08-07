@@ -437,6 +437,12 @@ main.quran-toc-reader-modes {
 	margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 }
 
+main.hadith-toc-page,
+main.tafsir-toc-page,
+main.book-catalog-page {
+	margin-top: max(7rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem));
+}
+
 main.quran-review-top-offset,
 main.quran-mushaf-reader,
 body:has(.site-navbar .chapter-toc) main {
@@ -1179,6 +1185,45 @@ nav .nav-link[aria-current="page"] {
 
 .h-menu::-webkit-scrollbar {
 	display: none;
+}
+
+.book-carousel-filter {
+	position: sticky;
+	left: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	flex: 0 0 7rem;
+	gap: 0.35rem;
+	min-width: 0;
+	padding: 0.2rem 0.55rem;
+	border: 1px solid var(--c-accent);
+	border-radius: 0.25rem 0 0 0.25rem;
+	background: var(--c-white);
+	color: var(--c-gray-mid);
+}
+
+.book-carousel-filter-input {
+	width: 100%;
+	min-width: 0;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	color: var(--c-gray-dark);
+	font-size: 0.75rem;
+}
+
+.book-carousel-filter-input::placeholder {
+	color: var(--c-gray-mid);
+	opacity: 1;
+}
+
+.book-carousel-filter:focus-within {
+	box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.2);
+}
+
+.book-carousel-filter-hidden {
+	display: none !important;
 }
 
 .h-menu a,

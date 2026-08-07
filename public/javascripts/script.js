@@ -88,6 +88,7 @@ $(function () {
 	initRandomTocItemLoader(document);
 	initQuranPassageNavigator();
 	initBookNavScroller();
+	initBookCarouselFilters(document);
 	initTafsirBookCarousels(document);
 	initQuranCommentaryTocNavigation(document);
 	initContentFontSizeControls(document);
@@ -1746,6 +1747,8 @@ function initQuranTafsirTabs(root) {
 					'data-tafsir-lang': book.lang,
 					'data-tafsir-disabled': disabled ? '1' : '0',
 					'data-tafsir-tooltip': tafsirTooltipText(book),
+					'data-book-carousel-item': '',
+					'data-book-carousel-search': [book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author, book.alias].filter(Boolean).join(' '),
 					role: 'tab',
 					'aria-controls': targetId,
 					'aria-selected': 'false'
@@ -1763,6 +1766,7 @@ function initQuranTafsirTabs(root) {
 					});
 				}
 			tab.toggleClass('d-none', book.lang !== activeLanguage).appendTo(container.find('.quran-tafsir-tabs'));
+			applyBookCarouselFilter(container.find('[data-book-carousel-filter]').first());
 			var panel = $('<section>').addClass('tab-pane fade quran-tafsir-panel').attr({
 				id: targetId,
 				role: 'tabpanel',
@@ -12048,6 +12052,50 @@ function initQuranAyahSelector(root) {
 		});
 	}
 
+	function normalizeBookCarouselFilterText(value) {
+		return (value || '').toString()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed\u0640]/g, '')
+			.replace(/[أإآٱ]/g, 'ا')
+			.replace(/ى/g, 'ي')
+			.replace(/ة/g, 'ه')
+			.toLocaleLowerCase()
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function applyBookCarouselFilter(filter) {
+		var menu = filter.closest('.h-menu');
+		var query = normalizeBookCarouselFilterText(filter.find('.book-carousel-filter-input').val());
+		var items = menu.children('[data-book-carousel-item]');
+		items.each(function () {
+			var item = $(this);
+			var searchableText = item.attr('data-book-carousel-search') || item.text();
+			item.toggleClass('book-carousel-filter-hidden', !!query && !normalizeBookCarouselFilterText(searchableText).includes(query));
+		});
+		var availableCount = items.filter(function () {
+			return !$(this).hasClass('d-none') && !$(this).hasClass('book-carousel-filter-hidden');
+		}).length;
+		filter.find('[data-book-carousel-filter-status]').text(query
+			? `${availableCount} ${availableCount === 1 ? 'book' : 'books'} found`
+			: '');
+	}
+
+	function initBookCarouselFilters(root) {
+		var scope = root || document;
+		$(scope).find('[data-book-carousel-filter]').each(function () {
+			var filter = $(this);
+			if (filter.data('bookCarouselFilterBound'))
+				return;
+			filter.data('bookCarouselFilterBound', true);
+			filter.on('input search', '.book-carousel-filter-input', function () {
+				setDirection($(this));
+				applyBookCarouselFilter(filter);
+			});
+			applyBookCarouselFilter(filter);
+		});
+	}
+
 	function initTafsirBookCarousels(root) {
 		var scope = root || document;
 		$(scope).find('.h-menu [data-tafsir-book-nav-item]').closest('.h-menu').each(function () {
@@ -12206,7 +12254,7 @@ function initQuranAyahSelector(root) {
 
 		function scrollQuranCommentaryCarouselToCurrent(carousel) {
 			var menu = carousel.find('.h-menu').get(0);
-			var current = carousel.find('[data-quran-commentary-book-nav-item].active:not(.d-none), [data-quran-commentary-book-nav-item][aria-current="page"]:not(.d-none)').get(0);
+			var current = carousel.find('[data-quran-commentary-book-nav-item].active:not(.d-none):not(.book-carousel-filter-hidden), [data-quran-commentary-book-nav-item][aria-current="page"]:not(.d-none):not(.book-carousel-filter-hidden)').get(0);
 			if (!menu || !current)
 				return;
 			window.requestAnimationFrame(function () {

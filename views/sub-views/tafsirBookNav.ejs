@@ -60,8 +60,9 @@
 		</div>
 		<div class="h-menu-scroller">
 			<div class="btn-group h-menu text-nowrap" role="group">
+				<%- include('bookCarouselFilter') %>
 				<% orderedTafsirs.forEach(function (tafsir) { %>
-					<a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= tafsirBookHref(tafsir) %>" data-tafsir-tooltip="<%= tafsirBookTooltip(tafsir) %>" data-tafsir-book-nav-item data-tafsir-alias="<%= tafsir.alias %>" data-tafsir-lang="<%= tafsir.lang %>" data-tafsir-death="<%= tafsir.death || '' %>" data-tafsir-ordinal="<%= tafsir.ordinal || 0 %>"><%- tafsirBookLabel(tafsir) %><%- tafsirSizeIndicator(tafsir) %></a>
+					<a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= tafsirBookHref(tafsir) %>" data-tafsir-tooltip="<%= tafsirBookTooltip(tafsir) %>" data-book-carousel-item data-book-carousel-search="<%= [tafsir.name_en, tafsir.shortName_en, tafsir.title, tafsir.shortName, tafsir.author_en, tafsir.author, tafsir.alias].filter(Boolean).join(' ') %>" data-tafsir-book-nav-item data-tafsir-alias="<%= tafsir.alias %>" data-tafsir-lang="<%= tafsir.lang %>" data-tafsir-death="<%= tafsir.death || '' %>" data-tafsir-ordinal="<%= tafsir.ordinal || 0 %>"><%- tafsirBookLabel(tafsir) %><%- tafsirSizeIndicator(tafsir) %></a>
 				<% }); %>
 			</div>
 		</div>
