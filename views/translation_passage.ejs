@@ -156,7 +156,7 @@
         }); %>
       </section>
 
-      <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: ayahs }); %>
+      <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: ayahs, usePassagePageModalLayout: true }); %>
       <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: ayahs, quranShareId: `Q${ref.replace(/[^A-Za-z0-9_-]/g, '-')}` }); %>
 
     </main>
