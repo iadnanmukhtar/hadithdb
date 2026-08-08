@@ -94,12 +94,12 @@
     return canonicalUrlForPath(`/${book.alias}`);
   }
   function contextChapterUrl(book, chapter) {
-    if (!book || !book.alias || chapter === undefined)
+    if (!book || !book.alias || !chapter)
       return '';
     return canonicalUrlForPath(`/${book.alias}/${chapter.h1}`);
   }
   function contextSectionUrl(book, chapter, section) {
-    if (!book || !book.alias || chapter === undefined || section === undefined)
+    if (!book || !book.alias || !chapter || !section)
       return '';
     return canonicalUrlForPath(`/${book.alias}/${chapter.h1}/${section.h2}`);
   }
@@ -251,7 +251,7 @@
 <% } %>
 <% } %>
 
-<% if (contextBook !== undefined && contextChapter !== undefined) { %>
+<% if (contextBook && contextChapter) { %>
 <%- utils.jsonLdScript({
   '@context': 'https://schema.org',
   '@type': 'Chapter',
@@ -267,14 +267,14 @@
 
 <%
   var breadcrumbItems = [];
-  if (contextBook !== undefined) {
+  if (contextBook) {
     breadcrumbItems.push(breadcrumbItem(1, contextCatalogName, contextCatalogUrl));
     if (!isQuranBookContext)
       breadcrumbItems.push(breadcrumbItem(2, contextBook.name_en || contextBook.shortName_en || contextBook.alias || contextBook.name || contextBook.shortName, contextBookUrl(contextBook) || headCanonicalUrl));
-    if (contextChapter !== undefined) {
+    if (contextChapter) {
       breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, `${contextChapter.h1}. ${contextChapter.title_en || chapterLabel(contextChapter)}`, contextChapterUrl(contextBook, contextChapter) || headCanonicalUrl));
     }
-    if (contextSection !== undefined) {
+    if (contextSection) {
       breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, `${contextSection.h2}. ${contextSection.title_en || sectionLabel(contextSection)}`, contextSectionUrl(contextBook, contextChapter, contextSection) || headCanonicalUrl));
     }
   }
