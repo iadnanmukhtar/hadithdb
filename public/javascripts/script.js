@@ -3025,6 +3025,16 @@ function clearMergedQuranTranslationContinuationTarget(target, book) {
 		target.dataset.quranTranslationAlias = alias || '';
 }
 
+function showUnavailableQuranTranslationTarget(target, book) {
+	if (!target)
+		return;
+	var message = 'Content is not available for this ayah.';
+	target.textContent = message;
+	target.dataset.markdownSource = message;
+	var alias = book && book.source !== 'default' ? book.alias : '';
+	setQuranTranslationAttribution(target, quranTranslationBookLabel(book), alias);
+}
+
 function applyQuranTranslationToTarget(target, book) {
 	storeDefaultQuranTranslationTarget(target);
 	var alias = book && book.source !== 'default' ? book.alias : '';
@@ -3047,7 +3057,10 @@ function applyQuranTranslationToTarget(target, book) {
 		var entry = Array.isArray(payload && payload.entries) ? payload.entries[0] : payload;
 		if (ref.ayah === '0')
 			entry = quranPrefatoryTranslationEntry(entry, ref.surah);
-		applyQuranTranslationEntryToTarget(target, book, entry);
+		if (entry && (entry.html || entry.data))
+			applyQuranTranslationEntryToTarget(target, book, entry);
+		else
+			showUnavailableQuranTranslationTarget(target, book);
 	});
 }
 
@@ -3119,6 +3132,7 @@ function applyQuranTranslationToTargets(targets, book) {
 			return fetchQuranLocalTranslationRange(book, surah, ayahFrom, ayahTo).then(function (payload) {
 				var entries = Array.isArray(payload && payload.entries) ? payload.entries : [payload];
 				var targetsByAyah = new Map();
+				var coveredAyahs = new Set();
 				surahTargets.forEach(function (target) {
 					targetsByAyah.set(quranTranslationTargetAyahNumber(target), target);
 				});
@@ -3141,10 +3155,17 @@ function applyQuranTranslationToTargets(targets, book) {
 					}
 					if (coveredTargets.length < 1)
 						return;
+					coveredTargets.forEach(function (target) {
+						coveredAyahs.add(quranTranslationTargetAyahNumber(target));
+					});
 					applyQuranTranslationEntryToTarget(coveredTargets[0], book, payloadEntry);
 					coveredTargets.slice(1).forEach(function (target) {
 						clearMergedQuranTranslationContinuationTarget(target, book);
 					});
+				});
+				surahTargets.forEach(function (target) {
+					if (!coveredAyahs.has(quranTranslationTargetAyahNumber(target)))
+						showUnavailableQuranTranslationTarget(target, book);
 				});
 			});
 		}));

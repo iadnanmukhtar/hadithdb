@@ -621,11 +621,24 @@ function toEnglishDigits(value) {
 		.trim();
 }
 
+function normalizeParagraph(value) {
+	return (value || '')
+		.replace(/\r\n?/g, ' ')
+		.replace(/\u00a0/g, ' ')
+		.replace(/[\t ]+/g, ' ')
+		.trim();
+}
+
 function toMarkdown(value) {
 	if (!value)
 		return '';
-	return normalizeSpace(value)
-		.replace(/([`*_#>~])/g, '\\$1');
+	const paragraphs = String(value)
+		.split(/\n{2,}/)
+		.map(paragraph => normalizeParagraph(paragraph))
+		.filter(Boolean);
+	return paragraphs
+		.map(paragraph => paragraph.replace(/([`*_#>~])/g, '\\$1'))
+		.join('\n\n');
 }
 
 function parseRef(value) {
@@ -676,6 +689,15 @@ function query(connection, sql) {
 async function upsertCommentary(connection, alias, config) {
 	const idColumn = await query(connection, `SHOW COLUMNS FROM books LIKE 'id'`);
 	const idColumnHasAutoIncrement = idColumn[0] && /auto_increment/i.test(idColumn[0].Extra || '');
+	const existing = await query(connection, `
+		SELECT id
+		FROM books
+		WHERE alias=${mysql.escape(alias)}
+			AND source='local'
+			AND type='tafsir'
+		LIMIT 1`);
+	if (existing.length === 1)
+		return existing[0].id;
 	const bookId = Number(config.id || config.ordinal);
 	if (!Number.isInteger(bookId) || bookId <= 0)
 		throw new Error(`Invalid book id/config ordinal '${config.id || config.ordinal}'.`);
@@ -697,19 +719,7 @@ async function upsertCommentary(connection, alias, config) {
 		INSERT INTO books
 			${insertCols}
 		VALUES
-			${insertVals}
-		ON DUPLICATE KEY UPDATE
-			shortName_en=VALUES(shortName_en),
-			shortName=VALUES(shortName),
-			hidden=VALUES(hidden),
-			source=VALUES(source),
-			lang=VALUES(lang),
-			format=VALUES(format),
-			name_en=VALUES(name_en),
-			author_en=VALUES(author_en),
-			title=VALUES(title),
-			author=VALUES(author),
-			description=VALUES(description)`);
+			${insertVals}`);
 
 	const rows = await query(connection, `
 		SELECT id

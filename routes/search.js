@@ -3269,6 +3269,7 @@ async function renderBookSection(req, res, next) {
 }
 
 async function applySelectedQuranTranslation(items, translation, surah, options = {}) {
+  const unavailableMessage = 'Content is not available for this ayah.';
   var firstItem = (items || [])[0];
   if (firstItem && (firstItem.chain_en || firstItem.en?.chain)) {
     var basmalahEntry = await Tafsir.localTranslationEntry(translation, 1, 1, options).catch(function (err) {
@@ -3300,8 +3301,14 @@ async function applySelectedQuranTranslation(items, translation, surah, options 
       debug.error(`selected quran translation render failed alias=${translation.alias} ref=${surah}:${ayah}: ${err.message}\n${err.stack || ''}`);
       return null;
     });
-    if (!entry || !entry.html)
+    if (!entry || !entry.html) {
+      if (!item.en)
+        item.en = {};
+      item.en.body = unavailableMessage;
+      item.body_en = unavailableMessage;
+      item.quranTranslationAlias = translation.alias;
       return;
+    }
     if (!item.en)
       item.en = {};
     item.en.body = entry.html;
