@@ -265,6 +265,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.id = commentaryId;
       await Books.touchBookContentLastmodById(commentary.bookId);
       await refreshCommentaryIndex(commentaryId);
+      await flushCommentaryPassageCaches(commentary);
       status.message = `${result.message}; reindexed local commentary passage`;
 
     } else if (type == 'toc') {
@@ -790,6 +791,20 @@ async function refreshCommentaryIndex(id) {
     throw createError(404, 'Local commentary passage not found after update');
   await Index.update('commentaries', commentary);
   await Index.refresh('commentaries');
+}
+
+async function flushCommentaryPassageCaches(commentary) {
+  if (!commentary || !commentary.commentary_alias)
+    return;
+  const surah = Number(commentary.surah);
+  const ayahFrom = Number(commentary.ayahFrom);
+  const ayahTo = Number(commentary.ayahTo);
+  if (!Number.isInteger(surah) || !Number.isInteger(ayahFrom) || !Number.isInteger(ayahTo))
+    return;
+  for (let ayah = ayahFrom; ayah <= ayahTo; ayah++) {
+    await Utils.flushCacheContaining(`tafsir:${commentary.commentary_alias}:quran:${surah}:${ayah}`);
+    await Utils.flushCacheContaining(`quran:${surah}:${ayah}`);
+  }
 }
 
 async function createLocalCommentaryPassage(ids, col, value) {

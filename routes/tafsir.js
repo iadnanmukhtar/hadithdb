@@ -191,7 +191,8 @@ async function renderTafsirPassage(req, res, next) {
     const refs = [
       `quran:${surahNum}:${ayahNum}`,
       `tafsir:${tafsir.alias}`,
-      `tafsir:${tafsir.slug || Tafsir.tafsirSlug(tafsir.alias)}`
+      `tafsir:${tafsir.slug || Tafsir.tafsirSlug(tafsir.alias)}`,
+      `tafsir:${tafsir.alias}:quran:${surahNum}:${ayahNum}`
     ];
     const html = await ejs.renderFile(`${__dirname}/../views/tafsir_passage.ejs`, cachedRenderLocals(res, {
       noadmin: true,
