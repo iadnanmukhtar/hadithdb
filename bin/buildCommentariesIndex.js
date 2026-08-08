@@ -11,6 +11,7 @@ const path = require('path');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
+const Utils = require('../lib/Utils');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const CommentaryTranslationIndexFields = require('../lib/CommentaryTranslationIndexFields');
 const SearchHttp = require('../lib/SearchHttp');
@@ -69,6 +70,7 @@ async function reindexCommentaryAlias(alias) {
 	}
 	await endDbPool();
 	await Index.refresh(INDEX);
+	await Utils.flushCacheContaining(`tafsir:${alias}`);
 	console.log('commentaries index complete');
 }
 
