@@ -14,13 +14,16 @@
     var translationMetaTitle = `Surah ${surah.name_en} ${ref}${translationHeadingTitle ? ` | ${translationHeadingTitle}` : ''} | Quran Translations`;
     var translationMetaDescription = `Compare Quran translations for ${ref}, Surat ${surah.name_en}, alongside the Arabic text and passage context.`;
     var page = {
-      menu: 'Quran',
+      menu: 'Section',
       title_en: translationMetaTitle,
       description_en: translationMetaDescription,
       subtitle_en: `Quran ${ref}`,
       subtitle: `${surah.name_ar} ${arabic.toArabicDigits(ayah + '')}`,
       canonical: `/quran/translations/quran:${surah.num}:${ayah}`,
       context: {
+        book: { alias: 'quran' },
+        chapter: chapter,
+        section: section,
         quranSearchProxy: true
       }
     };

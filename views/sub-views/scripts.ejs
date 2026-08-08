@@ -38,9 +38,7 @@
 
 	    const renderMarkdown = (text) => {
 	      if (!text) return '';
-	      if (window.marked && window.marked.parse)
-	        return window.marked.parse(text).replace(/<br>/g, '</p><p>').trim();
-	      return text;
+	      return renderClientMarkdown(text);
 	    };
 	    const stripQuranDisplayFootnotes = (value) => (value || '').toString()
 	      .replace(/\r\n?/g, '\n')
@@ -357,6 +355,10 @@
 	              value = '';
 	            if (!removeSimilarHadith && !$(this).is('select') && value !== undefined && value !== null)
 	              setElementValue(this, value);
+	            if (propStr.indexOf('book.') === 0 && $el.closest('.toc').length) {
+	              window.location.reload();
+	              return;
+	            }
 	          }
 	        } finally {
 	          if (hasLoadingButton) {

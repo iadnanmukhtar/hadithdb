@@ -6,6 +6,7 @@ const ejs = require('ejs');
 const fs = require('fs');
 const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
+const QuranMushaf = require('../lib/QuranMushaf');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const BookDownloads = require('../lib/BookDownloads');
@@ -161,10 +162,14 @@ async function renderTafsirPassage(req, res, next) {
     return;
   }
   const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
-  const [chapter, section] = await Promise.all([
-    QuranHeadings.chapter(surahNum),
-    QuranHeadings.sectionForAyah(surahNum, ayahNum)
-  ]);
+  const section = await QuranHeadings.sectionForAyah(surahNum, ayahNum);
+  const chapter = section
+    ? await section.getChapter()
+    : await QuranHeadings.chapter(surahNum);
+  if (chapter && typeof chapter.getSections === 'function')
+    await chapter.getSections();
+  if (section)
+    section.mushafPage = await QuranMushaf.pageForRef(surahNum, entryStart);
   const navigationEntries = entries.length || tafsir.source !== 'local'
     ? entries
     : await Tafsir.tafsirEntries(tafsir, surahNum, ayahNum, {
@@ -216,6 +221,9 @@ async function renderTafsirBookToc(req, res, tafsir) {
   const quranManzilRows = await QuranTocSubdivisions.manzilRows();
   const quranSectionRangesBySurah = await QuranTocSubdivisions.quranSectionRangesBySurah();
   const quranTafsirPassages = await Tafsir.sitemapPassages(tafsir, { source: 'db' });
+  const quranCommentaryAvailableSurahs = tafsir.source === 'local'
+    ? Array.from(new Set(quranTafsirPassages.map(passage => Number(passage.surah)).filter(Number.isInteger)))
+    : null;
   const quranTocDefaultView = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
   const renderLocals = {
     book: quranBook,
@@ -224,6 +232,7 @@ async function renderTafsirBookToc(req, res, tafsir) {
     quranManzilRows: quranManzilRows,
     quranSectionRangesBySurah: quranSectionRangesBySurah,
     quranTafsirPassages: quranTafsirPassages,
+    quranCommentaryAvailableSurahs: quranCommentaryAvailableSurahs,
     quranTocDefaultView: quranTocDefaultView,
     BookDownloads: BookDownloads,
     prevBook: null,

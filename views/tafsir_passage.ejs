@@ -21,15 +21,19 @@
     var tafsirAuthor = tafsir.author_en || tafsir.author || '';
     var tafsirMetaDescription = `Read ${tafsirTitle}${tafsirAuthor ? ` by ${tafsirAuthor}` : ''} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
     var page = {
-      menu: 'Tafsir',
+      menu: 'Section',
       title_en: tafsirMetaTitle,
       description_en: tafsirMetaDescription,
       subtitle_en: tafsirTitle,
       subtitle: tafsirTitleAr,
       canonical: Tafsir.passageUrl(tafsir, surah.num, tafsirEntryStart, tafsirEntryEnd),
       context: {
+        book: { alias: 'quran' },
+        chapter: chapter,
+        section: section,
         quranSearchProxy: true,
-        commentaryBook: tafsir
+        commentaryBook: tafsir,
+        quranCommentaryBook: tafsir
       }
     };
     var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {

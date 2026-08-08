@@ -370,7 +370,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
     } else if (type == 'book') {
       var bookColumns = [
-        'shortName_en', 'shortName', 'name_en',
+        'shortName_en', 'shortName', 'name_en', 'name',
         'title_en', 'title', 'author', 'author_en',
         'death', 'published_year', 'publisher',
         'description', 'aqidah', 'size'

@@ -95,6 +95,7 @@
                 var descriptionKey = `${descriptionId}-body`;
                 var editableBookId = translation.id || '';
                 var bookUrl = translationBookUrl(translation);
+                var isEnglishTranslation = translation.lang === 'en';
               %>
               <article class="translation-book-card tafsir-book-row" data-translation-book-filter="<%- [
                 translation.alias,
@@ -107,27 +108,32 @@
                 translation.description
               ].filter(Boolean).join(' ').toLowerCase() %>">
                 <div class="tafsir-book-row-main">
-                  <div class="tafsir-book-title-pair tafsir-book-title-pair-single">
+                  <div class="tafsir-book-title-pair">
                     <h3 class="tafsir-book-title-line mb-0">
                       <% if (site.editMode) { %>
-                        <span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en"><%- translation.shortName_en || translation.name_en || translation.alias %></span>
+                        <a href="<%= bookUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en" data-placeholder="English name"><%- translation.name_en || '' %></span></a>
                       <% } else { %>
-                        <a href="<%= bookUrl %>"><%- translation.shortName_en || translation.name_en || translation.alias %></a>
+                        <a href="<%= bookUrl %>"><%- translation.name_en || translation.shortName_en || translation.alias %></a>
                       <% } %>
                     </h3>
+                    <% if (!isEnglishTranslation && (site.editMode || translation.name)) { %><h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl"><% if (site.editMode) { %><a href="<%= bookUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name" data-placeholder="الاسم العربي"><%- translation.name || '' %></span></a><% } else { %><a href="<%= bookUrl %>"><%- translation.name %></a><% } %></h3><% } %>
                   </div>
-                  <% if (site.editMode || translation.name_en) { %>
-                    <div class="tafsir-book-full-name tafsir-book-full-name-single">
-                      <div <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en"<% } %>><%- translation.name_en %></div>
+                  <% if (site.editMode) { %>
+                    <div class="tafsir-book-full-name text-muted">
+                      <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en" data-placeholder="English short name"><%- translation.shortName_en || '' %></span></div>
+                      <% if (!isEnglishTranslation) { %><div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName" data-placeholder="الاسم المختصر"><%- translation.shortName || '' %></span></div><% } %>
+                      <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title_en" data-placeholder="Full English title"><%- translation.title_en || '' %></span></div>
+                      <% if (!isEnglishTranslation) { %><div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title" data-placeholder="العنوان الكامل"><%- translation.title || '' %></span></div><% } %>
                     </div>
-                  <% } %>
-                  <div class="tafsir-book-meta text-muted tafsir-book-meta-single">
+                  <% } else if (translation.title_en || (!isEnglishTranslation && translation.title)) { %><div class="tafsir-book-full-name text-muted"><% if (translation.title_en) { %><div><%- translation.title_en %></div><% } %><% if (!isEnglishTranslation && translation.title) { %><div lang="ar" dir="rtl"><%- translation.title %></div><% } %></div><% } %>
+                  <div class="tafsir-book-meta text-muted<%= !isEnglishTranslation && (translation.author || translation.name) ? '' : ' tafsir-book-meta-single' %>">
                     <div>
-                      <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author_en"<% } %>><%- translation.author_en || translation.author || '' %></span>
+                      <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author_en"<% } %>><%- translation.author_en || (isEnglishTranslation ? '' : translation.author) || '' %></span>
                       <% if (site.editMode || translationDeathLabel(translation)) { %>
                         <span>(<span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.death"<% } %>><%- site.editMode ? translation.death : translationDeathLabel(translation) %></span>)</span>
                       <% } %>
                     </div>
+                    <% if (!isEnglishTranslation && (site.editMode || translation.author)) { %><div lang="ar" dir="rtl"><span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author" data-placeholder="اسم المؤلف"<% } %>><%- translation.author || '' %></span></div><% } %>
                   </div>
                   <%
                     var translationDownloadLinks = downloadLinksFor(translation);

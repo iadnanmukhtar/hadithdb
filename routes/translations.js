@@ -4,6 +4,7 @@ const createError = require('http-errors');
 const express = require('express');
 const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
+const QuranMushaf = require('../lib/QuranMushaf');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const BookDownloads = require('../lib/BookDownloads');
@@ -60,10 +61,14 @@ router.get('/:ref', async function (req, res, next) {
   if (!ayah)
     return next(createError(404, `Quran ayah ${req.params.surah}:${req.params.ayah} not found`));
 
-  const [chapter, section] = await Promise.all([
-    QuranHeadings.chapter(surahNum),
-    QuranHeadings.sectionForAyah(surahNum, ayahNum)
-  ]);
+  const section = await QuranHeadings.sectionForAyah(surahNum, ayahNum);
+  const chapter = section
+    ? await section.getChapter()
+    : await QuranHeadings.chapter(surahNum);
+  if (chapter && typeof chapter.getSections === 'function')
+    await chapter.getSections();
+  if (section)
+    section.mushafPage = await QuranMushaf.pageForRef(surahNum, ayahNum);
 
   res.render('translation_passage', {
     Tafsir: Tafsir,

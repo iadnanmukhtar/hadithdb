@@ -2605,7 +2605,13 @@ router.get('/quran/page/:page', async function (req, res, next) {
 router.get('/:bookAlias', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
-  var books = (global.books || []).filter(book => Number(book.hidden) === 0);
+  var books = (global.books || []).filter(function (book) {
+    var type = book && (book.type || book.book_type || book.book_model || 'hadith');
+    return book
+      && Number(book.hidden) === 0
+      && book.alias !== 'quran'
+      && type === 'hadith';
+  });
   var book = visibleBookFromParam(req.params.bookAlias);
   if (book) {
     if ('download' in req.query && ('json' in req.query || 'epub' in req.query)) {
@@ -2619,7 +2625,7 @@ router.get('/:bookAlias', async function (req, res, next) {
     });
     if (bookIdx > 0)
       prevBook = books[bookIdx - 1];
-    if (bookIdx < (books.length - 1))
+    if (bookIdx >= 0 && bookIdx < (books.length - 1))
       nextBook = books[bookIdx + 1];
 
     var admin = req.admin;
@@ -2813,6 +2819,14 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
   var quranJuzRows = await QuranTocSubdivisions.juzRows();
   var quranManzilRows = await QuranTocSubdivisions.manzilRows();
   var quranSectionRangesBySurah = await QuranTocSubdivisions.quranSectionRangesBySurah();
+  var quranCommentaryPassages = quranCommentaryBook.source === 'local'
+    ? await Tafsir.sitemapPassages(quranCommentaryBook, { source: 'db' })
+    : [];
+  var quranCommentaryAvailableSurahs = quranCommentaryBook.source === 'local'
+    ? Array.from(new Set(quranCommentaryPassages.map(function (passage) {
+      return Number(passage.surah);
+    }).filter(Number.isInteger)))
+    : null;
   var quranTocDefaultView = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
   var renderLocals = {
     book: book,
@@ -2820,6 +2834,7 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
     quranJuzRows: quranJuzRows,
     quranManzilRows: quranManzilRows,
     quranSectionRangesBySurah: quranSectionRangesBySurah,
+    quranCommentaryAvailableSurahs: quranCommentaryAvailableSurahs,
     quranTocDefaultView: quranTocDefaultView,
     BookDownloads: BookDownloads,
     prevBook: null,

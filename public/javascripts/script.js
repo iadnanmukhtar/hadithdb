@@ -55,13 +55,6 @@ $(function () {
 			toggle.find('input').focus();
 	});
 
-	$('.search-click-toggle input').on('blur', function () {
-		var toggle = $(this).closest('.search-click-toggle');
-		window.setTimeout(function () {
-			toggle.removeClass('is-open');
-		}, 100);
-	});
-
 	$(document).on('click', function (event) {
 		if (!$(event.target).closest('.search-click-toggle').length)
 			$('.search-click-toggle').removeClass('is-open');
@@ -8288,6 +8281,7 @@ function initQuranMemorizeView(root) {
 			return;
 		page.dataset.quranMemorizeBound = '1';
 		var wordTimers = new WeakMap();
+		var reviewPage = Boolean(page.closest('[data-quran-review-reader]'));
 		var learningRef = new URLSearchParams(window.location.search).get('learningRef') || '';
 		if (/^\d+:\d+$/.test(learningRef)) {
 			var learningTargets = Array.from(page.querySelectorAll('[data-quran-ref]')).filter(function (element) {
@@ -8346,6 +8340,12 @@ function initQuranMemorizeView(root) {
 			return Array.from(page.querySelectorAll('.quran-corpus-word[data-quran-ref]')).filter(function (word) {
 				return word.getAttribute('data-quran-ref') === ref && !word.closest('.quran-mushaf-line-basmallah');
 			});
+		};
+		var isReviewWordVisible = function (word) {
+			return reviewPage && (page.classList.contains('quran-memorize-show-all')
+				|| word.classList.contains('quran-memorize-word-revealed')
+				|| word.classList.contains('quran-memorize-ayah-revealed')
+				|| word.classList.contains('quran-review-session-revealed'));
 		};
 		var setReviewAyahRevealed = function (ref, revealed) {
 			page.querySelectorAll('.quran-corpus-word[data-quran-ref], .quran-mushaf-ayah-marker[data-quran-ref]').forEach(function (element) {
@@ -8770,6 +8770,11 @@ function initQuranMemorizeView(root) {
 				return;
 			event.preventDefault();
 			event.stopImmediatePropagation();
+			if (isReviewWordVisible(word)) {
+				hideQuranAudioTranslationMarquee();
+				showQuranRevealedWordTranslation(word);
+				return;
+			}
 			materializePageReveal();
 			if (word.classList.contains('quran-memorize-word-revealed') || word.classList.contains('quran-memorize-ayah-revealed')) {
 				if (page.dataset.quranReviewAnswerRevealed === '1')
@@ -8800,7 +8805,10 @@ function initQuranMemorizeView(root) {
 				return;
 			event.preventDefault();
 			event.stopImmediatePropagation();
-			if (!word.classList.contains('quran-memorize-ayah-revealed'))
+			if (isReviewWordVisible(word)) {
+				hideQuranAudioTranslationMarquee();
+				showQuranRevealedWordTranslation(word);
+			} else if (!word.classList.contains('quran-memorize-ayah-revealed'))
 				revealWord(word);
 		});
 	});
@@ -12273,6 +12281,39 @@ function initQuranAyahSelector(root) {
 			slot.append(link);
 		}
 
+		function renderQuranCommentaryMobilePagination(entry, rel) {
+			var attr = rel === 'prev' ? 'data-mobile-bottom-nav-prev' : 'data-mobile-bottom-nav-next';
+			var current = $(`[${attr}]`).first();
+			if (!current.length)
+				return;
+			var replacement;
+			if (entry) {
+				replacement = $('<a>').addClass('mobile-bottom-nav-item').attr({
+					href: entry.href,
+					rel: rel,
+					title: `${rel === 'prev' ? 'Previous' : 'Next'}: ${entry.label}`,
+					'aria-label': rel === 'prev' ? 'Previous' : 'Next'
+				});
+				replacement.attr(attr, '');
+			} else {
+				replacement = $('<span>').addClass('mobile-bottom-nav-item mobile-bottom-nav-item-disabled').attr('aria-disabled', 'true');
+				replacement.attr(attr, '');
+			}
+			$('<span>').addClass(`bi bi-chevron-${rel === 'prev' ? 'left' : 'right'} mobile-bottom-nav-icon`).attr('aria-hidden', 'true').appendTo(replacement);
+			$('<span>').addClass('mobile-bottom-nav-label').text(rel === 'prev' ? 'Prev' : 'Next').appendTo(replacement);
+			current.replaceWith(replacement);
+
+			var headLink = $(`head link[rel="${rel}"]`);
+			if (entry) {
+				if (headLink.length)
+					headLink.attr('href', entry.href);
+				else
+					$('<link>').attr({ rel: rel, href: entry.href }).appendTo('head');
+			} else {
+				headLink.remove();
+			}
+		}
+
 		function scrollQuranCommentaryCarouselToCurrent(carousel) {
 			var menu = carousel.find('.h-menu').get(0);
 			var current = carousel.find('[data-quran-commentary-book-nav-item].active:not(.d-none):not(.book-carousel-filter-hidden), [data-quran-commentary-book-nav-item][aria-current="page"]:not(.d-none):not(.book-carousel-filter-hidden)').get(0);
@@ -12296,6 +12337,11 @@ function initQuranAyahSelector(root) {
 						return quranCommentaryEntryFromItem($(this), index);
 					}).get();
 					var orderedEntries = quranCommentaryOrderedEntries(entries, settings, currentAlias, currentLang);
+					var currentIndex = orderedEntries.findIndex(function (entry) {
+						return quranCommentaryEntryIsCurrent(entry, currentAlias, currentLang);
+					});
+					var previousEntry = currentIndex > 0 ? orderedEntries[currentIndex - 1] : null;
+					var nextEntry = currentIndex >= 0 && currentIndex < orderedEntries.length - 1 ? orderedEntries[currentIndex + 1] : null;
 					var visibleAliases = new Set(orderedEntries.map(function (entry) { return entry.book.alias; }));
 					entries.forEach(function (entry) {
 						var isCurrent = quranCommentaryEntryIsCurrent(entry, currentAlias, currentLang);
@@ -12311,15 +12357,17 @@ function initQuranAyahSelector(root) {
 					});
 					carousel.toggleClass('d-none', orderedEntries.length < 1);
 					scrollQuranCommentaryCarouselToCurrent(carousel);
+					renderQuranCommentaryMobilePagination(previousEntry, 'prev');
+					renderQuranCommentaryMobilePagination(nextEntry, 'next');
 					$(`[data-quran-commentary-pagination][data-commentary-kind="${kind}"]`).each(function () {
 						var pagination = $(this);
 						var paginationCurrentAlias = pagination.attr('data-current-commentary-alias') || '';
 						var paginationCurrentLang = pagination.attr('data-current-commentary-lang') || '';
-						var currentIndex = orderedEntries.findIndex(function (entry) {
+						var paginationCurrentIndex = orderedEntries.findIndex(function (entry) {
 							return quranCommentaryEntryIsCurrent(entry, paginationCurrentAlias, paginationCurrentLang);
 						});
-						renderQuranCommentaryPaginationLink(pagination.find('[data-quran-commentary-prev-slot]').first(), currentIndex > 0 ? orderedEntries[currentIndex - 1] : null, 'prev');
-						renderQuranCommentaryPaginationLink(pagination.find('[data-quran-commentary-next-slot]').first(), currentIndex >= 0 && currentIndex < orderedEntries.length - 1 ? orderedEntries[currentIndex + 1] : null, 'next');
+						renderQuranCommentaryPaginationLink(pagination.find('[data-quran-commentary-prev-slot]').first(), paginationCurrentIndex > 0 ? orderedEntries[paginationCurrentIndex - 1] : null, 'prev');
+						renderQuranCommentaryPaginationLink(pagination.find('[data-quran-commentary-next-slot]').first(), paginationCurrentIndex >= 0 && paginationCurrentIndex < orderedEntries.length - 1 ? orderedEntries[paginationCurrentIndex + 1] : null, 'next');
 					});
 				});
 			});
@@ -12516,7 +12564,8 @@ function submitQuranPassageSearch($input) {
 
 function initQuranSearchReturnMode() {
 	var path = window.location.pathname;
-	var mode = '';
+	var requestedMode = new URLSearchParams(window.location.search).get('mode');
+	var mode = requestedMode === 'mushaf' || requestedMode === 'study' ? requestedMode : '';
 	if (/^\/quran\/page(?:\/\d+)?$/.test(path) || path === '/quran/review')
 		mode = 'mushaf';
 	else if (/^\/quran\/\d+(?:\/|$)/.test(path))
@@ -13200,10 +13249,14 @@ function renderClientMarkdownFallback(value) {
 
 function normalizeClientMarkdownForRendering(value) {
 	return (value || '').toString()
-		.replace(/(^|[^\*])\*\*([^\n*]*?\S)[ \t]+\*\*(?!\*)/g, '$1**$2**')
-		.replace(/(^|[^\*])\*([^\n*]*?\S)[ \t]+\*(?!\*)/g, '$1*$2*')
-		.replace(/(^|[^_])__([^\n_]*?\S)[ \t]+__(?!_)/g, '$1__$2__')
-		.replace(/(^|[^_])_([^\n_]*?\S)[ \t]+_(?!_)/g, '$1_$2_');
+		.replace(/(^|[^\*])\*\*([ \t]+)(?=\S)/g, '$1$2**')
+		.replace(/(^|[^\*])\*([ \t]+)(?=\S)/g, '$1$2*')
+		.replace(/(^|[^_])__([ \t]+)(?=\S)/g, '$1$2__')
+		.replace(/(^|[^_])_([ \t]+)(?=\S)/g, '$1$2_')
+		.replace(/(^|[^\*])\*\*([^\n*]*?\S)([ \t]+)\*\*(?!\*)/g, '$1**$2**$3')
+		.replace(/(^|[^\*])\*([^\n*]*?\S)([ \t]+)\*(?!\*)/g, '$1*$2*$3')
+		.replace(/(^|[^_])__([^\n_]*?\S)([ \t]+)__(?!_)/g, '$1__$2__$3')
+		.replace(/(^|[^_])_([^\n_]*?\S)([ \t]+)_(?!_)/g, '$1_$2_$3');
 }
 
 function renderClientMarkdown(value) {

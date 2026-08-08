@@ -194,26 +194,33 @@
                       <div class="tafsir-book-title-pair">
                         <h3 class="tafsir-book-title-line mb-0">
                           <% if (site.editMode) { %>
-                            <span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></span>
+                            <a href="<%= browseUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en" data-placeholder="English name"><%- tafsir.name_en || '' %></span></a>
                           <% } else { %>
-                            <a href="<%= browseUrl %>"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></a>
+                            <a href="<%= browseUrl %>"><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></a>
                           <% } %><%- tafsirSizeIndicator(tafsir) %>
                         </h3>
-                        <% if (site.editMode || tafsir.shortName || tafsir.title) { %>
+                        <% if (site.editMode || tafsir.name || tafsir.shortName) { %>
                           <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">
                             <% if (site.editMode) { %>
-                              <span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName"><%- tafsir.shortName || tafsir.title || '' %></span>
+                              <a href="<%= browseUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name" data-placeholder="الاسم العربي"><%- tafsir.name || '' %></span></a>
                             <% } else { %>
-                              <a href="<%= browseUrl %>"><%- tafsir.shortName || tafsir.title || '' %></a>
+                              <a href="<%= browseUrl %>"><%- tafsir.name || tafsir.shortName || '' %></a>
                             <% } %>
                           </h3>
                         <% } %>
                       </div>
-                      <% if (site.editMode || tafsir.name_en || tafsir.title) { %>
-                        <div class="tafsir-book-full-name">
-                          <div <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en"<% } %>><%- tafsir.name_en || tafsir.title || '' %></div>
+                      <% if (site.editMode) { %>
+                        <div class="tafsir-book-full-name text-muted">
+                          <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en" data-placeholder="English short name"><%- tafsir.shortName_en || '' %></span></div>
+                          <div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName" data-placeholder="الاسم المختصر"><%- tafsir.shortName || '' %></span></div>
+                          <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title_en" data-placeholder="Full English title"><%- tafsir.title_en || '' %></span></div>
+                          <div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title" data-placeholder="العنوان الكامل"><%- tafsir.title || '' %></span></div>
+                        </div>
+                      <% } else if (tafsir.title_en || tafsir.title) { %>
+                        <div class="tafsir-book-full-name text-muted">
+                          <% if (tafsir.title_en) { %><div><%- tafsir.title_en %></div><% } %>
                           <% if (site.editMode || tafsir.title) { %>
-                            <div lang="ar" dir="rtl" <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.title"<% } %>><%- tafsir.title %></div>
+                            <div lang="ar" dir="rtl"><%- tafsir.title %></div>
                           <% } %>
                         </div>
                       <% } %>
@@ -222,7 +229,7 @@
                           <div>
                             <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author_en"<% } %>><%- tafsir.author_en || tafsir.author || '' %></span>
                             <% if (site.editMode || tafsirDeathLabel(tafsir)) { %>
-                              <span>(<span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.death"<% } %>><%- site.editMode ? tafsir.death : tafsirDeathLabel(tafsir) %></span>)</span>
+                              <% if (site.editMode) { %><span>(d. <span class="_e" data-id="<%= editableBookId %>" data-prop="book.death" data-placeholder="Death year"><%- tafsir.death || '' %></span> AH)</span><% } else { %><span>(<%- tafsirDeathLabel(tafsir) %>)</span><% } %>
                             <% } %>
                           </div>
                         <% } %>
@@ -233,6 +240,9 @@
                               <span>(<%- tafsirArabicDeathLabel(tafsir) %>)</span>
                             <% } %>
                           </div>
+                        <% } %>
+                        <% if (site.editMode || tafsir.aqidah) { %>
+                          <div><span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.aqidah" data-placeholder="Aqidah"<% } %>><%- tafsir.aqidah || '' %></span></div>
                         <% } %>
                       </div>
                       <%
@@ -273,9 +283,6 @@
                               <option value="md" <%= tafsir.size === 'md' ? 'selected' : '' %>>Medium</option>
                               <option value="lg" <%= tafsir.size === 'lg' ? 'selected' : '' %>>Large</option>
                             </select>
-                          </label>
-                          <label>Aqidah
-                            <span class="_e" data-id="<%= editableBookId %>" data-prop="book.aqidah"><%- tafsir.aqidah || '' %></span>
                           </label>
                         </div>
                       <% } %>

@@ -19,7 +19,8 @@
     var isQuranReviewArea = requestPath === '/quran/review' || (isQuranMushafArea && (req.query.review !== undefined || req.query.reviewRef !== undefined));
     var isQuranMemorizeArea = isQuranMushafArea && (req.query.memorize !== undefined || isQuranReviewArea);
     var isQuranStudyArea = /^\/quran\/\d+(?:\/|$)/.test(requestPath);
-    var quranSearchReturnMode = isQuranMushafArea || isQuranReviewArea ? 'mushaf' : (isQuranStudyArea ? 'study' : '');
+    var requestedQuranSearchReturnMode = req && req.query && (req.query.mode === 'mushaf' || req.query.mode === 'study') ? req.query.mode : '';
+    var quranSearchReturnMode = isQuranMushafArea || isQuranReviewArea ? 'mushaf' : (isQuranStudyArea ? 'study' : requestedQuranSearchReturnMode);
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
     var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
@@ -277,7 +278,7 @@
         </a>
         <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
              var quranSectionPath = utils.quranUrl(req, `/${(page.context.section || page.context.chapter).path}`);
-             var quranReaderMode = requestPath.indexOf('/quran/page/') === 0 ? (isQuranReviewArea ? 'review' : (isQuranMemorizeArea ? 'memorize' : 'mushaf')) : (req.query.ayat !== undefined ? 'ayah' : 'passage');
+             var quranReaderMode = isQuranTafsirArea ? 'tafsir' : (requestPath.indexOf('/quran/translations/quran:') === 0 ? 'trans' : (requestPath.indexOf('/quran/page/') === 0 ? (isQuranReviewArea ? 'review' : (isQuranMemorizeArea ? 'memorize' : 'mushaf')) : 'passage'));
              var quranMappedPage = page.context.section && page.context.section.mushafPage;
         %>
           <span class="chapter-toc-reader-modes">
@@ -286,6 +287,7 @@
               passageHref: quranSectionPath,
               ayahHref: `${quranSectionPath}?ayat`,
               mushafHref: utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`),
+              tafsirHref: isQuranTafsirArea ? requestPath : utils.quranUrl(req, '/quran/tafsir'),
               memorizeHref: `${utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`)}?memorize`
             }); %>
           </span>
@@ -350,7 +352,7 @@
   </nav>
   <% } %>
 
-  <% if ((requestPath === '/quran' || requestPath === '/quran/review') && !pageQuranCommentaryBook && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
+  <% if ((requestPath === '/quran' || requestPath === '/quran/review' || pageQuranCommentaryBook) && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
   <nav class="row g-0 chapter-toc">
     <div class="col-12 chapter-toc-toolbar">
       <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="Show juz sections">
@@ -360,10 +362,11 @@
       </a>
       <span class="chapter-toc-reader-modes">
         <%- include('quran_reader_modes.ejs', {
-          readerMode: requestPath === '/quran/review' ? 'review' : undefined,
+          readerMode: pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir' ? 'tafsir' : (requestPath === '/quran/review' ? 'review' : undefined),
           passageHref: utils.quranUrl(req, '/quran/1'),
           ayahHref: `${utils.quranUrl(req, '/quran/1')}?ayat`,
           mushafHref: utils.quranUrl(req, '/quran/page/1'),
+          tafsirHref: pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir' ? requestPath : utils.quranUrl(req, '/quran/tafsir'),
           memorizeHref: `${utils.quranUrl(req, '/quran/page/1')}?memorize`
         }); %>
       </span>
