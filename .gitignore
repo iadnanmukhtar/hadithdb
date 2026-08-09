@@ -26,3 +26,4 @@ tmp/*
 temp
 temp/*
 *test*
+ecosystem.config.cjs
