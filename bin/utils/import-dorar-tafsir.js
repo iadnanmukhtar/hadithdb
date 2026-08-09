@@ -43,8 +43,15 @@ async function run(argv = process.argv.slice(2)) {
 	const passages = Object.values(document.surahs).flat()
 		.filter(passage => passage.surah >= options.fromSurah && passage.surah <= options.toSurah)
 		.sort((a, b) => a.surah - b.surah || a.ayahFrom - b.ayahFrom);
+	let extractedFootnotes = 0;
+	for (const passage of passages) {
+		const converted = extractDorarFootnotes(passage.text);
+		passage.text = converted.text;
+		passage.footnotes = converted.footnotes;
+		extractedFootnotes += converted.count;
+	}
 	validatePassages(passages, options);
-	console.log(`Parsed ${passages.length} Dorar passage(s) for surahs ${options.fromSurah}-${options.toSurah}.`);
+	console.log(`Parsed ${passages.length} Dorar passage(s) with ${extractedFootnotes} footnote(s) for surahs ${options.fromSurah}-${options.toSurah}.`);
 	if (options.dryRun)
 		return;
 
@@ -190,6 +197,58 @@ function toWesternDigits(value) {
 		: '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)));
 }
 
+function extractDorarFootnotes(text, startIndex = 0) {
+	text = String(text || '');
+	const notes = [];
+	let output = '';
+	let cursor = 0;
+	for (let index = 0; index < text.length; index++) {
+		if (text[index] !== '(')
+			continue;
+		const end = matchingParenthesis(text, index);
+		if (end < 0)
+			continue;
+		const content = text.slice(index + 1, end).trim();
+		if (!isDorarCitation(content)) {
+			index = end;
+			continue;
+		}
+		output += text.slice(cursor, index).replace(/[ \t]+$/u, '');
+		notes.push(content);
+		output += `[^${startIndex + notes.length}]`;
+		cursor = end + 1;
+		index = end;
+	}
+	output += text.slice(cursor);
+	output = output.replace(/\[\^([0-9]+)\][ \t]+([،؛,.])/gu, '[^$1]$2');
+	return {
+		text: output,
+		footnotes: notes.map((note, index) => `[^${startIndex + index + 1}]: ${note}`).join('\n\n'),
+		count: notes.length
+	};
+}
+
+function matchingParenthesis(text, start) {
+	let depth = 0;
+	for (let index = start; index < text.length; index++) {
+		if (text[index] === '(')
+			depth++;
+		else if (text[index] === ')') {
+			depth--;
+			if (depth === 0)
+				return index;
+		}
+	}
+	return -1;
+}
+
+function isDorarCitation(content) {
+	const normalized = content.replace(/\s+/gu, ' ').trim();
+	if (/^(?:يُنظر|ينظر|انظر|رواه|أخرجه|أخرجهما|صححه|صحَّحه|حسنه|حسَّنه|ضعفه|ضعَّفه|ذكره|عزاه)(?:\s|:)/u.test(normalized))
+		return true;
+	return /\(\([^()]+\)\)\s*(?:ل[^،.()]+\s*)?\([0-9٠-٩۰-۹]+(?:\s*[/،-]\s*[0-9٠-٩۰-۹]+)*\)/u.test(normalized);
+}
+
 function validatePassages(passages, options) {
 	for (let surah = options.fromSurah; surah <= options.toSurah; surah++) {
 		const rows = passages.filter(passage => passage.surah === surah);
@@ -241,12 +300,12 @@ async function upsertPassages(db, bookId, passages, batchSize) {
 			const hadithId = hadithByRef.get(`${passage.surah}:${passage.ayahFrom}`);
 			if (!hadithId)
 				throw new Error(`Missing local Quran row ${passage.surah}:${passage.ayahFrom}.`);
-			return `(${bookId}, ${hadithId}, ${passage.surah}, ${passage.ayahFrom}, ${passage.ayahTo}, ${passage.ayahFrom}, ${mysql.escape(passage.text)}, NULL)`;
+			return `(${bookId}, ${hadithId}, ${passage.surah}, ${passage.ayahFrom}, ${passage.ayahTo}, ${passage.ayahFrom}, ${mysql.escape(passage.text)}, NULL, ${mysql.escape(passage.footnotes)}, NULL)`;
 		});
 		await query(db, `INSERT INTO hadiths_commentary
-			(bookId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en)
+			(bookId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en, footnotes, footnotes_en)
 			VALUES ${values.join(',\n')}
-			ON DUPLICATE KEY UPDATE hadithId=VALUES(hadithId), passageNum=VALUES(passageNum), text=VALUES(text)`);
+			ON DUPLICATE KEY UPDATE hadithId=VALUES(hadithId), passageNum=VALUES(passageNum), text=VALUES(text), footnotes=VALUES(footnotes)`);
 	}
 }
 
@@ -342,4 +401,4 @@ function closeDb(db) {
 if (require.main === module)
 	run().catch(err => { console.error(`ERROR: ${err.stack || err.message}`); process.exitCode = 1; });
 
-module.exports = { run, parseRangeLabel, validatePassages };
+module.exports = { run, parseRangeLabel, validatePassages, extractDorarFootnotes };

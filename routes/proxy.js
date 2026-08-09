@@ -719,18 +719,23 @@ function renderEditableCommentaryLanguage(row, lang, src) {
   const text = row[`text${suffix}`];
   const footnotes = row[`footnotes${suffix}`];
   return [
-    renderEditableCommentaryField(row.id, `text${suffix}`, text, format, lang, src),
+    renderEditableCommentaryField(row.id, `text${suffix}`, text, format, lang, src, footnotes),
     renderEditableCommentaryField(row.id, `footnotes${suffix}`, footnotes, format, lang, src)
   ].join('\n');
 }
 
-function renderEditableCommentaryField(id, column, text, format, lang, src) {
+function renderEditableCommentaryField(id, column, text, format, lang, src, previewFootnotes = '') {
   const value = text || '';
   const placeholder = commentaryFieldPlaceholder(column, lang);
   const escapedPlaceholder = escapeHtml(placeholder);
   const attrs = `class="_e quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}" data-edit-lang="${lang}" data-placeholder="${escapedPlaceholder}"`;
+  if (format === 'md' && column.startsWith('footnotes')) {
+    const count = Array.from(value.matchAll(/^\[\^[^\]]+\]:/gm)).length;
+    const label = lang === 'ar' ? `تحرير الحواشي (${count})` : `Edit footnotes (${count})`;
+    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="${escapedPlaceholder}"><span class="quran-tafsir-footnotes-edit-label">${escapeHtml(label)}</span></div>`;
+  }
   if (format === 'md')
-    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="${escapedPlaceholder}">${renderCommentaryText(value, '', format, { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: commentaryFootnoteIdPrefix(src, id), quranBackticks: lang === 'en' }) || escapedPlaceholder}</div>`;
+    return `<div ${attrs} data-markdown-source="${escapeHtml(value)}" data-markdown-empty-html="${escapedPlaceholder}">${renderCommentaryText(value, previewFootnotes, format, { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: commentaryFootnoteIdPrefix(src, id), quranBackticks: lang === 'en' }) || escapedPlaceholder}</div>`;
   return `<textarea ${attrs} rows="12" placeholder="${escapedPlaceholder}">${escapeHtml(value)}</textarea>`;
 }
 

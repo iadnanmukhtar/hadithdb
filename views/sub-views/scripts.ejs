@@ -335,6 +335,13 @@
 	          if (resBody.code == 200) {
 	            if (resBody.value !== undefined)
 	              value = resBody.value;
+	            if (resBody.commentaryValues && propStr.indexOf('commentary.') === 0) {
+	              Object.entries(resBody.commentaryValues).forEach(([column, commentaryValue]) => {
+	                $(`[data-id="${id}"][data-prop="commentary.${column}"]`).each(function () {
+	                  setMarkdownSource($(this), commentaryValue);
+	                });
+	              });
+	            }
 	            if (propStr === 'hadith.revise')
 	              applyHadithRevision(id, resBody.revised);
 	            if (propStr === 'hadiths_sim.add')
@@ -355,6 +362,10 @@
 	              value = '';
 	            if (!removeSimilarHadith && !$(this).is('select') && value !== undefined && value !== null)
 	              setElementValue(this, value);
+	            if (propStr.indexOf('commentary.') === 0) {
+	              window.location.reload();
+	              return;
+	            }
 	            if (propStr.indexOf('book.') === 0 && $el.closest('.toc').length) {
 	              window.location.reload();
 	              return;
@@ -429,6 +440,7 @@
 	    function split(val) {
 	      return val.split(/ +/);
 	    }
+
 	    function extractLast(term) {
 	      return split(term).pop();
 	    }

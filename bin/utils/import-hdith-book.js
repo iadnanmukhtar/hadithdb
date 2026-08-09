@@ -30,6 +30,10 @@ const http = axios.create({
 
 async function main() {
 	try {
+		if (options.normalizeExisting) {
+			await normalizeExistingBooks();
+			return;
+		}
 		for (const sourceId of options.books) {
 			const config = Object.assign({ sourceId }, DEFAULT_BOOKS[sourceId]);
 			const source = await loadOrScrapeBook(config);
@@ -64,9 +68,10 @@ if (require.main === module)
 	main();
 
 function readOptions(args) {
-	const parsed = { books: Object.keys(DEFAULT_BOOKS), concurrency: DEFAULT_CONCURRENCY, dryRun: false };
+	const parsed = { books: Object.keys(DEFAULT_BOOKS), concurrency: DEFAULT_CONCURRENCY, dryRun: false, normalizeExisting: false };
 	for (let i = 0; i < args.length; i++) {
 		if (args[i] === '--dry-run') parsed.dryRun = true;
+		else if (args[i] === '--normalize-existing') parsed.normalizeExisting = true;
 		else if (args[i] === '--book') parsed.books = [args[++i]];
 		else if (args[i] === '--books') parsed.books = args[++i].split(',').map(value => value.trim()).filter(Boolean);
 		else if (args[i] === '--concurrency') parsed.concurrency = Number(args[++i]);
@@ -84,7 +89,7 @@ function readOptions(args) {
 
 function usage(exitCode, message) {
 	if (message) console.error(message);
-	console.error('Usage: node bin/utils/import-hdith-book.js [--book b-16 | --books b-16,b-15] [--concurrency 12] [--dry-run]');
+	console.error('Usage: node bin/utils/import-hdith-book.js [--book b-16 | --books b-16,b-15] [--concurrency 12] [--dry-run] [--normalize-existing]');
 	process.exit(exitCode);
 }
 
@@ -265,7 +270,77 @@ function detailFields(html, hadith) {
 		if (!body) body = compact(source?.matn);
 	}
 	if (!body) throw new Error(`No hadith text found on ${hadith.url}.`);
+	chain = normalizeHadithText(chain) || null;
+	body = normalizeHadithText(body);
 	return { chain, body, text: compact(`${chain || ''} ${body}`) };
+}
+
+const ARABIC_MARKS = '[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]*';
+const markedWord = letters => [...letters].map(letter => `${letter}${ARABIC_MARKS}`).join('');
+const PAGE_REFERENCE_RE = /ج[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]*[٠-٩0-9]+\s*\/\s*ص[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]*[٠-٩0-9]+/gu;
+const SALAWAT_RE = new RegExp(`${markedWord('صلى')}\\s+${markedWord('الله')}\\s+${markedWord('عليه')}\\s+${markedWord('وسلم')}`, 'gu');
+const RADI_RE = new RegExp(
+	`${markedWord('رض')}[يى]${ARABIC_MARKS}\\s+${markedWord('الله')}` +
+	`(?:\\s+${markedWord('تعالى')})?\\s+${markedWord('عن')}(?:${markedWord('هما')}|${markedWord('هم')}|${markedWord('هن')}|${markedWord('ها')}|${markedWord('ه')})`,
+	'gu'
+);
+
+function normalizeHadithText(value, counts) {
+	if (value === null || value === undefined) return value;
+	let text = String(value);
+	text = text.replace(PAGE_REFERENCE_RE, () => {
+		if (counts) counts.pageReferences++;
+		return '';
+	});
+	text = text.replace(SALAWAT_RE, () => {
+		if (counts) counts.salawat++;
+		return 'ﷺ';
+	});
+	text = text.replace(RADI_RE, () => {
+		if (counts) counts.radi++;
+		return 'ؓ';
+	});
+	return text.replace(/ {2,}/g, ' ').trim();
+}
+
+async function normalizeExistingBooks() {
+	const connection = await getConnection();
+	const bookIds = options.books.map(sourceId => DEFAULT_BOOKS[sourceId].id);
+	const counts = { rows: 0, pageReferences: 0, salawat: 0, radi: 0 };
+	let lastId = 0;
+	try {
+		await query(connection, 'START TRANSACTION');
+		await query(connection, `CREATE TEMPORARY TABLE hdith_normalized_hadiths (
+			id INT NOT NULL PRIMARY KEY, chain LONGTEXT NULL, body LONGTEXT NULL, text LONGTEXT NULL
+		)`);
+		while (true) {
+			const rows = await query(connection,
+				'SELECT id, chain, body, text FROM hadiths WHERE bookId IN (?) AND id>? ORDER BY id LIMIT 500',
+				[bookIds, lastId]);
+			if (!rows.length) break;
+			const changed = [];
+			for (const row of rows) {
+				lastId = row.id;
+				const chain = normalizeHadithText(row.chain, counts);
+				const body = normalizeHadithText(row.body, counts);
+				const text = normalizeHadithText(row.text, counts);
+				if (chain === row.chain && body === row.body && text === row.text) continue;
+				changed.push([row.id, chain, body, text]);
+				counts.rows++;
+			}
+			if (changed.length) {
+				await query(connection, 'INSERT INTO hdith_normalized_hadiths (id, chain, body, text) VALUES ?', [changed]);
+				await query(connection, `UPDATE hadiths h JOIN hdith_normalized_hadiths n ON n.id=h.id
+					SET h.chain=n.chain, h.body=n.body, h.text=n.text`);
+				await query(connection, 'DELETE FROM hdith_normalized_hadiths');
+			}
+		}
+		await query(connection, 'COMMIT');
+		console.log(`Normalized ${counts.rows} hadith row(s): removed ${counts.pageReferences} page reference(s), replaced ${counts.salawat} salawat phrase(s), and replaced ${counts.radi} companion blessing phrase(s).`);
+	} catch (err) {
+		await query(connection, 'ROLLBACK').catch(() => {});
+		throw err;
+	}
 }
 
 function bookMetadata(book, config) {
@@ -436,4 +511,4 @@ async function closeDatabase() {
 	if (dbConnection) await new Promise(resolve => dbConnection.end(resolve));
 }
 
-module.exports = { bookMetadata, compact, detailFields, inertiaProps, listingHadiths, numericHadithNumber };
+module.exports = { bookMetadata, compact, detailFields, inertiaProps, listingHadiths, normalizeHadithText, numericHadithNumber };

@@ -258,9 +258,9 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         throw createError(404, 'Local commentary passage not found');
       var result = ids[0] === 'new-commentary'
         ? { message: 'Created local commentary passage' }
-        : await global.query(`UPDATE hadiths_commentary
-          SET ${col}=${sql(status.value)}, lastmod=CURRENT_TIMESTAMP()
-          WHERE id=${commentaryId}`);
+        : await updateCommentaryWithRenumberedFootnotes(commentaryId, col, status, commentary.format);
+      if (ids[0] === 'new-commentary')
+        await updateCommentaryWithRenumberedFootnotes(commentaryId, col, status, commentary.format);
       status.code = 200;
       status.id = commentaryId;
       await Books.touchBookContentLastmodById(commentary.bookId);
@@ -791,6 +791,49 @@ async function refreshCommentaryIndex(id) {
     throw createError(404, 'Local commentary passage not found after update');
   await Index.update('commentaries', commentary);
   await Index.refresh('commentaries');
+}
+
+async function updateCommentaryWithRenumberedFootnotes(id, col, status, format) {
+  if (!commentaryColumnUsesMarkdown(format, col)) {
+    status.commentaryValues = { [col]: status.value };
+    return global.query(`UPDATE hadiths_commentary
+      SET ${col}=${sql(status.value)}, lastmod=CURRENT_TIMESTAMP()
+      WHERE id=${parseInt(id, 10)}`);
+  }
+  const suffix = col.endsWith('_en') ? '_en' : '';
+  const textColumn = `text${suffix}`;
+  const footnotesColumn = `footnotes${suffix}`;
+  if (col === footnotesColumn) {
+    status.commentaryValues = { [footnotesColumn]: status.value };
+    return global.query(`UPDATE hadiths_commentary
+      SET ${footnotesColumn}=${sql(status.value)}, lastmod=CURRENT_TIMESTAMP()
+      WHERE id=${parseInt(id, 10)}`);
+  }
+  const row = (await global.query(`
+    SELECT ${textColumn} AS text, ${footnotesColumn} AS footnotes
+    FROM hadiths_commentary
+    WHERE id=${parseInt(id, 10)}
+    LIMIT 1`))[0];
+  if (!row)
+    throw createError(404, 'Local commentary passage not found while renumbering footnotes');
+  row.text = status.value;
+  const normalized = Tafsir.renumberMarkdownFootnotes(row.text, row.footnotes);
+  status.value = col === textColumn ? normalized.text : normalized.footnotes;
+  status.commentaryValues = {
+    [textColumn]: normalized.text,
+    [footnotesColumn]: normalized.footnotes
+  };
+  return global.query(`UPDATE hadiths_commentary
+    SET ${textColumn}=${sql(normalized.text)}, ${footnotesColumn}=${sql(normalized.footnotes)}, lastmod=CURRENT_TIMESTAMP()
+    WHERE id=${parseInt(id, 10)}`);
+}
+
+function commentaryColumnUsesMarkdown(format, col) {
+  const lang = col.endsWith('_en') ? 'en' : 'ar';
+  const formats = (format || 'md').split(',').map(value => value.trim()).filter(Boolean);
+  const languageFormat = formats.find(value => value.startsWith(`${lang}:`));
+  const selected = languageFormat ? languageFormat.slice(lang.length + 1) : formats.find(value => !value.includes(':')) || 'md';
+  return selected === 'md';
 }
 
 async function flushCommentaryPassageCaches(commentary) {
