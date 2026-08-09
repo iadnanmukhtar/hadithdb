@@ -259,6 +259,20 @@
       var chapter = page.context.chapter;
       var sections = chapter.sections; 
       var isQuranToc = book && book.alias === 'quran';
+	  var quranTafsirMenuBase = isQuranTafsirArea && pageQuranCommentaryBook
+	    ? `/quran/tafsir/${encodeURIComponent(pageQuranCommentaryBook.slug || pageQuranCommentaryBook.alias)}`
+	    : '';
+	  var quranSectionMenuHref = function (section) {
+	    if (!quranTafsirMenuBase)
+	      return utils.urlFor(req, `/${section.path}`);
+	    var startParts = String(section.start || '').split(':');
+	    var startAyah = Number(startParts[startParts.length - 1]);
+	    var sectionSurah = Number(section.h1 || chapter.h1);
+	    return utils.quranUrl(req, `${quranTafsirMenuBase}/quran:${sectionSurah}:${startAyah}`);
+	  };
+	  var quranSectionMenuTocHref = quranTafsirMenuBase
+	    ? utils.quranUrl(req, quranTafsirMenuBase)
+	    : utils.quranUrl(req, '/quran');
       var isQuranMushafSectionMenu = requestPath.indexOf('/quran/page/') === 0
         && Array.isArray(locals.quranHeaderJuzLinks)
         && locals.quranHeaderJuzLinks.length > 0;
@@ -301,9 +315,9 @@
         <tbody>
           <% if (!isQuranMushafSectionMenu) { %>
           <% if (isQuranToc) { %>
-          <tr class="title" data-quran-menu-href="<%= utils.quranUrl(req, '/quran') %>">
-            <td><a href="<%= utils.quranUrl(req, '/quran') %>">Table of Contents</a></td>
-            <td lang="ar" dir="rtl"><a href="<%= utils.quranUrl(req, '/quran') %>">الفهرس</a></td>
+          <tr class="title" data-quran-menu-href="<%= quranSectionMenuTocHref %>">
+            <td><a href="<%= quranSectionMenuTocHref %>">Table of Contents</a></td>
+            <td lang="ar" dir="rtl"><a href="<%= quranSectionMenuTocHref %>">الفهرس</a></td>
           </tr>
           <% } %>
           <%
@@ -311,13 +325,13 @@
 					if (section.level < 3) {
 						title_en = utils.truncate(utils.emptyIfNull(section.title_en).toString(), 75);
 						title = utils.truncate(utils.emptyIfNull(section.title).toString(), 150); %>
-          <tr class="title<%= page.context.section && Number(page.context.section.h2) === Number(section.h2) ? ' is-current' : '' %>"<% if (isQuranToc && section.start) { %> data-quran-menu-href="<%= utils.urlFor(req, `/${section.path}`) %>"<% } %>>
+          <tr class="title<%= page.context.section && Number(page.context.section.h2) === Number(section.h2) ? ' is-current' : '' %>"<% if (isQuranToc && section.start) { %> data-quran-menu-href="<%= quranSectionMenuHref(section) %>"<% } %>>
             <% if (!isQuranToc) { %>
             <td><%- section.start %></td>
             <% } %>
             <% if (section.start) { %>
             <td>
-              <a href="<%= utils.urlFor(req, `/${section.path}`) %>">
+              <a href="<%= quranSectionMenuHref(section) %>">
                 <%= `§${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>
                 <%- title_en || `Section ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%=section.count%>)
               </a>
@@ -325,7 +339,7 @@
                 &nbsp;<a href="<%= utils.urlFor(req, `/${section.path}`) %>" title="Study"><i class="bi bi-text-paragraph"></i></a>
               <% } %>
             </td>
-            <td lang="ar"><a href="<%= utils.urlFor(req, `/${section.path}`) %>"><%- title %></a></td>
+            <td lang="ar"><a href="<%= quranSectionMenuHref(section) %>"><%- title %></a></td>
             <% } else { %>
             <td><%- title_en || 'Section' %></td>
             <td lang="ar"><%- title %></td>
