@@ -150,7 +150,8 @@ const friendlyHttpErrorMessage = (statusCode, message) => {
 const logHttpError = (statusCode, err) => {
   const statusTitle = STATUS_CODES[statusCode] || 'Error';
   const message = err && err.message ? err.message : statusTitle;
-  const stack = !isNotFoundError(err) && err && err.stack ? `\n${err.stack}` : '';
+  const shouldLogStack = statusCode !== 405 && !isNotFoundError(err);
+  const stack = shouldLogStack && err && err.stack ? `\n${err.stack}` : '';
   debug.error(`HTTP ${statusCode} ${statusTitle}: ${message}${stack}`);
 };
 
