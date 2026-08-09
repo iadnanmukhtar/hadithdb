@@ -4,7 +4,7 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 const accessLogMiddleware = require('../lib/AccessLog');
-const { buildAccessLog, rotateAccessLog, resolveLogFile } = accessLogMiddleware;
+const { formatCombinedLog, rotateAccessLog, resolveLogFile } = accessLogMiddleware;
 
 describe('access logging', () => {
   test('is disabled when ACCESS_LOG_FILE is empty', () => {
@@ -46,13 +46,12 @@ describe('access logging', () => {
     }
   });
 
-  test('records the completed request and PM2 worker', () => {
-    const previousWorker = process.env.NODE_APP_INSTANCE;
-    process.env.NODE_APP_INSTANCE = '1';
+  test('formats requests using the combined log format', () => {
     const req = {
       clientIp: '203.0.113.8',
       method: 'GET',
       originalUrl: '/quran/1?translation=en',
+      httpVersion: '1.1',
       headers: {
         referer: 'https://example.test/',
         'user-agent': 'Example browser'
@@ -68,26 +67,10 @@ describe('access logging', () => {
       }
     };
 
-    const entry = buildAccessLog(req, res, 12.34);
+    const entry = formatCombinedLog(req, res, new Date(2026, 7, 9, 14, 30, 15));
 
-    expect(entry).toMatchObject({
-      type: 'access',
-      worker: '1',
-      clientIp: '203.0.113.8',
-      method: 'GET',
-      url: '/quran/1?translation=en',
-      status: 200,
-      bytes: 1234,
-      durationMs: 12.3,
-      referrer: 'https://example.test/',
-      userAgent: 'Example browser'
-    });
-    expect(entry.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    expect(entry.pid).toBe(process.pid);
-
-    if (previousWorker === undefined)
-      delete process.env.NODE_APP_INSTANCE;
-    else
-      process.env.NODE_APP_INSTANCE = previousWorker;
+    expect(entry).toMatch(
+      /^203\.0\.113\.8 - - \[09\/Aug\/2026:14:30:15 [+-]\d{4}\] "GET \/quran\/1\?translation=en HTTP\/1\.1" 200 1234 "https:\/\/example\.test\/" "Example browser"$/
+    );
   });
 });
