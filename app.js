@@ -125,6 +125,7 @@ const HTTP_ERROR_FRIENDLY_MESSAGES = {
   401: 'You need to sign in to access this resource.',
   403: 'You do not have permission to access this resource.',
   404: 'The requested page or reference could not be found.',
+  410: 'The requested page or reference is no longer available.',
   408: 'The request took too long to complete.',
   413: 'The request payload is too large.',
   414: 'The requested URL is too long.',
@@ -151,7 +152,7 @@ const friendlyHttpErrorMessage = (statusCode, message) => {
 const logHttpError = (statusCode, err) => {
   const statusTitle = STATUS_CODES[statusCode] || 'Error';
   const message = err && err.message ? err.message : statusTitle;
-  const shouldLogStack = statusCode !== 405 && !isNotFoundError(err);
+  const shouldLogStack = statusCode !== 405 && statusCode !== 410 && !isNotFoundError(err);
   const stack = shouldLogStack && err && err.stack ? `\n${err.stack}` : '';
   debug.error(`HTTP ${statusCode} ${statusTitle}: ${message}${stack}`);
 };

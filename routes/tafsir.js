@@ -15,6 +15,10 @@ const { Item, Library } = require('../lib/Model');
 
 const router = express.Router();
 
+function gone(message) {
+  return createError(410, message);
+}
+
 router.use(function removeTafsirLanguageQuery(req, res, next) {
   if (req.method !== 'GET' && req.method !== 'HEAD' || req.query.lang === undefined)
     return next();
@@ -33,19 +37,19 @@ function originalQuery(req) {
 router.get('/:tafsir/juz/:number', async function (req, res, next) {
   const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
-    return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
+    return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
   const number = Number(req.params.number);
   const juz = Number.isInteger(number) && number > 0
     ? (await QuranTocSubdivisions.juzRows()).find(row => Number(row.num) === number)
     : null;
   if (!juz)
-    return next(createError(404, `Quran juz '${req.params.number}' not found`));
+    return next(createError(Number.isInteger(number) && number > 0 ? 410 : 404, `Quran juz '${req.params.number}' not found`));
   const start = (juz.start || '').toString().split(':');
   const surah = Number(start[0]);
   const ayah = Number(start[1]);
   const section = await QuranHeadings.sectionForAyah(surah, ayah);
   if (!section)
-    return next(createError(404, `No Quran passage contains the start of juz ${number}`));
+    return next(gone(`No Quran passage contains the start of juz ${number}`));
   const slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
   return res.redirect(302, `${Utils.quranPath(`/quran/tafsir/${encodeURIComponent(slug)}/${surah}/${Number(section.h2)}`)}${originalQuery(req)}`);
 });
@@ -53,13 +57,13 @@ router.get('/:tafsir/juz/:number', async function (req, res, next) {
 router.get('/:tafsir/manzil/:number', async function (req, res, next) {
   const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
-    return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
+    return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
   const number = Number(req.params.number);
   const manzil = Number.isInteger(number) && number > 0
     ? (await QuranTocSubdivisions.manzilRows()).find(row => Number(row.num) === number)
     : null;
   if (!manzil)
-    return next(createError(404, `Quran manzil '${req.params.number}' not found`));
+    return next(createError(Number.isInteger(number) && number > 0 ? 410 : 404, `Quran manzil '${req.params.number}' not found`));
   const surah = Number((manzil.start || '').toString().split(':')[0]);
   const slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
   return res.redirect(302, `${Utils.quranPath(`/quran/tafsir/${encodeURIComponent(slug)}/${surah}`)}${originalQuery(req)}`);
@@ -71,7 +75,7 @@ router.get('/:tafsir', async function (req, res, next) {
 
   const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
-    return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
+    return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
 
   await renderTafsirBookToc(req, res, tafsir);
 });
@@ -85,16 +89,16 @@ router.get('/:tafsir/:surah', async function (req, res, next) {
 
   const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
-    return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
+    return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
 
   const surahNum = Number(req.params.surah);
   const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
   if (!surah)
-    return next(createError(404, `Quran surah ${req.params.surah} not found`));
+    return next(createError(Number.isInteger(surahNum) && surahNum > 0 ? 410 : 404, `Quran surah ${req.params.surah} not found`));
 
   const passage = await Tafsir.firstPassageInSurah(tafsir, surahNum);
   if (!passage)
-    return next(createError(404, `${tafsir.shortName_en || tafsir.alias} has no passages for Surah ${surahNum}`));
+    return next(gone(`${tafsir.shortName_en || tafsir.alias} has no passages for Surah ${surahNum}`));
 
   const allTafsirs = await Tafsir.visibleTafsirs();
   res.redirect(302, Utils.quranPath(Tafsir.passageUrl(tafsir, passage.surah, passage.ayah, passage.endAyah, allTafsirs)));
@@ -111,12 +115,15 @@ async function renderTafsirPassage(req, res, next) {
   const ayahNum = Number(req.params.start || req.params.section);
   const requestedEnd = req.params.end === undefined ? ayahNum : Number(req.params.end);
   const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
-  if (!surah || !Number.isInteger(ayahNum) || !Number.isInteger(requestedEnd) || ayahNum < 1 || requestedEnd < ayahNum || requestedEnd > Number(surah.ayahs))
-    return next(createError(404, `Quran passage ${req.params.surah}:${req.params.start || req.params.section}${req.params.end ? `-${req.params.end}` : ''} not found`));
+  const validPassageFormat = Number.isInteger(surahNum) && surahNum > 0
+    && Number.isInteger(ayahNum) && ayahNum > 0
+    && Number.isInteger(requestedEnd) && requestedEnd >= ayahNum;
+  if (!surah || !validPassageFormat || requestedEnd > Number(surah && surah.ayahs))
+    return next(createError(validPassageFormat ? 410 : 404, `Quran passage ${req.params.surah}:${req.params.start || req.params.section}${req.params.end ? `-${req.params.end}` : ''} not found`));
 
   const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
   if (!tafsir)
-    return next(createError(404, `Tafsīr '${req.params.tafsir}' not found`));
+    return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
 
   // Canonical passage URLs encode the complete tafsir entry range. Check their
   // disk cache before loading the tafsir entry merely to rediscover that range.

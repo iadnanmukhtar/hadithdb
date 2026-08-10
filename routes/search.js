@@ -86,6 +86,10 @@ function parseHadithHeadingNumberParam(value) {
   return numeric.toString();
 }
 
+function gone(message) {
+  return createError(410, message);
+}
+
 function parseQuranAyahParam(value) {
   var normalized = Arabic.toLatinDigits((value || '').toString());
   if (!/^\d+$/.test(normalized))
@@ -1193,10 +1197,12 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   ayah2 = parseQuranAyahParam(ayah2);
   surah = findSurah(surah);
   if (!surah)
-    return next(createError(404, routeParameterMessage('surah', requestedSurah, 'Quran surah was not found')));
+    return next(createError(Number.isInteger(parsePositiveIntegerParam(requestedSurah)) ? 410 : 404, routeParameterMessage('surah', requestedSurah, 'Quran surah was not found')));
   var ayahCount = quranAyahCount(surah);
-  if (!Number.isInteger(ayah1) || !Number.isInteger(ayah2) || ayah1 < 1 || ayah2 < ayah1 || ayah2 > ayahCount)
-    return next(createError(404, `Invalid route parameters 'ayah1=${req.params.ayah1 || ayah1}'${req.params.ayah2 ? ` and 'ayah2=${req.params.ayah2}'` : ''}: ayah range must be between 1 and ${ayahCount} for Quran ${surah.num}`));
+  if (!Number.isInteger(ayah1) || !Number.isInteger(ayah2) || ayah1 < 1 || ayah2 < ayah1 || ayah2 > ayahCount) {
+    var validPassageFormat = Number.isInteger(ayah1) && ayah1 > 0 && Number.isInteger(ayah2) && ayah2 >= ayah1;
+    return next(createError(validPassageFormat ? 410 : 404, `Invalid route parameters 'ayah1=${req.params.ayah1 || ayah1}'${req.params.ayah2 ? ` and 'ayah2=${ayah2}'` : ''}: ayah range must be between 1 and ${ayahCount} for Quran ${surah.num}`));
+  }
   var selectedAyahs = await Index.docsFromQueryString(Item.INDEX, `book_alias:quran AND h1:${surah.num} AND numInChapter:[${ayah1} TO ${ayah2}]`, 0, ayah2 - ayah1 + 1, 'numInChapter');
   selectedAyahs = selectedAyahs.map(item => new Item(item));
   var results = selectedAyahs;
@@ -1289,7 +1295,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
       ]);
     }
     if (selectedAyahs.length < 1)
-      return next(createError(404, `Route parameters 'surah=${surah.num}', 'ayah1=${ayah1}'${ayah2 !== ayah1 ? `, and 'ayah2=${ayah2}'` : ''} did not match any Quran ayat`));
+      return next(gone(`Route parameters 'surah=${surah.num}', 'ayah1=${ayah1}'${ayah2 !== ayah1 ? `, and 'ayah2=${ayah2}'` : ''} did not match any Quran ayat`));
     if (defaultPassage) {
       var quranSurahs = await getQuranSurahsFromIndex();
       var containingSections = await getQuranSectionsForAyahRange(surah.num, ayah1, ayah2, selectedAyahs[0]);
@@ -1373,14 +1379,14 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
           return next(createError(404, `Quran ayah ${surah.num}:${req.params.num} not found`));
         return redirectCanonicalReferencePath(req, res, `/quran:${surah.num}:${req.params.num}`);
       }
-      return next(createError(404, `Book '${req.params.bookAlias}' does not exist`));
+      return next(gone(`Book '${req.params.bookAlias}' does not exist`));
     }
   }
   var results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}` });
   if (results.length == 0) {
     results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}a` });
     if (results.length == 0)
-      return next(createError(404, `Item ${req.params.bookAlias}:${req.params.num} not found`));
+      return next(gone(`Item ${req.params.bookAlias}:${req.params.num} not found`));
   }
 
   results = results.map(item => new Item(item));
@@ -2889,8 +2895,10 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var results = [];
     var bookAlias = req.params.bookAlias;
     var book = bookAlias === 'quran' ? visibleBookByAlias('quran') : visibleBookFromParam(bookAlias);
-    if (!book)
-      return next(createError(404, `Book '${bookAlias}' does not exist`));
+    if (!book) {
+      var validMissingChapterPath = parseHadithHeadingNumberParam(req.params.chapterNum);
+      return next(createError(validMissingChapterPath ? 410 : 404, `Book '${bookAlias}' does not exist`));
+    }
     bookAlias = book.alias;
     if (bookAlias === 'quran') {
       var surah = findSurah(req.params.chapterNum);
@@ -2903,7 +2911,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     if (bookAlias === 'quran' ? !Number.isInteger(chapterNum) : !chapterNum)
       return next(createError(bookAlias === 'quran' ? 404 : 400, routeParameterMessage('chapterNum', req.params.chapterNum, bookAlias === 'quran' ? 'chapter must be a positive integer' : 'chapter must be a non-negative number')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
-      return next(createError(404, `Quran surah ${chapterNum} not found`));
+      return next(gone(`Quran surah ${chapterNum} not found`));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
     if (bookAlias === 'quran' && shouldRedirectQuranSurahPath(req)) {
       var firstSectionNum = await firstQuranSectionNumber(chapterNum);
@@ -3003,7 +3011,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
   } catch (e) {
     if (e instanceof ReferenceError)
-      return next(createError(404, e.message));
+      return next(gone(e.message));
     else {
       debug.error(e.stack || e.message || e);
       return next(createError(500, e.message));
@@ -3102,8 +3110,11 @@ async function renderBookSection(req, res, next) {
     var results = [];
     var bookAlias = req.params.bookAlias;
     var book = bookAlias === 'quran' ? visibleBookByAlias('quran') : visibleBookFromParam(bookAlias);
-    if (!book)
-      return next(createError(404, `Book '${bookAlias}' does not exist`));
+    if (!book) {
+      var validMissingSectionPath = parseHadithHeadingNumberParam(req.params.chapterNum)
+        && Number.isInteger(parsePositiveIntegerParam(req.params.sectionNum));
+      return next(createError(validMissingSectionPath ? 410 : 404, `Book '${bookAlias}' does not exist`));
+    }
     bookAlias = book.alias;
     if (bookAlias === 'quran' && !req.quranSelectedTranslationAlias) {
       var surah = findSurah(req.params.chapterNum);
@@ -3119,7 +3130,7 @@ async function renderBookSection(req, res, next) {
     if (!Number.isInteger(sectionNum))
       return next(createError(400, routeParameterMessage('sectionNum', req.params.sectionNum, 'section must be a positive integer')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
-      return next(createError(404, `Quran surah ${chapterNum} not found`));
+      return next(gone(`Quran surah ${chapterNum} not found`));
     var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
     var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
     if (bookAlias === 'quran' && selectedTranslation && selectedTranslation.source === 'local' && !req.quranTranslationCanonicalPath) {
@@ -3274,7 +3285,7 @@ async function renderBookSection(req, res, next) {
 
   } catch (e) {
     if (e instanceof ReferenceError)
-      return next(createError(404, e.message));
+      return next(gone(e.message));
     else {
       debug.error(e.stack || e.message || e);
       return next(createError(500, e.message));
