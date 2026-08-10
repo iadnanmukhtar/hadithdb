@@ -392,18 +392,18 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         await Hadith.a_reinit();
       else
         await Library.reloadBooks();
+      var afterBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
+      var bookAliases = new Set();
+      if (beforeBook && beforeBook.alias)
+        bookAliases.add(beforeBook.alias);
+      if (afterBook && afterBook.alias)
+        bookAliases.add(afterBook.alias);
+      await flushBookCaches(bookAliases);
+      if (isQuranCatalogBook(beforeBook) || isQuranCatalogBook(afterBook))
+        await flushQuranCatalogBookCaches(bookAliases);
       status.code = 200;
       status.message = result.message;
       try {
-        var afterBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
-        var bookAliases = new Set();
-        if (beforeBook && beforeBook.alias)
-          bookAliases.add(beforeBook.alias);
-        if (afterBook && afterBook.alias)
-          bookAliases.add(afterBook.alias);
-        await flushBookCaches(bookAliases);
-        if (isQuranCatalogBook(beforeBook) || isQuranCatalogBook(afterBook))
-          await flushQuranCatalogBookCaches(bookAliases);
         if ((beforeBook && beforeBook.virtual == 1) || (afterBook && afterBook.virtual == 1))
           VirtualHadithSnapshot.queueBook(ids[0]);
       } catch (err) {
