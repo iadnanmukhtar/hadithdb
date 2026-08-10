@@ -11,12 +11,27 @@ const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const BookDownloads = require('../lib/BookDownloads');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
+const HttpRange = require('../lib/HttpRange');
 const { Item, Library } = require('../lib/Model');
 
 const router = express.Router();
 
 function gone(message) {
   return createError(410, message);
+}
+
+function quranSurahCount() {
+  return Math.max(0, ...(global.surahs || []).map(item => Number(item.num)).filter(Number.isInteger));
+}
+
+function subdivisionRangeError(unit, rows, requested, label) {
+  const number = Number(requested);
+  if (!Number.isInteger(number))
+    return null;
+  const maximum = Math.max(0, ...(rows || []).map(row => Number(row.num)).filter(Number.isInteger));
+  return number < 1 || number > maximum
+    ? HttpRange.notSatisfiable(unit, maximum, `${label} '${requested}' is out of range`)
+    : null;
 }
 
 router.use(function removeTafsirLanguageQuery(req, res, next) {
@@ -39,9 +54,13 @@ router.get('/:tafsir/juz/:number', async function (req, res, next) {
   if (!tafsir)
     return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
   const number = Number(req.params.number);
+  const juzRows = await QuranTocSubdivisions.juzRows();
   const juz = Number.isInteger(number) && number > 0
-    ? (await QuranTocSubdivisions.juzRows()).find(row => Number(row.num) === number)
+    ? juzRows.find(row => Number(row.num) === number)
     : null;
+  const juzRangeError = subdivisionRangeError('quran-juz', juzRows, req.params.number, 'Quran juz');
+  if (juzRangeError)
+    return next(juzRangeError);
   if (!juz)
     return next(createError(Number.isInteger(number) && number > 0 ? 410 : 404, `Quran juz '${req.params.number}' not found`));
   const start = (juz.start || '').toString().split(':');
@@ -59,9 +78,13 @@ router.get('/:tafsir/manzil/:number', async function (req, res, next) {
   if (!tafsir)
     return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
   const number = Number(req.params.number);
+  const manzilRows = await QuranTocSubdivisions.manzilRows();
   const manzil = Number.isInteger(number) && number > 0
-    ? (await QuranTocSubdivisions.manzilRows()).find(row => Number(row.num) === number)
+    ? manzilRows.find(row => Number(row.num) === number)
     : null;
+  const manzilRangeError = subdivisionRangeError('quran-manzils', manzilRows, req.params.number, 'Quran manzil');
+  if (manzilRangeError)
+    return next(manzilRangeError);
   if (!manzil)
     return next(createError(Number.isInteger(number) && number > 0 ? 410 : 404, `Quran manzil '${req.params.number}' not found`));
   const surah = Number((manzil.start || '').toString().split(':')[0]);
@@ -93,6 +116,8 @@ router.get('/:tafsir/:surah', async function (req, res, next) {
 
   const surahNum = Number(req.params.surah);
   const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
+  if (Number.isInteger(surahNum) && (surahNum < 1 || surahNum > quranSurahCount()))
+    return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${req.params.surah} is out of range`));
   if (!surah)
     return next(createError(Number.isInteger(surahNum) && surahNum > 0 ? 410 : 404, `Quran surah ${req.params.surah} not found`));
 
@@ -115,10 +140,16 @@ async function renderTafsirPassage(req, res, next) {
   const ayahNum = Number(req.params.start || req.params.section);
   const requestedEnd = req.params.end === undefined ? ayahNum : Number(req.params.end);
   const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
+  const minimumAyah = surahNum === 1 ? 0 : 1;
   const validPassageFormat = Number.isInteger(surahNum) && surahNum > 0
-    && Number.isInteger(ayahNum) && ayahNum > 0
+    && Number.isInteger(ayahNum) && ayahNum >= minimumAyah
     && Number.isInteger(requestedEnd) && requestedEnd >= ayahNum;
-  if (!surah || !validPassageFormat || requestedEnd > Number(surah && surah.ayahs))
+  if (Number.isInteger(surahNum) && (surahNum < 1 || surahNum > quranSurahCount()))
+    return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${req.params.surah} is out of range`));
+  if (surah && Number.isInteger(ayahNum) && Number.isInteger(requestedEnd)
+    && (ayahNum < minimumAyah || requestedEnd < ayahNum || requestedEnd > Number(surah.ayahs)))
+    return next(HttpRange.notSatisfiable('quran-ayahs', Number(surah.ayahs), `Quran passage ${req.params.surah}:${req.params.start || req.params.section}${req.params.end ? `-${req.params.end}` : ''} is out of range`));
+  if (!surah || !validPassageFormat)
     return next(createError(validPassageFormat ? 410 : 404, `Quran passage ${req.params.surah}:${req.params.start || req.params.section}${req.params.end ? `-${req.params.end}` : ''} not found`));
 
   const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);

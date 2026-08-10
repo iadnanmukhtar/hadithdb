@@ -12,7 +12,7 @@ const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
-const { Section, Chapter, Heading, Item, Library, Record } = require('../lib/Model');
+const { Subsection, Section, Chapter, Heading, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
 const Arabic = require('../lib/Arabic');
 const Books = require('../lib/Books');
@@ -27,6 +27,7 @@ const QuranSimilarAyahs = require('../lib/QuranSimilarAyahs');
 const QuranMutashabihat = require('../lib/QuranMutashabihat');
 const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
+const HttpRange = require('../lib/HttpRange');
 const { homedir } = require('os');
 
 const router = express.Router();
@@ -126,6 +127,24 @@ function quranAyahCount(surah) {
   return Number(surah && (surah.ayahs || surah.ayat));
 }
 
+function quranMinimumAyah(surah) {
+  return Number(surah && surah.num) === 1 ? 0 : 1;
+}
+
+function quranSurahCount() {
+  return Math.max(0, ...(global.surahs || []).map(function (surah) { return Number(surah.num); }).filter(Number.isInteger));
+}
+
+function numberedSubdivisionRangeError(unit, rows, requested, label) {
+  var number = Number(requested);
+  if (!Number.isInteger(number))
+    return null;
+  var maximum = Math.max(0, ...(rows || []).map(function (row) { return Number(row.num); }).filter(Number.isInteger));
+  if (number >= 1 && number <= maximum)
+    return null;
+  return HttpRange.notSatisfiable(unit, maximum, `${label} '${requested}' is out of range`);
+}
+
 function visibleBookFromParam(value) {
   return (global.books || []).find(function (book) {
     return book
@@ -160,7 +179,7 @@ function validQuranAyah(surah, ayah) {
   surah = findSurah(surah);
   ayah = parseQuranAyahParam(ayah);
   var ayahCount = quranAyahCount(surah);
-  return !!surah && Number.isInteger(ayah) && ayah >= 1 && ayah <= ayahCount;
+  return !!surah && Number.isInteger(ayah) && ayah >= quranMinimumAyah(surah) && ayah <= ayahCount;
 }
 
 function validQuranTranslationAlias(value) {
@@ -1196,11 +1215,18 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   ayah1 = parseQuranAyahParam(ayah1);
   ayah2 = parseQuranAyahParam(ayah2);
   surah = findSurah(surah);
-  if (!surah)
+  if (!surah) {
+    var numericSurah = Number(Arabic.toLatinDigits((requestedSurah || '').toString()));
+    if (Number.isInteger(numericSurah) && (numericSurah < 1 || numericSurah > quranSurahCount()))
+      return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${requestedSurah} is out of range`));
     return next(createError(Number.isInteger(parsePositiveIntegerParam(requestedSurah)) ? 410 : 404, routeParameterMessage('surah', requestedSurah, 'Quran surah was not found')));
+  }
   var ayahCount = quranAyahCount(surah);
-  if (!Number.isInteger(ayah1) || !Number.isInteger(ayah2) || ayah1 < 1 || ayah2 < ayah1 || ayah2 > ayahCount) {
-    var validPassageFormat = Number.isInteger(ayah1) && ayah1 > 0 && Number.isInteger(ayah2) && ayah2 >= ayah1;
+  var minimumAyah = quranMinimumAyah(surah);
+  if (!Number.isInteger(ayah1) || !Number.isInteger(ayah2) || ayah1 < minimumAyah || ayah2 < ayah1 || ayah2 > ayahCount) {
+    var validPassageFormat = Number.isInteger(ayah1) && ayah1 >= minimumAyah && Number.isInteger(ayah2) && ayah2 >= ayah1;
+    if (Number.isInteger(ayah1) && Number.isInteger(ayah2))
+      return next(HttpRange.notSatisfiable('quran-ayahs', ayahCount, `Quran ayah range ${surah.num}:${ayah1}${ayah2 !== ayah1 ? `-${ayah2}` : ''} is out of range`));
     return next(createError(validPassageFormat ? 410 : 404, `Invalid route parameters 'ayah1=${req.params.ayah1 || ayah1}'${req.params.ayah2 ? ` and 'ayah2=${ayah2}'` : ''}: ayah range must be between 1 and ${ayahCount} for Quran ${surah.num}`));
   }
   var selectedAyahs = await Index.docsFromQueryString(Item.INDEX, `book_alias:quran AND h1:${surah.num} AND numInChapter:[${ayah1} TO ${ayah2}]`, 0, ayah2 - ayah1 + 1, 'numInChapter');
@@ -1358,10 +1384,18 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       if (toks.length > 1)
         num = toks[1];
       surah = findSurah(surah);
-      if (!surah)
+      if (!surah) {
+        var requestedQuranSurah = Number(Arabic.toLatinDigits((toks[0] || '').toString()));
+        if (Number.isInteger(requestedQuranSurah) && (requestedQuranSurah < 1 || requestedQuranSurah > quranSurahCount()))
+          return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${toks[0]} is out of range`));
         return next(createError(404, `Surah '${toks[0]}' not found`));
-      if (!validQuranAyah(surah.num, num))
+      }
+      if (!validQuranAyah(surah.num, num)) {
+        var requestedQuranAyah = Number(Arabic.toLatinDigits((num || '').toString()));
+        if (Number.isInteger(requestedQuranAyah))
+          return next(HttpRange.notSatisfiable('quran-ayahs', quranAyahCount(surah), `Quran ayah ${surah.num}:${num} is out of range`));
         return next(createError(404, `Quran ayah ${surah.num}:${num} not found`));
+      }
       if (redirectCanonicalReferencePath(req, res, `/quran:${surah.num}:${num}`))
         return;
       req.params.num = `${surah.num}:${num}`;
@@ -1375,8 +1409,12 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     if (!book) {
       var surah = findSurah(req.params.bookAlias);
       if (surah) {
-        if (!validQuranAyah(surah.num, req.params.num))
+        if (!validQuranAyah(surah.num, req.params.num)) {
+          var requestedAliasAyah = Number(Arabic.toLatinDigits((req.params.num || '').toString()));
+          if (Number.isInteger(requestedAliasAyah))
+            return next(HttpRange.notSatisfiable('quran-ayahs', quranAyahCount(surah), `Quran ayah ${surah.num}:${req.params.num} is out of range`));
           return next(createError(404, `Quran ayah ${surah.num}:${req.params.num} not found`));
+        }
         return redirectCanonicalReferencePath(req, res, `/quran:${surah.num}:${req.params.num}`);
       }
       return next(gone(`Book '${req.params.bookAlias}' does not exist`));
@@ -2583,6 +2621,11 @@ router.get('/quran/page/:page', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   var pageNumber = parsePositiveIntegerParam(req.params.page);
+  var numericPage = Number(Arabic.toLatinDigits((req.params.page || '').toString()));
+  var mushafInfo = Number.isInteger(numericPage) ? await QuranMushaf.info() : null;
+  var mushafPageCount = Number(mushafInfo && mushafInfo.number_of_pages);
+  if (Number.isInteger(numericPage) && Number.isInteger(mushafPageCount) && (numericPage < 1 || numericPage > mushafPageCount))
+    return next(HttpRange.notSatisfiable('quran-pages', mushafPageCount, `Mushaf page ${req.params.page} is out of range`));
   if (!Number.isInteger(pageNumber))
     return next(createError(400, routeParameterMessage('page', req.params.page, 'Mushaf page must be a positive integer')));
   var mappedSection = await QuranMushaf.sectionForPage(pageNumber);
@@ -2769,6 +2812,9 @@ router.get('/quran/juz/:number', async function (req, res, next) {
   var juz = Number.isInteger(juzNumber)
     ? juzRows.find(function (row) { return Number(row.num) === juzNumber; })
     : null;
+  var juzRangeError = numberedSubdivisionRangeError('quran-juz', juzRows, req.params.number, 'Quran juz');
+  if (juzRangeError)
+    return next(juzRangeError);
   if (!juz)
     return next(createError(404, `Quran juz '${req.params.number}' not found`));
 
@@ -2792,6 +2838,9 @@ router.get('/quran/manzil/:number', async function (req, res, next) {
   var manzil = Number.isInteger(manzilNumber)
     ? manzilRows.find(function (row) { return Number(row.num) === manzilNumber; })
     : null;
+  var manzilRangeError = numberedSubdivisionRangeError('quran-manzils', manzilRows, req.params.number, 'Quran manzil');
+  if (manzilRangeError)
+    return next(manzilRangeError);
   if (!manzil)
     return next(createError(404, `Quran manzil '${req.params.number}' not found`));
 
@@ -2908,10 +2957,14 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var chapterNum = bookAlias === 'quran'
       ? parsePositiveIntegerParam(req.params.chapterNum)
       : parseHadithHeadingNumberParam(req.params.chapterNum);
+    var numericQuranChapter = Number(Arabic.toLatinDigits((req.params.chapterNum || '').toString()));
+    if (bookAlias === 'quran' && Number.isInteger(numericQuranChapter)
+      && (numericQuranChapter < 1 || numericQuranChapter > quranSurahCount()))
+      return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${req.params.chapterNum} is out of range`));
     if (bookAlias === 'quran' ? !Number.isInteger(chapterNum) : !chapterNum)
       return next(createError(bookAlias === 'quran' ? 404 : 400, routeParameterMessage('chapterNum', req.params.chapterNum, bookAlias === 'quran' ? 'chapter must be a positive integer' : 'chapter must be a non-negative number')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
-      return next(gone(`Quran surah ${chapterNum} not found`));
+      return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${chapterNum} is out of range`));
     var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
     if (bookAlias === 'quran' && shouldRedirectQuranSurahPath(req)) {
       var firstSectionNum = await firstQuranSectionNumber(chapterNum);
@@ -3025,9 +3078,13 @@ router.get('/quran/:translationAlias/juz/:number', async function (req, res, nex
   if (!translation)
     return next();
   var juzNumber = parsePositiveIntegerParam(req.params.number);
+  var translationJuzRows = await QuranTocSubdivisions.juzRows();
   var juz = Number.isInteger(juzNumber)
-    ? (await QuranTocSubdivisions.juzRows()).find(function (row) { return Number(row.num) === juzNumber; })
+    ? translationJuzRows.find(function (row) { return Number(row.num) === juzNumber; })
     : null;
+  var translationJuzRangeError = numberedSubdivisionRangeError('quran-juz', translationJuzRows, req.params.number, 'Quran juz');
+  if (translationJuzRangeError)
+    return next(translationJuzRangeError);
   if (!juz)
     return next(createError(404, `Quran juz '${req.params.number}' not found`));
   var start = (juz.start || '').toString().split(':');
@@ -3050,9 +3107,13 @@ router.get('/quran/:translationAlias/manzil/:number', async function (req, res, 
   if (!translation)
     return next();
   var manzilNumber = parsePositiveIntegerParam(req.params.number);
+  var translationManzilRows = await QuranTocSubdivisions.manzilRows();
   var manzil = Number.isInteger(manzilNumber)
-    ? (await QuranTocSubdivisions.manzilRows()).find(function (row) { return Number(row.num) === manzilNumber; })
+    ? translationManzilRows.find(function (row) { return Number(row.num) === manzilNumber; })
     : null;
+  var translationManzilRangeError = numberedSubdivisionRangeError('quran-manzils', translationManzilRows, req.params.number, 'Quran manzil');
+  if (translationManzilRangeError)
+    return next(translationManzilRangeError);
   if (!manzil)
     return next(createError(404, `Quran manzil '${req.params.number}' not found`));
   var surah = Number((manzil.start || '').toString().split(':')[0]);
@@ -3082,6 +3143,9 @@ router.get('/quran/:translationAlias/:chapterNum', async function (req, res, nex
   if (!translation || translation.source !== 'local')
     return next();
   var surah = parsePositiveIntegerParam(req.params.chapterNum);
+  var numericTranslationSurah = Number(Arabic.toLatinDigits((req.params.chapterNum || '').toString()));
+  if (Number.isInteger(numericTranslationSurah) && (numericTranslationSurah < 1 || numericTranslationSurah > quranSurahCount()))
+    return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${req.params.chapterNum} is out of range`));
   if (!Number.isInteger(surah))
     return next(createError(404, `Quran surah ${req.params.chapterNum} not found`));
   var first = await Tafsir.firstPassageInSurah(translation, surah).catch(function (err) {
@@ -3125,12 +3189,16 @@ async function renderBookSection(req, res, next) {
       ? parsePositiveIntegerParam(req.params.chapterNum)
       : parseHadithHeadingNumberParam(req.params.chapterNum);
     var sectionNum = parsePositiveIntegerParam(req.params.sectionNum);
+    var numericQuranSectionSurah = Number(Arabic.toLatinDigits((req.params.chapterNum || '').toString()));
+    if (bookAlias === 'quran' && Number.isInteger(numericQuranSectionSurah)
+      && (numericQuranSectionSurah < 1 || numericQuranSectionSurah > quranSurahCount()))
+      return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${req.params.chapterNum} is out of range`));
     if (bookAlias === 'quran' ? !Number.isInteger(chapterNum) : !chapterNum)
       return next(createError(bookAlias === 'quran' ? 404 : 400, routeParameterMessage('chapterNum', req.params.chapterNum, bookAlias === 'quran' ? 'chapter must be a positive integer' : 'chapter must be a non-negative number')));
     if (!Number.isInteger(sectionNum))
       return next(createError(400, routeParameterMessage('sectionNum', req.params.sectionNum, 'section must be a positive integer')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
-      return next(gone(`Quran surah ${chapterNum} not found`));
+      return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${chapterNum} is out of range`));
     var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
     var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
     if (bookAlias === 'quran' && selectedTranslation && selectedTranslation.source === 'local' && !req.quranTranslationCanonicalPath) {
@@ -3347,11 +3415,19 @@ async function applySelectedQuranTranslation(items, translation, surah, options 
 router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function (req, res, next) {
   var p = req.params;
   var book = p.bookAlias === 'quran' ? visibleBookByAlias('quran') : visibleBookFromParam(p.bookAlias);
-  if (!book)
-    return next(createError(404, `Book '${p.bookAlias}' does not exist`));
+  if (!book) {
+    var validMissingSubsectionPath = parseHadithHeadingNumberParam(p.chapterNum)
+      && Number.isInteger(parsePositiveIntegerParam(p.sectionNum))
+      && Number.isInteger(parsePositiveIntegerParam(p.subsectionNum));
+    return next(createError(validMissingSubsectionPath ? 410 : 404, `Book '${p.bookAlias}' does not exist`));
+  }
   p.bookAlias = book.alias;
   if (p.bookAlias === 'quran') {
     var surah = findSurah(p.chapterNum);
+    var numericSubsectionSurah = Number(Arabic.toLatinDigits((p.chapterNum || '').toString()));
+    if (!surah && Number.isInteger(numericSubsectionSurah)
+      && (numericSubsectionSurah < 1 || numericSubsectionSurah > quranSurahCount()))
+      return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${p.chapterNum} is out of range`));
     if (!surah)
       return next(createError(404, `Quran surah ${p.chapterNum} not found`));
     p.chapterNum = surah.num;
@@ -3367,6 +3443,13 @@ router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function 
     return next(createError(400, routeParameterMessage('sectionNum', p.sectionNum, 'section must be a positive integer')));
   if (!Number.isInteger(subsectionNum))
     return next(createError(400, routeParameterMessage('subsectionNum', p.subsectionNum, 'subsection must be a positive integer')));
+  try {
+    await Subsection.subsectionFromRef(`${p.bookAlias}/${chapterNum}/${sectionNum}/${subsectionNum}`);
+  } catch (err) {
+    if (err instanceof ReferenceError)
+      return next(gone(err.message));
+    throw err;
+  }
   res.redirect(301, `/${p.bookAlias}/${chapterNum}/${sectionNum}#S${sectionNum}-${subsectionNum}`);
   return;
 });

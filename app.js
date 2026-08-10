@@ -129,6 +129,7 @@ const HTTP_ERROR_FRIENDLY_MESSAGES = {
   408: 'The request took too long to complete.',
   413: 'The request payload is too large.',
   414: 'The requested URL is too long.',
+  416: 'The requested range is outside the available resource.',
   429: 'Too many requests were sent. Please wait and try again.',
   431: 'The request headers are too large. This is often caused by oversized cookies. Clear site cookies and try again.',
   500: 'An unexpected server error occurred.',
@@ -152,7 +153,7 @@ const friendlyHttpErrorMessage = (statusCode, message) => {
 const logHttpError = (statusCode, err) => {
   const statusTitle = STATUS_CODES[statusCode] || 'Error';
   const message = err && err.message ? err.message : statusTitle;
-  const shouldLogStack = statusCode !== 405 && statusCode !== 410 && !isNotFoundError(err);
+  const shouldLogStack = statusCode !== 405 && statusCode !== 410 && statusCode !== 416 && !isNotFoundError(err);
   const stack = shouldLogStack && err && err.stack ? `\n${err.stack}` : '';
   debug.error(`HTTP ${statusCode} ${statusTitle}: ${message}${stack}`);
 };
@@ -568,6 +569,12 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     if (isNotFoundError(err))
       err = createError(404, err.message);
     const statusCode = normalizeHttpStatusCode(err.status || err.statusCode || 500);
+    if (err.headers && typeof err.headers === 'object') {
+      Object.entries(err.headers).forEach(([name, value]) => {
+        if (value !== undefined)
+          res.setHeader(name, value);
+      });
+    }
     logHttpError(statusCode, err);
     if (wantsJsonErrorResponse(req)) {
       return res.status(statusCode).json({
@@ -575,7 +582,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
         message: friendlyHttpErrorMessage(statusCode)
       });
     }
-    if (wantsFriendlyErrorRedirect(req))
+    if (statusCode !== 416 && wantsFriendlyErrorRedirect(req))
       return res.redirect(friendlyErrorRedirectStatus(req), buildFriendlyErrorUrl(req, statusCode));
     res.status(statusCode);
     Object.assign(res.locals, buildErrorViewLocals(statusCode, err.message, err, req, res));
