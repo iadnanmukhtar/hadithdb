@@ -56,7 +56,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     expect(QuranAyahMemorization.REVIEW_GRADES.has('core')).toBe(false);
   });
 
-  test('keeps scheduled ayat together and in Quran order within each surah', () => {
+  test('maintains Quran order within each learning stage', () => {
     const items = [
       { surah_number: 2, ayah_number: 10, lifecycle_state: 'learning' },
       { surah_number: 3, ayah_number: 4, lifecycle_state: 'relearning' },
@@ -67,7 +67,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
 
     expect(QuranAyahMemorization.orderReviewItemsBySurah(items).map(item =>
       `${item.surah_number}:${item.ayah_number}`)).toEqual([
-      '2:3', '2:7', '2:10', '3:1', '3:4'
+      '2:10', '3:4', '2:3', '2:7', '3:1'
     ]);
   });
 
@@ -826,6 +826,37 @@ describe('QuranAyahMemorization public ayah helpers', () => {
         9: [{ section: 1, start: 1, end: 6 }]
       }, {});
       expect(keys).toEqual(['h2:8:10:70-75', 'h2:9:1:1-6']);
+    });
+
+    test('finds every enrolled passage companion for selected ayah review items', async () => {
+      const selected = [
+        { surah_number: 2, ayah_number: 2, lifecycle_state: 'review' },
+        { surah_number: 3, ayah_number: 5, lifecycle_state: 'weak' }
+      ];
+      const enrolled = [
+        { surah_number: 2, ayah_number: 1, lifecycle_state: 'learning' },
+        { surah_number: 2, ayah_number: 2, lifecycle_state: 'review' },
+        { surah_number: 2, ayah_number: 3, lifecycle_state: 'core' },
+        { surah_number: 2, ayah_number: 4, lifecycle_state: 'review' },
+        { surah_number: 3, ayah_number: 4, lifecycle_state: 'weak' },
+        { surah_number: 3, ayah_number: 5, lifecycle_state: 'weak' },
+        { surah_number: 3, ayah_number: 6, lifecycle_state: 'suspended' }
+      ];
+      const query = jest.fn().mockResolvedValue(enrolled);
+      const sections = {
+        2: [{ section: 1, start: 1, end: 3 }, { section: 2, start: 4, end: 4 }],
+        3: [{ section: 1, start: 4, end: 6 }]
+      };
+
+      const result = await QuranAyahMemorization.includeEnrolledAyatForSelectedPassages(
+        query, 'user-1', selected, sections, {}
+      );
+
+      expect(result.map(item => `${item.surah_number}:${item.ayah_number}`)).toEqual([
+        '2:1', '2:2', '2:3', '3:4', '3:5', '3:6'
+      ]);
+      expect(query.mock.calls[0][0]).toContain('surah_number IN (2,3)');
+      expect(query.mock.calls[0][0]).toContain("lifecycle_state IN ('learning','relearning','weak','review','core','suspended')");
     });
 
     test('enrolls Later ayat in a custom review scope as Learning cards', async () => {

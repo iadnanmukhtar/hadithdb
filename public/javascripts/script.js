@@ -7857,6 +7857,7 @@ function initQuranAyahMemorization(root) {
 		var surahs = scopeSurahButtons.map(function (button) { return Number(button.getAttribute('data-quran-surah-state')); });
 		markers.forEach(function (marker) {
 			if (marker.closest('[data-share-card], .hadith-share-root')) return;
+			if (marker.closest('.quran-review-page-continuity')) return;
 			if (!marker.closest('[data-quran-memorize-reader]')) return;
 			var ref = refForMarker(marker);
 			if (!ref || marker.dataset.quranAyahMemorizationBound === '1') return;

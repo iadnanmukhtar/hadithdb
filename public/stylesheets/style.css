@@ -2604,6 +2604,10 @@ del em strong {
 	white-space: nowrap;
 }
 
+.quran-review-page-continuity-line > * {
+	flex-shrink: 0;
+}
+
 .quran-review-page-continuity-marker {
 	color: var(--bs-secondary-color);
 	font-size: .82em;
@@ -2871,7 +2875,7 @@ del em strong {
 }
 
 [data-quran-review-reader] [data-quran-mushaf-page] .quran-review-target-ayah:not(.quran-ayah-review-rating) {
-	box-shadow: inset 0 -.12em 0 color-mix(in srgb, var(--bs-primary) 55%, transparent);
+	box-shadow: inset 0 -.14em 0 #765500;
 	opacity: 1;
 }
 
@@ -4906,6 +4910,16 @@ del em strong {
 	text-decoration-thickness: 1px;
 	text-underline-offset: 0.22em;
 	text-shadow: none !important;
+}
+
+[data-quran-review-reader] .quran-memorize-page .quran-corpus-word.quran-review-target-ayah {
+	background-color: color-mix(in srgb, var(--bs-body-bg) 76%, #ffc107 24%) !important;
+	border-radius: .12em;
+}
+
+[data-quran-review-reader] .quran-memorize-page:not(.quran-memorize-show-all) .quran-mushaf-line:not(.quran-mushaf-line-basmallah) .quran-corpus-word.quran-review-target-ayah:not(.quran-memorize-word-revealed):not(.quran-memorize-ayah-revealed) {
+	background-color: color-mix(in srgb, var(--bs-body-bg) 76%, #ffc107 24%) !important;
+	text-decoration: none;
 }
 
 .quran-memorize-page .quran-corpus-word {
