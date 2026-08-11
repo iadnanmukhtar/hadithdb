@@ -36,6 +36,7 @@ function debugNewRelicLoadError(err) {
 const REQUEST_BODY_LIMIT = '10mb';
 const MAX_REQUEST_URL_LENGTH = 4096;
 const FRIENDLY_ERROR_REF_MAX_LENGTH = 80;
+const STARTUP_RETRY_AFTER_SECONDS = 30;
 const BLOCKED_HTTP_METHODS = new Set(['TRACE', 'TRACK']);
 
 const sameSiteSecurityHeaders = (req, res, next) => {
@@ -364,6 +365,7 @@ patchAsyncRouterMethods();
 const app = express();
 app.locals.newrelic = newrelic;
 app.locals.googleAnalyticsTagId = GoogleAnalytics.googleAnalyticsTagId;
+app.locals.startupReady = false;
 app.disable('x-powered-by');
 app.set('trust proxy', 'loopback');
 app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, res, callback) {
@@ -379,6 +381,25 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use(accessLogMiddleware);
   app.use(sameSiteSecurityHeaders);
   app.use(rejectUnsafeRequestShape);
+  app.use(function rejectRequestsUntilStartupIsReady(req, res, next) {
+    if (app.locals.startupReady)
+      return next();
+    const statusCode = 503;
+    const startupMessage = `The app is starting. Please retry in ${STARTUP_RETRY_AFTER_SECONDS} seconds.`;
+    res.setHeader('Retry-After', String(STARTUP_RETRY_AFTER_SECONDS));
+    if (wantsJsonErrorResponse(req)) {
+      return res.status(statusCode).json({
+        error: STATUS_CODES[statusCode],
+        message: startupMessage
+      });
+    }
+    res.status(statusCode);
+    Object.assign(res.locals, buildErrorViewLocals(statusCode, startupMessage, null, req, res), {
+      publicMessage: startupMessage,
+      errorPageSubtitle: 'Starting...'
+    });
+    return res.render('error');
+  });
   app.use(express.json({ limit: REQUEST_BODY_LIMIT, verify: preserveStripeWebhookRawBody }));
   app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
   app.use(cookieParser());
@@ -590,7 +611,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   });
 
   await Hadith.a_reinit();
-  debug('done');
+  app.locals.startupReady = true;
+  debug.info('Application startup complete, ready to accept requests');
 
 })();
 

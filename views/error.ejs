@@ -7,7 +7,7 @@
     site.admin = false;
     site.editMode = false;
 
-    var subtitle_en = `Error ${res.statusCode} `;
+    var subtitle_en = typeof errorPageSubtitle === 'string' ? errorPageSubtitle : `Error ${res.statusCode} `;
     var safeStatusTitle = statusTitle || 'Error';
     var safePublicMessage = publicMessage || friendlyMessage || 'An error occurred.';
     var page = {
@@ -33,8 +33,6 @@
   <div class="container col-lg-8 mx-auto">
     
     <main class="search-results">
-
-      <%- include('sub-views/bookNav.ejs'); %> 
 
       <div class="row"> 
         <h3><%- res.statusCode %> <%- safeStatusTitle %></h3>
