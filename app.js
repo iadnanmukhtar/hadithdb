@@ -26,6 +26,7 @@ const PaymentConfig = require('./lib/PaymentConfig');
 const ContentTranslations = require('./lib/ContentTranslations');
 const QuranRecitationFeedback = require('./lib/QuranRecitationFeedback');
 const GoogleAnalytics = require('./lib/GoogleAnalytics');
+const { mountInfiniteScrollApiRoutes } = require('./lib/InfiniteScrollApiRoutes');
 
 function debugNewRelicLoadError(err) {
   if (!process.env.DEBUG || !process.env.DEBUG.split(',').some(pattern => pattern.trim() === 'hadithdb:App'))
@@ -520,7 +521,6 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/api/login', loginRouter);
   app.use('/quran/api/login', loginRouter);
   app.use('/blog', blogRouter);
-  app.use('/api/blog', blogRouter);
   app.use('/tafsir', function (req, res) {
     res.redirect(301, Utils.quranUrl(req, '/quran/tafsir'));
   });
@@ -590,11 +590,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     Object.assign(res.locals, buildErrorViewLocals(statusCode, undefined, null, errorReq, res), { errorRef: errorRef });
     res.render('error');
   });
-  app.use('/api', searchRouter);
-  app.use('/quran/api', function mapQuranApiPath(req, res, next) {
-    req.url = `/quran${req.url === '/' ? '' : req.url}`;
-    next();
-  }, searchRouter);
+  mountInfiniteScrollApiRoutes(app, { blogRouter, tafsirRouter, searchRouter });
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {

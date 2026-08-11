@@ -114,6 +114,7 @@ $(function () {
 	initBlogInfiniteScroll(document);
 	initQuranInfinitePassageNavigation(document);
 	initReaderInfiniteNavigation(document);
+	initQuranMushafLastPageLinks(document);
 	initQuranMushafInfinite(document);
 	initQuranMemorizeView(document);
 	initQuranAyahReview(document);
@@ -10213,6 +10214,10 @@ function updateQuranMushafVisiblePage(pageNumber, pageElement) {
 	pageNumber = parseInt(pageNumber, 10);
 	if (!Number.isInteger(pageNumber) || pageNumber < 1 || pageNumber > 604)
 		return;
+	try {
+		if (window.localStorage)
+			window.localStorage.setItem('hadithdb.quranMushafLastPage', pageNumber.toString());
+	} catch (_err) {}
 	updateQuranMushafFooterPageLinks(pageNumber);
 	var subtitle = document.querySelector('.site-header-brand [data-page-subtitle]');
 	if (subtitle)
@@ -10221,6 +10226,36 @@ function updateQuranMushafVisiblePage(pageNumber, pageElement) {
 	updateQuranReaderModeHrefs(pageElement);
 	updateQuranMushafHeaderJuz(pageNumber, pageElement);
 	updateLazyReaderDocumentTitle(pageElement && pageElement.getAttribute('data-page-title'));
+}
+
+function initQuranMushafLastPageLinks(root) {
+	var scope = root || document;
+	if (scope !== document || document.documentElement.dataset.quranMushafLastPageLinksBound === '1')
+		return;
+	document.documentElement.dataset.quranMushafLastPageLinksBound = '1';
+	document.addEventListener('click', function (event) {
+		if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+			return;
+		var link = event.target.closest && event.target.closest('a[href]');
+		if (!link || link.target || link.hasAttribute('download'))
+			return;
+		var url;
+		try {
+			url = new URL(link.href, window.location.href);
+		} catch (_err) {
+			return;
+		}
+		if (url.origin !== window.location.origin || url.pathname !== '/quran/page' || url.search || url.hash)
+			return;
+		var pageNumber = 0;
+		try {
+			pageNumber = parseInt(window.localStorage && window.localStorage.getItem('hadithdb.quranMushafLastPage'), 10);
+		} catch (_err) {}
+		if (!Number.isInteger(pageNumber) || pageNumber < 1 || pageNumber > 604)
+			return;
+		event.preventDefault();
+		window.location.href = `${url.origin}/quran/page/${pageNumber}`;
+	});
 }
 
 function initQuranMushafInfinite(root) {

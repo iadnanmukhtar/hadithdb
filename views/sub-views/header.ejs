@@ -300,7 +300,7 @@
               readerMode: quranReaderMode,
               passageHref: quranSectionPath,
               ayahHref: `${quranSectionPath}?ayat`,
-              mushafHref: utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`),
+              mushafHref: utils.quranUrl(req, '/quran/page'),
               tafsirHref: isQuranTafsirArea ? requestPath : utils.quranUrl(req, '/quran/tafsir'),
               memorizeHref: `${utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`)}?memorize`
             }); %>
@@ -379,7 +379,7 @@
           readerMode: pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir' ? 'tafsir' : (requestPath === '/quran/review' ? 'review' : undefined),
           passageHref: utils.quranUrl(req, '/quran/1'),
           ayahHref: `${utils.quranUrl(req, '/quran/1')}?ayat`,
-          mushafHref: utils.quranUrl(req, '/quran/page/1'),
+          mushafHref: utils.quranUrl(req, '/quran/page'),
           tafsirHref: pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir' ? requestPath : utils.quranUrl(req, '/quran/tafsir'),
           memorizeHref: `${utils.quranUrl(req, '/quran/page/1')}?memorize`
         }); %>
