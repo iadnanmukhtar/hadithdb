@@ -215,7 +215,8 @@ router.post('/ayahs/:surah/:ayah/reviews', async function (req, res) {
       durationSeconds: req.body && req.body.duration_seconds,
       mistakeCount: req.body && req.body.mistake_count,
       promptCount: req.body && req.body.prompt_count,
-      fsrs: settings.memorization && settings.memorization.fsrs
+      fsrs: settings.memorization && settings.memorization.fsrs,
+      includeAyah: !(req.body && req.body.session_id)
     }
   );
   if (req.body && req.body.session_id) {
