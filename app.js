@@ -69,7 +69,7 @@ const rejectUnsafeRequestShape = (req, res, next) => {
 };
 
 const preserveStripeWebhookRawBody = (req, res, buf) => {
-  if (req.path === '/payments/webhook' || req.path === '/quran/payments/webhook')
+  if (req.path === '/api/payments/webhook' || req.path === '/quran/api/payments/webhook')
     req.rawBody = Buffer.from(buf);
 };
 
@@ -506,13 +506,21 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/books', booksRouter);
   app.use('/tag', tagRouter);
   app.use('/quran/tag', tagRouter);
-  app.use('/update', updateRouter);
-  app.use('/quran/update', updateRouter);
+  app.use('/api/update', updateRouter);
+  app.use('/quran/api/update', updateRouter);
   app.use('/settings', settingsRouter);
   app.use('/quran/settings', settingsRouter);
-  app.use('/login', loginRouter);
-  app.use('/quran/login', loginRouter);
+  const loginPageOnly = function loginPageOnly(req, res, next) {
+    if (req.method === 'GET' && /^\/(?!logout$|session$)[^/]+\/?$/.test(req.path))
+      return loginRouter(req, res, next);
+    next();
+  };
+  app.use('/login', loginPageOnly);
+  app.use('/quran/login', loginPageOnly);
+  app.use('/api/login', loginRouter);
+  app.use('/quran/api/login', loginRouter);
   app.use('/blog', blogRouter);
+  app.use('/api/blog', blogRouter);
   app.use('/tafsir', function (req, res) {
     res.redirect(301, Utils.quranUrl(req, '/quran/tafsir'));
   });
@@ -522,23 +530,27 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/quran/tafsir', tafsirsRouter);
   app.use('/quran/tafsir', tafsirRouter);
   app.use('/quran/translations', translationsRouter);
-  app.use('/proxy', proxyRouter);
-  app.use('/quran/proxy', proxyRouter);
-  app.use('/comments', commentsRouter);
-  app.use('/quran/comments', commentsRouter);
+  app.use('/api/proxy', proxyRouter);
+  app.use('/quran/api/proxy', proxyRouter);
+  app.use('/api/comments', commentsRouter);
+  app.use('/quran/api/comments', commentsRouter);
   app.use('/blog-comments', blogCommentsRouter);
-  app.use('/likes', likesRouter);
-  app.use('/quran/likes', likesRouter);
+  app.use('/api/likes', likesRouter);
+  app.use('/quran/api/likes', likesRouter);
   app.use('/liked', likedRouter);
-  app.use('/bookmarks', bookmarksRouter);
-  app.use('/user-settings', userSettingsRouter);
-  app.use('/quran/user-settings', userSettingsRouter);
-  app.use('/memorization', quranMemorizationRouter);
-  app.use('/quran/memorization', quranMemorizationRouter);
-  app.use('/payments', paymentsRouter);
-  app.use('/quran/payments', paymentsRouter);
-  app.use('/content-translations', contentTranslationsRouter);
-  app.use('/quran/content-translations', contentTranslationsRouter);
+  app.use('/bookmarks', function bookmarksPageOnly(req, res, next) {
+    if (req.method === 'GET' && (req.path === '/' || req.path === ''))
+      return bookmarksRouter(req, res, next);
+    next();
+  });
+  app.use('/api/bookmarks', bookmarksRouter);
+  app.use('/api/user-settings', userSettingsRouter);
+  app.use('/quran/api/user-settings', userSettingsRouter);
+  app.use('/quran/api/memorization', quranMemorizationRouter);
+  app.use('/api/payments', paymentsRouter);
+  app.use('/quran/api/payments', paymentsRouter);
+  app.use('/api/content-translations', contentTranslationsRouter);
+  app.use('/quran/api/content-translations', contentTranslationsRouter);
   app.use(function redirectTranslationAliases(req, res, next) {
     const alias = req.path.replace(/^\/+/, '').replace(/\/.*$/, '');
     const pathRemainder = req.path.replace(/^\/+/, '').split('/').slice(1).filter(Boolean);
@@ -578,6 +590,11 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     Object.assign(res.locals, buildErrorViewLocals(statusCode, undefined, null, errorReq, res), { errorRef: errorRef });
     res.render('error');
   });
+  app.use('/api', searchRouter);
+  app.use('/quran/api', function mapQuranApiPath(req, res, next) {
+    req.url = `/quran${req.url === '/' ? '' : req.url}`;
+    next();
+  }, searchRouter);
   app.use('/', searchRouter);
 
   app.use(function (req, res, next) {

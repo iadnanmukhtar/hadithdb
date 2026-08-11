@@ -144,8 +144,10 @@
 			if (/^https?:\/\//i.test(path)) return path;
 			if (path.charAt(0) !== '/') path = `/${path}`;
 			const hostname = (window.location.hostname || '').toLowerCase();
-			if (hostname.split('.')[0] !== 'quran' || path === '/quran' || path.startsWith('/quran/')) return path;
-			return `/quran${path}`;
+			const isQuran = hostname.split('.')[0] === 'quran' || window.location.pathname === '/quran' || window.location.pathname.startsWith('/quran/');
+			if (path === '/quran') path = '/';
+			else if (path.startsWith('/quran/')) path = path.substring('/quran'.length);
+			return `${isQuran ? '/quran/api' : '/api'}${path}`;
 		};
 		const USER_SETTINGS_ENDPOINT = quranApiPath('/user-settings');
 		const USER_SETTINGS_OPTIONAL_ENDPOINT = `${USER_SETTINGS_ENDPOINT}?optional=1`;

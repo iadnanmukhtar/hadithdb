@@ -413,7 +413,7 @@
       }
     };
 
-    const quranEditorUpdateUrl = (path) => quranEditorUrl(path.replace(/^\/update\//, '/quran/update/'));
+    const quranEditorUpdateUrl = (path) => path.replace(/^\/update\//, '/quran/api/update/');
 
     const quranEditorPost = async (path, value) => {
       const token = await quranEditorAuthToken();

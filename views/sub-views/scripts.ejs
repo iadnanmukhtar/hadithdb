@@ -444,10 +444,13 @@
 	      path = String(path || '');
 	      if (path.charAt(0) !== '/')
 	        path = `/${path}`;
-	      const isQuranHost = window.location.hostname.toLowerCase().split('.')[0] === 'quran';
-	      if (isQuranHost && path !== '/quran' && !path.startsWith('/quran/'))
-	        return `/quran${path}`;
-	      return path;
+	      const hostname = window.location.hostname.toLowerCase();
+	      const isQuran = hostname.split('.')[0] === 'quran' || window.location.pathname === '/quran' || window.location.pathname.startsWith('/quran/');
+	      if (path === '/quran')
+	        path = '/';
+	      else if (path.startsWith('/quran/'))
+	        path = path.substring('/quran'.length);
+	      return `${isQuran ? '/quran/api' : '/api'}${path}`;
 	    }
 
 	    const bindInlineEditors = (scope) => {
@@ -771,14 +774,14 @@
 
   function hadithLoginPath() {
       if (window.location.hostname.toLowerCase().split('.')[0] === 'quran')
-        return '/quran/login/google';
-      return '/login/google';
+        return '/quran/api/login/google';
+      return '/api/login/google';
   }
 
   function hadithLogoutPath() {
       if (window.location.hostname.toLowerCase().split('.')[0] === 'quran')
-        return '/quran/login/logout';
-      return '/login/logout';
+        return '/quran/api/login/logout';
+      return '/api/login/logout';
   }
 
   function hadithApiPath(path) {
@@ -786,9 +789,11 @@
       if (path.charAt(0) !== '/')
         path = `/${path}`;
       const isQuranHost = window.location.hostname.toLowerCase().split('.')[0] === 'quran';
-      if (isQuranHost && path !== '/quran' && !path.startsWith('/quran/'))
-        return `/quran${path}`;
-      return path;
+      if (path === '/quran')
+        path = '/';
+      else if (path.startsWith('/quran/'))
+        path = path.substring('/quran'.length);
+      return `${isQuranHost ? '/quran/api' : '/api'}${path}`;
   }
 
   function needsHadithAuthSync(user) {

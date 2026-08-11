@@ -585,7 +585,7 @@
         .filter(item => isWeakValue(item.title, item.key) || !text(item.range || item.ref))
         .map(item => item.key);
       if (!hadithIds.length && !headingIds.length && !tafsirRefs.length) return false;
-      const res = await fetch('/bookmarks/metadata', {
+      const res = await fetch('/api/bookmarks/metadata', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hadithIds, headingIds, tafsirRefs })

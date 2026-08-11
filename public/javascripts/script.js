@@ -232,7 +232,7 @@ function initBlogInfiniteScroll(root) {
 				return Promise.resolve(false);
 			}
 			status.removeAttr('data-infinite-load-error').text('Loading more blog posts...');
-			loadingPromise = fetch(targetUrl, {
+			loadingPromise = fetch(`/api${targetUrl}`, {
 				credentials: 'same-origin',
 				headers: { 'Accept': 'text/html' }
 			}).then(function (response) {
@@ -903,13 +903,16 @@ function quranApiPath(path) {
 	path = (path || '').toString();
 	if (/^https?:\/\//i.test(path))
 		return path;
-	if (!isQuranSubdomainHost(window.location.hostname))
-		return path;
 	if (path.charAt(0) !== '/')
 		path = '/' + path;
-	if (path === '/quran' || path.indexOf('/quran/') === 0 || path.indexOf('/quran:') === 0)
-		return path;
-	return '/quran' + path;
+	var explicitlyQuran = path === '/quran' || path.indexOf('/quran/') === 0;
+	if (path === '/quran')
+		path = '/';
+	else if (path.indexOf('/quran/') === 0)
+		path = path.substring('/quran'.length);
+	var pathname = window.location.pathname || '';
+	var isQuran = explicitlyQuran || isQuranSubdomainHost(window.location.hostname) || pathname === '/quran' || pathname.indexOf('/quran/') === 0;
+	return (isQuran ? '/quran/api' : '/api') + path;
 }
 
 function setDirection(el) {
@@ -10278,7 +10281,7 @@ function initQuranMushafInfinite(root) {
 		loading = true;
 		if (sentinel)
 			sentinel.textContent = 'Loading the next page…';
-		return fetch(nextUrl, { credentials: 'same-origin' }).then(function (response) {
+		return fetch(quranApiPath(nextUrl), { credentials: 'same-origin' }).then(function (response) {
 			if (!response.ok)
 				throw new Error('Unable to load the next Mushaf page.');
 			return response.text();
@@ -10468,7 +10471,7 @@ function initQuranDynamicPassageHero(root) {
 		if (pendingRequest && pendingRequest.abort)
 			pendingRequest.abort();
 		pendingRequest = new AbortController();
-		return fetch(quranApiPath(`${target.pathname}?json=1`), {
+		return fetch(quranUrl(`${target.pathname}?json=1`), {
 			credentials: 'same-origin',
 			signal: pendingRequest.signal
 		}).then(function (response) {
@@ -11249,7 +11252,7 @@ function initReaderInfiniteNavigation(root) {
 			}
 			retryAfter = 0;
 			status.removeAttr('data-infinite-load-error').text('Loading next page...');
-			loadingPromise = fetch(mode === 'tafsir' ? quranApiPath(targetUrl) : hadithUrl(targetUrl), {
+			loadingPromise = fetch(mode === 'tafsir' ? quranApiPath(targetUrl) : hadithUrl(`/api${targetUrl}`), {
 				credentials: 'same-origin',
 				headers: { 'Accept': 'text/html' }
 			}).then(function (response) {
@@ -11664,7 +11667,7 @@ function initQuranCorpusTooltips(root) {
 			scriptUrl.searchParams.set('script', script);
 			url = `${scriptUrl.pathname}${scriptUrl.search}`;
 		}
-		quranCorpusPayloadCache[url] = quranCorpusPayloadCache[url] || fetch(url, {
+		quranCorpusPayloadCache[url] = quranCorpusPayloadCache[url] || fetch(quranApiPath(url), {
 			credentials: 'same-origin',
 			headers: { 'Accept': 'application/json' }
 		}).then(function (response) {
@@ -12521,7 +12524,7 @@ function buildSearchAutocompleteParams($input, term) {
 }
 
 function searchAutocompletePath($input) {
-	return quranApiPath(isQuranSearchInput($input) ? '/quran/autocomplete' : '/autocomplete');
+	return isQuranSearchInput($input) ? '/quran/api/autocomplete' : '/api/autocomplete';
 }
 
 function isQuranSearchInput($input) {
