@@ -56,7 +56,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     expect(QuranAyahMemorization.REVIEW_GRADES.has('core')).toBe(false);
   });
 
-  test('maintains Quran order within each learning stage', () => {
+  test('keeps the entire review schedule in surah and ayah order', () => {
     const items = [
       { surah_number: 2, ayah_number: 10, lifecycle_state: 'learning' },
       { surah_number: 3, ayah_number: 4, lifecycle_state: 'relearning' },
@@ -67,7 +67,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
 
     expect(QuranAyahMemorization.orderReviewItemsBySurah(items).map(item =>
       `${item.surah_number}:${item.ayah_number}`)).toEqual([
-      '2:10', '3:4', '2:3', '2:7', '3:1'
+      '2:3', '2:7', '2:10', '3:1', '3:4'
     ]);
   });
 
