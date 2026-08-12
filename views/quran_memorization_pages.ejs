@@ -10,9 +10,10 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   <main class="container col-lg-8 mx-auto mt-10 quran-review-top-offset quran-memorization-welcome" id="quran-memorization-welcome"<% if (!helpView) { %> hidden<% } %>>
     <section class="quran-memorization-welcome-hero text-center mx-auto">
-      <span class="quran-memorization-welcome-icon" aria-hidden="true"><i class="bi bi-book"></i></span>
+      <img class="quran-memorization-welcome-logo" src="/images/quran/mudhakkir.svg" width="96" height="96" alt="Mudhakkir">
       <p class="text-primary fw-semibold small mb-2"><span class="badge rounded-pill text-bg-primary me-1">Adaptive review</span> Spaced repetition for Quran hifz</p>
-      <h1 class="fs-2 mb-3">Keep your Quran memorization fresh</h1>
+      <h1 class="fs-2 mb-1">Mudhakkir</h1>
+      <p class="fs-5 fw-semibold mb-3">Keep your Quran memorization fresh</p>
       <p class="lead text-muted mx-auto mb-4">The app brings each āyah back for review before it is likely to fade. Your answers adjust future timing, helping keep your hifz strong without unnecessary repetition.</p>
       <div class="d-flex justify-content-center gap-2 flex-wrap">
         <button type="button" class="btn btn-primary" id="quran-memorization-sign-in"><i class="bi bi-person-circle me-1" aria-hidden="true"></i> Sign in to begin memorizing</button>
@@ -260,7 +261,7 @@
       const progress = document.getElementById('quran-memorization-progress');
       if (<%= helpView ? 'true' : 'false' %>) {
         if (loading) loading.hidden = true;
-        document.title = 'Memorize the Quran';
+        document.title = 'Mudhakkir | Memorize the Quran';
         if (token) {
           const signInButton = document.getElementById('quran-memorization-sign-in');
           if (signInButton) {
@@ -272,7 +273,7 @@
       }
       if (!token) {
         if (loading) loading.hidden = true;
-        document.title = 'Memorize the Quran';
+        document.title = 'Mudhakkir | Memorize the Quran';
         if (welcome) welcome.hidden = false;
         return;
       }

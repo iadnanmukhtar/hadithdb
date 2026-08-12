@@ -42,16 +42,24 @@
         || page.canonical.indexOf('/quran/') === 0
       ))
     );
-  var headTitle = page.title_en || (isQuranPathHeadPage ? 'Quran Unlocked' : site.name);
+  var headRequestPath = req && req.originalUrl ? req.originalUrl.split('?')[0] : (req && req.path ? req.path : '');
+  var isMudhakkirHeadPage = headRequestPath === '/quran/review'
+    || ((headRequestPath === '/quran/page' || headRequestPath.indexOf('/quran/page/') === 0)
+      && req && req.query
+      && (req.query.memorize !== undefined || req.query.review !== undefined || req.query.reviewRef !== undefined));
+  var quranHeadBrandName = isMudhakkirHeadPage ? 'Mudhakkir' : 'Quran Unlocked';
+  var headTitle = page.title_en || (isQuranPathHeadPage ? quranHeadBrandName : site.name);
   var headDescription = page.description_en || site.desc || '';
-  var headSiteName = isQuranHeadPage ? 'Quran Unlocked' : site.name;
+  var headSiteName = isQuranHeadPage ? quranHeadBrandName : site.name;
   var headSiteUrl = isQuranHeadPage ? quranCanonicalBaseUrl : site.url;
-  var headAppLogo = isQuranHeadPage ? `${quranCanonicalBaseUrl}/images/quran-logo.png` : site.logo;
-  var headAppLogoVectorPath = isQuranHeadPage ? '/images/quran-logo2.svg' : '/images/logo2.svg';
-  var headAppLogo32Path = isQuranHeadPage ? '/images/quran-logo32.png' : '/images/logo32.png';
+  var headAppLogo = isMudhakkirHeadPage
+    ? `${quranCanonicalBaseUrl}/images/quran/mudhakkir.png`
+    : (isQuranHeadPage ? `${quranCanonicalBaseUrl}/images/quran-logo.png` : site.logo);
+  var headAppLogoVectorPath = isMudhakkirHeadPage ? '/images/quran/mudhakkir.svg' : (isQuranHeadPage ? '/images/quran-logo2.svg' : '/images/logo2.svg');
+  var headAppLogo32Path = isMudhakkirHeadPage ? '/images/quran/mudhakkir.png' : (isQuranHeadPage ? '/images/quran-logo32.png' : '/images/logo32.png');
   var headAppFavicon16Path = isQuranHeadPage ? '/images/quran-favicon-16x16.png' : '/images/favicon-16x16.png';
-  var headAppTouchIconPath = isQuranHeadPage ? '/images/quran-apple-touch-icon.png' : '/images/apple-touch-icon.png';
-  var headAppIcoPath = isQuranHeadPage ? '/images/quran-favicon.ico' : '/favicon.ico';
+  var headAppTouchIconPath = isMudhakkirHeadPage ? '/images/quran/mudhakkir.png' : (isQuranHeadPage ? '/images/quran-apple-touch-icon.png' : '/images/apple-touch-icon.png');
+  var headAppIcoPath = isMudhakkirHeadPage ? '/images/quran/mudhakkir.ico' : (isQuranHeadPage ? '/images/quran-favicon.ico' : '/favicon.ico');
   var headLogo = page.cover || headAppLogo;
   function quranCanonicalPath(path) {
     if (!path)

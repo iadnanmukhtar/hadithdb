@@ -18,6 +18,7 @@
     var isQuranMushafArea = requestPath === '/quran/page' || requestPath.indexOf('/quran/page/') === 0;
     var isQuranReviewArea = requestPath === '/quran/review' || (isQuranMushafArea && (req.query.review !== undefined || req.query.reviewRef !== undefined));
     var isQuranMemorizeArea = isQuranMushafArea && (req.query.memorize !== undefined || isQuranReviewArea);
+    var isMudhakkirArea = isQuranReviewArea || isQuranMemorizeArea;
     var isQuranStudyArea = /^\/quran\/\d+(?:\/|$)/.test(requestPath);
     var requestedQuranSearchReturnMode = req && req.query && (req.query.mode === 'mushaf' || req.query.mode === 'study') ? req.query.mode : '';
     var quranSearchReturnMode = isQuranMushafArea || isQuranReviewArea ? 'mushaf' : (isQuranStudyArea ? 'study' : requestedQuranSearchReturnMode);
@@ -39,8 +40,9 @@
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
     var isHadithArea = !isQuranArea && !isBooksArea && !isBlogArea && !isMoreArea;
-    var headerLogo = isQuranArea ? '/images/quran-logo2.svg' : '/images/logo2.svg';
-    var headerLogoAlt = isQuranArea ? 'Quran Unlocked' : site.name;
+    var headerLogo = isMudhakkirArea ? '/images/quran/mudhakkir.svg' : (isQuranArea ? '/images/quran-logo2.svg' : '/images/logo2.svg');
+    var headerBrandName = isMudhakkirArea ? 'Mudhakkir' : (isQuranArea ? 'Quran Unlocked' : site.name);
+    var headerLogoAlt = headerBrandName;
     var headerBrandHref = isQuranArea ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
     var alternateModeLabel = isQuranArea ? 'Hadith' : 'Quran';
     var alternateModeHref = isQuranArea ? utils.hadithBaseUrl(req) : utils.quranUrl(req, '/quran');
@@ -61,11 +63,7 @@
       <div>
         <h6 class="title fs-4 mb-0">
           <a href="<%= headerBrandHref %>" class="text-dark text-decoration-none">
-          <% if (isQuranArea) { %>
-            Quran Unlocked
-          <% } else { %>
-            <%= site.name %>
-          <% } %>
+            <%= headerBrandName %>
           </a>
         </h6>
 <!--hadithdb-cache:header:end-->

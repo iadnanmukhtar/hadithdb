@@ -627,6 +627,8 @@ main.chapter.tafsir-only-page {
 	width: 56px;
 	height: 56px;
 	flex-shrink: 0;
+	border-radius: 22.5%;
+	clip-path: inset(0 round 22.5%);
 }
 
 .site-navbar .subtitle {
@@ -2893,7 +2895,7 @@ del em strong {
 
 .quran-memorization-welcome-hero {
 	max-width: 46rem;
-	padding: clamp(1.5rem, 4vw, 3.5rem) 1rem;
+	padding: clamp(.75rem, 1.5vw, 1.25rem) 1rem clamp(1.5rem, 3vw, 2.5rem);
 }
 
 .quran-memorization-welcome-hero .lead {
@@ -2901,16 +2903,15 @@ del em strong {
 	font-size: 1.1rem;
 }
 
-.quran-memorization-welcome-icon {
-	display: inline-grid;
-	place-items: center;
-	width: 3.25rem;
-	height: 3.25rem;
+.quran-memorization-welcome-logo {
+	display: block;
+	width: 5.5rem;
+	height: 5.5rem;
 	margin-bottom: 1rem;
-	border-radius: 50%;
-	background: color-mix(in srgb, var(--bs-primary) 12%, transparent);
-	color: var(--bs-primary);
-	font-size: 1.5rem;
+	margin-inline: auto;
+	border-radius: 1.25rem;
+	clip-path: inset(0 round 1.25rem);
+	filter: drop-shadow(0 .55rem .7rem rgba(20, 82, 55, .22));
 }
 
 .quran-memorization-welcome-feature {

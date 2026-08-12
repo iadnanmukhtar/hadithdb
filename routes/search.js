@@ -2317,12 +2317,12 @@ router.get('/quran/review', async function (req, res) {
     quranHeaderJuzLinks: quranHeaderJuzLinks,
     page: {
       menu: 'Quran',
-      title_en: startReview ? 'Quran Memorization Review' : (helpView ? 'Memorize the Quran' : 'Memorization Progress'),
+      title_en: startReview ? 'Quran Memorization Review' : (helpView ? 'Mudhakkir | Memorize the Quran' : 'Memorization Progress'),
       subtitle_en: 'Memorization',
       description_en: startReview
         ? 'Review memorized Quran ayat with focused recall and adaptive spaced repetition that responds to your answers.'
         : (helpView
-          ? 'Memorize the Quran ayah by ayah with focused Mushaf practice, adaptive spaced repetition, review scheduling, and progress tracking.'
+          ? 'Mudhakkir helps you memorize the Quran ayah by ayah with focused Mushaf practice, adaptive spaced repetition, review scheduling, and progress tracking.'
           : 'View your Quran memorization progress, due ayat, recent activity, and adaptive review schedule.'),
       canonical: helpView ? '/quran/review?help' : '/quran/review',
       noindex: !helpView,
