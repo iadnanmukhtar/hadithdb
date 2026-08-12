@@ -10459,6 +10459,7 @@ function initQuranMushafInfinite(root) {
 				scheduleQuranMushafLineFit(importedPage);
 			});
 			initQuranMushafLineFitting(importedPage);
+			fitQuranMushafLines(importedPage);
 			initQuranMemorizeView(importedPage);
 			initQuranMushafAyahSelection(importedPage);
 			if (window.refreshHadithActions)
