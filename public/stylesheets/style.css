@@ -157,8 +157,11 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--c-comment-soft: #dbe9f5;
 	--c-danger: #dc3545;
 	--quran-memory-learning: #f2c200;
-	--quran-memory-weak: #f26a00;
-	--quran-memory-relearning: #c1121f;
+	--quran-memory-hard: #dc3545;
+	--quran-memory-good: #2c9be5;
+	--quran-memory-easy: #198754;
+	--quran-memory-weak: var(--quran-memory-hard);
+	--quran-memory-relearning: var(--quran-memory-hard);
 	--c-link-dark: #2379b1;
 	--c-cornsilk: cornsilk;
 	--c-primary-soft-08: rgba(var(--bs-primary-rgb), .08);
@@ -2804,11 +2807,11 @@ del em strong {
 .quran-ayah-state-option[data-quran-ayah-state-option="review"],
 .quran-ayah-state-option[data-quran-surah-state-option="review"],
 .quran-ayah-state-option[data-quran-page-state-option="review"],
-.quran-ayah-state-option[data-progress-group-state-option="review"] { --quran-ayah-state-option-color: #198754; }
+.quran-ayah-state-option[data-progress-group-state-option="review"] { --quran-ayah-state-option-color: var(--quran-memory-good); }
 .quran-ayah-state-option[data-quran-ayah-state-option="core"],
 .quran-ayah-state-option[data-quran-surah-state-option="core"],
 .quran-ayah-state-option[data-quran-page-state-option="core"],
-.quran-ayah-state-option[data-progress-group-state-option="core"] { --quran-ayah-state-option-color: #6f42c1; }
+.quran-ayah-state-option[data-progress-group-state-option="core"] { --quran-ayah-state-option-color: var(--quran-memory-easy); }
 .quran-ayah-state-option[data-quran-ayah-state-option="suspended"],
 .quran-ayah-state-option[data-quran-surah-state-option="suspended"],
 .quran-ayah-state-option[data-quran-page-state-option="suspended"],
@@ -2841,8 +2844,8 @@ del em strong {
 .quran-ayah-hero-ayah[data-quran-memorization-state="review"],
 .quran-search-item [data-quran-ref][data-quran-memorization-state="review"],
 [data-quran-memorize-reader] .quran-mushaf-sheet .quran-corpus-word[data-quran-memorization-state="review"] {
-	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, #198754 10%);
-	box-shadow: inset 0 -.1em 0 color-mix(in srgb, #198754 52%, transparent);
+	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, var(--quran-memory-good) 10%);
+	box-shadow: inset 0 -.1em 0 color-mix(in srgb, var(--quran-memory-good) 52%, transparent);
 }
 
 [data-quran-memorization-state="core"].ayah,
@@ -2850,8 +2853,8 @@ del em strong {
 .quran-ayah-hero-ayah[data-quran-memorization-state="core"],
 .quran-search-item [data-quran-ref][data-quran-memorization-state="core"],
 [data-quran-memorize-reader] .quran-mushaf-sheet .quran-corpus-word[data-quran-memorization-state="core"] {
-	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, #6f42c1 10%);
-	box-shadow: inset 0 -.1em 0 color-mix(in srgb, #6f42c1 52%, transparent);
+	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, var(--quran-memory-easy) 10%);
+	box-shadow: inset 0 -.1em 0 color-mix(in srgb, var(--quran-memory-easy) 52%, transparent);
 }
 
 [data-quran-memorization-state="relearning"].ayah,
@@ -3571,9 +3574,10 @@ del em strong {
 
 .quran-memorization-state-pill {
 	align-items: center;
-	background: var(--bs-body-bg);
-	border: 1px solid color-mix(in srgb, var(--quran-state-legend-color, var(--bs-secondary)) 28%, var(--bs-border-color));
+	background: color-mix(in srgb, var(--bs-body-bg) 88%, var(--quran-state-legend-color, var(--bs-secondary)) 12%);
+	border: 1px solid color-mix(in srgb, var(--bs-border-color) 48%, var(--quran-state-legend-color, var(--bs-secondary)) 52%);
 	border-radius: 999px;
+	color: color-mix(in srgb, var(--bs-body-color) 78%, var(--quran-state-legend-color, var(--bs-secondary)) 22%);
 	display: inline-flex;
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	font-size: .62rem;
@@ -3582,6 +3586,10 @@ del em strong {
 	min-width: 0;
 	padding: .22rem .32rem;
 	white-space: nowrap;
+}
+
+.quran-memorization-state-pill strong {
+	color: inherit;
 }
 
 .quran-page-state-count {
@@ -3649,11 +3657,11 @@ del em strong {
 }
 
 .quran-memorization-state-pill.is-review {
-	--quran-state-legend-color: #198754;
+	--quran-state-legend-color: var(--quran-memory-good);
 }
 
 .quran-memorization-state-pill.is-core {
-	--quran-state-legend-color: #6f42c1;
+	--quran-state-legend-color: var(--quran-memory-easy);
 }
 
 .quran-memorization-state-pill.is-relearning {
@@ -3826,10 +3834,10 @@ del em strong {
 
 .quran-memorization-help-states .is-learning { --quran-help-state-color: var(--quran-memory-learning); }
 .quran-memorization-help-states .is-weak { --quran-help-state-color: var(--quran-memory-weak); }
-.quran-memorization-help-states .is-review { --quran-help-state-color: #198754; }
+.quran-memorization-help-states .is-review { --quran-help-state-color: var(--quran-memory-good); }
 .quran-memorization-help-states .is-relearning { --quran-help-state-color: var(--quran-memory-relearning); }
 .quran-memorization-help-states .is-suspended { --quran-help-state-color: #6c757d; }
-.quran-memorization-help-states .is-core { --quran-help-state-color: #6f42c1; }
+.quran-memorization-help-states .is-core { --quran-help-state-color: var(--quran-memory-easy); }
 .quran-memorization-help-states .is-later { --quran-help-state-color: #adb5bd; }
 
 .quran-memorization-help-states dt {
@@ -4174,9 +4182,9 @@ del em strong {
 }
 
 .memorization-progress-table [data-progress-status].is-core {
-	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, #6f42c1 10%);
-	border-color: color-mix(in srgb, var(--bs-border-color) 55%, #6f42c1 45%);
-	color: color-mix(in srgb, var(--bs-body-color) 65%, #6f42c1 35%);
+	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, var(--quran-memory-easy) 10%);
+	border-color: color-mix(in srgb, var(--bs-border-color) 55%, var(--quran-memory-easy) 45%);
+	color: var(--bs-success-text-emphasis);
 }
 
 .quran-progress-summary-card {
@@ -4352,11 +4360,11 @@ del em strong {
 }
 
 .quran-progress-summary-card[data-progress-filter="review"] {
-	border-inline-start: .24rem solid var(--bs-success);
+	border-inline-start: .24rem solid var(--quran-memory-good);
 }
 
 .quran-progress-summary-card[data-progress-filter="core"] {
-	border-inline-start: .24rem solid #6f42c1;
+	border-inline-start: .24rem solid var(--quran-memory-easy);
 }
 
 .quran-progress-summary-card[data-progress-filter="relearning"] {
@@ -4468,13 +4476,13 @@ del em strong {
 }
 
 .memorization-progress-table [data-ayah-state].is-review {
-	background-color: color-mix(in srgb, var(--bs-body-bg) 89%, var(--bs-success) 11%);
-	border-color: color-mix(in srgb, var(--bs-border-color) 48%, var(--bs-success) 52%);
+	background-color: color-mix(in srgb, var(--bs-body-bg) 89%, var(--quran-memory-good) 11%);
+	border-color: color-mix(in srgb, var(--bs-border-color) 48%, var(--quran-memory-good) 52%);
 }
 
 .memorization-progress-table [data-ayah-state].is-core {
-	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, #6f42c1 10%);
-	border-color: color-mix(in srgb, var(--bs-border-color) 48%, #6f42c1 52%);
+	background-color: color-mix(in srgb, var(--bs-body-bg) 90%, var(--quran-memory-easy) 10%);
+	border-color: color-mix(in srgb, var(--bs-border-color) 48%, var(--quran-memory-easy) 52%);
 }
 
 .memorization-progress-table [data-ayah-state].is-relearning {

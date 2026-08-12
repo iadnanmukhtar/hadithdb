@@ -5,7 +5,7 @@ export const CANONICAL_AYAH_COUNTS: readonly number[];
 export const REVIEW_GRADES: readonly ReviewGrade[];
 export const LIFECYCLE_STATE_LABELS: Readonly<Record<string, string>>;
 export const USER_SELECTABLE_LIFECYCLE_STATES: readonly string[];
-export const INITIAL_ASSESSMENT_STAGES: readonly Readonly<{ state: 'learning' | 'weak' | 'review' | 'core'; label: 'Learn' | 'Weak' | 'Good' | 'Easy' }>[];
+export const INITIAL_ASSESSMENT_STAGES: readonly Readonly<{ state: 'learning' | 'weak' | 'review' | 'core'; label: 'Learn' | 'Hard' | 'Good' | 'Easy' }>[];
 export function strictInteger(value: unknown): number | null;
 export function parseRef(surah: unknown, ayah: unknown): QuranRef | null;
 export function parseRefString(value: unknown): QuranRef | null;

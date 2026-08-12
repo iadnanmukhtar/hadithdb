@@ -87,16 +87,16 @@
           <% if (review) { %>
           <ul data-quran-review-session-progress aria-label="Review session progress">
             <li class="quran-memorization-state-pill is-again" data-quran-review-session-category="again" hidden><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Again</strong><span class="quran-page-state-count" data-quran-review-session-category-count>—</span></li>
-            <% [['learning','Learning'],['weak','Weak'],['review','Mem'],['core','Core'],['suspended','Paused']].forEach(function (item) { %>
+            <% [['learning','Learning'],['weak','Hard'],['review','Good'],['core','Easy'],['suspended','Paused']].forEach(function (item) { %>
             <li class="quran-memorization-state-pill is-<%= item[0] %>" data-quran-review-session-category="<%= item[0] %>" hidden><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong><%= item[1] %></strong><span class="quran-page-state-count" data-quran-review-session-category-count>—</span></li>
             <% }); %>
           </ul>
           <% } else { %>
           <ul>
             <li class="quran-memorization-state-pill is-learning" title="Actively memorizing"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Learning</strong><span class="visually-hidden">Actively memorizing</span></li>
-            <li class="quran-memorization-state-pill is-weak" title="Memorized with short reviews"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Weak</strong><span class="visually-hidden">Memorized with short reviews</span></li>
-            <li class="quran-memorization-state-pill is-review" title="Strong recall under review"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Memorized</strong><span class="visually-hidden">Strong recall under review</span></li>
-            <li class="quran-memorization-state-pill is-core" title="No scheduled reviews"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Core</strong><span class="visually-hidden">No scheduled reviews</span></li>
+            <li class="quran-memorization-state-pill is-weak" title="Hard recall with shorter reviews"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Hard</strong><span class="visually-hidden">Hard recall with shorter reviews</span></li>
+            <li class="quran-memorization-state-pill is-review" title="Good recall under review"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Good</strong><span class="visually-hidden">Good recall under review</span></li>
+            <li class="quran-memorization-state-pill is-core" title="Easy recall with no scheduled reviews"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Easy</strong><span class="visually-hidden">Easy recall with no scheduled reviews</span></li>
             <li class="quran-memorization-state-pill is-suspended" title="Temporarily inactive"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Paused</strong><span class="visually-hidden">Temporarily inactive</span></li>
             <li class="quran-memorization-state-pill is-later" title="Not started yet"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>Later</strong><span class="visually-hidden">Not started yet</span></li>
           </ul>

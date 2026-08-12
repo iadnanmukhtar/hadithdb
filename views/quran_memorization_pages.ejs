@@ -25,7 +25,7 @@
     <section class="row g-3 quran-memorization-welcome-features" aria-label="How Quran memorization works">
       <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-journal-bookmark text-primary" aria-hidden="true"></i><h2 class="fs-6">Learn at your pace</h2><p>Choose the āyāt and surahs you want to learn, assess them once, and let daily Review manage their progress.</p></article></div>
       <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-arrow-repeat text-primary" aria-hidden="true"></i><h2 class="fs-6">Reviews that adapt</h2><p>Learning āyāt appear first, then review timing adjusts to your recall so you can focus on what needs attention.</p></article></div>
-      <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-bar-chart-line text-primary" aria-hidden="true"></i><h2 class="fs-6">See your progress</h2><p>Track learning, weak, memorized, and Core ayat from a progress view organized by surah and Mushaf page.</p></article></div>
+      <div class="col-md-4"><article class="quran-memorization-welcome-feature h-100"><i class="bi bi-bar-chart-line text-primary" aria-hidden="true"></i><h2 class="fs-6">See your progress</h2><p>Track Learning, Hard, Good, and Easy ayat from a progress view organized by surah and Mushaf page.</p></article></div>
     </section>
     <section class="quran-memorization-preview-section" aria-labelledby="quran-memorization-preview-title">
       <section class="quran-ayah-hero quran-memorization-preview-ayah row">
@@ -68,7 +68,7 @@
               <span>Assess each āyah once, then practice as Review guides you.</span>
             </div>
             <div class="quran-memorization-preview-screenshot">
-              <img src="/images/quran/memorization-memorize-preview.png" width="640" height="960" loading="lazy" alt="Cropped Memorize mode screenshot of Mushaf page 600, with the original surah headings, basmalahs, Core controls, hidden word placeholders, and page controls">
+              <img src="/images/quran/memorization-memorize-preview.png?v=<%= utils.styleAssetVersion() %>" width="640" height="960" loading="lazy" alt="Cropped Memorize mode screenshot of Mushaf page 600, with the original surah headings, basmalahs, Easy controls, hidden word placeholders, and page controls">
             </div>
           </div>
           <figcaption><strong>Memorize with clarity</strong><span>Give each Later āyah an honest starting assessment.</span></figcaption>
@@ -81,7 +81,7 @@
               <span>Focused reviews keep every āyah fresh.</span>
             </div>
             <div class="quran-memorization-preview-screenshot">
-              <img src="/images/quran/memorization-review-preview.png" width="640" height="960" loading="lazy" alt="Review mode using the original Mushaf page 599 screenshot, with earlier Quran context visible, the current āyah concealed in place, later text faded, and sticky recall grading buttons">
+              <img src="/images/quran/memorization-review-preview.png?v=<%= utils.styleAssetVersion() %>" width="640" height="960" loading="lazy" alt="Review mode using the original Mushaf page 599 screenshot, with earlier Quran context visible, the current āyah concealed in place, later text faded, and sticky Again, Hard, Good, Easy, and Skip grading buttons">
             </div>
           </div>
           <figcaption><strong>Review with focus</strong><span>Recall in Quran order, then let the app choose the next review time.</span></figcaption>
@@ -94,7 +94,7 @@
               <span>Your hifz history stays synced across devices.</span>
             </div>
             <div class="quran-memorization-preview-screenshot">
-              <img src="/images/quran/memorization-progress-preview.svg" width="640" height="960" loading="lazy" alt="Memorization Progress showing review activity, state totals, and pages grouped by surah">
+              <img src="/images/quran/memorization-progress-preview.svg?v=<%= utils.styleAssetVersion() %>" width="640" height="960" loading="lazy" alt="Memorization Progress showing review activity, Hard, Good, and Easy state totals, and pages grouped by surah">
             </div>
           </div>
           <figcaption><strong>See every step</strong><span>Follow activity, due reviews, and memorization states across the Quran.</span></figcaption>
@@ -138,7 +138,7 @@
       <div class="quran-review-stat-row" id="quran-review-stat-row"><span><strong>Daily average</strong> <b data-review-stat="daily_average">0</b> ayat</span><span><strong>Days learned</strong> <b data-review-stat="days_learned_percent">0%</b></span><span><strong>Longest streak</strong> <b data-review-stat="longest_streak">0 days</b></span><span><strong>Current streak</strong> <b data-review-stat="current_streak">0 days</b></span></div>
     </section>
     <section class="quran-memorization-summary mb-3" aria-label="Memorization totals">
-      <% [['due_today','Due now'],['learning','Learning'],['weak','Weak'],['review','Memorized'],['core','Core'],['suspended','Paused'],['later','Later']].forEach(function (item) { %>
+      <% [['due_today','Due now'],['learning','Learning'],['weak','Hard'],['review','Good'],['core','Easy'],['suspended','Paused'],['later','Later']].forEach(function (item) { %>
       <button type="button" class="card text-start quran-progress-summary-card" data-progress-filter="<%= item[0] %>" aria-pressed="false"<% if (item[0] === 'later') { %> disabled title="Untouched ayat are counted here but are not listed"<% } %>><span class="quran-progress-summary-label"><%= item[1] %></span><strong class="quran-progress-summary-count" data-progress-count="<%= item[0] %>">—</strong></button>
       <% }); %>
     </section>
@@ -167,12 +167,12 @@
         <header class="modal-header"><h2 class="modal-title fs-5" id="quran-get-started-title">Get started memorizing</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></header>
         <div class="modal-body">
           <section id="quran-get-started-known-step">
-            <p class="fw-bold mb-1">What surahs do you know by heart?</p>
+            <p class="fw-bold mb-1">Which surahs are Easy for you?</p>
             <p class="small text-muted">Add any complete surahs you can already recite.</p>
             <label class="form-label" for="quran-get-started-known-input">Known surahs</label>
             <input type="search" class="form-control" id="quran-get-started-known-input" placeholder="Type a surah name or number" autocomplete="off" autocapitalize="none" spellcheck="false">
             <div class="d-flex flex-wrap gap-2 mt-2" id="quran-get-started-known-list" aria-live="polite"></div>
-            <div class="alert alert-light border small mt-3 mb-0"><i class="bi bi-lightbulb text-primary me-1" aria-hidden="true"></i><strong>Already memorized.</strong> These surahs will be recorded as Core and will not be included in scheduled Review because you know them by heart.</div>
+            <div class="alert alert-light border small mt-3 mb-0"><i class="bi bi-lightbulb text-primary me-1" aria-hidden="true"></i><strong>Easy.</strong> These surahs will be recorded as Easy and will not be included in scheduled Review.</div>
           </section>
           <section id="quran-get-started-learning-step" hidden>
             <p class="fw-bold mb-1">What surah do you want to memorize?</p>
@@ -197,7 +197,7 @@
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   <script>
     (async function () {
-      const labels = { later: 'Later', learning: 'Learning', weak: 'Weak', review: 'Memorized', core: 'Core', relearning: 'Weak', suspended: 'Paused' };
+      const labels = window.HadithDbQuranReview.LIFECYCLE_STATE_LABELS;
       const stageOrder = ['learning', 'weak', 'review', 'core', 'suspended'];
       const status = document.getElementById('quran-ayah-progress-status');
       const table = document.getElementById('quran-ayah-progress-table');
@@ -319,7 +319,7 @@
         return `<button type="button" class="quran-memorization-state-pill memorization-progress-group-state is-${escapeHtml(current)}" data-progress-group-state="${escapeHtml(group.group_key||'')}" data-current-state="${escapeHtml(current)}" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-progress-group-state-menu" aria-label="${actionLabel} for this ${unitType}. Current state: ${escapeHtml(currentLabel)}, ${activeAyahCount} ${activeAyahCount===1?'āyah':'āyāt'}"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>${escapeHtml(currentLabel)}</strong><span class="quran-page-state-count">${activeAyahCount.toLocaleString()}</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button>`;
       };
       const groupStateOptions=['core','suspended','later'];
-      const groupStateDescriptions={core:'No scheduled reviews',suspended:'Temporarily inactive',later:'Remove from memorization'};
+      const groupStateDescriptions={core:'Easy recall; no scheduled reviews',suspended:'Temporarily inactive',later:'Remove from memorization'};
       const groupStateMenu=document.createElement('div');
       groupStateMenu.id='quran-progress-group-state-menu';
       groupStateMenu.className='quran-ayah-state-menu memorization-progress-group-state-menu';

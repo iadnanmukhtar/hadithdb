@@ -15,11 +15,11 @@
     3, 6, 3, 5, 4, 5, 6
   ]);
   const REVIEW_GRADES = Object.freeze(['again', 'hard', 'good', 'easy', 'skip']);
-  const LIFECYCLE_STATE_LABELS = Object.freeze({ later: 'Later', learning: 'Learning', weak: 'Weak', review: 'Memorized', core: 'Core', relearning: 'Weak', suspended: 'Paused' });
+  const LIFECYCLE_STATE_LABELS = Object.freeze({ later: 'Later', learning: 'Learning', weak: 'Hard', review: 'Good', core: 'Easy', relearning: 'Hard', suspended: 'Paused' });
   const USER_SELECTABLE_LIFECYCLE_STATES = Object.freeze(['later', 'learning', 'weak', 'review', 'core', 'suspended']);
   const INITIAL_ASSESSMENT_STAGES = Object.freeze([
     Object.freeze({ state: 'learning', label: 'Learn' }),
-    Object.freeze({ state: 'weak', label: 'Weak' }),
+    Object.freeze({ state: 'weak', label: 'Hard' }),
     Object.freeze({ state: 'review', label: 'Good' }),
     Object.freeze({ state: 'core', label: 'Easy' })
   ]);

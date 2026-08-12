@@ -33,14 +33,14 @@ describe('QuranAyahMemorization public ayah helpers', () => {
     expect(QuranAyahMemorization.STATE_LABELS).toEqual({
       later: 'Later',
       learning: 'Learning',
-      weak: 'Weak',
-      review: 'Memorized',
-      core: 'Core',
-      relearning: 'Weak',
+      weak: 'Hard',
+      review: 'Good',
+      core: 'Easy',
+      relearning: 'Hard',
       suspended: 'Paused'
     });
-    expect(QuranAyahMemorization.STATE_DESCRIPTIONS.weak).toBe('Memorized, with recall assessed as fragile');
-    expect(QuranAyahMemorization.STATE_DESCRIPTIONS.relearning).toBe('Weak recall under automatic recovery after Again');
+    expect(QuranAyahMemorization.STATE_DESCRIPTIONS.weak).toBe('Hard recall, scheduled with shorter intervals');
+    expect(QuranAyahMemorization.STATE_DESCRIPTIONS.relearning).toBe('Hard recall under automatic recovery after Again');
   });
 
   test('keeps review outcomes separate from lifecycle states', () => {

@@ -7292,10 +7292,10 @@ function initQuranAyahMemorization(root) {
 	var stateOptionLabels = {
 		later: 'Learn later',
 		learning: 'Learn',
-		weak: 'Weak',
-		review: 'Memorized',
-		core: 'Know by heart',
-		relearning: 'Weak',
+		weak: 'Hard',
+		review: 'Good',
+		core: 'Easy',
+		relearning: 'Hard',
 		suspended: 'Pause learning'
 	};
 	var initialAssessmentLabels = Object.fromEntries(window.HadithDbQuranReview.INITIAL_ASSESSMENT_STAGES.map(function (stage) {
@@ -7304,10 +7304,10 @@ function initQuranAyahMemorization(root) {
 	var stateDescriptions = {
 		later: 'Not currently being memorized',
 		learning: 'Still learning the complete ayah',
-		weak: 'Memorized, with recall assessed as fragile',
-		review: 'Memorized and maintained through spaced review',
-		core: 'Firmly retained without scheduled reviews',
-		relearning: 'Weak recall under automatic recovery after Again',
+		weak: 'Hard recall, scheduled with shorter intervals',
+		review: 'Good recall, maintained through spaced review',
+		core: 'Easy recall, retained without scheduled reviews',
+		relearning: 'Hard recall under automatic recovery after Again',
 		suspended: 'Temporarily removed from learning and review'
 	};
 	var stateOptions = ['learning', 'weak', 'review', 'core', 'suspended', 'later'];
@@ -8924,9 +8924,9 @@ function initQuranAyahReview(root) {
 			var categories = {
 				again: { label: 'Again', totals: ['again_queued'], backlog: true },
 				learning: { label: 'Learning', completed: ['learning_completed'], totals: ['learning_queued'] },
-				weak: { label: 'Weak', completed: ['relearning_completed', 'weak_completed'], totals: ['relearning_queued', 'weak_queued'] },
-				review: { label: 'Mem', completed: ['memorized_completed'], totals: ['memorized_queued'] },
-				core: { label: 'Core', completed: ['core_completed'], totals: ['core_queued'] },
+				weak: { label: 'Hard', completed: ['relearning_completed', 'weak_completed'], totals: ['relearning_queued', 'weak_queued'] },
+				review: { label: 'Good', completed: ['memorized_completed'], totals: ['memorized_queued'] },
+				core: { label: 'Easy', completed: ['core_completed'], totals: ['core_queued'] },
 				suspended: { label: 'Paused', completed: ['paused_completed'], totals: ['paused_queued'] }
 			};
 			var sessionCount = function (keys) {
@@ -9273,7 +9273,7 @@ function initPageHelpTips(root) {
 		},
 		{
 			title: 'Let grades manage the stage',
-			copy: 'Your initial self-assessment was the only manual stage choice. In Review, one **Easy** or two consecutive **Good** reviews move Learning or Weak to Memorized. **Again** on a Memorized āyah begins Weak recovery until you recall it successfully.',
+			copy: 'Your initial self-assessment was the only manual stage choice. In Review, one **Easy** or two consecutive **Good** reviews move Learning or Hard to Good. **Again** on a Good āyah begins Hard recovery until you recall it successfully.',
 			selector: '.mobile-bottom-nav-review-controls .quran-memorize-rating-buttons, .quran-ayah-review-buttons'
 		},
 		{
@@ -9295,7 +9295,7 @@ function initPageHelpTips(root) {
 		},
 		{
 			title: 'Understand what needs attention',
-			copy: 'Use the summary cards to see what is due now and how many āyāt are Learning, Weak, Memorized, Core, Paused, or Later.',
+			copy: 'Use the summary cards to see what is due now and how many āyāt are Learning, Hard, Good, Easy, Paused, or Later.',
 			selector: '.quran-memorization-summary'
 		},
 		{
@@ -9319,28 +9319,28 @@ function initPageHelpTips(root) {
 		},
 		{
 			title: 'Begin your hifz journey',
-			copy: 'For an āyah you have not started, open its chevron and honestly assess your current recall: **Learn**, **Weak**, **Good**, or **Easy**. This one-time self-assessment tells the app where your hifz journey should begin. The same menu can **Play**, **Reveal**, or **Hide** the āyah while you practice.',
+			copy: 'For an āyah you have not started, open its chevron and honestly assess your current recall: **Learn**, **Hard**, **Good**, or **Easy**. This one-time self-assessment tells the app where your hifz journey should begin. The same menu can **Play**, **Reveal**, or **Hide** the āyah while you practice.',
 			selector: '[data-quran-ayah-state-menu]',
 			requiresMemorizationMenu: 'ayah',
 			requiresMemorizationState: 'later'
 		},
 		{
 			title: 'Assess a complete surah',
-			copy: 'When you have not started any āyah in a surah, use the surah dropdown to give the complete surah one starting assessment. Choose **Learn**, **Weak**, **Good**, or **Easy**, then work through its āyāt.',
+			copy: 'When you have not started any āyah in a surah, use the surah dropdown to give the complete surah one starting assessment. Choose **Learn**, **Hard**, **Good**, or **Easy**, then work through its āyāt.',
 			selector: '[data-quran-surah-state-menu]',
 			requiresMemorizationMenu: 'surah',
 			requiresMemorizationState: 'later'
 		},
 		{
 			title: 'Let Review manage progress',
-			copy: 'Your self-assessment is the only time you choose a starting stage. After enrollment, Review updates Learning, Weak, and Memorized from your grades. You can still choose **Know by heart**, **Pause learning**, or **Learn later** when needed.',
+			copy: 'Your self-assessment is the only time you choose a starting stage. After enrollment, Review updates Learning, Hard, and Good from your grades. You can still choose **Easy**, **Pause learning**, or **Learn later** when needed.',
 			selector: '[data-quran-ayah-state-menu]',
 			requiresMemorizationMenu: 'ayah',
 			requiresMemorizationState: 'enrolled'
 		},
 		{
 			title: 'Pause learning or learn later',
-			copy: 'After enrollment, choose **Pause learning** to stop reviews temporarily without losing history, or **Learn later** to remove the āyah from the current plan. Choose **Know by heart** when it no longer needs scheduled Review.',
+			copy: 'After enrollment, choose **Pause learning** to stop reviews temporarily without losing history, or **Learn later** to remove the āyah from the current plan. Choose **Easy** when it no longer needs scheduled Review.',
 			selector: '[data-quran-ayah-state-menu]',
 			requiresMemorizationMenu: 'ayah',
 			requiresMemorizationState: 'enrolled'

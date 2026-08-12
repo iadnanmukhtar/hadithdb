@@ -41,7 +41,7 @@ test('builds canonical Quran Study paths', () => {
 test('shares the four initial assessment stages', () => {
   expect(core.INITIAL_ASSESSMENT_STAGES).toEqual([
     { state: 'learning', label: 'Learn' },
-    { state: 'weak', label: 'Weak' },
+    { state: 'weak', label: 'Hard' },
     { state: 'review', label: 'Good' },
     { state: 'core', label: 'Easy' }
   ]);
