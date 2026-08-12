@@ -3235,6 +3235,18 @@ del em strong {
 	width: 3rem;
 }
 
+.page-loading-transition.quran-review-loading-transition {
+	background: var(--bs-body-bg);
+	font-family: "Gentium Plus", Serif;
+	gap: 1rem;
+}
+
+.page-loading-transition.quran-review-loading-transition [data-page-loading-message] {
+	font-size: var(--content-size-sm);
+	font-weight: 400;
+	line-height: inherit;
+}
+
 .page-is-transitioning {
 	overflow: hidden;
 }

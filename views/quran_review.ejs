@@ -74,8 +74,7 @@
           window.location.replace('/quran/review');
           return;
         }
-        const now = new Date();
-        const localReviewDayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        const localReviewDayStart = window.HadithDbQuranReview.localDayStart();
         const response = await fetch(quranApiPath(`/memorization/review/sessions/${encodeURIComponent(sessionId)}/next?day_start=${encodeURIComponent(localReviewDayStart)}`), {
           credentials: 'same-origin',
           headers: { 'Authorization': `Bearer ${token}` }
@@ -88,7 +87,8 @@
           }
           throw new Error(data.error || 'Unable to load reviews.');
         }
-        if (data.complete || !data.ayah) {
+        const nextTarget = window.HadithDbQuranReview.nextItemTarget(data);
+        if (nextTarget.complete) {
           const state = Object.assign({}, window.history.state || {}, {
             pageNotice: { type:'success', title:'Review complete', message:'You completed this review session.', scrollToTop:true }
           });
@@ -99,7 +99,7 @@
           return;
         }
         const ayah = data.ayah;
-        const query = [`review=${ayah.surah_number}:${ayah.ayah_number}`];
+        const query = [`review=${nextTarget.ref}`];
         if (data.passage && Array.isArray(data.passage.ayahs)) {
           const endPage = Math.max(...data.passage.ayahs.map(item => Number(item.page_number) || 0));
           if (endPage > Number(ayah.page_number || 1)) query.push(`reviewPassageEndPage=${endPage}`);

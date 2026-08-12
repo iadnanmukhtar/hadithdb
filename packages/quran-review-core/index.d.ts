@@ -1,0 +1,20 @@
+export type ReviewGrade = 'again' | 'hard' | 'good' | 'easy' | 'skip';
+export type ReviewMode = 'regular' | 'surah' | 'page' | 'passage';
+export interface QuranRef { surah: number; ayah: number }
+export const CANONICAL_AYAH_COUNTS: readonly number[];
+export const REVIEW_GRADES: readonly ReviewGrade[];
+export const LIFECYCLE_STATE_LABELS: Readonly<Record<string, string>>;
+export const USER_SELECTABLE_LIFECYCLE_STATES: readonly string[];
+export const INITIAL_ASSESSMENT_STAGES: readonly Readonly<{ state: 'learning' | 'weak' | 'review' | 'core'; label: 'Learn' | 'Weak' | 'Good' | 'Easy' }>[];
+export function strictInteger(value: unknown): number | null;
+export function parseRef(surah: unknown, ayah: unknown): QuranRef | null;
+export function parseRefString(value: unknown): QuranRef | null;
+export function normalizeArabic(value: unknown, keepHamzah?: boolean): string;
+export function quranSearchNormalizeArabic(value: unknown): string;
+export function quranSearchMatches(normalizedText: string, query: string): boolean;
+export function quranStudyPath(ref: string | QuranRef): string;
+export function localDayStart(value?: Date | string | number): string;
+export function reviewSessionRequest(options?: Record<string, unknown>): Record<string, unknown>;
+export function sessionRequestBody(options?: Record<string, unknown>): Record<string, unknown>;
+export function gradeRequestBody(options: { grade: ReviewGrade; sessionId: string; attemptToken: string; dayStart?: string; durationSeconds?: number }): Record<string, unknown>;
+export function nextItemTarget(result: any): { complete: boolean; ref?: string; surah?: number; ayah?: number; pageNumber?: number; retry?: boolean; passageRefs?: string[] };

@@ -436,6 +436,10 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.get('/vendor/marked/marked.min.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'node_modules/marked/marked.min.js'), { cacheControl: false });
   });
+  app.get('/shared/quran-review-core.js', (req, res) => {
+    res.type('application/javascript');
+    res.sendFile(path.join(__dirname, 'packages/quran-review-core/index.js'), { cacheControl: false });
+  });
   app.use(function redirectDuplicatedBlogPaths(req, res, next) {
     const canonicalPath = canonicalBlogPath(req.path);
     if (!canonicalPath)

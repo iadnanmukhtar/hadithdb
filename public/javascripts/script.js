@@ -7087,7 +7087,7 @@ function initQuranMushafAyahSelection(root) {
 	});
 }
 
-function showPageLoading(message) {
+function showPageLoading(message, reviewStyle) {
 	var loading = document.getElementById('page-loading-transition');
 	if (!loading) {
 		loading = document.createElement('div');
@@ -7098,8 +7098,12 @@ function showPageLoading(message) {
 		loading.innerHTML = '<span class="spinner-border text-primary" aria-hidden="true"></span><span data-page-loading-message></span>';
 		document.body.appendChild(loading);
 	}
+	loading.classList.toggle('quran-review-loading-transition', Boolean(reviewStyle));
 	var copy = loading.querySelector('[data-page-loading-message]');
-	if (copy) copy.textContent = message || 'Loading...';
+	if (copy) {
+		copy.classList.toggle('text-muted', Boolean(reviewStyle));
+		copy.textContent = message || 'Loading...';
+	}
 	loading.hidden = false;
 	document.documentElement.classList.add('page-is-transitioning');
 }
@@ -7141,9 +7145,15 @@ window.hidePageLoading = function () {
 	if (loading) loading.hidden = true;
 	document.documentElement.classList.remove('page-is-transitioning');
 };
-// Compatibility aliases for older cached inline Quran templates.
-window.showQuranReviewLoading = window.showPageLoading;
-window.navigateWithQuranReviewLoading = window.navigateWithPageLoading;
+window.showQuranReviewLoading = function (message) {
+	showPageLoading(message, true);
+};
+window.navigateWithQuranReviewLoading = function (url, message, replace) {
+	window.showQuranReviewLoading(message);
+	window.setTimeout(function () {
+		window.location[replace ? 'replace' : 'assign'](url);
+	}, 120);
+};
 window.hideQuranReviewLoading = window.hidePageLoading;
 
 function initQuranMemorizeReviewLauncher(root) {
@@ -7242,10 +7252,10 @@ function initQuranMemorizeReviewLauncher(root) {
 		if (scope === 'surah' && (!Number.isInteger(Number(surahNumber.value)) || Number(surahNumber.value) < 1)) {
 			surahInput.classList.add('is-invalid'); status.textContent = 'Choose a surah from the suggestions.'; surahInput.focus(); return;
 		}
-		var body = scope === 'passage'
-			? { mode: 'passage', start_ref: currentRef, continue_forward: continueForward, review_unit: reviewUnit }
-			: scope === 'page' ? { mode: 'page', page_number: currentPage, continue_forward: continueForward, review_unit: reviewUnit }
-				: { mode: 'surah', surah_number: Number(surahNumber.value), review_type: 'all', continue_forward: continueForward, review_unit: reviewUnit };
+		var body = window.HadithDbQuranReview.sessionRequestBody(scope === 'passage'
+			? { mode: 'passage', startRef: currentRef, continueForward: continueForward, reviewUnit: reviewUnit }
+			: scope === 'page' ? { mode: 'page', pageNumber: currentPage, continueForward: continueForward, reviewUnit: reviewUnit }
+				: { mode: 'surah', surahNumber: Number(surahNumber.value), reviewType: 'all', continueForward: continueForward, reviewUnit: reviewUnit });
 		submit.disabled = true;
 		status.textContent = scope === 'page' ? `Preparing Mushaf page ${currentPage}...` : scope === 'passage' ? `Preparing the passage from Quran ${currentRef}...` : 'Preparing the Surah Review...';
 		showQuranReviewLoading('Preparing your review...');
@@ -7278,15 +7288,7 @@ function initQuranMemorizeReviewLauncher(root) {
 }
 
 function initQuranAyahMemorization(root) {
-	var stateLabels = {
-		later: 'Later',
-		learning: 'Learning',
-		weak: 'Weak',
-		review: 'Memorized',
-		core: 'Core',
-		relearning: 'Weak',
-		suspended: 'Paused'
-	};
+	var stateLabels = window.HadithDbQuranReview.LIFECYCLE_STATE_LABELS;
 	var stateOptionLabels = {
 		later: 'Learn later',
 		learning: 'Learn',
@@ -7296,6 +7298,9 @@ function initQuranAyahMemorization(root) {
 		relearning: 'Weak',
 		suspended: 'Pause learning'
 	};
+	var initialAssessmentLabels = Object.fromEntries(window.HadithDbQuranReview.INITIAL_ASSESSMENT_STAGES.map(function (stage) {
+		return [stage.state, stage.label];
+	}));
 	var stateDescriptions = {
 		later: 'Not currently being memorized',
 		learning: 'Still learning the complete ayah',
@@ -7307,7 +7312,7 @@ function initQuranAyahMemorization(root) {
 	};
 	var stateOptions = ['learning', 'weak', 'review', 'core', 'suspended', 'later'];
 	var selectableStateOptions = ['learning', 'weak', 'review', 'core', 'suspended', 'later'];
-	var initialAssessmentStateOptions = ['learning', 'weak', 'review', 'core', 'later'];
+	var initialAssessmentStateOptions = window.HadithDbQuranReview.INITIAL_ASSESSMENT_STAGES.map(function (stage) { return stage.state; });
 	var enrolledAyahStateOptions = ['core', 'suspended', 'later'];
 	var enrolledBulkStateOptions = ['core', 'suspended', 'later'];
 	var stateCache = window.quranAyahMemorizationStateCache = window.quranAyahMemorizationStateCache || new Map();
@@ -7338,7 +7343,10 @@ function initQuranAyahMemorization(root) {
 			stateDot.className = 'quran-ayah-state-option-dot';
 			stateDot.setAttribute('aria-hidden', 'true');
 			option.appendChild(stateDot);
-			option.appendChild(document.createTextNode(stateOptionLabels[state]));
+			var optionLabel = document.createElement('span');
+			optionLabel.setAttribute('data-quran-state-option-label', '1');
+			optionLabel.textContent = stateOptionLabels[state];
+			option.appendChild(optionLabel);
 			stateMenu.appendChild(option);
 		});
 		document.body.appendChild(stateMenu);
@@ -7400,7 +7408,10 @@ function initQuranAyahMemorization(root) {
 			stateDot.className = 'quran-ayah-state-option-dot';
 			stateDot.setAttribute('aria-hidden', 'true');
 			option.appendChild(stateDot);
-			option.appendChild(document.createTextNode(stateOptionLabels[state]));
+			var optionLabel = document.createElement('span');
+			optionLabel.setAttribute('data-quran-state-option-label', '1');
+			optionLabel.textContent = stateOptionLabels[state];
+			option.appendChild(optionLabel);
 			surahStateMenu.appendChild(option);
 		});
 		document.body.appendChild(surahStateMenu);
@@ -7428,7 +7439,10 @@ function initQuranAyahMemorization(root) {
 			stateDot.className = 'quran-ayah-state-option-dot';
 			stateDot.setAttribute('aria-hidden', 'true');
 			option.appendChild(stateDot);
-			option.appendChild(document.createTextNode(stateOptionLabels[state]));
+			var optionLabel = document.createElement('span');
+			optionLabel.setAttribute('data-quran-state-option-label', '1');
+			optionLabel.textContent = stateOptionLabels[state];
+			option.appendChild(optionLabel);
 			pageStateMenu.appendChild(option);
 		});
 		document.body.appendChild(pageStateMenu);
@@ -7498,6 +7512,16 @@ function initQuranAyahMemorization(root) {
 		if (state === 'later') return initialAssessmentStateOptions;
 		if (!state) return ['later'];
 		return enrolledBulkStateOptions;
+	};
+	var assessmentLabel = function (state) {
+		return initialAssessmentLabels[state] || stateLabels[state] || state;
+	};
+	var updateStateOptionPresentation = function (option, state, initialAssessment) {
+		var label = initialAssessment ? assessmentLabel(state) : stateOptionLabels[state];
+		var labelElement = option.querySelector('[data-quran-state-option-label]');
+		if (labelElement) labelElement.textContent = label;
+		option.setAttribute('aria-label', `${label}: ${stateDescriptions[state]}`);
+		option.title = stateDescriptions[state];
 	};
 	var updatePageStateSummary = function (page) {
 		if (!page) return;
@@ -7766,13 +7790,14 @@ function initQuranAyahMemorization(root) {
 		if (revealAyahLabel) revealAyahLabel.textContent = ayahIsRevealed ? 'Hide' : 'Reveal';
 		stateMenu.querySelectorAll('[data-quran-ayah-state-option]').forEach(function (option) {
 			var optionState = option.getAttribute('data-quran-ayah-state-option');
+			updateStateOptionPresentation(option, optionState, state === 'later');
 			option.hidden = allowedAyahStateOptions(state).indexOf(optionState) === -1;
 			option.disabled = control.disabled;
 		});
 		stateMenu.hidden = false;
 		positionStateMenu(trigger);
 		if (focusOption) {
-			var current = stateMenu.querySelector('[aria-checked="true"]');
+			var current = stateMenu.querySelector('[aria-checked="true"]:not([hidden])') || stateMenu.querySelector('[data-quran-ayah-state-option]:not([hidden])');
 			if (current) current.focus();
 		}
 	};
@@ -7789,6 +7814,7 @@ function initQuranAyahMemorization(root) {
 		surahStateMenu.setAttribute('aria-label', `Memorization state for ${surahName}`);
 		surahStateMenu.querySelectorAll('[data-quran-surah-state-option]').forEach(function (option) {
 			var optionState = option.getAttribute('data-quran-surah-state-option');
+			updateStateOptionPresentation(option, optionState, state === 'later');
 			var current = optionState === state;
 			option.hidden = allowedBulkStateOptions(state).indexOf(optionState) === -1;
 			option.classList.toggle('is-current', current);
@@ -7815,6 +7841,7 @@ function initQuranAyahMemorization(root) {
 		pageStateMenu.setAttribute('aria-label', `Memorization state for Mushaf page ${pageNumber}`);
 		pageStateMenu.querySelectorAll('[data-quran-page-state-option]').forEach(function (option) {
 			var optionState = option.getAttribute('data-quran-page-state-option');
+			updateStateOptionPresentation(option, optionState, state === 'later');
 			var current = optionState === state;
 			option.hidden = allowedBulkStateOptions(state).indexOf(optionState) === -1;
 			option.classList.toggle('is-current', current);
@@ -7959,7 +7986,9 @@ function initQuranAyahMemorization(root) {
 						applyState(ref, record);
 					});
 					await loadSurahStateStatuses(Array.from(affectedSurahs), true);
-					var pageMessage = `All ${Number(pageData.ayah_count || 0).toLocaleString()} ayat on Mushaf page ${pageNumber} are now ${stateLabels[nextPageState]}.`;
+					var pageMessage = currentPageState === 'later'
+						? `All ${Number(pageData.ayah_count || 0).toLocaleString()} ayat on Mushaf page ${pageNumber} received the ${assessmentLabel(nextPageState)} assessment.`
+						: `All ${Number(pageData.ayah_count || 0).toLocaleString()} ayat on Mushaf page ${pageNumber} are now ${stateLabels[nextPageState]}.`;
 					announce(pageMessage);
 					if (window.toastr) window.toastr.success(pageMessage, 'Page updated');
 				} catch (err) {
@@ -7989,7 +8018,8 @@ function initQuranAyahMemorization(root) {
 				var currentSurahState = surahButton.dataset.currentState || '';
 				closeSurahStateMenu(true);
 				if (!nextSurahState || nextSurahState === currentSurahState) return;
-				if (!window.confirm(`Set every ayah in ${surahName} to ${stateLabels[nextSurahState]}?`)) return;
+				var surahChoiceLabel = currentSurahState === 'later' ? assessmentLabel(nextSurahState) : stateLabels[nextSurahState];
+				if (!window.confirm(`Set every ayah in ${surahName} to ${surahChoiceLabel}?`)) return;
 				var matchingSurahButtons = surahButtons(surahNumber);
 				matchingSurahButtons.forEach(function (button) { button.disabled = true; });
 				try {
@@ -8016,7 +8046,9 @@ function initQuranAyahMemorization(root) {
 					var counts = {};
 					stateOptions.forEach(function (state) { counts[state] = state === nextSurahState ? Number(data.ayah_count) || 0 : 0; });
 					applySurahStateStatus({ surah_number: surahNumber, ayah_count: data.ayah_count, counts: counts, uniform_state: nextSurahState });
-					var message = `All ${Number(data.ayah_count || 0).toLocaleString()} ayat in ${surahName} are now ${stateLabels[nextSurahState]}.`;
+					var message = currentSurahState === 'later'
+						? `All ${Number(data.ayah_count || 0).toLocaleString()} ayat in ${surahName} received the ${assessmentLabel(nextSurahState)} assessment.`
+						: `All ${Number(data.ayah_count || 0).toLocaleString()} ayat in ${surahName} are now ${stateLabels[nextSurahState]}.`;
 					announce(message);
 					if (window.toastr) window.toastr.success(message, 'Surah updated');
 				} catch (err) {
@@ -8215,7 +8247,9 @@ function initQuranAyahMemorization(root) {
 				stateCache.set(ref, data.ayah);
 				applyState(ref, data.ayah);
 				adjustSurahStateStatus(ref, previous, data.ayah.lifecycle_state);
-				var successMessage = `Quran ${ref} is now ${stateLabels[data.ayah.lifecycle_state]}.`;
+				var successMessage = previous === 'later'
+					? `Quran ${ref} received the ${assessmentLabel(data.ayah.lifecycle_state)} assessment.`
+					: `Quran ${ref} is now ${stateLabels[data.ayah.lifecycle_state]}.`;
 				announce(successMessage);
 				if (window.toastr) window.toastr.success(successMessage, 'Memorization updated');
 			} catch (err) {
@@ -8834,7 +8868,7 @@ function initQuranAyahReview(root) {
 		var sessionId = '';
 		var attemptToken = '';
 		var reviewedRefs = new Set();
-		var localReviewDayStart = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).toISOString();
+		var localReviewDayStart = window.HadithDbQuranReview.localDayStart();
 		var presentedAt = Date.now();
 		var help = rating.querySelector('.quran-ayah-review-help');
 		var buttons = rating.querySelector('.quran-ayah-review-buttons');
@@ -9107,13 +9141,13 @@ function initQuranAyahReview(root) {
 					method: 'POST',
 					credentials: 'same-origin',
 					headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-					body: JSON.stringify({
+					body: JSON.stringify(window.HadithDbQuranReview.gradeRequestBody({
 						grade: grade,
-						session_id: sessionId,
-						attempt_token: attemptToken,
-						day_start: localReviewDayStart,
-						duration_seconds: Math.max(0, Math.round((Date.now() - presentedAt) / 1000))
-					})
+						sessionId: sessionId,
+						attemptToken: attemptToken,
+						dayStart: localReviewDayStart,
+						durationSeconds: (Date.now() - presentedAt) / 1000
+					}))
 				});
 				var data = await response.json().catch(function () { return {}; });
 				if (!response.ok) throw new Error(data.error || 'Unable to save this review.');
@@ -9126,7 +9160,7 @@ function initQuranAyahReview(root) {
 				// visible. This removes the intermediate /quran/review redirect and
 				// hides most of the next-card lookup behind the required reveal delay.
 				if (grade !== 'skip') reviewedRefs.add(ref);
-				if (status) status.textContent = 'Saved. Loading the next review…';
+				window.showQuranReviewLoading('Loading your next ayah...');
 				if (undoInProgress) return;
 				try {
 					if (!data.next_review) throw new Error(data.next_review_error || 'Unable to load the next review.');
@@ -9144,11 +9178,11 @@ function initQuranAyahReview(root) {
 						if (passageEndPage > Number(nextAyah.page_number || 1)) nextQuery.push(`reviewPassageEndPage=${passageEndPage}`);
 					}
 					if (nextAyah.retry) nextQuery.push('reviewRetry=1');
-					window.navigateWithQuranReviewLoading(quranUrl(`/quran/page/${nextAyah.page_number || 1}?${nextQuery.join('&')}`), 'Loading the next āyah...');
+					window.navigateWithQuranReviewLoading(quranUrl(`/quran/page/${nextAyah.page_number || 1}?${nextQuery.join('&')}`), 'Loading your next ayah...');
 				} catch (_nextErr) {
 					// The grade is already saved. Fall back to the existing recovery
 					// loader, which can resume the current persisted queue safely.
-					window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'), 'Loading the next āyah...');
+					window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'), 'Loading your next ayah...');
 				}
 			} catch (err) {
 				restoreReviewedAyah();
@@ -9285,14 +9319,14 @@ function initPageHelpTips(root) {
 		},
 		{
 			title: 'Begin your hifz journey',
-			copy: 'For an āyah you have not started, open its chevron and honestly assess your current recall: **Learn**, **Weak**, **Memorized**, or **Know by heart**. This one-time self-assessment tells the app where your hifz journey should begin. The same menu can **Play**, **Reveal**, or **Hide** the āyah while you practice.',
+			copy: 'For an āyah you have not started, open its chevron and honestly assess your current recall: **Learn**, **Weak**, **Good**, or **Easy**. This one-time self-assessment tells the app where your hifz journey should begin. The same menu can **Play**, **Reveal**, or **Hide** the āyah while you practice.',
 			selector: '[data-quran-ayah-state-menu]',
 			requiresMemorizationMenu: 'ayah',
 			requiresMemorizationState: 'later'
 		},
 		{
 			title: 'Assess a complete surah',
-			copy: 'When you have not started any āyah in a surah, use the surah dropdown to give the complete surah one starting assessment. Choose **Learn**, **Weak**, **Memorized**, or **Know by heart**, then work through its āyāt.',
+			copy: 'When you have not started any āyah in a surah, use the surah dropdown to give the complete surah one starting assessment. Choose **Learn**, **Weak**, **Good**, or **Easy**, then work through its āyāt.',
 			selector: '[data-quran-surah-state-menu]',
 			requiresMemorizationMenu: 'surah',
 			requiresMemorizationState: 'later'

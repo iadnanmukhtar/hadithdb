@@ -6,6 +6,7 @@
 .env
 .claude
 node_modules
+.expo/
 services/quran-asr/.venv/
 services/quran-asr/models/
 __pycache__/
@@ -26,4 +27,6 @@ tmp/*
 temp
 temp/*
 *test*
+!packages/quran-review-core/index.test.js
 ecosystem.config.cjs
+apps
