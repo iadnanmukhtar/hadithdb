@@ -2546,7 +2546,8 @@ del em strong {
 
 .quran-mushaf-sheet,
 .quran-mushaf-sheet.quran-hafs:lang(ar) {
-	--quran-mushaf-line-height: 1.85;
+	--quran-mushaf-line-height: 1.6;
+	--quran-mushaf-line-min-height: 1.72em;
 	background: var(--bs-body-bg);
 	border: 1px solid var(--bs-border-color);
 	border-radius: 0.35rem;
@@ -3260,8 +3261,8 @@ del em strong {
 	display: flex;
 	gap: 0.14em;
 	justify-content: space-between;
-	line-height: var(--quran-mushaf-line-height);
-	min-height: 1.95em;
+	line-height: var(--quran-mushaf-fitted-line-height, var(--quran-mushaf-line-height));
+	min-height: var(--quran-mushaf-fitted-min-height, var(--quran-mushaf-line-min-height, 1.95em));
 	position: relative;
 	white-space: nowrap;
 }
@@ -5156,12 +5157,12 @@ del em strong {
 	}
 
 	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) {
-		font-size: var(--quran-mushaf-mobile-font-size, 1rem) !important;
+		font-size: var(--quran-mushaf-line-font-size, var(--quran-mushaf-mobile-font-size, 1rem)) !important;
 	}
 
 	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) .quran-corpus-word,
 	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) .quran-mushaf-ayah-marker {
-		font-size: var(--quran-mushaf-mobile-font-size, 1rem) !important;
+		font-size: var(--quran-mushaf-line-font-size, var(--quran-mushaf-mobile-font-size, 1rem)) !important;
 	}
 
 	.quran-mushaf-sheet.quran-hafs .quran-mushaf-surah-name,

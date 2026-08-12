@@ -116,6 +116,7 @@ $(function () {
 	initReaderInfiniteNavigation(document);
 	initQuranMushafLastPageLinks(document);
 	initQuranMushafInfinite(document);
+	initQuranMushafLineFitting(document);
 	initQuranMemorizeView(document);
 	initQuranAyahReview(document);
 	initQuranMushafAyahSelection(document);
@@ -10292,6 +10293,80 @@ function initQuranMushafLastPageLinks(root) {
 	});
 }
 
+var pendingQuranMushafLineFitRoots = new Set();
+var quranMushafLineFitFrame = 0;
+
+function fitQuranMushafLines(root) {
+	var scope = root || document;
+	var lines = scope.matches && scope.matches('.quran-mushaf-line')
+		? [scope]
+		: Array.from(scope.querySelectorAll('.quran-mushaf-line'));
+	lines.filter(function (line) {
+		return !line.classList.contains('quran-mushaf-line-surah_name');
+	}).forEach(function (line) {
+		var sheet = line.closest('.quran-mushaf-sheet');
+		if (!sheet)
+			return;
+		var mobileSize = window.getComputedStyle(sheet).getPropertyValue('--quran-mushaf-mobile-font-size').trim();
+		line.style.removeProperty('--quran-mushaf-line-font-size');
+		line.style.removeProperty('--quran-mushaf-fitted-line-height');
+		line.style.removeProperty('--quran-mushaf-fitted-min-height');
+		if (!mobileSize || !line.clientWidth)
+			return;
+		var baseStyle = window.getComputedStyle(line);
+		var baseSize = parseFloat(baseStyle.fontSize) || parseFloat(mobileSize) || 16;
+		var baseLineHeight = (parseFloat(baseStyle.lineHeight) || baseSize * 1.85) / baseSize;
+		var baseMinHeight = parseFloat(baseStyle.minHeight) || baseSize * 1.95;
+		for (var attempt = 0; attempt < 3; attempt += 1) {
+			var items = Array.from(line.children).filter(function (item) {
+				return !item.classList.contains('quran-mushaf-ayah-highlight-bg') && item.getClientRects().length > 0;
+			});
+			if (items.length < 1)
+				return;
+			var itemRects = items.map(function (item) { return item.getBoundingClientRect(); });
+			var required = Math.max.apply(null, itemRects.map(function (rect) { return rect.right; }))
+				- Math.min.apply(null, itemRects.map(function (rect) { return rect.left; }));
+			var available = line.clientWidth;
+			if (required <= available + .5)
+				return;
+			var currentSize = parseFloat(window.getComputedStyle(line).fontSize) || parseFloat(mobileSize) || 16;
+			var nextSize = currentSize * available / required * .985;
+			var fitScale = nextSize / baseSize;
+			line.style.setProperty('--quran-mushaf-line-font-size', `${nextSize}px`);
+			line.style.setProperty('--quran-mushaf-fitted-line-height', `${baseLineHeight * fitScale}`);
+			line.style.setProperty('--quran-mushaf-fitted-min-height', `${baseMinHeight * fitScale * fitScale}px`);
+		}
+	});
+}
+
+function scheduleQuranMushafLineFit(root) {
+	pendingQuranMushafLineFitRoots.add(root || document);
+	if (quranMushafLineFitFrame)
+		return;
+	quranMushafLineFitFrame = window.requestAnimationFrame(function () {
+		quranMushafLineFitFrame = window.requestAnimationFrame(function () {
+			quranMushafLineFitFrame = 0;
+			var roots = Array.from(pendingQuranMushafLineFitRoots);
+			pendingQuranMushafLineFitRoots.clear();
+			roots.forEach(fitQuranMushafLines);
+		});
+	});
+}
+
+function initQuranMushafLineFitting(root) {
+	scheduleQuranMushafLineFit(root || document);
+	if (document.documentElement.dataset.quranMushafLineFittingBound === '1')
+		return;
+	document.documentElement.dataset.quranMushafLineFittingBound = '1';
+	window.addEventListener('resize', function () {
+		scheduleQuranMushafLineFit(document);
+	}, { passive: true });
+	if (document.fonts && document.fonts.ready)
+		document.fonts.ready.then(function () { scheduleQuranMushafLineFit(document); }).catch(function () {});
+	if (document.fonts && document.fonts.addEventListener)
+		document.fonts.addEventListener('loadingdone', function () { scheduleQuranMushafLineFit(document); });
+}
+
 function initQuranMushafInfinite(root) {
 	var reader = (root || document).querySelector('[data-quran-mushaf-reader]');
 	if (!reader || reader.dataset.quranMushafBound === '1')
@@ -10378,7 +10453,12 @@ function initQuranMushafInfinite(root) {
 			}
 			importedPage.style.visibility = 'hidden';
 			reader.insertBefore(importedPage, sentinel);
-			initQuranScriptPreference(importedPage).catch(function () {});
+			initQuranScriptPreference(importedPage).then(function () {
+				scheduleQuranMushafLineFit(importedPage);
+			}).catch(function () {
+				scheduleQuranMushafLineFit(importedPage);
+			});
+			initQuranMushafLineFitting(importedPage);
 			initQuranMemorizeView(importedPage);
 			initQuranMushafAyahSelection(importedPage);
 			if (window.refreshHadithActions)
@@ -11525,6 +11605,8 @@ function applyQuranScriptPayload(root, script, payload) {
 			replaceQuranScriptWordNodes(line.querySelectorAll('[data-quran-script-text="word"][data-quran-ref]'), wordsByAyah['1:1'], script);
 		});
 	});
+	if (pages.length > 0)
+		scheduleQuranMushafLineFit(scope);
 }
 
 function initQuranScriptPreference(root) {
