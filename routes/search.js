@@ -2317,8 +2317,8 @@ router.get('/quran/review', async function (req, res) {
     quranHeaderJuzLinks: quranHeaderJuzLinks,
     page: {
       menu: 'Quran',
-      title_en: startReview ? 'Quran Memorization Review' : (helpView ? 'Mudhakkir | Memorize the Quran' : 'Memorization Progress'),
-      subtitle_en: 'Memorization',
+      title_en: startReview ? 'Quran Memorization Review' : 'Mudhakkir: Keep your Quran hifz fresh',
+      subtitle_en: startReview ? 'Memorization' : 'Quran Hifz',
       description_en: startReview
         ? 'Review memorized Quran ayat with focused recall and adaptive spaced repetition that responds to your answers.'
         : (helpView

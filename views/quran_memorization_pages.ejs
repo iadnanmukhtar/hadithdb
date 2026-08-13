@@ -259,9 +259,10 @@
       const loading = document.getElementById('quran-memorization-auth-loading');
       const welcome = document.getElementById('quran-memorization-welcome');
       const progress = document.getElementById('quran-memorization-progress');
+      const pageSubtitle = document.querySelector('[data-page-subtitle]');
       if (<%= helpView ? 'true' : 'false' %>) {
         if (loading) loading.hidden = true;
-        document.title = 'Mudhakkir | Memorize the Quran';
+        document.title = 'Mudhakkir: Keep your Quran hifz fresh';
         if (token) {
           const signInButton = document.getElementById('quran-memorization-sign-in');
           if (signInButton) {
@@ -273,10 +274,11 @@
       }
       if (!token) {
         if (loading) loading.hidden = true;
-        document.title = 'Mudhakkir | Memorize the Quran';
+        document.title = 'Mudhakkir: Keep your Quran hifz fresh';
         if (welcome) welcome.hidden = false;
         return;
       }
+      if (pageSubtitle) pageSubtitle.textContent = 'Progress';
       const request = async (path, options = {}) => { const response=await fetch(quranApiPath(`/memorization${path}`),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load memorization progress.'); return data; };
       const userSettingsRequest = async (options={}) => { const response=await fetch(quranApiPath('/user-settings'),{credentials:'same-origin',method:options.method||'GET',headers:Object.assign({Authorization:`Bearer ${token}`},options.body?{'Content-Type':'application/json'}:{}),body:options.body?JSON.stringify(options.body):undefined}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Unable to load settings.'); return data; };
       const fsrsControls={retention:document.getElementById('review-fsrs-retention'),learningSpeed:document.getElementById('review-fsrs-learning-speed'),growth:document.getElementById('review-fsrs-growth'),lapse:document.getElementById('review-fsrs-lapse'),sessionLimit:document.getElementById('review-session-limit'),timeBudget:document.getElementById('review-time-budget'),learningLimit:document.getElementById('review-learning-limit'),weakLimit:document.getElementById('review-weak-limit'),memorizedLimit:document.getElementById('review-memorized-limit'),queueOrder:document.getElementById('review-queue-order'),save:document.getElementById('review-fsrs-save'),optimize:document.getElementById('review-fsrs-optimize'),status:document.getElementById('review-fsrs-status')};
