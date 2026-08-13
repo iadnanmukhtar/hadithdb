@@ -31,13 +31,13 @@ router.get('/', async function (req, res, next) {
   var refs = [];
   for (const item of results)
     refs.push(item.ref);
-  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list.ejs`, {
+  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list.ejs`, Utils.cachedRenderLocals(res, {
     noadmin: true,
     results: results,
     page: getPage(),
     req: req,
     res: res
-  });
+  }));
   Utils.writeCachedHtml(cachedFile, html);
   await Utils.indexCachedItem(refs, cachedFile);
 
@@ -69,13 +69,13 @@ router.get('/feed', async function (req, res, next) {
   var refs = [];
   for (const item of results)
     refs.push(item.ref);
-  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, {
+  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, Utils.cachedRenderLocals(res, {
     noadmin: true,
     results: results,
     page: getPage('/feed'),
     req: req,
     res: res
-  });
+  }));
   Utils.writeCachedTextFile(cachedFile, html);
   await Utils.indexCachedItem(refs, cachedFile);
 
@@ -107,13 +107,13 @@ router.get('/rss', async function (req, res, next) {
   var refs = [];
   for (const item of results)
     refs.push(item.ref);
-  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, {
+  var html = await ejs.renderFile(`${__dirname}/../views/hadiths_list_feed.ejs`, Utils.cachedRenderLocals(res, {
     noadmin: true,
     results: results,
     page: getPage('/rss'),
     req: req,
     res: res
-  });
+  }));
   Utils.writeCachedTextFile(cachedFile, html);
   await Utils.indexCachedItem(refs, cachedFile);
 
