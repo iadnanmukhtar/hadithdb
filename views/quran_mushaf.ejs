@@ -7,6 +7,11 @@
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   <main class="container col-xl-7 col-lg-8 mx-auto quran-mushaf-reader<%= memorize ? ' quran-memorize-reader' : '' %> mt-10" data-quran-mushaf-reader data-page-help-tour="<%= memorize ? (review ? 'review' : 'memorize') : 'mushaf' %>"<% if (memorize) { %> data-quran-memorize-reader="1"<% } %><% if (review) { %> data-quran-review-reader="1"<% } %> data-next-url="<%= `/quran/page/${mushaf.number < mushaf.info.number_of_pages ? mushaf.number + 1 : 1}${memorize ? '?memorize' : ''}` %>">
+    <% if (memorize && !review) { %>
+    <div class="d-flex justify-content-center mb-3" data-quran-memorize-get-started>
+      <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#quran-get-started-modal"><i class="bi bi-stars me-1" aria-hidden="true"></i>Get Started</button>
+    </div>
+    <% } %>
     <article class="quran-mushaf-page<%= memorize ? ' quran-memorize-page' : '' %>" data-quran-mushaf-page="<%= mushaf.number %>"<% if (memorize) { %> data-quran-memorize-page="1" data-quran-memorize-auto-hide="false"<% } %> data-quran-infinite-page="1" data-quran-audio-scope="quran-page-<%= mushaf.number %>">
       <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero data-quran-clear-href="/quran/page/<%= mushaf.number %>"></div>
       <% if (review && reviewPreviousLine) { %>
@@ -64,7 +69,7 @@
         <% } else { line.words.forEach(function (word) {
           var ref = `${word.surah}:${word.ayah}`;
           if (word.is_ayah_marker) { %>
-            <span class="quran-mushaf-ayah-marker-state-wrap"><a class="quran-ayah-end-marker quran-mushaf-ayah-marker quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %><%= selectedAyahRef === ref ? ' quran-audio-active-ayah quran-mushaf-search-ayah' : '' %>"<% if (!memorize) { %> data-quran-ayah-actions="1"<% } %> data-quran-ref="<%= ref %>" href="<%= utils.quranUrl(req, `/quran:${ref}`) %>" aria-label="<%= memorize ? 'Toggle Quran ' + ref + '; modifier click toggles this and previous āyāt' : 'Actions for Quran ' + ref %>"<% if (!memorize) { %> aria-haspopup="menu" aria-expanded="false" aria-controls="quran-mushaf-ayah-actions"<% } %> title="<%= memorize ? 'Toggle Quran ' + ref + '; Alt, Option, Command, or Control-click this and previous āyāt' : 'Quran ' + ref + ' actions' %>">۝<%= arabic.toArabicDigits(word.ayah) %></a><% if (!memorize) { %><button type="button" class="quran-ayah-state-toggle quran-mushaf-ayah-actions-toggle" data-quran-ayah-actions="1" data-quran-ref="<%= ref %>" data-quran-href="<%= utils.quranUrl(req, `/quran:${ref}`) %>" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-mushaf-ayah-actions" aria-label="Play or study Quran <%= ref %>"><span class="bi bi-chevron-down" aria-hidden="true"></span></button><% } %></span>
+            <span class="quran-mushaf-ayah-marker-state-wrap"><a class="quran-ayah-end-marker quran-mushaf-ayah-marker quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %><%= selectedAyahRef === ref ? ' quran-audio-active-ayah quran-mushaf-search-ayah' : '' %>"<% if (!memorize) { %> data-quran-ayah-actions="1"<% } %> data-quran-ref="<%= ref %>" href="<%= utils.quranUrl(req, `/quran:${ref}`) %>" aria-label="<%= memorize ? 'Toggle Quran ' + ref + '; modifier click toggles this and previous āyāt' : 'Actions for Quran ' + ref %>"<% if (!memorize) { %> aria-haspopup="menu" aria-expanded="false" aria-controls="quran-mushaf-ayah-actions"<% } %> title="<%= memorize ? 'Toggle Quran ' + ref + '; Alt, Option, Command, or Control-click this and previous āyāt' : 'Quran ' + ref + ' actions' %>">۝<%= arabic.toArabicDigits(word.ayah) %></a><% if (!memorize) { %><button type="button" class="quran-ayah-state-toggle quran-mushaf-ayah-actions-toggle" data-quran-ayah-actions="1" data-quran-ref="<%= ref %>" data-quran-href="<%= utils.quranUrl(req, `/quran:${ref}`) %>" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-mushaf-ayah-actions" aria-label="Play or study Quran <%= ref %>"><span class="bi bi-caret-down-square-fill" aria-hidden="true"></span></button><% } %></span>
           <% } else { %>
             <span class="quran-corpus-word quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %><%= word.juzStart ? ' quran-juz-start-word' : '' %><%= word.juzStartFirst ? ' quran-juz-start-first-word' : '' %><%= selectedAyahRef === ref ? ' quran-audio-active-ayah quran-mushaf-search-ayah' : '' %>" data-quran-script-text="word" data-quran-ref="<%= ref %>" data-quran-word="<%= word.text %>" data-quran-word-number="<%= word.word %>" data-quran-word-translation="<%= word.meaning_en || '' %>" data-quran-word-grammar="<%= word.grammar_parts_of_speech || word.parts_of_speech || '' %>"<% if (word.juzStart) { %> data-quran-juz="<%= word.juzStart %>" title="Beginning of Juz <%= word.juzStart %>"<% } %> tabindex="0"><%= word.text %></span>
           <% }
@@ -124,7 +129,7 @@
     </article>
     <div class="quran-mushaf-sentinel text-center py-4" data-quran-mushaf-sentinel role="status" aria-live="polite"></div>
   </main>
-  <% if (memorize) { %><%- include('sub-views/quran_memorization_help_modal.ejs', { site: site, page: page }); %><% if (!review) { %><%- include('sub-views/quran_memorize_review_modal.ejs', { site: site, page: page }); %><% } %><% } %>
+  <% if (memorize) { %><%- include('sub-views/quran_memorization_help_modal.ejs', { site: site, page: page }); %><% if (!review) { %><%- include('sub-views/quran_memorize_review_modal.ejs', { site: site, page: page }); %><%- include('sub-views/quran_get_started_modal.ejs', { site: site, page: page }); %><% } %><% } %>
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page, helpTour: memorize ? (review ? 'review' : 'memorize') : 'mushaf' }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>

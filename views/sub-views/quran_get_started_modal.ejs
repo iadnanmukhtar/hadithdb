@@ -1,0 +1,116 @@
+<div class="modal fade" id="quran-get-started-modal" tabindex="-1" aria-labelledby="quran-get-started-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" id="quran-get-started-form">
+      <header class="modal-header"><h2 class="modal-title fs-5" id="quran-get-started-title">Get started memorizing</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></header>
+      <div class="modal-body">
+        <section id="quran-get-started-learning-step">
+          <p class="fw-bold mb-1">What surah do you want to memorize?</p>
+          <p class="small text-muted">Choose one surah to begin with.</p>
+          <label class="form-label" for="quran-get-started-learning-input">Surah to memorize</label>
+          <input type="search" class="form-control" id="quran-get-started-learning-input" placeholder="Type a surah name or number" autocomplete="off" autocapitalize="none" spellcheck="false">
+          <input type="hidden" id="quran-get-started-learning-surah">
+        </section>
+        <p class="small text-muted mt-3 mb-0" id="quran-get-started-status" role="status" aria-live="polite"></p>
+      </div>
+      <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-success" id="quran-get-started-submit">Start Review</button></footer>
+    </form>
+  </div>
+</div>
+<script type="application/json" data-quran-get-started-surah-catalog><%- JSON.stringify((global.surahs || []).map(function (surah) { return { number: Number(surah.num), english: surah.name_en || '', arabic: surah.name_ar || '', aliases: surah.aliases || [], ayahs: Number(surah.ayahs) || 0 }; })).replace(/</g, '\\u003c') %></script>
+<script>
+  (function () {
+    function initialize() {
+      var modal = document.getElementById('quran-get-started-modal');
+      if (!modal || modal.dataset.quranGetStartedBound === '1') return;
+      modal.dataset.quranGetStartedBound = '1';
+      var form = document.getElementById('quran-get-started-form');
+      var input = document.getElementById('quran-get-started-learning-input');
+      var selectedSurah = document.getElementById('quran-get-started-learning-surah');
+      var status = document.getElementById('quran-get-started-status');
+      var submit = document.getElementById('quran-get-started-submit');
+      var catalog = [];
+      try { catalog = JSON.parse((document.querySelector('[data-quran-get-started-surah-catalog]') || {}).textContent || '[]'); } catch (_err) {}
+      var latinDigits = function (value) { return (value || '').toString().replace(/[٠-٩]/g, function (digit) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(digit); }).replace(/[۰-۹]/g, function (digit) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit); }); };
+      var normalizeSearch = function (value) { return latinDigits(value).toLocaleLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[^\p{L}\p{M}\d]+/gu, ' ').replace(/\s+/g, ' ').trim(); };
+      var choiceFor = function (surah) { return Object.assign({}, surah, { name: surah.english || `Surah ${surah.number}` }); };
+      var matches = function (choice, term) {
+        var query = normalizeSearch(term);
+        if (!query) return true;
+        return normalizeSearch([choice.number, choice.english, choice.arabic].concat(choice.aliases || []).join(' ')).includes(query);
+      };
+      var chooseSurah = function (choice) {
+        selectedSurah.value = String(choice.number);
+        input.value = `${choice.number}. ${choice.name}`;
+        input.classList.remove('is-invalid');
+        status.textContent = '';
+      };
+      var getToken = async function (requireSignIn) {
+        for (var attempt = 0; attempt < 30 && (!window.hadithAuth || !window.hadithAuth.getToken); attempt += 1)
+          await new Promise(function (resolve) { window.setTimeout(resolve, 100); });
+        var token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+        if (!token && requireSignIn && window.hadithAuth && window.hadithAuth.requireToken)
+          token = await window.hadithAuth.requireToken('Please sign in to begin Quran memorization.');
+        return token;
+      };
+      var memorizationRequest = async function (path, options) {
+        options = options || {};
+        var token = options.token || await getToken(Boolean(options.requireSignIn));
+        if (!token) throw new Error('Please sign in to begin Quran memorization.');
+        var response = await fetch(quranApiPath(`/memorization${path}`), {
+          method: options.method || 'GET', credentials: 'same-origin',
+          headers: Object.assign({ Authorization: `Bearer ${token}` }, options.body ? { 'Content-Type': 'application/json' } : {}),
+          body: options.body ? JSON.stringify(options.body) : undefined
+        });
+        var data = await response.json().catch(function () { return {}; });
+        if (!response.ok) throw new Error(data.error || 'Unable to start Quran memorization.');
+        return data;
+      };
+      if (window.jQuery && jQuery.fn.autocomplete) {
+        var $input = jQuery(input);
+        $input.autocomplete({
+          appendTo: form.querySelector('.modal-body'), delay: 0, minLength: 0,
+          source: function (request, response) { response(catalog.map(choiceFor).filter(function (choice) { return matches(choice, request.term); }).slice(0, 12).map(function (choice) { return { label: `${choice.number}. ${choice.name}`, value: `${choice.number}. ${choice.name}`, choice: choice }; })); },
+          focus: function (event) { event.preventDefault(); },
+          select: function (event, ui) { event.preventDefault(); chooseSurah(ui.item.choice); },
+          open: function () { $input.autocomplete('widget').addClass('search-autocomplete-menu quran-surah-review-autocomplete-menu').css('width', $input.outerWidth()); }
+        }).autocomplete('instance')._renderItem = function (list, item) {
+          var choice = item.choice;
+          var row = jQuery('<div>').addClass('search-autocomplete-item search-autocomplete-quran');
+          jQuery('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.label).appendTo(row);
+          var meta = jQuery('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-lines');
+          if (choice.arabic) jQuery('<span>').addClass('search-autocomplete-meta-ar').attr({ lang: 'ar', dir: 'rtl' }).text(choice.arabic).appendTo(meta);
+          jQuery('<span>').addClass('search-autocomplete-meta-en').text(`${choice.ayahs} āyāt`).appendTo(meta);
+          meta.appendTo(row);
+          return jQuery('<li>').append(row).appendTo(list);
+        };
+        $input.on('focus', function () { if (!$input.autocomplete('widget').is(':visible')) $input.autocomplete('search', $input.val()); });
+      }
+      modal.addEventListener('shown.bs.modal', function () { input.focus(); });
+      modal.addEventListener('hidden.bs.modal', function () { input.value = ''; selectedSurah.value = ''; status.textContent = ''; submit.disabled = false; });
+      input.addEventListener('input', function () { selectedSurah.value = ''; input.classList.remove('is-invalid'); });
+      form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var surahNumber = Number(selectedSurah.value);
+        var choice = catalog.map(choiceFor).find(function (item) { return item.number === surahNumber; });
+        if (!choice) { input.classList.add('is-invalid'); status.textContent = 'Choose a surah from the suggestions.'; input.focus(); return; }
+        submit.disabled = true;
+        status.textContent = 'Saving your starting point and preparing your review...';
+        try {
+          var token = await getToken(true);
+          var data = await memorizationRequest('/onboarding', { method: 'POST', token: token, body: { learning_surah: surahNumber, learning_ayah_count: choice.ayahs } });
+          if (window.trackQuranAnalyticsEvent) window.trackQuranAnalyticsEvent('quran_memorization_get_started', { surah_number: surahNumber, enrolled_ayah_count: Number(data.learning && data.learning.enrolled_count) || 0 });
+          var sessionData = await memorizationRequest('/review/sessions', { method: 'POST', token: token, body: { mode: 'regular' } });
+          var session = sessionData.session || {};
+          if (window.trackQuranAnalyticsEvent) window.trackQuranAnalyticsEvent('quran_review_session_start', { session_mode: 'regular', start_source: 'onboarding', ayah_count: Number(session.queued) || 0 });
+          window.navigateWithQuranReviewLoading(quranUrl('/quran/review?continue=1'), 'Loading your review...');
+        } catch (err) {
+          if (window.hideQuranReviewLoading) window.hideQuranReviewLoading();
+          status.textContent = err.message || 'Unable to start Quran memorization.';
+          submit.disabled = false;
+        }
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true });
+    else initialize();
+  }());
+</script>

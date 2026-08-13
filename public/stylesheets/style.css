@@ -2651,7 +2651,7 @@ del em strong {
 	background: transparent;
 	border: 0;
 	box-shadow: none;
-	color: var(--bs-secondary-color);
+	color: var(--c-accent);
 	cursor: pointer;
 	display: inline-flex;
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -2660,28 +2660,19 @@ del em strong {
 	justify-content: center;
 	line-height: 1;
 	margin: 0;
-	opacity: .72;
+	opacity: 1;
 	padding: 0;
 	touch-action: manipulation;
 	width: 1.2rem;
 }
 
-.quran-ayah-state-toggle .bi-chevron-down {
+.quran-ayah-state-toggle .bi-caret-down-square-fill {
 	align-items: center;
 	display: inline-flex;
-	height: .65rem;
+	font-size: .58rem;
+	height: .66rem;
 	justify-content: center;
-	width: .65rem;
-}
-
-.quran-ayah-state-toggle .bi-chevron-down::before {
-	border-bottom: .14rem solid currentColor;
-	border-right: .14rem solid currentColor;
-	content: "";
-	display: block;
-	height: .32rem;
-	transform: translateY(-.06rem) rotate(45deg);
-	width: .32rem;
+	width: .66rem;
 }
 
 .quran-ayah-state-toggle:hover,

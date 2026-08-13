@@ -2310,7 +2310,7 @@ router.get('/quran/review', async function (req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   const helpView = req.query.help !== undefined;
   const startReview = !helpView && (req.query.start !== undefined || req.query.continue !== undefined);
-  if (!helpView)
+  if (startReview)
     res.setHeader('X-Robots-Tag', 'noindex, follow');
   const quranHeaderJuzLinks = await quranReviewHeaderJuzLinks(req);
   res.render(startReview ? 'quran_review' : 'quran_memorization_pages', {
@@ -2325,7 +2325,7 @@ router.get('/quran/review', async function (req, res) {
           ? 'Mudhakkir helps you memorize the Quran ayah by ayah with focused Mushaf practice, adaptive spaced repetition, review scheduling, and progress tracking.'
           : 'View your Quran memorization progress, due ayat, recent activity, and adaptive review schedule.'),
       canonical: helpView ? '/quran/review?help' : '/quran/review',
-      noindex: !helpView,
+      noindex: startReview,
       context: { quranSearchProxy: true }
     }
   });

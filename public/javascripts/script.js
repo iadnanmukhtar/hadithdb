@@ -7907,7 +7907,7 @@ function initQuranAyahMemorization(root) {
 			trigger.setAttribute('aria-expanded', 'false');
 			trigger.setAttribute('aria-controls', stateMenu.id);
 			trigger.setAttribute('aria-label', `Memorization actions for Quran ${ref}. Current state: Later`);
-			trigger.innerHTML = '<span class="bi bi-chevron-down" aria-hidden="true"></span><span class="visually-hidden" data-quran-ayah-state-current>Later</span>';
+			trigger.innerHTML = '<span class="bi bi-caret-down-square-fill" aria-hidden="true"></span><span class="visually-hidden" data-quran-ayah-state-current>Later</span>';
 			var control = document.createElement('select');
 			control.className = 'quran-ayah-state-select';
 			control.setAttribute('data-quran-ref', ref);
@@ -9306,7 +9306,7 @@ function initPageHelpTips(root) {
 		},
 		{
 			title: 'Begin your hifz journey',
-			copy: 'Select **Get Started** to choose what you already know and what you want to learn first.',
+			copy: 'Select **Get Started** to choose the surah you want to memorize.',
 			selector: '#quran-memorization-progress [data-bs-target="#quran-get-started-modal"]',
 			action: 'click-target',
 			actionLabel: 'Get started'
