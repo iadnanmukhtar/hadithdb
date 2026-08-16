@@ -2,47 +2,47 @@
 
 @font-face {
 	font-family: Kitab;
-	src: url(/fonts/kitab-base.woff2);
+	src: url(/static/fonts/kitab-base.woff2);
 }
 
 @font-face {
 	font-family: KitabBold;
-	src: url(/fonts/kitab-base-b.woff2);
+	src: url(/static/fonts/kitab-base-b.woff2);
 }
 
 @font-face {
 	font-family: QuranV1;
-	src: url('/fonts/DigitalKhattV1.otf') format('opentype');
+	src: url('/static/fonts/DigitalKhattV1.otf') format('opentype');
 	font-display: swap;
 }
 
 @font-face {
 	font-family: QuranV2;
-	src: url('/fonts/DigitalKhattV1.otf') format('opentype');
+	src: url('/static/fonts/DigitalKhattV1.otf') format('opentype');
 	font-display: swap;
 }
 
 @font-face {
 	font-family: Quran;
-	src: url('/fonts/DigitalKhattV1.otf') format('opentype');
+	src: url('/static/fonts/DigitalKhattV1.otf') format('opentype');
 	font-display: swap;
 }
 
 @font-face {
 	font-family: QuranBold;
-	src: url('/fonts/DigitalKhattV1.otf') format('opentype');
+	src: url('/static/fonts/DigitalKhattV1.otf') format('opentype');
 	font-display: swap;
 }
 
 @font-face {
 	font-family: QuranIndoPak;
-	src: url('/fonts/DigitalKhattIndoPak.woff2') format('woff2');
+	src: url('/static/fonts/DigitalKhattIndoPak.woff2') format('woff2');
 	font-display: swap;
 }
 
 @font-face {
 	font-family: QuranWarsh;
-	src: url('/fonts/warsh.woff2') format('woff2');
+	src: url('/static/fonts/warsh.woff2') format('woff2');
 	font-display: swap;
 }
 
@@ -82,19 +82,19 @@ body.quran-script-warsh .quran-ayah-end-marker {
 
 @font-face {
 	font-family: Hafs;
-	src: url('/fonts/kd-hafs.woff2') format('woff2');
+	src: url('/static/fonts/kd-hafs.woff2') format('woff2');
 	font-display: swap;
 }
 
 @font-face {
 	font-family: SurahNameV2;
-	src: url('/fonts/surah-name-v2.woff2') format('woff2');
+	src: url('/static/fonts/surah-name-v2.woff2') format('woff2');
 	font-display: swap;
 }
 
 @font-face {
 	font-family: 'surah-header';
-	src: url('/fonts/qcf-surah-header.woff2') format('woff2');
+	src: url('/static/fonts/qcf-surah-header.woff2') format('woff2');
 	font-display: swap;
 }
 
@@ -957,14 +957,14 @@ nav .nav-link[aria-current="page"] {
 	margin-left: 0.3em;
 	vertical-align: -0.15em;
 	background-color: #444;
-	-webkit-mask: center / contain no-repeat url('/images/makki.svg');
-	mask: center / contain no-repeat url('/images/makki.svg');
+	-webkit-mask: center / contain no-repeat url('/static/img/makki.svg');
+	mask: center / contain no-repeat url('/static/img/makki.svg');
 }
 
 .quran-revelation-icon-madani {
 	background-color: #198754;
-	-webkit-mask-image: url('/images/madani.svg');
-	mask-image: url('/images/madani.svg');
+	-webkit-mask-image: url('/static/img/madani.svg');
+	mask-image: url('/static/img/madani.svg');
 }
 
 .quran-juz-surah-link .quran-revelation-icon {
@@ -1953,6 +1953,10 @@ nav .nav-link[aria-current="page"] {
 	color: var(--c-black-soft);
 }
 
+.home-quran-announcement[hidden] {
+	display: none;
+}
+
 .home-quran-announcement-text {
 	margin-bottom: 0.35rem;
 	font-size: var(--content-size-lead);
@@ -1969,15 +1973,32 @@ nav .nav-link[aria-current="page"] {
 .home-quran-announcement-actions {
 	display: flex;
 	align-items: center;
-	gap: 0.45rem;
+	flex-wrap: wrap;
+	gap: 0.85rem;
 	flex-shrink: 0;
+	padding-right: 1.5rem;
 }
 
-.home-quran-announcement-actions .btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.35rem;
-	white-space: nowrap;
+.home-quran-announcement-logo-link {
+	display: block;
+	border-radius: 22.5%;
+	line-height: 0;
+	transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.home-quran-announcement-logo {
+	display: block;
+	width: clamp(5.5rem, 9vw, 7rem);
+	height: auto;
+	border-radius: 22.5%;
+	clip-path: inset(0 round 22.5%);
+	object-fit: contain;
+}
+
+.home-quran-announcement-logo-link:hover,
+.home-quran-announcement-logo-link:focus-visible {
+	box-shadow: 0 .25rem .75rem var(--c-black-18);
+	transform: translateY(-1px);
 }
 
 .home-quran-announcement-close {
@@ -2016,7 +2037,8 @@ nav .nav-link[aria-current="page"] {
 	.home-quran-announcement-actions {
 		width: 100%;
 		justify-content: flex-start;
-		gap: 0.35rem;
+		gap: 0.75rem;
+		padding-right: 0;
 	}
 }
 

@@ -40,7 +40,7 @@
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
     var isHadithArea = !isQuranArea && !isBooksArea && !isBlogArea && !isMoreArea;
-    var headerLogo = isMudhakkirArea ? '/images/quran/mudhakkir.svg' : (isQuranArea ? '/images/quran-logo2.svg' : '/images/logo2.svg');
+    var headerLogo = isMudhakkirArea ? '/static/img/quran/mudhakkir.svg' : (isQuranArea ? '/static/img/quran-logo2.svg' : '/static/img/logo2.svg');
     var headerBrandName = isMudhakkirArea ? 'Mudhakkir' : (isQuranArea ? 'Quran Unlocked' : site.name);
     var headerLogoAlt = headerBrandName;
     var headerBrandHref = isQuranArea ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');

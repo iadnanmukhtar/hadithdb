@@ -10,7 +10,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   <main class="container col-lg-8 mx-auto mt-10 quran-review-top-offset quran-memorization-welcome" id="quran-memorization-welcome"<% if (!helpView) { %> hidden<% } %>>
     <section class="quran-memorization-welcome-hero text-center mx-auto">
-      <img class="quran-memorization-welcome-logo" src="/images/quran/mudhakkir.svg" width="96" height="96" alt="Mudhakkir">
+      <img class="quran-memorization-welcome-logo" src="/static/img/quran/mudhakkir.svg" width="96" height="96" alt="Mudhakkir">
       <p class="text-primary fw-semibold small mb-2"><span class="badge rounded-pill text-bg-primary me-1">Adaptive review</span> Spaced repetition for Quran hifz</p>
       <h1 class="fs-2 mb-1">Mudhakkir</h1>
       <p class="fs-5 fw-semibold mb-3">Keep your Quran memorization fresh</p>
@@ -68,7 +68,7 @@
               <span>Assess each āyah once, then practice as Review guides you.</span>
             </div>
             <div class="quran-memorization-preview-screenshot">
-              <img src="/images/quran/memorization-memorize-preview.png?v=<%= utils.styleAssetVersion() %>" width="640" height="960" loading="lazy" alt="Cropped Memorize mode screenshot of Mushaf page 600, with the original surah headings, basmalahs, Easy controls, hidden word placeholders, and page controls">
+              <img src="/static/img/quran/memorization-memorize-preview.png?v=<%= utils.styleAssetVersion() %>" width="640" height="960" loading="lazy" alt="Cropped Memorize mode screenshot of Mushaf page 600, with the original surah headings, basmalahs, Easy controls, hidden word placeholders, and page controls">
             </div>
           </div>
           <figcaption><strong>Memorize with clarity</strong><span>Give each Later āyah an honest starting assessment.</span></figcaption>
@@ -81,7 +81,7 @@
               <span>Focused reviews keep every āyah fresh.</span>
             </div>
             <div class="quran-memorization-preview-screenshot">
-              <img src="/images/quran/memorization-review-preview.png?v=<%= utils.styleAssetVersion() %>" width="640" height="960" loading="lazy" alt="Review mode using the original Mushaf page 599 screenshot, with earlier Quran context visible, the current āyah concealed in place, later text faded, and sticky Again, Hard, Good, Easy, and Skip grading buttons">
+              <img src="/static/img/quran/memorization-review-preview.png?v=<%= utils.styleAssetVersion() %>" width="640" height="960" loading="lazy" alt="Review mode using the original Mushaf page 599 screenshot, with earlier Quran context visible, the current āyah concealed in place, later text faded, and sticky Again, Hard, Good, Easy, and Skip grading buttons">
             </div>
           </div>
           <figcaption><strong>Review with focus</strong><span>Recall in Quran order, then let the app choose the next review time.</span></figcaption>
@@ -94,7 +94,7 @@
               <span>Your hifz history stays synced across devices.</span>
             </div>
             <div class="quran-memorization-preview-screenshot">
-              <img src="/images/quran/memorization-progress-preview.svg?v=<%= utils.styleAssetVersion() %>" width="640" height="960" loading="lazy" alt="Memorization Progress showing review activity, Hard, Good, and Easy state totals, and pages grouped by surah">
+              <img src="/static/img/quran/memorization-progress-preview.svg?v=<%= utils.styleAssetVersion() %>" width="640" height="960" loading="lazy" alt="Memorization Progress showing review activity, Hard, Good, and Easy state totals, and pages grouped by surah">
             </div>
           </div>
           <figcaption><strong>See every step</strong><span>Follow activity, due reviews, and memorization states across the Quran.</span></figcaption>

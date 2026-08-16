@@ -396,18 +396,22 @@ function initHomeQuranAnnouncement(scope) {
 	if (!announcement)
 		return;
 
+	var dismissed = false;
 	try {
 		if (window.localStorage && (localStorage.getItem(storageKey) === 'true' || localStorage.getItem(legacyStorageKey) === 'true')) {
+			dismissed = true;
 			if (localStorage.getItem(storageKey) !== 'true') {
 				localStorage.setItem(storageKey, 'true');
 				localStorage.removeItem(legacyStorageKey);
 			}
-			announcement.remove();
-			return;
 		}
 	} catch (err) {
 		// Storage can be unavailable in private or restricted browsing contexts.
 	}
+	if (dismissed)
+		return;
+
+	announcement.hidden = false;
 
 	var closeButton = announcement.querySelector('[data-home-quran-announcement-close]');
 	if (!closeButton)
@@ -420,7 +424,7 @@ function initHomeQuranAnnouncement(scope) {
 				localStorage.removeItem(legacyStorageKey);
 			}
 		} catch (err) {}
-		announcement.remove();
+		announcement.hidden = true;
 	});
 }
 
@@ -6767,7 +6771,7 @@ function quranShareModalHtml(ayah, shareId) {
 	var $brand = $('<div>').addClass('hadith-share-brand').attr('style', 'display:flex;align-items:center;justify-content:space-between;gap:9px;width:100%;min-width:0;').appendTo($footer);
 	$('<div>').addClass('hadith-share-site share-editable').attr({ contenteditable: 'false', 'data-share-site-editor': '1' }).text('hadithunlocked.com').appendTo($brand);
 	$('<div>').addClass('hadith-share-logo').attr({ 'data-share-logo': '', style: 'position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:34px;height:34px;max-width:34px;max-height:34px;' })
-		.append($('<img>').attr({ src: '/images/quran-logo2.svg', width: '34', height: '34', alt: 'Quran Unlocked', loading: 'lazy', style: 'display:block;width:34px;height:34px;max-width:34px;max-height:34px;object-fit:contain;' }))
+		.append($('<img>').attr({ src: '/static/img/quran-logo2.svg', width: '34', height: '34', alt: 'Quran Unlocked', loading: 'lazy', style: 'display:block;width:34px;height:34px;max-width:34px;max-height:34px;object-fit:contain;' }))
 		.append($('<button>').attr({ type: 'button', 'aria-label': 'Remove logo', title: 'Remove logo', hidden: 'hidden', style: 'display:none;position:absolute;top:-8px;right:-8px;width:20px;height:20px;padding:0;border:1px solid #cfc7bc;border-radius:999px;background:#fff;color:#333;line-height:1;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.16);' }).addClass('hadith-share-logo-remove').append($('<span>').addClass('bi bi-x')))
 		.appendTo($brand);
 	return $modal;

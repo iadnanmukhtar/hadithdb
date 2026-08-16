@@ -53,14 +53,14 @@
   var headSiteName = isQuranHeadPage ? quranHeadBrandName : site.name;
   var headSiteUrl = isQuranHeadPage ? quranCanonicalBaseUrl : site.url;
   var headAppLogo = isMudhakkirHeadPage
-    ? `${quranCanonicalBaseUrl}/images/quran/mudhakkir.png`
-    : (isQuranHeadPage ? `${quranCanonicalBaseUrl}/images/quran-logo.png` : site.logo);
-  var headAppLogoVectorPath = isMudhakkirHeadPage ? '/images/quran/mudhakkir.svg' : (isQuranHeadPage ? '/images/quran-logo2.svg' : '/images/logo2.svg');
-  var headAppLogo32Path = isMudhakkirHeadPage ? '/images/quran/mudhakkir.png' : (isQuranHeadPage ? '/images/quran-logo32.png' : '/images/logo32.png');
-  var headAppFavicon16Path = isQuranHeadPage ? '/images/quran-favicon-16x16.png' : '/images/favicon-16x16.png';
-  var headAppTouchIconPath = isMudhakkirHeadPage ? '/images/quran/mudhakkir.png' : (isQuranHeadPage ? '/images/quran-apple-touch-icon.png' : '/images/apple-touch-icon.png');
-  var headAppIcoPath = isMudhakkirHeadPage ? '/images/quran/mudhakkir.ico' : (isQuranHeadPage ? '/images/quran-favicon.ico' : '/favicon.ico');
-  var headLogo = page.cover || headAppLogo;
+    ? `${quranCanonicalBaseUrl}/static/img/quran/mudhakkir.png`
+    : (isQuranHeadPage ? `${quranCanonicalBaseUrl}/static/img/quran-logo.png` : utils.staticAssetUrl(site.logo));
+  var headAppLogoVectorPath = isMudhakkirHeadPage ? '/static/img/quran/mudhakkir.svg' : (isQuranHeadPage ? '/static/img/quran-logo2.svg' : '/static/img/logo2.svg');
+  var headAppLogo32Path = isMudhakkirHeadPage ? '/static/img/quran/mudhakkir.png' : (isQuranHeadPage ? '/static/img/quran-logo32.png' : '/static/img/logo32.png');
+  var headAppFavicon16Path = isQuranHeadPage ? '/static/img/quran-favicon-16x16.png' : '/static/img/favicon-16x16.png';
+  var headAppTouchIconPath = isMudhakkirHeadPage ? '/static/img/quran/mudhakkir.png' : (isQuranHeadPage ? '/static/img/quran-apple-touch-icon.png' : '/static/img/apple-touch-icon.png');
+  var headAppIcoPath = isMudhakkirHeadPage ? '/static/img/quran/mudhakkir.ico' : (isQuranHeadPage ? '/static/img/quran-favicon.ico' : '/favicon.ico');
+  var headLogo = utils.staticAssetUrl(page.cover) || headAppLogo;
   function quranCanonicalPath(path) {
     if (!path)
       return path;
@@ -128,7 +128,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<link rel="stylesheet" href="/stylesheets/style.css?v=<%= utils.styleAssetVersion() %>" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css?v=<%= utils.styleAssetVersion() %>" rel="stylesheet">
 <% if (page.feed || page.rss) { 
   if (page.feed) { %>
     <link rel="alternate" type="application/atom+xml" title="<%= page.title_en %>" href="<%= page.feed %>" />
@@ -141,7 +141,7 @@
   <link rel="alternate" type="application/rss+xml" title="Recent translations of beautiful and notable aḥādīth" href="<%= site.url %>/highlights/rss" />
 <% } %>
 
-<link rel="image_src" href="<%= page.cover || headAppLogo %>" />
+<link rel="image_src" href="<%= headLogo %>" />
 <link rel="icon" type="image/svg+xml" href="<%= headAppLogoVectorPath %>" />
 <link rel="icon" type="image/png" sizes="32x32" href="<%= headAppLogo32Path %>" />
 <link rel="icon" type="image/png" sizes="16x16" href="<%= headAppFavicon16Path %>" />
@@ -161,14 +161,14 @@
 
 <meta property="og:site_name" content="<%= headSiteName %>">
 <meta property="og:locale" content="en">
-<meta property="og:image" content="<%= page.cover || headAppLogo %>">
+<meta property="og:image" content="<%= headLogo %>">
 <meta property="og:url" content="<%= headCanonicalUrl %>">
 <meta property="og:title" content="<%= headTitle %>">
 <meta property="og:description" content="<%= headDescription %>">
 <meta property="og:type" content="article" />
 
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="<%= page.cover || headAppLogo %>">
+<meta name="twitter:image" content="<%= headLogo %>">
 <meta name="twitter:title" content="<%= headTitle %>">
 <meta name="twitter:description" content="<%= headDescription %>">
 

@@ -10,7 +10,7 @@ const markdownit = require('markdown-it');
 const markdownitfence = require('markdown-it-fence')
 
 const router = express.Router();
-const BLOG_PLACEHOLDER_COVER = '/images/pearls_of_the_deep.jpg';
+const BLOG_PLACEHOLDER_COVER = '/static/img/pearls_of_the_deep.jpg';
 
 router.get('/', async function (req, res, next) {
 
@@ -153,12 +153,13 @@ function applyCoverFallback(post) {
   if (typeof post.cover !== 'string' || post.cover.trim().length === 0)
     post.cover = BLOG_PLACEHOLDER_COVER;
   else
-    post.cover = post.cover.trim();
+    post.cover = global.utils.staticAssetUrl(post.cover.trim());
   post.coverUrl = absoluteCoverUrl(post.cover);
   return post;
 }
 
 function absoluteCoverUrl(cover) {
+  cover = global.utils.staticAssetUrl(cover);
   if (/^https?:\/\//i.test(cover))
     return cover;
   if (cover.startsWith('/'))
@@ -189,6 +190,5 @@ function renderHtml(body) {
   });
   body = body.replace(/==([^=]+)==/g, '<span class="highlight">$1</span>');
   body = body.replace(/\[![^\]]+\]/g, ''); // remove [!xyz] tags
-  const html = md.render(body);
-  return html;
+  return global.utils.rewriteStaticAssetUrls(md.render(body));
 }
