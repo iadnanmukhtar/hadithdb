@@ -2576,6 +2576,7 @@ del em strong {
 	--quran-mushaf-line-height: 1.6;
 	--quran-mushaf-line-min-height: 1.72em;
 	--quran-mushaf-page-font-size: 35px;
+	--quran-mushaf-page-control-height: calc(var(--quran-mushaf-page-toolbar-font-size) * 1.3 + 2px);
 	--quran-mushaf-page-header-font-size: clamp(0.78rem, calc(var(--quran-mushaf-page-font-size) * 0.54), 1.05rem);
 	--quran-mushaf-page-shadow-blur: clamp(2rem, 8vw, 100px);
 	--quran-mushaf-page-toolbar-font-size: clamp(1rem, calc(var(--quran-mushaf-page-font-size) * 0.67), 1.3rem);
@@ -2594,6 +2595,14 @@ del em strong {
 	width: 100%;
 }
 
+.quran-mushaf-page-toolbar .btn,
+.quran-mushaf-page-footer .btn {
+	align-items: center;
+	display: inline-flex;
+	height: var(--quran-mushaf-page-control-height);
+	justify-content: center;
+}
+
 .quran-mushaf-sheet.quran-hafs.quran-mushaf-sheet-odd:lang(ar) {
 	background-image: linear-gradient(to right, rgba(108, 117, 125, .22) 0%, rgba(108, 117, 125, 0) 18%);
 }
@@ -2602,52 +2611,28 @@ del em strong {
 	background-image: linear-gradient(to left, rgba(108, 117, 125, .22) 0%, rgba(108, 117, 125, 0) 18%);
 }
 
-[data-quran-review-reader] .quran-mushaf-sheet,
-[data-quran-review-reader] .quran-mushaf-sheet.quran-hafs:lang(ar) {
-	background-color: color-mix(in srgb, var(--bs-body-bg) 96%, #4c8fc7 4%);
-}
-
 .quran-review-page-continuity {
-	background: color-mix(in srgb, var(--bs-body-bg) 97%, #4c8fc7 3%);
-	border: 1px solid color-mix(in srgb, var(--bs-border-color) 82%, #4c8fc7 18%);
-	border-radius: .35rem;
-	box-sizing: border-box;
-	font-size: 1.58rem;
 	margin: 0 auto .55rem;
-	max-width: 832px;
-	min-width: 832px;
-	overflow: hidden;
-	padding: .38rem 40px .48rem;
-	width: 100%;
 }
 
 .quran-review-page-continuity-label {
 	color: var(--bs-secondary-color);
 	display: block;
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	font-size: .55rem;
+	font-size: var(--quran-mushaf-page-header-font-size);
+	font-weight: 600;
 	line-height: 1;
-	margin-bottom: .22rem;
+	margin-bottom: .55em;
 	text-align: left;
-}
-
-.quran-review-page-continuity-line {
-	align-items: center;
-	display: flex;
-	gap: .14em;
-	justify-content: space-between;
-	line-height: 1.55;
-	min-height: 1.55em;
-	white-space: nowrap;
 }
 
 .quran-review-page-continuity-line > * {
 	flex-shrink: 0;
 }
 
-.quran-review-page-continuity-marker {
-	color: var(--bs-secondary-color);
-	font-size: .82em;
+.quran-review-page-continuity .quran-review-page-continuity-word,
+.quran-review-page-continuity .quran-review-page-continuity-marker {
+	font-size: var(--quran-mushaf-line-font-size, var(--quran-mushaf-page-font-size)) !important;
 }
 
 .quran-ayah-state-select {
@@ -5227,13 +5212,6 @@ del em strong {
 		width: 100%;
 	}
 
-	.quran-review-page-continuity {
-		font-size: var(--quran-mushaf-mobile-font-size, 1rem);
-		max-width: 95vw;
-		min-width: 0;
-		padding: .38rem .65rem .45rem;
-	}
-
 	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) {
 		font-size: var(--quran-mushaf-line-font-size, var(--quran-mushaf-mobile-font-size, 1rem)) !important;
 	}
@@ -5267,10 +5245,6 @@ del em strong {
 		max-width: min(38rem, 72vw);
 	}
 
-	.quran-review-page-continuity {
-		max-width: min(38rem, 72vw);
-	}
-
 	.quran-mushaf-sheet.quran-hafs .quran-mushaf-line:not(.quran-mushaf-line-surah_name) {
 		gap: 0.14em;
 		justify-content: space-between;
@@ -5291,8 +5265,7 @@ del em strong {
 	}
 
 	.quran-mushaf-sheet,
-	.quran-mushaf-sheet.quran-hafs:lang(ar),
-	.quran-review-page-continuity {
+	.quran-mushaf-sheet.quran-hafs:lang(ar) {
 		max-width: 832px;
 		min-width: 832px;
 	}
@@ -5303,12 +5276,6 @@ del em strong {
 		font-size: var(--quran-mushaf-page-font-size) !important;
 		padding: 40px;
 	}
-
-	.quran-review-page-continuity {
-		font-size: 1.58rem;
-		padding-left: 40px;
-		padding-right: 40px;
-	}
 }
 
 @media (min-width: 1024px) and (max-width: 1279.98px) {
@@ -5317,8 +5284,7 @@ del em strong {
 	}
 
 	.quran-mushaf-sheet,
-	.quran-mushaf-sheet.quran-hafs:lang(ar),
-	.quran-review-page-continuity {
+	.quran-mushaf-sheet.quran-hafs:lang(ar) {
 		max-width: 672px;
 		min-width: 672px;
 	}
@@ -5329,12 +5295,6 @@ del em strong {
 		font-size: var(--quran-mushaf-page-font-size) !important;
 		padding: 40px;
 	}
-
-	.quran-review-page-continuity {
-		font-size: 1.28rem;
-		padding-left: 40px;
-		padding-right: 40px;
-	}
 }
 
 @media (min-width: 768px) and (max-width: 1023.98px) {
@@ -5343,8 +5303,7 @@ del em strong {
 	}
 
 	.quran-mushaf-sheet,
-	.quran-mushaf-sheet.quran-hafs:lang(ar),
-	.quran-review-page-continuity {
+	.quran-mushaf-sheet.quran-hafs:lang(ar) {
 		max-width: 640px;
 		min-width: 640px;
 	}
@@ -5354,12 +5313,6 @@ del em strong {
 		--quran-mushaf-page-font-size: 26.05px;
 		font-size: var(--quran-mushaf-page-font-size) !important;
 		padding: 40px;
-	}
-
-	.quran-review-page-continuity {
-		font-size: 1.21rem;
-		padding-left: 40px;
-		padding-right: 40px;
 	}
 }
 
@@ -5371,8 +5324,7 @@ del em strong {
 	}
 
 	.quran-mushaf-sheet,
-	.quran-mushaf-sheet.quran-hafs:lang(ar),
-	.quran-review-page-continuity {
+	.quran-mushaf-sheet.quran-hafs:lang(ar) {
 		max-width: 624px;
 		min-width: 0;
 		width: 100%;
@@ -5385,15 +5337,19 @@ del em strong {
 		font-size: var(--quran-mushaf-page-font-size) !important;
 		padding: 8px;
 	}
-
-	.quran-review-page-continuity {
-		font-size: clamp(1rem, 5vw, 1.57rem);
-		padding-left: 8px;
-		padding-right: 8px;
-	}
 }
 
 @media (max-width: 419.98px) {
+	[data-quran-review-reader] .quran-memorize-page-footer {
+		grid-template-columns: 1fr;
+	}
+
+	[data-quran-review-reader] .quran-memorize-page-footer .quran-ayah-review-rating {
+		grid-column: 1;
+		margin-left: 0;
+		width: 100%;
+	}
+
 	.quran-mushaf-page-heading {
 		grid-template-columns: auto 1fr;
 		row-gap: .35em;
@@ -6161,7 +6117,6 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	background: color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%);
 	display: flex;
 	flex-flow: row nowrap;
-	max-width: 34rem;
 	padding: .42rem .55rem calc(.42rem + env(safe-area-inset-bottom));
 }
 
@@ -7100,6 +7055,27 @@ body > footer,
 .quran-mushaf-page-toolbar .quran-ayah-select-btn {
 	font-size: .9em;
 	padding: .17em .39em;
+}
+
+.quran-mushaf-page-footer .quran-ayah-select-btn,
+.quran-mushaf-page-footer .quran-review-icon-action {
+	font-size: calc(var(--quran-mushaf-page-toolbar-font-size) * .9);
+	padding: .17em .39em;
+}
+
+.quran-mushaf-page-footer .quran-review-session-actions .btn {
+	font-size: calc(var(--quran-mushaf-page-toolbar-font-size) * .86);
+	padding: .18em .38em;
+}
+
+.quran-mushaf-page-footer .quran-memorize-rating-buttons .btn {
+	font-size: calc(var(--quran-mushaf-page-toolbar-font-size) * .83);
+	padding: .18em .38em;
+}
+
+.quran-mushaf-page-footer .quran-memorize-launch-actions .btn {
+	font-size: calc(var(--quran-mushaf-page-toolbar-font-size) * .76);
+	padding: .25em .55em;
 }
 
 .quran-mushaf-page-toolbar .quran-passage-audio-control {

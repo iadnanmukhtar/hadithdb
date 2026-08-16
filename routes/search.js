@@ -2374,11 +2374,11 @@ async function renderQuranMushafPage(req, res, next, options) {
   var previousMushaf = review && pageNumber > 1
     ? await QuranMushaf.page(pageNumber - 1)
     : null;
-  var reviewPreviousLine = previousMushaf
-    ? previousMushaf.lines.slice().reverse().find(function (line) {
+  var reviewPreviousLines = previousMushaf
+    ? previousMushaf.lines.filter(function (line) {
       return line.line_type === 'ayah' && Array.isArray(line.words) && line.words.length > 0;
-    }) || null
-    : null;
+    }).slice(-3)
+    : [];
   var juzStarts = {};
   var juzRows = await QuranTocSubdivisions.juzRows();
   juzRows.forEach(function (juz) {
@@ -2410,7 +2410,9 @@ async function renderQuranMushafPage(req, res, next, options) {
       subsectionIndex += 1;
     });
   });
-  mushaf.lines.flatMap(line => line.words || []).forEach(function (word) {
+  [mushaf, previousMushaf].filter(Boolean).flatMap(function (page) {
+    return page.lines.flatMap(line => line.words || []);
+  }).forEach(function (word) {
     var ranges = subsectionRangesBySurah[Number(word.surah)] || [];
     var range = ranges.find(function (candidate) {
       return Number(word.ayah) >= candidate.start && Number(word.ayah) <= candidate.end;
@@ -2579,7 +2581,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     review: review,
     reviewRef: reviewRef,
     reviewRetry: req.query.reviewRetry !== undefined,
-    reviewPreviousLine: reviewPreviousLine,
+    reviewPreviousLines: reviewPreviousLines,
     selectedAyahRef: selectedAyahRef,
     mushaf: mushaf,
     audioRanges: audioRanges,

@@ -14,17 +14,21 @@
     <% } %>
     <article class="quran-mushaf-page<%= memorize ? ' quran-memorize-page' : '' %>" data-quran-mushaf-page="<%= mushaf.number %>"<% if (memorize) { %> data-quran-memorize-page="1" data-quran-memorize-auto-hide="false"<% } %> data-quran-infinite-page="1" data-quran-audio-scope="quran-page-<%= mushaf.number %>">
       <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero data-quran-clear-href="/quran/page/<%= mushaf.number %>"></div>
-      <% if (review && reviewPreviousLine) { %>
-      <aside class="quran-review-page-continuity quran-hafs" lang="ar" dir="rtl" aria-label="Final line from Mushaf page <%= mushaf.number - 1 %>">
+      <% if (review && reviewPreviousLines && reviewPreviousLines.length) { %>
+      <aside class="quran-review-page-continuity quran-mushaf-sheet quran-hafs quran-mushaf-sheet-<%= Number(mushaf.number - 1) % 2 === 0 ? 'even' : 'odd' %>" lang="ar" dir="rtl" aria-label="Final <%= reviewPreviousLines.length %> lines from Mushaf page <%= mushaf.number - 1 %>">
         <span class="quran-review-page-continuity-label" lang="en" dir="ltr">Previous page</span>
-        <div class="quran-review-page-continuity-line">
-          <% reviewPreviousLine.words.forEach(function (word) { %>
+        <div class="quran-review-page-continuity-lines">
+        <% reviewPreviousLines.forEach(function (line) { %>
+          <div class="quran-mushaf-line quran-review-page-continuity-line" data-line-number="<%= line.line_number %>">
+          <% line.words.forEach(function (word) { %>
             <% if (word.is_ayah_marker) { %>
-            <span class="quran-review-page-continuity-marker quran-ayah-end-marker" data-quran-script-text="marker" data-quran-ref="<%= word.surah %>:<%= word.ayah %>" data-quran-marker-text="۝<%= arabic.toArabicDigits(word.ayah) %>" aria-label="End of Quran <%= word.surah %>:<%= word.ayah %>">۝<%= arabic.toArabicDigits(word.ayah) %></span>
+            <span class="quran-review-page-continuity-marker quran-ayah-end-marker quran-mushaf-ayah-marker quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %>" data-quran-script-text="marker" data-quran-ref="<%= word.surah %>:<%= word.ayah %>" data-quran-marker-text="۝<%= arabic.toArabicDigits(word.ayah) %>" aria-label="End of Quran <%= word.surah %>:<%= word.ayah %>">۝<%= arabic.toArabicDigits(word.ayah) %></span>
             <% } else { %>
-            <span class="quran-review-page-continuity-word" data-quran-script-text="word-exact" data-quran-ref="<%= word.surah %>:<%= word.ayah %>" data-quran-word="<%= word.text %>" data-quran-word-number="<%= word.word %>"><%= word.text %></span>
+            <span class="quran-review-page-continuity-word quran-mushaf-passage-tone-<%= word.passageTone === 1 ? 1 : 0 %>" data-quran-script-text="word-exact" data-quran-ref="<%= word.surah %>:<%= word.ayah %>" data-quran-word="<%= word.text %>" data-quran-word-number="<%= word.word %>"><%= word.text %></span>
             <% } %>
           <% }); %>
+          </div>
+        <% }); %>
         </div>
       </aside>
       <% } %>
@@ -135,41 +139,12 @@
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page, helpTour: memorize ? (review ? 'review' : 'memorize') : 'mushaf' }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
-  <% if (review && reviewPreviousLine) { %>
+  <% if (review && reviewPreviousLines && reviewPreviousLines.length) { %>
   <script>
     (function () {
       var context = document.querySelector('.quran-review-page-continuity');
       if (!context || typeof getQuranTafsirSettings !== 'function')
         return;
-      var line = context.querySelector('.quran-review-page-continuity-line');
-      var fitLine = function () {
-        if (!line || !line.clientWidth)
-          return;
-        line.style.removeProperty('--f-size-ar');
-        var available = line.clientWidth;
-        var firstItem = line.querySelector('.quran-review-page-continuity-word, .quran-review-page-continuity-marker');
-        var baseSize = parseFloat(window.getComputedStyle(firstItem || line).fontSize) || 16;
-        for (var attempt = 0; attempt < 3; attempt += 1) {
-          var itemRects = Array.from(line.children).map(function (item) { return item.getBoundingClientRect(); });
-          if (!itemRects.length)
-            return;
-          var required = Math.max.apply(null, itemRects.map(function (rect) { return rect.right; }))
-            - Math.min.apply(null, itemRects.map(function (rect) { return rect.left; }));
-          if (required <= available)
-            return;
-          baseSize = parseFloat(window.getComputedStyle(firstItem || line).fontSize) || baseSize;
-          line.style.setProperty('--f-size-ar', `${baseSize * available / required * .98}px`);
-        }
-      };
-      var scheduleFitLine = function () {
-        window.requestAnimationFrame(function () { window.requestAnimationFrame(fitLine); });
-      };
-      scheduleFitLine();
-      if (document.fonts && document.fonts.ready)
-        document.fonts.ready.then(scheduleFitLine);
-      if (document.fonts && document.fonts.addEventListener)
-        document.fonts.addEventListener('loadingdone', scheduleFitLine);
-      window.addEventListener('resize', scheduleFitLine, { passive: true });
       getQuranTafsirSettings().then(function (settings) {
         var script = normalizeQuranScriptChoice(settings && settings.quran && settings.quran.script) || 'uthmani';
         updateQuranAyahMarkersForScript(context, script);
@@ -200,7 +175,8 @@
             word.setAttribute('data-quran-word', sourceWord.text);
             word.setAttribute('data-quran-script-applied', script);
           });
-          scheduleFitLine();
+          if (typeof scheduleQuranMushafLineFit === 'function')
+            scheduleQuranMushafLineFit(context);
         });
       }).catch(function () {});
     }());
