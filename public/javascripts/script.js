@@ -8771,42 +8771,6 @@ function initQuranMemorizeView(root) {
 					setAyahRevealed(stepRef, revealOne);
 				return;
 			}
-			var marker = event.target.closest('.quran-mushaf-ayah-marker[data-quran-ref]');
-			if (marker && page.contains(marker)) {
-				event.preventDefault();
-				event.stopImmediatePropagation();
-				materializePageReveal();
-				var ref = marker.getAttribute('data-quran-ref');
-				var targetRefs = [ref];
-				if (event.altKey || event.metaKey || event.ctrlKey) {
-					var previousRefs = [];
-					page.querySelectorAll('.quran-corpus-word[data-quran-ref], .quran-mushaf-ayah-marker[data-quran-ref]').forEach(function (element) {
-						if (element === marker)
-							return;
-						if (marker.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING)
-							return;
-						if (!element.classList.contains('quran-corpus-word') || element.closest('.quran-mushaf-line-basmallah'))
-							return;
-						var previousRef = element.getAttribute('data-quran-ref');
-						if (previousRef && previousRef !== ref && previousRefs.indexOf(previousRef) < 0)
-							previousRefs.push(previousRef);
-					});
-					targetRefs = previousRefs.concat(ref);
-				}
-				var ayahWords = Array.from(page.querySelectorAll('.quran-corpus-word[data-quran-ref]')).filter(function (word) {
-					return targetRefs.indexOf(word.getAttribute('data-quran-ref')) >= 0
-						&& !word.closest('.quran-mushaf-line-basmallah');
-				});
-				var hideAyah = ayahWords.length > 0 && ayahWords.every(function (word) {
-					return word.classList.contains('quran-memorize-ayah-revealed');
-				});
-				if (hideAyah && page.dataset.quranReviewAnswerRevealed === '1')
-					return;
-				targetRefs.forEach(function (targetRef) { setAyahRevealed(targetRef, !hideAyah); });
-				if (marker.hasAttribute('aria-expanded'))
-					marker.setAttribute('aria-expanded', 'false');
-				return;
-			}
 			var word = event.target.closest('.quran-corpus-word[data-quran-ref]');
 			if (!word || !page.contains(word) || word.closest('.quran-mushaf-line-basmallah'))
 				return;

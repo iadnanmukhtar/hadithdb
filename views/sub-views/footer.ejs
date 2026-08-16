@@ -378,7 +378,6 @@
 				window.hadithUserSettingsCache.write(settingsUser, normalizeSettings(settings));
 			} catch (err) {
 				console.warn('Could not load bookmark settings', err);
-				toastr.warning('Unable to load saved bookmarks.', 'Bookmarks');
 			} finally {
 				bookmarkSettingsLoaded = true;
 				initBookmarks();

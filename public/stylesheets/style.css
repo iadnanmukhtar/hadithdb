@@ -4914,6 +4914,10 @@ del em strong {
 	cursor: pointer;
 }
 
+.quran-memorize-page .quran-mushaf-ayah-marker {
+	cursor: default;
+}
+
 .quran-memorize-page:not(.quran-memorize-show-all) .quran-mushaf-line:not(.quran-mushaf-line-basmallah) .quran-corpus-word:not(.quran-memorize-word-revealed):not(.quran-memorize-ayah-revealed) {
 	background-color: rgba(108, 117, 125, 0.04) !important;
 	border-radius: 0.12em;
