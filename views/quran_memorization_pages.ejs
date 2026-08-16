@@ -119,10 +119,10 @@
         <a class="btn btn-outline-secondary btn-sm quran-progress-secondary-action" href="<%= helpUrl %>" aria-label="How Quran memorization works" title="How it works"><i class="bi bi-question-circle" aria-hidden="true"></i><span class="quran-progress-secondary-action-label">How it works</span></a>
         <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#quran-get-started-modal"><i class="bi bi-stars me-1" aria-hidden="true"></i>Get Started</button>
         <div class="dropdown">
-          <button type="button" class="btn btn-primary btn-sm dropdown-toggle" id="quran-start-review" data-bs-toggle="dropdown" aria-expanded="false"><span id="quran-start-review-label">Start Mudhakkir</span></button>
+          <button type="button" class="btn btn-primary btn-sm dropdown-toggle" id="quran-start-review" data-bs-toggle="dropdown" aria-expanded="false"><span id="quran-start-review-label">Start Review</span></button>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quran-start-review">
-            <li><a class="dropdown-item" id="quran-start-regular-review" href="<%= utils.quranUrl(req, '/quran/review?continue=1') %>"><i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i><span id="quran-start-regular-review-label">Regular Mudhakkir</span></a></li>
-            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#quran-memorize-review-modal" data-quran-review-start-kind="surah"><i class="bi bi-book me-2" aria-hidden="true"></i>Surah Mudhakkir</button></li>
+            <li><a class="dropdown-item" id="quran-start-regular-review" href="<%= utils.quranUrl(req, '/quran/review?continue=1') %>"><i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i><span id="quran-start-regular-review-label">Regular Review</span></a></li>
+            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#quran-memorize-review-modal" data-quran-review-start-kind="surah"><i class="bi bi-book me-2" aria-hidden="true"></i>Surah Review</button></li>
           </ul>
         </div>
       </div>
@@ -365,7 +365,7 @@
         reviewSessionsList.innerHTML=open.map(session=>{
           const isSurah=session.session_mode==='surah';
           const isPage=session.session_mode==='page';
-          const title=isSurah?`${session.surah_name||`Surah ${session.review_surah_number}`} Mudhakkir`:isPage?`Mushaf Page ${session.review_page_number} Mudhakkir`:'Regular Mudhakkir';
+          const title=isSurah?`${session.surah_name||`Surah ${session.review_surah_number}`} Mudhakkir`:isPage?`Mushaf Page ${session.review_page_number} Mudhakkir`:'Regular Review';
           const scope=isSurah&&session.review_page_limit!==null&&Number(session.review_page_limit)===0?'Regular scheduled review':isSurah?'All āyāt':isPage?'Single Mushaf page':'Scheduled session';
           const pausedAt=new Date(session.paused_at);
           const date=Number.isNaN(pausedAt.getTime())?'':pausedAt.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
@@ -478,7 +478,7 @@
         renderReviewSessions(openData&&openData.sessions);
         if(regularReview){
           regularReview.href=quranUrl(`/quran/review?${activeSession?'continue':'start'}=1`);
-          startReviewLabel.textContent=activeSession?'Continue Mudhakkir':'Start Mudhakkir';
+          startReviewLabel.textContent=activeSession?'Continue Mudhakkir':'Start Review';
           if(activeSession&&activeSession.session_mode==='surah'){
             const selectedSurah=groups.find(group=>Number(group.surah_number)===Number(activeSession.review_surah_number));
             const surahName=selectedSurah&&selectedSurah.surah_name||`Surah ${activeSession.review_surah_number}`;
@@ -488,8 +488,8 @@
             regularReviewLabel.textContent=`Continue Page ${activeSession.review_page_number} Mudhakkir`;
             regularReview.setAttribute('aria-label',`Continue the active review of Mushaf page ${activeSession.review_page_number}`);
           }else{
-            regularReviewLabel.textContent='Regular Mudhakkir';
-            regularReview.setAttribute('aria-label',activeSession?`Regular Mudhakkir, ${dueNow?`${dueNow} ${dueNow===1?'āyah':'āyāt'} due now`:'session in progress'}`:'Regular Mudhakkir');
+            regularReviewLabel.textContent='Regular Review';
+            regularReview.setAttribute('aria-label',activeSession?`Regular Review, ${dueNow?`${dueNow} ${dueNow===1?'āyah':'āyāt'} due now`:'session in progress'}`:'Regular Review');
           }
         }
         updateTileSelection();

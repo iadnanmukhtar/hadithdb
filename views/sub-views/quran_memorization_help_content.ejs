@@ -8,7 +8,7 @@
   <h3 id="<%= helpPrefix %>-steps">A simple memorization routine</h3>
   <ol class="quran-memorization-help-steps">
     <li><span>1</span><div><strong>Assess it once in Practice</strong><p>For an āyah, page, or surah that has not been started, choose the action that honestly matches your present recall: Learn, Hard, Good, or Easy. This is the only time you select its starting stage. The āyah marker menu can also Play, Reveal, or Hide the complete āyah while you practice.</p></div></li>
-    <li><span>2</span><div><strong>Recall new and due āyāt</strong><p>Start Mudhakkir for the Learning āyāt and scheduled reviews selected for the session. Learning āyāt appear first. After enrollment, your only manual actions are Pause learning, Learn later, or Easy; Mudhakkir grades handle all other stage changes.</p></div></li>
+    <li><span>2</span><div><strong>Recall new and due āyāt</strong><p>Start Review for the Learning āyāt and scheduled reviews selected for the session. Learning āyāt appear first. After enrollment, your only manual actions are Pause learning, Learn later, or Easy; Mudhakkir grades handle all other stage changes.</p></div></li>
     <li><span>3</span><div><strong>Recall, reveal, then grade</strong><p>The final line of the preceding Mushaf page stays visible above the review page to support page-to-page continuity. Recite the complete āyah before selecting Reveal, then grade how independently you recalled it. Undo restores the most recent grade and previous review date. Skip leaves its stage and schedule unchanged.</p></div></li>
     <li><span>4</span><div><strong>Let Mudhakkir manage progress</strong><p>Again and Hard keep Learning or Hard āyāt in their current stage. One Easy review or two consecutive Good reviews can move them to Good once their calculated recall difficulty is no longer high. An āyah with difficulty greater than 6 remains Hard. Again on a Good āyah places it in Hard recovery. Every grade also updates its next review date.</p></div></li>
   </ol>
@@ -21,13 +21,13 @@
 
 <section aria-labelledby="<%= helpPrefix %>-limits">
   <h3 id="<%= helpPrefix %>-limits">What enters a Mudhakkir session</h3>
-  <p>Starting Mudhakkir selects due ayat and a limited number of new Learning ayat within your session settings. Learning ayat appear first. Later, Easy, and Paused ayat do not enter regular Mudhakkir.</p>
+  <p>Starting Mudhakkir selects due ayat and a limited number of new Learning ayat within your session settings. Learning ayat appear first. Later, Easy, and Paused ayat do not enter regular review.</p>
   <p class="mt-2">When nothing is due, a new session may include upcoming active ayat. Change the session size and category limits in Quran memorization settings or review settings. The Maximum Hard āyāt setting is shared by fragile Hard āyāt and Good āyāt recovering after Again.</p>
 </section>
 
 <section aria-labelledby="<%= helpPrefix %>-surah-review">
   <h3 id="<%= helpPrefix %>-surah-review">Using Mudhakkir for an āyah, page, or surah</h3>
-  <p>From an āyah dropdown in Practice, select <strong>Mudhakkir</strong> to begin with its current Study passage. Use the green Mudhakkir button in the reading-mode bar or the page Mudhakkir button to begin with the current Mushaf page, or choose <strong>Surah Mudhakkir</strong> from Memorization Progress. Every launcher uses the same choices: stop when the selected passage, page, or surah is complete, or continue forward until you end the session.</p>
+  <p>From an āyah dropdown in Practice, select <strong>Mudhakkir</strong> to begin with its current Study passage. Use the green Mudhakkir button in the reading-mode bar or the page Mudhakkir button to begin with the current Mushaf page, or choose <strong>Surah Review</strong> from Memorization Progress. Every launcher uses the same choices: stop when the selected passage, page, or surah is complete, or continue forward until you end the session.</p>
   <p class="mt-2">Choose <strong>āyah by āyah</strong> to reveal and grade each āyah separately. Choose <strong>passage by passage</strong> to reveal and grade each complete Study passage as one unit. The selected grade is still recorded for every āyah in the passage, so each āyah keeps its own schedule.</p>
   <p class="mt-2">Custom reviews follow Quran order and enroll untouched āyāt as Learning only when reached. Already enrolled āyāt keep their current state and schedule. These reviews are not limited by what is due now, regular-session caps, or the time budget. Grades update the schedule; Skip leaves the āyah unchanged.</p>
   <p class="mt-2">The Progress page lists your active and paused sessions. Switching reviews automatically pauses the current session and resumes the selected one. You can end any active or paused session while preserving its completed reviews.</p>
@@ -40,7 +40,7 @@
     <div class="is-learning"><dt><span aria-hidden="true"></span>Learn</dt><dd>Starts the āyah in Learning. It enters Mudhakkir as a new card and stays there until an Easy review or two consecutive Good reviews.</dd></div>
     <div class="is-weak"><dt><span aria-hidden="true"></span>Hard</dt><dd>You can recite the āyah, but recall is fragile. An FSRS recall-difficulty score greater than 6 keeps it here, scheduled with shorter intervals. Recovery after Again on a Good āyah is also shown here.</dd></div>
     <div class="is-review"><dt><span aria-hidden="true"></span>Good</dt><dd>You can recite the complete āyah independently. It remains in scheduled Mudhakkir so the app can maintain it and adapt its timing.</dd></div>
-    <div class="is-core"><dt><span aria-hidden="true"></span>Easy</dt><dd>You know the āyah by heart, so it does not enter regular Mudhakkir. It can also become Easy automatically after a successful review when its stability is greater than 730 days and difficulty is below 2.</dd></div>
+    <div class="is-core"><dt><span aria-hidden="true"></span>Easy</dt><dd>You know the āyah by heart, so it does not enter regular review. It can also become Easy automatically after a successful review when its stability is greater than 730 days and difficulty is below 2.</dd></div>
     <div class="is-suspended"><dt><span aria-hidden="true"></span>Pause learning</dt><dd>Temporarily stops learning and reviews without deleting history. Its resulting status is Paused.</dd></div>
     <div class="is-later"><dt><span aria-hidden="true"></span>Learn later</dt><dd>Removes the āyah from active memorization and Mudhakkir until you are ready to begin again. Its resulting status is Later.</dd></div>
   </dl>
