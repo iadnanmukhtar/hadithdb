@@ -5341,13 +5341,20 @@ del em strong {
 
 @media (max-width: 419.98px) {
 	[data-quran-review-reader] .quran-memorize-page-footer {
-		grid-template-columns: 1fr;
+		column-gap: .35rem;
 	}
 
 	[data-quran-review-reader] .quran-memorize-page-footer .quran-ayah-review-rating {
-		grid-column: 1;
-		margin-left: 0;
-		width: 100%;
+		min-width: 0;
+	}
+
+	[data-quran-review-reader] .quran-review-session-actions {
+		gap: .2rem;
+	}
+
+	[data-quran-review-reader] .quran-review-session-actions .btn {
+		font-size: clamp(.62rem, 3.4vw, calc(var(--quran-mushaf-page-toolbar-font-size) * .86));
+		padding-inline: .22em;
 	}
 
 	.quran-mushaf-page-heading {
