@@ -326,7 +326,7 @@
 	          prop: prop,
 	          arabizi: arabizi,
 	          value: value,
-	          quranSectionPath: propStr === 'toc.title_en' && !$el.closest('.quran-subheading').length
+	          quranSectionPath: propStr === 'toc.title_en' && isQuranPage() && !$el.closest('.quran-subheading').length
 	            ? window.location.pathname
 	            : '',
 	        };
@@ -441,17 +441,20 @@
 	    function extractLast(term) {
 	      return split(term).pop();
 	    }
+	    function isQuranPage() {
+	      const hostname = window.location.hostname.toLowerCase();
+	      return hostname.split('.')[0] === 'quran' || window.location.pathname === '/quran' || window.location.pathname.startsWith('/quran/');
+	    }
+
 	    function editHadithApiPath(path) {
 	      path = String(path || '');
 	      if (path.charAt(0) !== '/')
 	        path = `/${path}`;
-	      const hostname = window.location.hostname.toLowerCase();
-	      const isQuran = hostname.split('.')[0] === 'quran' || window.location.pathname === '/quran' || window.location.pathname.startsWith('/quran/');
 	      if (path === '/quran')
 	        path = '/';
 	      else if (path.startsWith('/quran/'))
 	        path = path.substring('/quran'.length);
-	      return `${isQuran ? '/quran/api' : '/api'}${path}`;
+	      return `${isQuranPage() ? '/quran/api' : '/api'}${path}`;
 	    }
 
 	    const bindInlineEditors = (scope) => {

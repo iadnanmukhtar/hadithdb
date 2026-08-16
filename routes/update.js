@@ -272,7 +272,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var result;
       var shouldRunDefaultHeadingTasks = true;
       var tocHeadingId = ids[0];
-      if (col === 'title_en' && req.body.quranSectionPath) {
+      if (col === 'title_en' && req.body.quranSectionPath && isQuranUpdateEndpoint(req)) {
         var canonicalQuranSection = await quranSectionFromPath(req.body.quranSectionPath);
         if (canonicalQuranSection) {
           tocHeadingId = canonicalQuranSection.tId || canonicalQuranSection.id;
@@ -1248,6 +1248,10 @@ async function quranSectionFromPath(path) {
   return (await global.query(`SELECT * FROM v_toc
     WHERE book_alias='quran' AND level=2 AND h1=${surah} AND h2=${h2}
     LIMIT 1`))[0] || null;
+}
+
+function isQuranUpdateEndpoint(req) {
+  return Utils.trimToEmpty(req && req.baseUrl).replace(/\/+$/, '') === '/quran/api/update';
 }
 
 async function deleteQuranSubsection(subsectionHeadingId) {
