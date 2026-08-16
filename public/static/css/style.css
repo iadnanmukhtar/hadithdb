@@ -489,6 +489,10 @@ main.chapter.tafsir-only-page {
 	z-index: 1000;
 }
 
+body:has(main.quran-mushaf-reader) > .navbar {
+	padding-bottom: 0;
+}
+
 .site-navbar {
 	--site-header-height: 4.25rem;
 	--site-header-shrink-height: 2.125rem;
@@ -502,7 +506,7 @@ main.chapter.tafsir-only-page {
 .site-navbar .subtitle :lang(ar),
 .site-navbar #icon-menu,
 .site-navbar .nav-link,
-.site-navbar > .site-navbar-main,
+.site-navbar > .container-fluid > .site-navbar-main,
 .site-navbar .site-header-brand {
 	transition: all .25s ease;
 }
@@ -548,13 +552,13 @@ main.chapter.tafsir-only-page {
 	transform: translate(-50%, -50%);
 }
 
-.site-navbar > .site-navbar-main {
+.site-navbar > .container-fluid > .site-navbar-main {
 	border-bottom: 1px solid var(--bs-border-color);
 	flex-wrap: nowrap;
 	align-items: center;
 }
 
-.site-navbar > .site-navbar-main {
+.site-navbar > .container-fluid > .site-navbar-main {
 	height: var(--site-header-height);
 	overflow: visible;
 }
@@ -646,7 +650,7 @@ main.chapter.tafsir-only-page {
 	white-space: nowrap;
 }
 
-.site-navbar.shrink > .site-navbar-main {
+.site-navbar.shrink > .container-fluid > .site-navbar-main {
 	height: var(--site-header-shrink-height);
 }
 
@@ -2573,11 +2577,12 @@ del em strong {
 	--quran-mushaf-line-min-height: 1.72em;
 	--quran-mushaf-page-font-size: 35px;
 	--quran-mushaf-page-header-font-size: clamp(0.78rem, calc(var(--quran-mushaf-page-font-size) * 0.54), 1.05rem);
+	--quran-mushaf-page-shadow-blur: clamp(2rem, 8vw, 100px);
 	--quran-mushaf-page-toolbar-font-size: clamp(1rem, calc(var(--quran-mushaf-page-font-size) * 0.67), 1.3rem);
 	background: var(--bs-body-bg);
 	border: 1px solid var(--bs-border-color);
 	border-radius: 0.35rem;
-	box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.06);
+	box-shadow: 0 0 var(--quran-mushaf-page-shadow-blur) rgba(0, 0, 0, .3);
 	font-family: QuranV1, Serif;
 	font-size: var(--quran-mushaf-page-font-size);
 	line-height: var(--quran-mushaf-line-height);
@@ -2590,11 +2595,11 @@ del em strong {
 }
 
 .quran-mushaf-sheet.quran-hafs.quran-mushaf-sheet-odd:lang(ar) {
-	background-image: linear-gradient(to right, rgba(108, 117, 125, 0.22) 0, rgba(108, 117, 125, 0.09) 1.25rem, transparent 3.5rem);
+	background-image: linear-gradient(to right, rgba(108, 117, 125, .22) 0%, rgba(108, 117, 125, 0) 18%);
 }
 
 .quran-mushaf-sheet.quran-hafs.quran-mushaf-sheet-even:lang(ar) {
-	background-image: linear-gradient(to left, rgba(108, 117, 125, 0.22) 0, rgba(108, 117, 125, 0.09) 1.25rem, transparent 3.5rem);
+	background-image: linear-gradient(to left, rgba(108, 117, 125, .22) 0%, rgba(108, 117, 125, 0) 18%);
 }
 
 [data-quran-review-reader] .quran-mushaf-sheet,
