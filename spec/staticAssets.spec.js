@@ -46,6 +46,20 @@ describe('static assets', () => {
     expect(fs.existsSync(path.join(publicDir, 'ads.txt'))).toBe(true);
   });
 
+  test('provides a local SVG title for every Surah header', () => {
+    const titleDir = path.join(__dirname, '..', 'public', 'static', 'img', 'quran', 'surah-header', 'names');
+
+    expect(fs.existsSync(path.join(titleDir, '..', 'border.svg'))).toBe(true);
+    expect(fs.existsSync(path.join(titleDir, '..', 'basmala.svg'))).toBe(true);
+    for (let surahNumber = 1; surahNumber <= 114; surahNumber++) {
+      expect(Utils.quranSurahHeaderSvgPath(surahNumber))
+        .toBe(`/static/img/quran/surah-header/names/${surahNumber}.svg`);
+      expect(fs.existsSync(path.join(titleDir, `${surahNumber}.svg`))).toBe(true);
+    }
+    expect(Utils.quranSurahHeaderSvgPath(0)).toBe('');
+    expect(Utils.quranSurahHeaderSvgPath(115)).toBe('');
+  });
+
   test('keeps the startup fallback self-contained apart from an available static logo', () => {
     const publicDir = path.join(__dirname, '..', 'public');
     const fallbackPath = path.join(publicDir, 'html', '_app_restarting.html');

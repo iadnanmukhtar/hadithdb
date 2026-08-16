@@ -46,6 +46,8 @@
 	    var quranSectionHref = quranSection && quranSection.path ? utils.quranUrl(req, `/${quranSection.path}`) : '';
 	    var quranChapterTitleEn = (quranChapter && quranChapter.title_en) || `Surat ${surah.name_en}`;
 	    var quranChapterTitleAr = (quranChapter && quranChapter.title) || `سورة ${surah.name_ar}`;
+	    var quranSurahRevelation = /^mad/i.test((surah.revelation_en || '').toString()) ? 'madani' : 'makki';
+	    var quranChapterSurahNameGlyph = !site.editMode ? utils.quranSurahNameLigature(surah.num) : '';
 	    var quranCorpusSection = quranSection && quranSection.book_alias === 'quran' && quranSection.h1 && quranSection.h2
 	      ? {
 	        surah: arabic.toLatinDigits(quranSection.h1.toString()),
@@ -67,6 +69,7 @@
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>">
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
 	        </a>
+	          <span class="quran-revelation-icon quran-revelation-icon-<%= quranSurahRevelation %>" role="img" aria-label="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span>
 	        <% if (quranChapter) { %>
 	          <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-heading-id="<%= quranChapter.id %>" data-bookmark-type="surah" data-bookmark-ref="quran:<%= surah.num %>" data-bookmark-title="<%= quranChapterTitleEn %>" data-bookmark-title-ar="<%= quranChapterTitleAr %>" data-bookmark-url="<%= quranChapterHref %>" title="Bookmark this chapter">
 	            <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranChapter.id %>"></span>
@@ -75,7 +78,7 @@
 	        </h2>
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="<%= quranChapterHref %>">
 	          <%= arabic.toArabicDigits(surah.num + '') %>۔
-	          <span<%- quranChapter ? ` class="_e quran-surah-name" data-id="${quranChapter.id}" data-prop="toc.title"` : ' class="quran-surah-name"' %>><%- quranChapterTitleAr %></span>
+	          <span<%- quranChapter ? ` class="_e ${quranChapterSurahNameGlyph ? 'quran-surah-name-font' : 'quran-surah-name'}" data-id="${quranChapter.id}" data-prop="toc.title"` : ` class="${quranChapterSurahNameGlyph ? 'quran-surah-name-font' : 'quran-surah-name'}"` %><% if (quranChapterSurahNameGlyph) { %> title="<%= quranChapterTitleAr %>" aria-label="<%= quranChapterTitleAr %>"<% } %>><%- quranChapterSurahNameGlyph || quranChapterTitleAr %></span>
 	        </a></h2>
 	      </heading>
 

@@ -95,7 +95,7 @@
       ? `${displayName(quranCommentaryBook.name_en || quranCommentaryBook.shortName_en || quranCommentaryBook.alias)}${displayName(quranCommentaryBook.author_en || quranCommentaryBook.author) ? ` | ${displayName(quranCommentaryBook.author_en || quranCommentaryBook.author)}` : ''}`
       : '';
     var pageTitleEn = isQuranToc
-      ? (quranCommentaryBook ? quranCommentaryPageTitleEn : 'Quran Unlocked | Table of Contents')
+      ? (quranCommentaryBook ? quranCommentaryPageTitleEn : 'Quran Unlocked | Your Companion for Deeper Quran Study')
       : utils.hadithBookTitle(book);
     var pageDescriptionEn = isQuranToc
       ? (quranCommentaryBook
@@ -106,7 +106,9 @@
       menu: 'Books',
       title_en: pageTitleEn,
       description_en: pageDescriptionEn,
-      subtitle_en: quranCommentaryBook ? quranCommentaryHeaderSubtitleEn : `${book.shortName_en}`,
+      subtitle_en: quranCommentaryBook
+        ? quranCommentaryHeaderSubtitleEn
+        : (isQuranToc ? 'Your Companion for Deeper Quran Study' : `${book.shortName_en}`),
       subtitle: quranCommentaryBook ? (isEnglishQuranTranslation ? '' : quranCommentaryBookTitle) : `${book.shortName}`,
       canonical: quranCommentaryBook ? quranCommentaryBookCanonical : `/${book.alias}`,
       context: {

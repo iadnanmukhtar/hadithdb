@@ -57,14 +57,18 @@
             </form>
           </span>
         </header>
+      <% var firstMushafContentLine = mushaf.lines.find(function (line) { return line.line_type !== 'basmallah'; }); %>
       <% mushaf.lines.forEach(function (line) { %>
         <% if (line.line_type === 'basmallah') return; %>
-        <div class="quran-mushaf-line quran-mushaf-line-<%= line.line_type %><%= line.is_centered ? ' is-centered' : '' %>" data-line-number="<%= line.line_number %>">
+        <div class="quran-mushaf-line quran-mushaf-line-<%= line.line_type %><%= line.is_centered ? ' is-centered' : '' %><%= line === firstMushafContentLine ? ' is-page-opening' : '' %>" data-line-number="<%= line.line_number %>">
         <% if (line.line_type === 'surah_name') {
           var surah = (global.surahs || []).find(function (item) { return Number(item.num) === Number(line.surah_number); });
           var memorizationSurahName = (surah && (surah.name_en || surah.name_ar)) || `Surah ${line.surah_number}`;
         %>
-          <span class="quran-mushaf-surah-name" title="<%= (surah && surah.name_ar) || `سورة ${line.surah_number}` %>" aria-label="<%= (surah && surah.name_ar) || `سورة ${line.surah_number}` %>"><%= utils.quranQcfSurahHeaderGlyph(line.surah_number) %></span>
+          <span class="quran-mushaf-surah-name" title="<%= (surah && surah.name_ar) || `سورة ${line.surah_number}` %>" aria-label="<%= (surah && surah.name_ar) || `سورة ${line.surah_number}` %>">
+            <span class="quran-mushaf-surah-cartouche" aria-hidden="true"></span>
+            <span class="quran-mushaf-surah-title" style="--quran-mushaf-surah-title-svg: url('<%= utils.quranSurahHeaderSvgPath(line.surah_number) %>');" aria-hidden="true"></span>
+          </span>
           <% if (memorize && !review) { %><button type="button" class="quran-mushaf-surah-state-toggle" data-quran-surah-state="<%= line.surah_number %>" data-quran-surah-name="<%= memorizationSurahName %>" aria-haspopup="menu" aria-expanded="false" aria-label="Set the initial memorization self-assessment for <%= memorizationSurahName %>. Current state: Later" lang="en" dir="ltr" hidden><span data-quran-surah-state-current>Later</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button><% } %>
         <% } else { line.words.forEach(function (word) {
           var ref = `${word.surah}:${word.ayah}`;
@@ -76,10 +80,8 @@
         }); } %>
         </div>
         <% if (line.line_type === 'surah_name' && ![1, 9].includes(Number(line.surah_number))) { %>
-        <div class="quran-mushaf-line quran-mushaf-line-basmallah is-centered" data-quran-basmallah-for="<%= line.surah_number %>">
-          <% mushaf.basmallahWords.forEach(function (word) { %>
-          <span class="quran-corpus-word" data-quran-script-text="word" data-quran-ref="1:1" data-quran-word="<%= word.text %>" data-quran-word-number="<%= word.word %>" data-quran-word-translation="<%= word.meaning_en || '' %>" data-quran-word-grammar="<%= word.grammar_parts_of_speech || word.parts_of_speech || '' %>" tabindex="0"><%= word.text %></span>
-          <% }); %>
+        <div class="quran-mushaf-line quran-mushaf-line-basmallah is-centered" data-quran-basmallah-for="<%= line.surah_number %>" role="img" aria-label="بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ">
+          <img class="quran-mushaf-basmallah-svg" src="/static/img/quran/surah-header/basmala.svg" alt="" aria-hidden="true">
         </div>
         <% } %>
       <% }); %>
