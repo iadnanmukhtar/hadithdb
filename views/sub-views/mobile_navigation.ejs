@@ -80,7 +80,7 @@
     || mobileCanonical.indexOf('/quran:') === 0;
   var mobileHomeHref = '/';
   var mobileHelpTour = typeof helpTour !== 'undefined' ? (helpTour || '').toString() : '';
-  var mobileHelpTourLabel = ({ mushaf: 'Mushaf', memorize: 'Memorize', review: 'Review', study: 'Study', tafsir: 'Tafsir' })[mobileHelpTour] || 'Page';
+  var mobileHelpTourLabel = ({ mushaf: 'Mushaf', memorize: 'Practice', review: 'Mudhakkir', study: 'Study', tafsir: 'Tafsir' })[mobileHelpTour] || 'Page';
   if (typeof utils !== 'undefined' && typeof req !== 'undefined')
     mobileHomeHref = mobileIsQuran ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
 %>

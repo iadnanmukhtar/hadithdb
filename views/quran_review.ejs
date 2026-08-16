@@ -7,7 +7,7 @@
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   <main class="container col-lg-7 mx-auto mt-10 quran-review-top-offset<%= req.query.complete === undefined ? ' page-loading-page' : '' %>">
-    <h1 class="fs-4">Quran Review</h1>
+    <h1 class="fs-4">Mudhakkir</h1>
     <% if (req.query.complete === undefined) { %>
     <div class="page-loading" id="quran-review-loading" role="status" aria-live="polite">
       <span class="spinner-border text-primary" aria-hidden="true"></span>
@@ -16,7 +16,7 @@
     <% } else { %>
     <p id="quran-review-status" class="text-muted">You have completed this review session.</p>
     <% } %>
-    <p><a class="btn btn-primary" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>">Open Memorize</a>
+    <p><a class="btn btn-primary" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>">Open Practice</a>
       <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/review') %>">Memorization Progress</a></p>
   </main>
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
@@ -90,7 +90,7 @@
         const nextTarget = window.HadithDbQuranReview.nextItemTarget(data);
         if (nextTarget.complete) {
           const state = Object.assign({}, window.history.state || {}, {
-            pageNotice: { type:'success', title:'Review complete', message:'You completed this review session.', scrollToTop:true }
+            pageNotice: { type:'success', title:'Mudhakkir complete', message:'You completed this review session.', scrollToTop:true }
           });
           window.history.replaceState(state, '', quranUrl('/quran/review'));
           if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';

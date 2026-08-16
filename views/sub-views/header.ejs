@@ -89,8 +89,8 @@
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranMushafArea && !isQuranMemorizeArea) %>" href="<%= utils.quranUrl(req, '/quran/page') %>"><i class="bi bi-book"></i> Mushaf</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations') %>"><i class="bi bi-translate"></i> Translations</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-book-half"></i> Tafsir</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isQuranMemorizeArea && !isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>"><i class="bi bi-eye-slash"></i> Memorize</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-arrow-repeat"></i> Review</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranMemorizeArea && !isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>"><i class="bi bi-eye-slash"></i> Practice</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-arrow-repeat"></i> Mudhakkir</a></li>
           </ul>
         </li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>

@@ -2344,6 +2344,25 @@ del em strong {
 	color: white;
 }
 
+.quran-reader-modes .btn[data-quran-reader-mode-link="review"] {
+	background-color: var(--bs-btn-bg);
+	border-color: var(--bs-btn-border-color);
+	color: var(--bs-btn-color);
+}
+
+.quran-reader-modes .btn[data-quran-reader-mode-link="review"]:hover,
+.quran-reader-modes .btn[data-quran-reader-mode-link="review"]:focus {
+	background-color: var(--bs-btn-hover-bg);
+	border-color: var(--bs-btn-hover-border-color);
+	color: var(--bs-btn-hover-color);
+}
+
+.quran-reader-modes .btn[data-quran-reader-mode-link="review"].active {
+	background-color: var(--bs-btn-active-bg);
+	border-color: var(--bs-btn-active-border-color);
+	color: var(--bs-btn-active-color);
+}
+
 .quran-reader-modes .quran-script-switcher > .dropdown-menu {
 	font-size: 0.78rem;
 	min-width: 7.5rem;
@@ -2997,7 +3016,7 @@ del em strong {
 }
 
 .quran-memorization-preview-visual-review {
-	background: #eef6fb;
+	background: #eef8f2;
 }
 
 .quran-memorization-preview-visual-progress {
@@ -3022,6 +3041,10 @@ del em strong {
 
 .quran-memorization-preview-visual-progress .quran-memorization-preview-kicker {
 	color: #7041c9;
+}
+
+.quran-memorization-preview-visual-review .quran-memorization-preview-kicker {
+	color: var(--bs-success);
 }
 
 .quran-memorization-preview-concept strong {
@@ -3492,6 +3515,10 @@ del em strong {
 	margin-bottom: .3rem;
 	padding-right: 2rem;
 	text-transform: uppercase;
+}
+
+.quran-help-tips[data-quran-help-tips="review"] .quran-help-tips-kicker {
+	color: var(--bs-success);
 }
 
 .quran-help-tips-card h2 {
@@ -3995,6 +4022,12 @@ del em strong {
 
 .quran-memorize-launch-actions .quran-memorize-list-link {
 	line-height: 1.2;
+}
+
+.quran-memorize-launch-actions .quran-memorize-review-launch {
+	align-items: center;
+	display: inline-flex;
+	gap: .22rem;
 }
 
 .quran-memorize-review-scope {

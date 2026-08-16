@@ -1,19 +1,19 @@
 <div class="modal fade" id="quran-fsrs-settings-modal" tabindex="-1" aria-labelledby="quran-fsrs-settings-title" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
-      <div class="modal-header"><div><h2 class="modal-title fs-5" id="quran-fsrs-settings-title"><i class="bi bi-brain me-1" aria-hidden="true"></i> Spaced repetition settings</h2><p class="small text-muted mb-0">Review timing and session controls in one place</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-header"><div><h2 class="modal-title fs-5" id="quran-fsrs-settings-title"><i class="bi bi-brain me-1" aria-hidden="true"></i> Spaced repetition settings</h2><p class="small text-muted mb-0">Mudhakkir timing and session controls in one place</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
       <div class="modal-body">
         <p>Choose how often you want āyāt to return and how quickly intervals should grow. The app handles the detailed scheduling automatically.</p>
         <div class="row g-3">
           <label class="col-sm-6 form-label"><strong class="d-block mb-1">Target Memory Goal</strong><select class="form-select" id="review-fsrs-retention"><option value="0.8">80% relaxed</option><option value="0.85">85% balanced</option><option value="0.9">90% recommended</option><option value="0.92">92% high mastery</option><option value="0.95">95% exam prep</option></select><span class="form-text">Higher retention means more frequent reviews.</span></label>
           <label class="col-sm-6 form-label"><strong class="d-block mb-1">Initial Memory Strength</strong><select class="form-select" id="review-fsrs-learning-speed"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option></select><span class="form-text">Sets the starting intervals for new ayat.</span></label>
-          <label class="col-sm-6 form-label"><strong class="d-block mb-1">Review Interval Multiplier</strong><select class="form-select" id="review-fsrs-growth"><option value="conservative">Conservative</option><option value="standard">Standard</option><option value="aggressive">Aggressive</option></select><span class="form-text">Controls how quickly successful review intervals grow.</span></label>
+          <label class="col-sm-6 form-label"><strong class="d-block mb-1">Mudhakkir Interval Multiplier</strong><select class="form-select" id="review-fsrs-growth"><option value="conservative">Conservative</option><option value="standard">Standard</option><option value="aggressive">Aggressive</option></select><span class="form-text">Controls how quickly successful review intervals grow.</span></label>
           <label class="col-sm-6 form-label"><strong class="d-block mb-1">Lapse Recovery Speed</strong><select class="form-select" id="review-fsrs-lapse"><option value="mild">Mild</option><option value="standard">Standard</option><option value="strict">Strict</option></select><span class="form-text">Controls how much stability is retained after Again.</span></label>
         </div>
         <div class="alert alert-light border small mt-3 mb-0"><strong>First review guide:</strong> Again returns soon, Hard is about 1 to 2 days, Good about 3 to 4 days, and Easy about 6 to 7 days. Future timing adapts to your review history.</div>
         <hr class="my-4">
         <section aria-labelledby="review-session-settings-title">
-          <h3 class="fs-6 fw-bold mb-1" id="review-session-settings-title">Review session</h3>
+          <h3 class="fs-6 fw-bold mb-1" id="review-session-settings-title">Mudhakkir session</h3>
           <p class="small text-muted">The app determines when each āyah is due. These controls determine how much work enters one session.</p>
           <div class="row g-3">
             <label class="col-sm-6 form-label"><strong class="d-block mb-1">Maximum ayat per session</strong><input class="form-control" type="number" min="1" max="200" id="review-session-limit"></label>
@@ -32,7 +32,7 @@
         </section>
       </div>
       <div class="modal-footer d-flex flex-column align-items-stretch gap-3">
-        <div class="d-flex align-items-center gap-2 flex-wrap"><button type="button" class="btn btn-outline-secondary" id="review-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Review Timing</button><span class="small text-muted" id="review-fsrs-status">Best after 100 or more reviews. Powered by FSRS 6.</span></div>
+        <div class="d-flex align-items-center gap-2 flex-wrap"><button type="button" class="btn btn-outline-secondary" id="review-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Mudhakkir Timing</button><span class="small text-muted" id="review-fsrs-status">Best after 100 or more reviews. Powered by FSRS 6.</span></div>
         <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" id="review-fsrs-save">Save Settings</button></div>
       </div>
     </div>

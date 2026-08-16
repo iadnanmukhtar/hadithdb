@@ -7262,7 +7262,7 @@ function initQuranMemorizeReviewLauncher(root) {
 			: scope === 'page' ? { mode: 'page', pageNumber: currentPage, continueForward: continueForward, reviewUnit: reviewUnit }
 				: { mode: 'surah', surahNumber: Number(surahNumber.value), reviewType: 'all', continueForward: continueForward, reviewUnit: reviewUnit });
 		submit.disabled = true;
-		status.textContent = scope === 'page' ? `Preparing Mushaf page ${currentPage}...` : scope === 'passage' ? `Preparing the passage from Quran ${currentRef}...` : 'Preparing the Surah Review...';
+		status.textContent = scope === 'page' ? `Preparing Mushaf page ${currentPage}...` : scope === 'passage' ? `Preparing the passage from Quran ${currentRef}...` : 'Preparing Surah Review...';
 		showQuranReviewLoading('Preparing your review...');
 		try {
 			var token = await getToken();
@@ -7386,7 +7386,7 @@ function initQuranAyahMemorization(root) {
 		reviewAyahOption.setAttribute('data-quran-ayah-review-option', '1');
 		reviewAyahOption.setAttribute('role', 'menuitem');
 		reviewAyahOption.tabIndex = -1;
-		reviewAyahOption.innerHTML = '<span class="bi bi-arrow-repeat" aria-hidden="true"></span><span>Review</span>';
+		reviewAyahOption.innerHTML = '<span class="bi bi-arrow-repeat" aria-hidden="true"></span><span>Mudhakkir</span>';
 		var firstStateOption = stateMenu.querySelector('[data-quran-ayah-state-option]');
 		stateMenu.insertBefore(reviewAyahOption, firstStateOption);
 	}
@@ -9172,7 +9172,7 @@ function initPageHelpTips(root) {
 	if (!owner || owner.dataset.pageHelpTipsBound === '1') return;
 	owner.dataset.pageHelpTipsBound = '1';
 	var mode = owner.getAttribute('data-page-help-tour') || '';
-	var labels = { mushaf: 'Mushaf', memorize: 'Memorize', review: 'Review', progress: 'Review summary', study: 'Study', tafsir: 'Tafsir' };
+	var labels = { mushaf: 'Mushaf', memorize: 'Practice', review: 'Mudhakkir', progress: 'Review summary', study: 'Study', tafsir: 'Tafsir' };
 	if (!labels[mode]) return;
 	var sessionStorageKey = `hadithdb.pageHelpTour.session.${mode}`;
 	var permanentStorageKey = `hadithdb.pageHelpTour.permanent.${mode}`;
@@ -9231,8 +9231,8 @@ function initPageHelpTips(root) {
 	],
 		review: [
 		{
-			title: 'Recite before looking',
-			copy: 'The current āyah is hidden. Recite it from memory before revealing the answer.',
+			title: 'Recite before looking in Mudhakkir',
+			copy: 'Mudhakkir hides the current āyah. Recite it from memory before revealing the answer.',
 			selector: '.quran-mushaf-sheet'
 		},
 		{
@@ -9242,7 +9242,7 @@ function initPageHelpTips(root) {
 		},
 		{
 			title: 'Let grades manage the stage',
-			copy: 'Your initial self-assessment was the only manual stage choice. In Review, one **Easy** or two consecutive **Good** reviews move Learning or Hard to Good. **Again** on a Good āyah begins Hard recovery until you recall it successfully.',
+			copy: 'Your initial self-assessment was the only manual stage choice. In Mudhakkir, one **Easy** or two consecutive **Good** reviews move Learning or Hard to Good. **Again** on a Good āyah begins Hard recovery until you recall it successfully.',
 			selector: '.mobile-bottom-nav-review-controls .quran-memorize-rating-buttons, .quran-ayah-review-buttons'
 		},
 		{
@@ -9301,15 +9301,15 @@ function initPageHelpTips(root) {
 			requiresMemorizationState: 'later'
 		},
 		{
-			title: 'Let Review manage progress',
-			copy: 'Your self-assessment is the only time you choose a starting stage. After enrollment, Review updates Learning, Hard, and Good from your grades. You can still choose **Easy**, **Pause learning**, or **Learn later** when needed.',
+			title: 'Let Mudhakkir manage progress',
+			copy: 'Your self-assessment is the only time you choose a starting stage. After enrollment, Mudhakkir updates Learning, Hard, and Good from your grades. You can still choose **Easy**, **Pause learning**, or **Learn later** when needed.',
 			selector: '[data-quran-ayah-state-menu]',
 			requiresMemorizationMenu: 'ayah',
 			requiresMemorizationState: 'enrolled'
 		},
 		{
 			title: 'Pause learning or learn later',
-			copy: 'After enrollment, choose **Pause learning** to stop reviews temporarily without losing history, or **Learn later** to remove the āyah from the current plan. Choose **Easy** when it no longer needs scheduled Review.',
+			copy: 'After enrollment, choose **Pause learning** to stop reviews temporarily without losing history, or **Learn later** to remove the āyah from the current plan. Choose **Easy** when it no longer needs a scheduled Review.',
 			selector: '[data-quran-ayah-state-menu]',
 			requiresMemorizationMenu: 'ayah',
 			requiresMemorizationState: 'enrolled'
@@ -9320,9 +9320,9 @@ function initPageHelpTips(root) {
 			selector: '.quran-mushaf-line:not(.quran-mushaf-line-basmallah) .quran-corpus-word'
 		},
 		{
-			title: 'Test your learning in Review',
-			copy: 'When you are ready to test yourself, select **Review** and choose this page or a surah. The Review guide will show you how to reveal, grade, pause, and finish a session.',
-			selector: '.quran-memorize-launch-actions [data-quran-memorize-review-page]'
+			title: 'Test your learning in Mudhakkir',
+			copy: 'When you are ready to test yourself, select the green **Mudhakkir** button in the reading-mode bar. You can review this page or a surah, and the Mudhakkir guide will show you how to reveal, grade, pause, and finish a session.',
+			selector: '.quran-reader-modes [data-quran-reader-mode-link="review"]'
 		}
 	],
 	study: [
@@ -9415,7 +9415,7 @@ function initPageHelpTips(root) {
 		},
 		{
 			title: 'Change script or reading mode',
-			copy: 'Use **Script** to choose **Uthmani**, **Indo-Pak**, or **Warsh**. Switch between **Study**, **Mushaf**, **Memorize**, and **Review** from the same reading-mode bar.',
+			copy: 'Use **Script** to choose **Uthmani**, **Indo-Pak**, or **Warsh**. Switch between **Study**, **Mushaf**, and **Practice** from the reading-mode bar; its green **Mudhakkir** button starts recall.',
 			selector: '.quran-reader-modes'
 		},
 		{
@@ -9856,7 +9856,7 @@ function initPageHelpTips(root) {
 			+ '<div class="quran-help-tips-footer"><span class="quran-help-tips-progress" data-quran-help-tips-progress></span>'
 			+ '<div class="quran-help-tips-nav-actions">'
 			+ '<button type="button" class="btn btn-sm btn-outline-secondary" data-quran-help-tips-back>Back</button>'
-			+ '<button type="button" class="btn btn-sm btn-primary" data-quran-help-tips-next>Next</button>'
+			+ `<button type="button" class="btn btn-sm ${mode === 'review' ? 'btn-success' : 'btn-primary'}" data-quran-help-tips-next>Next</button>`
 			+ '</div><div class="quran-help-tips-dismiss-actions">'
 			+ '<button type="button" class="btn btn-sm btn-link" data-quran-help-tips-dismiss aria-label="Dismiss this tour for the current browser session">Hide for now</button>'
 			+ '<span aria-hidden="true">·</span>'

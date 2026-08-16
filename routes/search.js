@@ -2321,10 +2321,10 @@ router.get('/quran/review', async function (req, res) {
     quranHeaderJuzLinks: quranHeaderJuzLinks,
     page: {
       menu: 'Quran',
-      title_en: startReview ? 'Quran Memorization Review' : 'Mudhakkir: Keep your Quran hifz fresh',
-      subtitle_en: startReview ? 'Memorization' : 'Quran Hifz',
+      title_en: startReview ? 'Mudhakkir Quran Recall' : 'Mudhakkir: Keep your Quran hifz fresh',
+      subtitle_en: startReview ? ' Quran Recall Test' : 'Quran Hifz',
       description_en: startReview
-        ? 'Review memorized Quran ayat with focused recall and adaptive spaced repetition that responds to your answers.'
+        ? 'Strengthen memorized Quran ayat with focused recall and adaptive spaced repetition that responds to your answers.'
         : (helpView
           ? 'Mudhakkir helps you memorize the Quran ayah by ayah with focused Mushaf practice, adaptive spaced repetition, review scheduling, and progress tracking.'
           : 'View your Quran memorization progress, due ayat, recent activity, and adaptive review schedule.'),
@@ -2567,10 +2567,10 @@ async function renderQuranMushafPage(req, res, next, options) {
     ? `${firstPageAudioRange.surah}:${firstPageAudioRange.from}-${lastPageAudioRange.surah}:${lastPageAudioRange.to}`
     : '';
   var mushafPageTitle = review
-    ? `Quran Review ${reviewRef || pageAyahRange || `Page ${pageNumber}`} | Mushaf Page ${pageNumber}`
-    : `Quran ${memorize ? 'Memorize' : 'Mushaf'} Page ${pageNumber}${pageAyahRange ? ` | Ayat ${pageAyahRange}` : ''}`;
+    ? `Mudhakkir ${reviewRef || pageAyahRange || `Page ${pageNumber}`} | Mushaf Page ${pageNumber}`
+    : `Quran ${memorize ? 'Practice' : 'Mushaf'} Page ${pageNumber}${pageAyahRange ? ` | Ayat ${pageAyahRange}` : ''}`;
   var mushafPageDescription = review
-    ? `Review Quran ${reviewRef || pageAyahRange || `page ${pageNumber}`} with focused recall in the Digital Khatt Mushaf and adaptive spaced repetition.`
+    ? `Strengthen your recall of Quran ${reviewRef || pageAyahRange || `page ${pageNumber}`} in the Digital Khatt Mushaf with adaptive spaced repetition.`
     : (memorize
       ? `Practice memorizing Quran page ${pageNumber}${pageAyahRange ? `, ayat ${pageAyahRange}` : ''}, in the 15-line Digital Khatt Mushaf with focused hide-and-reveal controls.`
       : `Read Quran page ${pageNumber}${pageAyahRange ? `, ayat ${pageAyahRange}` : ''}, in the 15-line Digital Khatt Arabic Mushaf.`);

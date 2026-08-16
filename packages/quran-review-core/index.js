@@ -144,7 +144,7 @@
     const source = options || {};
     const rawMode = source.mode === undefined ? 'regular' : (source.mode || '').toString().trim().toLowerCase();
     if (!['regular', 'surah', 'page', 'passage'].includes(rawMode))
-      throw reviewError('Review mode must be regular, surah, page, or passage.');
+      throw reviewError('Mudhakkir mode must be regular, surah, page, or passage.');
     if (rawMode === 'regular')
       return { mode: 'regular', reviewUnit: 'ayah', surahNumber: null, pageLimit: null, pageNumber: null, startRef: null, continueForward: false };
     const reviewUnit = (source.reviewUnit || source.review_unit || 'ayah').toString().trim().toLowerCase();
@@ -153,18 +153,18 @@
     const continueForward = source.continueForward === true || source.continue_forward === true;
     if (rawMode === 'passage') {
       const startRef = parseRefString(source.startRef || source.start_ref);
-      if (!startRef) throw reviewError('A valid Quran ayah is required for a Passage Review.');
+      if (!startRef) throw reviewError('A valid Quran ayah is required for a passage review.');
       return { mode: 'passage', reviewUnit, surahNumber: startRef.surah, pageLimit: null, pageNumber: null, startRef: `${startRef.surah}:${startRef.ayah}`, continueForward };
     }
     if (rawMode === 'page') {
       const pageNumber = strictInteger(source.pageNumber === undefined ? source.page_number : source.pageNumber);
-      if (!pageNumber || pageNumber > 604) throw reviewError('A valid Mushaf page from 1 through 604 is required for a Page Review.');
+      if (!pageNumber || pageNumber > 604) throw reviewError('A valid Mushaf page from 1 through 604 is required for a page review.');
       return { mode: 'page', reviewUnit, surahNumber: null, pageLimit: null, pageNumber, startRef: null, continueForward };
     }
     const ref = parseRef(source.surahNumber === undefined ? source.surah_number : source.surahNumber, 1);
-    if (!ref) throw reviewError('A valid surah is required for a Surah Review.');
+    if (!ref) throw reviewError('A valid surah is required for a surah review.');
     const reviewType = (source.reviewType || source.review_type || '').toString().trim().toLowerCase();
-    if (!['all', 'regular'].includes(reviewType)) throw reviewError('Choose Review all āyāt or Regular review for this Surah Review.');
+    if (!['all', 'regular'].includes(reviewType)) throw reviewError('Choose all āyāt or regular review for this surah review.');
     return { mode: 'surah', reviewUnit, surahNumber: ref.surah, reviewType, pageLimit: reviewType === 'all' ? null : 0, pageNumber: null, startRef: null, continueForward };
   }
 
