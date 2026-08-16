@@ -9010,8 +9010,8 @@ function initQuranAyahReview(root) {
 					var data = await response.json().catch(function () { return {}; });
 					if (!response.ok) throw new Error(data.error || `Unable to ${action} this review session.`);
 					window.navigateWithPageNotice(quranUrl('/quran/review'), action === 'pause'
-						? { type:'info', title:'Review paused', message:'Resume it whenever you are ready.' }
-						: { type:'info', title:'Review ended', message:'Completed reviews remain saved.' },
+						? { type:'info', title:'Review paused', message:'Resume it whenever you are ready.', scrollToTop:true }
+						: { type:'info', title:'Review ended', message:'Completed reviews remain saved.', scrollToTop:true },
 						action === 'pause' ? 'Pausing your review...' : 'Ending your review...');
 				} catch (err) {
 					if (status) status.textContent = err.message;

@@ -859,6 +859,36 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(query.mock.calls[0][0]).toContain("lifecycle_state IN ('learning','relearning','weak','review','core','suspended')");
     });
 
+    test('keeps passage companions within every regular-session category and total cap', () => {
+      const selected = [
+        { surah_number: 55, ayah_number: 1, lifecycle_state: 'learning' },
+        { surah_number: 55, ayah_number: 2, lifecycle_state: 'learning' },
+        { surah_number: 55, ayah_number: 3, lifecycle_state: 'learning' },
+        { surah_number: 55, ayah_number: 20, lifecycle_state: 'weak' },
+        { surah_number: 55, ayah_number: 30, lifecycle_state: 'review' }
+      ];
+      const expanded = [
+        ...selected,
+        { surah_number: 55, ayah_number: 4, lifecycle_state: 'learning' },
+        { surah_number: 55, ayah_number: 19, lifecycle_state: 'relearning' },
+        { surah_number: 55, ayah_number: 29, lifecycle_state: 'review' },
+        { surah_number: 55, ayah_number: 40, lifecycle_state: 'core' },
+        { surah_number: 55, ayah_number: 41, lifecycle_state: 'suspended' }
+      ];
+
+      const result = QuranAyahMemorization.limitRegularSessionPassageCompanions(
+        selected, expanded, { learning: 3, weak: 1, memorized: 1 }, 6
+      );
+
+      expect(result.map(item => `${item.surah_number}:${item.ayah_number}`)).toEqual([
+        '55:1', '55:2', '55:3', '55:20', '55:30', '55:40'
+      ]);
+      expect(result.filter(item => item.lifecycle_state === 'learning')).toHaveLength(3);
+      expect(result.filter(item => ['relearning', 'weak'].includes(item.lifecycle_state))).toHaveLength(1);
+      expect(result.filter(item => item.lifecycle_state === 'review')).toHaveLength(1);
+      expect(result).toHaveLength(6);
+    });
+
     test('enrolls Later ayat in a custom review scope as Learning cards', async () => {
       const query = jest.fn()
         .mockResolvedValueOnce([
@@ -948,7 +978,7 @@ describe('QuranAyahMemorization public ayah helpers', () => {
       expect(result.fresh).toBe(false);
     });
 
-    test('uses spare session capacity for overdue Learning cards beyond the category cap', async () => {
+    test('keeps overdue Learning cards within the configured category cap', async () => {
       const overdueLearning = rows('learning', 4, 2).map(row => ({ ...row, fsrs_state:2 }));
       const query = jest.fn()
         .mockResolvedValueOnce(overdueLearning)
@@ -958,7 +988,21 @@ describe('QuranAyahMemorization public ayah helpers', () => {
 
       const result = await QuranAyahMemorization.selectReviewSessionItems(query, 'user-1', 10, limits, order);
 
-      expect(result.learning).toEqual(overdueLearning);
+      expect(result.learning).toEqual(overdueLearning.slice(0, limits.learning));
+      expect(result.fresh).toBe(false);
+    });
+
+    test('keeps overdue Good cards within the configured category cap', async () => {
+      const overdueMemorized = rows('review', 12, 2).map(row => ({ ...row, fsrs_state:2 }));
+      const query = jest.fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(overdueMemorized);
+
+      const result = await QuranAyahMemorization.selectReviewSessionItems(query, 'user-1', 20, limits, order);
+
+      expect(result.memorized).toEqual(overdueMemorized.slice(0, limits.memorized));
       expect(result.fresh).toBe(false);
     });
 

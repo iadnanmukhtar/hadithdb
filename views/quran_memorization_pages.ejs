@@ -187,15 +187,24 @@
       const legacyNotice = <%- JSON.stringify(req.query.complete !== undefined
         ? { type:'success', title:'Review complete', message:'You completed this review session.', scrollToTop:true }
         : req.query.paused !== undefined
-          ? { type:'info', title:'Review paused', message:'Resume it whenever you are ready.' }
+          ? { type:'info', title:'Review paused', message:'Resume it whenever you are ready.', scrollToTop:true }
           : req.query.ended !== undefined
-            ? { type:'info', title:'Review ended', message:'Completed reviews remain saved.' }
+            ? { type:'info', title:'Review ended', message:'Completed reviews remain saved.', scrollToTop:true }
             : null) %>;
       const historyNotice = window.history.state && window.history.state.pageNotice;
       const pageNotice = historyNotice || legacyNotice;
       if (pageNotice && pageNotice.scrollToTop) {
+        const resetPageScroll = () => window.scrollTo(0, 0);
         if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
-        window.scrollTo(0, 0);
+        resetPageScroll();
+        window.addEventListener('load', resetPageScroll, { once:true });
+        window.addEventListener('pageshow', () => {
+          resetPageScroll();
+          window.requestAnimationFrame(() => {
+            resetPageScroll();
+            if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'auto';
+          });
+        }, { once:true });
       }
       if (pageNotice) {
         const cleanUrl = new URL(window.location.href);
