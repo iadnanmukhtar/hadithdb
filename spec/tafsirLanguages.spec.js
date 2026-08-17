@@ -42,4 +42,18 @@ describe('Tafsir catalog languages', () => {
   test('preserves source-first language metadata while removing duplicates', () => {
     expect(Tafsir.commentaryLanguages({ lang: 'ar-en-ur-en' })).toEqual(['ar', 'en', 'ur']);
   });
+
+  test('renders one carousel item per tafsir alias and prefers its English variant', () => {
+    const books = Tafsir.uniqueCarouselTafsirs([
+      { alias: 'mokhtasar', lang: 'ar' },
+      { alias: 'tabari', lang: 'ar' },
+      { alias: 'mokhtasar', lang: 'en' },
+      { alias: 'mokhtasar', lang: 'ur' }
+    ]);
+
+    expect(books).toEqual([
+      { alias: 'mokhtasar', lang: 'en' },
+      { alias: 'tabari', lang: 'ar' }
+    ]);
+  });
 });

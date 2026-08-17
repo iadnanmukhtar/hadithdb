@@ -419,7 +419,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     res.locals.tafsirTranslationFeatureEnabled = PaymentConfig.contentTranslationEnabledForItemType('tafsir');
     res.locals.contentTranslationEstimateFields = ContentTranslations.estimateFields;
     res.locals.quranRecitationFeedbackEnabled = QuranRecitationFeedback.isEnabled();
-    res.locals.quranNavTafsirs = Tafsir.visibleTafsirsSync().slice().sort(function (a, b) {
+    res.locals.quranNavTafsirs = Tafsir.uniqueCarouselTafsirs(Tafsir.visibleTafsirsSync()).sort(function (a, b) {
       const aLabel = Tafsir.rawShortName(a, 'en') || a.shortName_en || a.name_en || a.alias || '';
       const bLabel = Tafsir.rawShortName(b, 'en') || b.shortName_en || b.name_en || b.alias || '';
       return aLabel.localeCompare(bLabel, 'en', { sensitivity: 'base' });

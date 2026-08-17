@@ -1,5 +1,5 @@
 <%
-	const tafsirBooks = Array.isArray(tafsirs) ? tafsirs : [];
+	const tafsirBooks = Tafsir.uniqueCarouselTafsirs(Array.isArray(tafsirs) ? tafsirs : []);
 	const orderedTafsirs = ['en', 'ar'].reduce(function (items, lang) {
 		const group = tafsirBooks.filter(function (tafsir) {
 			return tafsir.lang === lang;

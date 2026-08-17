@@ -35,7 +35,7 @@
 		<div class="btn-group h-menu text-nowrap" role="group">
 			<%- include('bookCarouselFilter') %>
 			<% if (isQuranBookNav) {
-				var carouselTafsirs = Array.isArray(locals.quranNavTafsirs) ? locals.quranNavTafsirs : [];
+				var carouselTafsirs = Tafsir.uniqueCarouselTafsirs(Array.isArray(locals.quranNavTafsirs) ? locals.quranNavTafsirs : []);
 				for (var carouselTafsir of carouselTafsirs) {
 					var carouselTafsirLabel = Tafsir.rawShortName(carouselTafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();
 					var carouselTafsirSlug = carouselTafsir.slug || Tafsir.tafsirSlug(carouselTafsir.alias);

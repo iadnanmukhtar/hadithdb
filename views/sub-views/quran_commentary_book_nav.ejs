@@ -1,7 +1,8 @@
 <%
   const commentaryNavBook = locals.quranCommentaryBook || null;
-  const commentaryNavBooks = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
   const commentaryNavKind = commentaryNavBook && commentaryNavBook.type === 'trans' ? 'trans' : 'tafsir';
+  const commentaryNavBookRows = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
+  const commentaryNavBooks = commentaryNavKind === 'tafsir' ? Tafsir.uniqueCarouselTafsirs(commentaryNavBookRows) : commentaryNavBookRows;
 
   function commentaryNavSlug(book) {
     if (!book)
