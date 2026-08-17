@@ -11,7 +11,7 @@
 		"author": "مُحَمَّدُ رَشِيدٌ الرِّضَا",
 		"description": "Classical Arabic tafsir by Muhammad Rashid Rida.",
 		"format": "md",
-		"lang": "ar",
+		"lang": "ar-en",
 		"parser": {
 			"startPage": 27,
 			"maxSurah": 12,

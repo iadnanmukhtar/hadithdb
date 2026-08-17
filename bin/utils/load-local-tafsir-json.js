@@ -36,7 +36,7 @@ const TAFSIRS = {
 		author: 'الحُسَيْنُ بْنُ مَسْعُودِ بْنِ مُحَمَّدٍ الفَرَّاءُ البَغَوِيّ',
 		description: 'A respected Sunni tafsir that combines transmitted reports with concise explanation, language, legal material, and creed-related clarity. It is often treated as a reliable middle path between narration and analysis.',
 		aqidah: 'Athari',
-		lang: 'ar',
+		lang: 'ar-en',
 		format: 'md',
 		file: 'data/tafsir/baghawi.json',
 		column: 'text',
@@ -219,7 +219,7 @@ const TAFSIRS = {
 		autocommit: true
 	},
 	'samarqandi': {
-		lang: 'ar',
+		lang: 'ar-en',
 		format: 'md',
 		file: 'temp/samarqandi.json',
 		column: 'text',
@@ -417,8 +417,8 @@ const TAFSIRS = {
 		author: 'مَرْكَزُ تَفْسِيرٍ لِلدِّرَاسَاتِ القُرْآنِيَّةِ',
 		description: 'A contemporary concise tafsir written for accessibility, clarity, and practical guidance. It summarizes meanings in plain language, avoids lengthy disputes, and is useful for quick reading alongside the Quran.',
 		aqidah: 'Contemporary Sunni',
-		lang: 'en',
-		format: 'en:md,ar:md',
+		lang: 'ar-en',
+		format: 'ar:md,en:md',
 		files: {
 			en: 'data/en-mokhtasar.json',
 			ar: 'data/ar-mokhtasar.json'
@@ -502,7 +502,7 @@ const TAFSIRS = {
 		description: 'A concise modern tafsir known for clarity, spiritual benefit, sound creed, and practical lessons. It explains the Quran in accessible language while emphasizing tawhid, guidance, and moral transformation.',
 		aqidah: 'Athari',
 		death: 1376,
-		lang: 'ar',
+		lang: 'ar-en-ur',
 		format: 'md',
 		file: 'data/saadi.json',
 		column: 'text',
