@@ -977,6 +977,13 @@ async function renderSearchResults(req, res, next, options = {}) {
   res.setHeader('X-Robots-Tag', 'noindex, follow');
   var results = [];
   var totalResults = 0;
+  var requestedOffset;
+
+  try {
+    requestedOffset = HttpRange.parseOffset(req.query.o);
+  } catch (err) {
+    return next(err);
+  }
 
   req.query.q = Search.truncateQuery(req.query.q);
   if (options.forceBookFilters)
@@ -1016,13 +1023,16 @@ async function renderSearchResults(req, res, next, options = {}) {
     var effectiveBookFilters = req.query.b;
     if ((!effectiveBookFilters || effectiveBookFilters.length < 1) && options.defaultBookFilters)
       effectiveBookFilters = options.defaultBookFilters.slice();
-    var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
+    var offset = Math.max(0, requestedOffset);
     offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
     results = await Search.a_searchText(req.query.q, effectiveBookFilters, offset, {
       tafsirAliases: tafsirFilters,
       excludeQuranAndTafsir: !options.quranSearchProxy
     });
     totalResults = Number.isFinite(results.total) ? results.total : results.length;
+    var searchOffsetError = HttpRange.itemOffsetNotSatisfiable(requestedOffset, totalResults, 'Search results');
+    if (searchOffsetError)
+      return next(searchOffsetError);
     if (results.length > global.settings.search.itemsPerPage) {
       results.next = offset + global.settings.search.itemsPerPage;
       results.pop();
@@ -2969,7 +2979,13 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       return next(createError(bookAlias === 'quran' ? 404 : 400, routeParameterMessage('chapterNum', req.params.chapterNum, bookAlias === 'quran' ? 'chapter must be a positive integer' : 'chapter must be a non-negative number')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
       return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${chapterNum} is out of range`));
-    var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
+    var requestedOffset;
+    try {
+      requestedOffset = HttpRange.parseOffset(req.query.o);
+    } catch (err) {
+      return next(err);
+    }
+    var offset = Math.max(0, requestedOffset);
     if (bookAlias === 'quran' && shouldRedirectQuranSurahPath(req)) {
       var firstSectionNum = await firstQuranSectionNumber(chapterNum);
       if (firstSectionNum)
@@ -2977,6 +2993,9 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     }
 
     var chapter = await Chapter.chapterFromRef(`${bookAlias}/${chapterNum}`);
+    var chapterOffsetError = HttpRange.itemOffsetNotSatisfiable(requestedOffset, chapter.count, `Chapter ${bookAlias}/${chapterNum}`);
+    if (chapterOffsetError)
+      return next(chapterOffsetError);
     if (bookAlias !== 'quran' && shouldRedirectHadithChapterPath(req)) {
       var firstSection = await chapter.getFirstSection();
       if (firstSection && firstSection.path)
@@ -3005,6 +3024,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     await applySameBookHeadingNavigation(chapter);
     await chapter.getSections();
     results = await chapter.getItems(offset);
+    if (requestedOffset > 0 && results.length === 0)
+      return next(HttpRange.notSatisfiable('items', chapter.count, `Chapter ${bookAlias}/${chapterNum} does not have content at offset ${requestedOffset}`));
 
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
@@ -3213,7 +3234,13 @@ async function renderBookSection(req, res, next) {
         return res.redirect(301, canonicalTranslationUrl);
       }
     }
-    var offset = req.query.o ? parseInt(req.query.o.toString()) : 0;
+    var requestedOffset;
+    try {
+      requestedOffset = HttpRange.parseOffset(req.query.o);
+    } catch (err) {
+      return next(err);
+    }
+    var offset = Math.max(0, requestedOffset);
     if (bookAlias !== 'quran' && req.query.passage != undefined) {
       delete req.query.passage;
       var urlParts = req.url.split('?');
@@ -3242,6 +3269,9 @@ async function renderBookSection(req, res, next) {
     }
 
     var section = await Section.sectionFromRef(`${bookAlias}/${chapterNum}/${sectionNum}`);
+    var sectionOffsetError = HttpRange.itemOffsetNotSatisfiable(requestedOffset, section.count, `Section ${bookAlias}/${chapterNum}/${sectionNum}`);
+    if (sectionOffsetError)
+      return next(sectionOffsetError);
     if (editMode && bookAlias === 'quran')
       await attachQuranRawHeadingRangeToHeading(section);
     await section.getPrev();
@@ -3272,6 +3302,8 @@ async function renderBookSection(req, res, next) {
       results = await getQuranSectionPassageItems(section, offset);
     else
       results = await section.getItems(offset);
+    if (requestedOffset > 0 && results.length === 0)
+      return next(HttpRange.notSatisfiable('items', section.count, `Section ${bookAlias}/${chapterNum}/${sectionNum} does not have content at offset ${requestedOffset}`));
     if (isQuranPassageSection && results.length == 0)
       return next(createError(404, `${queryParameterMessage('o', offset, `Quran section ${chapterNum}/${sectionNum} does not have content at that offset`)}`));
     if (isQuranPassageSection && selectedTranslation && selectedTranslation.source === 'local') {

@@ -8,6 +8,7 @@ const createError = require('http-errors');
 const fm = require('front-matter');
 const markdownit = require('markdown-it');
 const markdownitfence = require('markdown-it-fence')
+const HttpRange = require('../lib/HttpRange');
 
 const router = express.Router();
 const BLOG_PLACEHOLDER_COVER = '/static/img/pearls_of_the_deep.jpg';
@@ -18,15 +19,13 @@ router.get('/', async function (req, res, next) {
   res.locals.res = res;
 
   var pageSize = global.settings.blog.itemsPerPage || 5;
-  var offset = 0;
-  if (req.query.o) {
-    offset = parseInt(req.query.o.toString(), 10);
-    if (isNaN(offset))
-      offset = 0;
-    offset = Math.floor(offset / pageSize) * pageSize;
+  var requestedOffset;
+  try {
+    requestedOffset = HttpRange.parseOffset(req.query.o);
+  } catch (err) {
+    return next(err);
   }
-  if (offset < 0)
-    offset = 0;
+  var offset = Math.floor(Math.max(0, requestedOffset) / pageSize) * pageSize;
 
   var posts = [];
   const files = fs.readdirSync(global.settings.blog.dir);
@@ -47,8 +46,9 @@ router.get('/', async function (req, res, next) {
   posts.sort((a, b) => {
     return b.published - a.published;
   });
-  if (offset >= posts.length && posts.length > 0)
-    return next(createError(404, `Page ${Math.floor(offset / pageSize) + 1} of the blog does not exist`));
+  var offsetError = HttpRange.itemOffsetNotSatisfiable(requestedOffset, posts.length, 'Blog');
+  if (offsetError)
+    return next(offsetError);
 
   var pagination = {
     offset: offset,
