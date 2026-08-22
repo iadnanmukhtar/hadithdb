@@ -6129,6 +6129,12 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	font-size: 1rem;
 }
 
+.mobile-bottom-nav > [data-mobile-bottom-nav-prev] .mobile-bottom-nav-icon,
+.mobile-bottom-nav > [data-mobile-bottom-nav-next] .mobile-bottom-nav-icon {
+	font-size: 1.4rem;
+	-webkit-text-stroke: .35px currentColor;
+}
+
 .mobile-bottom-nav-font-icon {
 	font-size: 0.85rem;
 }
