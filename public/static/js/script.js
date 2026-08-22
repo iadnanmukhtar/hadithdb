@@ -117,6 +117,7 @@ $(function () {
 	initQuranHeadingToc(document);
 	initHadithHeadingToc(document);
 	initTocHeadingRail(document);
+	initHeadingRailHeaderOffset();
 	initQuranMushafLastPageLinks(document);
 	initQuranMushafInfinite(document);
 	initQuranMushafLineFitting(document);
@@ -303,6 +304,28 @@ function updateFixedHeaderOffset(extraHeight) {
 	var additionalHeight = Number.isFinite(extraHeight) ? extraHeight : 0;
 	var height = navbar.getBoundingClientRect().height + additionalHeight;
 	document.documentElement.style.setProperty('--site-fixed-header-height', `${Math.ceil(height)}px`);
+}
+
+var headingRailHeaderResizeObserver = null;
+
+function initHeadingRailHeaderOffset() {
+	var navbar = document.querySelector('.site-navbar.fixed-top');
+	var rails = Array.from(document.querySelectorAll('.quran-heading-toc, .hadith-heading-toc'));
+	if (!navbar || !rails.length)
+		return;
+	var update = function () {
+		var height = `${Math.ceil(navbar.getBoundingClientRect().height)}px`;
+		rails.forEach(function (rail) {
+			rail.style.setProperty('--heading-rail-header-height', height);
+		});
+	};
+	update();
+	if (!('ResizeObserver' in window))
+		return;
+	if (headingRailHeaderResizeObserver)
+		headingRailHeaderResizeObserver.disconnect();
+	headingRailHeaderResizeObserver = new ResizeObserver(update);
+	headingRailHeaderResizeObserver.observe(navbar);
 }
 
 function initContentFontSizeControls(scope) {
@@ -10254,6 +10277,32 @@ var quranHeadingTocState = {
 	toc: null
 };
 
+function scrollHeadingRailLinkIntoView(toc, navSelector, activeLink) {
+	var scroller = toc && toc.querySelector(navSelector);
+	if (!activeLink || !scroller)
+		return;
+	var scrollerRect = scroller.getBoundingClientRect();
+	var linkRect = activeLink.getBoundingClientRect();
+	if (linkRect.top < scrollerRect.top)
+		scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.top - scrollerRect.top - 12);
+	else if (linkRect.bottom > scrollerRect.bottom)
+		scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.bottom - scrollerRect.bottom + 12);
+}
+
+function scheduleInitialHeadingRailScroll(toc, navSelector, linkSelector) {
+	var scrollSelection = function () {
+		window.requestAnimationFrame(function () {
+			window.requestAnimationFrame(function () {
+				scrollHeadingRailLinkIntoView(toc, navSelector, toc.querySelector(linkSelector));
+			});
+		});
+	};
+	scrollSelection();
+	window.setTimeout(scrollSelection, 150);
+	if (document.readyState !== 'complete')
+		window.addEventListener('load', scrollSelection, { once: true });
+}
+
 function registerQuranHeadingOutlines(root) {
 	var scope = root || document;
 	Array.from(scope.querySelectorAll('[data-quran-heading-outlines]')).forEach(function (script) {
@@ -10313,7 +10362,7 @@ function renderQuranHeadingToc(surah) {
 	if (!nav || !surahLabel)
 		return false;
 	quranHeadingTocState.surah = Number(outline.surah);
-	surahLabel.textContent = `${outline.surah}${outline.nameEn ? ` ${outline.nameEn.toUpperCase()}` : ''}`;
+	surahLabel.textContent = `${outline.surah}${outline.nameEn ? ` ${outline.nameEn}` : ''}`;
 	nav.replaceChildren();
 	nav.setAttribute('aria-label', `Headings in Surah ${outline.surah}`);
 	(outline.sections || []).forEach(function (section) {
@@ -10368,15 +10417,7 @@ function setActiveQuranHeading(surah, key) {
 			link.removeAttribute('aria-current');
 		}
 	});
-	var scroller = toc.querySelector('[data-quran-heading-toc-nav]');
-	if (activeLink && scroller) {
-		var scrollerRect = scroller.getBoundingClientRect();
-		var linkRect = activeLink.getBoundingClientRect();
-		if (linkRect.top < scrollerRect.top)
-			scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.top - scrollerRect.top - 12);
-		else if (linkRect.bottom > scrollerRect.bottom)
-			scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.bottom - scrollerRect.bottom + 12);
-	}
+	scrollHeadingRailLinkIntoView(toc, '[data-quran-heading-toc-nav]', activeLink);
 }
 
 function visibleQuranStudyHeading() {
@@ -10477,6 +10518,7 @@ function initQuranHeadingToc(root) {
 	});
 	window.addEventListener('scroll', scheduleQuranHeadingTocUpdate, { passive: true });
 	window.addEventListener('resize', scheduleQuranHeadingTocUpdate, { passive: true });
+	scheduleInitialHeadingRailScroll(toc, '[data-quran-heading-toc-nav]', '[data-quran-heading-key].active');
 	scheduleQuranHeadingTocUpdate();
 }
 
@@ -10586,15 +10628,7 @@ function setActiveHadithHeading(context, key) {
 		else
 			link.removeAttribute('aria-current');
 	});
-	var scroller = toc.querySelector('[data-hadith-heading-toc-nav]');
-	if (activeLink && scroller) {
-		var scrollerRect = scroller.getBoundingClientRect();
-		var linkRect = activeLink.getBoundingClientRect();
-		if (linkRect.top < scrollerRect.top)
-			scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.top - scrollerRect.top - 12);
-		else if (linkRect.bottom > scrollerRect.bottom)
-			scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.bottom - scrollerRect.bottom + 12);
-	}
+	scrollHeadingRailLinkIntoView(toc, '[data-hadith-heading-toc-nav]', activeLink);
 }
 
 function visibleHadithHeading() {
@@ -10660,6 +10694,7 @@ function initHadithHeadingToc(root) {
 	});
 	window.addEventListener('scroll', scheduleHadithHeadingTocUpdate, { passive: true });
 	window.addEventListener('resize', scheduleHadithHeadingTocUpdate, { passive: true });
+	scheduleInitialHeadingRailScroll(toc, '[data-hadith-heading-toc-nav]', '[data-hadith-heading-key].active');
 	scheduleHadithHeadingTocUpdate();
 }
 

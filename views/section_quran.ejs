@@ -390,7 +390,10 @@
       quranHeadingInitialSurah: chapter.h1,
       quranHeadingInitialAyah: quranNavigatorAyahValue,
       quranHeadingInitialKey: section && Number(section.level) >= 2 ? `${section.h1}.${section.h2}` : '',
-      quranHeadingTranslationAlias: quranSelectedTranslationAlias
+      quranHeadingTranslationAlias: quranSelectedTranslationAlias,
+      quranHeadingBookShortName: selectedTranslationBook
+        ? (selectedTranslationBook.shortName_en || selectedTranslationBook.name_en || selectedTranslationBook.alias)
+        : (book.shortName_en || book.name_en || 'Quran')
     }); %>
   </div>
 

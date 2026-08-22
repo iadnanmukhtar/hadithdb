@@ -141,7 +141,8 @@
   <%- include('sub-views/quran_heading_toc.ejs', {
     quranHeadingOutlines: locals.quranHeadingOutlines,
     quranHeadingInitialSurah: firstSurah && firstSurah.num,
-    quranHeadingInitialAyah: Number((firstRef || '').split(':')[1])
+    quranHeadingInitialAyah: Number((firstRef || '').split(':')[1]),
+    quranHeadingBookShortName: 'Quran'
   }); %>
   <% } %>
   </div>

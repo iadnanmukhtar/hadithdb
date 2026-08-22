@@ -3,6 +3,8 @@
 const path = require('path');
 const ejs = require('ejs');
 const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
+const Index = require('../lib/Index');
+const { Heading } = require('../lib/Model');
 
 const template = path.join(__dirname, '..', 'views', 'sub-views', 'hadith_heading_toc.ejs');
 const headingTemplate = path.join(__dirname, '..', 'views', 'sub-views', 'heading.ejs');
@@ -37,8 +39,16 @@ function renderHeading(continued, level = 2) {
 }
 
 describe('Hadith heading rail', () => {
+	const originalQuery = global.query;
+
+	afterEach(() => {
+		jest.restoreAllMocks();
+		global.query = originalQuery;
+	});
+
 	const outline = HadithHeadingOutlines.buildOutline({
 		book_alias: 'bukhari',
+		book: { shortName_en: 'Sahih al-Bukhari' },
 		h1: 1,
 		title_en: 'Revelation'
 	}, [{
@@ -76,6 +86,7 @@ describe('Hadith heading rail', () => {
 		});
 
 		expect(html).toContain('data-hadith-heading-toc');
+		expect(html).toContain('>SAHIH AL-BUKHARI</span>');
 		expect(html).toContain('>1 Revelation</strong>');
 		expect(html).not.toContain('>1 REVELATION</strong>');
 		expect(html).toContain('>1 How the Divine Revelation started</a>');
@@ -136,5 +147,78 @@ describe('Hadith heading rail', () => {
 		expect(subsection).toContain('data-hadith-heading-level="3"');
 		expect(subsection).toContain('data-hadith-heading-parent-key="ibnhibban:3.2"');
 		expect(await renderHeading(true)).not.toContain('data-hadith-heading-target');
+	});
+
+	test('loads chapter rail headings from Elasticsearch without querying the DB', async () => {
+		global.query = jest.fn(() => {
+			throw new Error('Hadith heading rails must not query the DB');
+		});
+		const search = jest.spyOn(Index, 'docsFromQueryFields').mockResolvedValue([{
+			ordinal: 1,
+			level: 2,
+			book_alias: 'bukhari',
+			h1: 1,
+			h2: 1,
+			h2_title_en: 'How the Divine Revelation started',
+			path: 'bukhari/1/1'
+		}]);
+
+		await expect(HadithHeadingOutlines.forChapter({
+			book_alias: 'bukhari',
+			h1: 1,
+			title_en: 'Revelation'
+		})).resolves.toHaveProperty('bukhari:1');
+
+		expect(search).toHaveBeenCalledWith(
+			Heading.INDEX,
+			expect.objectContaining({
+				bool: {
+					filter: [
+						{ term: { book_alias: 'bukhari' } },
+						{ term: { h1: 1 } },
+						{ terms: { level: [2, 3] } }
+					]
+				}
+			}),
+			expect.any(Array),
+			0,
+			500,
+			'ordinal'
+		);
+		expect(global.query).not.toHaveBeenCalled();
+	});
+
+	test('loads virtual-book chapter rails from Elasticsearch without querying the DB', async () => {
+		global.query = jest.fn(() => {
+			throw new Error('Virtual Hadith heading rails must not query the DB');
+		});
+		const search = jest.spyOn(Index, 'docsFromQueryFields')
+			.mockResolvedValueOnce([])
+			.mockResolvedValueOnce([{
+				ordinal: 1,
+				level: 1,
+				book_alias: 'riyad',
+				h1: 0.07,
+				h1_title_en: 'Certainty and Trust in Allah',
+				path: 'riyad/0.07'
+			}]);
+
+		await expect(HadithHeadingOutlines.forChapter({
+			book_alias: 'riyad',
+			h1: 0.07,
+			book: { alias: 'riyad', virtual: 1, name_en: 'Riyad al-Salihin' }
+		})).resolves.toHaveProperty('riyad:flat');
+
+		expect(search).toHaveBeenCalledTimes(2);
+		expect(search.mock.calls[1][0]).toBe(Heading.INDEX);
+		expect(search.mock.calls[1][1]).toEqual({
+			bool: {
+				filter: [
+					{ term: { book_alias: 'riyad' } },
+					{ term: { level: 1 } }
+				]
+			}
+		});
+		expect(global.query).not.toHaveBeenCalled();
 	});
 });

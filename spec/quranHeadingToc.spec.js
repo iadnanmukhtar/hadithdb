@@ -13,6 +13,7 @@ function render(outlines, options = {}) {
     quranHeadingInitialKey: options.key,
     quranHeadingTranslationAlias: options.translationAlias,
 	quranHeadingTafsirBase: options.tafsirBase,
+	quranHeadingBookShortName: options.bookShortName,
     req: {},
     utils: {
       quranUrl: (_req, href) => href
@@ -46,10 +47,11 @@ describe('Quran heading rail', () => {
           }]
         }]
       }
-    }, { surah: 2, ayah: 2, translationAlias: 'haleem' });
+    }, { surah: 2, ayah: 2, translationAlias: 'haleem', bookShortName: 'Abdel Haleem' });
 
     expect(html).toContain('data-quran-heading-toc');
-    expect(html.replace(/\s+/g, ' ')).toContain('>2 AL-BAQARAH</strong>');
+    expect(html.replace(/\s+/g, ' ')).toContain('>ABDEL HALEEM</span>');
+    expect(html.replace(/\s+/g, ' ')).toContain('>2 al-Baqarah</strong>');
     expect(html).not.toContain('In this surah');
     expect(html).not.toContain('Surah 2</span>');
     expect(html).toContain('>1 Guidance</a>');

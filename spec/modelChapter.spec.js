@@ -3,6 +3,50 @@
 const Index = require('../lib/Index');
 const { Book, Chapter, Section, Subsection, Library } = require('../lib/Model');
 
+describe('Book.getChapters', () => {
+  const originalQuery = global.query;
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    global.query = originalQuery;
+  });
+
+  test('loads the TOC chapter rail source from Elasticsearch without querying the DB', async () => {
+    global.query = jest.fn(() => {
+      throw new Error('TOC heading rails must not query the DB');
+    });
+    const search = jest.spyOn(Index, 'docsFromQueryFields')
+      .mockResolvedValueOnce([{
+        ordinal: 1,
+        level: 1,
+        book_alias: 'bukhari',
+        h1: 1,
+        path: 'bukhari/1',
+        h1_title_en: 'Revelation'
+      }])
+      .mockResolvedValueOnce([{
+        ordinal: 2,
+        level: 2,
+        book_alias: 'bukhari',
+        h1: 1,
+        h2: 1,
+        path: 'bukhari/1/1',
+        h2_title_en: 'How the Divine Revelation started'
+      }]);
+
+    const chapters = await new Book({ alias: 'bukhari' }).getChapters();
+
+    expect(chapters).toHaveLength(1);
+    expect(chapters[0].sections).toHaveLength(1);
+    expect(search).toHaveBeenCalledTimes(2);
+    expect(search.mock.calls.map(call => [call[0], call[1].bool.filter[1], call[5]])).toEqual([
+      ['toc', { term: { level: 1 } }, 'ordinal'],
+      ['toc', { term: { level: 2 } }, 'ordinal']
+    ]);
+    expect(global.query).not.toHaveBeenCalled();
+  });
+});
+
 describe('Chapter.getFirstSection', () => {
   afterEach(() => {
     jest.restoreAllMocks();

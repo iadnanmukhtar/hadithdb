@@ -473,14 +473,15 @@ body:has(.toc-heading-layout) {
 
 .quran-heading-toc,
 .hadith-heading-toc {
+	--heading-rail-sticky-top: calc(var(--heading-rail-header-height, var(--site-fixed-header-height, 0px)) + 1rem);
 	align-self: start;
 	justify-self: end;
-	max-height: calc(100vh - var(--site-fixed-header-height, 0px) - 2rem);
+	max-height: calc(100vh - var(--heading-rail-sticky-top) - 1rem);
 	margin-top: max(7rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem));
 	min-width: 0;
 	overflow: hidden;
 	position: sticky;
-	top: calc(var(--site-fixed-header-height, 0px) + 1rem);
+	top: var(--heading-rail-sticky-top);
 	width: var(--heading-rail-width);
 }
 
@@ -513,10 +514,16 @@ body:has(.toc-heading-layout) {
 	margin: 0 0 .55rem .7rem;
 }
 
-.quran-heading-toc-title {
+.heading-toc-book-name {
+	display: block;
+	font-size: .68rem;
+	font-weight: 600;
+	letter-spacing: .06em;
+	margin: 0 0 .12rem .7rem;
 	text-transform: uppercase;
 }
 
+.quran-heading-toc-title,
 .hadith-heading-toc-title {
 	text-transform: none;
 }

@@ -5,6 +5,7 @@
   var quranHeadingOutline = quranHeadingOutlines[quranHeadingInitialSurah] || quranHeadingOutlines[String(quranHeadingInitialSurah)];
   var quranHeadingInitialAyah = Number(locals.quranHeadingInitialAyah);
   var quranHeadingInitialKey = locals.quranHeadingInitialKey || '';
+  var quranHeadingBookShortName = (locals.quranHeadingBookShortName || 'Quran').toString().trim();
   var quranHeadingTranslationAlias = /^[A-Za-z0-9_-]+$/.test((locals.quranHeadingTranslationAlias || '').toString())
     ? locals.quranHeadingTranslationAlias.toString()
     : '';
@@ -39,7 +40,8 @@
 <% if (quranHeadingOutline && (quranHeadingOutline.sections || []).length > 0) { %>
 <aside class="quran-heading-toc d-none d-lg-block" data-quran-heading-toc data-quran-heading-initial-key="<%= quranHeadingInitialKey %>"<% if (quranHeadingTranslationAlias) { %> data-quran-heading-translation-alias="<%= quranHeadingTranslationAlias %>"<% } %><% if (quranHeadingTafsirBase) { %> data-quran-heading-tafsir-base="<%= quranHeadingTafsirBase %>"<% } %> aria-labelledby="quran-heading-toc-title">
   <div class="quran-heading-toc-sticky">
-    <strong id="quran-heading-toc-title" class="quran-heading-toc-title" data-quran-heading-toc-surah><%= quranHeadingOutline.surah %><% if (quranHeadingOutline.nameEn) { %> <%= quranHeadingOutline.nameEn.toUpperCase() %><% } %></strong>
+    <% if (quranHeadingBookShortName) { %><span class="heading-toc-book-name" data-quran-heading-toc-book><%= quranHeadingBookShortName.toUpperCase() %></span><% } %>
+    <strong id="quran-heading-toc-title" class="quran-heading-toc-title" data-quran-heading-toc-surah><%= quranHeadingOutline.surah %><% if (quranHeadingOutline.nameEn) { %> <%= quranHeadingOutline.nameEn %><% } %></strong>
     <nav class="nav flex-column quran-heading-toc-nav" data-quran-heading-toc-nav aria-label="Headings in Surah <%= quranHeadingOutline.surah %>">
       <% (quranHeadingOutline.sections || []).forEach(function (heading) { %>
       <a class="nav-link quran-heading-toc-link<%= quranHeadingInitialKey === heading.key ? ' active' : '' %>" href="<%= quranHeadingHref(heading) %>" data-quran-heading-key="<%= heading.key %>"<% if (quranHeadingInitialKey === heading.key) { %> aria-current="location"<% } %>><%= quranHeadingLabel(heading) %></a>
