@@ -914,7 +914,7 @@ async function updateQuranPassageRange(headingId, value, userId) {
   if (heading.book_alias !== 'quran')
     throw createError(400, 'Passage ranges can only be set for Quran headings');
   if (parseInt(heading.level, 10) !== 2)
-    throw createError(400, 'Passage ranges can only be set for Quran section headings');
+	throw createError(400, 'Passage ranges can only be set for level 2 Quran passage headings');
   var surah = parseInt(heading.h1, 10);
   validateAyahRange(payload.startAyah, payload.endAyah, surah);
   var rangeRows = await global.query(`SELECT COUNT(*) AS count
@@ -953,7 +953,7 @@ async function updateQuranPassageRange(headingId, value, userId) {
 async function reindexQuranSurah(sectionHeadingId, value, userId) {
   var section = await quranSectionFromId(sectionHeadingId, value);
   if (!section)
-    throw createError(404, 'Section heading not found');
+	throw createError(404, 'Passage heading not found');
   var bookId = parseInt(section.book_id, 10);
   var surah = Number(section.h1);
   var surahs = [surah - 1, surah, surah + 1]
@@ -1058,21 +1058,21 @@ async function rebuildQuranInMemoryCaches() {
 async function addQuranSection(anchorHeadingId, value, userId) {
   anchorHeadingId = parseInt(anchorHeadingId, 10);
   if (!Number.isInteger(anchorHeadingId) || anchorHeadingId <= 0)
-    throw createError(400, 'Invalid section heading id');
+	throw createError(400, 'Invalid passage heading id');
   var payload = parseSectionValue(value);
   var anchor = await quranSectionFromId(anchorHeadingId);
   if (!anchor)
-    throw createError(404, 'Section heading not found');
+	throw createError(404, 'Passage heading not found');
   if (anchor.book_alias !== 'quran')
-    throw createError(400, 'Sections can only be added here for Quran headings');
+	throw createError(400, 'Passages can only be added here for Quran headings');
   if (parseInt(anchor.level, 10) !== 2)
-    throw createError(400, 'Sections can only be added from a level 2 Quran heading');
+	throw createError(400, 'Passages can only be added from a level 2 Quran heading');
   var bookId = parseInt(anchor.book_id, 10);
   var surah = parseInt(anchor.h1, 10);
   validateAyahRange(payload.startAyah, payload.endAyah, surah);
   var insertH2 = Number(anchor.h2) + (payload.position === 'before' ? 0 : 1);
   if (!Number.isInteger(insertH2) || insertH2 < 1)
-    throw createError(400, 'Invalid section position');
+	throw createError(400, 'Invalid passage position');
   var insertOrdinal = await quranSectionInsertOrdinal(anchor, payload.position);
   await global.query(`UPDATE toc
     SET ordinal=ordinal+1
@@ -1111,15 +1111,15 @@ async function addQuranSection(anchorHeadingId, value, userId) {
 async function addQuranSubsection(sectionHeadingId, value, userId) {
   sectionHeadingId = parseInt(sectionHeadingId, 10);
   if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
-    throw createError(400, 'Invalid section heading id');
+	throw createError(400, 'Invalid passage heading id');
   var payload = parseSubsectionValue(value);
   var section = await quranSectionFromId(sectionHeadingId, value);
   if (!section)
-    throw createError(404, 'Section heading not found');
+	throw createError(404, 'Passage heading not found');
   if (section.book_alias !== 'quran')
     throw createError(400, 'Subsections can only be added here for Quran headings');
   if (parseInt(section.level, 10) !== 2)
-    throw createError(400, 'Subsections can only be added within a level 2 section');
+	throw createError(400, 'Subsections can only be added within a level 2 passage');
   var surah = parseInt(section.h1, 10);
   validateAyahRange(payload.startAyah, payload.endAyah, surah);
   validateSubsectionWithinSection(payload, section);
@@ -1170,7 +1170,7 @@ async function updateQuranSubsectionRange(subsectionHeadingId, value, userId) {
     WHERE book_id=${parseInt(subsection.book_id, 10)} AND level=2 AND h1=${Number(subsection.h1)} AND h2=${Number(subsection.h2)}
     LIMIT 1`))[0];
   if (!section)
-    throw createError(404, 'Parent section heading not found');
+	throw createError(404, 'Parent passage heading not found');
   var surah = parseInt(subsection.h1, 10);
   validateAyahRange(payload.startAyah, payload.endAyah, surah);
   validateSubsectionWithinSection(payload, section);
@@ -1300,7 +1300,7 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
     WHERE book_id=${bookId} AND level=2 AND h1=${surah} AND h2=${sourceH2}
     LIMIT 1`))[0];
   if (!section)
-    throw createError(404, 'Parent section heading not found');
+	throw createError(404, 'Parent passage heading not found');
   var rawSection = (await global.query(`SELECT start, end, count
     FROM toc
     WHERE id=${section.tId || section.id}
@@ -1313,9 +1313,9 @@ async function promoteQuranSubsection(subsectionHeadingId, userId) {
   });
   var splitAyah = quranAyahFromHeadingStart(subsection.start || subsection.h3_start);
   if (!Number.isInteger(sectionStart) || !Number.isInteger(sectionEnd) || !Number.isInteger(splitAyah))
-    throw createError(400, 'The section range is incomplete');
+	throw createError(400, 'The passage range is incomplete');
   if (splitAyah <= sectionStart || splitAyah > sectionEnd)
-    throw createError(400, 'Choose a subsection that starts after the first ayah of its parent section');
+	throw createError(400, 'Choose a subsection that starts after the first ayah of its parent passage');
   var nextSection = (await global.query(`SELECT start
     FROM toc
     WHERE bookId=${bookId} AND level=2 AND h1=${surah} AND h2>${sourceH2}
@@ -1476,10 +1476,10 @@ async function mergeQuranSubsectionWithNext(subsectionHeadingId, userId) {
 async function demoteQuranSection(sectionHeadingId, value, userId) {
   sectionHeadingId = parseInt(sectionHeadingId, 10);
   if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
-    throw createError(400, 'Invalid section heading id');
+	throw createError(400, 'Invalid passage heading id');
   var section = await quranSectionFromId(sectionHeadingId, value);
   if (!section)
-    throw createError(404, 'Section heading not found');
+	throw createError(404, 'Passage heading not found');
   var bookId = parseInt(section.book_id, 10);
   var surah = Number(section.h1);
   var currentH2 = Number(section.h2);
@@ -1489,7 +1489,7 @@ async function demoteQuranSection(sectionHeadingId, value, userId) {
     ORDER BY h2 DESC
     LIMIT 1`))[0];
   if (!previous)
-    throw createError(400, 'The first section in a surah cannot be demoted');
+	throw createError(400, 'The first passage in a surah cannot be demoted');
   var previousId = Number(previous.tId || previous.id);
   var previousH2 = Number(previous.h2);
   var rawRows = await global.query(`SELECT * FROM toc WHERE id IN (${previousId}, ${currentId})`);
@@ -1503,9 +1503,9 @@ async function demoteQuranSection(sectionHeadingId, value, userId) {
   });
   var previousStart = quranAyahFromHeadingStart(previousRaw.start || previous.h2_start);
   if (!Number.isInteger(currentStart) || !Number.isInteger(currentEnd) || !Number.isInteger(previousStart))
-    throw createError(400, 'The section ranges are incomplete');
+	throw createError(400, 'The passage ranges are incomplete');
   if (currentStart <= previousStart || currentEnd < currentStart)
-    throw createError(400, 'The section ranges cannot be demoted in their current order');
+	throw createError(400, 'The passage ranges cannot be demoted in their current order');
 
   var currentSubsections = await global.query(`SELECT * FROM toc
     WHERE bookId=${bookId} AND level=3 AND h1=${surah} AND h2=${currentH2}
@@ -1557,7 +1557,7 @@ async function demoteQuranSection(sectionHeadingId, value, userId) {
     await invalidateQuranSurahCaches(surah);
   });
   return {
-    message: 'Quran section demoted',
+	message: 'Quran passage demoted',
     value: {
       id: demotedSubsectionId,
       h1: surah,
@@ -1575,14 +1575,14 @@ async function demoteQuranSection(sectionHeadingId, value, userId) {
 async function deleteQuranSection(sectionHeadingId) {
   sectionHeadingId = parseInt(sectionHeadingId, 10);
   if (!Number.isInteger(sectionHeadingId) || sectionHeadingId <= 0)
-    throw createError(400, 'Invalid section heading id');
+	throw createError(400, 'Invalid passage heading id');
   var section = await quranSectionFromId(sectionHeadingId);
   if (!section)
-    throw createError(404, 'Section heading not found');
+	throw createError(404, 'Passage heading not found');
   if (section.book_alias !== 'quran')
-    throw createError(400, 'Sections can only be removed here for Quran headings');
+	throw createError(400, 'Passages can only be removed here for Quran headings');
   if (parseInt(section.level, 10) !== 2)
-    throw createError(400, 'Only level 2 section headings can be removed here');
+	throw createError(400, 'Only level 2 passage headings can be removed here');
   var bookId = parseInt(section.book_id, 10);
   var surah = Number(section.h1);
   var h2 = Number(section.h2);
@@ -1592,7 +1592,7 @@ async function deleteQuranSection(sectionHeadingId) {
     ORDER BY CASE WHEN h2<${h2} THEN 0 ELSE 1 END, ABS(h2-${h2})
     LIMIT 1`))[0];
   if (!destination)
-    throw createError(400, 'The only Quran section in a surah cannot be removed');
+	throw createError(400, 'The only Quran passage in a surah cannot be removed');
   var deletedHeadings = await global.query(`SELECT hId
     FROM v_toc
     WHERE book_id=${bookId} AND h1=${surah} AND h2=${h2} AND level IN (2, 3)`);
@@ -1646,7 +1646,7 @@ function parseSectionValue(value) {
     }
   }
   value = value || {};
-  payload.title_en = Utils.trimToEmpty(value.title_en || value.title || 'Section');
+	payload.title_en = Utils.trimToEmpty(value.title_en || value.title || 'Passage');
   payload.title = Utils.trimToEmpty(value.title_ar || value.titleArabic || '');
   payload.position = Utils.trimToEmpty(value.position).toLowerCase() === 'before' ? 'before' : 'after';
   return payload;
@@ -1868,7 +1868,7 @@ async function generateQuranHeadingTitle(heading, col) {
     .replace(/\s*[.۔]\s*$/g, '')
     .trim();
   title = Utils.replacePBUH(title);
-  return title ? `[AI] ${title.replace(/^\[AI\]\s*/i, '')}` : '[AI] Section';
+	return title ? `[AI] ${title.replace(/^\[AI\]\s*/i, '')}` : '[AI] Passage';
 }
 
 async function buildQuranHeadingTitlePrompt(heading, col) {
@@ -1906,7 +1906,7 @@ async function buildQuranHeadingTitlePrompt(heading, col) {
   var language = 'English';
   var style = 'Return only one concise English title in sentence case. Do not add punctuation.';
   var lines = [
-    `Create a ${language} Quran ${headingLevel === 3 ? 'h3 subsection' : 'h2 section'} title.`,
+	`Create a ${language} Quran ${headingLevel === 3 ? 'h3 subsection' : 'h2 passage'} title.`,
     style,
     'Base the title primarily on the actual ayat text in the target range.',
     headingLevel === 3

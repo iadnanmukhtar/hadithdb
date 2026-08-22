@@ -473,6 +473,27 @@
         return Number.isInteger(juz.num) && juz.num >= 1 && juz.num <= 30;
       })
       : [];
+	var tocHeadingRailKeys = new Map();
+	var tocHeadingRailItems = (Array.isArray(toc) ? toc : []).filter(function (heading) {
+	  return heading && heading.h1 !== undefined && heading.h1 !== null && heading.h1 !== ''
+	    && (!isQuranToc || quranCommentaryHasSurah(heading.h1));
+	}).map(function (heading, index) {
+	  var number = heading.h1 != Math.floor(heading.h1) ? Number(heading.h1).toFixed(2) : heading.h1.toString();
+	  var englishTitle = displayName(heading.title_en || heading.h1_title_en);
+	  var arabicTitle = displayName(heading.title || heading.h1_title);
+	  var title = englishTitle || arabicTitle || (isQuranToc ? 'Surah' : 'Chapter');
+	  var key = `toc-heading-${index}`;
+	  tocHeadingRailKeys.set(heading, key);
+	  return {
+	    key: key,
+	    number: number,
+	    title: title,
+	    titleLang: englishTitle ? 'en' : (arabicTitle ? 'ar' : 'en'),
+	    href: quranTocHref(heading)
+	  };
+	});
+	var showTocHeadingRail = tocHeadingRailItems.length > 0;
+	var tocHeadingRailTitle = tocDisplayBookNameEn || displayName(tocDisplayBook.shortName_en || tocDisplayBook.alias);
 	%>
   
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -483,7 +504,8 @@
   
   <%- include('sub-views/header.ejs', { site: site, page: page, quranHeaderJuzLinks: quranHeaderJuzLinks }); %>
   
-  <div class="container col-lg-8 mx-auto">
+  <div class="<%= showTocHeadingRail ? `container-fluid hadith-heading-layout toc-heading-layout${isQuranToc && !quranCommentaryBook ? ' toc-heading-layout-quran' : ''}` : 'container col-lg-8 mx-auto' %>">
+    <% if (showTocHeadingRail) { %><div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content"><% } %>
     
     <main class="toc<%= !isQuranToc ? ' hadith-toc-page' : '' %><%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? ' tafsir-toc-page' : '' %><%= isQuranToc && !quranCommentaryBook ? ' quran-toc-reader-modes' : '' %>"<% if (quranCommentaryBook && quranCommentaryBook.type === 'trans') { %> data-quran-selected-translation-book="<%= quranCommentaryBook.alias %>"<% } %>>
       
@@ -748,7 +770,7 @@
           var hasSections = sections.length > 0;
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
-                  <tr class="chapter" data-toc-chapter="<%= chapterRowId %>" data-toc-view="surahs">
+                  <tr class="chapter" data-toc-chapter="<%= chapterRowId %>" data-toc-view="surahs" data-toc-heading-target data-toc-heading-key="<%= tocHeadingRailKeys.get(toc[i]) %>">
                     <% if (showHadithBookChrome) { %>
                     <td><%- toc[i].start %></td>
                     <% } %>
@@ -797,11 +819,11 @@
                     <td><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
                     <% if (section.path) { %>
                     <td>
-                      <a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></a>
+					  <a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></a>
                     </td>
                     <td lang="ar"><a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
                     <% } else { %>
-                    <td class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></td>
+					<td class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></td>
                     <td lang="ar" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></td>
                     <% } %>
                   </tr>
@@ -870,7 +892,7 @@
           var hasSections = sections.length > 0;
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
-            <tr class="chapter" data-toc-chapter="<%= chapterRowId %>">
+            <tr class="chapter" data-toc-chapter="<%= chapterRowId %>" data-toc-heading-target data-toc-heading-key="<%= tocHeadingRailKeys.get(toc[i]) %>">
               <% if (showHadithBookChrome) { %>
               <td><%- toc[i].start %></td>
               <% } %>
@@ -916,11 +938,11 @@
               <td><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
               <% if (section.path) { %>
               <td>
-                <a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></a>
+				<a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></a>
               </td>
               <td lang="ar"><a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
               <% } else { %>
-              <td class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Section' %></td>
+			  <td class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></td>
               <td lang="ar" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></td>
               <% } %>
             </tr>
@@ -934,6 +956,12 @@
       </article>
       
     </main>
+    <% if (showTocHeadingRail) { %></div>
+    <%- include('sub-views/toc_heading_rail.ejs', {
+      tocHeadingRailItems: tocHeadingRailItems,
+      tocHeadingRailTitle: tocHeadingRailTitle
+    }); %>
+    <% } %>
   </div>
   
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>

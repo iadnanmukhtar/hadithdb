@@ -286,10 +286,10 @@
     <%# --- TABLE OF CONTENTS --- %>
     <div class="col-12 chapter-toc-toolbar">
       <% if (sections && sections.length > 0) { %>
-        <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="<%= isQuranMushafSectionMenu ? 'Show juz' : 'Show sections' %>">
+		<a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="<%= isQuranMushafSectionMenu ? 'Show juz' : (isQuranToc ? 'Show passages' : 'Show sections') %>">
           <i class="bi bi-list-ul" aria-hidden="true"></i>
-          <span><%= isQuranMushafSectionMenu ? 'Juz' : 'Sections' %></span>
-          <% if (isQuranMushafSectionMenu && currentMushafHeaderJuz) { %><span class="chapter-toc-current" data-quran-mushaf-current-juz><%= currentMushafHeaderJuz.num %> · <%= currentMushafHeaderJuz.progress %>%</span><% } else if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
+		  <span><%= isQuranMushafSectionMenu ? 'Juz' : (isQuranToc ? 'Passages' : 'Sections') %></span>
+		  <% if (isQuranMushafSectionMenu && currentMushafHeaderJuz) { %><span class="chapter-toc-current" data-quran-mushaf-current-juz><%= currentMushafHeaderJuz.num %> · <%= currentMushafHeaderJuz.progress %>%</span><% } else if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
           <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
         </a>
         <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
@@ -334,8 +334,8 @@
             <% if (section.start) { %>
             <td>
               <a href="<%= quranSectionMenuHref(section) %>">
-                <%= `§${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>
-                <%- title_en || `Section ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%=section.count%>)
+				<%= `§${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>
+				<%- title_en || `${isQuranToc ? 'Passage' : 'Section'} ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%=section.count%>)
               </a>
               <% if (page.context.book && page.context.book.alias === 'quran') { %>
                 &nbsp;<a href="<%= utils.urlFor(req, `/${section.path}`) %>" title="Study"><i class="bi bi-text-paragraph"></i></a>
@@ -343,7 +343,7 @@
             </td>
             <td lang="ar"><a href="<%= quranSectionMenuHref(section) %>"><%- title %></a></td>
             <% } else { %>
-            <td><%- title_en || 'Section' %></td>
+			<td><%- title_en || (isQuranToc ? 'Passage' : 'Section') %></td>
             <td lang="ar"><%- title %></td>
             <% } %>
           </tr>

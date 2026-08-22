@@ -26,4 +26,11 @@ describe('shared header navigation', () => {
     expect(header).toContain('<div class="col-auto d-flex align-items-center site-navbar-menu-toggle">');
     expect(header).toContain('data-bs-target="#offcanvas-topnav"');
   });
+
+	test('renames only the Quran Sections menu label to Passages', () => {
+	  expect(header).toContain("isQuranToc ? 'Show passages' : 'Show sections'");
+	  expect(header).toContain("isQuranToc ? 'Passages' : 'Sections'");
+	  expect(header).toContain('<span class="chapter-toc-current">§<%= page.context.section.h2 %></span>');
+	  expect(header).toContain("<%= `§${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>");
+	});
 });

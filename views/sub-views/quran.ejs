@@ -84,7 +84,7 @@
     group._audioEndAyah = groupAudioAyahs.length > 0 ? groupAudioAyahs[groupAudioAyahs.length - 1] : NaN;
     group._hasSubsection = group.quranSubsections && group.quranSubsections.length > 0;
     group._hasHeadingAudio = (group._hasSubsection || quranSubsections.length < 1) && Number.isInteger(group._audioStartAyah) && Number.isInteger(group._audioEndAyah);
-    group._headingAudioLabel = group._hasSubsection ? 'subsection' : 'section';
+	group._headingAudioLabel = group._hasSubsection ? 'subsection' : 'passage';
     group._audioScopeId = group._hasHeadingAudio ? `quran-audio-${index}` : '';
   });
   var quranInlineAudioGroup = quranGroups[0] && quranGroups[0]._hasHeadingAudio ? quranGroups[0] : null;
@@ -147,7 +147,7 @@
 <aside class="quran-subsection-admin mb-2" data-heading-id="<%= sectionHeading.id %>" data-surah="<%= sectionHeading.h1 %>" data-h2="<%= sectionHeading.h2 %>" data-section-path="/<%= sectionHeading.path %>">
   <div class="d-flex flex-wrap align-items-end gap-2">
     <label class="form-label mb-0 small">
-      Unsectioned start
+	  Passage start
       <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control form-control-sm quran-subsection-start" value="<%= groupStartAyah %>">
     </label>
     <label class="form-label mb-0 small">
@@ -177,7 +177,7 @@
   if (!Number.isInteger(isolatedHeadingEnd) || isolatedHeadingEnd < parseInt(isolatedHeadingStart || '0', 10))
     isolatedHeadingEnd = parseInt(isolatedHeadingStart || '0', 10);
 %>
-<aside class="col-12 quran-subheading-isolated-row mb-1">
+<aside class="col-12 quran-subheading-isolated-row mb-1" id="quran-heading-<%= isolatedHeading.h1 %>-<%= isolatedHeading.h2 %>-<%= isolatedHeading.h3 %>" data-quran-heading-target data-quran-heading-key="<%= isolatedHeading.h1 %>.<%= isolatedHeading.h2 %>.<%= isolatedHeading.h3 %>" data-quran-heading-surah="<%= isolatedHeading.h1 %>">
   <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
     <span class="quran-subheading quran-subheading-isolated" lang="en" dir="ltr">
       <span class="_e" data-id="<%= isolatedHeading.id %>" data-prop="toc.title_en" data-arabizi="true"><%- isolatedHeadingTitle %></span>
@@ -188,7 +188,7 @@
           <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-range-save" title="Save subsection range">
             <span class="bi bi-save"></span>
           </button>
-          <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-promote" title="Make this subsection and the remaining ayat a new section">
+		  <button type="button" class="btn btn-sm btn-outline-primary quran-subsection-promote" title="Make this subsection and the remaining ayat a new passage">
             <span class="bi bi-arrow-up-square"></span>
           </button>
           <% if (isolatedHeading.hasNextQuranSubsection) { %>

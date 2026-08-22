@@ -80,13 +80,15 @@
   var contextChapter = pageContext.chapter;
   var contextSection = pageContext.section;
   var isQuranBookContext = contextBook && contextBook.alias === 'quran';
-  var contextCatalogName = isQuranBookContext ? 'Quran' : 'Books';
-  var contextCatalogUrl = isQuranBookContext ? `${quranCanonicalBaseUrl}/quran` : `${site.url}/books`;
+	var contextCatalogName = pageContext.breadcrumbCatalogName || (isQuranBookContext ? 'Quran' : 'Books');
+	var contextCatalogUrl = pageContext.breadcrumbCatalogUrl
+	  ? canonicalUrlForPath(pageContext.breadcrumbCatalogUrl)
+	  : (isQuranBookContext ? `${quranCanonicalBaseUrl}/quran` : `${site.url}/books`);
   function chapterLabel(chapter) {
     return isQuranBookContext ? `Surah ${chapter.h1}` : `Chapter ${chapter.h1}`;
   }
   function sectionLabel(section) {
-    return isQuranBookContext ? `Section ${section.h2}` : `Section ${section.h2}`;
+	return isQuranBookContext ? `Passage ${section.h2}` : `Section ${section.h2}`;
   }
   function breadcrumbItem(position, name, item) {
     return {
@@ -280,10 +282,16 @@
     if (!isQuranBookContext)
       breadcrumbItems.push(breadcrumbItem(2, contextBook.name_en || contextBook.shortName_en || contextBook.alias || contextBook.name || contextBook.shortName, contextBookUrl(contextBook) || headCanonicalUrl));
     if (contextChapter) {
-      breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, `${contextChapter.h1}. ${contextChapter.title_en || chapterLabel(contextChapter)}`, contextChapterUrl(contextBook, contextChapter) || headCanonicalUrl));
+	  var contextChapterName = isQuranBookContext
+	    ? utils.quranSurahBreadcrumbLabel(contextChapter.h1, contextChapter.title_en)
+	    : `${contextChapter.h1}. ${contextChapter.title_en || chapterLabel(contextChapter)}`;
+	  breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, contextChapterName, contextChapterUrl(contextBook, contextChapter) || headCanonicalUrl));
     }
     if (contextSection) {
-      breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, `${contextSection.h2}. ${contextSection.title_en || sectionLabel(contextSection)}`, contextSectionUrl(contextBook, contextChapter, contextSection) || headCanonicalUrl));
+	  var contextSectionName = isQuranBookContext
+	    ? sectionLabel(contextSection)
+	    : (contextSection.title_en ? `${contextSection.h2}. ${contextSection.title_en}` : sectionLabel(contextSection));
+	  breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, contextSectionName, contextSectionUrl(contextBook, contextChapter, contextSection) || headCanonicalUrl));
     }
   }
 %>

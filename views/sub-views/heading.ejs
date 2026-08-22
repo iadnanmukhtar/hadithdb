@@ -5,6 +5,12 @@
     var headingEnglishOnly = locals.headingEnglishOnly;
     var quranHeadingAyahModalIndex = Number.isInteger(locals.quranHeadingAyahModalIndex) ? locals.quranHeadingAyahModalIndex : -1;
     var showQuranHeadingModalActions = quranHeadingAyahModalIndex >= 0;
+    var isQuranHeading = book && book.alias === 'quran' && heading && Number(heading.level) >= 2;
+	var isHadithHeading = book && book.alias !== 'quran' && heading && Number(heading.level) >= 2;
+	var isHadithHeadingTarget = isHadithHeading && !page.context.continued;
+	var headingKindEn = heading && Number(heading.level) === 3 ? 'Subsection' : (isQuranHeading ? 'Passage' : 'Section');
+    var quranHeadingKey = isQuranHeading ? `${heading.h1}.${heading.h2}${heading.h3 ? `.${heading.h3}` : ''}` : '';
+	var hadithHeadingKey = isHadithHeading ? `${book.alias}:${heading.h1}.${heading.h2}${heading.h3 ? `.${heading.h3}` : ''}` : '';
     if (chapter.h1 != Math.floor(chapter.h1))
       chapter.h1 = Number(chapter.h1).toFixed(2);
 %>
@@ -12,13 +18,13 @@
 <a id="S<%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>"></a>
 
 <%# Heading Title %>
-<article class="col-12 mt-4">
+<article class="col-12 mt-4"<% if (isQuranHeading) { %> id="quran-heading-<%= quranHeadingKey.replace(/\./g, '-') %>" data-quran-heading-target data-quran-heading-key="<%= quranHeadingKey %>" data-quran-heading-surah="<%= heading.h1 %>"<% } else if (isHadithHeading) { %> id="hadith-heading-<%= hadithHeadingKey.replace(/[^A-Za-z0-9_-]/g, '-') %>"<% if (isHadithHeadingTarget) { %> data-hadith-heading-target<% } %> data-hadith-heading-key="<%= hadithHeadingKey %>" data-hadith-heading-context="<%= `${book.alias}:${heading.h1}` %>" data-hadith-heading-level="<%= heading.level %>"<% if (Number(heading.level) === 3) { %> data-hadith-heading-parent-key="<%= `${book.alias}:${heading.h1}.${heading.h2}` %>"<% } %><% } %>>
 
   <heading class="row heading py-2">
     
     <h3 class="<%= headingEnglishOnly ? 'col-12' : 'col-md-6 col-sm-12' %> fs-5 title<%= showQuranHeadingModalActions ? ' quran-section-heading-title' : '' %>" lang="en">
       <span class="quran-section-heading-text">
-        <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= heading.id %>" data-bookmark-type="<%= heading.level === 3 ? 'subsection' : 'section' %>" data-bookmark-ref="<%= `${book.alias}:${heading.h1}.${heading.h2}${heading.h3 ? `.${heading.h3}` : ''}` %>" data-bookmark-title="<%= heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>" data-bookmark-title-ar="<%= heading.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${heading.path}`) %>" title="Bookmark this <%= heading.level === 3 ? 'subsection' : 'section' %>">
+		<button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= heading.id %>" data-bookmark-type="<%= heading.level === 3 ? 'subsection' : 'section' %>" data-bookmark-ref="<%= `${book.alias}:${heading.h1}.${heading.h2}${heading.h3 ? `.${heading.h3}` : ''}` %>" data-bookmark-title="<%= heading.title_en || headingKindEn %>" data-bookmark-title-ar="<%= heading.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${heading.path}`) %>" title="Bookmark this <%= headingKindEn.toLowerCase() %>">
           <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= heading.id %>"></span>
         </button>
         <% if (site.editMode) { %>
@@ -31,11 +37,11 @@
         <%- `${heading.h1}.${heading.h2}` + (heading.h3 ? `.${heading.h3}` : '') %>
         <% if (page.menu === 'Chapter')  { %>
         <a href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
-          <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
+		  <%- heading.title_en || headingKindEn %>
         </a>
         <% } else { %>
         <span href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title_en" data-arabizi="true">
-          <%- heading.title_en || (heading.level === 3 ? 'Subsection' : 'Section') %>
+		  <%- heading.title_en || headingKindEn %>
         </span>
         <% } %>
         <% if (page.context.continued) { %>

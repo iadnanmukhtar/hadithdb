@@ -1,0 +1,58 @@
+<%
+  var quranHeadingOutlines = locals.quranHeadingOutlines || {};
+  var quranHeadingSurahs = Object.keys(quranHeadingOutlines).map(Number).filter(Number.isInteger).sort(function (a, b) { return a - b; });
+  var quranHeadingInitialSurah = Number(locals.quranHeadingInitialSurah || quranHeadingSurahs[0]);
+  var quranHeadingOutline = quranHeadingOutlines[quranHeadingInitialSurah] || quranHeadingOutlines[String(quranHeadingInitialSurah)];
+  var quranHeadingInitialAyah = Number(locals.quranHeadingInitialAyah);
+  var quranHeadingInitialKey = locals.quranHeadingInitialKey || '';
+  var quranHeadingTranslationAlias = /^[A-Za-z0-9_-]+$/.test((locals.quranHeadingTranslationAlias || '').toString())
+    ? locals.quranHeadingTranslationAlias.toString()
+    : '';
+	var quranHeadingTafsirBase = /^\/quran\/tafsir\/[A-Za-z0-9_%.-]+$/.test((locals.quranHeadingTafsirBase || '').toString())
+	  ? locals.quranHeadingTafsirBase.toString()
+	  : '';
+  if (!quranHeadingInitialKey && quranHeadingOutline && Number.isInteger(quranHeadingInitialAyah)) {
+    (quranHeadingOutline.sections || []).forEach(function (section) {
+      if (quranHeadingInitialAyah < section.start || quranHeadingInitialAyah > section.end)
+        return;
+      quranHeadingInitialKey = section.key;
+      (section.subsections || []).forEach(function (subsection) {
+        if (quranHeadingInitialAyah >= subsection.start && quranHeadingInitialAyah <= subsection.end)
+          quranHeadingInitialKey = subsection.key;
+      });
+    });
+  }
+  function quranHeadingHref(heading) {
+	if (quranHeadingTafsirBase)
+	  return utils.quranUrl(req, `${quranHeadingTafsirBase}/quran:${heading.surah}:${heading.start}`);
+    var path = `/quran${quranHeadingTranslationAlias ? `/${encodeURIComponent(quranHeadingTranslationAlias)}` : ''}/${heading.surah}/${heading.section}`;
+    if (heading.level === 3)
+      path += `/${heading.subsection}`;
+    return utils.quranUrl(req, path);
+  }
+  function quranHeadingLabel(heading) {
+    if (heading.level === 3)
+      return heading.title || 'Subsection';
+    return `${heading.section} ${heading.title || 'Passage'}`;
+  }
+%>
+<% if (quranHeadingOutline && (quranHeadingOutline.sections || []).length > 0) { %>
+<aside class="quran-heading-toc d-none d-lg-block" data-quran-heading-toc data-quran-heading-initial-key="<%= quranHeadingInitialKey %>"<% if (quranHeadingTranslationAlias) { %> data-quran-heading-translation-alias="<%= quranHeadingTranslationAlias %>"<% } %><% if (quranHeadingTafsirBase) { %> data-quran-heading-tafsir-base="<%= quranHeadingTafsirBase %>"<% } %> aria-labelledby="quran-heading-toc-title">
+  <div class="quran-heading-toc-sticky">
+    <strong id="quran-heading-toc-title" class="quran-heading-toc-title" data-quran-heading-toc-surah><%= quranHeadingOutline.surah %><% if (quranHeadingOutline.nameEn) { %> <%= quranHeadingOutline.nameEn.toUpperCase() %><% } %></strong>
+    <nav class="nav flex-column quran-heading-toc-nav" data-quran-heading-toc-nav aria-label="Headings in Surah <%= quranHeadingOutline.surah %>">
+      <% (quranHeadingOutline.sections || []).forEach(function (heading) { %>
+      <a class="nav-link quran-heading-toc-link<%= quranHeadingInitialKey === heading.key ? ' active' : '' %>" href="<%= quranHeadingHref(heading) %>" data-quran-heading-key="<%= heading.key %>"<% if (quranHeadingInitialKey === heading.key) { %> aria-current="location"<% } %>><%= quranHeadingLabel(heading) %></a>
+      <% if ((heading.subsections || []).length > 0) { %>
+      <nav class="nav flex-column quran-heading-toc-subnav" aria-label="Subheadings in <%= heading.surah %>.<%= heading.section %>">
+        <% heading.subsections.forEach(function (subheading) { %>
+        <a class="nav-link quran-heading-toc-link quran-heading-toc-sublink<%= quranHeadingInitialKey === subheading.key ? ' active' : '' %>" href="<%= quranHeadingHref(subheading) %>" data-quran-heading-key="<%= subheading.key %>" data-quran-heading-parent-key="<%= heading.key %>"<% if (quranHeadingInitialKey === subheading.key) { %> aria-current="location"<% } %>><%= quranHeadingLabel(subheading) %></a>
+        <% }); %>
+      </nav>
+      <% } %>
+      <% }); %>
+    </nav>
+  </div>
+  <script type="application/json" data-quran-heading-outlines><%- JSON.stringify(quranHeadingOutlines).replace(/</g, '\\u003c') %></script>
+</aside>
+<% } %>

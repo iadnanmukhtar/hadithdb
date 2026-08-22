@@ -114,6 +114,9 @@ $(function () {
 	initBlogInfiniteScroll(document);
 	initQuranInfinitePassageNavigation(document);
 	initReaderInfiniteNavigation(document);
+	initQuranHeadingToc(document);
+	initHadithHeadingToc(document);
+	initTocHeadingRail(document);
 	initQuranMushafLastPageLinks(document);
 	initQuranMushafInfinite(document);
 	initQuranMushafLineFitting(document);
@@ -772,6 +775,7 @@ function initTocExpandCollapse(root) {
 			button.find('.toc-expand-icon')
 				.toggleClass('bi-chevron-right', expanded)
 				.toggleClass('bi-chevron-down', !expanded);
+			scheduleTocHeadingRailUpdate();
 		});
 	});
 }
@@ -826,6 +830,7 @@ function initTocContentFilters(root) {
 					section.toggleClass('d-none', !showSection);
 				});
 			});
+			scheduleTocHeadingRailUpdate();
 		};
 
 		input.on('input', update);
@@ -10180,6 +10185,500 @@ function initQuranMenuRows(root) {
 	});
 }
 
+var quranHeadingOutlineRegistry = {};
+var quranHeadingTocState = {
+	activeKey: '',
+	frame: 0,
+	surah: 0,
+	toc: null
+};
+
+function registerQuranHeadingOutlines(root) {
+	var scope = root || document;
+	Array.from(scope.querySelectorAll('[data-quran-heading-outlines]')).forEach(function (script) {
+		try {
+			var outlines = JSON.parse(script.textContent || '{}');
+			Object.keys(outlines || {}).forEach(function (surah) {
+				quranHeadingOutlineRegistry[surah] = outlines[surah];
+			});
+		} catch (_err) {}
+	});
+}
+
+function quranHeadingOutlineForSurah(surah) {
+	return quranHeadingOutlineRegistry[String(Number(surah))] || null;
+}
+
+function quranHeadingForAyah(outline, ayah) {
+	if (!outline || !Number.isInteger(Number(ayah)))
+		return null;
+	var matched = null;
+	(outline.sections || []).forEach(function (section) {
+		if (Number(ayah) < Number(section.start) || Number(ayah) > Number(section.end))
+			return;
+		matched = section;
+		(section.subsections || []).forEach(function (subsection) {
+			if (Number(ayah) >= Number(subsection.start) && Number(ayah) <= Number(subsection.end))
+				matched = subsection;
+		});
+	});
+	return matched;
+}
+
+function quranHeadingHref(heading) {
+	var translationAlias = quranHeadingTocState.toc && (quranHeadingTocState.toc.getAttribute('data-quran-heading-translation-alias') || '');
+	var tafsirBase = quranHeadingTocState.toc && (quranHeadingTocState.toc.getAttribute('data-quran-heading-tafsir-base') || '');
+	if (tafsirBase)
+		return `${tafsirBase}/quran:${heading.surah}:${heading.start}`;
+	var href = `/quran${translationAlias ? `/${encodeURIComponent(translationAlias)}` : ''}/${heading.surah}/${heading.section}`;
+	if (Number(heading.level) === 3)
+		href += `/${heading.subsection}`;
+	return href;
+}
+
+function quranHeadingLabel(heading) {
+	if (Number(heading.level) === 3)
+		return heading.title || 'Subsection';
+	return `${heading.section} ${heading.title || 'Passage'}`;
+}
+
+function renderQuranHeadingToc(surah) {
+	var toc = quranHeadingTocState.toc;
+	var outline = quranHeadingOutlineForSurah(surah);
+	if (!toc || !outline)
+		return false;
+	var nav = toc.querySelector('[data-quran-heading-toc-nav]');
+	var surahLabel = toc.querySelector('[data-quran-heading-toc-surah]');
+	if (!nav || !surahLabel)
+		return false;
+	quranHeadingTocState.surah = Number(outline.surah);
+	surahLabel.textContent = `${outline.surah}${outline.nameEn ? ` ${outline.nameEn.toUpperCase()}` : ''}`;
+	nav.replaceChildren();
+	nav.setAttribute('aria-label', `Headings in Surah ${outline.surah}`);
+	(outline.sections || []).forEach(function (section) {
+		var link = document.createElement('a');
+		link.className = 'nav-link quran-heading-toc-link';
+		link.href = quranHeadingHref(section);
+		link.dataset.quranHeadingKey = section.key;
+		link.textContent = quranHeadingLabel(section);
+		nav.appendChild(link);
+		if (!(section.subsections || []).length)
+			return;
+		var subnav = document.createElement('nav');
+		subnav.className = 'nav flex-column quran-heading-toc-subnav';
+		subnav.setAttribute('aria-label', `Subheadings in ${section.surah}.${section.section}`);
+		section.subsections.forEach(function (subsection) {
+			var sublink = document.createElement('a');
+			sublink.className = 'nav-link quran-heading-toc-link quran-heading-toc-sublink';
+			sublink.href = quranHeadingHref(subsection);
+			sublink.dataset.quranHeadingKey = subsection.key;
+			sublink.dataset.quranHeadingParentKey = section.key;
+			sublink.textContent = quranHeadingLabel(subsection);
+			subnav.appendChild(sublink);
+		});
+		nav.appendChild(subnav);
+	});
+	return true;
+}
+
+function setActiveQuranHeading(surah, key) {
+	var toc = quranHeadingTocState.toc;
+	if (!toc || !key)
+		return;
+	if (Number(surah) === quranHeadingTocState.surah && key === quranHeadingTocState.activeKey)
+		return;
+	if (Number(surah) !== quranHeadingTocState.surah || !toc.querySelector(`[data-quran-heading-key="${key}"]`)) {
+		if (!renderQuranHeadingToc(surah))
+			return;
+	}
+	quranHeadingTocState.activeKey = key;
+	var activeLink = null;
+	var selectedLink = toc.querySelector(`[data-quran-heading-key="${key}"]`);
+	var activeParentKey = selectedLink ? (selectedLink.getAttribute('data-quran-heading-parent-key') || '') : '';
+	toc.querySelectorAll('[data-quran-heading-key]').forEach(function (link) {
+		var active = link.getAttribute('data-quran-heading-key') === key;
+		var activeParent = activeParentKey && link.getAttribute('data-quran-heading-key') === activeParentKey;
+		link.classList.toggle('active', active);
+		link.classList.toggle('is-active-parent', !active && activeParent);
+		if (active) {
+			link.setAttribute('aria-current', 'location');
+			activeLink = link;
+		} else {
+			link.removeAttribute('aria-current');
+		}
+	});
+	var scroller = toc.querySelector('[data-quran-heading-toc-nav]');
+	if (activeLink && scroller) {
+		var scrollerRect = scroller.getBoundingClientRect();
+		var linkRect = activeLink.getBoundingClientRect();
+		if (linkRect.top < scrollerRect.top)
+			scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.top - scrollerRect.top - 12);
+		else if (linkRect.bottom > scrollerRect.bottom)
+			scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.bottom - scrollerRect.bottom + 12);
+	}
+}
+
+function visibleQuranStudyHeading() {
+	if (!document.querySelector('[data-quran-infinite-passage="1"]'))
+		return null;
+	var targets = Array.from(document.querySelectorAll('[data-quran-heading-target][data-quran-heading-key]'));
+	if (!targets.length)
+		return null;
+	var focus = Math.max(96, window.innerHeight * .28);
+	var preceding = targets.filter(function (target) {
+		return target.getBoundingClientRect().top <= focus;
+	}).pop();
+	var target = preceding || targets[0];
+	return {
+		key: target.getAttribute('data-quran-heading-key') || '',
+		surah: Number(target.getAttribute('data-quran-heading-surah'))
+	};
+}
+
+function visibleQuranMushafRef() {
+	var reader = document.querySelector('[data-quran-mushaf-reader]');
+	if (!reader)
+		return '';
+	var focus = window.innerHeight * .46;
+	var pages = Array.from(reader.querySelectorAll('[data-quran-mushaf-page]'));
+	var page = pages.find(function (candidate) {
+		var rect = candidate.getBoundingClientRect();
+		return rect.top <= focus && rect.bottom >= focus;
+	}) || pages.sort(function (a, b) {
+		return Math.abs(a.getBoundingClientRect().top - focus) - Math.abs(b.getBoundingClientRect().top - focus);
+	})[0];
+	if (!page)
+		return '';
+	var lines = Array.from(page.querySelectorAll('.quran-mushaf-line')).filter(function (line) {
+		return line.querySelector('[data-quran-ref]');
+	});
+	var line = lines.find(function (candidate) {
+		var rect = candidate.getBoundingClientRect();
+		return rect.top <= focus && rect.bottom >= focus;
+	}) || lines.sort(function (a, b) {
+		var aRect = a.getBoundingClientRect();
+		var bRect = b.getBoundingClientRect();
+		return Math.abs((aRect.top + aRect.bottom) / 2 - focus) - Math.abs((bRect.top + bRect.bottom) / 2 - focus);
+	})[0];
+	var refNode = line && line.querySelector('[data-quran-ref]');
+	return refNode ? (refNode.getAttribute('data-quran-ref') || '') : '';
+}
+
+function updateQuranHeadingToc() {
+	var toc = quranHeadingTocState.toc;
+	if (!toc)
+		return;
+	var study = visibleQuranStudyHeading();
+	if (study && study.key && study.surah) {
+		setActiveQuranHeading(study.surah, study.key);
+		return;
+	}
+	var ref = visibleQuranMushafRef();
+	var match = ref.match(/^(\d+):(\d+)$/);
+	if (!match)
+		return;
+	var surah = Number(match[1]);
+	var heading = quranHeadingForAyah(quranHeadingOutlineForSurah(surah), Number(match[2]));
+	if (heading)
+		setActiveQuranHeading(surah, heading.key);
+}
+
+function scheduleQuranHeadingTocUpdate() {
+	if (!quranHeadingTocState.toc || quranHeadingTocState.frame)
+		return;
+	quranHeadingTocState.frame = window.requestAnimationFrame(function () {
+		quranHeadingTocState.frame = 0;
+		updateQuranHeadingToc();
+	});
+}
+
+function initQuranHeadingToc(root) {
+	registerQuranHeadingOutlines(root || document);
+	var toc = (root || document).querySelector('[data-quran-heading-toc]');
+	if (!toc || quranHeadingTocState.toc)
+		return;
+	quranHeadingTocState.toc = toc;
+	quranHeadingTocState.activeKey = toc.getAttribute('data-quran-heading-initial-key') || '';
+	var firstOutline = Object.keys(quranHeadingOutlineRegistry).map(Number).filter(Number.isInteger).sort(function (a, b) { return a - b; })[0];
+	quranHeadingTocState.surah = firstOutline || 0;
+	toc.addEventListener('click', function (event) {
+		var link = event.target.closest('[data-quran-heading-key]');
+		if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+			return;
+		var key = link.getAttribute('data-quran-heading-key') || '';
+		var target = Array.from(document.querySelectorAll('[data-quran-heading-target]')).find(function (candidate) {
+			return candidate.getAttribute('data-quran-heading-key') === key;
+		});
+		if (!target)
+			return;
+		event.preventDefault();
+		target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	});
+	window.addEventListener('scroll', scheduleQuranHeadingTocUpdate, { passive: true });
+	window.addEventListener('resize', scheduleQuranHeadingTocUpdate, { passive: true });
+	scheduleQuranHeadingTocUpdate();
+}
+
+var hadithHeadingOutlineRegistry = {};
+var hadithHeadingTocState = {
+	activeKey: '',
+	context: '',
+	frame: 0,
+	toc: null
+};
+
+function registerHadithHeadingOutlines(root) {
+	var scope = root || document;
+	Array.from(scope.querySelectorAll('[data-hadith-heading-outlines]')).forEach(function (script) {
+		try {
+			var outlines = JSON.parse(script.textContent || '{}');
+			Object.keys(outlines || {}).forEach(function (context) {
+				hadithHeadingOutlineRegistry[context] = outlines[context];
+			});
+		} catch (_err) {}
+	});
+}
+
+function hadithHeadingLabel(heading) {
+	if (Number(heading.level) === 3)
+		return heading.title || 'Subsection';
+	return `${heading.section} ${heading.title || 'Section'}`;
+}
+
+function hadithHeadingHref(heading) {
+	return `/${(heading.path || '').toString().replace(/^\/+/, '')}`;
+}
+
+function applyHadithHeadingLanguage(link, heading) {
+	if (heading.titleLang !== 'ar')
+		return;
+	link.setAttribute('lang', 'ar');
+	link.setAttribute('dir', 'rtl');
+}
+
+function renderHadithHeadingToc(context) {
+	var toc = hadithHeadingTocState.toc;
+	var outline = hadithHeadingOutlineRegistry[context];
+	if (!toc || !outline)
+		return false;
+	var nav = toc.querySelector('[data-hadith-heading-toc-nav]');
+	var chapterLabel = toc.querySelector('[data-hadith-heading-toc-chapter]');
+	if (!nav || !chapterLabel)
+		return false;
+	hadithHeadingTocState.context = outline.key || context;
+	chapterLabel.textContent = outline.flat
+		? (outline.nameEn || '')
+		: `${outline.chapter}${outline.nameEn ? ` ${outline.nameEn}` : ''}`;
+	nav.replaceChildren();
+	nav.scrollTop = 0;
+	nav.setAttribute('aria-label', outline.flat ? `Chapters in ${outline.nameEn || outline.bookAlias}` : `Headings in chapter ${outline.chapter}`);
+	(outline.sections || []).forEach(function (section) {
+		var link = document.createElement('a');
+		link.className = 'nav-link hadith-heading-toc-link';
+		link.href = hadithHeadingHref(section);
+		link.dataset.hadithHeadingKey = section.key;
+		link.textContent = hadithHeadingLabel(section);
+		applyHadithHeadingLanguage(link, section);
+		nav.appendChild(link);
+		if (!(section.subsections || []).length)
+			return;
+		var subnav = document.createElement('nav');
+		subnav.className = 'nav flex-column hadith-heading-toc-subnav';
+		subnav.setAttribute('aria-label', `Subheadings in chapter ${section.chapter}, section ${section.section}`);
+		section.subsections.forEach(function (subsection) {
+			var sublink = document.createElement('a');
+			sublink.className = 'nav-link hadith-heading-toc-link hadith-heading-toc-sublink';
+			sublink.href = hadithHeadingHref(subsection);
+			sublink.dataset.hadithHeadingKey = subsection.key;
+			sublink.dataset.hadithHeadingParentKey = section.key;
+			sublink.textContent = hadithHeadingLabel(subsection);
+			applyHadithHeadingLanguage(sublink, subsection);
+			subnav.appendChild(sublink);
+		});
+		nav.appendChild(subnav);
+	});
+	return true;
+}
+
+function setActiveHadithHeading(context, key) {
+	var toc = hadithHeadingTocState.toc;
+	if (!toc || !context || !key)
+		return;
+	if (context === hadithHeadingTocState.context && key === hadithHeadingTocState.activeKey)
+		return;
+	var links = Array.from(toc.querySelectorAll('[data-hadith-heading-key]'));
+	if (context !== hadithHeadingTocState.context || !links.some(function (link) { return link.getAttribute('data-hadith-heading-key') === key; })) {
+		if (!renderHadithHeadingToc(context))
+			return;
+		links = Array.from(toc.querySelectorAll('[data-hadith-heading-key]'));
+	}
+	hadithHeadingTocState.activeKey = key;
+	var activeLink = links.find(function (link) { return link.getAttribute('data-hadith-heading-key') === key; }) || null;
+	var activeParentKey = activeLink ? (activeLink.getAttribute('data-hadith-heading-parent-key') || '') : '';
+	links.forEach(function (link) {
+		var active = link === activeLink;
+		var activeParent = activeParentKey && link.getAttribute('data-hadith-heading-key') === activeParentKey;
+		link.classList.toggle('active', active);
+		link.classList.toggle('is-active-parent', !active && activeParent);
+		if (active)
+			link.setAttribute('aria-current', 'location');
+		else
+			link.removeAttribute('aria-current');
+	});
+	var scroller = toc.querySelector('[data-hadith-heading-toc-nav]');
+	if (activeLink && scroller) {
+		var scrollerRect = scroller.getBoundingClientRect();
+		var linkRect = activeLink.getBoundingClientRect();
+		if (linkRect.top < scrollerRect.top)
+			scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.top - scrollerRect.top - 12);
+		else if (linkRect.bottom > scrollerRect.bottom)
+			scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.bottom - scrollerRect.bottom + 12);
+	}
+}
+
+function visibleHadithHeading() {
+	if (!document.querySelector('[data-reader-infinite^="hadith-"]'))
+		return null;
+	var targets = Array.from(document.querySelectorAll('[data-hadith-heading-target][data-hadith-heading-key]'));
+	if (!targets.length)
+		return null;
+	var focus = Math.max(96, window.innerHeight * .28);
+	var target = null;
+	targets.forEach(function (candidate) {
+		if (candidate.getBoundingClientRect().top > focus)
+			return;
+		var key = candidate.getAttribute('data-hadith-heading-key') || '';
+		var activeParentKey = target && target.getAttribute('data-hadith-heading-parent-key');
+		var repeatedActiveParent = Number(candidate.getAttribute('data-hadith-heading-level')) === 2
+			&& activeParentKey === key;
+		if (!repeatedActiveParent)
+			target = candidate;
+	});
+	target = target || targets[0];
+	return {
+		context: target.getAttribute('data-hadith-heading-context') || '',
+		key: target.getAttribute('data-hadith-heading-key') || ''
+	};
+}
+
+function updateHadithHeadingToc() {
+	var heading = visibleHadithHeading();
+	if (heading)
+		setActiveHadithHeading(heading.context, heading.key);
+}
+
+function scheduleHadithHeadingTocUpdate() {
+	if (!hadithHeadingTocState.toc || hadithHeadingTocState.frame)
+		return;
+	hadithHeadingTocState.frame = window.requestAnimationFrame(function () {
+		hadithHeadingTocState.frame = 0;
+		updateHadithHeadingToc();
+	});
+}
+
+function initHadithHeadingToc(root) {
+	registerHadithHeadingOutlines(root || document);
+	var toc = (root || document).querySelector('[data-hadith-heading-toc]');
+	if (!toc || hadithHeadingTocState.toc)
+		return;
+	hadithHeadingTocState.toc = toc;
+	hadithHeadingTocState.context = toc.getAttribute('data-hadith-heading-initial-context') || '';
+	hadithHeadingTocState.activeKey = toc.getAttribute('data-hadith-heading-initial-key') || '';
+	toc.addEventListener('click', function (event) {
+		var link = event.target.closest('[data-hadith-heading-key]');
+		if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+			return;
+		var key = link.getAttribute('data-hadith-heading-key') || '';
+		var target = Array.from(document.querySelectorAll('[data-hadith-heading-target]')).find(function (candidate) {
+			return candidate.getAttribute('data-hadith-heading-key') === key;
+		});
+		if (!target)
+			return;
+		event.preventDefault();
+		target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	});
+	window.addEventListener('scroll', scheduleHadithHeadingTocUpdate, { passive: true });
+	window.addEventListener('resize', scheduleHadithHeadingTocUpdate, { passive: true });
+	scheduleHadithHeadingTocUpdate();
+}
+
+var tocHeadingRailState = {
+	activeKey: '',
+	frame: 0,
+	rail: null
+};
+
+function visibleTocHeadingTarget() {
+	var targets = Array.from(document.querySelectorAll('[data-toc-heading-target][data-toc-heading-key]')).filter(function (target) {
+		return !target.hidden && target.getClientRects().length > 0;
+	});
+	if (!targets.length)
+		return null;
+	var focus = Math.max(96, window.innerHeight * .28);
+	var target = null;
+	targets.forEach(function (candidate) {
+		if (candidate.getBoundingClientRect().top <= focus)
+			target = candidate;
+	});
+	return target || targets[0];
+}
+
+function setActiveTocHeading(key) {
+	var rail = tocHeadingRailState.rail;
+	if (!rail || !key || key === tocHeadingRailState.activeKey)
+		return;
+	tocHeadingRailState.activeKey = key;
+	var links = Array.from(rail.querySelectorAll('[data-toc-heading-key]'));
+	var activeLink = null;
+	links.forEach(function (link) {
+		var active = link.getAttribute('data-toc-heading-key') === key;
+		link.classList.toggle('active', active);
+		if (active) {
+			link.setAttribute('aria-current', 'location');
+			activeLink = link;
+		} else {
+			link.removeAttribute('aria-current');
+		}
+	});
+	var scroller = rail.querySelector('[data-toc-heading-rail-nav]');
+	if (!activeLink || !scroller)
+		return;
+	var scrollerRect = scroller.getBoundingClientRect();
+	var linkRect = activeLink.getBoundingClientRect();
+	if (linkRect.top < scrollerRect.top)
+		scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.top - scrollerRect.top - 12);
+	else if (linkRect.bottom > scrollerRect.bottom)
+		scroller.scrollTop = Math.max(0, scroller.scrollTop + linkRect.bottom - scrollerRect.bottom + 12);
+}
+
+function updateTocHeadingRail() {
+	var target = visibleTocHeadingTarget();
+	if (target)
+		setActiveTocHeading(target.getAttribute('data-toc-heading-key') || '');
+}
+
+function scheduleTocHeadingRailUpdate() {
+	if (!tocHeadingRailState.rail || tocHeadingRailState.frame)
+		return;
+	tocHeadingRailState.frame = window.requestAnimationFrame(function () {
+		tocHeadingRailState.frame = 0;
+		updateTocHeadingRail();
+	});
+}
+
+function initTocHeadingRail(root) {
+	var rail = (root || document).querySelector('[data-toc-heading-rail]');
+	if (!rail || tocHeadingRailState.rail)
+		return;
+	tocHeadingRailState.rail = rail;
+	var activeLink = rail.querySelector('[data-toc-heading-key].active');
+	tocHeadingRailState.activeKey = activeLink ? (activeLink.getAttribute('data-toc-heading-key') || '') : '';
+	window.addEventListener('scroll', scheduleTocHeadingRailUpdate, { passive: true });
+	window.addEventListener('resize', scheduleTocHeadingRailUpdate, { passive: true });
+	$(document).on('shown.bs.tab.tocHeadingRail', scheduleTocHeadingRailUpdate);
+	scheduleTocHeadingRailUpdate();
+}
+
 function updateQuranMushafHeaderJuz(pageNumber, pageElement) {
 	pageNumber = parseInt(pageNumber, 10);
 	var input = pageElement && pageElement.querySelector('[data-quran-mushaf-juz-form] input');
@@ -10399,6 +10898,7 @@ function initQuranMushafInfinite(root) {
 			return response.text();
 		}).then(function (html) {
 			var parsed = new DOMParser().parseFromString(html, 'text/html');
+			registerQuranHeadingOutlines(parsed);
 			var remoteReader = parsed.querySelector('[data-quran-mushaf-reader]');
 			var page = remoteReader && remoteReader.querySelector('[data-quran-mushaf-page]');
 			if (!page)
@@ -10437,6 +10937,7 @@ function initQuranMushafInfinite(root) {
 			if (pageObserver)
 				pageObserver.observe(importedPage);
 			reader.setAttribute('data-next-url', remoteReader.getAttribute('data-next-url') || '');
+			scheduleQuranHeadingTocUpdate();
 			return true;
 		}).catch(function (error) {
 			reader.setAttribute('data-next-url', '');
@@ -10951,6 +11452,7 @@ function initQuranInfinitePassageNavigation(root) {
 
 	var appendPassage = function (html, url) {
 		var parsed = new DOMParser().parseFromString(html, 'text/html');
+		registerQuranHeadingOutlines(parsed);
 		var remoteMain = parsed.querySelector('[data-quran-infinite-passage="1"]');
 		if (!remoteMain)
 			throw new Error('Next Quran passage was not found.');
@@ -11041,6 +11543,7 @@ function initQuranInfinitePassageNavigation(root) {
           window.initQuranRangeAdminControls(chunk[0]);
 		if (window.refreshHadithActions)
 			window.refreshHadithActions();
+		scheduleQuranHeadingTocUpdate();
 		nextUrl = remoteMain.getAttribute('data-quran-next-url') || '';
 		if (nextUrl)
 			main.attr('data-quran-next-url', nextUrl);
@@ -11150,6 +11653,7 @@ function initReaderInfiniteNavigation(root) {
 		var initialAnchor = $('<span class="reader-infinite-url-marker" aria-hidden="true" data-reader-infinite-anchor="1"></span>').attr({
 			'data-reader-mode': mode,
 			'data-reader-url': currentUrl,
+			'data-reader-quran-ref': main.attr('data-reader-quran-ref') || '',
 			'data-page-title': document.title,
 			'data-reader-context-key': lastContextKey,
 			'data-reader-prev-url': main.attr('data-reader-prev-url') || '',
@@ -11217,6 +11721,16 @@ function initReaderInfiniteNavigation(root) {
 			var marker = pageMarkers()[currentPageIndex()];
 			if (!marker)
 				return;
+			if (mode === 'tafsir') {
+				var quranRef = marker.getAttribute('data-reader-quran-ref') || '';
+				var quranRefMatch = quranRef.match(/^(\d+):(\d+)$/);
+				if (quranRefMatch) {
+					var headingSurah = Number(quranRefMatch[1]);
+					var heading = quranHeadingForAyah(quranHeadingOutlineForSurah(headingSurah), Number(quranRefMatch[2]));
+					if (heading)
+						setActiveQuranHeading(headingSurah, heading.key);
+				}
+			}
 			var prevHref = marker.getAttribute('data-reader-prev-url') || '';
 			var nextHref = marker.getAttribute('data-reader-next-url') || '';
 			setMobileBottomNavLink('prev', prevHref, marker.getAttribute('data-reader-prev-title') || 'Previous');
@@ -11321,6 +11835,10 @@ function initReaderInfiniteNavigation(root) {
 		};
 		var appendReaderPage = function (html, url) {
 			var parsed = new DOMParser().parseFromString(html, 'text/html');
+			if (mode === 'tafsir')
+				registerQuranHeadingOutlines(parsed);
+			if (mode.indexOf('hadith-') === 0)
+				registerHadithHeadingOutlines(parsed);
 			var remoteMain = Array.from(parsed.querySelectorAll('[data-reader-infinite]')).find(function (node) {
 				return (node.getAttribute('data-reader-infinite') || '') === mode;
 			});
@@ -11331,6 +11849,7 @@ function initReaderInfiniteNavigation(root) {
 			var chunk = $('<section class="reader-infinite-page" data-reader-infinite-page="1"></section>').attr({
 				'data-reader-mode': mode,
 				'data-reader-url': remoteUrl,
+				'data-reader-quran-ref': remoteMain.getAttribute('data-reader-quran-ref') || '',
 				'data-page-title': parsed.title || '',
 				'data-reader-context-key': remoteContextKey,
 				'data-reader-prev-url': remoteMain.getAttribute('data-reader-prev-url') || '',
@@ -11344,6 +11863,8 @@ function initReaderInfiniteNavigation(root) {
 				appendHadithPage(remoteMain, chunk);
 			chunk.insertBefore(status);
 			reinitializeChunk(chunk[0]);
+			if (mode.indexOf('hadith-') === 0)
+				scheduleHadithHeadingTocUpdate();
 			nextUrl = remoteMain.getAttribute('data-reader-next-url') || '';
 			if (nextUrl)
 				main.attr('data-reader-next-url', nextUrl);

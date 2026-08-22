@@ -207,8 +207,8 @@
   
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   
-  <div class="container col-lg-8 mx-auto">
-    
+  <div class="container-fluid quran-heading-layout quran-heading-layout-study">
+    <div class="quran-heading-content quran-heading-content-study">
     <main class="chapter mt-10" data-page-help-tour="study"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %> data-quran-infinite-passage="1" data-quran-surah="<%= chapter.h1 %>" data-quran-current-url="<%= req.originalUrl || req.url || req.path %>"<% if (page.prev) { %> data-quran-prev-url="<%= selectedAyahPrevHref || quranPassageHref(page.prev) %>" data-quran-prev-title="<%= (page.prevTitle || 'Previous').replace(/&nbsp;/g, ' ') %>"<% } %><% if (page.next) { %> data-quran-next-url="<%= selectedAyahNextHref || quranPassageHref(page.next) %>" data-quran-next-title="<%= (page.nextTitle || 'Next').replace(/&nbsp;/g, ' ') %>"<% } %>>
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
@@ -302,7 +302,7 @@
                   </button>
                 <% } %>
                 <button type="button" class="btn btn-sm btn-outline-danger quran-section-delete" data-loading-label="Removing">
-                  <span class="bi bi-trash"></span> Delete section
+				  <span class="bi bi-trash"></span> Delete passage
                 </button>
               </div>
               <div class="quran-range-preview mt-2 d-none">
@@ -337,10 +337,10 @@
           <aside class="quran-section-admin mt-3 mb-3" data-heading-id="<%= rangeHeading.id %>" data-surah="<%= rangeHeading.h1 %>">
             <div class="d-flex flex-wrap align-items-end gap-2">
               <label class="form-label mb-0 small">
-                New section
+				New passage
                 <select class="form-select form-select-sm quran-section-position">
-                  <option value="after" selected>After this section</option>
-                  <option value="before">Before this section</option>
+				  <option value="after" selected>After this passage</option>
+				  <option value="before">Before this passage</option>
                 </select>
               </label>
               <label class="form-label mb-0 small">
@@ -356,7 +356,7 @@
                 <input type="text" class="form-control form-control-sm quran-section-title" value="">
               </label>
               <button type="button" class="btn btn-sm btn-outline-primary quran-section-add" data-loading-label="Adding">
-                <span class="bi bi-plus-circle"></span> Add section
+				<span class="bi bi-plus-circle"></span> Add passage
               </button>
             </div>
           </aside>
@@ -379,11 +379,19 @@
       
       <% if (results.length == 0 || !results[0].id) { %>
         <footer class="col-12">
-          <p>This is an empty section.</p>
+		  <p>This is an empty passage.</p>
         </footer>
       <% } %>
       
     </main>
+    </div>
+    <%- include('sub-views/quran_heading_toc.ejs', {
+      quranHeadingOutlines: locals.quranHeadingOutlines,
+      quranHeadingInitialSurah: chapter.h1,
+      quranHeadingInitialAyah: quranNavigatorAyahValue,
+      quranHeadingInitialKey: section && Number(section.level) >= 2 ? `${section.h1}.${section.h2}` : '',
+      quranHeadingTranslationAlias: quranSelectedTranslationAlias
+    }); %>
   </div>
 
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page, helpTour: 'study' }); %>
@@ -571,7 +579,7 @@
       };
 
       const deleteSection = async () => {
-        if (!window.confirm('Remove this section division and its subsections? The āyāt will remain in the surah, and later sections will be renumbered.'))
+		if (!window.confirm('Remove this passage division and its subsections? The āyāt will remain in the surah, and later passages will be renumbered.'))
           return;
         setActionLoading(deleteButton, 'Removing', true);
         try {
@@ -580,11 +588,11 @@
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
-            toastr.success('Later sections were renumbered', 'Quran section removed');
+			toastr.success('Later passages were renumbered', 'Quran passage removed');
           refreshAfterQuranHeadingUpdate(body.value.redirectPath || `/quran/${surah}`);
         } catch (err) {
           if (window.toastr)
-            toastr.error(err.message, 'Quran section remove failed');
+			toastr.error(err.message, 'Quran passage remove failed');
           else
             alert(err.message);
         } finally {
@@ -603,11 +611,11 @@
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
-            toastr.success(`${body.value.start} (${body.value.count} āyāt)`, 'Quran section demoted');
+			toastr.success(`${body.value.start} (${body.value.count} āyāt)`, 'Quran passage demoted');
           refreshAfterQuranHeadingUpdate(`/${body.value.path}#S${body.value.h2}-${body.value.h3}`);
         } catch (err) {
           if (window.toastr)
-            toastr.error(err.message, 'Quran section demote failed');
+			toastr.error(err.message, 'Quran passage demote failed');
           else
             alert(err.message);
         } finally {
@@ -742,7 +750,7 @@
           addButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Adding';
         } else {
           addButton.disabled = false;
-          addButton.innerHTML = addButton.dataset.originalHtml || '<span class="bi bi-plus-circle"></span> Add section';
+		  addButton.innerHTML = addButton.dataset.originalHtml || '<span class="bi bi-plus-circle"></span> Add passage';
         }
       };
 
@@ -773,11 +781,11 @@
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
-            toastr.success(body.value.path, 'Quran section added');
+			toastr.success(body.value.path, 'Quran passage added');
           refreshAfterQuranHeadingUpdate(`/${body.value.path}`);
         } catch (err) {
           if (window.toastr)
-            toastr.error(err.message, 'Quran section add failed');
+			toastr.error(err.message, 'Quran passage add failed');
           else
             alert(err.message);
         } finally {
@@ -855,7 +863,7 @@
       };
 
       const deleteSubsection = async () => {
-        if (!window.confirm('Remove this subsection division? The āyāt will remain in the parent section.'))
+		if (!window.confirm('Remove this subsection division? The āyāt will remain in the parent passage.'))
           return;
         setButtonLoading(deleteButton, '', true);
         try {
@@ -864,7 +872,7 @@
           if (!res.ok || body.code !== 200)
             throw new Error(body.message || res.statusText);
           if (window.toastr)
-            toastr.success('Āyāt remain in the parent section', 'Quran subsection removed');
+			toastr.success('Āyāt remain in the parent passage', 'Quran subsection removed');
           refreshAfterQuranHeadingUpdate(location.pathname);
         } catch (err) {
           if (window.toastr)
@@ -877,7 +885,7 @@
       };
 
       const promoteSubsection = async () => {
-        if (!window.confirm('Make this subsection and every following ayah a new section? The current section will end immediately before this subsection.'))
+		if (!window.confirm('Make this subsection and every following ayah a new passage? The current passage will end immediately before this subsection.'))
           return;
         setButtonLoading(promoteButton, '', true);
         try {

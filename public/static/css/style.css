@@ -450,6 +450,251 @@ main.chapter.tafsir-only-page {
 	margin-top: max(5.5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
 }
 
+.quran-heading-content,
+.hadith-heading-content,
+.toc-heading-content {
+	min-width: 0;
+}
+
+.quran-heading-layout,
+.hadith-heading-layout,
+.toc-heading-layout {
+	--heading-rail-width: 240px;
+}
+
+html:has(.quran-heading-layout),
+body:has(.quran-heading-layout),
+html:has(.hadith-heading-layout),
+body:has(.hadith-heading-layout),
+html:has(.toc-heading-layout),
+body:has(.toc-heading-layout) {
+	overflow-x: clip;
+}
+
+.quran-heading-toc,
+.hadith-heading-toc {
+	align-self: start;
+	justify-self: end;
+	max-height: calc(100vh - var(--site-fixed-header-height, 0px) - 2rem);
+	margin-top: max(7rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem));
+	min-width: 0;
+	overflow: hidden;
+	position: sticky;
+	top: calc(var(--site-fixed-header-height, 0px) + 1rem);
+	width: var(--heading-rail-width);
+}
+
+.quran-heading-layout-mushaf .quran-heading-toc {
+	margin-top: max(9rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem));
+}
+
+.quran-heading-layout-tafsir .quran-heading-toc {
+	margin-top: max(5.5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
+}
+
+.toc-heading-layout-quran .toc-heading-rail {
+	margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.25rem));
+}
+
+.quran-heading-toc-sticky,
+.hadith-heading-toc-sticky {
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	max-height: inherit;
+	padding: .15rem .35rem .75rem .25rem;
+}
+
+.quran-heading-toc-title,
+.hadith-heading-toc-title {
+	display: block;
+	font-size: .8rem;
+	letter-spacing: .025em;
+	margin: 0 0 .55rem .7rem;
+}
+
+.quran-heading-toc-title {
+	text-transform: uppercase;
+}
+
+.hadith-heading-toc-title {
+	text-transform: none;
+}
+
+.quran-heading-toc-nav,
+.hadith-heading-toc-nav {
+	border-left: 1px solid var(--bs-border-color);
+	display: block;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+}
+
+.quran-heading-toc-subnav,
+.hadith-heading-toc-subnav {
+	display: block;
+}
+
+.quran-heading-toc .nav-link,
+.hadith-heading-toc .nav-link {
+	border-left: 2px solid transparent;
+	color: var(--bs-secondary-color);
+	font-size: .82rem;
+	line-height: 1.32;
+	margin-left: -1px;
+	padding: .28rem .45rem .28rem .7rem;
+}
+
+.quran-heading-toc .nav-link:hover,
+.quran-heading-toc .nav-link:focus-visible,
+.hadith-heading-toc .nav-link:hover,
+.hadith-heading-toc .nav-link:focus-visible {
+	color: var(--bs-emphasis-color);
+}
+
+.quran-heading-toc .nav-link.active,
+.hadith-heading-toc .nav-link.active {
+	border-left-color: var(--bs-primary);
+	color: var(--bs-primary);
+	font-weight: 600;
+}
+
+.quran-heading-toc .nav-link.is-active-parent:not(.active),
+.hadith-heading-toc .nav-link.is-active-parent:not(.active) {
+	color: var(--bs-emphasis-color);
+	font-weight: 600;
+}
+
+.quran-heading-toc-subnav .nav-link,
+.hadith-heading-toc-subnav .nav-link {
+	font-size: .77rem;
+	padding-left: 1.3rem;
+}
+
+.hadith-heading-toc .nav-link[lang="ar"] {
+	font-family: Kitab, Serif;
+	font-size: .82rem;
+	text-align: right;
+}
+
+.hadith-heading-toc-subnav .nav-link[lang="ar"] {
+	font-size: .77rem;
+}
+
+[data-quran-heading-target],
+[data-hadith-heading-target],
+[data-toc-heading-target] {
+	scroll-margin-top: calc(var(--site-fixed-header-height, 0px) + 1rem);
+}
+
+@media (min-width: 992px) {
+	.quran-heading-layout {
+		align-items: start;
+		display: grid;
+		gap: 2rem;
+		grid-template-columns: minmax(0, 880px) var(--heading-rail-width);
+		justify-content: center;
+	}
+
+	.quran-heading-layout-mushaf {
+		grid-template-columns: minmax(0, 856px) var(--heading-rail-width);
+	}
+
+	.quran-heading-layout .quran-mushaf-reader,
+	.quran-heading-content-study,
+	.quran-heading-content-tafsir {
+		margin-left: auto !important;
+		margin-right: auto !important;
+		width: 100%;
+	}
+}
+
+@media (min-width: 992px) and (max-width: 1279.98px) {
+	.quran-heading-layout {
+		gap: 1.5rem;
+		grid-template-columns: minmax(0, 1fr) var(--heading-rail-width);
+	}
+
+	.quran-heading-layout-mushaf {
+		gap: 0;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 696px) 1.5rem var(--heading-rail-width) minmax(0, 1fr);
+	}
+
+	.quran-heading-layout-mushaf .quran-mushaf-reader {
+		grid-column: 2;
+	}
+
+	.quran-heading-layout-mushaf .quran-heading-toc {
+		grid-column: 4 / 6;
+	}
+}
+
+@media (min-width: 1280px) {
+	.quran-heading-layout {
+		gap: 0;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 880px) 2rem var(--heading-rail-width) minmax(0, 1fr);
+		justify-content: stretch;
+	}
+
+	.quran-heading-layout-mushaf {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 856px) 2rem var(--heading-rail-width) minmax(0, 1fr);
+	}
+
+	.quran-heading-content-study,
+	.quran-heading-content-tafsir,
+	.quran-heading-layout .quran-mushaf-reader {
+		grid-column: 2;
+	}
+
+	.quran-heading-layout .quran-heading-toc {
+		grid-column: 4 / 6;
+	}
+
+	.quran-heading-layout-tafsir {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 760px) 2rem var(--heading-rail-width) minmax(0, 1fr);
+	}
+}
+
+@media (min-width: 992px) {
+	.hadith-heading-layout {
+		align-items: start;
+		display: grid;
+		gap: 0;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 640px) 1.5rem var(--heading-rail-width) minmax(0, 1fr);
+	}
+
+	.hadith-heading-content {
+		grid-column: 2;
+		margin-left: auto !important;
+		margin-right: auto !important;
+		max-width: none;
+		width: 100% !important;
+	}
+
+	.hadith-heading-layout .hadith-heading-toc {
+		grid-column: 4 / 6;
+	}
+}
+
+@media (min-width: 1200px) {
+	.quran-heading-layout,
+	.hadith-heading-layout,
+	.toc-heading-layout {
+		--heading-rail-width: clamp(339px, calc(339px + (100vw - 1400px) / 2), 440px);
+	}
+
+	.hadith-heading-layout {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 760px) 2rem var(--heading-rail-width) minmax(0, 1fr);
+	}
+}
+
+@media (min-width: 1400px) {
+	.hadith-heading-layout {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 880px) 2rem var(--heading-rail-width) minmax(0, 1fr);
+	}
+}
+
 @media (max-width: var(--bs-breakpoint-sm)) {
 	main {
 		--content-font-size: calc(var(--content-font-size-mobile) * var(--content-font-scale));

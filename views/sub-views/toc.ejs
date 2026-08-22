@@ -8,6 +8,7 @@
 	const debugDocId = toc.id ?? toc.tId ?? toc.hId ?? toc._id ?? '';
 	const debugScore = Number.isFinite(toc._score) ? toc._score : '';
 	const isQuranSearchResult = searchResult && (toc.book_alias === 'quran' || (toc.book && toc.book.alias === 'quran'));
+	const isQuranToc = toc.book_alias === 'quran' || (toc.book && toc.book.alias === 'quran');
 	const quranSearchSurah = isQuranSearchResult ? (global.surahs || []).find(function (surah) { return Number(surah.num) === Number(toc.h1); }) : null;
 	const quranSearchRevelation = quranSearchSurah && /^mad/i.test((quranSearchSurah.revelation_en || '').toString()) ? 'madani' : 'makki';
 	function quranSearchRevelationIcon() {
@@ -40,8 +41,8 @@
 					<a href="<%= utils.urlFor(req, `/${toc.book.alias}/${toc.h1}${toc.h1_offset}/${toc.h2}/${toc.h3}`) %>" title="<%= linkTitle(toc.h3_title_en) %>"><%= `${toc.book.shortName_en}` %> Subsection <%=toc.h1%>.<%=toc.h2%>.<%=toc.h3%></a> –
 					<span class="<%=_e%>" data-id="<%=toc.h3_id%>" data-prop="toc.title_en"><%- toc.h3_title_en || 'Subsection' %></span>
 				<% } else { %>
-					<a href="<%= utils.urlFor(req, `/${toc.path}`) %>" title="<%= linkTitle(toc.h2_title_en) %>"><%= `${toc.book.shortName_en}` %> Section <%=toc.h1%>.<%=toc.h2%></a> –
-					<span class="<%=_e%>" data-id="<%=toc.h2_id%>" data-prop="toc.title_en"><%- toc.h2_title_en || 'Section' %></span>
+					<a href="<%= utils.urlFor(req, `/${toc.path}`) %>" title="<%= linkTitle(toc.h2_title_en) %>"><%= `${toc.book.shortName_en}` %> <%= isQuranToc ? 'Passage' : 'Section' %> <%=toc.h1%>.<%=toc.h2%></a> –
+					<span class="<%=_e%>" data-id="<%=toc.h2_id%>" data-prop="toc.title_en"><%- toc.h2_title_en || (isQuranToc ? 'Passage' : 'Section') %></span>
 				<% } %>
 			<% } else if (toc.h1) { %>
 				<a href="<%= utils.urlFor(req, `/${toc.book.alias}/${toc.h1}`) %>" title="<%= linkTitle(toc.h1_title_en) %>"><%= `${toc.book.shortName_en}` %> Chapter <%=toc.h1%></a> –
@@ -80,7 +81,7 @@
 					if (displayLevel == 3) { %>
 						<a href="/<%=toc.book.alias%>/<%=toc.h1%><%=toc.h1_offset%>/<%=toc.h2%>/<%=toc.h3%>" title="<%= linkTitle(toc.h3_title_en) %>"><%- utils.truncate(toc.h3_title_en, 30, true) || 'Subsection' %></a>
 					<% } else { %>
-						<a href="/<%=toc.book.alias%>/<%=toc.h1%><%=toc.h1_offset%>/<%=toc.h2%>" title="<%= linkTitle(toc.h2_title_en) %>"><%- utils.truncate(toc.h2_title_en, 30, true) || 'Section' %></a>
+						<a href="/<%=toc.book.alias%>/<%=toc.h1%><%=toc.h1_offset%>/<%=toc.h2%>" title="<%= linkTitle(toc.h2_title_en) %>"><%- utils.truncate(toc.h2_title_en, 30, true) || (isQuranToc ? 'Passage' : 'Section') %></a>
 					<% } %>
 				<% } %>
 				<% if (toc.h1) { %>

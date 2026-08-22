@@ -6,6 +6,7 @@ const ejs = require('ejs');
 const fs = require('fs');
 const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
+const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
 const QuranMushaf = require('../lib/QuranMushaf');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
@@ -215,6 +216,7 @@ async function renderTafsirPassage(req, res, next) {
       includeEmpty: true
     });
   const navigation = await tafsirNavigation(tafsir, navigationEntries, allTafsirs, surahNum, ayahNum);
+	const quranHeadingOutlines = await QuranHeadingOutlines.forSurahs([surahNum]);
 
   const renderLocals = {
     BookDownloads: BookDownloads,
@@ -224,6 +226,7 @@ async function renderTafsirPassage(req, res, next) {
     chapter: chapter,
     entries: entries,
     navigation: navigation,
+	quranHeadingOutlines: quranHeadingOutlines,
     tafsirBooks: allTafsirs,
     section: section,
     surah: surah,

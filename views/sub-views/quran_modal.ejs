@@ -99,7 +99,7 @@
 							<% } %>
 							<% if (page.context.section) { %>
 								&gt;
-								§&nbsp;<%- utils.truncate(page.context.section.title_en, 60, true) || `Section ${page.context.section.h2}` %>
+								Passage&nbsp;<%- utils.truncate(page.context.section.title_en, 60, true) || page.context.section.h2 %>
 							<% } %>
 						</div>
 					</div>

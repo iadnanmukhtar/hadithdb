@@ -79,6 +79,17 @@
     var readerPrevUrl = readerInfiniteEnabled && page.prev ? utils.urlFor(req, page.prev) : '';
     var readerNextUrl = readerInfiniteEnabled && page.next ? utils.urlFor(req, page.next) : '';
     var readerContextKey = `${book.alias}:${chapter.h1}`;
+    var hadithChapterPathParts = (chapter.path || '').toString().split('/').filter(Boolean);
+    var hadithChapterPathNumber = hadithChapterPathParts[hadithChapterPathParts.length - 1] || chapter.h1;
+    var hadithFlatHeadingKey = `${book.alias}:${hadithChapterPathNumber}`;
+    var hadithHeadingOutlines = locals.hadithHeadingOutlines || {};
+    var hadithHeadingContextKey = hadithHeadingOutlines[readerContextKey] ? readerContextKey : `${book.alias}:flat`;
+    var hadithHeadingOutline = hadithHeadingOutlines[hadithHeadingContextKey];
+    var showHadithHeadingToc = hadithHeadingOutline && (hadithHeadingOutline.sections || []).length > 0;
+    var hadithFlatHeadingRail = Boolean(showHadithHeadingToc && hadithHeadingOutline.flat);
+    var hadithHeadingInitialKey = showHadithHeadingToc
+      ? (hadithFlatHeadingRail ? hadithFlatHeadingKey : hadithHeadingOutline.sections[0].key)
+      : '';
   %>
   
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -89,11 +100,18 @@
   
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   
-  <div class="container col-lg-8 mx-auto">
+  <div class="<%= showHadithHeadingToc ? 'container-fluid hadith-heading-layout' : 'container col-lg-8 mx-auto' %>">
+    <% if (showHadithHeadingToc) { %><div class="container col-lg-8 mx-auto hadith-heading-content"><% } %>
     
     <main class="chapter mt-10"<% if (readerInfiniteEnabled) { %> data-reader-infinite="hadith-chapter" data-reader-context-key="<%= readerContextKey %>" data-reader-current-url="<%= readerCurrentUrl %>"<% if (readerPrevUrl) { %> data-reader-prev-url="<%= readerPrevUrl %>" data-reader-prev-title="<%= page.prevTitle || 'Previous' %>"<% } %><% if (readerNextUrl) { %> data-reader-next-url="<%= readerNextUrl %>" data-reader-next-title="<%= page.nextTitle || 'Next' %>"<% } %><% } %>>
       
-      <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
+      <%- include('sub-views/chapterTitle.ejs', {
+        site: site,
+        page: page,
+        hadithFlatHeadingRail: hadithFlatHeadingRail,
+        hadithFlatHeadingContext: hadithHeadingContextKey,
+        hadithFlatHeadingKey: hadithFlatHeadingKey
+      }); %>
               
       <%
       var lastPath = -1;
@@ -123,6 +141,13 @@
       <% } %>
               
     </main>
+    <% if (showHadithHeadingToc) { %></div>
+    <%- include('sub-views/hadith_heading_toc.ejs', {
+      hadithHeadingOutlines: hadithHeadingOutlines,
+      hadithHeadingInitialContext: hadithHeadingContextKey,
+      hadithHeadingInitialKey: hadithHeadingInitialKey
+    }); %>
+    <% } %>
   </div>
   
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>

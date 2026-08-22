@@ -21,6 +21,8 @@ const Surahs = require('../lib/Surahs');
 const QuranCorpus = require('../lib/QuranCorpus');
 const QuranScripts = require('../lib/QuranScripts');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
+const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
+const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
 const QuranHeadings = require('../lib/QuranHeadings');
 const QuranMushaf = require('../lib/QuranMushaf');
 const QuranSimilarAyahs = require('../lib/QuranSimilarAyahs');
@@ -343,6 +345,10 @@ function cachedRenderLocals(res, locals) {
     res.locals || {},
     locals || {}
   );
+}
+
+async function quranHeadingOutlinesForSurahs(surahNumbers) {
+	return QuranHeadingOutlines.forSurahs(surahNumbers);
 }
 
 function redirectCanonicalReferencePath(req, res, canonicalPath) {
@@ -1156,7 +1162,7 @@ router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNu
     return next(createError(404, `Surah '${req.params.surah}' not found`));
   var sectionNum = parsePositiveIntegerParam(req.params.sectionNum);
   if (!Number.isInteger(sectionNum))
-    return next(createError(400, routeParameterMessage('sectionNum', req.params.sectionNum, 'Quran section must be a positive integer')));
+	return next(createError(400, routeParameterMessage('sectionNum', req.params.sectionNum, 'Quran passage must be a positive integer')));
   var section;
   try {
     section = await Section.sectionFromRef(`quran/${surah.num}/${sectionNum}`);
@@ -1167,7 +1173,7 @@ router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNu
   }
   var range = await getQuranHeadingAyahRange(section);
   if (!range)
-    return next(createError(404, `Quran section ${surah.num}/${sectionNum} has no ayah range`));
+	return next(createError(404, `Quran passage ${surah.num}/${sectionNum} has no ayah range`));
   var startAyah = range.startAyah;
   var endAyah = startAyah + range.count - 1;
   var rows = await QuranCorpus.wordsForRange(surah.num, startAyah, endAyah);
@@ -1355,6 +1361,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         }
         await addQuranPassageBoundaryRefs(results);
       }
+      var quranHeadingOutlines = await quranHeadingOutlinesForSurahs([surah.num]);
       res.render('section_quran', {
         Tafsir: Tafsir,
         section: section,
@@ -1364,7 +1371,8 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         similarAyahs: similarAyahs,
         mutashabihatPhrases: mutashabihatPhrases,
         quranSubsections: quranSubsections,
-        quranSurahs: quranSurahs
+        quranSurahs: quranSurahs,
+        quranHeadingOutlines: quranHeadingOutlines
       });
     } else {
       res.render('section', {
@@ -1569,6 +1577,7 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
   var results = await getQuranSectionPassageItems(section, 0, 1000);
   await addQuranPassageBoundaryRefs(results);
   var quranSurahs = await getQuranSurahsFromIndex();
+  var quranHeadingOutlines = await quranHeadingOutlinesForSurahs([selectedSurah]);
   var [similarAyahs, mutashabihatPhrases] = await Promise.all([
     loadQuranSimilarAyahs(selectedAyah, req),
     loadQuranMutashabihat(selectedAyah, req)
@@ -1583,7 +1592,8 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
     similarAyahs: similarAyahs,
     mutashabihatPhrases: mutashabihatPhrases,
     quranSubsections: quranSubsections,
-    quranSurahs: quranSurahs
+    quranSurahs: quranSurahs,
+    quranHeadingOutlines: quranHeadingOutlines
   });
 }
 
@@ -2431,6 +2441,10 @@ async function renderQuranMushafPage(req, res, next, options) {
       word.passageTone = passageToneBySubsection[`${word.surah}:${range.section}:${range.subsection}`];
   });
   var firstWord = mushaf.lines.flatMap(line => line.words || []).find(word => !word.is_ayah_marker);
+  var mushafSurahs = mushaf.lines.flatMap(line => line.words || []).map(function (word) {
+    return Number(word.surah);
+  });
+  var quranHeadingOutlines = await quranHeadingOutlinesForSurahs(mushafSurahs);
   var firstSurah = firstWord && (global.surahs || []).find(function (surah) {
     return Number(surah.num) === Number(firstWord.surah);
   });
@@ -2601,6 +2615,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     firstSurah: firstSurah,
     firstJuz: firstJuz,
     quranHeaderJuzLinks: quranHeaderJuzLinks,
+    quranHeadingOutlines: quranHeadingOutlines,
     page: {
       menu: 'Section',
       title_en: mushafPageTitle,
@@ -2646,7 +2661,7 @@ router.get('/quran/page/:page', async function (req, res, next) {
     return next(createError(400, routeParameterMessage('page', req.params.page, 'Mushaf page must be a positive integer')));
   var mappedSection = await QuranMushaf.sectionForPage(pageNumber);
   if (!mappedSection)
-    return next(createError(404, `A Quran section was not found for Mushaf page ${pageNumber}`));
+	return next(createError(404, `A Quran passage was not found for Mushaf page ${pageNumber}`));
   var book = visibleBookByAlias('quran');
   var section = Number(mappedSection.level) === 2
     ? Heading.toLevel(mappedSection)
@@ -3023,6 +3038,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     await chapter.getNext();
     await applySameBookHeadingNavigation(chapter);
     await chapter.getSections();
+    var hadithHeadingOutlines = bookAlias === 'quran' ? {} : await HadithHeadingOutlines.forChapter(chapter);
     results = await chapter.getItems(offset);
     if (requestedOffset > 0 && results.length === 0)
       return next(HttpRange.notSatisfiable('items', chapter.count, `Chapter ${bookAlias}/${chapterNum} does not have content at offset ${requestedOffset}`));
@@ -3042,6 +3058,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     } else {
 
       if (quranChapterPassage) {
+        var quranHeadingOutlines = await quranHeadingOutlinesForSurahs([chapterNum]);
         // cache response
         var refs = [];
         for (const item of results)
@@ -3052,6 +3069,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
           chapter: chapter,
           section: chapter,
           results: results,
+          quranHeadingOutlines: quranHeadingOutlines,
           req: req,
           res: res
         }));
@@ -3062,7 +3080,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
           Tafsir: Tafsir,
           chapter: chapter,
           section: chapter,
-          results: results
+          results: results,
+          quranHeadingOutlines: quranHeadingOutlines
         });
         return;
       }
@@ -3075,6 +3094,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
         noadmin: true,
         chapter: chapter,
         results: results,
+        hadithHeadingOutlines: hadithHeadingOutlines,
         req: req,
         res: res
       }));
@@ -3083,7 +3103,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
       res.render('chapter', {
         chapter: chapter,
-        results: results
+        results: results,
+        hadithHeadingOutlines: hadithHeadingOutlines
       });
     }
 
@@ -3281,13 +3302,14 @@ async function renderBookSection(req, res, next) {
     await chapter.getPrev();
     await chapter.getNext();
     await chapter.getSections();
+    var hadithHeadingOutlines = bookAlias === 'quran' ? {} : await HadithHeadingOutlines.forChapter(chapter);
     if (bookAlias === 'quran') {
       var sectionStartAyah = quranAyahFromHeadingStart(section.start);
       if (sectionStartAyah === 0)
         sectionStartAyah = 1;
       section.mushafPage = await QuranMushaf.pageForSection(chapterNum, sectionNum, sectionStartAyah);
       if (!section.mushafPage)
-        return next(createError(404, `A Mushaf page was not found for Quran section ${chapterNum}/${sectionNum}`));
+		return next(createError(404, `A Mushaf page was not found for Quran passage ${chapterNum}/${sectionNum}`));
       if (req.query.mushaf !== undefined)
         return res.redirect(302, Utils.quranUrl(req, `/quran/page/${section.mushafPage}`));
     }
@@ -3298,6 +3320,9 @@ async function renderBookSection(req, res, next) {
     var quranSurahs = isQuranPassageSection
       ? await getQuranSurahsFromIndex()
       : [];
+    var quranHeadingOutlines = isQuranPassageSection
+      ? await quranHeadingOutlinesForSurahs([chapterNum])
+      : {};
     if (isQuranPassageSection)
       results = await getQuranSectionPassageItems(section, offset);
     else
@@ -3305,7 +3330,7 @@ async function renderBookSection(req, res, next) {
     if (requestedOffset > 0 && results.length === 0)
       return next(HttpRange.notSatisfiable('items', section.count, `Section ${bookAlias}/${chapterNum}/${sectionNum} does not have content at offset ${requestedOffset}`));
     if (isQuranPassageSection && results.length == 0)
-      return next(createError(404, `${queryParameterMessage('o', offset, `Quran section ${chapterNum}/${sectionNum} does not have content at that offset`)}`));
+	  return next(createError(404, `${queryParameterMessage('o', offset, `Quran passage ${chapterNum}/${sectionNum} does not have content at that offset`)}`));
     if (isQuranPassageSection && selectedTranslation && selectedTranslation.source === 'local') {
       await applySelectedQuranTranslation(results, selectedTranslation, chapterNum);
       req.quranServerRenderedTranslationAlias = selectedTranslation.alias;
@@ -3332,6 +3357,7 @@ async function renderBookSection(req, res, next) {
         selectedAyahs: [],
         quranSubsections: quranSubsections,
         quranSurahs: quranSurahs,
+        quranHeadingOutlines: quranHeadingOutlines,
         req: req,
         res: res
       }));
@@ -3344,7 +3370,8 @@ async function renderBookSection(req, res, next) {
         results: results,
         selectedAyahs: [],
         quranSubsections: quranSubsections,
-        quranSurahs: quranSurahs
+        quranSurahs: quranSurahs,
+        quranHeadingOutlines: quranHeadingOutlines
       });
     } else {
 
@@ -3370,6 +3397,7 @@ async function renderBookSection(req, res, next) {
             noadmin: true,
             section: section,
             results: results,
+            hadithHeadingOutlines: hadithHeadingOutlines,
             req: req,
             res: res
           }));
@@ -3379,7 +3407,8 @@ async function renderBookSection(req, res, next) {
 
         res.render('section', {
           section: section,
-          results: results
+          results: results,
+          hadithHeadingOutlines: hadithHeadingOutlines
         });
 
       }

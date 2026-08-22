@@ -1,0 +1,17 @@
+<%
+  var tocHeadingRailItems = Array.isArray(locals.tocHeadingRailItems) ? locals.tocHeadingRailItems : [];
+  var tocHeadingRailTitle = (locals.tocHeadingRailTitle || '').toString();
+  var tocHeadingRailInitialKey = tocHeadingRailItems.length > 0 ? tocHeadingRailItems[0].key : '';
+%>
+<% if (tocHeadingRailItems.length > 0) { %>
+<aside class="hadith-heading-toc toc-heading-rail d-none d-lg-block" data-toc-heading-rail aria-labelledby="toc-heading-rail-title">
+  <div class="hadith-heading-toc-sticky">
+    <strong id="toc-heading-rail-title" class="hadith-heading-toc-title"><%= tocHeadingRailTitle %></strong>
+    <nav class="nav flex-column hadith-heading-toc-nav" data-toc-heading-rail-nav aria-label="Chapters in <%= tocHeadingRailTitle %>">
+      <% tocHeadingRailItems.forEach(function (heading) { %>
+      <a class="nav-link hadith-heading-toc-link<%= heading.key === tocHeadingRailInitialKey ? ' active' : '' %>" href="<%= heading.href %>" data-toc-heading-key="<%= heading.key %>"<% if (heading.titleLang === 'ar') { %> lang="ar" dir="rtl"<% } %><% if (heading.key === tocHeadingRailInitialKey) { %> aria-current="location"<% } %>><%= heading.number %> <%= heading.title %></a>
+      <% }); %>
+    </nav>
+  </div>
+</aside>
+<% } %>

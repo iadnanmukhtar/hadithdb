@@ -46,6 +46,8 @@
 	    var quranSectionHref = quranSection && quranSection.path ? utils.quranUrl(req, `/${quranSection.path}`) : '';
 	    var quranChapterTitleEn = (quranChapter && quranChapter.title_en) || `Surat ${surah.name_en}`;
 	    var quranChapterTitleAr = (quranChapter && quranChapter.title) || `سورة ${surah.name_ar}`;
+	    var quranChapterBreadcrumbLabel = utils.quranSurahBreadcrumbLabel(surah.num, quranChapterTitleEn);
+	    var quranChapterBreadcrumbLabelAr = utils.quranSurahBreadcrumbLabelAr(surah.num, quranChapterTitleAr);
 	    var quranSurahRevelation = /^mad/i.test((surah.revelation_en || '').toString()) ? 'madani' : 'makki';
 	    var quranChapterSurahNameGlyph = !site.editMode ? utils.quranSurahNameLigature(surah.num) : '';
 	    var quranCorpusSection = quranSection && quranSection.book_alias === 'quran' && quranSection.h1 && quranSection.h2
@@ -86,22 +88,22 @@
 	        <div class="col-md-6 col-sm-12" lang="en">
 	          <a title="The Holy Quran" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a>
 	          &gt;
-	          <a title="<%- quranChapterTitleEn %>" href="<%= quranChapterHref %>">Surah <%= surah.num %></a>
+	          <a title="<%- quranChapterTitleEn %>" href="<%= quranChapterHref %>"><%= quranChapterBreadcrumbLabel %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranSection.id %>" data-bookmark-type="section" data-bookmark-ref="quran:<%= surah.num %>.<%= quranSection.h2 %>" data-bookmark-title="<%= quranSection.title_en || `Section ${quranSection.h2}` %>" data-bookmark-title-ar="<%= quranSection.title || '' %>" data-bookmark-url="<%= quranSectionHref %>" title="Bookmark this section">
+	            <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranSection.id %>" data-bookmark-type="section" data-bookmark-ref="quran:<%= surah.num %>.<%= quranSection.h2 %>" data-bookmark-title="<%= quranSection.title_en || `Passage ${quranSection.h2}` %>" data-bookmark-title-ar="<%= quranSection.title || '' %>" data-bookmark-url="<%= quranSectionHref %>" title="Bookmark this passage">
 	              <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranSection.id %>"></span>
 	            </button>
-	            <a title="<%- quranSection.title || quranSection.title_en || 'Section' %>" href="<%= quranSectionHref %>">Section <%= quranSection.h2 %></a>
+	            <a title="<%- quranSection.title || quranSection.title_en || 'Passage' %>" href="<%= quranSectionHref %>">Passage <%= quranSection.h2 %></a>
 	          <% } %>
 	        </div>
 	        <div class="col-md-6 col-sm-12" lang="ar">
 	          <a title="القرآن" href="<%= utils.quranUrl(req, '/quran') %>">القرآن</a>
 	          &gt;
-	          <a title="<%- quranChapterTitleAr %>" href="<%= quranChapterHref %>">السورة <%= arabic.toArabicDigits(surah.num + '') %></a>
+	          <a title="<%- quranChapterTitleAr %>" href="<%= quranChapterHref %>"><%= quranChapterBreadcrumbLabelAr %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <a title="<%- quranSection.title || quranSection.title_en || 'باب' %>" href="<%= quranSectionHref %>">باب <%= arabic.toArabicDigits(quranSection.h2 + '') %></a>
+	            <a title="<%- quranSection.title || quranSection.title_en || 'مقطع' %>" href="<%= quranSectionHref %>">مقطع <%= arabic.toArabicDigits(quranSection.h2 + '') %></a>
 	          <% } %>
 	        </div>
 	      </section>

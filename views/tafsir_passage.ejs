@@ -12,6 +12,8 @@
     var tafsirTitle = Tafsir.displayShortName(tafsir, 'en');
     var tafsirPassageTitle = tafsirTitle.replace(/^Tafsir\s+/i, '');
     var tafsirTitleAr = Tafsir.displayShortName(tafsir, 'ar');
+	var tafsirPassageTitleAr = tafsirTitleAr.replace(/^تفسير\s+/u, '');
+	var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
     var ref = `${surah.num}:${ayah}`;
     var tafsirEntryStart = entries && entries.length ? Math.min.apply(null, entries.map(function (entry) { return Number(entry.startAyah); })) : ayah;
     var tafsirEntryEnd = entries && entries.length ? Math.max.apply(null, entries.map(function (entry) { return Number(entry.endAyah); })) : tafsirEntryStart;
@@ -33,7 +35,9 @@
         section: section,
         quranSearchProxy: true,
         commentaryBook: tafsir,
-        quranCommentaryBook: tafsir
+		quranCommentaryBook: tafsir,
+		breadcrumbCatalogName: tafsirPassageTitle,
+		breadcrumbCatalogUrl: tafsirPath
       }
     };
     var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
@@ -48,7 +52,6 @@
     }).sort(function (a, b) {
       return a.num - b.num;
 	    });
-	    var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
 	    var tafsirPagePath = Tafsir.passageUrl(tafsir, surah.num, tafsirEntryStart, tafsirEntryEnd);
 	    var tafsirBookHref = utils.quranUrl(req, tafsirPath);
 	    var tafsirSurahHref = utils.quranUrl(req, `${tafsirPath}/${surah.num}`);
@@ -60,6 +63,8 @@
 	    var quranSectionHref = quranSection && quranSection.path ? utils.quranUrl(req, `/${quranSection.path}`) : '';
 	    var quranChapterTitleEn = (quranChapter && quranChapter.title_en) || `Surat ${surah.name_en}`;
 	    var quranChapterTitleAr = (quranChapter && quranChapter.title) || `سورة ${surah.name_ar}`;
+	    var quranChapterBreadcrumbLabel = utils.quranSurahBreadcrumbLabel(surah.num, quranChapterTitleEn);
+	    var quranChapterBreadcrumbLabelAr = utils.quranSurahBreadcrumbLabelAr(surah.num, quranChapterTitleAr);
 	    var quranSurahRevelation = /^mad/i.test((surah.revelation_en || '').toString()) ? 'madani' : 'makki';
 	    var quranChapterSurahNameGlyph = !site.editMode ? utils.quranSurahNameLigature(surah.num) : '';
 	    var quranAyahModalIndex = ayahs.findIndex(function (item) {
@@ -79,8 +84,9 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
-  <div class="container col-lg-8 mx-auto">
-    <main class="chapter mt-10 tafsir-only-page" data-page-help-tour="tafsir" data-reader-infinite="tafsir" data-reader-context-key="<%= surah.num %>" data-reader-current-url="<%= tafsirReaderCurrentUrl %>"<% if (tafsirReaderPrevUrl) { %> data-reader-prev-url="<%= tafsirReaderPrevUrl %>" data-reader-prev-title="<%= tafsirReaderPrevTitle %>"<% } %><% if (tafsirReaderNextUrl) { %> data-reader-next-url="<%= tafsirReaderNextUrl %>" data-reader-next-title="<%= tafsirReaderNextTitle %>"<% } %>>
+	<div class="container-fluid quran-heading-layout quran-heading-layout-tafsir">
+	  <div class="quran-heading-content quran-heading-content-tafsir">
+	<main class="chapter mt-10 tafsir-only-page" data-page-help-tour="tafsir" data-reader-infinite="tafsir" data-reader-context-key="<%= surah.num %>" data-reader-quran-ref="<%= surah.num %>:<%= tafsirEntryStart %>" data-reader-current-url="<%= tafsirReaderCurrentUrl %>"<% if (tafsirReaderPrevUrl) { %> data-reader-prev-url="<%= tafsirReaderPrevUrl %>" data-reader-prev-title="<%= tafsirReaderPrevTitle %>"<% } %><% if (tafsirReaderNextUrl) { %> data-reader-next-url="<%= tafsirReaderNextUrl %>" data-reader-next-title="<%= tafsirReaderNextTitle %>"<% } %>>
 	      <heading class="row major">
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>">
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
@@ -98,24 +104,24 @@
 
 	      <section class="row breadcrumbs pagination">
 	        <div class="col-md-6 col-sm-12" lang="en">
-	          <a title="<%- tafsirTitle %>" href="<%= tafsirBookHref %>">Quran</a>
+	          <a title="<%- tafsirTitle %>" href="<%= tafsirBookHref %>"><%- tafsirPassageTitle %></a>
 	          &gt;
-	          <a title="<%- quranChapterTitleEn %>" href="<%= tafsirSurahHref %>">Surah <%= surah.num %></a>
+	          <a title="<%- quranChapterTitleEn %>" href="<%= tafsirSurahHref %>"><%= quranChapterBreadcrumbLabel %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranSection.id %>" data-bookmark-type="section" data-bookmark-ref="quran:<%= surah.num %>.<%= quranSection.h2 %>" data-bookmark-title="<%= quranSection.title_en || `Section ${quranSection.h2}` %>" data-bookmark-title-ar="<%= quranSection.title || '' %>" data-bookmark-url="<%= quranSectionHref %>" title="Bookmark this section">
+	            <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranSection.id %>" data-bookmark-type="section" data-bookmark-ref="quran:<%= surah.num %>.<%= quranSection.h2 %>" data-bookmark-title="<%= quranSection.title_en || `Passage ${quranSection.h2}` %>" data-bookmark-title-ar="<%= quranSection.title || '' %>" data-bookmark-url="<%= quranSectionHref %>" title="Bookmark this passage">
 	              <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranSection.id %>"></span>
 	            </button>
-	            <a title="<%- quranSection.title || quranSection.title_en || 'Section' %>" href="<%= tafsirPassageHref %>">Section <%= quranSection.h2 %></a>
+	            <a title="<%- quranSection.title || quranSection.title_en || 'Passage' %>" href="<%= tafsirPassageHref %>">Passage <%= quranSection.h2 %></a>
 	          <% } %>
 	        </div>
 	        <div class="col-md-6 col-sm-12" lang="ar">
-	          <a title="<%- tafsirTitleAr %>" href="<%= tafsirBookHref %>">القرآن</a>
+	          <a title="<%- tafsirTitleAr %>" href="<%= tafsirBookHref %>"><%- tafsirPassageTitleAr %></a>
 	          &gt;
-	          <a title="<%- quranChapterTitleAr %>" href="<%= tafsirSurahHref %>">السورة <%= arabic.toArabicDigits(surah.num + '') %></a>
+	          <a title="<%- quranChapterTitleAr %>" href="<%= tafsirSurahHref %>"><%= quranChapterBreadcrumbLabelAr %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <a title="<%- quranSection.title || quranSection.title_en || 'باب' %>" href="<%= tafsirPassageHref %>">باب <%= arabic.toArabicDigits(quranSection.h2 + '') %></a>
+	            <a title="<%- quranSection.title || quranSection.title_en || 'مقطع' %>" href="<%= tafsirPassageHref %>">مقطع <%= arabic.toArabicDigits(quranSection.h2 + '') %></a>
 	          <% } %>
 	        </div>
 	      </section>
@@ -174,6 +180,13 @@
       <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: ayahs, usePassagePageModalLayout: true }); %>
 
     </main>
+	  </div>
+	  <%- include('sub-views/quran_heading_toc.ejs', {
+	    quranHeadingOutlines: locals.quranHeadingOutlines,
+	    quranHeadingInitialSurah: surah.num,
+	    quranHeadingInitialAyah: tafsirEntryStart,
+	    quranHeadingTafsirBase: tafsirPath
+	  }); %>
   </div>
 
 <%- include('sub-views/mobile_navigation.ejs', {

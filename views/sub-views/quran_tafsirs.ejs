@@ -33,7 +33,7 @@
 		: `${passageAyahHeadingStart}-${passageAyahHeadingEnd}`;
 	const passageTafsirHeading = passageAyahHeadingNums.length > 0
 		? `${passageSurah}:${passageAyahHeadingRange}${passageSurahInfo?.name_en ? ` ${passageSurahInfo.name_en}` : ''}`
-		: `Tafsir of Section ${tafsirSection}`;
+		: `Tafsir of Passage ${tafsirSection}`;
 	const tafsirHeading = locals.tafsirHeading || passageTafsirHeading;
 	const tafsirInstance = locals.tafsirInstance || 'passage';
 	const selectedTafsirAlias = locals.selectedTafsirAlias || '';
