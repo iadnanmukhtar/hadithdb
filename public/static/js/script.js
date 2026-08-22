@@ -9923,11 +9923,48 @@ function initQuranMushafAyahMarkerActions(root) {
 	menu.setAttribute('dir', 'ltr');
 	menu.setAttribute('aria-label', 'Ayah actions');
 	menu.hidden = true;
-	menu.innerHTML = '<button type="button" class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-play><span class="bi bi-play-fill" aria-hidden="true"></span> Play</button><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-view><span class="bi bi-text-paragraph" aria-hidden="true"></span> Study</a>';
+	menu.innerHTML = '<button type="button" class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-play><span class="bi bi-play-fill" aria-hidden="true"></span> Play</button><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-view><span class="bi bi-text-paragraph" aria-hidden="true"></span> Study</a><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-translations><span class="bi bi-translate" aria-hidden="true"></span> Translations</a><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-tafsir><span class="bi bi-book-half" aria-hidden="true"></span> Tafsir</a>';
 	document.body.appendChild(menu);
 	var activeMarker = null;
 	var markerShowTimer = null;
 	var markerHideTimer = null;
+	var markerTafsirBookPromise = null;
+	var markerTafsirBook = function () {
+		if (markerTafsirBookPromise)
+			return markerTafsirBookPromise;
+		markerTafsirBookPromise = getQuranTafsirBooks().then(function (books) {
+			books = Array.isArray(books) ? books.filter(function (book) {
+				return book && book.alias;
+			}) : [];
+			var storedAlias = getStoredQuranTafsirAlias();
+			var storedLanguage = getStoredQuranTafsirLanguage();
+			var storedBook = books.find(function (book) {
+				return book.alias === storedAlias && (!storedLanguage || book.lang === storedLanguage);
+			}) || books.find(function (book) {
+				return book.alias === storedAlias;
+			});
+			if (storedBook)
+				return storedBook;
+			var language = storedLanguage || 'en';
+			var visibleBooks = books.filter(function (book) {
+				return book.lang === language;
+			}).map(function (book, originalIndex) {
+				return { book: book, originalIndex: originalIndex };
+			}).sort(compareTafsirAlphabeticalEntries);
+			return visibleBooks.length ? visibleBooks[0].book : books[0] || null;
+		}).catch(function () {
+			markerTafsirBookPromise = null;
+			return null;
+		});
+		return markerTafsirBookPromise;
+	};
+	var markerTafsirHref = function (ref) {
+		return markerTafsirBook().then(function (book) {
+			if (!book || !ref || !Number.isInteger(ref.surah) || !Number.isInteger(ref.ayah))
+				return quranUrl('/quran/tafsir');
+			return quranUrl(`/quran/tafsir/${encodeURIComponent(tafsirBrowseSlug(book.slug || book.alias))}/quran:${encodeURIComponent(ref.surah)}:${encodeURIComponent(ref.ayah)}`);
+		});
+	};
 	var closeMenu = function (restoreFocus) {
 		window.clearTimeout(markerShowTimer);
 		window.clearTimeout(markerHideTimer);
@@ -9959,6 +9996,20 @@ function initQuranMushafAyahMarkerActions(root) {
 		var view = menu.querySelector('[data-quran-mushaf-ayah-view]');
 		view.setAttribute('href', marker.getAttribute('href') || marker.getAttribute('data-quran-href') || '#');
 		view.setAttribute('aria-label', `Study Quran ${marker.getAttribute('data-quran-ref') || ''}`);
+		var ref = quranAudioRefParts(marker.getAttribute('data-quran-ref') || '');
+		var translations = menu.querySelector('[data-quran-mushaf-ayah-translations]');
+		translations.setAttribute('href', quranUrl(`/quran/translations/quran:${encodeURIComponent(ref.surah)}:${encodeURIComponent(ref.ayah)}`));
+		translations.setAttribute('aria-label', `View full-page translations for Quran ${marker.getAttribute('data-quran-ref') || ''}`);
+		var tafsir = menu.querySelector('[data-quran-mushaf-ayah-tafsir]');
+		tafsir.setAttribute('href', '#');
+		tafsir.setAttribute('aria-label', `View full-page tafsir for Quran ${marker.getAttribute('data-quran-ref') || ''}`);
+		tafsir.setAttribute('aria-busy', 'true');
+		markerTafsirHref(ref).then(function (href) {
+			if (activeMarker !== marker)
+				return;
+			tafsir.setAttribute('href', href);
+			tafsir.removeAttribute('aria-busy');
+		});
 		menu.hidden = false;
 		positionMenu(marker);
 		if (focusAction)
@@ -10045,6 +10096,16 @@ function initQuranMushafAyahMarkerActions(root) {
 					restart: true
 				});
 			}
+			return;
+		}
+		var tafsir = event.target.closest('[data-quran-mushaf-ayah-tafsir]');
+		if (tafsir && menu.contains(tafsir) && activeMarker && tafsir.getAttribute('aria-busy') === 'true') {
+			event.preventDefault();
+			var tafsirRef = quranAudioRefParts(activeMarker.getAttribute('data-quran-ref') || '');
+			closeMenu(false);
+			markerTafsirHref(tafsirRef).then(function (href) {
+				window.location.assign(href);
+			});
 			return;
 		}
 		if (!menu.contains(event.target))
