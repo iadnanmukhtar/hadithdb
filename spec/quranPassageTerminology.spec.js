@@ -11,13 +11,13 @@ function normalize(html) {
   return html.replace(/\s+/g, ' ').trim();
 }
 
-async function renderChapterTitle(bookAlias) {
+async function renderChapterTitle(bookAlias, options = {}) {
   const isQuran = bookAlias === 'quran';
   const book = {
     alias: bookAlias,
     name_en: isQuran ? 'The Holy Quran' : 'Test Hadith Book',
     shortName_en: isQuran ? 'Quran' : 'Hadith',
-    title: isQuran ? 'القرآن' : 'الحديث',
+		title: isQuran ? 'القرآن الكريم' : 'الحديث',
     shortName: isQuran ? 'القرآن' : 'الحديث'
   };
   const chapter = {
@@ -44,7 +44,7 @@ async function renderChapterTitle(bookAlias) {
   chapter.sections = [section];
 
   return ejs.renderFile(chapterTitleTemplate, {
-    page: { context: { book, chapter, section, passage: isQuran }, menu: 'Section' },
+    page: { context: { book, chapter, section, passage: isQuran, quranCommentaryBook: options.quranCommentaryBook }, menu: 'Section' },
     site: { editMode: false },
     req: {},
     utils: {
@@ -90,19 +90,42 @@ describe('Quran passage terminology', () => {
   test('renders Quran h2 breadcrumbs as a named Surah and Passage', async () => {
     const html = normalize(await renderChapterTitle('quran'));
 
+	expect(html).toContain('href="/quran">Quran</a>');
     expect(html).toContain('>2 al-Baqarah</a>');
     expect(html).toContain('>Passage 10</a>');
+	expect(html).toContain('href="/quran">القرآن</a>');
 	expect(html).toContain('>٢ البقرة</a>');
 	expect(html).toContain('>مقطع ١٠</a>');
     expect(html).toContain('title="Bookmark this passage"');
+	expect(html).not.toContain('>The Holy Quran</a>');
     expect(html).not.toContain('>Surah 2</a>');
     expect(html).not.toContain('>Section 10</a>');
 	expect(html).not.toContain('>السورة ٢</a>');
   });
 
+  test('uses the selected translation book in Study breadcrumbs', async () => {
+    const html = normalize(await renderChapterTitle('quran', {
+      quranCommentaryBook: {
+        type: 'trans',
+        alias: 'en-khattab',
+        quranBookSlug: 'en-khattab',
+        shortName_en: 'Khattab',
+        name_en: 'The Clear Quran',
+        shortName: 'خطاب',
+        title: 'القرآن المبين'
+      }
+    }));
+
+    expect(html).toContain('title="The Clear Quran" href="/quran/en-khattab">Khattab</a>');
+    expect(html).toContain('title="القرآن المبين" href="/quran/en-khattab">خطاب</a>');
+    expect(html).not.toContain('href="/quran">Quran</a>');
+  });
+
   test('preserves Chapter and Section terminology for Hadith h2 breadcrumbs', async () => {
     const html = normalize(await renderChapterTitle('test-book'));
 
+	expect(html).toContain('>Hadith</a>');
+	expect(html).not.toContain('>Test Hadith Book</a>');
     expect(html).toContain('>Chapter 2</a>');
     expect(html).toContain('>Section 10</span>');
     expect(html).toContain('title="Bookmark this section"');

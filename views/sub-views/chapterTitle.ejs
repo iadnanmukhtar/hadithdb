@@ -3,7 +3,6 @@
     var chapter = page.context.chapter;
     var section = page.context.section;
     var heading = page.context.section || chapter;
-    var headingPage = heading && heading.page ? heading.page : {};
     var hadithFlatHeadingRail = Boolean(locals.hadithFlatHeadingRail);
     var hadithFlatHeadingContext = locals.hadithFlatHeadingContext || '';
     var hadithFlatHeadingKey = locals.hadithFlatHeadingKey || '';
@@ -20,6 +19,27 @@
 	var quranChapterBreadcrumbLabelAr = isQuranChapter
 	  ? utils.quranSurahBreadcrumbLabelAr(chapter.h1, chapter.title || (quranChapterSurah && quranChapterSurah.name_ar))
 	  : '';
+	var quranBreadcrumbBook = isQuranChapter && page.context.passage
+	  ? page.context.quranCommentaryBook
+	  : null;
+	var quranBreadcrumbBookSlug = quranBreadcrumbBook
+	  ? (quranBreadcrumbBook.quranBookSlug || quranBreadcrumbBook.alias)
+	  : '';
+	var breadcrumbBookLabelEn = quranBreadcrumbBook
+	  ? (quranBreadcrumbBook.shortName_en || quranBreadcrumbBook.name_en || quranBreadcrumbBook.alias)
+	  : book.shortName_en;
+	var breadcrumbBookLabelAr = quranBreadcrumbBook
+	  ? (quranBreadcrumbBook.shortName || quranBreadcrumbBook.title || breadcrumbBookLabelEn)
+	  : book.shortName;
+	var breadcrumbBookTitleEn = quranBreadcrumbBook
+	  ? (quranBreadcrumbBook.name_en || breadcrumbBookLabelEn)
+	  : book.name_en;
+	var breadcrumbBookTitleAr = quranBreadcrumbBook
+	  ? (quranBreadcrumbBook.title || breadcrumbBookLabelAr)
+	  : book.title;
+	var breadcrumbBookHref = quranBreadcrumbBookSlug
+	  ? `/quran/${encodeURIComponent(quranBreadcrumbBookSlug)}`
+	  : `/${book.alias}`;
     if (chapter.h1 != Math.floor(chapter.h1))
       chapter.h1 = Number(chapter.h1).toFixed(2);
     var quranSurahNameGlyph = isQuranChapter && !site.editMode ? utils.quranSurahNameLigature(chapter.h1) : '';
@@ -32,9 +52,6 @@
     <%- chapter.h1 %>. <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title_en" data-arabizi="true">
       <%- chapter.title_en || 'Chapter' %>
     </span>
-    <% if (headingPage.hasNext || headingPage.number && headingPage.number > 1) { %>
-    (<%- headingPage.number %>/<%- Math.ceil(chapter.count/global.settings.search.itemsPerPage)%>)
-    <% } %>
   </a>
   <% if (isQuranChapter) { %>
   <span class="quran-revelation-icon quran-revelation-icon-<%= quranChapterRevelation %>" role="img" aria-label="<%= quranChapterRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= quranChapterRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span>
@@ -49,7 +66,6 @@
     <span class="_e<%= quranSurahNameGlyph ? ' quran-surah-name-font' : (isQuranChapter ? ' quran-surah-name' : '') %>" data-id="<%= chapter.id %>" data-prop="toc.title"<% if (quranSurahNameGlyph) { %> title="<%= chapter.title %>" aria-label="<%= chapter.title %>"<% } %>>
       <%- quranSurahNameGlyph || chapter.title %>
     </span>
-    <%- (headingPage.hasNext || headingPage.number && headingPage.number > 1) ? `ص ${arabic.toArabicDigits(headingPage.number+'')}` : `` %>
   </a></h2>
 
 </heading>
@@ -58,7 +74,7 @@
 <section class="row breadcrumbs pagination">
 
   <div class="col-md-6 col-sm-12" lang="en">
-    <a title="<%- book.name_en %>" href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName_en %></a>
+    <a title="<%- breadcrumbBookTitleEn %>" href="<%= utils.urlFor(req, breadcrumbBookHref) %>"><%- breadcrumbBookLabelEn %></a>
     &gt;
     <% if (heading.level == 1) { %>
 	  <% if (isQuranChapter) { %>
@@ -81,7 +97,7 @@
   </div>
 
   <div class="col-md-6 col-sm-12" lang="ar">
-    <a title="<%- book.title %>" href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName %></a>
+    <a title="<%- breadcrumbBookTitleAr %>" href="<%= utils.urlFor(req, breadcrumbBookHref) %>"><%- breadcrumbBookLabelAr %></a>
     &gt;
     <% if (heading.level == 1) { %>
 	  <% if (isQuranChapter) { %>

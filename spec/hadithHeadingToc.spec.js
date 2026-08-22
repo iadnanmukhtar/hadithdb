@@ -188,33 +188,33 @@ describe('Hadith heading rail', () => {
 		expect(global.query).not.toHaveBeenCalled();
 	});
 
-	test('loads virtual-book chapter rails from Elasticsearch without querying the DB', async () => {
+	test('loads a flat chapter rail for a non-virtual leaf chapter without querying the DB', async () => {
 		global.query = jest.fn(() => {
-			throw new Error('Virtual Hadith heading rails must not query the DB');
+			throw new Error('Flat Hadith heading rails must not query the DB');
 		});
 		const search = jest.spyOn(Index, 'docsFromQueryFields')
 			.mockResolvedValueOnce([])
 			.mockResolvedValueOnce([{
 				ordinal: 1,
 				level: 1,
-				book_alias: 'riyad',
-				h1: 0.07,
-				h1_title_en: 'Certainty and Trust in Allah',
-				path: 'riyad/0.07'
+				book_alias: 'ahmad',
+				h1: 15.01,
+				h1_title_en: 'Aishah b. Abu Bakr al-Siddiq',
+				path: 'ahmad/15.01'
 			}]);
 
 		await expect(HadithHeadingOutlines.forChapter({
-			book_alias: 'riyad',
-			h1: 0.07,
-			book: { alias: 'riyad', virtual: 1, name_en: 'Riyad al-Salihin' }
-		})).resolves.toHaveProperty('riyad:flat');
+			book_alias: 'ahmad',
+			h1: 15.01,
+			book: { alias: 'ahmad', virtual: 0, name_en: 'Musnad Ahmad' }
+		})).resolves.toHaveProperty('ahmad:flat');
 
 		expect(search).toHaveBeenCalledTimes(2);
 		expect(search.mock.calls[1][0]).toBe(Heading.INDEX);
 		expect(search.mock.calls[1][1]).toEqual({
 			bool: {
 				filter: [
-					{ term: { book_alias: 'riyad' } },
+					{ term: { book_alias: 'ahmad' } },
 					{ term: { level: 1 } }
 				]
 			}
