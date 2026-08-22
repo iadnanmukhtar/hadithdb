@@ -10277,6 +10277,36 @@ var quranHeadingTocState = {
 	toc: null
 };
 
+function headingTocH1Label(heading) {
+	if (!heading)
+		return '';
+	var number = heading.number === undefined || heading.number === null ? '' : heading.number.toString();
+	return `${number}${heading.title ? ` ${heading.title}` : ''}`.trim();
+}
+
+function renderHeadingTocH1Link(link, heading, hrefForHeading, direction, itemName) {
+	if (!link)
+		return;
+	if (!heading) {
+		link.hidden = true;
+		link.removeAttribute('href');
+		return;
+	}
+	var label = headingTocH1Label(heading);
+	link.hidden = false;
+	link.href = hrefForHeading(heading);
+	link.rel = direction;
+	link.title = `${direction === 'prev' ? 'Previous' : 'Next'} ${itemName}: ${label}`;
+	link.textContent = label;
+	if (heading.titleLang === 'ar') {
+		link.lang = 'ar';
+		link.dir = 'rtl';
+	} else {
+		link.removeAttribute('lang');
+		link.removeAttribute('dir');
+	}
+}
+
 function scrollHeadingRailLinkIntoView(toc, navSelector, activeLink) {
 	var scroller = toc && toc.querySelector(navSelector);
 	if (!activeLink || !scroller)
@@ -10346,6 +10376,14 @@ function quranHeadingHref(heading) {
 	return href;
 }
 
+function quranHeadingH1Href(heading) {
+	var translationAlias = quranHeadingTocState.toc && (quranHeadingTocState.toc.getAttribute('data-quran-heading-translation-alias') || '');
+	var tafsirBase = quranHeadingTocState.toc && (quranHeadingTocState.toc.getAttribute('data-quran-heading-tafsir-base') || '');
+	if (tafsirBase)
+		return `${tafsirBase}/${heading.number}`;
+	return `/quran${translationAlias ? `/${encodeURIComponent(translationAlias)}` : ''}/${heading.number}`;
+}
+
 function quranHeadingLabel(heading) {
 	if (Number(heading.level) === 3)
 		return heading.title || 'Subsection';
@@ -10358,11 +10396,15 @@ function renderQuranHeadingToc(surah) {
 	if (!toc || !outline)
 		return false;
 	var nav = toc.querySelector('[data-quran-heading-toc-nav]');
+	var previousH1Link = toc.querySelector('[data-quran-heading-h1-prev]');
+	var nextH1Link = toc.querySelector('[data-quran-heading-h1-next]');
 	var surahLabel = toc.querySelector('[data-quran-heading-toc-surah]');
 	if (!nav || !surahLabel)
 		return false;
 	quranHeadingTocState.surah = Number(outline.surah);
 	surahLabel.textContent = `${outline.surah}${outline.nameEn ? ` ${outline.nameEn}` : ''}`;
+	renderHeadingTocH1Link(previousH1Link, outline.previousH1, quranHeadingH1Href, 'prev', 'surah');
+	renderHeadingTocH1Link(nextH1Link, outline.nextH1, quranHeadingH1Href, 'next', 'surah');
 	nav.replaceChildren();
 	nav.setAttribute('aria-label', `Headings in Surah ${outline.surah}`);
 	(outline.sections || []).forEach(function (section) {
@@ -10388,6 +10430,8 @@ function renderQuranHeadingToc(surah) {
 		});
 		nav.appendChild(subnav);
 	});
+	if (nextH1Link)
+		nav.appendChild(nextH1Link);
 	return true;
 }
 
@@ -10552,6 +10596,10 @@ function hadithHeadingHref(heading) {
 	return `/${(heading.path || '').toString().replace(/^\/+/, '')}`;
 }
 
+function hadithHeadingH1Href(heading) {
+	return hadithHeadingHref(heading);
+}
+
 function applyHadithHeadingLanguage(link, heading) {
 	if (heading.titleLang !== 'ar')
 		return;
@@ -10565,6 +10613,8 @@ function renderHadithHeadingToc(context) {
 	if (!toc || !outline)
 		return false;
 	var nav = toc.querySelector('[data-hadith-heading-toc-nav]');
+	var previousH1Link = toc.querySelector('[data-hadith-heading-h1-prev]');
+	var nextH1Link = toc.querySelector('[data-hadith-heading-h1-next]');
 	var chapterLabel = toc.querySelector('[data-hadith-heading-toc-chapter]');
 	if (!nav || !chapterLabel)
 		return false;
@@ -10572,6 +10622,8 @@ function renderHadithHeadingToc(context) {
 	chapterLabel.textContent = outline.flat
 		? (outline.nameEn || '')
 		: `${outline.chapter}${outline.nameEn ? ` ${outline.nameEn}` : ''}`;
+	renderHeadingTocH1Link(previousH1Link, outline.flat ? null : outline.previousH1, hadithHeadingH1Href, 'prev', 'chapter');
+	renderHeadingTocH1Link(nextH1Link, outline.flat ? null : outline.nextH1, hadithHeadingH1Href, 'next', 'chapter');
 	nav.replaceChildren();
 	nav.scrollTop = 0;
 	nav.setAttribute('aria-label', outline.flat ? `Chapters in ${outline.nameEn || outline.bookAlias}` : `Headings in chapter ${outline.chapter}`);
@@ -10600,6 +10652,8 @@ function renderHadithHeadingToc(context) {
 		});
 		nav.appendChild(subnav);
 	});
+	if (nextH1Link)
+		nav.appendChild(nextH1Link);
 	return true;
 }
 

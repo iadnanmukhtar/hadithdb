@@ -50,7 +50,9 @@ describe('Hadith heading rail', () => {
 		book_alias: 'bukhari',
 		book: { shortName_en: 'Sahih al-Bukhari' },
 		h1: 1,
-		title_en: 'Revelation'
+		title_en: 'Revelation',
+		prev: { level: 1, book_alias: 'bukhari', h1: 0, title_en: 'Introduction', path: 'bukhari/0' },
+		next: { level: 1, book_alias: 'bukhari', h1: 2, title_en: 'Belief', path: 'bukhari/2' }
 	}, [{
 		level: 2,
 		h1: 1,
@@ -86,8 +88,14 @@ describe('Hadith heading rail', () => {
 		});
 
 		expect(html).toContain('data-hadith-heading-toc');
-		expect(html).toContain('>SAHIH AL-BUKHARI</span>');
+		expect(html).toContain('href="/bukhari" data-hadith-heading-toc-book>SAHIH AL-BUKHARI</a>');
 		expect(html).toContain('>1 Revelation</strong>');
+		expect(html).toContain('href="/bukhari/0" rel="prev"');
+		expect(html).toContain('>0 Introduction</a>');
+		expect(html).toContain('href="/bukhari/2" rel="next"');
+		expect(html).toContain('>2 Belief</a>');
+		expect(html.indexOf('href="/bukhari/0"')).toBeLessThan(html.indexOf('>1 Revelation</strong>'));
+		expect(html.indexOf('>2 Belief</a>')).toBeGreaterThan(html.indexOf('>The beginning of revelation</a>'));
 		expect(html).not.toContain('>1 REVELATION</strong>');
 		expect(html).toContain('>1 How the Divine Revelation started</a>');
 		expect(html).toContain('>The beginning of revelation</a>');
@@ -114,7 +122,8 @@ describe('Hadith heading rail', () => {
 	test('uses a virtual book name and its H1 chapters for a flat outline', async () => {
 		const flatOutline = HadithHeadingOutlines.buildFlatOutline({
 			book: { alias: 'riyad', virtual: 1, name_en: 'Riyad al-Salihin' },
-			h1: 0.07
+			h1: 0.07,
+			path: 'riyad/0.07'
 		}, [{
 			level: 1,
 			h1: 0.06,
@@ -132,7 +141,8 @@ describe('Hadith heading rail', () => {
 		});
 
 		expect(flatOutline.flat).toBe(true);
-		expect(html).toContain('>Riyad al-Salihin</strong>');
+		expect(html).toContain('href="/riyad" data-hadith-heading-toc-chapter>Riyad al-Salihin</a>');
+		expect(html).not.toContain('href="/riyad/0.06" rel="prev"');
 		expect(html).toContain('>0.06 Piety</a>');
 		expect(html).toContain('>0.07 Certainty and Trust in Allah</a>');
 		expect(html).toMatch(/data-hadith-heading-key="riyad:0\.07"[^>]*aria-current="location"/);

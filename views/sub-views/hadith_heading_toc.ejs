@@ -22,12 +22,22 @@
       return heading.title || 'Subsection';
     return `${heading.section} ${heading.title || 'Section'}`;
   }
+  function hadithHeadingH1Label(heading) {
+    return `${heading.number}${heading.title ? ` ${heading.title}` : ''}`;
+  }
+  function hadithHeadingH1Href(heading) {
+    return utils.urlFor(req, `/${heading.path}`);
+  }
+  var hadithHeadingBookHref = hadithHeadingOutline
+    ? utils.urlFor(req, `/${hadithHeadingOutline.bookAlias}`)
+    : '';
 %>
 <% if (hadithHeadingOutline && (hadithHeadingOutline.sections || []).length > 0) { %>
 <aside class="hadith-heading-toc d-none d-lg-block" data-hadith-heading-toc data-hadith-heading-initial-context="<%= hadithHeadingInitialContext %>" data-hadith-heading-initial-key="<%= hadithHeadingInitialKey %>" aria-labelledby="hadith-heading-toc-title">
   <div class="hadith-heading-toc-sticky">
-    <% if (hadithHeadingBookShortName) { %><span class="heading-toc-book-name" data-hadith-heading-toc-book><%= hadithHeadingBookShortName.toUpperCase() %></span><% } %>
-    <strong id="hadith-heading-toc-title" class="hadith-heading-toc-title" data-hadith-heading-toc-chapter><%= hadithHeadingTitle %></strong>
+    <% if (hadithHeadingBookShortName) { %><a class="heading-toc-book-name" href="<%= hadithHeadingBookHref %>" data-hadith-heading-toc-book><%= hadithHeadingBookShortName.toUpperCase() %></a><% } %>
+    <a class="nav-link hadith-heading-toc-link heading-toc-adjacent-h1 heading-toc-previous-h1" data-hadith-heading-h1-prev<% if (hadithHeadingOutline.previousH1 && !hadithHeadingOutline.flat) { %> href="<%= hadithHeadingH1Href(hadithHeadingOutline.previousH1) %>" rel="prev" title="Previous chapter: <%= hadithHeadingH1Label(hadithHeadingOutline.previousH1) %>"<% if (hadithHeadingOutline.previousH1.titleLang === 'ar') { %> lang="ar" dir="rtl"<% } %>><%= hadithHeadingH1Label(hadithHeadingOutline.previousH1) %><% } else { %> hidden><% } %></a>
+    <% if (hadithHeadingOutline.flat) { %><a id="hadith-heading-toc-title" class="hadith-heading-toc-title heading-toc-book-title-link" href="<%= hadithHeadingBookHref %>" data-hadith-heading-toc-chapter><%= hadithHeadingTitle %></a><% } else { %><strong id="hadith-heading-toc-title" class="hadith-heading-toc-title" data-hadith-heading-toc-chapter><%= hadithHeadingTitle %></strong><% } %>
     <nav class="nav flex-column hadith-heading-toc-nav" data-hadith-heading-toc-nav aria-label="<%= hadithHeadingOutline.flat ? `Chapters in ${hadithHeadingOutline.nameEn}` : `Headings in chapter ${hadithHeadingOutline.chapter}` %>">
       <% (hadithHeadingOutline.sections || []).forEach(function (heading) { %>
       <a class="nav-link hadith-heading-toc-link<%= hadithHeadingInitialKey === heading.key ? ' active' : '' %>" href="<%= hadithHeadingHref(heading) %>" data-hadith-heading-key="<%= heading.key %>"<% if (heading.titleLang === 'ar') { %> lang="ar" dir="rtl"<% } %><% if (hadithHeadingInitialKey === heading.key) { %> aria-current="location"<% } %>><%= hadithHeadingLabel(heading) %></a>
@@ -39,6 +49,7 @@
       </nav>
       <% } %>
       <% }); %>
+      <a class="nav-link hadith-heading-toc-link heading-toc-adjacent-h1 heading-toc-next-h1" data-hadith-heading-h1-next<% if (hadithHeadingOutline.nextH1 && !hadithHeadingOutline.flat) { %> href="<%= hadithHeadingH1Href(hadithHeadingOutline.nextH1) %>" rel="next" title="Next chapter: <%= hadithHeadingH1Label(hadithHeadingOutline.nextH1) %>"<% if (hadithHeadingOutline.nextH1.titleLang === 'ar') { %> lang="ar" dir="rtl"<% } %>><%= hadithHeadingH1Label(hadithHeadingOutline.nextH1) %><% } else { %> hidden><% } %></a>
     </nav>
   </div>
   <script type="application/json" data-hadith-heading-outlines><%- JSON.stringify(hadithHeadingOutlines).replace(/</g, '\\u003c') %></script>

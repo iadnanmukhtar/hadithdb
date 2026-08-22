@@ -959,7 +959,8 @@
     <% if (showTocHeadingRail) { %></div>
     <%- include('sub-views/toc_heading_rail.ejs', {
       tocHeadingRailItems: tocHeadingRailItems,
-      tocHeadingRailTitle: tocHeadingRailTitle
+      tocHeadingRailTitle: tocHeadingRailTitle,
+      tocHeadingRailBookHref: utils.urlFor(req, page.canonical || req.path || '/')
     }); %>
     <% } %>
   </div>

@@ -27,6 +27,8 @@ describe('Quran heading rail', () => {
       2: {
         surah: 2,
         nameEn: 'al-Baqarah',
+        previousH1: { number: 1, title: 'al-Fatihah' },
+        nextH1: { number: 3, title: 'Ali Imran' },
         sections: [{
           key: '2.1',
           level: 2,
@@ -50,8 +52,13 @@ describe('Quran heading rail', () => {
     }, { surah: 2, ayah: 2, translationAlias: 'haleem', bookShortName: 'Abdel Haleem' });
 
     expect(html).toContain('data-quran-heading-toc');
-    expect(html.replace(/\s+/g, ' ')).toContain('>ABDEL HALEEM</span>');
+    expect(html.replace(/\s+/g, ' ')).toContain('href="/quran/haleem" data-quran-heading-toc-book>ABDEL HALEEM</a>');
     expect(html.replace(/\s+/g, ' ')).toContain('>2 al-Baqarah</strong>');
+    expect(html).toContain('href="/quran/haleem/1" rel="prev"');
+    expect(html).toContain('>1 al-Fatihah</a>');
+    expect(html).toContain('href="/quran/haleem/3" rel="next"');
+    expect(html.indexOf('href="/quran/haleem/1"')).toBeLessThan(html.indexOf('>2 al-Baqarah</strong>'));
+    expect(html.indexOf('href="/quran/haleem/3"')).toBeGreaterThan(html.indexOf('>The mindful</a>'));
     expect(html).not.toContain('In this surah');
     expect(html).not.toContain('Surah 2</span>');
     expect(html).toContain('>1 Guidance</a>');
@@ -91,6 +98,8 @@ describe('Quran heading rail', () => {
 	    2: {
 	      surah: 2,
 	      nameEn: 'al-Baqarah',
+	      previousH1: { number: 1, title: 'al-Fatihah' },
+	      nextH1: { number: 3, title: 'Ali Imran' },
 	      sections: [{
 	        key: '2.3',
 	        level: 2,
@@ -116,6 +125,8 @@ describe('Quran heading rail', () => {
 	  expect(html).toContain('data-quran-heading-tafsir-base="/quran/tafsir/tabari"');
 	  expect(html).toContain('href="/quran/tafsir/tabari/quran:2:6"');
 	  expect(html).toContain('href="/quran/tafsir/tabari/quran:2:17"');
+	  expect(html).toContain('href="/quran/tafsir/tabari/1" rel="prev"');
+	  expect(html).toContain('href="/quran/tafsir/tabari/3" rel="next"');
 	  expect(html).toMatch(/data-quran-heading-key="2\.3\.1"[^>]*aria-current="location"/);
 	});
 });

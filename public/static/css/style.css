@@ -515,12 +515,28 @@ body:has(.toc-heading-layout) {
 }
 
 .heading-toc-book-name {
+	color: var(--bs-secondary-color);
 	display: block;
 	font-size: .68rem;
 	font-weight: 600;
 	letter-spacing: .06em;
 	margin: 0 0 .12rem .7rem;
+	text-decoration: none;
 	text-transform: uppercase;
+}
+
+.heading-toc-book-name:hover,
+.heading-toc-book-name:focus-visible,
+.heading-toc-book-title-link:hover,
+.heading-toc-book-title-link:focus-visible {
+	color: var(--bs-primary);
+	text-decoration: none;
+}
+
+.heading-toc-book-title-link {
+	color: var(--bs-heading-color);
+	font-weight: 600;
+	text-decoration: none;
 }
 
 .quran-heading-toc-title,
@@ -551,6 +567,19 @@ body:has(.toc-heading-layout) {
 	line-height: 1.32;
 	margin-left: -1px;
 	padding: .28rem .45rem .28rem .7rem;
+	text-decoration: none;
+}
+
+.heading-toc-adjacent-h1[hidden] {
+	display: none;
+}
+
+.heading-toc-previous-h1 {
+	margin-bottom: .12rem;
+}
+
+.heading-toc-next-h1 {
+	margin-top: .28rem;
 }
 
 .quran-heading-toc .nav-link:hover,

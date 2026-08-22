@@ -9,7 +9,11 @@ describe('Quran heading outlines', () => {
 	const originalQuery = global.query;
 
 	beforeEach(() => {
-		global.surahs = [{ num: 2, name_en: 'al-Baqarah', name_ar: 'البقرة' }];
+		global.surahs = [
+			{ num: 1, name_en: 'al-Fatihah', name_ar: 'الفاتحة' },
+			{ num: 2, name_en: 'al-Baqarah', name_ar: 'البقرة' },
+			{ num: 3, name_en: 'Ali Imran', name_ar: 'آل عمران' }
+		];
 	});
 
 	afterEach(() => {
@@ -48,6 +52,8 @@ describe('Quran heading outlines', () => {
 				surah: 2,
 				nameEn: 'al-Baqarah',
 				nameAr: 'البقرة',
+				previousH1: { number: 1, title: 'al-Fatihah', titleAr: 'الفاتحة' },
+				nextH1: { number: 3, title: 'Ali Imran', titleAr: 'آل عمران' },
 				sections: [{
 					key: '2.3',
 					level: 2,
