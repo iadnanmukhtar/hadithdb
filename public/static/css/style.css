@@ -103,6 +103,7 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--c-gray-mid: #a0a0a0;
 	--c-gray-dark: #808080;
 	--c-gray-very-dark: #606060;
+	--c-footnote-muted: color-mix(in srgb, var(--bs-body-color) 48%, var(--bs-body-bg) 52%);
 	--c-white: #ffffff;
 	--c-white-transparent: rgba(255, 255, 255, 0);
 	--c-white-72: rgba(255, 255, 255, 0.72);
@@ -972,13 +973,15 @@ body:has(main.quran-mushaf-reader) > .navbar {
 body.quran-passage-nav-faded .site-navbar,
 body.quran-passage-nav-faded .mobile-bottom-nav,
 body.reader-infinite-nav-faded .site-navbar,
-body.reader-infinite-nav-faded .mobile-bottom-nav {
+body.reader-infinite-nav-faded .mobile-bottom-nav,
+body.reader-infinite-nav-faded main.tafsir-only-page > .quran-tafsirs > .h-menu-wrap {
 	opacity: 0;
 	pointer-events: none;
 }
 
 body.quran-passage-nav-faded .site-navbar,
-body.reader-infinite-nav-faded .site-navbar {
+body.reader-infinite-nav-faded .site-navbar,
+body.reader-infinite-nav-faded main.tafsir-only-page > .quran-tafsirs > .h-menu-wrap {
 	transform: translateY(-0.5rem);
 }
 
@@ -8028,7 +8031,8 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	box-shadow: 0 1px 0 var(--bs-border-color);
 	padding: .35rem 0 .5rem;
 	position: sticky;
-	top: 4.25rem;
+	top: var(--site-fixed-header-height, 4.25rem);
+	transition: opacity .22s ease, transform .22s ease;
 	z-index: 900;
 }
 
@@ -8041,7 +8045,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 
 @media (max-width: 768px) {
 	.quran-tafsirs>.h-menu-wrap {
-		top: 2.625rem;
+		top: var(--site-fixed-header-height, 2.625rem);
 	}
 
 	.quran-ayah-modal .quran-tafsirs>.h-menu-wrap {
@@ -9048,6 +9052,13 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	font-size: var(--content-size-sm);
 	line-height: 1.55;
 	text-align: justify;
+}
+
+.quran-tafsir-text {
+	color: var(--bs-body-color);
+}
+
+.quran-translation-text {
 	color: var(--c-brown);
 }
 
@@ -9058,8 +9069,8 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 .tafsir-only-page .quran-tafsir-text:lang(en) {
-	font-size: var(--content-size-body);
-	line-height: 1.55;
+	font-size: calc(var(--content-font-size) * .9);
+	line-height: var(--content-line-height);
 }
 
 .translation-only-page .quran-translation-text:lang(en) {
@@ -9123,7 +9134,9 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 .tafsir-only-page .quran-tafsir-local-pair [lang="en"] {
-	font-size: var(--content-size-body);
+	color: var(--bs-body-color);
+	font-size: calc(var(--content-font-size) * .9);
+	line-height: var(--content-line-height);
 }
 
 .quran-tafsir-text:lang(en) h1,
@@ -9132,10 +9145,10 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 .quran-tafsir-text:lang(en) h4,
 .quran-tafsir-text:lang(en) h5,
 .quran-tafsir-text:lang(en) h6 {
-	color: var(--c-brown);
+	color: inherit;
 	font-family: "Gentium Plus", Serif;
 	font-weight: 700;
-	line-height: 1.18;
+	line-height: var(--content-line-height-heading);
 	margin: 1.15em 0 .45em;
 }
 
@@ -9221,6 +9234,25 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	font-size: inherit;
 }
 
+.quran-tafsir-text .footnote-ref,
+.quran-tafsir-text .footnote-ref a,
+.quran-tafsir-text .footnote-backref,
+.quran-tafsir-text .footnotes,
+.quran-tafsir-text .footnotes a,
+.quran-translation-text .footnote-ref,
+.quran-translation-text .footnote-ref a,
+.quran-translation-text .footnote-backref,
+.quran-translation-text .footnotes,
+.quran-translation-text .footnotes a,
+[data-quran-translation-display="passage"] .footnote-ref,
+[data-quran-translation-display="passage"] .footnote-ref a,
+.quran-tafsir-footnotes,
+.quran-tafsir-footnotes a,
+.quran-preferred-translation-footnotes,
+.quran-preferred-translation-footnotes a {
+	color: var(--c-footnote-muted);
+}
+
 .quran-tafsir-text .footnote-backref,
 .quran-translation-text .footnote-backref {
 	font-size: .7em;
@@ -9302,7 +9334,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 .quran-preferred-translation-footnotes {
-	color: var(--c-gray-mid);
+	color: var(--c-footnote-muted);
 	font-family: "Gentium Plus", Serif;
 	font-size: var(--content-size-sm);
 	line-height: 1.3;

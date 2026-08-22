@@ -12,6 +12,8 @@
 	var quranHeadingTafsirBase = /^\/quran\/tafsir\/[A-Za-z0-9_%.-]+$/.test((locals.quranHeadingTafsirBase || '').toString())
 	  ? locals.quranHeadingTafsirBase.toString()
 	  : '';
+	if (quranHeadingTafsirBase)
+	  quranHeadingBookShortName = quranHeadingBookShortName.replace(/^Tafsir\s+/i, '');
   if (!quranHeadingInitialKey && quranHeadingOutline && Number.isInteger(quranHeadingInitialAyah)) {
     (quranHeadingOutline.sections || []).forEach(function (section) {
       if (quranHeadingInitialAyah < section.start || quranHeadingInitialAyah > section.end)

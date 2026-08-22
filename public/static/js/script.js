@@ -25,6 +25,7 @@ $(function () {
 
 	$('.site-navbar').toggleClass('shrink', $(document).scrollTop() > 50);
 	updateFixedHeaderOffset();
+	initFixedHeaderOffsetObserver();
 	$(window).on('resize', updateFixedHeaderOffset);
 
 	if ($('.search .form-check input:checked').length > 0) {
@@ -304,6 +305,23 @@ function updateFixedHeaderOffset(extraHeight) {
 	var additionalHeight = Number.isFinite(extraHeight) ? extraHeight : 0;
 	var height = navbar.getBoundingClientRect().height + additionalHeight;
 	document.documentElement.style.setProperty('--site-fixed-header-height', `${Math.ceil(height)}px`);
+}
+
+var fixedHeaderResizeObserver = null;
+
+function initFixedHeaderOffsetObserver() {
+	var navbar = document.querySelector('.site-navbar.fixed-top');
+	if (!navbar || !('ResizeObserver' in window))
+		return;
+	if (fixedHeaderResizeObserver)
+		fixedHeaderResizeObserver.disconnect();
+	fixedHeaderResizeObserver = new ResizeObserver(function () {
+		updateFixedHeaderOffset();
+	});
+	fixedHeaderResizeObserver.observe(navbar);
+	var navbarMain = navbar.querySelector('.site-navbar-main');
+	if (navbarMain)
+		fixedHeaderResizeObserver.observe(navbarMain);
 }
 
 var headingRailHeaderResizeObserver = null;

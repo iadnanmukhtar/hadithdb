@@ -120,9 +120,11 @@ describe('Quran heading rail', () => {
 	        }]
 	      }]
 	    }
-	  }, { surah: 2, ayah: 17, tafsirBase: '/quran/tafsir/tabari' });
+	  }, { surah: 2, ayah: 17, tafsirBase: '/quran/tafsir/tabari', bookShortName: 'Tafsir al-Tabari' });
 
 	  expect(html).toContain('data-quran-heading-tafsir-base="/quran/tafsir/tabari"');
+	  expect(html.replace(/\s+/g, ' ')).toContain('href="/quran/tafsir/tabari" data-quran-heading-toc-book>AL-TABARI</a>');
+	  expect(html).not.toContain('>TAFSIR AL-TABARI</a>');
 	  expect(html).toContain('href="/quran/tafsir/tabari/quran:2:6"');
 	  expect(html).toContain('href="/quran/tafsir/tabari/quran:2:17"');
 	  expect(html).toContain('href="/quran/tafsir/tabari/1" rel="prev"');
