@@ -90,7 +90,7 @@ describe('Quran heading outlines', () => {
 			expect.arrayContaining(['start', 'count', 'h2_start', 'h3_start']),
 			0,
 			500,
-			'ordinal'
+			'h1, h2, h3, ordinal'
 		);
 		expect(global.query).not.toHaveBeenCalled();
 	});

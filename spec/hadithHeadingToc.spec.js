@@ -193,7 +193,7 @@ describe('Hadith heading rail', () => {
 			expect.any(Array),
 			0,
 			500,
-			'ordinal'
+			'h2, h3, ordinal'
 		);
 		expect(global.query).not.toHaveBeenCalled();
 	});
@@ -229,6 +229,7 @@ describe('Hadith heading rail', () => {
 				]
 			}
 		});
+		expect(search.mock.calls[1][5]).toBe('h1, ordinal');
 		expect(global.query).not.toHaveBeenCalled();
 	});
 });

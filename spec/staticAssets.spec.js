@@ -71,6 +71,18 @@ describe('static assets', () => {
     expect(fallbackHtml).not.toMatch(/(?:href|src)="\/(?!static\/img\/logo2\.svg)/);
   });
 
+  test('keeps heading rails above the measured sticky footer', () => {
+    const staticDir = path.join(__dirname, '..', 'public', 'static');
+    const css = fs.readFileSync(path.join(staticDir, 'css', 'style.css'), 'utf8');
+    const script = fs.readFileSync(path.join(staticDir, 'js', 'script.js'), 'utf8');
+
+    expect(css).toContain('--heading-rail-sticky-bottom: calc(var(--heading-rail-footer-height, 0px) + 1rem)');
+    expect(css).toContain('max-height: var(--heading-rail-available-height, calc(100vh - var(--heading-rail-sticky-top) - var(--heading-rail-sticky-bottom)))');
+    expect(script).toContain("rail.style.setProperty('--heading-rail-footer-height', `${footerHeight}px`)");
+    expect(script).toContain("rail.style.setProperty('--heading-rail-available-height', `${availableHeight}px`)");
+    expect(script).toContain('headingRailHeaderResizeObserver.observe(footer)');
+  });
+
   test('removes unused assets while retaining high-resolution logo bases', () => {
     const staticDir = path.join(__dirname, '..', 'public', 'static');
     const retainedLogoBases = [

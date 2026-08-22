@@ -475,9 +475,10 @@ body:has(.toc-heading-layout) {
 .quran-heading-toc,
 .hadith-heading-toc {
 	--heading-rail-sticky-top: calc(var(--heading-rail-header-height, var(--site-fixed-header-height, 0px)) + 1rem);
+	--heading-rail-sticky-bottom: calc(var(--heading-rail-footer-height, 0px) + 1rem);
 	align-self: start;
 	justify-self: end;
-	max-height: calc(100vh - var(--heading-rail-sticky-top) - 1rem);
+	max-height: var(--heading-rail-available-height, calc(100vh - var(--heading-rail-sticky-top) - var(--heading-rail-sticky-bottom)));
 	margin-top: max(7rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem));
 	min-width: 0;
 	overflow: hidden;

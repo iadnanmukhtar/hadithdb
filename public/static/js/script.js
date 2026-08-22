@@ -325,25 +325,46 @@ function initFixedHeaderOffsetObserver() {
 }
 
 var headingRailHeaderResizeObserver = null;
+var headingRailViewportResizeBound = false;
 
 function initHeadingRailHeaderOffset() {
 	var navbar = document.querySelector('.site-navbar.fixed-top');
+	var footer = document.querySelector('.mobile-bottom-nav');
 	var rails = Array.from(document.querySelectorAll('.quran-heading-toc, .hadith-heading-toc'));
-	if (!navbar || !rails.length)
+	if (!rails.length)
 		return;
 	var update = function () {
-		var height = `${Math.ceil(navbar.getBoundingClientRect().height)}px`;
+		var headerHeight = navbar ? Math.ceil(navbar.getBoundingClientRect().height) : 0;
+		var footerHeight = 0;
+		if (footer && window.getComputedStyle(footer).display !== 'none') {
+			var footerRect = footer.getBoundingClientRect();
+			footerHeight = Math.max(0, Math.ceil(window.innerHeight - footerRect.top));
+		}
 		rails.forEach(function (rail) {
-			rail.style.setProperty('--heading-rail-header-height', height);
+			rail.style.setProperty('--heading-rail-header-height', `${headerHeight}px`);
+			rail.style.setProperty('--heading-rail-footer-height', `${footerHeight}px`);
+		});
+		var railGap = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+		rails.forEach(function (rail) {
+			var railTop = Math.max(0, rail.getBoundingClientRect().top);
+			var availableHeight = Math.max(0, Math.floor(window.innerHeight - railTop - footerHeight - railGap));
+			rail.style.setProperty('--heading-rail-available-height', `${availableHeight}px`);
 		});
 	};
 	update();
-	if (!('ResizeObserver' in window))
-		return;
-	if (headingRailHeaderResizeObserver)
-		headingRailHeaderResizeObserver.disconnect();
-	headingRailHeaderResizeObserver = new ResizeObserver(update);
-	headingRailHeaderResizeObserver.observe(navbar);
+	if ('ResizeObserver' in window) {
+		if (headingRailHeaderResizeObserver)
+			headingRailHeaderResizeObserver.disconnect();
+		headingRailHeaderResizeObserver = new ResizeObserver(update);
+		if (navbar)
+			headingRailHeaderResizeObserver.observe(navbar);
+		if (footer)
+			headingRailHeaderResizeObserver.observe(footer);
+	}
+	if (!headingRailViewportResizeBound) {
+		window.addEventListener('resize', update, { passive: true });
+		headingRailViewportResizeBound = true;
+	}
 }
 
 function initContentFontSizeControls(scope) {

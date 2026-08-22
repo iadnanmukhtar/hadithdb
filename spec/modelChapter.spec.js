@@ -40,8 +40,8 @@ describe('Book.getChapters', () => {
     expect(chapters[0].sections).toHaveLength(1);
     expect(search).toHaveBeenCalledTimes(2);
     expect(search.mock.calls.map(call => [call[0], call[1].bool.filter[1], call[5]])).toEqual([
-      ['toc', { term: { level: 1 } }, 'ordinal'],
-      ['toc', { term: { level: 2 } }, 'ordinal']
+      ['toc', { term: { level: 1 } }, 'h1, ordinal'],
+      ['toc', { term: { level: 2 } }, 'h1, h2, ordinal']
     ]);
     expect(global.query).not.toHaveBeenCalled();
   });
