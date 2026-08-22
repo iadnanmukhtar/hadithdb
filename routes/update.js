@@ -697,7 +697,7 @@ function isQuranCatalogBook(book) {
 
 async function flushQuranCatalogBookCaches(bookAliases) {
   var cacheDir = `${homedir()}/.hadithdb/cache`;
-  var aliases = Array.from(new Set((bookAliases || []).filter(Boolean)));
+  var aliases = Array.from(new Set(Array.from(bookAliases || []).filter(Boolean)));
   await Utils.flushCacheContaining('tafsirs');
   await Utils.flushCacheContaining('tafsir:books');
   await Utils.flushCachedFile(`${cacheDir}/_books.html`);

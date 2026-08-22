@@ -13373,20 +13373,8 @@ function renderClientMarkdownFallback(value) {
 	}).join('\n');
 }
 
-function normalizeClientMarkdownForRendering(value) {
-	return (value || '').toString()
-		.replace(/(^|[^\*])\*\*([ \t]+)(?=\S)/g, '$1$2**')
-		.replace(/(^|[^\*])\*([ \t]+)(?=\S)/g, '$1$2*')
-		.replace(/(^|[^_])__([ \t]+)(?=\S)/g, '$1$2__')
-		.replace(/(^|[^_])_([ \t]+)(?=\S)/g, '$1$2_')
-		.replace(/(^|[^\*])\*\*([^\n*]*?\S)([ \t]+)\*\*(?!\*)/g, '$1**$2**$3')
-		.replace(/(^|[^\*])\*([^\n*]*?\S)([ \t]+)\*(?!\*)/g, '$1*$2*$3')
-		.replace(/(^|[^_])__([^\n_]*?\S)([ \t]+)__(?!_)/g, '$1__$2__$3')
-		.replace(/(^|[^_])_([^\n_]*?\S)([ \t]+)_(?!_)/g, '$1_$2_$3');
-}
-
 function renderClientMarkdown(value) {
-	value = normalizeClientMarkdownForRendering(value);
+	value = (value || '').toString();
 	if (!value)
 		return '';
 	if (window.marked && window.marked.parse)
