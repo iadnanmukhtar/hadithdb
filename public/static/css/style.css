@@ -847,7 +847,7 @@ body:has(main.quran-mushaf-reader) > .navbar {
 
 .site-navbar > .container-fluid > .site-navbar-main {
 	height: auto;
-	min-height: var(--site-header-height);
+	min-height: var(--site-header-primary-height);
 	overflow: visible;
 }
 
@@ -1173,7 +1173,7 @@ nav .nav-link[aria-current="page"] {
 
 .site-navbar-search-row {
 	align-items: center;
-	border-top: 1px solid var(--bs-border-color);
+	border-bottom: 1px solid var(--bs-border-color);
 	height: var(--site-header-search-height);
 	padding: 0.35rem 0;
 }
@@ -1201,12 +1201,12 @@ nav .nav-link[aria-current="page"] {
 
 .command-search-shortcut {
 	align-items: center;
-	background: var(--bs-body-bg);
-	border: 1px solid var(--bs-border-color);
+	background: var(--c-accent);
+	border: 1px solid var(--c-accent);
 	border-bottom-width: 2px;
 	border-radius: 0.35rem;
 	box-shadow: none;
-	color: var(--bs-secondary-color);
+	color: var(--c-white);
 	display: inline-flex;
 	font-family: inherit;
 	font-size: 0.68rem;

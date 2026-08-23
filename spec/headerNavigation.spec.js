@@ -52,12 +52,14 @@ describe('shared header navigation', () => {
 	test('uses a desktop-only second header row for the full-width command search', () => {
 		expect(header).toContain('class="col-12 d-none d-md-flex site-navbar-search-row"');
 		expect(header).toContain('Search Hadith or Quran + Tafsir');
+		expect(header.indexOf('<nav class="row g-0 chapter-toc">')).toBeLessThan(header.indexOf('class="col-12 d-none d-md-flex site-navbar-search-row"'));
 		expect(header).not.toContain('command-search-nav-item');
 		expect(header).toContain('command-search-compact-item');
 		expect(styles).toContain('--site-header-search-height: 3.25rem;');
 		expect(styles).toContain('--site-header-shrink-height: var(--site-header-primary-shrink-height);');
-		expect(styles).toContain('min-height: var(--site-header-height);');
+		expect(styles).toMatch(/\.site-navbar > \.container-fluid > \.site-navbar-main \{\s*height: auto;\s*min-height: var\(--site-header-primary-height\);/);
 		expect(styles).toContain('.site-navbar-search-row');
+		expect(styles).toMatch(/\.command-search-shortcut \{[\s\S]*?background: var\(--c-accent\);[\s\S]*?color: var\(--c-white\);/);
 		expect(styles).toContain('.site-navbar.shrink .command-search-compact-item');
 		expect(styles).toMatch(/\.site-navbar\.shrink \.site-navbar-search-row \{\s*display: none !important;/);
 		expect(styles).toMatch(/\.top-nav-desktop-actions \{\s*column-gap: 1\.15rem;/);

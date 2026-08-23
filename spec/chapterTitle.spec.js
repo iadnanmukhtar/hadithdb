@@ -6,6 +6,49 @@ const Arabic = require('../lib/Arabic');
 
 const template = path.join(__dirname, '..', 'views', 'sub-views', 'chapterTitle.ejs');
 
+async function renderHadithChapterTitle({ sectionNumber = 1, introEn = '', introAr = '', editMode = false } = {}) {
+	const book = {
+		alias: 'bukhari',
+		name_en: 'Sahih al-Bukhari',
+		shortName_en: 'Bukhari',
+		title: 'صحيح البخاري',
+		shortName: 'البخاري'
+	};
+	const chapter = {
+		id: 41,
+		h1: 1,
+		level: 1,
+		path: 'bukhari/1',
+		title_en: 'Revelation',
+		title: 'بدء الوحي',
+		intro_en: introEn,
+		intro: introAr,
+		book
+	};
+	chapter.sections = [1, 2].map(h2 => ({
+		id: 41 + h2,
+		h1: 1,
+		h2,
+		level: 2,
+		path: `bukhari/1/${h2}`,
+		chapter,
+		book
+	}));
+	const section = chapter.sections.find(candidate => candidate.h2 === sectionNumber);
+
+	return ejs.renderFile(template, {
+		page: { context: { book, chapter, section }, menu: 'Section' },
+		site: { editMode },
+		req: {},
+		utils: {
+			emptyIfNull: value => value || '',
+			markdownToHtml: value => value ? `<p>${value}</p>` : '',
+			urlFor: (_req, href) => href
+		},
+		arabic: Arabic
+	});
+}
+
 test('omits legacy page numbers from English and Arabic chapter headings', async () => {
 	const book = {
 		alias: 'ahmad',
@@ -42,4 +85,27 @@ test('omits legacy page numbers from English and Arabic chapter headings', async
 	expect(html).toContain('مسند أبي بكر');
 	expect(html).not.toContain('(2/3)');
 	expect(html).not.toContain('ص ٢');
+});
+
+test('renders the chapter intro on the first section reached by the chapter redirect', async () => {
+	const html = await renderHadithChapterTitle({
+		introEn: 'Chapter introduction',
+		introAr: 'مقدمة الكتاب'
+	});
+
+	expect(html).toContain('class="chapter-intro row mt-2"');
+	expect(html).toContain('<p>Chapter introduction</p>');
+	expect(html).toContain('<p>مقدمة الكتاب</p>');
+	expect(html).toContain('data-id="41" data-prop="toc.intro_en"');
+	expect(html).toContain('data-id="41" data-prop="toc.intro"');
+});
+
+test('keeps an empty chapter intro editable on the first section only', async () => {
+	const firstSectionHtml = await renderHadithChapterTitle({ editMode: true });
+	const laterSectionHtml = await renderHadithChapterTitle({ sectionNumber: 2, editMode: true });
+
+	expect(firstSectionHtml).toContain('class="chapter-intro row mt-2"');
+	expect(firstSectionHtml).toContain('data-id="41" data-prop="toc.intro_en"');
+	expect(firstSectionHtml).toContain('data-markdown-empty-html="&hellip;"');
+	expect(laterSectionHtml).not.toContain('class="chapter-intro row mt-2"');
 });

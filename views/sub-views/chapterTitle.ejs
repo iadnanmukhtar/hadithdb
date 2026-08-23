@@ -3,6 +3,14 @@
     var chapter = page.context.chapter;
     var section = page.context.section;
     var heading = page.context.section || chapter;
+    var firstChapterSection = Array.isArray(chapter.sections)
+      ? chapter.sections.find(function (candidate) { return Number(candidate.h2) > 0; })
+      : null;
+    var isFirstChapterSectionPage = Number(heading.level) === 2 && firstChapterSection && (
+      (heading.id !== undefined && firstChapterSection.id !== undefined && String(heading.id) === String(firstChapterSection.id))
+      || (heading.path && firstChapterSection.path && heading.path === firstChapterSection.path)
+      || Number(heading.h2) === Number(firstChapterSection.h2)
+    );
     var hadithFlatHeadingRail = Boolean(locals.hadithFlatHeadingRail);
     var hadithFlatHeadingContext = locals.hadithFlatHeadingContext || '';
     var hadithFlatHeadingKey = locals.hadithFlatHeadingKey || '';
@@ -119,8 +127,8 @@
 </section>
 
 <%# Chapter Intro %>
-<% if (heading.level == 1) { %>
-<section class="chapter-intro row">
+<% if (heading.level == 1 || isFirstChapterSectionPage) { %>
+<section class="chapter-intro row mt-2">
 
   <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(chapter.intro_en) %>" data-markdown-empty-html="&hellip;">
     <% if (chapter.intro_en || site.editMode) { 

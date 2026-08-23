@@ -26,6 +26,7 @@ const PaymentConfig = require('./lib/PaymentConfig');
 const ContentTranslations = require('./lib/ContentTranslations');
 const QuranRecitationFeedback = require('./lib/QuranRecitationFeedback');
 const GoogleAnalytics = require('./lib/GoogleAnalytics');
+const RuntimeRefresh = require('./lib/RuntimeRefresh');
 const { mountInfiniteScrollApiRoutes } = require('./lib/InfiniteScrollApiRoutes');
 
 function debugNewRelicLoadError(err) {
@@ -411,6 +412,10 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     return res.status(statusCode).sendFile(STARTUP_FALLBACK_FILE, { cacheControl: false });
   });
+  app.use(RuntimeRefresh.middleware(async function refreshWorkerRuntime() {
+    debug.info(`Runtime refresh detected in worker ${process.pid}; reloading Hadith data`);
+    await Hadith.a_reinit();
+  }));
   app.use(express.json({ limit: REQUEST_BODY_LIMIT, verify: preserveStripeWebhookRawBody }));
   app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
   app.use(cookieParser());
@@ -630,6 +635,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     res.render('error');
   });
 
+  await RuntimeRefresh.markCurrent();
   await Hadith.a_reinit();
   app.locals.startupReady = true;
   debug.info('Application startup complete, ready to accept requests');

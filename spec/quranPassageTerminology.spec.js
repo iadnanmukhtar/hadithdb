@@ -51,6 +51,8 @@ async function renderChapterTitle(bookAlias, options = {}) {
       quranSurahBreadcrumbLabel: Utils.quranSurahBreadcrumbLabel,
 	  quranSurahBreadcrumbLabelAr: Utils.quranSurahBreadcrumbLabelAr,
       quranSurahNameLigature: Utils.quranSurahNameLigature,
+	  emptyIfNull: Utils.emptyIfNull,
+	  markdownToHtml: Utils.markdownToHtml,
       urlFor: (_req, href) => href
     },
     arabic: Arabic

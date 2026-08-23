@@ -27,6 +27,7 @@ const QuranHeadings = require('../lib/QuranHeadings');
 const QuranMushaf = require('../lib/QuranMushaf');
 const QuranSimilarAyahs = require('../lib/QuranSimilarAyahs');
 const QuranMutashabihat = require('../lib/QuranMutashabihat');
+const RuntimeRefresh = require('../lib/RuntimeRefresh');
 const GoogleAuth = require('../lib/GoogleAuth');
 const UserSettings = require('../lib/UserSettings');
 const HttpRange = require('../lib/HttpRange');
@@ -442,7 +443,10 @@ router.get(['/autocomplete', '/quran/autocomplete'], searchRequestLimiter, async
 
 router.get('/reinit', async function (req, res, next) {
   await Hadith.a_reinit();
+  const generation = await RuntimeRefresh.publish();
+  debug(`published runtime refresh generation ${generation}`);
   await flushMasterDataCaches();
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.write('Done');
   res.end();
   return;
@@ -631,6 +635,13 @@ async function flushMasterDataCaches() {
   await Utils.flushCacheContaining('book:quran');
   await Utils.flushCacheContaining('tafsirs');
   await Utils.flushCacheContaining('tafsir:books');
+  const hadithBookAliases = Array.from(new Set((global.books || [])
+    .filter(book => book && book.alias && book.alias !== 'quran' && !['tafsir', 'trans'].includes(book.type))
+    .map(book => book.alias)));
+  for (const alias of hadithBookAliases) {
+    await Utils.flushCacheContaining(alias);
+    await Utils.flushCacheContaining(`book:${alias}`);
+  }
 }
 
 async function buildSitemapText(req) {
