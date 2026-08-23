@@ -95,7 +95,7 @@ function gone(message) {
 }
 
 function parseNonNegativeIntegerParam(value) {
-  var normalized = Arabic.toLatinDigits((value || '').toString());
+  var normalized = Arabic.toLatinDigits((value === undefined || value === null ? '' : value).toString());
   if (!/^\d+$/.test(normalized))
     return NaN;
   var numeric = Number(normalized);
@@ -3462,14 +3462,13 @@ async function applySelectedQuranTranslation(items, translation, surah, options 
     }
   }
   await Promise.all((items || []).map(async function (item) {
-    var ayah = parseQuranAyahParam(item && (item.numInChapter || item.en?.num || item.num || item.ref || ''));
+    var itemAyah = item && item.numInChapter;
+    if (itemAyah === undefined || itemAyah === null || itemAyah === '')
+      itemAyah = item && (item.en?.num || item.num || item.ref || '');
+    var ayah = parseQuranAyahParam(itemAyah);
     if (!Number.isInteger(ayah))
       ayah = parseQuranAyahParam((item && (item.en?.num || item.num || item.ref) || '').toString().split(/:/).pop());
     if (!Number.isInteger(ayah))
-      return;
-    // 1:0 is the Quran's prefatory invocation, not 1:1. Local translations
-    // do not have a matching entry, so retain its built-in translation.
-    if (Number(surah) === 1 && ayah === 0)
       return;
     var entry = await Tafsir.localTranslationEntry(translation, surah, ayah, options).catch(function (err) {
       debug.error(`selected quran translation render failed alias=${translation.alias} ref=${surah}:${ayah}: ${err.message}\n${err.stack || ''}`);

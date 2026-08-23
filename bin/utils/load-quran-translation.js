@@ -147,6 +147,7 @@ async function loadRows(bookId) {
 		SELECT id, surah, ayahFrom, ayahTo, text_en, footnotes_en
 		FROM hadiths_commentary
 		WHERE bookId=${Number(bookId)}
+			AND NOT (surah=1 AND ayahFrom=0 AND ayahTo=0)
 		ORDER BY surah, ayahFrom, ayahTo, id`);
 }
 

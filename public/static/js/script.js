@@ -3455,13 +3455,12 @@ function applyQuranTranslationToTarget(target, book) {
 	var ref = quranTranslationTargetRef(target);
 	if (!ref.surah || !ref.ayah)
 		return Promise.resolve();
-	if (isQuranOriginalPrefatoryTranslationTarget(target))
-		return Promise.resolve();
-	var requestSurah = ref.ayah === '0' ? '1' : ref.surah;
-	var requestAyah = ref.ayah === '0' ? '1' : ref.ayah;
+	var originalPrefatory = isQuranOriginalPrefatoryTranslationTarget(target);
+	var requestSurah = ref.ayah === '0' && !originalPrefatory ? '1' : ref.surah;
+	var requestAyah = ref.ayah === '0' && !originalPrefatory ? '1' : ref.ayah;
 	return fetchQuranLocalTranslation(book, requestSurah, requestAyah).then(function (payload) {
 		var entry = Array.isArray(payload && payload.entries) ? payload.entries[0] : payload;
-		if (ref.ayah === '0')
+		if (ref.ayah === '0' && !originalPrefatory)
 			entry = quranPrefatoryTranslationEntry(entry, ref.surah);
 		if (entry && (entry.html || entry.data))
 			applyQuranTranslationEntryToTarget(target, book, entry);
@@ -3496,14 +3495,14 @@ function applyQuranTranslationToTargets(targets, book) {
 	var prefatoryPromises = prefatoryTargets.map(function (target) {
 		storeDefaultQuranTranslationTarget(target);
 		setQuranTranslationTargetEditable(target, false);
-		if (isQuranOriginalPrefatoryTranslationTarget(target))
-			return Promise.resolve();
 		var ref = quranTranslationTargetRef(target);
 		if (!ref.surah)
 			return Promise.resolve();
-		return fetchQuranLocalTranslation(book, '1', '1').then(function (payload) {
+		var originalPrefatory = isQuranOriginalPrefatoryTranslationTarget(target);
+		return fetchQuranLocalTranslation(book, '1', originalPrefatory ? '0' : '1').then(function (payload) {
 			var entry = Array.isArray(payload && payload.entries) ? payload.entries[0] : payload;
-			entry = quranPrefatoryTranslationEntry(entry, ref.surah);
+			if (!originalPrefatory)
+				entry = quranPrefatoryTranslationEntry(entry, ref.surah);
 			applyQuranTranslationEntryToTarget(target, book, entry);
 		});
 	});
