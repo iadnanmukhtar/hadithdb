@@ -1743,17 +1743,13 @@ nav .nav-link[aria-current="page"] {
 	width: 2.75rem;
 }
 
-.book-catalog-tabs .nav-link,
-.tafsir-book-tabs .nav-link {
-	color: var(--c-accent);
+.nav-tabs .nav-link:not(.active) {
+	color: var(--bs-secondary-color);
 }
 
-.book-catalog-tabs .nav-link:hover,
-.book-catalog-tabs .nav-link:focus,
-.book-catalog-tabs .nav-link.active,
-.tafsir-book-tabs .nav-link:hover,
-.tafsir-book-tabs .nav-link:focus,
-.tafsir-book-tabs .nav-link.active {
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus,
+.nav-tabs .nav-link.active {
 	color: var(--c-accent);
 }
 
@@ -6361,15 +6357,29 @@ del em strong {
 	}
 }
 
+.page-content-filter {
+	background: var(--bs-body-bg);
+	border: 1px solid var(--bs-border-color);
+	border-radius: 0.5rem;
+	overflow: hidden;
+}
+
 .page-content-filter .input-group-text {
-	border-color: var(--c-accent);
-	color: var(--c-accent);
-	background-color: var(--c-ghostwhite);
+	background: var(--bs-body-bg);
+	border: 0;
+	color: var(--bs-secondary-color);
 }
 
 .page-content-filter .form-control,
 .page-content-filter .form-control:focus {
-	border-color: var(--c-accent);
+	background: var(--bs-body-bg);
+	border: 0;
+	box-shadow: none;
+}
+
+.page-content-filter .form-control::placeholder {
+	color: var(--bs-secondary-color);
+	opacity: 1;
 }
 
 .pagination,

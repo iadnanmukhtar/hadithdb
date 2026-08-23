@@ -105,9 +105,13 @@ describe('shared header navigation', () => {
 		expect(searchDialog.match(/class="page-content-filter input-group command-search-filter-find"/g)).toHaveLength(2);
 		expect(searchDialog.match(/class="input-group-text bi bi-filter"/g)).toHaveLength(2);
 		expect(styles).toContain('.page-content-filter .input-group-text');
-		expect(styles).toContain('.book-catalog-tabs .nav-link');
+		expect(styles).toContain('.nav-tabs .nav-link:not(.active)');
 		expect(styles).toContain('.command-search-dialog .command-search-mode-switch .nav-link:not(.active)');
 		expect(styles).toMatch(/\.command-search-filter-find > \.input-group-text,[\s\S]*?font-size: 0\.82rem;/);
+		expect(styles).toMatch(/\.page-content-filter \{[\s\S]*?border: 1px solid var\(--bs-border-color\);/);
+		expect(styles).toMatch(/\.page-content-filter \.input-group-text \{[\s\S]*?border: 0;[\s\S]*?color: var\(--bs-secondary-color\);/);
+		expect(styles).toMatch(/\.page-content-filter \.form-control,[\s\S]*?border: 0;[\s\S]*?box-shadow: none;/);
+		expect(styles).toMatch(/\.nav-tabs \.nav-link:not\(\.active\) \{\s*color: var\(--bs-secondary-color\);/);
 		expect(searchDialog).toContain('name="tafsir"');
 		expect(searchDialog).toContain('data-command-search-pills');
 		expect(scripts).toContain("input[name=tafsir]:checked:not(:disabled)");
