@@ -209,6 +209,9 @@ function splitHadith(row) {
     var text = normalizeTextForSplit(row.text || [row.chain, row.body].filter(Boolean).join(' '));
     var textMarked = text + '';
     var bodyMarked = '';
+    // Keep the Companion honorific as a token while stripping Arabic marks so
+    // split offsets still line up with the source text and the marker survives.
+    textMarked = textMarked.replace(/ؓ/g, 'RA');
     textMarked = textMarked.replace(/[ؐ-ًؕ-ٖٓ-ٟۖ-ٰٰۭ]/g, '');
     textMarked = textMarked.replace(/و?(حدثنا|حدثني|حدثناه|حدثه|ثنا) /g, '~ ');
     textMarked = textMarked.replace(/و?(أخبرنا|أخبرناه|أخبرني|أخبره|آنا) /g, '~ ');
@@ -270,7 +273,6 @@ function splitHadith(row) {
 function normalizeTextForSplit(text) {
     text = text || '';
     text = text.replace(/[\:\"\'،۔ـ\-\.\,]/g, '');
-    text = global.utils.replaceRA(text).replace(/ؓ/g, '');
     return text.replace(/\s+/g, ' ').trim();
 }
 
