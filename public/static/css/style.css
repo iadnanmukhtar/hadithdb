@@ -9853,6 +9853,16 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	text-indent: 0;
 }
 
+.quran-passage-section em,
+.quran-ayah-hero em,
+.quran-share-root em,
+.quran-tafsirs em,
+.tafsir-only-page em,
+.translation-only-page em {
+	color: inherit;
+	font-style: italic;
+}
+
 .quran-preferred-translation-footnotes .footnotes-sep {
 	display: none;
 }

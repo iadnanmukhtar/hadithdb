@@ -137,17 +137,33 @@ router.get('/translations/local', async function (req, res) {
   debug(`proxy local translations start aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo} lang=${lang || ''}`);
   const rows = await localCommentaryRowsForAliases(aliases, surah, ayahFrom, ayahTo);
   debug(`proxy local translations rows=${rows.length} aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo}`);
-  const editMode = isEditMode(req) && (req.query.render || '').toString() !== 'reader';
+  const editMode = isEditMode(req);
+  if (editMode)
+    aliases.forEach(alias => addMissingEditableCommentaryRows(rows, alias, surah, ayahFrom, ayahTo));
+  const renderEditableContent = editMode && (req.query.render || '').toString() !== 'reader';
   const entries = rows.map(row => {
     const alias = row.commentary_alias;
-    const html = renderLocalCommentary(row, editMode, lang, alias);
+    const editLang = lang === 'ar' ? 'ar' : 'en';
+    const editSuffix = editLang === 'en' ? '_en' : '';
+    const html = renderLocalCommentary(row, renderEditableContent, lang, alias);
     return {
       alias: alias,
       ordinal: Number(row.ordinal || 0),
       ayahs_start: row.ayahFrom,
       count: row.ayahTo - row.ayahFrom,
       bilingual: commentaryRowHasBothLanguages(row),
-      html: html
+      html: html,
+      ...(editMode ? {
+        edit: {
+          id: row.id,
+          lang: editLang,
+          format: commentaryFormat(row.format, editLang),
+          text: row[`text${editSuffix}`] || '',
+          text_prop: `commentary.text${editSuffix}`,
+          footnotes: row[`footnotes${editSuffix}`] || '',
+          footnotes_prop: `commentary.footnotes${editSuffix}`
+        }
+      } : {})
     };
   }).filter(entry => entry.alias && (!lang || entry.html || Number.isInteger(Number(entry.ayahs_start))));
   setPublicProxyContentCache(req, res, editMode);
@@ -461,7 +477,7 @@ function addMissingEditableCommentaryRows(rows, src, surah, ayahFrom, ayahTo) {
   if (!book)
     return;
   const coveredAyahs = new Set();
-  rows.forEach(row => {
+  rows.filter(row => !row.commentary_alias || row.commentary_alias === src).forEach(row => {
     for (let ayah = row.ayahFrom; ayah <= row.ayahTo; ayah++)
       coveredAyahs.add(ayah);
   });
@@ -469,6 +485,7 @@ function addMissingEditableCommentaryRows(rows, src, surah, ayahFrom, ayahTo) {
     if (coveredAyahs.has(ayah))
       continue;
     rows.push({
+      commentary_alias: src,
       format: book.format || 'md',
       id: newCommentaryId(src, surah, ayah, ayah),
       surah: surah,
@@ -758,7 +775,8 @@ function commentaryFormat(format, lang) {
 function renderCommentaryText(text, footnotes, format, options = {}) {
   if (!text)
     return '';
-  let content = [text, footnotes].filter(Boolean).map(Tafsir.stripPageMarkers).join('\n\n');
+  const renderedFootnotes = format === 'md' ? Tafsir.prepareMarkdownFootnotesForRendering(footnotes) : footnotes;
+  let content = [text, renderedFootnotes].filter(Boolean).map(Tafsir.stripPageMarkers).join('\n\n');
   if (options.bracketedFootnotes)
     content = bracketedFootnotesToMarkdown(content);
   if (format === 'html')

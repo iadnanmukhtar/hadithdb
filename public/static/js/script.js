@@ -3261,7 +3261,10 @@ function quranTranslationFootnoteIdPart(value) {
 }
 
 function quranSelectedTranslationFootnoteHolder(target) {
-	return target ? target.closest('.quran-passage-section')?.querySelector('[data-quran-selected-translation-footnotes="1"]') || null : null;
+	if (!target)
+		return null;
+	var scope = target.closest('.quran-passage-section, .quran-ayah-hero');
+	return scope ? scope.querySelector('[data-quran-selected-translation-footnotes="1"]') : null;
 }
 
 function clearQuranSelectedTranslationFootnotes(root) {
@@ -3295,12 +3298,25 @@ function namespaceQuranTranslationFootnotes(wrapper, target, alias) {
 function normalizeQuranSelectedTranslationFootnotes(holder) {
 	if (!holder)
 		return;
+	var scope = holder.closest('.quran-passage-section, .quran-ayah-hero') || holder.parentElement;
 	var nextNumber = 1;
 	Array.from(holder.querySelectorAll('.footnotes-list')).forEach(function (list) {
 		var items = Array.from(list.querySelectorAll(':scope > .footnote-item'));
 		if (items.length < 1)
 			return;
 		list.setAttribute('start', String(nextNumber));
+		items.forEach(function (item, index) {
+			var id = item.getAttribute('id') || '';
+			var number = nextNumber + index;
+			if (!id || !scope)
+				return;
+			Array.from(scope.querySelectorAll('.footnote-ref a[href^="#"]')).forEach(function (link) {
+				if (link.getAttribute('href') !== `#${id}`)
+					return;
+				link.textContent = `[${number}]`;
+				link.setAttribute('aria-label', `Footnote ${number}`);
+			});
+		});
 		nextNumber += items.length;
 	});
 }
@@ -3366,6 +3382,110 @@ function storeDefaultQuranTranslationTarget(target) {
 		target.dataset.quranDefaultTranslationEditableClass = target.classList.contains('_e') ? '1' : '0';
 	if (target.dataset.quranDefaultTranslationContenteditable === undefined && target.hasAttribute('contenteditable'))
 		target.dataset.quranDefaultTranslationContenteditable = target.getAttribute('contenteditable') || 'true';
+	if (target.dataset.quranDefaultTranslationEditorAttrs === undefined) {
+		var attrs = {};
+		['data-id', 'data-prop', 'data-arabizi', 'data-edit-format', 'data-edit-lang', 'data-placeholder', 'data-markdown-empty-html'].forEach(function (name) {
+			if (target.hasAttribute(name))
+				attrs[name] = target.getAttribute(name);
+		});
+		target.dataset.quranDefaultTranslationEditorAttrs = JSON.stringify(attrs);
+	}
+}
+
+function restoreDefaultQuranTranslationEditor(target) {
+	if (!target)
+		return;
+	var attrs = {};
+	try {
+		attrs = JSON.parse(target.dataset.quranDefaultTranslationEditorAttrs || '{}');
+	} catch (_err) {}
+	['data-id', 'data-prop', 'data-arabizi', 'data-edit-format', 'data-edit-lang', 'data-placeholder', 'data-markdown-empty-html'].forEach(function (name) {
+		target.removeAttribute(name);
+	});
+	Object.keys(attrs).forEach(function (name) {
+		target.setAttribute(name, attrs[name]);
+	});
+	target.classList.remove('quran-study-translation-editor');
+}
+
+function applyQuranTranslationEditor(target, edit) {
+	if (!target || !edit)
+		return false;
+	['data-id', 'data-prop', 'data-arabizi', 'data-edit-format', 'data-edit-lang', 'data-placeholder', 'data-markdown-empty-html'].forEach(function (name) {
+		target.removeAttribute(name);
+	});
+	target.classList.add('_e', 'quran-study-translation-editor');
+	target.setAttribute('contenteditable', 'true');
+	target.removeAttribute('aria-readonly');
+	target.setAttribute('data-id', edit.id || '');
+	target.setAttribute('data-prop', edit.text_prop || '');
+	target.setAttribute('data-arabizi', 'false');
+	target.setAttribute('data-edit-format', edit.format || 'md');
+	target.setAttribute('data-edit-lang', edit.lang || 'en');
+	target.setAttribute('data-markdown-empty-html', '&hellip;');
+	target.dataset.markdownSource = edit.text || '';
+	if (!target.innerHTML.trim())
+		target.innerHTML = '&hellip;';
+	return true;
+}
+
+function appendQuranTranslationFootnoteEditor(target, edit, renderedNodes) {
+	var holder = quranSelectedTranslationFootnoteHolder(target);
+	if (!holder || !edit)
+		return;
+	var ref = quranTranslationTargetRef(target);
+	var editor = document.createElement('footer');
+	var renderedHtml = Array.from(renderedNodes || []).filter(function (node) {
+		return node.nodeType === Node.ELEMENT_NODE && !node.classList.contains('footnotes-sep');
+	}).map(function (node) {
+		return node.outerHTML;
+	}).join('');
+	Array.from(renderedNodes || []).forEach(function (node) {
+		node.remove();
+	});
+	editor.className = '_e footnote l2 quran-study-translation-footnote-editor';
+	editor.setAttribute('title', 'Translation Footnote');
+	editor.setAttribute('data-id', edit.id || '');
+	editor.setAttribute('data-prop', edit.footnotes_prop || '');
+	editor.setAttribute('data-arabizi', 'false');
+	editor.setAttribute('data-edit-format', edit.format || 'md');
+	editor.setAttribute('data-edit-lang', edit.lang || 'en');
+	editor.setAttribute('data-markdown-source', edit.footnotes || '');
+	editor.setAttribute('data-markdown-empty-html', '&hellip;');
+	editor.setAttribute('data-quran-ref', [ref.surah, ref.ayah].filter(Boolean).join(':'));
+	editor.innerHTML = renderedHtml || '&hellip;';
+	holder.appendChild(editor);
+	holder.classList.remove('d-none');
+	normalizeQuranSelectedTranslationFootnotes(holder);
+	if (window.bindInlineEditors)
+		window.bindInlineEditors(editor);
+}
+
+function appendDefaultQuranTranslationFootnoteEditor(target) {
+	if (!target || target.dataset.quranDefaultTranslationEditableClass !== '1')
+		return;
+	var holder = quranSelectedTranslationFootnoteHolder(target);
+	var id = target.getAttribute('data-quran-default-translation-footnote-id') || '';
+	var ref = target.getAttribute('data-quran-default-translation-footnote-ref') || '';
+	if (!holder || !id)
+		return;
+	var editor = document.createElement('footer');
+	var source = target.getAttribute('data-quran-default-translation-footnote-source') || '';
+	editor.className = '_e footnote l2 quran-study-translation-footnote-editor';
+	editor.setAttribute('title', 'Translation Footnote');
+	editor.setAttribute('data-id', id);
+	editor.setAttribute('data-prop', 'hadith.footnote_en');
+	editor.setAttribute('data-arabizi', 'true');
+	editor.setAttribute('data-edit-lang', 'en');
+	editor.setAttribute('data-markdown-source', source);
+	editor.setAttribute('data-markdown-empty-html', '&hellip;');
+	editor.setAttribute('data-quran-ref', ref);
+	editor.innerHTML = source ? renderClientMarkdown(source) : '&hellip;';
+	holder.appendChild(editor);
+	holder.classList.remove('d-none');
+	normalizeQuranSelectedTranslationFootnotes(holder);
+	if (window.bindInlineEditors)
+		window.bindInlineEditors(editor);
 }
 
 function setQuranTranslationTargetEditable(target, editable) {
@@ -3444,15 +3564,75 @@ function fetchQuranLocalTranslationRange(book, surah, ayahFrom, ayahTo) {
 }
 
 function applyQuranTranslationEntryToTarget(target, book, entry) {
-	if (!entry || !(entry.html || entry.data))
+	if (!entry || !(entry.html || entry.data || entry.edit))
 		return;
 	var alias = book && book.source !== 'default' ? book.alias : '';
-	target.innerHTML = target.getAttribute('data-quran-translation-display') === 'passage'
-		? quranPassageTranslationHtml(entry.html || entry.data, target, alias)
-		: compactQuranHeroTranslationHtml(entry.html || entry.data);
-	target.dataset.markdownSource = entry.data || '';
+	var sourceHtml = entry.html || entry.data || '';
+	if (entry.edit) {
+		var footnoteHolder = quranSelectedTranslationFootnoteHolder(target);
+		var initialFootnoteNodeCount = footnoteHolder ? footnoteHolder.childNodes.length : 0;
+		target.innerHTML = quranPassageTranslationHtml(sourceHtml, target, alias);
+		var renderedFootnoteNodes = footnoteHolder
+			? Array.from(footnoteHolder.childNodes).slice(initialFootnoteNodeCount)
+			: [];
+		if (target.getAttribute('data-quran-translation-display') !== 'passage')
+			target.innerHTML = compactQuranHeroTranslationHtml(target.innerHTML);
+		applyQuranTranslationEditor(target, entry.edit);
+		appendQuranTranslationFootnoteEditor(target, entry.edit, renderedFootnoteNodes);
+	} else {
+		target.innerHTML = target.getAttribute('data-quran-translation-display') === 'passage'
+			? quranPassageTranslationHtml(sourceHtml, target, alias)
+			: compactQuranHeroTranslationHtml(sourceHtml);
+		target.dataset.markdownSource = entry.data || '';
+	}
 	setQuranTranslationAttribution(target, quranTranslationBookLabel(book), alias);
+	normalizeQuranSelectedTranslationFootnotes(quranSelectedTranslationFootnoteHolder(target));
 }
+
+function applySavedQuranStudyCommentary(editor, entry) {
+	if (!editor || !entry || !entry.edit)
+		return false;
+	var scope = editor.closest('.quran-passage-section, .quran-ayah-hero');
+	if (!scope)
+		return false;
+	var id = String(entry.edit.id || editor.getAttribute('data-id') || '');
+	var target = editor.classList.contains('quran-study-translation-editor') ? editor : null;
+	if (!target) {
+		target = Array.from(scope.querySelectorAll('.quran-study-translation-editor')).find(function (candidate) {
+			return String(candidate.getAttribute('data-id') || '') === id;
+		}) || null;
+	}
+	if (!target)
+		return false;
+	var holder = quranSelectedTranslationFootnoteHolder(target);
+	var previousFootnoteEditor = holder ? Array.from(holder.querySelectorAll('.quran-study-translation-footnote-editor')).find(function (candidate) {
+		return String(candidate.getAttribute('data-id') || '') === id;
+	}) || null : null;
+	var footnoteInsertionPoint = previousFootnoteEditor ? previousFootnoteEditor.nextSibling : null;
+	if (previousFootnoteEditor)
+		previousFootnoteEditor.remove();
+	var existingFootnoteNodes = new Set(holder ? Array.from(holder.childNodes) : []);
+	var alias = target.dataset.quranTranslationAlias || '';
+	target.innerHTML = quranPassageTranslationHtml(entry.html || '', target, alias);
+	var renderedFootnoteNodes = holder ? Array.from(holder.childNodes).filter(function (node) {
+		return !existingFootnoteNodes.has(node);
+	}) : [];
+	if (target.getAttribute('data-quran-translation-display') !== 'passage')
+		target.innerHTML = compactQuranHeroTranslationHtml(target.innerHTML);
+	applyQuranTranslationEditor(target, entry.edit);
+	appendQuranTranslationFootnoteEditor(target, entry.edit, renderedFootnoteNodes);
+	if (holder && footnoteInsertionPoint && footnoteInsertionPoint.parentNode === holder) {
+		var replacement = Array.from(holder.querySelectorAll('.quran-study-translation-footnote-editor')).find(function (candidate) {
+			return String(candidate.getAttribute('data-id') || '') === id;
+		});
+		if (replacement)
+			holder.insertBefore(replacement, footnoteInsertionPoint);
+	}
+	normalizeQuranSelectedTranslationFootnotes(holder);
+	return true;
+}
+
+window.applySavedQuranStudyCommentary = applySavedQuranStudyCommentary;
 
 function quranPrefatoryTranslationEntry(entry, surah) {
 	if (!entry || Number(surah) === 1)
@@ -3487,9 +3667,11 @@ function applyQuranTranslationToTarget(target, book) {
 	storeDefaultQuranTranslationTarget(target);
 	var alias = book && book.source !== 'default' ? book.alias : '';
 	if (!book || book.source === 'default') {
+		restoreDefaultQuranTranslationEditor(target);
 		setQuranTranslationTargetEditable(target, true);
 		target.innerHTML = target.dataset.quranDefaultTranslationHtml || '';
 		target.dataset.markdownSource = target.dataset.quranDefaultTranslationMarkdown || '';
+		appendDefaultQuranTranslationFootnoteEditor(target);
 		setQuranTranslationAttribution(target, defaultQuranTranslationShortName(), alias);
 		return Promise.resolve();
 	}
@@ -6243,6 +6425,8 @@ function initQuranPreferredTranslationDisplays(root) {
 	var hasServerRenderedTranslation = targets.every(function (target) {
 		return target.dataset.quranTranslationServerRendered === '1'
 			&& validQuranTranslationAlias(target.dataset.quranFixedTranslationAlias || '') === selectedTranslationAlias;
+	}) && !targets.some(function (target) {
+		return selectedTranslationAlias && target.dataset.quranDefaultTranslationEditableClass === '1';
 	});
 	if (hasServerRenderedTranslation) {
 		var syncServerRenderedTranslation = function (book) {
@@ -6251,6 +6435,8 @@ function initQuranPreferredTranslationDisplays(root) {
 			targets.forEach(function (target) {
 				setQuranTranslationTargetEditable(target, !selectedTranslationAlias);
 				target.innerHTML = quranPassageTranslationHtml(target.innerHTML || '', target, selectedTranslationAlias);
+				if (!selectedTranslationAlias)
+					appendDefaultQuranTranslationFootnoteEditor(target);
 				setQuranTranslationAttribution(target, label, selectedTranslationAlias);
 			});
 			updateQuranTranslationPreferenceHearts(document, selectedTranslationAlias);

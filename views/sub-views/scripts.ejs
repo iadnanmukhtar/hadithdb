@@ -284,7 +284,7 @@
 	      if (e && typeof e.preventDefault === 'function')
 	        e.preventDefault();
 	      const $el = $(this);
-	      const propStr = (($el.data('prop')) || '').toString();
+	      const propStr = (($el.attr('data-prop')) || '').toString();
 	      const isMarkdownField = isMarkdownElement($el);
 	      if ($(this).attr('submitting') == 'true') {
 	        e.stopPropagation();
@@ -302,9 +302,10 @@
 	        const hasLoadingButton = $loadingButton.length && $loadingButton.is('button');
 	        let finalButtonHtml = hasLoadingButton ? $loadingButton.html() : null;
 	        let removeSimilarHadith = false;
-	        var id = $(this).data('id');
-	        var prop = $(this).data('prop');
-	        var arabizi = $(this).data('arabizi');
+	        var id = $(this).attr('data-id');
+	        var prop = propStr;
+	        var arabiziAttr = ($(this).attr('data-arabizi') || '').toString().toLowerCase();
+	        var arabizi = arabiziAttr === 'true' || arabiziAttr === '1';
 	        var value = '';
 	        if ($(this).attr('type') == 'checkbox')
 	          value = $(this).prop('checked') ? "1" : "0";
@@ -334,6 +335,7 @@
 	          var resBody = await update(reqBody);
 	          // update element on success
 	          if (resBody.code == 200) {
+	            let appliedRenderedCommentary = false;
 	            if (resBody.value !== undefined)
 	              value = resBody.value;
 	            if (resBody.commentaryValues && propStr.indexOf('commentary.') === 0) {
@@ -359,11 +361,15 @@
 	              });
 	              id = resBody.id;
 	            }
+	            if (($el.hasClass('quran-study-translation-editor') || $el.hasClass('quran-study-translation-footnote-editor')) &&
+	                resBody.commentaryRendered && typeof window.applySavedQuranStudyCommentary === 'function') {
+	              appliedRenderedCommentary = window.applySavedQuranStudyCommentary(this, resBody.commentaryRendered);
+	            }
 	            if ($(this).data('reset') == 'true')
 	              value = '';
-	            if (!removeSimilarHadith && !$(this).is('select') && value !== undefined && value !== null)
+	            if (!appliedRenderedCommentary && !removeSimilarHadith && !$(this).is('select') && value !== undefined && value !== null)
 	              setElementValue(this, value);
-	            if (propStr.indexOf('commentary.') === 0) {
+	            if (propStr.indexOf('commentary.') === 0 && !$el.hasClass('quran-study-translation-editor') && !$el.hasClass('quran-study-translation-footnote-editor')) {
 	              window.location.reload();
 	              return;
 	            }

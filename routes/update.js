@@ -264,7 +264,26 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.code = 200;
       status.id = commentaryId;
       await Books.touchBookContentLastmodById(commentary.bookId);
-      await refreshCommentaryIndex(commentaryId);
+      var refreshedCommentary = await refreshCommentaryIndex(commentaryId);
+      var commentaryLang = col.endsWith('_en') ? 'en' : 'ar';
+      var commentarySuffix = commentaryLang === 'en' ? '_en' : '';
+      status.commentaryRendered = {
+        html: Tafsir.renderLocalCommentaryLanguage(
+          refreshedCommentary,
+          false,
+          commentaryLang,
+          refreshedCommentary.commentary_alias
+        ),
+        edit: {
+          id: commentaryId,
+          lang: commentaryLang,
+          format: refreshedCommentary.format || 'md',
+          text: refreshedCommentary[`text${commentarySuffix}`] || '',
+          text_prop: `commentary.text${commentarySuffix}`,
+          footnotes: refreshedCommentary[`footnotes${commentarySuffix}`] || '',
+          footnotes_prop: `commentary.footnotes${commentarySuffix}`
+        }
+      };
       await flushCommentaryPassageCaches(commentary);
       status.message = `${result.message}; reindexed local commentary passage`;
 
@@ -791,6 +810,7 @@ async function refreshCommentaryIndex(id) {
     throw createError(404, 'Local commentary passage not found after update');
   await Index.update('commentaries', commentary);
   await Index.refresh('commentaries');
+  return commentary;
 }
 
 async function updateCommentaryWithRenumberedFootnotes(id, col, status, format) {
