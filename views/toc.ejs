@@ -570,26 +570,6 @@
         </div>
         <% } %>
 
-		      <% if (quranNavigatorSurahs.length > 0 && !quranCommentaryBook) { %>
-	      <form class="quran-passage-navigator quran-toc-navigator mb-3" action="/quran" method="get" novalidate data-quran-passage-navigator<% if (quranNavigatorBase) { %> data-tafsir-navigator-base="<%= quranNavigatorBase %>" data-tafsir-navigator-query="<%= quranNavigatorQuery %>"<% } %> data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
-	        <label class="form-label mb-0">
-	          <input type="text" class="form-control quran-passage-surah" value="1" aria-label="Select Quran surah" autocomplete="off" required>
-	        </label>
-	        <div class="input-group quran-passage-ayah-group quran-toc-ayah-group">
-	          <input type="text" inputmode="numeric" class="form-control quran-passage-ayah" value="1" aria-label="Select Quran ayah" autocomplete="off" required>
-	          <button type="submit" class="btn btn-outline-primary quran-passage-go" title="Open ayah" aria-label="Open ayah">
-	            <span class="bi bi-caret-right"></span>
-	          </button>
-	        </div>
-            <% if (!quranCommentaryBook) { %>
-            <div class="input-group quran-passage-search-group quran-toc-search-group">
-              <input role="search" type="text" class="form-control quran-passage-search quran-toc-search-bar" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off" autocapitalize="none" spellcheck="false" autofocus>
-              <%- include('sub-views/quran_tafsir_search_filter.ejs', { Tafsir: typeof Tafsir !== 'undefined' ? Tafsir : undefined }); %>
-            </div>
-            <% } %>
-		      </form>
-	      <% } %>
-	      
         <% if (showBookLayout) { %>
         <section>
           <%

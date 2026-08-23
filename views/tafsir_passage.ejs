@@ -126,27 +126,6 @@
 	        </div>
 	      </section>
 
-      <% if (quranNavigatorSurahs.length > 0) { %>
-        <form class="quran-passage-navigator mb-3" action="/quran" method="get" novalidate data-quran-passage-navigator data-tafsir-navigator-base="<%= tafsirPath %>" data-tafsir-navigator-query="" data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
-          <label class="form-label mb-0">
-            <input type="text" class="form-control form-control-sm quran-passage-surah" value="<%= surah.num %>" aria-label="Select Quran surah" autocomplete="off" required>
-          </label>
-          <div class="input-group input-group-sm quran-passage-ayah-group">
-            <input type="text" inputmode="numeric" class="form-control quran-passage-ayah" value="<%= ayah %>" aria-label="Select Quran ayah" autocomplete="off" required>
-            <button type="submit" class="btn btn-outline-primary quran-passage-go" title="Open tafsīr passage" aria-label="Open tafsīr passage">
-              <span class="bi bi-caret-right"></span>
-            </button>
-          </div>
-          <div class="input-group input-group-sm quran-passage-search-group">
-            <input role="search" type="text" class="form-control quran-passage-search" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off" autocapitalize="none" spellcheck="false">
-            <%- include('sub-views/quran_tafsir_search_filter.ejs', {
-              Tafsir: Tafsir,
-              selectedSearchTafsirAlias: tafsir.alias
-            }); %>
-          </div>
-        </form>
-      <% } %>
-
       <%- include('sub-views/quran_tafsirs.ejs', {
         site: site,
         page: page,

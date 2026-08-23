@@ -426,7 +426,7 @@ router.get(['/autocomplete', '/quran/autocomplete'], searchRequestLimiter, async
       bookFilters = ['quran', 'commentaries'];
     var tafsirFilters = quranSearchProxy ? normalizeRequestTafsirFilters(req) : [];
     if (tafsirFilters.length > 0)
-      bookFilters = ['commentaries'];
+      bookFilters = bookFilters.indexOf('quran') >= 0 ? ['quran', 'commentaries'] : ['commentaries'];
     var suggestions = await Search.a_autocomplete(q, bookFilters, req.query.limit, {
       tafsirAliases: tafsirFilters,
       excludeQuranAndTafsir: !quranSearchProxy
@@ -898,10 +898,14 @@ function normalizeRequestTafsirFilters(req) {
   if (values.length < 1)
     return [];
   var aliases = [];
+  var commentaryBooks = Tafsir.visibleTafsirsSync().concat(Tafsir.visibleTranslationsSync());
   values.forEach(function (value) {
-    var tafsir = Tafsir.visibleTafsirsSync().find(function (row) {
-      return row.source === 'local'
-        && (row.alias === value || row.slug === value || Tafsir.tafsirSlug(row.alias) === value);
+    var tafsir = commentaryBooks.find(function (row) {
+      if (row.source !== 'local')
+        return false;
+      if (row.type === 'trans')
+        return row.alias === value;
+      return row.alias === value || row.slug === value || Tafsir.tafsirSlug(row.alias) === value;
     });
     if (tafsir)
       aliases.push(tafsir.alias);
@@ -918,7 +922,7 @@ function normalizeRequestTafsirFilters(req) {
 function tafsirSearchFilterOptions(selectedAliases) {
   selectedAliases = Array.isArray(selectedAliases) ? selectedAliases : (selectedAliases ? [selectedAliases] : []);
   var seen = new Set();
-  return Tafsir.visibleTafsirsSync().filter(function (tafsir) {
+  return Tafsir.visibleTafsirsSync().concat(Tafsir.visibleTranslationsSync()).filter(function (tafsir) {
     if (!tafsir || tafsir.source !== 'local' || !tafsir.alias || seen.has(tafsir.alias) || Number(tafsir.hidden) === 1)
       return false;
     seen.add(tafsir.alias);
@@ -927,6 +931,7 @@ function tafsirSearchFilterOptions(selectedAliases) {
     return {
       alias: tafsir.alias,
       label: Tafsir.rawShortName(tafsir, 'en') || tafsir.shortName_en || tafsir.name_en || tafsir.alias,
+      type: tafsir.type === 'trans' ? 'translation' : 'tafsir',
       selected: selectedAliases.indexOf(tafsir.alias) >= 0
     };
   }).sort(compareTafsirFilterOptions);
@@ -942,7 +947,7 @@ function compareTafsirFilterOptions(a, b) {
 function tafsirSearchFilterLabel(alias) {
   if (!alias)
     return '';
-  var tafsir = Tafsir.visibleTafsirsSync().find(row => row.alias === alias && Number(row.hidden) !== 1);
+  var tafsir = Tafsir.visibleTafsirsSync().concat(Tafsir.visibleTranslationsSync()).find(row => row.alias === alias && Number(row.hidden) !== 1);
   if (!tafsir)
     return alias;
   return Tafsir.rawShortName(tafsir, 'en') || tafsir.shortName_en || tafsir.name_en || alias;
@@ -998,7 +1003,7 @@ async function renderSearchResults(req, res, next, options = {}) {
   if (!options.quranSearchProxy)
     delete req.query.tafsir;
   if (tafsirFilters.length > 0)
-    req.query.b = ['commentaries'];
+    req.query.b = normalizeBookFilterValues(req.query.b).indexOf('quran') >= 0 ? ['quran', 'commentaries'] : ['commentaries'];
 
   if (options.redirectReferences !== false) {
     var bookReference = !Search.isExpressionQuery(req.query.q) && Books.findReference(req.query.q, global.books);

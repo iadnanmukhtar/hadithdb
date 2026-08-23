@@ -19,9 +19,47 @@
     var isQuranReviewArea = requestPath === '/quran/review' || (isQuranMushafArea && (req.query.review !== undefined || req.query.reviewRef !== undefined));
     var isQuranMemorizeArea = isQuranMushafArea && (req.query.memorize !== undefined || isQuranReviewArea);
     var isMudhakkirArea = isQuranReviewArea || isQuranMemorizeArea;
-    var isQuranStudyArea = /^\/quran\/\d+(?:\/|$)/.test(requestPath);
-    var requestedQuranSearchReturnMode = req && req.query && (req.query.mode === 'mushaf' || req.query.mode === 'study') ? req.query.mode : '';
-    var quranSearchReturnMode = isQuranMushafArea || isQuranReviewArea ? 'mushaf' : (isQuranStudyArea ? 'study' : requestedQuranSearchReturnMode);
+    var isQuranStudyArea = /^\/quran\/(?:[A-Za-z0-9_-]+\/)?\d+(?:\/|$)/.test(requestPath);
+    var requestedQuranSearchReturnMode = req && req.query && ['mushaf', 'study', 'tafsir'].indexOf(req.query.mode) >= 0 ? req.query.mode : '';
+    var requestedQuranTafsirMode = req && req.query ? (req.query.tafsirMode || '') : '';
+    var requestedQuranTafsirBook = requestedQuranTafsirMode && Array.isArray(locals.quranNavTafsirs)
+      ? locals.quranNavTafsirs.find(function (tafsir) {
+          return tafsir && (tafsir.alias === requestedQuranTafsirMode || tafsir.slug === requestedQuranTafsirMode || Tafsir.tafsirSlug(tafsir.alias) === requestedQuranTafsirMode);
+        })
+      : null;
+    var quranSearchTafsirBook = isQuranTafsirArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir'
+      ? pageQuranCommentaryBook
+      : requestedQuranTafsirBook;
+    var quranSearchReturnMode = isQuranMushafArea || isQuranReviewArea
+      ? 'mushaf'
+      : (isQuranTafsirArea && quranSearchTafsirBook ? 'tafsir' : (isQuranStudyArea ? 'study' : requestedQuranSearchReturnMode));
+    var quranSearchTafsirSlug = quranSearchTafsirBook
+      ? (quranSearchTafsirBook.slug || Tafsir.tafsirSlug(quranSearchTafsirBook.alias))
+      : '';
+    var quranSearchCommentaryBook = pageQuranCommentaryBook && ['tafsir', 'trans'].indexOf(pageQuranCommentaryBook.type) >= 0
+      ? pageQuranCommentaryBook
+      : quranSearchTafsirBook;
+    var quranSearchContext = quranSearchTafsirBook
+      ? 'tafsir'
+      : (isQuranStudyArea ? 'study' : (quranSearchCommentaryBook ? 'commentary' : 'quran'));
+    var hadithSearchBookAlias = requestPath !== '/' && pageBook && pageBook.alias !== 'quran'
+      && (pageBook.type || pageBook.book_type || pageBook.book_model || 'hadith') === 'hadith'
+      ? pageBook.alias
+      : '';
+    var isSearchResultsContext = page && page.context && page.context.fromSearch === true;
+    var searchResultsBookFilters = isSearchResultsContext
+      ? (Array.isArray(locals.b) ? locals.b : [locals.b]).filter(Boolean)
+      : [];
+    var searchResultsTafsirFilters = isSearchResultsContext
+      ? (Array.isArray(locals.tafsirFilters) ? locals.tafsirFilters : [locals.tafsirFilters]).filter(Boolean)
+      : [];
+    var hadithSearchBookAliases = isSearchResultsContext && !isQuranArea
+      ? searchResultsBookFilters
+      : (hadithSearchBookAlias ? [hadithSearchBookAlias] : []);
+    var quranSearchBookFilters = isSearchResultsContext && isQuranArea ? searchResultsBookFilters : [];
+    var quranSearchCommentaryAliases = isSearchResultsContext && isQuranArea
+      ? searchResultsTafsirFilters
+      : (quranSearchCommentaryBook ? [quranSearchCommentaryBook.alias] : []);
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
     var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
@@ -46,7 +84,8 @@
     var headerBrandHref = isQuranArea ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
     var alternateModeLabel = isQuranArea ? 'Hadith' : 'Quran';
     var alternateModeHref = isQuranArea ? utils.hadithBaseUrl(req) : utils.quranUrl(req, '/quran');
-    var navSearchPlaceholder = isQuranArea ? 'Search the Qurʿān or tafāsīr...' : 'Search hadīth...';
+    var commandHadithSearchAction = typeof utils.globalSearchBaseUrl === 'function' ? utils.globalSearchBaseUrl(req) : navSearchAction;
+    var commandQuranSearchAction = utils.quranUrl(req, '/quran');
     function activeNavAttrs(active) {
       return active ? ' active" aria-current="page' : '';
     }
@@ -107,6 +146,11 @@
             <li><a class="dropdown-item<%- activeNavAttrs(isTitledArea) %>" href="<%= utils.urlFor(req, '/titled') %>"><i class="bi bi-card-heading"></i> Titled</a></li>
           </ul>
         </li>
+        <li class="nav-item command-search-compact-item">
+          <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-compact-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" title="Search" aria-label="Search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+        </li>
         <li class="nav-item">
           <a class="nav-link top-nav-icon-link" href="<%= utils.urlFor(req, '/bookmarks') %>" title="Bookmarks" aria-label="Bookmarks">
             <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>"></i>
@@ -127,13 +171,6 @@
             <i class="bi bi-gear<%=site.editMode ? '-fill' : ''%>"></i></a>
         </li>
         <% } %>
-        <li class="nav-item search-click-toggle">
-          <form action="<%= navSearchAction %>">
-          <% if (quranSearchReturnMode) { %><input type="hidden" name="mode" value="<%= quranSearchReturnMode %>"><% } %>
-          <input role="search" type="text" class="form-control search-click" name="q" placeholder="<%= navSearchPlaceholder %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
-          </form>
-          <a class="nav-link"><i class="bi bi-search"></i></a>
-        </li>
         <li class="nav-item d-flex align-items-center" id="nav-auth-desktop"></li>
       </ul>
       
@@ -153,13 +190,9 @@
         <a class="nav-link top-nav-icon-link" href="<%= utils.urlFor(req, '/bookmarks') %>" title="Bookmarks" aria-label="Bookmarks">
           <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>"></i>
         </a>
-        <div class="search-click-toggle">
-          <form action="<%= navSearchAction %>">
-            <% if (quranSearchReturnMode) { %><input type="hidden" name="mode" value="<%= quranSearchReturnMode %>"><% } %>
-            <input role="search" type="text" class="form-control search-click" name="q" placeholder="<%= navSearchPlaceholder %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
-          </form>
-          <a class="nav-link top-nav-icon-link" role="button" title="Search" aria-label="Search"><i class="bi bi-search"></i></a>
-        </div>
+        <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-mobile-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" title="Search" aria-label="Search">
+          <i class="bi bi-search" aria-hidden="true"></i>
+        </button>
         <button type="button" class="btn btn-sm nav-auth-btn" id="nav-auth-mobile">Sign in</button>
       </div>
     </menu>
@@ -170,6 +203,14 @@
       </button>
     </div>
 
+    <div class="col-12 d-none d-md-flex site-navbar-search-row" role="search">
+      <button type="button" class="command-search-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search Hadith or Quran and Tafsir (Command or Control K)">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <span class="command-search-trigger-label">Search Hadith or Quran + Tafsir</span>
+        <kbd class="command-search-shortcut" aria-hidden="true"><span data-command-key-modifier>⌘</span><span>K</span></kbd>
+      </button>
+    </div>
+
     <!--hadithdb-cache:left-rail:start-->
     <nav id="offcanvas-topnav" class="offcanvas offcanvas-start collapse" tabindex="-1" data-bs-static="true" data-bs-backdrop="true">
       <div class="offcanvas-header">
@@ -177,10 +218,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
       </div>
       <div class="offcanvas-body">
-        <form action="<%= navSearchAction %>">
-          <% if (quranSearchReturnMode) { %><input type="hidden" name="mode" value="<%= quranSearchReturnMode %>"><% } %>
-          <input role="search" type="text" class="form-control mb-2" name="q" placeholder="<%= navSearchPlaceholder %>" autocomplete="off" autocapitalize="none" spellcheck="false" />
-        </form>
         <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">
           <a class="offcanvas-quick-action<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>" title="My Bookmarks" aria-label="My Bookmarks">
             <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>" aria-hidden="true"></i>
@@ -253,6 +290,23 @@
       </div>
     </nav>
     <!--hadithdb-cache:left-rail:end-->
+
+    <%- include('global_search_dialog.ejs', {
+      initialSearchMode: isQuranArea ? 'quran' : 'hadith',
+      hadithSearchAction: commandHadithSearchAction,
+      quranSearchAction: commandQuranSearchAction,
+      quranSearchReturnMode: quranSearchReturnMode,
+      quranSearchTafsirSlug: quranSearchTafsirSlug,
+      quranSearchContext: quranSearchContext,
+      quranSearchCommentaryAlias: quranSearchCommentaryBook ? quranSearchCommentaryBook.alias : '',
+      isSearchResultsContext: isSearchResultsContext,
+      hadithSearchBookAliases: hadithSearchBookAliases,
+      quranSearchBookFilters: quranSearchBookFilters,
+      quranSearchCommentaryAliases: quranSearchCommentaryAliases,
+      hadithSearchBooks: books,
+      quranSearchTafsirs: locals.quranNavTafsirs || [],
+      quranSearchTranslations: Tafsir.visibleTranslationsSync ? Tafsir.visibleTranslationsSync() : []
+    }); %>
     
   </div>
   

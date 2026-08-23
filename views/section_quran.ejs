@@ -213,23 +213,6 @@
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
 
-      <% if (quranNavigatorSurahs.length > 0) { %>
-        <form class="quran-passage-navigator mb-3" action="/quran" method="get" novalidate data-quran-passage-navigator data-surahs="<%= JSON.stringify(quranNavigatorSurahs) %>">
-          <label class="form-label mb-0">
-            <input type="text" class="form-control form-control-sm quran-passage-surah" value="<%= quranNavigatorSurahValue %>" aria-label="Select Quran surah" autocomplete="off" required>
-          </label>
-          <div class="input-group input-group-sm quran-passage-ayah-group">
-            <input type="text" inputmode="numeric" class="form-control quran-passage-ayah" value="<%= quranNavigatorAyahValue %>" aria-label="Select Quran ayah" autocomplete="off" required>
-            <button type="submit" class="btn btn-outline-primary quran-passage-go" title="Open ayah" aria-label="Open ayah">
-              <span class="bi bi-caret-right"></span>
-            </button>
-          </div>
-          <div class="input-group input-group-sm quran-passage-search-group">
-            <input role="search" type="text" class="form-control quran-passage-search" placeholder="Search the Qurʿān or tafāsīr" aria-label="Search the Qurʿān or tafāsīr" autocomplete="off" autocapitalize="none" spellcheck="false">
-            <%- include('sub-views/quran_tafsir_search_filter.ejs', { Tafsir: typeof Tafsir !== 'undefined' ? Tafsir : undefined }); %>
-          </div>
-        </form>
-      <% } %>
       <% var quranSelectedAyahClearHref = page.context.section ? utils.quranUrl(req, `/${page.context.section.path}`) : undefined; %>
       <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero<% if (quranSelectedAyahClearHref) { %> data-quran-clear-href="<%= quranSelectedAyahClearHref %>"<% } %>>
       <% if (selectedAyahs.length > 0) { %>

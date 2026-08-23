@@ -77,8 +77,10 @@
         (locals.tafsirFilters || []).forEach(function (tafsirAlias) {
           params.append('tafsir', tafsirAlias);
         });
-        if (req.query.mode === 'mushaf' || req.query.mode === 'study')
+        if (req.query.mode === 'mushaf' || req.query.mode === 'study' || req.query.mode === 'tafsir')
           params.append('mode', req.query.mode);
+        if (req.query.mode === 'tafsir' && req.query.tafsirMode)
+          params.append('tafsirMode', req.query.tafsirMode);
         params.append('o', offset);
         return `${searchAction}?${params.toString()}`;
       }
@@ -102,102 +104,29 @@
   <div class="container col-lg-8 mx-auto">
     
     <main class="search-results">
-      
-      <form class="form-group" action="<%= locals.searchAction || '/' %>">
-        <% if (req.query.mode === 'mushaf' || req.query.mode === 'study') { %><input type="hidden" name="mode" value="<%= req.query.mode %>"><% } %>
-        <search class="search container pt-3 mb-3">
-          <div class="row justify-content-md-center">
-            <div class="col-md-8">
-              
-              <% var showSearchFilterPills = q && (locals.searchFilterPills || []).length > 0; %>
-              <div class="input-group mb-1">
-                <input role="search" id="search-bar" name="q" type="text" class="search-bar form-control" placeholder="<%= isQuranSearchProxy ? 'Search the Qurʿān or tafāsīr...' : 'Search hadīth...' %>" autocomplete="off" autocapitalize="none" spellcheck="false">
-                <button class="btn btn-outline-secondary dropdown-toggle search-filter-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-search-filter-toggle>
-                  <span class="search-filter-icon-wrap">
-                    <i class="bi bi-book"></i>
-                    <span class="search-filter-count-badge badge rounded-pill d-none" data-search-filter-count>0</span>
-                  </span>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end">
-                  <% if (isQuranSearchProxy) { %>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="quran" <%=(b.indexOf('quran') >= 0) ? 'checked' : ''%>>
-                    <label class="form-check-label">Quran</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="tafsir" <%= (b.indexOf('commentaries') >= 0 || b.indexOf('tafsir') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Tafsir</label>
-                  </div>
-                  <% if ((locals.tafsirFilterOptions || []).length > 0) { %>
-                  <div class="filter-list-search-wrap px-3 pb-2" data-filter-list-search>
-                    <input type="search" class="form-control form-control-sm filter-list-search" placeholder="Find book" aria-label="Find tafsir book">
-                  </div>
-                  <% locals.tafsirFilterOptions.forEach(function (tafsirOption) { %>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="tafsir" value="<%= tafsirOption.alias %>" <%= tafsirOption.selected ? 'checked' : '' %>>
-                    <label class="form-check-label"><%= tafsirOption.label %></label>
-                  </div>
-                  <% }); %>
-                  <% } %>
-                  <% } else { %>
-                  <div class="filter-list-search-wrap px-3 pb-2" data-filter-list-search>
-                    <input type="search" class="form-control form-control-sm filter-list-search" placeholder="Find book" aria-label="Find hadith book">
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="toc" <%= (b.indexOf('toc') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Chapter Headings</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="sahihayn" <%= (b.indexOf('sahihayn') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Sahihayn</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="kutubarbaah" <%= (b.indexOf('kutubarbaah') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Kutub Arbaah</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="sixbooks" <%= (b.indexOf('sixbooks') >= 0) ? 'checked' : '' %>>
-                    <label class="form-check-label">Kutub Sittah</label>
-                  </div>
-                  <% global.books.filter(b => {
-                    return !b.virtual
-                      && !b.hidden
-                      && b.alias !== 'quran'
-                      && (b.type || b.book_type || b.book_model || 'hadith') === 'hadith';
-                  }).sort((a, b) => Number(a.ordinal || 0) - Number(b.ordinal || 0)).forEach(bk => { %>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="b" value="<%= bk.alias %>" <%=(b.indexOf(bk.alias) >= 0) ? 'checked' : ''%>>
-                    <label class="form-check-label"><%=bk.shortName_en%></label>
-                  </div>
-                  <% }); %>
-                  <% } %>
-                  
-                </div>
-              </div>
-              <% if (showSearchFilterPills) { %>
-              <div class="search-filter-pills search-filter-pills-underbar" data-search-filter-pills>
-                <% locals.searchFilterPills.forEach(function (pill) { %>
-                <span class="search-filter-pill badge rounded-pill text-bg-light border" data-search-filter-pill>
-                  <span><%= pill.label %></span>
-                  <button type="button" class="btn-close" aria-label="Remove <%= pill.label %> filter" data-search-filter-remove data-filter-param="<%= pill.param %>" data-filter-value="<%= pill.value %>" <%- pill.removeTafsir ? 'data-remove-tafsir="1"' : '' %>></button>
-                </span>
-                <% }); %>
-              </div>
-              <% } else if (!isQuranSearchProxy && !q) { %>
-                <%- include('sub-views/caution_notice.ejs', { key: 'search-caution-notice', id: 'search-caution-notice-full' }) %>
-              <% } %>
-            </div>
-          </div>
-        </search>
-      </form>
-      
-      <%- include('sub-views/bookNav.ejs'); %> 
 
-      <% if (results.length != 1 && q) { %>
-      <div class="text-center">
-        Found <%= displayResultCount %> results in <%= bookFilterLabels.length > 0 ? bookFilterLabels.join(', ') : 'all books' %>
+      <% var showSearchFilterPills = q && (locals.searchFilterPills || []).length > 0; %>
+      <% if (isSearchResultsPage) { %>
+      <div class="search-results-summary">
+        <div class="search-results-filter-pills command-search-pills" data-search-filter-pills aria-label="Active search filters">
+        <% if (showSearchFilterPills) { %>
+        <% locals.searchFilterPills.forEach(function (pill) { %>
+          <span class="command-search-pill badge rounded-pill" data-search-filter-pill>
+            <span><%= pill.label %></span>
+            <button type="button" class="btn-close" aria-label="Remove <%= pill.label %> filter" data-search-filter-remove data-filter-param="<%= pill.param %>" data-filter-value="<%= pill.value %>" <%- pill.removeTafsir ? 'data-remove-tafsir="1"' : '' %>></button>
+          </span>
+        <% }); %>
+        <% } %>
+        </div>
+        <div class="search-results-count"><%= displayResultCount %> results found</div>
       </div>
-      <% } else if (results.length != 1) { %>
+      <% } %>
+
+      <% if (!isSearchResultsPage) { %>
+      <%- include('sub-views/bookNav.ejs'); %>
+      <% } %>
+
+      <% if (!isSearchResultsPage && results.length != 1) { %>
       <div class="text-center">
         Showing <%= displayResultCount %> results
       </div>

@@ -15,6 +15,7 @@ $(function () {
 	initReadOnlyInlineEditorGuards(document);
 	initSearchPlainTextPaste();
 	initQuranSearchReturnMode();
+	initCommandSearch();
 
 	setDirection($('#search-bar'));
 
@@ -47,19 +48,7 @@ $(function () {
 		}
 	});
 
-	$('.search-click-toggle a').click(function (event) {
-		var toggle = $(this).closest('.search-click-toggle');
-		event.preventDefault();
-		$('.search-click-toggle').not(toggle).removeClass('is-open');
-		toggle.toggleClass('is-open');
-		if (toggle.hasClass('is-open'))
-			toggle.find('input').focus();
-	});
-
 	$(document).on('click', function (event) {
-		if (!$(event.target).closest('.search-click-toggle').length)
-			$('.search-click-toggle').removeClass('is-open');
-
 		var tocMenu = document.getElementById('toc2');
 		if (!tocMenu || !$(tocMenu).hasClass('show'))
 			return;
@@ -743,12 +732,12 @@ function renderHadithAdminGear() {
 	const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
 	const desktopList = document.querySelector('.site-navbar menu.d-md-block ul.nav');
 	if (desktopList && !desktopList.querySelector('.edit-gear')) {
-		const searchItem = desktopList.querySelector('.search-click-toggle');
+		const authItem = desktopList.querySelector('#nav-auth-desktop');
 		const item = document.createElement('li');
 		item.className = 'nav-item edit-gear';
 		item.innerHTML = `<a class="nav-link" role="button" title="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}" aria-label="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}"><i class="bi ${icon}"></i></a>`;
 		item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
-		desktopList.insertBefore(item, searchItem || null);
+		desktopList.insertBefore(item, authItem || null);
 	}
 
 	const mobileList = document.querySelector('#offcanvas-topnav .offcanvas-col1');
@@ -1021,6 +1010,206 @@ function initSearchPlainTextPaste() {
 		}
 		$(this).trigger('input');
 	});
+}
+
+function initCommandSearch() {
+	var dialog = document.querySelector('[data-command-search-dialog]');
+	if (!dialog || dialog.dataset.commandSearchBound === '1')
+		return;
+	dialog.dataset.commandSearchBound = '1';
+	var form = dialog.querySelector('[data-command-search-form]');
+	var input = dialog.querySelector('.command-search-input');
+	var initialMode = dialog.dataset.initialSearchMode === 'quran' ? 'quran' : 'hadith';
+	var mode = initialMode;
+	var lastTrigger = null;
+	var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+	var commandModifier = /mac|iphone|ipad|ipod/i.test(platform) ? '⌘' : 'Ctrl';
+	document.querySelectorAll('[data-command-key-modifier]').forEach(function (element) {
+		element.textContent = commandModifier;
+	});
+
+	function activePanel() {
+		return dialog.querySelector(`[data-command-search-panel="${mode}"]`);
+	}
+
+	function refreshAutocomplete() {
+		var $input = $(input);
+		if (!$input.data('autocompleteBound') || !$.fn.autocomplete)
+			return;
+		$input.autocomplete('close');
+		if ((input.value || '').trim().length >= 2)
+			$input.autocomplete('search', input.value);
+	}
+
+	function normalizeQuranFilters(changedInput) {
+		var panel = dialog.querySelector('[data-command-search-panel="quran"]');
+		if (!panel)
+			return;
+		var quran = panel.querySelector('input[name="b"][value="quran"]');
+		var allTafsir = panel.querySelector('[data-command-all-tafsir]');
+		var tafsirs = Array.from(panel.querySelectorAll('input[name="tafsir"]'));
+		if (changedInput && changedInput.name === 'tafsir' && changedInput.checked && allTafsir)
+			allTafsir.checked = false;
+		if (changedInput === allTafsir && allTafsir.checked)
+			tafsirs.forEach(function (checkbox) { checkbox.checked = false; });
+		var hasSpecificCommentary = tafsirs.some(function (checkbox) { return checkbox.checked; });
+		if (quran && allTafsir && !quran.checked && !allTafsir.checked && !hasSpecificCommentary)
+			quran.checked = true;
+	}
+
+	function applyContextualQuranFilters() {
+		var context = dialog.dataset.quranSearchContext || 'quran';
+		var alias = (dialog.dataset.quranCommentaryAlias || '').toString().trim();
+		if (!alias && context === 'study')
+			alias = quranSelectedTranslationAliasFromLocation() || storedQuranSelectedTranslationAlias();
+		if (!alias)
+			return;
+		var checkbox = Array.from(dialog.querySelectorAll('[data-command-search-panel="quran"] input[name="tafsir"]')).find(function (candidate) {
+			return candidate.value === alias;
+		});
+		if (!checkbox)
+			return;
+		checkbox.checked = true;
+		var allTafsir = dialog.querySelector('[data-command-all-tafsir]');
+		if (allTafsir)
+			allTafsir.checked = false;
+	}
+
+	function renderSelectedFilters() {
+		var panel = activePanel();
+		var selected = dialog.querySelector('[data-command-search-selected]');
+		var pills = dialog.querySelector('[data-command-search-pills]');
+		if (!panel || !selected || !pills)
+			return;
+		pills.replaceChildren();
+		var checked = Array.from(panel.querySelectorAll('[data-command-filter]:checked:not(:disabled)'));
+		var hasSpecificTafsir = checked.some(function (checkbox) { return checkbox.name === 'tafsir'; });
+		checked.forEach(function (checkbox) {
+			if (checkbox.hasAttribute('data-command-all-tafsir') && hasSpecificTafsir && dialog.dataset.commandSearchResultsContext !== '1')
+				return;
+			var pill = document.createElement('span');
+			pill.className = 'command-search-pill badge rounded-pill';
+			var label = document.createElement('span');
+			label.textContent = checkbox.dataset.commandFilterLabel || checkbox.value;
+			var remove = document.createElement('button');
+			remove.type = 'button';
+			remove.className = 'btn-close';
+			remove.setAttribute('aria-label', `Remove ${label.textContent} filter`);
+			remove.addEventListener('click', function () {
+				checkbox.checked = false;
+				checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+			});
+			pill.append(label, remove);
+			pills.appendChild(pill);
+		});
+		selected.hidden = pills.childElementCount < 1;
+		dialog.querySelectorAll('[data-command-search-filter-count]').forEach(function (badge) {
+			var badgePanel = dialog.querySelector(`[data-command-search-panel="${badge.dataset.commandSearchFilterCount}"]`);
+			var count = badgePanel ? badgePanel.querySelectorAll('[data-command-filter]:checked:not(:disabled)').length : 0;
+			badge.textContent = count;
+			badge.classList.toggle('is-empty', count < 1);
+		});
+	}
+
+	function setMode(nextMode, options) {
+		mode = nextMode === 'quran' ? 'quran' : 'hadith';
+		dialog.querySelectorAll('[data-command-search-mode]').forEach(function (button) {
+			var active = button.dataset.commandSearchMode === mode;
+			button.classList.toggle('active', active);
+			button.setAttribute('aria-selected', active ? 'true' : 'false');
+			button.tabIndex = active ? 0 : -1;
+		});
+		dialog.querySelectorAll('[data-command-search-panel]').forEach(function (panel) {
+			var active = panel.dataset.commandSearchPanel === mode;
+			panel.hidden = !active;
+			panel.querySelectorAll('input').forEach(function (field) {
+				field.disabled = !active;
+			});
+			if (!active) {
+				var details = panel.querySelector('details');
+				if (details) details.open = false;
+			}
+		});
+		dialog.querySelectorAll('[data-command-quran-state]').forEach(function (field) {
+			field.disabled = mode !== 'quran';
+		});
+		form.action = mode === 'quran' ? form.dataset.quranSearchAction : form.dataset.hadithSearchAction;
+		input.placeholder = mode === 'quran' ? 'Search the Qurʿān or tafāsīr...' : 'Search hadith...';
+		input.setAttribute('aria-label', mode === 'quran' ? 'Search the Quran or tafsir' : 'Search hadith');
+		renderSelectedFilters();
+		if (!options || options.refresh !== false)
+			refreshAutocomplete();
+	}
+
+	function openDialog(trigger) {
+		lastTrigger = trigger || document.activeElement;
+		if (!dialog.open)
+			dialog.showModal();
+		window.setTimeout(function () {
+			input.focus();
+			if ((input.value || '').trim().length >= 2)
+				refreshAutocomplete();
+		}, 0);
+	}
+
+	document.querySelectorAll('[data-command-search-open]').forEach(function (trigger) {
+		trigger.addEventListener('click', function () { openDialog(trigger); });
+	});
+	dialog.querySelector('[data-command-search-close]').addEventListener('click', function () {
+		dialog.close();
+	});
+	dialog.addEventListener('click', function (event) {
+		if (event.target === dialog)
+			dialog.close();
+	});
+	dialog.addEventListener('close', function () {
+		if (lastTrigger && document.contains(lastTrigger))
+			lastTrigger.focus();
+	});
+	dialog.querySelectorAll('[data-command-search-mode]').forEach(function (button) {
+		button.addEventListener('click', function () {
+			setMode(button.dataset.commandSearchMode);
+			input.focus();
+		});
+		button.addEventListener('keydown', function (event) {
+			if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+				return;
+			event.preventDefault();
+			var nextMode = mode === 'hadith' ? 'quran' : 'hadith';
+			setMode(nextMode);
+			dialog.querySelector(`[data-command-search-mode="${nextMode}"]`).focus();
+		});
+	});
+	dialog.addEventListener('change', function (event) {
+		if (!event.target.matches('[data-command-filter]'))
+			return;
+		if (mode === 'quran')
+			normalizeQuranFilters(event.target);
+		renderSelectedFilters();
+		refreshAutocomplete();
+	});
+	dialog.querySelectorAll('[data-command-search-filter-search]').forEach(function (filterInput) {
+		filterInput.addEventListener('input', function () {
+			var query = normalizeDropdownFilterText(filterInput.value);
+			var list = dialog.querySelector(`[data-command-search-book-list="${filterInput.dataset.commandSearchFilterSearch}"]`);
+			if (!list)
+				return;
+			list.querySelectorAll('[data-command-search-book-option]').forEach(function (option) {
+				var haystack = normalizeDropdownFilterText(`${option.textContent} ${option.querySelector('input').value}`);
+				option.hidden = query !== '' && haystack.indexOf(query) < 0;
+			});
+		});
+	});
+	document.addEventListener('keydown', function (event) {
+		if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'k') {
+			event.preventDefault();
+			openDialog(document.activeElement);
+		}
+	});
+
+	applyContextualQuranFilters();
+	normalizeQuranFilters();
+	setMode(initialMode, { refresh: false });
 }
 
 var quranTafsirStorageKeys = {
@@ -13234,13 +13423,18 @@ function initQuranAyahSelector(root) {
 		$input.on('keydown', function (event) {
 			if (event.key !== 'Enter')
 				return;
-			event.preventDefault();
 			var $widget = $input.autocomplete('widget');
 			var activeItem = $widget.is(':visible') ? $widget.find('.ui-state-active').closest('li').data('ui-autocomplete-item') : null;
 			if (activeItem && activeItem.url) {
-				window.location.href = searchAutocompleteDestination($input, activeItem);
+				event.preventDefault();
+				var activeLink = $widget.find('.ui-state-active').closest('a[href]').get(0);
+				if (activeLink)
+					activeLink.click();
+				else
+					window.location.assign(searchAutocompleteDestination($input, activeItem));
 				return;
 			}
+			event.preventDefault();
 			if (suggestionOnly) {
 				if ($input.val().trim())
 					submitQuranPassageSearch($input);
@@ -13266,11 +13460,18 @@ function initQuranAyahSelector(root) {
 				event.preventDefault();
 			},
 			select: function (event, ui) {
-				event.preventDefault();
-				if (ui.item.url)
-					window.location.href = searchAutocompleteDestination($input, ui.item);
-				else if (!suggestionOnly)
+				if (ui.item.url) {
+					var nativeLink = event.originalEvent && event.originalEvent.target && event.originalEvent.target.closest
+						? event.originalEvent.target.closest('a[href]')
+						: null;
+					if (!nativeLink) {
+						event.preventDefault();
+						window.location.assign(searchAutocompleteDestination($input, ui.item));
+					}
+				} else if (!suggestionOnly) {
+					event.preventDefault();
 					$input.closest('form').trigger('submit');
+				}
 			},
 			open: function () {
 				var autocomplete = $input.autocomplete('widget');
@@ -13283,7 +13484,10 @@ function initQuranAyahSelector(root) {
 			}
 		}).autocomplete('instance')._renderItem = function (ul, item) {
 			var $item = $('<li>');
-			var $row = $('<div>').addClass('search-autocomplete-item');
+			var $row = item.url
+				? $('<a>').attr('href', searchAutocompleteDestination($input, item))
+				: $('<div>');
+			$row.addClass('search-autocomplete-item');
 			var isArabic = item.lang === 'ar';
 			var fallbackText = item.label || '';
 			if (item.is_quran && (item.type === 'Ayah' || item.type === 'Surah'))
@@ -13318,13 +13522,6 @@ function initQuranAyahSelector(root) {
 				}
 				$meta.appendTo($row);
 			}
-			if (item.url) {
-				$row.attr('role', 'link').on('mousedown click', function (event) {
-					event.preventDefault();
-					event.stopImmediatePropagation();
-					window.location.href = searchAutocompleteDestination($input, item);
-				});
-			}
 			return $item.append($row).appendTo(ul);
 		};
 	});
@@ -13334,8 +13531,21 @@ function searchAutocompleteDestination($input, item) {
 	if (!item.is_quran)
 		return hadithUrl(item.url);
 	var url = item.url.toString();
-	if ($input.closest('form').find('input[name="mode"][value="mushaf"]').length)
+	var $form = $input.closest('form');
+	var returnMode = $form.find('input[name="mode"]:not(:disabled)').val() || '';
+	if (returnMode === 'mushaf')
 		url += `${url.includes('?') ? '&' : '?'}mushaf`;
+	else if (returnMode === 'tafsir' && item.type === 'Ayah') {
+		var tafsirBase = ($form.attr('data-quran-tafsir-base') || '').replace(/\/$/, '');
+		if (!tafsirBase) {
+			var tafsirMode = ($form.find('input[name="tafsirMode"]:not(:disabled)').val() || '').toString().trim();
+			if (tafsirMode)
+				tafsirBase = `/quran/tafsir/${encodeURIComponent(tafsirMode)}`;
+		}
+		var ref = (item.ref || '').toString().replace(/^\/+/, '');
+		if (tafsirBase && /^quran:\d+:\d+(?:-\d+)?$/.test(ref))
+			return quranUrl(`${tafsirBase}/${ref}`);
+	}
 	return quranUrl(url);
 }
 
@@ -13347,7 +13557,7 @@ function buildSearchAutocompleteParams($input, term) {
 	quranSearchBookFilterParams($input.closest('form'), isQuranSearchInput($input)).forEach(function (field) {
 		params.push(field);
 	});
-	$input.closest('form').find('input[name=tafsir]:checked').each(function () {
+	$input.closest('form').find('input[name=tafsir]:checked:not(:disabled)').each(function () {
 		params.push({ name: 'tafsir', value: this.value });
 	});
 	return $.param(params);
@@ -13400,12 +13610,25 @@ function submitQuranPassageSearch($input) {
 
 function initQuranSearchReturnMode() {
 	var path = window.location.pathname;
-	var requestedMode = new URLSearchParams(window.location.search).get('mode');
-	var mode = requestedMode === 'mushaf' || requestedMode === 'study' ? requestedMode : '';
+	var searchParams = new URLSearchParams(window.location.search);
+	var requestedMode = searchParams.get('mode');
+	var mode = requestedMode === 'mushaf' || requestedMode === 'study' || requestedMode === 'tafsir' ? requestedMode : '';
+	var tafsirMode = requestedMode === 'tafsir' ? (searchParams.get('tafsirMode') || '') : '';
 	if (/^\/quran\/page(?:\/\d+)?$/.test(path) || path === '/quran/review')
 		mode = 'mushaf';
 	else if (/^\/quran\/\d+(?:\/|$)/.test(path))
 		mode = 'study';
+	else {
+		var tafsirPathMatch = path.match(/^\/quran\/tafsir\/([^/]+)/);
+		if (tafsirPathMatch) {
+			mode = 'tafsir';
+			try {
+				tafsirMode = decodeURIComponent(tafsirPathMatch[1]);
+			} catch (err) {
+				tafsirMode = tafsirPathMatch[1];
+			}
+		}
+	}
 	if (!mode)
 		return;
 	document.querySelectorAll('form').forEach(function (form) {
@@ -13420,20 +13643,35 @@ function initQuranSearchReturnMode() {
 			form.appendChild(input);
 		}
 		input.value = mode;
+		if (mode === 'tafsir' && tafsirMode) {
+			var tafsirInput = form.querySelector('input[name="tafsirMode"]');
+			if (!tafsirInput) {
+				tafsirInput = document.createElement('input');
+				tafsirInput.type = 'hidden';
+				tafsirInput.name = 'tafsirMode';
+				form.appendChild(tafsirInput);
+			}
+			tafsirInput.value = tafsirMode;
+			form.dataset.quranTafsirBase = `/quran/tafsir/${encodeURIComponent(tafsirMode)}`;
+		}
 	});
 }
 
 function quranSearchBookFilterParams($form, useQuranDefaults) {
 	var params = [];
 	var $filters = $form.find('input[name=b]').filter(function () {
-		return this.type === 'hidden' || this.checked;
+		return !this.disabled && (this.type === 'hidden' || this.checked);
 	});
 	$filters.each(function () {
 		params.push({ name: 'b', value: this.value });
 	});
 	if (useQuranDefaults && params.length < 1) {
-		params.push({ name: 'b', value: 'quran' });
-		params.push({ name: 'b', value: 'tafsir' });
+		if ($form.find('input[name=tafsir]:checked:not(:disabled)').length > 0)
+			params.push({ name: 'b', value: 'tafsir' });
+		else {
+			params.push({ name: 'b', value: 'quran' });
+			params.push({ name: 'b', value: 'tafsir' });
+		}
 	}
 	return params;
 }
