@@ -1,7 +1,6 @@
 <%
   var commandHadithBooks = (hadithSearchBooks || []).filter(function (book) {
     return book
-      && !book.virtual
       && Number(book.hidden) === 0
       && book.alias !== 'quran'
       && (book.type || book.book_type || book.book_model || 'hadith') === 'hadith';
