@@ -342,15 +342,16 @@
              var quranSectionPath = utils.quranUrl(req, `/${(page.context.section || page.context.chapter).path}`);
              var quranReaderMode = isQuranTafsirArea ? 'tafsir' : (requestPath.indexOf('/quran/translations/quran:') === 0 ? 'trans' : (requestPath.indexOf('/quran/page/') === 0 ? (isQuranReviewArea ? 'review' : (isQuranMemorizeArea ? 'memorize' : 'mushaf')) : 'passage'));
              var quranMappedPage = page.context.section && page.context.section.mushafPage;
+             var quranMappedMushafHref = utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`);
         %>
           <span class="chapter-toc-reader-modes">
             <%- include('quran_reader_modes.ejs', {
               readerMode: quranReaderMode,
               passageHref: quranSectionPath,
               ayahHref: `${quranSectionPath}?ayat`,
-              mushafHref: utils.quranUrl(req, '/quran/page'),
+              mushafHref: quranMappedMushafHref,
               tafsirHref: isQuranTafsirArea ? requestPath : utils.quranUrl(req, '/quran/tafsir'),
-              memorizeHref: `${utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`)}?memorize`
+              memorizeHref: `${quranMappedMushafHref}?memorize`
             }); %>
           </span>
         <% } %>

@@ -432,6 +432,8 @@ router.get(['/autocomplete', '/quran/autocomplete'], searchRequestLimiter, async
       tafsirAliases: tafsirFilters,
       excludeQuranAndTafsir: !quranSearchProxy
     });
+    if (quranSearchProxy)
+      suggestions = await Search.a_withQuranMushafPages(suggestions);
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(suggestions));
   } catch (err) {
