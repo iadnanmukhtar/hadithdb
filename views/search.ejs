@@ -103,7 +103,7 @@
   
   <div class="container col-lg-8 mx-auto">
     
-    <main class="search-results">
+    <main class="search-results"<% if (isSearchResultsPage) { %> data-search-infinite="1" data-search-current-url="<%= req.originalUrl || req.url || searchAction %>"<% if (page.prev) { %> data-search-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-search-next-url="<%= page.next %>"<% } %><% } %>>
 
       <% var showSearchFilterPills = q && (locals.searchFilterPills || []).length > 0; %>
       <% if (isSearchResultsPage) { %>
@@ -131,7 +131,10 @@
         Showing <%= displayResultCount %> results
       </div>
       <% } %>
-      
+
+      <% if (isSearchResultsPage) { %>
+      <section class="search-results-page" data-search-results-page="1" aria-label="Search results">
+      <% } %>
         <% for (var i = 0; i < results.length; i++) { 
         var main = !q; %>
         
@@ -173,7 +176,13 @@
         <% } %>
         
         <% } %>
-        
+
+      <% if (isSearchResultsPage) { %>
+      </section>
+      <div class="search-infinite-status text-muted small" data-search-infinite-status aria-live="polite"></div>
+      <div class="search-infinite-sentinel" data-search-infinite-sentinel aria-hidden="true"></div>
+      <% } %>
+
     </main>
   </div>
   

@@ -1238,9 +1238,7 @@ nav .nav-link[aria-current="page"] {
 	margin: 8vh auto auto;
 	max-height: 88dvh;
 	max-width: calc(100vw - 2rem);
-	overflow-x: hidden;
-	overflow-y: auto;
-	overscroll-behavior: contain;
+	overflow: visible;
 	padding: 0;
 	width: min(44rem, calc(100vw - 2rem));
 }
@@ -1255,6 +1253,9 @@ nav .nav-link[aria-current="page"] {
 	border: 1px solid var(--bs-border-color);
 	border-radius: 1rem;
 	box-shadow: 0 1.5rem 4rem rgba(15, 23, 42, 0.28);
+	max-height: 88dvh;
+	overflow-y: auto;
+	overscroll-behavior: contain;
 	padding: 1.25rem;
 }
 
@@ -1288,28 +1289,35 @@ nav .nav-link[aria-current="page"] {
 }
 
 .command-search-mode-switch {
-	background: var(--bs-tertiary-bg);
-	border: 1px solid var(--bs-border-color);
-	border-radius: 0.75rem;
-	display: grid;
-	gap: 0.35rem;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
+	align-items: stretch;
+	flex-wrap: nowrap;
 	margin-bottom: 1rem;
-	padding: 0.3rem;
+	overflow-x: auto;
 }
 
-.command-search-mode {
+.command-search-mode-switch .nav-item {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.command-search-dialog .command-search-mode-switch .command-search-mode {
 	align-items: center;
-	background: transparent;
-	border: 0;
-	border-radius: 0.55rem;
-	color: var(--bs-secondary-color);
-	display: inline-flex;
-	font-size: 0.9rem;
-	font-weight: 600;
+	display: flex;
+	font-size: 1rem;
+	font-weight: 400;
 	gap: 0.45rem;
 	justify-content: center;
-	padding: 0.55rem 0.75rem;
+	padding: 0.5rem 1rem;
+	width: 100%;
+}
+
+.command-search-dialog .command-search-mode-switch .nav-link:not(.active) {
+	color: var(--bs-secondary-color);
+}
+
+.command-search-dialog .command-search-mode-switch .nav-link:not(.active):hover,
+.command-search-dialog .command-search-mode-switch .nav-link:not(.active):focus-visible {
+	color: var(--c-accent);
 }
 
 .command-search-mode-icon {
@@ -1349,17 +1357,6 @@ nav .nav-link[aria-current="page"] {
 
 .command-search-mode-label {
 	line-height: 1.2;
-}
-
-.command-search-mode:hover,
-.command-search-mode:focus-visible {
-	color: var(--bs-emphasis-color);
-}
-
-.command-search-mode.active {
-	background: var(--bs-body-bg);
-	box-shadow: 0 1px 4px var(--c-black-12);
-	color: var(--c-accent);
 }
 
 .command-search-input-wrap {
@@ -1461,21 +1458,18 @@ nav .nav-link[aria-current="page"] {
 }
 
 .command-search-filter-find {
-	align-items: center;
-	display: flex;
 	margin-bottom: 0.65rem;
-	position: relative;
 }
 
-.command-search-filter-find > .bi {
-	color: var(--bs-secondary-color);
-	left: 0.65rem;
-	pointer-events: none;
-	position: absolute;
+.command-search-filter-find > .input-group-text,
+.command-search-filter-find > .form-control {
+	font-size: 0.82rem;
+	padding-bottom: 0.25rem;
+	padding-top: 0.25rem;
 }
 
 .command-search-filter-find > .form-control {
-	padding-left: 2rem;
+	min-width: 0;
 }
 
 .command-search-source-options {
@@ -1628,7 +1622,7 @@ nav .nav-link[aria-current="page"] {
 	padding: 0.1rem 0.28rem;
 }
 
-.command-search-form > .ui-autocomplete.search-autocomplete-menu {
+.command-search-dialog > .ui-autocomplete.search-autocomplete-menu {
 	border: 1px solid var(--bs-border-color);
 	border-radius: 0.65rem;
 	box-shadow: 0 0.8rem 2rem rgba(15, 23, 42, 0.2);
@@ -1653,6 +1647,7 @@ nav .nav-link[aria-current="page"] {
 
 	.command-search-shell {
 		border-radius: 0.85rem;
+		max-height: calc(100dvh - 1.5rem);
 		padding: 1rem;
 	}
 
@@ -6912,7 +6907,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 }
 
 .mobile-bottom-nav > [data-mobile-bottom-nav-prev] {
-	grid-column: 10;
+	grid-column: 9;
 }
 
 .mobile-bottom-nav > [data-mobile-bottom-nav-next] {
@@ -6928,7 +6923,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 }
 
 .mobile-bottom-nav.mobile-bottom-nav-has-tour > [data-mobile-bottom-nav-prev] {
-	grid-column: 10;
+	grid-column: 9;
 }
 
 .mobile-bottom-nav.mobile-bottom-nav-has-tour > [data-mobile-bottom-nav-next] {
@@ -7261,14 +7256,16 @@ body > footer,
 }
 
 .quran-infinite-page,
-.reader-infinite-page {
+.reader-infinite-page,
+.search-infinite-page {
 	border-top: 1px solid var(--bs-border-color);
 	margin-top: 2rem;
 	padding-top: 1rem;
 }
 
 .quran-infinite-status,
-.reader-infinite-status {
+.reader-infinite-status,
+.search-infinite-status {
 	min-height: 1.5rem;
 	padding: 1rem 0;
 	text-align: center;
@@ -7279,7 +7276,8 @@ body > footer,
 }
 
 .quran-infinite-sentinel,
-.reader-infinite-sentinel {
+.reader-infinite-sentinel,
+.search-infinite-sentinel {
 	height: 1px;
 }
 

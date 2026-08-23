@@ -73,6 +73,8 @@ describe('shared header navigation', () => {
 		expect(searchDialog).toContain('id="global-search-dialog"');
 		expect(searchDialog).toContain('data-command-search-mode="hadith"');
 		expect(searchDialog).toContain('data-command-search-mode="quran"');
+		expect(searchDialog).toContain('class="nav nav-tabs book-catalog-tabs command-search-mode-switch"');
+		expect(searchDialog.match(/class="nav-link command-search-mode"/g)).toHaveLength(2);
 		expect(searchDialog).toContain("include('menu_icon.ejs', { type: 'hadith'");
 		expect(searchDialog).toContain("include('menu_icon.ejs', { type: 'quran'");
 		expect(searchDialog).not.toContain('bi-journal-text');
@@ -87,13 +89,23 @@ describe('shared header navigation', () => {
 		expect(styles).toContain('border: 1px solid var(--c-accent);');
 		expect(styles).toContain('.command-search-trigger');
 		expect(styles).toContain('.command-search-dialog::backdrop');
+		expect(styles).toMatch(/\.command-search-dialog \{[\s\S]*?overflow: visible;/);
+		expect(styles).toMatch(/\.command-search-shell \{[\s\S]*?overflow-y: auto;/);
+		expect(styles).toContain('.command-search-dialog > .ui-autocomplete.search-autocomplete-menu');
 		expect(scripts).toContain("event.key.toLowerCase() === 'k'");
 		expect(scripts).toContain("event.metaKey || event.ctrlKey");
+		expect(scripts).toContain("$input.closest('[data-command-search-dialog]')");
 	});
 
 	test('filters command autocomplete and renders removable selected-book pills', () => {
 		expect(searchDialog).toContain('data-command-search-filter-search="hadith"');
 		expect(searchDialog).toContain('data-command-search-filter-search="quran"');
+		expect(searchDialog.match(/class="page-content-filter input-group command-search-filter-find"/g)).toHaveLength(2);
+		expect(searchDialog.match(/class="input-group-text bi bi-filter"/g)).toHaveLength(2);
+		expect(styles).toContain('.page-content-filter .input-group-text');
+		expect(styles).toContain('.book-catalog-tabs .nav-link');
+		expect(styles).toContain('.command-search-dialog .command-search-mode-switch .nav-link:not(.active)');
+		expect(styles).toMatch(/\.command-search-filter-find > \.input-group-text,[\s\S]*?font-size: 0\.82rem;/);
 		expect(searchDialog).toContain('name="tafsir"');
 		expect(searchDialog).toContain('data-command-search-pills');
 		expect(scripts).toContain("input[name=tafsir]:checked:not(:disabled)");

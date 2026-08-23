@@ -101,6 +101,7 @@ $(function () {
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
 	initStickyFooterScrollFade(document);
+	initSearchInfiniteScroll(document);
 	initBlogInfiniteScroll(document);
 	initQuranInfinitePassageNavigation(document);
 	initReaderInfiniteNavigation(document);
@@ -148,6 +149,153 @@ $(function () {
 	initTocInlineDescriptionExpanders(document);
 
 });
+
+function searchInfiniteApiUrl(targetUrl) {
+	try {
+		var parsed = new URL(targetUrl, window.location.origin);
+		if (parsed.pathname === '/quran')
+			return quranApiPath(`/${parsed.search}`);
+		var path = parsed.pathname === '/' ? '/' : parsed.pathname;
+		return hadithUrl(`/api${path}${parsed.search}`);
+	} catch (err) {
+		return '';
+	}
+}
+
+function initSearchInfiniteScroll(root) {
+	var scope = root || document;
+	$(scope).find('[data-search-infinite]').addBack('[data-search-infinite]').each(function () {
+		var main = $(this);
+		if (main.data('searchInfiniteBound'))
+			return;
+		main.data('searchInfiniteBound', true);
+
+		var status = main.find('[data-search-infinite-status]').first();
+		var sentinel = main.find('[data-search-infinite-sentinel]').first();
+		var nextUrl = main.attr('data-search-next-url') || '';
+		var currentUrl = main.attr('data-search-current-url') || `${window.location.pathname}${window.location.search}`;
+		var lastLoadedUrl = currentUrl;
+		var loadingPromise = null;
+		var loadedUrls = new Set([normalizeReaderInfiniteUrl(currentUrl)]);
+
+		var renderMobilePaginationLink = function (direction, href) {
+			var attribute = direction === 'prev' ? 'data-mobile-bottom-nav-prev' : 'data-mobile-bottom-nav-next';
+			var current = document.querySelector(`[${attribute}]`);
+			if (!current)
+				return;
+			var replacement = document.createElement(href ? 'a' : 'span');
+			replacement.className = `mobile-bottom-nav-item${href ? '' : ' mobile-bottom-nav-item-disabled'}`;
+			replacement.innerHTML = current.innerHTML;
+			replacement.setAttribute(attribute, '');
+			if (href) {
+				replacement.setAttribute('href', href);
+				replacement.setAttribute('rel', direction);
+				replacement.setAttribute('title', direction === 'prev' ? 'Previous' : 'Next');
+				replacement.setAttribute('aria-label', direction === 'prev' ? 'Previous' : 'Next');
+			} else {
+				replacement.setAttribute('aria-disabled', 'true');
+			}
+			current.replaceWith(replacement);
+		};
+
+		var reinitializeChunk = function (chunk) {
+			initReadOnlyInlineEditorGuards(chunk);
+			initMarkdownEditablePreviews(chunk);
+			initHadithSharhLinks(chunk);
+			initHadithShareModals(chunk);
+			initHadithContentTranslationControls(chunk);
+			initQuranAyahHoverPairs(chunk);
+			initQuranAyahSelector(chunk);
+			initQuranPreferredTranslationDisplays(chunk);
+			initQuranScriptSwitchers(chunk);
+			initQuranScriptPreference(chunk).then(function () {
+				initQuranCorpusTooltips(chunk);
+			}).catch(function () {
+				initQuranCorpusTooltips(chunk);
+			});
+			if (typeof window.bindInlineEditors === 'function')
+				window.bindInlineEditors(chunk);
+			if (window.refreshHadithActions)
+				window.refreshHadithActions();
+		};
+
+		var appendSearchPage = function (html, targetUrl) {
+			var parsed = new DOMParser().parseFromString(html, 'text/html');
+			var remoteMain = parsed.querySelector('[data-search-infinite]');
+			var remotePage = remoteMain && remoteMain.querySelector('[data-search-results-page]');
+			if (!remoteMain || !remotePage)
+				throw new Error('Next search results page was not found.');
+
+			var remoteUrl = remoteMain.getAttribute('data-search-current-url') || targetUrl;
+			var chunk = $('<section class="search-infinite-page" data-search-infinite-page="1" aria-label="More search results"></section>').attr({
+				'data-search-url': remoteUrl,
+				'data-page-title': parsed.title || ''
+			});
+			Array.from(remotePage.children).forEach(function (node) {
+				chunk[0].appendChild(document.importNode(node, true));
+			});
+			if (!chunk.children().length)
+				throw new Error('Next search results page did not include any results.');
+			chunk.insertBefore(status);
+			reinitializeChunk(chunk[0]);
+
+			var previousUrl = lastLoadedUrl;
+			lastLoadedUrl = remoteUrl;
+			nextUrl = remoteMain.getAttribute('data-search-next-url') || '';
+			if (nextUrl)
+				main.attr('data-search-next-url', nextUrl);
+			else
+				main.removeAttr('data-search-next-url');
+			renderMobilePaginationLink('prev', previousUrl);
+			renderMobilePaginationLink('next', nextUrl);
+			return chunk[0];
+		};
+
+		var loadNext = function () {
+			if (loadingPromise)
+				return loadingPromise;
+			if (!nextUrl)
+				return Promise.resolve(false);
+			var targetUrl = nextUrl;
+			var normalized = normalizeReaderInfiniteUrl(targetUrl);
+			var apiUrl = searchInfiniteApiUrl(targetUrl);
+			if (!normalized || !apiUrl || loadedUrls.has(normalized)) {
+				nextUrl = '';
+				main.removeAttr('data-search-next-url');
+				return Promise.resolve(false);
+			}
+			status.removeAttr('data-infinite-load-error').text('Loading more results...');
+			loadingPromise = fetch(apiUrl, {
+				credentials: 'same-origin',
+				headers: { 'Accept': 'text/html' }
+			}).then(function (response) {
+				if (!response.ok)
+					throw new Error('Unable to load more search results.');
+				return response.text();
+			}).then(function (html) {
+				appendSearchPage(html, targetUrl);
+				loadedUrls.add(normalized);
+				status.text('');
+				return true;
+			}).catch(function (err) {
+				showInfiniteLoadFailure(status, err && err.message ? err.message : 'Unable to load more search results.', targetUrl, 'Open next results page');
+				return false;
+			}).finally(function () {
+				loadingPromise = null;
+			});
+			return loadingPromise;
+		};
+
+		main[0].searchInfiniteLoadNext = loadNext;
+		if ('IntersectionObserver' in window && sentinel.length) {
+			var observer = new IntersectionObserver(function (entries) {
+				if (entries.some(function (entry) { return entry.isIntersecting; }))
+					loadNext();
+			}, { rootMargin: '1600px 0px' });
+			observer.observe(sentinel[0]);
+		}
+	});
+}
 
 function initBlogInfiniteScroll(root) {
 	var scope = root || document;
@@ -13414,7 +13562,10 @@ function initQuranAyahSelector(root) {
 		var input = this;
 		var $input = $(input);
 		var suggestionOnly = $input.hasClass('quran-passage-search');
-		var $appendTarget = $input.closest('.search-click-toggle, .input-group, .offcanvas-body');
+		var $commandDialog = $input.closest('[data-command-search-dialog]');
+		var $appendTarget = $commandDialog.length
+			? $commandDialog
+			: $input.closest('.search-click-toggle, .input-group, .offcanvas-body');
 		if (!$appendTarget.length)
 			$appendTarget = $input.closest('form');
 		if ($input.data('autocompleteBound'))

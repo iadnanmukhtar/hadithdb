@@ -49,20 +49,24 @@
       <button type="button" class="btn-close command-search-close" data-command-search-close aria-label="Close search"></button>
     </div>
 
-    <div class="command-search-mode-switch" role="tablist" aria-label="Search collection">
-      <button type="button" class="command-search-mode" role="tab" data-command-search-mode="hadith" aria-controls="command-search-hadith-filters">
-        <span class="command-search-mode-icon command-search-mode-icon-hadith">
-          <%- include('menu_icon.ejs', { type: 'hadith', label: 'Hadith', className: 'me-0' }) %>
-        </span>
-        <span class="command-search-mode-label">Hadith</span>
-      </button>
-      <button type="button" class="command-search-mode" role="tab" data-command-search-mode="quran" aria-controls="command-search-quran-filters">
-        <span class="command-search-mode-icon command-search-mode-icon-quran">
-          <%- include('menu_icon.ejs', { type: 'quran', label: 'Quran', className: 'me-0' }) %>
-        </span>
-        <span class="command-search-mode-label">Quran + Tafsir</span>
-      </button>
-    </div>
+    <ul class="nav nav-tabs book-catalog-tabs command-search-mode-switch" role="tablist" aria-label="Search collection">
+      <li class="nav-item" role="presentation">
+        <button type="button" class="nav-link command-search-mode" role="tab" data-command-search-mode="hadith" aria-controls="command-search-hadith-filters">
+          <span class="command-search-mode-icon command-search-mode-icon-hadith">
+            <%- include('menu_icon.ejs', { type: 'hadith', label: 'Hadith', className: 'me-0' }) %>
+          </span>
+          <span class="command-search-mode-label">Hadith</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button type="button" class="nav-link command-search-mode" role="tab" data-command-search-mode="quran" aria-controls="command-search-quran-filters">
+          <span class="command-search-mode-icon command-search-mode-icon-quran">
+            <%- include('menu_icon.ejs', { type: 'quran', label: 'Quran', className: 'me-0' }) %>
+          </span>
+          <span class="command-search-mode-label">Quran + Tafsir</span>
+        </button>
+      </li>
+    </ul>
 
     <form class="command-search-form" action="<%= initialSearchMode === 'quran' ? quranSearchAction : hadithSearchAction %>" method="get"
       data-command-search-form data-hadith-search-action="<%= hadithSearchAction %>" data-quran-search-action="<%= quranSearchAction %>"
@@ -82,9 +86,9 @@
             <span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count="hadith">0</span>
           </summary>
           <div class="command-search-filter-popover">
-            <label class="command-search-filter-find">
-              <i class="bi bi-search" aria-hidden="true"></i>
-              <input type="search" class="form-control form-control-sm" placeholder="Find a Hadith book" aria-label="Find a Hadith book" data-command-search-filter-search="hadith" autocomplete="off">
+            <label class="page-content-filter input-group command-search-filter-find">
+              <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
+              <input type="search" class="form-control" placeholder="Find a Hadith book" aria-label="Find a Hadith book" data-command-search-filter-search="hadith" autocomplete="off">
             </label>
             <div class="command-search-book-list" data-command-search-book-list="hadith">
               <% commandHadithBooks.forEach(function (book) { var label = book.shortName_en || book.name_en || book.alias; var selected = selectedCommandHadithAliases.indexOf(book.alias) >= 0; %>
@@ -115,9 +119,9 @@
                 <span>All Tafsir &amp; translations</span>
               </label>
             </div>
-            <label class="command-search-filter-find">
-              <i class="bi bi-search" aria-hidden="true"></i>
-              <input type="search" class="form-control form-control-sm" placeholder="Find a Tafsir or translation" aria-label="Find a Tafsir or translation" data-command-search-filter-search="quran" autocomplete="off">
+            <label class="page-content-filter input-group command-search-filter-find">
+              <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
+              <input type="search" class="form-control" placeholder="Find a Tafsir or translation" aria-label="Find a Tafsir or translation" data-command-search-filter-search="quran" autocomplete="off">
             </label>
             <div class="command-search-book-list" data-command-search-book-list="quran">
               <% if (commandTafsirBooks.length > 0) { %><div class="command-search-book-group-label">Tafsir</div><% } %>
