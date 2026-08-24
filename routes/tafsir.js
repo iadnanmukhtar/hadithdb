@@ -405,9 +405,9 @@ function isSearchBackendUnavailable(err) {
 
 async function tafsirNavigation(tafsir, entries, tafsirs, surah, ayah, introductionHref) {
   const currentRef = { surah: surah, ayah: ayah };
-  const prev = tafsirInvocationBoundary(entries, surah, ayah, -1)
+  const prev = Tafsir.invocationBoundary(entries, surah, ayah, -1, introductionHref)
     || await Tafsir.adjacentPassage(tafsir, entries, -1, currentRef);
-  const next = tafsirInvocationBoundary(entries, surah, ayah, 1, introductionHref)
+  const next = Tafsir.invocationBoundary(entries, surah, ayah, 1, introductionHref)
     || await Tafsir.adjacentPassage(tafsir, entries, 1, currentRef);
   return {
     prev: prev ? prev.href || navigationTarget(tafsir, prev.surah, prev.ayah, prev.endAyah, tafsirs) : '',
@@ -415,27 +415,6 @@ async function tafsirNavigation(tafsir, entries, tafsirs, surah, ayah, introduct
     next: next ? next.href || navigationTarget(tafsir, next.surah, next.ayah, next.endAyah, tafsirs) : '',
     nextTitle: next ? next.title || tafsirNavigationTitle(next) : ''
   };
-}
-
-function tafsirInvocationBoundary(entries, surah, ayah, direction, introductionHref) {
-  const ranges = (entries || []).map(entry => ({
-    surah: Number(entry.surah),
-    startAyah: Number(entry.startAyah),
-    endAyah: Number(entry.endAyah)
-  })).filter(entry => Number.isInteger(entry.surah) && Number.isInteger(entry.startAyah) && Number.isInteger(entry.endAyah));
-  const current = ranges.length ? {
-    surah: ranges[0].surah,
-    startAyah: Math.min(...ranges.map(entry => entry.startAyah)),
-    endAyah: Math.max(...ranges.map(entry => entry.endAyah))
-  } : { surah: Number(surah), startAyah: Number(ayah), endAyah: Number(ayah) };
-  if (direction < 0 && current.surah === 1 && current.startAyah === 1)
-    return { surah: 1, ayah: 0, endAyah: 0 };
-  const lastSurah = (global.surahs || []).find(item => Number(item.num) === 114);
-  if (direction > 0 && introductionHref && lastSurah && current.surah === 114 && current.endAyah === Number(lastSurah.ayahs))
-    return { href: introductionHref, title: 'Introduction' };
-  if (direction > 0 && lastSurah && current.surah === 114 && current.endAyah === Number(lastSurah.ayahs))
-    return { surah: 1, ayah: 0, endAyah: 0 };
-  return null;
 }
 
 function tafsirNavigationTitle(target) {

@@ -45,7 +45,9 @@ describe('Hadith and Tafsir language columns', () => {
     const heading = source('views/sub-views/heading.ejs');
     const introduction = source('views/quran_commentary_introduction.ejs');
 
-    expect(script).toContain("'data-reader-language-column': 'arabic'");
+    const ayahHeading = script.slice(script.indexOf('var appendAyahHeading = function'), script.indexOf('var footnoteIdPart = function'));
+    expect(ayahHeading).toContain(".addClass('quran-tafsir-ayah')");
+    expect(ayahHeading).not.toContain('data-reader-language-column');
     expect(script).toContain(".addClass('col-6 text-start').attr('lang', 'en')");
     expect(script).toContain('generatedBody.attr(\'data-reader-language-column\', panelLanguage === \'ar\' ? \'arabic\' : \'english\')');
     expect(script).toContain("generatedBody.find('.quran-tafsir-local-pair > [lang]')");

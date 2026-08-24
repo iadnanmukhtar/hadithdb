@@ -1720,8 +1720,7 @@ function initQuranTafsirTabs(root) {
 			var appendAyahHeading = function (entryElement, ayah, inline, showRef, alias) {
 				var heading = $('<h3>').addClass('quran-tafsir-ayah').attr({
 					lang: 'ar',
-					dir: 'rtl',
-					'data-reader-language-column': 'arabic'
+					dir: 'rtl'
 				}).appendTo(entryElement);
 				if (inline)
 					heading.addClass('quran-tafsir-ayah-inline');
@@ -11281,6 +11280,19 @@ function initQuranCommentaryIntroductionDisclosures() {
 		if (disclosure)
 			disclosure.open = true;
 	};
+	var openDirectIntroductionDisclosure = function () {
+		var hashDisclosure = disclosureForHash(window.location.hash);
+		if (hashDisclosure) {
+			hashDisclosure.open = true;
+			return;
+		}
+		if (!/\/introduction\/?$/.test(window.location.pathname))
+			return;
+		var introductionPage = document.querySelector('main[data-reader-infinite="tafsir"][data-reader-context-key="0"]');
+		var disclosure = introductionPage && introductionPage.querySelector('.quran-commentary-introduction-disclosure');
+		if (disclosure)
+			disclosure.open = true;
+	};
 
 	$(document).on('click.quranCommentaryIntroductionDisclosure', 'a[href*="#introduction-"]', function () {
 		var url;
@@ -11296,7 +11308,7 @@ function initQuranCommentaryIntroductionDisclosures() {
 			disclosure.open = true;
 	});
 	window.addEventListener('hashchange', openHashDisclosure);
-	openHashDisclosure();
+	openDirectIntroductionDisclosure();
 }
 
 function renderQuranHeadingToc(surah) {

@@ -99,9 +99,11 @@ test('shows the first available surah as the introduction rail next heading', as
 		commentaryBookPath: '/quran/tafsir/unal',
 		commentaryNameEn: 'Tafsir Unal',
 		commentaryIntroductionArticles: [{ h2: 1, title_en: 'Foreword', intro_en: 'Text' }],
-		commentaryIntroductionNextH1: { number: 1, title: 'al-Fatihah', href: '/quran/tafsir/unal/1' }
+		commentaryIntroductionNextH1: { number: 1, title: 'al-Fatihah', href: '/quran/tafsir/unal/1' },
+		commentaryIntroductionPreviousPassage: { title: '§114.1-6', href: '/quran/tafsir/unal/quran:114:1-6' }
 	});
-	expect(html).toContain('data-quran-heading-h1-prev hidden');
+	expect(html).toMatch(/data-quran-heading-h1-prev href="[^"]*\/quran\/tafsir\/unal\/quran:114:1-6" rel="prev"/);
+	expect(html).toContain('>§114.1-6</a>');
 	expect(html).toContain('data-quran-heading-toc-nav');
 	expect(html).toMatch(/href="[^"]*\/quran\/tafsir\/unal\/1" rel="next"/);
 	expect(html).toContain('>1 al-Fatihah</a>');
@@ -133,5 +135,7 @@ test('makes Surah 0 introductions part of the tafsir infinite-reader sequence', 
 	expect(script).toContain("node.matches('.quran-commentary-heading-intro')");
 	expect(script).toContain('initQuranCommentaryIntroductionDisclosures();');
 	expect(script).toContain("disclosure.open = true;");
+	expect(script).toContain('main[data-reader-infinite="tafsir"][data-reader-context-key="0"]');
+	expect(script).toContain('openDirectIntroductionDisclosure();');
 	expect(script).toContain("var startsWithIntroduction = mode === 'tafsir'");
 });

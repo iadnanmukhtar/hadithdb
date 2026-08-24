@@ -104,6 +104,21 @@ describe('tafsir surah introduction anchors', () => {
 		)).resolves.toEqual({ surah: 1, ayah: 1, endAyah: 7 });
 	});
 
+	test('places the introduction in both directions between Surah 114 and the 1:0 boundary', () => {
+		global.surahs = [{ num: 1, ayahs: 7 }, { num: 114, ayahs: 6 }];
+		const introductionHref = '/quran/tafsir/test-tafsir/introduction';
+
+		expect(Tafsir.invocationBoundary([
+			{ surah: 114, startAyah: 1, endAyah: 6 }
+		], 114, 1, 1, introductionHref)).toEqual({ href: introductionHref, title: 'Introduction' });
+		expect(Tafsir.invocationBoundary([
+			{ surah: 1, startAyah: 0, endAyah: 0 }
+		], 1, 0, -1, introductionHref)).toEqual({ href: introductionHref, title: 'Introduction' });
+		expect(Tafsir.invocationBoundary([
+			{ surah: 1, startAyah: 1, endAyah: 7 }
+		], 1, 1, -1, introductionHref)).toEqual({ surah: 1, ayah: 0, endAyah: 0 });
+	});
+
 	test('places the surah introduction before the Study passage-range heading', () => {
 		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'section_quran.ejs'), 'utf8');
 		expect(template.indexOf("include('sub-views/quran_commentary_surah_intro.ejs'")).toBeLessThan(
