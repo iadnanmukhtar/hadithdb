@@ -75,6 +75,7 @@ $(function () {
 	initTafsirCarouselLanguageSwitches(document);
 	initTafsirBookCarousels(document);
 	initQuranCommentaryTocNavigation(document);
+	initQuranCommentaryIntroductionDisclosures();
 	initContentFontSizeControls(document);
 
 	$('#toc2').on('show.bs.collapse', function(event) {
@@ -11265,6 +11266,39 @@ function quranHeadingLabel(heading) {
 	return `${heading.section} ${heading.title || 'Passage'}`;
 }
 
+function initQuranCommentaryIntroductionDisclosures() {
+	var disclosureForHash = function (hash) {
+		var match = (hash || '').match(/^#introduction-(\d+)$/);
+		if (!match)
+			return null;
+		var article = document.getElementById(`introduction-${match[1]}`);
+		if (!article || !article.matches('.quran-commentary-introduction-article'))
+			return null;
+		return article.querySelector('.quran-commentary-introduction-disclosure');
+	};
+	var openHashDisclosure = function () {
+		var disclosure = disclosureForHash(window.location.hash);
+		if (disclosure)
+			disclosure.open = true;
+	};
+
+	$(document).on('click.quranCommentaryIntroductionDisclosure', 'a[href*="#introduction-"]', function () {
+		var url;
+		try {
+			url = new URL(this.href, window.location.href);
+		} catch (err) {
+			return;
+		}
+		if (url.origin !== window.location.origin || url.pathname !== window.location.pathname)
+			return;
+		var disclosure = disclosureForHash(url.hash);
+		if (disclosure)
+			disclosure.open = true;
+	});
+	window.addEventListener('hashchange', openHashDisclosure);
+	openHashDisclosure();
+}
+
 function renderQuranHeadingToc(surah) {
 	var toc = quranHeadingTocState.toc;
 	var outline = quranHeadingOutlineForSurah(surah);
@@ -12767,6 +12801,14 @@ function initReaderInfiniteNavigation(root) {
 		var currentPageIndex = function () {
 			var markers = pageMarkers();
 			var position = window.pageYOffset + (window.innerHeight * 0.65);
+			var startsWithIntroduction = mode === 'tafsir'
+				&& markers.length > 1
+				&& markers[0].getAttribute('data-reader-context-key') === '0';
+			if (startsWithIntroduction) {
+				var nextPageTop = markers[1].getBoundingClientRect().top + window.pageYOffset;
+				if (window.pageYOffset < nextPageTop)
+					position = window.pageYOffset + Math.max(96, window.innerHeight * 0.28);
+			}
 			var index = 0;
 			markers.forEach(function (marker, markerIndex) {
 				var top = marker.getBoundingClientRect().top + window.pageYOffset;

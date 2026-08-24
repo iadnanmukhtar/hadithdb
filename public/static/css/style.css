@@ -7154,6 +7154,34 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	text-decoration: underline;
 }
 
+.quran-commentary-introduction-disclosure > summary {
+	cursor: pointer;
+	list-style: none;
+	position: relative;
+}
+
+.quran-commentary-introduction-disclosure > summary::-webkit-details-marker {
+	display: none;
+}
+
+.quran-commentary-introduction-disclosure > summary::before {
+	color: var(--c-accent);
+	content: "\f285";
+	font-family: "bootstrap-icons";
+	font-size: .75rem;
+	left: .25rem;
+	position: absolute;
+	top: calc(.5rem + 1px);
+}
+
+.quran-commentary-introduction-disclosure[open] > summary::before {
+	content: "\f282";
+}
+
+.quran-commentary-introduction-disclosure > summary .title:first-of-type {
+	padding-left: 2rem;
+}
+
 .quran-section-heading-title {
 	align-items: center;
 	display: flex;

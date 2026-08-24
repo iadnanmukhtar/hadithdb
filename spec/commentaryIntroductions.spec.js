@@ -23,6 +23,11 @@ test('renders a Surah 0 H2 as a bilingual introductory article', async () => {
 	expect(html).toContain('<strong>work</strong>');
 	expect(html).toContain('<strong>الكتاب</strong>');
 	expect(html).toContain('data-prop="toc.intro_en"');
+	expect(html).toContain('<details class="quran-commentary-introduction-disclosure">');
+	expect(html).toMatch(/<summary>\s*<heading class="row heading py-2">/);
+	expect(html).not.toContain('Read article');
+	expect(html).not.toContain('Collapse article');
+	expect(html).not.toContain('<details class="quran-commentary-introduction-disclosure" open>');
 });
 
 test('renders a commentary surah H1 introduction with the Hadith chapter-intro contract', async () => {
@@ -126,4 +131,7 @@ test('makes Surah 0 introductions part of the tafsir infinite-reader sequence', 
 	expect(article).toContain('data-quran-introduction-target=');
 	expect(script).toContain("node.matches('.quran-commentary-introduction-article')");
 	expect(script).toContain("node.matches('.quran-commentary-heading-intro')");
+	expect(script).toContain('initQuranCommentaryIntroductionDisclosures();');
+	expect(script).toContain("disclosure.open = true;");
+	expect(script).toContain("var startsWithIntroduction = mode === 'tafsir'");
 });

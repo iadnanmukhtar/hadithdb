@@ -8,8 +8,12 @@
   const commentaryNavPassageAyah = Number(commentaryNavPassage && commentaryNavPassage.ayah);
   const commentaryNavPassageEndAyah = Number(commentaryNavPassage && commentaryNavPassage.endAyah);
   const commentaryNavIsPassage = commentaryNavKind === 'tafsir'
+    && commentaryNavPassage !== null
+    && typeof commentaryNavPassage === 'object'
     && Number.isInteger(commentaryNavPassageSurah)
-    && Number.isInteger(commentaryNavPassageAyah);
+    && commentaryNavPassageSurah >= 1
+    && Number.isInteger(commentaryNavPassageAyah)
+    && commentaryNavPassageAyah >= 0;
 
   function commentaryNavSlug(book) {
     if (!book)
