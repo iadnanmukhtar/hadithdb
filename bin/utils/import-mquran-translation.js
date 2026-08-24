@@ -17,6 +17,7 @@ const EXPECTED_SURAHS = 114;
 const DEFAULT_BATCH_SIZE = 200;
 const DEFAULT_CONCURRENCY = 8;
 const DETAIL_CACHE_SAVE_EVERY = 50;
+const SURAH_INTRODUCTION_CACHE_VERSION = 1;
 const DEFAULT_ISTIADHA = 'I seek refuge in God from Satan, the accursed.';
 const SOURCE_URL_PATTERN = /^(https?:\/\/[^/]+)\/content\/category\/(\d+)\/(\d+)\/(\d+)(?:\/\d+\/\d+)?\/?$/;
 const SOURCE_REF_CORRECTIONS = Object.freeze({
@@ -36,6 +37,15 @@ const SOURCE_FOOTNOTE_REFERENCE_CORRECTIONS = Object.freeze({
 	'22:31': Object.freeze({ '10': '11' }),
 	'22:36': Object.freeze({ '11': '12' })
 });
+// These four current mquran.org detail pages omit the introduction entirely.
+// Preserve the corresponding paragraphs from Ünal's source-book PDF so every
+// surah has the same H1 introduction contract.
+const SOURCE_SURAH_INTRODUCTION_FALLBACKS = Object.freeze({
+	'5:1': 'This surah was one of the last chapters of the Qur’an to be revealed. It consists of 120 verses, and takes its name from the table (verse 112) which Jesus’ disciples asked God to send them from heaven. In addition to several other topics, it contains rulings concerning daily life.',
+	'6:1': 'This surah was revealed in its entirety during the final year of the Makkah period of Islam. Coming in order in the Qur’an after al-Baqarah, Al-Imran, an-Nisa’, and al-Maedah, and all of which were revealed in Madinah, this surah dwells on such themes as rejecting polytheism and unbelief, the establishment of Tawhid (pure monotheism), the Revelation, Messengership, and Resurrection.',
+	'8:1': 'This sūrah was revealed during the Madīnah period of Islam, just after the Battle of Badr, the first major confrontation between the Muslims of Madīnah and the polytheists of Makkah. It takes its name from the word al-anfāl found in the first verse. Al-Anfāl has the meaning of “extra, addition,” but here refers to the spoils taken in war. The sūrah deals for the most part with the Battle of Badr and the lessons that are to be taken from it, and instructs believers in topics such us jihād, hijrah (emigration for God’s sake), the law of war, treaties, gains of war, patience, mutual helping and solidarity, and reliance on God.',
+	'87:1': 'Revealed in Makkah, this surah of 19 verses derives its name from the word al-a’la (the Most High) in the first verse. It concentrates on God’s Power and Unity and the Revelation, and it contains some advice on observing the proper conditions and manners for preaching and admonition.'
+});
 
 async function run(argv = process.argv.slice(2)) {
 	const options = readOptions(argv);
@@ -51,7 +61,18 @@ async function run(argv = process.argv.slice(2)) {
 		await closeDb(db);
 	}
 
-	if (!options.dryRun && options.buildIndex && result.changed) {
+	if (!options.dryRun && options.buildIndex && (result.headingInserts || result.introUpdates)) {
+		console.log(`Rebuilding the toc index for '${options.alias}' (book ${result.bookId})...`);
+		execFileSync(process.execPath, [
+			path.resolve(__dirname, '../buildSearchIndex.js'),
+			'--book-id', String(result.bookId),
+			'--toc-only'
+		], {
+			stdio: 'inherit',
+			env: process.env
+		});
+	}
+	if (!options.dryRun && options.buildIndex && !options.introductionsOnly && result.changed) {
 		console.log(`Rebuilding the commentary index for '${options.alias}'...`);
 		execFileSync(process.execPath, [
 			path.resolve(__dirname, '../buildCommentariesIndex.js'),
@@ -128,7 +149,7 @@ async function downloadDetails(options, listings, cacheFile) {
 		if (fs.existsSync(resumeFile))
 			Object.assign(detailed, readPartialDetails(resumeFile, listings));
 	}
-	const missing = Object.keys(listings).filter(ref => !isDetailedEntry(detailed[ref]));
+	const missing = Object.keys(listings).filter(ref => !isDetailedEntry(detailed[ref], ref));
 	let next = 0;
 	let completed = 0;
 	let savedAt = 0;
@@ -174,7 +195,7 @@ function readPartialDetails(filename, listings) {
 	const document = JSON.parse(fs.readFileSync(filename, 'utf8'));
 	const retained = {};
 	for (const [ref, value] of Object.entries(document || {})) {
-		if (isDetailedEntry(value) && Number(value.sourceId) === Number(listings[ref]?.sourceId))
+		if (isDetailedEntry(value, ref) && Number(value.sourceId) === Number(listings[ref]?.sourceId))
 			retained[ref] = value;
 	}
 	console.log(`Resuming ${Object.keys(retained).length} cached ayah detail page(s) from ${displayPath(filename)}.`);
@@ -318,7 +339,12 @@ function parseDetailPage(html, expectedSurah, expectedAyah, contentId) {
 	const footnotes = parseFootnotes($, contentCell, ref, translationParagraph);
 	text = appendOmittedFootnoteReferences(text, footnotes, ref);
 	validateFootnotes(text, footnotes, ref);
-	return { t: text, f: footnotes };
+	const result = { t: text, f: footnotes };
+	if (requiresSurahIntroduction(ref)) {
+		result.i = parseSurahIntroduction($, contentCell, ref, translationParagraph);
+		result.iv = SURAH_INTRODUCTION_CACHE_VERSION;
+	}
+	return result;
 }
 
 function correctFootnoteReferences(text, ref) {
@@ -366,54 +392,96 @@ function inlineMarkdown($, element, footnoteReferences) {
 	return normalizeText(clone.text()).replace(/\s+([,.;:!?])/g, '$1');
 }
 
-function parseFootnotes($, contentCell, ref = '', translationParagraph = null) {
-	const notes = [];
-	let current = null;
+function annotationBlocks($, contentCell, translationParagraph = null) {
 	const blocks = [];
+	const seen = new Set();
+	const append = element => {
+		if (element && !seen.has(element)) {
+			seen.add(element);
+			blocks.push(element);
+		}
+	};
 	contentCell.find('blockquote').each(function () {
 		const paragraphs = $(this).children('p');
 		if (paragraphs.length)
-			paragraphs.each(function () { blocks.push(this); });
+			paragraphs.each(function () { append(this); });
 		else
-			blocks.push(this);
+			append(this);
 	});
 	contentCell.children('hr').each(function () {
-		$(this).nextAll('p').each(function () {
-			blocks.push(this);
-		});
+		$(this).nextAll('p').each(function () { append(this); });
 	});
-	if (translationParagraph?.length) {
-		translationParagraph.nextAll('p').each(function () {
-			blocks.push(this);
-		});
+	if (translationParagraph?.length)
+		translationParagraph.nextAll('p').each(function () { append(this); });
+	return blocks;
+}
+
+function annotationBlockValue($, block) {
+	if (block.type === 'text')
+		return normalizeText(block.data);
+	if (block.type === 'tag')
+		return inlineMarkdown($, block, false);
+	return '';
+}
+
+function isSurahIntroductionLabel(value) {
+	const plain = normalizeText(value.replace(/[*_]/g, ''));
+	if (/(?:^|\s)(?:Makkah|Mad[iī]nah)(?:\s+and\s+(?:Makkah|Mad[iī]nah))?\s+Periods?$/i.test(plain))
+		return true;
+	if (/^S[uū]rah\s+\d+$/i.test(plain))
+		return true;
+	const parentheticalTitle = /^([^()]+)\s+\([^()]+\)$/.exec(plain);
+	if (parentheticalTitle) {
+		const titleLetters = parentheticalTitle[1].replace(/[^A-Za-zÀ-ÖØ-öø-ÿĀ-ž]/g, '');
+		if (titleLetters.length > 2 && titleLetters === titleLetters.toLocaleUpperCase())
+			return true;
 	}
-	$(blocks).each(function () {
-			let value = '';
-			if (this.type === 'text')
-				value = normalizeText(this.data);
-			else if (this.type === 'tag')
-				value = inlineMarkdown($, this, false);
-			if (!value)
+	const letters = plain.replace(/[^A-Za-zÀ-ÖØ-öø-ÿĀ-ž]/g, '');
+	return letters.length > 2 && letters === letters.toLocaleUpperCase();
+}
+
+function parseSurahIntroduction($, contentCell, ref, translationParagraph = null) {
+	for (const block of annotationBlocks($, contentCell, translationParagraph)) {
+		const value = annotationBlockValue($, block);
+		if (!value)
+			continue;
+		if (/^(\*?)(\d+(?:\/\d+)*|\*)\s*(\*?)[.:]\s*/.test(value))
+			break;
+		if (!isSurahIntroductionLabel(value))
+			return value;
+	}
+	if (SOURCE_SURAH_INTRODUCTION_FALLBACKS[ref]) {
+		console.warn(`mquran.org ${ref} omits its surah introduction; using the source-book fallback.`);
+		return SOURCE_SURAH_INTRODUCTION_FALLBACKS[ref];
+	}
+	throw new Error(`mquran.org ${ref} had no surah introduction paragraph.`);
+}
+
+function parseFootnotes($, contentCell, ref = '', translationParagraph = null) {
+	const notes = [];
+	let current = null;
+	$(annotationBlocks($, contentCell, translationParagraph)).each(function () {
+		const value = annotationBlockValue($, this);
+		if (!value)
+			return;
+		const marker = /^(\*?)(\d+(?:\/\d+)*|\*)\s*(\*?)[.:]\s*([\s\S]*)$/.exec(value);
+		if (marker) {
+			const labelValue = SOURCE_FOOTNOTE_DEFINITION_CORRECTIONS[ref]?.[marker[2]] || marker[2];
+			const labels = labelValue.split('/');
+			if (!labels.every(label => /^\d+$/.test(label))) {
+				current = null;
 				return;
-			const marker = /^(\*?)(\d+(?:\/\d+)*|\*)\s*(\*?)[.:]\s*([\s\S]*)$/.exec(value);
-			if (marker) {
-				const labelValue = SOURCE_FOOTNOTE_DEFINITION_CORRECTIONS[ref]?.[marker[2]] || marker[2];
-				const labels = labelValue.split('/');
-				if (!labels.every(label => /^\d+$/.test(label))) {
-					current = null;
-					return;
-				}
-				if (labelValue !== marker[2])
-					console.warn(`mquran.org ${ref} labeled footnote ${labelValue} as '${marker[2]}'; applying the linked-page correction.`);
-				current = { labels, paragraphs: [] };
-				notes.push(current);
-				const firstParagraph = `${marker[1]}${marker[3]}${marker[4]}`;
-				if (firstParagraph)
-					current.paragraphs.push(firstParagraph);
-			} else if (current)
-				current.paragraphs.push(value);
-			// Some first-ayah pages begin with an unnumbered surah introduction.
-			// It is not linked from the translation, so it is not a footnote definition.
+			}
+			if (labelValue !== marker[2])
+				console.warn(`mquran.org ${ref} labeled footnote ${labelValue} as '${marker[2]}'; applying the linked-page correction.`);
+			current = { labels, paragraphs: [] };
+			notes.push(current);
+			const firstParagraph = `${marker[1]}${marker[3]}${marker[4]}`;
+			if (firstParagraph)
+				current.paragraphs.push(firstParagraph);
+		} else if (current)
+			current.paragraphs.push(value);
+		// An unnumbered first-ayah paragraph is imported separately as the surah intro.
 	});
 	const grouped = new Map();
 	for (const note of notes) {
@@ -466,7 +534,7 @@ function validateSource(translations, quranRows) {
 		const match = /^(\d+):([1-9]\d*)$/.exec(ref);
 		if (!match)
 			throw new Error(`Invalid Quran ref '${ref}' in mquran.org source.`);
-		if (!isDetailedEntry(value))
+		if (!isDetailedEntry(value, ref))
 			throw new Error(`Incomplete mquran.org detail-page data for '${ref}'.`);
 		if (!normalizeText(value.t))
 			throw new Error(`Missing mquran.org translation text for '${ref}'.`);
@@ -491,14 +559,22 @@ function validateSource(translations, quranRows) {
 
 function hasDetailedEntries(document) {
 	return document && typeof document === 'object' && !Array.isArray(document) &&
-		Object.keys(document).length === EXPECTED_AYAHS && Object.values(document).every(isDetailedEntry);
+		Object.keys(document).length === EXPECTED_AYAHS &&
+		Object.entries(document).every(([ref, value]) => isDetailedEntry(value, ref));
 }
 
-function isDetailedEntry(value) {
-	return value && typeof value === 'object' && !Array.isArray(value) &&
+function requiresSurahIntroduction(ref) {
+	const match = /^(\d+):1$/.exec(ref);
+	return Boolean(match && Number(match[1]) >= 1 && Number(match[1]) <= EXPECTED_SURAHS);
+}
+
+function isDetailedEntry(value, ref = '') {
+	return Boolean(value && typeof value === 'object' && !Array.isArray(value) &&
 		typeof value.t === 'string' && value.t.trim() && typeof value.f === 'string' &&
 		Number.isInteger(Number(value.sourceId)) && Number(value.sourceId) > 0 &&
-		hasValidFootnoteLabels(value.t, value.f);
+		hasValidFootnoteLabels(value.t, value.f) &&
+		(!requiresSurahIntroduction(ref) || (typeof value.i === 'string' && value.i.trim() &&
+			!isSurahIntroductionLabel(value.i) && Number(value.iv) === SURAH_INTRODUCTION_CACHE_VERSION)));
 }
 
 function hasValidFootnoteLabels(text, footnotes) {
@@ -525,19 +601,39 @@ async function importTranslation(db, options, translations) {
 	const existingBooks = await query(db, `SELECT * FROM books WHERE alias=${mysql.escape(options.alias)} LIMIT 2`);
 	if (existingBooks.length > 1)
 		throw new Error(`Expected at most one book with alias '${options.alias}', found ${existingBooks.length}.`);
-	if (existingBooks[0] && (existingBooks[0].type !== 'trans' || existingBooks[0].source !== 'local'))
-		throw new Error(`Alias '${options.alias}' belongs to a non-local translation book.`);
-	const existingRows = existingBooks[0] ? await loadTranslationRows(db, existingBooks[0].id) : [];
-	validateExistingRows(existingRows, quranRows, options.alias);
-	const changes = countChanges(existingRows, quranRows, translations, options.istiadhah);
-	const metadataChanged = !existingBooks[0] || bookMetadataChanged(existingBooks[0], options);
+	if (existingBooks[0] && (!['trans', 'tafsir'].includes(existingBooks[0].type) || existingBooks[0].source !== 'local'))
+		throw new Error(`Alias '${options.alias}' belongs to a non-local commentary book.`);
+	if (options.introductionsOnly && !existingBooks[0])
+		throw new Error(`--introductions-only requires an existing local commentary book with alias '${options.alias}'.`);
+	const bookType = commentaryBookType(options.type, existingBooks[0]?.type);
+	const existingRows = !options.introductionsOnly && existingBooks[0] ? await loadTranslationRows(db, existingBooks[0].id) : [];
+	if (!options.introductionsOnly)
+		validateExistingRows(existingRows, quranRows, options.alias);
+	const changes = options.introductionsOnly
+		? { inserts: 0, updates: 0 }
+		: countChanges(existingRows, quranRows, translations, options.istiadhah);
+	const existingHeadings = existingBooks[0] ? await loadSurahHeadings(db, existingBooks[0].id) : [];
+	const headingChanges = countSurahHeadingChanges(existingHeadings, translations, options.alias);
+	const metadataChanged = !options.introductionsOnly &&
+		(!existingBooks[0] || bookMetadataChanged(existingBooks[0], options, bookType));
 
 	console.log(`Validated ${EXPECTED_AYAHS} mquran.org translations across ${EXPECTED_SURAHS} surahs.`);
-	console.log(`${options.dryRun ? 'Would apply' : 'Applying'} ${changes.inserts} insert(s) and ${changes.updates} update(s) for '${options.alias}'.`);
+	if (options.introductionsOnly)
+		console.log(`Preserving all existing '${options.alias}' commentary rows (--introductions-only).`);
+	else
+		console.log(`${options.dryRun ? 'Would apply' : 'Applying'} ${changes.inserts} insert(s) and ${changes.updates} update(s) for '${options.alias}'.`);
+	console.log(`${options.dryRun ? 'Would apply' : 'Applying'} ${headingChanges.headingInserts} surah heading insert(s) and ${headingChanges.introUpdates} introduction update(s).`);
 	if (options.dryRun)
-		return { changed: metadataChanged || changes.inserts > 0 || changes.updates > 0, ...changes };
+		return {
+			changed: metadataChanged || changes.inserts > 0 || changes.updates > 0 ||
+				headingChanges.headingInserts > 0 || headingChanges.introUpdates > 0,
+			bookId: existingBooks[0] ? Number(existingBooks[0].id) : null,
+			...changes,
+			...headingChanges
+		};
 
 	let lockHeld = false;
+	let importedBookId = existingBooks[0] ? Number(existingBooks[0].id) : null;
 	try {
 		const lockRows = await query(db, `SELECT GET_LOCK('hadithdb:import-mquran-translation', 30) AS acquired`);
 		if (Number(lockRows[0]?.acquired) !== 1)
@@ -545,12 +641,21 @@ async function importTranslation(db, options, translations) {
 		lockHeld = true;
 		await query(db, 'START TRANSACTION');
 		try {
-			const bookId = await upsertBook(db, options);
-			await upsertTranslationRows(db, bookId, quranRows, translations, options);
-			await verifyImportedRows(db, bookId, quranRows, translations, options);
+			const bookId = options.introductionsOnly
+				? Number(existingBooks[0].id)
+				: await upsertBook(db, options, bookType);
+			importedBookId = Number(bookId);
+			if (!options.introductionsOnly)
+				await upsertTranslationRows(db, bookId, quranRows, translations, options);
+			await upsertSurahIntroductions(db, bookId, translations, options.alias);
+			if (!options.introductionsOnly)
+				await verifyImportedRows(db, bookId, quranRows, translations, options);
+			await verifySurahIntroductions(db, bookId, translations, options.alias);
 			await query(db, `UPDATE books SET content_lastmod=CURRENT_TIMESTAMP() WHERE id=${Number(bookId)}`);
 			await query(db, 'COMMIT');
-			console.log(`Imported and verified ${EXPECTED_AYAHS + 1} '${options.alias}' row(s), including Quran 1:0.`);
+			console.log(options.introductionsOnly
+				? `Imported and verified 114 '${options.alias}' surah introductions without changing commentary rows.`
+				: `Imported and verified ${EXPECTED_AYAHS + 1} '${options.alias}' row(s), including Quran 1:0, and 114 surah introductions.`);
 		} catch (err) {
 			await query(db, 'ROLLBACK');
 			throw err;
@@ -559,7 +664,13 @@ async function importTranslation(db, options, translations) {
 		if (lockHeld)
 			await query(db, `SELECT RELEASE_LOCK('hadithdb:import-mquran-translation')`);
 	}
-	return { changed: metadataChanged || changes.inserts > 0 || changes.updates > 0, ...changes };
+	return {
+		changed: metadataChanged || changes.inserts > 0 || changes.updates > 0 ||
+			headingChanges.headingInserts > 0 || headingChanges.introUpdates > 0,
+		bookId: importedBookId,
+		...changes,
+		...headingChanges
+	};
 }
 
 async function loadQuranRows(db) {
@@ -617,17 +728,107 @@ function countChanges(existingRows, quranRows, translations, istiadha) {
 	return { inserts, updates };
 }
 
-function bookMetadataChanged(book, options) {
-	const expected = bookMetadata(options, options.ordinal || Number(book.ordinal));
+async function loadSurahHeadings(db, bookId, forUpdate = false) {
+	return query(db, `
+		SELECT id, h1, intro_en
+		FROM toc
+		WHERE bookId=${Number(bookId)} AND level=1 AND h1 BETWEEN 1 AND ${EXPECTED_SURAHS}
+		ORDER BY h1, id${forUpdate ? ' FOR UPDATE' : ''}`);
+}
+
+function countSurahHeadingChanges(existingHeadings, translations, alias = '') {
+	const bySurah = new Map();
+	for (const heading of existingHeadings) {
+		const surah = Number(heading.h1);
+		if (bySurah.has(surah))
+			throw new Error(`Existing '${alias}' toc has duplicate surah ${surah} H1 headings.`);
+		bySurah.set(surah, heading);
+	}
+	let headingInserts = 0;
+	let introUpdates = 0;
+	for (let surah = 1; surah <= EXPECTED_SURAHS; surah++) {
+		const intro = translations[`${surah}:1`].i;
+		const existing = bySurah.get(surah);
+		if (!existing)
+			headingInserts++;
+		else if (String(existing.intro_en || '') !== intro)
+			introUpdates++;
+	}
+	return { headingInserts, introUpdates };
+}
+
+async function loadQuranSurahMetadata(db) {
+	const rows = await query(db, `
+		SELECT h1, title_en, title
+		FROM toc
+		WHERE bookId=0 AND level=1 AND h1 BETWEEN 1 AND ${EXPECTED_SURAHS}
+		ORDER BY h1, id`);
+	const bySurah = new Map();
+	for (const row of rows) {
+		const surah = Number(row.h1);
+		if (bySurah.has(surah))
+			throw new Error(`Local Quran toc has duplicate surah ${surah} H1 headings.`);
+		bySurah.set(surah, row);
+	}
+	if (bySurah.size !== EXPECTED_SURAHS)
+		throw new Error(`Expected ${EXPECTED_SURAHS} local Quran H1 headings for surahs 1–114, found ${bySurah.size}.`);
+	return bySurah;
+}
+
+async function upsertSurahIntroductions(db, bookId, translations, alias) {
+	const existing = await loadSurahHeadings(db, bookId, true);
+	countSurahHeadingChanges(existing, translations, alias);
+	const bySurah = new Map(existing.map(row => [Number(row.h1), row]));
+	const metadata = await loadQuranSurahMetadata(db);
+	for (let surah = 1; surah <= EXPECTED_SURAHS; surah++) {
+		const intro = translations[`${surah}:1`].i;
+		const heading = bySurah.get(surah);
+		if (heading) {
+			if (String(heading.intro_en || '') !== intro) {
+				await query(db, `UPDATE toc SET intro_en=${mysql.escape(intro)},
+					lastmod_user='import-mquran', lastfixed=CURRENT_TIMESTAMP()
+					WHERE id=${Number(heading.id)}`);
+			}
+			continue;
+		}
+		const source = metadata.get(surah);
+		await query(db, `INSERT INTO toc
+			(ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, lastmod_user, lastfixed)
+			VALUES (${surah * 1000}, ${Number(bookId)}, 1, ${surah}, NULL, NULL,
+				${mysql.escape(source.title_en)}, ${mysql.escape(source.title)}, ${mysql.escape(intro)}, '',
+				'import-mquran', CURRENT_TIMESTAMP())`);
+	}
+}
+
+async function verifySurahIntroductions(db, bookId, translations, alias) {
+	const headings = await loadSurahHeadings(db, bookId);
+	if (headings.length !== EXPECTED_SURAHS)
+		throw new Error(`Expected 114 '${alias}' surah H1 headings for surahs 1–114, found ${headings.length}.`);
+	const changes = countSurahHeadingChanges(headings, translations, alias);
+	if (changes.headingInserts || changes.introUpdates)
+		throw new Error(`Imported '${alias}' surah introductions did not match the source.`);
+}
+
+function bookMetadataChanged(book, options, type) {
+	const expected = bookMetadata(options, options.ordinal || Number(book.ordinal), type, book);
 	return Object.entries(expected).some(([key, value]) => String(book[key] ?? '') !== String(value ?? ''));
 }
 
-function bookMetadata(options, ordinal) {
+function commentaryBookType(requestedType, existingType) {
+	if (requestedType === 'trans' || requestedType === 'tafsir')
+		return requestedType;
+	if (existingType === 'trans' || existingType === 'tafsir')
+		return existingType;
+	return 'trans';
+}
+
+function bookMetadata(options, ordinal, type, existing = {}) {
+	type = commentaryBookType(type, existing.type);
 	return {
 		ordinal: Number(ordinal),
-		type: 'trans',
+		type: type,
 		shortName_en: options.shortName,
-		shortName: options.shortName,
+		shortName: type === 'tafsir' ? '' : options.shortName,
 		hidden: 0,
 		source: 'local',
 		lang: 'en',
@@ -637,31 +838,32 @@ function bookMetadata(options, ordinal) {
 		publisher: options.publisher || null,
 		published_year: options.publishedYear || null,
 		description: options.description || null,
-		aqidah: options.aqidah || null
+		aqidah: options.aqidah || existing.aqidah || (type === 'trans' ? 'Translation' : null)
 	};
 }
 
-async function upsertBook(db, options) {
-	const existing = await query(db, `SELECT id, ordinal, type, source FROM books WHERE alias=${mysql.escape(options.alias)} FOR UPDATE`);
-	if (existing[0] && (existing[0].type !== 'trans' || existing[0].source !== 'local'))
-		throw new Error(`Alias '${options.alias}' belongs to a non-local translation book.`);
+async function upsertBook(db, options, type) {
+	const existing = await query(db, `SELECT * FROM books WHERE alias=${mysql.escape(options.alias)} FOR UPDATE`);
+	if (existing[0] && (!['trans', 'tafsir'].includes(existing[0].type) || existing[0].source !== 'local'))
+		throw new Error(`Alias '${options.alias}' belongs to a non-local commentary book.`);
+	type = commentaryBookType(type, existing[0]?.type);
 	let bookId = existing[0]?.id;
 	let ordinal = options.ordinal || Number(existing[0]?.ordinal);
 	if (!ordinal) {
-		const rows = await query(db, `SELECT COALESCE(MAX(ordinal), 0) + 1 AS ordinal FROM books WHERE type='trans' AND source='local' AND lang='en'`);
+		const rows = await query(db, `SELECT COALESCE(MAX(ordinal), 0) + 1 AS ordinal FROM books WHERE type=${mysql.escape(type)} AND source='local' AND lang='en'`);
 		ordinal = Number(rows[0].ordinal);
 	}
 	if (!bookId) {
 		const rows = await query(db, 'SELECT COALESCE(MAX(id), 0) + 1 AS id FROM books FOR UPDATE');
 		bookId = Number(rows[0].id);
 	}
-	const metadata = bookMetadata(options, ordinal);
+	const metadata = bookMetadata(options, ordinal, type, existing[0]);
 	await query(db, `
 		INSERT INTO books
 			(id, ordinal, alias, type, shortName_en, shortName, hidden, source, lang, format,
 			 name_en, author_en, publisher, published_year, description, aqidah)
 		VALUES
-			(${Number(bookId)}, ${metadata.ordinal}, ${mysql.escape(options.alias)}, 'trans',
+			(${Number(bookId)}, ${metadata.ordinal}, ${mysql.escape(options.alias)}, ${mysql.escape(metadata.type)},
 			 ${mysql.escape(metadata.shortName_en)}, ${mysql.escape(metadata.shortName)}, 0, 'local', 'en', 'md',
 			 ${mysql.escape(metadata.name_en)}, ${mysql.escape(metadata.author_en)}, ${mysql.escape(metadata.publisher)},
 			 ${mysql.escape(metadata.published_year)}, ${mysql.escape(metadata.description)}, ${mysql.escape(metadata.aqidah)})
@@ -717,15 +919,17 @@ async function verifyImportedRows(db, bookId, quranRows, translations, options) 
 
 function readOptions(argv) {
 	const options = {
-		alias: '', url: '', shortName: '', name: '', author: '', publisher: '', publishedYear: null,
-		description: '', aqidah: 'Translation', ordinal: null, istiadhah: DEFAULT_ISTIADHA,
+		alias: '', type: '', url: '', shortName: '', name: '', author: '', publisher: '', publishedYear: null,
+		description: '', aqidah: '', ordinal: null, istiadhah: DEFAULT_ISTIADHA,
 		cacheFile: '', refresh: false, dryRun: true, buildIndex: true,
+		introductionsOnly: false,
 		batchSize: DEFAULT_BATCH_SIZE, concurrency: DEFAULT_CONCURRENCY,
 		timeout: 30000, retries: 3, retryDelay: 1000, delay: 100
 	};
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
 		if (arg === '--alias') options.alias = requiredValue(argv, ++i, arg);
+		else if (arg === '--type') options.type = requiredValue(argv, ++i, arg);
 		else if (arg === '--url') options.url = requiredValue(argv, ++i, arg);
 		else if (arg === '--short-name') options.shortName = requiredValue(argv, ++i, arg);
 		else if (arg === '--name') options.name = requiredValue(argv, ++i, arg);
@@ -744,6 +948,7 @@ function readOptions(argv) {
 		else if (arg === '--retry-delay') options.retryDelay = nonNegativeInteger(requiredValue(argv, ++i, arg), arg);
 		else if (arg === '--delay') options.delay = nonNegativeInteger(requiredValue(argv, ++i, arg), arg);
 		else if (arg === '--refresh') options.refresh = true;
+		else if (arg === '--introductions-only') options.introductionsOnly = true;
 		else if (arg === '--apply') options.dryRun = false;
 		else if (arg === '--dry-run') options.dryRun = true;
 		else if (arg === '--no-index') options.buildIndex = false;
@@ -756,6 +961,8 @@ function readOptions(argv) {
 		return options;
 	if (!/^[A-Za-z0-9_-]+$/.test(options.alias))
 		throw new Error(`--alias is required and must be URL-safe.\n\n${usage()}`);
+	if (options.type && !['trans', 'tafsir'].includes(options.type))
+		throw new Error(`--type must be 'trans' or 'tafsir'.\n\n${usage()}`);
 	if (!SOURCE_URL_PATTERN.test(options.url))
 		throw new Error(`--url must be an mquran.org-style category URL.\n\n${usage()}`);
 	for (const [option, value] of [['--short-name', options.shortName], ['--name', options.name], ['--author', options.author]]) {
@@ -771,7 +978,8 @@ function usage() {
 		'',
 		'Downloads and validates all 6,236 ayah translations from an mquran.org chapter',
 		'category and its linked detail pages, preserving annotation references and bodies',
-		'as Markdown footnotes. The Quran-ref-keyed source is cached and imported transactionally.',
+		'as Markdown footnotes and first-ayah surah introductions in toc.intro_en. The',
+		'Quran-ref-keyed source is cached and imported transactionally.',
 		'Default mode is a read-only dry run. --apply also rebuilds the targeted commentary index.',
 		'',
 		'Required metadata:',
@@ -780,10 +988,11 @@ function usage() {
 		'  --author <author>         Translator or author',
 		'',
 		'Optional metadata:',
+		'  --type <trans|tafsir>    Book type; preserves an existing type, otherwise trans',
 		'  --publisher <publisher>   Publisher',
 		'  --published-year <year>   Publication year',
 		'  --description <markdown>  Book description',
-		'  --aqidah <label>          Metadata label (default: Translation)',
+		'  --aqidah <label>          Aqidah metadata (new translations default to Translation)',
 		'  --ordinal <number>        Display order; defaults to the next English translation',
 		'  --istiadha <text>         Quran 1:0 text',
 		'',
@@ -791,6 +1000,7 @@ function usage() {
 		'  --apply                   Import, verify, and rebuild the targeted index',
 		'  --dry-run                 Validate and report only (default)',
 		'  --no-index                Skip index rebuilding after --apply',
+		'  --introductions-only      Update surah H1 intros without changing commentary rows',
 		'  --refresh                 Ignore a valid local source cache and download again',
 		'  --cache-file <json>       Override data/cache/mquran/<alias>.json',
 		'  --concurrency <number>    Concurrent source downloads (default: 8)',
@@ -858,15 +1068,21 @@ if (require.main === module) {
 }
 
 module.exports = {
+	bookMetadata,
 	chapterPageUrl,
+	commentaryBookType,
+	countSurahHeadingChanges,
 	contentPageUrl,
 	inlineMarkdown,
+	isDetailedEntry,
 	normalizeText,
 	parseChapterPage,
 	parseDetailPage,
 	parseFootnotes,
+	parseSurahIntroduction,
 	printPageUrl,
 	readOptions,
+	requiresSurahIntroduction,
 	sortTranslations,
 	validateSource
 };
