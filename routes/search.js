@@ -1576,13 +1576,11 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
   await addQuranAdjacentRefs(selectedAyah);
   var chapter = await section.getChapter();
   await Promise.all([
-    section.getPrev(),
-    section.getNext(),
+    applySameBookHeadingNavigation(section),
     chapter.getPrev(),
     chapter.getNext(),
     chapter.getSections()
   ]);
-  await applySameBookHeadingNavigation(section);
   var quranSubsections = await getQuranSectionSubsections(section, { reconcileWithDb: !!(req.admin && req.editMode) });
   var results = await getQuranSectionPassageItems(section, 0, 1000);
   await addQuranPassageBoundaryRefs(results);
@@ -3046,10 +3044,10 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 	  res.setHeader('Expires', '0');
 	}
 
-    await chapter.getPrev();
-    await chapter.getNext();
-    await applySameBookHeadingNavigation(chapter);
-    await chapter.getSections();
+    await Promise.all([
+      applySameBookHeadingNavigation(chapter),
+      chapter.getSections()
+    ]);
     var hadithHeadingOutlines = bookAlias === 'quran' ? {} : await HadithHeadingOutlines.forChapter(chapter);
     results = await chapter.getItems(offset);
     if (requestedOffset > 0 && results.length === 0)
@@ -3344,14 +3342,12 @@ async function renderBookSection(req, res, next) {
       return next(sectionOffsetError);
     if (editMode && bookAlias === 'quran')
       await attachQuranRawHeadingRangeToHeading(section);
-    await section.getPrev();
-    await section.getNext();
-    await applySameBookHeadingNavigation(section);
     var chapter = await section.getChapter();
-    await chapter.getPrev();
-    await chapter.getNext();
-    await applySameBookHeadingNavigation(chapter);
-    await chapter.getSections();
+    await Promise.all([
+      applySameBookHeadingNavigation(section),
+      applySameBookHeadingNavigation(chapter),
+      chapter.getSections()
+    ]);
     var hadithHeadingOutlines = bookAlias === 'quran' ? {} : await HadithHeadingOutlines.forChapter(chapter);
     if (bookAlias === 'quran') {
       var sectionStartAyah = quranAyahFromHeadingStart(section.start);
