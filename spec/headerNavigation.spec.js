@@ -35,6 +35,11 @@ describe('shared header navigation', () => {
   const translationPassage = fs.readFileSync(path.join(__dirname, '..', 'views', 'translation_passage.ejs'), 'utf8');
   const searchResults = fs.readFileSync(path.join(__dirname, '..', 'views', 'search.ejs'), 'utf8');
   const readerModes = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'quran_reader_modes.ejs'), 'utf8');
+  const commentaryBookNav = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'quran_commentary_book_nav.ejs'), 'utf8');
+  const quranTafsirs = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'quran_tafsirs.ejs'), 'utf8');
+  const tafsirBookNav = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'tafsirBookNav.ejs'), 'utf8');
+  const bookNav = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'bookNav.ejs'), 'utf8');
+  const tafsirLanguageSwitch = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'tafsirCarouselLanguageSwitch.ejs'), 'utf8');
 
   test('uses the full page width', () => {
     expect(header).toContain('<nav class="navbar site-navbar fixed-top">');
@@ -189,6 +194,15 @@ describe('shared header navigation', () => {
 		expect(scripts).toContain('updateQuranReaderModeHrefs(pageElement)');
 	});
 
+	test('compacts Quran section menus on mobile', () => {
+		expect(header).toContain("chapter-toc<%= isQuranToc ? ' quran-section-menu' : '' %>");
+		expect(header).toContain('chapter-toc quran-section-menu');
+		expect(styles).toMatch(/@media \(max-width: 576px\)[\s\S]*?\.quran-section-menu \.chapter-toc-toggle,[\s\S]*?display: none;/);
+		expect(readerModes).toContain('data-quran-script-short-label');
+		expect(scripts).toContain("return { uthmani: 'Uth', 'indo-pak': 'Ind', warsh: 'War' }");
+		expect(styles).toMatch(/@media \(max-width: 576px\)[\s\S]*?\.quran-reader-modes \.quran-script-label-short \{\s*display: inline;/);
+	});
+
 	test('shows Tafsir after Study in every Quran reader-mode group', () => {
 		const [commentaryModes, standardModes] = readerModes.split('<% } else { %>');
 		for (const modeGroup of [commentaryModes, standardModes]) {
@@ -198,7 +212,8 @@ describe('shared header navigation', () => {
 		}
 		expect(readerModes.match(/data-quran-reader-mode-link="tafsir"/g)).toHaveLength(2);
 		expect(scripts).toContain("lastVisited: 'hadithdb_quran_last_visited_tafsir'");
-		expect(scripts).toContain("|| 'ibn-kathir'");
+		expect(scripts).toContain("var defaultQuranTafsirAlias = 'muntakhab';");
+		expect(scripts).toContain('|| defaultQuranTafsirAlias;');
 		expect(scripts).toContain("target.setAttribute('data-quran-reader-first-ref', firstRef)");
 		expect(scripts).toContain("source.querySelector('.quran-passage-section .ayah[data-quran-ref]')");
 		expect(scripts).toContain("source.querySelector('[data-quran-mushaf-page]')");
@@ -213,14 +228,45 @@ describe('shared header navigation', () => {
 	});
 
 	test('fades the tafsir book carousel with reader navigation chrome', () => {
-	  expect(styles).toContain('body.reader-infinite-nav-faded main.tafsir-only-page > .quran-tafsirs > .h-menu-wrap');
-	  expect(styles).toMatch(/\.quran-tafsirs>\.h-menu-wrap\s*\{[^}]*transition: opacity \.22s ease, transform \.22s ease;/s);
+	  expect(styles).toContain('body.reader-infinite-nav-faded main.tafsir-only-page > .quran-commentary-passage-carousel');
+	  expect(styles).toMatch(/\.tafsir-only-page > \.quran-commentary-passage-carousel\s*\{[^}]*transition: opacity \.22s ease, transform \.22s ease;/s);
 	});
 
-	test('keeps the tafsir book carousel below the live header height', () => {
-	  expect(styles).toMatch(/\.quran-tafsirs>\.h-menu-wrap\s*\{[^}]*top: var\(--site-fixed-header-height, 4\.25rem\);/s);
+	test('keeps a passage-linked tafsir carousel at the top below the live header height', () => {
+	  expect(tafsirPassage.indexOf("include('sub-views/quran_commentary_book_nav.ejs'")).toBeLessThan(tafsirPassage.indexOf('<heading class="row major">'));
+	  expect(tafsirPassage).toContain('quranCommentaryPassage: { surah: surah.num, ayah: tafsirEntryStart, endAyah: tafsirEntryEnd }');
+	  expect(commentaryBookNav).toContain("Tafsir.passageUrl(book, commentaryNavPassageSurah, commentaryNavPassageAyah, endAyah)");
+	  expect(commentaryBookNav).toContain("' quran-commentary-passage-carousel'");
+	  expect(commentaryBookNav).toContain('data-commentary-slug="<%= commentaryNavSlug(book) %>"');
+	  expect(quranTafsirs).toContain("dedicatedTafsirPage ? ' d-none' : ''");
+	  expect(styles).toMatch(/\.tafsir-only-page > \.quran-commentary-passage-carousel\s*\{[^}]*position: sticky;[^}]*top: var\(--site-fixed-header-height, 4\.25rem\);/s);
+	  expect(scripts).toContain('updateTafsirPassageCarouselRef(quranRef);');
+	  expect(scripts).toContain("var isPassageCarousel = carousel.attr('data-commentary-passage-carousel') === '1';");
 	  expect(scripts).toContain('initFixedHeaderOffsetObserver();');
 	  expect(scripts).toContain('fixedHeaderResizeObserver.observe(navbar);');
 	  expect(scripts).toContain("fixedHeaderResizeObserver.observe(navbarMain);");
+	});
+
+	test('filters tafsir carousels by English or Arabic-only without hover descriptions', () => {
+	  for (const template of [commentaryBookNav, tafsirBookNav, bookNav]) {
+	    expect(template.indexOf("include('tafsirCarouselLanguageSwitch')")).toBeLessThan(template.indexOf("include('bookCarouselFilter')"));
+	    expect(template).toContain('data-tafsir-carousel-language=');
+	    expect(template).not.toContain('tafsir-book-tooltip');
+	    expect(template).not.toContain('data-tafsir-tooltip');
+	  }
+	  expect(quranTafsirs.indexOf("include('tafsirCarouselLanguageSwitch')")).toBeLessThan(quranTafsirs.indexOf("include('bookCarouselFilter')"));
+	  expect(quranTafsirs).toContain('data-selected-tafsir-carousel-language=');
+	  expect(commentaryBookNav).toContain('data-current-commentary-carousel-language=');
+	  expect(quranTafsirs).not.toContain('quran-tafsir-language-toggle');
+	  expect(tafsirLanguageSwitch).toContain('>En</button>');
+	  expect(tafsirLanguageSwitch).not.toContain('title=');
+	  expect(scripts).toContain(".text(isArabic ? 'Ar' : 'En')");
+	  expect(scripts).toContain("[data-tafsir-carousel-language]:not([data-tafsir-carousel-language-switch])");
+	  expect(scripts).toContain("book.lang === 'ar' && catalogBookIsBilingual(book)");
+	  expect(scripts).toContain('var initialLanguage = selectedCatalogBook');
+	  expect(scripts).toContain('getStoredQuranTafsirAlias() || defaultQuranTafsirAlias');
+	  expect(scripts).toContain('var defaultBook = books.find');
+	  expect(scripts).toContain('var initialLanguage = selectedLanguage || currentItem.attr');
+	  expect(styles).toContain('.btn-group.h-menu > .tafsir-carousel-language-switch + .book-carousel-filter');
 	});
 });

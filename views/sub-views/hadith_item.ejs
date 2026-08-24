@@ -125,7 +125,7 @@
 	})();
 %>
 
-<section class="col-md-6 col-sm-12 h<%= contentTranslationClass %>" lang="<%=lang%>"<%- contentTranslationAttrs %>>
+<section class="col-md-6 col-sm-12 h<%= contentTranslationClass %>" lang="<%=lang%>" data-reader-language-column="<%= lang === 'ar' ? 'arabic' : 'english' %>"<%- contentTranslationAttrs %>>
 
 	<%# Chain  ............................................................. %>
 	<section lang="<%=lang%>"<%- contentTranslationClass ? ` class="${contentTranslationClass.trim()}"` : '' %><%- contentTranslationAttrs %>>

@@ -328,7 +328,7 @@
         ? locals.quranHeaderJuzLinks.find(function (juz) { return juz.current; })
         : null;
   %>
-  <nav class="row g-0 chapter-toc">
+  <nav class="row g-0 chapter-toc<%= isQuranToc ? ' quran-section-menu' : '' %>">
     <%# --- TABLE OF CONTENTS --- %>
     <div class="col-12 chapter-toc-toolbar">
       <% if (sections && sections.length > 0) { %>
@@ -416,7 +416,7 @@
   <% } %>
 
   <% if ((requestPath === '/quran' || requestPath === '/quran/review' || pageQuranCommentaryBook) && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
-  <nav class="row g-0 chapter-toc">
+  <nav class="row g-0 chapter-toc quran-section-menu">
     <div class="col-12 chapter-toc-toolbar">
       <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="Show juz sections">
         <i class="bi bi-list-ul" aria-hidden="true"></i>

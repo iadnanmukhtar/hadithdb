@@ -1,9 +1,13 @@
 'use strict';
 
 const {
+	bookMetadata,
 	chapterPageUrl,
+	commentaryBookType,
+	countSurahHeadingChanges,
 	contentPageUrl,
 	inlineMarkdown,
+	isDetailedEntry,
 	normalizeText,
 	parseChapterPage,
 	parseDetailPage,
@@ -14,6 +18,28 @@ const {
 } = require('../bin/utils/import-mquran-translation');
 
 describe('mquran.org Quran translation importer', () => {
+	test('preserves an existing tafsir classification and its aqidah metadata', () => {
+		expect(commentaryBookType('', 'tafsir')).toBe('tafsir');
+		expect(bookMetadata({
+			shortName: 'Ünal',
+			name: "The Qur'an with Annotated Interpretation in Modern English",
+			author: 'Ali Ünal',
+			publisher: 'Tughra Books',
+			publishedYear: 2006,
+			description: 'English ayah-by-ayah tafsir.',
+			aqidah: ''
+		}, 24, 'tafsir', { aqidah: 'Sunni' })).toMatchObject({
+			type: 'tafsir',
+			shortName_en: 'Ünal',
+			shortName: '',
+			aqidah: 'Sunni'
+		});
+	});
+
+	test('defaults a new mquran.org import to a translation', () => {
+		expect(commentaryBookType('', '')).toBe('trans');
+	});
+
 	test('builds an unpaginated chapter URL from the supplied category URL', () => {
 		expect(chapterPageUrl('https://mquran.org/content/category/2/1/4/', 2))
 			.toBe('https://mquran.org/content/category/2/2/4/500/0/');
@@ -66,6 +92,61 @@ describe('mquran.org Quran translation importer', () => {
 			t: 'God increased their sickness.[^10] A punishment awaits.',
 			f: '[^10]: First paragraph with *emphasis*.\n\n    Second paragraph.'
 		});
+	});
+
+	test('extracts the unnumbered first-ayah paragraph as a surah introduction', () => {
+		const html = `
+			<table class="contentpaneopen"><tr><td class="contentheading">2.1. Translation title</td></tr></table>
+			<table class="contentpaneopen"><tr><td valign="top">
+				<p align="right"><font face="Traditional Arabic">Arabic</font></p>
+				<p><b>1</b>. <em>Alif. Lām. Mīm</em>.<sup>1</sup></p>
+				<blockquote>
+					<p>This <em>sūrah</em> is a detailed summary of the Qur’ān.</p>
+					<p><strong>1.</strong> The opening letters are explained here.</p>
+				</blockquote>
+			</td></tr></table>`;
+		expect(parseDetailPage(html, 2, 1, 8)).toEqual({
+			t: '*Alif. Lām. Mīm*.[^1]',
+			f: '[^1]: The opening letters are explained here.',
+			i: 'This *sūrah* is a detailed summary of the Qur’ān.',
+			iv: 1
+		});
+	});
+
+	test('skips source title and period labels before a later-surah introduction', () => {
+		const html = `
+			<table class="contentpaneopen"><tr><td class="contentheading">112.1. Translation title</td></tr></table>
+			<table class="contentpaneopen"><tr><td valign="top">
+				<p align="right"><font face="Traditional Arabic">Arabic</font></p>
+				<p><b>1</b>. Say: He is God.<sup>1</sup></p><hr>
+				<p>AL-IKHLĀS (PURITY OF FAITH)</p>
+				<p><em>Makkah Period</em></p>
+				<p>This sūrah of four verses was revealed in Makkah.</p>
+				<p><strong>1.</strong> An explanatory note.</p>
+			</td></tr></table>`;
+		expect(parseDetailPage(html, 112, 1, 6222)).toEqual({
+			t: 'Say: He is God.[^1]',
+			f: '[^1]: An explanatory note.',
+			i: 'This sūrah of four verses was revealed in Makkah.',
+			iv: 1
+		});
+	});
+
+	test('uses the source-book fallback when mquran.org omits an introduction', () => {
+		const html = `
+			<table class="contentpaneopen"><tr><td class="contentheading">5.1. Translation title</td></tr></table>
+			<table class="contentpaneopen"><tr><td valign="top">
+				<p align="right"><font face="Traditional Arabic">Arabic</font></p>
+				<p><b>1</b>. Fulfill the bonds you have entered into.</p>
+			</td></tr></table>`;
+		const warning = jest.spyOn(console, 'warn').mockImplementation(() => {});
+		expect(parseDetailPage(html, 5, 1, 670)).toMatchObject({
+			t: 'Fulfill the bonds you have entered into.',
+			f: '',
+			i: expect.stringMatching(/^This surah was one of the last chapters/)
+		});
+		expect(warning).toHaveBeenCalledWith(expect.stringContaining('source-book fallback'));
+		warning.mockRestore();
 	});
 
 	test('extracts translation text from mquran.org malformed paragraph tags', () => {
@@ -171,5 +252,26 @@ describe('mquran.org Quran translation importer', () => {
 
 	test('requires a complete 6,236-ayah, 114-surah source', () => {
 		expect(() => validateSource({ '1:1': 'Text' })).toThrow(/Expected 6236/);
+	});
+
+	test('requires cached introductions on the first ayah of every surah', () => {
+		const detail = { t: 'Text', f: '', sourceId: 8 };
+		expect(isDetailedEntry(detail, '1:1')).toBe(false);
+		expect(isDetailedEntry({ ...detail, i: 'Surah introduction.', iv: 1 }, '1:1')).toBe(true);
+		expect(isDetailedEntry(detail, '2:1')).toBe(false);
+		expect(isDetailedEntry({ ...detail, i: 'Surah introduction.', iv: 1 }, '2:1')).toBe(true);
+		expect(isDetailedEntry({ ...detail, i: '*Makkah Period*', iv: 1 }, '2:1')).toBe(false);
+		expect(isDetailedEntry({ ...detail, i: '*AL-QADR* (THE DESTINY and POWER)', iv: 1 }, '97:1')).toBe(false);
+		expect(isDetailedEntry(detail, '2:2')).toBe(true);
+	});
+
+	test('counts missing surah headings separately from changed introductions', () => {
+		const translations = {};
+		for (let surah = 1; surah <= 114; surah++)
+			translations[`${surah}:1`] = { i: `Introduction ${surah}` };
+		expect(countSurahHeadingChanges([
+			{ id: 1, h1: 2, intro_en: 'Introduction 2' },
+			{ id: 2, h1: 3, intro_en: 'Old introduction' }
+		], translations, 'unal')).toEqual({ headingInserts: 112, introUpdates: 1 });
 	});
 });

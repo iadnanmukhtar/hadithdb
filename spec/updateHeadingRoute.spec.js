@@ -2,6 +2,7 @@
 
 const updateRouter = require('../routes/update');
 const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
+const MySQL = require('mysql');
 
 function updateHandler() {
   const layer = updateRouter.stack.find(item => item.route && item.route.path === '/:id/:prop');
@@ -61,6 +62,30 @@ describe('heading title update route', () => {
     const { queries, res } = await submitTitle('/quran/api/update');
 
     expect(queries).toContainEqual(expect.stringMatching(/UPDATE toc SET[\s\S]*WHERE id=999$/));
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test('preserves both escaped literal and formatting backticks when saving a heading introduction', async () => {
+    const value = 'Ubayy bin Ka\\`b said, `اقْرَأْ`.';
+    const queries = [];
+    global.query = jest.fn(async query => {
+      queries.push(query);
+      if (/^UPDATE toc SET/.test(query))
+        return { message: 'updated' };
+      return [];
+    });
+    const req = {
+      baseUrl: '/quran/api/update',
+      body: { value },
+      params: { id: '139789', prop: 'toc.intro_en' },
+      user: { uid: 'admin' }
+    };
+    const res = { status: jest.fn(), end: jest.fn() };
+
+    await updateHandler()(req, res, jest.fn());
+
+    const updateQuery = queries.find(query => /^UPDATE toc SET/.test(query));
+    expect(updateQuery).toContain(`intro_en=${MySQL.escape(value)}`);
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });

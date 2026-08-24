@@ -78,10 +78,16 @@
   </heading>
 
   <%# Heading Intro %>
+  <%
+    var headingIntroShowEn = Boolean(utils.emptyIfNull(heading.intro_en) || site.editMode);
+    var headingIntroShowAr = Boolean(utils.emptyIfNull(heading.intro) || site.editMode);
+  %>
+  <% if (headingIntroShowEn || headingIntroShowAr) { %>
   <section class="col-12">
     <div class="row heading-intro mb-3">
 
-      <section class="_e <%= headingEnglishOnly ? 'col-12' : 'col-md-6 col-sm-12' %> intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(heading.intro_en) %>" data-markdown-empty-html="&hellip;">
+      <% if (headingIntroShowEn) { %>
+      <section class="_e <%= headingIntroShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(heading.intro_en) %>" data-markdown-empty-html="&hellip;">
         <% if (heading.intro_en || site.editMode) { 
             const introEn = utils.markdownToHtml(heading.intro_en) || '&hellip;';
         %>
@@ -90,9 +96,10 @@
         </div>
         <% } %>
       </section>
+      <% } %>
 
-      <% if (!headingEnglishOnly) { %>
-      <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro" data-markdown-source="<%= utils.emptyIfNull(heading.intro) %>" data-markdown-empty-html="&hellip;">
+      <% if (headingIntroShowAr) { %>
+      <section class="_e <%= headingIntroShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= utils.emptyIfNull(heading.intro) %>" data-markdown-empty-html="&hellip;">
         <% if (heading.intro || site.editMode) { 
             const introAr = utils.markdownToHtml(heading.intro) || '&hellip;';
         %>
@@ -105,5 +112,6 @@
 
     </div>
   </section>
+  <% } %>
 
 </article>

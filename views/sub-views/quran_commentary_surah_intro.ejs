@@ -1,0 +1,9 @@
+<%
+  var surahIntroHeading = locals.heading || null;
+%>
+<% if (surahIntroHeading) { %>
+  <%- include('quran_commentary_heading_intro.ejs', {
+    site: site,
+    heading: surahIntroHeading
+  }); %>
+<% } %>

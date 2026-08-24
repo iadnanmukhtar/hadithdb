@@ -127,10 +127,15 @@
 </section>
 
 <%# Chapter Intro %>
-<% if (heading.level == 1 || isFirstChapterSectionPage) { %>
+<%
+  var chapterIntroShowEn = Boolean(utils.emptyIfNull(chapter.intro_en) || site.editMode);
+  var chapterIntroShowAr = Boolean(utils.emptyIfNull(chapter.intro) || site.editMode);
+%>
+<% if ((heading.level == 1 || isFirstChapterSectionPage) && (chapterIntroShowEn || chapterIntroShowAr)) { %>
 <section class="chapter-intro row mt-2">
 
-  <section class="_e col-md-6 col-sm-12 intro" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(chapter.intro_en) %>" data-markdown-empty-html="&hellip;">
+  <% if (chapterIntroShowEn) { %>
+  <section class="_e <%= chapterIntroShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(chapter.intro_en) %>" data-markdown-empty-html="&hellip;">
     <% if (chapter.intro_en || site.editMode) { 
         const introEn = utils.markdownToHtml(chapter.intro_en) || '&hellip;';
     %>
@@ -139,8 +144,10 @@
     </div>
     <% } %>
   </section>
+  <% } %>
 
-  <section class="_e col-md-6 col-sm-12 intro" lang="ar" data-id="<%= chapter.id %>" data-prop="toc.intro" data-markdown-source="<%= utils.emptyIfNull(chapter.intro) %>" data-markdown-empty-html="&hellip;">
+  <% if (chapterIntroShowAr) { %>
+  <section class="_e <%= chapterIntroShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="ar" data-id="<%= chapter.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= utils.emptyIfNull(chapter.intro) %>" data-markdown-empty-html="&hellip;">
     <% if (chapter.intro || site.editMode) { 
         const introAr = utils.markdownToHtml(chapter.intro) || '&hellip;';
     %>
@@ -149,6 +156,7 @@
     </div>
     <% } %>
     </section>
+  <% } %>
 
 </section>
 <% } %>

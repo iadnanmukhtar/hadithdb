@@ -177,5 +177,6 @@ describe('Quran Study translation editing', () => {
 
     expect(css).toMatch(/\.quran-passage-section em,[\s\S]*\.quran-tafsirs em,[\s\S]*color: inherit;[\s\S]*font-style: italic;/);
     expect(css).toContain('.h .body em,');
+    expect(css.lastIndexOf('.quran-passage-section em,')).toBeGreaterThan(css.indexOf('.heading-intro em,'));
   });
 });

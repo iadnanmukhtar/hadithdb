@@ -991,14 +991,14 @@ body.quran-passage-nav-faded .site-navbar,
 body.quran-passage-nav-faded .mobile-bottom-nav,
 body.reader-infinite-nav-faded .site-navbar,
 body.reader-infinite-nav-faded .mobile-bottom-nav,
-body.reader-infinite-nav-faded main.tafsir-only-page > .quran-tafsirs > .h-menu-wrap {
+body.reader-infinite-nav-faded main.tafsir-only-page > .quran-commentary-passage-carousel {
 	opacity: 0;
 	pointer-events: none;
 }
 
 body.quran-passage-nav-faded .site-navbar,
 body.reader-infinite-nav-faded .site-navbar,
-body.reader-infinite-nav-faded main.tafsir-only-page > .quran-tafsirs > .h-menu-wrap {
+body.reader-infinite-nav-faded main.tafsir-only-page > .quran-commentary-passage-carousel {
 	transform: translateY(-0.5rem);
 }
 
@@ -2042,6 +2042,24 @@ nav .nav-link[aria-current="page"] {
 	color: var(--c-gray-mid);
 }
 
+.btn-group.h-menu > .tafsir-carousel-language-switch {
+	position: sticky;
+	left: 0;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 2.35rem;
+	min-width: 2.35rem;
+	padding-inline: 0.35rem;
+	background: var(--c-white);
+}
+
+.btn-group.h-menu > .tafsir-carousel-language-switch + .book-carousel-filter {
+	left: 2.35rem;
+	border-radius: 0 0.25rem 0.25rem 0;
+}
+
 .book-carousel-filter-input {
 	width: 100%;
 	min-width: 0;
@@ -2062,6 +2080,10 @@ nav .nav-link[aria-current="page"] {
 }
 
 .book-carousel-filter-hidden {
+	display: none !important;
+}
+
+.tafsir-carousel-language-hidden {
 	display: none !important;
 }
 
@@ -3189,6 +3211,10 @@ del em strong {
 .quran-reader-modes .quran-script-switcher .dropdown-item.active {
 	background-color: var(--c-speech);
 	color: white;
+}
+
+.quran-script-label-short {
+	display: none;
 }
 
 .quran-mushaf-page {
@@ -6347,6 +6373,19 @@ del em strong {
 		justify-content: space-between;
 	}
 
+	.quran-section-menu .chapter-toc-toolbar {
+		justify-content: center;
+	}
+
+	.quran-section-menu .chapter-toc-toggle,
+	.quran-reader-modes .quran-script-label-long {
+		display: none;
+	}
+
+	.quran-reader-modes .quran-script-label-short {
+		display: inline;
+	}
+
 	.quran-reader-modes .btn {
 		font-size: 0.62rem;
 		padding: 0.18rem 0.3rem;
@@ -7128,6 +7167,17 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	min-width: 0;
 }
 
+.quran-section-heading-link {
+	color: inherit;
+	text-decoration: none;
+}
+
+.quran-section-heading-link:hover,
+.quran-section-heading-link:focus-visible {
+	color: inherit;
+	text-decoration: underline;
+}
+
 .quran-section-heading-actions {
 	display: inline-flex;
 	flex: 0 0 auto;
@@ -7236,10 +7286,13 @@ body > footer,
 	font-family: QuranV1, Serif;
 }
 
-.h .body,
+.h .body {
+	text-indent: 2em;
+}
+
 .intro,
 .heading-intro {
-	text-indent: 2em;
+	text-indent: 0;
 }
 
 .body.passage {
@@ -7302,6 +7355,40 @@ body > footer,
 	flex: 0 0 100%;
 	max-width: 100%;
 	width: 100%;
+}
+
+.reader-language-toolbar {
+	align-items: center;
+	display: flex;
+	justify-content: space-between;
+	margin: .5rem 0 .85rem;
+	width: 100%;
+}
+
+.reader-language-toggle {
+	min-width: 2rem;
+}
+
+.quran-tafsir-entry > .reader-language-toolbar {
+	margin-bottom: 0;
+}
+
+[data-reader-language-root].reader-hide-english [data-reader-language-column="english"],
+[data-reader-language-root].reader-hide-arabic [data-reader-language-column="arabic"] {
+	display: none !important;
+}
+
+[data-reader-language-root].reader-hide-english [data-reader-language-column="arabic"],
+[data-reader-language-root].reader-hide-arabic [data-reader-language-column="english"] {
+	flex: 0 0 100%;
+	max-width: 100%;
+	width: 100%;
+}
+
+@media (max-width: 575.98px) {
+	.reader-language-toolbar {
+		margin-bottom: .65rem;
+	}
 }
 
 @media (max-width: 767.98px) {
@@ -8536,6 +8623,16 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	margin-bottom: 0;
 }
 
+.tafsir-only-page > .quran-commentary-passage-carousel {
+	background: var(--bs-body-bg, var(--c-white));
+	box-shadow: 0 1px 0 var(--bs-border-color);
+	padding: .35rem 0 .5rem;
+	position: sticky;
+	top: var(--site-fixed-header-height, 4.25rem);
+	transition: opacity .22s ease, transform .22s ease;
+	z-index: 900;
+}
+
 .quran-tafsirs>.h-menu-wrap {
 	background: var(--bs-body-bg, var(--c-white));
 	box-shadow: 0 1px 0 var(--bs-border-color);
@@ -8554,6 +8651,10 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 @media (max-width: 768px) {
+	.tafsir-only-page > .quran-commentary-passage-carousel {
+		top: var(--site-fixed-header-height, 2.625rem);
+	}
+
 	.quran-tafsirs>.h-menu-wrap {
 		top: var(--site-fixed-header-height, 2.625rem);
 	}
@@ -9853,16 +9954,6 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	text-indent: 0;
 }
 
-.quran-passage-section em,
-.quran-ayah-hero em,
-.quran-share-root em,
-.quran-tafsirs em,
-.tafsir-only-page em,
-.translation-only-page em {
-	color: inherit;
-	font-style: italic;
-}
-
 .quran-preferred-translation-footnotes .footnotes-sep {
 	display: none;
 }
@@ -9926,6 +10017,11 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	font-family: Hafs, Serif;
 	line-height: 1.75;
 	text-align: right;
+}
+
+[data-prop="toc.intro_en"] .quran-tafsir-arabic-only {
+	font-family: Hafs, Serif;
+	text-indent: 0;
 }
 
 .quran-tafsir-text p:last-child {
@@ -10393,6 +10489,16 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	color: var(--c-speech);
 }
 
+.quran-passage-section em,
+.quran-ayah-hero em,
+.quran-share-root em,
+.quran-tafsirs em,
+.tafsir-only-page em,
+.translation-only-page em {
+	color: inherit;
+	font-style: italic;
+}
+
 .h .footnote {
 	color: var(--c-gray-mid);
 	text-indent: 2em;
@@ -10731,6 +10837,50 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 .comment-feed {
 	font-family: var(--bs-font-sans-serif);
 	font-size: var(--content-size-meta);
+}
+
+.reflection-disclosure {
+	border-top: 1px solid var(--bs-border-color);
+}
+
+.reflection-disclosure-summary {
+	align-items: center;
+	cursor: pointer;
+	display: flex;
+	gap: .75rem;
+	justify-content: space-between;
+	list-style: none;
+	padding: .75rem 0;
+}
+
+.reflection-disclosure-summary::-webkit-details-marker {
+	display: none;
+}
+
+.reflection-disclosure-title {
+	flex: 1 1 auto;
+	font-weight: 600;
+	min-width: 0;
+}
+
+.reflection-disclosure-meta {
+	align-items: center;
+	display: inline-flex;
+	flex: 0 0 auto;
+	gap: .6rem;
+}
+
+.reflection-disclosure-chevron {
+	color: var(--bs-secondary-color);
+	transition: transform .2s ease;
+}
+
+.reflection-disclosure[open] .reflection-disclosure-chevron {
+	transform: rotate(180deg);
+}
+
+.reflection-disclosure > .comment-feed {
+	margin-bottom: 1rem;
 }
 
 .comment-feed-shell {

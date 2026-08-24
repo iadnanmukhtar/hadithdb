@@ -11,8 +11,10 @@ const QuranMushaf = require('../lib/QuranMushaf');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const BookDownloads = require('../lib/BookDownloads');
+const CommentaryHeadings = require('../lib/CommentaryHeadings');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const HttpRange = require('../lib/HttpRange');
+const QuranAyahNavigation = require('../lib/QuranAyahNavigation');
 const { Item, Library } = require('../lib/Model');
 
 const router = express.Router();
@@ -104,6 +106,57 @@ router.get('/:tafsir', async function (req, res, next) {
   await renderTafsirBookToc(req, res, tafsir);
 });
 
+router.get('/:tafsir/introduction', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
+  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
+  if (!tafsir)
+    return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
+  const commentaryIntroductionArticles = await CommentaryHeadings.introductionArticles(tafsir.id);
+  if (!CommentaryHeadings.hasIntroduction(commentaryIntroductionArticles) && !(req.admin && req.editMode))
+    return next(createError(404, `No authored introduction is available for ${tafsir.shortName_en || tafsir.alias}`));
+  const commentaryIntroductionNextH1 = await introductionNextH1(tafsir);
+  const commentaryIntroductionPreviousPassage = await introductionPreviousPassage(tafsir);
+  const quranHeadingOutlines = await QuranHeadingOutlines.forSurahs([1]);
+  res.render('quran_commentary_introduction', {
+    Tafsir: Tafsir,
+    commentaryIntroductionArticles: commentaryIntroductionArticles,
+    commentaryIntroductionNextH1: commentaryIntroductionNextH1,
+    commentaryIntroductionPreviousPassage: commentaryIntroductionPreviousPassage,
+    quranHeadingOutlines: quranHeadingOutlines,
+    quranCommentaryBook: tafsir,
+    quranCommentaryBooks: await Tafsir.visibleTafsirs()
+  });
+});
+
+async function introductionNextH1(book) {
+  const passage = { surah: 1, ayah: 0, endAyah: 0 };
+  const surah = passage && (global.surahs || []).find(item => Number(item.num) === Number(passage.surah));
+  if (!passage)
+    return null;
+  return {
+    number: Number(passage.surah),
+    title: surah && surah.name_en || '',
+    href: book.type === 'trans'
+      ? `/quran/${encodeURIComponent(book.quranBookSlug || book.alias)}/${Number(passage.surah)}`
+      : Tafsir.passageUrl(book, passage.surah, passage.ayah, passage.endAyah)
+  };
+}
+
+async function introductionPreviousPassage(book) {
+  if (!book || book.type !== 'tafsir')
+    return null;
+  const passages = book.source === 'local'
+    ? await Tafsir.sitemapPassages(book, { source: 'db' })
+    : [];
+  const passage = passages[passages.length - 1] || { surah: 114, ayah: 6, endAyah: 6 };
+  const href = Tafsir.passageUrl(book, passage.surah, passage.ayah, passage.endAyah);
+  const range = Number(passage.endAyah) > Number(passage.ayah)
+    ? `${passage.ayah}-${passage.endAyah}`
+    : `${passage.ayah}`;
+  return { href, title: `§${passage.surah}.${range}` };
+}
+
 router.get('/:tafsir/quran\::surah\::start-:end', renderTafsirPassage);
 router.get('/:tafsir/quran\::surah\::start', renderTafsirPassage);
 
@@ -122,7 +175,7 @@ router.get('/:tafsir/:surah', async function (req, res, next) {
   if (!surah)
     return next(createError(Number.isInteger(surahNum) && surahNum > 0 ? 410 : 404, `Quran surah ${req.params.surah} not found`));
 
-  const passage = await Tafsir.firstPassageInSurah(tafsir, surahNum);
+  const passage = await Tafsir.firstPassageInSurah(tafsir, surahNum, { includeZero: true });
   if (!passage)
     return next(gone(`${tafsir.shortName_en || tafsir.alias} has no passages for Surah ${surahNum}`));
 
@@ -215,15 +268,27 @@ async function renderTafsirPassage(req, res, next) {
       editMode: editMode,
       includeEmpty: true
     });
-  const navigation = await tafsirNavigation(tafsir, navigationEntries, allTafsirs, surahNum, ayahNum);
+  const commentaryIntroductionArticles = await CommentaryHeadings.introductionArticles(tafsir.id);
+  const commentaryIntroductionHref = CommentaryHeadings.hasIntroduction(commentaryIntroductionArticles)
+    ? `/quran/tafsir/${encodeURIComponent(tafsir.slug || Tafsir.tafsirSlug(tafsir.alias))}/introduction`
+    : '';
+  const navigation = await tafsirNavigation(tafsir, navigationEntries, allTafsirs, surahNum, ayahNum, commentaryIntroductionHref);
 	const quranHeadingOutlines = await QuranHeadingOutlines.forSurahs([surahNum]);
-
+  const firstSurahPassage = await Tafsir.firstPassageInSurah(tafsir, surahNum, { includeZero: true });
+  let commentarySurahHeading = null;
+  if (firstSurahPassage && Number(firstSurahPassage.ayah) === Number(entryStart)) {
+    commentarySurahHeading = await CommentaryHeadings.chapter(tafsir.id, surahNum);
+    if (!commentarySurahHeading && editMode)
+      commentarySurahHeading = await CommentaryHeadings.ensureChapter(tafsir.id, surahNum, '');
+  }
   const renderLocals = {
     BookDownloads: BookDownloads,
     Tafsir: Tafsir,
     ayah: ayahNum,
     ayahs: ayahs,
     chapter: chapter,
+    commentarySurahHeading: commentarySurahHeading,
+    commentaryIntroductionArticles: commentaryIntroductionArticles,
     entries: entries,
     navigation: navigation,
 	quranHeadingOutlines: quranHeadingOutlines,
@@ -266,6 +331,7 @@ async function renderTafsirBookToc(req, res, tafsir) {
     ? Array.from(new Set(quranTafsirPassages.map(passage => Number(passage.surah)).filter(Number.isInteger)))
     : null;
   const quranTocDefaultView = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
+  const commentaryIntroductionArticles = await CommentaryHeadings.introductionArticles(tafsir.id);
   const renderLocals = {
     book: quranBook,
     surahs: global.surahs || [],
@@ -276,6 +342,7 @@ async function renderTafsirBookToc(req, res, tafsir) {
     quranCommentaryAvailableSurahs: quranCommentaryAvailableSurahs,
     quranTocDefaultView: quranTocDefaultView,
     BookDownloads: BookDownloads,
+    commentaryIntroductionArticles: commentaryIntroductionArticles,
     prevBook: null,
     nextBook: null,
     toc: toc,
@@ -336,25 +403,56 @@ function isSearchBackendUnavailable(err) {
   return [502, 503, 504].includes(Number(status));
 }
 
-async function tafsirNavigation(tafsir, entries, tafsirs, surah, ayah) {
-  const currentRef = tafsir.source !== 'local' ? { surah: surah, ayah: ayah } : null;
-  const prev = await Tafsir.adjacentPassage(tafsir, entries, -1, currentRef);
-  const next = await Tafsir.adjacentPassage(tafsir, entries, 1, currentRef);
+async function tafsirNavigation(tafsir, entries, tafsirs, surah, ayah, introductionHref) {
+  const currentRef = { surah: surah, ayah: ayah };
+  const prev = tafsirInvocationBoundary(entries, surah, ayah, -1)
+    || await Tafsir.adjacentPassage(tafsir, entries, -1, currentRef);
+  const next = tafsirInvocationBoundary(entries, surah, ayah, 1, introductionHref)
+    || await Tafsir.adjacentPassage(tafsir, entries, 1, currentRef);
   return {
-    prev: prev ? navigationTarget(tafsir, prev.surah, prev.ayah, tafsirs) : '',
-    prevTitle: prev ? `§${prev.surah}.${prev.ayah}` : '',
-    next: next ? navigationTarget(tafsir, next.surah, next.ayah, tafsirs) : '',
-    nextTitle: next ? `§${next.surah}.${next.ayah}` : ''
+    prev: prev ? prev.href || navigationTarget(tafsir, prev.surah, prev.ayah, prev.endAyah, tafsirs) : '',
+    prevTitle: prev ? prev.title || tafsirNavigationTitle(prev) : '',
+    next: next ? next.href || navigationTarget(tafsir, next.surah, next.ayah, next.endAyah, tafsirs) : '',
+    nextTitle: next ? next.title || tafsirNavigationTitle(next) : ''
   };
+}
+
+function tafsirInvocationBoundary(entries, surah, ayah, direction, introductionHref) {
+  const ranges = (entries || []).map(entry => ({
+    surah: Number(entry.surah),
+    startAyah: Number(entry.startAyah),
+    endAyah: Number(entry.endAyah)
+  })).filter(entry => Number.isInteger(entry.surah) && Number.isInteger(entry.startAyah) && Number.isInteger(entry.endAyah));
+  const current = ranges.length ? {
+    surah: ranges[0].surah,
+    startAyah: Math.min(...ranges.map(entry => entry.startAyah)),
+    endAyah: Math.max(...ranges.map(entry => entry.endAyah))
+  } : { surah: Number(surah), startAyah: Number(ayah), endAyah: Number(ayah) };
+  if (direction < 0 && current.surah === 1 && current.startAyah === 1)
+    return { surah: 1, ayah: 0, endAyah: 0 };
+  const lastSurah = (global.surahs || []).find(item => Number(item.num) === 114);
+  if (direction > 0 && introductionHref && lastSurah && current.surah === 114 && current.endAyah === Number(lastSurah.ayahs))
+    return { href: introductionHref, title: 'Introduction' };
+  if (direction > 0 && lastSurah && current.surah === 114 && current.endAyah === Number(lastSurah.ayahs))
+    return { surah: 1, ayah: 0, endAyah: 0 };
+  return null;
+}
+
+function tafsirNavigationTitle(target) {
+  const endAyah = Number(target.endAyah);
+  const range = Number.isInteger(endAyah) && endAyah > Number(target.ayah)
+    ? `${target.ayah}-${endAyah}`
+    : target.ayah;
+  return `§${target.surah}.${range}`;
 }
 
 function tafsirEditNavigation(tafsir, surah, ayah, tafsirs) {
   const prev = adjacentQuranAyah(tafsir, surah, ayah, -1);
   const next = adjacentQuranAyah(tafsir, surah, ayah, 1);
   return {
-    prev: prev ? navigationTarget(tafsir, prev.surah, prev.ayah, tafsirs) : '',
+    prev: prev ? navigationTarget(tafsir, prev.surah, prev.ayah, prev.ayah, tafsirs) : '',
     prevTitle: prev ? `§${prev.surah}.${prev.ayah}` : '',
-    next: next ? navigationTarget(tafsir, next.surah, next.ayah, tafsirs) : '',
+    next: next ? navigationTarget(tafsir, next.surah, next.ayah, next.ayah, tafsirs) : '',
     nextTitle: next ? `§${next.surah}.${next.ayah}` : ''
   };
 }
@@ -366,6 +464,9 @@ function adjacentQuranAyah(tafsir, surah, ayah, direction) {
   const currentSurah = (global.surahs || []).find(item => Number(item.num) === surah);
   if (!currentSurah)
     return null;
+  const boundary = QuranAyahNavigation.boundaryAdjacent(surah, ayah, direction);
+  if (boundary)
+    return boundary;
   if (direction > 0 && ayah < Number(currentSurah.ayahs))
     return { surah: surah, ayah: ayah + 1 };
   if (direction < 0 && ayah > 1)
@@ -381,24 +482,12 @@ function adjacentQuranAyah(tafsir, surah, ayah, direction) {
 }
 
 function quranAdjacentRef(surah, ayah, direction) {
-  surah = Number(surah);
-  ayah = Number(ayah);
-  direction = direction > 0 ? 1 : -1;
-  const currentSurah = (global.surahs || []).find(item => Number(item.num) === surah);
-  if (!currentSurah)
-    return '';
-  if (direction > 0 && ayah < Number(currentSurah.ayahs))
-    return `quran:${surah}:${ayah + 1}`;
-  if (direction < 0 && ayah > 1)
-    return `quran:${surah}:${ayah - 1}`;
-  const nextSurah = (global.surahs || []).find(item => Number(item.num) === surah + direction);
-  if (!nextSurah)
-    return '';
-  return `quran:${Number(nextSurah.num)}:${direction > 0 ? 1 : Number(nextSurah.ayahs)}`;
+	const adjacent = QuranAyahNavigation.adjacent(surah, ayah, direction);
+	return adjacent ? `quran:${adjacent.surah}:${adjacent.ayah}` : '';
 }
 
-function navigationTarget(tafsir, surah, ayah, tafsirs) {
-  const url = Tafsir.browseUrl(tafsir, surah, ayah, tafsirs);
+function navigationTarget(tafsir, surah, ayah, endAyah, tafsirs) {
+  const url = Tafsir.passageUrl(tafsir, surah, ayah, endAyah, tafsirs);
   return Utils.quranPath(url);
 }
 

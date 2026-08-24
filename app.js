@@ -425,6 +425,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     res.locals.contentTranslationEstimateFields = ContentTranslations.estimateFields;
     res.locals.quranRecitationFeedbackEnabled = QuranRecitationFeedback.isEnabled();
     res.locals.quranNavTafsirs = Tafsir.uniqueCarouselTafsirs(Tafsir.visibleTafsirsSync()).sort(function (a, b) {
+      if (Tafsir.isDefaultTafsir(a) !== Tafsir.isDefaultTafsir(b))
+        return Tafsir.isDefaultTafsir(a) ? -1 : 1;
       const aLabel = Tafsir.rawShortName(a, 'en') || a.shortName_en || a.name_en || a.alias || '';
       const bLabel = Tafsir.rawShortName(b, 'en') || b.shortName_en || b.name_en || b.alias || '';
       return aLabel.localeCompare(bLabel, 'en', { sensitivity: 'base' });

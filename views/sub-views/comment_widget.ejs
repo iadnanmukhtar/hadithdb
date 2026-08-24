@@ -11,15 +11,31 @@
   const placeholder = typeof ctx.placeholder === 'string' ? ctx.placeholder : 'Write a comment...';
   const commentPrefix = typeof ctx.commentPrefix === 'string' ? ctx.commentPrefix.trim() : '';
   const lazyLoad = ctx.lazyLoad !== false;
+  const collapsible = ctx.collapsible === true;
+  const collapsed = ctx.collapsed !== false;
+  const disclosureId = `${widgetId}-disclosure`;
 %>
 
 <% if (targetId) { %>
+  <% if (collapsible) { %>
+  <details class="reflection-disclosure" id="<%= disclosureId %>" data-reflection-disclosure<% if (!collapsed) { %> open<% } %>>
+    <summary class="reflection-disclosure-summary">
+      <span class="reflection-disclosure-title fs-5"><%= heading %></span>
+      <span class="reflection-disclosure-meta">
+        <span class="reflection-count-link text-decoration-none" title="View reflections">
+          <span class="bi bi-chat-right-text text-accent" aria-hidden="true"></span><span class="comment-widget-count fw-semibold text-accent" id="<%= widgetId %>-count" title="0 reflections">0</span>
+        </span>
+        <span class="reflection-disclosure-chevron bi bi-chevron-down" aria-hidden="true"></span>
+      </span>
+    </summary>
+  <% } else { %>
   <h4 class="fs-5">
     <%= heading %>
     <a href="#<%= widgetId %>" class="reflection-count-link text-decoration-none" title="View reflections">
       <span class="bi bi-chat-right-text text-accent"></span><span class="comment-widget-count fw-semibold text-accent" id="<%= widgetId %>-count" title="0 reflections">0</span>
     </a>
   </h4>
+  <% } %>
   <section class="mt-3 comment-feed" id="<%= widgetId %>" data-ref="<%= ref %>" data-target-id="<%= targetId %>" data-target-type="<%= targetType %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>" data-lazy-load="<%= lazyLoad ? '1' : '0' %>">
     <div class="comment-feed-shell">
       <div id="<%= widgetId %>-thread" class="comment-thread"></div>
@@ -57,6 +73,7 @@
       (function () {
         const container = document.getElementById('<%= widgetId %>');
         if (!container) return;
+        const disclosure = document.getElementById('<%= disclosureId %>');
         const authHint = document.getElementById('<%= widgetId %>-hint');
         const composerAvatar = document.getElementById('<%= widgetId %>-avatar');
         const targetId = container.dataset.targetId;
@@ -538,6 +555,12 @@
           }
         });
 
+        if (disclosure) {
+          disclosure.addEventListener('toggle', () => {
+            if (disclosure.open) loadWidget();
+          });
+        }
+
         if (!lazyLoad) {
           loadWidget();
         } else if (window.location.hash === `#<%= widgetId %>`) {
@@ -548,11 +571,14 @@
             observer.disconnect();
             loadWidget();
           }, { rootMargin: '300px 0px' });
-          observer.observe(container);
+          observer.observe(disclosure || container);
         } else {
           window.setTimeout(loadWidget, 250);
         }
       })();
     </script>
   </section>
+  <% if (collapsible) { %>
+  </details>
+  <% } %>
 <% } %>

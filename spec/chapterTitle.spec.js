@@ -109,3 +109,13 @@ test('keeps an empty chapter intro editable on the first section only', async ()
 	expect(firstSectionHtml).toContain('data-markdown-empty-html="&hellip;"');
 	expect(laterSectionHtml).not.toContain('class="chapter-intro row mt-2"');
 });
+
+test('uses the full row for a one-language chapter intro but shows both editors in Edit mode', async () => {
+	const publicHtml = await renderHadithChapterTitle({ introEn: 'English only' });
+	const editHtml = await renderHadithChapterTitle({ introEn: 'English only', editMode: true });
+
+	expect(publicHtml).toContain('class="_e col-12 intro" lang="en"');
+	expect(publicHtml).not.toMatch(/class="chapter-intro[\s\S]*data-prop="toc\.intro"/);
+	expect(editHtml).toContain('class="_e col-md-6 col-sm-12 intro" lang="en"');
+	expect(editHtml).toContain('lang="ar" data-id="41" data-prop="toc.intro"');
+});

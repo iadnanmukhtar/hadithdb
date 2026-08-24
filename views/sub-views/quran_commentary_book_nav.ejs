@@ -3,6 +3,13 @@
   const commentaryNavKind = commentaryNavBook && commentaryNavBook.type === 'trans' ? 'trans' : 'tafsir';
   const commentaryNavBookRows = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
   const commentaryNavBooks = commentaryNavKind === 'tafsir' ? Tafsir.uniqueCarouselTafsirs(commentaryNavBookRows) : commentaryNavBookRows;
+  const commentaryNavPassage = locals.quranCommentaryPassage || null;
+  const commentaryNavPassageSurah = Number(commentaryNavPassage && commentaryNavPassage.surah);
+  const commentaryNavPassageAyah = Number(commentaryNavPassage && commentaryNavPassage.ayah);
+  const commentaryNavPassageEndAyah = Number(commentaryNavPassage && commentaryNavPassage.endAyah);
+  const commentaryNavIsPassage = commentaryNavKind === 'tafsir'
+    && Number.isInteger(commentaryNavPassageSurah)
+    && Number.isInteger(commentaryNavPassageAyah);
 
   function commentaryNavSlug(book) {
     if (!book)
@@ -17,6 +24,13 @@
       return '';
     if (book.type === 'trans')
       return utils.quranUrl(req, `/quran/${encodeURIComponent(commentaryNavSlug(book))}`);
+    if (commentaryNavIsPassage) {
+      const isCurrent = commentaryNavBook && book.alias === commentaryNavBook.alias;
+      const endAyah = isCurrent && Number.isInteger(commentaryNavPassageEndAyah)
+        ? commentaryNavPassageEndAyah
+        : commentaryNavPassageAyah;
+      return utils.quranUrl(req, Tafsir.passageUrl(book, commentaryNavPassageSurah, commentaryNavPassageAyah, endAyah));
+    }
     const slug = commentaryNavSlug(book);
     return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
   }
@@ -29,18 +43,6 @@
     return (Tafsir.rawShortName(book, 'en') || book.shortName_en || book.name_en || book.alias || '').replace(/^tafs[īi]r\s+/i, '').trim();
   }
 
-  function commentaryNavTooltip(book) {
-    if (!book)
-      return '';
-    return [
-      book.name_en || book.title || book.shortName_en || book.shortName || book.alias,
-      book.author_en || book.author,
-      book.death ? `d. ${book.death}` : '',
-      book.published_year ? `Pub. ${book.published_year}` : '',
-      book.publisher
-    ].filter(Boolean).join('\n');
-  }
-
   function commentaryNavSizeIndicator(book) {
     const size = utils.emptyIfNull(book && book.size || '').toString();
     if (!size || book.type !== 'tafsir')
@@ -48,21 +50,22 @@
     const label = size === 'lg' ? 'Large tafsir' : (size === 'md' ? 'Medium tafsir' : (size === 'sm' ? 'Small tafsir' : ''));
     if (!label)
       return '';
-    return `<span class="tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
+    return `<span class="tafsir-size-indicator tafsir-size-indicator-${size}" aria-label="${label}" role="img"></span>`;
   }
 %>
 <% if (commentaryNavBook && commentaryNavBooks.length > 0) { %>
-<div class="h-menu-wrap mb-3 quran-commentary-book-carousel" data-quran-commentary-carousel data-commentary-kind="<%= commentaryNavKind %>" data-current-commentary-alias="<%= commentaryNavBook.alias %>" data-current-commentary-lang="<%= commentaryNavBook.lang || '' %>">
+<div class="h-menu-wrap mb-3 quran-commentary-book-carousel<%= commentaryNavIsPassage ? ' quran-commentary-passage-carousel' : '' %>" data-quran-commentary-carousel<% if (commentaryNavIsPassage) { %> data-commentary-passage-carousel="1" data-commentary-quran-ref="<%= commentaryNavPassageSurah %>:<%= commentaryNavPassageAyah %>"<% } %> data-commentary-kind="<%= commentaryNavKind %>" data-current-commentary-alias="<%= commentaryNavBook.alias %>" data-current-commentary-lang="<%= commentaryNavBook.lang || '' %>"<% if (commentaryNavKind === 'tafsir') { %> data-current-commentary-carousel-language="<%= Tafsir.carouselLanguage(commentaryNavBook) %>"<% } %>>
   <div class="h-menu-hint d-md-none">
     <i class="bi bi-arrow-left-right"></i> Swipe to browse <%= commentaryNavKind === 'trans' ? 'translations' : 'tafsīr books' %>
   </div>
   <div class="h-menu-scroller">
     <div class="btn-group h-menu text-nowrap" role="group">
+      <% if (commentaryNavKind === 'tafsir') { %><%- include('tafsirCarouselLanguageSwitch') %><% } %>
       <%- include('bookCarouselFilter') %>
       <% commentaryNavBooks.forEach(function (book, index) {
         const isCurrent = commentaryNavBook && book.alias === commentaryNavBook.alias;
       %>
-      <a class="btn btn-outline-primary text-nowrap quran-commentary-book-nav-item<%= commentaryNavKind === 'tafsir' ? ' tafsir-book-tooltip' : '' %><%= isCurrent ? ' active' : '' %>" href="<%= commentaryNavHref(book) %>"<% if (isCurrent) { %> aria-current="page" data-current-book="true"<% } %> title="<%= commentaryNavTooltip(book) %>" data-tafsir-tooltip="<%= commentaryNavTooltip(book) %>" data-book-carousel-item data-book-carousel-search="<%= [book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author, book.alias].filter(Boolean).join(' ') %>" data-quran-commentary-book-nav-item data-commentary-kind="<%= commentaryNavKind %>" data-commentary-alias="<%= book.alias %>" data-commentary-lang="<%= book.lang || '' %>" data-commentary-ordinal="<%= book.ordinal || 0 %>" data-commentary-source="<%= book.source || '' %>" data-commentary-label="<%= commentaryNavLabel(book) %>" data-commentary-href="<%= commentaryNavHref(book) %>" data-commentary-death="<%= book.death || '' %>" data-commentary-original-index="<%= index %>"<% if (commentaryNavKind === 'tafsir') { %> data-tafsir-book-nav-item data-tafsir-alias="<%= book.alias %>" data-tafsir-lang="<%= book.lang || '' %>" data-tafsir-death="<%= book.death || '' %>" data-tafsir-ordinal="<%= book.ordinal || 0 %>"<% } %>><%- commentaryNavLabel(book) %><%- commentaryNavSizeIndicator(book) %></a>
+      <a class="btn btn-outline-primary text-nowrap quran-commentary-book-nav-item<%= isCurrent ? ' active' : '' %>" href="<%= commentaryNavHref(book) %>"<% if (isCurrent) { %> aria-current="page" data-current-book="true"<% } %> data-book-carousel-item data-book-carousel-search="<%= [book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author, book.alias].filter(Boolean).join(' ') %>" data-quran-commentary-book-nav-item data-commentary-kind="<%= commentaryNavKind %>" data-commentary-alias="<%= book.alias %>" data-commentary-slug="<%= commentaryNavSlug(book) %>" data-commentary-lang="<%= book.lang || '' %>" data-commentary-ordinal="<%= book.ordinal || 0 %>" data-commentary-source="<%= book.source || '' %>" data-commentary-label="<%= commentaryNavLabel(book) %>" data-commentary-href="<%= commentaryNavHref(book) %>" data-commentary-death="<%= book.death || '' %>" data-commentary-original-index="<%= index %>"<% if (commentaryNavKind === 'tafsir') { %> data-tafsir-book-nav-item data-tafsir-alias="<%= book.alias %>" data-tafsir-lang="<%= book.lang || '' %>" data-tafsir-carousel-language="<%= Tafsir.carouselLanguage(book) %>" data-tafsir-death="<%= book.death || '' %>" data-tafsir-ordinal="<%= book.ordinal || 0 %>"<% } %>><%- commentaryNavLabel(book) %><%- commentaryNavSizeIndicator(book) %></a>
       <% }); %>
     </div>
   </div>

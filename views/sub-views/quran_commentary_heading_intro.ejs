@@ -1,0 +1,25 @@
+<%
+  var commentaryHeading = locals.heading || {};
+  var commentaryHeadingEditEn = Boolean(site.editMode);
+  var commentaryHeadingEditAr = Boolean(site.editMode);
+  var commentaryHeadingEnMarkdown = utils.emptyIfNull(commentaryHeading.intro_en);
+  var commentaryHeadingArMarkdown = utils.emptyIfNull(commentaryHeading.intro);
+  var commentaryHeadingEnHtml = Tafsir.renderEnglishCommentaryMarkdown(commentaryHeadingEnMarkdown);
+  var commentaryHeadingArHtml = utils.markdownToHtml(commentaryHeadingArMarkdown);
+  var commentaryHeadingShowEn = Boolean(commentaryHeadingEnHtml || commentaryHeadingEditEn);
+  var commentaryHeadingShowAr = Boolean(commentaryHeadingArHtml || commentaryHeadingEditAr);
+%>
+<% if (commentaryHeadingShowEn || commentaryHeadingShowAr) { %>
+<section class="chapter-intro row mt-2 quran-commentary-heading-intro" data-commentary-surah="<%= commentaryHeading.h1 %>">
+  <% if (commentaryHeadingShowEn) { %>
+  <section class="_e <%= commentaryHeadingShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= commentaryHeading.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= commentaryHeadingEnMarkdown %>" data-markdown-empty-html="&hellip;">
+    <div><%- commentaryHeadingEnHtml || '&hellip;' %></div>
+  </section>
+  <% } %>
+  <% if (commentaryHeadingShowAr) { %>
+  <section class="_e <%= commentaryHeadingShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="ar" dir="rtl" data-id="<%= commentaryHeading.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= commentaryHeadingArMarkdown %>" data-markdown-empty-html="&hellip;">
+    <div><%- commentaryHeadingArHtml || '&hellip;' %></div>
+  </section>
+  <% } %>
+</section>
+<% } %>

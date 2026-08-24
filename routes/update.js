@@ -16,6 +16,7 @@ const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
 const CommentaryTranslationIndexFields = require('../lib/CommentaryTranslationIndexFields');
+const CommentaryHeadings = require('../lib/CommentaryHeadings');
 const Index = require('../lib/Index');
 const PaymentConfig = require('../lib/PaymentConfig');
 const GoogleAuth = require('../lib/GoogleAuth');
@@ -338,6 +339,18 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         result = await deleteQuranSection(ids[0]);
         status.value = result.value;
         shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'commentaryArticleAdd') {
+        result = await CommentaryHeadings.addIntroductionArticle(ids[0], status.value, userId);
+        status.value = result.value;
+        await finishCommentaryHeadingChange(ids[0]);
+        shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'commentarySurahEnsure') {
+        var commentarySurah = parseInt(status.value && status.value.surah, 10);
+        var ensuredCommentaryHeading = await CommentaryHeadings.ensureChapter(ids[0], commentarySurah, userId);
+        result = { message: 'Commentary surah introduction created' };
+        status.value = { id: ensuredCommentaryHeading.id, h1: commentarySurah };
+        await finishCommentaryHeadingChange(ids[0]);
+        shouldRunDefaultHeadingTasks = false;
       } else {
         result = await global.query(`UPDATE toc SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${tocHeadingId}`);
       }
@@ -376,6 +389,11 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         if (shouldRunDefaultHeadingTasks) {
           await reindexHeadingSubtreeByHeadingId(tocHeadingId);
           var invalidatedHeading = await invalidateHeadingCachesByHeadingId(tocHeadingId);
+          var commentaryHeadingBook = invalidatedHeading && await CommentaryHeadings.book(invalidatedHeading.book_id);
+          if (commentaryHeadingBook) {
+            await Books.touchBookContentLastmodById(commentaryHeadingBook.id);
+            await flushCommentaryIntroductionCaches(commentaryHeadingBook);
+          }
           if (['title', 'title_en'].includes(col) && isQuranThemeHeading(invalidatedHeading)) {
             QuranTocSubdivisions.invalidateSectionRanges();
             await invalidateQuranSurahCaches(invalidatedHeading.h1);
@@ -551,8 +569,7 @@ function sql(s) {
     if (s == '…') return null;
     s = s + '';
     s = s.replace(/\u200f/g, '').trim();
-    s = s.replace(/\"/g, '\\"').replace(/\'/g, "\\'").replace(/‘/g, "\\‘");
-    return '"' + s + '"';
+    return MySQL.escape(s);
   }
   return null;
 }
@@ -725,6 +742,25 @@ async function flushQuranCatalogBookCaches(bookAliases) {
     await Utils.flushCacheContaining(`tafsir:${alias}`);
     await Utils.flushCacheContaining(`translation:${alias}`);
   }
+}
+
+async function flushCommentaryIntroductionCaches(book) {
+  if (!book || !book.alias)
+    return;
+  await flushQuranCatalogBookCaches(new Set([book.alias]));
+  const cacheDir = Utils.cacheBookDirectory(book.alias, book.type);
+  if (!fs.existsSync(cacheDir))
+    return;
+  for (const filename of fs.readdirSync(cacheDir))
+    await Utils.flushCachedFile(`${cacheDir}/${filename}`);
+}
+
+async function finishCommentaryHeadingChange(bookId) {
+  const book = await CommentaryHeadings.book(bookId);
+  if (!book)
+    throw createError(404, 'Commentary book not found');
+  await Books.touchBookContentLastmodById(book.id);
+  await flushCommentaryIntroductionCaches(book);
 }
 
 async function commentaryIndexRowById(id) {

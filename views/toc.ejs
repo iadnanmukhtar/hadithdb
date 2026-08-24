@@ -79,6 +79,16 @@
     var quranCommentaryBookCanonical = quranCommentaryBook
       ? (quranCommentaryBook.type === 'trans' ? `/quran/${quranCommentaryBookSlug}` : `/quran/tafsir/${quranCommentaryBookSlug}`)
       : '';
+    var quranCommentaryIntroductionArticles = locals.commentaryIntroductionArticles || [];
+    var quranCommentaryHasWorkIntroduction = Boolean(quranCommentaryBook && quranCommentaryIntroductionArticles.some(function (article) {
+      return utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en);
+    }));
+    var quranCommentaryIntroductionHref = quranCommentaryHasWorkIntroduction
+      ? utils.quranUrl(req, `${quranCommentaryBookCanonical}/introduction`)
+      : '';
+    var quranCommentaryIntroductionAdminHref = quranCommentaryBook && site.editMode
+      ? utils.quranUrl(req, `${quranCommentaryBookCanonical}/introduction`)
+      : '';
     var tocDisplayBook = quranCommentaryBook || book;
     var tocDisplayBookNameEn = quranCommentaryBook
       ? quranCommentaryBookLabel
@@ -492,6 +502,20 @@
 	    href: quranTocHref(heading)
 	  };
 	});
+	quranCommentaryIntroductionArticles.slice().reverse().forEach(function (article) {
+	  if (!utils.trimToEmpty(article.intro) && !utils.trimToEmpty(article.intro_en))
+	    return;
+	  var articleTitleEn = displayName(article.title_en);
+	  var articleTitleAr = displayName(article.title);
+	  tocHeadingRailItems.unshift({
+	    key: `toc-commentary-introduction-${article.h2}`,
+	    number: '',
+	    title: articleTitleEn || articleTitleAr || 'Introduction by the author',
+	    titleLang: articleTitleEn ? 'en' : (articleTitleAr ? 'ar' : 'en'),
+	    href: `${quranCommentaryIntroductionHref}#introduction-${article.h2}`,
+	    track: false
+	  });
+	});
 	var showTocHeadingRail = tocHeadingRailItems.length > 0;
 	var tocHeadingRailTitle = tocDisplayBookNameEn || displayName(tocDisplayBook.shortName_en || tocDisplayBook.alias);
 	%>
@@ -736,8 +760,20 @@
             </div>
             <% } %>
             <h2 class="fs-4 mt-2">Surahs</h2>
+            <% if (quranCommentaryIntroductionAdminHref && !quranCommentaryIntroductionHref) { %>
+            <p class="mb-2"><a class="btn btn-sm btn-outline-primary" href="<%= quranCommentaryIntroductionAdminHref %>"><span class="bi bi-plus-circle"></span> Manage introduction articles</a></p>
+            <% } %>
             <table id="toc-surahs" class="table" title="<%- `Surahs for ${book.name_en} (فهرس ${book.title})` %>">
               <tbody>
+                <% quranCommentaryIntroductionArticles.forEach(function (article) { %>
+                <% if (quranCommentaryIntroductionHref && (utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en))) { %>
+                <tr class="chapter quran-commentary-introduction-link-row" data-toc-view="surahs">
+                  <td><span class="toc-expand-spacer"></span>Introduction</td>
+                  <td><a href="<%= `${quranCommentaryIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title_en) || 'Introduction by the author' %></a></td>
+                  <td lang="ar" dir="rtl"><a href="<%= `${quranCommentaryIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title) || 'مقدمة المؤلف' %></a></td>
+                </tr>
+                <% } %>
+                <% }); %>
                 <%
         for (var i = 0; i < toc.length; i++) {
           if (!quranCommentaryHasSurah(toc[i].h1))

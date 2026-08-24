@@ -56,4 +56,23 @@ describe('Tafsir catalog languages', () => {
       { alias: 'tabari', lang: 'ar' }
     ]);
   });
+
+  test('always places Muntakhab first in a tafsir carousel', () => {
+    const books = Tafsir.uniqueCarouselTafsirs([
+      { alias: 'tabari', lang: 'ar' },
+      { alias: 'ibn-kathir', lang: 'en' },
+      { alias: 'muntakhab', lang: 'ar', languages: 'ar-en' },
+      { alias: 'muntakhab', lang: 'en', languages: 'ar-en' }
+    ]);
+
+    expect(books.map(book => book.alias)).toEqual(['muntakhab', 'tabari', 'ibn-kathir']);
+    expect(books[0].lang).toBe('en');
+    expect(Tafsir.DEFAULT_TAFSIR_ALIAS).toBe('muntakhab');
+  });
+
+  test('groups English and bilingual tafsirs separately from Arabic-only tafsirs', () => {
+    expect(Tafsir.carouselLanguage({ alias: 'english', lang: 'en', source: 'local' })).toBe('en');
+    expect(Tafsir.carouselLanguage({ alias: 'bilingual', lang: 'ar', languages: 'ar-en', source: 'local' })).toBe('en');
+    expect(Tafsir.carouselLanguage({ alias: 'arabic', lang: 'ar', source: 'local' })).toBe('ar');
+  });
 });

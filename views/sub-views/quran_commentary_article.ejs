@@ -1,0 +1,21 @@
+<%
+  var article = locals.article || {};
+  var articleBook = locals.commentaryBook || {};
+  var articleHasEn = Boolean(utils.trimToEmpty(article.intro_en));
+  var articleHasAr = Boolean(utils.trimToEmpty(article.intro));
+  var articleHasContent = articleHasEn || articleHasAr;
+  var articleEditEmptyAr = site.editMode && !articleHasContent && articleBook.lang === 'ar';
+  var articleEditEmptyEn = site.editMode && !articleHasContent && !articleEditEmptyAr;
+  var articleShowEn = articleHasEn || articleEditEmptyEn;
+  var articleShowAr = articleHasAr || site.editMode || articleEditEmptyAr;
+%>
+<article class="quran-commentary-introduction-article mt-4" id="introduction-<%= article.h2 %>" data-introduction-article="<%= article.h2 %>" data-quran-introduction-target="<%= article.h2 %>">
+  <heading class="row heading py-2">
+    <% if (articleShowEn) { %><h2 class="<%= articleShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="en"><span class="_e" data-id="<%= article.id %>" data-prop="toc.title_en" data-placeholder="Introduction article title"><%- article.title_en || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
+    <% if (articleShowAr) { %><h2 class="<%= articleShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="ar" dir="rtl"><span class="_e" data-id="<%= article.id %>" data-prop="toc.title" data-placeholder="عنوان المقدمة"><%- article.title || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
+  </heading>
+  <section class="row heading-intro mb-3">
+    <% if (articleShowEn) { %><section class="_e <%= articleShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= article.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-markdown-source="<%= utils.emptyIfNull(article.intro_en) %>" data-markdown-empty-html="&hellip;"><div><%- Tafsir.renderEnglishCommentaryMarkdown(article.intro_en) || (site.editMode ? '&hellip;' : '') %></div></section><% } %>
+    <% if (articleShowAr) { %><section class="_e <%= articleShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="ar" dir="rtl" data-id="<%= article.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= utils.emptyIfNull(article.intro) %>" data-markdown-empty-html="&hellip;"><div><%- utils.markdownToHtml(article.intro) || (site.editMode ? '&hellip;' : '') %></div></section><% } %>
+  </section>
+</article>

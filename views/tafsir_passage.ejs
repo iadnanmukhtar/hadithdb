@@ -87,6 +87,12 @@
 	<div class="container-fluid quran-heading-layout quran-heading-layout-tafsir">
 	  <div class="quran-heading-content quran-heading-content-tafsir">
 	<main class="chapter mt-10 tafsir-only-page" data-page-help-tour="tafsir" data-reader-infinite="tafsir" data-reader-context-key="<%= surah.num %>" data-reader-quran-ref="<%= surah.num %>:<%= tafsirEntryStart %>" data-reader-current-url="<%= tafsirReaderCurrentUrl %>"<% if (tafsirReaderPrevUrl) { %> data-reader-prev-url="<%= tafsirReaderPrevUrl %>" data-reader-prev-title="<%= tafsirReaderPrevTitle %>"<% } %><% if (tafsirReaderNextUrl) { %> data-reader-next-url="<%= tafsirReaderNextUrl %>" data-reader-next-title="<%= tafsirReaderNextTitle %>"<% } %>>
+	      <%- include('sub-views/quran_commentary_book_nav.ejs', {
+	        quranCommentaryBook: tafsir,
+	        quranCommentaryBooks: tafsirBooks,
+	        quranCommentaryPassage: { surah: surah.num, ayah: tafsirEntryStart, endAyah: tafsirEntryEnd },
+	        Tafsir: Tafsir
+	      }); %>
 	      <heading class="row major">
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>">
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
@@ -126,6 +132,14 @@
 	        </div>
 	      </section>
 
+      <%- include('sub-views/quran_commentary_surah_intro.ejs', {
+        site: site,
+        Tafsir: Tafsir,
+        commentaryBook: tafsir,
+        heading: locals.commentarySurahHeading,
+        surah: surah.num
+      }); %>
+
       <%- include('sub-views/quran_tafsirs.ejs', {
         site: site,
         page: page,
@@ -137,22 +151,25 @@
         initialTafsirEntries: entries,
         tafsirBooks: tafsirBooks,
         tafsirHeading: `${tafsirTitle} ${tafsirMetaRef}${surah.name_en ? ` ${surah.name_en}` : ''}`,
+		tafsirHeadingHref: tafsirPassageHref,
         tafsirInstance: 'passage',
         tafsirSettingsHref: utils.quranUrl(req, '/quran/settings'),
         tafsirTranslationsHref: utils.quranUrl(req, `/quran/translations/quran:${surah.num}:${ayah}`),
         tafsirTranslationsModalIndex: quranAyahModalIndex
       }); %>
 
-      <section class="mt-4">
+      <section class="mt-4 reflection-section" data-reflection-section>
         <%- include('sub-views/comment_widget.ejs', {
-          widgetId: 'comments',
+          widgetId: `tafsir-comments-${ayahs[0] && ayahs[0].id ? ayahs[0].id : `${surah.num}-${tafsirEntryStart}`}`,
           heading: `Reflect on Quran ${ref}:`,
           targetId: ayahs[0] && ayahs[0].id,
           ref: ayahs[0] && ayahs[0].ref,
           endpoint: '/comments',
           subjectLabel: 'reflection',
           commentPrefix: `[${tafsirTitle} for Quran ${ref}](${tafsirPagePath})`,
-          placeholder: `Write a reflection on Quran ${ref}...`
+          placeholder: `Write a reflection on Quran ${ref}...`,
+          collapsible: true,
+          collapsed: true
         }); %>
       </section>
 
@@ -165,7 +182,8 @@
 	    quranHeadingInitialSurah: surah.num,
 	    quranHeadingInitialAyah: tafsirEntryStart,
 	    quranHeadingTafsirBase: tafsirPath,
-	    quranHeadingBookShortName: tafsirTitle
+	    quranHeadingBookShortName: tafsirTitle,
+	    commentaryIntroductionArticles: locals.commentaryIntroductionArticles
 	  }); %>
   </div>
 

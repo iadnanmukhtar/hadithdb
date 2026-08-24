@@ -84,6 +84,17 @@
 	    };
 
 	    const isEnglishTafsirMarkdown = ($el) => isTafsirEditor($el) && $el.attr('data-edit-lang') === 'en';
+	    const isEnglishCommentaryIntroMarkdown = ($el) => $el.attr('data-prop') === 'toc.intro_en';
+
+	    const markArabicOnlyMarkdownBlocks = ($root) => {
+	      $root.find('p, li, blockquote, h1, h2, h3, h4, h5, h6').each(function () {
+	        const $block = $(this);
+	        const text = $block.text();
+	        if (/\p{Script=Arabic}/u.test(text) && !/[A-Za-z]/.test(text))
+	          $block.addClass('quran-tafsir-arabic-only').attr({ lang: 'ar', dir: 'rtl' });
+	      });
+	      return $root;
+	    };
 
 	    const renderEnglishTafsirMarkdown = (html) => {
 	      const $root = $('<div>').html(html || '');
@@ -100,6 +111,7 @@
 	      $root.find('code').each(function () {
 	        $(this).replaceWith($('<span>').addClass('quran-tafsir-backtick quran-hafs').attr({ lang: 'ar', dir: 'rtl' }).text($(this).text()));
 	      });
+	      markArabicOnlyMarkdownBlocks($root);
 	      return $root.html();
 	    };
 
@@ -112,7 +124,7 @@
 	      $el.removeClass('markdown-editing');
 	      if (markdown) {
 	        const html = isQuranCompactMarkdownElement($el) ? renderQuranCompactMarkdown(markdown) : renderMarkdown(markdown);
-	        $el.html(isEnglishTafsirMarkdown($el) ? renderEnglishTafsirMarkdown(html) : html);
+	        $el.html(isEnglishTafsirMarkdown($el) || isEnglishCommentaryIntroMarkdown($el) ? renderEnglishTafsirMarkdown(html) : html);
 	      }
 	      else if (emptyHtml)
 	        $el.html(emptyHtml);

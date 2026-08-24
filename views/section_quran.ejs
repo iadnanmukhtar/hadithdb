@@ -213,6 +213,16 @@
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
 
+      <% if (selectedTranslationBook) { %>
+        <%- include('sub-views/quran_commentary_surah_intro.ejs', {
+          site: site,
+          Tafsir: Tafsir,
+          commentaryBook: selectedTranslationBook,
+          heading: locals.commentarySurahHeading,
+          surah: chapter.h1
+        }); %>
+      <% } %>
+
       <% var quranSelectedAyahClearHref = page.context.section ? utils.quranUrl(req, `/${page.context.section.path}`) : undefined; %>
       <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero<% if (quranSelectedAyahClearHref) { %> data-quran-clear-href="<%= quranSelectedAyahClearHref %>"<% } %>>
       <% if (selectedAyahs.length > 0) { %>
@@ -309,7 +319,7 @@
             </button>
             <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= passageLikeId %>" data-like-type="toc">0</span>
             &nbsp;
-            <a href="#quran-passage-comments" class="reflection-count-link text-decoration-none" title="View reflections">
+            <a href="#quran-passage-comments-<%= passageLikeId %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="quran-passage-comments-<%= passageLikeId %>-disclosure" title="View reflections">
               <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= passageLikeId %>" data-comment-type="toc" title="0 reflections">0</span>
             </a>
             &nbsp;
@@ -346,18 +356,20 @@
         <% } %>
 
       <% if (results.length > 0 && passageLikeId) { %>
-        <div class="mt-4">
+        <section class="mt-4 reflection-section" data-reflection-section>
           <%- include('sub-views/comment_widget.ejs', {
-            widgetId: 'quran-passage-comments',
+            widgetId: `quran-passage-comments-${passageLikeId}`,
             heading: 'Add your own reflection on this passage below:',
             targetId: passageLikeId,
             targetType: 'toc',
             ref: section && section.path ? section.path : results[0].ref,
             endpoint: '/comments',
             subjectLabel: 'reflection',
-            placeholder: 'Write a reflection on this Quran passage...'
+            placeholder: 'Write a reflection on this Quran passage...',
+            collapsible: true,
+            collapsed: true
           }); %>
-        </div>
+        </section>
       <% } %>
       
       <% if (results.length == 0 || !results[0].id) { %>
@@ -374,6 +386,7 @@
       quranHeadingInitialAyah: quranNavigatorAyahValue,
       quranHeadingInitialKey: section && Number(section.level) >= 2 ? `${section.h1}.${section.h2}` : '',
       quranHeadingTranslationAlias: quranSelectedTranslationAlias,
+      commentaryIntroductionArticles: locals.commentaryIntroductionArticles,
       quranHeadingBookShortName: selectedTranslationBook
         ? (selectedTranslationBook.shortName_en || selectedTranslationBook.name_en || selectedTranslationBook.alias)
         : (book.shortName_en || book.name_en || 'Quran')

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+  var site = Object.assign({}, global.settings.site);
+  site.admin = (!locals.noadmin && req.admin);
+  site.editMode = !locals.noadmin && site.admin && req.editMode;
+  var commentaryBook = locals.quranCommentaryBook;
+  var commentaryBooks = locals.quranCommentaryBooks || [];
+  var commentaryIsTranslation = commentaryBook.type === 'trans';
+  var commentarySlug = commentaryBook.quranBookSlug || commentaryBook.slug || commentaryBook.alias;
+  var commentaryBookPath = commentaryIsTranslation
+    ? `/quran/${encodeURIComponent(commentarySlug)}`
+    : `/quran/tafsir/${encodeURIComponent(commentarySlug)}`;
+  var commentaryIntroductionPath = `${commentaryBookPath}/introduction`;
+  var commentaryNameEn = Tafsir.displayShortName(commentaryBook, 'en');
+  var commentaryNameAr = Tafsir.displayShortName(commentaryBook, 'ar');
+  var commentaryIntroductionPreviousPassage = locals.commentaryIntroductionPreviousPassage || null;
+  var commentaryIntroductionNextUrl = !commentaryIsTranslation && locals.commentaryIntroductionNextH1
+    ? locals.commentaryIntroductionNextH1.href
+    : '';
+  var page = {
+    menu: 'Introduction',
+    title_en: `Introduction by the author | ${commentaryNameEn}`,
+    description_en: `Read the author's introduction to ${commentaryNameEn}.`,
+    subtitle_en: commentaryNameEn,
+    subtitle: commentaryNameAr,
+    canonical: commentaryIntroductionPath,
+    context: {
+      book: { alias: 'quran' },
+      quranSearchProxy: true,
+      quranCommentaryBook: commentaryBook
+    }
+  };
+%>
+<%- include('sub-views/head.ejs', { site: site, page: page }); %>
+</head>
+<body>
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+
+  <div class="container-fluid quran-heading-layout quran-heading-layout-tafsir">
+    <div class="quran-heading-content quran-heading-content-tafsir">
+    <main class="chapter mt-10 tafsir-only-page<%= commentaryIsTranslation ? ' translation-only-page' : '' %>"<% if (!commentaryIsTranslation) { %> data-reader-infinite="tafsir" data-reader-context-key="0" data-reader-quran-ref="0:1" data-reader-current-url="<%= utils.quranUrl(req, commentaryIntroductionPath) %>"<% if (commentaryIntroductionPreviousPassage) { %> data-reader-prev-url="<%= utils.quranUrl(req, commentaryIntroductionPreviousPassage.href) %>" data-reader-prev-title="Previous: <%= commentaryIntroductionPreviousPassage.title %>"<% } %><% if (commentaryIntroductionNextUrl) { %> data-reader-next-url="<%= utils.quranUrl(req, commentaryIntroductionNextUrl) %>" data-reader-next-title="Next: §1.0"<% } %><% } %>>
+      <%- include('sub-views/quran_commentary_book_nav.ejs', {
+        quranCommentaryBook: commentaryBook,
+        quranCommentaryBooks: commentaryBooks,
+        Tafsir: Tafsir
+      }); %>
+
+      <heading class="row major">
+        <h1 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameEn %></a></h1>
+        <% if (commentaryNameAr && commentaryNameAr !== commentaryNameEn) { %><h1 class="col-md-6 col-sm-12 fs-4 title" lang="ar" dir="rtl"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameAr %></a></h1><% } %>
+      </heading>
+
+      <section class="row breadcrumbs pagination">
+        <div class="col-12" lang="en"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameEn %></a> &gt; Introduction</div>
+      </section>
+
+      <% var commentaryIntroductionArticles = locals.commentaryIntroductionArticles || []; %>
+      <% commentaryIntroductionArticles.forEach(function (article) { %>
+        <% if (site.editMode || utils.trimToEmpty(article.intro_en) || utils.trimToEmpty(article.intro)) { %>
+        <%- include('sub-views/quran_commentary_article.ejs', {
+          site: site,
+          Tafsir: Tafsir,
+          commentaryBook: commentaryBook,
+          article: article
+        }); %>
+        <% } %>
+      <% }); %>
+
+      <% if (site.editMode) { %>
+      <aside class="quran-commentary-introduction-admin my-4" data-commentary-book-id="<%= commentaryBook.id %>">
+        <button type="button" class="btn btn-sm btn-outline-primary" data-add-introduction-article><span class="bi bi-plus-circle"></span> Add introduction article</button>
+      </aside>
+      <% } %>
+    </main>
+    </div>
+    <%- include('sub-views/quran_commentary_introduction_rail.ejs', {
+      commentaryIntroductionArticles: locals.commentaryIntroductionArticles,
+      commentaryIntroductionNextH1: locals.commentaryIntroductionNextH1,
+      quranHeadingOutlines: locals.quranHeadingOutlines,
+      quranHeadingTafsirBase: commentaryBookPath,
+      commentaryBookPath: commentaryBookPath,
+      commentaryNameEn: commentaryNameEn
+    }); %>
+  </div>
+
+  <%- include('sub-views/mobile_navigation.ejs', {
+    site: site,
+    page: page,
+    prev: commentaryIntroductionPreviousPassage && utils.quranUrl(req, commentaryIntroductionPreviousPassage.href),
+    next: commentaryIntroductionNextUrl && utils.quranUrl(req, commentaryIntroductionNextUrl),
+    prevTitle: commentaryIntroductionPreviousPassage ? `Previous: ${commentaryIntroductionPreviousPassage.title}` : 'Previous',
+    nextTitle: commentaryIntroductionNextUrl ? 'Next: §1.0' : 'Next'
+  }); %>
+  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <% if (site.editMode) { %>
+  <script>
+  (function () {
+    const button = document.querySelector('[data-add-introduction-article]');
+    const admin = document.querySelector('[data-commentary-book-id]');
+    if (!button || !admin)
+      return;
+    button.addEventListener('click', async function () {
+      const title = window.prompt('English title for the new introduction article:', 'Introduction');
+      if (title === null)
+        return;
+      button.disabled = true;
+      try {
+        const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+        const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
+        if (token)
+          headers.Authorization = `Bearer ${token}`;
+        const response = await fetch(quranApiPath(`/update/${admin.dataset.commentaryBookId}/toc.commentaryArticleAdd`), {
+          method: 'POST', credentials: 'same-origin', headers: headers,
+          body: JSON.stringify({ value: { title_en: title } })
+        });
+        const body = await response.json();
+        if (!response.ok || body.code !== 200)
+          throw new Error(body.message || response.statusText);
+        window.location.hash = `introduction-${body.value.h2}`;
+        window.location.reload();
+      } catch (err) {
+        if (window.toastr)
+          toastr.error(err.message, 'Introduction article add failed');
+        else
+          alert(err.message);
+        button.disabled = false;
+      }
+    });
+  }());
+  </script>
+  <% } %>
+</body>
+</html>

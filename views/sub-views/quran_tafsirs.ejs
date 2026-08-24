@@ -35,6 +35,7 @@
 		? `${passageSurah}:${passageAyahHeadingRange}${passageSurahInfo?.name_en ? ` ${passageSurahInfo.name_en}` : ''}`
 		: `Tafsir of Passage ${tafsirSection}`;
 	const tafsirHeading = locals.tafsirHeading || passageTafsirHeading;
+	const tafsirHeadingHref = locals.tafsirHeadingHref || '';
 	const tafsirInstance = locals.tafsirInstance || 'passage';
 	const selectedTafsirAlias = locals.selectedTafsirAlias || '';
 	const selectedTafsirLanguage = locals.selectedTafsirLanguage || '';
@@ -43,14 +44,16 @@
 	const tafsirTranslationsModalIndex = Number.isInteger(locals.tafsirTranslationsModalIndex) ? locals.tafsirTranslationsModalIndex : -1;
 	const showAyahModalModeToggle = locals.showAyahModalModeToggle === true;
 	const initialTafsirBook = locals.selectedTafsirBook || null;
+	const selectedTafsirCarouselLanguage = initialTafsirBook ? Tafsir.carouselLanguage(initialTafsirBook) : '';
 	const initialTafsirEntries = Array.isArray(locals.initialTafsirEntries) ? locals.initialTafsirEntries : [];
 	const initialTafsirBooks = Array.isArray(locals.tafsirBooks) ? locals.tafsirBooks : [];
+	const dedicatedTafsirPage = tafsirInstance === 'passage' && Boolean(initialTafsirBook && selectedTafsirAlias);
 	const safeJson = function (value) {
 		return JSON.stringify(value).replace(/</g, '\\u003c');
 	};
 %>
 <% if (passageSurah && passageAyahs.length > 0) { %>
-<article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>"<% if (selectedTafsirAlias) { %> data-selected-tafsir="<%= selectedTafsirAlias %>"<% } %><% if (selectedTafsirLanguage) { %> data-selected-tafsir-language="<%= selectedTafsirLanguage %>"<% } %>>
+<article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>"<% if (selectedTafsirAlias) { %> data-selected-tafsir="<%= selectedTafsirAlias %>"<% } %><% if (selectedTafsirLanguage) { %> data-selected-tafsir-language="<%= selectedTafsirLanguage %>"<% } %><% if (selectedTafsirCarouselLanguage) { %> data-selected-tafsir-carousel-language="<%= selectedTafsirCarouselLanguage %>"<% } %>>
 	<script type="application/json" class="quran-tafsir-ayah-data"><%- JSON.stringify(passageAyahText).replace(/</g, '\\u003c') %></script>
 	<% if (initialTafsirBooks.length > 0) { %><script type="application/json" class="quran-tafsir-books-data"><%- safeJson(initialTafsirBooks) %></script><% } %>
 	<% if (initialTafsirBook) { %><script type="application/json" class="quran-tafsir-initial-data"><%- safeJson({
@@ -69,7 +72,7 @@
 	}) %></script><% } %>
 	<heading class="quran-tafsir-heading row heading py-2">
 		<h2 class="col-12 fs-5 title quran-section-heading-title mb-0" lang="en">
-			<span class="quran-section-heading-text"><%= tafsirHeading %></span>
+			<span class="quran-section-heading-text"><% if (tafsirHeadingHref) { %><a class="quran-section-heading-link" href="<%= tafsirHeadingHref %>"><%= tafsirHeading %></a><% } else { %><%= tafsirHeading %><% } %></span>
 			<span class="quran-section-heading-actions">
 				<% if (tafsirTranslationsModalIndex >= 0) { %>
 					<button type="button" class="quran-section-heading-action btn btn-sm btn-outline-secondary quran-ayah-modal-trigger" data-quran-ayah-modal-index="<%= tafsirTranslationsModalIndex %>" data-quran-ayah-modal-type="translations" title="View translations" aria-label="View translations">
@@ -91,19 +94,16 @@
 						<button type="button" class="btn btn-outline-secondary quran-ayah-modal-switch" data-quran-ayah-modal-switch="translations"><span class="bi bi-translate" aria-hidden="true"></span><span>Translations</span></button>
 					</span>
 				<% } %>
-				<span class="btn-group btn-group-sm quran-tafsir-language-toggle" role="group" aria-label="Tafsir language">
-					<button type="button" class="btn btn-outline-secondary" data-tafsir-language="ar"><span class="quran-tafsir-language-label-full">Arabic</span><span class="quran-tafsir-language-label-short" lang="ar" dir="rtl">ع</span></button>
-					<button type="button" class="btn btn-outline-secondary active" data-tafsir-language="en"><span class="quran-tafsir-language-label-full">English</span><span class="quran-tafsir-language-label-short">A</span></button>
-				</span>
 			</span>
 		</h2>
 	</heading>
-	<div class="h-menu-wrap mb-3">
+	<div class="h-menu-wrap mb-3<%= dedicatedTafsirPage ? ' d-none' : '' %>"<% if (dedicatedTafsirPage) { %> aria-hidden="true"<% } %>>
 		<div class="h-menu-hint d-md-none">
 			<i class="bi bi-arrow-left-right"></i> Swipe to browse tafsirs
 		</div>
 		<div class="h-menu-scroller">
 			<div class="btn-group h-menu quran-tafsir-tabs text-nowrap" role="tablist">
+				<%- include('tafsirCarouselLanguageSwitch') %>
 				<%- include('bookCarouselFilter') %>
 			</div>
 		</div>

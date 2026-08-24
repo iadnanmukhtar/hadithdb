@@ -14,6 +14,9 @@
 	  : '';
 	if (quranHeadingTafsirBase)
 	  quranHeadingBookShortName = quranHeadingBookShortName.replace(/^Tafsir\s+/i, '');
+  var quranHeadingIntroductionArticles = (locals.commentaryIntroductionArticles || []).filter(function (article) {
+    return utils.trimToEmpty(article && article.intro) || utils.trimToEmpty(article && article.intro_en);
+  });
   if (!quranHeadingInitialKey && quranHeadingOutline && Number.isInteger(quranHeadingInitialAyah)) {
     (quranHeadingOutline.sections || []).forEach(function (section) {
       if (quranHeadingInitialAyah < section.start || quranHeadingInitialAyah > section.end)
@@ -47,11 +50,15 @@
     return utils.quranUrl(req, `/quran${quranHeadingTranslationAlias ? `/${encodeURIComponent(quranHeadingTranslationAlias)}` : ''}/${heading.number}`);
   }
   var quranHeadingBookHref = utils.quranUrl(req, quranHeadingTafsirBase || `/quran${quranHeadingTranslationAlias ? `/${encodeURIComponent(quranHeadingTranslationAlias)}` : ''}`);
+  var quranHeadingIntroductionHref = `${quranHeadingBookHref}/introduction`;
 %>
 <% if (quranHeadingOutline && (quranHeadingOutline.sections || []).length > 0) { %>
 <aside class="quran-heading-toc d-none d-lg-block" data-quran-heading-toc data-quran-heading-initial-key="<%= quranHeadingInitialKey %>"<% if (quranHeadingTranslationAlias) { %> data-quran-heading-translation-alias="<%= quranHeadingTranslationAlias %>"<% } %><% if (quranHeadingTafsirBase) { %> data-quran-heading-tafsir-base="<%= quranHeadingTafsirBase %>"<% } %> aria-labelledby="quran-heading-toc-title">
   <div class="quran-heading-toc-sticky">
     <% if (quranHeadingBookShortName) { %><a class="heading-toc-book-name" href="<%= quranHeadingBookHref %>" data-quran-heading-toc-book><%= quranHeadingBookShortName.toUpperCase() %></a><% } %>
+    <% quranHeadingIntroductionArticles.forEach(function (article) { %>
+    <a class="nav-link quran-heading-toc-link quran-commentary-introduction-rail-link" href="<%= `${quranHeadingIntroductionHref}#introduction-${article.h2}` %>" data-quran-introduction-heading="<%= article.h2 %>"<% if (quranHeadingInitialSurah !== 1) { %> hidden<% } %>><%= utils.trimToEmpty(article.title_en) || utils.trimToEmpty(article.title) || 'Introduction by the author' %></a>
+    <% }); %>
     <a class="nav-link quran-heading-toc-link heading-toc-adjacent-h1 heading-toc-previous-h1" data-quran-heading-h1-prev<% if (quranHeadingOutline.previousH1) { %> href="<%= quranHeadingH1Href(quranHeadingOutline.previousH1) %>" rel="prev" title="Previous surah: <%= quranHeadingH1Label(quranHeadingOutline.previousH1) %>"><%= quranHeadingH1Label(quranHeadingOutline.previousH1) %><% } else { %> hidden><% } %></a>
     <strong id="quran-heading-toc-title" class="quran-heading-toc-title" data-quran-heading-toc-surah><%= quranHeadingOutline.surah %><% if (quranHeadingOutline.nameEn) { %> <%= quranHeadingOutline.nameEn %><% } %></strong>
     <nav class="nav flex-column quran-heading-toc-nav" data-quran-heading-toc-nav aria-label="Headings in Surah <%= quranHeadingOutline.surah %>">

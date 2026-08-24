@@ -4,6 +4,8 @@
 		const group = tafsirBooks.filter(function (tafsir) {
 			return tafsir.lang === lang;
 		}).sort(function (a, b) {
+			if (Tafsir.isDefaultTafsir(a) !== Tafsir.isDefaultTafsir(b))
+				return Tafsir.isDefaultTafsir(a) ? -1 : 1;
 			const ordinal = Number(a.ordinal || 0) - Number(b.ordinal || 0);
 			if (ordinal !== 0)
 				return ordinal;
@@ -33,25 +35,8 @@
 		const label = tafsirSizeLabel(tafsir);
 		if (!label)
 			return '';
-		return `<span class="tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
+		return `<span class="tafsir-size-indicator tafsir-size-indicator-${size}" aria-label="${label}" role="img"></span>`;
 	}
-	function tafsirDeathTooltipLabel(tafsir) {
-		var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
-		if (!death)
-			return '';
-		if (!/\b(?:AH|H)\b/i.test(death) && !/هـ/u.test(death))
-			death = `${death} AH`;
-		return /^d\./i.test(death) ? death : `d. ${death}`;
-	}
-		function tafsirBookTooltip(tafsir) {
-			return [
-				tafsir.name_en || tafsir.title || tafsir.shortName_en || tafsir.shortName || tafsir.alias,
-				tafsir.author_en || tafsir.author,
-				tafsirDeathTooltipLabel(tafsir),
-				tafsir.published_year ? `Pub. ${tafsir.published_year}` : '',
-				tafsir.publisher
-			].filter(Boolean).join('\n');
-		}
 %>
 <% if (orderedTafsirs.length > 0) { %>
 	<div class="h-menu-wrap mb-3">
@@ -60,9 +45,10 @@
 		</div>
 		<div class="h-menu-scroller">
 			<div class="btn-group h-menu text-nowrap" role="group">
+				<%- include('tafsirCarouselLanguageSwitch') %>
 				<%- include('bookCarouselFilter') %>
 				<% orderedTafsirs.forEach(function (tafsir) { %>
-					<a class="btn btn-outline-primary text-nowrap tafsir-book-tooltip" href="<%= tafsirBookHref(tafsir) %>" data-tafsir-tooltip="<%= tafsirBookTooltip(tafsir) %>" data-book-carousel-item data-book-carousel-search="<%= [tafsir.name_en, tafsir.shortName_en, tafsir.title, tafsir.shortName, tafsir.author_en, tafsir.author, tafsir.alias].filter(Boolean).join(' ') %>" data-tafsir-book-nav-item data-tafsir-alias="<%= tafsir.alias %>" data-tafsir-lang="<%= tafsir.lang %>" data-tafsir-death="<%= tafsir.death || '' %>" data-tafsir-ordinal="<%= tafsir.ordinal || 0 %>"><%- tafsirBookLabel(tafsir) %><%- tafsirSizeIndicator(tafsir) %></a>
+					<a class="btn btn-outline-primary text-nowrap" href="<%= tafsirBookHref(tafsir) %>" data-book-carousel-item data-book-carousel-search="<%= [tafsir.name_en, tafsir.shortName_en, tafsir.title, tafsir.shortName, tafsir.author_en, tafsir.author, tafsir.alias].filter(Boolean).join(' ') %>" data-tafsir-book-nav-item data-tafsir-alias="<%= tafsir.alias %>" data-tafsir-lang="<%= tafsir.lang %>" data-tafsir-carousel-language="<%= Tafsir.carouselLanguage(tafsir) %>" data-tafsir-death="<%= tafsir.death || '' %>" data-tafsir-ordinal="<%= tafsir.ordinal || 0 %>"><%- tafsirBookLabel(tafsir) %><%- tafsirSizeIndicator(tafsir) %></a>
 				<% }); %>
 			</div>
 		</div>

@@ -14,9 +14,11 @@ function render(outlines, options = {}) {
     quranHeadingTranslationAlias: options.translationAlias,
 	quranHeadingTafsirBase: options.tafsirBase,
 	quranHeadingBookShortName: options.bookShortName,
+    commentaryIntroductionArticles: options.introductionArticles,
     req: {},
     utils: {
-      quranUrl: (_req, href) => href
+      quranUrl: (_req, href) => href,
+      trimToEmpty: value => value === undefined || value === null ? '' : value.toString().trim()
     }
   });
 }
@@ -131,4 +133,46 @@ describe('Quran heading rail', () => {
 	  expect(html).toContain('href="/quran/tafsir/tabari/3" rel="next"');
 	  expect(html).toMatch(/data-quran-heading-key="2\.3\.1"[^>]*aria-current="location"/);
 	});
+
+  test('lists each authored introduction article before the surah hierarchy', async () => {
+    const html = await render({
+      1: {
+        surah: 1,
+        nameEn: 'al-Fatihah',
+        sections: [{ key: '1.1', level: 2, surah: 1, section: 1, title: 'Opening', start: 1, end: 7, subsections: [] }]
+      }
+    }, {
+      surah: 1,
+      ayah: 1,
+      tafsirBase: '/quran/tafsir/unal',
+      introductionArticles: [
+        { h2: 1, title_en: 'Foreword', intro_en: 'Text' },
+        { h2: 2, title_en: 'Method', intro_en: 'Text' },
+        { h2: 3, title_en: 'Empty', intro_en: '' }
+      ]
+    });
+
+    expect(html).toMatch(/href="\/quran\/tafsir\/unal\/introduction#introduction-1"[^>]*>Foreword<\/a>/);
+    expect(html).toMatch(/href="\/quran\/tafsir\/unal\/introduction#introduction-2"[^>]*>Method<\/a>/);
+    expect(html).not.toContain('>Empty</a>');
+    expect(html.indexOf('>Foreword</a>')).toBeLessThan(html.indexOf('>1 al-Fatihah</strong>'));
+  });
+
+  test('does not list introduction articles after Surah 1', async () => {
+	const html = await render({
+	  2: {
+		surah: 2,
+		nameEn: 'al-Baqarah',
+		sections: [{ key: '2.1', level: 2, surah: 2, section: 1, title: 'Guidance', start: 1, end: 5, subsections: [] }]
+	  }
+	}, {
+	  surah: 2,
+	  ayah: 1,
+	  tafsirBase: '/quran/tafsir/unal',
+	  introductionArticles: [{ h2: 1, title_en: 'Foreword', intro_en: 'Text' }]
+	});
+
+	expect(html).toContain('quran-commentary-introduction-rail-link');
+	expect(html).toMatch(/data-quran-introduction-heading="1" hidden>Foreword<\/a>/);
+  });
 });

@@ -9,6 +9,7 @@ const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const BookDownloads = require('../lib/BookDownloads');
 const HttpRange = require('../lib/HttpRange');
+const QuranAyahNavigation = require('../lib/QuranAyahNavigation');
 const { Item } = require('../lib/Model');
 
 const router = express.Router();
@@ -167,23 +168,7 @@ function translationNavigation(surah, ayah) {
 }
 
 function adjacentQuranAyah(surah, ayah, direction) {
-  surah = Number(surah);
-  ayah = Number(ayah);
-  direction = direction > 0 ? 1 : -1;
-  const currentSurah = (global.surahs || []).find(item => Number(item.num) === surah);
-  if (!currentSurah)
-    return null;
-  if (direction > 0 && ayah < Number(currentSurah.ayahs))
-    return { surah: surah, ayah: ayah + 1 };
-  if (direction < 0 && ayah > 1)
-    return { surah: surah, ayah: ayah - 1 };
-  const nextSurah = (global.surahs || []).find(item => Number(item.num) === surah + direction);
-  if (!nextSurah)
-    return null;
-  return {
-    surah: Number(nextSurah.num),
-    ayah: direction > 0 ? 1 : Number(nextSurah.ayahs)
-  };
+	return QuranAyahNavigation.adjacent(surah, ayah, direction);
 }
 
 function quranAdjacentRef(surah, ayah, direction) {

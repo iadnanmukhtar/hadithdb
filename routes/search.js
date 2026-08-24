@@ -11,6 +11,7 @@ const ejs = require('ejs');
 const Search = require('../lib/Search');
 const Hadith = require('../lib/Hadith');
 const Tafsir = require('../lib/Tafsir');
+const CommentaryHeadings = require('../lib/CommentaryHeadings');
 const Utils = require('../lib/Utils');
 const { Subsection, Section, Chapter, Heading, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
@@ -23,6 +24,7 @@ const QuranScripts = require('../lib/QuranScripts');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
 const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
+const HadithHeadingNavigation = require('../lib/HadithHeadingNavigation');
 const QuranHeadings = require('../lib/QuranHeadings');
 const QuranMushaf = require('../lib/QuranMushaf');
 const QuranSimilarAyahs = require('../lib/QuranSimilarAyahs');
@@ -169,17 +171,7 @@ function visibleBookByAlias(value) {
 }
 
 async function applySameBookHeadingNavigation(heading) {
-  if (!heading || !heading.book_alias || !Number.isFinite(Number(heading.ordinal)))
-    return heading;
-  var level = Number(heading.level);
-  if (level !== 1 && level !== 2)
-    return heading;
-  var baseQuery = `book_alias:${heading.book_alias} AND level:${level}`;
-  var prev = await Index.docsFromQueryString(Heading.INDEX, `${baseQuery} AND ordinal:<${heading.ordinal}`, 0, 1, 'ordinal DESC');
-  var next = await Index.docsFromQueryString(Heading.INDEX, `${baseQuery} AND ordinal:>${heading.ordinal}`, 0, 1, 'ordinal ASC');
-  heading.prev = prev.length > 0 ? Heading.toLevel(prev[0]) : null;
-  heading.next = next.length > 0 ? Heading.toLevel(next[0]) : null;
-  return heading;
+  return HadithHeadingNavigation.applySameBookHeadingNavigation(heading);
 }
 
 function validQuranAyah(surah, ayah) {
@@ -2932,6 +2924,7 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
     }).filter(Number.isInteger)))
     : null;
   var quranTocDefaultView = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
+  var commentaryIntroductionArticles = await CommentaryHeadings.introductionArticles(quranCommentaryBook.id);
   var renderLocals = {
     book: book,
     surahs: global.surahs || [],
@@ -2941,6 +2934,7 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
     quranCommentaryAvailableSurahs: quranCommentaryAvailableSurahs,
     quranTocDefaultView: quranTocDefaultView,
     BookDownloads: BookDownloads,
+    commentaryIntroductionArticles: commentaryIntroductionArticles,
     prevBook: null,
     nextBook: null,
     toc: results,
@@ -3137,6 +3131,30 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
 });
 
+router.get('/quran/:translationAlias/introduction', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
+  const translation = visibleQuranTranslationByAlias(req.params.translationAlias);
+  if (!translation)
+    return next();
+  const commentaryIntroductionArticles = await CommentaryHeadings.introductionArticles(translation.id);
+  if (!CommentaryHeadings.hasIntroduction(commentaryIntroductionArticles) && !(req.admin && req.editMode))
+    return next(createError(404, `No authored introduction is available for ${translation.shortName_en || translation.alias}`));
+  const firstIntroductionPassage = await Tafsir.firstPassage(translation);
+  const firstIntroductionSurah = firstIntroductionPassage && (global.surahs || []).find(item => Number(item.num) === Number(firstIntroductionPassage.surah));
+  res.render('quran_commentary_introduction', {
+    Tafsir: Tafsir,
+    commentaryIntroductionArticles: commentaryIntroductionArticles,
+    commentaryIntroductionNextH1: firstIntroductionPassage ? {
+      number: Number(firstIntroductionPassage.surah),
+      title: firstIntroductionSurah && firstIntroductionSurah.name_en || '',
+      href: `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}/${Number(firstIntroductionPassage.surah)}`
+    } : null,
+    quranCommentaryBook: translation,
+    quranCommentaryBooks: await Tafsir.visibleTranslations()
+  });
+});
+
 router.get('/quran/:translationAlias/juz/:number', async function (req, res, next) {
   var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
   if (!translation)
@@ -3222,6 +3240,19 @@ router.get('/quran/:translationAlias/:chapterNum', async function (req, res, nex
   var targetPath = `/quran/${encodeURIComponent(translation.alias)}/${surah}/${Number(first.ayah)}`;
   return res.redirect(302, Utils.quranPath(targetPath));
 });
+
+function isFirstQuranChapterSection(section, chapter) {
+  const first = Array.isArray(chapter && chapter.sections)
+    ? chapter.sections.find(candidate => Number(candidate && candidate.h2) > 0)
+    : null;
+  if (!section || !first)
+    return false;
+  if (section.id !== undefined && first.id !== undefined && String(section.id) === String(first.id))
+    return true;
+  if (section.path && first.path && section.path === first.path)
+    return true;
+  return Number(section.h2) === Number(first.h2);
+}
 
 // BOOK: SECTION
 router.get('/:bookAlias/:chapterNum/:sectionNum', renderBookSection);
@@ -3319,6 +3350,7 @@ async function renderBookSection(req, res, next) {
     var chapter = await section.getChapter();
     await chapter.getPrev();
     await chapter.getNext();
+    await applySameBookHeadingNavigation(chapter);
     await chapter.getSections();
     var hadithHeadingOutlines = bookAlias === 'quran' ? {} : await HadithHeadingOutlines.forChapter(chapter);
     if (bookAlias === 'quran') {
@@ -3361,6 +3393,16 @@ async function renderBookSection(req, res, next) {
       results.push(item);
     }
 
+    var commentarySurahHeading = null;
+    var commentaryIntroductionArticles = [];
+    if (isQuranPassageSection && selectedTranslation && isFirstQuranChapterSection(section, chapter)) {
+      commentarySurahHeading = await CommentaryHeadings.chapter(selectedTranslation.id, chapterNum);
+      if (!commentarySurahHeading && req.admin && req.editMode)
+        commentarySurahHeading = await CommentaryHeadings.ensureChapter(selectedTranslation.id, chapterNum, '');
+    }
+    if (isQuranPassageSection && selectedTranslation)
+      commentaryIntroductionArticles = await CommentaryHeadings.introductionArticles(selectedTranslation.id);
+
     if (isQuranPassageSection) {
 
       // cache response
@@ -3369,6 +3411,8 @@ async function renderBookSection(req, res, next) {
         refs.push(item.ref);
       var html = await ejs.renderFile(`${__dirname}/../views/section_quran.ejs`, cachedRenderLocals(res, {
         Tafsir: Tafsir,
+        commentarySurahHeading: commentarySurahHeading,
+        commentaryIntroductionArticles: commentaryIntroductionArticles,
         noadmin: true,
         section: section,
         results: results,
@@ -3384,6 +3428,8 @@ async function renderBookSection(req, res, next) {
 
       res.render('section_quran', {
         Tafsir: Tafsir,
+        commentarySurahHeading: commentarySurahHeading,
+        commentaryIntroductionArticles: commentaryIntroductionArticles,
         section: section,
         results: results,
         selectedAyahs: [],
