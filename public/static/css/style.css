@@ -100,10 +100,11 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--c-accent: #2c9be5;
 	--c-speech: #1b7b00;
 	--c-note: #004a9f;
-	--c-gray-mid: #a0a0a0;
+	--c-muted: color-mix(in srgb, var(--bs-body-color) 62%, var(--bs-body-bg) 38%);
+	--c-gray-mid: var(--c-muted);
 	--c-gray-dark: #808080;
 	--c-gray-very-dark: #606060;
-	--c-footnote-muted: color-mix(in srgb, var(--bs-body-color) 48%, var(--bs-body-bg) 52%);
+	--c-footnote-muted: var(--c-muted);
 	--c-white: #ffffff;
 	--c-white-transparent: rgba(255, 255, 255, 0);
 	--c-white-72: rgba(255, 255, 255, 0.72);
@@ -328,7 +329,7 @@ a._click {
 }
 
 sup {
-	color: var(--c-gray-mid);
+	color: var(--c-footnote-muted);
 }
 
 :lang(ar) sup {
@@ -8632,6 +8633,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 
 .quran-footnotes .footnote,
 .quran-footnotes .footnote p {
+	color: var(--c-footnote-muted);
 	text-indent: 0;
 }
 
@@ -9921,17 +9923,56 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	line-height: 1.35 !important;
 }
 
-.quran-tafsir-text:lang(ar) .footnotes,
-.quran-tafsir-text:lang(ar) .footnotes p,
+.quran-tafsir-text .footnotes p:lang(ar),
+.quran-tafsir-text .footnotes li:lang(ar)::marker {
+	font-size: calc(1rem * var(--content-font-scale)) !important;
+	line-height: 1.45 !important;
+}
+
 .quran-translation-text:lang(ar) .footnotes,
 .quran-translation-text:lang(ar) .footnotes p {
 	font-size: .95rem !important;
 	line-height: 1.45 !important;
 }
 
-.quran-tafsir-text:lang(ar) .footnotes li::marker,
 .quran-translation-text:lang(ar) .footnotes li::marker {
 	font-size: .95rem !important;
+	line-height: 1.45 !important;
+}
+
+.quran-tafsir-text.quran-footnotes-size-md .footnotes,
+.quran-translation-text.quran-footnotes-size-md .footnotes {
+	font-size: .9em !important;
+	line-height: inherit !important;
+}
+
+.quran-tafsir-text.quran-footnotes-size-md .footnotes p,
+.quran-tafsir-text.quran-footnotes-size-md .footnotes li::marker,
+.quran-translation-text.quran-footnotes-size-md .footnotes p,
+.quran-translation-text.quran-footnotes-size-md .footnotes li::marker,
+.quran-tafsir-text.quran-footnotes-size-lg .footnotes p,
+.quran-tafsir-text.quran-footnotes-size-lg .footnotes li::marker,
+.quran-translation-text.quran-footnotes-size-lg .footnotes p,
+.quran-translation-text.quran-footnotes-size-lg .footnotes li::marker {
+	font-size: inherit !important;
+	line-height: inherit !important;
+}
+
+.quran-tafsir-text.quran-footnotes-size-lg .footnotes,
+.quran-translation-text.quran-footnotes-size-lg .footnotes {
+	font-size: 1em !important;
+	line-height: inherit !important;
+}
+
+.quran-tafsir-text.quran-footnotes-size-md .footnotes p:lang(ar),
+.quran-tafsir-text.quran-footnotes-size-md .footnotes li:lang(ar)::marker {
+	font-size: calc(var(--f-size-ar) * .94) !important;
+	line-height: 1.45 !important;
+}
+
+.quran-tafsir-text.quran-footnotes-size-lg .footnotes p:lang(ar),
+.quran-tafsir-text.quran-footnotes-size-lg .footnotes li:lang(ar)::marker {
+	font-size: var(--f-size-ar) !important;
 	line-height: 1.45 !important;
 }
 
@@ -9980,6 +10021,14 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	margin-top: .75rem;
 	padding-top: .6rem;
 	text-indent: 0;
+}
+
+.quran-preferred-translation-footnotes.quran-footnotes-size-md {
+	font-size: var(--content-size-meta);
+}
+
+.quran-preferred-translation-footnotes.quran-footnotes-size-lg {
+	font-size: var(--content-size-body);
 }
 
 .quran-preferred-translation-footnotes .footnotes-sep {
@@ -10528,7 +10577,7 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 }
 
 .h .footnote {
-	color: var(--c-gray-mid);
+	color: var(--c-footnote-muted);
 	text-indent: 2em;
 }
 

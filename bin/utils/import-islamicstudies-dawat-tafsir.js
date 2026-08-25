@@ -33,6 +33,7 @@ const SOURCES = Object.freeze({
 	ishraq: Object.freeze({
 		alias: 'ishraq',
 		label: 'Ishraq',
+		escapeMarkdownBackticks: true,
 		expectedPassages: 556,
 		book: Object.freeze({
 			alias: 'ishraq',
@@ -119,7 +120,7 @@ async function downloadSource(options) {
 			const index = nextRange++;
 			const range = ranges[index];
 			const html = await fetchPage(passageUrl(range.surah, range.ayahFrom, range.ayahTo, options.profile.alias), options);
-			passages[index] = parsePassagePage(html, range);
+			passages[index] = parsePassagePage(html, range, options.profile);
 			completedRanges++;
 			if (completedRanges % 50 === 0 || completedRanges === ranges.length)
 				console.log(`Downloaded ${completedRanges}/${ranges.length} passage page(s)...`);
@@ -187,7 +188,7 @@ function parseChapterRanges(html, expectedSurah, alias = 'dawat') {
 	return ranges;
 }
 
-function parsePassagePage(html, expected) {
+function parsePassagePage(html, expected, profile = SOURCES.dawat) {
 	const $ = cheerio.load(html);
 	const sourceRange = normalizeText($('#page center b').filter(function () {
 		return /Quran Text of Verse/i.test($(this).text());
@@ -214,13 +215,32 @@ function parsePassagePage(html, expected) {
 	const converted = convertSourceFootnotes(translations.join('\n\n'), sourceFootnotes);
 	if (converted.unresolved.length)
 		console.warn(`Surah ${expected.surah}:${expected.ayahFrom}-${expected.ayahTo}: source commentary is missing note(s) ${converted.unresolved.join(', ')}; preserving those markers as superscript text.`);
+	const text_en = ['### Translation', converted.text].join('\n\n');
 	return {
 		surah: expected.surah,
 		ayahFrom: expected.ayahFrom,
 		ayahTo: expected.ayahTo,
-		text_en: ['### Translation', converted.text].join('\n\n'),
-		footnotes_en: converted.footnotes
+		text_en: normalizeSourceBackticks(text_en, profile),
+		footnotes_en: normalizeSourceBackticks(converted.footnotes, profile)
 	};
+}
+
+function normalizeSourceBackticks(value, profile) {
+	if (!profile.escapeMarkdownBackticks)
+		return value;
+	let backslashes = 0;
+	let escaped = '';
+	for (const character of String(value || '')) {
+		if (character === '`' && backslashes % 2 === 0)
+			escaped += '\\';
+		escaped += character;
+		backslashes = character === '\\' ? backslashes + 1 : 0;
+	}
+	return escaped;
+}
+
+function hasUnescapedSourceBackticks(value) {
+	return normalizeSourceBackticks(value, { escapeMarkdownBackticks: true }) !== String(value || '');
 }
 
 function blockMarkdown($, element, preserveSup) {
@@ -347,6 +367,8 @@ function validatePassages(passages, verseCounts, profile = SOURCES.dawat) {
 		for (const row of rows) {
 			if (!normalizeText(row.text_en))
 				throw new Error(`Surah ${surah}:${row.ayahFrom}-${row.ayahTo}: empty ${profile.label} text.`);
+			if (profile.escapeMarkdownBackticks && (hasUnescapedSourceBackticks(row.text_en) || hasUnescapedSourceBackticks(row.footnotes_en)))
+				throw new Error(`${profile.label} ${passageKey(row)} contains unescaped Markdown backticks.`);
 			validateMarkdownFootnotes(row, profile);
 		}
 	}

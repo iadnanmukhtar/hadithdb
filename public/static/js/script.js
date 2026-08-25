@@ -2256,10 +2256,11 @@ function initQuranTafsirTabs(root) {
 			panel.toggleClass('is-disabled', disabled);
 			appendSourceHeader(panel, book);
 			$('<p>').addClass('quran-tafsir-status text-muted').text(disabled ? 'This tafsir is hidden in My Settings.' : 'Select this tab to load the tafsir.').appendTo(panel);
-			$('<div>').addClass('quran-tafsir-text').attr({
+			var tafsirText = $('<div>').addClass('quran-tafsir-text').attr({
 				lang: book.lang,
 				dir: book.lang === 'ar' ? 'rtl' : 'ltr'
 			}).appendTo(panel);
+			applyQuranCommentaryFootnoteSize(tafsirText, book);
 			panel.find('[data-tafsir-enable-toggle]').prop('checked', !disabled);
 		};
 		var adminTafsirCacheParam = function () {
@@ -3099,7 +3100,8 @@ function initQuranTafsirTabs(root) {
 					bindTranslationEnableToggle(entry, book);
 				if (canManageTranslationVisibility)
 					setTranslationEntryDisabled(entry, !!disabled);
-				$('<div>').addClass('quran-translation-text').html(payload.html || payload.data || '').appendTo(entry);
+				var translationText = $('<div>').addClass('quran-translation-text').html(payload.html || payload.data || '').appendTo(entry);
+				applyQuranCommentaryFootnoteSize(translationText, book);
 			};
 		Promise.resolve()
 			.then(function () {
@@ -3302,6 +3304,35 @@ function compactQuranHeroTranslationHtml(html) {
 
 function quranTranslationFootnoteIdPart(value) {
 	return (value || '').toString().replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'translation';
+}
+
+function quranCommentaryProperties(book) {
+	var properties = book && book.properties;
+	if (typeof properties === 'string') {
+		try {
+			properties = JSON.parse(properties);
+		} catch (_err) {
+			properties = {};
+		}
+	}
+	return properties && typeof properties === 'object' && !Array.isArray(properties) ? properties : {};
+}
+
+function quranCommentaryFootnoteSize(book) {
+	var properties = quranCommentaryProperties(book);
+	var size = properties.rendering && properties.rendering.footnotes;
+	return ['sm', 'md', 'lg'].includes(size) ? size : 'sm';
+}
+
+function applyQuranCommentaryFootnoteSize(element, book) {
+	var node = element && element.jquery ? element[0] : element;
+	if (!node || !node.classList)
+		return;
+	var size = quranCommentaryFootnoteSize(book);
+	['sm', 'md', 'lg'].forEach(function (candidate) {
+		node.classList.toggle(`quran-footnotes-size-${candidate}`, candidate === size);
+	});
+	node.setAttribute('data-quran-footnotes-size', size);
 }
 
 function quranSelectedTranslationFootnoteHolder(target) {
@@ -3612,6 +3643,7 @@ function applyQuranTranslationEntryToTarget(target, book, entry) {
 		return;
 	var alias = book && book.source !== 'default' ? book.alias : '';
 	var sourceHtml = entry.html || entry.data || '';
+	applyQuranCommentaryFootnoteSize(quranSelectedTranslationFootnoteHolder(target), book);
 	if (entry.edit) {
 		var footnoteHolder = quranSelectedTranslationFootnoteHolder(target);
 		var initialFootnoteNodeCount = footnoteHolder ? footnoteHolder.childNodes.length : 0;
@@ -3711,6 +3743,7 @@ function applyQuranTranslationToTarget(target, book) {
 	storeDefaultQuranTranslationTarget(target);
 	var alias = book && book.source !== 'default' ? book.alias : '';
 	if (!book || book.source === 'default') {
+		applyQuranCommentaryFootnoteSize(quranSelectedTranslationFootnoteHolder(target), book);
 		restoreDefaultQuranTranslationEditor(target);
 		setQuranTranslationTargetEditable(target, true);
 		target.innerHTML = target.dataset.quranDefaultTranslationHtml || '';
@@ -6666,6 +6699,7 @@ function initQuranPreferredTranslationDisplays(root) {
 			var label = selectedTranslationAlias ? quranTranslationBookLabel(book) : defaultQuranTranslationShortName();
 			clearQuranSelectedTranslationFootnotes(scope);
 			targets.forEach(function (target) {
+				applyQuranCommentaryFootnoteSize(quranSelectedTranslationFootnoteHolder(target), book);
 				setQuranTranslationTargetEditable(target, !selectedTranslationAlias);
 				target.innerHTML = quranPassageTranslationHtml(target.innerHTML || '', target, selectedTranslationAlias);
 				if (!selectedTranslationAlias)

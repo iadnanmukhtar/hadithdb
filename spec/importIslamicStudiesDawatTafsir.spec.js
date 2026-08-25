@@ -99,6 +99,19 @@ describe('IslamicStudies.info Dawat tafsir importer', () => {
 		});
 	});
 
+	test('escapes Ishraq source backticks so they render as literal punctuation', () => {
+		const html = `
+			<div id="page">
+				<center><b>Quran Text of Verse 1</b></center>
+				<p class="tr">1. \`Umar read al-ta\`awwudh.<sup>1</sup></p>
+				<div id="notes"><p class="nt">1. From \`Umdatu al-Qari by \`Ayni.</p></div>
+			</div>`;
+		expect(parsePassagePage(html, { surah: 1, ayahFrom: 1, ayahTo: 1 }, SOURCES.ishraq)).toMatchObject({
+			text_en: '### Translation\n\n**1.** \\`Umar read al-ta\\`awwudh.[^1]',
+			footnotes_en: '[^1]: From \\`Umdatu al-Qari by \\`Ayni.'
+		});
+	});
+
 	test('reconciles a malformed source marker with its unmatched definition', () => {
 		const html = `
 			<div id="page">
@@ -140,6 +153,17 @@ describe('IslamicStudies.info Dawat tafsir importer', () => {
 		expect(validatePassages(passages)).toBe(true);
 		passages[1].ayahFrom = 2;
 		expect(() => validatePassages(passages)).toThrow('Surah 2: first Dawat passage starts at ayah 2');
+	});
+
+	test('rejects cached Ishraq passages with unescaped Markdown backticks', () => {
+		const passages = Array.from({ length: 114 }, (_, index) => ({
+			surah: index + 1,
+			ayahFrom: 1,
+			ayahTo: 1,
+			text_en: index ? 'Text' : 'Text with `literal punctuation'
+		}));
+		expect(() => validatePassages(passages, undefined, SOURCES.ishraq))
+			.toThrow('Ishraq 1:1-1 contains unescaped Markdown backticks');
 	});
 
 	test('is dry-run by default and requires full Quran scope', () => {
