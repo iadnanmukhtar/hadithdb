@@ -409,7 +409,8 @@
         if (isQuranToc)
           return utils.urlFor(req, quranTocNormalizeQuranPath(targetPath));
         targetPath = (targetPath || '').toString();
-        return utils.urlFor(req, targetPath.charAt(0) === '/' ? targetPath : `/${targetPath}`);
+        targetPath = targetPath.charAt(0) === '/' ? targetPath : `/${targetPath}`;
+        return utils.urlFor(req, utils.canonicalHadithHeadingPath(targetPath));
       }
       if (quranCommentaryBook.type === 'trans') {
         var sectionRef = quranHeadingSectionRef(heading);

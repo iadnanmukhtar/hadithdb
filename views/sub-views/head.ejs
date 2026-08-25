@@ -21,6 +21,8 @@
   }
   if (page.canonical)
     page.canonical = cleanCanonicalPath(page.canonical);
+  if (page.canonical && page.context && page.context.book && page.context.book.alias !== 'quran')
+    page.canonical = utils.canonicalHadithHeadingPath(page.canonical);
   var quranCanonicalBaseUrl = site.quranUrl || utils.quranBaseUrl(req);
   var hadithCanonicalBaseUrl = site.url || utils.hadithBaseUrl(req);
   var isQuranHeadPage = page
@@ -106,12 +108,14 @@
   function contextChapterUrl(book, chapter) {
     if (!book || !book.alias || !chapter)
       return '';
-    return canonicalUrlForPath(`/${book.alias}/${chapter.h1}`);
+    var path = `/${book.alias}/${chapter.h1}`;
+    return canonicalUrlForPath(book.alias === 'quran' ? path : utils.canonicalHadithHeadingPath(path));
   }
   function contextSectionUrl(book, chapter, section) {
     if (!book || !book.alias || !chapter || !section)
       return '';
-    return canonicalUrlForPath(`/${book.alias}/${chapter.h1}/${section.h2}`);
+    var path = `/${book.alias}/${chapter.h1}/${section.h2}`;
+    return canonicalUrlForPath(book.alias === 'quran' ? path : utils.canonicalHadithHeadingPath(path));
   }
 %>
 <% if (typeof newrelic !== 'undefined' && newrelic && typeof newrelic.getBrowserTimingHeader === 'function') { %>

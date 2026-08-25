@@ -8,6 +8,10 @@ describe('shared header navigation', () => {
     path.join(__dirname, '..', 'views', 'sub-views', 'header.ejs'),
     'utf8'
   );
+  const offcanvasPrimaryNav = fs.readFileSync(
+    path.join(__dirname, '..', 'views', 'sub-views', 'offcanvas_primary_nav.ejs'),
+    'utf8'
+  );
   const styles = fs.readFileSync(
     path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'),
     'utf8'
@@ -53,6 +57,24 @@ describe('shared header navigation', () => {
     expect(header.match(/class="[^"]*top-nav-menu-toggle[^"]*"/g)).toHaveLength(1);
     expect(header).toContain('<div class="col-auto d-flex align-items-center site-navbar-menu-toggle">');
     expect(header).toContain('data-bs-target="#offcanvas-topnav"');
+  });
+
+  test('promotes Tafsir and keeps the requested Quran submenu order', () => {
+    const quranLabels = ['Quran', 'Translations', 'Study', 'Mushaf', 'Practice', 'Mudhakkir'];
+    const desktopQuranMenu = header.match(/<ul class="dropdown-menu">([\s\S]*?)<\/ul>/)[1];
+
+    expect(desktopQuranMenu).not.toContain('> Tafsir</a>');
+    expect(header).toContain('activeNavAttrs(isQuranArea && !isQuranTafsirArea)');
+    expect(header).toContain('href="<%= utils.quranUrl(req, \'/quran/tafsir\') %>">Tafsir</a>');
+    expect(offcanvasPrimaryNav).not.toMatch(/nav-link ps-4[^\n]*\/quran\/tafsir/);
+
+    for (const menu of [desktopQuranMenu, offcanvasPrimaryNav]) {
+      quranLabels.slice(1).reduce((lastPosition, label) => {
+        const position = menu.indexOf(`> ${label}</a>`);
+        expect(position).toBeGreaterThan(lastPosition);
+        return position;
+      }, menu.indexOf("label: 'Quran'"));
+    }
   });
 
 	test('uses a desktop-only second header row for the full-width command search', () => {

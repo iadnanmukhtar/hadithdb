@@ -22,7 +22,7 @@
       description_en: `Read ${book.name_en || book.shortName_en} chapter ${chapter.h1}${chapterMetaTitle ? `, ${chapterMetaTitle}` : ''}, with Arabic text, English translation, and source references.`,
       subtitle_en: `${book.shortName_en}`,
       subtitle: `${book.shortName}`,
-      canonical: `/${book.alias}/${chapter.h1}${isQuranAyatView ? '' : (req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : '')}`,
+      canonical: `${book.alias === 'quran' ? `/${book.alias}/${chapter.h1}` : utils.canonicalHadithHeadingPath(`/${book.alias}/${chapter.h1}`)}${isQuranAyatView ? '' : (req.originalUrl.includes('?') ? '?'+qs.stringify(req.query) : '')}`,
       noindex: isQuranAyatView,
       context: {
         book: book,

@@ -300,6 +300,35 @@ function redirectCanonicalQueryParams(req, res, next) {
   return res.redirect(301, redirectUrl);
 }
 
+function redirectCanonicalHadithHeadingNumbers(req, res, next) {
+  if (req.method !== 'GET' && req.method !== 'HEAD')
+    return next();
+
+  var segments = req.path.split('/').filter(Boolean);
+  if (segments.length < 2 || segments.length > 4)
+    return next();
+  var book = visibleBookFromParam(segments[0]);
+  var bookType = book && (book.type || book.book_type || book.book_model || 'hadith');
+  if (!book || book.alias === 'quran' || bookType !== 'hadith')
+    return next();
+
+  var canonicalSegments = segments.slice();
+  var changed = false;
+  for (var index = 1; index < canonicalSegments.length; index++) {
+    var value = Arabic.toLatinDigits(canonicalSegments[index]);
+    if (!/^(?:0|[1-9]\d*)\.\d+$/.test(value))
+      continue;
+    var canonicalValue = Utils.formatHadithHeadingNumber(value);
+    if (canonicalValue !== value) {
+      canonicalSegments[index] = canonicalValue;
+      changed = true;
+    }
+  }
+  if (!changed)
+    return next();
+  return res.redirect(301, `/${canonicalSegments.join('/')}${appendOriginalQuery(req)}`);
+}
+
 function isDefaultQuranPassagePath(path) {
   if (/^\/quran:[^/]+:[^/]+/.test(path))
     return true;
@@ -403,6 +432,7 @@ async function legacyTranslationItemUrl(req) {
 router.use(rejectUnsafePathContent);
 router.use(redirectEncodedReferencePath);
 router.use(redirectArabicDigitPath);
+router.use(redirectCanonicalHadithHeadingNumbers);
 router.use(redirectCanonicalQueryParams);
 
 router.get(['/autocomplete', '/quran/autocomplete'], searchRequestLimiter, async function (req, res, next) {
@@ -3278,17 +3308,19 @@ async function renderBookSection(req, res, next) {
     var chapterNum = bookAlias === 'quran'
       ? parsePositiveIntegerParam(req.params.chapterNum)
       : parseHadithHeadingNumberParam(req.params.chapterNum);
-    var sectionNum = parsePositiveIntegerParam(req.params.sectionNum);
+    var sectionNum = bookAlias === 'quran'
+      ? parsePositiveIntegerParam(req.params.sectionNum)
+      : parseHadithHeadingNumberParam(req.params.sectionNum);
     var numericQuranSectionSurah = Number(Arabic.toLatinDigits((req.params.chapterNum || '').toString()));
     if (bookAlias === 'quran' && Number.isInteger(numericQuranSectionSurah)
       && (numericQuranSectionSurah < 1 || numericQuranSectionSurah > quranSurahCount()))
       return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${req.params.chapterNum} is out of range`));
     if (bookAlias === 'quran' ? !Number.isInteger(chapterNum) : !chapterNum)
       return next(createError(bookAlias === 'quran' ? 404 : 400, routeParameterMessage('chapterNum', req.params.chapterNum, bookAlias === 'quran' ? 'chapter must be a positive integer' : 'chapter must be a non-negative number')));
-    if (bookAlias !== 'quran' && parseNonNegativeIntegerParam(req.params.sectionNum) === 0)
+    if (bookAlias !== 'quran' && sectionNum !== null && Number(sectionNum) === 0)
       return next(gone(`Hadith section ${bookAlias}/${chapterNum}/${req.params.sectionNum} not found`));
-    if (!Number.isInteger(sectionNum))
-      return next(createError(400, routeParameterMessage('sectionNum', req.params.sectionNum, 'section must be a positive integer')));
+    if (bookAlias === 'quran' ? !Number.isInteger(sectionNum) : !sectionNum)
+      return next(createError(400, routeParameterMessage('sectionNum', req.params.sectionNum, bookAlias === 'quran' ? 'section must be a positive integer' : 'section must be a positive number')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
       return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${chapterNum} is out of range`));
     var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
@@ -3554,20 +3586,22 @@ router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function 
   var chapterNum = p.bookAlias === 'quran'
     ? parsePositiveIntegerParam(p.chapterNum)
     : parseHadithHeadingNumberParam(p.chapterNum);
-  var sectionNum = parsePositiveIntegerParam(p.sectionNum);
-  var subsectionNum = parsePositiveIntegerParam(p.subsectionNum);
-  var hadithSectionNum = p.bookAlias === 'quran' ? NaN : parseNonNegativeIntegerParam(p.sectionNum);
-  var hadithSubsectionNum = p.bookAlias === 'quran' ? NaN : parseNonNegativeIntegerParam(p.subsectionNum);
+  var sectionNum = p.bookAlias === 'quran'
+    ? parsePositiveIntegerParam(p.sectionNum)
+    : parseHadithHeadingNumberParam(p.sectionNum);
+  var subsectionNum = p.bookAlias === 'quran'
+    ? parsePositiveIntegerParam(p.subsectionNum)
+    : parseHadithHeadingNumberParam(p.subsectionNum);
   if (p.bookAlias === 'quran' ? !Number.isInteger(chapterNum) : !chapterNum)
     return next(createError(400, routeParameterMessage('chapterNum', p.chapterNum, p.bookAlias === 'quran' ? 'chapter must be a positive integer' : 'chapter must be a non-negative number')));
-  if (hadithSectionNum === 0)
+  if (p.bookAlias !== 'quran' && sectionNum !== null && Number(sectionNum) === 0)
     return next(gone(`Hadith section ${p.bookAlias}/${chapterNum}/${p.sectionNum} not found`));
-  if (!Number.isInteger(sectionNum))
-    return next(createError(400, routeParameterMessage('sectionNum', p.sectionNum, 'section must be a positive integer')));
-  if (hadithSubsectionNum === 0)
+  if (p.bookAlias === 'quran' ? !Number.isInteger(sectionNum) : !sectionNum)
+    return next(createError(400, routeParameterMessage('sectionNum', p.sectionNum, p.bookAlias === 'quran' ? 'section must be a positive integer' : 'section must be a positive number')));
+  if (p.bookAlias !== 'quran' && subsectionNum !== null && Number(subsectionNum) === 0)
     return next(gone(`Hadith subsection ${p.bookAlias}/${chapterNum}/${sectionNum}/${p.subsectionNum} not found`));
-  if (!Number.isInteger(subsectionNum))
-    return next(createError(400, routeParameterMessage('subsectionNum', p.subsectionNum, 'subsection must be a positive integer')));
+  if (p.bookAlias === 'quran' ? !Number.isInteger(subsectionNum) : !subsectionNum)
+    return next(createError(400, routeParameterMessage('subsectionNum', p.subsectionNum, p.bookAlias === 'quran' ? 'subsection must be a positive integer' : 'subsection must be a positive number')));
   try {
     await Subsection.subsectionFromRef(`${p.bookAlias}/${chapterNum}/${sectionNum}/${subsectionNum}`);
   } catch (err) {
@@ -3575,7 +3609,10 @@ router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function 
       return next(gone(err.message));
     throw err;
   }
-  res.redirect(301, `/${p.bookAlias}/${chapterNum}/${sectionNum}#S${sectionNum}-${subsectionNum}`);
+  var canonicalChapterNum = Utils.formatHadithHeadingNumber(chapterNum);
+  var canonicalSectionNum = Utils.formatHadithHeadingNumber(sectionNum);
+  var canonicalSubsectionNum = Utils.formatHadithHeadingNumber(subsectionNum);
+  res.redirect(301, `/${p.bookAlias}/${canonicalChapterNum}/${canonicalSectionNum}#S${canonicalSectionNum}-${canonicalSubsectionNum}`);
   return;
 });
 

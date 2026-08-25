@@ -121,17 +121,17 @@
       
       <ul class="nav container-fluid justify-content-end top-nav-desktop-actions">
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle<%- activeNavAttrs(isQuranArea) %>" data-bs-toggle="dropdown" href="<%= utils.quranUrl(req, '/quran') %>" role="button" aria-expanded="false">Quran</a>
+          <a class="nav-link dropdown-toggle<%- activeNavAttrs(isQuranArea && !isQuranTafsirArea) %>" data-bs-toggle="dropdown" href="<%= utils.quranUrl(req, '/quran') %>" role="button" aria-expanded="false">Quran</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranArea && !isQuranStudyArea && !isQuranTranslationsArea && !isQuranTafsirArea && !isQuranMushafArea && !isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><%- include('menu_icon.ejs', { type: 'quran', label: 'Quran' }) %> Quran</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations') %>"><i class="bi bi-translate"></i> Translations</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranStudyArea) %>" href="<%= utils.quranUrl(req, '/quran/1') %>"><i class="bi bi-text-paragraph"></i> Study</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranMushafArea && !isQuranMemorizeArea) %>" href="<%= utils.quranUrl(req, '/quran/page') %>"><i class="bi bi-book"></i> Mushaf</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.quranUrl(req, '/quran/translations') %>"><i class="bi bi-translate"></i> Translations</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><i class="bi bi-book-half"></i> Tafsir</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranMemorizeArea && !isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>"><i class="bi bi-eye-slash"></i> Practice</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-arrow-repeat"></i> Mudhakkir</a></li>
           </ul>
         </li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>">Tafsir</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>">Blog</a></li>

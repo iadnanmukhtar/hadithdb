@@ -7,7 +7,7 @@ const path = require('path');
 const HttpRange = require('../lib/HttpRange');
 const Utils = require('../lib/Utils');
 const Search = require('../lib/Search');
-const { Chapter, Section } = require('../lib/Model');
+const { Chapter, Section, Subsection } = require('../lib/Model');
 const blogRouter = require('../routes/blog');
 const searchRouter = require('../routes/search');
 
@@ -157,6 +157,52 @@ describe('Hadith route status errors', () => {
 
     expect(response.status).toBe(410);
     expect(await response.text()).toBe(message);
+  });
+
+  test.each([
+    ['/tabarani/10.1', '/tabarani/10.10'],
+    ['/tabarani/10/2.3?json=1', '/tabarani/10/2.30?json=1'],
+    ['/tabarani/10/2/3.4', '/tabarani/10/2/3.40'],
+    ['/tabarani/10.1/2.2/3.3', '/tabarani/10.10/2.20/3.30'],
+    ['/tabarani/10.100/2/3', '/tabarani/10.10/2/3']
+  ])('permanently redirects non-canonical decimal Hadith headings: %s', async (path, location) => {
+    const response = await fetch(`${baseUrl}${path}`, { redirect: 'manual' });
+
+    expect(response.status).toBe(301);
+    expect(response.headers.get('location')).toBe(location);
+  });
+
+  test('accepts canonical two-place decimals in Hadith H1 and H2 parameters', async () => {
+    const lookup = jest.spyOn(Section, 'sectionFromRef').mockRejectedValue(new ReferenceError('Not found'));
+    try {
+      const response = await fetch(`${baseUrl}/tabarani/10.10/2.30`, { redirect: 'manual' });
+
+      expect(response.status).toBe(410);
+      expect(response.headers.get('location')).toBeNull();
+      expect(lookup).toHaveBeenCalledWith('tabarani/10.1/2.3');
+    } finally {
+      lookup.mockRestore();
+    }
+  });
+
+  test('accepts canonical two-place decimals in Hadith H3 parameters', async () => {
+    const lookup = jest.spyOn(Subsection, 'subsectionFromRef').mockRejectedValue(new ReferenceError('Not found'));
+    try {
+      const response = await fetch(`${baseUrl}/tabarani/10.10/2.30/3.40`, { redirect: 'manual' });
+
+      expect(response.status).toBe(410);
+      expect(response.headers.get('location')).toBeNull();
+      expect(lookup).toHaveBeenCalledWith('tabarani/10.1/2.3/3.4');
+    } finally {
+      lookup.mockRestore();
+    }
+  });
+
+  test('does not canonicalize decimal heading paths for an unknown book', async () => {
+    const response = await fetch(`${baseUrl}/removed-book/10.1/2.2`, { redirect: 'manual' });
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get('location')).toBeNull();
   });
 
   test.each([
