@@ -75,6 +75,8 @@
       group.tafsirs = (tafsirs || []).filter(function (tafsir) {
         return tafsir.lang === group.lang;
       }).sort(function (a, b) {
+        if (group.lang === 'en' && Tafsir.isDefaultTafsir(a) !== Tafsir.isDefaultTafsir(b))
+          return Tafsir.isDefaultTafsir(a) ? -1 : 1;
         var aDeath = tafsirDeathYear(a);
         var bDeath = tafsirDeathYear(b);
         var aHasDeath = Number.isFinite(aDeath) && aDeath > 0;

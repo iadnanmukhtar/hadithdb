@@ -234,7 +234,7 @@ describe('shared header navigation', () => {
 		}
 		expect(readerModes.match(/data-quran-reader-mode-link="tafsir"/g)).toHaveLength(2);
 		expect(scripts).toContain("lastVisited: 'hadithdb_quran_last_visited_tafsir'");
-		expect(scripts).toContain("var defaultQuranTafsirAlias = 'muntakhab';");
+		expect(scripts).toContain("var defaultQuranTafsirAlias = 'mokhtasar';");
 		expect(scripts).toContain('|| defaultQuranTafsirAlias;');
 		expect(scripts).toContain("target.setAttribute('data-quran-reader-first-ref', firstRef)");
 		expect(scripts).toContain("source.querySelector('.quran-passage-section .ayah[data-quran-ref]')");

@@ -31,6 +31,8 @@ describe('Hadith and Tafsir language columns', () => {
     expect(script).toContain("query('.quran-tafsirs')");
 		expect(script).toContain("activePanel.querySelector('.quran-tafsir-entry')");
 		expect(script).toContain("child.matches('header, summary') && child.querySelector('.quran-tafsir-ayah-range, .quran-tafsir-ayah')");
+		expect(script).toContain("root.querySelector('.quran-commentary-introduction-article, .quran-commentary-heading-intro, .chapter-intro, .heading-intro')");
+		expect(script).toContain('introduction.parentNode.insertBefore(toolbar, introduction)');
 		expect(script).toContain("entryHeader.insertAdjacentElement('afterend', toolbar)");
 		expect(script).toContain('initReaderLanguageColumnToggles(container[0]);');
     expect(script).toContain("if (!state.english && !state.arabic)\n\t\t\t\treturn;");
@@ -71,7 +73,10 @@ describe('Hadith and Tafsir language columns', () => {
     expect(css).toContain('[data-reader-language-root].reader-hide-english [data-reader-language-column="arabic"]');
     expect(css).toContain('flex: 0 0 100%;');
     expect(css).toMatch(/\.reader-language-toolbar \{[\s\S]*justify-content: space-between;[\s\S]*width: 100%;/);
-		expect(css).toContain('.quran-tafsir-entry > .reader-language-toolbar');
+    expect(css).toContain('.quran-tafsir-entry > .reader-language-toolbar');
+		expect(css).toMatch(/main \.intro\[lang="ar"\]\[data-prop="toc\.intro"\] \{\s*font-size: calc\(1\.05rem \* var\(--content-font-scale\)\) !important;/);
+		expect(css).toMatch(/main \.intro\[lang="ar"\]\[data-prop="toc\.intro"\] \* \{\s*font-size: inherit !important;/);
+		expect(css).toMatch(/main \.intro\[lang="en"\]\[data-prop="toc\.intro_en"\] \{\s*font-size: calc\(\.81rem \* var\(--content-font-scale\)\);/);
     expect(script).toContain('quran-ayah-select-btn quran-passage-display-btn quran-passage-view-btn reader-language-toggle');
     expect(script).not.toContain("label.textContent = 'Columns'");
     expect(script).not.toContain('text.textContent = choice.label');

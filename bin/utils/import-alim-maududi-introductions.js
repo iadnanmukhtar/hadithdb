@@ -574,8 +574,11 @@ if (require.main === module) {
 }
 
 module.exports = {
+	closeDb,
+	connectDb,
 	countChanges,
 	escapeUnescapedMarkdownBackticks,
+	importIntroductions,
 	introductionUrl,
 	markdownChildren,
 	normalizeMarkdown,

@@ -7324,6 +7324,18 @@ body > footer,
 	text-indent: 0;
 }
 
+main .intro[lang="en"][data-prop="toc.intro_en"] {
+	font-size: calc(.81rem * var(--content-font-scale));
+}
+
+main .intro[lang="ar"][data-prop="toc.intro"] {
+	font-size: calc(1.05rem * var(--content-font-scale)) !important;
+}
+
+main .intro[lang="ar"][data-prop="toc.intro"] * {
+	font-size: inherit !important;
+}
+
 .body.passage {
 	text-indent: unset;
 	text-align: justify;

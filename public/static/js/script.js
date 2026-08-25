@@ -1379,7 +1379,7 @@ var quranTafsirStorageKeys = {
 	legacyAlias: 'quranTafsirAlias',
 	lastVisited: 'hadithdb_quran_last_visited_tafsir'
 };
-var defaultQuranTafsirAlias = 'muntakhab';
+var defaultQuranTafsirAlias = 'mokhtasar';
 var quranTafsirBooksPromise = null;
 
 function getQuranTafsirBooks(query) {
@@ -4221,6 +4221,7 @@ function ensureReaderLanguageColumnToolbar(root) {
 		return;
 	var kind = root.getAttribute('data-reader-language-root');
 	var toolbar = root._readerLanguageColumnToolbar;
+	var introduction = root.querySelector('.quran-commentary-introduction-article, .quran-commentary-heading-intro, .chapter-intro, .heading-intro');
 	if (kind === 'tafsir') {
 		var activePanel = root.querySelector('.quran-tafsir-panel.active.show, .quran-tafsir-panel.active');
 		var tafsirEntry = activePanel
@@ -4229,14 +4230,17 @@ function ensureReaderLanguageColumnToolbar(root) {
 		var entryHeader = tafsirEntry && Array.from(tafsirEntry.children).find(function (child) {
 			return child.matches('header, summary') && child.querySelector('.quran-tafsir-ayah-range, .quran-tafsir-ayah');
 		});
-		if (!entryHeader)
+		if (!introduction && !entryHeader)
 			return;
 		if (!toolbar) {
 			toolbar = readerLanguageColumnToolbar();
 			toolbar.setAttribute('data-reader-language-toolbar', '1');
 			root._readerLanguageColumnToolbar = toolbar;
 		}
-		entryHeader.insertAdjacentElement('afterend', toolbar);
+		if (introduction && introduction.parentNode)
+			introduction.parentNode.insertBefore(toolbar, introduction);
+		else
+			entryHeader.insertAdjacentElement('afterend', toolbar);
 		return;
 	}
 	if (toolbar)
@@ -4245,6 +4249,10 @@ function ensureReaderLanguageColumnToolbar(root) {
 	toolbar.setAttribute('data-reader-language-toolbar', '1');
 	root._readerLanguageColumnToolbar = toolbar;
 	if (kind === 'hadith') {
+		if (introduction && introduction.parentNode) {
+			introduction.parentNode.insertBefore(toolbar, introduction);
+			return;
+		}
 		var firstItem = root.querySelector('[data-reader-language-item="hadith"]');
 		if (firstItem && firstItem.parentNode)
 			firstItem.parentNode.insertBefore(toolbar, firstItem);
@@ -12799,7 +12807,8 @@ function initReaderInfiniteNavigation(root) {
 		main.data('readerInfiniteBound', true);
 
 		var mode = main.attr('data-reader-infinite') || '';
-		var prefetchAhead = mode === 'tafsir' ? 1 : 3;
+		var startsAtTafsirIntroduction = mode === 'tafsir' && main.attr('data-reader-context-key') === '0';
+		var prefetchAhead = mode === 'tafsir' ? (startsAtTafsirIntroduction ? 2 : 1) : 3;
 		var ensuring = false;
 		var loadingPromise = null;
 		var retryAfter = 0;
@@ -13145,6 +13154,7 @@ function initReaderInfiniteNavigation(root) {
 				loadNext().then(function (loaded) {
 					if (!loaded || pagesAhead() >= prefetchAhead) {
 						ensuring = false;
+						window.requestAnimationFrame(scheduleInfiniteWork);
 						return;
 					}
 					window.requestAnimationFrame(run);
