@@ -5,6 +5,7 @@ const Books = require('../lib/Books');
 const Hadith = require('../lib/Hadith');
 const Utils = require('../lib/Utils');
 const CommentaryHeadings = require('../lib/CommentaryHeadings');
+const Tafsir = require('../lib/Tafsir');
 
 function updateHandler() {
   const layer = updateRouter.stack.find(item => item.route && item.route.path === '/:id/:prop');
@@ -18,6 +19,7 @@ describe('book update route', () => {
     jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
     jest.spyOn(Utils, 'flushCachedFile').mockResolvedValue();
     jest.spyOn(Books, 'touchBookContentLastmodById').mockResolvedValue();
+    jest.spyOn(Tafsir, 'invalidateMemoryCaches');
   });
 
   afterEach(() => {
@@ -50,6 +52,7 @@ describe('book update route', () => {
     expect(JSON.parse(res.end.mock.calls[0][0])).toMatchObject({ code: 200, value: req.body.value });
     expect(Utils.flushCacheContaining).toHaveBeenCalledWith('tafsir:rida');
     expect(Utils.flushCacheContaining).toHaveBeenCalledWith('translation:rida');
+    expect(Tafsir.invalidateMemoryCaches).toHaveBeenCalledWith('rida');
   });
 
   test('creates a Surah 0 introduction article and invalidates the commentary cache', async () => {

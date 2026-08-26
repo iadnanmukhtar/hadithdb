@@ -1,7 +1,11 @@
 'use strict';
 
 const updateRouter = require('../routes/update');
+const Books = require('../lib/Books');
+const QuranMushaf = require('../lib/QuranMushaf');
+const Utils = require('../lib/Utils');
 const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
+const { Library } = require('../lib/Model');
 const MySQL = require('mysql');
 
 function updateHandler() {
@@ -48,6 +52,7 @@ describe('heading title update route', () => {
 
   afterEach(() => {
     delete global.query;
+    delete global.library;
   });
 
   test('keeps a Hadith section update on its submitted heading id', async () => {
@@ -86,6 +91,54 @@ describe('heading title update route', () => {
 
     const updateQuery = queries.find(query => /^UPDATE toc SET/.test(query));
     expect(updateQuery).toContain(`intro_en=${MySQL.escape(value)}`);
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test('invalidates cross-route disk keys and Mushaf memory after a Quran heading edit', async () => {
+    const heading = {
+      id: 999,
+      hId: 999,
+      tId: 999,
+      book_id: 0,
+      book_alias: 'quran',
+      level: 2,
+      h1: 1,
+      h2: 1,
+      start: '1:1',
+      end: '1:7',
+      count: 7
+    };
+    global.surahs = [{ num: 1, ayahs: 7, ayat: 7 }];
+    jest.spyOn(Library, 'instance', 'get').mockReturnValue({
+      findBook: jest.fn().mockReturnValue({ chapters: [] })
+    });
+    global.query = jest.fn(async query => {
+      if (/^UPDATE toc SET/.test(query.trim()))
+        return { message: 'updated' };
+      if (query.includes('FROM v_toc WHERE hId=999'))
+        return [heading];
+      return [];
+    });
+    jest.spyOn(Books, 'touchBookContentLastmodById').mockResolvedValue();
+    jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
+    jest.spyOn(Utils, 'cacheBookDirectory').mockReturnValue('/tmp/hadithdb-missing-quran-cache');
+    jest.spyOn(QuranMushaf, 'pageForRef').mockResolvedValue(1);
+    jest.spyOn(QuranMushaf, 'invalidatePage');
+    jest.spyOn(QuranMushaf, 'invalidateMappings');
+    const req = {
+      baseUrl: '/quran/api/update',
+      body: { value: 'The Opening' },
+      params: { id: '999', prop: 'toc.title_en' },
+      user: { uid: 'admin' }
+    };
+    const res = { status: jest.fn(), end: jest.fn() };
+
+    await updateHandler()(req, res, jest.fn());
+
+    expect(Utils.flushCacheContaining).toHaveBeenCalledWith('quran:surah:1');
+    expect(Utils.flushCacheContaining).toHaveBeenCalledWith('quran:navigation-tocs');
+    expect(QuranMushaf.invalidatePage).toHaveBeenCalledWith(1);
+    expect(QuranMushaf.invalidateMappings).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });

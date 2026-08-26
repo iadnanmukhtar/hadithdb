@@ -232,7 +232,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
       if (col !== 'similar') {
-        runHadithPostUpdateTasks(ids[0], {
+        await runHadithPostUpdateTasks(ids[0], {
           forceKnowledge: isArabicKnowledgeSourceColumn(col)
         });
         VirtualHadithSnapshot.queueHadith(ids[0]);
@@ -403,6 +403,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         }
       } catch (err) {
         debug.error(`${err.message}:\n${err.stack || ''}`);
+        throw err;
       }
 
     } else if (type == 'book') {
@@ -734,6 +735,7 @@ function isQuranCatalogBook(book) {
 async function flushQuranCatalogBookCaches(bookAliases) {
   var cacheDir = `${homedir()}/.hadithdb/cache`;
   var aliases = Array.from(new Set(Array.from(bookAliases || []).filter(Boolean)));
+  aliases.forEach(alias => Tafsir.invalidateMemoryCaches(alias));
   await Utils.flushCacheContaining('tafsirs');
   await Utils.flushCacheContaining('tafsir:books');
   await Utils.flushCachedFile(`${cacheDir}/_books.html`);
@@ -895,11 +897,16 @@ function commentaryColumnUsesMarkdown(format, col) {
 async function flushCommentaryPassageCaches(commentary) {
   if (!commentary || !commentary.commentary_alias)
     return;
+  Tafsir.invalidateMemoryCaches(commentary.commentary_alias);
   const surah = Number(commentary.surah);
   const ayahFrom = Number(commentary.ayahFrom);
   const ayahTo = Number(commentary.ayahTo);
   if (!Number.isInteger(surah) || !Number.isInteger(ayahFrom) || !Number.isInteger(ayahTo))
     return;
+  const commentaryCacheType = commentary.commentary_type === 'trans' ? 'translation' : 'tafsir';
+  await Utils.flushCacheContaining(`${commentaryCacheType}:${commentary.commentary_alias}:toc`);
+  if (commentaryCacheType === 'tafsir')
+    await Utils.flushCacheContaining(`tafsir:${commentary.commentary_alias}:catalog`);
   for (let ayah = ayahFrom; ayah <= ayahTo; ayah++) {
     await Utils.flushCacheContaining(`tafsir:${commentary.commentary_alias}:quran:${surah}:${ayah}`);
     await Utils.flushCacheContaining(`quran:${surah}:${ayah}`);
@@ -2038,6 +2045,10 @@ function quranAyahFromHeadingStart(start) {
 
 async function invalidateQuranSurahCaches(surah) {
   QuranTocSubdivisions.invalidateSectionRanges();
+  await Promise.all([
+    Utils.flushCacheContaining(`quran:surah:${Number(surah)}`),
+    Utils.flushCacheContaining('quran:navigation-tocs')
+  ]);
   var cacheDir = Utils.cacheBookDirectory('quran', 'quran');
   if (!fs.existsSync(cacheDir)) {
     debug(`quran ${surah} cache invalidation skipped: ${cacheDir} does not exist`);
@@ -2120,6 +2131,8 @@ async function invalidateQuranMushafPageNumberCaches(affectedPages, label) {
         deleted++;
     }
   }
+  affectedPages.forEach(pageNumber => QuranMushaf.invalidatePage(pageNumber));
+  QuranMushaf.invalidateMappings();
   var pageNumbers = Array.from(affectedPages).sort((a, b) => a - b);
   debug(`quran Mushaf cache invalidation ${label || ''} pages ${pageNumbers.join(',')}, matched ${matched}, deleted ${deleted}`);
 }
@@ -2402,21 +2415,15 @@ async function reindexSearchScope(whereClause, options) {
   debug(`reindex search scope done in ${Date.now() - started}ms: ${whereClause}`);
 }
 
-function runHadithPostUpdateTasks(hadithId, options) {
+async function runHadithPostUpdateTasks(hadithId, options) {
   options = options || {};
-  (async () => {
-    var item = await hadithSearchRowById(hadithId);
-    if (!item)
-      return;
-    await safeBackground(`flushing cache for ${item.ref}`, async () => {
-      await Books.touchBookContentLastmodById(item.book_id);
-      await Utils.flushCacheContaining(`${item.book_alias}:${item.num}`);
-    });
-    await safeBackground(`reindexing hadith ${item.ref}`, async () => {
-      await Index.update(Item.INDEX, item);
-    });
-  })().catch((err) => {
-    debug.error(`background hadith post-update failed for ${hadithId}: ${err.message}\n${err.stack || ''}`);
+  var item = await hadithSearchRowById(hadithId);
+  if (!item)
+    return;
+  await Books.touchBookContentLastmodById(item.book_id);
+  await Utils.flushCacheContaining(`${item.book_alias}:${item.num}`);
+  safeBackground(`reindexing hadith ${item.ref}`, async () => {
+    await Index.update(Item.INDEX, item);
   });
 }
 

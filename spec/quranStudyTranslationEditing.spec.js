@@ -132,6 +132,17 @@ describe('Quran Study translation editing', () => {
     expect(inlineEditor).toContain("!$el.hasClass('quran-study-translation-editor')");
   });
 
+  test('mirrors the preferred Study translation for a server-side redirect before rendering', () => {
+    const client = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'), 'utf8');
+    const route = fs.readFileSync(path.join(__dirname, '..', 'routes', 'search.js'), 'utf8');
+
+    expect(client).toContain("var QURAN_PREFERRED_TRANSLATION_COOKIE = 'quranPreferredTranslationAlias';");
+    expect(client).toContain('setHadithCookie(QURAN_PREFERRED_TRANSLATION_COOKIE, alias, window.HADITH_SESSION_MAX_AGE);');
+    expect(client).toContain('storeQuranSelectedTranslationAlias(preferredAlias);');
+    expect(route).toContain('preferredQuranTranslationFromCookie(req)');
+    expect(route).toContain('return res.redirect(302, appendQueryExcluding(req, Utils.quranUrl(req, preferredTranslationPath)');
+  });
+
   test('renders saved translation Markdown and footnotes back into the inline Study fields', () => {
     const html = Tafsir.renderLocalCommentaryLanguage({
       id: 8123,

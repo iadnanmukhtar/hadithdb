@@ -3880,6 +3880,8 @@ function applyQuranTranslationToTargets(targets, book) {
 }
 
 var QURAN_SELECTED_TRANSLATION_STORAGE_KEY = 'hadithdb.quran.selectedTranslationAlias';
+var QURAN_PREFERRED_TRANSLATION_COOKIE = 'quranPreferredTranslationAlias';
+var QURAN_SCRIPT_COOKIE = 'quranScript';
 
 function validQuranTranslationAlias(value) {
 	value = (value || '').toString().trim();
@@ -3933,6 +3935,10 @@ function storedQuranSelectedTranslationAlias() {
 
 function storeQuranSelectedTranslationAlias(alias) {
 	alias = validQuranTranslationAlias(alias);
+	if (alias)
+		setHadithCookie(QURAN_PREFERRED_TRANSLATION_COOKIE, alias, window.HADITH_SESSION_MAX_AGE);
+	else
+		clearHadithCookie(QURAN_PREFERRED_TRANSLATION_COOKIE);
 	try {
 		if (!window.sessionStorage)
 			return;
@@ -4329,6 +4335,7 @@ function initQuranPassageTranslationSelects(root) {
 	Promise.all([quranTranslationBooks(), getQuranTafsirSettings().catch(function () { return {}; })]).then(function (results) {
 		var settings = results[1] || {};
 		var preferredAlias = settings.translations && settings.translations.preferredAlias || '';
+		storeQuranSelectedTranslationAlias(preferredAlias);
 		var selectedTranslationAlias = quranSelectedTranslationAliasFromLocation();
 		var choices = orderedSelectableQuranTranslationBooks(results[0], settings).filter(function (book) {
 			return book && (book.source === 'default' || book.source === 'local');
@@ -6782,6 +6789,8 @@ function updateCachedQuranUserSettings(user, settings) {
 	if (window.hadithUserSettingsCache && window.hadithUserSettingsCache.write)
 		window.hadithUserSettingsCache.write(cacheUser, settings || {});
 	window.hadithQuranUserSettingsOverride = settings || null;
+	if (settings && settings.quran && settings.quran.script)
+		storeQuranScriptCookie(settings.quran.script);
 	quranTafsirSettingsPromise = null;
 }
 
@@ -13340,7 +13349,7 @@ function initQuranScriptPreference(root) {
 		.flat()
 		.filter(function (ref) { return /^\d{1,3}:\d{1,3}$/.test(ref || ''); })));
 	return getQuranTafsirSettings().then(function (settings) {
-		var script = settings && settings.quran && settings.quran.script || 'uthmani';
+		var script = storeQuranScriptCookie(settings && settings.quran && settings.quran.script || 'uthmani');
 		document.body.classList.remove('quran-script-indo-pak', 'quran-script-warsh');
 		document.body.dataset.quranScript = script;
 		trackQuranScriptDefault(script, 'resolved');
@@ -13367,6 +13376,12 @@ function initQuranScriptPreference(root) {
 function normalizeQuranScriptChoice(value) {
 	value = (value || '').toString().trim().toLowerCase();
 	return ['uthmani', 'indo-pak', 'warsh'].indexOf(value) >= 0 ? value : '';
+}
+
+function storeQuranScriptCookie(value) {
+	var script = normalizeQuranScriptChoice(value) || 'uthmani';
+	setHadithCookie(QURAN_SCRIPT_COOKIE, script, window.HADITH_SESSION_MAX_AGE);
+	return script;
 }
 
 function trackQuranScriptDefault(value, source) {

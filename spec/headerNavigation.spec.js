@@ -225,8 +225,17 @@ describe('shared header navigation', () => {
 		expect(styles).toMatch(/@media \(max-width: 576px\)[\s\S]*?\.quran-reader-modes \.quran-script-label-short \{\s*display: inline;/);
 	});
 
+	test('keeps Mushaf disk caches separate for each resolved Quran script', () => {
+		expect(scripts).toContain("var QURAN_SCRIPT_COOKIE = 'quranScript';");
+		expect(scripts).toContain("setHadithCookie(QURAN_SCRIPT_COOKIE, script, window.HADITH_SESSION_MAX_AGE);");
+		expect(scripts).toContain("var script = storeQuranScriptCookie(settings && settings.quran && settings.quran.script || 'uthmani');");
+		expect(searchRoutes).toContain("filename += `__script-${quranMushafScript(req)}`;");
+		expect(searchRoutes).toContain("return ['uthmani', 'indo-pak', 'warsh'].includes(script) ? script : 'uthmani';");
+	});
+
 	test('shows Tafsir after Study in every Quran reader-mode group', () => {
 		const [commentaryModes, standardModes] = readerModes.split('<% } else { %>');
+		expect(readerModes).toContain("var commentaryReaderMode = ['translation', 'trans'].indexOf(locals.readerMode) >= 0;");
 		for (const modeGroup of [commentaryModes, standardModes]) {
 			expect(modeGroup.indexOf('data-quran-reader-mode-link="passage"')).toBeGreaterThanOrEqual(0);
 			expect(modeGroup.indexOf('data-quran-reader-mode-link="tafsir"')).toBeGreaterThan(modeGroup.indexOf('data-quran-reader-mode-link="passage"'));

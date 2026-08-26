@@ -1,6 +1,7 @@
 'use strict';
 
 const createError = require('http-errors');
+const ejs = require('ejs');
 const express = require('express');
 const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
@@ -10,6 +11,7 @@ const Utils = require('../lib/Utils');
 const BookDownloads = require('../lib/BookDownloads');
 const HttpRange = require('../lib/HttpRange');
 const QuranAyahNavigation = require('../lib/QuranAyahNavigation');
+const { invalidateQuranMemoryCaches } = require('../lib/QuranCacheInvalidation');
 const { Item } = require('../lib/Model');
 
 const router = express.Router();
@@ -70,6 +72,22 @@ router.get('/:ref', async function (req, res, next) {
   if (Object.prototype.hasOwnProperty.call(req.query || {}, 'lang'))
     return res.redirect(302, canonicalTranslationUrl(req, surah.num, ayahNum));
 
+  const editMode = req.admin && req.editMode;
+  const cachedFile = Utils.htmlCacheFile(req, { includeBaseUrl: true });
+  const flushCache = Utils.shouldFlushCache(req);
+  if (flushCache) {
+    invalidateQuranMemoryCaches();
+    await Utils.flushCachedFile(cachedFile, { strict: true });
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    if (Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8'))
+      return;
+    await Utils.flushCachedFile(cachedFile);
+  }
+
   const ayahs = await quranAyahs(surahNum, ayahNum, ayahNum);
   const ayah = ayahs.find(item => Number(item.ayah) === ayahNum) || ayahs[0];
   if (!ayah)
@@ -84,7 +102,7 @@ router.get('/:ref', async function (req, res, next) {
   if (section)
     section.mushafPage = await QuranMushaf.pageForRef(surahNum, ayahNum);
 
-  res.render('translation_passage', {
+  const renderLocals = {
     Tafsir: Tafsir,
     ayah: ayahNum,
     ayahs: [ayah],
@@ -92,7 +110,24 @@ router.get('/:ref', async function (req, res, next) {
     navigation: translationNavigation(surahNum, ayahNum),
     section: section,
     surah: surah
-  });
+  };
+
+  if (!editMode && Utils.diskCacheEnabled()) {
+    const html = await ejs.renderFile(`${__dirname}/../views/translation_passage.ejs`, Utils.cachedRenderLocals(res, {
+      noadmin: true,
+      ...renderLocals
+    }));
+    Utils.writeCachedHtml(cachedFile, html);
+    await Utils.indexCachedItem([
+      `quran:${surahNum}:${ayahNum}`,
+      `quran:surah:${surahNum}`,
+      `translations:quran:${surahNum}:${ayahNum}`
+    ], cachedFile);
+    if (Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8'))
+      return;
+  }
+
+  res.render('translation_passage', renderLocals);
 });
 
 function canonicalTranslationUrl(req, surah, ayah) {

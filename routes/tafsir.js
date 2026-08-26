@@ -15,6 +15,7 @@ const CommentaryHeadings = require('../lib/CommentaryHeadings');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const HttpRange = require('../lib/HttpRange');
 const QuranAyahNavigation = require('../lib/QuranAyahNavigation');
+const { invalidateQuranMemoryCaches } = require('../lib/QuranCacheInvalidation');
 const { Item, Library } = require('../lib/Model');
 
 const router = express.Router();
@@ -216,8 +217,13 @@ async function renderTafsirPassage(req, res, next) {
   // redirected to the correct canonical passage.
   const cachedFile = cachedRequestFile(req);
   const flushCache = Utils.shouldFlushCache(req);
-  if (flushCache)
-    await Utils.flushCachedFile(cachedFile);
+  if (flushCache) {
+    invalidateQuranMemoryCaches({ commentaryAlias: tafsir.alias });
+    await Utils.flushCachedFile(cachedFile, { strict: true });
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
   if (req.params.start !== undefined && !flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
     sendCachedHtml(req, res, cachedFile);
     return;
@@ -301,6 +307,7 @@ async function renderTafsirPassage(req, res, next) {
   if (!editMode) {
     const refs = [
       `quran:${surahNum}:${ayahNum}`,
+      `quran:surah:${surahNum}`,
       `tafsir:${tafsir.alias}`,
       `tafsir:${tafsir.slug || Tafsir.tafsirSlug(tafsir.alias)}`,
       `tafsir:${tafsir.alias}:quran:${surahNum}:${ayahNum}`
@@ -321,6 +328,23 @@ async function renderTafsirBookToc(req, res, tafsir) {
   if (!quranBook)
     throw createError(404, `Book 'quran' does not exist`);
 
+  const editMode = req.admin && req.editMode;
+  const quranTocDefaultView = normalizedQuranTocView(req);
+  const cachedFile = cachedTafsirTocFile(req, tafsir, quranTocDefaultView);
+  const flushCache = Utils.shouldFlushCache(req);
+  if (flushCache) {
+    invalidateQuranMemoryCaches({ commentaryAlias: tafsir.alias });
+    await flushTafsirTocCacheVariants(req, tafsir);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    if (sendCachedHtml(req, res, cachedFile))
+      return;
+    await Utils.flushCachedFile(cachedFile);
+  }
+
   const toc = await Library.instance.findBook('quran').getChapters();
   const tafsirs = await Tafsir.visibleTafsirs();
   const quranJuzRows = await QuranTocSubdivisions.juzRows();
@@ -330,7 +354,6 @@ async function renderTafsirBookToc(req, res, tafsir) {
   const quranCommentaryAvailableSurahs = tafsir.source === 'local'
     ? Array.from(new Set(quranTafsirPassages.map(passage => Number(passage.surah)).filter(Number.isInteger)))
     : null;
-  const quranTocDefaultView = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
   const commentaryIntroductionArticles = await CommentaryHeadings.introductionArticles(tafsir.id);
   const renderLocals = {
     book: quranBook,
@@ -353,7 +376,48 @@ async function renderTafsirBookToc(req, res, tafsir) {
     quranCommentaryBook: tafsir
   };
 
+  if (!editMode && Utils.diskCacheEnabled()) {
+    const html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, cachedRenderLocals(res, {
+      noadmin: true,
+      ...renderLocals
+    }));
+    Utils.writeCachedHtml(cachedFile, html);
+    await Utils.indexCachedItem([
+      'quran',
+      'book:quran',
+      'quran:navigation-tocs',
+      `tafsir:${tafsir.alias}:toc`,
+      `tafsir:${tafsir.slug || Tafsir.tafsirSlug(tafsir.alias)}:toc`
+    ], cachedFile);
+    if (sendCachedHtml(req, res, cachedFile))
+      return;
+  }
+
   res.render('toc', renderLocals);
+}
+
+function normalizedQuranTocView(req) {
+  const view = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
+  return ['surahs', 'juz', 'manzils'].includes(view) ? view : 'juz';
+}
+
+function cachedTafsirTocFile(req, tafsir, view) {
+  const filename = Utils.cacheReqToFilename({
+    ...req,
+    url: req.originalUrl || req.url || ''
+  });
+  const variant = view === 'juz' ? '' : `__toc-${Utils.safeFilename(view)}`;
+  return Utils.cacheFileFromFilename(
+    `${filename}${variant}`,
+    'html',
+    tafsir.alias,
+    'tafsir'
+  );
+}
+
+async function flushTafsirTocCacheVariants(req, tafsir) {
+  await Promise.all(['juz', 'surahs', 'manzils'].map(view =>
+    Utils.flushCachedFile(cachedTafsirTocFile(req, tafsir, view), { strict: true })));
 }
 
 async function quranAyahs(surah, startAyah, endAyah) {
@@ -471,7 +535,7 @@ function navigationTarget(tafsir, surah, ayah, endAyah, tafsirs) {
 }
 
 function sendCachedHtml(req, res, cachedFile) {
-  Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8');
+  return Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8');
 }
 
 function cachedRenderLocals(res, locals) {

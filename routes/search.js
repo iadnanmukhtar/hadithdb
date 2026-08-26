@@ -27,6 +27,7 @@ const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
 const HadithHeadingNavigation = require('../lib/HadithHeadingNavigation');
 const QuranHeadings = require('../lib/QuranHeadings');
 const QuranMushaf = require('../lib/QuranMushaf');
+const { invalidateQuranMemoryCaches } = require('../lib/QuranCacheInvalidation');
 const QuranSimilarAyahs = require('../lib/QuranSimilarAyahs');
 const QuranMutashabihat = require('../lib/QuranMutashabihat');
 const RuntimeRefresh = require('../lib/RuntimeRefresh');
@@ -208,6 +209,12 @@ function appendQueryExcluding(req, target, excludedKeys) {
   });
   var query = params.toString();
   return query ? `${target}${target.indexOf('?') >= 0 ? '&' : '?'}${query}` : target;
+}
+
+function preferredQuranTranslationFromCookie(req) {
+  var alias = validQuranTranslationAlias(req.cookies && req.cookies.quranPreferredTranslationAlias);
+  var translation = alias ? visibleQuranTranslationByAlias(alias) : null;
+  return translation && ['default', 'local'].includes(translation.source) ? translation : null;
 }
 
 function routeParameterMessage(name, value, reason) {
@@ -2638,7 +2645,7 @@ async function renderQuranMushafPage(req, res, next, options) {
       : `Read Quran page ${pageNumber}${pageAyahRange ? `, ayat ${pageAyahRange}` : ''}, in the 15-line Digital Khatt Arabic Mushaf.`);
   if (review)
     res.setHeader('X-Robots-Tag', 'noindex, follow');
-  return res.render('quran_mushaf', {
+  var renderLocals = {
     memorize: memorize,
     review: review,
     reviewRef: reviewRef,
@@ -2663,7 +2670,54 @@ async function renderQuranMushafPage(req, res, next, options) {
       noindex: review,
       context: pageContext
     }
+  };
+  if (options.cachedFile && Utils.diskCacheEnabled()) {
+    var html = await ejs.renderFile(`${__dirname}/../views/quran_mushaf.ejs`, cachedRenderLocals(res, {
+      noadmin: true,
+      ...renderLocals
+    }));
+    Utils.writeCachedHtml(options.cachedFile, html);
+    await Utils.indexCachedItem([
+      'quran',
+      'book:quran',
+      `quran:page:${pageNumber}`,
+      ...Array.from(new Set(mushafSurahs.filter(Number.isInteger))).map(surah => `quran:surah:${surah}`)
+    ], options.cachedFile);
+    if (sendCachedHtml(req, res, options.cachedFile))
+      return;
+  }
+  return res.render('quran_mushaf', renderLocals);
+}
+
+function quranMushafDiskCacheable(req) {
+  var query = req.query || {};
+  var hasMemorize = Object.prototype.hasOwnProperty.call(query, 'memorize');
+  var hasReviewState = Object.keys(query).some(function (key) {
+    return key === 'review' || key.startsWith('review');
   });
+  return !(req.admin && req.editMode) && !hasMemorize && !hasReviewState;
+}
+
+function quranMushafCacheFile(req, pageNumber) {
+  var requestUrl = (req.url || '').toString();
+  var queryIndex = requestUrl.indexOf('?');
+  var normalizedReq = {
+    ...req,
+    url: `/quran/page/${pageNumber}${queryIndex >= 0 ? requestUrl.slice(queryIndex) : ''}`
+  };
+  var filename = Utils.cacheReqToFilename(normalizedReq);
+  filename += `__script-${quranMushafScript(req)}`;
+  var selectedAyahRef = /^\d+:\d+$/.test((req.query.ayah || '').toString())
+    ? req.query.ayah.toString()
+    : '';
+  if (selectedAyahRef)
+    filename += `__ayah-${Utils.safeFilename(selectedAyahRef)}`;
+  return Utils.cacheFileFromFilename(filename, 'html');
+}
+
+function quranMushafScript(req) {
+  var script = (req.cookies && req.cookies.quranScript || '').toString().trim().toLowerCase();
+  return ['uthmani', 'indo-pak', 'warsh'].includes(script) ? script : 'uthmani';
 }
 
 router.get('/quran/page', async function (req, res) {
@@ -2697,6 +2751,24 @@ router.get('/quran/page/:page', async function (req, res, next) {
     return next(HttpRange.notSatisfiable('quran-pages', mushafPageCount, `Mushaf page ${req.params.page} is out of range`));
   if (!Number.isInteger(pageNumber))
     return next(createError(400, routeParameterMessage('page', req.params.page, 'Mushaf page must be a positive integer')));
+  var cacheableMushafPage = quranMushafDiskCacheable(req);
+  var cachedFile = cacheableMushafPage ? quranMushafCacheFile(req, pageNumber) : null;
+  var flushCache = Utils.shouldFlushCache(req);
+  if (flushCache) {
+    invalidateQuranMemoryCaches({ mushafPage: pageNumber });
+    var mushafFlushes = [Utils.flushCacheContaining(`quran:page:${pageNumber}`)];
+    if (cachedFile)
+      mushafFlushes.push(Utils.flushCachedFile(cachedFile, { strict: true }));
+    await Promise.all(mushafFlushes);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  if (cachedFile && !flushCache && Utils.cachedTextPathForRead(cachedFile)) {
+    if (sendCachedHtml(req, res, cachedFile))
+      return;
+    await Utils.flushCachedFile(cachedFile);
+  }
   var mappedSection = await QuranMushaf.sectionForPage(pageNumber);
   if (!mappedSection)
 	return next(createError(404, `A Quran passage was not found for Mushaf page ${pageNumber}`));
@@ -2715,7 +2787,8 @@ router.get('/quran/page/:page', async function (req, res, next) {
     pageNumber: pageNumber,
     book: book,
     chapter: chapter,
-    section: section
+    section: section,
+    cachedFile: cachedFile
   });
 });
 
@@ -2754,9 +2827,11 @@ router.get('/:bookAlias', async function (req, res, next) {
       : 'surahs';
     var cachedFile = Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
+    if (flushCache && req.params.bookAlias === 'quran')
+      invalidateQuranMemoryCaches({ allMushaf: true });
     if (flushCache)
       await Promise.all([
-        Utils.flushCachedFile(cachedFile),
+        Utils.flushCachedFile(cachedFile, { strict: true }),
         req.params.bookAlias === 'quran'
           ? Promise.all([
             flushQuranTocDiskCacheVariants(),
@@ -2820,6 +2895,8 @@ router.get('/:bookAlias', async function (req, res, next) {
         if (Utils.diskCacheEnabled())
           fs.mkdirSync(`${homedir}/.hadithdb/cache`, { recursive: true });
         var refs = [book.alias, `book:${book.alias}`];
+        if (book.alias === 'quran')
+          refs.push('quran:navigation-tocs');
         var html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, cachedRenderLocals(res, {
           noadmin: true,
           book: book,
@@ -2870,7 +2947,7 @@ async function flushQuranTocDiskCacheVariants() {
       ? filename.slice(0, -Utils.CACHE_GZIP_SUFFIX.length)
       : filename;
     if (/^_quran(?:[?.]|$)/.test(cachedName))
-      await Utils.flushCachedFile(`${cacheDir}/${cachedName}`);
+      await Utils.flushCachedFile(`${cacheDir}/${cachedName}`, { strict: true });
   }
 }
 
@@ -2937,6 +3014,24 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
   if (!book)
     return next(createError(404, `Book 'quran' does not exist`));
 
+  var editMode = req.admin && req.editMode;
+  var cacheableHtml = !('json' in req.query) && !('tsv' in req.query);
+  var quranTocDefaultView = normalizedCommentaryTocView(req);
+  var cachedFile = translationTocCacheFile(req, quranCommentaryBook, quranTocDefaultView);
+  var flushCache = Utils.shouldFlushCache(req);
+  if (flushCache) {
+    invalidateQuranMemoryCaches({ commentaryAlias: quranCommentaryBook.alias });
+    await flushTranslationTocCacheVariants(req, quranCommentaryBook);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  if (cacheableHtml && !flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
+    if (sendCachedHtml(req, res, cachedFile))
+      return;
+    await Utils.flushCachedFile(cachedFile);
+  }
+
   var results = await Library.instance.findBook('quran').getChapters();
   var tafsirs = quranCommentaryBook.type === 'tafsir' ? await Tafsir.visibleTafsirs() : [];
   var translations = quranCommentaryBook.type === 'trans' ? await Tafsir.visibleTranslations() : [];
@@ -2951,7 +3046,6 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
       return Number(passage.surah);
     }).filter(Number.isInteger)))
     : null;
-  var quranTocDefaultView = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
   var commentaryIntroductionArticles = await CommentaryHeadings.introductionArticles(quranCommentaryBook.id);
   var renderLocals = {
     book: book,
@@ -2988,8 +3082,50 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
     return;
   }
 
+  if (!editMode && Utils.diskCacheEnabled()) {
+    var html = await ejs.renderFile(`${__dirname}/../views/toc.ejs`, cachedRenderLocals(res, {
+      noadmin: true,
+      ...renderLocals
+    }));
+    Utils.writeCachedHtml(cachedFile, html);
+    await Utils.indexCachedItem([
+      'quran',
+      'book:quran',
+      'quran:navigation-tocs',
+      `translation:${quranCommentaryBook.alias}`,
+      `translation:${quranCommentaryBook.alias}:toc`
+    ], cachedFile);
+    if (sendCachedHtml(req, res, cachedFile))
+      return;
+  }
+
   res.render('toc', renderLocals);
 });
+
+function normalizedCommentaryTocView(req) {
+  var view = (req.query.toc || req.query.view || req.query.tab || 'juz').toString();
+  return ['surahs', 'juz', 'manzils'].includes(view) ? view : 'juz';
+}
+
+function translationTocCacheFile(req, translation, view) {
+  var filename = Utils.cacheReqToFilename({
+    ...req,
+    url: req.originalUrl || req.url || ''
+  });
+  var variant = view === 'juz' ? '' : `__toc-${Utils.safeFilename(view)}`;
+  return Utils.cacheFileFromFilename(
+    `${filename}${variant}`,
+    'html',
+    translation.alias,
+    'trans'
+  );
+}
+
+async function flushTranslationTocCacheVariants(req, translation) {
+  await Promise.all(['juz', 'surahs', 'manzils'].map(function (view) {
+    return Utils.flushCachedFile(translationTocCacheFile(req, translation, view), { strict: true });
+  }));
+}
 
 async function resolveQuranCommentaryBook(alias) {
   if (!alias)
@@ -3323,6 +3459,13 @@ async function renderBookSection(req, res, next) {
       return next(createError(400, routeParameterMessage('sectionNum', req.params.sectionNum, bookAlias === 'quran' ? 'section must be a positive integer' : 'section must be a positive number')));
     if (bookAlias === 'quran' && !findSurah(chapterNum))
       return next(HttpRange.notSatisfiable('quran-surahs', quranSurahCount(), `Quran surah ${chapterNum} is out of range`));
+    if (bookAlias === 'quran' && !req.quranSelectedTranslationAlias && !req.query.translation) {
+      var preferredTranslation = preferredQuranTranslationFromCookie(req);
+      if (preferredTranslation) {
+        var preferredTranslationPath = `/quran/${encodeURIComponent(preferredTranslation.alias)}/${chapterNum}/${sectionNum}`;
+        return res.redirect(302, appendQueryExcluding(req, Utils.quranUrl(req, preferredTranslationPath), ['translation']));
+      }
+    }
     var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
     var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
     if (bookAlias === 'quran' && selectedTranslation && selectedTranslation.source === 'local' && !req.quranTranslationCanonicalPath) {

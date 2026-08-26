@@ -4,7 +4,7 @@
   var modeTafsirHref = locals.tafsirHref || utils.quranUrl(req, '/quran/tafsir');
   var modeMemorizeHref = locals.memorizeHref || `${modeMushafHref}${modeMushafHref.indexOf('?') >= 0 ? '&' : '?'}memorize`;
   var modeReviewHref = locals.reviewHref || utils.quranUrl(req, '/quran/review');
-  var commentaryReaderMode = ['tafsir', 'translation', 'trans'].indexOf(locals.readerMode) >= 0;
+  var commentaryReaderMode = ['translation', 'trans'].indexOf(locals.readerMode) >= 0;
 %>
 <span class="quran-reader-modes btn-group btn-group-sm" role="group" aria-label="Quran reading mode">
   <% if (commentaryReaderMode) { %>
