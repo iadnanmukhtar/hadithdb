@@ -80,6 +80,25 @@ describe('tafsir translation range compaction', () => {
 		expect(findMergeGroups(rows)).toEqual([]);
 	});
 
+	test('merges consecutive rows with exact matching full text when explicitly requested', () => {
+		const rows = [
+			Object.assign(row(1, 2, 4, 4, '', ''), { sourceText: 'Shared tafsir' }),
+			Object.assign(row(2, 2, 5, 5, '', ''), { sourceText: 'Shared tafsir' }),
+			Object.assign(row(3, 2, 6, 6, '', ''), { sourceText: 'Different tafsir' })
+		];
+
+		expect(findMergeGroups(rows)).toEqual([]);
+		expect(findMergeGroups(rows, { fullText: true })).toEqual([
+			expect.objectContaining({
+				ayahFrom: 4,
+				ayahTo: 5,
+				keepId: 1,
+				deleteIds: [2],
+				sourceText: 'Shared tafsir'
+			})
+		]);
+	});
+
 	test('accepts partial tafsirs and verifies their exact coverage is preserved', () => {
 		const rows = [
 			row(1, 1, 1, 2, 'Translation', 'Commentary'),
@@ -96,5 +115,12 @@ describe('tafsir translation range compaction', () => {
 			row(1, 1, 1, 2, 'Translation', 'Commentary'),
 			row(2, 1, 2, 3, 'Translation', 'Commentary')
 		], quranSurahs, 'test')).toThrow(/overlapping/);
+	});
+
+	test('accepts the Surah 1 istiadhah as ayah zero', () => {
+		const quranSurahs = new Map();
+		for (let surah = 1; surah <= 114; surah++) quranSurahs.set(surah, 10);
+		const rows = [row(1, 1, 0, 0, 'Translation', 'Commentary'), row(2, 1, 1, 1, 'Translation', 'Commentary')];
+		expect(Array.from(validateCoverage(rows, quranSurahs, 'test'))).toEqual(['1:0', '1:1']);
 	});
 });

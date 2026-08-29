@@ -19,11 +19,12 @@ async function run(argv = process.argv.slice(2)) {
 		const quranSurahs = await getQuranSurahs(db);
 		const rows = await getRows(db, book.id, sourceColumn);
 		const originalCoverage = validateCoverage(rows, quranSurahs, options.alias);
-		const groups = findMergeGroups(rows);
+		const groups = findMergeGroups(rows, { fullText: options.fullText });
 		const rowsRemoved = groups.reduce((total, group) => total + group.deleteIds.length, 0);
-		const eligibleRows = rows.filter(row => commentaryAfterTranslation(row.sourceText)).length;
+		const eligibleRows = options.fullText ? rows.filter(row => String(row.sourceText || '').trim()).length :
+			rows.filter(row => commentaryAfterTranslation(row.sourceText)).length;
 
-		console.log(`${options.dryRun ? 'Checking' : 'Compacting'} '${options.alias}' ${sourceColumn} by commentary after each leading translation.`);
+		console.log(`${options.dryRun ? 'Checking' : 'Compacting'} '${options.alias}' ${sourceColumn} by ${options.fullText ? 'exact full text' : 'commentary after each leading translation'}.`);
 		console.log(`Found ${groups.length} range(s) to merge and ${rowsRemoved} duplicate row(s) to remove from ${rows.length} rows.`);
 		if (eligibleRows !== rows.length)
 			console.log(`Skipping ${rows.length - eligibleRows} row(s) without commentary after a leading translation.`);
@@ -49,7 +50,7 @@ async function run(argv = process.argv.slice(2)) {
 				WHERE id=${Number(book.id)}`);
 			const updatedRows = await getRows(db, book.id, sourceColumn);
 			validateCoverage(updatedRows, quranSurahs, options.alias, originalCoverage);
-			const remainingGroups = findMergeGroups(updatedRows);
+			const remainingGroups = findMergeGroups(updatedRows, { fullText: options.fullText });
 			if (remainingGroups.length > 0)
 				throw new Error(`Verification found ${remainingGroups.length} mergeable range(s) after compaction.`);
 			if (updatedRows.length !== rows.length - rowsRemoved)
@@ -160,33 +161,37 @@ function mergedSourceText(translations, commentary) {
 	return `${translations.map(item => prefixedTranslation(item.translation, item.ayahFrom, item.ayahTo)).join('\n')}\n\n${commentary}`;
 }
 
-function appendMergeGroup(groups, group) {
+function appendMergeGroup(groups, group, options = {}) {
 	if (!group || group.deleteIds.length < 1)
 		return;
-	group.sourceText = mergedSourceText(group.translations, group.commentary);
+	if (!options.fullText)
+		group.sourceText = mergedSourceText(group.translations, group.commentary);
 	groups.push(group);
 }
 
-function findMergeGroups(rows) {
+function findMergeGroups(rows, options = {}) {
 	const groups = [];
 	let current = null;
 
 	for (const row of rows) {
-		const parts = splitTranslationAndCommentary(row.sourceText);
+		const fullText = String(row.sourceText || '').trim();
+		const parts = options.fullText ? (fullText ? { commentary: fullText } : null) :
+			splitTranslationAndCommentary(row.sourceText);
 		if (!current || !parts ||
 			row.bookId !== current.bookId ||
 			row.surah !== current.surah ||
 			Number(row.ayahFrom) !== current.ayahTo + 1 ||
 			parts.commentary !== current.commentary) {
-			appendMergeGroup(groups, current);
+			appendMergeGroup(groups, current, options);
 			current = {
 				bookId: row.bookId,
 				surah: Number(row.surah),
 				ayahFrom: Number(row.ayahFrom),
 				ayahTo: Number(row.ayahTo),
 				keepId: row.id,
+				sourceText: row.sourceText,
 				commentary: parts && parts.commentary,
-				translations: parts ? [{
+				translations: parts && !options.fullText ? [{
 					ayahFrom: Number(row.ayahFrom),
 					ayahTo: Number(row.ayahTo),
 					translation: parts.translation
@@ -197,15 +202,17 @@ function findMergeGroups(rows) {
 		}
 
 		current.ayahTo = Number(row.ayahTo);
-		current.translations.push({
-			ayahFrom: Number(row.ayahFrom),
-			ayahTo: Number(row.ayahTo),
-			translation: parts.translation
-		});
+		if (!options.fullText) {
+			current.translations.push({
+				ayahFrom: Number(row.ayahFrom),
+				ayahTo: Number(row.ayahTo),
+				translation: parts.translation
+			});
+		}
 		current.deleteIds.push(row.id);
 	}
 
-	appendMergeGroup(groups, current);
+	appendMergeGroup(groups, current, options);
 	return groups;
 }
 
@@ -219,8 +226,9 @@ function validateCoverage(rows, quranSurahs, alias, expectedCoverage) {
 		const ayahFrom = Number(row.ayahFrom);
 		const ayahTo = Number(row.ayahTo);
 		const ayahCount = quranSurahs.get(surah);
+		const isIstiadhah = surah === 1 && ayahFrom === 0 && ayahTo === 0;
 		if (!Number.isInteger(surah) || !Number.isInteger(ayahFrom) || !Number.isInteger(ayahTo) ||
-			!ayahCount || ayahFrom < 1 || ayahTo < ayahFrom || ayahTo > ayahCount)
+			!ayahCount || (!isIstiadhah && (ayahFrom < 1 || ayahTo < ayahFrom || ayahTo > ayahCount)))
 			throw new Error(`'${alias}' has an invalid Quran range at ${surah}:${ayahFrom}-${ayahTo}.`);
 		if (previousTo.has(surah) && ayahFrom <= previousTo.get(surah))
 			throw new Error(`'${alias}' has overlapping or out-of-order ranges at ${surah}:${ayahFrom}-${ayahTo}.`);
@@ -315,6 +323,7 @@ function readOptions(argv) {
 		column: '',
 		dryRun: true,
 		showRanges: false,
+		fullText: false,
 		buildIndex: true
 	};
 	for (let i = 0; i < argv.length; i++) {
@@ -331,6 +340,8 @@ function readOptions(argv) {
 			options.dryRun = true;
 		else if (arg === '--show-ranges')
 			options.showRanges = true;
+		else if (arg === '--full-text')
+			options.fullText = true;
 		else if (arg === '--no-index')
 			options.buildIndex = false;
 		else if (arg === '--help' || arg === '-h') {
@@ -359,6 +370,7 @@ function usage() {
 		'by its ayah number, followed once by the shared commentary.',
 		'English source text uses text_en; other primary languages use text. Rows without',
 		'a leading translation separator are left unchanged. Existing coverage is preserved.',
+		'Use --full-text to merge only rows whose complete selected text is identical.',
 		'Default mode is a read-only dry run.',
 		'',
 		'Options:',
@@ -368,6 +380,7 @@ function usage() {
 		'  --apply             Back up and update MySQL, then rebuild the commentary index',
 		'  --dry-run           Validate and report only (default)',
 		'  --show-ranges       Print every range that would be merged',
+		'  --full-text         Merge exact full-text matches instead of split commentary',
 		'  --no-index          Do not rebuild the commentary index after applying',
 		'  --help              Show this help'
 	].join('\n');
