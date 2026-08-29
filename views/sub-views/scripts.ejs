@@ -1,7 +1,7 @@
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="/vendor/toastr/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
   if (!window.marked) {
@@ -36,6 +36,25 @@
 	    toastr.options.closeMethod = 'fadeOut';
 	    toastr.options.closeDuration = 300;
 	    toastr.options.closeEasing = 'swing';
+
+	    const updateToastStorageKey = 'hadithdb_update_success_toast';
+	    const rememberUpdateSuccessToast = (title, message) => {
+	      try {
+	        window.sessionStorage.setItem(updateToastStorageKey, JSON.stringify({ title, message }));
+	      } catch (_err) {}
+	    };
+	    const showRememberedUpdateSuccessToast = () => {
+	      try {
+	        const stored = window.sessionStorage.getItem(updateToastStorageKey);
+	        if (!stored) return;
+	        window.sessionStorage.removeItem(updateToastStorageKey);
+	        const toast = JSON.parse(stored);
+	        toastr.success(toast.message || 'Your changes are ready in the reader.', toast.title || 'Changes saved');
+	      } catch (_err) {
+	        try { window.sessionStorage.removeItem(updateToastStorageKey); } catch (_storageErr) {}
+	      }
+	    };
+	    showRememberedUpdateSuccessToast();
 
 	    const renderMarkdown = (text) => {
 	      if (!text) return '';
@@ -382,6 +401,12 @@
 	            if (!appliedRenderedCommentary && !removeSimilarHadith && !$(this).is('select') && value !== undefined && value !== null)
 	              setElementValue(this, value);
 	            if (propStr.indexOf('commentary.') === 0 && !$el.hasClass('quran-study-translation-editor') && !$el.hasClass('quran-study-translation-footnote-editor')) {
+	              rememberUpdateSuccessToast(
+	                propStr.indexOf('commentary.') === 0 ? 'Tafsir updated' : 'Changes saved',
+	                propStr.indexOf('commentary.') === 0
+	                  ? 'Your changes have been saved and the Tafsir reader refreshed.'
+	                  : 'Your changes have been saved.'
+	              );
 	              window.location.reload();
 	              return;
 	            }
@@ -441,13 +466,16 @@
         res.statusText = 'Update request body is not present';
       }
       if (res.status == 200) {
-        const successMessage = `Successful update for ${reqBody.id}/${reqBody.prop}`;
-        console.log(successMessage);
-        toastr.success(`${res.status} ${res.statusText}`, successMessage);
+        const isTafsirUpdate = (reqBody.prop || '').toString().indexOf('commentary.') === 0;
+        const successTitle = isTafsirUpdate ? 'Tafsir updated' : 'Changes saved';
+        const successMessage = isTafsirUpdate
+          ? 'Your changes have been saved and the Tafsir reader refreshed.'
+          : 'Your changes have been saved.';
+        toastr.success(successMessage, successTitle);
       } else {
         var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
-        console.error(`Update Error\n${errMessage}`);
-        toastr.error(errMessage, `Error on update for ${reqBody.id}/${reqBody.prop}`);
+        const isTafsirUpdate = (reqBody.prop || '').toString().indexOf('commentary.') === 0;
+        toastr.error(errMessage, isTafsirUpdate ? 'Tafsir update needs attention' : 'Update needs attention');
       }
       return resBody;
     }

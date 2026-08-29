@@ -141,7 +141,12 @@ router.get('/translations/local', async function (req, res) {
   if (editMode)
     aliases.forEach(alias => addMissingEditableCommentaryRows(rows, alias, surah, ayahFrom, ayahTo));
   const renderEditableContent = editMode && (req.query.render || '').toString() !== 'reader';
-  const entries = rows.map(row => {
+  const translationBooks = new Map(Tafsir.visibleTranslationsSync().map(book => [book.alias, book]));
+  const translationRows = renderEditableContent ? rows : rows.flatMap(row => Tafsir.splitTranslationRowByAyah(
+    row,
+    translationBooks.get(row.commentary_alias)
+  )).filter(row => Number(row.ayahFrom) <= ayahTo && Number(row.ayahTo) >= ayahFrom);
+  const entries = translationRows.map(row => {
     const alias = row.commentary_alias;
     const editLang = lang === 'ar' ? 'ar' : 'en';
     const editSuffix = editLang === 'en' ? '_en' : '';

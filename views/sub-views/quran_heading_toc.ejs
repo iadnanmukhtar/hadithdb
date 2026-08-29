@@ -9,6 +9,9 @@
   var quranHeadingTranslationAlias = /^[A-Za-z0-9_-]+$/.test((locals.quranHeadingTranslationAlias || '').toString())
     ? locals.quranHeadingTranslationAlias.toString()
     : '';
+  var quranHeadingTranslationSlug = /^[A-Za-z0-9_-]+$/.test((locals.quranHeadingTranslationSlug || quranHeadingTranslationAlias).toString())
+    ? (locals.quranHeadingTranslationSlug || quranHeadingTranslationAlias).toString()
+    : quranHeadingTranslationAlias;
 	var quranHeadingTafsirBase = /^\/quran\/tafsir\/[A-Za-z0-9_%.-]+$/.test((locals.quranHeadingTafsirBase || '').toString())
 	  ? locals.quranHeadingTafsirBase.toString()
 	  : '';
@@ -31,10 +34,7 @@
   function quranHeadingHref(heading) {
 	if (quranHeadingTafsirBase)
 	  return utils.quranUrl(req, `${quranHeadingTafsirBase}/quran:${heading.surah}:${heading.start}`);
-    var path = `/quran${quranHeadingTranslationAlias ? `/${encodeURIComponent(quranHeadingTranslationAlias)}` : ''}/${heading.surah}/${heading.section}`;
-    if (heading.level === 3)
-      path += `/${heading.subsection}`;
-    return utils.quranUrl(req, path);
+    return utils.quranUrl(req, utils.quranStudySectionPath(heading, quranHeadingTranslationSlug));
   }
   function quranHeadingLabel(heading) {
     if (heading.level === 3)
@@ -47,9 +47,9 @@
   function quranHeadingH1Href(heading) {
     if (quranHeadingTafsirBase)
       return utils.quranUrl(req, `${quranHeadingTafsirBase}/${heading.number}`);
-    return utils.quranUrl(req, `/quran${quranHeadingTranslationAlias ? `/${encodeURIComponent(quranHeadingTranslationAlias)}` : ''}/${heading.number}`);
+    return utils.quranUrl(req, utils.quranStudySectionPath({ surah: heading.number }, quranHeadingTranslationSlug));
   }
-  var quranHeadingBookHref = utils.quranUrl(req, quranHeadingTafsirBase || `/quran${quranHeadingTranslationAlias ? `/${encodeURIComponent(quranHeadingTranslationAlias)}` : ''}`);
+  var quranHeadingBookHref = utils.quranUrl(req, quranHeadingTafsirBase || utils.quranStudySectionPath(null, quranHeadingTranslationSlug));
   var quranHeadingIntroductionHref = `${quranHeadingBookHref}/introduction`;
 %>
 <% if (quranHeadingOutline && (quranHeadingOutline.sections || []).length > 0) { %>

@@ -216,6 +216,21 @@ describe('shared header navigation', () => {
 		expect(scripts).toContain('updateQuranReaderModeHrefs(pageElement)');
 	});
 
+	test('keeps Study passage links out of tafsir scope and inside the selected translation scope', () => {
+		expect(header).toContain("req.cookies && req.cookies.quranPreferredTranslationAlias");
+		expect(header).toContain('translationBook.alias === quranStudyTranslationMenuAlias');
+		expect(header).toContain('var quranStudyTranslationMenuSlug = quranStudyTranslationMenuBook');
+		expect(header).toContain('utils.quranStudySectionPath(section, quranStudyTranslationMenuSlug)');
+		expect(header).toContain('utils.quranStudySectionPath(null, quranStudyTranslationMenuSlug)');
+		expect(header).toContain("pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans'");
+		expect(header).toContain('var quranSectionPath = quranStudySectionMenuHref(page.context.section || page.context.chapter);');
+		expect(header).toContain("(!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir')");
+		expect(header).toContain('`${quranTafsirMenuBase || quranTranslationMenuBase}/quran:${sectionSurah}:${startAyah}`');
+		expect(header).toContain('href="<%= quranStudySectionMenuHref(section) %>" title="Study"');
+		expect(quranStudy).toContain('`/quran/${encodeURIComponent(quranSelectedTranslationSlug)}/quran:${quranRefMatch[1]}:${quranRefMatch[2]}');
+		expect(searchRoutes).toContain("router.get('/quran/:translationAlias/quran\\::surah\\::ayah1', renderScopedQuranTranslationPassage);");
+	});
+
 	test('compacts Quran section menus on mobile', () => {
 		expect(header).toContain("chapter-toc<%= isQuranToc ? ' quran-section-menu' : '' %>");
 		expect(header).toContain('chapter-toc quran-section-menu');

@@ -96,6 +96,38 @@ describe('Quran Study translation editing', () => {
     expect(payload.entries[0].edit.footnotes_prop).toBe('commentary.footnotes_en');
   });
 
+  test('aliases the commentary table when resolving a newly created passage', () => {
+    const updateRoute = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
+    const createPassage = updateRoute.slice(
+      updateRoute.indexOf('async function createLocalCommentaryPassage'),
+      updateRoute.indexOf('async function updateQuranPassageRange')
+    );
+
+    expect(createPassage).toContain('SELECT hc.id\n    FROM hadiths_commentary hc');
+    expect(createPassage).toContain('WHERE ${bookWhere}');
+  });
+
+  test('uses a lightweight update target and refreshes Elasticsearch in the update request', () => {
+    const updateRoute = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
+
+    expect(updateRoute).toContain('var commentary = await localCommentaryUpdateTargetById(commentaryId);');
+    expect(updateRoute).toContain("await Index.update('commentaries', commentary, { refresh: true });");
+    expect(updateRoute).not.toContain("await Index.refresh('commentaries');");
+    expect(updateRoute).toContain('await flushCommentaryPassageCaches(refreshedCommentary);');
+  });
+
+  test('preserves the commentary success toast across its required page reload', () => {
+    const inlineEditor = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'scripts.ejs'), 'utf8');
+
+    expect(inlineEditor).toContain("const updateToastStorageKey = 'hadithdb_update_success_toast';");
+    expect(inlineEditor).toContain('showRememberedUpdateSuccessToast();');
+    expect(inlineEditor).toContain("propStr.indexOf('commentary.') === 0 ? 'Tafsir updated' : 'Changes saved'");
+    expect(inlineEditor).toContain("'Your changes have been saved and the Tafsir reader refreshed.'");
+    expect(inlineEditor.indexOf('rememberUpdateSuccessToast(')).toBeLessThan(
+      inlineEditor.indexOf('window.location.reload();')
+    );
+  });
+
   test('keeps editor markup private and exposes the default footnote field on Study targets', async () => {
     Index.docsFromQueryFields = jest.fn().mockResolvedValue([{
       commentary_alias: 'study-test',
@@ -141,6 +173,40 @@ describe('Quran Study translation editing', () => {
     expect(client).toContain('storeQuranSelectedTranslationAlias(preferredAlias);');
     expect(route).toContain('preferredQuranTranslationFromCookie(req)');
     expect(route).toContain('return res.redirect(302, appendQueryExcluding(req, Utils.quranUrl(req, preferredTranslationPath)');
+  });
+
+  test('keeps translation dropdown changes on a selected hero ayah URL', () => {
+    const client = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'), 'utf8');
+    const route = fs.readFileSync(path.join(__dirname, '..', 'routes', 'search.js'), 'utf8');
+	const passageSelector = client.slice(
+	  client.indexOf('function initQuranPassageTranslationSelects'),
+	  client.indexOf('var quranPassageAudioRecitationsPromise')
+	);
+	const attributionSelector = client.slice(
+	  client.indexOf('function initQuranTranslationAttributionSelectors'),
+	  client.indexOf('function initQuranPreferredTranslationDisplays')
+	);
+
+    expect(client).toContain("var scopedRefMatch = path.match(/^\\/quran\\/[^/]+\\/quran:(\\d+):(\\d+(?:-\\d+)?)(?:\\/|$)/);");
+    expect(client).toContain("alias ? `/quran/${encodeURIComponent(alias)}/quran:${parts.ref}` : `/quran:${parts.ref}`");
+	expect(passageSelector).toContain('window.location.assign(targetUrl);');
+	expect(passageSelector).not.toContain('applyQuranHeroTranslationAlias');
+	expect(passageSelector).not.toContain('saveQuranPreferredTranslationAlias');
+	expect(attributionSelector).toContain('window.location.assign(targetUrl);');
+	expect(attributionSelector).not.toContain('applyQuranHeroTranslationAlias');
+	expect(attributionSelector).not.toContain('saveQuranPreferredTranslationAlias');
+    expect(route).toContain('await applySelectedQuranTranslation(selectedAyahs, selectedTranslation, surah.num);');
+  });
+
+  test('scopes Study links in ayah marker menus to the active non-default translation', () => {
+    const client = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'), 'utf8');
+
+    expect(client).toContain('function quranAyahStudyUrl(ref)');
+    expect(client).toContain("document.querySelector('[data-quran-passage-translation-select=\"1\"]')");
+    expect(client).toContain("document.querySelector('[data-quran-audio-translation-select=\"1\"]')");
+    expect(client).toContain('? `/quran/${encodeURIComponent(alias)}/quran:${parts[1]}:${parts[2]}`');
+    expect(client).toContain(': `/quran:${parts[1]}:${parts[2]}`;');
+    expect(client).toContain("view.setAttribute('href', quranAyahStudyUrl(marker.getAttribute('data-quran-ref') || ''));");
   });
 
   test('renders saved translation Markdown and footnotes back into the inline Study fields', () => {

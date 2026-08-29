@@ -210,6 +210,147 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--content-language-thai-font: "Thonburi", "Noto Serif Thai", serif;
 }
 
+/* Site notices: a compact illuminated-card treatment for reader feedback. */
+#toast-container.toast-top-right {
+	right: .8rem;
+	top: calc(var(--fixed-header-offset, 4.5rem) + .55rem);
+	width: min(20.5rem, calc(100vw - 1.25rem));
+}
+
+#toast-container > .toast {
+	--toast-status: var(--c-white);
+	--toast-status-soft: rgba(255, 255, 255, .15);
+	animation: hadith-toast-arrive .28s cubic-bezier(.2, .8, .2, 1) both;
+	backdrop-filter: blur(10px);
+	background: linear-gradient(135deg, var(--c-note), color-mix(in srgb, var(--c-accent) 78%, var(--c-note) 22%)) !important;
+	border: 1px solid rgba(255, 255, 255, .24);
+	border-radius: .72rem;
+	box-shadow: 0 .65rem 1.6rem var(--c-black-24), 0 .1rem .35rem var(--c-black-08);
+	color: var(--c-white) !important;
+	font-family: var(--content-language-latin-font);
+	font-size: .86rem;
+	line-height: 1.25;
+	margin: 0 0 .48rem;
+	min-height: 3.75rem;
+	opacity: 1;
+	overflow: hidden;
+	padding: .72rem 2.25rem .72rem 3.65rem !important;
+	position: relative;
+	width: 100%;
+}
+
+#toast-container > .toast::before {
+	align-items: center;
+	background: var(--toast-status-soft);
+	border: 1px solid rgba(255, 255, 255, .32);
+	border-radius: 50%;
+	color: var(--toast-status);
+	content: "i";
+	display: flex;
+	font-family: Georgia, serif;
+	font-size: .95rem;
+	font-weight: 700;
+	height: 2rem;
+	justify-content: center;
+	left: .8rem;
+	line-height: 1;
+	position: absolute;
+	top: .78rem;
+	width: 2rem;
+}
+
+#toast-container > .toast::after {
+	background: linear-gradient(90deg, var(--toast-status), color-mix(in srgb, var(--toast-status) 12%, transparent));
+	content: "";
+	height: .16rem;
+	left: 0;
+	position: absolute;
+	top: 0;
+	width: 100%;
+}
+
+#toast-container > .toast-success {
+	--toast-status: var(--c-white);
+}
+
+#toast-container > .toast-success::before {
+	content: "✓";
+	font-family: system-ui, sans-serif;
+}
+
+#toast-container > .toast-error {
+	--toast-status: #ffd5d9;
+	--toast-status-soft: rgba(220, 53, 69, .28);
+	background: linear-gradient(135deg, color-mix(in srgb, var(--c-note) 90%, var(--c-danger) 10%), color-mix(in srgb, var(--c-accent) 82%, var(--c-note) 18%)) !important;
+}
+
+#toast-container > .toast-error::before {
+	content: "!";
+	font-family: system-ui, sans-serif;
+	font-weight: 800;
+}
+
+#toast-container .toast-title {
+	color: var(--c-white);
+	font-family: var(--content-language-latin-font);
+	font-size: .96rem;
+	font-weight: 700;
+	letter-spacing: .01em;
+	line-height: 1.15;
+	margin-bottom: .16rem;
+}
+
+#toast-container .toast-message {
+	color: rgba(255, 255, 255, .88);
+}
+
+#toast-container .toast-close-button {
+	color: var(--c-white);
+	font-family: system-ui, sans-serif;
+	font-size: 1.2rem;
+	font-weight: 400;
+	opacity: .48;
+	position: absolute;
+	right: .6rem;
+	text-shadow: none;
+	top: .38rem;
+}
+
+#toast-container .toast-close-button:hover,
+#toast-container .toast-close-button:focus {
+	opacity: .85;
+}
+
+#toast-container .toast-progress {
+	background: var(--toast-status);
+	bottom: 0;
+	height: .16rem;
+	opacity: .82;
+}
+
+@keyframes hadith-toast-arrive {
+	from { opacity: 0; transform: translate3d(1.25rem, -.35rem, 0) scale(.97); }
+	to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@media (max-width: 575.98px) {
+	#toast-container.toast-top-right {
+		left: .625rem;
+		right: .625rem;
+		top: calc(var(--fixed-header-offset, 4rem) + .55rem);
+		width: auto;
+	}
+
+	#toast-container > .toast {
+		border-radius: .7rem;
+		padding-right: 2.25rem !important;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#toast-container > .toast { animation: none; }
+}
+
 .btn-primary {
 	--bs-btn-bg: var(--c-accent);
 	--bs-btn-border-color: var(--c-accent);

@@ -1,4 +1,5 @@
 <%
+  var quranPassageTranslationBook = page && page.context ? page.context.quranCommentaryBook : null;
   var quranSubsections = (locals.quranSubsections || []).map(function (heading) {
     var startAyah = parseInt(arabic.toLatinDigits((heading.start || '').toString().split(/:/).pop()), 10);
     var count = parseInt(heading.count, 10);
@@ -98,10 +99,10 @@
   <span class="dropdown quran-passage-translation-control quran-dynamic-translation-control">
     <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn dropdown-toggle quran-dynamic-translation-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose translation" title="Choose translation">
       <span class="bi bi-translate" aria-hidden="true"></span>
-      <span data-quran-dynamic-translation-label>Haleem</span>
+      <span data-quran-dynamic-translation-label><%= quranPassageTranslationBook ? (quranPassageTranslationBook.shortName_en || quranPassageTranslationBook.shortName || quranPassageTranslationBook.alias) : 'Haleem' %></span>
     </button>
     <select class="visually-hidden" data-quran-passage-translation-select="1" aria-label="Translation" tabindex="-1">
-      <option value="">Haleem</option>
+      <option value="<%= quranPassageTranslationBook ? quranPassageTranslationBook.alias : '' %>"><%= quranPassageTranslationBook ? (quranPassageTranslationBook.shortName_en || quranPassageTranslationBook.shortName || quranPassageTranslationBook.alias) : 'Haleem' %></option>
     </select>
     <ul class="dropdown-menu quran-passage-reciter-menu" data-quran-audio-translation-menu="1"></ul>
   </span>

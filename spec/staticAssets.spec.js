@@ -5,6 +5,11 @@ const path = require('path');
 const Utils = require('../lib/Utils');
 
 describe('static assets', () => {
+	test('content-hashes both shared client assets', () => {
+		expect(Utils.scriptAssetVersion()).toMatch(/^v\d+-[a-f0-9]{12}$/);
+		expect(Utils.styleAssetVersion()).toMatch(/^v\d+-[a-f0-9]{12}$/);
+	});
+
   test.each([
     ['/images/logo.png', '/static/img/logo.png'],
     ['/fonts/kitab-base.woff2', '/static/fonts/kitab-base.woff2'],

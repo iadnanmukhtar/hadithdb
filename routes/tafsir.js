@@ -4,6 +4,7 @@ const createError = require('http-errors');
 const express = require('express');
 const ejs = require('ejs');
 const fs = require('fs');
+const debug = require('debug')('hadithdb:TafsirRoute');
 const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
 const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
@@ -187,6 +188,9 @@ router.get('/:tafsir/:surah', async function (req, res, next) {
 router.get('/:tafsir/:surah/:section', renderTafsirPassage);
 
 async function renderTafsirPassage(req, res, next) {
+  const routeStartedAt = Date.now();
+  const trace = stage => debug(`passage ${req.params.tafsir} ${req.params.surah}:${req.params.start || req.params.section}${req.params.end ? `-${req.params.end}` : ''} ${stage} ${Date.now() - routeStartedAt}ms`);
+  trace('start');
   res.locals.req = req;
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
@@ -208,6 +212,7 @@ async function renderTafsirPassage(req, res, next) {
     return next(createError(validPassageFormat ? 410 : 404, `Quran passage ${req.params.surah}:${req.params.start || req.params.section}${req.params.end ? `-${req.params.end}` : ''} not found`));
 
   const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
+  trace(`resolved tafsir source=${tafsir && tafsir.source} type=${tafsir && tafsir.type}`);
   if (!tafsir)
     return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
 
@@ -225,15 +230,18 @@ async function renderTafsirPassage(req, res, next) {
     res.setHeader('Expires', '0');
   }
   if (req.params.start !== undefined && !flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
-    sendCachedHtml(req, res, cachedFile);
-    return;
+    if (sendCachedHtml(req, res, cachedFile))
+      return;
+    await Utils.flushCachedFile(cachedFile);
   }
 
   let entries;
   try {
+    trace('loading entries');
     entries = await Tafsir.tafsirEntries(tafsir, surahNum, ayahNum, {
       editMode: editMode
     });
+    trace('loaded entries');
   } catch (err) {
     return next(createError(503, `Unable to load ${tafsir.shortName_en || tafsir.alias} for ${surahNum}:${ayahNum}`, {
       cause: err
@@ -243,6 +251,7 @@ async function renderTafsirPassage(req, res, next) {
   const entryStart = entries.length ? Math.min(...entries.map(entry => entry.startAyah)) : ayahNum;
   const entryEnd = entries.length ? Math.max(...entries.map(entry => entry.endAyah)) : ayahNum;
   const allTafsirs = await Tafsir.visibleTafsirs();
+  trace('loaded catalog');
   const canonicalPath = Tafsir.passageUrl(tafsir, surahNum, entryStart, entryEnd, allTafsirs);
   const canonicalUrl = new URL(canonicalPath, 'https://quran.islamunlocked.com');
   const canonicalPathname = canonicalUrl.pathname;
@@ -256,11 +265,14 @@ async function renderTafsirPassage(req, res, next) {
   }
 
   if (!flushCache && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
-    sendCachedHtml(req, res, cachedFile);
-    return;
+    if (sendCachedHtml(req, res, cachedFile))
+      return;
+    await Utils.flushCachedFile(cachedFile);
   }
   const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
+  trace('loaded ayahs');
   const section = await QuranHeadings.sectionForAyah(surahNum, ayahNum);
+  trace('loaded Quran heading');
   const chapter = section
     ? await section.getChapter()
     : await QuranHeadings.chapter(surahNum);
@@ -275,12 +287,16 @@ async function renderTafsirPassage(req, res, next) {
       includeEmpty: true
     });
   const commentaryIntroductionArticles = await CommentaryHeadings.introductionArticles(tafsir.id);
+  trace('loaded commentary introduction');
   const commentaryIntroductionHref = CommentaryHeadings.hasIntroduction(commentaryIntroductionArticles)
     ? `/quran/tafsir/${encodeURIComponent(tafsir.slug || Tafsir.tafsirSlug(tafsir.alias))}/introduction`
     : '';
   const navigation = await tafsirNavigation(tafsir, navigationEntries, allTafsirs, surahNum, ayahNum, commentaryIntroductionHref);
+  trace('loaded navigation');
 	const quranHeadingOutlines = await QuranHeadingOutlines.forSurahs([surahNum]);
+  trace('loaded outlines');
   const firstSurahPassage = await Tafsir.firstPassageInSurah(tafsir, surahNum, { includeZero: true });
+  trace('loaded first passage');
   let commentarySurahHeading = null;
   if (firstSurahPassage && Number(firstSurahPassage.ayah) === Number(entryStart)) {
     commentarySurahHeading = await CommentaryHeadings.chapter(tafsir.id, surahNum);
@@ -316,11 +332,15 @@ async function renderTafsirPassage(req, res, next) {
       noadmin: true,
       ...renderLocals
     }));
+    trace('rendered cache HTML');
     Utils.writeCachedHtml(cachedFile, html);
+    trace('wrote cache HTML');
     await Utils.indexCachedItem(refs, cachedFile);
+    trace('indexed cache HTML');
   }
 
   res.render('tafsir_passage', renderLocals);
+  trace('sent response');
 }
 
 async function renderTafsirBookToc(req, res, tafsir) {

@@ -2,6 +2,7 @@
 
 const path = require('path');
 const ejs = require('ejs');
+const Utils = require('../lib/Utils');
 
 const template = path.join(__dirname, '..', 'views', 'sub-views', 'quran_heading_toc.ejs');
 
@@ -18,6 +19,7 @@ function render(outlines, options = {}) {
     req: {},
     utils: {
       quranUrl: (_req, href) => href,
+	  quranStudySectionPath: Utils.quranStudySectionPath,
       trimToEmpty: value => value === undefined || value === null ? '' : value.toString().trim()
     }
   });
@@ -93,6 +95,16 @@ describe('Quran heading rail', () => {
     expect(html).toContain('\\u003c/script>\\u003cscript>alert(1)\\u003c/script>');
     expect((html.match(/<script/g) || [])).toHaveLength(1);
     expect(await render({})).not.toContain('data-quran-heading-toc');
+  });
+
+  test('lets Mushaf synchronize heading URLs with its active translation', () => {
+    const client = require('fs').readFileSync(path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'), 'utf8');
+
+    expect(client).toContain('function applyQuranHeadingTranslationScope(alias, force)');
+    expect(client).toContain("bookLink.href = quranUrl(alias ? `/quran/${encodeURIComponent(alias)}` : '/quran');");
+    expect(client).toContain('applyQuranHeadingTranslationScope(selector.value);');
+    expect(client).toContain('applyQuranHeadingTranslationScope(alias);');
+    expect(client).toContain('renderQuranHeadingToc(surah)');
   });
 
 	test('links tafsir headings through the selected tafsir at each heading start', async () => {

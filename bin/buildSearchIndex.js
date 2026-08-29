@@ -75,9 +75,60 @@ async function getHadithData(book) {
 		FROM v_hadiths
 		WHERE book_id = ${book.id}
 		ORDER BY ordinal`);
+	await attachHadithSharh(rows, book.id);
+	await attachHadithGraderOpinions(rows, book.id);
 	if (Number(book.id) === 0)
 		await attachQuranScriptWords(rows);
 	return rows;
+}
+
+async function attachHadithGraderOpinions(rows, bookId) {
+	if (!rows.length || !(await tableExists('hdith_hadith_grades')))
+		return;
+	const opinionRows = await global.query(`
+		SELECT hg.hadith_id, hg.source_slug, hg.grader, hg.grade, hg.grade_category_id,
+			hg.source_name, hg.book_page, hg.source_url
+		FROM hdith_hadith_grades hg
+		JOIN hadiths h ON h.id=hg.hadith_id
+		WHERE h.bookId=${Number(bookId)}
+		ORDER BY hg.hadith_id, hg.ordinal`);
+	const byHadith = new Map();
+	opinionRows.forEach(opinion => {
+		if (!byHadith.has(opinion.hadith_id)) byHadith.set(opinion.hadith_id, []);
+		byHadith.get(opinion.hadith_id).push({
+			source_slug: opinion.source_slug,
+			grader: opinion.grader,
+			grade: opinion.grade,
+			grade_category_id: opinion.grade_category_id,
+			source: opinion.source_name,
+			book_page: opinion.book_page,
+			source_url: opinion.source_url
+		});
+	});
+	rows.forEach(row => { row.grader_opinions = byHadith.get(row.id) || []; });
+}
+
+async function attachHadithSharh(rows, bookId) {
+	if (!rows.length || !(await tableExists('hdith_hadith_sharh')))
+		return;
+	const sharhRows = await global.query(`
+		SELECT hs.hadith_id, hs.text, ss.title, ss.author
+		FROM hdith_hadith_sharh hs
+		JOIN hdith_sharh_sources ss ON ss.id=hs.source_id
+		JOIN hadiths h ON h.id=hs.hadith_id
+		WHERE h.bookId=${Number(bookId)}
+		ORDER BY hs.hadith_id, hs.id`);
+	const byHadith = new Map();
+	sharhRows.forEach(sharh => {
+		if (!byHadith.has(sharh.hadith_id)) byHadith.set(sharh.hadith_id, []);
+		byHadith.get(sharh.hadith_id).push(`${sharh.title}${sharh.author ? ` — ${sharh.author}` : ''}\n${sharh.text}`);
+	});
+	rows.forEach(row => { row.sharh = (byHadith.get(row.id) || []).join('\n\n'); });
+}
+
+async function tableExists(table) {
+	const rows = await global.query(`SHOW TABLES LIKE '${table.replace(/'/g, "''")}'`);
+	return rows.length > 0;
 }
 
 async function attachQuranScriptWords(rows) {

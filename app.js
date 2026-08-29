@@ -446,6 +446,12 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.get('/vendor/marked/marked.min.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'node_modules/marked/marked.min.js'), { cacheControl: false });
   });
+  app.get('/vendor/toastr/toastr.min.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'node_modules/toastr/build/toastr.min.js'), { cacheControl: false });
+  });
+  app.get('/vendor/toastr/toastr.min.css', (req, res) => {
+    res.sendFile(path.join(__dirname, 'node_modules/toastr/build/toastr.min.css'), { cacheControl: false });
+  });
   app.get('/shared/quran-review-core.js', (req, res) => {
     res.type('application/javascript');
     res.sendFile(path.join(__dirname, 'packages/quran-review-core/index.js'), { cacheControl: false });
@@ -512,6 +518,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   const quranMemorizationRouter = require('./routes/quranMemorization');
   const paymentsRouter = require('./routes/payments');
   const contentTranslationsRouter = require('./routes/contentTranslations');
+  const clientErrorsRouter = require('./routes/clientErrors');
 
   app.use('/recent', highlightsRouter);
   app.use('/highlights', highlightsRouter);
@@ -523,6 +530,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   app.use('/quran/tag', tagRouter);
   app.use('/api/update', updateRouter);
   app.use('/quran/api/update', updateRouter);
+  app.use('/api/client-errors', clientErrorsRouter);
+  app.use('/quran/api/client-errors', clientErrorsRouter);
   app.use('/settings', settingsRouter);
   app.use('/quran/settings', settingsRouter);
   const loginPageOnly = function loginPageOnly(req, res, next) {

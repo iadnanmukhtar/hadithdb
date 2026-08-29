@@ -35,21 +35,27 @@
     var quranSelectedTranslationAlias = /^[A-Za-z0-9_-]+$/.test((req.quranSelectedTranslationAlias || req.query.translation || '').toString().trim())
       ? (req.quranSelectedTranslationAlias || req.query.translation).toString().trim()
       : '';
+    var quranSelectedTranslationSlug = /^[A-Za-z0-9_-]+$/.test((req.quranSelectedTranslationSlug || quranSelectedTranslationAlias).toString().trim())
+      ? (req.quranSelectedTranslationSlug || quranSelectedTranslationAlias).toString().trim()
+      : quranSelectedTranslationAlias;
     var quranPassageHref = function (path) {
       if (quranSelectedTranslationAlias) {
-        var quranSectionMatch = path.toString().match(/^\/?quran\/(\d+)\/(\d+)(.*)$/);
+        var quranRefMatch = path.toString().match(/^\/?quran:(\d+):(\d+(?:-\d+)?)(.*)$/);
+        if (quranRefMatch)
+          return utils.quranUrl(req, `/quran/${encodeURIComponent(quranSelectedTranslationSlug)}/quran:${quranRefMatch[1]}:${quranRefMatch[2]}${quranRefMatch[3] || ''}`);
+        var quranSectionMatch = path.toString().match(/^\/?quran\/(?:[A-Za-z0-9_-]+\/)?(\d+)\/(\d+)(.*)$/);
         if (quranSectionMatch)
-          return utils.quranUrl(req, `/quran/${encodeURIComponent(quranSelectedTranslationAlias)}/${quranSectionMatch[1]}/${quranSectionMatch[2]}${quranSectionMatch[3] || ''}`);
+          return utils.quranUrl(req, `/quran/${encodeURIComponent(quranSelectedTranslationSlug)}/${quranSectionMatch[1]}/${quranSectionMatch[2]}${quranSectionMatch[3] || ''}`);
       }
       return utils.quranUrl(req, path);
     };
     var selectedAyahPrevHref;
     var selectedAyahNextHref;
     var selectedAyahHeroPrevHref = firstSelectedAyah && firstSelectedAyah.prev_ref
-      ? utils.quranUrl(req, `/${firstSelectedAyah.prev_ref}`)
+      ? quranPassageHref(`/${firstSelectedAyah.prev_ref}`)
       : undefined;
     var selectedAyahHeroNextHref = lastSelectedAyah && lastSelectedAyah.next_ref
-      ? utils.quranUrl(req, `/${lastSelectedAyah.next_ref}`)
+      ? quranPassageHref(`/${lastSelectedAyah.next_ref}`)
       : undefined;
     var quranAyahModalItems = [];
     var quranAyahModalRefs = new Set();
@@ -134,8 +140,8 @@
       : quranSectionTitle;
     var quranMetaRef = selectedCanonicalRef || quranPassageCanonicalRef || `${chapter.h1}:${quranNavigatorAyahValue}`;
     var quranSurahTitleAr = (quranNavigatorCurrentSurah && quranNavigatorCurrentSurah.name_ar) || chapter.title || section.h1_title || book.shortName;
-    var selectedTranslationBook = (global.commentaries || []).find(function (commentary) {
-      return commentary && commentary.type === 'trans' && commentary.alias === quranSelectedTranslationAlias;
+    var selectedTranslationBook = locals.quranCommentaryBook || (Tafsir.visibleTranslationsSync() || []).find(function (commentary) {
+      return commentary && commentary.alias === quranSelectedTranslationAlias;
     });
     var quranTranslationSurname = utils.englishAuthorSurname(selectedTranslationBook);
     var quranMetaTitle;
@@ -203,7 +209,7 @@
   
 </head>
 
-<body>
+<body<% if (quranSelectedTranslationAlias) { %> data-quran-selected-translation-alias="<%= quranSelectedTranslationAlias %>"<% } %>>
   
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   
@@ -223,7 +229,7 @@
         }); %>
       <% } %>
 
-      <% var quranSelectedAyahClearHref = page.context.section ? utils.quranUrl(req, `/${page.context.section.path}`) : undefined; %>
+      <% var quranSelectedAyahClearHref = page.context.section ? quranPassageHref(`/${page.context.section.path}`) : undefined; %>
       <div class="quran-selected-ayah-hero" data-quran-selected-ayah-hero<% if (quranSelectedAyahClearHref) { %> data-quran-clear-href="<%= quranSelectedAyahClearHref %>"<% } %>>
       <% if (selectedAyahs.length > 0) { %>
         <% var selectedAyahModalIndex = quranAyahModalItems.findIndex(ayah => firstSelectedAyah && ayah.ref === firstSelectedAyah.ref); %>
@@ -386,6 +392,7 @@
       quranHeadingInitialAyah: quranNavigatorAyahValue,
       quranHeadingInitialKey: section && Number(section.level) >= 2 ? `${section.h1}.${section.h2}` : '',
       quranHeadingTranslationAlias: quranSelectedTranslationAlias,
+      quranHeadingTranslationSlug: quranSelectedTranslationSlug,
       commentaryIntroductionArticles: locals.commentaryIntroductionArticles,
       quranHeadingBookShortName: selectedTranslationBook
         ? (selectedTranslationBook.shortName_en || selectedTranslationBook.name_en || selectedTranslationBook.alias)

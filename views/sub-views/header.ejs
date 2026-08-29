@@ -13,13 +13,13 @@
       || requestPath.indexOf('/quran/') === 0
       || (pageBook && pageBook.alias === 'quran')
       || (page.context && page.context.quranSearchProxy);
-    var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans');
-    var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
+    var isQuranStudyArea = /^\/quran\/(?:[A-Za-z0-9_-]+\/)?(?:\d+|quran:\d+:\d+)(?:\/|$)/.test(requestPath);
+    var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0 || (!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans');
+    var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
     var isQuranMushafArea = requestPath === '/quran/page' || requestPath.indexOf('/quran/page/') === 0;
     var isQuranReviewArea = requestPath === '/quran/review' || (isQuranMushafArea && (req.query.review !== undefined || req.query.reviewRef !== undefined));
     var isQuranMemorizeArea = isQuranMushafArea && (req.query.memorize !== undefined || isQuranReviewArea);
     var isMudhakkirArea = isQuranReviewArea || isQuranMemorizeArea;
-    var isQuranStudyArea = /^\/quran\/(?:[A-Za-z0-9_-]+\/)?\d+(?:\/|$)/.test(requestPath);
     var requestedQuranSearchReturnMode = req && req.query && ['mushaf', 'study', 'tafsir'].indexOf(req.query.mode) >= 0 ? req.query.mode : '';
     var requestedQuranTafsirMode = req && req.query ? (req.query.tafsirMode || '') : '';
     var requestedQuranTafsirBook = requestedQuranTafsirMode && Array.isArray(locals.quranNavTafsirs)
@@ -310,16 +310,39 @@
 	  var quranTafsirMenuBase = isQuranTafsirArea && pageQuranCommentaryBook
 	    ? `/quran/tafsir/${encodeURIComponent(pageQuranCommentaryBook.slug || pageQuranCommentaryBook.alias)}`
 	    : '';
+	  var quranStudyTranslationMenuBook = pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans'
+	    ? pageQuranCommentaryBook
+	    : null;
+	  if (!quranStudyTranslationMenuBook) {
+	    var quranStudyTranslationMenuAlias = (req.quranSelectedTranslationAlias
+	      || (req.cookies && req.cookies.quranPreferredTranslationAlias)
+	      || '').toString().trim();
+	    if (/^[A-Za-z0-9_-]+$/.test(quranStudyTranslationMenuAlias))
+	      quranStudyTranslationMenuBook = (Tafsir.visibleTranslationsSync() || []).find(function (translationBook) {
+	        return translationBook && translationBook.alias === quranStudyTranslationMenuAlias;
+	      }) || null;
+	  }
+	  var quranStudyTranslationMenuSlug = quranStudyTranslationMenuBook
+	    ? (quranStudyTranslationMenuBook.quranBookSlug || quranStudyTranslationMenuBook.alias)
+	    : '';
+	  var quranTranslationMenuBase = isQuranTranslationsArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans'
+	    ? `/quran/${encodeURIComponent(pageQuranCommentaryBook.quranBookSlug || pageQuranCommentaryBook.alias)}`
+	    : '';
+	  var quranStudySectionMenuHref = function (section) {
+	    return utils.quranUrl(req, utils.quranStudySectionPath(section, quranStudyTranslationMenuSlug));
+	  };
 	  var quranSectionMenuHref = function (section) {
-	    if (!quranTafsirMenuBase)
+	    if (isQuranStudyArea)
+	      return utils.quranUrl(req, utils.quranStudySectionPath(section, quranStudyTranslationMenuSlug));
+	    if (!quranTafsirMenuBase && !quranTranslationMenuBase)
 	      return utils.urlFor(req, `/${section.path}`);
 	    var startParts = String(section.start || '').split(':');
 	    var startAyah = Number(startParts[startParts.length - 1]);
 	    var sectionSurah = Number(section.h1 || chapter.h1);
-	    return utils.quranUrl(req, `${quranTafsirMenuBase}/quran:${sectionSurah}:${startAyah}`);
+	    return utils.quranUrl(req, `${quranTafsirMenuBase || quranTranslationMenuBase}/quran:${sectionSurah}:${startAyah}`);
 	  };
-	  var quranSectionMenuTocHref = quranTafsirMenuBase
-	    ? utils.quranUrl(req, quranTafsirMenuBase)
+	  var quranSectionMenuTocHref = isQuranStudyArea || quranTafsirMenuBase || quranTranslationMenuBase
+	    ? utils.quranUrl(req, isQuranStudyArea ? utils.quranStudySectionPath(null, quranStudyTranslationMenuSlug) : (quranTafsirMenuBase || quranTranslationMenuBase))
 	    : utils.quranUrl(req, '/quran');
       var isQuranMushafSectionMenu = requestPath.indexOf('/quran/page/') === 0
         && Array.isArray(locals.quranHeaderJuzLinks)
@@ -338,8 +361,8 @@
 		  <% if (isQuranMushafSectionMenu && currentMushafHeaderJuz) { %><span class="chapter-toc-current" data-quran-mushaf-current-juz><%= currentMushafHeaderJuz.num %> · <%= currentMushafHeaderJuz.progress %>%</span><% } else if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
           <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
         </a>
-        <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
-             var quranSectionPath = utils.quranUrl(req, `/${(page.context.section || page.context.chapter).path}`);
+	        <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
+	             var quranSectionPath = quranStudySectionMenuHref(page.context.section || page.context.chapter);
              var quranReaderMode = isQuranTafsirArea ? 'tafsir' : (requestPath.indexOf('/quran/translations/quran:') === 0 ? 'trans' : (requestPath.indexOf('/quran/page/') === 0 ? (isQuranReviewArea ? 'review' : (isQuranMemorizeArea ? 'memorize' : 'mushaf')) : 'passage'));
              var quranMappedPage = page.context.section && page.context.section.mushafPage;
              var quranMappedMushafHref = utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`);
@@ -385,7 +408,7 @@
 				<%- title_en || `${isQuranToc ? 'Passage' : 'Section'} ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%=section.count%>)
               </a>
               <% if (page.context.book && page.context.book.alias === 'quran') { %>
-                &nbsp;<a href="<%= utils.urlFor(req, `/${section.path}`) %>" title="Study"><i class="bi bi-text-paragraph"></i></a>
+                &nbsp;<a href="<%= quranStudySectionMenuHref(section) %>" title="Study"><i class="bi bi-text-paragraph"></i></a>
               <% } %>
             </td>
             <td lang="ar"><a href="<%= quranSectionMenuHref(section) %>"><%- title %></a></td>

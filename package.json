@@ -62,6 +62,7 @@
     "string-similarity": "4.0.4",
     "stripe": "^22.3.0",
     "sync-request": "6.1.0",
+    "toastr": "^2.1.4",
     "ts-fsrs": "^5.4.1"
   },
   "devDependencies": {

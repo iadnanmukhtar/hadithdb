@@ -5,6 +5,7 @@ const path = require('path');
 const {
 	INVOCATIONS,
 	planRows,
+	translationProjectionBooks,
 	validateCatalog
 } = require('../bin/utils/populate-quran-translation-invocations');
 
@@ -29,9 +30,33 @@ describe('Quran translation invocations', () => {
 		validateCatalog(books);
 		const plan = planRows(books, sourceRows, 460953);
 
-		expect(plan).toHaveLength(21);
+		expect(plan).toHaveLength(24);
 		expect(plan.every(row => row.action === 'create')).toBe(true);
-		expect(plan.every(row => /^I seek\b/.test(row.text))).toBe(true);
+		expect(plan.every(row => /^(?:I seek\b|To You\b)/.test(row.text))).toBe(true);
+	});
+
+	test('includes English Tafsirs explicitly projected into the Translation catalog', () => {
+		const catalog = [{ id: 1, alias: 'native', type: 'trans', lang: 'en' }, {
+			id: 2,
+			alias: 'mokhtasar',
+			type: 'tafsir',
+			lang: 'ar-en',
+			properties: JSON.stringify({ quran: { display_as: ['translation', 'tafsir'] } })
+		}, {
+			id: 3,
+			alias: 'arabic-only',
+			type: 'tafsir',
+			lang: 'ar',
+			properties: { quran: { display_as: ['translation'] } }
+		}, {
+			id: 4,
+			alias: 'ordinary-tafsir',
+			type: 'tafsir',
+			lang: 'en',
+			properties: {}
+		}];
+
+		expect(translationProjectionBooks(catalog).map(book => book.alias)).toEqual(['native', 'mokhtasar']);
 	});
 
 	test('is idempotent when the Quran 1:0 rows already match', () => {

@@ -254,7 +254,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         : parseInt(ids[0], 10);
       if (!Number.isInteger(commentaryId) || commentaryId <= 0)
         throw createError(400, 'Invalid commentary passage id');
-      var commentary = await commentaryIndexRowById(commentaryId);
+      var commentary = await localCommentaryUpdateTargetById(commentaryId);
       if (!commentary)
         throw createError(404, 'Local commentary passage not found');
       var result = ids[0] === 'new-commentary'
@@ -285,7 +285,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           footnotes_prop: `commentary.footnotes${commentarySuffix}`
         }
       };
-      await flushCommentaryPassageCaches(commentary);
+      await flushCommentaryPassageCaches(refreshedCommentary);
       status.message = `${result.message}; reindexed local commentary passage`;
 
     } else if (type == 'toc') {
@@ -832,6 +832,27 @@ async function commentaryIndexRowById(id) {
   return row;
 }
 
+async function localCommentaryUpdateTargetById(id) {
+  id = parseInt(id, 10);
+  if (!Number.isInteger(id) || id <= 0)
+    return null;
+  var commentaryJoin = await Books.commentaryJoin('bc', 'hc');
+  return (await global.query(`
+    SELECT
+      hc.id,
+      ${commentaryJoin.bookIdSelect},
+      bc.alias AS commentary_alias,
+      bc.type AS commentary_type,
+      bc.format
+    FROM ${commentaryJoin.from}
+    ${commentaryJoin.join}
+    WHERE hc.id=${id}
+      AND bc.source='local'
+      AND bc.hidden=0
+      AND ${commentaryJoin.typePredicate}
+    LIMIT 1`))[0] || null;
+}
+
 function loadCommentaryTranslationIndexFields() {
   if (!commentaryTranslationIndexFieldsPromise) {
     commentaryTranslationIndexFieldsPromise = CommentaryTranslationIndexFields.loadIndexFields().catch(err => {
@@ -846,8 +867,7 @@ async function refreshCommentaryIndex(id) {
   var commentary = await commentaryIndexRowById(id);
   if (!commentary)
     throw createError(404, 'Local commentary passage not found after update');
-  await Index.update('commentaries', commentary);
-  await Index.refresh('commentaries');
+  await Index.update('commentaries', commentary, { refresh: true });
   return commentary;
 }
 
@@ -954,8 +974,8 @@ async function createLocalCommentaryPassage(ids, col, value) {
 
   var bookWhere = await Books.commentaryPassageBookWhere(book);
   var row = (await global.query(`
-    SELECT id
-    FROM hadiths_commentary
+    SELECT hc.id
+    FROM hadiths_commentary hc
     WHERE ${bookWhere}
       AND surah=${surah}
       AND ayahFrom=${ayahFrom}

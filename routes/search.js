@@ -191,9 +191,17 @@ function visibleQuranTranslationByAlias(alias) {
   alias = validQuranTranslationAlias(alias);
   if (!alias)
     return null;
-  return (global.commentaries || []).find(function (book) {
-    return book && Number(book.hidden) === 0 && book.type === 'trans' && book.alias === alias;
-  }) || null;
+  var translations = Tafsir.visibleTranslationsSync();
+  var translation = translations.find(function (book) {
+    return book && (book.alias === alias || book.quranBookSlug === alias);
+  });
+  if (!translation && alias.startsWith('translation-')) {
+    var legacyAlias = alias.substring('translation-'.length);
+    translation = translations.find(function (book) {
+      return book && book.storedType === 'tafsir' && book.alias === legacyAlias;
+    });
+  }
+  return translation || null;
 }
 
 function appendQueryExcluding(req, target, excludedKeys) {
@@ -1298,6 +1306,12 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   }
   var selectedAyahs = await Index.docsFromQueryString(Item.INDEX, `book_alias:quran AND h1:${surah.num} AND numInChapter:[${ayah1} TO ${ayah2}]`, 0, ayah2 - ayah1 + 1, 'numInChapter');
   selectedAyahs = selectedAyahs.map(item => new Item(item));
+  var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
+  var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
+  if (selectedTranslation && selectedTranslation.source === 'local') {
+    await applySelectedQuranTranslation(selectedAyahs, selectedTranslation, surah.num);
+    req.quranServerRenderedTranslationAlias = selectedTranslation.alias;
+  }
   var results = selectedAyahs;
   var section;
   var chapter;
@@ -1408,6 +1422,8 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         }
         await addQuranPassageBoundaryRefs(results);
       }
+      if (selectedTranslation && selectedTranslation.source === 'local' && results !== selectedAyahs)
+        await applySelectedQuranTranslation(results, selectedTranslation, surah.num);
       var quranHeadingOutlines = await quranHeadingOutlinesForSurahs([surah.num]);
       res.render('section_quran', {
         Tafsir: Tafsir,
@@ -2289,11 +2305,8 @@ router.get('/:bookAlias/random', async function (req, res, next) {
   random = new Item(random[0]);
   var quranCommentaryBook = null;
   if (book.alias === 'quran' && typeof req.query.translation === 'string' && /^[A-Za-z0-9_-]+$/.test(req.query.translation)) {
-    quranCommentaryBook = (global.commentaries || []).find(function (commentaryBook) {
-      return commentaryBook
-        && Number(commentaryBook.hidden) === 0
-        && commentaryBook.type === 'trans'
-        && commentaryBook.alias === req.query.translation;
+    quranCommentaryBook = Tafsir.visibleTranslationsSync().find(function (commentaryBook) {
+      return commentaryBook && commentaryBook.alias === req.query.translation;
     }) || null;
     if (quranCommentaryBook)
       await applyRandomQuranTranslation(random, quranCommentaryBook);
@@ -3130,11 +3143,11 @@ async function flushTranslationTocCacheVariants(req, translation) {
 async function resolveQuranCommentaryBook(alias) {
   if (!alias)
     return null;
-  var translation = (global.commentaries || []).find(function (book) {
-    return book && Number(book.hidden) === 0 && book.type === 'trans' && book.alias === alias;
+  var translation = Tafsir.visibleTranslationsSync().find(function (book) {
+    return book && (book.alias === alias || book.quranBookSlug === alias);
   });
   if (translation)
-    return { ...translation, quranBookSlug: alias };
+    return { ...translation, quranBookSlug: translation.quranBookSlug || alias };
   return null;
 }
 
@@ -3341,7 +3354,7 @@ router.get('/quran/:translationAlias/juz/:number', async function (req, res, nex
     return next(createError(404, `No Quran passage contains the start of juz ${juzNumber}`));
   var target;
   if (translation.source === 'local') {
-    target = Utils.quranUrl(req, `/quran/${encodeURIComponent(translation.alias)}/${surah}/${Number(section.h2)}`);
+    target = Utils.quranUrl(req, `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}/${surah}/${Number(section.h2)}`);
     return res.redirect(302, appendQueryExcluding(req, target, ['translation']));
   }
   target = Utils.quranUrl(req, `/quran/${surah}/${Number(section.h2)}`);
@@ -3365,21 +3378,48 @@ router.get('/quran/:translationAlias/manzil/:number', async function (req, res, 
   var surah = Number((manzil.start || '').toString().split(':')[0]);
   var target;
   if (translation.source === 'local') {
-    target = Utils.quranUrl(req, `/quran/${encodeURIComponent(translation.alias)}/${surah}`);
+    target = Utils.quranUrl(req, `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}/${surah}`);
     return res.redirect(302, appendQueryExcluding(req, target, ['translation']));
   }
   target = Utils.quranUrl(req, `/quran/${surah}`);
   return res.redirect(302, appendQueryExcluding(req, target, ['translation']));
 });
 
+async function renderScopedQuranTranslationPassage(req, res, next) {
+  var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
+  if (!translation || !['default', 'local'].includes(translation.source))
+    return next();
+  var translationSlug = translation.quranBookSlug || translation.alias;
+  var end = req.params.ayah2 ? `-${req.params.ayah2}` : '';
+  var canonicalPath = `/quran/${encodeURIComponent(translationSlug)}/quran:${req.params.surah}:${req.params.ayah1}${end}`;
+  if (req.params.translationAlias !== translationSlug)
+    return res.redirect(301, appendQueryExcluding(req, Utils.quranUrl(req, canonicalPath), ['translation']));
+  req.params.bookAlias = 'quran';
+  req.quranSelectedTranslationAlias = translation.alias;
+  req.quranSelectedTranslationSlug = translationSlug;
+  req.quranTranslationAliasRoute = true;
+  req.quranTranslationCanonicalPath = canonicalPath;
+  req.query.translation = translation.alias;
+  return a_getPassage(req.params.surah, req.params.ayah1, req.params.ayah2 || req.params.ayah1, req, res, next);
+}
+
+router.get('/quran/:translationAlias/quran\::surah\::ayah1-:ayah2', renderScopedQuranTranslationPassage);
+router.get('/quran/:translationAlias/quran\::surah\::ayah1', renderScopedQuranTranslationPassage);
+
 router.get('/quran/:translationAlias/:chapterNum/:sectionNum', async function (req, res, next) {
   var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
   if (!translation || !['default', 'local'].includes(translation.source))
     return next();
+  var translationSlug = translation.quranBookSlug || translation.alias;
+  if (req.params.translationAlias !== translationSlug) {
+    var canonicalTranslationUrl = Utils.quranUrl(req, `/quran/${encodeURIComponent(translationSlug)}/${req.params.chapterNum}/${req.params.sectionNum}`);
+    return res.redirect(301, appendQueryExcluding(req, canonicalTranslationUrl, ['translation']));
+  }
   req.params.bookAlias = 'quran';
   req.quranSelectedTranslationAlias = translation.alias;
+  req.quranSelectedTranslationSlug = translationSlug;
   req.quranTranslationAliasRoute = true;
-  req.quranTranslationCanonicalPath = `/quran/${encodeURIComponent(translation.alias)}/${req.params.chapterNum}/${req.params.sectionNum}`;
+  req.quranTranslationCanonicalPath = `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}/${req.params.chapterNum}/${req.params.sectionNum}`;
   req.query.translation = translation.alias;
   return renderBookSection(req, res, next);
 });
@@ -3401,7 +3441,8 @@ router.get('/quran/:translationAlias/:chapterNum', async function (req, res, nex
   if (!first || !Number.isInteger(Number(first.ayah)))
     return next(createError(404, `Quran surah ${surah} has no passages for translation ${translation.alias}`));
   req.quranSelectedTranslationAlias = translation.alias;
-  var targetPath = `/quran/${encodeURIComponent(translation.alias)}/${surah}/${Number(first.ayah)}`;
+  req.quranSelectedTranslationSlug = translation.quranBookSlug || translation.alias;
+  var targetPath = `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}/${surah}/${Number(first.ayah)}`;
   return res.redirect(302, Utils.quranPath(targetPath));
 });
 
@@ -3462,14 +3503,14 @@ async function renderBookSection(req, res, next) {
     if (bookAlias === 'quran' && !req.quranSelectedTranslationAlias && !req.query.translation) {
       var preferredTranslation = preferredQuranTranslationFromCookie(req);
       if (preferredTranslation) {
-        var preferredTranslationPath = `/quran/${encodeURIComponent(preferredTranslation.alias)}/${chapterNum}/${sectionNum}`;
+        var preferredTranslationPath = `/quran/${encodeURIComponent(preferredTranslation.quranBookSlug || preferredTranslation.alias)}/${chapterNum}/${sectionNum}`;
         return res.redirect(302, appendQueryExcluding(req, Utils.quranUrl(req, preferredTranslationPath), ['translation']));
       }
     }
     var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
     var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
     if (bookAlias === 'quran' && selectedTranslation && selectedTranslation.source === 'local' && !req.quranTranslationCanonicalPath) {
-      var canonicalTranslationPath = `/quran/${encodeURIComponent(selectedTranslation.alias)}/${chapterNum}/${sectionNum}`;
+      var canonicalTranslationPath = `/quran/${encodeURIComponent(selectedTranslation.quranBookSlug || selectedTranslation.alias)}/${chapterNum}/${sectionNum}`;
       if (req.quranTranslationAliasRoute)
         req.quranTranslationCanonicalPath = canonicalTranslationPath;
       else {
@@ -3591,6 +3632,7 @@ async function renderBookSection(req, res, next) {
         quranSubsections: quranSubsections,
         quranSurahs: quranSurahs,
         quranHeadingOutlines: quranHeadingOutlines,
+        quranCommentaryBook: selectedTranslation,
         req: req,
         res: res
       }));
@@ -3606,7 +3648,8 @@ async function renderBookSection(req, res, next) {
         selectedAyahs: [],
         quranSubsections: quranSubsections,
         quranSurahs: quranSurahs,
-        quranHeadingOutlines: quranHeadingOutlines
+        quranHeadingOutlines: quranHeadingOutlines,
+        quranCommentaryBook: selectedTranslation
       });
     } else {
 

@@ -88,6 +88,18 @@ const INVOCATIONS = Object.freeze({
 	'en-qarai': Object.freeze({
 		source: 'When you recite the Quran, seek the protection of Allah against the outcast Satan.',
 		text: 'I seek the protection of Allah against the outcast Satan.'
+	}),
+	'mokhtasar': Object.freeze({
+		source: "So when you recite the Qur'an, ˹first˺ seek refuge in Allah from Satan, the expelled ˹from His mercy˺\\.\n\nWhen you intend to recite the Qur’ān \\- O believer \\- then ask Allah to protect you from the whispering of the Satan, who is rejected from Allah’s mercy\\.",
+		text: 'I seek refuge in Allah from Satan, the expelled ˹from His mercy˺.'
+	}),
+	'muntakhab': Object.freeze({
+		source: "And when you recite the Quran begin with the opening formula of seeking Allah's help against satanic secret suggestions to the mind, thus: &quot;To You O Allah do I commit myself counter to AL-Shaytan the accursed&quot;\n\nHe has no influence on those whose hearts have been touched with the divine hand and in Allah they trust\n\nBut he exerts influence upon those who take him as a tutelary guardian and incorporate with Allah other deities\n\nIf We happen to exchange a revelation which has already served its purpose for another revelation appropriate for the new circumstance, and Allah knows exactly what to reveal and when, they -the infidels- accuse your O Muhammad of forgery. Indeed, most of them do not know the facts nor do they reflect\n\nSay to them: &quot;This and that and all divine revelations are being conveyed by the Holy Spirit from Allah, my Creator, to strengthen -in opinion, action and purpose- those whose hearts have been touched with the divine hand and they are joyful tidings to those who have conformed to Islam",
+		text: 'To You, O Allah, do I commit myself counter to Al-Shaytan the accursed.'
+	}),
+	'yusuf-ali': Object.freeze({
+		source: "When thou dost read the Qur'an seek Allah's protection from Satan the rejected one.[^2139]",
+		text: "I seek Allah's protection from Satan the rejected one."
 	})
 });
 
@@ -125,8 +137,8 @@ function usage() {
 	return [
 		'Usage: node bin/utils/populate-quran-translation-invocations.js [--apply]',
 		'',
-		'Creates Quran 1:0 for every visible local English translation using that',
-		"translation's wording of Quran 16:98. Dry-run is the default.",
+		'Creates Quran 1:0 for every visible local English Translation projection',
+		"using that book's wording of Quran 16:98. Dry-run is the default.",
 		'',
 		'Options:',
 		'  --apply  Apply the inserts or updates transactionally',
@@ -135,17 +147,18 @@ function usage() {
 }
 
 async function buildPlan() {
-	const books = await global.query(`
-		SELECT id, alias, shortName_en
+	const catalog = await global.query(`
+		SELECT id, alias, shortName_en, type, lang, properties
 		FROM books
-		WHERE type='trans' AND source='local' AND hidden=0
+		WHERE type IN ('trans', 'tafsir') AND source='local' AND hidden=0
 		ORDER BY ordinal, id`);
+	const books = translationProjectionBooks(catalog);
 	validateCatalog(books);
 	const rows = await global.query(`
 		SELECT b.id AS bookId, b.alias, hc.id, hc.surah, hc.ayahFrom, hc.ayahTo, hc.text_en, hc.footnotes_en
 		FROM books b
 		JOIN hadiths_commentary hc ON hc.bookId=b.id
-		WHERE b.type='trans' AND b.source='local' AND b.hidden=0
+		WHERE b.id IN (${books.map(book => Number(book.id)).join(',')})
 			AND ((hc.surah=16 AND hc.ayahFrom<=98 AND hc.ayahTo>=98)
 				OR (hc.surah=1 AND hc.ayahFrom=0 AND hc.ayahTo=0))
 		ORDER BY b.ordinal, b.id, hc.surah, hc.ayahFrom, hc.ayahTo`);
@@ -158,6 +171,29 @@ async function buildPlan() {
 	if (invocationHadith.length !== 1)
 		throw new Error(`Expected one Quran 1:0 row, found ${invocationHadith.length}.`);
 	return planRows(books, rows, Number(invocationHadith[0].id));
+}
+
+function translationProjectionBooks(books) {
+	return (books || []).filter(function (book) {
+		if (book.type === 'trans')
+			return true;
+		if (book.type !== 'tafsir' || !(book.lang || '').toString().toLowerCase().split('-').includes('en'))
+			return false;
+		var properties = book.properties;
+		if (Buffer.isBuffer(properties))
+			properties = properties.toString();
+		if (typeof properties === 'string') {
+			try {
+				properties = JSON.parse(properties);
+			} catch (_err) {
+				return false;
+			}
+		}
+		var displayAs = properties && properties.quran && Array.isArray(properties.quran.display_as)
+			? properties.quran.display_as
+			: [];
+		return displayAs.some(role => ['trans', 'translation'].includes((role || '').toString().toLowerCase()));
+	});
 }
 
 function validateCatalog(books) {
@@ -264,5 +300,6 @@ if (require.main === module) {
 module.exports = {
 	INVOCATIONS,
 	planRows,
+	translationProjectionBooks,
 	validateCatalog
 };

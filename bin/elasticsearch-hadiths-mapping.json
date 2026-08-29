@@ -2032,6 +2032,15 @@
           "boost": 2,
           "analyzer": "arabic"
         },
+        "sharh": {
+          "type": "text",
+          "boost": 3,
+          "analyzer": "arabic"
+        },
+        "grader_opinions": {
+          "type": "object",
+          "enabled": false
+        },
         "footnote_en": {
           "type": "text",
           "boost": 2,

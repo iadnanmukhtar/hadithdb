@@ -50,4 +50,12 @@ describe('Utils Quran URLs', () => {
     expect(Utils.quranBaseUrl(req)).toBe('http://localhost:3004');
     expect(Utils.quranUrl(req, '/quran/1')).toBe('/quran/1');
   });
+
+  test('builds default and translation-scoped Study section paths in one place', () => {
+    expect(Utils.quranStudySectionPath({ h1: 2, h2: 11 }, '')).toBe('/quran/2/11');
+    expect(Utils.quranStudySectionPath({ surah: 2, section: 11, subsection: 3 }, 'yusuf-ali')).toBe('/quran/yusuf-ali/2/11/3');
+    expect(Utils.quranStudySectionPath({ number: 3 }, 'en-itani')).toBe('/quran/en-itani/3');
+    expect(Utils.quranStudySectionPath(null, 'en-itani')).toBe('/quran/en-itani');
+    expect(Utils.quranStudySectionPath(null, '../tafsir')).toBe('/quran');
+  });
 });
