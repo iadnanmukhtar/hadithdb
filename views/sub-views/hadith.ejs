@@ -22,7 +22,7 @@
 	}
 %>
 <a id="<%= String(i.num || i.num0 || i.id || '').replace(/:/g, '-') %>"></a>
-<article class="row mt-3<%= isQuranItem ? ' quran-search-item' : ' hadith-language-item' %>"<% if (!isQuranItem) { %> data-reader-language-item="hadith"<% } %><%- isSimilarSection && i.similarCandidate ? ' data-similar-candidate="true"' : '' %><% if (enableHadithContentLanguage) { %> data-content-translation-scope="hadith" data-content-translation-item-id="<%= contentTranslationItemId %>"<% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% if (enableHadithContentTranslation) { %> data-content-translation-points="<%= contentTranslationEstimate.points %>" data-content-translation-word-count="<%= contentTranslationEstimate.wordCount %>"<% } %><% } %>>
+<article class="row mt-3<%= isQuranItem ? ' quran-search-item' : ' hadith-language-item' %>"<% if (!isQuranItem) { %> data-reader-language-item="hadith"<% } %><% if (i.single && !isQuranItem) { %> id="hadith-metadata-<%= i.actual ? i.actual.id : i.id %>-hadith" data-toc-heading-target data-toc-heading-key="hadith"<% } %><%- isSimilarSection && i.similarCandidate ? ' data-similar-candidate="true"' : '' %><% if (enableHadithContentLanguage) { %> data-content-translation-scope="hadith" data-content-translation-item-id="<%= contentTranslationItemId %>"<% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% if (enableHadithContentTranslation) { %> data-content-translation-points="<%= contentTranslationEstimate.points %>" data-content-translation-word-count="<%= contentTranslationEstimate.wordCount %>"<% } %><% } %>>
 
 	<% if (site.editMode) { %>
 		<header class="col-12" lang="ar">

@@ -7,6 +7,8 @@ const Utils = require('../lib/Utils');
 const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
 const { Library } = require('../lib/Model');
 const MySQL = require('mysql');
+const fs = require('fs');
+const path = require('path');
 
 function updateHandler() {
   const layer = updateRouter.stack.find(item => item.route && item.route.path === '/:id/:prop');
@@ -42,6 +44,13 @@ async function submitTitle(baseUrl) {
 }
 
 describe('heading title update route', () => {
+	test('renumbers Quran H3 siblings after add, range changes, and delete', () => {
+		const source = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
+		expect(source).toMatch(/INSERT INTO toc[\s\S]*?await renumberQuranSubsections\(section\.book_id, surah, section\.h2\);/);
+		expect(source).toMatch(/normalizeQuranSurahHeadingRanges\(subsection\.book_id, surah[\s\S]*?SELECT h3 FROM toc WHERE id=/);
+		expect(source).toMatch(/DELETE FROM toc WHERE id=\$\{subsection\.tId \|\| subsection\.id\}[\s\S]*?await renumberQuranSubsections\(subsection\.book_id, subsection\.h1, subsection\.h2\);/);
+	});
+
   beforeAll(() => {
     jest.spyOn(VirtualHadithSnapshot, 'queueHeading').mockImplementation(() => {});
   });

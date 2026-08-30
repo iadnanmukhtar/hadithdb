@@ -5,6 +5,19 @@
 	src: url(/static/fonts/kitab-base.woff2);
 }
 
+/* Keep disclosure indicators thin and consistent instead of using native filled triangles. */
+details > summary {
+	list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+	display: none;
+}
+
+details > summary::marker {
+	content: '';
+}
+
 @font-face {
 	font-family: KitabBold;
 	src: url(/static/fonts/kitab-base-b.woff2);
@@ -7486,9 +7499,12 @@ body > footer,
 .hadith-grade-opinion a:hover, .hadith-grade-opinion a:focus-visible { color: var(--c-accent); text-decoration: underline dotted; text-underline-offset: .18em; }
 .hadith-mushabihah-section .similar-list { direction: ltr; text-align: left; }
 .hadith-mushabihah-section .similar-list .h:lang(ar) { text-align: start; }
+.hadith-mushabihah-section .hadith-reference-index:lang(ar) { font-size: calc(1.05rem * var(--content-font-scale)) !important; }
+.hadith-mushabihah-section .hadith-reference-index:lang(ar) * { font-size: inherit !important; }
 .hadith-metadata-source-link { align-self: flex-start; color: var(--bs-secondary-color); margin: 1.25rem .7rem 0; text-decoration: none; }
 .hadith-metadata-source-link:hover, .hadith-metadata-source-link:focus-visible { color: var(--bs-primary); }
 .hadith-metadata-rail .hadith-heading-toc-title { margin-left: .7rem; }
+.hadith-metadata-rail button.hadith-heading-toc-link { text-align: left; width: 100%; }
 .hadith-metadata-rail .badge { float: right; }
 .hadith-metadata-page-layout .hadith-metadata-side-rail { grid-column: 4 / 6; }
 .hadith-narrator-list { list-style: none; margin: 0; padding: 0; }
@@ -7500,6 +7516,7 @@ body > footer,
 .hadith-narrator-name { font-size: 1.35rem; margin: 0; }
 .hadith-narrator-name a { color: inherit; text-decoration: underline dotted; text-underline-offset: .18em; }
 .hadith-narrator-name a:hover, .hadith-narrator-name a:focus-visible { color: var(--c-accent); text-decoration: underline dotted; }
+.hadith-narrator-fullname { color: var(--bs-secondary-color); font-size: .8em; font-weight: 400; }
 .hadith-narrator-details { color: var(--bs-secondary-color); margin-top: .35rem; }
 .hadith-narrator-accent-detail { color: var(--c-accent); }
 .hadith-narrator-marker { align-self: stretch; min-height: 4rem; position: relative; text-align: center; }
@@ -7524,7 +7541,13 @@ body > footer,
 .hadith-sharh-entry + .hadith-sharh-entry { margin-top: 1rem; }
 .hadith-gharib-list { display: grid; gap: .75rem; }
 .hadith-gharib-entry { border: 1px solid var(--bs-border-color); border-radius: var(--bs-border-radius); padding: .75rem 1rem; }
-.hadith-gharib-entry summary { cursor: pointer; }
+.hadith-gharib-entry summary { align-items: center; cursor: pointer; display: flex; gap: .5rem; }
+.hadith-gharib-entry summary,
+.hadith-gharib-definition { font-size: calc(1.05rem * var(--content-font-scale)) !important; }
+.hadith-gharib-entry summary *,
+.hadith-gharib-definition * { font-size: inherit !important; }
+.hadith-gharib-entry summary::after { color: var(--bs-secondary-color); content: "\f284"; flex: 0 0 auto; font-family: "bootstrap-icons"; font-size: .75rem; margin-inline-start: auto; transition: transform .15s ease; }
+.hadith-gharib-entry[open] summary::after { transform: rotate(-90deg); }
 .hadith-gharib-entry[open] summary { margin-bottom: .75rem; }
 .hadith-gharib-definition + .hadith-gharib-definition { border-top: 1px solid var(--bs-border-color); padding-top: .75rem; }
 .hadith-gharib-definition:last-child p { margin-bottom: 0; }

@@ -11902,6 +11902,17 @@ function initTocHeadingRail(root) {
 	tocHeadingRailState.rail = rail;
 	var activeLink = rail.querySelector('[data-toc-heading-key].active');
 	tocHeadingRailState.activeKey = activeLink ? (activeLink.getAttribute('data-toc-heading-key') || '') : '';
+	rail.addEventListener('click', function (event) {
+		var control = event.target.closest('[data-toc-heading-key]');
+		if (!control || control.tagName !== 'BUTTON' || event.defaultPrevented || event.button !== 0)
+			return;
+		var key = control.getAttribute('data-toc-heading-key') || '';
+		var target = Array.from(document.querySelectorAll('[data-toc-heading-target][data-toc-heading-key]')).find(function (candidate) {
+			return candidate.getAttribute('data-toc-heading-key') === key;
+		});
+		if (target)
+			target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	});
 	window.addEventListener('scroll', scheduleTocHeadingRailUpdate, { passive: true });
 	window.addEventListener('resize', scheduleTocHeadingRailUpdate, { passive: true });
 	$(document).on('shown.bs.tab.tocHeadingRail', scheduleTocHeadingRailUpdate);

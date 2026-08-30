@@ -21,4 +21,4 @@
 		});
 	});
 %>
-<% if (referenceGroups.size) { %><p class="hadith-reference-index fs-5 mb-3" lang="ar" dir="rtl"><% Array.from(referenceGroups.values()).forEach(function (group, groupIndex) { %><% if (groupIndex) { %><span class="hadith-reference-group-separator"> · </span><% } %><span class="hadith-reference-group"><span class="hadith-reference-book"><%= group.name %></span> <% group.references.forEach(function (reference, referenceIndex) { %><% if (referenceIndex) { %>، <% } %><a href="<%= reference.href %>"><%= reference.number %></a><% }); %></span><% }); %></p><% } %>
+<% if (referenceGroups.size) { %><p class="hadith-reference-index small mb-3" lang="ar" dir="rtl"><% Array.from(referenceGroups.values()).forEach(function (group, groupIndex) { %><% if (groupIndex) { %><span class="hadith-reference-group-separator"> · </span><% } %><span class="hadith-reference-group"><span class="hadith-reference-book"><%= group.name %></span> <% group.references.forEach(function (reference, referenceIndex) { %><% if (referenceIndex) { %>، <% } %><a href="<%= reference.href %>"><%= reference.number %></a><% }); %></span><% }); %></p><% } %>

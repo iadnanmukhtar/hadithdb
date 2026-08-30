@@ -66,6 +66,7 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(matcher.match({ editionReference: '100', editionReferenceRepeated: false,
 			comparisonText: 'إن الله لا يقبض العلم انتزاعا ولكن يقبض العلم بقبض العلماء' }))
 			.toEqual(expect.objectContaining({ id: 100, num: '100', score: 1 }));
+		expect(matcher.lastMatch()).toEqual(expect.objectContaining({ id: 100, num: '100' }));
 		expect(matcher.match({ editionReference: '101', editionReferenceRepeated: false,
 			comparisonText: 'قالت النساء للنبي غلبنا عليك الرجال فاجعل لنا يوما' }))
 			.toEqual(expect.objectContaining({ id: 101, num: '101', score: 1 }));
@@ -129,11 +130,13 @@ describe('hdith.com six-book enrichment importer', () => {
 	test('parses takhrij and shawahid as internally resolvable link records', () => {
 		const links = parseLinks({
 			takhrij: { sources: [{ book_id: 2, author: 'مسلم', book_quoted: 'صحيحه', occurrences: [{ entry_id: 22, hadith_num: '10', similarity: 'بمثله' }] }] },
-			shawahid: { groups: [{ narrator: 'صحابي', books: [{ title: 'سنن أبي داود', entries: [{ book_id: 3, entry_id: 33, number: '20 ' }] }] }] }
+			shawahid: { groups: [{ narrator: 'صحابي', books: [{ title: 'سنن أبي داود', entries: [{ book_id: 3, entry_id: 33, number: '20 ' }] }] }] },
+			similars: [{ book_id: 8, book: 'مسند أحمد', entry_id: 44, numbering: '30', tarf: 'طرف الحديث المشابه' }]
 		});
 		expect(links).toEqual([
 			expect.objectContaining({ type: 'takhrij', sourceBookTitle: 'مسلم، صحيحه', sourceEntryId: 22, internalRef: 'muslim:10' }),
-			expect.objectContaining({ type: 'shahid', sourceBookTitle: 'سنن أبي داود', sourceEntryId: 33, internalRef: 'abudawud:20' })
+			expect.objectContaining({ type: 'shahid', sourceBookTitle: 'سنن أبي داود', sourceEntryId: 33, internalRef: 'abudawud:20' }),
+			expect.objectContaining({ type: 'similar', sourceBookTitle: 'مسند أحمد', sourceEntryId: 44, num: '30', label: null, tarf: 'طرف الحديث المشابه' })
 		]);
 	});
 
@@ -163,10 +166,11 @@ describe('hdith.com six-book enrichment importer', () => {
 	test('parses attribution, subjects, and sharh availability', () => {
 		const record = parseHadithPayload({
 			id: 5, numbering_harf: '1', chapter_path: [{ id: 2 }], next_id: 6, attribution: 'مرفوع',
+			matn: 'طَرَفُ الْحَدِيثِ',
 			isnad_html: '<span class="hp-rawi" data-rawi-slug="p-1">رَاوٍ</span>',
 			subjects: [{ slug: 's-1', title: 'النية' }], services: [{ type_id: 6, items: [{ entry_id: 7 }] }]
 		});
-		expect(record).toEqual(expect.objectContaining({ sourceId: 5, num: '1', chapterId: 2, attribution: 'مرفوع', chainType: null,
+		expect(record).toEqual(expect.objectContaining({ sourceId: 5, num: '1', chapterId: 2, attribution: 'مرفوع', chainType: null, tarf: 'طَرَفُ الْحَدِيثِ',
 			sourceIsnadHtml: expect.stringContaining('https://hdith.com/encyclopedia/rawi/p-1') }));
 		expect(record.subjects).toEqual([{ slug: 's-1', title: 'النية' }]);
 		expect(record.sharhPreview).toHaveLength(1);
@@ -188,6 +192,9 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(schemaStatements().join('\n')).toContain('source_reference VARCHAR(45) NULL');
 		expect(schemaStatements().join('\n')).toContain('source_edition_reference VARCHAR(45) NULL');
 		expect(schemaStatements().join('\n')).toContain('source_edition_num VARCHAR(45) NULL');
+		expect(schemaStatements().join('\n')).toContain('is_supplementary TINYINT(1) NOT NULL DEFAULT 0');
+		expect(schemaStatements().join('\n')).toContain("link_type ENUM('takhrij','shahid','similar')");
+		expect(schemaStatements().join('\n')).toContain('source_tarf MEDIUMTEXT NULL');
 		expect(schemaStatements().join('\n')).toContain('chain_type VARCHAR(128) NULL');
 		expect(schemaStatements().join('\n')).toContain('source_isnad_html TEXT NULL');
 		expect(schemaStatements().join('\n')).toContain('gharib_json JSON NULL');
@@ -197,6 +204,15 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(schemaStatements().join('\n')).toContain('CREATE TABLE IF NOT EXISTS hdith_book_reference_crosswalk');
 		expect(fs.readFileSync(path.join(__dirname, '..', 'bin', 'utils', 'import-hdith-six-books-enrichment.js'), 'utf8'))
 			.toContain('HadithAttributions.ensureSchema');
+	});
+
+	test('preserves indexed hadith navigation while applying enrichment updates', () => {
+		const indexer = fs.readFileSync(path.join(__dirname, '..', 'bin', 'indexEnrichedHadithBatch.js'), 'utf8');
+		expect(indexer).toContain('await attachNavigation(rows)');
+		expect(indexer).toContain('ORDER BY bookId, ordinal, id');
+		expect(indexer).toContain('row.prev_ref =');
+		expect(indexer).toContain('row.next_ref =');
+		expect(indexer).not.toContain('doc_as_upsert: true');
 	});
 
 	test('converts sharh HTML to normalized Markdown', () => {

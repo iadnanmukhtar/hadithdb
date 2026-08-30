@@ -1229,7 +1229,10 @@ async function addQuranSubsection(sectionHeadingId, value, userId) {
     (ordinal, bookId, level, h1, h2, h3, title_en, title, intro_en, intro, start, end, start0, end0, count, lastmod_user, lastfixed)
     VALUES
     (${insertOrdinal}, ${parseInt(section.book_id, 10)}, 3, ${surah}, ${Number(section.h2)}, ${h3}, ${sql(payload.title_en)}, ${sql(payload.title)}, NULL, NULL, ${sql(startRef)}, ${sql(endRef)}, ${start0}, ${end0}, ${count}, '${userId}', CURRENT_TIMESTAMP())`);
-  await reindexChapterSearchScope(section.book_id, surah, { syncKnowledge: false, refresh: true });
+  await renumberQuranSubsections(section.book_id, surah, section.h2);
+  var insertedSubsection = (await global.query(`SELECT h3 FROM toc WHERE id=${Number(insertResult.insertId)} LIMIT 1`))[0];
+  h3 = insertedSubsection ? Number(insertedSubsection.h3) : h3;
+  await reindexChapterSearchScope(section.book_id, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true });
   await invalidateQuranSurahCaches(surah);
   return {
     message: insertResult.message,
@@ -1276,6 +1279,8 @@ async function updateQuranSubsectionRange(subsectionHeadingId, value, userId) {
     SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), start=${sql(startRef)}, end=${sql(endRef)}, start0=${start0}, end0=${end0}, count=${count}
     WHERE id=${subsection.tId || subsection.id}`);
   await normalizeQuranSurahHeadingRanges(subsection.book_id, surah, userId, { deleteOrphanSubsections: true });
+  var updatedSubsection = (await global.query(`SELECT h3 FROM toc WHERE id=${Number(subsection.tId || subsection.id)} LIMIT 1`))[0];
+  var updatedH3 = updatedSubsection ? Number(updatedSubsection.h3) : Number(subsection.h3);
   await reindexChapterSearchScope(subsection.book_id, surah, { syncKnowledge: false, refresh: true, replaceHeadings: true });
   await invalidateQuranSurahCaches(surah);
   await invalidateQuranMushafPageCaches(surah);
@@ -1285,8 +1290,8 @@ async function updateQuranSubsectionRange(subsectionHeadingId, value, userId) {
       id: subsection.tId || subsection.id,
       h1: surah,
       h2: Number(subsection.h2),
-      h3: Number(subsection.h3),
-      path: `quran/${surah}/${Number(subsection.h2)}/${Number(subsection.h3)}`,
+      h3: updatedH3,
+      path: `quran/${surah}/${Number(subsection.h2)}/${updatedH3}`,
       start: startRef,
       startAyah: payload.startAyah,
       endAyah: payload.endAyah,
@@ -1360,7 +1365,8 @@ async function deleteQuranSubsection(subsectionHeadingId) {
     throw createError(400, 'Only level 3 subsection headings can be removed here');
   var deleteResult = await global.query(`DELETE FROM toc WHERE id=${subsection.tId || subsection.id}`);
   await Index.delete(Heading.INDEX, subsection.hId || subsection.tId || subsection.id);
-  await reindexChapterSearchScope(subsection.book_id, subsection.h1, { syncKnowledge: false, refresh: true });
+  await renumberQuranSubsections(subsection.book_id, subsection.h1, subsection.h2);
+  await reindexChapterSearchScope(subsection.book_id, subsection.h1, { syncKnowledge: false, refresh: true, replaceHeadings: true });
   await invalidateQuranSurahCaches(subsection.h1);
   return {
     message: deleteResult.message,

@@ -2037,6 +2037,14 @@
           "boost": 3,
           "analyzer": "arabic"
         },
+        "tarf": {
+          "type": "text",
+          "boost": 2,
+          "analyzer": "arabic"
+        },
+        "hasSupplementaryTransmissions": {
+          "type": "boolean"
+        },
         "grader_opinions": {
           "type": "object",
           "enabled": false

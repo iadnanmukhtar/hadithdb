@@ -5,14 +5,16 @@
 	const railNarrators = Array.isArray(railMetadata.narrators) ? railMetadata.narrators : [];
 	const railSharh = Array.isArray(railMetadata.sharh) ? railMetadata.sharh : [];
 	const railGharib = Array.isArray(railMetadata.gharib) ? railMetadata.gharib : [];
+	const railSourceSimilar = Array.isArray(railMetadata.similar) ? railMetadata.similar.filter(reference => reference.internal_ref) : [];
 	const railBase = `hadith-metadata-${i.actual ? i.actual.id : i.id}`;
 	const railGroups = (railNavigationOnly ? [] : [
+		{ key: 'hadith', label: 'Hadith', count: null, always: true },
 		{ key: 'reflection', label: 'Reflection', count: null, always: true },
 		{ key: 'grades', label: 'Scholarly Grades', count: railGrades.length },
 		{ key: 'isnad', label: 'Chain of Narrators', count: railNarrators.length },
 		{ key: 'sharh', label: 'Explanations', count: railSharh.length },
 		{ key: 'gharib', label: 'Definitions', count: railGharib.length },
-		{ key: 'mushabihah', label: 'Similar References', count: Array.isArray(i.similar) ? i.similar.length : 0 }
+		{ key: 'mushabihah', label: 'Similar Hadiths', count: (Array.isArray(i.similar) ? i.similar.length : 0) + railSourceSimilar.length }
 	]).filter(group => group.always || group.count);
 	const railInitialKey = railGroups.length ? railGroups[0].key : '';
 	const railBookName = (i.book_shortName_en || (i.book && (i.book.shortName_en || i.book.name_en)) || i.book_alias || '').toString().trim();
@@ -32,7 +34,7 @@
 		<% if (railChapterLabel) { %><a class="hadith-heading-toc-title heading-toc-book-title-link" href="<%= railChapterHref %>"><%= railChapterLabel %></a><% } %>
 		<nav class="nav flex-column hadith-heading-toc-nav" data-toc-heading-rail-nav aria-label="Hadith and metadata sections">
 			<% if (railSectionLabel) { %><a class="nav-link hadith-heading-toc-link" href="<%= railSectionHref %>"><%= railSectionLabel %></a><% } %>
-			<% railGroups.forEach(function (group) { %><a class="nav-link hadith-heading-toc-link<%= group.key === railInitialKey ? ' active' : '' %>" href="#<%= railBase %>-<%= group.key %>" data-toc-heading-key="<%= group.key %>"<% if (group.key === 'reflection') { %> data-reflection-disclosure-trigger="comments-disclosure"<% } %><% if (group.key === railInitialKey) { %> aria-current="location"<% } %>><%= group.label %> <% if (group.key === 'reflection') { %><span class="badge text-bg-secondary hadith-comment-count" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-comment-type="hadith" title="0 reflections">0</span><% } else { %><span class="badge text-bg-secondary"><%= group.count %></span><% } %></a><% }); %>
+			<% railGroups.forEach(function (group) { %><button type="button" class="nav-link hadith-heading-toc-link<%= group.key === railInitialKey ? ' active' : '' %>" data-toc-heading-key="<%= group.key %>"<% if (group.key === 'reflection') { %> data-reflection-disclosure-trigger="comments-disclosure"<% } %><% if (group.key === railInitialKey) { %> aria-current="location"<% } %>><%= group.label %><% if (group.key === 'reflection') { %> <span class="badge text-bg-secondary hadith-comment-count" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-comment-type="hadith" title="0 reflections">0</span><% } else if (group.count !== null) { %> <span class="badge text-bg-secondary"><%= group.count %></span><% } %></button><% }); %>
 		</nav>
 		<% if (!railNavigationOnly && railMetadata.sourceUrl) { %><a class="hadith-metadata-source-link small" href="<%= railMetadata.sourceUrl %>" target="_blank" rel="noopener noreferrer">hdith.com source <span class="bi bi-box-arrow-up-right" aria-hidden="true"></span></a><% } %>
 	</div>

@@ -94,4 +94,22 @@ describe('Quran heading outlines', () => {
 		);
 		expect(global.query).not.toHaveBeenCalled();
 	});
+
+	test('orders H2 and H3 links by their starting ayah rather than their stored heading number', () => {
+		const outline = QuranHeadingOutlines.buildOutlines([18], [{
+			level: 2, h1: 18, h2: 2, h2_title_en: 'Cave youths', h2_start: '18:9', h2_count: 17
+		}, {
+			level: 2, h1: 18, h2: 1, h2_title_en: 'Opening', h2_start: '18:1', h2_count: 8
+		}, {
+			level: 3, h1: 18, h2: 2, h3: 4, h3_title_en: 'The sleepers become a sign', h3_start: '18:21', h3_count: 2
+		}, {
+			level: 3, h1: 18, h2: 2, h3: 6, h3_title_en: 'The youths seek food', h3_start: '18:19', h3_count: 2
+		}, {
+			level: 3, h1: 18, h2: 2, h3: 5, h3_title_en: 'Say God willing', h3_start: '18:23', h3_count: 2
+		}])[18];
+
+		expect(outline.sections.map(section => section.section)).toEqual([1, 2]);
+		expect(outline.sections[1].subsections.map(subsection => subsection.subsection)).toEqual([6, 4, 5]);
+		expect(outline.sections[1].subsections.map(subsection => subsection.start)).toEqual([19, 21, 23]);
+	});
 });

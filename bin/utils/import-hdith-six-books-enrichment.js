@@ -6,6 +6,7 @@ require('dotenv').config();
 const { spawn } = require('child_process');
 const cheerio = require('cheerio');
 const crypto = require('crypto');
+const childProcess = require('child_process');
 const fs = require('fs');
 const mysql = require('mysql');
 const os = require('os');
@@ -50,15 +51,18 @@ const HDITH_LOCAL_BOOKS = Object.freeze({
 });
 const SOURCE_BOOK_ALIASES = Object.freeze(Object.fromEntries(Object.entries(HDITH_LOCAL_BOOKS).map(([id, book]) => [id, book.alias])));
 const MIN_REQUEST_DELAY_MS = 100;
+const INDEX_BATCH_SIZE = Math.max(1, Number(process.env.HDITH_INDEX_BATCH_SIZE) || 100);
 
 const options = require.main === module ? readOptions(process.argv.slice(2)) : {
 	apply: false, books: SIX_BOOKS.map(book => book.sourceSlug), delay: MIN_REQUEST_DELAY_MS, maxHadiths: null, refresh: false, resumeSourceId: null, skipSchema: false
 };
 let dbConnection;
+let dbSessionConfigured = false;
 const sourceBookAuthorCache = new Map();
 const narratorIdCache = new Map();
 const subjectIdCache = new Map();
 const sharhSourceIdCache = new Map();
+const pendingIndexHadithIds = new Set();
 
 async function main() {
 	let browser;
@@ -75,6 +79,7 @@ async function main() {
 		}
 		for (const book of selectedBooks(options.books))
 			await scrapeBook(page, book);
+		if (options.apply) await flushEnrichedHadithIndex();
 		if (options.apply && !options.skipSchema) await ensureSharhFulltextIndex();
 	} catch (err) {
 		console.error(`ERROR: ${err.stack || err.message}`);
@@ -205,6 +210,8 @@ async function scrapeBook(page, config) {
 			if (!record.isIntro) {
 				const orderedMatch = bookMatcher.match(record);
 				if (!orderedMatch) {
+					if (options.apply && record.editionReferenceRepeated)
+						await markSupplementaryTransmission(config, record, bookMatcher.lastMatch());
 					console.warn(`${config.alias}: no ordered text-confirmed local match for hdith.com entry ${record.sourceId}; skipped.`);
 					compressCachedRecord(config, record.sourceId);
 					sourceId = record.nextId;
@@ -212,8 +219,11 @@ async function scrapeBook(page, config) {
 				}
 				if (handled < 10)
 					console.log(`${config.alias}: hdith.com ${record.sourceId} (${record.editionReference || record.num}) -> ${orderedMatch.num} (${orderedMatch.score.toFixed(3)} normalized similarity)`);
-				if (options.apply) await withTimeout(applyRecordWithRetry(page, config, record, orderedMatch), 360000,
-					`${config.sourceSlug}/h/${sourceId}: timed out applying enrichment`);
+				if (options.apply) {
+					const indexedHadithId = await withTimeout(applyRecordWithRetry(page, config, record, orderedMatch), 360000,
+						`${config.sourceSlug}/h/${sourceId}: timed out applying enrichment`);
+					if (indexedHadithId) await queueEnrichedHadithIndex(indexedHadithId);
+				}
 				else {
 					if (record.sharhPreview.length) await fetchSharh(page, config, record.sourceId);
 					if (record.verificationUrl && !ignoresExternalGrades(config))
@@ -299,6 +309,7 @@ function parseHadithPayload(hadith) {
 		links: parseLinks(hadith),
 		sharhPreview: (hadith.services || []).find(service => Number(service.type_id) === 6)?.items || [],
 		verificationUrl: compact(hadith._verification_url) || null,
+		tarf: compact(hadith.matn) || null,
 		comparisonText: compact([hadith.isnad_prefix, hadith.matn].filter(Boolean).join(' ')),
 		rawChecksum: checksum(hadith)
 	};
@@ -393,6 +404,11 @@ function parseLinks(hadith) {
 	for (const group of hadith.shawahid?.groups || [])
 		for (const book of group.books || [])
 			for (const entry of book.entries || []) links.push(linkRecord('shahid', entry.book_id, book.title, entry.entry_id, entry.number, group.narrator));
+	for (const similar of hadith.similars || []) {
+		const link = linkRecord('similar', similar.book_id, similar.book, similar.entry_id, similar.numbering, null);
+		link.tarf = compact(similar.tarf || similar.matn) || null;
+		links.push(link);
+	}
 	return uniqueBy(links.filter(link => link.sourceEntryId), link => `${link.type}:${link.sourceEntryId}`);
 }
 
@@ -405,6 +421,7 @@ function linkRecord(type, sourceBookId, sourceBookTitle, sourceEntryId, num, lab
 		sourceEntryId: Number(sourceEntryId),
 		num: compact(num),
 		label: compact(label) || null,
+		tarf: null,
 		internalRef: alias && compact(num) ? `${alias}:${compact(num)}` : null
 	};
 }
@@ -422,6 +439,8 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 	if (localRows.length !== 1) throw new Error(`${config.alias}:${record.num}: expected one local hadith, found ${localRows.length}.`);
 	const hadithId = localRows[0].id;
 	const localReference = localRows[0].num;
+	await query(connection, 'UPDATE hadiths SET tarf=? WHERE id=? AND NOT (tarf <=> ?)',
+		[record.tarf, hadithId, record.tarf]);
 	if (!refresh) {
 		const existing = await query(connection, 'SELECT source_checksum, source_reference, source_edition_reference, chain_type, source_isnad_html, gharib_json FROM hdith_hadith_metadata WHERE hadith_id=? LIMIT 1', [hadithId]);
 		if (existing[0]?.source_checksum === record.rawChecksum) {
@@ -437,7 +456,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 					[record.num, record.editionReference, record.chainType, record.sourceIsnadHtml, gharibJson, hadithId]);
 			if (storedCollectionGrades >= expectedCollectionGrades) {
 				await upsertSourceReferenceMap(connection, config, record, hadithId, localReference, orderedMatch);
-				return;
+				return hadithId;
 			}
 		}
 	}
@@ -465,6 +484,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 		await replaceSharh(connection, hadithId, sharh);
 		await replaceGraderOpinions(connection, hadithId, graderOpinions);
 		await query(connection, 'COMMIT');
+		return hadithId;
 	} catch (err) {
 		await query(connection, 'ROLLBACK').catch(() => {});
 		narratorIdCache.clear();
@@ -472,6 +492,22 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 		sharhSourceIdCache.clear();
 		throw err;
 	}
+}
+
+async function queueEnrichedHadithIndex(hadithId) {
+	pendingIndexHadithIds.add(Number(hadithId));
+	if (pendingIndexHadithIds.size >= INDEX_BATCH_SIZE) await flushEnrichedHadithIndex();
+}
+
+async function flushEnrichedHadithIndex() {
+	if (!pendingIndexHadithIds.size) return;
+	const ids = [...pendingIndexHadithIds];
+	const script = path.join(__dirname, '..', 'indexEnrichedHadithBatch.js');
+	const result = await util.promisify(childProcess.execFile)(process.execPath, [script, ids.join(',')], {
+		cwd: path.join(__dirname, '..', '..'), maxBuffer: 10 * 1024 * 1024
+	});
+	pendingIndexHadithIds.clear();
+	console.log(`search: ${String(result.stdout || '').trim()}`);
 }
 
 async function applyRecordWithRetry(page, config, record, orderedMatch, runtimeOptions = {}) {
@@ -515,6 +551,7 @@ async function createBookMatcher(config) {
 
 function createOrderedTextMatcher(rows, initialCursor = 0) {
 	let cursor = initialCursor;
+	let lastMatched = initialCursor > 0 ? { ...rows[initialCursor - 1], index: initialCursor - 1 } : null;
 	const indexesByReference = new Map();
 	rows.forEach((row, index) => {
 		const reference = referenceBase(row.num);
@@ -547,8 +584,10 @@ function createOrderedTextMatcher(rows, initialCursor = 0) {
 				best = scoredMatch(record, Array.from({ length: end - cursor }, (unused, offset) => cursor + offset));
 			if (!best || best.score < 0.90) return null;
 			cursor = best.index + 1;
+			lastMatched = best;
 			return best;
-		}
+		},
+		lastMatch() { return lastMatched; }
 	};
 }
 
@@ -748,24 +787,38 @@ async function replaceLinks(connection, hadithId, links) {
 	await query(connection, 'DELETE FROM hdith_hadith_links WHERE hadith_id=?', [hadithId]);
 	if (!links.length) return;
 	const values = links.map(link => {
-		return [hadithId, link.type, link.sourceBookId, link.sourceBookTitle, link.sourceEntryId, link.num || null, link.label,
+		return [hadithId, link.type, link.sourceBookId, link.sourceBookTitle, link.sourceEntryId, link.num || null, link.label, link.tarf || null,
 			null, null,
 			`${BASE_URL}/encyclopedia/book/b-${link.sourceBookId}/h/${link.sourceEntryId}`];
 	});
 	for (let index = 0; index < values.length; index += 500)
 		await query(connection, `INSERT INTO hdith_hadith_links
-			(hadith_id, link_type, source_book_id, source_book_title, source_entry_id, source_num, label, internal_hadith_id, internal_ref, source_url)
+			(hadith_id, link_type, source_book_id, source_book_title, source_entry_id, source_num, label, source_tarf, internal_hadith_id, internal_ref, source_url)
 			VALUES ?`, [values.slice(index, index + 500)]);
 }
 
 async function upsertSourceReferenceMap(connection, config, record, hadithId, localReference, orderedMatch) {
 	const sourceBookId = Number(config.sourceSlug.replace(/^b-/, ''));
 	await query(connection, `INSERT INTO hdith_book_reference_crosswalk
-		(source_book_id, source_entry_id, source_num, source_edition_num, local_hadith_id, local_ref, similarity)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		(source_book_id, source_entry_id, source_num, source_edition_num, local_hadith_id, local_ref, similarity, is_supplementary)
+		VALUES (?, ?, ?, ?, ?, ?, ?, 0)
 		ON DUPLICATE KEY UPDATE source_num=VALUES(source_num), source_edition_num=VALUES(source_edition_num), local_hadith_id=VALUES(local_hadith_id),
-			local_ref=VALUES(local_ref), similarity=VALUES(similarity), lastmod=NOW()`,
+			local_ref=VALUES(local_ref), similarity=VALUES(similarity), is_supplementary=0, lastmod=NOW()`,
 	[sourceBookId, record.sourceId, record.num, record.editionReference, hadithId, localReference, orderedMatch ? orderedMatch.score : 1]);
+}
+
+async function markSupplementaryTransmission(config, record, previousMatch) {
+	if (!previousMatch || referenceBase(record.editionReference) !== referenceBase(previousMatch.num)) return false;
+	const connection = await getConnection();
+	await query(connection, 'UPDATE hadiths SET hasSupplementaryTransmissions=1 WHERE id=?', [previousMatch.id]);
+	const sourceBookId = Number(config.sourceSlug.replace(/^b-/, ''));
+	await query(connection, `INSERT INTO hdith_book_reference_crosswalk
+		(source_book_id, source_entry_id, source_num, source_edition_num, local_hadith_id, local_ref, similarity, is_supplementary)
+		VALUES (?, ?, ?, ?, ?, ?, NULL, 1)
+		ON DUPLICATE KEY UPDATE source_num=VALUES(source_num), source_edition_num=VALUES(source_edition_num),
+			local_hadith_id=VALUES(local_hadith_id), local_ref=VALUES(local_ref), similarity=NULL, is_supplementary=1, lastmod=NOW()`,
+		[sourceBookId, record.sourceId, record.num, record.editionReference, previousMatch.id, previousMatch.num]);
+	return true;
 }
 
 async function deferInternalLinkResolution() {
@@ -928,26 +981,21 @@ async function fetchProps(page, pathname, compressedCacheFile = null) {
 	await wait(options.delay);
 	const url = `${BASE_URL}${pathname}`;
 	let html;
-	if (page.url().startsWith(BASE_URL)) {
-		let lastError;
-		for (let attempt = 1; attempt <= 3; attempt++) {
-			try {
-				const response = await fetch(url, {
-					headers: { accept: 'text/html,application/xhtml+xml' }, signal: AbortSignal.timeout(30000)
-				});
-				if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-				html = await response.text();
-				break;
-			} catch (err) {
-				lastError = err;
-				if (attempt < 3) await wait(Math.max(options.delay, attempt * 1000));
-			}
+	let lastError;
+	for (let attempt = 1; attempt <= 3; attempt++) {
+		try {
+			const response = await fetch(url, {
+				headers: { accept: 'text/html,application/xhtml+xml' }, signal: AbortSignal.timeout(30000)
+			});
+			if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+			html = await response.text();
+			break;
+		} catch (err) {
+			lastError = err;
+			if (attempt < 3) await wait(Math.max(options.delay, attempt * 1000));
 		}
-		if (html === undefined) throw new Error(`${url}: failed after 3 attempts: ${lastError?.message || lastError}`);
-	} else {
-		await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-		html = await page.content();
 	}
+	if (html === undefined) throw new Error(`${url}: failed after 3 attempts: ${lastError?.message || lastError}`);
 	const $ = cheerio.load(html);
 	const json = $('script[data-page="app"][type="application/json"]').html();
 	if (!json) throw new Error(`${url}: missing Inertia payload.`);
@@ -965,6 +1013,18 @@ async function fetchProps(page, pathname, compressedCacheFile = null) {
 async function ensureSchema() {
 	const connection = await getConnection();
 	for (const statement of schemaStatements()) await query(connection, statement);
+	const tarfColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hadiths' AND column_name='tarf' LIMIT 1`);
+	if (!tarfColumn.length)
+		await query(connection, 'ALTER TABLE hadiths ADD COLUMN tarf MEDIUMTEXT NULL AFTER body');
+	const supplementaryColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hadiths' AND column_name='hasSupplementaryTransmissions' LIMIT 1`);
+	if (!supplementaryColumn.length)
+		await query(connection, 'ALTER TABLE hadiths ADD COLUMN hasSupplementaryTransmissions TINYINT(1) NOT NULL DEFAULT 0 AFTER tarf');
+	const crosswalkSupplementaryColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_book_reference_crosswalk' AND column_name='is_supplementary' LIMIT 1`);
+	if (!crosswalkSupplementaryColumn.length)
+		await query(connection, 'ALTER TABLE hdith_book_reference_crosswalk ADD COLUMN is_supplementary TINYINT(1) NOT NULL DEFAULT 0 AFTER similarity');
 	const mappingModeColumn = await query(connection, `SELECT column_type FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_book_mappings' AND column_name='reference_mode' LIMIT 1`);
 	if (mappingModeColumn[0] && !(mappingModeColumn[0].column_type || mappingModeColumn[0].COLUMN_TYPE).includes("'crosswalk'"))
@@ -998,6 +1058,14 @@ async function ensureSchema() {
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='source_book_title' LIMIT 1`);
 	if (!linkBookTitleColumn.length)
 		await query(connection, 'ALTER TABLE hdith_hadith_links ADD COLUMN source_book_title VARCHAR(255) NULL AFTER source_book_id');
+	const linkTarfColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='source_tarf' LIMIT 1`);
+	if (!linkTarfColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_links ADD COLUMN source_tarf MEDIUMTEXT NULL AFTER label');
+	const linkTypeColumn = await query(connection, `SELECT column_type FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='link_type' LIMIT 1`);
+	if (linkTypeColumn[0] && !(linkTypeColumn[0].column_type || linkTypeColumn[0].COLUMN_TYPE).includes("'similar'"))
+		await query(connection, "ALTER TABLE hdith_hadith_links MODIFY link_type ENUM('takhrij','shahid','similar') NOT NULL");
 	const linkBookIndex = await query(connection, `SELECT 1 FROM information_schema.statistics
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND index_name='hdith_link_source_book' LIMIT 1`);
 	if (!linkBookIndex.length)
@@ -1051,7 +1119,7 @@ function schemaStatements() {
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_book_reference_crosswalk (
 			source_book_id INT NOT NULL, source_entry_id INT NOT NULL, source_num VARCHAR(45) NULL, source_edition_num VARCHAR(45) NULL,
-			local_hadith_id INT NOT NULL, local_ref VARCHAR(45) NOT NULL, similarity DECIMAL(6,5) NULL,
+			local_hadith_id INT NOT NULL, local_ref VARCHAR(45) NOT NULL, similarity DECIMAL(6,5) NULL, is_supplementary TINYINT(1) NOT NULL DEFAULT 0,
 			lastmod DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (source_book_id, source_entry_id), KEY hdith_crosswalk_local (source_book_id, local_hadith_id),
 			KEY hdith_crosswalk_hadith (local_hadith_id),
@@ -1085,8 +1153,8 @@ function schemaStatements() {
 			CONSTRAINT hdith_hs_subject_fk FOREIGN KEY (subject_id) REFERENCES hdith_subjects(id) ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_hadith_links (
-			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, hadith_id INT NOT NULL, link_type ENUM('takhrij','shahid') NOT NULL,
-			source_book_id INT NOT NULL, source_book_title VARCHAR(255) NULL, source_entry_id INT NOT NULL, source_num VARCHAR(45) NULL, label VARCHAR(255) NULL,
+			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, hadith_id INT NOT NULL, link_type ENUM('takhrij','shahid','similar') NOT NULL,
+			source_book_id INT NOT NULL, source_book_title VARCHAR(255) NULL, source_entry_id INT NOT NULL, source_num VARCHAR(45) NULL, label VARCHAR(255) NULL, source_tarf MEDIUMTEXT NULL,
 			internal_hadith_id INT NULL, internal_ref VARCHAR(96) NULL, source_url VARCHAR(512) NOT NULL,
 			UNIQUE KEY hdith_link_source (hadith_id, link_type, source_entry_id), KEY hdith_link_internal (internal_hadith_id), KEY hdith_link_source_book (source_book_id),
 			CONSTRAINT hdith_link_hadith_fk FOREIGN KEY (hadith_id) REFERENCES hadiths(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -1147,8 +1215,17 @@ function withTimeout(promise, milliseconds, message) {
 
 function getConnection() {
 	if (!dbConnection) dbConnection = mysql.createConnection(appMysqlConnection());
-	if (dbConnection.state === 'authenticated') return Promise.resolve(dbConnection);
-	return new Promise((resolve, reject) => dbConnection.connect(err => err ? reject(err) : resolve(dbConnection)));
+	if (dbConnection.state === 'authenticated') return configureDatabaseSession(dbConnection);
+	return new Promise((resolve, reject) => dbConnection.connect(err => err ? reject(err) : resolve(dbConnection)))
+		.then(configureDatabaseSession);
+}
+
+async function configureDatabaseSession(connection) {
+	if (!dbSessionConfigured) {
+		await query(connection, 'SET SESSION innodb_lock_wait_timeout=20');
+		dbSessionConfigured = true;
+	}
+	return connection;
 }
 
 function query(connection, sql, values) {

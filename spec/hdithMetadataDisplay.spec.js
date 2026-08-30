@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
+const { narratorDisplayFullname, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
 
 describe('hdith.com metadata display', () => {
 	test('loads enrichment only for the single hadith detail route', () => {
@@ -34,6 +34,17 @@ describe('hdith.com metadata display', () => {
 		expect(opinions).toHaveLength(1);
 	});
 
+	test('hides external similar links until they resolve to internal references', () => {
+		expect(resolvedSimilarLinks([
+			{ link_type: 'similar', source_url: 'https://hdith.com/one', internal_ref: null },
+			{ link_type: 'similar', source_url: 'https://hdith.com/two', internal_ref: 'bukhari:1' },
+			{ link_type: 'shahid', internal_ref: 'muslim:2' }
+		])).toEqual([{ link_type: 'similar', source_url: 'https://hdith.com/two', internal_ref: 'bukhari:1' }]);
+		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
+		expect(template).toContain('metadata.similar.filter(reference => reference.internal_ref)');
+		expect(template).not.toContain('reference.internal_ref ?');
+	});
+
 	test('translates source-specific scholarly grades and collection graders', () => {
 		expect(translatedSourceGrade('أصح شيء في هذا الباب وأحسن')).toBe('The soundest and best report in this chapter');
 		expect(translatedSourceGrader('الترمذي')).toBe('al-Tirmidhī');
@@ -43,6 +54,12 @@ describe('hdith.com metadata display', () => {
 		const names = sourceNarratorNames('حَدَّثَنَا <a href="https://hdith.com/encyclopedia/rawi/p-6305">الْمُغِيرَةِ بْنِ شُعْبَةَ : </a>');
 		expect(names.get('https://hdith.com/encyclopedia/rawi/p-6305')).toBe('الْمُغِيرَةِ بْنِ شُعْبَةَ');
 		expect(vocalizedNarratorName({ source_url: 'https://hdith.com/encyclopedia/rawi/p-2577', source_slug: 'p-2577', name: 'أبو داود السجستاني' }, names)).toBe('أَبُو دَاوُدَ السِّجِسْتَانِيُّ');
+	});
+
+	test('shows the known full narrator name without appended biographical variants', () => {
+		expect(narratorDisplayFullname({ name: 'المغيرة بن شعبة', fullname: 'المغيرة بن شعبة بن أبي عامر : ثقيف بن منبه، ويقال غير ذلك' }))
+			.toBe('المغيرة بن شعبة بن أبي عامر');
+		expect(narratorDisplayFullname({ name: 'المغيرة بن شعبة', fullname: 'المغيرة بن شعبة' })).toBeNull();
 	});
 
 	test('keeps the regular chain in the main hadith and moves the enriched chain above the timeline', () => {
@@ -72,7 +89,7 @@ describe('hdith.com metadata display', () => {
 
 	test('renders all metadata as full-page anchor sections', () => {
 		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
-		['Scholarly Grades', 'أحكام المحدّثين', 'Chain of Narrators', 'الإسناد', 'Explanations', 'الشرح', 'Definitions', 'غريب الحديث', 'Similar References', 'الأحاديث المشابهة'].forEach(label => expect(template).toContain(label));
+		['Scholarly Grades', 'أحكام المحدّثين', 'Chain of Narrators', 'الإسناد', 'Explanations', 'الشرح', 'Definitions', 'غريب الحديث', 'Similar Hadiths', 'أحاديث مشابهة'].forEach(label => expect(template).toContain(label));
 		expect(template).not.toContain('Additional References');
 		expect(template).not.toContain('التخريج');
 		expect(template).not.toContain('Supporting References');
@@ -97,6 +114,12 @@ describe('hdith.com metadata display', () => {
 		expect(template).toContain('aria-expanded="false"');
 		expect(template).toContain('hadith-sharh-collapse-wrap');
 		expect(template).toContain('مزيد...');
+		expect(template).toContain('<details class="hadith-gharib-entry"><summary class="small">');
+		expect(template).not.toContain('<details class="hadith-gharib-entry" open>');
+		expect(template).not.toContain("entry.term !== entry.matchedText");
+		expect(template).not.toContain('<summary class="small"><strong>');
+		expect(template).toContain('class="hadith-gharib-definition small"');
+		expect(template).toContain('class="hadith-source-similar-reference small"');
 		expect(template).not.toContain('>المزيد<');
 		['Grader:', 'Grade:', 'Narrator grading:', 'Generation:', 'Died:', 'Transmission formula:', 'Reference ', 'Page ', 'Collected by', 'Source record'].forEach(label => expect(template).not.toContain(label));
 		expect(template).not.toContain('Matn attribution:');
@@ -107,7 +130,8 @@ describe('hdith.com metadata display', () => {
 		expect(template).toContain('narratorIndex < metadata.narrators.length - 1');
 		expect(template).toContain('const narratorAccentDetails = [narrator.reliability]');
 		expect(template).toContain('hadith-narrator-accent-detail');
-		expect(template).not.toContain('hadith-narrator-fullname');
+		expect(template).toContain('hadith-narrator-fullname');
+		expect(template).toContain('narrator.display_fullname');
 		expect(template).not.toContain('text-bg-warning');
 		expect(template).not.toContain('text-bg-light');
 		expect(template).not.toContain('تقييم الراوي');
@@ -130,6 +154,7 @@ describe('hdith.com metadata display', () => {
 	test('places every single Hadith in the page-level sticky rail layout', () => {
 		const page = fs.readFileSync(path.join(__dirname, '..', 'views', 'search.ejs'), 'utf8');
 		const rail = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata_rail.ejs'), 'utf8');
+		const hadithTemplate = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith.ejs'), 'utf8');
 		expect(page).toContain('hadith-heading-layout hadith-metadata-page-layout');
 		expect(page).toContain("item.single && item.book_alias !== 'quran'");
 		expect(page).toContain('detailHadithItem');
@@ -139,7 +164,11 @@ describe('hdith.com metadata display', () => {
 		expect(rail).toContain('hadith-heading-toc-sticky');
 		expect(rail).toContain('data-toc-heading-rail');
 		expect(rail).toContain('data-toc-heading-key');
+		expect(rail).toContain('<button type="button" class="nav-link hadith-heading-toc-link');
+		expect(rail).not.toContain('href="#<%= railBase %>');
 		expect(rail).toContain("key: 'reflection'");
+		expect(rail).toContain("key: 'hadith', label: 'Hadith'");
+		expect(rail.indexOf("key: 'hadith'")).toBeLessThan(rail.indexOf("key: 'reflection'"));
 		expect(rail.indexOf("key: 'reflection'")).toBeLessThan(rail.indexOf("key: 'grades'"));
 		expect(rail).toContain('data-reflection-disclosure-trigger="comments-disclosure"');
 		expect(rail).toContain('heading-toc-book-name');
@@ -154,7 +183,10 @@ describe('hdith.com metadata display', () => {
 		expect(rail).not.toContain("key: 'shawahid'");
 		expect(rail).not.toContain('Supporting References');
 		expect(rail).not.toContain('shawahidHadiths');
-		expect(rail).toContain("key: 'mushabihah', label: 'Similar References'");
+		const railScript = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'), 'utf8');
+		expect(railScript).toContain("var control = event.target.closest('[data-toc-heading-key]');");
+		expect(railScript).toContain("target.scrollIntoView({ behavior: 'smooth', block: 'start' });");
+		expect(rail).toContain("key: 'mushabihah', label: 'Similar Hadiths'");
 		expect(rail).not.toContain('label_ar');
 		expect(rail.indexOf('data-toc-heading-rail-nav')).toBeLessThan(rail.indexOf('hadith-metadata-source-link small'));
 		expect(rail).not.toContain("key: 'subjects'");
@@ -163,16 +195,24 @@ describe('hdith.com metadata display', () => {
 		expect(rail).not.toContain('In this hadith');
 		expect(rail).not.toContain('if (railGroups.length)');
 		expect(rail).not.toContain('data-bs-toggle="tab"');
+		expect(hadithTemplate).toContain('data-toc-heading-key="hadith"');
 		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
 		expect(css).toContain('.hadith-metadata-section { direction: rtl;');
 		expect(css).toContain('.enriched-isnad a { color: var(--bs-body-color); text-decoration: underline dotted; text-underline-offset: .18em; }');
 		expect(css).toContain('.enriched-isnad a:hover, .enriched-isnad a:focus-visible { color: var(--c-accent); }');
 		expect(css).toContain('.hadith-enriched-isnad { color: var(--c-gray-mid); font-size: var(--f-size-ar); margin: 0 0 1.25rem; }');
 		expect(css).toContain('.hadith-metadata-heading { margin-bottom: 1rem; }');
+		expect(css).toContain('.hadith-metadata-rail button.hadith-heading-toc-link { text-align: left; width: 100%; }');
 		expect(css).toContain('.hadith-grade-list { color: var(--bs-body-color); margin: 0 0 1.25rem; }');
 		expect(css).not.toMatch(/\.hadith-enriched-isnad \{[^}]*text-indent/);
 		expect(css).toContain('.hadith-narrator-name a { color: inherit; text-decoration: underline dotted; text-underline-offset: .18em; }');
 		expect(css).toContain('.hadith-narrator-name a:hover, .hadith-narrator-name a:focus-visible { color: var(--c-accent); text-decoration: underline dotted; }');
+		expect(css).toContain('.hadith-narrator-fullname { color: var(--bs-secondary-color); font-size: .8em; font-weight: 400; }');
+		expect(css).toContain('details > summary::-webkit-details-marker');
+		expect(css).toContain('details > summary::marker');
+		expect(css).toContain('.hadith-gharib-entry summary::after');
+		expect(css).toContain('.hadith-gharib-definition { font-size: calc(1.05rem * var(--content-font-scale)) !important; }');
+		expect(css).toContain('.hadith-gharib-definition * { font-size: inherit !important; }');
 		expect(css).toContain('.hadith-sharh-body { font-size: calc(1.05rem * var(--content-font-scale)) !important; line-height: var(--content-line-height); text-indent: 0; }');
 		expect(css).toContain('.hadith-sharh-body * { font-size: inherit !important; }');
 		expect(css).toContain('-webkit-line-clamp: 10; line-clamp: 10; overflow: hidden;');
@@ -206,6 +246,7 @@ describe('hdith.com metadata display', () => {
 		const hadith = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith.ejs'), 'utf8');
 		const metadata = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
 		const referenceIndex = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_reference_index.ejs'), 'utf8');
+		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
 		expect(search).not.toContain('!results[i].hdithMetadata');
 		expect(search).not.toContain('data-toc-heading-key="mushabihah"');
 		expect(hadith).toContain("if (i.single)");
@@ -217,6 +258,10 @@ describe('hdith.com metadata display', () => {
 		expect(metadata.indexOf("include('hadith_reference_index.ejs', { references: i.similar })")).toBeLessThan(metadata.indexOf('i.similar[similarIndex].rating'));
 		expect(referenceIndex).toContain('const referenceGroups = new Map()');
 		expect(referenceIndex).toContain('hadith-reference-group-separator"> · ');
+		expect(referenceIndex).toContain('class="hadith-reference-index small mb-3"');
+		expect(referenceIndex).not.toContain('class="hadith-reference-index fs-5');
+		expect(css).toContain('.hadith-mushabihah-section .hadith-reference-index:lang(ar) { font-size: calc(1.05rem * var(--content-font-scale)) !important; }');
+		expect(css).toContain('.hadith-mushabihah-section .hadith-reference-index:lang(ar) * { font-size: inherit !important; }');
 		expect(referenceIndex).toContain('arabic.toArabicDigits(latinNumber)');
 		expect(referenceIndex).toContain('<a href="<%= reference.href %>"><%= reference.number %></a>');
 		expect(metadata).not.toContain('أخرجه');
