@@ -70,7 +70,8 @@ describe('Quran heading rail', () => {
     expect(html).not.toContain('2.1 Guidance');
     expect(html).not.toContain('2.1.1 The mindful');
     expect(html).toContain('data-quran-heading-translation-alias="haleem"');
-    expect(html).toContain('href="/quran/haleem/2/1/1"');
+    expect(html).toContain('href="/quran/haleem/2/1" data-quran-heading-key="2.1"');
+    expect(html).toContain('href="/quran/haleem/2/1" data-quran-heading-key="2.1.1"');
     expect(html).toMatch(/data-quran-heading-key="2\.1\.1"[^>]*aria-current="location"/);
   });
 
@@ -105,9 +106,10 @@ describe('Quran heading rail', () => {
     expect(client).toContain('applyQuranHeadingTranslationScope(selector.value);');
     expect(client).toContain('applyQuranHeadingTranslationScope(alias);');
     expect(client).toContain('renderQuranHeadingToc(surah)');
+		expect(client).toContain('/${heading.surah}/${heading.section}');
   });
 
-	test('links tafsir headings through the selected tafsir at each heading start', async () => {
+	test('links tafsir headings through their parent H2 section', async () => {
 	  const html = await render({
 	    2: {
 	      surah: 2,
@@ -139,8 +141,8 @@ describe('Quran heading rail', () => {
 	  expect(html).toContain('data-quran-heading-tafsir-base="/quran/tafsir/tabari"');
 	  expect(html.replace(/\s+/g, ' ')).toContain('href="/quran/tafsir/tabari" data-quran-heading-toc-book>AL-TABARI</a>');
 	  expect(html).not.toContain('>TAFSIR AL-TABARI</a>');
-	  expect(html).toContain('href="/quran/tafsir/tabari/quran:2:6"');
-	  expect(html).toContain('href="/quran/tafsir/tabari/quran:2:17"');
+	  expect(html).toContain('href="/quran/tafsir/tabari/2/3" data-quran-heading-key="2.3"');
+	  expect(html).toContain('href="/quran/tafsir/tabari/2/3" data-quran-heading-key="2.3.1"');
 	  expect(html).toContain('href="/quran/tafsir/tabari/1" rel="prev"');
 	  expect(html).toContain('href="/quran/tafsir/tabari/3" rel="next"');
 	  expect(html).toMatch(/data-quran-heading-key="2\.3\.1"[^>]*aria-current="location"/);

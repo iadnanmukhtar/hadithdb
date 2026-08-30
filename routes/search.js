@@ -25,6 +25,7 @@ const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
 const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
 const HadithHeadingNavigation = require('../lib/HadithHeadingNavigation');
+const HdithMetadata = require('../lib/HdithMetadata');
 const QuranHeadings = require('../lib/QuranHeadings');
 const QuranMushaf = require('../lib/QuranMushaf');
 const { invalidateQuranMemoryCaches } = require('../lib/QuranCacheInvalidation');
@@ -1514,6 +1515,11 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 
   results = results.map(item => new Item(item));
   results[0].single = true;
+  if (results[0].book_alias !== 'quran') {
+    results[0].hdithMetadata = await HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id);
+    if (results[0].hdithMetadata)
+      results[0].hdithMetadata.grades = HdithMetadata.withPrimaryGrade(results[0].hdithMetadata.grades, results[0]);
+  }
   if (results[0].book_alias === 'quran')
     await addQuranAdjacentRefs(results[0]);
   if (results[0].book_alias === 'quran'
@@ -3406,6 +3412,27 @@ async function renderScopedQuranTranslationPassage(req, res, next) {
 router.get('/quran/:translationAlias/quran\::surah\::ayah1-:ayah2', renderScopedQuranTranslationPassage);
 router.get('/quran/:translationAlias/quran\::surah\::ayah1', renderScopedQuranTranslationPassage);
 
+router.get('/quran/:translationAlias/:chapterNum/:sectionNum/:subsectionNum', async function (req, res, next) {
+  var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
+  if (!translation || !['default', 'local'].includes(translation.source))
+    return next();
+  var translationSlug = translation.quranBookSlug || translation.alias;
+  var surah = parsePositiveIntegerParam(req.params.chapterNum);
+  var section = parsePositiveIntegerParam(req.params.sectionNum);
+  var subsection = parsePositiveIntegerParam(req.params.subsectionNum);
+  if (!Number.isInteger(surah) || !Number.isInteger(section) || !Number.isInteger(subsection))
+    return next(createError(400, 'Invalid Quran subsection path'));
+  try {
+    await Subsection.subsectionFromRef(`quran/${surah}/${section}/${subsection}`);
+  } catch (err) {
+    if (err instanceof ReferenceError)
+      return next(gone(err.message));
+    throw err;
+  }
+  var target = Utils.quranUrl(req, `/quran/${encodeURIComponent(translationSlug)}/${surah}/${section}`);
+  return res.redirect(301, appendQueryExcluding(req, target, ['translation']));
+});
+
 router.get('/quran/:translationAlias/:chapterNum/:sectionNum', async function (req, res, next) {
   var translation = visibleQuranTranslationByAlias(req.params.translationAlias);
   if (!translation || !['default', 'local'].includes(translation.source))
@@ -3797,8 +3824,7 @@ router.get('/:bookAlias/:chapterNum/:sectionNum/:subsectionNum', async function 
   }
   var canonicalChapterNum = Utils.formatHadithHeadingNumber(chapterNum);
   var canonicalSectionNum = Utils.formatHadithHeadingNumber(sectionNum);
-  var canonicalSubsectionNum = Utils.formatHadithHeadingNumber(subsectionNum);
-  res.redirect(301, `/${p.bookAlias}/${canonicalChapterNum}/${canonicalSectionNum}#S${canonicalSectionNum}-${canonicalSubsectionNum}`);
+  res.redirect(301, `/${p.bookAlias}/${canonicalChapterNum}/${canonicalSectionNum}${appendOriginalQuery(req)}`);
   return;
 });
 

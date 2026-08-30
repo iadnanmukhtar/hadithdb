@@ -123,12 +123,12 @@
           %>
             <% if (passage.showPassageTitle) { %>
             <span class="quran-mushaf-page-passage-ref"><%= passage.surah %>.<%= passage.section %></span>
-            <a class="quran-mushaf-page-passage-title" href="<%= utils.quranUrl(req, `/quran/${passage.surah}/${passage.section}`) %>"><%= passageTitle %></a>;
+            <a class="quran-mushaf-page-passage-title" href="<%= utils.quranUrl(req, utils.quranStudySectionPath(passage)) %>"><%= passageTitle %></a>;
             <% } %><% (passage.subsections || []).forEach(function (subsection) {
               var subsectionTitle = subsection.title_en || subsection.title || `Subsection ${subsection.subsection}`;
             %>
             <span class="quran-mushaf-page-subsection-ref"><%= subsection.surah %>:<%= subsection.start %></span>
-            <a href="<%= utils.quranUrl(req, `/quran/${subsection.surah}/${subsection.section}/${subsection.subsection}`) %>"><%= subsectionTitle %></a>;<% }); %>
+            <a href="<%= utils.quranUrl(req, utils.quranStudySectionPath({ surah: subsection.surah, section: subsection.section })) %>"><%= subsectionTitle %></a>;<% }); %>
           <% }); %>
           </p>
         </footer>

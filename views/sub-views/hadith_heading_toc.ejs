@@ -15,7 +15,10 @@
   if (!hadithHeadingInitialKey && hadithHeadingOutline && hadithHeadingOutline.sections && hadithHeadingOutline.sections.length > 0)
     hadithHeadingInitialKey = hadithHeadingOutline.sections[0].key;
   function hadithHeadingHref(heading) {
-    return utils.urlFor(req, `/${heading.path}`);
+    var path = (heading.path || '').toString();
+    if (Number(heading.level) === 3)
+      path = path.split('/').slice(0, 3).join('/');
+    return utils.urlFor(req, `/${path}`);
   }
   function hadithHeadingLabel(heading) {
     if (Number(heading.level) === 3)

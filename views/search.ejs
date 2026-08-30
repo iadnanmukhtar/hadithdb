@@ -59,6 +59,7 @@
     if (typeof chapter !== 'undefined')
       page.context.chapter = chapter;
     var displayResultCount = (typeof totalResults !== 'undefined' && totalResults > 0) ? totalResults : results.length;
+    var detailHadithItem = !isSearchResultsPage ? (results.find(function (item) { return item.single && item.book_alias !== 'quran'; }) || null) : null;
     if (utils.isFalsey(q) && results.length > 0) {
       page.context.chapter = results[0].chapter;
       page.context.section = results[0].section;
@@ -101,7 +102,8 @@
   
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   
-  <div class="container col-lg-8 mx-auto">
+  <div class="<%= detailHadithItem ? 'container-fluid hadith-heading-layout hadith-metadata-page-layout' : 'container col-lg-8 mx-auto' %>">
+    <% if (detailHadithItem) { %><div class="container col-lg-8 mx-auto hadith-heading-content"><% } %>
     
     <main class="search-results"<% if (isSearchResultsPage) { %> data-search-infinite="1" data-search-current-url="<%= req.originalUrl || req.url || searchAction %>"<% if (page.prev) { %> data-search-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-search-next-url="<%= page.next %>"<% } %><% } %>>
 
@@ -150,31 +152,6 @@
           <%- include('sub-views/toc.ejs', { site: site, page: page, toc: results[i], title: true, main: main, searchResult: q }); %>
         <% } %>
 
-        <% if (!q && results[i].similar && results[i].similar.length > 0) { %>
-        <div class="row similar-list">
-          
-          <hr>
-          <div class="col-12">
-            <h4 class="fs-5">See similar narrations below:</h4>
-            <small><a title="أخرجه">Collected by</a>
-              <% for (var j = 0; results[i].similarBooks && j < results[i].similarBooks.length; j++) { %>
-              <span title="<%- results[i].similarBooks[j].name %>"><%- results[i].similarBooks[j].shortName_en + ((j < results[i].similarBooks.length-1) ? ', ' : '') %></span>
-              <% } %> %></small>
-          </div>
-          
-          <div class="col-12">
-          <% for (var j = 0; j < results[i].similar.length; j++) { 
-            results[i].similar[j].rating = Math.round((results[i].similar[j].rating - 0.5)*100/50*100/25);
-          %>
-          
-          <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i].similar[j], main: true, title: true, searchResult: false, similarSection: true }); %>
-          
-          <% } %>
-          </div>
-          
-        </div>
-        <% } %>
-        
         <% } %>
 
       <% if (isSearchResultsPage) { %>
@@ -184,6 +161,7 @@
       <% } %>
 
     </main>
+    <% if (detailHadithItem) { %></div><%- include('sub-views/hadith_metadata_rail.ejs', { i: detailHadithItem, mobile: false }); %><% } %>
   </div>
   
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>

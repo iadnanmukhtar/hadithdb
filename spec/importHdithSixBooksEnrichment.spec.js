@@ -4,19 +4,33 @@ const fs = require('fs');
 const path = require('path');
 const {
 	CACHE_DIR,
+	dedupeSharhItems,
+	HDITH_LOCAL_BOOKS,
+	MIN_REQUEST_DELAY_MS,
 	SIX_BOOKS,
 	compressCachedRecord,
+	createOrderedTextMatcher,
+	fetchProps,
 	firstHadithId,
+	hadithPrefixSimilarity,
 	hadithTextSimilarity,
 	ignoresExternalGrades,
+	isSourceNotFoundError,
 	loadRecord,
 	normalizeArabicForMatch,
 	normalizeHadithForComparison,
+	parseCollectionGrades,
+	parseEditionReference,
+	parseGharib,
 	parseGraderOpinions,
 	parseHadithPayload,
 	parseLinks,
 	parseNarrators,
+	parseSourceIsnadHtml,
+	readOptions,
+	referenceBase,
 	referencesEquivalent,
+	resolveLinkTarget,
 	schemaStatements,
 	sharhToMarkdown
 } = require('../bin/utils/import-hdith-six-books-enrichment');
@@ -24,6 +38,42 @@ const {
 describe('hdith.com six-book enrichment importer', () => {
 	test('stores downloaded payloads under /tmp', () => {
 		expect(CACHE_DIR).toBe('/tmp/hadithdb-hdith-six-books-enrichment');
+	});
+
+	test('allows the supervised importer to use a 100 ms request delay', () => {
+		expect(MIN_REQUEST_DELAY_MS).toBe(100);
+		expect(readOptions(['--apply', '--skip-schema', '--delay', '100', '--book', 'b-2'])).toEqual(expect.objectContaining({
+			apply: true, skipSchema: true, delay: 100, books: ['b-2']
+		}));
+	});
+
+	test('distinguishes hdith sequence numbers from canonical edition references', () => {
+		expect(parseEditionReference([{ value: '99 (م)' }])).toEqual({ value: '99 (م)', repeated: true });
+		expect(parseEditionReference([{ value: '100' }])).toEqual({ value: '100', repeated: false });
+		expect(parseEditionReference([{ value: '١ / ١' }])).toEqual({ value: '١ / ١', repeated: false });
+		expect(referenceBase('١ / ١')).toBe('1');
+		expect(referenceBase('402b')).toBe('402');
+	});
+
+	test('skips a repeated Bukhari source record and matches the canonical edition record by text', () => {
+		const matcher = createOrderedTextMatcher([
+			{ id: 99, num: '99', body: 'من أسعد الناس بشفاعتك يوم القيامة' },
+			{ id: 100, num: '100', body: 'إن الله لا يقبض العلم انتزاعا ولكن يقبض العلم بقبض العلماء' },
+			{ id: 101, num: '101', body: 'قالت النساء للنبي غلبنا عليك الرجال فاجعل لنا يوما' }
+		]);
+		expect(matcher.match({ editionReference: '99 (م)', editionReferenceRepeated: true,
+			comparisonText: 'حدثنا عبد العزيز بن مسلم عن عبد الله بن دينار بذلك' })).toBeNull();
+		expect(matcher.match({ editionReference: '100', editionReferenceRepeated: false,
+			comparisonText: 'إن الله لا يقبض العلم انتزاعا ولكن يقبض العلم بقبض العلماء' }))
+			.toEqual(expect.objectContaining({ id: 100, num: '100', score: 1 }));
+		expect(matcher.match({ editionReference: '101', editionReferenceRepeated: false,
+			comparisonText: 'قالت النساء للنبي غلبنا عليك الرجال فاجعل لنا يوما' }))
+			.toEqual(expect.objectContaining({ id: 101, num: '101', score: 1 }));
+	});
+
+	test('recognizes a missing hdith source entry so the importer can continue with the next chapter', () => {
+		expect(isSourceNotFoundError(new Error('https://hdith.com/h/20614: HTTP 404'))).toBe(true);
+		expect(isSourceNotFoundError(new Error('https://hdith.com/h/20614: HTTP 500'))).toBe(false);
 	});
 
 	test('compresses completed payloads and reads them back from gzip', async () => {
@@ -45,8 +95,24 @@ describe('hdith.com six-book enrichment importer', () => {
 		}
 	});
 
+	test('reads cached page props without navigating or applying a request delay', async () => {
+		const cacheFile = path.join(CACHE_DIR, `jest-props-${process.pid}.json.gz`);
+		fs.writeFileSync(cacheFile, require('zlib').gzipSync(JSON.stringify({ cached: true })));
+		const page = { url: jest.fn(() => { throw new Error('cache hit must not access the browser'); }) };
+		await expect(fetchProps(page, '/never-requested', cacheFile)).resolves.toEqual({ cached: true });
+		expect(page.url).not.toHaveBeenCalled();
+		fs.unlinkSync(cacheFile);
+	});
+
 	test('keeps the canonical six-book order', () => {
 		expect(SIX_BOOKS.map(book => book.alias)).toEqual(['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah']);
+	});
+
+	test('maps hdith.com collections to local database books', () => {
+		expect(HDITH_LOCAL_BOOKS[8]).toEqual(expect.objectContaining({ bookId: 8, alias: 'ahmad', referenceMode: 'exact' }));
+		expect(HDITH_LOCAL_BOOKS[10]).toEqual(expect.objectContaining({ bookId: 11, alias: 'ibnhibban', referenceMode: 'exact' }));
+		expect(HDITH_LOCAL_BOOKS[15]).toEqual(expect.objectContaining({ bookId: 31, alias: 'ibnabishaybah', referenceMode: 'exact' }));
+		expect(HDITH_LOCAL_BOOKS[7]).toEqual(expect.objectContaining({ bookId: 7, alias: 'malik', referenceMode: 'crosswalk' }));
 	});
 
 	test('parses stable narrator identities and chain metadata', () => {
@@ -54,25 +120,65 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(narrators).toEqual([expect.objectContaining({ ordinal: 1, sourceSlug: 'p-1', name: 'راو', formula: 'حدثنا', flags: ['التدليس'] })]);
 	});
 
+	test('sanitizes and links the authoritative source isnad without name matching', () => {
+		const html = parseSourceIsnadHtml('<span class="hp-sigha">حَدَّثَنَا </span><span class="hp-rawi" data-rawi-slug="p-3919" data-name="عبد الله بن مسلمة">عَبْدُ اللَّهِ بْنُ مَسْلَمَةَ </span>، <span hidden>ignored</span><script>ignored()</script>');
+		expect(html).toBe('حَدَّثَنَا <a href="https://hdith.com/encyclopedia/rawi/p-3919" target="_blank" rel="noopener noreferrer" title="عبد الله بن مسلمة">عَبْدُ اللَّهِ بْنُ مَسْلَمَةَ </a>،');
+		expect(parseSourceIsnadHtml('', 'عَنْ رَاوٍ')).toBe('عَنْ رَاوٍ');
+	});
+
 	test('parses takhrij and shawahid as internally resolvable link records', () => {
 		const links = parseLinks({
-			takhrij: { sources: [{ book_id: 2, occurrences: [{ entry_id: 22, hadith_num: '10', similarity: 'بمثله' }] }] },
-			shawahid: { groups: [{ narrator: 'صحابي', books: [{ entries: [{ book_id: 3, entry_id: 33, number: '20 ' }] }] }] }
+			takhrij: { sources: [{ book_id: 2, author: 'مسلم', book_quoted: 'صحيحه', occurrences: [{ entry_id: 22, hadith_num: '10', similarity: 'بمثله' }] }] },
+			shawahid: { groups: [{ narrator: 'صحابي', books: [{ title: 'سنن أبي داود', entries: [{ book_id: 3, entry_id: 33, number: '20 ' }] }] }] }
 		});
 		expect(links).toEqual([
-			expect.objectContaining({ type: 'takhrij', sourceEntryId: 22, internalRef: 'muslim:10' }),
-			expect.objectContaining({ type: 'shahid', sourceEntryId: 33, internalRef: 'abudawud:20' })
+			expect.objectContaining({ type: 'takhrij', sourceBookTitle: 'مسلم، صحيحه', sourceEntryId: 22, internalRef: 'muslim:10' }),
+			expect.objectContaining({ type: 'shahid', sourceBookTitle: 'سنن أبي داود', sourceEntryId: 33, internalRef: 'abudawud:20' })
 		]);
+	});
+
+	test('resolves links only through the imported hdith source-entry crosswalk', () => {
+		const link = { sourceBookId: 2, sourceEntryId: 13000, num: '999', internalRef: 'muslim:999' };
+		expect(resolveLinkTarget(link, { id: 42, num: '1234a' })).toEqual({
+			sourceNum: '999', internalHadithId: 42, internalRef: 'muslim:1234a'
+		});
+		expect(resolveLinkTarget(link, null)).toEqual({
+			sourceNum: '999', internalHadithId: null, internalRef: null
+		});
+	});
+
+	test('does not infer internal references from matching number strings', () => {
+		const ahmad = { sourceBookId: 8, sourceEntryId: 88, num: '123', internalRef: null };
+		expect(resolveLinkTarget(ahmad, { id: 456, num: '900' })).toEqual({
+			sourceNum: '123', internalHadithId: 456, internalRef: 'ahmad:900'
+		});
+		expect(resolveLinkTarget(ahmad, null)).toEqual({ sourceNum: '123', internalHadithId: null, internalRef: null });
+		const malik = { sourceBookId: 7, sourceEntryId: 77, num: '123', internalRef: null };
+		expect(resolveLinkTarget(malik, null)).toEqual({ sourceNum: '123', internalHadithId: null, internalRef: null });
+		expect(resolveLinkTarget(malik, { id: 789, num: '2-4' })).toEqual({
+			sourceNum: '123', internalHadithId: 789, internalRef: 'malik:2-4'
+		});
 	});
 
 	test('parses attribution, subjects, and sharh availability', () => {
 		const record = parseHadithPayload({
 			id: 5, numbering_harf: '1', chapter_path: [{ id: 2 }], next_id: 6, attribution: 'مرفوع',
+			isnad_html: '<span class="hp-rawi" data-rawi-slug="p-1">رَاوٍ</span>',
 			subjects: [{ slug: 's-1', title: 'النية' }], services: [{ type_id: 6, items: [{ entry_id: 7 }] }]
 		});
-		expect(record).toEqual(expect.objectContaining({ sourceId: 5, num: '1', chapterId: 2, attribution: 'مرفوع' }));
+		expect(record).toEqual(expect.objectContaining({ sourceId: 5, num: '1', chapterId: 2, attribution: 'مرفوع', chainType: null,
+			sourceIsnadHtml: expect.stringContaining('https://hdith.com/encyclopedia/rawi/p-1') }));
 		expect(record.subjects).toEqual([{ slug: 's-1', title: 'النية' }]);
 		expect(record.sharhPreview).toHaveLength(1);
+		expect(parseHadithPayload({ id: 6, chain_type: 'معلق' })).toEqual(expect.objectContaining({ attribution: null, chainType: 'معلق' }));
+	});
+
+	test('parses Gharib al-Hadith terms and their source definitions', () => {
+		expect(parseGharib([{ id: 12, term: 'أبعد', matched_text: 'أَبْعَدَ', lexicon: 'غريب الحديث', definitions: [
+			{ book: 'النهاية في غريب الحديث', content: 'أي ذهب إلى مكان بعيد.' }
+		] }])).toEqual([{ sourceId: 12, term: 'أبعد', matchedText: 'أَبْعَدَ', lexicon: 'غريب الحديث', definitions: [
+			{ book: 'النهاية في غريب الحديث', content: 'أي ذهب إلى مكان بعيد.' }
+		] }]);
 	});
 
 	test('finds the first detail id and defines searchable sharh storage', () => {
@@ -80,12 +186,34 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(schemaStatements().join('\n')).toContain('FULLTEXT KEY hdith_sharh_text');
 		expect(schemaStatements().join('\n')).toContain("format VARCHAR(8) NOT NULL DEFAULT 'md'");
 		expect(schemaStatements().join('\n')).toContain('source_reference VARCHAR(45) NULL');
+		expect(schemaStatements().join('\n')).toContain('source_edition_reference VARCHAR(45) NULL');
+		expect(schemaStatements().join('\n')).toContain('source_edition_num VARCHAR(45) NULL');
+		expect(schemaStatements().join('\n')).toContain('chain_type VARCHAR(128) NULL');
+		expect(schemaStatements().join('\n')).toContain('source_isnad_html TEXT NULL');
+		expect(schemaStatements().join('\n')).toContain('gharib_json JSON NULL');
+		expect(schemaStatements().join('\n')).toContain('source_book_title VARCHAR(255) NULL');
+		expect(schemaStatements().join('\n')).toContain('KEY hdith_link_source_book (source_book_id)');
+		expect(schemaStatements().join('\n')).toContain('CREATE TABLE IF NOT EXISTS hdith_book_mappings');
+		expect(schemaStatements().join('\n')).toContain('CREATE TABLE IF NOT EXISTS hdith_book_reference_crosswalk');
+		expect(fs.readFileSync(path.join(__dirname, '..', 'bin', 'utils', 'import-hdith-six-books-enrichment.js'), 'utf8'))
+			.toContain('HadithAttributions.ensureSchema');
 	});
 
 	test('converts sharh HTML to normalized Markdown', () => {
 		expect(sharhToMarkdown('<h2>عنوان</h2><p>شرح <strong>مهم</strong>.</p><ul><li>فائدة</li></ul>'))
 			.toBe('## عنوان\n\nشرح **مهم**.\n\n- فائدة');
 		expect(sharhToMarkdown('فقرة أولى\n\nفقرة ثانية')).toBe('فقرة أولى\n\nفقرة ثانية');
+	});
+
+	test('deduplicates repeated sharh entries while retaining the fullest Markdown body', () => {
+		expect(dedupeSharhItems([
+			{ sourceEntryId: 357836, text: 'short', chapter: null },
+			{ sourceEntryId: 357836, text: 'the complete sharh body', chapter: 'chapter' },
+			{ sourceEntryId: 357837, text: 'another sharh' }
+		])).toEqual([
+			{ sourceEntryId: 357836, text: 'the complete sharh body', chapter: 'chapter' },
+			{ sourceEntryId: 357837, text: 'another sharh' }
+		]);
 	});
 
 	test('matches verification grades only by the six-book source and reference number', () => {
@@ -100,11 +228,32 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(normalizeArabicForMatch('<mark>أوَّلُ</mark>')).toBe('اول');
 	});
 
+	test('does not treat Abu Dawud collection-author search rows as supplemental graders', () => {
+		const opinions = parseGraderOpinions([
+			{ slug: 'collection-author', muhaddith: 'أبو داود', degree: 'حسن صحيح', source: 'سنن أبي داود', book_page: '1' },
+			{ slug: 'albani', muhaddith: 'الألباني', degree: 'حسن صحيح', source: 'صحيح سنن أبي داود', book_page: '1' }
+		], 'b-3', '1');
+		expect(opinions.map(opinion => opinion.grader)).toEqual(['الألباني']);
+	});
+
+	test('stores collection-native hukm with its grader separately from external opinions', () => {
+		const opinions = parseCollectionGrades({
+			id: 96224, book: { slug: 'b-4', title: 'جامع الترمذي' }, numbering_harf: '2',
+			grading: [{ scholar: 'الترمذي', opinion: 'هذا حديث حسن صحيح', degree: 1, branch: 'A' }]
+		});
+		expect(opinions).toEqual([expect.objectContaining({
+			sourceSlug: 'collection-b-4-1', grader: 'الترمذي', grade: 'هذا حديث حسن صحيح',
+			gradeCategoryId: 1, source: 'جامع الترمذي', bookPage: '2', driver: 'A'
+		})]);
+	});
+
 	test('renders all indexed grader opinions on a hadith item', () => {
 		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		expect(template).toContain('hadith-grader-opinions');
 		expect(template).toContain('graderOpinions.forEach');
 		expect(template).toContain('opinion.source_url');
+		expect(template).toContain('if (graderOpinions.length)');
+		expect(template).not.toContain('graderOpinions.length && !hasHadithClassification');
 	});
 
 	test('allows Muslim suffix differences but preserves suffixes for other books', () => {
@@ -121,6 +270,17 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(source).toBe(local);
 		expect(hadithTextSimilarity(source, local)).toBe(1);
 		expect(hadithTextSimilarity(source, normalizeHadithForComparison('حديث مختلف تمامًا'))).toBeLessThan(0.70);
+	});
+
+	test('confirms the nearly exact beginning of the combined chain and body', () => {
+		expect(hadithPrefixSimilarity(
+			normalizeHadithForComparison('حدثنا أنس عن مالك قال سمعت النبي يقول إنما الأعمال بالنيات'),
+			normalizeHadithForComparison('حدثنا أنس عن مالك قال سمعت النبي ﷺ يقول إنما الأعمال بالنيات حاشية محلية طويلة')
+		)).toBe(1);
+		expect(hadithPrefixSimilarity(
+			normalizeHadithForComparison('حدثنا أنس عن مالك قال سمعت النبي يقول إنما الأعمال بالنيات'),
+			normalizeHadithForComparison('حدثنا زيد عن شعبة قال سمعت ابن عمر يقول نص مختلف')
+		)).toBeLessThan(0.5);
 	});
 
 	test('ignores external grader opinions for the two Sahih collections', () => {

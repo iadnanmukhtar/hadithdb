@@ -12,6 +12,7 @@ const { spawn } = require('child_process');
 const { homedir } = require('os');
 const Hadith = require('../lib/Hadith');
 const HadithRevision = require('../lib/HadithRevision');
+const HdithEnrichment = require('../lib/HdithEnrichment');
 const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
@@ -160,13 +161,17 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           status.value = (status.value && status.value !== '') ? 1 : 0;
 
         if (col === 'revise') {
+          var hdithEnriched = await HdithEnrichment.enrichHadithById(ids[0], {
+            hdithUrl: req.body.hdithUrl
+          });
           var revised = await HadithRevision.reviseHadithById(ids[0], {
             userId: userId,
             forceArabicRevision: true,
             source: 'admin_revise'
           });
-          result = { message: 'AI revision complete' };
+          result = { message: 'hdith.com enrichment and AI revision complete' };
           status.value = 'Revised';
+          status.hdithEnriched = hdithEnriched;
           status.revised = {
             title_en: revised.item.title_en,
             chain: revised.item.chain,
@@ -554,6 +559,11 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
   } catch (err) {
     status.message = updateErrorMessage(err);
     status.code = updateErrorStatus(err);
+    if (err?.needsHdithUrl) {
+      status.needsHdithUrl = true;
+      status.expectedHdithBookId = err.expectedHdithBookId;
+      status.expectedHdithBookTitle = err.expectedHdithBookTitle;
+    }
     var valuePreview = Utils.trimToEmpty(status.value + '').substring(0, 120);
     debug.error(`update failed id:${ids || req.params.id}, prop:${prop || req.params.prop}, value:${valuePreview}: ${status.message}\n${err.stack || ''}`);
   } finally {

@@ -364,6 +364,14 @@
 	        };
 	        try {
 	          var resBody = await update(reqBody);
+	          if (propStr === 'hadith.revise' && resBody.needsHdithUrl) {
+	            const expectedBook = resBody.expectedHdithBookId ? ` for hdith.com book b-${resBody.expectedHdithBookId}` : '';
+	            const hdithUrl = window.prompt(`The automatic match is not confident enough. Paste the hdith.com hadith detail URL${expectedBook}:`);
+	            if (!hdithUrl)
+	              return;
+	            reqBody.hdithUrl = hdithUrl.trim();
+	            resBody = await update(reqBody);
+	          }
 	          // update element on success
 	          if (resBody.code == 200) {
 	            let appliedRenderedCommentary = false;
@@ -378,6 +386,11 @@
 	            }
 	            if (propStr === 'hadith.revise')
 	              applyHadithRevision(id, resBody.revised);
+	            if (propStr === 'hadith.revise' && resBody.hdithEnriched) {
+	              rememberUpdateSuccessToast('Hadith revised', 'The hadith was enriched from hdith.com and revised.');
+	              window.location.reload();
+	              return;
+	            }
 	            if (propStr === 'hadiths_sim.add')
 	              finalButtonHtml = setSimilarToggleButton($loadingButton, true) || finalButtonHtml;
 	            else if (propStr === 'hadiths_sim.demote')
@@ -451,6 +464,7 @@
             arabizi: reqBody.arabizi,
             value: reqBody.value,
             quranSectionPath: reqBody.quranSectionPath,
+	            hdithUrl: reqBody.hdithUrl,
           })
         });
         const responseText = await res.text();
@@ -462,7 +476,7 @@
             message: `Expected JSON from ${res.url || 'server'}, got ${responseText.trim().substring(0, 120) || res.statusText}`
           };
         }
-      } else {
+	      } else if (!resBody.needsHdithUrl) {
         res.statusText = 'Update request body is not present';
       }
       if (res.status == 200) {
@@ -800,12 +814,15 @@
       const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
       const desktopList = document.querySelector('.site-navbar menu.d-md-block ul.nav');
       if (desktopList && !desktopList.querySelector('.edit-gear')) {
-        const searchItem = desktopList.querySelector('.search-click-toggle');
+        const authItem = desktopList.querySelector('#nav-auth-desktop');
         const item = document.createElement('li');
         item.className = 'nav-item edit-gear';
         item.innerHTML = `<a class="nav-link" role="button" title="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}" aria-label="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}"><i class="bi ${icon}"></i></a>`;
         item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
-        desktopList.insertBefore(item, searchItem || null);
+        if (authItem)
+          authItem.after(item);
+        else
+          desktopList.appendChild(item);
       }
 
       const mobileList = document.querySelector('#offcanvas-topnav .offcanvas-col1');

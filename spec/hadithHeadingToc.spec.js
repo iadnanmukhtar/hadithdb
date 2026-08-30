@@ -101,7 +101,7 @@ describe('Hadith heading rail', () => {
 		expect(html).toContain('>The beginning of revelation</a>');
 		expect(html).not.toContain('1.1 How the Divine Revelation started');
 		expect(html).not.toContain('1.1.1 The beginning of revelation');
-		expect(html).toContain('href="/bukhari/1/1/1"');
+		expect(html).toContain('href="/bukhari/1/1" data-hadith-heading-key="bukhari:1.1.1"');
 		expect(html).toMatch(/data-hadith-heading-key="bukhari:1\.1\.1"[^>]*aria-current="location"/);
 		expect(html).toMatch(/data-hadith-heading-key="bukhari:1\.2"[^>]*lang="ar" dir="rtl"[^>]*>2 باب عربي<\/a>/);
 		expect(html).toMatch(/data-hadith-heading-key="bukhari:1\.2\.1"[^>]*lang="ar" dir="rtl"[^>]*>عنوان فرعي<\/a>/);

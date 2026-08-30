@@ -17,7 +17,7 @@ const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const HttpRange = require('../lib/HttpRange');
 const QuranAyahNavigation = require('../lib/QuranAyahNavigation');
 const { invalidateQuranMemoryCaches } = require('../lib/QuranCacheInvalidation');
-const { Item, Library } = require('../lib/Model');
+const { Item, Library, Subsection } = require('../lib/Model');
 
 const router = express.Router();
 
@@ -183,6 +183,26 @@ router.get('/:tafsir/:surah', async function (req, res, next) {
 
   const allTafsirs = await Tafsir.visibleTafsirs();
   res.redirect(302, Utils.quranPath(Tafsir.passageUrl(tafsir, passage.surah, passage.ayah, passage.endAyah, allTafsirs)));
+});
+
+router.get('/:tafsir/:surah/:section/:subsection', async function (req, res, next) {
+  const tafsir = await Tafsir.resolveTafsir(req.params.tafsir);
+  if (!tafsir)
+    return next(gone(`Tafsīr '${req.params.tafsir}' not found`));
+  const surah = Number(req.params.surah);
+  const section = Number(req.params.section);
+  const subsection = Number(req.params.subsection);
+  if (![surah, section, subsection].every(value => Number.isInteger(value) && value > 0))
+    return next(createError(400, 'Invalid Quran subsection path'));
+  try {
+    await Subsection.subsectionFromRef(`quran/${surah}/${section}/${subsection}`);
+  } catch (err) {
+    if (err instanceof ReferenceError)
+      return next(gone(err.message));
+    throw err;
+  }
+  const slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
+  return res.redirect(301, `${Utils.quranPath(`/quran/tafsir/${encodeURIComponent(slug)}/${surah}/${section}`)}${originalQuery(req)}`);
 });
 
 router.get('/:tafsir/:surah/:section', renderTafsirPassage);

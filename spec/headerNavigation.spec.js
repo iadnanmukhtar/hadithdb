@@ -20,6 +20,10 @@ describe('shared header navigation', () => {
     path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'),
     'utf8'
   );
+  const inlineScripts = fs.readFileSync(
+    path.join(__dirname, '..', 'views', 'sub-views', 'scripts.ejs'),
+    'utf8'
+  );
   const searchDialog = fs.readFileSync(
     path.join(__dirname, '..', 'views', 'sub-views', 'global_search_dialog.ejs'),
     'utf8'
@@ -57,6 +61,12 @@ describe('shared header navigation', () => {
     expect(header.match(/class="[^"]*top-nav-menu-toggle[^"]*"/g)).toHaveLength(1);
     expect(header).toContain('<div class="col-auto d-flex align-items-center site-navbar-menu-toggle">');
     expect(header).toContain('data-bs-target="#offcanvas-topnav"');
+  });
+
+  test('keeps the desktop edit gear after the profile in every render path', () => {
+    expect(header.indexOf('id="nav-auth-desktop"')).toBeLessThan(header.indexOf('class="nav-item edit-gear"'));
+    expect(scripts).toContain('authItem.after(item)');
+    expect(inlineScripts).toContain('authItem.after(item)');
   });
 
   test('promotes Tafsir and keeps the requested Quran submenu order', () => {
@@ -214,6 +224,12 @@ describe('shared header navigation', () => {
 		expect(readerModes).not.toContain('`${utils.quranUrl(req, req.path)}?mushaf`');
 		expect(scripts).toContain("['passage', 'ayat', 'tafsir', 'mushaf', 'memorize', 'review'].forEach");
 		expect(scripts).toContain('updateQuranReaderModeHrefs(pageElement)');
+	});
+
+	test('links Mushaf footer headings and subheadings to their H2 section', () => {
+		const mushaf = fs.readFileSync(path.join(__dirname, '..', 'views', 'quran_mushaf.ejs'), 'utf8');
+		expect(mushaf).toContain('utils.quranStudySectionPath(passage)');
+		expect(mushaf).toContain('utils.quranStudySectionPath({ surah: subsection.surah, section: subsection.section })');
 	});
 
 	test('keeps Study passage links out of tafsir scope and inside the selected translation scope', () => {

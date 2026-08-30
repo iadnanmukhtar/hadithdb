@@ -9,7 +9,7 @@ const QuranMushaf = require('../lib/QuranMushaf');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
-const { Library, Section } = require('../lib/Model');
+const { Library, Section, Subsection } = require('../lib/Model');
 
 function routeHandler(router, routePath) {
   return router.stack.find(layer => layer.route && layer.route.path === routePath).route.stack[0].handle;
@@ -27,6 +27,22 @@ function response() {
 describe('restored Quran public route caches', () => {
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  test('permanently redirects a Tafsir H3 path to its parent H2 section', async () => {
+    const router = require('../routes/tafsir');
+    const req = {
+      params: { tafsir: 'tabari', surah: '18', section: '5', subsection: '2' },
+      originalUrl: '/quran/tafsir/tabari/18/5/2?view=full'
+    };
+    const res = { redirect: jest.fn() };
+    jest.spyOn(Tafsir, 'resolveTafsir').mockResolvedValue({ alias: 'tabari', slug: 'tabari' });
+    jest.spyOn(Subsection, 'subsectionFromRef').mockResolvedValue({ path: 'quran/18/5/2' });
+
+    await routeHandler(router, '/:tafsir/:surah/:section/:subsection')(req, res, jest.fn());
+
+    expect(Subsection.subsectionFromRef).toHaveBeenCalledWith('quran/18/5/2');
+    expect(res.redirect).toHaveBeenCalledWith(301, '/quran/tafsir/tabari/18/5?view=full');
   });
 
   test('serves the Tafsir catalog cache before resolving first passages', async () => {

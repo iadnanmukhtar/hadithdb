@@ -33,8 +33,8 @@
   }
   function quranHeadingHref(heading) {
 	if (quranHeadingTafsirBase)
-	  return utils.quranUrl(req, `${quranHeadingTafsirBase}/quran:${heading.surah}:${heading.start}`);
-    return utils.quranUrl(req, utils.quranStudySectionPath(heading, quranHeadingTranslationSlug));
+	  return utils.quranUrl(req, `${quranHeadingTafsirBase}/${heading.surah}/${heading.section}`);
+    return utils.quranUrl(req, utils.quranStudySectionPath({ surah: heading.surah, section: heading.section }, quranHeadingTranslationSlug));
   }
   function quranHeadingLabel(heading) {
     if (heading.level === 3)

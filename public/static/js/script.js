@@ -144,6 +144,7 @@ $(function () {
 
 	initMarkdownEditablePreviews(document);
 	initHadithSharhLinks(document);
+	initHadithSharhDisclosures(document);
 	initHadithShareModals(document);
 	initGlobalContentLanguageSelect(document);
 	initHadithContentTranslationControls(document);
@@ -946,7 +947,10 @@ function renderHadithAdminGear() {
 		item.className = 'nav-item edit-gear';
 		item.innerHTML = `<a class="nav-link" role="button" title="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}" aria-label="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}"><i class="bi ${icon}"></i></a>`;
 		item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
-		desktopList.insertBefore(item, authItem || null);
+		if (authItem)
+			authItem.after(item);
+		else
+			desktopList.appendChild(item);
 	}
 
 	const mobileList = document.querySelector('#offcanvas-topnav .offcanvas-col1');
@@ -11390,11 +11394,8 @@ function quranHeadingHref(heading) {
 	var translationAlias = quranHeadingTocState.toc && (quranHeadingTocState.toc.getAttribute('data-quran-heading-translation-alias') || '');
 	var tafsirBase = quranHeadingTocState.toc && (quranHeadingTocState.toc.getAttribute('data-quran-heading-tafsir-base') || '');
 	if (tafsirBase)
-		return `${tafsirBase}/quran:${heading.surah}:${heading.start}`;
-	var href = `/quran${translationAlias ? `/${encodeURIComponent(translationAlias)}` : ''}/${heading.surah}/${heading.section}`;
-	if (Number(heading.level) === 3)
-		href += `/${heading.subsection}`;
-	return href;
+		return `${tafsirBase}/${heading.surah}/${heading.section}`;
+	return `/quran${translationAlias ? `/${encodeURIComponent(translationAlias)}` : ''}/${heading.surah}/${heading.section}`;
 }
 
 function quranHeadingH1Href(heading) {
@@ -11668,7 +11669,10 @@ function hadithHeadingLabel(heading) {
 }
 
 function hadithHeadingHref(heading) {
-	return `/${(heading.path || '').toString().replace(/^\/+/, '')}`;
+	var path = (heading.path || '').toString().replace(/^\/+/, '');
+	if (Number(heading.level) === 3)
+		path = path.split('/').slice(0, 3).join('/');
+	return `/${path}`;
 }
 
 function hadithHeadingH1Href(heading) {
@@ -15238,6 +15242,38 @@ function initHadithSharhLinks(root) {
 			event.preventDefault();
 			openHadithSharhModal(link);
 		});
+	});
+}
+
+function initHadithSharhDisclosures(root) {
+	var scope = root || document;
+	scope.querySelectorAll('[data-hadith-sharh-collapsible]').forEach(function (body) {
+		if (body.dataset.hadithSharhDisclosureBound === 'true')
+			return;
+		body.dataset.hadithSharhDisclosureBound = 'true';
+		var entry = body.closest('.hadith-sharh-entry');
+		var button = entry && entry.querySelector('[data-hadith-sharh-expand]');
+		if (!button)
+			return;
+		var updateOverflow = function () {
+			if (body.classList.contains('is-expanded'))
+				return;
+			body.classList.remove('hadith-sharh-no-overflow');
+			requestAnimationFrame(function () {
+				var overflows = body.scrollHeight > body.clientHeight + 1;
+				body.classList.toggle('hadith-sharh-no-overflow', !overflows);
+				button.hidden = !overflows;
+			});
+		};
+		button.addEventListener('click', function () {
+			body.classList.add('is-expanded');
+			body.classList.remove('hadith-sharh-no-overflow');
+			button.setAttribute('aria-expanded', 'true');
+			button.hidden = true;
+		});
+		updateOverflow();
+		if (document.fonts && document.fonts.ready)
+			document.fonts.ready.then(updateOverflow);
 	});
 }
 

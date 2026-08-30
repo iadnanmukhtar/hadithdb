@@ -1,0 +1,24 @@
+<%
+	const referenceGroups = new Map();
+	(references || []).forEach(function (reference) {
+		const referenceArabic = reference.ar || {};
+		const referenceActualArabic = referenceArabic.actual || {};
+		const referenceActual = reference.actual || null;
+		const bookAlias = referenceActual ? referenceActual.book_alias : reference.book_alias;
+		const latinNumber = referenceActual
+			? (reference.en && reference.en.actual && reference.en.actual.num) || referenceActual.num || reference.num
+			: (reference.en && reference.en.num) || reference.num;
+		const bookName = referenceActual
+			? referenceActualArabic.book_shortName || reference.book_shortName || bookAlias
+			: referenceArabic.book_shortName || reference.book_shortName || bookAlias;
+		if (!bookAlias || !latinNumber || !bookName)
+			return;
+		if (!referenceGroups.has(bookAlias))
+			referenceGroups.set(bookAlias, { name: bookName, references: [] });
+		referenceGroups.get(bookAlias).references.push({
+			href: utils.urlFor(req, `/${bookAlias}:${latinNumber}`),
+			number: arabic.toArabicDigits(latinNumber)
+		});
+	});
+%>
+<% if (referenceGroups.size) { %><p class="hadith-reference-index fs-5 mb-3" lang="ar" dir="rtl"><% Array.from(referenceGroups.values()).forEach(function (group, groupIndex) { %><% if (groupIndex) { %><span class="hadith-reference-group-separator"> · </span><% } %><span class="hadith-reference-group"><span class="hadith-reference-book"><%= group.name %></span> <% group.references.forEach(function (reference, referenceIndex) { %><% if (referenceIndex) { %>، <% } %><a href="<%= reference.href %>"><%= reference.number %></a><% }); %></span><% }); %></p><% } %>

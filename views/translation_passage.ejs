@@ -134,7 +134,7 @@
       <section class="mt-4">
         <%- include('sub-views/comment_widget.ejs', {
           widgetId: 'comments',
-          heading: `Reflect on Quran ${ref}:`,
+		  heading: 'Reflect on this ayah',
           targetId: ayahs[0] && ayahs[0].id,
           ref: ayahs[0] && ayahs[0].ref,
           endpoint: '/comments',

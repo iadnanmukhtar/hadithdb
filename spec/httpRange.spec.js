@@ -7,6 +7,8 @@ const path = require('path');
 const HttpRange = require('../lib/HttpRange');
 const Utils = require('../lib/Utils');
 const Search = require('../lib/Search');
+const Tafsir = require('../lib/Tafsir');
+const Surahs = require('../lib/Surahs');
 const { Chapter, Section, Subsection } = require('../lib/Model');
 const blogRouter = require('../routes/blog');
 const searchRouter = require('../routes/search');
@@ -195,6 +197,46 @@ describe('Hadith route status errors', () => {
       expect(lookup).toHaveBeenCalledWith('tabarani/10.1/2.3/3.4');
     } finally {
       lookup.mockRestore();
+    }
+  });
+
+  test.each([
+    ['/tabarani/10/2/3', '/tabarani/10/2', 'tabarani/10/2/3'],
+    ['/quran/2/1/3', '/quran/2/1', 'quran/2/1/3']
+  ])('redirects a valid H3 path to its H2 section: %s', async (path, location, ref) => {
+    const lookup = jest.spyOn(Subsection, 'subsectionFromRef').mockResolvedValue({ path: ref });
+    const surahLookup = path.startsWith('/quran/')
+      ? jest.spyOn(Surahs, 'find').mockReturnValue({ num: 2, ayahs: 286 })
+      : null;
+    try {
+      const response = await fetch(`${baseUrl}${path}`, { redirect: 'manual' });
+
+      expect(response.status).toBe(301);
+      expect(response.headers.get('location')).toBe(location);
+      expect(lookup).toHaveBeenCalledWith(ref);
+    } finally {
+      lookup.mockRestore();
+      if (surahLookup)
+        surahLookup.mockRestore();
+    }
+  });
+
+  test('redirects a translation-scoped Quran H3 path to its translation-scoped H2 section', async () => {
+    const translations = jest.spyOn(Tafsir, 'visibleTranslationsSync').mockReturnValue([{
+      alias: 'en-shakir',
+      quranBookSlug: 'en-shakir',
+      source: 'local'
+    }]);
+    const lookup = jest.spyOn(Subsection, 'subsectionFromRef').mockResolvedValue({ path: 'quran/18/5/2' });
+    try {
+      const response = await fetch(`${baseUrl}/quran/en-shakir/18/5/2`, { redirect: 'manual' });
+
+      expect(response.status).toBe(301);
+      expect(response.headers.get('location')).toBe('/quran/en-shakir/18/5');
+      expect(lookup).toHaveBeenCalledWith('quran/18/5/2');
+    } finally {
+      lookup.mockRestore();
+      translations.mockRestore();
     }
   });
 

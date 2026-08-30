@@ -28,6 +28,7 @@
       if (random.next_ref)
           page.next = `/${random.next_ref}`;
     }
+	var homeHadithItem = random && random.remark != 2 ? random : null;
 %> 
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
@@ -38,7 +39,8 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-  <div class="container col-lg-8 mx-auto">
+  <div class="<%= homeHadithItem ? 'container-fluid hadith-heading-layout hadith-metadata-page-layout' : 'container col-lg-8 mx-auto' %>">
+    <% if (homeHadithItem) { %><div class="container col-lg-8 mx-auto hadith-heading-content"><% } %>
     
     <main class="search-results">
 
@@ -126,6 +128,7 @@
         } %>
 
     </main>
+    <% if (homeHadithItem) { %></div><%- include('sub-views/hadith_metadata_rail.ejs', { i: homeHadithItem, mobile: false, navigationOnly: true }); %><% } %>
   </div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>

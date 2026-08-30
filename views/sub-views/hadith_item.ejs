@@ -80,6 +80,9 @@
 	const graderOpinions = Array.isArray(i.grader_opinions) ? i.grader_opinions : (() => {
 		try { return JSON.parse(i.grader_opinions || '[]'); } catch (err) { return []; }
 	})();
+	const hadithAttribution = i.single && i.hdithMetadata ? i.hdithMetadata.attribution : null;
+	const hadithChainCategories = i.single && i.hdithMetadata && Array.isArray(i.hdithMetadata.chainCategories) ? i.hdithMetadata.chainCategories : [];
+	const hasHadithClassification = !!hadithAttribution || hadithChainCategories.length > 0;
 	const itemRefPath = `/${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
 	const quranSearchReturnMode = searchResult && (req.query.mode === 'mushaf' || req.query.mode === 'study') ? req.query.mode : '';
 	const itemHref = isQuranItem
@@ -241,6 +244,9 @@
 	<% } %>
 
 	<%# Grade  ............................................................. %>
+	<% if (i.remark == 0 && !isContentTranslationLang && hasHadithClassification) { const classificationParts = [hadithAttribution ? (lang === 'ar' ? hadithAttribution.title : hadithAttribution.title_en) : '', ...hadithChainCategories.map(function (category) { return lang === 'ar' ? category.title : category.title_en; })].filter(Boolean); %>
+		<div class="hadith-attribution"><%= classificationParts.join(' · ') %></div>
+	<% } %>
 	<% if (i.remark == 0 && !isContentTranslationLang) { %>
 		<aside lang="<%=lang%>" >
 		<em class="grade">
@@ -256,7 +262,7 @@
 				<% }); %>
 			</select>)
 			<% } else { %>
-			– <span><%- langData.grade_grade %></span>&nbsp;(<span title="<%=langData.grader_name%>"><%- langData.grader_shortName %></span>)
+			<% if (!hasHadithClassification) { %>– <% } %><span><%- langData.grade_grade %></span>&nbsp;(<span title="<%=langData.grader_name%>"><%- langData.grader_shortName %></span>)
 			<% } %>
 		</em>
 		<% if (graderOpinions.length) { %>
@@ -369,7 +375,7 @@
 		<% if (site.editMode && lang === "en") { %>
 		<aside class="admin">
 			<% if (!isSimilarSection) { %>
-				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Revise with AI" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Revising">
+				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Enrich from hdith.com and revise" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Enriching">
 					<span class="bi bi-magic"></span> Revise
 				</button>
 				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Find similar hadith offline" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.similar" data-loading-label="Starting">
