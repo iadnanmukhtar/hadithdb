@@ -77,12 +77,11 @@
 		return utils.emptyIfNull(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 	}
 	const sharhBody = !isQuranItem ? plainText(i.ar?.body || '') : '';
-	const graderOpinions = Array.isArray(i.grader_opinions) ? i.grader_opinions : (() => {
-		try { return JSON.parse(i.grader_opinions || '[]'); } catch (err) { return []; }
-	})();
-	const hadithAttribution = i.single && i.hdithMetadata ? i.hdithMetadata.attribution : null;
-	const hadithChainCategories = i.single && i.hdithMetadata && Array.isArray(i.hdithMetadata.chainCategories) ? i.hdithMetadata.chainCategories : [];
+	const hadithClassification = i.hdithClassification || i.hdithMetadata || {};
+	const hadithAttribution = hadithClassification.attribution || null;
+	const hadithChainCategories = Array.isArray(hadithClassification.chainCategories) ? hadithClassification.chainCategories : [];
 	const hasHadithClassification = !!hadithAttribution || hadithChainCategories.length > 0;
+	const showLegacyInlineGrade = !isQuranItem && !i.single && page && (page.menu === 'Chapter' || page.menu === 'Section');
 	const itemRefPath = `/${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
 	const quranSearchReturnMode = searchResult && (req.query.mode === 'mushaf' || req.query.mode === 'study') ? req.query.mode : '';
 	const itemHref = isQuranItem
@@ -247,37 +246,26 @@
 	<% if (i.remark == 0 && !isContentTranslationLang && hasHadithClassification) { const classificationParts = [hadithAttribution ? (lang === 'ar' ? hadithAttribution.title : hadithAttribution.title_en) : '', ...hadithChainCategories.map(function (category) { return lang === 'ar' ? category.title : category.title_en; })].filter(Boolean); %>
 		<div class="hadith-attribution"><%= classificationParts.join(' · ') %></div>
 	<% } %>
-	<% if (i.remark == 0 && !isContentTranslationLang && !i.single) { %>
-		<aside lang="<%=lang%>" >
-		<em class="grade">
-			<% if (lang === 'en' && site.editMode) { %>
-			<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.gradeId">
-				<% global.grades.forEach(function (grade) { %>
-					<option value="<%=grade.id%>" <%=(grade.id == (i.grade && i.grade.id)) ? 'selected' :''%>><%=grade.grade%></option>
-				<% }); %>
-			</select> 
-			(<select class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.graderId">
-				<% global.graders.forEach(function (grader) { %>
-					<option value="<%=grader.id%>" <%=(grader.id == (i.grader && i.grader.id)) ? 'selected' :''%>><%=grader.shortName_en%></option>
-				<% }); %>
-			</select>)
-			<% } else { %>
-			<% if (!hasHadithClassification) { %>– <% } %><span><%- langData.grade_grade %></span>&nbsp;(<span title="<%=langData.grader_name%>"><%- langData.grader_shortName %></span>)
-			<% } %>
-		</em>
-		<% if (graderOpinions.length) { %>
-		<ul class="hadith-grader-opinions list-unstyled mb-0 mt-1">
-			<% graderOpinions.forEach(function (opinion) { %>
-			<li>
-				– <span class="grade"><%= opinion.grade %></span>
-				(<% if (opinion.source_url) { %><a href="<%= opinion.source_url %>" target="_blank" rel="noopener noreferrer" title="<%= opinion.source || '' %>"><%= opinion.grader %></a><% } else { %><span title="<%= opinion.source || '' %>"><%= opinion.grader %></span><% } %><% if (opinion.source) { %> — <%= opinion.source %><% } %><% if (opinion.book_page) { %> <%= opinion.book_page %><% } %>)
-			</li>
-			<% }); %>
-		</ul>
-		<% } %>
+	<% if (i.remark == 0 && !isContentTranslationLang && showLegacyInlineGrade) { %>
+		<aside lang="<%=lang%>">
+			<em class="grade">
+				<% if (lang === 'en' && site.editMode) { %>
+				<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.gradeId">
+					<% global.grades.forEach(function (grade) { %>
+						<option value="<%=grade.id%>" <%=(grade.id == (i.grade && i.grade.id)) ? 'selected' :''%>><%=grade.grade%></option>
+					<% }); %>
+				</select>
+				(<select class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.graderId">
+					<% global.graders.forEach(function (grader) { %>
+						<option value="<%=grader.id%>" <%=(grader.id == (i.grader && i.grader.id)) ? 'selected' :''%>><%=grader.shortName_en%></option>
+					<% }); %>
+				</select>)
+				<% } else { %>
+				<span><%- langData.grade_grade %></span>&nbsp;(<span title="<%=langData.grader_name%>"><%- langData.grader_shortName %></span>)
+				<% } %>
+			</em>
 		</aside>
 	<% } %>
-
 	<%# Nav  ............................................................... %>
 	<% if (!isContentTranslationLang && (site.editMode || ((title || i.book_virtual===1) && (i.chapter || i.section)))) { %>
 		<aside class="title<%= isQuranItem && lang === 'ar' ? ' quran-search-title' : '' %>">

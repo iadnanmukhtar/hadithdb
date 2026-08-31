@@ -44,11 +44,18 @@ describe('Hadith attribution taxonomy', () => {
 		expect(sql).toContain('fk_hadith_attribution');
 	});
 
-	test('renders localized attribution without inline grades on Hadith detail pages', () => {
+	test('renders classification everywhere and only the legacy grade on chapter and section pages', () => {
 		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		expect(template).toContain('hadithAttribution.title_en');
 		expect(template).toContain('hadithAttribution.title');
+		expect(template).toContain('i.hdithClassification || i.hdithMetadata || {}');
 		expect(template).toContain("classificationParts.join(' · ')");
-		expect(template).toContain('i.remark == 0 && !isContentTranslationLang && !i.single');
+		expect(template).toContain("page.menu === 'Chapter' || page.menu === 'Section'");
+		expect(template).toContain('!i.single');
+		expect(template).toContain('<em class="grade">');
+		expect(template).toContain('<%- langData.grade_grade %>');
+		expect(template).toContain('<%- langData.grader_shortName %>');
+		expect(template).not.toContain('– <span><%- langData.grade_grade %>');
+		expect(template).not.toContain('hadith-grader-opinions');
 	});
 });

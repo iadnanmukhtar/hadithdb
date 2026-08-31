@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { narratorDisplayFullname, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, uniqueGradeGraderPairs, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
+const { classificationFromRow, narratorDisplayFullname, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, uniqueGradeGraderPairs, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
 
 describe('hdith.com metadata display', () => {
 	test('loads enrichment only for the single hadith detail route', () => {
@@ -12,6 +12,22 @@ describe('hdith.com metadata display', () => {
 		expect(route).not.toContain('addHdithShawahid');
 		expect(route).not.toContain('shawahidHadiths');
 		expect(route.indexOf('results[0].single = true')).toBeLessThan(route.indexOf('HdithMetadata.forHadith'));
+		expect((route.match(/HdithMetadata\.attachClassifications\(results\)/g) || [])).toHaveLength(2);
+	});
+
+	test('builds lightweight attribution and chain classifications for list pages', () => {
+		expect(classificationFromRow({
+			attribution_id: 200,
+			attribution_en: 'Prophetic',
+			attribution: 'مرفوع',
+			chain_type: 'معلق ، مرسل'
+		})).toEqual({
+			attribution: { id: 200, title_en: 'Prophetic', title: 'مرفوع' },
+			chainCategories: [
+				{ key: 'muallaq', title_en: 'Muʿallaq', title: 'معلق' },
+				{ key: 'mursal', title_en: 'Mursal', title: 'مرسل' }
+			]
+		});
 	});
 
 	test('includes the primary hadith grader before supplemental source opinions', () => {

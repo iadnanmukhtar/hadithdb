@@ -3239,6 +3239,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     ]);
     var hadithHeadingOutlines = bookAlias === 'quran' ? {} : await HadithHeadingOutlines.forChapter(chapter);
     results = await chapter.getItems(offset);
+	if (bookAlias !== 'quran')
+	  await HdithMetadata.attachClassifications(results);
     if (requestedOffset > 0 && results.length === 0)
       return next(HttpRange.notSatisfiable('items', chapter.count, `Chapter ${bookAlias}/${chapterNum} does not have content at offset ${requestedOffset}`));
 
@@ -3620,6 +3622,8 @@ async function renderBookSection(req, res, next) {
       results = await getQuranSectionPassageItems(section, offset);
     else
       results = await section.getItems(offset);
+	if (bookAlias !== 'quran')
+	  await HdithMetadata.attachClassifications(results);
     if (requestedOffset > 0 && results.length === 0)
       return next(HttpRange.notSatisfiable('items', section.count, `Section ${bookAlias}/${chapterNum}/${sectionNum} does not have content at offset ${requestedOffset}`));
     if (isQuranPassageSection && results.length == 0)
