@@ -78,6 +78,16 @@ describe('hdith.com metadata display', () => {
 		expect(route).not.toContain('linkedIsnadHtml');
 	});
 
+	test('does not display the imported body start above the main hadith', () => {
+		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith.ejs'), 'utf8');
+		expect(template).not.toContain('i.body_start');
+		expect(template).not.toContain('hadith-tarf');
+		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
+		expect(css).not.toContain('.hadith-tarf');
+		const script = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'), 'utf8');
+		expect(script).not.toContain('HadithTarf');
+	});
+
 	test('loads the authoritative imported source isnad without local-chain matching', () => {
 		const metadata = fs.readFileSync(path.join(__dirname, '..', 'lib', 'HdithMetadata.js'), 'utf8');
 		expect(metadata).toContain('m.source_isnad_html');

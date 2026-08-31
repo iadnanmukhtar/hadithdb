@@ -131,12 +131,12 @@ describe('hdith.com six-book enrichment importer', () => {
 		const links = parseLinks({
 			takhrij: { sources: [{ book_id: 2, author: 'مسلم', book_quoted: 'صحيحه', occurrences: [{ entry_id: 22, hadith_num: '10', similarity: 'بمثله' }] }] },
 			shawahid: { groups: [{ narrator: 'صحابي', books: [{ title: 'سنن أبي داود', entries: [{ book_id: 3, entry_id: 33, number: '20 ' }] }] }] },
-			similars: [{ book_id: 8, book: 'مسند أحمد', entry_id: 44, numbering: '30', tarf: 'طرف الحديث المشابه' }]
+			similars: [{ book_id: 8, book: 'مسند أحمد', entry_id: 44, numbering: '30', tarf: 'بداية متن الحديث المشابه' }]
 		});
 		expect(links).toEqual([
 			expect.objectContaining({ type: 'takhrij', sourceBookTitle: 'مسلم، صحيحه', sourceEntryId: 22, internalRef: 'muslim:10' }),
 			expect.objectContaining({ type: 'shahid', sourceBookTitle: 'سنن أبي داود', sourceEntryId: 33, internalRef: 'abudawud:20' }),
-			expect.objectContaining({ type: 'similar', sourceBookTitle: 'مسند أحمد', sourceEntryId: 44, num: '30', label: null, tarf: 'طرف الحديث المشابه' })
+			expect.objectContaining({ type: 'similar', sourceBookTitle: 'مسند أحمد', sourceEntryId: 44, num: '30', label: null, bodyStart: 'بداية متن الحديث المشابه' })
 		]);
 	});
 
@@ -166,11 +166,11 @@ describe('hdith.com six-book enrichment importer', () => {
 	test('parses attribution, subjects, and sharh availability', () => {
 		const record = parseHadithPayload({
 			id: 5, numbering_harf: '1', chapter_path: [{ id: 2 }], next_id: 6, attribution: 'مرفوع',
-			matn: 'طَرَفُ الْحَدِيثِ',
+			matn: 'بِدَايَةُ مَتْنِ الْحَدِيثِ',
 			isnad_html: '<span class="hp-rawi" data-rawi-slug="p-1">رَاوٍ</span>',
 			subjects: [{ slug: 's-1', title: 'النية' }], services: [{ type_id: 6, items: [{ entry_id: 7 }] }]
 		});
-		expect(record).toEqual(expect.objectContaining({ sourceId: 5, num: '1', chapterId: 2, attribution: 'مرفوع', chainType: null, tarf: 'طَرَفُ الْحَدِيثِ',
+		expect(record).toEqual(expect.objectContaining({ sourceId: 5, num: '1', chapterId: 2, attribution: 'مرفوع', chainType: null, bodyStart: 'بِدَايَةُ مَتْنِ الْحَدِيثِ',
 			sourceIsnadHtml: expect.stringContaining('https://hdith.com/encyclopedia/rawi/p-1') }));
 		expect(record.subjects).toEqual([{ slug: 's-1', title: 'النية' }]);
 		expect(record.sharhPreview).toHaveLength(1);
@@ -194,7 +194,7 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(schemaStatements().join('\n')).toContain('source_edition_num VARCHAR(45) NULL');
 		expect(schemaStatements().join('\n')).toContain('is_supplementary TINYINT(1) NOT NULL DEFAULT 0');
 		expect(schemaStatements().join('\n')).toContain("link_type ENUM('takhrij','shahid','similar')");
-		expect(schemaStatements().join('\n')).toContain('source_tarf MEDIUMTEXT NULL');
+		expect(schemaStatements().join('\n')).toContain('source_body_start MEDIUMTEXT NULL');
 		expect(schemaStatements().join('\n')).toContain('chain_type VARCHAR(128) NULL');
 		expect(schemaStatements().join('\n')).toContain('source_isnad_html TEXT NULL');
 		expect(schemaStatements().join('\n')).toContain('gharib_json JSON NULL');
@@ -212,6 +212,8 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(indexer).toContain('ORDER BY bookId, ordinal, id');
 		expect(indexer).toContain('row.prev_ref =');
 		expect(indexer).toContain('row.next_ref =');
+		expect(indexer).toContain('h.body_start');
+		expect(indexer).toContain("ctx._source.remove('tarf')");
 		expect(indexer).not.toContain('doc_as_upsert: true');
 	});
 

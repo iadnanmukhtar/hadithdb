@@ -309,7 +309,7 @@ function parseHadithPayload(hadith) {
 		links: parseLinks(hadith),
 		sharhPreview: (hadith.services || []).find(service => Number(service.type_id) === 6)?.items || [],
 		verificationUrl: compact(hadith._verification_url) || null,
-		tarf: compact(hadith.matn) || null,
+		bodyStart: compact(hadith.matn) || null,
 		comparisonText: compact([hadith.isnad_prefix, hadith.matn].filter(Boolean).join(' ')),
 		rawChecksum: checksum(hadith)
 	};
@@ -406,7 +406,7 @@ function parseLinks(hadith) {
 			for (const entry of book.entries || []) links.push(linkRecord('shahid', entry.book_id, book.title, entry.entry_id, entry.number, group.narrator));
 	for (const similar of hadith.similars || []) {
 		const link = linkRecord('similar', similar.book_id, similar.book, similar.entry_id, similar.numbering, null);
-		link.tarf = compact(similar.tarf || similar.matn) || null;
+		link.bodyStart = compact(similar.tarf || similar.matn) || null;
 		links.push(link);
 	}
 	return uniqueBy(links.filter(link => link.sourceEntryId), link => `${link.type}:${link.sourceEntryId}`);
@@ -421,7 +421,7 @@ function linkRecord(type, sourceBookId, sourceBookTitle, sourceEntryId, num, lab
 		sourceEntryId: Number(sourceEntryId),
 		num: compact(num),
 		label: compact(label) || null,
-		tarf: null,
+		bodyStart: null,
 		internalRef: alias && compact(num) ? `${alias}:${compact(num)}` : null
 	};
 }
@@ -439,8 +439,8 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 	if (localRows.length !== 1) throw new Error(`${config.alias}:${record.num}: expected one local hadith, found ${localRows.length}.`);
 	const hadithId = localRows[0].id;
 	const localReference = localRows[0].num;
-	await query(connection, 'UPDATE hadiths SET tarf=? WHERE id=? AND NOT (tarf <=> ?)',
-		[record.tarf, hadithId, record.tarf]);
+	await query(connection, 'UPDATE hadiths SET body_start=? WHERE id=? AND NOT (body_start <=> ?)',
+		[record.bodyStart, hadithId, record.bodyStart]);
 	if (!refresh) {
 		const existing = await query(connection, 'SELECT source_checksum, source_reference, source_edition_reference, chain_type, source_isnad_html, gharib_json FROM hdith_hadith_metadata WHERE hadith_id=? LIMIT 1', [hadithId]);
 		if (existing[0]?.source_checksum === record.rawChecksum) {
@@ -787,13 +787,13 @@ async function replaceLinks(connection, hadithId, links) {
 	await query(connection, 'DELETE FROM hdith_hadith_links WHERE hadith_id=?', [hadithId]);
 	if (!links.length) return;
 	const values = links.map(link => {
-		return [hadithId, link.type, link.sourceBookId, link.sourceBookTitle, link.sourceEntryId, link.num || null, link.label, link.tarf || null,
+		return [hadithId, link.type, link.sourceBookId, link.sourceBookTitle, link.sourceEntryId, link.num || null, link.label, link.bodyStart || null,
 			null, null,
 			`${BASE_URL}/encyclopedia/book/b-${link.sourceBookId}/h/${link.sourceEntryId}`];
 	});
 	for (let index = 0; index < values.length; index += 500)
 		await query(connection, `INSERT INTO hdith_hadith_links
-			(hadith_id, link_type, source_book_id, source_book_title, source_entry_id, source_num, label, source_tarf, internal_hadith_id, internal_ref, source_url)
+			(hadith_id, link_type, source_book_id, source_book_title, source_entry_id, source_num, label, source_body_start, internal_hadith_id, internal_ref, source_url)
 			VALUES ?`, [values.slice(index, index + 500)]);
 }
 
@@ -1013,14 +1013,24 @@ async function fetchProps(page, pathname, compressedCacheFile = null) {
 async function ensureSchema() {
 	const connection = await getConnection();
 	for (const statement of schemaStatements()) await query(connection, statement);
-	const tarfColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+	const bodyStartColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hadiths' AND column_name='body_start' LIMIT 1`);
+	const legacyTarfColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hadiths' AND column_name='tarf' LIMIT 1`);
-	if (!tarfColumn.length)
-		await query(connection, 'ALTER TABLE hadiths ADD COLUMN tarf MEDIUMTEXT NULL AFTER body');
+	if (legacyTarfColumn.length) {
+		if (!bodyStartColumn.length)
+			await query(connection, 'ALTER TABLE hadiths CHANGE COLUMN tarf body_start MEDIUMTEXT NULL');
+		else {
+			await query(connection, 'UPDATE hadiths SET body_start=tarf WHERE tarf IS NOT NULL AND NOT (body_start <=> tarf)');
+			await query(connection, 'ALTER TABLE hadiths DROP COLUMN tarf');
+		}
+	}
+	else if (!bodyStartColumn.length)
+		await query(connection, 'ALTER TABLE hadiths ADD COLUMN body_start MEDIUMTEXT NULL AFTER body');
 	const supplementaryColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hadiths' AND column_name='hasSupplementaryTransmissions' LIMIT 1`);
 	if (!supplementaryColumn.length)
-		await query(connection, 'ALTER TABLE hadiths ADD COLUMN hasSupplementaryTransmissions TINYINT(1) NOT NULL DEFAULT 0 AFTER tarf');
+		await query(connection, 'ALTER TABLE hadiths ADD COLUMN hasSupplementaryTransmissions TINYINT(1) NOT NULL DEFAULT 0 AFTER body_start');
 	const crosswalkSupplementaryColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_book_reference_crosswalk' AND column_name='is_supplementary' LIMIT 1`);
 	if (!crosswalkSupplementaryColumn.length)
@@ -1058,10 +1068,20 @@ async function ensureSchema() {
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='source_book_title' LIMIT 1`);
 	if (!linkBookTitleColumn.length)
 		await query(connection, 'ALTER TABLE hdith_hadith_links ADD COLUMN source_book_title VARCHAR(255) NULL AFTER source_book_id');
-	const linkTarfColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+	const linkBodyStartColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='source_body_start' LIMIT 1`);
+	const legacySourceTarfColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='source_tarf' LIMIT 1`);
-	if (!linkTarfColumn.length)
-		await query(connection, 'ALTER TABLE hdith_hadith_links ADD COLUMN source_tarf MEDIUMTEXT NULL AFTER label');
+	if (legacySourceTarfColumn.length) {
+		if (!linkBodyStartColumn.length)
+			await query(connection, 'ALTER TABLE hdith_hadith_links CHANGE COLUMN source_tarf source_body_start MEDIUMTEXT NULL');
+		else {
+			await query(connection, 'UPDATE hdith_hadith_links SET source_body_start=source_tarf WHERE source_tarf IS NOT NULL AND NOT (source_body_start <=> source_tarf)');
+			await query(connection, 'ALTER TABLE hdith_hadith_links DROP COLUMN source_tarf');
+		}
+	}
+	else if (!linkBodyStartColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_links ADD COLUMN source_body_start MEDIUMTEXT NULL AFTER label');
 	const linkTypeColumn = await query(connection, `SELECT column_type FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='link_type' LIMIT 1`);
 	if (linkTypeColumn[0] && !(linkTypeColumn[0].column_type || linkTypeColumn[0].COLUMN_TYPE).includes("'similar'"))
@@ -1154,7 +1174,7 @@ function schemaStatements() {
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_hadith_links (
 			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, hadith_id INT NOT NULL, link_type ENUM('takhrij','shahid','similar') NOT NULL,
-			source_book_id INT NOT NULL, source_book_title VARCHAR(255) NULL, source_entry_id INT NOT NULL, source_num VARCHAR(45) NULL, label VARCHAR(255) NULL, source_tarf MEDIUMTEXT NULL,
+			source_book_id INT NOT NULL, source_book_title VARCHAR(255) NULL, source_entry_id INT NOT NULL, source_num VARCHAR(45) NULL, label VARCHAR(255) NULL, source_body_start MEDIUMTEXT NULL,
 			internal_hadith_id INT NULL, internal_ref VARCHAR(96) NULL, source_url VARCHAR(512) NOT NULL,
 			UNIQUE KEY hdith_link_source (hadith_id, link_type, source_entry_id), KEY hdith_link_internal (internal_hadith_id), KEY hdith_link_source_book (source_book_id),
 			CONSTRAINT hdith_link_hadith_fk FOREIGN KEY (hadith_id) REFERENCES hadiths(id) ON DELETE CASCADE ON UPDATE CASCADE,

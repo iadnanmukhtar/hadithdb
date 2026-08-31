@@ -20,7 +20,7 @@ const query = util.promisify(connection.query).bind(connection);
 	try {
 		if (!ids.length) throw new Error('At least one valid hadith ID is required.');
 		const idList = ids.join(',');
-		const rows = await query(`SELECT h.id AS hId, h.tarf, h.hasSupplementaryTransmissions,
+		const rows = await query(`SELECT h.id AS hId, h.body_start, h.hasSupplementaryTransmissions,
 			h.bookId AS _bookId, book.alias AS _bookAlias
 			FROM hadiths h JOIN books book ON book.id=h.bookId
 			WHERE h.id IN (${idList}) ORDER BY h.id`);
@@ -85,7 +85,7 @@ async function attachGrades(rows, idList) {
 
 async function ensureLiveMapping() {
 	await axios.put(`${settings.search.domain}/hadiths/_mapping`, { properties: {
-		tarf: { type: 'text', boost: 2, analyzer: 'arabic' },
+		body_start: { type: 'text', boost: 2, analyzer: 'arabic' },
 		hasSupplementaryTransmissions: { type: 'boolean' }
 	} }, searchConfig());
 }
@@ -96,6 +96,8 @@ async function updatePartial(rows) {
 	for (const row of rows) {
 		bulk += `${JSON.stringify({ update: { _index: 'hadiths', _id: row.hId } })}\n`;
 		bulk += `${JSON.stringify({ doc: row })}\n`;
+		bulk += `${JSON.stringify({ update: { _index: 'hadiths', _id: row.hId } })}\n`;
+		bulk += `${JSON.stringify({ script: { source: "ctx._source.remove('tarf')" } })}\n`;
 		count++;
 		if (count >= 25 || Buffer.byteLength(bulk, 'utf8') >= 2 * 1024 * 1024) {
 			await postBulk(bulk);

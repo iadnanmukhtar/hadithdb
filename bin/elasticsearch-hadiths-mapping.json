@@ -2037,7 +2037,7 @@
           "boost": 3,
           "analyzer": "arabic"
         },
-        "tarf": {
+        "body_start": {
           "type": "text",
           "boost": 2,
           "analyzer": "arabic"
