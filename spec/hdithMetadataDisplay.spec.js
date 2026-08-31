@@ -58,6 +58,15 @@ describe('hdith.com metadata display', () => {
 		expect(opinions[0]).toMatchObject({ grader_en: null, grader_name_en: null, grade_en: null });
 	});
 
+	test('forces the primary grades for Bukhari and Muslim to authentic green', () => {
+		for (const bookId of [1, 2]) {
+			const opinions = withPrimaryGrade([], {
+				actual: { bookId }, ar: { grader_shortName: 'المصنف', grade_grade: 'صحيح' }
+			});
+			expect(opinions[0].grade_color).toBe('oklch(58% .135 155)');
+		}
+	});
+
 	test('deduplicates repeated grade-grader pairs while retaining distinct opinions', () => {
 		const opinions = uniqueGradeGraderPairs([
 			{ grader: 'الألباني', grade: 'صحيح', source_url: 'https://hdith.com/one' },

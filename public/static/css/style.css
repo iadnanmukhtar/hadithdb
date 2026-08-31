@@ -7525,6 +7525,7 @@ body > footer,
 .hadith-grade-opinion + .hadith-grade-opinion { margin-top: .65rem; }
 .hadith-grade-opinion-en { text-align: left; }
 .hadith-grade-opinion-ar { text-align: right; }
+.hadith-grade-color { display: inline-block; width: .42em; height: .42em; margin-inline-end: .38em; border-radius: 50%; background: var(--hadith-grade-color); vertical-align: .08em; }
 .hadith-grade-opinion a { color: inherit; text-decoration: none; }
 .hadith-grade-opinion a:hover, .hadith-grade-opinion a:focus-visible { color: var(--c-accent); text-decoration: underline dotted; text-underline-offset: .18em; }
 .hadith-mushabihah-section .similar-list { direction: ltr; text-align: left; }

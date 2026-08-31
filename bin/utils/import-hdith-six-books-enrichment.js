@@ -53,6 +53,13 @@ const HDITH_LOCAL_BOOKS = Object.freeze({
 const SOURCE_BOOK_ALIASES = Object.freeze(Object.fromEntries(Object.entries(HDITH_LOCAL_BOOKS).map(([id, book]) => [id, book.alias])));
 const MIN_REQUEST_DELAY_MS = 100;
 const INDEX_BATCH_SIZE = Math.max(1, Number(process.env.HDITH_INDEX_BATCH_SIZE) || 100);
+const HDITH_GRADE_COLORS = Object.freeze({
+	0: 'oklch(58% .02 250)',
+	1: 'oklch(58% .135 155)',
+	2: 'oklch(68% .105 155)',
+	3: 'oklch(57% .165 22)',
+	4: 'oklch(68% .115 22)'
+});
 
 const options = require.main === module ? readOptions(process.argv.slice(2)) : {
 	apply: false, books: SIX_BOOKS.map(book => book.sourceSlug), delay: MIN_REQUEST_DELAY_MS, maxHadiths: null, refresh: false, resumeSourceId: null, skipSchema: false
@@ -347,6 +354,7 @@ function parseCollectionGrades(hadith) {
 		graderSourceId: null,
 		grade: compact(grading.opinion),
 		gradeCategoryId: Number.isFinite(Number(grading.degree)) ? Number(grading.degree) : null,
+		gradeColor: HDITH_GRADE_COLORS[Number(grading.degree)] || HDITH_GRADE_COLORS[0],
 		source: sourceName,
 		sourceId: null,
 		bookPage,
@@ -781,6 +789,7 @@ function parseGraderOpinions(results, sourceBookSlug, hadithNum) {
 		graderSourceId: Number(result.muhaddith_id) || null,
 		grade: compact(result.degree),
 		gradeCategoryId: Number(result.degree_category_id),
+		gradeColor: HDITH_GRADE_COLORS[Number(result.degree_category_id)] || HDITH_GRADE_COLORS[0],
 		source: compact(result.source),
 		sourceId: Number(result.source_id) || null,
 		bookPage: compact(result.book_page) || null,
@@ -832,11 +841,11 @@ async function replaceGraderOpinions(connection, hadithId, opinions) {
 	for (let index = 0; index < opinions.length; index++) {
 		const opinion = opinions[index];
 		await query(connection, `INSERT INTO hdith_hadith_grades
-			(hadith_id, ordinal, source_slug, grader, grader_source_id, grade, grade_category_id,
+			(hadith_id, ordinal, source_slug, grader, grader_source_id, grade, grade_category_id, grade_color,
 			 source_name, source_id, book_page, source_driver, source_url)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [hadithId, index + 1, opinion.sourceSlug, opinion.grader,
-			 opinion.graderSourceId, opinion.grade, opinion.gradeCategoryId, opinion.source, opinion.sourceId,
-			 opinion.bookPage, opinion.driver, opinion.sourceUrl]);
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [hadithId, index + 1, opinion.sourceSlug, opinion.grader,
+				opinion.graderSourceId, opinion.grade, opinion.gradeCategoryId, opinion.gradeColor, opinion.source, opinion.sourceId,
+				opinion.bookPage, opinion.driver, opinion.sourceUrl]);
 	}
 }
 
@@ -1161,6 +1170,10 @@ async function ensureSchema() {
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_metadata' AND column_name='gharib_json' LIMIT 1`);
 	if (!gharibColumn.length)
 		await query(connection, 'ALTER TABLE hdith_hadith_metadata ADD COLUMN gharib_json JSON NULL AFTER chain_type');
+	const gradeColorColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_grades' AND column_name='grade_color' LIMIT 1`);
+	if (!gradeColorColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_grades ADD COLUMN grade_color VARCHAR(40) NULL AFTER grade_category_id');
 	const linkBookTitleColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='source_book_title' LIMIT 1`);
 	if (!linkBookTitleColumn.length)
@@ -1291,7 +1304,7 @@ function schemaStatements() {
 		`CREATE TABLE IF NOT EXISTS hdith_hadith_grades (
 			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, hadith_id INT NOT NULL, ordinal SMALLINT UNSIGNED NOT NULL,
 			source_slug VARCHAR(32) NOT NULL, grader VARCHAR(255) NOT NULL, grader_source_id INT NULL,
-			grade TEXT NOT NULL, grade_category_id INT NULL, source_name VARCHAR(255) NULL, source_id INT NULL,
+			grade TEXT NOT NULL, grade_category_id INT NULL, grade_color VARCHAR(40) NULL, source_name VARCHAR(255) NULL, source_id INT NULL,
 			book_page VARCHAR(64) NULL, source_driver VARCHAR(32) NULL, source_url VARCHAR(512) NOT NULL,
 			UNIQUE KEY hdith_grade_source (hadith_id, source_slug), KEY hdith_grade_hadith (hadith_id, ordinal),
 			CONSTRAINT hdith_grade_hadith_fk FOREIGN KEY (hadith_id) REFERENCES hadiths(id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -1366,7 +1379,7 @@ async function closeDatabase() {
 if (require.main === module) main();
 
 module.exports = {
-	CACHE_DIR, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
+	CACHE_DIR, HDITH_GRADE_COLORS, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
 	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
 	enrichSingleHadith, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult
 };

@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const {
 	CACHE_DIR,
+	HDITH_GRADE_COLORS,
 	dedupeSharhItems,
 	HDITH_LOCAL_BOOKS,
 	MIN_REQUEST_DELAY_MS,
@@ -47,6 +48,12 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(readOptions(['--apply', '--skip-schema', '--delay', '100', '--book', 'b-2'])).toEqual(expect.objectContaining({
 			apply: true, skipSchema: true, delay: 100, books: ['b-2']
 		}));
+	});
+
+	test('preserves hdith.com grading category colors', () => {
+		const opinions = parseGraderOpinions([{ slug: 'grade-1', muhaddith: 'الألباني', degree: 'صحيح',
+			degree_category_id: 1, source: 'صحيح الترمذي', book_page: '147' }], 'b-4', '147');
+		expect(opinions[0]).toEqual(expect.objectContaining({ gradeCategoryId: 1, gradeColor: HDITH_GRADE_COLORS[1] }));
 	});
 
 	test('distinguishes hdith sequence numbers from canonical edition references', () => {
