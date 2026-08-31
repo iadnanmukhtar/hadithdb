@@ -67,13 +67,23 @@ describe('on-demand hdith.com enrichment', () => {
 		})).rejects.toThrow(/belongs to hdith.com book b-2/);
 	});
 
-	test('the Revise UI prompts and resubmits with the supplied URL', () => {
+	test('the Enrich UI prompts and resubmits with the supplied URL', () => {
 		const template = require('fs').readFileSync(require('path').join(__dirname, '..', 'views', 'sub-views', 'scripts.ejs'), 'utf8');
+		const itemTemplate = require('fs').readFileSync(require('path').join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
+		const route = require('fs').readFileSync(require('path').join(__dirname, '..', 'routes', 'update.js'), 'utf8');
 		expect(template).toContain("resBody.needsHdithUrl");
 		expect(template).toContain('window.prompt');
 		expect(template).toContain('reqBody.hdithUrl = hdithUrl.trim()');
 		expect(template).toContain('hdithUrl: reqBody.hdithUrl');
-		expect(template).toContain("suppressHdithUrlPromptError: propStr === 'hadith.revise'");
+		expect(template).toContain("suppressHdithUrlPromptError: propStr === 'hadith.enrich'");
 		expect(template).toContain('options.suppressHdithUrlPromptError && resBody.needsHdithUrl');
+		expect(itemTemplate).toContain('data-prop="hadith.revise"');
+		expect(itemTemplate).toContain('data-prop="hadith.enrich"');
+		expect(itemTemplate).toContain('> Enrich');
+		expect(route).toContain("if (col === 'revise')");
+		expect(route).toContain("else if (col === 'enrich')");
+		const reviseBranch = route.slice(route.indexOf("if (col === 'revise')"), route.indexOf("else if (col === 'enrich')"));
+		expect(reviseBranch).toContain('HadithRevision.reviseHadithById');
+		expect(reviseBranch).not.toContain('HdithEnrichment.enrichHadithById');
 	});
 });

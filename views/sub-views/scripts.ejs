@@ -367,8 +367,8 @@
 	            : '',
 	        };
 	        try {
-	          var resBody = await update(reqBody, { suppressHdithUrlPromptError: propStr === 'hadith.revise' });
-	          if (propStr === 'hadith.revise' && resBody.needsHdithUrl) {
+	          var resBody = await update(reqBody, { suppressHdithUrlPromptError: propStr === 'hadith.enrich' });
+	          if (propStr === 'hadith.enrich' && resBody.needsHdithUrl) {
 	            const expectedBook = resBody.expectedHdithBookId ? ` for hdith.com book b-${resBody.expectedHdithBookId}` : '';
 	            const hdithUrl = window.prompt(`The automatic match is not confident enough. Paste the hdith.com hadith detail URL${expectedBook}:`);
 	            if (!hdithUrl)
@@ -401,8 +401,8 @@
 	            }
 	            if (propStr === 'hadith.revise')
 	              applyHadithRevision(id, resBody.revised);
-	            if (propStr === 'hadith.revise' && resBody.hdithEnriched) {
-	              rememberUpdateSuccessToast('Hadith revised', 'The hadith was enriched from hdith.com and revised.');
+	            if (propStr === 'hadith.enrich' && resBody.hdithEnriched) {
+	              rememberUpdateSuccessToast('Hadith enriched', 'Metadata was imported from hdith.com.');
 	              window.location.reload();
 	              return;
 	            }

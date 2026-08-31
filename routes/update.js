@@ -161,28 +161,31 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         if (col === 'verified')
           status.value = (status.value && status.value !== '') ? 1 : 0;
 
-        if (col === 'revise') {
-          var hdithEnriched = await HdithEnrichment.enrichHadithById(ids[0], {
-            hdithUrl: req.body.hdithUrl
-          });
-          var revised = await HadithRevision.reviseHadithById(ids[0], {
-            userId: userId,
-            forceArabicRevision: true,
-            source: 'admin_revise'
-          });
-          result = { message: 'hdith.com enrichment and AI revision complete' };
-          status.value = 'Revised';
-          status.hdithEnriched = hdithEnriched;
-          status.revised = {
+		if (col === 'revise') {
+		  var revised = await HadithRevision.reviseHadithById(ids[0], {
+			userId: userId,
+			forceArabicRevision: true,
+			source: 'admin_revise'
+		  });
+		  result = { message: 'AI revision complete' };
+		  status.value = 'Revised';
+		  status.revised = {
             title_en: revised.item.title_en,
             chain: revised.item.chain,
             body: revised.item.body,
             footnote: revised.item.footnote,
             chain_en: revised.item.chain_en,
             body_en: revised.item.body_en,
-            footnote_en: revised.item.footnote_en
-          };
-        } else if (col === 'similar') {
+			footnote_en: revised.item.footnote_en
+		  };
+		} else if (col === 'enrich') {
+		  var hdithEnriched = await HdithEnrichment.enrichHadithById(ids[0], {
+			hdithUrl: req.body.hdithUrl
+		  });
+		  result = { message: 'hdith.com enrichment complete' };
+		  status.value = 'Enriched';
+		  status.hdithEnriched = hdithEnriched;
+		} else if (col === 'similar') {
           var child = await startSimilarHadithProcess(ids[0]);
           result = { message: `Similar-hadith scan started as pid ${child.pid}` };
           status.value = 'Queued';

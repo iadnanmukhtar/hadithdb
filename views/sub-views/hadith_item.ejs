@@ -364,8 +364,11 @@
 		<% if (site.editMode && lang === "en") { %>
 		<aside class="admin">
 			<% if (!isSimilarSection) { %>
-				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Enrich from hdith.com and revise" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Enriching">
+				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Revise this hadith" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Revising">
 					<span class="bi bi-magic"></span> Revise
+				</button>
+				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Enrich from hdith.com" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.enrich" data-loading-label="Enriching">
+					<span class="bi bi-database-add"></span> Enrich
 				</button>
 				<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Find similar hadith offline" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.similar" data-loading-label="Starting">
 					<span class="bi bi-search"></span> Similar
