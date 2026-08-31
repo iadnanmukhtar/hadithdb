@@ -302,7 +302,9 @@
     
   </div>
   
-  <% if (page.menu === 'Chapter' || page.menu === 'Section') { 
+  <% if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
+  <%- include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true }); %>
+  <% } else if (page.menu === 'Chapter' || page.menu === 'Section') {
       var book = page.context.book;
       var chapter = page.context.chapter;
       var sections = chapter.sections; 

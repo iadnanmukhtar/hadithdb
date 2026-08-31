@@ -73,5 +73,7 @@ describe('on-demand hdith.com enrichment', () => {
 		expect(template).toContain('window.prompt');
 		expect(template).toContain('reqBody.hdithUrl = hdithUrl.trim()');
 		expect(template).toContain('hdithUrl: reqBody.hdithUrl');
+		expect(template).toContain("suppressHdithUrlPromptError: propStr === 'hadith.revise'");
+		expect(template).toContain('options.suppressHdithUrlPromptError && resBody.needsHdithUrl');
 	});
 });

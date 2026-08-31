@@ -100,13 +100,12 @@
 
 <body>
   
-  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/header.ejs', { site: site, page: page, hadithDetailSectionItem: detailHadithItem }); %>
   
   <div class="<%= detailHadithItem ? 'container-fluid hadith-heading-layout hadith-metadata-page-layout' : 'container col-lg-8 mx-auto' %>">
     <% if (detailHadithItem) { %><div class="container col-lg-8 mx-auto hadith-heading-content"><% } %>
     
     <main class="search-results"<% if (isSearchResultsPage) { %> data-search-infinite="1" data-search-current-url="<%= req.originalUrl || req.url || searchAction %>"<% if (page.prev) { %> data-search-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-search-next-url="<%= page.next %>"<% } %><% } %>>
-
       <% var showSearchFilterPills = q && (locals.searchFilterPills || []).length > 0; %>
       <% if (isSearchResultsPage) { %>
       <div class="search-results-summary">
@@ -118,6 +117,7 @@
             <button type="button" class="btn-close" aria-label="Remove <%= pill.label %> filter" data-search-filter-remove data-filter-param="<%= pill.param %>" data-filter-value="<%= pill.value %>" <%- pill.removeTafsir ? 'data-remove-tafsir="1"' : '' %>></button>
           </span>
         <% }); %>
+          <button type="button" class="command-search-pill command-search-clear-all badge rounded-pill" data-search-filter-clear aria-label="Clear all search filters">Clear all</button>
         <% } %>
         </div>
         <div class="search-results-count"><%= displayResultCount %> results found</div>

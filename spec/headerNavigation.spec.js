@@ -154,7 +154,18 @@ describe('shared header navigation', () => {
 		expect(searchDialog).toContain('data-command-search-pills');
 		expect(scripts).toContain("input[name=tafsir]:checked:not(:disabled)");
 		expect(scripts).toContain("[data-command-filter]:checked:not(:disabled)");
+		expect(scripts).toContain("clearAll.textContent = 'Clear all'");
+		expect(scripts).toContain("activePanel().querySelectorAll('[data-command-filter]:checked:not(:disabled)')");
 		expect(searchRoutes).toContain("bookFilters.indexOf('quran') >= 0 ? ['quran', 'commentaries'] : ['commentaries']");
+	});
+
+	test('retains separate Hadith and Quran command-search terms for the browser session', () => {
+		expect(scripts).toContain("hadith: 'hadithdb.commandSearch.term.hadith'");
+		expect(scripts).toContain("quran: 'hadithdb.commandSearch.term.quran'");
+		expect(scripts).toContain('storage.setItem(searchTermStorageKeys[searchMode]');
+		expect(scripts).toContain('input.value = storage.getItem(searchTermStorageKeys[searchMode])');
+		expect(scripts).toMatch(/function openDialog\(trigger\) \{[\s\S]*?restoreSearchTerm\(mode\);[\s\S]*?dialog\.showModal\(\);/);
+		expect(scripts).toMatch(/if \(resolvedMode !== previousMode\)[\s\S]*?storeSearchTerm\(previousMode\);[\s\S]*?restoreSearchTerm\(mode\);/);
 	});
 
 	test('removes legacy page search and Quran navigation controls in favor of the shared command search', () => {
@@ -164,6 +175,10 @@ describe('shared header navigation', () => {
 		expect(searchResults).toContain('search-results-filter-pills command-search-pills');
 		expect(searchResults).toContain('command-search-pill badge rounded-pill');
 		expect(searchResults).toContain('data-search-filter-remove');
+		expect(searchResults).toContain('data-search-filter-clear');
+		expect(scripts).toContain("url.searchParams.delete('b')");
+		expect(scripts).toContain("url.searchParams.delete('tafsir')");
+		expect(styles).toContain('.command-search-clear-all');
 		expect(searchResults).toContain('class="search-results-summary"');
 		expect(searchResults).toContain('<%= displayResultCount %> results found');
 		expect(searchResults).not.toContain('Found <%= displayResultCount %> results in');
@@ -330,5 +345,11 @@ describe('shared header navigation', () => {
 	  expect(scripts).toContain('var defaultBook = books.find');
 	  expect(scripts).toContain('var initialLanguage = selectedLanguage || currentItem.attr');
 	  expect(styles).toContain('.btn-group.h-menu > .tafsir-carousel-language-switch + .book-carousel-filter');
+	});
+
+	test('does not show hover descriptions in the Hadith book carousel', () => {
+	  expect(bookNav).not.toContain('book-carousel-tooltip');
+	  expect(bookNav).not.toContain('data-book-tooltip');
+	  expect(bookNav).not.toContain('bookTooltip');
 	});
 });

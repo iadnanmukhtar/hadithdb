@@ -363,7 +363,7 @@
 	            : '',
 	        };
 	        try {
-	          var resBody = await update(reqBody);
+	          var resBody = await update(reqBody, { suppressHdithUrlPromptError: propStr === 'hadith.revise' });
 	          if (propStr === 'hadith.revise' && resBody.needsHdithUrl) {
 	            const expectedBook = resBody.expectedHdithBookId ? ` for hdith.com book b-${resBody.expectedHdithBookId}` : '';
 	            const hdithUrl = window.prompt(`The automatic match is not confident enough. Paste the hdith.com hadith detail URL${expectedBook}:`);
@@ -439,7 +439,8 @@
 	      e.stopPropagation();
 	    }
 
-	    async function update(reqBody) {
+	    async function update(reqBody, options) {
+	      options = options || {};
 	      var resBody = {};
 	      var res = {
 	        status: 500,
@@ -486,7 +487,7 @@
           ? 'Your changes have been saved and the Tafsir reader refreshed.'
           : 'Your changes have been saved.';
         toastr.success(successMessage, successTitle);
-      } else {
+	      } else if (!(options.suppressHdithUrlPromptError && resBody.needsHdithUrl)) {
         var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
         const isTafsirUpdate = (reqBody.prop || '').toString().indexOf('commentary.') === 0;
         toastr.error(errMessage, isTafsirUpdate ? 'Tafsir update needs attention' : 'Update needs attention');

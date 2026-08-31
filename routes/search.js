@@ -902,6 +902,10 @@ function expandShortcutBookFilters(filters) {
       expanded.push('bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah');
       return;
     }
+    if (filter === 'ninebooks') {
+      expanded.push('bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi');
+      return;
+    }
     expanded.push(filter);
   });
   return orderBookFilters(Array.from(new Set(expanded)));
@@ -937,7 +941,7 @@ function isVisibleBookFilter(filter) {
     return false;
   if (filter === 'toc' || filter === 'commentaries')
     return true;
-  if (filter === 'sahihayn' || filter === 'kutubarbaah' || filter === 'sixbooks')
+  if (filter === 'sahihayn' || filter === 'kutubarbaah' || filter === 'sixbooks' || filter === 'ninebooks')
     return true;
   var book = (global.books || []).find(row => row && row.alias === filter);
   return !!book && Number(book.hidden) !== 1;

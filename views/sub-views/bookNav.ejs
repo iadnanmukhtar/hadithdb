@@ -13,20 +13,6 @@
 				&& book.alias !== 'quran'
 				&& (book.type || book.book_type || book.book_model || 'hadith') === 'hadith';
 		};
-		var bookDeathLabel = function (book) {
-			if (!book || !book.death)
-				return '';
-			return `d. ${book.death} AH`;
-		};
-			var bookTooltip = function (book) {
-				return [
-					book.name_en || book.title || book.shortName_en || book.shortName || book.alias,
-					book.author,
-					bookDeathLabel(book),
-					book.published_year ? `Pub. ${book.published_year}` : '',
-					book.publisher
-				].filter(Boolean).join('\n');
-			};
 	%>
 	<div class="h-menu-hint d-md-none">
 		<i class="bi bi-arrow-left-right"></i> Swipe to browse <%= isQuranBookNav ? 'tafsīr books' : 'books' %>
@@ -47,7 +33,7 @@
 			  for (b of books.filter(isHadithBook)) {
 				var isCurrentBook = b.alias === currentBookAlias;
 			%>
-			  <a class="btn btn-outline-primary text-nowrap book-carousel-tooltip<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-tooltip="<%= bookTooltip(b) %>" data-book-carousel-item data-book-carousel-search="<%= [b.name_en, b.shortName_en, b.title, b.shortName, b.author_en, b.author, b.alias].filter(Boolean).join(' ') %>"><%= b.shortName_en %></a>
+			  <a class="btn btn-outline-primary text-nowrap<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-carousel-item data-book-carousel-search="<%= [b.name_en, b.shortName_en, b.title, b.shortName, b.author_en, b.author, b.alias].filter(Boolean).join(' ') %>"><%= b.shortName_en %></a>
 			<% }
 			} %>
 		</div>

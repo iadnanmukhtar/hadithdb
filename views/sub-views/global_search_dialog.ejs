@@ -90,6 +90,19 @@
               <input type="search" class="form-control" placeholder="Find a Hadith book" aria-label="Find a Hadith book" data-command-search-filter-search="hadith" autocomplete="off">
             </label>
             <div class="command-search-book-list" data-command-search-book-list="hadith">
+              <div class="command-search-book-group-label">Book groups</div>
+              <% [
+                { value: 'sahihayn', label: 'Sahihayn' },
+                { value: 'kutubarbaah', label: 'Four Sunan' },
+                { value: 'sixbooks', label: 'Six Books' },
+                { value: 'ninebooks', label: 'Nine Books' }
+              ].forEach(function (group) { var selected = selectedCommandHadithAliases.indexOf(group.value) >= 0; %>
+              <label class="command-search-book-option" data-command-search-book-option>
+                <input class="form-check-input" type="checkbox" name="b" value="<%= group.value %>" <%= selected ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= group.label %>">
+                <span><%= group.label %></span>
+              </label>
+              <% }); %>
+              <div class="command-search-book-group-label">Individual books</div>
               <% commandHadithBooks.forEach(function (book) { var label = book.shortName_en || book.name_en || book.alias; var selected = selectedCommandHadithAliases.indexOf(book.alias) >= 0; %>
               <label class="command-search-book-option" data-command-search-book-option>
                 <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selected ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= label %>">

@@ -49,4 +49,13 @@ describe('virtual Hadith search filters', () => {
 		expect(serialized).toContain('"book_alias":["bukhari"]');
 		expect(serialized).not.toContain('books:');
 	});
+
+	test('expands the Nine Books filter to the Six Books, Malik, Ahmad, and Darimi', async () => {
+		await Search.a_searchText('test', ['ninebooks'], 0, { excludeQuranAndTafsir: true });
+
+		const query = Index.docsFromQuery.mock.calls[0][1];
+		const serialized = JSON.stringify(query);
+		expect(serialized).toContain('"book_alias":["bukhari","muslim","abudawud","tirmidhi","nasai","ibnmajah","malik","ahmad","darimi"]');
+		expect(Search.describeBookFilters(['kutubarbaah', 'sixbooks', 'ninebooks'])).toEqual(['Four Sunan', 'Six Books', 'Nine Books']);
+	});
 });

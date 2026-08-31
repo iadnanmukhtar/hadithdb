@@ -1,6 +1,7 @@
 <%
 	const railMetadata = i.hdithMetadata || {};
 	const railNavigationOnly = typeof navigationOnly !== 'undefined' && navigationOnly;
+	const railTopMenu = typeof topMenu !== 'undefined' && topMenu;
 	const railGrades = Array.isArray(railMetadata.grades) ? railMetadata.grades : [];
 	const railNarrators = Array.isArray(railMetadata.narrators) ? railMetadata.narrators : [];
 	const railSharh = Array.isArray(railMetadata.sharh) ? railMetadata.sharh : [];
@@ -27,7 +28,30 @@
 	const railSectionTitle = (railSection.title_en || i.h2_title_en || '').toString().trim();
 	const railSectionLabel = `${railSection.h2 || i.h2 || ''}${railSectionTitle ? ` ${railSectionTitle}` : ''}`.trim();
 	const railSectionHref = utils.urlFor(req, `/${railSection.path || `${i.book_alias}/${utils.formatHadithHeadingNumber(railSection.h1 || i.h1)}/${utils.formatHadithHeadingNumber(railSection.h2 || i.h2)}`}`);
+	const railTopMenuId = railTopMenu ? 'toc2' : `${railBase}-section-menu`;
 %>
+<% if (railTopMenu) { %>
+<nav class="row g-0 chapter-toc hadith-detail-section-menu" aria-label="Hadith sections in <%= railBookName %>">
+	<div class="col-12 chapter-toc-toolbar">
+		<a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#<%= railTopMenuId %>" role="button" aria-expanded="false" aria-controls="<%= railTopMenuId %>" title="Show hadith sections">
+			<i class="bi bi-list-ul" aria-hidden="true"></i>
+			<span>Sections</span>
+			<span class="chapter-toc-current">Hadith</span>
+			<i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
+		</a>
+	</div>
+	<div id="<%= railTopMenuId %>" class="col-12 toc2 collapse chapter-toc-panel">
+		<table class="table chapter-toc-table">
+			<tbody>
+				<% if (railBookName) { %><tr class="title" data-quran-menu-href="<%= railBookHref %>"><td><a href="<%= railBookHref %>"><%= railBookName %></a></td></tr><% } %>
+				<% if (railChapterLabel) { %><tr class="title" data-quran-menu-href="<%= railChapterHref %>"><td><a href="<%= railChapterHref %>"><%= railChapterLabel %></a></td></tr><% } %>
+				<% if (railSectionLabel) { %><tr class="title" data-quran-menu-href="<%= railSectionHref %>"><td><a href="<%= railSectionHref %>"><%= railSectionLabel %></a></td></tr><% } %>
+				<% railGroups.forEach(function (group) { %><tr class="title<%= group.key === railInitialKey ? ' is-current' : '' %>" data-toc-heading-scroll="<%= group.key %>"<% if (group.key === 'reflection') { %> data-reflection-disclosure-trigger="comments-disclosure"<% } %>><td><button type="button" class="hadith-detail-section-control" data-toc-heading-key="<%= group.key %>"<% if (group.key === 'reflection') { %> data-reflection-disclosure-trigger="comments-disclosure"<% } %><% if (group.key === railInitialKey) { %> aria-current="location"<% } %>><%= group.label %><% if (group.key === 'reflection') { %> <span class="badge text-bg-secondary hadith-comment-count" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-comment-type="hadith" title="0 reflections">0</span><% } else if (group.count !== null) { %> <span class="badge text-bg-secondary"><%= group.count %></span><% } %></button></td></tr><% }); %>
+			</tbody>
+		</table>
+	</div>
+</nav>
+<% } else { %>
 <aside class="hadith-heading-toc hadith-metadata-rail hadith-metadata-side-rail d-none d-lg-block" data-toc-heading-rail aria-label="Hadith sections in <%= railBookName %>">
 	<div class="hadith-heading-toc-sticky">
 		<% if (railBookName) { %><a class="heading-toc-book-name" href="<%= railBookHref %>"><%= railBookName.toUpperCase() %></a><% } %>
@@ -39,3 +63,4 @@
 		<% if (!railNavigationOnly && railMetadata.sourceUrl) { %><a class="hadith-metadata-source-link small" href="<%= railMetadata.sourceUrl %>" target="_blank" rel="noopener noreferrer">hdith.com source <span class="bi bi-box-arrow-up-right" aria-hidden="true"></span></a><% } %>
 	</div>
 </aside>
+<% } %>

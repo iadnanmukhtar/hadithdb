@@ -61,4 +61,13 @@ describe('global search dialog', () => {
 		expect(html).toContain('Bukhari');
 		expect(html).not.toContain('Hidden Virtual Book');
 	});
+
+	test('shows the canonical Hadith book groups', async () => {
+		const html = await render(['ninebooks']);
+
+		expect(html).toMatch(/name="b" value="sahihayn"[^>]*data-command-filter-label="Sahihayn"/);
+		expect(html).toMatch(/name="b" value="kutubarbaah"[^>]*data-command-filter-label="Four Sunan"/);
+		expect(html).toMatch(/name="b" value="sixbooks"[^>]*data-command-filter-label="Six Books"/);
+		expect(html).toMatch(/name="b" value="ninebooks" checked[^>]*data-command-filter-label="Nine Books"/);
+	});
 });

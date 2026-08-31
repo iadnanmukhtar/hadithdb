@@ -1235,6 +1235,10 @@ function initCommandSearch() {
 	var initialMode = dialog.dataset.initialSearchMode === 'quran' ? 'quran' : 'hadith';
 	var mode = initialMode;
 	var lastTrigger = null;
+	var searchTermStorageKeys = {
+		hadith: 'hadithdb.commandSearch.term.hadith',
+		quran: 'hadithdb.commandSearch.term.quran'
+	};
 	var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
 	var commandModifier = /mac|iphone|ipad|ipod/i.test(platform) ? '⌘' : 'Ctrl';
 	document.querySelectorAll('[data-command-key-modifier]').forEach(function (element) {
@@ -1243,6 +1247,36 @@ function initCommandSearch() {
 
 	function activePanel() {
 		return dialog.querySelector(`[data-command-search-panel="${mode}"]`);
+	}
+
+	function commandSearchSessionStorage() {
+		try {
+			return window.sessionStorage || null;
+		} catch (_err) {
+			return null;
+		}
+	}
+
+	function storeSearchTerm(searchMode) {
+		var storage = commandSearchSessionStorage();
+		if (!storage)
+			return;
+		try {
+			storage.setItem(searchTermStorageKeys[searchMode], input.value || '');
+		} catch (_err) {
+			// Search remains usable when browser storage is unavailable.
+		}
+	}
+
+	function restoreSearchTerm(searchMode) {
+		var storage = commandSearchSessionStorage();
+		if (!storage)
+			return;
+		try {
+			input.value = storage.getItem(searchTermStorageKeys[searchMode]) || '';
+		} catch (_err) {
+			// Search remains usable when browser storage is unavailable.
+		}
 	}
 
 	function refreshAutocomplete() {
@@ -1315,6 +1349,21 @@ function initCommandSearch() {
 			pill.append(label, remove);
 			pills.appendChild(pill);
 		});
+		if (checked.length > 0) {
+			var clearAll = document.createElement('button');
+			clearAll.type = 'button';
+			clearAll.className = 'command-search-pill command-search-clear-all badge rounded-pill';
+			clearAll.textContent = 'Clear all';
+			clearAll.setAttribute('aria-label', `Clear all ${mode === 'quran' ? 'Quran and Tafsir' : 'Hadith'} filters`);
+			clearAll.addEventListener('click', function () {
+				activePanel().querySelectorAll('[data-command-filter]:checked:not(:disabled)').forEach(function (checkbox) {
+					checkbox.checked = false;
+				});
+				renderSelectedFilters();
+				refreshAutocomplete();
+			});
+			pills.appendChild(clearAll);
+		}
 		selected.hidden = pills.childElementCount < 1;
 		dialog.querySelectorAll('[data-command-search-filter-count]').forEach(function (badge) {
 			var badgePanel = dialog.querySelector(`[data-command-search-panel="${badge.dataset.commandSearchFilterCount}"]`);
@@ -1325,7 +1374,13 @@ function initCommandSearch() {
 	}
 
 	function setMode(nextMode, options) {
-		mode = nextMode === 'quran' ? 'quran' : 'hadith';
+		var previousMode = mode;
+		var resolvedMode = nextMode === 'quran' ? 'quran' : 'hadith';
+		if (resolvedMode !== previousMode)
+			storeSearchTerm(previousMode);
+		mode = resolvedMode;
+		if (resolvedMode !== previousMode)
+			restoreSearchTerm(mode);
 		dialog.querySelectorAll('[data-command-search-mode]').forEach(function (button) {
 			var active = button.dataset.commandSearchMode === mode;
 			button.classList.toggle('active', active);
@@ -1356,6 +1411,7 @@ function initCommandSearch() {
 
 	function openDialog(trigger) {
 		lastTrigger = trigger || document.activeElement;
+		restoreSearchTerm(mode);
 		if (!dialog.open)
 			dialog.showModal();
 		window.setTimeout(function () {
@@ -1400,6 +1456,12 @@ function initCommandSearch() {
 			normalizeQuranFilters(event.target);
 		renderSelectedFilters();
 		refreshAutocomplete();
+	});
+	input.addEventListener('input', function () {
+		storeSearchTerm(mode);
+	});
+	form.addEventListener('submit', function () {
+		storeSearchTerm(mode);
 	});
 	dialog.querySelectorAll('[data-command-search-filter-search]').forEach(function (filterInput) {
 		filterInput.addEventListener('input', function () {
@@ -11254,9 +11316,28 @@ function scrollQuranMushafJuzMenuToCurrent() {
 }
 
 function initQuranMenuRows(root) {
-	var rows = root.querySelectorAll('[data-quran-mushaf-juz-href], [data-quran-menu-href]');
+	var rows = root.querySelectorAll('[data-quran-mushaf-juz-href], [data-quran-menu-href], [data-toc-heading-scroll]');
 	rows.forEach(function (row) {
 		row.addEventListener('click', function (event) {
+			var hadithSectionMenu = row.closest('.hadith-detail-section-menu');
+			var hadithSectionPanel = hadithSectionMenu && hadithSectionMenu.querySelector('.chapter-toc-panel');
+			if (hadithSectionPanel) {
+				if (window.bootstrap && window.bootstrap.Collapse)
+					window.bootstrap.Collapse.getOrCreateInstance(hadithSectionPanel).hide();
+				else
+					hadithSectionPanel.classList.remove('show');
+			}
+			var headingKey = row.getAttribute('data-toc-heading-scroll');
+			if (headingKey) {
+				var headingTarget = Array.from(document.querySelectorAll('[data-toc-heading-target][data-toc-heading-key]')).find(function (candidate) {
+					return candidate.getAttribute('data-toc-heading-key') === headingKey;
+				});
+				if (headingTarget) {
+					event.preventDefault();
+					headingTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
+				return;
+			}
 			if (event.target.closest('a, button, input, select, textarea'))
 				return;
 			var href = row.getAttribute('data-quran-mushaf-juz-href') || row.getAttribute('data-quran-menu-href');
@@ -14798,6 +14879,14 @@ function initTafsirSearchFilterPills(root) {
 		params.delete('o');
 		window.location.href = `${url.pathname}${url.search}${url.hash}`;
 	});
+	$(document).on('click', '[data-search-filter-clear]', function (event) {
+		event.preventDefault();
+		var url = new URL(window.location.href);
+		url.searchParams.delete('b');
+		url.searchParams.delete('tafsir');
+		url.searchParams.delete('o');
+		window.location.href = `${url.pathname}${url.search}${url.hash}`;
+	});
 }
 
 function normalizeSearchBookFilterValue(value) {
@@ -14813,6 +14902,8 @@ function expandSearchBookFilterValue(value) {
 		return ['abudawud', 'tirmidhi', 'nasai', 'ibnmajah'];
 	if (value === 'sixbooks')
 		return ['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah'];
+	if (value === 'ninebooks')
+		return ['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi'];
 	return value ? [value] : [];
 }
 
