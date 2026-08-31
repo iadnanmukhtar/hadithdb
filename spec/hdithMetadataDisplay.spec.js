@@ -339,6 +339,8 @@ describe('hdith.com metadata display', () => {
 
 	test('uses the Hadith rail on the home page without metadata links', () => {
 		const home = fs.readFileSync(path.join(__dirname, '..', 'views', 'index.ejs'), 'utf8');
+		const searchRoute = fs.readFileSync(path.join(__dirname, '..', 'routes', 'search.js'), 'utf8');
+		const item = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		const rail = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata_rail.ejs'), 'utf8');
 		expect(home).toContain("var homeHadithItem = random && random.remark != 2 ? random : null");
 		expect(home).toContain("hadith-heading-layout hadith-metadata-page-layout");
@@ -346,6 +348,10 @@ describe('hdith.com metadata display', () => {
 		expect(rail).toContain("const railNavigationOnly = typeof navigationOnly !== 'undefined' && navigationOnly");
 		expect(rail).toContain('railNavigationOnly ? [] : [');
 		expect(rail).toContain('!railNavigationOnly && railMetadata.sourceUrl');
+		expect(searchRoute).toContain('await HdithMetadata.attachClassifications([random])');
+		expect(item).toContain("page && page.menu === 'Home'");
+		expect(item).toContain('hasHadithClassification');
+		expect(item).toContain('i.legacyGradeColor');
 	});
 
 	test('moves similar hadiths into the final Mushabihah section', () => {

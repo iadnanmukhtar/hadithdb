@@ -1164,9 +1164,11 @@ router.get('/', throttleSearchRequest, async function (req, res, next) {
     // results = await Hadith.a_dbGetRecentUpdates(5);
     var random = await Index.docRandomnly(Item.INDEX, `books:/.+/`);
     if (random.length > 0) {
-      random = new Item(random[0]);
-      random.single = true;
-      var admin = (req.admin);
+	  random = new Item(random[0]);
+	  random.single = true;
+	  if (random.remark != 2)
+		await HdithMetadata.attachClassifications([random]);
+	  var admin = (req.admin);
       var editMode = (admin && req.editMode);
       if (editMode)
         await addVirtualReferences([random]);
