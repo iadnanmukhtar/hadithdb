@@ -13,6 +13,7 @@ describe('hdith.com metadata display', () => {
 		expect(route).not.toContain('shawahidHadiths');
 		expect(route.indexOf('results[0].single = true')).toBeLessThan(route.indexOf('HdithMetadata.forHadith'));
 		expect((route.match(/HdithMetadata\.attachClassifications\(results\)/g) || [])).toHaveLength(2);
+		expect(route).toContain('HdithMetadata.attachClassifications(results.flatMap');
 	});
 
 	test('builds lightweight attribution and chain classifications for list pages', () => {
@@ -48,6 +49,25 @@ describe('hdith.com metadata display', () => {
 			ar: { grader_shortName: 'الألباني', grade_grade: 'صحيح' }
 		});
 		expect(opinions).toHaveLength(1);
+		expect(opinions[0]).toMatchObject({ grader: 'الألباني', grade: 'صحيح', primary: true });
+	});
+
+	test('exposes legacy grade controls in the scholarly grades section for admins', () => {
+		const route = fs.readFileSync(path.join(__dirname, '..', 'routes', 'search.js'), 'utf8');
+		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
+		const scripts = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'scripts.ejs'), 'utf8');
+		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
+		expect(route).toContain('HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id) || {}');
+		expect(template).toContain('grade.primary && site.editMode');
+		expect(template).toContain('data-prop="hadith.gradeId"');
+		expect(template).toContain('data-prop="hadith.graderId"');
+		expect(template).toContain("bilingualLabel(legacyGrade.grade_en, legacyGrade.grade)");
+		expect(template).toContain("bilingualLabel(legacyGrader.shortName_en, legacyGrader.shortName)");
+		expect(template).toContain('if (!(grade.primary && site.editMode))');
+		expect(scripts).toContain("$el.on('change'");
+		expect(scripts).toContain('select[data-prop="hadith.gradeId"], select[data-prop="hadith.graderId"]');
+		expect(scripts).not.toContain("propStr === 'hadith.gradeId' || propStr === 'hadith.graderId'");
+		expect(css).toContain('.hadith-legacy-grade-editor { display: grid;');
 	});
 
 	test('does not manufacture an English rendering for an untranslated primary grade', () => {
@@ -150,7 +170,7 @@ describe('hdith.com metadata display', () => {
 		['Scholarly gradings', '>Isnād<', '>Sharḥ<', 'Gharīb al-Ḥadīth', 'Takhrīj and shawāhid', 'التخريج والشواهد', '>Mushābihah<'].forEach(label => expect(template).not.toContain(label));
 		expect(template).toContain('<%= grade.grader %>');
 		expect(template).toContain('class="hadith-grade-list"');
-		expect(template).toContain('class="row hadith-grade-opinion"');
+		expect(template).toContain('class="row hadith-grade-opinion<%= grade.primary');
 		expect(template).toContain('hadith-grade-opinion-en');
 		expect(template).toContain('hadith-grade-opinion-ar');
 		expect(template).toContain('const hasEnglishGrade = !!(grade.grade_en && grade.grader_en)');

@@ -537,7 +537,12 @@
 	          $(this).attr('editing', 'true');
 	          $(this).removeClass('partial');
 	        });
-	        if (isTafsirEditor($el))
+	        if ($el.is('select[data-prop="hadith.gradeId"], select[data-prop="hadith.graderId"]'))
+	          $el.on('change', function (event) {
+	            $(this).attr('editing', 'true');
+	            changeListener.call(this, event);
+	          });
+	        else if (isTafsirEditor($el))
 	          ensureTafsirSaveButton($el);
 	        else
 	          $el.on('blur', changeListener);

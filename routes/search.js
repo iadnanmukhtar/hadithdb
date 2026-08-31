@@ -1520,9 +1520,8 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   results = results.map(item => new Item(item));
   results[0].single = true;
   if (results[0].book_alias !== 'quran') {
-    results[0].hdithMetadata = await HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id);
-    if (results[0].hdithMetadata)
-      results[0].hdithMetadata.grades = HdithMetadata.withPrimaryGrade(results[0].hdithMetadata.grades, results[0]);
+    results[0].hdithMetadata = await HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id) || {};
+    results[0].hdithMetadata.grades = HdithMetadata.withPrimaryGrade(results[0].hdithMetadata.grades, results[0]);
   }
   if (results[0].book_alias === 'quran')
     await addQuranAdjacentRefs(results[0]);
@@ -1586,6 +1585,9 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       return book1.ordinal - book2.ordinal;
     });
   }
+  await HdithMetadata.attachClassifications(results.flatMap(function (item) {
+    return Array.isArray(item.similar) ? item.similar : [];
+  }));
   if (results.length > 0) {
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');

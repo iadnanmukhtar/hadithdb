@@ -6,14 +6,34 @@
 	metadata.gharib = Array.isArray(metadata.gharib) ? metadata.gharib : [];
 	metadata.similar = Array.isArray(metadata.similar) ? metadata.similar.filter(reference => reference.internal_ref) : [];
 	const metadataBase = `hadith-metadata-${i.actual ? i.actual.id : i.id}`;
+	const editableHadithId = i.actual ? i.actual.id : i.id;
 	function arabicOrdinal(value) { return String(value).replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[Number(digit)]); }
+	function bilingualLabel(english, arabic) { return [english, arabic].filter(Boolean).join(' — '); }
 %>
 <section class="hadith-metadata-panel col-12" aria-label="Hadith metadata">
 	<div class="hadith-metadata-content">
 		<% if (metadata.grades.length) { %>
 		<section class="hadith-metadata-section mt-4" id="<%= metadataBase %>-grades" data-toc-heading-target data-toc-heading-key="grades">
 			<heading class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Scholarly Grades</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">أحكام المحدّثين</h3></heading>
-			<div class="hadith-grade-list"><% metadata.grades.forEach(function (grade) { const hasEnglishGrade = !!(grade.grade_en && grade.grader_en); %><div class="row hadith-grade-opinion" dir="ltr"><% if (hasEnglishGrade) { %><div class="col-md-6 col-sm-12 hadith-grade-opinion-en" lang="en"><span><%= grade.grade_en %></span> (<span<% if (grade.grader_name_en) { %> title="<%= grade.grader_name_en %>"<% } %>><%= grade.grader_en %></span>)</div><% } %><div class="col-md-6 col-sm-12 hadith-grade-opinion-ar<%= hasEnglishGrade ? '' : ' ms-md-auto' %>" lang="ar" dir="rtl"><% if (grade.grade_color) { %><span class="hadith-grade-color" style="--hadith-grade-color: <%= grade.grade_color %>" aria-hidden="true"></span><% } %><span><%= grade.grade %></span> (<% if (grade.source_url) { %><a href="<%= grade.source_url %>" target="_blank" rel="noopener noreferrer"><%= grade.grader %></a><% } else { %><span<% if (grade.grader_name) { %> title="<%= grade.grader_name %>"<% } %>><%= grade.grader %></span><% } %>)</div></div><% }); %></div>
+			<div class="hadith-grade-list">
+				<% metadata.grades.forEach(function (grade) { const hasEnglishGrade = !!(grade.grade_en && grade.grader_en); %>
+				<div class="row hadith-grade-opinion<%= grade.primary ? ' hadith-grade-opinion-primary' : '' %>" dir="ltr">
+					<% if (grade.primary && site.editMode) { %>
+					<div class="col-12 hadith-grade-opinion-en hadith-legacy-grade-editor" lang="en">
+						<select class="_e form-select form-select-sm" data-id="<%= editableHadithId %>" data-prop="hadith.gradeId" aria-label="Legacy hadith grade" title="Legacy hadith grade">
+							<% global.grades.forEach(function (legacyGrade) { %><option value="<%= legacyGrade.id %>" <%=(legacyGrade.id == (i.grade && i.grade.id)) ? 'selected' :''%>><%= bilingualLabel(legacyGrade.grade_en, legacyGrade.grade) %></option><% }); %>
+						</select>
+						<select class="_e form-select form-select-sm" data-id="<%= editableHadithId %>" data-prop="hadith.graderId" aria-label="Legacy hadith grader" title="Legacy hadith grader">
+							<% global.graders.forEach(function (legacyGrader) { %><option value="<%= legacyGrader.id %>" <%=(legacyGrader.id == (i.grader && i.grader.id)) ? 'selected' :''%>><%= bilingualLabel(legacyGrader.shortName_en, legacyGrader.shortName) %></option><% }); %>
+						</select>
+					</div>
+					<% } else if (hasEnglishGrade) { %>
+					<div class="col-md-6 col-sm-12 hadith-grade-opinion-en" lang="en"><span><%= grade.grade_en %></span> (<span<% if (grade.grader_name_en) { %> title="<%= grade.grader_name_en %>"<% } %>><%= grade.grader_en %></span>)</div>
+					<% } %>
+					<% if (!(grade.primary && site.editMode)) { %><div class="col-md-6 col-sm-12 hadith-grade-opinion-ar<%= hasEnglishGrade ? '' : ' ms-md-auto' %>" lang="ar" dir="rtl"><% if (grade.grade_color) { %><span class="hadith-grade-color" style="--hadith-grade-color: <%= grade.grade_color %>" aria-hidden="true"></span><% } %><span><%= grade.grade %></span> (<% if (grade.source_url) { %><a href="<%= grade.source_url %>" target="_blank" rel="noopener noreferrer"><%= grade.grader %></a><% } else { %><span<% if (grade.grader_name) { %> title="<%= grade.grader_name %>"<% } %>><%= grade.grader %></span><% } %>)</div><% } %>
+				</div>
+				<% }); %>
+			</div>
 		</section>
 		<% } %>
 

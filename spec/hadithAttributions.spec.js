@@ -51,6 +51,7 @@ describe('Hadith attribution taxonomy', () => {
 		expect(template).toContain('i.hdithClassification || i.hdithMetadata || {}');
 		expect(template).toContain("classificationParts.join(' · ')");
 		expect(template).toContain("page.menu === 'Chapter' || page.menu === 'Section'");
+		expect(template).toContain('isSimilarSection ||');
 		expect(template).toContain('!i.single');
 		expect(template).toContain('<em class="grade">');
 		expect(template).toContain('<%- langData.grade_grade %>');
