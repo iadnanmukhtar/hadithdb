@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { narratorDisplayFullname, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
+const { narratorDisplayFullname, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, uniqueGradeGraderPairs, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
 
 describe('hdith.com metadata display', () => {
 	test('loads enrichment only for the single hadith detail route', () => {
@@ -32,6 +32,16 @@ describe('hdith.com metadata display', () => {
 			ar: { grader_shortName: 'الألباني', grade_grade: 'صحيح' }
 		});
 		expect(opinions).toHaveLength(1);
+	});
+
+	test('deduplicates repeated grade-grader pairs while retaining distinct opinions', () => {
+		const opinions = uniqueGradeGraderPairs([
+			{ grader: 'الألباني', grade: 'صحيح', source_url: 'https://hdith.com/one' },
+			{ grader: 'الأَلْبَانِيّ', grade: 'صَحِيح', source_url: 'https://hdith.com/two' },
+			{ grader: 'الألباني', grade: 'حسن', source_url: 'https://hdith.com/three' }
+		]);
+		expect(opinions).toHaveLength(2);
+		expect(opinions.map(opinion => opinion.source_url)).toEqual(['https://hdith.com/one', 'https://hdith.com/three']);
 	});
 
 	test('hides external similar links until they resolve to internal references', () => {
