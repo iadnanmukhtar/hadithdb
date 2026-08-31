@@ -249,6 +249,7 @@
 	<% if (i.remark == 0 && !isContentTranslationLang && showLegacyInlineGrade) { %>
 		<aside lang="<%=lang%>">
 			<em class="grade">
+				<% if (i.legacyGradeColor) { %><span class="hadith-grade-color" style="--hadith-grade-color: <%= i.legacyGradeColor %>" aria-hidden="true"></span><% } %>
 				<% if (lang === 'en' && site.editMode) { %>
 				<select dir="rtl" class="_e" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.gradeId">
 					<% global.grades.forEach(function (grade) { %>

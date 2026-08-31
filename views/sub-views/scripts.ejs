@@ -327,6 +327,10 @@
 	        return;
 	      }
 	      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
+	        if (propStr === 'hdith_grade.delete' && !window.confirm('Delete this scholarly grade?')) {
+	          $(this).removeAttr('editing');
+	          return;
+	        }
 	        $(this).attr('submitting', 'true');
 	        const isClickableButton = $(this).attr('clickable') == 'true' && $(this).is('button');
 	        const $loadingButton = isClickableButton ? $(this) : $($(this).data('loadingButton'));
@@ -384,11 +388,31 @@
 	                });
 	              });
 	            }
+	            if (resBody.fields) {
+	              const metadataType = propStr.split('.')[0];
+	              const $metadataRow = $el.closest('.hadith-grade-opinion, .hadith-sharh-entry');
+	              Object.entries(resBody.fields).forEach(([field, fieldValue]) => {
+	                if (field === 'grade_color')
+	                  $metadataRow.find('.hadith-grade-color-editor').css('--hadith-grade-color', fieldValue);
+	                $metadataRow.find(`[data-prop="${metadataType}.${field}"]`).each(function () {
+	                  setElementValue(this, fieldValue);
+	                });
+	              });
+	            }
 	            if (propStr === 'hadith.revise')
 	              applyHadithRevision(id, resBody.revised);
 	            if (propStr === 'hadith.revise' && resBody.hdithEnriched) {
 	              rememberUpdateSuccessToast('Hadith revised', 'The hadith was enriched from hdith.com and revised.');
 	              window.location.reload();
+	              return;
+	            }
+	            if (propStr === 'hdith_grade.add') {
+	              rememberUpdateSuccessToast('Scholarly grade added', 'The new scholarly grade is ready to edit.');
+	              window.location.reload();
+	              return;
+	            }
+	            if (propStr === 'hdith_grade.delete') {
+	              $el.closest('.hadith-grade-opinion').remove();
 	              return;
 	            }
 	            if (propStr === 'hadiths_sim.add')
@@ -537,8 +561,12 @@
 	          $(this).attr('editing', 'true');
 	          $(this).removeClass('partial');
 	        });
-	        if ($el.is('select[data-prop="hadith.gradeId"], select[data-prop="hadith.graderId"]'))
+	        if ($el.is('select[data-prop="hadith.gradeId"], select[data-prop="hadith.graderId"], select[data-prop="hdith_grade.grade_category_id"]'))
 	          $el.on('change', function (event) {
+	            if ($(this).is('select[data-prop="hadith.gradeId"]')) {
+	              const color = $(this).find('option:selected').attr('data-grade-color') || '';
+	              $(this).closest('.hadith-legacy-grade-editor').find('.hadith-legacy-grade-color').css('--hadith-grade-color', color);
+	            }
 	            $(this).attr('editing', 'true');
 	            changeListener.call(this, event);
 	          });
@@ -546,6 +574,55 @@
 	          ensureTafsirSaveButton($el);
 	        else
 	          $el.on('blur', changeListener);
+	      });
+	    };
+
+	    const bindHadithGradeSorting = (scope) => {
+	      $(scope || document).find('[data-hdith-grade-sort-list]').addBack('[data-hdith-grade-sort-list]').each(function () {
+	        const $list = $(this);
+	        if ($list.data('hadithGradeSortingBound')) return;
+	        $list.data('hadithGradeSortingBound', true);
+	        let draggedRow = null;
+	        $list.find('[data-hdith-grade-sort-id]').each(function () {
+	          const row = this;
+	          $(row).find('.hadith-grade-drag-handle').on('mousedown', function () {
+	            row.setAttribute('draggable', 'true');
+	          });
+	          row.addEventListener('dragstart', function (event) {
+	            draggedRow = row;
+	            row.classList.add('is-dragging');
+	            if (event.dataTransfer) {
+	              event.dataTransfer.effectAllowed = 'move';
+	              event.dataTransfer.setData('text/plain', row.getAttribute('data-hdith-grade-sort-id') || '');
+	            }
+	          });
+	          row.addEventListener('dragend', function () {
+	            row.classList.remove('is-dragging');
+	            row.removeAttribute('draggable');
+	            draggedRow = null;
+	          });
+	        });
+	        this.addEventListener('dragover', function (event) {
+	          if (!draggedRow) return;
+	          event.preventDefault();
+	          const target = event.target.closest('[data-hdith-grade-sort-id]');
+	          if (!target || target === draggedRow || target.parentNode !== this) return;
+	          const rect = target.getBoundingClientRect();
+	          this.insertBefore(draggedRow, event.clientY < rect.top + rect.height / 2 ? target : target.nextSibling);
+	        });
+	        this.addEventListener('drop', async function (event) {
+	          if (!draggedRow) return;
+	          event.preventDefault();
+	          const order = $list.find('[data-hdith-grade-order-id]').map(function () {
+	            return this.getAttribute('data-hdith-grade-order-id');
+	          }).get();
+	          await update({
+	            id: $list.attr('data-hadith-id'),
+	            prop: 'hdith_grade.reorder',
+	            arabizi: false,
+	            value: order.join(',')
+	          });
+	        });
 	      });
 	    };
 
@@ -589,6 +666,7 @@
 	    };
 	    window.bindInlineEditors = bindInlineEditors;
 	    bindInlineEditors(document);
+	    bindHadithGradeSorting(document);
 	    const inlineEditorObserver = new MutationObserver((mutations) => {
 	      mutations.forEach((mutation) => {
 	        mutation.addedNodes.forEach((node) => {

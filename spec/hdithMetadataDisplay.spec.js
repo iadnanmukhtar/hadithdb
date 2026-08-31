@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { classificationFromRow, narratorDisplayFullname, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, uniqueGradeGraderPairs, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
+const { classificationFromRow, legacyGradeCategoryForId, legacyGradeColorForId, narratorDisplayFullname, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, uniqueGradeGraderPairs, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
 
 describe('hdith.com metadata display', () => {
 	test('loads enrichment only for the single hadith detail route', () => {
@@ -63,11 +63,11 @@ describe('hdith.com metadata display', () => {
 		expect(template).toContain('data-prop="hadith.graderId"');
 		expect(template).toContain("bilingualLabel(legacyGrade.grade_en, legacyGrade.grade)");
 		expect(template).toContain("bilingualLabel(legacyGrader.shortName_en, legacyGrader.shortName)");
-		expect(template).toContain('if (!(grade.primary && site.editMode))');
+		expect(template).toContain('if (!site.editMode)');
 		expect(scripts).toContain("$el.on('change'");
 		expect(scripts).toContain('select[data-prop="hadith.gradeId"], select[data-prop="hadith.graderId"]');
 		expect(scripts).not.toContain("propStr === 'hadith.gradeId' || propStr === 'hadith.graderId'");
-		expect(css).toContain('.hadith-legacy-grade-editor { display: grid;');
+		expect(css).toContain('.hadith-legacy-grade-editor { align-items: center; display: grid;');
 	});
 
 	test('does not manufacture an English rendering for an untranslated primary grade', () => {
@@ -78,13 +78,22 @@ describe('hdith.com metadata display', () => {
 		expect(opinions[0]).toMatchObject({ grader_en: null, grader_name_en: null, grade_en: null });
 	});
 
-	test('forces the primary grades for Bukhari and Muslim to authentic green', () => {
-		for (const bookId of [1, 2]) {
-			const opinions = withPrimaryGrade([], {
-				actual: { bookId }, ar: { grader_shortName: 'المصنف', grade_grade: 'صحيح' }
-			});
-			expect(opinions[0].grade_color).toBe('oklch(58% .135 155)');
-		}
+	test('maps legacy grade ID ranges to the four grade colors', () => {
+		expect([[0, 1], [199, 1], [200, 2], [499, 2], [500, 3], [599, 3], [600, 4], [1999, 4]]
+			.map(([id]) => legacyGradeCategoryForId(id))).toEqual([1, 1, 2, 2, 3, 3, 4, 4]);
+		expect(legacyGradeCategoryForId(-1)).toBe(0);
+		expect(legacyGradeCategoryForId(2000)).toBe(0);
+		expect(legacyGradeCategoryForId('not-an-id')).toBe(0);
+		expect(legacyGradeCategoryForId(null)).toBe(0);
+		expect(legacyGradeColorForId(2000)).toBe('oklch(58% .02 250)');
+		expect(legacyGradeColorForId(100)).toBe('oklch(58% .135 155)');
+		expect(legacyGradeColorForId(250)).toBe('oklch(68% .105 155)');
+		expect(legacyGradeColorForId(550)).toBe('oklch(57% .165 22)');
+		expect(legacyGradeColorForId(700)).toBe('oklch(68% .115 22)');
+		const opinions = withPrimaryGrade([], {
+			grade: { id: 550 }, ar: { grader_shortName: 'المصنف', grade_grade: 'ضعيف' }
+		});
+		expect(opinions[0]).toMatchObject({ grade_color: 'oklch(57% .165 22)', legacy_grade_id: 550 });
 	});
 
 	test('deduplicates repeated grade-grader pairs while retaining distinct opinions', () => {
@@ -319,6 +328,8 @@ describe('hdith.com metadata display', () => {
 		expect(script).toContain("body.scrollHeight > body.clientHeight + 1");
 		expect(script).toContain("button.setAttribute('aria-expanded', 'true')");
 		expect(css).toContain('.hadith-mushabihah-section .similar-list .h:lang(ar) { text-align: start; }');
+		expect(css).toContain('.hadith-mushabihah-section .similar-list article.hadith-language-item > header:lang(en)');
+		expect(css).toContain('.hadith-mushabihah-section .similar-list article.hadith-language-item > header:lang(ar) { text-align: start; }');
 		expect(css).toContain('.hadith-narrator-marker .hadith-narrator-ordinal { align-items: center;');
 		expect(css).toMatch(/\.hadith-narrator-marker \.hadith-narrator-ordinal \{[^}]*font-size: calc\(var\(--f-size-ar\) \* \.85\);/);
 		expect(css).toMatch(/\.hadith-narrator-marker \.hadith-narrator-connector-label \{[^}]*font-size: calc\(var\(--f-size-ar\) \* \.8\);/);

@@ -13,6 +13,7 @@ const { homedir } = require('os');
 const Hadith = require('../lib/Hadith');
 const HadithRevision = require('../lib/HadithRevision');
 const HdithEnrichment = require('../lib/HdithEnrichment');
+const HdithMetadata = require('../lib/HdithMetadata');
 const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
@@ -242,6 +243,93 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         });
         VirtualHadithSnapshot.queueHadith(ids[0]);
       }
+
+    } else if (type === 'hdith_grade') {
+      await HdithMetadata.ensureEditableColumns();
+      var gradeId = parseInt(ids[0], 10);
+      var gradeHadithId = null;
+      if (col === 'add' || col === 'reorder') {
+        gradeHadithId = gradeId;
+        if (!Number.isInteger(gradeHadithId) || gradeHadithId <= 0)
+          throw createError(400, 'Invalid hadith ID');
+        var gradeHadith = (await global.query(`SELECT id FROM hadiths WHERE id=${gradeHadithId} LIMIT 1`))[0];
+        if (!gradeHadith)
+          throw createError(404, 'Hadith not found');
+        if (col === 'reorder') {
+          var requestedGradeOrder = String(status.value || '').split(',').map(value => Number(value)).filter(Number.isSafeInteger);
+          var existingGradeOrder = (await global.query(`SELECT id FROM hdith_hadith_grades WHERE hadith_id=${gradeHadithId} ORDER BY ordinal, id`)).map(row => Number(row.id));
+          if (!requestedGradeOrder.length
+            || new Set(requestedGradeOrder).size !== requestedGradeOrder.length
+            || requestedGradeOrder.some(id => !existingGradeOrder.includes(id)))
+            throw createError(400, 'Invalid scholarly grade order');
+          requestedGradeOrder.push(...existingGradeOrder.filter(id => !requestedGradeOrder.includes(id)));
+          var reorderCases = requestedGradeOrder.map((id, index) => `WHEN ${id} THEN ${index + 1}`).join(' ');
+          await global.query(`UPDATE hdith_hadith_grades SET ordinal=CASE id ${reorderCases} END WHERE hadith_id=${gradeHadithId}`);
+          status.code = 200;
+          status.message = 'Scholarly grades reordered';
+        } else {
+          var gradeOrdinal = Number((await global.query(`SELECT COALESCE(MAX(ordinal), 0) + 1 AS ordinal FROM hdith_hadith_grades WHERE hadith_id=${gradeHadithId}`))[0].ordinal);
+          var sourceSlug = `admin-${crypto.randomBytes(6).toString('hex')}`;
+          var insertGrade = await global.query(`INSERT INTO hdith_hadith_grades
+            (hadith_id, ordinal, source_slug, grader, grader_en, grade, grade_en, grade_category_id, grade_color, source_driver, source_url)
+            VALUES (${gradeHadithId}, ${gradeOrdinal}, ${MySQL.escape(sourceSlug)}, 'محدّث', 'Scholar', 'غير محدد', 'Unspecified', 0, ${MySQL.escape(HdithMetadata.gradeColorForCategory(0))}, 'admin', '')`);
+          status.createdGradeId = Number(insertGrade.insertId);
+          status.code = 200;
+          status.message = 'Scholarly grade added';
+        }
+      } else {
+        if (!Number.isInteger(gradeId) || gradeId <= 0)
+          throw createError(400, 'Invalid scholarly grade ID');
+        var gradeRow = (await global.query(`SELECT * FROM hdith_hadith_grades WHERE id=${gradeId} LIMIT 1`))[0];
+        if (!gradeRow)
+          throw createError(404, 'Scholarly grade not found');
+        gradeHadithId = Number(gradeRow.hadith_id);
+        if (col === 'delete') {
+          await global.query(`DELETE FROM hdith_hadith_grades WHERE id=${gradeId}`);
+          status.code = 200;
+          status.message = 'Scholarly grade deleted';
+		} else if (col === 'grade_category_id') {
+          var gradeCategoryId = Number(status.value);
+          var gradeColor = HdithMetadata.gradeColorForCategory(gradeCategoryId);
+          if (!Number.isInteger(gradeCategoryId) || !gradeColor)
+            throw createError(400, 'Invalid scholarly grade color');
+          await global.query(`UPDATE hdith_hadith_grades SET grade_category_id=${gradeCategoryId}, grade_color=${MySQL.escape(gradeColor)} WHERE id=${gradeId}`);
+          status.value = String(gradeCategoryId);
+          status.fields = { grade_category_id: String(gradeCategoryId), grade_color: gradeColor };
+          status.code = 200;
+          status.message = 'Scholarly grade color updated';
+		} else if (['grade', 'grader', 'grade_en', 'grader_en'].includes(col)) {
+		  if (col === 'grade_en' && Utils.isFalsey(status.value))
+			status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic hadith grade into concise scholarly English. Return only the translation:\n${gradeRow.grade}`));
+		  else if (col === 'grader_en' && Utils.isFalsey(status.value))
+			status.value = Utils.trimToEmpty(await Utils.openai(`Transliterate this Arabic scholar name using ALA-LC. Return only the transliteration:\n${gradeRow.grader}`));
+		  await global.query(`UPDATE hdith_hadith_grades SET ${col}=${sql(status.value)} WHERE id=${gradeId}`);
+          status.code = 200;
+          status.message = 'Scholarly grade updated';
+        } else {
+          throw createError(400, `Invalid scholarly grade field '${col}'`);
+        }
+      }
+      await runHadithPostUpdateTasks(gradeHadithId);
+
+    } else if (type === 'hdith_sharh') {
+      await HdithMetadata.ensureEditableColumns();
+      var sharhId = parseInt(ids[0], 10);
+      if (!Number.isInteger(sharhId) || sharhId <= 0)
+        throw createError(400, 'Invalid explanation ID');
+      var sharhRow = (await global.query(`SELECT id, hadith_id, text, text_en FROM hdith_hadith_sharh WHERE id=${sharhId} LIMIT 1`))[0];
+      if (!sharhRow)
+        throw createError(404, 'Explanation not found');
+	  if (col === 'text' || col === 'text_en') {
+		if (col === 'text_en' && Utils.isFalsey(status.value))
+		  status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic hadith explanation into clear scholarly English. Preserve Markdown structure and return only the translation:\n${sharhRow.text}`));
+		await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sqlPreserveWhitespace(status.value)} WHERE id=${sharhId}`);
+        status.code = 200;
+        status.message = 'Explanation updated';
+      } else {
+        throw createError(400, `Invalid explanation field '${col}'`);
+      }
+      await runHadithPostUpdateTasks(sharhRow.hadith_id);
 
     } else if (type == 'tags') {
       var result = await global.query(`UPDATE tags SET ${col}=${sql(status.value)} WHERE id=${ids[0]}`);

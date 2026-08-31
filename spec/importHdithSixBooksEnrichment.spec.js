@@ -286,13 +286,12 @@ describe('hdith.com six-book enrichment importer', () => {
 		})]);
 	});
 
-	test('renders all indexed grader opinions on a hadith item', () => {
-		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
-		expect(template).toContain('hadith-grader-opinions');
-		expect(template).toContain('graderOpinions.forEach');
-		expect(template).toContain('opinion.source_url');
-		expect(template).toContain('if (graderOpinions.length)');
-		expect(template).not.toContain('graderOpinions.length && !hasHadithClassification');
+	test('renders all grader opinions in the scholarly grades detail section', () => {
+		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
+		expect(template).toContain('metadata.grades.forEach');
+		expect(template).toContain('grade.source_url');
+		expect(template).toContain('hadith-grade-opinion');
+		expect(template).not.toContain('hadith-grader-opinions');
 	});
 
 	test('allows Muslim suffix differences but preserves suffixes for other books', () => {

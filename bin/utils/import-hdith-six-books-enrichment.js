@@ -174,7 +174,7 @@ async function scrapeBook(page, config) {
 	if (options.apply && ignoresExternalGrades(config)) {
 		const connection = await getConnection();
 		await query(connection, `DELETE hg FROM hdith_hadith_grades hg
-			JOIN hadiths h ON h.id=hg.hadith_id WHERE h.bookId=?`, [config.bookId]);
+			JOIN hadiths h ON h.id=hg.hadith_id WHERE h.bookId=? AND COALESCE(hg.source_driver, '')<>'admin'`, [config.bookId]);
 	}
 	const bookMatcher = await createBookMatcher(config);
 	let resumeRecord = options.resumeSourceId && config.sourceSlug === options.books[0]
@@ -837,14 +837,21 @@ function normalizeArabicForMatch(value) {
 }
 
 async function replaceGraderOpinions(connection, hadithId, opinions) {
-	await query(connection, 'DELETE FROM hdith_hadith_grades WHERE hadith_id=?', [hadithId]);
+	const translations = new Map((await query(connection, `SELECT source_slug, ordinal, grader_en, grade_en, grade_category_id, grade_color
+		FROM hdith_hadith_grades WHERE hadith_id=? AND COALESCE(source_driver, '')<>'admin'`, [hadithId]))
+		.map(row => [row.source_slug, row]));
+	await query(connection, "DELETE FROM hdith_hadith_grades WHERE hadith_id=? AND COALESCE(source_driver, '')<>'admin'", [hadithId]);
 	for (let index = 0; index < opinions.length; index++) {
 		const opinion = opinions[index];
+		const translation = translations.get(opinion.sourceSlug) || {};
+		const ordinal = Number.isFinite(Number(translation.ordinal)) ? Number(translation.ordinal) : index + 1;
+		const gradeCategoryId = translation.grade_category_id !== null && translation.grade_category_id !== undefined ? translation.grade_category_id : opinion.gradeCategoryId;
+		const gradeColor = translation.grade_color || opinion.gradeColor;
 		await query(connection, `INSERT INTO hdith_hadith_grades
-			(hadith_id, ordinal, source_slug, grader, grader_source_id, grade, grade_category_id, grade_color,
+			(hadith_id, ordinal, source_slug, grader, grader_en, grader_source_id, grade, grade_en, grade_category_id, grade_color,
 			 source_name, source_id, book_page, source_driver, source_url)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [hadithId, index + 1, opinion.sourceSlug, opinion.grader,
-				opinion.graderSourceId, opinion.grade, opinion.gradeCategoryId, opinion.gradeColor, opinion.source, opinion.sourceId,
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [hadithId, ordinal, opinion.sourceSlug, opinion.grader,
+				translation.grader_en || null, opinion.graderSourceId, opinion.grade, translation.grade_en || null, gradeCategoryId, gradeColor, opinion.source, opinion.sourceId,
 				opinion.bookPage, opinion.driver, opinion.sourceUrl]);
 	}
 }
@@ -1040,6 +1047,8 @@ async function sourceBookAuthor(page, bookId) {
 }
 
 async function replaceSharh(connection, hadithId, items) {
+	const translations = new Map((await query(connection, 'SELECT source_entry_id, text_en FROM hdith_hadith_sharh WHERE hadith_id=?', [hadithId]))
+		.map(row => [Number(row.source_entry_id), row.text_en]));
 	await query(connection, 'DELETE FROM hdith_hadith_sharh WHERE hadith_id=?', [hadithId]);
 	for (const item of items) {
 		let sourceId = sharhSourceIdCache.get(item.sourceBookId);
@@ -1052,11 +1061,11 @@ async function replaceSharh(connection, hadithId, items) {
 			sharhSourceIdCache.set(item.sourceBookId, sourceId);
 		}
 		await query(connection, `INSERT INTO hdith_hadith_sharh
-			(hadith_id, source_id, source_entry_id, chapter, page_num, text, format, source_url)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			(hadith_id, source_id, source_entry_id, chapter, page_num, text, text_en, format, source_url)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE source_id=VALUES(source_id), chapter=VALUES(chapter), page_num=VALUES(page_num),
-				text=VALUES(text), format=VALUES(format), source_url=VALUES(source_url)`,
-		[hadithId, sourceId, item.sourceEntryId, item.chapter, item.page, item.text, item.format, item.sourceUrl]);
+				text=VALUES(text), text_en=VALUES(text_en), format=VALUES(format), source_url=VALUES(source_url)`,
+		[hadithId, sourceId, item.sourceEntryId, item.chapter, item.page, item.text, translations.get(Number(item.sourceEntryId)) || null, item.format, item.sourceUrl]);
 	}
 }
 
@@ -1174,6 +1183,18 @@ async function ensureSchema() {
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_grades' AND column_name='grade_color' LIMIT 1`);
 	if (!gradeColorColumn.length)
 		await query(connection, 'ALTER TABLE hdith_hadith_grades ADD COLUMN grade_color VARCHAR(40) NULL AFTER grade_category_id');
+	const graderEnglishColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_grades' AND column_name='grader_en' LIMIT 1`);
+	if (!graderEnglishColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_grades ADD COLUMN grader_en VARCHAR(255) NULL AFTER grader');
+	const gradeEnglishColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_grades' AND column_name='grade_en' LIMIT 1`);
+	if (!gradeEnglishColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_grades ADD COLUMN grade_en TEXT NULL AFTER grade');
+	const sharhEnglishColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_sharh' AND column_name='text_en' LIMIT 1`);
+	if (!sharhEnglishColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_sharh ADD COLUMN text_en LONGTEXT NULL AFTER text');
 	const linkBookTitleColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='source_book_title' LIMIT 1`);
 	if (!linkBookTitleColumn.length)
@@ -1296,15 +1317,15 @@ function schemaStatements() {
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_hadith_sharh (
 			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, hadith_id INT NOT NULL, source_id INT NOT NULL, source_entry_id INT NOT NULL,
-			chapter VARCHAR(512) NULL, page_num INT NULL, text LONGTEXT NOT NULL, format VARCHAR(8) NOT NULL DEFAULT 'md', source_url VARCHAR(512) NOT NULL,
+			chapter VARCHAR(512) NULL, page_num INT NULL, text LONGTEXT NOT NULL, text_en LONGTEXT NULL, format VARCHAR(8) NOT NULL DEFAULT 'md', source_url VARCHAR(512) NOT NULL,
 			UNIQUE KEY hdith_sharh_entry (hadith_id, source_entry_id), KEY hdith_sharh_source (source_id), FULLTEXT KEY hdith_sharh_text (text),
 			CONSTRAINT hdith_sharh_hadith_fk FOREIGN KEY (hadith_id) REFERENCES hadiths(id) ON DELETE CASCADE ON UPDATE CASCADE,
 			CONSTRAINT hdith_sharh_source_fk FOREIGN KEY (source_id) REFERENCES hdith_sharh_sources(id) ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_hadith_grades (
 			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, hadith_id INT NOT NULL, ordinal SMALLINT UNSIGNED NOT NULL,
-			source_slug VARCHAR(32) NOT NULL, grader VARCHAR(255) NOT NULL, grader_source_id INT NULL,
-			grade TEXT NOT NULL, grade_category_id INT NULL, grade_color VARCHAR(40) NULL, source_name VARCHAR(255) NULL, source_id INT NULL,
+			source_slug VARCHAR(32) NOT NULL, grader VARCHAR(255) NOT NULL, grader_en VARCHAR(255) NULL, grader_source_id INT NULL,
+			grade TEXT NOT NULL, grade_en TEXT NULL, grade_category_id INT NULL, grade_color VARCHAR(40) NULL, source_name VARCHAR(255) NULL, source_id INT NULL,
 			book_page VARCHAR(64) NULL, source_driver VARCHAR(32) NULL, source_url VARCHAR(512) NOT NULL,
 			UNIQUE KEY hdith_grade_source (hadith_id, source_slug), KEY hdith_grade_hadith (hadith_id, ordinal),
 			CONSTRAINT hdith_grade_hadith_fk FOREIGN KEY (hadith_id) REFERENCES hadiths(id) ON DELETE CASCADE ON UPDATE CASCADE

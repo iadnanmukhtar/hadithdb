@@ -7,33 +7,51 @@
 	metadata.similar = Array.isArray(metadata.similar) ? metadata.similar.filter(reference => reference.internal_ref) : [];
 	const metadataBase = `hadith-metadata-${i.actual ? i.actual.id : i.id}`;
 	const editableHadithId = i.actual ? i.actual.id : i.id;
+	const gradeColorOptions = Array.isArray(metadata.gradeColors) ? metadata.gradeColors : [];
 	function arabicOrdinal(value) { return String(value).replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[Number(digit)]); }
 	function bilingualLabel(english, arabic) { return [english, arabic].filter(Boolean).join(' — '); }
+	function legacyGradeColor(gradeId) {
+		if (gradeId === null || gradeId === undefined || gradeId === '') return (gradeColorOptions.find(colorOption => colorOption.id === 0) || {}).color || '';
+		const id = Number(gradeId);
+		const categoryId = Number.isInteger(id) && id >= 0 && id <= 1999 ? (id <= 199 ? 1 : (id <= 499 ? 2 : (id <= 599 ? 3 : 4))) : 0;
+		const option = gradeColorOptions.find(colorOption => colorOption.id === categoryId);
+		return option ? option.color : '';
+	}
 %>
 <section class="hadith-metadata-panel col-12" aria-label="Hadith metadata">
 	<div class="hadith-metadata-content">
 		<% if (metadata.grades.length) { %>
 		<section class="hadith-metadata-section mt-4" id="<%= metadataBase %>-grades" data-toc-heading-target data-toc-heading-key="grades">
 			<heading class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Scholarly Grades</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">أحكام المحدّثين</h3></heading>
-			<div class="hadith-grade-list">
+			<div class="hadith-grade-list"<% if (site.editMode) { %> data-hdith-grade-sort-list data-hadith-id="<%= editableHadithId %>"<% } %>>
 				<% metadata.grades.forEach(function (grade) { const hasEnglishGrade = !!(grade.grade_en && grade.grader_en); %>
-				<div class="row hadith-grade-opinion<%= grade.primary ? ' hadith-grade-opinion-primary' : '' %>" dir="ltr">
+				<div class="row hadith-grade-opinion<%= grade.primary ? ' hadith-grade-opinion-primary' : '' %>" dir="ltr"<% if (site.editMode && grade.id) { %> data-hdith-grade-order-id="<%= grade.id %>"<% } %><% if (site.editMode && !grade.primary) { %> data-hdith-grade-sort-id="<%= grade.id %>"<% } %>>
 					<% if (grade.primary && site.editMode) { %>
 					<div class="col-12 hadith-grade-opinion-en hadith-legacy-grade-editor" lang="en">
+						<span class="hadith-legacy-grade-color" style="--hadith-grade-color: <%= grade.grade_color || legacyGradeColor(i.grade && i.grade.id) %>" aria-hidden="true"><span class="hadith-grade-color-indicator"></span></span>
 						<select class="_e form-select form-select-sm" data-id="<%= editableHadithId %>" data-prop="hadith.gradeId" aria-label="Legacy hadith grade" title="Legacy hadith grade">
-							<% global.grades.forEach(function (legacyGrade) { %><option value="<%= legacyGrade.id %>" <%=(legacyGrade.id == (i.grade && i.grade.id)) ? 'selected' :''%>><%= bilingualLabel(legacyGrade.grade_en, legacyGrade.grade) %></option><% }); %>
+							<% global.grades.forEach(function (legacyGrade) { %><option value="<%= legacyGrade.id %>" data-grade-color="<%= legacyGradeColor(legacyGrade.id) %>" <%=(legacyGrade.id == (i.grade && i.grade.id)) ? 'selected' :''%>><%= bilingualLabel(legacyGrade.grade_en, legacyGrade.grade) %></option><% }); %>
 						</select>
 						<select class="_e form-select form-select-sm" data-id="<%= editableHadithId %>" data-prop="hadith.graderId" aria-label="Legacy hadith grader" title="Legacy hadith grader">
 							<% global.graders.forEach(function (legacyGrader) { %><option value="<%= legacyGrader.id %>" <%=(legacyGrader.id == (i.grader && i.grader.id)) ? 'selected' :''%>><%= bilingualLabel(legacyGrader.shortName_en, legacyGrader.shortName) %></option><% }); %>
 						</select>
 					</div>
+					<% } else if (site.editMode) { %>
+					<div class="col-md-6 col-sm-12 hadith-grade-opinion-en hadith-scholarly-grade-editor" lang="en">
+						<div class="hadith-scholarly-grade-copy"><span class="_e hadith-scholarly-grade-value" data-id="<%= grade.id %>" data-prop="hdith_grade.grade_en" data-placeholder="English grade" aria-label="English grade"><%= grade.grade_en || '' %></span> (<span class="_e hadith-scholarly-grader-value" data-id="<%= grade.id %>" data-prop="hdith_grade.grader_en" data-placeholder="English grader" aria-label="English grader"><%= grade.grader_en || '' %></span>)</div>
+					</div>
+					<div class="col-md-6 col-sm-12 hadith-grade-opinion-ar hadith-scholarly-grade-editor" lang="ar" dir="rtl">
+						<div class="hadith-scholarly-grade-copy"><span class="_e hadith-scholarly-grade-value" data-id="<%= grade.id %>" data-prop="hdith_grade.grade" data-placeholder="الحكم" aria-label="الحكم"><%= grade.grade %></span> (<span class="_e hadith-scholarly-grader-value" data-id="<%= grade.id %>" data-prop="hdith_grade.grader" data-placeholder="المحدّث" aria-label="المحدّث"><%= grade.grader %></span>)</div>
+						<span class="hadith-scholarly-grade-actions"><button type="button" class="btn btn-sm btn-outline-secondary hadith-grade-drag-handle" title="Drag to reorder" aria-label="Drag to reorder"><span class="bi bi-grip-vertical" aria-hidden="true"></span></button><span class="hadith-grade-color-editor" style="--hadith-grade-color: <%= grade.grade_color %>"><span class="hadith-grade-color-indicator" data-hdith-grade-color-indicator aria-hidden="true"></span><select class="_e hadith-grade-color-select" data-id="<%= grade.id %>" data-prop="hdith_grade.grade_category_id" aria-label="Grade color" title="Grade color"><% gradeColorOptions.forEach(function (colorOption) { %><option value="<%= colorOption.id %>" data-color="<%= colorOption.color %>" <%= Number(grade.grade_category_id) === colorOption.id ? 'selected' : '' %>><%= colorOption.label %></option><% }); %></select></span><button type="button" class="_click btn btn-sm btn-outline-danger hadith-grade-delete" data-id="<%= grade.id %>" data-prop="hdith_grade.delete" data-loading-label="Deleting" title="Delete scholarly grade"><span class="bi bi-trash" aria-hidden="true"></span></button></span>
+					</div>
 					<% } else if (hasEnglishGrade) { %>
 					<div class="col-md-6 col-sm-12 hadith-grade-opinion-en" lang="en"><span><%= grade.grade_en %></span> (<span<% if (grade.grader_name_en) { %> title="<%= grade.grader_name_en %>"<% } %>><%= grade.grader_en %></span>)</div>
 					<% } %>
-					<% if (!(grade.primary && site.editMode)) { %><div class="col-md-6 col-sm-12 hadith-grade-opinion-ar<%= hasEnglishGrade ? '' : ' ms-md-auto' %>" lang="ar" dir="rtl"><% if (grade.grade_color) { %><span class="hadith-grade-color" style="--hadith-grade-color: <%= grade.grade_color %>" aria-hidden="true"></span><% } %><span><%= grade.grade %></span> (<% if (grade.source_url) { %><a href="<%= grade.source_url %>" target="_blank" rel="noopener noreferrer"><%= grade.grader %></a><% } else { %><span<% if (grade.grader_name) { %> title="<%= grade.grader_name %>"<% } %>><%= grade.grader %></span><% } %>)</div><% } %>
+					<% if (!site.editMode) { %><div class="col-md-6 col-sm-12 hadith-grade-opinion-ar<%= hasEnglishGrade ? '' : ' ms-md-auto' %>" lang="ar" dir="rtl"><% if (grade.grade_color) { %><span class="hadith-grade-color" style="--hadith-grade-color: <%= grade.grade_color %>" aria-hidden="true"></span><% } %><span><%= grade.grade %></span> (<% if (grade.source_url) { %><a href="<%= grade.source_url %>" target="_blank" rel="noopener noreferrer"><%= grade.grader %></a><% } else { %><span<% if (grade.grader_name) { %> title="<%= grade.grader_name %>"<% } %>><%= grade.grader %></span><% } %>)</div><% } %>
 				</div>
 				<% }); %>
 			</div>
+			<% if (site.editMode) { %><button type="button" class="_click btn btn-sm btn-outline-primary hadith-grade-add" data-id="<%= editableHadithId %>" data-prop="hdith_grade.add" data-loading-label="Adding"><span class="bi bi-plus-lg" aria-hidden="true"></span> Add scholarly grade</button><% } %>
 		</section>
 		<% } %>
 
@@ -48,7 +66,10 @@
 		<% if (metadata.sharh.length) { %>
 		<section class="hadith-metadata-section mt-4" id="<%= metadataBase %>-sharh" data-toc-heading-target data-toc-heading-key="sharh">
 			<heading class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Explanations</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">الشرح</h3></heading>
-			<div lang="ar" dir="rtl"><% metadata.sharh.forEach(function (entry, entryIndex) { const sharhBodyId = `${metadataBase}-sharh-body-${entryIndex + 1}`; %><article class="hadith-sharh-entry"><h4 class="fs-6"><a href="<%= entry.source_url %>" target="_blank" rel="noopener noreferrer"><%= entry.title %></a></h4><div class="hadith-sharh-collapse-wrap"><div class="hadith-sharh-body intro" id="<%= sharhBodyId %>" data-hadith-sharh-collapsible><%- utils.markdownToHtml(entry.text) %></div><button type="button" class="hadith-sharh-more" data-hadith-sharh-expand aria-expanded="false" aria-controls="<%= sharhBodyId %>" hidden>مزيد...</button></div></article><% }); %></div>
+			<div><% metadata.sharh.forEach(function (entry, entryIndex) { const sharhBodyId = `${metadataBase}-sharh-body-${entryIndex + 1}`; const sharhEnglishBodyId = `${sharhBodyId}-en`; %><article class="hadith-sharh-entry" data-hdith-sharh-id="<%= entry.id %>"><h4 class="fs-6" lang="ar" dir="rtl"><a href="<%= entry.source_url %>" target="_blank" rel="noopener noreferrer"><%= entry.title %></a></h4><div class="row hadith-sharh-columns" dir="ltr">
+				<% if (site.editMode) { %><div class="col-md-6 col-sm-12 hadith-sharh-column" lang="en"><div class="_e hadith-sharh-body intro" data-id="<%= entry.id %>" data-prop="hdith_sharh.text_en" data-edit-format="md" data-markdown-source="<%= entry.text_en || '' %>" data-markdown-empty-html="&hellip;"><%- entry.text_en ? utils.markdownToHtml(entry.text_en) : '&hellip;' %></div></div><div class="col-md-6 col-sm-12 hadith-sharh-column" lang="ar" dir="rtl"><div class="_e hadith-sharh-body intro" data-id="<%= entry.id %>" data-prop="hdith_sharh.text" data-edit-format="md" data-markdown-source="<%= entry.text %>"><%- utils.markdownToHtml(entry.text) %></div></div>
+				<% } else { %><% if (entry.text_en) { %><div class="col-md-6 col-sm-12 hadith-sharh-column" lang="en"><div class="hadith-sharh-collapse-wrap"><div class="hadith-sharh-body intro" id="<%= sharhEnglishBodyId %>" data-hadith-sharh-collapsible><%- utils.markdownToHtml(entry.text_en) %></div><button type="button" class="hadith-sharh-more" data-hadith-sharh-expand aria-expanded="false" aria-controls="<%= sharhEnglishBodyId %>" hidden>More...</button></div></div><% } %><div class="<%= entry.text_en ? 'col-md-6' : 'col-12' %> col-sm-12 hadith-sharh-column" lang="ar" dir="rtl"><div class="hadith-sharh-collapse-wrap"><div class="hadith-sharh-body intro" id="<%= sharhBodyId %>" data-hadith-sharh-collapsible><%- utils.markdownToHtml(entry.text) %></div><button type="button" class="hadith-sharh-more" data-hadith-sharh-expand aria-expanded="false" aria-controls="<%= sharhBodyId %>" hidden>مزيد...</button></div></div><% } %>
+			</div></article><% }); %></div>
 		</section>
 		<% } %>
 
