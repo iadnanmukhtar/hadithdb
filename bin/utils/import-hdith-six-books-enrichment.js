@@ -15,6 +15,7 @@ const { chromium } = require('playwright-core');
 const util = require('util');
 const zlib = require('zlib');
 const HadithAttributions = require('../../lib/HadithAttributions');
+const Hadith = require('../../lib/Hadith');
 
 const BASE_URL = 'https://hdith.com';
 const LIGHTPANDA = process.env.LIGHTPANDA_BIN || path.join(os.homedir(), '.local', 'bin', 'lightpanda');
@@ -439,6 +440,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 	if (localRows.length !== 1) throw new Error(`${config.alias}:${record.num}: expected one local hadith, found ${localRows.length}.`);
 	const hadithId = localRows[0].id;
 	const localReference = localRows[0].num;
+	await correctLocalChainBodySplit(connection, hadithId, record.bodyStart);
 	await query(connection, 'UPDATE hadiths SET body_start=? WHERE id=? AND NOT (body_start <=> ?)',
 		[record.bodyStart, hadithId, record.bodyStart]);
 	if (!refresh) {
@@ -604,6 +606,101 @@ function normalizeHadithForComparison(value) {
 		.replace(/رحمه\s+الله(?:\s+تعالى)?/gu, ' ')
 		.replace(/[إأآٱ]/g, 'ا').replace(/[ئى]/g, 'ي').replace(/ؤ/g, 'و').replace(/ة/g, 'ه')
 		.replace(/[^\u0621-\u063a\u0641-\u064a0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function normalizedArabicTokensWithOffsets(value) {
+	const source = String(value || '');
+	const tokens = [];
+	const expression = /[\u0621-\u063a\u0641-\u064a\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06edـ]+|[0-9٠-٩]+/gu;
+	for (const match of source.matchAll(expression)) {
+		const normalized = normalizeHadithForComparison(match[0]);
+		if (normalized) tokens.push({ value: normalized, start: match.index, end: match.index + match[0].length });
+	}
+	return tokens;
+}
+
+function proposedChainBodySplit(chain, body, sourceMatn) {
+	const originalChain = String(chain || '').trim();
+	const originalBody = String(body || '').trim();
+	const combined = [originalChain, originalBody].filter(Boolean).join(' ');
+	const localTokens = normalizedArabicTokensWithOffsets(combined);
+	let sourceTokens = normalizeHadithForComparison(sourceMatn).split(' ').filter(Boolean);
+	while (sourceTokens.length && /^\d+$/u.test(sourceTokens[0])) sourceTokens.shift();
+	if (!combined || sourceTokens.length < 2 || localTokens.length < 2) return null;
+
+	const candidates = [];
+	for (let index = 0; index < localTokens.length; index++) {
+		if (localTokens[index].value !== sourceTokens[0]) continue;
+		const compared = Math.min(30, sourceTokens.length, localTokens.length - index);
+		if (compared < Math.min(4, sourceTokens.length)) continue;
+		let exact = 0;
+		for (let offset = 0; offset < compared; offset++)
+			if (localTokens[index + offset].value === sourceTokens[offset]) exact++;
+		const score = exact / compared;
+		if (score >= 0.9) candidates.push({ index, score, compared });
+	}
+	if (!candidates.length) return null;
+	candidates.sort((left, right) => right.score - left.score || right.compared - left.compared || left.index - right.index);
+	if (candidates[1] && candidates[1].score === candidates[0].score && candidates[1].compared === candidates[0].compared)
+		return null;
+	let boundary = localTokens[candidates[0].index].start;
+	while (boundary > 0 && /[\s*_{[(«“\"]/.test(combined[boundary - 1])) boundary--;
+	const correctedChain = combined.slice(0, boundary).trim();
+	const correctedBody = combined.slice(boundary).trim();
+	if (!correctedBody || (correctedChain === originalChain && correctedBody === originalBody)) return null;
+	return { chain: correctedChain, body: correctedBody, score: candidates[0].score };
+}
+
+function proposedBodyFootnoteSplit(body, footnote, sourceMatn) {
+	const originalBody = String(body || '').trim();
+	const originalFootnote = String(footnote || '').trim();
+	const localTokens = normalizedArabicTokensWithOffsets(originalBody);
+	let sourceTokens = normalizeHadithForComparison(sourceMatn).split(' ').filter(Boolean);
+	while (sourceTokens.length && /^\d+$/u.test(sourceTokens[0])) sourceTokens.shift();
+	if (sourceTokens.length < 4 || localTokens.length < 4) return null;
+	const startCompared = Math.min(30, sourceTokens.length, localTokens.length);
+	let startExact = 0;
+	for (let index = 0; index < startCompared; index++)
+		if (sourceTokens[index] === localTokens[index].value) startExact++;
+	if (startExact / startCompared < 0.9) return null;
+
+	const anchorLength = Math.min(8, sourceTokens.length);
+	const suffix = sourceTokens.slice(-anchorLength);
+	const expectedStart = sourceTokens.length - anchorLength;
+	const candidates = [];
+	for (let index = 0; index <= localTokens.length - anchorLength; index++) {
+		if (suffix.every((token, offset) => token === localTokens[index + offset].value))
+			candidates.push(index);
+	}
+	if (!candidates.length) return null;
+	candidates.sort((left, right) => Math.abs(left - expectedStart) - Math.abs(right - expectedStart));
+	const suffixStart = candidates[0];
+	if (Math.abs(suffixStart - expectedStart) > Math.max(10, Math.ceil(sourceTokens.length * 0.15))) return null;
+	let boundary = localTokens[suffixStart + anchorLength - 1].end;
+	while (boundary < originalBody.length && /[\s*_.،؛:!?؟۔»”\"')}\]ﷺؓ]/.test(originalBody[boundary])) boundary++;
+	const correctedBody = originalBody.slice(0, boundary).trim();
+	const moved = originalBody.slice(boundary).trim();
+	const correctedFootnote = [moved, originalFootnote].filter(Boolean).join(' ').trim();
+	if (!correctedBody || (correctedBody === originalBody && correctedFootnote === originalFootnote)) return null;
+	return { body: correctedBody, footnote: correctedFootnote || null };
+}
+
+async function correctLocalChainBodySplit(connection, hadithId, sourceMatn) {
+	const rows = await query(connection, 'SELECT chain, chain_en, body, footnote FROM hadiths WHERE id=? LIMIT 1', [hadithId]);
+	if (!rows[0]) return false;
+	const split = sourceMatn && proposedChainBodySplit(rows[0].chain, rows[0].body, sourceMatn);
+	const chain = split ? split.chain : String(rows[0].chain || '').trim();
+	let body = split ? split.body : String(rows[0].body || '').trim();
+	let footnote = String(rows[0].footnote || '').trim() || null;
+	const bodyFootnoteSplit = sourceMatn && proposedBodyFootnoteSplit(body, footnote, sourceMatn);
+	if (bodyFootnoteSplit) {
+		body = bodyFootnoteSplit.body;
+		footnote = bodyFootnoteSplit.footnote;
+	}
+	const chainEn = Hadith.transliteratedNarratorChain(chain).chain_en;
+	if (!split && !bodyFootnoteSplit && chainEn === String(rows[0].chain_en || '').trim()) return false;
+	await query(connection, 'UPDATE hadiths SET chain=?, body=?, footnote=?, chain_en=? WHERE id=?', [chain, body, footnote, chainEn, hadithId]);
+	return true;
 }
 
 function hadithTextSimilarity(left, right) {
@@ -1270,6 +1367,6 @@ if (require.main === module) main();
 
 module.exports = {
 	CACHE_DIR, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
-	hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, normalizeHadithForComparison, parseNarrators, parseSourceIsnadHtml, readOptions, referenceBase, referencesEquivalent,
+	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
 	enrichSingleHadith, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult
 };

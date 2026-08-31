@@ -34,6 +34,14 @@ describe('hdith.com metadata display', () => {
 		expect(opinions).toHaveLength(1);
 	});
 
+	test('does not manufacture an English rendering for an untranslated primary grade', () => {
+		const opinions = withPrimaryGrade([], {
+			ar: { grader_shortName: 'محدث', grade_grade: 'لفظ غير مترجم' }
+		});
+		expect(opinions).toHaveLength(1);
+		expect(opinions[0]).toMatchObject({ grader_en: null, grader_name_en: null, grade_en: null });
+	});
+
 	test('deduplicates repeated grade-grader pairs while retaining distinct opinions', () => {
 		const opinions = uniqueGradeGraderPairs([
 			{ grader: 'الألباني', grade: 'صحيح', source_url: 'https://hdith.com/one' },
@@ -120,8 +128,12 @@ describe('hdith.com metadata display', () => {
 		expect(template).toContain('class="row hadith-grade-opinion"');
 		expect(template).toContain('hadith-grade-opinion-en');
 		expect(template).toContain('hadith-grade-opinion-ar');
-		expect(template).toContain('grade.grade_en || grade.grade');
-		expect(template).toContain('grade.grader_en || grade.grader');
+		expect(template).toContain('const hasEnglishGrade = !!(grade.grade_en && grade.grader_en)');
+		expect(template).toContain('if (hasEnglishGrade)');
+		expect(template).toContain('<%= grade.grade_en %>');
+		expect(template).toContain('<%= grade.grader_en %>');
+		expect(template).not.toContain('grade.grade_en || grade.grade');
+		expect(template).not.toContain('grade.grader_en || grade.grader');
 		expect(template).not.toContain('<ul class="mb-0">');
 		expect(template).not.toContain('grade.source_name');
 		expect(template).not.toContain('grade.book_page');

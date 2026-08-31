@@ -10,6 +10,7 @@ const mysql = require('mysql');
 const os = require('os');
 const path = require('path');
 const util = require('util');
+const Hadith = require('../../lib/Hadith');
 
 const BASE_URL = 'https://hdith.com';
 const DEFAULT_CONCURRENCY = 12;
@@ -272,7 +273,8 @@ function detailFields(html, hadith) {
 	if (!body) throw new Error(`No hadith text found on ${hadith.url}.`);
 	chain = normalizeHadithText(chain) || null;
 	body = normalizeHadithText(body);
-	return { chain, body, text: compact(`${chain || ''} ${body}`) };
+	return { chain, chain_en: Hadith.transliteratedNarratorChain(chain || '').chain_en || null,
+		body, text: compact(`${chain || ''} ${body}`) };
 }
 
 const ARABIC_MARKS = '[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]*';
@@ -311,27 +313,28 @@ async function normalizeExistingBooks() {
 	try {
 		await query(connection, 'START TRANSACTION');
 		await query(connection, `CREATE TEMPORARY TABLE hdith_normalized_hadiths (
-			id INT NOT NULL PRIMARY KEY, chain LONGTEXT NULL, body LONGTEXT NULL, text LONGTEXT NULL
+			id INT NOT NULL PRIMARY KEY, chain LONGTEXT NULL, chain_en LONGTEXT NULL, body LONGTEXT NULL, text LONGTEXT NULL
 		)`);
 		while (true) {
 			const rows = await query(connection,
-				'SELECT id, chain, body, text FROM hadiths WHERE bookId IN (?) AND id>? ORDER BY id LIMIT 500',
+				'SELECT id, chain, chain_en, body, text FROM hadiths WHERE bookId IN (?) AND id>? ORDER BY id LIMIT 500',
 				[bookIds, lastId]);
 			if (!rows.length) break;
 			const changed = [];
 			for (const row of rows) {
 				lastId = row.id;
 				const chain = normalizeHadithText(row.chain, counts);
+				const chainEn = Hadith.transliteratedNarratorChain(chain || '').chain_en || null;
 				const body = normalizeHadithText(row.body, counts);
 				const text = normalizeHadithText(row.text, counts);
-				if (chain === row.chain && body === row.body && text === row.text) continue;
-				changed.push([row.id, chain, body, text]);
+				if (chain === row.chain && chainEn === row.chain_en && body === row.body && text === row.text) continue;
+				changed.push([row.id, chain, chainEn, body, text]);
 				counts.rows++;
 			}
 			if (changed.length) {
-				await query(connection, 'INSERT INTO hdith_normalized_hadiths (id, chain, body, text) VALUES ?', [changed]);
+				await query(connection, 'INSERT INTO hdith_normalized_hadiths (id, chain, chain_en, body, text) VALUES ?', [changed]);
 				await query(connection, `UPDATE hadiths h JOIN hdith_normalized_hadiths n ON n.id=h.id
-					SET h.chain=n.chain, h.body=n.body, h.text=n.text`);
+					SET h.chain=n.chain, h.chain_en=n.chain_en, h.body=n.body, h.text=n.text`);
 				await query(connection, 'DELETE FROM hdith_normalized_hadiths');
 			}
 		}
@@ -413,10 +416,10 @@ async function replaceBook(source) {
 			const batch = source.hadiths.slice(offset, offset + 250);
 			const values = batch.map(hadith => [
 					++ordinal, source.config.id, hadith.tocId, hadith.numInChapter, hadith.h1, hadith.h2 || null, hadith.h3 || null, hadith.num,
-					hadith.num0, hadith.gradeText, hadith.chain, hadith.body, hadith.text
+					hadith.num0, hadith.gradeText, hadith.chain, hadith.chain_en, hadith.body, hadith.text
 				]);
 				await query(connection, `
-					INSERT INTO hadiths (ordinal, bookId, tocId, numInChapter, h1, h2, h3, num, num0, gradeText, chain, body, text)
+					INSERT INTO hadiths (ordinal, bookId, tocId, numInChapter, h1, h2, h3, num, num0, gradeText, chain, chain_en, body, text)
 				VALUES ?`, [values]);
 		}
 		await query(connection, 'COMMIT');

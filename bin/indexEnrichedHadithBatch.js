@@ -20,7 +20,7 @@ const query = util.promisify(connection.query).bind(connection);
 	try {
 		if (!ids.length) throw new Error('At least one valid hadith ID is required.');
 		const idList = ids.join(',');
-		const rows = await query(`SELECT h.id AS hId, h.body_start, h.hasSupplementaryTransmissions,
+		const rows = await query(`SELECT h.id AS hId, h.chain, h.chain_en, h.body, h.footnote, h.body_start, h.hasSupplementaryTransmissions,
 			h.bookId AS _bookId, book.alias AS _bookAlias
 			FROM hadiths h JOIN books book ON book.id=h.bookId
 			WHERE h.id IN (${idList}) ORDER BY h.id`);

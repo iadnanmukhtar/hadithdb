@@ -27,6 +27,8 @@ const {
 	parseLinks,
 	parseNarrators,
 	parseSourceIsnadHtml,
+	proposedBodyFootnoteSplit,
+	proposedChainBodySplit,
 	readOptions,
 	referenceBase,
 	referencesEquivalent,
@@ -217,6 +219,18 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(indexer).not.toContain('doc_as_upsert: true');
 	});
 
+	test('keeps chain boundary and transliteration fixes in future hdith imports', () => {
+		const sixBookImporter = fs.readFileSync(path.join(__dirname, '..', 'bin', 'utils', 'import-hdith-six-books-enrichment.js'), 'utf8');
+		const genericImporter = fs.readFileSync(path.join(__dirname, '..', 'bin', 'utils', 'import-hdith-book.js'), 'utf8');
+		expect(sixBookImporter).toContain('await correctLocalChainBodySplit(connection, hadithId, record.bodyStart)');
+		expect(sixBookImporter).toContain("Hadith.transliteratedNarratorChain(chain).chain_en");
+		expect(sixBookImporter).toContain('UPDATE hadiths SET chain=?, body=?, footnote=?, chain_en=? WHERE id=?');
+		expect(genericImporter).toContain("chain_en: Hadith.transliteratedNarratorChain(chain || '').chain_en || null");
+		expect(genericImporter).toContain('gradeText, chain, chain_en, body, text)');
+		expect(fs.readFileSync(path.join(__dirname, '..', 'bin', 'indexEnrichedHadithBatch.js'), 'utf8'))
+			.toContain('h.chain, h.chain_en, h.body');
+	});
+
 	test('converts sharh HTML to normalized Markdown', () => {
 		expect(sharhToMarkdown('<h2>عنوان</h2><p>شرح <strong>مهم</strong>.</p><ul><li>فائدة</li></ul>'))
 			.toBe('## عنوان\n\nشرح **مهم**.\n\n- فائدة');
@@ -299,6 +313,32 @@ describe('hdith.com six-book enrichment importer', () => {
 			normalizeHadithForComparison('حدثنا أنس عن مالك قال سمعت النبي يقول إنما الأعمال بالنيات'),
 			normalizeHadithForComparison('حدثنا زيد عن شعبة قال سمعت ابن عمر يقول نص مختلف')
 		)).toBeLessThan(0.5);
+	});
+
+	test('moves only the local chain/body boundary to the cached matn start', () => {
+		const split = proposedChainBodySplit(
+			'حَدَّثَنَا أَنَسٌ عَنْ مَالِكٍ قَالَ سَمِعْتُ النَّبِيَّ',
+			'يَقُولُ إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى',
+			'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى.'
+		);
+		expect(split).toEqual(expect.objectContaining({
+			chain: 'حَدَّثَنَا أَنَسٌ عَنْ مَالِكٍ قَالَ سَمِعْتُ النَّبِيَّ يَقُولُ',
+			body: 'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى'
+		}));
+		expect(proposedChainBodySplit('حدثنا راو', 'متن مختلف', 'كلام لا يطابق النص المحلي')).toBeNull();
+	});
+
+	test('moves local text after the cached matn ending into the footnote', () => {
+		const split = proposedBodyFootnoteSplit(
+			'*«إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى».* تَنْبِيهٌ مُلْحَقٌ',
+			'حَاشِيَةٌ قَدِيمَةٌ',
+			'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى.'
+		);
+		expect(split).toEqual({
+			body: '*«إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى».*',
+			footnote: 'تَنْبِيهٌ مُلْحَقٌ حَاشِيَةٌ قَدِيمَةٌ'
+		});
+		expect(proposedBodyFootnoteSplit('متن مختلف تماما هنا', null, 'نص لا يطابق هذا المتن')).toBeNull();
 	});
 
 	test('ignores external grader opinions for the two Sahih collections', () => {

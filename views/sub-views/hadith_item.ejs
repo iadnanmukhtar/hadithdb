@@ -247,7 +247,7 @@
 	<% if (i.remark == 0 && !isContentTranslationLang && hasHadithClassification) { const classificationParts = [hadithAttribution ? (lang === 'ar' ? hadithAttribution.title : hadithAttribution.title_en) : '', ...hadithChainCategories.map(function (category) { return lang === 'ar' ? category.title : category.title_en; })].filter(Boolean); %>
 		<div class="hadith-attribution"><%= classificationParts.join(' · ') %></div>
 	<% } %>
-	<% if (i.remark == 0 && !isContentTranslationLang) { %>
+	<% if (i.remark == 0 && !isContentTranslationLang && !i.single) { %>
 		<aside lang="<%=lang%>" >
 		<em class="grade">
 			<% if (lang === 'en' && site.editMode) { %>

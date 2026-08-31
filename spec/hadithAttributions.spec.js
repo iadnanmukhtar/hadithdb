@@ -44,13 +44,11 @@ describe('Hadith attribution taxonomy', () => {
 		expect(sql).toContain('fk_hadith_attribution');
 	});
 
-	test('renders localized attribution above only the primary inline grade', () => {
+	test('renders localized attribution without inline grades on Hadith detail pages', () => {
 		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		expect(template).toContain('hadithAttribution.title_en');
 		expect(template).toContain('hadithAttribution.title');
-		expect(template.indexOf('class="hadith-attribution"')).toBeLessThan(template.indexOf('<em class="grade">'));
 		expect(template).toContain("classificationParts.join(' · ')");
-		expect(template).toContain('if (graderOpinions.length)');
-		expect(template).not.toContain('graderOpinions.length && !hasHadithClassification');
+		expect(template).toContain('i.remark == 0 && !isContentTranslationLang && !i.single');
 	});
 });
