@@ -16,7 +16,7 @@
 		{ key: 'isnad', label: 'Chain of Narrators', count: railNarrators.length },
 		{ key: 'sharh', label: 'Explanations', count: railSharh.length },
 		{ key: 'gharib', label: 'Definitions', count: railGharib.length },
-		{ key: 'mushabihah', label: 'Similar Hadiths', count: (Array.isArray(i.similar) ? i.similar.length : 0) + railSourceSimilar.length }
+		{ key: 'mushabihah', label: 'Similar Hadiths', count: (Array.isArray(i.similar) ? i.similar.length : 0) + railSourceSimilar.length, always: railEditMode }
 	]).filter(group => group.always || group.count);
 	const railInitialKey = railGroups.length ? railGroups[0].key : '';
 	const railBookName = (i.book_shortName_en || (i.book && (i.book.shortName_en || i.book.name_en)) || i.book_alias || '').toString().trim();

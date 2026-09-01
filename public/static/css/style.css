@@ -7541,6 +7541,10 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-mushabihah-section .similar-list .h:lang(ar) { text-align: start; }
 .hadith-mushabihah-section .hadith-reference-index:lang(ar) { font-size: calc(1.05rem * var(--content-font-scale)) !important; }
 .hadith-mushabihah-section .hadith-reference-index:lang(ar) * { font-size: inherit !important; }
+.hadith-similar-admin-search { position: relative; text-align: right; width: 100%; }
+.hadith-similar-admin-search .input-group-text { color: var(--bs-secondary-color); }
+.hadith-similar-admin-search .input-group-text .bi { font-size: .875rem; }
+.hadith-similar-autocomplete-menu { max-height: min(24rem, 55vh); overflow-y: auto; z-index: 1080; }
 .hadith-metadata-source-link { align-self: flex-start; color: var(--bs-secondary-color); margin: 1.25rem .7rem 0; text-decoration: none; }
 .hadith-metadata-source-link:hover, .hadith-metadata-source-link:focus-visible { color: var(--bs-primary); }
 .hadith-metadata-rail .hadith-heading-toc-title { margin-left: .7rem; }

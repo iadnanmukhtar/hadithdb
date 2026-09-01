@@ -7,6 +7,9 @@
 	metadata.similar = Array.isArray(metadata.similar) ? metadata.similar.filter(reference => reference.internal_ref) : [];
 	const metadataBase = `hadith-metadata-${i.actual ? i.actual.id : i.id}`;
 	const editableHadithId = i.actual ? i.actual.id : i.id;
+	const similarSearchItems = Array.isArray(i.similar) ? i.similar : [];
+	const similarSearchExcludeIds = [editableHadithId].concat(similarSearchItems.map(item => item.actual ? item.actual.id : item.id)).filter(Boolean);
+	const similarSearchExcludeRefs = [i.actual ? i.actual.ref : i.ref].concat(similarSearchItems.map(item => item.actual ? item.actual.ref : item.ref), metadata.similar.map(reference => reference.internal_ref)).filter(Boolean);
 	const gradeColorOptions = Array.isArray(metadata.gradeColors) ? metadata.gradeColors : [];
 	function arabicOrdinal(value) { return String(value).replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[Number(digit)]); }
 	function bilingualLabel(english, arabic) { return [english, arabic].filter(Boolean).join(' — '); }
@@ -80,9 +83,10 @@
 		</section>
 		<% } %>
 
-		<% if ((i.similar && i.similar.length) || metadata.similar.length) { %>
+		<% if (site.editMode || (i.similar && i.similar.length) || metadata.similar.length) { %>
 		<section class="hadith-metadata-section hadith-mushabihah-section mt-4" id="<%= metadataBase %>-mushabihah" data-toc-heading-target data-toc-heading-key="mushabihah">
 			<heading class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Similar Hadiths</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">أحاديث مشابهة</h3></heading>
+			<% if (site.editMode) { %><div class="hadith-similar-admin-search mb-3" lang="ar" dir="rtl" data-hadith-similar-search data-parent-id="<%= editableHadithId %>" data-exclude-ids="<%= similarSearchExcludeIds.join(',') %>" data-exclude-refs="<%= similarSearchExcludeRefs.join(',') %>"><label class="visually-hidden" for="<%= metadataBase %>-similar-search">إضافة حديث مشابه</label><div class="input-group input-group-sm"><span class="input-group-text" aria-hidden="true"><span class="bi bi-search"></span></span><input id="<%= metadataBase %>-similar-search" type="search" class="form-control hadith-similar-search-input" lang="ar" dir="rtl" placeholder="إضافة حديث مشابه…" aria-label="البحث عن حديث مشابه لإضافته" autocomplete="off" autocapitalize="none" spellcheck="false"></div><div class="visually-hidden" data-hadith-similar-search-status aria-live="polite"></div></div><% } %>
 			<% if (metadata.similar.length) { %><ul class="hadith-source-similar-list fs-5" lang="ar" dir="rtl"><% metadata.similar.forEach(function (reference) { %><li><a class="hadith-source-similar-reference small" href="<%= utils.urlFor(req, `/${reference.internal_ref}`) %>"><%= reference.source_book_title || `كتاب ${reference.source_book_id}` %><% if (reference.source_num) { %> <bdi dir="ltr"><%= reference.source_num %></bdi><% } %></a><% if (reference.source_body_start) { %><div class="hadith-source-similar-body-start"><%= reference.source_body_start %></div><% } %></li><% }); %></ul><% } %>
 			<% if (i.similar && i.similar.length) { %><%- include('hadith_reference_index.ejs', { references: i.similar }); %><% } %>
 			<div class="similar-list"><% for (var similarIndex = 0; i.similar && similarIndex < i.similar.length; similarIndex++) { i.similar[similarIndex].rating = Math.round((i.similar[similarIndex].rating - 0.5) * 100 / 50 * 100 / 25); %><%- include('hadith.ejs', { site: site, page: page, i: i.similar[similarIndex], main: true, title: true, searchResult: false, similarSection: true }); %><% } %></div>

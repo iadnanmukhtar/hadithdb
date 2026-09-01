@@ -76,6 +76,23 @@ function throttleSearchRequest(req, res, next) {
   return searchRequestLimiter(req, res, next);
 }
 
+async function requireSearchAdmin(req, res, next) {
+  let user;
+  try {
+    user = await GoogleAuth.verifyRequest(req);
+  } catch (err) {
+    return next(createError(401, 'Invalid authentication token'));
+  }
+  if (!user)
+    return next(createError(401, 'Authentication required'));
+  if (!(user.admin === true || await UserSettings.isAdminUser(user.uid)))
+    return next(createError(403, 'Search unauthorized'));
+  req.user = user;
+  req.admin = true;
+  req.editMode = true;
+  next();
+}
+
 function parsePositiveIntegerParam(value) {
   var normalized = Arabic.toLatinDigits((value || '').toString());
   if (!/^\d+$/.test(normalized))
@@ -476,6 +493,24 @@ router.get(['/autocomplete', '/quran/autocomplete'], searchRequestLimiter, async
     res.end(JSON.stringify(suggestions));
   } catch (err) {
     var message = `Error fetching autocomplete suggestions [${req.query.q || req.query.term}]`;
+    debug.error(message + `\n${err.stack}`);
+    return next(createError(500, message));
+  }
+});
+
+router.get('/autocomplete/similar-hadiths', searchRequestLimiter, requireSearchAdmin, async function (req, res, next) {
+  try {
+    var q = Search.truncateQuery(req.query.q || req.query.term || '');
+    var exclusions = {
+      ids: [].concat(req.query.exclude || []).flatMap(value => String(value).split(',')),
+      refs: [].concat(req.query.exclude_ref || []).flatMap(value => String(value).split(','))
+    };
+    var suggestions = await Search.a_similarHadithAutocomplete(q, req.query.limit, exclusions);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.end(JSON.stringify(suggestions));
+  } catch (err) {
+    var message = `Error fetching similar hadith suggestions [${req.query.q || req.query.term}]`;
     debug.error(message + `\n${err.stack}`);
     return next(createError(500, message));
   }

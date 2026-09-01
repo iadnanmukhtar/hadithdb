@@ -543,6 +543,78 @@
 	      return `${isQuranPage() ? '/quran/api' : '/api'}${path}`;
 	    }
 
+	    const bindHadithSimilarSearch = (scope) => {
+	      if (!$.fn.autocomplete) return;
+	      $(scope || document).find('[data-hadith-similar-search]').addBack('[data-hadith-similar-search]').each(function () {
+	        const $search = $(this);
+	        if ($search.data('hadithSimilarSearchBound')) return;
+	        $search.data('hadithSimilarSearchBound', true);
+	        const $input = $search.find('.hadith-similar-search-input').first();
+	        const $status = $search.find('[data-hadith-similar-search-status]').first();
+	        const parentId = Number($search.attr('data-parent-id'));
+	        const excludedIds = new Set(($search.attr('data-exclude-ids') || '').split(',').map(Number).filter(Number.isInteger));
+	        const excludedRefs = new Set(($search.attr('data-exclude-refs') || '').split(',').map(value => value.trim().replace(/^\//, '')).filter(Boolean));
+	        const setStatus = (message, isError) => $status.text(message).toggleClass('text-danger', !!isError);
+	        const addSuggestion = async (item) => {
+	          const itemId = Number(item && item.id);
+	          const itemRef = ((item && item.ref) || '').toString().replace(/^\//, '');
+	          if (!Number.isInteger(parentId) || !Number.isInteger(itemId) || itemId === parentId || excludedIds.has(itemId) || excludedRefs.has(itemRef)) {
+	            setStatus('هذا الحديث مضاف بالفعل.', true);
+	            return;
+	          }
+	          $input.prop('disabled', true);
+	          setStatus(`جارٍ إضافة ${itemRef || 'الحديث'}…`, false);
+	          try {
+	            const result = await update({ id: `${parentId},${itemId}`, prop: 'hadiths_sim.add', arabizi: false, value: '' });
+	            if (result.code !== 200) return;
+	            rememberUpdateSuccessToast('Similar hadith added', `${itemRef || 'The selected hadith'} was added.`);
+	            window.location.reload();
+	          } finally {
+	            $input.prop('disabled', false);
+	          }
+	        };
+	        $input.autocomplete({
+	          appendTo: $search,
+	          delay: 180,
+	          minLength: 2,
+	          source: async function (request, response) {
+	            try {
+	              const params = new URLSearchParams({ q: request.term, limit: '12' });
+	              if (excludedIds.size) params.set('exclude', Array.from(excludedIds).join(','));
+	              if (excludedRefs.size) params.set('exclude_ref', Array.from(excludedRefs).join(','));
+	              const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+	              const headers = token ? { Authorization: `Bearer ${token}` } : {};
+	              const res = await fetch(`${editHadithApiPath('/autocomplete/similar-hadiths')}?${params.toString()}`, { headers });
+	              if (!res.ok) throw new Error(`Search failed with ${res.status}`);
+	              const items = await res.json();
+	              response((items || []).filter(item => item && item.type === 'Hadith' && item.id && !excludedIds.has(Number(item.id)) && !excludedRefs.has((item.ref || '').replace(/^\//, ''))));
+	            } catch (err) {
+	              setStatus('تعذّر تحميل اقتراحات الأحاديث.', true);
+	              response([]);
+	            }
+	          },
+	          focus: function (event) { event.preventDefault(); },
+	          select: function (event, ui) {
+	            event.preventDefault();
+	            $input.val('');
+	            $input.autocomplete('close');
+	            addSuggestion(ui.item);
+	          },
+	          open: function () {
+	            $input.autocomplete('widget').addClass('search-autocomplete-menu hadith-similar-autocomplete-menu').attr({ lang: 'ar', dir: 'rtl' }).css('width', $input.outerWidth());
+	          }
+	        }).autocomplete('instance')._renderItem = function (list, item) {
+	          const $row = $('<div>').addClass('search-autocomplete-item').attr({ lang: 'ar', dir: 'rtl' });
+	          $('<div>').addClass('search-autocomplete-match').html(item.fragment || item.label || item.ref).appendTo($row);
+	          const $meta = $('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-lines');
+	          if (item.metadata_ar) $('<span>').addClass('search-autocomplete-meta-ar').attr({ lang: 'ar', dir: 'rtl' }).text(item.metadata_ar).appendTo($meta);
+	          if (item.metadata_en) $('<span>').addClass('search-autocomplete-meta-en').attr({ lang: 'en', dir: 'ltr' }).text(item.metadata_en).appendTo($meta);
+	          $meta.appendTo($row);
+	          return $('<li>').append($row).appendTo(list);
+	        };
+	      });
+	    };
+
 	    const bindInlineEditors = (scope) => {
 	      $(scope || document).find('._e').addBack('._e').each(function () {
 	        const $el = $(this);
@@ -668,6 +740,7 @@
 	    window.bindInlineEditors = bindInlineEditors;
 	    bindInlineEditors(document);
 	    bindHadithGradeSorting(document);
+	    bindHadithSimilarSearch(document);
 	    const inlineEditorObserver = new MutationObserver((mutations) => {
 	      mutations.forEach((mutation) => {
 	        mutation.addedNodes.forEach((node) => {

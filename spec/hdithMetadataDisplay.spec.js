@@ -410,6 +410,8 @@ describe('hdith.com metadata display', () => {
 		const hadith = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith.ejs'), 'utf8');
 		const hadithItem = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		const metadata = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
+		const rail = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata_rail.ejs'), 'utf8');
+		const scripts = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'scripts.ejs'), 'utf8');
 		const referenceIndex = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_reference_index.ejs'), 'utf8');
 		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
 		expect(search).not.toContain('!results[i].hdithMetadata');
@@ -418,6 +420,17 @@ describe('hdith.com metadata display', () => {
 		expect(hadith).toContain("include('hadith_metadata.ejs', { i: i })");
 		expect(metadata).toContain('const metadata = i.hdithMetadata || {}');
 		expect(metadata).toContain('hadith-mushabihah-section');
+		expect(metadata).toContain('data-hadith-similar-search');
+		expect(metadata).toContain('data-exclude-ids');
+		expect(metadata).toContain('lang="ar" dir="rtl" data-hadith-similar-search');
+		expect(metadata).toContain('placeholder="إضافة حديث مشابه…"');
+		expect(metadata).not.toContain('ابحث بالمرجع أو نص الحديث.');
+		expect(css).toContain('.hadith-similar-admin-search { position: relative; text-align: right; width: 100%; }');
+		expect(css).toContain('.hadith-similar-admin-search .input-group-text .bi { font-size: .875rem; }');
+		expect(metadata).toContain('site.editMode || (i.similar && i.similar.length)');
+		expect(rail).toContain("always: railEditMode");
+		expect(scripts).toContain("editHadithApiPath('/autocomplete/similar-hadiths')");
+		expect(scripts).toContain("prop: 'hadiths_sim.add'");
 		expect(metadata).toContain("include('hadith.ejs'");
 		expect((metadata.match(/include\('hadith_reference_index\.ejs'/g) || []).length).toBe(1);
 		expect(metadata.indexOf("include('hadith_reference_index.ejs', { references: i.similar })")).toBeLessThan(metadata.indexOf('i.similar[similarIndex].rating'));
