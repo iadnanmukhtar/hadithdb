@@ -84,10 +84,14 @@ async function attachGrades(rows, idList) {
 }
 
 async function ensureLiveMapping() {
-	await axios.put(`${settings.search.domain}/hadiths/_mapping`, { properties: {
+	const mappingUrl = `${settings.search.domain}/hadiths/_mapping`;
+	const response = await withSearchRetry(() => axios.get(mappingUrl, searchConfig({ timeout: 30000 })), 'read live mapping');
+	const properties = Object.values(response.data || {})[0]?.mappings?.properties || {};
+	if (properties.body_start && properties.hasSupplementaryTransmissions) return;
+	await withSearchRetry(() => axios.put(mappingUrl, { properties: {
 		body_start: { type: 'text', boost: 2, analyzer: 'arabic' },
 		hasSupplementaryTransmissions: { type: 'boolean' }
-	} }, searchConfig());
+	} }, searchConfig({ timeout: 60000 })), 'update live mapping');
 }
 
 async function updatePartial(rows) {
@@ -110,13 +114,29 @@ async function updatePartial(rows) {
 
 async function postBulk(body) {
 	const compressed = zlib.gzipSync(Buffer.from(body, 'utf8'));
-	const response = await axios.post(`${settings.search.domain}/hadiths/_bulk`, compressed, searchConfig({
+	const response = await withSearchRetry(() => axios.post(`${settings.search.domain}/hadiths/_bulk`, compressed, searchConfig({
 		headers: { 'Content-Type': 'application/x-ndjson', 'Content-Encoding': 'gzip' }, timeout: 120000, maxBodyLength: Infinity
-	}));
+	})), 'bulk update');
 	if (response.data?.errors) {
 		const failure = (response.data.items || []).flatMap(item => Object.values(item)).find(item => item.error);
 		throw new Error(`Elasticsearch bulk update failed: ${JSON.stringify(failure?.error || response.data)}`);
 	}
+}
+
+async function withSearchRetry(operation, label) {
+	let lastError;
+	for (let attempt = 1; attempt <= 5; attempt++) {
+		try { return await operation(); }
+		catch (err) {
+			lastError = err;
+			const status = Number(err?.response?.status);
+			if (![429, 502, 503, 504].includes(status) || attempt === 5) throw err;
+			const delay = Math.min(8000, 500 * (2 ** (attempt - 1)));
+			console.warn(`search: ${label} returned HTTP ${status}; retrying ${attempt + 1}/5 after ${delay} ms`);
+			await new Promise(resolve => setTimeout(resolve, delay));
+		}
+	}
+	throw lastError;
 }
 
 function searchConfig(extra = {}) {

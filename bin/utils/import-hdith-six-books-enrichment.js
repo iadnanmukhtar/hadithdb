@@ -53,6 +53,7 @@ const HDITH_LOCAL_BOOKS = Object.freeze({
 const SOURCE_BOOK_ALIASES = Object.freeze(Object.fromEntries(Object.entries(HDITH_LOCAL_BOOKS).map(([id, book]) => [id, book.alias])));
 const MIN_REQUEST_DELAY_MS = 100;
 const INDEX_BATCH_SIZE = Math.max(1, Number(process.env.HDITH_INDEX_BATCH_SIZE) || 100);
+const PENDING_INDEX_FILE = path.join(CACHE_DIR, '_pending-index-batches.log');
 const HDITH_GRADE_COLORS = Object.freeze({
 	0: 'oklch(58% .02 250)',
 	1: 'oklch(58% .135 155)',
@@ -513,11 +514,18 @@ async function flushEnrichedHadithIndex() {
 	if (!pendingIndexHadithIds.size) return;
 	const ids = [...pendingIndexHadithIds];
 	const script = path.join(__dirname, '..', 'indexEnrichedHadithBatch.js');
-	const result = await util.promisify(childProcess.execFile)(process.execPath, [script, ids.join(',')], {
-		cwd: path.join(__dirname, '..', '..'), maxBuffer: 10 * 1024 * 1024
-	});
-	pendingIndexHadithIds.clear();
-	console.log(`search: ${String(result.stdout || '').trim()}`);
+	try {
+		const result = await util.promisify(childProcess.execFile)(process.execPath, [script, ids.join(',')], {
+			cwd: path.join(__dirname, '..', '..'), maxBuffer: 10 * 1024 * 1024
+		});
+		console.log(`search: ${String(result.stdout || '').trim()}`);
+	} catch (err) {
+		fs.mkdirSync(path.dirname(PENDING_INDEX_FILE), { recursive: true });
+		fs.appendFileSync(PENDING_INDEX_FILE, `${new Date().toISOString()}\t${ids.join(',')}\n`);
+		console.warn(`search: deferred ${ids.length} enriched hadith(s) to ${PENDING_INDEX_FILE}: ${String(err.stderr || err.message).split('\n')[0]}`);
+	} finally {
+		pendingIndexHadithIds.clear();
+	}
 }
 
 async function applyRecordWithRetry(page, config, record, orderedMatch, runtimeOptions = {}) {

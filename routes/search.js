@@ -2315,8 +2315,12 @@ router.get('/:bookAlias/random', async function (req, res, next) {
   else
     random = await Index.docRandomnly(Item.INDEX, `books:"{${book.alias}}"`);
   if (!random || random.length < 1)
-    return next(createError(404, `Random item in ${book.shortName_en || book.alias} not found`));
+	return next(createError(404, `Random item in ${book.shortName_en || book.alias} not found`));
   random = new Item(random[0]);
+	if (random.remark != 2) {
+	  random.randomTocItem = true;
+	  await HdithMetadata.attachClassifications([random]);
+	}
   var quranCommentaryBook = null;
   if (book.alias === 'quran' && typeof req.query.translation === 'string' && /^[A-Za-z0-9_-]+$/.test(req.query.translation)) {
     quranCommentaryBook = Tafsir.visibleTranslationsSync().find(function (commentaryBook) {

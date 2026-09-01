@@ -646,6 +646,8 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     res.render('error');
   });
 
+  const cacheIndex = await Utils.setupCacheIndex();
+  await Utils.runCacheMaintenance({ db: cacheIndex, force: true, reconcile: true });
   await RuntimeRefresh.markCurrent();
   await Hadith.a_reinit();
   app.locals.startupReady = true;

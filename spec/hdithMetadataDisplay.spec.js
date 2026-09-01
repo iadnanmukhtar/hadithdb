@@ -354,6 +354,16 @@ describe('hdith.com metadata display', () => {
 		expect(item).toContain('i.legacyGradeColor');
 	});
 
+	test('shows classifications and the legacy grade on random Hadith TOC items', () => {
+		const searchRoute = fs.readFileSync(path.join(__dirname, '..', 'routes', 'search.js'), 'utf8');
+		const item = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
+		const randomFragment = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'random_toc_item.ejs'), 'utf8');
+		expect(searchRoute).toContain('random.randomTocItem = true');
+		expect(searchRoute).toContain('await HdithMetadata.attachClassifications([random])');
+		expect(item).toContain('i.randomTocItem === true');
+		expect(randomFragment).toContain("include('hadith.ejs'");
+	});
+
 	test('moves similar hadiths into the final Mushabihah section', () => {
 		const search = fs.readFileSync(path.join(__dirname, '..', 'views', 'search.ejs'), 'utf8');
 		const hadith = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith.ejs'), 'utf8');
