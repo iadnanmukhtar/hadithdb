@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { classificationFromRow, legacyGradeCategoryForId, legacyGradeColorForId, narratorDisplayFullname, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, uniqueGradeGraderPairs, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
+const { classificationFromRow, legacyGradeCategoryForId, legacyGradeColorForId, narratorDisplayFullname, preferredColoredGradeOpinion, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, uniqueGradeGraderPairs, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
 
 describe('hdith.com metadata display', () => {
 	test('loads enrichment only for the single hadith detail route', () => {
@@ -97,6 +97,29 @@ describe('hdith.com metadata display', () => {
 			grade: { id: 550 }, ar: { grader_shortName: 'المصنف', grade_grade: 'ضعيف' }
 		});
 		expect(opinions[0]).toMatchObject({ grade_color: 'oklch(57% .165 22)', legacy_grade_id: 550 });
+	});
+
+	test('shows the worst shortest colored ruling instead of a missing legacy ruling', () => {
+		const item = { grade: { id: -1 }, ar: { grader_shortName: 'لا يعرف', grade_grade: 'لا نعرف حكم له' } };
+		const grades = [
+			{ id: 1, grader: 'الدارقطني', grade: 'لا يصح وقد روي موقوفا', grade_category_id: 3, grade_color: 'red' },
+			{ id: 2, grader: 'يحيى بن معين', grade: 'منكر', grade_category_id: 3, grade_color: 'red' },
+			{ id: 3, grader: 'البيهقي', grade: 'صحيح', grade_category_id: 1, grade_color: 'green' }
+		];
+		const ordered = withPrimaryGrade(grades, item);
+		expect(preferredColoredGradeOpinion(grades).grade).toBe('منكر');
+		expect(ordered[0]).toMatchObject({ id: 2, grade: 'منكر' });
+		expect(item.legacyGradeOverride).toMatchObject({ grader: 'يحيى بن معين', grade: 'منكر' });
+		expect(item.legacyGradeColor).toBe('red');
+		expect(item.grade.id).toBe(-1);
+	});
+
+	test('does not fall back to Arabic for an untranslated English inline grade', () => {
+		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
+		expect(template).toContain("!!(legacyGradeOverride.grade_en && legacyGradeOverride.grader_en)");
+		expect(template).toContain('showLegacyInlineGrade && showTranslatedLegacyGradeOverride');
+		expect(template).toContain("lang === 'en' ? legacyGradeOverride.grade_en : legacyGradeOverride.grade");
+		expect(template).not.toContain("legacyGradeOverride.grade_en || legacyGradeOverride.grade");
 	});
 
 	test('deduplicates repeated grade-grader pairs while retaining distinct opinions', () => {
@@ -221,6 +244,8 @@ describe('hdith.com metadata display', () => {
 		expect(template).toContain('const narratorAccentDetails = [narrator.reliability]');
 		expect(template).toContain('hadith-narrator-accent-detail');
 		expect(template).toContain('hadith-narrator-fullname');
+		expect(template).toContain('<span class="hadith-narrator-fullname"><%= narrator.display_fullname %></span>');
+		expect(template).not.toContain('(<%= narrator.display_fullname %>)');
 		expect(itemTemplate).toContain('i.single === true');
 		expect(itemTemplate).toContain('hasHadithClassification');
 		expect(itemTemplate).toContain('showLegacyInlineGrade');
@@ -322,10 +347,13 @@ describe('hdith.com metadata display', () => {
 		expect(css).toContain('.hadith-narrator-name { font-size: calc(1.05rem * var(--content-font-scale)) !important;');
 		expect(css).toContain('.hadith-narrator-name a { color: inherit; font-size: inherit !important; text-decoration: underline dotted; text-underline-offset: .18em; }');
 		expect(css).toContain('.hadith-narrator-death * { font-size: inherit !important; }');
+		expect(css).toContain('text-align: left; white-space: nowrap; }');
+		expect(css).toContain('grid-template-columns: 3.75rem minmax(0, 1fr) 2rem;');
+		expect(css).toContain('.hadith-narrator-death { grid-column: 1; grid-row: 1; text-align: left; }');
 		expect(css).toContain('.hadith-narrator-details { color: var(--bs-secondary-color); font-size: calc(1.05rem * var(--content-font-scale)) !important;');
 		expect(css).toContain('.hadith-narrator-details * { font-size: inherit !important; }');
 		expect(css).toContain('.hadith-narrator-name a:hover, .hadith-narrator-name a:focus-visible { color: var(--c-accent); text-decoration: underline dotted; }');
-		expect(css).toContain('.hadith-narrator-fullname { color: var(--bs-secondary-color); font-size: .8em !important; font-weight: 400; }');
+		expect(css).toContain('.hadith-narrator-fullname { color: var(--bs-secondary-color); display: block; font-size: .8em !important; font-weight: 400; margin-top: .1rem; }');
 		expect(css).toContain('details > summary::-webkit-details-marker');
 		expect(css).toContain('details > summary::marker');
 		expect(css).toContain('.hadith-gharib-entry summary::after');
@@ -380,6 +408,7 @@ describe('hdith.com metadata display', () => {
 	test('moves similar hadiths into the final Mushabihah section', () => {
 		const search = fs.readFileSync(path.join(__dirname, '..', 'views', 'search.ejs'), 'utf8');
 		const hadith = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith.ejs'), 'utf8');
+		const hadithItem = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		const metadata = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
 		const referenceIndex = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_reference_index.ejs'), 'utf8');
 		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
@@ -402,6 +431,14 @@ describe('hdith.com metadata display', () => {
 		expect(referenceIndex).toContain('<a href="<%= reference.href %>"><%= reference.number %></a>');
 		expect(metadata).not.toContain('أخرجه');
 		expect(metadata).not.toContain('i.similarBooks');
+		expect(hadithItem).toContain('if (i.book_virtual != 1)');
+		expect(hadithItem).toContain('i.similarDemotable');
+		expect(hadithItem).toContain('i.similarRemovable');
+		expect(hadithItem).toContain("hadith-inline-ruling<%= i.single === true ? ' hadith-inline-ruling-single' : '' %>");
+		expect(hadithItem).toContain('class="hadith-inline-ruling-text"');
+		expect(css).toContain('.hadith-inline-ruling-single .grade { cursor: text; display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }');
+		expect(css).toMatch(/\.search-results \.h \.hadith-body-content,\s*\.search-results \.h \.grade,/);
+		expect(css).not.toMatch(/\.search-results \.h \.admin,\s*\.search-results \.h \.grade,/);
 		expect(search).not.toContain('أخرجه');
 		expect(search).not.toContain('results[i].similarBooks');
 	});

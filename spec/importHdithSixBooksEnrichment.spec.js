@@ -28,6 +28,7 @@ const {
 	parseLinks,
 	parseNarrators,
 	parseSourceIsnadHtml,
+	preferredColoredGradeOpinion,
 	legacyGradeForOpinion,
 	preferredLegacyOpinion,
 	proposedBodyFootnoteSplit,
@@ -69,6 +70,20 @@ describe('hdith.com six-book enrichment importer', () => {
 		])).toEqual({ id: 101, grade: 'إسناده صحيح' });
 	});
 
+	test('selects the shortest ruling from the worst colored category', () => {
+		const opinion = preferredColoredGradeOpinion([
+			{ ordinal: 1, grader: 'الدارقطني', grade: 'لا يصح وقد روي موقوفا', grade_category_id: 3 },
+			{ ordinal: 2, grader: 'يحيى بن معين', grade: 'منكر', grade_category_id: 3 },
+			{ ordinal: 3, grader: 'البيهقي', grade: 'صحيح', grade_category_id: 1 },
+			{ ordinal: 4, grader: 'محدث', grade: 'شبه موضوع', grade_category_id: 4 }
+		]);
+		expect(opinion).toEqual(expect.objectContaining({ grade: 'شبه موضوع', grade_category_id: 4 }));
+		expect(preferredColoredGradeOpinion([
+			{ grade: 'ضعيفة لا تصح', grade_category_id: 3 },
+			{ grade: 'منكر', grade_category_id: 3 }
+		])).toEqual(expect.objectContaining({ grade: 'منكر' }));
+	});
+
 	test('distinguishes hdith sequence numbers from canonical edition references', () => {
 		expect(parseEditionReference([{ value: '99 (م)' }])).toEqual({ value: '99 (م)', repeated: true });
 		expect(parseEditionReference([{ value: '100' }])).toEqual({ value: '100', repeated: false });
@@ -92,6 +107,30 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(matcher.match({ editionReference: '101', editionReferenceRepeated: false,
 			comparisonText: 'قالت النساء للنبي غلبنا عليك الرجال فاجعل لنا يوما' }))
 			.toEqual(expect.objectContaining({ id: 101, num: '101', score: 1 }));
+	});
+
+	test('uses matn confirmation only for an exact edition-reference candidate', () => {
+		const sharedMatn = 'إنما الأعمال بالنيات وإنما لكل امرئ ما نوى';
+		const differingSourceChain = 'حدثنا طريق طويل إضافي لا يوجد في النسخة المحلية';
+		const matcher = createOrderedTextMatcher([
+			{ id: 1, num: '1', chain: 'حدثنا مالك عن نافع', body: sharedMatn },
+			{ id: 2, num: '2', chain: 'حدثنا شعبة عن قتادة', body: sharedMatn }
+		]);
+		const exactReference = matcher.match({
+			editionReference: '1', editionReferenceRepeated: false,
+			comparisonText: `${differingSourceChain} ${sharedMatn}`,
+			bodyStart: normalizeHadithForComparison(sharedMatn)
+		});
+		expect(exactReference).toEqual(expect.objectContaining({ id: 1, score: 1 }));
+
+		const broadWindowMatcher = createOrderedTextMatcher([
+			{ id: 2, num: '2', chain: 'حدثنا شعبة عن قتادة', body: sharedMatn }
+		]);
+		expect(broadWindowMatcher.match({
+			editionReference: '1', editionReferenceRepeated: false,
+			comparisonText: `${differingSourceChain} ${sharedMatn}`,
+			bodyStart: normalizeHadithForComparison(sharedMatn)
+		})).toBeNull();
 	});
 
 	test('recognizes a missing hdith source entry so the importer can continue with the next chapter', () => {

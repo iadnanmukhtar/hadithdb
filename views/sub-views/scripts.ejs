@@ -276,6 +276,7 @@
 	    const setSimilarToggleButton = ($button, promoted) => {
 	      if (!$button.length)
 	        return null;
+	      $button.closest('article').attr('data-similar-candidate', promoted ? null : 'true');
 	      const nextProp = promoted ? 'hadiths_sim.demote' : 'hadiths_sim.add';
 	      const nextTitle = promoted ? 'Make similar candidate' : 'Make actual similar hadith';
 	      const nextLoadingLabel = promoted ? 'Moving' : 'Adding';

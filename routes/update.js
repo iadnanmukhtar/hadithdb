@@ -621,6 +621,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         status.value = 'Added';
       } else if (col == 'demote') {
         var simPairs = similarPairsFromIds(ids);
+        await Hadith.a_suppressSimilarCandidate(simPairs[0][0], simPairs[0][1]);
         var result = await global.query(`INSERT IGNORE INTO hadiths_sim_candidates
           (hadithId1, hadithId2, rating) VALUES ${simPairs.map(pair => `(${pair[0]}, ${pair[1]}, 1)`).join(',')}`);
         for (const pair of simPairs) {

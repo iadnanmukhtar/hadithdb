@@ -36,6 +36,7 @@ const FOLLOWUP_BOOKS = Object.freeze([
 	{ sourceSlug: 'b-11', bookId: 17, alias: 'ibnkhuzaymah' },
 	{ sourceSlug: 'b-19', bookId: 16, alias: 'bazzar' },
 	{ sourceSlug: 'b-33', bookId: 32, alias: 'shamail' },
+	{ sourceSlug: 'b-24', bookId: 10, alias: 'hakim' },
 	{ sourceSlug: 'b-8', bookId: 8, alias: 'ahmad' }
 ]);
 const SUPPORTED_BOOKS = Object.freeze([...SIX_BOOKS, ...FOLLOWUP_BOOKS]);
@@ -493,6 +494,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 			if (storedCollectionGrades >= expectedCollectionGrades) {
 				await upsertSourceReferenceMap(connection, config, record, hadithId, localReference, orderedMatch);
 				await backfillLegacyGradeFromOpinions(connection, hadithId);
+				await promoteColoredGradeForMissingLegacy(connection, hadithId);
 				return hadithId;
 			}
 		}
@@ -521,6 +523,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 		await replaceSharh(connection, hadithId, sharh);
 		await replaceGraderOpinions(connection, hadithId, graderOpinions);
 		await backfillLegacyGradeFromOpinions(connection, hadithId);
+		await promoteColoredGradeForMissingLegacy(connection, hadithId);
 		await query(connection, 'COMMIT');
 		return hadithId;
 	} catch (err) {
@@ -556,15 +559,16 @@ async function flushEnrichedHadithIndex() {
 }
 
 async function applyRecordWithRetry(page, config, record, orderedMatch, runtimeOptions = {}) {
-	for (let attempt = 1; attempt <= 3; attempt++) {
+	const maxAttempts = 8;
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		try {
 			return await applyRecord(page, config, record, orderedMatch, runtimeOptions);
 		} catch (err) {
 			const retryable = ['ER_LOCK_DEADLOCK', 'ER_LOCK_WAIT_TIMEOUT', 'ER_SERVER_SHUTDOWN',
 				'PROTOCOL_CONNECTION_LOST', 'ECONNREFUSED', 'ECONNRESET'].includes(err?.code);
-			if (!retryable || attempt === 3) throw err;
-			const retryDelay = Math.max(250, options.delay, attempt * 500);
-			console.warn(`${config.sourceSlug}/h/${record.sourceId}: ${err.code}; retrying apply (${attempt + 1}/3) after ${retryDelay} ms.`);
+			if (!retryable || attempt === maxAttempts) throw err;
+			const retryDelay = Math.max(250, options.delay, Math.min(10000, attempt * 1000));
+			console.warn(`${config.sourceSlug}/h/${record.sourceId}: ${err.code}; retrying apply (${attempt + 1}/${maxAttempts}) after ${retryDelay} ms.`);
 			if (!['ER_LOCK_DEADLOCK', 'ER_LOCK_WAIT_TIMEOUT'].includes(err?.code)) await resetDatabaseConnection();
 			await wait(retryDelay);
 		}
@@ -612,14 +616,16 @@ function createOrderedTextMatcher(rows, initialCursor = 0) {
 		if (!indexesByReference.has(reference)) indexesByReference.set(reference, []);
 		indexesByReference.get(reference).push(index);
 	});
-	function scoredMatch(record, indexes) {
+	function scoredMatch(record, indexes, allowSameReferenceMatn = false) {
 		const source = normalizeHadithForComparison(record.comparisonText);
 		if (!source) return null;
 		let best = null;
 		for (const index of indexes) {
 			if (index < cursor || index >= rows.length) continue;
-			const score = hadithPrefixSimilarity(source,
+			let score = hadithPrefixSimilarity(source,
 				normalizeHadithForComparison([rows[index].chain, rows[index].body].filter(Boolean).join(' ')));
+			if (allowSameReferenceMatn && record.bodyStart)
+				score = Math.max(score, hadithPrefixSimilarity(record.bodyStart, rows[index].body));
 			if (!best || score > best.score) best = { ...rows[index], index, score };
 			if (score >= 0.96) break;
 		}
@@ -631,7 +637,7 @@ function createOrderedTextMatcher(rows, initialCursor = 0) {
 			// Skipping them without advancing the cursor prevents every later match from shifting.
 			if (!record.editionReference || record.editionReferenceRepeated) return null;
 			let best = null;
-			best = scoredMatch(record, indexesByReference.get(referenceBase(record.editionReference)) || []);
+			best = scoredMatch(record, indexesByReference.get(referenceBase(record.editionReference)) || [], true);
 			const end = Math.min(rows.length, cursor + 120);
 			if (!best || best.score < 0.90)
 				best = scoredMatch(record, Array.from({ length: end - cursor }, (unused, offset) => cursor + offset));
@@ -656,7 +662,9 @@ function normalizeHadithForComparison(value) {
 		.replace(/رض[يى]\s+الله\s+(?:تعالى\s+)?عن(?:ه|ها|هما|هم|هن)|ؓ/gu, ' ')
 		.replace(/رحمه\s+الله(?:\s+تعالى)?/gu, ' ')
 		.replace(/[إأآٱ]/g, 'ا').replace(/[ئى]/g, 'ي').replace(/ؤ/g, 'و').replace(/ة/g, 'ه')
-		.replace(/[^\u0621-\u063a\u0641-\u064a0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+		.replace(/[^\u0621-\u063a\u0641-\u064a0-9]+/g, ' ').replace(/\s+/g, ' ').trim()
+		.replace(/(^|\s)(?:ثنا|نا)(?=\s)/gu, '$1حدثنا')
+		.replace(/(^|\s)انا(?=\s)/gu, '$1اخبرنا');
 }
 
 function normalizedArabicTokensWithOffsets(value) {
@@ -856,6 +864,7 @@ function isCollectionAuthorVerificationResult(sourceBookSlug, grader) {
 		'b-11': /ابن خزيمه/,
 		'b-18': /الدارقطني/,
 		'b-19': /البزار/,
+		'b-24': /الحاكم/,
 		'b-33': /الترمذي/
 	};
 	return collectionAuthors[sourceBookSlug]?.test(normalizeArabicForMatch(grader)) || false;
@@ -876,6 +885,7 @@ function sourceSlugForVerificationResult(source) {
 	if (/ابن خزيمه/.test(normalized)) return 'b-11';
 	if (/الدارقطني/.test(normalized)) return 'b-18';
 	if (/البزار/.test(normalized)) return 'b-19';
+	if (/الحاكم/.test(normalized)) return 'b-24';
 	if (/الشمايل/.test(normalized)) return 'b-33';
 	return null;
 }
@@ -921,6 +931,31 @@ async function replaceGraderOpinions(connection, hadithId, opinions) {
 				translation.grader_en || null, opinion.graderSourceId, opinion.grade, translation.grade_en || null, gradeCategoryId, gradeColor, opinion.source, opinion.sourceId,
 				opinion.bookPage, opinion.driver, opinion.sourceUrl]);
 	}
+}
+
+function preferredColoredGradeOpinion(opinions) {
+	return (Array.isArray(opinions) ? opinions : []).map((opinion, index) => ({ opinion, index }))
+		.filter(entry => Number(entry.opinion?.grade_category_id ?? entry.opinion?.gradeCategoryId) >= 1
+			&& Number(entry.opinion?.grade_category_id ?? entry.opinion?.gradeCategoryId) <= 4
+			&& normalizeArabicForMatch(entry.opinion?.grade))
+		.sort((left, right) => Number(right.opinion.grade_category_id ?? right.opinion.gradeCategoryId)
+			- Number(left.opinion.grade_category_id ?? left.opinion.gradeCategoryId)
+			|| normalizeArabicForMatch(left.opinion.grade).length - normalizeArabicForMatch(right.opinion.grade).length
+			|| left.index - right.index)[0]?.opinion || null;
+}
+
+async function promoteColoredGradeForMissingLegacy(connection, hadithId) {
+	const rows = await query(connection, `SELECT hg.id, hg.ordinal, hg.grade, hg.grade_category_id
+		FROM hadiths h JOIN hdith_hadith_grades hg ON hg.hadith_id=h.id
+		WHERE h.id=? AND h.gradeId=-1 ORDER BY hg.ordinal, hg.id`, [hadithId]);
+	const preferred = preferredColoredGradeOpinion(rows);
+	if (!preferred || Number(rows[0]?.id) === Number(preferred.id)) return false;
+	const ordered = [preferred, ...rows.filter(row => Number(row.id) !== Number(preferred.id))];
+	const cases = ordered.map(() => 'WHEN ? THEN ?').join(' ');
+	const values = ordered.flatMap((row, index) => [row.id, index + 1]);
+	await query(connection, `UPDATE hdith_hadith_grades SET ordinal=CASE id ${cases} ELSE ordinal END WHERE hadith_id=?`,
+		[...values, hadithId]);
+	return true;
 }
 
 function preferredLegacyOpinion(opinions) {
@@ -1503,5 +1538,5 @@ if (require.main === module) main();
 module.exports = {
 	CACHE_DIR, FOLLOWUP_BOOKS, HDITH_GRADE_COLORS, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, SUPPORTED_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
 	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
-	enrichSingleHadith, legacyGradeForOpinion, preferredLegacyOpinion, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult
+	enrichSingleHadith, legacyGradeForOpinion, preferredColoredGradeOpinion, preferredLegacyOpinion, promoteColoredGradeForMissingLegacy, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult
 };

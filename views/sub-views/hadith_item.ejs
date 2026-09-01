@@ -82,6 +82,8 @@
 	const hadithChainCategories = Array.isArray(hadithClassification.chainCategories) ? hadithClassification.chainCategories : [];
 	const hasHadithClassification = !!hadithAttribution || hadithChainCategories.length > 0;
 	const showLegacyInlineGrade = !isQuranItem && (i.single === true || i.randomTocItem === true || isSimilarSection || (page && (page.menu === 'Chapter' || page.menu === 'Section')));
+	const legacyGradeOverride = i.legacyGradeOverride || null;
+	const showTranslatedLegacyGradeOverride = !legacyGradeOverride || lang !== 'en' || !!(legacyGradeOverride.grade_en && legacyGradeOverride.grader_en);
 	const itemRefPath = `/${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
 	const quranSearchReturnMode = searchResult && (req.query.mode === 'mushaf' || req.query.mode === 'study') ? req.query.mode : '';
 	const itemHref = isQuranItem
@@ -246,8 +248,8 @@
 	<% if (i.remark == 0 && !isContentTranslationLang && hasHadithClassification) { const classificationParts = [hadithAttribution ? (lang === 'ar' ? hadithAttribution.title : hadithAttribution.title_en) : '', ...hadithChainCategories.map(function (category) { return lang === 'ar' ? category.title : category.title_en; })].filter(Boolean); %>
 		<div class="hadith-attribution"><%= classificationParts.join(' · ') %></div>
 	<% } %>
-	<% if (i.remark == 0 && !isContentTranslationLang && showLegacyInlineGrade) { %>
-		<aside lang="<%=lang%>">
+	<% if (i.remark == 0 && !isContentTranslationLang && showLegacyInlineGrade && showTranslatedLegacyGradeOverride) { %>
+		<aside class="hadith-inline-ruling<%= i.single === true ? ' hadith-inline-ruling-single' : '' %>" lang="<%=lang%>">
 			<em class="grade">
 				<% if (i.legacyGradeColor) { %><span class="hadith-grade-color" style="--hadith-grade-color: <%= i.legacyGradeColor %>" aria-hidden="true"></span><% } %>
 				<% if (lang === 'en' && site.editMode) { %>
@@ -262,7 +264,10 @@
 					<% }); %>
 				</select>)
 				<% } else { %>
-				<span><%- langData.grade_grade %></span>&nbsp;(<span title="<%=langData.grader_name%>"><%- langData.grader_shortName %></span>)
+				<% const displayedGrade = legacyGradeOverride ? (lang === 'en' ? legacyGradeOverride.grade_en : legacyGradeOverride.grade) : langData.grade_grade;
+				   const displayedGrader = legacyGradeOverride ? (lang === 'en' ? legacyGradeOverride.grader_en : legacyGradeOverride.grader) : langData.grader_shortName;
+				   const displayedGraderName = legacyGradeOverride ? (lang === 'en' ? (legacyGradeOverride.grader_name_en || displayedGrader) : (legacyGradeOverride.grader_name || displayedGrader)) : langData.grader_name; %>
+				<span class="hadith-inline-ruling-text" title="<%= attrValue(displayedGrade) %>"><%- displayedGrade %></span>&nbsp;(<span title="<%= displayedGraderName %>"><%- displayedGrader %></span>)
 				<% } %>
 			</em>
 		</aside>
@@ -382,7 +387,7 @@
 					<span class="bi bi-caret-down-square-fill"></span> Move Down
 				</button>
 			<% }
-			   if (i.book_virtual == 0) { %>
+			   if (i.book_virtual != 1) { %>
 				<% if (isSimilarSection && i.similarCandidate) { %>
 					<button type="button" class="_click btn btn-sm btn-outline-secondary ms-1 mb-1" title="Make actual similar hadith" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %><%= i.similarSecondHopCandidate && i.similarRemoveId1 && i.similarRemoveId2 ? `,${i.similarRemoveId1},${i.similarRemoveId2}` : '' %>" data-prop="hadiths_sim.add" data-loading-label="Adding">
 						<span class="bi bi-check2-circle"></span> Make Similar

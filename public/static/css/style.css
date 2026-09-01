@@ -5883,8 +5883,6 @@ del em strong {
 	background-color: currentColor;
 	display: block;
 	pointer-events: none;
-	-webkit-user-select: none;
-	user-select: none;
 }
 
 .quran-mushaf-surah-cartouche {
@@ -5933,8 +5931,6 @@ del em strong {
 	opacity: .58;
 	pointer-events: none;
 	width: auto;
-	-webkit-user-select: none;
-	user-select: none;
 }
 
 .quran-mushaf-line-surah_name > .quran-mushaf-surah-state-toggle {
@@ -7446,26 +7442,9 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	margin-bottom: 2rem;
 }
 
-.search-results .h-menu-wrap,
-.search-results .caution,
-.search-results article > header,
-.search-results .h .title,
-.search-results .h .tags,
-.search-results .h .admin,
-.search-results .h .grade,
-.search-results .h .content-translation-actions-row,
-.search-results article > h4,
-.search-results .comment-feed,
-.mobile-bottom-nav,
-body > footer,
-.ui-autocomplete,
-.ui-helper-hidden-accessible {
-	-webkit-user-select: none;
-	user-select: none;
-}
-
 .search-results .h .chain,
 .search-results .h .hadith-body-content,
+.search-results .h .grade,
 .search-results .h .footnote,
 .search-results .h .note {
 	-webkit-user-select: text;
@@ -7498,6 +7477,9 @@ body > footer,
 	font-style: normal;
 	color: var(--c-accent);
 }
+
+.hadith-inline-ruling-single { max-width: 100%; min-width: 0; }
+.hadith-inline-ruling-single .grade { cursor: text; display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .h .hadith-attribution {
 	color: var(--c-accent);
@@ -7569,13 +7551,13 @@ body > footer,
 .hadith-narrator-list li { direction: ltr; display: grid; gap: 1.25rem; grid-template-columns: 7rem minmax(0, 1fr) 1.75rem; padding: 1.25rem 0; position: relative; }
 .hadith-metadata-heading + .hadith-narrator-list li:first-child { padding-top: 0; }
 .hadith-narrator-list li + li { border-top: 1px solid var(--bs-border-color); }
-.hadith-narrator-death { align-self: start; color: var(--bs-secondary-color); direction: ltr; font-size: calc(1.05rem * var(--content-font-scale)) !important; text-align: left; }
+.hadith-narrator-death { align-self: start; color: var(--bs-secondary-color); direction: ltr; font-size: calc(1.05rem * var(--content-font-scale)) !important; text-align: left; white-space: nowrap; }
 .hadith-narrator-death * { font-size: inherit !important; }
 .hadith-narrator-main { direction: rtl; min-width: 0; text-align: right; }
 .hadith-narrator-name { font-size: calc(1.05rem * var(--content-font-scale)) !important; margin: 0; }
 .hadith-narrator-name a { color: inherit; font-size: inherit !important; text-decoration: underline dotted; text-underline-offset: .18em; }
 .hadith-narrator-name a:hover, .hadith-narrator-name a:focus-visible { color: var(--c-accent); text-decoration: underline dotted; }
-.hadith-narrator-fullname { color: var(--bs-secondary-color); font-size: .8em !important; font-weight: 400; }
+.hadith-narrator-fullname { color: var(--bs-secondary-color); display: block; font-size: .8em !important; font-weight: 400; margin-top: .1rem; }
 .hadith-narrator-details { color: var(--bs-secondary-color); font-size: calc(1.05rem * var(--content-font-scale)) !important; margin-top: .35rem; }
 .hadith-narrator-details * { font-size: inherit !important; }
 .hadith-narrator-accent-detail { color: var(--c-accent); }
@@ -7601,10 +7583,10 @@ body > footer,
 .hadith-sharh-more:hover, .hadith-sharh-more:focus-visible { text-decoration: underline; text-underline-offset: .18em; }
 @media (max-width: 575.98px) {
 	.hadith-sharh-column + .hadith-sharh-column { border-inline-start: 0; border-top: 1px solid var(--bs-border-color); padding-top: 1rem; }
-	.hadith-narrator-list li { gap: .75rem; grid-template-columns: minmax(0, 1fr) 2rem; }
-	.hadith-narrator-death { grid-column: 1; grid-row: 2; text-align: right; }
-	.hadith-narrator-main { grid-column: 1; grid-row: 1; }
-	.hadith-narrator-marker { grid-column: 2; grid-row: 1 / 3; }
+	.hadith-narrator-list li { gap: .75rem; grid-template-columns: 3.75rem minmax(0, 1fr) 2rem; }
+	.hadith-narrator-death { grid-column: 1; grid-row: 1; text-align: left; }
+	.hadith-narrator-main { grid-column: 2; grid-row: 1; }
+	.hadith-narrator-marker { grid-column: 3; grid-row: 1; }
 }
 .hadith-sharh-entry + .hadith-sharh-entry { margin-top: 1rem; }
 .hadith-gharib-list { display: grid; gap: .75rem; }
