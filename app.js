@@ -646,12 +646,12 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     res.render('error');
   });
 
-  const cacheIndex = await Utils.setupCacheIndex();
-  await Utils.runCacheMaintenance({ db: cacheIndex, force: true, reconcile: true });
   await RuntimeRefresh.markCurrent();
   await Hadith.a_reinit();
   app.locals.startupReady = true;
   debug.info('Application startup complete, ready to accept requests');
+  Utils.runCacheMaintenance({ force: true, reconcile: true }).catch(error =>
+    debug.error(`Startup cache maintenance failed: ${error.stack || error}`));
 
 })();
 
