@@ -28,6 +28,8 @@ const {
 	parseLinks,
 	parseNarrators,
 	parseSourceIsnadHtml,
+	legacyGradeForOpinion,
+	preferredLegacyOpinion,
 	proposedBodyFootnoteSplit,
 	proposedChainBodySplit,
 	readOptions,
@@ -54,6 +56,17 @@ describe('hdith.com six-book enrichment importer', () => {
 		const opinions = parseGraderOpinions([{ slug: 'grade-1', muhaddith: 'الألباني', degree: 'صحيح',
 			degree_category_id: 1, source: 'صحيح الترمذي', book_page: '147' }], 'b-4', '147');
 		expect(opinions[0]).toEqual(expect.objectContaining({ gradeCategoryId: 1, gradeColor: HDITH_GRADE_COLORS[1] }));
+	});
+
+	test('prefers Arnaut over Albani when filling a missing legacy grade', () => {
+		const opinion = preferredLegacyOpinion([
+			{ grader: 'الشيخ الألباني', grade: 'حسن' },
+			{ grader: 'شعيب الأرنؤوط', grade: 'إسناده صحيح' }
+		]);
+		expect(opinion).toEqual(expect.objectContaining({ grader: 'شعيب الأرنؤوط', grade: 'إسناده صحيح' }));
+		expect(legacyGradeForOpinion(opinion, [
+			{ id: 100, grade: 'صحيح' }, { id: 101, grade: 'إسناده صحيح' }
+		])).toEqual({ id: 101, grade: 'إسناده صحيح' });
 	});
 
 	test('distinguishes hdith sequence numbers from canonical edition references', () => {

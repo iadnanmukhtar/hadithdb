@@ -81,7 +81,7 @@
 	const hadithAttribution = hadithClassification.attribution || null;
 	const hadithChainCategories = Array.isArray(hadithClassification.chainCategories) ? hadithClassification.chainCategories : [];
 	const hasHadithClassification = !!hadithAttribution || hadithChainCategories.length > 0;
-	const showLegacyInlineGrade = !isQuranItem && (i.randomTocItem === true || (page && page.menu === 'Home') || (!i.single && (isSimilarSection || (page && (page.menu === 'Chapter' || page.menu === 'Section')))));
+	const showLegacyInlineGrade = !isQuranItem && (i.single === true || i.randomTocItem === true || isSimilarSection || (page && (page.menu === 'Chapter' || page.menu === 'Section')));
 	const itemRefPath = `/${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? i.en?.actual?.num || i.actual?.num || i.num : i.en?.num || i.num}`;
 	const quranSearchReturnMode = searchResult && (req.query.mode === 'mushaf' || req.query.mode === 'study') ? req.query.mode : '';
 	const itemHref = isQuranItem

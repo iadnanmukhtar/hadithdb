@@ -44,7 +44,7 @@ describe('Hadith attribution taxonomy', () => {
 		expect(sql).toContain('fk_hadith_attribution');
 	});
 
-	test('renders classification everywhere and only the legacy grade on chapter and section pages', () => {
+	test('renders classification everywhere and the legacy grade on reader cards', () => {
 		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		expect(template).toContain('hadithAttribution.title_en');
 		expect(template).toContain('hadithAttribution.title');
@@ -52,7 +52,8 @@ describe('Hadith attribution taxonomy', () => {
 		expect(template).toContain("classificationParts.join(' · ')");
 		expect(template).toContain("page.menu === 'Chapter' || page.menu === 'Section'");
 		expect(template).toContain('isSimilarSection ||');
-		expect(template).toContain('!i.single');
+		expect(template).toContain('i.single === true');
+		expect(template).not.toContain('!i.single');
 		expect(template).toContain('<em class="grade">');
 		expect(template).toContain('<%- langData.grade_grade %>');
 		expect(template).toContain('<%- langData.grader_shortName %>');

@@ -7569,13 +7569,15 @@ body > footer,
 .hadith-narrator-list li { direction: ltr; display: grid; gap: 1.25rem; grid-template-columns: 7rem minmax(0, 1fr) 1.75rem; padding: 1.25rem 0; position: relative; }
 .hadith-metadata-heading + .hadith-narrator-list li:first-child { padding-top: 0; }
 .hadith-narrator-list li + li { border-top: 1px solid var(--bs-border-color); }
-.hadith-narrator-death { align-self: start; color: var(--bs-secondary-color); direction: ltr; font-size: .9em; text-align: left; }
+.hadith-narrator-death { align-self: start; color: var(--bs-secondary-color); direction: ltr; font-size: calc(1.05rem * var(--content-font-scale)) !important; text-align: left; }
+.hadith-narrator-death * { font-size: inherit !important; }
 .hadith-narrator-main { direction: rtl; min-width: 0; text-align: right; }
-.hadith-narrator-name { font-size: 1.35rem; margin: 0; }
-.hadith-narrator-name a { color: inherit; text-decoration: underline dotted; text-underline-offset: .18em; }
+.hadith-narrator-name { font-size: calc(1.05rem * var(--content-font-scale)) !important; margin: 0; }
+.hadith-narrator-name a { color: inherit; font-size: inherit !important; text-decoration: underline dotted; text-underline-offset: .18em; }
 .hadith-narrator-name a:hover, .hadith-narrator-name a:focus-visible { color: var(--c-accent); text-decoration: underline dotted; }
-.hadith-narrator-fullname { color: var(--bs-secondary-color); font-size: .8em; font-weight: 400; }
-.hadith-narrator-details { color: var(--bs-secondary-color); margin-top: .35rem; }
+.hadith-narrator-fullname { color: var(--bs-secondary-color); font-size: .8em !important; font-weight: 400; }
+.hadith-narrator-details { color: var(--bs-secondary-color); font-size: calc(1.05rem * var(--content-font-scale)) !important; margin-top: .35rem; }
+.hadith-narrator-details * { font-size: inherit !important; }
 .hadith-narrator-accent-detail { color: var(--c-accent); }
 .hadith-narrator-marker { align-self: stretch; min-height: 4rem; position: relative; text-align: center; }
 .hadith-narrator-marker::after { background: var(--bs-border-color); bottom: -1.25rem; content: ''; position: absolute; right: 50%; top: 1.55rem; transform: translateX(50%); width: 1px; }

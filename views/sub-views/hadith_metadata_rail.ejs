@@ -1,5 +1,6 @@
 <%
 	const railMetadata = i.hdithMetadata || {};
+	const railEditMode = typeof site !== 'undefined' ? !!site.editMode : !!(typeof req !== 'undefined' && req.admin && req.editMode);
 	const railNavigationOnly = typeof navigationOnly !== 'undefined' && navigationOnly;
 	const railTopMenu = typeof topMenu !== 'undefined' && topMenu;
 	const railGrades = Array.isArray(railMetadata.grades) ? railMetadata.grades : [];
@@ -60,7 +61,7 @@
 			<% if (railSectionLabel) { %><a class="nav-link hadith-heading-toc-link" href="<%= railSectionHref %>"><%= railSectionLabel %></a><% } %>
 			<% railGroups.forEach(function (group) { %><button type="button" class="nav-link hadith-heading-toc-link<%= group.key === railInitialKey ? ' active' : '' %>" data-toc-heading-key="<%= group.key %>"<% if (group.key === 'reflection') { %> data-reflection-disclosure-trigger="comments-disclosure"<% } %><% if (group.key === railInitialKey) { %> aria-current="location"<% } %>><%= group.label %><% if (group.key === 'reflection') { %> <span class="badge text-bg-secondary hadith-comment-count" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-comment-type="hadith" title="0 reflections">0</span><% } else if (group.count !== null) { %> <span class="badge text-bg-secondary"><%= group.count %></span><% } %></button><% }); %>
 		</nav>
-		<% if (!railNavigationOnly && railMetadata.sourceUrl) { %><a class="hadith-metadata-source-link small" href="<%= railMetadata.sourceUrl %>" target="_blank" rel="noopener noreferrer">hdith.com source <span class="bi bi-box-arrow-up-right" aria-hidden="true"></span></a><% } %>
+		<% if (railEditMode && !railNavigationOnly && railMetadata.sourceUrl) { %><a class="hadith-metadata-source-link small" href="<%= railMetadata.sourceUrl %>" target="_blank" rel="noopener noreferrer">hdith.com source <span class="bi bi-box-arrow-up-right" aria-hidden="true"></span></a><% } %>
 	</div>
 </aside>
 <% } %>

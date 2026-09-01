@@ -28,6 +28,17 @@ const SIX_BOOKS = Object.freeze([
 	{ sourceSlug: 'b-5', bookId: 3, alias: 'nasai' },
 	{ sourceSlug: 'b-6', bookId: 6, alias: 'ibnmajah' }
 ]);
+const FOLLOWUP_BOOKS = Object.freeze([
+	{ sourceSlug: 'b-7', bookId: 7, alias: 'malik' },
+	{ sourceSlug: 'b-9', bookId: 9, alias: 'darimi' },
+	{ sourceSlug: 'b-18', bookId: 18, alias: 'daraqutni' },
+	{ sourceSlug: 'b-10', bookId: 11, alias: 'ibnhibban' },
+	{ sourceSlug: 'b-11', bookId: 17, alias: 'ibnkhuzaymah' },
+	{ sourceSlug: 'b-19', bookId: 16, alias: 'bazzar' },
+	{ sourceSlug: 'b-33', bookId: 32, alias: 'shamail' },
+	{ sourceSlug: 'b-8', bookId: 8, alias: 'ahmad' }
+]);
+const SUPPORTED_BOOKS = Object.freeze([...SIX_BOOKS, ...FOLLOWUP_BOOKS]);
 const HDITH_LOCAL_BOOKS = Object.freeze({
 	1: { bookId: 1, alias: 'bukhari', title: 'صحيح البخاري', referenceMode: 'exact' },
 	2: { bookId: 2, alias: 'muslim', title: 'صحيح مسلم', referenceMode: 'source-entry' },
@@ -71,6 +82,8 @@ const sourceBookAuthorCache = new Map();
 const narratorIdCache = new Map();
 const subjectIdCache = new Map();
 const sharhSourceIdCache = new Map();
+let legacyGradesCache;
+let legacyGradersCache;
 const pendingIndexHadithIds = new Set();
 
 async function main() {
@@ -120,7 +133,7 @@ function readOptions(args) {
 	if (parsed.resumeSourceId !== null && (!Number.isInteger(parsed.resumeSourceId) || parsed.resumeSourceId < 1))
 		usage(1, '--resume-source-id must be a positive integer.');
 	for (const slug of parsed.books)
-		if (!SIX_BOOKS.some(book => book.sourceSlug === slug)) usage(1, `Unknown six-book source '${slug}'.`);
+		if (!SUPPORTED_BOOKS.some(book => book.sourceSlug === slug)) usage(1, `Unknown hdith.com book source '${slug}'.`);
 	if (parsed.skipSchema && !parsed.apply) usage(1, '--skip-schema requires --apply.');
 	return parsed;
 }
@@ -133,7 +146,7 @@ function usage(code, message) {
 
 function selectedBooks(slugs) {
 	const wanted = new Set(slugs);
-	return SIX_BOOKS.filter(book => wanted.has(book.sourceSlug));
+	return SUPPORTED_BOOKS.filter(book => wanted.has(book.sourceSlug));
 }
 
 async function startLightpanda() {
@@ -179,13 +192,12 @@ async function scrapeBook(page, config) {
 	}
 	const bookMatcher = await createBookMatcher(config);
 	let resumeRecord = options.resumeSourceId && config.sourceSlug === options.books[0]
-		? await withTimeout(loadRecord(page, config, options.resumeSourceId), 60000,
-			`${config.sourceSlug}/h/${options.resumeSourceId}: timed out loading the resume payload`)
+		? await loadResumeRecord(page, config, options.resumeSourceId)
 		: null;
 	let handled = 0;
 	for (const chapter of chapters) {
 		if (options.maxHadiths !== null && handled >= options.maxHadiths) break;
-		if (resumeRecord && resumeRecord.chapterId !== Number(chapter.id)) continue;
+		if (resumeRecord && resumeRecord.chapterId && resumeRecord.chapterId !== Number(chapter.id)) continue;
 		let firstId;
 		if (resumeRecord) {
 			firstId = resumeRecord.sourceId;
@@ -209,7 +221,7 @@ async function scrapeBook(page, config) {
 				console.warn(`${config.alias}: source entry ${sourceId} returned HTTP 404; ending the current chapter and continuing from the next chapter listing.`);
 				break;
 			}
-			if (!record || record.chapterId !== Number(chapter.id)) break;
+			if (!record || (record.chapterId && record.chapterId !== Number(chapter.id))) break;
 			chapterCount++;
 			if (options.resumeSourceId && config.sourceSlug === options.books[0] && record.sourceId < options.resumeSourceId) {
 				compressCachedRecord(config, record.sourceId);
@@ -246,6 +258,19 @@ async function scrapeBook(page, config) {
 		}
 	}
 	console.log(`${config.alias}: ${options.apply ? 'enriched' : 'validated'} ${handled} hadith(s); no index command was run.`);
+}
+
+async function loadResumeRecord(page, config, sourceId) {
+	for (let candidate = sourceId; candidate < sourceId + 250; candidate++) {
+		try {
+			return await withTimeout(loadRecord(page, config, candidate), 60000,
+				`${config.sourceSlug}/h/${candidate}: timed out loading the resume payload`);
+		} catch (err) {
+			if (!isSourceNotFoundError(err)) throw err;
+			console.warn(`${config.alias}: resume source entry ${candidate} returned HTTP 404; trying the next source ID.`);
+		}
+	}
+	throw new Error(`${config.alias}: could not find a valid resume payload within 250 source IDs after ${sourceId}.`);
 }
 
 function isSourceNotFoundError(err) {
@@ -467,6 +492,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 					[record.num, record.editionReference, record.chainType, record.sourceIsnadHtml, gharibJson, hadithId]);
 			if (storedCollectionGrades >= expectedCollectionGrades) {
 				await upsertSourceReferenceMap(connection, config, record, hadithId, localReference, orderedMatch);
+				await backfillLegacyGradeFromOpinions(connection, hadithId);
 				return hadithId;
 			}
 		}
@@ -494,6 +520,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 		await replaceLinks(connection, hadithId, record.links);
 		await replaceSharh(connection, hadithId, sharh);
 		await replaceGraderOpinions(connection, hadithId, graderOpinions);
+		await backfillLegacyGradeFromOpinions(connection, hadithId);
 		await query(connection, 'COMMIT');
 		return hadithId;
 	} catch (err) {
@@ -533,13 +560,21 @@ async function applyRecordWithRetry(page, config, record, orderedMatch, runtimeO
 		try {
 			return await applyRecord(page, config, record, orderedMatch, runtimeOptions);
 		} catch (err) {
-			const retryable = err?.code === 'ER_LOCK_DEADLOCK' || err?.code === 'ER_LOCK_WAIT_TIMEOUT';
+			const retryable = ['ER_LOCK_DEADLOCK', 'ER_LOCK_WAIT_TIMEOUT', 'ER_SERVER_SHUTDOWN',
+				'PROTOCOL_CONNECTION_LOST', 'ECONNREFUSED', 'ECONNRESET'].includes(err?.code);
 			if (!retryable || attempt === 3) throw err;
 			const retryDelay = Math.max(250, options.delay, attempt * 500);
 			console.warn(`${config.sourceSlug}/h/${record.sourceId}: ${err.code}; retrying apply (${attempt + 1}/3) after ${retryDelay} ms.`);
+			if (!['ER_LOCK_DEADLOCK', 'ER_LOCK_WAIT_TIMEOUT'].includes(err?.code)) await resetDatabaseConnection();
 			await wait(retryDelay);
 		}
 	}
+}
+
+async function resetDatabaseConnection() {
+	if (dbConnection) dbConnection.destroy();
+	dbConnection = null;
+	dbSessionConfigured = false;
 }
 
 function ignoresExternalGrades(config) {
@@ -807,7 +842,23 @@ function parseGraderOpinions(results, sourceBookSlug, hadithNum) {
 }
 
 function isCollectionAuthorVerificationResult(sourceBookSlug, grader) {
-	return sourceBookSlug === 'b-3' && /ابو داود/.test(normalizeArabicForMatch(grader));
+	if (sourceBookSlug === 'b-4' || sourceBookSlug === 'b-33') return false;
+	const collectionAuthors = {
+		'b-1': /البخاري/,
+		'b-2': /مسلم/,
+		'b-3': /ابو داود/,
+		'b-5': /النسايي/,
+		'b-6': /ابن ماجه/,
+		'b-7': /مالك/,
+		'b-8': /احمد(?: بن حنبل)?/,
+		'b-9': /الدارمي/,
+		'b-10': /ابن حبان/,
+		'b-11': /ابن خزيمه/,
+		'b-18': /الدارقطني/,
+		'b-19': /البزار/,
+		'b-33': /الترمذي/
+	};
+	return collectionAuthors[sourceBookSlug]?.test(normalizeArabicForMatch(grader)) || false;
 }
 
 function sourceSlugForVerificationResult(source) {
@@ -818,6 +869,14 @@ function sourceSlugForVerificationResult(source) {
 	if (/الترمذي/.test(normalized)) return 'b-4';
 	if (/النسايي/.test(normalized)) return 'b-5';
 	if (/ابن ماجه/.test(normalized)) return 'b-6';
+	if (/موطا مالك|مالك/.test(normalized)) return 'b-7';
+	if (/مسند احمد|احمد بن حنبل/.test(normalized)) return 'b-8';
+	if (/الدارمي/.test(normalized)) return 'b-9';
+	if (/ابن حبان/.test(normalized)) return 'b-10';
+	if (/ابن خزيمه/.test(normalized)) return 'b-11';
+	if (/الدارقطني/.test(normalized)) return 'b-18';
+	if (/البزار/.test(normalized)) return 'b-19';
+	if (/الشمايل/.test(normalized)) return 'b-33';
 	return null;
 }
 
@@ -862,6 +921,40 @@ async function replaceGraderOpinions(connection, hadithId, opinions) {
 				translation.grader_en || null, opinion.graderSourceId, opinion.grade, translation.grade_en || null, gradeCategoryId, gradeColor, opinion.source, opinion.sourceId,
 				opinion.bookPage, opinion.driver, opinion.sourceUrl]);
 	}
+}
+
+function preferredLegacyOpinion(opinions) {
+	const normalized = (opinions || []).map(opinion => ({ ...opinion, normalizedGrader: normalizeArabicForMatch(opinion.grader) }));
+	return normalized.find(opinion => /الارنا?و+ط/.test(opinion.normalizedGrader))
+		|| normalized.find(opinion => /الالباني/.test(opinion.normalizedGrader)) || null;
+}
+
+function legacyGradeForOpinion(opinion, grades) {
+	const ruling = normalizeArabicForMatch(opinion?.grade);
+	if (!ruling) return null;
+	return [...(grades || [])].filter(grade => Number(grade.id) !== -1 && normalizeArabicForMatch(grade.grade))
+		.sort((left, right) => normalizeArabicForMatch(right.grade).length - normalizeArabicForMatch(left.grade).length)
+		.find(grade => ruling.includes(normalizeArabicForMatch(grade.grade))) || null;
+}
+
+async function backfillLegacyGradeFromOpinions(connection, hadithId) {
+	const hadith = (await query(connection, 'SELECT gradeId FROM hadiths WHERE id=? LIMIT 1', [hadithId]))[0];
+	if (!hadith || (hadith.gradeId !== null && Number(hadith.gradeId) !== -1)) return false;
+	const opinion = preferredLegacyOpinion(await query(connection,
+		'SELECT grader, grade FROM hdith_hadith_grades WHERE hadith_id=? ORDER BY ordinal, id', [hadithId]));
+	if (!opinion) return false;
+	if (!legacyGradesCache) legacyGradesCache = await query(connection, 'SELECT id, grade FROM grades WHERE id<>-1');
+	if (!legacyGradersCache) legacyGradersCache = await query(connection, 'SELECT id, shortName, name FROM graders');
+	const grade = legacyGradeForOpinion(opinion, legacyGradesCache);
+	const normalizedGrader = normalizeArabicForMatch(opinion.grader);
+	const grader = legacyGradersCache.find(candidate => {
+		const names = `${normalizeArabicForMatch(candidate.shortName)} ${normalizeArabicForMatch(candidate.name)}`;
+		return /الالباني/.test(normalizedGrader) ? /الالباني/.test(names) : /الارنا?و+ط/.test(names);
+	});
+	if (!grade || !grader) return false;
+	const result = await query(connection, `UPDATE hadiths SET gradeId=?, graderId=?
+		WHERE id=? AND (gradeId IS NULL OR gradeId=-1)`, [grade.id, grader.id, hadithId]);
+	return result.affectedRows > 0;
 }
 
 async function replaceNarrators(connection, hadithId, narrators) {
@@ -1408,7 +1501,7 @@ async function closeDatabase() {
 if (require.main === module) main();
 
 module.exports = {
-	CACHE_DIR, HDITH_GRADE_COLORS, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
+	CACHE_DIR, FOLLOWUP_BOOKS, HDITH_GRADE_COLORS, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, SUPPORTED_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
 	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
-	enrichSingleHadith, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult
+	enrichSingleHadith, legacyGradeForOpinion, preferredLegacyOpinion, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult
 };

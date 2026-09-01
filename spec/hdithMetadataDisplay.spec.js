@@ -32,16 +32,19 @@ describe('hdith.com metadata display', () => {
 	});
 
 	test('includes the primary hadith grader before supplemental source opinions', () => {
-		const opinions = withPrimaryGrade([
-			{ grader: 'محدث آخر', grade: 'حسن صحيح' }
-		], {
+		const item = {
+			grade: { id: 250 },
 			ar: { grader_shortName: 'الألباني', grader_name: 'محمد ناصر الدين الألباني', grade_grade: 'حسن صحيح' },
 			en: { grader_shortName: 'Albānī', grader_name: 'M. Nāṣir al-Dīn al-Albānī', grade_grade: 'Good-Sound' }
-		});
+		};
+		const opinions = withPrimaryGrade([
+			{ grader: 'محدث آخر', grade: 'حسن صحيح' }
+		], item);
 		expect(opinions).toHaveLength(2);
 		expect(opinions[0]).toMatchObject({
 			grader: 'الألباني', grader_en: 'Albānī', grade: 'حسن صحيح', grade_en: 'Good-Sound', primary: true
 		});
+		expect(item.legacyGradeColor).toBe('oklch(68% .105 155)');
 	});
 
 	test('does not duplicate a primary grading already present in metadata', () => {
@@ -171,6 +174,7 @@ describe('hdith.com metadata display', () => {
 
 	test('renders all metadata as full-page anchor sections', () => {
 		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
+		const itemTemplate = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		['Scholarly Grades', 'أحكام المحدّثين', 'Chain of Narrators', 'الإسناد', 'Explanations', 'الشرح', 'Definitions', 'غريب الحديث', 'Similar Hadiths', 'أحاديث مشابهة'].forEach(label => expect(template).toContain(label));
 		expect(template).not.toContain('Additional References');
 		expect(template).not.toContain('التخريج');
@@ -217,6 +221,9 @@ describe('hdith.com metadata display', () => {
 		expect(template).toContain('const narratorAccentDetails = [narrator.reliability]');
 		expect(template).toContain('hadith-narrator-accent-detail');
 		expect(template).toContain('hadith-narrator-fullname');
+		expect(itemTemplate).toContain('i.single === true');
+		expect(itemTemplate).toContain('hasHadithClassification');
+		expect(itemTemplate).toContain('showLegacyInlineGrade');
 		expect(template).toContain('narrator.display_fullname');
 		expect(template).not.toContain('text-bg-warning');
 		expect(template).not.toContain('text-bg-light');
@@ -281,6 +288,8 @@ describe('hdith.com metadata display', () => {
 		expect(rail).toContain('railSectionHref');
 		expect(rail).toContain('hadith-metadata-source-link small');
 		expect(rail).toContain('hdith.com source');
+		expect(rail).toContain("const railEditMode = typeof site !== 'undefined' ? !!site.editMode");
+		expect(rail).toContain('railEditMode && !railNavigationOnly && railMetadata.sourceUrl');
 		expect(rail).toContain("key: 'gharib'");
 		expect(rail).toContain("label: 'Definitions'");
 		expect(rail).not.toContain("key: 'takhrij'");
@@ -310,9 +319,13 @@ describe('hdith.com metadata display', () => {
 		expect(css).toContain('.hadith-metadata-rail button.hadith-heading-toc-link { text-align: left; width: 100%; }');
 		expect(css).toContain('.hadith-grade-list { color: var(--bs-body-color); margin: 0 0 1.25rem; }');
 		expect(css).not.toMatch(/\.hadith-enriched-isnad \{[^}]*text-indent/);
-		expect(css).toContain('.hadith-narrator-name a { color: inherit; text-decoration: underline dotted; text-underline-offset: .18em; }');
+		expect(css).toContain('.hadith-narrator-name { font-size: calc(1.05rem * var(--content-font-scale)) !important;');
+		expect(css).toContain('.hadith-narrator-name a { color: inherit; font-size: inherit !important; text-decoration: underline dotted; text-underline-offset: .18em; }');
+		expect(css).toContain('.hadith-narrator-death * { font-size: inherit !important; }');
+		expect(css).toContain('.hadith-narrator-details { color: var(--bs-secondary-color); font-size: calc(1.05rem * var(--content-font-scale)) !important;');
+		expect(css).toContain('.hadith-narrator-details * { font-size: inherit !important; }');
 		expect(css).toContain('.hadith-narrator-name a:hover, .hadith-narrator-name a:focus-visible { color: var(--c-accent); text-decoration: underline dotted; }');
-		expect(css).toContain('.hadith-narrator-fullname { color: var(--bs-secondary-color); font-size: .8em; font-weight: 400; }');
+		expect(css).toContain('.hadith-narrator-fullname { color: var(--bs-secondary-color); font-size: .8em !important; font-weight: 400; }');
 		expect(css).toContain('details > summary::-webkit-details-marker');
 		expect(css).toContain('details > summary::marker');
 		expect(css).toContain('.hadith-gharib-entry summary::after');
@@ -347,9 +360,9 @@ describe('hdith.com metadata display', () => {
 		expect(home).toContain("include('sub-views/hadith_metadata_rail.ejs', { i: homeHadithItem, mobile: false, navigationOnly: true })");
 		expect(rail).toContain("const railNavigationOnly = typeof navigationOnly !== 'undefined' && navigationOnly");
 		expect(rail).toContain('railNavigationOnly ? [] : [');
-		expect(rail).toContain('!railNavigationOnly && railMetadata.sourceUrl');
+		expect(rail).toContain('railEditMode && !railNavigationOnly && railMetadata.sourceUrl');
 		expect(searchRoute).toContain('await HdithMetadata.attachClassifications([random])');
-		expect(item).toContain("page && page.menu === 'Home'");
+		expect(item).toContain('i.single === true');
 		expect(item).toContain('hasHadithClassification');
 		expect(item).toContain('i.legacyGradeColor');
 	});
