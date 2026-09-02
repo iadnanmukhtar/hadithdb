@@ -27,5 +27,6 @@ tmp/*
 temp
 temp/*
 *test*
+ecosystem.config.cjs
 !packages/quran-review-core/index.test.js
 apps
