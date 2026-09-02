@@ -731,8 +731,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
     debug(status.message);
   }
 
-  res.status(status.code);
-  res.end(JSON.stringify(status));
+  res.status(status.code).json(status);
 });
 
 function sql(s) {

@@ -15,6 +15,7 @@ describe('client toast error reporting', () => {
   test('wraps every toastr error with browser and server logging', () => {
     const client = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'), 'utf8');
     const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+    const updateRoute = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
     const head = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'head.ejs'), 'utf8');
     const scripts = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'scripts.ejs'), 'utf8');
 
@@ -28,6 +29,7 @@ describe('client toast error reporting', () => {
     expect(app).toContain("app.use('/api/client-errors', clientErrorsRouter);");
     expect(app).toContain("app.use('/quran/api/client-errors', clientErrorsRouter);");
     expect(app).toContain("app.get('/vendor/toastr/toastr.min.js'");
+    expect(updateRoute).toContain('res.status(status.code).json(status);');
     expect(head).toContain('href="/vendor/toastr/toastr.min.css"');
     expect(scripts).toContain('src="/vendor/toastr/toastr.min.js"');
   });
@@ -54,5 +56,15 @@ describe('client toast error reporting', () => {
     expect(editor).toContain("'Tafsir updated'");
     expect(editor).toContain("'Tafsir update needs attention'");
     expect(editor).not.toContain('toastr.success(`${res.status} ${res.statusText}`');
+  });
+
+  test('requests JSON for inline updates and keeps non-JSON error HTML out of toasts', () => {
+    const editor = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'scripts.ejs'), 'utf8');
+
+    expect(editor).toContain("'Accept': 'application/json'");
+    expect(editor).toContain("res.headers.get('Retry-After')");
+    expect(editor).toContain('The update service is temporarily unavailable.');
+    expect(editor).not.toContain('Expected JSON from ${res.url');
+    expect(editor).toContain('var errMessage = resBody.message ||');
   });
 });

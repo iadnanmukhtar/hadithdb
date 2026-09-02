@@ -511,6 +511,7 @@
       if (reqBody) {
         const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
         const headers = {
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
         };
         if (token)
@@ -531,9 +532,15 @@
         try {
           resBody = JSON.parse(responseText);
         } catch (err) {
+          const retryAfter = Number.parseInt(res.headers.get('Retry-After') || '', 10);
+          const retryMessage = Number.isFinite(retryAfter) && retryAfter > 0
+            ? ` Please try again in ${retryAfter} seconds.`
+            : ' Please try again shortly.';
           resBody = {
             code: res.status,
-            message: `Expected JSON from ${res.url || 'server'}, got ${responseText.trim().substring(0, 120) || res.statusText}`
+            message: res.status === 503
+              ? `The update service is temporarily unavailable.${retryMessage}`
+              : `The server returned an invalid response (${res.status || 'unknown status'}). Please try again.`
           };
         }
 	      } else if (!resBody.needsHdithUrl) {
@@ -547,7 +554,7 @@
           : 'Your changes have been saved.';
         toastr.success(successMessage, successTitle);
 	      } else if (!(options.suppressHdithUrlPromptError && resBody.needsHdithUrl)) {
-        var errMessage = `${res.status} ${res.statusText} ${resBody.message}`;
+        var errMessage = resBody.message || `${res.status} ${res.statusText || 'Update failed'}`;
         const isTafsirUpdate = (reqBody.prop || '').toString().indexOf('commentary.') === 0;
         toastr.error(errMessage, isTafsirUpdate ? 'Tafsir update needs attention' : 'Update needs attention');
       }
