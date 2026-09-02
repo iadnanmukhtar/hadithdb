@@ -82,6 +82,8 @@
           params.append('mode', req.query.mode);
         if (req.query.mode === 'tafsir' && req.query.tafsirMode)
           params.append('tafsirMode', req.query.tafsirMode);
+        if (isQuranSearchProxy && locals.searchSort === 'canonical')
+          params.append('sort', 'canonical');
         params.append('o', offset);
         return `${searchAction}?${params.toString()}`;
       }
@@ -120,7 +122,23 @@
           <button type="button" class="command-search-pill command-search-clear-all badge rounded-pill" data-search-filter-clear aria-label="Clear all search filters">Clear all</button>
         <% } %>
         </div>
-        <div class="search-results-count"><%= displayResultCount %> results found</div>
+        <div class="search-results-meta">
+        <% if (isQuranSearchProxy) {
+          function searchSortPath(sort) {
+            var sortParams = new URL(req.originalUrl || req.url || searchAction, 'http://localhost').searchParams;
+            sortParams.delete('o');
+            sortParams.delete('sort');
+            if (sort === 'canonical') sortParams.set('sort', 'canonical');
+            return `${searchAction}?${sortParams.toString()}`;
+          }
+        %>
+          <div class="btn-group btn-group-sm search-results-sort" role="group" aria-label="Sort search results">
+            <a class="btn btn-outline-secondary<%= locals.searchSort !== 'canonical' ? ' active' : '' %>" href="<%= searchSortPath('relevance') %>"<% if (locals.searchSort !== 'canonical') { %> aria-current="page"<% } %>>Relevance</a>
+            <a class="btn btn-outline-secondary<%= locals.searchSort === 'canonical' ? ' active' : '' %>" href="<%= searchSortPath('canonical') %>"<% if (locals.searchSort === 'canonical') { %> aria-current="page"<% } %>>Quran order</a>
+          </div>
+        <% } %>
+          <div class="search-results-count"><%= displayResultCount %> results found</div>
+        </div>
       </div>
       <% } %>
 

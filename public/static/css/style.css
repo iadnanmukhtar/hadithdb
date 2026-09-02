@@ -1332,7 +1332,7 @@ nav .nav-link[aria-current="page"] {
 	height: 2.5rem;
 	max-width: none;
 	padding: 0.35rem 0.45rem 0.35rem 0.75rem;
-	text-align: left;
+	text-align: start;
 	transition: border-color .15s ease, box-shadow .15s ease, color .15s ease;
 	width: 100%;
 }
@@ -1363,6 +1363,15 @@ nav .nav-link[aria-current="page"] {
 
 .command-search-trigger-label {
 	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: start;
+	unicode-bidi: plaintext;
+	white-space: nowrap;
+}
+
+.bi-search.is-rtl-search {
+	transform: scaleX(-1);
 }
 
 .command-search-shortcut {
@@ -1772,6 +1781,20 @@ nav .nav-link[aria-current="page"] {
 	white-space: nowrap;
 }
 
+.search-results-meta {
+	align-items: center;
+	display: flex;
+	flex: 0 0 auto;
+	gap: 0.75rem;
+}
+
+.search-results-sort .btn {
+	font-size: 0.72rem;
+	line-height: 1.2;
+	padding: 0.2rem 0.45rem;
+	white-space: nowrap;
+}
+
 @media (max-width: 575.98px) {
 	.search-results-summary {
 		flex-wrap: wrap;
@@ -1782,6 +1805,10 @@ nav .nav-link[aria-current="page"] {
 	}
 
 	.search-results-count {
+		margin-left: auto;
+	}
+
+	.search-results-meta {
 		margin-left: auto;
 	}
 }

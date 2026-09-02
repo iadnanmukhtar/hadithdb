@@ -1274,9 +1274,30 @@ function initCommandSearch() {
 			return;
 		try {
 			input.value = storage.getItem(searchTermStorageKeys[searchMode]) || '';
+			updateCommandSearchPresentation();
 		} catch (_err) {
 			// Search remains usable when browser storage is unavailable.
 		}
+	}
+
+	function isRtlSearchTerm(value) {
+		return /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test((value || '').toString());
+	}
+
+	function updateCommandSearchPresentation() {
+		var value = input.value || '';
+		var rtl = isRtlSearchTerm(value);
+		input.dir = rtl ? 'rtl' : 'ltr';
+		document.querySelectorAll('[data-command-search-direction-container]').forEach(function (container) {
+			container.dir = rtl ? 'rtl' : 'ltr';
+		});
+		document.querySelectorAll('[data-command-search-icon]').forEach(function (icon) {
+			icon.classList.toggle('is-rtl-search', rtl);
+		});
+		document.querySelectorAll('[data-command-search-trigger-label]').forEach(function (label) {
+			label.textContent = value || label.dataset.emptyLabel || 'Search';
+			label.dir = rtl ? 'rtl' : 'ltr';
+		});
 	}
 
 	function refreshAutocomplete() {
@@ -1459,6 +1480,7 @@ function initCommandSearch() {
 	});
 	input.addEventListener('input', function () {
 		storeSearchTerm(mode);
+		updateCommandSearchPresentation();
 	});
 	form.addEventListener('submit', function () {
 		storeSearchTerm(mode);
@@ -1485,6 +1507,9 @@ function initCommandSearch() {
 	applyContextualQuranFilters();
 	normalizeQuranFilters();
 	setMode(initialMode, { refresh: false });
+	if (dialog.dataset.commandSearchResultsContext === '1')
+		storeSearchTerm(initialMode);
+	updateCommandSearchPresentation();
 }
 
 var quranTafsirStorageKeys = {

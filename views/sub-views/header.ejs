@@ -47,6 +47,10 @@
       ? pageBook.alias
       : '';
     var isSearchResultsContext = page && page.context && page.context.fromSearch === true;
+    var headerSearchTerm = isSearchResultsContext && req && req.query && req.query.q
+      ? req.query.q.toString()
+      : '';
+    var headerSearchIsRtl = /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(headerSearchTerm);
     var searchResultsBookFilters = isSearchResultsContext
       ? (Array.isArray(locals.b) ? locals.b : [locals.b]).filter(Boolean)
       : [];
@@ -148,7 +152,7 @@
         </li>
         <li class="nav-item command-search-compact-item">
           <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-compact-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" title="Search" aria-label="Search">
-            <i class="bi bi-search" aria-hidden="true"></i>
+            <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
           </button>
         </li>
         <li class="nav-item">
@@ -191,7 +195,7 @@
           <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>"></i>
         </a>
         <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-mobile-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" title="Search" aria-label="Search">
-          <i class="bi bi-search" aria-hidden="true"></i>
+          <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
         </button>
         <button type="button" class="btn btn-sm nav-auth-btn" id="nav-auth-mobile">Sign in</button>
       </div>
@@ -297,7 +301,8 @@
       quranSearchCommentaryAliases: quranSearchCommentaryAliases,
       hadithSearchBooks: books,
       quranSearchTafsirs: locals.quranNavTafsirs || [],
-      quranSearchTranslations: Tafsir.visibleTranslationsSync ? Tafsir.visibleTranslationsSync() : []
+      quranSearchTranslations: Tafsir.visibleTranslationsSync ? Tafsir.visibleTranslationsSync() : [],
+      searchQuery: headerSearchTerm
     }); %>
     
   </div>
@@ -479,9 +484,9 @@
   <% } %>
 
   <div class="col-12 d-none d-md-flex site-navbar-search-row" role="search">
-    <button type="button" class="command-search-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search Hadith or Quran and Tafsir (Command or Control K)">
-      <i class="bi bi-search" aria-hidden="true"></i>
-      <span class="command-search-trigger-label">Search Hadith or Quran + Tafsir</span>
+    <button type="button" class="command-search-trigger" data-command-search-open data-command-search-direction-container dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>" aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search Hadith or Quran and Tafsir (Command or Control K)">
+      <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
+      <span class="command-search-trigger-label" data-command-search-trigger-label data-empty-label="Search Hadith or Quran + Tafsir" dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>"><%= headerSearchTerm || 'Search Hadith or Quran + Tafsir' %></span>
       <kbd class="command-search-shortcut" aria-hidden="true"><span data-command-key-modifier>⌘</span><span>K</span></kbd>
     </button>
   </div>

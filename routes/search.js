@@ -1087,6 +1087,9 @@ async function renderSearchResults(req, res, next, options = {}) {
   }
 
   req.query.q = Search.truncateQuery(req.query.q);
+  var searchSort = options.quranSearchProxy && req.query.sort === 'canonical' ? 'canonical' : 'relevance';
+  if (searchSort === 'relevance')
+    delete req.query.sort;
   if (options.forceBookFilters)
     req.query.b = options.forceBookFilters.slice();
   var tafsirFilters = options.quranSearchProxy ? normalizeRequestTafsirFilters(req) : [];
@@ -1128,7 +1131,8 @@ async function renderSearchResults(req, res, next, options = {}) {
     offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
     results = await Search.a_searchText(req.query.q, effectiveBookFilters, offset, {
       tafsirAliases: tafsirFilters,
-      excludeQuranAndTafsir: !options.quranSearchProxy
+      excludeQuranAndTafsir: !options.quranSearchProxy,
+      sort: searchSort
     });
     totalResults = Number.isFinite(results.total) ? results.total : results.length;
     var searchOffsetError = HttpRange.itemOffsetNotSatisfiable(requestedOffset, totalResults, 'Search results');
@@ -1180,6 +1184,7 @@ async function renderSearchResults(req, res, next, options = {}) {
       tafsirFilters: tafsirFilters,
       tafsirFilter: tafsirFilters[0] || '',
       tafsirFilterOptions: options.quranSearchProxy ? tafsirSearchFilterOptions(tafsirFilters) : [],
+      searchSort: searchSort,
     });
   }
   return true;
