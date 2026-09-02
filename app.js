@@ -385,7 +385,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
   return app.render('error', buildErrorViewLocals(statusCode, message, error, req, res), callback);
 };
 
-(async () => {
+const startupPromise = (async () => {
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
@@ -654,5 +654,7 @@ app.renderErrorPage = function renderErrorPage(statusCode, message, error, req, 
     debug.error(`Startup cache maintenance failed: ${error.stack || error}`));
 
 })();
+
+app.locals.startupPromise = startupPromise;
 
 module.exports = app;

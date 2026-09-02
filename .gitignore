@@ -28,5 +28,4 @@ temp
 temp/*
 *test*
 !packages/quran-review-core/index.test.js
-ecosystem.config.cjs
 apps

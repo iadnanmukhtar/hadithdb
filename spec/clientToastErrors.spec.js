@@ -66,5 +66,20 @@ describe('client toast error reporting', () => {
     expect(editor).toContain('The update service is temporarily unavailable.');
     expect(editor).not.toContain('Expected JSON from ${res.url');
     expect(editor).toContain('var errMessage = resBody.message ||');
+    expect(editor).not.toContain('startupRetryAttempts');
+  });
+
+  test('does not listen or notify PM2 until application initialization completes', () => {
+    const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+    const server = fs.readFileSync(path.join(__dirname, '..', 'bin', 'www'), 'utf8');
+    const pm2 = fs.readFileSync(path.join(__dirname, '..', 'ecosystem.config.cjs'), 'utf8');
+
+    expect(app).toContain('app.locals.startupPromise = startupPromise;');
+    expect(app).not.toContain('X-HadithDB-Retry-Safe');
+    expect(server).toContain('await app.locals.startupPromise;\n    server.listen(port);');
+    expect(server).toContain("process.send('ready');");
+    expect(server.indexOf('await app.locals.startupPromise;')).toBeLessThan(server.indexOf('server.listen(port);'));
+    expect(pm2).toContain('wait_ready: true');
+    expect(pm2).toContain('listen_timeout: 180000');
   });
 });
