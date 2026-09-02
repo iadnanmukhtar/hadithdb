@@ -26,12 +26,14 @@
 		const arabizi = options.arabizi;
 		const markdown = options.markdown;
 		const emptyHtml = options.emptyHtml;
+		const placeholder = options.placeholder;
 		return [
 			`data-id="${attrValue(id)}"`,
 			`data-prop="${attrValue(prop)}"`,
 			arabizi !== undefined ? `data-arabizi="${attrValue(arabizi)}"` : '',
 			markdown !== undefined ? `data-markdown-source="${attrValue(markdown)}"` : '',
-			emptyHtml !== undefined ? `data-markdown-empty-html="${attrValue(emptyHtml)}"` : ''
+			emptyHtml !== undefined ? `data-markdown-empty-html="${attrValue(emptyHtml)}"` : '',
+			placeholder !== undefined ? `data-placeholder="${attrValue(placeholder)}" aria-label="${attrValue(placeholder)}"` : ''
 		].filter(Boolean).join(' ');
 	}
 	function contentTranslationForLang(code) {
@@ -51,6 +53,12 @@
 	var langActual = !isContentTranslationLang && i[lang] ? i[lang].actual : null;
 	var langDir = langData.dir || (['ar', 'fa', 'he', 'ur'].includes(lang) ? 'rtl' : 'ltr');
 	var langFontClass = langData.fontClass || '';
+	var editLanguageLabel = lang === 'ar' ? 'Arabic' : (langData.label || (lang === 'en' ? 'English' : lang.toUpperCase()));
+	function editPlaceholder(field) {
+		const arabic = { chain: 'سند الحديث', body: 'متن الحديث', footnote: 'حاشية الحديث', note: 'ملاحظة الحديث' };
+		const translated = { chain: `${editLanguageLabel} chain`, body: `${editLanguageLabel} hadith text`, footnote: `${editLanguageLabel} footnote`, note: `${editLanguageLabel} note` };
+		return lang === 'ar' ? arabic[field] : translated[field];
+	}
 	var adminContentTranslationOptionsList = Array.isArray(typeof adminContentTranslationOptions !== 'undefined' ? adminContentTranslationOptions : null) ? adminContentTranslationOptions : [];
 	var adminContentTranslationSelectedCode = (typeof adminContentTranslationSelected !== 'undefined' ? adminContentTranslationSelected : lang) || 'en';
 	var adminContentTranslationId = typeof adminContentTranslationItemId !== 'undefined' ? adminContentTranslationItemId : (i.actual ? i.actual.id : i.id);
@@ -163,7 +171,7 @@
 				console.log(typeof i.highlight);
 				console.log(e);
 			} %>
-			<span class="_e form-input" style="width:100px;" title="Hightlight Date" type="text" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.highlight"><%- hlDate || '&hellip;' %></span>
+			<span class="_e form-input" style="width:100px;" title="Highlight Date" type="text" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.highlight" data-placeholder="Highlight date" aria-label="Highlight date"><%- hlDate || '' %></span>
 		<% 	
 		    } %>
 
@@ -174,14 +182,14 @@
 
 		<%# Admin: Virtul Num 0%>
 		<% if (lang === 'en' && site.editMode) { %>
-			(<span class="_e" title="Virtual Num0" data-id="<%= i.id %>" data-prop="hadith_virtual.num0"><%- i.num0 || '&hellip;' %></span>)
-			(<span class="_e" title="Num" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.num"><%- i.actual ? (langActual?.num || i.actual?.num || i.num || '&hellip;') : (langData.num || i.num || '&hellip;') %></span>)
+			(<span class="_e" title="Virtual Num0" data-id="<%= i.id %>" data-prop="hadith_virtual.num0" data-placeholder="Internal reference" aria-label="Internal reference"><%- i.num0 || '' %></span>)
+			(<span class="_e" title="Num" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.num" data-placeholder="Hadith number" aria-label="Hadith number"><%- i.actual ? (langActual?.num || i.actual?.num || i.num || '') : (langData.num || i.num || '') %></span>)
 		<% } %>
 
 		<%# Item Number + Chain %>
 		<b><a href="<%= itemHref %>" title="<%= linkTitle(langData.title || langData.body || langData.chain) %>"><%= `${itemBookShortName}:${i.actual ? (langActual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a></b> –
 		<% if (langData.chain || site.editMode) { %>
-			<span class="<%= editClass(`chain ${_p} l3`) %>" title="Ḥadīth Chain"<%- site.editMode ? ` ${editAttrs('chain', { arabizi: isContentTranslationLang ? 'false' : 'true' })}` : '' %><% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="chain"<% } %>><%- langData.chain || `&hellip;` %></span>
+			<span class="<%= editClass(`chain ${_p} l3`) %>" title="Ḥadīth Chain"<%- site.editMode ? ` ${editAttrs('chain', { arabizi: isContentTranslationLang ? 'false' : 'true', placeholder: editPlaceholder('chain') })}` : '' %><% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="chain"<% } %>><%- langData.chain || '' %></span>
 		<% } %>
 
 	</section>
@@ -194,7 +202,7 @@
 		const contentAvailableTranslations = enableHadithContentLanguage && Array.isArray(i.contentTranslations) ? JSON.stringify(i.contentTranslations) : '';
 	%>
 	<section lang="<%=lang%>" class="body <%=_p%> l5<%= contentTranslationClass %>" title="Ḥadīth Body"<%- contentTranslationAttrs %><% if (enableHadithContentLanguage) { %> data-content-translation-container="1"<% } %>>
-		<div class="<%= editClass(`hadith-body-content ${_p}${isQuranItem && lang === 'ar' ? ' quran-hafs' : ''}${contentTranslationClass}`) %>"<%- quranMemorizationAttrs %><%- quranTranslationAttrs %><%- contentTranslationAttrs %><%- site.editMode ? ` ${editAttrs('body', { arabizi: isContentTranslationLang ? 'false' : 'true', markdown: bodyMarkdown, emptyHtml: '&hellip;' })}` : '' %><% if (!site.editMode && bodyMarkdown) { %> data-markdown-source="<%= bodyMarkdown %>"<% } %><% if (enableHadithContentLanguage) { %> data-content-translation-item-type="hadith" data-content-translation-item-id="<%= i.actual ? i.actual.id : i.id %>" data-content-translation-language="en" data-content-translation-field="body" data-content-translation-existing="<%= bodyMarkdown ? 'true' : 'false' %>" data-content-available-translations="<%= contentAvailableTranslations %>"<% if (isContentTranslationBrowse) { %> data-content-translation-show-control="true"<% } %><% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% } %>>
+		<div class="<%= editClass(`hadith-body-content ${_p}${isQuranItem && lang === 'ar' ? ' quran-hafs' : ''}${contentTranslationClass}`) %>"<%- quranMemorizationAttrs %><%- quranTranslationAttrs %><%- contentTranslationAttrs %><%- site.editMode ? ` ${editAttrs('body', { arabizi: isContentTranslationLang ? 'false' : 'true', markdown: bodyMarkdown, emptyHtml: editPlaceholder('body'), placeholder: editPlaceholder('body') })}` : '' %><% if (!site.editMode && bodyMarkdown) { %> data-markdown-source="<%= bodyMarkdown %>"<% } %><% if (enableHadithContentLanguage) { %> data-content-translation-item-type="hadith" data-content-translation-item-id="<%= i.actual ? i.actual.id : i.id %>" data-content-translation-language="en" data-content-translation-field="body" data-content-translation-existing="<%= bodyMarkdown ? 'true' : 'false' %>" data-content-available-translations="<%= contentAvailableTranslations %>"<% if (isContentTranslationBrowse) { %> data-content-translation-show-control="true"<% } %><% if (isSimilarSection) { %> data-content-translation-auto-only="true"<% } %><% } %>>
 				<% if (isQuranItem && lang === 'ar' && canonicalQuranAyahRef) { %><span data-quran-script-text="ayah" data-quran-ref="<%= canonicalQuranAyahRef %>"><%- bodyHtml %></span><% } else { %><%- bodyHtml %><% } %>
 				<% if (quranAyahMarkerNum) { %>&nbsp;<button type="button" class="quran-ayah-hero-trigger quran-ayah-end-marker" data-quran-ayah-actions="1" data-quran-ref="<%= canonicalQuranAyahRef %>" data-quran-href="<%= itemHref %>" aria-haspopup="menu" aria-expanded="false" aria-label="Actions for Quran <%= canonicalQuranAyahRef %>">۝<%= quranAyahMarkerNum %></button><% } %>
 			</div>
@@ -207,9 +215,9 @@
 	<% if (langData.footnote || site.editMode) { 
 		const footnoteMarkdown = utils.emptyIfNull(langData.footnote);
 		const footnoteHtml = utils.markdownToHtml(langData.footnote);
-		const footnoteContent = footnoteHtml || '&hellip;';
+		const footnoteContent = footnoteHtml || editPlaceholder('footnote');
 	%>
-		<footer lang="<%=lang%>" class="<%= editClass(`footnote ${_p} l2${contentTranslationClass}`) %>" title="Ḥadīth Footnote"<%- contentTranslationAttrs %><%- site.editMode ? ` ${editAttrs('footnote', { arabizi: isContentTranslationLang ? 'false' : 'true', markdown: footnoteMarkdown, emptyHtml: '&hellip;' })}` : '' %><% if (!site.editMode && footnoteMarkdown) { %> data-markdown-source="<%= footnoteMarkdown %>"<% } %><% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="footnote"<% } %>>
+		<footer lang="<%=lang%>" class="<%= editClass(`footnote ${_p} l2${contentTranslationClass}`) %>" title="Ḥadīth Footnote"<%- contentTranslationAttrs %><%- site.editMode ? ` ${editAttrs('footnote', { arabizi: isContentTranslationLang ? 'false' : 'true', markdown: footnoteMarkdown, emptyHtml: editPlaceholder('footnote'), placeholder: editPlaceholder('footnote') })}` : '' %><% if (!site.editMode && footnoteMarkdown) { %> data-markdown-source="<%= footnoteMarkdown %>"<% } %><% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="footnote"<% } %>>
 			<%- footnoteContent %>
 		</footer>
 	<% } %>
@@ -219,9 +227,9 @@
 		<% if (langData.note || site.editMode) {
 			const noteMarkdown = utils.emptyIfNull(langData.note);
 			const noteHtml = utils.markdownToHtml(langData.note);
-			const noteContent = noteHtml || '&hellip;';
+			const noteContent = noteHtml || editPlaceholder('note');
 		%>
-			<aside lang="<%=lang%>" class="<%= editClass(`note ${_p} l2`) %>" title="Ḥadīth Note"<% if (lang === 'en') { %> data-content-translation-actions-anchor="1"<% } %><% if (site.editMode) { %> data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= noteMarkdown %>" data-markdown-empty-html="&hellip;"<% } %>>
+			<aside lang="<%=lang%>" class="<%= editClass(`note ${_p} l2`) %>" title="Ḥadīth Note"<% if (lang === 'en') { %> data-content-translation-actions-anchor="1"<% } %><% if (site.editMode) { %> data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= noteMarkdown %>" data-markdown-empty-html="<%= editPlaceholder('note') %>" data-placeholder="<%= editPlaceholder('note') %>" aria-label="<%= editPlaceholder('note') %>"<% } %>>
 				<%- noteContent %>
 			</aside>
 		<% }

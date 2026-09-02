@@ -18,6 +18,7 @@ describe('Hadith metadata editing', () => {
 		const template = read('views/sub-views/hadith_metadata.ejs');
 		expect(route).toContain("type === 'hdith_grade'");
 		expect(route).toContain("col === 'add'");
+		expect(route).toContain("Utils.trimToEmpty(status.value) || 'شرح مخصص'");
 		expect(route).toContain("col === 'delete'");
 		expect(route).toContain("col === 'grade_en' && Utils.isFalsey(status.value)");
 		expect(route).toContain("col === 'grader_en' && Utils.isFalsey(status.value)");
@@ -38,27 +39,51 @@ describe('Hadith metadata editing', () => {
 		expect(template).not.toContain('bi-box-arrow-up-right');
 	});
 
-	test('renders and edits Sharh in Arabic and English columns', () => {
+	test('renders and manages custom Sharh in Arabic and English columns', () => {
 		const route = read('routes/update.js');
 		const template = read('views/sub-views/hadith_metadata.ejs');
 		expect(route).toContain("type === 'hdith_sharh'");
+		expect(route).toContain("col === 'add'");
+		expect(route).toContain("col === 'delete'");
+		expect(route).toContain('CUSTOM_SHARH_SOURCE_BOOK_ID');
+		expect(route).toContain('Only locally managed explanations can be deleted');
 		expect(route).toContain("col === 'text' || col === 'text_en'");
 		expect(template).toContain('hadith-sharh-columns');
 		expect(template).toContain('data-prop="hdith_sharh.text_en"');
 		expect(template).toContain('data-prop="hdith_sharh.text"');
+		expect(template).toContain('data-prop="hdith_sharh.title_en"');
+		expect(template).toContain('data-prop="hdith_sharh.title"');
+		expect(template).toContain('data-placeholder="English book title"');
+		expect(template).toContain('data-placeholder="عنوان كتاب الشرح"');
+		expect(template).toContain('data-placeholder="English explanation"');
+		expect(template).toContain('data-placeholder="نص الشرح"');
+		expect(template).not.toContain("entry.title_en || '…'");
+		expect(template).not.toContain('data-markdown-empty-html="&hellip;"');
+		expect(template).toContain('data-prop="hdith_sharh.add"');
+		expect(template).toContain('data-prop="hdith_sharh.delete"');
+		expect(template).toContain('data-prop="hdith_sharh.import_dorar"');
+		expect(template).toContain('align-items-center gap-2 hadith-sharh-actions');
+		expect(template).toContain('site.editMode || renderedSharh.length');
 		expect(template).not.toContain('data-prop="hdith_sharh.translate"');
 		expect(route).toContain("col === 'text_en' && Utils.isFalsey(status.value)");
+		expect(route).toContain("col === 'title_en' && Utils.isFalsey(status.value)");
+		expect(route).toContain('Translate this Arabic Sharh book title into concise English');
+		expect(route).toContain('UPDATE hdith_hadith_sharh SET ${col}');
+		expect(route).not.toContain('UPDATE hdith_sharh_sources SET ${col}');
 		expect(template).toContain("if (entry.text_en)");
 	});
 
 	test('preserves translations and admin grades across enrichment imports', () => {
 		const importer = read('bin/utils/import-hdith-six-books-enrichment.js');
 		expect(importer).toContain("COALESCE(source_driver, '')<>'admin'");
-		expect(importer).toContain('SELECT source_entry_id, text_en FROM hdith_hadith_sharh');
-		expect(importer).toContain('translations.get(Number(item.sourceEntryId)) || null');
+		expect(importer).toContain('SELECT source_entry_id, text_en, title, title_en FROM hdith_hadith_sharh');
+		expect(importer).toContain('ss.source_book_id>0');
+		expect(importer).toContain('existingEntries.get(Number(item.sourceEntryId))?.text_en || null');
 		expect(importer).toContain('grader_en VARCHAR(255) NULL');
 		expect(importer).toContain('grade_en TEXT NULL');
 		expect(importer).toContain('text_en LONGTEXT NULL');
+		expect(importer).toContain('title_en VARCHAR(255) NULL');
+		expect(importer).toContain('existingEntries.get(Number(item.sourceEntryId))?.title_en || null');
 		expect(importer).toContain('source_slug, ordinal, grader_en, grade_en, grade_category_id, grade_color');
 	});
 
@@ -69,6 +94,10 @@ describe('Hadith metadata editing', () => {
 		expect(scripts).toContain('if (resBody.fields)');
 		expect(scripts).toContain("propStr === 'hdith_grade.add'");
 		expect(scripts).toContain("propStr === 'hdith_grade.delete'");
+		expect(scripts).toContain("propStr === 'hdith_sharh.add'");
+		expect(scripts).toContain('Enter the Arabic Sharh book title. You may reuse an existing title:');
+		expect(scripts).toContain("propStr === 'hdith_sharh.delete'");
+		expect(scripts).toContain("propStr === 'hdith_sharh.import_dorar'");
 		expect(scripts).toContain("$el.closest('.hadith-grade-opinion').remove()");
 		expect(scripts).toContain("prop: 'hdith_grade.reorder'");
 		expect(scripts).toContain("this.addEventListener('dragover'");
@@ -80,7 +109,10 @@ describe('Hadith metadata editing', () => {
 		expect(css).toContain('.hadith-grade-color-indicator { background: var(--hadith-grade-color);');
 		expect(css).toContain('.hadith-grade-opinion-en { font-size: var(--content-size-meta);');
 		expect(css).toContain('.hadith-sharh-column:lang(en) .hadith-sharh-body');
-		expect(css).toContain('.hadith-sharh-column:lang(en) .hadith-sharh-more { font-size: var(--content-size-meta) !important; }');
+		expect(css).toContain('.hadith-sharh-entry-heading > [lang="en"] { direction: ltr; text-align: left; }');
+		expect(css).toContain('.hadith-sharh-column:lang(en) .hadith-sharh-more { font-size: calc(.9rem * var(--content-font-scale)) !important; }');
+		expect(css).toContain('.hadith-sharh-column:lang(en) .hadith-sharh-more { direction: ltr; left: auto; right: 0; text-align: right; }');
+		expect(css).toContain('.hadith-sharh-entry-heading > [lang="en"] h4 { font-size: calc(.95rem * var(--content-font-scale)) !important; }');
 		expect(css).toContain('.hadith-scholarly-grade-actions .bi { font-size: .68rem !important;');
 	});
 });

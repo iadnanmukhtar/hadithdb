@@ -14,6 +14,7 @@ const Hadith = require('../lib/Hadith');
 const HadithRevision = require('../lib/HadithRevision');
 const HdithEnrichment = require('../lib/HdithEnrichment');
 const HdithMetadata = require('../lib/HdithMetadata');
+const DorarSharhImport = require('../lib/DorarSharhImport');
 const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
@@ -320,19 +321,86 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var sharhId = parseInt(ids[0], 10);
       if (!Number.isInteger(sharhId) || sharhId <= 0)
         throw createError(400, 'Invalid explanation ID');
-      var sharhRow = (await global.query(`SELECT id, hadith_id, text, text_en FROM hdith_hadith_sharh WHERE id=${sharhId} LIMIT 1`))[0];
-      if (!sharhRow)
-        throw createError(404, 'Explanation not found');
-	  if (col === 'text' || col === 'text_en') {
-		if (col === 'text_en' && Utils.isFalsey(status.value))
-		  status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic hadith explanation into clear scholarly English. Preserve Markdown structure and return only the translation:\n${sharhRow.text}`));
-		await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sqlPreserveWhitespace(status.value)} WHERE id=${sharhId}`);
-        status.code = 200;
-        status.message = 'Explanation updated';
+      if (col === 'add' || col === 'import_dorar') {
+        var sharhHadith = (await global.query(`SELECT id FROM hadiths WHERE id=${sharhId} LIMIT 1`))[0];
+        if (!sharhHadith)
+          throw createError(404, 'Hadith not found');
+        if (col === 'import_dorar') {
+          var dorarSharh = await DorarSharhImport.importDorarSharh(status.value);
+          await global.query(`INSERT INTO hdith_sharh_sources (source_book_id, title, author, source_url)
+            VALUES (${DorarSharhImport.DORAR_SHARH_SOURCE_BOOK_ID}, 'الدرر السنية', NULL, 'https://dorar.net')
+            ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), title=VALUES(title), source_url=VALUES(source_url)`);
+          var dorarSharhSource = (await global.query(`SELECT id FROM hdith_sharh_sources WHERE source_book_id=${DorarSharhImport.DORAR_SHARH_SOURCE_BOOK_ID} LIMIT 1`))[0];
+          if (!dorarSharhSource)
+            throw createError(500, 'Unable to create dorar.net explanation source');
+          var existingDorarSharh = (await global.query(`SELECT id FROM hdith_hadith_sharh
+            WHERE hadith_id=${sharhId} AND source_url=${MySQL.escape(dorarSharh.sourceUrl)} LIMIT 1`))[0];
+          if (existingDorarSharh) {
+            await global.query(`UPDATE hdith_hadith_sharh SET text=${sqlPreserveWhitespace(dorarSharh.text)}, format='md'
+              WHERE id=${Number(existingDorarSharh.id)}`);
+            status.createdSharhId = Number(existingDorarSharh.id);
+          } else {
+            var dorarSourceEntry = Number((await global.query(`SELECT LEAST(COALESCE(MIN(source_entry_id), 0), 0) - 1 AS source_entry_id
+              FROM hdith_hadith_sharh WHERE hadith_id=${sharhId}`))[0].source_entry_id);
+            var insertDorarSharh = await global.query(`INSERT INTO hdith_hadith_sharh
+              (hadith_id, source_id, source_entry_id, chapter, page_num, text, text_en, format, source_url)
+              VALUES (${sharhId}, ${Number(dorarSharhSource.id)}, ${dorarSourceEntry}, NULL, NULL,
+                ${sqlPreserveWhitespace(dorarSharh.text)}, NULL, 'md', ${MySQL.escape(dorarSharh.sourceUrl)})`);
+            status.createdSharhId = Number(insertDorarSharh.insertId);
+          }
+          status.dorarSharhImported = true;
+          status.code = 200;
+          status.message = 'Explanation imported from dorar.net';
+        } else {
+          await global.query(`INSERT INTO hdith_sharh_sources (source_book_id, title, author, source_url)
+            VALUES (${HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID}, 'شرح مخصص', NULL, '')
+            ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), title=VALUES(title)`);
+          var customSharhSource = (await global.query(`SELECT id FROM hdith_sharh_sources WHERE source_book_id=${HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID} LIMIT 1`))[0];
+          if (!customSharhSource)
+            throw createError(500, 'Unable to create custom explanation source');
+          var customSourceEntry = Number((await global.query(`SELECT LEAST(COALESCE(MIN(source_entry_id), 0), 0) - 1 AS source_entry_id
+            FROM hdith_hadith_sharh WHERE hadith_id=${sharhId}`))[0].source_entry_id);
+		  var customSharhTitle = Utils.trimToEmpty(status.value) || 'شرح مخصص';
+          var insertSharh = await global.query(`INSERT INTO hdith_hadith_sharh
+			(hadith_id, source_id, source_entry_id, chapter, page_num, title, title_en, text, text_en, format, source_url)
+			VALUES (${sharhId}, ${Number(customSharhSource.id)}, ${customSourceEntry}, NULL, NULL, ${sql(customSharhTitle)}, NULL, '', NULL, 'md', '')`);
+          status.createdSharhId = Number(insertSharh.insertId);
+          status.code = 200;
+          status.message = 'Custom explanation added';
+        }
+        await runHadithPostUpdateTasks(sharhId);
       } else {
-        throw createError(400, `Invalid explanation field '${col}'`);
+		var sharhRow = (await global.query(`SELECT hs.id, hs.hadith_id, hs.text, hs.text_en, ss.source_book_id,
+		  COALESCE(NULLIF(hs.title, ''), ss.title) AS title, COALESCE(NULLIF(hs.title_en, ''), ss.title_en) AS title_en
+		  FROM hdith_hadith_sharh hs JOIN hdith_sharh_sources ss ON ss.id=hs.source_id
+          WHERE hs.id=${sharhId} LIMIT 1`))[0];
+        if (!sharhRow)
+          throw createError(404, 'Explanation not found');
+	    if (col === 'delete') {
+		  if (Number(sharhRow.source_book_id) >= 0)
+		    throw createError(400, 'Only locally managed explanations can be deleted');
+          await global.query(`DELETE FROM hdith_hadith_sharh WHERE id=${sharhId}`);
+          status.code = 200;
+          status.message = 'Custom explanation deleted';
+		} else if (col === 'text' || col === 'text_en') {
+		  if (col === 'text_en' && Utils.isFalsey(status.value))
+		    status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic hadith explanation into clear scholarly English. Preserve Markdown structure and return only the translation:\n${sharhRow.text}`));
+		  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sqlPreserveWhitespace(status.value)} WHERE id=${sharhId}`);
+		  status.code = 200;
+		  status.message = 'Explanation updated';
+		} else if (col === 'title' || col === 'title_en') {
+		  if (col === 'title_en' && Utils.isFalsey(status.value))
+		    status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic Sharh book title into concise English. Return only the translation:\n${sharhRow.title}`));
+		  if (col === 'title' && Utils.isFalsey(status.value))
+		    throw createError(400, 'The Arabic Sharh book title cannot be empty');
+		  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE id=${sharhId}`);
+		  status.code = 200;
+		  status.message = 'Explanation book title updated';
+        } else {
+          throw createError(400, `Invalid explanation field '${col}'`);
+        }
+        await runHadithPostUpdateTasks(sharhRow.hadith_id);
       }
-      await runHadithPostUpdateTasks(sharhRow.hadith_id);
 
     } else if (type == 'tags') {
       var result = await global.query(`UPDATE tags SET ${col}=${sql(status.value)} WHERE id=${ids[0]}`);

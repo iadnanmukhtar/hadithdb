@@ -328,7 +328,23 @@
 	        return;
 	      }
 	      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
-	        if (propStr === 'hdith_grade.delete' && !window.confirm('Delete this scholarly grade?')) {
+	        let dorarSharhUrl = '';
+	        let customSharhTitle = '';
+	        if (propStr === 'hdith_sharh.add') {
+	          customSharhTitle = (window.prompt('Enter the Arabic Sharh book title. You may reuse an existing title:', 'شرح مخصص') || '').trim();
+	          if (!customSharhTitle) {
+	            $(this).removeAttr('editing');
+	            return;
+	          }
+	        }
+	        if (propStr === 'hdith_sharh.import_dorar') {
+	          dorarSharhUrl = (window.prompt('Paste the dorar.net explanation URL:') || '').trim();
+	          if (!dorarSharhUrl) {
+	            $(this).removeAttr('editing');
+	            return;
+	          }
+	        }
+	        if ((propStr === 'hdith_grade.delete' || propStr === 'hdith_sharh.delete') && !window.confirm(propStr === 'hdith_sharh.delete' ? 'Delete this custom explanation?' : 'Delete this scholarly grade?')) {
 	          $(this).removeAttr('editing');
 	          return;
 	        }
@@ -352,6 +368,10 @@
 	        else
 	          value = $(this).text();
 	        value = isMarkdownField ? normalizeMarkdownValue(value) : (value || '').toString().replace(/&nbsp;/g, ' ').trim();
+	        if (dorarSharhUrl)
+	          value = dorarSharhUrl;
+	        else if (customSharhTitle)
+	          value = customSharhTitle;
 	        if (isMarkdownField)
 	          setMarkdownPreview(this, value);
 	        if (hasLoadingButton) {
@@ -414,6 +434,20 @@
 	            }
 	            if (propStr === 'hdith_grade.delete') {
 	              $el.closest('.hadith-grade-opinion').remove();
+	              return;
+	            }
+	            if (propStr === 'hdith_sharh.add') {
+	              rememberUpdateSuccessToast('Explanation added', 'The custom explanation is ready to edit.');
+	              window.location.reload();
+	              return;
+	            }
+	            if (propStr === 'hdith_sharh.import_dorar') {
+	              rememberUpdateSuccessToast('Explanation imported', 'The dorar.net explanation is ready to review.');
+	              window.location.reload();
+	              return;
+	            }
+	            if (propStr === 'hdith_sharh.delete') {
+	              $el.closest('.hadith-sharh-entry').remove();
 	              return;
 	            }
 	            if (propStr === 'hadiths_sim.add')

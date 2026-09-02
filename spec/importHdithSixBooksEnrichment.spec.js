@@ -17,6 +17,7 @@ const {
 	hadithTextSimilarity,
 	ignoresExternalGrades,
 	isSourceNotFoundError,
+	localHadithOrderClause,
 	loadRecord,
 	normalizeArabicForMatch,
 	normalizeHadithForComparison,
@@ -131,6 +132,23 @@ describe('hdith.com six-book enrichment importer', () => {
 			comparisonText: `${differingSourceChain} ${sharedMatn}`,
 			bodyStart: normalizeHadithForComparison(sharedMatn)
 		})).toBeNull();
+	});
+
+	test('can prefer the earliest strict ordered match over a later duplicate reference', () => {
+		const text = 'حدثنا محمد بن يحيى حدثنا عبد الصمد عن شعبة أن ابن عمر كان يصلي ركعتين';
+		const matcher = createOrderedTextMatcher([
+			{ id: 721, num: '721', body: text },
+			{ id: 816, num: '816', body: text },
+			{ id: 817, num: '817', body: 'حدثنا أحمد عن مالك أن رسول الله صلى الله عليه وسلم قال الدين النصيحة' }
+		], 0, { preferEarliestOrderedMatch: true, windowSize: 180 });
+		expect(matcher.match({
+			editionReference: '816', editionReferenceRepeated: false, comparisonText: text
+		})).toEqual(expect.objectContaining({ id: 721, score: 1 }));
+	});
+
+	test('orders Ibn Khuzaymah by numeric reference because its local ordinals interleave numbering blocks', () => {
+		expect(localHadithOrderClause({ sourceSlug: 'b-11' })).toBe('CAST(num AS UNSIGNED), num, id');
+		expect(localHadithOrderClause({ sourceSlug: 'b-18' })).toBe('ordinal, id');
 	});
 
 	test('recognizes a missing hdith source entry so the importer can continue with the next chapter', () => {
@@ -371,6 +389,13 @@ describe('hdith.com six-book enrichment importer', () => {
 			normalizeHadithForComparison('حدثنا أنس عن مالك قال سمعت النبي يقول إنما الأعمال بالنيات'),
 			normalizeHadithForComparison('حدثنا زيد عن شعبة قال سمعت ابن عمر يقول نص مختلف')
 		)).toBeLessThan(0.5);
+	});
+
+	test('ignores the fixed Ibn Khuzaymah riwayah wrapper before strict chain comparison', () => {
+		const local = 'حدثنا محمد بن يحيى حدثنا عبد الصمد حدثنا شعبة عن عاصم عن الشعبي أن ابن عمر كان يصلي ركعتين';
+		const source = 'أخبرنا أبو طاهر قال حدثنا أبو بكر قال حدثنا محمد بن يحيى حدثنا عبد الصمد حدثنا شعبة عن عاصم عن الشعبي أن ابن عمر كان يصلي ركعتين';
+		expect(normalizeHadithForComparison(source)).toBe(normalizeHadithForComparison(local));
+		expect(hadithPrefixSimilarity(source, local)).toBe(1);
 	});
 
 	test('moves only the local chain/body boundary to the cached matn start', () => {

@@ -588,7 +588,7 @@ function ignoresExternalGrades(config) {
 async function createBookMatcher(config) {
 	const connection = await getConnection();
 	const rows = await query(connection, `SELECT id, num, chain, body
-		FROM hadiths WHERE bookId=? ORDER BY ordinal, id`, [config.bookId]);
+		FROM hadiths WHERE bookId=? ORDER BY ${localHadithOrderClause(config)}`, [config.bookId]);
 	let cursor = 0;
 	if (options.resumeSourceId && options.books[0] === config.sourceSlug) {
 		const previous = await query(connection, `SELECT hadith_id
@@ -603,10 +603,24 @@ async function createBookMatcher(config) {
 			console.log(`${config.alias}: restored ordered matcher after local ${rows[previousIndex].num} for hdith.com resume ${options.resumeSourceId}`);
 		}
 	}
-	return createOrderedTextMatcher(rows, cursor);
+	return createOrderedTextMatcher(rows, cursor, config.sourceSlug === 'b-11'
+		? { preferEarliestOrderedMatch: true, windowSize: 180 }
+		: {});
 }
 
-function createOrderedTextMatcher(rows, initialCursor = 0) {
+function localHadithOrderClause(config) {
+	// Ibn Khuzaymah's imported local ordinals interleave several numbering blocks
+	// (for example 1-8, 11-17, 35/50/73, then back to 9). hdith.com follows the
+	// printed edition reference order, so a cursor based on those ordinals skips
+	// valid candidates and can jump far ahead on a repeated text. Keep this
+	// collection in numeric reference order; the remaining collections have
+	// already been mapped and verified against their local ordinal order.
+	return config?.sourceSlug === 'b-11'
+		? 'CAST(num AS UNSIGNED), num, id'
+		: 'ordinal, id';
+}
+
+function createOrderedTextMatcher(rows, initialCursor = 0, matcherOptions = {}) {
 	let cursor = initialCursor;
 	let lastMatched = initialCursor > 0 ? { ...rows[initialCursor - 1], index: initialCursor - 1 } : null;
 	const indexesByReference = new Map();
@@ -636,9 +650,24 @@ function createOrderedTextMatcher(rows, initialCursor = 0) {
 			// Repeated/supplementary source records are not standalone edition hadiths.
 			// Skipping them without advancing the cursor prevents every later match from shifting.
 			if (!record.editionReference || record.editionReferenceRepeated) return null;
+			const windowSize = Number(matcherOptions.windowSize) || 120;
+			const end = Math.min(rows.length, cursor + windowSize);
+			if (matcherOptions.preferEarliestOrderedMatch) {
+				const source = normalizeHadithForComparison(record.comparisonText);
+				if (!source) return null;
+				for (let index = cursor; index < end; index++) {
+					const score = hadithPrefixSimilarity(source,
+						normalizeHadithForComparison([rows[index].chain, rows[index].body].filter(Boolean).join(' ')));
+					if (score < 0.90) continue;
+					const match = { ...rows[index], index, score };
+					cursor = index + 1;
+					lastMatched = match;
+					return match;
+				}
+				return null;
+			}
 			let best = null;
 			best = scoredMatch(record, indexesByReference.get(referenceBase(record.editionReference)) || [], true);
-			const end = Math.min(rows.length, cursor + 120);
 			if (!best || best.score < 0.90)
 				best = scoredMatch(record, Array.from({ length: end - cursor }, (unused, offset) => cursor + offset));
 			if (!best || best.score < 0.90) return null;
@@ -664,7 +693,12 @@ function normalizeHadithForComparison(value) {
 		.replace(/[إأآٱ]/g, 'ا').replace(/[ئى]/g, 'ي').replace(/ؤ/g, 'و').replace(/ة/g, 'ه')
 		.replace(/[^\u0621-\u063a\u0641-\u064a0-9]+/g, ' ').replace(/\s+/g, ' ').trim()
 		.replace(/(^|\s)(?:ثنا|نا)(?=\s)/gu, '$1حدثنا')
-		.replace(/(^|\s)انا(?=\s)/gu, '$1اخبرنا');
+		.replace(/(^|\s)انا(?=\s)/gu, '$1اخبرنا')
+		// hdith.com's Ibn Khuzaymah text commonly includes this fixed riwayah
+		// wrapper before the compiler-level chain stored by the local edition.
+		// Removing only the exact leading wrapper preserves strict comparison of
+		// the actual chain and matn while avoiding collection-wide false failures.
+		.replace(/^اخبرنا ابو طاهر قال حدثنا ابو بكر قال\s*/u, '');
 }
 
 function normalizedArabicTokensWithOffsets(value) {
@@ -1183,9 +1217,11 @@ async function sourceBookAuthor(page, bookId) {
 }
 
 async function replaceSharh(connection, hadithId, items) {
-	const translations = new Map((await query(connection, 'SELECT source_entry_id, text_en FROM hdith_hadith_sharh WHERE hadith_id=?', [hadithId]))
-		.map(row => [Number(row.source_entry_id), row.text_en]));
-	await query(connection, 'DELETE FROM hdith_hadith_sharh WHERE hadith_id=?', [hadithId]);
+	const existingEntries = new Map((await query(connection, 'SELECT source_entry_id, text_en, title, title_en FROM hdith_hadith_sharh WHERE hadith_id=?', [hadithId]))
+		.map(row => [Number(row.source_entry_id), row]));
+	await query(connection, `DELETE hs FROM hdith_hadith_sharh hs
+		JOIN hdith_sharh_sources ss ON ss.id=hs.source_id
+		WHERE hs.hadith_id=? AND ss.source_book_id>0`, [hadithId]);
 	for (const item of items) {
 		let sourceId = sharhSourceIdCache.get(item.sourceBookId);
 		if (!sourceId) {
@@ -1197,11 +1233,13 @@ async function replaceSharh(connection, hadithId, items) {
 			sharhSourceIdCache.set(item.sourceBookId, sourceId);
 		}
 		await query(connection, `INSERT INTO hdith_hadith_sharh
-			(hadith_id, source_id, source_entry_id, chapter, page_num, text, text_en, format, source_url)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-			ON DUPLICATE KEY UPDATE source_id=VALUES(source_id), chapter=VALUES(chapter), page_num=VALUES(page_num),
+			(hadith_id, source_id, source_entry_id, chapter, page_num, title, title_en, text, text_en, format, source_url)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE source_id=VALUES(source_id), chapter=VALUES(chapter), page_num=VALUES(page_num), title=VALUES(title), title_en=VALUES(title_en),
 				text=VALUES(text), text_en=VALUES(text_en), format=VALUES(format), source_url=VALUES(source_url)`,
-		[hadithId, sourceId, item.sourceEntryId, item.chapter, item.page, item.text, translations.get(Number(item.sourceEntryId)) || null, item.format, item.sourceUrl]);
+		[hadithId, sourceId, item.sourceEntryId, item.chapter, item.page,
+			existingEntries.get(Number(item.sourceEntryId))?.title || null, existingEntries.get(Number(item.sourceEntryId))?.title_en || null,
+			item.text, existingEntries.get(Number(item.sourceEntryId))?.text_en || null, item.format, item.sourceUrl]);
 	}
 }
 
@@ -1331,6 +1369,14 @@ async function ensureSchema() {
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_sharh' AND column_name='text_en' LIMIT 1`);
 	if (!sharhEnglishColumn.length)
 		await query(connection, 'ALTER TABLE hdith_hadith_sharh ADD COLUMN text_en LONGTEXT NULL AFTER text');
+	const sharhTitleColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_sharh' AND column_name='title' LIMIT 1`);
+	if (!sharhTitleColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_sharh ADD COLUMN title VARCHAR(255) NULL AFTER page_num');
+	const sharhTitleEnglishColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_sharh' AND column_name='title_en' LIMIT 1`);
+	if (!sharhTitleEnglishColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_sharh ADD COLUMN title_en VARCHAR(255) NULL AFTER title');
 	const linkBookTitleColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_links' AND column_name='source_book_title' LIMIT 1`);
 	if (!linkBookTitleColumn.length)
@@ -1448,12 +1494,13 @@ function schemaStatements() {
 			CONSTRAINT hdith_link_internal_fk FOREIGN KEY (internal_hadith_id) REFERENCES hadiths(id) ON DELETE SET NULL ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_sharh_sources (
-			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, source_book_id INT NOT NULL, title VARCHAR(255) NOT NULL, author VARCHAR(255) NULL,
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, source_book_id INT NOT NULL, title VARCHAR(255) NOT NULL, title_en VARCHAR(255) NULL, author VARCHAR(255) NULL,
 			source_url VARCHAR(512) NOT NULL, UNIQUE KEY hdith_sharh_book (source_book_id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_hadith_sharh (
 			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, hadith_id INT NOT NULL, source_id INT NOT NULL, source_entry_id INT NOT NULL,
-			chapter VARCHAR(512) NULL, page_num INT NULL, text LONGTEXT NOT NULL, text_en LONGTEXT NULL, format VARCHAR(8) NOT NULL DEFAULT 'md', source_url VARCHAR(512) NOT NULL,
+			chapter VARCHAR(512) NULL, page_num INT NULL, title VARCHAR(255) NULL, title_en VARCHAR(255) NULL,
+			text LONGTEXT NOT NULL, text_en LONGTEXT NULL, format VARCHAR(8) NOT NULL DEFAULT 'md', source_url VARCHAR(512) NOT NULL,
 			UNIQUE KEY hdith_sharh_entry (hadith_id, source_entry_id), KEY hdith_sharh_source (source_id), FULLTEXT KEY hdith_sharh_text (text),
 			CONSTRAINT hdith_sharh_hadith_fk FOREIGN KEY (hadith_id) REFERENCES hadiths(id) ON DELETE CASCADE ON UPDATE CASCADE,
 			CONSTRAINT hdith_sharh_source_fk FOREIGN KEY (source_id) REFERENCES hdith_sharh_sources(id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -1537,6 +1584,6 @@ if (require.main === module) main();
 
 module.exports = {
 	CACHE_DIR, FOLLOWUP_BOOKS, HDITH_GRADE_COLORS, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, SUPPORTED_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
-	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
+	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, localHadithOrderClause, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
 	enrichSingleHadith, legacyGradeForOpinion, preferredColoredGradeOpinion, preferredLegacyOpinion, promoteColoredGradeForMissingLegacy, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult
 };
