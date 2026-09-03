@@ -14,7 +14,7 @@
 		{ key: 'reflection', label: 'Reflection', count: null, always: true },
 		{ key: 'grades', label: 'Scholarly Grades', count: railGrades.length },
 		{ key: 'isnad', label: 'Chain of Narrators', count: railNarrators.length },
-		{ key: 'sharh', label: 'Explanations', count: railSharh.filter(entry => railEditMode || entry.text).length, always: railEditMode },
+		{ key: 'sharh', label: 'Explanations', count: railSharh.filter(entry => railEditMode || entry.text || entry.text_en).length, always: railEditMode },
 		{ key: 'gharib', label: 'Definitions', count: railGharib.length },
 		{ key: 'mushabihah', label: 'Similar Hadiths', count: (Array.isArray(i.similar) ? i.similar.length : 0) + railSourceSimilar.length, always: railEditMode }
 	]).filter(group => group.always || group.count);

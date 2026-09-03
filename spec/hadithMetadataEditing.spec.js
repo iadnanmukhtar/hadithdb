@@ -69,7 +69,12 @@ describe('Hadith metadata editing', () => {
 		expect(route).toContain("col === 'title_en' && Utils.isFalsey(status.value)");
 		expect(route).toContain('Translate this Arabic Sharh book title into concise English');
 		expect(route).toContain('UPDATE hdith_hadith_sharh SET ${col}');
-		expect(route).not.toContain('UPDATE hdith_sharh_sources SET ${col}');
+		expect(route).toContain('UPDATE hdith_hadith_sharh SET title_en=${sql(status.value)} WHERE source_id=');
+		expect(route).toContain("(col === 'title' || col === 'title_en') && Utils.isTruthy(status.value)");
+		expect(route).toContain('UPDATE hdith_sharh_sources SET ${col}=${sql(status.value)}');
+		expect(route).toContain('UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE source_id=');
+		expect(route).toContain('UPDATE hdith_hadith_grades SET grader_en=${sql(status.value)} WHERE ${sharedGraderWhere}');
+		expect(route).toContain('UPDATE graders SET shortName_en=${sql(status.value)}');
 		expect(template).toContain("if (entry.text_en)");
 	});
 

@@ -112,7 +112,8 @@ async function attachHadithSharh(rows, bookId) {
 	if (!rows.length || !(await tableExists('hdith_hadith_sharh')))
 		return;
 	const sharhRows = await global.query(`
-		SELECT hs.hadith_id, hs.text, ss.title, ss.author
+		SELECT hs.hadith_id, COALESCE(NULLIF(hs.text_en, ''), hs.text) AS text,
+			COALESCE(NULLIF(hs.title_en, ''), NULLIF(hs.title, ''), ss.title_en, ss.title) AS title, ss.author
 		FROM hdith_hadith_sharh hs
 		JOIN hdith_sharh_sources ss ON ss.id=hs.source_id
 		JOIN hadiths h ON h.id=hs.hadith_id

@@ -226,6 +226,8 @@ describe('hdith.com metadata display', () => {
 		expect(template).toContain('data-hadith-sharh-expand');
 		expect(template).toContain('aria-expanded="false"');
 		expect(template).toContain('hadith-sharh-collapse-wrap');
+		expect(template).toContain('site.editMode || entry.text || entry.text_en');
+		expect(template).toContain("entry.text ? 'col-md-6' : 'col-12'");
 		expect(template).toContain('مزيد...');
 		expect(template).toContain('<details class="hadith-gharib-entry"><summary class="small">');
 		expect(template).not.toContain('<details class="hadith-gharib-entry" open>');
@@ -284,6 +286,7 @@ describe('hdith.com metadata display', () => {
 		expect(header).toContain("include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true })");
 		expect(header.indexOf("typeof hadithDetailSectionItem !== 'undefined'")).toBeLessThan(header.indexOf("page.menu === 'Chapter' || page.menu === 'Section'"));
 		expect(rail).toContain('i.hdithMetadata || {}');
+		expect(rail).toContain('railEditMode || entry.text || entry.text_en');
 		expect(rail).toContain('hadith-metadata-side-rail d-none d-lg-block');
 		expect(rail).toContain('hadith-heading-toc-sticky');
 		expect(rail).toContain('data-toc-heading-rail');

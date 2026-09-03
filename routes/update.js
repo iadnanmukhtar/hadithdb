@@ -308,6 +308,13 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 		  else if (col === 'grader_en' && Utils.isFalsey(status.value))
 			status.value = Utils.trimToEmpty(await Utils.openai(`Transliterate this Arabic scholar name using ALA-LC. Return only the transliteration:\n${gradeRow.grader}`));
 		  await global.query(`UPDATE hdith_hadith_grades SET ${col}=${sql(status.value)} WHERE id=${gradeId}`);
+		  if (col === 'grader_en' && Utils.isTruthy(status.value)) {
+			var sharedGraderWhere = gradeRow.grader_source_id
+			  ? `(grader_source_id=${Number(gradeRow.grader_source_id)} OR grader=${MySQL.escape(gradeRow.grader)})`
+			  : `grader=${MySQL.escape(gradeRow.grader)}`;
+			await global.query(`UPDATE hdith_hadith_grades SET grader_en=${sql(status.value)} WHERE ${sharedGraderWhere}`);
+			await global.query(`UPDATE graders SET shortName_en=${sql(status.value)} WHERE shortName=${MySQL.escape(gradeRow.grader)}`);
+		  }
           status.code = 200;
           status.message = 'Scholarly grade updated';
         } else {
@@ -370,7 +377,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         }
         await runHadithPostUpdateTasks(sharhId);
       } else {
-		var sharhRow = (await global.query(`SELECT hs.id, hs.hadith_id, hs.text, hs.text_en, ss.source_book_id,
+		var sharhRow = (await global.query(`SELECT hs.id, hs.hadith_id, hs.source_id, hs.text, hs.text_en, ss.source_book_id,
 		  COALESCE(NULLIF(hs.title, ''), ss.title) AS title, COALESCE(NULLIF(hs.title_en, ''), ss.title_en) AS title_en
 		  FROM hdith_hadith_sharh hs JOIN hdith_sharh_sources ss ON ss.id=hs.source_id
           WHERE hs.id=${sharhId} LIMIT 1`))[0];
@@ -394,6 +401,14 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 		  if (col === 'title' && Utils.isFalsey(status.value))
 		    throw createError(400, 'The Arabic Sharh book title cannot be empty');
 		  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE id=${sharhId}`);
+		  if ((col === 'title' || col === 'title_en') && Utils.isTruthy(status.value)) {
+			if (Number(sharhRow.source_book_id) === HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID && col === 'title_en')
+			  await global.query(`UPDATE hdith_hadith_sharh SET title_en=${sql(status.value)} WHERE source_id=${Number(sharhRow.source_id)} AND COALESCE(NULLIF(title, ''), (SELECT title FROM hdith_sharh_sources WHERE id=${Number(sharhRow.source_id)}))=${MySQL.escape(sharhRow.title)}`);
+			else if (Number(sharhRow.source_book_id) !== HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID) {
+			  await global.query(`UPDATE hdith_sharh_sources SET ${col}=${sql(status.value)} WHERE id=${Number(sharhRow.source_id)}`);
+			  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(sharhRow.source_id)}`);
+			}
+		  }
 		  status.code = 200;
 		  status.message = 'Explanation book title updated';
         } else {

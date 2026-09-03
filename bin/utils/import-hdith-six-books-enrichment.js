@@ -232,9 +232,12 @@ async function scrapeBook(page, config) {
 			if (!record.isIntro) {
 				const orderedMatch = bookMatcher.match(record);
 				if (!orderedMatch) {
-					if (options.apply && record.editionReferenceRepeated)
-						await markSupplementaryTransmission(config, record, bookMatcher.lastMatch());
-					console.warn(`${config.alias}: no ordered text-confirmed local match for hdith.com entry ${record.sourceId}; skipped.`);
+					const supplementary = options.apply && record.editionReferenceRepeated
+						? await markSupplementaryTransmission(config, record, bookMatcher.lastMatch()) : false;
+					if (supplementary)
+						console.log(`${config.alias}: linked repeated hdith.com entry ${record.sourceId} to local ${supplementary.num}.`);
+					else
+						console.warn(`${config.alias}: no ordered text-confirmed local match for hdith.com entry ${record.sourceId}; skipped.`);
 					compressCachedRecord(config, record.sourceId);
 					sourceId = record.nextId;
 					continue;
@@ -623,13 +626,11 @@ async function createBookMatcher(config) {
 }
 
 function localHadithOrderClause(config) {
-	// Ibn Khuzaymah's imported local ordinals interleave several numbering blocks
-	// (for example 1-8, 11-17, 35/50/73, then back to 9). hdith.com follows the
-	// printed edition reference order, so a cursor based on those ordinals skips
-	// valid candidates and can jump far ahead on a repeated text. Keep this
-	// collection in numeric reference order; the remaining collections have
-	// already been mapped and verified against their local ordinal order.
-	return config?.sourceSlug === 'b-11'
+	// Ibn Khuzaymah and Bazzar have imported local ordinals that interleave
+	// numbering blocks. hdith.com follows printed-reference order, so an ordinal
+	// cursor can skip a valid earlier-numbered candidate and jump to a later
+	// similar transmission. Keep these collections in numeric reference order.
+	return config?.sourceSlug === 'b-11' || config?.sourceSlug === 'b-19'
 		? 'CAST(num AS UNSIGNED), num, id'
 		: 'ordinal, id';
 }
@@ -1117,17 +1118,25 @@ async function upsertSourceReferenceMap(connection, config, record, hadithId, lo
 }
 
 async function markSupplementaryTransmission(config, record, previousMatch) {
-	if (!previousMatch || referenceBase(record.editionReference) !== referenceBase(previousMatch.num)) return false;
 	const connection = await getConnection();
-	await query(connection, 'UPDATE hadiths SET hasSupplementaryTransmissions=1 WHERE id=?', [previousMatch.id]);
+	const sourceReference = referenceBase(record.editionReference);
+	let target = previousMatch && sourceReference === referenceBase(previousMatch.num) ? previousMatch : null;
+	if (!target && sourceReference) {
+		const stored = await query(connection, `SELECT m.hadith_id AS id, h.num
+			FROM hdith_hadith_metadata m JOIN hadiths h ON h.id=m.hadith_id
+			WHERE m.source_book_slug=? AND m.source_edition_reference=? LIMIT 1`, [config.sourceSlug, sourceReference]);
+		target = stored[0] || null;
+	}
+	if (!target) return false;
+	await query(connection, 'UPDATE hadiths SET hasSupplementaryTransmissions=1 WHERE id=?', [target.id]);
 	const sourceBookId = Number(config.sourceSlug.replace(/^b-/, ''));
 	await query(connection, `INSERT INTO hdith_book_reference_crosswalk
 		(source_book_id, source_entry_id, source_num, source_edition_num, local_hadith_id, local_ref, similarity, is_supplementary)
 		VALUES (?, ?, ?, ?, ?, ?, NULL, 1)
 		ON DUPLICATE KEY UPDATE source_num=VALUES(source_num), source_edition_num=VALUES(source_edition_num),
 			local_hadith_id=VALUES(local_hadith_id), local_ref=VALUES(local_ref), similarity=NULL, is_supplementary=1, lastmod=NOW()`,
-		[sourceBookId, record.sourceId, record.num, record.editionReference, previousMatch.id, previousMatch.num]);
-	return true;
+		[sourceBookId, record.sourceId, record.num, record.editionReference, target.id, target.num]);
+	return target;
 }
 
 async function deferInternalLinkResolution() {

@@ -193,6 +193,7 @@ describe('hdith.com six-book enrichment importer', () => {
 
 	test('orders Ibn Khuzaymah by numeric reference because its local ordinals interleave numbering blocks', () => {
 		expect(localHadithOrderClause({ sourceSlug: 'b-11' })).toBe('CAST(num AS UNSIGNED), num, id');
+		expect(localHadithOrderClause({ sourceSlug: 'b-19' })).toBe('CAST(num AS UNSIGNED), num, id');
 		expect(localHadithOrderClause({ sourceSlug: 'b-18' })).toBe('ordinal, id');
 	});
 

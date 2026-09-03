@@ -40,13 +40,14 @@ const query = util.promisify(connection.query).bind(connection);
 });
 
 async function attachSharh(rows, idList) {
-	const source = await query(`SELECT hs.hadith_id, hs.text, ss.title, ss.author
+	const source = await query(`SELECT hs.hadith_id, hs.text, hs.text_en,
+		COALESCE(NULLIF(hs.title_en, ''), NULLIF(hs.title, ''), ss.title_en, ss.title) AS title, ss.author
 		FROM hdith_hadith_sharh hs JOIN hdith_sharh_sources ss ON ss.id=hs.source_id
 		WHERE hs.hadith_id IN (${idList}) ORDER BY hs.hadith_id, hs.id`);
 	const grouped = groupByHadith(source);
 	rows.forEach(row => {
 		row.sharh = (grouped.get(Number(row.hId)) || []).map(item =>
-			`${item.title}${item.author ? ` — ${item.author}` : ''}\n${item.text}`).join('\n\n');
+			`${item.title}${item.author ? ` — ${item.author}` : ''}\n${item.text_en || item.text}`).join('\n\n');
 	});
 }
 
