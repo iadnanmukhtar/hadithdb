@@ -2524,14 +2524,18 @@ nav .nav-link[aria-current="page"] {
 	--share-english-tune: 1;
 	--share-translation-tune: var(--share-english-tune);
 	--share-arabic-tune: 1;
+	/* html2canvas 1.x cannot parse the modern color() value produced by color-mix(). */
+	--c-muted: #76787a;
+	--c-gray-mid: #76787a;
+	--c-footnote-muted: #76787a;
 	width: min(100%, 540px);
 	aspect-ratio: 4 / 5;
 	margin: 0 auto;
 	padding: max(10px, calc(18px * var(--share-scale)));
 	border-radius: 8px;
-	background:
-		linear-gradient(180deg, var(--c-white-98), var(--c-ghostwhite-98)),
-		repeating-linear-gradient(90deg, var(--c-accent-045) 0 1px, var(--c-transparent) 1px 14px);
+	/* Keep the texture, but avoid the linear-gradient form that html2canvas misrenders. */
+	background-color: #fbfbfb;
+	background-image: repeating-linear-gradient(90deg, var(--c-accent-045) 0 1px, var(--c-transparent) 1px 14px);
 	box-shadow: 0 1.6rem 3.5rem var(--c-black-28);
 	color: var(--c-black-soft);
 	overflow: hidden;

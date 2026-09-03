@@ -18,6 +18,7 @@ function render(selectedHadithAliases) {
 		hadithSearchBookAliases: selectedHadithAliases || [],
 		quranSearchBookFilters: [],
 		quranSearchCommentaryAliases: [],
+		searchQuery: '',
 		hadithSearchBooks: [{
 			id: 1,
 			alias: 'bukhari',

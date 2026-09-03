@@ -93,6 +93,18 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(referenceBase('402b')).toBe('402');
 	});
 
+	test('uses the Muassasat al-Risalah numbering for Musnad Ahmad', () => {
+		const numberings = [
+			{ key: 'طبعة ١ — جمعية المكنز الإسلامي', value: '20598' },
+			{ key: 'طبعة ٢ — مؤسسة الرسالة', value: '20274' }
+		];
+		expect(parseEditionReference(numberings, 'b-8')).toEqual({ value: '20274', repeated: false });
+		expect(parseEditionReference(numberings, 'b-24')).toEqual({ value: '20598', repeated: false });
+		expect(parseHadithPayload({
+			id: 171670, book: { slug: 'b-8' }, chapter_path: [{ id: 171133 }], numberings
+		}, { sourceSlug: 'b-8' })).toEqual(expect.objectContaining({ editionReference: '20274' }));
+	});
+
 	test('skips a repeated Bukhari source record and matches the canonical edition record by text', () => {
 		const matcher = createOrderedTextMatcher([
 			{ id: 99, num: '99', body: 'من أسعد الناس بشفاعتك يوم القيامة' },
@@ -144,6 +156,39 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(matcher.match({
 			editionReference: '816', editionReferenceRepeated: false, comparisonText: text
 		})).toEqual(expect.objectContaining({ id: 721, score: 1 }));
+	});
+
+	test('allows a collection-specific ordered similarity threshold for edition wording differences', () => {
+		const rows = [{ id: 8703, num: '8703', body: 'حدثنا محمد عن الزهري قال تمد الأرض يوم القيامة حقا' }];
+		const source = {
+			editionReference: '8801', editionReferenceRepeated: false,
+			comparisonText: 'حدثنا أحمد عن الزهري قال تبسط الأرض يوم القيامة حقا'
+		};
+		expect(createOrderedTextMatcher(rows).match(source)).toBeNull();
+		expect(createOrderedTextMatcher(rows, 0, { minimumScore: 0.80, windowSize: 180 }).match(source))
+			.toEqual(expect.objectContaining({ id: 8703, num: '8703' }));
+	});
+
+	test('keeps an existing source mapping fixed while replaying an enrichment book', () => {
+		const rows = [
+			{ id: 10, num: '10', body: 'الحديث الأول' },
+			{ id: 11, num: '11', body: 'الحديث الثاني' }
+		];
+		const matcher = createOrderedTextMatcher(rows, 0, {
+			existingMatches: new Map([[51001, 1]]), minimumScore: 0.80
+		});
+		expect(matcher.match({
+			sourceId: 51001, editionReference: '10', editionReferenceRepeated: false,
+			comparisonText: 'نص مختلف كان يمكن أن يختار صفا آخر'
+		})).toEqual(expect.objectContaining({ id: 11, num: '11', index: 1 }));
+		expect(matcher.lastMatch()).toEqual(expect.objectContaining({ id: 11 }));
+		const passedMapping = createOrderedTextMatcher(rows, 1, {
+			existingMatches: new Map([[51000, 0]]), minimumScore: 0.80
+		});
+		expect(passedMapping.match({
+			sourceId: 51000, editionReference: '11', editionReferenceRepeated: false,
+			comparisonText: 'الحديث الثاني'
+		})).toBeNull();
 	});
 
 	test('orders Ibn Khuzaymah by numeric reference because its local ordinals interleave numbering blocks', () => {

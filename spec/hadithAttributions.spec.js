@@ -55,8 +55,10 @@ describe('Hadith attribution taxonomy', () => {
 		expect(template).toContain('i.single === true');
 		expect(template).not.toContain('!i.single');
 		expect(template).toContain('<em class="grade">');
-		expect(template).toContain('<%- langData.grade_grade %>');
-		expect(template).toContain('<%- langData.grader_shortName %>');
+		expect(template).toContain('const displayedGrade = legacyGradeOverride');
+		expect(template).toContain('const displayedGrader = legacyGradeOverride');
+		expect(template).toContain('<%- displayedGrade %>');
+		expect(template).toContain('<%- displayedGrader %>');
 		expect(template).not.toContain('– <span><%- langData.grade_grade %>');
 		expect(template).not.toContain('hadith-grader-opinions');
 	});

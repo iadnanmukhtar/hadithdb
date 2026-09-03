@@ -79,7 +79,10 @@ async function runBook(config) {
 				log(`${config.alias}: ${current.enriched}/${current.total} (${percent}%), source ${current.source_id || 'none'}, pid ${child?.pid || 'none'}`);
 				unchangedChecks = Number(current.enriched) === lastEnriched ? unchangedChecks + 1 : 0;
 				lastEnriched = Number(current.enriched);
-				if (unchangedChecks >= 2 && child && child.exitCode === null) {
+				// A replay can legitimately spend many checks reprocessing already-enriched
+				// cached rows before it reaches gaps, so database coverage is not a valid
+				// liveness signal in this mode.
+				if (!replaying && unchangedChecks >= 2 && child && child.exitCode === null) {
 					log(`${config.alias}: stalled for two checks; terminating for checkpoint restart`);
 					child.kill('SIGTERM');
 				}

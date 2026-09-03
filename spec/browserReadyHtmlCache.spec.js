@@ -13,6 +13,7 @@ describe('browser-ready HTML cache artifacts', () => {
   let req;
 
   beforeEach(() => {
+	jest.spyOn(Utils, 'diskCacheEnabled').mockReturnValue(true);
     directory = fs.mkdtempSync(path.join(os.tmpdir(), 'hadithdb-browser-cache-'));
     fragmentsDirectory = path.join(directory, 'fragments');
     fs.mkdirSync(fragmentsDirectory);

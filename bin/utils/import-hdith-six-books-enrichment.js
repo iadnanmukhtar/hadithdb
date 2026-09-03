@@ -310,7 +310,7 @@ async function loadRecord(page, config, sourceId, runtimeOptions = {}) {
 		fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
 		fs.writeFileSync(cacheFile, JSON.stringify(hadith));
 	}
-	return parseHadithPayload(hadith);
+	return parseHadithPayload(hadith, config);
 }
 
 function compressCachedRecord(config, sourceId) {
@@ -323,9 +323,9 @@ function compressCachedRecord(config, sourceId) {
 	fs.unlinkSync(cacheFile);
 }
 
-function parseHadithPayload(hadith) {
+function parseHadithPayload(hadith, config = {}) {
 	const chapterPath = hadith.chapter_path || [];
-	const editionReference = parseEditionReference(hadith.numberings);
+	const editionReference = parseEditionReference(hadith.numberings, config.sourceSlug);
 	return {
 		sourceId: Number(hadith.id),
 		num: compact(hadith.numbering_harf || hadith.numberings?.[0]?.value),
@@ -350,8 +350,15 @@ function parseHadithPayload(hadith) {
 	};
 }
 
-function parseEditionReference(numberings) {
-	const value = compact((Array.isArray(numberings) ? numberings : []).find(numbering => compact(numbering?.value))?.value);
+function parseEditionReference(numberings, sourceSlug = null) {
+	const available = (Array.isArray(numberings) ? numberings : []).filter(numbering => compact(numbering?.value));
+	// The local Musnad Ahmad text is numbered according to the Muassasat al-Risalah
+	// edition. hdith.com lists the al-Maknaz numbering first, so using the generic first
+	// value points at a different local hadith even when the texts otherwise agree.
+	const preferred = sourceSlug === 'b-8'
+		? available.find(numbering => /(?:مؤسسة\s+)?الرسالة/u.test(compact(`${numbering?.key || ''} ${numbering?.short || ''}`)))
+		: null;
+	const value = compact((preferred || available[0])?.value);
 	return {
 		value: value || null,
 		repeated: /[\[(]\s*م\s*[\])]/u.test(value)
@@ -589,6 +596,11 @@ async function createBookMatcher(config) {
 	const connection = await getConnection();
 	const rows = await query(connection, `SELECT id, num, chain, body
 		FROM hadiths WHERE bookId=? ORDER BY ${localHadithOrderClause(config)}`, [config.bookId]);
+	const rowIndexById = new Map(rows.map((row, index) => [Number(row.id), index]));
+	const storedMappings = new Map((await query(connection, `SELECT source_entry_id, hadith_id
+		FROM hdith_hadith_metadata WHERE source_book_slug=?`, [config.sourceSlug]))
+		.map(mapping => [Number(mapping.source_entry_id), rowIndexById.get(Number(mapping.hadith_id))])
+		.filter(mapping => Number.isInteger(mapping[1])));
 	let cursor = 0;
 	if (options.resumeSourceId && options.books[0] === config.sourceSlug) {
 		const previous = await query(connection, `SELECT hadith_id
@@ -604,8 +616,10 @@ async function createBookMatcher(config) {
 		}
 	}
 	return createOrderedTextMatcher(rows, cursor, config.sourceSlug === 'b-11'
-		? { preferEarliestOrderedMatch: true, windowSize: 180 }
-		: {});
+		? { existingMatches: storedMappings, preferEarliestOrderedMatch: true, windowSize: 180 }
+		: (config.sourceSlug === 'b-24'
+			? { existingMatches: storedMappings, minimumScore: 0.80, windowSize: 180 }
+			: { existingMatches: storedMappings }));
 }
 
 function localHadithOrderClause(config) {
@@ -622,6 +636,7 @@ function localHadithOrderClause(config) {
 
 function createOrderedTextMatcher(rows, initialCursor = 0, matcherOptions = {}) {
 	let cursor = initialCursor;
+	const minimumScore = Number(matcherOptions.minimumScore) || 0.90;
 	let lastMatched = initialCursor > 0 ? { ...rows[initialCursor - 1], index: initialCursor - 1 } : null;
 	const indexesByReference = new Map();
 	rows.forEach((row, index) => {
@@ -647,6 +662,17 @@ function createOrderedTextMatcher(rows, initialCursor = 0, matcherOptions = {}) 
 	}
 	return {
 		match(record) {
+			const existingIndex = matcherOptions.existingMatches?.get(Number(record.sourceId));
+			if (Number.isInteger(existingIndex)) {
+				// Preserve a stored source mapping during replay. If it is behind the
+				// ordered cursor, it has already been passed and must not be fuzzily
+				// rematched to another hadith with the same unique source entry.
+				if (existingIndex < cursor) return null;
+				const existingMatch = { ...rows[existingIndex], index: existingIndex, score: 1 };
+				cursor = existingIndex + 1;
+				lastMatched = existingMatch;
+				return existingMatch;
+			}
 			// Repeated/supplementary source records are not standalone edition hadiths.
 			// Skipping them without advancing the cursor prevents every later match from shifting.
 			if (!record.editionReference || record.editionReferenceRepeated) return null;
@@ -658,7 +684,7 @@ function createOrderedTextMatcher(rows, initialCursor = 0, matcherOptions = {}) 
 				for (let index = cursor; index < end; index++) {
 					const score = hadithPrefixSimilarity(source,
 						normalizeHadithForComparison([rows[index].chain, rows[index].body].filter(Boolean).join(' ')));
-					if (score < 0.90) continue;
+					if (score < minimumScore) continue;
 					const match = { ...rows[index], index, score };
 					cursor = index + 1;
 					lastMatched = match;
@@ -668,9 +694,9 @@ function createOrderedTextMatcher(rows, initialCursor = 0, matcherOptions = {}) 
 			}
 			let best = null;
 			best = scoredMatch(record, indexesByReference.get(referenceBase(record.editionReference)) || [], true);
-			if (!best || best.score < 0.90)
+			if (!best || best.score < minimumScore)
 				best = scoredMatch(record, Array.from({ length: end - cursor }, (unused, offset) => cursor + offset));
-			if (!best || best.score < 0.90) return null;
+			if (!best || best.score < minimumScore) return null;
 			cursor = best.index + 1;
 			lastMatched = best;
 			return best;

@@ -21,7 +21,7 @@ function request() {
 }
 
 function response() {
-  return { status: jest.fn(), end: jest.fn() };
+  return { status: jest.fn().mockReturnThis(), json: jest.fn() };
 }
 
 describe('admin content cache invalidation', () => {
@@ -63,7 +63,7 @@ describe('admin content cache invalidation', () => {
 
     expect(Books.touchBookContentLastmodById).toHaveBeenCalledWith(1);
     expect(Utils.flushCacheContaining).toHaveBeenCalledWith('bukhari:1');
-    expect(Utils.flushCacheContaining.mock.invocationCallOrder[0]).toBeLessThan(res.end.mock.invocationCallOrder[0]);
+    expect(Utils.flushCacheContaining.mock.invocationCallOrder[0]).toBeLessThan(res.json.mock.invocationCallOrder[0]);
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
@@ -75,6 +75,6 @@ describe('admin content cache invalidation', () => {
     await updateHandler()(request(), res, jest.fn());
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(JSON.parse(res.end.mock.calls[0][0]).message).toContain('cache index unavailable');
+    expect(res.json.mock.calls[0][0].message).toContain('cache index unavailable');
   });
 });

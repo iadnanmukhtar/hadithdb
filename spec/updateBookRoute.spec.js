@@ -42,14 +42,14 @@ describe('book update route', () => {
       user: { uid: 'admin' }
     };
     const res = {
-      status: jest.fn(),
-      end: jest.fn()
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
     };
 
     await updateHandler()(req, res, jest.fn());
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(JSON.parse(res.end.mock.calls[0][0])).toMatchObject({ code: 200, value: req.body.value });
+    expect(res.json.mock.calls[0][0]).toMatchObject({ code: 200, value: req.body.value });
     expect(Utils.flushCacheContaining).toHaveBeenCalledWith('tafsir:rida');
     expect(Utils.flushCacheContaining).toHaveBeenCalledWith('translation:rida');
     expect(Tafsir.invalidateMemoryCaches).toHaveBeenCalledWith('rida');
@@ -68,7 +68,7 @@ describe('book update route', () => {
       params: { id: '100382', prop: 'toc.commentaryArticleAdd' },
       user: { uid: 'admin' }
     };
-    const res = { status: jest.fn(), end: jest.fn() };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
 
     await updateHandler()(req, res, jest.fn());
 
@@ -76,6 +76,6 @@ describe('book update route', () => {
     expect(Books.touchBookContentLastmodById).toHaveBeenCalledWith(100382);
     expect(Utils.flushCacheContaining).toHaveBeenCalledWith('tafsir:rida');
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(JSON.parse(res.end.mock.calls[0][0])).toMatchObject({ code: 200, value: { h1: 0, h2: 2 } });
+    expect(res.json.mock.calls[0][0]).toMatchObject({ code: 200, value: { h1: 0, h2: 2 } });
   });
 });

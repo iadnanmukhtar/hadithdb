@@ -423,7 +423,7 @@ describe('hdith.com metadata display', () => {
 		expect(metadata).toContain('data-hadith-similar-search');
 		expect(metadata).toContain('data-exclude-ids');
 		expect(metadata).toContain('lang="ar" dir="rtl" data-hadith-similar-search');
-		expect(metadata).toContain('placeholder="إضافة حديث مشابه…"');
+		expect(metadata).toContain('placeholder="إضافة حديث مشابه"');
 		expect(metadata).not.toContain('ابحث بالمرجع أو نص الحديث.');
 		expect(css).toContain('.hadith-similar-admin-search { position: relative; text-align: right; width: 100%; }');
 		expect(css).toContain('.hadith-similar-admin-search .input-group-text .bi { font-size: .875rem; }');

@@ -35,8 +35,8 @@ async function submitTitle(baseUrl) {
     user: { uid: 'admin' }
   };
   const res = {
-    status: jest.fn(),
-    end: jest.fn()
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn()
   };
 
   await updateHandler()(req, res, jest.fn());
@@ -94,7 +94,7 @@ describe('heading title update route', () => {
       params: { id: '139789', prop: 'toc.intro_en' },
       user: { uid: 'admin' }
     };
-    const res = { status: jest.fn(), end: jest.fn() };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
 
     await updateHandler()(req, res, jest.fn());
 
@@ -140,7 +140,7 @@ describe('heading title update route', () => {
       params: { id: '999', prop: 'toc.title_en' },
       user: { uid: 'admin' }
     };
-    const res = { status: jest.fn(), end: jest.fn() };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
 
     await updateHandler()(req, res, jest.fn());
 
