@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.iadnanmukhtar/hadithdb",
+  "title": "HadithDB",
+  "description": "Search and retrieve Quran ayahs, tafsir commentary, hadith, and detailed hadith records.",
+  "version": "0.2.0",
+  "websiteUrl": "https://hadithunlocked.com",
+  "repository": {
+    "url": "https://github.com/iadnanmukhtar/hadithdb",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://hadithunlocked.com/mcp"
+    }
+  ]
+}
