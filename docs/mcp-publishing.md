@@ -7,6 +7,8 @@
 - Authentication: None
 - Access: Read-only
 - Category: Education
+- Text responses: Uncapped; return the complete available Arabic and English
+  text from the underlying record.
 
 The canonical registry metadata is in [`server.json`](../server.json).
 

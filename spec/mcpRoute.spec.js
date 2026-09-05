@@ -192,4 +192,52 @@ describe('Hadith MCP tool service', () => {
     }));
     expect(result.structuredContent.canonical_url).toBe('https://hadith.example/bukhari:1');
   });
+
+  test('does not truncate Arabic or English scripture fields', () => {
+    const longEnglish = 'e'.repeat(25000);
+    const longArabic = 'ع'.repeat(25000);
+    const item = HadithMcp.normalizeScriptureItem({
+      ref: 'bukhari:1',
+      book_alias: 'bukhari',
+      chain_en: longEnglish,
+      body_en: longEnglish,
+      footnote_en: longEnglish,
+      chain: longArabic,
+      body: longArabic,
+      footnote: longArabic
+    }, urls.hadith, { detail: true });
+
+    expect(item.english).toEqual(expect.objectContaining({
+      chain: longEnglish,
+      body: longEnglish,
+      footnote: longEnglish
+    }));
+    expect(item.arabic).toEqual(expect.objectContaining({
+      chain: longArabic,
+      body: longArabic,
+      footnote: longArabic
+    }));
+  });
+
+  test('does not truncate tafsir lookup commentary', async () => {
+    const longCommentary = `<p>${'commentary '.repeat(6000)}</p>`;
+    const fetch = async url => {
+      if (String(url).endsWith('/quran/api/proxy/tafsir/books')) {
+        return response([{ type: 'tafsir', source: 'local', alias: 'long-tafsir', lang: 'en' }], String(url));
+      }
+      return response({ entries: [{ id: 1, html: longCommentary, content_translation_language: 'en' }] }, String(url));
+    };
+
+    const result = await HadithMcp.callTool('lookup_tafsir', {
+      tafsir: 'long-tafsir',
+      surah: 1,
+      ayah: 1,
+      max_chars: 500
+    }, { baseUrls: urls, fetch });
+    const commentary = result.structuredContent.commentary[0];
+
+    expect(commentary.text.length).toBeGreaterThan(50000);
+    expect(commentary.text.endsWith('commentary')).toBe(true);
+    expect(commentary.truncated).toBe(false);
+  });
 });

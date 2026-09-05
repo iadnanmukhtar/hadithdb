@@ -11,6 +11,10 @@ HadithDB exposes a read-only, stateless Streamable HTTP MCP transport at
 `https://hadithunlocked.com/mcp`. It provides Quran and tafsir lookup/search,
 hadith search, and full hadith-detail lookup tools.
 
+Text fields are returned in full. Arabic and English are exposed separately
+when the underlying record provides both languages; unavailable language fields
+are returned as `null` rather than synthesized or omitted.
+
 The endpoint accepts JSON-RPC 2.0 requests for `initialize`, `ping`,
 `tools/list`, and `tools/call`. It does not create sessions, so clients should
 not expect an `Mcp-Session-Id` response header. Browser preflight requests are
