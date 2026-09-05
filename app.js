@@ -44,6 +44,7 @@ const BLOCKED_HTTP_METHODS = new Set(['TRACE', 'TRACK']);
 const PUBLIC_DIRECTORY = path.join(__dirname, 'public');
 const STATIC_DIRECTORY = path.join(PUBLIC_DIRECTORY, 'static');
 const STARTUP_FALLBACK_FILE = path.join(PUBLIC_DIRECTORY, 'html', '_app_restarting.html');
+const TERMS_FILE = path.join(PUBLIC_DIRECTORY, 'html', 'terms.html');
 const PUBLIC_STATIC_OPTIONS = {
   dotfiles: 'ignore',
   fallthrough: true,
@@ -448,6 +449,9 @@ const startupPromise = (async () => {
     next();
   });
   app.use('/', express.static(PUBLIC_DIRECTORY, PUBLIC_STATIC_OPTIONS));
+  app.get('/terms', function termsOfService(req, res) {
+    res.sendFile(TERMS_FILE, { cacheControl: false });
+  });
   app.get('/vendor/marked/marked.min.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'node_modules/marked/marked.min.js'), { cacheControl: false });
   });

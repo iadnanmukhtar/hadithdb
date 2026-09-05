@@ -76,6 +76,16 @@ describe('static assets', () => {
     expect(fallbackHtml).not.toMatch(/(?:href|src)="\/(?!static\/img\/logo2\.svg)/);
   });
 
+  test('publishes a complete Terms of Service page for the public service and MCP integration', () => {
+    const termsPath = path.join(__dirname, '..', 'public', 'html', 'terms.html');
+    const termsHtml = fs.readFileSync(termsPath, 'utf8');
+
+    expect(termsHtml).toContain('<link rel="canonical" href="https://hadithunlocked.com/terms">');
+    expect(termsHtml).toContain('Model Context Protocol (“MCP”) server');
+    expect(termsHtml).toContain('href="/html/privacy.html"');
+    expect(termsHtml).toContain('mailto:adnanmukhtar@gmail.com');
+  });
+
   test('keeps heading rails above the measured sticky footer', () => {
     const staticDir = path.join(__dirname, '..', 'public', 'static');
     const css = fs.readFileSync(path.join(staticDir, 'css', 'style.css'), 'utf8');
