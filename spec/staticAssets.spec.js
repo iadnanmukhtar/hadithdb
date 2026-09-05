@@ -86,6 +86,18 @@ describe('static assets', () => {
     expect(termsHtml).toContain('mailto:adnanmukhtar@gmail.com');
   });
 
+  test('uses the shared legal-page presentation for the privacy policy without replacing its content', () => {
+    const privacyPath = path.join(__dirname, '..', 'public', 'html', 'privacy.html');
+    const privacyHtml = fs.readFileSync(privacyPath, 'utf8');
+
+    expect(privacyHtml).toContain('<!doctype html>');
+    expect(privacyHtml).toContain('<title>Privacy Policy | Hadith Unlocked</title>');
+    expect(privacyHtml).toContain('class="brand"');
+    expect(privacyHtml).toContain('width: min(860px, calc(100% - 32px))');
+    expect(privacyHtml).toContain('data-custom-class="body"');
+    expect(privacyHtml).toContain('This privacy policy was created using Termly');
+  });
+
   test('keeps heading rails above the measured sticky footer', () => {
     const staticDir = path.join(__dirname, '..', 'public', 'static');
     const css = fs.readFileSync(path.join(staticDir, 'css', 'style.css'), 'utf8');
