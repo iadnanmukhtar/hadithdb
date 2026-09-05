@@ -1288,6 +1288,7 @@ function initCommandSearch() {
 		var value = input.value || '';
 		var rtl = isRtlSearchTerm(value);
 		input.dir = rtl ? 'rtl' : 'ltr';
+		input.classList.toggle('command-search-arabic-text', rtl);
 		document.querySelectorAll('[data-command-search-direction-container]').forEach(function (container) {
 			container.dir = rtl ? 'rtl' : 'ltr';
 		});
@@ -1297,6 +1298,7 @@ function initCommandSearch() {
 		document.querySelectorAll('[data-command-search-trigger-label]').forEach(function (label) {
 			label.textContent = value || label.dataset.emptyLabel || 'Search';
 			label.dir = rtl ? 'rtl' : 'ltr';
+			label.classList.toggle('command-search-arabic-text', rtl);
 		});
 	}
 

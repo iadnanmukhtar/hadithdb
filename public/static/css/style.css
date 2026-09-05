@@ -1370,6 +1370,10 @@ nav .nav-link[aria-current="page"] {
 	white-space: nowrap;
 }
 
+.command-search-arabic-text {
+	font-family: Kitab, Serif;
+}
+
 .bi-search.is-rtl-search {
 	transform: scaleX(-1);
 }
@@ -1382,6 +1386,7 @@ nav .nav-link[aria-current="page"] {
 	border-radius: 0.35rem;
 	box-shadow: none;
 	color: var(--c-white);
+	direction: ltr;
 	display: inline-flex;
 	font-family: inherit;
 	font-size: 0.68rem;
@@ -1389,6 +1394,7 @@ nav .nav-link[aria-current="page"] {
 	gap: 0.15rem;
 	line-height: 1;
 	padding: 0.3rem 0.4rem;
+	unicode-bidi: isolate;
 	white-space: nowrap;
 }
 
@@ -7480,6 +7486,14 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .search-results .h .note {
 	-webkit-user-select: text;
 	user-select: text;
+}
+
+.search-results .hadith-body-content.search-result-unmatched-body {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 4;
+	line-clamp: 4;
+	overflow: hidden;
 }
 
 .h:lang(ar) {

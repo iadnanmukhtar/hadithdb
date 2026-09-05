@@ -80,7 +80,7 @@
 
       <div class="command-search-input-wrap" data-command-search-direction-container dir="<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? 'rtl' : 'ltr' %>">
         <i class="bi bi-search<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
-        <input role="search" type="search" class="form-control command-search-input" name="q" value="<%= searchQuery || '' %>" dir="<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? 'rtl' : 'ltr' %>" placeholder="Search hadith..." aria-label="Search hadith" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <input role="search" type="search" class="form-control command-search-input<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? ' command-search-arabic-text' : '' %>" name="q" value="<%= searchQuery || '' %>" dir="<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? 'rtl' : 'ltr' %>" placeholder="Search hadith..." aria-label="Search hadith" autocomplete="off" autocapitalize="none" spellcheck="false">
       </div>
 
       <section id="command-search-hadith-filters" class="command-search-filter-panel" role="tabpanel" data-command-search-panel="hadith">

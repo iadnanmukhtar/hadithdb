@@ -9,6 +9,7 @@ const mysql = require('mysql');
 const AdmZip = require('adm-zip');
 const cheerio = require('cheerio');
 const { execSync } = require('child_process');
+const Utils = require('../../lib/Utils');
 
 require('dotenv').config();
 
@@ -107,7 +108,7 @@ async function run(argv = process.argv.slice(2)) {
 				${startAyah.ayah},
 				${endAyah.ayah},
 				${startAyah.ayah},
-				${mysql.escape(passage.text)},
+				${mysql.escape(Utils.normalizeArabicHonorifics(passage.text).replace(/[ \t]{2,}/g, ' ').trim())},
 				NULL
 			)`);
 		}

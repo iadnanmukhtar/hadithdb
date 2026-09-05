@@ -519,6 +519,7 @@ const startupPromise = (async () => {
   const paymentsRouter = require('./routes/payments');
   const contentTranslationsRouter = require('./routes/contentTranslations');
   const clientErrorsRouter = require('./routes/clientErrors');
+  const mcpRouter = require('./routes/mcp');
 
   app.use('/recent', highlightsRouter);
   app.use('/highlights', highlightsRouter);
@@ -532,6 +533,7 @@ const startupPromise = (async () => {
   app.use('/quran/api/update', updateRouter);
   app.use('/api/client-errors', clientErrorsRouter);
   app.use('/quran/api/client-errors', clientErrorsRouter);
+  app.use('/mcp', mcpRouter);
   app.use('/settings', settingsRouter);
   app.use('/quran/settings', settingsRouter);
   const loginPageOnly = function loginPageOnly(req, res, next) {

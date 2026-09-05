@@ -5,11 +5,18 @@
 	const enChain = utils.emptyIfNull(en.chain);
 	const enNarrators = enChain.split(/(>|&gt;)/).filter(part => !part.match(/^(>|&gt;)$/) && utils.emptyIfNull(part) !== '');
 	const derivedEnNarrator = enNarrators.length > 0 ? utils.emptyIfNull(enNarrators[enNarrators.length - 1]).trim() : '';
+	const importedNarrator = i.hdithNarrator || (i.hdithMetadata && i.hdithMetadata.narrator ? {
+		name: i.hdithMetadata.narrator,
+		name_en: i.hdithMetadata.narratorEn
+	} : null);
 	const timelineNarrators = i.hdithMetadata && Array.isArray(i.hdithMetadata.narrators) ? i.hdithMetadata.narrators : [];
 	const firstTimelineNarrator = timelineNarrators.length ? timelineNarrators[0] : null;
 	const timelineArNarrator = firstTimelineNarrator ? utils.emptyIfNull(firstTimelineNarrator.vocalized_name || firstTimelineNarrator.name).trim() : '';
-	const arNarrator = timelineArNarrator || (derivedEnNarrator ? arabic.toArabic(derivedEnNarrator) : '');
-	const enNarrator = timelineArNarrator ? arabic.toALALCName(timelineArNarrator) : derivedEnNarrator;
+	const importedArNarrator = importedNarrator ? utils.emptyIfNull(importedNarrator.name).trim() : '';
+	const arNarrator = importedArNarrator || timelineArNarrator || (derivedEnNarrator ? arabic.toArabic(derivedEnNarrator) : '');
+	const enNarrator = importedNarrator && importedNarrator.name_en
+		? importedNarrator.name_en
+		: (arNarrator ? arabic.toALALCName(arNarrator) : derivedEnNarrator);
 	const shareRef = i.ref || `${i.actual ? i.actual.book_alias : i.book_alias}:${i.actual ? en.actual?.num || i.actual?.num || i.num : en.num || i.num}`;
 	const quranShareRef = ((i.actual ? i.actual.book_alias : i.book_alias) === 'quran' || /^quran:/.test(shareRef))
 		? arabic.toLatinDigits(shareRef.toString().replace(/^quran:/, ''))

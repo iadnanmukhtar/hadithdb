@@ -6,6 +6,7 @@ const path = require('path');
 const util = require('util');
 const sqlite3 = require('sqlite3');
 const Hadith = require('../../lib/Hadith');
+const Utils = require('../../lib/Utils');
 require('../../lib/Globals');
 
 const DEFAULT_BATCH_SIZE = 250;
@@ -491,18 +492,18 @@ async function verifyImport(bookId) {
 }
 
 function cleanHeadingTitle(value) {
-	return cleanText(value).replace(/^\d+\s*-\s*/, '').trim();
+	return normalizeHadithArabic(cleanText(value)).replace(/^\d+\s*-\s*/, '').trim();
 }
 
 function cleanHadithText(value, num) {
-	return cleanText(value)
+	return normalizeHadithArabic(cleanText(value))
 		.replace(/^§\s*/, '')
 		.replace(new RegExp(`^${num}\\s*-\\s*`), '')
 		.trim();
 }
 
 function cleanHadithBody(value) {
-	return cleanText(value)
+	return normalizeHadithArabic(cleanText(value))
 		.replace(/^§\s*/, '')
 		.replace(/\s*§\s*/g, ' ')
 		.trim();
@@ -515,6 +516,10 @@ function cleanText(value) {
 		.replace(/-\[\d+\]-/g, '')
 		.replace(/\u200f/g, '')
 		.trim();
+}
+
+function normalizeHadithArabic(value) {
+	return Utils.normalizeArabicHonorifics(value).replace(/ {2,}/g, ' ').trim();
 }
 
 function quoteSqliteIdentifier(identifier) {

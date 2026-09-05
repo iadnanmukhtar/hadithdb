@@ -39,6 +39,20 @@ describe('Hadith metadata editing', () => {
 		expect(template).not.toContain('bi-box-arrow-up-right');
 	});
 
+	test('allows Arabic and English narrator metadata to be edited on list and detail pages', () => {
+		const route = read('routes/update.js');
+		const item = read('views/sub-views/hadith_item.ejs');
+		expect(route).toContain("type === 'hdith_metadata'");
+		expect(route).toContain("['narrator', 'narrator_en'].includes(col)");
+		expect(route).toContain('UPDATE hdith_hadith_metadata SET ${col}=');
+		expect(route).toContain('await runHadithPostUpdateTasks(metadataHadithId)');
+		expect(item).toContain("'hdith_metadata.narrator'");
+		expect(item).toContain("'hdith_metadata.narrator_en'");
+		expect(item).toContain('showPrimaryNarratorOnly');
+		expect(item).toContain('i.single === true');
+		expect(item).toContain('hadith-narrator-editor');
+	});
+
 	test('renders and manages custom Sharh in Arabic and English columns', () => {
 		const route = read('routes/update.js');
 		const template = read('views/sub-views/hadith_metadata.ejs');

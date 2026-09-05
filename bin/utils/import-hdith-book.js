@@ -11,6 +11,7 @@ const os = require('os');
 const path = require('path');
 const util = require('util');
 const Hadith = require('../../lib/Hadith');
+const Utils = require('../../lib/Utils');
 
 const BASE_URL = 'https://hdith.com';
 const DEFAULT_CONCURRENCY = 12;
@@ -22,7 +23,9 @@ const GRADE_LABELS = Object.freeze({ 0: 'لم يُحكَمْ عليه', 1: 'صح
 const CACHE_DIR = path.join(os.tmpdir(), 'hadithdb-hdith-import');
 let dbConnection;
 
-const options = readOptions(process.argv.slice(2));
+const options = require.main === module
+	? readOptions(process.argv.slice(2))
+	: { books: Object.keys(DEFAULT_BOOKS), concurrency: DEFAULT_CONCURRENCY, dryRun: true, normalizeExisting: false };
 const http = axios.create({
 	baseURL: BASE_URL,
 	timeout: 30000,
@@ -100,7 +103,7 @@ async function scrapeBook(config) {
 	const chapters = page.chapters.map((chapter, index) => ({
 		id: Number(chapter.id),
 		h1: index + 1,
-		title: compact(chapter.t),
+		title: normalizeHadithText(compact(chapter.t)),
 		sourceCount: Number(chapter.count) || 0,
 		hadiths: []
 	}));
@@ -154,7 +157,7 @@ function detailRecord(html, config, chapter, sourceHadithId, url, visibleGrade) 
 	const $ = cheerio.load(html);
 	const breadcrumb = $('.enc-breadcrumb a').map((unused, link) => ({
 		href: $(link).attr('href') || '',
-		title: compact($(link).text())
+		title: normalizeHadithText(compact($(link).text()))
 	})).get().filter(item => item.href.startsWith(`/encyclopedia/book/${config.sourceId}?chapter=`));
 	const h1 = breadcrumb[0] || null;
 	const h2 = breadcrumb[1] || null;
@@ -277,16 +280,7 @@ function detailFields(html, hadith) {
 		body, text: compact(`${chain || ''} ${body}`) };
 }
 
-const ARABIC_MARKS = '[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]*';
-const markedWord = letters => [...letters].map(letter => `${letter}${ARABIC_MARKS}`).join('');
 const PAGE_REFERENCE_RE = /ج[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]*[٠-٩0-9]+\s*\/\s*ص[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]*[٠-٩0-9]+/gu;
-const SALAWAT_RE = new RegExp(`${markedWord('صلى')}\\s+${markedWord('الله')}\\s+${markedWord('عليه')}\\s+${markedWord('وسلم')}`, 'gu');
-const RADI_RE = new RegExp(
-	`${markedWord('رض')}[يى]${ARABIC_MARKS}\\s+${markedWord('الله')}` +
-	`(?:\\s+${markedWord('تعالى')})?\\s+${markedWord('عن')}(?:${markedWord('هما')}|${markedWord('هم')}|${markedWord('هن')}|${markedWord('ها')}|${markedWord('ه')})`,
-	'gu'
-);
-
 function normalizeHadithText(value, counts) {
 	if (value === null || value === undefined) return value;
 	let text = String(value);
@@ -294,14 +288,12 @@ function normalizeHadithText(value, counts) {
 		if (counts) counts.pageReferences++;
 		return '';
 	});
-	text = text.replace(SALAWAT_RE, () => {
-		if (counts) counts.salawat++;
-		return 'ﷺ';
-	});
-	text = text.replace(RADI_RE, () => {
-		if (counts) counts.radi++;
-		return 'ؓ';
-	});
+	const salawatBefore = (text.match(/ﷺ/gu) || []).length;
+	text = Utils.replacePBUH(text);
+	if (counts) counts.salawat += Math.max(0, (text.match(/ﷺ/gu) || []).length - salawatBefore);
+	const radiBefore = (text.match(/ؓ/gu) || []).length;
+	text = Utils.replaceRA(text);
+	if (counts) counts.radi += Math.max(0, (text.match(/ؓ/gu) || []).length - radiBefore);
 	return text.replace(/ {2,}/g, ' ').trim();
 }
 
@@ -326,7 +318,7 @@ async function normalizeExistingBooks() {
 				const chain = normalizeHadithText(row.chain, counts);
 				const chainEn = Hadith.transliteratedNarratorChain(chain || '').chain_en || null;
 				const body = normalizeHadithText(row.body, counts);
-				const text = normalizeHadithText(row.text, counts);
+				const text = [chain, body].filter(Boolean).join(' ').trim();
 				if (chain === row.chain && chainEn === row.chain_en && body === row.body && text === row.text) continue;
 				changed.push([row.id, chain, chainEn, body, text]);
 				counts.rows++;

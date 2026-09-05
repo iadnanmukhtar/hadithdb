@@ -47,7 +47,11 @@ describe('Quran and tafsir canonical search ordering', () => {
 		expect(script).toContain('updateCommandSearchPresentation');
 		expect(script).toContain("container.dir = rtl ? 'rtl' : 'ltr'");
 		expect(script).toContain("icon.classList.toggle('is-rtl-search', rtl)");
+		expect(script).toContain("input.classList.toggle('command-search-arabic-text', rtl)");
+		expect(script).toContain("label.classList.toggle('command-search-arabic-text', rtl)");
 		expect(styles).toMatch(/\.bi-search\.is-rtl-search \{\s*transform: scaleX\(-1\);/);
+		expect(styles).toMatch(/\.command-search-arabic-text \{\s*font-family: Kitab, Serif;/);
+		expect(styles).toMatch(/\.command-search-shortcut \{[\s\S]*?direction: ltr;[\s\S]*?unicode-bidi: isolate;/);
 		expect(styles).toMatch(/\.command-search-trigger \{[\s\S]*?text-align: start;/);
 		expect(styles).toMatch(/\.command-search-trigger-label \{[\s\S]*?text-align: start;[\s\S]*?unicode-bidi: plaintext;/);
 	});

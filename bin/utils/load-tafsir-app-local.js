@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const MySQL = require('mysql');
+const Utils = require('../../lib/Utils');
 
 const API_URL = 'https://tafsir.app/get.php';
 const CACHE_DIR = path.resolve(__dirname, '../../data/tafsir/tafsir-app');
@@ -222,7 +223,7 @@ async function upsertLocalPassages(commentary, quran, document) {
 	const batchSize = options.batchSize;
 	for (let offset = 0; offset < populated.length; offset += batchSize) {
 		const values = populated.slice(offset, offset + batchSize).map(ayah => {
-			const text = document[ayah.ref]?.text;
+			const text = Utils.normalizeArabicHonorifics(document[ayah.ref]?.text).replace(/[ \t]{2,}/g, ' ').trim();
 			return `(
 				${commentary.id},
 				${ayah.id},

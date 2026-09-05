@@ -9,6 +9,7 @@ const path = require('path');
 const mysql = require('mysql');
 const { chromium } = require('playwright');
 const { execFileSync } = require('child_process');
+const Utils = require('../../lib/Utils');
 
 const BASE_URL = 'https://dorar.net/tafseer';
 const CACHE_FILE = path.resolve(__dirname, '../../data/tafsir/dorar.json');
@@ -300,7 +301,8 @@ async function upsertPassages(db, bookId, passages, batchSize) {
 			const hadithId = hadithByRef.get(`${passage.surah}:${passage.ayahFrom}`);
 			if (!hadithId)
 				throw new Error(`Missing local Quran row ${passage.surah}:${passage.ayahFrom}.`);
-			return `(${bookId}, ${hadithId}, ${passage.surah}, ${passage.ayahFrom}, ${passage.ayahTo}, ${passage.ayahFrom}, ${mysql.escape(passage.text)}, NULL, ${mysql.escape(passage.footnotes)}, NULL)`;
+			const text = Utils.normalizeArabicHonorifics(passage.text).replace(/[ \t]{2,}/g, ' ').trim();
+			return `(${bookId}, ${hadithId}, ${passage.surah}, ${passage.ayahFrom}, ${passage.ayahTo}, ${passage.ayahFrom}, ${mysql.escape(text)}, NULL, ${mysql.escape(passage.footnotes)}, NULL)`;
 		});
 		await query(db, `INSERT INTO hadiths_commentary
 			(bookId, hadithId, surah, ayahFrom, ayahTo, passageNum, text, text_en, footnotes, footnotes_en)

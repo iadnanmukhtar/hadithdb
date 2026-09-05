@@ -14,6 +14,15 @@ const { SUPPORTED_BOOKS } = require('./import-hdith-six-books-enrichment');
 const books = String(process.argv[process.argv.indexOf('--books') + 1] || '').split(',').filter(Boolean);
 const lane = String(process.argv[process.argv.indexOf('--lane') + 1] || 'lane');
 const replayFirst = process.argv.includes('--replay-first');
+function numericOption(name, fallback) {
+	const index = process.argv.indexOf(name);
+	const value = index >= 0 ? Number(process.argv[index + 1]) : fallback;
+	if (!Number.isFinite(value) || value < 1000) throw new Error(`${name} must be at least 1000 milliseconds`);
+	return value;
+}
+const monitorInitialMs = numericOption('--monitor-initial-ms', 600000);
+const monitorInitialDurationMs = numericOption('--monitor-initial-duration-ms', monitorInitialMs);
+const monitorSteadyMs = numericOption('--monitor-steady-ms', 600000);
 const configs = books.map(slug => SUPPORTED_BOOKS.find(book => book.sourceSlug === slug));
 if (!books.length || configs.some(config => !config)) throw new Error('Usage: supervise-hdith-enrichment-lane.js --lane NAME --books b-N,b-N');
 
@@ -44,7 +53,10 @@ async function status(config) {
 	const query = (sql, values) => util.promisify(connection.query).call(connection, sql, values);
 	try {
 		await util.promisify(connection.connect).call(connection);
-		return (await query(`SELECT COUNT(h.id) total, COUNT(DISTINCT m.hadith_id) enriched, MAX(m.source_entry_id) source_id
+		return (await query(`SELECT COUNT(h.id) total,
+			COUNT(DISTINCT CASE WHEN m.source_checksum <> REPEAT('0', 64) THEN m.hadith_id END) enriched,
+			MAX(m.source_entry_id) source_id,
+			MIN(CASE WHEN m.source_checksum = REPEAT('0', 64) THEN m.source_entry_id END) next_pending_source_id
 			FROM hadiths h LEFT JOIN hdith_hadith_metadata m ON m.hadith_id=h.id AND m.source_book_slug=? WHERE h.bookId=?`,
 			[config.sourceSlug, config.bookId]))[0];
 	} finally {
@@ -62,17 +74,24 @@ async function waitForDatabase() {
 function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 async function runBook(config) {
+	let replayPending = replayFirst && config === configs[0];
 	while (!stopping) {
 		await waitForDatabase();
 		const before = await status(config);
 		const args = ['bin/utils/import-hdith-six-books-enrichment.js', '--apply', '--book', config.sourceSlug, '--delay', '100'];
-		const replaying = replayFirst && config === configs[0];
-		if (before.source_id && !replaying) args.push('--resume-source-id', String(Number(before.source_id) + 1));
+		const replaying = replayPending;
+		replayPending = false;
+		if (!replaying && before.next_pending_source_id)
+			args.push('--resume-source-id', String(Number(before.next_pending_source_id)));
+		else if (before.source_id && !replaying)
+			args.push('--resume-source-id', String(Number(before.source_id) + 1));
 		const output = fs.openSync(path.join(logDir, `${config.sourceSlug}.log`), 'a');
 		log(`${config.alias}: launching at ${before.enriched}/${before.total}${replaying ? ' replaying from the first source' : (before.source_id ? ` after source ${before.source_id}` : '')}`);
 		child = spawn(process.execPath, args, { cwd: path.resolve(__dirname, '../..'), stdio: ['ignore', output, output] });
 		lastEnriched = Number(before.enriched); unchangedChecks = 0;
-		const monitor = setInterval(async () => {
+		const monitorStarted = Date.now();
+		let monitor = null;
+		const monitorStatus = async () => {
 			try {
 				const current = await status(config);
 				const percent = current.total ? (100 * current.enriched / current.total).toFixed(2) : '0.00';
@@ -87,9 +106,14 @@ async function runBook(config) {
 					child.kill('SIGTERM');
 				}
 			} catch (error) { log(`${config.alias}: monitor error ${error.code || error.message}`); }
-		}, 600000);
+			if (!stopping && child?.exitCode === null) {
+				const delay = Date.now() - monitorStarted < monitorInitialDurationMs ? monitorInitialMs : monitorSteadyMs;
+				monitor = setTimeout(monitorStatus, delay);
+			}
+		};
+		monitor = setTimeout(monitorStatus, monitorInitialMs);
 		const code = await new Promise(resolve => child.once('exit', resolve));
-		clearInterval(monitor); fs.closeSync(output); child = null;
+		clearTimeout(monitor); fs.closeSync(output); child = null;
 		if (stopping) return false;
 		if (code === 0) { log(`${config.alias}: completed successfully`); return true; }
 		log(`${config.alias}: exited ${code}; restarting from committed checkpoint in 30s`);

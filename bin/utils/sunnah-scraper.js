@@ -475,9 +475,9 @@ function parseChapter(url, page) {
 	chapter.h1 = chapterNumber(($('.book_page_number').text() || 0).trim());
 	chapter.h2 = null;
 	chapter.h3 = null;
-	chapter.title_en = clean($('.book_page_english_name').text());
+	chapter.title_en = Utils.normalizeEnglishAIMarker(clean($('.book_page_english_name').text()));
 	chapter.title = clean($('.book_page_arabic_name').text());
-	chapter.intro_en = clean($('.ebookintro').text());
+	chapter.intro_en = Utils.normalizeEnglishAIMarker(clean($('.ebookintro').text()));
 	chapter.intro = clean($('.abookintro').text());
 	chapter.start = null;
 	chapter.end = null;
@@ -508,7 +508,7 @@ function parseChapter(url, page) {
 			heading.h1 = chapter.h1;
 			heading.h2 = h2InChapter++;
 			heading.h3 = null;
-			heading.title_en = clean($(this).find('.englishchapter').text());
+			heading.title_en = Utils.normalizeEnglishAIMarker(clean($(this).find('.englishchapter').text()));
 			heading.title = clean($(this).find('.arabicchapter').text());
 			heading.intro_en = null;
 			heading.intro = null;
@@ -572,12 +572,12 @@ function parseChapter(url, page) {
 			hadith.num = clean(hadith.num);
 			var chainEn = $(this).find(`.englishcontainer .hadith_narrated`).text();
 			var bodyEn = $(this).find(`.englishcontainer .text_details`).text();
-			hadith.chain_en = clean(chainEn);
+			hadith.chain_en = Utils.normalizeEnglishAIMarker(clean(chainEn));
 			hadith.chain = null;
-			hadith.body_en = clean(bodyEn);
+			hadith.body_en = Utils.normalizeEnglishAIMarker(clean(bodyEn));
 			hadith.footnote_en = null;
 			hadith.footnote = null;
-			hadith.text_en = clean((emptyIfNull(chainEn) + ' ' + emptyIfNull(bodyEn)).trim());
+			hadith.text_en = Utils.normalizeEnglishAIMarker(clean((emptyIfNull(chainEn) + ' ' + emptyIfNull(bodyEn)).trim()));
 			hadith.text = hadith.body = $(this).find(`.arabic_hadith_full`).text();
 			hadith = splitHadith(hadith);
 			hadith.chain = clean(hadith.chain);

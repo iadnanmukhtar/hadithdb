@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const MySQL = require('mysql');
 const cheerio = require('cheerio');
+const Utils = require('../../lib/Utils');
 
 const TAFSIRS = {
 	'tafsir-tabari': {
@@ -792,7 +793,7 @@ async function upsertPassages(connection, bookId, passages) {
 		${passage.ayah},
 		${passage.ayah},
 		${passage.ayah},
-		${MySQL.escape(passage.text)},
+		${MySQL.escape(Utils.normalizeArabicHonorifics(passage.text).replace(/[ \t]{2,}/g, ' ').trim())},
 		${MySQL.escape(passage.text_en)}
 	)`).join(',\n');
 	await query(connection, `

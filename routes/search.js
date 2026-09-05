@@ -1153,6 +1153,8 @@ async function renderSearchResults(req, res, next, options = {}) {
           hadith.chapter.offset = '';
       }
     });
+	await HdithMetadata.attachClassifications(results.filter(result =>
+		(!result.doctype || result.doctype === 'hadith') && result.book_alias !== 'quran' && Number(result.remark) !== 2));
   } catch (err) {
     var message = `Error searching [${req.query.q} ${req.query.b}]`;
     debug.error(message + `\n${err.stack}`);

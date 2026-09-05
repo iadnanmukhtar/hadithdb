@@ -14,8 +14,10 @@ const path = require('path');
 const { chromium } = require('playwright-core');
 const util = require('util');
 const zlib = require('zlib');
+const Arabic = require('../../lib/Arabic');
 const HadithAttributions = require('../../lib/HadithAttributions');
 const Hadith = require('../../lib/Hadith');
+const Utils = require('../../lib/Utils');
 
 const BASE_URL = 'https://hdith.com';
 const LIGHTPANDA = process.env.LIGHTPANDA_BIN || path.join(os.homedir(), '.local', 'bin', 'lightpanda');
@@ -34,6 +36,9 @@ const FOLLOWUP_BOOKS = Object.freeze([
 	{ sourceSlug: 'b-18', bookId: 18, alias: 'daraqutni' },
 	{ sourceSlug: 'b-10', bookId: 11, alias: 'ibnhibban' },
 	{ sourceSlug: 'b-11', bookId: 17, alias: 'ibnkhuzaymah' },
+	{ sourceSlug: 'b-13', bookId: 34, alias: 'tabarani-awsat' },
+	{ sourceSlug: 'b-14', bookId: 33, alias: 'tabarani-saghir' },
+	{ sourceSlug: 'b-17', bookId: 14, alias: 'bayhaqi' },
 	{ sourceSlug: 'b-19', bookId: 16, alias: 'bazzar' },
 	{ sourceSlug: 'b-33', bookId: 32, alias: 'shamail' },
 	{ sourceSlug: 'b-24', bookId: 10, alias: 'hakim' },
@@ -53,6 +58,8 @@ const HDITH_LOCAL_BOOKS = Object.freeze({
 	10: { bookId: 11, alias: 'ibnhibban', title: 'صحيح ابن حبان', referenceMode: 'exact' },
 	11: { bookId: 17, alias: 'ibnkhuzaymah', title: 'صحيح ابن خزيمة', referenceMode: 'exact' },
 	12: { bookId: 12, alias: 'tabarani', title: 'المعجم الكبير', referenceMode: 'exact' },
+	13: { bookId: 34, alias: 'tabarani-awsat', title: 'المعجم الأوسط', referenceMode: 'exact' },
+	14: { bookId: 33, alias: 'tabarani-saghir', title: 'المعجم الصغير', referenceMode: 'exact' },
 	15: { bookId: 31, alias: 'ibnabishaybah', title: 'مصنف ابن أبي شيبة', referenceMode: 'exact' },
 	16: { bookId: 30, alias: 'abdalrazzaq', title: 'مصنف عبد الرزاق', referenceMode: 'exact' },
 	17: { bookId: 14, alias: 'bayhaqi', title: 'سنن البيهقي الكبرى', referenceMode: 'exact' },
@@ -81,6 +88,7 @@ let dbConnection;
 let dbSessionConfigured = false;
 const sourceBookAuthorCache = new Map();
 const narratorIdCache = new Map();
+let narratorCorrectionCache = null;
 const subjectIdCache = new Map();
 const sharhSourceIdCache = new Map();
 let legacyGradesCache;
@@ -114,9 +122,10 @@ async function main() {
 }
 
 function readOptions(args) {
-	const parsed = { apply: false, books: SIX_BOOKS.map(book => book.sourceSlug), delay: MIN_REQUEST_DELAY_MS, maxHadiths: null, refresh: false, resumeSourceId: null, skipSchema: false };
+	const parsed = { apply: false, books: SIX_BOOKS.map(book => book.sourceSlug), cacheOnly: false, delay: MIN_REQUEST_DELAY_MS, maxHadiths: null, refresh: false, resumeSourceId: null, skipSchema: false };
 	for (let i = 0; i < args.length; i++) {
 		if (args[i] === '--apply') parsed.apply = true;
+		else if (args[i] === '--cache-only') parsed.cacheOnly = true;
 		else if (args[i] === '--refresh') parsed.refresh = true;
 		else if (args[i] === '--skip-schema') parsed.skipSchema = true;
 		else if (args[i] === '--book') parsed.books = [args[++i]];
@@ -136,18 +145,19 @@ function readOptions(args) {
 	for (const slug of parsed.books)
 		if (!SUPPORTED_BOOKS.some(book => book.sourceSlug === slug)) usage(1, `Unknown hdith.com book source '${slug}'.`);
 	if (parsed.skipSchema && !parsed.apply) usage(1, '--skip-schema requires --apply.');
+	if (parsed.cacheOnly && parsed.apply) usage(1, '--cache-only cannot be combined with --apply.');
 	return parsed;
 }
 
 function usage(code, message) {
 	if (message) console.error(message);
-	console.error(`Usage: node bin/utils/import-hdith-six-books-enrichment.js [--apply] [--skip-schema] [--book b-1 | --books b-1,b-2] [--delay ${MIN_REQUEST_DELAY_MS}] [--max-hadiths N] [--resume-source-id N] [--refresh]`);
+	console.error(`Usage: node bin/utils/import-hdith-six-books-enrichment.js [--apply | --cache-only] [--skip-schema] [--book b-1 | --books b-1,b-2] [--delay ${MIN_REQUEST_DELAY_MS}] [--max-hadiths N] [--resume-source-id N] [--refresh]`);
 	process.exit(code);
 }
 
 function selectedBooks(slugs) {
-	const wanted = new Set(slugs);
-	return SUPPORTED_BOOKS.filter(book => wanted.has(book.sourceSlug));
+	const bySlug = new Map(SUPPORTED_BOOKS.map(book => [book.sourceSlug, book]));
+	return slugs.map(slug => bySlug.get(slug));
 }
 
 async function startLightpanda() {
@@ -191,7 +201,7 @@ async function scrapeBook(page, config) {
 		await query(connection, `DELETE hg FROM hdith_hadith_grades hg
 			JOIN hadiths h ON h.id=hg.hadith_id WHERE h.bookId=? AND COALESCE(hg.source_driver, '')<>'admin'`, [config.bookId]);
 	}
-	const bookMatcher = await createBookMatcher(config);
+	const bookMatcher = options.cacheOnly ? null : await createBookMatcher(config);
 	let resumeRecord = options.resumeSourceId && config.sourceSlug === options.books[0]
 		? await loadResumeRecord(page, config, options.resumeSourceId)
 		: null;
@@ -225,6 +235,13 @@ async function scrapeBook(page, config) {
 			if (!record || (record.chapterId && record.chapterId !== Number(chapter.id))) break;
 			chapterCount++;
 			if (options.resumeSourceId && config.sourceSlug === options.books[0] && record.sourceId < options.resumeSourceId) {
+				compressCachedRecord(config, record.sourceId);
+				sourceId = record.nextId;
+				continue;
+			}
+			if (options.cacheOnly) {
+				handled++;
+				if (handled % 250 === 0) console.log(`${config.alias}: cached ${handled} source entries`);
 				compressCachedRecord(config, record.sourceId);
 				sourceId = record.nextId;
 				continue;
@@ -329,6 +346,7 @@ function compressCachedRecord(config, sourceId) {
 function parseHadithPayload(hadith, config = {}) {
 	const chapterPath = hadith.chapter_path || [];
 	const editionReference = parseEditionReference(hadith.numberings, config.sourceSlug);
+	const narrator = parsePrimaryNarrator(hadith);
 	return {
 		sourceId: Number(hadith.id),
 		num: compact(hadith.numbering_harf || hadith.numberings?.[0]?.value),
@@ -339,6 +357,8 @@ function parseHadithPayload(hadith, config = {}) {
 		nextId: Number(hadith.next_id) || null,
 		attribution: compact(hadith.attribution) || null,
 		chainType: compact(hadith.chain_type) || null,
+		narrator,
+		narratorEn: narrator ? Arabic.toALALCName(narrator) : null,
 		sourceIsnadHtml: parseSourceIsnadHtml(hadith.isnad_html, hadith.isnad_prefix),
 		gharib: parseGharib(hadith.gharib),
 		collectionGrades: parseCollectionGrades(hadith),
@@ -351,6 +371,23 @@ function parseHadithPayload(hadith, config = {}) {
 		comparisonText: compact([hadith.isnad_prefix, hadith.matn].filter(Boolean).join(' ')),
 		rawChecksum: checksum(hadith)
 	};
+}
+
+function parsePrimaryNarrator(hadith) {
+	const explicitName = compact(hadith?.narrator).replace(/^رواه\s+/u, '').trim();
+	const primary = Array.isArray(hadith?.isnad) ? hadith.isnad[0] : null;
+	const name = explicitName || compact(primary?.name).replace(/^رواه\s+/u, '').trim();
+	if (!name) return null;
+	const sourceSlug = compact(primary?.slug);
+	if (!sourceSlug || !hadith.isnad_html) return name;
+	const $ = cheerio.load(`<div id="hdith-primary-narrator">${hadith.isnad_html}</div>`, null, false);
+	let vocalized = null;
+	$('#hdith-primary-narrator .hp-rawi').each(function () {
+		if (vocalized || compact($(this).attr('data-rawi-slug')) !== sourceSlug) return;
+		const candidate = compact($(this).text()).replace(/\s*[،:]\s*$/u, '').trim();
+		if (normalizeArabicForMatch(candidate) === normalizeArabicForMatch(name)) vocalized = candidate;
+	});
+	return vocalized || name;
 }
 
 function parseEditionReference(numberings, sourceSlug = null) {
@@ -485,11 +522,20 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 	if (localRows.length !== 1) throw new Error(`${config.alias}:${record.num}: expected one local hadith, found ${localRows.length}.`);
 	const hadithId = localRows[0].id;
 	const localReference = localRows[0].num;
-	await correctLocalChainBodySplit(connection, hadithId, record.bodyStart);
+	if (narratorCorrectionCache === null) {
+		narratorCorrectionCache = new Map((await query(connection, `SELECT source_slug, name_tashkil, name_ala_lc FROM hdith_narrators
+			WHERE NULLIF(name_tashkil, '') IS NOT NULL`)).map(row => [row.source_slug, row]));
+	}
+	const narratorCorrection = narratorCorrectionCache.get(record.narrators?.[0]?.sourceSlug);
+	if (narratorCorrection) {
+		record.narrator = narratorCorrection.name_tashkil;
+		record.narratorEn = narratorCorrection.name_ala_lc || record.narratorEn;
+	}
+	await correctLocalChainBodySplit(connection, hadithId, record.bodyStart, { replaceBodyFromSource: config.sourceSlug === 'b-8' });
 	await query(connection, 'UPDATE hadiths SET body_start=? WHERE id=? AND NOT (body_start <=> ?)',
 		[record.bodyStart, hadithId, record.bodyStart]);
 	if (!refresh) {
-		const existing = await query(connection, 'SELECT source_checksum, source_reference, source_edition_reference, chain_type, source_isnad_html, gharib_json FROM hdith_hadith_metadata WHERE hadith_id=? LIMIT 1', [hadithId]);
+		const existing = await query(connection, 'SELECT source_checksum, source_reference, source_edition_reference, chain_type, narrator, narrator_en, source_isnad_html, gharib_json FROM hdith_hadith_metadata WHERE hadith_id=? LIMIT 1', [hadithId]);
 		if (existing[0]?.source_checksum === record.rawChecksum) {
 			const expectedCollectionGrades = ignoresExternalGrades(config) ? 0 : (record.collectionGrades || []).length;
 			const storedCollectionGrades = expectedCollectionGrades ? Number((await query(connection,
@@ -497,10 +543,11 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 			const gharibJson = record.gharib.length ? JSON.stringify(record.gharib) : null;
 			if (existing[0]?.source_reference !== record.num || existing[0]?.source_edition_reference !== record.editionReference
 				|| existing[0]?.chain_type !== record.chainType
+				|| existing[0]?.narrator !== record.narrator || existing[0]?.narrator_en !== record.narratorEn
 				|| existing[0]?.source_isnad_html !== record.sourceIsnadHtml
 				|| (gharibJson && !existing[0]?.gharib_json))
-				await query(connection, 'UPDATE hdith_hadith_metadata SET source_reference=?, source_edition_reference=?, chain_type=?, source_isnad_html=?, gharib_json=? WHERE hadith_id=?',
-					[record.num, record.editionReference, record.chainType, record.sourceIsnadHtml, gharibJson, hadithId]);
+				await query(connection, 'UPDATE hdith_hadith_metadata SET source_reference=?, source_edition_reference=?, chain_type=?, narrator=?, narrator_en=?, source_isnad_html=?, gharib_json=? WHERE hadith_id=?',
+					[record.num, record.editionReference, record.chainType, record.narrator, record.narratorEn, record.sourceIsnadHtml, gharibJson, hadithId]);
 			if (storedCollectionGrades >= expectedCollectionGrades) {
 				await upsertSourceReferenceMap(connection, config, record, hadithId, localReference, orderedMatch);
 				await backfillLegacyGradeFromOpinions(connection, hadithId);
@@ -517,12 +564,12 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 	try {
 		await query(connection, 'START TRANSACTION');
 		await query(connection, `INSERT INTO hdith_hadith_metadata
-			(hadith_id, source_book_slug, source_entry_id, source_reference, source_edition_reference, attribution, chain_type, source_isnad_html, gharib_json, takhrij_json, shawahid_json, source_checksum)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			(hadith_id, source_book_slug, source_entry_id, source_reference, source_edition_reference, attribution, chain_type, narrator, narrator_en, source_isnad_html, gharib_json, takhrij_json, shawahid_json, source_checksum)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE source_entry_id=VALUES(source_entry_id), source_reference=VALUES(source_reference), source_edition_reference=VALUES(source_edition_reference), attribution=VALUES(attribution),
-				chain_type=VALUES(chain_type), source_isnad_html=VALUES(source_isnad_html), gharib_json=VALUES(gharib_json), takhrij_json=VALUES(takhrij_json), shawahid_json=VALUES(shawahid_json), source_checksum=VALUES(source_checksum), lastmod=NOW()`,
+				chain_type=VALUES(chain_type), narrator=VALUES(narrator), narrator_en=VALUES(narrator_en), source_isnad_html=VALUES(source_isnad_html), gharib_json=VALUES(gharib_json), takhrij_json=VALUES(takhrij_json), shawahid_json=VALUES(shawahid_json), source_checksum=VALUES(source_checksum), lastmod=NOW()`,
 			[hadithId, config.sourceSlug, record.sourceId, record.num, record.editionReference, record.attribution, record.chainType,
-			 record.sourceIsnadHtml,
+			 record.narrator, record.narratorEn, record.sourceIsnadHtml,
 			 record.gharib.length ? JSON.stringify(record.gharib) : null,
 			 JSON.stringify(record.links.filter(link => link.type === 'takhrij')),
 			 JSON.stringify(record.links.filter(link => link.type === 'shahid')), record.rawChecksum]);
@@ -805,21 +852,27 @@ function proposedBodyFootnoteSplit(body, footnote, sourceMatn) {
 	return { body: correctedBody, footnote: correctedFootnote || null };
 }
 
-async function correctLocalChainBodySplit(connection, hadithId, sourceMatn) {
+async function correctLocalChainBodySplit(connection, hadithId, sourceMatn, runtimeOptions = {}) {
 	const rows = await query(connection, 'SELECT chain, chain_en, body, footnote FROM hadiths WHERE id=? LIMIT 1', [hadithId]);
 	if (!rows[0]) return false;
+	sourceMatn = Utils.normalizeArabicHonorifics(sourceMatn);
 	const split = sourceMatn && proposedChainBodySplit(rows[0].chain, rows[0].body, sourceMatn);
-	const chain = split ? split.chain : String(rows[0].chain || '').trim();
-	let body = split ? split.body : String(rows[0].body || '').trim();
-	let footnote = String(rows[0].footnote || '').trim() || null;
+	const chain = Utils.normalizeArabicHonorifics(split ? split.chain : String(rows[0].chain || '').trim()).replace(/\s+/g, ' ').trim();
+	let body = Utils.normalizeArabicHonorifics(split ? split.body : String(rows[0].body || '').trim()).replace(/\s+/g, ' ').trim();
+	let footnote = Utils.normalizeArabicHonorifics(String(rows[0].footnote || '').trim()) || null;
 	const bodyFootnoteSplit = sourceMatn && proposedBodyFootnoteSplit(body, footnote, sourceMatn);
 	if (bodyFootnoteSplit) {
 		body = bodyFootnoteSplit.body;
 		footnote = bodyFootnoteSplit.footnote;
 	}
+	if (runtimeOptions.replaceBodyFromSource && String(sourceMatn || '').trim()) body = String(sourceMatn).trim();
 	const chainEn = Hadith.transliteratedNarratorChain(chain).chain_en;
-	if (!split && !bodyFootnoteSplit && chainEn === String(rows[0].chain_en || '').trim()) return false;
-	await query(connection, 'UPDATE hadiths SET chain=?, body=?, footnote=?, chain_en=? WHERE id=?', [chain, body, footnote, chainEn, hadithId]);
+	const chainChanged = chain !== String(rows[0].chain || '').trim();
+	const bodyChanged = body !== String(rows[0].body || '').trim();
+	const footnoteChanged = footnote !== (String(rows[0].footnote || '').trim() || null);
+	if (!split && !bodyFootnoteSplit && !chainChanged && !bodyChanged && !footnoteChanged && chainEn === String(rows[0].chain_en || '').trim()) return false;
+	await query(connection, 'UPDATE hadiths SET chain=?, body=?, footnote=?, chain_en=?, text=? WHERE id=?',
+		[chain, body, footnote, chainEn, [chain, body].filter(Boolean).join(' ').trim(), hadithId]);
 	return true;
 }
 
@@ -1296,7 +1349,8 @@ function sharhToMarkdown(value) {
 		$('p, div').each((unused, element) => $(element).append('\n\n'));
 		source = $('main').text();
 	}
-	return source.split(/\n\s*\n/).map(paragraph => paragraph.replace(/[ \t]+/g, ' ').trim()).filter(Boolean).join('\n\n');
+	return Utils.normalizeArabicHonorifics(source.split(/\n\s*\n/).map(paragraph => paragraph.replace(/[ \t]+/g, ' ').trim()).filter(Boolean).join('\n\n'))
+		.replace(/[ \t]{2,}/g, ' ').trim();
 }
 
 async function fetchProps(page, pathname, compressedCacheFile = null) {
@@ -1324,6 +1378,7 @@ async function fetchProps(page, pathname, compressedCacheFile = null) {
 	const json = $('script[data-page="app"][type="application/json"]').html();
 	if (!json) throw new Error(`${url}: missing Inertia payload.`);
 	const props = JSON.parse(json).props;
+	if (props.hadith) props.hadith.narrator = parsePageNarrator($) || props.hadith.narrator || null;
 	props.__verificationUrl = $('a[href^="/s?q="], a[href^="https://hdith.com/s?q="]').first().attr('href') || null;
 	if (compressedCacheFile) {
 		fs.mkdirSync(path.dirname(compressedCacheFile), { recursive: true });
@@ -1332,6 +1387,16 @@ async function fetchProps(page, pathname, compressedCacheFile = null) {
 		fs.renameSync(temporaryFile, compressedCacheFile);
 	}
 	return props;
+}
+
+function parsePageNarrator($) {
+	let narrator = '';
+	$('span').each(function () {
+		if (narrator) return;
+		const match = compact($(this).text()).match(/^(?:·\s*)?رواه\s+(.+)$/u);
+		if (match) narrator = compact(match[1]);
+	});
+	return narrator || null;
 }
 
 async function ensureSchema() {
@@ -1383,7 +1448,27 @@ async function ensureSchema() {
 	const sourceIsnadColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_metadata' AND column_name='source_isnad_html' LIMIT 1`);
 	if (!sourceIsnadColumn.length)
-		await query(connection, 'ALTER TABLE hdith_hadith_metadata ADD COLUMN source_isnad_html TEXT NULL AFTER chain_type');
+		await query(connection, 'ALTER TABLE hdith_hadith_metadata ADD COLUMN source_isnad_html MEDIUMTEXT NULL AFTER chain_type');
+	const narratorColumn = await query(connection, `SELECT column_type FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_metadata' AND column_name='narrator' LIMIT 1`);
+	if (!narratorColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_metadata ADD COLUMN narrator TEXT NULL AFTER chain_type');
+	else if (!/text/i.test(narratorColumn[0].column_type))
+		await query(connection, 'ALTER TABLE hdith_hadith_metadata MODIFY narrator TEXT NULL');
+	const narratorEnglishColumn = await query(connection, `SELECT column_type FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_metadata' AND column_name='narrator_en' LIMIT 1`);
+	if (!narratorEnglishColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_metadata ADD COLUMN narrator_en TEXT NULL AFTER narrator');
+	else if (!/text/i.test(narratorEnglishColumn[0].column_type))
+		await query(connection, 'ALTER TABLE hdith_hadith_metadata MODIFY narrator_en TEXT NULL');
+	const narratorTashkilColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_narrators' AND column_name='name_tashkil' LIMIT 1`);
+	if (!narratorTashkilColumn.length)
+		await query(connection, 'ALTER TABLE hdith_narrators ADD COLUMN name_tashkil TEXT NULL AFTER name');
+	const narratorAlaLcColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_narrators' AND column_name='name_ala_lc' LIMIT 1`);
+	if (!narratorAlaLcColumn.length)
+		await query(connection, 'ALTER TABLE hdith_narrators ADD COLUMN name_ala_lc TEXT NULL AFTER name_tashkil');
 	const gharibColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_metadata' AND column_name='gharib_json' LIMIT 1`);
 	if (!gharibColumn.length)
@@ -1495,13 +1580,13 @@ function schemaStatements() {
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_hadith_metadata (
 			hadith_id INT NOT NULL PRIMARY KEY, source_book_slug VARCHAR(16) NOT NULL, source_entry_id INT NOT NULL,
-			source_reference VARCHAR(45) NULL, source_edition_reference VARCHAR(45) NULL, attribution VARCHAR(64) NULL, chain_type VARCHAR(128) NULL, source_isnad_html TEXT NULL, gharib_json JSON NULL, takhrij_json JSON NULL, shawahid_json JSON NULL, source_checksum CHAR(64) NOT NULL,
+			source_reference VARCHAR(45) NULL, source_edition_reference VARCHAR(45) NULL, attribution VARCHAR(64) NULL, chain_type VARCHAR(128) NULL, narrator TEXT NULL, narrator_en TEXT NULL, source_isnad_html MEDIUMTEXT NULL, gharib_json JSON NULL, takhrij_json JSON NULL, shawahid_json JSON NULL, source_checksum CHAR(64) NOT NULL,
 			lastmod DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			UNIQUE KEY hdith_metadata_source (source_book_slug, source_entry_id),
 			CONSTRAINT hdith_metadata_hadith_fk FOREIGN KEY (hadith_id) REFERENCES hadiths(id) ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_narrators (
-			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, source_slug VARCHAR(32) NOT NULL, name VARCHAR(255) NOT NULL,
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, source_slug VARCHAR(32) NOT NULL, name VARCHAR(255) NOT NULL, name_tashkil TEXT NULL, name_ala_lc TEXT NULL,
 			fullname TEXT NULL, reliability VARCHAR(255) NULL, generation_name VARCHAR(255) NULL, death_text VARCHAR(255) NULL,
 			source_url VARCHAR(512) NOT NULL, UNIQUE KEY hdith_narrator_source (source_slug)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
@@ -1619,6 +1704,6 @@ if (require.main === module) main();
 
 module.exports = {
 	CACHE_DIR, FOLLOWUP_BOOKS, HDITH_GRADE_COLORS, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, SUPPORTED_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
-	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, localHadithOrderClause, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
+	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, localHadithOrderClause, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parsePageNarrator, parsePrimaryNarrator, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
 	enrichSingleHadith, legacyGradeForOpinion, preferredColoredGradeOpinion, preferredLegacyOpinion, promoteColoredGradeForMissingLegacy, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult
 };

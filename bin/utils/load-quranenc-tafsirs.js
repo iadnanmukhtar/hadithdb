@@ -8,6 +8,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const MySQL = require('mysql');
+const Utils = require('../../lib/Utils');
 
 const API_BASE = 'https://quranenc.com/api/v1/translation/sura';
 const CACHE_DIR = path.resolve(__dirname, '../../data/tafsir/quranenc');
@@ -269,7 +270,7 @@ async function upsertPassages(bookId, config, passages) {
 			${passage.ayah},
 			${passage.ayah},
 			${passage.ayah},
-			${MySQL.escape(passage.text)},
+			${MySQL.escape(passage.text == null ? passage.text : Utils.normalizeArabicHonorifics(passage.text).replace(/[ \t]{2,}/g, ' ').trim())},
 			${MySQL.escape(passage.text_en)},
 			${MySQL.escape(passage.footnotes)},
 			${MySQL.escape(passage.footnotes_en)}

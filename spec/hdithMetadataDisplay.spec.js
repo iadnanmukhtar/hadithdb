@@ -154,6 +154,16 @@ describe('hdith.com metadata display', () => {
 		expect(vocalizedNarratorName({ source_url: 'https://hdith.com/encyclopedia/rawi/p-2577', source_slug: 'p-2577', name: 'أبو داود السجستاني' }, names)).toBe('أَبُو دَاوُدَ السِّجِسْتَانِيُّ');
 	});
 
+	test('uses reviewed canonical tashkil only for the primary narrator', () => {
+		const names = new Map([['https://hdith.com/encyclopedia/rawi/p-4307', 'عُثْمَانَ بْنِ عَفَّانَ']]);
+		const narrator = {
+			source_url: 'https://hdith.com/encyclopedia/rawi/p-4307', source_slug: 'p-4307', name: 'عثمان بن عفان',
+			name_tashkil: 'عُثْمَانُ بْنُ عَفَّانَ'
+		};
+		expect(vocalizedNarratorName(Object.assign({ ordinal: 1 }, narrator), names)).toBe('عُثْمَانُ بْنُ عَفَّانَ');
+		expect(vocalizedNarratorName(Object.assign({ ordinal: 2 }, narrator), names)).toBe('عُثْمَانَ بْنِ عَفَّانَ');
+	});
+
 	test('shows the known full narrator name without appended biographical variants', () => {
 		expect(narratorDisplayFullname({ name: 'المغيرة بن شعبة', fullname: 'المغيرة بن شعبة بن أبي عامر : ثقيف بن منبه، ويقال غير ذلك' }))
 			.toBe('المغيرة بن شعبة بن أبي عامر');
@@ -163,7 +173,9 @@ describe('hdith.com metadata display', () => {
 	test('keeps the regular chain in the main hadith and moves the enriched chain above the timeline', () => {
 		const itemTemplate = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		const metadataTemplate = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
-		expect(itemTemplate).toContain('if (langData.chain || site.editMode)');
+		expect(itemTemplate).toContain('const displayedChain = showPrimaryNarratorOnly ? primaryNarratorText : langData.chain;');
+		expect(itemTemplate).toContain('!!searchResult && !hasReturnedSearchChain && !hasReturnedSearchFootnote');
+		expect(itemTemplate).toContain('title="Ḥadīth Chain"');
 		expect(itemTemplate).not.toContain('linkedIsnadHtml');
 		expect(itemTemplate).not.toContain('enrichedNarrators');
 		expect(metadataTemplate).toContain('metadata.sourceIsnadHtml');

@@ -28,6 +28,8 @@ const {
 	parseHadithPayload,
 	parseLinks,
 	parseNarrators,
+	parsePageNarrator,
+	parsePrimaryNarrator,
 	parseSourceIsnadHtml,
 	preferredColoredGradeOpinion,
 	legacyGradeForOpinion,
@@ -246,6 +248,27 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(narrators).toEqual([expect.objectContaining({ ordinal: 1, sourceSlug: 'p-1', name: 'راو', formula: 'حدثنا', flags: ['التدليس'] })]);
 	});
 
+	test('imports the primary narrator and borrows tashkil only from an exact source-isnad match', () => {
+		const hadith = {
+			narrator: 'عثمان بن عفان',
+			isnad: [{ slug: 'p-4307', name: 'عثمان بن عفان' }],
+			isnad_html: '<span class="hp-rawi" data-rawi-slug="p-1">أَحْمَدُ</span><span class="hp-rawi" data-rawi-slug="p-4307">عُثْمَانُ بْنُ عَفَّانَ :</span>'
+		};
+		expect(parsePrimaryNarrator(hadith)).toBe('عُثْمَانُ بْنُ عَفَّانَ');
+		expect(parseHadithPayload({ id: 5, isnad: hadith.isnad, isnad_html: hadith.isnad_html }))
+			.toEqual(expect.objectContaining({ narrator: 'عُثْمَانُ بْنُ عَفَّانَ', narratorEn: 'ʿUthmān b. ʿAffān' }));
+		expect(parsePrimaryNarrator({ isnad: [{ slug: 'p-4307', name: 'عثمان بن عفان' }],
+			isnad_html: '<span class="hp-rawi" data-rawi-slug="p-4307">عُثْمَانَ</span>' }))
+			.toBe('عثمان بن عفان');
+	});
+
+	test('captures the page narrator badge separately from the isnad payload', () => {
+		const $ = require('cheerio').load('<article><span>مرفوع</span><span>· رواه عثمان بن عفان</span></article>');
+		expect(parsePageNarrator($)).toBe('عثمان بن عفان');
+		expect(parsePrimaryNarrator({ narrator: 'رواه عثمان بن عفان', isnad: [{ name: 'راو آخر' }] }))
+			.toBe('عثمان بن عفان');
+	});
+
 	test('sanitizes and links the authoritative source isnad without name matching', () => {
 		const html = parseSourceIsnadHtml('<span class="hp-sigha">حَدَّثَنَا </span><span class="hp-rawi" data-rawi-slug="p-3919" data-name="عبد الله بن مسلمة">عَبْدُ اللَّهِ بْنُ مَسْلَمَةَ </span>، <span hidden>ignored</span><script>ignored()</script>');
 		expect(html).toBe('حَدَّثَنَا <a href="https://hdith.com/encyclopedia/rawi/p-3919" target="_blank" rel="noopener noreferrer" title="عبد الله بن مسلمة">عَبْدُ اللَّهِ بْنُ مَسْلَمَةَ </a>،');
@@ -321,7 +344,11 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(schemaStatements().join('\n')).toContain("link_type ENUM('takhrij','shahid','similar')");
 		expect(schemaStatements().join('\n')).toContain('source_body_start MEDIUMTEXT NULL');
 		expect(schemaStatements().join('\n')).toContain('chain_type VARCHAR(128) NULL');
-		expect(schemaStatements().join('\n')).toContain('source_isnad_html TEXT NULL');
+		expect(schemaStatements().join('\n')).toContain('source_isnad_html MEDIUMTEXT NULL');
+		expect(schemaStatements().join('\n')).toContain('narrator TEXT NULL');
+		expect(schemaStatements().join('\n')).toContain('narrator_en TEXT NULL');
+		expect(schemaStatements().join('\n')).toContain('name_tashkil TEXT NULL');
+		expect(schemaStatements().join('\n')).toContain('name_ala_lc TEXT NULL');
 		expect(schemaStatements().join('\n')).toContain('gharib_json JSON NULL');
 		expect(schemaStatements().join('\n')).toContain('source_book_title VARCHAR(255) NULL');
 		expect(schemaStatements().join('\n')).toContain('KEY hdith_link_source_book (source_book_id)');
@@ -345,9 +372,9 @@ describe('hdith.com six-book enrichment importer', () => {
 	test('keeps chain boundary and transliteration fixes in future hdith imports', () => {
 		const sixBookImporter = fs.readFileSync(path.join(__dirname, '..', 'bin', 'utils', 'import-hdith-six-books-enrichment.js'), 'utf8');
 		const genericImporter = fs.readFileSync(path.join(__dirname, '..', 'bin', 'utils', 'import-hdith-book.js'), 'utf8');
-		expect(sixBookImporter).toContain('await correctLocalChainBodySplit(connection, hadithId, record.bodyStart)');
+		expect(sixBookImporter).toContain("await correctLocalChainBodySplit(connection, hadithId, record.bodyStart, { replaceBodyFromSource: config.sourceSlug === 'b-8' })");
 		expect(sixBookImporter).toContain("Hadith.transliteratedNarratorChain(chain).chain_en");
-		expect(sixBookImporter).toContain('UPDATE hadiths SET chain=?, body=?, footnote=?, chain_en=? WHERE id=?');
+		expect(sixBookImporter).toContain('UPDATE hadiths SET chain=?, body=?, footnote=?, chain_en=?, text=? WHERE id=?');
 		expect(genericImporter).toContain("chain_en: Hadith.transliteratedNarratorChain(chain || '').chain_en || null");
 		expect(genericImporter).toContain('gradeText, chain, chain_en, body, text)');
 		expect(fs.readFileSync(path.join(__dirname, '..', 'bin', 'indexEnrichedHadithBatch.js'), 'utf8'))

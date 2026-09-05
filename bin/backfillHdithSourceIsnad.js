@@ -53,9 +53,9 @@ async function main() {
 		const columns = await query(`SELECT 1 FROM information_schema.columns
 			WHERE table_schema=DATABASE() AND table_name='hdith_hadith_metadata' AND column_name='source_isnad_html' LIMIT 1`);
 		if (!columns.length)
-			await query('ALTER TABLE hdith_hadith_metadata ADD COLUMN source_isnad_html TEXT NULL AFTER chain_type');
+			await query('ALTER TABLE hdith_hadith_metadata ADD COLUMN source_isnad_html MEDIUMTEXT NULL AFTER chain_type');
 		await query(`CREATE TEMPORARY TABLE hdith_source_isnad_backfill (
-			source_book_slug VARCHAR(16) NOT NULL, source_entry_id INT NOT NULL, source_isnad_html TEXT NOT NULL,
+			source_book_slug VARCHAR(16) NOT NULL, source_entry_id INT NOT NULL, source_isnad_html MEDIUMTEXT NOT NULL,
 			PRIMARY KEY (source_book_slug, source_entry_id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`);
 		for (let offset = 0; offset < rows.length; offset += 250) {

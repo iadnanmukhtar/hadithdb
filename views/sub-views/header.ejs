@@ -486,7 +486,7 @@
   <div class="col-12 d-none d-md-flex site-navbar-search-row" role="search">
     <button type="button" class="command-search-trigger" data-command-search-open data-command-search-direction-container dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>" aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search Hadith or Quran and Tafsir (Command or Control K)">
       <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
-      <span class="command-search-trigger-label" data-command-search-trigger-label data-empty-label="Search Hadith or Quran + Tafsir" dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>"><%= headerSearchTerm || 'Search Hadith or Quran + Tafsir' %></span>
+      <span class="command-search-trigger-label<%= headerSearchIsRtl ? ' command-search-arabic-text' : '' %>" data-command-search-trigger-label data-empty-label="Search Hadith or Quran + Tafsir" dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>"><%= headerSearchTerm || 'Search Hadith or Quran + Tafsir' %></span>
       <kbd class="command-search-shortcut" aria-hidden="true"><span data-command-key-modifier>⌘</span><span>K</span></kbd>
     </button>
   </div>

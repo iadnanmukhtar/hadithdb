@@ -72,6 +72,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.value = null;
     if (req.body.arabizi)
       status.value = Utils.emptyIfNull(Arabic.arabizi2ALALC(status.value)).trim();
+	if (typeof status.value === 'string' && (col === 'text_en' || col === 'footnotes_en' || col === 'title_en' || col === 'intro_en' || col === 'body_en' || col === 'chain_en' || col === 'footnote_en' || col === 'note_en' || col === 'part_en'))
+	  status.value = Utils.normalizeEnglishAIMarker(status.value);
 
     if (type == 'content_translation') {
       var translationResult = await updateHadithContentTranslation(ids[0], col, propParts[2], status.value, userId);
@@ -247,6 +249,21 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         });
         VirtualHadithSnapshot.queueHadith(ids[0]);
       }
+
+    } else if (type === 'hdith_metadata') {
+      await HdithMetadata.ensureEditableColumns();
+      var metadataHadithId = parseInt(ids[0], 10);
+      if (!Number.isInteger(metadataHadithId) || metadataHadithId <= 0)
+        throw createError(400, 'Invalid hadith ID');
+      if (!['narrator', 'narrator_en'].includes(col))
+        throw createError(400, `Invalid hadith metadata field '${col}'`);
+      status.value = Utils.trimToEmpty(status.value);
+      var metadataResult = await global.query(`UPDATE hdith_hadith_metadata SET ${col}=${sql(status.value)} WHERE hadith_id=${metadataHadithId}`);
+      if (!metadataResult.affectedRows)
+        throw createError(404, 'Hadith metadata not found');
+      status.code = 200;
+      status.message = col === 'narrator' ? 'Arabic hadith narrator updated' : 'English hadith narrator updated';
+      await runHadithPostUpdateTasks(metadataHadithId);
 
     } else if (type === 'hdith_grade') {
       await HdithMetadata.ensureEditableColumns();
@@ -428,6 +445,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       if (!commentaryColumns.includes(col))
         throw createError(400, `Invalid commentary field '${col}'`);
       status.value = Tafsir.stripPageMarkers(status.value);
+	  if (col === 'text' && status.value != null)
+		status.value = Utils.normalizeArabicHonorifics(status.value).replace(/[ \t]{2,}/g, ' ').trim();
       var commentaryId = ids[0] === 'new-commentary'
         ? await createLocalCommentaryPassage(ids, col, status.value)
         : parseInt(ids[0], 10);
@@ -471,6 +490,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var result;
       var shouldRunDefaultHeadingTasks = true;
       var tocHeadingId = ids[0];
+	  if (['title', 'intro'].includes(col) && status.value != null)
+		status.value = Utils.normalizeArabicHonorifics(status.value).replace(/[ \t]{2,}/g, ' ').trim();
       if (col === 'title_en' && req.body.quranSectionPath && isQuranUpdateEndpoint(req)) {
         var canonicalQuranSection = await quranSectionFromPath(req.body.quranSectionPath);
         if (canonicalQuranSection) {

@@ -4,16 +4,56 @@ HadithDB (Hadith Unlocked) is a website for reading, searching, and citing the Q
 
 Every record keeps the original Arabic text alongside an English translation where one is available, together with chapter listings and grading information. For ḥadīth, the chain of narrators (isnād) and the report itself (matn) are stored separately so each can be read and searched on its own.
 
+## MCP server
+
+HadithDB exposes a read-only, stateless Streamable HTTP MCP transport at
+`POST /mcp`. After this version is deployed, the public endpoint will be
+`https://hadithunlocked.com/mcp`. It provides Quran and tafsir lookup/search,
+hadith search, and full hadith-detail lookup tools.
+
+The endpoint accepts JSON-RPC 2.0 requests for `initialize`, `ping`,
+`tools/list`, and `tools/call`. It does not create sessions, so clients should
+not expect an `Mcp-Session-Id` response header. Browser preflight requests are
+supported with `OPTIONS /mcp`; other HTTP methods return `405`.
+
+```bash
+curl https://hadithunlocked.com/mcp \
+  -H 'Accept: application/json, text/event-stream' \
+  -H 'Content-Type: application/json' \
+  -H 'MCP-Protocol-Version: 2025-11-25' \
+  --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"example","version":"1.0.0"}}}'
+```
+
+The endpoint has a 64 KiB request limit and a per-IP rate limit. Override the
+defaults with `MCP_RATE_LIMIT_WINDOW_MS` and `MCP_RATE_LIMIT_PER_IP`. Internal
+tool requests use the current request host by default; staging deployments can
+override the backing sites with `HADITHDB_MCP_HADITH_BASE_URL` and
+`HADITHDB_MCP_QURAN_BASE_URL`.
+
 ## What's New
 
 Recent work has improved the reading, browsing, and search experience across the site:
 
 * **Reading the Quran** — move naturally between Passage, Ayat, Mushaf, Practice, and Mudhakkir views while the site keeps your place. You can like, comment on, bookmark, and share a passage, move easily between verses and sections, and use the page-faithful Mushaf with database-backed spaced repetition.
 * **The 15-line Mushaf** — read all 604 pages in a responsive, page-faithful Digital Khatt layout with infinite scrolling, Quranic surah headers, interactive words and ayah markers, page bookmarks, passage-aware coloring, and continuous recitation.
-* **Commentary and translation** — full-page commentary and translation views, tabs for switching between commentary works, hover explanations, dynamic translation selection, and the option to show Arabic and English side by side. You can turn individual works on or off and choose the order they appear in.
+* **Commentary and translation** — full-page commentary and translation views, tabs for switching between works, authored book and surah introductions, hover explanations, dynamic translation selection, and the option to show Arabic and English side by side. You can turn individual works on or off and choose the order they appear in.
 * **Quran audio** — choose a reciter, begin from a selected ayah, continue across page boundaries, repeat a passage or subsection, and control playback speed without losing synchronized ayah highlighting or translation captions.
-* **Search** — searching now covers the Quran and its commentaries as well as ḥadīth, returns Quran matches faster, lets you filter to commentary results, and presents cleaner highlights and a single, unified set of suggestions.
+* **Search** — a site-wide search panel switches between ḥadīth and Quran + Tafsīr while remembering a separate query for each. It supports canonical Quran ordering, Arabic RTL input, virtual collections, book-group shortcuts, per-work filters, and unified suggestions for surahs, ayat, translations, tafsīr, and ḥadīth.
+* **Enriched ḥadīth details** — individual reports can include multiple scholarly grades, report and chain classification, a linked narrator timeline, uncommon-word definitions, sourced explanations, and references to similar or supplementary transmissions.
+* **Outline navigation** — responsive section menus and sticky desktop rails follow the current chapter, passage, subsection, or metadata section and expose nearby headings for faster movement through long works.
+* **Sharing** — responsive Quran and ḥadīth share cards support editable copy, text-size controls, selectable translations, Copy text, Copy image, and the device share sheet.
+* **MCP access** — a read-only Streamable HTTP endpoint exposes Quran, tafsīr, ḥadīth search, and full ḥadīth-detail tools to compatible clients without creating server-side sessions.
 * **My Settings** — separate starting points for ḥadīth and Quran, remembered commentary, translation, and reciter preferences, and bookmarked passages and Mushaf pages saved for later.
+
+## Hadith Features
+
+* Browse source books and thematic virtual collections with bilingual chapter and section navigation, stable `book:number` citations, and JSON, TSV, EPUB, or Markdown output where available.
+* Search the whole ḥadīth library or narrow it to individual books and the **Sahihayn**, **Four Sunan**, **Six Books**, or **Nine Books** groups. Virtual collections remain searchable alongside their source books.
+* Read Arabic isnād and matn separately from the English translation. Report attribution and chain categories identify material such as prophetic, companion, or successor reports and connected or interrupted chains when that metadata is available.
+* On enriched detail pages, compare scholarly grading opinions, follow a vocalized narrator-by-narrator isnād with biographical links and reliability notes, open definitions of uncommon Arabic terms, read Arabic or English sharḥ, and follow similar-report references back into the library.
+* Supplementary source transmissions are linked to their primary local report instead of being presented as unrelated duplicate records.
+* Like, bookmark, comment on, cite, and share reports. The share editor can resize or omit language blocks and copy either formatted text or a generated image on desktop and mobile.
+* Administrators can revise text and headings in place, manage scholarly grades and sourced explanations, link similar reports, enrich metadata from configured sources, and refresh the affected search and rendered caches without changing the public citation.
 
 ## Quran Unlocked
 
@@ -59,27 +99,6 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * The plus and minus controls reveal the next hidden ayah or hide the most recently revealed ayah, one ayah at a time.
 * Each page keeps its own state as additional pages load through infinite scrolling, and Practice mode remains active through page, surah, juz, URL, and previous/next navigation.
 * Audio, reciter and translation controls, the translation marquee, and word-translation tooltips are intentionally omitted so the view remains focused on recall.
-* Optional recitation feedback records a short passage, sends it to a separately configured self-hosted Quran speech-recognition service, and highlights matched, missed, different, and repeated words. It does not change Mudhakkir ratings automatically.
-
-#### Self-hosted recitation feedback
-
-Recitation feedback is disabled unless it is enabled in `~/.hadithdb/settings.json`. It does not use the site's personal OpenAI key. A self-hosted Quran speech-recognition service is included under [`services/quran-asr`](services/quran-asr/README.md); configure HadithDB to call it:
-
-```json
-{
-  "quran": {
-    "recitationFeedback": {
-      "enabled": true,
-      "endpoint": "http://127.0.0.1:8010/transcribe",
-      "model": "tarteel-ai/whisper-base-ar-quran",
-      "token": "replace-with-a-long-random-value"
-    }
-  }
-}
-```
-
-The endpoint receives `multipart/form-data` containing `file`, `language`, `prompt`, `page`, and optional `model` fields. It must return JSON in the form `{ "text": "recognized Arabic words" }`. Keep `enabled` false, or omit the section, to remove the microphone controls and restore the global `microphone=()` browser permission policy.
-
 ### Ayah-level memorization and spaced review
 
 Memorization identity is the surah and ayah reference, not a Mushaf page. Page numbers remain useful for navigation, but every ayah has its own lifecycle, schedule, and append-only review history. Untouched ayat behave as **Later** without creating 6,236 rows for every user.
@@ -198,12 +217,16 @@ npm run quran-memorization-optimize -- --apply
 * Show or hide Arabic and translation text independently on passage pages.
 * Open available translations, bilingual tafsīr, Arabic tafsīr, and English tafsīr for an ayah without leaving the reading workflow.
 * Tafsīr tabs, translation disclosures, footnote popups, hover explanations, and side-by-side Arabic/English layouts support both quick reading and deeper study.
+* Tafsīr and translation works can include collapsible book introductions and surah introductions with direct links and previous/next navigation into the Quran text.
+* The books catalog can be filtered across ḥadīth, Arabic and English tafsīr, and translations; tafsīr entries identify their relative size and can be ordered by author or publication chronology.
+* A work may be exposed in both the translation and tafsīr catalogs when its content serves both roles, while each route keeps the appropriate reading and navigation experience.
 * My Settings controls the preferred translation and reciter, enabled translations, tafsīrs and reciters, and the display order of translation and tafsīr works.
 * Translation choices are synchronized across passage text, the ayah hero, Mushaf controls, share cards, and the audio/selection marquee.
 
 ### Navigation, saving, and sharing
 
 * Infinite Passage and Mushaf readers update their canonical reading context as the user scrolls.
+* A responsive heading outline shows the current Quran passage or subsection and nearby previous and next headings on Passage, Mushaf, tafsīr, and translation pages.
 * The compact sticky footer provides back, Quran home, text controls, and context-aware previous/next navigation; in Mushaf mode those links move by page.
 * A single Mushaf page bookmark is maintained at a time, appears on the Bookmarks page, and determines the default `/quran/page` destination.
 * Quran passages and ayat support bookmarks, likes, comments, reflections, and shareable image cards with selectable translations.
@@ -258,6 +281,7 @@ The site includes the commentary (tafsīr) and translation works listed below. E
 
 | Alias | Name |
 |---|---|
+| `rida` | al-Tafsir al-Manar |
 | `tabari` | Jami al-Bayan an Tawil Ay al-Quran |
 | `samarqandi` | Bahr al-Ulum |
 | `abu-zamanayn` | Tafsir al-Quran al-Aziz |
@@ -300,11 +324,13 @@ The site includes the commentary (tafsīr) and translation works listed below. E
 | `yasir` | al-Yasir fi Tafsir al-Quran |
 | `khadiri` | al-Siraj fi Bayan Gharib al-Quran |
 | `wasit` | al-Tafsir al-Wasit li-al-Quran al-Karim |
+| `dorar-t` | al-Tafsir al-Muharrar |
 
 ### English translations
 
 | Alias | Name |
 |---|---|
+| `en-haleem` | The Qur'an: A New Translation |
 | `en-khattab` | The Clear Quran |
 | `en-saheeh-intl` | The Holy Qur'an (Saheeh International) |
 | `en-hilali-khan` | Interpretation of the Meanings of the Noble Qur'an |
@@ -326,6 +352,7 @@ The site includes the commentary (tafsīr) and translation works listed below. E
 | `en-shakir` | The Qur'an |
 | `en-pickthall` | The Meaning of the Glorious Koran |
 | `en-qarai` | The Qur'an with an English Paraphrase |
+| `yusuf-ali` | The Meaning of the Holy Qur'an |
 
 ### English tafsīr
 
@@ -335,35 +362,46 @@ The site includes the commentary (tafsīr) and translation works listed below. E
 | `en-maarif-al-quran` | Maarif al-Quran |
 | `en-tazkir-al-quran` | Tadhkir al-Quran |
 | `en-easy-tajwid` | Easy Tajwid |
+| `en-wahidi` | Asbab al-Nuzul |
+| `unal` | Tafsir Ünal |
+| `dawat` | Dawat ul Quran |
+| `ishraq` | Tafsir Ishraq al-Ma'ani |
+| `yusuf-ali` | The Meaning of the Holy Qur'an |
 
 ## Books and Collections
 
-The catalog holds 23 books and collections in all: 20 source books and 3 themed collections drawn from them. The source books together hold 203,840 records, and the collections link to another 4,755.
+The catalog currently exposes 29 books and collections: 26 source books (including the Quran) and 3 themed collections drawn from them. The source books together hold 273,324 records, and the collections link to another 4,754.
 
-In the table below, **Records** is the number of entries in each work, **English** is how many of those have an English translation, and **Graded** is how many carry an authenticity grading. The counts were last updated on 2026-04-26.
+In the table below, **Records** is the number of entries in each work, **English** is how many of those have an English translation, and **Graded** is how many carry a primary or enriched authenticity grading. **Graders** summarizes the compact primary-grade field; enriched detail pages may contain additional scholarly opinions. The counts were refreshed from the local catalog on 2026-09-05.
 
 | ID | Alias | Name | Type | Records | English | Graded | Graders |
 |---:|---|---|---|---:|---:|---:|---|
 | 0 | `quran` | The Holy Quran | Source | 6,236 | 6,236 | 0 | N/A |
 | 57 | `ibnrajab50` | Jāmiʿ al-ʿUlūm wa-al-Ḥikam | Virtual | 93 | N/A | N/A | N/A |
-| 61 | `riyad` | Riyāḍ al-Ṣāliḥīn min Kalām Sayyid al-Mursalīn | Virtual | 2,755 | N/A | N/A | N/A |
+| 61 | `riyad` | Riyāḍ al-Ṣāliḥīn min Kalām Sayyid al-Mursalīn | Virtual | 2,754 | N/A | N/A | N/A |
 | 15 | `adab` | al-Adab al-Mufrad | Source | 1,326 | 1,326 | 1,326 | Albānī, Arnaʾūṭ |
+| 32 | `shamail` | al-Shamāʾil al-Muḥammadiyyah | Source | 402 | 402 | 402 | Abū Dāwūd, Albānī |
 | 50 | `lulu-marjan` | al-Luʾluʾ wa-al-Marjān (Muttafaq ʿAlayh) | Virtual | 1,907 | N/A | N/A | N/A |
-| 1 | `bukhari` | Ṣaḥīḥ al-Bukhārī | Source | 7,277 | 7,277 | 7,276 | Bukhārī, Luʿluʿ wa-al-Marjān |
-| 2 | `muslim` | Ṣaḥīḥ Muslim | Source | 7,469 | 7,469 | 7,469 | Muslim |
-| 4 | `abudawud` | Sunan Abū Dāwūd | Source | 5,276 | 5,276 | 4,897 | Albānī, Arnaʾūṭ |
-| 5 | `tirmidhi` | Jamiʿ al-Tirmidhī | Source | 4,052 | 4,052 | 3,908 | Albānī, Arnaʾūṭ, Tirmidhī, ʿAli Zaʾī |
-| 3 | `nasai` | Sunan al-Nasāʾī | Source | 5,769 | 5,769 | 5,460 | Albānī, Arnaʾūṭ, Ḥākim, Nasāʿī, ʿAli Zaʾī |
-| 6 | `ibnmajah` | Sunan Ibn Mājah | Source | 4,345 | 4,345 | 4,184 | Albānī, Arnaʾūṭ, ʿAli Zaʾī |
-| 9 | `darimi` | Sunan al-Dārimī | Source | 3,547 | 3,546 | 3,199 | Dārānī, Ibn Ḥibbān, Ibn Mājah |
-| 8 | `ahmad` | Musnad Aḥmad | Source | 27,735 | 27,668 | 27,734 | Arnaʾūṭ, ʿAli Zaʾī |
+| 1 | `bukhari` | Ṣaḥīḥ al-Bukhārī | Source | 7,277 | 7,277 | 7,277 | Bukhārī, Luʿluʿ wa-al-Marjān |
+| 2 | `muslim` | Ṣaḥīḥ Muslim | Source | 7,469 | 7,469 | 7,468 | Muslim |
+| 4 | `abudawud` | Sunan Abū Dāwūd | Source | 5,276 | 5,276 | 5,275 | Albānī, Arnaʾūṭ |
+| 5 | `tirmidhi` | Jāmiʿ al-Tirmidhī | Source | 4,052 | 4,052 | 4,052 | Aḥmad, Albānī, Arnaʾūṭ, Tirmidhī, ʿAli Zaʾī |
+| 3 | `nasai` | Sunan al-Nasāʾī | Source | 5,769 | 5,769 | 5,769 | Albānī, Arnaʾūṭ, Ḥākim, Nasāʾī, ʿAli Zaʾī |
+| 6 | `ibnmajah` | Sunan Ibn Mājah | Source | 4,345 | 4,345 | 4,345 | Albānī, Arnaʾūṭ, ʿAli Zaʾī |
+| 9 | `darimi` | Sunan al-Dārimī | Source | 3,547 | 3,546 | 3,547 | Dārānī, Ibn Ḥibbān, Ibn Mājah |
+| 8 | `ahmad` | Musnad Aḥmad | Source | 27,735 | 27,672 | 27,732 | Arnaʾūṭ, ʿAli Zaʾī |
 | 7 | `malik` | Muwaṭṭaʾ Mālik | Source | 1,975 | 1,975 | 1,975 | Mālik |
-| 10 | `hakim` | Mustadrak al-Ḥākim | Source | 8,809 | 8,788 | 8,809 | Aḥmad, Dhahabī, Ḥākim, Haythamī, Ibn Ḥibbān |
-| 11 | `ibnhibban` | Ṣaḥīḥ Ibn Ḥibbān | Source | 7,539 | 7,496 | 6,723 | Arnaʾūṭ |
-| 16 | `bazzar` | Musnad al-Bazzār | Source | 9,030 | 22 | 0 | N/A |
-| 17 | `ibnkhuzaymah` | Ṣaḥīḥ Ibn Khuzaymah | Source | 2,414 | 1 | 0 | N/A |
-| 12 | `tabarani` | al-Muʿjam al-Kabīr, Ṭabarānī | Source | 21,373 | 21,264 | 19 | Aḥmad, Albānī, Arnaʾūṭ, Haythamī, Muslim |
-| 13 | `nasai-kubra` | al-Sunan al-Kubrá, Nasāʾī | Source | 11,446 | 11,414 | 4 | Arnaʾūṭ, Nasāʿī, Tirmidhī, ʿAli Zaʾī |
-| 14 | `bayhaqi` | al-Sunan al-Kabīr, Bayhaqī | Source | 19,953 | 19,850 | 5 | Bayhaqī, Bukhārī, Muslim |
-| 82 | `ahmad-zuhd` | al-Zuhd, Aḥmad | Source | 2,360 | 2,355 | 0 | N/A |
-| 1000 | `suyuti` | Jamʿ al-Jawāmiʿ, Suyūṭī | Source | 45,909 | 1,397 | 61 | Albānī, Arnaʾūṭ, Bayhaqī, Bukhārī, Dhahabī, Ḥākim, Haythamī, Ibn al-Jawzī, Ibn Ḥajar, Luʿluʿ wa-al-Marjān, Mudhiri, Muslim, Nawawī, Suyūṭī, Tirmidhī |
+| 10 | `hakim` | Mustadrak al-Ḥākim | Source | 8,809 | 8,789 | 8,809 | Aḥmad, Dhahabī, Ḥākim, Haythamī, Ibn Ḥibbān |
+| 11 | `ibnhibban` | Ṣaḥīḥ Ibn Ḥibbān | Source | 7,539 | 7,499 | 7,538 | Arnaʾūṭ |
+| 17 | `ibnkhuzaymah` | Ṣaḥīḥ Ibn Khuzaymah | Source | 3,282 | 0 | 3,282 | N/A |
+| 16 | `bazzar` | Musnad al-Bazzār | Source | 10,401 | 0 | 10,401 | N/A |
+| 18 | `daraqutni` | Sunan al-Dāraquṭnī | Source | 4,847 | 1 | 4,847 | Arnaʾūṭ |
+| 30 | `abdalrazzaq` | Muṣannaf ʿAbd al-Razzāq | Source | 21,109 | 0 | 21,109 | N/A |
+| 31 | `ibnabishaybah` | Muṣannaf Ibn Abī Shaybah | Source | 39,098 | 0 | 39,098 | N/A |
+| 13 | `nasai-kubra` | al-Sunan al-Kubrá, Nasāʾī | Source | 11,446 | 11,415 | 11,446 | Arnaʾūṭ, Nasāʾī, Tirmidhī, ʿAli Zaʾī |
+| 14 | `bayhaqi` | al-Sunan al-Kabīr, Bayhaqī | Source | 21,742 | 0 | 21,742 | N/A |
+| 12 | `tabarani` | al-Muʿjam al-Kabīr, Ṭabarānī | Source | 21,373 | 21,264 | 21,373 | Aḥmad, Albānī, Arnaʾūṭ, Haythamī, Muslim |
+| 34 | `tabarani-awsat` | al-Muʿjam al-Awsaṭ, Ṭabarānī | Source | 0 | 0 | 0 | N/A |
+| 82 | `ahmad-zuhd` | al-Zuhd, Aḥmad | Source | 2,360 | 2,355 | 2,360 | N/A |
+| 33 | `tabarani-saghir` | al-Muʿjam al-Ṣaghīr, Ṭabarānī | Source | 0 | 0 | 0 | N/A |
+| 1000 | `suyuti` | Jamʿ al-Jawāmiʿ, Suyūṭī | Source | 45,909 | 1,430 | 45,908 | Albānī, Arnaʾūṭ, Bayhaqī, Bukhārī, Dhahabī, Ḥākim, Haythamī, Ibn al-Jawzī, Ibn Ḥajar, Luʿluʿ wa-al-Marjān, Mudhiri, Muslim, Nawawī, Suyūṭī, Tirmidhī |

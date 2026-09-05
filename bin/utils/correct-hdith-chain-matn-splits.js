@@ -13,6 +13,7 @@ const { CACHE_DIR, proposedBodyFootnoteSplit, proposedChainBodySplit } = require
 const Hadith = require('../../lib/Hadith');
 
 const apply = process.argv.includes('--apply');
+const replaceBodyFromSource = process.argv.includes('--replace-body-from-source');
 const batchSizeArgument = process.argv.find(argument => argument.startsWith('--batch-size='));
 const batchSize = Math.max(1, Number(batchSizeArgument?.split('=')[1]) || 100);
 const booksArgument = process.argv.find(argument => argument.startsWith('--books='));
@@ -27,6 +28,7 @@ const query = util.promisify(connection.query).bind(connection);
 	let corrected = 0;
 	let transliterated = 0;
 	let bodyFootnotes = 0;
+	let sourceBodies = 0;
 	let unchanged = 0;
 	let ambiguous = 0;
 	let missingCache = 0;
@@ -62,23 +64,34 @@ const query = util.promisify(connection.query).bind(connection);
 				correctedFootnote = bodyFootnoteSplit.footnote;
 				bodyFootnotes++;
 			}
+			const cachedSourceBody = String(payload.matn || '').trim();
+			if (replaceBodyFromSource && !cachedSourceBody) {
+				ambiguous++;
+				continue;
+			}
+			if (replaceBodyFromSource && correctedBody !== cachedSourceBody) {
+				correctedBody = cachedSourceBody;
+				sourceBodies++;
+			}
 			const chainEn = Hadith.transliteratedNarratorChain(correctedChain).chain_en;
 			const chainEnChanged = chainEn !== String(row.chain_en || '').trim();
-			if (!split && !bodyFootnoteSplit && !chainEnChanged) {
+			const sourceBodyChanged = replaceBodyFromSource && correctedBody !== String(row.body || '').trim();
+			if (!split && !bodyFootnoteSplit && !chainEnChanged && !sourceBodyChanged) {
 				unchanged++;
 				continue;
 			}
 			if (split) corrected++;
 			if (chainEnChanged) transliterated++;
-			pending.push({ id: Number(row.id), chain: correctedChain, body: correctedBody, footnote: correctedFootnote, chainEn });
+			pending.push({ id: Number(row.id), chain: correctedChain, body: correctedBody, footnote: correctedFootnote,
+				chainEn, text: [correctedChain, correctedBody].filter(Boolean).join(' ').trim() });
 			if (pending.length >= batchSize) {
 				if (apply) await applyBatch(pending);
-				console.log(`scanned=${scanned} cached=${cached} corrected=${corrected} body_footnotes=${bodyFootnotes} transliterated=${transliterated} unchanged=${unchanged} missing_cache=${missingCache}`);
+				console.log(`scanned=${scanned} cached=${cached} corrected=${corrected} source_bodies=${sourceBodies} body_footnotes=${bodyFootnotes} transliterated=${transliterated} unchanged=${unchanged} missing_cache=${missingCache}`);
 				pending = [];
 			}
 		}
 		if (pending.length && apply) await applyBatch(pending);
-		console.log(`complete mode=${apply ? 'apply' : 'dry-run'} scanned=${scanned} cached=${cached} corrected=${corrected} body_footnotes=${bodyFootnotes} transliterated=${transliterated} unchanged=${unchanged} ambiguous=${ambiguous} missing_cache=${missingCache}`);
+		console.log(`complete mode=${apply ? 'apply' : 'dry-run'} scanned=${scanned} cached=${cached} corrected=${corrected} source_bodies=${sourceBodies} body_footnotes=${bodyFootnotes} transliterated=${transliterated} unchanged=${unchanged} ambiguous=${ambiguous} missing_cache=${missingCache}`);
 	} finally {
 		connection.end();
 	}
@@ -91,7 +104,8 @@ async function applyBatch(rows) {
 	await query('START TRANSACTION');
 	try {
 		for (const row of rows)
-			await query('UPDATE hadiths SET chain=?, body=?, footnote=?, chain_en=? WHERE id=?', [row.chain, row.body, row.footnote, row.chainEn, row.id]);
+			await query('UPDATE hadiths SET chain=?, body=?, footnote=?, chain_en=?, text=? WHERE id=?',
+				[row.chain, row.body, row.footnote, row.chainEn, row.text, row.id]);
 		await query('COMMIT');
 	} catch (err) {
 		await query('ROLLBACK').catch(() => {});

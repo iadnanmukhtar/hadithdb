@@ -103,6 +103,7 @@ async function countCommentaries(alias, freshConnection) {
 		WHERE bc.source='local'
 			AND bc.hidden=0
 			AND ${commentaryJoin.typePredicate}
+			${options.changedSince ? `AND hc.lastmod>=${global.dbPool.escape(options.changedSince)}` : ''}
 			AND bc.alias=${global.dbPool.escape(alias)}`;
 	const rows = freshConnection ? await freshQuery(sql) : await global.query(sql);
 	return rows[0]?.total || 0;
@@ -207,6 +208,7 @@ async function getCommentariesByIdBatch(alias, limit, afterId, freshConnection) 
 			AND bc.hidden=0
 			AND ${commentaryJoin.typePredicate}
 			AND bc.alias=${global.dbPool.escape(alias)}
+			${options.changedSince ? `AND hc.lastmod>=${global.dbPool.escape(options.changedSince)}` : ''}
 			AND hc.id>${parseInt(afterId, 10)}
 		ORDER BY hc.id
 		${Number.isInteger(limit) ? `LIMIT ${limit}` : ''}`);
@@ -306,7 +308,7 @@ function describeAxiosError(err, prefix) {
 }
 
 function readOptions(argv) {
-	const options = { alias: null, noDelete: false, afterId: 0 };
+	const options = { alias: null, noDelete: false, afterId: 0, changedSince: null };
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
 		if (arg === '--tafsir') {
@@ -319,6 +321,11 @@ function readOptions(argv) {
 			options.afterId = parseInt(argv[++i], 10);
 			if (!Number.isFinite(options.afterId))
 				throw new Error('--after-id requires a numeric hadiths_commentary id.');
+		} else if (arg === '--changed-since') {
+			options.changedSince = argv[++i];
+			if (!options.changedSince || Number.isNaN(Date.parse(options.changedSince)))
+				throw new Error('--changed-since requires an ISO date/time.');
+			options.noDelete = true;
 		} else if (arg === '--help' || arg === '-h') {
 			console.log(usage());
 			process.exit(0);
@@ -338,6 +345,7 @@ function usage() {
 		'  --tafsir <alias>  Reindex only one local commentary alias',
 		'  --no-delete       Do not delete existing docs before indexing the alias',
 		'  --after-id <id>   With --tafsir, resume rows after a hadiths_commentary id',
+		'  --changed-since <date>  Reindex only passages modified since an ISO date/time',
 		'  --help            Show this help'
 	].join('\n');
 }
