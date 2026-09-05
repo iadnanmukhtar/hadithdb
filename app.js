@@ -39,6 +39,7 @@ const REQUEST_BODY_LIMIT = '10mb';
 const MAX_REQUEST_URL_LENGTH = 4096;
 const FRIENDLY_ERROR_REF_MAX_LENGTH = 80;
 const STARTUP_RETRY_AFTER_SECONDS = 30;
+const OPENAI_APPS_CHALLENGE_TOKEN = 'UOcAjjalXTvuXq2_7D-6JFSRhf64gXLHUn_bBjxQ5mk';
 const BLOCKED_HTTP_METHODS = new Set(['TRACE', 'TRACK']);
 const PUBLIC_DIRECTORY = path.join(__dirname, 'public');
 const STATIC_DIRECTORY = path.join(PUBLIC_DIRECTORY, 'static');
@@ -394,6 +395,10 @@ const startupPromise = (async () => {
   app.use(accessLogMiddleware);
   app.use(sameSiteSecurityHeaders);
   app.use(rejectUnsafeRequestShape);
+  app.get('/.well-known/openai-apps-challenge', function openAiAppsChallenge(req, res) {
+    res.setHeader('Cache-Control', 'no-store');
+    res.type('text/plain').send(OPENAI_APPS_CHALLENGE_TOKEN);
+  });
   // Keep presentation assets available while application data is initializing.
   app.use('/static', express.static(STATIC_DIRECTORY, PUBLIC_STATIC_OPTIONS));
   app.use(function rejectRequestsUntilStartupIsReady(req, res, next) {
