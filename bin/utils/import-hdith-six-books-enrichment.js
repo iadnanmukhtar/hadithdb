@@ -538,8 +538,13 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 		const existing = await query(connection, 'SELECT source_checksum, source_reference, source_edition_reference, chain_type, narrator, narrator_en, source_isnad_html, gharib_json FROM hdith_hadith_metadata WHERE hadith_id=? LIMIT 1', [hadithId]);
 		if (existing[0]?.source_checksum === record.rawChecksum) {
 			const expectedCollectionGrades = ignoresExternalGrades(config) ? 0 : (record.collectionGrades || []).length;
-			const storedCollectionGrades = expectedCollectionGrades ? Number((await query(connection,
-				"SELECT COUNT(*) AS count FROM hdith_hadith_grades WHERE hadith_id=? AND source_slug LIKE 'collection-%'", [hadithId]))[0].count) : 0;
+			const stored = (await query(connection, `SELECT
+				(SELECT COUNT(*) FROM hdith_hadith_narrators WHERE hadith_id=?) narrators,
+				(SELECT COUNT(*) FROM hdith_hadith_subjects WHERE hadith_id=?) subjects,
+				(SELECT COUNT(*) FROM hdith_hadith_links WHERE hadith_id=?) links,
+				(SELECT COUNT(*) FROM hdith_hadith_sharh WHERE hadith_id=?) sharh,
+				(SELECT COUNT(*) FROM hdith_hadith_grades WHERE hadith_id=? AND source_slug LIKE 'collection-%') collection_grades`,
+				[hadithId, hadithId, hadithId, hadithId, hadithId]))[0];
 			const gharibJson = record.gharib.length ? JSON.stringify(record.gharib) : null;
 			if (existing[0]?.source_reference !== record.num || existing[0]?.source_edition_reference !== record.editionReference
 				|| existing[0]?.chain_type !== record.chainType
@@ -548,7 +553,12 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 				|| (gharibJson && !existing[0]?.gharib_json))
 				await query(connection, 'UPDATE hdith_hadith_metadata SET source_reference=?, source_edition_reference=?, chain_type=?, narrator=?, narrator_en=?, source_isnad_html=?, gharib_json=? WHERE hadith_id=?',
 					[record.num, record.editionReference, record.chainType, record.narrator, record.narratorEn, record.sourceIsnadHtml, gharibJson, hadithId]);
-			if (storedCollectionGrades >= expectedCollectionGrades) {
+			const dependentRowsComplete = Number(stored.narrators) >= (record.narrators || []).length
+				&& Number(stored.subjects) >= (record.subjects || []).length
+				&& Number(stored.links) >= (record.links || []).length
+				&& (!(record.sharhPreview || []).length || Number(stored.sharh) > 0)
+				&& Number(stored.collection_grades) >= expectedCollectionGrades;
+			if (dependentRowsComplete) {
 				await upsertSourceReferenceMap(connection, config, record, hadithId, localReference, orderedMatch);
 				await backfillLegacyGradeFromOpinions(connection, hadithId);
 				await promoteColoredGradeForMissingLegacy(connection, hadithId);

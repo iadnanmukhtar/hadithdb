@@ -15,6 +15,7 @@ describe('Arabic hadith and sharh honorific normalization', () => {
 	test.each([
 		['صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ', 'ﷺ'],
 		['صَلَّى ٱللَّهُ عَلَيْهِ وَسَلَّمَ', 'ﷺ'],
+		['صَلَّى اللهُ عَلَيْهِ وَآلِهِ وَسَلَّمَ', 'ﷺ'],
 		['صـلى الله عليه وسلم', 'ﷺ']
 	])('normalizes salawat variant %s', (input, expected) => {
 		expect(Utils.normalizeArabicHonorifics(input).trim()).toBe(expected);
