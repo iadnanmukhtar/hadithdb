@@ -258,12 +258,52 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       if (!['narrator', 'narrator_en'].includes(col))
         throw createError(400, `Invalid hadith metadata field '${col}'`);
       status.value = Utils.trimToEmpty(status.value);
-      var metadataResult = await global.query(`UPDATE hdith_hadith_metadata SET ${col}=${sql(status.value)} WHERE hadith_id=${metadataHadithId}`);
-      if (!metadataResult.affectedRows)
-        throw createError(404, 'Hadith metadata not found');
+      if (!await HdithMetadata.ensureLocalMetadataRow(metadataHadithId))
+        throw createError(404, 'Hadith not found');
+      await global.query(`UPDATE hdith_hadith_metadata SET ${col}=${sql(status.value)} WHERE hadith_id=${metadataHadithId}`);
       status.code = 200;
       status.message = col === 'narrator' ? 'Arabic hadith narrator updated' : 'English hadith narrator updated';
       await runHadithPostUpdateTasks(metadataHadithId);
+
+    } else if (type === 'hdith_narrator') {
+      await HdithMetadata.ensureEditableColumns();
+      var narratorTargetId = parseInt(ids[0], 10);
+      if (!Number.isInteger(narratorTargetId) || narratorTargetId <= 0)
+        throw createError(400, col === 'add' ? 'Invalid hadith ID' : 'Invalid narrator ID');
+      if (col === 'add') {
+        var narratorName = Utils.trimToEmpty(status.value);
+        if (!narratorName)
+          throw createError(400, 'Narrator name is required');
+        if (!await HdithMetadata.ensureLocalMetadataRow(narratorTargetId))
+          throw createError(404, 'Hadith not found');
+        var narratorOrdinal = Number((await global.query(`SELECT COALESCE(MAX(ordinal), 0) + 1 AS ordinal FROM hdith_hadith_narrators WHERE hadith_id=${narratorTargetId}`))[0].ordinal);
+        if (narratorOrdinal > 1)
+          await global.query(`UPDATE hdith_hadith_narrators SET formula=COALESCE(NULLIF(formula, ''), 'عن') WHERE hadith_id=${narratorTargetId} AND ordinal=${narratorOrdinal - 1}`);
+        var narratorSourceSlug = `admin-${crypto.randomBytes(8).toString('hex')}`;
+        var insertedNarrator = await global.query(`INSERT INTO hdith_narrators
+          (source_slug, name, name_tashkil, name_ala_lc, fullname, reliability, generation_name, death_text, source_url)
+          VALUES (${MySQL.escape(narratorSourceSlug)}, ${sql(narratorName)}, ${sql(narratorName)}, NULL, NULL, NULL, NULL, NULL, '')`);
+        await global.query(`INSERT INTO hdith_hadith_narrators (hadith_id, narrator_id, ordinal, formula, flags_json)
+          VALUES (${narratorTargetId}, ${Number(insertedNarrator.insertId)}, ${narratorOrdinal}, NULL, '[]')`);
+        status.createdNarratorId = Number(insertedNarrator.insertId);
+        status.code = 200;
+        status.message = 'Narrator added';
+        await runHadithPostUpdateTasks(narratorTargetId);
+      } else if (col === 'delete') {
+        var narratorRow = (await global.query(`SELECT hn.hadith_id, n.source_slug FROM hdith_hadith_narrators hn
+          JOIN hdith_narrators n ON n.id=hn.narrator_id WHERE n.id=${narratorTargetId} LIMIT 1`))[0];
+        if (!narratorRow)
+          throw createError(404, 'Narrator not found');
+        if (!String(narratorRow.source_slug || '').startsWith('admin-'))
+          throw createError(400, 'Only manually added narrators can be deleted');
+        await global.query(`DELETE FROM hdith_hadith_narrators WHERE hadith_id=${Number(narratorRow.hadith_id)} AND narrator_id=${narratorTargetId}`);
+        await global.query(`DELETE FROM hdith_narrators WHERE id=${narratorTargetId}`);
+        status.code = 200;
+        status.message = 'Narrator deleted';
+        await runHadithPostUpdateTasks(narratorRow.hadith_id);
+      } else {
+        throw createError(400, `Invalid narrator operation '${col}'`);
+      }
 
     } else if (type === 'hdith_grade') {
       await HdithMetadata.ensureEditableColumns();

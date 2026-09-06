@@ -191,11 +191,18 @@ describe('hdith.com six-book enrichment importer', () => {
 			sourceId: 51000, editionReference: '11', editionReferenceRepeated: false,
 			comparisonText: 'الحديث الثاني'
 		})).toBeNull();
+		const authoritativeMapping = createOrderedTextMatcher(rows, 1, {
+			existingMatches: new Map([[51000, 0]]), authoritativeExistingMatches: true
+		});
+		expect(authoritativeMapping.match({
+			sourceId: 51000, editionReference: '11', editionReferenceRepeated: false,
+			comparisonText: 'نص مختلف'
+		})).toEqual(expect.objectContaining({ id: 10, num: '10', index: 0, score: 1 }));
 	});
 
-	test('orders Ibn Khuzaymah by numeric reference because its local ordinals interleave numbering blocks', () => {
+	test('uses source ordinal order for collections loaded directly from hdith.com', () => {
 		expect(localHadithOrderClause({ sourceSlug: 'b-11' })).toBe('CAST(num AS UNSIGNED), num, id');
-		expect(localHadithOrderClause({ sourceSlug: 'b-19' })).toBe('CAST(num AS UNSIGNED), num, id');
+		expect(localHadithOrderClause({ sourceSlug: 'b-19' })).toBe('ordinal, id');
 		expect(localHadithOrderClause({ sourceSlug: 'b-18' })).toBe('ordinal, id');
 	});
 

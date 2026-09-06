@@ -112,7 +112,8 @@
 	const narratorEditProp = lang === 'ar' ? 'hdith_metadata.narrator' : 'hdith_metadata.narrator_en';
 	const narratorEditPlaceholder = lang === 'ar' ? 'راوي الحديث' : 'Hadith narrator';
 	const narratorInlineEditable = site.editMode && (lang === 'ar' || lang === 'en');
-	const displayedChain = showPrimaryNarratorOnly ? primaryNarratorText : langData.chain;
+	const showPrimaryNarrator = showPrimaryNarratorOnly && !!primaryNarratorText;
+	const displayedChain = showPrimaryNarrator ? primaryNarratorText : langData.chain;
 	const itemLinkTitleSource = langData.title || langData.body || displayedChain;
 	const hadithAttribution = hadithClassification.attribution || null;
 	const hadithChainCategories = Array.isArray(hadithClassification.chainCategories) ? hadithClassification.chainCategories : [];
@@ -216,11 +217,14 @@
 
 		<%# Item Number + Chain %>
 		<b><a href="<%= itemHref %>" title="<%= linkTitle(itemLinkTitleSource) %>"><%= `${itemBookShortName}:${i.actual ? (langActual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a></b><% if (displayedChain || site.editMode) { %> –
-		<% if (showPrimaryNarratorOnly) { %>
+		<% if (showPrimaryNarrator) { %>
 			<span class="<%= `${narratorInlineEditable ? '_e ' : ''}chain ${_p} l3`.trim() %>" title="Ḥadīth Narrator"<%- narratorInlineEditable ? ` ${editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder })}` : '' %>><%= displayedChain %></span>
 		<% } else { %>
 			<span class="<%= editClass(`chain ${_p} l3`) %>" title="Ḥadīth Chain"<%- site.editMode ? ` ${editAttrs('chain', { arabizi: isContentTranslationLang ? 'false' : 'true', placeholder: editPlaceholder('chain') })}` : '' %><% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="chain"<% } %>><%- displayedChain || '' %></span>
 		<% } %>
+		<% } %>
+		<% if (narratorInlineEditable && showPrimaryNarratorOnly && !primaryNarratorText) { %>
+			<div class="hadith-narrator-editor <%= _p %> l3"><span class="text-muted"><%= lang === 'ar' ? 'الراوي:' : 'Narrator:' %></span> <span class="_e" title="Ḥadīth Narrator" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>></span></div>
 		<% } %>
 		<% if (narratorInlineEditable && !isQuranItem && i.single === true) { %>
 			<div class="hadith-narrator-editor <%= _p %> l3"><span class="text-muted"><%= lang === 'ar' ? 'الراوي:' : 'Narrator:' %></span> <span class="_e" title="Ḥadīth Narrator" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>><%= primaryNarratorText %></span></div>

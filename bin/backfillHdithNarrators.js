@@ -84,7 +84,7 @@ async function main() {
 			SET m.narrator=b.narrator, m.narrator_en=b.narrator_en
 			WHERE NOT (m.narrator <=> b.narrator) OR NOT (m.narrator_en <=> b.narrator_en)`);
 
-		const fallbacks = await query(`SELECT m.hadith_id, m.source_isnad_html, n.source_slug, n.source_url, n.name
+		const fallbacks = await query(`SELECT m.hadith_id, m.source_isnad_html, hn.ordinal, n.source_slug, n.source_url, n.name, n.name_tashkil
 			FROM hdith_hadith_metadata m
 			JOIN hdith_hadith_narrators hn ON hn.hadith_id=m.hadith_id AND hn.ordinal=1
 			JOIN hdith_narrators n ON n.id=hn.narrator_id
@@ -92,15 +92,16 @@ async function main() {
 		await query(`CREATE TEMPORARY TABLE hdith_narrator_fallback_values (
 			hadith_id INT NOT NULL PRIMARY KEY, narrator TEXT NOT NULL, narrator_en TEXT NOT NULL
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`);
-		for (let offset = 0; offset < fallbacks.length; offset += 500) {
-			const batch = fallbacks.slice(offset, offset + 500).map(row => {
-				const narrator = vocalizedNarratorName(row, sourceNarratorNames(row.source_isnad_html));
-				return [narrator, Arabic.toALALCName(narrator), row.hadith_id];
-			});
+		const fallbackValues = fallbacks.map(row => {
+			const narrator = vocalizedNarratorName(row, sourceNarratorNames(row.source_isnad_html));
+			return [narrator, Arabic.toALALCName(narrator), row.hadith_id];
+		});
+		for (let offset = 0; offset < fallbackValues.length; offset += 500) {
+			const batch = fallbackValues.slice(offset, offset + 500);
 			if (batch.length)
 				await query(`INSERT INTO hdith_narrator_fallback_values (narrator, narrator_en, hadith_id) VALUES ${batch.map(() => '(?, ?, ?)').join(',')}`, batch.flat());
 		}
-		const fallbackResult = fallbacks.length ? await query(`UPDATE hdith_hadith_metadata m JOIN hdith_narrator_fallback_values f ON f.hadith_id=m.hadith_id
+		const fallbackResult = fallbackValues.length ? await query(`UPDATE hdith_hadith_metadata m JOIN hdith_narrator_fallback_values f ON f.hadith_id=m.hadith_id
 			SET m.narrator=f.narrator, m.narrator_en=f.narrator_en`) : { affectedRows: 0 };
 		console.log(`cached=${rows.length} cache_files_updated=${rows.cacheFilesUpdated} database_cache_updated=${cacheResult.affectedRows} relation_fallback_updated=${fallbackResult.affectedRows}`);
 	} finally {

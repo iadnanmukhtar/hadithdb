@@ -330,6 +330,14 @@
 	      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
 	        let dorarSharhUrl = '';
 	        let customSharhTitle = '';
+	        let customNarratorName = '';
+	        if (propStr === 'hdith_narrator.add') {
+	          customNarratorName = (window.prompt('Enter the Arabic narrator name:') || '').trim();
+	          if (!customNarratorName) {
+	            $(this).removeAttr('editing');
+	            return;
+	          }
+	        }
 	        if (propStr === 'hdith_sharh.add') {
 	          customSharhTitle = (window.prompt('Enter the Arabic Sharh book title. You may reuse an existing title:', 'شرح مخصص') || '').trim();
 	          if (!customSharhTitle) {
@@ -344,7 +352,7 @@
 	            return;
 	          }
 	        }
-	        if ((propStr === 'hdith_grade.delete' || propStr === 'hdith_sharh.delete') && !window.confirm(propStr === 'hdith_sharh.delete' ? 'Delete this custom explanation?' : 'Delete this scholarly grade?')) {
+	        if ((propStr === 'hdith_grade.delete' || propStr === 'hdith_sharh.delete' || propStr === 'hdith_narrator.delete') && !window.confirm(propStr === 'hdith_sharh.delete' ? 'Delete this custom explanation?' : (propStr === 'hdith_narrator.delete' ? 'Delete this manually added narrator?' : 'Delete this scholarly grade?'))) {
 	          $(this).removeAttr('editing');
 	          return;
 	        }
@@ -372,6 +380,8 @@
 	          value = dorarSharhUrl;
 	        else if (customSharhTitle)
 	          value = customSharhTitle;
+	        else if (customNarratorName)
+	          value = customNarratorName;
 	        if (isMarkdownField)
 	          setMarkdownPreview(this, value);
 	        if (hasLoadingButton) {
@@ -434,6 +444,11 @@
 	            }
 	            if (propStr === 'hdith_grade.delete') {
 	              $el.closest('.hadith-grade-opinion').remove();
+	              return;
+	            }
+	            if (propStr === 'hdith_narrator.add' || propStr === 'hdith_narrator.delete') {
+	              rememberUpdateSuccessToast(propStr === 'hdith_narrator.add' ? 'Narrator added' : 'Narrator deleted', 'The chain of narrators has been updated.');
+	              window.location.reload();
 	              return;
 	            }
 	            if (propStr === 'hdith_sharh.add') {

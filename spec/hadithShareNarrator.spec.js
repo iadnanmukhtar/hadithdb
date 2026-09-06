@@ -31,7 +31,9 @@ describe('Hadith share narrator', () => {
 		expect(template).toContain('const compactUnmatchedSearchBody = !!searchResult && !isQuranItem && !hasReturnedSearchText;');
 		expect(template).toContain("compactUnmatchedSearchBody ? ' search-result-unmatched-body' : ''");
 		expect(template).toContain('(langData.footnote && !compactUnmatchedSearchBody) || site.editMode');
-		expect(template).toContain('const displayedChain = showPrimaryNarratorOnly ? primaryNarratorText : langData.chain;');
+		expect(template).toContain('const showPrimaryNarrator = showPrimaryNarratorOnly && !!primaryNarratorText;');
+		expect(template).toContain('const displayedChain = showPrimaryNarrator ? primaryNarratorText : langData.chain;');
+		expect(template).toContain('showPrimaryNarratorOnly && !primaryNarratorText');
 		const styles = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
 		expect(styles).toMatch(/\.search-results \.hadith-body-content\.search-result-unmatched-body \{[\s\S]*?-webkit-line-clamp: 4;[\s\S]*?line-clamp: 4;/);
 		expect(template).toContain('title="Ḥadīth Narrator"');

@@ -2,9 +2,16 @@
 
 const fs = require('fs');
 const path = require('path');
-const { classificationFromRow, legacyGradeCategoryForId, legacyGradeColorForId, narratorDisplayFullname, preferredColoredGradeOpinion, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, uniqueGradeGraderPairs, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
+const { classificationFromRow, legacyGradeCategoryForId, legacyGradeColorForId, localPrimaryNarrator, narratorDisplayFullname, preferredColoredGradeOpinion, resolvedSimilarLinks, sourceNarratorNames, translatedSourceGrade, translatedSourceGrader, uniqueGradeGraderPairs, vocalizedNarratorName, withPrimaryGrade } = require('../lib/HdithMetadata');
 
 describe('hdith.com metadata display', () => {
+	test('derives a missing primary narrator from a locally split continuation chain', () => {
+		expect(localPrimaryNarrator('وَقَالَ عُقَيْلٌ عَنِ الزُّهْرِيِّ قَالَ عُرْوَةُ فَأَخْبَرَتْنِي عَائِشَةُ'))
+			.toEqual({ name: 'عَائِشَةُ', name_en: 'ʿĀʾishah' });
+		expect(localPrimaryNarrator('حَدَّثَنِي يَحْيَى عَنْ مَالِكٍ عَنِ ابْنِ شِهَابٍ قَالَ بَلَغَنِي')).toBeNull();
+		expect(localPrimaryNarrator('عَنِ ابْنِ عَبَّاسٍ قَالَ لَمَّا نَزَلَتْ تَحْرِيمُ الْخَمْرِ')).toBeNull();
+	});
+
 	test('loads enrichment only for the single hadith detail route', () => {
 		const route = fs.readFileSync(path.join(__dirname, '..', 'routes', 'search.js'), 'utf8');
 		expect(route).toContain('HdithMetadata.forHadith');
@@ -173,7 +180,8 @@ describe('hdith.com metadata display', () => {
 	test('keeps the regular chain in the main hadith and moves the enriched chain above the timeline', () => {
 		const itemTemplate = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		const metadataTemplate = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
-		expect(itemTemplate).toContain('const displayedChain = showPrimaryNarratorOnly ? primaryNarratorText : langData.chain;');
+		expect(itemTemplate).toContain('const showPrimaryNarrator = showPrimaryNarratorOnly && !!primaryNarratorText;');
+		expect(itemTemplate).toContain('const displayedChain = showPrimaryNarrator ? primaryNarratorText : langData.chain;');
 		expect(itemTemplate).toContain('!!searchResult && !hasReturnedSearchChain && !hasReturnedSearchFootnote');
 		expect(itemTemplate).toContain('title="Ḥadīth Chain"');
 		expect(itemTemplate).not.toContain('linkedIsnadHtml');

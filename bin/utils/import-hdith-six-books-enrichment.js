@@ -576,7 +576,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 		await query(connection, `INSERT INTO hdith_hadith_metadata
 			(hadith_id, source_book_slug, source_entry_id, source_reference, source_edition_reference, attribution, chain_type, narrator, narrator_en, source_isnad_html, gharib_json, takhrij_json, shawahid_json, source_checksum)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-			ON DUPLICATE KEY UPDATE source_entry_id=VALUES(source_entry_id), source_reference=VALUES(source_reference), source_edition_reference=VALUES(source_edition_reference), attribution=VALUES(attribution),
+			ON DUPLICATE KEY UPDATE source_book_slug=VALUES(source_book_slug), source_entry_id=VALUES(source_entry_id), source_reference=VALUES(source_reference), source_edition_reference=VALUES(source_edition_reference), attribution=VALUES(attribution),
 				chain_type=VALUES(chain_type), narrator=VALUES(narrator), narrator_en=VALUES(narrator_en), source_isnad_html=VALUES(source_isnad_html), gharib_json=VALUES(gharib_json), takhrij_json=VALUES(takhrij_json), shawahid_json=VALUES(shawahid_json), source_checksum=VALUES(source_checksum), lastmod=NOW()`,
 			[hadithId, config.sourceSlug, record.sourceId, record.num, record.editionReference, record.attribution, record.chainType,
 			 record.narrator, record.narratorEn, record.sourceIsnadHtml,
@@ -626,7 +626,7 @@ async function flushEnrichedHadithIndex() {
 }
 
 async function applyRecordWithRetry(page, config, record, orderedMatch, runtimeOptions = {}) {
-	const maxAttempts = 8;
+	const maxAttempts = 12;
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		try {
 			return await applyRecord(page, config, record, orderedMatch, runtimeOptions);
@@ -634,7 +634,11 @@ async function applyRecordWithRetry(page, config, record, orderedMatch, runtimeO
 			const retryable = ['ER_LOCK_DEADLOCK', 'ER_LOCK_WAIT_TIMEOUT', 'ER_SERVER_SHUTDOWN',
 				'PROTOCOL_CONNECTION_LOST', 'ECONNREFUSED', 'ECONNRESET'].includes(err?.code);
 			if (!retryable || attempt === maxAttempts) throw err;
-			const retryDelay = Math.max(250, options.delay, Math.min(10000, attempt * 1000));
+			// Concurrent enrichment lanes can deadlock on shared narrator, subject,
+			// and sharh-source rows. A small jitter keeps their retries from staying
+			// synchronized and colliding again on every deterministic backoff.
+			const retryJitter = Math.floor(Math.random() * 2001);
+			const retryDelay = Math.max(250, options.delay, Math.min(10000, attempt * 1000)) + retryJitter;
 			console.warn(`${config.sourceSlug}/h/${record.sourceId}: ${err.code}; retrying apply (${attempt + 1}/${maxAttempts}) after ${retryDelay} ms.`);
 			if (!['ER_LOCK_DEADLOCK', 'ER_LOCK_WAIT_TIMEOUT'].includes(err?.code)) await resetDatabaseConnection();
 			await wait(retryDelay);
@@ -677,17 +681,17 @@ async function createBookMatcher(config) {
 	}
 	return createOrderedTextMatcher(rows, cursor, config.sourceSlug === 'b-11'
 		? { existingMatches: storedMappings, preferEarliestOrderedMatch: true, windowSize: 180 }
+		: (config.sourceSlug === 'b-19'
+			? { existingMatches: storedMappings, authoritativeExistingMatches: true }
 		: (config.sourceSlug === 'b-24'
 			? { existingMatches: storedMappings, minimumScore: 0.80, windowSize: 180 }
-			: { existingMatches: storedMappings }));
+			: { existingMatches: storedMappings })));
 }
 
 function localHadithOrderClause(config) {
-	// Ibn Khuzaymah and Bazzar have imported local ordinals that interleave
-	// numbering blocks. hdith.com follows printed-reference order, so an ordinal
-	// cursor can skip a valid earlier-numbered candidate and jump to a later
-	// similar transmission. Keep these collections in numeric reference order.
-	return config?.sourceSlug === 'b-11' || config?.sourceSlug === 'b-19'
+	// Ibn Khuzaymah's local ordinals interleave numbering blocks. Bazzar is loaded
+	// directly from hdith.com, so its ordinal is the authoritative source order.
+	return config?.sourceSlug === 'b-11'
 		? 'CAST(num AS UNSIGNED), num, id'
 		: 'ordinal, id';
 }
@@ -722,6 +726,16 @@ function createOrderedTextMatcher(rows, initialCursor = 0, matcherOptions = {}) 
 		match(record) {
 			const existingIndex = matcherOptions.existingMatches?.get(Number(record.sourceId));
 			if (Number.isInteger(existingIndex)) {
+				if (matcherOptions.authoritativeExistingMatches) {
+					// A collection loaded directly from hdith.com already has an exact
+					// source-entry identity. Its printed references can be non-monotonic,
+					// so never reject that identity merely because an ordered cursor has
+					// advanced farther in the locally sorted rows.
+					const existingMatch = { ...rows[existingIndex], index: existingIndex, score: 1 };
+					cursor = Math.max(cursor, existingIndex + 1);
+					lastMatched = existingMatch;
+					return existingMatch;
+				}
 				// Preserve a stored source mapping during replay. If it is behind the
 				// ordered cursor, it has already been passed and must not be fuzzily
 				// rematched to another hadith with the same unique source entry.
