@@ -185,6 +185,7 @@
                     tafsir.name_en,
                     tafsir.shortName_en,
                     tafsir.author_en,
+					tafsir.name,
                     tafsir.title,
                     tafsir.shortName,
                     tafsir.author,
@@ -311,7 +312,7 @@
       return;
     filter.focus();
     var normalize = function (value) {
-      return (value || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
+      return window.normalizeContentFilterText(value);
     };
     var cards = Array.from(document.querySelectorAll('.tafsir-book-card'));
     var tabPanes = Array.from(document.querySelectorAll('.tafsir-book-section-body'));

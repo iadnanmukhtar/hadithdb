@@ -34,7 +34,8 @@ describe('Hadith metadata editing', () => {
 		expect(template).toContain('data-hdith-grade-sort-list');
 		expect(template).toContain('hadith-grade-drag-handle');
 		expect(template).toContain('class="_e hadith-scholarly-grade-value"');
-		expect(template).toContain('class="_e hadith-scholarly-grader-value"');
+		expect(template).toContain('class="_e hadith-scholarly-grader-value hadith-bilingual-pair-input"');
+		expect(template).not.toContain('hadith-scholarly-grade-value hadith-bilingual-pair-input');
 		expect(template).not.toContain('data-prop="hdith_grade.grade_en" value=');
 		expect(template).not.toContain('bi-box-arrow-up-right');
 	});
@@ -52,6 +53,8 @@ describe('Hadith metadata editing', () => {
 		expect(item).toContain('i.single === true');
 		expect(item).toContain('hadith-narrator-editor');
 		expect(item).toContain('hadith-primary-narrator-input');
+		expect(read('public/static/css/style.css')).toContain('.h .hadith-primary-narrator-input {');
+		expect(read('public/static/css/style.css')).toContain('font-size: inherit !important;');
 		expect(read('views/sub-views/scripts.ejs')).toContain("editHadithApiPath('/autocomplete/primary-narrators')");
 	});
 
@@ -66,11 +69,15 @@ describe('Hadith metadata editing', () => {
 		expect(item).toContain('data-prop="hdith_metadata.attribution_id"');
 		expect(item).toContain('data-prop="hdith_metadata.chain_type"');
 		expect(item).toContain('hadithChainCategorySelections');
+		expect(item).toContain('bilingualLabel(grade.grade_en, grade.grade)');
+		expect(item).toContain('bilingualLabel(grader.shortName_en, grader.shortName)');
+		expect(item).not.toContain('data-prop="hadith.add"');
 	});
 
 	test('renders and manages custom Sharh in Arabic and English columns', () => {
 		const route = read('routes/update.js');
 		const template = read('views/sub-views/hadith_metadata.ejs');
+		const css = read('public/static/css/style.css');
 		expect(route).toContain("type === 'hdith_sharh'");
 		expect(route).toContain("col === 'add'");
 		expect(route).toContain("col === 'delete'");
@@ -82,8 +89,14 @@ describe('Hadith metadata editing', () => {
 		expect(template).toContain('data-prop="hdith_sharh.text"');
 		expect(template).toContain('data-prop="hdith_sharh.title_en"');
 		expect(template).toContain('data-prop="hdith_sharh.title"');
-		expect(template).toContain('data-placeholder="English book title"');
-		expect(template).toContain('data-placeholder="عنوان كتاب الشرح"');
+		expect(template).toContain('placeholder="English book title"');
+		expect(template).toContain('placeholder="عنوان كتاب الشرح"');
+		expect(template).toContain('hadith-sharh-title-input');
+		expect(template).toContain('data-hdith-sharh-sort-list');
+		expect(template).toContain('hadith-sharh-drag-handle');
+		expect(css).toContain('.hadith-admin-action,');
+		expect(css).toContain('color: var(--bs-secondary-color) !important;');
+		expect(css).toContain('.hadith-admin-action .bi,');
 		expect(template).toContain('data-placeholder="English explanation"');
 		expect(template).toContain('data-placeholder="نص الشرح"');
 		expect(template).not.toContain("entry.title_en || '…'");
@@ -110,7 +123,7 @@ describe('Hadith metadata editing', () => {
 	test('preserves translations and admin grades across enrichment imports', () => {
 		const importer = read('bin/utils/import-hdith-six-books-enrichment.js');
 		expect(importer).toContain("COALESCE(source_driver, '')<>'admin'");
-		expect(importer).toContain('SELECT source_entry_id, text_en, title, title_en FROM hdith_hadith_sharh');
+		expect(importer).toContain('SELECT source_entry_id, ordinal, text_en, title, title_en FROM hdith_hadith_sharh');
 		expect(importer).toContain('ss.source_book_id>0');
 		expect(importer).toContain('existingEntries.get(Number(item.sourceEntryId))?.text_en || null');
 		expect(importer).toContain('grader_en VARCHAR(255) NULL');
@@ -122,6 +135,7 @@ describe('Hadith metadata editing', () => {
 	});
 
 	test('updates translated fields inline and removes deleted rows', () => {
+		const route = read('routes/update.js');
 		const scripts = read('views/sub-views/scripts.ejs');
 		const template = read('views/sub-views/hadith_metadata.ejs');
 		const css = read('public/static/css/style.css');
@@ -132,6 +146,24 @@ describe('Hadith metadata editing', () => {
 		expect(scripts).toContain('Enter the Arabic Sharh book title. You may reuse an existing title:');
 		expect(scripts).toContain("propStr === 'hdith_sharh.delete'");
 		expect(scripts).toContain("propStr === 'hdith_sharh.import_dorar'");
+		expect(scripts).toContain("editHadithApiPath('/autocomplete/sharh-titles')");
+		expect(scripts).toContain("editHadithApiPath('/autocomplete/bilingual-pairs')");
+		expect(scripts).toContain("prop: 'hdith_pair.save'");
+		expect(template).toContain('data-hadith-pair-manager-open="narrator"');
+		expect(template).toContain('data-hadith-pair-manager-open="sharh_title"');
+		expect(template).toContain('data-hadith-pair-manager-open="attribution"');
+		expect(template).toContain('data-hadith-pair-manager-open="chain_classification"');
+		expect(template).toContain('data-hadith-pair-manager-open="grader"');
+		expect(template).toContain('data-hadith-pair-manager-open="grade"');
+		expect(template).toContain('data-bilingual-pair-type="grader"');
+		expect(template).not.toContain('data-bilingual-pair-type="grade"');
+		expect(template).toContain('data-hadith-pair-manager-filter');
+		expect(scripts).toContain("limit: '100'");
+		expect(scripts).toContain('bindBilingualMetadataAutocomplete($el)');
+		expect(scripts).toContain("pairedBilingualValue: ($el.attr('data-paired-bilingual-value')");
+		expect(scripts).toContain('pairedBilingualValue: reqBody.pairedBilingualValue');
+		expect(route).toContain('var pairedBilingualColumn =');
+		expect(scripts).toContain("prop: 'hdith_sharh.reorder'");
 		expect(scripts).toContain("$el.closest('.hadith-grade-opinion').remove()");
 		expect(scripts).toContain("prop: 'hdith_grade.reorder'");
 		expect(scripts).toContain("this.addEventListener('dragover'");

@@ -1044,14 +1044,24 @@ function initTocExpandCollapse(root) {
 	});
 }
 
-function normalizeTocFilterText(value) {
+function normalizeContentFilterText(value) {
 	return (value || '')
 		.toString()
-		.toLowerCase()
 		.normalize('NFKD')
-		.replace(/[\u0300-\u036f]/g, '')
+		.toLocaleLowerCase()
+		.replace(/[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed\u0640]/gu, '')
+		.replace(/\p{M}/gu, '')
+		.replace(/[أإآٱ]/gu, 'ا')
+		.replace(/ى/gu, 'ي')
+		.replace(/[ʿʾʻʼ'’`]/gu, '')
+		.replace(/[^\p{L}\p{N}]+/gu, ' ')
 		.replace(/\s+/g, ' ')
 		.trim();
+}
+window.normalizeContentFilterText = normalizeContentFilterText;
+
+function normalizeTocFilterText(value) {
+	return normalizeContentFilterText(value);
 }
 
 function initTocContentFilters(root) {
@@ -8266,7 +8276,7 @@ function initQuranMemorizeReviewLauncher(root) {
 	var catalog = [];
 	try { catalog = JSON.parse((modal.querySelector('[data-quran-review-surah-catalog]') || {}).textContent || '[]'); } catch (_err) {}
 	var normalizeSearch = function (value) {
-		return (value || '').toString().toLocaleLowerCase().normalize('NFD').replace(/[\u064B-\u065F\u0670]/g, '').replace(/\p{Diacritic}/gu, '').replace(/[^\p{L}\p{M}\d]+/gu, ' ').replace(/\s+/g, ' ').trim();
+		return normalizeContentFilterText(value);
 	};
 	var chooseSurah = function (choice) {
 		surahNumber.value = String(choice.number);
@@ -14229,15 +14239,7 @@ function initQuranAyahSelector(root) {
 	}
 
 	function normalizeBookCarouselFilterText(value) {
-		return (value || '').toString()
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed\u0640]/g, '')
-			.replace(/[أإآٱ]/g, 'ا')
-			.replace(/ى/g, 'ي')
-			.replace(/ة/g, 'ه')
-			.toLocaleLowerCase()
-			.replace(/\s+/g, ' ')
-			.trim();
+		return normalizeContentFilterText(value);
 	}
 
 	function applyBookCarouselFilter(filter) {
@@ -15023,13 +15025,7 @@ function applyDropdownFilterSearch($input) {
 }
 
 function normalizeDropdownFilterText(value) {
-	return (value || '').toString()
-		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.replace(/[ʿʾ'’`]/g, '')
-		.replace(/[^a-z0-9]+/gi, ' ')
-		.toLowerCase()
-		.trim();
+	return normalizeContentFilterText(value);
 }
 
 function initQuranPassageNavigator() {
@@ -15060,12 +15056,7 @@ function initQuranPassageNavigator() {
 			return toLatinDigits(value || '').trim().toLowerCase();
 		};
 		var normalizeSearchText = function (value) {
-			return normalizeText(value)
-				.normalize('NFD')
-				.replace(/\p{Diacritic}/gu, '')
-				.replace(/[^\p{L}\p{M}\d]+/gu, ' ')
-				.replace(/\s+/g, ' ')
-				.trim();
+			return normalizeContentFilterText(normalizeText(value));
 		};
 		var surahLabel = function (surah) {
 			return `${surah.num} ${surah.name_en}`;

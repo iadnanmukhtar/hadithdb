@@ -101,6 +101,9 @@
                 translation.alias,
                 translation.name_en,
                 translation.shortName_en,
+				translation.name,
+				translation.shortName,
+				translation.title,
                 translation.author_en,
                 translation.author,
                 translation.published_year,
@@ -184,7 +187,7 @@
       return;
     filter.focus();
     var normalize = function (value) {
-      return (value || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
+      return window.normalizeContentFilterText(value);
     };
     var cards = Array.from(document.querySelectorAll('.translation-book-card'));
     var empty = document.querySelector('.translation-book-filter-empty');

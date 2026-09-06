@@ -14,6 +14,7 @@ const Hadith = require('../lib/Hadith');
 const HadithRevision = require('../lib/HadithRevision');
 const HdithEnrichment = require('../lib/HdithEnrichment');
 const HdithMetadata = require('../lib/HdithMetadata');
+const HadithBilingualPairs = require('../lib/HadithBilingualPairs');
 const HadithAttributions = require('../lib/HadithAttributions');
 const HadithChainCategories = require('../lib/HadithChainCategories');
 const DorarSharhImport = require('../lib/DorarSharhImport');
@@ -252,6 +253,30 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         VirtualHadithSnapshot.queueHadith(ids[0]);
       }
 
+    } else if (type === 'hdith_pair') {
+      var bilingualPairType = Utils.trimToEmpty(req.body.pairType);
+      var bilingualPairArabic = Utils.trimToEmpty(req.body.valueAr);
+      var bilingualPairEnglish = Utils.trimToEmpty(req.body.valueEn);
+      var bilingualPairOriginalArabic = Utils.trimToEmpty(req.body.originalAr);
+      if (!HadithBilingualPairs.TYPES.includes(bilingualPairType))
+        throw createError(400, 'Invalid bilingual pair type');
+      if (col === 'save') {
+        if (!bilingualPairArabic || !bilingualPairEnglish)
+          throw createError(400, 'Both Arabic and English values are required');
+        status.pair = await HadithBilingualPairs.save(bilingualPairType, bilingualPairArabic, bilingualPairEnglish, bilingualPairOriginalArabic);
+        status.message = 'Bilingual pair saved';
+      } else if (col === 'delete') {
+        if (!bilingualPairOriginalArabic && !bilingualPairArabic)
+          throw createError(400, 'Arabic value is required');
+        await HadithBilingualPairs.hide(bilingualPairType, bilingualPairOriginalArabic || bilingualPairArabic);
+        status.message = 'Bilingual pair removed';
+      } else {
+        throw createError(400, `Invalid bilingual pair action '${col}'`);
+	      }
+	      if (bilingualPairType === 'narrator') HdithMetadata.invalidatePrimaryNarratorSuggestionCache();
+	      else if (bilingualPairType === 'sharh_title') HdithMetadata.invalidateSharhTitleSuggestionCache();
+	      status.code = 200;
+
     } else if (type === 'hdith_metadata') {
       await HdithMetadata.ensureEditableColumns();
       var metadataHadithId = parseInt(ids[0], 10);
@@ -392,11 +417,15 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           status.code = 200;
           status.message = 'Scholarly grade color updated';
 		} else if (['grade', 'grader', 'grade_en', 'grader_en'].includes(col)) {
+		  var pairedBilingualValue = Utils.trimToEmpty(req.body.pairedBilingualValue);
 		  if (col === 'grade_en' && Utils.isFalsey(status.value))
 			status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic hadith grade into concise scholarly English. Return only the translation:\n${gradeRow.grade}`));
 		  else if (col === 'grader_en' && Utils.isFalsey(status.value))
 			status.value = Utils.trimToEmpty(await Utils.openai(`Transliterate this Arabic scholar name using ALA-LC. Return only the transliteration:\n${gradeRow.grader}`));
-		  await global.query(`UPDATE hdith_hadith_grades SET ${col}=${sql(status.value)} WHERE id=${gradeId}`);
+		  var pairedBilingualColumn = { grader: 'grader_en', grader_en: 'grader' }[col];
+		  var savePairedBilingualValue = pairedBilingualColumn && pairedBilingualValue;
+		  await global.query(`UPDATE hdith_hadith_grades SET ${col}=${sql(status.value)}${savePairedBilingualValue ? `, ${pairedBilingualColumn}=${sql(pairedBilingualValue)}` : ''} WHERE id=${gradeId}`);
+		  if (savePairedBilingualValue) status.fields = { [col]: status.value, [pairedBilingualColumn]: pairedBilingualValue };
 		  if (col === 'grader_en' && Utils.isTruthy(status.value)) {
 			var sharedGraderWhere = gradeRow.grader_source_id
 			  ? `(grader_source_id=${Number(gradeRow.grader_source_id)} OR grader=${MySQL.escape(gradeRow.grader)})`
@@ -417,11 +446,22 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var sharhId = parseInt(ids[0], 10);
       if (!Number.isInteger(sharhId) || sharhId <= 0)
         throw createError(400, 'Invalid explanation ID');
-      if (col === 'add' || col === 'import_dorar') {
+      if (col === 'add' || col === 'import_dorar' || col === 'reorder') {
         var sharhHadith = (await global.query(`SELECT id FROM hadiths WHERE id=${sharhId} LIMIT 1`))[0];
         if (!sharhHadith)
           throw createError(404, 'Hadith not found');
-        if (col === 'import_dorar') {
+        if (col === 'reorder') {
+          var requestedSharhOrder = String(status.value || '').split(',').map(value => Number(value)).filter(Number.isSafeInteger);
+          var existingSharhOrder = (await global.query(`SELECT id FROM hdith_hadith_sharh WHERE hadith_id=${sharhId} ORDER BY COALESCE(ordinal, 65535), id`)).map(row => Number(row.id));
+          if (!requestedSharhOrder.length || requestedSharhOrder.length !== existingSharhOrder.length
+            || new Set(requestedSharhOrder).size !== requestedSharhOrder.length
+            || requestedSharhOrder.some(id => !existingSharhOrder.includes(id)))
+            throw createError(400, 'Invalid explanation order');
+          var sharhReorderCases = requestedSharhOrder.map((id, index) => `WHEN ${id} THEN ${index + 1}`).join(' ');
+          await global.query(`UPDATE hdith_hadith_sharh SET ordinal=CASE id ${sharhReorderCases} END WHERE hadith_id=${sharhId}`);
+          status.code = 200;
+          status.message = 'Explanations reordered';
+        } else if (col === 'import_dorar') {
           var dorarSharh = await DorarSharhImport.importDorarSharh(status.value);
           await global.query(`INSERT INTO hdith_sharh_sources (source_book_id, title, author, source_url)
             VALUES (${DorarSharhImport.DORAR_SHARH_SOURCE_BOOK_ID}, 'الدرر السنية', NULL, 'https://dorar.net')
@@ -436,11 +476,12 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
               WHERE id=${Number(existingDorarSharh.id)}`);
             status.createdSharhId = Number(existingDorarSharh.id);
           } else {
+            var dorarSharhOrdinal = Number((await global.query(`SELECT GREATEST(COALESCE(MAX(ordinal), 0), COUNT(*)) + 1 AS ordinal FROM hdith_hadith_sharh WHERE hadith_id=${sharhId}`))[0].ordinal);
             var dorarSourceEntry = Number((await global.query(`SELECT LEAST(COALESCE(MIN(source_entry_id), 0), 0) - 1 AS source_entry_id
               FROM hdith_hadith_sharh WHERE hadith_id=${sharhId}`))[0].source_entry_id);
             var insertDorarSharh = await global.query(`INSERT INTO hdith_hadith_sharh
-              (hadith_id, source_id, source_entry_id, chapter, page_num, text, text_en, format, source_url)
-              VALUES (${sharhId}, ${Number(dorarSharhSource.id)}, ${dorarSourceEntry}, NULL, NULL,
+              (hadith_id, ordinal, source_id, source_entry_id, chapter, page_num, text, text_en, format, source_url)
+              VALUES (${sharhId}, ${dorarSharhOrdinal}, ${Number(dorarSharhSource.id)}, ${dorarSourceEntry}, NULL, NULL,
                 ${sqlPreserveWhitespace(dorarSharh.text)}, NULL, 'md', ${MySQL.escape(dorarSharh.sourceUrl)})`);
             status.createdSharhId = Number(insertDorarSharh.insertId);
           }
@@ -456,14 +497,16 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
             throw createError(500, 'Unable to create custom explanation source');
           var customSourceEntry = Number((await global.query(`SELECT LEAST(COALESCE(MIN(source_entry_id), 0), 0) - 1 AS source_entry_id
             FROM hdith_hadith_sharh WHERE hadith_id=${sharhId}`))[0].source_entry_id);
+		  var customSharhOrdinal = Number((await global.query(`SELECT GREATEST(COALESCE(MAX(ordinal), 0), COUNT(*)) + 1 AS ordinal FROM hdith_hadith_sharh WHERE hadith_id=${sharhId}`))[0].ordinal);
 		  var customSharhTitle = Utils.trimToEmpty(status.value) || 'شرح مخصص';
           var insertSharh = await global.query(`INSERT INTO hdith_hadith_sharh
-			(hadith_id, source_id, source_entry_id, chapter, page_num, title, title_en, text, text_en, format, source_url)
-			VALUES (${sharhId}, ${Number(customSharhSource.id)}, ${customSourceEntry}, NULL, NULL, ${sql(customSharhTitle)}, NULL, '', NULL, 'md', '')`);
+			(hadith_id, ordinal, source_id, source_entry_id, chapter, page_num, title, title_en, text, text_en, format, source_url)
+			VALUES (${sharhId}, ${customSharhOrdinal}, ${Number(customSharhSource.id)}, ${customSourceEntry}, NULL, NULL, ${sql(customSharhTitle)}, NULL, '', NULL, 'md', '')`);
           status.createdSharhId = Number(insertSharh.insertId);
           status.code = 200;
           status.message = 'Custom explanation added';
         }
+        HdithMetadata.invalidateSharhTitleSuggestionCache();
         await runHadithPostUpdateTasks(sharhId);
       } else {
 		var sharhRow = (await global.query(`SELECT hs.id, hs.hadith_id, hs.source_id, hs.text, hs.text_en, ss.source_book_id,
@@ -478,6 +521,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           await global.query(`DELETE FROM hdith_hadith_sharh WHERE id=${sharhId}`);
           status.code = 200;
           status.message = 'Custom explanation deleted';
+		  HdithMetadata.invalidateSharhTitleSuggestionCache();
 		} else if (col === 'text' || col === 'text_en') {
 		  if (col === 'text_en' && Utils.isFalsey(status.value))
 		    status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic hadith explanation into clear scholarly English. Preserve Markdown structure and return only the translation:\n${sharhRow.text}`));
@@ -489,15 +533,20 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 		    status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic Sharh book title into concise English. Return only the translation:\n${sharhRow.title}`));
 		  if (col === 'title' && Utils.isFalsey(status.value))
 		    throw createError(400, 'The Arabic Sharh book title cannot be empty');
-		  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE id=${sharhId}`);
+		  var pairedSharhTitle = Utils.trimToEmpty(req.body.pairedSharhTitle);
+		  var pairedSharhTitleColumn = col === 'title' ? 'title_en' : 'title';
+		  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)}${pairedSharhTitle ? `, ${pairedSharhTitleColumn}=${sql(pairedSharhTitle)}` : ''} WHERE id=${sharhId}`);
+		  if (pairedSharhTitle)
+			status.fields = { [col]: status.value, [pairedSharhTitleColumn]: pairedSharhTitle };
 		  if ((col === 'title' || col === 'title_en') && Utils.isTruthy(status.value)) {
-			if (Number(sharhRow.source_book_id) === HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID && col === 'title_en')
+			if (!pairedSharhTitle && Number(sharhRow.source_book_id) === HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID && col === 'title_en')
 			  await global.query(`UPDATE hdith_hadith_sharh SET title_en=${sql(status.value)} WHERE source_id=${Number(sharhRow.source_id)} AND COALESCE(NULLIF(title, ''), (SELECT title FROM hdith_sharh_sources WHERE id=${Number(sharhRow.source_id)}))=${MySQL.escape(sharhRow.title)}`);
-			else if (Number(sharhRow.source_book_id) !== HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID) {
+			else if (!pairedSharhTitle && Number(sharhRow.source_book_id) !== HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID) {
 			  await global.query(`UPDATE hdith_sharh_sources SET ${col}=${sql(status.value)} WHERE id=${Number(sharhRow.source_id)}`);
 			  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(sharhRow.source_id)}`);
 			}
 		  }
+		  HdithMetadata.invalidateSharhTitleSuggestionCache();
 		  status.code = 200;
 		  status.message = 'Explanation book title updated';
         } else {

@@ -31,7 +31,7 @@
       var catalog = [];
       try { catalog = JSON.parse((document.querySelector('[data-quran-get-started-surah-catalog]') || {}).textContent || '[]'); } catch (_err) {}
       var latinDigits = function (value) { return (value || '').toString().replace(/[٠-٩]/g, function (digit) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(digit); }).replace(/[۰-۹]/g, function (digit) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit); }); };
-      var normalizeSearch = function (value) { return latinDigits(value).toLocaleLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[^\p{L}\p{M}\d]+/gu, ' ').replace(/\s+/g, ' ').trim(); };
+      var normalizeSearch = function (value) { return window.normalizeContentFilterText(latinDigits(value)); };
       var choiceFor = function (surah) { return Object.assign({}, surah, { name: surah.english || `Surah ${surah.number}` }); };
       var matches = function (choice, term) {
         var query = normalizeSearch(term);

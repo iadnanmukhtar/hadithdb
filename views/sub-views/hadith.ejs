@@ -17,6 +17,7 @@
 	const contentTranslationEstimate = enableHadithContentTranslation && locals.contentTranslationEstimateFields
 		? locals.contentTranslationEstimateFields(contentTranslationSourceFields, 'translate')
 		: { points: 0, wordCount: 0 };
+	const collapseHadithDetail = i.single && typeof collapsedDetail !== 'undefined' && collapsedDetail;
 	function editClass(classes) {
 		return `${site.editMode ? '_e ' : ''}${classes || ''}`.trim();
 	}
@@ -97,8 +98,22 @@
 		</section>
 	<% } %>
 
+	<% if (collapseHadithDetail) { %>
+		<details class="hadith-detail-disclosure col-12 mt-4">
+			<summary class="hadith-detail-disclosure-summary">
+				<span class="hadith-detail-disclosure-label"><span lang="en">Hadith details</span><span class="text-muted" lang="ar" dir="rtl">تفاصيل الحديث</span></span>
+				<span class="bi bi-chevron-down hadith-detail-disclosure-chevron" aria-hidden="true"></span>
+			</summary>
+			<div class="hadith-detail-disclosure-content">
+	<% } %>
+
 	<% if (i.single) { %>
 		<%- include('hadith_metadata.ejs', { i: i }); %>
+	<% } %>
+
+	<% if (collapseHadithDetail) { %>
+			</div>
+		</details>
 	<% } %>
 
 </article>

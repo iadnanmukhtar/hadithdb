@@ -1,4 +1,7 @@
-<div class="h-menu-wrap mb-3">
+<%
+	var inlineHadithBookList = typeof inlineHadithBooks !== 'undefined' && inlineHadithBooks;
+%>
+<div class="h-menu-wrap mb-3<%= inlineHadithBookList ? ' home-hadith-book-nav' : '' %>"<% if (inlineHadithBookList) { %> role="navigation" aria-label="Hadith books"<% } %>>
 	<%
 		var currentBookAlias = typeof page !== 'undefined' && page.context && page.context.book ? page.context.book.alias : '';
 		var bookNavRequestPath = typeof req !== 'undefined' && req.originalUrl ? req.originalUrl.split('?')[0] : '';
@@ -13,10 +16,17 @@
 				&& book.alias !== 'quran'
 				&& (book.type || book.book_type || book.book_model || 'hadith') === 'hadith';
 		};
+		var hadithSizeIndicator = function (book) {
+			var size = utils.emptyIfNull(book && book.size || '').toString();
+			var label = size === 'lg' ? 'Large hadith' : (size === 'md' ? 'Medium hadith' : (size === 'sm' ? 'Small hadith' : ''));
+			if (!label)
+				return '';
+			return `<span class="hadith-size-indicator hadith-size-indicator-${size}" aria-label="${label}" role="img"></span>`;
+		};
 	%>
-	<div class="h-menu-hint d-md-none">
+	<% if (!inlineHadithBookList) { %><div class="h-menu-hint d-md-none">
 		<i class="bi bi-arrow-left-right"></i> Swipe to browse <%= isQuranBookNav ? 'tafsīr books' : 'books' %>
-	</div>
+	</div><% } %>
 	<div class="h-menu-scroller">
 		<div class="btn-group h-menu text-nowrap" role="group">
 			<% if (isQuranBookNav) { %><%- include('tafsirCarouselLanguageSwitch') %><% } %>
@@ -33,7 +43,7 @@
 			  for (b of books.filter(isHadithBook)) {
 				var isCurrentBook = b.alias === currentBookAlias;
 			%>
-			  <a class="btn btn-outline-primary text-nowrap<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-carousel-item data-book-carousel-search="<%= [b.name_en, b.shortName_en, b.title, b.shortName, b.author_en, b.author, b.alias].filter(Boolean).join(' ') %>"><%= b.shortName_en %></a>
+			  <a class="btn btn-outline-primary text-nowrap<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-carousel-item data-book-carousel-search="<%= [b.name_en, b.shortName_en, b.title, b.shortName, b.author_en, b.author, b.alias].filter(Boolean).join(' ') %>"><%= b.shortName_en %><%- hadithSizeIndicator(b) %></a>
 			<% }
 			} %>
 		</div>

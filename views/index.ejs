@@ -28,7 +28,6 @@
       if (random.next_ref)
           page.next = `/${random.next_ref}`;
     }
-	var homeHadithItem = random && random.remark != 2 ? random : null;
 %> 
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
@@ -39,8 +38,7 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-  <div class="<%= homeHadithItem ? 'container-fluid hadith-heading-layout hadith-metadata-page-layout' : 'container col-lg-8 mx-auto' %>">
-    <% if (homeHadithItem) { %><div class="container col-lg-8 mx-auto hadith-heading-content"><% } %>
+  <div class="container col-lg-8 mx-auto">
     
     <main class="search-results">
 
@@ -62,7 +60,7 @@
         </div>
       </section>
 
-      <%- include('sub-views/bookNav.ejs'); %> 
+      <%- include('sub-views/bookNav.ejs', { inlineHadithBooks: true }); %>
       
       <% if (typeof random !== 'undefined') { %>
         <header class="row">
@@ -90,7 +88,7 @@
           <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: [random] }); %>
           <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: [random], quranShareId: randomQuranShareId }); %>
         <% } else { %>
-          <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false }); %>
+          <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false, collapsedDetail: true }); %>
         <% } %>
 
         <hr>
@@ -128,7 +126,6 @@
         } %>
 
     </main>
-    <% if (homeHadithItem) { %></div><%- include('sub-views/hadith_metadata_rail.ejs', { i: homeHadithItem, mobile: false, navigationOnly: true }); %><% } %>
   </div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>

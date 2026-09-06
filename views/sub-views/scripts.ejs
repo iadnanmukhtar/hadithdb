@@ -394,6 +394,8 @@
 	          arabizi: arabizi,
 	          value: value,
 	          pairedNarrator: ($el.attr('data-paired-narrator') || '').toString(),
+	          pairedSharhTitle: ($el.attr('data-paired-sharh-title') || '').toString(),
+	          pairedBilingualValue: ($el.attr('data-paired-bilingual-value') || '').toString(),
 	          quranSectionPath: propStr === 'toc.title_en' && isQuranPage() && !$el.closest('.quran-subheading').length
 	            ? window.location.pathname
 	            : '',
@@ -551,6 +553,12 @@
 	            arabizi: reqBody.arabizi,
 	            value: reqBody.value,
 	            pairedNarrator: reqBody.pairedNarrator,
+	            pairedSharhTitle: reqBody.pairedSharhTitle,
+	            pairedBilingualValue: reqBody.pairedBilingualValue,
+	            pairType: reqBody.pairType,
+	            valueAr: reqBody.valueAr,
+	            valueEn: reqBody.valueEn,
+	            originalAr: reqBody.originalAr,
 	            quranSectionPath: reqBody.quranSectionPath,
 	            hdithUrl: reqBody.hdithUrl,
           })
@@ -729,6 +737,100 @@
 	      $input.on('focus.primaryNarrator', function () { $input.autocomplete('search', ''); });
 	    };
 
+	    const bindSharhTitleAutocomplete = ($input) => {
+	      if (!$.fn.autocomplete || !$input.hasClass('hadith-sharh-title-input') || $input.data('sharhTitleAutocompleteBound')) return;
+	      $input.data('sharhTitleAutocompleteBound', true);
+	      const language = ($input.attr('data-sharh-title-language') || 'ar').toString();
+	      $input.on('input.sharhTitle', function () { $input.removeAttr('data-paired-sharh-title'); });
+	      $input.autocomplete({
+	        delay: 120,
+	        minLength: 0,
+	        source: async function (request, response) {
+	          try {
+	            const params = new URLSearchParams({ q: request.term || '', limit: '20' });
+	            const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+	            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+	            const res = await fetch(`${editHadithApiPath('/autocomplete/sharh-titles')}?${params.toString()}`, { headers });
+	            if (!res.ok) throw new Error(`Search failed with ${res.status}`);
+	            response(await res.json());
+	          } catch (_err) {
+	            response([]);
+	          }
+	        },
+	        focus: function (event) { event.preventDefault(); },
+	        select: function (event, ui) {
+	          event.preventDefault();
+	          const value = language === 'en' ? (ui.item.title_en || ui.item.title) : ui.item.title;
+	          const pairedTitle = language === 'en' ? ui.item.title : ui.item.title_en;
+	          $input.val(value).attr('editing', 'true');
+	          if (pairedTitle) $input.attr('data-paired-sharh-title', pairedTitle);
+	          else $input.removeAttr('data-paired-sharh-title');
+	          $input.autocomplete('close');
+	          changeListener.call($input[0], event);
+	        },
+	        open: function () {
+	          $input.autocomplete('widget').addClass('search-autocomplete-menu hadith-sharh-title-autocomplete-menu').attr({ lang: language, dir: language === 'ar' ? 'rtl' : 'ltr' }).css('width', Math.max($input.outerWidth(), 320));
+	        }
+	      }).autocomplete('instance')._renderItem = function (list, item) {
+	        const $row = $('<div>').addClass('search-autocomplete-item').attr({ lang: 'ar', dir: 'rtl' });
+	        $('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.title).appendTo($row);
+	        if (item.title_en)
+	          $('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-en').attr({ lang: 'en', dir: 'ltr' }).text(item.title_en).appendTo($row);
+	        return $('<li>').append($row).appendTo(list);
+	      };
+	      $input.on('focus.sharhTitle', function () { $input.autocomplete('search', ''); });
+	    };
+
+	    const bindBilingualMetadataAutocomplete = ($input) => {
+	      if (!$.fn.autocomplete || !$input.hasClass('hadith-bilingual-pair-input') || $input.data('bilingualMetadataAutocompleteBound')) return;
+	      $input.data('bilingualMetadataAutocompleteBound', true);
+	      const pairType = ($input.attr('data-bilingual-pair-type') || '').toString();
+	      const language = ($input.attr('data-bilingual-pair-language') || 'ar').toString();
+	      const readValue = () => ($input.is('input, textarea') ? $input.val() : $input.text()).toString().trim();
+	      const writeValue = value => $input.is('input, textarea') ? $input.val(value) : $input.text(value);
+	      $input.on('input.bilingualMetadata', function () { $input.removeAttr('data-paired-bilingual-value'); });
+	      $input.autocomplete({
+	        delay: 120,
+	        minLength: 0,
+	        source: async function (request, response) {
+	          try {
+	            const params = new URLSearchParams({ type: pairType, q: request.term || readValue(), limit: '20' });
+	            const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+	            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+	            const res = await fetch(`${editHadithApiPath('/autocomplete/bilingual-pairs')}?${params.toString()}`, { headers });
+	            if (!res.ok) throw new Error(`Search failed with ${res.status}`);
+	            response((await res.json()).map(pair => ({
+	              label: language === 'en' ? (pair.value_en || pair.value_ar) : pair.value_ar,
+	              value: language === 'en' ? (pair.value_en || pair.value_ar) : pair.value_ar,
+	              value_ar: pair.value_ar,
+	              value_en: pair.value_en
+	            })));
+	          } catch (_err) { response([]); }
+	        },
+	        focus: function (event) { event.preventDefault(); },
+	        select: function (event, ui) {
+	          event.preventDefault();
+	          const value = language === 'en' ? (ui.item.value_en || ui.item.value_ar) : ui.item.value_ar;
+	          const pairedValue = language === 'en' ? ui.item.value_ar : ui.item.value_en;
+	          writeValue(value);
+	          $input.attr('editing', 'true');
+	          if (pairedValue) $input.attr('data-paired-bilingual-value', pairedValue);
+	          else $input.removeAttr('data-paired-bilingual-value');
+	          $input.autocomplete('close');
+	          changeListener.call($input[0], event);
+	        },
+	        open: function () {
+	          $input.autocomplete('widget').addClass('search-autocomplete-menu hadith-bilingual-pair-autocomplete-menu').attr({ lang: language, dir: language === 'ar' ? 'rtl' : 'ltr' }).css('width', Math.max($input.outerWidth(), 320));
+	        }
+	      }).autocomplete('instance')._renderItem = function (list, item) {
+	        const $row = $('<div>').addClass('search-autocomplete-item').attr({ lang: 'ar', dir: 'rtl' });
+	        $('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.value_ar).appendTo($row);
+	        if (item.value_en) $('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-en').attr({ lang: 'en', dir: 'ltr' }).text(item.value_en).appendTo($row);
+	        return $('<li>').append($row).appendTo(list);
+	      };
+	      $input.on('focus.bilingualMetadata', function () { $input.autocomplete('search', readValue()); });
+	    };
+
 	    const bindInlineEditors = (scope) => {
 	      $(scope || document).find('._e').addBack('._e').each(function () {
 	        const $el = $(this);
@@ -737,6 +839,8 @@
 	        $el.data('inlineEditorBound', true);
 	        applyInlineEditorLanguageContext($el);
 	        bindPrimaryNarratorAutocomplete($el);
+	        bindSharhTitleAutocomplete($el);
+	        bindBilingualMetadataAutocomplete($el);
 	        if (!$el.is('textarea, input, select'))
 	          $el.attr('contenteditable', 'true');
 	        if (isMarkdownElement($el) && !hasMarkdownSource($el))
@@ -749,7 +853,7 @@
 	          $(this).attr('editing', 'true');
 	          $(this).removeClass('partial');
 	        });
-	        if ($el.is('select[data-prop="hadith.gradeId"], select[data-prop="hadith.graderId"], select[data-prop="hdith_grade.grade_category_id"]'))
+	        if ($el.is('select'))
 	          $el.on('change', function (event) {
 	            if ($(this).is('select[data-prop="hadith.gradeId"]')) {
 	              const color = $(this).find('option:selected').attr('data-grade-color') || '';
@@ -814,6 +918,151 @@
 	      });
 	    };
 
+	    const bindHadithSharhSorting = (scope) => {
+	      $(scope || document).find('[data-hdith-sharh-sort-list]').addBack('[data-hdith-sharh-sort-list]').each(function () {
+	        const $list = $(this);
+	        if ($list.data('hadithSharhSortingBound')) return;
+	        $list.data('hadithSharhSortingBound', true);
+	        let draggedRow = null;
+	        $list.find('[data-hdith-sharh-sort-id]').each(function () {
+	          const row = this;
+	          $(row).find('.hadith-sharh-drag-handle').on('mousedown', function () { row.setAttribute('draggable', 'true'); });
+	          row.addEventListener('dragstart', function (event) {
+	            draggedRow = row;
+	            row.classList.add('is-dragging');
+	            if (event.dataTransfer) {
+	              event.dataTransfer.effectAllowed = 'move';
+	              event.dataTransfer.setData('text/plain', row.getAttribute('data-hdith-sharh-sort-id') || '');
+	            }
+	          });
+	          row.addEventListener('dragend', function () {
+	            row.classList.remove('is-dragging');
+	            row.removeAttribute('draggable');
+	            draggedRow = null;
+	          });
+	        });
+	        this.addEventListener('dragover', function (event) {
+	          if (!draggedRow) return;
+	          event.preventDefault();
+	          const target = event.target.closest('[data-hdith-sharh-sort-id]');
+	          if (!target || target === draggedRow || target.parentNode !== this) return;
+	          const rect = target.getBoundingClientRect();
+	          this.insertBefore(draggedRow, event.clientY < rect.top + rect.height / 2 ? target : target.nextSibling);
+	        });
+	        this.addEventListener('drop', async function (event) {
+	          if (!draggedRow) return;
+	          event.preventDefault();
+	          const order = $list.find('[data-hdith-sharh-order-id]').map(function () { return this.getAttribute('data-hdith-sharh-order-id'); }).get();
+	          await update({ id: $list.attr('data-hadith-id'), prop: 'hdith_sharh.reorder', arabizi: false, value: order.join(',') });
+	        });
+	      });
+	    };
+
+	    const bindHadithPairManagers = (scope) => {
+	      $(scope || document).find('[data-hadith-pair-manager]').addBack('[data-hadith-pair-manager]').each(function () {
+	        const $modal = $(this);
+	        if ($modal.data('hadithPairManagerBound')) return;
+	        $modal.data('hadithPairManagerBound', true);
+	        const $list = $modal.find('[data-hadith-pair-manager-list]');
+	        const $empty = $modal.find('[data-hadith-pair-manager-empty]');
+	        const $status = $modal.find('[data-hadith-pair-manager-status]');
+	        const $filter = $modal.find('[data-hadith-pair-manager-filter]');
+	        let currentType = 'narrator';
+	        let filterTimer = null;
+	        let loadGeneration = 0;
+	        const labels = {
+	          narrator: 'Narrator name pairs',
+	          sharh_title: 'Sharḥ title pairs',
+	          attribution: 'Hadith attribution pairs',
+	          chain_classification: 'Chain classification pairs',
+	          grader: 'Scholarly grader pairs',
+	          grade: 'Legacy grade pairs'
+	        };
+	        const setStatus = (message, error) => $status.text(message || '').toggleClass('text-danger', !!error).toggleClass('text-success', !!message && !error);
+	        const requestPairs = async () => {
+	          const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+	          const headers = token ? { Authorization: `Bearer ${token}` } : {};
+	          const params = new URLSearchParams({ type: currentType, q: $filter.val().trim(), limit: '100' });
+	          const response = await fetch(`${editHadithApiPath('/autocomplete/bilingual-pairs')}?${params}`, { headers });
+	          if (!response.ok) throw new Error(`Unable to load pairs (${response.status})`);
+	          return response.json();
+	        };
+	        const savePair = async (valueAr, valueEn, originalAr) => {
+	          const result = await update({ id: '0', prop: 'hdith_pair.save', value: '', arabizi: false, pairType: currentType, valueAr, valueEn, originalAr });
+	          if (result.code !== 200) throw new Error(result.message || 'Unable to save pair');
+	        };
+	        const deletePair = async (originalAr) => {
+	          const result = await update({ id: '0', prop: 'hdith_pair.delete', value: '', arabizi: false, pairType: currentType, originalAr });
+	          if (result.code !== 200) throw new Error(result.message || 'Unable to remove pair');
+	        };
+	        const render = (pairs) => {
+	          $list.empty();
+	          $empty.prop('hidden', pairs.length > 0);
+	          pairs.forEach(pair => {
+	            const $row = $('<div>').addClass('hadith-pair-manager-row').attr('data-original-ar', pair.value_ar || '');
+	            const $ar = $('<input>').attr({ type: 'text', lang: 'ar', dir: 'rtl', 'aria-label': 'Arabic value', placeholder: 'Arabic value' }).addClass('form-control form-control-sm hadith-admin-combobox').val(pair.value_ar || '');
+	            const $en = $('<input>').attr({ type: 'text', lang: 'en', dir: 'ltr', 'aria-label': 'English value', placeholder: 'English value' }).addClass('form-control form-control-sm hadith-admin-combobox').val(pair.value_en || '');
+	            const $save = $('<button>').attr({ type: 'button', title: 'Save pair', 'aria-label': 'Save pair' }).addClass('btn btn-sm btn-outline-secondary hadith-admin-action hadith-admin-action-icon').html('<span class="bi bi-check-lg" aria-hidden="true"></span>');
+	            const $delete = $('<button>').attr({ type: 'button', title: 'Remove pair', 'aria-label': 'Remove pair' }).addClass('btn btn-sm btn-outline-secondary hadith-admin-action hadith-admin-action-icon').html('<span class="bi bi-trash" aria-hidden="true"></span>');
+	            $save.on('click', async () => {
+	              try {
+	                setStatus('Saving…');
+	                await savePair($ar.val().trim(), $en.val().trim(), $row.attr('data-original-ar'));
+	                setStatus('Pair saved.');
+	                await load();
+	              } catch (err) { setStatus(err.message, true); }
+	            });
+	            $delete.on('click', async () => {
+	              if (!window.confirm('Remove this pair from autocomplete? Existing hadith data will not be changed.')) return;
+	              try {
+	                setStatus('Removing…');
+	                await deletePair($row.attr('data-original-ar'));
+	                setStatus('Pair removed.');
+	                await load();
+	              } catch (err) { setStatus(err.message, true); }
+	            });
+	            $row.append($ar, $en, $('<span>').addClass('hadith-pair-manager-row-actions').append($save, $delete)).appendTo($list);
+	          });
+	        };
+	        const load = async () => {
+	          const generation = ++loadGeneration;
+	          try {
+	            const pairs = await requestPairs();
+	            if (generation !== loadGeneration) return;
+	            render(pairs);
+	          } catch (err) {
+	            if (generation !== loadGeneration) return;
+	            $list.empty();
+	            $empty.prop('hidden', false);
+	            setStatus(err.message, true);
+	          }
+	        };
+	        $(`[data-bs-target="#${$modal.attr('id')}"][data-hadith-pair-manager-open]`).on('click', function () {
+	          currentType = $(this).attr('data-hadith-pair-manager-open') || 'narrator';
+	          $modal.find('[data-hadith-pair-manager-title]').text(labels[currentType] || 'Bilingual pairs');
+	          $filter.val('');
+	          setStatus('');
+	          load();
+	        });
+	        $filter.on('input', function () {
+	          clearTimeout(filterTimer);
+	          filterTimer = setTimeout(load, 180);
+	        });
+	        $modal.find('[data-hadith-pair-add]').on('click', async function () {
+	          const $new = $modal.find('[data-hadith-pair-manager-new]');
+	          const $ar = $new.find('[data-hadith-pair-value-ar]');
+	          const $en = $new.find('[data-hadith-pair-value-en]');
+	          try {
+	            setStatus('Saving…');
+	            await savePair($ar.val().trim(), $en.val().trim(), '');
+	            $ar.val(''); $en.val('');
+	            setStatus('Pair added.');
+	            await load();
+	          } catch (err) { setStatus(err.message, true); }
+	        });
+	      });
+	    };
+
 	    const bindAdminContentTranslationSwitchers = (scope) => {
 	      $(scope || document).find('[data-admin-content-translation-select="1"]').addBack('[data-admin-content-translation-select="1"]').each(function () {
 	        const $select = $(this);
@@ -855,6 +1104,8 @@
 	    window.bindInlineEditors = bindInlineEditors;
 	    bindInlineEditors(document);
 	    bindHadithGradeSorting(document);
+	    bindHadithSharhSorting(document);
+	    bindHadithPairManagers(document);
 	    bindHadithSimilarSearch(document);
 	    const inlineEditorObserver = new MutationObserver((mutations) => {
 	      mutations.forEach((mutation) => {

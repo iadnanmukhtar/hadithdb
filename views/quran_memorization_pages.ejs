@@ -407,7 +407,7 @@
       const updateSortHeaders=()=>document.querySelectorAll('[data-progress-sort]').forEach(button=>{const active=button.dataset.progressSort===sortKey;button.classList.toggle('is-active',active);button.setAttribute('aria-sort',active?(sortDirection===1?'ascending':'descending'):'none');button.dataset.sortDirection=active?(sortDirection===1?'ascending':'descending'):'';});
       const render = () => {
         closeGroupStateMenu(false);
-        const query=filter.value.trim().toLocaleLowerCase();
+        const query=window.normalizeContentFilterText(filter.value);
         const visible=groups.filter(group => {
           const matchesStage=!selectedStage || (selectedStage==='due_today' ? Number(group.due_count)>0 : countFor(group,selectedStage)>0);
           const activeStages=stageOrder.filter(state=>countFor(group,state)>0).map(state=>labels[state]).join(' ');
@@ -417,7 +417,7 @@
           const juzReferences=juzNumbers.map(number=>`Juz ${number} Juz' ${number} Juz’ ${number} جزء ${number}`).join(' ');
           const openingArabic=group.opening_arabic||'';
           const openingSearchable=group.opening_searchable||'';
-          const haystack=`${group.unit_label||''} ${group.page_number||''} ${juzReferences} ${surahNumbers} ${group.start_reference||''} ${group.surah_name||''} ${aliases} ${activeStages} ${openingArabic} ${openingSearchable}`.toLocaleLowerCase();
+          const haystack=window.normalizeContentFilterText(`${group.unit_label||''} ${group.page_number||''} ${juzReferences} ${surahNumbers} ${group.start_reference||''} ${group.surah_name||''} ${aliases} ${activeStages} ${openingArabic} ${openingSearchable}`);
           const juzQuery=query.match(/^(?:juz(?:['’])?|جزء)\s*(\d{1,2})$/u);
           const matchesQuery=!query || (juzQuery ? juzNumbers.includes(Number(juzQuery[1])) : haystack.includes(query));
           return matchesStage && matchesQuery;

@@ -18,7 +18,7 @@ describe('hdith.com metadata display', () => {
 		expect(route).toContain('HdithMetadata.withPrimaryGrade');
 		expect(route).not.toContain('addHdithShawahid');
 		expect(route).not.toContain('shawahidHadiths');
-		expect(route.indexOf('results[0].single = true')).toBeLessThan(route.indexOf('HdithMetadata.forHadith'));
+		expect(route.indexOf('results[0].single = true')).toBeLessThan(route.indexOf('results[0].hdithMetadata = await HdithMetadata.forHadith'));
 		expect((route.match(/HdithMetadata\.attachClassifications\(results\)/g) || [])).toHaveLength(2);
 		expect(route).toContain('HdithMetadata.attachClassifications(results.flatMap');
 	});
@@ -75,7 +75,7 @@ describe('hdith.com metadata display', () => {
 		expect(template).toContain("bilingualLabel(legacyGrader.shortName_en, legacyGrader.shortName)");
 		expect(template).toContain('if (!site.editMode)');
 		expect(scripts).toContain("$el.on('change'");
-		expect(scripts).toContain('select[data-prop="hadith.gradeId"], select[data-prop="hadith.graderId"]');
+		expect(scripts).toContain("if ($el.is('select'))");
 		expect(scripts).not.toContain("propStr === 'hadith.gradeId' || propStr === 'hadith.graderId'");
 		expect(css).toContain('.hadith-legacy-grade-editor { align-items: center; display: grid;');
 	});
@@ -401,17 +401,21 @@ describe('hdith.com metadata display', () => {
 		expect(css).not.toMatch(/\.hadith-metadata-heading h3:lang\(ar\) \{[^}]*font-size/);
 	});
 
-	test('uses the Hadith rail on the home page without metadata links', () => {
+	test('loads and collapses the full Hadith detail on the home page', () => {
 		const home = fs.readFileSync(path.join(__dirname, '..', 'views', 'index.ejs'), 'utf8');
 		const searchRoute = fs.readFileSync(path.join(__dirname, '..', 'routes', 'search.js'), 'utf8');
+		const hadith = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith.ejs'), 'utf8');
 		const item = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
-		const rail = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata_rail.ejs'), 'utf8');
-		expect(home).toContain("var homeHadithItem = random && random.remark != 2 ? random : null");
-		expect(home).toContain("hadith-heading-layout hadith-metadata-page-layout");
-		expect(home).toContain("include('sub-views/hadith_metadata_rail.ejs', { i: homeHadithItem, mobile: false, navigationOnly: true })");
-		expect(rail).toContain("const railNavigationOnly = typeof navigationOnly !== 'undefined' && navigationOnly");
-		expect(rail).toContain('railNavigationOnly ? [] : [');
-		expect(rail).toContain('railEditMode && !railNavigationOnly && railMetadata.sourceUrl');
+		expect(home).toContain('collapsedDetail: true');
+		expect(home).toContain("include('sub-views/bookNav.ejs', { inlineHadithBooks: true })");
+		expect(home).not.toContain('hadith-metadata-page-layout');
+		expect(hadith).toContain('class="hadith-detail-disclosure col-12 mt-4"');
+		expect(hadith).toContain('Hadith details');
+		expect(hadith).toContain('تفاصيل الحديث');
+		expect(hadith.indexOf("include('comment_widget.ejs'")).toBeLessThan(hadith.indexOf('class="hadith-detail-disclosure col-12 mt-4"'));
+		expect(hadith.indexOf('class="hadith-detail-disclosure col-12 mt-4"')).toBeLessThan(hadith.indexOf("include('hadith_metadata.ejs'"));
+		expect(searchRoute).toContain('random.hdithMetadata = await HdithMetadata.forHadith');
+		expect(searchRoute).toContain('random.hdithMetadata.grades = HdithMetadata.withPrimaryGrade');
 		expect(searchRoute).toContain('await HdithMetadata.attachClassifications([random])');
 		expect(item).toContain('i.single === true');
 		expect(item).toContain('hasHadithClassification');

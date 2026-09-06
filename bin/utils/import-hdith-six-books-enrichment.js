@@ -106,7 +106,10 @@ async function main() {
 				await ensureSchema();
 				await suspendSharhFulltextIndex();
 			}
-			await deferInternalLinkResolution();
+			// Clearing every resolved link is a one-time preparation step. Repeating
+			// this table-wide update on checkpoint resumes both discards useful links
+			// and makes concurrent lanes contend before they can process one record.
+			if (!options.resumeSourceId) await deferInternalLinkResolution();
 		}
 		for (const book of selectedBooks(options.books))
 			await scrapeBook(page, book);
@@ -1329,12 +1332,12 @@ async function sourceBookAuthor(page, bookId) {
 }
 
 async function replaceSharh(connection, hadithId, items) {
-	const existingEntries = new Map((await query(connection, 'SELECT source_entry_id, text_en, title, title_en FROM hdith_hadith_sharh WHERE hadith_id=?', [hadithId]))
+	const existingEntries = new Map((await query(connection, 'SELECT source_entry_id, ordinal, text_en, title, title_en FROM hdith_hadith_sharh WHERE hadith_id=?', [hadithId]))
 		.map(row => [Number(row.source_entry_id), row]));
 	await query(connection, `DELETE hs FROM hdith_hadith_sharh hs
 		JOIN hdith_sharh_sources ss ON ss.id=hs.source_id
 		WHERE hs.hadith_id=? AND ss.source_book_id>0`, [hadithId]);
-	for (const item of items) {
+	for (const [itemIndex, item] of items.entries()) {
 		let sourceId = sharhSourceIdCache.get(item.sourceBookId);
 		if (!sourceId) {
 			await query(connection, `INSERT INTO hdith_sharh_sources
@@ -1345,11 +1348,11 @@ async function replaceSharh(connection, hadithId, items) {
 			sharhSourceIdCache.set(item.sourceBookId, sourceId);
 		}
 		await query(connection, `INSERT INTO hdith_hadith_sharh
-			(hadith_id, source_id, source_entry_id, chapter, page_num, title, title_en, text, text_en, format, source_url)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-			ON DUPLICATE KEY UPDATE source_id=VALUES(source_id), chapter=VALUES(chapter), page_num=VALUES(page_num), title=VALUES(title), title_en=VALUES(title_en),
+			(hadith_id, ordinal, source_id, source_entry_id, chapter, page_num, title, title_en, text, text_en, format, source_url)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE ordinal=VALUES(ordinal), source_id=VALUES(source_id), chapter=VALUES(chapter), page_num=VALUES(page_num), title=VALUES(title), title_en=VALUES(title_en),
 				text=VALUES(text), text_en=VALUES(text_en), format=VALUES(format), source_url=VALUES(source_url)`,
-		[hadithId, sourceId, item.sourceEntryId, item.chapter, item.page,
+		[hadithId, existingEntries.get(Number(item.sourceEntryId))?.ordinal ?? itemIndex + 1, sourceId, item.sourceEntryId, item.chapter, item.page,
 			existingEntries.get(Number(item.sourceEntryId))?.title || null, existingEntries.get(Number(item.sourceEntryId))?.title_en || null,
 			item.text, existingEntries.get(Number(item.sourceEntryId))?.text_en || null, item.format, item.sourceUrl]);
 	}
@@ -1477,13 +1480,13 @@ async function ensureSchema() {
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_metadata' AND column_name='narrator' LIMIT 1`);
 	if (!narratorColumn.length)
 		await query(connection, 'ALTER TABLE hdith_hadith_metadata ADD COLUMN narrator TEXT NULL AFTER chain_type');
-	else if (!/text/i.test(narratorColumn[0].column_type))
+	else if (!/text/i.test(narratorColumn[0].column_type || narratorColumn[0].COLUMN_TYPE || ''))
 		await query(connection, 'ALTER TABLE hdith_hadith_metadata MODIFY narrator TEXT NULL');
 	const narratorEnglishColumn = await query(connection, `SELECT column_type FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_metadata' AND column_name='narrator_en' LIMIT 1`);
 	if (!narratorEnglishColumn.length)
 		await query(connection, 'ALTER TABLE hdith_hadith_metadata ADD COLUMN narrator_en TEXT NULL AFTER narrator');
-	else if (!/text/i.test(narratorEnglishColumn[0].column_type))
+	else if (!/text/i.test(narratorEnglishColumn[0].column_type || narratorEnglishColumn[0].COLUMN_TYPE || ''))
 		await query(connection, 'ALTER TABLE hdith_hadith_metadata MODIFY narrator_en TEXT NULL');
 	const narratorTashkilColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_narrators' AND column_name='name_tashkil' LIMIT 1`);
@@ -1513,6 +1516,10 @@ async function ensureSchema() {
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_sharh' AND column_name='text_en' LIMIT 1`);
 	if (!sharhEnglishColumn.length)
 		await query(connection, 'ALTER TABLE hdith_hadith_sharh ADD COLUMN text_en LONGTEXT NULL AFTER text');
+	const sharhOrdinalColumn = await query(connection, `SELECT 1 FROM information_schema.columns
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_sharh' AND column_name='ordinal' LIMIT 1`);
+	if (!sharhOrdinalColumn.length)
+		await query(connection, 'ALTER TABLE hdith_hadith_sharh ADD COLUMN ordinal SMALLINT UNSIGNED NULL AFTER hadith_id');
 	const sharhTitleColumn = await query(connection, `SELECT 1 FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_sharh' AND column_name='title' LIMIT 1`);
 	if (!sharhTitleColumn.length)
@@ -1642,7 +1649,7 @@ function schemaStatements() {
 			source_url VARCHAR(512) NOT NULL, UNIQUE KEY hdith_sharh_book (source_book_id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_hadith_sharh (
-			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, hadith_id INT NOT NULL, source_id INT NOT NULL, source_entry_id INT NOT NULL,
+			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, hadith_id INT NOT NULL, ordinal SMALLINT UNSIGNED NULL, source_id INT NOT NULL, source_entry_id INT NOT NULL,
 			chapter VARCHAR(512) NULL, page_num INT NULL, title VARCHAR(255) NULL, title_en VARCHAR(255) NULL,
 			text LONGTEXT NOT NULL, text_en LONGTEXT NULL, format VARCHAR(8) NOT NULL DEFAULT 'md', source_url VARCHAR(512) NOT NULL,
 			UNIQUE KEY hdith_sharh_entry (hadith_id, source_entry_id), KEY hdith_sharh_source (source_id), FULLTEXT KEY hdith_sharh_text (text),

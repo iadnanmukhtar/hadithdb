@@ -352,4 +352,15 @@ describe('shared header navigation', () => {
 	  expect(bookNav).not.toContain('data-book-tooltip');
 	  expect(bookNav).not.toContain('bookTooltip');
 	});
+
+	test('renders the homepage Hadith books as a wrapping filterable list', () => {
+	  const home = fs.readFileSync(path.join(__dirname, '..', 'views', 'index.ejs'), 'utf8');
+	  expect(home).toContain("include('sub-views/bookNav.ejs', { inlineHadithBooks: true })");
+	  expect(bookNav).toContain('home-hadith-book-nav');
+	  expect(bookNav).toContain('role="navigation" aria-label="Hadith books"');
+	  expect(bookNav.indexOf("include('bookCarouselFilter')")).toBeLessThan(bookNav.indexOf('for (b of books.filter(isHadithBook))'));
+	  expect(styles).toMatch(/\.home-hadith-book-nav \.h-menu\s*\{[^}]*flex-wrap: wrap;[^}]*overflow: visible;/s);
+	  expect(styles).toMatch(/\.home-hadith-book-nav \.book-carousel-filter\s*\{[^}]*position: static;/s);
+	  expect(styles).toMatch(/\.home-hadith-book-nav \.h-menu > \.btn\s*\{[^}]*border-color: var\(--bs-border-color\);/s);
+	});
 });

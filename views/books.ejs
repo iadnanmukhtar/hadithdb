@@ -143,6 +143,23 @@
         return '';
       return `<span class="tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
     };
+    var hadithSizeLabel = function (book) {
+      var size = utils.emptyIfNull(book && book.size || '').toString();
+      if (size === 'lg')
+        return 'Large hadith';
+      if (size === 'md')
+        return 'Medium hadith';
+      if (size === 'sm')
+        return 'Small hadith';
+      return '';
+    };
+    var hadithSizeIndicator = function (book) {
+      var size = utils.emptyIfNull(book && book.size || '').toString();
+      var label = hadithSizeLabel(book);
+      if (!label)
+        return '';
+      return `<span class="hadith-size-indicator tafsir-size-tooltip hadith-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
+    };
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
@@ -195,6 +212,7 @@
                 book.shortName_en,
                 book.author_en,
                 book.author,
+				book.name,
                 book.title,
                 book.shortName,
                 book.description
@@ -206,7 +224,7 @@
                         <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><span class="_e" data-id="<%= book.id %>" data-prop="book.name_en" data-placeholder="English name"><%- book.name_en || '' %></span></a>
                       <% } else { %>
                         <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.name_en || book.shortName_en || book.alias %></a>
-                      <% } %>
+                      <% } %><%- hadithSizeIndicator(book) %>
                     </h3>
                     <% if (site.editMode || book.name || book.shortName) { %>
                       <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">
@@ -288,6 +306,7 @@
                     tafsir.name_en,
                     tafsir.shortName_en,
                     tafsir.author_en,
+					tafsir.name,
                     tafsir.title,
                     tafsir.shortName,
                     tafsir.author,
@@ -411,6 +430,10 @@
                   translation.name_en,
                   translation.shortName_en,
                   translation.author_en,
+				  translation.name,
+				  translation.shortName,
+				  translation.title,
+				  translation.author,
                   translation.published_year,
                   translation.publisher,
                   translation.description
@@ -495,7 +518,7 @@
       return;
     filter.focus();
     var normalize = function (value) {
-      return (value || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
+      return window.normalizeContentFilterText(value);
     };
     var cards = Array.from(document.querySelectorAll('.book-catalog-card'));
     var tabPanes = Array.from(document.querySelectorAll('.book-catalog-tab-pane'));

@@ -26,6 +26,7 @@ const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
 const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
 const HadithHeadingNavigation = require('../lib/HadithHeadingNavigation');
 const HdithMetadata = require('../lib/HdithMetadata');
+const HadithBilingualPairs = require('../lib/HadithBilingualPairs');
 const QuranHeadings = require('../lib/QuranHeadings');
 const QuranMushaf = require('../lib/QuranMushaf');
 const { invalidateQuranMemoryCaches } = require('../lib/QuranCacheInvalidation');
@@ -527,6 +528,34 @@ router.get('/autocomplete/primary-narrators', searchRequestLimiter, requireSearc
     var message = `Error fetching primary narrator suggestions [${req.query.q || req.query.term || ''}]`;
     debug.error(message + `\n${err.stack}`);
     return next(createError(500, message));
+  }
+});
+
+router.get('/autocomplete/sharh-titles', searchRequestLimiter, requireSearchAdmin, async function (req, res, next) {
+  try {
+    var q = Search.truncateQuery(req.query.q || req.query.term || '');
+    var suggestions = await HdithMetadata.sharhTitleSuggestions(q, req.query.limit);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.end(JSON.stringify(suggestions));
+  } catch (err) {
+    var message = `Error fetching Sharh title suggestions [${req.query.q || req.query.term || ''}]`;
+    debug.error(message + `\n${err.stack}`);
+    return next(createError(500, message));
+  }
+});
+
+router.get('/autocomplete/bilingual-pairs', searchRequestLimiter, requireSearchAdmin, async function (req, res, next) {
+  try {
+    var pairs = await HadithBilingualPairs.list(req.query.type, req.query.q || req.query.term || '', req.query.limit);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.end(JSON.stringify(pairs));
+  } catch (err) {
+    if (/Invalid hadith bilingual pair type/.test(err.message || ''))
+      return next(createError(400, err.message));
+    debug.error(`Error fetching bilingual pairs\n${err.stack}`);
+    return next(createError(500, 'Error fetching bilingual pairs'));
   }
 });
 
@@ -1222,8 +1251,11 @@ router.get('/', throttleSearchRequest, async function (req, res, next) {
     if (random.length > 0) {
 	  random = new Item(random[0]);
 	  random.single = true;
-	  if (random.remark != 2)
+	  if (random.remark != 2) {
 		await HdithMetadata.attachClassifications([random]);
+		random.hdithMetadata = await HdithMetadata.forHadith(random.actual ? random.actual.id : random.id) || {};
+		random.hdithMetadata.grades = HdithMetadata.withPrimaryGrade(random.hdithMetadata.grades, random);
+	  }
 	  var admin = (req.admin);
       var editMode = (admin && req.editMode);
       if (editMode)

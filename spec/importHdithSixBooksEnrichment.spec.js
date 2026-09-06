@@ -376,6 +376,11 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(indexer).not.toContain('doc_as_upsert: true');
 	});
 
+	test('does not repeat the global internal-link reset on checkpoint resumes', () => {
+		const importer = fs.readFileSync(path.join(__dirname, '..', 'bin', 'utils', 'import-hdith-six-books-enrichment.js'), 'utf8');
+		expect(importer).toContain('if (!options.resumeSourceId) await deferInternalLinkResolution()');
+	});
+
 	test('keeps chain boundary and transliteration fixes in future hdith imports', () => {
 		const sixBookImporter = fs.readFileSync(path.join(__dirname, '..', 'bin', 'utils', 'import-hdith-six-books-enrichment.js'), 'utf8');
 		const genericImporter = fs.readFileSync(path.join(__dirname, '..', 'bin', 'utils', 'import-hdith-book.js'), 'utf8');
