@@ -4,9 +4,10 @@
   var articleHasEn = Boolean(utils.trimToEmpty(article.intro_en));
   var articleHasAr = Boolean(utils.trimToEmpty(article.intro));
   var articleHasContent = articleHasEn || articleHasAr;
-  var articleEditEmptyAr = site.editMode && !articleHasContent && articleBook.lang === 'ar';
+  var articleForceBilingual = Boolean(locals.introductionBilingual);
+  var articleEditEmptyAr = site.editMode && !articleForceBilingual && !articleHasContent && articleBook.lang === 'ar';
   var articleEditEmptyEn = site.editMode && !articleHasContent && !articleEditEmptyAr;
-  var articleShowEn = articleHasEn || articleEditEmptyEn;
+  var articleShowEn = articleHasEn || articleEditEmptyEn || (site.editMode && articleForceBilingual);
   var articleShowAr = articleHasAr || site.editMode || articleEditEmptyAr;
 %>
 <article class="quran-commentary-introduction-article mt-4" id="introduction-<%= article.h2 %>" data-introduction-article="<%= article.h2 %>" data-quran-introduction-target="<%= article.h2 %>">

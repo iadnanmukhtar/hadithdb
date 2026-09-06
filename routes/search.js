@@ -516,6 +516,20 @@ router.get('/autocomplete/similar-hadiths', searchRequestLimiter, requireSearchA
   }
 });
 
+router.get('/autocomplete/primary-narrators', searchRequestLimiter, requireSearchAdmin, async function (req, res, next) {
+  try {
+    var q = Search.truncateQuery(req.query.q || req.query.term || '');
+    var suggestions = await HdithMetadata.primaryNarratorSuggestions(q, req.query.limit);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.end(JSON.stringify(suggestions));
+  } catch (err) {
+    var message = `Error fetching primary narrator suggestions [${req.query.q || req.query.term || ''}]`;
+    debug.error(message + `\n${err.stack}`);
+    return next(createError(500, message));
+  }
+});
+
 router.get('/reinit', async function (req, res, next) {
   await Hadith.a_reinit();
   const generation = await RuntimeRefresh.publish();
@@ -2927,6 +2941,7 @@ router.get('/:bookAlias', async function (req, res, next) {
     var results;
     var random;
     var tafsirs;
+	var hadithIntroductionArticles = [];
     if ('download' in req.query && ('json' in req.query || 'epub' in req.query || 'tsv' in req.query)) {
       debug(`downloading ${req.params.bookAlias}`);
       if (!book.virtual)
@@ -2948,6 +2963,8 @@ router.get('/:bookAlias', async function (req, res, next) {
         random = new Item(random[0]);
       if (book.alias === 'quran')
         tafsirs = await Tafsir.visibleTafsirs();
+	  else
+		hadithIntroductionArticles = await CommentaryHeadings.introductionArticles(book.id);
     }
 
     if ('download' in req.query && 'json' in req.query) {
@@ -2985,6 +3002,7 @@ router.get('/:bookAlias', async function (req, res, next) {
           random: random,
           Tafsir: Tafsir,
           tafsirs: tafsirs,
+		  hadithIntroductionArticles: hadithIntroductionArticles,
           req: req,
           res: res
         }));
@@ -3004,7 +3022,8 @@ router.get('/:bookAlias', async function (req, res, next) {
         toc: results,
         random: random,
         Tafsir: Tafsir,
-        tafsirs: tafsirs
+        tafsirs: tafsirs,
+		hadithIntroductionArticles: hadithIntroductionArticles
       });
     }
   } else
@@ -3209,6 +3228,35 @@ async function resolveQuranCommentaryBook(alias) {
   if (translation)
     return { ...translation, quranBookSlug: translation.quranBookSlug || alias };
   return null;
+}
+
+// HADITH BOOK: AUTHORED INTRODUCTION
+router.get('/:bookAlias/introduction', async function (req, res, next) {
+  res.locals.req = req;
+  res.locals.res = res;
+  const book = visibleBookFromParam(req.params.bookAlias);
+  if (!book || book.alias === 'quran' || (book.type || 'hadith') !== 'hadith')
+    return next();
+  const introductionArticles = await CommentaryHeadings.introductionArticles(book.id);
+  if (!CommentaryHeadings.hasIntroduction(introductionArticles) && !(req.admin && req.editMode))
+    return next(createError(404, `No authored introduction is available for ${book.shortName_en || book.alias}`));
+  const adjacent = await hadithIntroductionAdjacentHeadings(book.alias);
+  res.render('hadith_introduction', {
+    Tafsir: Tafsir,
+    book: book,
+    introductionArticles: introductionArticles,
+    previousHeading: adjacent.previous,
+    nextHeading: adjacent.next
+  });
+});
+
+async function hadithIntroductionAdjacentHeadings(alias) {
+  const query = `book_alias:${JSON.stringify(alias)} AND level:2 AND h1:>0`;
+  const [first, last] = await Promise.all([
+    Index.docsFromQueryString(Heading.INDEX, query, 0, 1, 'ordinal ASC'),
+    Index.docsFromQueryString(Heading.INDEX, query, 0, 1, 'ordinal DESC')
+  ]);
+  return { next: first[0] || null, previous: last[0] || null };
 }
 
 // BOOK: CHAPTER

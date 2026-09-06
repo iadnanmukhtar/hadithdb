@@ -89,6 +89,14 @@
     var quranCommentaryIntroductionAdminHref = quranCommentaryBook && site.editMode
       ? utils.quranUrl(req, `${quranCommentaryBookCanonical}/introduction`)
       : '';
+	var hadithIntroductionArticles = !isQuranToc && Array.isArray(locals.hadithIntroductionArticles)
+	  ? locals.hadithIntroductionArticles
+	  : [];
+	var hadithHasIntroduction = hadithIntroductionArticles.some(function (article) {
+	  return utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en);
+	});
+	var hadithIntroductionHref = hadithHasIntroduction ? `/${book.alias}/introduction` : '';
+	var hadithIntroductionAdminHref = !isQuranToc && site.editMode ? `/${book.alias}/introduction` : '';
     var tocDisplayBook = quranCommentaryBook || book;
     var tocDisplayBookNameEn = quranCommentaryBook
       ? quranCommentaryBookLabel
@@ -487,6 +495,7 @@
 	var tocHeadingRailKeys = new Map();
 	var tocHeadingRailItems = (Array.isArray(toc) ? toc : []).filter(function (heading) {
 	  return heading && heading.h1 !== undefined && heading.h1 !== null && heading.h1 !== ''
+	    && (isQuranToc || Number(heading.h1) !== 0)
 	    && (!isQuranToc || quranCommentaryHasSurah(heading.h1));
 	}).map(function (heading, index) {
 	  var number = heading.h1 != Math.floor(heading.h1) ? Number(heading.h1).toFixed(2) : heading.h1.toString();
@@ -514,6 +523,20 @@
 	    title: articleTitleEn || articleTitleAr || 'Introduction by the author',
 	    titleLang: articleTitleEn ? 'en' : (articleTitleAr ? 'ar' : 'en'),
 	    href: `${quranCommentaryIntroductionHref}#introduction-${article.h2}`,
+	    track: false
+	  });
+	});
+	hadithIntroductionArticles.slice().reverse().forEach(function (article) {
+	  if (!hadithIntroductionHref || (!utils.trimToEmpty(article.intro) && !utils.trimToEmpty(article.intro_en)))
+	    return;
+	  var articleTitleEn = displayName(article.title_en);
+	  var articleTitleAr = displayName(article.title);
+	  tocHeadingRailItems.unshift({
+	    key: `toc-hadith-introduction-${article.h2}`,
+	    number: '',
+	    title: articleTitleEn || articleTitleAr || 'Introduction',
+	    titleLang: articleTitleEn ? 'en' : (articleTitleAr ? 'ar' : 'en'),
+	    href: `${hadithIntroductionHref}#introduction-${article.h2}`,
 	    track: false
 	  });
 	});
@@ -896,11 +919,25 @@
         </div>
 
         <h2 class="fs-4 mt-3">Chapters Headings</h2>
+		<% if (hadithIntroductionAdminHref && !hadithIntroductionHref) { %>
+		<p class="mb-2"><a class="btn btn-sm btn-outline-primary" href="<%= hadithIntroductionAdminHref %>"><span class="bi bi-plus-circle"></span> Manage introduction articles</a></p>
+		<% } %>
         
         <table id="toc" class="table" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.title})` %>">
           <tbody>
+			<% hadithIntroductionArticles.forEach(function (article) { %>
+			<% if (hadithIntroductionHref && (utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en))) { %>
+			<tr class="chapter hadith-introduction-link-row">
+			  <td></td><td><span class="toc-expand-spacer"></span>Introduction</td>
+			  <td><a href="<%= `${hadithIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title_en) || 'Introduction' %></a></td>
+			  <td lang="ar" dir="rtl"><a href="<%= `${hadithIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title) || 'المقدمة' %></a></td>
+			</tr>
+			<% } %>
+			<% }); %>
             <%
         for (var i = 0; i < toc.length; i++) {
+		  if (Number(toc[i].h1) === 0)
+			continue;
           toc[i].h1 = formatHeadingNumber(toc[i].h1);
           toc[i].h2 = formatHeadingNumber(toc[i].h2);
           var title_en = truncateTitle(toc[i].title_en, 75);

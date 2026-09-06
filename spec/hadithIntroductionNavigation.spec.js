@@ -57,7 +57,7 @@ describe('Hadith introduction chapter navigation', () => {
 		await HadithHeadingNavigation.applySameBookHeadingNavigation(current);
 
 		expect(current.prev.path).toBe('muslim/56/8');
-		expect(current.next.path).toBe('muslim/0/5');
+		expect(current.next.path).toBe('muslim/introduction');
 		expect(lookup).toHaveBeenCalledTimes(3);
 	});
 
@@ -75,7 +75,7 @@ describe('Hadith introduction chapter navigation', () => {
 		await HadithHeadingNavigation.applySameBookHeadingNavigation(current);
 
 		expect(current.prev.path).toBe('muslim/56/7');
-		expect(current.next.path).toBe('muslim/0/1');
+		expect(current.next.path).toBe('muslim/introduction');
 		expect(lookup).toHaveBeenCalledTimes(3);
 	});
 

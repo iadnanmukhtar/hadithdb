@@ -6,20 +6,28 @@
   var introductionRailPreviousPassage = locals.commentaryIntroductionPreviousPassage || null;
   var introductionRailOutlines = locals.quranHeadingOutlines || {};
   var introductionRailTafsirBase = locals.quranHeadingTafsirBase || commentaryBookPath;
+  var introductionRailUrlFor = typeof locals.introductionRailUrlFor === 'function'
+    ? locals.introductionRailUrlFor
+    : function (path) { return utils.quranUrl(req, path); };
+  var introductionRailPreviousKind = locals.introductionRailPreviousKind || 'passage';
+  var introductionRailNextKind = locals.introductionRailNextKind || 'surah';
+  var introductionRailHadith = Boolean(locals.introductionRailHadith);
+  var introductionRailHadithContext = locals.introductionRailHadithContext || '';
 %>
 <% if (introductionRailArticles.length > 0) { %>
-<aside class="quran-heading-toc d-none d-lg-block quran-commentary-introduction-rail" data-quran-heading-toc data-quran-heading-initial-key="" data-quran-heading-tafsir-base="<%= introductionRailTafsirBase %>" aria-labelledby="quran-commentary-introduction-rail-title">
+<aside class="quran-heading-toc<%= introductionRailHadith ? ' hadith-heading-toc' : '' %> d-none d-lg-block quran-commentary-introduction-rail" data-quran-heading-toc data-quran-heading-initial-key="" data-quran-heading-tafsir-base="<%= introductionRailTafsirBase %>"<% if (introductionRailHadith) { %> data-hadith-heading-toc data-hadith-heading-initial-context="<%= introductionRailHadithContext %>" data-hadith-heading-initial-key=""<% } %> aria-labelledby="quran-commentary-introduction-rail-title">
   <div class="quran-heading-toc-sticky">
-    <a class="heading-toc-book-name" href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameEn.toUpperCase() %></a>
+    <a class="heading-toc-book-name" href="<%= introductionRailUrlFor(commentaryBookPath) %>"<% if (introductionRailHadith) { %> data-hadith-heading-toc-book<% } %>><%= commentaryNameEn.toUpperCase() %></a>
     <% introductionRailArticles.forEach(function (article, index) { %>
     <a class="nav-link quran-heading-toc-link quran-commentary-introduction-rail-link<%= index === 0 ? ' active' : '' %>" href="#introduction-<%= article.h2 %>" data-quran-introduction-heading="<%= article.h2 %>"<% if (index === 0) { %> aria-current="location"<% } %>><%= utils.trimToEmpty(article.title_en) || utils.trimToEmpty(article.title) || 'Introduction by the author' %></a>
     <% }); %>
-    <a class="nav-link quran-heading-toc-link heading-toc-adjacent-h1 heading-toc-previous-h1" data-quran-heading-h1-prev<% if (introductionRailPreviousPassage) { %> href="<%= utils.quranUrl(req, introductionRailPreviousPassage.href) %>" rel="prev" title="Previous passage: <%= introductionRailPreviousPassage.title %>"><%= introductionRailPreviousPassage.title %><% } else { %> hidden><% } %></a>
-    <strong id="quran-commentary-introduction-rail-title" class="quran-heading-toc-title" data-quran-heading-toc-surah>Introduction</strong>
-    <nav class="nav flex-column quran-heading-toc-nav" data-quran-heading-toc-nav aria-label="Introduction articles">
-      <a class="nav-link quran-heading-toc-link heading-toc-adjacent-h1 heading-toc-next-h1" data-quran-heading-h1-next<% if (introductionRailNextH1) { %> href="<%= utils.quranUrl(req, introductionRailNextH1.href) %>" rel="next" title="Next surah: <%= introductionRailNextH1.number %><%= introductionRailNextH1.title ? ` ${introductionRailNextH1.title}` : '' %>"><%= introductionRailNextH1.number %><% if (introductionRailNextH1.title) { %> <%= introductionRailNextH1.title %><% } %><% } else { %> hidden><% } %></a>
+    <a class="nav-link quran-heading-toc-link<%= introductionRailHadith ? ' hadith-heading-toc-link' : '' %> heading-toc-adjacent-h1 heading-toc-previous-h1" data-quran-heading-h1-prev<% if (introductionRailHadith) { %> data-hadith-heading-h1-prev<% } %><% if (introductionRailPreviousPassage) { %> href="<%= introductionRailUrlFor(introductionRailPreviousPassage.href) %>" rel="prev" title="Previous <%= introductionRailPreviousKind %>: <%= introductionRailPreviousPassage.title %>"><%= introductionRailPreviousPassage.title %><% } else { %> hidden><% } %></a>
+    <strong id="quran-commentary-introduction-rail-title" class="quran-heading-toc-title<%= introductionRailHadith ? ' hadith-heading-toc-title' : '' %>" data-quran-heading-toc-surah<% if (introductionRailHadith) { %> data-hadith-heading-toc-chapter<% } %>>Introduction</strong>
+    <nav class="nav flex-column quran-heading-toc-nav<%= introductionRailHadith ? ' hadith-heading-toc-nav' : '' %>" data-quran-heading-toc-nav<% if (introductionRailHadith) { %> data-hadith-heading-toc-nav<% } %> aria-label="Introduction articles">
+      <a class="nav-link quran-heading-toc-link<%= introductionRailHadith ? ' hadith-heading-toc-link' : '' %> heading-toc-adjacent-h1 heading-toc-next-h1" data-quran-heading-h1-next<% if (introductionRailHadith) { %> data-hadith-heading-h1-next<% } %><% if (introductionRailNextH1) { %> href="<%= introductionRailUrlFor(introductionRailNextH1.href) %>" rel="next" title="Next <%= introductionRailNextKind %>: <%= introductionRailNextH1.number %><%= introductionRailNextH1.title ? ` ${introductionRailNextH1.title}` : '' %>"><%= introductionRailNextH1.number %><% if (introductionRailNextH1.title) { %> <%= introductionRailNextH1.title %><% } %><% } else { %> hidden><% } %></a>
     </nav>
   </div>
   <script type="application/json" data-quran-heading-outlines><%- JSON.stringify(introductionRailOutlines).replace(/</g, '\\u003c') %></script>
+  <% if (introductionRailHadith) { %><script type="application/json" data-hadith-heading-outlines>{}</script><% } %>
 </aside>
 <% } %>

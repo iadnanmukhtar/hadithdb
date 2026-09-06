@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+  var site = Object.assign({}, global.settings.site);
+  site.admin = req.admin;
+  site.editMode = site.admin && req.editMode;
+  var bookPath = `/${encodeURIComponent(book.alias)}`;
+  var introductionPath = `${bookPath}/introduction`;
+  var previousUrl = previousHeading && previousHeading.path ? utils.urlFor(req, `/${previousHeading.path}`) : '';
+  var nextUrl = nextHeading && nextHeading.path ? utils.urlFor(req, `/${nextHeading.path}`) : '';
+  function headingLabel(heading) {
+    if (!heading)
+      return '';
+    var number = Number(heading.h2) > 0 ? `§${heading.h1}.${heading.h2}` : `Chapter ${heading.h1}`;
+    var title = heading.title_en || heading.title || '';
+    return `${number}${title ? ` ${title}` : ''}`;
+  }
+  var page = {
+    menu: 'Introduction',
+    title_en: `Introduction | ${book.name_en || book.shortName_en}`,
+    description_en: `Read the introduction to ${book.name_en || book.shortName_en}.`,
+    subtitle_en: book.shortName_en,
+    subtitle: book.shortName,
+    canonical: introductionPath,
+    prev: previousUrl,
+    next: nextUrl,
+    prevTitle: previousHeading ? `Previous: ${previousHeading.title_en || previousHeading.title || 'Section'}` : 'Previous',
+    nextTitle: nextHeading ? `Next: ${nextHeading.title_en || nextHeading.title || 'Section'}` : 'Next',
+    context: { book: book }
+  };
+%>
+<%- include('sub-views/head.ejs', { site: site, page: page }); %>
+</head>
+<body>
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+  <div class="container-fluid quran-heading-layout quran-heading-layout-tafsir hadith-introduction-layout">
+    <div class="quran-heading-content quran-heading-content-tafsir">
+    <main class="chapter mt-10 hadith-introduction-page" data-reader-infinite="hadith-section" data-reader-starts-introduction="1" data-reader-context-key="<%= `${book.alias}:introduction` %>" data-reader-current-url="<%= utils.urlFor(req, introductionPath) %>"<% if (previousUrl) { %> data-reader-prev-url="<%= previousUrl %>" data-reader-prev-title="<%= page.prevTitle %>"<% } %><% if (nextUrl) { %> data-reader-next-url="<%= nextUrl %>" data-reader-next-title="<%= page.nextTitle %>"<% } %>>
+      <heading class="row major">
+        <h1 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.urlFor(req, bookPath) %>"><%= book.name_en || book.shortName_en %></a></h1>
+        <h1 class="col-md-6 col-sm-12 fs-4 title" lang="ar" dir="rtl"><a href="<%= utils.urlFor(req, bookPath) %>"><%= book.title || book.shortName %></a></h1>
+      </heading>
+      <section class="row breadcrumbs pagination">
+        <div class="col-12" lang="en"><a href="<%= utils.urlFor(req, bookPath) %>"><%= book.shortName_en %></a> &gt; Introduction</div>
+      </section>
+
+      <% introductionArticles.forEach(function (article) { %>
+        <% if (site.editMode || utils.trimToEmpty(article.intro_en) || utils.trimToEmpty(article.intro)) { %>
+        <%- include('sub-views/quran_commentary_article.ejs', {
+          site: site,
+          Tafsir: Tafsir,
+          commentaryBook: book,
+          introductionBilingual: true,
+          article: article
+        }); %>
+        <% } %>
+      <% }); %>
+
+      <% if (site.editMode) { %>
+      <aside class="hadith-introduction-admin my-4" data-introduction-book-id="<%= book.id %>">
+        <button type="button" class="btn btn-sm btn-outline-primary" data-add-introduction-article><span class="bi bi-plus-circle"></span> Add introduction article</button>
+      </aside>
+      <% } %>
+    </main>
+    </div>
+    <%- include('sub-views/quran_commentary_introduction_rail.ejs', {
+      commentaryIntroductionArticles: introductionArticles,
+      commentaryIntroductionNextH1: nextHeading ? {
+        number: Number(nextHeading.h2) > 0 ? `§${nextHeading.h1}.${nextHeading.h2}` : `Chapter ${nextHeading.h1}`,
+        title: nextHeading.title_en || nextHeading.title || '',
+        href: `/${nextHeading.path}`
+      } : null,
+      commentaryIntroductionPreviousPassage: previousHeading ? {
+        title: headingLabel(previousHeading),
+        href: `/${previousHeading.path}`
+      } : null,
+      quranHeadingOutlines: {},
+      quranHeadingTafsirBase: bookPath,
+      commentaryBookPath: bookPath,
+      commentaryNameEn: book.shortName_en || book.name_en || book.alias,
+      introductionRailUrlFor: function (path) { return utils.urlFor(req, path); },
+      introductionRailPreviousKind: 'section',
+      introductionRailNextKind: 'section',
+      introductionRailHadith: true,
+      introductionRailHadithContext: `${book.alias}:introduction`
+    }); %>
+  </div>
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <% if (site.editMode) { %>
+  <script>
+  (function () {
+    const button = document.querySelector('[data-add-introduction-article]');
+    const admin = document.querySelector('[data-introduction-book-id]');
+    if (!button || !admin)
+      return;
+    button.addEventListener('click', async function () {
+      const title = window.prompt('English title for the new introduction article:', 'Introduction');
+      if (title === null)
+        return;
+      button.disabled = true;
+      try {
+        const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+        const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
+        if (token)
+          headers.Authorization = `Bearer ${token}`;
+        const response = await fetch(quranApiPath(`/update/${admin.dataset.introductionBookId}/toc.commentaryArticleAdd`), {
+          method: 'POST', credentials: 'same-origin', headers: headers,
+          body: JSON.stringify({ value: { title_en: title } })
+        });
+        const body = await response.json();
+        if (!response.ok || body.code !== 200)
+          throw new Error(body.message || response.statusText);
+        window.location.hash = `introduction-${body.value.h2}`;
+        window.location.reload();
+      } catch (err) {
+        if (window.toastr)
+          toastr.error(err.message, 'Introduction article add failed');
+        else
+          alert(err.message);
+        button.disabled = false;
+      }
+    });
+  }());
+  </script>
+  <% } %>
+</body>
+</html>

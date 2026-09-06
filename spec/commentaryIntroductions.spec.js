@@ -137,8 +137,8 @@ test('makes Surah 0 introductions part of the tafsir infinite-reader sequence', 
 	expect(script).toContain("disclosure.open = true;");
 	expect(script).toContain('main[data-reader-infinite="tafsir"][data-reader-context-key="0"]');
 	expect(script).toContain('openDirectIntroductionDisclosure();');
-	expect(script).toContain("var startsWithIntroduction = mode === 'tafsir'");
+	expect(script).toContain('var startsWithIntroduction = startsAtReaderIntroduction');
 	expect(script).toContain("var startsAtTafsirIntroduction = mode === 'tafsir' && main.attr('data-reader-context-key') === '0';");
-	expect(script).toContain("var prefetchAhead = mode === 'tafsir' ? (startsAtTafsirIntroduction ? 2 : 1) : 3;");
+	expect(script).toContain("var prefetchAhead = startsAtReaderIntroduction ? 2 : (mode === 'tafsir' ? 1 : 3);");
 	expect(script).toMatch(/if \(!loaded \|\| pagesAhead\(\) >= prefetchAhead\) \{\s*ensuring = false;\s*window\.requestAnimationFrame\(scheduleInfiniteWork\);/);
 });

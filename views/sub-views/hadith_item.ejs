@@ -86,6 +86,7 @@
 	}
 	const sharhBody = !isQuranItem ? plainText(i.ar?.body || '') : '';
 	const hadithClassification = i.hdithClassification || i.hdithMetadata || {};
+	const hadithClassificationOptions = i.hdithClassificationOptions || i.hdithMetadata || {};
 	const sourceHadithNarrator = i.hdithNarrator || (i.hdithMetadata && i.hdithMetadata.narrator ? {
 		name: i.hdithMetadata.narrator,
 		name_en: i.hdithMetadata.narratorEn
@@ -117,6 +118,17 @@
 	const itemLinkTitleSource = langData.title || langData.body || displayedChain;
 	const hadithAttribution = hadithClassification.attribution || null;
 	const hadithChainCategories = Array.isArray(hadithClassification.chainCategories) ? hadithClassification.chainCategories : [];
+	const hadithAttributionOptions = Array.isArray(hadithClassificationOptions.attributionOptions) ? hadithClassificationOptions.attributionOptions : [];
+	const hadithChainCategoryOptions = Array.isArray(hadithClassificationOptions.chainCategoryOptions) ? hadithClassificationOptions.chainCategoryOptions : [];
+	const selectedChainCategoryKeys = hadithChainCategoryOptions.filter(function (option) { return hadithChainCategories.some(function (category) { return category.key === option.key; }); }).map(function (category) { return category.key; }).join(',');
+	const hadithChainCategorySelections = [{ value: '', label: 'No chain classification — بلا تصنيف للسند' }];
+	for (let selectionMask = 1; selectionMask < (1 << hadithChainCategoryOptions.length); selectionMask++) {
+		const selection = hadithChainCategoryOptions.filter(function (_category, categoryIndex) { return selectionMask & (1 << categoryIndex); });
+		hadithChainCategorySelections.push({
+			value: selection.map(function (category) { return category.key; }).join(','),
+			label: `${selection.map(function (category) { return category.title_en; }).join(' · ')} — ${selection.map(function (category) { return category.title; }).join(' · ')}`
+		});
+	}
 	const hasHadithClassification = !!hadithAttribution || hadithChainCategories.length > 0;
 	const showLegacyInlineGrade = !isQuranItem && (i.single === true || i.randomTocItem === true || isSimilarSection || (page && (page.menu === 'Chapter' || page.menu === 'Section')));
 	const legacyGradeOverride = i.legacyGradeOverride || null;
@@ -218,16 +230,16 @@
 		<%# Item Number + Chain %>
 		<b><a href="<%= itemHref %>" title="<%= linkTitle(itemLinkTitleSource) %>"><%= `${itemBookShortName}:${i.actual ? (langActual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a></b><% if (displayedChain || site.editMode) { %> –
 		<% if (showPrimaryNarrator) { %>
-			<span class="<%= `${narratorInlineEditable ? '_e ' : ''}chain ${_p} l3`.trim() %>" title="Ḥadīth Narrator"<%- narratorInlineEditable ? ` ${editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder })}` : '' %>><%= displayedChain %></span>
+			<% if (narratorInlineEditable) { %><input type="search" class="_e chain hadith-primary-narrator-input <%= _p %> l3" title="Ḥadīth Narrator" value="<%= displayedChain %>" data-narrator-language="<%= lang %>" autocomplete="off" autocapitalize="none" spellcheck="false" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>><% } else { %><span class="chain <%= _p %> l3" title="Ḥadīth Narrator"><%= displayedChain %></span><% } %>
 		<% } else { %>
 			<span class="<%= editClass(`chain ${_p} l3`) %>" title="Ḥadīth Chain"<%- site.editMode ? ` ${editAttrs('chain', { arabizi: isContentTranslationLang ? 'false' : 'true', placeholder: editPlaceholder('chain') })}` : '' %><% if (paymentFeatureEnabled && !site.editMode && !isQuranItem && lang === 'en') { %> data-content-translation-field="chain"<% } %>><%- displayedChain || '' %></span>
 		<% } %>
 		<% } %>
 		<% if (narratorInlineEditable && showPrimaryNarratorOnly && !primaryNarratorText) { %>
-			<div class="hadith-narrator-editor <%= _p %> l3"><span class="text-muted"><%= lang === 'ar' ? 'الراوي:' : 'Narrator:' %></span> <span class="_e" title="Ḥadīth Narrator" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>></span></div>
+			<div class="hadith-narrator-editor <%= _p %> l3"><span class="text-muted"><%= lang === 'ar' ? 'الراوي:' : 'Narrator:' %></span> <input type="search" class="_e hadith-primary-narrator-input" title="Ḥadīth Narrator" value="" data-narrator-language="<%= lang %>" autocomplete="off" autocapitalize="none" spellcheck="false" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>></div>
 		<% } %>
 		<% if (narratorInlineEditable && !isQuranItem && i.single === true) { %>
-			<div class="hadith-narrator-editor <%= _p %> l3"><span class="text-muted"><%= lang === 'ar' ? 'الراوي:' : 'Narrator:' %></span> <span class="_e" title="Ḥadīth Narrator" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>><%= primaryNarratorText %></span></div>
+			<div class="hadith-narrator-editor <%= _p %> l3"><span class="text-muted"><%= lang === 'ar' ? 'الراوي:' : 'Narrator:' %></span> <input type="search" class="_e hadith-primary-narrator-input" title="Ḥadīth Narrator" value="<%= primaryNarratorText %>" data-narrator-language="<%= lang %>" autocomplete="off" autocapitalize="none" spellcheck="false" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>></div>
 		<% } %>
 
 	</section>
@@ -291,8 +303,8 @@
 	<% } %>
 
 	<%# Grade  ............................................................. %>
-	<% if (i.remark == 0 && !isContentTranslationLang && hasHadithClassification) { const classificationParts = [hadithAttribution ? (lang === 'ar' ? hadithAttribution.title : hadithAttribution.title_en) : '', ...hadithChainCategories.map(function (category) { return lang === 'ar' ? category.title : category.title_en; })].filter(Boolean); %>
-		<div class="hadith-attribution"><%= classificationParts.join(' · ') %></div>
+	<% if (i.remark == 0 && !isContentTranslationLang && (hasHadithClassification || (site.editMode && lang === 'en'))) { const classificationParts = [hadithAttribution ? (lang === 'ar' ? hadithAttribution.title : hadithAttribution.title_en) : '', ...hadithChainCategories.map(function (category) { return lang === 'ar' ? category.title : category.title_en; })].filter(Boolean); %>
+		<div class="hadith-attribution"><% if (site.editMode && lang === 'en') { %><div class="hadith-classification-editor" dir="ltr"><select class="_e form-select form-select-sm" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hdith_metadata.attribution_id" aria-label="Hadith attribution" title="Hadith attribution"><% hadithAttributionOptions.forEach(function (attributionOption) { %><option value="<%= attributionOption.id %>" <%= Number(hadithAttribution && hadithAttribution.id) === attributionOption.id || (!hadithAttribution && attributionOption.id === -1) ? 'selected' : '' %>><%= attributionOption.title_en %> — <%= attributionOption.title %></option><% }); %></select><select class="_e form-select form-select-sm" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hdith_metadata.chain_type" aria-label="Chain classification" title="Chain classification"><% hadithChainCategorySelections.forEach(function (chainSelection) { %><option value="<%= chainSelection.value %>" <%= selectedChainCategoryKeys === chainSelection.value ? 'selected' : '' %>><%= chainSelection.label %></option><% }); %></select></div><% } else { %><%= classificationParts.join(' · ') %><% } %></div>
 	<% } %>
 	<% if (i.remark == 0 && !isContentTranslationLang && showLegacyInlineGrade && showTranslatedLegacyGradeOverride) { %>
 		<aside class="hadith-inline-ruling<%= i.single === true ? ' hadith-inline-ruling-single' : '' %>" lang="<%=lang%>">

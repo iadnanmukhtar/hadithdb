@@ -48,6 +48,20 @@ describe('hadith narrator inline editing', () => {
 		expect(res.json.mock.calls[0][0].value).toBe(value);
 	});
 
+	test('updates both narrator languages when an autocomplete option is selected', async () => {
+		const req = {
+			body: { value: 'عُثْمَانُ بْنُ عَفَّانَ', pairedNarrator: 'ʿUthmān b. ʿAffān' },
+			params: { id: '123', prop: 'hdith_metadata.narrator' },
+			user: { uid: 'admin' }
+		};
+		const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+		await updateHandler()(req, res, jest.fn());
+
+		expect(global.query.mock.calls.some(([sql]) => sql.includes("SET narrator='عُثْمَانُ بْنُ عَفَّانَ', narrator_en='ʿUthmān b. ʿAffān'"))).toBe(true);
+		expect(res.status).toHaveBeenCalledWith(200);
+	});
+
 	test('adds a manually managed narrator to a hadith without imported metadata', async () => {
 		global.query.mockImplementation(async sql => {
 			if (sql.includes('MAX(ordinal)')) return [{ ordinal: 1 }];
@@ -67,6 +81,27 @@ describe('hadith narrator inline editing', () => {
 		expect(global.query.mock.calls.some(([sql]) => sql.includes('INSERT INTO hdith_hadith_narrators'))).toBe(true);
 		expect(res.status).toHaveBeenCalledWith(200);
 		expect(res.json.mock.calls[0][0].createdNarratorId).toBe(456);
+	});
+
+	test('updates the canonical attribution in the hadith and metadata rows', async () => {
+		const req = { body: { value: '200' }, params: { id: '123', prop: 'hdith_metadata.attribution_id' }, user: { uid: 'admin' } };
+		const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+		await updateHandler()(req, res, jest.fn());
+
+		expect(global.query.mock.calls.some(([sql]) => sql.includes('UPDATE hadiths SET attributionId=200 WHERE id=123'))).toBe(true);
+		expect(global.query.mock.calls.some(([sql]) => sql.includes("UPDATE hdith_hadith_metadata SET attribution='مرفوع'"))).toBe(true);
+		expect(res.status).toHaveBeenCalledWith(200);
+	});
+
+	test('stores selected chain classifications with the display separator', async () => {
+		const req = { body: { value: 'muallaq,mursal' }, params: { id: '123', prop: 'hdith_metadata.chain_type' }, user: { uid: 'admin' } };
+		const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+		await updateHandler()(req, res, jest.fn());
+
+		expect(global.query.mock.calls.some(([sql]) => sql.includes("UPDATE hdith_hadith_metadata SET chain_type='معلق · مرسل'"))).toBe(true);
+		expect(res.status).toHaveBeenCalledWith(200);
 	});
 });
 

@@ -62,6 +62,7 @@ describe('book update route', () => {
       message: 'created', value: { id: 91, h1: 0, h2: 2, title_en: 'Preface' }
     });
     jest.spyOn(CommentaryHeadings, 'book').mockResolvedValue(book);
+	jest.spyOn(CommentaryHeadings, 'introductionBook').mockResolvedValue(book);
     jest.spyOn(Utils, 'cacheBookDirectory').mockReturnValue('/tmp/hadithdb-missing-commentary-introduction-cache');
     const req = {
       body: { value: { title_en: 'Preface' } },

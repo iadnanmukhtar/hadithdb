@@ -393,6 +393,7 @@
 	          prop: prop,
 	          arabizi: arabizi,
 	          value: value,
+	          pairedNarrator: ($el.attr('data-paired-narrator') || '').toString(),
 	          quranSectionPath: propStr === 'toc.title_en' && isQuranPage() && !$el.closest('.quran-subheading').length
 	            ? window.location.pathname
 	            : '',
@@ -448,6 +449,16 @@
 	            }
 	            if (propStr === 'hdith_narrator.add' || propStr === 'hdith_narrator.delete') {
 	              rememberUpdateSuccessToast(propStr === 'hdith_narrator.add' ? 'Narrator added' : 'Narrator deleted', 'The chain of narrators has been updated.');
+	              window.location.reload();
+	              return;
+	            }
+	            if (propStr === 'hdith_metadata.attribution_id' || propStr === 'hdith_metadata.chain_type') {
+	              rememberUpdateSuccessToast('Classification updated', 'The hadith classification has been updated.');
+	              window.location.reload();
+	              return;
+	            }
+	            if (propStr === 'hdith_metadata.narrator' || propStr === 'hdith_metadata.narrator_en') {
+	              rememberUpdateSuccessToast('Primary narrator updated', 'The hadith primary narrator has been updated.');
 	              window.location.reload();
 	              return;
 	            }
@@ -537,9 +548,10 @@
           body: JSON.stringify({
             id: reqBody.id,
             prop: reqBody.prop,
-            arabizi: reqBody.arabizi,
-            value: reqBody.value,
-            quranSectionPath: reqBody.quranSectionPath,
+	            arabizi: reqBody.arabizi,
+	            value: reqBody.value,
+	            pairedNarrator: reqBody.pairedNarrator,
+	            quranSectionPath: reqBody.quranSectionPath,
 	            hdithUrl: reqBody.hdithUrl,
           })
         });
@@ -671,6 +683,52 @@
 	      });
 	    };
 
+	    const bindPrimaryNarratorAutocomplete = ($input) => {
+	      if (!$.fn.autocomplete || !$input.hasClass('hadith-primary-narrator-input') || $input.data('primaryNarratorAutocompleteBound')) return;
+	      $input.data('primaryNarratorAutocompleteBound', true);
+	      const language = ($input.attr('data-narrator-language') || 'ar').toString();
+	      $input.on('input.primaryNarrator', function () { $input.removeAttr('data-paired-narrator'); });
+	      $input.autocomplete({
+	        delay: 120,
+	        minLength: 0,
+	        source: async function (request, response) {
+	          try {
+	            const params = new URLSearchParams({ q: request.term || '', limit: '20' });
+	            const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+	            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+	            const res = await fetch(`${editHadithApiPath('/autocomplete/primary-narrators')}?${params.toString()}`, { headers });
+	            if (!res.ok) throw new Error(`Search failed with ${res.status}`);
+	            response(await res.json());
+	          } catch (_err) {
+	            response([]);
+	          }
+	        },
+	        focus: function (event, ui) {
+	          event.preventDefault();
+	        },
+	        select: function (event, ui) {
+	          event.preventDefault();
+	          const value = language === 'en' ? (ui.item.narrator_en || ui.item.narrator) : ui.item.narrator;
+	          const pairedNarrator = language === 'en' ? ui.item.narrator : ui.item.narrator_en;
+	          $input.val(value).attr('editing', 'true');
+	          if (pairedNarrator) $input.attr('data-paired-narrator', pairedNarrator);
+	          else $input.removeAttr('data-paired-narrator');
+	          $input.autocomplete('close');
+	          changeListener.call($input[0], event);
+	        },
+	        open: function () {
+	          $input.autocomplete('widget').addClass('search-autocomplete-menu hadith-primary-narrator-autocomplete-menu').attr({ lang: language, dir: language === 'ar' ? 'rtl' : 'ltr' }).css('width', Math.max($input.outerWidth(), 320));
+	        }
+	      }).autocomplete('instance')._renderItem = function (list, item) {
+	        const $row = $('<div>').addClass('search-autocomplete-item').attr({ lang: 'ar', dir: 'rtl' });
+	        $('<div>').addClass('search-autocomplete-match search-autocomplete-name').text(item.narrator).appendTo($row);
+	        if (item.narrator_en)
+	          $('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-en').attr({ lang: 'en', dir: 'ltr' }).text(item.narrator_en).appendTo($row);
+	        return $('<li>').append($row).appendTo(list);
+	      };
+	      $input.on('focus.primaryNarrator', function () { $input.autocomplete('search', ''); });
+	    };
+
 	    const bindInlineEditors = (scope) => {
 	      $(scope || document).find('._e').addBack('._e').each(function () {
 	        const $el = $(this);
@@ -678,6 +736,7 @@
 	          return;
 	        $el.data('inlineEditorBound', true);
 	        applyInlineEditorLanguageContext($el);
+	        bindPrimaryNarratorAutocomplete($el);
 	        if (!$el.is('textarea, input, select'))
 	          $el.attr('contenteditable', 'true');
 	        if (isMarkdownElement($el) && !hasMarkdownSource($el))

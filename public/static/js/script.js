@@ -11880,6 +11880,9 @@ function visibleHadithHeading() {
 	if (!targets.length)
 		return null;
 	var focus = Math.max(96, window.innerHeight * .28);
+	var introductionReader = document.querySelector('[data-reader-infinite^="hadith-"][data-reader-starts-introduction="1"]');
+	if (introductionReader && targets[0].getBoundingClientRect().top > focus)
+		return null;
 	var target = null;
 	targets.forEach(function (candidate) {
 		if (candidate.getBoundingClientRect().top > focus)
@@ -13043,7 +13046,8 @@ function initReaderInfiniteNavigation(root) {
 
 		var mode = main.attr('data-reader-infinite') || '';
 		var startsAtTafsirIntroduction = mode === 'tafsir' && main.attr('data-reader-context-key') === '0';
-		var prefetchAhead = mode === 'tafsir' ? (startsAtTafsirIntroduction ? 2 : 1) : 3;
+		var startsAtReaderIntroduction = startsAtTafsirIntroduction || main.attr('data-reader-starts-introduction') === '1';
+		var prefetchAhead = startsAtReaderIntroduction ? 2 : (mode === 'tafsir' ? 1 : 3);
 		var ensuring = false;
 		var loadingPromise = null;
 		var retryAfter = 0;
@@ -13063,6 +13067,7 @@ function initReaderInfiniteNavigation(root) {
 			'data-reader-quran-ref': main.attr('data-reader-quran-ref') || '',
 			'data-page-title': document.title,
 			'data-reader-context-key': lastContextKey,
+			'data-reader-starts-introduction': startsAtReaderIntroduction ? '1' : '',
 			'data-reader-prev-url': main.attr('data-reader-prev-url') || '',
 			'data-reader-prev-title': main.attr('data-reader-prev-title') || 'Previous',
 			'data-reader-next-url': main.attr('data-reader-next-url') || '',
@@ -13091,9 +13096,9 @@ function initReaderInfiniteNavigation(root) {
 		var currentPageIndex = function () {
 			var markers = pageMarkers();
 			var position = window.pageYOffset + (window.innerHeight * 0.65);
-			var startsWithIntroduction = mode === 'tafsir'
+			var startsWithIntroduction = startsAtReaderIntroduction
 				&& markers.length > 1
-				&& markers[0].getAttribute('data-reader-context-key') === '0';
+				&& markers[0].getAttribute('data-reader-starts-introduction') === '1';
 			if (startsWithIntroduction) {
 				var nextPageTop = markers[1].getBoundingClientRect().top + window.pageYOffset;
 				if (window.pageYOffset < nextPageTop)

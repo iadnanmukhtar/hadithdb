@@ -43,7 +43,7 @@ describe('Hadith metadata editing', () => {
 		const route = read('routes/update.js');
 		const item = read('views/sub-views/hadith_item.ejs');
 		expect(route).toContain("type === 'hdith_metadata'");
-		expect(route).toContain("['narrator', 'narrator_en'].includes(col)");
+		expect(route).toContain("['narrator', 'narrator_en', 'attribution_id', 'chain_type'].includes(col)");
 		expect(route).toContain('UPDATE hdith_hadith_metadata SET ${col}=');
 		expect(route).toContain('await runHadithPostUpdateTasks(metadataHadithId)');
 		expect(item).toContain("'hdith_metadata.narrator'");
@@ -51,6 +51,21 @@ describe('Hadith metadata editing', () => {
 		expect(item).toContain('showPrimaryNarratorOnly');
 		expect(item).toContain('i.single === true');
 		expect(item).toContain('hadith-narrator-editor');
+		expect(item).toContain('hadith-primary-narrator-input');
+		expect(read('views/sub-views/scripts.ejs')).toContain("editHadithApiPath('/autocomplete/primary-narrators')");
+	});
+
+	test('allows attribution and chain classifications to be edited from controlled lists', () => {
+		const route = read('routes/update.js');
+		const item = read('views/sub-views/hadith_item.ejs');
+		expect(route).toContain("'attribution_id', 'chain_type'");
+		expect(route).toContain('HadithAttributions.ATTRIBUTIONS.find');
+		expect(route).toContain('HadithChainCategories.CATEGORIES.find');
+		expect(route).toContain('UPDATE hadiths SET attributionId=');
+		expect(route).toContain('UPDATE hdith_hadith_metadata SET chain_type=');
+		expect(item).toContain('data-prop="hdith_metadata.attribution_id"');
+		expect(item).toContain('data-prop="hdith_metadata.chain_type"');
+		expect(item).toContain('hadithChainCategorySelections');
 	});
 
 	test('renders and manages custom Sharh in Arabic and English columns', () => {

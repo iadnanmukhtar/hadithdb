@@ -14,6 +14,8 @@ const Hadith = require('../lib/Hadith');
 const HadithRevision = require('../lib/HadithRevision');
 const HdithEnrichment = require('../lib/HdithEnrichment');
 const HdithMetadata = require('../lib/HdithMetadata');
+const HadithAttributions = require('../lib/HadithAttributions');
+const HadithChainCategories = require('../lib/HadithChainCategories');
 const DorarSharhImport = require('../lib/DorarSharhImport');
 const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const Arabic = require('../lib/Arabic');
@@ -255,14 +257,42 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var metadataHadithId = parseInt(ids[0], 10);
       if (!Number.isInteger(metadataHadithId) || metadataHadithId <= 0)
         throw createError(400, 'Invalid hadith ID');
-      if (!['narrator', 'narrator_en'].includes(col))
+      if (!['narrator', 'narrator_en', 'attribution_id', 'chain_type'].includes(col))
         throw createError(400, `Invalid hadith metadata field '${col}'`);
       status.value = Utils.trimToEmpty(status.value);
       if (!await HdithMetadata.ensureLocalMetadataRow(metadataHadithId))
         throw createError(404, 'Hadith not found');
-      await global.query(`UPDATE hdith_hadith_metadata SET ${col}=${sql(status.value)} WHERE hadith_id=${metadataHadithId}`);
+      if (col === 'attribution_id') {
+        var attributionId = Number(status.value);
+        var attribution = HadithAttributions.ATTRIBUTIONS.find(item => item.id === attributionId);
+        if (!attribution)
+          throw createError(400, 'Invalid hadith attribution');
+        await global.query(`UPDATE hadiths SET attributionId=${attribution.id} WHERE id=${metadataHadithId}`);
+        await global.query(`UPDATE hdith_hadith_metadata SET attribution=${attribution.id < 0 ? 'NULL' : sql(attribution.title)} WHERE hadith_id=${metadataHadithId}`);
+        status.value = String(attribution.id);
+        status.message = 'Hadith attribution updated';
+      } else if (col === 'chain_type') {
+        var requestedChainCategoryKeys = String(status.value || '').split(',').map(value => value.trim()).filter(Boolean);
+        if (new Set(requestedChainCategoryKeys).size !== requestedChainCategoryKeys.length)
+          throw createError(400, 'Duplicate chain classification');
+        var requestedChainCategories = requestedChainCategoryKeys.map(key => HadithChainCategories.CATEGORIES.find(item => item.key === key));
+        if (requestedChainCategories.some(category => !category))
+          throw createError(400, 'Invalid chain classification');
+        var chainType = requestedChainCategories.map(category => category.title).join(' · ');
+        await global.query(`UPDATE hdith_hadith_metadata SET chain_type=${sql(chainType)} WHERE hadith_id=${metadataHadithId}`);
+        status.value = requestedChainCategoryKeys.join(',');
+        status.message = 'Hadith chain classification updated';
+      } else {
+        var pairedNarrator = Utils.trimToEmpty(req.body.pairedNarrator);
+        if (pairedNarrator) {
+          var pairedColumn = col === 'narrator' ? 'narrator_en' : 'narrator';
+          await global.query(`UPDATE hdith_hadith_metadata SET ${col}=${sql(status.value)}, ${pairedColumn}=${sql(pairedNarrator)} WHERE hadith_id=${metadataHadithId}`);
+        } else {
+          await global.query(`UPDATE hdith_hadith_metadata SET ${col}=${sql(status.value)} WHERE hadith_id=${metadataHadithId}`);
+        }
+        status.message = col === 'narrator' ? 'Arabic hadith narrator updated' : 'English hadith narrator updated';
+      }
       status.code = 200;
-      status.message = col === 'narrator' ? 'Arabic hadith narrator updated' : 'English hadith narrator updated';
       await runHadithPostUpdateTasks(metadataHadithId);
 
     } else if (type === 'hdith_narrator') {
@@ -285,6 +315,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           VALUES (${MySQL.escape(narratorSourceSlug)}, ${sql(narratorName)}, ${sql(narratorName)}, NULL, NULL, NULL, NULL, NULL, '')`);
         await global.query(`INSERT INTO hdith_hadith_narrators (hadith_id, narrator_id, ordinal, formula, flags_json)
           VALUES (${narratorTargetId}, ${Number(insertedNarrator.insertId)}, ${narratorOrdinal}, NULL, '[]')`);
+        HdithMetadata.invalidatePrimaryNarratorSuggestionCache();
         status.createdNarratorId = Number(insertedNarrator.insertId);
         status.code = 200;
         status.message = 'Narrator added';
@@ -298,6 +329,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           throw createError(400, 'Only manually added narrators can be deleted');
         await global.query(`DELETE FROM hdith_hadith_narrators WHERE hadith_id=${Number(narratorRow.hadith_id)} AND narrator_id=${narratorTargetId}`);
         await global.query(`DELETE FROM hdith_narrators WHERE id=${narratorTargetId}`);
+        HdithMetadata.invalidatePrimaryNarratorSuggestionCache();
         status.code = 200;
         status.message = 'Narrator deleted';
         await runHadithPostUpdateTasks(narratorRow.hadith_id);
@@ -582,7 +614,11 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       } else if (col === 'commentaryArticleAdd') {
         result = await CommentaryHeadings.addIntroductionArticle(ids[0], status.value, userId);
         status.value = result.value;
-        await finishCommentaryHeadingChange(ids[0]);
+		var introductionBook = await finishIntroductionHeadingChange(ids[0]);
+		if (introductionBook.type === 'hadith') {
+		  await reindexHeadingSubtreeByHeadingId(result.value.chapterId);
+		  await invalidateHeadingCachesByHeadingId(result.value.chapterId);
+		}
         shouldRunDefaultHeadingTasks = false;
       } else if (col === 'commentarySurahEnsure') {
         var commentarySurah = parseInt(status.value && status.value.surah, 10);
@@ -1008,6 +1044,23 @@ async function finishCommentaryHeadingChange(bookId) {
     throw createError(404, 'Commentary book not found');
   await Books.touchBookContentLastmodById(book.id);
   await flushCommentaryIntroductionCaches(book);
+}
+
+async function finishIntroductionHeadingChange(bookId) {
+  const book = await CommentaryHeadings.introductionBook(bookId);
+  if (!book)
+    throw createError(404, 'Book not found');
+  if (book.type !== 'hadith') {
+    await Books.touchBookContentLastmodById(book.id);
+    await flushCommentaryIntroductionCaches(book);
+    return book;
+  }
+  await Books.touchBookContentLastmodById(book.id);
+  await Promise.all([
+    Utils.flushCacheContaining(book.alias),
+    Utils.flushCacheContaining(`book:${book.alias}`)
+  ]);
+  return book;
 }
 
 async function commentaryIndexRowById(id) {

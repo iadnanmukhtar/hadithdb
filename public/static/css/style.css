@@ -7531,6 +7531,11 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	font-weight: bold;
 	margin-top: .65rem;
 }
+.hadith-classification-editor { align-items: center; display: flex; flex-wrap: wrap; gap: .4rem; }
+.hadith-classification-editor .form-select { color: var(--bs-body-color); font-size: var(--content-size-meta); font-weight: 400; width: auto; }
+.hadith-primary-narrator-input { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: .25rem; color: var(--c-gray-mid); display: inline-block; font: inherit; max-width: 100%; min-width: min(18rem, 100%); padding: .15rem .4rem; width: auto; }
+.hadith-primary-narrator-input:focus { border-color: var(--c-accent); box-shadow: 0 0 0 .15rem color-mix(in srgb, var(--c-accent) 20%, transparent); outline: 0; }
+.hadith-primary-narrator-autocomplete-menu { max-height: min(24rem, 55vh); overflow-y: auto; z-index: 1080; }
 
 .h .chain {
 	color: var(--c-gray-mid) !important;
