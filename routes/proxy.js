@@ -210,6 +210,7 @@ router.get('/tafsir/local', async function (req, res) {
       bilingual: rendered.bilingual,
       ...(rendered.contentTranslationLanguage ? { content_translation_language: rendered.contentTranslationLanguage } : {}),
       ...(rendered.arabicHtml ? { arabic_html: rendered.arabicHtml } : {}),
+      ...(rendered.translationHtml ? { translation_html: rendered.translationHtml } : {}),
       ...(translationEstimate ? {
         translation_points: translationEstimate.points,
         translation_word_count: translationEstimate.wordCount,
@@ -520,7 +521,8 @@ function renderLocalCommentaryResult(row, editMode, lang, src) {
     return {
       html: html,
       bilingual: false,
-      contentTranslationLanguage: html ? 'en' : ''
+      contentTranslationLanguage: html ? 'en' : '',
+      translationHtml: html
     };
   }
   const translation = localCommentaryAvailableTranslation(row, lang === 'ar' ? 'en' : lang || 'en');
@@ -532,7 +534,8 @@ function renderLocalCommentaryResult(row, editMode, lang, src) {
         html: renderLocalCommentaryPair(arabicHtml, translationHtml, translation),
         bilingual: true,
         contentTranslationLanguage: translation.code,
-        arabicHtml: arabicHtml
+        arabicHtml: arabicHtml,
+        translationHtml: translationHtml
       };
     }
   }
@@ -555,7 +558,8 @@ function renderLocalCommentaryResult(row, editMode, lang, src) {
       html: renderLocalCommentaryPair(arabic, english, localCommentaryLanguageMetadata('en')),
       bilingual: true,
       contentTranslationLanguage: 'en',
-      arabicHtml: arabic
+      arabicHtml: arabic,
+      translationHtml: english
     };
   }
   const sections = [];
@@ -567,7 +571,8 @@ function renderLocalCommentaryResult(row, editMode, lang, src) {
     html: sections.join('\n'),
     bilingual: false,
     contentTranslationLanguage: english ? 'en' : (arabic ? 'en' : ''),
-    arabicHtml: arabic || ''
+    arabicHtml: arabic || '',
+    translationHtml: english || ''
   };
 }
 

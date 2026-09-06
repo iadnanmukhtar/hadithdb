@@ -14,6 +14,11 @@ hadith search, and full hadith-detail lookup tools.
 Text fields are returned in full. Arabic and English are exposed separately
 when the underlying record provides both languages; unavailable language fields
 are returned as `null` rather than synthesized or omitted.
+Quran ayat, Quran search results, hadith search results, and hadith-detail
+records expose `bilingual`, `text`, `text_arabic`, `text_english`, and
+`truncated`. Hadith-detail sharh entries retain their existing `text` and
+`text_en` source fields and additionally expose the same language-explicit
+fields, with their combined value in `text_combined`.
 
 The endpoint accepts JSON-RPC 2.0 requests for `initialize`, `ping`,
 `tools/list`, and `tools/call`. It does not create sessions, so clients should

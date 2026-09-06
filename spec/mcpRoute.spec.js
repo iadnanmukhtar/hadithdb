@@ -2,6 +2,7 @@
 
 const express = require('express');
 const HadithMcp = require('../lib/HadithMcp');
+const Debug = require('../lib/Debug');
 
 describe('public MCP Streamable HTTP route', () => {
   let server;
@@ -105,6 +106,35 @@ describe('public MCP Streamable HTTP route', () => {
     expect(call).toHaveBeenCalledWith('lookup_quran_ayah', { surah: 2, ayah: 255 }, expect.objectContaining({ req: expect.any(Object) }));
   });
 
+  test('logs every MCP lookup with its arguments and resolved requester IP at info level', async () => {
+    const originalLog = Debug.log;
+    const log = jest.fn();
+    Debug.log = log;
+    jest.spyOn(HadithMcp, 'callTool').mockResolvedValueOnce({
+      structuredContent: { reference: 'quran:5:47', commentary: [] },
+      content: [{ type: 'text', text: 'Found Ibn Kathir for Quran 5:47.' }]
+    });
+
+    try {
+      const response = await request('POST', {
+        jsonrpc: '2.0',
+        id: 'logged-tool',
+        method: 'tools/call',
+        params: {
+          name: 'lookup_tafsir',
+          arguments: { tafsir: 'ibn-kathir', surah: 5, ayah: 47, language: 'en' }
+        }
+      }, { 'x-forwarded-for': '203.0.113.27' });
+
+      expect(response.status).toBe(200);
+      expect(log.mock.calls.flat().join('\n')).toContain(
+        'hadithdb:Mcp INFO: MCP lookup request ip=203.0.113.27 tool=lookup_tafsir arguments={"tafsir":"ibn-kathir","surah":5,"ayah":47,"language":"en"}'
+      );
+    } finally {
+      Debug.log = originalLog;
+    }
+  });
+
   test('accepts initialized notifications with HTTP 202', async () => {
     const response = await request('POST', { jsonrpc: '2.0', method: 'notifications/initialized' });
     expect(response.status).toBe(202);
@@ -173,6 +203,26 @@ describe('Hadith MCP tool service', () => {
       .rejects.toThrow('only for Surah 1');
   });
 
+  test('returns Quran ayah text and its translation through the bilingual contract', async () => {
+    const fetch = async url => response([{
+      id: 255,
+      ref: 'quran:2:255',
+      book_alias: 'quran',
+      num: '2:255',
+      body: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ',
+      body_en: 'Allah—there is no deity except Him.'
+    }], String(url));
+
+    const result = await HadithMcp.callTool('lookup_quran_ayah', { surah: 2, ayah: 255 }, { baseUrls: urls, fetch });
+
+    expect(result.structuredContent.ayah).toEqual(expect.objectContaining({
+      bilingual: true,
+      text_arabic: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ',
+      text_english: 'Allah—there is no deity except Him.',
+      truncated: false
+    }));
+  });
+
   test('normalizes a detailed hadith response and canonical URL', async () => {
     const fetch = async url => response([{
       id: 1,
@@ -182,13 +232,39 @@ describe('Hadith MCP tool service', () => {
       body_en: 'Actions are by intentions.',
       body: 'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ',
       grade_grade_en: 'Agreed Upon',
-      hdithMetadata: { narrators: [{ name: 'Umar' }] }
+      hdithMetadata: {
+        narrators: [{ name: 'Umar' }],
+        sharh: [{
+          id: 10,
+          title: 'فتح الباري',
+          title_en: 'Fath al-Bari',
+          text: 'شرح عربي كامل',
+          text_en: 'Complete English explanation'
+        }]
+      }
     }], String(url));
     const result = await HadithMcp.callTool('lookup_hadith_detail', { reference: 'bukhari:1' }, { baseUrls: urls, fetch });
     expect(result.structuredContent.records[0]).toEqual(expect.objectContaining({
       reference: 'bukhari:1',
       url: 'https://hadith.example/bukhari:1',
-      metadata: { narrators: [{ name: 'Umar' }] }
+      bilingual: true,
+      text_arabic: 'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ',
+      text_english: 'Actions are by intentions.',
+      truncated: false,
+      metadata: expect.objectContaining({
+        narrators: [{ name: 'Umar' }],
+        sharh: [expect.objectContaining({
+          bilingual: true,
+          title_arabic: 'فتح الباري',
+          title_english: 'Fath al-Bari',
+          text: 'شرح عربي كامل',
+          text_en: 'Complete English explanation',
+          text_arabic: 'شرح عربي كامل',
+          text_english: 'Complete English explanation',
+          text_combined: 'Complete English explanation\n\nشرح عربي كامل',
+          truncated: false
+        })]
+      })
     }));
     expect(result.structuredContent.canonical_url).toBe('https://hadith.example/bukhari:1');
   });
@@ -217,6 +293,12 @@ describe('Hadith MCP tool service', () => {
       body: longArabic,
       footnote: longArabic
     }));
+    expect(item).toEqual(expect.objectContaining({
+      bilingual: true,
+      text_arabic: `${longArabic}\n\n${longArabic}\n\n${longArabic}`,
+      text_english: `${longEnglish}\n\n${longEnglish}\n\n${longEnglish}`,
+      truncated: false
+    }));
   });
 
   test('does not truncate tafsir lookup commentary', async () => {
@@ -239,5 +321,43 @@ describe('Hadith MCP tool service', () => {
     expect(commentary.text.length).toBeGreaterThan(50000);
     expect(commentary.text.endsWith('commentary')).toBe(true);
     expect(commentary.truncated).toBe(false);
+  });
+
+  test('returns bilingual tafsir in separate full Arabic and English fields', async () => {
+    const arabic = 'تفسير عربي كامل';
+    const english = 'Complete English commentary';
+    const fetch = async url => {
+      if (String(url).endsWith('/quran/api/proxy/tafsir/books')) {
+        return response([{ type: 'tafsir', source: 'local', alias: 'ibn-kathir', lang: 'en' }], String(url));
+      }
+      return response({
+        id: 47,
+        ayahs_start: 47,
+        count: 0,
+        bilingual: true,
+        content_translation_language: 'en',
+        html: `<section lang="en">${english}</section><section lang="ar">${arabic}</section>`,
+        arabic_html: `<p>${arabic}</p>`,
+        translation_html: `<p>${english}</p>`
+      }, String(url));
+    };
+
+    const result = await HadithMcp.callTool('lookup_tafsir', {
+      tafsir: 'ibn-kathir',
+      surah: 5,
+      ayah: 47,
+      language: 'en'
+    }, { baseUrls: urls, fetch });
+    const commentary = result.structuredContent.commentary[0];
+
+    expect(commentary).toEqual(expect.objectContaining({
+      bilingual: true,
+      language: 'en',
+      text_arabic: arabic,
+      text_english: english,
+      truncated: false
+    }));
+    expect(commentary.text).toContain(arabic);
+    expect(commentary.text).toContain(english);
   });
 });

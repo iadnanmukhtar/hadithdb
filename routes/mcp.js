@@ -27,6 +27,22 @@ function requestRateLimitIp(req) {
   return req.clientIp || req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
 }
 
+function singleLineLogValue(value) {
+  return String(value == null ? '' : value).replace(/[\r\n\t]+/g, ' ').trim();
+}
+
+function jsonLogValue(value) {
+  try {
+    return JSON.stringify(value === undefined ? null : value);
+  } catch (err) {
+    return JSON.stringify({ error: 'Unable to serialize MCP arguments.' });
+  }
+}
+
+function logToolCall(req, name, args) {
+  debug.info(`MCP lookup request ip=${singleLineLogValue(requestRateLimitIp(req)) || 'unknown'} tool=${singleLineLogValue(name) || 'unknown'} arguments=${jsonLogValue(args)}`);
+}
+
 const mcpRequestLimiter = rateLimit({
   windowMs: envPositiveInteger('MCP_RATE_LIMIT_WINDOW_MS', DEFAULT_MCP_RATE_LIMIT_WINDOW_MS),
   limit: envPositiveInteger('MCP_RATE_LIMIT_PER_IP', DEFAULT_MCP_RATE_LIMIT_PER_IP),
@@ -122,9 +138,10 @@ async function dispatch(message, req) {
     return { tools: HadithMcp.TOOLS };
   if (message.method === 'tools/call') {
     const name = message.params && message.params.name;
+    const args = (message.params && message.params.arguments) || {};
+    logToolCall(req, name, args);
     if (typeof name !== 'string' || !HadithMcp.TOOLS.some(tool => tool.name === name))
       throw new Error(`Unknown tool: ${name || ''}`);
-    const args = (message.params && message.params.arguments) || {};
     HadithMcp.validateToolArguments(name, args);
     try {
       return await HadithMcp.callTool(name, args, { req });
