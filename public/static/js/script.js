@@ -1321,6 +1321,19 @@ function initCommandSearch() {
 			$input.autocomplete('search', input.value);
 	}
 
+	function normalizeHadithFilters(changedInput) {
+		var panel = dialog.querySelector('[data-command-search-panel="hadith"]');
+		var hadith = panel.querySelector('input[name="b"][value="hadith"]');
+		var sharh = panel.querySelector('[data-command-all-sharh]');
+		var sources = Array.from(panel.querySelectorAll('[data-command-sharh-book]'));
+		if (changedInput && changedInput.hasAttribute('data-command-sharh-book') && changedInput.checked)
+			sharh.checked = false;
+		if (changedInput === sharh && sharh.checked)
+			sources.forEach(function (checkbox) { checkbox.checked = false; });
+		if (!hadith.checked && !sharh.checked && !sources.some(function (checkbox) { return checkbox.checked; }))
+			hadith.checked = true;
+	}
+
 	function normalizeQuranFilters(changedInput) {
 		var panel = dialog.querySelector('[data-command-search-panel="quran"]');
 		if (!panel)
@@ -1333,8 +1346,12 @@ function initCommandSearch() {
 		if (changedInput === allTafsir && allTafsir.checked)
 			tafsirs.forEach(function (checkbox) { checkbox.checked = false; });
 		var hasSpecificCommentary = tafsirs.some(function (checkbox) { return checkbox.checked; });
-		if (quran && allTafsir && !quran.checked && !allTafsir.checked && !hasSpecificCommentary)
-			quran.checked = true;
+		if (quran && allTafsir && !quran.checked && !allTafsir.checked && !hasSpecificCommentary) {
+			if (changedInput === quran)
+				allTafsir.checked = true;
+			else
+				quran.checked = true;
+		}
 	}
 
 	function applyContextualQuranFilters() {
@@ -1487,6 +1504,8 @@ function initCommandSearch() {
 			return;
 		if (mode === 'quran')
 			normalizeQuranFilters(event.target);
+		else
+			normalizeHadithFilters(event.target);
 		renderSelectedFilters();
 		refreshAutocomplete();
 	});
@@ -4349,6 +4368,11 @@ function readerLanguageColumnRoots(scope) {
 			roots.add(root);
 		}
 	});
+	query('[data-search-results-page]').forEach(function (page) {
+		var root = page.closest('main') || page;
+		root.setAttribute('data-reader-language-root', 'search');
+		roots.add(root);
+	});
 	query('[data-reader-language-item="hadith"]').forEach(function (item) {
 		var root = item.closest('[data-reader-infinite-page="1"]') || item.closest('main') || item.parentElement;
 		if (!root)
@@ -4432,12 +4456,12 @@ function ensureReaderLanguageColumnToolbar(root) {
 	toolbar = readerLanguageColumnToolbar();
 	toolbar.setAttribute('data-reader-language-toolbar', '1');
 	root._readerLanguageColumnToolbar = toolbar;
-	if (kind === 'hadith') {
+	if (kind === 'hadith' || kind === 'search') {
 		if (introduction && introduction.parentNode) {
 			introduction.parentNode.insertBefore(toolbar, introduction);
 			return;
 		}
-		var firstItem = root.querySelector('[data-reader-language-item="hadith"]');
+		var firstItem = root.querySelector('.search-results-page > article, [data-reader-language-item="hadith"]');
 		if (firstItem && firstItem.parentNode)
 			firstItem.parentNode.insertBefore(toolbar, firstItem);
 		else
@@ -14885,7 +14909,7 @@ function initTafsirSearchFilterPills(root) {
 		if (param === 'b') {
 			var remainingFilters = [];
 			var removeValue = normalizeSearchBookFilterValue(value);
-			params.getAll('b').forEach(function (filterValue) {
+			Array.from(document.querySelectorAll('[data-search-filter-remove][data-filter-param="b"]')).map(function (button) { return button.dataset.filterValue; }).forEach(function (filterValue) {
 				filterValue.toString().split(',').forEach(function (filter) {
 					filter = filter.trim();
 					expandSearchBookFilterValue(filter).forEach(function (expandedFilter) {
@@ -14894,6 +14918,10 @@ function initTafsirSearchFilterPills(root) {
 					});
 				});
 			});
+			if (removeValue === 'quran' && !remainingFilters.includes('commentaries')) remainingFilters.push('commentaries');
+			if (removeValue === 'commentaries' && !remainingFilters.includes('quran')) remainingFilters.push('quran');
+			if (removeValue === 'hadith' && !remainingFilters.includes('sharh')) remainingFilters.push('sharh');
+			if (removeValue === 'sharh' && !remainingFilters.includes('hadith')) remainingFilters.push('hadith');
 			params.delete('b');
 			Array.from(new Set(remainingFilters)).forEach(function (filter) {
 				params.append('b', filter);

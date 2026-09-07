@@ -877,7 +877,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         if (!beforeBook || beforeBook.type !== 'sharh')
           throw createError(400, 'Alias editing here is supported for Sharh books only');
         status.value = Utils.trimToEmpty(status.value);
-        if (!/^[a-z][a-z0-9-]{1,79}$/.test(status.value) || ['sharh', 'toc', 'tafsir', 'commentaries', 'sahihayn', 'kutubarbaah', 'sixbooks', 'ninebooks'].includes(status.value))
+        if (!/^[a-z][a-z0-9-]{1,79}$/.test(status.value) || ['hadith', 'sharh', 'toc', 'tafsir', 'commentaries', 'sahihayn', 'kutubarbaah', 'sixbooks', 'ninebooks'].includes(status.value))
           throw createError(400, 'Use a unique lowercase alias containing letters, numbers, and hyphens');
         const duplicateAlias = await global.query(`SELECT id FROM books WHERE alias=${sql(status.value)} AND id<>${Number(beforeBook.id)} LIMIT 1`);
         if (duplicateAlias.length) throw createError(400, 'This book alias is already in use');

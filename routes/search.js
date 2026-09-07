@@ -485,7 +485,7 @@ router.get(['/autocomplete', '/quran/autocomplete'], searchRequestLimiter, async
     bookFilters = expandShortcutBookFilters(normalizeBookFilterValues(bookFilters));
     var quranSearchProxy = req.path.indexOf('/quran/') === 0;
     if (!quranSearchProxy)
-      bookFilters = stripQuranTafsirBookFilters(bookFilters);
+      bookFilters = Search.hadithContentFilters(stripQuranTafsirBookFilters(bookFilters));
     else if (bookFilters.length < 1)
       bookFilters = ['quran', 'commentaries'];
     var tafsirFilters = quranSearchProxy ? normalizeRequestTafsirFilters(req) : [];
@@ -1024,7 +1024,7 @@ function stripQuranTafsirBookFilters(filters) {
 function isVisibleBookFilter(filter) {
   if (!filter)
     return false;
-  if (filter === 'toc' || filter === 'commentaries' || filter === 'sharh')
+  if (filter === 'hadith' || filter === 'toc' || filter === 'commentaries' || filter === 'sharh')
     return true;
   if (filter === 'sahihayn' || filter === 'kutubarbaah' || filter === 'sixbooks' || filter === 'ninebooks')
     return true;
@@ -1173,10 +1173,11 @@ async function renderSearchResults(req, res, next, options = {}) {
   try {
     normalizeRequestBookFilters(req);
     if (!options.quranSearchProxy)
-      req.query.b = stripQuranTafsirBookFilters(req.query.b);
+      req.query.b = Search.hadithContentFilters(stripQuranTafsirBookFilters(req.query.b));
     var effectiveBookFilters = req.query.b;
     if ((!effectiveBookFilters || effectiveBookFilters.length < 1) && options.defaultBookFilters)
       effectiveBookFilters = options.defaultBookFilters.slice();
+    req.query.b = effectiveBookFilters;
     var offset = Math.max(0, requestedOffset);
     offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
     results = await Search.a_searchText(req.query.q, effectiveBookFilters, offset, {

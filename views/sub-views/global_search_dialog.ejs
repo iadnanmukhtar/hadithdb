@@ -30,6 +30,8 @@
     return aLabel.localeCompare(bLabel, 'en', { sensitivity: 'base' });
   });
   var selectedCommandHadithAliases = Array.isArray(hadithSearchBookAliases) ? hadithSearchBookAliases : [];
+  if (!selectedCommandHadithAliases.some(function (alias) { return ['hadith', 'sharh', 'toc'].includes(alias) || (global.books || []).some(function (book) { return book.type === 'sharh' && book.alias === alias; }); }))
+    selectedCommandHadithAliases = ['hadith', 'sharh'].concat(selectedCommandHadithAliases);
   var selectedCommandQuranBookFilters = Array.isArray(quranSearchBookFilters) ? quranSearchBookFilters : [];
   var selectedCommandCommentaryAliases = Array.isArray(quranSearchCommentaryAliases) ? quranSearchCommentaryAliases : [];
   var hasCommandQuranResultFilters = isSearchResultsContext && selectedCommandQuranBookFilters.length > 0;
@@ -91,7 +93,11 @@
           </summary>
           <div class="command-search-filter-popover">
             <label class="command-search-book-option">
-              <input class="form-check-input" type="checkbox" name="b" value="sharh" <%= selectedCommandHadithAliases.includes('sharh') ? 'checked' : '' %> data-command-filter data-command-filter-label="Sharh">
+              <input class="form-check-input" type="checkbox" name="b" value="hadith" <%= selectedCommandHadithAliases.includes('hadith') ? 'checked' : '' %> data-command-filter data-command-filter-label="Hadith">
+              <span>Hadith</span>
+            </label>
+            <label class="command-search-book-option">
+              <input class="form-check-input" type="checkbox" name="b" value="sharh" <%= selectedCommandHadithAliases.includes('sharh') ? 'checked' : '' %> data-command-filter data-command-filter-label="Sharh" data-command-all-sharh>
               <span>Sharh (Hadith commentary)</span>
             </label>
             <label class="page-content-filter input-group command-search-filter-find">
@@ -102,7 +108,7 @@
               <div class="command-search-book-group-label">Sharh books</div>
               <% (global.books || []).filter(function (book) { return book.type === 'sharh'; }).forEach(function (book) { %>
               <label class="command-search-book-option" data-command-search-book-option>
-                <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selectedCommandHadithAliases.includes(book.alias) ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= book.shortName_en || book.alias %>">
+                <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selectedCommandHadithAliases.includes(book.alias) ? 'checked' : '' %> data-command-filter data-command-sharh-book data-command-filter-label="<%= book.shortName_en || book.alias %>">
                 <span><%= book.shortName_en || book.alias %></span>
               </label>
               <% }); %>
@@ -143,7 +149,7 @@
                 <span>Quran text</span>
               </label>
               <label class="command-search-book-option">
-                <input class="form-check-input" type="checkbox" name="b" value="tafsir" <%= commandAllTafsirSelected ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= isSearchResultsContext ? 'Tafsir' : 'All Tafsir & translations' %>" data-command-all-tafsir>
+                <input class="form-check-input" type="checkbox" name="b" value="tafsir" <%= commandAllTafsirSelected ? 'checked' : '' %> data-command-filter data-command-filter-label="Tafsir" data-command-all-tafsir>
                 <span>All Tafsir &amp; translations</span>
               </label>
             </div>

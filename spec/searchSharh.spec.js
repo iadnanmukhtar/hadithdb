@@ -15,6 +15,21 @@ describe('Sharh book search', () => {
 		Index.docsFromQuery.mockReset();
 		Index.docsFromQuery.mockResolvedValue(Object.assign([], { total: 0 }));
 	});
+	test('defaults to both content types while preserving book scope', async () => {
+		expect(Search.hadithContentFilters(['bukhari'])).toEqual(['hadith', 'sharh', 'bukhari']);
+		expect(Search.hadithContentFilters([])).toEqual(['hadith', 'sharh']);
+		await Search.a_searchText('mercy', Search.hadithContentFilters(['bukhari']), 0, { excludeQuranAndTafsir: true });
+		const filters = Index.docsFromQuery.mock.calls[0][1].bool.filter;
+		expect(filters).toContainEqual({ terms: { doctype: ['hadith', 'sharh'] } });
+		expect(filters).toContainEqual({ terms: { book_alias: ['bukhari'] } });
+	});
+	test('can search Hadith without Sharh and retain the selected book', async () => {
+		expect(Search.hadithContentFilters(['hadith', 'bukhari'])).toEqual(['hadith', 'bukhari']);
+		await Search.a_searchText('mercy', ['hadith', 'bukhari'], 0, { excludeQuranAndTafsir: true });
+		const filters = Index.docsFromQuery.mock.calls[0][1].bool.filter;
+		expect(filters).toContainEqual({ term: { doctype: 'hadith' } });
+		expect(filters).toContainEqual({ terms: { book_alias: ['bukhari'] } });
+	});
 	test.each([['kindness', 'text_en^5'], ['الرحمة', 'text^5']])('searches %s within Sharh documents', async (q, field) => {
 		await Search.a_searchText(q, ['sharh', 'bukhari'], 0, { excludeQuranAndTafsir: true });
 		const query = Index.docsFromQuery.mock.calls[0][1];

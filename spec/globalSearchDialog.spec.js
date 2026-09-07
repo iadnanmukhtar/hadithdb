@@ -54,6 +54,18 @@ function render(selectedHadithAliases) {
 }
 
 describe('global search dialog', () => {
+	test('shows both default content filters alongside a Hadith book selection', async () => {
+		const html = await render(['bukhari']);
+		expect(html).toMatch(/name="b" value="hadith" checked/);
+		expect(html).toMatch(/name="b" value="sharh" checked/);
+		expect(html).toMatch(/name="b" value="bukhari" checked/);
+	});
+	test('preserves an explicit Hadith-only selection', async () => {
+		const html = await render(['hadith', 'bukhari']);
+		expect(html).toMatch(/name="b" value="hadith" checked/);
+		expect(html).not.toMatch(/name="b" value="sharh" checked/);
+	});
+
 	test('shows and contextually selects visible virtual Hadith books', async () => {
 		const html = await render(['riyad']);
 
