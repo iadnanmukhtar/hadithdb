@@ -328,6 +328,8 @@
 	        return;
 	      }
 	      if ($(this).attr('editing') == 'true' || $(this).attr('clickable') == 'true') {
+            if (propStr === 'hadith.delete' && !window.confirm(`Permanently delete ${$el.attr('data-delete-reference')} and its attached grades, narrators, and explanations? This cannot be undone.`))
+              return;
 	        let dorarSharhUrl = '';
 	        let customSharhTitle = '';
 	        let customNarratorName = '';
@@ -412,6 +414,10 @@
 	          }
 	          // update element on success
 	          if (resBody.code == 200) {
+                if (propStr === 'hadith.delete') {
+                  window.location.assign(resBody.redirect);
+                  return;
+                }
 	            let appliedRenderedCommentary = false;
 	            if (resBody.value !== undefined)
 	              value = resBody.value;

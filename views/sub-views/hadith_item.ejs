@@ -481,6 +481,9 @@
 				</div>
 			<% } %>
 		<% } %>
+			<% if (!isQuranItem && !isSimilarSection && i.book_virtual != 1) { %>
+				<button type="button" class="_click btn btn-sm btn-outline-danger hadith-admin-action ms-1 mb-1" data-id="<%= i.id %>" data-prop="hadith.delete" data-delete-reference="<%= i.ref || (i.book_alias + ':' + i.num) %>" data-loading-label="Deleting"><span class="bi bi-trash"></span> Delete hadith</button>
+			<% } %>
 		</aside>
 	<% } %>
 	

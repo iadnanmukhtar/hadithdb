@@ -11,6 +11,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { homedir } = require('os');
 const Hadith = require('../lib/Hadith');
+const HadithDeletion = require('../lib/HadithDeletion');
 const HadithRevision = require('../lib/HadithRevision');
 const HdithEnrichment = require('../lib/HdithEnrichment');
 const HdithMetadata = require('../lib/HdithMetadata');
@@ -88,6 +89,22 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
     } else if (type == 'hadith') {
       var result = "";
+
+      if (col === 'delete') {
+        const deleted = await HadithDeletion.remove(req.params.id);
+        await Index.delete(Item.INDEX, deleted.id);
+        await Index.refresh(Item.INDEX);
+        await require('../lib/HadithSharhIndex').syncHadiths([{ hId: deleted.id, book_alias: deleted.alias }]);
+        HdithMetadata.invalidatePrimaryNarratorSuggestionCache();
+        invalidateBookChapterCache({ book_id: deleted.bookId });
+        await Books.touchBookContentLastmodById(deleted.bookId);
+        await Utils.flushCacheContaining(`${deleted.alias}:${deleted.num}`);
+        await Utils.flushCacheContaining(`book:${deleted.alias}`);
+        await flushBookCaches(new Set([deleted.alias]));
+        await reindexSearchScope(`book_id=${Number(deleted.bookId)}`, { refresh: true });
+        await Library.reloadBooks();
+        return res.status(200).json({ code: 200, message: 'Hadith deleted', redirect: `/${deleted.alias}` });
+      }
 
       if (col == 'tags') {
         var tags = status.value.split(/[,; \t\n]/);
@@ -848,7 +865,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         'death', 'published_year', 'publisher',
         'description', 'aqidah', 'size'
       ];
-      if (!bookColumns.includes(col))
+      if (!bookColumns.includes(col) && col !== 'alias')
         throw createError(400, `Invalid book field '${col}'`);
       if (col === 'size') {
         status.value = Utils.trimToEmpty(status.value);
@@ -856,6 +873,15 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           throw createError(400, `Invalid book size '${status.value}'`);
       }
       var beforeBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
+      if (col === 'alias') {
+        if (!beforeBook || beforeBook.type !== 'sharh')
+          throw createError(400, 'Alias editing here is supported for Sharh books only');
+        status.value = Utils.trimToEmpty(status.value);
+        if (!/^[a-z][a-z0-9-]{1,79}$/.test(status.value) || ['sharh', 'toc', 'tafsir', 'commentaries', 'sahihayn', 'kutubarbaah', 'sixbooks', 'ninebooks'].includes(status.value))
+          throw createError(400, 'Use a unique lowercase alias containing letters, numbers, and hyphens');
+        const duplicateAlias = await global.query(`SELECT id FROM books WHERE alias=${sql(status.value)} AND id<>${Number(beforeBook.id)} LIMIT 1`);
+        if (duplicateAlias.length) throw createError(400, 'This book alias is already in use');
+      }
       var bookValueSql = (col === 'description') ? sqlPreserveWhitespace(status.value) : sql(status.value);
       await Books.ensureBookContentLastmodColumn();
       var result = await global.query(`UPDATE books SET ${col}=${bookValueSql}, content_lastmod=CURRENT_TIMESTAMP() WHERE id=${ids[0]}`);

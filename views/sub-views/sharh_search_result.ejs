@@ -1,0 +1,16 @@
+<article class="commentary-search-result sharh-search-result row mt-3" data-reader-language-item="hadith" data-sharh-book-id="<%= commentary.bookId %>">
+  <div class="col-md-6 col-sm-12 h" lang="en" data-reader-language-column="english">
+    <b><a href="<%= commentary.url %>"><%= commentary.commentary_ref_en %></a></b>
+  </div>
+  <div class="col-md-6 col-sm-12 h" lang="ar" data-reader-language-column="arabic" dir="rtl">
+    <b><a href="<%= commentary.url %>"><%= commentary.commentary_ref_ar %></a></b>
+  </div>
+  <% if (commentary.commentary_is_bilingual) { %>
+    <div class="commentary-search-fragment col-md-6 col-sm-12" lang="en" data-reader-language-column="english"><%- commentary.commentary_fragment_html_en %></div>
+    <div class="commentary-search-fragment col-md-6 col-sm-12" lang="ar" data-reader-language-column="arabic" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
+  <% } else if (commentary.commentary_fragment_html_en) { %>
+    <div class="commentary-search-fragment col-12" lang="en" data-reader-language-column="english"><%- commentary.commentary_fragment_html_en %></div>
+  <% } else { %>
+    <div class="commentary-search-fragment col-12" lang="ar" data-reader-language-column="arabic" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
+  <% } %>
+</article>

@@ -86,15 +86,26 @@
       <section id="command-search-hadith-filters" class="command-search-filter-panel" role="tabpanel" data-command-search-panel="hadith">
         <details class="command-search-filter-details">
           <summary>
-            <span><i class="bi bi-filter" aria-hidden="true"></i> Filter Hadith books</span>
+            <span><i class="bi bi-filter" aria-hidden="true"></i> Filter Hadith books and Sharh</span>
             <span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count="hadith">0</span>
           </summary>
           <div class="command-search-filter-popover">
+            <label class="command-search-book-option">
+              <input class="form-check-input" type="checkbox" name="b" value="sharh" <%= selectedCommandHadithAliases.includes('sharh') ? 'checked' : '' %> data-command-filter data-command-filter-label="Sharh">
+              <span>Sharh (Hadith commentary)</span>
+            </label>
             <label class="page-content-filter input-group command-search-filter-find">
               <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
-              <input type="search" class="form-control" placeholder="Find a Hadith book" aria-label="Find a Hadith book" data-command-search-filter-search="hadith" autocomplete="off">
+              <input type="search" class="form-control" placeholder="Find a Hadith or Sharh book" aria-label="Find a Hadith or Sharh book" data-command-search-filter-search="hadith" autocomplete="off">
             </label>
             <div class="command-search-book-list" data-command-search-book-list="hadith">
+              <div class="command-search-book-group-label">Sharh books</div>
+              <% (global.books || []).filter(function (book) { return book.type === 'sharh'; }).forEach(function (book) { %>
+              <label class="command-search-book-option" data-command-search-book-option>
+                <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selectedCommandHadithAliases.includes(book.alias) ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= book.shortName_en || book.alias %>">
+                <span><%= book.shortName_en || book.alias %></span>
+              </label>
+              <% }); %>
               <div class="command-search-book-group-label">Book groups</div>
               <% [
                 { value: 'sahihayn', label: 'Sahihayn' },

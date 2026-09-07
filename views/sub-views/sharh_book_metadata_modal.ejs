@@ -1,0 +1,28 @@
+<div class="modal fade" id="<%= modalId %>" tabindex="-1" aria-labelledby="<%= modalId %>-heading" aria-hidden="true" dir="ltr" lang="en">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="<%= modalId %>-heading">Sharh book metadata — <%= sharhBook.shortName_en || sharhBook.title %></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted">Changes save when you leave a field and apply everywhere this Sharh book is used.</p>
+        <% [
+          ['alias', 'Alias'], ['shortName_en', 'English short name'], ['shortName', 'Arabic short name'],
+          ['name_en', 'English name'], ['title', 'Arabic title'], ['author_en', 'English author'], ['author', 'Arabic author'],
+          ['death', 'Death year'], ['published_year', 'Publication year'], ['publisher', 'Publisher'], ['description', 'Description']
+        ].forEach(function (field) { const fieldId = `${modalId}-${field[0]}`; %>
+          <div class="mb-3">
+            <label class="form-label" for="<%= fieldId %>"><%= field[1] %></label>
+            <% if (field[0] === 'description') { %>
+              <textarea id="<%= fieldId %>" class="_e form-control" rows="4" data-id="<%= sharhBook.id %>" data-prop="book.<%= field[0] %>"><%= sharhBook[field[0]] || '' %></textarea>
+            <% } else { %>
+              <input id="<%= fieldId %>" type="text" class="_e form-control" data-id="<%= sharhBook.id %>" data-prop="book.<%= field[0] %>" value="<%= sharhBook[field[0]] || '' %>"<% if (field[1].startsWith('Arabic')) { %> lang="ar" dir="rtl"<% } %>>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Done</button></div>
+    </div>
+  </div>
+</div>

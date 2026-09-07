@@ -761,7 +761,7 @@ async function flushMasterDataCaches() {
   await Utils.flushCacheContaining('tafsirs');
   await Utils.flushCacheContaining('tafsir:books');
   const hadithBookAliases = Array.from(new Set((global.books || [])
-    .filter(book => book && book.alias && book.alias !== 'quran' && !['tafsir', 'trans'].includes(book.type))
+    .filter(book => book && book.alias && book.alias !== 'quran' && !['tafsir', 'trans', 'sharh'].includes(book.type))
     .map(book => book.alias)));
   for (const alias of hadithBookAliases) {
     await Utils.flushCacheContaining(alias);
@@ -1024,12 +1024,12 @@ function stripQuranTafsirBookFilters(filters) {
 function isVisibleBookFilter(filter) {
   if (!filter)
     return false;
-  if (filter === 'toc' || filter === 'commentaries')
+  if (filter === 'toc' || filter === 'commentaries' || filter === 'sharh')
     return true;
   if (filter === 'sahihayn' || filter === 'kutubarbaah' || filter === 'sixbooks' || filter === 'ninebooks')
     return true;
   var book = (global.books || []).find(row => row && row.alias === filter);
-  return !!book && Number(book.hidden) !== 1;
+  return !!book && (book.type === 'sharh' || Number(book.hidden) !== 1);
 }
 
 function normalizeRequestTafsirFilters(req) {
