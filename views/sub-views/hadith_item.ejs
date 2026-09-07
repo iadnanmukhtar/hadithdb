@@ -107,6 +107,7 @@
 		? ['title', 'title_search_ar', 'chain', 'body', 'body_search_ar', 'body_start', 'footnote']
 		: ['title_en', 'title_en_search', 'title_search_en', 'chain_en', 'chain_en_search', 'body_en', 'body_en_search', 'footnote_en', 'footnote_en_search']);
 	const compactUnmatchedSearchBody = !!searchResult && !isQuranItem && !hasReturnedSearchText;
+	const suppressHadithFootnote = !isQuranItem && i.single !== true;
 	const showPrimaryNarratorOnly = !isQuranItem && i.single !== true
 		&& (page && (page.menu === 'Chapter' || page.menu === 'Section')
 			|| (!!searchResult && !hasReturnedSearchChain && !hasReturnedSearchFootnote));
@@ -265,7 +266,7 @@
 	</section>
 
 	<%# Footer  ............................................................ %>
-	<% if ((langData.footnote && !compactUnmatchedSearchBody) || site.editMode) {
+	<% if (!suppressHadithFootnote && ((langData.footnote && !compactUnmatchedSearchBody) || site.editMode)) {
 		const footnoteMarkdown = utils.emptyIfNull(langData.footnote);
 		const footnoteHtml = utils.markdownToHtml(langData.footnote);
 		const footnoteContent = footnoteHtml || editPlaceholder('footnote');

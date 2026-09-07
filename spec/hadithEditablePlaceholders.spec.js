@@ -27,4 +27,12 @@ describe('Hadith detail editable placeholders', () => {
 		expect(item).toContain("placeholder: editPlaceholder('footnote')");
 		expect(item).toContain("data-placeholder=\"<%= editPlaceholder('note') %>\"");
 	});
+
+	test('shows physical hadith footnotes only on detail pages while retaining virtual-book notes', () => {
+		const item = read('views/sub-views/hadith_item.ejs');
+		expect(item).toContain('const suppressHadithFootnote = !isQuranItem && i.single !== true;');
+		expect(item).toContain('if (!suppressHadithFootnote && ((langData.footnote && !compactUnmatchedSearchBody) || site.editMode))');
+		expect(item).toContain('if (i.book_virtual)');
+		expect(item).toContain('title="Ḥadīth Note"');
+	});
 });

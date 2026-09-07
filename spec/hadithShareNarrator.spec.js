@@ -30,7 +30,7 @@ describe('Hadith share narrator', () => {
 		expect(template).toContain("var _p = searchResult && isQuranItem ? 'partial' : '';");
 		expect(template).toContain('const compactUnmatchedSearchBody = !!searchResult && !isQuranItem && !hasReturnedSearchText;');
 		expect(template).toContain("compactUnmatchedSearchBody ? ' search-result-unmatched-body' : ''");
-		expect(template).toContain('(langData.footnote && !compactUnmatchedSearchBody) || site.editMode');
+		expect(template).toContain('!suppressHadithFootnote && ((langData.footnote && !compactUnmatchedSearchBody) || site.editMode)');
 		expect(template).toContain('const showPrimaryNarrator = showPrimaryNarratorOnly && !!primaryNarratorText;');
 		expect(template).toContain('const displayedChain = showPrimaryNarrator ? primaryNarratorText : langData.chain;');
 		expect(template).toContain('showPrimaryNarratorOnly && !primaryNarratorText');
