@@ -13,11 +13,14 @@
   var introductionRailNextKind = locals.introductionRailNextKind || 'surah';
   var introductionRailHadith = Boolean(locals.introductionRailHadith);
   var introductionRailHadithContext = locals.introductionRailHadithContext || '';
+  var introductionRailBookName = commentaryNameEn.toString().trim();
+  if (/^\/quran\/tafsir\//.test(commentaryBookPath))
+    introductionRailBookName = introductionRailBookName.replace(/^Tafsir\s+/i, '');
 %>
 <% if (introductionRailArticles.length > 0) { %>
 <aside class="quran-heading-toc<%= introductionRailHadith ? ' hadith-heading-toc' : '' %> d-none d-lg-block quran-commentary-introduction-rail" data-quran-heading-toc data-quran-heading-initial-key="" data-quran-heading-tafsir-base="<%= introductionRailTafsirBase %>"<% if (introductionRailHadith) { %> data-hadith-heading-toc data-hadith-heading-initial-context="<%= introductionRailHadithContext %>" data-hadith-heading-initial-key=""<% } %> aria-labelledby="quran-commentary-introduction-rail-title">
   <div class="quran-heading-toc-sticky">
-    <a class="heading-toc-book-name" href="<%= introductionRailUrlFor(commentaryBookPath) %>"<% if (introductionRailHadith) { %> data-hadith-heading-toc-book<% } %>><%= commentaryNameEn.toUpperCase() %></a>
+    <a class="heading-toc-book-name" href="<%= introductionRailUrlFor(commentaryBookPath) %>"<% if (introductionRailHadith) { %> data-hadith-heading-toc-book<% } %>><%= introductionRailBookName.toUpperCase() %></a>
     <% introductionRailArticles.forEach(function (article, index) { %>
     <a class="nav-link quran-heading-toc-link quran-commentary-introduction-rail-link<%= index === 0 ? ' active' : '' %>" href="#introduction-<%= article.h2 %>" data-quran-introduction-heading="<%= article.h2 %>"<% if (index === 0) { %> aria-current="location"<% } %>><%= utils.trimToEmpty(article.title_en) || utils.trimToEmpty(article.title) || 'Introduction by the author' %></a>
     <% }); %>

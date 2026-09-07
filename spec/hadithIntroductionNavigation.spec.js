@@ -43,6 +43,15 @@ describe('Hadith introduction chapter navigation', () => {
 		expect(current.next.path).toBe('muslim/4/2');
 	});
 
+	test('keeps a populated chapter zero section on its hadith route', async () => {
+		jest.spyOn(Index, 'docsFromQueryString')
+			.mockResolvedValueOnce([heading({ h2_count: 4 })])
+			.mockResolvedValueOnce([heading({ h1: 1, h2: 2, ordinal: 201, path: 'muslim/1/2' })]);
+		const current = heading({ h1: 1, h2: 1, ordinal: 200, path: 'muslim/1/1' });
+		await HadithHeadingNavigation.applySameBookHeadingNavigation(current);
+		expect(current.prev.path).toBe('muslim/0/1');
+	});
+
 	test('wraps backward from the first introduction section to the final section', async () => {
 		const lookup = jest.spyOn(Index, 'docsFromQueryString').mockImplementation(async (_index, query, _offset, _size, orderBy) => {
 			if (query.includes('h1:0')) return [heading({})];

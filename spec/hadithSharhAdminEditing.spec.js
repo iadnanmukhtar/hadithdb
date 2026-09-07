@@ -4,6 +4,7 @@ const updateRouter = require('../routes/update');
 const Books = require('../lib/Books');
 const HdithMetadata = require('../lib/HdithMetadata');
 const HadithBilingualPairs = require('../lib/HadithBilingualPairs');
+const HadithHeadingSharh = require('../lib/HadithHeadingSharh');
 const Index = require('../lib/Index');
 const Utils = require('../lib/Utils');
 
@@ -15,6 +16,7 @@ function updateHandler() {
 describe('Hadith Sharh administration', () => {
 	beforeEach(() => {
 		HadithBilingualPairs.resetSchemaForTests();
+		HadithHeadingSharh.resetSchemaForTests();
 		jest.spyOn(HdithMetadata, 'ensureEditableColumns').mockResolvedValue();
 		jest.spyOn(Books, 'touchBookContentLastmodById').mockResolvedValue();
 		jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
@@ -59,6 +61,48 @@ describe('Hadith Sharh administration', () => {
 
 		expect(global.query.mock.calls.some(([sql]) => sql.includes("SET title='عمدة القاري', title_en='ʿUmdat al-Qārī' WHERE id=11"))).toBe(true);
 		expect(res.json.mock.calls[0][0].fields).toEqual({ title: 'عمدة القاري', title_en: 'ʿUmdat al-Qārī' });
+	});
+
+	test.each(['bukhari', 'riyad'])('adds a custom explanation to a %s heading', async alias => {
+		global.query = jest.fn(async sql => {
+			if (sql.startsWith('CREATE TABLE')) return { affectedRows: 0 };
+			if (sql.includes('FROM toc t JOIN books b') && sql.includes('t.id=42')) return [{ id: 42, book_id: 7, alias }];
+			if (sql.includes('SELECT id FROM hdith_sharh_sources')) return [{ id: 9 }];
+			if (sql.includes('MIN(source_entry_id)')) return [{ source_entry_id: -2 }];
+			if (sql.includes('MAX(ordinal)')) return [{ ordinal: 3 }];
+			if (sql.includes('INSERT INTO hdith_toc_sharh')) return { insertId: 77 };
+			return [];
+		});
+		const req = { body: { value: '' }, params: { id: '42', prop: 'hdith_toc_sharh.add' }, user: { uid: 'admin' } };
+		const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+		await updateHandler()(req, res, jest.fn());
+
+		expect(global.query.mock.calls.some(([sql]) => sql.includes('INSERT INTO hdith_toc_sharh') && sql.includes("'شرح مخصص'"))).toBe(true);
+		expect(Books.touchBookContentLastmodById).toHaveBeenCalledWith(7);
+		expect(Utils.flushCacheContaining).toHaveBeenCalledWith(alias);
+		expect(res.json.mock.calls[0][0]).toEqual(expect.objectContaining({ code: 200, createdSharhId: 77 }));
+	});
+
+	test('updates both heading explanation title languages from a paired selection', async () => {
+		global.query = jest.fn(async sql => {
+			if (sql.startsWith('CREATE TABLE')) return { affectedRows: 0 };
+			if (sql.includes('WHERE ts.id=31')) return [{
+				id: 31, toc_id: 42, source_id: 9, source_book_id: -1, book_id: 7, alias: 'riyad',
+				title: 'شرح مخصص', title_en: 'Custom explanation', text: 'شرح'
+			}];
+			return [];
+		});
+		const req = {
+			body: { value: 'شرح الباب', pairedSharhTitle: 'Chapter explanation' },
+			params: { id: '31', prop: 'hdith_toc_sharh.title' }, user: { uid: 'admin' }
+		};
+		const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+		await updateHandler()(req, res, jest.fn());
+
+		expect(global.query.mock.calls.some(([sql]) => sql.includes("UPDATE hdith_toc_sharh SET title='شرح الباب', title_en='Chapter explanation' WHERE id=31"))).toBe(true);
+		expect(res.json.mock.calls[0][0].fields).toEqual({ title: 'شرح الباب', title_en: 'Chapter explanation' });
 	});
 
 	test('returns bilingual title pairs while allowing normalized Arabic or English searches', async () => {

@@ -14,6 +14,7 @@ const Hadith = require('../lib/Hadith');
 const HadithRevision = require('../lib/HadithRevision');
 const HdithEnrichment = require('../lib/HdithEnrichment');
 const HdithMetadata = require('../lib/HdithMetadata');
+const HadithHeadingSharh = require('../lib/HadithHeadingSharh');
 const HadithBilingualPairs = require('../lib/HadithBilingualPairs');
 const HadithAttributions = require('../lib/HadithAttributions');
 const HadithChainCategories = require('../lib/HadithChainCategories');
@@ -258,17 +259,24 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var bilingualPairArabic = Utils.trimToEmpty(req.body.valueAr);
       var bilingualPairEnglish = Utils.trimToEmpty(req.body.valueEn);
       var bilingualPairOriginalArabic = Utils.trimToEmpty(req.body.originalAr);
+	  var bilingualPairOriginalKey = Utils.trimToEmpty(req.body.originalKey);
       if (!HadithBilingualPairs.TYPES.includes(bilingualPairType))
         throw createError(400, 'Invalid bilingual pair type');
       if (col === 'save') {
         if (!bilingualPairArabic || !bilingualPairEnglish)
           throw createError(400, 'Both Arabic and English values are required');
-        status.pair = await HadithBilingualPairs.save(bilingualPairType, bilingualPairArabic, bilingualPairEnglish, bilingualPairOriginalArabic);
+        status.pair = await HadithBilingualPairs.save(bilingualPairType, bilingualPairArabic, bilingualPairEnglish, bilingualPairOriginalArabic, bilingualPairOriginalKey);
+		var affectedPairBooks = status.pair.affected_book_aliases || [];
+		await Promise.all(affectedPairBooks.flatMap(bookAlias => [
+			Utils.flushCacheContaining(bookAlias), Utils.flushCacheContaining(`book:${bookAlias}`)
+		]));
+		if (['sharh_title', 'grader', 'grade'].includes(bilingualPairType) && status.pair.affected_hadith_ids?.length)
+		  safeBackground(`reindexing ${bilingualPairType} pair`, () => reindexEnrichedHadithIds(status.pair.affected_hadith_ids));
         status.message = 'Bilingual pair saved';
       } else if (col === 'delete') {
         if (!bilingualPairOriginalArabic && !bilingualPairArabic)
           throw createError(400, 'Arabic value is required');
-        await HadithBilingualPairs.hide(bilingualPairType, bilingualPairOriginalArabic || bilingualPairArabic);
+        await HadithBilingualPairs.hide(bilingualPairType, bilingualPairOriginalArabic || bilingualPairArabic, bilingualPairOriginalKey);
         status.message = 'Bilingual pair removed';
       } else {
         throw createError(400, `Invalid bilingual pair action '${col}'`);
@@ -443,6 +451,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
     } else if (type === 'hdith_sharh') {
       await HdithMetadata.ensureEditableColumns();
+      await HadithHeadingSharh.ensureSchema();
       var sharhId = parseInt(ids[0], 10);
       if (!Number.isInteger(sharhId) || sharhId <= 0)
         throw createError(400, 'Invalid explanation ID');
@@ -544,6 +553,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 			else if (!pairedSharhTitle && Number(sharhRow.source_book_id) !== HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID) {
 			  await global.query(`UPDATE hdith_sharh_sources SET ${col}=${sql(status.value)} WHERE id=${Number(sharhRow.source_id)}`);
 			  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(sharhRow.source_id)}`);
+			  await global.query(`UPDATE hdith_toc_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(sharhRow.source_id)}`);
 			}
 		  }
 		  HdithMetadata.invalidateSharhTitleSuggestionCache();
@@ -553,6 +563,99 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           throw createError(400, `Invalid explanation field '${col}'`);
         }
         await runHadithPostUpdateTasks(sharhRow.hadith_id);
+      }
+
+    } else if (type === 'hdith_toc_sharh') {
+      await HadithHeadingSharh.ensureSchema();
+      var tocSharhId = parseInt(ids[0], 10);
+      if (!Number.isInteger(tocSharhId) || tocSharhId <= 0)
+        throw createError(400, 'Invalid heading explanation ID');
+      if (col === 'add' || col === 'reorder') {
+        var sharhHeading = (await global.query(`SELECT t.id, t.bookId AS book_id, b.alias
+          FROM toc t JOIN books b ON b.id=t.bookId
+          WHERE t.id=${tocSharhId} AND b.alias<>'quran' AND COALESCE(b.type, 'hadith')='hadith' LIMIT 1`))[0];
+        if (!sharhHeading)
+          throw createError(404, 'Hadith chapter or section heading not found');
+        if (col === 'reorder') {
+          var requestedTocSharhOrder = String(status.value || '').split(',').map(value => Number(value)).filter(Number.isSafeInteger);
+          var existingTocSharhOrder = (await global.query(`SELECT id FROM hdith_toc_sharh WHERE toc_id=${tocSharhId} ORDER BY COALESCE(ordinal, 65535), id`)).map(row => Number(row.id));
+          if (!requestedTocSharhOrder.length || requestedTocSharhOrder.length !== existingTocSharhOrder.length
+            || new Set(requestedTocSharhOrder).size !== requestedTocSharhOrder.length
+            || requestedTocSharhOrder.some(id => !existingTocSharhOrder.includes(id)))
+            throw createError(400, 'Invalid heading explanation order');
+          var tocSharhReorderCases = requestedTocSharhOrder.map((id, index) => `WHEN ${id} THEN ${index + 1}`).join(' ');
+          await global.query(`UPDATE hdith_toc_sharh SET ordinal=CASE id ${tocSharhReorderCases} END WHERE toc_id=${tocSharhId}`);
+          status.code = 200;
+          status.message = 'Heading explanations reordered';
+        } else {
+          await global.query(`INSERT INTO hdith_sharh_sources (source_book_id, title, author, source_url)
+            VALUES (${HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID}, 'شرح مخصص', NULL, '')
+            ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)`);
+          var customHeadingSharhSource = (await global.query(`SELECT id FROM hdith_sharh_sources WHERE source_book_id=${HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID} LIMIT 1`))[0];
+          if (!customHeadingSharhSource)
+            throw createError(500, 'Unable to create custom explanation source');
+          var customHeadingSourceEntry = Number((await global.query(`SELECT LEAST(COALESCE(MIN(source_entry_id), 0), 0) - 1 AS source_entry_id
+            FROM hdith_toc_sharh WHERE toc_id=${tocSharhId}`))[0].source_entry_id);
+          var customHeadingSharhOrdinal = Number((await global.query(`SELECT GREATEST(COALESCE(MAX(ordinal), 0), COUNT(*)) + 1 AS ordinal
+            FROM hdith_toc_sharh WHERE toc_id=${tocSharhId}`))[0].ordinal);
+          var customHeadingSharhTitle = Utils.trimToEmpty(status.value) || 'شرح مخصص';
+          var insertHeadingSharh = await global.query(`INSERT INTO hdith_toc_sharh
+            (toc_id, ordinal, source_id, source_entry_id, page_num, title, title_en, text, text_en, format, source_url)
+            VALUES (${tocSharhId}, ${customHeadingSharhOrdinal}, ${Number(customHeadingSharhSource.id)}, ${customHeadingSourceEntry}, NULL,
+              ${sql(customHeadingSharhTitle)}, NULL, '', NULL, 'md', '')`);
+          status.createdSharhId = Number(insertHeadingSharh.insertId);
+          status.code = 200;
+          status.message = 'Custom heading explanation added';
+        }
+        HdithMetadata.invalidateSharhTitleSuggestionCache();
+        await Books.touchBookContentLastmodById(sharhHeading.book_id);
+        await Promise.all([Utils.flushCacheContaining(sharhHeading.alias), Utils.flushCacheContaining(`book:${sharhHeading.alias}`)]);
+      } else {
+        var tocSharhRow = (await global.query(`SELECT ts.id, ts.toc_id, ts.source_id, ts.text, ts.text_en, ss.source_book_id,
+          t.bookId AS book_id, b.alias,
+          COALESCE(NULLIF(ts.title, ''), ss.title) AS title,
+          COALESCE(NULLIF(ts.title_en, ''), ss.title_en) AS title_en
+          FROM hdith_toc_sharh ts JOIN hdith_sharh_sources ss ON ss.id=ts.source_id
+          JOIN toc t ON t.id=ts.toc_id JOIN books b ON b.id=t.bookId
+          WHERE ts.id=${tocSharhId} AND b.alias<>'quran' AND COALESCE(b.type, 'hadith')='hadith' LIMIT 1`))[0];
+        if (!tocSharhRow)
+          throw createError(404, 'Heading explanation not found');
+        if (col === 'delete') {
+          if (Number(tocSharhRow.source_book_id) >= 0)
+            throw createError(400, 'Only locally managed explanations can be deleted');
+          await global.query(`DELETE FROM hdith_toc_sharh WHERE id=${tocSharhId}`);
+          status.code = 200;
+          status.message = 'Custom heading explanation deleted';
+          HdithMetadata.invalidateSharhTitleSuggestionCache();
+        } else if (col === 'text' || col === 'text_en') {
+          if (col === 'text_en' && Utils.isFalsey(status.value))
+            status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic chapter or section explanation into clear scholarly English. Preserve Markdown structure and return only the translation:\n${tocSharhRow.text}`));
+          await global.query(`UPDATE hdith_toc_sharh SET ${col}=${sqlPreserveWhitespace(status.value)} WHERE id=${tocSharhId}`);
+          status.code = 200;
+          status.message = 'Heading explanation updated';
+        } else if (col === 'title' || col === 'title_en') {
+          if (col === 'title_en' && Utils.isFalsey(status.value))
+            status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic Sharh book title into concise English. Return only the translation:\n${tocSharhRow.title}`));
+          if (col === 'title' && Utils.isFalsey(status.value))
+            throw createError(400, 'The Arabic Sharh book title cannot be empty');
+          var pairedHeadingSharhTitle = Utils.trimToEmpty(req.body.pairedSharhTitle);
+          var pairedHeadingSharhTitleColumn = col === 'title' ? 'title_en' : 'title';
+          await global.query(`UPDATE hdith_toc_sharh SET ${col}=${sql(status.value)}${pairedHeadingSharhTitle ? `, ${pairedHeadingSharhTitleColumn}=${sql(pairedHeadingSharhTitle)}` : ''} WHERE id=${tocSharhId}`);
+          if (pairedHeadingSharhTitle)
+            status.fields = { [col]: status.value, [pairedHeadingSharhTitleColumn]: pairedHeadingSharhTitle };
+          if (!pairedHeadingSharhTitle && Utils.isTruthy(status.value) && Number(tocSharhRow.source_book_id) !== HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID) {
+            await global.query(`UPDATE hdith_sharh_sources SET ${col}=${sql(status.value)} WHERE id=${Number(tocSharhRow.source_id)}`);
+            await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(tocSharhRow.source_id)}`);
+            await global.query(`UPDATE hdith_toc_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(tocSharhRow.source_id)}`);
+          }
+          HdithMetadata.invalidateSharhTitleSuggestionCache();
+          status.code = 200;
+          status.message = 'Explanation book title updated';
+        } else {
+          throw createError(400, `Invalid heading explanation field '${col}'`);
+        }
+        await Books.touchBookContentLastmodById(tocSharhRow.book_id);
+        await Promise.all([Utils.flushCacheContaining(tocSharhRow.alias), Utils.flushCacheContaining(`book:${tocSharhRow.alias}`)]);
       }
 
     } else if (type == 'tags') {
@@ -659,6 +762,13 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       } else if (col === 'sectionDelete') {
         result = await deleteQuranSection(ids[0]);
         status.value = result.value;
+        shouldRunDefaultHeadingTasks = false;
+      } else if (col === 'commentaryArticleDelete') {
+        result = await CommentaryHeadings.deleteIntroductionArticle(ids[0]);
+        status.value = result.value;
+        await Index.delete(Heading.INDEX, result.value.id);
+        await Index.refresh(Heading.INDEX);
+        await finishIntroductionHeadingChange(result.value.bookId);
         shouldRunDefaultHeadingTasks = false;
       } else if (col === 'commentaryArticleAdd') {
         result = await CommentaryHeadings.addIntroductionArticle(ids[0], status.value, userId);
@@ -2870,6 +2980,22 @@ async function safeBackground(label, fn) {
     await fn();
   } catch (err) {
     debug.error(`${label} failed: ${err.message}\n${err.stack || ''}`);
+  }
+}
+
+async function reindexEnrichedHadithIds(hadithIds) {
+  var ids = [...new Set((hadithIds || []).map(Number).filter(id => Number.isSafeInteger(id) && id > 0))];
+  for (var offset = 0; offset < ids.length; offset += 100) {
+    var batch = ids.slice(offset, offset + 100).map(String);
+    await new Promise((resolve, reject) => {
+      var child = spawn(process.execPath, ['bin/indexEnrichedHadithBatch.js'].concat(batch), {
+        cwd: path.resolve(__dirname, '..'), stdio: ['ignore', 'ignore', 'pipe']
+      });
+      var stderr = '';
+      child.stderr.on('data', chunk => { stderr += chunk.toString(); });
+      child.on('error', reject);
+      child.on('close', code => code === 0 ? resolve() : reject(new Error(stderr.trim() || `index process exited ${code}`)));
+    });
   }
 }
 

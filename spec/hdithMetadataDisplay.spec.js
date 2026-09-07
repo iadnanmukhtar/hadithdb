@@ -181,7 +181,7 @@ describe('hdith.com metadata display', () => {
 		const itemTemplate = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_item.ejs'), 'utf8');
 		const metadataTemplate = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
 		expect(itemTemplate).toContain('const showPrimaryNarrator = showPrimaryNarratorOnly && !!primaryNarratorText;');
-		expect(itemTemplate).toContain('const displayedChain = showPrimaryNarrator ? primaryNarratorText : langData.chain;');
+		expect(itemTemplate).toContain("const displayedChain = showPrimaryNarrator ? primaryNarratorText : (isSimilarSection ? '' : langData.chain);");
 		expect(itemTemplate).toContain('!!searchResult && !hasReturnedSearchChain && !hasReturnedSearchFootnote');
 		expect(itemTemplate).toContain('title="Ḥadīth Chain"');
 		expect(itemTemplate).not.toContain('linkedIsnadHtml');
@@ -474,6 +474,9 @@ describe('hdith.com metadata display', () => {
 		expect(hadithItem).toContain('if (i.book_virtual != 1)');
 		expect(hadithItem).toContain('i.similarDemotable');
 		expect(hadithItem).toContain('i.similarRemovable');
+		expect(hadithItem).toContain("const suppressHadithFootnote = isSimilarSection || (!isQuranItem && i.single !== true);");
+		expect(hadithItem).toContain("const displayedChain = showPrimaryNarrator ? primaryNarratorText : (isSimilarSection ? '' : langData.chain);");
+		expect(hadithItem).toContain('if (!isSimilarSection && !isContentTranslationLang');
 		expect(hadithItem).toContain("hadith-inline-ruling<%= i.single === true ? ' hadith-inline-ruling-single' : '' %>");
 		expect(hadithItem).toContain('class="hadith-inline-ruling-text"');
 		expect(css).toContain('.hadith-inline-ruling-single .grade { cursor: text; display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }');

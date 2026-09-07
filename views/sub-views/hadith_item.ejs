@@ -107,9 +107,9 @@
 		? ['title', 'title_search_ar', 'chain', 'body', 'body_search_ar', 'body_start', 'footnote']
 		: ['title_en', 'title_en_search', 'title_search_en', 'chain_en', 'chain_en_search', 'body_en', 'body_en_search', 'footnote_en', 'footnote_en_search']);
 	const compactUnmatchedSearchBody = !!searchResult && !isQuranItem && !hasReturnedSearchText;
-	const suppressHadithFootnote = !isQuranItem && i.single !== true;
+	const suppressHadithFootnote = isSimilarSection || (!isQuranItem && i.single !== true);
 	const showPrimaryNarratorOnly = !isQuranItem && i.single !== true
-		&& (page && (page.menu === 'Chapter' || page.menu === 'Section')
+		&& (isSimilarSection || page && (page.menu === 'Chapter' || page.menu === 'Section')
 			|| (!!searchResult && !hasReturnedSearchChain && !hasReturnedSearchFootnote));
 	const primaryNarratorText = sourceHadithNarrator
 		? (lang === 'ar' ? sourceHadithNarrator.name : (sourceHadithNarrator.name_en || arabic.toALALCName(sourceHadithNarrator.name)))
@@ -118,7 +118,7 @@
 	const narratorEditPlaceholder = lang === 'ar' ? 'راوي الحديث' : 'Hadith narrator';
 	const narratorInlineEditable = site.editMode && (lang === 'ar' || lang === 'en');
 	const showPrimaryNarrator = showPrimaryNarratorOnly && !!primaryNarratorText;
-	const displayedChain = showPrimaryNarrator ? primaryNarratorText : langData.chain;
+	const displayedChain = showPrimaryNarrator ? primaryNarratorText : (isSimilarSection ? '' : langData.chain);
 	const itemLinkTitleSource = langData.title || langData.body || displayedChain;
 	const hadithAttribution = hadithClassification.attribution || null;
 	const hadithChainCategories = Array.isArray(hadithClassification.chainCategories) ? hadithClassification.chainCategories : [];
@@ -335,7 +335,7 @@
 		</aside>
 	<% } %>
 	<%# Nav  ............................................................... %>
-	<% if (!isContentTranslationLang && (site.editMode || ((title || i.book_virtual===1) && (i.chapter || i.section)))) { %>
+	<% if (!isSimilarSection && !isContentTranslationLang && (site.editMode || ((title || i.book_virtual===1) && (i.chapter || i.section)))) { %>
 		<aside class="title<%= isQuranItem && lang === 'ar' ? ' quran-search-title' : '' %>">
 			§ 
 			<% if (lang === 'en' && site.editMode && i.book_virtual===0 && chapter && chapter.sections) { %>

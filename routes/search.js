@@ -25,6 +25,7 @@ const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
 const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
 const HadithHeadingNavigation = require('../lib/HadithHeadingNavigation');
+const HadithHeadingSharh = require('../lib/HadithHeadingSharh');
 const HdithMetadata = require('../lib/HdithMetadata');
 const HadithBilingualPairs = require('../lib/HadithBilingualPairs');
 const QuranHeadings = require('../lib/QuranHeadings');
@@ -309,6 +310,12 @@ function redirectCanonicalQueryParams(req, res, next) {
 
   var queryParams = new URLSearchParams(req.originalUrl.substring(queryIndex + 1));
   var shouldRedirect = false;
+
+  if (/^\/(?!quran(?::|\/))[^/]+:[^/]+\/?$/i.test(req.path) && queryParams.has('virtualId')) {
+    queryParams.delete('virtualId');
+    shouldRedirect = true;
+  }
+
   var offsetValues = queryParams.getAll('o');
   if (offsetValues.length > 0 && offsetValues.every(value => value === '0')) {
     queryParams.delete('o');
@@ -1610,7 +1617,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   results = results.map(item => new Item(item));
   results[0].single = true;
   if (results[0].book_alias !== 'quran') {
-    results[0].hdithMetadata = await HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id) || {};
+	results[0].hdithMetadata = await HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id) || {};
     results[0].hdithMetadata.grades = HdithMetadata.withPrimaryGrade(results[0].hdithMetadata.grades, results[0]);
   }
   if (results[0].book_alias === 'quran')
@@ -2371,7 +2378,7 @@ async function redirectVirtualHadithReference(book, num, req, res) {
   var orderConditions = candidateNums.map((candidate, idx) => `WHEN hv.num='${Utils.escSQL(candidate)}' THEN ${idx}`);
 
   var rows = await global.query(`
-    SELECT b.alias AS book_alias, h.num
+	SELECT b.alias AS book_alias, h.num
     FROM hadiths_virtual hv
     JOIN hadiths h ON h.id = hv.hadithId
     JOIN books b ON b.id = h.bookId
@@ -3283,12 +3290,9 @@ router.get('/:bookAlias/introduction', async function (req, res, next) {
 });
 
 async function hadithIntroductionAdjacentHeadings(alias) {
-  const query = `book_alias:${JSON.stringify(alias)} AND level:2 AND h1:>0`;
-  const [first, last] = await Promise.all([
-    Index.docsFromQueryString(Heading.INDEX, query, 0, 1, 'ordinal ASC'),
-    Index.docsFromQueryString(Heading.INDEX, query, 0, 1, 'ordinal DESC')
-  ]);
-  return { next: first[0] || null, previous: last[0] || null };
+  const query = `book_alias:${JSON.stringify(alias)} AND level:2 AND h1:>=0`;
+  const first = await Index.docsFromQueryString(Heading.INDEX, query, 0, 1000, 'ordinal ASC');
+  return { next: first.find(row => Number(row.h1) !== 0 || Number(row.h2_count) > 0) || null, previous: null };
 }
 
 // BOOK: CHAPTER
@@ -3369,8 +3373,10 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     ]);
     var hadithHeadingOutlines = bookAlias === 'quran' ? {} : await HadithHeadingOutlines.forChapter(chapter);
     results = await chapter.getItems(offset);
-	if (bookAlias !== 'quran')
+	if (bookAlias !== 'quran') {
 	  await HdithMetadata.attachClassifications(results);
+	  await HadithHeadingSharh.attach([chapter].concat(chapter.sections || [], results.flatMap(item => [item.heading, item.section])));
+	}
     if (requestedOffset > 0 && results.length === 0)
       return next(HttpRange.notSatisfiable('items', chapter.count, `Chapter ${bookAlias}/${chapterNum} does not have content at offset ${requestedOffset}`));
 
@@ -3752,8 +3758,10 @@ async function renderBookSection(req, res, next) {
       results = await getQuranSectionPassageItems(section, offset);
     else
       results = await section.getItems(offset);
-	if (bookAlias !== 'quran')
+	if (bookAlias !== 'quran') {
 	  await HdithMetadata.attachClassifications(results);
+	  await HadithHeadingSharh.attach([chapter, section].concat(chapter.sections || [], results.flatMap(item => [item.heading, item.section])));
+	}
     if (requestedOffset > 0 && results.length === 0)
       return next(HttpRange.notSatisfiable('items', section.count, `Section ${bookAlias}/${chapterNum}/${sectionNum} does not have content at offset ${requestedOffset}`));
     if (isQuranPassageSection && results.length == 0)

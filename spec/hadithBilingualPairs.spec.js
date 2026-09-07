@@ -86,13 +86,45 @@ describe('hadith bilingual pair library', () => {
 		expect(global.query.mock.calls.find(([sql]) => sql.includes('FROM grades WHERE'))[0]).not.toContain('hdith_hadith_grades');
 	});
 
-	test('editing a pair hides its old key and saves both new values', async () => {
-		global.query = jest.fn(async () => []);
+	test('editing a pair keeps its original identity and saves both new values', async () => {
+		global.query = jest.fn(async sql => sql.includes('SELECT DISTINCT hadith_id') ? [
+			{ hadith_id: 1, alias: 'bukhari' }, { hadith_id: null, alias: 'riyad' }
+		] : []);
 
-		await HadithBilingualPairs.save('sharh_title', 'فَتْحُ البَارِي', 'Fatḥ al-Bārī', 'فتح الباري القديم');
+		const saved = await HadithBilingualPairs.save('sharh_title', 'فَتْحُ البَارِي', 'Fatḥ al-Bārī', 'فتح الباري القديم');
 
-		expect(global.query.mock.calls.some(([sql]) => sql.includes("VALUES ('sharh_title', 'فتح الباري القديم'") && sql.includes('hidden=1'))).toBe(true);
-		expect(global.query.mock.calls.some(([sql]) => sql.includes("VALUES ('sharh_title', 'فتح الباري'") && sql.includes("'Fatḥ al-Bārī', 0"))).toBe(true);
+		expect(global.query.mock.calls.some(([sql]) => sql.includes("VALUES ('sharh_title', 'فتح الباري القديم', 'فَتْحُ البَارِي', 'Fatḥ al-Bārī', 0"))).toBe(true);
+		expect(global.query.mock.calls.some(([sql]) => sql.includes("hidden=1"))).toBe(false);
+		expect(global.query.mock.calls.some(([sql]) => sql.includes('UPDATE hdith_hadith_sharh hs') && sql.includes("hs.title='فَتْحُ البَارِي'"))).toBe(true);
+		expect(global.query.mock.calls.some(([sql]) => sql.includes('UPDATE hdith_toc_sharh ts') && sql.includes("ts.title_en='Fatḥ al-Bārī'"))).toBe(true);
+		expect(global.query.mock.calls.some(([sql]) => sql.includes('UPDATE hdith_sharh_sources SET') && sql.includes("title='فَتْحُ البَارِي'"))).toBe(true);
+		expect(saved.affected_book_aliases).toEqual(['bukhari', 'riyad']);
+		expect(saved.affected_hadith_ids).toEqual([1]);
+	});
+
+	test.each([
+		['narrator', 'UPDATE hdith_hadith_metadata SET narrator=', 'UPDATE hdith_narrators SET name='],
+		['attribution', 'UPDATE hdith_hadith_metadata SET attribution=', 'UPDATE attributions SET attribution='],
+		['grader', 'UPDATE hdith_hadith_grades SET grader=', 'UPDATE graders SET shortName='],
+		['grade', 'UPDATE hdith_hadith_grades SET grade=', 'UPDATE grades SET grade=']
+	])('propagates managed %s pairs to their canonical records', async (type, firstUpdate, secondUpdate) => {
+		global.query = jest.fn(async sql => sql.includes('SELECT DISTINCT') ? [{ hadith_id: 7, alias: 'muslim' }] : []);
+		const saved = await HadithBilingualPairs.save(type, 'القيمة الجديدة', 'New value', 'القيمة القديمة');
+		const statements = global.query.mock.calls.map(([sql]) => sql).join('\n');
+		expect(statements).toContain(firstUpdate);
+		expect(statements).toContain(secondUpdate);
+		expect(saved.affected_book_aliases).toEqual(['muslim']);
+		expect(saved.affected_hadith_ids).toEqual([7]);
+	});
+
+	test('keeps chain classification storage stable while resolving its managed display pair', async () => {
+		global.query = jest.fn(async sql => sql.includes('SELECT DISTINCT') ? [{ hadith_id: 7, alias: 'muslim' }] : []);
+		await HadithBilingualPairs.save('chain_classification', 'المتصل', 'Connected', 'متصل');
+		const statements = global.query.mock.calls.map(([sql]) => sql).join('\n');
+		expect(statements).toContain("FIND_IN_SET('متصل'");
+		expect(statements).not.toContain('SET chain_type=');
+		expect(HadithBilingualPairs.resolve([{ pair_type: 'chain_classification', pair_key: 'متصل', value_ar: 'المتصل', value_en: 'Connected' }],
+			'chain_classification', 'متصل', 'Muttaṣil')).toEqual({ value_ar: 'المتصل', value_en: 'Connected' });
 	});
 
 	test('admin update saves a complete pair and invalidates autocomplete', async () => {

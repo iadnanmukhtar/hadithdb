@@ -41,8 +41,7 @@ describe('Hadith book introductions', () => {
 		const article = { id: 91, h1: 0, h2: 1, title_en: 'Foreword', intro_en: 'Text' };
 		jest.spyOn(CommentaryHeadings, 'introductionArticles').mockResolvedValue([article]);
 		jest.spyOn(Index, 'docsFromQueryString')
-			.mockResolvedValueOnce([{ path: 'muslim/1/1', title_en: 'Faith' }])
-			.mockResolvedValueOnce([{ path: 'muslim/56/8', title_en: 'Paradise' }]);
+			.mockResolvedValueOnce([{ path: 'muslim/1/1', title_en: 'Faith' }]);
 		const req = { params: { bookAlias: 'muslim' }, admin: false, editMode: false };
 		const res = { locals: {}, render: jest.fn() };
 
@@ -52,7 +51,7 @@ describe('Hadith book introductions', () => {
 			book: book,
 			introductionArticles: [article],
 			nextHeading: expect.objectContaining({ path: 'muslim/1/1' }),
-			previousHeading: expect.objectContaining({ path: 'muslim/56/8' })
+			previousHeading: null
 		}));
 	});
 

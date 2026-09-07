@@ -338,7 +338,7 @@
 	            return;
 	          }
 	        }
-	        if (propStr === 'hdith_sharh.add') {
+	        if (propStr === 'hdith_sharh.add' || propStr === 'hdith_toc_sharh.add') {
 	          customSharhTitle = (window.prompt('Enter the Arabic Sharh book title. You may reuse an existing title:', 'شرح مخصص') || '').trim();
 	          if (!customSharhTitle) {
 	            $(this).removeAttr('editing');
@@ -352,7 +352,7 @@
 	            return;
 	          }
 	        }
-	        if ((propStr === 'hdith_grade.delete' || propStr === 'hdith_sharh.delete' || propStr === 'hdith_narrator.delete') && !window.confirm(propStr === 'hdith_sharh.delete' ? 'Delete this custom explanation?' : (propStr === 'hdith_narrator.delete' ? 'Delete this manually added narrator?' : 'Delete this scholarly grade?'))) {
+	        if ((propStr === 'hdith_grade.delete' || propStr === 'hdith_sharh.delete' || propStr === 'hdith_toc_sharh.delete' || propStr === 'hdith_narrator.delete') && !window.confirm((propStr === 'hdith_sharh.delete' || propStr === 'hdith_toc_sharh.delete') ? 'Delete this custom explanation?' : (propStr === 'hdith_narrator.delete' ? 'Delete this manually added narrator?' : 'Delete this scholarly grade?'))) {
 	          $(this).removeAttr('editing');
 	          return;
 	        }
@@ -464,7 +464,7 @@
 	              window.location.reload();
 	              return;
 	            }
-	            if (propStr === 'hdith_sharh.add') {
+	            if (propStr === 'hdith_sharh.add' || propStr === 'hdith_toc_sharh.add') {
 	              rememberUpdateSuccessToast('Explanation added', 'The custom explanation is ready to edit.');
 	              window.location.reload();
 	              return;
@@ -474,7 +474,7 @@
 	              window.location.reload();
 	              return;
 	            }
-	            if (propStr === 'hdith_sharh.delete') {
+	            if (propStr === 'hdith_sharh.delete' || propStr === 'hdith_toc_sharh.delete') {
 	              $el.closest('.hadith-sharh-entry').remove();
 	              return;
 	            }
@@ -559,6 +559,7 @@
 	            valueAr: reqBody.valueAr,
 	            valueEn: reqBody.valueEn,
 	            originalAr: reqBody.originalAr,
+	            originalKey: reqBody.originalKey,
 	            quranSectionPath: reqBody.quranSectionPath,
 	            hdithUrl: reqBody.hdithUrl,
           })
@@ -832,6 +833,30 @@
 	    };
 
 	    const bindInlineEditors = (scope) => {
+	      $(scope || document).find('[data-delete-introduction-article]').each(function () {
+	        const $button = $(this);
+	        if ($button.data('deleteArticleBound')) return;
+	        $button.data('deleteArticleBound', true);
+	        $button.on('click', async function () {
+	          if (!window.confirm('Delete this introduction article and its English and Arabic text?')) return;
+	          $button.prop('disabled', true);
+	          try {
+	            const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+	            const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
+	            if (token) headers.Authorization = `Bearer ${token}`;
+	            const response = await fetch(quranApiPath(`/update/${$button.attr('data-delete-introduction-article')}/toc.commentaryArticleDelete`), {
+	              method: 'POST', credentials: 'same-origin', headers,
+	              body: JSON.stringify({ value: true })
+	            });
+	            const body = await response.json();
+	            if (!response.ok || body.code !== 200) throw new Error(body.message || response.statusText);
+	            window.location.reload();
+	          } catch (err) {
+	            toastr.error(err.message, 'Introduction article delete failed');
+	            $button.prop('disabled', false);
+	          }
+	        });
+	      });
 	      $(scope || document).find('._e').addBack('._e').each(function () {
 	        const $el = $(this);
 	        if ($el.data('inlineEditorBound'))
@@ -843,6 +868,13 @@
 	        bindBilingualMetadataAutocomplete($el);
 	        if (!$el.is('textarea, input, select'))
 	          $el.attr('contenteditable', 'true');
+	        if ($el.closest('.quran-commentary-introduction-disclosure > summary').length) {
+	          // Editing a title must not activate the enclosing disclosure.
+	          $el.on('click', function (event) {
+	            event.preventDefault();
+	            event.stopPropagation();
+	          });
+	        }
 	        if (isMarkdownElement($el) && !hasMarkdownSource($el))
 	          setMarkdownSource($el, htmlToMarkdown($el.html()));
 	        $el.on('focusin', function () {
@@ -953,7 +985,11 @@
 	          if (!draggedRow) return;
 	          event.preventDefault();
 	          const order = $list.find('[data-hdith-sharh-order-id]').map(function () { return this.getAttribute('data-hdith-sharh-order-id'); }).get();
-	          await update({ id: $list.attr('data-hadith-id'), prop: 'hdith_sharh.reorder', arabizi: false, value: order.join(',') });
+	          const headingSharhOwnerId = $list.attr('data-sharh-owner-id');
+	          const reorderRequest = headingSharhOwnerId
+	            ? { id: headingSharhOwnerId, prop: $list.attr('data-sharh-update-prop'), arabizi: false, value: order.join(',') }
+	            : { id: $list.attr('data-hadith-id'), prop: 'hdith_sharh.reorder', arabizi: false, value: order.join(',') };
+	          await update(reorderRequest);
 	        });
 	      });
 	    };
@@ -987,19 +1023,19 @@
 	          if (!response.ok) throw new Error(`Unable to load pairs (${response.status})`);
 	          return response.json();
 	        };
-	        const savePair = async (valueAr, valueEn, originalAr) => {
-	          const result = await update({ id: '0', prop: 'hdith_pair.save', value: '', arabizi: false, pairType: currentType, valueAr, valueEn, originalAr });
+	        const savePair = async (valueAr, valueEn, originalAr, originalKey) => {
+	          const result = await update({ id: '0', prop: 'hdith_pair.save', value: '', arabizi: false, pairType: currentType, valueAr, valueEn, originalAr, originalKey });
 	          if (result.code !== 200) throw new Error(result.message || 'Unable to save pair');
 	        };
-	        const deletePair = async (originalAr) => {
-	          const result = await update({ id: '0', prop: 'hdith_pair.delete', value: '', arabizi: false, pairType: currentType, originalAr });
+	        const deletePair = async (originalAr, originalKey) => {
+	          const result = await update({ id: '0', prop: 'hdith_pair.delete', value: '', arabizi: false, pairType: currentType, originalAr, originalKey });
 	          if (result.code !== 200) throw new Error(result.message || 'Unable to remove pair');
 	        };
 	        const render = (pairs) => {
 	          $list.empty();
 	          $empty.prop('hidden', pairs.length > 0);
 	          pairs.forEach(pair => {
-	            const $row = $('<div>').addClass('hadith-pair-manager-row').attr('data-original-ar', pair.value_ar || '');
+	            const $row = $('<div>').addClass('hadith-pair-manager-row').attr('data-original-ar', pair.value_ar || '').attr('data-original-key', pair.key || '');
 	            const $ar = $('<input>').attr({ type: 'text', lang: 'ar', dir: 'rtl', 'aria-label': 'Arabic value', placeholder: 'Arabic value' }).addClass('form-control form-control-sm hadith-admin-combobox').val(pair.value_ar || '');
 	            const $en = $('<input>').attr({ type: 'text', lang: 'en', dir: 'ltr', 'aria-label': 'English value', placeholder: 'English value' }).addClass('form-control form-control-sm hadith-admin-combobox').val(pair.value_en || '');
 	            const $save = $('<button>').attr({ type: 'button', title: 'Save pair', 'aria-label': 'Save pair' }).addClass('btn btn-sm btn-outline-secondary hadith-admin-action hadith-admin-action-icon').html('<span class="bi bi-check-lg" aria-hidden="true"></span>');
@@ -1007,7 +1043,7 @@
 	            $save.on('click', async () => {
 	              try {
 	                setStatus('Saving…');
-	                await savePair($ar.val().trim(), $en.val().trim(), $row.attr('data-original-ar'));
+	                await savePair($ar.val().trim(), $en.val().trim(), $row.attr('data-original-ar'), $row.attr('data-original-key'));
 	                setStatus('Pair saved.');
 	                await load();
 	              } catch (err) { setStatus(err.message, true); }
@@ -1016,7 +1052,7 @@
 	              if (!window.confirm('Remove this pair from autocomplete? Existing hadith data will not be changed.')) return;
 	              try {
 	                setStatus('Removing…');
-	                await deletePair($row.attr('data-original-ar'));
+	                await deletePair($row.attr('data-original-ar'), $row.attr('data-original-key'));
 	                setStatus('Pair removed.');
 	                await load();
 	              } catch (err) { setStatus(err.message, true); }

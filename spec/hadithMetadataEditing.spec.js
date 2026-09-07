@@ -149,6 +149,7 @@ describe('Hadith metadata editing', () => {
 		expect(scripts).toContain("editHadithApiPath('/autocomplete/sharh-titles')");
 		expect(scripts).toContain("editHadithApiPath('/autocomplete/bilingual-pairs')");
 		expect(scripts).toContain("prop: 'hdith_pair.save'");
+		expect(scripts).toContain('originalKey: reqBody.originalKey');
 		expect(template).toContain('data-hadith-pair-manager-open="narrator"');
 		expect(template).toContain('data-hadith-pair-manager-open="sharh_title"');
 		expect(template).toContain('data-hadith-pair-manager-open="attribution"');

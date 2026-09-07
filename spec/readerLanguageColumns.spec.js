@@ -64,6 +64,15 @@ describe('Hadith and Tafsir language columns', () => {
     expect(heading).toContain('data-prop="toc.intro" data-reader-language-column="arabic"');
   });
 
+	test('marks chapter and section explanation titles and bodies as language columns', () => {
+		const headingSharh = source('views/sub-views/hadith_heading_sharh.ejs');
+
+		expect((headingSharh.match(/data-reader-language-column="english"/g) || [])).toHaveLength(3);
+		expect((headingSharh.match(/data-reader-language-column="arabic"/g) || [])).toHaveLength(3);
+		expect(headingSharh).toContain('lang="en" data-reader-language-column="english"');
+		expect(headingSharh).toContain('lang="ar" dir="rtl" data-reader-language-column="arabic"');
+	});
+
   test('hides the selected panels and expands the remaining column at all widths', () => {
     const css = source('public/static/css/style.css');
     const script = source('public/static/js/script.js');

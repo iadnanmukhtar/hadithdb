@@ -7,7 +7,7 @@
   var articleForceBilingual = Boolean(locals.introductionBilingual);
   var articleEditEmptyAr = site.editMode && !articleForceBilingual && !articleHasContent && articleBook.lang === 'ar';
   var articleEditEmptyEn = site.editMode && !articleHasContent && !articleEditEmptyAr;
-  var articleShowEn = articleHasEn || articleEditEmptyEn || (site.editMode && articleForceBilingual);
+  var articleShowEn = articleHasEn || articleEditEmptyEn || site.editMode;
   var articleShowAr = articleHasAr || site.editMode || articleEditEmptyAr;
 %>
 <article class="quran-commentary-introduction-article mt-4" id="introduction-<%= article.h2 %>" data-introduction-article="<%= article.h2 %>" data-quran-introduction-target="<%= article.h2 %>">
@@ -23,4 +23,7 @@
       <% if (articleShowAr) { %><section class="_e <%= articleShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="ar" dir="rtl" data-id="<%= article.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= utils.emptyIfNull(article.intro) %>" data-markdown-empty-html="&hellip;"><div><%- utils.markdownToHtml(article.intro) || (site.editMode ? '&hellip;' : '') %></div></section><% } %>
     </section>
   </details>
+  <% if (site.editMode && !Number(article.count)) { %>
+  <button type="button" class="btn btn-sm btn-outline-danger mt-2" data-delete-introduction-article="<%= article.id %>">Delete article</button>
+  <% } %>
 </article>

@@ -160,3 +160,7 @@
 
 </section>
 <% } %>
+
+<% if (heading.level == 1 || isFirstChapterSectionPage) { %>
+<%- include('hadith_heading_sharh.ejs', { heading: chapter }); %>
+<% } %>

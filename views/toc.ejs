@@ -495,7 +495,7 @@
 	var tocHeadingRailKeys = new Map();
 	var tocHeadingRailItems = (Array.isArray(toc) ? toc : []).filter(function (heading) {
 	  return heading && heading.h1 !== undefined && heading.h1 !== null && heading.h1 !== ''
-	    && (isQuranToc || Number(heading.h1) !== 0)
+	    && (isQuranToc || Number(heading.h1) !== 0 || Number(heading.count) > 0)
 	    && (!isQuranToc || quranCommentaryHasSurah(heading.h1));
 	}).map(function (heading, index) {
 	  var number = heading.h1 != Math.floor(heading.h1) ? Number(heading.h1).toFixed(2) : heading.h1.toString();
@@ -541,7 +541,11 @@
 	  });
 	});
 	var showTocHeadingRail = tocHeadingRailItems.length > 0;
-	var tocHeadingRailTitle = tocDisplayBookNameEn || displayName(tocDisplayBook.shortName_en || tocDisplayBook.alias);
+	var tocHeadingRailTitle = quranCommentaryBook && quranCommentaryBook.type !== 'trans'
+	  ? Tafsir.displayShortName(quranCommentaryBook, 'en')
+	  : displayName(tocDisplayBook.shortName_en || tocDisplayBook.name_en || tocDisplayBook.alias);
+	if (quranCommentaryBook && quranCommentaryBook.type !== 'trans')
+	  tocHeadingRailTitle = tocHeadingRailTitle.replace(/^Tafsir\s+/i, '');
 	%>
   
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -937,7 +941,7 @@
 			<% }); %>
             <%
         for (var i = 0; i < toc.length; i++) {
-		  if (Number(toc[i].h1) === 0)
+		  if (Number(toc[i].h1) === 0 && !(Number(toc[i].count) > 0))
 			continue;
           toc[i].h1 = formatHeadingNumber(toc[i].h1);
           toc[i].h2 = formatHeadingNumber(toc[i].h2);

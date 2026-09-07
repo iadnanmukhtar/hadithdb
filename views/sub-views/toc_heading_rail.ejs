@@ -8,7 +8,7 @@
 <% if (tocHeadingRailItems.length > 0) { %>
 <aside class="hadith-heading-toc toc-heading-rail d-none d-lg-block" data-toc-heading-rail aria-labelledby="toc-heading-rail-title">
   <div class="hadith-heading-toc-sticky">
-    <% if (tocHeadingRailBookHref) { %><a id="toc-heading-rail-title" class="hadith-heading-toc-title heading-toc-book-title-link" href="<%= tocHeadingRailBookHref %>"><%= tocHeadingRailTitle %></a><% } else { %><strong id="toc-heading-rail-title" class="hadith-heading-toc-title"><%= tocHeadingRailTitle %></strong><% } %>
+    <% if (tocHeadingRailBookHref) { %><a id="toc-heading-rail-title" class="heading-toc-book-name" href="<%= tocHeadingRailBookHref %>"><%= tocHeadingRailTitle.toUpperCase() %></a><% } else { %><strong id="toc-heading-rail-title" class="heading-toc-book-name"><%= tocHeadingRailTitle.toUpperCase() %></strong><% } %>
     <nav class="nav flex-column hadith-heading-toc-nav" data-toc-heading-rail-nav aria-label="Chapters in <%= tocHeadingRailTitle %>">
       <% tocHeadingRailItems.forEach(function (heading) { %>
       <a class="nav-link hadith-heading-toc-link<%= heading.key === tocHeadingRailInitialKey ? ' active' : '' %>" href="<%= heading.href %>"<% if (heading.track !== false) { %> data-toc-heading-key="<%= heading.key %>"<% } %><% if (heading.titleLang === 'ar') { %> lang="ar" dir="rtl"<% } %><% if (heading.key === tocHeadingRailInitialKey) { %> aria-current="location"<% } %>><% if (heading.number) { %><%= heading.number %> <% } %><%= heading.title %></a>

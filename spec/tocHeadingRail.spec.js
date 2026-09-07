@@ -32,7 +32,7 @@ describe('TOC heading rail', () => {
 		}]);
 
 		expect(html).toContain('data-toc-heading-rail');
-		expect(html).toContain('href="/riyad">Riyad al-Salihin</a>');
+		expect(html).toContain('class="heading-toc-book-name" href="/riyad">RIYAD AL-SALIHIN</a>');
 		expect(html).toContain('href="/riyad/0.07"');
 		expect(html).toContain('>0.07 Certainty and Trust in Allah</a>');
 		expect(html).toMatch(/data-toc-heading-key="toc-heading-1"[^>]*lang="ar" dir="rtl"[^>]*>0\.08 باب عربي<\/a>/);
