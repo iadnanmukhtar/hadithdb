@@ -57,6 +57,25 @@ function cachedSimilarRows(payload, file) {
 
 function crosswalkKey(bookId, entryId) { return `${Number(bookId)}:${Number(entryId)}`; }
 
+function relationshipKey(firstId, secondId) {
+	const first = Number(firstId);
+	const second = Number(secondId);
+	return first < second ? `${first}:${second}` : `${second}:${first}`;
+}
+
+function confirmedRelationships(rows) {
+	const relationships = new Map();
+	for (const row of rows) {
+		if (Number(row.parentHadithId) === Number(row.targetHadithId)) continue;
+		const key = relationshipKey(row.parentHadithId, row.targetHadithId);
+		if (!relationships.has(key)) {
+			const [hadithId1, hadithId2] = key.split(':').map(Number);
+			relationships.set(key, { hadithId1, hadithId2 });
+		}
+	}
+	return [...relationships.values()];
+}
+
 function resolveRows(rows, crosswalk, localBooks, exactHadiths = new Map()) {
 	const statistics = { cached: rows.length, parentMissing: 0, targetBookAbsent: 0, targetMissing: 0, exactFallbacks: 0, resolved: 0 };
 	const resolved = [];
@@ -134,10 +153,28 @@ async function main() {
 				source_num=COALESCE(source_num,VALUES(source_num)),source_body_start=COALESCE(source_body_start,VALUES(source_body_start)),
 				internal_hadith_id=VALUES(internal_hadith_id),internal_ref=VALUES(internal_ref),source_url=VALUES(source_url)`, [values]);
 		}
+		const existingRelationships = new Set((await query('SELECT hadithId1,hadithId2 FROM hadiths_sim'))
+			.map(row => relationshipKey(row.hadithId1, row.hadithId2)));
+		const relationships = confirmedRelationships(result.rows);
+		const missingRelationships = relationships.filter(row => !existingRelationships.has(relationshipKey(row.hadithId1, row.hadithId2)));
+		for (let offset = 0; offset < missingRelationships.length; offset += 500) {
+			const batch = missingRelationships.slice(offset, offset + 500);
+			await query(`INSERT IGNORE INTO hadiths_sim
+				(hadithId1,hadithId2,similarity_source,similarity_imported) VALUES ?`,
+			[batch.map(row => [row.hadithId1, row.hadithId2, 'hdith.com', 1])]);
+		}
+		for (let offset = 0; offset < relationships.length; offset += 500) {
+			const batch = relationships.slice(offset, offset + 500);
+			await query(`DELETE FROM hadiths_sim_candidates WHERE (hadithId1,hadithId2) IN (?)`,
+				[batch.map(row => [row.hadithId1, row.hadithId2])]);
+			await query(`DELETE FROM hadiths_sim_candidates WHERE (hadithId1,hadithId2) IN (?)`,
+				[batch.map(row => [row.hadithId2, row.hadithId1])]);
+		}
 		await query('COMMIT');
 		const [verified] = await query(`SELECT COUNT(*) total,COUNT(DISTINCT hadith_id) parents
 			FROM hdith_hadith_links WHERE link_type='similar' AND internal_hadith_id IS NOT NULL AND internal_ref IS NOT NULL`);
-		console.log(`Applied without deleting existing links. Resolved table state: ${verified.total} links across ${verified.parents} hadiths.`);
+		console.log(`Applied without deleting existing source links. Resolved table state: ${verified.total} links across ${verified.parents} hadiths.`);
+		console.log(`Confirmed relationships: ${relationships.length} unique pairs; ${missingRelationships.length} added to hadiths_sim as hdith.com similarities (not candidates).`);
 	} catch (error) {
 		if (apply) await query('ROLLBACK').catch(() => {});
 		throw error;
@@ -146,4 +183,4 @@ async function main() {
 
 if (require.main === module) main().catch(error => { console.error(`ERROR: ${error.stack || error.message}`); process.exitCode = 1; });
 
-module.exports = { cachedSimilarRows, crosswalkKey, resolveRows, sourceBookId };
+module.exports = { cachedSimilarRows, confirmedRelationships, crosswalkKey, relationshipKey, resolveRows, sourceBookId };

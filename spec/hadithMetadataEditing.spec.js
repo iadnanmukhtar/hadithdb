@@ -167,6 +167,8 @@ describe('Hadith metadata editing', () => {
 		expect(scripts).toContain("prop: 'hdith_sharh.reorder'");
 		expect(scripts).toContain("$el.closest('.hadith-grade-opinion').remove()");
 		expect(scripts).toContain("prop: 'hdith_grade.reorder'");
+		expect(scripts).toContain("successTitle: 'Grades reordered'");
+		expect(scripts).toContain("successMessage: 'The scholarly grade order has been updated.'");
 		expect(scripts).toContain("this.addEventListener('dragover'");
 		expect(template).toContain('hadith-grade-color-editor');
 		expect(template).toContain('data-hdith-grade-color-indicator');

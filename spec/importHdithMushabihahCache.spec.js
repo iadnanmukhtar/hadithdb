@@ -1,6 +1,6 @@
 'use strict';
 
-const { cachedSimilarRows, resolveRows } = require('../bin/utils/import-hdith-mushabihah-cache');
+const { cachedSimilarRows, confirmedRelationships, resolveRows } = require('../bin/utils/import-hdith-mushabihah-cache');
 
 describe('hdith.com cached mushabihah import', () => {
 	test('extracts and deduplicates similar references without changing source identity', () => {
@@ -40,5 +40,13 @@ describe('hdith.com cached mushabihah import', () => {
 		const result = resolveRows(rows, new Map(), books, exact);
 		expect(result.rows[0]).toMatchObject({ parentHadithId: 120, targetHadithId: 310, internalRef: 'ibnabishaybah:9' });
 		expect(result.statistics.exactFallbacks).toBe(2);
+	});
+
+	test('stores source similarities as canonical confirmed pairs, never self-links or candidates', () => {
+		expect(confirmedRelationships([
+			{ parentHadithId: 20, targetHadithId: 10 },
+			{ parentHadithId: 10, targetHadithId: 20 },
+			{ parentHadithId: 10, targetHadithId: 10 }
+		])).toEqual([{ hadithId1: 10, hadithId2: 20 }]);
 	});
 });

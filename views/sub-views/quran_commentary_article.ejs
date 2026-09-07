@@ -9,13 +9,15 @@
   var articleEditEmptyEn = site.editMode && !articleHasContent && !articleEditEmptyAr;
   var articleShowEn = articleHasEn || articleEditEmptyEn || site.editMode;
   var articleShowAr = articleHasAr || site.editMode || articleEditEmptyAr;
+  var articleShowTitleEn = articleShowEn || (articleForceBilingual && Boolean(utils.trimToEmpty(article.title_en)));
+  var articleShowTitleAr = articleShowAr || (articleForceBilingual && Boolean(utils.trimToEmpty(article.title)));
 %>
 <article class="quran-commentary-introduction-article mt-4" id="introduction-<%= article.h2 %>" data-introduction-article="<%= article.h2 %>" data-quran-introduction-target="<%= article.h2 %>">
   <details class="quran-commentary-introduction-disclosure">
     <summary>
       <heading class="row heading py-2">
-        <% if (articleShowEn) { %><h2 class="<%= articleShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="en"><span class="_e" data-id="<%= article.id %>" data-prop="toc.title_en" data-placeholder="Introduction article title"><%- article.title_en || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
-        <% if (articleShowAr) { %><h2 class="<%= articleShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="ar" dir="rtl"><span class="_e" data-id="<%= article.id %>" data-prop="toc.title" data-placeholder="عنوان المقدمة"><%- article.title || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
+        <% if (articleShowTitleEn) { %><h2 class="<%= articleShowTitleAr ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="en"><span class="_e" data-id="<%= article.id %>" data-prop="toc.title_en" data-placeholder="Introduction article title"><%- article.title_en || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
+        <% if (articleShowTitleAr) { %><h2 class="<%= articleShowTitleEn ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="ar" dir="rtl"><span class="_e" data-id="<%= article.id %>" data-prop="toc.title" data-placeholder="عنوان المقدمة"><%- article.title || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
       </heading>
     </summary>
     <section class="row heading-intro mb-3">

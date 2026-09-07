@@ -7,7 +7,6 @@
 	const railNarrators = Array.isArray(railMetadata.narrators) ? railMetadata.narrators : [];
 	const railSharh = Array.isArray(railMetadata.sharh) ? railMetadata.sharh : [];
 	const railGharib = Array.isArray(railMetadata.gharib) ? railMetadata.gharib : [];
-	const railSourceSimilar = Array.isArray(railMetadata.similar) ? railMetadata.similar.filter(reference => reference.internal_ref) : [];
 	const railBase = `hadith-metadata-${i.actual ? i.actual.id : i.id}`;
 	const railGroups = (railNavigationOnly ? [] : [
 		{ key: 'hadith', label: 'Hadith', count: null, always: true },
@@ -16,7 +15,7 @@
 		{ key: 'isnad', label: 'Chain of Narrators', count: railNarrators.length, always: railEditMode },
 		{ key: 'sharh', label: 'Explanations', count: railSharh.filter(entry => railEditMode || entry.text || entry.text_en).length, always: railEditMode },
 		{ key: 'gharib', label: 'Definitions', count: railGharib.length },
-		{ key: 'mushabihah', label: 'Similar Hadiths', count: (Array.isArray(i.similar) ? i.similar.length : 0) + railSourceSimilar.length, always: railEditMode }
+		{ key: 'mushabihah', label: 'Similar Hadiths', count: Array.isArray(i.similar) ? i.similar.length : 0, always: railEditMode }
 	]).filter(group => group.always || group.count);
 	const railInitialKey = railGroups.length ? railGroups[0].key : '';
 	const railBookName = (i.book_shortName_en || (i.book && (i.book.shortName_en || i.book.name_en)) || i.book_alias || '').toString().trim();

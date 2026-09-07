@@ -584,10 +584,10 @@
       }
       if (res.status == 200) {
         const isTafsirUpdate = (reqBody.prop || '').toString().indexOf('commentary.') === 0;
-        const successTitle = isTafsirUpdate ? 'Tafsir updated' : 'Changes saved';
-        const successMessage = isTafsirUpdate
+        const successTitle = options.successTitle || (isTafsirUpdate ? 'Tafsir updated' : 'Changes saved');
+        const successMessage = options.successMessage || (isTafsirUpdate
           ? 'Your changes have been saved and the Tafsir reader refreshed.'
-          : 'Your changes have been saved.';
+          : 'Your changes have been saved.');
         toastr.success(successMessage, successTitle);
 	      } else if (!(options.suppressHdithUrlPromptError && resBody.needsHdithUrl)) {
         var errMessage = resBody.message || `${res.status} ${res.statusText || 'Update failed'}`;
@@ -945,6 +945,9 @@
 	            prop: 'hdith_grade.reorder',
 	            arabizi: false,
 	            value: order.join(',')
+	          }, {
+	            successTitle: 'Grades reordered',
+	            successMessage: 'The scholarly grade order has been updated.'
 	          });
 	        });
 	      });

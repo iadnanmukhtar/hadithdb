@@ -115,7 +115,7 @@ describe('hdith.com metadata display', () => {
 		];
 		const ordered = withPrimaryGrade(grades, item);
 		expect(preferredColoredGradeOpinion(grades).grade).toBe('منكر');
-		expect(ordered[0]).toMatchObject({ id: 2, grade: 'منكر' });
+		expect(ordered.map(opinion => opinion.id)).toEqual([1, 2, 3]);
 		expect(item.legacyGradeOverride).toMatchObject({ grader: 'يحيى بن معين', grade: 'منكر' });
 		expect(item.legacyGradeColor).toBe('red');
 		expect(item.grade.id).toBe(-1);
@@ -254,7 +254,8 @@ describe('hdith.com metadata display', () => {
 		expect(template).not.toContain("entry.term !== entry.matchedText");
 		expect(template).not.toContain('<summary class="small"><strong>');
 		expect(template).toContain('class="hadith-gharib-definition small"');
-		expect(template).toContain('class="hadith-source-similar-reference small"');
+		expect(template).not.toContain('hadith-source-similar-list');
+		expect(template).not.toContain('hadith-source-similar-reference');
 		expect(template).not.toContain('>المزيد<');
 		['Grader:', 'Grade:', 'Narrator grading:', 'Generation:', 'Died:', 'Transmission formula:', 'Reference ', 'Page ', 'Collected by', 'Source record'].forEach(label => expect(template).not.toContain(label));
 		expect(template).not.toContain('Matn attribution:');
@@ -465,9 +466,11 @@ describe('hdith.com metadata display', () => {
 		expect(referenceIndex).toContain('hadith-reference-group-separator"> · ');
 		expect(referenceIndex).toContain('class="hadith-reference-index small mb-3"');
 		expect(referenceIndex).not.toContain('class="hadith-reference-index fs-5');
-		expect(css).toContain('.hadith-mushabihah-section .hadith-reference-index:lang(ar) { font-size: calc(1.05rem * var(--content-font-scale)) !important; }');
-		expect(css).toContain('.hadith-mushabihah-section .hadith-reference-index:lang(ar) * { font-size: inherit !important; }');
-		expect(referenceIndex).toContain('arabic.toArabicDigits(latinNumber)');
+		expect(css).toContain('.hadith-mushabihah-section .hadith-reference-index:lang(en) { direction: ltr; text-align: left; }');
+		expect(referenceIndex).toContain('lang="en" dir="ltr"');
+		expect(referenceIndex).toContain('const bookName = bookAlias');
+		expect(referenceIndex).toContain('number: latinNumber');
+		expect(referenceIndex).not.toContain('arabic.toArabicDigits(latinNumber)');
 		expect(referenceIndex).toContain('<a href="<%= reference.href %>"><%= reference.number %></a>');
 		expect(metadata).not.toContain('أخرجه');
 		expect(metadata).not.toContain('i.similarBooks');
