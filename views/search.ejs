@@ -21,7 +21,7 @@
     if (q) {
         page.menu = 'Search';
         page.title_en = `Search Results for ${q}`;
-        page.description_en = `Search results for “${q}”${isQuranSearchProxy ? ' across the Quran and tafsir' : ' across the hadith collection'}.`;
+        page.description_en = `Search results for “${q}”${isQuranSearchProxy ? ' across the Quran and tafsir' : ' across Hadith, Sharh, Sirah, Tafsir, and Quran'}.`;
         page.canonical = searchAction;
         page.noindex = true;
         page.title = '';
@@ -59,7 +59,7 @@
     if (typeof chapter !== 'undefined')
       page.context.chapter = chapter;
     var displayResultCount = (typeof totalResults !== 'undefined' && totalResults > 0) ? totalResults : results.length;
-    var detailHadithItem = !isSearchResultsPage ? (results.find(function (item) { return item.single && item.book_alias !== 'quran'; }) || null) : null;
+    var detailHadithItem = !isSearchResultsPage ? (results.find(function (item) { return item.single && item.book_alias !== 'quran' && item.doctype !== 'sirah'; }) || null) : null;
     if (utils.isFalsey(q) && results.length > 0) {
       page.context.chapter = results[0].chapter;
       page.context.section = results[0].section;
@@ -104,7 +104,7 @@
   
   <%- include('sub-views/header.ejs', { site: site, page: page, hadithDetailSectionItem: detailHadithItem }); %>
   
-  <div class="<%= detailHadithItem ? 'container-fluid hadith-heading-layout hadith-metadata-page-layout' : 'container col-lg-8 mx-auto' %>">
+  <div class="<%= isSearchResultsPage ? 'container-fluid search-results-layout' : (detailHadithItem ? 'container-fluid hadith-heading-layout hadith-metadata-page-layout' : 'container col-lg-8 mx-auto') %>">
     <% if (detailHadithItem) { %><div class="container col-lg-8 mx-auto hadith-heading-content"><% } %>
     
     <main class="search-results"<% if (isSearchResultsPage) { %> data-search-infinite="1" data-search-current-url="<%= req.originalUrl || req.url || searchAction %>"<% if (page.prev) { %> data-search-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-search-next-url="<%= page.next %>"<% } %><% } %>>
@@ -160,6 +160,8 @@
         
         <% if (results[i].doctype == 'suggestion') { %>
           <%- include('sub-views/search_suggestion_result.ejs', { suggestion: results[i] }); %>
+        <% } else if (results[i].doctype == 'sirah') { %>
+          <%- include('sub-views/sirah_item.ejs', { i: results[i] }); %>
         <% } else if (!results[i].doctype || results[i].doctype == 'hadith') { %>
           <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], title: true, main: main, searchResult: q }); %>
         <% } else if (results[i].doctype == 'sharh') { %>
@@ -181,6 +183,19 @@
       <% } %>
 
     </main>
+    <% if (isSearchResultsPage) { %>
+    <aside class="search-filter-rail" aria-label="Search filters">
+      <div data-search-filter-rail-container>
+        <form method="get" action="<%= searchAction %>" class="search-filter-controls" data-search-filter-rail-form>
+          <input type="hidden" name="q" value="<%= q %>">
+          <% ['mode', 'tafsirMode', 'sort'].forEach(function (key) { if (req.query[key]) { %>
+          <input type="hidden" name="<%= key %>" value="<%= req.query[key] %>">
+          <% } }); %>
+          <div data-search-filter-rail-options></div>
+        </form>
+      </div>
+    </aside>
+    <% } %>
     <% if (detailHadithItem) { %></div><%- include('sub-views/hadith_metadata_rail.ejs', { i: detailHadithItem, mobile: false }); %><% } %>
   </div>
   

@@ -669,7 +669,7 @@
         <section data-random-toc-item data-src="<%= utils.urlFor(req, randomTocItemSrc) %>">
           <% if (showRandomTocTitle) { %>
           <header class="row">
-            <h3 class="col-12 fs-4">Random <%= isQuranToc ? 'āyah' : 'ḥadīth' %> in <%- quranCommentaryBook ? quranCommentaryBookLabel : book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h3>
+            <h3 class="col-12 fs-4">Random <%= isQuranToc ? 'āyah' : (book.type === 'sirah' ? 'passage' : 'ḥadīth') %> in <%- quranCommentaryBook ? quranCommentaryBookLabel : book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h3>
           </header>
           <% } %>
         </section>
@@ -746,7 +746,7 @@
           <div class="tab-pane fade <%= quranTocDefaultView === 'juz' ? 'show active' : '' %>" id="toc-view-juz" role="tabpanel" aria-labelledby="toc-tab-juz">
             <% if (!quranCommentaryBook || quranCommentaryBook.type !== 'trans') { %>
             <div class="page-content-filter toc-content-filter input-group mb-3">
-              <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
+              <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
               <input type="search" class="form-control" placeholder="Filter Juz/Siparas" aria-label="Filter Juz/Siparas" autocomplete="off" data-toc-content-filter="#toc-juz">
             </div>
             <% } %>
@@ -784,7 +784,7 @@
           <div class="tab-pane fade <%= quranTocDefaultView === 'surahs' ? 'show active' : '' %>" id="toc-view-surahs" role="tabpanel" aria-labelledby="toc-tab-surahs">
             <% if (!quranCommentaryBook || quranCommentaryBook.type !== 'trans') { %>
             <div class="page-content-filter toc-content-filter input-group mb-3">
-              <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
+              <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
               <input type="search" class="form-control" placeholder="Filter surahs" aria-label="Filter surahs" autocomplete="off" data-toc-content-filter="#toc-surahs">
             </div>
             <% } %>
@@ -881,7 +881,7 @@
           <div class="tab-pane fade <%= quranTocDefaultView === 'manzils' ? 'show active' : '' %>" id="toc-view-manzils" role="tabpanel" aria-labelledby="toc-tab-manzils">
             <% if (!quranCommentaryBook || quranCommentaryBook.type !== 'trans') { %>
             <div class="page-content-filter toc-content-filter input-group mb-3">
-              <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
+              <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
               <input type="search" class="form-control" placeholder="Filter Manzils" aria-label="Filter Manzils" autocomplete="off" data-toc-content-filter="#toc-manzils">
             </div>
             <% } %>
@@ -919,7 +919,7 @@
         </div>
         <% } else { %>
         <div class="page-content-filter toc-content-filter input-group mb-3">
-          <span class="input-group-text bi bi-filter" aria-hidden="true"></span>
+          <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
           <input type="search" class="form-control" placeholder="Filter chapter headings" aria-label="Filter chapter headings" autocomplete="off" data-toc-content-filter="#toc">
         </div>
 

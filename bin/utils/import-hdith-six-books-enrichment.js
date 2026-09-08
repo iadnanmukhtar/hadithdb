@@ -42,7 +42,10 @@ const FOLLOWUP_BOOKS = Object.freeze([
 	{ sourceSlug: 'b-19', bookId: 16, alias: 'bazzar' },
 	{ sourceSlug: 'b-33', bookId: 32, alias: 'shamail' },
 	{ sourceSlug: 'b-24', bookId: 10, alias: 'hakim' },
-	{ sourceSlug: 'b-8', bookId: 8, alias: 'ahmad' }
+	{ sourceSlug: 'b-8', bookId: 8, alias: 'ahmad' },
+	{ sourceSlug: 'b-21', bookId: 35, alias: 'tayalisi' },
+	{ sourceSlug: 'b-23', bookId: 36, alias: 'abuyaala' },
+	{ sourceSlug: 'b-26', bookId: 37, alias: 'matalib' }
 ]);
 const SUPPORTED_BOOKS = Object.freeze([...SIX_BOOKS, ...FOLLOWUP_BOOKS]);
 const HDITH_LOCAL_BOOKS = Object.freeze({
@@ -65,8 +68,11 @@ const HDITH_LOCAL_BOOKS = Object.freeze({
 	17: { bookId: 14, alias: 'bayhaqi', title: 'سنن البيهقي الكبرى', referenceMode: 'exact' },
 	18: { bookId: 18, alias: 'daraqutni', title: 'سنن الدارقطني', referenceMode: 'exact' },
 	19: { bookId: 16, alias: 'bazzar', title: 'مسند البزار', referenceMode: 'exact' },
+	21: { bookId: 35, alias: 'tayalisi', title: 'مسند الطيالسي', referenceMode: 'exact' },
 	22: { bookId: 13, alias: 'nasai-kubra', title: 'السنن الكبرى للنسائي', referenceMode: 'exact' },
+	23: { bookId: 36, alias: 'abuyaala', title: 'مسند أبي يعلى الموصلي', referenceMode: 'exact' },
 	24: { bookId: 10, alias: 'hakim', title: 'المستدرك على الصحيحين', referenceMode: 'exact' },
+	26: { bookId: 37, alias: 'matalib', title: 'المطالب العالية', referenceMode: 'exact' },
 	33: { bookId: 32, alias: 'shamail', title: 'الشمائل المحمدية', referenceMode: 'exact' }
 });
 const SOURCE_BOOK_ALIASES = Object.freeze(Object.fromEntries(Object.entries(HDITH_LOCAL_BOOKS).map(([id, book]) => [id, book.alias])));

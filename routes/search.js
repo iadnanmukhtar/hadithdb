@@ -485,15 +485,16 @@ router.get(['/autocomplete', '/quran/autocomplete'], searchRequestLimiter, async
     bookFilters = expandShortcutBookFilters(normalizeBookFilterValues(bookFilters));
     var quranSearchProxy = req.path.indexOf('/quran/') === 0;
     if (!quranSearchProxy)
-      bookFilters = Search.hadithContentFilters(stripQuranTafsirBookFilters(bookFilters));
+      bookFilters = Search.generalContentFilters(bookFilters);
     else if (bookFilters.length < 1)
       bookFilters = ['quran', 'commentaries'];
-    var tafsirFilters = quranSearchProxy ? normalizeRequestTafsirFilters(req) : [];
-    if (tafsirFilters.length > 0)
+    var tafsirFilters = normalizeRequestTafsirFilters(req);
+    if (tafsirFilters.length > 0 && quranSearchProxy)
       bookFilters = bookFilters.indexOf('quran') >= 0 ? ['quran', 'commentaries'] : ['commentaries'];
+    if (!quranSearchProxy && tafsirFilters.length && !bookFilters.includes('commentaries')) bookFilters.push('commentaries');
     var suggestions = await Search.a_autocomplete(q, bookFilters, req.query.limit, {
       tafsirAliases: tafsirFilters,
-      excludeQuranAndTafsir: !quranSearchProxy
+      generalSearch: !quranSearchProxy
     });
     if (quranSearchProxy)
       suggestions = await Search.a_withQuranMushafPages(suggestions);
@@ -991,6 +992,26 @@ function expandShortcutBookFilters(filters) {
       expanded.push('bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi');
       return;
     }
+    if (filter === 'sihah') {
+      expanded.push(...['bukhari', 'muslim', 'malik', 'ibnhibban', 'ibnkhuzaymah', 'hakim']);
+      return;
+    }
+    if (filter === 'sunan') {
+      expanded.push(...['abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'darimi', 'daraqutni', 'nasai-kubra', 'bayhaqi']);
+      return;
+    }
+    if (filter === 'masanid') {
+      expanded.push(...['ahmad', 'bazzar']);
+      return;
+    }
+    if (filter === 'musannaf') {
+      expanded.push(...['malik', 'abdalrazzaq', 'ibnabishaybah']);
+      return;
+    }
+    if (filter === 'maajim') {
+      expanded.push(...['tabarani-saghir', 'tabarani-awsat', 'tabarani']);
+      return;
+    }
     expanded.push(filter);
   });
   return orderBookFilters(Array.from(new Set(expanded)));
@@ -1011,20 +1032,10 @@ function orderBookFilters(filters) {
   });
 }
 
-function stripQuranTafsirBookFilters(filters) {
-  if (!filters)
-    return [];
-  filters = Array.isArray(filters) ? filters : [filters];
-  return filters.flatMap(filter => filter.toString().split(','))
-    .map(normalizeBookFilterValue)
-    .filter(isVisibleBookFilter)
-    .filter(filter => filter && filter !== 'quran' && filter !== 'commentaries');
-}
-
 function isVisibleBookFilter(filter) {
   if (!filter)
     return false;
-  if (filter === 'hadith' || filter === 'toc' || filter === 'commentaries' || filter === 'sharh')
+  if (filter === 'hadith' || filter === 'toc' || filter === 'commentaries' || filter === 'sharh' || filter === 'sirah')
     return true;
   if (filter === 'sahihayn' || filter === 'kutubarbaah' || filter === 'sixbooks' || filter === 'ninebooks')
     return true;
@@ -1142,10 +1153,8 @@ async function renderSearchResults(req, res, next, options = {}) {
     delete req.query.sort;
   if (options.forceBookFilters)
     req.query.b = options.forceBookFilters.slice();
-  var tafsirFilters = options.quranSearchProxy ? normalizeRequestTafsirFilters(req) : [];
-  if (!options.quranSearchProxy)
-    delete req.query.tafsir;
-  if (tafsirFilters.length > 0)
+  var tafsirFilters = normalizeRequestTafsirFilters(req);
+  if (tafsirFilters.length > 0 && options.quranSearchProxy)
     req.query.b = normalizeBookFilterValues(req.query.b).indexOf('quran') >= 0 ? ['quran', 'commentaries'] : ['commentaries'];
 
   if (options.redirectReferences !== false) {
@@ -1173,7 +1182,8 @@ async function renderSearchResults(req, res, next, options = {}) {
   try {
     normalizeRequestBookFilters(req);
     if (!options.quranSearchProxy)
-      req.query.b = Search.hadithContentFilters(stripQuranTafsirBookFilters(req.query.b));
+      req.query.b = Search.generalContentFilters(req.query.b);
+    if (!options.quranSearchProxy && tafsirFilters.length && !req.query.b.includes('commentaries')) req.query.b.push('commentaries');
     var effectiveBookFilters = req.query.b;
     if ((!effectiveBookFilters || effectiveBookFilters.length < 1) && options.defaultBookFilters)
       effectiveBookFilters = options.defaultBookFilters.slice();
@@ -1182,7 +1192,7 @@ async function renderSearchResults(req, res, next, options = {}) {
     offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
     results = await Search.a_searchText(req.query.q, effectiveBookFilters, offset, {
       tafsirAliases: tafsirFilters,
-      excludeQuranAndTafsir: !options.quranSearchProxy,
+      generalSearch: !options.quranSearchProxy,
       sort: searchSort
     });
     totalResults = Number.isFinite(results.total) ? results.total : results.length;
@@ -1617,7 +1627,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 
   results = results.map(item => new Item(item));
   results[0].single = true;
-  if (results[0].book_alias !== 'quran') {
+  if (results[0].book_alias !== 'quran' && results[0].doctype !== 'sirah') {
 	results[0].hdithMetadata = await HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id) || {};
     results[0].hdithMetadata.grades = HdithMetadata.withPrimaryGrade(results[0].hdithMetadata.grades, results[0]);
   }

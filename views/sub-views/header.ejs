@@ -60,8 +60,8 @@
     var hadithSearchBookAliases = isSearchResultsContext && !isQuranArea
       ? searchResultsBookFilters
       : (hadithSearchBookAlias ? [hadithSearchBookAlias] : []);
-    var quranSearchBookFilters = isSearchResultsContext && isQuranArea ? searchResultsBookFilters : [];
-    var quranSearchCommentaryAliases = isSearchResultsContext && isQuranArea
+    var quranSearchBookFilters = isSearchResultsContext ? searchResultsBookFilters : (hadithSearchBookAlias ? [hadithSearchBookAlias] : []);
+    var quranSearchCommentaryAliases = isSearchResultsContext
       ? searchResultsTafsirFilters
       : (quranSearchCommentaryBook ? [quranSearchCommentaryBook.alias] : []);
     var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
@@ -307,6 +307,19 @@
     
   </div>
   
+  <% if (isSearchResultsContext) { %>
+  <nav class="row g-0 chapter-toc search-filter-top-menu" aria-label="Search filters">
+    <div class="col-12 chapter-toc-toolbar">
+      <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#search-mobile-filter-panel" role="button" aria-expanded="false" aria-controls="search-mobile-filter-panel" title="Show search filters">
+        <i class="bi bi-funnel" aria-hidden="true"></i>
+        <span>Search Filters</span>
+        <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
+      </a>
+    </div>
+    <div id="search-mobile-filter-panel" class="col-12 collapse chapter-toc-panel" data-search-mobile-filter-panel></div>
+  </nav>
+  <% } %>
+
   <% if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
   <%- include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true }); %>
   <% } else if (page.menu === 'Chapter' || page.menu === 'Section') {
@@ -484,9 +497,9 @@
   <% } %>
 
   <div class="col-12 d-none d-md-flex site-navbar-search-row" role="search">
-    <button type="button" class="command-search-trigger" data-command-search-open data-command-search-direction-container dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>" aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search Hadith or Quran and Tafsir (Command or Control K)">
+    <button type="button" class="command-search-trigger" data-command-search-open data-command-search-direction-container dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>" aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search Hadith, Sharh, Tafsir, and Quran (Command or Control K)">
       <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
-      <span class="command-search-trigger-label<%= headerSearchIsRtl ? ' command-search-arabic-text' : '' %>" data-command-search-trigger-label data-empty-label="Search Hadith or Quran + Tafsir" dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>"><%= headerSearchTerm || 'Search Hadith or Quran + Tafsir' %></span>
+      <span class="command-search-trigger-label<%= headerSearchIsRtl ? ' command-search-arabic-text' : '' %>" data-command-search-trigger-label data-empty-label="Search the library" dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>"><%= headerSearchTerm || 'Search the library' %></span>
       <kbd class="command-search-shortcut" aria-hidden="true"><span data-command-key-modifier>⌘</span><span>K</span></kbd>
     </button>
   </div>

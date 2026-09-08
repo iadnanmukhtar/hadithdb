@@ -1245,6 +1245,28 @@ function initCommandSearch() {
 	var initialMode = dialog.dataset.initialSearchMode === 'quran' ? 'quran' : 'hadith';
 	var mode = initialMode;
 	var lastTrigger = null;
+	var filterOptions = dialog.querySelector('[data-command-search-combined-filters]');
+	var filterToggle = dialog.querySelector('[data-command-filter-toggle]');
+	filterToggle.addEventListener('click', function () {
+		filterOptions.open = !filterOptions.open;
+		filterToggle.setAttribute('aria-expanded', filterOptions.open ? 'true' : 'false');
+	});
+	filterOptions.addEventListener('toggle', function () {
+		filterToggle.setAttribute('aria-expanded', filterOptions.open ? 'true' : 'false');
+		filterToggle.classList.toggle('active', filterOptions.open);
+	});
+	var railOptions = document.querySelector('[data-search-filter-rail-options]');
+	var railSources = [];
+	var railChecks = [];
+	function syncFilterRail() {
+		railChecks.forEach(function (checkbox, index) { checkbox.checked = railSources[index].checked; });
+		if (railOptions) railOptions.querySelectorAll('[data-command-search-filter-count]').forEach(function (badge) {
+			var count = badge.closest('details').querySelectorAll('[data-command-filter]:checked:not(:disabled)').length;
+			badge.textContent = count;
+			badge.classList.toggle('is-empty', count === 0);
+		});
+	}
+
 	var searchTermStorageKeys = {
 		hadith: 'hadithdb.commandSearch.term.hadith',
 		quran: 'hadithdb.commandSearch.term.quran'
@@ -1256,7 +1278,7 @@ function initCommandSearch() {
 	});
 
 	function activePanel() {
-		return dialog.querySelector(`[data-command-search-panel="${mode}"]`);
+		return mode === 'hadith' ? form : dialog.querySelector('[data-command-search-panel="quran"]');
 	}
 
 	function commandSearchSessionStorage() {
@@ -1330,8 +1352,6 @@ function initCommandSearch() {
 			sharh.checked = false;
 		if (changedInput === sharh && sharh.checked)
 			sources.forEach(function (checkbox) { checkbox.checked = false; });
-		if (!hadith.checked && !sharh.checked && !sources.some(function (checkbox) { return checkbox.checked; }))
-			hadith.checked = true;
 	}
 
 	function normalizeQuranFilters(changedInput) {
@@ -1346,7 +1366,7 @@ function initCommandSearch() {
 		if (changedInput === allTafsir && allTafsir.checked)
 			tafsirs.forEach(function (checkbox) { checkbox.checked = false; });
 		var hasSpecificCommentary = tafsirs.some(function (checkbox) { return checkbox.checked; });
-		if (quran && allTafsir && !quran.checked && !allTafsir.checked && !hasSpecificCommentary) {
+		if (mode === 'quran' && quran && allTafsir && !quran.checked && !allTafsir.checked && !hasSpecificCommentary) {
 			if (changedInput === quran)
 				allTafsir.checked = true;
 			else
@@ -1415,8 +1435,9 @@ function initCommandSearch() {
 			pills.appendChild(clearAll);
 		}
 		selected.hidden = pills.childElementCount < 1;
+		syncFilterRail();
 		dialog.querySelectorAll('[data-command-search-filter-count]').forEach(function (badge) {
-			var badgePanel = dialog.querySelector(`[data-command-search-panel="${badge.dataset.commandSearchFilterCount}"]`);
+			var badgePanel = badge.closest('details') || activePanel();
 			var count = badgePanel ? badgePanel.querySelectorAll('[data-command-filter]:checked:not(:disabled)').length : 0;
 			badge.textContent = count;
 			badge.classList.toggle('is-empty', count < 1);
@@ -1429,6 +1450,7 @@ function initCommandSearch() {
 		if (resolvedMode !== previousMode)
 			storeSearchTerm(previousMode);
 		mode = resolvedMode;
+		if (mode === 'quran') normalizeQuranFilters();
 		if (resolvedMode !== previousMode)
 			restoreSearchTerm(mode);
 		dialog.querySelectorAll('[data-command-search-mode]').forEach(function (button) {
@@ -1438,7 +1460,7 @@ function initCommandSearch() {
 			button.tabIndex = active ? 0 : -1;
 		});
 		dialog.querySelectorAll('[data-command-search-panel]').forEach(function (panel) {
-			var active = panel.dataset.commandSearchPanel === mode;
+			var active = mode === 'hadith' || panel.dataset.commandSearchPanel === mode;
 			panel.hidden = !active;
 			panel.querySelectorAll('input').forEach(function (field) {
 				field.disabled = !active;
@@ -1452,8 +1474,8 @@ function initCommandSearch() {
 			field.disabled = mode !== 'quran';
 		});
 		form.action = mode === 'quran' ? form.dataset.quranSearchAction : form.dataset.hadithSearchAction;
-		input.placeholder = mode === 'quran' ? 'Search the Qurʿān or tafāsīr...' : 'Search hadith...';
-		input.setAttribute('aria-label', mode === 'quran' ? 'Search the Quran or tafsir' : 'Search hadith');
+		input.placeholder = mode === 'quran' ? 'Search the Qurʿān or tafāsīr...' : 'Search Hadith, Sharh, Tafsir, and Quran...';
+		input.setAttribute('aria-label', mode === 'quran' ? 'Search the Quran or tafsir' : 'General search');
 		renderSelectedFilters();
 		if (!options || options.refresh !== false)
 			refreshAutocomplete();
@@ -1502,10 +1524,8 @@ function initCommandSearch() {
 	dialog.addEventListener('change', function (event) {
 		if (!event.target.matches('[data-command-filter]'))
 			return;
-		if (mode === 'quran')
-			normalizeQuranFilters(event.target);
-		else
-			normalizeHadithFilters(event.target);
+		normalizeQuranFilters(event.target);
+		if (mode !== 'quran') normalizeHadithFilters(event.target);
 		renderSelectedFilters();
 		refreshAutocomplete();
 	});
@@ -1519,12 +1539,15 @@ function initCommandSearch() {
 	dialog.querySelectorAll('[data-command-search-filter-search]').forEach(function (filterInput) {
 		filterInput.addEventListener('input', function () {
 			var query = normalizeDropdownFilterText(filterInput.value);
-			var list = dialog.querySelector(`[data-command-search-book-list="${filterInput.dataset.commandSearchFilterSearch}"]`);
+			var list = filterOptions;
 			if (!list)
 				return;
 			list.querySelectorAll('[data-command-search-book-option]').forEach(function (option) {
 				var haystack = normalizeDropdownFilterText(`${option.textContent} ${option.querySelector('input').value}`);
 				option.hidden = query !== '' && haystack.indexOf(query) < 0;
+			});
+			list.querySelectorAll('[data-command-filter-group]').forEach(function (group) {
+				group.open = query !== '' && !!group.querySelector('[data-command-search-book-option]:not([hidden])');
 			});
 		});
 	});
@@ -1538,6 +1561,62 @@ function initCommandSearch() {
 	applyContextualQuranFilters();
 	normalizeQuranFilters();
 	setMode(initialMode, { refresh: false });
+	if (railOptions) {
+		var clone = filterOptions.querySelector(':scope > .command-search-filter-popover').cloneNode(true);
+		clone.querySelectorAll('[id]').forEach(function (element) { element.removeAttribute('id'); });
+		var railFinder = clone.querySelector('.command-search-filter-find');
+		clone.querySelectorAll('.command-search-filter-find').forEach(function (finder) { finder.remove(); });
+		var railField = railFinder.querySelector('input');
+		railField.disabled = false;
+		railField.value = '';
+		railField.placeholder = 'Filter books and sources';
+		railField.setAttribute('aria-label', 'Filter books and sources');
+		clone.prepend(railFinder);
+		railOptions.appendChild(clone);
+		railSources = Array.from(filterOptions.querySelectorAll('[data-command-filter]'));
+		railChecks = Array.from(railOptions.querySelectorAll('[data-command-filter]'));
+		railChecks.forEach(function (checkbox, index) {
+			checkbox.addEventListener('change', function () {
+				var source = railSources[index];
+				source.checked = checkbox.checked;
+				var dialogMode = mode;
+				mode = initialMode;
+				normalizeQuranFilters(source);
+				if (mode !== 'quran') normalizeHadithFilters(source);
+				mode = dialogMode;
+				renderSelectedFilters();
+				checkbox.form.requestSubmit();
+			});
+		});
+		railOptions.querySelectorAll('[data-command-search-filter-search]').forEach(function (field) {
+			field.addEventListener('input', function () {
+				var query = normalizeDropdownFilterText(field.value);
+				var list = railOptions;
+				list.querySelectorAll('[data-command-search-book-option]').forEach(function (option) {
+					option.hidden = query !== '' && !normalizeDropdownFilterText(option.textContent + ' ' + option.querySelector('input').value).includes(query);
+				});
+				list.querySelectorAll('[data-command-filter-group]').forEach(function (group) {
+					group.open = query !== '' && !!group.querySelector('[data-command-search-book-option]:not([hidden])');
+				});
+			});
+		});
+		var railContainer = document.querySelector('[data-search-filter-rail-container]');
+		var railMedia = window.matchMedia('(min-width: 992px)');
+		var mobileFilterPanel = document.querySelector('[data-search-mobile-filter-panel]');
+		var railForm = document.querySelector('[data-search-filter-rail-form]');
+		function sizeFilterRail() {
+			if (mobileFilterPanel) {
+				(railMedia.matches ? railContainer : mobileFilterPanel).appendChild(railForm);
+				if (railMedia.matches && mobileFilterPanel.classList.contains('show'))
+					bootstrap.Collapse.getOrCreateInstance(mobileFilterPanel, { toggle: false }).hide();
+			}
+			updateFixedHeaderOffset();
+		}
+		railMedia.addEventListener('change', sizeFilterRail);
+		sizeFilterRail();
+		syncFilterRail();
+	}
+
 	if (dialog.dataset.commandSearchResultsContext === '1')
 		storeSearchTerm(initialMode);
 	updateCommandSearchPresentation();
@@ -14918,10 +14997,8 @@ function initTafsirSearchFilterPills(root) {
 					});
 				});
 			});
-			if (removeValue === 'quran' && !remainingFilters.includes('commentaries')) remainingFilters.push('commentaries');
-			if (removeValue === 'commentaries' && !remainingFilters.includes('quran')) remainingFilters.push('quran');
-			if (removeValue === 'hadith' && !remainingFilters.includes('sharh')) remainingFilters.push('sharh');
-			if (removeValue === 'sharh' && !remainingFilters.includes('hadith')) remainingFilters.push('hadith');
+			if (url.pathname.startsWith('/quran') && removeValue === 'quran' && !remainingFilters.includes('commentaries')) remainingFilters.push('commentaries');
+			if (url.pathname.startsWith('/quran') && removeValue === 'commentaries' && !remainingFilters.includes('quran')) remainingFilters.push('quran');
 			params.delete('b');
 			Array.from(new Set(remainingFilters)).forEach(function (filter) {
 				params.append('b', filter);
@@ -14967,6 +15044,16 @@ function expandSearchBookFilterValue(value) {
 		return ['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah'];
 	if (value === 'ninebooks')
 		return ['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi'];
+	if (value === 'sihah')
+		return ['bukhari', 'muslim', 'malik', 'ibnhibban', 'ibnkhuzaymah', 'hakim'];
+	if (value === 'sunan')
+		return ['abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'darimi', 'daraqutni', 'nasai-kubra', 'bayhaqi'];
+	if (value === 'masanid')
+		return ['ahmad', 'bazzar'];
+	if (value === 'musannaf')
+		return ['malik', 'abdalrazzaq', 'ibnabishaybah'];
+	if (value === 'maajim')
+		return ['tabarani-saghir', 'tabarani-awsat', 'tabarani'];
 	return value ? [value] : [];
 }
 
@@ -14986,9 +15073,10 @@ function updateSearchFilterIcon($form) {
 		$(this).toggleClass('d-none', !active).text(activeFilterCount);
 	});
 	$form.find('[data-search-filter-toggle] .search-filter-icon-wrap .bi').each(function () {
-		$(this).toggleClass('d-none', active);
+		$(this).removeClass('d-none');
 		this.classList.toggle('bi-book-fill', false);
-		this.classList.toggle('bi-book', true);
+		this.classList.remove('bi-book');
+		this.classList.add('bi-funnel');
 	});
 }
 

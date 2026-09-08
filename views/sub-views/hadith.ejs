@@ -1,3 +1,6 @@
+<% if (i.doctype === 'sirah' || i.book_type === 'sirah') { %>
+<%- include('sirah_item.ejs', { i: i }); %>
+<% } else { %>
 <%
 	const en = i.en || {};
 	const ar = i.ar || {};
@@ -119,3 +122,5 @@
 </article>
 
 <%- include('hadith_modal.ejs', { site: site, page: page, i: i }); %>
+
+<% } %>

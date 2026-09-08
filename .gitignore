@@ -30,3 +30,5 @@ temp/*
 ecosystem.config.cjs
 !packages/quran-review-core/index.test.js
 apps
+
+/var/imports/hdith-b81/

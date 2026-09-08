@@ -58,4 +58,34 @@ describe('virtual Hadith search filters', () => {
 		expect(serialized).toContain('"book_alias":["bukhari","muslim","abudawud","tirmidhi","nasai","ibnmajah","malik","ahmad","darimi"]');
 		expect(Search.describeBookFilters(['kutubarbaah', 'sixbooks', 'ninebooks'])).toEqual(['Four Sunan', 'Six Books', 'Nine Books']);
 	});
+	test('expands Sihah to its exact member books', async () => {
+		await Search.a_searchText('test', ['sihah'], 0, { excludeQuranAndTafsir: true });
+		expect(JSON.stringify(Index.docsFromQuery.mock.calls[0][1])).toContain(JSON.stringify({ book_alias: ['bukhari', 'muslim', 'malik', 'ibnhibban', 'ibnkhuzaymah', 'hakim'] }));
+		expect(Search.describeBookFilters(['sihah'])).toEqual(['Sihah']);
+	});
+
+	test('expands Sunan to its exact member books', async () => {
+		await Search.a_searchText('test', ['sunan'], 0, { excludeQuranAndTafsir: true });
+		expect(JSON.stringify(Index.docsFromQuery.mock.calls[0][1])).toContain(JSON.stringify({ book_alias: ['abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'darimi', 'daraqutni', 'nasai-kubra', 'bayhaqi'] }));
+		expect(Search.describeBookFilters(['sunan'])).toEqual(['Sunan']);
+	});
+
+	test('expands Masanid to its exact member books', async () => {
+		await Search.a_searchText('test', ['masanid'], 0, { excludeQuranAndTafsir: true });
+		expect(JSON.stringify(Index.docsFromQuery.mock.calls[0][1])).toContain(JSON.stringify({ book_alias: ['ahmad', 'bazzar'] }));
+		expect(Search.describeBookFilters(['masanid'])).toEqual(['Masanid']);
+	});
+
+	test('expands Musannafat to its exact member books', async () => {
+		await Search.a_searchText('test', ['musannaf'], 0, { excludeQuranAndTafsir: true });
+		expect(JSON.stringify(Index.docsFromQuery.mock.calls[0][1])).toContain(JSON.stringify({ book_alias: ['malik', 'abdalrazzaq', 'ibnabishaybah'] }));
+		expect(Search.describeBookFilters(['musannaf'])).toEqual(['Musannafat']);
+	});
+
+	test('expands Maajim to its exact member books', async () => {
+		await Search.a_searchText('test', ['maajim'], 0, { excludeQuranAndTafsir: true });
+		expect(JSON.stringify(Index.docsFromQuery.mock.calls[0][1])).toContain(JSON.stringify({ book_alias: ['tabarani-saghir', 'tabarani-awsat', 'tabarani'] }));
+		expect(Search.describeBookFilters(['maajim'])).toEqual(['Maajim']);
+	});
+
 });

@@ -19,6 +19,15 @@ const BOOKS = Object.freeze({
 	'b-14': { bookId: 33, sourceBookId: 14, alias: 'Tabarani Saghir' },
 	'b-17': { bookId: 14, sourceBookId: 17, alias: 'Bayhaqi' },
 	'b-19': { bookId: 16, sourceBookId: 19, alias: 'Bazzar' }
+	,'b-21': { bookId: 35, sourceBookId: 21, alias: 'Tayalisi', localAlias: 'tayalisi', ordinal: 62,
+		shortName: 'الطيالسي', shortNameEn: 'Tayalisi', name: 'مُسْنَدُ أَبِي دَاوُدَ الطَّيَالِسِيّ', nameEn: 'Musnad Abu Dawud al-Tayalisi',
+		author: 'أَبُو دَاوُدَ سُلَيْمَانُ بْنُ دَاوُدَ الطَّيَالِسِيّ', authorEn: 'Abu Dawud Sulayman b. Dawud al-Tayalisi', death: 204 }
+	,'b-23': { bookId: 36, sourceBookId: 23, alias: 'Abu Yala', localAlias: 'abuyaala', ordinal: 63,
+		shortName: 'أبو يعلى', shortNameEn: 'Abu Yala', name: 'مُسْنَدُ أَبِي يَعْلَى المَوْصِلِيّ', nameEn: 'Musnad Abu Yala al-Mawsili',
+		author: 'أَبُو يَعْلَى أَحْمَدُ بْنُ عَلِيٍّ المَوْصِلِيّ', authorEn: 'Abu Yala Ahmad b. Ali al-Mawsili', death: 307 }
+	,'b-26': { bookId: 37, sourceBookId: 26, alias: 'Matalib al-Aliyah', localAlias: 'matalib', ordinal: 64,
+		shortName: 'المطالب العالية', shortNameEn: 'Matalib al-Aliyah', name: 'المَطَالِبُ العَالِيَةُ', nameEn: 'al-Matalib al-Aliyah',
+		author: 'أَبُو الفَضْلِ أَحْمَدُ بْنُ عَلِيٍّ ابْنُ حَجَرٍ العَسْقَلَانِيّ', authorEn: 'Ibn Hajar al-Asqalani', death: 852 }
 });
 const requestedBook = process.argv.includes('--book') ? process.argv[process.argv.indexOf('--book') + 1] : 'b-19';
 const config = BOOKS[requestedBook];
@@ -144,6 +153,18 @@ async function replace(source) {
 	const query = util.promisify(connection.query).bind(connection);
 	const outline = buildOutline(source);
 	try {
+		if (config.localAlias) await query(`INSERT INTO books
+			(id,hdith_book_id,ordinal,alias,hidden,virtual,type,source,lang,size,shortName_en,shortName,name_en,name,title_en,title,author,author_en,death,format)
+			VALUES (?,?,?,?,0,0,'hadith',?,'ar','md',?,?,?,?,?,?,?,?,?,'hadith')
+			ON DUPLICATE KEY UPDATE hdith_book_id=VALUES(hdith_book_id),source=VALUES(source),lang='ar'`,
+		[BOOK_ID,SOURCE_BOOK_ID,config.ordinal,config.localAlias,`https://hdith.com/encyclopedia/book/${SOURCE_SLUG}`,
+			config.shortNameEn,config.shortName,config.nameEn,config.name,config.nameEn,config.name,
+			config.author,config.authorEn,config.death]);
+		await query(`INSERT INTO hdith_book_mappings
+			(source_book_id,source_book_title,local_book_id,local_alias,reference_mode)
+			VALUES (?,?,?,?, 'exact') ON DUPLICATE KEY UPDATE source_book_title=VALUES(source_book_title),
+			local_book_id=VALUES(local_book_id),local_alias=VALUES(local_alias),reference_mode='exact'`,
+		[SOURCE_BOOK_ID,source.book.book?.title || config.name || config.alias,BOOK_ID,config.localAlias || config.alias.toLowerCase().replace(/\s+/g,'')]);
 		const isnadColumns = await query("SHOW COLUMNS FROM hdith_hadith_metadata LIKE 'source_isnad_html'");
 		if (String(isnadColumns[0]?.Type || '').toLowerCase() !== 'mediumtext') {
 			console.log('Widening hdith_hadith_metadata.source_isnad_html to MEDIUMTEXT...');

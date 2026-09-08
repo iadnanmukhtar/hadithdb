@@ -1,0 +1,16 @@
+<article class="sirah-item my-4" data-content-type="sirah">
+  <header class="mb-2">
+    <span class="badge text-bg-secondary">Sirah</span>
+    <a href="/<%= i.ref %>"><%= i.book_shortName_en %> · <%= i.num %></a>
+  </header>
+  <% if (i.title) { %><h2 class="fs-5" lang="ar" dir="rtl"><%= i.title %></h2><% } %>
+  <div class="body ar l5" lang="ar" dir="rtl"><%- utils.markdownToHtml(i.body || i.text || '') %></div>
+  <% if (i.footnote) { %><div class="small text-muted" lang="ar" dir="rtl"><%- utils.markdownToHtml(i.footnote) %></div><% } %>
+  <% if (i.single) { %>
+  <nav class="d-flex justify-content-between my-3" aria-label="Sirah passages">
+    <% if (i.prev_ref) { %><a href="/<%= i.prev_ref %>">Previous passage</a><% } %>
+    <a href="/<%= i.book_alias %>">Contents</a>
+    <% if (i.next_ref) { %><a href="/<%= i.next_ref %>">Next passage</a><% } %>
+  </nav>
+  <% } %>
+</article>

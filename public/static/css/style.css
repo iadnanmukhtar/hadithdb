@@ -598,7 +598,7 @@ main.book-catalog-page {
 
 main.quran-review-top-offset,
 main.quran-mushaf-reader,
-body:has(.site-navbar .chapter-toc) main {
+body:has(.site-navbar .chapter-toc) main:not(.search-results-layout > main) {
 	margin-top: max(9rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem)) !important;
 }
 
@@ -1574,6 +1574,23 @@ nav .nav-link[aria-current="page"] {
 	margin-top: 0.8rem;
 }
 
+.command-search-combined-filters {
+	margin-top: 0.8rem;
+}
+
+.command-search-combined-filters .command-search-filter-panel {
+	margin-top: 0;
+}
+
+.command-search-filter-group + .command-search-filter-group,
+.command-search-filter-panel + .command-search-filter-panel:not([hidden]) {
+	margin-top: 0.5rem;
+}
+
+.command-search-filter-group .command-search-filter-group {
+	margin-top: 0.5rem;
+}
+
 .command-search-filter-panel[hidden] {
 	display: none;
 }
@@ -1636,6 +1653,28 @@ nav .nav-link[aria-current="page"] {
 	border-radius: 0 0 0.7rem 0.7rem;
 	border-top: 1px solid var(--bs-border-color);
 	padding: 0.75rem;
+}
+
+.command-search-filter-group {
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+}
+
+.command-search-filter-group > summary {
+	color: var(--bs-secondary-color);
+	font-size: 0.68rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	padding: 0.35rem 0.45rem;
+	text-transform: uppercase;
+}
+
+.command-search-filter-group > .command-search-filter-popover {
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	padding: 0.25rem 0;
 }
 
 .command-search-filter-find {
@@ -12406,4 +12445,46 @@ a.cmd-btn:hover {
 		margin-top: auto !important;
 	}
 
+}
+
+*/
+
+/* Keep search filters out of the way until requested. */
+.command-search-funnel-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	border: 0;
+	color: var(--bs-secondary-color);
+	flex: 0 0 auto;
+	font-size: 1.15rem;
+}
+.command-search-funnel-toggle.active,
+.command-search-funnel-toggle:hover { color: var(--c-accent); }
+.command-search-dialog .command-search-combined-filters { border: 0; background: transparent; }
+.command-search-dialog .command-search-combined-filters:not([open]) { display: none; }
+.command-search-dialog .command-search-combined-filters > summary { display: none; }
+.command-search-dialog .command-search-combined-filters > .command-search-filter-popover { border: 0; padding: 0; }
+.command-search-form:has(.command-search-combined-filters:not([open])) .command-search-selected { display: none; }
+.search-results-layout { max-width: 90rem; padding-inline: 1.5rem; margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem)); }
+.search-results-layout > main { min-width: 0; margin-top: 0; }
+.search-filter-rail { min-width: 0; }
+.search-filter-controls [data-search-filter-rail-options] > .command-search-filter-popover { border: 0; padding: 0; }
+.search-filter-controls .command-search-source-options,
+.search-filter-controls .command-search-book-list { grid-template-columns: minmax(0, 1fr); }
+.search-filter-controls .command-search-book-list { max-height: 16rem; }
+.search-filter-controls .command-search-filter-find input { font-size: 0.75rem; }
+.search-filter-controls .command-search-filter-panel { margin: 0 0 1rem; }
+@media (min-width: 992px) {
+	.search-results-layout { display: grid; grid-template-columns: minmax(0, 1fr) 18rem; gap: 2rem; }
+	.search-filter-rail { align-self: start; position: sticky; top: calc(var(--site-fixed-header-height, 5rem) + 0.75rem); max-height: calc(100dvh - var(--site-fixed-header-height, 5rem) - 1.5rem); overflow-y: auto; padding-inline: 1rem; border-left: 1px solid var(--bs-border-color); }
+}
+@media (max-width: 991.98px) {
+	.search-results-layout { display: flex; flex-direction: column; max-width: 60rem; padding-inline: 0.75rem; }
+	.search-filter-rail { display: none; }
+}
+
+.search-filter-top-menu .search-filter-controls { padding: 0.25rem 0.5rem 0.75rem; }
+@media (min-width: 992px) {
+	.search-filter-top-menu { display: none; }
 }
