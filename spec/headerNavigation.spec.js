@@ -182,7 +182,7 @@ describe('shared header navigation', () => {
 		expect(searchResults).toContain('class="search-results-summary"');
 		expect(searchResults).toContain('<%= displayResultCount %> results found');
 		expect(searchResults).not.toContain('Found <%= displayResultCount %> results in');
-		expect(searchResults).toMatch(/if \(!isSearchResultsPage\) \{ %>\s*<%- include\('sub-views\/bookNav\.ejs'\); %>/);
+		expect(searchResults).toMatch(/if \(!isSearchResultsPage && !sirahDetailItem\) \{ %>\s*<%- include\('sub-views\/bookNav\.ejs'\); %>/);
 		expect(styles).toMatch(/\.search-results-summary \{[\s\S]*?justify-content: space-between;/);
 		expect(styles).toMatch(/\.search-results-filter-pills \{\s*flex: 1 1 auto;\s*justify-content: flex-start;/);
 		expect(styles).toMatch(/\.search-results-count \{[\s\S]*?text-align: right;/);
@@ -358,7 +358,7 @@ describe('shared header navigation', () => {
 	  expect(home).toContain("include('sub-views/bookNav.ejs', { inlineHadithBooks: true })");
 	  expect(bookNav).toContain('home-hadith-book-nav');
 	  expect(bookNav).toContain('role="navigation" aria-label="Hadith books"');
-	  expect(bookNav.indexOf("include('bookCarouselFilter')")).toBeLessThan(bookNav.indexOf('for (b of books.filter(isHadithBook))'));
+	  expect(bookNav.indexOf("include('bookCarouselFilter')")).toBeLessThan(bookNav.indexOf('for (b of hadithNavBooks)'));
 	  expect(styles).toMatch(/\.home-hadith-book-nav \.h-menu\s*\{[^}]*flex-wrap: wrap;[^}]*overflow: visible;/s);
 	  expect(styles).toMatch(/\.home-hadith-book-nav \.book-carousel-filter\s*\{[^}]*position: static;/s);
 	  expect(styles).toMatch(/\.home-hadith-book-nav \.h-menu > \.btn\s*\{[^}]*border-color: var\(--bs-border-color\);/s);

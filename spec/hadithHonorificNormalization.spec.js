@@ -16,9 +16,22 @@ describe('Arabic hadith and sharh honorific normalization', () => {
 		['صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ', 'ﷺ'],
 		['صَلَّى ٱللَّهُ عَلَيْهِ وَسَلَّمَ', 'ﷺ'],
 		['صَلَّى اللهُ عَلَيْهِ وَآلِهِ وَسَلَّمَ', 'ﷺ'],
-		['صـلى الله عليه وسلم', 'ﷺ']
+		['صـلى الله عليه وسلم', 'ﷺ'],
+		['صَلَّى اللَّهُ عَلَيْهِ وَعَلَى آلِهِ وَسَلَّمَ', 'ﷺ'],
+		['صلى الله عليه وعلى آله وسلم', 'ﷺ'],
+		['صلى الله عليه و على اله وسلم', 'ﷺ'],
+		['صَلَّى ٱللَّهُ عَلَيْهِ وَعَلَى اٰلِهِ وَسَلَّمَ', 'ﷺ']
 	])('normalizes salawat variant %s', (input, expected) => {
 		expect(Utils.normalizeArabicHonorifics(input).trim()).toBe(expected);
+	});
+
+	test('matches independently vocalized letters and decomposed madda', () => {
+		const phrase = 'صَلَّى اللَّهُ عَلَيْهِ وَعَلَى آلِهِ وَسَلَّمَ';
+		expect(Utils.normalizeArabicHonorifics(phrase.normalize('NFD')).trim()).toBe('ﷺ');
+		for (const mark of ['َ', 'ُ', 'ِ', 'ْ', 'ّ', 'ً', 'ٌ', 'ٍ', 'ٰ']) {
+			const variant = [...'صلى الله عليه وعلى آله وسلم'].map(letter => letter === ' ' ? letter : letter + mark).join('');
+			expect(Utils.normalizeArabicHonorifics(variant).trim()).toBe('ﷺ');
+		}
 	});
 
 	test.each([

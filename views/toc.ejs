@@ -107,6 +107,7 @@
     var showBookLayout = !isQuranToc || !!quranCommentaryBook;
     var showBookMetadata = !isQuranToc || !!quranCommentaryBook;
     var showHadithBookChrome = !isQuranToc;
+    var showTocStartNumbers = showHadithBookChrome && book.type !== 'sirah';
     var showRandomTocItem = !quranCommentaryBook;
     var showRandomTocTitle = !isQuranToc && !quranCommentaryBook;
     var quranCommentaryPageTitleEn = quranCommentaryBook
@@ -669,7 +670,7 @@
         <section data-random-toc-item data-src="<%= utils.urlFor(req, randomTocItemSrc) %>">
           <% if (showRandomTocTitle) { %>
           <header class="row">
-            <h3 class="col-12 fs-4">Random <%= isQuranToc ? 'āyah' : (book.type === 'sirah' ? 'passage' : 'ḥadīth') %> in <%- quranCommentaryBook ? quranCommentaryBookLabel : book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h3>
+            <h3 class="col-12 fs-4">Random <%= isQuranToc ? 'āyah' : (book.type === 'sirah' ? 'heading' : 'ḥadīth') %> in <%- quranCommentaryBook ? quranCommentaryBookLabel : book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h3>
           </header>
           <% } %>
         </section>
@@ -816,7 +817,7 @@
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
                   <tr class="chapter" data-toc-chapter="<%= chapterRowId %>" data-toc-view="surahs" data-toc-heading-target data-toc-heading-key="<%= tocHeadingRailKeys.get(toc[i]) %>">
-                    <% if (showHadithBookChrome) { %>
+                    <% if (showTocStartNumbers) { %>
                     <td><%- toc[i].start %></td>
                     <% } %>
                     <td>
@@ -858,7 +859,7 @@
                     var sectionTitle = truncateTitle(section.title, 150);
                   %>
                   <tr class="title toc-section-row d-none" data-toc-parent="<%= chapterRowId %>" data-toc-view="surahs">
-                    <% if (showHadithBookChrome) { %>
+                    <% if (showTocStartNumbers) { %>
                     <td><%- section.start %></td>
                     <% } %>
                     <td><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
@@ -928,12 +929,15 @@
 		<p class="mb-2"><a class="btn btn-sm btn-outline-primary" href="<%= hadithIntroductionAdminHref %>"><span class="bi bi-plus-circle"></span> Manage introduction articles</a></p>
 		<% } %>
         
-        <table id="toc" class="table" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.title})` %>">
+        <table id="toc" class="table<%= book.type === 'sirah' ? ' sirah-toc' : '' %>" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.title})` %>">
+          <% if (book.type === 'sirah') { %>
+          <colgroup><col class="sirah-toc-number-column"><col><col></colgroup>
+          <% } %>
           <tbody>
 			<% hadithIntroductionArticles.forEach(function (article) { %>
 			<% if (hadithIntroductionHref && (utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en))) { %>
 			<tr class="chapter hadith-introduction-link-row">
-			  <td></td><td><span class="toc-expand-spacer"></span>Introduction</td>
+			  <% if (showTocStartNumbers) { %><td></td><% } %><td><span class="toc-expand-spacer"></span>Introduction</td>
 			  <td><a href="<%= `${hadithIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title_en) || 'Introduction' %></a></td>
 			  <td lang="ar" dir="rtl"><a href="<%= `${hadithIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title) || 'المقدمة' %></a></td>
 			</tr>
@@ -952,7 +956,7 @@
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
             <tr class="chapter" data-toc-chapter="<%= chapterRowId %>" data-toc-heading-target data-toc-heading-key="<%= tocHeadingRailKeys.get(toc[i]) %>">
-              <% if (showHadithBookChrome) { %>
+              <% if (showTocStartNumbers) { %>
               <td><%- toc[i].start %></td>
               <% } %>
               <td>
@@ -991,7 +995,7 @@
               var sectionTitle = truncateTitle(section.title, 150);
             %>
             <tr class="title toc-section-row d-none" data-toc-parent="<%= chapterRowId %>">
-              <% if (showHadithBookChrome) { %>
+              <% if (showTocStartNumbers) { %>
               <td><%- section.start %></td>
               <% } %>
               <td><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>

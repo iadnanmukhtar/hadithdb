@@ -3,7 +3,7 @@ jest.mock('../lib/Index', () => ({ docsFromQuery: jest.fn(), docsFromQueryFields
 const Index = require('../lib/Index');
 const Search = require('../lib/Search');
 const Books = require('../lib/Books');
-const { passage } = require('../bin/utils/import-hdith-sirah');
+const { passage, fullTitle } = require('../bin/utils/import-hdith-sirah');
 describe('Sirah content', () => {
  beforeEach(() => {
   global.settings = { search: { itemsPerPage: 50 } };
@@ -17,6 +17,11 @@ describe('Sirah content', () => {
   expect(()=>passage(source,813788)).toThrow('Wrong source identity');
   expect(()=>passage({...source,entry_kind:'hadith'},813787)).toThrow();
   expect(()=>passage({...source,matn:''},813787)).toThrow('Empty passage');
+ });
+ test('restores truncated source headings only from matching full titles',()=>{
+  expect(fullTitle('وفاة آم…','وفاة آمنة')).toBe('وفاة آمنة');
+  expect(()=>fullTitle('وفاة آم…','عنوان آخر')).toThrow('Cannot recover heading');
+  expect(fullTitle('عنوان كامل','عنوان آخر')).toBe('عنوان كامل');
  });
  test('catalog model remains sirah',()=>{
   expect(Books.normalizeBook(global.books[0],'books').book_model).toBe('sirah');

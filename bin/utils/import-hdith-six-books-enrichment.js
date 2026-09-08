@@ -115,7 +115,7 @@ async function main() {
 			// Clearing every resolved link is a one-time preparation step. Repeating
 			// this table-wide update on checkpoint resumes both discards useful links
 			// and makes concurrent lanes contend before they can process one record.
-			if (!options.resumeSourceId) await deferInternalLinkResolution();
+			if (!options.resumeSourceId && !options.skipSchema) await deferInternalLinkResolution();
 		}
 		for (const book of selectedBooks(options.books))
 			await scrapeBook(page, book);

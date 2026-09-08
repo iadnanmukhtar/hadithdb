@@ -9,6 +9,7 @@ const fs = require('fs');
 const fm = require('front-matter');
 const ejs = require('ejs');
 const Search = require('../lib/Search');
+const SirahReader = require('../lib/SirahReader');
 const Hadith = require('../lib/Hadith');
 const Tafsir = require('../lib/Tafsir');
 const CommentaryHeadings = require('../lib/CommentaryHeadings');
@@ -1551,6 +1552,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
         quranHeadingOutlines: quranHeadingOutlines
       });
     } else {
+      await SirahReader.attachNavigation(section);
       res.render('section', {
         section: section,
         results: results
@@ -1602,6 +1604,9 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     if (originalNum !== req.params.num)
       return res.redirect(301, `/${req.params.bookAlias}:${req.params.num}${appendOriginalQuery(req)}`);
     var book = visibleBookByAlias(req.params.bookAlias);
+    var sirahNumber = await SirahReader.sourceReference(book, req.params.num);
+    if (sirahNumber)
+      return res.redirect(301, `/${book.alias}:${sirahNumber}${appendOriginalQuery(req)}`);
     if (await redirectVirtualHadithReference(book, req.params.num, req, res))
       return;
     if (!book) {
@@ -2416,14 +2421,16 @@ router.get('/:bookAlias/random', async function (req, res, next) {
     return next(createError(404, `Book '${req.params.bookAlias}' does not exist`));
 
   var random;
-  if (!book.virtual)
+  if (book.type === 'sirah')
+    random = await Index.docRandomnly(Heading.INDEX, `book_alias:${book.alias}`);
+  else if (!book.virtual)
     random = await Index.docRandomnly(Item.INDEX, `book_alias:${book.alias}`);
   else
     random = await Index.docRandomnly(Item.INDEX, `books:"{${book.alias}}"`);
   if (!random || random.length < 1)
 	return next(createError(404, `Random item in ${book.shortName_en || book.alias} not found`));
-  random = new Item(random[0]);
-	if (random.remark != 2) {
+  random = book.type === 'sirah' ? new Heading(random[0]) : new Item(random[0]);
+	if (book.type !== 'sirah' && random.remark != 2) {
 	  random.randomTocItem = true;
 	  await HdithMetadata.attachClassifications([random]);
 	}
@@ -3355,7 +3362,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     var chapterOffsetError = HttpRange.itemOffsetNotSatisfiable(requestedOffset, chapter.count, `Chapter ${bookAlias}/${chapterNum}`);
     if (chapterOffsetError)
       return next(chapterOffsetError);
-    if (bookAlias !== 'quran' && shouldRedirectHadithChapterPath(req)) {
+    await SirahReader.prepareChapter(chapter);
+    if (bookAlias !== 'quran' && !chapter.sirahChapterOpeningOnly && shouldRedirectHadithChapterPath(req)) {
       var firstSection = await chapter.getFirstSection();
       if (firstSection && firstSection.path)
         return res.redirect(301, `/${firstSection.path}${appendChapterSectionRedirectQuery(req)}`);
@@ -3438,6 +3446,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
       var refs = [];
       for (const item of results)
         refs.push(item.ref);
+      await SirahReader.attachNavigation(chapter);
       var html = await ejs.renderFile(`${__dirname}/../views/chapter.ejs`, cachedRenderLocals(res, {
         noadmin: true,
         chapter: chapter,
@@ -3851,6 +3860,7 @@ async function renderBookSection(req, res, next) {
         res.end(Utils.toMarkdown(results));
       } else {
 
+        await SirahReader.attachNavigation(section);
         if (!isQuranAyahSectionRequest) {
           var refs = [];
           for (const item of results)

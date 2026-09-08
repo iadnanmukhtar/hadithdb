@@ -1,5 +1,5 @@
-<% if (i.doctype === 'sirah' || i.book_type === 'sirah') { %>
-<%- include('sirah_item.ejs', { i: i }); %>
+<% if ((i.doctype === 'sirah' || i.book_type === 'sirah') && !(typeof searchResult !== 'undefined' && searchResult)) { %>
+<%- include('sirah_item.ejs', { i: i, title: title }); %>
 <% } else { %>
 <%
 	const en = i.en || {};

@@ -12155,6 +12155,24 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	white-space: nowrap;
 }
 
+.sirah-toc {
+	table-layout: fixed;
+	width: 100%;
+}
+
+.sirah-toc-number-column {
+	width: 5.5rem;
+}
+
+.sirah-toc td:first-child {
+	white-space: nowrap;
+}
+
+#toc.sirah-toc td:not(:first-child) {
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
 .toc-expand-btn {
 	color: var(--bs-body-color);
 	width: 1rem;

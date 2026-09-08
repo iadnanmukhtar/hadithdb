@@ -1,4 +1,15 @@
-<% if (book.alias === 'quran' && random.remark == 2) { %>
+<% if (book.type === 'sirah') { %>
+  <header class="row">
+    <h3 class="col-12 fs-4">Random heading in <%= book.shortName_en %> <button type="button" class="btn btn-link text-muted p-0 align-baseline" data-random-toc-refresh title="Load another random heading" aria-label="Load another random heading"><i class="bi bi-arrow-clockwise"></i></button></h3>
+  </header>
+  <% const headingNumber = [random.h1, random.h2, random.h3].filter(value => value !== null && value !== undefined && value !== '').join('.'); %>
+  <article class="row py-2" data-random-sirah-heading>
+    <% if (random.title_en) { %>
+    <div class="col-md-6 col-sm-12" lang="en" data-reader-language-column="english"><a href="<%= utils.urlFor(req, `/${random.path}`) %>"><%= headingNumber %> <%= random.title_en %></a></div>
+    <% } %>
+    <div class="<%= random.title_en ? 'col-md-6 col-sm-12' : 'col-12' %>" lang="ar" dir="rtl" data-reader-language-column="arabic"><a href="<%= utils.urlFor(req, `/${random.path}`) %>"><%= arabic.toArabicDigits(headingNumber) %> <%= random.title %></a></div>
+  </article>
+<% } else if (book.alias === 'quran' && random.remark == 2) { %>
   <%- include('random_quran_ayah.ejs', { site: site, page: page, book: book, random: random }); %>
 <% } else { %>
   <header class="row">

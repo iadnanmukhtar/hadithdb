@@ -4,6 +4,7 @@
 
 require('dotenv').config();
 const crypto = require('crypto');
+const cheerio = require('cheerio');
 const fs = require('fs');
 const mysql = require('mysql');
 const os = require('os');
@@ -83,6 +84,13 @@ function normalizeArabic(value) {
 	return Utils.normalizeArabicHonorifics(compact(value)).replace(/[ \t]{2,}/g, ' ').trim();
 }
 
+function sourceMatn(payload) {
+	const visible = normalizeArabic(payload.matn);
+	if (visible) return visible;
+	const $ = cheerio.load(`<main>${payload.matn_html || ''}</main>`);
+	return normalizeArabic($('details[data-kind="متن_مخفي"] .hp-collapsed-body').first().text());
+}
+
 function checksum(payload) {
 	return crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
@@ -111,7 +119,7 @@ function prepareSource() {
 		const h1 = chapterOrder.get(Number(pathItems[0]?.id));
 		if (!h1) throw new Error(`Source entry ${payload.id} has an unknown top-level chapter.`);
 		const num = sourceReference(payload);
-		const body = normalizeArabic(payload.matn);
+		const body = sourceMatn(payload);
 		if (!num || !body) throw new Error(`Source entry ${payload.id} is missing its hdith.com number or matn.`);
 		const chain = normalizeArabic(payload.isnad_prefix) || null;
 		return { payload, sourceId: Number(payload.id), num, num0: numericReference(num), h1,
@@ -154,7 +162,7 @@ async function replace(source) {
 	const outline = buildOutline(source);
 	try {
 		if (config.localAlias) await query(`INSERT INTO books
-			(id,hdith_book_id,ordinal,alias,hidden,virtual,type,source,lang,size,shortName_en,shortName,name_en,name,title_en,title,author,author_en,death,format)
+			(id,hdith_book_id,ordinal,alias,hidden,\`virtual\`,type,source,lang,size,shortName_en,shortName,name_en,name,title_en,title,author,author_en,death,format)
 			VALUES (?,?,?,?,0,0,'hadith',?,'ar','md',?,?,?,?,?,?,?,?,?,'hadith')
 			ON DUPLICATE KEY UPDATE hdith_book_id=VALUES(hdith_book_id),source=VALUES(source),lang='ar'`,
 		[BOOK_ID,SOURCE_BOOK_ID,config.ordinal,config.localAlias,`https://hdith.com/encyclopedia/book/${SOURCE_SLUG}`,
@@ -248,4 +256,4 @@ async function replace(source) {
 	} catch (error) { console.error(`ERROR: ${error.stack || error.message}`); process.exitCode = 1; }
 })();
 
-module.exports = { buildOutline, cachedPayloads, editionReference, prepareSource, sourceReference };
+module.exports = { buildOutline, cachedPayloads, editionReference, prepareSource, sourceMatn, sourceReference };

@@ -2,6 +2,7 @@
     var book = page.context.book;
     var chapter = page.context.chapter;
     var section = page.context.section;
+    var sirahArabicHeadingOnly = book && book.type === 'sirah' && !utils.trimToEmpty(heading.title_en) && !site.editMode;
     var headingEnglishOnly = locals.headingEnglishOnly;
     var quranHeadingAyahModalIndex = Number.isInteger(locals.quranHeadingAyahModalIndex) ? locals.quranHeadingAyahModalIndex : -1;
     var showQuranHeadingModalActions = quranHeadingAyahModalIndex >= 0;
@@ -22,6 +23,7 @@
 
   <heading class="row heading py-2">
     
+    <% if (!sirahArabicHeadingOnly) { %>
     <h3 class="<%= headingEnglishOnly ? 'col-12' : 'col-md-6 col-sm-12' %> fs-5 title<%= showQuranHeadingModalActions ? ' quran-section-heading-title' : '' %>" lang="en">
       <span class="quran-section-heading-text">
 		<button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center me-1" data-heading-id="<%= heading.id %>" data-bookmark-type="<%= heading.level === 3 ? 'subsection' : 'section' %>" data-bookmark-ref="<%= `${book.alias}:${heading.h1}.${heading.h2}${heading.h3 ? `.${heading.h3}` : ''}` %>" data-bookmark-title="<%= heading.title_en || headingKindEn %>" data-bookmark-title-ar="<%= heading.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${heading.path}`) %>" title="Bookmark this <%= headingKindEn.toLowerCase() %>">
@@ -60,8 +62,9 @@
       <% } %>
     </h3>
     
+    <% } %>
     <% if (!headingEnglishOnly) { %>
-    <h3 class="col-md-6 col-sm-12 title" lang="ar">
+    <h3 class="<%= sirahArabicHeadingOnly ? 'col-12' : 'col-md-6 col-sm-12' %> title" lang="ar" dir="rtl">
       <%- `${arabic.toArabicDigits(heading.h1 + '')}۔${arabic.toArabicDigits(heading.h2 + '')}` + (heading.h3 ? `۔${arabic.toArabicDigits(heading.h3+'')}` : '') %>
       <% if (page.menu === 'Chapter')  { %>
         <a href="<%= utils.urlFor(req, `/${heading.path}`) %>" class="_e" data-id="<%= heading.id %>" data-prop="toc.title" data-arabizi="true">

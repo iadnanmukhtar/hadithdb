@@ -16,6 +16,10 @@
 				&& book.alias !== 'quran'
 				&& (book.type || book.book_type || book.book_model || 'hadith') === 'hadith';
 		};
+		var hadithNavBooks = books.filter(function (book) { return isHadithBook(book) && book.alias !== 'ibnhisham'; });
+		var ibnHishamNavBook = books.find(function (book) { return book && book.hidden == 0 && book.alias === 'ibnhisham'; });
+		if (ibnHishamNavBook)
+			hadithNavBooks.push(ibnHishamNavBook);
 		var hadithSizeIndicator = function (book) {
 			var size = utils.emptyIfNull(book && book.size || '').toString();
 			var label = size === 'lg' ? 'Large hadith' : (size === 'md' ? 'Medium hadith' : (size === 'sm' ? 'Small hadith' : ''));
@@ -40,7 +44,7 @@
 			  <a class="btn btn-outline-primary text-nowrap" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(carouselTafsirSlug)}`) %>" data-book-carousel-item data-book-carousel-search="<%= [carouselTafsir.name_en, carouselTafsir.shortName_en, carouselTafsir.title, carouselTafsir.shortName, carouselTafsir.author_en, carouselTafsir.author, carouselTafsir.alias].filter(Boolean).join(' ') %>" data-tafsir-book-nav-item data-tafsir-alias="<%= carouselTafsir.alias %>" data-tafsir-lang="<%= carouselTafsir.lang || '' %>" data-tafsir-carousel-language="<%= Tafsir.carouselLanguage(carouselTafsir) %>"><%= carouselTafsirLabel %></a>
 			<% }
 			} else {
-			  for (b of books.filter(isHadithBook)) {
+			  for (b of hadithNavBooks) {
 				var isCurrentBook = b.alias === currentBookAlias;
 			%>
 			  <a class="btn btn-outline-primary text-nowrap<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-carousel-item data-book-carousel-search="<%= [b.name_en, b.shortName_en, b.title, b.shortName, b.author_en, b.author, b.alias].filter(Boolean).join(' ') %>"><%= b.shortName_en %><%- hadithSizeIndicator(b) %></a>

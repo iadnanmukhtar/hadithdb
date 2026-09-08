@@ -8,6 +8,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const mysql = require('mysql');
 const { promisify } = require('util');
+const { normalizeField } = require('./normalize-hadith-honorifics');
 const SOURCE = 'https://hdith.com/encyclopedia/book/b-81';
 const ALIAS = 'ibnhisham';
 const CACHE = path.resolve('var/imports/hdith-b81');
@@ -37,6 +38,25 @@ function passage(source, expectedId) {
  if (!source.matn?.trim()) throw new Error(`Empty passage ${expectedId}`);
  return { id: Number(source.id), text: source.matn, title: source.chapter_text || '', raw: source };
 }
+function fullTitle(listed, full) {
+ if (!listed?.includes('…')) return listed;
+ full=full ? cheerio.load(`<div>${full}</div>`)('div').text() : '';
+ const comparable=text=>text.replace(/["'«»]/g,'').replace(/\s+/g,' ').trim();
+ if (!full || full.includes('…') || !comparable(full).startsWith(comparable(listed.split('…')[0]))) throw new Error(`Cannot recover heading: ${listed}`);
+ return full;
+}
+function restoreTitles(chapters) {
+ for(const chapter of chapters) {
+  const raw=chapter.entries[0].passage.raw;
+  const occurrence=raw.takhrij?.sources?.find(source=>source.book_id===81)?.occurrences?.find(item=>item.entry_id===raw.id);
+  chapter.title=fullTitle(chapter.title,occurrence?.section);
+  for(const group of chapter.groups || []) {
+   const first=chapter.entries.find(entry=>entry.id===group.hadiths?.[0]?.id);
+   group.title=fullTitle(group.title,first?.passage.raw.chapter_text);
+  }
+ }
+ return chapters;
+}
 async function scrape() {
  fs.mkdirSync(CACHE,{recursive:true});
  const book = await fetchPage('book',SOURCE);
@@ -59,6 +79,7 @@ async function scrape() {
  for(let i=0;i<entries.length;i++) {
   if(entries[i].passage.raw.next_id !== (entries[i+1]?.id ?? null))throw new Error(`Broken source sequence after ${entries[i].id}`);
  }
+ restoreTitles(chapters);
  const result={book:book.book,stats:book.stats,chapters};
  fs.writeFileSync(path.join(CACHE,'complete.json'),JSON.stringify(result));
  return result;
@@ -78,11 +99,12 @@ async function apply(source) {
   }
   const id=Number((await query('SELECT MAX(id) AS id FROM books FOR UPDATE'))[0].id)+1;
   await query(`INSERT INTO books (id,ordinal,alias,type,shortName_en,name_en,title_en,shortName,name,title,author_en,author,death,description,source,lang,hidden,format,hdith_book_id,properties,content_lastmod) VALUES (?,?,?,'sirah',?,?,?,?,?,?,?,?,?,?,?,'ar',0,'md',81,?,NOW())`,
-   [id,id,ALIAS,'Sirat Ibn Hisham','Sirat Ibn Hisham','Sirat Ibn Hisham','سيرة ابن هشام',source.book.title,source.book.title,'Ibn Hisham',source.book.author,source.book.author_death,source.book.summary,SOURCE,JSON.stringify({sirah:{source_book:'b-81',card_info:source.book.card_info,stats:source.stats,reference:'hdith.com source entry ID'}})]);
+   [id,id,ALIAS,'Sirat Ibn Hisham','Sirat Ibn Hisham','Sirat Ibn Hisham','سيرة ابن هشام',source.book.title,source.book.title,'Ibn Hisham',source.book.author,source.book.author_death,normalizeField(source.book.summary),SOURCE,JSON.stringify({sirah:{source_book:'b-81',card_info:source.book.card_info,stats:source.stats,reference:'sequential passage number; source IDs retained in sirah_source_entries'}})]);
+  const passageNumbers=new Map(source.chapters.flatMap(chapter=>chapter.entries).map((entry,index)=>[entry.id,index+1]));
   let ordinal=0,tocOrdinal=0;
   for(let ci=0;ci<source.chapters.length;ci++) {
    const chapter=source.chapters[ci]; const rows=chapter.entries;
-   const addToc=async(level,h2,h3,title,items)=> (await query('INSERT INTO toc (ordinal,bookId,level,h1,h2,h3,title,start,end,start0,end0,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',[++tocOrdinal,id,level,ci+1,h2,h3,title,String(items[0].id),String(items.at(-1).id),items[0].id,items.at(-1).id,items.length])).insertId;
+   const addToc=async(level,h2,h3,title,items)=> (await query('INSERT INTO toc (ordinal,bookId,level,h1,h2,h3,title,start,end,start0,end0,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',[++tocOrdinal,id,level,ci+1,h2,h3,normalizeField(title),String(passageNumbers.get(items[0].id)),String(passageNumbers.get(items.at(-1).id)),passageNumbers.get(items[0].id),passageNumbers.get(items.at(-1).id),items.length])).insertId;
    const root=await addToc(1,null,null,chapter.title,rows);
    const map=new Map(rows.map(e=>[e.id,{toc:root,h2:null,h3:null}]));
    let h2=0,h3=0;
@@ -102,7 +124,7 @@ async function apply(source) {
    for(let ri=0;ri<rows.length;ri++) {
     const entry=rows[ri],p=entry.passage,pos=map.get(entry.id);
     const notes=(p.raw.footnotes||[]).map(note=>typeof note==='string'?note:(note.text||note.content||JSON.stringify(note))).join('\n\n');
-    const inserted=await query('INSERT INTO hadiths (ordinal,bookId,tocId,h1,h2,h3,num,num0,numInChapter,title,body,text,footnote) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',[++ordinal,id,pos.toc,ci+1,pos.h2,pos.h3,String(p.id),p.id,ri+1,p.title,p.text,p.text,notes||null]);
+    const inserted=await query('INSERT INTO hadiths (ordinal,bookId,tocId,h1,h2,h3,num,num0,numInChapter,title,body,text,footnote) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',[++ordinal,id,pos.toc,ci+1,pos.h2,pos.h3,String(passageNumbers.get(p.id)),passageNumbers.get(p.id),ri+1,normalizeField(p.title),normalizeField(p.text),normalizeField(p.text),normalizeField(notes)||null]);
     await query('INSERT INTO sirah_source_entries (book_id,source_entry_id,item_id,source_url,source_json) VALUES (?,?,?,?,?)',[id,p.id,inserted.insertId,`${SOURCE}/h/${p.id}`,JSON.stringify(p.raw)]);
    }
   }
@@ -111,4 +133,4 @@ async function apply(source) {
  }catch(error){await query('ROLLBACK');throw error;}finally{db.end();}
 }
 if(require.main===module)(async()=>{const source=await scrape();console.log(`${source.stats.hadiths} passages, ${source.chapters.length} chapters verified`);if(process.argv.includes('--apply'))await apply(source);})().catch(e=>{console.error(e);process.exitCode=1;});
-module.exports={props,passage};
+module.exports={props,passage,fullTitle,restoreTitles};
