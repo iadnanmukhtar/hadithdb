@@ -177,19 +177,37 @@ function numberedSubdivisionRangeError(unit, rows, requested, label) {
 }
 
 function visibleBookFromParam(value) {
-  return (global.books || []).find(function (book) {
+  return visibleBookByAlias(value) || (global.books || []).find(function (book) {
     return book
       && Number(book.hidden) === 0
-      && (book.alias == value || book.id == value);
+      && book.id == value;
   }) || null;
 }
 
 function visibleBookByAlias(value) {
-  return (global.books || []).find(function (book) {
-    return book
-      && Number(book.hidden) === 0
-      && book.alias === value;
-  }) || null;
+  return Books.findByAlias(value, (global.books || []).filter(book => book && Number(book.hidden) === 0));
+}
+
+function redirectCanonicalBookAlias(req, res, next) {
+  if (req.method !== 'GET' && req.method !== 'HEAD')
+    return next();
+  const match = req.path.match(/^\/([^/:]+)(.*)$/);
+  if (!match)
+    return next();
+  let alias;
+  try {
+    alias = decodeURIComponent(match[1]);
+  } catch (_err) {
+    return next();
+  }
+  const download = alias.match(/\.(json|epub)$/);
+  const extension = download ? download[0] : '';
+  if (extension)
+    alias = alias.slice(0, -extension.length);
+  const book = visibleBookByAlias(alias);
+  if (!book || book.alias === alias)
+    return next();
+  return res.redirect(301, `/${book.alias}${extension}${match[2]}${appendOriginalQuery(req)}`);
 }
 
 async function applySameBookHeadingNavigation(heading) {
@@ -474,6 +492,7 @@ async function legacyTranslationItemUrl(req) {
 router.use(rejectUnsafePathContent);
 router.use(redirectEncodedReferencePath);
 router.use(redirectArabicDigitPath);
+router.use(redirectCanonicalBookAlias);
 router.use(redirectCanonicalHadithHeadingNumbers);
 router.use(redirectCanonicalQueryParams);
 
