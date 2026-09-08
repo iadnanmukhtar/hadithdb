@@ -196,9 +196,10 @@
         <%- catalogTabButton('book-catalog-translations', 'Translations <sup>en</sup>', false) %>
       </ul>
       <div class="tab-content">
-        <div id="book-catalog-hadith" class="tab-pane fade show active book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-hadith-tab">
+        <% ['hadith', 'sirah'].forEach(function (bookType) { %>
+        <div id="book-catalog-<%= bookType %>" class="tab-pane fade<%= bookType === 'hadith' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-<%= bookType %>-tab">
           <div class="tafsir-book-list">
-            <% books.filter(function (book) { return book.type !== 'sirah'; }).forEach(function (book) { %>
+            <% books.filter(function (book) { return bookType === 'sirah' ? book.type === 'sirah' : book.type !== 'sirah'; }).forEach(function (book) { %>
               <%
                 var descriptionMarkdown = utils.emptyIfNull(book.description || '');
                 var descriptionHtml = utils.markdownToHtml(descriptionMarkdown);
@@ -207,7 +208,7 @@
                 var descriptionKey = `${descriptionId}-body`;
               %>
               <article class="book-catalog-card tafsir-book-row" data-book-catalog-filter="<%- [
-                'hadith',
+                bookType,
                 book.alias,
                 book.name_en,
                 book.shortName_en,
@@ -284,19 +285,7 @@
           </div>
         </div>
 
-        <div id="book-catalog-sirah" class="tab-pane fade book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-sirah-tab">
-          <div class="tafsir-book-list">
-            <% books.filter(function (book) { return book.type === 'sirah'; }).forEach(function (book) { %>
-            <article class="book-catalog-card tafsir-book-row" data-book-catalog-filter="<%= ['sirah', book.alias, book.name_en, book.name, book.author].join(' ').toLowerCase() %>">
-              <div class="tafsir-book-row-main">
-                <h3 class="fs-5"><a href="/<%= book.alias %>"><%= book.name_en %></a></h3>
-                <h3 class="fs-5" lang="ar" dir="rtl"><%= book.name %></h3>
-                <p><%= book.author_en %> · <%= book.hadith_count %> passages · Arabic</p>
-              </div>
-            </article>
-            <% }); %>
-          </div>
-        </div>
+        <% }); %>
 
         <% tafsirGroups.forEach(function (group) { %>
           <% var sectionId = `book-catalog-tafsir-${group.key}`; %>

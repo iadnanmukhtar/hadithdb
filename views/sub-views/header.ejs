@@ -81,7 +81,8 @@
     var isMoreArea = ['/settings', '/quran/settings', '/bookmarks', '/liked', '/commented', '/highlights', '/titled'].some(function (path) {
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
-    var isHadithArea = !isQuranArea && !isBooksArea && !isBlogArea && !isMoreArea;
+    var isSirahArea = !isQuranArea && ((pageBook && pageBook.type === 'sirah') || /^\/ibnhisham(?:[/:]|$)/.test(requestPath));
+    var isHadithArea = !isQuranArea && !isSirahArea && !isBooksArea && !isBlogArea && !isMoreArea;
     var headerLogo = isMudhakkirArea ? '/static/img/quran/mudhakkir.svg' : (isQuranArea ? '/static/img/quran-logo2.svg' : '/static/img/logo2.svg');
     var headerBrandName = isMudhakkirArea ? 'Mudhakkir' : (isQuranArea ? 'Quran Unlocked' : site.name);
     var headerLogoAlt = headerBrandName;
@@ -137,6 +138,7 @@
         </li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>">Tafsir</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isSirahArea) %>" href="<%= utils.urlFor(req, '/ibnhisham') %>">Sirah</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>">Blog</a></li>
         <li class="nav-item dropdown">
@@ -245,6 +247,7 @@
             isQuranTranslationsArea: isQuranTranslationsArea,
             isQuranTafsirArea: isQuranTafsirArea,
             isHadithArea: isHadithArea,
+            isSirahArea: isSirahArea,
             isBooksArea: isBooksArea,
             isBlogArea: isBlogArea,
             isSettingsArea: isSettingsArea,
