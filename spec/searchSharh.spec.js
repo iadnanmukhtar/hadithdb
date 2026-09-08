@@ -22,10 +22,30 @@ describe('Sharh book search', () => {
 		await Search.a_searchText('=mercy', Search.generalContentFilters([]), 0, { generalSearch: true });
 		const union = Index.docsFromQuery.mock.calls[0][1].bool.filter[0].bool;
 		expect(union.minimum_should_match).toBe(1);
-		expect(union.should).toHaveLength(4);
+		expect(union.should).toHaveLength(5);
 		expect(union.should[0].bool.filter).toContainEqual({ terms: { doctype: ['hadith', 'sharh'] } });
 		expect(union.should[1].bool.filter).toContainEqual({ term: { book_alias: 'quran' } });
 		expect(union.should[2].bool.filter).toContainEqual({ term: { doctype: 'commentary' } });
+	});
+
+	test.each([
+		[['sirah'], ['sirah-one', 'sirah-two']],
+		[['sirah', 'sirah-one'], ['sirah-one']],
+		[['hadith'], ['bukhari', 'muslim']],
+		[['hadith', 'bukhari'], ['bukhari']],
+		[['quran'], ['quran']],
+		[['commentaries'], ['tafsir-one']],
+		[['sharh'], ['fath-al-bari']]
+	])('includes only TOCs belonging to scope %j', async (scope, aliases) => {
+		global.books.push(
+			{ alias: 'muslim' }, { alias: 'quran' },
+			{ alias: 'sirah-one', type: 'sirah' }, { alias: 'sirah-two', type: 'sirah' },
+			{ alias: 'tafsir-one', type: 'tafsir' }, { alias: 'hidden-book', hidden: 1 }
+		);
+		await Search.a_searchText('=abu dujanah', scope, 0, { generalSearch: true });
+		const branches = Index.docsFromQuery.mock.calls[0][1].bool.filter[0].bool.should;
+		const tocBranch = branches.find(branch => branch.bool.filter.some(filter => filter.term?.doctype === 'toc'));
+		expect(tocBranch.bool.filter).toEqual([{ term: { doctype: 'toc' } }, { terms: { book_alias: aliases } }]);
 	});
 
 	test('General autocomplete carries mixed-source filters beyond Quran matches', async () => {
@@ -33,14 +53,14 @@ describe('Sharh book search', () => {
 		const restCall = Index.docsFromQuery.mock.calls.find(call => call[0] === 'hadiths,toc,commentaries,sharhs');
 		expect(restCall).toBeDefined();
 		const union = restCall[1].bool.must.bool.filter[0].bool;
-		expect(union.should).toHaveLength(4);
+		expect(union.should).toHaveLength(5);
 		expect(union.should[0].bool.filter).toContainEqual({ terms: { doctype: ['hadith', 'sharh'] } });
 	});
 
 	test('General restricts named Tafsir only within the commentary branch', async () => {
 		await Search.a_searchText('=mercy', ['hadith', 'commentaries', 'bukhari'], 0, { generalSearch: true, tafsirAliases: ['ibn-kathir'] });
 		const branches = Index.docsFromQuery.mock.calls[0][1].bool.filter[0].bool.should;
-		expect(branches).toHaveLength(2);
+		expect(branches).toHaveLength(3);
 		expect(branches[0].bool.filter).toContainEqual({ terms: { book_alias: ['bukhari'] } });
 		expect(JSON.stringify(branches[0])).not.toContain('commentary_alias');
 		expect(branches[1].bool.filter).toContainEqual({ term: { commentary_alias: 'ibn-kathir' } });
