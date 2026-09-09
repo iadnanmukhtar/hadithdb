@@ -1,0 +1,467 @@
+[
+  {
+    "id": "sahihayn",
+    "label": "sahihayn",
+    "scope": "hadith",
+    "ordinal": 0,
+    "aliases": [
+      "bukhari",
+      "muslim",
+      "lulu-marjan"
+    ],
+    "memberEvidence": {
+      "lulu-marjan": {
+        "source": "https://darussalampublishers.com/product/al-lulu-wal-marjan-pocket-size/",
+        "classificationBasis": "Al-Lulu wal-Marjan collects reports agreed upon by Bukhari and Muslim; included in Sahihayn by user request."
+      }
+    }
+  },
+  {
+    "id": "kutubarbaah",
+    "label": "four sunan",
+    "scope": "hadith",
+    "ordinal": 1,
+    "aliases": [
+      "abudawud",
+      "tirmidhi",
+      "nasai",
+      "ibnmajah"
+    ]
+  },
+  {
+    "id": "sixbooks",
+    "label": "six books",
+    "scope": "hadith",
+    "ordinal": 2,
+    "aliases": [
+      "bukhari",
+      "muslim",
+      "abudawud",
+      "tirmidhi",
+      "nasai",
+      "ibnmajah"
+    ]
+  },
+  {
+    "id": "ninebooks",
+    "label": "nine books",
+    "scope": "hadith",
+    "ordinal": 3,
+    "aliases": [
+      "bukhari",
+      "muslim",
+      "abudawud",
+      "tirmidhi",
+      "nasai",
+      "ibnmajah",
+      "malik",
+      "ahmad",
+      "darimi"
+    ]
+  },
+  {
+    "id": "sihah",
+    "label": "sihah",
+    "scope": "hadith",
+    "ordinal": 4,
+    "aliases": [
+      "bukhari",
+      "muslim",
+      "malik",
+      "ibnhibban",
+      "ibnkhuzaymah",
+      "hakim"
+    ]
+  },
+  {
+    "id": "sunan",
+    "label": "sunan",
+    "scope": "hadith",
+    "ordinal": 5,
+    "aliases": [
+      "abudawud",
+      "tirmidhi",
+      "nasai",
+      "ibnmajah",
+      "darimi",
+      "daraqutni",
+      "nasai-kubra",
+      "bayhaqi"
+    ]
+  },
+  {
+    "id": "masanid",
+    "label": "masanid",
+    "scope": "hadith",
+    "ordinal": 6,
+    "aliases": [
+      "ahmad",
+      "bazzar",
+      "tayalisi",
+      "matalib",
+      "abuyaala"
+    ]
+  },
+  {
+    "id": "musannaf",
+    "label": "musannafat",
+    "scope": "hadith",
+    "ordinal": 7,
+    "aliases": [
+      "malik",
+      "abdalrazzaq",
+      "ibnabishaybah"
+    ]
+  },
+  {
+    "id": "maajim",
+    "label": "maajim",
+    "scope": "hadith",
+    "ordinal": 8,
+    "aliases": [
+      "tabarani-saghir",
+      "tabarani-awsat",
+      "tabarani"
+    ]
+  },
+  {
+    "id": "tafsir-major",
+    "label": "major tafsirs",
+    "label_ar": "أمّهات",
+    "scope": "tafsir",
+    "ordinal": 0,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "tabari",
+      "ibn-kathir",
+      "qurtubi",
+      "baghawi"
+    ]
+  },
+  {
+    "id": "tafsir-collected-opinions",
+    "label": "collected opinions",
+    "label_ar": "جمع الأقوال",
+    "scope": "tafsir",
+    "ordinal": 1,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "ibn-al-jawzi",
+      "mawardi"
+    ]
+  },
+  {
+    "id": "tafsir-selected",
+    "label": "selected works",
+    "label_ar": "منتقاة",
+    "scope": "tafsir",
+    "ordinal": 2,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "ibn-alqayyim",
+      "ibn-taymiyyah"
+    ]
+  },
+  {
+    "id": "tafsir-general",
+    "label": "general tafsirs",
+    "label_ar": "عامّة",
+    "scope": "tafsir",
+    "ordinal": 3,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "samaani",
+      "makki",
+      "qasimi",
+      "samarqandi",
+      "thalabi",
+      "qinnawji",
+      "shawkani",
+      "ibn-juzay"
+    ]
+  },
+  {
+    "id": "tafsir-encyclopedic",
+    "label": "encyclopedic",
+    "label_ar": "موسوعات",
+    "scope": "tafsir",
+    "ordinal": 4,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "alusi",
+      "razi",
+      "dorar-t"
+    ],
+    "memberEvidence": {
+      "dorar-t": {
+        "source": "https://store.dorar.net/tafseer1-44/p646529407",
+        "classificationBasis": "Publisher describes a 44-volume work spanning interpretation, vocabulary, syntax, readings, rhetoric and educational benefits; editorial breadth classification."
+      }
+    }
+  },
+  {
+    "id": "tafsir-other",
+    "label": "other tafsirs",
+    "label_ar": "أخرى",
+    "scope": "tafsir",
+    "ordinal": 14,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "shanqiti",
+      "biqaii",
+      "en-easy-tajwid",
+      "en-wahidi"
+    ],
+    "memberEvidence": {
+      "en-easy-tajwid": {
+        "source": "catalog:en-easy-tajwid",
+        "classificationBasis": "Recitation aid, placed in Other Tafsirs by user request."
+      },
+      "en-wahidi": {
+        "source": "user:search-group-classification",
+        "classificationBasis": "Moved from occasions of revelation to other tafsirs by user request."
+      }
+    }
+  },
+  {
+    "id": "tafsir-language-rhetoric",
+    "label": "language & rhetoric",
+    "label_ar": "لغة وبلاغة",
+    "scope": "tafsir",
+    "ordinal": 6,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "ibn-ashur",
+      "ibn-atiyah",
+      "abu-hayyan",
+      "basit",
+      "abu-alsuod",
+      "zamakhshari",
+      "qiraat",
+      "khadiri",
+      "irab-daas",
+      "ibn-adil",
+      "irab-al-quran"
+    ],
+    "memberEvidence": {
+      "qiraat": {
+        "source": "user:search-group-classification",
+        "classificationBasis": "Moved from quran readings to language & rhetoric by user request."
+      },
+      "khadiri": {
+        "source": "user:search-group-classification",
+        "classificationBasis": "Moved from vocabulary & meanings to language & rhetoric by user request."
+      },
+      "irab-daas": {
+        "source": "user:search-group-classification",
+        "classificationBasis": "Moved from Grammar & Language to Language & Rhetoric by user request."
+      },
+      "ibn-adil": {
+        "source": "user:search-group-classification",
+        "classificationBasis": "Moved from Grammar & Language to Language & Rhetoric by user request."
+      },
+      "irab-al-quran": {
+        "source": "user:search-group-classification",
+        "classificationBasis": "Moved from Grammar & Language to Language & Rhetoric by user request."
+      }
+    }
+  },
+  {
+    "id": "tafsir-contemporary",
+    "label": "contemporary",
+    "label_ar": "معاصرة",
+    "scope": "tafsir",
+    "ordinal": 7,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "muyassar",
+      "mokhtasar",
+      "saadi",
+      "aysar",
+      "tadabbur-wa-amal",
+      "ibn-uthaymin",
+      "rida",
+      "unal",
+      "en-maududi",
+      "en-maarif-al-quran",
+      "en-tazkir-al-quran",
+      "shawi",
+      "muntakhab",
+      "wasit",
+      "dorar-t",
+      "dawat",
+      "ishraq",
+      "yusuf-ali"
+    ],
+    "memberEvidence": {
+      "rida": {
+        "source": "https://dorar.net/files/tafsir-book.pdf",
+        "classificationBasis": "Al-Manar of Muhammad Rashid Rida; modern-period commentary."
+      },
+      "unal": {
+        "source": "https://tughrabooks.com/wp-content/Catalogue_2020.pdf",
+        "classificationBasis": "Ali Unal’s modern annotated Quran interpretation."
+      },
+      "en-maududi": {
+        "source": "https://www.islamicstudies.info/quran/tafheem/tafheemintroduction.php",
+        "classificationBasis": "Abul Ala Mawdudi’s Tafhim al-Quran; modern-period commentary."
+      },
+      "en-maarif-al-quran": {
+        "source": "https://www.islamicstudies.info/quran/maarif/maarif.php",
+        "classificationBasis": "Maarif al-Quran of Muhammad Shafi; not Idris Kandhlawi’s similarly named work."
+      },
+      "en-tazkir-al-quran": {
+        "source": "https://www.goodwordbooks.com/collections/quran-commentaries",
+        "classificationBasis": "Wahiduddin Khan’s modern concise commentary."
+      },
+      "shawi": {
+        "source": "https://quranenc.com/ar/browse/arabic_nafahat",
+        "classificationBasis": "Al-Nafahat al-Makkiyyah by Muhammad b Salih al-Shawi; not Ahmad al-Sawi’s gloss."
+      },
+      "muntakhab": {
+        "source": "https://api.tafsiroqs.com/storage/attachments/pdfs/2023-08/32225-1691491604-64d21d144150d7.28043908-fy-tfsyr-alkraan.pdf",
+        "classificationBasis": "Modern committee commentary commissioned by Egypt’s Supreme Council for Islamic Affairs."
+      },
+      "wasit": {
+        "source": "https://journals.ekb.eg/article_401861_0.html",
+        "classificationBasis": "Al-Wasit by Muhammad Sayyid Tantawi; exact author identified in catalog."
+      },
+      "dorar-t": {
+        "source": "https://store.dorar.net/tafseer1-44/p646529407",
+        "classificationBasis": "Modern al-Tafsir al-Muharrar published by Dorar."
+      },
+      "dawat": {
+        "source": "https://www.islamicstudies.info/",
+        "classificationBasis": "Dawat al-Quran by Shams Pirzada; modern-period classification from catalog identity and hosted work."
+      },
+      "ishraq": {
+        "source": "https://islamicstudies.info/quran/ishraq.php?sura=70",
+        "classificationBasis": "Ishraq al-Maani by Syed Iqbal Zaheer; modern-period commentary."
+      },
+      "yusuf-ali": {
+        "source": "https://sacred-texts.com/isl/yaq/yaq000.htm",
+        "classificationBasis": "Abdullah Yusuf Ali’s 1934 translation and commentary. Contemporary here includes the modern period."
+      }
+    }
+  },
+  {
+    "id": "tafsir-mukhtasarat",
+    "label": "mukhtasarat",
+    "label_ar": "مركَّزة العبارة",
+    "scope": "tafsir",
+    "ordinal": 8,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "jalalayn",
+      "iji",
+      "baydawi",
+      "nasafi",
+      "wajiz",
+      "abu-zamanayn",
+      "en-tazkir-al-quran",
+      "shawi",
+      "muntakhab"
+    ],
+    "memberEvidence": {
+      "en-tazkir-al-quran": {
+        "source": "https://www.goodwordbooks.com/collections/quran-commentaries",
+        "classificationBasis": "Publisher describes a concise commentary; overlaps with contemporary."
+      },
+      "shawi": {
+        "source": "https://www.sifatusafwa.com/ar/tafasir-muyassara-wa-mukhtasara/al-nafahat-al-makkiyyah-fi-tafsir-kitab-rabb-al-bariyyah-al-shawi.html",
+        "classificationBasis": "Concise one-volume commentary; editorial classification supported by edition description and text."
+      },
+      "muntakhab": {
+        "source": "https://api.tafsiroqs.com/storage/attachments/pdfs/2023-08/32225-1691491604-64d21d144150d7.28043908-fy-tfsyr-alkraan.pdf",
+        "classificationBasis": "Its introduction describes a simplified concise commentary; overlaps with contemporary."
+      }
+    }
+  },
+  {
+    "id": "tafsir-narrations",
+    "label": "narration collections",
+    "label_ar": "آثار",
+    "scope": "tafsir",
+    "ordinal": 9,
+    "source": "https://tafsir.app/",
+    "aliases": [
+      "mathur",
+      "suyuti-t",
+      "ibn-abi-hatim"
+    ]
+  },
+  {
+    "id": "hadith-adab",
+    "label": "adab & akhlaq",
+    "label_ar": "آداب وأخلاق",
+    "scope": "hadith",
+    "ordinal": 9,
+    "aliases": [
+      "adab",
+      "riyad"
+    ],
+    "source": "https://sunnah.com/adab",
+    "classificationBasis": "Editorial classification by subject: manners and character; Riyad also covers worship and other topics.",
+    "memberEvidence": {
+      "riyad": {
+        "source": "https://beta.sunnah.com/riyadussalihin",
+        "classificationBasis": "Selected hadith collection covering ethics, manners and worship."
+      }
+    }
+  },
+  {
+    "id": "hadith-zuhd",
+    "label": "zuhd & raqaiq",
+    "label_ar": "زهد ورقائق",
+    "scope": "hadith",
+    "ordinal": 10,
+    "aliases": [
+      "ahmad-zuhd",
+      "riyad"
+    ],
+    "source": "https://dorar.net/h/agT3SiIc?osoul=1",
+    "classificationBasis": "Editorial subject classification; al-Zuhd is a separate work from the Musnad.",
+    "memberEvidence": {
+      "riyad": {
+        "source": "https://beta.sunnah.com/riyadussalihin",
+        "classificationBasis": "Includes chapters on sincerity, repentance, piety, renunciation and remembrance; overlaps with adab."
+      }
+    }
+  },
+  {
+    "id": "hadith-shamail",
+    "label": "shamail",
+    "label_ar": "شمائل",
+    "scope": "hadith",
+    "ordinal": 11,
+    "aliases": [
+      "shamail"
+    ],
+    "source": "https://sunnah.com/shamail",
+    "classificationBasis": "Genre describing the Prophet’s appearance, character and habits."
+  },
+  {
+    "id": "hadith-arbain",
+    "label": "arbain",
+    "label_ar": "أربعينات",
+    "scope": "hadith",
+    "ordinal": 12,
+    "aliases": [
+      "ibnrajab50"
+    ],
+    "source": "https://sunnah.com/nawawi40",
+    "classificationBasis": "Classified by this catalog’s title, Forty Hadith of Nawawi; the legacy alias is unchanged."
+  },
+  {
+    "id": "hadith-encyclopedic",
+    "label": "encyclopedic collections",
+    "label_ar": "جوامع موسوعية",
+    "scope": "hadith",
+    "ordinal": 14,
+    "aliases": [
+      "suyuti"
+    ],
+    "source": "https://dorar.net/files/khazana_hadith.pdf",
+    "classificationBasis": "Jam al-Jawami aims to gather hadith broadly; classification describes compilation breadth, not authenticity."
+  }
+]

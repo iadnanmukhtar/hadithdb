@@ -379,6 +379,7 @@ patchAsyncRouterMethods();
 
 const app = express();
 app.locals.newrelic = newrelic;
+app.locals.BookGroups = require('./lib/BookGroups');
 app.locals.googleAnalyticsTagId = GoogleAnalytics.googleAnalyticsTagId;
 app.locals.startupReady = false;
 app.disable('x-powered-by');

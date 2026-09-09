@@ -18,6 +18,7 @@ const { Subsection, Section, Chapter, Heading, Item, Library, Record } = require
 const Index = require('../lib/Index');
 const Arabic = require('../lib/Arabic');
 const Books = require('../lib/Books');
+const BookGroups = require('../lib/BookGroups');
 const BookDownloads = require('../lib/BookDownloads');
 const Surahs = require('../lib/Surahs');
 const QuranCorpus = require('../lib/QuranCorpus');
@@ -504,11 +505,11 @@ router.get(['/autocomplete', '/quran/autocomplete'], searchRequestLimiter, async
       bookFilters = [bookFilters];
     bookFilters = expandShortcutBookFilters(normalizeBookFilterValues(bookFilters));
     var quranSearchProxy = req.path.indexOf('/quran/') === 0;
+    var tafsirFilters = normalizeRequestTafsirFilters(req);
     if (!quranSearchProxy)
-      bookFilters = Search.generalContentFilters(bookFilters);
+      bookFilters = Search.generalContentFilters(bookFilters.length || !tafsirFilters.length ? bookFilters : ['commentaries']);
     else if (bookFilters.length < 1)
       bookFilters = ['quran', 'commentaries'];
-    var tafsirFilters = normalizeRequestTafsirFilters(req);
     if (tafsirFilters.length > 0 && quranSearchProxy)
       bookFilters = bookFilters.indexOf('quran') >= 0 ? ['quran', 'commentaries'] : ['commentaries'];
     if (!quranSearchProxy && tafsirFilters.length && !bookFilters.includes('commentaries')) bookFilters.push('commentaries');
@@ -994,47 +995,7 @@ function normalizeBookFilterValue(filter) {
 }
 
 function expandShortcutBookFilters(filters) {
-  var expanded = [];
-  filters.forEach(function (filter) {
-    if (filter === 'sahihayn') {
-      expanded.push('bukhari', 'muslim');
-      return;
-    }
-    if (filter === 'kutubarbaah') {
-      expanded.push('abudawud', 'tirmidhi', 'nasai', 'ibnmajah');
-      return;
-    }
-    if (filter === 'sixbooks') {
-      expanded.push('bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah');
-      return;
-    }
-    if (filter === 'ninebooks') {
-      expanded.push('bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi');
-      return;
-    }
-    if (filter === 'sihah') {
-      expanded.push(...['bukhari', 'muslim', 'malik', 'ibnhibban', 'ibnkhuzaymah', 'hakim']);
-      return;
-    }
-    if (filter === 'sunan') {
-      expanded.push(...['abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'darimi', 'daraqutni', 'nasai-kubra', 'bayhaqi']);
-      return;
-    }
-    if (filter === 'masanid') {
-      expanded.push(...['ahmad', 'bazzar']);
-      return;
-    }
-    if (filter === 'musannaf') {
-      expanded.push(...['malik', 'abdalrazzaq', 'ibnabishaybah']);
-      return;
-    }
-    if (filter === 'maajim') {
-      expanded.push(...['tabarani-saghir', 'tabarani-awsat', 'tabarani']);
-      return;
-    }
-    expanded.push(filter);
-  });
-  return orderBookFilters(Array.from(new Set(expanded)));
+  return orderBookFilters(BookGroups.expand(filters, 'hadith'));
 }
 
 function orderBookFilters(filters) {
@@ -1057,7 +1018,7 @@ function isVisibleBookFilter(filter) {
     return false;
   if (filter === 'hadith' || filter === 'toc' || filter === 'commentaries' || filter === 'sharh' || filter === 'sirah')
     return true;
-  if (filter === 'sahihayn' || filter === 'kutubarbaah' || filter === 'sixbooks' || filter === 'ninebooks')
+  if (BookGroups.list('hadith').some(group => group.id === filter))
     return true;
   var book = (global.books || []).find(row => row && row.alias === filter);
   return !!book && (book.type === 'sharh' || Number(book.hidden) !== 1);
@@ -1068,6 +1029,7 @@ function normalizeRequestTafsirFilters(req) {
   values = values.flatMap(value => value.toString().split(',')).map(value => Utils.trimToEmpty(value)).filter(Boolean);
   if (values.length < 1)
     return [];
+  values = BookGroups.expand(values, 'tafsir');
   var aliases = [];
   var commentaryBooks = Tafsir.visibleTafsirsSync().concat(Tafsir.visibleTranslationsSync());
   values.forEach(function (value) {
@@ -1201,13 +1163,12 @@ async function renderSearchResults(req, res, next, options = {}) {
 
   try {
     normalizeRequestBookFilters(req);
-    if (!options.quranSearchProxy)
-      req.query.b = Search.generalContentFilters(req.query.b);
-    if (!options.quranSearchProxy && tafsirFilters.length && !req.query.b.includes('commentaries')) req.query.b.push('commentaries');
     var effectiveBookFilters = req.query.b;
+    if (!options.quranSearchProxy)
+      effectiveBookFilters = Search.generalContentFilters(normalizeBookFilterValues(req.query.b).length || !tafsirFilters.length ? req.query.b : ['commentaries']);
+    if (!options.quranSearchProxy && tafsirFilters.length && !effectiveBookFilters.includes('commentaries')) effectiveBookFilters.push('commentaries');
     if ((!effectiveBookFilters || effectiveBookFilters.length < 1) && options.defaultBookFilters)
       effectiveBookFilters = options.defaultBookFilters.slice();
-    req.query.b = effectiveBookFilters;
     var offset = Math.max(0, requestedOffset);
     offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
     results = await Search.a_searchText(req.query.q, effectiveBookFilters, offset, {
@@ -1541,6 +1502,14 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
       var containingSections = await getQuranSectionsForAyahRange(surah.num, ayah1, ayah2, selectedAyahs[0]);
       if (containingSections.length > 0) {
         section = containingSections[0];
+        await applySameBookHeadingNavigation(section);
+        // A selected range can render several complete passages. Continue after
+        // the last rendered passage so infinite scrolling does not repeat it.
+        var lastContainingSection = containingSections[containingSections.length - 1];
+        if (lastContainingSection !== section) {
+          await applySameBookHeadingNavigation(lastContainingSection);
+          section.next = lastContainingSection.next;
+        }
         section.mushafPage = await QuranMushaf.pageForRef(surah.num, ayah1);
         chapter = await section.getChapter();
         await chapter.getPrev();

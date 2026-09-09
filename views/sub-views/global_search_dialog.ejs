@@ -30,20 +30,11 @@
     return aLabel.localeCompare(bLabel, 'en', { sensitivity: 'base' });
   });
   var selectedCommandHadithAliases = Array.isArray(hadithSearchBookAliases) ? hadithSearchBookAliases : [];
-  if (!selectedCommandHadithAliases.some(function (alias) { return ['hadith', 'sharh', 'sirah', 'toc', 'quran', 'tafsir', 'commentaries'].includes(alias) || (global.books || []).some(function (book) { return book.type === 'sharh' && book.alias === alias; }); }))
-    selectedCommandHadithAliases = (selectedCommandHadithAliases.length === 0
-      ? ['hadith', 'sharh', 'sirah']
-      : ((global.books || []).some(function (book) { return book.type === 'sirah' && selectedCommandHadithAliases.includes(book.alias); }) ? ['sirah'] : ['hadith', 'sharh'])).concat(selectedCommandHadithAliases);
   var selectedCommandQuranBookFilters = Array.isArray(quranSearchBookFilters) ? quranSearchBookFilters : [];
   var selectedCommandCommentaryAliases = Array.isArray(quranSearchCommentaryAliases) ? quranSearchCommentaryAliases : [];
-  var hasCommandQuranResultFilters = selectedCommandQuranBookFilters.length > 0;
   var hasCommandSpecificCommentary = selectedCommandCommentaryAliases.length > 0;
-  var commandQuranTextSelected = isSearchResultsContext || selectedCommandQuranBookFilters.length > 0
-    ? (!hasCommandQuranResultFilters || selectedCommandQuranBookFilters.indexOf('quran') >= 0)
-    : true;
-  var commandAllTafsirSelected = isSearchResultsContext || selectedCommandQuranBookFilters.length > 0
-    ? (!hasCommandQuranResultFilters || (!hasCommandSpecificCommentary && (selectedCommandQuranBookFilters.indexOf('tafsir') >= 0 || selectedCommandQuranBookFilters.indexOf('commentaries') >= 0)))
-    : !hasCommandSpecificCommentary;
+  var commandQuranTextSelected = selectedCommandQuranBookFilters.includes('quran');
+  var commandAllTafsirSelected = !hasCommandSpecificCommentary && selectedCommandQuranBookFilters.some(function (alias) { return alias === 'tafsir' || alias === 'commentaries'; });
 %>
 <dialog id="global-search-dialog" class="command-search-dialog" data-command-search-dialog data-initial-search-mode="<%= initialSearchMode %>"
   data-quran-search-context="<%= quranSearchContext || 'quran' %>" data-quran-commentary-alias="<%= quranSearchCommentaryAlias || '' %>"
@@ -118,19 +109,9 @@
                 </summary>
                 <div class="command-search-filter-popover">
                   <div class="command-search-book-list" data-command-search-book-list="groups">
-                    <% [
-                    { value: 'sahihayn', label: 'Sahihayn' },
-                    { value: 'kutubarbaah', label: 'Four Sunan' },
-                    { value: 'sixbooks', label: 'Six Books' },
-                    { value: 'ninebooks', label: 'Nine Books' },
-                    { value: 'sihah', label: 'Sihah' },
-                    { value: 'sunan', label: 'Sunan' },
-                    { value: 'masanid', label: 'Masanid' },
-                    { value: 'musannaf', label: 'Musannafat' },
-                    { value: 'maajim', label: 'Maajim' }
-                    ].forEach(function (group) { var selected = selectedCommandHadithAliases.indexOf(group.value) >= 0; %>
+                    <% BookGroups.list('hadith').forEach(function (group) { var selected = selectedCommandHadithAliases.indexOf(group.value) >= 0; %>
                     <label class="command-search-book-option" data-command-search-book-option>
-                      <input class="form-check-input" type="checkbox" name="b" value="<%= group.value %>" <%= selected ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= group.label %>">
+                      <input class="form-check-input" type="checkbox" name="b" value="<%= group.value %>" <%= selected ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= group.label %>" data-search-group-aliases="<%= JSON.stringify(group.aliases) %>">
                       <span>
                         <%= group.label %>
                       </span>
@@ -200,6 +181,19 @@
               </label>
             </div>
             <div data-command-search-book-list="quran">
+              <% var tafsirGroups = BookGroups.list('tafsir').map(function (group) { return { ...group, aliases: group.aliases.filter(function (alias) { return commandTafsirBooks.some(function (book) { return book.alias === alias; }); }) }; }).filter(function (group) { return group.aliases.length; }); if (tafsirGroups.length) { %>
+              <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
+                <summary><span>Tafsir Book Groups</span><span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span></summary>
+                <div class="command-search-filter-popover"><div class="command-search-book-list">
+                  <% tafsirGroups.forEach(function (group) { %>
+                  <label class="command-search-book-option" data-command-search-book-option>
+                    <input class="form-check-input" type="checkbox" name="tafsir" value="<%= group.id %>" data-command-filter data-command-filter-label="<%= group.label %>" data-search-group-aliases="<%= JSON.stringify(group.aliases) %>" <%= selectedCommandCommentaryAliases.includes(group.id) ? 'checked' : '' %>>
+                    <span><%= group.label %></span>
+                  </label>
+                  <% }); %>
+                </div></div>
+              </details>
+              <% } %>
               <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
                 <summary>
                   <span>Tafsir Books</span>

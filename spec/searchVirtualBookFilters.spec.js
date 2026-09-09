@@ -27,6 +27,9 @@ describe('virtual Hadith search filters', () => {
 			shortName_en: "Ibn Rajab's Fifty",
 			virtual: 1
 		}];
+		const catalog = require('./fixtures/bookSearchGroups')();
+		global.books.forEach(book => { const seeded = catalog.find(row => row.alias === book.alias); if (seeded) book.properties = seeded.properties; });
+		global.books.push(...catalog.filter(book => !global.books.some(row => row.alias === book.alias)));
 		Index.docsFromQuery.mockReset();
 		Index.docsFromQuery.mockResolvedValue(emptySearchResult());
 	});
@@ -72,7 +75,7 @@ describe('virtual Hadith search filters', () => {
 
 	test('expands Masanid to its exact member books', async () => {
 		await Search.a_searchText('test', ['masanid'], 0, { excludeQuranAndTafsir: true });
-		expect(JSON.stringify(Index.docsFromQuery.mock.calls[0][1])).toContain(JSON.stringify({ book_alias: ['ahmad', 'bazzar'] }));
+		expect(JSON.stringify(Index.docsFromQuery.mock.calls[0][1])).toContain(JSON.stringify({ book_alias: ['ahmad', 'bazzar', 'tayalisi', 'matalib', 'abuyaala'] }));
 		expect(Search.describeBookFilters(['masanid'])).toEqual(['Masanid']);
 	});
 

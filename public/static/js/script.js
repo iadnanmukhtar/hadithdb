@@ -1365,13 +1365,7 @@ function initCommandSearch() {
 			allTafsir.checked = false;
 		if (changedInput === allTafsir && allTafsir.checked)
 			tafsirs.forEach(function (checkbox) { checkbox.checked = false; });
-		var hasSpecificCommentary = tafsirs.some(function (checkbox) { return checkbox.checked; });
-		if (mode === 'quran' && quran && allTafsir && !quran.checked && !allTafsir.checked && !hasSpecificCommentary) {
-			if (changedInput === quran)
-				allTafsir.checked = true;
-			else
-				quran.checked = true;
-		}
+
 	}
 
 	function applyContextualQuranFilters() {
@@ -15036,24 +15030,8 @@ function normalizeSearchBookFilterValue(value) {
 
 function expandSearchBookFilterValue(value) {
 	value = normalizeSearchBookFilterValue(value);
-	if (value === 'sahihayn')
-		return ['bukhari', 'muslim'];
-	if (value === 'kutubarbaah')
-		return ['abudawud', 'tirmidhi', 'nasai', 'ibnmajah'];
-	if (value === 'sixbooks')
-		return ['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah'];
-	if (value === 'ninebooks')
-		return ['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi'];
-	if (value === 'sihah')
-		return ['bukhari', 'muslim', 'malik', 'ibnhibban', 'ibnkhuzaymah', 'hakim'];
-	if (value === 'sunan')
-		return ['abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'darimi', 'daraqutni', 'nasai-kubra', 'bayhaqi'];
-	if (value === 'masanid')
-		return ['ahmad', 'bazzar'];
-	if (value === 'musannaf')
-		return ['malik', 'abdalrazzaq', 'ibnabishaybah'];
-	if (value === 'maajim')
-		return ['tabarani-saghir', 'tabarani-awsat', 'tabarani'];
+	var group = Array.from(document.querySelectorAll('[data-search-group-aliases][name="b"]')).find(function (input) { return input.value === value; });
+	if (group) return JSON.parse(group.dataset.searchGroupAliases);
 	return value ? [value] : [];
 }
 

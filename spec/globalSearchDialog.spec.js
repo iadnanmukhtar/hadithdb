@@ -7,6 +7,7 @@ const partial = path.join(__dirname, '..', 'views', 'sub-views', 'global_search_
 
 function render(selectedHadithAliases, overrides = {}) {
 	return ejs.renderFile(partial, {
+		BookGroups: { list: scope => require('../lib/BookGroups').list(scope, require('./fixtures/bookSearchGroups')()) },
 		initialSearchMode: 'hadith',
 		hadithSearchAction: '/',
 		quranSearchAction: '/quran',
@@ -55,11 +56,16 @@ function render(selectedHadithAliases, overrides = {}) {
 }
 
 describe('global search dialog', () => {
-	test('General selects all four categories without context', async () => {
+	test('General leaves all filters unselected without context', async () => {
 		const html = await render([]);
 		expect(html).toContain('command-search-mode-label">General</span>');
 		for (const source of ['hadith', 'sharh', 'quran', 'tafsir'])
-			expect(html).toContain(`name="b" value="${source}" checked`);
+			expect(html).not.toContain(`name="b" value="${source}" checked`);
+	});
+
+	test('unfiltered results reopen with no selected source filters', async () => {
+		const html = await render([], { isSearchResultsContext: true });
+		expect(html).not.toMatch(/type="checkbox"[^>]* checked/);
 	});
 
 	test('reopening filtered results does not restore removed categories', async () => {
@@ -69,10 +75,10 @@ describe('global search dialog', () => {
 			expect(html).not.toContain(`name="b" value="${source}" checked`);
 	});
 
-	test('shows both default content filters alongside a Hadith book selection', async () => {
+	test('selects only the contextual Hadith book', async () => {
 		const html = await render(['bukhari']);
-		expect(html).toMatch(/name="b" value="hadith" checked/);
-		expect(html).toMatch(/name="b" value="sharh" checked/);
+		expect(html).not.toMatch(/name="b" value="hadith" checked/);
+		expect(html).not.toMatch(/name="b" value="sharh" checked/);
 		expect(html).toMatch(/name="b" value="bukhari" checked/);
 	});
 	test('preserves an explicit Hadith-only selection', async () => {
