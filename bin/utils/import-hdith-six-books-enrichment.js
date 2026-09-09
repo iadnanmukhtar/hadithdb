@@ -569,6 +569,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 				&& Number(stored.collection_grades) >= expectedCollectionGrades;
 			if (dependentRowsComplete) {
 				await upsertSourceReferenceMap(connection, config, record, hadithId, localReference, orderedMatch);
+				await resolveAndConfirmSimilarLinks(connection, hadithId, Number(config.sourceSlug.replace(/^b-/, '')), record.sourceId);
 				await backfillLegacyGradeFromOpinions(connection, hadithId);
 				await promoteColoredGradeForMissingLegacy(connection, hadithId);
 				return hadithId;
@@ -596,6 +597,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 		await replaceNarrators(connection, hadithId, record.narrators);
 		await replaceSubjects(connection, hadithId, record.subjects);
 		await replaceLinks(connection, hadithId, record.links);
+		await resolveAndConfirmSimilarLinks(connection, hadithId, Number(config.sourceSlug.replace(/^b-/, '')), record.sourceId);
 		await replaceSharh(connection, hadithId, sharh);
 		await replaceGraderOpinions(connection, hadithId, graderOpinions);
 		await backfillLegacyGradeFromOpinions(connection, hadithId);
@@ -1191,6 +1193,48 @@ async function replaceLinks(connection, hadithId, links) {
 		await query(connection, `INSERT INTO hdith_hadith_links
 			(hadith_id, link_type, source_book_id, source_book_title, source_entry_id, source_num, label, source_body_start, internal_hadith_id, internal_ref, source_url)
 			VALUES ?`, [values.slice(index, index + 500)]);
+}
+
+async function resolveAndConfirmSimilarLinks(connection, hadithId, sourceBookId, sourceEntryId) {
+	const links = await query(connection, `SELECT id,hadith_id,source_book_id,source_entry_id,source_num
+		FROM hdith_hadith_links WHERE link_type='similar' AND
+		(hadith_id=? OR (source_book_id=? AND source_entry_id=?))`, [hadithId, sourceBookId, sourceEntryId]);
+	const pairs = new Map();
+	for (const link of links) {
+		const target = await localTargetForHdithLink(connection, link);
+		if (!target) continue;
+		await query(connection, 'UPDATE hdith_hadith_links SET internal_hadith_id=?,internal_ref=? WHERE id=?',
+			[target.id, `${target.alias}:${target.num}`, link.id]);
+		if (Number(link.hadith_id) === Number(target.id)) continue;
+		const ids = [Number(link.hadith_id), Number(target.id)].sort((left, right) => left - right);
+		pairs.set(`${ids[0]}:${ids[1]}`, ids);
+	}
+	const values = [...pairs.values()].sort((left, right) => left[0] - right[0] || left[1] - right[1]);
+	if (!values.length) return 0;
+	await query(connection, `INSERT IGNORE INTO hadiths_sim
+		(hadithId1,hadithId2,similarity_source,similarity_imported) VALUES ?`,
+		[values.map(ids => [ids[0], ids[1], 'hdith.com', 1])]);
+	for (let offset = 0; offset < values.length; offset += 500) {
+		const batch = values.slice(offset, offset + 500);
+		await query(connection, 'DELETE FROM hadiths_sim_candidates WHERE (hadithId1,hadithId2) IN (?)', [batch]);
+		await query(connection, 'DELETE FROM hadiths_sim_candidates WHERE (hadithId1,hadithId2) IN (?)',
+			[batch.map(ids => [ids[1], ids[0]])]);
+	}
+	return values.length;
+}
+
+async function localTargetForHdithLink(connection, link) {
+	const mapped = HDITH_LOCAL_BOOKS[Number(link.source_book_id)];
+	if (!mapped) return null;
+	const crosswalk = await query(connection, `SELECT h.id,h.num FROM hdith_book_reference_crosswalk c
+		JOIN hadiths h ON h.id=c.local_hadith_id
+		WHERE c.source_book_id=? AND c.source_entry_id=? AND h.bookId=? LIMIT 1`,
+		[link.source_book_id, link.source_entry_id, mapped.bookId]);
+	if (crosswalk[0]) return { ...crosswalk[0], alias: mapped.alias };
+	if (mapped.referenceMode !== 'exact' || !link.source_num) return null;
+	const exact = await query(connection, 'SELECT id,num FROM hadiths WHERE bookId=? AND num=? ORDER BY id LIMIT 1',
+		[mapped.bookId, link.source_num]);
+	return exact[0] ? { ...exact[0], alias: mapped.alias } : null;
 }
 
 async function upsertSourceReferenceMap(connection, config, record, hadithId, localReference, orderedMatch) {

@@ -11,6 +11,7 @@ describe('local tafsir proxy lookup', () => {
   let originalQuery;
   let originalDbPool;
   let originalSurahs;
+  let editMode = false;
 
   beforeAll(done => {
     originalDocsFromQuery = Index.docsFromQuery;
@@ -21,6 +22,11 @@ describe('local tafsir proxy lookup', () => {
     global.dbPool = { escape: value => `'${String(value).replace(/'/g, "''")}'` };
 
     const app = express();
+    app.use((req, res, next) => {
+      req.admin = editMode;
+      req.editMode = editMode;
+      next();
+    });
     app.use('/quran/api/proxy', proxyRouter);
     server = app.listen(0, '127.0.0.1', () => {
       baseUrl = `http://127.0.0.1:${server.address().port}`;
@@ -34,6 +40,35 @@ describe('local tafsir proxy lookup', () => {
     global.dbPool = originalDbPool;
     global.surahs = originalSurahs;
     server.close(done);
+  });
+
+  afterEach(() => {
+    editMode = false;
+  });
+
+  test.each([
+    ['en', '', 'English commentary'],
+    ['ar', 'تفسير عربي', ''],
+    ['en', '', ''],
+    ['ar', '', '']
+  ])('offers both editors for %s tafsir with Arabic "%s" and English "%s"', async (lang, text, textEn) => {
+    editMode = true;
+    Index.docsFromQuery = jest.fn().mockResolvedValue([{
+      commentary_alias: 'test-tafsir', id: 47, format: 'md',
+      surah: 5, ayahFrom: 47, ayahTo: 47,
+      text, text_en: textEn, footnotes: '', footnotes_en: ''
+    }]);
+
+    const response = await fetch(`${baseUrl}/quran/api/proxy/tafsir/local?src=test-tafsir&s=5&a=47&lang=${lang}`);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.bilingual).toBe(true);
+    for (const field of ['text', 'text_en', 'footnotes', 'footnotes_en'])
+      expect(payload.html).toContain(`data-prop="commentary.${field}"`);
+    expect(payload.arabic_html).toContain('data-edit-lang="ar"');
+    expect(payload.translation_html).toContain('data-edit-lang="en"');
+    expect(payload.html).not.toContain('<details');
   });
 
   test('returns both languages directly from the indexed overlapping passage', async () => {
