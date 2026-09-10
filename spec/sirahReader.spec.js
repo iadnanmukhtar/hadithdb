@@ -8,7 +8,7 @@ function render(overrides = {}) {
  return cheerio.load(ejs.render(template, {
   i: { id: 1, num: '813787', ref: 'ibnhisham:813787', book_shortName_en: 'Sirat Ibn Hisham', book_shortName: 'سيرة ابن هشام', body: 'النص العربي', title: 'العنوان', ...overrides },
   utils: require('../lib/Utils'), arabic: require('../lib/Arabic'), title: true
- }));
+ }, { filename: path.join(__dirname, '../views/sub-views/sirah_item.ejs') }));
 }
 test('untranslated Sirah occupies the full reader width without an empty English column', () => {
  const $ = render({ title_en: 'Translated heading only', text_en: 'النص العربي الاحتياطي' });
@@ -23,6 +23,17 @@ test('translated Sirah uses two language columns with its English text and notes
  expect($('[data-reader-language-column=arabic]').hasClass('col-md-6')).toBe(true);
  expect($('[data-reader-language-column=english]').text()).toContain('English text');
  expect($('[data-reader-language-column=english] .footnote').text()).toContain('English note');
+});
+test('Sirah passages expose only bookmark, like, and reflection actions', () => {
+ const $ = render();
+ expect($('.sirah-item-actions .hadith-bookmark-btn')).toHaveLength(1);
+ expect($('.sirah-item-actions .hadith-like-btn')).toHaveLength(1);
+ expect($('.sirah-item-actions .hadith-comment-count')).toHaveLength(1);
+ expect($('.sirah-item-actions').text()).not.toMatch(/Share|Sharh|Sound/i);
+ expect($('.sirah-item-actions').closest('.h')).toHaveLength(1);
+ expect($('.sirah-item-actions .reflection-count-link').attr('data-reflection-disclosure-trigger')).toBe('sirah-comments-1-disclosure');
+ expect($('#sirah-comments-1-disclosure')).toHaveLength(1);
+ expect($('#sirah-comments-1').attr('data-target-type')).toBe('hadith');
 });
 test('Sirah passage detail opts into the existing reader navigation, independently of search pagination', () => {
  const search = fs.readFileSync(path.join(__dirname, '../views/search.ejs'), 'utf8');

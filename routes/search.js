@@ -1619,6 +1619,18 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   }
 
   results = results.map(item => new Item(item));
+  if (req.params.bookAlias !== 'quran'
+    && Books.referenceView(book) === 'section'
+    && !('json' in req.query)
+    && !('tsv' in req.query)
+    && !('md' in req.query)
+    && req.query.sharepreview === undefined
+    && req.query.share === undefined) {
+    var headingPath = `/${book.alias}/${Utils.formatHadithHeadingNumber(results[0].h1)}`;
+    if (Number(results[0].h2) > 0)
+      headingPath += `/${Utils.formatHadithHeadingNumber(results[0].h2)}`;
+    return res.redirect(302, `${headingPath}${appendOriginalQuery(req)}#${String(results[0].num || results[0].id).replace(/:/g, '-')}`);
+  }
   results[0].single = true;
   if (results[0].book_alias !== 'quran' && results[0].doctype !== 'sirah') {
 	results[0].hdithMetadata = await HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id) || {};
@@ -2410,7 +2422,7 @@ router.get('/:bookAlias/random', async function (req, res, next) {
 
   var random;
   if (book.type === 'sirah')
-    random = await Index.docRandomnly(Heading.INDEX, `book_alias:${book.alias}`);
+    random = await Index.docRandomnly(Heading.INDEX, `book_alias:${book.alias} AND level:(1 OR 2)`);
   else if (!book.virtual)
     random = await Index.docRandomnly(Item.INDEX, `book_alias:${book.alias}`);
   else

@@ -3,12 +3,56 @@
     <h3 class="col-12 fs-4">Random heading in <%= book.shortName_en %> <button type="button" class="btn btn-link text-muted p-0 align-baseline" data-random-toc-refresh title="Load another random heading" aria-label="Load another random heading"><i class="bi bi-arrow-clockwise"></i></button></h3>
   </header>
   <% const headingNumber = [random.h1, random.h2, random.h3].filter(value => value !== null && value !== undefined && value !== '').join('.'); %>
-  <article class="row py-2" data-random-sirah-heading>
+  <% const summaryEn = utils.trimToEmpty(random.intro_en); %>
+  <% const summaryAr = utils.trimToEmpty(random.intro); %>
+  <% const randomHeadingKind = Number(random.level) === 1 ? 'Chapter' : 'Section'; %>
+  <% const randomHeadingRef = `${book.alias}:${random.h1}${Number(random.level) === 2 ? `.${random.h2}` : ''}`; %>
+  <% const randomHeadingTitle = random.title_en || randomHeadingKind; %>
+  <% const randomHeadingTitleAr = random.title || ''; %>
+  <% const randomHeadingContext = Number(random.level) === 2 && random.h1_title_en ? `${randomHeadingTitle} in ${random.h1_title_en}` : randomHeadingTitle; %>
+  <article class="row py-2 h" data-random-sirah-heading>
     <% if (random.title_en) { %>
     <div class="col-md-6 col-sm-12" lang="en" data-reader-language-column="english"><a href="<%= utils.urlFor(req, `/${random.path}`) %>"><%= headingNumber %> <%= random.title_en %></a></div>
     <% } %>
     <div class="<%= random.title_en ? 'col-md-6 col-sm-12' : 'col-12' %>" lang="ar" dir="rtl" data-reader-language-column="arabic"><a href="<%= utils.urlFor(req, `/${random.path}`) %>"><%= arabic.toArabicDigits(headingNumber) %> <%= random.title %></a></div>
+    <% if (summaryEn) { %>
+    <div class="<%= summaryAr ? 'col-md-6 col-sm-12' : 'col-12' %> mt-2 text-muted random-sirah-heading-summary" lang="en" data-reader-language-column="english"><%- utils.markdownToHtml(summaryEn) %></div>
+    <% } %>
+    <% if (summaryAr) { %>
+    <div class="<%= summaryEn ? 'col-md-6 col-sm-12' : 'col-12' %> mt-2 text-muted random-sirah-heading-summary" lang="ar" dir="rtl" data-reader-language-column="arabic"><%- utils.markdownToHtml(summaryAr) %></div>
+    <% } %>
+    <aside class="col-12 tags random-sirah-heading-footer">
+      <div class="random-sirah-heading-context">§ <a href="<%= utils.urlFor(req, `/${random.path}`) %>"><%= randomHeadingContext %></a></div>
+      <div class="random-sirah-heading-actions">
+        <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= random.id %>" data-bookmark-type="<%= randomHeadingKind.toLowerCase() %>" data-bookmark-ref="<%= randomHeadingRef %>" data-bookmark-title="<%= randomHeadingTitle %>" data-bookmark-title-ar="<%= randomHeadingTitleAr %>" data-bookmark-url="<%= utils.urlFor(req, `/${random.path}`) %>" title="Bookmark this <%= randomHeadingKind.toLowerCase() %>">
+          <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= random.id %>"></span>
+        </button>
+        &nbsp;
+        <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= random.id %>" data-like-type="toc" title="Like this <%= randomHeadingKind.toLowerCase() %>">
+          <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= random.id %>" data-like-type="toc"></span>
+        </button>
+        <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= random.id %>" data-like-type="toc">0</span>
+        &nbsp;
+        <a href="#sirah-heading-comments-<%= random.id %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="sirah-heading-comments-<%= random.id %>-disclosure" title="View reflections">
+          <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= random.id %>" data-comment-type="toc" title="0 reflections">0</span>
+        </a>
+      </div>
+    </aside>
   </article>
+  <section class="mt-4 reflection-section col-12" data-reflection-section>
+    <%- include('comment_widget.ejs', {
+      widgetId: `sirah-heading-comments-${random.id}`,
+      heading: `Reflect on this ${randomHeadingKind.toLowerCase()}`,
+      targetId: random.id,
+      targetType: 'toc',
+      ref: random.path,
+      endpoint: '/comments',
+      subjectLabel: 'reflection',
+      placeholder: `Write a reflection on this ${randomHeadingKind.toLowerCase()}...`,
+      collapsible: true,
+      collapsed: true
+    }); %>
+  </section>
 <% } else if (book.alias === 'quran' && random.remark == 2) { %>
   <%- include('random_quran_ayah.ejs', { site: site, page: page, book: book, random: random }); %>
 <% } else { %>

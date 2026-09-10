@@ -21,4 +21,31 @@
     <section class="body l5"><div><%- utils.markdownToHtml(i.body || i.text || '') %></div></section>
     <% if (i.footnote) { %><footer class="footnote l2"><%- utils.markdownToHtml(i.footnote) %></footer><% } %>
   </section>
+  <footer class="col-12 h"><aside class="tags sirah-item-actions">
+    <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-bookmark-type="sirah" data-bookmark-ref="<%= i.ref %>" data-bookmark-title="<%= i.title_en || `${i.book_shortName_en || 'Sirah'}:${i.num}` %>" data-bookmark-title-ar="<%= i.title || '' %>" data-bookmark-url="/<%= i.ref %>" title="Bookmark this passage">
+      <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= i.id %>"></span>
+    </button>
+    &nbsp;
+    <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-like-type="hadith" title="Like this passage">
+      <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= i.id %>" data-like-type="hadith"></span>
+    </button>
+    <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.id %>" data-like-type="hadith">0</span>
+    &nbsp;
+    <a href="#sirah-comments-<%= i.id %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="sirah-comments-<%= i.id %>-disclosure" title="View reflections">
+      <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.id %>" data-comment-type="hadith" title="0 reflections">0</span>
+    </a>
+  </aside></footer>
 </article>
+<section class="mt-4 reflection-section col-12" data-reflection-section>
+  <%- include('comment_widget.ejs', {
+    widgetId: `sirah-comments-${i.id}`,
+    heading: 'Reflect on this passage',
+    targetId: i.id,
+    ref: i.ref,
+    endpoint: '/comments',
+    subjectLabel: 'reflection',
+    placeholder: 'Write a reflection on this passage...',
+    collapsible: true,
+    collapsed: true
+  }); %>
+</section>

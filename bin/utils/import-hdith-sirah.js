@@ -99,7 +99,7 @@ async function apply(source) {
   }
   const id=Number((await query('SELECT MAX(id) AS id FROM books FOR UPDATE'))[0].id)+1;
   await query(`INSERT INTO books (id,ordinal,alias,type,shortName_en,name_en,title_en,shortName,name,title,author_en,author,death,description,source,lang,hidden,format,hdith_book_id,properties,content_lastmod) VALUES (?,?,?,'sirah',?,?,?,?,?,?,?,?,?,?,?,'ar',0,'md',81,?,NOW())`,
-   [id,id,ALIAS,'Sirat Ibn Hisham','Sirat Ibn Hisham','Sirat Ibn Hisham','سيرة ابن هشام',source.book.title,source.book.title,'Ibn Hisham',source.book.author,source.book.author_death,normalizeField(source.book.summary),SOURCE,JSON.stringify({sirah:{source_book:'b-81',card_info:source.book.card_info,stats:source.stats,reference:'sequential passage number; source IDs retained in sirah_source_entries'}})]);
+   [id,id,ALIAS,'Sirat Ibn Hisham','Sirat Ibn Hisham','Sirat Ibn Hisham','سيرة ابن هشام',source.book.title,source.book.title,'Ibn Hisham',source.book.author,source.book.author_death,normalizeField(source.book.summary),SOURCE,JSON.stringify({reader:{referenceView:'section'},sirah:{source_book:'b-81',card_info:source.book.card_info,stats:source.stats,reference:'sequential passage number; source IDs retained in sirah_source_entries'}})]);
   const passageNumbers=new Map(source.chapters.flatMap(chapter=>chapter.entries).map((entry,index)=>[entry.id,index+1]));
   let ordinal=0,tocOrdinal=0;
   for(let ci=0;ci<source.chapters.length;ci++) {
