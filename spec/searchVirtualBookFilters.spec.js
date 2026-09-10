@@ -63,7 +63,7 @@ describe('virtual Hadith search filters', () => {
 	});
 	test('expands Sihah to its exact member books', async () => {
 		await Search.a_searchText('test', ['sihah'], 0, { excludeQuranAndTafsir: true });
-		expect(JSON.stringify(Index.docsFromQuery.mock.calls[0][1])).toContain(JSON.stringify({ book_alias: ['bukhari', 'muslim', 'malik', 'ibnhibban', 'ibnkhuzaymah', 'hakim'] }));
+		expect(JSON.stringify(Index.docsFromQuery.mock.calls[0][1])).toContain(JSON.stringify({ book_alias: ['bukhari', 'muslim', 'malik', 'ibnhibban', 'ibnkhuzaymah', 'hakim', 'lulu-marjan'] }));
 		expect(Search.describeBookFilters(['sihah'])).toEqual(['Sihah']);
 	});
 

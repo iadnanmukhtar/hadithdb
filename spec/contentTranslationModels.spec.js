@@ -44,6 +44,22 @@ describe('content translation models', () => {
     expect(ContentTranslations.selectedTranslationModel().provider).toBe('openai');
   });
 
+  test('can keep DeepSeek specifically for English translations', () => {
+    global.settings = {
+      openAI: { key: 'openai-key', model: 'gpt-test' },
+      deepSeek: { key: 'deepseek-key', model: 'deepseek-flash' },
+      payments: {
+        content: {
+          translationModel: 'openai',
+          englishTranslationModel: 'deepseek'
+        }
+      }
+    };
+
+    expect(ContentTranslations.selectedTranslationModel({ code: 'ar' }).provider).toBe('openai');
+    expect(ContentTranslations.selectedTranslationModel({ code: 'en' }).provider).toBe('deepseek');
+  });
+
   test('grounds hadith translation in content and book context with b. and bt. name forms', () => {
     const messages = ContentTranslations.buildMessages({
       itemType: 'hadith',

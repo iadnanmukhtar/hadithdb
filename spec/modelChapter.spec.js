@@ -58,6 +58,7 @@ describe('Chapter.getFirstSection', () => {
       level: 2,
       h1: 23,
       h2: 1,
+      h2_count: 1,
       path: 'hakim/23/1'
     }]);
     const chapter = new Chapter({
@@ -78,6 +79,46 @@ describe('Chapter.getFirstSection', () => {
     );
     expect(section).toBeInstanceOf(Section);
     expect(section.path).toBe('hakim/23/1');
+  });
+
+  test('skips an empty section and redirects an integer parent to its first populated decimal chapter', async () => {
+    const docsFromQueryString = jest.spyOn(Index, 'docsFromQueryString').mockResolvedValueOnce([{
+        book_alias: 'ahmad',
+        level: 2,
+        h1: 1,
+        h2: 1,
+        h2_count: 0,
+        path: 'ahmad/1/1'
+      }]);
+    const docsFromQuery = jest.spyOn(Index, 'docsFromQuery').mockResolvedValueOnce([{
+        book_alias: 'ahmad',
+        level: 1,
+        h1: 1.2,
+        h1_count: 81,
+        path: 'ahmad/1.20'
+      }]);
+    const chapter = new Chapter({
+      book_alias: 'ahmad',
+      level: 1,
+      h1: 1,
+      path: 'ahmad/1'
+    });
+
+    const first = await chapter.getFirstSection();
+
+    expect(docsFromQuery).toHaveBeenCalledWith(
+      'toc',
+      { bool: { filter: [
+        { term: { book_alias: 'ahmad' } },
+        { term: { level: 1 } },
+        { range: { h1: { gt: 1, lt: 2 } } }
+      ] } },
+      0,
+      100,
+      'ordinal'
+    );
+    expect(first).toBeInstanceOf(Chapter);
+    expect(first.path).toBe('ahmad/1.20');
   });
 });
 
