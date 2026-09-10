@@ -61,36 +61,45 @@
     var tafsirSortName = function (tafsir) {
       return tafsir.shortName_en || tafsir.name_en || tafsir.shortName || tafsir.title || tafsir.alias || '';
     };
-    var groups = [
+    var tafsirGroupSort = function (a, b) {
+      if (Tafsir.isDefaultTafsir(a) !== Tafsir.isDefaultTafsir(b))
+        return Tafsir.isDefaultTafsir(a) ? -1 : 1;
+      var aDeath = tafsirDeathYear(a);
+      var bDeath = tafsirDeathYear(b);
+      var aHasDeath = Number.isFinite(aDeath) && aDeath > 0;
+      var bHasDeath = Number.isFinite(bDeath) && bDeath > 0;
+      if (aHasDeath && bHasDeath && aDeath !== bDeath)
+        return aDeath - bDeath;
+      if (aHasDeath !== bHasDeath)
+        return aHasDeath ? -1 : 1;
+      if (!aHasDeath && !bHasDeath) {
+        var aPublished = tafsirPublishedYear(a);
+        var bPublished = tafsirPublishedYear(b);
+        var aHasPublished = Number.isFinite(aPublished) && aPublished > 0;
+        var bHasPublished = Number.isFinite(bPublished) && bPublished > 0;
+        if (aHasPublished && bHasPublished && aPublished !== bPublished)
+          return bPublished - aPublished;
+        if (aHasPublished !== bHasPublished)
+          return aHasPublished ? -1 : 1;
+      }
+      return tafsirSortName(a).localeCompare(tafsirSortName(b));
+    };
+    var catalogTafsirs = Tafsir.uniqueCarouselTafsirs(tafsirs || []);
+    var tafsirBookGroups = BookGroups.list('tafsir').map(function (group) {
+      return Object.assign({}, group, {
+        aliases: group.aliases.filter(function (alias) {
+          return catalogTafsirs.some(function (tafsir) { return tafsir.alias === alias; });
+        })
+      });
+    }).filter(function (group) { return group.aliases.length > 0; });
+    var languageTabs = [
       { key: 'en', lang: 'en', heading: 'Tafsir <sup>en</sup>' },
       { key: 'ar', lang: 'ar', heading: 'Tafsir <sup>ar</sup>' }
-    ].map(function (group) {
-      group.tafsirs = (tafsirs || []).filter(function (tafsir) {
-        return tafsir.lang === group.lang;
-      }).sort(function (a, b) {
-        if (Tafsir.isDefaultTafsir(a) !== Tafsir.isDefaultTafsir(b))
-          return Tafsir.isDefaultTafsir(a) ? -1 : 1;
-        var aDeath = tafsirDeathYear(a);
-        var bDeath = tafsirDeathYear(b);
-        var aHasDeath = Number.isFinite(aDeath) && aDeath > 0;
-        var bHasDeath = Number.isFinite(bDeath) && bDeath > 0;
-        if (aHasDeath && bHasDeath && aDeath !== bDeath)
-          return aDeath - bDeath;
-        if (aHasDeath !== bHasDeath)
-          return aHasDeath ? -1 : 1;
-        if (!aHasDeath && !bHasDeath) {
-          var aPublished = tafsirPublishedYear(a);
-          var bPublished = tafsirPublishedYear(b);
-          var aHasPublished = Number.isFinite(aPublished) && aPublished > 0;
-          var bHasPublished = Number.isFinite(bPublished) && bPublished > 0;
-          if (aHasPublished && bHasPublished && aPublished !== bPublished)
-            return bPublished - aPublished;
-          if (aHasPublished !== bHasPublished)
-            return aHasPublished ? -1 : 1;
-        }
-        return tafsirSortName(a).localeCompare(tafsirSortName(b));
-      });
-      return group;
+    ].map(function (tab) {
+      tab.tafsirs = catalogTafsirs.filter(function (tafsir) {
+        return tafsir.lang === tab.lang;
+      }).sort(tafsirGroupSort);
+      return tab;
     });
     var tafsirTabButton = function (id, heading, isActive) {
       return `
@@ -98,6 +107,11 @@
           <button class="nav-link${isActive ? ' active' : ''}" id="${id}-tab" data-bs-toggle="tab" data-bs-target="#${id}" type="button" role="tab" aria-controls="${id}" aria-selected="${isActive ? 'true' : 'false'}">${heading}</button>
         </li>
       `;
+    };
+    var tafsirGroupIds = function (tafsir) {
+      return tafsirBookGroups.filter(function (group) {
+        return group.aliases.indexOf(tafsir.alias) >= 0;
+      }).map(function (group) { return group.id; });
     };
     var htmlToPlainText = function (value) {
       return utils.emptyIfNull(value || '')
@@ -113,8 +127,8 @@
         return line.trim();
       }).find(Boolean) || description);
     };
-    var tafsirDescriptionId = function (group, tafsir) {
-      return `tafsir-book-description-${group.key}-${utils.emptyIfNull(tafsir.alias || '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
+    var tafsirDescriptionId = function (tab, tafsir) {
+      return `tafsir-book-description-${tab.key}-${utils.emptyIfNull(tafsir.alias || '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
     };
     var tafsirSizeLabel = function (tafsir) {
       var size = utils.emptyIfNull(tafsir && tafsir.size || '').toString();
@@ -150,37 +164,49 @@
         about: 'Available Books of Tafsīr'
       }) %>
 
-      <div class="page-content-filter input-group mb-3">
-        <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
-        <input type="search" class="form-control tafsir-book-filter" placeholder="Filter tafsīr books" aria-label="Filter tafsīr books" autocomplete="off" autofocus>
-      </div>
+      <nav class="h-menu-wrap home-hadith-book-nav tafsir-book-group-filters mb-3" aria-label="Filter tafsīr books">
+        <div class="h-menu-scroller">
+          <div class="btn-group h-menu text-nowrap" role="group">
+            <label class="book-carousel-filter">
+              <span class="bi bi-search" aria-hidden="true"></span>
+              <input type="search" class="book-carousel-filter-input tafsir-book-filter" placeholder="Filter books" aria-label="Filter tafsīr books" autocomplete="off" autofocus>
+            </label>
+            <% if (tafsirBookGroups.length) { %>
+              <button type="button" class="btn btn-outline-primary active" data-tafsir-group-filter="" aria-pressed="true">All</button>
+              <% tafsirBookGroups.forEach(function (group) { %>
+                <button type="button" class="btn btn-outline-primary" data-tafsir-group-filter="<%= group.id %>" aria-pressed="false"><%= group.label %></button>
+              <% }); %>
+            <% } %>
+          </div>
+        </div>
+      </nav>
 
-      <section class="mb-4">
+      <section class="mb-4 tafsir-book-tabs-section">
+        <% if (!catalogTafsirs.length) { %>
+          <p class="text-muted">No tafsīr books are currently available.</p>
+        <% } else { %>
         <ul class="nav nav-tabs tafsir-book-tabs mb-3" role="tablist">
-          <% groups.forEach(function (group) { %>
-            <% var sectionId = `tafsir-book-section-${group.key}`; %>
-            <%- tafsirTabButton(sectionId, group.heading, group.key === 'en') %>
+          <% languageTabs.forEach(function (tab, index) { var sectionId = `tafsir-book-section-${tab.key}`; %>
+            <%- tafsirTabButton(sectionId, tab.heading, index === 0) %>
           <% }); %>
         </ul>
         <div class="tab-content">
-          <% groups.forEach(function (group) { %>
-            <% var sectionId = `tafsir-book-section-${group.key}`; %>
-            <div id="<%= sectionId %>" class="tab-pane fade<%= group.key === 'en' ? ' show active' : '' %> tafsir-book-section-body" role="tabpanel" aria-labelledby="<%= sectionId %>-tab">
-            <% if (group.tafsirs.length < 1) { %>
-              <p class="text-muted">No <%= group.heading.toLowerCase() %> are currently available.</p>
-            <% } else { %>
+          <% languageTabs.forEach(function (tab, index) { var sectionId = `tafsir-book-section-${tab.key}`; %>
+            <div id="<%= sectionId %>" class="tab-pane fade<%= index === 0 ? ' show active' : '' %> tafsir-book-section-body" role="tabpanel" aria-labelledby="<%= sectionId %>-tab">
               <div class="tafsir-book-list">
-                <% group.tafsirs.forEach(function (tafsir) { %>
+                <% tab.tafsirs.forEach(function (tafsir) { %>
                   <%
                     var descriptionMarkdown = utils.emptyIfNull(tafsir.description || '');
                     var descriptionHtml = utils.markdownToHtml(descriptionMarkdown);
                     var descriptionPreview = tafsirDescriptionPreview(descriptionMarkdown);
-                    var descriptionId = tafsirDescriptionId(group, tafsir);
+                    var descriptionId = tafsirDescriptionId(tab, tafsir);
                     var descriptionKey = `${descriptionId}-body`;
                     var browseUrl = tafsirBookUrl(tafsir);
                     var editableBookId = tafsir.id || '';
+                    var bookGroupIds = tafsirGroupIds(tafsir);
                   %>
-                  <article class="tafsir-book-card tafsir-book-row" data-tafsir-book-filter="<%= [
+                  <article class="tafsir-book-card tafsir-book-row" data-tafsir-book-groups="<%= bookGroupIds.join(' ') %>" data-tafsir-book-filter="<%= [
+                    bookGroupIds.map(function (id) { var group = tafsirBookGroups.find(function (candidate) { return candidate.id === id; }); return group && group.label; }).filter(Boolean).join(' '),
                     tafsir.alias,
                     tafsir.name_en,
                     tafsir.shortName_en,
@@ -293,10 +319,10 @@
                   </article>
                 <% }); %>
               </div>
-            <% } %>
             </div>
           <% }); %>
         </div>
+        <% } %>
       </section>
       <p class="text-muted d-none tafsir-book-filter-empty">No matching tafsīr books found.</p>
     </main>
@@ -315,54 +341,54 @@
       return window.normalizeContentFilterText(value);
     };
     var cards = Array.from(document.querySelectorAll('.tafsir-book-card'));
-    var tabPanes = Array.from(document.querySelectorAll('.tafsir-book-section-body'));
+    var groupPills = Array.from(document.querySelectorAll('[data-tafsir-group-filter]'));
     var empty = document.querySelector('.tafsir-book-filter-empty');
+    var activeGroup = '';
 
-    var getTabButton = function (pane) {
-      return document.querySelector('.tafsir-book-tabs .nav-link[data-bs-target="#' + pane.id + '"]');
-    };
-
-    var activateFirstVisiblePane = function () {
-      var firstVisible = tabPanes.find(function (pane) {
-        return !pane.classList.contains('d-none');
-      });
-      if (!firstVisible)
-        return;
-      var button = getTabButton(firstVisible);
-      if (!button)
-        return;
-      var tab = window.bootstrap && window.bootstrap.Tab ? new window.bootstrap.Tab(button) : null;
-      if (tab)
-        tab.show();
-    };
-
-    filter.addEventListener('input', function () {
+    var applyFilters = function () {
       var query = normalize(filter.value);
-      var visibleCount = 0;
-      var hasVisiblePane = false;
       cards.forEach(function (card) {
-        var match = !query || normalize(card.dataset.tafsirBookFilter).includes(query);
+        var groups = (card.dataset.tafsirBookGroups || '').split(/\s+/).filter(Boolean);
+        var match = (!query || normalize(card.dataset.tafsirBookFilter).includes(query))
+          && (!activeGroup || groups.indexOf(activeGroup) >= 0);
         card.classList.toggle('d-none', !match);
-        if (match)
-          visibleCount += 1;
       });
-      tabPanes.forEach(function (pane) {
-        var paneCards = Array.from(pane.querySelectorAll('.tafsir-book-card'));
-        var paneHasVisible = paneCards.some(function (card) {
-          return !card.classList.contains('d-none');
-        });
-        if (query) {
-          pane.classList.toggle('d-none', !paneHasVisible);
-        } else {
-          pane.classList.remove('d-none');
-        }
-        if (paneHasVisible)
-          hasVisiblePane = true;
-      });
+      var activePane = document.querySelector('.tafsir-book-section-body.active');
+      var visibleCount = activePane ? Array.from(activePane.querySelectorAll('.tafsir-book-card')).filter(function (card) {
+        return !card.classList.contains('d-none');
+      }).length : 0;
       if (empty)
-        empty.classList.toggle('d-none', visibleCount > 0 || !query);
-      if (query && hasVisiblePane)
-        activateFirstVisiblePane();
+        empty.classList.toggle('d-none', visibleCount > 0);
+    };
+    var activateLanguageWithMostMatches = function () {
+      var panes = Array.from(document.querySelectorAll('.tafsir-book-section-body'));
+      var bestPane = panes.reduce(function (best, pane) {
+        var count = Array.from(pane.querySelectorAll('.tafsir-book-card:not(.d-none)')).length;
+        return !best || count > best.count ? { pane: pane, count: count } : best;
+      }, null);
+      if (!bestPane || !bestPane.count || bestPane.pane.classList.contains('active'))
+        return;
+      var button = document.querySelector('.tafsir-book-tabs [data-bs-target="#' + bestPane.pane.id + '"]');
+      if (button && window.bootstrap && window.bootstrap.Tab)
+        new window.bootstrap.Tab(button).show();
+    };
+
+    filter.addEventListener('input', applyFilters);
+    groupPills.forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        activeGroup = pill.dataset.tafsirGroupFilter || '';
+        groupPills.forEach(function (candidate) {
+          var active = candidate === pill;
+          candidate.classList.toggle('active', active);
+          candidate.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        applyFilters();
+        if (activeGroup)
+          activateLanguageWithMostMatches();
+      });
+    });
+    document.querySelectorAll('.tafsir-book-tabs [data-bs-toggle="tab"]').forEach(function (tab) {
+      tab.addEventListener('shown.bs.tab', applyFilters);
     });
   })();
 </script>

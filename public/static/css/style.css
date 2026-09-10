@@ -8388,6 +8388,11 @@ main .intro[lang="ar"][data-prop="toc.intro"] * {
 	gap: 0;
 }
 
+.tafsir-book-group-filters .book-carousel-filter,
+.book-catalog-group-filters .book-carousel-filter {
+	flex-basis: 8rem;
+}
+
 .tafsir-book-row {
 	border-bottom: 1px solid var(--bs-border-color);
 	padding: .8rem 0;

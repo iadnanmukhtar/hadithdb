@@ -346,12 +346,13 @@
   },
   {
     "id": "tafsir-mukhtasarat",
-    "label": "mukhtasarat",
+    "label": "summarized",
     "label_ar": "مركَّزة العبارة",
     "scope": "tafsir",
     "ordinal": 8,
     "source": "https://tafsir.app/",
     "aliases": [
+      "ibn-juzay",
       "jalalayn",
       "iji",
       "baydawi",
@@ -360,7 +361,10 @@
       "abu-zamanayn",
       "en-tazkir-al-quran",
       "shawi",
-      "muntakhab"
+      "muntakhab",
+      "muyassar",
+      "mokhtasar",
+      "yasir"
     ],
     "memberEvidence": {
       "en-tazkir-al-quran": {

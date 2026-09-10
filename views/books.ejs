@@ -99,6 +99,15 @@
       });
       return group;
     });
+    var catalogBookGroups = {
+      hadith: BookGroups.list('hadith'),
+      tafsir: BookGroups.list('tafsir')
+    };
+    var catalogGroupIds = function (alias, scope) {
+      return (catalogBookGroups[scope] || []).filter(function (group) {
+        return group.aliases.indexOf(alias) >= 0;
+      }).map(function (group) { return group.id; });
+    };
     var catalogTabButton = function (id, heading, isActive) {
       return `
         <li class="nav-item" role="presentation">
@@ -180,10 +189,20 @@
       about: 'Available Books of Ḥadīth, Tafsīr, and Quran Translations'
     }) %>
 
-    <div class="page-content-filter input-group mb-3">
-      <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
-      <input type="search" class="form-control book-catalog-filter" placeholder="Filter ḥadīth, tafsīr, and translation books" aria-label="Filter ḥadīth, tafsīr, and translation books" autocomplete="off" autofocus>
-    </div>
+    <nav class="h-menu-wrap home-hadith-book-nav book-catalog-group-filters mb-3" aria-label="Filter books">
+      <div class="h-menu-scroller">
+        <div class="btn-group h-menu text-nowrap" role="group">
+          <label class="book-carousel-filter">
+            <span class="bi bi-search" aria-hidden="true"></span>
+            <input type="search" class="book-carousel-filter-input book-catalog-filter" placeholder="Filter books" aria-label="Filter ḥadīth, tafsīr, and translation books" autocomplete="off" autofocus>
+          </label>
+          <button type="button" class="btn btn-outline-primary active" data-book-catalog-group-filter="" aria-pressed="true">All</button>
+          <% Object.keys(catalogBookGroups).forEach(function (scope) { catalogBookGroups[scope].forEach(function (group) { %>
+            <button type="button" class="btn btn-outline-primary<%= scope === 'hadith' ? '' : ' d-none' %>" data-book-catalog-group-filter="<%= group.id %>" data-book-catalog-group-scope="<%= scope %>" aria-pressed="false"><%= group.label %></button>
+          <% }); }); %>
+        </div>
+      </div>
+    </nav>
 
     <section class="book-catalog-tabs-section mb-4">
       <ul class="nav nav-tabs book-catalog-tabs mb-3" role="tablist">
@@ -207,7 +226,9 @@
                 var descriptionId = bookDescriptionId(book);
                 var descriptionKey = `${descriptionId}-body`;
               %>
-              <article class="book-catalog-card tafsir-book-row" data-book-catalog-filter="<%- [
+              <% var bookGroupIds = bookType === 'hadith' ? catalogGroupIds(book.alias, 'hadith') : []; %>
+              <article class="book-catalog-card tafsir-book-row" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
+                bookGroupIds.map(function (id) { var group = catalogBookGroups.hadith.find(function (candidate) { return candidate.id === id; }); return group && group.label; }).filter(Boolean).join(' '),
                 bookType,
                 book.alias,
                 book.name_en,
@@ -304,7 +325,9 @@
                     var browseUrl = tafsirBookUrl(tafsir);
                     var editableBookId = tafsir.id || '';
                   %>
-                  <article class="book-catalog-card tafsir-book-row" data-book-catalog-filter="<%- [
+                  <% var bookGroupIds = catalogGroupIds(tafsir.alias, 'tafsir'); %>
+                  <article class="book-catalog-card tafsir-book-row" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
+                    bookGroupIds.map(function (id) { var bookGroup = catalogBookGroups.tafsir.find(function (candidate) { return candidate.id === id; }); return bookGroup && bookGroup.label; }).filter(Boolean).join(' '),
                     'tafsir',
                     tafsir.alias,
                     tafsir.name_en,
@@ -526,7 +549,10 @@
     };
     var cards = Array.from(document.querySelectorAll('.book-catalog-card'));
     var tabPanes = Array.from(document.querySelectorAll('.book-catalog-tab-pane'));
+    var groupButtons = Array.from(document.querySelectorAll('[data-book-catalog-group-filter]'));
     var empty = document.querySelector('.book-catalog-filter-empty');
+    var activeGroup = '';
+    var activeScope = 'hadith';
 
     var getTabButton = function (pane) {
       return document.querySelector('.book-catalog-tabs .nav-link[data-bs-target="#' + pane.id + '"]');
@@ -546,12 +572,14 @@
         tab.show();
     };
 
-    filter.addEventListener('input', function () {
+    var applyFilters = function () {
       var query = normalize(filter.value);
       var visibleCount = 0;
       var hasVisiblePane = false;
       cards.forEach(function (card) {
-        var match = !query || normalize(card.dataset.bookCatalogFilter).includes(query);
+        var groups = (card.dataset.bookCatalogGroups || '').split(/\s+/).filter(Boolean);
+        var match = (!query || normalize(card.dataset.bookCatalogFilter).includes(query))
+          && (!activeGroup || groups.indexOf(activeGroup) >= 0);
         card.classList.toggle('d-none', !match);
         if (match)
           visibleCount += 1;
@@ -561,7 +589,7 @@
         var paneHasVisible = paneCards.some(function (card) {
           return !card.classList.contains('d-none');
         });
-        if (query) {
+        if (query && !activeGroup) {
           pane.classList.toggle('d-none', !paneHasVisible);
         } else {
           pane.classList.remove('d-none');
@@ -570,9 +598,60 @@
           hasVisiblePane = true;
       });
       if (empty)
-        empty.classList.toggle('d-none', visibleCount > 0 || !query);
-      if (query && hasVisiblePane)
+        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeGroup));
+      if (query && !activeGroup && hasVisiblePane)
         activateFirstVisiblePane();
+    };
+
+    var setGroupScope = function (paneId) {
+      var scope = paneId === 'book-catalog-hadith' ? 'hadith' : (paneId.indexOf('book-catalog-tafsir-') === 0 ? 'tafsir' : '');
+      var scopeChanged = scope !== activeScope;
+      activeScope = scope;
+      if (scopeChanged)
+        activeGroup = '';
+      groupButtons.forEach(function (button) {
+        var buttonScope = button.dataset.bookCatalogGroupScope || '';
+        var isAll = !button.dataset.bookCatalogGroupFilter;
+        button.classList.toggle('d-none', !isAll && buttonScope !== scope);
+        var active = activeGroup ? button.dataset.bookCatalogGroupFilter === activeGroup : isAll;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      applyFilters();
+    };
+    var activateTabWithMostGroupMatches = function () {
+      var panes = tabPanes.filter(function (pane) {
+        return pane.id.indexOf('book-catalog-tafsir-') === 0;
+      });
+      var bestPane = panes.reduce(function (best, pane) {
+        var count = Array.from(pane.querySelectorAll('.book-catalog-card:not(.d-none)')).length;
+        return !best || count > best.count ? { pane: pane, count: count } : best;
+      }, null);
+      if (!bestPane || !bestPane.count || bestPane.pane.classList.contains('active'))
+        return;
+      var button = getTabButton(bestPane.pane);
+      if (button && window.bootstrap && window.bootstrap.Tab)
+        new window.bootstrap.Tab(button).show();
+    };
+
+    filter.addEventListener('input', applyFilters);
+    groupButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        activeGroup = button.dataset.bookCatalogGroupFilter || '';
+        groupButtons.forEach(function (candidate) {
+          var active = candidate === button;
+          candidate.classList.toggle('active', active);
+          candidate.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        applyFilters();
+        if (activeGroup && button.dataset.bookCatalogGroupScope === 'tafsir')
+          activateTabWithMostGroupMatches();
+      });
+    });
+    document.querySelectorAll('.book-catalog-tabs [data-bs-toggle="tab"]').forEach(function (tab) {
+      tab.addEventListener('shown.bs.tab', function () {
+        setGroupScope((tab.dataset.bsTarget || '').replace(/^#/, ''));
+      });
     });
   })();
 </script>

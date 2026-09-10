@@ -37,9 +37,9 @@ async function main() {
 			}
 			// Retired groups are replaced by their user-requested memberships in the seed.
 			groups = (groups || []).filter(group => !['combined-sahihayn', 'tafsir-tajwid', 'tafsir-revelation', 'tafsir-readings', 'tafsir-vocabulary', 'tafsir-grammar'].includes(group.id)).map(group => {
-				if (group.id !== 'tafsir-other') return group;
-				const other = seed.find(item => item.id === 'tafsir-other');
-				return { ...group, label: other.label, ordinal: other.ordinal };
+				if (!['tafsir-other', 'tafsir-mukhtasarat'].includes(group.id)) return group;
+				const seededGroup = seed.find(item => item.id === group.id);
+				return { ...group, label: seededGroup.label, ordinal: seededGroup.ordinal };
 			});
 			for (const { aliases, memberEvidence, ...group } of seed.filter(group => group.aliases.includes(row.alias))) {
 				if (!groups.some(current => current.id === group.id)) groups.push({ ...group, memberOrdinal: aliases.indexOf(row.alias), ...memberEvidence?.[row.alias] });
