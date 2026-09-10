@@ -6,6 +6,7 @@ const Hadith = require('../lib/Hadith');
 const Utils = require('../lib/Utils');
 const CommentaryHeadings = require('../lib/CommentaryHeadings');
 const Tafsir = require('../lib/Tafsir');
+const RuntimeRefresh = require('../lib/RuntimeRefresh');
 
 function updateHandler() {
   const layer = updateRouter.stack.find(item => item.route && item.route.path === '/:id/:prop');
@@ -18,9 +19,31 @@ describe('book update route', () => {
     jest.spyOn(Hadith, 'a_reinit').mockResolvedValue();
     jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
     jest.spyOn(Utils, 'flushCachedFile').mockResolvedValue();
+	jest.spyOn(Utils, 'flushBookDiskCache').mockResolvedValue({ alias: 'rida', files: 12, directories: 2, targets: 2 });
+	jest.spyOn(RuntimeRefresh, 'publish').mockResolvedValue('generation');
     jest.spyOn(Books, 'touchBookContentLastmodById').mockResolvedValue();
     jest.spyOn(Tafsir, 'invalidateMemoryCaches');
   });
+
+	test('fully flushes a book disk cache through the protected update route', async () => {
+		global.query = jest.fn().mockResolvedValue([{ id: 100382, alias: 'rida' }]);
+		const req = {
+			body: { value: true },
+			params: { id: '100382', prop: 'book.flushDisk' },
+			user: { uid: 'admin' }
+		};
+		const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+		await updateHandler()(req, res, jest.fn());
+
+		expect(Utils.flushBookDiskCache).toHaveBeenCalledWith('rida', { strict: true });
+		expect(RuntimeRefresh.publish).toHaveBeenCalled();
+		expect(res.status).toHaveBeenCalledWith(200);
+		expect(res.json.mock.calls[0][0]).toMatchObject({
+			message: 'Book disk cache flushed',
+			value: { alias: 'rida', files: 12 }
+		});
+	});
 
   afterEach(() => {
     jest.restoreAllMocks();

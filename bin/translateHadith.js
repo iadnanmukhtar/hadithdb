@@ -27,8 +27,8 @@ async function translate(item) {
 		item = await Item.itemFromRef(item.hId);
 		if (utils.isFalsey(item.body_en)) {
 			console.log(`Translating ${item.ref}...`);
-			item.body_en = await utils.openai(`Translate the following passage into English and don't include the prompt answer: ${item.body}`);
-			item.body_en = utils.replacePBUH('[AI] ' + utils.trimToEmpty(item.body_en));
+			item.body_en = await utils.openai(`Treat this as a hadith matn from classical Islamic hadith literature.\nContent type: hadith matn.\nHadith collection: ${item.book_name_en || item.book_shortName_en || item.book_name || item.book_shortName || item.book_alias || ''}.\nReference: ${item.ref || ''}.\nChapter context: ${item.h1_title_en || item.h2_title_en || item.h3_title_en || item.h1_title || item.h2_title || item.h3_title || ''}.\nTranslate the following matn into clear English using its collection and chapter context. In personal names, render ibn/bin as "b." and bint as "bt.". Return only the translation:\n${item.body}`);
+			item.body_en = utils.replacePBUH('✧ ' + utils.trimToEmpty(item.body_en));
 			await global.query(`UPDATE hadiths SET body_en="${utils.escSQL(item.body_en)}", temp_trans=1 WHERE id=${item.hId}`);
 			await Index.update(Item.INDEX, item);
 		}

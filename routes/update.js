@@ -35,6 +35,7 @@ const Books = require('../lib/Books');
 const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranMushaf = require('../lib/QuranMushaf');
+const RuntimeRefresh = require('../lib/RuntimeRefresh');
 const Surahs = require('../lib/Surahs');
 const { Heading, Item, Library } = require('../lib/Model');
 
@@ -218,24 +219,24 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
           if (col === 'body_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.body_en) && Utils.isTruthy(item.body)) {
-            item.body_en = await Utils.openai(`Translate the following passage into English. Return only the translation:\n${item.body}`);
-            item.body_en = '[AI] ' + Utils.trimToEmpty(item.body_en);
+            item.body_en = await Utils.openai(buildHadithContextTranslationPrompt(item, 'Arabic hadith matn', item.body));
+            item.body_en = '✧ ' + Utils.trimToEmpty(item.body_en);
             item.body_en = Utils.replacePBUH(item.body_en);
             status.value = item.body_en;
             await global.query(`UPDATE hadiths SET body_en="${Utils.escSQL(item.body_en)}" WHERE id=${item.hId}`);
           }
           } else if (col === 'title_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.title_en) && Utils.isTruthy(item.title)) {
-            item.title_en = await Utils.openai(`Generate a concise English title using sentence case for the following Arabic title. Return only the title:\n${item.title}`);
-            item.title_en = '[AI] ' + Utils.trimToEmpty(item.title_en);
+            item.title_en = await Utils.openai(buildHadithHeadingPrompt(item, item.title, false));
+            item.title_en = '✧ ' + Utils.trimToEmpty(item.title_en);
             item.title_en = Utils.replacePBUH(item.title_en);
             status.value = item.title_en;
             await global.query(`UPDATE hadiths SET title_en="${Utils.escSQL(item.title_en)}" WHERE id=${item.hId}`);
           } else if (Utils.isFalsey(item.title_en)) {
             var sourceBody = Utils.isTruthy(item.body) ? item.body : item.body_en;
             if (Utils.isTruthy(sourceBody)) {
-              item.title_en = await Utils.openai(`Generate a concise English title using sentence case for the following hadith body. Return only the title:\n${sourceBody}`);
-              item.title_en = '[AI] ' + Utils.trimToEmpty(item.title_en);
+              item.title_en = await Utils.openai(buildHadithHeadingPrompt(item, sourceBody, true));
+              item.title_en = '✧ ' + Utils.trimToEmpty(item.title_en);
               item.title_en = Utils.replacePBUH(item.title_en);
               status.value = item.title_en;
               await global.query(`UPDATE hadiths SET title_en="${Utils.escSQL(item.title_en)}" WHERE id=${item.hId}`);
@@ -244,14 +245,14 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           } else if (col === 'footnote_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.footnote_en) && Utils.isTruthy(item.footnote)) {
             item.footnote_en = await Utils.openai(buildHadithContextTranslationPrompt(item, 'Arabic footnote', item.footnote));
-            item.footnote_en = '[AI] ' + Utils.trimToEmpty(item.footnote_en);
+            item.footnote_en = '✧ ' + Utils.trimToEmpty(item.footnote_en);
             item.footnote_en = Utils.replacePBUH(item.footnote_en);
             status.value = item.footnote_en;
             await global.query(`UPDATE hadiths SET footnote_en="${Utils.escSQL(item.footnote_en)}" WHERE id=${item.hId}`);
           }
           } else if (col === 'chain_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.chain_en) && Utils.isTruthy(item.chain)) {
-            item.chain_en = await Utils.openai(`Extract the narrators from this chain, transliterate them using ALA-LC, and separate them using the "greator than" symbol. Instead of ibn or bint, use "bt.":\n${item.chain}`);
+            item.chain_en = await Utils.openai(`${hadithPromptContext(item, 'hadith isnad')}\nExtract only the narrator names from this chain, transliterate them using ALA-LC, and separate them with the ">" symbol. Render ibn/bin as "b." and bint as "bt.". Return only the narrator list:\n${item.chain}`);
             item.chain_en = Utils.trimToEmpty(item.chain_en);
             item.chain_en = Utils.replacePBUH(item.chain_en);
             status.value = item.chain_en;
@@ -819,8 +820,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           await invalidateQuranMushafHeadingPageCaches(heading);
           shouldRunDefaultHeadingTasks = false;
         } else if (col === 'title_en' && Utils.isFalsey(heading.title_en) && Utils.isTruthy(heading.title)) {
-          heading.title_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${heading.title}`);
-          heading.title_en = '[AI] ' + Utils.trimToEmpty(heading.title_en);
+          heading.title_en = await Utils.openai(buildHeadingTranslationPrompt(heading, 'hadith book heading', heading.title));
+          heading.title_en = '✧ ' + Utils.trimToEmpty(heading.title_en);
           heading.title_en = Utils.replacePBUH(heading.title_en);
           status.value = heading.title_en;
           await global.query(`UPDATE toc SET title_en="${Utils.escSQL(heading.title_en)}" WHERE id=${heading.id}`);
@@ -828,8 +829,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       } else if (col === 'intro_en' && Utils.isFalsey(status.value)) {
         var heading = new Heading((await global.query(`SELECT * FROM v_toc WHERE hId=${ids[0]}`))[0]);
         if (Utils.isFalsey(heading.intro_en) && Utils.isTruthy(heading.intro)) {
-          heading.intro_en = await Utils.openai(`Translate the following title or passage into English. Return only the translation:\n${heading.intro}`);
-          heading.intro_en = '[AI] ' + Utils.trimToEmpty(heading.intro_en);
+          heading.intro_en = await Utils.openai(buildHeadingTranslationPrompt(heading, 'hadith book heading introduction', heading.intro));
+          heading.intro_en = '✧ ' + Utils.trimToEmpty(heading.intro_en);
           heading.intro_en = Utils.replacePBUH(heading.intro_en);
           status.value = heading.intro_en;
           await global.query(`UPDATE toc SET intro_en="${Utils.escSQL(heading.intro_en)}" WHERE id=${heading.id}`);
@@ -859,6 +860,14 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       }
 
     } else if (type == 'book') {
+	  if (col === 'flushDisk') {
+		const book = (await global.query(`SELECT id, alias FROM books WHERE id=${Number(ids[0])} LIMIT 1`))[0];
+		if (!book)
+		  throw createError(404, 'Book not found');
+		const flushed = await Utils.flushBookDiskCache(book.alias, { strict: true });
+		await RuntimeRefresh.publish();
+		return res.status(200).json({ code: 200, message: 'Book disk cache flushed', value: flushed });
+	  }
       var bookColumns = [
         'shortName_en', 'shortName', 'name_en', 'name',
         'title_en', 'title', 'author', 'author_en',
@@ -959,7 +968,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           var item = new Item((await global.query(`SELECT * FROM v_hadiths_virtual WHERE hId=${ids[0]}`))[0]);
           if (Utils.isFalsey(item.note_en) && Utils.isTruthy(item.note)) {
             item.note_en = await Utils.openai(buildHadithContextTranslationPrompt(item, 'Arabic virtual hadith note', item.note));
-            item.note_en = '[AI] ' + Utils.trimToEmpty(item.note_en);
+            item.note_en = '✧ ' + Utils.trimToEmpty(item.note_en);
             item.note_en = Utils.replacePBUH(item.note_en);
             status.value = item.note_en;
             await queryWithMysqlLockRetry(
@@ -2440,7 +2449,7 @@ async function generateQuranHeadingTitle(heading, col) {
     .replace(/\s*[.۔]\s*$/g, '')
     .trim();
   title = Utils.replacePBUH(title);
-	return title ? `[AI] ${title.replace(/^\[AI\]\s*/i, '')}` : '[AI] Passage';
+	return title ? `✧ ${title.replace(/^(?:\[(?:Machine|AI)\]|✧)\s*/i, '')}` : '✧ Passage';
 }
 
 async function buildQuranHeadingTitlePrompt(heading, col) {
@@ -2478,6 +2487,8 @@ async function buildQuranHeadingTitlePrompt(heading, col) {
   var language = 'English';
   var style = 'Return only one concise English title in sentence case. Do not add punctuation.';
   var lines = [
+	'Treat the Quran and its headings as classical Islamic scripture and scholarly reading structure.',
+	`Content type: generated ${headingLevel === 3 ? 'Quran subsection heading' : 'Quran passage heading'} for the Quran reader.`,
 	`Create a ${language} Quran ${headingLevel === 3 ? 'h3 subsection' : 'h2 passage'} title.`,
     style,
     'Base the title primarily on the actual ayat text in the target range.',
@@ -2485,6 +2496,7 @@ async function buildQuranHeadingTitlePrompt(heading, col) {
       ? 'Use the parent and neighboring headings only to match tone, scope, and naming style.'
       : 'Use the previous h2 headings only to match tone, scope, and naming style.',
     'Do not simply copy, combine, or paraphrase old subsection titles unless that is what the ayat themselves support.',
+	'In personal names, render ibn/bin as "b." and bint as "bt.".',
     '',
     `Surah: ${surah}`,
     `Range: ${surah}:${startAyah}-${endAyah}`,
@@ -2751,8 +2763,10 @@ async function startSimilarHadithProcess(hadithId) {
 
 function buildHadithContextTranslationPrompt(item, sourceLabel, sourceText) {
   var lines = [
+    hadithPromptContext(item, sourceLabel),
     'Translate the requested Arabic text into clear English.',
-    'Use the Arabic hadith body below only as context for meaning, pronouns, references, and terminology.',
+    'Use the hadith body below only as context for meaning, pronouns, references, and technical terminology.',
+    'In personal names, render ibn/bin as "b." and bint as "bt.".',
     'Return only the translation of the requested text, not the hadith body or any explanation.',
     '',
     'Arabic hadith body context:',
@@ -2764,6 +2778,45 @@ function buildHadithContextTranslationPrompt(item, sourceLabel, sourceText) {
     Utils.trimToEmpty(sourceText)
   );
   return lines.join('\n');
+}
+
+function hadithPromptContext(item, contentType) {
+  return [
+    'Treat this as classical Islamic hadith literature.',
+    `Content type: ${contentType || 'hadith record'}.`,
+    `Hadith collection: ${Utils.trimToEmpty(item.book_name_en || item.book_shortName_en || item.book_name || item.book_shortName || item.book_alias)}.`,
+    `Reference: ${Utils.trimToEmpty(item.ref)}.`,
+    `Chapter context: ${Utils.trimToEmpty(item.h1_title_en || item.h2_title_en || item.h3_title_en || item.h1_title || item.h2_title || item.h3_title)}.`
+  ].join('\n');
+}
+
+function buildHadithHeadingPrompt(item, sourceText, inferFromBody) {
+  return [
+    hadithPromptContext(item, 'hadith heading'),
+    inferFromBody
+      ? 'Generate a concise English hadith heading in sentence case from the following hadith matn.'
+      : 'Translate the following Arabic hadith heading into concise English in sentence case.',
+    'Use the collection and chapter context to preserve the heading’s hadith-specific meaning.',
+    'In personal names, render ibn/bin as "b." and bint as "bt.".',
+    'Return only the heading.',
+    '',
+    Utils.trimToEmpty(sourceText)
+  ].join('\n');
+}
+
+function buildHeadingTranslationPrompt(heading, contentType, sourceText) {
+  return [
+    'Treat this as classical Islamic literature.',
+    `Content type: ${contentType}.`,
+    `Book: ${Utils.trimToEmpty(heading.book_name_en || heading.book_shortName_en || heading.book_name || heading.book_shortName || heading.book_alias)}.`,
+    `Book reference: ${Utils.trimToEmpty(heading.ref || heading.path)}.`,
+    `Parent heading context: ${Utils.trimToEmpty(heading.h1_title_en || heading.h1_title)} / ${Utils.trimToEmpty(heading.h2_title_en || heading.h2_title)}.`,
+    'Translate the requested text into clear English using the book, genre, and heading hierarchy as context.',
+    'In personal names, render ibn/bin as "b." and bint as "bt.".',
+    'Return only the translation.',
+    '',
+    Utils.trimToEmpty(sourceText)
+  ].join('\n');
 }
 
 async function reindexHeadingSubtreeByHeadingId(headingId) {

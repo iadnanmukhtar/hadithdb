@@ -14,6 +14,7 @@ const { SUPPORTED_BOOKS } = require('./import-hdith-six-books-enrichment');
 const books = String(process.argv[process.argv.indexOf('--books') + 1] || '').split(',').filter(Boolean);
 const lane = String(process.argv[process.argv.indexOf('--lane') + 1] || 'lane');
 const replayFirst = process.argv.includes('--replay-first');
+const replayAll = process.argv.includes('--replay-all');
 function numericOption(name, fallback) {
 	const index = process.argv.indexOf(name);
 	const value = index >= 0 ? Number(process.argv[index + 1]) : fallback;
@@ -74,11 +75,11 @@ async function waitForDatabase() {
 function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 async function runBook(config) {
-	let replayPending = replayFirst && config === configs[0];
+	let replayPending = replayAll || (replayFirst && config === configs[0]);
 	while (!stopping) {
 		await waitForDatabase();
 		const before = await status(config);
-		const args = ['bin/utils/import-hdith-six-books-enrichment.js', '--apply', '--book', config.sourceSlug, '--delay', '100'];
+		const args = ['bin/utils/import-hdith-six-books-enrichment.js', '--apply', '--skip-schema', '--book', config.sourceSlug, '--delay', '100'];
 		const replaying = replayPending;
 		replayPending = false;
 		if (!replaying && before.next_pending_source_id)

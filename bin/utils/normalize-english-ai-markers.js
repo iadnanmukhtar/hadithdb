@@ -26,14 +26,14 @@ async function main() {
 		for (const column of columns) {
 			const table = mysql.escapeId(column.TABLE_NAME);
 			const field = mysql.escapeId(column.COLUMN_NAME);
-			const where = `${field} LIKE '%[Machine]%'`;
+			const where = `(${field} LIKE '%[Machine]%' OR ${field} LIKE '%[AI]%')`;
 			const count = Number((await query(`SELECT COUNT(*) count FROM ${table} WHERE ${where}`))[0].count);
 			if (!count) continue;
 			replacements += count;
 			console.log(`${options.apply ? 'Updating' : 'Would update'} ${column.TABLE_NAME}.${column.COLUMN_NAME}: ${count} row(s)`);
 			await collectIndexScopes(query, column.TABLE_NAME, where, changedHadithIds, changedTocBookIds, changedTafsirBookIds);
 			if (options.apply)
-				await query(`UPDATE ${table} SET ${field}=REPLACE(${field}, '[Machine]', '[AI]') WHERE ${where}`);
+				await query(`UPDATE ${table} SET ${field}=REPLACE(REPLACE(${field}, '[Machine]', '✧'), '[AI]', '✧') WHERE ${where}`);
 		}
 		if (options.apply) await query('COMMIT');
 	} catch (err) {

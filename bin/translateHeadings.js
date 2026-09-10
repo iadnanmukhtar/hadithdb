@@ -39,11 +39,11 @@ async function translate(heading) {
 			title = title.replace(/^بَابٌ[ :]/, '');
 			title = title.replace(/^حديث[ :]/, '');
 			title = title.replace(/^ذكر /, '');
-			heading[`h${level}_title_en`] = await utils.openai(`Translate the following heading into English and don't include the prompt answer: ${title}`);
+			heading[`h${level}_title_en`] = await utils.openai(`Treat this as a heading from a classical Islamic hadith book.\nContent type: hadith book heading.\nBook: ${heading.book_name_en || heading.book_shortName_en || heading.book_name || heading.book_shortName || heading.book_alias || ''}.\nReference: ${heading.ref || heading.path || ''}.\nParent heading context: ${heading.h1_title_en || heading.h1_title || ''} / ${heading.h2_title_en || heading.h2_title || ''}.\nTranslate the following heading into clear English. In personal names, render ibn/bin as "b." and bint as "bt.". Return only the heading:\n${title}`);
 			console.log(`Fix ${heading.ref}...`);
 			heading[`h${level}_title_en`] = heading[`h${level}_title_en`].replace(/^"/, '');
 			heading[`h${level}_title_en`] = heading[`h${level}_title_en`].replace(/"$/, '');
-			heading[`h${level}_title_en`] = utils.replacePBUH('[AI] ' + utils.trimToEmpty(heading['h' + level + '_title_en']));
+			heading[`h${level}_title_en`] = utils.replacePBUH('✧ ' + utils.trimToEmpty(heading['h' + level + '_title_en']));
 			console.log(`Update ${heading.ref}...`);
 			await global.query(`UPDATE toc SET title_en="${utils.escSQL(heading['h' + level + '_title_en'])}" WHERE id=${heading.tId}`);
 			await Index.update(Heading.INDEX, heading);

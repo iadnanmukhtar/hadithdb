@@ -7,8 +7,15 @@ const { sharhToMarkdown } = require('../bin/utils/import-hdith-six-books-enrichm
 const { parseDorarSharhHtml } = require('../lib/DorarSharhImport');
 
 describe('Arabic hadith and sharh honorific normalization', () => {
+	test('uses classical Islamic literature and b./bt. conventions by default', () => {
+		const prompt = Utils.classicalIslamicLiteraturePrompt();
+		expect(prompt).toContain('classical Islamic literature');
+		expect(prompt).toContain('hadith headings, tafsir, sirah');
+		expect(prompt).toContain('ibn/bin as "b." and bint as "bt."');
+	});
+
 	test('replaces the legacy English AI marker wherever it occurs', () => {
-		expect(Utils.normalizeEnglishAIMarker('[Machine] Translation [Machine] note')).toBe('[AI] Translation [AI] note');
+		expect(Utils.normalizeEnglishAIMarker('[Machine] Translation [AI] note')).toBe('✧ Translation ✧ note');
 		expect(Utils.normalizeEnglishAIMarker(null)).toBeNull();
 	});
 
@@ -23,6 +30,10 @@ describe('Arabic hadith and sharh honorific normalization', () => {
 		['صَلَّى ٱللَّهُ عَلَيْهِ وَعَلَى اٰلِهِ وَسَلَّمَ', 'ﷺ']
 	])('normalizes salawat variant %s', (input, expected) => {
 		expect(Utils.normalizeArabicHonorifics(input).trim()).toBe(expected);
+	});
+
+	test('normalizes a model-generated Prophet honorific phrase', () => {
+		expect(Utils.normalizeArabicHonorifics('(May Allah be pleased with the Prophet Muhammad)').trim()).toBe('ﷺ');
 	});
 
 	test('matches independently vocalized letters and decomposed madda', () => {
@@ -51,6 +62,14 @@ describe('Arabic hadith and sharh honorific normalization', () => {
 		['رضي الله عني', 'ؓ'],
 		['رضي الله عنا', 'ؓ']
 	])('normalizes companion blessing variant %s', (input, expected) => {
+		expect(Utils.normalizeArabicHonorifics(input).trim()).toBe(expected);
+	});
+
+	test.each([
+		['may Allah be pleased with him', 'ؓ'],
+		['(May Allah Be Pleased with Her)', 'ؓ'],
+		['may God be pleased with them all', 'ؓ']
+	])('normalizes English companion blessing variant %s', (input, expected) => {
 		expect(Utils.normalizeArabicHonorifics(input).trim()).toBe(expected);
 	});
 

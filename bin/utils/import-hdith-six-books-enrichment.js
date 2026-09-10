@@ -1228,7 +1228,8 @@ async function localTargetForHdithLink(connection, link) {
 	if (!mapped) return null;
 	const crosswalk = await query(connection, `SELECT h.id,h.num FROM hdith_book_reference_crosswalk c
 		JOIN hadiths h ON h.id=c.local_hadith_id
-		WHERE c.source_book_id=? AND c.source_entry_id=? AND h.bookId=? LIMIT 1`,
+		WHERE c.source_book_id=? AND c.source_entry_id=? AND h.bookId=?
+		ORDER BY c.is_supplementary, c.similarity DESC, c.local_hadith_id LIMIT 1`,
 		[link.source_book_id, link.source_entry_id, mapped.bookId]);
 	if (crosswalk[0]) return { ...crosswalk[0], alias: mapped.alias };
 	if (mapped.referenceMode !== 'exact' || !link.source_num) return null;
@@ -1333,6 +1334,48 @@ async function enrichSingleHadith({ sourceBookId, sourceEntryId, localHadithId, 
 		};
 	} finally {
 		if (browser) await browser.close();
+	}
+}
+
+async function enrichHadithMatches(matches) {
+	if (!Array.isArray(matches) || !matches.length) return { applied: [], rejected: [] };
+	let browser;
+	const applied = [];
+	const rejected = [];
+	try {
+		await ensureSchema();
+		browser = await startLightpanda();
+		const page = await browser.context.newPage();
+		for (const match of matches) {
+			const sourceBookId = Number(match.sourceBookId);
+			const mapped = HDITH_LOCAL_BOOKS[sourceBookId];
+			if (!mapped) { rejected.push({ ...match, reason: 'unmapped source book' }); continue; }
+			const config = { ...mapped, sourceSlug: `b-${sourceBookId}` };
+			const local = (await query(await getConnection(), 'SELECT id,num,chain,body FROM hadiths WHERE id=? AND bookId=? LIMIT 1',
+				[Number(match.localHadithId), mapped.bookId]))[0];
+			if (!local) { rejected.push({ ...match, reason: 'local hadith missing' }); continue; }
+			const record = await loadRecord(page, config, Number(match.sourceEntryId));
+			const sourceText = normalizeHadithForComparison(record.comparisonText);
+			const localText = normalizeHadithForComparison([local.chain, local.body].filter(Boolean).join(' '));
+			let score = hadithPrefixSimilarity(sourceText, localText);
+			if (referencesEquivalent(record.editionReference || record.num, local.num, config.sourceSlug) && record.bodyStart)
+				score = Math.max(score, hadithPrefixSimilarity(record.bodyStart, local.body));
+			const minimumScore = config.sourceSlug === 'b-24' ? 0.80 : 0.90;
+			if (score < minimumScore) {
+				rejected.push({ ...match, sourceReference: record.num, localReference: local.num, score, reason: 'full-text confirmation failed' });
+				compressCachedRecord(config, record.sourceId);
+				continue;
+			}
+			await applyRecordWithRetry(page, config, record, { id: local.id, num: local.num, score });
+			await queueEnrichedHadithIndex(local.id);
+			compressCachedRecord(config, record.sourceId);
+			applied.push({ ...match, sourceReference: record.num, localReference: local.num, score });
+		}
+		await flushEnrichedHadithIndex();
+		return { applied, rejected };
+	} finally {
+		if (browser) await browser.close();
+		await closeDatabase();
 	}
 }
 
@@ -1614,6 +1657,20 @@ async function ensureSchema() {
 	if (crosswalkLocalIndex[0] && Number(crosswalkLocalIndex[0].nonUnique) === 0)
 		await query(connection, `ALTER TABLE hdith_book_reference_crosswalk
 			DROP INDEX hdith_crosswalk_local, ADD KEY hdith_crosswalk_local (source_book_id, local_hadith_id)`);
+	const crosswalkPrimaryColumns = (await query(connection, `SELECT column_name AS columnName
+		FROM information_schema.statistics
+		WHERE table_schema=DATABASE() AND table_name='hdith_book_reference_crosswalk' AND index_name='PRIMARY'
+		ORDER BY seq_in_index`)).map(row => row.columnName || row.COLUMN_NAME);
+	if (crosswalkPrimaryColumns.join(',') !== 'source_book_id,source_entry_id,local_hadith_id')
+		await query(connection, `ALTER TABLE hdith_book_reference_crosswalk DROP PRIMARY KEY,
+			ADD PRIMARY KEY (source_book_id, source_entry_id, local_hadith_id)`);
+	const metadataSourceIndex = await query(connection, `SELECT non_unique AS nonUnique
+		FROM information_schema.statistics
+		WHERE table_schema=DATABASE() AND table_name='hdith_hadith_metadata'
+			AND index_name='hdith_metadata_source' LIMIT 1`);
+	if (metadataSourceIndex[0] && Number(metadataSourceIndex[0].nonUnique) === 0)
+		await query(connection, `ALTER TABLE hdith_hadith_metadata DROP INDEX hdith_metadata_source,
+			ADD KEY hdith_metadata_source (source_book_slug, source_entry_id)`);
 	const crosswalkSimilarity = await query(connection, `SELECT is_nullable AS isNullable FROM information_schema.columns
 		WHERE table_schema=DATABASE() AND table_name='hdith_book_reference_crosswalk' AND column_name='similarity' LIMIT 1`);
 	if (crosswalkSimilarity[0]?.isNullable === 'NO')
@@ -1655,7 +1712,7 @@ function schemaStatements() {
 			source_book_id INT NOT NULL, source_entry_id INT NOT NULL, source_num VARCHAR(45) NULL, source_edition_num VARCHAR(45) NULL,
 			local_hadith_id INT NOT NULL, local_ref VARCHAR(45) NOT NULL, similarity DECIMAL(6,5) NULL, is_supplementary TINYINT(1) NOT NULL DEFAULT 0,
 			lastmod DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY (source_book_id, source_entry_id), KEY hdith_crosswalk_local (source_book_id, local_hadith_id),
+			PRIMARY KEY (source_book_id, source_entry_id, local_hadith_id), KEY hdith_crosswalk_local (source_book_id, local_hadith_id),
 			KEY hdith_crosswalk_hadith (local_hadith_id),
 			CONSTRAINT hdith_crosswalk_hadith_fk FOREIGN KEY (local_hadith_id) REFERENCES hadiths(id) ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
@@ -1663,7 +1720,7 @@ function schemaStatements() {
 			hadith_id INT NOT NULL PRIMARY KEY, source_book_slug VARCHAR(16) NOT NULL, source_entry_id INT NOT NULL,
 			source_reference VARCHAR(45) NULL, source_edition_reference VARCHAR(45) NULL, attribution VARCHAR(64) NULL, chain_type VARCHAR(128) NULL, narrator TEXT NULL, narrator_en TEXT NULL, source_isnad_html MEDIUMTEXT NULL, gharib_json JSON NULL, takhrij_json JSON NULL, shawahid_json JSON NULL, source_checksum CHAR(64) NOT NULL,
 			lastmod DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			UNIQUE KEY hdith_metadata_source (source_book_slug, source_entry_id),
+			KEY hdith_metadata_source (source_book_slug, source_entry_id),
 			CONSTRAINT hdith_metadata_hadith_fk FOREIGN KEY (hadith_id) REFERENCES hadiths(id) ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		`CREATE TABLE IF NOT EXISTS hdith_narrators (
@@ -1779,6 +1836,8 @@ function appMysqlConnection() {
 
 async function closeDatabase() {
 	if (dbConnection) await new Promise(resolve => dbConnection.end(resolve));
+	dbConnection = null;
+	dbSessionConfigured = false;
 }
 
 if (require.main === module) main();
@@ -1786,5 +1845,5 @@ if (require.main === module) main();
 module.exports = {
 	CACHE_DIR, FOLLOWUP_BOOKS, HDITH_GRADE_COLORS, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, SUPPORTED_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
 	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, localHadithOrderClause, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parsePageNarrator, parsePrimaryNarrator, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
-	enrichSingleHadith, legacyGradeForOpinion, preferredColoredGradeOpinion, preferredLegacyOpinion, promoteColoredGradeForMissingLegacy, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult
+	enrichHadithMatches, enrichSingleHadith, legacyGradeForOpinion, preferredColoredGradeOpinion, preferredLegacyOpinion, promoteColoredGradeForMissingLegacy, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult, startLightpanda
 };
