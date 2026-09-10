@@ -285,6 +285,7 @@ The site includes the commentary (tafsīr) and translation works listed below. E
 | `jalalayn` | Tafsir al-Jalalayn |
 | `mokhtasar` | al-Mukhtasar fi Tafsir al-Quran al-Karim |
 | `muntakhab` | al-Muntakhab fi Tafsir al-Quran |
+| `muyassar` | al-Tafsir al-Muyassar |
 
 ### Arabic tafsīr and Quran companions
 
@@ -321,7 +322,6 @@ The site includes the commentary (tafsīr) and translation works listed below. E
 | `shanqiti` | Adwa al-Bayan fi Idah al-Quran bi-al-Quran |
 | `ibn-uthaymin` | Tafsir al-Quran al-Karim |
 | `aysar` | Aysar al-Tafasir li-Kalam al-Ali al-Kabir |
-| `muyassar` | al-Tafsir al-Muyassar |
 | `ibn-atiyah` | al-Muharrar al-Wajiz |
 | `basit` | al-Tafsir al-Basit |
 | `tadabbur-wa-amal` | al-Quran: Tadabbur wa-Amal |

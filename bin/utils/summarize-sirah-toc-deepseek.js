@@ -11,8 +11,8 @@ const Utils = require('../../lib/Utils');
 const RuntimeRefresh = require('../../lib/RuntimeRefresh');
 
 const OUTPUT = path.resolve('data/ibnhisham-toc-summaries-en.json');
-const CACHE = path.resolve('var/imports/hdith-b81/toc-summaries-deepseek-v4-pro');
-const BATCH_SIZE = 12;
+const CACHE = path.resolve('var/imports/hdith-b81/toc-summaries-deepseek-v4-pro-v2');
+const BATCH_SIZE = 8;
 const CONCURRENCY = 4;
 const MAX_ATTEMPTS = 5;
 const ARABIC = /[\u0621-\u064A]/u;
@@ -20,7 +20,7 @@ const ARABIC = /[\u0621-\u064A]/u;
 function messages(rows) {
 	return [{
 		role: 'system',
-		content: `Treat this as classical Islamic sirah literature. Write a very short English overview for each supplied table-of-contents heading from Ibn Hisham's Sirah, based only on its supplied descendant H2 and H3 headings.
+		content: `Treat this as classical Islamic sirah literature. Write a very short English overview for each supplied table-of-contents heading from Ibn Hisham's Sirah, based only on its supplied source material. For H1 headings the source material is the descendant H2/H3 table of contents. For H2 headings with H3 children it is those child headings. For leaf H2 headings it is the English passage text belonging to that section.
 Each overview must be exactly one concise factual sentence, normally 12-30 words and never more than 40 words. Describe the subjects covered beneath the parent; do not praise, interpret, authenticate reports, add facts, mention "this chapter/section", or merely repeat the parent title. Preserve historical names and distinctions. Use conventional scholarly transliteration with diacritics consistently. In personal names, render ibn/bin as "b." and bint as "bt.". Keep ﷺ and ؓ exactly when present in supplied English headings. Return only strict JSON: {"summaries":[{"id":integer,"intro_en":string}]}. Return every supplied id exactly once in the same order.`
 	}, {
 		role: 'user',
@@ -29,7 +29,9 @@ Each overview must be exactly one concise factual sentence, normally 12-30 words
 			level: row.level,
 			parent_title_en: row.title_en,
 			parent_title_ar: row.title,
-			descendant_headings: row.descendants.map(child => ({ level: child.level, title_en: child.title_en, title_ar: child.title }))
+			source_material: row.descendants.length
+				? row.descendants.map(child => ({ level: child.level, title_en: child.title_en, title_ar: child.title }))
+				: row.passages.map(passage => passage.body_en)
 		})))
 	}];
 }
@@ -95,25 +97,33 @@ async function loadTargets() {
 	const rows = await global.query(`
 		SELECT p.id,p.ordinal,p.level,p.h1,p.h2,p.title,p.title_en,p.intro_en
 		FROM toc p JOIN books b ON b.id=p.bookId AND b.alias='ibnhisham' AND b.type='sirah'
-		WHERE p.level=1 OR (p.level=2 AND EXISTS(
-			SELECT 1 FROM toc x WHERE x.bookId=p.bookId AND x.level=3 AND x.h1=p.h1 AND x.h2=p.h2))
+		WHERE p.level IN (1,2)
 		ORDER BY p.ordinal`);
 	const descendants = await global.query(`
 		SELECT id,ordinal,level,h1,h2,title,title_en FROM toc
 		WHERE bookId=(SELECT id FROM books WHERE alias='ibnhisham') AND level IN (2,3)
 		ORDER BY ordinal`);
+	const passages = await global.query(`
+		SELECT h1,h2,body_en FROM hadiths
+		WHERE bookId=(SELECT id FROM books WHERE alias='ibnhisham')
+		ORDER BY ordinal`);
 	return rows.map(row => ({
 		...row,
-		descendants: descendants.filter(child => row.level === 1
-			? child.h1 === row.h1
-			: child.level === 3 && child.h1 === row.h1 && child.h2 === row.h2)
+		descendants: descendants.filter(child => Number(row.level) === 1
+			? Number(child.h1) === Number(row.h1)
+			: Number(child.level) === 3 && Number(child.h1) === Number(row.h1) && Number(child.h2) === Number(row.h2)),
+		passages: passages.filter(passage => Number(passage.h1) === Number(row.h1) &&
+			(Number(row.level) === 1 || Number(passage.h2) === Number(row.h2)))
 	}));
 }
 
 async function main() {
 	const rows = await loadTargets();
-	if (rows.length !== 103 || rows.filter(row => row.level === 1).length !== 97 || rows.filter(row => row.level === 2).length !== 6)
-		throw new Error(`Unexpected summary target shape: ${rows.length}`);
+	const h1Count = rows.filter(row => Number(row.level) === 1).length;
+	const h2Count = rows.filter(row => Number(row.level) === 2).length;
+	const missingSource = rows.filter(row => !row.descendants.length && !row.passages.length);
+	if (rows.length !== 787 || h1Count !== 97 || h2Count !== 690 || missingSource.length)
+		throw new Error(`Unexpected summary target shape: total=${rows.length} h1=${h1Count} h2=${h2Count} missingSource=${missingSource.map(row => row.id).join(',')}`);
 	if (process.argv.includes('--generate')) {
 		fs.mkdirSync(CACHE, { recursive: true });
 		const batches = [];
@@ -138,7 +148,7 @@ async function main() {
 	const summaries = artifact.summaries;
 	validate(rows, summaries.map(item => ({ ...item, intro_en: item.intro_en.replace(/^✧\s*/, '') })));
 	const changes = rows.filter((row, index) => Utils.trimToEmpty(row.intro_en) !== summaries[index].intro_en);
-	console.log(JSON.stringify({ targets: rows.length, h1: 97, h2WithH3: 6, changes: changes.length, apply: process.argv.includes('--apply') }));
+	console.log(JSON.stringify({ targets: rows.length, h1: 97, h2: 690, changes: changes.length, apply: process.argv.includes('--apply') }));
 	if (!process.argv.includes('--apply')) return;
 	const cases = summaries.map(summary => `WHEN ${summary.id} THEN '${Utils.escSQL(summary.intro_en)}'`).join(' ');
 	const ids = summaries.map(summary => summary.id).join(',');

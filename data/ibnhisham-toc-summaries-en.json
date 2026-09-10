@@ -5,415 +5,3151 @@
   "summaries": [
     {
       "id": 161271,
-      "intro_en": "✧ Traces the Prophet’s genealogy from Muhammad ﷺ through Ishmael to Adam, including pre-Islamic Arabian history, Arab tribal origins, and events leading to his birth."
+      "intro_en": "✧ Traces the Prophet's ﷺ pure genealogy from Adam through Ishmael, with accounts of early Arabian kings, the Yemeni and Abyssinian conflicts, the Elephant incident, the rise of Quraysh and Quṣayy, Zamzam, and ʿAbd al-Muṭṭalib's family."
+    },
+    {
+      "id": 161272,
+      "intro_en": "✧ Presents the genealogical chain of Muḥammad ﷺ from ʿAbd Allāh back to Adam ﷺ, noting variant transmissions and the identification of Idrīs with Akhnūkh."
+    },
+    {
+      "id": 161273,
+      "intro_en": "✧ States Ibn Hishām's editorial approach of beginning with Ismāʿīl b. Ibrāhīm, omitting material unrelated to the Prophet ﷺ or unverified poems and reports."
     },
     {
       "id": 161274,
-      "intro_en": "✧ Covers Ishmael's descendants, his mother Hagar's lineage and homeland, his age and burial, and the Prophet’s ﷺ injunction regarding Egypt."
+      "intro_en": "✧ Covers the children and mother of Ismāʿīl, his age and burial place, Hagar's homeland, and the Prophet's ﷺ injunction concerning the people of Egypt."
     },
     {
       "id": 161279,
-      "intro_en": "✧ States that all Arabs descend from Ishmael and Qaḥṭān."
+      "intro_en": "✧ Asserts that all Arabs descend from Ismāʿīl and Qaḥṭān."
+    },
+    {
+      "id": 161281,
+      "intro_en": "✧ Discusses Qunuṣ b. Maʿadd and conflicting genealogical claims about al-Nuʿmān b. al-Mundhir, with ʿUmar b. al-Khaṭṭāb ؓ consulting Jubayr b. Muṭʿim."
+    },
+    {
+      "id": 161282,
+      "intro_en": "✧ Relates how ʿAmr b. ʿĀmir foresaw the Maʾrib dam's destruction through a rat's digging, tricked his people into leaving Yemen, and led the Azd's dispersion."
+    },
+    {
+      "id": 161283,
+      "intro_en": "✧ Recounts King Rabīʿah b. Naṣr's terrifying dream, his consultation of the soothsayers Saṭīḥ and Shiqq, their prophecies of Abyssinian invasion and a future prophet, and his migration to al-Ḥīrah."
+    },
+    {
+      "id": 161284,
+      "intro_en": "✧ Traces the genealogy of al-Nuʿmān b. al-Mundhir through his forebears back to Rabīʿah b. Naṣr, with variant lines noted by Ibn Hishām."
+    },
+    {
+      "id": 161285,
+      "intro_en": "✧ Recounts how Abū Karib Tubbaʿ Asʿad regained the entire kingship of Yemen after Rabīʿah b. Naṣr's death, tracing his lineage to Qaḥṭān via Ḥimyar."
     },
     {
       "id": 161286,
-      "intro_en": "✧ Relates Tubban’s conflict with Madinah, his abandonment of its destruction, conversion to Christianity, dispute with his people, and the fate of Riʾām."
+      "intro_en": "✧ Covers events in Tubbaʿ's career: his campaign against Medina and withdrawal, his adoption of Christianity, veiling the Kaʿba, and the ordeal of the fire at Riʾām."
+    },
+    {
+      "id": 161292,
+      "intro_en": "✧ Describes Lakhunayʿah Dhū Shanātir's seizure of the Yemeni throne, his immoral conduct, and his assassination by Dhū Nuwās, who then became king."
+    },
+    {
+      "id": 161293,
+      "intro_en": "✧ Notes that remnants of the religion of ʿĪsā b. Maryam ﷺ, led by ʿAbd Allāh b. al-Thāmir, existed in Najrān amid pagan Arabs."
+    },
+    {
+      "id": 161294,
+      "intro_en": "✧ Relates through Wahb b. Munabbih how the ascetic Faymiyūn and his follower Ṣāliḥ brought Christianity to Najrān after a miraculous healing and the destruction of a sacred palm."
+    },
+    {
+      "id": 161295,
+      "intro_en": "✧ Recounts how ʿAbd Allāh b. al-Thāmir learned the Greatest Name of God from Faymiyūn by testing names written on arrow shafts in fire."
+    },
+    {
+      "id": 161296,
+      "intro_en": "✧ Describes Ibn al-Thāmir's healing mission in Najrān, his confrontation with the king, the king's conversion and death, and the subsequent establishment of Christianity there."
+    },
+    {
+      "id": 161297,
+      "intro_en": "✧ Dhū Nuwās compelled the Najrān Christians to choose Judaism or death, killing nearly twenty thousand by trench, fire, sword, and mutilation, with Quranic revelation lamenting the slain believers."
+    },
+    {
+      "id": 161298,
+      "intro_en": "✧ Among those killed was their leader ʿAbd Allāh b. al-Thāmir, whose miraculously preserved corpse was later found seated with a signet ring reading \"My Lord is Allāh,\" prompting ʿUmar ؓ to order it reburied."
     },
     {
       "id": 161299,
-      "intro_en": "✧ Narrates Daws Dhū Thaʿlabān’s flight to Byzantium, the Abyssinian victory under Aryāṭ over Dhū Nuwās, and associated poetry."
+      "intro_en": "✧ The section recounts Daws Dhū Thaʿlabān's flight to seek Byzantine aid, the subsequent Abyssinian victory and death of Dhū Nuwās, and associated poetry."
+    },
+    {
+      "id": 161303,
+      "intro_en": "✧ The soothsayers Saṭīḥ and Shiqq foretold that the Abyssinians would descend upon the land and rule between Abyan and Jurash or Najrān."
+    },
+    {
+      "id": 161304,
+      "intro_en": "✧ Abrahah and Aryāṭ quarreled over command, and in a duel Aryāṭ wounded Abrahah's face before being killed by Abrahah's slave ʿAtwadah, after which Abrahah paid blood-money and united the Abyssinian forces."
+    },
+    {
+      "id": 161305,
+      "intro_en": "✧ The Negus, enraged at Aryāṭ's death, swore to humble Abrahah, but Abrahah placated him by shaving his head and sending a sack of Yemeni dust to fulfill the oath, after which the Negus confirmed his rule."
+    },
+    {
+      "id": 161306,
+      "intro_en": "✧ Abrahah built the magnificent church al-Qullays in Ṣanʿāʾ to divert Arab pilgrimage, and a man of the Nasaʾah (the intercalators) became angry, with Ibn Hishām explaining intercalation as postponed sacred months."
+    },
+    {
+      "id": 161307,
+      "intro_en": "✧ The hereditary line of Nasaʾah, beginning with al-Qalammas and ending with Junādah b. ʿAwf, intercalated the months by transferring sanctity from Muḥarram to Ṣafar, as extolled in verses by ʿUmayr b. Qays."
+    },
+    {
+      "id": 161308,
+      "intro_en": "✧ A Kinānī man defiled al-Qullays to protest Abrahah's plan to divert pilgrimage, enraging Abrahah to march with the elephant against the Kaʿbah."
+    },
+    {
+      "id": 161309,
+      "intro_en": "✧ Dhū Nafr fought Abrahah to defend the Kaʿbah, was defeated and captured, but was spared and kept in fetters."
+    },
+    {
+      "id": 161310,
+      "intro_en": "✧ Nufayl b. Ḥabīb al-Khathʿamī confronted Abrahah, was defeated and then released after pledging to guide him through Arab lands."
+    },
+    {
+      "id": 161311,
+      "intro_en": "✧ Masʿūd b. Muʿattib al-Thaqafī came out to Abrahah at al-Ṭāʾif among men of Thaqīf."
+    },
+    {
+      "id": 161312,
+      "intro_en": "✧ The name of Thaqīf is Qasiyy, with conflicting genealogies, and Umayyah b. Abī al-Ṣalt's verses trace their descent from Iyād and al-Nabīt."
+    },
+    {
+      "id": 161313,
+      "intro_en": "✧ The people of al-Ṭāʾif submitted to Abrahah, declaring obedience and offering a guide to the Kaʿbah while disavowing their own shrine al-Lāt."
+    },
+    {
+      "id": 161314,
+      "intro_en": "✧ Abū Righāl guided Abrahah until al-Mughammis, where he died and his grave was stoned by the Arabs."
+    },
+    {
+      "id": 161315,
+      "intro_en": "✧ Abrahah sent al-Aswad b. Maqṣūd with cavalry to Makkah, seizing livestock including ʿAbd al-Muṭṭalib's camels, while Quraysh and allies initially resolved to fight but then desisted."
+    },
+    {
+      "id": 161316,
+      "intro_en": "✧ Abrahah sends Ḥunāṭah al-Ḥimyarī to summon ʿAbd al-Muṭṭalib and inform him that he intends only to destroy the Kaʿbah."
+    },
+    {
+      "id": 161317,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib visits the captive Dhū Nafr, who arranges through his friend Unays, the elephant driver, for ʿAbd al-Muṭṭalib to meet Abrahah."
+    },
+    {
+      "id": 161318,
+      "intro_en": "✧ In his audience with Abrahah, ʿAbd al-Muṭṭalib asks only for his seized camels, declaring that the House has its own owner to protect it."
+    },
+    {
+      "id": 161319,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib orders Quraysh to take refuge in the mountain passes and then, at the door of the Kaʿbah, prays for God's aid against Abrahah."
+    },
+    {
+      "id": 161320,
+      "intro_en": "✧ ʿIkrimah b. ʿĀmir recites verses invoking disgrace on al-Aswad b. Maqṣūd for seizing camels, and ʿAbd al-Muṭṭalib withdraws with Quraysh to the mountain peaks."
+    },
+    {
+      "id": 161321,
+      "intro_en": "✧ Abrahah's elephant named Maḥmūd refuses to enter Makkah, and God sends birds pelting the army with stones, afflicting Abrahah with a fatal disease."
+    },
+    {
+      "id": 161322,
+      "intro_en": "✧ Ibn Hishām explains Qur'anic terms about the companions of the elephant, such as abābīl, sijjīl, ʿaṣf, and īlāf, citing Arabic poetry and authorities."
+    },
+    {
+      "id": 161323,
+      "intro_en": "✧ ʿĀʾishah ؓ reports seeing the elephant's driver and keeper in Makkah, both blind and crippled, begging for food."
+    },
+    {
+      "id": 161324,
+      "intro_en": "✧ Poems by Ibn al-Zibaʿrā, Abū Qays b. al-Aslat, Ṭālib b. Abī Ṭālib, Abū al-Ṣalt, al-Farazdaq, and Ibn al-Ruqayyāt describing the Elephant incident and Allah's defense of Quraysh."
+    },
+    {
+      "id": 161325,
+      "intro_en": "✧ After Abrahah's death his son Yaksūm ruled the Abyssinians in Yemen, followed by his brother Masrūq."
+    },
+    {
+      "id": 161326,
+      "intro_en": "✧ Sayf b. Dhī Yazan sought aid from Caesar and Kisrā, leading to Wahrz's Persian force killing Masrūq and ending Abyssinian rule in Yemen, with accompanying poetry."
+    },
+    {
+      "id": 161327,
+      "intro_en": "✧ The Abyssinian defeat fulfilled the prophecies of Saṭīḥ and Shiqq concerning a successor of Dhū Yazan coming from ʿAdan."
+    },
+    {
+      "id": 161328,
+      "intro_en": "✧ Wahriz and the Persians remained in Yemen, and Abyssinian dominion lasted seventy-two years under four kings: Aryāṭ, Abrahah, Yaksūm, and Masrūq."
+    },
+    {
+      "id": 161329,
+      "intro_en": "✧ After Wahriz, Persian kings over Yemen were al-Marzubān, al-Taynujān, his son, and Bādhān until the Prophet's mission."
+    },
+    {
+      "id": 161330,
+      "intro_en": "✧ Kisrā wrote to Bādhān concerning the Prophet's claim; the Prophet predicted Kisrā's death, which occurred, leading Bādhān and the Persians to embrace Islam."
+    },
+    {
+      "id": 161331,
+      "intro_en": "✧ The Prophet's mission fulfilled the prophecies of Saṭīḥ and Shiqq, and a stone inscription in Yemen foretold dominion passing to Quraysh, with poetry by al-Aʿshā."
+    },
+    {
+      "id": 161332,
+      "intro_en": "✧ The chapter covers the story of Sāṭirūn, king of al-Ḥaḍr, his overthrow by Sābūr Dhū al-Aktāf, and the genealogies of Nizār's sons and their descendants."
+    },
+    {
+      "id": 161333,
+      "intro_en": "✧ It describes ʿAmr b. Luḥayy as the first to alter the religion of Ismāʿīl, as seen in the Prophet's ﷺ vision of him dragging his intestines in the Fire."
+    },
+    {
+      "id": 161334,
+      "intro_en": "✧ This section narrates how ʿAmr b. Luḥayy brought the idol Hubal from Syria to Makkah and instituted its worship."
+    },
+    {
+      "id": 161335,
+      "intro_en": "✧ It recounts how the Banū Ismāʿīl began worshipping stones by carrying them from the Ḥaram, gradually replacing the religion of Ibrāhīm."
+    },
+    {
+      "id": 161336,
+      "intro_en": "✧ The chapter details the idols of Noah's people and the tribes among the Arabs who adopted them, including Suwāʿ, Wadd, Yaghūth, Yaʿūq, Nasr, and ʿUmyānis."
+    },
+    {
+      "id": 161337,
+      "intro_en": "✧ It describes the Arabs' worship of household idols, the ṭawāghīt, and the major idols al-ʿUzzā, al-Lāt, Manāt, Dhū al-Khalaṣah, Fils, Riʾām, Ruḍāʾ, and Dhū al-Kaʿabāt."
+    },
+    {
+      "id": 161338,
+      "intro_en": "✧ This section explains the pre-Islamic Arabian practices regarding the baḥīrah, sāʾibah, waṣīlah, and ḥāmī, with differences between Ibn Isḥāq's and Ibn Hishām's views."
+    },
+    {
+      "id": 161339,
+      "intro_en": "✧ The chapter details the genealogy of Khuzāʿah and the successive descendants from Mudrikah through Kinānah, al-Naḍr, Mālik, Fihr, Ghālib, Luʾayy, and their offshoots."
+    },
+    {
+      "id": 161340,
+      "intro_en": "✧ Provides the genealogy of Murrah b. ʿAwf within Ghaṭafān, poetic debates over descent from Quraysh versus Ghaṭafān, the chiefs of Murrah, the sacred months of al-basl, and the children of Kaʿb and Murrah with their mothers."
+    },
+    {
+      "id": 161341,
+      "intro_en": "✧ Identifies Bāriq as the Banū ʿAdī b. Ḥārithah of al-Azd, named for following lightning, and records the two sons of Kilāb b. Murrah and their mother."
+    },
+    {
+      "id": 161342,
+      "intro_en": "✧ Traces the genealogy of Juʿthumah and explains the name al-Jadarah from their ancestor's building of the Kaʿbah wall, then gives the children of Quṣayy and ʿAbd Manāf and their mothers."
+    },
+    {
+      "id": 161343,
+      "intro_en": "✧ Notes the differing genealogy of ʿUtbah b. Ghazwān through Māzin b. Manṣūr, then lists the remaining children of ʿAbd Manāf and their mothers."
+    },
+    {
+      "id": 161344,
+      "intro_en": "✧ Enumerates the four sons and five daughters of Hāshim b. ʿAbd Manāf and identifies the mothers of each."
+    },
+    {
+      "id": 161345,
+      "intro_en": "✧ Lists the ten sons and six daughters of ʿAbd al-Muṭṭalib b. Hāshim, specifying each child's mother with full genealogies."
+    },
+    {
+      "id": 161346,
+      "intro_en": "✧ Gives the lineage of the Messenger of God ﷺ through his father ʿAbd Allāh and his mother Āminah bt. Wahb, with the maternal line back through Zuhrah, and affirms his nobility."
+    },
+    {
+      "id": 161347,
+      "intro_en": "✧ Recounts the dream of ʿAbd al-Muṭṭalib commanding the digging of Zamzam, its origin from Ismāʿīl, and the conflict between Jurhum and Qaṭūrā that led to its burial."
+    },
+    {
+      "id": 161348,
+      "intro_en": "✧ The descendants of Ismāʿīl spread throughout Makkah under the guardianship of their maternal uncles, Jurhum, without dispute due to their kinship and veneration for the sanctuary."
+    },
+    {
+      "id": 161349,
+      "intro_en": "✧ Jurhum transgressed in Makkah by violating its sanctity and consuming the Kaʿbah's gifts, leading Banū Bakr b. ʿAbd Manāt b. Kinānah and Ghubshān of Khuzāʿah to defeat and expel them."
+    },
+    {
+      "id": 161350,
+      "intro_en": "✧ Bakkah is explained as the hollow of Makkah from the verb meaning to crowd, and the departure of ʿAmr b. al-Ḥārith b. Muḍāḍ al-Jurhumī with the Kaʿbah's treasures is recounted in his poetry."
+    },
+    {
+      "id": 161351,
+      "intro_en": "✧ The Ghubshān of Khuzāʿah, led by ʿAmr b. al-Ḥārith al-Ghubshānī, exclusively assumed guardianship of the House while Quraysh remained scattered, and later Ḥulayl's daughter Ḥubbā married Quṣayy b. Kilāb."
+    },
+    {
+      "id": 161352,
+      "intro_en": "✧ Quṣayy b. Kilāb, considering Quraysh more entitled to the Kaʿbah, sought to expel Khuzāʿah and Banū Bakr and secured the military support of his maternal brother Rizāḥ b. Rabīʿah, while Khuzāʿah claimed Ḥulayl had bequeathed the authority to him."
+    },
+    {
+      "id": 161353,
+      "intro_en": "✧ Ṣūfah, descendants of al-Ghawth b. Murr, controlled the departure from ʿArafah and stoning of the jamarāt, where a man from Ṣūfah would cast first and delay until the sun declined despite the people's urging."
+    },
+    {
+      "id": 161354,
+      "intro_en": "✧ Following the extinction of Ṣūfah, Banū Saʿd b. Zayd Manāh b. Tamīm inherited the function of granting permission from Minā, particularly the family of Ṣafwān b. al-Ḥārith b. Shijnah until Karib b. Ṣafwān in Islamic times."
+    },
+    {
+      "id": 161355,
+      "intro_en": "✧ The ʿAdwān tribe's role in dispatching the people from Muzdalifah is illustrated through the poetry of Dhū al-Iṣbaʿ al-ʿAdwānī, which praises their leadership and justice."
+    },
+    {
+      "id": 161356,
+      "intro_en": "✧ Abū Sayyārah led the ifāḍah from al-Muzdalifah on his donkey, a hereditary privilege of ʿAdwān, with supporting verses."
+    },
+    {
+      "id": 161357,
+      "intro_en": "✧ ʿĀmir b. Ẓarib arbitrated difficult disputes among the Arabs, resolving the hermaphrodite case through his slave-girl Sukhaylah's advice."
+    },
+    {
+      "id": 161358,
+      "intro_en": "✧ Quṣayy b. Kilāb defeated Ṣūfah, then Khuzāʿah and Banū Bakr, and gained control of Makkah through arbitration by Yaʿmur b. ʿAwf."
+    },
+    {
+      "id": 161359,
+      "intro_en": "✧ Quṣayy became ruler of Makkah, gathered Quraysh into quarters, held the ḥijābah, siqāyah, rifādah, nadwah, and liwāʾ, and was named Mujammiʿ."
+    },
+    {
+      "id": 161360,
+      "intro_en": "✧ Rizāḥ supported Quṣayy with poetry and military aid against Khuzāʿah and Bakr, while Quṣayy later praised Quḍāʿah and entrusted ʿAbd al-Dār with key offices."
+    },
+    {
+      "id": 161361,
+      "intro_en": "✧ After Quṣayy's death, Banū ʿAbd Manāf and Banū ʿAbd al-Dār disputed control of the Kaʿbah offices, split Quraysh into al-Muṭayyabīn and al-Aḥlāf, then settled on sharing duties."
+    },
+    {
+      "id": 161362,
+      "intro_en": "✧ The Pact of al-Fuḍūl united Banū Hāshim, al-Muṭṭalib, Asad, Zuhrah, and Taym to defend the wronged in Makkah, praised by the Prophet ﷺ and invoked by al-Ḥusayn ؓ."
+    },
+    {
+      "id": 161363,
+      "intro_en": "✧ Hāshim b. ʿAbd Manāf administered the rifādah and siqāyah, collected contributions to feed pilgrims, and was credited with originating the two trade journeys and tharīd."
+    },
+    {
+      "id": 161364,
+      "intro_en": "✧ Hāshim b. ʿAbd Manāf died at Ghazzah, and al-Muṭṭalib b. ʿAbd Manāf succeeded him in administering the siqāyah and rifādah, gaining renown among Quraysh as al-Fayḍ."
+    },
+    {
+      "id": 161365,
+      "intro_en": "✧ Hāshim married Salmā bt. ʿAmr of Banū ʿAdī b. al-Najjār in Madinah, a noblewoman who retained the right to dissolve marriages at her discretion."
+    },
+    {
+      "id": 161366,
+      "intro_en": "✧ Salmā bore Hāshim a son named Shaybah; his uncle al-Muṭṭalib later brought him from Madinah to Makkah, where Quraysh called him ʿAbd al-Muṭṭalib."
+    },
+    {
+      "id": 161367,
+      "intro_en": "✧ Al-Muṭṭalib died at Radmān in Yemen, and poets including Maṭrūd b. Kaʿb al-Khuzāʿī and Abū Khirāsh al-Hudhalī mourned him and the other sons of ʿAbd Manāf."
+    },
+    {
+      "id": 161368,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib b. Hāshim took charge of the siqāyah and rifādah after his uncle al-Muṭṭalib, restoring his forefathers' institutions and attaining unprecedented standing among his people."
+    },
+    {
+      "id": 161369,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib received a vision in the Ḥijr commanding him to dig Zamzam, first naming it Ṭaybah, Barrah, and al-Maḍnūnah before identifying its location."
+    },
+    {
+      "id": 161370,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib and his son al-Ḥārith dug Zamzam after a sign; Quraysh claimed partnership but a dispute resolved via lots awarded gold gazelles and swords, leading to the well's establishment for pilgrims."
+    },
+    {
+      "id": 161371,
+      "intro_en": "✧ Before Zamzam's excavation, various Quraysh clans owned wells in and around Makkah, including al-Ṭawiyy, Budhdhar, Sajlah, al-Ḥafr, Suqayyah, Umm Aḥrād, al-Sunbulah, al-Ghimr, Rumm, and Khumm."
+    },
+    {
+      "id": 161372,
+      "intro_en": "✧ The Banū ʿAbd Manāf boast of Zamzam's superiority over other wells, citing its location in the Sacred Mosque, its origin as the well of Ismāʿīl b. Ibrāhīm, and poetry by Musāfir b. Abī ʿAmr and Ḥudhayfah b. Ghānim."
+    },
+    {
+      "id": 161373,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib, after facing opposition from Quraysh while digging Zamzam, vows to sacrifice one of his ten sons if they reach manhood and protect him, then gathers them to fulfill the vow."
+    },
+    {
+      "id": 161374,
+      "intro_en": "✧ The Arabs cast seven divining arrows before Hubal to decide matters such as blood-money, yes or no questions, lineage verification, circumcision, marriage, burial, and digging for water."
+    },
+    {
+      "id": 161375,
+      "intro_en": "✧ The keeper of the arrows casts lots for ʿAbd al-Muṭṭalib's sons, the lot falls on his youngest and most beloved son ʿAbd Allāh, and Quraysh prevent his sacrifice and advise consulting a diviner."
+    },
+    {
+      "id": 161376,
+      "intro_en": "✧ A female diviner in Khaybar advises ʿAbd al-Muṭṭalib to cast lots between ʿAbd Allāh and camels, increasing the camels by ten each time until the lot falls on the camels."
+    },
+    {
+      "id": 161377,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib repeatedly casts lots between ʿAbd Allāh and increasing numbers of camels, refusing to accept the result until the lot falls on the camels three times, after which one hundred camels are slaughtered."
+    },
+    {
+      "id": 161378,
+      "intro_en": "✧ A woman from Banū Asad, sister of Waraqah b. Nawfal, offers herself to ʿAbd Allāh b. ʿAbd al-Muṭṭalib, but he declines because he is with his father and cannot part from him."
+    },
+    {
+      "id": 161379,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib marries his son ʿAbd Allāh to Āminah bt. Wahb, and after consummation she becomes pregnant with Muḥammad ﷺ, while another wife reports seeing a white blaze between his eyes."
+    },
+    {
+      "id": 161380,
+      "intro_en": "✧ Āminah reports a visitation announcing she bears the master of the community, is instructed to seek protection and name him Muḥammad, sees light reaching Buṣrā, and her husband dies during the pregnancy."
     },
     {
       "id": 161381,
-      "intro_en": "✧ Covers the Prophet’s ﷺ birth, early suckling by Ḥalīmah, the angels’ opening of his chest, and his pride in his Qurayshī lineage."
+      "intro_en": "✧ The section recounts the date and circumstances of the Prophet's ﷺ birth, reports by contemporaries like Ḥassān b. Thābit, his grandfather's notification, Ḥalīmah's nursing, the angels splitting his belly, and his return to his mother."
+    },
+    {
+      "id": 161382,
+      "intro_en": "✧ Ibn Isḥāq records the Prophet's ﷺ birth on Monday, twelve nights into Rabīʿ al-Awwal in the Year of the Elephant, with Qays b. Makhramah noting he was born the same year."
+    },
+    {
+      "id": 161383,
+      "intro_en": "✧ Ḥassān b. Thābit, as a young boy, hears a Jew announce from a Yathrib fortress that the star of Aḥmad has risen, marking the Prophet's ﷺ birth."
+    },
+    {
+      "id": 161384,
+      "intro_en": "✧ Upon his birth ﷺ, his mother informs his grandfather ʿAbd al-Muṭṭalib, who takes him into the Kaʿbah to pray, then seeks wet nurses for him."
+    },
+    {
+      "id": 161385,
+      "intro_en": "✧ The section provides genealogies for his wet nurse Ḥalīmah bt. Abī Dhuʾayb and her husband, names his foster siblings, and includes Ḥalīmah's detailed account of the blessings experienced after taking him."
+    },
+    {
+      "id": 161386,
+      "intro_en": "✧ Ḥalīmah relates that two men in white garments split open the young Prophet's ﷺ belly while he was with his foster brother among the lambs."
+    },
+    {
+      "id": 161387,
+      "intro_en": "✧ Fearing affliction, Ḥalīmah's husband urges her to return the Prophet ﷺ to his mother, who reassures her that Shayṭān has no power over him and recounts her own signs during pregnancy."
+    },
+    {
+      "id": 161388,
+      "intro_en": "✧ The Prophet ﷺ affirms his Qurayshī lineage and Banū Saʿd upbringing, and accounts of his loss and rediscovery by Waraqah b. Nawfal and Ethiopians' interest."
     },
     {
       "id": 161389,
-      "intro_en": "✧ Describes Āminah’s death, ʿAbd al-Muṭṭalib’s care for the young Prophet ﷺ, the grandfather’s death, and the many elegies composed for him."
+      "intro_en": "✧ Āminah's death and the Prophet's ﷺ upbringing under ʿAbd al-Muṭṭalib including elegiac poetry and guardianship of Zamzam."
+    },
+    {
+      "id": 161390,
+      "intro_en": "✧ Āminah bt. Wahb dies at al-Abwāʾ when the Prophet ﷺ is six years old while returning from visiting maternal uncles."
+    },
+    {
+      "id": 161391,
+      "intro_en": "✧ The Prophet's ﷺ maternal kinship with Banū ʿAdī b. al-Najjār stems from ʿAbd al-Muṭṭalib's mother Salmā bt. ʿAmr."
+    },
+    {
+      "id": 161392,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib honors the young Prophet ﷺ by seating him on his bed despite his sons' objections."
+    },
+    {
+      "id": 161393,
+      "intro_en": "✧ ʿAbd al-Muṭṭalib dies when the Prophet ﷺ is eight years old, having asked his six daughters to lament him before his death."
+    },
+    {
+      "id": 161394,
+      "intro_en": "✧ Ṣafiyyah bt. ʿAbd al-Muṭṭalib's elegy praises her father's nobility, generosity, and unmatched glory."
+    },
+    {
+      "id": 161395,
+      "intro_en": "✧ Barrah bt. ʿAbd al-Muṭṭalib's elegy laments her father's virtues, majesty, and eventual death."
+    },
+    {
+      "id": 161396,
+      "intro_en": "✧ ʿĀtikah bt. ʿAbd al-Muṭṭalib mourns her father in verse, extolling his nobility, courage, generosity, and role as a protector and chief."
+    },
+    {
+      "id": 161397,
+      "intro_en": "✧ Umm Ḥakīm al-Bayḍāʾ bt. ʿAbd al-Muṭṭalib’s elegy praises her father’s generosity, leadership, and protective role for Kinānah during calamities."
+    },
+    {
+      "id": 161398,
+      "intro_en": "✧ Umaymah bt. ʿAbd al-Muṭṭalib’s elegy laments the loss of her father, highlighting his sustenance of pilgrims and guests and his enduring praiseworthy legacy."
+    },
+    {
+      "id": 161399,
+      "intro_en": "✧ Arwā bt. ʿAbd al-Muṭṭalib’s elegy praises her father’s virtues, generosity, courage, and pre-eminence, followed by a note on Muḥammad b. Saʿīd’s gesture and al-Musayyib’s lineage."
+    },
+    {
+      "id": 161400,
+      "intro_en": "✧ Ḥudhayfah b. Ghānim’s elegy honors ʿAbd al-Muṭṭalib and the descendants of Quṣayy, recounting their virtues, protection, and the ransom involving Abū Lahab."
+    },
+    {
+      "id": 161401,
+      "intro_en": "✧ Maṭrūd b. Kaʿb al-Khuzāʿī’s elegy mourns ʿAbd al-Muṭṭalib and praises the Banū ʿAbd Manāf for their protection, generosity, and noble qualities."
+    },
+    {
+      "id": 161402,
+      "intro_en": "✧ After ʿAbd al-Muṭṭalib’s death, his youngest son al-ʿAbbās took charge of Zamzam’s watering, a role later confirmed by the Messenger of Allah ﷺ and retained by his descendants."
     },
     {
       "id": 161403,
-      "intro_en": "✧ Recounts Abū Ṭālib’s guardianship, the monk Baḥīrā’s recognition of the young Prophet ﷺ, divine protection in childhood, and the Sacrilegious War."
+      "intro_en": "✧ This section relates ʿAbd al-Muṭṭalib’s entrusting of the Prophet ﷺ to Abū Ṭālib, the tale of Baḥīrā, the Prophet’s account of divine protection in childhood, and the Sacrilegious War."
+    },
+    {
+      "id": 161404,
+      "intro_en": "✧ Abū Ṭālib takes charge of the Prophet ﷺ after ʿAbd al-Muṭṭalib's bequest, and a soothsayer from Lahab prophesies the boy's great affair."
+    },
+    {
+      "id": 161405,
+      "intro_en": "✧ The monk Baḥīrā recognizes the signs of prophethood in the Prophet ﷺ during a caravan stop, warns Abū Ṭālib about the Jews, and prompts a swift return to Makkah."
+    },
+    {
+      "id": 161406,
+      "intro_en": "✧ The Prophet ﷺ recounts how Allah protected him in childhood when an unseen figure struck him and ordered him to tie his loincloth."
+    },
+    {
+      "id": 161407,
+      "intro_en": "✧ The War of al-Fijār erupts between Quraysh/Kinānah and Qays ʿAylān after al-Barrāḍ kills ʿUrwah al-Raḥḥāl in the sacred month, with the Prophet ﷺ witnessing some days while passing arrows to his uncles."
     },
     {
       "id": 161408,
-      "intro_en": "✧ Details the Prophet’s ﷺ marriage to Khadījah, including her trade venture to Syria, her proposal, and Waraqah’s testimony."
+      "intro_en": "✧ The account of the Prophet's ﷺ marriage to Khadījah ؓ, covering his age, trade journey to Syria, her desire to marry him, the marriage itself, and Waraqah's prophecy."
+    },
+    {
+      "id": 161409,
+      "intro_en": "✧ The Prophet ﷺ marries Khadījah bt. Khuwaylid at the age of twenty-five."
+    },
+    {
+      "id": 161410,
+      "intro_en": "✧ Khadījah hires the Prophet ﷺ to trade in Syria with her servant Maysarah, and a monk declares that only a prophet has alighted under the tree where the Prophet ﷺ stops."
+    },
+    {
+      "id": 161411,
+      "intro_en": "✧ After a profitable Syrian journey and Maysarah's reports of angels shading the Prophet ﷺ, Khadījah proposes marriage to him, and her full lineage is detailed."
+    },
+    {
+      "id": 161412,
+      "intro_en": "✧ The Prophet's ﷺ marriage to Khadījah is arranged by his uncle Ḥamzah with a dowry, and she bears him all his children except Ibrāhīm, who is born to Māriyah the Copt."
+    },
+    {
+      "id": 161413,
+      "intro_en": "✧ Khadījah relates to her cousin Waraqah b. Nawfal the signs observed by Maysarah, and he affirms his belief that Muḥammad ﷺ is the expected prophet of this community."
     },
     {
       "id": 161414,
-      "intro_en": "✧ Describes Quraysh's rebuilding of the Kaʿbah and the Prophet’s ﷺ arbitration in placing the Black Stone."
+      "intro_en": "✧ This account covers Quraysh's rebuilding of the Kaʿbah, including the reason, events involving Abū Wahb and al-Walīd b. al-Mughīrah, the dispute over the stone, and related poetry."
+    },
+    {
+      "id": 161415,
+      "intro_en": "✧ Quraysh rebuilds the Kaʿbah after it is damaged and a treasure is stolen, obtaining timber from a wrecked ship and being relieved when a bird carries away the feared snake."
+    },
+    {
+      "id": 161416,
+      "intro_en": "✧ Abū Wahb b. ʿAmr takes a stone from the Kaʿbah, which miraculously returns to its place, and he warns Quraysh to use only lawful earnings in the rebuilding."
+    },
+    {
+      "id": 161417,
+      "intro_en": "✧ Abū Wahb is identified as the maternal uncle of the Prophet's ﷺ father, a noble man praised in verse, and the Kaʿbah is divided among the Quraysh clans for rebuilding."
+    },
+    {
+      "id": 161418,
+      "intro_en": "✧ Al-Walīd b. al-Mughīrah begins the demolition of the Kaʿbah, and beneath it they find the foundations of Ibrāhīm ﷺ along with inscriptions in Syriac and Arabic."
+    },
+    {
+      "id": 161419,
+      "intro_en": "✧ Quraysh clans dispute who will place the Black Stone, leading to the blood oath of the Lickers of the Blood, until the Prophet ﷺ arbitrates and sets the stone using a garment."
+    },
+    {
+      "id": 161420,
+      "intro_en": "✧ Al-Zubayr's poem recounts how Quraysh feared a serpent during the Kaʿbah's rebuilding until an eagle carried it away, and notes the Kaʿbah's measurements and earliest silk brocade covering."
     },
     {
       "id": 161421,
-      "intro_en": "✧ Explains the pre-Islamic Ḥums customs among Quraysh and allied tribes, and Islam’s later abrogation of them."
+      "intro_en": "✧ This account details the customs of the Ḥums adopted by Quraysh and affiliated tribes, including circumambulation in Ḥums garments and their later abrogation by Islamic rulings."
+    },
+    {
+      "id": 161422,
+      "intro_en": "✧ Quraysh instituted the doctrine of the Ḥums, declaring themselves the people of the sacred precinct and abandoning the standing at ʿArafah and ifāḍah from it."
+    },
+    {
+      "id": 161423,
+      "intro_en": "✧ Kinānah, Khuzāʿah, Banū ʿĀmir b. Ṣaʿṣaʿah, and allied Banū ʿAbs adopted the Ḥums, as illustrated by poetry and battles such as Jabalah and Dhū Najab."
+    },
+    {
+      "id": 161424,
+      "intro_en": "✧ The Ḥums introduced restrictions on making curds, clarifying butter, entering hair tents, and seeking shade except under tanned leather during iḥrām, while forbidding pilgrims from ḥill food and non-Ḥums garments in circumambulation."
+    },
+    {
+      "id": 161425,
+      "intro_en": "✧ The custom of discarded garments (laqā) among the Ḥums led Arabs to circumambulate the Kaʿbah naked or cast off their own clothes afterward, as commemorated in poetry."
+    },
+    {
+      "id": 161426,
+      "intro_en": "✧ Qurʾānic revelations on ḥajj and the adornment at mosques abolished the Ḥums' restrictions on food, clothing, circumambulation, and standing at ʿArafah."
     },
     {
       "id": 161427,
-      "intro_en": "✧ Gathers reports of soothsayers, rabbis, and monks who foretold the Prophet’s ﷺ mission, including Salmān’s conversion and Zayd b. ʿAmr’s monotheism."
+      "intro_en": "✧ This section gathers reports from Arab soothsayers, Jewish rabbis, and Christian monks about the Prophet's ﷺ mission, including the pelting of jinn with stars, Salmān's ؓ conversion, and Zayd b. ʿAmr."
+    },
+    {
+      "id": 161428,
+      "intro_en": "✧ Soothsayers, rabbis, and monks foretold Muḥammad's ﷺ mission before his sending through their books, covenants, and jinn-inspired knowledge."
+    },
+    {
+      "id": 161429,
+      "intro_en": "✧ When Muḥammad's ﷺ mission drew near, jinn were prevented from eavesdropping on heaven and pelted with shooting stars, prompting the jinn to recognize the Qur'an and warn their people."
+    },
+    {
+      "id": 161430,
+      "intro_en": "✧ Thaqīf sought the judgment of ʿAmr b. Umayya upon seeing the pelting of jinn with meteors, and he distinguished between destruction of the world and a divinely willed matter."
+    },
+    {
+      "id": 161431,
+      "intro_en": "✧ The Prophet ﷺ explained to the Anṣār that the hurled meteors were not omens of births or deaths but God's way of cutting off jinn eavesdropping and soothsaying."
+    },
+    {
+      "id": 161432,
+      "intro_en": "✧ The soothsayer al-Ghayṭalah received cryptic warnings from her jinn companion that were understood only after the battles of Badr and Uḥud at al-Shaʿb."
+    },
+    {
+      "id": 161433,
+      "intro_en": "✧ The soothsayer of Janb announced that God had honored and chosen Muḥammad ﷺ, and ʿUmar b. al-Khaṭṭāb later recounted a soothsayer and a calf uttering the shahādah before Islam."
+    },
+    {
+      "id": 161434,
+      "intro_en": "✧ Jews warned the Arabs of an imminent prophet who would fight against them, yet when Muḥammad ﷺ was sent many Jews disbelieved while some, like Thaʿlabah and Usayd, embraced Islam."
+    },
+    {
+      "id": 161435,
+      "intro_en": "✧ Salmān al-Fārisī ؓ recounts his journey from Zoroastrianism through successive Christian teachers until he learned of the coming prophet and set out for Arabia."
+    },
+    {
+      "id": 161436,
+      "intro_en": "✧ Salmān recounts being sold into slavery in Wādī al-Qurā, then taken to Madinah, where he hears of the Prophet ﷺ from a man of Banū Qurayẓah."
+    },
+    {
+      "id": 161437,
+      "intro_en": "✧ Salmān tests the Prophet ﷺ first with charity, which he declines, then with a gift, which he accepts, and recognizes the seal of prophethood."
+    },
+    {
+      "id": 161438,
+      "intro_en": "✧ The Prophet ﷺ instructs Salmān to contract for manumission with three hundred palm offshoots and forty ūqiyyahs, and the Companions help him fulfill it."
+    },
+    {
+      "id": 161439,
+      "intro_en": "✧ Waraqah b. Nawfal, ʿUbayd Allāh b. Jaḥsh, ʿUthmān b. al-Ḥuwayrith, and Zayd b. ʿAmr b. Nufayl abandon idol worship and seek the ḥanīfiyyah; their subsequent religious paths diverge."
+    },
+    {
+      "id": 161440,
+      "intro_en": "✧ After becoming Christian in Abyssinia, ʿUbayd Allāh b. Jaḥsh taunts the Muslims there, and after his death the Prophet ﷺ marries his widow Umm Ḥabībah."
+    },
+    {
+      "id": 161441,
+      "intro_en": "✧ Zayd b. ʿAmr b. Nufayl persists in seeking the religion of Abraham, faces opposition from his uncle al-Khaṭṭāb, travels to Syria, and is killed on his return; his poetry and Waraqah's elegy are included."
+    },
+    {
+      "id": 161442,
+      "intro_en": "✧ The Gospel's description of the Prophet ﷺ is cited from Yūḥannas the disciple, identifying the Munḥamannā with Muḥammad."
     },
     {
       "id": 161443,
-      "intro_en": "✧ Covers the Prophet's ﷺ first revelation at forty, true dreams, greeting stones, Gabriel's descent, Khadijah's support, Qur'an's descent, her Islam, the pause in revelation, and Sūrat al-Ḍuḥā."
+      "intro_en": "✧ The mission of the Prophet ﷺ begins at forty with true dreams, greetings from stones and trees, Gabriel's descent, Khadijah's testing of the revelation, the first Qur'anic revelation, her conversion, and the pause of revelation."
+    },
+    {
+      "id": 161444,
+      "intro_en": "✧ Describes the sending of Muḥammad ﷺ at age forty as a mercy to all worlds, with God taking a covenant from all prophets to believe in and aid him."
+    },
+    {
+      "id": 161445,
+      "intro_en": "✧ ʿĀʾishah ؓ relates that the first sign of prophethood was truthful dreams coming like the break of dawn, followed by a love of seclusion."
+    },
+    {
+      "id": 161446,
+      "intro_en": "✧ Before Gabriel's coming, stones and trees would greet the Prophet ﷺ with peace when he went alone into Makkah's mountain passes and valleys."
+    },
+    {
+      "id": 161447,
+      "intro_en": "✧ While secluded in Ḥirāʾ during Ramaḍān, Gabriel ﷺ came to Muḥammad ﷺ, pressed him with a brocade cloth, and made him recite the opening verses of Sūrat al-ʿAlaq."
+    },
+    {
+      "id": 161448,
+      "intro_en": "✧ Muḥammad ﷺ returned to Khadījah, sat close to her, told her what he had seen, and she expressed hope that he would be the prophet of the community."
+    },
+    {
+      "id": 161449,
+      "intro_en": "✧ Khadījah consulted her cousin Waraqah b. Nawfal, a Christian, who affirmed the coming of the greatest Nāmūs and warned that Muḥammad ﷺ would be persecuted."
+    },
+    {
+      "id": 161450,
+      "intro_en": "✧ Khadījah tested the visitor by having the Prophet ﷺ sit on her thighs and lap; Gabriel disappeared when she was uncovered, proving he was an angel."
+    },
+    {
+      "id": 161451,
+      "intro_en": "✧ The Qur'anic revelation began in Ramaḍān, and Muḥammad ﷺ, accepting the weight of prophethood, bore the opposition and harm of his people."
+    },
+    {
+      "id": 161452,
+      "intro_en": "✧ Khadijah bt. Khuwaylid believed in and supported the Prophet ﷺ, becoming the first to accept Islam and comforting him against rejection."
+    },
+    {
+      "id": 161453,
+      "intro_en": "✧ The Messenger ﷺ relates a divine command to give Khadijah glad tidings of a house of hollow pearl, free from clamor and toil."
+    },
+    {
+      "id": 161454,
+      "intro_en": "✧ Gabriel conveys greetings of peace from God to Khadijah, who responds acknowledging God as Peace and greeting Gabriel."
+    },
+    {
+      "id": 161455,
+      "intro_en": "✧ After a distressing pause in revelation, Gabriel brings Sūrat al-Ḍuḥā, reassuring the Prophet ﷺ that God has not forsaken him."
+    },
+    {
+      "id": 161456,
+      "intro_en": "✧ Ibn Hishām explains lexical items in Sūrat al-Ḍuḥā, including saja, al-ʿāʾil, and the commands not to oppress the orphan, repel the beggar, or proclaim the Lord's favor."
     },
     {
       "id": 161457,
-      "intro_en": "✧ Describes Gabriel specifying the prayer times for the Messenger ﷺ."
+      "intro_en": "✧ The beginning of the obligation of prayer, with Gabriel specifying the prayer times for the Messenger ﷺ."
+    },
+    {
+      "id": 161458,
+      "intro_en": "✧ Gabriel performs the five prayers with the Prophet ﷺ over two days, establishing their time ranges as between the two demonstrations."
     },
     {
       "id": 161459,
-      "intro_en": "✧ Mentions that ʿAlī b. Abī Ṭālib ؓ was the first male to embrace Islam."
+      "intro_en": "✧ ʿAlī b. Abī Ṭālib ؓ, at age ten, was the first male to embrace Islam, having been raised in the Prophet's care and praying with him secretly."
     },
     {
       "id": 161460,
-      "intro_en": "✧ Relates the conversion of Zayd b. Ḥārithah as the second Muslim."
+      "intro_en": "✧ Relates Zayd b. Ḥārithah’s early conversion, his enslavement, manumission, adoption by the Prophet ﷺ, and his choice to remain with him over his father."
     },
     {
       "id": 161461,
-      "intro_en": "✧ Describes Abū Bakr al-Ṣiddīq's ؓ conversion and the companions who embraced Islam through his call."
+      "intro_en": "✧ Records the conversion of Abū Bakr al-Ṣiddīq ؓ and lists those Companions who embraced Islam through his call."
+    },
+    {
+      "id": 161462,
+      "intro_en": "✧ Lists numerous early converts brought to Islam by Abū Bakr ؓ, including ʿUthmān, al-Zubayr, ʿAbd al-Raḥmān b. ʿAwf, Saʿd b. Abī Waqqāṣ, Ṭalḥah, and others, with genealogies."
     },
     {
       "id": 161463,
-      "intro_en": "✧ Details the Prophet's ﷺ open proclamation, Quraysh's enmity, Abū Ṭālib's protection, persecution of believers, Quraysh's polemics, drought prayer, and spread of his name among tribes."
+      "intro_en": "✧ Describes the Prophet’s ﷺ open proclamation of Islam, initial Quraysh opposition, Abū Ṭālib’s protection, persecution of believers, and tribal reactions."
+    },
+    {
+      "id": 161464,
+      "intro_en": "✧ Tells how early Muslims prayed secretly in Makkan ravines and how Saʿd b. Abī Waqqāṣ shed the first blood in Islam by striking a polytheist with a camel’s jawbone."
+    },
+    {
+      "id": 161465,
+      "intro_en": "✧ Explains that Quraysh turned hostile only after the Prophet ﷺ criticized their gods, while Abū Ṭālib shielded him, leading nobles to approach the uncle."
+    },
+    {
+      "id": 161466,
+      "intro_en": "✧ Recounts the first Quraysh delegation to Abū Ṭālib demanding he restrain the Prophet ﷺ and a second, harsher delegation threatening conflict."
+    },
+    {
+      "id": 161467,
+      "intro_en": "✧ Describes Abū Ṭālib’s plea for the Prophet ﷺ to cease his call and the Prophet’s ﷺ defiant refusal, which prompted the uncle’s reassurance of support."
+    },
+    {
+      "id": 161468,
+      "intro_en": "✧ Quraysh offers Abū Ṭālib ʿUmārah b. al-Walīd in exchange for the Prophet ﷺ, but he refuses and al-Muṭʿim b. ʿAdiyy rebukes him, escalating conflict."
+    },
+    {
+      "id": 161469,
+      "intro_en": "✧ Abū Ṭālib recites verses reproaching al-Muṭʿim b. ʿAdiyy and other Banū ʿAbd Manāf who abandoned him and opposed the Prophet ﷺ."
+    },
+    {
+      "id": 161470,
+      "intro_en": "✧ Quraysh incite each tribe to torture and persecute Muslim converts, while Allah protects the Prophet ﷺ through Abū Ṭālib and his kinsmen, except Abū Lahab."
+    },
+    {
+      "id": 161471,
+      "intro_en": "✧ Abū Ṭālib praises his kinsmen, especially Banū Hāshim, for supporting and defending the Prophet ﷺ against Quraysh."
+    },
+    {
+      "id": 161472,
+      "intro_en": "✧ Al-Walīd b. al-Mughīrah convenes Quraysh to agree on how to describe the Prophet ﷺ, rejecting soothsayer, madman, and poet before settling on sorcerer."
+    },
+    {
+      "id": 161473,
+      "intro_en": "✧ God reveals Qurʾānic verses concerning the group with al-Walīd b. al-Mughīrah who divided the Qurʾān into parts."
+    },
+    {
+      "id": 161474,
+      "intro_en": "✧ Those Quraysh spread their accusations against the Prophet ﷺ among the people, so his affair and mention spread throughout Arab lands."
+    },
+    {
+      "id": 161475,
+      "intro_en": "✧ Abū Ṭālib recites an ode seeking Quraysh's affection by oaths of the sanctuary and declaring he will never surrender the Prophet ﷺ."
+    },
+    {
+      "id": 161476,
+      "intro_en": "✧ The Messenger ﷺ prayed for rain during a drought in Madinah, causing floods, and then wished Abū Ṭālib had lived to see it."
+    },
+    {
+      "id": 161477,
+      "intro_en": "✧ Ibn Isḥāq lists the names of Quraysh and other Arabs mentioned in Abū Ṭālib's poem, with Ibn Hishām supplying further genealogical annotations."
+    },
+    {
+      "id": 161478,
+      "intro_en": "✧ The account of the Messenger's ﷺ mention spreading among Arab tribes focuses particularly on al-Aws and al-Khazraj, who heard of him from Jewish scholars, and includes a poem by Abū Qays b. al-Aslat and Ibn Hishām's discussion of his lineage."
+    },
+    {
+      "id": 161479,
+      "intro_en": "✧ Abū Qays b. al-Aslat composed a long poem urging Quraysh to refrain from harming the Messenger ﷺ and reminding them of God's favor in repelling the Elephant, with Ibn Hishām adding variant readings."
+    },
+    {
+      "id": 161480,
+      "intro_en": "✧ Ibn Hishām provides details of the War of Dāḥis, including the horse race between Dāḥis and al-Ghabrāʾ, the ensuing killings, and subsequent war between ʿAbs and Fazārah."
+    },
+    {
+      "id": 161481,
+      "intro_en": "✧ Ibn Hishām explains the War of Ḥāṭib, arising from the killing of Ḥāṭib b. al-Ḥārith by Ibn Fusḥum, which led to a battle between Aws and Khazraj and later revenge at Uḥud."
+    },
+    {
+      "id": 161482,
+      "intro_en": "✧ Ḥakīm b. Umayyah al-Sulamī, a Muslim ally of Banū Umayyah, recited verses restraining his people from enmity toward the Messenger ﷺ."
     },
     {
       "id": 161483,
-      "intro_en": "✧ Recounts the harm inflicted on the Prophet ﷺ by Quraysh, including the worst seen by Ibn al-ʿĀṣ and Abū Bakr's suffering."
+      "intro_en": "✧ This account includes Ibn al-ʿĀṣ's report on the worst harm Quraysh inflicted on the Messenger ﷺ, some of what Abū Bakr suffered, and the severest injury done to the Prophet ﷺ."
+    },
+    {
+      "id": 161484,
+      "intro_en": "✧ ʿAbd Allāh b. ʿAmr b. al-ʿĀṣ describes witnessing Quraysh mock and attack the Prophet ﷺ at the Kaʿbah, with Abū Bakr ؓ intervening."
+    },
+    {
+      "id": 161485,
+      "intro_en": "✧ Abū Bakr ؓ was beaten and had his beard pulled by Quraysh until the parting of his head was split."
+    },
+    {
+      "id": 161486,
+      "intro_en": "✧ The severest harm the Prophet ﷺ suffered from Quraysh was being insulted by everyone he met, prompting the revelation of Sūrat al-Muddaththir."
     },
     {
       "id": 161487,
-      "intro_en": "✧ Narrates Ḥamzah's assault on Abū Jahl and his conversion to Islam."
+      "intro_en": "✧ Ḥamzah's anger at Abū Jahl's insulting the Prophet ﷺ led to his embracing Islam."
+    },
+    {
+      "id": 161488,
+      "intro_en": "✧ Ḥamzah struck Abū Jahl with a bow and proclaimed his Islam, after which Quraysh desisted from some harassment of the Prophet ﷺ."
     },
     {
       "id": 161489,
-      "intro_en": "✧ Presents ʿUtbah b. Rabīʿah's statement and advice to his companions concerning the Messenger ﷺ."
+      "intro_en": "✧ ʿUtbah b. Rabīʿah sought to negotiate with the Prophet ﷺ by offering wealth, honor, or kingship, and later advised Quraysh to leave him alone."
+    },
+    {
+      "id": 161490,
+      "intro_en": "✧ ʿUtbah proposed wealth, leadership, or medical treatment to the Prophet ﷺ, but the Prophet ﷺ responded by reciting the opening of Sūrat Fuṣṣilat."
+    },
+    {
+      "id": 161491,
+      "intro_en": "✧ ʿUtbah told Quraysh that the Prophet's speech was neither poetry nor sorcery and counseled them to leave him to his affairs, but they accused him of being bewitched."
     },
     {
       "id": 161492,
-      "intro_en": "✧ Relates the leaders of Quraysh's questions to the Messenger ﷺ and the revelation concerning the Companions of the Cave in Sūrat al-Kahf."
+      "intro_en": "✧ Quraysh's leaders confront and test the Messenger ﷺ with demands and questions, leading to revealed answers about the Companions of the Cave, Dhū al-Qarnayn, and the Spirit."
+    },
+    {
+      "id": 161493,
+      "intro_en": "✧ Quraysh's leaders offer wealth, honor, and kingship to the Messenger ﷺ, then demand miracles; Abū Jahl attempts violence, and al-Naḍr advises them to consult Jewish scholars."
+    },
+    {
+      "id": 161494,
+      "intro_en": "✧ Quraysh pose three questions to the Messenger ﷺ, and after a fifteen-day delay, Sūrat al-Kahf is revealed with reproof and answers."
+    },
+    {
+      "id": 161495,
+      "intro_en": "✧ God reveals the stories of the Companions of the Cave and Dhū al-Qarnayn, and explains the Spirit and other matters raised by Quraysh."
     },
     {
       "id": 161496,
-      "intro_en": "✧ Identifies the first person to recite the Qur'an aloud."
+      "intro_en": "✧ ʿAbd Allāh b. Masʿūd is the first to recite the Qur'an aloud, and Abū Sufyān, Abū Jahl, and al-Akhnas secretly listen to the Prophet's ﷺ recitation."
     },
     {
       "id": 161497,
-      "intro_en": "✧ Tells the conversion account of al-Ṭufayl b. ʿAmr al-Dawsī."
+      "intro_en": "✧ Al-Ṭufayl b. ʿAmr al-Dawsī hears the Qur'an despite Quraysh's warnings, converts, and later leads many of his tribe to Islam after a sign from God."
     },
     {
       "id": 161498,
-      "intro_en": "✧ Narrates the encounter of Aʿshā Banī Qays b. Thaʿlaba with the Prophet and its outcome."
+      "intro_en": "✧ Aʿshā of Banū Qays b. Thaʿlaba sets out as a Muslim but is deterred by a polytheist's mention of prohibitions on wine and dies before reaching the Messenger ﷺ."
     },
     {
       "id": 161499,
-      "intro_en": "✧ Relates how the Messenger secured justice for the Irāshī against Abū Jahl after he sold his camels."
+      "intro_en": "✧ An Irāshī man sells camels to Abū Jahl, who withholds payment; the Messenger ﷺ secures justice, and Abū Jahl relates his fear of him to Quraysh."
+    },
+    {
+      "id": 161500,
+      "intro_en": "✧ The Prophet ﷺ accompanies an Irāshī stranger to Abū Jahl's door and secures the return of his right."
+    },
+    {
+      "id": 161501,
+      "intro_en": "✧ Abū Jahl explains to Quraysh that he feared a terrifying stallion-camel above the Prophet's head when he complied."
     },
     {
       "id": 161502,
-      "intro_en": "✧ Describes the wrestling match between Rukāna al-Muṭṭalibī and the Prophet ﷺ and its result."
+      "intro_en": "✧ Rukānah al-Muṭṭalibī is twice thrown in wrestling and witnesses a tree come and return, then calls the Prophet the greatest sorcerer."
     },
     {
       "id": 161503,
-      "intro_en": "✧ Tells of the Christian delegation that came to the Prophet and embraced Islam."
+      "intro_en": "✧ Abyssinian Christians accept Islam after hearing the Qurʾān, and God reveals verses answering Quraysh's mockery and claim that Jabr taught the Prophet."
     },
     {
       "id": 161504,
-      "intro_en": "✧ Records the revelation of Sūrat al-Kawthar and the Prophet's explanation of al-Kawthar when asked."
+      "intro_en": "✧ The Prophet ﷺ answers a question about the nature of the heavenly river al-Kawthar granted to him by God."
+    },
+    {
+      "id": 161505,
+      "intro_en": "✧ The Prophet ﷺ describes al-Kawthar as a wide river with vessels like stars and camels-necked birds whose eaters are more blessed."
     },
     {
       "id": 161506,
-      "intro_en": "✧ Presents the Qur'anic revelation rebuking those who demanded an angel be sent down."
+      "intro_en": "✧ Zamʿah and other Quraysh leaders ask why no angel was sent with the Prophet, and God reveals the decisive response."
     },
     {
       "id": 161507,
-      "intro_en": "✧ Consoles the Prophet by citing the mockery faced by earlier messengers."
+      "intro_en": "✧ Al-Walīd b. al-Mughīrah, Umayyah b. Khalaf, and Abū Jahl mock the Prophet, so God reveals that earlier messengers were likewise mocked."
     },
     {
       "id": 161508,
-      "intro_en": "✧ Recounts the Night Journey and Ascension, including visions of prophets and the lightening of prayer."
+      "intro_en": "✧ Describes the Prophet ﷺ's visions of Abraham, Moses, and Jesus during the Ascension, including his own and ʿAlī's physical descriptions, the journey through heavens, and Moses' advice to reduce daily prayers."
+    },
+    {
+      "id": 161509,
+      "intro_en": "✧ Reports the Prophet ﷺ's description of Ibrāhīm, Mūsā, and ʿĪsā as he saw them during the Night Journey, noting their physical traits and resemblance to ʿUrwah b. Masʿūd."
+    },
+    {
+      "id": 161510,
+      "intro_en": "✧ Contains ʿAlī's detailed physical description of the Prophet ﷺ and Umm Hāniʾ's account of the Night Journey from her house, including reactions of the Quraysh and signs of the journey."
+    },
+    {
+      "id": 161511,
+      "intro_en": "✧ Recounts the Prophet ﷺ's Ascension through the heavens, meeting angels and prophets, witnessing punishments for sins, and reaching the seventh heaven and Paradise."
+    },
+    {
+      "id": 161512,
+      "intro_en": "✧ Relates how Mūsā advised the Prophet ﷺ to seek reduction of the fifty daily prayers until only five remained, with full reward still promised."
     },
     {
       "id": 161513,
-      "intro_en": "✧ Describes how God dealt with the mockers, focusing on the killing of Abū Uzayhir al-Dawsī and its aftermath."
+      "intro_en": "✧ Covers the incident of Abū Uzayhir al-Dawsī, the demands of Banū Makhzūm for his blood against Khuzāʿa, and the tribal responses and vengeance."
+    },
+    {
+      "id": 161514,
+      "intro_en": "✧ Narrates al-Walīd's deathbed injunctions to his sons concerning blood revenge in Khuzāʿah, usurious wealth in Thaqīf, and bride-price with Abū Uzayhir."
+    },
+    {
+      "id": 161515,
+      "intro_en": "✧ Describes the Banū Makhzūm's demand for blood-money from Khuzāʿah over al-Walīd's death, the ensuing poetic exchanges, and eventual settlement."
+    },
+    {
+      "id": 161516,
+      "intro_en": "✧ Hishām b. al-Walīd kills Abū Uzayhir, Abū Sufyān’s son-in-law, and Quraysh calms the ensuing tension with blood money."
+    },
+    {
+      "id": 161517,
+      "intro_en": "✧ Daws seeks vengeance for Abū Uzayhir, but Umm Ghaylān and her women protect Ḍirār b. al-Khaṭṭāb and his Quraysh companions."
     },
     {
       "id": 161518,
-      "intro_en": "✧ Covers the deaths of Abū Ṭālib and Khadīja and the increased persecution that followed."
+      "intro_en": "✧ The deaths of Abū Ṭālib and Khadīja, Quraysh’s subsequent aggression, and Abū Ṭālib’s final interactions with the Messenger ﷺ."
+    },
+    {
+      "id": 161519,
+      "intro_en": "✧ Neighboring polytheists, including Abū Lahab and ʿUqbah b. Abī Muʿayṭ, harm the Messenger ﷺ, who publicly reproaches Banū ʿAbd Manāf."
+    },
+    {
+      "id": 161520,
+      "intro_en": "✧ After Khadīja and Abū Ṭālib die in the same year, Quraysh inflict greater harm on the Messenger ﷺ, including scattering dust on his head."
+    },
+    {
+      "id": 161521,
+      "intro_en": "✧ Quraysh nobles visit the ailing Abū Ṭālib seeking a pact, but reject the Messenger’s ﷺ call to profess one God."
+    },
+    {
+      "id": 161522,
+      "intro_en": "✧ The Messenger ﷺ urges his dying uncle Abū Ṭālib to say the shahāda, but Abū Ṭālib declines due to fear of Quraysh’s reproach."
+    },
+    {
+      "id": 161523,
+      "intro_en": "✧ Qurʾānic verses from Sūrat Ṣād are revealed concerning those Quraysh nobles who sought a pact with the Messenger ﷺ in Abū Ṭālib’s presence."
     },
     {
       "id": 161524,
-      "intro_en": "✧ Narrates the Prophet's journey to Thaqīf seeking support, his complaint to God, and the jinn who believed."
+      "intro_en": "✧ The section covers the Prophet's ﷺ complaint to God after rejection by Thaqīf, the encounter with the Christian slave ʿAddās, and the jinn who believed after listening to his recitation."
+    },
+    {
+      "id": 161525,
+      "intro_en": "✧ It records the Prophet's ﷺ supplication complaining of his weakness and entrusting his affair to God."
+    },
+    {
+      "id": 161526,
+      "intro_en": "✧ It recounts how ʿAddās, a Christian slave of ʿUtbah and Shaybah, recognized the Prophet ﷺ as a prophet after being told about Jonah son of Matta."
+    },
+    {
+      "id": 161527,
+      "intro_en": "✧ It describes how a group of seven jinn from Naṣībīn listened to the Prophet's ﷺ prayer at Nakhla, believed, and returned to warn their people."
     },
     {
       "id": 161528,
-      "intro_en": "✧ Tells of the Prophet presenting himself to Arab tribes at fairs and key individuals like Suwayd b. Ṣāmit."
+      "intro_en": "✧ This section covers the Prophet's ﷺ efforts to present Islam to Arab tribes during fairs, his meeting with Suwayd b. Ṣāmit, and the conversion of Iyās b. Muʿādh."
+    },
+    {
+      "id": 161529,
+      "intro_en": "✧ It narrates the Prophet's ﷺ practice of approaching Arab notables at seasonal gatherings in Makkah to call them to Allah and Islam."
+    },
+    {
+      "id": 161530,
+      "intro_en": "✧ It tells of Suwayd b. Ṣāmit, called al-Kāmil, whom the Prophet ﷺ invited to Islam and who praised the Qurʾān before departing and later being killed by the Khazraj."
+    },
+    {
+      "id": 161531,
+      "intro_en": "✧ It recounts how Iyās b. Muʿādh embraced Islam upon hearing the Prophet ﷺ, while Abū al-Ḥaysar rebuffed the message, and Iyās died as a Muslim before the battle of Buʿāth."
     },
     {
       "id": 161532,
-      "intro_en": "✧ Details of the initial meetings and pledges of allegiance between the Prophet ﷺ and the Anṣār at al-ʿAqabah, leading to the spread of Islam in Madinah."
+      "intro_en": "✧ This section describes the Anṣār's initial acceptance of Islam, covering meetings and pledges at al-ʿAqabah, the twelve nuqabāʾ, Muṣʿab b. ʿUmayr's mission, the first Friday prayer, conversion of key figures, and the Quraysh's response."
+    },
+    {
+      "id": 161533,
+      "intro_en": "✧ The Prophet ﷺ meets a band of Khazraj at al-ʿAqabah, calls them to Islam, and they accept, hoping for unity and recognizing him as the prophesied prophet."
+    },
+    {
+      "id": 161534,
+      "intro_en": "✧ It lists the six Khazrajī men—Asʿad b. Zurārah, ʿAwf b. al-Ḥārith, Rāfiʿ b. Mālik, Quṭbah b. ʿĀmir, ʿUqbah b. ʿĀmir, and Jābir b. ʿAbd Allāh—who met the Prophet ﷺ and spread Islam in Madinah."
+    },
+    {
+      "id": 161535,
+      "intro_en": "✧ Twelve Anṣārī men pledge allegiance at the first al-ʿAqabah according to the women's pledge, listing their names and tribal affiliations."
+    },
+    {
+      "id": 161536,
+      "intro_en": "✧ The covenant for the first al-ʿAqabah pledge included monotheism, refraining from theft, fornication, infanticide, slander, and disobedience to the Prophet ﷺ in what is right."
+    },
+    {
+      "id": 161537,
+      "intro_en": "✧ The Prophet ﷺ sent Muṣʿab b. ʿUmayr with the delegation to teach Islam, recite the Qur'an, and lead prayers, lodging with Asʿad b. Zurārah."
+    },
+    {
+      "id": 161538,
+      "intro_en": "✧ Asʿad b. Zurārah established the first Friday prayer in Madinah with forty men, and through Muṣʿab's efforts Saʿd b. Muʿādh and Usayd b. Ḥuḍayr converted, leading to widespread Islam among the Anṣār."
+    },
+    {
+      "id": 161539,
+      "intro_en": "✧ Muṣʿab returns to Makkah, and Anṣār pilgrims arrange to meet the Prophet ﷺ at al-ʿAqabah during the days of al-Tashrīq for the second pledge."
+    },
+    {
+      "id": 161540,
+      "intro_en": "✧ Al-Barāʾ b. Maʿrūr prays toward the Kaʿbah against his companions' practice, then consults the Prophet ﷺ in Makkah and returns to praying toward Syria."
+    },
+    {
+      "id": 161541,
+      "intro_en": "✧ Kaʿb b. Mālik secretly recruits ʿAbd Allāh b. ʿAmr b. Ḥarām to Islam before the ʿAqabah meeting, and they join seventy-three men and two women there."
+    },
+    {
+      "id": 161542,
+      "intro_en": "✧ Al-ʿAbbās, still a polytheist, addresses the Khazraj at al-ʿAqabah to confirm their commitment to protect the Prophet ﷺ before the pledge."
+    },
+    {
+      "id": 161543,
+      "intro_en": "✧ The Prophet ﷺ pledges mutual protection with the Anṣār, and Abū al-Haytham raises the question of his remaining with them, to which he affirms lasting solidarity."
+    },
+    {
+      "id": 161544,
+      "intro_en": "✧ The twelve naqībs are named—nine from Khazraj and three from Aws—and al-ʿAbbās b. ʿUbādah clarifies the pledge entails war against all people in return for Paradise."
+    },
+    {
+      "id": 161545,
+      "intro_en": "✧ Disagreement exists over whether Abū Umāmah Asʿad b. Zurārah, Abū al-Haytham b. al-Tayyihān, or al-Barāʾ b. Maʿrūr first struck the Prophet's hand at the second ʿAqabah pledge."
+    },
+    {
+      "id": 161546,
+      "intro_en": "✧ Iblīs cries out from al-ʿAqabah to warn the polytheists of the pledge, and al-ʿAbbās b. ʿUbādah offers to attack Minā but the Prophet ﷺ declines as not commanded."
+    },
+    {
+      "id": 161547,
+      "intro_en": "✧ Quraysh confront the Anṣār about the pledge, seize Saʿd b. ʿUbādah, who is freed through his protection pacts with Jubayr b. Muṭʿim and al-Ḥārith b. Ḥarb, with later poetic exchanges."
+    },
+    {
+      "id": 161548,
+      "intro_en": "✧ Young Muslims repeatedly humiliate ʿAmr b. al-Jamūḥ's idol Manāt by throwing it into refuse pits, prompting it to be found with a dead dog and leading to his conversion to Islam."
+    },
+    {
+      "id": 161549,
+      "intro_en": "✧ The conditions of the second ʿAqabah pledge included listening and obeying in hardship and ease, not disputing authority, and speaking truth without fear of blame."
+    },
+    {
+      "id": 161550,
+      "intro_en": "✧ The chapter lists the seventy-three men and two women of the Aws and Khazraj who pledged allegiance at the second ʿAqabah, including their names, lineages, and fates."
     },
     {
       "id": 161551,
-      "intro_en": "✧ The divine instruction to the Prophet ﷺ permitting armed conflict against the polytheists."
+      "intro_en": "✧ God permitted the Messenger ﷺ to fight after Quraysh's oppression, with revealed verses allowing warfare against those who wronged and expelled the believers."
     },
     {
       "id": 161552,
-      "intro_en": "✧ The Prophet's ﷺ authorization for Makkan Muslims to emigrate to Madinah, with accounts of key emigrants and their residences."
+      "intro_en": "✧ The section relates the emigration of Makkan Muslims to Madinah, beginning with Abū Salamah and continuing with ʿUmar b. al-Khaṭṭāb and others."
+    },
+    {
+      "id": 161553,
+      "intro_en": "✧ The early Emigrants to Madinah from Quraysh, including Abū Salamah and his family's separation, and the Banū Jaḥsh's departure, along with the emigrants' dwellings in Qubāʾ."
+    },
+    {
+      "id": 161554,
+      "intro_en": "✧ ʿUmar b. al-Khaṭṭāb and ʿAyyāsh emigrated to Madinah, but ʿAyyāsh was deceived by Abū Jahl and al-Ḥārith, returned to Makkah, and was later rescued by al-Walīd b. al-Walīd."
+    },
+    {
+      "id": 161555,
+      "intro_en": "✧ The chapter records the dwellings of Emigrants in Madinah, such as ʿUmar, Ṭalḥah, Ḥamzah, ʿUbaydah, ʿAbd al-Raḥmān b. ʿAwf, al-Zubayr, Muṣʿab, and ʿUthmān, among their Anṣārī hosts."
     },
     {
       "id": 161556,
-      "intro_en": "✧ The Prophet's ﷺ emigration from Makkah to Madinah, including the Quraysh plot, the cave episode, and the establishment of the first Muslim community."
+      "intro_en": "✧ Covers the Prophet's ﷺ departure from Makkah, the Quraysh plot against him, his journey with Abū Bakr to Madinah, and their settlement and early community measures there."
+    },
+    {
+      "id": 161557,
+      "intro_en": "✧ ʿAlī b. Abī Ṭālib and Abū Bakr al-Ṣiddīq ؓ remained in Makkah after other emigrants, with Abū Bakr repeatedly requesting permission to emigrate."
+    },
+    {
+      "id": 161558,
+      "intro_en": "✧ Quraysh leaders convened in Dār al-Nadwah, where Abū Jahl proposed that young men from each tribe jointly kill the Prophet ﷺ to spread blood responsibility."
+    },
+    {
+      "id": 161559,
+      "intro_en": "✧ The Prophet ﷺ evaded the waiting assassins by having ʿAlī sleep in his bed, while he scattered dust and departed unseen."
+    },
+    {
+      "id": 161560,
+      "intro_en": "✧ God revealed Qurʾānic verses concerning the polytheists' plotting to confine, kill, or expel the Prophet ﷺ, after which emigration was permitted."
+    },
+    {
+      "id": 161561,
+      "intro_en": "✧ Wealthy Abū Bakr prepared two riding camels for emigration, hoping to become the Prophet's ﷺ companion."
+    },
+    {
+      "id": 161562,
+      "intro_en": "✧ The Prophet ﷺ came to Abū Bakr at midday announcing permission to emigrate, and they hired ʿAbd Allāh b. Arqaṭ as their polytheist guide."
+    },
+    {
+      "id": 161563,
+      "intro_en": "✧ Only ʿAlī, Abū Bakr, and Abū Bakr's family knew of the Prophet's ﷺ departure, with ʿAlī commanded to return trusts left with him."
+    },
+    {
+      "id": 161564,
+      "intro_en": "✧ Describes the Prophet ﷺ and Abū Bakr hiding in the cave at Thawr, with their provisions secretly supplied by Abū Bakr's family and freedman, and his refusal to ride a gifted camel without payment."
+    },
+    {
+      "id": 161565,
+      "intro_en": "✧ Recounts how a jinn's verses revealed the Prophet ﷺ's route via Umm Maʿbad, with the party including Abū Bakr, ʿĀmir b. Fuhayrah, and their guide ʿAbd Allāh b. Arqaṭ."
+    },
+    {
+      "id": 161566,
+      "intro_en": "✧ Relates how Asmāʾ bt. Abī Bakr deceived her blind grandfather Abū Quḥāfah with stones to conceal that Abū Bakr had taken all his wealth."
+    },
+    {
+      "id": 161567,
+      "intro_en": "✧ Surāqah b. Mālik pursues the Prophet ﷺ for a reward but is thwarted by his horse's repeated stumbling and a miraculous smoke, then accepts a written guarantee and later converts to Islam."
+    },
+    {
+      "id": 161568,
+      "intro_en": "✧ Details the Prophet ﷺ's emigration route from Makkah to Qubāʾ with place names and corrections, and describes his arrival when Banū Qaylah initially confused him with Abū Bakr."
+    },
+    {
+      "id": 161569,
+      "intro_en": "✧ The Prophet ﷺ lodged with Kulthūm b. Hidm or Saʿd b. Khaythama at Qubāʾ, Abū Bakr with Khubayb b. Isāf or Khārija b. Zayd, and ʿAlī after delivering trusts; also notes Sahl b. Ḥunayf's secret idol-breaking."
+    },
+    {
+      "id": 161570,
+      "intro_en": "✧ During his stay at Qubāʾ the Prophet ﷺ built the first mosque there, then left on Friday, praying the first Friday prayer in Madinah at Rānūnāʾ, and refused tribal invitations to let his camel choose."
+    },
+    {
+      "id": 161571,
+      "intro_en": "✧ The Prophet's she-camel knelt at the drying-ground of two orphans, which Muʿādh b. ʿAfrāʾ offered to compensate, and he lodged with Abū Ayyūb Khālid b. Zayd."
+    },
+    {
+      "id": 161572,
+      "intro_en": "✧ Describes the Prophet’s ﷺ construction of the Madinah mosque and dwellings, his work alongside the Emigrants and Helpers, his stay with Abū Ayyūb, and the incident with ʿAmmār b. Yāsir during the building."
+    },
+    {
+      "id": 161573,
+      "intro_en": "✧ Relates the successive emigration of Muslims from Makkah, the households that left, Abū Sufyān’s seizure of Banū Jaḥsh’s house, and the completion of Islam among the Anṣār except for certain clans."
+    },
+    {
+      "id": 161574,
+      "intro_en": "✧ Presents the Prophet’s ﷺ first sermon exhorting the people to send forth good deeds for the Hereafter, warning them of God’s questioning and the Fire."
+    },
+    {
+      "id": 161575,
+      "intro_en": "✧ Records the Prophet’s ﷺ second sermon praising God, affirming the excellence of the Qurʾān, and urging love of God and avoidance of covenant-breaking."
+    },
+    {
+      "id": 161576,
+      "intro_en": "✧ Contains the document written by the Prophet ﷺ between the Emigrants and the Anṣār, establishing mutual obligations, blood-money customs, and terms of peace and mutual support with the Jews of Madinah."
+    },
+    {
+      "id": 161577,
+      "intro_en": "✧ Lists the pairs of brotherhood established by the Prophet ﷺ between Emigrants and Anṣār, along with subsequent events such as Bilāl’s dīwān attachment and the death of Abū Umāmah Asʿad b. Zurārah."
+    },
+    {
+      "id": 161578,
+      "intro_en": "✧ Describes how after Islam was firmly established in Madinah, the Prophet ﷺ considered using a horn or a clapper to summon to prayer before the adoption of the call to prayer."
+    },
+    {
+      "id": 161579,
+      "intro_en": "✧ Narrates the dream of ʿAbd Allāh b. Zayd in which a man in green garments taught him the words of the call to prayer."
+    },
+    {
+      "id": 161580,
+      "intro_en": "✧ The Messenger ﷺ instructs ʿUmar to teach Bilāl the call to prayer from his vision, and ʿUmar testifies he saw the same dream."
+    },
+    {
+      "id": 161581,
+      "intro_en": "✧ ʿUmar's dream about the call to prayer is reported to have coincided with a revelation, and Bilāl's pre-dawn supplication is also mentioned alongside Abū Qays Ṣirmah's poetry."
     },
     {
       "id": 161582,
-      "intro_en": "✧ Accounts of Jewish enmity toward the Prophet ﷺ in Madinah, including notable conversions and testimonies."
+      "intro_en": "✧ Ibn Isḥāq lists Jewish rabbis from Madinan tribes who opposed the Prophet ﷺ and recounts several early conversions including ʿAbd Allāh b. Salām and Mukhayrīq."
+    },
+    {
+      "id": 161583,
+      "intro_en": "✧ Ibn Isḥāq explains that Jewish rabbis opposed the Prophet ﷺ out of envy and details named enemies from Banū al-Naḍīr, Banū Thaʿlabah, Banū Qaynuqāʿ, and other groups."
+    },
+    {
+      "id": 161584,
+      "intro_en": "✧ ʿAbd Allāh b. Salām recognizes the Prophet ﷺ from scriptural descriptions, converts secretly, then publicly testifies before the Jews who turn against him."
+    },
+    {
+      "id": 161585,
+      "intro_en": "✧ Mukhayrīq, a learned Jewish rabbi, fights at Uḥud despite the Sabbath and bequeaths his date-palm properties to the Messenger ﷺ, who later uses them as charitable endowments."
+    },
+    {
+      "id": 161586,
+      "intro_en": "✧ Ṣafiyya bt. Ḥuyayy narrates how her father and uncle, after visiting the Prophet ﷺ at Qubāʾ, confirm his identity but openly declare their lasting enmity towards him."
     },
     {
       "id": 161587,
-      "intro_en": "✧ Qur'anic revelations concerning the hypocrites among the Anṣār and their Jewish allies, exposing their intrigues against the Prophet ﷺ."
+      "intro_en": "✧ Ibn Isḥāq identifies hypocritical Jewish rabbis and provides numerous Qurʾanic revelations addressing their schemes, questions, and disputes with Christians, including events like the confederates and the mutual imprecation."
+    },
+    {
+      "id": 161588,
+      "intro_en": "✧ Lists Jewish rabbis from Banū Qaynuqāʿ and others who hypocritically professed Islam, including Zayd b. al-Luṣayṭ's mockery of the Prophet's knowledge of his lost she-camel, and recounts their expulsion from the mosque."
+    },
+    {
+      "id": 161589,
+      "intro_en": "✧ Explains the opening verses of Sūrat al-Baqarah up to verse one hundred as revealed concerning the Jewish rabbis and hypocrites, with Ibn Hishām's lexical notes."
+    },
+    {
+      "id": 161590,
+      "intro_en": "✧ Comments on verses of Sūrat al-Baqarah describing the hypocrites among the Aws and Khazraj, including their deceptions and parables, with Ibn Hishām's glosses on rare words."
+    },
+    {
+      "id": 161591,
+      "intro_en": "✧ Relates the Jews' claim that the Fire would touch them only seven days and Allah's refutation, followed by verses rebuking their covenant-breaking and bloodshed among themselves."
+    },
+    {
+      "id": 161592,
+      "intro_en": "✧ Narrates a delegation of Jewish rabbis questioning the Prophet about resemblance in offspring, his sleep, Israel's self-prohibition, and the Spirit, leading to revelation about Gabriel."
+    },
+    {
+      "id": 161593,
+      "intro_en": "✧ Mentions a Jewish rabbi's denial that Solomon was a prophet and Allah's refutation, with Ibn ʿAbbās's explanation of what Israel forbade for himself."
+    },
+    {
+      "id": 161594,
+      "intro_en": "✧ Cites the Prophet's letter to the Jews of Khaybar, adjuring them by God to acknowledge his prophethood, and Ibn Hishām's explanations of the Quranic parable's rare words."
+    },
+    {
+      "id": 161595,
+      "intro_en": "✧ Recounts how Abū Yāsir and Ḥuyayy b. Akhṭab calculated the numerical value of the disconnected letters to undermine the Prophet, occasioning the verse on clear and ambiguous verses."
+    },
+    {
+      "id": 161596,
+      "intro_en": "✧ The Jews had sought victory through the Prophet ﷺ before his mission but disbelieved when he was sent, as noted by Muʿādh b. Jabal and Bishr b. al-Barāʾ."
+    },
+    {
+      "id": 161597,
+      "intro_en": "✧ Mālik b. al-Ṣayf denied that any covenant concerning Muḥammad was taken from the Jews, prompting a Qurʾānic rebuke."
+    },
+    {
+      "id": 161598,
+      "intro_en": "✧ Abū Ṣalūbā al-Fatyūnī told the Prophet ﷺ that he brought nothing recognizable, leading to revelation about clear signs being sent down."
+    },
+    {
+      "id": 161599,
+      "intro_en": "✧ Ibn Ḥuraymila and Wahb b. Zayd asked for a book from heaven and rivers, and the revelation compared them to those who asked Moses."
+    },
+    {
+      "id": 161600,
+      "intro_en": "✧ Ḥuyayy b. Akhṭab and his brother Abū Yāsir were envious of the Arabs and strove to turn people from Islam, prompting a verse about People of the Scripture."
+    },
+    {
+      "id": 161601,
+      "intro_en": "✧ Jews and Christians disputed before the Prophet ﷺ, each denying the other's faith while reciting scripture, and revelation said God will judge between them."
+    },
+    {
+      "id": 161602,
+      "intro_en": "✧ Ibn Ḥuraymila asked the Prophet ﷺ to have God speak directly to them, and revelation said such words were like those of earlier ignorant people."
+    },
+    {
+      "id": 161603,
+      "intro_en": "✧ Ibn Ṣūriyā asked the Prophet ﷺ to become a Jew for guidance, and the Christians said similarly, leading to revelation about the creed of Abraham."
+    },
+    {
+      "id": 161604,
+      "intro_en": "✧ When the qiblah was changed to the Kaʿbah, Jewish leaders challenged Muḥammad ﷺ, prompting Qur'anic revelations about the change, concealment of Torah truths, and warnings after Badr."
+    },
+    {
+      "id": 161605,
+      "intro_en": "✧ Jewish rabbis and Najrān Christians disputed before Muḥammad ﷺ whether Abraham was Jewish or Christian, and God revealed that Abraham was a ḥanīf Muslim."
+    },
+    {
+      "id": 161606,
+      "intro_en": "✧ Three Jews plotted to believe in the morning and disbelieve in the evening to confuse Muslims, and God exposed their scheme in revelation."
+    },
+    {
+      "id": 161607,
+      "intro_en": "✧ Abū Rāfiʿ and a Najrān Christian asked Muḥammad ﷺ if he wanted worship as Christians worship Jesus, and God revealed that no prophet commands worship of himself."
+    },
+    {
+      "id": 161608,
+      "intro_en": "✧ The Day of Buʿāth narrative recounts Aws-Khazraj fighting, Shās b. Qays's incitement of tribal boasting, and Muḥammad ﷺ's reconciliation, with Qur'anic condemnations of such discord."
+    },
+    {
+      "id": 161609,
+      "intro_en": "✧ After certain Jews converted, their rabbis dismissed them as the worst of their people, and God revealed that an upright community among the People of the Scripture exists."
+    },
+    {
+      "id": 161610,
+      "intro_en": "✧ God forbade Muslims from close ties with Jews; Abū Bakr struck Finḥāṣ for claiming God is poor; Jewish leaders urged miserliness and denied the truth, provoking revelations."
+    },
+    {
+      "id": 161611,
+      "intro_en": "✧ Jewish men from Banū al-Naḍīr and Banū Wāʾil incited Quraysh, Ghaṭafān, and Banū Qurayẓah, asserted their religion superior to Islam, and denied revelation after Moses, prompting Qur'anic responses."
+    },
+    {
+      "id": 161612,
+      "intro_en": "✧ Covers the Banū al-Naḍīr's plot to drop a boulder on the Prophet ﷺ, their claim to be God's beloved, and their denial of any scripture after Moses."
+    },
+    {
+      "id": 161613,
+      "intro_en": "✧ Relates how the Jews brought an adultery case to the Prophet ﷺ, his ruling of stoning, their unequal blood-money practices, attempts to tempt him, and various theological challenges they posed."
+    },
+    {
+      "id": 161614,
+      "intro_en": "✧ Describes the Najrān Christian delegation's debate with the Prophet ﷺ, Qur'anic revelations about Jesus, and the mutual imprecation they declined, leading to a treaty and Abū ʿUbaydah's appointment as judge."
+    },
+    {
+      "id": 161615,
+      "intro_en": "✧ Narrates the stories of two Madinan chiefs, ʿAbd Allāh b. Ubayy and Abū ʿĀmir b. Ṣayfī, their resentment at Islam's rise, and their respective hypocrisy and exile."
     },
     {
       "id": 161616,
-      "intro_en": "✧ Illnesses among the Prophet's ﷺ Companions in Madinah and his supplication regarding the city's fever."
+      "intro_en": "✧ Mentions the Companions of the Prophet ﷺ who fell ill, including the supplication to move Madinah's fever to Mahyaʿah."
+    },
+    {
+      "id": 161617,
+      "intro_en": "✧ Describes the fever afflicting the Prophet ﷺ and his Companions upon arriving in Madinah, his supplication to transfer it to al-Juḥfah, and the ruling on praying while sitting."
     },
     {
       "id": 161618,
-      "intro_en": "✧ The commencement of military conflict between the Muslims and the polytheists."
+      "intro_en": "✧ Chronicles the beginning of combat against the polytheists, the Prophet's ﷺ age and time in Madinah before first raiding in Ṣafar, with Saʿd b. ʿUbādah left in charge."
     },
     {
       "id": 161619,
-      "intro_en": "✧ The Prophet's ﷺ first military expedition to Waddān."
+      "intro_en": "✧ Narrates the Prophet's ﷺ first expedition to Waddān (al-Abwāʾ), where Banū Ḍamrah made peace and he returned to Madinah without fighting."
     },
     {
       "id": 161620,
-      "intro_en": "✧ The first military banner entrusted by the Prophet ﷺ, given to ʿUbaydah b. al-Ḥārith."
+      "intro_en": "✧ ʿUbaydah b. al-Ḥārith led sixty or eighty Emigrants to Thaniyyat al-Murrah, where Saʿd b. Abī Waqqāṣ shot the first arrow in Islam, and two Muslims among the polytheists joined them."
     },
     {
       "id": 161621,
-      "intro_en": "✧ The military detachment led by Ḥamzah to the coastal region of the Red Sea."
+      "intro_en": "✧ Ḥamzah b. ʿAbd al-Muṭṭalib led thirty Emigrants to Sayf al-Baḥr, where Majdī b. ʿAmr al-Juhanī intervened between them and Abū Jahl's three hundred riders, preventing fighting."
     },
     {
       "id": 161622,
-      "intro_en": "✧ The Prophet's ﷺ military expedition to Buwāṭ."
+      "intro_en": "✧ The Messenger ﷺ raided Quraysh in Rabīʿ al-Awwal, appointing al-Sāʾib b. ʿUthmān b. Maẓʿūn over Madinah, and returned from Buwāṭ near Raḍwā without encountering hostility."
     },
     {
       "id": 161623,
-      "intro_en": "✧ The Prophet ﷺ leads an expedition to the region of al-ʿUshayrah, where he concludes a pact with the Banū Mudlij."
+      "intro_en": "✧ The Messenger ﷺ raided Quraysh via mountain passes to al-ʿUshayrah in Yanbuʿ, summoned Banū Mudlij and their allies, and returned without fighting; during it he gave ʿAlī the kunyah Abū Turāb."
     },
     {
       "id": 161624,
-      "intro_en": "✧ Saʿd b. Abī Waqqāṣ is dispatched with a small force to intercept a Quraysh caravan, but the caravan passes before his arrival."
+      "intro_en": "✧ Saʿd b. Abī Waqqāṣ led eight Emigrants to al-Kharrār in the Ḥijāz and returned to Madinah without encountering any hostility."
     },
     {
       "id": 161625,
-      "intro_en": "✧ The Prophet ﷺ pursues Kurz b. Jābir al-Fihrī, who had raided Madinah's pasturing camels, as far as Safwān near Badr."
+      "intro_en": "✧ After Kurz b. Jābir al-Fihrī raided Madinah's livestock, the Messenger ﷺ pursued him to Safawān near Badr with Zayd b. Ḥārithah over Madinah, but Kurz eluded him."
     },
     {
       "id": 161626,
-      "intro_en": "✧ A detachment led by ʿAbd Allāh b. Jaḥsh is sent to observe Quraysh, and it clashes with a caravan during the sacred month."
+      "intro_en": "✧ ʿAbd Allāh b. Jaḥsh opened the Prophet's sealed letter, proceeded with his companions to Nakhlah, attacked a Quraysh caravan in the sacred month, and the Qurʾan endorsed the action."
+    },
+    {
+      "id": 161627,
+      "intro_en": "✧ ʿAbd Allāh b. Jaḥsh read the Prophet's ﷺ letter at Baḥrān, gave his companions the choice to continue, and after two men lagged behind, he camped at Nakhlah to observe Quraysh."
+    },
+    {
+      "id": 161628,
+      "intro_en": "✧ The Prophet ﷺ rebuked Ibn Jaḥsh for fighting in the sacred month and withheld the caravan and captives, while Quraysh condemned the act and the Jews portended evil."
+    },
+    {
+      "id": 161629,
+      "intro_en": "✧ Allah revealed Qur'anic verses exonerating the Muslims and condemning Quraysh's persecution, after which the Prophet ﷺ seized the spoils and ransomed the captives, one of whom embraced Islam."
+    },
+    {
+      "id": 161630,
+      "intro_en": "✧ Ibn Jaḥsh and his companions sought reward, and Allah revealed a verse granting them hope, while the expedition is noted as the first involving booty, killing, and capture."
     },
     {
       "id": 161631,
-      "intro_en": "✧ The Muslims confront a Quraysh army at Badr, win a decisive victory, capture prisoners and spoils, and receive extensive Qurʾanic revelation."
+      "intro_en": "✧ The chapter narrates the complete account of the Battle of Badr, including preparations, the caravan, the battle, its aftermath, Qur'anic revelations, and lists of participants and prisoners."
+    },
+    {
+      "id": 161632,
+      "intro_en": "✧ The Messenger ﷺ learned of Abū Sufyān's caravan returning from Syria with Quraysh's wealth and merchandise, escorted by thirty or forty men including Makhrama b. Nawfal and ʿAmr b. al-ʿĀṣ."
+    },
+    {
+      "id": 161633,
+      "intro_en": "✧ Upon hearing of the caravan, the Prophet ﷺ urged the Muslims to intercept it, while Abū Sufyān, alerted by riders, sent Ḍamḍam b. ʿAmr to Makkah to summon Quraysh for protection."
+    },
+    {
+      "id": 161634,
+      "intro_en": "✧ ʿĀtikah bt. ʿAbd al-Muṭṭalib dreamed of a rider warning of destruction, and after telling al-ʿAbbās, the dream spread among Quraysh and caused alarm."
+    },
+    {
+      "id": 161635,
+      "intro_en": "✧ Abū Jahl ridiculed ʿĀtikah's dream and challenged al-ʿAbbās, who then prepared to confront him, but Ḍamḍam's arrival with news of the caravan diverted both men."
+    },
+    {
+      "id": 161636,
+      "intro_en": "✧ Quraysh fully mustered for departure, with Abū Lahab sending al-ʿĀṣī b. Hishām in his place, and ʿUqbah b. Abī Muʿayṭ goading Umayyah b. Khalaf into joining the expedition."
+    },
+    {
+      "id": 161637,
+      "intro_en": "✧ Before marching to Badr, Quraysh recalled their past war with Banū Bakr, which began when Mikraz b. Ḥafṣ avenged his brother by killing ʿĀmir b. Yazīd, and they feared an attack from that tribe."
+    },
+    {
+      "id": 161638,
+      "intro_en": "✧ Iblīs appeared to Quraysh in the form of Surāqah b. Mālik, promising protection against Kinānah, thereby dispelling their hesitation and urging them to march."
+    },
+    {
+      "id": 161639,
+      "intro_en": "✧ The Messenger of Allah ﷺ departed Madinah for Badr in Ramaḍān after appointing ʿAmr b. Umm Maktūm over prayer and later Abū Lubābah over Madinah, and he gave a white banner to Muṣʿab b. ʿUmayr."
+    },
+    {
+      "id": 161640,
+      "intro_en": "✧ Two black banners were carried before the Messenger ﷺ, one named al-ʿUqāb held by ʿAlī b. Abī Ṭālib and the other by one of the Anṣār."
+    },
+    {
+      "id": 161641,
+      "intro_en": "✧ The Muslims had seventy camels ridden in turns, with the Messenger ﷺ, ʿAlī, and Marthad sharing one, while Qays b. Abī Ṣaʿṣaʿah commanded the rear guard and Saʿd b. Muʿādh bore the Anṣār banner."
+    },
+    {
+      "id": 161642,
+      "intro_en": "✧ The Messenger ﷺ journeyed from Madinah along a route through al-ʿAqīq, al-Sayyāla, and Fajj al-Rawḥāʾ, encountering a Bedouin whose obscene question to the Prophet was rebuffed by Salama b. Salāma."
+    },
+    {
+      "id": 161643,
+      "intro_en": "✧ Upon learning that Quraysh were marching to protect their caravan, the Messenger ﷺ consulted his companions, and Abū Bakr, ʿUmar, and al-Miqdād b. ʿAmr spoke in support of fighting, with al-Miqdād vowing to fight alongside him even at Birk al-Ghimād."
+    },
+    {
+      "id": 161644,
+      "intro_en": "✧ The Messenger ﷺ seeks assurance from the Anṣār about their obligation to fight beyond Madinah, and Saʿd b. Muʿādh pledges their full support and readiness to march with him."
+    },
+    {
+      "id": 161645,
+      "intro_en": "✧ The Messenger ﷺ and Abū Bakr question an old Arab about the positions of Quraysh and the Muslims, then ʿAlī, al-Zubayr, and Saʿd bring two water-carriers who reveal Quraysh's numbers and nobles."
+    },
+    {
+      "id": 161646,
+      "intro_en": "✧ Abū Sufyān, alerted by camel droppings containing date stones, diverts the caravan away from Badr along the coast to avoid the Muslims."
+    },
+    {
+      "id": 161647,
+      "intro_en": "✧ Juhaym b. al-Ṣalt dreams of Quraysh's nobles being killed at Badr, Abū Jahl dismisses it, and al-Akhnas leads Banū Zuhrah back while Ṭālib returns due to accusations of sympathy for Muḥammad."
+    },
+    {
+      "id": 161648,
+      "intro_en": "✧ Quraysh encamp at the farther side of the valley behind al-ʿAqanqal, while the Muslims reach the nearest water of Badr, and rain aids their movement but hinders Quraysh."
+    },
+    {
+      "id": 161649,
+      "intro_en": "✧ Al-Ḥubāb b. al-Mundhir advises the Messenger ﷺ to move to the nearest water to the enemy, stop up the other wells, and build a cistern so the Muslims can drink while Quraysh cannot, and the Messenger acts on his counsel."
+    },
+    {
+      "id": 161650,
+      "intro_en": "✧ Saʿd b. Muʿādh proposes building a hut for the Messenger ﷺ and readying his riding camels so he can retreat if needed, and the hut is constructed."
+    },
+    {
+      "id": 161651,
+      "intro_en": "✧ Quraysh advance from al-ʿAqanqal and the Messenger ﷺ prays for victory and their destruction, while Khufāf offers reinforcements which Quraysh decline, and Ḥakīm b. Ḥizām later recounts his survival."
+    },
+    {
+      "id": 161652,
+      "intro_en": "✧ Quraysh deliberated about withdrawing after ʿUmayr b. Wahb scouted the Muslim numbers and ʿUtba b. Rabīʿah urged retreat, but Abū Jahl, instigated by ʿĀmir b. al-Ḥaḍramī, rejected this and war was inflamed, followed by Ḥamzah killing al-Aswad b. ʿAbd al-Asad."
+    },
+    {
+      "id": 161653,
+      "intro_en": "✧ ʿUtba b. Rabīʿah challenged the Muslims to single combat with his brother Shaybah and son al-Walīd; ʿUbaydah b. al-Ḥārith, Ḥamzah, and ʿAlī fought and killed them."
+    },
+    {
+      "id": 161654,
+      "intro_en": "✧ The two armies advanced and met at Badr on Friday morning, the 17th of Ramadan, with the Messenger ﷺ commanding his companions to hold attack until ordered."
+    },
+    {
+      "id": 161655,
+      "intro_en": "✧ While straightening the ranks with an arrow-shaft, the Messenger ﷺ prodded Sawād b. Ghaziyyah; Sawād asked for retaliation and then embraced him, prompting the Prophet's prayer for him."
+    },
+    {
+      "id": 161656,
+      "intro_en": "✧ The Messenger ﷺ urgently supplicated God in the shelter for the victory promised, and after a doze he announced Gabriel's arrival with God's help; Mihjaʿ and Ḥārithah b. Surāqah were the first Muslims slain."
+    },
+    {
+      "id": 161657,
+      "intro_en": "✧ The Messenger ﷺ promised Paradise to those fighting patiently and advancing; ʿUmayr b. al-Ḥumām and ʿAwf b. al-Ḥārith then fought to death after hearing this incitement."
+    },
+    {
+      "id": 161658,
+      "intro_en": "✧ As the armies met, Abū Jahl called on God to destroy whoever had cut kinship ties and brought what was unrecognized, thus seeking a decision through supplication."
+    },
+    {
+      "id": 161659,
+      "intro_en": "✧ The Messenger ﷺ threw pebbles at Quraysh, saying 'May the faces be ugly!', and ordered the attack, leading to their defeat; Saʿd b. Muʿādh expressed preference for thorough killing over sparing captives."
+    },
+    {
+      "id": 161660,
+      "intro_en": "✧ The Prophet ﷺ forbade killing certain polytheists brought out unwillingly, including Banū Hāshim, al-ʿAbbās, and Abū al-Bakhtarī, the latter being killed after refusing to abandon his companion."
+    },
+    {
+      "id": 161661,
+      "intro_en": "✧ ʿAbd al-Raḥmān b. ʿAwf captured his friend Umayyah b. Khalaf and his son, but Bilāl incited the Muslims until both were killed."
+    },
+    {
+      "id": 161662,
+      "intro_en": "✧ Angels witnessed Badr with white turbans, and their neighing and intervention were reported, though they fought only at Badr."
+    },
+    {
+      "id": 161663,
+      "intro_en": "✧ Abū Jahl came forward fighting and recited rajaz verses boasting of his lineage."
+    },
+    {
+      "id": 161664,
+      "intro_en": "✧ The Muslims' battle-cry at Badr was 'Aḥad, Aḥad', and after the battle Abū Jahl was searched for, wounded by Muʿādh b. ʿAmr and Muʿawwidh b. ʿAfrāʾ, then beheaded by Ibn Masʿūd."
+    },
+    {
+      "id": 161665,
+      "intro_en": "✧ ʿUkkāshah b. Miḥṣan's sword broke, and the Prophet ﷺ gave him a stick that became the sword al-ʿAwn, with which he fought until killed by Ṭulayḥah during the apostasy."
+    },
+    {
+      "id": 161666,
+      "intro_en": "✧ The polytheists' slain were cast into a well, and the Prophet ﷺ addressed them; Ḥassān composed poetry about it, and Qurʾān 4:97 was revealed concerning Muslim youths killed at Badr."
+    },
+    {
+      "id": 161667,
+      "intro_en": "✧ The Muslims disputed over the spoils of Badr, and the Prophet ﷺ collected and divided them equally after the revelation about anfāl."
+    },
+    {
+      "id": 161668,
+      "intro_en": "✧ ʿAbd Allāh b. Rawāḥah and Zayd b. Ḥārithah were sent to the highlands and lowlands respectively to announce the victory at Badr, while Usāmah b. Zayd received the news during the burial of Ruqayyah."
+    },
+    {
+      "id": 161669,
+      "intro_en": "✧ The Messenger of God ﷺ returned to Madinah with captives and spoils, dividing the latter equally at Sayr before being met by Muslims at al-Rawḥāʾ who congratulated him on the victory."
+    },
+    {
+      "id": 161670,
+      "intro_en": "✧ Al-Naḍr b. al-Ḥārith was killed at al-Ṣafrāʾ and ʿUqbah b. Abī Muʿayṭ at ʿIrq al-Ẓabyah, after which the Messenger of God ﷺ arrived in Madinah and instructed good treatment of the captives."
+    },
+    {
+      "id": 161671,
+      "intro_en": "✧ The first news of Quraysh's losses reached Makkah through al-Haysumān b. ʿAbd Allāh al-Khuzāʿī, while Abū Lahab reacted violently upon hearing Abū Sufyān b. al-Ḥārith's account and later died of ʿadasah."
+    },
+    {
+      "id": 161672,
+      "intro_en": "✧ Quraysh refrained from wailing over their dead and delayed ransoming captives, though al-Aswad b. al-Muṭṭalib lamented his three slain sons and al-Muṭṭalib b. Abī Wadāʿah secretly ransomed his father."
+    },
+    {
+      "id": 161673,
+      "intro_en": "✧ Mikraz b. Ḥafṣ arranged the ransom of Suhayl b. ʿAmr by remaining as surety, and the Messenger of God ﷺ refused ʿUmar's request to mutilate Suhayl, predicting he would later stand in a praiseworthy station."
+    },
+    {
+      "id": 161674,
+      "intro_en": "✧ Abū Sufyān refused to ransom his captured son ʿAmr, but after detaining Saʿd b. al-Nuʿmān in Makkah, the Messenger of God ﷺ released ʿAmr so the Anṣār could exchange him for Saʿd."
+    },
+    {
+      "id": 161675,
+      "intro_en": "✧ Abū al-ʿĀṣ b. al-Rabīʿ, the Prophet's son-in-law and husband of Zaynab, was captured by Khirāsh b. al-Ṣimmah at Badr; his marriage to Zaynab had been arranged before revelation through Khadījah, but he remained a polytheist."
+    },
+    {
+      "id": 161676,
+      "intro_en": "✧ Quraysh attempted to persuade ʿUtbah b. Abī Lahab and Abū al-ʿĀṣ to divorce the Messenger's daughters Ruqayyah or Umm Kulthūm."
+    },
+    {
+      "id": 161677,
+      "intro_en": "✧ Abū al-ʿĀṣ was held captive after Badr, and Zaynab sent Khadījah's necklace as his ransom, prompting the Messenger ﷺ to release him and return the necklace."
+    },
+    {
+      "id": 161678,
+      "intro_en": "✧ After Abu al-ʿAṣ reached Makkah, Zaynab prepared to join her father, and Hind bt. ʿUtbah tried to discern her intention while offering help."
+    },
+    {
+      "id": 161679,
+      "intro_en": "✧ When Zaynab set out openly, Habbār frightened her and caused a miscarriage; after Abū Sufyān's counsel she was returned, then slipped away secretly to Zayd b. Ḥārithah and his companion."
+    },
+    {
+      "id": 161680,
+      "intro_en": "✧ The Messenger ﷺ initially ordered the burning of Habbār b. al-Aswad and Nāfiʿ b. ʿAbd Qays if captured, then revoked it and commanded their execution only."
+    },
+    {
+      "id": 161681,
+      "intro_en": "✧ Abū al-ʿĀṣ's caravan property was seized by a Muslim raiding party, Zaynab granted him protection, and the property was returned; he then became Muslim and his marriage to Zaynab remained valid."
+    },
+    {
+      "id": 161682,
+      "intro_en": "✧ The Prophet ﷺ released without ransom captives including Abū al-ʿĀṣ, al-Muṭṭalib b. Ḥanṭab, Ṣayfī b. Abī Rifāʿah, and needy poet Abū ʿAzzah, with ransoms otherwise ranging from one to four thousand dirhams."
+    },
+    {
+      "id": 161683,
+      "intro_en": "✧ ʿUmayr b. Wahb plotted with Ṣafwān b. Umayyah to kill the Prophet ﷺ, but upon being confronted with the secret conversation, he embraced Islam and returned to Makkah as a caller to Islam."
+    },
+    {
+      "id": 161684,
+      "intro_en": "✧ Lists the Quraysh clans and individuals responsible for feeding the people, including Banū Hāshim, Banū ʿAbd Shams, Banū Nawfal, Banū Asad, Banū ʿAbd al-Dār, Banū Makhzūm, Banū Jumaḥ, Banū Sahm, and Banū ʿĀmir."
+    },
+    {
+      "id": 161685,
+      "intro_en": "✧ Names the horses ridden by Muslims at Badr: al-Sabal, Baʿzajah (or Sabḥah), and al-Yaʿsūb."
+    },
+    {
+      "id": 161686,
+      "intro_en": "✧ States that the polytheists brought one hundred horses to the battle of Badr."
+    },
+    {
+      "id": 161687,
+      "intro_en": "✧ Explains that Sūrat al-Anfāl was revealed after Badr, particularly addressing the Muslims' dispute over the spoils."
+    },
+    {
+      "id": 161688,
+      "intro_en": "✧ Describes Quranic verses revealed concerning the believers' reluctant march to meet Quraysh instead of only seeking the caravan."
+    },
+    {
+      "id": 161689,
+      "intro_en": "✧ Cites verses in which God promises the Muslims angelic assistance and victory while urging them to stand firm in battle."
+    },
+    {
+      "id": 161690,
+      "intro_en": "✧ Interprets the verse 'You did not throw when you threw, but Allah threw' as referring to the Prophet's ﷺ casting pebbles at the polytheists."
+    },
+    {
+      "id": 161691,
+      "intro_en": "✧ Relates the revelation of 'If you seek judgment...' to Abū Jahl's prayer for destruction on the morning of Badr."
+    },
+    {
+      "id": 161692,
+      "intro_en": "✧ Explains Qur'anic verses urging the Muslims to obey Allah and His Messenger, warning them not to be like the hypocrites who hear but do not obey."
+    },
+    {
+      "id": 161693,
+      "intro_en": "✧ Mentions God's favour upon the Messenger ﷺ when the people plotted to kill, restrain, or expel him, and God's plotting delivered him."
+    },
+    {
+      "id": 161694,
+      "intro_en": "✧ Describes Quraysh's delusion and their seeking judgment by demanding punishment if Muhammad's message was true, and the revelation that Allah would not punish them while the Prophet ﷺ was among them."
+    },
+    {
+      "id": 161695,
+      "intro_en": "✧ Relates how the disbelievers spent their wealth to help Abū Sufyān and Quraysh in the caravan, and the warning that they will regret it and be vanquished."
+    },
+    {
+      "id": 161696,
+      "intro_en": "✧ Commands the believers to fight the disbelievers until there is no more fitnah and the religion is entirely for God, and reassures them of God's protection."
+    },
+    {
+      "id": 161697,
+      "intro_en": "✧ Explains the division of the spoils, stating that one-fifth is for Allah, the Messenger, near kin, orphans, the needy, and the wayfarer, and describes the encounter at Badr."
+    },
+    {
+      "id": 161698,
+      "intro_en": "✧ Mentions God's kindness to the Messenger ﷺ by showing the enemy as few in a dream, which emboldened the Muslims and prevented weakness."
+    },
+    {
+      "id": 161699,
+      "intro_en": "✧ Teaches the Muslims war stratagems, urging steadfastness, obedience, and sincerity, and warns them not to be like Abū Jahl and his companions who went out boastfully."
+    },
+    {
+      "id": 161700,
+      "intro_en": "✧ The Qurʾānic revelation rebukes the Prophet for taking captives and spoils before slaughtering the enemy, then permits such spoils as a special mercy."
+    },
+    {
+      "id": 161701,
+      "intro_en": "✧ Believers are commanded to form bonds of guardianship only among themselves and with relatives in inheritance, avoiding alliances with disbelievers."
+    },
+    {
+      "id": 161702,
+      "intro_en": "✧ The names and lineages of the Muslims from Banū Hāshim and other Qurayshī clans who witnessed the battle of Badr are listed."
+    },
+    {
+      "id": 161703,
+      "intro_en": "✧ The Emigrants who witnessed Badr and received a share of the spoils totaled eighty-three men, with additional names mentioned by other scholars."
+    },
+    {
+      "id": 161704,
+      "intro_en": "✧ This section lists the names and lineages of the Anṣār from the Aws, their confederates, and clients who were present at Badr."
+    },
+    {
+      "id": 161705,
+      "intro_en": "✧ The Aws contingent at Badr numbered sixty-one men, followed by a detailed list of the Khazraj participants and their clans."
+    },
+    {
+      "id": 161706,
+      "intro_en": "✧ The total number of Muslims who witnessed Badr was three hundred and fourteen men, comprising eighty-three Emigrants, sixty-one Aws, and one hundred and seventy Khazraj."
+    },
+    {
+      "id": 161707,
+      "intro_en": "✧ Six Muslims were martyred at Badr, including four from Quraysh and two from the Anṣār, whose names and clans are recorded."
+    },
+    {
+      "id": 161708,
+      "intro_en": "✧ Lists the Quraysh polytheists killed at Badr by clan, including those omitted by Ibn Isḥāq, with their slayers and variant reports, totalling seventy."
+    },
+    {
+      "id": 161709,
+      "intro_en": "✧ Enumerates the Quraysh captives taken at Badr by clan, counting forty-three preserved names plus additional captives mentioned by Ibn Hishām."
+    },
+    {
+      "id": 161710,
+      "intro_en": "✧ Records poems composed about Badr by combatants and relatives, including elegies for the slain and satires between Quraysh and the Muslims."
+    },
+    {
+      "id": 161711,
+      "intro_en": "✧ States that the Messenger ﷺ completed the affair of Badr at the end of Ramaḍān or in Shawwāl."
     },
     {
       "id": 161712,
-      "intro_en": "✧ The Prophet ﷺ leads an expedition against the Banū Sulaym at al-Kadar, but they flee and he captures their herds."
+      "intro_en": "✧ Relates the Prophet's ﷺ raid on Banū Sulaym at al-Kudr seven nights after Badr, staying three nights and returning without battle."
     },
     {
       "id": 161713,
-      "intro_en": "✧ Abū Sufyān raids the outskirts of Madinah and the Prophet ﷺ pursues him, with the expedition named for the provision bags the enemy discarded."
+      "intro_en": "✧ Covers Abū Sufyān's raid on Madinah after Badr and the Prophet's ﷺ pursuit, named al-Sawīq from the provisions the enemy discarded."
+    },
+    {
+      "id": 161714,
+      "intro_en": "✧ Describes Abū Sufyān's oath to raid Madinah, his night visit to Banū al-Naḍīr, burning of palm enclosures, killing two Muslims, and the Prophet's ﷺ pursuit."
+    },
+    {
+      "id": 161715,
+      "intro_en": "✧ Explains that the expedition was named al-Sawīq because the Muslims found much sawīq among the provisions Quraysh threw away, and includes Abū Sufyān's poem."
     },
     {
       "id": 161716,
-      "intro_en": "✧ The Prophet ﷺ marches against Ghatafān at Dhū Amar, but the enemy flees to the mountaintops, and he returns without fighting."
+      "intro_en": "✧ The Messenger ﷺ raided Najd against Ghatafān, stayed in that region during Ṣafar, and returned to Madinah without encountering hostilities."
     },
     {
       "id": 161717,
-      "intro_en": "✧ The Prophet ﷺ leads an expedition to Buḥrān in the territory of the Banū Sulaym to confront a reported gathering of enemies."
+      "intro_en": "✧ The Messenger ﷺ raided toward Quraysh, reached Buḥrān near al-Furuʿ, stayed for two months, and returned without battle."
     },
     {
       "id": 161718,
-      "intro_en": "✧ The Jewish tribe of Banū Qaynuqāʿ breaks its pact with the Muslims and is besieged by the Prophet ﷺ until it surrenders and is expelled."
+      "intro_en": "✧ It covers the Messenger's ﷺ warning to Banū Qaynuqāʿ, their defiant reply, ʿAbd Allāh b. Ubayy's intercession for them, and ʿUbādah b. al-Ṣāmit's renunciation of their alliance."
+    },
+    {
+      "id": 161719,
+      "intro_en": "✧ The Messenger ﷺ gathered the Banū Qaynuqāʿ, warned them to submit to God, and they responded defiantly; their breach of pact and a market incident sparked the conflict."
+    },
+    {
+      "id": 161720,
+      "intro_en": "✧ After the Messenger ﷺ besieged the Banū Qaynuqāʿ and they surrendered, ʿAbd Allāh b. Ubayy insisted the Messenger ﷺ treat his clients well, leading to their release."
+    },
+    {
+      "id": 161721,
+      "intro_en": "✧ ʿUbādah b. al-Ṣāmit renounced the alliance with Banū Qaynuqāʿ before God and the Messenger ﷺ, prompting Quranic verses about not taking Jews and Christians as protectors."
     },
     {
       "id": 161722,
-      "intro_en": "✧ Zayd b. Ḥārithah intercepts a Quraysh caravan at al-Qaradah, seizing its goods while the guards flee."
+      "intro_en": "✧ It describes Zayd b. Ḥārithah's seizure of a Quraysh caravan at al-Qaradah and includes Ḥassān's poetry rebuking Quraysh."
+    },
+    {
+      "id": 161723,
+      "intro_en": "✧ Zayd b. Ḥārithah captured a Quraysh caravan carrying silver at al-Qaradah, but the men, including Abū Sufyān b. Ḥarb, escaped."
+    },
+    {
+      "id": 161724,
+      "intro_en": "✧ Ḥassān b. Thābit rebukes Quraysh in verse for taking the road toward the latter Badr expedition, and Abū Sufyān b. al-Ḥārith composed a rebuttal."
     },
     {
       "id": 161725,
-      "intro_en": "✧ Kaʿb b. al-Ashraf, who insulted the Muslims and composed verses against their women, is killed by a group of the Anṣār."
+      "intro_en": "✧ Includes Kaʿb b. al-Ashraf's denial of the Muslims' victory report, his love poetry and the plot to kill him, and verses by Kaʿb b. Mālik and Ḥassān on his slaying."
+    },
+    {
+      "id": 161726,
+      "intro_en": "✧ Kaʿb b. al-Ashraf disbelieves the envoys' news of polytheist deaths at Badr, travels to Makkah to incite against the Prophet ﷺ, and exchanges poetic blame with Ḥassān and Maymūnah."
+    },
+    {
+      "id": 161727,
+      "intro_en": "✧ Kaʿb b. al-Ashraf's amorous verses harm Muslim women, prompting Muḥammad b. Maslamah and companions to lure and kill him at night with the Prophet's ﷺ approval."
+    },
+    {
+      "id": 161728,
+      "intro_en": "✧ Kaʿb b. Mālik composes verses celebrating the slaying of Kaʿb b. al-Ashraf, found within his ode on the day of Banū al-Naḍīr."
+    },
+    {
+      "id": 161729,
+      "intro_en": "✧ Ḥassān b. Thābit praises the night raiders who killed Kaʿb b. al-Ashraf and Sallām b. Abī al-Ḥuqayq, mentioning both in one poem."
     },
     {
       "id": 161730,
-      "intro_en": "✧ Relates the affair of Muḥayyiṣah and Ḥuwayyiṣah."
+      "intro_en": "✧ Muḥayyiṣah kills the Jew Ibn Sunaynah on the Prophet's ﷺ order, leading his brother Ḥuwayyiṣah to embrace Islam; includes alternative account of Ḥuwayyiṣah's conversion and Muḥayyiṣah's verses."
     },
     {
       "id": 161731,
-      "intro_en": "✧ Covers the period between the Messenger's return from Najrān and the expedition of Uḥud."
+      "intro_en": "✧ States that the Prophet ﷺ remained in Madinah from Jumādā al-Ākhirah through Ramaḍān before Quraysh's raid at Uḥud in Shawwāl of year three."
     },
     {
       "id": 161732,
-      "intro_en": "✧ Details the battle of Uḥud, including incitement, key casualties, and aftermath."
+      "intro_en": "✧ The expedition of Uḥud covers Quraysh's incitement and march, the battle, deaths and mutilation of Muslim martyrs, pursuit of the enemy, and subsequent revelations and poetry."
+    },
+    {
+      "id": 161733,
+      "intro_en": "✧ Leaders of Quraysh incite war against Muḥammad, gather allies and women, and debate with the Messenger ﷺ about whether to remain in Madinah or meet the enemy."
+    },
+    {
+      "id": 161734,
+      "intro_en": "✧ Abū Dujānah's taking of the sword, his swagger in battle, and the apostate Abū ʿĀmir's failed attempt to incite the Aws against the Muslims."
+    },
+    {
+      "id": 161735,
+      "intro_en": "✧ Abū Sufyān provokes the banner-bearers of Banū ʿAbd al-Dār, Hind incites the Quraysh women to fight, and Abū Dujānah kills a polytheist but spares Hind."
+    },
+    {
+      "id": 161736,
+      "intro_en": "✧ Waḥshī kills Ḥamzah with a javelin to win his freedom, later relates the account to the Messenger ﷺ, and ultimately kills Musaylimah at al-Yamāmah."
+    },
+    {
+      "id": 161737,
+      "intro_en": "✧ Muṣʿab b. ʿUmayr is killed while defending the Messenger ﷺ, and those who carried the banner on both sides, including Abū Saʿd b. Abī Ṭalḥah, are slain."
+    },
+    {
+      "id": 161738,
+      "intro_en": "✧ ʿĀṣim b. Thābit kills two sons of Ṭalḥah, whose mother vows to drink wine from his skull, and Ḥamzah kills ʿUthmān b. Abī Ṭalḥah."
+    },
+    {
+      "id": 161739,
+      "intro_en": "✧ Ḥanẓalah b. Abī ʿĀmir is killed by Shaddād b. al-Aswad after leaving in a state of major ritual impurity, and the angels wash him."
+    },
+    {
+      "id": 161740,
+      "intro_en": "✧ Relates al-Zubayr's eyewitness account of the Muslim defeat at Uḥud, the fall of the Quraysh banner, and Ḥassān's verses on its bearers."
+    },
+    {
+      "id": 161741,
+      "intro_en": "✧ Describes the wounds suffered by the Messenger ﷺ at Uḥud, the defense by Companions such as Ṭalḥah and Umm ʿUmārah, and related episodes."
+    },
+    {
+      "id": 161742,
+      "intro_en": "✧ Narrates the killing of Ubayy b. Khalaf by the Messenger ﷺ after his threat, and includes Ḥassān's poetry on the event."
+    },
+    {
+      "id": 161743,
+      "intro_en": "✧ Describes the Messenger's arrival at the mountain pass, ʿAlī fetching water from al-Mihrās, and the repelling of Khālid b. al-Walīd's cavalry."
+    },
+    {
+      "id": 161744,
+      "intro_en": "✧ Mentions the Prophet ﷺ praying the noon prayer seated due to wounds, and the accidental killing of al-Yamān by Muslims."
+    },
+    {
+      "id": 161745,
+      "intro_en": "✧ Relates the wounding of Yazīd b. Ḥāṭib, his father's hypocritical words, and the suicide of the brave but hypocritical Quzmān."
+    },
+    {
+      "id": 161746,
+      "intro_en": "✧ Tells of the Jewish convert Mukhayrīq fighting and dying for the Muslims, and the hypocrite al-Ḥārith b. Suwayd's killing of al-Mujadhdhar."
+    },
+    {
+      "id": 161747,
+      "intro_en": "✧ Narrates how the lame ʿAmr b. al-Jamūḥ insisted on joining the battle of Uḥud and attained martyrdom."
+    },
+    {
+      "id": 161748,
+      "intro_en": "✧ Hind bt. ʿUtbah mutilated the slain at Uḥud, especially Ḥamzah, and exchanged satirical verses with Hind bt. Uthāthah."
+    },
+    {
+      "id": 161749,
+      "intro_en": "✧ Abū Sufyān disavowed the mutilation and challenged the Muslims to meet at Badr the following year, after which ʿAlī tracked the departing Meccans."
+    },
+    {
+      "id": 161750,
+      "intro_en": "✧ The Muslims searched for and identified their slain at Uḥud, including the dying Saʿd b. al-Rabīʿ and a report about his daughter in Abū Bakr's care."
     },
     {
       "id": 161751,
-      "intro_en": "✧ Addresses the mutilation of Ḥamza after his death, the Messenger's grief, and revelation prohibiting mutilation."
+      "intro_en": "✧ The Prophet grieved for Ḥamzah and threatened the polytheists with retaliation, after which a revelation prohibited mutilation."
+    },
+    {
+      "id": 161754,
+      "intro_en": "✧ The Messenger prayed over Ḥamzah and the other slain, totaling seventy-two prayers."
+    },
+    {
+      "id": 161755,
+      "intro_en": "✧ Ṣafiyyah bt. ʿAbd al-Muṭṭalib came to view her martyred brother Ḥamzah after the Prophet initially sought to turn her back, and she mourned him with patience."
+    },
+    {
+      "id": 161756,
+      "intro_en": "✧ The burial of ʿAbd Allāh b. Jaḥsh with Ḥamzah is recounted, along with the Prophet's order to bury the slain where they fell and his instructions for multiple bodies in one grave."
+    },
+    {
+      "id": 161757,
+      "intro_en": "✧ Ḥamnah bt. Jaḥsh received the news of her brother ʿAbd Allāh, her maternal uncle Ḥamzah, and her husband Muṣʿab b. ʿUmayr, and her reaction prompted the Prophet's remark about a husband's special place."
+    },
+    {
+      "id": 161758,
+      "intro_en": "✧ The Messenger ﷺ weeps on hearing the Anṣārī women wailing over their slain and arranges for them to weep over Ḥamzah, with wailing later forbidden."
+    },
+    {
+      "id": 161759,
+      "intro_en": "✧ A woman of the Banū Dīnār, after losing her husband, brother, and father at Uḥud, dismisses the loss upon seeing the Messenger ﷺ unharmed."
+    },
+    {
+      "id": 161760,
+      "intro_en": "✧ The Messenger ﷺ and ʿAlī hand their swords to Fāṭimah to wash after Uḥud, and Ibn Hishām adds notes on Dhū al-Faqār and the day's date."
+    },
+    {
+      "id": 161761,
+      "intro_en": "✧ The Messenger ﷺ departs the next day in pursuit of the enemy to overawe them, accompanied by Jābir and two wounded Anṣārī brothers."
+    },
+    {
+      "id": 161762,
+      "intro_en": "✧ The Messenger ﷺ appoints Ibn Umm Maktūm over Madinah when he goes out to Ḥamrāʾ al-Asad and stays three days there before returning."
+    },
+    {
+      "id": 161763,
+      "intro_en": "✧ Maʿbad al-Khuzāʿī deceives Abū Sufyān into thinking a large Muslim army pursues him, causing the Quraysh to abandon their plan of a second attack."
+    },
+    {
+      "id": 161764,
+      "intro_en": "✧ A caravan from ʿAbd al-Qays conveys Abū Sufyān's threat of returning to extirpate the Muslims, and Ṣafwān persuades him not to attack."
+    },
+    {
+      "id": 161765,
+      "intro_en": "✧ Abū ʿAzzah and Muʿāwiyah b. al-Mughīrah are both killed after the expedition, and ʿAbd Allāh b. Ubayy's attempted station in the mosque is rejected by the Muslims."
+    },
+    {
+      "id": 161766,
+      "intro_en": "✧ The day of Uḥud was a divine trial that tested the believers and exposed the hypocrites while honoring chosen martyrs."
+    },
+    {
+      "id": 161767,
+      "intro_en": "✧ God revealed sixty verses of Āl ʿImrān concerning Uḥud, with Ibn Hishām and Ibn Isḥāq explaining their interpretations and rare words."
+    },
+    {
+      "id": 161768,
+      "intro_en": "✧ The spirits of the Uḥud martyrs were placed in green birds in Paradise, desiring to return and be slain again for God."
+    },
+    {
+      "id": 161769,
+      "intro_en": "✧ The believers who marched to Ḥamrāʾ al-Asad despite their wounds are praised, and God's favor in turning away the enemy is described."
+    },
+    {
+      "id": 161770,
+      "intro_en": "✧ Lists the names of the Emigrant and Anṣārī martyrs of Uḥud by clan, with variations noted by Ibn Hishām and a total of sixty-five."
+    },
+    {
+      "id": 161771,
+      "intro_en": "✧ Lists the twenty-two polytheists killed at Uḥud by clan, including the standard-bearers of Banū ʿAbd al-Dār and others."
+    },
+    {
+      "id": 161772,
+      "intro_en": "✧ The total number of polytheists killed by God on the day of Uḥud was twenty-two men."
+    },
+    {
+      "id": 161773,
+      "intro_en": "✧ Contains the poetry composed on Uḥud by figures such as Ḥubayrah, Ḥassān, Kaʿb, Ibn al-Zibaʿrā, Ḍirār, and ʿAmr b. al-ʿĀṣ, along with their replies."
     },
     {
       "id": 161774,
-      "intro_en": "✧ Recounts the day of al-Rajīʿ, when ʿAḍal and al-Qārah requested teachers and treachery followed."
+      "intro_en": "✧ Covers the betrayal and killing of six Muslim teachers sent to ʿAḍal and al-Qārah at al-Rajīʿ, and the Qurʾānic verses revealed about the martyrs and hypocrites."
+    },
+    {
+      "id": 161775,
+      "intro_en": "✧ Relates how ʿAḍal and al-Qārah requested instructors, then betrayed the six companions at al-Rajīʿ, leading to the deaths of three fighters and the capture, sale, and execution of Khubayb and Zayd b. al-Dathinah."
+    },
+    {
+      "id": 161776,
+      "intro_en": "✧ Presents Qurʾānic commentary on the hypocrites' reaction to al-Rajīʿ, along with poetry by Khubayb and Ḥassān lamenting the martyrs and satirizing Hudhayl."
     },
     {
       "id": 161777,
-      "intro_en": "✧ Describes the affair of Biʾr Maʿūnah in Ṣafar of year four."
+      "intro_en": "✧ Describes the dispatch of forty companions under al-Mundhir b. ʿAmr to Najd at Abū Barāʾ's request, their massacre at Biʾr Maʿūnah by ʿĀmir b. al-Ṭufayl and Sulaym clans, and subsequent poetic laments."
     },
     {
       "id": 161778,
-      "intro_en": "✧ Covers the expulsion of the Banū al-Naḍīr in year four, including the request for bloodwit and poetry."
+      "intro_en": "✧ Covers the Messenger's request for help with bloodwit from Banū al-Naḍīr, their plot to kill him, the siege and expulsion to Khaybar, and the accompanying poetry."
+    },
+    {
+      "id": 161779,
+      "intro_en": "✧ Narrates the Messenger's visit to Banū al-Naḍīr over the bloodwit, their assassination conspiracy via ʿAmr b. Jaḥḥāsh, the divinely exposed plot, siege, expulsion under agreed conditions, and Qurʾānic revelations in Sūrat al-Ḥashr."
+    },
+    {
+      "id": 161780,
+      "intro_en": "✧ Contains poetic exchanges concerning the expulsion of Banū al-Naḍīr, including laments, satires by Muslim poets, and replies by Jewish poets like Sammāk."
     },
     {
       "id": 161781,
-      "intro_en": "✧ Narrates the expedition of Dhāt al-Riqāʿ in year four."
+      "intro_en": "✧ Recounts the raid on Najd against Banū Muḥārib and Banū Thaʿlabah, the fear prayer during the standoff, Ghawrath's failed assassination attempt on Muḥammad ﷺ, and Jābir's camel transaction and the night guard's steadfastness."
     },
     {
       "id": 161782,
-      "intro_en": "✧ Describes the latter expedition of Badr."
+      "intro_en": "✧ The Messenger ﷺ went to Badr for the appointed meeting with Abū Sufyān, waited eight days, while Abū Sufyān turned back, and poetry related to the expedition is included."
     },
     {
       "id": 161783,
-      "intro_en": "✧ Recounts the expedition of Dūmat al-Jandal."
+      "intro_en": "✧ The Messenger ﷺ raided Dūmat al-Jandal in Rabīʿ al-Awwal of year five, appointing Sibāʿ b. ʿUrfuṭah over Madinah, and returned without encountering fighting."
     },
     {
       "id": 161784,
-      "intro_en": "✧ Details the expedition of the Trench, including its date, tribulations, and key events."
+      "intro_en": "✧ The Trench expedition covers its date, Jewish incitement of Quraysh and Ghaṭafān, the confederates' advance, trench digging, miracles, Ḥuyayy's instigation of Kaʿb, Muslim fear, peace negotiations, ʿAlī's duel, Nuʿaym's stratagem, and the discord among the polytheists."
+    },
+    {
+      "id": 161785,
+      "intro_en": "✧ The expedition of al-Khandaq took place in Shawwāl of the year five."
+    },
+    {
+      "id": 161786,
+      "intro_en": "✧ Jewish leaders from Banū al-Naḍīr and Banū Wāʾil went to Quraysh, inciting them to war and claiming Quraysh's religion was better, prompting the revelation of Qur'anic verses."
+    },
+    {
+      "id": 161787,
+      "intro_en": "✧ The same Jewish delegation went to Ghaṭafān of Qays ʿAylān, urging them to join the war against the Messenger ﷺ and informing them of Quraysh's support."
+    },
+    {
+      "id": 161788,
+      "intro_en": "✧ Quraysh under Abū Sufyān, Ghaṭafān under ʿUyaynah b. Ḥiṣn, al-Ḥārith b. ʿAwf, and Misʿar b. Rukhaylah advanced against the Muslims."
+    },
+    {
+      "id": 161789,
+      "intro_en": "✧ Upon hearing of the confederates, the Messenger ﷺ ordered a trench dug around Madinah, working alongside the believers while hypocrites slipped away and sincere Muslims briefly excused themselves for necessities."
+    },
+    {
+      "id": 161790,
+      "intro_en": "✧ God revealed verses distinguishing faithful believers who ask permission before leaving from hypocrites who slip away from the trench work."
+    },
+    {
+      "id": 161791,
+      "intro_en": "✧ While digging the trench, the Muslims chanted rajaz verses about Juʿayl, whom the Prophet ﷺ renamed ʿAmr, and he echoed their words."
+    },
+    {
+      "id": 161792,
+      "intro_en": "✧ Miracles occurred during the trench digging: a hard rock crumbled after the Prophet ﷺ sprinkled water on it, dates and a small ewe fed multitudes, and flashes foretold conquests of Yemen, Syria, the West, and the East."
+    },
+    {
+      "id": 161793,
+      "intro_en": "✧ Ibn Umm Maktūm was appointed over Madinah, and the Prophet ﷺ ordered that women and children be placed in the strongholds."
+    },
+    {
+      "id": 161794,
+      "intro_en": "✧ Ḥuyayy b. Akhṭab persuaded Kaʿb b. Asad of Banū Qurayẓa to break his covenant with the Prophet ﷺ, promising to share his fate if Quraysh and Ghaṭafān withdrew."
+    },
+    {
+      "id": 161795,
+      "intro_en": "✧ The Prophet ﷺ sent Saʿd b. Muʿādh, Saʿd b. ʿUbādah, and others to investigate Kaʿb's betrayal; they reported the treachery through a veiled allusion to ʿAḍal and al-Qārah."
+    },
+    {
+      "id": 161796,
+      "intro_en": "✧ Fear and hardship intensified among the Muslims, while hypocrisy surfaced through remarks by Muʿattib b. Qushayr and requests for leave by Aws b. Qayẓī."
+    },
+    {
+      "id": 161797,
+      "intro_en": "✧ The Prophet ﷺ considered ceding a third of Madinah's dates to Ghaṭafān, but Saʿd b. Muʿādh and Saʿd b. ʿUbādah rejected the idea, erasing the draft agreement and choosing war."
+    },
+    {
+      "id": 161798,
+      "intro_en": "✧ Horsemen from Quraysh, including ʿAmr b. ʿAbd Wudd, ʿIkrimah b. Abī Jahl, Hubayrah b. Abī Wahb, and Ḍirār b. al-Khaṭṭāb, armed themselves, rode past the Banū Kinānah, and marveled at the trench as a stratagem unknown to the Arabs."
+    },
+    {
+      "id": 161799,
+      "intro_en": "✧ Salmān al-Fārisī is credited with advising the trench, and the Prophet ﷺ declared him as one of the ahl al-bayt in response to competing claims from the Emigrants and Helpers."
+    },
+    {
+      "id": 161800,
+      "intro_en": "✧ ʿAlī b. Abī Ṭālib challenged and killed ʿAmr b. ʿAbd Wudd in single combat after ʿAmr refused his call to Islam, and composed verses about the deed though their attribution is doubted."
+    },
+    {
+      "id": 161801,
+      "intro_en": "✧ Ḥassān b. Thābit lampooned ʿIkrimah b. Abī Jahl for throwing down his lance and fleeing from ʿAmr, comparing his flight to an ostrich and his neck to a hyena cub's back."
+    },
+    {
+      "id": 161802,
+      "intro_en": "✧ The Muslims' battle-cry was 'Ḥā Mīm, they will not be helped,' and Saʿd b. Muʿādh was wounded by an arrow shot by either Ḥibbān b. Qays, Abū Usāmah al-Jushamī, or Khafājah b. ʿĀṣim, leading to his prayer regarding Qurayẓah."
+    },
+    {
+      "id": 161803,
+      "intro_en": "✧ Ṣafiyyah bt. ʿAbd al-Muṭṭalib killed a Jewish man who was circling the fortress of Fāriʿ after Ḥassān b. Thābit refused to do so, citing his admitted cowardice."
+    },
+    {
+      "id": 161804,
+      "intro_en": "✧ Nuʿaym b. Masʿūd, having secretly become Muslim, deceived the Banū Qurayẓah, Quraysh, and Ghaṭafān into mutual suspicion by advising each side that the others would betray them, thereby sowing discord."
+    },
+    {
+      "id": 161805,
+      "intro_en": "✧ Dissension between Quraysh, Ghaṭafān, and the Banū Qurayẓah intensified over hostages, and a violent wind destroyed the polytheists' camp, prompting Abū Sufyān to order departure after Hudhayfah's reconnaissance mission."
     },
     {
       "id": 161806,
-      "intro_en": "✧ Covers the expedition against Banū Qurayẓa in year five, including judgment, execution, and spoils."
+      "intro_en": "✧ It recounts Gabriel's command to fight Banū Qurayẓa, the expedition from Madinah, their arbitration and slaughter, division of spoils, revealed verses, death of Saʿd b. Muʿādh, and martyrs."
+    },
+    {
+      "id": 161807,
+      "intro_en": "✧ Gabriel, appearing to the Prophet ﷺ, conveys God's command to march against Banū Qurayẓa, and the Muslims are ordered not to pray ʿaṣr except at their fortresses."
+    },
+    {
+      "id": 161808,
+      "intro_en": "✧ Ibn Umm Maktūm is appointed over Madinah, ʿAlī is sent ahead, the Prophet ﷺ besieges the Jews, and the section records the counsel of Kaʿb b. Asad, the repentance of Abū Lubābah, and the conversions and departure of certain men."
+    },
+    {
+      "id": 161809,
+      "intro_en": "✧ Banū Qurayẓa submit to the judgment of the Messenger ﷺ, and the wounded Saʿd b. Muʿādh is appointed arbiter, ruling that their men be killed and women and children taken captive."
+    },
+    {
+      "id": 161810,
+      "intro_en": "✧ The captured men of Banū Qurayẓa are beheaded in trenches in Madinah, including Ḥuyayy b. Akhṭab and Kaʿb b. Asad, with one woman executed; some individuals are spared through intercession."
+    },
+    {
+      "id": 161811,
+      "intro_en": "✧ The Prophet ﷺ divides the spoils of Banū Qurayẓa, allotting shares to cavalry and infantry and taking a fifth, and later he keeps Rayḥānah bt. ʿAmr as his concubine."
+    },
+    {
+      "id": 161812,
+      "intro_en": "✧ This section discusses Qurʾanic verses revealed about the trench and Banū Qurayẓa, including commentary on God's sending wind and unseen hosts, the believers' trials, and hypocrites' behavior, with philological explanations."
+    },
+    {
+      "id": 161813,
+      "intro_en": "✧ Saʿd b. Muʿādh dies from his wound after the affair of Banū Qurayẓa, and the section reports Gabriel's statement about heaven's gates and the Throne shaking, as well as the grave's squeezing and elegies for him."
+    },
+    {
+      "id": 161814,
+      "intro_en": "✧ Lists the Muslim and polytheist dead from the Trench, including six Muslims, three polytheists, and the refusal to sell Nawfal's body, then notes martyrs at Banū Qurayẓah."
+    },
+    {
+      "id": 161815,
+      "intro_en": "✧ Records the Prophet's glad tidings of future raids on Quraysh and collects extensive poetry from the Trench and Qurayẓah by poets such as Ḍirār, Kaʿb, Ḥassān, and Hubayrah."
     },
     {
       "id": 161816,
-      "intro_en": "✧ Recounts the assassination of the Jewish leader Sallām b. Abī al-Ḥuqayq at Khaybar by a Muslim raiding party."
+      "intro_en": "✧ Narrates the Khazraj's assassination of Sallām b. Abī al-Ḥuqayq in Khaybar, including the selection of the party, their entry, killing, confirmation of death, and Ḥassān's praise poem."
     },
     {
       "id": 161817,
-      "intro_en": "✧ Narrates the separate journeys of ʿAmr b. al-ʿāṣ and Khālid b. al-Walīd toward Islam, including ʿAmr's visit to the Negus and their eventual agreement to convert."
+      "intro_en": "✧ Covers the Islam of ʿAmr b. al-ʿĀṣ and Khālid b. al-Walīd through ʿAmr's visit to the Negus and their subsequent agreement."
+    },
+    {
+      "id": 161818,
+      "intro_en": "✧ ʿAmr b. al-ʿĀṣ travels to the Negus with Quraysh companions, encounters ʿAmr b. Umayyah al-Ḍamrī, and the Negus testifies to the Prophet's truth, leading ʿAmr to secretly embrace Islam."
+    },
+    {
+      "id": 161819,
+      "intro_en": "✧ ʿAmr b. al-ʿĀṣ and Khālid b. al-Walīd meet and agree to embrace Islam, go to the Prophet in Madinah, pledge allegiance, and Ibn al-Zibaʿrā composes poetry about Ibn Ṭalḥah's conversion."
     },
     {
       "id": 161820,
-      "intro_en": "✧ Describes the Messenger's expedition against the Banū Liḥyān tribe, including his departure and Kaʿb's poetry commemorating the event."
+      "intro_en": "✧ Describes the Messenger's expedition against Banū Liḥyān to avenge al-Rajīʿ and includes Kaʿb's poetry on it."
+    },
+    {
+      "id": 161821,
+      "intro_en": "✧ The Messenger ﷺ departs for Banū Liḥyān, appoints Ibn Umm Maktūm over Madinah, takes a misleading route, finds them alerted, advances to ʿUsfān, and returns with a supplication."
+    },
+    {
+      "id": 161822,
+      "intro_en": "✧ Kaʿb b. Mālik's verses rebuke Banū Liḥyān for not uniting to face the Muslims, likening them to fleeing hyraxes."
     },
     {
       "id": 161823,
-      "intro_en": "✧ Covers the raid on the Prophet's milch-camels by Ibn Ḥiṣn, the Muslim pursuit, names of horses, casualties, spoil distribution, and associated poems by Ḥassān, Kaʿb, and Shaddād."
+      "intro_en": "✧ The expedition of Dhū Qarad recounts ʿUyaynah b. Ḥiṣn's raid on the Prophet's milch-camels, the Muslim pursuit, slain polytheists, spoils division, and related poetry."
+    },
+    {
+      "id": 161824,
+      "intro_en": "✧ ʿUyaynah b. Ḥiṣn al-Fazārī raids the Prophet's milch-camels at al-Ghābah, and Salamah b. al-Akwaʿ warns the Muslims, initiating the pursuit in which Muḥriz b. Naḍlah is killed."
+    },
+    {
+      "id": 161825,
+      "intro_en": "✧ The names of the Muslims' horses in the expedition of Dhū Qarad are listed, including Dhū al-Limmah, Lāḥiqah, Baʿzajah, Ḥazwah, and al-Janāḥ."
+    },
+    {
+      "id": 161826,
+      "intro_en": "✧ Abū Qatādah kills Ḥabīb b. ʿUyaynah, ʿUkkāshah b. Miḥṣan kills Awbār and his son, and some milch-camels are recovered before the Prophet stops at Dhū Qarad."
+    },
+    {
+      "id": 161827,
+      "intro_en": "✧ The Prophet divides one slaughtered camel per hundred men among his companions, and the wife of al-Ghifārī is told not to slaughter the she-camel she vowed."
+    },
+    {
+      "id": 161828,
+      "intro_en": "✧ Ḥassān b. Thābit's poems on Dhū Qarad praise the Muslim horsemen, anger Saʿd b. Zayd over the attribution to al-Miqdād, and rebuke ʿUyaynah."
+    },
+    {
+      "id": 161829,
+      "intro_en": "✧ Kaʿb b. Mālik's verses on the day of Dhū Qarad extol the Muslim horsemen's courage, generosity, and martial prowess against their enemies."
+    },
+    {
+      "id": 161830,
+      "intro_en": "✧ Shaddād b. ʿĀriḍ al-Jushamī addresses ʿUyaynah b. Ḥiṣn, reproaching his retreat and praising the pursuing Muslim horsemen at Dhū Qarad."
     },
     {
       "id": 161831,
-      "intro_en": "✧ Details the expedition against Banū al-Muṣṭaliq, including its date, causes, the conflict involving Ibn Ubayy, the affair of Juwayriyah, Qurʾānic revelations, and the slander incident concerning ʿĀʾishah."
+      "intro_en": "✧ The expedition against Banū al-Muṣṭaliq covers its timing, cause, the conflict involving Ibn Ubayy, casualties, Juwayriyah's capture and marriage, and the slander of ʿĀʾishah."
+    },
+    {
+      "id": 161832,
+      "intro_en": "✧ The expedition occurred in Shaʿbān of year six after a stay in Madinah, with Abū Dharr al-Ghifārī or Numaylah b. ʿAbd Allāh al-Laythī left in charge."
+    },
+    {
+      "id": 161833,
+      "intro_en": "✧ The Messenger raided Banū al-Muṣṭaliq at al-Muraysīʿ after learning of their gathering, defeating them and taking captives, including Juwayriyah, while a Muslim killed Hishām b. Ṣubābah by mistake."
     },
     {
       "id": 161834,
-      "intro_en": "✧ Recounts the altercation between Jahjāh and Sinān, Ibn Ubayy's seditious remarks, his apology, the Qurʾānic revelation about him, his son's request to kill him, and his people's reproach."
+      "intro_en": "✧ An altercation over water between Jahjāh and Sinān led Ibn Ubayy to speak defiantly, prompting Qurʾānic revelation and his son's offer to kill him."
+    },
+    {
+      "id": 161841,
+      "intro_en": "✧ ʿAlī b. Abī Ṭālib killed Mālik and his son, and ʿAbd al-Raḥmān b. ʿAwf killed a horseman named Aḥmar or Uḥaymir."
+    },
+    {
+      "id": 161842,
+      "intro_en": "✧ Juwayriyah bt. al-Ḥārith, captured and allotted to Thābit b. Qays, was freed and married by the Prophet, leading to the release of a hundred households of her tribe."
+    },
+    {
+      "id": 161843,
+      "intro_en": "✧ Al-Walīd b. ʿUqbah's false report about Banū al-Muṣṭaliq withholding alms prompted Qurʾanic verses on verifying news from a disobedient person."
+    },
+    {
+      "id": 161844,
+      "intro_en": "✧ Al-Zuhrī and others narrate the slander (al-ifk) during the expedition of Banū al-Muṣṭaliq in year six, collected by Ibn Isḥāq from multiple transmitters."
+    },
+    {
+      "id": 161845,
+      "intro_en": "✧ The Messenger ﷺ casts lots among his wives before journeys, and ʿĀʾishah is chosen to accompany him on the expedition of Banū al-Muṣṭaliq."
+    },
+    {
+      "id": 161846,
+      "intro_en": "✧ ʿĀʾishah stays behind to search for her lost necklace, is found by Ṣafwān b. al-Muʿaṭṭal, falls ill in Madinah, and learns of the slander from Umm Misṭaḥ."
+    },
+    {
+      "id": 161847,
+      "intro_en": "✧ The Messenger ﷺ publicly defends his family, the slander is traced to ʿAbd Allāh b. Ubayy and Ḥamnah bt. Jaḥsh, and after consulting ʿAlī and Usāmah he questions Barīrah about ʿĀʾishah."
+    },
+    {
+      "id": 161848,
+      "intro_en": "✧ The Qurʾān reveals ʿĀʾishah's innocence, Abū Bakr restores Misṭaḥ's allowance, Ṣafwān strikes Ḥassān over his satire, and Ḥassān is compensated and flogged."
     },
     {
       "id": 161849,
-      "intro_en": "✧ Describes the events at al-Ḥudaybiyah, including the Messenger's departure, the pledge of al-Riḍwān, the arrival of Suhayl for truce, witnesses, revelation of Sūrat al-Fatḥ, and related matters concerning the oppressed and emigrant women."
+      "intro_en": "✧ The affair of al-Ḥudaybiyah at the end of year six, including the Messenger's departure, the pledge of al-Riḍwān, Quraysh sending Suhayl b. ʿAmr, witnesses to the reconciliation, the revelation of Sūrat al-Fatḥ, oppressed Muslims after the truce, and emigrant women."
+    },
+    {
+      "id": 161850,
+      "intro_en": "✧ The Messenger ﷺ departs for ʿumrah with sacrificial animals, avoids Quraysh through a rugged route, receives envoys Budayl, Mikraz, al-Ḥulays, and ʿUrwah, and sends ʿUthmān to Makkah where he is detained."
+    },
+    {
+      "id": 161851,
+      "intro_en": "✧ The Messenger ﷺ takes the pledge of al-Riḍwān under the tree after news of ʿUthmān's alleged killing, with al-Jadd b. Qays staying behind and Abū Sinān al-Asadī being the first to pledge."
+    },
+    {
+      "id": 161852,
+      "intro_en": "✧ Suhayl b. ʿAmr is sent by Quraysh to negotiate peace, leading to the terms written by ʿAlī, ʿUmar's objections, and the return of Abū Jandal."
+    },
+    {
+      "id": 161853,
+      "intro_en": "✧ The peace document is witnessed by Muslims and polytheists, after which the Messenger sacrifices, shaves, and prays for those who shaved."
+    },
+    {
+      "id": 161854,
+      "intro_en": "✧ Sūrat al-Fatḥ is revealed during the return, confirming the pledge under the tree and foretelling the near victory from the Ḥudaybiyyah peace."
+    },
+    {
+      "id": 161855,
+      "intro_en": "✧ Abū Baṣīr comes to Madinah, kills his escort after being handed back, and gathers oppressed Muslims at al-ʿĪṣ, prompting Quraysh to beg for their repatriation."
+    },
+    {
+      "id": 161856,
+      "intro_en": "✧ Umm Kulthūm bt. ʿUqbah emigrates but is not returned, and ʿUrwah explains the ruling that believing women are tested and kept while dowers are exchanged."
     },
     {
       "id": 161857,
-      "intro_en": "✧ Chronicles the march to Khaybar and its conquest, including the Messenger's supplication, encampments, prohibitions, reconciliation, women's participation, martyrs, divisions of property, Fadak, and later expulsion of Jews by ʿUmar."
+      "intro_en": "✧ The Messenger marches to Khaybar in Muḥarram of year seven, with sections covering the journey, encampments, fighting, reconciliations, spoils, and later expulsion of the Jews."
+    },
+    {
+      "id": 161858,
+      "intro_en": "✧ The Messenger leaves Madinah for Khaybar, appoints Numaylah over the city, and hears ʿĀmir b. al-Akwaʿ recite verses before his martyrdom there."
+    },
+    {
+      "id": 161859,
+      "intro_en": "✧ Upon overlooking Khaybar, the Messenger supplicates for its good and seeks refuge from its evil, then the workers flee upon seeing the army."
+    },
+    {
+      "id": 161860,
+      "intro_en": "✧ Describes the Messenger's route and encampments from Madinah to Khaybar, Ghatafān's aborted support for the Jews, and the conquest of fortresses including Nāʿim and al-Qamūṣ."
+    },
+    {
+      "id": 161861,
+      "intro_en": "✧ Records the Messenger's prohibitions at Khaybar, the Banū Sahm's supplication, and duels in which Marḥab, Yāsir, and other champions were killed, culminating in ʿAlī's victory."
+    },
+    {
+      "id": 161862,
+      "intro_en": "✧ Narrates the interrogation and execution of Kinānah b. al-Rabīʿ for withholding the Banū al-Naḍīr treasure."
+    },
+    {
+      "id": 161863,
+      "intro_en": "✧ Covers the peace terms with Khaybar and Fadak, the poisoned ewe incident, the return journey, spoils-related anecdotes, marriage to Ṣafiyyah, Bilāl's watch, and victory poetry."
+    },
+    {
+      "id": 161864,
+      "intro_en": "✧ Reports the presence of women at Khaybar, their small share of booty, and the account of a Ghifārī woman's menstruation and gift of a necklace."
+    },
+    {
+      "id": 161865,
+      "intro_en": "✧ Lists the Muslim martyrs of Khaybar from Quraysh, the Anṣār, and allied tribes, with their tribal affiliations."
+    },
+    {
+      "id": 161866,
+      "intro_en": "✧ Relates the conversion, death, and promised heavenly wives of al-Aswad the shepherd, a Jewish hireling who joined the Muslims at Khaybar."
+    },
+    {
+      "id": 161867,
+      "intro_en": "✧ Tells how al-Ḥajjāj b. ʿIlāṭ deceived Quraysh to recover his wealth from Makkah, and includes poems by Ḥassān, Nājiyah, and Kaʿb on Khaybar."
+    },
+    {
+      "id": 161868,
+      "intro_en": "✧ Details the distribution of Khaybar's lands among the Prophet ﷺ, his relatives, wives, and Companions, specifying shares, recipients, and quantities."
+    },
+    {
+      "id": 161869,
+      "intro_en": "✧ Records the Prophet's ﷺ allotment of Khaybar wheat to his wives and certain Companions, along with his final bequests to several clans."
+    },
+    {
+      "id": 161870,
+      "intro_en": "✧ Describes the peace agreement granting the Prophet ﷺ half of Fadak, the appointment of assessors over Khaybar, and the blood-money paid after ʿAbd Allāh b. Sahl's killing."
+    },
+    {
+      "id": 161871,
+      "intro_en": "✧ Explains how ʿUmar expelled the Jews from Khaybar based on the Prophet's instruction that two religions should not remain in Arabia."
+    },
+    {
+      "id": 161872,
+      "intro_en": "✧ Lists the Companions who received shares when ʿUmar divided Wādī al-Qurā among the Muslims."
     },
     {
       "id": 161873,
-      "intro_en": "✧ Recounts Jaʿfar b. Abī Ṭālib's return from Abyssinia with other emigrants, the Messenger's joy, and lists of male and female emigrants who came with ʿAmr b. Umayya."
+      "intro_en": "✧ Covers the joy at Jaʿfar b. Abī Ṭālib's return, naming those emigrants brought back from Abyssinia, and separately listing the women emigrants."
+    },
+    {
+      "id": 161874,
+      "intro_en": "✧ Recounts the Messenger's ﷺ embrace and his joy upon Jaʿfar b. Abī Ṭālib's arrival at Khaybar."
+    },
+    {
+      "id": 161875,
+      "intro_en": "✧ Names the sixteen male emigrants from Abyssinia who returned with ʿAmr b. Umayyah, then lists other emigrants who returned later, perished there, or remained."
+    },
+    {
+      "id": 161876,
+      "intro_en": "✧ Lists sixteen women Qurayshī and Arab emigrants to Abyssinia, their clans, deaths en route, and the ten children born to them there."
     },
     {
       "id": 161877,
-      "intro_en": "✧ Describes the compensatory ʿumrah in Dhū al-Qaʿdah of year seven, including the Messenger's departure, the reason for raml between al-Ṣafā and al-Marwa, and his marriage to Maymūna."
+      "intro_en": "✧ Describes the Messenger's ﷺ compensatory ʿumra in Dhū al-Qaʿda year seven, including departure, raml, and marriage to Maymūna."
+    },
+    {
+      "id": 161878,
+      "intro_en": "✧ The Messenger ﷺ departed from Madinah in Dhū al-Qaʿda year seven, leaving ʿUwayf b. al-Aḍbaṭ as governor, to perform the retaliatory ʿumra after Quraysh blocked him the previous year."
+    },
+    {
+      "id": 161879,
+      "intro_en": "✧ Explains the origin of raml: the Prophet ﷺ jogged during ṭawāf to display strength before Quraysh, and Ibn Rawāḥa recited verses while leading his camel."
+    },
+    {
+      "id": 161880,
+      "intro_en": "✧ The Prophet ﷺ married Maymūna bt. al-Ḥārith through al-ʿAbbās during the ʿumra, stayed three days, then left when Quraysh requested, consummating the marriage at Sarif."
     },
     {
       "id": 161881,
-      "intro_en": "✧ Narrates the expedition to Muʾta, its date, the Messenger's appointment of commanders, their deaths in battle, the Prophet's foreknowledge and grief, and the list of martyrs."
+      "intro_en": "✧ Covers the Muʾta expedition in Jumādā al-Ūlā year eight, including commanders Zayd b. Ḥāritha, Jaʿfar b. Abī Ṭālib, and ʿAbd Allāh b. Rawāḥa leading to their deaths."
+    },
+    {
+      "id": 161882,
+      "intro_en": "✧ Dates the Muʾta expedition to Jumādā al-Ūlā of year eight, after the Messenger ﷺ remained in Madinah from Dhū al-Ḥijjah through the two Rabīʿs."
+    },
+    {
+      "id": 161883,
+      "intro_en": "✧ The Prophet ﷺ appointed Zayd b. Ḥāritha, then Jaʿfar, then Ibn Rawāḥa as commanders of the 3,000-strong Muʾta force, and Ibn Rawāḥa expressed fear of the Fire and poetic farewell."
+    },
+    {
+      "id": 161884,
+      "intro_en": "✧ The Muslims halted at Maʿān upon learning of Heraclius's huge army, and Ibn Rawāḥah encouraged them to seek martyrdom or victory."
+    },
+    {
+      "id": 161885,
+      "intro_en": "✧ The Muslim army met the Byzantines at Mashārif, withdrew to Muʾtah, and fought with Zayd b. Ḥārithah carrying the banner until he was killed."
+    },
+    {
+      "id": 161886,
+      "intro_en": "✧ Jaʿfar b. Abī Ṭālib took the banner after Zayd, hamstrung his horse, and fought until he was killed, receiving two wings in Paradise."
+    },
+    {
+      "id": 161887,
+      "intro_en": "✧ ʿAbd Allāh b. Rawāḥah took the banner after Jaʿfar, overcame his hesitation, dismounted, and fought until he was killed."
+    },
+    {
+      "id": 161888,
+      "intro_en": "✧ The Prophet ﷺ foretold the successive martyrdoms of Zayd, Jaʿfar, and ʿAbd Allāh b. Rawāḥah, noting the latter's slight hesitation."
+    },
+    {
+      "id": 161889,
+      "intro_en": "✧ The Messenger ﷺ grieved for Jaʿfar, instructed that food be prepared for his family, and the army's return was met with abuse and poetical responses."
+    },
+    {
+      "id": 161890,
+      "intro_en": "✧ The section lists the Muslims martyred at Muʾtah, including Jaʿfar, Zayd, ʿAbd Allāh b. Rawāḥah, and others from Quraysh and the Anṣār."
     },
     {
       "id": 161891,
-      "intro_en": "✧ Explains the causes of the conquest of Makkah in Ramaḍān of year eight, including the fighting between Bakr and Khuzāʿa, Abū Sufyān's failed mission, the Messenger's preparations, Ḥāṭib's letter, the march, entry into Makkah, and subsequent events."
+      "intro_en": "✧ The causes of the conquest of Makkah, including the fighting between Bakr and Khuzāʿa, Abū Sufyān's failed peace mission, and the events of the conquest."
+    },
+    {
+      "id": 161892,
+      "intro_en": "✧ It recounts the attack by Banū Bakr on Khuzāʿa at al-Watīr with Quraysh's secret aid, breaking the truce, and the subsequent poems and appeals for help."
+    },
+    {
+      "id": 161893,
+      "intro_en": "✧ Budayl b. Warqāʾ travels to Madinah to complain about Quraysh's backing of Banū Bakr, and Abū Sufyān discerns from camel dung that he had visited the Prophet ﷺ."
+    },
+    {
+      "id": 161894,
+      "intro_en": "✧ Abū Sufyān's attempts in Madinah to secure reconciliation are rebuffed by his daughter, Abū Bakr, ʿUmar, and ʿAlī, and his granting of protection proves futile."
+    },
+    {
+      "id": 161895,
+      "intro_en": "✧ The Messenger ﷺ secretly prepares for the conquest of Makkah and marches with a large force, while Ḥassān b. Thābit incites the people with verses about Khuzāʿa's slain."
+    },
+    {
+      "id": 161896,
+      "intro_en": "✧ Ḥāṭib b. Abī Baltaʿah's letter warning Quraysh is intercepted by ʿAlī and al-Zubayr, leading to his summons, ʿUmar's rebuke, and the Qur'anic revelation concerning his case."
+    },
+    {
+      "id": 161897,
+      "intro_en": "✧ The Messenger ﷺ departs in Ramaḍān, appoints Abū Ruhm al-Ghifārī over Madinah, encounters relatives who convert, and camps at Marr al-Ẓahrān with ten thousand Muslims."
+    },
+    {
+      "id": 161898,
+      "intro_en": "✧ Al-ʿAbbās brings Abū Sufyān to the Prophet ﷺ, overcomes ʿUmar's objection, and after a dialogue about faith, Abū Sufyān testifies and is granted amnesty."
+    },
+    {
+      "id": 161899,
+      "intro_en": "✧ As the Muslim tribes and the green squadron pass before him, Abū Sufyān marvels at their strength, then returns to Makkah urging surrender and declaring safety for those entering Abū Sufyān's house or the mosque."
+    },
+    {
+      "id": 161900,
+      "intro_en": "✧ At Dhū Ṭuwā the Prophet ﷺ halted in humility, and Abū Quḥāfah was brought to convert to Islam."
+    },
+    {
+      "id": 161901,
+      "intro_en": "✧ The Prophet ﷺ dispatched al-Zubayr and Saʿd b. ʿUbādah into Makkah, then replaced Saʿd with ʿAlī after his alarming war cry."
+    },
+    {
+      "id": 161902,
+      "intro_en": "✧ Khālid, Abū ʿUbaydah, and the Prophet ﷺ entered Makkah by different routes, and at al-Khandamah Khālid's forces repelled Ṣafwān, ʿIkrimah, and Suhayl."
+    },
+    {
+      "id": 161903,
+      "intro_en": "✧ War cries of the Muhājirūn, Khazraj, and Aws are given, alongside the Prophet's ﷺ order to kill certain named individuals, including ʿAbd Allāh b. Saʿd."
+    },
+    {
+      "id": 161904,
+      "intro_en": "✧ Names and reasons are listed for those the Prophet ﷺ ordered killed, and Umm Hāniʾ's protection of two Makhzūmī men is honored by the Prophet ﷺ."
+    },
+    {
+      "id": 161905,
+      "intro_en": "✧ The Prophet ﷺ circumambulated the Kaʿbah, broke its wooden dove, and addressed Quraysh from its door about monotheism and forgiveness."
+    },
+    {
+      "id": 161906,
+      "intro_en": "✧ The Prophet ﷺ restored the Kaʿbah key to ʿUthmān b. Ṭalḥah and ordered the effacement of images inside the House."
+    },
+    {
+      "id": 161907,
+      "intro_en": "✧ Ibn ʿUmar inquired where the Prophet ﷺ prayed inside the Kaʿbah, and the Prophet ﷺ revealed his knowledge of Abū Sufyān and others' remarks."
+    },
+    {
+      "id": 161908,
+      "intro_en": "✧ It recounts the first blood-money the Messenger paid for Junaydab b. al-Akwaʿ, his reassurance to the Anṣār, the falling of the idols, and Fuḍālah b. ʿUmayr's foiled attempt."
+    },
+    {
+      "id": 161909,
+      "intro_en": "✧ It covers the Messenger's grant of safety to Ṣafwān b. Umayyah via ʿUmayr b. Wahb, and the conversions of ʿIkrimah, Ṣafwān, and Ibn al-Zibaʿrā, along with Hubayrah's rejection."
+    },
+    {
+      "id": 161910,
+      "intro_en": "✧ It gives the number of Muslims at the conquest as ten thousand and presents poems by Ḥassān b. Thābit, Anas b. Zunaym, Budayl, Bujayr, ʿAbbās b. Mirdās, Jaʿdah, and Bujayd."
     },
     {
       "id": 161911,
-      "intro_en": "✧ The Messenger's injunctions to Khālid b. al-Walīd before his expedition, and the subsequent actions of Khālid towards Banū Jadhīma that violated those commands."
+      "intro_en": "✧ It recounts Khālid b. al-Walīd's expedition to Banū Jadhīmah, the Messenger's injunctions and anger, Khālid's excuse, and the subsequent conflict and reconciliation."
+    },
+    {
+      "id": 161912,
+      "intro_en": "✧ It narrates the Messenger sending Khālid as a caller, his attack on Banū Jadhīmah despite their laying down arms, the killing of captives, and the Messenger's disavowal of his action."
+    },
+    {
+      "id": 161913,
+      "intro_en": "✧ It describes the Messenger's anger at Khālid's deed, his dispatch of ʿAlī to compensate the victims fully, and his public declaration of innocence three times."
+    },
+    {
+      "id": 161914,
+      "intro_en": "✧ It gives Khālid's excuse that ʿAbd Allāh b. Ḥudhāfah ordered him to fight, and the Messenger's rebuke of Khālid for dishonoring his companions."
+    },
+    {
+      "id": 161915,
+      "intro_en": "✧ It relates the background conflict between Quraysh and Banū Jadhīmah over a merchant's property, their eventual peace, and includes several poems on the affair."
     },
     {
       "id": 161916,
-      "intro_en": "✧ Khālid b. al-Walīd's military expedition to destroy the idol al-ʿUzzā."
+      "intro_en": "✧ Khālid b. al-Walīd is sent to destroy the idol al-ʿUzzā at Nakhla, where its Sulamī keeper curses him before he demolishes it and returns to the Prophet ﷺ."
     },
     {
       "id": 161917,
-      "intro_en": "✧ The battle of Ḥunayn in the eighth year after the conquest, including the gathering of Hawāzin, the fighting, and the distribution of spoils."
+      "intro_en": "✧ The expedition of Ḥunayn covers Hawāzin's gathering, the battle, the siege of al-Ṭāʾif, and subsequent division of spoils and reconciliation with the Anṣār."
+    },
+    {
+      "id": 161918,
+      "intro_en": "✧ Mālik b. ʿAwf gathers Hawāzin and Thaqīf at Awṭās with their families and wealth, ignoring Durayd b. al-Ṣimmah's advice against this."
+    },
+    {
+      "id": 161919,
+      "intro_en": "✧ Mālik b. ʿAwf's scouts see white riders on piebald horses, while ʿAbd Allāh b. Abī Ḥadrad spies on Hawāzin and Ṣafwān b. Umayyah lends the Prophet ﷺ coats of mail."
+    },
+    {
+      "id": 161920,
+      "intro_en": "✧ The Messenger ﷺ departs with twelve thousand men to meet Hawāzin, leaving ʿAttāb b. Asīd over Makkah, and ʿAbbās b. Mirdās recites war poetry."
+    },
+    {
+      "id": 161921,
+      "intro_en": "✧ On the way to Ḥunayn, some Muslims ask the Prophet ﷺ to create a sacred tree like Dhāt Anwāṭ, and he rebukes them for echoing the Israelites."
+    },
+    {
+      "id": 161922,
+      "intro_en": "✧ At the valley of Ḥunayn, Hawāzin ambush the Muslims at dawn, most flee, but the Prophet ﷺ stands firm calling to them with a small group of Companions."
+    },
+    {
+      "id": 161923,
+      "intro_en": "✧ During the Muslim rout, Abū Sufyān b. Ḥarb and Kalada b. al-Ḥanbal gloat, while Ṣafwān b. Umayyah rebukes Kalada, and Ḥassān satirizes him."
+    },
+    {
+      "id": 161924,
+      "intro_en": "✧ Shaybah b. ʿUthmān abandons his resolve to kill the Prophet when his heart is overcome, followed by accounts of the Muslim rout at Ḥunayn, al-ʿAbbās's rallying call, and the counterattack."
+    },
+    {
+      "id": 161925,
+      "intro_en": "✧ ʿAlī and an Anṣārī disable the Hawāzin standard-bearer's camel, and the narrative includes Umm Sulaym's encounter with the Prophet and Abū Qatādah's claim to spoils."
+    },
+    {
+      "id": 161926,
+      "intro_en": "✧ Jubayr b. Muṭʿim recounts seeing something like black ants descending from the sky, which he took to be angels aiding the Muslims before the enemy's defeat."
+    },
+    {
+      "id": 161927,
+      "intro_en": "✧ The polytheists are routed, a Muslim woman extols God's cavalry over al-Lāt's, and seventy Thaqīf men, including ʿUthmān b. ʿAbd Allāh, are killed under their banner."
+    },
+    {
+      "id": 161928,
+      "intro_en": "✧ A slain uncircumcised Christian slave causes a rumor that Thaqīf are uncircumcised, which al-Mughīrah b. Shuʿbah suppresses, and ʿAbbās b. Mirdās's poem satirizes Qārib's flight."
+    },
+    {
+      "id": 161929,
+      "intro_en": "✧ Rabīʿah b. Rufayʿ kills the elderly Durayd b. al-Ṣimmah, who instructs him on the fatal blow, and ʿAmrah bt. Durayd laments her father's death in verse."
+    },
+    {
+      "id": 161930,
+      "intro_en": "✧ Abū ʿĀmir al-Ashʿarī is killed by an arrow from Salamah b. Durayd at Awṭās, after which Abū Mūsā al-Ashʿarī takes the banner and routs the enemy."
+    },
+    {
+      "id": 161931,
+      "intro_en": "✧ Mālik b. ʿAwf holds a mountain pass as his people retreat, identifies the approaching cavalry, and is dislodged by al-Zubayr b. al-ʿAwwām's charge, with appended poetry on the flight."
+    },
+    {
+      "id": 161932,
+      "intro_en": "✧ The Messenger ﷺ forbade killing children, women, and hired servants, and recognized his foster sister al-Shaymāʾ bt. al-Ḥārith, giving her provision and returning her to her people."
+    },
+    {
+      "id": 161933,
+      "intro_en": "✧ It names the Muslims martyred at Ḥunayn, including Ayman b. ʿUbayd, Yazīd b. Zamaʿa, Surāqa b. al-Ḥārith, and Abū ʿĀmir al-Ashʿarī, and includes poems by Bujayr, ʿAbbās b. Mirdās, and others about the battle."
+    },
+    {
+      "id": 161934,
+      "intro_en": "✧ The remnant of Thaqīf arrived at al-Ṭāʾif and shut the city gates, preparing to fight the Muslims."
+    },
+    {
+      "id": 161935,
+      "intro_en": "✧ ʿUrwah b. Masʿūd and Ghaylān b. Salamah missed Ḥunayn and the siege of al-Ṭāʾif because they were at Jurash learning siegecraft including testudos, mangonels, and ḍubūr."
+    },
+    {
+      "id": 161936,
+      "intro_en": "✧ The Messenger ﷺ marched from Ḥunayn to al-Ṭāʾif, demolished Mālik b. ʿAwf's fortress, renamed al-Dayyiqah as al-Yusrā, and besieged the town for about twenty nights while Kaʿb b. Mālik and Kinānah b. ʿAbd Yālīl exchanged poems."
+    },
+    {
+      "id": 161937,
+      "intro_en": "✧ The Messenger ﷺ was the first in Islam to shoot a mangonel, and when a testudo assault failed he cut Thaqīf's vines but departed after ʿUmar announced the withdrawal."
+    },
+    {
+      "id": 161938,
+      "intro_en": "✧ Thaqīf seized the family of Marwān b. Qays, who captured Ubayy b. Mālik al-Qushayrī, and al-Ḍaḥḥāk b. Sufyān intervened to secure their release, commemorated in his poem."
+    },
+    {
+      "id": 161939,
+      "intro_en": "✧ It names twelve Muslim martyrs at al-Ṭāʾif—seven from Quraysh, four from the Anṣār, and one from Banū Layth—followed by Bujayr b. Zuhayr's poem on Ḥunayn and al-Ṭāʾif."
+    },
+    {
+      "id": 161940,
+      "intro_en": "✧ It recounts the Messenger's ﷺ departure from al-Ṭāʾif to al-Jiʿrānah with Hawāzin captives and his prayer for Thaqīf's guidance."
+    },
+    {
+      "id": 161941,
+      "intro_en": "✧ It narrates the return of Hawāzin captives at al-Jiʿrānah, the conversion and appointment of Mālik b. ʿAwf, and his subsequent raids on Thaqīf."
+    },
+    {
+      "id": 161942,
+      "intro_en": "✧ It describes the Messenger's ﷺ urging the return of spoils down to a needle and thread, with the refusal of ʿAqīl b. Abī Ṭālib's wife to keep one."
+    },
+    {
+      "id": 161943,
+      "intro_en": "✧ It lists gifts of one hundred or fewer camels to nobles to reconcile their hearts, including Abū Sufyān b. Ḥarb, and the appeasement of ʿAbbās b. Mirdās."
+    },
+    {
+      "id": 161944,
+      "intro_en": "✧ It lists recipients of Ḥunayn spoils by clan, records the Messenger's ﷺ reply about Juʿayl b. Surāqah, Dhū al-Khuwayṣirah's objection, and Ḥassān's reproachful verses about the Anṣār's deprivation."
+    },
+    {
+      "id": 161945,
+      "intro_en": "✧ It recounts how the Anṣār resented being excluded from gifts, and the Messenger ﷺ appeased them in an address affirming their merit and his fellowship with them."
     },
     {
       "id": 161946,
-      "intro_en": "✧ The Messenger's ʿumrah from al-Jiʿrānah, including his appointment of Ibn Usayd as deputy over Makkah and the timing of the ʿumrah."
+      "intro_en": "✧ It covers the Messenger's ﷺ ʿumrah from al-Jiʿrānah, including his appointment of ʿAttāb b. Asīd over Makkah and the timing of the ʿumrah."
+    },
+    {
+      "id": 161947,
+      "intro_en": "✧ It narrates the Messenger's ﷺ ʿumrah from al-Jiʿrānah, his detention of remaining spoils at Majannah, and appointment of ʿAttāb b. Asīd with Muʿādh b. Jabal over Makkah."
+    },
+    {
+      "id": 161948,
+      "intro_en": "✧ Covers the timing of the Prophet's ʿumrah in Dhū al-Qaʿdah, the ḥajj leadership of ʿAttāb b. Asīd, and the repentance and poems of Kaʿb b. Zuhayr."
     },
     {
       "id": 161949,
-      "intro_en": "✧ The expedition to Tabūk, covering preparations, the hypocrisy of those who stayed behind, and events during and after the campaign."
+      "intro_en": "✧ Relates the preparations, incidents, and aftermath of the Tabūk expedition, including the cases of those who stayed behind and the destruction of the Mosque of Ḍirār."
+    },
+    {
+      "id": 161950,
+      "intro_en": "✧ Describes the Prophet's ﷺ command to prepare for the Byzantine expedition during severe heat and hardship, openly stating the destination."
+    },
+    {
+      "id": 161951,
+      "intro_en": "✧ Recounts al-Jadd b. Qays's request to remain behind and the Qur'anic revelation concerning his temptation."
+    },
+    {
+      "id": 161952,
+      "intro_en": "✧ Reports the hypocrites' discouragement from jihād, the Qur'anic response, and the burning of Suwaylim's house where they gathered."
+    },
+    {
+      "id": 161953,
+      "intro_en": "✧ Tells of the Messenger's ﷺ urging for contributions and ʿUthmān b. ʿAffān's exceptional spending of one thousand dinars."
+    },
+    {
+      "id": 161954,
+      "intro_en": "✧ Describes the seven needy companions known as the weepers who lacked mounts and were provided with a camel by Ibn Yāmīn."
+    },
+    {
+      "id": 161955,
+      "intro_en": "✧ Mentions the bedouin excuse-makers who were not excused and the sincere Muslims who stayed behind without doubt, including Kaʿb b. Mālik."
+    },
+    {
+      "id": 161956,
+      "intro_en": "✧ The Prophet ﷺ left Madinah, appointed deputies, and dealt with the staying behind of the hypocrites and false rumors about ʿAlī b. Abī Ṭālib, while Abū Khaythamah repented and rejoined the expedition."
+    },
+    {
+      "id": 161957,
+      "intro_en": "✧ At al-Ḥijr the Prophet ﷺ commanded the Muslims to drink no water and go out only with companions; two men disobeyed and were afflicted, and later rain came through supplication."
+    },
+    {
+      "id": 161958,
+      "intro_en": "✧ The Messenger's she-camel went astray, and the hypocrite Ibn al-Luṣayt mocked his prophetic knowledge, so the Prophet ﷺ revealed its location and ʿUmārah b. Ḥazm expelled him."
+    },
+    {
+      "id": 161959,
+      "intro_en": "✧ Abū Dharr lagged behind when his camel delayed him, then walked alone to join the Prophet ﷺ, who said he would walk, die, and be raised alone, as later fulfilled at al-Rabadhah."
+    },
+    {
+      "id": 161960,
+      "intro_en": "✧ Hypocrites including Wadīʿah b. Thābit and Mukhashshin b. Ḥumayyir discouraged the Muslims before Tabūk, and Qurʾān was revealed about their idle talk and jesting, with Mukhashshin renamed ʿAbd al-Raḥmān."
+    },
+    {
+      "id": 161961,
+      "intro_en": "✧ At Tabūk, Yuḥannā b. Ruʾbah of Aylah and the people of Jarbāʾ and Adhruḥ made peace and gave jizyah, and the Prophet ﷺ wrote them a guarantee of security for ships and caravans."
+    },
+    {
+      "id": 161962,
+      "intro_en": "✧ Khālid b. al-Walīd captured Ukaydir b. ʿAbd al-Malik of Dūmah while hunting wild cows, and the Prophet ﷺ spared his blood and made peace with him on payment of jizyah."
+    },
+    {
+      "id": 161963,
+      "intro_en": "✧ At Wādī al-Mushaqqaq, hypocrites drew its scant water despite the Prophet's prohibition, and after cursing them, he prayed over the trickle and it burst forth abundantly."
+    },
+    {
+      "id": 161964,
+      "intro_en": "✧ Relates the death and burial of Dhū al-Bijādayn during Tabūk, the Prophet’s prayer over him, the origin of his name, and an encounter with Abū Ruhm about those who stayed behind."
+    },
+    {
+      "id": 161965,
+      "intro_en": "✧ Describes the Prophet’s order to demolish and burn the Mosque of Ḍirār after returning from Tabūk and lists its twelve builders."
+    },
+    {
+      "id": 161966,
+      "intro_en": "✧ Enumerates the mosques of the Messenger between Madinah and Tabūk, naming each location."
+    },
+    {
+      "id": 161967,
+      "intro_en": "✧ Reports the Prophet’s prohibition on speaking to the three Muslims left behind—Kaʿb b. Mālik, Murārah b. al-Rabīʿ, and Hilāl b. Umayyah—and his acceptance of excuses from the hypocrites."
+    },
+    {
+      "id": 161968,
+      "intro_en": "✧ Kaʿb b. Mālik narrates his failure to join Tabūk, his truthful confession, and the fifty-night boycott until God’s acceptance."
+    },
+    {
+      "id": 161969,
+      "intro_en": "✧ Describes the announcement of God’s acceptance of the three men’s repentance after fifty nights, Kaʿb’s joy and gift of his garments, and the Qur’anic verses revealed about them."
     },
     {
       "id": 161970,
-      "intro_en": "✧ The delegation of Thaqīf and their acceptance of Islam, including the conversion of ʿUrwah b. Masʿūd and the Messenger's letter to Thaqīf."
+      "intro_en": "✧ Covers the delegation of Thaqīf in Ramaḍān year nine, including ʿUrwah b. Masʿūd’s conversion, the sending of emissaries, Bilāl’s hospitality, and the Prophet’s charge and letter to them."
+    },
+    {
+      "id": 161971,
+      "intro_en": "✧ ʿUrwah b. Masʿūd converts and returns to Thaqīf to call them to Islam, but they shoot arrows at him and kill him; he rejoices in martyrdom."
+    },
+    {
+      "id": 161972,
+      "intro_en": "✧ Thaqīf deliberates sending a delegation to the Messenger ﷺ after ʿUrwah's killing, led by ʿAbd Yālīl with five companions, and negotiates terms including initial requests about al-Lāt and prayer."
+    },
+    {
+      "id": 161973,
+      "intro_en": "✧ Bilāl brings the Thaqīf delegation their pre-dawn and evening meals during Ramaḍān, explaining the Prophet's ﷺ practice of delaying saḥūr and hastening ifṭār."
+    },
+    {
+      "id": 161974,
+      "intro_en": "✧ The Messenger ﷺ instructs ʿUthmān b. Abī al-ʿĀṣ to shorten prayers and consider the weakest, and sends Abū Sufyān and al-Mughīrah to demolish the idol al-Lāt and settle debts from its wealth."
+    },
+    {
+      "id": 161975,
+      "intro_en": "✧ The Prophet ﷺ writes Thaqīf a letter protecting the acacia trees and game of Wajj, prescribing flogging and seizure for violators, written by Khālid b. Saʿīd."
     },
     {
       "id": 161976,
-      "intro_en": "✧ Abū Bakr's leadership of the people in the pilgrimage in the year nine."
+      "intro_en": "✧ Abū Bakr leads the pilgrimage in year nine, and the Prophet ﷺ sends ʿAlī to proclaim the opening of Barāʾah, annulling treaties with polytheists and establishing new rulings for pilgrimage."
     },
     {
       "id": 161977,
-      "intro_en": "✧ Ḥassān's poetry enumerating the expeditions."
+      "intro_en": "✧ Ḥassān b. Thābit's poems enumerate the expeditions and praise the Anṣār's steadfastness, recounting battles from Badr to Tabūk and affirming their loyalty."
     },
     {
       "id": 161978,
-      "intro_en": "✧ The year nine, named the year of delegations, with accounts of various tribal delegations and their acceptance of Islam."
+      "intro_en": "✧ The year nine is named the Year of Delegations because after the conquest of Makkah and Tabūk, Arab tribes sent delegations to the Messenger ﷺ, marking widespread submission to Islam."
+    },
+    {
+      "id": 161979,
+      "intro_en": "✧ After the conquest of Makkah, Tabūk, and Thaqīf's submission, delegations of Arabs came to the Prophet ﷺ from every direction, and the year was called the Year of Delegations."
+    },
+    {
+      "id": 161980,
+      "intro_en": "✧ The Arabs' acceptance of Islam followed Quraysh's submission after the conquest of Makkah, fulfilling the Quranic prophecy of entering religion in throngs."
+    },
+    {
+      "id": 161981,
+      "intro_en": "✧ The delegation of Banū Tamīm vied in oratory and poetry with Thābit b. Qays and Ḥassān b. Thābit, then submitted, prompting revelation of Sūrat al-Ḥujurāt."
+    },
+    {
+      "id": 161982,
+      "intro_en": "✧ ʿĀmir b. al-Ṭufayl planned with Arbad b. Qays to assassinate the Prophet ﷺ during their delegation's visit, but Arbad failed to strike."
+    },
+    {
+      "id": 161983,
+      "intro_en": "✧ In response to the Prophet's ﷺ supplication against him, ʿĀmir b. al-Ṭufayl died of a plague in his neck at a Salūlī woman's house."
+    },
+    {
+      "id": 161984,
+      "intro_en": "✧ Arbad b. Qays and his camel were killed by a thunderbolt, and Quranic verses were revealed concerning him and ʿĀmir, with Labīd mourning Arbad in elegiac poetry."
+    },
+    {
+      "id": 161985,
+      "intro_en": "✧ Ḍimām b. Thaʿlabah came as envoy from Banū Saʿd b. Bakr, questioned the Prophet ﷺ about Islam's obligations, converted, and successfully called his people to Islam."
+    },
+    {
+      "id": 161986,
+      "intro_en": "✧ Al-Jārūd b. ʿAmr, a Christian, came in the delegation of ʿAbd al-Qays, accepted Islam after the Prophet ﷺ guaranteed divine guidance, and later opposed the riddah."
+    },
+    {
+      "id": 161987,
+      "intro_en": "✧ The delegation of Banū Ḥanīfah included Musaylimah the Liar, who later apostatized, claimed prophethood as a partner, and composed rhymed prose imitating the Quran."
+    },
+    {
+      "id": 161988,
+      "intro_en": "✧ Zayd al-Khayl came in the delegation of Ṭayyiʾ, accepted Islam, was renamed Zayd al-Khayr, granted lands, and died of fever on his journey home."
+    },
+    {
+      "id": 161989,
+      "intro_en": "✧ ʿAdī b. Ḥātim, a Christian chief of Ṭayyiʾ, fled to Syria out of hatred for the Prophet, leaving behind his daughter."
+    },
+    {
+      "id": 161990,
+      "intro_en": "✧ The Prophet's cavalry captured Ḥātim's daughter, but he released her honorably and sent her to her brother in Syria."
+    },
+    {
+      "id": 161991,
+      "intro_en": "✧ Ḥātim's daughter advised ʿAdī to join the Prophet quickly, arguing he would gain excellence if a prophet and not be humbled if a king."
+    },
+    {
+      "id": 161992,
+      "intro_en": "✧ ʿAdī came to the Prophet in Madinah, observed his humility, heard his prophecies about future prosperity and conquests, and became a Muslim."
+    },
+    {
+      "id": 161993,
+      "intro_en": "✧ Farwah b. Musayk al-Murādī came to the Prophet after defecting from the kings of Kindah, was appointed over Murād, Zubayd, and Madhḥij, and sent with Khālid b. Saʿīd for ṣadaqah."
+    },
+    {
+      "id": 161994,
+      "intro_en": "✧ ʿAmr b. Maʿdīkarib came with Banū Zubayd and became Muslim, but later apostatized after the Prophet's death and criticized Farwah's rule."
+    },
+    {
+      "id": 161995,
+      "intro_en": "✧ Al-Ashʿath b. Qays came with eighty Kindah riders, removed their silk adornments at the Prophet's command, claimed descent from Ākil al-Murār, and was corrected about the Prophet's own lineage."
+    },
+    {
+      "id": 161996,
+      "intro_en": "✧ Surad b. ʿAbd Allāh al-Azdī converts to Islam, is appointed over his people, fights the people of Jurash, and the Jurash delegation later embraces Islam."
+    },
+    {
+      "id": 161997,
+      "intro_en": "✧ Envoys from the kings of Ḥimyar announce their acceptance of Islam, and the Prophet ﷺ writes them a letter outlining alms, jizyah, and the mission of Muʿādh b. Jabal."
+    },
+    {
+      "id": 161998,
+      "intro_en": "✧ The Prophet ﷺ charges Muʿādh b. Jabal to make things easy when sent to Yemen, and Muʿādh answers a woman's question about a husband's right."
+    },
+    {
+      "id": 161999,
+      "intro_en": "✧ Farwah b. ʿAmr al-Judhāmī, a Byzantine governor, converts to Islam, is imprisoned, recites poetry, and is crucified by the Byzantines."
+    },
+    {
+      "id": 162000,
+      "intro_en": "✧ Khālid b. al-Walīd is sent to Banū al-Ḥārith b. Kaʿb; they convert, their delegation meets the Prophet ﷺ, and ʿAmr b. Ḥazm is dispatched with a covenant."
+    },
+    {
+      "id": 162001,
+      "intro_en": "✧ Rifāʿah b. Zayd al-Judhāmī converts during the truce of al-Ḥudaybiyah, carries the Prophet's ﷺ letter to his people, and they accept Islam."
+    },
+    {
+      "id": 162002,
+      "intro_en": "✧ The delegation of Hamdān, including Mālik b. Namaṭ, visits the Prophet ﷺ after Tabūk, and he grants them a letter over their lands."
     },
     {
       "id": 162003,
-      "intro_en": "✧ The two liars Musaylimah al-Ḥanafī and al-Aswad al-ʿAnsī, including the Prophet's dream, his saying about dajjāls, and correspondence with Musaylimah."
+      "intro_en": "✧ The Prophet ﷺ dreams about Musaylimah al-Ḥanafī and al-Aswad al-ʿAnsī, speaks of false claimants, and exchanges letters with Musaylimah."
+    },
+    {
+      "id": 162004,
+      "intro_en": "✧ Reports the Prophet's dream of two gold bracelets, which he interpreted as the false prophets Musaylimah b. Ḥabīb in al-Yamāmah and al-Aswad b. Kaʿb al-ʿAnsī in Ṣanʿāʾ."
+    },
+    {
+      "id": 162005,
+      "intro_en": "✧ Records the Prophet's prediction that thirty dajjāls would appear before the Hour and lists the commanders and collectors he sent for alms across various regions."
+    },
+    {
+      "id": 162006,
+      "intro_en": "✧ Contains Musaylimah's letter claiming partnership in prophethood and the Prophet's reply rebuking him as \"the liar,\" along with his refusal to kill the messengers."
     },
     {
       "id": 162007,
-      "intro_en": "✧ The Farewell Pilgrimage, including the Prophet's preparation, instructions to ʿĀʾishah, ʿAlī's meeting, and the Prophet's sermon."
+      "intro_en": "✧ Covers the Prophet's preparations, appointment of Abū Dujānah over Madinah, instructions to ʿĀʾishah during her menstruation, ʿAlī's meeting upon returning from Yemen, and the Farewell Sermon."
+    },
+    {
+      "id": 162008,
+      "intro_en": "✧ Describes the Prophet's departure for the pilgrimage with five nights left in Dhū al-Qaʿdah and his appointment of Abū Dujānah al-Sāʿidī, or alternatively Sibāʿ b. ʿUrfuṭah, over Madinah."
+    },
+    {
+      "id": 162009,
+      "intro_en": "✧ Relates the Prophet's instruction to ʿĀʾishah not to weep over her menstruation, her performing all rites except circumambulation, and his command for his wives to exit iḥrām with an ʿumrah."
+    },
+    {
+      "id": 162010,
+      "intro_en": "✧ Describes ʿAlī's return from Yemen, his conflict with the Prophet over exiting iḥrām, the Prophet's making him a partner in his sacrificial animal, and the troops' complaint about his harshness."
+    },
+    {
+      "id": 162011,
+      "intro_en": "✧ Presents the Farewell Sermon at ʿArafah, including declarations of sanctity, abolition of usury and blood feuds, rights of women, and the teachings on standing places during the pilgrimage."
     },
     {
       "id": 162012,
-      "intro_en": "✧ The dispatch of Usāmah b. Zayd to the land of Palestine."
+      "intro_en": "✧ The Prophet ﷺ appointed Usāmah b. Zayd to lead an expedition to Syria, commanding him to raid al-Balqāʾ and al-Dārūm in Palestine."
     },
     {
       "id": 162013,
-      "intro_en": "✧ Covers the Prophet's ﷺ reminder to his people about the disciples' disagreement over Jesus and lists the names of messengers sent to various kings."
+      "intro_en": "✧ This section covers the Prophet's dispatch of envoys to various kings, preceded by his reminder about the disciples' disagreement over Jesus."
+    },
+    {
+      "id": 162014,
+      "intro_en": "✧ The Prophet ﷺ reminded his companions not to differ as the disciples did, recounting how Jesus' distant envoys became sluggish until God made each speak the language of his assigned nation."
+    },
+    {
+      "id": 162015,
+      "intro_en": "✧ It lists the Prophet's envoys and their royal recipients, including Diḥyah to Caesar, ʿAbd Allāh b. Ḥudhāfah to Chosroes, and others, alongside an account of Jesus' envoys."
     },
     {
       "id": 162016,
-      "intro_en": "✧ Summarizes multiple expeditions, including those led by Ghālib b. ʿAbd Allāh, Zayd b. Ḥārithah, ʿAbd Allāh b. Rawāḥah, Ibn ʿAtīk, ʿAmr b. al-ʿĀṣ, and others against various tribes and targets."
+      "intro_en": "✧ This heading summarizes the Prophet's expeditions and missions, including detachments led by Ghālib, Zayd, ʿAbd Allāh b. Rawāḥah, and others against various tribes."
+    },
+    {
+      "id": 162017,
+      "intro_en": "✧ It enumerates twenty-seven expeditions in which the Prophet personally participated, noting he fought in nine of them, and lists thirty-eight missions and detachments."
+    },
+    {
+      "id": 162018,
+      "intro_en": "✧ Ghālib b. ʿAbd Allāh al-Laythī's raid on Banū al-Mulawwaḥ at al-Kadīd, including the capture of Ibn al-Barṣāʾ, a flood that hindered pursuit, and the Muslims' watchword 'amit, amit'."
+    },
+    {
+      "id": 162019,
+      "intro_en": "✧ Zayd b. Ḥārithah's expedition against Judhām in response to the attack on Diḥyah b. Khalīfah, involving the killing of al-Hunayd and his son and subsequent negotiations with Rifāʿah b. Zayd."
+    },
+    {
+      "id": 162020,
+      "intro_en": "✧ Zayd b. Ḥārithah’s punitive raid against Banū Fazārah at Wādī al-Qurā, his severe treatment of the old woman Umm Qirfah, and the captives taken."
+    },
+    {
+      "id": 162021,
+      "intro_en": "✧ ʿAbd Allāh b. Rawāḥah’s expedition to Khaybar, where al-Yasīr b. Rizām was lured out and killed along with his Jewish companions."
+    },
+    {
+      "id": 162022,
+      "intro_en": "✧ ʿAbd Allāh b. ʿAtīk’s expedition to Khaybar, in which Abū Rāfiʿ b. Abī al-Ḥuqayq was killed."
+    },
+    {
+      "id": 162023,
+      "intro_en": "✧ ʿAbd Allāh b. Unays’s solo mission to assassinate Khālid b. Sufyān b. Nubayḥ al-Hudhalī, and his receipt of a staff from the Prophet ﷺ."
+    },
+    {
+      "id": 162024,
+      "intro_en": "✧ Ghālib b. ʿAbd Allāh al-Kalbī’s raid on Banū Murrah, where Usāmah b. Zayd killed a man after he had professed Islam."
+    },
+    {
+      "id": 162025,
+      "intro_en": "✧ ʿAmr b. al-ʿĀṣ’s expedition to Dhāt al-Salāsil, his reinforcement by Abū ʿUbaydah, and accounts of Abū Bakr’s counsel and ʿAwf b. Mālik’s camel."
+    },
+    {
+      "id": 162026,
+      "intro_en": "✧ Ibn Abī Ḥadrad’s expedition to Baṭn Iḍam, the killing of ʿĀmir b. al-Aḍbaṭ by Muḥallim b. Jaththāmah, and the subsequent dispute over blood-money."
+    },
+    {
+      "id": 162027,
+      "intro_en": "✧ Ibn Abī Ḥadrad’s mission to gather intelligence on Rifāʿah b. Qays al-Jushamī, who was encamped at al-Ghābah to rally Qays against the Prophet ﷺ."
+    },
+    {
+      "id": 162028,
+      "intro_en": "✧ The Muslims ambush a settlement, kill Rifāʿah b. Qays, drive off camels and sheep, and Ibn Abī Ḥadrad receives thirteen camels toward his marriage."
+    },
+    {
+      "id": 162029,
+      "intro_en": "✧ ʿAbd al-Raḥmān b. ʿAwf is dispatched to Dūmat al-Jandal, and ʿAbd Allāh b. ʿUmar recalls the Messenger's admonitions on virtues and societal vices."
+    },
+    {
+      "id": 162030,
+      "intro_en": "✧ The Messenger ﷺ turbans ʿAbd al-Raḥmān b. ʿAwf with a black cotton turban, instructs him on proper conduct, and gives him the banner for the expedition."
+    },
+    {
+      "id": 162031,
+      "intro_en": "✧ Abū ʿUbaydah b. al-Jarrāḥ leads a party to the seacoast where dates run out, but God provides a sea creature that sustains them until they return."
+    },
+    {
+      "id": 162032,
+      "intro_en": "✧ ʿAmr b. Umayyah al-Ḍamrī is sent to kill Abū Sufyān in Makkah, aborts the attempt, kills a man he mistakenly meets, and captures a Quraysh spy on his way back."
+    },
+    {
+      "id": 162033,
+      "intro_en": "✧ Zayd b. Ḥārithah is sent to Madyan, captures prisoners from Mīnāʾ, and the Messenger ﷺ orders that mothers and children not be sold separately."
+    },
+    {
+      "id": 162034,
+      "intro_en": "✧ Sālim b. ʿUmayr kills the elderly poet Abū ʿAfak for his satirical verses against Islam after the Messenger ﷺ asks who will deal with him."
+    },
+    {
+      "id": 162035,
+      "intro_en": "✧ ʿUmayr b. ʿAdī al-Khiṭmī kills ʿAṣmāʾ bt. Marwān for her anti-Islamic poetry, which leads to the open acceptance of Islam by men of Banū Khaṭmah."
+    },
+    {
+      "id": 162036,
+      "intro_en": "✧ Thumāmah b. Uthāl al-Ḥanafī is captured by the Messenger's cavalry, treated well, and after release converts to Islam, then enforces a food blockade on Makkah until the Prophet ﷺ lifts it."
+    },
+    {
+      "id": 162037,
+      "intro_en": "✧ ʿAlqamah b. Mujazziz is sent in pursuit of raiders after Waqqāṣ b. Mujazziz's death, and his deputy ʿAbd Allāh b. Ḥudhāfah jests about obedience by ordering men toward a fire."
+    },
+    {
+      "id": 162038,
+      "intro_en": "✧ Kurz b. Jābir is dispatched after Bajalī men who killed the Prophet's slave Yasār, who had been assigned to tend milch-camels."
+    },
+    {
+      "id": 162039,
+      "intro_en": "✧ The Bajalīs, after recovering from illness by drinking camel milk and urine, murder herdsman Yasār and drive off camels, and upon capture Kurz brings them for exemplary punishment by amputation and blinding."
+    },
+    {
+      "id": 162040,
+      "intro_en": "✧ ʿAlī b. Abī Ṭālib is sent on an expedition to Yemen, raiding twice, with command precedence over Khālid b. al-Walīd if their armies meet."
+    },
+    {
+      "id": 162041,
+      "intro_en": "✧ Usāmah b. Zayd is sent as commander to Syria, with orders to raid al-Balqāʾ and al-Dārūm in Palestine, in the last detachment dispatched by the Messenger ﷺ."
     },
     {
       "id": 162042,
-      "intro_en": "✧ Describes the onset of the final illness of the Messenger of God ﷺ."
+      "intro_en": "✧ The Prophet's ﷺ final illness begins after a night visit to al-Baqīʿ seeking forgiveness, where he chooses meeting his Lord over worldly treasures, and he receives permission to be nursed in ʿĀʾishah's house."
     },
     {
       "id": 162043,
-      "intro_en": "✧ Details the marriages of the Prophet ﷺ to his wives, including Khadījah, ʿĀʾishah, Sawdah, Zaynab bt. Jaḥsh, and others."
+      "intro_en": "✧ This section lists the Mothers of the Believers, including his marriages to Khadījah, ʿĀʾishah, Sawdah, Zaynab bt. Jaḥsh, Umm Salamah, Ḥafṣah, Umm Ḥabībah, Juwayriyah, Ṣafiyyah, Maymūnah, and Zaynab bt. Khuzaymah."
+    },
+    {
+      "id": 162044,
+      "intro_en": "✧ Lists the nine wives of the Prophet ﷺ with their names and lineages."
+    },
+    {
+      "id": 162045,
+      "intro_en": "✧ Describes the Prophet's ﷺ first marriage to Khadījah bt. Khuwaylid, her previous husbands, and children."
+    },
+    {
+      "id": 162046,
+      "intro_en": "✧ Narrates the marriage and consummation with ʿĀʾishah bt. Abī Bakr, including her age and dowry."
+    },
+    {
+      "id": 162047,
+      "intro_en": "✧ Details the marriage to Sawdah bt. Zamʿah, including her guardian, dowry, and previous husband."
+    },
+    {
+      "id": 162048,
+      "intro_en": "✧ Records the marriage to Zaynab bt. Jaḥsh after her divorce from Zayd b. Ḥārithah."
+    },
+    {
+      "id": 162049,
+      "intro_en": "✧ Relates the marriage to Umm Salamah, with her dowry and children from her previous husband."
+    },
+    {
+      "id": 162050,
+      "intro_en": "✧ Describes the marriage to Ḥafṣah bt. ʿUmar, her dowry, and previous husband."
+    },
+    {
+      "id": 162051,
+      "intro_en": "✧ Covers the marriage to Umm Ḥabībah in Abyssinia, including the Negus paying her dower."
+    },
+    {
+      "id": 162052,
+      "intro_en": "✧ The Prophet ﷺ married Juwayriyah bt. al-Ḥārith after she was taken captive from Banū al-Muṣṭaliq, either by paying her ransom, marrying her, or purchasing and freeing her."
+    },
+    {
+      "id": 162053,
+      "intro_en": "✧ The Prophet ﷺ married Ṣafiyyah bt. Ḥuyayy after capturing her at Khaybar and held a wedding feast of sawīq and dates."
+    },
+    {
+      "id": 162054,
+      "intro_en": "✧ The Prophet ﷺ married Maymūnah bt. al-Ḥārith through al-ʿAbbās, who paid her dower, with reports that she offered herself to him."
+    },
+    {
+      "id": 162055,
+      "intro_en": "✧ The Prophet ﷺ married Zaynab bt. Khuzaymah, called Umm al-Masākīn, for a bride-price of four hundred dirhams, and she died before him."
     },
     {
       "id": 162056,
-      "intro_en": "✧ Narrates the Prophet's ﷺ illness in ʿĀʾishah's house, his statements, testament concerning the Anṣār, Abū Bakr's leading prayer, and events around his death."
+      "intro_en": "✧ During the Prophet's final illness in ʿĀʾishah's house, he addressed the community, dispatched Usāmah's expedition, gave testament regarding the Anṣār, and Abū Bakr led prayers."
+    },
+    {
+      "id": 162057,
+      "intro_en": "✧ The Prophet ﷺ praised Abū Bakr from the pulpit, indicating his choice of the hereafter and ordering that all mosque doors be closed except Abū Bakr's."
+    },
+    {
+      "id": 162058,
+      "intro_en": "✧ The Prophet ﷺ urged the dispatch of Usāmah's expedition despite criticisms of his young leadership, and Usāmah camped at al-Jurf until the Prophet's death."
+    },
+    {
+      "id": 162059,
+      "intro_en": "✧ The Prophet ﷺ instructed the Muhājirūn to treat the Anṣār well, then his illness worsened and his wives administered a ludud remedy against his will."
+    },
+    {
+      "id": 162060,
+      "intro_en": "✧ Usāmah b. Zayd describes the Messenger ﷺ, rendered speechless in his final illness, gesturing in supplication over him, followed by ʿĀʾishah’s account of his last words choosing the Highest Companion."
+    },
+    {
+      "id": 162061,
+      "intro_en": "✧ In his final illness the Messenger ﷺ ordered Abū Bakr to lead the prayer, and when ʿUmar initially led it, he insisted that only Abū Bakr do so."
+    },
+    {
+      "id": 162062,
+      "intro_en": "✧ On Monday the Messenger ﷺ appeared during the dawn prayer, then withdrew and died later that day, with accounts of his last public speech, the exchange between al-ʿAbbās and ʿAlī, and the recognition of his death."
+    },
+    {
+      "id": 162063,
+      "intro_en": "✧ ʿĀʾishah relates that shortly before his death the Messenger ﷺ used a tooth-stick she had softened for him, then became heavy in her lap and passed away."
+    },
+    {
+      "id": 162064,
+      "intro_en": "✧ ʿUmar denied the Messenger’s death from the pulpit, but Abū Bakr confirmed it by reciting Qurʾān 3:144, bringing the people to acceptance."
     },
     {
       "id": 162065,
-      "intro_en": "✧ Describes the gathering at the Saqīfah of Banū Sāʿidah, including discussions and sermons leading to the pledge of allegiance to Abū Bakr."
+      "intro_en": "✧ This section covers the gathering at the Saqīfah of Banū Sāʿidah after the Prophet’s death, the counsel of Ibn ʿAwf to ʿUmar, and the speeches of ʿUmar and Abū Bakr at the pledge of allegiance."
+    },
+    {
+      "id": 162066,
+      "intro_en": "✧ After the Messenger ﷺ died, the Anṣār gathered around Saʿd b. ʿUbādah at the Saqīfah while ʿAlī, al-Zubayr, and Ṭalḥah stayed in Fāṭimah’s house, and the rest of the Muhājirūn went to Abū Bakr."
+    },
+    {
+      "id": 162067,
+      "intro_en": "✧ ʿAbd al-Raḥmān b. ʿAwf advises ʿUmar to delay warning the people about those questioning Abū Bakr’s pledge until they return to Madinah, where his words will be understood."
+    },
+    {
+      "id": 162068,
+      "intro_en": "✧ ʿUmar recounts the events at the Saqīfah of Banū Sāʿidah, including his own statements about stoning and the danger of unconsulted pledges, leading to Abū Bakr's election."
+    },
+    {
+      "id": 162069,
+      "intro_en": "✧ ʿUmar publicly retracts his earlier denial of the Prophet's death, declares Abū Bakr the best successor, and calls for the community's allegiance."
+    },
+    {
+      "id": 162070,
+      "intro_en": "✧ Abū Bakr delivers his inaugural sermon declaring his accountability for right and wrong, and ʿUmar later explains the verse that motivated his initial denial."
     },
     {
       "id": 162071,
-      "intro_en": "✧ Details the washing, shrouding, burial, and funeral prayer of the Messenger of God ﷺ, as well as the Muslims' trial after his death."
+      "intro_en": "✧ Details cover those who washed the Prophet, the manner of washing and shrouding, his burial and the prayer over him, and the subsequent trial of the Muslims."
+    },
+    {
+      "id": 162072,
+      "intro_en": "✧ ʿAlī b. Abī Ṭālib, al-ʿAbbās, his sons, Usāmah b. Zayd, and Shuqrān wash the Messenger's body while ʿAlī supports him against his chest."
+    },
+    {
+      "id": 162073,
+      "intro_en": "✧ The washers are guided by a mysterious voice to keep the Prophet's shirt on while they pour water and rub him through the cloth."
+    },
+    {
+      "id": 162074,
+      "intro_en": "✧ The Messenger is shrouded in three garments, and al-ʿAbbās arranges for Abū Ṭalḥah to dig a laḥd grave after a divine selection."
+    },
+    {
+      "id": 162075,
+      "intro_en": "✧ After disagreement over the burial place, Abū Bakr cites the Prophet's saying that prophets are buried where they die, and he is buried under his bed after group prayers."
+    },
+    {
+      "id": 162076,
+      "intro_en": "✧ ʿĀʾishah narrates the burial on Wednesday night, and ʿAlī b. Abī Ṭālib, al-Faḍl b. ʿAbbās, Qutham b. ʿAbbās, and the freedman Shuqrān descended into the grave, with Shuqrān burying a velvet cloak."
+    },
+    {
+      "id": 162077,
+      "intro_en": "✧ Al-Mughīrah b. Shuʿbah claims to be the last to touch the Prophet by throwing his ring into the grave, but ʿAlī b. Abī Ṭālib calls him a liar and identifies Qutham b. ʿAbbās as the last."
+    },
+    {
+      "id": 162078,
+      "intro_en": "✧ After the Prophet's death the Muslims were severely tried, with apostasy and turmoil until God united them under Abū Bakr, and Ḥassān b. Thābit composed several elegies lamenting his death."
     }
   ]
 }

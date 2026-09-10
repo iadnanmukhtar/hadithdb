@@ -75,6 +75,9 @@ function translationValue(parsed, id) {
 		return Utils.trimToEmpty(entry);
 	if (entry && typeof entry === 'object')
 		return Utils.trimToEmpty(entry.text_en || entry.translation || entry.text || entry.en);
+	// Fall back to a single-passage {"id":N,"text_en":...} envelope.
+	if (parsed && parsed.id !== undefined && Number(parsed.id) === Number(id))
+		return Utils.trimToEmpty(parsed.text_en || parsed.translation || parsed.text || parsed.en || parsed.body_en);
 	return '';
 }
 
@@ -100,7 +103,7 @@ function parseTranslations(content, rows) {
 			throw new Error(`Translation still contains Arabic script for passage id ${id}`);
 		if (/\[(?:AI|Machine)\]/i.test(value))
 			throw new Error(`Translation contains a raw AI marker for passage id ${id}`);
-		value = Utils.replacePBUH(`✧ ${value.replace(/^✧\s*/, '')}`);
+		value = Utils.normalizeArabicHonorifics(`✧ ${value.replace(/^✧\s*/, '')}`);
 		for (const mark of ['ﷺ', 'ؓ'])
 			if (row.text.includes(mark) && !value.includes(mark))
 				throw new Error(`Missing honorific ${mark} for passage id ${id}`);

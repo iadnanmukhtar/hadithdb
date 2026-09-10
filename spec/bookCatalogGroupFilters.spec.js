@@ -15,7 +15,8 @@ describe('books catalog group filters', () => {
 		expect(template).toContain("hadith: BookGroups.list('hadith')");
 		expect(template).toContain("tafsir: BookGroups.list('tafsir')");
 		expect(template).toContain('data-book-catalog-group-scope');
+		expect(template).toContain('data-book-catalog-language-filter="en"');
+		expect(template).toContain('data-book-catalog-language-filter="ar"');
 		expect(template).toContain('setGroupScope');
-		expect(template).toContain('activateTabWithMostGroupMatches');
 	});
 });
