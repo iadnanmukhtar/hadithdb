@@ -10,7 +10,7 @@ describe('guest ChatKit proxy', () => {
   let server, base;
   const original = global.settings;
   beforeAll(async () => {
-    global.settings = { chatkit: { secret: 'test-secret', domainKey: 'public-test-key' } };
+    global.settings = { openAI: { chatkit: { secret: 'test-secret', domainKey: 'public-test-key' } } };
     const app = express();
     app.use(express.json({ limit: '1mb' }), cookieParser());
     app.use('/api/chatkit', require('../routes/chatkit'));

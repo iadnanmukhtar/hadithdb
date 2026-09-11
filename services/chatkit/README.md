@@ -29,12 +29,12 @@ existing `openAI.key` and `openAI.model`. API credentials remain on the server.
 
 ## Configuration
 
-Environment variables take priority over the optional `settings.chatkit` object.
+Environment variables take priority over the optional `settings.openAI.chatkit` object.
 
 | Environment | Settings field | Default |
 | --- | --- | --- |
 | `CHATKIT_ENABLED` | `enabled` | Enabled; `0` or settings `false` disables the route and launcher |
-| `CHATKIT_DOMAIN_KEY` | `domainKey` | Registered publishable key in `lib/ChatKitConfig.js` |
+| `CHATKIT_DOMAIN_KEY` | `domainKey` | Set in `~/.hadithdb/settings.json` under `openAI.chatkit.domainKey` |
 | `CHATKIT_ENDPOINT` | `endpoint` | `http://127.0.0.1:8011/chatkit` (Express proxy destination) |
 | `CHATKIT_MCP_URL` | `mcpUrl` | `http://127.0.0.1:3004/mcp` (Python agent source endpoint) |
 | `CHATKIT_MODEL` | `model` | `settings.openAI.model` |

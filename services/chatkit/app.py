@@ -23,7 +23,7 @@ from mcp_source import library_mcp
 load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 settings_file = Path(os.environ.get('HADITHDB_SETTINGS', Path.home() / '.hadithdb/settings.json'))
 settings = json.loads(settings_file.read_text()) if settings_file.exists() else {}
-chat = settings.get('chatkit', {})
+chat = settings.get('openAI', {}).get('chatkit', {})
 key = os.environ.get('OPENAI_API_KEY') or settings.get('openAI', {}).get('key', '')
 secret = os.environ.get('CHATKIT_SECRET') or chat.get('secret') or (
     hmac.new(key.encode(), b'hadithdb-chatkit-v1', hashlib.sha256).hexdigest() if key else '')
