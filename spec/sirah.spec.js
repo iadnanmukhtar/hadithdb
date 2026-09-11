@@ -7,7 +7,10 @@ const { passage, fullTitle } = require('../bin/utils/import-hdith-sirah');
 describe('Sirah content', () => {
  beforeEach(() => {
   global.settings = { search: { itemsPerPage: 50 } };
-  global.books = [{id:101,alias:'ibnhisham',type:'sirah',hidden:0,shortName_en:'Sirat Ibn Hisham'}];
+  global.books = [
+   {id:101,alias:'ibnhisham',type:'sirah',hidden:0,shortName_en:'Ibn Hisham'},
+   {id:102,alias:'history',type:'sirah',hidden:0,shortName_en:'History'}
+  ];
   Index.docsFromQuery.mockReset();
   Index.docsFromQuery.mockResolvedValue(Object.assign([], {total:0}));
  });
@@ -33,11 +36,14 @@ describe('Sirah content', () => {
   expect(union).toHaveLength(1);
   expect(union[0].bool.filter).toContainEqual({term:{doctype:'hadith'}});
  });
- test.each([['sirah'],['ibnhisham']])('Sirah selection %s queries passages',async(selection)=>{
+ test.each([['history'],['sirah'],['ibnhisham']])('History selection %s queries passages',async(selection)=>{
   await Search.a_searchText('=النسب',[selection],0,{generalSearch:true});
   const union=Index.docsFromQuery.mock.calls[0][1].bool.filter[0].bool.should;
-  expect(union).toHaveLength(1);
-  expect(union[0].bool.filter).toContainEqual({term:{doctype:'sirah'}});
-  if(selection==='ibnhisham')expect(union[0].bool.filter).toContainEqual({terms:{book_alias:['ibnhisham']}});
+  const passageBranch=union.find(branch=>branch.bool.filter.some(filter=>filter.term?.doctype==='sirah'));
+  const headingBranch=union.find(branch=>branch.bool.filter.some(filter=>filter.term?.doctype==='toc'));
+  expect(passageBranch.bool.filter).toContainEqual({term:{doctype:'sirah'}});
+  const expectedAliases = selection === 'sirah' ? ['ibnhisham','history'] : [selection];
+  expect(headingBranch.bool.filter).toContainEqual({terms:{book_alias:expectedAliases}});
+  if(selection!=='sirah')expect(passageBranch.bool.filter).toContainEqual({terms:{book_alias:expectedAliases}});
  });
 });

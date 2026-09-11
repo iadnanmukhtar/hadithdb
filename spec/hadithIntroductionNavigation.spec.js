@@ -52,6 +52,25 @@ describe('Hadith introduction chapter navigation', () => {
 		expect(current.prev.path).toBe('muslim/0/1');
 	});
 
+	test('moves from an empty parent section to an intervening populated decimal chapter', async () => {
+		const lookup = jest.spyOn(Index, 'docsFromQueryString').mockImplementation(async (_index, query) => {
+			if (query.includes('ordinal:<100')) return [];
+			if (query.includes('level:2') && query.includes('ordinal:>100'))
+				return [heading({ h1: 1.4, h2: 2, ordinal: 140, path: 'ahmad/1.40/2' })];
+			if (query.includes('level:1') && query.includes('ordinal:>100'))
+				return [
+					heading({ level: 1, h1: 1.2, h2: null, h1_count: 81, ordinal: 120, path: 'ahmad/1.20' }),
+					heading({ level: 1, h1: 1.3, h2: null, h1_count: 317, ordinal: 130, path: 'ahmad/1.30' })
+				];
+			return [];
+		});
+		const current = heading({ book_alias: 'ahmad', h1: 1, h2: 1, h2_count: 0, ordinal: 100, path: 'ahmad/1/1' });
+
+		await HadithHeadingNavigation.applySameBookHeadingNavigation(current);
+
+		expect(current.next.path).toBe('ahmad/1.20');
+	});
+
 	test('wraps backward from the first introduction section to the final section', async () => {
 		const lookup = jest.spyOn(Index, 'docsFromQueryString').mockImplementation(async (_index, query, _offset, _size, orderBy) => {
 			if (query.includes('h1:0')) return [heading({})];

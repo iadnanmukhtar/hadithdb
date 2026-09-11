@@ -75,7 +75,7 @@
 
       <div class="command-search-input-wrap" data-command-search-direction-container dir="<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? 'rtl' : 'ltr' %>">
         <i class="bi bi-search<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
-        <input role="search" type="search" class="form-control command-search-input<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? ' command-search-arabic-text' : '' %>" name="q" value="<%= searchQuery || '' %>" dir="<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? 'rtl' : 'ltr' %>" placeholder="Search Hadith, Sharh, Sirah, Tafsir, and Quran..." aria-label="General search" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <input role="search" type="search" class="form-control command-search-input<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? ' command-search-arabic-text' : '' %>" name="q" value="<%= searchQuery || '' %>" dir="<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? 'rtl' : 'ltr' %>" placeholder="Search Hadith, Sharh, History, Tafsir, and Quran..." aria-label="General search" autocomplete="off" autocapitalize="none" spellcheck="false">
         <button type="button" class="btn command-search-funnel-toggle" data-command-filter-toggle aria-label="Search filters" title="Search filters" aria-expanded="false" aria-controls="command-search-filter-options"><i class="bi bi-funnel" aria-hidden="true"></i><span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count aria-live="polite">0</span></button>
       </div>
 
@@ -89,8 +89,8 @@
           <section id="command-search-hadith-filters" class="command-search-filter-panel" data-command-search-panel="hadith">
             <div class="command-search-source-options">
               <label class="command-search-book-option">
-                <input class="form-check-input" type="checkbox" name="b" value="sirah" <%= selectedCommandHadithAliases.includes('sirah') ? 'checked' : '' %> data-command-filter data-command-filter-label="Sirah">
-                <span>Sirah</span>
+                <input class="form-check-input" type="checkbox" name="b" value="sirah" <%= selectedCommandHadithAliases.includes('sirah') ? 'checked' : '' %> data-command-filter data-command-filter-label="History">
+                <span>History</span>
               </label>
               <label class="command-search-book-option">
                 <input class="form-check-input" type="checkbox" name="b" value="hadith" <%= selectedCommandHadithAliases.includes('hadith') ? 'checked' : '' %> data-command-filter data-command-filter-label="Hadith">
@@ -139,7 +139,7 @@
                 </div>
               </details>
               <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
-                <summary><span>Sirah Books</span><span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span></summary>
+                <summary><span>History Books</span><span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span></summary>
                 <div class="command-search-filter-popover">
                   <% (global.books || []).filter(function (book) { return book.type === 'sirah' && Number(book.hidden) !== 1; }).forEach(function (book) { %>
                   <label class="command-search-book-option" data-command-search-book-option>

@@ -64,7 +64,8 @@
     var quranSearchCommentaryAliases = isSearchResultsContext
       ? searchResultsTafsirFilters
       : (quranSearchCommentaryBook ? [quranSearchCommentaryBook.alias] : []);
-    var isBooksArea = !isQuranArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
+        var isHistoryCatalogArea = !isQuranArea && requestPath === '/books' && req && req.query && req.query.tab === 'history';
+        var isBooksArea = !isQuranArea && !isHistoryCatalogArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog';
     var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
     var isLikedArea = requestPath === '/liked' || requestPath.indexOf('/liked/') === 0;
@@ -81,7 +82,7 @@
     var isMoreArea = ['/settings', '/quran/settings', '/bookmarks', '/liked', '/commented', '/highlights', '/titled'].some(function (path) {
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
-    var isSirahArea = !isQuranArea && ((pageBook && pageBook.type === 'sirah') || /^\/ibnhisham(?:[/:]|$)/.test(requestPath));
+        var isSirahArea = !isQuranArea && (isHistoryCatalogArea || (pageBook && pageBook.type === 'sirah') || /^\/(?:ibnhisham|history)(?:[/:]|$)/.test(requestPath));
     var isHadithArea = !isQuranArea && !isSirahArea && !isBooksArea && !isBlogArea && !isMoreArea;
     var headerLogo = isMudhakkirArea ? '/static/img/quran/mudhakkir.svg' : (isQuranArea ? '/static/img/quran-logo2.svg' : '/static/img/logo2.svg');
     var headerBrandName = isMudhakkirArea ? 'Mudhakkir' : (isQuranArea ? 'Quran Unlocked' : site.name);
@@ -272,7 +273,8 @@
                 return book
                   && Number(book.hidden) === 0
                   && book.alias !== 'quran'
-                  && (book.type || book.book_type || book.book_model || 'hadith') === 'hadith';
+                  && ((book.type || book.book_type || book.book_model || 'hadith') === 'hadith'
+                    || ['ibnhisham', 'history'].includes(book.alias));
               }).slice().sort(function (a, b) {
                 return (a.shortName_en || a.name_en || a.alias || '').localeCompare(
                   b.shortName_en || b.name_en || b.alias || '',

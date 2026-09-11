@@ -9,6 +9,33 @@ const BookDownloads = require('../lib/BookDownloads');
 
 const router = express.Router();
 
+async function withContentLanguageBadges(books) {
+  if (!books.length)
+    return books;
+  const physicalIds = books.filter(book => Number(book.virtual) !== 1).map(book => Number(book.id)).filter(Number.isFinite);
+  const virtualIds = books.filter(book => Number(book.virtual) === 1).map(book => Number(book.id)).filter(Number.isFinite);
+  const englishRows = [];
+  if (physicalIds.length)
+    englishRows.push(...await global.query(`
+      SELECT DISTINCT bookId AS book_id
+      FROM hadiths
+      WHERE bookId IN (${physicalIds.join(',')})
+        AND NULLIF(TRIM(body_en), '') IS NOT NULL
+    `));
+  if (virtualIds.length)
+    englishRows.push(...await global.query(`
+      SELECT DISTINCT book_id
+      FROM v_hadiths_virtual_snapshot
+      WHERE book_id IN (${virtualIds.join(',')})
+        AND NULLIF(TRIM(body_en), '') IS NOT NULL
+    `));
+  const hasEnglish = new Set(englishRows.map(row => Number(row.book_id)));
+  return books.map(book => ({
+    ...book,
+    catalog_language_badge: hasEnglish.has(Number(book.id)) ? 'EN-AR' : ((book.lang || 'ar').toLowerCase() === 'en' ? 'EN' : 'AR')
+  }));
+}
+
 router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
@@ -31,6 +58,7 @@ router.get('/', async function (req, res, next) {
       keyNames = req.query.keys.split(/,/);
     res.end(Utils.toTSV(results, keyNames));
   } else {
+    results = await withContentLanguageBadges(results);
     var tafsirs = await Tafsir.visibleTafsirs();
     tafsirs = await Tafsir.withFirstPassages(tafsirs);
     var translations = await Tafsir.visibleTranslations();

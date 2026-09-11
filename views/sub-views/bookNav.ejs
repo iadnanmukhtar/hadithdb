@@ -16,10 +16,12 @@
 				&& book.alias !== 'quran'
 				&& (book.type || book.book_type || book.book_model || 'hadith') === 'hadith';
 		};
-		var hadithNavBooks = books.filter(function (book) { return isHadithBook(book) && book.alias !== 'ibnhisham'; });
-		var ibnHishamNavBook = books.find(function (book) { return book && book.hidden == 0 && book.alias === 'ibnhisham'; });
-		if (ibnHishamNavBook)
-			hadithNavBooks.push(ibnHishamNavBook);
+		var hadithNavBooks = books.filter(isHadithBook);
+		['ibnhisham', 'history'].forEach(function (alias) {
+			var historyBook = books.find(function (book) { return book && book.hidden == 0 && book.alias === alias; });
+			if (historyBook)
+				hadithNavBooks.push(historyBook);
+		});
 		var hadithSizeIndicator = function (book) {
 			var size = utils.emptyIfNull(book && book.size || '').toString();
 			var label = size === 'lg' ? 'Large hadith' : (size === 'md' ? 'Medium hadith' : (size === 'sm' ? 'Small hadith' : ''));

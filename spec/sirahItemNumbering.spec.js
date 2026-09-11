@@ -10,11 +10,15 @@ test('numbers source-ordered passages from one and maps inclusive heading ranges
 test('rejects unmapped heading boundaries before writes',()=>expect(()=>numbering(items,[{id:1,start:0,end:items[2].num}])).toThrow('Unmapped'));
 test('rejects duplicate passage identities',()=>expect(()=>numbering([...items.slice(1),items[1]],[])).toThrow('identities'));
 test('resolves old source references without querying ordinary current references',async()=>{
- const oldQuery=global.query;global.query=jest.fn().mockResolvedValue([{num:'1'}]);
+ const oldQuery=global.query;global.query=jest.fn()
+  .mockResolvedValueOnce([{num:'1'}])
+  .mockResolvedValueOnce([{num:'6993'}]);
  try{
   expect(await sourceReference({id:100412,alias:'ibnhisham',type:'sirah'},'813787')).toBe('1');
   expect(await sourceReference({id:100412,alias:'ibnhisham',type:'sirah'},'1')).toBeNull();
+  expect(await sourceReference({id:100413,alias:'history',type:'sirah'},'23060')).toBe('6993');
   expect(await sourceReference({alias:'bukhari',type:'hadith'},'813787')).toBeNull();
-  expect(global.query).toHaveBeenCalledTimes(1);
+  expect(global.query).toHaveBeenCalledTimes(2);
+  expect(global.query.mock.calls[1][0]).toContain('islamweb_history_source_entries');
  }finally{global.query=oldQuery;}
 });

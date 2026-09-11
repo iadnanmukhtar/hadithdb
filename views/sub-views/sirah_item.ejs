@@ -8,7 +8,7 @@
   <% if (sirahHasEnglish) { %>
   <section class="col-md-6 col-sm-12 h" lang="en" dir="ltr" data-reader-language-column="english">
     <% if (sirahShowTitle && i.title_en) { %><h2 class="fs-5 title"><%- i.title_en %></h2><% } %>
-    <b><a href="/<%= i.ref %>"><%= i.book_shortName_en %>:<%= i.num %></a></b>
+    <b><a href="/<%= i.ref %>"><%= i.book_alias || i.book_shortName_en %>:<%= i.num %></a></b>
     <section class="body l5"><div><%- utils.markdownToHtml(i.body_en || '') %></div></section>
     <% if (i.footnote_en) { %><footer class="footnote l2"><%- utils.markdownToHtml(i.footnote_en) %></footer><% } %>
   </section>
@@ -22,7 +22,7 @@
     <% if (i.footnote) { %><footer class="footnote l2"><%- utils.markdownToHtml(i.footnote) %></footer><% } %>
   </section>
   <footer class="col-12 h"><aside class="tags sirah-item-actions">
-    <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-bookmark-type="sirah" data-bookmark-ref="<%= i.ref %>" data-bookmark-title="<%= i.title_en || `${i.book_shortName_en || 'Sirah'}:${i.num}` %>" data-bookmark-title-ar="<%= i.title || '' %>" data-bookmark-url="/<%= i.ref %>" title="Bookmark this passage">
+    <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-bookmark-type="sirah" data-bookmark-ref="<%= i.ref %>" data-bookmark-title="<%= i.title_en || `${i.book_alias || i.book_shortName_en || 'sirah'}:${i.num}` %>" data-bookmark-title-ar="<%= i.title || '' %>" data-bookmark-url="/<%= i.ref %>" title="Bookmark this passage">
       <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= i.id %>"></span>
     </button>
     &nbsp;
