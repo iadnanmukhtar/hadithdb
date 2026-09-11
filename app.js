@@ -544,6 +544,8 @@ const startupPromise = (async () => {
   app.use('/api/client-errors', clientErrorsRouter);
   app.use('/quran/api/client-errors', clientErrorsRouter);
   app.use('/mcp', mcpRouter);
+  app.use('/api/chatkit', require('./routes/chatkit'));
+  app.use('/quran/api/chatkit', require('./routes/chatkit'));
   app.use('/settings', settingsRouter);
   app.use('/quran/settings', settingsRouter);
   const loginPageOnly = function loginPageOnly(req, res, next) {

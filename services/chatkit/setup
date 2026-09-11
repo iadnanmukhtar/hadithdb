@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+service_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+venv_dir=${CHATKIT_VENV:-"$service_dir/.venv"}
+python_bin=${CHATKIT_PYTHON:-python3.12}
+"$python_bin" -m venv "$venv_dir"
+"$venv_dir/bin/python" -m pip install -r "$service_dir/requirements.txt"

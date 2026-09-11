@@ -3,6 +3,7 @@ jest.mock('../lib/Index', () => ({ docsFromQuery: jest.fn(), docsFromQueryFields
 const Index = require('../lib/Index');
 const Search = require('../lib/Search');
 const Books = require('../lib/Books');
+const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
 const { passage, fullTitle } = require('../bin/utils/import-hdith-sirah');
 describe('Sirah content', () => {
  beforeEach(() => {
@@ -29,6 +30,9 @@ describe('Sirah content', () => {
  });
  test('catalog model remains sirah',()=>{
   expect(Books.normalizeBook(global.books[0],'books').book_model).toBe('sirah');
+ });
+ test('indexes sirah and history book types as historical passages',()=>{
+  expect(HadithTranslationIndexView.buildViewSql()).toContain("CASE WHEN b.type IN ('sirah','history') THEN 'sirah' ELSE 'hadith' END AS doctype");
  });
  test('general default contains Sirah and explicit Hadith excludes it',async()=>{
   expect(Search.generalContentFilters([])).toContain('sirah');

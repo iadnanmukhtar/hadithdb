@@ -24,7 +24,7 @@ const SearchHttp = require('../lib/SearchHttp');
 		for (var i = 0; i < indexNames.length; i++)
 			await ensureIndexExists(indexNames[i]);
 		if (indexNames.includes('hadiths')) {
-			var viewUpdate = await HadithTranslationIndexView.ensureBaseView();
+			var viewUpdate = await HadithTranslationIndexView.ensureBaseView({ force: true });
 			if (viewUpdate.updated)
 				log('v_hadiths restored to base view without generated translation columns');
 			var translationIndexFields = await HadithTranslationIndexView.loadIndexFields();

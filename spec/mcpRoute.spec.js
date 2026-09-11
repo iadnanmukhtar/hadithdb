@@ -5,6 +5,10 @@ const HadithMcp = require('../lib/HadithMcp');
 const Debug = require('../lib/Debug');
 
 describe('public MCP Streamable HTTP route', () => {
+  test('Quran links use exact references instead of decimal SQL section paths', () => {
+    const item = HadithMcp.normalizeScriptureItem({ ref: 'quran:1:1', path: 'quran/1.00/1.00' }, 'https://quran.islamunlocked.com');
+    expect(item.url).toBe('https://quran.islamunlocked.com/quran:1:1');
+  });
   let server;
   let baseUrl;
 

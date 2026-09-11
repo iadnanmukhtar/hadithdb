@@ -1,0 +1,5 @@
+openai-chatkit==1.6.5
+openai-agents==0.22.2
+fastapi==0.141.1
+uvicorn==0.52.4
+python-dotenv==1.2.2

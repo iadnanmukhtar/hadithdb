@@ -8,6 +8,7 @@
     "start": "node -r dotenv/config -r newrelic ./bin/www",
     "dev": "nodemon --exec \"node -r dotenv/config -r newrelic\" ./bin/www",
     "quran-asr": "./services/quran-asr/run",
+    "chatkit": "./services/chatkit/run",
     "test": "jest"
   },
   "keywords": [

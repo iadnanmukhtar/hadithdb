@@ -1,0 +1,15 @@
+<link rel="stylesheet" href="/static/css/chatkit.css?v=5">
+<button id="library-chat-launcher" class="library-chat-launcher" type="button" hidden
+  aria-controls="library-chat-panel" aria-expanded="false" aria-label="Ask the library" title="Ask the library">
+  <img src="/static/img/library-chat.svg" width="36" height="36" alt="" aria-hidden="true">
+</button>
+<section id="library-chat-panel" class="library-chat-panel" hidden role="dialog"
+  aria-labelledby="library-chat-title">
+  <div class="library-chat-heading">
+    <div><strong id="library-chat-title">Ask the library</strong><small>Explore Quran, hadith, tafsir, Sirah, and Islamic history with sources</small></div>
+    <button id="library-chat-close" type="button" aria-label="Close library chat">&times;</button>
+  </div>
+  <p id="library-chat-status" class="library-chat-status" role="status">Loading chat…</p>
+  <openai-chatkit id="library-chat" hidden></openai-chatkit>
+</section>
+<script src="/static/js/chatkit.js?v=4" defer></script>

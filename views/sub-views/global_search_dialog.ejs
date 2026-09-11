@@ -45,7 +45,13 @@
         <span class="command-search-kicker">Search the library</span>
         <h2 class="command-search-title">What are you looking for?</h2>
       </div>
-      <button type="button" class="btn-close command-search-close" data-command-search-close aria-label="Close search"></button>
+      <div class="command-search-heading-actions">
+        <button type="button" class="command-search-chat" data-library-chat-open hidden
+          aria-label="Ask the library" title="Ask the library" aria-controls="library-chat-panel">
+          <img src="/static/img/library-chat.svg" width="28" height="28" alt="" aria-hidden="true">
+        </button>
+        <button type="button" class="btn-close command-search-close" data-command-search-close aria-label="Close search"></button>
+      </div>
     </div>
 
     <ul class="nav nav-tabs book-catalog-tabs command-search-mode-switch" role="tablist" aria-label="Search collection">

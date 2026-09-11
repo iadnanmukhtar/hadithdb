@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+service_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+venv_dir=${CHATKIT_VENV:-"$service_dir/.venv"}
+if [ ! -x "$venv_dir/bin/python" ]; then
+  "$service_dir/setup"
+fi
+cd "$service_dir"
+exec "$venv_dir/bin/python" -m uvicorn app:app --host 127.0.0.1 --port "${CHATKIT_PORT:-8011}"

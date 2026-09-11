@@ -8,6 +8,7 @@
 node_modules
 .expo/
 services/quran-asr/.venv/
+services/chatkit/.venv/
 services/quran-asr/models/
 __pycache__/
 *.py[cod]
