@@ -7,6 +7,7 @@ require('../../lib/Globals');
 const axios = require('axios');
 const Utils = require('../../lib/Utils');
 const RuntimeRefresh = require('../../lib/RuntimeRefresh');
+const { normalizeExistingEnglishTocHeading } = require('../../lib/EnglishTocHeading');
 
 const DEFAULT_BATCH_SIZE = 30;
 const DEFAULT_CONCURRENCY = 4;
@@ -24,14 +25,15 @@ function cachedTranslation(row) {
 }
 
 function stripEnglishTocWrapper(title) {
-	const marker = Utils.trimToEmpty(title).startsWith('✧') ? '✧ ' : '';
-	let value = Utils.normalizeArabicHonorifics(Utils.trimToEmpty(title).replace(/^✧\s*/, ''));
+	const normalized = normalizeExistingEnglishTocHeading(Utils.normalizeArabicHonorifics(title));
+	const marker = Utils.trimToEmpty(normalized).startsWith('✧') ? '✧ ' : '';
+	let value = Utils.trimToEmpty(normalized).replace(/^✧\s*/, '');
 	const wrapper = /^(?:(?:From\s+)?(?:the\s+)?Musnad|(?:the\s+)?Account|(?:the\s+)?Book|(?:the\s+)?Chapter|(?:the\s+)?Mention|(?:the\s+)?Narration|(?:the\s+)?Hadith)\s+(?:of|on|about|regarding|concerning)\s+/i;
 	while (wrapper.test(value)) {
 		value = value.replace(wrapper, '');
 		value = value.replace(/^the\s+(?=[A-Z'\u02bf\u02be])/i, '');
 	}
-	return marker + value.replace(/[ \t]{2,}/g, ' ').trim();
+	return normalizeExistingEnglishTocHeading(marker + value.replace(/[ \t]{2,}/g, ' ').trim());
 }
 
 function cleanSourceTitle(title) {
@@ -50,7 +52,7 @@ function promptForBatch(rows) {
 		{
 			role: 'system',
 			content: `Translate Arabic table-of-contents headings into concise, natural English. ${context}
-Preserve the meaning, Islamic terminology, personal names, and honorifics accurately. Omit redundant heading wrappers such as "Musnad of", "Account of", "Book of", "Chapter on", "Mention of", "Narration of", and "Hadith of"; return only the substantive person or topic. Do not summarize, explain, add commentary, or invent numbering. Return only a JSON object whose keys are the supplied IDs and whose values are the English translations.`
+Preserve the meaning, Islamic terminology, personal names, and honorifics accurately. Omit redundant heading wrappers such as "Musnad", "Musnad of", "Account of", "Book of", "Chapter on", "Mention of", "Narration of", "Hadith of", and "Hadiths of", as well as a leading "And"; return only the substantive person or topic. Use lowercase "al-", render "ibn" as "b." and "bint" as "bt." except when the resulting name begins with Ibn or Bint, and use the English companion honorific ᴿᴬ. Do not summarize, explain, add commentary, or invent numbering. Return only a JSON object whose keys are the supplied IDs and whose values are the English translations.`
 		},
 		{
 			role: 'user',

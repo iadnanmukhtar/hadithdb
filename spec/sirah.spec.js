@@ -9,7 +9,8 @@ describe('Sirah content', () => {
   global.settings = { search: { itemsPerPage: 50 } };
   global.books = [
    {id:101,alias:'ibnhisham',type:'sirah',hidden:0,shortName_en:'Ibn Hisham'},
-   {id:102,alias:'history',type:'sirah',hidden:0,shortName_en:'History'}
+   {id:102,alias:'history',type:'sirah',hidden:0,shortName_en:'History'},
+   {id:103,alias:'islamweb-history',type:'history',hidden:0,shortName_en:'Islamweb History'}
   ];
   Index.docsFromQuery.mockReset();
   Index.docsFromQuery.mockResolvedValue(Object.assign([], {total:0}));
@@ -42,8 +43,17 @@ describe('Sirah content', () => {
   const passageBranch=union.find(branch=>branch.bool.filter.some(filter=>filter.term?.doctype==='sirah'));
   const headingBranch=union.find(branch=>branch.bool.filter.some(filter=>filter.term?.doctype==='toc'));
   expect(passageBranch.bool.filter).toContainEqual({term:{doctype:'sirah'}});
-  const expectedAliases = selection === 'sirah' ? ['ibnhisham','history'] : [selection];
+  const expectedAliases = selection === 'sirah' ? ['ibnhisham','history','islamweb-history'] : [selection];
   expect(headingBranch.bool.filter).toContainEqual({terms:{book_alias:expectedAliases}});
   if(selection!=='sirah')expect(passageBranch.bool.filter).toContainEqual({terms:{book_alias:expectedAliases}});
+ });
+
+ test('history-typed aliases use the Sirah passage and heading branches',async()=>{
+  await Search.a_searchText('=النسب',['islamweb-history'],0,{generalSearch:true});
+  const union=Index.docsFromQuery.mock.calls[0][1].bool.filter[0].bool.should;
+  const passageBranch=union.find(branch=>branch.bool.filter.some(filter=>filter.term?.doctype==='sirah'));
+  const headingBranch=union.find(branch=>branch.bool.filter.some(filter=>filter.term?.doctype==='toc'));
+  expect(passageBranch.bool.filter).toContainEqual({terms:{book_alias:['islamweb-history']}});
+  expect(headingBranch.bool.filter).toContainEqual({terms:{book_alias:['islamweb-history']}});
  });
 });

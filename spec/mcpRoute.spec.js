@@ -269,6 +269,32 @@ describe('Hadith MCP tool service', () => {
     expect(result.structuredContent.canonical_url).toBe('https://hadith.example/bukhari:1');
   });
 
+  test.each(['sirah', 'history'])('searches every sirah and history book for the %s scope', async scope => {
+    const previousBooks = global.books;
+    global.books = [
+      { alias: 'ibnhisham', type: 'sirah' },
+      { alias: 'islamweb-history', type: 'history' },
+      { alias: 'bukhari', type: 'hadith' }
+    ];
+    let requested;
+    const fetch = async url => {
+      requested = new URL(String(url));
+      return response([], String(url));
+    };
+
+    try {
+      const result = await HadithMcp.callTool('search_hadith', {
+        query: 'migration',
+        books: [scope]
+      }, { baseUrls: urls, fetch });
+
+      expect(requested.searchParams.getAll('b')).toEqual(['ibnhisham', 'islamweb-history']);
+      expect(result.structuredContent.books).toEqual(['ibnhisham', 'islamweb-history']);
+    } finally {
+      global.books = previousBooks;
+    }
+  });
+
   test('does not truncate Arabic or English scripture fields', () => {
     const longEnglish = 'e'.repeat(25000);
     const longArabic = 'ع'.repeat(25000);
