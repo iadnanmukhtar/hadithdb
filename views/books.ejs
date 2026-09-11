@@ -70,7 +70,7 @@
       return /^d\./i.test(death) ? death : `d. ${death}`;
     };
     var tafsirGroups = [
-      { key: 'all', heading: 'Tafsir', tafsirs: (tafsirs || []).slice() }
+      { key: 'all', heading: 'Tafsir', tafsirs: Tafsir.uniqueCarouselTafsirs((tafsirs || []).slice()) }
     ].map(function (group) {
       group.tafsirs.sort(function (a, b) {
         if (Tafsir.isDefaultTafsir(a) !== Tafsir.isDefaultTafsir(b))
@@ -116,12 +116,15 @@
     var bookLanguageBadge = function (book) {
       if (book && book.catalog_language_badge)
         return book.catalog_language_badge;
-      var lang = utils.emptyIfNull(book && book.lang || '').toString().toLowerCase();
-      if (lang === 'ar-en' || lang === 'en-ar')
+      var languages = Tafsir.commentaryLanguages(book);
+      if (languages.indexOf('en') >= 0 && languages.indexOf('ar') >= 0)
         return 'EN-AR';
-      if (lang === 'en')
+      if (languages.indexOf('en') >= 0)
         return 'EN';
       return 'AR';
+    };
+    var catalogLanguageCodes = function (book) {
+      return Tafsir.commentaryLanguages(book).join(' ');
     };
     var htmlToPlainText = function (value) {
       return utils.emptyIfNull(value || '')
@@ -336,7 +339,7 @@
                     var editableBookId = tafsir.id || '';
                   %>
                   <% var bookGroupIds = catalogGroupIds(tafsir.alias, 'tafsir'); %>
-                  <article class="book-catalog-card tafsir-book-row" data-book-catalog-language="<%= tafsir.lang || '' %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
+                  <article class="book-catalog-card tafsir-book-row" data-book-catalog-language="<%= catalogLanguageCodes(tafsir) %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
                     bookGroupIds.map(function (id) { var bookGroup = catalogBookGroups.tafsir.find(function (candidate) { return candidate.id === id; }); return bookGroup && bookGroup.label; }).filter(Boolean).join(' '),
                     'tafsir',
                     tafsir.alias,
@@ -593,7 +596,7 @@
         var groups = (card.dataset.bookCatalogGroups || '').split(/\s+/).filter(Boolean);
         var match = (!query || normalize(card.dataset.bookCatalogFilter).includes(query))
           && (!activeGroup || groups.indexOf(activeGroup) >= 0)
-          && (!activeLanguage || card.dataset.bookCatalogLanguage === activeLanguage);
+          && (!activeLanguage || (card.dataset.bookCatalogLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0);
         card.classList.toggle('d-none', !match);
         if (match)
           visibleCount += 1;

@@ -14941,10 +14941,6 @@ function quranSearchBookFilterParams($form, useQuranDefaults) {
 	if (useQuranDefaults && params.length < 1) {
 		if ($form.find('input[name=tafsir]:checked:not(:disabled)').length > 0)
 			params.push({ name: 'b', value: 'tafsir' });
-		else {
-			params.push({ name: 'b', value: 'quran' });
-			params.push({ name: 'b', value: 'tafsir' });
-		}
 	}
 	return params;
 }

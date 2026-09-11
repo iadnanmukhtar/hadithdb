@@ -20,4 +20,11 @@ describe('tafsir book catalog filters', () => {
 		expect(template).toContain('data-tafsir-book-groups');
 		expect(template).toContain("groups.indexOf(activeGroup) >= 0");
 	});
+
+	test('shows one bilingual card with a language badge and inclusive language filters', () => {
+		expect(template).toContain('Tafsir.uniqueCarouselTafsirs(tafsirs || [])');
+		expect(template).toContain('book-language-badge');
+		expect(template).toContain("return 'EN-AR'");
+		expect(template).toContain("split(/\\s+/).indexOf(activeLanguage) >= 0");
+	});
 });

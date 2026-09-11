@@ -1,7 +1,7 @@
 <article class="row mt-3 quran-search-item translation-search-result">
 	<section class="col-md-6 col-sm-12 h" lang="en" data-reader-language-column="english">
 		<section lang="en">
-			<b><a href="<%= utils.quranUrl(req, translation.url) %>" title="<%- translation.translation_name %>"><%= `${translation.translation_book}:${translation.translation_ref}` %></a></b>
+			<b><a href="<%= utils.quranUrl(req, translation.url) %>" title="<%- translation.translation_name %>"><%= `${translation.translation_alias}:${translation.translation_ref}` %></a></b>
 			<% if (translation.translation_author) { %>
 				<span class="text-muted"> – <%- translation.translation_author %></span>
 			<% } %>
@@ -18,7 +18,7 @@
 	</section>
 	<section class="col-md-6 col-sm-12 h" lang="ar" data-reader-language-column="arabic" dir="rtl">
 		<section lang="ar">
-			<b><a href="<%= utils.quranUrl(req, translation.url) %>">مقطع:<%= arabic.toArabicDigits(arabic.toLatinDigits(translation.translation_ref) || translation.translation_ref) %></a></b>
+			<b><a href="<%= utils.quranUrl(req, translation.url) %>"><%= translation.translation_book_ar %>:<%= arabic.toArabicDigits(arabic.toLatinDigits(translation.translation_ref) || translation.translation_ref) %></a></b>
 		</section>
 		<section class="body partial l5 quran-hafs" lang="ar" dir="rtl">
 			<div class="hadith-body-content partial quran-hafs">

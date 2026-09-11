@@ -605,7 +605,7 @@
         <div class="tafsir-book-meta text-muted mb-3<%= tocBookNameAr || tocBookAuthorAr || tocBookDeathAr ? '' : ' tafsir-book-meta-single' %>">
           <% if (editableBook) { %>
             <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en" data-placeholder="English short name"><%- tocDisplayBook.shortName_en || '' %></span></div>
-            <% if (!isEnglishQuranTranslation) { %><div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName" data-placeholder="الاسم المختصر"><%- tocDisplayBook.shortName || '' %></span></div><% } %>
+            <div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName" data-placeholder="الاسم المختصر"><%- tocDisplayBook.shortName || '' %></span></div>
             <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title_en" data-placeholder="Full English title"><%- tocDisplayBook.title_en || '' %></span></div>
             <% if (!isEnglishQuranTranslation) { %><div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title" data-placeholder="العنوان العربي"><%- tocDisplayBook.title || '' %></span></div><% } %>
             <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.author_en" data-placeholder="Author"><%- tocDisplayBook.author_en || '' %></span> (d. <span class="_e" data-id="<%= editableBookId %>" data-prop="book.death" data-placeholder="Death year"><%- tocDisplayBook.death || '' %></span><%= tocDisplayBook.type === 'trans' ? ' CE' : ' AH' %>)</div>

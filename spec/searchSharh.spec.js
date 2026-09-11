@@ -24,8 +24,23 @@ describe('Sharh book search', () => {
 		expect(union.minimum_should_match).toBe(1);
 		expect(union.should).toHaveLength(5);
 		expect(union.should[0].bool.filter).toContainEqual({ terms: { doctype: ['hadith', 'sharh'] } });
-		expect(union.should[1].bool.filter).toContainEqual({ term: { book_alias: 'quran' } });
-		expect(union.should[2].bool.filter).toContainEqual({ term: { doctype: 'commentary' } });
+		expect(JSON.stringify(union.should[1])).toContain('"book_alias":"quran"');
+		expect(JSON.stringify(union.should[1])).toContain('"commentary_type":"trans"');
+		expect(union.should[2].bool.filter).toContainEqual({ bool: { should: [{ bool: { filter: [{ term: { doctype: 'commentary' } }, { term: { commentary_type: 'tafsir' } }] } }], minimum_should_match: 1 } });
+	});
+
+	test('puts translations in the Quran scope and excludes them from the Tafsir scope', async () => {
+		await Search.a_searchText('=test', ['quran'], 0);
+		var quranQuery = JSON.stringify(Index.docsFromQuery.mock.calls[0][1]);
+		expect(quranQuery).toContain('"book_alias":"quran"');
+		expect(quranQuery).toContain('"commentary_type":"trans"');
+		expect(quranQuery).not.toContain('"commentary_type":"tafsir"');
+
+		Index.docsFromQuery.mockClear();
+		await Search.a_searchText('=test', ['commentaries'], 0);
+		var tafsirQuery = JSON.stringify(Index.docsFromQuery.mock.calls[0][1]);
+		expect(tafsirQuery).toContain('"commentary_type":"tafsir"');
+		expect(tafsirQuery).not.toContain('"commentary_type":"trans"');
 	});
 
 	test.each([

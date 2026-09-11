@@ -68,6 +68,12 @@ describe('global search dialog', () => {
 		expect(html).not.toMatch(/type="checkbox"[^>]* checked/);
 	});
 
+	test('unfiltered Quran results reopen with Quran and Tafsir visually unselected', async () => {
+		const html = await render([], { initialSearchMode: 'quran', isSearchResultsContext: true });
+		expect(html).not.toContain('name="b" value="quran" checked');
+		expect(html).not.toContain('name="b" value="tafsir" checked');
+	});
+
 	test('reopening filtered results does not restore removed categories', async () => {
 		const html = await render(['quran'], { isSearchResultsContext: true, quranSearchBookFilters: ['quran'] });
 		expect(html).toContain('name="b" value="quran" checked');

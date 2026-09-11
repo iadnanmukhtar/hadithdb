@@ -623,7 +623,9 @@ body:has(.quran-heading-layout),
 html:has(.hadith-heading-layout),
 body:has(.hadith-heading-layout),
 html:has(.toc-heading-layout),
-body:has(.toc-heading-layout) {
+body:has(.toc-heading-layout),
+html:has(.search-results-layout),
+body:has(.search-results-layout) {
 	overflow-x: clip;
 }
 
@@ -12512,7 +12514,8 @@ a.cmd-btn:hover {
 .search-filter-controls .command-search-filter-panel { margin: 0 0 1rem; }
 @media (min-width: 992px) {
 	.search-results-layout { display: grid; grid-template-columns: minmax(0, 1fr) 18rem; gap: 2rem; }
-	.search-filter-rail { align-self: start; position: sticky; top: calc(var(--site-fixed-header-height, 5rem) + 0.75rem); max-height: calc(100dvh - var(--site-fixed-header-height, 5rem) - 1.5rem); overflow-y: auto; padding-inline: 1rem; border-left: 1px solid var(--bs-border-color); }
+	.search-filter-rail { position: fixed; z-index: 20; top: calc(var(--site-fixed-header-height, 5rem) + 0.75rem); right: max(1.5rem, calc((100vw - 90rem) / 2 + 1.5rem)); width: 18rem; min-height: 0; }
+	.search-filter-rail > [data-search-filter-rail-container] { max-height: calc(100dvh - var(--site-fixed-header-height, 5rem) - 1.5rem); overflow-y: auto; padding-inline: 1rem; border-left: 1px solid var(--bs-border-color); }
 }
 @media (max-width: 991.98px) {
 	.search-results-layout { display: flex; flex-direction: column; max-width: 60rem; padding-inline: 0.75rem; }

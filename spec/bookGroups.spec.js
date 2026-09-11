@@ -11,6 +11,12 @@ test('seeded groups do not collide with individual books or broaden an individua
 	expect(BookGroups.expand(['hadith-adab'], 'hadith', books)).toEqual(['adab', 'riyad']);
 });
 
+test('includes both Irab editions in Language & Rhetoric', () => {
+	const books = require('./fixtures/bookSearchGroups')();
+	const languageAndRhetoric = BookGroups.list('tafsir', books).find(group => group.id === 'tafsir-language-rhetoric');
+	expect(languageAndRhetoric.aliases).toEqual(expect.arrayContaining(['irab-al-quran', 'irab-daas']));
+});
+
 test('reads lowercase names and overlapping memberships from books metadata', () => {
 	const books = [row('one', [group]), row('two', [group, { ...group, id: 'second', label: 'second' }])];
 	expect(BookGroups.list('hadith', books).map(g => [g.id, g.label, g.aliases])).toEqual([

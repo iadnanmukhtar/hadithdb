@@ -107,6 +107,21 @@ describe('Quran Study translation editing', () => {
     expect(createPassage).toContain('WHERE ${bookWhere}');
   });
 
+  test('shows the Arabic short-name editor on English translation TOCs', () => {
+    const toc = fs.readFileSync(path.join(__dirname, '..', 'views', 'toc.ejs'), 'utf8');
+    const updateRoute = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
+    const metadataEditor = toc.slice(
+      toc.indexOf('<% if (editableBook) { %>', toc.indexOf('<% if (showBookMetadata) {')),
+      toc.indexOf('<% } else { %>', toc.indexOf('<% if (showBookMetadata) {'))
+    );
+
+    expect(metadataEditor).toContain('data-prop="book.shortName"');
+    expect(metadataEditor).toContain('data-placeholder="الاسم المختصر"');
+    expect(metadataEditor).not.toContain('if (!isEnglishQuranTranslation) { %><div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName"');
+    expect(updateRoute).toContain("'shortName_en', 'shortName', 'name_en', 'name'");
+    expect(updateRoute).toContain('await flushQuranCatalogBookCaches(bookAliases);');
+  });
+
   test('uses a lightweight update target and refreshes Elasticsearch in the update request', () => {
     const updateRoute = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
 

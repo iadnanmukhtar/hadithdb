@@ -19,4 +19,11 @@ describe('books catalog group filters', () => {
 		expect(template).toContain('data-book-catalog-language-filter="ar"');
 		expect(template).toContain('setGroupScope');
 	});
+
+	test('collapses bilingual tafsir variants into one badged card', () => {
+		expect(template).toContain("tafsirs: Tafsir.uniqueCarouselTafsirs((tafsirs || []).slice())");
+		expect(template).toContain('book-language-badge');
+		expect(template).toContain('Tafsir.commentaryLanguages(book)');
+		expect(template).toContain("split(/\\s+/).indexOf(activeLanguage) >= 0");
+	});
 });

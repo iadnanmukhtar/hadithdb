@@ -56,11 +56,15 @@ describe('Quran and tafsir canonical search ordering', () => {
 		expect(styles).toMatch(/\.command-search-trigger-label \{[\s\S]*?text-align: start;[\s\S]*?unicode-bidi: plaintext;/);
 	});
 
-	test('defaults Quran search to Quran and Tafsir except within a specific commentary', () => {
+	test('leaves Quran search filters unselected so the backend applies the broad default', () => {
 		const dialog = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'global_search_dialog.ejs'), 'utf8');
+		const script = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'), 'utf8');
 
 		expect(dialog).toContain('hasCommandSpecificCommentary');
-		expect(dialog).toMatch(/commandQuranTextSelected = isSearchResultsContext[\s\S]*: true;/);
-		expect(dialog).toMatch(/commandAllTafsirSelected = isSearchResultsContext[\s\S]*: !hasCommandSpecificCommentary;/);
+		expect(dialog).toContain("commandQuranTextSelected = selectedCommandQuranBookFilters.includes('quran')");
+		expect(dialog).toContain("commandAllTafsirSelected = !hasCommandSpecificCommentary && selectedCommandQuranBookFilters.some");
+		const filterParams = script.slice(script.indexOf('function quranSearchBookFilterParams'), script.indexOf('function initTafsirSearchFilterPills'));
+		expect(filterParams).not.toContain("params.push({ name: 'b', value: 'quran' })");
+		expect(filterParams).toContain("params.push({ name: 'b', value: 'tafsir' })");
 	});
 });

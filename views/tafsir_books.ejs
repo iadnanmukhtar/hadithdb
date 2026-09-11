@@ -132,6 +132,17 @@
         return '';
       return `<span class="tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
     };
+    var tafsirLanguages = function (tafsir) {
+      return Tafsir.commentaryLanguages(tafsir);
+    };
+    var tafsirLanguageBadge = function (tafsir) {
+      var languages = tafsirLanguages(tafsir);
+      if (languages.indexOf('en') >= 0 && languages.indexOf('ar') >= 0)
+        return 'EN-AR';
+      if (languages.indexOf('en') >= 0)
+        return 'EN';
+      return 'AR';
+    };
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -184,7 +195,7 @@
                     var editableBookId = tafsir.id || '';
                     var bookGroupIds = tafsirGroupIds(tafsir);
                   %>
-                  <article class="tafsir-book-card tafsir-book-row" data-tafsir-language="<%= tafsir.lang || '' %>" data-tafsir-book-groups="<%= bookGroupIds.join(' ') %>" data-tafsir-book-filter="<%= [
+                  <article class="tafsir-book-card tafsir-book-row" data-tafsir-language="<%= tafsirLanguages(tafsir).join(' ') %>" data-tafsir-book-groups="<%= bookGroupIds.join(' ') %>" data-tafsir-book-filter="<%= [
                     bookGroupIds.map(function (id) { var group = tafsirBookGroups.find(function (candidate) { return candidate.id === id; }); return group && group.label; }).filter(Boolean).join(' '),
                     tafsir.alias,
                     tafsir.name_en,
@@ -205,7 +216,7 @@
                             <a href="<%= browseUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en" data-placeholder="English name"><%- tafsir.name_en || '' %></span></a>
                           <% } else { %>
                             <a href="<%= browseUrl %>"><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></a>
-                          <% } %><%- tafsirSizeIndicator(tafsir) %>
+                          <% } %><%- tafsirSizeIndicator(tafsir) %> <span class="badge rounded-pill text-bg-light border book-language-badge"><%= tafsirLanguageBadge(tafsir) %></span>
                         </h3>
                         <% if (site.editMode || tafsir.name || tafsir.shortName) { %>
                           <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">
@@ -330,7 +341,7 @@
         var groups = (card.dataset.tafsirBookGroups || '').split(/\s+/).filter(Boolean);
         var match = (!query || normalize(card.dataset.tafsirBookFilter).includes(query))
           && (!activeGroup || groups.indexOf(activeGroup) >= 0)
-          && (!activeLanguage || card.dataset.tafsirLanguage === activeLanguage);
+          && (!activeLanguage || (card.dataset.tafsirLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0);
         card.classList.toggle('d-none', !match);
       });
       var visibleCount = cards.filter(function (card) {
