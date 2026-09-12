@@ -46,12 +46,18 @@ function requestPayload(req) {
 }
 
 function requirePaymentsEnabled(req, res, next) {
-  if (!PaymentConfig.isEnabled())
+  if (!PaymentConfig.contentTranslationsEnabled())
     return next(createError(503, 'Content translation is disabled.'));
   next();
 }
 
-router.get('/estimate', requirePaymentsEnabled, requireUser, async function (req, res) {
+function requireTranslationAccess(req, res, next) {
+  if (PaymentConfig.adminOnlyTranslations() && req.user.admin !== true)
+    return res.status(403).json({ error: 'Only admins can translate content.' });
+  next();
+}
+
+router.get('/estimate', requirePaymentsEnabled, requireUser, requireTranslationAccess, async function (req, res) {
   const payload = requestPayload(req);
   const estimate = await ContentTranslations.estimate(req.user, payload.itemType, payload.itemId, payload.targetLanguage, payload.mode);
   res.setHeader('Cache-Control', 'no-store');
@@ -64,7 +70,7 @@ router.get('/available', requirePaymentsEnabled, async function (req, res) {
   res.json(result);
 });
 
-router.post('/', requirePaymentsEnabled, requireUser, async function (req, res, next) {
+router.post('/', requirePaymentsEnabled, requireUser, requireTranslationAccess, async function (req, res, next) {
   const payload = requestPayload(req);
   try {
     const result = await ContentTranslations.translate(req.user, payload.itemType, payload.itemId, payload.targetLanguage, payload.mode, {
@@ -87,7 +93,7 @@ router.post('/', requirePaymentsEnabled, requireUser, async function (req, res, 
 });
 
 router.get('/languages', async function (req, res) {
-  const enabled = PaymentConfig.isEnabled();
+  const enabled = PaymentConfig.contentTranslationsEnabled();
   const languages = enabled ? (await PaymentConfig.loadLanguages()).filter(language => language.code !== 'ar') : [];
   res.json({
     enabled,

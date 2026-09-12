@@ -48,7 +48,7 @@
 	var sections = [];
 	var isSimilarSection = typeof similarSection !== 'undefined' && similarSection;
 	var isContentTranslationBrowse = typeof contentTranslationBrowse !== 'undefined' && contentTranslationBrowse;
-	var paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
+	var paymentFeatureEnabled = locals.contentTranslationFeatureEnabled === true;
 	var langData = isContentTranslationLang ? contentTranslationForLang(lang) : (i[lang] || {});
 	var langActual = !isContentTranslationLang && i[lang] ? i[lang].actual : null;
 	var langDir = langData.dir || (['ar', 'fa', 'he', 'ur'].includes(lang) ? 'rtl' : 'ltr');

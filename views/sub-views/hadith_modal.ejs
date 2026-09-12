@@ -21,7 +21,7 @@
 	const quranShareRef = ((i.actual ? i.actual.book_alias : i.book_alias) === 'quran' || /^quran:/.test(shareRef))
 		? arabic.toLatinDigits(shareRef.toString().replace(/^quran:/, ''))
 		: '';
-	const paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
+	const paymentFeatureEnabled = locals.contentTranslationFeatureEnabled === true;
 	const shareContentTranslations = Array.isArray(i.contentTranslations) ? i.contentTranslations : [];
 %>
 <aside class="h modal fade hadith-share-root" id="H<%= i.id %>" tabindex="-1">

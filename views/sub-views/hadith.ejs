@@ -6,7 +6,7 @@
 	const ar = i.ar || {};
 	const isSimilarSection = typeof similarSection !== 'undefined' && similarSection;
 	const isQuranItem = i.remark == 2 || i.book_alias === 'quran' || (i.actual && i.actual.book_alias === 'quran');
-	const paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
+	const paymentFeatureEnabled = locals.contentTranslationFeatureEnabled === true;
 	const isContentTranslationBrowse = typeof contentTranslationBrowse !== 'undefined' && contentTranslationBrowse;
 	const enableHadithContentLanguage = paymentFeatureEnabled && !site.editMode && !isQuranItem;
 	const enableHadithContentTranslation = enableHadithContentLanguage && !isSimilarSection;

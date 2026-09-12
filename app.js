@@ -397,6 +397,13 @@ const startupPromise = (async () => {
   app.use(accessLogMiddleware);
   app.use(sameSiteSecurityHeaders);
   app.use(rejectUnsafeRequestShape);
+  app.use(function rejectTsvDownloads(req, res, next) {
+    if ('tsv' in req.query) {
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(410).type('text/plain').send('TSV downloads are disabled.');
+    }
+    return next();
+  });
   app.get('/.well-known/openai-apps-challenge', function openAiAppsChallenge(req, res) {
     res.setHeader('Cache-Control', 'no-store');
     res.type('text/plain').send(OPENAI_APPS_CHALLENGE_TOKEN);
@@ -428,6 +435,8 @@ const startupPromise = (async () => {
   app.use(cookieParser());
   app.use(function exposeFeatureFlags(req, res, next) {
     res.locals.paymentFeatureEnabled = PaymentConfig.isEnabled();
+    res.locals.contentTranslationFeatureEnabled = PaymentConfig.contentTranslationsEnabled();
+    res.locals.contentTranslationAdminOnly = PaymentConfig.adminOnlyTranslations();
     res.locals.tafsirTranslationFeatureEnabled = PaymentConfig.contentTranslationEnabledForItemType('tafsir');
     res.locals.contentTranslationEstimateFields = ContentTranslations.estimateFields;
     res.locals.quranRecitationFeedbackEnabled = QuranRecitationFeedback.isEnabled();

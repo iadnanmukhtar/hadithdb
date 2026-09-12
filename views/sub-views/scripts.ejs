@@ -12,6 +12,8 @@
 <script>
   window.HADITH_BASE_URL = <%- JSON.stringify(utils.hadithBaseUrl(req)) %>;
   window.HADITH_QURAN_BASE_URL = <%- JSON.stringify(utils.quranBaseUrl(req)) %>;
+  window.HADITH_CONTENT_TRANSLATION_ENABLED = <%= locals.contentTranslationFeatureEnabled === true ? 'true' : 'false' %>;
+  window.HADITH_CONTENT_TRANSLATION_ADMIN_ONLY = <%= locals.contentTranslationAdminOnly === true ? 'true' : 'false' %>;
   window.HADITH_PAYMENT_FEATURE_ENABLED = <%= locals.paymentFeatureEnabled === true ? 'true' : 'false' %>;
   window.HADITH_TAFSIR_TRANSLATION_ENABLED = <%= locals.tafsirTranslationFeatureEnabled === false ? 'false' : 'true' %>;
   window.HADITH_COOKIE_DOMAIN = (() => {

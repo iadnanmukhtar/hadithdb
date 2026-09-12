@@ -414,3 +414,9 @@ In the table below, **Records** is the number of entries in each work, **English
 | 82 | `ahmad-zuhd` | al-Zuhd, Aḥmad | Source | 2,360 | 2,355 | 2,360 | N/A |
 | 33 | `tabarani-saghir` | al-Muʿjam al-Ṣaghīr, Ṭabarānī | Source | 0 | 0 | 0 | N/A |
 | 1000 | `suyuti` | Jamʿ al-Jawāmiʿ, Suyūṭī | Source | 45,909 | 1,430 | 45,908 | Albānī, Arnaʾūṭ, Bayhaqī, Bukhārī, Dhahabī, Ḥākim, Haythamī, Ibn al-Jawzī, Ibn Ḥajar, Luʿluʿ wa-al-Marjān, Mudhiri, Muslim, Nawawī, Suyūṭī, Tirmidhī |
+
+### Admin-only content translations
+
+Set `payments.content.adminOnly` to `true` in `~/.hadithdb/settings.json` and restart the app to disable payments and restrict new translations/revisions to authenticated admins. Admin translations cost zero points and do not require Stripe. The Payments section in My Settings is hidden, and payment endpoints are disabled. Existing translations remain readable by everyone. The separate Tafsir translation switch still applies.
+
+Set the flag to `false` (the default) to restore the existing paid translation flow, subject to `payments.enabled` and Stripe configuration.

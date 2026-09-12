@@ -15636,7 +15636,7 @@ function paymentFeatureEnabled() {
 }
 
 function contentTranslationFeatureEnabled(itemType) {
-	if (!paymentFeatureEnabled())
+	if (!(window.HADITH_CONTENT_TRANSLATION_ENABLED === true || paymentFeatureEnabled()))
 		return false;
 	itemType = (itemType || '').toString().trim().toLowerCase();
 	if (itemType === 'tafsir')
@@ -15838,7 +15838,7 @@ function setContentTranslationContainerLanguage(target, language, fallbackLangua
 }
 
 function contentTranslationConfig() {
-	if (!paymentFeatureEnabled())
+	if (!contentTranslationFeatureEnabled())
 		return Promise.resolve({ languages: [], pricing: null });
 	if (!contentTranslationConfigPromise) {
 		contentTranslationConfigPromise = fetch(quranApiPath('/content-translations/languages'), {
@@ -16024,6 +16024,8 @@ async function contentTranslationPaymentRequest(path, options, message) {
 }
 
 async function contentTranslationPaymentSummary() {
+	if (!paymentFeatureEnabled())
+		return { balance: 0, profile: {}, config: { packages: [] } };
 	return contentTranslationPaymentRequest('/payments/summary', { method: 'GET' }, 'Please sign in to view your points.');
 }
 
@@ -16341,7 +16343,7 @@ function resetHadithContentTranslationScope(target) {
 }
 
 function initGeneratedShareLanguageSelect(modal, card) {
-	if (!paymentFeatureEnabled())
+	if (!contentTranslationFeatureEnabled())
 		return;
 	var menu = modal ? modal.querySelector('[data-share-language-menu="1"]') : null;
 	if (!menu || !card)
@@ -16412,7 +16414,7 @@ function markContentTranslationTargetTranslated(target) {
 	if (!control.length)
 		return;
 	var label = 'Revise or Translate';
-	control.attr('title', 'Revise translation with points').addClass('content-translation-auth-only').prop('hidden', false);
+	control.attr('title', 'Revise translation').addClass('content-translation-auth-only').prop('hidden', false);
 	control.find('.content-translate-button').first().addClass('content-translation-revise-button').attr({
 		title: label,
 		'aria-label': label
@@ -16888,6 +16890,8 @@ function contentTranslationEstimateFromWords(wordCount, pricing) {
 }
 
 function contentTranslationLocalEstimate(target, config) {
+	if (window.HADITH_CONTENT_TRANSLATION_ADMIN_ONLY === true)
+		return { points: 0, wordCount: contentTranslationWordCount(target.text() || '') };
 	var scope = hadithContentTranslationScope(target);
 	var source = scope.length ? scope : target;
 	var attrPoints = Number(source.attr('data-content-translation-points'));
@@ -16924,7 +16928,7 @@ function ensureContentTranslationModal() {
 		'aria-label': 'Close'
 	}).appendTo(header);
 	var body = $('<div>').addClass('modal-body').appendTo(content);
-	$('<p>').addClass('content-translation-modal-copy').text('Choose a language and translate this text using points. Your preferred language is selected when available.').appendTo(body);
+	$('<p>').addClass('content-translation-modal-copy').text(window.HADITH_CONTENT_TRANSLATION_ADMIN_ONLY === true ? 'Choose a language to translate this text. No payment is required.' : 'Choose a language and translate this text using points. Your preferred language is selected when available.').appendTo(body);
 	var field = $('<div>').addClass('mb-3').appendTo(body);
 	$('<label>').addClass('form-label').attr('for', 'content-translation-modal-language').text('Language').appendTo(field);
 	$('<select>').addClass('form-select content-translation-modal-language').attr({
@@ -16980,6 +16984,12 @@ function ensureContentTranslationModal() {
 function updateContentTranslationModalEstimate() {
 	var modal = $('#content-translation-modal');
 	var state = contentTranslationModalState || {};
+	if (window.HADITH_CONTENT_TRANSLATION_ADMIN_ONLY === true) {
+		modal.find('.content-translation-modal-points, .content-translation-modal-words, .content-translation-modal-balance, .content-translation-modal-purchase').prop('hidden', true);
+		modal.find('.content-translation-modal-status').text('Admin translation — no payment required.');
+		modal.find('.content-translation-modal-submit').text('Translate').prop('disabled', state.busy === true || modal.find('.content-translation-modal-language').prop('disabled'));
+		return;
+	}
 	var estimate = state.estimate || { points: 0, wordCount: 0 };
 	var balance = Number(state.balance);
 	var hasBalance = Number.isFinite(balance);
@@ -17324,11 +17334,11 @@ function appendContentTranslationControl(container, target, itemType, itemId, cu
 	var itemClass = itemType.toString().replace(/[^a-z0-9_-]/gi, '').toLowerCase();
 	var row = ensureContentTranslationActionsRow(target);
 	var control = $('<div>').addClass(`content-translation-control content-translation-control-${itemClass}`).attr({
-		title: existingTranslation ? 'Revise translation with points' : 'Translate with points',
+		title: existingTranslation ? 'Revise translation' : 'Translate',
 		lang: 'en',
 		dir: 'ltr'
 	});
-	if (existingTranslation && target.attr('data-content-translation-show-control') !== 'true')
+	if (window.HADITH_CONTENT_TRANSLATION_ADMIN_ONLY === true || (existingTranslation && target.attr('data-content-translation-show-control') !== 'true'))
 		control.addClass('content-translation-auth-only').prop('hidden', true);
 	$('<button>').addClass((existingTranslation ? 'btn btn-sm btn-primary content-translate-button content-translation-revise-button' : 'btn btn-sm btn-primary content-translate-button') + ` content-translate-button-${itemClass}`).attr({
 		type: 'button',
@@ -17362,7 +17372,7 @@ async function refreshContentTranslationAuthControls() {
 	} catch (_err) {
 		user = null;
 	}
-	controls.prop('hidden', !user);
+	controls.prop('hidden', !user || (window.HADITH_CONTENT_TRANSLATION_ADMIN_ONLY === true && window.hadithAdmin !== true));
 }
 
 function bindContentTranslationAuthRefresh() {
@@ -17375,7 +17385,7 @@ function bindContentTranslationAuthRefresh() {
 }
 
 function initHadithContentTranslationControls(root) {
-	if (!paymentFeatureEnabled())
+	if (!contentTranslationFeatureEnabled())
 		return;
 	bindContentTranslationAuthRefresh();
 	var scope = root || document;
@@ -17394,7 +17404,7 @@ function initHadithContentTranslationControls(root) {
 }
 
 function initLegacyHadithTranslationLink() {
-	if (!paymentFeatureEnabled())
+	if (!contentTranslationFeatureEnabled())
 		return;
 	var params = new URLSearchParams(window.location.search || '');
 	if (params.get('translate') !== '1')

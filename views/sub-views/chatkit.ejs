@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/static/css/chatkit.css?v=5">
+<link rel="stylesheet" href="/static/css/chatkit.css?v=6">
 <button id="library-chat-launcher" class="library-chat-launcher" type="button" hidden
   aria-controls="library-chat-panel" aria-expanded="false" aria-label="Ask the library" title="Ask the library">
   <img src="/static/img/library-chat.svg" width="36" height="36" alt="" aria-hidden="true">
@@ -9,7 +9,23 @@
     <div><strong id="library-chat-title">Ask the library</strong><small>Explore Quran, hadith, tafsir, Sirah, and Islamic history with sources</small></div>
     <button id="library-chat-close" type="button" aria-label="Close library chat">&times;</button>
   </div>
-  <p id="library-chat-status" class="library-chat-status" role="status">Loading chat…</p>
-  <openai-chatkit id="library-chat" hidden></openai-chatkit>
+  <div class="library-chat-handoff">
+    <h3>Continue in your ChatGPT account</h3>
+    <p>Connect the library once, then ask questions in ChatGPT using your own account and its usage limits.</p>
+    <ol>
+      <li>In ChatGPT Settings, open <strong>Security and login</strong> and enable <strong>Developer mode</strong>.</li>
+      <li>Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer">ChatGPT Plugins</a>, select <strong>+</strong>, and add a connection named <strong>Hadith Unlocked</strong> using this server address:</li>
+    </ol>
+    <label for="library-mcp-url">Library server address</label>
+    <div class="library-chat-copy-row">
+      <input id="library-mcp-url" type="url" readonly value="https://hadithunlocked.com/mcp">
+      <button id="library-copy-mcp" type="button">Copy</button>
+    </div>
+    <p id="library-chat-status" class="library-chat-copy-status" role="status" aria-live="polite"></p>
+    <p>After connecting, start a new chat and select <strong>Hadith Unlocked</strong> from the tools menu. Ask a question and request links to the sources.</p>
+    <a class="library-chat-continue" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Open ChatGPT <span aria-hidden="true">↗</span></a>
+    <p class="library-chat-note">Connecting a custom library requires Developer mode, which may not be available for your account or workspace. Opening ChatGPT alone does not connect the library.</p>
+    <a class="library-chat-help" href="https://developers.openai.com/plugins/deploy/connect-chatgpt" target="_blank" rel="noopener noreferrer">Connection help from OpenAI</a>
+  </div>
 </section>
-<script src="/static/js/chatkit.js?v=4" defer></script>
+<script src="/static/js/chatkit.js?v=6" defer></script>
