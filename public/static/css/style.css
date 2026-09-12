@@ -7752,7 +7752,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-sharh-body { font-size: calc(1.05rem * var(--content-font-scale)) !important; line-height: var(--content-line-height); text-indent: 0; }
 .hadith-sharh-body * { font-size: inherit !important; }
 .hadith-sharh-column:lang(en) .hadith-sharh-body,
-.hadith-sharh-column:lang(en) .hadith-sharh-more { font-size: calc(.9rem * var(--content-font-scale)) !important; }
+.hadith-sharh-column:lang(en) .hadith-sharh-more { font-size: calc(.81rem * var(--content-font-scale)) !important; }
 .hadith-sharh-body[data-hadith-sharh-collapsible]:not(.is-expanded):not(.hadith-sharh-no-overflow) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 10; line-clamp: 10; overflow: hidden; }
 .hadith-sharh-more { background: var(--bs-body-bg); border: 0; bottom: 0; color: var(--c-accent); cursor: pointer; font-family: inherit; font-size: calc(1.05rem * var(--content-font-scale)) !important; font-style: inherit; font-weight: inherit; left: 0; line-height: var(--content-line-height) !important; padding: 0 .15rem 0 .85rem; position: absolute; }
 .hadith-sharh-column:lang(en) .hadith-sharh-more { direction: ltr; left: auto; right: 0; text-align: right; }
@@ -10542,6 +10542,51 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 .quran-translation-text:lang(ar) .footnotes li::marker {
+	font-size: .95rem !important;
+	line-height: 1.45 !important;
+}
+
+:is(.intro, .h .body) .footnote-ref {
+	font-size: .62em;
+	line-height: 0;
+	vertical-align: super;
+}
+
+:is(.intro, .h .body) .footnote-ref,
+:is(.intro, .h .body) .footnote-ref a,
+:is(.intro, .h .body) .footnote-backref,
+:is(.intro, .h .body) .footnotes,
+:is(.intro, .h .body) .footnotes a,
+:is(.intro, .h .body) .footnotes li,
+:is(.intro, .h .body) .footnotes li::marker {
+	color: var(--c-footnote-muted);
+}
+
+:is(.intro, .h .body) .footnote-backref {
+	font-size: .7em;
+}
+
+:is(.intro, .h .body) .footnotes,
+:is(.intro, .h .body) .footnotes p,
+:is(.intro, .h .body) .footnotes li::marker {
+	font-size: .78rem !important;
+	line-height: 1.35 !important;
+}
+
+:is(.intro, .h .body) .footnotes li {
+	margin-bottom: .45rem;
+}
+
+:is(.intro, .h .body) .footnotes li:last-child {
+	margin-bottom: 0;
+}
+
+:is(.intro, .h .body):lang(ar) .footnotes,
+:is(.intro, .h .body):lang(ar) .footnotes p,
+:is(.intro, .h .body):lang(ar) .footnotes li::marker,
+.h:lang(ar) .body .footnotes,
+.h:lang(ar) .body .footnotes p,
+.h:lang(ar) .body .footnotes li::marker {
 	font-size: .95rem !important;
 	line-height: 1.45 !important;
 }

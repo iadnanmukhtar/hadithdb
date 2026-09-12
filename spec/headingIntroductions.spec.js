@@ -5,6 +5,7 @@ const fs = require('fs');
 const ejs = require('ejs');
 const Arabic = require('../lib/Arabic');
 const Utils = require('../lib/Utils');
+const Tafsir = require('../lib/Tafsir');
 
 const template = path.join(__dirname, '..', 'views', 'sub-views', 'heading.ejs');
 
@@ -20,6 +21,7 @@ function render(editMode) {
 		site: { editMode },
 		req: {},
 		utils: Utils,
+		Tafsir,
 		arabic: Arabic,
 		heading,
 		headingEnglishOnly: true

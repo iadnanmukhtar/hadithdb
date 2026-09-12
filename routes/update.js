@@ -13,6 +13,7 @@ const { homedir } = require('os');
 const Hadith = require('../lib/Hadith');
 const HadithDeletion = require('../lib/HadithDeletion');
 const HadithRevision = require('../lib/HadithRevision');
+const ContentRevision = require('../lib/ContentRevision');
 const HdithEnrichment = require('../lib/HdithEnrichment');
 const HdithMetadata = require('../lib/HdithMetadata');
 const HadithHeadingSharh = require('../lib/HadithHeadingSharh');
@@ -542,7 +543,14 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           WHERE hs.id=${sharhId} LIMIT 1`))[0];
         if (!sharhRow)
           throw createError(404, 'Explanation not found');
-	    if (col === 'delete') {
+	    if (col === 'revise') {
+		  var revisedSharh = await ContentRevision.revise('hdith_sharh', sharhId, { userId });
+		  status.revised = revisedSharh.fields;
+		  status.fields = revisedSharh.fields;
+		  status.value = 'Revised';
+		  status.code = 200;
+		  status.message = 'Explanation revised';
+		} else if (col === 'delete') {
 		  if (Number(sharhRow.source_book_id) >= 0)
 		    throw createError(400, 'Only locally managed explanations can be deleted');
           await global.query(`DELETE FROM hdith_hadith_sharh WHERE id=${sharhId}`);
@@ -638,7 +646,14 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           WHERE ts.id=${tocSharhId} AND b.alias<>'quran' AND COALESCE(b.type, 'hadith')='hadith' LIMIT 1`))[0];
         if (!tocSharhRow)
           throw createError(404, 'Heading explanation not found');
-        if (col === 'delete') {
+        if (col === 'revise') {
+          var revisedTocSharh = await ContentRevision.revise('hdith_toc_sharh', tocSharhId, { userId });
+          status.revised = revisedTocSharh.fields;
+          status.fields = revisedTocSharh.fields;
+          status.value = 'Revised';
+          status.code = 200;
+          status.message = 'Heading explanation revised';
+        } else if (col === 'delete') {
           if (Number(tocSharhRow.source_book_id) >= 0)
             throw createError(400, 'Only locally managed explanations can be deleted');
           await global.query(`DELETE FROM hdith_toc_sharh WHERE id=${tocSharhId}`);
@@ -683,10 +698,17 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       await Hadith.a_reinit();
 
     } else if (type == 'commentary') {
-      var commentaryColumns = ['text', 'text_en', 'footnotes', 'footnotes_en'];
+      var commentaryColumns = ['text', 'text_en', 'footnotes', 'footnotes_en', 'revise'];
       if (!commentaryColumns.includes(col))
         throw createError(400, `Invalid commentary field '${col}'`);
-      status.value = Tafsir.stripPageMarkers(status.value);
+	  if (col === 'revise') {
+		var revisedCommentary = await ContentRevision.revise('commentary', ids[0], { userId });
+		status.revised = revisedCommentary.fields;
+		status.commentaryValues = revisedCommentary.fields;
+		status.value = 'Revised';
+	  } else {
+		status.value = Tafsir.stripPageMarkers(status.value);
+	  }
 	  if (col === 'text' && status.value != null)
 		status.value = Utils.normalizeArabicHonorifics(status.value).replace(/[ \t]{2,}/g, ' ').trim();
       var commentaryId = ids[0] === 'new-commentary'
@@ -697,7 +719,9 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var commentary = await localCommentaryUpdateTargetById(commentaryId);
       if (!commentary)
         throw createError(404, 'Local commentary passage not found');
-      var result = ids[0] === 'new-commentary'
+	  var result = col === 'revise'
+		? { message: 'Tafsir passage revised' }
+		: ids[0] === 'new-commentary'
         ? { message: 'Created local commentary passage' }
         : await updateCommentaryWithRenumberedFootnotes(commentaryId, col, status, commentary.format);
       if (ids[0] === 'new-commentary')
@@ -706,7 +730,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.id = commentaryId;
       await Books.touchBookContentLastmodById(commentary.bookId);
       var refreshedCommentary = await refreshCommentaryIndex(commentaryId);
-      var commentaryLang = col.endsWith('_en') ? 'en' : 'ar';
+	  var commentaryLang = col.endsWith('_en') ? 'en' : 'ar';
       var commentarySuffix = commentaryLang === 'en' ? '_en' : '';
       status.commentaryRendered = {
         html: Tafsir.renderLocalCommentaryLanguage(
@@ -732,7 +756,13 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var result;
       var shouldRunDefaultHeadingTasks = true;
       var tocHeadingId = ids[0];
-	  if (['title', 'intro'].includes(col) && status.value != null)
+	  if (col === 'revise') {
+		var revisedIntro = await ContentRevision.revise('toc', tocHeadingId, { userId });
+		status.revised = revisedIntro.fields;
+		status.fields = revisedIntro.fields;
+		status.value = 'Revised';
+		result = { message: 'Introduction revised' };
+	  } else if (['title', 'intro'].includes(col) && status.value != null)
 		status.value = Utils.normalizeArabicHonorifics(status.value).replace(/[ \t]{2,}/g, ' ').trim();
       if (col === 'title_en' && req.body.quranSectionPath && isQuranUpdateEndpoint(req)) {
         var canonicalQuranSection = await quranSectionFromPath(req.body.quranSectionPath);

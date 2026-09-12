@@ -179,7 +179,7 @@ describe('Hadith metadata editing', () => {
 		expect(css).toContain('.hadith-grade-opinion-en { font-size: var(--content-size-meta);');
 		expect(css).toContain('.hadith-sharh-column:lang(en) .hadith-sharh-body');
 		expect(css).toContain('.hadith-sharh-entry-heading > [lang="en"] { direction: ltr; text-align: left; }');
-		expect(css).toContain('.hadith-sharh-column:lang(en) .hadith-sharh-more { font-size: calc(.9rem * var(--content-font-scale)) !important; }');
+		expect(css).toContain('.hadith-sharh-column:lang(en) .hadith-sharh-more { font-size: calc(.81rem * var(--content-font-scale)) !important; }');
 		expect(css).toContain('.hadith-sharh-column:lang(en) .hadith-sharh-more { direction: ltr; left: auto; right: 0; text-align: right; }');
 		expect(css).toContain('.hadith-sharh-entry-heading > [lang="en"] h4 { font-size: calc(.95rem * var(--content-font-scale)) !important; }');
 		expect(css).toContain('.hadith-scholarly-grade-actions .bi { font-size: .68rem !important;');

@@ -92,7 +92,7 @@
       <% if (headingIntroShowEn) { %>
       <section class="_e <%= headingIntroShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(heading.intro_en) %>" data-markdown-empty-html="&hellip;">
         <% if (heading.intro_en || site.editMode) { 
-            const introEn = utils.markdownToHtml(heading.intro_en) || '&hellip;';
+            const introEn = Tafsir.renderCommentaryText(heading.intro_en, '', 'md', { englishQuotationMarks: true, footnoteIdPrefix: `toc-intro-${heading.id}-en` }) || '&hellip;';
         %>
         <div>
           <%- introEn %>
@@ -104,7 +104,7 @@
       <% if (headingIntroShowAr) { %>
       <section class="_e <%= headingIntroShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="ar" data-id="<%= heading.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= utils.emptyIfNull(heading.intro) %>" data-markdown-empty-html="&hellip;">
         <% if (heading.intro || site.editMode) { 
-            const introAr = utils.markdownToHtml(heading.intro) || '&hellip;';
+            const introAr = Tafsir.renderCommentaryText(heading.intro, '', 'md', { bracketedFootnotes: true, footnoteIdPrefix: `toc-intro-${heading.id}-ar` }) || '&hellip;';
         %>
         <div>
           <%- introAr %>
@@ -112,6 +112,7 @@
         <% } %>
       </section>
       <% } %>
+	  <% if (site.editMode) { %><div class="col-md-6 col-sm-12<%= utils.trimToEmpty(heading.intro_en) ? '' : ' ms-md-auto' %>" lang="en" dir="ltr"><aside class="admin hadith-admin-actions mt-1"><button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" data-id="<%= heading.id %>" data-prop="toc.revise" data-loading-label="Revising" title="Revise this introduction"><span class="bi bi-magic" aria-hidden="true"></span> Revise</button></aside></div><% } %>
 
     </div>
   </section>

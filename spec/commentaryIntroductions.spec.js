@@ -57,7 +57,7 @@ test('renders Arabic-only paragraphs in English commentary introductions with Ta
 	for (const html of [surahHtml, articleHtml]) {
 		expect(html).toContain('data-prop="toc.intro_en"');
 		expect(html).toContain('<p>An English paragraph.</p>');
-		expect(html).toContain('<p class="quran-tafsir-arabic-only" lang="ar" dir="rtl">«لَا تَجْعَلُوا بُيُوتَكُمْ قُبُورًا»</p>');
+		expect(html).toContain('<p class="quran-tafsir-arabic-only" lang="ar" dir="rtl">"لَا تَجْعَلُوا بُيُوتَكُمْ قُبُورًا"</p>');
 		expect(html).not.toContain('<p class="quran-tafsir-arabic-only" lang="ar" dir="rtl">An English paragraph.</p>');
 	}
 });

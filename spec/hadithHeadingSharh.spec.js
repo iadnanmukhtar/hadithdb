@@ -33,6 +33,22 @@ describe('Hadith heading and virtual-book sharh', () => {
 		expect(partial).toContain('data-sharh-update-prop="hdith_toc_sharh.reorder"');
 		expect(partial).toContain('data-reader-language-column="english"');
 		expect(partial).toContain('data-reader-language-column="arabic"');
+		expect(partial).toContain('data-hadith-sharh-more-label="More..." data-hadith-sharh-less-label="Less..."');
+		expect(partial).toContain('data-hadith-sharh-more-label="مزيد..." data-hadith-sharh-less-label="أقل..."');
+	});
+
+	test('English explanations use the smaller English introduction font size', () => {
+		const css = fs.readFileSync(path.join(__dirname, '../public/static/css/style.css'), 'utf8');
+		expect(css).toMatch(/main \.intro\[lang="en"\]\[data-prop="toc\.intro_en"\]\s*\{\s*font-size: calc\(\.81rem \* var\(--content-font-scale\)\);/);
+		expect(css).toMatch(/\.hadith-sharh-column:lang\(en\) \.hadith-sharh-body,\s*\.hadith-sharh-column:lang\(en\) \.hadith-sharh-more \{ font-size: calc\(\.81rem \* var\(--content-font-scale\)\) !important; \}/);
+	});
+
+	test('reinitializes independent More and Less controls in appended reader sections', () => {
+		const script = fs.readFileSync(path.join(__dirname, '../public/static/js/script.js'), 'utf8');
+		expect(script).toContain("var wrap = body.closest('.hadith-sharh-collapse-wrap');");
+		expect(script).toContain("body.classList.toggle('is-expanded', expanded);");
+		expect(script).toContain("button.textContent = expanded ? lessLabel : moreLabel;");
+		expect(script.match(/initHadithSharhDisclosures\(chunk\)/g)).toHaveLength(2);
 	});
 
 	test('canonical Hadith commentary does not depend on a virtual query parameter', () => {

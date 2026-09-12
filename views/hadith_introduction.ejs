@@ -7,6 +7,7 @@
   site.editMode = site.admin && req.editMode;
   var bookPath = `/${encodeURIComponent(book.alias)}`;
   var introductionPath = `${bookPath}/introduction`;
+  var introductionReaderMode = nextHeading && Number(nextHeading.level) === 1 ? 'hadith-chapter' : 'hadith-section';
   var previousUrl = previousHeading && previousHeading.path ? utils.urlFor(req, `/${previousHeading.path}`) : '';
   var nextUrl = nextHeading && nextHeading.path ? utils.urlFor(req, `/${nextHeading.path}`) : '';
   function headingLabel(heading) {
@@ -36,7 +37,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   <div class="container-fluid quran-heading-layout quran-heading-layout-tafsir hadith-introduction-layout">
     <div class="quran-heading-content quran-heading-content-tafsir">
-    <main class="chapter mt-10 hadith-introduction-page" data-reader-infinite="hadith-section" data-reader-starts-introduction="1" data-reader-context-key="<%= `${book.alias}:introduction` %>" data-reader-current-url="<%= utils.urlFor(req, introductionPath) %>"<% if (previousUrl) { %> data-reader-prev-url="<%= previousUrl %>" data-reader-prev-title="<%= page.prevTitle %>"<% } %><% if (nextUrl) { %> data-reader-next-url="<%= nextUrl %>" data-reader-next-title="<%= page.nextTitle %>"<% } %>>
+    <main class="chapter mt-10 hadith-introduction-page" data-reader-infinite="<%= introductionReaderMode %>" data-reader-starts-introduction="1" data-reader-context-key="<%= `${book.alias}:introduction` %>" data-reader-current-url="<%= utils.urlFor(req, introductionPath) %>"<% if (previousUrl) { %> data-reader-prev-url="<%= previousUrl %>" data-reader-prev-title="<%= page.prevTitle %>"<% } %><% if (nextUrl) { %> data-reader-next-url="<%= nextUrl %>" data-reader-next-title="<%= page.nextTitle %>"<% } %>>
       <heading class="row major">
         <h1 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.urlFor(req, bookPath) %>"><%= book.name_en || book.shortName_en %></a></h1>
         <h1 class="col-md-6 col-sm-12 fs-4 title" lang="ar" dir="rtl"><a href="<%= utils.urlFor(req, bookPath) %>"><%= book.title || book.shortName %></a></h1>

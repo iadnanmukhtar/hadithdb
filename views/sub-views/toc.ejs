@@ -55,20 +55,20 @@
 					if (displayLevel == 3) { %>
 						<%
 							const introEnMarkdown = utils.emptyIfNull(toc.h3_intro_en);
-							const introEn = utils.markdownToHtml(toc.h3_intro_en) || '&hellip;';
+							const introEn = Tafsir.renderCommentaryText(toc.h3_intro_en, '', 'md', { englishQuotationMarks: true, footnoteIdPrefix: `toc-intro-${toc.h3_id}-en` }) || '&hellip;';
 						%>
 						<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro_en" data-markdown-source="<%= introEnMarkdown %>" data-markdown-empty-html="&hellip;"><%- introEn %></div>
 					<% } else { %>
 						<%
 							const introEnMarkdown = utils.emptyIfNull(toc.h2_intro_en);
-							const introEn = utils.markdownToHtml(toc.h2_intro_en) || '&hellip;';
+							const introEn = Tafsir.renderCommentaryText(toc.h2_intro_en, '', 'md', { englishQuotationMarks: true, footnoteIdPrefix: `toc-intro-${toc.h2_id}-en` }) || '&hellip;';
 						%>
 						<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro_en" data-markdown-source="<%= introEnMarkdown %>" data-markdown-empty-html="&hellip;"><%- introEn %></div>
 					<% } %>
 				<% } else if (toc.h1) { %>
 					<%
 						const introEnMarkdown = utils.emptyIfNull(toc.h1_intro_en);
-						const introEn = utils.markdownToHtml(toc.h1_intro_en) || '&hellip;';
+						const introEn = Tafsir.renderCommentaryText(toc.h1_intro_en, '', 'md', { englishQuotationMarks: true, footnoteIdPrefix: `toc-intro-${toc.h1_id}-en` }) || '&hellip;';
 					%>
 					<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro_en" data-markdown-source="<%= introEnMarkdown %>" data-markdown-empty-html="&hellip;"><%- introEn %></div>
 				<% } %>
@@ -113,7 +113,7 @@
 					if (displayLevel == 3) { %>
 						<%
 							const introArMarkdown = utils.emptyIfNull(toc.h3_intro);
-							const introAr = utils.markdownToHtml(toc.h3_intro) || '&hellip;';
+							const introAr = Tafsir.renderCommentaryText(toc.h3_intro, '', 'md', { bracketedFootnotes: true, footnoteIdPrefix: `toc-intro-${toc.h3_id}-ar` }) || '&hellip;';
 						%>
 						<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h3_id%>" data-prop="toc.intro" data-markdown-source="<%= introArMarkdown %>" data-markdown-empty-html="&hellip;">
 							<%- introAr %>
@@ -121,14 +121,14 @@
 					<% } else { %> 
 						<%
 							const introArMarkdown = utils.emptyIfNull(toc.h2_intro);
-							const introAr = utils.markdownToHtml(toc.h2_intro) || '&hellip;';
+							const introAr = Tafsir.renderCommentaryText(toc.h2_intro, '', 'md', { bracketedFootnotes: true, footnoteIdPrefix: `toc-intro-${toc.h2_id}-ar` }) || '&hellip;';
 						%>
 						<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h2_id%>" data-prop="toc.intro" data-markdown-source="<%= introArMarkdown %>" data-markdown-empty-html="&hellip;"><%- introAr %></div>
 					<% } %>
 				<% } else if (toc.h1) { %>
 					<%
 						const introArMarkdown = utils.emptyIfNull(toc.h1_intro);
-						const introAr = utils.markdownToHtml(toc.h1_intro) || '&hellip;';
+						const introAr = Tafsir.renderCommentaryText(toc.h1_intro, '', 'md', { bracketedFootnotes: true, footnoteIdPrefix: `toc-intro-${toc.h1_id}-ar` }) || '&hellip;';
 					%>
 					<div class="<%=_e%> <%=_p%>" data-id="<%=toc.h1_id%>" data-prop="toc.intro" data-markdown-source="<%= introArMarkdown %>" data-markdown-empty-html="&hellip;"><%- introAr %></div>
 				<% } %>

@@ -3308,9 +3308,16 @@ router.get('/:bookAlias/introduction', async function (req, res, next) {
 });
 
 async function hadithIntroductionAdjacentHeadings(alias) {
-  const query = `book_alias:${JSON.stringify(alias)} AND level:2 AND h1:>=0`;
+  const query = `book_alias:${JSON.stringify(alias)} AND level:(1 OR 2) AND h1:>=0`;
   const first = await Index.docsFromQueryString(Heading.INDEX, query, 0, 1000, 'ordinal ASC');
-  return { next: first.find(row => Number(row.h1) !== 0 || Number(row.h2_count) > 0) || null, previous: null };
+  return {
+    next: first.find(function (row) {
+      if (Number(row.level) === 1)
+        return !Number.isInteger(Number(row.h1)) && Number(row.h1_count) > 0;
+      return Number(row.level) === 2 && (Number(row.h1) !== 0 || Number(row.h2_count) > 0);
+    }) || null,
+    previous: null
+  };
 }
 
 // BOOK: CHAPTER

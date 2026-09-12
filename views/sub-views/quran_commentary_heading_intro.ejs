@@ -4,8 +4,8 @@
   var commentaryHeadingEditAr = Boolean(site.editMode);
   var commentaryHeadingEnMarkdown = utils.emptyIfNull(commentaryHeading.intro_en);
   var commentaryHeadingArMarkdown = utils.emptyIfNull(commentaryHeading.intro);
-  var commentaryHeadingEnHtml = Tafsir.renderEnglishCommentaryMarkdown(commentaryHeadingEnMarkdown);
-  var commentaryHeadingArHtml = utils.markdownToHtml(commentaryHeadingArMarkdown);
+  var commentaryHeadingEnHtml = Tafsir.renderCommentaryText(commentaryHeadingEnMarkdown, '', 'md', { englishQuotationMarks: true, quranBackticks: true, footnoteIdPrefix: `toc-intro-${commentaryHeading.id}-en` });
+  var commentaryHeadingArHtml = Tafsir.renderCommentaryText(commentaryHeadingArMarkdown, '', 'md', { bracketedFootnotes: true, footnoteIdPrefix: `toc-intro-${commentaryHeading.id}-ar` });
   var commentaryHeadingShowEn = Boolean(commentaryHeadingEnHtml || commentaryHeadingEditEn);
   var commentaryHeadingShowAr = Boolean(commentaryHeadingArHtml || commentaryHeadingEditAr);
 %>
@@ -21,5 +21,6 @@
     <div><%- commentaryHeadingArHtml || '&hellip;' %></div>
   </section>
   <% } %>
+  <% if (site.editMode) { %><div class="col-md-6 col-sm-12<%= utils.trimToEmpty(commentaryHeadingEnMarkdown) ? '' : ' ms-md-auto' %>" lang="en" dir="ltr"><aside class="admin hadith-admin-actions mt-1"><button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" data-id="<%= commentaryHeading.id %>" data-prop="toc.revise" data-loading-label="Revising" title="Revise this introduction"><span class="bi bi-magic" aria-hidden="true"></span> Revise</button></aside></div><% } %>
 </section>
 <% } %>

@@ -257,6 +257,7 @@ function initSearchInfiniteScroll(root) {
 			initReadOnlyInlineEditorGuards(chunk);
 			initMarkdownEditablePreviews(chunk);
 			initHadithSharhLinks(chunk);
+			initHadithSharhDisclosures(chunk);
 			initHadithShareModals(chunk);
 			initHadithContentTranslationControls(chunk);
 			initQuranAyahHoverPairs(chunk);
@@ -712,6 +713,7 @@ function initRandomTocItemLoader(scope) {
 				container.innerHTML = await response.text();
 				executeInlineScripts(container);
 				initHadithSharhLinks(container);
+				initHadithSharhDisclosures(container);
 				initHadithShareModals(container);
 				initHadithContentTranslationControls(container);
 				initQuranAyahHoverPairs(container);
@@ -2748,6 +2750,28 @@ function initQuranTafsirTabs(root) {
 							'data-content-translation-word-count': tafsirTranslationWordCount
 						});
 						appendContentTranslationControl(summary, generatedBody, 'tafsir', tafsirTranslationItemId, tafsirContentLanguage);
+						if (window.hadithAdmin === true) {
+							var revisionColumns = generatedBody.filter('[data-reader-language-column], [lang]').add(generatedBody.find('[data-reader-language-column], [lang]'));
+							var storedEnglishFields = generatedBody.find('[data-prop="commentary.text_en"], [data-prop="commentary.footnotes_en"]');
+							var hasStoredEnglish = storedEnglishFields.filter(function () {
+								return $.trim($(this).attr('data-markdown-source') || $(this).val() || '') !== '';
+							}).length > 0;
+							var revisionColumn = (tafsirTranslationExisting || hasStoredEnglish)
+								? revisionColumns.filter('[data-reader-language-column="english"], [lang="en"]').first()
+								: $();
+							if (!revisionColumn.length)
+								revisionColumn = revisionColumns.filter('[data-reader-language-column="arabic"], [lang="ar"]').first();
+							if (!revisionColumn.length)
+								revisionColumn = generatedBody;
+							var revisionActions = $('<aside>').addClass('admin hadith-admin-actions mt-1').attr({ lang: 'en', dir: 'ltr' }).appendTo(revisionColumn);
+							$('<button>').addClass('_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1').attr({
+								type: 'button',
+								'data-id': tafsirTranslationItemId,
+								'data-prop': 'commentary.revise',
+								'data-loading-label': 'Revising',
+								title: 'Revise this tafsir passage'
+							}).append($('<span>').addClass('bi bi-magic').attr('aria-hidden', 'true')).append(' Revise').appendTo(revisionActions);
+						}
 						appendedContentTranslationControl = true;
 					}
 				});
@@ -13392,6 +13416,7 @@ function initReaderInfiniteNavigation(root) {
 		var reinitializeChunk = function (chunk) {
 			initMarkdownEditablePreviews(chunk);
 			initHadithSharhLinks(chunk);
+			initHadithSharhDisclosures(chunk);
 			initHadithShareModals(chunk);
 			initHadithContentTranslationControls(chunk);
 			initReaderLanguageColumnToggles(chunk);
@@ -15467,10 +15492,12 @@ function initHadithSharhDisclosures(root) {
 		if (body.dataset.hadithSharhDisclosureBound === 'true')
 			return;
 		body.dataset.hadithSharhDisclosureBound = 'true';
-		var entry = body.closest('.hadith-sharh-entry');
-		var button = entry && entry.querySelector('[data-hadith-sharh-expand]');
+		var wrap = body.closest('.hadith-sharh-collapse-wrap');
+		var button = wrap && wrap.querySelector('[data-hadith-sharh-expand]');
 		if (!button)
 			return;
+		var moreLabel = button.dataset.hadithSharhMoreLabel || button.textContent.trim();
+		var lessLabel = button.dataset.hadithSharhLessLabel || 'Less...';
 		var updateOverflow = function () {
 			if (body.classList.contains('is-expanded'))
 				return;
@@ -15482,10 +15509,12 @@ function initHadithSharhDisclosures(root) {
 			});
 		};
 		button.addEventListener('click', function () {
-			body.classList.add('is-expanded');
+			var expanded = !body.classList.contains('is-expanded');
+			body.classList.toggle('is-expanded', expanded);
 			body.classList.remove('hadith-sharh-no-overflow');
-			button.setAttribute('aria-expanded', 'true');
-			button.hidden = true;
+			button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+			button.textContent = expanded ? lessLabel : moreLabel;
+			button.hidden = false;
 		});
 		updateOverflow();
 		if (document.fonts && document.fonts.ready)

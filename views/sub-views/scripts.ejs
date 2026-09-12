@@ -443,6 +443,11 @@
 	            }
 	            if (propStr === 'hadith.revise')
 	              applyHadithRevision(id, resBody.revised);
+				if (propStr !== 'hadith.revise' && propStr.endsWith('.revise')) {
+				  rememberUpdateSuccessToast('Content revised', 'References, quotation marks, and available translations have been updated.');
+				  window.location.reload();
+				  return;
+				}
 	            if (propStr === 'hadith.enrich' && resBody.hdithEnriched) {
 	              rememberUpdateSuccessToast('Hadith enriched', 'Metadata was imported from hdith.com.');
 	              window.location.reload();

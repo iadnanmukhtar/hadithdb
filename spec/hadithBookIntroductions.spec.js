@@ -41,7 +41,7 @@ describe('Hadith book introductions', () => {
 		const article = { id: 91, h1: 0, h2: 1, title_en: 'Foreword', intro_en: 'Text' };
 		jest.spyOn(CommentaryHeadings, 'introductionArticles').mockResolvedValue([article]);
 		jest.spyOn(Index, 'docsFromQueryString')
-			.mockResolvedValueOnce([{ path: 'muslim/1/1', title_en: 'Faith' }]);
+			.mockResolvedValueOnce([{ level: 2, h1: 1, h2_count: 4, path: 'muslim/1/1', title_en: 'Faith' }]);
 		const req = { params: { bookAlias: 'muslim' }, admin: false, editMode: false };
 		const res = { locals: {}, render: jest.fn() };
 
@@ -53,6 +53,27 @@ describe('Hadith book introductions', () => {
 			nextHeading: expect.objectContaining({ path: 'muslim/1/1' }),
 			previousHeading: null
 		}));
+	});
+
+	test('moves from an introduction into an earlier populated decimal chapter', async () => {
+		const article = { id: 91, h1: 0, h2: 1, title_en: 'Introduction', intro_en: 'Text' };
+		jest.spyOn(CommentaryHeadings, 'introductionArticles').mockResolvedValue([article]);
+		jest.spyOn(Index, 'docsFromQueryString').mockResolvedValueOnce([
+			{ level: 1, h1: 0, h1_count: 0, ordinal: 10, path: 'riyad/0', title_en: 'Introduction' },
+			{ level: 2, h1: 0, h2: 1, h2_count: 0, ordinal: 11, path: 'riyad/0/1', title_en: 'Introduction' },
+			{ level: 1, h1: 0.01, h1_count: 12, ordinal: 12, path: 'riyad/0.01', title_en: 'Sincerity' },
+			{ level: 2, h1: 1, h2: 1, h2_count: 7, ordinal: 20, path: 'riyad/1/1', title_en: 'Good Manners' }
+		]);
+		const req = { params: { bookAlias: 'riyad' }, admin: false, editMode: false };
+		const res = { locals: {}, render: jest.fn() };
+
+		global.books = [{ ...book, id: 61, alias: 'riyad', shortName_en: 'Riyad al-Salihin' }];
+		await introductionHandler()(req, res, jest.fn());
+
+		expect(res.render).toHaveBeenCalledWith('hadith_introduction', expect.objectContaining({
+			nextHeading: expect.objectContaining({ path: 'riyad/0.01' })
+		}));
+		expect(Index.docsFromQueryString.mock.calls[0][1]).toContain('level:(1 OR 2)');
 	});
 
 	test('allows an admin in Edit mode to open an empty introduction page', async () => {
@@ -105,7 +126,8 @@ describe('Hadith book introductions', () => {
 		expect(template).toContain("include('sub-views/quran_commentary_introduction_rail.ejs'");
 		expect(template).toContain('quran-heading-layout quran-heading-layout-tafsir hadith-introduction-layout');
 		expect(template).toContain("introductionRailNextKind: 'section'");
-		expect(template).toContain('data-reader-infinite="hadith-section"');
+		expect(template).toContain("var introductionReaderMode = nextHeading && Number(nextHeading.level) === 1 ? 'hadith-chapter' : 'hadith-section';");
+		expect(template).toContain('data-reader-infinite="<%= introductionReaderMode %>"');
 		expect(template).toContain('data-reader-starts-introduction="1"');
 		expect(template).toContain('data-reader-next-url=');
 		expect(template).toContain('introductionRailHadith: true');

@@ -391,7 +391,8 @@ describe('hdith.com metadata display', () => {
 		const script = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'), 'utf8');
 		expect(script).toContain('initHadithSharhDisclosures(document)');
 		expect(script).toContain("body.scrollHeight > body.clientHeight + 1");
-		expect(script).toContain("button.setAttribute('aria-expanded', 'true')");
+		expect(script).toContain("button.setAttribute('aria-expanded', expanded ? 'true' : 'false')");
+		expect(script).toContain("button.textContent = expanded ? lessLabel : moreLabel");
 		expect(css).toContain('.hadith-mushabihah-section .similar-list .h:lang(ar) { text-align: start; }');
 		expect(css).toContain('.hadith-mushabihah-section .similar-list article.hadith-language-item > header:lang(en)');
 		expect(css).toContain('.hadith-mushabihah-section .similar-list article.hadith-language-item > header:lang(ar) { text-align: start; }');
