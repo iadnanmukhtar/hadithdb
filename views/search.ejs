@@ -6,6 +6,7 @@
     var site = Object.assign({}, global.settings.site);
     var isSearchResultsPage = (q && q != '');
     var isQuranSearchProxy = locals.quranSearchProxy || locals.searchAction === '/quran';
+    var showQuranSearchSort = locals.showQuranSearchSort === true;
     var searchAction = locals.searchAction || '/';
     site.admin = (req.admin);
     if (!locals.noadmin)
@@ -83,7 +84,7 @@
           params.append('mode', req.query.mode);
         if (req.query.mode === 'tafsir' && req.query.tafsirMode)
           params.append('tafsirMode', req.query.tafsirMode);
-        if (isQuranSearchProxy && locals.searchSort === 'canonical')
+        if (showQuranSearchSort && locals.searchSort === 'canonical')
           params.append('sort', 'canonical');
         params.append('o', offset);
         return `${searchAction}?${params.toString()}`;
@@ -125,7 +126,7 @@
         <% } %>
         </div>
         <div class="search-results-meta">
-        <% if (isQuranSearchProxy) {
+        <% if (showQuranSearchSort) {
           function searchSortPath(sort) {
             var sortParams = new URL(req.originalUrl || req.url || searchAction, 'http://localhost').searchParams;
             sortParams.delete('o');

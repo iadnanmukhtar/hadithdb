@@ -1004,6 +1004,8 @@ function normalizeBookFilterValue(filter) {
   filter = Utils.trimToEmpty(filter);
   if (filter === 'tafsir')
     return 'commentaries';
+  if (filter === 'translation')
+    return 'translations';
   return filter;
 }
 
@@ -1029,7 +1031,7 @@ function orderBookFilters(filters) {
 function isVisibleBookFilter(filter) {
   if (!filter)
     return false;
-  if (filter === 'hadith' || filter === 'toc' || filter === 'commentaries' || filter === 'sharh' || filter === 'sirah')
+  if (filter === 'hadith' || filter === 'toc' || filter === 'commentaries' || filter === 'translations' || filter === 'sharh' || filter === 'sirah')
     return true;
   if (BookGroups.list('hadith').some(group => group.id === filter))
     return true;
@@ -1127,7 +1129,11 @@ function searchFilterDisplayValues(bookFilters) {
 }
 
 function searchFilterDisplayValue(filter) {
-  return filter === 'commentaries' ? 'tafsir' : filter;
+  if (filter === 'commentaries')
+    return 'tafsir';
+  if (filter === 'translations')
+    return 'translation';
+  return filter;
 }
 
 async function renderSearchResults(req, res, next, options = {}) {
@@ -1143,9 +1149,9 @@ async function renderSearchResults(req, res, next, options = {}) {
   }
 
   req.query.q = Search.truncateQuery(req.query.q);
-  var searchSort = options.quranSearchProxy && req.query.sort === 'canonical' ? 'canonical' : 'relevance';
-  if (searchSort === 'relevance')
-    delete req.query.sort;
+  var requestedSearchSort = req.query.sort === 'canonical' ? 'canonical' : 'relevance';
+  var searchSort = 'relevance';
+  var showQuranSearchSort = false;
   if (options.forceBookFilters)
     req.query.b = options.forceBookFilters.slice();
   var tafsirFilters = normalizeRequestTafsirFilters(req);
@@ -1182,6 +1188,10 @@ async function renderSearchResults(req, res, next, options = {}) {
     if (!options.quranSearchProxy && tafsirFilters.length && !effectiveBookFilters.includes('commentaries')) effectiveBookFilters.push('commentaries');
     if ((!effectiveBookFilters || effectiveBookFilters.length < 1) && options.defaultBookFilters)
       effectiveBookFilters = options.defaultBookFilters.slice();
+    showQuranSearchSort = Search.supportsCanonicalQuranSort(effectiveBookFilters, options);
+    searchSort = showQuranSearchSort ? requestedSearchSort : 'relevance';
+    if (searchSort === 'relevance')
+      delete req.query.sort;
     var offset = Math.max(0, requestedOffset);
     offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
     results = await Search.a_searchText(req.query.q, effectiveBookFilters, offset, {
@@ -1241,6 +1251,7 @@ async function renderSearchResults(req, res, next, options = {}) {
       tafsirFilters: tafsirFilters,
       tafsirFilter: tafsirFilters[0] || '',
       tafsirFilterOptions: options.quranSearchProxy ? tafsirSearchFilterOptions(tafsirFilters) : [],
+      showQuranSearchSort: showQuranSearchSort,
       searchSort: searchSort,
     });
   }

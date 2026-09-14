@@ -1712,6 +1712,11 @@ nav .nav-link[aria-current="page"] {
 	scrollbar-width: thin;
 }
 
+.command-search-dialog .command-search-source-options,
+.command-search-dialog .command-search-filter-group .command-search-book-list {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .command-search-book-group-label {
 	color: var(--bs-secondary-color);
 	font-size: 0.68rem;
@@ -12547,13 +12552,12 @@ a.cmd-btn:hover {
 .command-search-dialog .command-search-combined-filters:not([open]) { display: none; }
 .command-search-dialog .command-search-combined-filters > summary { display: none; }
 .command-search-dialog .command-search-combined-filters > .command-search-filter-popover { border: 0; padding: 0; }
-.command-search-form:has(.command-search-combined-filters:not([open])) .command-search-selected { display: none; }
 .search-results-layout { max-width: 90rem; padding-inline: 1.5rem; margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem)); }
 .search-results-layout > main { min-width: 0; margin-top: 0; }
 .search-filter-rail { min-width: 0; }
 .search-filter-controls [data-search-filter-rail-options] > .command-search-filter-popover { border: 0; padding: 0; }
 .search-filter-controls .command-search-source-options,
-.search-filter-controls .command-search-book-list { grid-template-columns: minmax(0, 1fr); }
+.search-filter-controls .command-search-book-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .search-filter-controls .command-search-book-list { max-height: 16rem; }
 .search-filter-controls .command-search-filter-find input { font-size: 0.75rem; }
 .search-filter-controls .command-search-filter-panel { margin: 0 0 1rem; }
@@ -12570,6 +12574,16 @@ a.cmd-btn:hover {
 .search-filter-top-menu .search-filter-controls { padding: 0.25rem 0.5rem 0.75rem; }
 @media (min-width: 992px) {
 	.search-filter-top-menu { display: none; }
+}
+@media (max-width: 575.98px) {
+	.command-search-dialog .command-search-source-options,
+	.command-search-dialog .command-search-filter-group .command-search-book-list {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.search-filter-top-menu .search-filter-controls .command-search-source-options,
+	.search-filter-top-menu .search-filter-controls .command-search-book-list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
 }
 
 /* Hadith Unlocked MCP marketing page */

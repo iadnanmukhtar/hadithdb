@@ -9,6 +9,7 @@ describe('Quran and tafsir canonical search ordering', () => {
 		const docs = [
 			{ doctype: 'commentary', commentary_alias: 'tabari', surah: 2, ayahFrom: 3, id: 4 },
 			{ doctype: 'hadith', ref: 'quran:1:7', h1: 1, numInChapter: 7, hId: 3 },
+			{ doctype: 'commentary', commentary_type: 'trans', commentary_alias: 'sahih-international', surah: 1, ayahFrom: 4, id: 5 },
 			{ doctype: 'commentary', commentary_alias: 'ibn-kathir', surah: 1, ayahFrom: 7, id: 2 },
 			{ doctype: 'hadith', ref: 'quran:1:2', h1: 1, numInChapter: 2, hId: 1 }
 		];
@@ -17,20 +18,33 @@ describe('Quran and tafsir canonical search ordering', () => {
 
 		expect(docs.map(doc => doc.ref || `${doc.commentary_alias}:${doc.surah}:${doc.ayahFrom}`)).toEqual([
 			'quran:1:2',
+			'sahih-international:1:4',
 			'quran:1:7',
 			'ibn-kathir:1:7',
 			'tabari:2:3'
 		]);
 	});
 
-	test('renders a Quran-only sort switch and preserves it in pagination', () => {
+	test('renders the Quran-family sort switch when the route marks it eligible and preserves it in pagination', () => {
 		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'search.ejs'), 'utf8');
 
 		expect(template).toContain('aria-label="Sort search results"');
 		expect(template).toContain('>Relevance</a>');
 		expect(template).toContain('>Quran order</a>');
 		expect(template).toContain("params.append('sort', 'canonical')");
-		expect(template).toMatch(/if \(isQuranSearchProxy\)[\s\S]*search-results-sort/);
+		expect(template).toContain('var showQuranSearchSort = locals.showQuranSearchSort === true');
+		expect(template).toMatch(/if \(showQuranSearchSort\)[\s\S]*search-results-sort/);
+	});
+
+	test('offers canonical sorting only for Quran text, translations, and tafsir scopes', () => {
+		expect(Search.supportsCanonicalQuranSort(['quran'])).toBe(true);
+		expect(Search.supportsCanonicalQuranSort(['translations'])).toBe(true);
+		expect(Search.supportsCanonicalQuranSort(['commentaries'])).toBe(true);
+		expect(Search.supportsCanonicalQuranSort(['quran', 'translations', 'commentaries'])).toBe(true);
+		expect(Search.supportsCanonicalQuranSort(['hadith'])).toBe(false);
+		expect(Search.supportsCanonicalQuranSort(['quran', 'hadith'])).toBe(false);
+		expect(Search.supportsCanonicalQuranSort([])).toBe(false);
+		expect(Search.supportsCanonicalQuranSort([], { quranSearchProxy: true })).toBe(true);
 	});
 
 	test('keeps the result query in the header search and mirrors the RTL icon', () => {

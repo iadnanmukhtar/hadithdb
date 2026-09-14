@@ -41,6 +41,14 @@ describe('Sharh book search', () => {
 		var tafsirQuery = JSON.stringify(Index.docsFromQuery.mock.calls[0][1]);
 		expect(tafsirQuery).toContain('"commentary_type":"tafsir"');
 		expect(tafsirQuery).not.toContain('"commentary_type":"trans"');
+
+		Index.docsFromQuery.mockClear();
+		await Search.a_searchText('=test', ['translations'], 0);
+		var translationQuery = JSON.stringify(Index.docsFromQuery.mock.calls[0][1]);
+		expect(translationQuery).toContain('"doctype":"commentary"');
+		expect(translationQuery).toContain('"commentary_type":"trans"');
+		expect(translationQuery).not.toContain('"commentary_type":"tafsir"');
+		expect(Search.describeBookFilters(['translations'])).toEqual(['Translation']);
 	});
 
 	test.each([
@@ -48,14 +56,15 @@ describe('Sharh book search', () => {
 		[['sirah', 'sirah-one'], ['sirah-one']],
 		[['hadith'], ['bukhari', 'muslim']],
 		[['hadith', 'bukhari'], ['bukhari']],
-		[['quran'], ['quran']],
+		[['quran'], ['quran', 'translation-one']],
 		[['commentaries'], ['tafsir-one']],
+		[['translations'], ['translation-one']],
 		[['sharh'], ['fath-al-bari']]
 	])('includes only TOCs belonging to scope %j', async (scope, aliases) => {
 		global.books.push(
 			{ alias: 'muslim' }, { alias: 'quran' },
 			{ alias: 'sirah-one', type: 'sirah' }, { alias: 'sirah-two', type: 'sirah' },
-			{ alias: 'tafsir-one', type: 'tafsir' }, { alias: 'hidden-book', hidden: 1 }
+			{ alias: 'tafsir-one', type: 'tafsir' }, { alias: 'translation-one', type: 'trans' }, { alias: 'hidden-book', hidden: 1 }
 		);
 		await Search.a_searchText('=abu dujanah', scope, 0, { generalSearch: true });
 		const branches = Index.docsFromQuery.mock.calls[0][1].bool.filter[0].bool.should;

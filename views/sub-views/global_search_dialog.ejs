@@ -35,6 +35,7 @@
   var hasCommandSpecificCommentary = selectedCommandCommentaryAliases.length > 0;
   var commandQuranTextSelected = selectedCommandQuranBookFilters.includes('quran');
   var commandAllTafsirSelected = !hasCommandSpecificCommentary && selectedCommandQuranBookFilters.some(function (alias) { return alias === 'tafsir' || alias === 'commentaries'; });
+  var commandAllTranslationsSelected = selectedCommandQuranBookFilters.some(function (alias) { return alias === 'translation' || alias === 'translations'; });
 %>
 <dialog id="global-search-dialog" class="command-search-dialog" data-command-search-dialog data-initial-search-mode="<%= initialSearchMode %>"
   data-quran-search-context="<%= quranSearchContext || 'quran' %>" data-quran-commentary-alias="<%= quranSearchCommentaryAlias || '' %>"
@@ -81,8 +82,13 @@
 
       <div class="command-search-input-wrap" data-command-search-direction-container dir="<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? 'rtl' : 'ltr' %>">
         <i class="bi bi-search<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
-        <input role="search" type="search" class="form-control command-search-input<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? ' command-search-arabic-text' : '' %>" name="q" value="<%= searchQuery || '' %>" dir="<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? 'rtl' : 'ltr' %>" placeholder="Search Hadith, Sharh, History, Tafsir, and Quran..." aria-label="General search" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <input role="search" type="search" class="form-control command-search-input<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? ' command-search-arabic-text' : '' %>" name="q" value="<%= searchQuery || '' %>" dir="<%= /^[\s\u200e\u200f]*[\u0600-\u06ff]/.test(searchQuery || '') ? 'rtl' : 'ltr' %>" placeholder="Search Quran, Tafsir, Translation, Hadith, Sharh, and History..." aria-label="General library search" autocomplete="off" autocapitalize="none" spellcheck="false">
         <button type="button" class="btn command-search-funnel-toggle" data-command-filter-toggle aria-label="Search filters" title="Search filters" aria-expanded="false" aria-controls="command-search-filter-options"><i class="bi bi-funnel" aria-hidden="true"></i><span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count aria-live="polite">0</span></button>
+      </div>
+
+      <div class="command-search-selected" data-command-search-selected hidden aria-label="Current search filters">
+        <span class="command-search-selected-label">Current filters</span>
+        <div class="command-search-pills" data-command-search-pills></div>
       </div>
 
       <details id="command-search-filter-options" class="command-search-filter-details command-search-combined-filters" data-command-search-combined-filters>
@@ -92,100 +98,33 @@
             <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
             <input type="search" class="form-control" placeholder="Filter books and sources" aria-label="Filter books and sources" data-command-search-filter-search="all" autocomplete="off">
           </label>
-          <section id="command-search-hadith-filters" class="command-search-filter-panel" data-command-search-panel="hadith">
-            <div class="command-search-source-options">
-              <label class="command-search-book-option">
-                <input class="form-check-input" type="checkbox" name="b" value="sirah" <%= selectedCommandHadithAliases.includes('sirah') ? 'checked' : '' %> data-command-filter data-command-filter-label="History">
-                <span>History</span>
-              </label>
-              <label class="command-search-book-option">
-                <input class="form-check-input" type="checkbox" name="b" value="hadith" <%= selectedCommandHadithAliases.includes('hadith') ? 'checked' : '' %> data-command-filter data-command-filter-label="Hadith">
-                <span>Hadith</span>
-              </label>
-              <label class="command-search-book-option">
-                <input class="form-check-input" type="checkbox" name="b" value="sharh" <%= selectedCommandHadithAliases.includes('sharh') ? 'checked' : '' %> data-command-filter data-command-filter-label="Sharh" data-command-all-sharh>
-                <span>Sharh</span>
-              </label>
-            </div>
-            <div data-command-search-book-list="hadith">
-              <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
-                <summary>
-                  <span>Hadith Book Groups</span>
-                  <span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span>
-                </summary>
-                <div class="command-search-filter-popover">
-                  <div class="command-search-book-list" data-command-search-book-list="groups">
-                    <% BookGroups.list('hadith').forEach(function (group) { var selected = selectedCommandHadithAliases.indexOf(group.value) >= 0; %>
-                    <label class="command-search-book-option" data-command-search-book-option>
-                      <input class="form-check-input" type="checkbox" name="b" value="<%= group.value %>" <%= selected ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= group.label %>" data-search-group-aliases="<%= JSON.stringify(group.aliases) %>">
-                      <span>
-                        <%= group.label %>
-                      </span>
-                    </label>
-                    <% }); %>
-                  </div>
-                </div>
-              </details>
-              <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
-                <summary>
-                  <span>Hadith Books</span>
-                  <span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span>
-                </summary>
-                <div class="command-search-filter-popover">
-                  <div class="command-search-book-list" data-command-search-book-list="hadith">
-                    <% commandHadithBooks.forEach(function (book) { var label = book.shortName_en || book.name_en || book.alias; var selected = selectedCommandHadithAliases.indexOf(book.alias) >= 0; %>
-                    <label class="command-search-book-option" data-command-search-book-option>
-                      <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selected ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= label %>">
-                      <span>
-                        <%= label %>
-                      </span>
-                    </label>
-                    <% }); %>
-                  </div>
-                </div>
-              </details>
-              <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
-                <summary><span>History Books</span><span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span></summary>
-                <div class="command-search-filter-popover">
-                  <% (global.books || []).filter(function (book) { return book.type === 'sirah' && Number(book.hidden) !== 1; }).forEach(function (book) { %>
-                  <label class="command-search-book-option" data-command-search-book-option>
-                    <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selectedCommandHadithAliases.includes(book.alias) ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= book.shortName_en || book.alias %>">
-                    <span><%= book.shortName_en || book.alias %></span>
-                  </label>
-                  <% }); %>
-                </div>
-              </details>
-              <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
-                <summary>
-                  <span>Sharh Books</span>
-                  <span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span>
-                </summary>
-                <div class="command-search-filter-popover">
-                  <div class="command-search-book-list" data-command-search-book-list="sharh">
-                    <% (global.books || []).filter(function (book) { return book.type === 'sharh'; }).forEach(function (book) { %>
-                    <label class="command-search-book-option" data-command-search-book-option>
-                      <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selectedCommandHadithAliases.includes(book.alias) ? 'checked' : '' %> data-command-filter data-command-sharh-book data-command-filter-label="<%= book.shortName_en || book.alias %>">
-                      <span>
-                        <%= book.shortName_en || book.alias %>
-                      </span>
-                    </label>
-                    <% }); %>
-                  </div>
-                </div>
-              </details>
-            </div>
-          </section>
+          <div class="command-search-source-options" data-command-global-source-options>
+            <label class="command-search-book-option">
+              <input class="form-check-input" type="checkbox" name="b" value="quran" <%= commandQuranTextSelected ? 'checked' : '' %> data-command-filter data-command-filter-label="Quran">
+              <span>Quran</span>
+            </label>
+            <label class="command-search-book-option">
+              <input class="form-check-input" type="checkbox" name="b" value="tafsir" <%= commandAllTafsirSelected ? 'checked' : '' %> data-command-filter data-command-filter-label="Tafsir" data-command-all-tafsir>
+              <span>Tafsir</span>
+            </label>
+            <label class="command-search-book-option">
+              <input class="form-check-input" type="checkbox" name="b" value="translations" <%= commandAllTranslationsSelected ? 'checked' : '' %> data-command-filter data-command-filter-label="Translation" data-command-all-translations>
+              <span>Translation</span>
+            </label>
+            <label class="command-search-book-option" data-command-general-only-filter>
+              <input class="form-check-input" type="checkbox" name="b" value="hadith" <%= selectedCommandHadithAliases.includes('hadith') ? 'checked' : '' %> data-command-filter data-command-filter-label="Hadith">
+              <span>Hadith</span>
+            </label>
+            <label class="command-search-book-option" data-command-general-only-filter>
+              <input class="form-check-input" type="checkbox" name="b" value="sharh" <%= selectedCommandHadithAliases.includes('sharh') ? 'checked' : '' %> data-command-filter data-command-filter-label="Sharh" data-command-all-sharh>
+              <span>Sharh</span>
+            </label>
+            <label class="command-search-book-option" data-command-general-only-filter>
+              <input class="form-check-input" type="checkbox" name="b" value="sirah" <%= selectedCommandHadithAliases.includes('sirah') ? 'checked' : '' %> data-command-filter data-command-filter-label="History">
+              <span>History</span>
+            </label>
+          </div>
           <section id="command-search-quran-filters" class="command-search-filter-panel" data-command-search-panel="quran">
-            <div class="command-search-source-options">
-              <label class="command-search-book-option">
-                <input class="form-check-input" type="checkbox" name="b" value="quran" <%= commandQuranTextSelected ? 'checked' : '' %> data-command-filter data-command-filter-label="Quran">
-                <span>Quran</span>
-              </label>
-              <label class="command-search-book-option">
-                <input class="form-check-input" type="checkbox" name="b" value="tafsir" <%= commandAllTafsirSelected ? 'checked' : '' %> data-command-filter data-command-filter-label="Tafsir" data-command-all-tafsir>
-                <span>Tafsir</span>
-              </label>
-            </div>
             <div data-command-search-book-list="quran">
               <% var tafsirGroups = BookGroups.list('tafsir').map(function (group) { return { ...group, aliases: group.aliases.filter(function (alias) { return commandTafsirBooks.some(function (book) { return book.alias === alias; }); }) }; }).filter(function (group) { return group.aliases.length; }); if (tafsirGroups.length) { %>
               <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
@@ -244,13 +183,79 @@
               </details>
             </div>
           </section>
+          <section id="command-search-hadith-filters" class="command-search-filter-panel" data-command-search-panel="hadith">
+            <div data-command-search-book-list="hadith">
+              <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
+                <summary>
+                  <span>Hadith Book Groups</span>
+                  <span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span>
+                </summary>
+                <div class="command-search-filter-popover">
+                  <div class="command-search-book-list" data-command-search-book-list="groups">
+                    <% BookGroups.list('hadith').forEach(function (group) { var selected = selectedCommandHadithAliases.indexOf(group.value) >= 0; %>
+                    <label class="command-search-book-option" data-command-search-book-option>
+                      <input class="form-check-input" type="checkbox" name="b" value="<%= group.value %>" <%= selected ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= group.label %>" data-search-group-aliases="<%= JSON.stringify(group.aliases) %>">
+                      <span>
+                        <%= group.label %>
+                      </span>
+                    </label>
+                    <% }); %>
+                  </div>
+                </div>
+              </details>
+              <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
+                <summary>
+                  <span>Hadith Books</span>
+                  <span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span>
+                </summary>
+                <div class="command-search-filter-popover">
+                  <div class="command-search-book-list" data-command-search-book-list="hadith">
+                    <% commandHadithBooks.forEach(function (book) { var label = book.shortName_en || book.name_en || book.alias; var selected = selectedCommandHadithAliases.indexOf(book.alias) >= 0; %>
+                    <label class="command-search-book-option" data-command-search-book-option>
+                      <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selected ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= label %>">
+                      <span>
+                        <%= label %>
+                      </span>
+                    </label>
+                    <% }); %>
+                  </div>
+                </div>
+              </details>
+              <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
+                <summary>
+                  <span>Sharh Books</span>
+                  <span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span>
+                </summary>
+                <div class="command-search-filter-popover">
+                  <div class="command-search-book-list" data-command-search-book-list="sharh">
+                    <% (global.books || []).filter(function (book) { return book.type === 'sharh'; }).forEach(function (book) { %>
+                    <label class="command-search-book-option" data-command-search-book-option>
+                      <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selectedCommandHadithAliases.includes(book.alias) ? 'checked' : '' %> data-command-filter data-command-sharh-book data-command-filter-label="<%= book.shortName_en || book.alias %>">
+                      <span>
+                        <%= book.shortName_en || book.alias %>
+                      </span>
+                    </label>
+                    <% }); %>
+                  </div>
+                </div>
+              </details>
+              <details class="command-search-filter-details command-search-filter-group" data-command-filter-group>
+                <summary><span>History Books</span><span class="badge rounded-pill command-search-filter-count" data-command-search-filter-count>0</span></summary>
+                <div class="command-search-filter-popover">
+                  <div class="command-search-book-list" data-command-search-book-list="history">
+                  <% (global.books || []).filter(function (book) { return book.type === 'sirah' && Number(book.hidden) !== 1; }).forEach(function (book) { %>
+                  <label class="command-search-book-option" data-command-search-book-option>
+                    <input class="form-check-input" type="checkbox" name="b" value="<%= book.alias %>" <%= selectedCommandHadithAliases.includes(book.alias) ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= book.shortName_en || book.alias %>">
+                    <span><%= book.shortName_en || book.alias %></span>
+                  </label>
+                  <% }); %>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </section>
         </div>
       </details>
-
-      <div class="command-search-selected" data-command-search-selected hidden>
-        <span class="command-search-selected-label">Searching in</span>
-        <div class="command-search-pills" data-command-search-pills></div>
-      </div>
 
       <p class="command-search-hint mb-0">
         Start typing for suggestions. Use <kbd>↑</kbd><kbd>↓</kbd> to move and <kbd>Enter</kbd> to open.
