@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const express = require('express');
 const HadithMcp = require('../lib/HadithMcp');
 const Debug = require('../lib/Debug');
@@ -66,8 +67,78 @@ describe('public MCP Streamable HTTP route', () => {
       id: 1,
       result: expect.objectContaining({
         protocolVersion: HadithMcp.PROTOCOL_VERSION,
-        serverInfo: { name: 'HadithDB', version: HadithMcp.SERVER_VERSION }
+        serverInfo: { name: 'HadithDB', version: HadithMcp.SERVER_VERSION },
+        capabilities: expect.objectContaining({
+          tools: {},
+          extensions: { 'io.modelcontextprotocol/skills': {} }
+        })
       })
+    }));
+  });
+
+  test('lists five importable skills with matching resources and SHA-256 digests', async () => {
+    const response = await request('POST', { jsonrpc: '2.0', id: 'skills-list', method: 'skills/list', params: {} });
+    const payload = await response.json();
+    const skills = payload.result.skills;
+
+    expect(skills.map(skill => skill.frontmatter.name)).toEqual([
+      'companion-biography',
+      'fiqh-evidence-and-practice',
+      'quran-tafsir-comparison',
+      'sirah-history-research',
+      'source-aware-islamic-narrative'
+    ]);
+    expect(payload.result.nextCursor).toBeUndefined();
+
+    for (const skill of skills) {
+      expect(skill.uri).toBe(`skill://hadithdb/${skill.frontmatter.name}/SKILL.md`);
+      expect(skill.frontmatter.description).toEqual(expect.any(String));
+      expect(skill.resources).toHaveLength(1);
+      expect(skill.resources[0].uri).toBe(skill.uri);
+      expect(skill.resources[0].digest).toMatch(/^sha256:[a-f0-9]{64}$/);
+
+      const readResponse = await request('POST', {
+        jsonrpc: '2.0',
+        id: `read-${skill.frontmatter.name}`,
+        method: 'resources/read',
+        params: { uri: skill.uri }
+      });
+      const readPayload = await readResponse.json();
+      expect(readPayload.result.contents).toEqual([
+        expect.objectContaining({ uri: skill.uri, mimeType: 'text/markdown', text: expect.any(String) })
+      ]);
+      const text = readPayload.result.contents[0].text;
+      const actualDigest = `sha256:${crypto.createHash('sha256').update(Buffer.from(text, 'utf8')).digest('hex')}`;
+      expect(actualDigest).toBe(skill.resources[0].digest);
+      expect(text).toContain(`name: ${skill.frontmatter.name}`);
+
+      const getResponse = await request('POST', {
+        jsonrpc: '2.0',
+        id: `get-${skill.frontmatter.name}`,
+        method: 'skills/get',
+        params: { uri: skill.uri }
+      });
+      await expect(getResponse.json()).resolves.toEqual(expect.objectContaining({
+        result: { skill }
+      }));
+    }
+  });
+
+  test('rejects invalid skill cursors and unknown skill resources as invalid params', async () => {
+    const cursorResponse = await request('POST', {
+      jsonrpc: '2.0', id: 'bad-cursor', method: 'skills/list', params: { cursor: 'not-issued' }
+    });
+    expect((await cursorResponse.json()).error).toEqual(expect.objectContaining({
+      code: -32602,
+      message: 'Invalid skills cursor.'
+    }));
+
+    const resourceResponse = await request('POST', {
+      jsonrpc: '2.0', id: 'bad-resource', method: 'resources/read', params: { uri: 'skill://hadithdb/missing/SKILL.md' }
+    });
+    expect((await resourceResponse.json()).error).toEqual(expect.objectContaining({
+      code: -32602,
+      message: 'Unknown skill resource URI: skill://hadithdb/missing/SKILL.md'
     }));
   });
 

@@ -21,8 +21,10 @@ records expose `bilingual`, `text`, `text_arabic`, `text_english`, and
 fields, with their combined value in `text_combined`.
 
 The endpoint accepts JSON-RPC 2.0 requests for `initialize`, `ping`,
-`tools/list`, and `tools/call`. It does not create sessions, so clients should
-not expect an `Mcp-Session-Id` response header. Browser preflight requests are
+`tools/list`, `tools/call`, `skills/list`, `skills/get`, and `resources/read`.
+It advertises five source-aware research skills through OpenAI's static MCP
+skill-import extension. It does not create sessions, so clients should not
+expect an `Mcp-Session-Id` response header. Browser preflight requests are
 supported with `OPTIONS /mcp`; other HTTP methods return `405`.
 
 ```bash

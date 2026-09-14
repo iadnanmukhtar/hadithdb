@@ -5,6 +5,7 @@ const express = require('express');
 const rateLimit = require('express-rate-limit').default;
 const Debug = require('../lib/Debug');
 const HadithMcp = require('../lib/HadithMcp');
+const HadithMcpSkills = require('../lib/HadithMcpSkills');
 
 const debug = Debug('hadithdb:Mcp');
 const router = express.Router();
@@ -95,7 +96,7 @@ router.post('/', mcpRequestLimiter, async function (req, res) {
     return res.status(200).json({ jsonrpc: '2.0', id: message.id, result });
   } catch (err) {
     const messageText = err && err.message ? err.message : 'MCP request failed.';
-    const invalidParams = message.method === 'tools/call';
+    const invalidParams = ['tools/call', 'skills/list', 'skills/get', 'resources/read'].includes(message.method);
     if (invalidParams) {
       debug(`MCP ${message.method} rejected: ${messageText}`);
     } else {
@@ -127,7 +128,12 @@ async function dispatch(message, req) {
   if (message.method === 'initialize') {
     return {
       protocolVersion: HadithMcp.PROTOCOL_VERSION,
-      capabilities: { tools: {} },
+      capabilities: {
+        tools: {},
+        extensions: {
+          'io.modelcontextprotocol/skills': {}
+        }
+      },
       serverInfo: { name: HadithMcp.SERVER_NAME, version: HadithMcp.SERVER_VERSION },
       instructions: 'Use exact-reference lookup tools when a Quran or hadith citation is known. Use list_tafsirs to resolve uncertain tafsir names. Results are read-only source records; preserve grading attribution and distinguish exact hadith wording from broader parallel reports.'
     };
@@ -136,6 +142,12 @@ async function dispatch(message, req) {
     return {};
   if (message.method === 'tools/list')
     return { tools: HadithMcp.TOOLS };
+  if (message.method === 'skills/list')
+    return HadithMcpSkills.listSkills(message.params || {});
+  if (message.method === 'skills/get')
+    return HadithMcpSkills.getSkill(message.params || {});
+  if (message.method === 'resources/read')
+    return HadithMcpSkills.readResource(message.params || {});
   if (message.method === 'tools/call') {
     const name = message.params && message.params.name;
     const args = (message.params && message.params.arguments) || {};
