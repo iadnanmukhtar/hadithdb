@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+  var site = Object.assign({}, global.settings.site);
+  site.admin = req.admin;
+  site.editMode = site.admin && req.editMode;
+  var page = {
+    menu: 'MCP Server',
+    title_en: 'Ask Islamic questions with sources | Hadith Unlocked for AI',
+    description_en: 'Help your AI answer questions using Quran, tafsir, hadith, and Sirah sources. Free to connect, with no API key or authentication token required.',
+    subtitle_en: 'MCP Server',
+    canonical: '/mcp-server',
+    context: {}
+  };
+  var endpoint = 'https://hadithunlocked.com/mcp';
+  var codexConfig = '[mcp_servers.hadith_unlocked]\nurl = "' + endpoint + '"';
+  var cursorConfig = JSON.stringify({ mcpServers: { 'hadith-unlocked': { url: endpoint } } }, null, 2);
+  var vscodeConfig = JSON.stringify({ servers: { 'hadith-unlocked': { type: 'http', url: endpoint } } }, null, 2);
+  var claudeCommand = 'claude mcp add --transport http hadith-unlocked --scope user ' + endpoint;
+%>
+<%- include('sub-views/head.ejs', { site: site, page: page }); %>
+</head>
+<body class="mcp-marketing-page">
+  <%- include('sub-views/header.ejs', { site: site, page: page }); %>
+
+  <main class="mcp-marketing-main">
+    <section class="mcp-hero">
+      <div class="container col-xl-10 mx-auto">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-7">
+            <div class="mcp-eyebrow"><span class="mcp-status-dot" aria-hidden="true"></span> Quran · Tafsir · Hadith · Sirah</div>
+            <h1>Ask Islamic questions—and see where the answers come from.</h1>
+            <p class="mcp-hero-lead">Hadith Unlocked helps the AI you already use find relevant Islamic sources. Ask in your own words, receive a clear answer, and follow the references to read the evidence yourself.</p>
+            <div class="mcp-hero-actions">
+              <a class="btn btn-primary btn-lg" href="#try-it">See questions you can ask <i class="bi bi-arrow-down-short" aria-hidden="true"></i></a>
+              <a class="btn btn-outline-secondary btn-lg" href="#connect">How to connect</a>
+            </div>
+            <ul class="mcp-trust-list" aria-label="Server benefits">
+              <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> No API key or authentication token</li>
+              <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Free public access</li>
+              <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> English &amp; Arabic</li>
+            </ul>
+          </div>
+          <div class="col-lg-5">
+            <div class="mcp-question-card">
+              <div class="mcp-question-card-top"><span><i class="bi bi-chat-left-text" aria-hidden="true"></i> Example question</span><span class="mcp-live-label">Ask naturally</span></div>
+              <blockquote>“How do I pray istikhārah? Show me the steps, the duʿāʾ, and the hadith evidence.”</blockquote>
+              <div class="mcp-answer-preview">
+                <span class="mcp-answer-icon"><i class="bi bi-book" aria-hidden="true"></i></span>
+                <p>Your AI can search Hadith Unlocked, explain what it finds, and include references you can open and check.</p>
+              </div>
+              <p class="mcp-question-note"><i class="bi bi-shield-check" aria-hidden="true"></i> No Hadith Unlocked account, password, or token needed.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mcp-section mcp-simple-section" aria-labelledby="mcp-simple-title">
+      <div class="container col-xl-10 mx-auto">
+        <div class="mcp-section-heading">
+          <span class="mcp-kicker">How it helps</span>
+          <h2 id="mcp-simple-title">You ask. Your AI looks through the library.</h2>
+          <p>You do not need to learn technical commands. Once connected, use ChatGPT or another supported AI as you normally would.</p>
+        </div>
+        <div class="row g-4 mcp-simple-steps">
+          <div class="col-md-4"><div class="mcp-simple-step h-100"><span>1</span><i class="bi bi-chat-heart" aria-hidden="true"></i><h3>Ask your question</h3><p>Write naturally: ask about worship, an āyah, a hadith, a person, or an event.</p></div></div>
+          <div class="col-md-4"><div class="mcp-simple-step h-100"><span>2</span><i class="bi bi-search" aria-hidden="true"></i><h3>The AI checks sources</h3><p>Hadith Unlocked helps it search the Quran, tafsir, hadith collections, and Sirah.</p></div></div>
+          <div class="col-md-4"><div class="mcp-simple-step h-100"><span>3</span><i class="bi bi-journal-check" aria-hidden="true"></i><h3>You review the evidence</h3><p>The answer can include grades, references, Arabic and English text, and links for further reading.</p></div></div>
+        </div>
+        <p class="mcp-guidance-note"><i class="bi bi-info-circle" aria-hidden="true"></i> AI can misunderstand sources. For personal religious rulings, use the evidence as a starting point and consult a qualified scholar.</p>
+      </div>
+    </section>
+
+    <section class="mcp-section" id="try-it">
+      <div class="container col-xl-10 mx-auto">
+        <div class="mcp-section-heading">
+          <span class="mcp-kicker">Questions you can ask</span>
+          <h2>From everyday practice to deeper study.</h2>
+          <p>These are examples, not special commands. Ask follow-up questions and request simpler explanations whenever you need them.</p>
+        </div>
+        <div class="row g-4 mcp-use-case-grid">
+          <div class="col-md-6 col-xl-3">
+            <article class="mcp-use-case-card h-100">
+              <span class="mcp-card-icon"><i class="bi bi-moon-stars" aria-hidden="true"></i></span>
+              <h3>Fiqh evidence &amp; practice</h3>
+              <p>“How do I pray istikhārah? Give me the steps, duʿāʾ, and evidence.”</p>
+              <span class="mcp-card-meta">Hadith · practical synthesis</span>
+            </article>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <article class="mcp-use-case-card h-100">
+              <span class="mcp-card-icon"><i class="bi bi-book" aria-hidden="true"></i></span>
+              <h3>Compare tafsīr</h3>
+              <p>“Compare Ibn Kathīr and al-Qurṭubī on Quran 5:47. Where do they differ?”</p>
+              <span class="mcp-card-meta">Quran · classical commentary</span>
+            </article>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <article class="mcp-use-case-card h-100">
+              <span class="mcp-card-icon"><i class="bi bi-person-lines-fill" aria-hidden="true"></i></span>
+              <h3>Study a companion</h3>
+              <p>“Build a source-aware biography of ʿAbd Allāh b. Umm Maktūm.”</p>
+              <span class="mcp-card-meta">Hadith · Sirah · chronology</span>
+            </article>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <article class="mcp-use-case-card h-100">
+              <span class="mcp-card-icon"><i class="bi bi-diagram-3" aria-hidden="true"></i></span>
+              <h3>Trace a narrative</h3>
+              <p>“Gather the reports about the army of al-Baydāʾ and separate the strongest core from later details.”</p>
+              <span class="mcp-card-meta">Source strength · synthesis</span>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mcp-section mcp-capabilities-section">
+      <div class="container col-xl-10 mx-auto">
+        <div class="row g-5 align-items-start">
+          <div class="col-lg-5">
+            <span class="mcp-kicker">Sources it can search</span>
+            <h2>A growing Islamic library in one place.</h2>
+            <p class="mcp-section-copy">Instead of relying only on what an AI remembers, Hadith Unlocked lets it look up the source material while answering you.</p>
+            <details class="mcp-technical-details">
+              <summary>For technical users: view the available tools</summary>
+              <div class="mcp-tool-pills" aria-label="MCP tools">
+                <span>search_quran</span><span>lookup_quran_ayah</span><span>list_tafsirs</span><span>search_tafsir</span><span>lookup_tafsir</span><span>search_hadith</span><span>lookup_hadith_detail</span>
+              </div>
+            </details>
+          </div>
+          <div class="col-lg-7">
+            <div class="mcp-capability-list">
+              <div class="mcp-capability-item"><span>01</span><div><h3>Quran</h3><p>Search Arabic text and English translations, or retrieve an exact āyah with headings and a canonical URL.</p></div></div>
+              <div class="mcp-capability-item"><span>02</span><div><h3>Tafsir</h3><p>Discover available commentators, search across commentary, and retrieve a named source for a specific verse.</p></div></div>
+              <div class="mcp-capability-item"><span>03</span><div><h3>Hadith</h3><p>Search collections and inspect the complete record, including grade, narrators, references, and commentary when available.</p></div></div>
+              <div class="mcp-capability-item"><span>04</span><div><h3>Sirah &amp; history</h3><p>Search historical collections through the same source-aware flow while keeping canonical identities and links.</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mcp-section mcp-skills-section">
+      <div class="container col-xl-10 mx-auto">
+        <div class="row g-5 align-items-center">
+          <div class="col-lg-5">
+            <span class="mcp-kicker">Thoughtful research help</span>
+            <h2>It can do more than find a passage.</h2>
+            <p class="mcp-section-copy">On supported AI platforms, built-in research guides help organize evidence, compare accounts, and clearly distinguish stronger sources from uncertain details.</p>
+          </div>
+          <div class="col-lg-7">
+            <div class="mcp-skills-grid">
+              <div><i class="bi bi-layers" aria-hidden="true"></i><span>Source-aware Islamic narrative</span></div>
+              <div><i class="bi bi-person-badge" aria-hidden="true"></i><span>Companion biography</span></div>
+              <div><i class="bi bi-layout-text-sidebar-reverse" aria-hidden="true"></i><span>Quran &amp; tafsir comparison</span></div>
+              <div><i class="bi bi-signpost-split" aria-hidden="true"></i><span>Fiqh evidence &amp; practice</span></div>
+              <div><i class="bi bi-map" aria-hidden="true"></i><span>Sirah &amp; history research</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mcp-section mcp-final-cta">
+      <div class="container col-xl-10 mx-auto">
+        <div class="mcp-final-cta-inner">
+          <div><span class="mcp-kicker">Ready to try it?</span><h2>Choose your AI platform and connect once.</h2><p>After that, simply ask your Islamic questions as you normally would.</p></div>
+          <a class="btn btn-primary btn-lg" href="#connect">Show me how <i class="bi bi-arrow-down-short" aria-hidden="true"></i></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="mcp-section mcp-connect-section" id="connect">
+      <div class="container col-xl-10 mx-auto">
+        <div class="mcp-section-heading">
+          <span class="mcp-kicker">Simple setup guides</span>
+          <h2>Connect Hadith Unlocked to your AI.</h2>
+          <p>You only need to set this up once. Choose the app you use and follow its steps below.</p>
+        </div>
+
+        <div class="mcp-no-auth-callout">
+          <i class="bi bi-unlock" aria-hidden="true"></i>
+          <div><strong>No login or secret code is required.</strong><p>Hadith Unlocked does not require an account, API key, access token, or authentication token. Just paste the public address shown in the instructions. If your app asks for authentication, choose <strong>None</strong> or <strong>No authentication</strong>.</p></div>
+        </div>
+
+        <div class="accordion mcp-platform-accordion" id="mcp-platforms">
+          <div class="accordion-item">
+            <h3 class="accordion-header" id="mcp-platform-chatgpt-heading">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mcp-platform-chatgpt" aria-expanded="true" aria-controls="mcp-platform-chatgpt">
+                <span class="mcp-platform-mark">AI</span><span><strong>ChatGPT</strong><small>Custom app in Developer Mode</small></span>
+              </button>
+            </h3>
+            <div id="mcp-platform-chatgpt" class="accordion-collapse collapse show" aria-labelledby="mcp-platform-chatgpt-heading" data-bs-parent="#mcp-platforms">
+              <div class="accordion-body">
+                <ol class="mcp-steps">
+                  <li><span>1</span><p>In ChatGPT on the web, open <strong>Settings</strong> and enable <strong>Developer mode</strong>. Availability depends on your plan and workspace policy.</p></li>
+                  <li><span>2</span><p>Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer">ChatGPT Plugins <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a>, select the plus button, and create a connection named <strong>Hadith Unlocked</strong>.</p></li>
+                  <li><span>3</span><p>Paste <code><%= endpoint %></code> as the public MCP URL, create the connection, and review the discovered tools.</p></li>
+                  <li><span>4</span><p>Start a new chat and select Hadith Unlocked from the tools menu before asking your question.</p></li>
+                </ol>
+                <div class="mcp-platform-note"><i class="bi bi-info-circle" aria-hidden="true"></i> Pro users can connect read/fetch MCPs in Developer Mode. Business and Enterprise/Edu access is governed by workspace settings.</div>
+                <a class="mcp-doc-link" href="https://developers.openai.com/plugins/deploy/connect-chatgpt" target="_blank" rel="noopener noreferrer">Official OpenAI setup guide <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header" id="mcp-platform-codex-heading">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mcp-platform-codex" aria-expanded="false" aria-controls="mcp-platform-codex">
+                <span class="mcp-platform-mark">CX</span><span><strong>Codex</strong><small>Desktop app, CLI, or IDE extension</small></span>
+              </button>
+            </h3>
+            <div id="mcp-platform-codex" class="accordion-collapse collapse" aria-labelledby="mcp-platform-codex-heading" data-bs-parent="#mcp-platforms">
+              <div class="accordion-body">
+                <p>In the desktop app or IDE extension, open <strong>Settings → MCP servers → Add server</strong>. Choose <strong>Streamable HTTP</strong>, enter the endpoint, save, and restart. Or add this to <code>~/.codex/config.toml</code>:</p>
+                <div class="mcp-code-block"><pre id="mcp-code-codex"><code><%= codexConfig %></code></pre><button class="mcp-code-copy mcp-copy-button" type="button" data-mcp-copy-target="mcp-code-codex"><i class="bi bi-clipboard" aria-hidden="true"></i><span>Copy</span></button></div>
+                <p class="mb-2">Run <code>codex mcp list</code> to verify it, or type <code>/mcp</code> inside Codex.</p>
+                <a class="mcp-doc-link" href="https://developers.openai.com/codex/mcp" target="_blank" rel="noopener noreferrer">Official Codex MCP guide <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header" id="mcp-platform-claude-heading">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mcp-platform-claude" aria-expanded="false" aria-controls="mcp-platform-claude">
+                <span class="mcp-platform-mark">CL</span><span><strong>Claude</strong><small>Claude Code or claude.ai connector</small></span>
+              </button>
+            </h3>
+            <div id="mcp-platform-claude" class="accordion-collapse collapse" aria-labelledby="mcp-platform-claude-heading" data-bs-parent="#mcp-platforms">
+              <div class="accordion-body">
+                <p>For Claude Code, run:</p>
+                <div class="mcp-code-block"><pre id="mcp-code-claude"><code><%= claudeCommand %></code></pre><button class="mcp-code-copy mcp-copy-button" type="button" data-mcp-copy-target="mcp-code-claude"><i class="bi bi-clipboard" aria-hidden="true"></i><span>Copy</span></button></div>
+                <p>Then run <code>claude mcp list</code> to confirm the server is connected. In claude.ai, add the same endpoint under <strong>Customize → Connectors</strong>; Team and Enterprise workspaces may require an admin.</p>
+                <a class="mcp-doc-link" href="https://code.claude.com/docs/en/mcp" target="_blank" rel="noopener noreferrer">Official Claude Code MCP guide <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header" id="mcp-platform-cursor-heading">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mcp-platform-cursor" aria-expanded="false" aria-controls="mcp-platform-cursor">
+                <span class="mcp-platform-mark">CR</span><span><strong>Cursor</strong><small>Global or project MCP configuration</small></span>
+              </button>
+            </h3>
+            <div id="mcp-platform-cursor" class="accordion-collapse collapse" aria-labelledby="mcp-platform-cursor-heading" data-bs-parent="#mcp-platforms">
+              <div class="accordion-body">
+                <p>Create <code>~/.cursor/mcp.json</code> for all projects, or <code>.cursor/mcp.json</code> inside one project:</p>
+                <div class="mcp-code-block"><pre id="mcp-code-cursor"><code><%= cursorConfig %></code></pre><button class="mcp-code-copy mcp-copy-button" type="button" data-mcp-copy-target="mcp-code-cursor"><i class="bi bi-clipboard" aria-hidden="true"></i><span>Copy</span></button></div>
+                <p class="mb-2">Open Cursor’s Customize page to confirm the server and its tools are enabled.</p>
+                <a class="mcp-doc-link" href="https://cursor.com/docs/mcp" target="_blank" rel="noopener noreferrer">Official Cursor MCP guide <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header" id="mcp-platform-vscode-heading">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mcp-platform-vscode" aria-expanded="false" aria-controls="mcp-platform-vscode">
+                <span class="mcp-platform-mark">VS</span><span><strong>VS Code + GitHub Copilot</strong><small>Agent mode with MCP tools</small></span>
+              </button>
+            </h3>
+            <div id="mcp-platform-vscode" class="accordion-collapse collapse" aria-labelledby="mcp-platform-vscode-heading" data-bs-parent="#mcp-platforms">
+              <div class="accordion-body">
+                <p>Run <strong>MCP: Add Server</strong> from the Command Palette and choose HTTP, or create <code>.vscode/mcp.json</code>:</p>
+                <div class="mcp-code-block"><pre id="mcp-code-vscode"><code><%= vscodeConfig %></code></pre><button class="mcp-code-copy mcp-copy-button" type="button" data-mcp-copy-target="mcp-code-vscode"><i class="bi bi-clipboard" aria-hidden="true"></i><span>Copy</span></button></div>
+                <p class="mb-2">Start the server from the file’s inline action, confirm trust when prompted, then use its tools in Copilot Chat agent mode.</p>
+                <a class="mcp-doc-link" href="https://code.visualstudio.com/docs/agent-customization/mcp-servers" target="_blank" rel="noopener noreferrer">Official VS Code MCP guide <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="mcp-copy-status mcp-copy-status-wide" role="status" aria-live="polite" data-mcp-copy-status></p>
+      </div>
+    </section>
+
+  </main>
+
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <script>
+    (function () {
+      const statuses = document.querySelectorAll('[data-mcp-copy-status]');
+      const announce = (message) => statuses.forEach(status => { status.textContent = message; });
+      const copyText = async (text) => {
+        if (navigator.clipboard && window.isSecureContext)
+          return navigator.clipboard.writeText(text);
+        const input = document.createElement('textarea');
+        input.value = text;
+        input.setAttribute('readonly', '');
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        input.remove();
+      };
+      document.querySelectorAll('[data-mcp-copy-target]').forEach(button => {
+        button.addEventListener('click', async function () {
+          const target = document.getElementById(button.dataset.mcpCopyTarget);
+          if (!target) return;
+          try {
+            await copyText(target.textContent.trim());
+            const label = button.querySelector('span');
+            if (label) label.textContent = 'Copied';
+            announce('Copied to clipboard.');
+            window.setTimeout(function () {
+              if (label) label.textContent = button.classList.contains('mcp-code-copy') ? 'Copy' : (button.dataset.mcpCopyTarget === 'mcp-endpoint-final' ? 'Copy endpoint' : 'Copy');
+              announce('');
+            }, 1800);
+          } catch (_err) {
+            announce('Could not copy automatically. Select and copy the text manually.');
+          }
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

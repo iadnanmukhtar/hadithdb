@@ -72,6 +72,7 @@
     var isCommentedArea = requestPath === '/commented' || requestPath.indexOf('/commented/') === 0;
     var isHighlightsArea = requestPath === '/highlights' || requestPath.indexOf('/highlights/') === 0;
     var isTitledArea = requestPath === '/titled' || requestPath.indexOf('/titled/') === 0;
+    var isMcpServerArea = requestPath === '/mcp-server' || requestPath.indexOf('/mcp-server/') === 0;
     var isSettingsArea = requestPath === '/settings' || requestPath.indexOf('/settings/') === 0
       || requestPath === '/quran/settings' || requestPath.indexOf('/quran/settings/') === 0;
     if (isQuranArea)
@@ -79,7 +80,7 @@
     var settingsHref = isQuranArea || requestPath.indexOf('/quran/settings') === 0
       ? utils.quranUrl(req, '/quran/settings')
       : utils.urlFor(req, '/settings');
-    var isMoreArea = ['/settings', '/quran/settings', '/bookmarks', '/liked', '/commented', '/highlights', '/titled'].some(function (path) {
+    var isMoreArea = ['/settings', '/quran/settings', '/bookmarks', '/liked', '/commented', '/highlights', '/titled', '/mcp-server'].some(function (path) {
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
         var isSirahArea = !isQuranArea && (isHistoryCatalogArea || (pageBook && pageBook.type === 'sirah') || /^\/(?:ibnhisham|history)(?:[/:]|$)/.test(requestPath));
@@ -151,6 +152,8 @@
             <li><a class="dropdown-item<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isHighlightsArea) %>" href="<%= utils.urlFor(req, '/highlights') %>"><i class="bi bi-star"></i> Highlighted</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isTitledArea) %>" href="<%= utils.urlFor(req, '/titled') %>"><i class="bi bi-card-heading"></i> Titled</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isMcpServerArea) %>" href="<%= utils.urlFor(req, '/mcp-server') %>"><i class="bi bi-braces"></i> MCP Server</a></li>
           </ul>
         </li>
         <li class="nav-item command-search-compact-item">
@@ -257,6 +260,7 @@
             isCommentedArea: isCommentedArea,
             isHighlightsArea: isHighlightsArea,
             isTitledArea: isTitledArea,
+            isMcpServerArea: isMcpServerArea,
             settingsHref: settingsHref
           }) %>
           <ul class="col-5 nav flex-column offcanvas-col2">

@@ -539,6 +539,7 @@ const startupPromise = (async () => {
   const contentTranslationsRouter = require('./routes/contentTranslations');
   const clientErrorsRouter = require('./routes/clientErrors');
   const mcpRouter = require('./routes/mcp');
+  const mcpMarketingRouter = require('./routes/mcpMarketing');
 
   app.use('/recent', highlightsRouter);
   app.use('/highlights', highlightsRouter);
@@ -552,6 +553,7 @@ const startupPromise = (async () => {
   app.use('/quran/api/update', updateRouter);
   app.use('/api/client-errors', clientErrorsRouter);
   app.use('/quran/api/client-errors', clientErrorsRouter);
+  app.use('/mcp-server', mcpMarketingRouter);
   app.use('/mcp', mcpRouter);
   app.use('/api/chatkit', require('./routes/chatkit'));
   app.use('/quran/api/chatkit', require('./routes/chatkit'));

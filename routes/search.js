@@ -686,7 +686,9 @@ async function sitemapUrls(req) {
     const cachedText = Utils.readCachedTextFile(cachedFile);
     const cachedUrls = sitemapTextToUrls(cachedText);
     const siteUrls = sitemapUrlsForSite(cachedUrls, quranOnly);
-    const requiredUrls = quranOnly ? quranRequiredSitemapUrlList(quranSitemapBaseUrl(req)) : [];
+    const requiredUrls = quranOnly
+      ? quranRequiredSitemapUrlList(quranSitemapBaseUrl(req))
+      : hadithPublicSitemapUrlList(global.settings.site.url);
     const hasWrongSiteUrls = siteUrls.length !== cachedUrls.length;
     if (!hasWrongSiteUrls && !sitemapCacheNeedsRebuild(cachedUrls, requiredUrls))
       return siteUrls;
@@ -807,13 +809,7 @@ async function buildSitemapText(req) {
     return `${domain}/${alias}${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
   };
   if (!quranOnly) {
-    txt += `${domain}\n`;
-    txt += `${domain}/books\n`;
-    txt += `${domain}/highlights\n`;
-    txt += `${domain}/titled\n`;
-    txt += `${domain}/commented\n`;
-    txt += `${domain}/requests\n`;
-    txt += `${domain}/blog\n`;
+    txt += hadithPublicSitemapUrls(domain);
     const files = fs.readdirSync(global.settings.blog.dir);
     for (var file of files) {
       if (file.endsWith('.md')) {
@@ -851,6 +847,23 @@ async function buildSitemapText(req) {
     txt += await quranCommentarySitemapUrls(quranDomain);
   }
   return txt;
+}
+
+function hadithPublicSitemapUrlList(domain) {
+  return [
+    domain,
+    `${domain}/books`,
+    `${domain}/highlights`,
+    `${domain}/titled`,
+    `${domain}/commented`,
+    `${domain}/requests`,
+    `${domain}/blog`,
+    `${domain}/mcp-server`
+  ];
+}
+
+function hadithPublicSitemapUrls(domain) {
+  return hadithPublicSitemapUrlList(domain).map(url => `${url}\n`).join('');
 }
 
 function quranPublicSitemapUrlList(quranDomain) {
