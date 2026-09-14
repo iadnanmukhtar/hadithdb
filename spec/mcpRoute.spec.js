@@ -85,6 +85,13 @@ describe('public MCP Streamable HTTP route', () => {
     ]);
     for (const tool of payload.result.tools) {
       expect(tool.inputSchema.type).toBe('object');
+      expect(tool.outputSchema).toEqual(expect.objectContaining({
+        type: 'object',
+        properties: expect.objectContaining({ error: expect.objectContaining({ type: 'string' }) }),
+        oneOf: expect.arrayContaining([
+          expect.objectContaining({ required: ['error'] })
+        ])
+      }));
       expect(tool.annotations).toEqual(expect.objectContaining({
         readOnlyHint: true,
         destructiveHint: false,
@@ -92,6 +99,12 @@ describe('public MCP Streamable HTTP route', () => {
         openWorldHint: true
       }));
     }
+    expect(payload.result.tools.find(tool => tool.name === 'lookup_quran_ayah').outputSchema.properties)
+      .toHaveProperty('ayah');
+    expect(payload.result.tools.find(tool => tool.name === 'search_tafsir').outputSchema.properties.results.items.properties)
+      .toEqual(expect.objectContaining({ source: expect.any(Object), text_arabic: expect.any(Object), text_english: expect.any(Object) }));
+    expect(payload.result.tools.find(tool => tool.name === 'lookup_hadith_detail').outputSchema.properties)
+      .toEqual(expect.objectContaining({ requested_reference: expect.any(Object), canonical_url: expect.any(Object), records: expect.any(Object) }));
   });
 
   test('dispatches tool calls and returns model-readable structured content', async () => {
