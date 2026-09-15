@@ -116,7 +116,7 @@ router.use(function identifyAndAuditMcpRequest(req, res, next) {
   next();
 });
 
-router.use(function validateOriginAndSetHeaders(req, res, next) {
+router.use(function validateOriginAndSetTransportHeaders(req, res, next) {
   const origin = req.get('origin');
   if (origin) {
     const normalized = normalizedOrigin(origin);
@@ -124,12 +124,9 @@ router.use(function validateOriginAndSetHeaders(req, res, next) {
       res.locals.mcpOutcome = 'origin_rejected';
       return res.status(403).json({ error: 'Origin is not allowed.' });
     }
-    res.setHeader('Access-Control-Allow-Origin', normalized);
-    res.vary('Origin');
   }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Accept, Content-Type, MCP-Protocol-Version, X-Request-ID');
-  res.setHeader('Access-Control-Expose-Headers', 'MCP-Protocol-Version, X-Request-ID');
+  // The public edge owns CORS for /mcp. Keep Origin validation here for the
+  // transport security contract, but do not emit a second CORS header set.
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.setHeader('MCP-Protocol-Version', HadithMcp.PROTOCOL_VERSION);

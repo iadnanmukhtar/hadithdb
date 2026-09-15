@@ -48,18 +48,18 @@ describe('public MCP Streamable HTTP route', () => {
   test('advertises the stateless POST transport and protocol version', async () => {
     const options = await request('OPTIONS');
     expect(options.status).toBe(204);
-    expect(options.headers.get('access-control-allow-methods')).toBe('POST, OPTIONS');
+    expect(options.headers.get('access-control-allow-methods')).toBeNull();
     expect(options.headers.get('access-control-allow-origin')).toBeNull();
     expect(options.headers.get('mcp-protocol-version')).toBe(HadithMcp.PROTOCOL_VERSION);
 
     const browserOptions = await request('OPTIONS', undefined, { Origin: 'https://chatgpt.com' });
     expect(browserOptions.status).toBe(204);
-    expect(browserOptions.headers.get('access-control-allow-origin')).toBe('https://chatgpt.com');
-    expect(browserOptions.headers.get('vary')).toContain('Origin');
+    expect(browserOptions.headers.get('access-control-allow-origin')).toBeNull();
+    expect(browserOptions.headers.get('access-control-allow-headers')).toBeNull();
 
     const playgroundOptions = await request('OPTIONS', undefined, { Origin: 'https://mcpplaygroundonline.com' });
     expect(playgroundOptions.status).toBe(204);
-    expect(playgroundOptions.headers.get('access-control-allow-origin')).toBe('https://mcpplaygroundonline.com');
+    expect(playgroundOptions.headers.get('access-control-allow-origin')).toBeNull();
 
     const rejectedOrigin = await request('OPTIONS', undefined, { Origin: 'https://evil.example' });
     expect(rejectedOrigin.status).toBe(403);
@@ -237,6 +237,11 @@ describe('public MCP Streamable HTTP route', () => {
       .toEqual(expect.objectContaining({ response_profile: expect.any(Object), availability: expect.any(Object) }));
     expect(payload.result.tools.find(tool => tool.name === 'lookup_hadith_detail').outputSchema.properties)
       .toEqual(expect.objectContaining({ requested_reference: expect.any(Object), canonical_url: expect.any(Object), response_profile: expect.any(Object), records: expect.any(Object) }));
+    const listTafsirs = payload.result.tools.find(tool => tool.name === 'list_tafsirs');
+    expect(listTafsirs.inputSchema.properties).toHaveProperty('cursor');
+    expect(listTafsirs.outputSchema.properties).toEqual(expect.objectContaining({
+      total: expect.any(Object), has_more: expect.any(Object), next_cursor: expect.any(Object)
+    }));
   });
 
   test('dispatches tool calls and returns model-readable structured content', async () => {
@@ -395,7 +400,9 @@ describe('Hadith MCP tool service', () => {
         }]
       }
     }], String(url));
-    const result = await HadithMcp.callTool('lookup_hadith_detail', { reference: 'bukhari:1' }, { baseUrls: urls, fetch });
+    const result = await HadithMcp.callTool('lookup_hadith_detail', {
+      reference: 'bukhari:1', response_profile: 'full'
+    }, { baseUrls: urls, fetch });
     expect(result.structuredContent.records[0]).toEqual(expect.objectContaining({
       reference: 'bukhari:1',
       url: 'https://hadith.example/bukhari:1',
@@ -446,7 +453,7 @@ describe('Hadith MCP tool service', () => {
       expect(requestedOptions).toEqual(expect.objectContaining({
         excludeQuranAndTafsir: true,
         resultSize: 100,
-        resultLimit: 10000,
+        resultLimit: 600,
         redactLogs: true
       }));
       expect(result.structuredContent.books).toEqual(['ibnhisham', 'islamweb-history']);
@@ -498,6 +505,34 @@ describe('Hadith MCP tool service', () => {
       limit: 2,
       cursor: first.structuredContent.pagination.next_cursor
     }, { baseUrls: urls, search })).rejects.toThrow('Invalid search cursor.');
+  });
+
+  test('bounds deep pagination by logical offset, scanned pages, and deadline', async () => {
+    const untouchedSearch = jest.fn();
+    await expect(HadithMcp.callTool('search_hadith', {
+      query: 'result', offset: 501
+    }, { baseUrls: urls, search: untouchedSearch })).rejects.toThrow('Pagination depth exceeded');
+    expect(untouchedSearch).not.toHaveBeenCalled();
+
+    const duplicateSearch = jest.fn(async (query, filters, offset, options) => {
+      const page = Array.from({ length: options.resultSize }, (_, index) => ({
+        id: offset + index + 1,
+        ref: 'bukhari:1',
+        book_alias: 'bukhari',
+        body_en: 'Same logical record'
+      }));
+      page.total = 10000;
+      return page;
+    });
+    await expect(HadithMcp.callTool('search_hadith', {
+      query: 'result', offset: 10
+    }, { baseUrls: urls, search: duplicateSearch })).rejects.toThrow('Pagination depth exceeded');
+    expect(duplicateSearch).toHaveBeenCalledTimes(6);
+
+    const slowSearch = () => new Promise(resolve => setTimeout(() => resolve([]), 30));
+    await expect(HadithMcp.callTool('search_hadith', {
+      query: 'result'
+    }, { baseUrls: urls, search: slowSearch, deadlineMs: 5 })).rejects.toThrow('Search request deadline exceeded');
   });
 
   test('continues dedicated MCP searches beyond the website page cap', async () => {
@@ -653,7 +688,62 @@ describe('Hadith MCP tool service', () => {
     expect(result.structuredContent.commentary[0].text_arabic).toBe('تفسير عربي');
   });
 
-  test('compact hadith detail omits large metadata while default retains it', async () => {
+  test('paginates the tafsir catalog with query-bound cursors', async () => {
+    const rows = Array.from({ length: 57 }, (_, index) => ({
+      type: 'tafsir',
+      source: 'local',
+      alias: `tafsir-${String(index + 1).padStart(2, '0')}`,
+      lang: index % 2 ? 'ar' : 'en',
+      name_en: `Tafsir ${index + 1}`
+    }));
+    const fetch = async url => response(rows, String(url));
+
+    const first = await HadithMcp.callTool('list_tafsirs', { limit: 20 }, { baseUrls: urls, fetch });
+    expect(first.structuredContent).toEqual(expect.objectContaining({
+      total: 57,
+      has_more: true,
+      next_cursor: expect.any(String)
+    }));
+    expect(first.structuredContent.tafsirs).toHaveLength(20);
+    expect(first.content[0].text).toContain('Total: 57. More: yes.');
+
+    const second = await HadithMcp.callTool('list_tafsirs', {
+      limit: 20,
+      cursor: first.structuredContent.next_cursor
+    }, { baseUrls: urls, fetch });
+    expect(second.structuredContent.tafsirs[0].alias).toBe('tafsir-21');
+
+    await expect(HadithMcp.callTool('list_tafsirs', {
+      query: 'different',
+      cursor: first.structuredContent.next_cursor
+    }, { baseUrls: urls, fetch })).rejects.toThrow('Invalid search cursor.');
+  });
+
+  test('reports commentary language as the resolved presentation language', async () => {
+    const fetch = async url => {
+      if (String(url).endsWith('/quran/api/proxy/tafsir/books'))
+        return response([{ type: 'tafsir', source: 'local', alias: 'ibn-kathir', lang: 'ar' }], String(url));
+      return response({
+        entries: [{
+          id: 1,
+          content_translation_language: 'en',
+          arabic_html: '<p>تفسير عربي</p>',
+          translation_html: '<p>English translation</p>'
+        }]
+      }, String(url));
+    };
+
+    const result = await HadithMcp.callTool('lookup_tafsir', {
+      tafsir: 'ibn-kathir', surah: 1, ayah: 1, language: 'ar'
+    }, { baseUrls: urls, fetch });
+
+    expect(result.structuredContent.availability).toEqual(expect.objectContaining({
+      requested_language: 'ar', resolved_language: 'ar', fallback_used: false
+    }));
+    expect(result.structuredContent.commentary[0].language).toBe('ar');
+  });
+
+  test('compact hadith detail is the default and default metadata is bounded', async () => {
     const fetch = async url => response([{
       id: 1,
       ref: 'bukhari:1',
@@ -663,17 +753,19 @@ describe('Hadith MCP tool service', () => {
       hdithMetadata: { narrators: [{ name: 'Umar' }], sharh: [{ text_en: 'Explanation' }] }
     }], String(url));
 
-    const compact = await HadithMcp.callTool('lookup_hadith_detail', {
-      reference: 'bukhari:1', response_profile: 'compact'
-    }, { baseUrls: urls, fetch });
+    const compact = await HadithMcp.callTool('lookup_hadith_detail', { reference: 'bukhari:1' }, { baseUrls: urls, fetch });
     expect(compact.structuredContent.response_profile).toBe('compact');
     expect(compact.structuredContent.records[0]).not.toHaveProperty('metadata');
 
     const normal = await HadithMcp.callTool('lookup_hadith_detail', {
-      reference: 'bukhari:1'
+      reference: 'bukhari:1', response_profile: 'default'
     }, { baseUrls: urls, fetch });
     expect(normal.structuredContent.response_profile).toBe('default');
     expect(normal.structuredContent.records[0]).toHaveProperty('metadata');
+    expect(normal.structuredContent.records[0].metadata.sharh[0].text_english).toBe('Explanation');
+    expect(normal.structuredContent.records[0].metadata.sharh[0]).not.toHaveProperty('text_en');
+    expect(normal.content[0].text).toContain('Actions are by intentions.');
+    expect(normal.content[0].text.length).toBeLessThanOrEqual(12000);
   });
 
   test('returns bilingual tafsir in separate full Arabic and English fields', async () => {

@@ -14,24 +14,30 @@ hadith search, and full hadith-detail lookup tools.
 Arabic and English are exposed separately when the underlying record provides
 both languages; unavailable language fields are returned as `null` rather than
 synthesized. Long tafsir and hadith-detail tools accept `compact`, `default`,
-and `full` response profiles. Search tools return exact-size pages, pagination
+and `full` response profiles. Hadith detail defaults to `compact`; `default`
+adds bounded scholarly attribution and commentary, while `full` is the explicit
+complete-provenance mode. Search tools return exact-size pages, pagination
 metadata, and opaque cursors; Quran search merges translation hits under each
 canonical ayah. Pagination reports whether its total is exact; `total_available`
 is `null` while the backend has only fetched enough data to prove another page
-exists.
+exists. Searches reject logical offsets beyond 500, scan at most six underlying
+pages per call, and enforce a ten-second deadline. `list_tafsirs` also returns
+`total`, `has_more`, and an opaque query-bound cursor.
 Quran ayat, Quran search results, hadith search results, and hadith-detail
 records expose `bilingual`, `text`, `text_arabic`, `text_english`, and
-`truncated`. Hadith-detail sharh entries retain their existing `text` and
-`text_en` source fields and additionally expose the same language-explicit
-fields, with their combined value in `text_combined`.
+`truncated`. Full-profile hadith-detail sharh entries retain their existing
+`text` and `text_en` source fields and additionally expose language-explicit
+fields. The bounded default profile exposes the language-explicit commentary
+fields without duplicating the original long text fields.
 
 The endpoint accepts JSON-RPC 2.0 requests for `initialize`, `ping`,
 `tools/list`, `tools/call`, `skills/list`, `skills/get`, and `resources/read`.
 It advertises five source-aware research skills through OpenAI's static MCP
 skill-import extension. It does not create sessions, so clients should not
 expect an `Mcp-Session-Id` response header. Browser preflight requests are
-supported with `OPTIONS /mcp`; browser origins must be allowlisted, while
-native clients may omit `Origin`. Other HTTP methods return `405`.
+supported with `OPTIONS /mcp`; the public edge owns the complete CORS response
+for this path, while the application validates browser origins and native
+clients may omit `Origin`. Other HTTP methods return `405`.
 
 ```bash
 curl https://hadithunlocked.com/mcp \

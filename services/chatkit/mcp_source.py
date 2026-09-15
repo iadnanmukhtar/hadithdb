@@ -14,8 +14,8 @@ def library_mcp(url, site_url=None):
     return MCPServerStreamableHttp(
         name='HadithDB', params=params,
         client_session_timeout_seconds=30,
-        # HadithDB's text block is only a short status summary. The actual source
-        # text, grading, and URLs live in structuredContent.
+        # Prefer the complete machine-readable contract. HadithDB also includes
+        # a concise, bounded rendition of the primary result in its text block.
         use_structured_content=True,
         tool_filter=create_static_tool_filter(allowed_tool_names=TOOLS),
     )
