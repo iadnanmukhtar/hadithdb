@@ -11,9 +11,14 @@ HadithDB exposes a read-only, stateless Streamable HTTP MCP transport at
 `https://hadithunlocked.com/mcp`. It provides Quran and tafsir lookup/search,
 hadith search, and full hadith-detail lookup tools.
 
-Text fields are returned in full. Arabic and English are exposed separately
-when the underlying record provides both languages; unavailable language fields
-are returned as `null` rather than synthesized or omitted.
+Arabic and English are exposed separately when the underlying record provides
+both languages; unavailable language fields are returned as `null` rather than
+synthesized. Long tafsir and hadith-detail tools accept `compact`, `default`,
+and `full` response profiles. Search tools return exact-size pages, pagination
+metadata, and opaque cursors; Quran search merges translation hits under each
+canonical ayah. Pagination reports whether its total is exact; `total_available`
+is `null` while the backend has only fetched enough data to prove another page
+exists.
 Quran ayat, Quran search results, hadith search results, and hadith-detail
 records expose `bilingual`, `text`, `text_arabic`, `text_english`, and
 `truncated`. Hadith-detail sharh entries retain their existing `text` and
@@ -25,7 +30,8 @@ The endpoint accepts JSON-RPC 2.0 requests for `initialize`, `ping`,
 It advertises five source-aware research skills through OpenAI's static MCP
 skill-import extension. It does not create sessions, so clients should not
 expect an `Mcp-Session-Id` response header. Browser preflight requests are
-supported with `OPTIONS /mcp`; other HTTP methods return `405`.
+supported with `OPTIONS /mcp`; browser origins must be allowlisted, while
+native clients may omit `Origin`. Other HTTP methods return `405`.
 
 ```bash
 curl https://hadithunlocked.com/mcp \
@@ -39,7 +45,9 @@ The endpoint has a 64 KiB request limit and a per-IP rate limit. Override the
 defaults with `MCP_RATE_LIMIT_WINDOW_MS` and `MCP_RATE_LIMIT_PER_IP`. Internal
 tool requests use the current request host by default; staging deployments can
 override the backing sites with `HADITHDB_MCP_HADITH_BASE_URL` and
-`HADITHDB_MCP_QURAN_BASE_URL`.
+`HADITHDB_MCP_QURAN_BASE_URL`. Add browser origins with the comma-separated
+`MCP_ALLOWED_ORIGINS` setting. See [MCP data handling](docs/MCP_DATA_HANDLING.md)
+for the redacted audit-log contract and retention setting.
 
 ## What's New
 
