@@ -235,7 +235,10 @@ describe('public MCP Streamable HTTP route', () => {
     }
     expect(payload.result.tools.find(tool => tool.name === 'lookup_tafsir').outputSchema.properties)
       .toEqual(expect.objectContaining({ response_profile: expect.any(Object), availability: expect.any(Object) }));
-    expect(payload.result.tools.find(tool => tool.name === 'lookup_hadith_detail').outputSchema.properties)
+    const hadithDetail = payload.result.tools.find(tool => tool.name === 'lookup_hadith_detail');
+    expect(hadithDetail.description).toContain('available with response_profile: "full"');
+    expect(hadithDetail.description).not.toContain('Retrieve the full');
+    expect(hadithDetail.outputSchema.properties)
       .toEqual(expect.objectContaining({ requested_reference: expect.any(Object), canonical_url: expect.any(Object), response_profile: expect.any(Object), records: expect.any(Object) }));
     const listTafsirs = payload.result.tools.find(tool => tool.name === 'list_tafsirs');
     expect(listTafsirs.inputSchema.properties).toHaveProperty('cursor');
@@ -593,6 +596,62 @@ describe('Hadith MCP tool service', () => {
       ]
     }));
     expect(new Set(result.structuredContent.results.map(item => item.reference)).size).toBe(2);
+  });
+
+  test('hydrates translation-only Quran search results from the canonical ayah', async () => {
+    const raw = [{
+      id: 9,
+      ref: 'quran:2:128',
+      commentary_type: 'trans',
+      commentary_alias: 'clear-quran',
+      commentary_name_en: 'The Clear Quran',
+      content_translation_language: 'en',
+      translation_body_html: '<p>Our Lord! Make us submit to You.</p>'
+    }];
+    const search = async () => {
+      const results = raw.slice();
+      results.total = results.length;
+      return results;
+    };
+    const fetch = jest.fn(async url => response([{
+      id: 128,
+      ref: 'quran:2:128',
+      path: 'quran:2:128',
+      book_alias: 'quran',
+      book_name_en: 'The Quran',
+      book_name: 'القرآن',
+      num: '2:128',
+      numInChapter: 128,
+      h1: 2,
+      h1_title_en: 'Al-Baqarah',
+      h1_title: 'البقرة',
+      body: 'رَبَّنَا وَاجْعَلْنَا مُسْلِمَيْنِ لَكَ',
+      body_en: 'Our Lord, make us both submit to You.'
+    }], String(url)));
+
+    const result = await HadithMcp.callTool('search_quran', {
+      query: 'mercy', limit: 1, sort: 'canonical'
+    }, { baseUrls: urls, search, fetch });
+    const item = result.structuredContent.results[0];
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0][0]).toBe('https://quran.example/quran:2:128?json=1');
+    expect(item).toEqual(expect.objectContaining({
+      reference: 'quran:2:128',
+      text_arabic: 'رَبَّنَا وَاجْعَلْنَا مُسْلِمَيْنِ لَكَ',
+      text_english: 'Our Lord, make us both submit to You.',
+      bilingual: true,
+      book: expect.objectContaining({
+        alias: 'quran',
+        name_english: 'The Quran',
+        name_arabic: 'القرآن'
+      }),
+      translation_matches: [expect.objectContaining({
+        source_alias: 'clear-quran',
+        text: 'Our Lord! Make us submit to You.'
+      })]
+    }));
+    expect(item).not.toHaveProperty('_quran_base_present');
   });
 
   test('does not truncate Arabic or English scripture fields', () => {
