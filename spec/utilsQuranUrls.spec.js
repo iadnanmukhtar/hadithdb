@@ -4,9 +4,27 @@ const Utils = require('../lib/Utils');
 
 describe('Utils Quran URLs', () => {
   const originalSettings = global.settings;
+  const originalCommentaries = global.commentaries;
 
   afterEach(() => {
     global.settings = originalSettings;
+    global.commentaries = originalCommentaries;
+  });
+
+  test('derives the default Quran translation label from the loaded database catalog', () => {
+    global.commentaries = [
+      { alias: 'en-old', type: 'trans', source: 'local', shortName_en: 'Old translation' },
+      { alias: 'en-current', type: 'trans', source: 'default', shortName_en: 'Current translation' }
+    ];
+
+    expect(Utils.defaultQuranTranslationBook().alias).toBe('en-current');
+    expect(Utils.defaultQuranTranslationLabel()).toBe('Current translation');
+  });
+
+  test('uses a generic label when no default translation is loaded', () => {
+    global.commentaries = [];
+
+    expect(Utils.defaultQuranTranslationLabel()).toBe('Default translation');
   });
 
   test('uses the production Quran host when quranUrl is not configured', () => {

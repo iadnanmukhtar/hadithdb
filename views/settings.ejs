@@ -834,10 +834,8 @@
     };
 
     let defaultTranslationBook = {
+      ...<%- JSON.stringify(utils.defaultQuranTranslationBook()).replace(/</g, '\\u003c') %>,
       alias: '',
-      shortName_en: 'Abdel Haleem',
-      name_en: 'Abdel Haleem Translation',
-      author_en: 'M. A. S. Abdel Haleem',
       builtinDefault: true
     };
 

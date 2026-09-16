@@ -3514,7 +3514,7 @@ function initQuranTafsirTabs(root) {
 function defaultQuranTranslationShortName() {
 	return typeof window.defaultQuranTranslationShortNameLabel === 'string' && window.defaultQuranTranslationShortNameLabel
 		? window.defaultQuranTranslationShortNameLabel
-		: 'Abdel Haleem';
+		: 'Default translation';
 }
 
 var quranTranslationBooksPromise = null;

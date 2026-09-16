@@ -21,10 +21,7 @@
 		audioSurah: firstHeroAudioRef.surah,
 		audioAyah: firstHeroAudioRef.ayah
 	}) : null;
-		const defaultTranslationBook = (global.commentaries || []).find(function (book) {
-			return book && book.type === 'trans' && book.source === 'default';
-		}) || {};
-		const defaultTranslationShortName = defaultTranslationBook.shortName_en || defaultTranslationBook.shortName || 'Abdel Haleem';
+		const defaultTranslationShortName = utils.defaultQuranTranslationLabel();
 		const fixedTranslationAlias = /^[A-Za-z0-9_-]+$/.test((locals.fixedTranslationAlias || '').toString())
 			? locals.fixedTranslationAlias.toString()
 			: '';

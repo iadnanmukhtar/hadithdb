@@ -10,10 +10,7 @@
 	const surahTitle = page.context.chapter?.title_en || firstAyah.h1_title_en || firstAyah.en?.h1_title || 'Qurʾān';
 	const shareTitleRef = firstRef && lastRef && firstRef !== lastRef ? `${firstRef}-${lastRefPart}` : firstRef;
 	const shareTitle = shareTitleRef ? `${surahTitle} ${shareTitleRef}` : surahTitle;
-	const defaultTranslationBook = (global.commentaries || []).find(function (book) {
-		return book && book.type === 'trans' && book.source === 'default';
-	}) || {};
-	const defaultTranslationShortName = defaultTranslationBook.shortName_en || defaultTranslationBook.shortName || 'Abdel Haleem';
+	const defaultTranslationShortName = utils.defaultQuranTranslationLabel();
 %>
 <% if (ayahs.length > 0) { %>
 <aside class="h modal fade hadith-share-root quran-share-root" id="<%= quranShareId %>" tabindex="-1">

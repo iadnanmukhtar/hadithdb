@@ -173,10 +173,7 @@
 	const quranTranslationAttrs = isQuranItem && lang === 'en' && searchResult && quranAyahRefParts.length >= 2
 		? ` data-quran-translation-target="1" data-quran-surah="${quranAyahRefParts[0]}" data-quran-ayah="${quranAyahRefParts[1]}"`
 		: '';
-	const defaultTranslationBook = (global.commentaries || []).find(function (book) {
-		return book && book.type === 'trans' && book.source === 'default';
-	}) || {};
-	const defaultTranslationShortName = defaultTranslationBook.shortName_en || defaultTranslationBook.shortName || 'Abdel Haleem';
+	const defaultTranslationShortName = utils.defaultQuranTranslationLabel();
 	const quranAyahMarkerNum = (() => {
 		if (!canonicalQuranAyahRef || lang !== 'ar')
 			return '';

@@ -28,19 +28,14 @@
 	const hideDefaultTranslation = locals.hideDefaultTranslation === true;
 	const translationSettingsHref = locals.translationSettingsHref || '';
 	const showAyahModalModeToggle = locals.showAyahModalModeToggle === true;
-	const defaultTranslationBook = (global.commentaries || []).find(function (book) {
-		return book && book.type === 'trans' && book.source === 'default';
-	}) || {
-		shortName_en: 'Abdel Haleem',
-		name_en: 'The Qur\'an: A New Translation',
-		author_en: 'M. A. S. Abdel Haleem'
-	};
+	const defaultTranslationBook = utils.defaultQuranTranslationBook();
+	const defaultTranslationLabel = utils.quranTranslationBookLabel(defaultTranslationBook);
 	const defaultTranslationMeta = [
 		defaultTranslationBook.author_en || defaultTranslationBook.author,
 		defaultTranslationBook.published_year ? `Pub. ${defaultTranslationBook.published_year}` : '',
 		defaultTranslationBook.publisher || ''
 	].filter(Boolean).join(', ');
-	const defaultTranslationTitle = defaultTranslationBook.name_en || defaultTranslationBook.title || 'The Qur\'an: A New Translation';
+	const defaultTranslationTitle = defaultTranslationBook.name_en || defaultTranslationBook.title || defaultTranslationLabel;
 	const defaultTranslationHtml = passageItems.map(function (ayah) {
 		return utils.markdownToHtml(utils.emptyIfNull(ayah.en?.body || ayah.body_en));
 	}).filter(Boolean).join('\n');
@@ -78,12 +73,12 @@
 			<details class="quran-translation-entry quran-translation-default" lang="en" dir="ltr" data-translation-alias="default" draggable="false" open>
 				<summary class="quran-translation-source">
 					<span class="quran-translation-chevron bi bi-chevron-right" aria-hidden="true"></span>
-					<strong class="quran-translation-source-author" title="<%= defaultTranslationBook.shortName_en || 'Abdel Haleem' %>"><%= defaultTranslationBook.shortName_en || 'Abdel Haleem' %></strong>
-					<button type="button" class="translation-preference-heart btn btn-link p-0" data-quran-translation-preference-heart="1" data-quran-translation-preference-alias="" data-quran-translation-preference-label="<%= defaultTranslationBook.shortName_en || 'Abdel Haleem' %>" title="Use <%= defaultTranslationBook.shortName_en || 'Abdel Haleem' %> as the default hero translation" aria-label="Use <%= defaultTranslationBook.shortName_en || 'Abdel Haleem' %> as the default hero translation" aria-pressed="false">
+					<strong class="quran-translation-source-author" title="<%= defaultTranslationLabel %>"><%= defaultTranslationLabel %></strong>
+					<button type="button" class="translation-preference-heart btn btn-link p-0" data-quran-translation-preference-heart="1" data-quran-translation-preference-alias="" data-quran-translation-preference-label="<%= defaultTranslationLabel %>" title="Use <%= defaultTranslationLabel %> as the default hero translation" aria-label="Use <%= defaultTranslationLabel %> as the default hero translation" aria-pressed="false">
 						<i class="bi bi-heart" aria-hidden="true"></i>
 					</button>
 						<span class="quran-translation-source-title" title="<%= [defaultTranslationMeta, defaultTranslationTitle].filter(Boolean).join(' ') %>">
-							<span class="quran-translation-source-full-author" title="<%= defaultTranslationMeta %>"><%= defaultTranslationMeta || 'M. A. S. Abdel Haleem' %></span>
+							<span class="quran-translation-source-full-author" title="<%= defaultTranslationMeta %>"><%= defaultTranslationMeta || defaultTranslationLabel %></span>
 							<span class="quran-translation-source-book-title" title="<%= defaultTranslationTitle %>"><%= defaultTranslationTitle %></span>
 						</span>
 				</summary>
