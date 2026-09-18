@@ -205,3 +205,17 @@ test('expanded source text and translations omit Markdown formatting', async () 
   expect(Notebook.render(quote)).not.toContain('<em>');
   expect(quote).toContain('"Expanded reference"');
 });
+
+test('ayah menu resolves the existing canonical note for the signed-in user', async () => {
+  Item.itemFromRef.mockResolvedValue({ ref: 'quran:2:255', id: 204673 });
+  const response = await fetch(`${base}/ayah?reference=quran:2:255`, { headers: { Authorization: 'Bearer alice' } });
+  expect(response.status).toBe(200);
+  expect((await response.json()).source.source_key).toBe('item:204673');
+  expect(global.query.mock.calls.at(-1)[0]).toContain("user_uid='alice' AND source_key='item:204673'");
+  expect((await fetch(`${base}/ayah?reference=quran:2:255`)).status).toBe(401);
+});
+test('ayah menu rejects mismatched source records', async () => {
+  Item.itemFromRef.mockResolvedValue({ ref: 'quran:2:254', id: 42 });
+  expect((await fetch(`${base}/ayah?reference=quran:2:255`, { headers: { Authorization: 'Bearer alice' } })).status).toBe(404);
+  expect(global.query).not.toHaveBeenCalled();
+});

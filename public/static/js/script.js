@@ -11208,7 +11208,7 @@ function initQuranMushafAyahMarkerActions(root) {
 	menu.setAttribute('dir', 'ltr');
 	menu.setAttribute('aria-label', 'Ayah actions');
 	menu.hidden = true;
-	menu.innerHTML = '<button type="button" class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-play><span class="bi bi-play-fill" aria-hidden="true"></span> Play</button><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-view><span class="bi bi-text-paragraph" aria-hidden="true"></span> Study</a><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-translations><span class="bi bi-translate" aria-hidden="true"></span> Translations</a><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-tafsir><span class="bi bi-book-half" aria-hidden="true"></span> Tafsir</a>';
+	menu.innerHTML = '<button type="button" class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-play><span class="bi bi-play-fill" aria-hidden="true"></span> Play</button><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-view><span class="bi bi-text-paragraph" aria-hidden="true"></span> Study</a><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-translations><span class="bi bi-translate" aria-hidden="true"></span> Translations</a><a class="quran-mushaf-ayah-action" role="menuitem" data-quran-mushaf-ayah-tafsir><span class="bi bi-book-half" aria-hidden="true"></span> Tafsir</a><button type="button" class="quran-mushaf-ayah-action personal-note-btn" role="menuitem" data-quran-ayah-note disabled><span class="bi bi-sticky" aria-hidden="true"></span> Note</button>';
 	document.body.appendChild(menu);
 	var activeMarker = null;
 	var markerShowTimer = null;
@@ -11285,6 +11285,9 @@ function initQuranMushafAyahMarkerActions(root) {
 			activeMarker.setAttribute('aria-expanded', 'false');
 		activeMarker = marker;
 		activeMarker.setAttribute('aria-expanded', 'true');
+		var note = menu.querySelector('[data-quran-ayah-note]');
+		note.dataset.ayahNoteRef = 'quran:' + (marker.getAttribute('data-quran-ref') || '').replace(/^quran:/, '');
+		document.dispatchEvent(new CustomEvent('quranAyahNoteTarget', { detail: { button: note } }));
 		var view = menu.querySelector('[data-quran-mushaf-ayah-view]');
 		view.setAttribute('href', quranAyahStudyUrl(marker.getAttribute('data-quran-ref') || ''));
 		view.setAttribute('aria-label', `Study Quran ${marker.getAttribute('data-quran-ref') || ''}`);

@@ -135,6 +135,40 @@
     }
     if (sources.length) { paintButtons(); scheduleStatus(); }
   }
+  let ayahNoteRequest = 0;
+  async function prepareAyahNote(button) {
+    const request = ++ayahNoteRequest, ownGeneration = generation;
+    const ref = button.dataset.ayahNoteRef;
+    buttons.delete(button);
+    button.disabled = true;
+    button.firstElementChild.className = 'bi bi-sticky';
+    button.dataset.hasNote = 'false';
+    delete button.dataset.noteKey;
+    if (!await window.hadithAuth?.getToken()) return;
+    try {
+      const result = await api(`/ayah?reference=${encodeURIComponent(ref)}`);
+      if (request !== ayahNoteRequest || ownGeneration !== generation || button.dataset.ayahNoteRef !== ref) return;
+      button.dataset.noteKey = result.source.source_key;
+      button.dataset.noteTitle = result.source.source_title;
+      button.dataset.noteUrl = result.source.source_url;
+      buttons.set(button, button);
+      markSource(result.source.source_key, !!result.note?.version);
+      button.disabled = false;
+      if (!button.dataset.noteBound) {
+        button.dataset.noteBound = '1';
+        button.addEventListener('click', event => {
+          event.preventDefault(); event.stopPropagation();
+          const menu = button.closest('[role="menu"]');
+          if (menu) menu.hidden = true;
+          document.querySelectorAll('[data-quran-ayah-actions][aria-expanded="true"]').forEach(marker => marker.setAttribute('aria-expanded', 'false'));
+          open(sourceFor(button));
+        });
+      }
+    } catch (_) {
+      if (request === ayahNoteRequest) button.title = 'Could not load note. Reopen the ayah menu to retry.';
+    }
+  }
+  document.addEventListener('quranAyahNoteTarget', event => prepareAyahNote(event.detail.button));
   function mode(edit) {
     editing = edit;
     editor.hidden = !edit; preview.hidden = edit;
@@ -369,6 +403,8 @@
     ++generation; ++listRequest; ++statusEpoch; returnModal = null;
     clearTimeout(saveTimer); saving = null; current = null; editor.value = savedText = ''; preview.innerHTML = '';
     existing.clear(); checked.clear(); paintButtons(); scheduleStatus();
+    const ayahNote = document.querySelector('[data-quran-ayah-note][data-ayah-note-ref]');
+    if (ayahNote) prepareAyahNote(ayahNote);
     setBusy(false); saveButton.disabled = true; deleteButton.hidden = true;
     bootstrap.Modal.getInstance(modal)?.hide(); loadList();
   });

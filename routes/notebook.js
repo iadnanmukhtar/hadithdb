@@ -21,6 +21,16 @@ router.use(async (req, res, next) => {
   if (!req.user) return res.status(401).json({ error: 'Please sign in to use your notebook.' });
   next();
 });
+router.get('/ayah', async (req, res, next) => {
+  try {
+    const ref = String(req.query.reference || '');
+    if (!/^quran:\d{1,3}:\d{1,3}$/.test(ref)) return res.status(400).json({ error: 'Invalid ayah.' });
+    const item = await require('../lib/Model').Item.itemFromRef(ref);
+    if (!item || item.ref !== ref || !Number.isSafeInteger(Number(item.id))) return res.status(404).json({ error: 'Ayah not found.' });
+    const source = { source_key: `item:${item.id}`, source_title: ref, source_url: `/${ref}`, markdown: '', version: 0 };
+    res.json({ source, note: await Notebook.get(req.user.uid, source.source_key) });
+  } catch (err) { next(err); }
+});
 router.get('/download', async (req, res, next) => {
   try {
     const zip = await Notebook.exportZip(req.user.uid);
