@@ -1,4 +1,4 @@
-/* global bootstrap */
+/* global bootstrap, quranApiPath */
 (() => {
   'use strict';
   const modal = document.getElementById('notebook-modal');
@@ -41,7 +41,7 @@
     try {
       const token = await window.hadithAuth?.getToken();
       if (!token) throw new Error('Please sign in to download your notebook.');
-      const response = await fetch('/api/notebook/download', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+      const response = await fetch(quranApiPath('/notebook/download'), { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
       if (!response.ok) throw new Error((await response.json()).error || 'Could not download notebook.');
       const blob = await response.blob();
       if (ownGeneration !== generation) return;
@@ -63,7 +63,7 @@
   async function api(path = '', method = 'GET', body) {
     const token = await window.hadithAuth?.getToken();
     if (!token) throw new Error('Please sign in to use your notebook.');
-    const response = await fetch('/api/notebook' + path, {
+    const response = await fetch(quranApiPath('/notebook' + path), {
       method, cache: 'no-store', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       ...(body === undefined ? {} : { body: JSON.stringify(body) })
     });
@@ -218,6 +218,7 @@
     const link = document.getElementById('notebook-source');
     const reference = source.source_url.match(/\/([a-z][a-z0-9_-]*:\d+(?::\d+)?[a-z]?)(?:[?#]|$)/i);
     link.textContent = reference ? reference[1] : source.source_title; link.title = source.source_title; link.href = source.source_url;
+    if (source.source_key === 'general') link.removeAttribute('href');
     status.textContent = 'Loading…'; setBusy(true);
     returnModal = document.querySelector('.modal.show:not(#notebook-modal)');
     if (returnModal) {
@@ -310,19 +311,20 @@
   function renderList() {
     const query = document.getElementById('notebook-search').value.toLocaleLowerCase();
     list.replaceChildren();
-    const filtered = notes.filter(note => `${note.source_title}\n${note.markdown}`.toLocaleLowerCase().includes(query));
+    const general = notes.find(note => note.source_key === 'general') || { source_key: 'general', source_title: 'General note', source_url: '/notebook', markdown: '', html: '', version: 0 };
+    const filtered = [general, ...notes.filter(note => note.source_key !== 'general' && `${note.source_title}\n${note.markdown}`.toLocaleLowerCase().includes(query))];
     for (const note of filtered) {
       const article = document.createElement('article'); article.className = 'notebook-tile';
       const button = document.createElement('button'); button.type = 'button'; button.className = 'notebook-tile-open';
       button.setAttribute('aria-label', `Open note: ${note.source_title}`);
       const heading = document.createElement('span'); heading.className = 'notebook-tile-title';
-      const icon = document.createElement('span'); icon.className = 'bi bi-sticky-fill'; icon.setAttribute('aria-hidden', 'true');
+      const icon = document.createElement('span'); icon.className = note.version ? 'bi bi-sticky-fill' : 'bi bi-sticky'; icon.setAttribute('aria-hidden', 'true');
       const title = document.createElement('span'); title.dir = 'auto'; title.textContent = note.source_title;
       heading.append(icon, title);
       const rendered = document.createElement('div'); rendered.innerHTML = note.html;
       rendered.querySelectorAll('button').forEach(node => node.remove());
       rendered.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, pre, tr, br').forEach(node => node.append(' '));
-      const text = rendered.textContent.replace(/\s+/g, ' ').trim();
+      const text = rendered.textContent.replace(/\s+/g, ' ').trim() || (note.source_key === 'general' ? 'Write a private note.' : '');
       const excerpt = text.length > 220 ? `${text.slice(0, 220).trimEnd()}…` : text;
       const content = document.createElement('span'); content.className = 'notebook-tile-preview notebook-markdown'; content.dir = 'auto';
       const arabic = /([\p{Script_Extensions=Arabic}\u200c\u200d]+(?:[ \t]+[\p{Script_Extensions=Arabic}\u200c\u200d]+)*)/gu;

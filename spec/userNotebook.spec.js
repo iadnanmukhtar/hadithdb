@@ -78,9 +78,11 @@ test('expansion looks up the exact reference and saves both languages with the d
   await Notebook.expand('alice', body);
   expect(Item.itemFromRef).toHaveBeenCalledWith('bukhari:100');
   const insert = global.query.mock.calls.find(([sql]) => sql.startsWith('INSERT'))[0];
-  expect(insert).toContain('My draft bukhari:100');
+  expect(insert).toContain('My draft');
+  expect(insert).not.toContain('My draft bukhari:100');
   expect(insert).toContain('السند');
-  expect(insert).toContain('*النص*');
+  expect(insert).toContain('النص');
+  expect(insert).not.toContain('*النص*');
   expect(insert).toContain('Translation');
   expect(insert).toContain('Expanded reference');
 });
@@ -166,4 +168,40 @@ test('notebook pages return twelve notes and detect the next batch', async () =>
   expect(result.hasMore).toBe(true);
   expect(global.query.mock.calls.at(-1)[0]).toContain("user_uid='alice'");
   expect(global.query.mock.calls.at(-1)[0]).toContain('LIMIT 13 OFFSET 12');
+});
+
+test('general notes are private, unattached, and sorted before reading notes', async () => {
+  await Notebook.save('alice', { source_key: 'general', markdown: 'Private thoughts', version: 0 });
+  const insert = global.query.mock.calls.find(([sql]) => sql.startsWith('INSERT INTO user_notebook'))[0];
+  expect(insert).toContain("'alice', 'general', 'General note', '/notebook'");
+  await Notebook.list('alice');
+  expect(global.query.mock.calls.at(-1)[0]).toContain("ORDER BY (source_key='general') DESC");
+  await Notebook.get('bob', 'general');
+  expect(global.query.mock.calls.at(-1)[0]).toContain("user_uid='bob' AND source_key='general'");
+});
+
+ test('expansion controls are accessible icons', () => {
+  const html = Notebook.render('bukhari:100');
+  expect(html).toContain('bi-arrows-angle-expand');
+  expect(html).toContain('aria-label="Expand bukhari:100"');
+  expect(html).not.toContain('>Expand</button>');
+});
+test('removes prose references and Markdown reference links without changing code or other URLs', () => {
+  const md = new (require('markdown-it'))();
+  const text = 'Before bukhari:100 after [Read this](/bukhari:100).\n\n`bukhari:100` https://example.com/bukhari:100 bukhari:1000\n\n```\nbukhari:100\n```';
+  expect(References.removeReference(text, 'bukhari:100', md)).toBe('Before  after .\n\n`bukhari:100` https://example.com/bukhari:100 bukhari:1000\n\n```\nbukhari:100\n```');
+});
+
+test('expanded source text and translations omit Markdown formatting', async () => {
+  Item.itemFromRef.mockResolvedValue({ ref: 'bukhari:100', ar: { body: '# عنوان\n\n**النص** و*شرح* و`كلمة`' }, en: { body: '## Heading\n\n**Bold** and *italic*, [label](https://example.com), ~~deleted~~, ==highlight==.\n\n- First\n- Second' } });
+  const quote = await References.snapshot('bukhari:100');
+  expect(quote).toContain('> عنوان');
+  expect(quote).toContain('> النص وشرح وكلمة');
+  expect(quote).toContain('> Bold and italic, label, deleted, highlight.');
+  expect(quote).toContain('> First');
+  expect(quote).toContain('> Second');
+  expect(quote).not.toContain('## Heading');
+  expect(quote).not.toContain('https://example.com');
+  expect(Notebook.render(quote)).not.toContain('<em>');
+  expect(quote).toContain('"Expanded reference"');
 });
