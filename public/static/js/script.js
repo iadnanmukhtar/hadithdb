@@ -11501,13 +11501,17 @@ function copyQuranReaderModeHrefs(source, target) {
 function quranReaderModeFirstRef(source) {
 	if (!source)
 		return '';
-	var storedRef = source.getAttribute && source.getAttribute('data-quran-reader-first-ref');
+	var storedRef = source.getAttribute && (source.getAttribute('data-reader-quran-ref') || source.getAttribute('data-quran-reader-first-ref'));
+	var commentary = source.querySelector && source.querySelector('[data-reader-quran-ref]');
+	storedRef = storedRef || commentary && commentary.getAttribute('data-reader-quran-ref');
 	if (/^\d+:\d+$/.test(storedRef || ''))
 		return storedRef;
 	var mushafPage = source.matches && source.matches('[data-quran-mushaf-page]')
 		? source
 		: source.querySelector && source.querySelector('[data-quran-mushaf-page]');
-	var refElement = mushafPage && mushafPage.querySelector('.quran-mushaf-sheet:not(.quran-review-page-continuity) [data-quran-ref]');
+	var refElement = mushafPage && (mushafPage.querySelector('.quran-mushaf-search-ayah[data-quran-ref]') || mushafPage.querySelector('.quran-mushaf-sheet:not(.quran-review-page-continuity) [data-quran-ref]'));
+	if (!refElement && source.querySelector)
+		refElement = source.querySelector('.quran-passage-section .ayah.ayah-selected[data-quran-ref]');
 	if (!refElement && source.querySelector)
 		refElement = source.querySelector('.quran-passage-section .ayah[data-quran-ref]');
 	var ref = refElement && refElement.getAttribute('data-quran-ref') || '';
@@ -11533,6 +11537,22 @@ function updateQuranReaderModeHrefs(marker) {
 			link.setAttribute('href', href);
 		});
 	});
+	var firstRef = quranReaderModeFirstRef(marker);
+	if (firstRef) {
+		var mushafHref = marker.getAttribute('data-quran-reader-mushaf-href');
+		if (mushafHref) {
+			var mushafUrl = new URL(mushafHref, window.location.origin);
+			mushafUrl.searchParams.set('ayah', firstRef);
+			document.querySelectorAll('[data-quran-reader-mode-link="mushaf"]').forEach(function (link) {
+				link.setAttribute('href', mushafUrl.pathname + mushafUrl.search);
+			});
+		}
+		if (marker.matches('[data-quran-mushaf-page]') || marker.getAttribute('data-reader-mode') === 'tafsir') {
+			document.querySelectorAll('[data-quran-reader-mode-link="passage"]').forEach(function (link) {
+				link.setAttribute('href', quranUrl(`/quran:${firstRef}`));
+			});
+		}
+	}
 	var tafsirHref = quranReaderTafsirHref(quranReaderModeFirstRef(marker));
 	if (tafsirHref) {
 		document.querySelectorAll('[data-quran-reader-mode-link="tafsir"]:not(.active)').forEach(function (link) {
@@ -12392,14 +12412,37 @@ function initQuranMushafLineFitting(root) {
 		document.fonts.addEventListener('loadingdone', function () { scheduleQuranMushafLineFit(document); });
 }
 
+function quranMushafAyahSelection(value) {
+	var match = String(value || '').match(/^(\d+):(\d+)(?:-(\d+))?$/);
+	if (!match) return null;
+	var surah = Number(match[1]);
+	var start = Number(match[2]);
+	var end = match[3] === undefined ? start : Number(match[3]);
+	if (surah < 1 || surah > 114 || start < 1 || end < start || end > 286) return null;
+	return { surah: surah, start: start, end: end };
+}
+
+function highlightQuranMushafSelection(root, ref) {
+	var selection = quranMushafAyahSelection(ref === undefined ? new URLSearchParams(window.location.search).get('ayah') : ref);
+	root.querySelectorAll('[data-quran-ref]').forEach(function (element) {
+		if (element.closest('.quran-review-page-continuity')) return;
+		var ref = element.getAttribute('data-quran-ref').split(':').map(Number);
+		var selected = !!selection && ref[0] === selection.surah && ref[1] >= selection.start && ref[1] <= selection.end;
+		if (!element.matches('.quran-corpus-word, .quran-mushaf-ayah-marker')) return;
+		if (element.classList.contains('quran-mushaf-search-ayah') || selected)
+			element.classList.toggle('quran-audio-active-ayah', selected);
+		element.classList.toggle('quran-mushaf-search-ayah', selected);
+	});
+}
+
 function initQuranMushafSearchAyahScroll(root) {
 	if (!/^\/quran\/page\/\d+$/.test(window.location.pathname))
 		return;
 	var ref = new URLSearchParams(window.location.search).get('ayah') || '';
-	if (!/^\d+:\d+$/.test(ref))
+	if (!quranMushafAyahSelection(ref))
 		return;
 	var scope = root || document;
-	var selector = `[data-quran-ref="${ref}"].quran-mushaf-search-ayah`;
+	var selector = '.quran-mushaf-search-ayah';
 	var target = scope.querySelector(`.quran-corpus-word${selector}`) || scope.querySelector(selector);
 	if (!target)
 		return;
@@ -12443,7 +12486,7 @@ function initQuranMushafInfinite(root) {
 			var querySuffix = reader.hasAttribute('data-quran-memorize-reader') ? '?memorize' : '';
 			var selectedRef = new URLSearchParams(window.location.search).get('ayah') || '';
 			var pendingPage = reader.querySelector(`[data-quran-mushaf-page="${pendingPageNumber}"]`);
-			if (!querySuffix && /^\d+:\d+$/.test(selectedRef) && pendingPage && pendingPage.querySelector(`[data-quran-ref="${selectedRef}"]`))
+			if (!querySuffix && quranMushafAyahSelection(selectedRef) && pendingPage && pendingPage.querySelector('.quran-mushaf-search-ayah'))
 				querySuffix = `?ayah=${encodeURIComponent(selectedRef)}`;
 			var nextLocation = `/quran/page/${pendingPageNumber}${querySuffix}`;
 			if (pendingPageNumber && window.history && window.history.replaceState && `${window.location.pathname}${window.location.search}` !== nextLocation)
@@ -12494,6 +12537,7 @@ function initQuranMushafInfinite(root) {
 			if (reader.hasAttribute('data-quran-review-reader'))
 				importedPage.querySelectorAll('.quran-memorize-rating').forEach(function (controls) { controls.remove(); });
 			importedPage.setAttribute('data-page-title', parsed.title || '');
+			highlightQuranMushafSelection(importedPage);
 			copyQuranReaderModeHrefs(parsed, importedPage);
 			pageInstance += 1;
 			var originalScope = importedPage.getAttribute('data-quran-audio-scope') || '';
@@ -12608,7 +12652,7 @@ function initQuranDynamicPassageHero(root) {
 			return `${match[1]}:${match[2]}`;
 		if (/\/quran\/page\/\d+$/.test(window.location.pathname)) {
 			var queryRef = new URLSearchParams(window.location.search).get('ayah') || '';
-			return /^\d+:\d+$/.test(queryRef) ? queryRef : '';
+			return quranMushafAyahSelection(queryRef) ? queryRef : '';
 		}
 		return '';
 	};
@@ -12627,12 +12671,7 @@ function initQuranDynamicPassageHero(root) {
 		if (!/^\/quran\/page\/\d+$/.test(window.location.pathname))
 			return false;
 		document.querySelectorAll('[data-quran-mushaf-page]').forEach(function (page) {
-			page.querySelectorAll('[data-quran-ref]').forEach(function (element) {
-				var matches = !!ref && element.getAttribute('data-quran-ref') === ref;
-				if (element.classList.contains('quran-mushaf-search-ayah') || matches)
-					element.classList.toggle('quran-audio-active-ayah', matches);
-				element.classList.toggle('quran-mushaf-search-ayah', matches);
-			});
+			highlightQuranMushafSelection(page, ref);
 		});
 		refreshQuranMushafAyahBackgrounds([document]);
 		return true;
@@ -13279,6 +13318,7 @@ function initReaderInfiniteNavigation(root) {
 			'data-reader-next-url': main.attr('data-reader-next-url') || '',
 			'data-reader-next-title': main.attr('data-reader-next-title') || 'Next'
 		});
+		copyQuranReaderModeHrefs(document, initialAnchor[0]);
 		var firstContent = main.children('heading.row.major, article, section').filter(function () {
 			return !this.matches('.reader-infinite-status, .reader-infinite-sentinel');
 		}).first();
@@ -13348,6 +13388,7 @@ function initReaderInfiniteNavigation(root) {
 			if (!marker)
 				return;
 			if (mode === 'tafsir') {
+				updateQuranReaderModeHrefs(marker);
 				var introductionContext = marker.getAttribute('data-reader-context-key') === '0';
 				var headingRail = document.querySelector('[data-quran-heading-toc]');
 				var headingRailSurah = headingRail && headingRail.querySelector('[data-quran-heading-toc-surah]');
@@ -13533,6 +13574,7 @@ function initReaderInfiniteNavigation(root) {
 				'data-reader-next-url': remoteMain.getAttribute('data-reader-next-url') || '',
 				'data-reader-next-title': remoteMain.getAttribute('data-reader-next-title') || 'Next'
 			});
+			copyQuranReaderModeHrefs(parsed, chunk[0]);
 			if (mode === 'tafsir')
 				appendTafsirPage(remoteMain, chunk);
 			else
@@ -14903,7 +14945,7 @@ function searchAutocompleteDestination($input, item) {
 	if (returnMode === 'mushaf') {
 		var mushafPage = Number(item.mushaf_page);
 		if (Number.isInteger(mushafPage) && mushafPage >= 1 && mushafPage <= 604) {
-			var mushafRef = (item.ref || '').toString().match(/^quran:(\d+):(\d+)/);
+			var mushafRef = (item.ref || '').toString().match(/^quran:(\d+):(\d+(?:-\d+)?)/);
 			var ayahQuery = mushafRef ? `?ayah=${mushafRef[1]}:${mushafRef[2]}` : '';
 			return quranUrl(`/quran/page/${mushafPage}${ayahQuery}`);
 		}

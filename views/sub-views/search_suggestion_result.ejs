@@ -1,5 +1,5 @@
 <%
-	const href = suggestion.is_quran ? utils.quranUrl(req, suggestion.url || '/') : utils.urlFor(req, suggestion.url || '/');
+	const href = suggestion.is_quran ? (suggestion.quranMushafHref || utils.quranUrl(req, suggestion.url || '/')) : utils.urlFor(req, suggestion.url || '/');
 	const titleEn = suggestion.title_en || (suggestion.lang === 'en' ? suggestion.label : '') || suggestion.metadata_en || suggestion.ref || suggestion.url;
 	const titleAr = suggestion.title_ar || (suggestion.lang === 'ar' ? suggestion.label : '') || suggestion.metadata_ar || suggestion.ref || suggestion.url;
 	const metaEn = suggestion.metadata_en && suggestion.metadata_en !== titleEn ? suggestion.metadata_en : '';

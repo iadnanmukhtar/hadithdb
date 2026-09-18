@@ -349,14 +349,14 @@ describe('restored Quran public route caches', () => {
     expect(QuranMushaf.sectionForPage).not.toHaveBeenCalled();
   });
 
-  test('writes and indexes a script-and-ayah-specific Mushaf page cache miss', async () => {
+  test.each(['1:1', '1:1-2'])('writes and indexes a script-and-ayah-specific Mushaf page cache miss for %s', async (selection) => {
     global.books = [{ id: 1, alias: 'quran', hidden: 0 }];
     global.surahs = [{ num: 1, ayahs: 7, name_en: 'al-Fatihah', name_ar: 'الفاتحة' }];
     const router = require('../routes/search');
     const req = {
-      url: '/quran/page/1?ayah=1:1',
+      url: `/quran/page/1?ayah=${selection}`,
       params: { page: '1' },
-      query: { ayah: '1:1' },
+      query: { ayah: selection },
       cookies: { quranScript: 'warsh' },
       admin: false,
       editMode: false
@@ -403,12 +403,12 @@ describe('restored Quran public route caches', () => {
 
     expect(ejs.renderFile).toHaveBeenCalledWith(
       expect.stringContaining('/views/quran_mushaf.ejs'),
-      expect.objectContaining({ selectedAyahRef: '1:1', memorize: false, review: false })
+      expect.objectContaining({ selectedAyahRef: selection, selectedAyahRefs: new Set(['1:1']), memorize: false, review: false })
     );
-    expect(Utils.writeCachedHtml).toHaveBeenCalledWith('/cache/_quran_page_1__script-warsh__ayah-1-1.html', '<html>mushaf page</html>');
+    expect(Utils.writeCachedHtml).toHaveBeenCalledWith(`/cache/_quran_page_1__script-warsh__ayah-${Utils.safeFilename(selection)}.html`, '<html>mushaf page</html>');
     expect(Utils.indexCachedItem).toHaveBeenCalledWith(
       expect.arrayContaining(['quran', 'book:quran', 'quran:page:1', 'quran:surah:1']),
-      '/cache/_quran_page_1__script-warsh__ayah-1-1.html'
+      `/cache/_quran_page_1__script-warsh__ayah-${Utils.safeFilename(selection)}.html`
     );
   });
 

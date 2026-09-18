@@ -49,3 +49,21 @@ describe('Quran autocomplete Mushaf destinations', () => {
 		expect(scripts).toContain('window.setTimeout(scrollToLine, 320);');
 	});
 });
+
+
+describe('Mushaf highlight ranges', () => {
+	const vm = require('vm');
+	const context = vm.createContext({});
+	vm.runInContext(scripts.slice(scripts.indexOf('function quranMushafAyahSelection('), scripts.indexOf('function highlightQuranMushafSelection(')), context);
+
+	test.each([
+		['2:255', { surah: 2, start: 255, end: 255 }],
+		['2:253-257', { surah: 2, start: 253, end: 257 }],
+		['2:257-253', null], ['2:0-3', null], ['115:1-2', null],
+		['2:255-287', null], ['2:255-3:2', null], ['garbage', null]
+	])('validates %s consistently for rendering and browser navigation', (value, expected) => {
+		const server = QuranMushaf.ayahSelection(value);
+		expect(server && { surah: server.surah, start: server.start, end: server.end }).toEqual(expected);
+		expect(context.quranMushafAyahSelection(value)).toEqual(expected);
+	});
+});

@@ -1218,6 +1218,17 @@ async function renderSearchResults(req, res, next, options = {}) {
           hadith.chapter.offset = '';
       }
     });
+    if (req.query.mode === 'mushaf') {
+      await Promise.all(results.map(async function (result) {
+        const ref = /^quran:\d+:\d+/.test(result.ref || '')
+          ? result.ref : (result.book_alias === 'quran' ? `quran:${result.num}` : '');
+        const match = ref.match(/^quran:(\d+):(\d+(?:-\d+)?)/);
+        if (!match) return;
+        const page = await QuranMushaf.pageForRef(Number(match[1]), Number(match[2].split('-')[0]));
+        if (Number.isInteger(page))
+          result.quranMushafHref = Utils.quranUrl(req, `/quran/page/${page}?ayah=${match[1]}:${match[2]}`);
+      }));
+    }
 	await HdithMetadata.attachClassifications(results.filter(result =>
 		(!result.doctype || result.doctype === 'hadith') && result.book_alias !== 'quran' && Number(result.remark) !== 2));
   } catch (err) {
@@ -2599,11 +2610,18 @@ async function renderQuranMushafPage(req, res, next, options) {
   var mushaf = await QuranMushaf.page(pageNumber);
   if (!mushaf)
     return next(createError(404, `Mushaf page '${pageNumber}' not found`));
-  var selectedAyahRef = /^\d+:\d+$/.test((req.query.ayah || '').toString()) ? req.query.ayah.toString() : '';
-  if (selectedAyahRef && !mushaf.lines.some(function (line) {
-    return (line.words || []).some(function (word) { return `${word.surah}:${word.ayah}` === selectedAyahRef; });
-  }))
-    selectedAyahRef = '';
+  var selectedAyahRange = QuranMushaf.ayahSelection(req.query.ayah);
+  var selectedAyahRefs = new Set();
+  if (selectedAyahRange) {
+    mushaf.lines.forEach(function (line) {
+      (line.words || []).forEach(function (word) {
+        if (Number(word.surah) === selectedAyahRange.surah
+          && Number(word.ayah) >= selectedAyahRange.start && Number(word.ayah) <= selectedAyahRange.end)
+          selectedAyahRefs.add(`${word.surah}:${word.ayah}`);
+      });
+    });
+  }
+  var selectedAyahRef = selectedAyahRefs.size ? selectedAyahRange.ref : '';
   var previousMushaf = review && pageNumber > 1
     ? await QuranMushaf.page(pageNumber - 1)
     : null;
@@ -2820,6 +2838,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     reviewRetry: req.query.reviewRetry !== undefined,
     reviewPreviousLines: reviewPreviousLines,
     selectedAyahRef: selectedAyahRef,
+    selectedAyahRefs: selectedAyahRefs,
     mushaf: mushaf,
     audioRanges: audioRanges,
     subsectionAudioRanges: subsectionAudioRanges,
@@ -2875,9 +2894,8 @@ function quranMushafCacheFile(req, pageNumber) {
   };
   var filename = Utils.cacheReqToFilename(normalizedReq);
   filename += `__script-${quranMushafScript(req)}`;
-  var selectedAyahRef = /^\d+:\d+$/.test((req.query.ayah || '').toString())
-    ? req.query.ayah.toString()
-    : '';
+  var selection = QuranMushaf.ayahSelection(req.query.ayah);
+  var selectedAyahRef = selection ? selection.ref : '';
   if (selectedAyahRef)
     filename += `__ayah-${Utils.safeFilename(selectedAyahRef)}`;
   return Utils.cacheFileFromFilename(filename, 'html');

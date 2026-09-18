@@ -69,22 +69,19 @@ describe('shared header navigation', () => {
     expect(inlineScripts).toContain('authItem.after(item)');
   });
 
-  test('promotes Tafsir and keeps the requested Quran submenu order', () => {
+  test('links the desktop Quran item directly to Study and keeps the off-canvas submenu', () => {
     const quranLabels = ['Quran', 'Translations', 'Study', 'Mushaf', 'Practice', 'Mudhakkir'];
-    const desktopQuranMenu = header.match(/<ul class="dropdown-menu">([\s\S]*?)<\/ul>/)[1];
 
-    expect(desktopQuranMenu).not.toContain('> Tafsir</a>');
-    expect(header).toContain('activeNavAttrs(isQuranArea && !isQuranTafsirArea)');
+    expect(header).toContain('<li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, \'/quran/1\') %>">Quran</a></li>');
+    expect(header).not.toContain('dropdown-toggle<%- activeNavAttrs(isQuranArea && !isQuranTafsirArea)');
     expect(header).toContain('href="<%= utils.quranUrl(req, \'/quran/tafsir\') %>">Tafsir</a>');
     expect(offcanvasPrimaryNav).not.toMatch(/nav-link ps-4[^\n]*\/quran\/tafsir/);
 
-    for (const menu of [desktopQuranMenu, offcanvasPrimaryNav]) {
-      quranLabels.slice(1).reduce((lastPosition, label) => {
-        const position = menu.indexOf(`> ${label}</a>`);
-        expect(position).toBeGreaterThan(lastPosition);
-        return position;
-      }, menu.indexOf("label: 'Quran'"));
-    }
+    quranLabels.slice(1).reduce((lastPosition, label) => {
+      const position = offcanvasPrimaryNav.indexOf(`> ${label}</a>`);
+      expect(position).toBeGreaterThan(lastPosition);
+      return position;
+    }, offcanvasPrimaryNav.indexOf("label: 'Quran'"));
   });
 
 	test('uses a desktop-only second header row for the full-width command search', () => {
@@ -222,7 +219,7 @@ describe('shared header navigation', () => {
 		expect(header).toContain("['mushaf', 'study', 'tafsir']");
 		expect(searchDialog).toContain('data-quran-tafsir-base=');
 		expect(scripts).toContain("returnMode === 'mushaf'");
-		expect(scripts).toContain("var mushafRef = (item.ref || '').toString().match(/^quran:(\\d+):(\\d+)/);");
+		expect(scripts).toContain("var mushafRef = (item.ref || '').toString().match(/^quran:(\\d+):(\\d+(?:-\\d+)?)/);");
 		expect(scripts).toContain("var ayahQuery = mushafRef ? `?ayah=${mushafRef[1]}:${mushafRef[2]}` : '';");
 		expect(scripts).toContain('return quranUrl(`/quran/page/${mushafPage}${ayahQuery}`)');
 		expect(scripts).not.toMatch(/returnMode === 'mushaf'\)\s*url \+=/);
