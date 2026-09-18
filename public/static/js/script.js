@@ -2825,7 +2825,7 @@ function initQuranTafsirTabs(root) {
 							'data-content-translation-word-count': tafsirTranslationWordCount
 						});
 						appendContentTranslationControl(summary, generatedBody, 'tafsir', tafsirTranslationItemId, tafsirContentLanguage);
-						if (window.hadithAdmin === true) {
+						if (window.hadithAdmin === true && window.hadithEditMode === true) {
 							var revisionColumns = generatedBody.filter('[data-reader-language-column], [lang]').add(generatedBody.find('[data-reader-language-column], [lang]'));
 							var storedEnglishFields = generatedBody.find('[data-prop="commentary.text_en"], [data-prop="commentary.footnotes_en"]');
 							var hasStoredEnglish = storedEnglishFields.filter(function () {
