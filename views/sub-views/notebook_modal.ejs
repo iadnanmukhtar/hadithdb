@@ -7,7 +7,7 @@
     </div>
     <div class="modal-body">
       <div id="notebook-surface">
-        <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" placeholder="Write a note…" hidden></textarea>
+        <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" placeholder="Write a private note." hidden></textarea>
         <div id="notebook-preview" class="notebook-markdown" tabindex="0" aria-label="Note preview"></div>
       </div>
     </div>
@@ -45,7 +45,7 @@ body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { d
 #notebook-surface { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 #notebook-editor, #notebook-preview { flex: 1; min-height: 0; overflow: auto; }
 #notebook-editor { resize: none; }
-#notebook-preview:empty::before { content: 'Write a note…'; opacity: .55; }
+#notebook-preview:empty::before { content: 'Write a private note.'; opacity: .55; }
 .notebook-tool { border: 0; background: transparent; color: #805d00; padding: .45rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .3rem; }
 .notebook-tool:hover, .notebook-tool:focus-visible { background: #ffe69c; }
 .notebook-tool:disabled { opacity: .45; }
