@@ -16,8 +16,8 @@
   <details class="quran-commentary-introduction-disclosure">
     <summary>
       <heading class="row heading py-2">
-        <% if (articleShowTitleEn) { %><h2 class="<%= articleShowTitleAr ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="en"><span class="_e" data-id="<%= article.id %>" data-prop="toc.title_en" data-placeholder="Introduction article title"><%- article.title_en || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
-        <% if (articleShowTitleAr) { %><h2 class="<%= articleShowTitleEn ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="ar" dir="rtl"><span class="_e" data-id="<%= article.id %>" data-prop="toc.title" data-placeholder="عنوان المقدمة"><%- article.title || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
+        <% if (articleShowTitleEn) { %><h2 class="<%= articleShowTitleAr ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="en"><%- include('notebook_anchor.ejs', { noteKey: `intro:${article.id}`, noteTitle: `Introduction — ${article.title_en || article.title || article.h2}`, noteUrl: utils.urlFor(req, `${req.path}#introduction-${article.h2}`) }); %><span class="_e" data-id="<%= article.id %>" data-prop="toc.title_en" data-placeholder="Introduction article title"><%- article.title_en || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
+        <% if (articleShowTitleAr) { %><h2 class="<%= articleShowTitleEn ? 'col-md-6 col-sm-12' : 'col-12' %> fs-5 title" lang="ar" dir="rtl"><% if (!articleShowTitleEn) { %><%- include('notebook_anchor.ejs', { noteKey: `intro:${article.id}`, noteTitle: `Introduction — ${article.title_en || article.title || article.h2}`, noteUrl: utils.urlFor(req, `${req.path}#introduction-${article.h2}`) }); %><% } %><span class="_e" data-id="<%= article.id %>" data-prop="toc.title" data-placeholder="عنوان المقدمة"><%- article.title || (site.editMode ? '&hellip;' : '') %></span></h2><% } %>
       </heading>
     </summary>
     <section class="row heading-intro mb-3">

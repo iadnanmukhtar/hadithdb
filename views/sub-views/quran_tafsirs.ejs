@@ -53,7 +53,7 @@
 	};
 %>
 <% if (passageSurah && passageAyahs.length > 0) { %>
-<article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>"<% if (selectedTafsirAlias) { %> data-selected-tafsir="<%= selectedTafsirAlias %>"<% } %><% if (selectedTafsirLanguage) { %> data-selected-tafsir-language="<%= selectedTafsirLanguage %>"<% } %><% if (selectedTafsirCarouselLanguage) { %> data-selected-tafsir-carousel-language="<%= selectedTafsirCarouselLanguage %>"<% } %>>
+<article<%- tafsirInstance === 'passage' ? ' id="tafsir"' : '' %> class="quran-tafsirs mt-4<%= dedicatedTafsirPage ? ' quran-tafsirs-dedicated' : '' %>" data-tafsir-instance="<%= tafsirInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>" data-selected-ayahs="<%= selectedAyahNums.join(',') %>"<% if (selectedTafsirAlias) { %> data-selected-tafsir="<%= selectedTafsirAlias %>"<% } %><% if (selectedTafsirLanguage) { %> data-selected-tafsir-language="<%= selectedTafsirLanguage %>"<% } %><% if (selectedTafsirCarouselLanguage) { %> data-selected-tafsir-carousel-language="<%= selectedTafsirCarouselLanguage %>"<% } %>>
 	<script type="application/json" class="quran-tafsir-ayah-data"><%- JSON.stringify(passageAyahText).replace(/</g, '\\u003c') %></script>
 	<% if (initialTafsirBooks.length > 0) { %><script type="application/json" class="quran-tafsir-books-data"><%- safeJson(initialTafsirBooks) %></script><% } %>
 	<% if (initialTafsirBook) { %><script type="application/json" class="quran-tafsir-initial-data"><%- safeJson({
@@ -73,7 +73,11 @@
 	}) %></script><% } %>
 	<heading class="quran-tafsir-heading row heading py-2">
 		<h2 class="col-12 fs-5 title quran-section-heading-title mb-0" lang="en">
-			<span class="quran-section-heading-text"><% if (tafsirHeadingHref) { %><a class="quran-section-heading-link" href="<%= tafsirHeadingHref %>"><%= tafsirHeading %></a><% } else { %><%= tafsirHeading %><% } %></span>
+			<span class="quran-section-heading-text"><% if (dedicatedTafsirPage) {
+                const noteStart = initialTafsirEntries.length ? initialTafsirEntries[0].startAyah : Math.min(...passageAyahs);
+                const noteBook = initialTafsirBook.slug || Tafsir.tafsirSlug(initialTafsirBook.alias);
+                const noteRef = `${noteBook}:${passageSurah}:${noteStart}`;
+            %><span class="quran-section-reading-actions"><button type="button" class="tafsir-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-tafsir-bookmark-key="<%= noteRef %>" data-bookmark-type="tafsir" data-bookmark-ref="quran:<%= passageSurah %>:<%= noteStart %>" data-bookmark-title="<%= tafsirHeading %>" data-bookmark-url="<%= tafsirHeadingHref %>" title="Bookmark this tafsir" aria-label="Bookmark this tafsir"><span class="tafsir-bookmark-icon bi bi-bookmark text-accent" data-tafsir-bookmark-key="<%= noteRef %>" aria-hidden="true"></span></button></span><% } %><% if (tafsirHeadingHref) { %><a class="quran-section-heading-link" href="<%= tafsirHeadingHref %>"><%= tafsirHeading %></a><% } else { %><%= tafsirHeading %><% } %></span>
 			<span class="quran-section-heading-actions">
 				<% if (tafsirTranslationsModalIndex >= 0) { %>
 					<button type="button" class="quran-section-heading-action btn btn-sm btn-outline-secondary quran-ayah-modal-trigger" data-quran-ayah-modal-index="<%= tafsirTranslationsModalIndex %>" data-quran-ayah-modal-type="translations" title="View translations" aria-label="View translations">

@@ -1,0 +1,81 @@
+<div class="modal fade" id="notebook-modal" data-nosnippet tabindex="-1" aria-labelledby="notebook-modal-title" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header py-2">
+      <h2 class="modal-title fs-6" id="notebook-modal-title"><i class="bi bi-sticky me-2" aria-hidden="true"></i><a id="notebook-source" dir="auto">Note</a></h2>
+      <button id="notebook-fullscreen" type="button" class="notebook-tool ms-auto me-2" title="Expand note" aria-label="Expand note" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <div id="notebook-surface">
+        <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" placeholder="Write a note…" hidden></textarea>
+        <div id="notebook-preview" class="notebook-markdown" tabindex="0" aria-label="Note preview"></div>
+      </div>
+    </div>
+    <div class="modal-footer py-1 gap-1">
+      <a data-notebook-auth href="/notebook" class="notebook-tool me-auto" title="My Notebook" aria-label="My Notebook"><i class="bi bi-sticky" aria-hidden="true"></i></a>
+      <span id="notebook-status" class="small me-2" role="status" aria-live="polite"></span>
+      <button id="notebook-preview-button" type="button" class="notebook-tool" title="Edit Markdown" aria-label="Edit Markdown"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+      <button id="notebook-download" type="button" class="notebook-tool" title="Download Markdown" aria-label="Download Markdown"><i class="bi bi-download" aria-hidden="true"></i></button>
+      <button id="notebook-delete" type="button" class="notebook-tool" title="Delete note" aria-label="Delete note" hidden><i class="bi bi-trash" aria-hidden="true"></i></button>
+      <button id="notebook-save" type="button" class="notebook-tool" title="Save now" aria-label="Save now"><i class="bi bi-check2" aria-hidden="true"></i></button>
+    </div>
+  </div></div>
+</div>
+<style>
+body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { display: none !important; }
+#notebook-editor { font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
+.notebook-markdown { overflow-wrap: anywhere; text-align: start; }
+.notebook-markdown [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
+.notebook-markdown :is(p, h1, h2, h3, h4, h5, h6, li, td, th):dir(rtl), .notebook-markdown .notebook-arabic { font-family: Kitab, Quran, serif; line-height: 2; }
+.notebook-markdown .notebook-arabic { font-size: 1.2em; }
+.notebook-markdown .notebook-arabic .notebook-arabic { font-size: inherit; }
+.notebook-markdown blockquote { border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; margin-block: 1rem; }
+.notebook-expand-reference { color: #805d00; margin-inline-start: .3rem; font-size: .85em; }
+.notebook-markdown pre { direction: ltr; text-align: left; overflow: auto; }
+.notebook-markdown img { max-width: 100%; }
+.notebook-markdown table { display: block; overflow-x: auto; }
+#notebook-modal .modal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#notebook-modal .modal-dialog { height: calc(100vh - 2rem); height: calc(100dvh - 2rem); margin-block: 1rem; }
+#notebook-modal .modal-dialog.modal-fullscreen { width: 100%; max-width: none; height: 100vh; height: 100dvh; margin: 0; }
+#notebook-modal .modal-header { align-items: center; }
+#notebook-modal .modal-header > button { flex-shrink: 0; box-sizing: border-box; width: 2.25rem; height: 2.25rem; padding: .45rem; line-height: 1; }
+#notebook-modal .modal-header .btn-close { margin: 0; background-size: 1em; }
+#notebook-modal .modal-content { height: 100%; }
+#notebook-modal .modal-body { display: flex; min-height: 0; overflow: hidden; }
+#notebook-surface { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+#notebook-editor, #notebook-preview { flex: 1; min-height: 0; overflow: auto; }
+#notebook-editor { resize: none; }
+#notebook-preview:empty::before { content: 'Write a note…'; opacity: .55; }
+.notebook-tool { border: 0; background: transparent; color: #805d00; padding: .45rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .3rem; }
+.notebook-tool:hover, .notebook-tool:focus-visible { background: #ffe69c; }
+.notebook-tool:disabled { opacity: .45; }
+#notebook-status:empty { display: none; }
+.personal-note-actions { display: inline-flex; align-items: center; gap: .5rem; vertical-align: middle; }
+.quran-ayah-hero-toolbar > .personal-note-actions { gap: .75rem; }
+.personal-note-btn { color: #cc9a06; }
+.personal-note-btn:hover, .personal-note-btn:focus-visible { color: #9a7300; background: transparent; }
+.personal-note-btn .bi { pointer-events: none; }
+/* Personal notes use a consistent amber paper color. */
+#notebook-modal, #personal-notebook { --note-paper: #fff8db; --note-ink: #634800; --note-edge: #d4a72c; }
+
+
+#notebook-modal .modal-content { background: var(--note-paper); border: 1px solid var(--note-edge); }
+#notebook-modal .modal-header { border-bottom-color: var(--note-edge); }
+#notebook-modal #notebook-editor { background: #fffdf3; border-color: var(--note-edge); color: #302a1b; }
+
+#notebook-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.notebook-tile { min-width: 0; background: var(--note-paper); border: 1px solid var(--note-edge); border-radius: .65rem; color: #302a1b; }
+.notebook-tile-open { display: flex; flex-direction: column; gap: .8rem; width: 100%; height: 100%; min-height: 10rem; padding: 1rem; border: 0; border-radius: inherit; background: transparent; color: inherit; text-align: start; }
+.notebook-tile-open:hover { background: rgba(212, 167, 44, .09); }
+.notebook-tile-open:focus-visible { outline: 2px solid var(--note-edge); outline-offset: 3px; }
+.notebook-tile-title { display: flex; align-items: start; gap: .65rem; width: 100%; color: var(--note-ink); font-weight: 600; }
+.notebook-tile-title > .bi { flex: none; color: var(--note-edge); }
+.notebook-tile-title > span:last-child { min-width: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.notebook-tile-preview { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; width: 100%; font-size: .9rem; line-height: 1.6; opacity: .8; }
+.notebook-tile-preview .notebook-arabic { line-height: inherit; }
+#notebook-list-status:empty { display: none; }
+#personal-notebook h1, #notebook-modal .modal-title { color: var(--note-ink); }
+[data-bs-theme="dark"] #notebook-modal, [data-bs-theme="dark"] #personal-notebook { --note-paper: #302b1b; --note-ink: #ffe69c; --note-edge: #a88732; }
+[data-bs-theme="dark"] #notebook-list > article, [data-bs-theme="dark"] #notebook-modal #notebook-editor { background: #302b1b; color: #fff3bf; }
+</style>
+<script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>

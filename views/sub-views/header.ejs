@@ -138,6 +138,7 @@
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-sliders"></i> My Settings</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
+            <li data-notebook-auth><a class="dropdown-item<%- activeNavAttrs(requestPath === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="bi bi-sticky"></i> My Notebook</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isHighlightsArea) %>" href="<%= utils.urlFor(req, '/highlights') %>"><i class="bi bi-star"></i> Highlighted</a></li>
@@ -213,6 +214,9 @@
         <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">
           <a class="offcanvas-quick-action<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>" title="My Bookmarks" aria-label="My Bookmarks">
             <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>" aria-hidden="true"></i>
+          </a>
+          <a data-notebook-auth class="offcanvas-quick-action<%- activeNavAttrs(requestPath === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>" title="My Notebook" aria-label="My Notebook">
+            <i class="bi bi-sticky<%= requestPath === '/notebook' ? '-fill' : '' %>" aria-hidden="true"></i>
           </a>
           <a class="offcanvas-quick-action<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>" title="Liked" aria-label="Liked">
             <i class="bi bi-heart<%= isLikedArea ? '-fill' : '' %>" aria-hidden="true"></i>

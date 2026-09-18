@@ -96,9 +96,6 @@
     <% } else if (heading.level == 2) { %>
 	  <a title="<%- chapter.title_en || chapterBreadcrumbLabelEn %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%- isQuranChapter ? quranChapterBreadcrumbLabel : `${chapterBreadcrumbLabelEn} ${chapter.h1}` %></a>
       &gt;
-	  <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= section.id %>" data-bookmark-type="section" data-bookmark-ref="<%= `${book.alias}:${chapter.h1}.${section.h2}` %>" data-bookmark-title="<%= section.title_en || `${isQuranChapter ? 'Passage' : 'Section'} ${section.h2}` %>" data-bookmark-title-ar="<%= section.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${section.path}`) %>" title="Bookmark this <%= isQuranChapter ? 'passage' : 'section' %>">
-        <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= section.id %>"></span>
-      </button>
       <% if (page.context.book && page.context.book.alias === 'quran' && page.context.passage) { %>
 	    <a title="<%- section.title %>" href="<%= utils.urlFor(req, `/${section.path}`) %>">Passage <%- section.h2 %></a>
       <% } else { %>
@@ -136,6 +133,7 @@
 %>
 <% if ((heading.level == 1 || isFirstChapterSectionPage) && (chapterIntroShowEn || chapterIntroShowAr)) { %>
 <section class="chapter-intro row mt-2">
+  <div class="col-12 mb-2" id="note-intro-<%= chapter.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${chapter.id}`, noteTitle: `Introduction — ${chapter.title_en || chapter.title || chapter.path}`, noteUrl: utils.urlFor(req, `/${chapter.path || req.path.replace(/^\//, "")}#note-intro-${chapter.id}`) }); %></div>
 
   <% if (chapterIntroShowEn) { %>
   <section class="_e <%= chapterIntroShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(chapter.intro_en) %>" data-markdown-empty-html="&hellip;">

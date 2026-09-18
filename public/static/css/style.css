@@ -7796,7 +7796,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-sharh-actions { margin-top: .75rem; }
 .hadith-sharh-actions .btn { align-self: auto; }
 .hadith-admin-action,
-.hadith-metadata-panel .btn {
+.hadith-metadata-panel .btn:not(.personal-note-btn) {
 	--bs-btn-active-bg: var(--c-ghostwhite);
 	--bs-btn-active-border-color: var(--bs-secondary-color);
 	--bs-btn-active-color: var(--bs-body-color);
@@ -7821,15 +7821,15 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-admin-action:hover,
 .hadith-admin-action:focus-visible,
 .hadith-admin-action:active,
-.hadith-metadata-panel .btn:hover,
-.hadith-metadata-panel .btn:focus-visible,
-.hadith-metadata-panel .btn:active {
+.hadith-metadata-panel .btn:not(.personal-note-btn):hover,
+.hadith-metadata-panel .btn:not(.personal-note-btn):focus-visible,
+.hadith-metadata-panel .btn:not(.personal-note-btn):active {
 	background: var(--c-ghostwhite) !important;
 	border-color: var(--bs-secondary-color) !important;
 	color: var(--bs-body-color) !important;
 }
 .hadith-admin-action .bi,
-.hadith-metadata-panel .btn .bi,
+.hadith-metadata-panel .btn:not(.personal-note-btn) .bi,
 .hadith-similar-admin-search .input-group-text .bi { font-size: .68rem !important; line-height: 1; }
 .hadith-admin-action-icon,
 .hadith-scholarly-grade-actions .btn,
@@ -13428,3 +13428,18 @@ a.cmd-btn:hover {
 		transition: none;
 	}
 }
+
+/* Personal reading actions are available after sign-in. */
+html:not([data-account-signed-in="true"]) :is(.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .personal-note-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn),
+html:not([data-account-signed-in="true"]) :is(.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .personal-note-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn) *,
+html:not([data-account-signed-in="true"]) :is(.hadith-like-count, .comment-composer) {
+  color: #8a8a8a !important;
+  filter: grayscale(1);
+  cursor: default;
+}
+html:not([data-account-signed-in="true"]) .comment-composer { opacity: .6; }
+
+.quran-section-reading-actions { display: inline-flex; align-items: center; margin-inline-end: .6rem; vertical-align: middle; }
+
+html:not([data-account-signed-in="true"]) [data-notebook-auth],
+html[data-account-signed-in="true"] #notebook-signin { display: none !important; }

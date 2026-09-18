@@ -11,6 +11,7 @@
 %>
 <% if (commentaryHeadingShowEn || commentaryHeadingShowAr) { %>
 <section class="chapter-intro row mt-2 quran-commentary-heading-intro" data-commentary-surah="<%= commentaryHeading.h1 %>">
+  <div class="col-12 mb-2" id="note-intro-<%= commentaryHeading.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${commentaryHeading.id}`, noteTitle: `Introduction — ${commentaryHeading.title_en || commentaryHeading.title || commentaryHeading.path}`, noteUrl: utils.urlFor(req, `/${commentaryHeading.path || req.path.replace(/^\//, "")}#note-intro-${commentaryHeading.id}`) }); %></div>
   <% if (commentaryHeadingShowEn) { %>
   <section class="_e <%= commentaryHeadingShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= commentaryHeading.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= commentaryHeadingEnMarkdown %>" data-markdown-empty-html="&hellip;">
     <div><%- commentaryHeadingEnHtml || '&hellip;' %></div>

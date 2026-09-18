@@ -56,7 +56,6 @@
 	    var tafsirBookHref = utils.quranUrl(req, tafsirPath);
 	    var tafsirSurahHref = utils.quranUrl(req, `${tafsirPath}/${surah.num}`);
 	    var tafsirPassageHref = utils.quranUrl(req, tafsirPagePath);
-	    var tafsirBookmarkKey = `${tafsir.slug || tafsir.alias}:${surah.num}:${ayah}`;
 	    var quranChapter = locals.chapter;
 	    var quranSection = locals.section;
 	    var quranChapterHref = quranChapter && quranChapter.path ? utils.quranUrl(req, `/${quranChapter.path}`) : utils.quranUrl(req, `/quran/${surah.num}`);
@@ -98,9 +97,6 @@
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
 	        </a>
 	          <span class="quran-revelation-icon quran-revelation-icon-<%= quranSurahRevelation %>" role="img" aria-label="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span>
-	          <button type="button" class="tafsir-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>" data-bookmark-type="tafsir" data-bookmark-ref="quran:<%= tafsirMetaRef %>" data-bookmark-range="<%= tafsirMetaRef %>" data-bookmark-title="<%= tafsirTitle %>" data-bookmark-title-ar="<%= tafsirTitleAr %>" data-bookmark-url="<%= tafsirPagePath %>" title="Bookmark this tafsīr passage">
-	            <span class="tafsir-bookmark-icon bi bi-bookmark text-accent" data-tafsir-bookmark-key="<%= tafsirBookmarkKey %>"></span>
-	          </button>
 	        </h2>
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="<%= quranChapterHref %>">
 	          <%= arabic.toArabicDigits(surah.num + '') %>۔
@@ -115,9 +111,6 @@
 	          <a title="<%- quranChapterTitleEn %>" href="<%= tafsirSurahHref %>"><%= quranChapterBreadcrumbLabel %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranSection.id %>" data-bookmark-type="section" data-bookmark-ref="quran:<%= surah.num %>.<%= quranSection.h2 %>" data-bookmark-title="<%= quranSection.title_en || `Passage ${quranSection.h2}` %>" data-bookmark-title-ar="<%= quranSection.title || '' %>" data-bookmark-url="<%= quranSectionHref %>" title="Bookmark this passage">
-	              <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranSection.id %>"></span>
-	            </button>
 	            <a title="<%- quranSection.title || quranSection.title_en || 'Passage' %>" href="<%= tafsirPassageHref %>">Passage <%= quranSection.h2 %></a>
 	          <% } %>
 	        </div>

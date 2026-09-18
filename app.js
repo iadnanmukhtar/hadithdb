@@ -591,6 +591,10 @@ const startupPromise = (async () => {
       return bookmarksRouter(req, res, next);
     next();
   });
+  const notebookRouter = require('./routes/notebook');
+  app.get(['/notebook', '/quran/notebook'], notebookRouter.page);
+  app.use('/api/notebook', notebookRouter);
+  app.use('/quran/api/notebook', notebookRouter);
   app.use('/api/bookmarks', bookmarksRouter);
   app.use('/api/user-settings', userSettingsRouter);
   app.use('/quran/api/user-settings', userSettingsRouter);

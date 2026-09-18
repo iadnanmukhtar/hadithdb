@@ -91,9 +91,6 @@
 	          <a title="<%- quranChapterTitleEn %>" href="<%= quranChapterHref %>"><%= quranChapterBreadcrumbLabel %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranSection.id %>" data-bookmark-type="section" data-bookmark-ref="quran:<%= surah.num %>.<%= quranSection.h2 %>" data-bookmark-title="<%= quranSection.title_en || `Passage ${quranSection.h2}` %>" data-bookmark-title-ar="<%= quranSection.title || '' %>" data-bookmark-url="<%= quranSectionHref %>" title="Bookmark this passage">
-	              <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranSection.id %>"></span>
-	            </button>
 	            <a title="<%- quranSection.title || quranSection.title_en || 'Passage' %>" href="<%= quranSectionHref %>">Passage <%= quranSection.h2 %></a>
 	          <% } %>
 	        </div>

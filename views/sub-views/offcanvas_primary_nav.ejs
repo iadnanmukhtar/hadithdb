@@ -13,6 +13,7 @@
   <li><hr></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="app-menu-icon bi bi-sliders" aria-hidden="true"></i> My Settings</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="app-menu-icon bi bi-bookmark" aria-hidden="true"></i> My Bookmarks</a></li>
+  <li data-notebook-auth class="nav-item"><a class="nav-link<%- activeNavAttrs(req.path === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="app-menu-icon bi bi-sticky" aria-hidden="true"></i> My Notebook</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="app-menu-icon bi bi-heart" aria-hidden="true"></i> Liked</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="app-menu-icon bi bi-chat-right-text" aria-hidden="true"></i> Latest Reflections</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHighlightsArea) %>" href="<%= utils.urlFor(req, '/highlights') %>"><i class="app-menu-icon bi bi-star" aria-hidden="true"></i> Highlighted</a></li>

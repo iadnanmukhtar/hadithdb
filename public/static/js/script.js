@@ -2777,6 +2777,11 @@ function initQuranTafsirTabs(root) {
 					if (rendersCollapsibleEntries)
 						bindTafsirEntryCollapse(entryElement);
 					var summary = $(rendersCollapsibleEntries ? '<summary>' : '<header>').appendTo(entryElement);
+                    if (!container.hasClass('quran-tafsirs-dedicated')) $('<span>').attr({
+                      'data-note-key': `tafsir:${tafsirUrlSlug(src)}:${surah}:${startAyah}`,
+                      'data-note-title': `${tafsirUrlSlug(src)} — Quran ${surah}:${startAyah}${endAyah > startAyah ? '-' + endAyah : ''}`,
+                      'data-note-url': quranUrl(`/quran/tafsir/${encodeURIComponent(tafsirUrlSlug(src))}/quran:${surah}:${startAyah}${endAyah > startAyah ? '-' + endAyah : ''}`)
+                    }).appendTo(summary);
 					var ayahHeadings = count > 0
 						? $('<div>').addClass('quran-tafsir-ayah-range').attr({ lang: 'ar', dir: 'rtl' }).appendTo(summary)
 						: summary;
@@ -11126,7 +11131,7 @@ function initPageHelpTips(root) {
 		}
 	};
 	var startTour = function () {
-		if (tour) return;
+		if (tour || document.querySelector('#notebook-modal.show')) return;
 		previousFocus = document.activeElement;
 		tour = document.createElement('div');
 		tour.className = 'quran-help-tips';
