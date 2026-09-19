@@ -8,7 +8,7 @@
   var page = {
     menu: 'MCP Server',
     title_en: 'Ask Islamic questions with sources | Hadith Unlocked for AI',
-    description_en: 'Help your AI answer questions using Quran, tafsir, hadith, and Sirah sources. Free to connect, with no API key or authentication token required.',
+    description_en: 'Explore Quran pages and passages, find recitations, and ask questions using Quran, tafsir, hadith, and Sirah sources. Free to connect, with no API key required.',
     subtitle_en: 'MCP Server',
     canonical: '/mcp-server',
     context: {}
@@ -31,7 +31,7 @@
           <div class="col-lg-7">
             <div class="mcp-eyebrow"><span class="mcp-status-dot" aria-hidden="true"></span> Quran · Tafsir · Hadith · Sirah</div>
             <h1>Ask Islamic questions—and see where the answers come from.</h1>
-            <p class="mcp-hero-lead">Hadith Unlocked helps the AI you already use find relevant Islamic sources. Ask in your own words, receive a clear answer, and follow the references to read the evidence yourself.</p>
+            <p class="mcp-hero-lead">Hadith Unlocked helps the AI you already use find relevant Islamic sources. Ask in your own words, explore Quran pages and passages, or find a recitation to listen to. Follow the references to read the evidence yourself.</p>
             <div class="mcp-hero-actions">
               <a class="btn btn-primary btn-lg" href="#try-it">See questions you can ask <i class="bi bi-arrow-down-short" aria-hidden="true"></i></a>
               <a class="btn btn-outline-secondary btn-lg" href="#connect">How to connect</a>
@@ -65,9 +65,9 @@
           <p>You do not need to learn technical commands. Once connected, use ChatGPT or another supported AI as you normally would.</p>
         </div>
         <div class="row g-4 mcp-simple-steps">
-          <div class="col-md-4"><div class="mcp-simple-step h-100"><span>1</span><i class="bi bi-chat-heart" aria-hidden="true"></i><h3>Ask your question</h3><p>Write naturally: ask about worship, an āyah, a hadith, a person, or an event.</p></div></div>
+          <div class="col-md-4"><div class="mcp-simple-step h-100"><span>1</span><i class="bi bi-chat-heart" aria-hidden="true"></i><h3>Ask your question</h3><p>Write naturally: ask about worship, a Quran page or passage, a recitation, a hadith, or a person.</p></div></div>
           <div class="col-md-4"><div class="mcp-simple-step h-100"><span>2</span><i class="bi bi-search" aria-hidden="true"></i><h3>The AI checks sources</h3><p>Hadith Unlocked helps it search the Quran, tafsir, hadith collections, and Sirah.</p></div></div>
-          <div class="col-md-4"><div class="mcp-simple-step h-100"><span>3</span><i class="bi bi-journal-check" aria-hidden="true"></i><h3>You review the evidence</h3><p>The answer can include grades, references, Arabic and English text, and links for further reading.</p></div></div>
+          <div class="col-md-4"><div class="mcp-simple-step h-100"><span>3</span><i class="bi bi-journal-check" aria-hidden="true"></i><h3>You review the evidence</h3><p>The answer can include grades, Arabic and English text, passage headings, and links for reading or listening.</p></div></div>
         </div>
         <p class="mcp-guidance-note"><i class="bi bi-info-circle" aria-hidden="true"></i> AI can misunderstand sources. For personal religious rulings, use the evidence as a starting point and consult a qualified scholar.</p>
       </div>
@@ -77,10 +77,42 @@
       <div class="container col-xl-10 mx-auto">
         <div class="mcp-section-heading">
           <span class="mcp-kicker">Questions you can ask</span>
-          <h2>From everyday practice to deeper study.</h2>
+          <h2>Read, listen, and explore with sources.</h2>
           <p>These are examples, not special commands. Ask follow-up questions and request simpler explanations whenever you need them.</p>
         </div>
         <div class="row g-4 mcp-use-case-grid">
+          <div class="col-md-6 col-xl-3">
+            <article class="mcp-use-case-card h-100">
+              <span class="mcp-card-icon"><i class="bi bi-headphones" aria-hidden="true"></i></span>
+              <h3>Find a recitation</h3>
+              <p>“Find audio for Quran 2:255–257 recited by Juhani.”</p>
+              <span class="mcp-card-meta">Choose a reciter · Juhani by default</span>
+            </article>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <article class="mcp-use-case-card h-100">
+              <span class="mcp-card-icon"><i class="bi bi-book-half" aria-hidden="true"></i></span>
+              <h3>Explore a Quran page</h3>
+              <p>“What does Mushaf page 42 cover? Show its āyah ranges and passage headings.”</p>
+              <span class="mcp-card-meta">Page overview · headings · introductions</span>
+            </article>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <article class="mcp-use-case-card h-100">
+              <span class="mcp-card-icon"><i class="bi bi-signpost-split" aria-hidden="true"></i></span>
+              <h3>Follow a passage</h3>
+              <p>“Which passage contains Quran 2:255? Show its heading, introduction, and subsections.”</p>
+              <span class="mcp-card-meta">Passage context · exact āyah ranges</span>
+            </article>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <article class="mcp-use-case-card h-100">
+              <span class="mcp-card-icon"><i class="bi bi-list-nested" aria-hidden="true"></i></span>
+              <h3>See a surah’s structure</h3>
+              <p>“Show me the passage and subsection headings in Sūrat al-Kahf, with links to read them.”</p>
+              <span class="mcp-card-meta">Surah outline · Arabic &amp; English headings</span>
+            </article>
+          </div>
           <div class="col-md-6 col-xl-3">
             <article class="mcp-use-case-card h-100">
               <span class="mcp-card-icon"><i class="bi bi-moon-stars" aria-hidden="true"></i></span>
@@ -121,22 +153,26 @@
       <div class="container col-xl-10 mx-auto">
         <div class="row g-5 align-items-start">
           <div class="col-lg-5">
-            <span class="mcp-kicker">Sources it can search</span>
+            <span class="mcp-kicker">What you can explore</span>
             <h2>A growing Islamic library in one place.</h2>
-            <p class="mcp-section-copy">Instead of relying only on what an AI remembers, Hadith Unlocked lets it look up the source material while answering you.</p>
+            <p class="mcp-section-copy">Hadith Unlocked gives your AI access to source texts, Quran page and passage context, and recitations with precise āyah timings.</p>
+            <p><a class="mcp-doc-link" href="/mcp-server/schema.json">View the complete tool schema (JSON) <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a><br><small>Input and output schemas, descriptions, and read-only annotations, generated from the server’s current tool definitions.</small></p>
             <details class="mcp-technical-details">
               <summary>For technical users: view the available tools</summary>
               <div class="mcp-tool-pills" aria-label="MCP tools">
-                <span>search_quran</span><span>lookup_quran_ayah</span><span>list_tafsirs</span><span>search_tafsir</span><span>lookup_tafsir</span><span>search_hadith</span><span>lookup_hadith_detail</span>
+                <span>research_islamic_topic</span><span>research_quran_ayah</span><span>list_hadith_commentaries</span><span>search_hadith_commentary</span><span>lookup_hadith_commentary</span><span>lookup_quran_page</span><span>list_quran_sections</span><span>lookup_quran_passage</span><span>get_quran_audio</span><span>list_quran_reciters</span><span>search_quran</span><span>lookup_quran_ayah</span><span>list_tafsirs</span><span>search_tafsir</span><span>lookup_tafsir</span><span>search_hadith</span><span>lookup_hadith_detail</span>
               </div>
             </details>
           </div>
           <div class="col-lg-7">
             <div class="mcp-capability-list">
-              <div class="mcp-capability-item"><span>01</span><div><h3>Quran</h3><p>Search Arabic text and English translations, or retrieve an exact āyah with headings and a canonical URL.</p></div></div>
-              <div class="mcp-capability-item"><span>02</span><div><h3>Tafsir</h3><p>Discover available commentators, search across commentary, and retrieve a named source for a specific verse.</p></div></div>
-              <div class="mcp-capability-item"><span>03</span><div><h3>Hadith</h3><p>Search collections and inspect the complete record, including grade, narrators, references, and commentary when available.</p></div></div>
-              <div class="mcp-capability-item"><span>04</span><div><h3>Sirah &amp; history</h3><p>Search historical collections through the same source-aware flow while keeping canonical identities and links.</p></div></div>
+              <div class="mcp-capability-item"><span>01</span><div><h3>Quran text</h3><p>Search Arabic text and English translations, or retrieve an exact āyah with its headings and a source link.</p></div></div>
+              <div class="mcp-capability-item"><span>02</span><div><h3>Quran recitations</h3><p>Find audio for an āyah, a passage, or a whole surah. Choose from the available reciters, with Juhani as the default. Audio links include āyah timings; listening within the conversation depends on your AI app’s audio support.</p></div></div>
+              <div class="mcp-capability-item"><span>03</span><div><h3>Mushaf pages &amp; page overviews</h3><p>Look up a page by number or find the page containing an āyah. See its verse ranges, overlapping passage headings, and available introductions. Page overviews draw on stored headings; your AI can use these sources to write a narrative summary when asked.</p></div></div>
+              <div class="mcp-capability-item"><span>04</span><div><h3>Passages &amp; section headings</h3><p>Explore a surah’s passage and subsection structure, or find the passage containing a particular āyah. Read stored Arabic and English headings and introductions where available, with exact verse ranges and links to the reader.</p></div></div>
+              <div class="mcp-capability-item"><span>05</span><div><h3>Tafsir</h3><p>Explore an āyah through major available tafsirs, then investigate its concepts in hadith and their scholarly explanations. Direct verse interpretation and broader conceptual connections remain distinct.</p></div></div>
+              <div class="mcp-capability-item"><span>06</span><div><h3>Hadith</h3><p>Research a topic across hadith collections and scholarly explanations. Discover commentary works, compare relevant excerpts, and inspect exact reports with grades and attribution.</p></div></div>
+              <div class="mcp-capability-item"><span>07</span><div><h3>Sirah &amp; history</h3><p>Search historical collections while preserving each source’s identity and links.</p></div></div>
             </div>
           </div>
         </div>
@@ -167,7 +203,7 @@
     <section class="mcp-section mcp-final-cta">
       <div class="container col-xl-10 mx-auto">
         <div class="mcp-final-cta-inner">
-          <div><span class="mcp-kicker">Ready to try it?</span><h2>Choose your AI platform and connect once.</h2><p>After that, simply ask your Islamic questions as you normally would.</p></div>
+          <div><span class="mcp-kicker">Ready to try it?</span><h2>Choose your AI platform and connect once.</h2><p>Then ask a question, explore a Quran page, or request a recitation in your own words.</p></div>
           <a class="btn btn-primary btn-lg" href="#connect">Show me how <i class="bi bi-arrow-down-short" aria-hidden="true"></i></a>
         </div>
       </div>

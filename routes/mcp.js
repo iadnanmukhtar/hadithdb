@@ -217,7 +217,7 @@ async function dispatch(message, req) {
         }
       },
       serverInfo: { name: HadithMcp.SERVER_NAME, version: HadithMcp.SERVER_VERSION },
-      instructions: 'Use exact-reference lookup tools when a Quran or hadith citation is known. Use list_tafsirs to resolve uncertain tafsir names. Results are read-only source records; preserve grading attribution and distinguish exact hadith wording from broader parallel reports.'
+      instructions: 'For substantive Islamic topic or worship how-to questions, use research_islamic_topic to consult source reports and relevant shuruh before the first answer. For explanations of Quran ayahs, use research_quran_ayah to consult major available tafsirs, then derive concepts from those texts and research hadith and shuruh for those concepts in the same turn. Respect explicitly narrow requests. Research depth is independent of answer length; inspect coverage and distinguish direct tafsir from conceptual candidates. Use exact-reference lookup tools when a Quran or hadith citation is known. Use list_tafsirs to resolve uncertain tafsir names. For Quran listening requests, use get_quran_audio (default reciter: Juhani); resolve other reciters with list_quran_reciters. Audio URLs require client playback using the returned start/end timings. Use lookup_quran_page for Mushaf pages and source-based page overviews; list_quran_sections and lookup_quran_passage expose editorial headings and introductions, which must be distinguished from Quran text. Results are read-only source records; preserve grading attribution and distinguish exact hadith wording from broader parallel reports.'
     };
   }
   if (message.method === 'ping')

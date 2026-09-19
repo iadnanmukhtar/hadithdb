@@ -2,11 +2,44 @@
 
 const fs = require('fs');
 const path = require('path');
+const express = require('express');
+const HadithMcp = require('../lib/HadithMcp');
 const router = require('../routes/mcpMarketing');
 
 const read = relativePath => fs.readFileSync(path.join(__dirname, '..', relativePath), 'utf8');
 
 describe('MCP marketing page', () => {
+  test('publishes the same tool definitions as tools/list without an MCP handshake', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/mcp-server', router);
+    app.use('/mcp', require('../routes/mcp'));
+    const server = app.listen(0, '127.0.0.1');
+    await new Promise(resolve => server.once('listening', resolve));
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    try {
+      const response = await fetch(`${baseUrl}/mcp-server/schema.json`);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toMatch(/^application\/json/);
+      expect(response.headers.get('cache-control')).toBe('public, max-age=0, must-revalidate');
+      expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+      const schema = await response.json();
+      expect(schema.serverInfo).toEqual({ name: HadithMcp.SERVER_NAME, version: HadithMcp.SERVER_VERSION });
+      expect(schema.protocolVersion).toBe(HadithMcp.PROTOCOL_VERSION);
+      const rpc = await fetch(`${baseUrl}/mcp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'MCP-Protocol-Version': HadithMcp.PROTOCOL_VERSION },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} })
+      });
+      expect(schema.tools).toEqual((await rpc.json()).result.tools);
+      expect(schema.tools.length).toBeGreaterThan(0);
+      const page = read('views/mcp_server.ejs');
+      expect(page).toContain('href="/mcp-server/schema.json"');
+    } finally {
+      await new Promise(resolve => server.close(resolve));
+    }
+  });
+
   test('renders the page without shared caching of personalized navigation', () => {
     const route = router.stack.find(layer => layer.route && layer.route.path === '/');
     const res = { locals: {}, setHeader: jest.fn(), render: jest.fn() };

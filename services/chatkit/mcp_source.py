@@ -1,7 +1,9 @@
 from agents.mcp import MCPServerStreamableHttp, create_static_tool_filter
 from urllib.parse import urlparse
 
-TOOLS = ['lookup_quran_ayah', 'search_quran', 'list_tafsirs', 'lookup_tafsir',
+TOOLS = ['research_islamic_topic', 'research_quran_ayah', 'list_hadith_commentaries',
+         'search_hadith_commentary', 'lookup_hadith_commentary', 'lookup_quran_page', 'list_quran_sections', 'lookup_quran_passage',
+         'list_quran_reciters', 'get_quran_audio', 'lookup_quran_ayah', 'search_quran', 'list_tafsirs', 'lookup_tafsir',
          'search_tafsir', 'search_hadith', 'lookup_hadith_detail']
 
 

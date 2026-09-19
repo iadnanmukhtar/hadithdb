@@ -196,6 +196,16 @@ describe('public MCP Streamable HTTP route', () => {
     const response = await request('POST', { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const payload = await response.json();
     expect(payload.result.tools.map(tool => tool.name)).toEqual([
+      'list_hadith_commentaries',
+      'search_hadith_commentary',
+      'lookup_hadith_commentary',
+      'research_islamic_topic',
+      'research_quran_ayah',
+      'lookup_quran_page',
+      'list_quran_sections',
+      'lookup_quran_passage',
+      'list_quran_reciters',
+      'get_quran_audio',
       'lookup_quran_ayah',
       'search_quran',
       'list_tafsirs',

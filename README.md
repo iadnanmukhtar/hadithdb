@@ -9,7 +9,78 @@ Every record keeps the original Arabic text alongside an English translation whe
 HadithDB exposes a read-only, stateless Streamable HTTP MCP transport at
 `POST /mcp`. After this version is deployed, the public endpoint will be
 `https://hadithunlocked.com/mcp`. It provides Quran and tafsir lookup/search,
-hadith search, and full hadith-detail lookup tools.
+hadith search, full hadith-detail lookup, and Quran audio tools.
+
+Substantive research is available through `research_islamic_topic` and
+`research_quran_ayah`. The topic tool takes a `question`, short Arabic/English
+`queries`, optional known `hadith_references` to anchor the evidence, and `depth` (`brief`, `standard`, or `deep`). It gathers discovery
+candidates, exact Quran/tafsir and hadith records, commentary from distinct works,
+and reports linked by verified internal references. Source numbers alone are
+never treated as cross-collection identities.
+
+For ayah explanations, call `research_quran_ayah` with `surah` and `ayah`.
+Standard depth requests Tabari, Ibn Kathir and Qurtubi; deep adds Baghawi, Saadi
+and Ibn Ashur. Missing sources are reported rather than silently replaced.
+`tafsirs` overrides this selection. Read the returned texts, then call again
+with short grounded `concepts` to research relevant Quran/tafsir, hadith and
+shuruh. This is an assistant workflow within one turn, not a user follow-up.
+The tool does not pretend to infer semantic concepts on the server.
+
+Dossiers distinguish direct tafsir, exact reports, source-linked reports, and
+conceptual search candidates. They return per-call `found`, `searched_no_match`,
+`not_searched`, or `unavailable` states, omissions and explicit next steps.
+Dossiers include selected source fields and bounded excerpts: discovery text is capped at 500 characters per field, retrieved source text at 3500, with truncation flags and exact lookup identifiers. They are not exhaustive surveys or generated rulings. A 25-second total deadline
+and depth-dependent call/source limits bound work; inspect coverage and retrieve
+truncated or omitted sources when consequential. Research depth does not dictate
+answer length.
+
+`list_hadith_commentaries`, `search_hadith_commentary` and
+`lookup_hadith_commentary` expose the existing shuruh catalog and index. Search
+supports an exact commentary `source` alias and/or associated hadith `reference`;
+lookup uses an entry `id`. Compact hadith details now include `research_inventory`
+with commentary identities, work counts, and verified related references.
+
+After deploying schema changes, update the published plugin/connection metadata
+and verify the tools visible in a fresh client session against `tools/list`.
+Publishing the JSON schema URL alone does not refresh an installed plugin’s
+schema snapshot. In particular, `lookup_hadith_detail` must expose
+`response_profile` to clients as it does on the server.
+
+The public tool schema is available at `GET /mcp-server/schema.json`, linked
+from `/mcp-server`. It includes the server and protocol versions and the same
+tool definitions returned by MCP `tools/list`, including input/output schemas
+and annotations. It is generated from the running server’s definitions and
+requires no MCP initialization or authentication.
+
+`get_quran_audio` returns a full-surah `audio_url`, a `playback_url` with a
+seconds-based media fragment, passage `start_ms` / `end_ms`, and ordered ayah
+`segments` with millisecond boundaries. For example,
+`{"surah":2,"ayah_from":255,"ayah_to":257}` defaults to Juhani; add `reciter`
+to select an alias or exact name from `list_quran_reciters`. Omit `ayah_to` for
+one ayah. Supply the first and last ayah for a whole surah; call once per surah
+for a passage spanning surahs. Incomplete timing coverage returns an error.
+These tools supply playback data; the client must play the URL, seek to the
+start, and stop at the end. Media-fragment support depends on the player.
+
+Quran navigation tools expose the stored Mushaf layout and editorial headings:
+
+- `lookup_quran_page`: pass `page`, or `surah` and `ayah`, for edition information,
+  ayah ranges and word boundaries, overlapping headings, and stored introductions.
+  Its page overview is assembled from source headings, not a separately authored
+  narrative summary. Ayahs can span pages; word boundaries identify the portion here.
+- `list_quran_sections`: pass `surah` to discover passage (level 2) and subsection
+  (level 3) identities, bilingual titles, introductions, and exact ayah ranges.
+  Follow `next_offset`; default `limit` is 25, maximum 100.
+- `lookup_quran_passage`: pass `surah` and `section` (optionally `subsection`),
+  or `surah` and `ayah` to resolve the containing passage. Returns parent/child
+  relationships and Mushaf page links as well as the source heading record.
+
+These tools preserve absent language fields as null. `response_profile` controls
+per-heading introduction length: `compact` 1000, `default` 6000 characters per
+language, or `full` without truncation. Introductions describe the entire heading
+range, which may extend beyond a requested page. Titles and ranges are preserved.
+An assistant can write a narrative page summary from this source material when
+asked, clearly distinguishing its synthesis from the stored editorial text.
 
 Arabic and English are exposed separately when the underlying record provides
 both languages; unavailable language fields are returned as `null` rather than
