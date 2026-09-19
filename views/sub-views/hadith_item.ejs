@@ -108,9 +108,9 @@
 		: ['title_en', 'title_en_search', 'title_search_en', 'chain_en', 'chain_en_search', 'body_en', 'body_en_search', 'footnote_en', 'footnote_en_search']);
 	const compactUnmatchedSearchBody = !!searchResult && !isQuranItem && !hasReturnedSearchText;
 	const suppressHadithFootnote = isSimilarSection || (!isQuranItem && i.single !== true);
-	const showPrimaryNarratorOnly = !isQuranItem && i.single !== true
+	const showPrimaryNarratorOnly = !isQuranItem && (i.primaryNarratorOnly === true || (i.single !== true
 		&& (isSimilarSection || page && (page.menu === 'Chapter' || page.menu === 'Section')
-			|| (!!searchResult && !hasReturnedSearchChain && !hasReturnedSearchFootnote));
+			|| (!!searchResult && !hasReturnedSearchChain && !hasReturnedSearchFootnote))));
 	const primaryNarratorText = sourceHadithNarrator
 		? (lang === 'ar' ? sourceHadithNarrator.name : (sourceHadithNarrator.name_en || arabic.toALALCName(sourceHadithNarrator.name)))
 		: '';
@@ -118,7 +118,7 @@
 	const narratorEditPlaceholder = lang === 'ar' ? 'راوي الحديث' : 'Hadith narrator';
 	const narratorInlineEditable = site.editMode && (lang === 'ar' || lang === 'en');
 	const showPrimaryNarrator = showPrimaryNarratorOnly && !!primaryNarratorText;
-	const displayedChain = showPrimaryNarrator ? primaryNarratorText : (isSimilarSection ? '' : langData.chain);
+	const displayedChain = showPrimaryNarrator ? primaryNarratorText : (isSimilarSection || i.primaryNarratorOnly === true ? '' : langData.chain);
 	const itemLinkTitleSource = langData.title || langData.body || displayedChain;
 	const hadithAttribution = hadithClassification.attribution || null;
 	const hadithChainCategories = Array.isArray(hadithClassification.chainCategories) ? hadithClassification.chainCategories : [];
@@ -239,7 +239,7 @@
 		<% if (narratorInlineEditable && showPrimaryNarratorOnly && !primaryNarratorText) { %>
 			<div class="hadith-narrator-editor <%= _p %> l3"><span class="text-muted"><%= lang === 'ar' ? 'الراوي:' : 'Narrator:' %></span> <input type="search" class="_e hadith-admin-combobox hadith-primary-narrator-input" title="Ḥadīth Narrator" value="" data-narrator-language="<%= lang %>" autocomplete="off" autocapitalize="none" spellcheck="false" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>></div>
 		<% } %>
-		<% if (narratorInlineEditable && !isQuranItem && i.single === true) { %>
+		<% if (narratorInlineEditable && !isQuranItem && i.single === true && !showPrimaryNarratorOnly) { %>
 			<div class="hadith-narrator-editor <%= _p %> l3"><span class="text-muted"><%= lang === 'ar' ? 'الراوي:' : 'Narrator:' %></span> <input type="search" class="_e hadith-admin-combobox hadith-primary-narrator-input" title="Ḥadīth Narrator" value="<%= primaryNarratorText %>" data-narrator-language="<%= lang %>" autocomplete="off" autocapitalize="none" spellcheck="false" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>></div>
 		<% } %>
 

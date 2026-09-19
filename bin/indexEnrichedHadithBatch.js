@@ -28,6 +28,7 @@ const query = util.promisify(connection.query).bind(connection);
 		await attachNavigation(rows);
 		await attachSharh(rows, idList);
 		await attachGrades(rows, idList);
+		await require('../lib/HadithNarratorIndex').attach(rows, query);
 		await ensureLiveMapping();
 		await updatePartial(rows);
 		console.log(`indexed ${rows.length}/${ids.length} enriched hadith(s)`);

@@ -576,7 +576,9 @@ router.get('/autocomplete/sharh-titles', searchRequestLimiter, requireSearchAdmi
 
 router.get('/autocomplete/bilingual-pairs', searchRequestLimiter, requireSearchAdmin, async function (req, res, next) {
   try {
-    var pairs = await HadithBilingualPairs.list(req.query.type, req.query.q || req.query.term || '', req.query.limit);
+    var pairs = req.query.type === 'narrator'
+      ? await HadithBilingualPairs.searchNarrators(req.query.q || req.query.term || '', req.query.limit)
+      : await HadithBilingualPairs.list(req.query.type, req.query.q || req.query.term || '', req.query.limit);
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'private, no-store');
     res.end(JSON.stringify(pairs));
@@ -1285,6 +1287,7 @@ router.get('/', throttleSearchRequest, async function (req, res, next) {
     if (random.length > 0) {
 	  random = new Item(random[0]);
 	  random.single = true;
+	  random.primaryNarratorOnly = true;
 	  if (random.remark != 2) {
 		await HdithMetadata.attachClassifications([random]);
 		random.hdithMetadata = await HdithMetadata.forHadith(random.actual ? random.actual.id : random.id) || {};

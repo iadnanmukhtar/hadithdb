@@ -46,7 +46,7 @@ describe('Hadith metadata editing', () => {
 		expect(route).toContain("type === 'hdith_metadata'");
 		expect(route).toContain("['narrator', 'narrator_en', 'attribution_id', 'chain_type'].includes(col)");
 		expect(route).toContain('UPDATE hdith_hadith_metadata SET ${col}=');
-		expect(route).toContain('await runHadithPostUpdateTasks(metadataHadithId)');
+		expect(route).toContain("await runHadithPostUpdateTasks(metadataHadithId, { awaitIndex: ['narrator', 'narrator_en'].includes(col) })");
 		expect(item).toContain("'hdith_metadata.narrator'");
 		expect(item).toContain("'hdith_metadata.narrator_en'");
 		expect(item).toContain('showPrimaryNarratorOnly');

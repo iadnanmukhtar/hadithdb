@@ -1023,6 +1023,7 @@
 	        let currentType = 'narrator';
 	        let filterTimer = null;
 	        let loadGeneration = 0;
+	        let searchController = null;
 	        const labels = {
 	          narrator: 'Narrator name pairs',
 	          sharh_title: 'Sharḥ title pairs',
@@ -1032,11 +1033,11 @@
 	          grade: 'Legacy grade pairs'
 	        };
 	        const setStatus = (message, error) => $status.text(message || '').toggleClass('text-danger', !!error).toggleClass('text-success', !!message && !error);
-	        const requestPairs = async () => {
+	        const requestPairs = async (signal) => {
 	          const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
 	          const headers = token ? { Authorization: `Bearer ${token}` } : {};
 	          const params = new URLSearchParams({ type: currentType, q: $filter.val().trim(), limit: '100' });
-	          const response = await fetch(`${editHadithApiPath('/autocomplete/bilingual-pairs')}?${params}`, { headers });
+	          const response = await fetch(`${editHadithApiPath('/autocomplete/bilingual-pairs')}?${params}`, { headers, signal });
 	          if (!response.ok) throw new Error(`Unable to load pairs (${response.status})`);
 	          return response.json();
 	        };
@@ -1079,10 +1080,21 @@
 	        };
 	        const load = async () => {
 	          const generation = ++loadGeneration;
+	          if (searchController) searchController.abort();
+	          if (currentType === 'narrator' && $filter.val().trim().length < 2) {
+	            render([]);
+	            $empty.text('Enter at least two letters to search narrators.');
+	            setStatus('');
+	            return;
+	          }
+	          $empty.text('No matching pairs.');
+	          searchController = new AbortController();
+	          setStatus('Searching…');
 	          try {
-	            const pairs = await requestPairs();
+	            const pairs = await requestPairs(searchController.signal);
 	            if (generation !== loadGeneration) return;
 	            render(pairs);
+	            setStatus(pairs.length === 100 ? 'Showing 100 matches. Refine your search for more specific results.' : '');
 	          } catch (err) {
 	            if (generation !== loadGeneration) return;
 	            $list.empty();
@@ -1094,12 +1106,20 @@
 	          currentType = $(this).attr('data-hadith-pair-manager-open') || 'narrator';
 	          $modal.find('[data-hadith-pair-manager-title]').text(labels[currentType] || 'Bilingual pairs');
 	          $filter.val('');
+	          clearTimeout(filterTimer);
 	          setStatus('');
 	          load();
 	        });
 	        $filter.on('input', function () {
 	          clearTimeout(filterTimer);
+	          ++loadGeneration;
+	          if (searchController) searchController.abort();
 	          filterTimer = setTimeout(load, 180);
+	        });
+	        $modal.on('hidden.bs.modal', function () {
+	          clearTimeout(filterTimer);
+	          ++loadGeneration;
+	          if (searchController) searchController.abort();
 	        });
 	        $modal.find('[data-hadith-pair-add]').on('click', async function () {
 	          const $new = $modal.find('[data-hadith-pair-manager-new]');

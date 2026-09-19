@@ -91,7 +91,7 @@
           <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false, collapsedDetail: true }); %>
         <% } %>
 
-        <hr>
+        <% if (random.remark == 2) { %><hr><% } %>
       <% } %>
 
       <% if (results) { %>

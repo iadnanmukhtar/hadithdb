@@ -18,6 +18,7 @@ const HdithEnrichment = require('../lib/HdithEnrichment');
 const HdithMetadata = require('../lib/HdithMetadata');
 const HadithHeadingSharh = require('../lib/HadithHeadingSharh');
 const HadithBilingualPairs = require('../lib/HadithBilingualPairs');
+const HadithNarratorIndex = require('../lib/HadithNarratorIndex');
 const HadithAttributions = require('../lib/HadithAttributions');
 const HadithChainCategories = require('../lib/HadithChainCategories');
 const DorarSharhImport = require('../lib/DorarSharhImport');
@@ -289,6 +290,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 		await Promise.all(affectedPairBooks.flatMap(bookAlias => [
 			Utils.flushCacheContaining(bookAlias), Utils.flushCacheContaining(`book:${bookAlias}`)
 		]));
+		if (bilingualPairType === 'narrator')
+		  await HadithNarratorIndex.reindex(status.pair.affected_hadith_ids || []);
 		if (['sharh_title', 'grader', 'grade'].includes(bilingualPairType) && status.pair.affected_hadith_ids?.length)
 		  safeBackground(`reindexing ${bilingualPairType} pair`, () => reindexEnrichedHadithIds(status.pair.affected_hadith_ids));
         status.message = 'Bilingual pair saved';
@@ -345,7 +348,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         status.message = col === 'narrator' ? 'Arabic hadith narrator updated' : 'English hadith narrator updated';
       }
       status.code = 200;
-      await runHadithPostUpdateTasks(metadataHadithId);
+      await runHadithPostUpdateTasks(metadataHadithId, { awaitIndex: ['narrator', 'narrator_en'].includes(col) });
 
     } else if (type === 'hdith_narrator') {
       await HdithMetadata.ensureEditableColumns();
@@ -371,7 +374,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         status.createdNarratorId = Number(insertedNarrator.insertId);
         status.code = 200;
         status.message = 'Narrator added';
-        await runHadithPostUpdateTasks(narratorTargetId);
+        await runHadithPostUpdateTasks(narratorTargetId, { awaitIndex: true });
       } else if (col === 'delete') {
         var narratorRow = (await global.query(`SELECT hn.hadith_id, n.source_slug FROM hdith_hadith_narrators hn
           JOIN hdith_narrators n ON n.id=hn.narrator_id WHERE n.id=${narratorTargetId} LIMIT 1`))[0];
@@ -384,7 +387,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         HdithMetadata.invalidatePrimaryNarratorSuggestionCache();
         status.code = 200;
         status.message = 'Narrator deleted';
-        await runHadithPostUpdateTasks(narratorRow.hadith_id);
+        await runHadithPostUpdateTasks(narratorRow.hadith_id, { awaitIndex: true });
       } else {
         throw createError(400, `Invalid narrator operation '${col}'`);
       }
@@ -3016,6 +3019,10 @@ async function runHadithPostUpdateTasks(hadithId, options) {
     return;
   await Books.touchBookContentLastmodById(item.book_id);
   await Utils.flushCacheContaining(`${item.book_alias}:${item.num}`);
+  if (options.awaitIndex) {
+    await Index.update(Item.INDEX, item, { force: true, refresh: true });
+    return;
+  }
   safeBackground(`reindexing hadith ${item.ref}`, async () => {
     await Index.update(Item.INDEX, item);
   });
