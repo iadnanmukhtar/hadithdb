@@ -3342,6 +3342,7 @@ router.get('/:bookAlias/introduction', async function (req, res, next) {
   const introductionArticles = await CommentaryHeadings.introductionArticles(book.id);
   if (!CommentaryHeadings.hasIntroduction(introductionArticles) && !(req.admin && req.editMode))
     return next(createError(404, `No authored introduction is available for ${book.shortName_en || book.alias}`));
+  await HadithHeadingSharh.attach(introductionArticles);
   const adjacent = await hadithIntroductionAdjacentHeadings(book.alias);
   res.render('hadith_introduction', {
     Tafsir: Tafsir,

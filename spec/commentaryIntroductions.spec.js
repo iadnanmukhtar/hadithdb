@@ -10,7 +10,7 @@ const articleTemplate = path.join(__dirname, '..', 'views', 'sub-views', 'quran_
 const surahTemplate = path.join(__dirname, '..', 'views', 'sub-views', 'quran_commentary_heading_intro.ejs');
 const pageTemplate = path.join(__dirname, '..', 'views', 'quran_commentary_introduction.ejs');
 const railTemplate = path.join(__dirname, '..', 'views', 'sub-views', 'quran_commentary_introduction_rail.ejs');
-const shared = { Tafsir, utils: Utils, commentaryBook: { id: 71, type: 'tafsir', lang: 'ar-en' } };
+const shared = { Tafsir, utils: Utils, req: { path: '/quran/tafsir/example/introduction' }, commentaryBook: { id: 71, type: 'tafsir', lang: 'ar-en' } };
 
 test('renders a Surah 0 H2 as a bilingual introductory article', async () => {
 	const html = await ejs.renderFile(articleTemplate, {

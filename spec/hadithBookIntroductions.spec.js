@@ -8,6 +8,7 @@ const CommentaryHeadings = require('../lib/CommentaryHeadings');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
+const HadithHeadingSharh = require('../lib/HadithHeadingSharh');
 
 function introductionHandler() {
 	const layer = searchRouter.stack.find(item => item.route && item.route.path === '/:bookAlias/introduction');
@@ -29,6 +30,7 @@ describe('Hadith book introductions', () => {
 
 	beforeEach(() => {
 		global.books = [book];
+		jest.spyOn(HadithHeadingSharh, 'attach').mockResolvedValue([]);
 	});
 
 	afterEach(() => {
@@ -47,6 +49,7 @@ describe('Hadith book introductions', () => {
 
 		await introductionHandler()(req, res, jest.fn());
 
+		expect(HadithHeadingSharh.attach).toHaveBeenCalledWith([article]);
 		expect(res.render).toHaveBeenCalledWith('hadith_introduction', expect.objectContaining({
 			book: book,
 			introductionArticles: [article],
@@ -147,15 +150,35 @@ describe('Hadith book introductions', () => {
 		const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'sub-views', 'quran_commentary_article.ejs'), {
 			Tafsir: Tafsir,
 			utils: Utils,
+			req: { path: '/muslim/introduction' },
 			site: { editMode: true },
 			commentaryBook: { ...book, lang: 'ar' },
 			introductionBilingual: true,
 			article: { id: 91, h1: 0, h2: 1, title: 'المقدمة', title_en: '', intro: 'نص المقدمة', intro_en: '' }
 		});
 
-		expect(html).toContain('lang="en"><span class="_e" data-id="91" data-prop="toc.title_en"');
+		expect(require('cheerio').load(html)('h2[lang="en"] [data-prop="toc.title_en"]')).toHaveLength(1);
 		expect(html).toContain('lang="en" data-id="91" data-prop="toc.intro_en"');
 		expect(html).toContain('lang="ar" dir="rtl" data-id="91" data-prop="toc.intro"');
+	});
+
+	test('renders attributed book sharh separately from the introduction text', async () => {
+		const cheerio = require('cheerio');
+		const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'sub-views', 'quran_commentary_article.ejs'), {
+			Tafsir, utils: Utils, req: { path: '/muslim/introduction' }, site: { editMode: false },
+			commentaryBook: book, introductionBilingual: true, introductionSharh: true,
+			article: { id: 91, h1: 0, h2: 1, title: 'مقدمة الكتاب', title_en: 'Book introduction',
+				intro: 'تمهيد قصير.', intro_en: 'A short introduction.', shuruh: [
+					{ id: 17, title: 'شرح الكتاب', title_en: 'Book commentary', text: 'هذا نص الشرح.', format: 'md' },
+					{ id: 18, title: 'شرح آخر', text: 'شرح ثان.', format: 'md' }
+				] }
+		});
+		const $ = cheerio.load(html);
+		expect($('[data-prop="toc.intro"]').text().trim()).toBe('تمهيد قصير.');
+		expect($('details .hadith-heading-sharh-entry')).toHaveLength(2);
+		expect($('#note-heading-sharh-17 .hadith-sharh-body').text()).toContain('هذا نص الشرح.');
+		expect($('#note-heading-sharh-17').text()).toContain('Book commentary');
+		expect($('#note-heading-sharh-18 .hadith-sharh-body').text()).toContain('شرح ثان.');
 	});
 
 	test('keeps the Hadith TOC introduction controls and rows on the friendly route', () => {

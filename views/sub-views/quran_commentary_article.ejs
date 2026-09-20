@@ -25,6 +25,9 @@
       <% if (articleShowAr) { %><section class="_e <%= articleShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="ar" dir="rtl" data-id="<%= article.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= utils.emptyIfNull(article.intro) %>" data-markdown-empty-html="&hellip;"><div><%- Tafsir.renderCommentaryText(article.intro, '', 'md', { bracketedFootnotes: true, footnoteIdPrefix: `toc-introduction-${article.id}-ar` }) || (site.editMode ? '&hellip;' : '') %></div></section><% } %>
       <% if (site.editMode) { %><div class="col-md-6 col-sm-12<%= articleHasEn ? '' : ' ms-md-auto' %>" lang="en" dir="ltr"><aside class="admin hadith-admin-actions mt-1"><button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" data-id="<%= article.id %>" data-prop="toc.revise" data-loading-label="Revising" title="Revise this introduction article"><span class="bi bi-magic" aria-hidden="true"></span> Revise</button></aside></div><% } %>
     </section>
+    <% if (locals.introductionSharh) { %>
+    <%- include('hadith_heading_sharh.ejs', { heading: article }); %>
+    <% } %>
   </details>
   <% if (site.editMode && !Number(article.count)) { %>
   <button type="button" class="btn btn-sm btn-outline-danger mt-2" data-delete-introduction-article="<%= article.id %>">Delete article</button>
