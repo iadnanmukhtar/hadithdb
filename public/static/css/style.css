@@ -3154,6 +3154,15 @@ nav .nav-link[aria-current="page"] {
 	}
 }
 
+.home-about-copy { min-width: 0; }
+main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(--content-size-lead) !important; }
+.home-about-links { display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin-top: .5rem; font-size: .8rem; }
+.home-about-links a { text-decoration: none; }
+.home-about-links a:hover { text-decoration: underline; }
+.home-about .home-quran-announcement-close { width: 2rem; height: 2rem; font-size: 1.25rem; }
+.about-page-logos { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0; }
+.about-page-logos img { width: 80px; height: 80px; border-radius: 22.5%; }
+
 .form-check:hover {
 	background-color: var(--bs-border-color);
 }

@@ -1,7 +1,7 @@
 'use strict';
 const express = require('express');
 const GoogleAuth = require('../lib/GoogleAuth');
-const Notebook = require('../lib/UserNotebook');
+const Notebook = require('../lib/NotebookDrive');
 const router = express.Router();
 router.use((req, res, next) => {
   res.set('Cache-Control', 'private, no-store');
@@ -28,8 +28,28 @@ router.get('/ayah', async (req, res, next) => {
     const item = await require('../lib/Model').Item.itemFromRef(ref);
     if (!item || item.ref !== ref || !Number.isSafeInteger(Number(item.id))) return res.status(404).json({ error: 'Ayah not found.' });
     const source = { source_key: `item:${item.id}`, source_title: ref, source_url: `/${ref}`, markdown: '', version: 0 };
-    res.json({ source, note: await Notebook.get(req.user.uid, source.source_key) });
+    res.json({ source });
   } catch (err) { next(err); }
+});
+router.get('/drive', async (req, res, next) => {
+  try { res.json(await Notebook.connectionStatus(req.user.uid)); } catch (err) { next(err); }
+});
+router.post('/drive/connect', async (req, res, next) => {
+  try {
+    const origin = req.get('Origin');
+    const allowed = [...Object.values(global.settings?.site || {}), ...(process.env.GOOGLE_DRIVE_ORIGINS || '').split(',')]
+      .filter(value => typeof value === 'string' && /^https?:\/\//.test(value)).map(value => new URL(value).origin);
+    if (process.env.NODE_ENV !== 'production') allowed.push('http://localhost:3004', 'http://127.0.0.1:3004');
+    if (req.get('X-Requested-With') !== 'XmlHttpRequest' || !allowed.includes(origin))
+      return res.status(403).json({ error: 'Invalid Google Drive authorization origin.' });
+    res.json(await Notebook.connect(req.user, req.body?.code, origin));
+  } catch (err) { next(err); }
+});
+router.post('/drive/migrate', async (req, res, next) => {
+  try { res.json(await Notebook.migrate(req.user.uid)); } catch (err) { next(err); }
+});
+router.delete('/drive', async (req, res, next) => {
+  try { await Notebook.disconnect(req.user.uid); res.json({ disconnected: true }); } catch (err) { next(err); }
 });
 router.get('/tags', async (req, res, next) => {
   try { res.json({ tags: await Notebook.tagList(req.user.uid) }); } catch (err) { next(err); }
@@ -69,6 +89,6 @@ router.post('/preview', (req, res) => {
   res.json({ html: Notebook.render(text) });
 });
 router.use((err, req, res, next) => {
-  res.status(err.status || 500).json({ error: err.status ? err.message : 'Could not access your notebook. Please try again.' });
+  res.status(err.status || 500).json({ error: err.status ? err.message : 'Could not access your notebook. Please try again.', code: err.code });
 });
 module.exports = router;

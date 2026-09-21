@@ -42,23 +42,7 @@
     
     <main class="search-results">
 
-      <section class="home-quran-announcement" data-home-quran-announcement hidden>
-        <div>
-          <p class="home-quran-announcement-text">Explore the Qurʾān—and keep your hifz fresh with Mudhakkir</p>
-          <p class="home-quran-announcement-blurb mb-0">Read connected passages with classical tafāsīr in English and Arabic, plus highlighting, bookmarks, reflections, and sharing. Mudhakkir adds focused memorization, adaptive spaced-repetition reviews, and progress tracking that stays synced across your devices.</p>
-        </div>
-        <div class="home-quran-announcement-actions">
-          <a class="home-quran-announcement-logo-link" href="/quran:1:1" title="Explore Quran Unlocked">
-            <img class="home-quran-announcement-logo" src="/static/img/quran-logo2.svg" width="112" height="112" alt="Quran Unlocked">
-          </a>
-          <a class="home-quran-announcement-logo-link" href="/quran/review?help" title="Discover Mudhakkir">
-            <img class="home-quran-announcement-logo" src="/static/img/quran/mudhakkir.svg" width="112" height="112" alt="Mudhakkir">
-          </a>
-          <button type="button" class="btn btn-sm btn-outline-secondary home-quran-announcement-close" data-home-quran-announcement-close title="Close announcement" aria-label="Close announcement">
-            <span class="bi bi-x" aria-hidden="true"></span>
-          </button>
-        </div>
-      </section>
+      <%- include('sub-views/home_about.ejs', { quranAbout: false }); %>
 
       <%- include('sub-views/bookNav.ejs', { inlineHadithBooks: true }); %>
       

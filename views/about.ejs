@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+  var site = Object.assign({}, global.settings.site, { admin: false, editMode: false });
+  var quranAbout = !!req.quranArea;
+  var page = {
+    menu: 'About',
+    title_en: `About ${quranAbout ? 'Quran Unlocked' : 'Hadith Unlocked'}`,
+    description_en: 'Discover Hadith Unlocked, Quran Unlocked, and Mudhakkir: tools for reading, researching, and remembering Islamic sources.',
+    subtitle_en: 'About', canonical: '/about', context: {}
+  };
+%>
+<%- include('sub-views/head.ejs', { site, page }); %>
+</head>
+<body>
+  <%- include('sub-views/header.ejs', { site, page }); %>
+  <main class="container col-lg-8 mx-auto py-4">
+    <div class="about-page-logos">
+      <a href="https://hadithunlocked.com" title="Hadith Unlocked"><img src="/static/img/logo2.svg" width="80" height="80" alt="Hadith Unlocked"></a>
+      <a href="https://quran.islamunlocked.com/quran" title="Quran Unlocked"><img src="/static/img/quran-logo2.svg" width="80" height="80" alt="Quran Unlocked"></a>
+      <a href="<%= utils.quranUrl(req, '/quran/review') %>" title="Mudhakkir"><img src="/static/img/quran/mudhakkir.svg" width="80" height="80" alt="Mudhakkir"></a>
+    </div>
+    <h1>About <%= quranAbout ? 'Quran Unlocked' : 'Hadith Unlocked' %></h1>
+    <p class="lead">Read with context. Follow the sources. Build a lasting connection with what you learn.</p>
+    <p>Hadith Unlocked and Quran Unlocked bring Islamic texts and study tools together. Created and maintained by Adnan Mukhtar, the project helps readers explore Arabic texts, translations, and scholarly commentary, with references they can follow and study for themselves.</p>
+
+    <section class="mt-4" aria-labelledby="about-hadith">
+      <h2 id="about-hadith" class="fs-4">Hadith Unlocked</h2>
+      <p>Search hadith collections in Arabic and English, browse books and chapters, compare related narrations, and explore available narrator information, grades, and explanations. Source references keep the original works within reach.</p>
+      <a href="https://hadithunlocked.com/books">Browse the hadith library →</a>
+    </section>
+    <section class="mt-4" aria-labelledby="about-quran">
+      <h2 id="about-quran" class="fs-4">Quran Unlocked</h2>
+      <p>Read the Qurʾān by surah, connected passage, or Mushaf page. Compare translations, explore classical tafsir in Arabic and English, listen to recitations, and save highlights, bookmarks, and reflections as you study.</p>
+      <a href="https://quran.islamunlocked.com/quran">Open the Qurʾān table of contents →</a>
+    </section>
+    <section class="mt-4" aria-labelledby="about-mudhakkir">
+      <h2 id="about-mudhakkir" class="fs-4">Mudhakkir</h2>
+      <p>Keep your hifz fresh with focused memorization practice and adaptive spaced-repetition reviews. Track your progress and return to the passages that need attention, with saved progress available across your devices when you sign in.</p>
+      <a href="<%= utils.quranUrl(req, '/quran/review?help') %>">Discover Mudhakkir →</a>
+    </section>
+    <section class="mt-4" aria-labelledby="about-account">
+      <h2 id="about-account" class="fs-4">Explore freely. Make your study your own.</h2>
+      <p>You do not need an account to browse or search the public library. Optional Google sign-in lets you save your study activity. A separate Google Drive connection stores your personal notebook as Markdown files in your own Drive; it does not grant access to your entire Drive.</p>
+      <p>Our <a href="/html/privacy.html">Privacy Policy</a> explains what information we collect, how we use it, and how to request deletion. Read the <a href="/terms">Terms of Service</a> for the terms of using the site.</p>
+    </section>
+    <section class="mt-4" aria-labelledby="about-sources">
+      <h2 id="about-sources" class="fs-4">A starting point for careful study</h2>
+      <p>Translations and commentary help explain the texts; they do not replace the originals. Hadith grading and interpretation can differ among scholars. Follow the cited sources and seek qualified guidance for personal religious questions.</p>
+      <p>For questions, corrections, or feedback, contact <a href="mailto:adnanmukhtar@gmail.com">adnanmukhtar@gmail.com</a>.</p>
+    </section>
+  </main>
+  <%- include('sub-views/footer.ejs', { site, page }); %>
+  <%- include('sub-views/scripts.ejs', { site, page }); %>
+</body>
+</html>

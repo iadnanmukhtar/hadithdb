@@ -2082,6 +2082,10 @@
     };
 
     const startGoogleOneTap = async () => {
+      // Keep the public homepage free of automatic sign-in overlays.
+      // Explicit sign-in buttons remain available for account features.
+      if (/^\/(?:(?:quran|about)\/?)?$/.test(window.location.pathname))
+        return;
       if (oneTapStarted)
         return;
       if (!window.hadithAuth?.googleClientId) {

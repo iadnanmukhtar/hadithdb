@@ -561,6 +561,9 @@
     <% if (showTocHeadingRail) { %><div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content"><% } %>
     
     <main class="toc<%= !isQuranToc ? ' hadith-toc-page' : '' %><%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? ' tafsir-toc-page' : '' %><%= isQuranToc && !quranCommentaryBook ? ' quran-toc-reader-modes' : '' %>"<% if (quranCommentaryBook && quranCommentaryBook.type === 'trans') { %> data-quran-selected-translation-book="<%= quranCommentaryBook.alias %>"<% } %>>
+      <% if (isQuranToc && !quranCommentaryBook) { %>
+        <%- include('sub-views/home_about.ejs', { quranAbout: true }); %>
+      <% } %>
       
       <% if (showHadithBookChrome) { %>
         <%- include('sub-views/bookNav.ejs'); %>

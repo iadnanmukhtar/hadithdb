@@ -640,22 +640,24 @@ router.all(['/do/:id', '/quran/do/:id'], async function (req, res, next) {
 });
 
 // SITEMAP
-router.get('/sitemap\.txt', async function (req, res, next) {
-  res.setHeader('content-type', 'text/plain');
-  res.setHeader('Cache-Control', 'no-store');
-  const urls = await sitemapUrls(req);
-  res.end(sitemapText(urls));
+router.get('/sitemap\.txt', function (req, res) {
+  res.redirect(301, '/sitemap.xml');
 });
 
 router.get('/quran/sitemap\.txt', function (req, res) {
-  res.redirect(301, quranSitemapUrl(req, '/sitemap.txt'));
+  res.redirect(301, quranSitemapUrl(req, '/sitemap.xml'));
 });
 
 router.get('/sitemap\.xml', async function (req, res, next) {
   res.setHeader('content-type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   const urls = await sitemapUrls(req);
-  res.end(sitemapXml(urls));
+  const domain = Utils.isQuranSubdomainRequest(req)
+    ? quranSitemapBaseUrl(req)
+    : global.settings.site.url.replace(/\/+$/, '');
+  const children = Array.from({ length: Math.ceil(urls.length / SITEMAP_PAGE_SIZE) },
+    (_, index) => `${domain}/sitemap-${index + 1}.txt`);
+  res.end(sitemapXml(children));
 });
 
 router.get('/quran/sitemap\.xml', function (req, res) {
@@ -666,13 +668,13 @@ router.get('/sitemap-:page(\\d+)\.txt', async function (req, res, next) {
   res.setHeader('content-type', 'text/plain');
   res.setHeader('Cache-Control', 'no-store');
   const page = Number(req.params.page);
-  if (!Number.isInteger(page) || page < 1)
-    return next(createError(404, `Sitemap page ${req.params.page} not found`));
+  if (!Number.isSafeInteger(page) || page < 1)
+    return res.status(404).end('Sitemap not found.\n');
   const urls = await sitemapUrls(req);
   const start = (page - 1) * SITEMAP_PAGE_SIZE;
   const pagedUrls = urls.slice(start, start + SITEMAP_PAGE_SIZE);
   if (pagedUrls.length < 1)
-    return next(createError(404, `Sitemap page ${page} not found`));
+    return res.status(404).end('Sitemap not found.\n');
   res.end(sitemapText(pagedUrls));
 });
 
@@ -716,7 +718,8 @@ function sitemapUrlsForSite(urls, quranOnly) {
 
 function quranRelatedSitemapUrl(url) {
   try {
-    return new URL(url).pathname.startsWith('/quran');
+    const pathname = new URL(url).pathname;
+    return pathname.startsWith('/quran') && !/^\/quran\/\d+$/.test(pathname);
   } catch (e) {
     return false;
   }
@@ -751,7 +754,7 @@ function sitemapText(urls) {
 }
 
 function sitemapTextToUrls(txt) {
-  return txt.toString().split(/\r?\n/).map(url => url.trim()).filter(Boolean);
+  return Array.from(new Set(txt.toString().split(/\r?\n/).map(url => url.trim()).filter(Boolean)));
 }
 
 function sitemapCacheNeedsRebuild(urls, requiredUrls = []) {
@@ -763,9 +766,9 @@ function sitemapCacheNeedsRebuild(urls, requiredUrls = []) {
 function sitemapXml(urls) {
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    urls.map(url => `  <url><loc>${escapeSitemapXml(url)}</loc></url>`).join('\n'),
-    '</urlset>',
+    '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    urls.map(url => `  <sitemap><loc>${escapeSitemapXml(url)}</loc></sitemap>`).join('\n'),
+    '</sitemapindex>',
     ''
   ].join('\n');
 }
@@ -804,6 +807,8 @@ async function buildSitemapText(req) {
     ? `b.alias = 'quran'`
     : `b.alias <> 'quran' AND COALESCE(b.type, 'hadith') = 'hadith'`;
   var sitemapUrl = function (alias, h1, h2) {
+    if (alias === 'quran' && h1 && !h2)
+      return ''; // Bare surah URLs redirect to their first passage.
     if (alias === 'quran')
       return `${quranDomain}/quran${(h1 ? '/' + h1 : '')}${(h2 ? '/' + h2 : '')}\n`;
     if (alias.indexOf('quran:') === 0)
@@ -876,13 +881,16 @@ function quranPublicSitemapUrlList(quranDomain) {
 }
 
 function quranRequiredSitemapUrlList(quranDomain) {
-  return quranPublicSitemapUrlList(quranDomain).concat(quranAyahRefs().map(function (ref) {
-    return `${quranDomain}/quran/translations/quran:${ref.surah}:${ref.ayah}`;
+  return quranPublicSitemapUrlList(quranDomain).concat(quranAyahRefs().flatMap(function (ref) {
+    return [
+      `${quranDomain}/quran:${ref.surah}:${ref.ayah}`,
+      `${quranDomain}/quran/translations/quran:${ref.surah}:${ref.ayah}`
+    ];
   }));
 }
 
 function quranPublicSitemapUrls(quranDomain) {
-  return quranPublicSitemapUrlList(quranDomain).map(url => `${url}\n`).join('');
+  return quranRequiredSitemapUrlList(quranDomain).map(url => `${url}\n`).join('');
 }
 
 async function quranMushafSitemapUrls(quranDomain) {
@@ -1273,6 +1281,8 @@ async function renderSearchResults(req, res, next, options = {}) {
 
 // HOME (SEARCH OR SHOW RANDOM HADITH)
 router.get('/', throttleSearchRequest, async function (req, res, next) {
+  if (Utils.isQuranSubdomainRequest(req))
+    return res.redirect(302, `/quran${appendOriginalQuery(req)}`);
   res.locals.req = req;
   res.locals.res = res;
 

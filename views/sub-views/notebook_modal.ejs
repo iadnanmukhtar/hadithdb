@@ -7,6 +7,11 @@
     </div>
     <div class="modal-body">
       <div id="notebook-surface">
+        <div class="small mb-2" data-notebook-drive-panel hidden>
+          <span data-notebook-drive-message role="status"></span>
+          <button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-notebook-drive-connect hidden>Connect Google Drive</button>
+          <a data-notebook-drive-folder target="_blank" rel="noopener" class="ms-1" hidden>Open folder</a>
+        </div>
         <input id="notebook-title-editor" class="form-control mb-2" dir="auto" maxlength="500" aria-label="Note title (optional)" placeholder="Title (optional)" hidden>
         <div id="notebook-note-title" dir="auto" hidden></div>
         <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" placeholder="Create a new private note." hidden></textarea>
@@ -121,4 +126,5 @@ body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { d
 #personal-notebook .notebook-tile-open:disabled { cursor: not-allowed; }
 #personal-notebook .notebook-tile-open:disabled:hover { background: transparent; }
 </style>
+<script src="/static/js/notebook-drive.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>

@@ -13,6 +13,7 @@ const accessLogMiddleware = require('./lib/AccessLog');
 const debug = Debug('hadithdb:App');
 const util = require('util');
 const path = require('path');
+const fs = require('fs');
 const createError = require('http-errors');
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -458,9 +459,24 @@ const startupPromise = (async () => {
     req.loginSessionChecked = false;
     next();
   });
+  app.get('/robots.txt', function robotsWithSitemap(req, res) {
+    const domain = Utils.isQuranSubdomainRequest(req)
+      ? Utils.quranBaseUrl(req)
+      : global.settings.site.url;
+    res.type('text/plain').send(
+      fs.readFileSync(path.join(PUBLIC_DIRECTORY, 'robots.txt'), 'utf8').trimEnd()
+      + `\n\nSitemap: ${domain.replace(/\/+$/, '')}/sitemap.xml\n`
+    );
+  });
   app.use('/', express.static(PUBLIC_DIRECTORY, PUBLIC_STATIC_OPTIONS));
   app.get('/terms', function termsOfService(req, res) {
     res.sendFile(TERMS_FILE, { cacheControl: false });
+  });
+  app.get('/about', function aboutPage(req, res) {
+    req.quranArea = Utils.isQuranSubdomainRequest(req);
+    res.locals.req = req;
+    res.locals.res = res;
+    res.render('about');
   });
   app.get('/vendor/marked/marked.min.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'node_modules/marked/marked.min.js'), { cacheControl: false });

@@ -1,0 +1,22 @@
+<section class="home-quran-announcement home-about" data-home-intro="<%= quranAbout ? 'quran' : 'hadith' %>" aria-labelledby="home-about-title">
+  <div class="home-about-copy">
+    <h1 id="home-about-title" class="home-quran-announcement-text"><%= quranAbout ? 'Read the Qurʾān—and keep your hifz fresh with Mudhakkir' : 'Hadith Unlocked—discover the words, explore the wisdom' %></h1>
+    <p class="home-quran-announcement-blurb mb-0"><%= quranAbout ? 'Read connected passages with classical tafāsīr in English and Arabic, plus highlighting, bookmarks, reflections, and sharing. Mudhakkir adds focused memorization, adaptive spaced-repetition reviews, and progress tracking that stays synced across your devices.' : 'Search hadith collections in Arabic and English, explore their sources and related narrations, and read scholarly commentary. Save bookmarks, highlights, and reflections, or connect Google Drive to keep your own study notebook. Browse freely; sign in when you want to save your work.' %></p>
+    <nav class="home-about-links" aria-label="About this service">
+      <a href="/about">About <%= quranAbout ? 'Quran Unlocked' : 'Hadith Unlocked' %></a>
+      <a href="/html/privacy.html">Privacy</a>
+      <a href="/terms">Terms</a>
+    </nav>
+  </div>
+  <div class="home-quran-announcement-actions">
+    <a class="home-quran-announcement-logo-link" href="/about" title="About <%= quranAbout ? 'Quran Unlocked' : 'Hadith Unlocked' %>">
+      <img class="home-quran-announcement-logo" src="<%= quranAbout ? '/static/img/quran-logo2.svg' : '/static/img/logo2.svg' %>" width="112" height="112" alt="<%= quranAbout ? 'Quran Unlocked' : 'Hadith Unlocked' %>">
+    </a>
+    <% if (quranAbout) { %>
+      <a class="home-quran-announcement-logo-link" href="<%= utils.quranUrl(req, '/quran/review?help') %>" title="Discover Mudhakkir">
+        <img class="home-quran-announcement-logo" src="/static/img/quran/mudhakkir.svg" width="112" height="112" alt="Mudhakkir">
+      </a>
+    <% } %>
+  </div>
+  <button type="button" class="btn home-quran-announcement-close" data-home-intro-close title="Dismiss this introduction permanently" aria-label="Dismiss this introduction permanently">×</button>
+</section>

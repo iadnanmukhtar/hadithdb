@@ -116,7 +116,7 @@ $(function () {
 
 	initSearchAutocomplete();
 	initTafsirSearchFilterPills(document);
-	initHomeQuranAnnouncement(document);
+	initHomeIntros(document);
 	initRandomTocItemLoader(document);
 	initQuranPassageNavigator();
 	initBookNavScroller();
@@ -668,42 +668,18 @@ function initContentFontSizeControls(scope) {
 	});
 }
 
-function initHomeQuranAnnouncement(scope) {
-	var storageKey = 'hadithdb_home_quran_announcement_closed';
-	var legacyStorageKey = 'hadithHomeQuranAnnouncementClosed';
-	var announcement = (scope || document).querySelector('[data-home-quran-announcement]');
-	if (!announcement)
-		return;
-
-	var dismissed = false;
-	try {
-		if (window.localStorage && (localStorage.getItem(storageKey) === 'true' || localStorage.getItem(legacyStorageKey) === 'true')) {
-			dismissed = true;
-			if (localStorage.getItem(storageKey) !== 'true') {
-				localStorage.setItem(storageKey, 'true');
-				localStorage.removeItem(legacyStorageKey);
-			}
-		}
-	} catch (err) {
-		// Storage can be unavailable in private or restricted browsing contexts.
-	}
-	if (dismissed)
-		return;
-
-	announcement.hidden = false;
-
-	var closeButton = announcement.querySelector('[data-home-quran-announcement-close]');
-	if (!closeButton)
-		return;
-
-	closeButton.addEventListener('click', function () {
-		try {
-			if (window.localStorage) {
-				localStorage.setItem(storageKey, 'true');
-				localStorage.removeItem(legacyStorageKey);
-			}
-		} catch (err) {}
-		announcement.hidden = true;
+function initHomeIntros(scope) {
+	(scope || document).querySelectorAll('[data-home-intro]').forEach(function (intro) {
+		if (intro.dataset.introBound === 'true') return;
+		intro.dataset.introBound = 'true';
+		var storageKey = 'hadithdb_home_intro_dismissed_' + intro.dataset.homeIntro;
+		try { intro.hidden = localStorage.getItem(storageKey) === 'true'; } catch (_err) {}
+		var closeButton = intro.querySelector('[data-home-intro-close]');
+		if (!closeButton) return;
+		closeButton.addEventListener('click', function () {
+			try { localStorage.setItem(storageKey, 'true'); } catch (_err) {}
+			intro.hidden = true;
+		});
 	});
 }
 

@@ -68,7 +68,7 @@
   const sentinel = document.getElementById('notebook-sentinel');
   let listSignedIn = false;
   let listLoading = false, hasMore = false, listFailed = false;
-  let current = null, savedText = '', busy = false, generation = 0, notes = [], listRequest = 0, returnModal = null;
+  let current = null, pendingSource = null, savedText = '', busy = false, generation = 0, notes = [], listRequest = 0, returnModal = null;
   let editing = false, saving = null, saveTimer, previewRequest = 0, statusTimer, statusEpoch = 0;
   const existing = new Set(), checked = new Set(), buttons = new Map();
   const installed = new WeakSet();
@@ -81,7 +81,10 @@
       ...(body === undefined ? {} : { body: JSON.stringify(body) })
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Could not access your notebook.');
+    if (!response.ok) {
+      if (result.code?.startsWith('DRIVE_')) window.notebookDrive?.required(result.code);
+      throw new Error(result.error || 'Could not access your notebook.');
+    }
     return result;
   }
   function setBusy(value) {
@@ -301,6 +304,7 @@
       return;
     }
     document.querySelector('[data-quran-help-tips-close]')?.click();
+    pendingSource = source;
     clearTimeout(saveTimer);
     const ownGeneration = ++generation;
     current = source; editor.value = savedText = ''; preview.innerHTML = ''; resetTags();
@@ -321,6 +325,7 @@
       const result = await api(`?source=${encodeURIComponent(source.source_key)}`);
       if (ownGeneration !== generation) return;
       current = result.note || source; editor.value = savedText = current.markdown; resetTags();
+      pendingSource = null;
       preview.innerHTML = current.html || ''; deleteButton.hidden = !current.version;
       markSource(current.source_key, !!current.version);
       status.textContent = ''; setBusy(false); mode(edit || !current.version);
@@ -500,13 +505,20 @@
     window.addEventListener('resize', checkMore);
   }
   document.addEventListener('hadithAuthChanged', () => {
-    ++generation; ++listRequest; ++statusEpoch; ++tagRequest; railTags = []; renderTagRail(); returnModal = null;
+    ++generation; ++listRequest; ++statusEpoch; ++tagRequest; railTags = []; renderTagRail(); returnModal = null; pendingSource = null;
     clearTimeout(saveTimer); saving = null; current = null; editor.value = savedText = ''; preview.innerHTML = ''; resetTags();
     existing.clear(); checked.clear(); paintButtons(); scheduleStatus();
     const ayahNote = document.querySelector('[data-quran-ayah-note][data-ayah-note-ref]');
     if (ayahNote) prepareAyahNote(ayahNote);
     setBusy(false); saveButton.disabled = true; deleteButton.hidden = true;
     bootstrap.Modal.getInstance(modal)?.hide(); loadList(); loadTags();
+  });
+  document.addEventListener('notebookDriveConnected', () => {
+    ++statusEpoch; checked.clear(); scheduleStatus(); loadList(); loadTags();
+    if (modal.classList.contains('show') && (pendingSource || (current && !dirty()))) open(pendingSource || current);
+  });
+  document.addEventListener('notebookDriveDisconnected', () => {
+    ++statusEpoch; existing.clear(); checked.clear(); paintButtons(); loadList(); loadTags();
   });
   let searchTimer;
   for (const id of ['notebook-search', 'notebook-tag']) document.getElementById(id)?.addEventListener('input', () => {

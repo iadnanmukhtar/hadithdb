@@ -80,7 +80,8 @@
     var settingsHref = isQuranArea || requestPath.indexOf('/quran/settings') === 0
       ? utils.quranUrl(req, '/quran/settings')
       : utils.urlFor(req, '/settings');
-    var isMoreArea = ['/settings', '/quran/settings', '/bookmarks', '/liked', '/commented', '/highlights', '/titled', '/mcp-server'].some(function (path) {
+    var isAboutArea = requestPath === '/about' || requestPath === '/about/';
+    var isMoreArea = ['/about', '/settings', '/quran/settings', '/bookmarks', '/liked', '/commented', '/highlights', '/titled', '/mcp-server'].some(function (path) {
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
         var isSirahArea = !isQuranArea && (isHistoryCatalogArea || (pageBook && pageBook.type === 'sirah') || /^\/(?:ibnhisham|history)(?:[/:]|$)/.test(requestPath));
@@ -127,7 +128,7 @@
     <menu class="col d-md-block d-none">
       
       <ul class="nav container-fluid justify-content-end top-nav-desktop-actions">
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/1') %>">Quran</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranTafsirArea) %>" href="https://quran.islamunlocked.com/quran">Quran</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>">Tafsir</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isSirahArea) %>" href="<%= utils.urlFor(req, '/ibnhisham') %>">Sirah</a></li>
@@ -145,6 +146,7 @@
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-sliders"></i> My Settings</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isMcpServerArea) %>" href="<%= utils.urlFor(req, '/mcp-server') %>"><i class="bi bi-braces"></i> MCP Server</a></li>
+            <li><a class="dropdown-item<%- activeNavAttrs(isAboutArea) %>" href="/about"><i class="bi bi-info-circle" aria-hidden="true"></i> About</a></li>
           </ul>
         </li>
         <li class="nav-item command-search-compact-item">
@@ -255,6 +257,7 @@
             isHighlightsArea: isHighlightsArea,
             isTitledArea: isTitledArea,
             isMcpServerArea: isMcpServerArea,
+            isAboutArea: isAboutArea,
             settingsHref: settingsHref
           }) %>
           <ul class="col-5 nav flex-column offcanvas-col2">
