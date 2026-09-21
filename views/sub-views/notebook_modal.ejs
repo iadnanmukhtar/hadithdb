@@ -34,6 +34,14 @@
 body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { display: none !important; }
 #notebook-editor { font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
 .notebook-markdown { overflow-wrap: anywhere; text-align: start; }
+.notebook-markdown :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; }
+.notebook-markdown > :first-child { margin-top: 0; }
+.notebook-markdown h1 { font-size: 1.4em; }
+.notebook-markdown h2 { font-size: 1.25em; }
+.notebook-markdown h3 { font-size: 1.15em; }
+.notebook-markdown h4 { font-size: 1.08em; }
+.notebook-markdown h5 { font-size: 1.04em; }
+.notebook-markdown h6 { font-size: 1em; }
 .notebook-markdown [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
 .notebook-markdown :is(p, h1, h2, h3, h4, h5, h6, li, td, th):dir(rtl), .notebook-markdown .notebook-arabic { font-family: Kitab, Quran, serif; line-height: 2; }
 .notebook-markdown .notebook-arabic { font-size: 1.2em; }
