@@ -4,17 +4,17 @@
 <%- include('sub-views/head.ejs', { site, page }); %>
 </head><body>
 <%- include('sub-views/header.ejs', { site, page }); %>
-<p class="container py-4" id="notebook-signin">Sign in to view your notebook.</p>
-<main class="container py-4" id="personal-notebook" data-notebook-auth data-nosnippet>
+<main class="container py-4" id="personal-notebook" data-nosnippet>
   <div class="notebook-layout">
   <section class="notebook-main" aria-label="Private notes">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h1 class="mb-0">My Notebook</h1>
     <button id="notebook-download-all" class="notebook-tool" type="button" title="Download notebook as ZIP" aria-label="Download notebook as ZIP" disabled><i class="bi bi-download" aria-hidden="true"></i></button>
   </div>
+  <p id="notebook-signin" class="text-muted mb-3" role="status">Sign-in is required to take notes.</p>
   <p class="small text-muted mb-3">Tip: In addition to creating a general note, you can take notes on hadith, Quran verses, and tafsir using the <i class="bi bi-sticky" aria-hidden="true"></i> note icon beside the content.</p>
   <label class="visually-hidden" for="notebook-search">Search notes</label>
-  <input class="form-control mb-3" id="notebook-search" type="search" dir="auto" placeholder="Search all notes by source or text">
+  <input class="form-control mb-3" id="notebook-search" disabled type="search" dir="auto" placeholder="Search all notes by source or text">
   <p id="notebook-list-status" role="status">Loading your notebook…</p>
   <div id="notebook-list"></div>
   <div id="notebook-sentinel" aria-hidden="true" style="height:1px"></div>
@@ -25,7 +25,7 @@
     <label class="visually-hidden" for="notebook-tag">Filter by tag</label>
     <div class="page-content-filter input-group command-search-filter-find mb-3">
       <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
-      <input class="form-control" id="notebook-tag" type="search" dir="auto" placeholder="Filter by tag">
+      <input class="form-control" id="notebook-tag" disabled type="search" dir="auto" placeholder="Filter by tag">
     </div>
     <div id="notebook-tags" class="nav flex-column"></div>
   </aside>

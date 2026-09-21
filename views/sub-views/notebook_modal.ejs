@@ -117,5 +117,8 @@ body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { d
 #notebook-title-editor { flex-shrink: 0; }
 #notebook-note-title { font-size: 1.1rem; font-weight: 600; margin-bottom: .75rem; overflow-wrap: anywhere; flex-shrink: 0; }
 #notebook-dates { width: 100%; font-size: .65rem; line-height: 1.4; text-align: start; }
+#personal-notebook.notebook-signed-out .notebook-tile { filter: grayscale(1); opacity: .55; }
+#personal-notebook .notebook-tile-open:disabled { cursor: not-allowed; }
+#personal-notebook .notebook-tile-open:disabled:hover { background: transparent; }
 </style>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>

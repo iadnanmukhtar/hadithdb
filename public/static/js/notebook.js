@@ -66,6 +66,7 @@
   const listStatus = document.getElementById('notebook-list-status');
   const more = document.getElementById('notebook-more');
   const sentinel = document.getElementById('notebook-sentinel');
+  let listSignedIn = false;
   let listLoading = false, hasMore = false, listFailed = false;
   let current = null, savedText = '', busy = false, generation = 0, notes = [], listRequest = 0, returnModal = null;
   let editing = false, saving = null, saveTimer, previewRequest = 0, statusTimer, statusEpoch = 0;
@@ -230,7 +231,10 @@
   async function loadTags() {
     if (!list) return;
     const request = ++tagRequest;
-    try { const result = await api('/tags'); if (request === tagRequest) { railTags = result.tags; renderTagRail(); } }
+    try {
+      if (!await window.hadithAuth?.getToken()) return;
+      if (request !== tagRequest) return;
+      const result = await api('/tags'); if (request === tagRequest) { railTags = result.tags; renderTagRail(); } }
     catch (_) { if (request === tagRequest) { railTags = []; renderTagRail(); } }
   }
   async function renderPreview() {
@@ -419,6 +423,8 @@
     for (const note of filtered) {
       const article = document.createElement('article'); article.className = 'notebook-tile' + (!note.version ? ' notebook-tile-new' : '');
       const button = document.createElement('button'); button.type = 'button'; button.className = 'notebook-tile-open';
+      button.disabled = !listSignedIn;
+      if (!listSignedIn) button.setAttribute('aria-describedby', 'notebook-signin');
       button.setAttribute('aria-label', `Open note: ${note.title || note.source_title}`);
       const heading = document.createElement('span'); heading.className = 'notebook-tile-title';
       const icon = document.createElement('span'); icon.className = note.version ? 'bi bi-sticky-fill' : 'bi bi-sticky'; icon.setAttribute('aria-hidden', 'true');
@@ -461,6 +467,20 @@
     if (!append) { notes = []; list.replaceChildren(); hasMore = false; downloadAll.disabled = true; }
     listStatus.textContent = 'Loading…';
     try {
+      const token = await window.hadithAuth?.getToken();
+      if (request !== listRequest) return;
+      listSignedIn = !!token;
+      document.getElementById('personal-notebook').classList.toggle('notebook-signed-out', !listSignedIn);
+      document.getElementById('notebook-signin').hidden = listSignedIn;
+      for (const id of ['notebook-search', 'notebook-tag']) document.getElementById(id).disabled = !listSignedIn;
+      if (!listSignedIn) {
+        notes = []; railTags = []; hasMore = false;
+        document.getElementById('notebook-search').value = '';
+        document.getElementById('notebook-tag').value = '';
+        downloadAll.disabled = true;
+        renderTagRail(); renderList();
+        return;
+      }
       const params = new URLSearchParams({ offset: append ? notes.length : 0,
         q: document.getElementById('notebook-search').value.trim(), tag: document.getElementById('notebook-tag').value.trim() });
       const result = await api(`?${params}`);
