@@ -5,17 +5,27 @@
 </head><body>
 <%- include('sub-views/header.ejs', { site, page }); %>
 <p class="container py-4" id="notebook-signin">Sign in to view your notebook.</p>
-<main class="container col-lg-9 py-4" id="personal-notebook" data-notebook-auth data-nosnippet>
+<main class="container py-4" id="personal-notebook" data-notebook-auth data-nosnippet>
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h1 class="mb-0">My Notebook</h1>
     <button id="notebook-download-all" class="notebook-tool" type="button" title="Download notebook as ZIP" aria-label="Download notebook as ZIP" disabled><i class="bi bi-download" aria-hidden="true"></i></button>
   </div>
+  <div class="notebook-layout">
+  <section class="notebook-main" aria-label="Private notes">
   <label class="visually-hidden" for="notebook-search">Search notes</label>
-  <input class="form-control mb-3" id="notebook-search" type="search" dir="auto" placeholder="Search loaded notes by source or text">
+  <input class="form-control mb-3" id="notebook-search" type="search" dir="auto" placeholder="Search all notes by source or text">
   <p id="notebook-list-status" role="status">Loading your notebook…</p>
   <div id="notebook-list"></div>
   <div id="notebook-sentinel" aria-hidden="true" style="height:1px"></div>
   <button class="btn btn-outline-secondary" id="notebook-more" hidden>Retry</button>
+  </section>
+  <aside class="notebook-tag-rail" aria-label="Notebook tags">
+    <div class="heading-toc-book-name" role="heading" aria-level="2">Tags</div>
+    <label class="visually-hidden" for="notebook-tag">Filter by tag</label>
+    <input class="form-control mb-3" id="notebook-tag" type="search" dir="auto" placeholder="Filter by tag">
+    <div id="notebook-tags" class="nav flex-column"></div>
+  </aside>
+  </div>
 </main>
 <%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
 <%- include('sub-views/footer.ejs', { site, page }); %>

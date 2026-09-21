@@ -31,6 +31,12 @@ router.get('/ayah', async (req, res, next) => {
     res.json({ source, note: await Notebook.get(req.user.uid, source.source_key) });
   } catch (err) { next(err); }
 });
+router.get('/tags', async (req, res, next) => {
+  try { res.json({ tags: await Notebook.tagList(req.user.uid) }); } catch (err) { next(err); }
+});
+router.post('/download', (req, res, next) => {
+  try { res.json({ markdown: Notebook.exportMarkdown(req.body || {}) }); } catch (err) { next(err); }
+});
 router.get('/download', async (req, res, next) => {
   try {
     const zip = await Notebook.exportZip(req.user.uid);
@@ -42,7 +48,7 @@ router.get('/', async (req, res, next) => {
     if (req.query.source) return res.json({ note: await Notebook.get(req.user.uid, req.query.source) });
     const offset = Number(req.query.offset || 0);
     if (!Number.isSafeInteger(offset) || offset < 0) return res.status(400).json({ error: 'Invalid page.' });
-    res.json(await Notebook.list(req.user.uid, offset));
+    res.json(await Notebook.list(req.user.uid, offset, req.query.q || '', req.query.tag || ''));
   } catch (err) { next(err); }
 });
 router.put('/', async (req, res, next) => {

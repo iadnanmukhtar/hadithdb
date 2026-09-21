@@ -719,7 +719,8 @@ body:has(.search-results-layout) {
 }
 
 .quran-heading-toc .nav-link,
-.hadith-heading-toc .nav-link {
+.hadith-heading-toc .nav-link,
+.notebook-tag-rail .nav-link {
 	border-left: 2px solid transparent;
 	color: var(--bs-secondary-color);
 	font-size: .82rem;
@@ -744,12 +745,15 @@ body:has(.search-results-layout) {
 .quran-heading-toc .nav-link:hover,
 .quran-heading-toc .nav-link:focus-visible,
 .hadith-heading-toc .nav-link:hover,
-.hadith-heading-toc .nav-link:focus-visible {
+.hadith-heading-toc .nav-link:focus-visible,
+.notebook-tag-rail .nav-link:hover,
+.notebook-tag-rail .nav-link:focus-visible {
 	color: var(--bs-emphasis-color);
 }
 
 .quran-heading-toc .nav-link.active,
-.hadith-heading-toc .nav-link.active {
+.hadith-heading-toc .nav-link.active,
+.notebook-tag-rail .nav-link.active {
 	border-left-color: var(--bs-primary);
 	color: var(--bs-primary);
 	font-weight: 600;

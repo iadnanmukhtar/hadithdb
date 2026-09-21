@@ -155,7 +155,9 @@ test('exports the entire owned notebook as distinct UTF-8 Markdown files', async
   for (const row of rows) {
     const entry = entries.find(entry => entry.entryName.endsWith(`(${row.source_key.replace(/:/g, '-')}).md`));
     expect(entry.entryName).not.toMatch(/[\\/]/);
-    expect(entry.getData().toString('utf8')).toBe(row.markdown);
+    const exported = require('front-matter')(entry.getData().toString('utf8'));
+    expect(exported.body).toBe(row.markdown);
+    expect(exported.attributes).toEqual({ tags: [], reference: row.source_key });
   }
   expect(global.query.mock.calls.at(-1)[0]).toContain("WHERE user_uid='alice'");
   expect(global.query.mock.calls.at(-1)[0]).not.toContain('LIMIT');
@@ -218,4 +220,99 @@ test('ayah menu rejects mismatched source records', async () => {
   Item.itemFromRef.mockResolvedValue({ ref: 'quran:2:254', id: 42 });
   expect((await fetch(`${base}/ayah?reference=quran:2:255`, { headers: { Authorization: 'Bearer alice' } })).status).toBe(404);
   expect(global.query).not.toHaveBeenCalled();
+});
+
+test('normalizes Arabic and Latin diacritics without changing saved Markdown', async () => {
+  expect(Notebook.normalizeSearch('صَلَاة Café Ṣalāh')).toBe('صلاة cafe salah');
+  await Notebook.save('alice', { source_key: 'general', markdown: 'صَلَاة Café #صَلَاة #Café', version: 0 });
+  const sql = global.query.mock.calls.find(([sql]) => sql.startsWith('INSERT'))[0];
+  expect(sql).toContain('صَلَاة Café #صَلَاة #Café');
+  expect(sql).toContain('صلاة cafe #صلاة #cafe');
+});
+test('extracts distinct multilingual hashtags, excluding headings, code and URL fragments', () => {
+  expect(Notebook.hashtags('# Heading\n\n#prayer #صَلَاة #Café #cafe #prayer_times #daily-notes `#code` https://example.org/#fragment\n\n```\n#fenced\n```')).toEqual(['prayer', 'صَلَاة', 'cafe', 'prayer_times', 'daily-notes']);
+});
+test('search and exact hashtag conditions run in SQL before pagination and remain owner scoped', async () => {
+  const response = await fetch(`${base}?q=${encodeURIComponent('Ṣalāh 100%_')}&tag=${encodeURIComponent('#صَلَاة')}&offset=12&uid=bob`, { headers: { Authorization: 'Bearer alice' } });
+  expect(response.status).toBe(200);
+  const sql = global.query.mock.calls.at(-1)[0];
+  expect(sql).toContain("user_uid='alice' AND LOCATE('salah 100%_', search_text)>0 AND LOCATE('\\nصلاة\\n', search_tags)>0");
+  expect(sql).toContain('LIMIT 13 OFFSET 12');
+});
+test.each(['tag=a%25', 'q[x]=bad', 'tag=a%20b'])('rejects malformed notebook filters: %s', async query => {
+  const response = await fetch(`${base}?${query}`, { headers: { Authorization: 'Bearer alice' } });
+  expect(response.status).toBe(400);
+  expect(global.query).not.toHaveBeenCalled();
+});
+
+test('accepts space-delimited tags and normalizes duplicate identities', () => {
+  expect(Notebook.parseTags('prayer #صَلَاة Café cafe')).toEqual(['prayer', 'صَلَاة', 'cafe']);
+  expect(() => Notebook.parseTags('bad,tag')).toThrow();
+});
+test('separate tags are stored and included in exact hashtag search metadata', async () => {
+  await Notebook.save('alice', { source_key: 'general', markdown: 'My note #inline', tags: 'prayer #صَلَاة', version: 0 });
+  const sql = global.query.mock.calls.find(([sql]) => sql.startsWith('INSERT'))[0];
+  expect(sql).toContain('[\\"prayer\\",\\"صَلَاة\\"]');
+  expect(sql).toContain('\\ninline\\nprayer\\nصلاة\\n');
+});
+test('tag rail aggregates all owned notes independently of pagination', async () => {
+  global.query.mockResolvedValue([{ search_tags: '\nprayer\nصلاة\n' }, { search_tags: '\nprayer\n' }]);
+  const response = await fetch(`${base}/tags?uid=bob`, { headers: { Authorization: 'Bearer alice' } });
+  expect(response.status).toBe(200);
+  expect((await response.json()).tags).toEqual(expect.arrayContaining([{ tag: 'prayer', count: 2 }, { tag: 'صلاة', count: 1 }]));
+  expect(global.query.mock.calls.at(-1)[0]).toBe("SELECT search_tags FROM user_notebook WHERE user_uid='alice'");
+  expect((await fetch(`${base}/tags`)).status).toBe(401);
+});
+
+test('Markdown exports include Obsidian tags and canonical references without changing the body', () => {
+  const body = '# Test Note\n\nExact **text**. #inline';
+  const exported = Notebook.exportMarkdown({ source_key: 'item:42', source_url: '/bukhari:100?x=1', markdown: body, tags: 'action angels attributes inline true 123 صلاة' });
+  const parsed = require('front-matter')(exported);
+  expect(parsed.attributes).toEqual({ tags: ['inline', 'action', 'angels', 'attributes', 'true', '123', 'صلاة'], reference: 'bukhari:100' });
+  expect(parsed.body).toBe(body);
+  expect(exported).toContain('reference: bukhari:100\n---');
+});
+test('general export reference is general and empty tags remain a YAML list', () => {
+  const exported = Notebook.exportMarkdown({ source_key: 'general', source_url: '/notebook', markdown: 'My thoughts', tags: [] });
+  expect(require('front-matter')(exported).attributes).toEqual({ tags: [], reference: 'general' });
+});
+test('individual export includes current draft tags and text and requires authentication', async () => {
+  const draft = { source_key: 'item:42', source_url: '/quran:2:255', markdown: 'Unsaved draft', tags: 'reflection صلاة' };
+  const response = await fetch(`${base}/download`, { method: 'POST', headers: { Authorization: 'Bearer alice', 'Content-Type': 'application/json' }, body: JSON.stringify(draft) });
+  expect(response.status).toBe(200);
+  const parsed = require('front-matter')((await response.json()).markdown);
+  expect(parsed.attributes).toEqual({ tags: ['reflection', 'صلاة'], reference: 'quran:2:255' });
+  expect(parsed.body).toBe('Unsaved draft');
+  expect(global.query).not.toHaveBeenCalled();
+  expect((await fetch(`${base}/download`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft) })).status).toBe(401);
+});
+
+test('ZIP frontmatter includes stored and inline tags with canonical references', async () => {
+  global.query.mockResolvedValue([{ source_key: 'item:1', source_title: 'Ayah', source_url: '/quran/quran:2:255', tags: '["reflection","صلاة"]', markdown: 'Text #faith' }]);
+  const zip = new (require('adm-zip'))(await Notebook.exportZip('alice'));
+  expect(require('front-matter')(zip.getEntries()[0].getData().toString('utf8')).attributes).toEqual({ tags: ['faith', 'reflection', 'صلاة'], reference: 'quran:2:255' });
+});
+
+test('optional title is independently stored and searchable while source identity stays intact', async () => {
+  await Notebook.save('alice', { source_key: 'general', title: 'Ṣalāh reflection', markdown: 'My note', tags: [], version: 0 });
+  const sql = global.query.mock.calls.find(([sql]) => sql.startsWith('INSERT'))[0];
+  expect(sql).toContain("'General note', '/notebook'");
+  expect(sql).toContain('Ṣalāh reflection');
+  expect(sql).toContain('salah reflection');
+  expect(sql).toContain('created_at');
+  expect(sql).toContain('CURRENT_TIMESTAMP(3)');
+});
+test('editing a title updates modification time without changing creation time', async () => {
+  global.query.mockImplementation(async sql => sql.startsWith('UPDATE') ? { affectedRows: 1 } : []);
+  await Notebook.save('alice', { source_key: 'general', title: 'New title', markdown: 'Note', tags: [], version: 1 });
+  const sql = global.query.mock.calls.find(([sql]) => sql.startsWith('UPDATE'))[0];
+  expect(sql).toContain('title=\'New title\'');
+  expect(sql).toContain('updated_at=CURRENT_TIMESTAMP(3)');
+  expect(sql).not.toContain('created_at');
+});
+test('title-only notes save, oversized titles fail, and exported titles are YAML safe', async () => {
+  await expect(Notebook.save('alice', { source_key: 'general', title: 'Title only', markdown: '', version: 0 })).resolves.toBeNull();
+  await expect(Notebook.save('alice', { source_key: 'general', title: 'a'.repeat(501), markdown: 'Note', version: 0 })).rejects.toMatchObject({ status: 400 });
+  const exported = Notebook.exportMarkdown({ source_key: 'general', title: 'Thoughts: "today"', markdown: 'Note', tags: [] });
+  expect(require('front-matter')(exported).attributes.title).toBe('Thoughts: "today"');
 });
