@@ -148,37 +148,31 @@
     if (sources.length) { paintButtons(); scheduleStatus(); }
   }
   let ayahNoteRequest = 0;
-  async function prepareAyahNote(button) {
-    const request = ++ayahNoteRequest, ownGeneration = generation;
-    const ref = button.dataset.ayahNoteRef;
-    buttons.delete(button);
-    button.disabled = true;
+  function prepareAyahNote(button) {
+    // Ayah menus always use the outline icon; resolve the note only on click.
+    button.disabled = false;
     button.firstElementChild.className = 'bi bi-sticky';
-    button.dataset.hasNote = 'false';
-    delete button.dataset.noteKey;
-    if (!await window.hadithAuth?.getToken()) return;
-    try {
-      const result = await api(`/ayah?reference=${encodeURIComponent(ref)}`);
-      if (request !== ayahNoteRequest || ownGeneration !== generation || button.dataset.ayahNoteRef !== ref) return;
-      button.dataset.noteKey = result.source.source_key;
-      button.dataset.noteTitle = result.source.source_title;
-      button.dataset.noteUrl = result.source.source_url;
-      buttons.set(button, button);
-      markSource(result.source.source_key, !!result.note?.version);
-      button.disabled = false;
-      if (!button.dataset.noteBound) {
-        button.dataset.noteBound = '1';
-        button.addEventListener('click', event => {
-          event.preventDefault(); event.stopPropagation();
-          const menu = button.closest('[role="menu"]');
-          if (menu) menu.hidden = true;
-          document.querySelectorAll('[data-quran-ayah-actions][aria-expanded="true"]').forEach(marker => marker.setAttribute('aria-expanded', 'false'));
-          open(sourceFor(button));
-        });
+    button.title = 'Open note';
+    if (button.dataset.noteBound) return;
+    button.dataset.noteBound = '1';
+    button.addEventListener('click', async event => {
+      event.preventDefault(); event.stopPropagation();
+      const ref = button.dataset.ayahNoteRef, ownGeneration = generation, request = ++ayahNoteRequest;
+      const menu = button.closest('[role="menu"]');
+      if (menu) menu.hidden = true;
+      document.querySelectorAll('[data-quran-ayah-actions][aria-expanded="true"]').forEach(marker => marker.setAttribute('aria-expanded', 'false'));
+      try {
+        if (!await window.hadithAuth?.getToken()) {
+          window.hadithAuth?.requireToken?.('Please sign in to take notes.');
+          return;
+        }
+        const result = await api(`/ayah?reference=${encodeURIComponent(ref)}`);
+        if (request !== ayahNoteRequest || ownGeneration !== generation || button.dataset.ayahNoteRef !== ref) return;
+        open(result.source);
+      } catch (_) {
+        if (request === ayahNoteRequest) button.title = 'Could not load note. Click to retry.';
       }
-    } catch (_) {
-      if (request === ayahNoteRequest) button.title = 'Could not load note. Reopen the ayah menu to retry.';
-    }
+    });
   }
   document.addEventListener('quranAyahNoteTarget', event => prepareAyahNote(event.detail.button));
   function mode(edit) {
