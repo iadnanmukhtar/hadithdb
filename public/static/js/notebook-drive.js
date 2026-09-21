@@ -19,6 +19,8 @@
     for (const panel of panels) {
       panel.hidden = !state;
       if (!state) continue;
+      panel.dataset.connected = String(!!state.connected);
+      panel.querySelector('[data-notebook-drive-icon]')?.setAttribute('aria-label', state.connected ? 'Google Drive connected' : 'Google Drive disconnected');
       panel.querySelector('[data-notebook-drive-message]').textContent = message || (!state.configured ? 'Google Drive storage is being set up. Your existing notes are preserved.' : !state.connected ? 'Connect Google Drive to store your notes in a Hadith Unlocked folder. Existing notes will be copied there.' : !state.migrated ? 'Finish moving your existing notes to Google Drive.' : 'Your notes are stored in Google Drive.');
       const button = panel.querySelector('[data-notebook-drive-connect]');
       button.hidden = !state.configured || (state.connected && state.migrated);

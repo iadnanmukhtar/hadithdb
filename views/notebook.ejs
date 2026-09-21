@@ -12,10 +12,11 @@
     <button id="notebook-download-all" class="notebook-tool" type="button" title="Download notebook as ZIP" aria-label="Download notebook as ZIP" disabled><i class="bi bi-download" aria-hidden="true"></i></button>
   </div>
   <div class="small mb-3" data-notebook-drive-panel hidden>
+    <%- include('sub-views/notebook_drive_icon.ejs'); %>
     <span data-notebook-drive-message role="status"></span>
-    <button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-notebook-drive-connect hidden>Connect Google Drive</button>
-    <a data-notebook-drive-folder target="_blank" rel="noopener" class="ms-1" hidden>Open folder</a>
-    <button type="button" class="btn btn-sm btn-link" data-notebook-drive-disconnect hidden>Disconnect</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-notebook-drive-connect hidden>Connect Google Drive</button>
+    <a data-notebook-drive-folder target="_blank" rel="noopener" class="notebook-drive-action ms-1" hidden>Open folder</a>
+    <button type="button" class="btn btn-link notebook-drive-action ms-2 p-0" data-notebook-drive-disconnect hidden>Disconnect</button>
   </div>
   <p id="notebook-signin" class="text-muted mb-3" role="status">Sign-in is required to take notes.</p>
   <p class="small text-muted mb-3">Tip: In addition to creating a general note, you can take notes on hadith, Quran verses, and tafsir using the <i class="bi bi-sticky" aria-hidden="true"></i> note icon beside the content.</p>

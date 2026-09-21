@@ -13456,3 +13456,10 @@ html:not([data-account-signed-in="true"]) .comment-composer { opacity: .6; }
 
 html:not([data-account-signed-in="true"]) [data-notebook-auth],
 html[data-account-signed-in="true"] #notebook-signin { display: none !important; }
+
+[data-notebook-drive-panel] .notebook-drive-action { font: inherit; vertical-align: baseline; }
+[data-notebook-drive-panel]:not([hidden]):has([data-notebook-drive-connect]:not([hidden])) { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+[data-notebook-drive-panel]:has([data-notebook-drive-connect]:not([hidden])) [data-notebook-drive-message] { flex: 1 1 16rem; }
+[data-notebook-drive-connect] { flex-shrink: 0; }
+.notebook-drive-icon { width: 1.25em; height: 1.1em; margin-inline-end: .4em; vertical-align: -.15em; filter: grayscale(1); opacity: .5; }
+[data-notebook-drive-panel][data-connected="true"] .notebook-drive-icon { filter: none; opacity: 1; }

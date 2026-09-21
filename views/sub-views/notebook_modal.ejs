@@ -8,9 +8,10 @@
     <div class="modal-body">
       <div id="notebook-surface">
         <div class="small mb-2" data-notebook-drive-panel hidden>
+          <%- include('notebook_drive_icon.ejs'); %>
           <span data-notebook-drive-message role="status"></span>
-          <button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-notebook-drive-connect hidden>Connect Google Drive</button>
-          <a data-notebook-drive-folder target="_blank" rel="noopener" class="ms-1" hidden>Open folder</a>
+          <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-notebook-drive-connect hidden>Connect Google Drive</button>
+          <a data-notebook-drive-folder target="_blank" rel="noopener" class="notebook-drive-action ms-1" hidden>Open folder</a>
         </div>
         <input id="notebook-title-editor" class="form-control mb-2" dir="auto" maxlength="500" aria-label="Note title (optional)" placeholder="Title (optional)" hidden>
         <div id="notebook-note-title" dir="auto" hidden></div>
