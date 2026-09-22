@@ -332,3 +332,36 @@ test('all note links open safely in a new tab, including wiki links and referenc
     expect(link).toContain('rel="noopener noreferrer"');
   }
 });
+
+test('notes render footnotes with local references and return links', () => {
+  const html = Notebook.render('A statement[^source], cited twice[^source].\n\n[^source]: Supporting **detail** and العربية.');
+  expect(html).toContain('href="#fn-notebook-1"');
+  expect(html).toContain('id="fn-notebook-1"');
+  expect(html).toContain('href="#fnref-notebook-1"');
+  expect(html).toContain('href="#fnref-notebook-1:1"');
+  expect(html).toContain('<strong>detail</strong>');
+  expect(html).toContain('notebook-arabic');
+  expect(html).not.toContain('target="_blank"');
+});
+test('inline footnotes support note links while code stays literal', () => {
+  const html = Notebook.render('Text^[See [[Another note]] and [source](https://example.com).] `[^literal]`');
+  expect(html).toContain('class="footnotes"');
+  expect(html).toContain('data-notebook-wiki="Another note"');
+  expect(html).toContain('target="_blank"');
+  expect(html).toContain('<code>[^literal]</code>');
+});
+
+test.each([['١٢', '12'], ['۱۲', '12']])('preserves %s in references and uses English digits in the footnote list', (label, number) => {
+  const html = Notebook.render(`نص[^${label}] ومرة أخرى[^${label}].\n\n[^${label}]: الشرح.`);
+  expect((html.match(new RegExp(`\\[${label}\\]`, 'g')) || [])).toHaveLength(2);
+  expect(html).toContain(`<li value="${number}" id="fn-notebook-1"`);
+  expect(html).toContain('href="#fnref-notebook-1:1"');
+  expect(html).not.toContain(`[${number}]`);
+});
+test('mixed footnote numeral styles retain correct individual list numbers', () => {
+  const html = Notebook.render('First[^٣] then second[^named].\n\n[^٣]: First detail.\n[^named]: Second detail.');
+  expect(html).toContain('>[٣]</a>');
+  expect(html).toContain('>[2]</a>');
+  expect(html).toContain('<li value="3" id="fn-notebook-1"');
+  expect(html).toContain('<li value="2" id="fn-notebook-2"');
+});
