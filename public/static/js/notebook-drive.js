@@ -17,7 +17,8 @@
   }
   function paint() {
     for (const panel of panels) {
-      panel.hidden = !state || (panel.hasAttribute('data-notebook-drive-compact') && state.connected && state.migrated && !message);
+      const settingsPanel = panel.hasAttribute('data-notebook-drive-settings');
+      panel.hidden = !state || (!settingsPanel && state.connected && state.migrated && !message);
       if (!state) continue;
       panel.dataset.connected = String(!!state.connected);
       panel.querySelector('[data-notebook-drive-icon]')?.setAttribute('aria-label', state.connected ? 'Google Drive connected' : 'Google Drive disconnected');
@@ -27,10 +28,12 @@
       button.disabled = working;
       button.textContent = state.connected ? 'Finish moving notes' : 'Connect Google Drive';
       const folder = panel.querySelector('[data-notebook-drive-folder]');
-      folder.hidden = !state.connected || !state.folderUrl;
-      if (state.folderUrl) folder.href = state.folderUrl;
+      if (folder) {
+        folder.hidden = !settingsPanel || !state.connected || !state.folderUrl;
+        if (state.folderUrl) folder.href = state.folderUrl;
+      }
       const disconnect = panel.querySelector('[data-notebook-drive-disconnect]');
-      if (disconnect) { disconnect.hidden = !state.connected; disconnect.disabled = working; }
+      if (disconnect) { disconnect.hidden = !settingsPanel || !state.connected; disconnect.disabled = working; }
     }
   }
   async function refresh() {

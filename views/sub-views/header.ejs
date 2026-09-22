@@ -326,6 +326,19 @@
   </nav>
   <% } %>
 
+  <% if (page.menu === 'Notebook') { %>
+  <nav class="row g-0 chapter-toc search-filter-top-menu" aria-label="Notebook filters">
+    <div class="col-12 chapter-toc-toolbar">
+      <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#notebook-mobile-filter-panel" role="button" aria-expanded="false" aria-controls="notebook-mobile-filter-panel" title="Show notebook filters">
+        <i class="bi bi-funnel" aria-hidden="true"></i>
+        <span>Notebook Filters</span>
+        <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
+      </a>
+    </div>
+    <div id="notebook-mobile-filter-panel" class="col-12 collapse chapter-toc-panel"></div>
+  </nav>
+  <% } %>
+
   <% if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
   <%- include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true }); %>
   <% } else if (page.menu === 'Chapter' || page.menu === 'Section') {

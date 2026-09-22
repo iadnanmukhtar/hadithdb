@@ -299,6 +299,7 @@
                 </button>
               `;
               const editControls = deleted ? '' : (c.canEdit ? `<button type="button" class="comment-action comment-edit" data-id="${c.id}" aria-label="Edit" title="Edit"><i class="bi bi-pencil" aria-hidden="true"></i></button>` : '');
+              const noteControls = !deleted && c.canEdit && container.dataset.endpoint === '/comments' ? `<button type="button" class="comment-action comment-save-note" data-id="${c.id}" aria-label="Save as note" title="Save as note"><i class="bi bi-sticky" aria-hidden="true"></i></button>` : '';
               const deleteControls = deleted ? '' : (c.canDelete ? `<button type="button" class="comment-action comment-delete comment-action-delete" data-id="${c.id}" aria-label="Delete" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>` : '');
               const replyControls = deleted ? '' : `<button type="button" class="comment-action comment-reply" data-id="${c.id}" aria-label="Reply" title="Reply"><i class="bi bi-reply" aria-hidden="true"></i></button>`;
               item.innerHTML = `
@@ -320,6 +321,7 @@
                       <span class="comment-time" title="${escapeHtml(dateMeta.fullLabel)}">${escapeHtml(dateMeta.shortLabel)}</span>
                       ${voteControls}
                       ${replyControls}
+                      ${noteControls}
                       ${editControls}
                       ${deleteControls}
                     </div>`}
@@ -351,6 +353,19 @@
               cancelReply.classList.remove('d-none');
               setFormStatus(`Replying to ${parentComment && parentComment.user && parentComment.user.name ? parentComment.user.name : 'this reflection'}`);
               textarea.focus();
+            };
+          });
+          threadEl.querySelectorAll('.comment-save-note').forEach((btn) => {
+            btn.onclick = () => {
+              const comment = comments.find(c => String(c.id) === btn.dataset.id);
+              if (!comment || !comment.canEdit || comment.deleted) return;
+              const reference = container.dataset.ref || '';
+              document.dispatchEvent(new CustomEvent('notebookSaveReflection', { detail: {
+                source_key: `${targetType === 'toc' ? 'heading' : 'item'}:${targetId}`,
+                source_title: reference || 'Reflection',
+                source_url: reference ? '/' + reference.replace(/^\//, '') : location.pathname,
+                markdown: '', version: 0, reflectionMarkdown: comment.text
+              } }));
             };
           });
           threadEl.querySelectorAll('.comment-edit').forEach((btn) => {

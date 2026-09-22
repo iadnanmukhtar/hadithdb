@@ -1,0 +1,58 @@
+<div class="modal fade" id="notebook-help-modal" tabindex="-1" aria-labelledby="notebook-help-title" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="notebook-help-title">Taking notes</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close help"></button>
+      </div>
+      <div class="modal-body">
+        <h3 class="fs-6 fw-bold">Start a note</h3>
+        <ol>
+          <li>Sign in and connect your Google Drive from <a href="<%= utils.urlFor(req, '/settings') %>">My Settings</a>. Your notes are saved as Markdown files in your own Drive.</li>
+          <li>Open the general note in My Notebook, or select the <i class="bi bi-sticky" aria-hidden="true"></i> note icon beside a hadith, Quran ayah, or tafsir.</li>
+          <li>Give the note a title that is different from your other note titles, then write your note. Changes save automatically after you pause typing; use the checkmark to save and preview.</li>
+        </ol>
+        <p>Use the eye/pencil control to switch between preview and editing. Add tags separated by spaces, or write hashtags such as <code>#reflection</code> in your note. Use search and tag filters to find notes later.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Markdown basics</h3>
+        <p>Type these examples in the editor. Formatting appears in preview.</p>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th scope="col">Formatting</th><th scope="col">What to type</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Headings</th><td><code># Main heading</code><br><code>## Section heading</code><br><code>### Smaller heading</code></td></tr>
+              <tr><th scope="row">Emphasis</th><td><code>**bold**</code>, <code>*italic*</code>, <code>~~strikethrough~~</code></td></tr>
+              <tr><th scope="row">Lists</th><td><code>- A bullet point</code><br><code>1. A numbered point</code></td></tr>
+              <tr><th scope="row">Quotation</th><td><code>&gt; Quoted text</code></td></tr>
+              <tr><th scope="row">Link</th><td><code>[Link text](https://example.com)</code></td></tr>
+              <tr><th scope="row">Inline code</th><td><code>`literal text`</code></td></tr>
+              <tr><th scope="row">Divider</th><td><code>---</code> on its own line</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Leave a blank line between paragraphs. Arabic and English can be used together; text direction adjusts automatically.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Link your notes</h3>
+        <p>Type <code>[[</code> followed by at least two letters from a note title to see suggestions. Matching ignores case and diacritics and can find words anywhere in a title.</p>
+        <p><code>[[The Mahdi]]</code> links to that note. Use <code>[[The Mahdi|my research]]</code> to display a different label. Note links and ordinary web links open in a new tab.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Expand a reference</h3>
+        <p>Type a plain reference such as <code>bukhari:1</code>, <code>quran:1:1</code>, or <code>quran:17:18-20</code>. In preview, select its <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i> expand icon to replace it with the Arabic text, English translation, and source citation. Quran ranges include each ayah in order, in ordinary Arabic script.</p>
+        <p>The expand icon is not shown for references inside an explicit Markdown link or code.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Footnotes</h3>
+        <p>Put the reference in your text and its definition on a separate line:</p>
+        <pre class="bg-body-tertiary rounded p-3"><code>A point worth explaining.[^1]
+
+[^1]: The explanation goes here.</code></pre>
+        <p>Arabic digits work too: <code>[^١]</code> with <code>[^١]: Explanation</code>. References keep the digits you typed; the footnote list uses English digits.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Download your notes</h3>
+        <p class="mb-0">The download icon inside a note saves that note as a Markdown file. The download icon on My Notebook saves your notebook as a ZIP file.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Got it</button>
+      </div>
+    </div>
+  </div>
+</div>

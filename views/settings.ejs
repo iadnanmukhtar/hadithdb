@@ -35,6 +35,22 @@
         </label>
       </section>
 
+      <section class="border-top pt-3 mt-3" id="settings-google-drive-section">
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+          <div>
+            <h2 class="fs-5 fw-bold mb-1">Google Drive</h2>
+            <p class="text-muted small mb-0">Manage Google Drive storage for My Notebook. Sign in to manage your connection.</p>
+          </div>
+        </div>
+        <div class="small mb-3" data-notebook-drive-panel data-notebook-drive-settings hidden>
+          <%- include('sub-views/notebook_drive_icon.ejs'); %>
+          <span data-notebook-drive-message role="status"></span>
+          <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-notebook-drive-connect hidden>Connect Google Drive</button>
+          <a data-notebook-drive-folder target="_blank" rel="noopener" class="notebook-drive-action ms-1" hidden>Open folder</a>
+          <button type="button" class="btn btn-link notebook-drive-action ms-2 p-0" data-notebook-drive-disconnect hidden>Disconnect</button>
+        </div>
+      </section>
+
       <section class="border-top pt-3" id="settings-payments-section" <%= paymentFeatureEnabled ? '' : 'hidden' %>>
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
           <div>

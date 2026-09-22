@@ -62,6 +62,21 @@
     } catch (err) { if (ownGeneration === generation) listStatus.textContent = err.message; }
     finally { if (ownGeneration === generation) downloadAll.disabled = false; }
   });
+  const mobileFilters = document.getElementById('notebook-mobile-filter-panel');
+  const tagRail = document.querySelector('.notebook-tag-rail');
+  const tagRailSlot = document.querySelector('.notebook-tag-rail-slot');
+  if (mobileFilters && tagRail && tagRailSlot) {
+    const desktop = window.matchMedia('(min-width: 992px)');
+    function positionTagFilters() {
+      // Move the same controls so selected tags, search text and listeners survive resizing.
+      (desktop.matches ? tagRailSlot : mobileFilters).appendChild(tagRail);
+      if (desktop.matches && mobileFilters.classList.contains('show'))
+        bootstrap.Collapse.getOrCreateInstance(mobileFilters, { toggle: false }).hide();
+      if (typeof window.updateFixedHeaderOffset === 'function') window.updateFixedHeaderOffset();
+    }
+    desktop.addEventListener('change', positionTagFilters);
+    positionTagFilters();
+  }
   const list = document.getElementById('notebook-list');
   const listStatus = document.getElementById('notebook-list-status');
   const more = document.getElementById('notebook-more');
@@ -325,6 +340,19 @@
     showPreview();
     return save();
   }
+  function importReflection(source) {
+    const text = source.reflectionMarkdown?.trim();
+    if (!text) return;
+    if (!editor.value.includes(text)) editor.value = [editor.value.trimEnd(), text].filter(Boolean).join('\n\n');
+    if (!titleEditor.value.trim()) titleEditor.value = `Reflections on ${source.source_title}`.slice(0, 500);
+    mode(true);
+    scheduleSave();
+  }
+  document.addEventListener('notebookSaveReflection', event => {
+    const source = event.detail;
+    if (!source || !/^(item|heading):[1-9]\d*$/.test(source.source_key) || typeof source.reflectionMarkdown !== 'string') return;
+    open(source, true);
+  });
   async function open(source, edit = false) {
     if (busy || saving) return;
     if (!await window.hadithAuth?.getToken()) {
@@ -357,6 +385,7 @@
       preview.innerHTML = current.html || ''; deleteButton.hidden = !current.version;
       markSource(current.source_key, !!current.version);
       status.textContent = ''; setBusy(false); mode(edit || !current.version);
+      importReflection(source);
     } catch (err) {
       if (ownGeneration !== generation) return;
       status.textContent = err.message; busy = false; current = null;
