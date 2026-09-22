@@ -322,3 +322,13 @@ test('title-only notes save, oversized titles fail, and exported titles are YAML
   const exported = Notebook.exportMarkdown({ source_key: 'general', title: 'Thoughts: "today"', markdown: 'Note', tags: [] });
   expect(require('front-matter')(exported).attributes.title).toBe('Thoughts: "today"');
 });
+
+test('all note links open safely in a new tab, including wiki links and references', () => {
+  const html = Notebook.render('[External](https://example.com) [Hadith](/bukhari:100) bukhari:100 [[Another note|Alias]]');
+  const links = [...html.matchAll(/<a\b[^>]*>/g)].map(match => match[0]);
+  expect(links).toHaveLength(4);
+  for (const link of links) {
+    expect(link).toContain('target="_blank"');
+    expect(link).toContain('rel="noopener noreferrer"');
+  }
+});

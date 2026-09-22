@@ -459,11 +459,6 @@
       await open(result.note);
     } catch (err) { if (ownGeneration !== generation) return; if (modal.classList.contains('show')) status.textContent = err.message; else if (listStatus) listStatus.textContent = err.message; }
   }
-  document.addEventListener('click', event => {
-    const link = event.target.closest('[data-notebook-wiki]');
-    if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-    event.preventDefault(); openWiki(link.dataset.notebookWiki);
-  });
   // Keep native new-tab links on the current Quran host's notebook route.
   function localizeWikiLinks() {
     document.querySelectorAll('[data-notebook-wiki]').forEach(link => {
