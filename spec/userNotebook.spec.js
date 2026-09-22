@@ -72,7 +72,7 @@ test('explicit Markdown links do not receive expand controls in their labels or 
   expect((mixed.match(/data-notebook-reference=/g) || [])).toHaveLength(1);
 });
 test.each(['', ' "Expanded reference"'])('saved expansions render as permanent quotations without another expand button (%s)', title => {
-  const html = Notebook.render(`bukhari:100\n\n> **[bukhari:100](/bukhari:100${title})**\n>\n> النص العربي\n>\n> English translation`);
+  const html = Notebook.render(`> **[bukhari:100](/bukhari:100${title})**\n>\n> النص العربي\n>\n> English translation`);
   expect(html).toContain('<blockquote dir="auto">');
   expect(html).toContain('النص العربي');
   expect(html).not.toContain('data-notebook-reference=');
@@ -86,7 +86,7 @@ test('expansion looks up the exact reference and saves both languages with the d
   const insert = global.query.mock.calls.find(([sql]) => sql.startsWith('INSERT'))[0];
   expect(insert).toContain('My draft');
   expect(insert).not.toContain('My draft bukhari:100');
-  expect(insert).toContain('السند');
+  expect(insert).not.toContain('السند');
   expect(insert).toContain('النص');
   expect(insert).not.toContain('*النص*');
   expect(insert).toContain('Translation');
@@ -200,17 +200,17 @@ test('removes prose references and Markdown reference links without changing cod
   expect(References.removeReference(text, 'bukhari:100', md)).toBe('Before  after .\n\n`bukhari:100` https://example.com/bukhari:100 bukhari:1000\n\n```\nbukhari:100\n```');
 });
 
-test('expanded source text and translations omit Markdown formatting', async () => {
+test('expanded source text is flattened before applying quotation formatting', async () => {
   Item.itemFromRef.mockResolvedValue({ ref: 'bukhari:100', ar: { body: '# عنوان\n\n**النص** و*شرح* و`كلمة`' }, en: { body: '## Heading\n\n**Bold** and *italic*, [label](https://example.com), ~~deleted~~, ==highlight==.\n\n- First\n- Second' } });
   const quote = await References.snapshot('bukhari:100');
   expect(quote).toContain('> عنوان');
   expect(quote).toContain('> النص وشرح وكلمة');
-  expect(quote).toContain('> Bold and italic, label, deleted, highlight.');
-  expect(quote).toContain('> First');
-  expect(quote).toContain('> Second');
+  expect(quote).toContain('> *Bold and italic, label, deleted, highlight.*');
+  expect(quote).toContain('> *First');
+  expect(quote).toContain('> *Second*');
   expect(quote).not.toContain('## Heading');
   expect(quote).not.toContain('https://example.com');
-  expect(Notebook.render(quote)).not.toContain('<em>');
+  expect(Notebook.render(quote)).toContain('<em>');
   expect(quote).not.toContain('Expanded reference');
 });
 
@@ -386,8 +386,8 @@ test('range expansion fetches every exact ayah in order and replaces the referen
 test('single references expand at their position without modifying code, links or surrounding prose', async () => {
   Item.itemFromRef.mockResolvedValue({ ref: 'bukhari:100', en: { body: 'Expanded text' } });
   const result = await Notebook.expandedDraft({ markdown: 'Before bukhari:100 after.\n\n`bukhari:100` [source](/bukhari:100)\n\n```\nbukhari:100\n```', reference: 'bukhari:100' });
-  expect(result.markdown).toContain('Before \n\n> **[bukhari:100]');
-  expect(result.markdown).toContain('Expanded text\n\n after.');
+  expect(result.markdown).toContain('Before \n\n> النص العربي غير متوفر ([bukhari ١٠٠](/bukhari:100))');
+  expect(result.markdown).toContain('*Expanded text*\n\n after.');
   expect(result.markdown).toContain('`bukhari:100` [source](/bukhari:100)\n\n```\nbukhari:100\n```');
 });
 test.each(['quran:11:16-15', 'quran:0:1-2', 'quran:115:1-2', 'quran:11:1-999'])('invalid range %s fails before a lookup', async ref => {
@@ -398,4 +398,53 @@ test('a missing ayah aborts range expansion without saving a partial quotation',
   Item.itemFromRef.mockImplementation(async ref => ref === 'quran:11:15' ? { ref, en: { body: 'Text' } } : null);
   await expect(Notebook.expand('alice', { markdown: 'quran:11:15-16', reference: 'quran:11:15-16' })).rejects.toMatchObject({ status: 404 });
   expect(global.query).not.toHaveBeenCalled();
+});
+
+test.each(['quran:1:1', 'quran:1:1-2'])('Quran quotation %s uses one decorative pair and a trailing Arabic citation', async ref => {
+  Item.itemFromRef.mockImplementation(async reference => ({ ref: reference, ar: { h1_title: 'الفاتحة', body: reference.endsWith(':1') ? 'بسم الله' : 'الحمد لله' }, en: { body: reference.endsWith(':1') ? 'In the name of Allah.' : 'Praise be to Allah.' } }));
+  const result = await References.snapshot(ref);
+  expect(result.match(/﴿/g)).toHaveLength(1);
+  expect(result.match(/﴾/g)).toHaveLength(1);
+  expect(result).toContain('﴿ بسم الله ۝١');
+  if (ref.endsWith('-2')) {
+    expect(result).toContain('۝١ الحمد لله ۝٢ ﴾ ([الفاتحة ١:١-٢](/quran:1:1-2))');
+    expect(result).toContain('> 1:1 In the name of Allah. 2 Praise be to Allah.');
+  } else {
+    expect(result).toContain('۝١ ﴾ ([الفاتحة ١:١](/quran:1:1))');
+    expect(result).toContain('> In the name of Allah.');
+  }
+  expect(Notebook.render(result)).not.toContain('data-notebook-reference=');
+  expect(result).not.toContain('Expanded reference');
+});
+test('hadith expansion has a title, trailing Arabic source and grade, and English below', async () => {
+  Item.itemFromRef.mockResolvedValue({ ref: 'bukhari:1', en: { title: 'Deeds depend on intentions', chain: 'Umar reported:', body: 'Deeds depend on intentions.' }, ar: { body: '«إنما الأعمال بالنيات»', book_shortName: 'البخاري', grade_grade: 'متفق عليه' } });
+  const result = await References.snapshot('bukhari:1');
+  expect(result).toBe('**Hadith: Deeds depend on intentions**\n\n> «إنما الأعمال بالنيات» ([البخاري ١](/bukhari:1) متفق عليه)\n> \n> Umar reported: *Deeds depend on intentions.*');
+});
+
+test.each(['quran:1:1', 'quran:1:1-2'])('Quran expansion %s uses ordinary script from the current database record', async ref => {
+  Item.itemFromRef.mockImplementation(async reference => ({ ref: reference, id: Number(reference.split(':')[2]), book_id: 0, ar: { body: 'Cached Uthmani', body_alt: 'Cached ordinary' } }));
+  global.query.mockResolvedValue([{ body: 'ٱلْحَمْدُ لِلَّهِ', body_ar_alt: 'الْحَمْدُ لِلَّهِ', body_en: 'Praise be to Allah.' }]);
+  const result = await References.snapshot(ref);
+  expect(result).toContain('الْحَمْدُ لِلَّهِ');
+  expect(result).not.toContain('ٱلْحَمْدُ');
+  expect(result).not.toContain('Cached');
+  expect(result.match(/الْحَمْدُ/g)).toHaveLength(ref.endsWith('-2') ? 2 : 1);
+  expect(result).toContain('﴿');
+  expect(result).toContain('﴾');
+});
+
+test.each(['quran:17:18', 'quran:17:18-20'])('plain %s remains expandable when another citation uses the same reference', async ref => {
+  const citation = `> ﴿ النص ﴾ ([الإسراء](/${ref}))`;
+  const markdown = `${citation}\n\n${ref}`;
+  expect(Notebook.render(markdown)).toContain(`data-notebook-reference="${ref}"`);
+  Item.itemFromRef.mockImplementation(async reference => ({ ref: reference, ar: { body: 'النص' }, en: { body: 'Translation' } }));
+  const result = await Notebook.expandedDraft({ markdown, reference: ref });
+  expect(result.markdown).toContain(citation);
+  expect(result.markdown).toContain('Translation');
+  expect(Notebook.render(result.markdown)).not.toContain('data-notebook-reference=');
+});
+test('a citation alone is not an expandable plain reference', async () => {
+  await expect(Notebook.expandedDraft({ markdown: '> النص ([source](/quran:17:18))', reference: 'quran:17:18' })).rejects.toMatchObject({ status: 400 });
+  expect(Item.itemFromRef).not.toHaveBeenCalled();
 });

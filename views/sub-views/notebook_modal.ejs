@@ -60,7 +60,8 @@ body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { d
 .notebook-markdown :is(p, h1, h2, h3, h4, h5, h6, li, td, th):dir(rtl), .notebook-markdown .notebook-arabic { font-family: Kitab, Quran, serif; line-height: 2; }
 .notebook-markdown .notebook-arabic { font-size: 1.2em; }
 .notebook-markdown .notebook-arabic .notebook-arabic { font-size: inherit; }
-.notebook-markdown blockquote { border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; margin-block: 1rem; }
+.notebook-markdown blockquote { margin-block: 1rem; }
+.notebook-markdown blockquote > p { border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; }
 .notebook-expand-reference { color: #805d00; margin-inline-start: .3rem; font-size: .85em; }
 .notebook-markdown pre { direction: ltr; text-align: left; overflow: auto; }
 .notebook-markdown img { max-width: 100%; }
