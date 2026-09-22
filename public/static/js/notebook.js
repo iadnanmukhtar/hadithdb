@@ -181,14 +181,15 @@
   document.addEventListener('quranAyahNoteTarget', event => prepareAyahNote(event.detail.button));
   function mode(edit) {
     editing = edit;
+    wikiAutocomplete.close();
     editor.hidden = !edit; preview.hidden = edit;
     tagEditor.hidden = !edit; document.getElementById('notebook-tag-help').hidden = !edit;
     renderNoteMetadata();
     renderNoteTags();
     const label = edit ? 'Preview' : 'Edit Markdown';
     toggle.title = label; toggle.setAttribute('aria-label', label);
-    toggle.innerHTML = `<i class="bi ${edit ? 'bi-eye' : 'bi-pencil'}" aria-hidden="true"></i>`;
-    if (edit) editor.focus();
+    toggle.innerHTML = `<i class="bi ${edit ? 'bi-pencil' : 'bi-eye'}" aria-hidden="true"></i>`;
+    if (edit) (titleEditor.value.trim() ? editor : titleEditor).focus();
   }
   function dirty() { return editor.value !== savedText || tagEditor.value !== savedTags || titleEditor.value !== savedTitle; }
   function resetTags() {
@@ -201,6 +202,11 @@
     const title = document.getElementById('notebook-note-title');
     titleEditor.hidden = !editing;
     title.textContent = titleEditor.value.trim(); title.hidden = editing || !title.textContent;
+    const driveFile = document.getElementById('notebook-drive-file');
+    driveFile.hidden = !current?.version || !current?.driveFileUrl;
+    if (!driveFile.hidden) driveFile.href = current.driveFileUrl;
+    else driveFile.removeAttribute('href');
+    driveFile.querySelector('svg').setAttribute('aria-hidden', 'true');
     const dates = document.getElementById('notebook-dates');
     dates.hidden = !current?.version;
     const format = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'unavailable';
@@ -253,25 +259,34 @@
       if (request === previewRequest && ownGeneration === generation && editor.value === text) preview.innerHTML = result.html;
     } catch (err) { if (ownGeneration === generation) status.textContent = err.message; }
   }
+  let listNeedsRefresh = false;
   function updateList(note) {
     if (!list) return;
+    if (modal.classList.contains('show')) { listNeedsRefresh = true; return; }
     loadList(); loadTags();
   }
-  async function save() {
+  function scheduleSave() {
     clearTimeout(saveTimer);
-    if (saving) return saving;
+    if (!current || !dirty()) return;
+    status.textContent = saving ? 'Saving…' : 'Unsaved changes';
+    saveTimer = setTimeout(() => save(true), 1800);
+  }
+  async function save(background = false) {
+    clearTimeout(saveTimer);
+    if (saving) {
+      const ok = await saving;
+      return ok && !background && dirty() ? save() : ok;
+    }
     if (!current || busy) return false;
+    if ((dirty() || current.needsChecksum) && !titleEditor.value.trim()) { status.textContent = 'Enter a title for this note.'; return false; }
     const ownGeneration = generation;
+    let succeeded = false;
     const operation = (async () => {
       try {
-        while (ownGeneration === generation && dirty()) {
+        while (ownGeneration === generation && (dirty() || current.needsChecksum)) {
           const text = editor.value, tags = tagEditor.value, title = titleEditor.value;
           status.textContent = 'Saving…';
-          let note;
-          if (!text.trim() && !title.trim()) {
-            if (current.version) await api('', 'DELETE', { source_key: current.source_key, version: current.version });
-            note = { ...current, version: 0, markdown: text, html: '' };
-          } else note = (await api('', 'PUT', { ...current, markdown: text, tags, title })).note;
+          const note = (await api('', 'PUT', { ...current, markdown: text, tags, title })).note;
           if (ownGeneration !== generation) return false;
           current = note;
           savedText = text; savedTags = tags; savedTitle = title; renderNoteTags(); renderNoteMetadata();
@@ -280,8 +295,11 @@
           updateList(note);
           // Keep any text typed during the request; only advance the saved revision.
           if (!editing && editor.value === text) preview.innerHTML = note.html;
+          // Coalesce edits made during a slow Drive request into the next idle save.
+          if (background) break;
         }
-        if (ownGeneration === generation) status.textContent = '';
+        succeeded = ownGeneration === generation;
+        if (succeeded) status.textContent = dirty() ? 'Unsaved changes' : '';
         return ownGeneration === generation;
       } catch (err) {
         if (ownGeneration === generation) status.textContent = err.message;
@@ -289,13 +307,23 @@
       }
     })();
     saving = operation;
-    try { return await operation; } finally { if (saving === operation) saving = null; }
+    try { return await operation; } finally {
+      if (saving === operation) saving = null;
+      if (succeeded) {
+        if (dirty()) scheduleSave();
+      }
+    }
   }
-  async function showPreview() {
+  function showPreview() {
     if (!editing || busy) return;
     mode(false);
     renderPreview();
-    await save();
+    scheduleSave();
+  }
+  function saveAndPreview() {
+    if (!current || busy) return;
+    showPreview();
+    return save();
   }
   async function open(source, edit = false) {
     if (busy || saving) return;
@@ -338,17 +366,23 @@
     if (busy) { event.preventDefault(); return; }
     if (current && (saving || dirty())) {
       event.preventDefault();
-      save().then(ok => { if (ok) bootstrap.Modal.getInstance(modal)?.hide(); });
+      save().then(ok => {
+        if (!ok && window.confirm('This note could not be saved. Discard your unsaved changes and close?')) {
+          editor.value = savedText; tagEditor.value = savedTags; titleEditor.value = savedTitle; ok = true;
+        }
+        if (ok) bootstrap.Modal.getInstance(modal)?.hide();
+      });
     }
   });
   modal.addEventListener('hidden.bs.modal', () => {
+    wikiAutocomplete.close();
     clearTimeout(saveTimer);
+    if (listNeedsRefresh) { listNeedsRefresh = false; loadList(); loadTags(); }
     if (returnModal?.isConnected) bootstrap.Modal.getOrCreateInstance(returnModal).show();
     returnModal = null;
   });
   editor.addEventListener('input', () => {
-    status.textContent = '';
-    clearTimeout(saveTimer); saveTimer = setTimeout(save, 700);
+    scheduleSave();
   });
   function editTags() {
     if (!current || busy) return;
@@ -362,20 +396,21 @@
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); editTags(); }
   });
   titleEditor.addEventListener('input', () => {
-    status.textContent = ''; renderNoteMetadata(); clearTimeout(saveTimer); saveTimer = setTimeout(save, 700);
+    renderNoteMetadata(); scheduleSave();
   });
   tagEditor.addEventListener('input', () => {
-    status.textContent = ''; renderNoteTags(); clearTimeout(saveTimer); saveTimer = setTimeout(save, 700);
+    renderNoteTags(); scheduleSave();
   });
   toggle.addEventListener('click', () => { if (!busy && current) editing ? showPreview() : mode(true); });
+  const wikiAutocomplete = window.NotebookWiki.install(editor, document.getElementById('notebook-wiki-options'), query => api('/links?q=' + encodeURIComponent(query)));
   // Clicking anywhere outside the editor returns to the rendered note.
   document.addEventListener('pointerdown', event => {
-    if (modal.classList.contains('show') && editing && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
+    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
   });
   editor.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); showPreview(); }
   });
-  saveButton.addEventListener('click', save);
+  saveButton.addEventListener('click', saveAndPreview);
   deleteButton.addEventListener('click', async () => {
     if (busy || !current || !window.confirm('Delete this note?')) return;
     clearTimeout(saveTimer);
@@ -384,7 +419,7 @@
     if (!current?.version) return;
     setBusy(true);
     try {
-      await api('', 'DELETE', { source_key: current.source_key, version: current.version });
+      await api('', 'DELETE', { source_key: current.source_key, version: current.version, revision: current.revision });
       if (ownGeneration !== generation) return;
       current = { ...current, markdown: '', html: '', version: 0, tags: [], hashtags: [], title: '', created_at: null, updated_at: null }; resetTags();
       editor.value = savedText = ''; preview.innerHTML = ''; deleteButton.hidden = true;
@@ -414,6 +449,32 @@
     if (event.target.closest('a, button, input, textarea, select, summary')) return;
     if (current && !busy) mode(true);
   });
+  async function openWiki(title) {
+    const ownGeneration = generation;
+    try {
+      const result = await api('/links?title=' + encodeURIComponent(title));
+      if (ownGeneration !== generation) return;
+      if (current && dirty() && !await save()) return;
+      if (ownGeneration !== generation) return;
+      await open(result.note);
+    } catch (err) { if (ownGeneration !== generation) return; if (modal.classList.contains('show')) status.textContent = err.message; else if (listStatus) listStatus.textContent = err.message; }
+  }
+  document.addEventListener('click', event => {
+    const link = event.target.closest('[data-notebook-wiki]');
+    if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault(); openWiki(link.dataset.notebookWiki);
+  });
+  // Keep native new-tab links on the current Quran host's notebook route.
+  function localizeWikiLinks() {
+    document.querySelectorAll('[data-notebook-wiki]').forEach(link => {
+      link.href = quranApiPath('/notebook').replace('/api/', '/') + '?note=' + encodeURIComponent(link.dataset.notebookWiki);
+    });
+  }
+  new MutationObserver(localizeWikiLinks).observe(preview, { childList: true, subtree: true });
+  async function openRequestedWiki() {
+    const title = new URLSearchParams(location.search).get('note');
+    if (title && await window.hadithAuth?.getToken()) openWiki(title);
+  }
   preview.addEventListener('keydown', event => {
     if (event.target === preview && event.key === 'Enter' && current && !busy) {
       event.preventDefault();
@@ -462,6 +523,7 @@
     listStatus.textContent = filtered.length ? '' : (filtering ? 'No matching notes.' : 'No notes yet.');
   }
   function checkMore() {
+    if (modal.classList.contains('show')) return;
     if (!sentinel || listLoading || !hasMore || listFailed || !list.getClientRects().length) return;
     if (sentinel.getBoundingClientRect().top < window.innerHeight + 300) loadList(true);
   }
@@ -505,13 +567,15 @@
     window.addEventListener('resize', checkMore);
   }
   document.addEventListener('hadithAuthChanged', () => {
+    listNeedsRefresh = false;
+    wikiAutocomplete.close();
     ++generation; ++listRequest; ++statusEpoch; ++tagRequest; railTags = []; renderTagRail(); returnModal = null; pendingSource = null;
     clearTimeout(saveTimer); saving = null; current = null; editor.value = savedText = ''; preview.innerHTML = ''; resetTags();
     existing.clear(); checked.clear(); paintButtons(); scheduleStatus();
     const ayahNote = document.querySelector('[data-quran-ayah-note][data-ayah-note-ref]');
     if (ayahNote) prepareAyahNote(ayahNote);
     setBusy(false); saveButton.disabled = true; deleteButton.hidden = true;
-    bootstrap.Modal.getInstance(modal)?.hide(); loadList(); loadTags();
+    bootstrap.Modal.getInstance(modal)?.hide(); loadList(); loadTags(); openRequestedWiki();
   });
   document.addEventListener('notebookDriveConnected', () => {
     ++statusEpoch; checked.clear(); scheduleStatus(); loadList(); loadTags();
@@ -540,4 +604,5 @@
     if (current && (saving || dirty())) { event.preventDefault(); event.returnValue = ''; }
   });
   loadList(); loadTags();
+  openRequestedWiki();
 })();

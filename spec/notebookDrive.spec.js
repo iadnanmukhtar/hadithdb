@@ -54,7 +54,8 @@ beforeEach(() => {
       if (options.method === 'POST' && old) fail(409);
       if (options.method === 'PUT' && options.headers['If-Match'] !== '"' + old.version + '"') fail(412);
       files.set(id, { ...old, ...metadata, id, body, version: String(Number(old?.version || 0) + 1), modifiedTime: new Date().toISOString(), createdTime: new Date().toISOString(), size: Buffer.byteLength(body) });
-      return { data: { id } };
+      const saved = files.get(id);
+      return { data: { id, version: saved.version, modifiedDate: saved.modifiedTime, createdDate: saved.createdTime } };
     }
     if (path === 'drive/v3/files' && options.method === 'POST') { files.set(options.data.id, { ...options.data }); return { data: options.data }; }
     const id = path.split('/').at(-1), file = files.get(id);
@@ -86,6 +87,7 @@ test('CRUD uses Drive, preserves owner mapping, and rejects stale edits and dele
   const saved = await Drive.save('alice', { ...note(), version: 0 });
   expect(saved.version).toBe('1'); expect(saved.markdown).toBe(note().markdown);
   expect(saved).not.toHaveProperty('_etag');
+  expect(saved.driveFileUrl).toBe('https://drive.google.com/file/d/' + mappings.get('item:42') + '/view');
   expect([...files.values()].find(f => f.mimeType === 'text/markdown').parents).toEqual(['folder']);
   expect(sqlCalls.some(c => /INSERT INTO user_notebook \(/.test(c.statement))).toBe(false);
   const updated = await Drive.save('alice', { ...saved, markdown: 'Updated' });
@@ -100,7 +102,10 @@ test('concurrent external update is protected by conditional upload', async () =
   const saved = await Drive.save('alice', { ...note(), version: 0 });
   const real = request.getMockImplementation();
   request.mockImplementation(async options => {
-    if (options.method === 'PUT' && options.url.includes('/upload/')) files.get(mappings.get('item:42')).version = '999';
+    if (options.method === 'PUT' && options.url.includes('/upload/')) {
+      const file = files.get(mappings.get('item:42')); file.version = '999';
+      file.body = Drive.encode(note({ markdown: 'External edit العربية' }));
+    }
     return real(options);
   });
   await expect(Drive.save('alice', { ...saved, markdown: 'stale' })).rejects.toMatchObject({ status: 409 });
@@ -119,7 +124,7 @@ test('a changing Drive revision retries the entire read and persistent changes f
   });
   expect((await Drive.get('alice', 'item:42')).markdown).toBe('External edit');
   changes = 100;
-  await expect(Drive.get('alice', 'item:42')).rejects.toMatchObject({ status: 409 });
+  await expect(Drive.get('alice', 'item:42')).rejects.toMatchObject({ status: 503 });
 });
 test('missing v2 ETags block update and trash without mutating content', async () => {
   const saved = await Drive.save('alice', { ...note(), version: 0 });
@@ -157,7 +162,7 @@ test('migration stops on differing remote content without overwriting it', async
 });
 test('list, tags and ZIP use the Drive note content and preserve filtering', async () => {
   await Drive.save('alice', { ...note(), version: 0 });
-  await Drive.save('alice', { ...note({ source_key: 'general', markdown: 'General' }), version: 0 });
+  await Drive.save('alice', { ...note({ source_key: 'general', title: 'General reflection', markdown: 'General' }), version: 0 });
   expect((await Drive.list('alice')).notes[0].source_key).toBe('general');
   expect((await Drive.list('alice', 0, 'english', '#prayer')).notes).toHaveLength(1);
   expect(await Drive.tagList('alice')).toEqual(expect.arrayContaining([{ tag: 'prayer', count: 1 }]));
@@ -189,4 +194,148 @@ test('production router ignores supplied ownership and reports connection state'
   connection.token_cipher = null;
   const missing = await fetch(base, { headers: { Authorization: 'Bearer alice' } });
   expect(missing.status).toBe(428); expect((await missing.json()).code).toBe('DRIVE_CONNECT');
+});
+
+test('titles are mandatory, delimiter-safe, and unique per notebook on create and rename', async () => {
+  for (const title of [null, '', '  ', 'A|B', '[Title]', 'A\nB']) {
+    await expect(Drive.save('alice', { ...note({ title }), version: 0 })).rejects.toMatchObject({ status: 400 });
+  }
+  const first = await Drive.save('alice', { ...note({ title: 'My Reflection' }), version: 0 });
+  await expect(Drive.save('alice', { ...note({ source_key: 'general', title: '  MY   reflection ' }), version: 0 })).rejects.toMatchObject({ status: 409 });
+  const other = await Drive.save('alice', { ...note({ source_key: 'general', title: 'Other' }), version: 0 });
+  await expect(Drive.save('alice', { ...other, title: 'my reflection' })).rejects.toMatchObject({ status: 409 });
+  expect((await Drive.save('alice', { ...first, markdown: 'Updated' })).title).toBe('My Reflection');
+});
+test('wiki suggestions and title resolution stay private and report missing or ambiguous targets', async () => {
+  await Drive.save('alice', { ...note(), version: 0 });
+  expect(await Drive.links('alice', 're')).toEqual({ notes: [{ title: 'Reflection', source_key: 'item:42' }] });
+  expect((await Drive.links('alice', '', ' REFLECTION ')).note.source_key).toBe('item:42');
+  await expect(Drive.links('alice', '', 'Missing')).rejects.toMatchObject({ status: 404 });
+  await expect(Drive.links('bob', 're')).rejects.toMatchObject({ code: 'DRIVE_CONNECT' });
+  expect((await fetch(base + '/links?q=re')).status).toBe(401);
+  expect((await (await fetch(base + '/links?q=re', { headers: { Authorization: 'Bearer alice' } })).json()).notes).toHaveLength(1);
+  const other = await Drive.save('alice', { ...note({ source_key: 'general', title: 'Other' }), version: 0 });
+  files.get(mappings.get(other.source_key)).body = Drive.encode(note({ source_key: 'general' }));
+  await expect(Drive.links('alice', '', 'Reflection')).rejects.toMatchObject({ status: 409 });
+});
+
+test('metadata-only version changes between autosaves do not cause false conflicts', async () => {
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  const file = files.get(mappings.get('item:42'));
+  file.version = '10';
+  const next = await Drive.save('alice', { ...first, markdown: 'My next edit' });
+  expect(next.markdown).toBe('My next edit');
+  expect(next.revision).not.toBe(first.revision);
+  await expect(Drive.save('alice', { ...first, markdown: 'A genuinely stale edit' })).rejects.toMatchObject({ status: 409 });
+});
+test('metadata-only ETag races retry conditionally without overriding content changes', async () => {
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  const real = request.getMockImplementation(); let bump = true;
+  request.mockImplementation(async options => {
+    if (bump && options.method === 'PUT') { files.get(mappings.get('item:42')).version = '10'; bump = false; }
+    return real(options);
+  });
+  const next = await Drive.save('alice', { ...first, markdown: 'Next edit' });
+  expect(next.markdown).toBe('Next edit');
+  const uploads = request.mock.calls.map(([o]) => o).filter(o => o.method === 'PUT');
+  expect(uploads).toHaveLength(2);
+  expect(uploads[0].headers['If-Match']).not.toBe(uploads[1].headers['If-Match']);
+});
+test('a lost save response can be retried without another upload or a false conflict', async () => {
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  const real = request.getMockImplementation(); let lose = true;
+  request.mockImplementation(async options => {
+    const response = await real(options);
+    if (lose && options.method === 'PUT') { lose = false; throw Error('Lost response'); }
+    return response;
+  });
+  const body = { ...first, markdown: 'Already saved' };
+  await expect(Drive.save('alice', body)).rejects.toMatchObject({ status: 503 });
+  const result = await Drive.save('alice', body);
+  expect(result.markdown).toBe('Already saved');
+  expect(request.mock.calls.map(([o]) => o).filter(o => o.method === 'PUT')).toHaveLength(1);
+});
+test('delete tolerates metadata drift but still rejects changed content', async () => {
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  files.get(mappings.get('item:42')).version = '10';
+  const real = request.getMockImplementation(); let bump = true;
+  request.mockImplementation(async options => {
+    if (bump && options.method === 'PATCH') { files.get(mappings.get('item:42')).version = '11'; bump = false; }
+    return real(options);
+  });
+  await Drive.remove('alice', first.source_key, first.version, first.revision);
+  expect(await Drive.get('alice', first.source_key)).toBeNull();
+  const next = await Drive.save('alice', { ...note(), version: 0 });
+  await Drive.save('alice', { ...next, markdown: 'New content' });
+  await expect(Drive.remove('alice', next.source_key, next.version, next.revision)).rejects.toMatchObject({ status: 409 });
+});
+
+test('frontmatter stores a fresh checksum and reads use it for revision comparisons', () => {
+  const original = note();
+  const encoded = Drive.encode(original);
+  const parsed = require('front-matter')(encoded);
+  const checksum = parsed.attributes.hadithunlocked.cksum;
+  expect(checksum).toMatch(/^[a-f0-9]{64}$/);
+  expect(Drive.decode(encoded, original.source_key).revision).toBe(checksum);
+  // Frontmatter is the revision authority; external writers must maintain it.
+  expect(Drive.decode(encoded.replace('English', 'External'), original.source_key).revision).toBe(checksum);
+  const changed = Drive.encode({ ...original, cksum: checksum, markdown: 'New content' });
+  expect(Drive.decode(changed, original.source_key).revision).not.toBe(checksum);
+});
+test('legacy files without a checksum remain readable; malformed checksums fail clearly', () => {
+  const encoded = Drive.encode(note());
+  const legacy = encoded.replace(/,"cksum":"[a-f0-9]{64}"/, '');
+  expect(Drive.decode(legacy, 'item:42').revision).toBe(Drive.decode(encoded, 'item:42').revision);
+  const invalid = encoded.replace(/"cksum":"[a-f0-9]{64}"/, '"cksum":"invalid"');
+  expect(() => Drive.decode(invalid, 'item:42')).toThrow('invalid content checksum');
+});
+
+test.each(['missing', 'legacy name'])('unchanged saves persist cksum when the field is %s', async kind => {
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  const file = files.get(mappings.get(first.source_key));
+  file.body = kind === 'missing'
+    ? file.body.replace(/,"cksum":"[a-f0-9]{64}"/, '')
+    : file.body.replace('"cksum":', '"content_checksum":');
+  const old = await Drive.get('alice', first.source_key);
+  expect(old.needsChecksum).toBe(true);
+  const saved = await Drive.save('alice', old);
+  expect(saved.needsChecksum).toBe(false);
+  expect(saved.markdown).toBe(old.markdown);
+  const stored = files.get(mappings.get(first.source_key));
+  const metadata = require('front-matter')(stored.body).attributes.hadithunlocked;
+  expect(metadata.cksum).toBe(saved.revision);
+  expect(metadata).not.toHaveProperty('content_checksum');
+  const uploads = request.mock.calls.filter(([o]) => o.method === 'PUT').length;
+  await Drive.save('alice', saved);
+  expect(request.mock.calls.filter(([o]) => o.method === 'PUT')).toHaveLength(uploads);
+});
+
+test('wiki suggestions match anywhere in titles without case or diacritics', async () => {
+  const title = 'Reflections on Ṣalāh and صَلَاة';
+  await Drive.save('alice', { ...note({ title }), version: 0 });
+  for (const query of ['LECTION', 'SALAH', 'lāh', 'صلاة', 'صَلَاة']) {
+    expect((await Drive.links('alice', query)).notes).toEqual([{ title, source_key: 'item:42' }]);
+  }
+  expect((await Drive.links('alice', 'unrelated')).notes).toEqual([]);
+});
+
+test('successful uploads return the accepted revision without a racy readback', async () => {
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  const real = request.getMockImplementation(); let uploaded = false;
+  request.mockImplementation(async options => {
+    if (uploaded && options.url.includes('/files/')) throw Error('Readback temporarily unavailable');
+    const response = await real(options);
+    if (options.method === 'PUT') uploaded = true;
+    return response;
+  });
+  const saved = await Drive.save('alice', { ...first, markdown: 'Accepted content' });
+  expect(saved.markdown).toBe('Accepted content');
+  expect(saved.version).toBe('2');
+  expect(saved.revision).toBe(Drive.decode(files.get(mappings.get('item:42')).body, 'item:42').revision);
+});
+test('unchanged titles do not scan other notes during autosave', async () => {
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  sqlCalls.length = 0;
+  await Drive.save('alice', { ...first, tags: ['mahdi'] });
+  expect(sqlCalls.some(call => call.statement.startsWith('SELECT source_key,file_id'))).toBe(false);
 });

@@ -7,15 +7,19 @@
     </div>
     <div class="modal-body">
       <div id="notebook-surface">
-        <div class="small mb-2" data-notebook-drive-panel hidden>
+        <div class="small mb-2" data-notebook-drive-panel data-notebook-drive-compact hidden>
           <%- include('notebook_drive_icon.ejs'); %>
           <span data-notebook-drive-message role="status"></span>
           <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-notebook-drive-connect hidden>Connect Google Drive</button>
           <a data-notebook-drive-folder target="_blank" rel="noopener" class="notebook-drive-action ms-1" hidden>Open folder</a>
         </div>
-        <input id="notebook-title-editor" class="form-control mb-2" dir="auto" maxlength="500" aria-label="Note title (optional)" placeholder="Title (optional)" hidden>
-        <div id="notebook-note-title" dir="auto" hidden></div>
-        <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" placeholder="Create a new private note." hidden></textarea>
+        <div id="notebook-title-row">
+          <a id="notebook-drive-file" target="_blank" rel="noopener" title="Open note in Google Drive" aria-label="Open note in Google Drive" hidden><%- include('notebook_drive_icon.ejs'); %></a>
+          <input id="notebook-title-editor" class="form-control mb-2" dir="auto" maxlength="500" required aria-label="Note title" placeholder="Note title" hidden>
+          <div id="notebook-note-title" dir="auto" hidden></div>
+        </div>
+        <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" aria-autocomplete="list" aria-controls="notebook-wiki-options" aria-expanded="false" placeholder="Create a new private note." hidden></textarea>
+        <div id="notebook-wiki-options" role="listbox" aria-label="Link to a note" hidden></div>
         <div id="notebook-preview" class="notebook-markdown" tabindex="0" aria-label="Note preview"></div>
       </div>
     </div>
@@ -29,7 +33,7 @@
       <div id="notebook-dates" class="text-muted" aria-live="polite" hidden></div>
       <a data-notebook-auth href="/notebook" class="notebook-tool me-auto" title="My Notebook" aria-label="My Notebook"><i class="bi bi-sticky" aria-hidden="true"></i></a>
       <span id="notebook-status" class="small me-2" role="status" aria-live="polite"></span>
-      <button id="notebook-preview-button" type="button" class="notebook-tool" title="Edit Markdown" aria-label="Edit Markdown"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+      <button id="notebook-preview-button" type="button" class="notebook-tool" title="Edit Markdown" aria-label="Edit Markdown"><i class="bi bi-eye" aria-hidden="true"></i></button>
       <button id="notebook-download" type="button" class="notebook-tool" title="Download Markdown" aria-label="Download Markdown"><i class="bi bi-download" aria-hidden="true"></i></button>
       <button id="notebook-delete" type="button" class="notebook-tool" title="Delete note" aria-label="Delete note" hidden><i class="bi bi-trash" aria-hidden="true"></i></button>
       <button id="notebook-save" type="button" class="notebook-tool" title="Save now" aria-label="Save now"><i class="bi bi-check2" aria-hidden="true"></i></button>
@@ -39,6 +43,9 @@
 <style>
 body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { display: none !important; }
 #notebook-editor { font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
+#notebook-wiki-options { max-height: 12rem; overflow-y: auto; border: 1px solid var(--bs-border-color, #ccc); border-radius: .35rem; background: var(--bs-body-bg, white); margin-block: .25rem; }
+#notebook-wiki-options [role="option"] { padding: .3rem .65rem; cursor: pointer; }
+#notebook-wiki-options [aria-selected="true"] { background: var(--bs-secondary-bg, #eee); color: var(--bs-body-color, #222); }
 .notebook-markdown { overflow-wrap: anywhere; text-align: start; }
 .notebook-markdown :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; }
 .notebook-markdown > :first-child { margin-top: 0; }
@@ -122,10 +129,15 @@ body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { d
 }
 #notebook-title-editor { flex-shrink: 0; }
 #notebook-note-title { font-size: 1.1rem; font-weight: 600; margin-bottom: .75rem; overflow-wrap: anywhere; flex-shrink: 0; }
+#notebook-title-row { display: flex; align-items: baseline; gap: .5rem; }
+#notebook-title-row :is(#notebook-title-editor, #notebook-note-title) { min-width: 0; flex: 1; }
+#notebook-drive-file { flex-shrink: 0; }
+#notebook-drive-file .notebook-drive-icon { filter: none; opacity: 1; margin: 0; }
 #notebook-dates { width: 100%; font-size: .65rem; line-height: 1.4; text-align: start; }
 #personal-notebook.notebook-signed-out .notebook-tile { filter: grayscale(1); opacity: .55; }
 #personal-notebook .notebook-tile-open:disabled { cursor: not-allowed; }
 #personal-notebook .notebook-tile-open:disabled:hover { background: transparent; }
 </style>
 <script src="/static/js/notebook-drive.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-wiki.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>

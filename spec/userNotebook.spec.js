@@ -63,10 +63,13 @@ test('links Quran and hadith references with expand controls, excluding code and
   expect((html.match(/data-notebook-reference=/g) || []).length).toBe(2);
   expect(html).not.toContain('href="/quran:2"');
 });
-test('supports explicit Markdown reference links without nested anchors', () => {
-  const html = Notebook.render('[Read this](/bukhari:100)');
-  expect(html).toContain('</a> <button');
-  expect(html).toContain('data-notebook-reference="bukhari:100"');
+test('explicit Markdown links do not receive expand controls in their labels or destinations', () => {
+  const html = Notebook.render('[Read this](/bukhari:100) [quran:2:255](/quran:2:255) [bukhari:100](https://example.com)');
+  expect(html).toContain('href="/bukhari:100"');
+  expect(html).toContain('href="/quran:2:255"');
+  expect(html).not.toContain('data-notebook-reference=');
+  const mixed = Notebook.render('[Read this](/bukhari:100) and bukhari:100');
+  expect((mixed.match(/data-notebook-reference=/g) || [])).toHaveLength(1);
 });
 test('saved expansions render as permanent quotations without another expand button', () => {
   const html = Notebook.render('bukhari:100\n\n> **[bukhari:100](/bukhari:100 "Expanded reference")**\n>\n> النص العربي\n>\n> English translation');

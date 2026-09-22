@@ -34,7 +34,7 @@ The folder uses app-owned identity, not a name search, so an unrelated folder na
 ## Conflicts and failures
 
 - Application mutations are serialized per notebook with a MySQL advisory lock held on a dedicated connection.
-- Drive versions reject stale client edits; file reads check metadata revisions before and after body retrieval.
+- A content checksum (SHA-256 of the note identity, title, tags, and Markdown) is written to `hadithunlocked.cksum` in frontmatter and used as the revision for stale-edit checks. Reads compare the stored checksum without rehashing the content. Legacy files without a checksum use a computed fallback and gain the field on their next save, even without content edits. Drive metadata-only version changes do not invalidate an editor draft. File reads still check metadata revisions before and after body retrieval. Conditional writes retry at most twice when the fresh content revision is unchanged; actual content changes remain conflicts. Retrying an already-saved payload returns the existing note without another write.
 - The final revision check uses Drive v2 `files.get` for its explicit `etag` field. Updates use v2 multipart `files.update` and trash uses v2 `files.patch`, both with `If-Match`. Drive v3 omitted the ETag and ignored `If-Match` during live verification, so it is only used for reads and creation. Writes fail closed without a revision marker. Changing read snapshots are retried up to twice, always re-reading metadata and content together.
 - Deleting a note moves the file to Drive trash. Restoring that file before recreating the note makes it readable again. Recreating a deleted note reserves a new file ID.
 - Missing/moved folders, invalid metadata, revoked permission, quota failures, and network errors surface to the user. Unsaved editor text remains available for retry.
@@ -56,3 +56,15 @@ References:
 - https://developers.google.com/workspace/drive/api/guides/api-specific-auth
 - https://developers.google.com/workspace/drive/api/guides/manage-uploads
 - https://developers.google.com/workspace/drive/api/reference/rest/v2/files
+
+## Note titles and wiki links
+
+New saves require a nonblank title, unique within the user's notebook after Unicode NFKC normalization, case folding, and whitespace normalization. Brackets, pipes, and line breaks are reserved for link syntax and cannot appear in titles. The per-user mutation lock covers the duplicate-title check and upload. Existing untitled notes remain readable and must be titled when next edited; migration preserves originals. Direct edits in Drive can bypass app validation, so ambiguous titles produce an error rather than opening an arbitrary note.
+
+Use `[[Note title]]` or `[[Note title|display alias]]`. The editor suggests up to 20 titles containing the search term, ignoring case and diacritics, after two characters following `[[`; use arrow keys and Enter/Tab, or select with the pointer. Escape closes suggestions. Links resolve only against the signed-in user's notes. Literal code, escaped syntax, and Markdown link labels are not converted into nested links. Markdown export preserves wiki syntax. Links are title-based: renaming or deleting a target requires updating references to its title; missing targets show a clear error.
+
+External editors must update `hadithunlocked.cksum` when changing note content, or remove it to enable the legacy computed fallback. A stale stored checksum cannot detect edits made outside the app. Note content is still downloaded for rendering and title validation; this change removes repeated hashing, not all Drive content reads.
+
+Editor preview switches immediately on click-away and does not wait for Drive saves. Autosave waits for 1.8 seconds of inactivity; edits made during an in-flight request are coalesced into the next background save. Explicit saves and closing the dialog flush pending edits. Failures retain the draft and surface an error rather than silently discarding it.
+
+Save responses use the accepted upload payload and revision returned by Drive, without an immediate content readback. Title uniqueness scans run on creation or title changes, not every content/tag autosave. Repeatedly unstable read snapshots report a temporary Drive error instead of claiming another editor changed the note.

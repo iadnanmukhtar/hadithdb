@@ -54,6 +54,9 @@ router.delete('/drive', async (req, res, next) => {
 router.get('/tags', async (req, res, next) => {
   try { res.json({ tags: await Notebook.tagList(req.user.uid) }); } catch (err) { next(err); }
 });
+router.get('/links', async (req, res, next) => {
+  try { res.json(await Notebook.links(req.user.uid, req.query.q || '', req.query.title)); } catch (err) { next(err); }
+});
 router.post('/download', (req, res, next) => {
   try { res.json({ markdown: Notebook.exportMarkdown(req.body || {}) }); } catch (err) { next(err); }
 });
@@ -75,7 +78,7 @@ router.put('/', async (req, res, next) => {
   try { res.json({ note: await Notebook.save(req.user.uid, req.body || {}) }); } catch (err) { next(err); }
 });
 router.delete('/', async (req, res, next) => {
-  try { await Notebook.remove(req.user.uid, req.body.source_key, req.body.version); res.json({ deleted: true }); } catch (err) { next(err); }
+  try { await Notebook.remove(req.user.uid, req.body.source_key, req.body.version, req.body.revision); res.json({ deleted: true }); } catch (err) { next(err); }
 });
 router.post('/status', async (req, res, next) => {
   try { res.json({ sources: await Notebook.status(req.user.uid, req.body && req.body.sources) }); } catch (err) { next(err); }
