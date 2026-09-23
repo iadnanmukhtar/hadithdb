@@ -368,7 +368,7 @@
     const link = document.getElementById('notebook-source');
     const reference = source.source_url.match(/\/([a-z][a-z0-9_-]*:\d+(?::\d+)?[a-z]?)(?:[?#]|$)/i);
     link.textContent = reference ? reference[1] : source.source_title; link.title = source.source_title; link.href = source.source_url;
-    if (source.source_key === 'general') link.removeAttribute('href');
+    if (source.source_key === 'general' || source.source_key.startsWith('general:')) link.removeAttribute('href');
     status.textContent = 'Loading…'; setBusy(true);
     returnModal = document.querySelector('.modal.show:not(#notebook-modal)');
     if (returnModal) {
@@ -504,6 +504,9 @@
       event.preventDefault();
       mode(true);
     }
+  });
+  document.getElementById('notebook-new')?.addEventListener('click', () => {
+    open({ source_key: `general:${crypto.randomUUID()}`, source_title: 'General note', source_url: '/notebook', title: '', markdown: '', html: '', version: 0 }, true);
   });
   function renderList() {
     const filtering = document.getElementById('notebook-search').value.trim() || document.getElementById('notebook-tag').value.trim();

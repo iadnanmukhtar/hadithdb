@@ -339,3 +339,13 @@ test('unchanged titles do not scan other notes during autosave', async () => {
   await Drive.save('alice', { ...first, tags: ['mahdi'] });
   expect(sqlCalls.some(call => call.statement.startsWith('SELECT source_key,file_id'))).toBe(false);
 });
+
+test('independent general notes can be created without replacing an existing general note', async () => {
+  const first = await Drive.save('alice', { ...note({ source_key: 'general', title: 'Original general note' }), version: 0 });
+  const second = await Drive.save('alice', { ...note({ source_key: 'general:12345678-1234-4123-8123-123456789abc', title: 'New general note' }), version: 0 });
+  expect(second.source_key).not.toBe(first.source_key);
+  expect(second.source_title).toBe('General note');
+  expect(second.source_url).toBe('/notebook');
+  expect((await Drive.get('alice', first.source_key)).title).toBe('Original general note');
+  expect((await Drive.get('alice', second.source_key)).title).toBe('New general note');
+});
