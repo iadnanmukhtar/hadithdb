@@ -145,3 +145,10 @@ describe('static assets', () => {
       expect(fs.existsSync(path.join(staticDir, relativePath))).toBe(false);
   });
 });
+
+test('cached pages refresh deferred notebook scripts as well as the main script', () => {
+  for (const file of ['notebook', 'notebook-drive', 'notebook-wiki', 'notebook-references', 'account-controls']) {
+    const html = `<script src="/static/js/${file}.js?v=old" defer></script>`;
+    expect(Utils.injectCachedAssetVersions(html)).toBe(`<script src="/static/js/${file}.js?v=${Utils.scriptAssetVersion()}" defer></script>`);
+  }
+});

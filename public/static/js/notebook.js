@@ -8,6 +8,7 @@
   const tagEditor = document.getElementById('notebook-tag-editor');
   const titleEditor = document.getElementById('notebook-title-editor');
   let savedTitle = '';
+  let noteReferences = [], savedReferences = '[]';
   let savedTags = '', railTags = [], tagRequest = 0;
   const status = document.getElementById('notebook-status');
   const preview = document.getElementById('notebook-preview');
@@ -35,7 +36,7 @@
   downloadButton.addEventListener('click', async () => {
     if (!current || busy) return;
     const ownGeneration = generation;
-    const note = { ...current, markdown: editor.value, tags: tagEditor.value, title: titleEditor.value };
+    const note = { ...current, markdown: editor.value, tags: tagEditor.value, title: titleEditor.value, references: noteReferences };
     const title = (note.title || note.source_title).replace(/[^\p{L}\p{N} _-]/gu, '-').slice(0, 80).trim() || 'Note';
     const identity = note.source_key.replace(/:/g, '-');
     downloadButton.disabled = true;
@@ -88,6 +89,11 @@
   const existing = new Set(), checked = new Set(), buttons = new Map();
   const installed = new WeakSet();
   const sourceSelector = '.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, [data-note-key]';
+  const referencePicker = window.NotebookReferences.install(document.getElementById('notebook-references'), {
+    search: query => api('/references?q=' + encodeURIComponent(query)),
+    onEdit: () => { if (current && !busy) mode(true); },
+    onChange: references => { noteReferences = references; scheduleSave(); }
+  });
   async function api(path = '', method = 'GET', body) {
     const token = await window.hadithAuth?.getToken();
     if (!token) throw new Error('Please sign in to use your notebook.');
@@ -104,6 +110,7 @@
   }
   function setBusy(value) {
     busy = value;
+    referencePicker.setDisabled(value);
     saveButton.disabled = deleteButton.disabled = toggle.disabled = editor.disabled = downloadButton.disabled = tagEditor.disabled = titleEditor.disabled = value;
   }
   function sourceFor(button) {
@@ -196,6 +203,7 @@
   document.addEventListener('quranAyahNoteTarget', event => prepareAyahNote(event.detail.button));
   function mode(edit) {
     editing = edit;
+    referencePicker.setEditing(edit);
     wikiAutocomplete.close();
     editor.hidden = !edit; preview.hidden = edit;
     tagEditor.hidden = !edit; document.getElementById('notebook-tag-help').hidden = !edit;
@@ -206,8 +214,91 @@
     toggle.innerHTML = `<i class="bi ${edit ? 'bi-pencil' : 'bi-eye'}" aria-hidden="true"></i>`;
     if (edit) (titleEditor.value.trim() ? editor : titleEditor).focus();
   }
-  function dirty() { return editor.value !== savedText || tagEditor.value !== savedTags || titleEditor.value !== savedTitle; }
+  const floatButton = document.getElementById('notebook-float');
+  const minimizeButton = document.getElementById('notebook-minimize');
+  const restoreButton = document.getElementById('notebook-restore');
+  const floatingStorage = 'notebook-floating-note';
+  let changingPresentation = false, floatingOwner = null, restoringFloating = false, pendingFloating = false;
+  function rememberFloating() {
+    if (!current || !floatingOwner || !modal.classList.contains('notebook-floating')) return;
+    try { sessionStorage.setItem(floatingStorage, JSON.stringify({ uid: floatingOwner, source: { source_key: current.source_key, source_title: current.source_title, source_url: current.source_url, markdown: '', version: 0 }, minimized: modal.classList.contains('notebook-minimized') })); } catch (_) {}
+  }
+  function minimizeFloating(minimized) {
+    modal.classList.toggle('notebook-minimized', minimized);
+    restoreButton.hidden = !minimized;
+    if (minimized) restoreButton.focus();
+    else editor.focus();
+    rememberFloating();
+  }
+  function configureFloating(enabled) {
+    modal.classList.toggle('notebook-floating', enabled);
+    modal.classList.remove('notebook-minimized');
+    modal.querySelector('.modal-dialog').classList.remove('modal-fullscreen');
+    fullscreen.setAttribute('aria-pressed', 'false');
+    fullscreen.hidden = enabled;
+    fullscreen.title = 'Expand note';
+    fullscreen.setAttribute('aria-label', 'Expand note');
+    fullscreen.firstElementChild.className = 'bi bi-arrows-fullscreen';
+    restoreButton.hidden = true;
+    minimizeButton.hidden = !enabled;
+    floatButton.setAttribute('aria-pressed', String(enabled));
+    floatButton.firstElementChild.className = enabled ? 'bi bi-pin-fill' : 'bi bi-pin-angle';
+    floatButton.title = enabled ? 'Return to dialog' : 'Float note while browsing';
+    floatButton.setAttribute('aria-label', floatButton.title);
+    bootstrap.Modal.getInstance(modal)?.dispose();
+    new bootstrap.Modal(modal, { backdrop: !enabled, focus: !enabled });
+  }
+  async function setFloating(enabled) {
+    if (changingPresentation) return;
+    changingPresentation = true;
+    const instance = bootstrap.Modal.getOrCreateInstance(modal);
+    if (instance._isTransitioning) await new Promise(resolve => modal.addEventListener('shown.bs.modal', resolve, { once: true }));
+    await new Promise(resolve => { modal.addEventListener('hidden.bs.modal', resolve, { once: true }); instance.hide(); });
+    instance.dispose();
+    configureFloating(enabled);
+    const shown = new Promise(resolve => modal.addEventListener('shown.bs.modal', resolve, { once: true }));
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+    await shown;
+    changingPresentation = false;
+    if (enabled) modal.removeAttribute('aria-modal');
+    if (enabled) {
+      floatingOwner = (await window.hadithAuth?.getUser())?.uid;
+      rememberFloating();
+    } else { try { sessionStorage.removeItem(floatingStorage); } catch (_) {} }
+  }
+  floatButton?.addEventListener('click', () => { if (!busy) setFloating(!modal.classList.contains('notebook-floating')); });
+  minimizeButton?.addEventListener('click', () => minimizeFloating(true));
+  restoreButton?.addEventListener('click', () => {
+    if (pendingFloating) restoreFloating(true);
+    else minimizeFloating(false);
+  });
+  async function restoreFloating(reveal = false) {
+    if (restoringFloating || modal.classList.contains('show') || new URLSearchParams(location.search).has('note')) return;
+    let stored;
+    try { stored = JSON.parse(sessionStorage.getItem(floatingStorage)); } catch (_) { return; }
+    if (!stored?.source || stored.uid !== (await window.hadithAuth?.getUser())?.uid) return;
+    if (stored.minimized && !reveal) {
+      pendingFloating = true;
+      restoreButton.hidden = false;
+      return;
+    }
+    restoringFloating = true;
+    restoreButton.disabled = true;
+    try {
+      configureFloating(true);
+      floatingOwner = stored.uid;
+      await open(stored.source, true);
+      if (current) {
+        pendingFloating = false;
+        minimizeFloating(false);
+      }
+    } finally { restoringFloating = false; restoreButton.disabled = false; }
+  }
+  function dirty() { return editor.value !== savedText || tagEditor.value !== savedTags || titleEditor.value !== savedTitle || JSON.stringify(noteReferences) !== savedReferences; }
   function resetTags() {
+    noteReferences = current?.references || [];
+    savedReferences = JSON.stringify(noteReferences);
+    referencePicker.reset(noteReferences);
     titleEditor.value = savedTitle = current?.title || '';
     renderNoteMetadata();
     tagEditor.value = savedTags = (current?.tags || []).join(' ');
@@ -274,11 +365,34 @@
       if (request === previewRequest && ownGeneration === generation && editor.value === text) preview.innerHTML = result.html;
     } catch (err) { if (ownGeneration === generation) status.textContent = err.message; }
   }
-  let listNeedsRefresh = false;
   function updateList(note) {
     if (!list) return;
-    if (modal.classList.contains('show')) { listNeedsRefresh = true; return; }
-    loadList(); loadTags();
+    const index = notes.findIndex(entry => entry.source_key === note.source_key);
+    const previous = index >= 0 ? notes[index] : null;
+    const normalize = text => String(text || '').normalize('NFKD').replace(/\p{M}/gu, '').replace(/[ـʿʾ]/g, '').toLowerCase();
+    const search = normalize(document.getElementById('notebook-search').value.trim());
+    const tag = normalize(document.getElementById('notebook-tag').value.trim().replace(/^#/, ''));
+    const matches = !!note.version
+      && (!search || normalize(`${note.source_title}\n${note.title || ''}\n${note.markdown}`).includes(search))
+      && (!tag || (note.hashtags || []).some(value => normalize(value) === tag));
+    if (matches) {
+      if (index >= 0) notes[index] = note;
+      else notes.unshift(note);
+    } else if (index >= 0) notes.splice(index, 1);
+    const tile = Array.from(list.children).find(entry => entry.dataset.sourceKey === note.source_key);
+    const showEmptyGeneral = note.source_key === 'general' && !search && !tag;
+    if (matches || showEmptyGeneral) {
+      const replacement = createNoteTile(note);
+      if (tile) tile.replaceWith(replacement);
+      else {
+        const general = list.firstElementChild;
+        if (note.source_key !== 'general' && general?.dataset.sourceKey === 'general') general.after(replacement);
+        else list.prepend(replacement);
+      }
+    } else tile?.remove();
+    listStatus.textContent = list.childElementCount ? '' : (search || tag ? 'No matching notes.' : 'No notes yet.');
+    // Tag counts only need refreshing when membership changes, not on close.
+    if (JSON.stringify(previous?.hashtags || []) !== JSON.stringify(note.hashtags || [])) loadTags();
   }
   function scheduleSave() {
     clearTimeout(saveTimer);
@@ -299,12 +413,12 @@
     const operation = (async () => {
       try {
         while (ownGeneration === generation && (dirty() || current.needsChecksum)) {
-          const text = editor.value, tags = tagEditor.value, title = titleEditor.value;
+          const text = editor.value, tags = tagEditor.value, title = titleEditor.value, references = noteReferences.slice();
           status.textContent = 'Saving…';
-          const note = (await api('', 'PUT', { ...current, markdown: text, tags, title })).note;
+          const note = (await api('', 'PUT', { ...current, markdown: text, tags, title, references })).note;
           if (ownGeneration !== generation) return false;
           current = note;
-          savedText = text; savedTags = tags; savedTitle = title; renderNoteTags(); renderNoteMetadata();
+          savedText = text; savedTags = tags; savedTitle = title; savedReferences = JSON.stringify(references); renderNoteTags(); renderNoteMetadata();
           deleteButton.hidden = !note.version;
           markSource(note.source_key, !!note.version);
           updateList(note);
@@ -354,13 +468,16 @@
     open(source, true);
   });
   async function open(source, edit = false) {
-    if (busy || saving) return;
+    if (busy || saving || changingPresentation) return;
+    if (current && dirty() && !await save()) return;
     if (!await window.hadithAuth?.getToken()) {
       window.hadithAuth?.requireToken?.('Please sign in to take notes.');
       return;
     }
     document.querySelector('[data-quran-help-tips-close]')?.click();
     pendingSource = source;
+    pendingFloating = false;
+    restoreButton.hidden = true;
     clearTimeout(saveTimer);
     const ownGeneration = ++generation;
     current = source; editor.value = savedText = ''; preview.innerHTML = ''; resetTags();
@@ -377,6 +494,7 @@
       if (ownGeneration !== generation) return;
     }
     bootstrap.Modal.getOrCreateInstance(modal).show();
+    if (modal.classList.contains('notebook-floating')) modal.removeAttribute('aria-modal');
     try {
       const result = await api(`?source=${encodeURIComponent(source.source_key)}`);
       if (ownGeneration !== generation) return;
@@ -386,27 +504,33 @@
       markSource(current.source_key, !!current.version);
       status.textContent = ''; setBusy(false); mode(edit || !current.version);
       importReflection(source);
+      if (modal.classList.contains('notebook-floating')) { minimizeFloating(false); rememberFloating(); }
     } catch (err) {
       if (ownGeneration !== generation) return;
       status.textContent = err.message; busy = false; current = null;
     }
   }
   modal.addEventListener('hide.bs.modal', event => {
+    if (changingPresentation) return;
     if (busy) { event.preventDefault(); return; }
     if (current && (saving || dirty())) {
       event.preventDefault();
       save().then(ok => {
         if (!ok && window.confirm('This note could not be saved. Discard your unsaved changes and close?')) {
-          editor.value = savedText; tagEditor.value = savedTags; titleEditor.value = savedTitle; ok = true;
+          editor.value = savedText; tagEditor.value = savedTags; titleEditor.value = savedTitle; noteReferences = JSON.parse(savedReferences); referencePicker.reset(noteReferences); ok = true;
         }
         if (ok) bootstrap.Modal.getInstance(modal)?.hide();
       });
     }
   });
   modal.addEventListener('hidden.bs.modal', () => {
+    if (changingPresentation) return;
+    referencePicker.close();
+    restoreButton.hidden = true;
+    modal.classList.remove('notebook-minimized');
+    try { sessionStorage.removeItem(floatingStorage); } catch (_) {}
     wikiAutocomplete.close();
     clearTimeout(saveTimer);
-    if (listNeedsRefresh) { listNeedsRefresh = false; loadList(); loadTags(); }
     if (returnModal?.isConnected) bootstrap.Modal.getOrCreateInstance(returnModal).show();
     returnModal = null;
   });
@@ -424,6 +548,16 @@
   document.getElementById('notebook-note-tags').addEventListener('keydown', event => {
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); editTags(); }
   });
+  function editTitle() {
+    if (!current || busy) return;
+    mode(true);
+    titleEditor.focus();
+  }
+  const noteTitle = document.getElementById('notebook-note-title');
+  noteTitle.addEventListener('click', editTitle);
+  noteTitle.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); editTitle(); }
+  });
   titleEditor.addEventListener('input', () => {
     renderNoteMetadata(); scheduleSave();
   });
@@ -434,7 +568,7 @@
   const wikiAutocomplete = window.NotebookWiki.install(editor, document.getElementById('notebook-wiki-options'), query => api('/links?q=' + encodeURIComponent(query)));
   // Clicking anywhere outside the editor returns to the rendered note.
   document.addEventListener('pointerdown', event => {
-    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
+    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file, #notebook-references') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
   });
   editor.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); showPreview(); }
@@ -450,7 +584,7 @@
     try {
       await api('', 'DELETE', { source_key: current.source_key, version: current.version, revision: current.revision });
       if (ownGeneration !== generation) return;
-      current = { ...current, markdown: '', html: '', version: 0, tags: [], hashtags: [], title: '', created_at: null, updated_at: null }; resetTags();
+      current = { ...current, markdown: '', html: '', version: 0, tags: [], hashtags: [], references: [], title: '', created_at: null, updated_at: null }; resetTags();
       editor.value = savedText = ''; preview.innerHTML = ''; deleteButton.hidden = true;
       markSource(current.source_key, false); updateList(current); status.textContent = ''; mode(false);
     } catch (err) { if (ownGeneration === generation) status.textContent = err.message; }
@@ -472,11 +606,131 @@
     } catch (err) { if (ownGeneration === generation) targetStatus.textContent = err.message; }
     finally { if (ownGeneration === generation) { button.disabled = false; setBusy(false); } }
   }
+  function previewCaretOffset(event) {
+    const caret = document.caretPositionFromPoint?.(event.clientX, event.clientY);
+    const range = caret ? null : document.caretRangeFromPoint?.(event.clientX, event.clientY);
+    let node = caret?.offsetNode || range?.startContainer;
+    let offset = caret ? caret.offset : range?.startOffset;
+    if (!node || node.nodeType !== Node.TEXT_NODE || !preview.contains(node)) {
+      // Paragraph margins, blank space and some browser hit tests return an
+      // element (or nothing). Resolve the nearest rendered text, never note end.
+      const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
+      const probe = document.createRange();
+      let part, nearest = null, best = Infinity;
+      const distance = rect => {
+        const dy = Math.max(rect.top - event.clientY, event.clientY - rect.bottom, 0);
+        const dx = Math.max(rect.left - event.clientX, event.clientX - rect.right, 0);
+        return dy * 100000 + dx;
+      };
+      while ((part = walker.nextNode())) {
+        if (!part.nodeValue.trim() || part.parentElement.closest('button, .footnote-backref')) continue;
+        probe.selectNodeContents(part);
+        for (const rect of probe.getClientRects()) {
+          if (!rect.height) continue;
+          const score = distance(rect);
+          if (score < best) { best = score; nearest = part; }
+        }
+      }
+      if (!nearest) return 0;
+      node = nearest; offset = 0; best = Infinity;
+      // Collapsed ranges give visual caret positions even in right-to-left text.
+      for (let i = 0; i <= node.length; i++) {
+        if (i && i < node.length && /[\uDC00-\uDFFF]/.test(node.nodeValue[i])) continue;
+        probe.setStart(node, i); probe.collapse(true);
+        for (const rect of probe.getClientRects()) {
+          if (!rect.height) continue;
+          const score = distance(rect);
+          if (score < best) { best = score; offset = i; }
+        }
+      }
+    }
+
+    // Decode source escapes/entities while retaining UTF-16 textarea offsets.
+    const source = editor.value, positions = [], decoder = document.createElement('textarea');
+    let text = '';
+    for (let i = 0; i < source.length;) {
+      const start = i;
+      let value = source[i++];
+      if (value.charCodeAt(0) === 92 && /[!-/:-@[-`{-~]/.test(source[i] || '')) {
+        value = source[i++];
+      } else if (value === '&') {
+        const entity = source.slice(start).match(/^&(?:#[xX][\da-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]+);/);
+        if (entity) { decoder.innerHTML = entity[0]; value = decoder.value; i = start + entity[0].length; }
+      }
+      for (let j = 0; j < value.length; j++) positions.push(start);
+      text += value;
+    }
+    positions.push(source.length);
+    const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
+    let cursor = 0, part;
+    while ((part = walker.nextNode())) {
+      if (part.parentElement.closest('button, .footnote-backref')) continue;
+      const value = part.nodeValue;
+      if (!value.trim()) {
+        if (part === node) return positions[cursor];
+        continue;
+      }
+      // Walking in document order disambiguates repeated words and paragraphs.
+      let start = text.indexOf(value, cursor);
+      if (start < 0) {
+        // Inline code and Markdown hard breaks can normalize whitespace.
+        let matched = cursor;
+        for (let j = 0; j < value.length; j++) {
+          const next = text.indexOf(value[j], matched);
+          if (next < 0) break;
+          if (part === node && j === offset) return positions[next];
+          matched = next + 1;
+        }
+        if (part === node) return positions[matched];
+        continue;
+      }
+      if (part === node) return positions[start + Math.min(offset, value.length)];
+      cursor = start + value.length;
+    }
+    // Whitespace outside text nodes uses the nearest preceding source position.
+    return positions[cursor];
+  }
+  function revealEditorCaret(offset, viewportY) {
+    editor.setSelectionRange(offset, offset);
+    editor.focus({ preventScroll: true });
+    // A textarea exposes selection offsets but no caret rectangle. Mirror its
+    // wrapping and typography to keep the clicked line at the same visible height.
+    const mirror = document.createElement('div');
+    const style = getComputedStyle(editor);
+    for (const property of ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing', 'wordSpacing', 'textIndent', 'textAlign', 'direction', 'unicodeBidi', 'tabSize', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']) {
+      mirror.style[property] = style[property];
+    }
+    Object.assign(mirror.style, { position: 'fixed', left: '-10000px', top: '0', visibility: 'hidden', boxSizing: 'border-box', width: `${editor.clientWidth}px`, whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
+    mirror.textContent = editor.value.slice(0, offset);
+    const marker = document.createElement('span');
+    marker.textContent = editor.value.slice(offset, offset + 1) || '\u200b';
+    mirror.append(marker);
+    document.body.append(mirror);
+    const caretY = marker.getBoundingClientRect().top - mirror.getBoundingClientRect().top;
+    const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
+    const visibleY = Math.max(0, Math.min(viewportY, editor.clientHeight - lineHeight));
+    editor.scrollTop = Math.max(0, caretY - visibleY);
+    mirror.remove();
+  }
+  let previewPointerCaret = null;
+  preview.addEventListener('pointerdown', event => {
+    previewPointerCaret = !editing && current && !busy && event.button === 0
+      ? { offset: previewCaretOffset(event), viewportY: event.clientY - preview.getBoundingClientRect().top }
+      : null;
+  });
+  preview.addEventListener('pointercancel', () => { previewPointerCaret = null; });
   preview.addEventListener('click', event => {
+    const pointerCaret = previewPointerCaret;
+    previewPointerCaret = null;
     const button = event.target.closest('[data-notebook-reference]');
     if (button && current) { expandReference(button, current, true); return; }
     if (event.target.closest('a, button, input, textarea, select, summary')) return;
-    if (current && !busy) mode(true);
+    if (current && !busy) {
+      const offset = pointerCaret?.offset ?? previewCaretOffset(event);
+      const viewportY = pointerCaret?.viewportY ?? event.clientY - preview.getBoundingClientRect().top;
+      mode(true);
+      revealEditorCaret(offset, viewportY);
+    }
   });
   async function openWiki(title) {
     const ownGeneration = generation;
@@ -508,45 +762,47 @@
   document.getElementById('notebook-new')?.addEventListener('click', () => {
     open({ source_key: `general:${crypto.randomUUID()}`, source_title: 'General note', source_url: '/notebook', title: '', markdown: '', html: '', version: 0 }, true);
   });
+  function createNoteTile(note) {
+    const article = document.createElement('article'); article.className = 'notebook-tile' + (!note.version ? ' notebook-tile-new' : '');
+    article.dataset.sourceKey = note.source_key;
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'notebook-tile-open';
+    button.disabled = !listSignedIn;
+    if (!listSignedIn) button.setAttribute('aria-describedby', 'notebook-signin');
+    button.setAttribute('aria-label', `Open note: ${note.title || note.source_title}`);
+    const heading = document.createElement('span'); heading.className = 'notebook-tile-title';
+    const icon = document.createElement('span'); icon.className = note.version ? 'bi bi-sticky-fill' : 'bi bi-sticky'; icon.setAttribute('aria-hidden', 'true');
+    const title = document.createElement('span'); title.dir = 'auto'; title.textContent = note.title || note.source_title;
+    heading.append(icon, title);
+    const rendered = document.createElement('div'); rendered.innerHTML = note.html;
+    rendered.querySelectorAll('button').forEach(node => node.remove());
+    rendered.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, pre, tr, br').forEach(node => node.append(' '));
+    const text = rendered.textContent.replace(/\s+/g, ' ').trim() || (note.source_key === 'general' ? 'Create a new private note.' : '');
+    const excerpt = text.length > 220 ? `${text.slice(0, 220).trimEnd()}…` : text;
+    const content = document.createElement('span'); content.className = 'notebook-tile-preview notebook-markdown'; content.dir = 'auto';
+    const arabic = /([\p{Script_Extensions=Arabic}\u200c\u200d]+(?:[ \t]+[\p{Script_Extensions=Arabic}\u200c\u200d]+)*)/gu;
+    for (const part of excerpt.split(arabic)) {
+      const span = document.createElement('span'); span.textContent = part;
+      if (/\p{Script_Extensions=Arabic}/u.test(part)) span.className = 'notebook-arabic';
+      content.append(span);
+    }
+    button.append(heading, content); button.addEventListener('click', () => open(note));
+    article.append(button);
+    const tagBar = document.createElement('div'); tagBar.className = 'notebook-tile-tags';
+    for (const tag of note.hashtags || []) {
+      const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'notebook-tag-chip';
+      chip.textContent = tag; chip.dir = 'auto';
+      chip.addEventListener('click', () => { document.getElementById('notebook-tag').value = tag; renderTagRail(); loadList(); });
+      tagBar.append(chip);
+    }
+    if (tagBar.childElementCount) article.append(tagBar);
+    return article;
+  }
   function renderList() {
     const filtering = document.getElementById('notebook-search').value.trim() || document.getElementById('notebook-tag').value.trim();
     list.replaceChildren();
     const general = notes.find(note => note.source_key === 'general') || { source_key: 'general', source_title: 'General note', source_url: '/notebook', markdown: '', html: '', version: 0 };
     const filtered = filtering ? notes : [general, ...notes.filter(note => note.source_key !== 'general')];
-    for (const note of filtered) {
-      const article = document.createElement('article'); article.className = 'notebook-tile' + (!note.version ? ' notebook-tile-new' : '');
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'notebook-tile-open';
-      button.disabled = !listSignedIn;
-      if (!listSignedIn) button.setAttribute('aria-describedby', 'notebook-signin');
-      button.setAttribute('aria-label', `Open note: ${note.title || note.source_title}`);
-      const heading = document.createElement('span'); heading.className = 'notebook-tile-title';
-      const icon = document.createElement('span'); icon.className = note.version ? 'bi bi-sticky-fill' : 'bi bi-sticky'; icon.setAttribute('aria-hidden', 'true');
-      const title = document.createElement('span'); title.dir = 'auto'; title.textContent = note.title || note.source_title;
-      heading.append(icon, title);
-      const rendered = document.createElement('div'); rendered.innerHTML = note.html;
-      rendered.querySelectorAll('button').forEach(node => node.remove());
-      rendered.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, pre, tr, br').forEach(node => node.append(' '));
-      const text = rendered.textContent.replace(/\s+/g, ' ').trim() || (note.source_key === 'general' ? 'Create a new private note.' : '');
-      const excerpt = text.length > 220 ? `${text.slice(0, 220).trimEnd()}…` : text;
-      const content = document.createElement('span'); content.className = 'notebook-tile-preview notebook-markdown'; content.dir = 'auto';
-      const arabic = /([\p{Script_Extensions=Arabic}\u200c\u200d]+(?:[ \t]+[\p{Script_Extensions=Arabic}\u200c\u200d]+)*)/gu;
-      for (const part of excerpt.split(arabic)) {
-        const span = document.createElement('span'); span.textContent = part;
-        if (/\p{Script_Extensions=Arabic}/u.test(part)) span.className = 'notebook-arabic';
-        content.append(span);
-      }
-      button.append(heading, content); button.addEventListener('click', () => open(note));
-      article.append(button);
-      const tagBar = document.createElement('div'); tagBar.className = 'notebook-tile-tags';
-      for (const tag of note.hashtags || []) {
-        const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'notebook-tag-chip';
-        chip.textContent = tag; chip.dir = 'auto';
-        chip.addEventListener('click', () => { document.getElementById('notebook-tag').value = tag; renderTagRail(); loadList(); });
-        tagBar.append(chip);
-      }
-      if (tagBar.childElementCount) article.append(tagBar);
-      list.append(article);
-    }
+    for (const note of filtered) list.append(createNoteTile(note));
     listStatus.textContent = filtered.length ? '' : (filtering ? 'No matching notes.' : 'No notes yet.');
   }
   function checkMore() {
@@ -594,7 +850,9 @@
     window.addEventListener('resize', checkMore);
   }
   document.addEventListener('hadithAuthChanged', () => {
-    listNeedsRefresh = false;
+    pendingFloating = false;
+    try { sessionStorage.removeItem(floatingStorage); } catch (_) {}
+    restoreButton.hidden = true;
     wikiAutocomplete.close();
     ++generation; ++listRequest; ++statusEpoch; ++tagRequest; railTags = []; renderTagRail(); returnModal = null; pendingSource = null;
     clearTimeout(saveTimer); saving = null; current = null; editor.value = savedText = ''; preview.innerHTML = ''; resetTags();
@@ -632,4 +890,5 @@
   });
   loadList(); loadTags();
   openRequestedWiki();
+  restoreFloating();
 })();

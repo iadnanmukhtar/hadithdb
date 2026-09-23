@@ -69,10 +69,10 @@ describe('shared header navigation', () => {
     expect(inlineScripts).toContain('authItem.after(item)');
   });
 
-  test('links the desktop Quran item directly to Study and keeps the off-canvas submenu', () => {
+  test('links the desktop Quran item to the Quran home and keeps the off-canvas submenu', () => {
     const quranLabels = ['Quran', 'Translations', 'Study', 'Mushaf', 'Practice', 'Mudhakkir'];
 
-    expect(header).toContain('<li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, \'/quran/1\') %>">Quran</a></li>');
+    expect(header).toContain('<li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, \'/quran\') %>">Quran</a></li>');
     expect(header).not.toContain('dropdown-toggle<%- activeNavAttrs(isQuranArea && !isQuranTafsirArea)');
     expect(header).toContain('href="<%= utils.quranUrl(req, \'/quran/tafsir\') %>">Tafsir</a>');
     expect(offcanvasPrimaryNav).not.toMatch(/nav-link ps-4[^\n]*\/quran\/tafsir/);

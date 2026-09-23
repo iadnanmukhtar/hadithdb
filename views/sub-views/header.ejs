@@ -128,7 +128,7 @@
     <menu class="col d-md-block d-none">
       
       <ul class="nav container-fluid justify-content-end top-nav-desktop-actions">
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranTafsirArea) %>" href="https://quran.islamunlocked.com/quran">Quran</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>">Tafsir</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isSirahArea) %>" href="<%= utils.urlFor(req, '/ibnhisham') %>">Sirah</a></li>

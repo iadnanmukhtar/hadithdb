@@ -2,7 +2,9 @@
   <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
     <div class="modal-header py-2">
       <h2 class="modal-title fs-6" id="notebook-modal-title"><i class="bi bi-sticky me-2" aria-hidden="true"></i><a id="notebook-source" dir="auto">Note</a></h2>
-      <button id="notebook-fullscreen" type="button" class="notebook-tool ms-auto me-2" title="Expand note" aria-label="Expand note" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
+      <button id="notebook-float" type="button" class="notebook-tool ms-auto" title="Float note while browsing" aria-label="Float note while browsing" aria-pressed="false"><i class="bi bi-pin-angle" aria-hidden="true"></i></button>
+      <button id="notebook-minimize" type="button" class="notebook-tool" title="Minimize note" aria-label="Minimize note" hidden><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+      <button id="notebook-fullscreen" type="button" class="notebook-tool me-2" title="Expand note" aria-label="Expand note" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
@@ -16,13 +18,26 @@
         <div id="notebook-title-row">
           <a id="notebook-drive-file" target="_blank" rel="noopener" title="Open note in Google Drive" aria-label="Open note in Google Drive" hidden><%- include('notebook_drive_icon.ejs'); %></a>
           <input id="notebook-title-editor" class="form-control mb-2" dir="auto" maxlength="500" required aria-label="Note title" placeholder="Note title" hidden>
-          <div id="notebook-note-title" dir="auto" hidden></div>
+          <div id="notebook-note-title" dir="auto" role="button" tabindex="0" aria-label="Edit note title" hidden></div>
         </div>
         <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" aria-autocomplete="list" aria-controls="notebook-wiki-options" aria-expanded="false" placeholder="Create a new private note." hidden></textarea>
         <div id="notebook-wiki-options" role="listbox" aria-label="Link to a note" hidden></div>
         <div id="notebook-preview" class="notebook-markdown" tabindex="0" aria-label="Note preview"></div>
       </div>
     </div>
+    <section id="notebook-references" class="px-3 py-2" aria-label="Note references">
+      <div class="d-flex align-items-center gap-2">
+        <span class="small text-muted">References <span class="small">(optional)</span></span>
+        <button type="button" class="btn btn-sm btn-link p-0" data-reference-add>Attach reference</button>
+      </div>
+      <div class="d-flex flex-wrap gap-2" data-reference-chips></div>
+      <div data-reference-controls hidden>
+        <label class="visually-hidden" for="notebook-reference-search">Search references to attach</label>
+        <input id="notebook-reference-search" type="search" class="form-control form-control-sm mt-1" dir="auto" placeholder="Search text or a reference, e.g. bukhari:1 or quran:2:255" autocomplete="off" aria-controls="notebook-reference-results" aria-expanded="false">
+        <div id="notebook-reference-results" data-reference-results hidden></div>
+        <div class="small text-muted" role="status" aria-live="polite"></div>
+      </div>
+    </section>
     <div id="notebook-tag-bar" class="px-3 py-2">
       <div id="notebook-note-tags" class="d-flex flex-wrap gap-2" role="button" tabindex="0" aria-label="Edit note tags"></div>
       <label class="visually-hidden" for="notebook-tag-editor">Tags separated by spaces</label>
@@ -41,6 +56,15 @@
   </div></div>
 </div>
 <style>
+#notebook-references { position: relative; flex-shrink: 0; border-top: 1px solid var(--note-edge); }
+#notebook-references [data-reference-chips] { max-height: 5rem; overflow-y: auto; }
+.notebook-reference-chip { display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem; }
+.notebook-reference-chip button { background: transparent; border: 0; color: inherit; font-size: 1.1rem; }
+#notebook-reference-results { position: absolute; bottom: 100%; left: 1rem; right: 1rem; max-height: min(18rem, 40vh); overflow-y: auto; z-index: 2; background: var(--bs-body-bg); color: var(--bs-body-color); border: 1px solid var(--bs-border-color); border-radius: .4rem; box-shadow: 0 .25rem 1rem #0002; }
+.notebook-reference-result { display: flex; flex-direction: column; gap: .25rem; width: 100%; padding: .65rem; text-align: start; border: 0; border-bottom: 1px solid var(--bs-border-color); background: transparent; color: inherit; }
+.notebook-reference-result:hover, .notebook-reference-result:focus-visible { background: var(--bs-tertiary-bg); }
+.notebook-reference-result > span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
 body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { display: none !important; }
 #notebook-editor { font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
 #notebook-wiki-options { max-height: 12rem; overflow-y: auto; border: 1px solid var(--bs-border-color, #ccc); border-radius: .35rem; background: var(--bs-body-bg, white); margin-block: .25rem; }
@@ -130,7 +154,7 @@ body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { d
   .notebook-tag-rail { position: static; width: 100%; max-height: none; overflow-y: visible; border-inline-start: 0; padding: .25rem .5rem .75rem; }
 }
 #notebook-title-editor { flex-shrink: 0; }
-#notebook-note-title { font-size: 1.1rem; font-weight: 600; margin-bottom: .75rem; overflow-wrap: anywhere; flex-shrink: 0; }
+#notebook-note-title { font-size: 1.1rem; font-weight: 600; margin-bottom: .75rem; overflow-wrap: anywhere; flex-shrink: 0; cursor: text; }
 #notebook-title-row { display: flex; align-items: baseline; gap: .5rem; }
 #notebook-title-row :is(#notebook-title-editor, #notebook-note-title) { min-width: 0; flex: 1; }
 #notebook-drive-file { flex-shrink: 0; }
@@ -142,4 +166,20 @@ body:has(#notebook-modal.show .modal-fullscreen) :is(#bmc-wbtn, #bmc-iframe) { d
 </style>
 <script src="/static/js/notebook-drive.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-wiki.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-references.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+
+<button id="notebook-restore" type="button" class="notebook-restore-note" hidden aria-controls="notebook-modal" title="Restore note" aria-label="Restore note"><i class="bi bi-sticky" aria-hidden="true"></i><span>Restore note</span></button>
+<style>
+body.modal-open:has(#notebook-modal.notebook-floating.show):not(:has(.modal.show:not(#notebook-modal))) { overflow: auto !important; padding-right: 0 !important; }
+#notebook-modal.notebook-floating { pointer-events: none; overflow: visible; }
+#notebook-modal.notebook-floating .modal-dialog { position: fixed; right: 1rem; bottom: 4.5rem; width: min(30rem, calc(100vw - 2rem)); max-width: none; height: min(70dvh, 44rem); margin: 0; pointer-events: auto; }
+#notebook-modal.notebook-floating .modal-content { height: 100%; box-shadow: 0 .5rem 2rem #0003; }
+#notebook-modal.notebook-minimized { visibility: hidden; }
+#notebook-restore { position: fixed; right: 1rem; bottom: 4.5rem; z-index: 1056; max-width: calc(100vw - 2rem); width: 6.5rem; min-height: 5rem; padding: .65rem .6rem 1rem; border: 1px solid #d4a72c; border-radius: .3rem .3rem 1rem .3rem; background: #fff8d8; color: #725300; box-shadow: 0 .2rem .6rem #0002; font: inherit; font-size: .75rem; cursor: pointer; }
+#notebook-restore::after { content: ''; position: absolute; right: 0; bottom: 0; width: .9rem; height: .9rem; background: #f2dfa0; border-top: 1px solid #d4a72c; border-left: 1px solid #d4a72c; border-radius: .15rem 0 .85rem 0; }
+#notebook-restore .bi { display: block; font-size: 1.3rem; margin-bottom: .2rem; }
+#notebook-restore:hover { background: #fff1b8; box-shadow: 0 .3rem .8rem #0003; }
+#notebook-restore:focus-visible { outline: 3px solid var(--bs-primary, #0d6efd); outline-offset: 3px; }
+#notebook-restore:disabled { cursor: wait; opacity: .65; }
+</style>

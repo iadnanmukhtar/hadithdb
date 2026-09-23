@@ -6,7 +6,7 @@ function harness() {
   const ctx = vm.createContext({
     current: { source_key: 'general', title: 'Title', markdown: 'Before', version: '1' },
     editor: { value: 'After' }, titleEditor: { value: 'Title' }, tagEditor: { value: '' },
-    savedText: 'Before', savedTitle: 'Title', savedTags: '', busy: false, saving: null,
+    savedText: 'Before', savedTitle: 'Title', savedTags: '', noteReferences: [], savedReferences: '[]', busy: false, saving: null,
     saveTimer: null, generation: 1, editing: true, status: { textContent: '' },
     deleteButton: {}, preview: {}, setTimeout, clearTimeout,
     api: jest.fn(), renderNoteTags: jest.fn(), renderNoteMetadata: jest.fn(),
@@ -63,16 +63,70 @@ test('Save button switches to preview before its slow save completes', async () 
   expect(ctx.api).toHaveBeenCalledTimes(1);
   resolve(result('After')); expect(await pending).toBe(true);
 });
-test('repeated saves defer list and tag reloads while the modal is visible', () => {
-  const ctx = vm.createContext({ list: {}, modal: { classList: { contains: () => true } }, loadList: jest.fn(), loadTags: jest.fn(), listNeedsRefresh: false });
+function listHarness() {
+  const before = { ...result('Before').note, source_key: 'general:one', hashtags: ['old'] };
+  const untouched = { ...result('Unchanged').note, source_key: 'general:two' };
+  const children = [];
+  const list = { children, prepend: tile => children.unshift(tile), get childElementCount() { return children.length; } };
+  const createNoteTile = note => ({
+    dataset: { sourceKey: note.source_key }, note,
+    replaceWith(next) { children.splice(children.indexOf(this), 1, next); },
+    remove() { children.splice(children.indexOf(this), 1); }
+  });
+  children.push(createNoteTile(before), createNoteTile(untouched));
+  const fields = { 'notebook-search': {value: ''}, 'notebook-tag': {value: ''} };
+  const ctx = vm.createContext({ list, notes: [before, untouched], listStatus: {}, createNoteTile: jest.fn(createNoteTile), document: {getElementById: id => fields[id]}, loadList: jest.fn(), loadTags: jest.fn(), hasMore: true });
   vm.runInContext(source.match(/  function updateList\([^]*?\n  }/)[0], ctx);
-  ctx.updateList(result('one').note); ctx.updateList(result('two').note);
+  return {ctx, fields, children, before};
+}
+test('saving replaces only the affected card without reloading loaded pages', () => {
+  const {ctx, children, before} = listHarness();
+  const sibling = children[1];
+  const saved = {...before, title: 'Updated', markdown: 'Latest', html: '<p>Latest</p>'};
+  ctx.updateList(saved);
+  expect(ctx.notes[0]).toBe(saved); expect(ctx.notes).toHaveLength(2);
+  expect(children[0].note).toBe(saved); expect(children[1]).toBe(sibling);
   expect(ctx.loadList).not.toHaveBeenCalled(); expect(ctx.loadTags).not.toHaveBeenCalled();
-  expect(ctx.listNeedsRefresh).toBe(true);
+  expect(ctx.hasMore).toBe(true);
 });
-test('closing the modal refreshes the list once after multiple saved edits', () => {
-  const ctx = vm.createContext({ listNeedsRefresh: true, wikiAutocomplete: { close: jest.fn() }, clearTimeout: jest.fn(), saveTimer: null, loadList: jest.fn(), loadTags: jest.fn(), returnModal: null, modal: { addEventListener: jest.fn() } });
+test('tag changes remove a card from its active filter without reloading the list', () => {
+  const {ctx, fields, children, before} = listHarness();
+  fields['notebook-tag'].value = 'old';
+  ctx.updateList({...before, hashtags: ['new']});
+  expect(ctx.notes.map(note => note.source_key)).toEqual(['general:two']);
+  expect(children).toHaveLength(1); expect(ctx.loadTags).toHaveBeenCalledTimes(1);
+  expect(ctx.loadList).not.toHaveBeenCalled();
+});
+test('new notes and deletions update cards locally', () => {
+  const {ctx, children} = listHarness();
+  const saved = {...result('New').note, source_key: 'general:new'};
+  ctx.updateList(saved);
+  expect(children[0].note).toBe(saved); expect(ctx.notes).toHaveLength(3);
+  ctx.updateList({...saved, version: 0});
+  expect(children).toHaveLength(2); expect(ctx.notes).toHaveLength(2);
+  expect(ctx.loadList).not.toHaveBeenCalled();
+});
+test('closing the modal does not reload the list or tags', () => {
+  const ctx = vm.createContext({ referencePicker: {close: jest.fn()}, changingPresentation: false, restoreButton: {}, floatingStorage: 'floating', sessionStorage: { removeItem: jest.fn() }, wikiAutocomplete: { close: jest.fn() }, clearTimeout: jest.fn(), saveTimer: null, loadList: jest.fn(), loadTags: jest.fn(), returnModal: null, modal: { classList: { remove: jest.fn() }, addEventListener: jest.fn() } });
   vm.runInContext(source.match(/  modal.addEventListener\('hidden.bs.modal', \(\) => \{[^]*?\n  \}\);/)[0], ctx);
   const close = ctx.modal.addEventListener.mock.calls[0][1]; close(); close();
-  expect(ctx.loadList).toHaveBeenCalledTimes(1); expect(ctx.loadTags).toHaveBeenCalledTimes(1);
+  expect(ctx.loadList).not.toHaveBeenCalled(); expect(ctx.loadTags).not.toHaveBeenCalled();
+});
+
+test('reference-only edits autosave and preserve newer attachments during an in-flight save', async () => {
+  const ctx = harness(); ctx.editor.value = ctx.savedText;
+  const one = {ref:'bukhari:1',label:'bukhari:1',url:'/bukhari:1'};
+  const two = {ref:'quran:2:255',label:'quran:2:255',url:'/quran:2:255'};
+  ctx.noteReferences = [one];
+  let finish;
+  ctx.api.mockImplementationOnce(() => new Promise(resolve => {finish=resolve;}))
+    .mockResolvedValue({note:{...result('Before').note,references:[one,two]}});
+  const pending = ctx.save(true);
+  expect(ctx.api.mock.calls[0][2].references).toEqual([one]);
+  ctx.noteReferences = [one,two];
+  finish({note:{...result('Before').note,references:[one]}}); await pending;
+  expect(ctx.dirty()).toBe(true);
+  await jest.advanceTimersByTimeAsync(1800);
+  expect(ctx.api.mock.calls[1][2].references).toEqual([one,two]);
+  expect(ctx.dirty()).toBe(false);
 });
