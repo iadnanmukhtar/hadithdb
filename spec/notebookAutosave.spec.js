@@ -6,7 +6,7 @@ function harness() {
   const ctx = vm.createContext({
     current: { source_key: 'general', title: 'Title', markdown: 'Before', version: '1' },
     editor: { value: 'After' }, titleEditor: { value: 'Title' }, tagEditor: { value: '' },
-    savedText: 'Before', savedTitle: 'Title', savedTags: '', noteReferences: [], savedReferences: '[]', busy: false, saving: null,
+    savedText: 'Before', savedTitle: 'Title', savedTags: '', busy: false, saving: null,
     saveTimer: null, generation: 1, editing: true, status: { textContent: '' },
     deleteButton: {}, preview: {}, setTimeout, clearTimeout,
     api: jest.fn(), renderNoteTags: jest.fn(), renderNoteMetadata: jest.fn(),
@@ -107,26 +107,8 @@ test('new notes and deletions update cards locally', () => {
   expect(ctx.loadList).not.toHaveBeenCalled();
 });
 test('closing the modal does not reload the list or tags', () => {
-  const ctx = vm.createContext({ referencePicker: {close: jest.fn()}, changingPresentation: false, restoreButton: {}, floatingStorage: 'floating', sessionStorage: { removeItem: jest.fn() }, wikiAutocomplete: { close: jest.fn() }, clearTimeout: jest.fn(), saveTimer: null, loadList: jest.fn(), loadTags: jest.fn(), returnModal: null, modal: { classList: { remove: jest.fn() }, addEventListener: jest.fn() } });
+  const ctx = vm.createContext({ changingPresentation: false, restoreButton: {}, floatingStorage: 'floating', sessionStorage: { removeItem: jest.fn() }, wikiAutocomplete: { close: jest.fn() }, clearTimeout: jest.fn(), saveTimer: null, loadList: jest.fn(), loadTags: jest.fn(), returnModal: null, modal: { classList: { remove: jest.fn() }, addEventListener: jest.fn() } });
   vm.runInContext(source.match(/  modal.addEventListener\('hidden.bs.modal', \(\) => \{[^]*?\n  \}\);/)[0], ctx);
   const close = ctx.modal.addEventListener.mock.calls[0][1]; close(); close();
   expect(ctx.loadList).not.toHaveBeenCalled(); expect(ctx.loadTags).not.toHaveBeenCalled();
-});
-
-test('reference-only edits autosave and preserve newer attachments during an in-flight save', async () => {
-  const ctx = harness(); ctx.editor.value = ctx.savedText;
-  const one = {ref:'bukhari:1',label:'bukhari:1',url:'/bukhari:1'};
-  const two = {ref:'quran:2:255',label:'quran:2:255',url:'/quran:2:255'};
-  ctx.noteReferences = [one];
-  let finish;
-  ctx.api.mockImplementationOnce(() => new Promise(resolve => {finish=resolve;}))
-    .mockResolvedValue({note:{...result('Before').note,references:[one,two]}});
-  const pending = ctx.save(true);
-  expect(ctx.api.mock.calls[0][2].references).toEqual([one]);
-  ctx.noteReferences = [one,two];
-  finish({note:{...result('Before').note,references:[one]}}); await pending;
-  expect(ctx.dirty()).toBe(true);
-  await jest.advanceTimersByTimeAsync(1800);
-  expect(ctx.api.mock.calls[1][2].references).toEqual([one,two]);
-  expect(ctx.dirty()).toBe(false);
 });

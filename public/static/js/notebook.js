@@ -8,7 +8,7 @@
   const tagEditor = document.getElementById('notebook-tag-editor');
   const titleEditor = document.getElementById('notebook-title-editor');
   let savedTitle = '';
-  let noteReferences = [], savedReferences = '[]';
+  let titleEditing = false, tagsEditing = false;
   let savedTags = '', railTags = [], tagRequest = 0;
   const status = document.getElementById('notebook-status');
   const preview = document.getElementById('notebook-preview');
@@ -36,7 +36,7 @@
   downloadButton.addEventListener('click', async () => {
     if (!current || busy) return;
     const ownGeneration = generation;
-    const note = { ...current, markdown: editor.value, tags: tagEditor.value, title: titleEditor.value, references: noteReferences };
+    const note = { ...current, markdown: editor.value, tags: tagEditor.value, title: titleEditor.value };
     const title = (note.title || note.source_title).replace(/[^\p{L}\p{N} _-]/gu, '-').slice(0, 80).trim() || 'Note';
     const identity = note.source_key.replace(/:/g, '-');
     downloadButton.disabled = true;
@@ -89,11 +89,6 @@
   const existing = new Set(), checked = new Set(), buttons = new Map();
   const installed = new WeakSet();
   const sourceSelector = '.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, [data-note-key]';
-  const referencePicker = window.NotebookReferences.install(document.getElementById('notebook-references'), {
-    search: query => api('/references?q=' + encodeURIComponent(query)),
-    onEdit: () => { if (current && !busy) mode(true); },
-    onChange: references => { noteReferences = references; scheduleSave(); }
-  });
   async function api(path = '', method = 'GET', body) {
     const token = await window.hadithAuth?.getToken();
     if (!token) throw new Error('Please sign in to use your notebook.');
@@ -110,7 +105,6 @@
   }
   function setBusy(value) {
     busy = value;
-    referencePicker.setDisabled(value);
     saveButton.disabled = deleteButton.disabled = toggle.disabled = editor.disabled = downloadButton.disabled = tagEditor.disabled = titleEditor.disabled = value;
   }
   function sourceFor(button) {
@@ -203,16 +197,15 @@
   document.addEventListener('quranAyahNoteTarget', event => prepareAyahNote(event.detail.button));
   function mode(edit) {
     editing = edit;
-    referencePicker.setEditing(edit);
+    titleEditing = tagsEditing = false;
     wikiAutocomplete.close();
     editor.hidden = !edit; preview.hidden = edit;
-    tagEditor.hidden = !edit; document.getElementById('notebook-tag-help').hidden = !edit;
     renderNoteMetadata();
     renderNoteTags();
     const label = edit ? 'Preview' : 'Edit Markdown';
     toggle.title = label; toggle.setAttribute('aria-label', label);
     toggle.innerHTML = `<i class="bi ${edit ? 'bi-pencil' : 'bi-eye'}" aria-hidden="true"></i>`;
-    if (edit) (titleEditor.value.trim() ? editor : titleEditor).focus();
+    if (edit) editor.focus();
   }
   const floatButton = document.getElementById('notebook-float');
   const minimizeButton = document.getElementById('notebook-minimize');
@@ -294,11 +287,8 @@
       }
     } finally { restoringFloating = false; restoreButton.disabled = false; }
   }
-  function dirty() { return editor.value !== savedText || tagEditor.value !== savedTags || titleEditor.value !== savedTitle || JSON.stringify(noteReferences) !== savedReferences; }
+  function dirty() { return editor.value !== savedText || tagEditor.value !== savedTags || titleEditor.value !== savedTitle; }
   function resetTags() {
-    noteReferences = current?.references || [];
-    savedReferences = JSON.stringify(noteReferences);
-    referencePicker.reset(noteReferences);
     titleEditor.value = savedTitle = current?.title || '';
     renderNoteMetadata();
     tagEditor.value = savedTags = (current?.tags || []).join(' ');
@@ -306,8 +296,8 @@
   }
   function renderNoteMetadata() {
     const title = document.getElementById('notebook-note-title');
-    titleEditor.hidden = !editing;
-    title.textContent = titleEditor.value.trim(); title.hidden = editing || !title.textContent;
+    titleEditor.hidden = !titleEditing;
+    title.textContent = titleEditor.value.trim() || 'Add a title'; title.hidden = titleEditing;
     const driveFile = document.getElementById('notebook-drive-file');
     driveFile.hidden = !current?.version || !current?.driveFileUrl;
     if (!driveFile.hidden) driveFile.href = current.driveFileUrl;
@@ -320,12 +310,16 @@
   }
   function renderNoteTags() {
     const container = document.getElementById('notebook-note-tags');
+    tagEditor.hidden = !tagsEditing;
+    document.getElementById('notebook-tag-help').hidden = !tagsEditing;
+    container.hidden = tagsEditing;
+    container.classList.toggle('d-flex', !tagsEditing);
     container.replaceChildren();
     const tags = new Set([...(current?.hashtags || []), ...tagEditor.value.split(/\s+/u).filter(Boolean).map(tag => tag.replace(/^#/, ''))]);
     for (const tag of tags) {
       const chip = document.createElement('span'); chip.className = 'notebook-tag-chip'; chip.dir = 'auto'; chip.textContent = tag; container.append(chip);
     }
-    if (!tags.size && !editing) container.textContent = 'No tags';
+    if (!tags.size) container.textContent = 'Add tags';
   }
   function renderTagRail() {
     const container = document.getElementById('notebook-tags');
@@ -413,12 +407,12 @@
     const operation = (async () => {
       try {
         while (ownGeneration === generation && (dirty() || current.needsChecksum)) {
-          const text = editor.value, tags = tagEditor.value, title = titleEditor.value, references = noteReferences.slice();
+          const text = editor.value, tags = tagEditor.value, title = titleEditor.value;
           status.textContent = 'Saving…';
-          const note = (await api('', 'PUT', { ...current, markdown: text, tags, title, references })).note;
+          const note = (await api('', 'PUT', { ...current, markdown: text, tags, title })).note;
           if (ownGeneration !== generation) return false;
           current = note;
-          savedText = text; savedTags = tags; savedTitle = title; savedReferences = JSON.stringify(references); renderNoteTags(); renderNoteMetadata();
+          savedText = text; savedTags = tags; savedTitle = title; renderNoteTags(); renderNoteMetadata();
           deleteButton.hidden = !note.version;
           markSource(note.source_key, !!note.version);
           updateList(note);
@@ -517,7 +511,7 @@
       event.preventDefault();
       save().then(ok => {
         if (!ok && window.confirm('This note could not be saved. Discard your unsaved changes and close?')) {
-          editor.value = savedText; tagEditor.value = savedTags; titleEditor.value = savedTitle; noteReferences = JSON.parse(savedReferences); referencePicker.reset(noteReferences); ok = true;
+          editor.value = savedText; tagEditor.value = savedTags; titleEditor.value = savedTitle; ok = true;
         }
         if (ok) bootstrap.Modal.getInstance(modal)?.hide();
       });
@@ -525,7 +519,6 @@
   });
   modal.addEventListener('hidden.bs.modal', () => {
     if (changingPresentation) return;
-    referencePicker.close();
     restoreButton.hidden = true;
     modal.classList.remove('notebook-minimized');
     try { sessionStorage.removeItem(floatingStorage); } catch (_) {}
@@ -540,6 +533,7 @@
   function editTags() {
     if (!current || busy) return;
     mode(true);
+    tagsEditing = true; renderNoteTags();
     tagEditor.focus();
   }
   document.getElementById('notebook-tag-bar').addEventListener('click', event => {
@@ -551,12 +545,20 @@
   function editTitle() {
     if (!current || busy) return;
     mode(true);
+    titleEditing = true; renderNoteMetadata();
     titleEditor.focus();
   }
   const noteTitle = document.getElementById('notebook-note-title');
   noteTitle.addEventListener('click', editTitle);
   noteTitle.addEventListener('keydown', event => {
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); editTitle(); }
+  });
+  titleEditor.addEventListener('blur', () => { titleEditing = false; renderNoteMetadata(); });
+  tagEditor.addEventListener('blur', () => { tagsEditing = false; renderNoteTags(); });
+  for (const field of [titleEditor, tagEditor]) field.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === 'Escape') {
+      event.preventDefault(); event.stopPropagation(); editor.focus();
+    }
   });
   titleEditor.addEventListener('input', () => {
     renderNoteMetadata(); scheduleSave();
@@ -568,7 +570,7 @@
   const wikiAutocomplete = window.NotebookWiki.install(editor, document.getElementById('notebook-wiki-options'), query => api('/links?q=' + encodeURIComponent(query)));
   // Clicking anywhere outside the editor returns to the rendered note.
   document.addEventListener('pointerdown', event => {
-    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file, #notebook-references') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
+    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
   });
   editor.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); showPreview(); }
@@ -584,7 +586,7 @@
     try {
       await api('', 'DELETE', { source_key: current.source_key, version: current.version, revision: current.revision });
       if (ownGeneration !== generation) return;
-      current = { ...current, markdown: '', html: '', version: 0, tags: [], hashtags: [], references: [], title: '', created_at: null, updated_at: null }; resetTags();
+      current = { ...current, markdown: '', html: '', version: 0, tags: [], hashtags: [], title: '', created_at: null, updated_at: null }; resetTags();
       editor.value = savedText = ''; preview.innerHTML = ''; deleteButton.hidden = true;
       markSource(current.source_key, false); updateList(current); status.textContent = ''; mode(false);
     } catch (err) { if (ownGeneration === generation) status.textContent = err.message; }

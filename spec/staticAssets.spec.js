@@ -147,7 +147,7 @@ describe('static assets', () => {
 });
 
 test('cached pages refresh deferred notebook scripts as well as the main script', () => {
-  for (const file of ['notebook', 'notebook-drive', 'notebook-wiki', 'notebook-references', 'account-controls']) {
+  for (const file of ['notebook', 'notebook-drive', 'notebook-wiki', 'account-controls']) {
     const html = `<script src="/static/js/${file}.js?v=old" defer></script>`;
     expect(Utils.injectCachedAssetVersions(html)).toBe(`<script src="/static/js/${file}.js?v=${Utils.scriptAssetVersion()}" defer></script>`);
   }

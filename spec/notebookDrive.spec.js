@@ -349,37 +349,3 @@ test('independent general notes can be created without replacing an existing gen
   expect((await Drive.get('alice', first.source_key)).title).toBe('Original general note');
   expect((await Drive.get('alice', second.source_key)).title).toBe('New general note');
 });
-
-test('optional references round-trip, survive omitted fields, and participate in edit conflicts', async () => {
-  const references = [
-    {ref:'bukhari:1', label:'bukhari:1', url:'/bukhari:1'},
-    {ref:'quran:2:255', label:'quran:2:255', url:'/quran:2:255'}
-  ];
-  const first = await Drive.save('alice', {...note(), version:0, references});
-  expect((await Drive.get('alice', first.source_key)).references).toEqual(references);
-  const {references: omitted, ...withoutReferences} = first;
-  const second = await Drive.save('alice', {...withoutReferences, markdown:'Changed body'});
-  expect(second.references).toEqual(references);
-  const removed = await Drive.save('alice', {...second, references:[]});
-  expect(removed.references).toEqual([]); expect(removed.revision).not.toBe(second.revision);
-  await expect(Drive.save('alice', {...second, references:references.slice(0,1)})).rejects.toMatchObject({status:409});
-  expect(Legacy.exportMarkdown({...note(), references})).toContain('references: [{"ref":"bukhari:1"');
-  expect(Legacy.exportMarkdown(note())).not.toContain('references:');
-});
-test('reference validation deduplicates links and rejects unsafe destinations', () => {
-  const ref = {ref:'bukhari:1', label:'bukhari:1', url:'/bukhari:1'};
-  expect(Drive.validate({...note(), references:[ref,ref]}).references).toEqual([ref]);
-  for (const url of ['javascript:alert(1)', '//evil.test', '/\\evil.test', 'https://evil.test']) {
-    expect(() => Drive.validate({...note(), references:[{...ref,url}]})).toThrow('Invalid note reference');
-  }
-  expect(() => Drive.validate({...note(), references:Array(51).fill(ref)})).toThrow('50');
-});
-test('reference search permits a regular signed-in user but not anonymous callers', async () => {
-  const search = jest.spyOn(require('../lib/NotebookAttachments'), 'search').mockResolvedValue([{ref:'bukhari:1',label:'bukhari:1',url:'/bukhari:1'}]);
-  expect((await fetch(base+'/references?q=intention')).status).toBe(401);
-  expect(search).not.toHaveBeenCalled();
-  const response = await fetch(base+'/references?q=intention', {headers:{Authorization:'Bearer alice'}});
-  expect(response.status).toBe(200);
-  expect((await response.json()).references[0].ref).toBe('bukhari:1');
-  expect(search).toHaveBeenCalledWith('intention');
-});

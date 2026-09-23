@@ -54,9 +54,6 @@ router.delete('/drive', async (req, res, next) => {
 router.get('/tags', async (req, res, next) => {
   try { res.json({ tags: await Notebook.tagList(req.user.uid) }); } catch (err) { next(err); }
 });
-router.get('/references', async (req, res, next) => {
-  try { res.json({ references: await require('../lib/NotebookAttachments').search(req.query.q || '') }); } catch (err) { next(err); }
-});
 router.get('/links', async (req, res, next) => {
   try { res.json(await Notebook.links(req.user.uid, req.query.q || '', req.query.title)); } catch (err) { next(err); }
 });
