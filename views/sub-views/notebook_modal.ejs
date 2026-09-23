@@ -37,6 +37,7 @@
       <span id="notebook-status" class="small me-2" role="status" aria-live="polite"></span>
       <button id="notebook-preview-button" type="button" class="notebook-tool" title="Edit Markdown" aria-label="Edit Markdown"><i class="bi bi-eye" aria-hidden="true"></i></button>
       <button id="notebook-download" type="button" class="notebook-tool" title="Download Markdown" aria-label="Download Markdown"><i class="bi bi-download" aria-hidden="true"></i></button>
+      <button id="notebook-print" type="button" class="notebook-tool" title="Print / Save as PDF" aria-label="Print / Save as PDF"><i class="bi bi-printer" aria-hidden="true"></i></button>
       <button id="notebook-delete" type="button" class="notebook-tool" title="Delete note" aria-label="Delete note" hidden><i class="bi bi-trash" aria-hidden="true"></i></button>
       <button id="notebook-save" type="button" class="notebook-tool" title="Save now" aria-label="Save now"><i class="bi bi-check2" aria-hidden="true"></i></button>
     </div>
@@ -152,6 +153,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 </style>
 <script src="/static/js/notebook-drive.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-wiki.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-print.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 
 <button id="notebook-restore" type="button" class="notebook-restore-note" hidden aria-controls="notebook-modal" title="Restore note" aria-label="Restore note"><i class="bi bi-sticky" aria-hidden="true"></i><span>Restore note</span></button>

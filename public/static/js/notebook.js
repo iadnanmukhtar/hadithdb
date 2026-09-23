@@ -26,6 +26,18 @@
   const saveButton = document.getElementById('notebook-save');
   const deleteButton = document.getElementById('notebook-delete');
   const downloadButton = document.getElementById('notebook-download');
+  const printButton = document.getElementById('notebook-print');
+  printButton.addEventListener('click', printNote);
+  async function printNote() {
+    if (!current || busy || printButton.disabled) return;
+    const ownGeneration = generation;
+    const note = { ...current, markdown: editor.value, tags: tagEditor.value, title: titleEditor.value };
+    printButton.disabled = true;
+    try {
+      await window.NotebookPrint.open(note, () => api('/preview', 'POST', { markdown: note.markdown }), () => ownGeneration === generation);
+    } catch (err) { if (ownGeneration === generation) status.textContent = err.message; }
+    finally { if (ownGeneration === generation) printButton.disabled = busy; }
+  }
   const downloadAll = document.getElementById('notebook-download-all');
   function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
@@ -106,6 +118,7 @@
   function setBusy(value) {
     busy = value;
     saveButton.disabled = deleteButton.disabled = toggle.disabled = editor.disabled = downloadButton.disabled = tagEditor.disabled = titleEditor.disabled = value;
+    printButton.disabled = value;
   }
   function sourceFor(button) {
     const d = button.dataset;
