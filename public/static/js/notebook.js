@@ -585,7 +585,22 @@
   document.addEventListener('pointerdown', event => {
     if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
   });
+  function updateEditorCaretDirection() {
+    // dir="auto" uses the whole note's first strong character for keyboard
+    // navigation, even though plaintext displays each paragraph independently.
+    const position = editor.selectionDirection === 'backward' ? editor.selectionStart : editor.selectionEnd;
+    const start = position ? editor.value.lastIndexOf('\n', position - 1) + 1 : 0;
+    const nextBreak = editor.value.indexOf('\n', position);
+    const probe = document.createElement('bdi');
+    probe.dir = 'auto';
+    probe.hidden = true;
+    probe.textContent = editor.value.slice(start, nextBreak < 0 ? editor.value.length : nextBreak);
+    document.body.appendChild(probe);
+    editor.dir = getComputedStyle(probe).direction;
+    probe.remove();
+  }
   editor.addEventListener('keydown', event => {
+    if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) updateEditorCaretDirection();
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); showPreview(); }
   });
   saveButton.addEventListener('click', saveAndPreview);

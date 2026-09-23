@@ -11,6 +11,36 @@ beforeEach(async () => { page = await browser.newPage(); });
 afterEach(async () => { await page?.close(); });
 afterAll(async () => { await browser?.close(); });
 test.each([
+  ['العربية هنا\nEnglish words here', 18, 'ltr', 12, 30],
+  ['English words here\nالعربية هنا', 22, 'rtl', 19, 30],
+])('horizontal selection follows the active paragraph: %s', async (markdown, position, direction, start, end) => {
+  const template = fs.readFileSync(require.resolve('../views/sub-views/notebook_modal.ejs'), 'utf8');
+  const style = template.match(/#notebook-editor \{[^}]+\}/)[0];
+  await page.setContent(`<style>${style}</style><textarea id="notebook-editor" dir="auto" style="width:600px"></textarea>`);
+  await page.evaluate(({markdown, source}) => {
+    window.editor = document.querySelector('textarea');
+    editor.value = markdown;
+    (0, eval)(source.slice(source.indexOf('  function updateEditorCaretDirection()'), source.indexOf("  saveButton.addEventListener('click', saveAndPreview)")));
+  }, {markdown, source});
+  const left = direction === 'ltr' ? -1 : 1;
+  const cases = [
+    ['Shift+ArrowLeft', position + left],
+    ['Shift+ArrowRight', position - left],
+  ];
+  if (process.platform === 'darwin') cases.push(
+    ['Meta+Shift+ArrowLeft', direction === 'ltr' ? start : end],
+    ['Meta+Shift+ArrowRight', direction === 'ltr' ? end : start],
+  );
+  for (const [key, target] of cases) {
+    await page.locator('textarea').evaluate((editor, position) => {
+      editor.dir = 'auto'; editor.focus(); editor.setSelectionRange(position, position);
+    }, position);
+    await page.keyboard.press(key);
+    expect(await page.locator('textarea').evaluate(editor => [editor.selectionStart, editor.selectionEnd]))
+      .toEqual([Math.min(position, target), Math.max(position, target)]);
+  }
+});
+test.each([
   ['Plain paragraph with some words.', 'some', 0],
   ['# Heading\n\nFirst **bold words** and *italic words*.\n\nLast paragraph.', 'words', 1],
   ['Repeated paragraph.\n\nRepeated paragraph.', 'paragraph', 1],
