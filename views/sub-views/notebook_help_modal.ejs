@@ -16,6 +16,14 @@
 
         <h3 class="fs-6 fw-bold mt-4">Keep a note open while reading</h3>
         <p>Select the pin icon in a note's header to float it beside the page. The minus icon minimizes it to a <strong>Restore note</strong> button. You can scroll and browse the site while it stays available; the saved note reopens as you move between pages in the same tab. Select the pin again to return to the regular dialog, or close the note to stop following it.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Read and edit in fullscreen</h3>
+        <p>Select the <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i> <strong>Expand note</strong> button in the header to fill the screen. Select <strong>Restore note size</strong> to return to the smaller view.</p>
+        <ul>
+          <li><strong>Heading outline:</strong> In preview, headings from <code>#</code> through <code>######</code> appear under <strong>On this note</strong>. Select a heading to jump to that section. The outline stays visible as you scroll and highlights your current section. It sits beside the note on wider screens and above it on narrow screens. It is hidden while editing or when the note has no headings.</li>
+          <li><strong>Text size:</strong> Use the slider at the bottom to shrink or enlarge the note from <strong>75% to 200%</strong>. It works in both preview and editing; <strong>100%</strong> is the default size. This changes your fullscreen view without changing the saved Markdown or printed text size.</li>
+        </ul>
+
         <h3 class="fs-6 fw-bold mt-4">Markdown basics</h3>
         <p>Type these examples in the editor. Formatting appears in preview.</p>
         <div class="table-responsive">
@@ -23,7 +31,11 @@
             <thead><tr><th scope="col">Formatting</th><th scope="col">What to type</th></tr></thead>
             <tbody>
               <tr><th scope="row">Headings</th><td><code># Main heading</code><br><code>## Section heading</code><br><code>### Smaller heading</code></td></tr>
-              <tr><th scope="row">Emphasis</th><td><code>**bold**</code>, <code>*italic*</code>, <code>~~strikethrough~~</code></td></tr>
+              <tr><th scope="row">Bold</th><td><code>**bold text**</code></td></tr>
+              <tr><th scope="row">Italic</th><td><code>*italic text*</code> or <code>_italic text_</code></td></tr>
+              <tr><th scope="row">Strikethrough</th><td><code>~~strikethrough~~</code></td></tr>
+              <tr><th scope="row">Highlight</th><td><code>==highlighted text==</code></td></tr>
+              <tr><th scope="row">Underline</th><td><code>__underlined text__</code> or <code>&lt;u&gt;underlined text&lt;/u&gt;</code></td></tr>
               <tr><th scope="row">Lists</th><td><code>- A bullet point</code><br><code>1. A numbered point</code></td></tr>
               <tr><th scope="row">Quotation</th><td><code>&gt; Quoted text</code></td></tr>
               <tr><th scope="row">Link</th><td><code>[Link text](https://example.com)</code></td></tr>
@@ -33,6 +45,33 @@
           </table>
         </div>
         <p>Leave a blank line between paragraphs. Arabic and English can be used together; text direction adjusts automatically.</p>
+        <p>In notes, two underscores mean <strong>underline</strong>; use two asterisks for <strong>bold</strong>. Combine formatting when needed, for example <code>==**bold highlighted text**==</code>. Wrap markers in backticks to show them literally.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Keyboard shortcuts</h3>
+        <p>While editing a note, select the text you want to format, then use a shortcut below. Use <kbd>Cmd</kbd> on Mac or <kbd>Ctrl</kbd> on Windows and Linux. These work in the regular, floating, and fullscreen editors.</p>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th scope="col">Formatting</th><th scope="col">Shortcut</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Bold</th><td><kbd>Cmd/Ctrl</kbd> + <kbd>B</kbd></td></tr>
+              <tr><th scope="row">Italic</th><td><kbd>Cmd/Ctrl</kbd> + <kbd>I</kbd></td></tr>
+              <tr><th scope="row">Underline / Arabic overline</th><td><kbd>Cmd/Ctrl</kbd> + <kbd>U</kbd></td></tr>
+              <tr><th scope="row">Highlight</th><td><kbd>Cmd/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd></td></tr>
+              <tr><th scope="row">Strikethrough</th><td><kbd>Cmd/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>X</kbd></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The shortcut adds Markdown markers and keeps your text selected. Press the same shortcut again to remove that formatting, or use another shortcut to combine styles. Arabic and English both work. Changes save automatically; switch to preview to see the result. Select text first: these formatting shortcuts do nothing at an empty cursor. Use <kbd>Cmd/Ctrl</kbd> + <kbd>Z</kbd> to undo, and <kbd>Cmd/Ctrl</kbd> + <kbd>Enter</kbd> to return to preview.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Format Arabic text</h3>
+        <p>Use the same markers around Arabic words, including words with vowel marks:</p>
+        <ul>
+          <li>Bold: <code dir="auto">**نص عريض**</code></li>
+          <li>Italic: <code dir="auto">*نص مائل*</code></li>
+          <li>Highlight: <code dir="auto">==نص مظلل==</code></li>
+          <li>Overline: <code dir="auto">__نص عربي__</code> or <code>&lt;u&gt;نص عربي&lt;/u&gt;</code></li>
+        </ul>
+        <p>Underline markers place a Unicode line <strong>above Arabic text</strong> and a line <strong>below English text</strong>, including when both languages share the same marked passage. The Arabic overline is added for display; your saved Markdown keeps the original text and markers.</p>
 
         <h3 class="fs-6 fw-bold mt-4">Link your notes</h3>
         <p>Type <code>[[</code> followed by at least two letters from a note title to see suggestions. Matching ignores case and diacritics and can find words anywhere in a title.</p>

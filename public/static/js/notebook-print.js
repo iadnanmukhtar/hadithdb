@@ -25,6 +25,12 @@
         [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
         :is(p,h1,h2,h3,h4,h5,h6,li,td,th):dir(rtl), .notebook-arabic { font-family: Kitab, serif; line-height: 2; }
         .notebook-arabic { font-size: 1.2em; } .notebook-arabic .notebook-arabic { font-size: inherit; }
+        [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
+        strong, strong .notebook-arabic { font-weight: 700; }
+        em, em .notebook-arabic { font-style: italic; font-synthesis: style; }
+        mark { background: #ffe680; color: #111; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        u { text-decoration: none; }
+        .notebook-underline { text-decoration: underline; text-underline-offset: .15em; }
         .metadata { font-size: 10pt; color: #444; margin-block: .5rem; }
         header { border-bottom: 1px solid #ccc; padding-bottom: 1rem; margin-bottom: 1.5rem; }
         header h1 { margin: 0; }

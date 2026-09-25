@@ -8,6 +8,10 @@
       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
+      <nav id="notebook-outline" aria-label="Note heading outline" hidden>
+        <div class="notebook-outline-label">On this note</div>
+        <ol id="notebook-outline-items"></ol>
+      </nav>
       <div id="notebook-surface">
         <div class="small mb-2" data-notebook-drive-panel data-notebook-drive-compact hidden>
           <%- include('notebook_drive_icon.ejs'); %>
@@ -32,6 +36,11 @@
       <small id="notebook-tag-help" class="text-muted" hidden>Separate tags with spaces. Hashtags in your note also appear here.</small>
     </div>
     <div class="modal-footer py-1 gap-1">
+      <div id="notebook-zoom-control">
+        <label for="notebook-zoom">Text size</label>
+        <input id="notebook-zoom" type="range" min="75" max="200" step="5" value="100" aria-describedby="notebook-zoom-value">
+        <output id="notebook-zoom-value" for="notebook-zoom">100%</output>
+      </div>
       <div id="notebook-dates" class="text-muted" aria-live="polite" hidden></div>
       <a data-notebook-auth href="/notebook" class="notebook-tool me-auto" title="My Notebook" aria-label="My Notebook"><i class="bi bi-sticky" aria-hidden="true"></i></a>
       <span id="notebook-status" class="small me-2" role="status" aria-live="polite"></span>
@@ -44,6 +53,8 @@
   </div></div>
 </div>
 <style>
+@font-face { font-family: NotebookKitab; font-style: normal; font-weight: 400; src: url('/static/fonts/kitab-base.woff2'); }
+@font-face { font-family: NotebookKitab; font-style: normal; font-weight: 700; src: url('/static/fonts/kitab-base-b.woff2'); }
 body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !important; }
 #notebook-editor { font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
 #notebook-wiki-options { max-height: 12rem; overflow-y: auto; border: 1px solid var(--bs-border-color, #ccc); border-radius: .35rem; background: var(--bs-body-bg, white); margin-block: .25rem; }
@@ -60,9 +71,16 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 .notebook-markdown h5 { font-size: 1.04em; }
 .notebook-markdown h6 { font-size: 1em; }
 .notebook-markdown [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
-.notebook-markdown :is(p, h1, h2, h3, h4, h5, h6, li, td, th):dir(rtl), .notebook-markdown .notebook-arabic { font-family: Kitab, Quran, serif; line-height: 2; }
+.notebook-markdown :is(p, h1, h2, h3, h4, h5, h6, li, td, th):dir(rtl), .notebook-markdown .notebook-arabic { font-family: NotebookKitab, Kitab, Quran, serif; line-height: 2; font-synthesis: weight style; }
+.notebook-markdown strong, .notebook-markdown strong .notebook-arabic { font-weight: 700; }
+.notebook-markdown em, .notebook-markdown em .notebook-arabic { font-style: italic; }
+.notebook-markdown mark { background: #ffe680; color: #302a1b; padding: .05em 0; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.notebook-markdown u { text-decoration: none; }
+.notebook-markdown .notebook-underline { text-decoration: underline; text-underline-offset: .15em; }
 .notebook-markdown .notebook-arabic { font-size: 1.2em; }
 .notebook-markdown .notebook-arabic .notebook-arabic { font-size: inherit; }
+/* Kitab lacks U+0305; use a face that shapes Arabic and its overline together. */
+.notebook-markdown [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
 .notebook-markdown blockquote { margin-block: 1rem; }
 .notebook-markdown blockquote > p { border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; }
 .notebook-expand-reference { color: #805d00; margin-inline-start: .3rem; font-size: .85em; }
@@ -86,8 +104,25 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-modal .modal-content { height: 100%; }
 #notebook-modal .modal-body { display: flex; min-height: 0; overflow: hidden; }
 #notebook-surface { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+#notebook-outline { flex: 0 0 14rem; min-height: 0; overflow-y: auto; border-inline-end: 1px solid var(--note-edge); padding-inline-end: 1rem; margin-inline-end: 1.25rem; }
+#notebook-outline[hidden] { display: none; }
+.notebook-outline-label { position: sticky; top: 0; padding-bottom: .5rem; background: var(--note-paper); color: var(--note-ink); font-size: .8rem; font-weight: 600; }
+#notebook-outline-items { list-style: none; padding: 0; margin: 0; }
+#notebook-outline-items button { display: block; width: 100%; border: 0; border-inline-start: 2px solid transparent; border-radius: .2rem; padding: .35rem .5rem; padding-inline-start: calc(.5rem + var(--outline-depth) * .7rem); background: transparent; color: inherit; font: inherit; font-size: .85rem; text-align: start; overflow-wrap: anywhere; }
+#notebook-outline-items button:hover, #notebook-outline-items button[aria-current="location"] { background: rgba(212, 167, 44, .15); color: var(--note-ink); border-inline-start-color: var(--note-edge); }
+#notebook-outline-items button:focus-visible { outline: 2px solid var(--note-edge); outline-offset: -2px; }
+#notebook-outline-items .notebook-outline-arabic { font-family: NotebookKitab, Kitab, Quran, serif; font-size: 1.2em; line-height: 2; }
+@media (max-width: 767.98px) {
+  #notebook-modal .modal-fullscreen .modal-body { flex-direction: column; }
+  #notebook-outline { flex: 0 0 auto; max-height: 22dvh; border-inline-end: 0; border-bottom: 1px solid var(--note-edge); padding: 0 0 .5rem; margin: 0 0 .5rem; }
+}
 #notebook-editor, #notebook-preview { flex: 1; min-height: 0; overflow: auto; }
 #notebook-editor { resize: none; }
+#notebook-zoom-control { display: none; align-items: center; justify-content: flex-end; gap: .6rem; width: 100%; font-size: .75rem; color: var(--note-ink); }
+#notebook-modal .modal-fullscreen #notebook-zoom-control { display: flex; }
+#notebook-zoom { width: min(10rem, 40vw); accent-color: var(--note-edge); }
+#notebook-zoom-value { min-width: 3em; font-variant-numeric: tabular-nums; }
+#notebook-modal .modal-fullscreen :is(#notebook-preview, #notebook-editor) { font-size: var(--notebook-font-size, 1rem); }
 #notebook-preview:empty::before { content: 'Create a new private note.'; opacity: .55; }
 .notebook-tool { border: 0; background: transparent; color: #805d00; padding: .45rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .3rem; }
 .notebook-tool:hover, .notebook-tool:focus-visible { background: #ffe69c; }
@@ -153,6 +188,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 </style>
 <script src="/static/js/notebook-drive.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-wiki.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-shortcuts.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-print.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 

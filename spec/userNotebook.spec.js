@@ -47,6 +47,41 @@ test('Markdown supports independent block direction and escapes executable HTML'
   expect(html).not.toContain('<script>');
   expect(html).not.toContain('href="javascript:');
 });
+test('note formatting supports highlights and both underline forms with nested emphasis', () => {
+  const html = Notebook.render('==**bold** and *italic*== __underline__ <u>**also bold**</u>');
+  expect(html).toContain('<mark><strong>bold</strong> and <em>italic</em></mark>');
+  expect(html).toContain('<u><span class="notebook-underline">underline</span></u>');
+  expect(html).toContain('<u><strong><span class="notebook-underline">also bold</span></strong></u>');
+  expect(Notebook.render('_italic_')).toContain('<em>italic</em>');
+});
+test('Arabic including diacritics supports bold, italic, highlight and underline', () => {
+  const arabic = 'العَرَبِيَّة';
+  const span = `<span class="notebook-arabic">${arabic}</span>`;
+  for (const [source, tag] of [[`**${arabic}**`, 'strong'], [`*${arabic}*`, 'em'], [`==${arabic}==`, 'mark']]) {
+    expect(Notebook.render(source)).toContain(`<${tag}>${span}</${tag}>`);
+  }
+  expect(Notebook.render(`==**${arabic}**==`)).toContain(`<mark><strong>${span}</strong></mark>`);
+  for (const source of [`__${arabic}__`, `<u>${arabic}</u>`]) {
+    const html = Notebook.render(source);
+    expect(html).toContain('data-notebook-overline');
+    expect(html).toContain('\u0305');
+    expect(html.replace(/\u0305/g, '')).toContain(arabic);
+    expect((html.match(/\u0305/g) || []).length).toBe(7);
+  }
+  const mixed = Notebook.render('__English العربية__');
+  expect(mixed).toContain('<span class="notebook-underline">English </span>');
+  expect(mixed).toContain('data-notebook-overline');
+});
+test('formatting preserves literal code, escaped markers, unmatched markers and unsafe HTML', () => {
+  const literal = '==mark== __line__ <u>text</u>';
+  expect(Notebook.render('`' + literal + '`')).toContain('<code>==mark== __line__ &lt;u&gt;text&lt;/u&gt;</code>');
+  expect(Notebook.render('```\n' + literal + '\n```')).not.toMatch(/<(mark|u)>/);
+  expect(Notebook.render('\\=\\=literal\\=\\= \\_\\_literal\\_\\_ \\<u>literal</u>')).not.toMatch(/<(mark|u)>/);
+  expect(Notebook.render('==unfinished <u>unfinished')).not.toMatch(/<(mark|u)>/);
+  const html = Notebook.render('<u onclick="alert(1)">bad</u> <img src=x onerror=alert(1)> ==<script>alert(1)</script>==');
+  expect(html).not.toMatch(/<(u|img|script)[ >]/);
+  expect(html).toContain('&lt;script&gt;');
+});
 test.each(['javascript:alert(1)', '//evil.test', '/\\evil.test', 'https://evil.test/note'])('rejects unsafe source URL %s', url => {
   expect(() => Notebook.sourceUrl(url)).toThrow('Invalid source URL');
 });

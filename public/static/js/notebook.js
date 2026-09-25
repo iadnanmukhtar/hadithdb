@@ -14,6 +14,13 @@
   const preview = document.getElementById('notebook-preview');
   const toggle = document.getElementById('notebook-preview-button');
   const fullscreen = document.getElementById('notebook-fullscreen');
+  const zoom = document.getElementById('notebook-zoom');
+  const zoomValue = document.getElementById('notebook-zoom-value');
+  zoom.addEventListener('input', () => {
+    modal.style.setProperty('--notebook-font-size', `${Number(zoom.value) / 100}rem`);
+    zoomValue.value = `${zoom.value}%`;
+    updateOutlinePosition();
+  });
   fullscreen.addEventListener('click', () => {
     const expanded = modal.querySelector('.modal-dialog').classList.toggle('modal-fullscreen');
     const label = expanded ? 'Restore note size' : 'Expand note';
@@ -581,9 +588,10 @@
   });
   toggle.addEventListener('click', () => { if (!busy && current) editing ? showPreview() : mode(true); });
   const wikiAutocomplete = window.NotebookWiki.install(editor, document.getElementById('notebook-wiki-options'), query => api('/links?q=' + encodeURIComponent(query)));
+  window.NotebookShortcuts.install(editor, () => editing && current && !busy, () => wikiAutocomplete.close());
   // Clicking anywhere outside the editor returns to the rendered note.
   document.addEventListener('pointerdown', event => {
-    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
+    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file, #notebook-zoom-control') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
   });
   function updateEditorCaretDirection() {
     // dir="auto" uses the whole note's first strong character for keyboard
@@ -695,7 +703,10 @@
     let cursor = 0, part;
     while ((part = walker.nextNode())) {
       if (part.parentElement.closest('button, .footnote-backref')) continue;
-      const value = part.nodeValue;
+      // Arabic underline adds a display-only Unicode combining overline.
+      const overlined = part.parentElement.closest('[data-notebook-overline]');
+      const value = overlined ? part.nodeValue.replace(/\u0305/g, '') : part.nodeValue;
+      const sourceOffset = overlined ? part.nodeValue.slice(0, offset).replace(/\u0305/g, '').length : offset;
       if (!value.trim()) {
         if (part === node) return positions[cursor];
         continue;
@@ -708,13 +719,13 @@
         for (let j = 0; j < value.length; j++) {
           const next = text.indexOf(value[j], matched);
           if (next < 0) break;
-          if (part === node && j === offset) return positions[next];
+          if (part === node && j === sourceOffset) return positions[next];
           matched = next + 1;
         }
         if (part === node) return positions[matched];
         continue;
       }
-      if (part === node) return positions[start + Math.min(offset, value.length)];
+      if (part === node) return positions[start + Math.min(sourceOffset, value.length)];
       cursor = start + value.length;
     }
     // Whitespace outside text nodes uses the nearest preceding source position.
@@ -779,6 +790,66 @@
     });
   }
   new MutationObserver(localizeWikiLinks).observe(preview, { childList: true, subtree: true });
+  // The outline stays outside the preview's scroll container.
+  const outline = document.getElementById('notebook-outline');
+  const outlineItems = document.getElementById('notebook-outline-items');
+  let outlineHeadings = [], outlineButtons = [];
+  function updateOutlinePosition() {
+    if (outline.hidden || !outlineHeadings.length) return;
+    const top = preview.getBoundingClientRect().top;
+    let active = 0;
+    outlineHeadings.forEach((heading, index) => {
+      if (heading.getBoundingClientRect().top <= top + 24) active = index;
+    });
+    outlineButtons.forEach((button, index) => {
+      if (index === active) button.setAttribute('aria-current', 'location');
+      else button.removeAttribute('aria-current');
+    });
+  }
+  function updateOutlineVisibility() {
+    outline.hidden = preview.hidden || !outlineHeadings.length || !modal.querySelector('.modal-dialog').classList.contains('modal-fullscreen');
+    updateOutlinePosition();
+  }
+  function rebuildOutline() {
+    outlineHeadings = Array.from(preview.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(heading => heading.textContent.trim());
+    const baseLevel = Math.min(...outlineHeadings.map(heading => Number(heading.tagName.slice(1))));
+    outlineItems.replaceChildren();
+    outlineButtons = outlineHeadings.map(heading => {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dir = 'auto';
+      const label = heading.textContent.trim();
+      let labelCursor = 0;
+      for (const match of label.matchAll(/[\p{Script_Extensions=Arabic}\u200c\u200d]+(?:[ \t]+[\p{Script_Extensions=Arabic}\u200c\u200d]+)*/gu)) {
+        button.append(label.slice(labelCursor, match.index));
+        const arabic = document.createElement('span');
+        arabic.className = 'notebook-outline-arabic';
+        arabic.textContent = match[0];
+        button.append(arabic);
+        labelCursor = match.index + match[0].length;
+      }
+      button.append(label.slice(labelCursor));
+      button.style.setProperty('--outline-depth', Number(heading.tagName.slice(1)) - baseLevel);
+      button.addEventListener('click', () => {
+        preview.scrollTop += heading.getBoundingClientRect().top - preview.getBoundingClientRect().top - 8;
+        heading.setAttribute('tabindex', '-1');
+        heading.focus({ preventScroll: true });
+        updateOutlinePosition();
+      });
+      item.appendChild(button);
+      outlineItems.appendChild(item);
+      return button;
+    });
+    updateOutlineVisibility();
+  }
+  new MutationObserver(rebuildOutline).observe(preview, { childList: true, subtree: true, characterData: true });
+  new MutationObserver(updateOutlineVisibility).observe(preview, { attributes: true, attributeFilter: ['hidden'] });
+  new MutationObserver(updateOutlineVisibility).observe(modal.querySelector('.modal-dialog'), { attributes: true, attributeFilter: ['class'] });
+  preview.addEventListener('scroll', updateOutlinePosition, { passive: true });
+  window.addEventListener('resize', updateOutlinePosition);
+  modal.addEventListener('shown.bs.modal', updateOutlinePosition);
+  rebuildOutline();
   async function openRequestedWiki() {
     const title = new URLSearchParams(location.search).get('note');
     if (title && await window.hadithAuth?.getToken()) openWiki(title);

@@ -10,6 +10,20 @@ beforeAll(async () => { browser = await chromium.launch({ channel: 'chrome', hea
 beforeEach(async () => { page = await browser.newPage(); });
 afterEach(async () => { await page?.close(); });
 afterAll(async () => { await browser?.close(); });
+test('Arabic Unicode overlines preserve the Markdown caret position', async () => {
+  const markdown = 'Before __العَرَبِيَّة__ after';
+  await page.setContent('<textarea id="editor"></textarea><div id="preview"></div>');
+  const actual = await page.evaluate(({ markdown, html, handlers }) => {
+    window.editor = document.getElementById('editor'); window.preview = document.getElementById('preview');
+    editor.value = markdown; preview.innerHTML = html;
+    (0, eval)(handlers);
+    const node = preview.querySelector('[data-notebook-overline]').firstChild;
+    const offset = node.nodeValue.indexOf('\u0305', node.nodeValue.indexOf('\u0305') + 1) + 1;
+    document.caretPositionFromPoint = () => ({ offsetNode: node, offset });
+    return { position: previewCaretOffset({clientX:0, clientY:0}), prefix: node.nodeValue.slice(0, offset).replace(/\u0305/g, '') };
+  }, { markdown, html: Notebook.render(markdown), handlers });
+  expect(actual.position).toBe(markdown.indexOf(actual.prefix) + actual.prefix.length);
+});
 test.each([
   ['العربية هنا\nEnglish words here', 18, 'ltr', 12, 30],
   ['English words here\nالعربية هنا', 22, 'rtl', 19, 30],
