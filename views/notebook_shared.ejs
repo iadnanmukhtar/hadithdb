@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title><%= note ? note.title : 'Shared note unavailable' %> · Hadith Unlocked</title>
+  <style>
+    <%- include('sub-views/notebook_content_styles.ejs') %>
+    * { box-sizing: border-box; }
+    body { --shared-gutter: clamp(1rem, 4vw, 3rem); margin: 0; padding: var(--shared-gutter); padding-bottom: 5rem; background: #fff8db; color: #302a1b; font: 18px/1.8 Georgia, NotebookKitab, serif; }
+    main { max-width: 52rem; margin: auto; overflow-wrap: anywhere; }
+    main:has(.shared-note-outline) { max-width: 70rem; }
+    main:has(.shared-note-outline) > header { margin-inline-start: 16rem; }
+    article.notebook-markdown { display: flow-root; min-width: 0; font-size: calc(18px * var(--shared-note-scale, 1)); }
+    article.notebook-markdown blockquote { margin-inline: 0; }
+    article.notebook-markdown :is(ul, ol) { padding-inline: 0; }
+    article.notebook-markdown li { margin-inline-start: 1.6em; }
+    .shared-note-controls { position: fixed; z-index: 2; bottom: 0; left: 0; right: 0; display: flex; justify-content: flex-end; align-items: center; gap: .65rem; width: calc(100% - 2 * var(--shared-gutter)); max-width: 52rem; margin: auto; padding: .65rem 0; border-top: 1px solid #d4a72c; background: #fff8db; font: .8rem/1.5 system-ui, sans-serif; }
+    main:has(.shared-note-outline) .shared-note-controls { max-width: 70rem; }
+    #shared-note-zoom { width: min(10rem, 40vw); accent-color: #a88732; }
+    #shared-note-zoom-value { min-width: 3em; font-variant-numeric: tabular-nums; }
+    .shared-note-layout { display: grid; grid-template-columns: 14rem minmax(0, 1fr); gap: 2rem; align-items: start; }
+    .shared-note-layout article { min-width: 0; }
+    .shared-note-outline { position: sticky; top: 1rem; max-height: calc(100dvh - 5rem); overflow-y: auto; border-inline-end: 1px solid #d4a72c; padding-inline-end: 1rem; font-size: .85rem; background: #fff8db; }
+    .shared-note-outline h2 { position: sticky; top: 0; margin: 0; padding-bottom: .5rem; background: inherit; font: 600 .8rem/1.5 system-ui, sans-serif; }
+    .shared-note-outline ol { list-style: none; margin: 0; padding: 0; }
+    .shared-note-outline a { display: block; padding: .35rem .5rem; padding-inline-start: calc(.5rem + var(--outline-depth) * .7rem); color: inherit; text-decoration: none; border-inline-start: 2px solid transparent; }
+    .shared-note-outline a:hover, .shared-note-outline a:focus-visible { background: rgba(212, 167, 44, .15); border-inline-start-color: #d4a72c; }
+    .shared-note-outline a[aria-current="location"] { background: rgba(212, 167, 44, .2); border-inline-start-color: #d4a72c; font-weight: 600; }
+    .shared-note-outline .notebook-outline-arabic { font-family: NotebookKitab, Kitab, Quran, serif; font-size: 1.2em; line-height: 2; }
+    .notebook-markdown :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: 1rem; }
+    @media (max-width: 767.98px) {
+      main:has(.shared-note-outline) > header { margin-inline-start: 0; }
+      .shared-note-layout { display: block; }
+      .shared-note-outline { z-index: 1; top: 0; max-height: 22dvh; padding: .5rem 0; margin-bottom: 1rem; border-inline-end: 0; border-bottom: 1px solid #d4a72c; }
+      .shared-note-layout .notebook-markdown :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: calc(22dvh + 1rem); }
+    }
+    @media print { .shared-note-outline, .shared-note-controls { display: none; } .shared-note-layout { display: block; } main:has(.shared-note-outline) > header { margin-inline-start: 0; } article.notebook-markdown { font-size: 18px; } }
+    header { border-bottom: 1px solid #d4a72c; margin-bottom: 1.5rem; padding-bottom: 1rem; }
+    header p { margin: 0; font: .8rem/1.5 system-ui, sans-serif; color: #634800; }
+    header h1 { margin: .5rem 0 0; font-size: 1.7rem; }
+    header h1:dir(rtl) { font-family: NotebookKitab, serif; }
+    .shared-note-author { display: flex; align-items: center; gap: .65rem; margin-top: 1rem; }
+    .shared-note-author-name { font-size: .95rem; overflow-wrap: anywhere; }
+    .shared-note-author-name:dir(rtl) { font-family: NotebookKitab, serif; }
+    .shared-note-avatar { position: relative; display: grid; place-items: center; flex: 0 0 2.5rem; width: 2.5rem; height: 2.5rem; border-radius: 50%; overflow: hidden; background: #e8dba4; color: #634800; font: 600 1rem/1 system-ui, sans-serif; }
+    .shared-note-profile-image { position: absolute; inset: 0; background-size: cover; background-position: center; }
+    a { color: #805d00; }
+    code { font-size: .9em; } pre { padding: .75rem; background: #fffdf3; }
+    .notebook-markdown table { border-collapse: collapse; } td, th { border: 1px solid #d4a72c; padding: .4rem .6rem; }
+    @media (prefers-color-scheme: dark) { body, .shared-note-outline, .shared-note-controls { background: #302b1b; color: #fff3bf; } header p, a { color: #ffe69c; } pre { background: #262216; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p>Hadith Unlocked · Shared note</p>
+      <h1 dir="auto"><%= note ? note.title : 'Shared note unavailable' %></h1>
+    </header>
+    <% if (unavailable) { %><p><%= message %></p><% } else { %>
+      <div<% if (note.outline.length) { %> class="shared-note-layout"<% } %>>
+        <% if (note.outline.length) { %>
+          <nav class="shared-note-outline" aria-label="Note heading outline">
+            <h2>On this note</h2>
+            <ol>
+              <% note.outline.forEach(heading => { %>
+                <li><a href="#<%= heading.id %>" dir="auto" style="--outline-depth: <%= heading.depth %>"><% heading.parts.forEach(part => { %><% if (part.arabic) { %><span class="notebook-outline-arabic"><%= part.text %></span><% } else { %><%= part.text %><% } %><% }); %></a></li>
+              <% }); %>
+            </ol>
+          </nav>
+        <% } %>
+        <article class="notebook-markdown"><%- note.html %></article>
+      </div>
+      <div class="shared-note-controls" aria-label="Reading settings">
+        <label for="shared-note-zoom">Text size</label>
+        <input id="shared-note-zoom" type="range" min="75" max="200" step="5" value="100" aria-describedby="shared-note-zoom-value">
+        <output id="shared-note-zoom-value" for="shared-note-zoom">100%</output>
+      </div>
+      <script src="/static/js/notebook-shared-reader.js?v=<%= readerVersion %>" defer></script>
+    <% } %>
+  </main>
+</body>
+</html>

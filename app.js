@@ -608,6 +608,7 @@ const startupPromise = (async () => {
     next();
   });
   const notebookRouter = require('./routes/notebook');
+  app.get(['/notebook/shared/:token', '/quran/notebook/shared/:token'], require('./routes/notebook_shared'));
   app.get(['/notebook', '/quran/notebook'], notebookRouter.page);
   app.use('/api/notebook', notebookRouter);
   app.use('/quran/api/notebook', notebookRouter);

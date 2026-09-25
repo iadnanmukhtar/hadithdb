@@ -8,7 +8,10 @@
   <div class="notebook-layout">
   <section class="notebook-main" aria-label="Private notes">
   <div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="mb-0">My Notebook</h1>
+    <div>
+      <h1 class="mb-0">My Notebook</h1>
+      <p id="notebook-created-count" class="small text-muted mb-0" aria-live="polite" hidden></p>
+    </div>
     <div class="d-flex align-items-center gap-2">
       <button id="notebook-new" class="notebook-tool" type="button" title="New note" aria-label="Create a general note"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="small ms-1">New note</span></button>
       <button class="notebook-tool" type="button" data-bs-toggle="modal" data-bs-target="#notebook-help-modal" title="Notebook help" aria-label="Notebook help"><i class="bi bi-question-circle" aria-hidden="true"></i></button>

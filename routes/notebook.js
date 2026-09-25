@@ -2,6 +2,7 @@
 const express = require('express');
 const GoogleAuth = require('../lib/GoogleAuth');
 const Notebook = require('../lib/NotebookDrive');
+const Shares = require('../lib/NotebookShare');
 const router = express.Router();
 router.use((req, res, next) => {
   res.set('Cache-Control', 'private, no-store');
@@ -31,6 +32,15 @@ router.get('/ayah', async (req, res, next) => {
     res.json({ source });
   } catch (err) { next(err); }
 });
+router.get('/share', async (req, res, next) => {
+  try { await Shares.rememberAuthor(req.user); res.json(await Shares.status(req.user.uid, req.query.source)); } catch (err) { next(err); }
+});
+router.post('/share', async (req, res, next) => {
+  try { await Shares.rememberAuthor(req.user); res.json(await Shares.enable(req.user.uid, req.body?.source_key)); } catch (err) { next(err); }
+});
+router.delete('/share', async (req, res, next) => {
+  try { res.json(await Shares.revoke(req.user.uid, req.body?.source_key)); } catch (err) { next(err); }
+});
 router.get('/drive', async (req, res, next) => {
   try { res.json(await Notebook.connectionStatus(req.user.uid)); } catch (err) { next(err); }
 });
@@ -54,6 +64,9 @@ router.delete('/drive', async (req, res, next) => {
 router.get('/tags', async (req, res, next) => {
   try { res.json({ tags: await Notebook.tagList(req.user.uid) }); } catch (err) { next(err); }
 });
+router.get('/stats', async (req, res, next) => {
+  try { res.json(await Notebook.stats(req.user.uid)); } catch (err) { next(err); }
+});
 router.get('/links', async (req, res, next) => {
   try { res.json(await Notebook.links(req.user.uid, req.query.q || '', req.query.title)); } catch (err) { next(err); }
 });
@@ -68,6 +81,7 @@ router.get('/download', async (req, res, next) => {
 });
 router.get('/', async (req, res, next) => {
   try {
+    await Shares.rememberAuthor(req.user);
     if (req.query.source) return res.json({ note: await Notebook.get(req.user.uid, req.query.source) });
     const offset = Number(req.query.offset || 0);
     if (!Number.isSafeInteger(offset) || offset < 0) return res.status(400).json({ error: 'Invalid page.' });
@@ -75,7 +89,7 @@ router.get('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 router.put('/', async (req, res, next) => {
-  try { res.json({ note: await Notebook.save(req.user.uid, req.body || {}) }); } catch (err) { next(err); }
+  try { await Shares.rememberAuthor(req.user); res.json({ note: await Notebook.save(req.user.uid, req.body || {}) }); } catch (err) { next(err); }
 });
 router.delete('/', async (req, res, next) => {
   try { await Notebook.remove(req.user.uid, req.body.source_key, req.body.version, req.body.revision); res.json({ deleted: true }); } catch (err) { next(err); }

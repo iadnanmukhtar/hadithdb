@@ -2,6 +2,7 @@
 // Keep legacy database and formatting contracts covered for the migration source.
 // Drive persistence and the production router are exercised in notebookDrive.spec.js.
 jest.mock('../lib/NotebookDrive', () => jest.requireActual('../lib/UserNotebook'));
+jest.mock('../lib/NotebookShare', () => ({ rememberAuthor: jest.fn(async () => {}) }));
 jest.mock('../lib/GoogleAuth', () => ({ verifyRequest: jest.fn(async req => req.headers.authorization === 'Bearer alice' ? { uid: 'alice' } : null) }));
 jest.mock('../lib/Model', () => ({ Item: { itemFromRef: jest.fn() } }));
 const { Item } = require('../lib/Model');

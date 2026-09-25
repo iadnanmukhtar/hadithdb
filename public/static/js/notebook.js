@@ -98,6 +98,30 @@
     positionTagFilters();
   }
   const list = document.getElementById('notebook-list');
+  const createdCount = document.getElementById('notebook-created-count');
+  let lifetimeCreated = null, statsRequest = 0;
+  function renderCreationCount(count) {
+    if (!createdCount || !Number.isSafeInteger(count) || count < 0) return;
+    lifetimeCreated = Math.max(lifetimeCreated ?? 0, count);
+    createdCount.textContent = `${lifetimeCreated.toLocaleString()} ${lifetimeCreated === 1 ? 'note' : 'notes'} created`;
+    createdCount.title = 'Lifetime total, including deleted notes.';
+    createdCount.hidden = false;
+  }
+  function clearCreationCount() {
+    ++statsRequest; lifetimeCreated = null;
+    if (createdCount) { createdCount.hidden = true; createdCount.textContent = ''; }
+  }
+  async function loadCreationCount() {
+    if (!createdCount) return;
+    const request = ++statsRequest;
+    try {
+      const result = await api('/stats');
+      if (request === statsRequest) {
+        renderCreationCount(result.lifetime_created);
+        if (result.backfill_incomplete) createdCount.title += ' Some older file records are unavailable and may not be included.';
+      }
+    } catch (_) { /* Keep the known lifetime total if Drive is temporarily unavailable. */ }
+  }
   const listStatus = document.getElementById('notebook-list-status');
   const more = document.getElementById('notebook-more');
   const sentinel = document.getElementById('notebook-sentinel');
@@ -108,6 +132,7 @@
   const existing = new Set(), checked = new Set(), buttons = new Map();
   const installed = new WeakSet();
   const sourceSelector = '.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, [data-note-key]';
+  const shareControls = window.NotebookShare.install({ context: () => ({ current, busy, generation }), api, save });
   async function api(path = '', method = 'GET', body) {
     const token = await window.hadithAuth?.getToken();
     if (!token) throw new Error('Please sign in to use your notebook.');
@@ -381,6 +406,7 @@
   }
   function updateList(note) {
     if (!list) return;
+    renderCreationCount(note.lifetime_created);
     const index = notes.findIndex(entry => entry.source_key === note.source_key);
     const previous = index >= 0 ? notes[index] : null;
     const normalize = text => String(text || '').normalize('NFKD').replace(/\p{M}/gu, '').replace(/[ـʿʾ]/g, '').toLowerCase();
@@ -494,6 +520,7 @@
     restoreButton.hidden = true;
     clearTimeout(saveTimer);
     const ownGeneration = ++generation;
+    shareControls.reset();
     current = source; editor.value = savedText = ''; preview.innerHTML = ''; resetTags();
     mode(false); deleteButton.hidden = true;
     const link = document.getElementById('notebook-source');
@@ -539,6 +566,7 @@
   });
   modal.addEventListener('hidden.bs.modal', () => {
     if (changingPresentation) return;
+    shareControls.reset();
     restoreButton.hidden = true;
     modal.classList.remove('notebook-minimized');
     try { sessionStorage.removeItem(floatingStorage); } catch (_) {}
@@ -591,7 +619,7 @@
   window.NotebookShortcuts.install(editor, () => editing && current && !busy, () => wikiAutocomplete.close());
   // Clicking anywhere outside the editor returns to the rendered note.
   document.addEventListener('pointerdown', event => {
-    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file, #notebook-zoom-control') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
+    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file, #notebook-zoom-control, #notebook-share-panel, #notebook-share') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
   });
   function updateEditorCaretDirection() {
     // dir="auto" uses the whole note's first strong character for keyboard
@@ -622,6 +650,7 @@
     try {
       await api('', 'DELETE', { source_key: current.source_key, version: current.version, revision: current.revision });
       if (ownGeneration !== generation) return;
+      shareControls.reset();
       current = { ...current, markdown: '', html: '', version: 0, tags: [], hashtags: [], title: '', created_at: null, updated_at: null }; resetTags();
       editor.value = savedText = ''; preview.innerHTML = ''; deleteButton.hidden = true;
       markSource(current.source_key, false); updateList(current); status.textContent = ''; mode(false);
@@ -925,6 +954,7 @@
       document.getElementById('notebook-signin').hidden = listSignedIn;
       for (const id of ['notebook-search', 'notebook-tag']) document.getElementById(id).disabled = !listSignedIn;
       if (!listSignedIn) {
+        clearCreationCount();
         notes = []; railTags = []; hasMore = false;
         document.getElementById('notebook-search').value = '';
         document.getElementById('notebook-tag').value = '';
@@ -932,6 +962,7 @@
         renderTagRail(); renderList();
         return;
       }
+      if (!append) loadCreationCount();
       const params = new URLSearchParams({ offset: append ? notes.length : 0,
         q: document.getElementById('notebook-search').value.trim(), tag: document.getElementById('notebook-tag').value.trim() });
       const result = await api(`?${params}`);
@@ -951,6 +982,8 @@
     window.addEventListener('resize', checkMore);
   }
   document.addEventListener('hadithAuthChanged', () => {
+    clearCreationCount();
+    shareControls.reset();
     pendingFloating = false;
     try { sessionStorage.removeItem(floatingStorage); } catch (_) {}
     restoreButton.hidden = true;
@@ -968,6 +1001,7 @@
     if (modal.classList.contains('show') && (pendingSource || (current && !dirty()))) open(pendingSource || current);
   });
   document.addEventListener('notebookDriveDisconnected', () => {
+    shareControls.reset();
     ++statusEpoch; existing.clear(); checked.clear(); paintButtons(); loadList(); loadTags();
   });
   let searchTimer;

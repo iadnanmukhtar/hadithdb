@@ -1,0 +1,29 @@
+@font-face { font-family: NotebookKitab; font-style: normal; font-weight: 400; src: url('/static/fonts/kitab-base.woff2'); }
+@font-face { font-family: NotebookKitab; font-style: normal; font-weight: 700; src: url('/static/fonts/kitab-base-b.woff2'); }
+.notebook-markdown { overflow-wrap: anywhere; text-align: start; }
+.notebook-markdown .footnotes-list { list-style-type: decimal; }
+.notebook-markdown :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; }
+.notebook-markdown > :first-child { margin-top: 0; }
+.notebook-markdown h1 { font-size: 1.4em; }
+.notebook-markdown h2 { font-size: 1.25em; }
+.notebook-markdown h3 { font-size: 1.15em; }
+.notebook-markdown h4 { font-size: 1.08em; }
+.notebook-markdown h5 { font-size: 1.04em; }
+.notebook-markdown h6 { font-size: 1em; }
+.notebook-markdown [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
+.notebook-markdown :is(p, h1, h2, h3, h4, h5, h6, li, td, th):dir(rtl), .notebook-markdown .notebook-arabic { font-family: NotebookKitab, Kitab, Quran, serif; line-height: 2; font-synthesis: weight style; }
+.notebook-markdown strong, .notebook-markdown strong .notebook-arabic { font-weight: 700; }
+.notebook-markdown em, .notebook-markdown em .notebook-arabic { font-style: italic; }
+.notebook-markdown mark { background: #ffe680; color: #302a1b; padding: .05em 0; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.notebook-markdown u { text-decoration: none; }
+.notebook-markdown .notebook-underline { text-decoration: underline; text-underline-offset: .15em; }
+.notebook-markdown .notebook-arabic { font-size: 1.2em; }
+.notebook-markdown .notebook-arabic .notebook-arabic { font-size: inherit; }
+/* Kitab lacks U+0305; use a face that shapes Arabic and its overline together. */
+.notebook-markdown [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
+.notebook-markdown blockquote { margin-block: 1rem; }
+.notebook-markdown blockquote > p { border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; }
+.notebook-expand-reference { color: #805d00; margin-inline-start: .3rem; font-size: .85em; }
+.notebook-markdown pre { direction: ltr; text-align: left; overflow: auto; }
+.notebook-markdown img { max-width: 100%; }
+.notebook-markdown table { display: block; overflow-x: auto; }

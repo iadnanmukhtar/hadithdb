@@ -2,16 +2,20 @@
 jest.mock('../lib/Model', () => ({ Item: { itemFromRef: jest.fn() } }));
 jest.mock('../lib/GoogleAuth', () => ({ verifyRequest: jest.fn(async req => req.headers.authorization === 'Bearer alice' ? { uid: 'alice', provider: 'google.com' } : null) }));
 jest.mock('google-auth-library', () => ({ OAuth2Client: jest.fn() }));
+jest.mock('../lib/NotebookShare', () => ({ rememberAuthor: jest.fn(async () => {}) }));
 const { OAuth2Client } = require('google-auth-library');
 const Drive = require('../lib/NotebookDrive');
 const Legacy = require('../lib/UserNotebook');
 const express = require('express');
 const http = require('http');
-let connection, mappings, files, originals, nextId, request, server, base, sqlCalls;
+let connection, mappings, files, originals, nextId, request, server, base, sqlCalls, creations;
 const note = (overrides = {}) => ({ source_key: 'item:42', source_title: 'bukhari:100', source_url: '/bukhari:100', title: 'Reflection', tags: ['صلاة'], markdown: '\n\nالعربية\n\nEnglish #prayer\n', ...overrides });
 function db(statement, values) {
   sqlCalls.push({ statement, values });
   if (statement.startsWith('CREATE')) return {};
+  if (statement.startsWith('INSERT IGNORE INTO user_notebook_creations')) { creations.add(values[0] + ':' + values[1]); return {}; }
+  if (statement.startsWith('SELECT COUNT(*) AS lifetime_created')) return [{ lifetime_created: [...creations].filter(key => key.startsWith(values[0] + ':')).length }];
+  if (statement.startsWith('SELECT f.source_key')) return values[0] === 'alice' ? [...mappings].filter(([, id]) => !creations.has('alice:' + id)).map(([source_key, file_id]) => ({ source_key, file_id })) : [];
   if (statement.startsWith('SELECT GET_LOCK')) return [{ acquired: 1 }];
   if (statement.startsWith('SELECT RELEASE_LOCK')) return [{ released: 1 }];
   if (statement.startsWith('SELECT * FROM user_notebook_drive')) return connection && values[0] === 'alice' ? [connection] : [];
@@ -37,7 +41,7 @@ beforeEach(() => {
   OAuth2Client.mockClear();
   global.settings = { site: { url: 'https://hadithunlocked.com' }, google: { clientId: 'client', clientSecret: 'secret', driveTokenKey: Buffer.alloc(32, 7).toString('base64') } };
   global.books = [{ alias: 'bukhari' }];
-  mappings = new Map(); files = new Map(); originals = []; nextId = 0; sqlCalls = [];
+  mappings = new Map(); files = new Map(); originals = []; nextId = 0; sqlCalls = []; creations = new Set();
   connection = { user_uid: 'alice', google_sub: 'alice', folder_id: 'folder', migrated: 1, token_cipher: Drive.encrypt('alice', { refresh_token: 'refresh', access_token: 'access' }) };
   files.set('folder', { id: 'folder', mimeType: 'application/vnd.google-apps.folder', trashed: false });
   const query = (statement, values, cb) => { try { cb(null, db(statement, values)); } catch (err) { cb(err); } };
@@ -348,4 +352,47 @@ test('independent general notes can be created without replacing an existing gen
   expect(second.source_url).toBe('/notebook');
   expect((await Drive.get('alice', first.source_key)).title).toBe('Original general note');
   expect((await Drive.get('alice', second.source_key)).title).toBe('New general note');
+});
+test('lifetime count increments once per creation and survives edits, retries, deletion and recreation', async () => {
+  expect((await Drive.stats('alice')).lifetime_created).toBe(0);
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  expect(first.lifetime_created).toBe(1);
+  const retry = await Drive.save('alice', { ...note(), version: 0 });
+  expect(retry.lifetime_created).toBe(1);
+  const edited = await Drive.save('alice', { ...first, markdown: 'Changed text' });
+  expect(edited.lifetime_created).toBe(1);
+  await Drive.remove('alice', edited.source_key, edited.version, edited.revision);
+  expect((await Drive.stats('alice')).lifetime_created).toBe(1);
+  const recreated = await Drive.save('alice', { ...note(), version: 0 });
+  expect(recreated.lifetime_created).toBe(2);
+  expect((await Drive.stats('alice')).lifetime_created).toBe(2);
+  expect((await Drive.stats('bob')).lifetime_created).toBe(0);
+});
+test('lifetime backfill includes existing trashed notes and is idempotent', async () => {
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  const second = await Drive.save('alice', { ...note({ source_key: 'general', title: 'Another note' }), version: 0 });
+  await Drive.remove('alice', first.source_key, first.version, first.revision);
+  creations.clear(); // Simulate files created before lifetime tracking was installed.
+  expect(await Drive.stats('alice')).toEqual({ lifetime_created: 2, backfill_incomplete: false });
+  expect((await Drive.stats('alice')).lifetime_created).toBe(2);
+  expect((await Drive.get('alice', second.source_key)).version).toBe(second.version);
+  await Drive.disconnect('alice');
+  expect((await Drive.stats('alice')).lifetime_created).toBe(2);
+});
+test('failed uploads and reserved IDs do not count as created notes', async () => {
+  const normalRequest = request.getMockImplementation();
+  request.mockImplementation(async options => {
+    if (options.url.includes('/upload/')) fail(503);
+    return normalRequest(options);
+  });
+  await expect(Drive.save('alice', { ...note(), version: 0 })).rejects.toMatchObject({ status: 503 });
+  expect((await Drive.stats('alice')).lifetime_created).toBe(0);
+  expect(creations.size).toBe(0);
+});
+test('stats endpoint is private and ignores a supplied account ID', async () => {
+  await Drive.save('alice', { ...note(), version: 0 });
+  expect((await fetch(base + '/stats')).status).toBe(401);
+  const response = await fetch(base + '/stats?uid=bob', { headers: { Authorization: 'Bearer alice' } });
+  expect(response.headers.get('cache-control')).toContain('no-store');
+  expect((await response.json()).lifetime_created).toBe(1);
 });

@@ -2,11 +2,25 @@
   <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
     <div class="modal-header py-2">
       <h2 class="modal-title fs-6" id="notebook-modal-title"><i class="bi bi-sticky me-2" aria-hidden="true"></i><a id="notebook-source" dir="auto">Note</a></h2>
-      <button id="notebook-float" type="button" class="notebook-tool ms-auto" title="Float note while browsing" aria-label="Float note while browsing" aria-pressed="false"><i class="bi bi-pin-angle" aria-hidden="true"></i></button>
+      <button id="notebook-share" type="button" class="notebook-tool ms-auto" title="Share note" aria-label="Share note" aria-controls="notebook-share-panel" aria-expanded="false"><i class="bi bi-box-arrow-up" aria-hidden="true"></i></button>
+      <button id="notebook-print" type="button" class="notebook-tool" title="Print / Save as PDF" aria-label="Print / Save as PDF"><i class="bi bi-printer" aria-hidden="true"></i></button>
+      <button id="notebook-float" type="button" class="notebook-tool" title="Float note while browsing" aria-label="Float note while browsing" aria-pressed="false"><i class="bi bi-pin-angle" aria-hidden="true"></i></button>
       <button id="notebook-minimize" type="button" class="notebook-tool" title="Minimize note" aria-label="Minimize note" hidden><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
       <button id="notebook-fullscreen" type="button" class="notebook-tool me-2" title="Expand note" aria-label="Expand note" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
+    <section id="notebook-share-panel" class="px-3 py-2" aria-label="Share note" hidden>
+      <p class="small mb-2">Anyone with the link can see your name, profile image, and this note’s title and latest saved text without signing in. Your other notes and Google Drive remain private.</p>
+      <button id="notebook-share-enable" type="button" class="btn btn-sm btn-outline-secondary">Create public link</button>
+      <div id="notebook-share-active" hidden>
+        <label class="visually-hidden" for="notebook-share-url">Public read-only link</label>
+        <input id="notebook-share-url" type="url" class="form-control form-control-sm mb-2" readonly>
+        <button id="notebook-share-copy" type="button" class="btn btn-sm btn-outline-secondary">Copy link</button>
+        <a id="notebook-share-open" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary">Open link</a>
+        <button id="notebook-share-revoke" type="button" class="btn btn-sm btn-outline-danger">Stop sharing</button>
+      </div>
+      <p id="notebook-share-status" class="small mb-0 mt-1" role="status" aria-live="polite"></p>
+    </section>
     <div class="modal-body">
       <nav id="notebook-outline" aria-label="Note heading outline" hidden>
         <div class="notebook-outline-label">On this note</div>
@@ -46,47 +60,18 @@
       <span id="notebook-status" class="small me-2" role="status" aria-live="polite"></span>
       <button id="notebook-preview-button" type="button" class="notebook-tool" title="Edit Markdown" aria-label="Edit Markdown"><i class="bi bi-eye" aria-hidden="true"></i></button>
       <button id="notebook-download" type="button" class="notebook-tool" title="Download Markdown" aria-label="Download Markdown"><i class="bi bi-download" aria-hidden="true"></i></button>
-      <button id="notebook-print" type="button" class="notebook-tool" title="Print / Save as PDF" aria-label="Print / Save as PDF"><i class="bi bi-printer" aria-hidden="true"></i></button>
       <button id="notebook-delete" type="button" class="notebook-tool" title="Delete note" aria-label="Delete note" hidden><i class="bi bi-trash" aria-hidden="true"></i></button>
       <button id="notebook-save" type="button" class="notebook-tool" title="Save now" aria-label="Save now"><i class="bi bi-check2" aria-hidden="true"></i></button>
     </div>
   </div></div>
 </div>
 <style>
-@font-face { font-family: NotebookKitab; font-style: normal; font-weight: 400; src: url('/static/fonts/kitab-base.woff2'); }
-@font-face { font-family: NotebookKitab; font-style: normal; font-weight: 700; src: url('/static/fonts/kitab-base-b.woff2'); }
+<%- include('notebook_content_styles.ejs') %>
 body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !important; }
 #notebook-editor { font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
 #notebook-wiki-options { max-height: 12rem; overflow-y: auto; border: 1px solid var(--bs-border-color, #ccc); border-radius: .35rem; background: var(--bs-body-bg, white); margin-block: .25rem; }
 #notebook-wiki-options [role="option"] { padding: .3rem .65rem; cursor: pointer; }
 #notebook-wiki-options [aria-selected="true"] { background: var(--bs-secondary-bg, #eee); color: var(--bs-body-color, #222); }
-.notebook-markdown { overflow-wrap: anywhere; text-align: start; }
-.notebook-markdown .footnotes-list { list-style-type: decimal; }
-.notebook-markdown :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; }
-.notebook-markdown > :first-child { margin-top: 0; }
-.notebook-markdown h1 { font-size: 1.4em; }
-.notebook-markdown h2 { font-size: 1.25em; }
-.notebook-markdown h3 { font-size: 1.15em; }
-.notebook-markdown h4 { font-size: 1.08em; }
-.notebook-markdown h5 { font-size: 1.04em; }
-.notebook-markdown h6 { font-size: 1em; }
-.notebook-markdown [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
-.notebook-markdown :is(p, h1, h2, h3, h4, h5, h6, li, td, th):dir(rtl), .notebook-markdown .notebook-arabic { font-family: NotebookKitab, Kitab, Quran, serif; line-height: 2; font-synthesis: weight style; }
-.notebook-markdown strong, .notebook-markdown strong .notebook-arabic { font-weight: 700; }
-.notebook-markdown em, .notebook-markdown em .notebook-arabic { font-style: italic; }
-.notebook-markdown mark { background: #ffe680; color: #302a1b; padding: .05em 0; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-.notebook-markdown u { text-decoration: none; }
-.notebook-markdown .notebook-underline { text-decoration: underline; text-underline-offset: .15em; }
-.notebook-markdown .notebook-arabic { font-size: 1.2em; }
-.notebook-markdown .notebook-arabic .notebook-arabic { font-size: inherit; }
-/* Kitab lacks U+0305; use a face that shapes Arabic and its overline together. */
-.notebook-markdown [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
-.notebook-markdown blockquote { margin-block: 1rem; }
-.notebook-markdown blockquote > p { border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; }
-.notebook-expand-reference { color: #805d00; margin-inline-start: .3rem; font-size: .85em; }
-.notebook-markdown pre { direction: ltr; text-align: left; overflow: auto; }
-.notebook-markdown img { max-width: 100%; }
-.notebook-markdown table { display: block; overflow-x: auto; }
 #notebook-modal .modal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #notebook-modal .modal-dialog { height: calc(100vh - 2rem); height: calc(100dvh - 2rem); margin-block: 1rem; }
 #notebook-modal .modal-dialog.modal-fullscreen { width: 100%; max-width: none; height: 100vh; height: 100dvh; margin: 0; }
@@ -128,6 +113,8 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 .notebook-tool:hover, .notebook-tool:focus-visible { background: #ffe69c; }
 .notebook-tool:disabled { opacity: .45; }
 #notebook-status:empty { display: none; }
+#notebook-share-panel { flex-shrink: 0; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid var(--note-edge); }
+#notebook-share-url { direction: ltr; }
 .personal-note-actions { display: inline-flex; align-items: center; gap: .5rem; vertical-align: middle; }
 .quran-ayah-hero-toolbar > .personal-note-actions { gap: .75rem; }
 .personal-note-btn { color: #cc9a06; }
@@ -189,6 +176,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 <script src="/static/js/notebook-drive.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-wiki.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-shortcuts.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-share.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-print.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 
