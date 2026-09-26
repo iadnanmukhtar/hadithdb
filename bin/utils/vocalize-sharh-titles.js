@@ -76,6 +76,7 @@ async function main() {
 			await Utils.flushCacheContaining(row.alias);
 			await Utils.flushBookDiskCache(row.alias);
 		}
+		await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'));
 		await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books'));
 		await Utils.flushCachedFile(path.join(os.homedir(), '.hadithdb/cache/_books.html'));
 		await require('../../lib/RuntimeRefresh').publish();

@@ -51,16 +51,16 @@ describe('books catalog performance path', () => {
   test('serves a disk cache hit before Elasticsearch, SQL, or Tafsir lookups', async () => {
     const req = request();
     const res = response();
-    jest.spyOn(Utils, 'cacheFileFromFilename').mockReturnValue('/cache/_books.html');
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/hadith${Utils.cacheSuffix()}/books/_books.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
-    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue('/cache/_books.html.gz');
+    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${cachedFile}.gz`);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
     jest.spyOn(Index, 'distinctTermsFromQuery');
     jest.spyOn(Tafsir, 'visibleTafsirs');
 
     await routeHandler()(req, res, jest.fn());
 
-    expect(Utils.sendCachedHtml).toHaveBeenCalledWith(res, req, '/cache/_books.html', 'text/html; charset=UTF-8');
+    expect(Utils.sendCachedHtml).toHaveBeenCalledWith(res, req, cachedFile, 'text/html; charset=UTF-8');
     expect(Index.distinctTermsFromQuery).not.toHaveBeenCalled();
     expect(global.query).not.toHaveBeenCalled();
     expect(Tafsir.visibleTafsirs).not.toHaveBeenCalled();
@@ -69,8 +69,8 @@ describe('books catalog performance path', () => {
   test('uses the same versioned cache path for rendering and metadata invalidation', () => {
     const route = fs.readFileSync(path.join(__dirname, '..', 'routes', 'books.js'), 'utf8');
     const updates = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
-    expect(route).toContain("Utils.cacheFileFromFilename('_books')");
-    expect(updates).toContain("Utils.flushCachedFile(Utils.cacheFileFromFilename('_books'))");
+    expect(route).toContain("Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith')");
+    expect(updates).toContain("Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'))");
   });
 
   test('uses Elasticsearch for badges and writes the rendered catalog to disk', async () => {

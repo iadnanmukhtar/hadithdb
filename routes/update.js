@@ -1215,6 +1215,7 @@ async function flushBookCaches(bookAliases) {
   var aliases = Array.from(bookAliases || []).filter(Boolean);
   for (const bookAlias of aliases)
     await Utils.flushCacheContaining(bookAlias);
+  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'));
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books'));
   await Utils.flushCachedFile(`${cacheDir}/_books.html`);
   if (!fs.existsSync(cacheDir))
@@ -1247,6 +1248,7 @@ async function flushQuranCatalogBookCaches(bookAliases) {
   aliases.forEach(alias => Tafsir.invalidateMemoryCaches(alias));
   await Utils.flushCacheContaining('tafsirs');
   await Utils.flushCacheContaining('tafsir:books');
+  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'));
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books'));
   await Utils.flushCachedFile(`${cacheDir}/_books.html`);
   await Utils.flushCachedFile(`${cacheDir}/_books`);

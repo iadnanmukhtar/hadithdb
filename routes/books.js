@@ -63,7 +63,7 @@ router.get('/', async function (req, res, next) {
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
   const cacheableHtml = !('json' in req.query) && !('tsv' in req.query) && !('tab' in req.query);
-  const cachedFile = Utils.cacheFileFromFilename('_books');
+  const cachedFile = Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith');
   const flushCache = Utils.shouldFlushCache(req);
   if (flushCache) {
     await Utils.flushCachedFile(cachedFile, { strict: true });
