@@ -55,9 +55,9 @@ describe('restored Quran public route caches', () => {
       editMode: false
     };
     const res = response();
-    jest.spyOn(Utils, 'htmlCacheFile').mockReturnValue('/cache/_quran_tafsir.html');
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/tafsir${Utils.cacheSuffix()}/tafsirs/_quran_tafsir_.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
-    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue('/cache/_quran_tafsir.html.gz');
+    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${cachedFile}.gz`);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
     jest.spyOn(Tafsir, 'visibleTafsirs');
     jest.spyOn(Tafsir, 'withFirstPassages');
@@ -67,7 +67,7 @@ describe('restored Quran public route caches', () => {
     expect(Utils.sendCachedHtml).toHaveBeenCalledWith(
       res,
       req,
-      '/cache/_quran_tafsir.html',
+      cachedFile,
       'text/html; charset=UTF-8'
     );
     expect(Tafsir.visibleTafsirs).not.toHaveBeenCalled();
@@ -78,7 +78,7 @@ describe('restored Quran public route caches', () => {
     const router = require('../routes/tafsirs');
     const req = { baseUrl: '/quran/tafsir', url: '/?flush=1', query: { flush: '1' }, admin: false, editMode: false };
     const res = response();
-    jest.spyOn(Utils, 'htmlCacheFile').mockReturnValue('/cache/_quran_tafsir.html');
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/tafsir${Utils.cacheSuffix()}/tafsirs/_quran_tafsir_.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(true);
     jest.spyOn(Utils, 'flushCachedFile').mockResolvedValue(true);
     jest.spyOn(Utils, 'cachedTextPathForRead');
@@ -91,7 +91,7 @@ describe('restored Quran public route caches', () => {
 
     await routeHandler(router, '/')(req, res, jest.fn());
 
-    expect(Utils.flushCachedFile).toHaveBeenCalledWith('/cache/_quran_tafsir.html', { strict: true });
+    expect(Utils.flushCachedFile).toHaveBeenCalledWith(cachedFile, { strict: true });
     expect(Tafsir.invalidateMemoryCaches).toHaveBeenCalled();
     expect(QuranTocSubdivisions.invalidateAll).toHaveBeenCalled();
     expect(QuranMushaf.invalidateAll).toHaveBeenCalled();
@@ -104,7 +104,7 @@ describe('restored Quran public route caches', () => {
     const router = require('../routes/tafsirs');
     const req = { baseUrl: '/quran/tafsir', url: '/', query: {}, admin: false, editMode: false };
     const res = response();
-    jest.spyOn(Utils, 'htmlCacheFile').mockReturnValue('/cache/_quran_tafsir.html');
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/tafsir${Utils.cacheSuffix()}/tafsirs/_quran_tafsir_.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(null);
     jest.spyOn(Utils, 'diskCacheEnabled').mockReturnValue(true);
@@ -117,10 +117,10 @@ describe('restored Quran public route caches', () => {
 
     await routeHandler(router, '/')(req, res, jest.fn());
 
-    expect(Utils.writeCachedHtml).toHaveBeenCalledWith('/cache/_quran_tafsir.html', '<html>tafsir catalog</html>');
+    expect(Utils.writeCachedHtml).toHaveBeenCalledWith(cachedFile, '<html>tafsir catalog</html>');
     expect(Utils.indexCachedItem).toHaveBeenCalledWith(
       expect.arrayContaining(['tafsirs', 'tafsir:books', 'tafsir:mokhtasar:catalog']),
-      '/cache/_quran_tafsir.html'
+      cachedFile
     );
   });
 
@@ -201,7 +201,7 @@ describe('restored Quran public route caches', () => {
       editMode: false
     };
     const res = response();
-    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/translations/_quran_translations_quran:1:1.html`;
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/trans${Utils.cacheSuffix()}/translations/_quran_translations_quran:1:1.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${cachedFile}.gz`);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
@@ -225,7 +225,7 @@ describe('restored Quran public route caches', () => {
     const res = response();
     const chapter = { getSections: jest.fn().mockResolvedValue([]) };
     const section = { getChapter: jest.fn().mockResolvedValue(chapter) };
-    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/translations/_quran_translations_quran:1:1.html`;
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/trans${Utils.cacheSuffix()}/translations/_quran_translations_quran:1:1.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(null);
     jest.spyOn(Utils, 'diskCacheEnabled').mockReturnValue(true);

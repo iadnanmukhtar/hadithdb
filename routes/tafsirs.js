@@ -17,7 +17,12 @@ router.get('/', async function (req, res, next) {
 
   const editMode = req.admin && req.editMode;
   const cacheableHtml = !('json' in req.query) && !('tsv' in req.query);
-  const cachedFile = Utils.htmlCacheFile(req, { includeBaseUrl: true });
+  const cachedFile = Utils.cacheFileFromFilename(
+    Utils.cacheReqToFilename(req, { includeBaseUrl: true }),
+    'html',
+    'tafsirs',
+    'tafsir'
+  );
   const flushCache = Utils.shouldFlushCache(req);
   if (flushCache) {
     invalidateQuranMemoryCaches({ allMushaf: true });

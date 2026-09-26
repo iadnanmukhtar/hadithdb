@@ -77,7 +77,7 @@ router.get('/:ref', async function (req, res, next) {
     Utils.cacheReqToFilename(req, { includeBaseUrl: true }),
     'html',
     'translations',
-    'quran'
+    'trans'
   );
   const flushCache = Utils.shouldFlushCache(req);
   if (flushCache) {
