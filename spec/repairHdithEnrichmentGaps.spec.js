@@ -58,6 +58,12 @@ test('both Daraqutni enrichment entry points include linked explanations', () =>
 	expect(HDITH_LOCAL_BOOKS[18].commentaryServices).toEqual([6, 12]);
 });
 
+test('both Malik enrichment entry points include dedicated and linked explanations', () => {
+	const { FOLLOWUP_BOOKS, HDITH_LOCAL_BOOKS } = require('../bin/utils/import-hdith-six-books-enrichment');
+	expect(FOLLOWUP_BOOKS.find(book => book.sourceSlug === 'b-7').commentaryServices).toEqual([6, 12]);
+	expect(HDITH_LOCAL_BOOKS[7].commentaryServices).toEqual([6, 12]);
+});
+
 test('both Abu Dawud enrichment entry points include linked explanations', () => {
 	const { SIX_BOOKS, HDITH_LOCAL_BOOKS } = require('../bin/utils/import-hdith-six-books-enrichment');
 	expect(SIX_BOOKS.find(book => book.sourceSlug === 'b-3').commentaryServices).toEqual([6, 12]);

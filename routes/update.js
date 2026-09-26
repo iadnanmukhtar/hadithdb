@@ -2670,6 +2670,7 @@ async function invalidateQuranMushafPageNumberCaches(affectedPages, label) {
     return;
   var cacheDirectories = [
     `${homedir()}/.hadithdb/cache`,
+    Utils.cacheBookDirectory('pages', 'quran'),
     Utils.cacheBookDirectory('quran', 'quran')
   ];
   var matched = 0;

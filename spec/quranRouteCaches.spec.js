@@ -268,9 +268,9 @@ describe('restored Quran public route caches', () => {
     const res = response();
     jest.spyOn(QuranMushaf, 'info').mockResolvedValue({ number_of_pages: 604 });
     jest.spyOn(Utils, 'cacheReqToFilename').mockReturnValue('_quran_page_1');
-    jest.spyOn(Utils, 'cacheFileFromFilename').mockImplementation(filename => `/cache/${filename}.html`);
+    jest.spyOn(Utils, 'cacheFileFromFilename');
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
-    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue('/cache/_quran_page_1__script-uthmani.html.gz');
+    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/pages/_quran_page_1__script-uthmani.html.gz`);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
     jest.spyOn(QuranMushaf, 'sectionForPage');
 
@@ -279,7 +279,7 @@ describe('restored Quran public route caches', () => {
     expect(Utils.sendCachedHtml).toHaveBeenCalledWith(
       res,
       req,
-      '/cache/_quran_page_1__script-uthmani.html',
+      `${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/pages/_quran_page_1__script-uthmani.html`,
       'text/html; charset=UTF-8'
     );
     expect(QuranMushaf.sectionForPage).not.toHaveBeenCalled();
@@ -304,7 +304,7 @@ describe('restored Quran public route caches', () => {
     jest.spyOn(QuranMushaf, 'sectionForPage').mockResolvedValue(null);
     jest.spyOn(QuranTocSubdivisions, 'invalidateAll');
     jest.spyOn(Utils, 'cacheReqToFilename').mockReturnValue('_quran_page_1');
-    jest.spyOn(Utils, 'cacheFileFromFilename').mockImplementation(filename => `/cache/${filename}.html`);
+    jest.spyOn(Utils, 'cacheFileFromFilename');
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(true);
     jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
     jest.spyOn(Utils, 'flushCachedFile').mockResolvedValue(true);
@@ -313,7 +313,7 @@ describe('restored Quran public route caches', () => {
     await routeHandler(router, '/quran/page/:page')(req, res, next);
 
     expect(Utils.flushCacheContaining).toHaveBeenCalledWith('quran:page:1');
-    expect(Utils.flushCachedFile).toHaveBeenCalledWith('/cache/_quran_page_1__script-warsh.html', { strict: true });
+    expect(Utils.flushCachedFile).toHaveBeenCalledWith(`${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/pages/_quran_page_1__script-warsh.html`, { strict: true });
     expect(QuranMushaf.invalidatePage).toHaveBeenCalledWith(1);
     expect(QuranMushaf.invalidateMappings).toHaveBeenCalled();
     expect(QuranTocSubdivisions.invalidateAll).toHaveBeenCalled();
@@ -333,10 +333,10 @@ describe('restored Quran public route caches', () => {
       editMode: false
     };
     const res = response();
-    const expectedFile = `/cache/_quran_page_1__script-${script}.html`;
+    const expectedFile = `${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/pages/_quran_page_1__script-${script}.html`;
     jest.spyOn(QuranMushaf, 'info').mockResolvedValue({ number_of_pages: 604 });
     jest.spyOn(Utils, 'cacheReqToFilename').mockReturnValue('_quran_page_1');
-    jest.spyOn(Utils, 'cacheFileFromFilename').mockImplementation(filename => `/cache/${filename}.html`);
+    jest.spyOn(Utils, 'cacheFileFromFilename');
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${expectedFile}.gz`);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
@@ -344,7 +344,7 @@ describe('restored Quran public route caches', () => {
 
     await routeHandler(router, '/quran/page/:page')(req, res, jest.fn());
 
-    expect(Utils.cacheFileFromFilename).toHaveBeenCalledWith(`_quran_page_1__script-${script}`, 'html');
+    expect(Utils.cacheFileFromFilename).toHaveBeenCalledWith(`_quran_page_1__script-${script}`, 'html', 'pages', 'quran');
     expect(Utils.sendCachedHtml).toHaveBeenCalledWith(res, req, expectedFile, 'text/html; charset=UTF-8');
     expect(QuranMushaf.sectionForPage).not.toHaveBeenCalled();
   });
@@ -390,7 +390,7 @@ describe('restored Quran public route caches', () => {
     jest.spyOn(QuranTocSubdivisions, 'quranSubsectionRangesBySurah').mockResolvedValue({});
     jest.spyOn(QuranHeadingOutlines, 'forSurahs').mockResolvedValue({});
     jest.spyOn(Utils, 'cacheReqToFilename').mockReturnValue('_quran_page_1');
-    jest.spyOn(Utils, 'cacheFileFromFilename').mockImplementation(filename => `/cache/${filename}.html`);
+    jest.spyOn(Utils, 'cacheFileFromFilename');
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(null);
     jest.spyOn(Utils, 'diskCacheEnabled').mockReturnValue(true);
@@ -405,10 +405,10 @@ describe('restored Quran public route caches', () => {
       expect.stringContaining('/views/quran_mushaf.ejs'),
       expect.objectContaining({ selectedAyahRef: selection, selectedAyahRefs: new Set(['1:1']), memorize: false, review: false })
     );
-    expect(Utils.writeCachedHtml).toHaveBeenCalledWith(`/cache/_quran_page_1__script-warsh__ayah-${Utils.safeFilename(selection)}.html`, '<html>mushaf page</html>');
+    expect(Utils.writeCachedHtml).toHaveBeenCalledWith(`${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/pages/_quran_page_1__script-warsh__ayah-${Utils.safeFilename(selection)}.html`, '<html>mushaf page</html>');
     expect(Utils.indexCachedItem).toHaveBeenCalledWith(
       expect.arrayContaining(['quran', 'book:quran', 'quran:page:1', 'quran:surah:1']),
-      `/cache/_quran_page_1__script-warsh__ayah-${Utils.safeFilename(selection)}.html`
+      `${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/pages/_quran_page_1__script-warsh__ayah-${Utils.safeFilename(selection)}.html`
     );
   });
 

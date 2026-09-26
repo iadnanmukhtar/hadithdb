@@ -2857,7 +2857,7 @@ function quranMushafCacheFile(req, pageNumber) {
   var selectedAyahRef = selection ? selection.ref : '';
   if (selectedAyahRef)
     filename += `__ayah-${Utils.safeFilename(selectedAyahRef)}`;
-  return Utils.cacheFileFromFilename(filename, 'html');
+  return Utils.cacheFileFromFilename(filename, 'html', 'pages', 'quran');
 }
 
 function quranMushafScript(req) {

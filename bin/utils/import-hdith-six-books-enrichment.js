@@ -31,7 +31,7 @@ const SIX_BOOKS = Object.freeze([
 	{ sourceSlug: 'b-6', bookId: 6, alias: 'ibnmajah', commentaryServices: [6, 12] }
 ]);
 const FOLLOWUP_BOOKS = Object.freeze([
-	{ sourceSlug: 'b-7', bookId: 7, alias: 'malik' },
+	{ sourceSlug: 'b-7', bookId: 7, alias: 'malik', commentaryServices: [6, 12] },
 	{ sourceSlug: 'b-9', bookId: 9, alias: 'darimi' },
 	{ sourceSlug: 'b-18', bookId: 18, alias: 'daraqutni', commentaryServices: [6, 12] },
 	{ sourceSlug: 'b-10', bookId: 11, alias: 'ibnhibban' },
@@ -55,7 +55,7 @@ const HDITH_LOCAL_BOOKS = Object.freeze({
 	4: { bookId: 5, alias: 'tirmidhi', title: 'جامع الترمذي', referenceMode: 'crosswalk', commentaryServices: [6, 12] },
 	5: { bookId: 3, alias: 'nasai', title: 'سنن النسائي', referenceMode: 'crosswalk', commentaryServices: [6, 12] },
 	6: { bookId: 6, alias: 'ibnmajah', title: 'سنن ابن ماجه', referenceMode: 'crosswalk', commentaryServices: [6, 12] },
-	7: { bookId: 7, alias: 'malik', title: 'موطأ مالك', referenceMode: 'crosswalk' },
+	7: { bookId: 7, alias: 'malik', title: 'موطأ مالك', referenceMode: 'crosswalk', commentaryServices: [6, 12] },
 	8: { bookId: 8, alias: 'ahmad', title: 'مسند أحمد', referenceMode: 'exact' },
 	9: { bookId: 9, alias: 'darimi', title: 'مسند الدارمي', referenceMode: 'exact' },
 	10: { bookId: 11, alias: 'ibnhibban', title: 'صحيح ابن حبان', referenceMode: 'exact' },
