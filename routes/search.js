@@ -1640,7 +1640,9 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   } else {
     if (originalNum !== req.params.num)
       return res.redirect(301, `/${req.params.bookAlias}:${req.params.num}${appendOriginalQuery(req)}`);
-    var book = visibleBookByAlias(req.params.bookAlias);
+    var book = visibleBookByAlias(req.params.bookAlias)
+      || await require('../lib/MiscReferenceAccess').referencedMiscBook(
+        req.params.bookAlias, req.params.num, global.books || [], global.query);
     var sirahNumber = await SirahReader.sourceReference(book, req.params.num);
     if (sirahNumber)
       return res.redirect(301, `/${book.alias}:${sirahNumber}${appendOriginalQuery(req)}`);

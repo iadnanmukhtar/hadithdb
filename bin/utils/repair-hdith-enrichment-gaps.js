@@ -27,7 +27,8 @@ function compact(value) { return String(value || '').replace(/\s+/g, ' ').trim()
 function uniqueSummaries(props) {
 	const values = [...(props.hadiths || []), ...(props.hadith_groups || []).flatMap(group => group.hadiths || [])];
 	const byId = new Map();
-	for (const value of values) if (value?.id && value.kind === 'hadith') byId.set(Number(value.id), value);
+	// Source chapter totals also include separately classified explanatory passages.
+	for (const value of values) if (value?.id && ['hadith', 'passage'].includes(value.kind)) byId.set(Number(value.id), value);
 	return [...byId.values()];
 }
 
@@ -77,38 +78,69 @@ function matchSummaries(sourceBookId, summaries, locals) {
 // Top-level source listings can stop at 400 entries. Read their subchapters
 // (including the partially returned boundary group), then fail closed if the
 // declared chapter count still cannot be accounted for.
-async function collectChapterSummaries(chapter, fetchChapter) {
+async function collectChapterSummaries(chapter, fetchChapter, fetchRecord = null) {
 	const props = await fetchChapter(chapter.id);
 	const summaries = new Map(uniqueSummaries(props).map(item => [Number(item.id), item]));
 	const expected = Number(chapter.count);
 	const visited = new Set([Number(chapter.id)]);
 	const queue = [...(props.hadith_groups || [])];
 	while (summaries.size < expected && queue.length) {
-		const group = queue.shift();
-		if (!Number(group.id) || visited.has(Number(group.id))) continue;
-		visited.add(Number(group.id));
-		const child = await fetchChapter(group.id);
-		for (const item of uniqueSummaries(child)) summaries.set(Number(item.id), item);
-		queue.push(...(child.hadith_groups || []));
+		const batch = [];
+		while (batch.length < 4 && queue.length) {
+			const group = queue.shift();
+			if (!Number(group.id) || visited.has(Number(group.id))) continue;
+			visited.add(Number(group.id));
+			batch.push(group.id);
+		}
+		for (const child of await Promise.all(batch.map(fetchChapter))) {
+			for (const item of uniqueSummaries(child)) summaries.set(Number(item.id), item);
+			queue.push(...(child.hadith_groups || []));
+		}
+	}
+	// Some books also cap the subchapter list itself. Follow the source's
+	// explicit next-hadith links, checking chapter membership at each step.
+	if (summaries.size < expected && summaries.size && fetchRecord) {
+		let record = await fetchRecord(Math.max(...summaries.keys()));
+		const seen = new Set([record.sourceId]);
+		while (summaries.size < expected && record.nextId && !seen.has(record.nextId)) {
+			seen.add(record.nextId);
+			record = await fetchRecord(record.nextId);
+			if (record.chapterId !== Number(chapter.id)) break;
+			if (!record.isIntro || record.entryKind === 'passage') summaries.set(record.sourceId,
+				{ id: record.sourceId, n: record.num, kind: record.entryKind || 'hadith', text: record.comparisonText });
+		}
 	}
 	if (summaries.size !== expected)
 		throw new Error(`Chapter ${chapter.id}: found ${summaries.size}/${expected} source hadiths; refusing an incomplete repair.`);
 	return [...summaries.values()];
 }
 
-function matchFullRecords(sourceBookId, records, locals) {
+function matchFullRecords(sourceBookId, records, locals, anchors = []) {
 	const sourceSlug = `b-${sourceBookId}`;
 	const matched = [], ambiguous = [], used = new Set();
+	const orderedAnchors = anchors.filter(row => Number.isFinite(Number(row.ordinal)))
+		.sort((a, b) => Number(a.source_entry_id) - Number(b.source_entry_id));
 	for (const record of records) {
-		if (record.isIntro) continue;
+		if (record.isIntro || (record.entryKind && record.entryKind !== 'hadith')) continue;
 		// Full details contain the edition reference; summary display numbers can
 		// drift. Do not fall back to a different reference for an automatic repair.
-		const candidates = locals.filter(local => editionReferencesEquivalent(sourceSlug, local.num, record.editionReference || record.num));
+		let candidates;
+		if (record.editionReference || !orderedAnchors.length) {
+			candidates = locals.filter(local => editionReferencesEquivalent(sourceSlug, local.num, record.editionReference || record.num));
+		} else {
+			const lower = orderedAnchors.filter(row => Number(row.source_entry_id) < record.sourceId).at(-1);
+			const upper = orderedAnchors.find(row => Number(row.source_entry_id) > record.sourceId);
+			// Missing edition numbers cannot be replaced by drifting display numbers.
+			// Use confirmed neighbors only to bound candidates; full ordered text
+			// confirmation remains mandatory and matn-only scoring is disabled.
+			candidates = lower && upper && Number(lower.ordinal) < Number(upper.ordinal)
+				? locals.filter(local => Number(local.ordinal) > Number(lower.ordinal) && Number(local.ordinal) < Number(upper.ordinal)) : [];
+		}
 		const ranked = candidates.map(local => ({ local, score: fullRecordMatchScore(record, local, sourceSlug) }))
 			.filter(item => item.score >= (sourceSlug === 'b-24' ? 0.80 : 0.90))
 			.sort((a, b) => b.score - a.score);
 		if (!ranked.length) continue;
-		if (ranked.length > 1 && ranked[0].score - ranked[1].score < 0.015) {
+		if (ranked.length > 1 && ranked[0].score - ranked[1].score < (record.editionReference ? 0.015 : 0.05)) {
 			ambiguous.push({ sourceEntryId: record.sourceId, reason: 'multiple local matches' }); continue;
 		}
 		const best = ranked[0];
@@ -129,7 +161,8 @@ function matchFullRecords(sourceBookId, records, locals) {
 
 async function main() {
 	if (!sourceBookIds.length || sourceBookIds.some(id => !HDITH_LOCAL_BOOKS[id]))
-		throw new Error('Usage: repair-hdith-enrichment-gaps.js --books b-N,b-N [--apply] [--skip-schema] [--report FILE] [--reviewed FILE]');
+		throw new Error('Usage: repair-hdith-enrichment-gaps.js --books b-N,b-N [--apply] [--skip-schema] [--serialize-writes] [--defer-similar-links] [--report FILE] [--matches FILE | --reviewed FILE]');
+	if (option('--matches') && option('--reviewed')) throw new Error('Choose either automatic match selection or reviewed identities.');
 	const settings = JSON.parse(fs.readFileSync(path.join(os.homedir(), '.hadithdb', 'settings.json'), 'utf8')).mysql.connection;
 	const connection = mysql.createConnection(settings);
 	const query = util.promisify(connection.query).bind(connection);
@@ -143,25 +176,40 @@ async function main() {
 			const locals = await query(`SELECT h.id,h.num,h.chain,h.body,h.ordinal FROM hadiths h
 				LEFT JOIN hdith_hadith_metadata m ON m.hadith_id=h.id
 				WHERE h.bookId=? AND m.hadith_id IS NULL ORDER BY h.ordinal,h.id`, [config.bookId]);
-			const mappedRows = await query('SELECT source_entry_id FROM hdith_book_reference_crosswalk WHERE source_book_id=?', [sourceBookId]);
+			const mappedRows = await query(`SELECT c.source_entry_id,h.ordinal FROM hdith_book_reference_crosswalk c
+				JOIN hadiths h ON h.id=c.local_hadith_id WHERE c.source_book_id=? AND h.bookId=?`, [sourceBookId, config.bookId]);
 			const mapped = new Set(mappedRows.map(row => Number(row.source_entry_id)));
 			const book = await fetchProps(page, `/encyclopedia/book/${slug}`, path.join(CACHE_DIR, slug, '_book.json.gz'));
 			const summaries = new Map();
 			for (const chapter of book.chapters || []) {
 				const complete = await collectChapterSummaries(chapter, id => fetchProps(page,
-					`/encyclopedia/book/${slug}?chapter=${id}`, path.join(CACHE_DIR, slug, '_chapters', `${id}.json.gz`)));
+					`/encyclopedia/book/${slug}?chapter=${id}`, path.join(CACHE_DIR, slug, '_chapters', `${id}.json.gz`)),
+					id => loadRecord(page, { ...config, sourceSlug: slug }, id));
 				for (const summary of complete) summaries.set(Number(summary.id), summary);
 				console.log(`${config.alias}: chapter ${chapter.id}: ${complete.length}/${chapter.count} source entries`);
 			}
 			if (Number(book.stats?.hadiths) && summaries.size !== Number(book.stats.hadiths))
 				throw new Error(`${slug}: found ${summaries.size}/${book.stats.hadiths} source entries.`);
+			const sourceIdsFile = `${option('--report') || path.join(CACHE_DIR, `${slug}-gap-repair.json`)}.source-ids.json`;
+			fs.mkdirSync(path.dirname(sourceIdsFile), { recursive: true });
+			fs.writeFileSync(sourceIdsFile, JSON.stringify([...summaries.keys()]));
 			const records = [];
-			for (const summary of summaries.values()) {
-				if (mapped.has(Number(summary.id))) continue;
-				records.push(await loadRecord(page, { ...config, sourceSlug: slug }, Number(summary.id)));
-				if (records.length % 25 === 0) console.log(`${config.alias}: checked ${records.length} full source records`);
+			const candidates = [...summaries.values()].filter(summary => !mapped.has(Number(summary.id)));
+			for (let offset = 0; offset < candidates.length; offset += 4) {
+				records.push(...await Promise.all(candidates.slice(offset, offset + 4).map(summary =>
+					loadRecord(page, { ...config, sourceSlug: slug }, Number(summary.id)))));
+				if (records.length % 100 === 0 || records.length === candidates.length)
+					console.log(`${config.alias}: checked ${records.length}/${candidates.length} full source records`);
 			}
-			const result = matchFullRecords(sourceBookId, records, locals);
+			const result = matchFullRecords(sourceBookId, records, locals, mappedRows);
+			if (option('--matches')) {
+				const selected = JSON.parse(fs.readFileSync(option('--matches'), 'utf8'));
+				if (!Array.isArray(selected) || selected.some(item => !Number.isSafeInteger(item.sourceEntryId) || !Number.isSafeInteger(item.localHadithId)))
+					throw new Error('Invalid automatic match selection.');
+				const keys = new Set(selected.filter(item => item.sourceBookId === sourceBookId).map(item => `${item.sourceEntryId}:${item.localHadithId}`));
+				result.matched = result.matched.filter(item => keys.has(`${item.sourceEntryId}:${item.localHadithId}`));
+				result.unmatchedLocals = locals.filter(local => !result.matched.some(item => item.localHadithId === local.id));
+			}
 			if (option('--reviewed')) {
 				const reviewed = JSON.parse(fs.readFileSync(option('--reviewed'), 'utf8'));
 				const available = new Set(records.map(record => record.sourceId));
@@ -197,7 +245,8 @@ async function main() {
 				fs.writeFileSync(backupFile, JSON.stringify(backup));
 				console.log(`${config.alias}: saved before-repair backup ${backupFile}`);
 				const applied = await enrichHadithMatches(result.matched, { gapsOnly: true, allowReviewed: !!option('--reviewed'),
-					skipSchema: process.argv.includes('--skip-schema'), onApplied: item => {
+					deferSimilarLinks: process.argv.includes('--defer-similar-links'),
+					skipSchema: process.argv.includes('--skip-schema'), serializeWrites: process.argv.includes('--serialize-writes'), onApplied: item => {
 						fs.appendFileSync(`${reportFile}.applied.jsonl`, `${JSON.stringify(item)}\n`);
 						console.log(`${config.alias}:${item.localReference}: enriched from ${item.sourceEntryId}`);
 					} });

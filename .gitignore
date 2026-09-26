@@ -24,11 +24,9 @@ data/generated/*
 data/tafsir/*
 cache/*
 tmp
-tmp/*
 temp
-temp/*
 var
-var/*
+docs
 *test*
 ecosystem.config.cjs
 !packages/quran-review-core/index.test.js

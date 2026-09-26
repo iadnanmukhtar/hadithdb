@@ -74,6 +74,7 @@ async function getHadithData(book) {
 		SELECT *
 		FROM v_hadiths
 		WHERE book_id = ${book.id}
+		${require('./utils/misc-index-scope').miscReferenceFilter(book)}
 		ORDER BY ordinal`);
 	await attachHadithGraderOpinions(rows, book.id);
 	if (Number(book.id) === 0)
@@ -148,7 +149,7 @@ async function reindexBooks(books, indexNames) {
 }
 
 function getSkipIndexReason(indexName, book) {
-	if (book.hidden == 1)
+	if (book.hidden == 1 && !require('./utils/misc-index-scope').isReferencedMisc(book, indexName))
 		return 'hidden books are not indexed';
 	if (indexName === 'hadiths' && book.virtual == 1)
 		return 'virtual books only index toc';

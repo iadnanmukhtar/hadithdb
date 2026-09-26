@@ -332,6 +332,21 @@ describe('hdith.com six-book enrichment importer', () => {
 		expect(parseHadithPayload({ id: 6, chain_type: 'معلق' })).toEqual(expect.objectContaining({ attribution: null, chainType: 'معلق' }));
 	});
 
+	test('removes complete dual and plural honorifics without leaving suffixes in identity text', () => {
+		for (const ending of ['عنه', 'عنها', 'عنهما', 'عنهم', 'عنهن'])
+			expect(normalizeHadithForComparison(`عن ابن عباس رضي الله ${ending} قال`)).toBe('عن ابن عباس قال');
+	});
+
+	test('uses only the visible transmission before broken hidden-matn XML for identity', () => {
+		const visible = 'وحدثني حجاج بن الشاعر عن عمر عن النبي بنحو حديثهم.';
+		const record = parseHadithPayload({ id: 11634,
+			matn: `${visible} <متن_مخفي ربط="2000681" نص="متن آخر مخفي`,
+			post_isnad_html: 'متن آخر مخفي' }, { sourceSlug: 'b-2' });
+		expect(record.comparisonText).toBe(visible);
+		expect(record.bodyStart).toBeNull();
+		expect(parseHadithPayload({ id: 1, matn: 'نص="متن غير صالح"' }).comparisonText).toBe('');
+	});
+
 	test('parses Gharib al-Hadith terms and their source definitions', () => {
 		expect(parseGharib([{ id: 12, term: 'أبعد', matched_text: 'أَبْعَدَ', lexicon: 'غريب الحديث', definitions: [
 			{ book: 'النهاية في غريب الحديث', content: 'أي ذهب إلى مكان بعيد.' }

@@ -16,8 +16,9 @@ async function main() {
 	const slug = option('--book');
 	const bookId = Number(String(slug || '').replace(/^b-/, ''));
 	const config = HDITH_LOCAL_BOOKS[bookId];
-	if (!config || !/^b-\d+$/.test(slug || '')) throw new Error('Usage: repair-hdith-sharh.js --book b-N [--apply] [--include-explanations] [--source-ids FILE] [--report FILE]');
+	if (!config || !/^b-\d+$/.test(slug || '')) throw new Error('Usage: repair-hdith-sharh.js --book b-N [--apply] [--missing-only] [--serialize-writes] [--include-explanations] [--source-ids FILE] [--report FILE]');
 	const apply = process.argv.includes('--apply');
+	const missingOnly = process.argv.includes('--missing-only');
 	const services = process.argv.includes('--include-explanations') ? [6, 12] : [6];
 	const reportFile = option('--report') || path.join(CACHE_DIR, `${slug}-sharh-audit.json`);
 	fs.mkdirSync(path.dirname(reportFile), { recursive: true });
@@ -36,7 +37,7 @@ async function main() {
 			for (const id of new Set(ids)) if (!mapped.has(id)) rows.push({ id: null, num: null, source_entry_id: id });
 		}
 		const stored = await query(`SELECT hs.* FROM hdith_hadith_sharh hs JOIN hadiths h ON h.id=hs.hadith_id WHERE h.bookId=?`, [config.bookId]);
-		const report = { sourceBookSlug: slug, services, mappedCount, checked: 0, withSharh: 0, sourceItems: 0, changed: [], failures: [], records: [] };
+		const report = { sourceBookSlug: slug, services, mappedCount, checked: 0, withSharh: 0, sourceItems: 0, needsRepair: [], changed: [], failures: [], records: [] };
 		const downloaded = new Map();
 		let cursor = 0;
 		// Bound simultaneous requests. Only downloads run concurrently; writes are serial.
@@ -49,6 +50,13 @@ async function main() {
 					report.checked++;
 					if (items.length) report.withSharh++;
 					report.sourceItems += items.length;
+					if (row.id) {
+						const existing = stored.filter(item => item.hadith_id === row.id);
+						const missing = items.filter(item => !existing.some(old => Number(old.source_entry_id) === item.sourceEntryId));
+						const different = items.filter(item => existing.some(old => Number(old.source_entry_id) === item.sourceEntryId && old.text !== item.text));
+						if (missing.length || different.length) report.needsRepair.push({ hadithId: row.id, localReference: row.num,
+							missingEntryIds: missing.map(item => item.sourceEntryId), differentEntryIds: different.map(item => item.sourceEntryId) });
+					}
 					report.records.push({ hadithId: row.id, localReference: row.num, sourceEntryId: row.source_entry_id,
 						entryIds: items.map(item => item.sourceEntryId) });
 				} catch (error) { report.failures.push({ hadithId: row.id, sourceEntryId: row.source_entry_id, error: error.message }); }
@@ -69,10 +77,19 @@ async function main() {
 				const items = downloaded.get(row.source_entry_id);
 				const existing = stored.filter(item => item.hadith_id === row.id);
 				// Never delete existing authored material based on an empty response.
-				if (!items.length || items.every(item => existing.some(old => old.source_entry_id === item.sourceEntryId && old.text === item.text))) continue;
-				await query('START TRANSACTION');
-				try { await replaceSharh(connection, row.id, items, services); await query('COMMIT'); }
-				catch (error) { await query('ROLLBACK'); throw error; }
+				if (!items.length || items.every(item => existing.some(old => old.source_entry_id === item.sourceEntryId && (missingOnly || old.text === item.text)))) continue;
+				let writeLock = false;
+				try {
+					if (process.argv.includes('--serialize-writes')) {
+						if (Number((await query("SELECT GET_LOCK('hdith-enrichment-write', 120) acquired"))[0].acquired) !== 1)
+							throw new Error('Timed out waiting for enrichment write lock.');
+						writeLock = true;
+					}
+					await query('START TRANSACTION');
+					await replaceSharh(connection, row.id, items, services, { preserveExisting: missingOnly });
+					await query('COMMIT');
+				} catch (error) { await query('ROLLBACK'); throw error; }
+				finally { if (writeLock) await query("SELECT RELEASE_LOCK('hdith-enrichment-write')"); }
 				report.changed.push(row.id);
 				pendingIndex.add(row.id);
 				fs.writeFileSync(pendingFile, JSON.stringify([...pendingIndex]));
