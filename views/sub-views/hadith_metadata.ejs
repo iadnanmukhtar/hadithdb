@@ -88,6 +88,7 @@
 		</section>
 		<% } %>
 
+		<%- include('hadith_also_found.ejs', { i: i, metadataBase: metadataBase }); %>
 		<% if (site.editMode || (i.similar && i.similar.length)) { %>
 		<section class="hadith-metadata-section hadith-mushabihah-section mt-4" id="<%= metadataBase %>-mushabihah" data-toc-heading-target data-toc-heading-key="mushabihah">
 			<heading class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Similar Hadiths</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">أحاديث مشابهة</h3></heading>

@@ -15,6 +15,7 @@
 		{ key: 'isnad', label: 'Chain of Narrators', count: railNarrators.length, always: railEditMode },
 		{ key: 'sharh', label: 'Explanations', count: railSharh.filter(entry => railEditMode || entry.text || entry.text_en).length, always: railEditMode },
 		{ key: 'gharib', label: 'Definitions', count: railGharib.length },
+		{ key: 'also-found', label: 'Also found in', count: Array.isArray(i.virtualReferences) ? i.virtualReferences.length : 0 },
 		{ key: 'mushabihah', label: 'Similar Hadiths', count: Array.isArray(i.similar) ? i.similar.length : 0, always: railEditMode }
 	]).filter(group => group.always || group.count);
 	const railInitialKey = railGroups.length ? railGroups[0].key : '';

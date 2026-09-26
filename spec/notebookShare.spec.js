@@ -78,7 +78,7 @@ test('public authors come from verified identity, with no email or editable body
   let shared = await Shares.read(token);
   expect(shared.author).toEqual({ name: 'Amina أحمد', photo: 'https://example.com/avatar.png' });
   const html = await (await request('/notebook/shared/' + token, 'GET', null)).text();
-  expect(html).toContain('Amina أحمد'); expect(html).toContain('https://example.com/avatar.png');
+  expect(html).toContain('Amina أحمد'); expect(html).not.toContain('https://example.com/avatar.png');
   for (const hidden of ['alice@private.test', 'Forged author', 'evil.test', 'Read-only']) expect(html).not.toContain(hidden);
   await Shares.rememberAuthor({ uid: 'alice', name: 'Updated Author', photo: 'javascript:alert(1)' });
   shared = await Shares.read(token); expect(shared.author).toEqual({ name: 'Updated Author', photo: null });
@@ -197,7 +197,7 @@ test('owner controls save before publishing, copy the link, revoke it and clear 
     await guest.route('https://example.com/avatar.png', route => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#d4a72c"/><circle cx="20" cy="14" r="7" fill="#fff8db"/><path d="M6 40v-6a14 14 0 0128 0v6" fill="#fff8db"/></svg>' }));
     await guest.goto(url);
     expect(await guest.locator('.shared-note-author-name').textContent()).toBe('Amina أحمد');
-    expect(await guest.locator('.shared-note-profile-image').getAttribute('style')).toContain('https://example.com/avatar.png');
+    expect(await guest.locator('.shared-note-profile-image').count()).toBe(0);
     expect(await guest.locator('article').textContent()).toContain('العربية');
     expect(await guest.locator('textarea, button, [contenteditable]').count()).toBe(0);
     expect(await guest.locator('input').count()).toBe(1);

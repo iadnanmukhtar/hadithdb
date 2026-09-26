@@ -7596,6 +7596,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 }
 
 .h:lang(en),
+.hadith-also-found-reference:lang(en),
 .intro:lang(en),
 .heading-intro:lang(en) {
 	font-size: var(--content-size-meta);

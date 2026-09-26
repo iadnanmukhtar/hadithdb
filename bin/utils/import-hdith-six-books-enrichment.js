@@ -33,7 +33,7 @@ const SIX_BOOKS = Object.freeze([
 const FOLLOWUP_BOOKS = Object.freeze([
 	{ sourceSlug: 'b-7', bookId: 7, alias: 'malik' },
 	{ sourceSlug: 'b-9', bookId: 9, alias: 'darimi' },
-	{ sourceSlug: 'b-18', bookId: 18, alias: 'daraqutni' },
+	{ sourceSlug: 'b-18', bookId: 18, alias: 'daraqutni', commentaryServices: [6, 12] },
 	{ sourceSlug: 'b-10', bookId: 11, alias: 'ibnhibban' },
 	{ sourceSlug: 'b-11', bookId: 17, alias: 'ibnkhuzaymah' },
 	{ sourceSlug: 'b-13', bookId: 34, alias: 'tabarani-awsat' },
@@ -66,7 +66,7 @@ const HDITH_LOCAL_BOOKS = Object.freeze({
 	15: { bookId: 31, alias: 'ibnabishaybah', title: 'مصنف ابن أبي شيبة', referenceMode: 'exact' },
 	16: { bookId: 30, alias: 'abdalrazzaq', title: 'مصنف عبد الرزاق', referenceMode: 'exact' },
 	17: { bookId: 14, alias: 'bayhaqi', title: 'سنن البيهقي الكبرى', referenceMode: 'exact' },
-	18: { bookId: 18, alias: 'daraqutni', title: 'سنن الدارقطني', referenceMode: 'exact' },
+	18: { bookId: 18, alias: 'daraqutni', title: 'سنن الدارقطني', referenceMode: 'exact', commentaryServices: [6, 12] },
 	19: { bookId: 16, alias: 'bazzar', title: 'مسند البزار', referenceMode: 'exact' },
 	21: { bookId: 35, alias: 'tayalisi', title: 'مسند الطيالسي', referenceMode: 'exact' },
 	22: { bookId: 13, alias: 'nasai-kubra', title: 'السنن الكبرى للنسائي', referenceMode: 'exact' },
@@ -276,7 +276,7 @@ async function scrapeBook(page, config) {
 					if (indexedHadithId) await queueEnrichedHadithIndex(indexedHadithId);
 				}
 				else {
-					if (record.sharhPreview.length) await fetchSharh(page, config, record.sourceId);
+					await fetchSharh(page, config, record.sourceId);
 					if (record.verificationUrl && !ignoresExternalGrades(config))
 						await fetchGraderOpinions(page, record.verificationUrl, config, record.num);
 				}
@@ -356,13 +356,18 @@ function parseHadithPayload(hadith, config = {}) {
 	const chapterPath = hadith.chapter_path || [];
 	const editionReference = parseEditionReference(hadith.numberings, config.sourceSlug);
 	const narrator = parsePrimaryNarrator(hadith);
+	// A few source records expose broken internal XML as their parsed matn.
+	// Keep the original payload checksum, but never copy that markup into text.
+	const matn = /(?:نوع|ربط|نص)\s*=\s*["']|<متن(?:\s|>)/u.test(String(hadith.matn || '')) ? null : compact(hadith.matn) || null;
 	return {
 		sourceId: Number(hadith.id),
 		num: compact(hadith.numbering_harf || hadith.numberings?.[0]?.value),
 		editionReference: editionReference.value,
 		editionReferenceRepeated: editionReference.repeated,
 		chapterId: Number(chapterPath[0]?.id),
-		isIntro: !!hadith.is_intro || hadith.entry_kind === 'intro',
+		// Some numbered reports (including scholarly discussions) carry is_intro
+		// while explicitly being hadith entries. Prefer the explicit entry kind.
+		isIntro: hadith.entry_kind === 'hadith' ? false : !!hadith.is_intro || hadith.entry_kind === 'intro',
 		nextId: Number(hadith.next_id) || null,
 		attribution: compact(hadith.attribution) || null,
 		chainType: compact(hadith.chain_type) || null,
@@ -376,8 +381,10 @@ function parseHadithPayload(hadith, config = {}) {
 		links: parseLinks(hadith),
 		sharhPreview: (hadith.services || []).find(service => Number(service.type_id) === 6)?.items || [],
 		verificationUrl: compact(hadith._verification_url) || null,
-		bodyStart: compact(hadith.matn) || null,
-		comparisonText: compact([hadith.isnad_prefix, hadith.matn].filter(Boolean).join(' ')),
+		// Unparsed scholarly reports put the entire report (sometimes including
+		// headings and numbering) in matn. It is comparison evidence, not a split hint.
+		bodyStart: hadith.is_intro && !compact(hadith.isnad_prefix) ? null : matn,
+		comparisonText: compact([hadith.isnad_prefix, matn].filter(Boolean).join(' ')),
 		rawChecksum: checksum(hadith)
 	};
 }
@@ -531,6 +538,9 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 	if (localRows.length !== 1) throw new Error(`${config.alias}:${record.num}: expected one local hadith, found ${localRows.length}.`);
 	const hadithId = localRows[0].id;
 	const localReference = localRows[0].num;
+	// Preview arrays may be absent or truncated. The dedicated service is the
+	// authoritative list, including when its response is explicitly empty.
+	const sharh = await fetchSharh(page, config, record.sourceId);
 	if (narratorCorrectionCache === null) {
 		narratorCorrectionCache = new Map((await query(connection, `SELECT source_slug, name_tashkil, name_ala_lc FROM hdith_narrators
 			WHERE NULLIF(name_tashkil, '') IS NOT NULL`)).map(row => [row.source_slug, row]));
@@ -541,7 +551,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 		record.narratorEn = narratorCorrection.name_ala_lc || record.narratorEn;
 	}
 	await correctLocalChainBodySplit(connection, hadithId, record.bodyStart, { replaceBodyFromSource: config.sourceSlug === 'b-8' });
-	await query(connection, 'UPDATE hadiths SET body_start=? WHERE id=? AND NOT (body_start <=> ?)',
+	if (record.bodyStart) await query(connection, 'UPDATE hadiths SET body_start=? WHERE id=? AND NOT (body_start <=> ?)',
 		[record.bodyStart, hadithId, record.bodyStart]);
 	if (!refresh) {
 		const existing = await query(connection, 'SELECT source_checksum, source_reference, source_edition_reference, chain_type, narrator, narrator_en, source_isnad_html, gharib_json FROM hdith_hadith_metadata WHERE hadith_id=? LIMIT 1', [hadithId]);
@@ -555,6 +565,8 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 				(SELECT COUNT(*) FROM hdith_hadith_grades WHERE hadith_id=? AND source_slug LIKE 'collection-%') collection_grades`,
 				[hadithId, hadithId, hadithId, hadithId, hadithId]))[0];
 			const gharibJson = record.gharib.length ? JSON.stringify(record.gharib) : null;
+			const storedSharh = await query(connection,
+				'SELECT source_entry_id, text FROM hdith_hadith_sharh WHERE hadith_id=?', [hadithId]);
 			if (existing[0]?.source_reference !== record.num || existing[0]?.source_edition_reference !== record.editionReference
 				|| existing[0]?.chain_type !== record.chainType
 				|| existing[0]?.narrator !== record.narrator || existing[0]?.narrator_en !== record.narratorEn
@@ -565,7 +577,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 			const dependentRowsComplete = Number(stored.narrators) >= (record.narrators || []).length
 				&& Number(stored.subjects) >= (record.subjects || []).length
 				&& Number(stored.links) >= (record.links || []).length
-				&& (!(record.sharhPreview || []).length || Number(stored.sharh) > 0)
+				&& sharhEntriesComplete(storedSharh, sharh)
 				&& Number(stored.collection_grades) >= expectedCollectionGrades;
 			if (dependentRowsComplete) {
 				await upsertSourceReferenceMap(connection, config, record, hadithId, localReference, orderedMatch);
@@ -576,7 +588,6 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 			}
 		}
 	}
-	const sharh = record.sharhPreview.length ? await fetchSharh(page, config, record.sourceId) : [];
 	const externalGraderOpinions = record.verificationUrl && !ignoresExternalGrades(config)
 		? await fetchGraderOpinions(page, record.verificationUrl, config, record.num) : [];
 	const graderOpinions = ignoresExternalGrades(config) ? []
@@ -598,7 +609,7 @@ async function applyRecord(page, config, record, orderedMatch, runtimeOptions = 
 		await replaceSubjects(connection, hadithId, record.subjects);
 		await replaceLinks(connection, hadithId, record.links);
 		await resolveAndConfirmSimilarLinks(connection, hadithId, Number(config.sourceSlug.replace(/^b-/, '')), record.sourceId);
-		await replaceSharh(connection, hadithId, sharh);
+		await replaceSharh(connection, hadithId, sharh, config.commentaryServices);
 		await replaceGraderOpinions(connection, hadithId, graderOpinions);
 		await backfillLegacyGradeFromOpinions(connection, hadithId);
 		await promoteColoredGradeForMissingLegacy(connection, hadithId);
@@ -1337,13 +1348,47 @@ async function enrichSingleHadith({ sourceBookId, sourceEntryId, localHadithId, 
 	}
 }
 
-async function enrichHadithMatches(matches) {
+function editionReferencesEquivalent(sourceSlug, localReference, sourceReference) {
+	// Edition parts such as "142 / 1" correspond to "142a", not hadith 1.
+	const source = String(sourceReference || '').replace(/[٠-٩]/g, digit => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit))).trim();
+	const part = source.match(/^(\d+)\s*\/\s*(\d+)$/);
+	if (part) {
+		const index = Number(part[2]);
+		return index >= 1 && index <= 26 && String(localReference).toLowerCase() === `${Number(part[1])}${String.fromCharCode(96 + index)}`;
+	}
+	return referencesEquivalent(sourceSlug, localReference, sourceReference);
+}
+
+function fullRecordMatchScore(record, local, sourceSlug) {
+	const sourceText = normalizeHadithForComparison(record.comparisonText);
+	const localText = normalizeHadithForComparison([local.chain, local.body].filter(Boolean).join(' '));
+	let score = hadithPrefixSimilarity(sourceText, localText);
+	if (editionReferencesEquivalent(sourceSlug, local.num, record.editionReference || record.num) && record.bodyStart) {
+		score = Math.max(score, hadithPrefixSimilarity(record.bodyStart, local.body));
+		const matn = normalizeHadithForComparison(record.bodyStart);
+		// Older local imports sometimes split a matn into chain/body or join
+		// adjacent words. Confirm a substantial verbatim matn across that split;
+		// do not lower the fuzzy-match threshold or rewrite the stored text.
+		if (matn.split(' ').length >= 8 && matn.length >= 40
+			&& localText.replace(/\s/g, '').includes(matn.replace(/\s/g, '')))
+			score = 1;
+	}
+	return score;
+}
+
+function reviewedIdentityIsCurrent(match, record, local) {
+	const review = match.review;
+	return !!review?.reason && review.sourceChecksum === record.rawChecksum
+		&& review.localChecksum === checksum({ id: local.id, num: local.num, chain: local.chain, body: local.body });
+}
+
+async function enrichHadithMatches(matches, runtimeOptions = {}) {
 	if (!Array.isArray(matches) || !matches.length) return { applied: [], rejected: [] };
 	let browser;
 	const applied = [];
 	const rejected = [];
 	try {
-		await ensureSchema();
+		if (!runtimeOptions.skipSchema) await ensureSchema();
 		browser = await startLightpanda();
 		const page = await browser.context.newPage();
 		for (const match of matches) {
@@ -1354,14 +1399,21 @@ async function enrichHadithMatches(matches) {
 			const local = (await query(await getConnection(), 'SELECT id,num,chain,body FROM hadiths WHERE id=? AND bookId=? LIMIT 1',
 				[Number(match.localHadithId), mapped.bookId]))[0];
 			if (!local) { rejected.push({ ...match, reason: 'local hadith missing' }); continue; }
+			if (runtimeOptions.gapsOnly) {
+				const existing = await query(await getConnection(), `SELECT hadith_id FROM hdith_hadith_metadata
+					WHERE hadith_id=? OR (source_book_slug=? AND source_entry_id=?) LIMIT 1`,
+					[local.id, config.sourceSlug, Number(match.sourceEntryId)]);
+				const mappedSource = await query(await getConnection(), `SELECT local_hadith_id FROM hdith_book_reference_crosswalk
+					WHERE source_book_id=? AND source_entry_id=? AND local_hadith_id<>? LIMIT 1`,
+					[sourceBookId, Number(match.sourceEntryId), local.id]);
+				if (existing.length || mappedSource.length) {
+					rejected.push({ ...match, reason: 'local or source already enriched' }); continue;
+				}
+			}
 			const record = await loadRecord(page, config, Number(match.sourceEntryId));
-			const sourceText = normalizeHadithForComparison(record.comparisonText);
-			const localText = normalizeHadithForComparison([local.chain, local.body].filter(Boolean).join(' '));
-			let score = hadithPrefixSimilarity(sourceText, localText);
-			if (referencesEquivalent(record.editionReference || record.num, local.num, config.sourceSlug) && record.bodyStart)
-				score = Math.max(score, hadithPrefixSimilarity(record.bodyStart, local.body));
+			const score = fullRecordMatchScore(record, local, config.sourceSlug);
 			const minimumScore = config.sourceSlug === 'b-24' ? 0.80 : 0.90;
-			if (score < minimumScore) {
+			if (score < minimumScore && !(runtimeOptions.allowReviewed && reviewedIdentityIsCurrent(match, record, local))) {
 				rejected.push({ ...match, sourceReference: record.num, localReference: local.num, score, reason: 'full-text confirmation failed' });
 				compressCachedRecord(config, record.sourceId);
 				continue;
@@ -1370,6 +1422,7 @@ async function enrichHadithMatches(matches) {
 			await queueEnrichedHadithIndex(local.id);
 			compressCachedRecord(config, record.sourceId);
 			applied.push({ ...match, sourceReference: record.num, localReference: local.num, score });
+			if (runtimeOptions.onApplied) await runtimeOptions.onApplied(applied[applied.length - 1]);
 		}
 		await flushEnrichedHadithIndex();
 		return { applied, rejected };
@@ -1380,8 +1433,19 @@ async function enrichHadithMatches(matches) {
 }
 
 async function fetchSharh(page, config, sourceId) {
-	const props = await fetchProps(page, `/encyclopedia/book/${config.sourceSlug}/h/${sourceId}/service/6`,
-		path.join(CACHE_DIR, config.sourceSlug, '_sharh', `${sourceId}.json.gz`));
+	const services = config.commentaryServices || [6];
+	if (services.some(type => ![6, 12].includes(type))) throw new Error('Unsupported commentary service.');
+	const allItems = [];
+	for (const type of services) allItems.push(...await fetchCommentaryService(page, config, sourceId, type));
+	return dedupeSharhItems(allItems);
+}
+
+async function fetchCommentaryService(page, config, sourceId, type) {
+	const props = await fetchProps(page, `/encyclopedia/book/${config.sourceSlug}/h/${sourceId}/service/${type}`,
+		path.join(CACHE_DIR, config.sourceSlug, type === 6 ? '_sharh' : `_commentary-${type}`, `${sourceId}.json.gz`));
+	if (Number(props.service?.type_id) !== type || !Array.isArray(props.items)
+		|| Number(props.hadith?.id) !== Number(sourceId) || props.hadith?.book?.slug !== config.sourceSlug)
+		throw new Error(`${config.sourceSlug}/h/${sourceId}: invalid sharh service response.`);
 	const items = props.items || [];
 	const authors = new Map();
 	for (const item of items) {
@@ -1391,8 +1455,13 @@ async function fetchSharh(page, config, sourceId) {
 		sourceEntryId: Number(item.entry_id), sourceBookId: Number(item.book_id), title: compact(item.book),
 		author: authors.get(item.book_id), chapter: compact(item.chapter) || null, page: Number(item.page_num) || null,
 		text: sharhToMarkdown(item.content), format: 'md',
-		sourceUrl: `${BASE_URL}/encyclopedia/book/${config.sourceSlug}/h/${sourceId}/service/6`
+		sourceUrl: `${BASE_URL}/encyclopedia/book/${config.sourceSlug}/h/${sourceId}/service/${type}`
 	})).filter(item => item.sourceEntryId && item.text));
+}
+
+function sharhEntriesComplete(stored, expected) {
+	const byEntry = new Map(stored.map(item => [Number(item.source_entry_id), item]));
+	return expected.every(item => byEntry.get(Number(item.sourceEntryId))?.text === item.text);
 }
 
 function dedupeSharhItems(items) {
@@ -1424,12 +1493,14 @@ async function sourceBookAuthor(page, bookId) {
 	return author;
 }
 
-async function replaceSharh(connection, hadithId, items) {
+async function replaceSharh(connection, hadithId, items, services = [6]) {
 	const existingEntries = new Map((await query(connection, 'SELECT source_entry_id, ordinal, text_en, title, title_en FROM hdith_hadith_sharh WHERE hadith_id=?', [hadithId]))
 		.map(row => [Number(row.source_entry_id), row]));
+	if (services.some(type => ![6, 12].includes(type))) throw new Error('Unsupported commentary service.');
 	await query(connection, `DELETE hs FROM hdith_hadith_sharh hs
 		JOIN hdith_sharh_sources ss ON ss.id=hs.source_id
-		WHERE hs.hadith_id=? AND ss.source_book_id>0`, [hadithId]);
+		WHERE hs.hadith_id=? AND ss.source_book_id>0 AND (${services.map(() => 'hs.source_url LIKE ?').join(' OR ')})`,
+		[hadithId, ...services.map(type => `${BASE_URL}/encyclopedia/book/%/service/${type}`)]);
 	for (const [itemIndex, item] of items.entries()) {
 		let sourceId = sharhSourceIdCache.get(item.sourceBookId);
 		if (!sourceId) {
@@ -1845,5 +1916,5 @@ if (require.main === module) main();
 module.exports = {
 	CACHE_DIR, FOLLOWUP_BOOKS, HDITH_GRADE_COLORS, HDITH_LOCAL_BOOKS, MIN_REQUEST_DELAY_MS, SIX_BOOKS, SUPPORTED_BOOKS, compressCachedRecord, createOrderedTextMatcher, dedupeSharhItems, fetchProps, firstHadithId, loadRecord, normalizeArabicForMatch, parseCollectionGrades, parseEditionReference, parseGharib, parseGraderOpinions, parseHadithPayload, parseLinks,
 	correctLocalChainBodySplit, hadithPrefixSimilarity, hadithTextSimilarity, ignoresExternalGrades, isSourceNotFoundError, localHadithOrderClause, normalizeHadithForComparison, normalizedArabicTokensWithOffsets, parseNarrators, parsePageNarrator, parsePrimaryNarrator, parseSourceIsnadHtml, proposedBodyFootnoteSplit, proposedChainBodySplit, readOptions, referenceBase, referencesEquivalent,
-	enrichHadithMatches, enrichSingleHadith, legacyGradeForOpinion, preferredColoredGradeOpinion, preferredLegacyOpinion, promoteColoredGradeForMissingLegacy, resolveLinkTarget, schemaStatements, sharhToMarkdown, sourceSlugForVerificationResult, startLightpanda
+	editionReferencesEquivalent, enrichHadithMatches, enrichSingleHadith, fetchSharh, fullRecordMatchScore, legacyGradeForOpinion, preferredColoredGradeOpinion, preferredLegacyOpinion, promoteColoredGradeForMissingLegacy, replaceSharh, resolveLinkTarget, reviewedIdentityIsCurrent, schemaStatements, sharhEntriesComplete, sharhToMarkdown, sourceSlugForVerificationResult, startLightpanda
 };

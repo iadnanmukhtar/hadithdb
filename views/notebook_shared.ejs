@@ -56,6 +56,11 @@
     <header>
       <p>Hadith Unlocked · Shared note</p>
       <h1 dir="auto"><%= note ? note.title : 'Shared note unavailable' %></h1>
+      <% if (note && note.author) { %>
+        <div class="shared-note-author" aria-label="Note taker">
+          <span class="shared-note-author-name" dir="auto"><%= note.author.name %></span>
+        </div>
+      <% } %>
     </header>
     <% if (unavailable) { %><p><%= message %></p><% } else { %>
       <div<% if (note.outline.length) { %> class="shared-note-layout"<% } %>>

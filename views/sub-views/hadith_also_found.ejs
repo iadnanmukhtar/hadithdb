@@ -1,0 +1,26 @@
+<% if (Array.isArray(i.virtualReferences) && i.virtualReferences.length) { %>
+<section class="hadith-metadata-section hadith-also-found-section mt-4" id="<%= metadataBase %>-also-found" data-toc-heading-target data-toc-heading-key="also-found">
+	<heading class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Also found in</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">ورد أيضًا في</h3></heading>
+	<ul class="list-unstyled mb-0" dir="ltr">
+		<% i.virtualReferences.forEach(function (ref) { %>
+		<li class="py-2 border-bottom text-start">
+			<div class="row">
+				<div class="col-md-6 col-sm-12" lang="en" dir="ltr"><a class="hadith-also-found-reference fw-bold" href="<%= utils.urlFor(req, '/' + ref.referencePath) %>"><%= ref.book_alias %>:<%= ref.num %></a></div>
+				<% if (ref.book_shortName) { %><div class="col-md-6 col-sm-12 text-end" lang="ar" dir="rtl"><a class="hadith-also-found-reference fw-bold" href="<%= utils.urlFor(req, '/' + ref.referencePath) %>"><%= ref.book_shortName %>:<bdi><%= ref.num_ar %></bdi></a></div><% } %>
+			</div>
+			<div class="row small mt-1">
+				<div class="col-md-6 col-sm-12" lang="en">
+					<a href="<%= utils.urlFor(req, '/' + ref.book_alias + '/' + utils.formatHadithHeadingNumber(String(ref.h1 ?? ''))) %>"><%= ref.h1_title_en || `Chapter ${utils.formatHadithHeadingNumber(String(ref.h1 ?? ''))}` %></a>
+					<% if (ref.h2_title_en || Number(ref.h2)) { %><span aria-hidden="true"> › </span><a href="<%= utils.urlFor(req, '/' + ref.path) %>"><%= ref.h2_title_en || `Section ${utils.formatHadithHeadingNumber(String(ref.h2 ?? ''))}` %></a><% } %>
+				</div>
+				<% if (ref.h1_title || ref.h2_title) { %><div class="col-md-6 col-sm-12 text-end" lang="ar" dir="rtl">
+					<% if (ref.h1_title) { %><a href="<%= utils.urlFor(req, '/' + ref.book_alias + '/' + utils.formatHadithHeadingNumber(String(ref.h1 ?? ''))) %>"><%= ref.h1_title %></a><% } %>
+					<% if (ref.h1_title && ref.h2_title) { %><span aria-hidden="true"> › </span><% } %>
+					<% if (ref.h2_title) { %><a href="<%= utils.urlFor(req, '/' + ref.path) %>"><%= ref.h2_title %></a><% } %>
+				</div><% } %>
+			</div>
+		</li>
+		<% }); %>
+	</ul>
+</section>
+<% } %>
