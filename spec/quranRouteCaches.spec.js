@@ -201,9 +201,9 @@ describe('restored Quran public route caches', () => {
       editMode: false
     };
     const res = response();
-    jest.spyOn(Utils, 'htmlCacheFile').mockReturnValue('/cache/_quran_translations_quran:1:1.html');
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/translations/_quran_translations_quran:1:1.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
-    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue('/cache/_quran_translations_quran:1:1.html.gz');
+    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${cachedFile}.gz`);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
     jest.spyOn(Index, 'docsFromQueryString');
 
@@ -212,7 +212,7 @@ describe('restored Quran public route caches', () => {
     expect(Utils.sendCachedHtml).toHaveBeenCalledWith(
       res,
       req,
-      '/cache/_quran_translations_quran:1:1.html',
+      cachedFile,
       'text/html; charset=UTF-8'
     );
     expect(Index.docsFromQueryString).not.toHaveBeenCalled();
@@ -225,7 +225,7 @@ describe('restored Quran public route caches', () => {
     const res = response();
     const chapter = { getSections: jest.fn().mockResolvedValue([]) };
     const section = { getChapter: jest.fn().mockResolvedValue(chapter) };
-    jest.spyOn(Utils, 'htmlCacheFile').mockReturnValue('/cache/_quran_translations_quran:1:1.html');
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/translations/_quran_translations_quran:1:1.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(null);
     jest.spyOn(Utils, 'diskCacheEnabled').mockReturnValue(true);
@@ -248,10 +248,10 @@ describe('restored Quran public route caches', () => {
 
     await routeHandler(router, '/:ref')(req, res, jest.fn());
 
-    expect(Utils.writeCachedHtml).toHaveBeenCalledWith('/cache/_quran_translations_quran:1:1.html', '<html>all translations</html>');
+    expect(Utils.writeCachedHtml).toHaveBeenCalledWith(cachedFile, '<html>all translations</html>');
     expect(Utils.indexCachedItem).toHaveBeenCalledWith(
       expect.arrayContaining(['quran:1:1', 'quran:surah:1', 'translations:quran:1:1']),
-      '/cache/_quran_translations_quran:1:1.html'
+      cachedFile
     );
   });
 

@@ -73,7 +73,12 @@ router.get('/:ref', async function (req, res, next) {
     return res.redirect(302, canonicalTranslationUrl(req, surah.num, ayahNum));
 
   const editMode = req.admin && req.editMode;
-  const cachedFile = Utils.htmlCacheFile(req, { includeBaseUrl: true });
+  const cachedFile = Utils.cacheFileFromFilename(
+    Utils.cacheReqToFilename(req, { includeBaseUrl: true }),
+    'html',
+    'translations',
+    'quran'
+  );
   const flushCache = Utils.shouldFlushCache(req);
   if (flushCache) {
     invalidateQuranMemoryCaches();
