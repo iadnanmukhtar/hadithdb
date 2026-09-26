@@ -98,6 +98,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-outline-items button:focus-visible { outline: 2px solid var(--note-edge); outline-offset: -2px; }
 #notebook-outline-items .notebook-outline-arabic { font-family: NotebookKitab, Kitab, Quran, serif; font-size: 1.2em; line-height: 2; }
 @media (max-width: 767.98px) {
+  #notebook-fullscreen { display: none; }
   #notebook-modal .modal-fullscreen .modal-body { flex-direction: column; }
   #notebook-outline { flex: 0 0 auto; max-height: 22dvh; border-inline-end: 0; border-bottom: 1px solid var(--note-edge); padding: 0 0 .5rem; margin: 0 0 .5rem; }
 }

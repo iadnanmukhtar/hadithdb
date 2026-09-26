@@ -2,6 +2,9 @@
 @font-face { font-family: NotebookKitab; font-style: normal; font-weight: 700; src: url('/static/fonts/kitab-base-b.woff2'); }
 .notebook-markdown { overflow-wrap: anywhere; text-align: start; }
 .notebook-markdown .footnotes-list { list-style-type: decimal; }
+/* Each item chooses its own direction; reserve marker space on that side. */
+.notebook-markdown :is(ul, ol) { padding-inline: 0; }
+.notebook-markdown li { margin-inline-start: 1.6em; }
 .notebook-markdown :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; }
 .notebook-markdown > :first-child { margin-top: 0; }
 .notebook-markdown h1 { font-size: 1.4em; }
@@ -21,8 +24,11 @@
 .notebook-markdown .notebook-arabic .notebook-arabic { font-size: inherit; }
 /* Kitab lacks U+0305; use a face that shapes Arabic and its overline together. */
 .notebook-markdown [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
-.notebook-markdown blockquote { margin-block: 1rem; }
-.notebook-markdown blockquote > p { border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; }
+.notebook-markdown blockquote { margin: 1rem 0; border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; }
+.notebook-markdown blockquote:has(> :first-child:dir(rtl)),
+.notebook-markdown blockquote:has(> :is(ul, ol):first-child > li:first-child:dir(rtl)) { direction: rtl; }
+.notebook-markdown blockquote > :first-child { margin-top: 0; }
+.notebook-markdown blockquote > :last-child { margin-bottom: 0; }
 .notebook-expand-reference { color: #805d00; margin-inline-start: .3rem; font-size: .85em; }
 .notebook-markdown pre { direction: ltr; text-align: left; overflow: auto; }
 .notebook-markdown img { max-width: 100%; }
