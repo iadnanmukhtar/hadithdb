@@ -43,7 +43,7 @@ describe('browser-ready HTML cache artifacts', () => {
     expect(zlib.gunzipSync(first.body).toString()).toContain('cached page');
 
     const artifact = Utils.browserReadyHtmlArtifact(cachedFile, req);
-    expect(fs.existsSync(artifact.html)).toBe(true);
+    expect(fs.existsSync(artifact.html)).toBe(false);
     expect(fs.existsSync(artifact.gzip)).toBe(true);
 
     const gunzip = jest.spyOn(zlib, 'gunzipSync');
@@ -52,6 +52,30 @@ describe('browser-ready HTML cache artifacts', () => {
     expect(second.encoding).toBe('gzip');
     expect(second.body.equals(fs.readFileSync(artifact.gzip))).toBe(true);
     expect(gunzip).not.toHaveBeenCalled();
+  });
+
+  test('serves clients without gzip from the compressed artifact', () => {
+    Utils.readCachedHtmlResponse(cachedFile, req);
+    req.get = () => '';
+    const readSource = jest.spyOn(Utils, 'readCachedHtml');
+    const response = Utils.readCachedHtmlResponse(cachedFile, req);
+    expect(response.encoding).toBeNull();
+    expect(response.complete).toBe(true);
+    expect(response.body.toString()).toContain('cached page');
+    expect(readSource).not.toHaveBeenCalled();
+    expect(fs.existsSync(Utils.browserReadyHtmlArtifact(cachedFile, req).html)).toBe(false);
+  });
+
+  test('removes an existing original only after successfully writing gzip', () => {
+    const artifact = Utils.browserReadyHtmlArtifact(cachedFile, req);
+    fs.writeFileSync(artifact.html, 'old original');
+    const write = jest.spyOn(Utils, 'writeFileAtomically').mockImplementation(() => { throw new Error('disk full'); });
+    expect(() => Utils.writeBrowserReadyHtmlArtifact(artifact, 'new content')).toThrow('disk full');
+    expect(fs.readFileSync(artifact.html, 'utf8')).toBe('old original');
+    write.mockRestore();
+    Utils.writeBrowserReadyHtmlArtifact(artifact, 'new content');
+    expect(fs.existsSync(artifact.html)).toBe(false);
+    expect(zlib.gunzipSync(fs.readFileSync(artifact.gzip)).toString()).toBe('new content');
   });
 
   test('does not create a shared artifact for admin requests', () => {
