@@ -13568,6 +13568,13 @@ function initReaderInfiniteNavigation(root) {
 			var remoteUrl = remoteMain.getAttribute('data-reader-current-url') || url;
 			if (mode.indexOf('hadith-') === 0)
 				remoteUrl = remoteUrl.replace(/^\/api(?=\/)/, '');
+			var remoteIdentity = normalizeReaderInfiniteUrl(remoteUrl);
+			if (loadedUrls.has(remoteIdentity)) {
+				exhausted = true;
+				nextUrl = '';
+				main.removeAttr('data-reader-next-url');
+				return null;
+			}
 			var remoteContextKey = remoteMain.getAttribute('data-reader-context-key') || '';
 			var chunk = $('<section class="reader-infinite-page" data-reader-infinite-page="1"></section>').attr({
 				'data-reader-mode': mode,
@@ -13586,6 +13593,7 @@ function initReaderInfiniteNavigation(root) {
 			else
 				appendHadithPage(remoteMain, chunk);
 			chunk.insertBefore(status);
+			loadedUrls.add(remoteIdentity);
 			reinitializeChunk(chunk[0]);
 			if (mode.indexOf('hadith-') === 0)
 				scheduleHadithHeadingTocUpdate();
@@ -13624,10 +13632,10 @@ function initReaderInfiniteNavigation(root) {
 					throw new Error('Unable to load next page.');
 				return response.text();
 			}).then(function (html) {
-				appendReaderPage(html, targetUrl);
+				var appended = appendReaderPage(html, targetUrl);
 				loadedUrls.add(normalized);
 				status.text('');
-				return true;
+				return Boolean(appended);
 			}).catch(function (err) {
 				retryAfter = Date.now() + 2500;
 				showInfiniteLoadFailure(status, err && err.message ? err.message : 'Unable to load next page.', targetUrl, 'Open next page');
@@ -13710,6 +13718,8 @@ function normalizeReaderInfiniteUrl(url) {
 	try {
 		var parsed = new URL(url, window.location.origin);
 		parsed.hash = '';
+		parsed.searchParams.delete('flush');
+		parsed.pathname = parsed.pathname.replace(/^\/api(?=\/)/, '');
 		return `${parsed.pathname}${parsed.search}`;
 	} catch (err) {
 		return '';

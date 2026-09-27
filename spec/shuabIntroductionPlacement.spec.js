@@ -3,7 +3,7 @@ const {chapterSections}=require('../lib/HadithIntroductionSections');
 const Index=require('../lib/Index');
 const Navigation=require('../lib/HadithHeadingNavigation');
 afterEach(()=>jest.restoreAllMocks());
-const article={id:170316,book_id:100420,book_alias:'shuab',level:2,h1:0,h2:14,ordinal:904286,h2_count:0,path:'shuab/0/14'};
+const article={id:170316,book_id:100420,book_alias:'shuab',level:2,h1:0,h2:14,ordinal:904286,h1_count:86,h2_count:0,path:'shuab/0/14'};
 const first={...article,id:169896,h2:1,ordinal:904288,h2_count:3,path:'shuab/0/1'};
 const reality={...article,id:169897,h2:2,ordinal:904289,path:'shuab/0/2'};
 test('chapter zero lists Reality of Faith but excludes the authored book article',()=>{
@@ -11,7 +11,7 @@ test('chapter zero lists Reality of Faith but excludes the authored book article
 });
 test('next chapter navigation opens Reality of Faith, not the book introduction',async()=>{
  jest.spyOn(Index,'docsFromQueryString').mockImplementation(async(_index,q)=>{
-  if(q.includes('h2_count:>0'))return [first];
+  if(q==='book_alias:shuab AND level:2')return [article,first,reality];
   if(q.includes('ordinal:<'))return [article];
   if(q.includes('ordinal:>'))return [reality];
   return [];
