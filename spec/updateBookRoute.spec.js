@@ -50,6 +50,28 @@ describe('book update route', () => {
     delete global.query;
   });
 
+  test('refreshes the snapshot, collection caches and both source search records after replacement', async () => {
+    const Editing = require('../lib/VirtualHadithEditing');
+    const Index = require('../lib/Index');
+    const { Library } = require('../lib/Model');
+    jest.spyOn(Library, 'instance', 'get').mockReturnValue({ findBook: () => ({}) });
+    jest.spyOn(Library, 'reloadBooks').mockResolvedValue();
+    jest.spyOn(Editing, 'selectHadith').mockResolvedValue({ bookId: 61, alias: 'riyad', hadithIds: [100,200] });
+    jest.spyOn(Index, 'update').mockResolvedValue();
+    global.query = jest.fn(async sql => {
+      const match = sql.match(/WHERE hId=(\d+)/);
+      return match ? [{ hId: Number(match[1]), book_id: 1, book_alias: 'bukhari', num: match[1], books: '{riyad}' }] : [];
+    });
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+      await updateHandler()({ body: { value: 200 }, params: { id: '10', prop: 'hadith_virtual.replace_selected' }, user: { uid: 'admin' } }, res, jest.fn());
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(global.query).toHaveBeenCalledWith('CALL refresh_v_hadiths_virtual_snapshot(61)');
+      expect(Utils.flushBookDiskCache).toHaveBeenCalledWith('riyad', { strict: true });
+      expect(RuntimeRefresh.publish).toHaveBeenCalled();
+      expect(Index.update).toHaveBeenCalledTimes(2);
+      expect(Index.update).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ hId: 200, books: '{riyad}' }), { force: true, refresh: true });
+  });
+
   test('accepts the alias Set while invalidating tafsir caches', async () => {
     const book = { id: 100382, alias: 'rida', type: 'tafsir', virtual: 0 };
     global.query = jest.fn(async query => {

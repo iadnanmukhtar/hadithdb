@@ -536,7 +536,10 @@ router.get('/autocomplete/similar-hadiths', searchRequestLimiter, requireSearchA
       ids: [].concat(req.query.exclude || []).flatMap(value => String(value).split(',')),
       refs: [].concat(req.query.exclude_ref || []).flatMap(value => String(value).split(','))
     };
-    var suggestions = await Search.a_similarHadithAutocomplete(q, req.query.limit, exclusions);
+    var suggestions = await Search.a_similarHadithAutocomplete(q, req.query.limit, exclusions, {
+      books: expandShortcutBookFilters(normalizeBookFilterValues([].concat(req.query.b || req.query['b[]'] || []))),
+      grade: req.query.grade
+    });
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'private, no-store');
     res.end(JSON.stringify(suggestions));

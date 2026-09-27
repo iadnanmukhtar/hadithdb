@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const Zip = require('adm-zip');
 const cheerio = require('cheerio');
 const zlib = require('zlib');
+const { cleanTitle } = require('./utils/remove-shuab-heading-numbers');
 const SOURCE = 'temp/shuab/shuab.epub';
 const SOURCE_SHA256 = '13b9d90b031331db484b04541008b2ab3cc49756f7925229ac36a3a1a58386be';
 const norm = s => s.normalize('NFD').replace(/[\u064b-\u065f\u0670ـ\s\p{P}\p{S}]/gu, '');
@@ -34,7 +35,7 @@ function parse() {
   else if(candidates.some(p=>p.page===h.target-7))p=byPage.get(h.target-7);
   else if(['C34','C414'].includes(h.key))p=byPage.get(h.target-7);
   else throw Error('Ambiguous heading '+h.key);
-  return {...h,h1,h2,h3,page:p.page,witness:p.text.slice(0,600),intro:'',sources:[]};
+  return {...h,sourceTitle:h.title,title:h.level===1?cleanTitle(h.title,h1):h.title,h1,h2,h3,page:p.page,witness:p.text.slice(0,600),intro:'',sources:[]};
  });
  for(let i=1;i<headings.length;i++)if(headings[i].page<=headings[i-1].page)throw Error('Heading order '+headings[i].key);
  const start=new Map(headings.map(h=>[h.page,h]));let current=null,last=null;const entries=[];const pageAudit=[];

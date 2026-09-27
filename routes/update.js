@@ -35,6 +35,7 @@ const UserPoints = require('../lib/UserPoints');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
 const VirtualHadithSnapshot = require('../lib/VirtualHadithSnapshot');
+const VirtualHadithEditing = require('../lib/VirtualHadithEditing');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranMushaf = require('../lib/QuranMushaf');
 const RuntimeRefresh = require('../lib/RuntimeRefresh');
@@ -953,6 +954,20 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
     } else if (type == 'hadith_virtual') {
       var result = "";
+      if (['add_selected', 'replace_selected'].includes(col)) {
+        const selected = await VirtualHadithEditing.selectHadith(req.params.id, status.value, col, userId);
+        await global.query(`CALL refresh_v_hadiths_virtual_snapshot(${selected.bookId})`);
+        await Books.touchBookContentLastmodById(selected.bookId);
+        invalidateBookChapterCache({ book_id: selected.bookId });
+        await flushBookCaches(new Set([selected.alias]));
+        await Utils.flushBookDiskCache(selected.alias, { strict: true });
+        for (const hadithId of selected.hadithIds) await runHadithPostUpdateTasks(hadithId, { awaitIndex: true });
+        await Library.reloadBooks();
+        await RuntimeRefresh.publish();
+        status.code = 200;
+        status.message = col === 'replace_selected' ? 'Hadith replaced' : 'Hadith added';
+      } else {
+
 
       if (col == 'del') {
         var curr = (await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`))[0];
@@ -1015,6 +1030,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.code = 200;
       status.message = result.message;
 
+      }
     } else if (type == 'hadiths_sim') {
 
       if (col == 'add') {

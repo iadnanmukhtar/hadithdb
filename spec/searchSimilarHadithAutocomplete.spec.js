@@ -45,3 +45,25 @@ describe('admin similar hadith autocomplete', () => {
 		expect(suggestions[0]).toMatchObject({ id: 456, ref: 'muslim:456', type: 'Hadith' });
 	});
 });
+
+test('collection and grade filters narrow searches, including browsing without text', async () => {
+  global.books = [{ alias: 'bukhari', type: 'hadith' }];
+  Index.docsFromQuery.mockReset().mockResolvedValue([]);
+  await Search.a_similarHadithAutocomplete('', 12, {}, { books: ['bukhari'], grade: '1' });
+  const query = Index.docsFromQuery.mock.calls[0][1];
+  expect(query.bool.must).toEqual({ match_all: {} });
+  expect(query.bool.filter).toContainEqual({ terms: { book_alias: ['bukhari'] } });
+  expect(query.bool.filter).toContainEqual({ term: { grade_id: 1 } });
+});
+
+test('exact references cannot bypass collection or grade filters', async () => {
+  global.books = [{ id: 1, alias: 'bukhari', type: 'hadith', shortName_en: 'Bukhari' }];
+  Index.docsFromQuery.mockReset().mockResolvedValue([]);
+  await Search.a_similarHadithAutocomplete('bukhari:1', 12, {}, { books: ['muslim'], grade: '2' });
+  expect(Index.docsFromQuery).toHaveBeenCalledTimes(2);
+  expect(Index.docsFromQuery.mock.calls[0][1].bool.filter).toContainEqual({ term: { ref: 'bukhari:1' } });
+  for (const [, query] of Index.docsFromQuery.mock.calls) {
+    expect(query.bool.filter).toContainEqual({ terms: { book_alias: ['muslim'] } });
+    expect(query.bool.filter).toContainEqual({ term: { grade_id: 2 } });
+  }
+});

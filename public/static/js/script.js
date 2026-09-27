@@ -1208,6 +1208,27 @@ function setDirection(el) {
 	}
 }
 
+function prepareInlineContentEditor(el) {
+	if (el.getAttribute('contenteditable') === 'true')
+		return;
+	// Activating thousands of editing hosts at load forces repeated browser
+	// layout. Keep keyboard access, and activate before the first interaction.
+	var addedTabIndex = !el.hasAttribute('tabindex');
+	if (addedTabIndex)
+		el.setAttribute('tabindex', '0');
+	var activate = function (event) {
+		if (event.type === 'pointerdown' && event.button !== 0)
+			return;
+		el.setAttribute('contenteditable', 'true');
+		if (addedTabIndex)
+			el.removeAttribute('tabindex');
+		el.removeEventListener('pointerdown', activate);
+		el.removeEventListener('focus', activate);
+	};
+	el.addEventListener('pointerdown', activate);
+	el.addEventListener('focus', activate);
+}
+
 function initReadOnlyInlineEditorGuards(root) {
 	var scope = root || document;
 	$(scope).find('._e[contenteditable="true"], [data-prop][contenteditable="true"]').addBack('._e[contenteditable="true"], [data-prop][contenteditable="true"]').each(function () {

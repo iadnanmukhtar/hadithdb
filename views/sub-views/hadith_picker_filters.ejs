@@ -1,0 +1,20 @@
+<details class="hadith-picker-filters mt-2" dir="ltr">
+  <summary class="small">Filters</summary>
+  <div class="d-flex flex-wrap gap-2 mt-2">
+    <label class="small flex-grow-1">Collection
+      <select class="form-select form-select-sm" data-hadith-picker-book>
+        <option value="">All collections</option>
+        <% (global.books || []).filter(b => b.alias !== 'quran' && b.type === 'hadith' && Number(b.hidden) !== 1).forEach(function (b) { %>
+          <option value="<%= b.alias %>"><%= b.shortName_en || b.title_en || b.alias %></option>
+        <% }); %>
+      </select>
+    </label>
+    <label class="small flex-grow-1">Grade
+      <select class="form-select form-select-sm" data-hadith-picker-grade>
+        <option value="">All grades</option>
+        <% (global.grades || []).forEach(function (g) { %><option value="<%= g.id %>"><%= g.grade_en || g.grade || g.id %></option><% }); %>
+      </select>
+    </label>
+    <button type="button" class="btn btn-sm btn-outline-secondary align-self-end" data-hadith-picker-clear>Clear filters</button>
+  </div>
+</details>

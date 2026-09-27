@@ -643,44 +643,65 @@
 	        const $input = $search.find('.hadith-similar-search-input').first();
 	        const $status = $search.find('[data-hadith-similar-search-status]').first();
 	        const parentId = Number($search.attr('data-parent-id'));
-	        const excludedIds = new Set(($search.attr('data-exclude-ids') || '').split(',').map(Number).filter(Number.isInteger));
+	        const virtualId = Number($search.attr('data-virtual-id'));
+	        const isVirtual = Number.isSafeInteger(virtualId) && virtualId > 0;
+	        let searchController;
+	        let saving = false;
+	        const excludedIds = new Set(($search.attr('data-exclude-ids') || '').split(',').map(Number).filter(id => Number.isSafeInteger(id) && id > 0));
 	        const excludedRefs = new Set(($search.attr('data-exclude-refs') || '').split(',').map(value => value.trim().replace(/^\//, '')).filter(Boolean));
 	        const setStatus = (message, isError) => $status.text(message).toggleClass('text-danger', !!isError);
 	        const addSuggestion = async (item) => {
 	          const itemId = Number(item && item.id);
 	          const itemRef = ((item && item.ref) || '').toString().replace(/^\//, '');
-	          if (!Number.isInteger(parentId) || !Number.isInteger(itemId) || itemId === parentId || excludedIds.has(itemId) || excludedRefs.has(itemRef)) {
+	          if (saving) return;
+	          if ((!isVirtual && (!Number.isInteger(parentId) || itemId === parentId)) || !Number.isInteger(itemId) || excludedIds.has(itemId) || excludedRefs.has(itemRef)) {
 	            setStatus('هذا الحديث مضاف بالفعل.', true);
 	            return;
 	          }
-	          $input.prop('disabled', true);
-	          setStatus(`جارٍ إضافة ${itemRef || 'الحديث'}…`, false);
+	          saving = true;
+	          const action = isVirtual ? $search.find('[data-hadith-picker-action]').val() : 'add';
+	          $search.find('input, select, button').prop('disabled', true);
+	          setStatus(`${action === 'replace_selected' ? 'Replacing with' : 'Adding'} ${itemRef || 'hadith'}…`, false);
 	          try {
-	            const result = await update({ id: `${parentId},${itemId}`, prop: 'hadiths_sim.add', arabizi: false, value: '' });
-	            if (result.code !== 200) return;
-	            rememberUpdateSuccessToast('Similar hadith added', `${itemRef || 'The selected hadith'} was added.`);
+	            const result = await update(isVirtual
+	              ? { id: String(virtualId), prop: `hadith_virtual.${action}`, arabizi: false, value: itemId }
+	              : { id: `${parentId},${itemId}`, prop: 'hadiths_sim.add', arabizi: false, value: '' });
+	            if (result.code !== 200) { setStatus(result.message || 'Unable to save the hadith.', true); return; }
+	            rememberUpdateSuccessToast(isVirtual ? 'Virtual hadith updated' : 'Similar hadith added', `${itemRef || 'The selected hadith'} was ${action === 'replace_selected' ? 'selected as the replacement' : 'added'}.`);
 	            window.location.reload();
+	          } catch (err) {
+	            setStatus('Unable to save the hadith. Please try again.', true);
 	          } finally {
-	            $input.prop('disabled', false);
+	            saving = false;
+	            $search.find('input, select, button').prop('disabled', false);
 	          }
 	        };
 	        $input.autocomplete({
 	          appendTo: $search,
 	          delay: 180,
-	          minLength: 2,
+	          minLength: 0,
 	          source: async function (request, response) {
 	            try {
+	              if (searchController) searchController.abort();
+	              const controller = searchController = new AbortController();
+	              setStatus('', false);
 	              const params = new URLSearchParams({ q: request.term, limit: '12' });
+	              const book = $search.find('[data-hadith-picker-book]').val();
+	              const grade = $search.find('[data-hadith-picker-grade]').val();
+	              if (book) params.set('b', book);
+	              if (grade !== '') params.set('grade', grade);
 	              if (excludedIds.size) params.set('exclude', Array.from(excludedIds).join(','));
 	              if (excludedRefs.size) params.set('exclude_ref', Array.from(excludedRefs).join(','));
 	              const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
 	              const headers = token ? { Authorization: `Bearer ${token}` } : {};
-	              const res = await fetch(`${editHadithApiPath('/autocomplete/similar-hadiths')}?${params.toString()}`, { headers });
+	              const res = await fetch(`${editHadithApiPath('/autocomplete/similar-hadiths')}?${params.toString()}`, { headers, signal: controller.signal });
 	              if (!res.ok) throw new Error(`Search failed with ${res.status}`);
 	              const items = await res.json();
+	              if (controller !== searchController) { response([]); return; }
+	              setStatus(items.length ? 'Select a result to save it.' : 'No matching hadiths.', false);
 	              response((items || []).filter(item => item && item.type === 'Hadith' && item.id && !excludedIds.has(Number(item.id)) && !excludedRefs.has((item.ref || '').replace(/^\//, ''))));
 	            } catch (err) {
-	              setStatus('تعذّر تحميل اقتراحات الأحاديث.', true);
+	              if (err.name !== 'AbortError') setStatus('Unable to load hadith suggestions.', true);
 	              response([]);
 	            }
 	          },
@@ -692,10 +713,11 @@
 	            addSuggestion(ui.item);
 	          },
 	          open: function () {
-	            $input.autocomplete('widget').addClass('search-autocomplete-menu hadith-similar-autocomplete-menu').attr({ lang: 'ar', dir: 'rtl' }).css('width', $input.outerWidth());
+	            $input.autocomplete('widget').addClass('search-autocomplete-menu hadith-similar-autocomplete-menu').attr({ lang: /[\u0600-\u06ff]/.test($input.val()) ? 'ar' : 'en', dir: /[\u0600-\u06ff]/.test($input.val()) ? 'rtl' : 'ltr' }).css('width', $input.outerWidth());
 	          }
 	        }).autocomplete('instance')._renderItem = function (list, item) {
-	          const $row = $('<div>').addClass('search-autocomplete-item').attr({ lang: 'ar', dir: 'rtl' });
+	          const language = item.lang || 'ar';
+	          const $row = $('<div>').addClass('search-autocomplete-item').attr({ lang: language, dir: language === 'ar' ? 'rtl' : 'ltr' });
 	          $('<div>').addClass('search-autocomplete-match').html(item.fragment || item.label || item.ref).appendTo($row);
 	          const $meta = $('<div>').addClass('search-autocomplete-meta search-autocomplete-meta-lines');
 	          if (item.metadata_ar) $('<span>').addClass('search-autocomplete-meta-ar').attr({ lang: 'ar', dir: 'rtl' }).text(item.metadata_ar).appendTo($meta);
@@ -703,6 +725,10 @@
 	          $meta.appendTo($row);
 	          return $('<li>').append($row).appendTo(list);
 	        };
+	        const refresh = () => { $input.autocomplete('close'); $input.autocomplete('search', $input.val()); };
+	        $search.find('[data-hadith-picker-book], [data-hadith-picker-grade], [data-hadith-picker-action]').on('change', refresh);
+	        $search.find('[data-hadith-picker-clear]').on('click', () => { $search.find('[data-hadith-picker-book], [data-hadith-picker-grade]').val(''); refresh(); });
+	        $input.on('focus', refresh);
 	      });
 	    };
 
@@ -881,7 +907,7 @@
 	        bindSharhTitleAutocomplete($el);
 	        bindBilingualMetadataAutocomplete($el);
 	        if (!$el.is('textarea, input, select'))
-	          $el.attr('contenteditable', 'true');
+	          prepareInlineContentEditor(this);
 	        if ($el.closest('.quran-commentary-introduction-disclosure > summary').length) {
 	          // Editing a title must not activate the enclosing disclosure.
 	          $el.on('click', function (event) {
@@ -898,6 +924,16 @@
 	        $el.on('input', function () {
 	          $(this).attr('editing', 'true');
 	          $(this).removeClass('partial');
+	        });
+	        $el.on('keydown', function (event) {
+	          // Focusing an empty Markdown field removes its ellipsis. Deleting
+	          // that empty field may not emit input, but still requests translation.
+	          if ((event.key === 'Backspace' || event.key === 'Delete') &&
+	              /_en$/.test($el.attr('data-prop') || '') &&
+	              isMarkdownElement($el) && !$el.text().trim()) {
+	            $el.attr('editing', 'true');
+	            $el.removeClass('partial');
+	          }
 	        });
 	        if ($el.is('select'))
 	          $el.on('change', function (event) {

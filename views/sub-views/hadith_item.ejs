@@ -448,12 +448,17 @@
 				<span class="bi bi-trash"></span> Delete
 			</button>
 			<% if (!isSimilarSection) { %>
-				<div class="input-group input-group-sm d-inline-flex align-middle ms-1 mb-1" style="width: 9rem;">
-					<button type="button" class="_submit-edit btn btn-outline-secondary hadith-admin-action hadith-admin-action-icon" title="Add Reference" aria-label="Add Reference" data-loading-label="Adding">
-						<span class="bi bi-file-plus-fill"></span>
-					</button>
-					<input class="_e form-control border-secondary" title="Ref Num" aria-label="Ref Num" data-id="<%= i.id %>" data-prop="hadith_virtual.add" data-reset="true">
-				</div>
+                <div class="hadith-similar-admin-search my-2" data-hadith-similar-search data-virtual-id="<%= i.id %>">
+                  <div class="d-flex flex-wrap gap-2" dir="ltr">
+                    <select class="form-select form-select-sm w-auto" data-hadith-picker-action aria-label="Hadith action">
+                      <option value="add_selected">Add after this hadith</option>
+                      <option value="replace_selected">Replace this hadith</option>
+                    </select>
+                    <input type="search" class="form-control form-control-sm hadith-similar-search-input flex-grow-1" style="flex-basis: 16rem; width: auto;" dir="auto" placeholder="Search text or reference…" aria-label="Find a hadith to add or replace" autocomplete="off">
+                  </div>
+                  <%- include('hadith_picker_filters.ejs'); %>
+                  <div class="small mt-1" data-hadith-similar-search-status aria-live="polite"></div>
+                </div>
 			<% } %>
 		<% } %>
 			<% if (!isQuranItem && !isSimilarSection && i.book_virtual != 1) { %>
