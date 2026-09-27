@@ -54,3 +54,21 @@ test('rolls back insertion and ordering changes on a database failure', async ()
   expect(connection.rollback).toHaveBeenCalledTimes(1);
   expect(connection.commit).not.toHaveBeenCalled();
 });
+
+test('deletion preserves all surviving ordinals and scopes its delete to the selected book', async () => {
+  rows[0].h1 = 2; rows[0].h2 = 3;
+  await expect(Editing.remove(10)).resolves.toMatchObject({ id: 10, bookId: 61, hadithIds: [100] });
+  expect(connection.query.mock.calls).toContainEqual(['DELETE FROM hadiths_virtual WHERE bookId=? AND id=?', [61,10], expect.any(Function)]);
+  expect(connection.query.mock.calls.some(([sql]) => /UPDATE hadiths_virtual|@n|SET ordinal/.test(sql))).toBe(false);
+  expect(connection.query.mock.calls).toContainEqual([expect.stringContaining('UPDATE toc SET count=GREATEST'), [61,90,2,2,3], expect.any(Function)]);
+  expect(connection.commit).toHaveBeenCalledTimes(1);
+});
+
+test('deletion rolls back when the delete fails', async () => {
+  const normal = connection.query.getMockImplementation();
+  connection.query.mockImplementation((sql,args,cb) => sql.startsWith('DELETE FROM hadiths_virtual') ? cb(new Error('delete failed')) : normal(sql,args,cb));
+  await expect(Editing.remove(10)).rejects.toThrow('delete failed');
+  expect(connection.rollback).toHaveBeenCalledTimes(1);
+  expect(connection.commit).not.toHaveBeenCalled();
+  expect(connection.release).toHaveBeenCalledTimes(1);
+});

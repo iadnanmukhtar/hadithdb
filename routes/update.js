@@ -954,8 +954,10 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
     } else if (type == 'hadith_virtual') {
       var result = "";
-      if (['add_selected', 'replace_selected'].includes(col)) {
-        const selected = await VirtualHadithEditing.selectHadith(req.params.id, status.value, col, userId);
+      if (['add_selected', 'replace_selected', 'del'].includes(col)) {
+        const selected = col === 'del'
+          ? await VirtualHadithEditing.remove(req.params.id)
+          : await VirtualHadithEditing.selectHadith(req.params.id, status.value, col, userId);
         await global.query(`CALL refresh_v_hadiths_virtual_snapshot(${selected.bookId})`);
         await Books.touchBookContentLastmodById(selected.bookId);
         invalidateBookChapterCache({ book_id: selected.bookId });
@@ -965,27 +967,11 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         await Library.reloadBooks();
         await RuntimeRefresh.publish();
         status.code = 200;
-        status.message = col === 'replace_selected' ? 'Hadith replaced' : 'Hadith added';
+        status.message = col === 'del' ? 'Virtual hadith deleted' : col === 'replace_selected' ? 'Hadith replaced' : 'Hadith added';
       } else {
 
 
-      if (col == 'del') {
-        var curr = (await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`))[0];
-        if (curr) {
-          result = await global.query(`DELETE FROM hadiths_virtual 
-            WHERE bookId=${curr.bookId} AND id=${ids[0]}`);
-          result = await global.query(`SET sql_safe_updates=0`);
-          result = await global.query(`SET @n:=0`);
-          result = await global.query(`UPDATE hadiths_virtual SET ordinal=(@n:=@n+1)
-            ORDER BY bookId, num0`);
-          result = await global.query(`SET @n:=0`);
-          result = await global.query(`UPDATE hadiths_virtual SET numInChapter=(@n:=@n+1)
-            WHERE bookId=${curr.bookId} AND h1=${curr.h1} 
-            ORDER BY bookId, num0`);
-        } else
-          throw new Error("Hadith not found");
-
-      } else if (col == 'add') {
+      if (col == 'add') {
         var curr = (await global.query(`SELECT * from hadiths_virtual WHERE id=${ids[0]}`))[0];
         if (curr) {
           result = await global.query(`INSERT INTO hadiths_virtual
