@@ -111,3 +111,24 @@ describe('Hadith heading and virtual-book sharh', () => {
 		expect(blocks.map(block => block.hadithNumbers)).toEqual([[], []]);
 	});
 });
+
+describe('empty sections with commentary',()=>{
+ const {mergeEmptyReaderItems}=require('../lib/HadithHeadingSharh');
+ const hadith=(num,id)=>({id:num,num:String(num),heading:{id},section:{id:10}});
+ const explanation={heading:{id:2,shuruh:[{text:'Section introduction'}]},nextContentHeading:{id:3,start:'36'}};
+ test('appears between sections without changing the hadith list',()=>{
+  const items=[hadith(35,1),hadith(36,3)];
+  expect(mergeEmptyReaderItems(items,[explanation])).toEqual([items[0],explanation,items[1]]);
+  expect(items).toHaveLength(2);
+ });
+ test('waits for the first page of its following section and does not repeat',()=>{
+  expect(mergeEmptyReaderItems([hadith(35,1)],[explanation],{hasNext:true})).toHaveLength(1);
+  expect(mergeEmptyReaderItems([hadith(36,3)],[explanation],{hasPrev:true})).toHaveLength(2);
+  expect(mergeEmptyReaderItems([hadith(37,3)],[explanation],{hasPrev:true})).toHaveLength(1);
+ });
+ test('trailing introductions appear only on the final page',()=>{
+  const last={...explanation,nextContentHeading:null};
+  expect(mergeEmptyReaderItems([hadith(35,1)],[last],{hasNext:true})).toHaveLength(1);
+  expect(mergeEmptyReaderItems([hadith(35,1)],[last],{hasNext:false})).toHaveLength(2);
+ });
+});

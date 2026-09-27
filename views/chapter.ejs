@@ -116,7 +116,7 @@
       <%
       var lastPath = -1;
       var n = -1;
-      for (var item of results) {
+      for (var item of (results.readerItems || results)) {
         n++;
         var showHeading = (item.path != lastPath && item.heading && item.heading.level > 1);
         lastPath = item.path;

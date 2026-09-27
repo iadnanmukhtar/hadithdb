@@ -3408,6 +3408,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 	if (bookAlias !== 'quran') {
 	  await HdithMetadata.attachClassifications(results);
 	  await HadithHeadingSharh.attach([chapter].concat(chapter.sections || [], results.flatMap(item => [item.heading, item.section])));
+	  await HadithHeadingSharh.attachEmptyReaderItems(chapter, results);
 	}
     if (requestedOffset > 0 && results.length === 0)
       return next(HttpRange.notSatisfiable('items', chapter.count, `Chapter ${bookAlias}/${chapterNum} does not have content at offset ${requestedOffset}`));
@@ -3794,6 +3795,7 @@ async function renderBookSection(req, res, next) {
 	if (bookAlias !== 'quran') {
 	  await HdithMetadata.attachClassifications(results);
 	  await HadithHeadingSharh.attach([chapter, section].concat(chapter.sections || [], results.flatMap(item => [item.heading, item.section])));
+	  await HadithHeadingSharh.attachEmptyReaderItems(section, results);
 	}
     if (requestedOffset > 0 && results.length === 0)
       return next(HttpRange.notSatisfiable('items', section.count, `Section ${bookAlias}/${chapterNum}/${sectionNum} does not have content at offset ${requestedOffset}`));

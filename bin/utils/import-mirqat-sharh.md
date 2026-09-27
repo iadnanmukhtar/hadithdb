@@ -73,3 +73,36 @@ heading passages. Backup and verification are in `temp/mirqat/faith-intro/`.
 Stored commentary and introductory passages use the shared honorific normalizer
 (`ﷺ` / `ؓ`). EPUB hashes, extracted source witnesses, and conservation checks
 remain verbatim; normalization is applied only when building the storage plan.
+
+## Whole-book introduction boundary audit
+
+The parser also checks retained paragraphs throughout the EPUB for chapter and
+section explanations embedded after a quoted hadith or at the end of the preceding
+commentary. Chapter starts are checked against nearby source navigation entries;
+source page positions and non-whitespace text conservation are verified. Bare
+labels stay out of introduction cards. A quotation discussing “the Book of Allah”
+inside hadith 2555 is explicitly audited as prose, not a chapter boundary.
+
+The full audit found 28 additional introductions (25 chapters and three sections)
+inside 31 stored commentary records. Section numbers select their own TOC entries,
+including an empty second section before the next hadith in section three. The
+planner also respects sections promoted to level two in Mishkat's hierarchy.
+
+```sh
+node bin/utils/repair-mirqat-introduction-boundaries.js          # dry run
+node bin/utils/repair-mirqat-introduction-boundaries.js --apply  # move and refresh
+```
+
+The repair validates both the previous and corrected plans, updates existing
+hadith rows in place, and inserts each extracted introduction once. Existing
+introductions, hadith IDs, and virtual ownership links are preserved. Backups,
+move witnesses, and refresh manifests are saved in
+`var/imports/mirqat-boundaries/<timestamp>/`. Repeating the repair reports zero
+updates. The ordinary importer retains its refusal to overwrite differing text;
+use this repair for the already-imported edition. `legacyBoundaries` exists only
+to reconstruct the repair's expected previous state.
+
+Reader note: an empty section can still have substantive commentary (for example,
+Mishkat 19.13.2). The reader includes these heading-only passages before the next
+nonempty heading, without adding hadith records or changing API counts/pagination.
+This reader change requires deployment of the updated application code.
