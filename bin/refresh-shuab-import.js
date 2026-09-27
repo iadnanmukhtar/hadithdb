@@ -10,7 +10,7 @@ const Utils=require('../lib/Utils');
  const book=(await global.query("SELECT id FROM books WHERE alias='shuab'"))[0];
  if(!book)throw Error('Shuab has not been imported');
  const result={bookId:book.id};
- for(const [index,expected]of [['hadiths',10725],['toc',421]]){
+ for(const [index,expected]of [['hadiths',10725],['toc',422]]){
   await Index.refresh(index);
   const response=await axios.post(`${global.settings.search.domain}/${index}/_count`,{query:{term:{book_alias:'shuab'}}},SearchHttp.axiosConfig());
   if(response.data.count!==expected)throw Error(`${index} count ${response.data.count}, expected ${expected}`);
