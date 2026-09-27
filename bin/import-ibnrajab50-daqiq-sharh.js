@@ -77,7 +77,7 @@ function extract(epub) {
 async function main() {
 	const epub = path.resolve(process.argv.find(a => a.startsWith('--epub='))?.slice(7) ||
 		'temp/' + fs.readdirSync('temp').find(f => f.endsWith('.epub') && f.normalize('NFC').includes('دقيق')));
-	const sections = extract(epub);
+	const sections = extract(epub).map(section => ({...section, text: require('./utils/normalize-commentary-honorifics').normalize(section.text)}));
 	const connection = mysql.createConnection(connectionSettings());
 	const query = util.promisify(connection.query).bind(connection);
 	try {
@@ -105,6 +105,7 @@ async function main() {
 		console.log(JSON.stringify(audit, null, 2));
 		if (!process.argv.includes('--apply')) return;
 		await HadithHeadingSharh.ensureSchema(query);
+		await require('../lib/VirtualHadithSharh').ensureSchema(query);
 		await query('START TRANSACTION');
 		try {
 			const existing = (await query('SELECT * FROM hdith_sharh_sources WHERE source_book_id=?', [SOURCE.bookId]))[0];
@@ -128,6 +129,7 @@ async function main() {
 				await query(`INSERT INTO toc (ordinal,bookId,level,h1,h2,title,title_en,intro,intro_en)
 					VALUES (?,?,2,0,?,?,?,?,'')`,[next,book.id,next,SOURCE.title,SOURCE.titleEn,sections[0].text]);
 			}
+			await require('./utils/link-virtual-sharh').linkSources(query, [source.id]);
 			await query('COMMIT');
 		} catch (error) { await query('ROLLBACK'); throw error; }
 		await Utils.flushCacheContaining(ALIAS);

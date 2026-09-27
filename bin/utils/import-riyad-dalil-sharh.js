@@ -139,6 +139,7 @@ async function main(){
   else if(!process.argv.includes('--apply'))return;
   else{
    await require('../../lib/HadithHeadingSharh').ensureSchema(query);
+   await require('../../lib/VirtualHadithSharh').ensureSchema(query);
    if(Number((await query("SELECT GET_LOCK('import-riyad-dalil',30) locked"))[0].locked)!==1)throw Error('Import already running');
    await query('START TRANSACTION');
    try{
@@ -187,6 +188,7 @@ async function main(){
      const stored=await query(`SELECT * FROM ${table} WHERE source_id=?`,[source.id]);const expected=entries.filter(e=>kind==='hadith'?e.kind==='hadith':e.kind!=='hadith');
      if(stored.length!==expected.length||expected.some(e=>!stored.some(s=>s[key]===(kind==='hadith'?e.hadithId:e.tocId)&&s.source_entry_id===e.entryId&&s.text===e.text)))throw Error('Exact post-write audit failed');
     }
+    await require('./link-virtual-sharh').linkSources(query, [source.id]);
     await query('COMMIT');
     fs.writeFileSync(path.join(AUDIT,'applied.json'),JSON.stringify({sourceId:source.id,counts,inserted,normalizedRows,correctedRows,actualHadiths:new Set(entries.filter(e=>e.hadithId).map(e=>e.hadithId)).size,backup,exactTextVerified:true,appliedAt:new Date().toISOString()},null,2));
     console.log(`Imported/verified ${entries.length} passages (new: ${inserted}, honorifics normalized: ${normalizedRows}, reviewed corrections: ${correctedRows}), source ${source.id}.`);

@@ -957,10 +957,18 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
     } else if (type == 'hadith_virtual') {
       var result = "";
-      if (['add_selected', 'replace_selected', 'del'].includes(col)) {
-        const selected = col === 'del'
+      if (['add_selected', 'replace_selected', 'del', 'ref_num', 'hadithId'].includes(col)) {
+        let replacementId = status.value;
+        if (col === 'ref_num') {
+          const targets = await global.query(`SELECT h.id FROM hadiths h JOIN books b ON b.id=h.bookId
+            WHERE CONCAT(b.alias, ':', h.num)=${MySQL.escape(String(status.value).trim())}`);
+          if (targets.length !== 1) throw createError(400, 'Select an exact original hadith reference');
+          replacementId = targets[0].id;
+        }
+        const action = ['ref_num', 'hadithId'].includes(col) ? 'replace_selected' : col;
+        const selected = action === 'del'
           ? await VirtualHadithEditing.remove(req.params.id)
-          : await VirtualHadithEditing.selectHadith(req.params.id, status.value, col, userId);
+          : await VirtualHadithEditing.selectHadith(req.params.id, replacementId, action, userId);
         if (col === 'del') await refreshVirtualHadithEdit(selected);
         else {
           // The transaction is committed. A whole-book snapshot/index refresh can
@@ -969,7 +977,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           void safeBackground(`refreshing saved virtual hadith ${selected.id}`, () => refreshVirtualHadithEdit(selected));
         }
         status.code = 200;
-        status.message = col === 'del' ? 'Virtual hadith deleted' : col === 'replace_selected' ? 'Hadith replaced' : 'Hadith added';
+        status.message = col === 'del' ? 'Virtual hadith deleted' : action === 'replace_selected' ? 'Hadith replaced' : 'Hadith added';
       } else {
 
 

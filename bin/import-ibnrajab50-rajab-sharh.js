@@ -81,7 +81,7 @@ function extract(epub) {
 async function main() {
 	const epub = path.resolve(process.argv.find(a => a.startsWith('--epub='))?.slice(7) ||
 		'temp/جامع العلوم والحكم.epub');
-	const sections = extract(epub);
+	const sections = extract(epub).map(section => ({...section, text: require('./utils/normalize-commentary-honorifics').normalize(section.text)}));
 	const connection = mysql.createConnection(connectionSettings());
 	const query = util.promisify(connection.query).bind(connection);
 	try {
@@ -109,6 +109,7 @@ async function main() {
 		console.log(JSON.stringify(audit, null, 2));
 		if (!process.argv.includes('--apply')) return;
 		await HadithHeadingSharh.ensureSchema(query);
+		await require('../lib/VirtualHadithSharh').ensureSchema(query);
 		await query('START TRANSACTION');
 		try {
 			const existing = (await query('SELECT * FROM hdith_sharh_sources WHERE source_book_id=?', [SOURCE.bookId]))[0];
@@ -141,6 +142,7 @@ async function main() {
 			const stored = await query('SELECT source_entry_id,text FROM hdith_hadith_sharh WHERE source_id=?', [source.id]);
 			if (stored.length !== 50 || rows.some(row => !stored.some(r => r.source_entry_id === row.sourceEntryId && r.text === row.text)))
 				throw new Error('Stored commentary verification failed');
+			await require('./utils/link-virtual-sharh').linkSources(query, [source.id]);
 			await query('COMMIT');
 		} catch (error) { await query('ROLLBACK'); throw error; }
 		await Utils.flushCacheContaining(ALIAS);

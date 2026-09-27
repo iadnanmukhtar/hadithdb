@@ -5,11 +5,19 @@ const fs = require('fs');
 const path = require('path');
 const {promisify} = require('util');
 const Utils = require('../../lib/Utils');
+const mark='[ؐ-ؚـً-ٰٟۖ-ۭ]*';
+const markedPhrase=value=>[...value].map(c=>c===' '?'\\s+':`${c==='ا'?'[اٱ]':c}${mark}`).join('');
+const additionalBlessings=new RegExp([
+ markedPhrase('عليه الصلاة والسلام'),
+ markedPhrase('صلى الله تعالى عليه وسلم'),
+ `${markedPhrase('صلى الله')}\\s*-\\s*${markedPhrase('عليه وسلم')}\\s*-`,
+ `${markedPhrase('صلى الله عليه')}\\s*-\\s*${markedPhrase('وسلم')}\\s*-`
+].join('|'),'gu');
 
 // Preserve layout and all non-honorific text, including Markdown indentation.
 function normalizeBare(value) {
  return Utils.normalizeArabicHonorifics(value
-  .replace(/عليه الصلاة والسلام/g, ' ﷺ ')
+  .replace(additionalBlessings, ' ﷺ ')
   .replace(/\b(?:PBUH)\b/g, ' ﷺ ')
   .replace(/(?:may\s+)?(?:Allah\\?['’]s\s+)?peace(?:\s+and\s+blessings)?\s+be\s+upon\s+him/gi, ' ﷺ ')
   .replace(/upon whom be Allah\\?['’]s peace and blessings/gi, ' ﷺ ')
@@ -49,28 +57,36 @@ function normalize(value) {
 }
 // A conservative superset of every match in normalize()/Utils. Filtering on the
 // server avoids transferring hundreds of MB of already-normalized commentary.
-const mark='[ؐ-ؚـً-ٰٟۖ-ۭ]*';
-const candidatePattern=String.raw`peace(?:\s+and\s+blessings)?\s+be\s+upon\s+him|may\s+(?:Allah|God)(?:\s+the\s+Most\s+High)?\s+be\s+pleased|Allah bless him|upon whom be Allah|PBUH|[\[(]\s*SAW|Allah.{1,2}s\s+ﷺ|عليه الصلاة والسلام|(?:ص${mark}ل${mark}[ىي]|ر${mark}ض${mark}[ىي])${mark}\s+[اٱ]?${mark}ل${mark}ل${mark}ه|[\[(]\s*[ﷺؓ]|-\s*[ﷺؓ]\s*-`;
+const candidatePattern=String.raw`peace(?:\s+and\s+blessings)?\s+be\s+upon\s+him|may\s+(?:Allah|God)(?:\s+the\s+Most\s+High)?\s+be\s+pleased|Allah bless him|upon whom be Allah|PBUH|[\[(]\s*SAW|Allah.{1,2}s\s+ﷺ|${markedPhrase('عليه الصلاة والسلام')}|(?:ص${mark}ل${mark}[ىي]|ر${mark}ض${mark}[ىي])${mark}\s+[اٱ]?${mark}ل${mark}ل${mark}ه|[\[(]\s*[ﷺؓ]|-\s*[ﷺؓ]\s*-`;
 async function main() {
  const args = process.argv.slice(2);
  const introductions=args.includes('--introductions');
  const allowedTables=['hdith_hadith_sharh','hdith_toc_sharh','hadiths_commentary','toc'];
  const selected=args.find(a=>a.startsWith('--table='))?.slice(8);
- if (args.some(a => a !== '--apply' && a !== '--introductions' && a !== `--table=${selected}`) || (selected && !allowedTables.includes(selected)) || (introductions && selected && selected!=='toc')) throw Error('Usage: normalize-commentary-honorifics.js [--apply] [--table=<table>] [--introductions]');
+ const sourceArg=args.find(a=>a.startsWith('--source-book-ids='));
+ const bookArg=args.find(a=>a.startsWith('--book-ids='));
+ const parseIds=arg=>arg?arg.split('=')[1].split(',').map(value=>{if(!/^-?\d+$/.test(value)||!Number.isSafeInteger(Number(value)))throw Error('Invalid scope ID');return Number(value);}):[];
+ const sourceBooks=parseIds(sourceArg), scopedBooks=parseIds(bookArg);
+ if(scopedBooks.length&&!sourceBooks.length&&!introductions&&(!selected||!['toc','hadiths_commentary'].includes(selected))) throw Error('--book-ids requires --introductions, a book-owned --table, or --source-book-ids');
+ if(sourceBooks.length&&(introductions||['toc','hadiths_commentary'].includes(selected))&&!scopedBooks.length) throw Error('Book-owned fields also require --book-ids');
+ if (args.some(a => a !== '--apply' && a !== '--skip-refresh' && a !== '--introductions' && a !== `--table=${selected}` && a!==sourceArg && a!==bookArg) || (selected && !allowedTables.includes(selected)) || (introductions && selected && selected!=='toc')) throw Error('Usage: normalize-commentary-honorifics.js [--apply] [--skip-refresh] [--table=<table>] [--introductions] [--source-book-ids=<ids>] [--book-ids=<ids>]');
  const apply = args.includes('--apply');
  const c = require('mysql').createConnection(require(require('os').homedir()+'/.hadithdb/settings.json').mysql.connection);
  const q = promisify(c.query).bind(c);
- const manifest = {started: new Date().toISOString(), tables: {}, hadithIds: [], sharhIds: [], bookIds: []};
+ const manifest = {started: new Date().toISOString(), sourceBookIds:sourceBooks, scopedBookIds:scopedBooks, tables: {}, hadithIds: [], sharhIds: [], bookIds: [], tocBookIds:[]};
  const hadithIds = new Set(), bookIds = new Set(), sourceIds = new Set();
  const directory = path.resolve('var/imports/commentary-honorifics', String(Date.now()));
  if (apply) {fs.mkdirSync(directory, {recursive:true});fs.writeFileSync(path.join(directory,'after.jsonl'),'');}
  try {
   if (apply) await q('START TRANSACTION');
-  for (const table of introductions ? ['toc'] : selected ? [selected] : allowedTables) {
+  for (const table of introductions ? ['toc'] : selected ? [selected] : sourceBooks.length ? ['hdith_hadith_sharh','hdith_toc_sharh',...(scopedBooks.length?['toc']:[])] : allowedTables) {
    const columns = await q(`SHOW COLUMNS FROM ${table}`);
    const fields = columns.map(r=>r.Field).filter(f=> (introductions ? /^intro(_[a-z]+)?$/ : /^(text|footnotes|intro)(_[a-z]+)?$/).test(f));
    if(apply) await q(`CREATE TEMPORARY TABLE honorific_stage (PRIMARY KEY (id)) AS SELECT id,${fields.join(',')} FROM ${table} WHERE 1=0`);
-   const scope=!introductions && ['hadiths_commentary','toc'].includes(table) ? "AND EXISTS (SELECT 1 FROM books b WHERE b.id=s.bookId AND b.type='tafsir')" : '';
+   const scope=sourceBooks.length && ['hdith_hadith_sharh','hdith_toc_sharh'].includes(table)
+    ? `AND s.source_id IN (SELECT id FROM hdith_sharh_sources WHERE source_book_id IN (${sourceBooks.join(',')}))`
+    : scopedBooks.length && ['hadiths_commentary','toc'].includes(table) ? `AND s.bookId IN (${scopedBooks.join(',')})`
+    : !introductions && ['hadiths_commentary','toc'].includes(table) ? "AND EXISTS (SELECT 1 FROM books b WHERE b.id=s.bookId AND b.type='tafsir')" : '';
    const [total]=await q(`SELECT COUNT(*) n FROM ${table} s WHERE 1=1 ${scope}`);
    const report = manifest.tables[table] = {total:total.n,scanned:0, changed:0, fields:{}, samples:[]};
    let after = 0;
@@ -93,6 +109,7 @@ async function main() {
      report.changed++;
      if(row.hadith_id)hadithIds.add(row.hadith_id);
      if(row.bookId)bookIds.add(row.bookId);
+     if(table==='toc'&&!manifest.tocBookIds.includes(row.bookId))manifest.tocBookIds.push(row.bookId);
      if(row.source_id)sourceIds.add(row.source_id);
      if(table==='hdith_hadith_sharh')manifest.sharhIds.push(row.id);
      if(row.toc_id){const [toc]=await q('SELECT bookId FROM toc WHERE id=?',[row.toc_id]);bookIds.add(toc.bookId);}
@@ -116,8 +133,8 @@ async function main() {
   }
  } catch(e){if(apply)await q('ROLLBACK').catch(()=>{});throw e;}
  finally{c.destroy();}
- if(apply){
-  if(introductions)for(const bookId of manifest.bookIds)require('child_process').execFileSync(process.execPath,[path.resolve(__dirname,'../buildSearchIndex.js'),'--book-id',String(bookId),'--toc-only'],{stdio:'inherit'});
+ if(apply&&!args.includes('--skip-refresh')){
+  for(const bookId of manifest.tocBookIds)require('child_process').execFileSync(process.execPath,[path.resolve(__dirname,'../buildSearchIndex.js'),'--book-id',String(bookId),'--toc-only'],{stdio:'inherit'});
   await refresh(manifest,directory);
  }
 }

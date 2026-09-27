@@ -251,6 +251,7 @@ async function applyImport(query, book, source, hadithRows, headingRows) {
 			(toc_id,ordinal,source_id,source_entry_id,page_num,title,title_en,text,text_en,format,source_url)
 			VALUES (?,?,?,?,?,?,?,?,NULL,'md','')`, [row.tocId, row.ordinal, sourceId, row.sourceEntryId,
 			row.page, source.title, source.title_en, row.text]);
+		await require('./utils/link-virtual-sharh').linkSources(query, [source.id]);
 		await query('COMMIT');
 	} catch (err) {
 		await query('ROLLBACK');
@@ -308,6 +309,7 @@ async function main() {
 		}
 		const duplicateHadithKeys = hadithRows.length - new Set(hadithRows.map(row => `${row.hadithId}:${row.sourceEntryId}`)).size;
 		const groupedHeadingRows = groupHeadingRows(headingRows);
+		for (const row of [...hadithRows, ...groupedHeadingRows]) row.text = require('./utils/normalize-commentary-honorifics').normalize(row.text);
 		if (process.argv.includes('--audit-headings'))
 			console.log(JSON.stringify(headingRows.map(row => ({ entryId: row.sourceEntryId, tocId: row.tocId, page: row.page,
 				anchor: row.anchor, sourceTitle: row.sourceTitle, tocTitle: row.tocTitle, headingScore: row.headingScore })), null, 2));
@@ -333,6 +335,7 @@ async function main() {
 		}
 		if (duplicateHadithKeys) throw new Error('Refusing to import duplicate hadith/source-entry keys');
 		await HadithHeadingSharh.ensureSchema(query);
+		await require('../lib/VirtualHadithSharh').ensureSchema(query);
 		await query(`INSERT INTO hdith_sharh_sources (source_book_id,title,title_en,author,source_url)
 			VALUES (?,?,?,?, '') ON DUPLICATE KEY UPDATE author=VALUES(author),id=LAST_INSERT_ID(id)`,
 			[SOURCE_BOOK_ID, SOURCE_TITLE, SOURCE_TITLE_EN, SOURCE_AUTHOR]);

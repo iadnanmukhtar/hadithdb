@@ -23,3 +23,12 @@ with him\).`,'Anas ؓ.'],
   [null,null],['ordinary  text','ordinary  text']
  ])('preserves surrounding content: %s',(input,expected)=>{if(input!==expected)expect(new RegExp(candidatePattern,'iu').test(input)).toBe(true);expect(normalize(input)).toBe(expected);expect(normalize(normalize(input))).toBe(expected);});
 });
+test.each([
+ ['قال - عَلَيْهِ الصَّلَاةُ وَالسَّلَامُ -:','قال ﷺ:'],
+ ['قال صَلَّى اللَّهُ تَعَالَى عَلَيْهِ وَسَلَّمَ','قال ﷺ'],
+ ['قال صلى الله - عليه وسلم -','قال ﷺ'],
+ ['قال صلى الله عليه - وسلم -','قال ﷺ']
+])('normalizes reviewed fully marked or page-split blessings: %s',(input,expected)=>{
+ expect(new RegExp(candidatePattern,'iu').test(input)).toBe(true);
+ expect(normalize(input)).toBe(expected);expect(normalize(normalize(input))).toBe(expected);
+});

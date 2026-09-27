@@ -798,7 +798,7 @@
                 <% quranCommentaryIntroductionArticles.forEach(function (article) { %>
                 <% if (quranCommentaryIntroductionHref && (utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en))) { %>
                 <tr class="chapter quran-commentary-introduction-link-row" data-toc-view="surahs">
-                  <td><span class="toc-expand-spacer"></span>Introduction</td>
+                  <td><span class="toc-expand-spacer"></span>Ci</td>
                   <td><a href="<%= `${quranCommentaryIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title_en) || 'Introduction by the author' %></a></td>
                   <td lang="ar" dir="rtl"><a href="<%= `${quranCommentaryIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title) || 'مقدمة المؤلف' %></a></td>
                 </tr>
@@ -928,7 +928,7 @@
 			<% hadithIntroductionArticles.forEach(function (article) { %>
 			<% if (hadithIntroductionHref && (utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en))) { %>
 			<tr class="chapter hadith-introduction-link-row">
-			  <% if (showTocStartNumbers) { %><td></td><% } %><td><span class="toc-expand-spacer"></span>Introduction</td>
+			  <% if (showTocStartNumbers) { %><td></td><% } %><td><span class="toc-expand-spacer"></span>Ci</td>
 			  <td><a href="<%= `${hadithIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title_en) || 'Introduction' %></a></td>
 			  <td lang="ar" dir="rtl"><a href="<%= `${hadithIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title) || 'المقدمة' %></a></td>
 			</tr>
