@@ -268,7 +268,10 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
       status.code = 200;
       status.message = result.message;
-      if (col !== 'similar') {
+      if (col === 'revise') {
+        VirtualHadithSnapshot.queueHadith(ids[0]);
+        void safeBackground(`refreshing saved hadith revision ${ids[0]}`, () => runHadithPostUpdateTasks(ids[0]));
+      } else if (col !== 'similar') {
         await runHadithPostUpdateTasks(ids[0], {
           forceKnowledge: isArabicKnowledgeSourceColumn(col)
         });
@@ -958,14 +961,13 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         const selected = col === 'del'
           ? await VirtualHadithEditing.remove(req.params.id)
           : await VirtualHadithEditing.selectHadith(req.params.id, status.value, col, userId);
-        await global.query(`CALL refresh_v_hadiths_virtual_snapshot(${selected.bookId})`);
-        await Books.touchBookContentLastmodById(selected.bookId);
-        invalidateBookChapterCache({ book_id: selected.bookId });
-        await flushBookCaches(new Set([selected.alias]));
-        await Utils.flushBookDiskCache(selected.alias, { strict: true });
-        for (const hadithId of selected.hadithIds) await runHadithPostUpdateTasks(hadithId, { awaitIndex: true });
-        await Library.reloadBooks();
-        await RuntimeRefresh.publish();
+        if (col === 'del') await refreshVirtualHadithEdit(selected);
+        else {
+          // The transaction is committed. A whole-book snapshot/index refresh can
+          // exceed the proxy timeout and must not turn a saved edit into a failure.
+          status.refreshPending = true;
+          void safeBackground(`refreshing saved virtual hadith ${selected.id}`, () => refreshVirtualHadithEdit(selected));
+        }
         status.code = 200;
         status.message = col === 'del' ? 'Virtual hadith deleted' : col === 'replace_selected' ? 'Hadith replaced' : 'Hadith added';
       } else {
@@ -3104,6 +3106,19 @@ async function safeBackground(label, fn) {
   } catch (err) {
     debug.error(`${label} failed: ${err.message}\n${err.stack || ''}`);
   }
+}
+
+async function refreshVirtualHadithEdit(selected) {
+  await global.query(`CALL refresh_v_hadiths_virtual_snapshot(${selected.bookId})`);
+  await Books.touchBookContentLastmodById(selected.bookId);
+  invalidateBookChapterCache({ book_id: selected.bookId });
+  await flushBookCaches(new Set([selected.alias]));
+  await Utils.flushBookDiskCache(selected.alias, { strict: true });
+  // Reader invalidation must still finish if a search backend is unavailable.
+  await Library.reloadBooks();
+  await RuntimeRefresh.publish();
+  for (const hadithId of selected.hadithIds)
+    await safeBackground(`indexing saved virtual hadith source ${hadithId}`, () => runHadithPostUpdateTasks(hadithId, { awaitIndex: true }));
 }
 
 async function reindexEnrichedHadithIds(hadithIds) {

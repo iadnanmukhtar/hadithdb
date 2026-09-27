@@ -49,4 +49,26 @@ describe('hadith revision provider resilience', () => {
     });
     expect(axios.post).toHaveBeenCalledTimes(3);
   });
+
+  test('returns the saved revision even when post-save bookkeeping fails', async () => {
+    const Utils = require('../lib/Utils');
+    const Index = require('../lib/Index');
+    const previousQuery = global.query;
+    jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
+    jest.spyOn(Index, 'update').mockResolvedValue();
+    axios.post.mockResolvedValue({ data: { choices: [{ message: { content: JSON.stringify({ body: 'متن جديد', body_en: 'Revised text', chain: '', chain_en: '', footnote: '', footnote_en: '' }) } }] } });
+    global.query = jest.fn(async sql => {
+      if (sql.startsWith('UPDATE hadiths SET')) return { affectedRows: 1 };
+      throw new Error('post-save database unavailable');
+    });
+    try {
+      const result = await HadithRevision.reviseHadith({ hId: 123, ref: 'test:1', title_en: 'Existing title', chain: '', body: 'متن', footnote: '' }, { provider: 'openai', model: 'test-model' });
+      expect(result.item.body).toBe('متن جديد');
+      expect(result.item.body_en).toContain('Revised text');
+      expect(global.query.mock.calls[0][0]).toMatch(/^UPDATE hadiths SET/);
+      expect(global.query.mock.calls.some(([sql]) => sql.includes('SELECT * FROM v_hadiths'))).toBe(false);
+      await new Promise(resolve => setImmediate(resolve));
+      expect(Utils.flushCacheContaining).toHaveBeenCalled();
+    } finally { global.query = previousQuery; jest.restoreAllMocks(); }
+  });
 });

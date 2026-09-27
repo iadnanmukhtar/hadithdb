@@ -659,6 +659,7 @@
 	            return;
 	          }
 	          saving = true;
+	          let refreshPending = false;
 	          const action = isVirtual ? $search.find('[data-hadith-picker-action]').val() : 'add';
 	          $search.find('input, select, button').prop('disabled', true);
 	          setStatus(`${action === 'replace_selected' ? 'Replacing with' : 'Adding'} ${itemRef || 'hadith'}…`, false);
@@ -667,13 +668,21 @@
 	              ? { id: String(virtualId), prop: `hadith_virtual.${action}`, arabizi: false, value: itemId }
 	              : { id: `${parentId},${itemId}`, prop: 'hadiths_sim.add', arabizi: false, value: '' });
 	            if (result.code !== 200) { setStatus(result.message || 'Unable to save the hadith.', true); return; }
+	            if (isVirtual && result.refreshPending) {
+	              refreshPending = true;
+	              setStatus(`${itemRef || 'Hadith'} saved. The page is updating; refresh shortly to see the change.`, false);
+	              $('<button type="button">').addClass('btn btn-sm btn-outline-secondary mt-2').text('Refresh page').on('click', () => window.location.reload()).appendTo($status);
+	              return;
+	            }
 	            rememberUpdateSuccessToast(isVirtual ? 'Virtual hadith updated' : 'Similar hadith added', `${itemRef || 'The selected hadith'} was ${action === 'replace_selected' ? 'selected as the replacement' : 'added'}.`);
 	            window.location.reload();
 	          } catch (err) {
 	            setStatus('Unable to save the hadith. Please try again.', true);
 	          } finally {
-	            saving = false;
-	            $search.find('input, select, button').prop('disabled', false);
+	            if (!refreshPending) {
+	              saving = false;
+	              $search.find('input, select, button').prop('disabled', false);
+	            }
 	          }
 	        };
 	        $input.autocomplete({

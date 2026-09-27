@@ -65,11 +65,44 @@ describe('book update route', () => {
     const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
       await updateHandler()({ body: { value: 200 }, params: { id: '10', prop: 'hadith_virtual.replace_selected' }, user: { uid: 'admin' } }, res, jest.fn());
       expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json.mock.calls[0][0]).toMatchObject({ refreshPending: true });
+      await new Promise(resolve => setImmediate(resolve));
       expect(global.query).toHaveBeenCalledWith('CALL refresh_v_hadiths_virtual_snapshot(61)');
       expect(Utils.flushBookDiskCache).toHaveBeenCalledWith('riyad', { strict: true });
       expect(RuntimeRefresh.publish).toHaveBeenCalled();
       expect(Index.update).toHaveBeenCalledTimes(2);
       expect(Index.update).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ hId: 200, books: '{riyad}' }), { force: true, refresh: true });
+  });
+
+  test.each(['add_selected', 'replace_selected'])('acknowledges committed %s while snapshot refresh is blocked, even if refresh then fails', async action => {
+    const Editing = require('../lib/VirtualHadithEditing');
+    jest.spyOn(Editing, 'selectHadith').mockResolvedValue({ id: 10, bookId: 61, alias: 'riyad', hadithIds: [100,200] });
+    let failRefresh;
+    global.query = jest.fn(() => new Promise((resolve, reject) => { failRefresh = reject; }));
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    await updateHandler()({ body: { value: 200 }, params: { id: '10', prop: `hadith_virtual.${action}` }, user: { uid: 'admin' } }, res, jest.fn());
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 200, refreshPending: true }));
+    failRefresh(new Error('simulated snapshot outage after commit'));
+    await new Promise(resolve => setImmediate(resolve));
+    expect(res.status).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test('returns revised fields without waiting on post-save refresh and preserves success when it fails', async () => {
+    const Revision = require('../lib/HadithRevision');
+    const Snapshot = require('../lib/VirtualHadithSnapshot');
+    jest.spyOn(Revision, 'reviseHadithById').mockResolvedValue({ item: { body: 'متن', body_en: 'Saved revision' } });
+    jest.spyOn(Snapshot, 'queueHadith').mockImplementation(() => {});
+    let failRefresh;
+    global.query = jest.fn(() => new Promise((resolve, reject) => { failRefresh = reject; }));
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    await updateHandler()({ body: { value: '' }, params: { id: '123', prop: 'hadith.revise' }, user: { uid: 'admin' } }, res, jest.fn());
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 200, revised: expect.objectContaining({ body_en: 'Saved revision' }) }));
+    expect(Snapshot.queueHadith).toHaveBeenCalledWith('123');
+    failRefresh(new Error('cache read failed after revision was saved'));
+    await new Promise(resolve => setImmediate(resolve));
+    expect(res.status).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(200);
   });
 
   test('accepts the alias Set while invalidating tafsir caches', async () => {
