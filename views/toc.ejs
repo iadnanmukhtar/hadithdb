@@ -812,9 +812,7 @@
           toc[i].h2 = formatHeadingNumber(toc[i].h2);
           var title_en = truncateTitle(toc[i].title_en, 75);
           var title = truncateTitle(toc[i].title, 150);
-          var sections = (Array.isArray(toc[i].sections) ? toc[i].sections : []).filter(function (section) {
-            return !hadithIntroductionArticles.some(function (article) { return String(article.id) === String(section.id); });
-          });
+          var sections = Array.isArray(toc[i].sections) ? toc[i].sections : [];
           var hasSections = sections.length > 0;
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
