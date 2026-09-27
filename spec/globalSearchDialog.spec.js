@@ -97,6 +97,17 @@ describe('global search dialog', () => {
 		expect(html).not.toMatch(/type="checkbox"[^>]* checked/);
 	});
 
+	test('Quran search includes Arabic ayat alongside the contextual translation by default', async () => {
+		const html = await render([], {
+			initialSearchMode: 'quran',
+			quranSearchContext: 'study',
+			quranSearchCommentaryAliases: ['test-translation'],
+			quranSearchTranslations: [{ alias: 'test-translation', source: 'local', shortName_en: 'Test Translation' }]
+		});
+		expect(html).toContain('name="b" value="quran" checked');
+		expect(html).toContain('name="tafsir" value="test-translation" checked');
+	});
+
 	test('unfiltered Quran results reopen with Quran, Tafsir, and Translation visually unselected', async () => {
 		const html = await render([], { initialSearchMode: 'quran', isSearchResultsContext: true });
 		expect(html).not.toContain('name="b" value="quran" checked');

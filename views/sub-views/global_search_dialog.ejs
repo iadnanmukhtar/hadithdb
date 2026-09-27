@@ -33,7 +33,7 @@
   var selectedCommandQuranBookFilters = Array.isArray(quranSearchBookFilters) ? quranSearchBookFilters : [];
   var selectedCommandCommentaryAliases = Array.isArray(quranSearchCommentaryAliases) ? quranSearchCommentaryAliases : [];
   var hasCommandSpecificCommentary = selectedCommandCommentaryAliases.length > 0;
-  var commandQuranTextSelected = selectedCommandQuranBookFilters.includes('quran');
+  var commandQuranTextSelected = selectedCommandQuranBookFilters.includes('quran') || (initialSearchMode === 'quran' && !isSearchResultsContext);
   var commandAllTafsirSelected = !hasCommandSpecificCommentary && selectedCommandQuranBookFilters.some(function (alias) { return alias === 'tafsir' || alias === 'commentaries'; });
   var commandAllTranslationsSelected = selectedCommandQuranBookFilters.some(function (alias) { return alias === 'translation' || alias === 'translations'; });
 %>
