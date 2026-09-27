@@ -7735,6 +7735,8 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-picker-filters { text-align: left; }
 .hadith-picker-filters label { min-width: 0; max-width: 100%; }
 .hadith-picker-filters select { max-width: 100%; }
+.hadith-picker-books { position: relative; min-width: 0; flex-basis: 16rem; }
+.hadith-picker-book-menu { max-height: 16rem; overflow-y: auto; z-index: 1081; text-align: left; }
 .hadith-similar-autocomplete-menu .search-autocomplete-item[dir="ltr"] { text-align: left; }
 .hadith-similar-autocomplete-menu .search-autocomplete-item[dir="rtl"] { text-align: right; }
 .hadith-similar-admin-search .input-group-text { color: var(--bs-secondary-color); }

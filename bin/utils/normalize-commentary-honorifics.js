@@ -53,9 +53,10 @@ const mark='[ؐ-ؚـً-ٰٟۖ-ۭ]*';
 const candidatePattern=String.raw`peace(?:\s+and\s+blessings)?\s+be\s+upon\s+him|may\s+(?:Allah|God)(?:\s+the\s+Most\s+High)?\s+be\s+pleased|Allah bless him|upon whom be Allah|PBUH|[\[(]\s*SAW|Allah.{1,2}s\s+ﷺ|عليه الصلاة والسلام|(?:ص${mark}ل${mark}[ىي]|ر${mark}ض${mark}[ىي])${mark}\s+[اٱ]?${mark}ل${mark}ل${mark}ه|[\[(]\s*[ﷺؓ]|-\s*[ﷺؓ]\s*-`;
 async function main() {
  const args = process.argv.slice(2);
+ const introductions=args.includes('--introductions');
  const allowedTables=['hdith_hadith_sharh','hdith_toc_sharh','hadiths_commentary','toc'];
  const selected=args.find(a=>a.startsWith('--table='))?.slice(8);
- if (args.some(a => a !== '--apply' && a !== `--table=${selected}`) || (selected && !allowedTables.includes(selected))) throw Error('Usage: normalize-commentary-honorifics.js [--apply] [--table=<table>]');
+ if (args.some(a => a !== '--apply' && a !== '--introductions' && a !== `--table=${selected}`) || (selected && !allowedTables.includes(selected)) || (introductions && selected && selected!=='toc')) throw Error('Usage: normalize-commentary-honorifics.js [--apply] [--table=<table>] [--introductions]');
  const apply = args.includes('--apply');
  const c = require('mysql').createConnection(require(require('os').homedir()+'/.hadithdb/settings.json').mysql.connection);
  const q = promisify(c.query).bind(c);
@@ -65,11 +66,11 @@ async function main() {
  if (apply) {fs.mkdirSync(directory, {recursive:true});fs.writeFileSync(path.join(directory,'after.jsonl'),'');}
  try {
   if (apply) await q('START TRANSACTION');
-  for (const table of selected ? [selected] : allowedTables) {
+  for (const table of introductions ? ['toc'] : selected ? [selected] : allowedTables) {
    const columns = await q(`SHOW COLUMNS FROM ${table}`);
-   const fields = columns.map(r=>r.Field).filter(f=> /^(text|footnotes|intro)(_[a-z]+)?$/.test(f));
+   const fields = columns.map(r=>r.Field).filter(f=> (introductions ? /^intro(_[a-z]+)?$/ : /^(text|footnotes|intro)(_[a-z]+)?$/).test(f));
    if(apply) await q(`CREATE TEMPORARY TABLE honorific_stage (PRIMARY KEY (id)) AS SELECT id,${fields.join(',')} FROM ${table} WHERE 1=0`);
-   const scope=['hadiths_commentary','toc'].includes(table) ? "AND EXISTS (SELECT 1 FROM books b WHERE b.id=s.bookId AND b.type='tafsir')" : '';
+   const scope=!introductions && ['hadiths_commentary','toc'].includes(table) ? "AND EXISTS (SELECT 1 FROM books b WHERE b.id=s.bookId AND b.type='tafsir')" : '';
    const [total]=await q(`SELECT COUNT(*) n FROM ${table} s WHERE 1=1 ${scope}`);
    const report = manifest.tables[table] = {total:total.n,scanned:0, changed:0, fields:{}, samples:[]};
    let after = 0;
@@ -115,7 +116,10 @@ async function main() {
   }
  } catch(e){if(apply)await q('ROLLBACK').catch(()=>{});throw e;}
  finally{c.destroy();}
- if(apply)await refresh(manifest,directory);
+ if(apply){
+  if(introductions)for(const bookId of manifest.bookIds)require('child_process').execFileSync(process.execPath,[path.resolve(__dirname,'../buildSearchIndex.js'),'--book-id',String(bookId),'--toc-only'],{stdio:'inherit'});
+  await refresh(manifest,directory);
+ }
 }
 async function refresh(manifest,directory,options={}) {
  require('../../lib/Globals');

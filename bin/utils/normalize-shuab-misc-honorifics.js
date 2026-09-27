@@ -22,7 +22,8 @@ async function main() {
 	try {
 		const rows = await q("SELECT h.* FROM hadiths h JOIN books b ON b.id=h.bookId WHERE (b.alias='shuab' AND h.lastmod_user='epub:shuab') OR (b.alias='misc' AND h.lastmod_user='epub:mishkat-misc') ORDER BY h.id");
 		assert.equal(rows.filter(r => r.bookId === 100420).length, 10725);
-		assert.equal(rows.filter(r => r.bookId === 9999).length, 1842);
+		const [mishkat] = await q("SELECT properties FROM books WHERE alias='mishkat'");
+		assert.equal(rows.filter(r => r.bookId === 9999).length, JSON.parse(mishkat.properties).mishkatMiscImport.entries);
 		const aliases = await q('SELECT * FROM hadiths_virtual WHERE hadithId IN (?) ORDER BY id', [rows.map(r => r.id)]);
 		const physical = changes(rows, ['chain', 'body', 'footnote']);
 		physical.forEach(r => { r.text = [r.chain, r.body].filter(Boolean).join(' ').trim(); });

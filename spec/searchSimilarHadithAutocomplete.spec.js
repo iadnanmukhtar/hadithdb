@@ -67,3 +67,12 @@ test('exact references cannot bypass collection or grade filters', async () => {
     expect(query.bool.filter).toContainEqual({ term: { grade_id: 2 } });
   }
 });
+
+test('multiple selected books are combined as alternatives while retaining the grade filter', async () => {
+  global.books = [{ alias: 'bukhari', type: 'hadith' }, { alias: 'muslim', type: 'hadith' }];
+  Index.docsFromQuery.mockReset().mockResolvedValue([]);
+  await Search.a_similarHadithAutocomplete('faith', 12, {}, { books: ['bukhari', 'muslim'], grade: '100' });
+  const query = Index.docsFromQuery.mock.calls[0][1];
+  expect(query.bool.filter).toContainEqual({ terms: { book_alias: ['bukhari', 'muslim'] } });
+  expect(query.bool.filter).toContainEqual({ term: { grade_id: 100 } });
+});

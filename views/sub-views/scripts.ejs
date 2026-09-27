@@ -684,11 +684,11 @@
 	            try {
 	              if (searchController) searchController.abort();
 	              const controller = searchController = new AbortController();
-	              setStatus('', false);
+	              setStatus('Searching…', false);
 	              const params = new URLSearchParams({ q: request.term, limit: '12' });
-	              const book = $search.find('[data-hadith-picker-book]').val();
+	              const books = $search.find('[data-hadith-picker-book]').val() || [];
 	              const grade = $search.find('[data-hadith-picker-grade]').val();
-	              if (book) params.set('b', book);
+	              books.forEach(book => params.append('b', book));
 	              if (grade !== '') params.set('grade', grade);
 	              if (excludedIds.size) params.set('exclude', Array.from(excludedIds).join(','));
 	              if (excludedRefs.size) params.set('exclude_ref', Array.from(excludedRefs).join(','));
@@ -726,8 +726,46 @@
 	          return $('<li>').append($row).appendTo(list);
 	        };
 	        const refresh = () => { $input.autocomplete('close'); $input.autocomplete('search', $input.val()); };
-	        $search.find('[data-hadith-picker-book], [data-hadith-picker-grade], [data-hadith-picker-action]').on('change', refresh);
-	        $search.find('[data-hadith-picker-clear]').on('click', () => { $search.find('[data-hadith-picker-book], [data-hadith-picker-grade]').val(''); refresh(); });
+	        const $books = $search.find('[data-hadith-picker-book]');
+	        const $bookInput = $search.find('[data-hadith-picker-book-search]');
+	        const $chips = $search.find('[data-hadith-picker-book-chips]');
+	        const normalizeBookName = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f\u064b-\u065f\u0670\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').toLowerCase();
+	        const renderBooks = () => {
+	          $chips.empty();
+	          $books.find('option:selected').each(function () {
+	            const alias = this.value, label = this.textContent;
+	            $('<button type="button">').addClass('btn btn-sm btn-outline-secondary').attr('aria-label', `Remove ${label}`).text(`${label} ×`).on('click', () => {
+	              $books.val(($books.val() || []).filter(value => value !== alias));
+	              booksChanged();
+	            }).appendTo($chips);
+	          });
+	          $search.find('[data-hadith-picker-all-books]').prop('hidden', ($books.val() || []).length > 0);
+	        };
+	        const booksChanged = () => {
+	          if (searchController) searchController.abort();
+	          $input.autocomplete('close');
+	          renderBooks();
+	          setStatus('Filters updated. Enter or focus the hadith search to see results.', false);
+	        };
+	        $bookInput.autocomplete({
+	          appendTo: $bookInput.closest('.hadith-picker-books'), minLength: 0, delay: 0,
+	          source: (request, response) => {
+	            const terms = normalizeBookName(request.term).split(/\s+/).filter(Boolean);
+	            response($books.find('option').toArray().filter(option => !option.selected && terms.every(term => normalizeBookName(option.getAttribute('data-search-name')).includes(term))).map(option => ({ label: option.textContent, value: option.value })));
+	          },
+	          focus: event => event.preventDefault(),
+	          select: (event, ui) => {
+	            event.preventDefault();
+	            $books.val([...new Set([...($books.val() || []), ui.item.value])]);
+	            $bookInput.val('');
+	            booksChanged();
+	          },
+	          open: () => $bookInput.autocomplete('widget').addClass('hadith-picker-book-menu').css('width', $bookInput.outerWidth())
+	        });
+	        $bookInput.on('focus', () => { $input.autocomplete('close'); $bookInput.autocomplete('search', $bookInput.val()); });
+	        $search.find('[data-hadith-picker-grade], [data-hadith-picker-action]').on('change', refresh);
+	        $search.find('[data-hadith-picker-clear]').on('click', () => { $books.val([]); $bookInput.val('').autocomplete('close'); $search.find('[data-hadith-picker-grade]').val(''); renderBooks(); refresh(); });
+	        renderBooks();
 	        $input.on('focus', refresh);
 	      });
 	    };
@@ -873,6 +911,7 @@
 	    };
 
 	    const bindInlineEditors = (scope) => {
+	      bindHadithSimilarSearch(scope);
 	      $(scope || document).find('[data-delete-introduction-article]').each(function () {
 	        const $button = $(this);
 	        if ($button.data('deleteArticleBound')) return;
@@ -1215,14 +1254,13 @@
 	    bindHadithGradeSorting(document);
 	    bindHadithSharhSorting(document);
 	    bindHadithPairManagers(document);
-	    bindHadithSimilarSearch(document);
 	    const inlineEditorObserver = new MutationObserver((mutations) => {
 	      mutations.forEach((mutation) => {
 	        mutation.addedNodes.forEach((node) => {
 	          if (node.nodeType !== Node.ELEMENT_NODE)
 	            return;
 	          const $node = $(node);
-	          if ($node.is('._e') || $node.find('._e').length)
+	          if ($node.is('._e, [data-hadith-similar-search]') || $node.find('._e, [data-hadith-similar-search]').length)
 	            bindInlineEditors(node);
 	        });
 	      });

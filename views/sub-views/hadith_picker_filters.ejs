@@ -1,14 +1,18 @@
 <details class="hadith-picker-filters mt-2" dir="ltr">
   <summary class="small">Filters</summary>
   <div class="d-flex flex-wrap gap-2 mt-2">
-    <label class="small flex-grow-1">Collection
-      <select class="form-select form-select-sm" data-hadith-picker-book>
-        <option value="">All collections</option>
+    <div class="small flex-grow-1 hadith-picker-books">
+      <label class="d-block">Collections
+        <input type="search" class="form-control form-control-sm" data-hadith-picker-book-search aria-label="Search hadith books" placeholder="Type to add books…" autocomplete="off" dir="auto">
+      </label>
+      <select multiple hidden data-hadith-picker-book aria-label="Selected hadith books">
         <% (global.books || []).filter(b => b.alias !== 'quran' && b.type === 'hadith' && Number(b.hidden) !== 1).forEach(function (b) { %>
-          <option value="<%= b.alias %>"><%= b.shortName_en || b.title_en || b.alias %></option>
+          <option value="<%= b.alias %>" data-search-name="<%= [b.alias, b.shortName_en, b.title_en, b.shortName, b.title].filter(Boolean).join(' ') %>"><%= b.shortName_en || b.title_en || b.alias %></option>
         <% }); %>
       </select>
-    </label>
+      <div class="d-flex flex-wrap gap-1 mt-1" data-hadith-picker-book-chips aria-live="polite"></div>
+      <span class="text-muted" data-hadith-picker-all-books>All collections</span>
+    </div>
     <label class="small flex-grow-1">Grade
       <select class="form-select form-select-sm" data-hadith-picker-grade>
         <option value="">All grades</option>
