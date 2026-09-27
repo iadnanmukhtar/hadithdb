@@ -86,7 +86,7 @@ describe('Hadith introduction chapter navigation', () => {
 
 		expect(current.prev.path).toBe('muslim/56/8');
 		expect(current.next.path).toBe('muslim/introduction');
-		expect(lookup).toHaveBeenCalledTimes(3);
+		expect(lookup).toHaveBeenCalledTimes(4);
 	});
 
 	test('wraps forward from the final section to the introduction', async () => {
@@ -104,7 +104,7 @@ describe('Hadith introduction chapter navigation', () => {
 
 		expect(current.prev.path).toBe('muslim/56/7');
 		expect(current.next.path).toBe('muslim/introduction');
-		expect(lookup).toHaveBeenCalledTimes(3);
+		expect(lookup).toHaveBeenCalledTimes(4);
 	});
 
 	test('keeps lazy-loaded Hadith history on the public URL', () => {
