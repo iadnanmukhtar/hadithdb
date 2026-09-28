@@ -472,6 +472,7 @@ const startupPromise = (async () => {
   app.get('/terms', function termsOfService(req, res) {
     res.sendFile(TERMS_FILE, { cacheControl: false });
   });
+  app.use('/admin', require('./routes/admin'));
   app.get('/about', function aboutPage(req, res) {
     req.quranArea = Utils.isQuranSubdomainRequest(req);
     res.locals.req = req;

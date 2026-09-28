@@ -98,35 +98,6 @@
 		</section>
 		<% } %>
 
-		<% if (site.editMode) { %>
-		<div class="hadith-pair-library-actions d-flex flex-wrap gap-2 mt-4">
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#<%= metadataBase %>-pair-manager" data-hadith-pair-manager-open="narrator"><span class="bi bi-people" aria-hidden="true"></span> Manage narrator pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#<%= metadataBase %>-pair-manager" data-hadith-pair-manager-open="sharh_title"><span class="bi bi-book" aria-hidden="true"></span> Manage Sharḥ title pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#<%= metadataBase %>-pair-manager" data-hadith-pair-manager-open="attribution"><span class="bi bi-diagram-2" aria-hidden="true"></span> Manage attribution pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#<%= metadataBase %>-pair-manager" data-hadith-pair-manager-open="chain_classification"><span class="bi bi-link-45deg" aria-hidden="true"></span> Manage chain classification pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#<%= metadataBase %>-pair-manager" data-hadith-pair-manager-open="grader"><span class="bi bi-person" aria-hidden="true"></span> Manage grader pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#<%= metadataBase %>-pair-manager" data-hadith-pair-manager-open="grade"><span class="bi bi-check2-circle" aria-hidden="true"></span> Manage legacy grade pairs</button>
-		</div>
-		<aside class="modal fade hadith-pair-manager-modal" id="<%= metadataBase %>-pair-manager" tabindex="-1" aria-hidden="true" data-hadith-pair-manager>
-			<div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
-				<div class="modal-header"><h3 class="modal-title fs-5" data-hadith-pair-manager-title>Bilingual pairs</h3><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-				<div class="modal-body">
-					<label class="visually-hidden" for="<%= metadataBase %>-pair-filter">Filter pairs</label>
-					<div class="hadith-pair-manager-filter mb-3"><span class="bi bi-funnel" aria-hidden="true"></span><input id="<%= metadataBase %>-pair-filter" type="search" class="form-control form-control-sm hadith-admin-combobox" dir="auto" data-hadith-pair-manager-filter placeholder="Search Arabic or English (ignores diacritics)" aria-label="Search pairs by Arabic or English" autocomplete="off"></div>
-					<div class="hadith-pair-manager-list" data-hadith-pair-manager-list></div>
-					<div class="hadith-pair-manager-empty text-muted" data-hadith-pair-manager-empty hidden>No saved pairs.</div>
-					<hr>
-					<h4 class="fs-6">Add a new pair</h4>
-					<div class="hadith-pair-manager-new" data-hadith-pair-manager-new>
-						<input type="text" class="form-control form-control-sm hadith-admin-combobox" lang="ar" dir="rtl" data-hadith-pair-value-ar placeholder="Arabic value" aria-label="Arabic value">
-						<input type="text" class="form-control form-control-sm hadith-admin-combobox" lang="en" dir="ltr" data-hadith-pair-value-en placeholder="English value" aria-label="English value">
-						<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-hadith-pair-add><span class="bi bi-plus-lg" aria-hidden="true"></span> Add pair</button>
-					</div>
-					<div class="small mt-2" data-hadith-pair-manager-status aria-live="polite"></div>
-				</div>
-			</div></div>
-		</aside>
-		<% } %>
 	</div>
 </section>
 

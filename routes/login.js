@@ -53,6 +53,7 @@ async function createLoginResponse(req, res, user) {
     admin: adminUser
   };
   const localToken = LocalAuth.signUser(loginUser);
+  res.clearCookie('hadith_admin_session', { path: '/admin' });
   clearAuthCookie(res, req, 'admin');
   clearAuthCookie(res, req, 'adminUser');
   clearAuthCookie(res, req, 'adminChecked');
@@ -81,6 +82,7 @@ router.get('/logout', async function (req, res) {
   clearAuthCookie(res, req, 'admin');
   clearAuthCookie(res, req, 'adminUser');
   clearAuthCookie(res, req, 'adminChecked');
+  res.clearCookie('hadith_admin_session', { path: '/admin' });
   clearAuthCookie(res, req, 'userId');
   clearAuthCookie(res, req, 'editMode');
   clearAuthCookie(res, req, 'quranMushafBookmarkPage');

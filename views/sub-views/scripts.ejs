@@ -574,6 +574,8 @@
 	            valueEn: reqBody.valueEn,
 	            originalAr: reqBody.originalAr,
 	            originalKey: reqBody.originalKey,
+	            mergeKeys: reqBody.mergeKeys,
+	            targetKey: reqBody.targetKey,
 	            quranSectionPath: reqBody.quranSectionPath,
 	            hdithUrl: reqBody.hdithUrl,
           })
@@ -1105,6 +1107,10 @@
 	        const $status = $modal.find('[data-hadith-pair-manager-status]');
 	        const $filter = $modal.find('[data-hadith-pair-manager-filter]');
 	        let currentType = 'narrator';
+	        const selected = new Map();
+	        const $target = $modal.find('[data-pair-merge-target]');
+	        const $merge = $modal.find('[data-pair-merge]');
+	        let merging = false;
 	        let filterTimer = null;
 	        let loadGeneration = 0;
 	        let searchController = null;
@@ -1133,11 +1139,63 @@
 	          const result = await update({ id: '0', prop: 'hdith_pair.delete', value: '', arabizi: false, pairType: currentType, originalAr, originalKey });
 	          if (result.code !== 200) throw new Error(result.message || 'Unable to remove pair');
 	        };
+	        const renderSelection = () => {
+	          const previous = $target.val();
+	          const $selected = $modal.find('[data-pair-merge-selected]').empty();
+	          $target.empty().append($('<option>').val('').text('Choose the pair to keep'));
+	          selected.forEach(pair => {
+	            const label = `${pair.value_en || ''} — ${pair.value_ar}`;
+	            $target.append($('<option>').val(pair.key).text(label));
+	            const $remove = $('<button type="button">').addClass('btn btn-sm btn-link').text('Remove').attr('aria-label', `Deselect ${label}`);
+	            $remove.on('click', () => {
+	              selected.delete(pair.key);
+	              $list.find('[data-pair-select]').each(function () { if (this.value === pair.key) this.checked = false; });
+	              renderSelection();
+	            });
+	            $selected.append($('<li>').append($('<span>').text(label), $remove));
+	          });
+	          if (selected.has(previous)) $target.val(previous);
+	          else { $modal.find('[data-pair-merge-ar], [data-pair-merge-en]').val(''); }
+	          $merge.prop('disabled', selected.size < 2 || !$target.val() || merging);
+	        };
+	        $target.on('change', () => {
+	          const pair = selected.get($target.val());
+	          $modal.find('[data-pair-merge-ar]').val(pair ? pair.value_ar : '');
+	          $modal.find('[data-pair-merge-en]').val(pair ? pair.value_en : '');
+	          $merge.prop('disabled', selected.size < 2 || !pair || merging);
+	        });
+	        $modal.find('[data-pair-merge-clear]').on('click', () => {
+	          selected.clear(); $list.find('[data-pair-select]').prop('checked', false); renderSelection();
+	        });
+	        $merge.on('click', async () => {
+	          if (merging || selected.size < 2 || !$target.val()) return;
+	          const valueAr = $modal.find('[data-pair-merge-ar]').val().trim();
+	          const valueEn = $modal.find('[data-pair-merge-en]').val().trim();
+	          if (!valueAr || !valueEn) { setStatus('Enter both Arabic and English target names.', true); return; }
+	          const names = [...selected.values()].map(pair => `${pair.value_en} — ${pair.value_ar}`).join('\n');
+	          if (!window.confirm(`Merge these pairs:\n${names}\n\nInto: ${valueEn} — ${valueAr}\n\nAll matching metadata references will use the target names.`)) return;
+	          merging = true;
+	          $modal.find('input, select, button').prop('disabled', true);
+	          clearTimeout(filterTimer); ++loadGeneration;
+	          if (searchController) searchController.abort();
+	          setStatus('Merging pairs and refreshing affected hadiths…');
+	          try {
+	            const result = await update({ id: '0', prop: 'hdith_pair.merge', value: '', arabizi: false,
+	              pairType: currentType, mergeKeys: [...selected.keys()], targetKey: $target.val(), valueAr, valueEn });
+	            if (result.code !== 200) throw new Error(result.message || 'Unable to merge pairs');
+	            selected.clear(); renderSelection();
+	            await load();
+	            setStatus(result.message, !!result.warning);
+	          } catch (err) { setStatus(err.message, true); }
+	          finally { merging = false; $modal.find('input, select, button').prop('disabled', false); renderSelection(); }
+	        });
 	        const render = (pairs) => {
 	          $list.empty();
 	          $empty.prop('hidden', pairs.length > 0);
 	          pairs.forEach(pair => {
 	            const $row = $('<div>').addClass('hadith-pair-manager-row').attr('data-original-ar', pair.value_ar || '').attr('data-original-key', pair.key || '');
+	            const $pick = $('<input type="checkbox" data-pair-select>').val(pair.key).prop('checked', selected.has(pair.key)).attr('aria-label', `Select ${pair.value_en || pair.value_ar} for merging`);
+	            $pick.on('change', function () { if (this.checked) selected.set(pair.key, pair); else selected.delete(pair.key); renderSelection(); });
 	            const $ar = $('<input>').attr({ type: 'text', lang: 'ar', dir: 'rtl', 'aria-label': 'Arabic value', placeholder: 'Arabic value' }).addClass('form-control form-control-sm hadith-admin-combobox').val(pair.value_ar || '');
 	            const $en = $('<input>').attr({ type: 'text', lang: 'en', dir: 'ltr', 'aria-label': 'English value', placeholder: 'English value' }).addClass('form-control form-control-sm hadith-admin-combobox').val(pair.value_en || '');
 	            const $save = $('<button>').attr({ type: 'button', title: 'Save pair', 'aria-label': 'Save pair' }).addClass('btn btn-sm btn-outline-secondary hadith-admin-action hadith-admin-action-icon').html('<span class="bi bi-check-lg" aria-hidden="true"></span>');
@@ -1146,8 +1204,9 @@
 	              try {
 	                setStatus('Saving…');
 	                await savePair($ar.val().trim(), $en.val().trim(), $row.attr('data-original-ar'), $row.attr('data-original-key'));
-	                setStatus('Pair saved.');
+	                selected.clear(); renderSelection();
 	                await load();
+	                setStatus('Pair saved.');
 	              } catch (err) { setStatus(err.message, true); }
 	            });
 	            $delete.on('click', async () => {
@@ -1155,11 +1214,12 @@
 	              try {
 	                setStatus('Removing…');
 	                await deletePair($row.attr('data-original-ar'), $row.attr('data-original-key'));
-	                setStatus('Pair removed.');
+	                selected.clear(); renderSelection();
 	                await load();
+	                setStatus('Pair removed.');
 	              } catch (err) { setStatus(err.message, true); }
 	            });
-	            $row.append($ar, $en, $('<span>').addClass('hadith-pair-manager-row-actions').append($save, $delete)).appendTo($list);
+	            $row.append($('<label>').addClass('hadith-pair-select').append($pick, $('<span>').text('Merge')), $ar, $en, $('<span>').addClass('hadith-pair-manager-row-actions').append($save, $delete)).appendTo($list);
 	          });
 	        };
 	        const load = async () => {
@@ -1188,6 +1248,7 @@
 	        };
 	        $(`[data-bs-target="#${$modal.attr('id')}"][data-hadith-pair-manager-open]`).on('click', function () {
 	          currentType = $(this).attr('data-hadith-pair-manager-open') || 'narrator';
+	          selected.clear(); renderSelection();
 	          $modal.find('[data-hadith-pair-manager-title]').text(labels[currentType] || 'Bilingual pairs');
 	          $filter.val('');
 	          clearTimeout(filterTimer);
@@ -1482,14 +1543,40 @@
   }
   window.setHadithAdminMode = setHadithAdminMode;
 
+  let adminPageLinkCheck = null;
+  async function ensureAdminPageLinks() {
+      if (adminPageLinkCheck) return adminPageLinkCheck;
+      const session = readHadithLoginSessionCache();
+      if (!session || !session.token) return;
+      adminPageLinkCheck = (async () => {
+        try {
+          const response = await fetch('/admin/session', { method: 'POST', headers: { Authorization: `Bearer ${session.token}` } });
+          if (!response.ok) { document.querySelectorAll('.admin-page-link').forEach(el => el.remove()); return; }
+          if (window.hadithAdmin !== true) return;
+          ['.site-navbar menu.d-md-block ul.nav', '#offcanvas-topnav .offcanvas-col1'].forEach(selector => {
+            const list = document.querySelector(selector);
+            if (!list || list.querySelector('.admin-page-link')) return;
+            const item = document.createElement('li');
+            item.className = 'nav-item admin-page-link';
+            const link = document.createElement('a');
+            link.className = 'nav-link'; link.href = '/admin'; link.textContent = 'Admin'; link.rel = 'nofollow';
+            item.appendChild(link); list.appendChild(item);
+          });
+        } catch (err) { /* Keep administrative navigation hidden when verification fails. */ }
+        finally { adminPageLinkCheck = null; }
+      })();
+      return adminPageLinkCheck;
+  }
+
   function renderHadithAdminGear() {
       if (window.hadithAdmin !== true) {
         if (window.hadithAdminSessionChecked) {
-          document.querySelectorAll('.edit-gear').forEach((el) => el.remove());
+          document.querySelectorAll('.edit-gear, .admin-page-link').forEach((el) => el.remove());
           setHadithEditMode(false);
         }
         return;
       }
+      ensureAdminPageLinks();
       const editMode = getHadithEditMode();
       const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
       const desktopList = document.querySelector('.site-navbar menu.d-md-block ul.nav');

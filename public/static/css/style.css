@@ -13492,3 +13492,12 @@ html[data-account-signed-in="true"] #notebook-signin { display: none !important;
 [data-notebook-drive-connect] { flex-shrink: 0; }
 .notebook-drive-icon { width: 1.25em; height: 1.1em; margin-inline-end: .4em; vertical-align: -.15em; filter: grayscale(1); opacity: .5; }
 [data-notebook-drive-panel][data-connected="true"] .notebook-drive-icon { filter: none; opacity: 1; }
+
+.admin-pairs-page .hadith-pair-manager-row { grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto; }
+.hadith-pair-select { display: flex; gap: .35rem; align-items: center; font-size: .8rem; }
+@media (max-width: 575.98px) {
+  .admin-pairs-page .hadith-pair-manager-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .admin-pairs-page .hadith-pair-select { grid-column: 1 / -1; }
+  .admin-pairs-page .hadith-pair-manager-row > input { grid-column: 1; }
+  .admin-pairs-page .hadith-pair-manager-row-actions { grid-column: 2; grid-row: 2 / span 2; }
+}

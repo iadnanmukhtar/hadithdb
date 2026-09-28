@@ -18,6 +18,7 @@ const HdithEnrichment = require('../lib/HdithEnrichment');
 const HdithMetadata = require('../lib/HdithMetadata');
 const HadithHeadingSharh = require('../lib/HadithHeadingSharh');
 const HadithBilingualPairs = require('../lib/HadithBilingualPairs');
+const HadithPairRefresh = require('../lib/HadithPairRefresh');
 const HadithNarratorIndex = require('../lib/HadithNarratorIndex');
 const HadithAttributions = require('../lib/HadithAttributions');
 const HadithChainCategories = require('../lib/HadithChainCategories');
@@ -54,7 +55,9 @@ async function requireAdmin(req, res, next) {
   }
   if (!user)
     return next(createError(401, 'Authentication required'));
-  const admin = user.admin === true || await UserSettings.isAdminUser(user.uid);
+  const admin = String(req.params.prop || '').startsWith('hdith_pair.')
+    ? await UserSettings.isAdminUser(user.uid)
+    : user.admin === true || await UserSettings.isAdminUser(user.uid);
   if (!admin)
     return next(createError(403, 'Update unauthorized'));
   req.user = user;
@@ -286,7 +289,21 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 	  var bilingualPairOriginalKey = Utils.trimToEmpty(req.body.originalKey);
       if (!HadithBilingualPairs.TYPES.includes(bilingualPairType))
         throw createError(400, 'Invalid bilingual pair type');
-      if (col === 'save') {
+      if (col === 'merge') {
+        status.pair = await HadithBilingualPairs.merge(bilingualPairType, req.body.mergeKeys, req.body.targetKey, bilingualPairArabic, bilingualPairEnglish);
+        status.message = `${status.pair.merged_count} pairs merged. All matching metadata references now use the target pair.`;
+        try {
+          await HadithPairRefresh.refresh(status.pair);
+          if (['sharh_title', 'grader', 'grade'].includes(bilingualPairType)) {
+            await reindexEnrichedHadithIds(status.pair.affected_hadith_ids);
+            await Index.refresh('hadiths');
+          }
+        } catch (error) {
+          debug.error(`Pair merge committed but refresh failed: ${error.stack || error}`);
+          status.warning = true;
+          status.message = 'Pairs merged in the database, but search/cache refresh failed. Do not repeat the merge; refresh the affected books before relying on search results.';
+        }
+      } else if (col === 'save') {
         if (!bilingualPairArabic || !bilingualPairEnglish)
           throw createError(400, 'Both Arabic and English values are required');
         status.pair = await HadithBilingualPairs.save(bilingualPairType, bilingualPairArabic, bilingualPairEnglish, bilingualPairOriginalArabic, bilingualPairOriginalKey);

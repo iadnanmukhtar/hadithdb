@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+  const site = Object.assign({}, global.settings.site, { admin: true, editMode: true });
+  const page = { menu: 'Admin', title_en: 'Administration', description_en: 'Manage shared hadith metadata.', canonical: '/admin', noindex: true, nofollow: true, context: {} };
+%>
+<%- include('sub-views/head.ejs', { site, page }); %>
+</head>
+<body>
+<%- include('sub-views/header.ejs', { site, page }); %>
+<main class="container py-4 admin-pairs-page">
+<h1>Administration</h1>
+<p>Manage shared Arabic and English names and labels. Select multiple pairs and choose the target to replace their existing metadata references.</p>
+
+		
+		<div class="hadith-pair-library-actions d-flex flex-wrap gap-2 mt-4">
+			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="narrator"><span class="bi bi-people" aria-hidden="true"></span> Manage narrator pairs</button>
+			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="sharh_title"><span class="bi bi-book" aria-hidden="true"></span> Manage Sharḥ title pairs</button>
+			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="attribution"><span class="bi bi-diagram-2" aria-hidden="true"></span> Manage attribution pairs</button>
+			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="chain_classification"><span class="bi bi-link-45deg" aria-hidden="true"></span> Manage chain classification pairs</button>
+			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="grader"><span class="bi bi-person" aria-hidden="true"></span> Manage grader pairs</button>
+			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="grade"><span class="bi bi-check2-circle" aria-hidden="true"></span> Manage legacy grade pairs</button>
+		</div>
+		<aside class="modal fade hadith-pair-manager-modal" id="admin-pair-manager" tabindex="-1" aria-hidden="true" data-hadith-pair-manager>
+			<div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+				<div class="modal-header"><h3 class="modal-title fs-5" data-hadith-pair-manager-title>Bilingual pairs</h3><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+				<div class="modal-body">
+					<label class="visually-hidden" for="admin-pair-filter">Filter pairs</label>
+					<div class="hadith-pair-manager-filter mb-3"><span class="bi bi-funnel" aria-hidden="true"></span><input id="admin-pair-filter" type="search" class="form-control form-control-sm hadith-admin-combobox" dir="auto" data-hadith-pair-manager-filter placeholder="Search Arabic or English (ignores diacritics)" aria-label="Search pairs by Arabic or English" autocomplete="off"></div>
+					<section class="hadith-pair-merge border rounded p-3 mb-3" aria-label="Merge selected pairs">
+<h4 class="fs-6">Merge selected pairs</h4>
+<p class="small text-muted">Selections stay when you search. Choose the pair to keep, then review its Arabic and English names.</p>
+<ul data-pair-merge-selected class="list-unstyled"></ul>
+<label for="pair-merge-target">Target pair</label>
+<select id="pair-merge-target" class="form-select form-select-sm mb-2" data-pair-merge-target><option value="">Select pairs below</option></select>
+<div class="row g-2 mb-2">
+<div class="col-sm-6"><label for="pair-merge-ar">Target Arabic name</label><input id="pair-merge-ar" class="form-control" lang="ar" dir="rtl" data-pair-merge-ar maxlength="255"></div>
+<div class="col-sm-6"><label for="pair-merge-en">Target English name</label><input id="pair-merge-en" class="form-control" lang="en" data-pair-merge-en maxlength="255"></div>
+</div>
+<button type="button" class="btn btn-primary btn-sm" data-pair-merge disabled>Merge selected pairs</button>
+<button type="button" class="btn btn-outline-secondary btn-sm" data-pair-merge-clear>Clear selection</button>
+</section>
+<div class="hadith-pair-manager-list" data-hadith-pair-manager-list></div>
+					<div class="hadith-pair-manager-empty text-muted" data-hadith-pair-manager-empty hidden>No saved pairs.</div>
+					<hr>
+					<h4 class="fs-6">Add a new pair</h4>
+					<div class="hadith-pair-manager-new" data-hadith-pair-manager-new>
+						<input type="text" class="form-control form-control-sm hadith-admin-combobox" lang="ar" dir="rtl" data-hadith-pair-value-ar placeholder="Arabic value" aria-label="Arabic value">
+						<input type="text" class="form-control form-control-sm hadith-admin-combobox" lang="en" dir="ltr" data-hadith-pair-value-en placeholder="English value" aria-label="English value">
+						<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-hadith-pair-add><span class="bi bi-plus-lg" aria-hidden="true"></span> Add pair</button>
+					</div>
+					<div class="small mt-2" data-hadith-pair-manager-status aria-live="polite"></div>
+				</div>
+			</div></div>
+		</aside>
+		
+</main>
+<%- include('sub-views/footer.ejs', { site, page }); %>
+<%- include('sub-views/scripts.ejs', { site, page }); %>
+</body></html>
