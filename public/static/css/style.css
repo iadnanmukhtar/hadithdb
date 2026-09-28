@@ -7810,6 +7810,25 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-sharh-drag-handle:active { cursor: grabbing; }
 .hadith-sharh-entry ._e[data-placeholder]:empty::before { color: var(--bs-secondary-color); content: attr(data-placeholder); }
 .hadith-sharh-body._e[data-markdown-source=""]:not(.markdown-editing) { color: var(--bs-secondary-color); }
+/* Keep the main text and source footnote editors visible even when empty. */
+.hadith-content-editor-label {
+	margin-block: .65rem .25rem;
+	color: var(--bs-secondary-color);
+	font-size: .85rem;
+	line-height: 1.5;
+}
+.h .hadith-content-editor._e {
+	display: block;
+	min-height: 3rem;
+	padding: .5rem .65rem;
+	border: 1px dashed var(--bs-border-color);
+	border-radius: .375rem;
+	cursor: text;
+}
+.h .hadith-content-editor._e:focus {
+	border-style: solid;
+	border-color: var(--bs-primary);
+}
 .hadith-language-item ._e[data-placeholder]:empty::before { color: var(--bs-secondary-color); content: attr(data-placeholder); }
 .hadith-language-item ._e[data-markdown-source=""]:not(.markdown-editing) { color: var(--bs-secondary-color); }
 .hadith-sharh-delete { align-items: center; display: inline-flex; justify-content: center; padding: .2rem .35rem; }
