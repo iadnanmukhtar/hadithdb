@@ -576,6 +576,7 @@
 	            originalKey: reqBody.originalKey,
 	            mergeKeys: reqBody.mergeKeys,
 	            targetKey: reqBody.targetKey,
+                grader: reqBody.grader,
 	            quranSectionPath: reqBody.quranSectionPath,
 	            hdithUrl: reqBody.hdithUrl,
           })
@@ -1097,6 +1098,70 @@
 	      });
 	    };
 
+        const bindLegacyGraders = () => {
+          const $modal = $('[data-legacy-graders]');
+          if (!$modal.length) return;
+          const $select = $modal.find('[data-legacy-grader-select]');
+          const $filter = $modal.find('[data-legacy-grader-filter]');
+          const $form = $modal.find('[data-legacy-grader-form]');
+          const $status = $modal.find('[data-legacy-grader-status]');
+          const fields = ['shortName', 'shortName_en', 'name', 'name_en'];
+          let rows = [], currentId = 'new', busy = false;
+          const normalize = value => String(value || '').normalize('NFKD').replace(/\p{M}/gu, '').replace(/[أإآٱ]/g, 'ا').toLowerCase();
+          const status = (text, error = false) => $status.text(text).toggleClass('text-danger', error);
+          const renderOptions = () => {
+            const term = normalize($filter.val());
+            $select.empty().append($('<option>').val('new').text('Add a new grader'));
+            rows.filter(row => String(row.id) === currentId || fields.some(field => normalize(row[field]).includes(term))).forEach(row => {
+              $select.append($('<option>').val(row.id).text(`${row.shortName_en} — ${row.shortName}`));
+            });
+            $select.val(currentId);
+          };
+          const choose = id => {
+            currentId = String(id || 'new');
+            const row = rows.find(row => String(row.id) === currentId);
+            fields.forEach(field => $form.find(`[name="${field}"]`).val(row ? row[field] || '' : ''));
+            $modal.find('[data-legacy-grader-usage]').text(row ? `Used by ${row.usage_count || 0} hadiths. Record ID: ${row.id}.` : 'The new grader will be available in the legacy grader dropdown.');
+            $modal.find('[data-legacy-grader-save]').text(row ? 'Save changes' : 'Add grader');
+            renderOptions();
+          };
+          const load = async () => {
+            const response = await fetch('/admin/legacy-graders', { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error(`Unable to load legacy graders (${response.status}). Reload /admin to renew your session.`);
+            rows = await response.json();
+            choose(currentId);
+          };
+          $modal.on('show.bs.modal', async () => {
+            if (busy) return;
+            busy = true; $modal.find('input,select,button').prop('disabled', true);
+            status('Loading legacy graders…');
+            try { await load(); status(''); } catch (error) { status(error.message, true); }
+            finally { busy = false; $modal.find('input,select,button').prop('disabled', false); }
+          });
+          $filter.on('input', renderOptions);
+          $select.on('change', () => { choose($select.val()); status(''); });
+          $modal.find('[data-legacy-grader-new]').on('click', () => { $filter.val(''); choose('new'); status(''); });
+          $form.on('submit', async event => {
+            event.preventDefault();
+            if (busy) return;
+            const grader = Object.fromEntries(fields.map(field => [field, $form.find(`[name="${field}"]`).val().trim()]));
+            busy = true; $modal.find('input,select,button').prop('disabled', true);
+            status('Saving legacy grader and refreshing affected hadiths…');
+            let saved = false;
+            try {
+              const result = await update({ id: currentId, prop: 'legacy_grader.save', value: '', arabizi: false, grader });
+              if (result.code !== 200) throw new Error(result.message || 'Unable to save legacy grader');
+              saved = true;
+              currentId = String(result.grader.id);
+              rows = rows.filter(row => String(row.id) !== currentId).concat(result.grader);
+              choose(currentId);
+              await load();
+              status(result.message, !!result.warning);
+            } catch (error) { status(saved ? `Grader saved. The list could not be refreshed: ${error.message}` : error.message, true); }
+            finally { busy = false; $modal.find('input,select,button').prop('disabled', false); }
+          });
+        };
+
 	    const bindHadithPairManagers = (scope) => {
 	      $(scope || document).find('[data-hadith-pair-manager]').addBack('[data-hadith-pair-manager]').each(function () {
 	        const $modal = $(this);
@@ -1324,6 +1389,7 @@
 	    bindHadithGradeSorting(document);
 	    bindHadithSharhSorting(document);
 	    bindHadithPairManagers(document);
+        bindLegacyGraders();
 	    const inlineEditorObserver = new MutationObserver((mutations) => {
 	      mutations.forEach((mutation) => {
 	        mutation.addedNodes.forEach((node) => {

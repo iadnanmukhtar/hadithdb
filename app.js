@@ -225,19 +225,6 @@ const buildQuranPathSuggestions = (req, queryString) => {
   ];
 };
 
-const buildQuranHostRedirectPath = (req) => {
-  const match = req.path.match(/^\/quran\/([1-9]\d*)\/([1-9]\d*)\/?$/);
-  if (!match)
-    return req.originalUrl;
-  const surahNum = Number(match[1]);
-  const ayahNum = Number(match[2]);
-  const surah = (global.surahs || []).find(item => Number(item.num) === surahNum);
-  const ayahCount = Number(surah && (surah.ayahs || surah.ayat));
-  if (!surah || !Number.isInteger(ayahNum) || ayahNum < 1 || ayahNum > ayahCount)
-    return req.originalUrl;
-  return appendQueryString(`/quran:${surahNum}:${ayahNum}`, requestQueryString(req));
-};
-
 const visibleHadithBookForAlias = (alias) => {
   return (global.books || []).find(item => item
     && Number(item.hidden) === 0
@@ -527,7 +514,8 @@ const startupPromise = (async () => {
     const quranBaseUrl = Utils.quranBaseUrl(req);
     if (!quranBaseUrl || Utils.requestMatchesBaseUrl(req, quranBaseUrl))
       return next();
-    return res.redirect(301, Utils.quranUrl(req, buildQuranHostRedirectPath(req)));
+    // Slash paths identify Study sections; colon paths identify ayahs.
+    return res.redirect(301, Utils.quranUrl(req, req.originalUrl));
   });
 
   const highlightsRouter = require('./routes/highlights');

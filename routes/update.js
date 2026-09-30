@@ -55,7 +55,7 @@ async function requireAdmin(req, res, next) {
   }
   if (!user)
     return next(createError(401, 'Authentication required'));
-  const admin = String(req.params.prop || '').startsWith('hdith_pair.')
+  const admin = /^(hdith_pair|legacy_grader)\./.test(String(req.params.prop || ''))
     ? await UserSettings.isAdminUser(user.uid)
     : user.admin === true || await UserSettings.isAdminUser(user.uid);
   if (!admin)
@@ -280,6 +280,19 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         });
         VirtualHadithSnapshot.queueHadith(ids[0]);
       }
+
+    } else if (type === 'legacy_grader') {
+      if (col !== 'save') throw createError(400, 'Invalid legacy grader action');
+      status.grader = await require('../lib/LegacyGraders').save(req.params.id, req.body.grader);
+      status.message = req.params.id === 'new' ? 'Legacy grader added' : 'Legacy grader saved';
+      try {
+        await HadithPairRefresh.refresh(status.grader);
+      } catch (error) {
+        debug.error(`Legacy grader saved but refresh failed: ${error.stack || error}`);
+        status.warning = true;
+        status.message = 'Legacy grader saved, but search/cache refresh failed. Do not add it again; refresh the affected books.';
+      }
+      status.code = 200;
 
     } else if (type === 'hdith_pair') {
       var bilingualPairType = Utils.trimToEmpty(req.body.pairType);

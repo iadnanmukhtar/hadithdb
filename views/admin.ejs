@@ -15,6 +15,7 @@
 
 		
 		<div class="hadith-pair-library-actions d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-legacy-graders">Manage legacy graders</button>
 			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="narrator"><span class="bi bi-people" aria-hidden="true"></span> Manage narrator pairs</button>
 			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="sharh_title"><span class="bi bi-book" aria-hidden="true"></span> Manage Sharḥ title pairs</button>
 			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="attribution"><span class="bi bi-diagram-2" aria-hidden="true"></span> Manage attribution pairs</button>
@@ -55,6 +56,30 @@
 			</div></div>
 		</aside>
 		
+<aside class="modal fade" id="admin-legacy-graders" tabindex="-1" aria-labelledby="legacy-graders-title" aria-hidden="true" data-legacy-graders>
+  <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title fs-5" id="legacy-graders-title">Legacy graders</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-body">
+      <p>These records populate the legacy grader dropdown on hadith pages. Editing a record keeps its existing hadith assignments.</p>
+      <label for="legacy-grader-filter" class="form-label">Find a grader</label>
+      <input id="legacy-grader-filter" class="form-control mb-3" type="search" placeholder="Search Arabic or English" data-legacy-grader-filter>
+      <div class="d-flex gap-2 mb-3">
+        <select class="form-select" aria-label="Legacy grader to edit" data-legacy-grader-select><option value="new">Add a new grader</option></select>
+        <button type="button" class="btn btn-outline-secondary text-nowrap" data-legacy-grader-new>New grader</button>
+      </div>
+      <form data-legacy-grader-form>
+        <div class="row g-3">
+          <% for (const field of [{ key: 'shortName', label: 'Arabic short name', ar: true, required: true }, { key: 'shortName_en', label: 'English short name', required: true }, { key: 'name', label: 'Arabic full name (optional)', ar: true }, { key: 'name_en', label: 'English full name (optional)' }]) { %>
+          <div class="col-sm-6"><label class="form-label" for="legacy-grader-<%= field.key %>"><%= field.label %></label><input class="form-control" id="legacy-grader-<%= field.key %>" name="<%= field.key %>" lang="<%= field.ar ? 'ar' : 'en' %>" dir="<%= field.ar ? 'rtl' : 'ltr' %>" maxlength="<%= field.required ? 45 : 255 %>" <%= field.required ? 'required' : '' %>></div>
+          <% } %>
+        </div>
+        <p class="small text-muted mt-3" data-legacy-grader-usage></p>
+        <button class="btn btn-primary" type="submit" data-legacy-grader-save>Add grader</button>
+      </form>
+      <div class="small mt-3" role="status" aria-live="polite" data-legacy-grader-status></div>
+    </div>
+  </div></div>
+</aside>
 </main>
 <%- include('sub-views/footer.ejs', { site, page }); %>
 <%- include('sub-views/scripts.ejs', { site, page }); %>
