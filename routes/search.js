@@ -2955,8 +2955,8 @@ router.get('/:bookAlias', async function (req, res, next) {
   });
   var book = visibleBookFromParam(req.params.bookAlias);
   if (book) {
-    if ('download' in req.query && ('json' in req.query || 'epub' in req.query)) {
-      req.params.format = 'epub' in req.query ? 'epub' : 'json';
+    if ('json' in req.query || ('download' in req.query && 'epub' in req.query)) {
+      req.params.format = 'download' in req.query && 'epub' in req.query ? 'epub' : 'json';
       return BookDownloads.sendHadithBook(req, res, next);
     }
     var prevBook = null;

@@ -335,7 +335,8 @@ npm run quran-memorization-optimize -- --apply
 
 ### Search, downloads, and integration
 
-Hadith book JSON downloads include per-item `metadata` with all stored grader
+Hadith book JSON endpoints (`/<book>.json`, `/<book>?json`, and
+`/<book>?download&json`) share the whole-book exporter and include per-item `metadata` with all stored grader
 opinions (including the primary grade), narrators with reliability and stored
 `death_text`, deduplicated `related_reports` references, and the complete attached
 `sharh` list with attribution and full Arabic/English texts when available.

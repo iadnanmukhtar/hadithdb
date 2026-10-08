@@ -14,6 +14,7 @@ const RuntimeRefresh = require('../../lib/RuntimeRefresh');
 	const rows = await global.query(`SELECT id, alias FROM books WHERE alias='${Utils.escSQL(alias)}' LIMIT 1`);
 	if (!rows.length)
 		throw new Error(`Book not found: ${alias}`);
+	global.books = rows;
 	const result = await Utils.flushBookDiskCache(alias, { strict: true });
 	const generation = await RuntimeRefresh.publish();
 	console.log(JSON.stringify({ ...result, runtimeGeneration: generation }, null, 2));

@@ -10,8 +10,11 @@ const Utils = require('../lib/Utils');
 describe('full book disk cache flush', () => {
 	let root;
 	let db;
+	let originalBooks;
 
 	beforeEach(async () => {
+		originalBooks = global.books;
+		global.books = [{ id: 1, alias: 'bukhari', type: 'hadith' }];
 		root = fs.mkdtempSync(path.join(os.tmpdir(), 'hadithdb-book-cache-'));
 		db = new sqlite3.Database(':memory:');
 		db.runAsync = util.promisify(db.run.bind(db));
@@ -20,6 +23,7 @@ describe('full book disk cache flush', () => {
 	});
 
 	afterEach(async () => {
+		global.books = originalBooks;
 		await util.promisify(db.close.bind(db))();
 		fs.rmSync(root, { recursive: true, force: true });
 	});
@@ -28,6 +32,7 @@ describe('full book disk cache flush', () => {
 		const targets = [
 			path.join(root, 'hadith.v1', 'bukhari', 'page.html'),
 			path.join(root, 'hadith.v2', 'bukhari', 'page.html.gz'),
+			path.join(root, 'hadith.v2', '1', 'page.html.gz'),
 			path.join(root, 'tafsir.v2', 'bukhari', 'toc.html'),
 			path.join(root, '_bukhari_feed.html')
 		];
@@ -41,11 +46,24 @@ describe('full book disk cache flush', () => {
 
 		const result = await Utils.flushBookDiskCache('bukhari', { cacheRoot: root, db });
 
-		expect(result.files).toBe(4);
+		expect(result.files).toBe(5);
 		expect(fs.existsSync(keep)).toBe(true);
 		for (const filename of targets) expect(fs.existsSync(filename)).toBe(false);
 		expect(await db.allAsync('SELECT * FROM cachendx')).toEqual([]);
 		expect(await db.allAsync('SELECT * FROM cache_files')).toEqual([]);
+	});
+
+	test('numeric book parameters use the named owner for every book cache writer', () => {
+		for (const book of [
+			{ id: 1, alias: 'bukhari', type: 'hadith' },
+			{ id: 32, alias: 'tabarani', type: 'hadith' },
+			{ id: 50, alias: 'example-tafsir', type: 'tafsir' }
+		]) {
+			global.books = [book];
+			expect(Utils.cacheBookOwner({ params: { bookAlias: `${book.id}` } })).toEqual({ alias: book.alias, type: book.type });
+			expect(Utils.cacheBookDirectory(book.id, book.type)).toBe(Utils.cacheBookDirectory(book.alias, book.type));
+			expect(Utils.htmlCacheFile({ url: `/${book.id}/1`, params: { bookAlias: `${book.id}` } })).toContain(`/${book.alias}/`);
+		}
 	});
 
 	test('rejects path-like aliases', async () => {
