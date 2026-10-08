@@ -38,7 +38,12 @@ answer length.
 `lookup_hadith_commentary` expose the existing shuruh catalog and index. Search
 supports an exact commentary `source` alias and/or associated hadith `reference`;
 lookup uses an entry `id`. Compact hadith details now include `research_inventory`
-with commentary identities, work counts, and verified related references.
+with the complete attached commentary list, work counts, and verified related references.
+Every detail profile also includes `metadata.grades` (all stored grader opinions),
+`metadata.narrators` (including reliability and `death_text`, the stored death year
+or date description), and `metadata.related_reports` (deduplicated collection:number
+references only). Compact `metadata.sharh` lists commentary identities without text;
+use the commentary lookup tool for complete text.
 
 After deploying schema changes, update the published plugin/connection metadata
 and verify the tools visible in a fresh client session against `tools/list`.

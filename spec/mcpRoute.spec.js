@@ -824,7 +824,8 @@ describe('Hadith MCP tool service', () => {
 
     const compact = await HadithMcp.callTool('lookup_hadith_detail', { reference: 'bukhari:1' }, { baseUrls: urls, fetch });
     expect(compact.structuredContent.response_profile).toBe('compact');
-    expect(compact.structuredContent.records[0]).not.toHaveProperty('metadata');
+    expect(compact.structuredContent.records[0].metadata.narrators[0].name).toBe('Umar');
+    expect(compact.structuredContent.records[0].metadata.sharh[0]).not.toHaveProperty('text_en');
 
     const normal = await HadithMcp.callTool('lookup_hadith_detail', {
       reference: 'bukhari:1', response_profile: 'default'
@@ -835,6 +836,34 @@ describe('Hadith MCP tool service', () => {
     expect(normal.structuredContent.records[0].metadata.sharh[0]).not.toHaveProperty('text_en');
     expect(normal.content[0].text).toContain('Actions are by intentions.');
     expect(normal.content[0].text.length).toBeLessThanOrEqual(12000);
+  });
+
+  test('all detail profiles retain complete research metadata without related narration text', async () => {
+    const grades = Array.from({ length: 12 }, (_, id) => ({ grader: id === 0 ? 'البوصيري' : 'أبو حاتم', grade: 'صحيح', ordinal: id }));
+    const narrators = Array.from({ length: 22 }, (_, id) => ({ id, name: 'Narrator', reliability: 'ثقة', death_text: '179 هـ' }));
+    const sharh = Array.from({ length: 7 }, (_, id) => ({ id: id + 1, source_title: 'Commentary', text: 'Explanation' }));
+    const fetch = async url => response([{
+      ref: 'bukhari:1', book_alias: 'bukhari', num: '1',
+      hdithMetadata: { grades, narrators, sharh,
+        similar: [{ internal_ref: 'muslim:1907a', label: 'Long narration text' }],
+        takhrij: [{ internal_ref: 'muslim:1907a' }, { internal_ref: 'abudawud:2201' }]
+      }
+    }], String(url));
+    for (const response_profile of ['compact', 'default', 'full']) {
+      const result = await HadithMcp.callTool('lookup_hadith_detail', {
+        reference: 'bukhari:1', response_profile
+      }, { baseUrls: urls, fetch });
+      const record = result.structuredContent.records[0];
+      expect(record.metadata.grades).toEqual(grades);
+      expect(record.metadata.narrators).toHaveLength(22);
+      expect(record.metadata.narrators[0]).toMatchObject({ reliability: 'ثقة', death_text: '179 هـ' });
+      expect(record.metadata.related_reports).toEqual(['muslim:1907a', 'abudawud:2201']);
+      expect(record.research_inventory.commentaries).toHaveLength(7);
+      if (response_profile === 'compact') {
+        expect(record.metadata.sharh).toHaveLength(7);
+        expect(JSON.stringify(record.metadata.sharh)).not.toContain('Explanation');
+      }
+    }
   });
 
   test('returns bilingual tafsir in separate full Arabic and English fields', async () => {
