@@ -335,6 +335,16 @@ npm run quran-memorization-optimize -- --apply
 
 ### Search, downloads, and integration
 
+Hadith book JSON downloads include per-item `metadata` with all stored grader
+opinions (including the primary grade), narrators with reliability and stored
+`death_text`, deduplicated `related_reports` references, and the complete attached
+`sharh` list with attribution and full Arabic/English texts when available.
+JSON record responses expose `metadata` instead of the internal metadata property.
+Related reports are reference strings only; raw link records, UI option lists,
+serialized narrator flags, and duplicate narrator/grader name aliases are omitted.
+Book-level source and accessibility details live only under `metadata`; the book
+description lives only under `book.description`.
+
 * Unified search covers Arabic and translated Quran text, translations, and tafsīr, with autocomplete, filters, highlighting, and direct verse navigation.
 * Quran content is addressable through stable ayah, range, passage, subsection, juz, manzil, translation, tafsīr, and Mushaf-page URLs.
 * Machine-readable JSON and Markdown responses support individual ayat and ranges, while translation and Quran downloads are available in JSON or EPUB where provided.

@@ -59,7 +59,7 @@ describe('Quran commentary downloads', () => {
 		});
 
 		expect(document.book.description.en).toBe('A concise description.');
-		expect(document.description.en).toBe('A concise description.');
+		expect(document).not.toHaveProperty('description');
 		expect(document.introductions[0]).toMatchObject({
 			number: 1,
 			title: { en: 'Foreword' },

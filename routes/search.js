@@ -21,6 +21,7 @@ const Arabic = require('../lib/Arabic');
 const Books = require('../lib/Books');
 const BookGroups = require('../lib/BookGroups');
 const BookDownloads = require('../lib/BookDownloads');
+const HadithJsonMetadata = require('../lib/HadithJsonMetadata');
 const Surahs = require('../lib/Surahs');
 const QuranCorpus = require('../lib/QuranCorpus');
 const QuranScripts = require('../lib/QuranScripts');
@@ -1253,7 +1254,7 @@ async function renderSearchResults(req, res, next, options = {}) {
 
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(results));
+    res.end(JSON.stringify(HadithJsonMetadata.publicJson(results)));
   } else if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
     var keyNames = Object.keys(results[0] || {});
@@ -1720,7 +1721,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     if ('json' in req.query) {
       escapeQuranMarkdownFields(results[0]);
       res.setHeader('Content-Type', 'application/json');
-      return res.end(JSON.stringify(results));
+      return res.end(JSON.stringify(HadithJsonMetadata.publicJson(results)));
     }
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
     return res.end(Utils.toMarkdown(results));
@@ -1758,7 +1759,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   if (results.length > 0) {
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(results));
+      res.end(JSON.stringify(HadithJsonMetadata.publicJson(results)));
     } else if ('tsv' in req.query) {
       res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
       var keyNames = Object.keys(results[0]);
@@ -3035,7 +3036,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       Utils.sendEpubDownload(res, `hadithunlocked_${Utils.safeFilename(book.alias)}.epub`, book, results);
     } else if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(results));
+      res.end(JSON.stringify(HadithJsonMetadata.publicJson(results)));
     } else if ('tsv' in req.query) {
       res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
       var keyNames = Object.keys(results[0]);
@@ -3224,7 +3225,7 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
 
   if ('json' in req.query) {
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(results));
+    res.end(JSON.stringify(HadithJsonMetadata.publicJson(results)));
     return;
   }
   if ('tsv' in req.query) {
@@ -3415,7 +3416,7 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
 
     if ('json' in req.query) {
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(results));
+      res.end(JSON.stringify(HadithJsonMetadata.publicJson(results)));
     } else if ('tsv' in req.query) {
       res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
       var keyNames = Object.keys(results[0]);
@@ -3863,7 +3864,7 @@ async function renderBookSection(req, res, next) {
 
       if ('json' in req.query) {
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(results));
+        res.end(JSON.stringify(HadithJsonMetadata.publicJson(results)));
       } else if ('tsv' in req.query) {
         res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
         var keyNames = Object.keys(results[0]);
