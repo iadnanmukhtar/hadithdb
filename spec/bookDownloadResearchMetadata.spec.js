@@ -10,14 +10,14 @@ test('JSON book items retain all research opinions, narrators, references and fu
   const narrators = Array.from({ length: 22 }, (_, id) => ({ id, name: 'Narrator', reliability: 'ثقة', death_text: '179 هـ' }));
   const text = 'Commentary '.repeat(1000);
   const sharh = Array.from({ length: 7 }, (_, id) => ({ id: id + 1, source_title: 'Sharh', author: 'Author', text, text_en: text }));
-  const lookup = jest.spyOn(HdithMetadata, 'forHadith').mockResolvedValue({ grades, narrators, sharh,
+  const lookup = jest.spyOn(HdithMetadata, 'forHadiths').mockResolvedValue(new Map([[7, { grades, narrators, sharh,
     similar: [{ internal_ref: 'muslim:1a', label: 'Narration text' }],
     takhrij: [{ internal_ref: 'muslim:1a' }, { internal_ref: 'abudawud:2' }]
-  });
+  }]]));
   const rows = [{ hId: 100, hId_ref: 7, book_virtual: 1, book_id: 42, book_alias: 'sample', ref: 'sample:1', num: '1',
     grade_grade: 'حسن', grader_shortName: 'البوصيري' }];
   await BookDownloads.attachResearchMetadata(rows);
-  expect(lookup).toHaveBeenCalledWith(7);
+  expect(lookup).toHaveBeenCalledWith([7]);
   const document = BookDownloads.buildBookDocument({ id: 42, alias: 'sample', type: 'hadith' }, rows);
   const item = document.chapters[0].items[0];
   expect(item.metadata.grades).toHaveLength(13);
@@ -31,7 +31,7 @@ test('JSON book items retain all research opinions, narrators, references and fu
 });
 
 test('metadata hydration reuses underlying identities and skips Quran and commentary rows', async () => {
-  const lookup = jest.spyOn(HdithMetadata, 'forHadith').mockResolvedValue(null);
+  const lookup = jest.spyOn(HdithMetadata, 'forHadiths').mockResolvedValue(new Map());
   const rows = [
     { hId: 7, book_id: 1, book_alias: 'sample' },
     { hId: 101, hId_ref: 7, book_id: 42, book_alias: 'virtual' },
