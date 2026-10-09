@@ -71,4 +71,44 @@ describe('hadith revision provider resilience', () => {
       expect(Utils.flushCacheContaining).toHaveBeenCalled();
     } finally { global.query = previousQuery; jest.restoreAllMocks(); }
   });
+
+  test('preserves an isnad extracted from a body when the original chain field is empty', async () => {
+    const Utils = require('../lib/Utils');
+    const Index = require('../lib/Index');
+    const previousQuery = global.query;
+    const chain = 'عَنْ قَاسِمٍ بن أَبِى حَازِمٍ قَالَ قَالَ عَلِىٌّ';
+    const matn = 'كُونُوا بِقَبُولِ الْعَمَلِ أَشَدَّ اهْتِمَامًا مِنْكُم بِالعَمَلِ، فَإِنَّهُ لَنْ يَقِلَّ عَمَلٌ مَعَ التَّقُوى، وَكيْفَ يَقِلُّ عما يُقْبَلُ';
+    const body = `"${chain}: ${matn}".`;
+    const output = { chain, chain_en: 'Qāsim b. Abī Ḥāzim > ʿAlī', body: matn, body_en: 'Be more concerned with acceptance of the deed.', footnote: '', footnote_en: '' };
+    jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
+    jest.spyOn(Index, 'update').mockResolvedValue();
+    global.query = jest.fn().mockResolvedValue({ affectedRows: 1 });
+    axios.post.mockResolvedValueOnce({ data: { choices: [{ message: { content: JSON.stringify(output) } }] } });
+    try {
+      expect(HadithRevision.countArabicDiacritics(body)).toBe(73);
+      expect(HadithRevision.countArabicDiacritics(matn)).toBe(55);
+      const result = await HadithRevision.reviseHadith({ hId: 411007, ref: 'suyuti:4-2321b', title_en: 'Existing title', chain: '', body, footnote: '' }, { provider: 'openai', model: 'test-model', forceArabicRevision: true });
+      expect(axios.post).toHaveBeenCalledTimes(1);
+      expect(result.item.chain).toBe(chain);
+      expect(result.item.chain_en).toBe(output.chain_en);
+      expect(result.item.body).toBe(matn);
+      expect(result.arabicRevisionSkipped).toBe(false);
+      const writes = global.query.mock.calls.filter(([sql]) => sql.startsWith('UPDATE hadiths SET'));
+      expect(writes).toHaveLength(1);
+      expect(writes[0][0]).toContain(`chain='${chain}'`);
+      expect(writes[0][0]).toContain(`body='${matn}'`);
+      await new Promise(resolve => setImmediate(resolve));
+    } finally { global.query = previousQuery; jest.restoreAllMocks(); }
+  });
+
+  test('still rejects actual diacritic loss before writing', async () => {
+    const previousQuery = global.query;
+    global.query = jest.fn();
+    axios.post.mockResolvedValueOnce({ data: { choices: [{ message: { content: JSON.stringify({ chain: '', chain_en: '', body: 'كونوا بقبول العمل أشد اهتماما منكم بالعمل', body_en: 'Text', footnote: '', footnote_en: '' }) } }] } });
+    try {
+      await expect(HadithRevision.reviseHadith({ ref: 'test:loss', chain: '', body: 'كُونُوا بِقَبُولِ الْعَمَلِ أَشَدَّ اهْتِمَامًا مِنْكُم بِالعَمَلِ', footnote: '' }, { model: 'test-model' })).rejects.toThrow('Model stripped Arabic tashkīl');
+      expect(global.query).not.toHaveBeenCalled();
+      expect(axios.post).toHaveBeenCalledTimes(1);
+    } finally { global.query = previousQuery; }
+  });
 });
