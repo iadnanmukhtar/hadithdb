@@ -786,18 +786,30 @@
 	      if (!$.fn.autocomplete || !$input.hasClass('hadith-primary-narrator-input') || $input.data('primaryNarratorAutocompleteBound')) return;
 	      $input.data('primaryNarratorAutocompleteBound', true);
 	      const language = ($input.attr('data-narrator-language') || 'ar').toString();
-	      $input.on('input.primaryNarrator', function () { $input.removeAttr('data-paired-narrator'); });
+	      let searchController = null;
+	      let searchSequence = 0;
+	      $input.on('input.primaryNarrator', function () {
+	        $input.removeAttr('data-paired-narrator');
+	        searchSequence++;
+	        if (searchController) searchController.abort();
+	      });
 	      $input.autocomplete({
 	        delay: 120,
 	        minLength: 0,
 	        source: async function (request, response) {
+	          const sequence = ++searchSequence;
+	          if (searchController) searchController.abort();
+	          const controller = new AbortController();
+	          searchController = controller;
 	          try {
 	            const params = new URLSearchParams({ q: request.term || '', limit: '20' });
 	            const token = window.hadithAuth && window.hadithAuth.getToken ? await window.hadithAuth.getToken() : null;
+	            if (sequence !== searchSequence) { response([]); return; }
 	            const headers = token ? { Authorization: `Bearer ${token}` } : {};
-	            const res = await fetch(`${editHadithApiPath('/autocomplete/primary-narrators')}?${params.toString()}`, { headers });
+	            const res = await fetch(`${editHadithApiPath('/autocomplete/primary-narrators')}?${params.toString()}`, { headers, signal: controller.signal });
 	            if (!res.ok) throw new Error(`Search failed with ${res.status}`);
-	            response(await res.json());
+	            const items = await res.json();
+	            response(sequence === searchSequence ? items : []);
 	          } catch (_err) {
 	            response([]);
 	          }

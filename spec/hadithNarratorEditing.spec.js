@@ -62,6 +62,17 @@ describe('hadith narrator inline editing', () => {
 		expect(res.status).toHaveBeenCalledWith(200);
 	});
 
+	test('updates both columns atomically when selecting from the English field', async () => {
+		const req = { body: { value: 'ʿUthmān b. ʿAffān', pairedNarrator: 'عُثْمَانُ بْنُ عَفَّانَ' },
+			params: { id: '123', prop: 'hdith_metadata.narrator_en' }, user: { uid: 'admin' } };
+		const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+		await updateHandler()(req, res, jest.fn());
+		const updates = global.query.mock.calls.filter(([sql]) => sql.startsWith('UPDATE hdith_hadith_metadata SET'));
+		expect(updates).toHaveLength(1);
+		expect(updates[0][0]).toContain("SET narrator_en='ʿUthmān b. ʿAffān', narrator='عُثْمَانُ بْنُ عَفَّانَ'");
+		expect(res.status).toHaveBeenCalledWith(200);
+	});
+
 	test('adds a manually managed narrator to a hadith without imported metadata', async () => {
 		global.query.mockImplementation(async sql => {
 			if (sql.includes('MAX(ordinal)')) return [{ ordinal: 1 }];
