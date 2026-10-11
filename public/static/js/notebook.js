@@ -133,6 +133,10 @@
   const installed = new WeakSet();
   const sourceSelector = '.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, [data-note-key]';
   const shareControls = window.NotebookShare.install({ context: () => ({ current, busy, generation }), api, save });
+  const navigatorControls = window.NotebookNavigator.install({ api, context: () => current, open: async note => {
+    if (saving && !await save()) return;
+    await open(note);
+  } });
   async function api(path = '', method = 'GET', body) {
     const token = await window.hadithAuth?.getToken();
     if (!token) throw new Error('Please sign in to use your notebook.');
@@ -149,6 +153,7 @@
   }
   function setBusy(value) {
     busy = value;
+    document.getElementById('notebook-expanded-new').disabled = value;
     saveButton.disabled = deleteButton.disabled = toggle.disabled = editor.disabled = downloadButton.disabled = tagEditor.disabled = titleEditor.disabled = value;
     printButton.disabled = value;
   }
@@ -416,19 +421,15 @@
       && (!search || normalize(`${note.source_title}\n${note.title || ''}\n${note.markdown}`).includes(search))
       && (!tag || (note.hashtags || []).some(value => normalize(value) === tag));
     if (matches) {
-      if (index >= 0) notes[index] = note;
-      else notes.unshift(note);
+      if (index >= 0) notes.splice(index, 1);
+      notes.unshift(note);
     } else if (index >= 0) notes.splice(index, 1);
     const tile = Array.from(list.children).find(entry => entry.dataset.sourceKey === note.source_key);
     const showEmptyGeneral = note.source_key === 'general' && !search && !tag;
     if (matches || showEmptyGeneral) {
       const replacement = createNoteTile(note);
-      if (tile) tile.replaceWith(replacement);
-      else {
-        const general = list.firstElementChild;
-        if (note.source_key !== 'general' && general?.dataset.sourceKey === 'general') general.after(replacement);
-        else list.prepend(replacement);
-      }
+      tile?.remove();
+      list.prepend(replacement);
     } else tile?.remove();
     listStatus.textContent = list.childElementCount ? '' : (search || tag ? 'No matching notes.' : 'No notes yet.');
     // Tag counts only need refreshing when membership changes, not on close.
@@ -462,6 +463,7 @@
           deleteButton.hidden = !note.version;
           markSource(note.source_key, !!note.version);
           updateList(note);
+          navigatorControls.update(note);
           // Keep any text typed during the request; only advance the saved revision.
           if (!editing && editor.value === text) preview.innerHTML = note.html;
           // Coalesce edits made during a slow Drive request into the next idle save.
@@ -545,6 +547,7 @@
       markSource(current.source_key, !!current.version);
       status.textContent = ''; setBusy(false); mode(edit || !current.version);
       importReflection(source);
+      navigatorControls.select();
       if (modal.classList.contains('notebook-floating')) { minimizeFloating(false); rememberFloating(); }
     } catch (err) {
       if (ownGeneration !== generation) return;
@@ -654,6 +657,7 @@
       current = { ...current, markdown: '', html: '', version: 0, tags: [], hashtags: [], title: '', created_at: null, updated_at: null }; resetTags();
       editor.value = savedText = ''; preview.innerHTML = ''; deleteButton.hidden = true;
       markSource(current.source_key, false); updateList(current); status.textContent = ''; mode(false);
+      navigatorControls.update(current);
     } catch (err) { if (ownGeneration === generation) status.textContent = err.message; }
     finally { if (ownGeneration === generation) setBusy(false); }
   });
@@ -669,7 +673,7 @@
         current = result.note; editor.value = savedText = current.markdown; resetTags();
         preview.innerHTML = current.html; mode(false); deleteButton.hidden = false;
       }
-      markSource(result.note.source_key, true); updateList(result.note); targetStatus.textContent = '';
+      markSource(result.note.source_key, true); updateList(result.note); navigatorControls.update(result.note); targetStatus.textContent = '';
     } catch (err) { if (ownGeneration === generation) targetStatus.textContent = err.message; }
     finally { if (ownGeneration === generation) { button.disabled = false; setBusy(false); } }
   }
@@ -889,9 +893,11 @@
       mode(true);
     }
   });
-  document.getElementById('notebook-new')?.addEventListener('click', () => {
-    open({ source_key: `general:${crypto.randomUUID()}`, source_title: 'General note', source_url: '/notebook', title: '', markdown: '', html: '', version: 0 }, true);
-  });
+  async function createNote() {
+    if (busy || (saving && !await save())) return;
+    await open({ source_key: `general:${crypto.randomUUID()}`, source_title: 'General note', source_url: '/notebook', title: '', markdown: '', html: '', version: 0 }, true);
+  }
+  for (const id of ['notebook-new', 'notebook-expanded-new']) document.getElementById(id)?.addEventListener('click', createNote);
   function createNoteTile(note) {
     const article = document.createElement('article'); article.className = 'notebook-tile' + (!note.version ? ' notebook-tile-new' : '');
     article.dataset.sourceKey = note.source_key;
@@ -930,8 +936,7 @@
   function renderList() {
     const filtering = document.getElementById('notebook-search').value.trim() || document.getElementById('notebook-tag').value.trim();
     list.replaceChildren();
-    const general = notes.find(note => note.source_key === 'general') || { source_key: 'general', source_title: 'General note', source_url: '/notebook', markdown: '', html: '', version: 0 };
-    const filtered = filtering ? notes : [general, ...notes.filter(note => note.source_key !== 'general')];
+    const filtered = notes.length || filtering ? notes : [{ source_key: 'general', source_title: 'General note', source_url: '/notebook', markdown: '', html: '', version: 0 }];
     for (const note of filtered) list.append(createNoteTile(note));
     listStatus.textContent = filtered.length ? '' : (filtering ? 'No matching notes.' : 'No notes yet.');
   }

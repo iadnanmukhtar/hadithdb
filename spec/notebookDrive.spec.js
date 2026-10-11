@@ -174,6 +174,25 @@ test('list, tags and ZIP use the Drive note content and preserve filtering', asy
   expect(zip.getEntries()).toHaveLength(2);
   expect(zip.getEntries().some(entry => entry.getData().toString().includes('العربية'))).toBe(true);
 });
+test('recently created and edited notes outrank the original general note, including across pages', async () => {
+  await Drive.save('alice', { ...note({ source_key: 'general', title: 'Siege of the Kaabah' }), version: 0 });
+  files.get(mappings.get('general')).modifiedTime = '2026-09-22T14:01:00.000Z';
+  for (let i = 1; i <= 13; i++) {
+    const source_key = i === 13 ? 'general:12345678-1234-4123-8123-123456789abc' : `item:${i}`;
+    await Drive.save('alice', { ...note({ source_key, title: `Note ${i}` }), version: 0 });
+    files.get(mappings.get(source_key)).modifiedTime = `2026-10-${String(i).padStart(2, '0')}T12:00:00.000Z`;
+  }
+  const first = await Drive.list('alice');
+  expect(first.notes).toHaveLength(12);
+  expect(first.hasMore).toBe(true);
+  expect(first.notes[0].source_key).toBe('general:12345678-1234-4123-8123-123456789abc');
+  expect(first.notes.some(note => note.source_key === 'general')).toBe(false);
+  expect((await Drive.list('alice', 12)).notes.map(note => note.source_key)).toEqual(['item:1', 'general']);
+  const saved = await Drive.get('alice', 'item:1');
+  await Drive.save('alice', { ...saved, markdown: 'Edited today' });
+  files.get(mappings.get('item:1')).modifiedTime = '2026-10-14T12:00:00.000Z';
+  expect((await Drive.list('alice')).notes[0].source_key).toBe('item:1');
+});
 test('revoked access requires reconnect and never falls back to database storage', async () => {
   request.mockRejectedValue({ response: { status: 400, data: { error: 'invalid_grant' } } });
   await expect(Drive.list('alice')).rejects.toMatchObject({ code: 'DRIVE_CONNECT' });

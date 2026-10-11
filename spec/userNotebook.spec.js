@@ -214,12 +214,12 @@ test('notebook pages return twelve notes and detect the next batch', async () =>
   expect(global.query.mock.calls.at(-1)[0]).toContain('LIMIT 13 OFFSET 12');
 });
 
-test('general notes are private, unattached, and sorted before reading notes', async () => {
+test('general notes are private, unattached, and use the same modification ordering as reading notes', async () => {
   await Notebook.save('alice', { source_key: 'general', markdown: 'Private thoughts', version: 0 });
   const insert = global.query.mock.calls.find(([sql]) => sql.startsWith('INSERT INTO user_notebook'))[0];
   expect(insert).toContain("'alice', 'general', 'General note', '/notebook'");
   await Notebook.list('alice');
-  expect(global.query.mock.calls.at(-1)[0]).toContain("ORDER BY (source_key='general') DESC");
+  expect(global.query.mock.calls.at(-1)[0]).toContain('ORDER BY updated_at DESC, source_key LIMIT');
   await Notebook.get('bob', 'general');
   expect(global.query.mock.calls.at(-1)[0]).toContain("user_uid='bob' AND source_key='general'");
 });

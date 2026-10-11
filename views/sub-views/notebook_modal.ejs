@@ -1,3 +1,15 @@
+<% const markdownPlaceholder = `Write your note using Markdown:
+
+# Main heading
+## Section heading
+**bold** · *italic* · __underline__ · ==highlight==
+- A bullet point
+1. A numbered point
+> A quotation
+[Link text](https://example.com)
+[[Note title]] links to another note
+
+Leave a blank line between paragraphs. Preview to see formatting.`; %>
 <div class="modal fade" id="notebook-modal" data-nosnippet tabindex="-1" aria-labelledby="notebook-modal-title" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
     <div class="modal-header py-2">
@@ -22,9 +34,18 @@
       <p id="notebook-share-status" class="small mb-0 mt-1" role="status" aria-live="polite"></p>
     </section>
     <div class="modal-body">
-      <nav id="notebook-outline" aria-label="Note heading outline" hidden>
-        <div class="notebook-outline-label">On this note</div>
-        <ol id="notebook-outline-items"></ol>
+      <nav id="notebook-navigator" aria-label="Recent notes" hidden>
+        <div class="notebook-sidebar-header">
+          <div class="notebook-outline-label">Recent notes</div>
+          <button type="button" class="notebook-tool notebook-sidebar-toggle" data-notebook-sidebar="notebook-navigator" aria-controls="notebook-navigator-content" aria-expanded="true" aria-label="Collapse recent notes" title="Collapse recent notes"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+        </div>
+        <div id="notebook-navigator-content" class="notebook-sidebar-content">
+        <button id="notebook-expanded-new" type="button" class="btn btn-sm btn-outline-secondary w-100 mb-3"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New note</button>
+        <ol id="notebook-navigator-items"></ol>
+        <p id="notebook-navigator-status" class="small" role="status"></p>
+        <button id="notebook-navigator-more" type="button" class="btn btn-sm btn-outline-secondary" hidden>More notes</button>
+        </div>
+        <div class="notebook-sidebar-resize" data-notebook-resize="notebook-navigator" role="separator" tabindex="0" aria-label="Resize recent notes sidebar" aria-orientation="vertical" aria-controls="notebook-navigator" aria-valuemin="140" aria-valuemax="420" aria-valuenow="256"></div>
       </nav>
       <div id="notebook-surface">
         <div class="small mb-2" data-notebook-drive-panel data-notebook-drive-compact hidden>
@@ -38,10 +59,18 @@
           <input id="notebook-title-editor" class="form-control mb-2" dir="auto" maxlength="500" required aria-label="Note title" placeholder="Note title" hidden>
           <div id="notebook-note-title" dir="auto" role="button" tabindex="0" aria-label="Edit note title" hidden></div>
         </div>
-        <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" aria-autocomplete="list" aria-controls="notebook-wiki-options" aria-expanded="false" placeholder="Create a new private note." hidden></textarea>
+        <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" aria-autocomplete="list" aria-controls="notebook-wiki-options" aria-expanded="false" placeholder="<%= markdownPlaceholder %>" hidden></textarea>
         <div id="notebook-wiki-options" role="listbox" aria-label="Link to a note" hidden></div>
-        <div id="notebook-preview" class="notebook-markdown" tabindex="0" aria-label="Note preview"></div>
+        <div id="notebook-preview" class="notebook-markdown" tabindex="0" aria-label="Note preview" data-placeholder="<%= markdownPlaceholder %>"></div>
       </div>
+      <nav id="notebook-outline" aria-label="Note heading outline" hidden>
+        <div class="notebook-sidebar-header">
+          <button type="button" class="notebook-tool notebook-sidebar-toggle" data-notebook-sidebar="notebook-outline" aria-controls="notebook-outline-content" aria-expanded="true" aria-label="Collapse heading outline" title="Collapse heading outline"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+          <div class="notebook-outline-label">On this note</div>
+        </div>
+        <div id="notebook-outline-content" class="notebook-sidebar-content"><ol id="notebook-outline-items"></ol></div>
+        <div class="notebook-sidebar-resize" data-notebook-resize="notebook-outline" role="separator" tabindex="0" aria-label="Resize heading outline sidebar" aria-orientation="vertical" aria-controls="notebook-outline" aria-valuemin="140" aria-valuemax="420" aria-valuenow="256"></div>
+      </nav>
     </div>
     <div id="notebook-tag-bar" class="px-3 py-2">
       <div id="notebook-note-tags" class="d-flex flex-wrap gap-2" role="button" tabindex="0" aria-label="Edit note tags"></div>
@@ -89,7 +118,28 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-modal .modal-content { height: 100%; }
 #notebook-modal .modal-body { display: flex; min-height: 0; overflow: hidden; }
 #notebook-surface { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
-#notebook-outline { flex: 0 0 14rem; min-height: 0; overflow-y: auto; border-inline-end: 1px solid var(--note-edge); padding-inline-end: 1rem; margin-inline-end: 1.25rem; }
+#notebook-outline, #notebook-navigator { position: relative; display: flex; flex-direction: column; flex: 0 0 var(--sidebar-width, clamp(10rem, 18vw, 16rem)); min-width: 0; min-height: 0; overflow: hidden; }
+.notebook-sidebar-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: .5rem; margin-bottom: .5rem; }
+.notebook-sidebar-header .notebook-outline-label { padding: 0; }
+.notebook-sidebar-toggle { flex-shrink: 0; width: 2rem; height: 2rem; }
+.notebook-sidebar-content { min-height: 0; overflow: auto; flex: 1; }
+#notebook-modal :is(#notebook-outline, #notebook-navigator).notebook-sidebar-collapsed { flex-basis: 2.25rem; padding: 0; margin-inline: .5rem; }
+.notebook-sidebar-collapsed .notebook-sidebar-header { justify-content: center; }
+.notebook-sidebar-collapsed :is(.notebook-outline-label, .notebook-sidebar-resize) { display: none; }
+.notebook-sidebar-content[hidden] { display: none; }
+.notebook-sidebar-resize { position: absolute; top: 0; bottom: 0; width: .5rem; cursor: col-resize; touch-action: none; }
+#notebook-navigator .notebook-sidebar-resize { right: 0; }
+#notebook-outline .notebook-sidebar-resize { left: 0; }
+.notebook-sidebar-resize:hover, .notebook-sidebar-resize:focus-visible { background: rgba(212, 167, 44, .3); outline: 1px solid var(--note-edge); outline-offset: -1px; }
+#notebook-modal.notebook-sidebar-dragging { cursor: col-resize; user-select: none; }
+#notebook-outline { border-left: 1px solid var(--note-edge); padding-left: 1rem; margin-left: 1.25rem; }
+#notebook-navigator { border-right: 1px solid var(--note-edge); padding-right: 1rem; margin-right: 1.25rem; }
+#notebook-navigator[hidden] { display: none; }
+#notebook-navigator-items { list-style: none; padding: 0; margin: 0; }
+#notebook-navigator-items button { display: block; width: 100%; border: 0; border-left: 2px solid transparent; border-radius: .2rem; padding: .5rem; background: transparent; color: inherit; font: inherit; font-size: .85rem; text-align: start; overflow-wrap: anywhere; }
+#notebook-navigator-items button:hover, #notebook-navigator-items button[aria-current="page"] { background: rgba(212, 167, 44, .15); border-left-color: var(--note-edge); }
+#notebook-navigator-items button:focus-visible { outline: 2px solid var(--note-edge); outline-offset: -2px; }
+#notebook-navigator-items button { font-family: var(--content-language-latin-font, Georgia), NotebookKitab, Kitab, serif; }
 #notebook-outline[hidden] { display: none; }
 .notebook-outline-label { position: sticky; top: 0; padding-bottom: .5rem; background: var(--note-paper); color: var(--note-ink); font-size: .8rem; font-weight: 600; }
 #notebook-outline-items { list-style: none; padding: 0; margin: 0; }
@@ -100,7 +150,14 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 @media (max-width: 767.98px) {
   #notebook-fullscreen { display: none; }
   #notebook-modal .modal-fullscreen .modal-body { flex-direction: column; }
-  #notebook-outline { flex: 0 0 auto; max-height: 22dvh; border-inline-end: 0; border-bottom: 1px solid var(--note-edge); padding: 0 0 .5rem; margin: 0 0 .5rem; }
+  #notebook-outline, #notebook-navigator { flex: 0 0 auto; max-height: 18dvh; border: 0; border-bottom: 1px solid var(--note-edge); padding: 0 0 .5rem; margin: 0 0 .5rem; }
+  #notebook-modal :is(#notebook-outline, #notebook-navigator).notebook-sidebar-collapsed { flex-basis: auto; margin: 0 0 .5rem; }
+  .notebook-sidebar-resize { display: none; }
+  .notebook-sidebar-collapsed .notebook-sidebar-header { justify-content: space-between; }
+  .notebook-sidebar-collapsed .notebook-outline-label { display: block; }
+  #notebook-outline { order: 1; }
+  #notebook-surface { order: 2; }
+  #notebook-navigator { order: 0; }
 }
 #notebook-editor, #notebook-preview { flex: 1; min-height: 0; overflow: auto; }
 #notebook-editor { resize: none; }
@@ -109,7 +166,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-zoom { width: min(10rem, 40vw); accent-color: var(--note-edge); }
 #notebook-zoom-value { min-width: 3em; font-variant-numeric: tabular-nums; }
 #notebook-modal .modal-fullscreen :is(#notebook-preview, #notebook-editor) { font-size: var(--notebook-font-size, 1rem); }
-#notebook-preview:empty::before { content: 'Create a new private note.'; opacity: .55; }
+#notebook-preview:empty::before { content: attr(data-placeholder); white-space: pre-wrap; opacity: .55; }
 .notebook-tool { border: 0; background: transparent; color: #805d00; padding: .45rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .3rem; }
 .notebook-tool:hover, .notebook-tool:focus-visible { background: #ffe69c; }
 .notebook-tool:disabled { opacity: .45; }
@@ -179,6 +236,8 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 <script src="/static/js/notebook-shortcuts.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-share.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-print.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-navigator.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-sidebars.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 
 <button id="notebook-restore" type="button" class="notebook-restore-note" hidden aria-controls="notebook-modal" title="Restore note" aria-label="Restore note"><i class="bi bi-sticky" aria-hidden="true"></i><span>Restore note</span></button>

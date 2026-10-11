@@ -11,7 +11,7 @@ function harness() {
     deleteButton: {}, preview: {}, setTimeout, clearTimeout,
     api: jest.fn(), renderNoteTags: jest.fn(), renderNoteMetadata: jest.fn(),
     markSource: jest.fn(), updateList: jest.fn(), renderPreview: jest.fn(),
-    mode: jest.fn()
+    mode: jest.fn(), navigatorControls: { update: jest.fn() }
   });
   vm.runInContext(functions, ctx); return ctx;
 }
@@ -89,6 +89,16 @@ test('saving replaces only the affected card without reloading loaded pages', ()
   expect(children[0].note).toBe(saved); expect(children[1]).toBe(sibling);
   expect(ctx.loadList).not.toHaveBeenCalled(); expect(ctx.loadTags).not.toHaveBeenCalled();
   expect(ctx.hasMore).toBe(true);
+});
+test('editing a later note moves it ahead of the original general note immediately', () => {
+  const {ctx, children} = listHarness();
+  ctx.notes[0].source_key = 'general'; children[0].dataset.sourceKey = 'general';
+  const saved = {...ctx.notes[1], markdown: 'Latest edit'};
+  const original = children[0];
+  ctx.updateList(saved);
+  expect(ctx.notes.map(note => note.source_key)).toEqual(['general:two', 'general']);
+  expect(children[0].note).toBe(saved); expect(children[1]).toBe(original);
+  expect(ctx.loadList).not.toHaveBeenCalled();
 });
 test('tag changes remove a card from its active filter without reloading the list', () => {
   const {ctx, fields, children, before} = listHarness();
