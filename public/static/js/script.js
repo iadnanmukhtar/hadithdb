@@ -1895,7 +1895,19 @@ function initQuranTafsirFootnotePopups(root) {
 		return;
 	$(doc).data('quranTafsirFootnotePopupsBound', true);
 	var popup = null;
+	var activeLink = null;
+	var hideTimer = null;
+	var markerSelector = '.footnote-ref a[href^="#"], a.footnote-ref[href^="#"]';
 	var removePopup = function () {
+		clearTimeout(hideTimer);
+		if (activeLink) {
+			var descriptions = (activeLink.getAttribute('aria-describedby') || '').split(/\s+/).filter(function (id) {
+				return id && id !== 'footnote-hover-popup';
+			});
+			if (descriptions.length) activeLink.setAttribute('aria-describedby', descriptions.join(' '));
+			else activeLink.removeAttribute('aria-describedby');
+			activeLink = null;
+		}
 		if (popup) {
 			popup.remove();
 			popup = null;
@@ -1910,9 +1922,10 @@ function initQuranTafsirFootnotePopups(root) {
 			return null;
 		var content = $(target).clone();
 		content.find('.footnote-backref').remove();
+		content.find('[id]').removeAttr('id');
 		if (!content.text().trim())
 			return null;
-		return content.children().length ? content.children() : content.contents();
+		return content.contents();
 	};
 	var positionPopup = function (link) {
 		if (!popup)
@@ -1926,6 +1939,7 @@ function initQuranTafsirFootnotePopups(root) {
 			top = rect.bottom + margin;
 		var left = rect.left + (rect.width / 2) - (width / 2);
 		left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+		top = Math.max(margin, Math.min(top, window.innerHeight - height - margin));
 		popup.css({ left: `${left}px`, top: `${top}px` });
 	};
 	var showPopup = function (link) {
@@ -1933,19 +1947,32 @@ function initQuranTafsirFootnotePopups(root) {
 		var content = footnoteContent(link);
 		if (!content)
 			return;
-		var textRoot = $(link).closest('.quran-tafsir-text, [data-quran-translation-display="passage"], .quran-translation-text');
+		var language = $(link).closest('[lang]').attr('lang') || '';
+		var direction = $(link).closest('[dir]').attr('dir') || (language === 'ar' ? 'rtl' : 'auto');
 		popup = $('<aside>').addClass('quran-tafsir-footnote-popup').attr({
+			id: 'footnote-hover-popup',
 			role: 'tooltip',
-			dir: textRoot.attr('dir') || 'auto',
-			lang: textRoot.attr('lang') || ''
+			dir: direction,
+			lang: language
 		}).appendTo(doc.body);
+		activeLink = link;
+		link.setAttribute('aria-describedby', ((link.getAttribute('aria-describedby') || '') + ' footnote-hover-popup').trim());
 		popup.append(content);
+		popup.on('mouseenter focusin', function () { clearTimeout(hideTimer); });
+		popup.on('mouseleave focusout', scheduleHide);
 		positionPopup(link);
 	};
-	$(doc).on('mouseenter focusin', '.quran-tafsir-text .footnote-ref a, [data-quran-translation-display="passage"] .footnote-ref a', function () {
+	var scheduleHide = function () {
+		clearTimeout(hideTimer);
+		hideTimer = setTimeout(removePopup, 150);
+	};
+	$(doc).on('mouseenter focusin', markerSelector, function () {
 		showPopup(this);
 	});
-	$(doc).on('mouseleave focusout', '.quran-tafsir-text .footnote-ref a, [data-quran-translation-display="passage"] .footnote-ref a', removePopup);
+	$(doc).on('mouseleave focusout', markerSelector, scheduleHide);
+	$(doc).on('keydown', function (event) {
+		if (event.key === 'Escape') removePopup();
+	});
 	$(window).on('scroll resize', removePopup);
 }
 
