@@ -20,8 +20,8 @@ router.get('/', async function (req, res, next) {
   const cachedFile = `${homedir}/.hadithdb/cache/${name}.html`;
   if (Utils.shouldFlushCache(req)) Utils.flushCachedFile(cachedFile);
   if (!Utils.shouldFlushCache(req) && !editMode && Utils.cachedTextPathForRead(cachedFile)) {
-    Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8');
-    return;
+    if (Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8'))
+      return;
   }
 
   try {

@@ -120,10 +120,20 @@
     (function () {
       var remaining = 30;
       var seconds = document.getElementById('retry-seconds');
-      var retry = function () { window.location.reload(); };
+      var button = document.getElementById('retry-now');
+      var retryStarted = false;
+      var timer;
+      var retry = function () {
+        if (retryStarted) return;
+        retryStarted = true;
+        window.clearInterval(timer);
+        button.disabled = true;
+        button.textContent = 'Retrying…';
+        window.location.reload();
+      };
 
-      document.getElementById('retry-now').addEventListener('click', retry);
-      window.setInterval(function () {
+      button.addEventListener('click', retry);
+      timer = window.setInterval(function () {
         remaining -= 1;
         seconds.textContent = String(Math.max(remaining, 0));
         if (remaining <= 0)
