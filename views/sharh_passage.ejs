@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <%
-const site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: req.admin && req.editMode });
+const site = Object.assign({}, global.settings.site, { admin: !locals.noadmin && req.admin, editMode: !locals.noadmin && req.admin && req.editMode });
 const title = book.shortName_en || book.name_en || book.title || book.alias;
 const titleAr = book.shortName || book.title || '';
 const reference = owner ? (kind === 'hadith' ? `${owner.book_alias}:${owner.num}` : owner.title_en || owner.title || '') : '';
