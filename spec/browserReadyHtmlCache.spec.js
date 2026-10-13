@@ -100,4 +100,33 @@ describe('browser-ready HTML cache artifacts', () => {
     Utils.readCachedHtmlResponse(cachedFile, req);
     expect(fs.statSync(artifact.gzip).mtimeMs).toBeGreaterThanOrEqual(originalMtime);
   });
+
+  test('flushing one page preserves shared fragments and another page can still compose them', async () => {
+    const cachedb = { runAsync: jest.fn().mockResolvedValue() };
+    jest.spyOn(Utils, 'setupCacheIndex').mockResolvedValue(cachedb);
+    const otherFile = path.join(directory, 'other.html');
+    const html = '<html><body><!--hadithdb-cache:left-rail:start--><aside>Shared sidebar</aside><!--hadithdb-cache:left-rail:end--></body></html>';
+    Utils.writeCachedHtml(cachedFile, html);
+    Utils.writeCachedHtml(otherFile, html);
+    Utils.readCachedHtmlResponse(cachedFile, req);
+    const artifact = Utils.browserReadyHtmlArtifact(cachedFile, req);
+    const fragments = fs.readdirSync(fragmentsDirectory);
+    expect(fragments.length).toBeGreaterThan(0);
+
+    await expect(Utils.flushCachedFile(cachedFile, { strict: true })).resolves.toBe(true);
+
+    expect(fs.existsSync(`${cachedFile}.gz`)).toBe(false);
+    expect(fs.existsSync(artifact.gzip)).toBe(false);
+    expect(fs.readdirSync(fragmentsDirectory)).toEqual(fragments);
+    // No browser artifact exists for this page: it must resolve the shared fragment.
+    const response = Utils.readCachedHtmlResponse(otherFile, req);
+    expect(response.complete).toBe(true);
+    expect(zlib.gunzipSync(response.body).toString()).toContain('<aside>Shared sidebar</aside>');
+    expect(cachedb.runAsync).toHaveBeenCalledWith('DELETE FROM cachendx WHERE filename=?;', [cachedFile]);
+    expect(cachedb.runAsync).toHaveBeenCalledWith('DELETE FROM cache_files WHERE filename=?;', [cachedFile]);
+
+    // Repeated invalidation of an absent page must also leave other pages intact.
+    await expect(Utils.flushCachedFile(cachedFile, { strict: true })).resolves.toBe(false);
+    expect(fs.readdirSync(fragmentsDirectory)).toEqual(fragments);
+  });
 });
