@@ -1,0 +1,32 @@
+<% if (page.context.book && page.context.chapter) { %>
+  <%- include('chapterTitle.ejs', { site, page, contextOnly: true }); %>
+  <% [page.context.section, page.context.subsection].filter(Boolean).forEach(function (heading) { %>
+    <%- include('heading.ejs', { site, page, heading, contextOnly: true }); %>
+  <% }); %>
+<% } else { %>
+<%
+  const headings = kind === 'hadith'
+    ? [owner.chapter, owner.section, owner.subsection].filter(Boolean)
+    : [owner];
+%>
+<% headings.forEach(function (heading, index) {
+  const headingPath = heading.path || [heading.book_alias, heading.h1, Number(heading.level) >= 2 ? heading.h2 : null, Number(heading.level) >= 3 ? heading.h3 : null].filter(value => value !== null && value !== undefined && value !== '').map((value, index) => index ? utils.formatHadithHeadingNumber(value) : value).join('/');
+%>
+<section class="mb-3" aria-label="<%= Number(heading.level) === 1 ? 'Chapter' : 'Section' %>">
+  <heading class="row <%= index === 0 ? 'major' : 'heading py-2' %>" dir="ltr">
+    <h2 class="col-md-6 col-sm-12 <%= index === 0 ? 'fs-4' : 'fs-5' %> title" lang="en"><a href="/<%= headingPath %>"><%- heading.title_en || '' %></a></h2>
+    <h2 class="col-md-6 col-sm-12 <%= index === 0 ? 'fs-4' : 'fs-5' %> title" lang="ar" dir="rtl"><a href="/<%= headingPath %>"><%- heading.title || '' %></a></h2>
+  </heading>
+  <% if (heading.intro || heading.intro_en) { %>
+  <div class="row heading-intro mb-3">
+    <% ['en', 'ar'].forEach(function (lang) { const intro = lang === 'en' ? heading.intro_en : heading.intro; if (!intro) return; %>
+    <section class="<%= heading.intro && heading.intro_en ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
+      <%- Tafsir.renderCommentaryText(intro, '', 'md', { englishQuotationMarks: lang === 'en', bracketedFootnotes: lang === 'ar', footnoteIdPrefix: `sharh-context-${heading.id}-${lang}` }) %>
+    </section>
+    <% }); %>
+  </div>
+  <% } %>
+</section>
+<% }); %>
+
+<% } %>

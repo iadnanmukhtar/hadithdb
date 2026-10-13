@@ -7,11 +7,12 @@ function harness() {
     current: { source_key: 'general', title: 'Title', markdown: 'Before', version: '1' },
     editor: { value: 'After' }, titleEditor: { value: 'Title' }, tagEditor: { value: '' },
     savedText: 'Before', savedTitle: 'Title', savedTags: '', busy: false, saving: null,
+    statusEpoch: 0, checked: new Set(), scheduleStatus: jest.fn(),
     saveTimer: null, generation: 1, editing: true, status: { textContent: '' },
     deleteButton: {}, preview: {}, setTimeout, clearTimeout,
     api: jest.fn(), renderNoteTags: jest.fn(), renderNoteMetadata: jest.fn(),
     markSource: jest.fn(), updateList: jest.fn(), renderPreview: jest.fn(),
-    mode: jest.fn(), navigatorControls: { update: jest.fn() }
+    mode: jest.fn(), navigatorControls: { update: jest.fn() }, attachmentControls: { render: jest.fn() }, frontmatterControls: { valid: () => true, linksEdited: () => false, refresh: jest.fn() }
   });
   vm.runInContext(functions, ctx); return ctx;
 }
@@ -123,4 +124,17 @@ test('closing the modal does not reload the list or tags', () => {
   vm.runInContext(source.match(/  modal.addEventListener\('hidden.bs.modal', \(\) => \{[^]*?\n  \}\);/)[0], ctx);
   const close = ctx.modal.addEventListener.mock.calls[0][1]; close(); close();
   expect(ctx.loadList).not.toHaveBeenCalled(); expect(ctx.loadTags).not.toHaveBeenCalled();
+});
+
+test('server-updated frontmatter replaces only an unchanged draft and does not autosave repeatedly', async () => {
+  const ctx = harness();
+  const markdown = '---\nattachments: []\n---\nAfter';
+  ctx.api.mockResolvedValue(result(markdown));
+  expect(await ctx.save()).toBe(true);
+  expect(ctx.editor.value).toBe(markdown);
+  expect(ctx.savedText).toBe(markdown);
+  expect(ctx.dirty()).toBe(false);
+  expect(ctx.attachmentControls.render).toHaveBeenCalled();
+  await jest.advanceTimersByTimeAsync(2000);
+  expect(ctx.api).toHaveBeenCalledTimes(1);
 });

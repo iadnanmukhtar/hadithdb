@@ -5,6 +5,9 @@ const router = express.Router();
 router.use(Access.privateResponse);
 router.use(Access.authorize);
 router.post('/session', Access.createSession);
+router.get('/book-aliases', async (req, res, next) => {
+  try { res.json(await require('../lib/BookAliases').list()); } catch (error) { next(error); }
+});
 router.get('/legacy-graders', async (req, res, next) => {
   try { res.json(await require('../lib/LegacyGraders').list()); } catch (error) { next(error); }
 });

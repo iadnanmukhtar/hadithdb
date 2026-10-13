@@ -11,13 +11,14 @@
 <%- include('sub-views/header.ejs', { site, page }); %>
 <main class="container py-4 admin-pairs-page">
 <h1>Administration</h1>
+<p><a href="/sharh">Manage Sharḥ books</a></p>
 <p>Manage shared Arabic and English names and labels. Select multiple pairs and choose the target to replace their existing metadata references.</p>
 
 		
 		<div class="hadith-pair-library-actions d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-book-aliases"><span class="bi bi-link-45deg" aria-hidden="true"></span> Manage book aliases</button>
             <button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-legacy-graders">Manage legacy graders</button>
 			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="narrator"><span class="bi bi-people" aria-hidden="true"></span> Manage narrator pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="sharh_title"><span class="bi bi-book" aria-hidden="true"></span> Manage Sharḥ title pairs</button>
 			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="attribution"><span class="bi bi-diagram-2" aria-hidden="true"></span> Manage attribution pairs</button>
 			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="chain_classification"><span class="bi bi-link-45deg" aria-hidden="true"></span> Manage chain classification pairs</button>
 			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="grader"><span class="bi bi-person" aria-hidden="true"></span> Manage grader pairs</button>
@@ -77,6 +78,25 @@
         <button class="btn btn-primary" type="submit" data-legacy-grader-save>Add grader</button>
       </form>
       <div class="small mt-3" role="status" aria-live="polite" data-legacy-grader-status></div>
+    </div>
+  </div></div>
+</aside>
+<aside class="modal fade" id="admin-book-aliases" tabindex="-1" aria-labelledby="book-aliases-title" aria-hidden="true" data-book-aliases>
+  <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title fs-5" id="book-aliases-title">Book aliases</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-body">
+      <div class="row g-3 mb-3">
+        <div class="col-sm-4"><label for="book-alias-type" class="form-label">Book type</label><select id="book-alias-type" class="form-select" data-book-alias-type><option value="">All types</option><option value="hadith">Hadith</option><option value="sharh">Sharḥ</option><option value="tafsir">Tafsīr</option><option value="trans">Translation</option><option value="sirah">Sīrah</option><option value="quran">Quran</option></select></div>
+        <div class="col-sm-8"><label for="book-alias-search" class="form-label">Find a book</label><input id="book-alias-search" class="form-control" type="search" placeholder="Name or alias" data-book-alias-search></div>
+      </div>
+      <label for="book-alias-select" class="form-label">Book</label><select id="book-alias-select" class="form-select mb-3" data-book-alias-select></select>
+      <form data-book-alias-form>
+        <label for="book-alias-value" class="form-label">URL alias</label>
+        <input id="book-alias-value" class="form-control" name="alias" dir="ltr" autocapitalize="none" autocomplete="off" spellcheck="false" required maxlength="80" pattern="[a-z][a-z0-9_-]{0,79}" aria-describedby="book-alias-help">
+        <p class="small text-muted mt-2" id="book-alias-help">Use lowercase letters, numbers, hyphens, or underscores.</p>
+        <button class="btn btn-primary" type="submit" data-book-alias-save>Save alias</button>
+      </form>
+      <div class="small mt-3" role="status" aria-live="polite" data-book-alias-status></div>
     </div>
   </div></div>
 </aside>

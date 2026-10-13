@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+const site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: req.admin && req.editMode });
+const title = book.shortName_en || book.name_en || book.title || book.alias;
+const titleAr = book.shortName || book.title || '';
+const reference = owner ? (kind === 'hadith' ? `${owner.book_alias}:${owner.num}` : owner.title_en || owner.title || '') : '';
+const context = locals.readerContext || (kind === 'hadith' && owner ? { book: owner.book, chapter: owner.chapter, section: owner.section } : {});
+const referenceBook = (kind === 'hadith' && owner ? owner.book : context.book) || {};
+const referenceBookName = referenceBook.shortName_en || referenceBook.name_en || (owner && (owner.book_shortName_en || owner.book_alias)) || '';
+const headingNumber = owner && kind === 'heading' ? [owner.h1, Number(owner.level) >= 2 ? owner.h2 : null, Number(owner.level) >= 3 ? owner.h3 : null].filter(value => value !== null && value !== undefined && value !== '').map(value => utils.formatHadithHeadingNumber(value)).join('.') : '';
+const referenceLabel = owner ? (kind === 'hadith' ? `${referenceBookName} ${owner.num}` : `${referenceBookName} §${headingNumber}`) : '';
+const headingTitle = owner && kind === 'heading' ? (owner.title_en || (context.chapter && context.chapter.title_en) || owner.title || '') : '';
+const page = { menu: 'Sharh', title_en: [referenceLabel, headingTitle, title].filter(Boolean).join(' | '), description_en: `Read ${title}${reference ? `, ${reference}` : ''}.`, canonical, context };
+const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
+%>
+<%- include('sub-views/head.ejs', { site, page }); %>
+</head>
+<body>
+<%- include('sub-views/header.ejs', { site, page }); %>
+<main class="container chapter mt-10 tafsir-only-page sharh-only-page">
+  <% if (locals.availableSharhs && availableSharhs.length > 1) { %>
+  <nav class="h-menu-wrap mb-3" aria-label="Available explanations">
+    <div class="h-menu-hint d-md-none"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Swipe to browse explanations</div>
+    <div class="h-menu-scroller"><div class="btn-group h-menu text-nowrap">
+      <% availableSharhs.forEach(function (source) { %>
+      <a class="btn btn-outline-primary text-nowrap<%= source.id === book.id ? ' active' : '' %>" href="<%= source.url %>"<% if (source.id === book.id) { %> aria-current="page" data-current-book="true"<% } %>><%= source.shortName_en || source.name_en || source.shortName || source.title || source.alias %></a>
+      <% }); %>
+    </div></div>
+  </nav>
+  <% } %>
+
+    <header class="quran-tafsir-source row text-muted">
+      <section class="col-6 text-start" lang="en">
+        <strong><a class="quran-tafsir-book-modal-trigger" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= book.name_en || title %></a></strong>
+        <span><%= [book.author_en || book.author, book.death ? `d. ${book.death} AH` : '', [book.published_year, book.publisher].filter(Boolean).join(', ')].filter(Boolean).join(', ') %></span>
+      </section>
+      <section class="col-6 text-end" lang="ar" dir="rtl">
+        <strong><a class="quran-tafsir-book-modal-trigger" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= book.title || titleAr %></a></strong>
+        <span><%= [book.author, book.death ? `ت. ${arabic.toArabicDigits(String(book.death))} هـ` : '', [book.published_year, book.publisher].filter(Boolean).join('، ')].filter(Boolean).join('، ') %></span>
+      </section>
+    </header>
+  <% if (owner) { %>
+    <%- include('sub-views/sharh_context.ejs', { owner, kind, site, page, Tafsir }); %>
+    <% if (kind === 'hadith') { %>
+      <section aria-label="Referenced hadith">
+        <%- include('sub-views/hadith.ejs', { site, page, i: owner, main: true, title: true, searchResult: false, contextOnly: true }); %>
+      </section>
+    <% } %>
+  <% } %>
+  <% (locals.entries || [entry]).forEach(function (entry) { %>
+  <article class="mt-4 sharh-passage-entry" id="<%= kind === 'heading' ? 'note-heading-sharh' : 'note-sharh' %>-<%= entry.id %>" aria-label="Explanation">
+    <header class="hadith-sharh-header">
+    <div class="hadith-sharh-toolbar" role="group" aria-label="Explanation tools">
+      <%- include('sub-views/notebook_anchor.ejs', { noteKey: `${kind === 'heading' ? 'heading-sharh' : 'sharh'}:${entry.id}`, noteTitle: `${reference} — ${title}`, noteUrl: utils.urlFor(req, canonical) }); %>
+      <% if (site.editMode) { %><button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#sharh-book-metadata" title="Book metadata" aria-label="Book metadata"><span class="bi bi-pencil-square" aria-hidden="true"></span></button><% } %>
+    </div>
+    <div class="row hadith-sharh-entry-heading" dir="ltr">
+      <div class="col-md-6 col-sm-12" lang="en" data-reader-language-column="english">
+        <h4 class="fs-6"><a class="sharh-book-link" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= title %></a></h4>
+      </div>
+      <div class="col-md-6 col-sm-12 hadith-sharh-title-ar" lang="ar" dir="rtl" data-reader-language-column="arabic">
+        <h4 class="fs-6"><a class="sharh-book-link" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= titleAr %></a></h4>
+      </div>
+    </div>
+    </header>
+    <div class="row g-4" dir="ltr">
+    <% ['en', 'ar'].forEach(function (lang) { const field = lang === 'en' ? 'text_en' : 'text'; const text = entry[field] || ''; if (!text && !site.editMode) return; %>
+      <div class="<%= site.editMode || (entry.text && entry.text_en) ? 'col-md-6' : 'col-12' %> col-sm-12" data-reader-language-column="<%= lang === 'ar' ? 'arabic' : 'english' %>" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
+        <div class="quran-tafsir-text quran-tafsir-entry-body<%= site.editMode ? ' _e quran-tafsir-editor' : '' %>"<% if (site.editMode) { %> data-id="<%= entry.id %>" data-prop="<%= updateType %>.<%= field %>" data-edit-format="md" data-markdown-source="<%= text %>" data-markdown-empty-html="<%= lang === 'ar' ? 'نص الشرح' : 'English explanation' %>"<% } %>><%- text ? Tafsir.renderCommentaryText(text, '', entry.format || 'md', { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: `sharh-${kind}-${entry.id}-${lang}` }) : (lang === 'ar' ? 'نص الشرح' : 'English explanation') %></div>
+      </div>
+    <% }); %>
+    </div>
+  </article>
+  <% }); %>
+</main>
+<% if (site.editMode) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: 'sharh-book-metadata' }); %><% } %>
+<%- include('sub-views/footer.ejs', { site, page }); %>
+<%- include('sub-views/scripts.ejs', { site, page }); %>
+</body>
+</html>

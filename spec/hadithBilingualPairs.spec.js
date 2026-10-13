@@ -86,20 +86,9 @@ describe('hadith bilingual pair library', () => {
 		expect(global.query.mock.calls.find(([sql]) => sql.includes('FROM grades WHERE'))[0]).not.toContain('hdith_hadith_grades');
 	});
 
-	test('editing a pair keeps its original identity and saves both new values', async () => {
-		global.query = jest.fn(async sql => sql.includes('SELECT DISTINCT hadith_id') ? [
-			{ hadith_id: 1, alias: 'bukhari' }, { hadith_id: null, alias: 'riyad' }
-		] : []);
-
-		const saved = await HadithBilingualPairs.save('sharh_title', 'فَتْحُ البَارِي', 'Fatḥ al-Bārī', 'فتح الباري القديم');
-
-		expect(global.query.mock.calls.some(([sql]) => sql.includes("VALUES ('sharh_title', 'فتح الباري القديم', 'فَتْحُ البَارِي', 'Fatḥ al-Bārī', 0"))).toBe(true);
-		expect(global.query.mock.calls.some(([sql]) => sql.includes("hidden=1"))).toBe(false);
-		expect(global.query.mock.calls.some(([sql]) => sql.includes('UPDATE hdith_hadith_sharh hs') && sql.includes("hs.title='فَتْحُ البَارِي'"))).toBe(true);
-		expect(global.query.mock.calls.some(([sql]) => sql.includes('UPDATE hdith_toc_sharh ts') && sql.includes("ts.title_en='Fatḥ al-Bārī'"))).toBe(true);
-		expect(global.query.mock.calls.some(([sql]) => sql.includes('UPDATE hdith_sharh_sources SET') && sql.includes("title='فَتْحُ البَارِي'"))).toBe(true);
-		expect(saved.affected_book_aliases).toEqual(['bukhari', 'riyad']);
-		expect(saved.affected_hadith_ids).toEqual([1]);
+	test('sharh names are no longer managed as bilingual pairs', async () => {
+		global.query = jest.fn();
+		await expect(HadithBilingualPairs.save('sharh_title', 'عنوان', 'Title')).rejects.toThrow('Invalid hadith bilingual pair type');
 	});
 
 	test.each([

@@ -32,6 +32,20 @@ router.get('/ayah', async (req, res, next) => {
     res.json({ source });
   } catch (err) { next(err); }
 });
+// Resolve exact references to the same identities used by contextual Note buttons.
+router.get('/attachment', async (req, res, next) => {
+  try {
+    const ref = require('../lib/NotebookReferences').reference(String(req.query.reference || '').trim());
+    if (/^quran:.*-/.test(ref)) return res.status(400).json({ error: 'Attach one ayah at a time.' });
+    const item = await require('../lib/Model').Item.itemFromRef(ref);
+    if (!item || String(item.ref).toLowerCase() !== ref || !Number.isSafeInteger(Number(item.id)) || Number(item.id) < 1)
+      return res.status(404).json({ error: 'Item not found.' });
+    res.json({ source: { source_key: `item:${item.id}`, source_title: ref, source_url: `/${ref}` } });
+  } catch (err) { next(err instanceof ReferenceError ? Object.assign(new Error('Item not found.'), { status: 404 }) : err); }
+});
+router.get('/associated', async (req, res, next) => {
+  try { res.json({ notes: await Notebook.related(req.user.uid, req.query.source) }); } catch (err) { next(err); }
+});
 router.get('/share', async (req, res, next) => {
   try { await Shares.rememberAuthor(req.user); res.json(await Shares.status(req.user.uid, req.query.source)); } catch (err) { next(err); }
 });
@@ -82,7 +96,16 @@ router.get('/download', async (req, res, next) => {
 router.get('/', async (req, res, next) => {
   try {
     await Shares.rememberAuthor(req.user);
-    if (req.query.source) return res.json({ note: await Notebook.get(req.user.uid, req.query.source) });
+    if (req.query.source) {
+      const note = await Notebook.get(req.user.uid, req.query.source);
+      if (req.query.context === '1' && note?.links_explicit && !note.attachments.some(entry => entry.source_key === req.query.source)) {
+        // The old note still exists in the notebook, but is no longer linked here.
+        // A new contextual note gets its own identity instead of overwriting it.
+        return res.json({ note: null, source: { source_key: `general:${require('crypto').randomUUID()}`, source_title: 'General note', source_url: '/notebook',
+          attachments: [{ source_key: note.source_key, source_title: note.source_title, source_url: note.source_url }], markdown: '', title: '', version: 0 } });
+      }
+      return res.json({ note });
+    }
     const offset = Number(req.query.offset || 0);
     if (!Number.isSafeInteger(offset) || offset < 0) return res.status(400).json({ error: 'Invalid page.' });
     res.json(await Notebook.list(req.user.uid, offset, req.query.q || '', req.query.tag || ''));

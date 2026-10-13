@@ -13,7 +13,7 @@ describe('History catalog navigation', () => {
 
  test('the books page renders the requested History tab active', () => {
   const books = source('views/books.ejs');
-  expect(books).toContain("req.query.tab === 'history' ? 'sirah' : 'hadith'");
+  expect(books).toContain("req.query.tab === 'history' ? 'sirah' : (req && req.query && req.query.tab === 'sharh' ? 'sharh' : 'hadith')");
   expect(books).toContain("bookType === initialBookCatalogType ? ' show active' : ''");
   expect(books).toContain("catalogTabButton('book-catalog-sirah', 'History &amp; Sirah'");
   expect(books).toContain('book-language-badge');

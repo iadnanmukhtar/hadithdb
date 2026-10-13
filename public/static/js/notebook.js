@@ -137,6 +137,19 @@
     if (saving && !await save()) return;
     await open(note);
   } });
+  const attachmentControls = window.NotebookAttachments.install({ api, save, setBusy, open,
+    context: () => ({ current, busy }), changed: note => {
+      if (current?.source_key === note.source_key) {
+        current = note; editor.value = savedText = note.markdown; preview.innerHTML = note.html || ''; resetTags(); frontmatterControls.refresh();
+      }
+      updateList(note); navigatorControls.update(note);
+      ++statusEpoch; checked.clear(); scheduleStatus();
+    }
+  });
+  const frontmatterControls = window.NotebookFrontmatterEditor.install({ editor, titleEditor, tagEditor,
+    context: () => ({ current, busy }), changed: scheduleSave,
+    render: () => { renderNoteMetadata(); renderNoteTags(); }
+  });
   async function api(path = '', method = 'GET', body) {
     const token = await window.hadithAuth?.getToken();
     if (!token) throw new Error('Please sign in to use your notebook.');
@@ -153,6 +166,7 @@
   }
   function setBusy(value) {
     busy = value;
+    frontmatterControls.setBusy(value);
     document.getElementById('notebook-expanded-new').disabled = value;
     saveButton.disabled = deleteButton.disabled = toggle.disabled = editor.disabled = downloadButton.disabled = tagEditor.disabled = titleEditor.disabled = value;
     printButton.disabled = value;
@@ -264,7 +278,7 @@
   let changingPresentation = false, floatingOwner = null, restoringFloating = false, pendingFloating = false;
   function rememberFloating() {
     if (!current || !floatingOwner || !modal.classList.contains('notebook-floating')) return;
-    try { sessionStorage.setItem(floatingStorage, JSON.stringify({ uid: floatingOwner, source: { source_key: current.source_key, source_title: current.source_title, source_url: current.source_url, markdown: '', version: 0 }, minimized: modal.classList.contains('notebook-minimized') })); } catch (_) {}
+    try { sessionStorage.setItem(floatingStorage, JSON.stringify({ uid: floatingOwner, source: { source_key: current.source_key, source_title: current.source_title, source_url: current.source_url, markdown: '', version: current.version || 0 }, minimized: modal.classList.contains('notebook-minimized') })); } catch (_) {}
   }
   function minimizeFloating(minimized) {
     modal.classList.toggle('notebook-minimized', minimized);
@@ -448,6 +462,7 @@
       return ok && !background && dirty() ? save() : ok;
     }
     if (!current || busy) return false;
+    if (!frontmatterControls.valid()) { status.textContent = 'Fix the frontmatter before saving.'; return false; }
     if ((dirty() || current.needsChecksum) && !titleEditor.value.trim()) { status.textContent = 'Enter a title for this note.'; return false; }
     const ownGeneration = generation;
     let succeeded = false;
@@ -456,16 +471,25 @@
         while (ownGeneration === generation && (dirty() || current.needsChecksum)) {
           const text = editor.value, tags = tagEditor.value, title = titleEditor.value;
           status.textContent = 'Saving…';
-          const note = (await api('', 'PUT', { ...current, markdown: text, tags, title })).note;
+          const note = (await api('', 'PUT', { ...current, markdown: text, tags, title, links_edited: frontmatterControls.linksEdited() })).note;
           if (ownGeneration !== generation) return false;
+          const attachmentsChanged = JSON.stringify(current.attachments || []) !== JSON.stringify(note.attachments || []);
           current = note;
-          savedText = text; savedTags = tags; savedTitle = title; renderNoteTags(); renderNoteMetadata();
+          if (editor.value === text && text !== note.markdown) editor.value = note.markdown;
+          savedText = note.markdown;
+          if (titleEditor.value === title) titleEditor.value = note.title || '';
+          if (tagEditor.value === tags) tagEditor.value = (note.tags || []).join(' ');
+          savedTags = (note.tags || []).join(' '); savedTitle = note.title || '';
+          renderNoteTags(); renderNoteMetadata();
+          if (editor.value === note.markdown) frontmatterControls.refresh();
           deleteButton.hidden = !note.version;
           markSource(note.source_key, !!note.version);
           updateList(note);
           navigatorControls.update(note);
+          attachmentControls.render(note);
+          if (attachmentsChanged) { ++statusEpoch; checked.clear(); scheduleStatus(); }
           // Keep any text typed during the request; only advance the saved revision.
-          if (!editing && editor.value === text) preview.innerHTML = note.html;
+          if (!editing && editor.value === note.markdown) preview.innerHTML = note.html;
           // Coalesce edits made during a slow Drive request into the next idle save.
           if (background) break;
         }
@@ -523,6 +547,8 @@
     clearTimeout(saveTimer);
     const ownGeneration = ++generation;
     shareControls.reset();
+    attachmentControls.reset(null);
+    frontmatterControls.reset();
     current = source; editor.value = savedText = ''; preview.innerHTML = ''; resetTags();
     mode(false); deleteButton.hidden = true;
     const link = document.getElementById('notebook-source');
@@ -539,13 +565,17 @@
     bootstrap.Modal.getOrCreateInstance(modal).show();
     if (modal.classList.contains('notebook-floating')) modal.removeAttribute('aria-modal');
     try {
-      const result = await api(`?source=${encodeURIComponent(source.source_key)}`);
+      const result = await api(`?source=${encodeURIComponent(source.source_key)}${source.version === 0 && !source.source_key.startsWith('general') ? '&context=1' : ''}`);
       if (ownGeneration !== generation) return;
-      current = result.note || source; editor.value = savedText = current.markdown; resetTags();
+      current = result.note || result.source || source; editor.value = savedText = current.markdown; resetTags();
+      if (current.links_explicit && !current.attachments?.some(entry => entry.source_key === current.source_key)) { link.textContent = 'Note'; link.removeAttribute('href'); }
       pendingSource = null;
       preview.innerHTML = current.html || ''; deleteButton.hidden = !current.version;
       markSource(current.source_key, !!current.version);
+      checked.delete(current.source_key);
       status.textContent = ''; setBusy(false); mode(edit || !current.version);
+      attachmentControls.reset(current);
+      frontmatterControls.refresh();
       importReflection(source);
       navigatorControls.select();
       if (modal.classList.contains('notebook-floating')) { minimizeFloating(false); rememberFloating(); }
@@ -622,7 +652,7 @@
   window.NotebookShortcuts.install(editor, () => editing && current && !busy, () => wikiAutocomplete.close());
   // Clicking anywhere outside the editor returns to the rendered note.
   document.addEventListener('pointerdown', event => {
-    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file, #notebook-zoom-control, #notebook-share-panel, #notebook-share') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
+    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file, #notebook-zoom-control, #notebook-share-panel, #notebook-share, #notebook-frontmatter-panel, #notebook-frontmatter') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
   });
   function updateEditorCaretDirection() {
     // dir="auto" uses the whole note's first strong character for keyboard
@@ -654,9 +684,12 @@
       await api('', 'DELETE', { source_key: current.source_key, version: current.version, revision: current.revision });
       if (ownGeneration !== generation) return;
       shareControls.reset();
-      current = { ...current, markdown: '', html: '', version: 0, tags: [], hashtags: [], title: '', created_at: null, updated_at: null }; resetTags();
+      current = { ...current, attachments: [], markdown: '', html: '', version: 0, tags: [], hashtags: [], title: '', created_at: null, updated_at: null }; resetTags();
       editor.value = savedText = ''; preview.innerHTML = ''; deleteButton.hidden = true;
       markSource(current.source_key, false); updateList(current); status.textContent = ''; mode(false);
+      attachmentControls.reset(current);
+      frontmatterControls.refresh();
+      checked.clear(); scheduleStatus();
       navigatorControls.update(current);
     } catch (err) { if (ownGeneration === generation) status.textContent = err.message; }
     finally { if (ownGeneration === generation) setBusy(false); }
@@ -670,7 +703,7 @@
       const result = await api('/expand', 'POST', { ...note, reference: button.dataset.notebookReference });
       if (ownGeneration !== generation) return;
       if (inEditor) {
-        current = result.note; editor.value = savedText = current.markdown; resetTags();
+        current = result.note; editor.value = savedText = current.markdown; resetTags(); frontmatterControls.refresh();
         preview.innerHTML = current.html; mode(false); deleteButton.hidden = false;
       }
       markSource(result.note.source_key, true); updateList(result.note); navigatorControls.update(result.note); targetStatus.textContent = '';
@@ -993,6 +1026,8 @@
     try { sessionStorage.removeItem(floatingStorage); } catch (_) {}
     restoreButton.hidden = true;
     wikiAutocomplete.close();
+    attachmentControls.reset(null);
+    frontmatterControls.reset();
     ++generation; ++listRequest; ++statusEpoch; ++tagRequest; railTags = []; renderTagRail(); returnModal = null; pendingSource = null;
     clearTimeout(saveTimer); saving = null; current = null; editor.value = savedText = ''; preview.innerHTML = ''; resetTags();
     existing.clear(); checked.clear(); paintButtons(); scheduleStatus();

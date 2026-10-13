@@ -4628,6 +4628,14 @@ function readerLanguageColumnToolbar() {
 function ensureReaderLanguageColumnToolbar(root) {
 	if (!root)
 		return;
+	if (root.matches('.sharh-only-page')) {
+		root.querySelectorAll('.sharh-passage-entry').forEach(function (entry) {
+			if (entry.querySelector('[data-reader-language-toolbar]')) return;
+			var toolbar = readerLanguageColumnToolbar();
+			toolbar.setAttribute('data-reader-language-toolbar', '1');
+			entry.insertBefore(toolbar, entry.querySelector('.row.g-4'));
+		});
+	}
 	var kind = root.getAttribute('data-reader-language-root');
 	var toolbar = root._readerLanguageColumnToolbar;
 	var introduction = root.querySelector('.quran-commentary-introduction-article, .quran-commentary-heading-intro, .chapter-intro, .heading-intro');
@@ -6335,7 +6343,8 @@ function quranPassageAudioElement() {
 		return quranPassageAudioState.audio;
 	}
 	var audio = new Audio();
-	audio.preload = 'none';
+	// Playback seeks after loadedmetadata; allow that event before calling play().
+	audio.preload = 'metadata';
 	applyQuranPassageAudioPlaybackRate(audio);
 	audio.addEventListener('ratechange', function () {
 		var selectedRate = quranPassageAudioPlaybackRateOption().value;
@@ -18006,18 +18015,20 @@ async function exportHadithShareCard(card, mode, button) {
 	try {
 		if (document.activeElement && typeof document.activeElement.blur === 'function')
 			document.activeElement.blur();
-		var blob = await renderHadithShareImage(card);
-		var filename = getHadithShareFilename(card.dataset.shareRef);
-		if (mode === 'copy' && navigator.clipboard && window.ClipboardItem) {
+		// Start the clipboard write during the click, before rendering yields.
+		// Safari requires user activation even when the PNG is still being prepared.
+		if (mode === 'copy' && navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
 			await navigator.clipboard.write([
 				new ClipboardItem({
-					'image/png': blob
+					'image/png': renderHadithShareImage(card)
 				})
 			]);
 			if (window.toastr)
 				toastr.success('Image copied to clipboard');
 			return;
 		}
+		var blob = await renderHadithShareImage(card);
+		var filename = getHadithShareFilename(card.dataset.shareRef);
 		if (mode === 'share') {
 			var file = window.File ? new File([blob], filename, { type: 'image/png' }) : null;
 			if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {

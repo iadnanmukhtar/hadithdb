@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+const site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: req.admin && req.editMode });
+const page = { menu: 'Books', title_en: 'Hadith Unlocked | Sharḥ Books', description_en: 'Browse hadith commentary books in Arabic and English.', subtitle_en: 'Sharḥ Books', subtitle: '', canonical: '/sharh', context: {} };
+%>
+<%- include('sub-views/head.ejs', { site, page }); %>
+</head>
+<body>
+<%- include('sub-views/header.ejs', { site, page }); %>
+<div class="container col-lg-8 mx-auto">
+  <main class="book-catalog-page">
+      <nav class="h-menu-wrap home-hadith-book-nav tafsir-book-group-filters mb-3" aria-label="Filter sharḥ books">
+        <div class="h-menu-scroller">
+          <div class="btn-group h-menu text-nowrap" role="group">
+            <label class="book-carousel-filter">
+              <span class="bi bi-search" aria-hidden="true"></span>
+              <input type="search" class="book-carousel-filter-input tafsir-book-filter" placeholder="Filter books" aria-label="Filter sharḥ books" autocomplete="off" autofocus>
+            </label>
+            <button type="button" class="btn btn-outline-primary active" data-tafsir-group-filter="" aria-pressed="true">All</button>
+            <button type="button" class="btn btn-outline-primary" data-tafsir-language-filter="en" aria-pressed="false">English</button>
+            <button type="button" class="btn btn-outline-primary" data-tafsir-language-filter="ar" aria-pressed="false">Arabic</button>
+          </div>
+        </div>
+      </nav>
+
+    <section class="mb-4">
+      <%- include('sub-views/sharh_catalog_list.ejs', { site, sharhBooks: books }); %>
+    </section>
+    <p class="text-muted d-none tafsir-book-filter-empty">No matching sharḥ books found.</p>
+  </main>
+</div>
+<%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
+<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+<script>
+  (function () {
+    var filter = document.querySelector('.tafsir-book-filter');
+    if (!filter)
+      return;
+    filter.focus();
+    var normalize = function (value) {
+      return window.normalizeContentFilterText(value);
+    };
+    var cards = Array.from(document.querySelectorAll('.tafsir-book-card'));
+    var groupPills = Array.from(document.querySelectorAll('[data-tafsir-group-filter]'));
+    var languagePills = Array.from(document.querySelectorAll('[data-tafsir-language-filter]'));
+    var filterPills = groupPills.concat(languagePills);
+    var empty = document.querySelector('.tafsir-book-filter-empty');
+    var activeGroup = '';
+    var activeLanguage = '';
+
+    var applyFilters = function () {
+      var query = normalize(filter.value);
+      cards.forEach(function (card) {
+        var groups = (card.dataset.tafsirBookGroups || '').split(/\s+/).filter(Boolean);
+        var match = (!query || normalize(card.dataset.tafsirBookFilter).includes(query))
+          && (!activeGroup || groups.indexOf(activeGroup) >= 0)
+          && (!activeLanguage || (card.dataset.tafsirLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0);
+        card.classList.toggle('d-none', !match);
+      });
+      var visibleCount = cards.filter(function (card) {
+        return !card.classList.contains('d-none');
+      }).length;
+      if (empty)
+        empty.classList.toggle('d-none', visibleCount > 0);
+    };
+
+    filter.addEventListener('input', applyFilters);
+    groupPills.forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        activeGroup = pill.dataset.tafsirGroupFilter || '';
+        activeLanguage = '';
+        filterPills.forEach(function (candidate) {
+          var active = candidate === pill;
+          candidate.classList.toggle('active', active);
+          candidate.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        applyFilters();
+      });
+    });
+    languagePills.forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        activeGroup = '';
+        activeLanguage = pill.dataset.tafsirLanguageFilter || '';
+        filterPills.forEach(function (candidate) {
+          var active = candidate === pill;
+          candidate.classList.toggle('active', active);
+          candidate.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        applyFilters();
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>

@@ -8,11 +8,19 @@ const Drive = require('../lib/NotebookDrive');
 const Legacy = require('../lib/UserNotebook');
 const express = require('express');
 const http = require('http');
-let connection, mappings, files, originals, nextId, request, server, base, sqlCalls, creations;
+let linkModes, attachmentIndex, connection, mappings, files, originals, nextId, request, server, base, sqlCalls, creations;
 const note = (overrides = {}) => ({ source_key: 'item:42', source_title: 'bukhari:100', source_url: '/bukhari:100', title: 'Reflection', tags: ['صلاة'], markdown: '\n\nالعربية\n\nEnglish #prayer\n', ...overrides });
 function db(statement, values) {
   sqlCalls.push({ statement, values });
   if (statement.startsWith('CREATE')) return {};
+  if (statement.startsWith('INSERT IGNORE INTO user_notebook_link_modes')) { linkModes.add(JSON.stringify(values)); return {}; }
+  if (statement.startsWith('SELECT source_key FROM user_notebook_link_modes')) return values[1].filter(source => linkModes.has(JSON.stringify([values[0], source]))).map(source_key => ({ source_key }));
+  if (statement.startsWith('INSERT IGNORE INTO user_notebook_attachments')) { attachmentIndex.set(JSON.stringify(values), values); return {}; }
+  if (statement.startsWith('DELETE FROM user_notebook_attachments')) {
+    for (const [key, [uid, source, target]] of attachmentIndex) if (uid === values[0] && source === values[1] && !values[2]?.includes(target)) attachmentIndex.delete(key);
+    return {};
+  }
+  if (statement.startsWith('SELECT DISTINCT source_key FROM user_notebook_attachments')) return [...new Set([...attachmentIndex.values()].filter(([uid, , target]) => uid === values[0] && values[1].includes(target)).map(([, source]) => source))].map(source_key => ({ source_key }));
   if (statement.startsWith('INSERT IGNORE INTO user_notebook_creations')) { creations.add(values[0] + ':' + values[1]); return {}; }
   if (statement.startsWith('SELECT COUNT(*) AS lifetime_created')) return [{ lifetime_created: [...creations].filter(key => key.startsWith(values[0] + ':')).length }];
   if (statement.startsWith('SELECT f.source_key')) return values[0] === 'alice' ? [...mappings].filter(([, id]) => !creations.has('alice:' + id)).map(([source_key, file_id]) => ({ source_key, file_id })) : [];
@@ -41,7 +49,8 @@ beforeEach(() => {
   OAuth2Client.mockClear();
   global.settings = { site: { url: 'https://hadithunlocked.com' }, google: { clientId: 'client', clientSecret: 'secret', driveTokenKey: Buffer.alloc(32, 7).toString('base64') } };
   global.books = [{ alias: 'bukhari' }];
-  mappings = new Map(); files = new Map(); originals = []; nextId = 0; sqlCalls = []; creations = new Set();
+  require('../lib/Model').Item.itemFromRef.mockImplementation(async ref => ({ ref, id: ref.startsWith('quran:') ? 77 : 42 }));
+  linkModes = new Set(); attachmentIndex = new Map(); mappings = new Map(); files = new Map(); originals = []; nextId = 0; sqlCalls = []; creations = new Set();
   connection = { user_uid: 'alice', google_sub: 'alice', folder_id: 'folder', migrated: 1, token_cipher: Drive.encrypt('alice', { refresh_token: 'refresh', access_token: 'access' }) };
   files.set('folder', { id: 'folder', mimeType: 'application/vnd.google-apps.folder', trashed: false });
   const query = (statement, values, cb) => { try { cb(null, db(statement, values)); } catch (err) { cb(err); } };
@@ -414,4 +423,143 @@ test('stats endpoint is private and ignores a supplied account ID', async () => 
   const response = await fetch(base + '/stats?uid=bob', { headers: { Authorization: 'Bearer alice' } });
   expect(response.headers.get('cache-control')).toContain('no-store');
   expect((await response.json()).lifetime_created).toBe(1);
+});
+
+test('one general note attaches to multiple items without replacing their own notes', async () => {
+  const targets = [
+    { source_key: 'item:42', source_title: 'bukhari:100', source_url: '/bukhari:100' },
+    { source_key: 'item:77', source_title: 'quran:2:255', source_url: '/quran:2:255' }
+  ];
+  const original = await Drive.save('alice', { ...note(), version: 0 });
+  const general = await Drive.save('alice', { ...note({ source_key: 'general', title: 'Shared reflection', attachments: targets }), version: 0 });
+  expect(general.source_key).toBe('general');
+  expect((await Drive.get('alice', 'general')).attachments).toEqual(targets);
+  expect((await Drive.related('alice', 'item:77')).map(n => n.source_key)).toEqual(['general']);
+  expect(new Set(await Drive.status('alice', ['item:42', 'item:77']))).toEqual(new Set(['item:42', 'item:77']));
+  expect((await Drive.get('alice', 'item:42')).markdown).toBe(original.markdown);
+  const { attachments, ...oldClient } = general;
+  const edited = await Drive.save('alice', { ...oldClient, markdown: oldClient.markdown.replace('English', 'New text') });
+  expect(edited.attachments).toEqual(targets);
+  const detached = await Drive.save('alice', { ...edited, attachments: [targets[0]], attachment_edit: true });
+  expect(detached.revision).not.toBe(edited.revision);
+  await expect(Drive.save('alice', { ...edited, markdown: 'Stale' })).rejects.toMatchObject({ status: 409 });
+  expect(await Drive.related('alice', 'item:77')).toEqual([]);
+  expect(await Drive.status('alice', ['item:77'])).toEqual([]);
+  await expect(Drive.related('bob', 'item:42')).rejects.toMatchObject({ code: 'DRIVE_CONNECT' });
+  await Drive.remove('alice', detached.source_key, detached.version, detached.revision);
+  expect(await Drive.related('alice', 'item:42')).toEqual([]);
+  expect(await Drive.status('alice', ['item:42'])).toEqual(['item:42']);
+});
+test('attachments deduplicate and validate metadata and legacy checksums still read', () => {
+  const source = { source_key: 'item:77', source_title: 'Quran', source_url: '/quran:2:255' };
+  expect(Drive.validate(note({ attachments: [source, source] })).attachments).toEqual([source]);
+  expect(() => Drive.validate(note({ attachments: [{ ...source, source_key: 'general' }] }))).toThrow();
+  expect(() => Drive.validate(note({ attachments: [{ ...source, source_url: 'javascript:alert(1)' }] }))).toThrow();
+  expect(() => Drive.validate(note({ attachments: Array(101).fill(source) }))).toThrow();
+  expect(Drive.decode(Drive.encode(note()), 'item:42').attachments).toEqual([]);
+});
+test('attachment lookup resolves canonical item identity and associated endpoint requires authentication', async () => {
+  const { Item } = require('../lib/Model');
+  Item.itemFromRef.mockResolvedValue({ ref: 'quran:2:255', id: 77 });
+  const response = await fetch(base + '/attachment?reference=quran:2:255', { headers: { Authorization: 'Bearer alice' } });
+  expect(response.status).toBe(200);
+  expect((await response.json()).source.source_key).toBe('item:77');
+  const missing = await fetch(base + '/attachment?reference=bukhari:1', { headers: { Authorization: 'Bearer alice' } });
+  expect(missing.status).toBe(404);
+  expect((await fetch(base + '/associated?source=item:77')).status).toBe(401);
+});
+
+test('editing YAML attachments updates associations and removing the field detaches', async () => {
+  const markdown = '---\nauthor: أحمد\ncustom:\n  reviewed: false\nattachments:\n  - bukhari:100\n  - quran:2:255\n---\n\nReflection';
+  const saved = await Drive.save('alice', { ...note({ source_key: 'general', markdown }), version: 0 });
+  expect(require('../lib/NotebookFrontmatter').parse(saved.markdown).body).toBe('\nReflection');
+  expect(saved.attachments.map(entry => entry.source_key)).toEqual(['item:42', 'item:77']);
+  expect((await Drive.related('alice', 'item:77'))[0].source_key).toBe('general');
+  const edited = await Drive.save('alice', { ...saved, markdown: markdown.replace('  - quran:2:255\n', '') });
+  expect(await Drive.related('alice', 'item:77')).toEqual([]);
+  expect(edited.attachments).toHaveLength(1);
+  const detached = await Drive.save('alice', { ...edited, markdown: require('../lib/NotebookFrontmatter').serialize({ title: edited.title, tags: edited.tags, author: 'أحمد' }, '\nReflection') });
+  expect(detached.attachments).toEqual([]);
+  expect(await Drive.status('alice', ['item:42', 'item:77'])).toEqual([]);
+  expect(detached.markdown).toContain('author: أحمد');
+});
+test('attachment buttons write portable YAML and keep custom fields and body', async () => {
+  const saved = await Drive.save('alice', { ...note({ source_key: 'general', markdown: '---\nproject: Research\npriority: 2\n---\n\nReflection' }), version: 0 });
+  const attached = await Drive.save('alice', { ...saved, attachment_edit: true, attachments: [{ source_key: 'item:77', source_title: 'quran:2:255', source_url: '/quran:2:255' }] });
+  const frontmatter = require('../lib/NotebookFrontmatter').parse(attached.markdown);
+  expect(frontmatter.attributes).toEqual({ project: 'Research', priority: 2, title: 'Reflection', tags: ['صلاة'], links: ['quran:2:255'] });
+  expect(frontmatter.body).toBe('\nReflection');
+  expect((await Drive.get('alice', 'general')).markdown).toBe(attached.markdown);
+});
+test('invalid YAML or unresolved references never overwrite a saved note', async () => {
+  const saved = await Drive.save('alice', { ...note(), version: 0 });
+  for (const markdown of ['---\nbroken: [\n---\nBody', '---\nattachments: wrong\n---\nBody'])
+    await expect(Drive.save('alice', { ...saved, markdown })).rejects.toMatchObject({ status: 400 });
+  require('../lib/Model').Item.itemFromRef.mockResolvedValue(null);
+  await expect(Drive.save('alice', { ...saved, markdown: '---\nattachments: [bukhari:999999]\n---\nBody' })).rejects.toMatchObject({ status: 400 });
+  expect((await Drive.get('alice', saved.source_key)).markdown).toBe(saved.markdown);
+});
+
+test('single-note and ZIP downloads use the same merged frontmatter', async () => {
+  const saved = await Drive.save('alice', { ...note({ source_key: 'general', markdown: '---\nauthor: أحمد\ntags: [custom]\nattachments: [quran:2:255]\n---\n\nReflection' }), version: 0 });
+  const response = await fetch(base + '/download', { method: 'POST', headers: { Authorization: 'Bearer alice', 'Content-Type': 'application/json' }, body: JSON.stringify(saved) });
+  expect(response.status).toBe(200);
+  const single = (await response.json()).markdown;
+  const zip = new (require('adm-zip'))(await Drive.exportZip('alice'));
+  expect(zip.getEntries()[0].getData().toString('utf8')).toBe(single);
+  const parsed = require('../lib/NotebookFrontmatter').parse(single);
+  expect(parsed.attributes).toMatchObject({ title: 'Reflection', author: 'أحمد', tags: ['custom'], links: ['quran:2:255'] });
+  expect(parsed.body).toBe('\nReflection');
+  expect(single.match(/^---$/gm)).toHaveLength(2);
+});
+
+test('editable metadata synchronizes between frontmatter and controls in both directions', async () => {
+  const fm = require('../lib/NotebookFrontmatter');
+  const saved = await Drive.save('alice', { ...note({ source_key: 'general', markdown: '---\nauthor: أحمد\n---\nBody' }), version: 0 });
+  expect(fm.parse(saved.markdown).attributes).toEqual({ author: 'أحمد', title: 'Reflection', tags: ['صلاة'], links: [] });
+  const controls = await Drive.save('alice', { ...saved, title: 'Edited control', tags: ['changed'] });
+  expect(fm.parse(controls.markdown).attributes).toMatchObject({ title: 'Edited control', tags: ['changed'], author: 'أحمد' });
+  const yaml = await Drive.save('alice', { ...controls, markdown: fm.serialize({ ...fm.parse(controls.markdown).attributes, title: 'Edited YAML', tags: ['frontmatter'] }, 'Body') });
+  expect(yaml.title).toBe('Edited YAML'); expect(yaml.tags).toEqual(['frontmatter']);
+  expect((await Drive.get('alice', 'general')).title).toBe('Edited YAML');
+});
+test.each(['version', 'revision', 'source_key', 'source_url', 'created_at', 'cksum', 'reference'])('system frontmatter field %s cannot be changed by saving', async field => {
+  const saved = await Drive.save('alice', { ...note(), version: 0 });
+  await expect(Drive.save('alice', { ...saved, markdown: `---\n${field}: changed\n---\nBody` })).rejects.toMatchObject({ status: 400 });
+  expect((await Drive.get('alice', saved.source_key)).revision).toBe(saved.revision);
+});
+
+test('original and later items share one editable links list and detached identity stays accessible', async () => {
+  const fm = require('../lib/NotebookFrontmatter');
+  const saved = await Drive.save('alice', { ...note({ markdown: '---\nauthor: Ahmad\n---\nBody' }), version: 0 });
+  expect(fm.parse(saved.markdown).attributes.links).toEqual(['bukhari:100']);
+  const linked = await Drive.save('alice', { ...saved, markdown: fm.serialize({ links: ['bukhari:100', 'quran:2:255'] }, 'Body') });
+  expect(linked.attachments.map(item => item.source_key)).toEqual(['item:42', 'item:77']);
+  const detached = await Drive.save('alice', { ...linked, markdown: fm.serialize({ links: ['quran:2:255'] }, 'Body') });
+  expect(await Drive.status('alice', ['item:42', 'item:77'])).toEqual(['item:77']);
+  expect((await Drive.get('alice', 'item:42')).driveFileUrl).toBe(saved.driveFileUrl);
+  expect((await Drive.related('alice', 'item:77'))[0].source_key).toBe('item:42');
+  const exported = fm.parse(Drive.exportMarkdown(detached)).attributes;
+  expect(exported.links).toEqual(['quran:2:255']);
+  expect(exported).not.toHaveProperty('reference');
+  expect(exported).not.toHaveProperty('attachments');
+  const response = await fetch(base + '?source=item:42&context=1', { headers: { Authorization: 'Bearer alice' } });
+  const draft = await response.json();
+  expect(draft.note).toBeNull();
+  expect(draft.source.source_key).toMatch(/^general:/);
+  await Drive.save('alice', { ...draft.source, title: 'New contextual note', markdown: 'New contextual note' });
+  expect((await Drive.get('alice', 'item:42')).revision).toBe(detached.revision);
+  expect(await Drive.status('alice', ['item:42'])).toEqual(['item:42']);
+});
+
+test('legacy additional links migrate alongside the original item without changing identity', async () => {
+  const created = await Drive.save('alice', { ...note(), version: 0 });
+  const legacy = note({ markdown: '---\nattachments: [quran:2:255]\n---\nBody', attachments: [{ source_key: 'item:77', source_title: 'quran:2:255', source_url: '/quran:2:255' }] });
+  files.get(mappings.get('item:42')).body = Drive.encode(legacy);
+  const loaded = await Drive.get('alice', 'item:42');
+  expect(loaded.attachments.map(item => item.source_key)).toEqual(['item:42', 'item:77']);
+  const migrated = await Drive.save('alice', loaded);
+  expect(require('../lib/NotebookFrontmatter').parse(migrated.markdown).attributes.links).toEqual(['bukhari:100', 'quran:2:255']);
+  expect(migrated.driveFileUrl).toBe(created.driveFileUrl);
+  expect(migrated.markdown).not.toContain('attachments:');
 });

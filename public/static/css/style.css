@@ -106,6 +106,7 @@ body.quran-script-warsh .quran-ayah-end-marker {
 }
 
 :root {
+	--note-icon-yellow: #cc9a06;
 	--c-ghostwhite: #f8f8f8;
 	--c-ghostwhite-86: rgba(248, 248, 248, 0.86);
 	--c-ghostwhite-95: rgba(248, 248, 248, 0.95);
@@ -7799,6 +7800,31 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-sharh-entry-heading > [lang="ar"] { direction: rtl; text-align: right; }
 .hadith-sharh-title-ar { align-items: center; display: flex; gap: .5rem; justify-content: space-between; }
 .hadith-sharh-entry-heading h4 { flex: 1 1 auto; min-width: 0; }
+.hadith-sharh-header { display: flex; flex-direction: column; gap: .5rem; direction: ltr; border-bottom: 1px solid var(--bs-border-color); margin-bottom: 1rem; padding-bottom: .75rem; }
+.hadith-sharh-header .hadith-sharh-entry-heading { width: 100%; min-width: 0; margin: 0; order: 0; row-gap: .35rem; }
+.hadith-sharh-header .hadith-sharh-entry-heading > div { padding-inline: 0; }
+.hadith-sharh-header .hadith-sharh-entry-heading > [lang="en"] { padding-right: .75rem; }
+.hadith-sharh-header h4 { margin-bottom: 0; overflow-wrap: anywhere; }
+.hadith-sharh-header .sharh-book-link { text-decoration: none; }
+.hadith-sharh-header .sharh-book-link:hover { text-decoration: underline; text-underline-offset: .2em; }
+/* Shared icon-only tools above chapter and hadith explanation titles. */
+.hadith-sharh-toolbar { display: flex; align-items: center; gap: .15rem; direction: ltr; }
+.hadith-sharh-toolbar .personal-note-actions { display: inline-flex; margin: 0 !important; }
+.hadith-sharh-toolbar :is(.hadith-sharh-expand-link, .personal-note-btn) { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; padding: 0 !important; border: 0; border-radius: .35rem; background: transparent; color: var(--bs-secondary-color); font-size: .8rem !important; line-height: 1 !important; text-decoration: none; }
+.hadith-sharh-toolbar .bi { font-size: .85rem !important; }
+.hadith-sharh-toolbar :is(.hadith-sharh-expand-link, .personal-note-btn):hover { color: var(--c-accent); background: var(--bs-tertiary-bg) !important; }
+.hadith-sharh-toolbar :is(.hadith-sharh-expand-link, .personal-note-btn):focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+@media (pointer: coarse) {
+	.hadith-sharh-toolbar :is(.hadith-sharh-expand-link, .personal-note-btn) { width: 2.75rem; height: 2.75rem; }
+}
+@media (max-width: 767.98px) {
+	.hadith-sharh-header { gap: .5rem; }
+	.hadith-sharh-header .hadith-sharh-entry-heading > [lang="en"] { padding-right: 0; }
+	.hadith-sharh-column + .hadith-sharh-column { border-inline-start: 0; border-top: 1px solid var(--bs-border-color); padding-top: 1rem; }
+}
+@media print {
+	.hadith-sharh-toolbar { display: none; }
+}
 .hadith-sharh-title-input { width: 100%; }
 .hadith-sharh-title-autocomplete-menu { max-height: min(24rem, 55vh); overflow-y: auto; z-index: 1080; }
 .hadith-sharh-admin-actions { align-items: center; direction: ltr; display: inline-flex; flex: 0 0 auto; gap: .15rem; }
@@ -13473,8 +13499,8 @@ a.cmd-btn:hover {
 }
 
 /* Personal reading actions are available after sign-in. */
-html:not([data-account-signed-in="true"]) :is(.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .personal-note-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn),
-html:not([data-account-signed-in="true"]) :is(.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .personal-note-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn) *,
+html:not([data-account-signed-in="true"]) :is(.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn),
+html:not([data-account-signed-in="true"]) :is(.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn) *,
 html:not([data-account-signed-in="true"]) :is(.hadith-like-count, .comment-composer) {
   color: #8a8a8a !important;
   filter: grayscale(1);
@@ -13502,3 +13528,10 @@ html[data-account-signed-in="true"] #notebook-signin { display: none !important;
   .admin-pairs-page .hadith-pair-manager-row > input { grid-column: 1; }
   .admin-pairs-page .hadith-pair-manager-row-actions { grid-column: 2; grid-row: 2 / span 2; }
 }
+
+/* Every note glyph shares its color; outline/fill alone indicates note state. */
+.bi.bi-sticky,
+.bi.bi-sticky-fill {
+  color: var(--note-icon-yellow) !important;
+}
+html:not([data-account-signed-in="true"]) .personal-note-btn { cursor: default; }

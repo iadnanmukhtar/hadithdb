@@ -158,3 +158,57 @@ describe('book update route', () => {
     expect(res.json.mock.calls[0][0]).toMatchObject({ code: 200, value: { h1: 0, h2: 2 } });
   });
 });
+
+describe('Sharh book metadata updates', () => {
+  afterEach(() => { jest.restoreAllMocks(); delete global.query; });
+  test('refreshes current book metadata and invalidates physical and virtual owner caches', async () => {
+    const { Library } = require('../lib/Model');
+    const SharhBooks = require('../lib/SharhBooks');
+    jest.spyOn(Books, 'ensureBookContentLastmodColumn').mockResolvedValue();
+    jest.spyOn(Library, 'reloadBooks').mockResolvedValue();
+    jest.spyOn(SharhBooks, 'affectedBookAliases').mockResolvedValue(['bukhari', 'riyad']);
+    jest.spyOn(RuntimeRefresh, 'publish').mockResolvedValue('generation');
+    jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
+    jest.spyOn(Utils, 'flushCachedFile').mockResolvedValue();
+    global.query = jest.fn(async sql => sql.startsWith('UPDATE books') ? { affectedRows: 1 } : [{ id: 101, alias: 'fath-al-bari', type: 'sharh' }]);
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    await updateHandler()({ body: { value: 'New short name' }, params: { id: '101', prop: 'book.shortName_en' }, user: { uid: 'admin' } }, res, jest.fn());
+    expect(global.query).toHaveBeenCalledWith(expect.stringContaining("UPDATE books SET shortName_en='New short name'"));
+    expect(Library.reloadBooks).toHaveBeenCalled();
+    expect(SharhBooks.affectedBookAliases).toHaveBeenCalledWith(101);
+    expect(Utils.flushCacheContaining).toHaveBeenCalledWith('bukhari');
+    expect(Utils.flushCacheContaining).toHaveBeenCalledWith('riyad');
+    expect(RuntimeRefresh.publish).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+});
+
+describe('main book alias update endpoint', () => {
+  const Aliases = require('../lib/BookAliases');
+  afterEach(() => { jest.restoreAllMocks(); delete global.query; });
+  test.each(['hadith', 'sharh', 'tafsir', 'trans', 'sirah'])('uses the complete alias rename workflow for %s', async type => {
+    const book = { id: 12, alias: 'new-alias', type };
+    global.query = jest.fn().mockResolvedValue([{ ...book, alias: 'old-alias' }]);
+    jest.spyOn(Books, 'ensureBookContentLastmodColumn').mockResolvedValue();
+    jest.spyOn(Aliases, 'save').mockResolvedValue({ book });
+    jest.spyOn(Aliases, 'refresh').mockResolvedValue();
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    await updateHandler()({ params: { id: '12', prop: 'book.alias' }, body: { value: 'new-alias' }, user: { uid: 'admin' } }, res, jest.fn());
+    expect(Aliases.save).toHaveBeenCalledWith('12', 'new-alias');
+    expect(Aliases.refresh).toHaveBeenCalledWith(book);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 200, value: 'new-alias' }));
+  });
+  test('reports a committed alias and retryable refresh separately', async () => {
+    const book = { id: 12, alias: 'new-alias', type: 'tafsir' };
+    global.query = jest.fn().mockResolvedValue([book]);
+    jest.spyOn(Books, 'ensureBookContentLastmodColumn').mockResolvedValue();
+    jest.spyOn(Aliases, 'save').mockResolvedValue({ book });
+    jest.spyOn(Aliases, 'refresh').mockRejectedValue(new Error('Search unavailable'));
+    jest.spyOn(require('../lib/Model').Library, 'reloadBooks').mockResolvedValue();
+    jest.spyOn(require('../lib/Commentaries'), 'loadCommentaries').mockResolvedValue();
+    jest.spyOn(RuntimeRefresh, 'publish').mockResolvedValue();
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    await updateHandler()({ params: { id: '12', prop: 'book.alias' }, body: { value: 'new-alias' }, user: { uid: 'admin' } }, res, jest.fn());
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 200, value: 'new-alias', warning: true, refreshPending: true }));
+  });
+});

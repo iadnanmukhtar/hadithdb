@@ -1,0 +1,5 @@
+<% const expandHref = kind === 'entry' && entry.sharh_book && locals.hadithReference ? `/sharh/${encodeURIComponent(entry.sharh_book.alias)}/${locals.hadithReference}` : entry.full_page_url; if (expandHref) { %>
+<a class="hadith-sharh-expand-link" href="<%= expandHref %>" lang="en" dir="ltr" title="Read full explanation" aria-label="Read full explanation: <%= entry.title_en || entry.title || 'Explanation' %>">
+  <span class="bi bi-arrows-fullscreen" aria-hidden="true"></span>
+</a>
+<% } %>

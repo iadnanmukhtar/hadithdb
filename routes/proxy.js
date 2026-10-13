@@ -246,7 +246,7 @@ router.get('/tafsir', async function (req, res) {
     debug(`proxy tafsir.app start alias=${src} ref=${surah}:${ayah} version=${version}`);
     const response = await axios.get('https://tafsir.app/get.php', {
       params: {
-        src: src,
+        src: Books.normalizeBookProperties((global.commentaries || []).find(book => book.alias === src)?.properties).source_alias || src,
         s: surah,
         a: ayah,
         ver: version

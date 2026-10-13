@@ -1,0 +1,501 @@
+{
+  "reviewed_on": "2026-10-13",
+  "excluded_aliases": [
+    "mukhtar"
+  ],
+  "notes": "Death years are AH. Edition-specific publication dates, doctrinal labels and sizes are not inferred. Sources document the descriptions and author identities; stable aliases and source mappings are unchanged.",
+  "books": [
+    {
+      "id": 100388,
+      "alias": "bukhari-ibnhajar",
+      "values": {
+        "author": "أحمد بن علي بن حجر العسقلاني",
+        "author_en": "Aḥmad b. ʿAlī Ibn Ḥajar al-ʿAsqalānī",
+        "description": "*Fatḥ al-Bārī bi-Sharḥ Ṣaḥīḥ al-Bukhārī* is one of the greatest monuments of hadith scholarship and among the most authoritative and influential commentaries on Ṣaḥīḥ al-Bukhārī. Its author, Ibn Ḥajar al-ʿAsqalānī (d. 852 AH), was a towering authority in the hadith sciences, whose mastery encompassed transmission, narrator criticism, the evaluation of chains and texts, and the principles of hadith classification. His commentary brings that extraordinary range of learning to bear on al-Bukhārī’s collection, serving as a major reference for scholars across the Sunni legal schools.\n\nIbn Ḥajar brings together variant narrations, biographical information about transmitters, explanations of difficult vocabulary, and the legal arguments drawn from the reports. He compares earlier commentators and jurists, discussing apparent discrepancies and evaluating the evidence behind competing readings. His analysis of chapter headings, variant wordings, apparently conflicting reports, and juristic disagreement makes the work fundamental to understanding both al-Bukhārī’s method and the wider hadith tradition.\n\nIbn Ḥajar’s wider achievement helped shape the study of hadith for subsequent generations. His *Tahdhīb al-Tahdhīb* and *Taqrīb al-Tahdhīb* are major references for narrator evaluation; *Lisān al-Mīzān* examines transmitters discussed in the critical literature; and *Nukhbat al-Fikar* with its explanation *Nuzhat al-Naẓar* became central teaching texts in hadith methodology. Other important works include *Bulūgh al-Marām*, *al-Talkhīṣ al-Ḥabīr*, *Taghlīq al-Taʿlīq*, and *al-Iṣābah fī Tamyīz al-Ṣaḥābah*. *Fatḥ al-Bārī* stands at the center of this scholarly legacy: an encyclopedic synthesis of earlier learning and a sustained work of critical judgment.",
+        "death": 852
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=34",
+        "https://islamansiklopedisi.org.tr/ibn-hacer-el-askalani"
+      ]
+    },
+    {
+      "id": 100389,
+      "alias": "bukhari-ayni",
+      "values": {
+        "author": "بدر الدين محمود بن أحمد العيني",
+        "author_en": "Badr al-Dīn Maḥmūd b. Aḥmad al-ʿAynī",
+        "description": "*ʿUmdat al-Qārī Sharḥ Ṣaḥīḥ al-Bukhārī* is one of the major classical commentaries on al-Bukhārī’s collection, written by Badr al-Dīn al-ʿAynī (d. 855 AH), a leading Ḥanafī jurist, hadith scholar, and historian of Mamluk Egypt. A contemporary of Ibn Ḥajar, al-ʿAynī brought formidable legal and linguistic learning to the same text. His commentary is particularly important for its detailed explanation of Arabic expression and its extensive presentation of Ḥanafī legal reasoning.\n\nThe commentary examines narrators, vocabulary, grammar, variant wording, and the connection between a chapter heading and its hadiths. Its extended discussions of legal disagreement present the reasoning of different schools, frequently explaining and defending Ḥanafī positions. These features make it a useful companion to other major commentaries when comparing how jurists understood the same evidence.\n\nal-ʿAynī also wrote *al-Bināyah Sharḥ al-Hidāyah*, a major work of Ḥanafī jurisprudence; *Nukhab al-Afkār*, a commentary on al-Ṭaḥāwī’s *Sharḥ Maʿānī al-Āthār*; and the historical chronicle *ʿIqd al-Jumān*. His scholarship connects hadith interpretation with the wider traditions of law, language, and history.",
+        "death": 855
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=43",
+        "https://islamansiklopedisi.org.tr/ayni-bedreddin"
+      ]
+    },
+    {
+      "id": 100390,
+      "alias": "muslim-nawawi",
+      "values": {
+        "author": "أَبُو زَكَرِيَّا يَحْيَى بْنُ شَرَفٍ النَّوَوِيّ",
+        "author_en": "Abu Zakariyya Yaḥya b. Sharaf al-Nawawi",
+        "description": "*al-Minhāj Sharḥ Ṣaḥīḥ Muslim b. al-Ḥajjāj* is one of the principal classical commentaries on Ṣaḥīḥ Muslim and a central work in its study. Its author, al-Nawawī (d. 676 AH), was a leading authority in hadith and Shāfiʿī jurisprudence whose writings profoundly influenced scholarly teaching and everyday Muslim religious life. The commentary combines clarity and relative concision with the judgment of a scholar deeply versed in transmission, language, and law.\n\nal-Nawawī explains unusual words, identifies transmitters, discusses variant narrations, and addresses passages that might appear difficult or contradictory. A Shāfiʿī jurist, he regularly presents his school’s position while recording the views and evidence of other scholars. His explanations help readers follow Muslim’s arrangement of related chains and wordings without losing sight of the practical meaning of the hadith.\n\nal-Nawawī’s *Riyāḍ al-Ṣāliḥīn*, *al-Adhkār*, and *al-Arbaʿīn al-Nawawiyyah* became enduring works of religious instruction, while *al-Majmūʿ* and *Minhāj al-Ṭālibīn* occupy major places in Shāfiʿī jurisprudence. His *al-Taqrīb wa-l-Taysīr* also contributed to the teaching of hadith methodology. This combination of technical authority and an exceptional ability to organize knowledge for students helps explain the lasting importance of his commentary on Muslim.",
+        "death": 676
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=35",
+        "https://shkhudheir.com/book-detector/535813832",
+        "https://islamansiklopedisi.org.tr/nevevi"
+      ]
+    },
+    {
+      "id": 100391,
+      "alias": "abudawud-shamsalhaqq",
+      "values": {
+        "author": "محمد شمس الحق العظيم آبادي",
+        "author_en": "Muḥammad Shams al-Ḥaqq al-ʿAẓīmābādī",
+        "description": "*ʿAwn al-Maʿbūd Sharḥ Sunan Abī Dāwūd* is a commentary conventionally catalogued under Muḥammad Shams al-Ḥaqq al-ʿAẓīmābādī (d. 1329 AH). It explains Abū Dāwūd’s collection of hadiths with particular attention to their wording, transmission, and bearing on questions of religious practice.\n\nThe commentary clarifies vocabulary and narrator names, draws together related reports, and records discussions of authenticity and legal disagreement. It frequently engages earlier commentators and jurists, allowing the reader to see how an individual narration contributes to a broader argument. Its treatment is more compact than the author’s larger commentary project, *Ghāyat al-Maqṣūd fī Ḥall Sunan Abī Dāwūd*.\n\nThe book’s authorship history requires some care: bibliographical discussions also credit his brother Muḥammad Ashraf with a role in its composition or abridgment. The conventional attribution used here should therefore not be read as excluding that contribution. *Ghāyat al-Maqṣūd* is the closely related work associated with Shams al-Ḥaqq’s wider study of the Sunan.",
+        "death": 1329
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=36",
+        "https://www.bazmool.net/Writing/Read/57"
+      ]
+    },
+    {
+      "id": 100392,
+      "alias": "tirmidhi-mubarakfuri",
+      "values": {
+        "author": "أبو العلا محمد عبد الرحمن بن عبد الرحيم المباركفوري",
+        "author_en": "Abū al-ʿUlā Muḥammad ʿAbd al-Raḥmān al-Mubārakfūrī",
+        "description": "*Tuḥfat al-Aḥwadhī bi-Sharḥ Jāmiʿ al-Tirmidhī* is the commentary of Abū al-ʿUlā ʿAbd al-Raḥmān al-Mubārakfūrī (d. 1353 AH) on al-Tirmidhī’s Jāmiʿ. It explains the reports together with al-Tirmidhī’s observations about their transmission and the practice of earlier scholars. al-Mubārakfūrī was a distinguished South Asian hadith authority, particularly respected for his knowledge of transmitters, hadith classification, and defects in transmission. That critical expertise gives the commentary its importance as a detailed investigation of al-Tirmidhī’s evidence and judgments.\n\nThe work discusses difficult expressions, narrator identification, supporting narrations, and the legal conclusions drawn from a hadith. Particular attention is given to the judgments and technical language found in al-Tirmidhī’s own comments. The author compares juristic positions and argues from the hadith evidence, situating the commentary within the South Asian tradition of hadith study.\n\nal-Mubārakfūrī’s other writings include *Abkār al-Minan fī Tanqīd Āthār al-Sunan* and *Taḥqīq al-Kalām fī Wujūb al-Qirāʾah Khalf al-Imām*. He should be distinguished from ʿUbayd Allāh al-Raḥmānī al-Mubārakfūrī, the author of *Mirʿāt al-Mafātīḥ* on Mishkāt al-Maṣābīḥ.",
+        "death": 1353
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=37"
+      ]
+    },
+    {
+      "id": 100393,
+      "alias": "nasai-suyuti",
+      "values": {
+        "author": "جلال الدين عبد الرحمن بن أبي بكر السيوطي",
+        "author_en": "Jalāl al-Dīn ʿAbd al-Raḥmān b. Abī Bakr al-Suyūṭī",
+        "description": "al-Suyūṭī’s commentary on *Sunan al-Nasāʾī* provides concise explanatory notes on the collection known as *al-Mujtabā*. Jalāl al-Dīn al-Suyūṭī (d. 911 AH) was one of the most prolific and influential scholarly compilers of the late medieval Islamic world, with major contributions to hadith, Qurʾanic studies, language, and history. These brief glosses represent one part of a much larger undertaking to gather, organize, and transmit earlier scholarship.\n\nThe notes concentrate on points that benefit from clarification: unfamiliar vocabulary, grammatical constructions, names, and the intended meaning of particular expressions. They draw on earlier scholarship without turning every report into an extended legal discussion. This compact approach makes the commentary useful alongside the hadith text, especially where a word or phrase may otherwise interrupt the reader’s understanding.\n\nal-Suyūṭī’s contribution to hadith study includes *Tadrīb al-Rāwī*, his extensive explanation of al-Nawawī’s manual of hadith methodology, as well as *al-Tawshīḥ* on Ṣaḥīḥ al-Bukhārī and *al-Dībāj* on Ṣaḥīḥ Muslim. His other major works include *al-Itqān fī ʿUlūm al-Qurʾān* and the transmitted tafsīr *al-Durr al-Manthūr*. The compact form of his notes on al-Nasāʾī reflects their purpose as a reading aid within this broad scholarly legacy.",
+        "name": "شرح السيوطي على سنن النسائي",
+        "name_en": "Sharḥ al-Suyūṭī on Sunan al-Nasāʾī",
+        "title": "شرح السيوطي على سنن النسائي",
+        "title_en": "Sharḥ al-Suyūṭī on Sunan al-Nasāʾī",
+        "shortName": "شرح السيوطي",
+        "shortName_en": "Sharḥ al-Suyūṭī",
+        "death": 911
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=40",
+        "https://hdith.com/encyclopedia/book/b-40/h/380297",
+        "https://islamansiklopedisi.org.tr/suyuti"
+      ]
+    },
+    {
+      "id": 100394,
+      "alias": "nasai-sindi",
+      "values": {
+        "author": "أبو الحسن محمد بن عبد الهادي السندي",
+        "author_en": "Abū al-Ḥasan Muḥammad b. ʿAbd al-Hādī al-Sindī",
+        "description": "*Ḥāshiyat al-Sindī on Sunan al-Nasāʾī* is a collection of concise explanatory glosses by Abū al-Ḥasan Muḥammad b. ʿAbd al-Hādī al-Sindī (d. 1138 AH). The notes accompany the hadith text and focus on expressions or implications that call for explanation.\n\nal-Sindī clarifies vocabulary, grammar, and the meaning of selected passages, adding brief legal observations where relevant. His economical style assumes that the reader has the underlying report in view. The work is therefore especially useful for resolving a particular textual difficulty while reading the collection in sequence.\n\nal-Sindī also wrote glosses on Sunan Ibn Mājah, Ṣaḥīḥ al-Bukhārī, Ṣaḥīḥ Muslim, and Musnad Aḥmad. These related works reflect his sustained engagement with the principal hadith collections.",
+        "death": 1138
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=39"
+      ]
+    },
+    {
+      "id": 100395,
+      "alias": "ibnmajah-sindi",
+      "values": {
+        "author": "أبو الحسن محمد بن عبد الهادي السندي",
+        "author_en": "Abū al-Ḥasan Muḥammad b. ʿAbd al-Hādī al-Sindī",
+        "description": "*Ḥāshiyat al-Sindī on Sunan Ibn Mājah* is a collection of concise explanatory glosses by Abū al-Ḥasan Muḥammad b. ʿAbd al-Hādī al-Sindī (d. 1138 AH). The notes accompany the hadith text and focus on expressions or implications that call for explanation.\n\nal-Sindī clarifies vocabulary, grammar, and the meaning of selected passages, adding brief legal observations where relevant. His economical style assumes that the reader has the underlying report in view. The work is therefore especially useful for resolving a particular textual difficulty while reading the collection in sequence.\n\nal-Sindī also wrote glosses on Sunan al-Nasāʾī, Ṣaḥīḥ al-Bukhārī, Ṣaḥīḥ Muslim, and Musnad Aḥmad. These related works reflect his sustained engagement with the principal hadith collections.",
+        "death": 1138
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=39"
+      ]
+    },
+    {
+      "id": 100396,
+      "alias": "bukhari-ibnrajab",
+      "values": {
+        "author": "عبد الرحمن بن أحمد بن رجب الحنبلي",
+        "author_en": "ʿAbd al-Raḥmān b. Aḥmad Ibn Rajab al-Ḥanbalī",
+        "description": "*Fatḥ al-Bārī Sharḥ Ṣaḥīḥ al-Bukhārī* by Ibn Rajab al-Ḥanbalī (d. 795 AH) is an unfinished commentary on the opening portion of al-Bukhārī’s collection, extending into the Book of Forgetfulness in Prayer. It is a separate, earlier work from Ibn Ḥajar’s commentary of the same name. Ibn Rajab was a major Ḥanbalī jurist and an accomplished hadith critic, especially distinguished by his knowledge of the early critics’ methods and the subtle defects of transmission known as ʿilal.\n\nIbn Rajab examines the meanings and legal implications of the reports through the explanations of early hadith scholars and jurists. His discussions give substantial attention to transmitted variants, defects in transmission, and the relationship between a chapter heading and its evidence. The surviving work is particularly valuable for its treatment of faith, purification, and prayer.\n\nHis other writings include *Jāmiʿ al-ʿUlūm wa-l-Ḥikam*, explaining fifty foundational hadiths; *Sharḥ ʿIlal al-Tirmidhī*, on hadith criticism; and *al-Dhayl ʿalā Ṭabaqāt al-Ḥanābilah*, a biographical continuation devoted to Ḥanbalī scholars. His legal and devotional interests remain closely connected to the study of early transmitted evidence.",
+        "death": 795
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=42",
+        "https://nawader.co/product/jam-allwm-walhkm/",
+        "https://islamansiklopedisi.org.tr/ibn-receb"
+      ]
+    },
+    {
+      "id": 100397,
+      "alias": "muslim-qurtubi",
+      "values": {
+        "author": "أبو العباس أحمد بن عمر بن إبراهيم القرطبي",
+        "author_en": "Abū al-ʿAbbās Aḥmad b. ʿUmar al-Qurṭubī",
+        "description": "*al-Mufhim limā Ashkala min Talkhīṣ Kitāb Muslim* is Abū al-ʿAbbās al-Qurṭubī’s (d. 656 AH) explanation of difficult passages in his abridgment of Ṣaḥīḥ Muslim. Its author was a Mālikī scholar, distinct from the Qurʾanic commentator Abū ʿAbd Allāh Muḥammad al-Qurṭubī.\n\nThe work addresses vocabulary, meaning, and the legal and theological questions raised by the reports. Its discussion often sets out scholarly disagreement and weighs the reasoning behind different interpretations. Because it accompanies an abridgment, its organization and selection should be understood in relation to that underlying text rather than as a word-by-word treatment of every chain in the full Ṣaḥīḥ.\n\nal-Qurṭubī also compiled the underlying *Talkhīṣ Ṣaḥīḥ Muslim* and wrote *Kashf al-Qināʿ ʿan Ḥukm Masāʾil al-Wajd wa-l-Samāʿ*. These works illustrate his combination of hadith interpretation, Mālikī jurisprudence, and engagement with questions of religious practice.",
+        "title_en": "al-Mufhim (Abū al-ʿAbbās)",
+        "death": 656,
+        "shortName_en": "al-Mufhim (Abū al-ʿAbbās)",
+        "name_en": "al-Mufhim (Abū al-ʿAbbās)"
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=44"
+      ]
+    },
+    {
+      "id": 100398,
+      "alias": "ibnmajah-mughultay",
+      "values": {
+        "author": "علاء الدين مغلطاي بن قليج",
+        "author_en": "ʿAlāʾ al-Dīn Mughulṭāy b. Qilīj",
+        "description": "*al-Iʿlām bi-Sunnatihi ʿalayhi al-Ṣalāh wa-l-Salām* is Mughulṭāy b. Qilīj’s (d. 762 AH) commentary on Sunan Ibn Mājah. The surviving, unfinished work begins with purification and offers a detailed examination of the reports within its coverage.\n\nMughulṭāy pays close attention to transmitters, the routes by which a report is narrated, and the judgments of earlier hadith critics. His explanation brings together biographical and textual evidence while also discussing vocabulary and legal implications. It is particularly useful when studying the transmission history of a report or comparing a commentator’s assessment with other critical sources.\n\nA Ḥanafī scholar with extensive interests in biography and hadith criticism, Mughulṭāy also wrote *Ikmāl Tahdhīb al-Kamāl*. That work supplements al-Mizzī’s major biographical dictionary of hadith transmitters and reflects the same concern for comprehensive documentation visible in his commentary on Ibn Mājah.",
+        "title_en": "al-Iʿlām (Mughulṭāy)",
+        "death": 762,
+        "shortName_en": "al-Iʿlām (Mughulṭāy)",
+        "name_en": "al-Iʿlām (Mughulṭāy)"
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=38",
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=52"
+      ]
+    },
+    {
+      "id": 100399,
+      "alias": "malik-tamhid",
+      "values": {
+        "author": "أبو عمر يوسف بن عبد الله بن عبد البر",
+        "author_en": "Abū ʿUmar Yūsuf b. ʿAbd Allāh Ibn ʿAbd al-Barr",
+        "description": "*al-Tamhīd limā fī al-Muwaṭṭaʾ min al-Maʿānī wa-l-Asānīd* is a monumental work of hadith criticism and interpretation by Ibn ʿAbd al-Barr (d. 463 AH), one of the foremost hadith authorities of al-Andalus. His standing extended beyond Mālikī jurisprudence: scholars valued his command of transmission, narrator evaluation, and the disagreements of early jurists. *al-Tamhīd* brings this learning together in an encyclopedic study of the prophetic reports in Mālik’s Muwaṭṭaʾ.\n\nThe work is arranged around Mālik’s teachers rather than simply following the Muwaṭṭaʾ’s topical sequence. Ibn ʿAbd al-Barr gathers connected routes and supporting narrations, discusses transmitters, and examines the language and legal implications of the reports.\n\nHis related commentary *al-Istidhkār* follows the Muwaṭṭaʾ’s legal arrangement and develops its juristic discussions. His other works include *al-Kāfī* in Mālikī jurisprudence and *al-Intiqāʾ*, on the leading jurists Mālik, al-Shāfiʿī, and Abū Ḥanīfah.",
+        "death": 463
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=41",
+        "https://islamansiklopedisi.org.tr/ibn-abdulber-en-nemeri"
+      ]
+    },
+    {
+      "id": 100400,
+      "alias": "malik-istidhkar",
+      "values": {
+        "author": "أبو عمر يوسف بن عبد الله بن عبد البر",
+        "author_en": "Abū ʿUmar Yūsuf b. ʿAbd Allāh Ibn ʿAbd al-Barr",
+        "description": "*al-Istidhkār* is Ibn ʿAbd al-Barr’s (d. 463 AH) commentary on Mālik’s Muwaṭṭaʾ, bringing together hadith interpretation and the positions of jurists from different regions and schools. It follows the collection’s arrangement by subjects of religious practice and law. Its author was one of al-Andalus’s greatest hadith scholars, whose authority in transmission and comparative jurisprudence earned recognition well beyond his own Mālikī school. Together with *al-Tamhīd*, the work forms a major part of his enduring contribution to the interpretation of hadith and early Islamic law.\n\nThe commentary examines prophetic reports, statements of Companions and Successors, and Mālik’s legal opinions. Ibn ʿAbd al-Barr sets out agreements and disagreements, compares supporting evidence, and explains how earlier authorities understood the material. His Mālikī background informs the discussion without limiting it to a single school’s positions.\n\nHis companion work *al-Tamhīd* concentrates on the Muwaṭṭaʾ’s prophetic reports through the organization of Mālik’s teachers and their transmissions. Other writings include the legal manual *al-Kāfī* and the biographical work *al-Intiqāʾ*. Together, these books show his sustained interest in connecting jurisprudence with transmitted evidence and the scholarship of earlier generations.",
+        "death": 463
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=45",
+        "https://islamansiklopedisi.org.tr/ibn-abdulber-en-nemeri"
+      ]
+    },
+    {
+      "id": 100401,
+      "alias": "malik-zarqani",
+      "values": {
+        "author": "محمد بن عبد الباقي بن يوسف الزرقاني",
+        "author_en": "Muḥammad b. ʿAbd al-Bāqī al-Zurqānī",
+        "description": "*Sharḥ al-Zurqānī ʿalā Muwaṭṭaʾ al-Imām Mālik* is Muḥammad b. ʿAbd al-Bāqī al-Zurqānī’s (d. 1122 AH) commentary on the Muwaṭṭaʾ. The author was an Egyptian Mālikī scholar; he should not be confused with his father, the jurist ʿAbd al-Bāqī al-Zurqānī.\n\nThe commentary explains the wording and transmission of the reports and discusses the legal questions that arise from them. Drawing on earlier scholarship, it presents narrator information, related narrations, and the reasoning of jurists in a comparatively accessible form. It connects Mālik’s text with the broader commentary tradition while retaining a sustained interest in Mālikī jurisprudence.\n\nal-Zurqānī’s other works include his commentary on *al-Mawāhib al-Ladunniyyah*, concerning the Prophet’s life and qualities; a commentary on *al-Bayqūniyyah* in hadith terminology; and an abridgment of *al-Maqāṣid al-Ḥasanah*. These writings place the Muwaṭṭaʾ commentary within his broader work on prophetic biography and hadith scholarship.",
+        "title": "شرح الزرقاني على موطأ الإمام مالك",
+        "title_en": "Sharḥ al-Zurqānī on al-Muwaṭṭaʾ",
+        "name": "شرح الزرقاني على موطأ الإمام مالك",
+        "name_en": "Sharḥ al-Zurqānī on al-Muwaṭṭaʾ",
+        "death": 1122,
+        "shortName": "شرح الزرقاني على الموطأ",
+        "shortName_en": "Sharḥ al-Zurqānī on al-Muwaṭṭaʾ"
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=46"
+      ]
+    },
+    {
+      "id": 100402,
+      "alias": "dorar-s",
+      "values": {
+        "author": "مؤسسة الدرر السنية",
+        "author_en": "al-Durar al-Saniyyah editorial team",
+        "description": "This collection contains hadith explanations from the *al-Durar al-Saniyyah* online encyclopedia. It represents an institutional editorial resource, rather than a single historical author’s commentary. The explanations accompany reports drawn from a range of hadith collections.\n\nThe entries clarify the meaning of a report, explain unfamiliar expressions, and draw out its principal lessons. They are useful for reading an individual hadith with a concise account of its context and implications. The explanation should be distinguished from the separate transmission information and scholarly grading that may accompany a report in the encyclopedia.\n\nal-Durar al-Saniyyah also maintains projects devoted to jurisprudence, Qurʾanic interpretation, and Islamic history. These are related institutional publications, rather than other books by an individual commentator. This resource should also be distinguished from the historical anthology *al-Durar al-Saniyyah fī al-Ajwibah al-Najdiyyah*, which shares part of its name."
+      },
+      "sources": [
+        "https://dorar.net/h/ycyUTaGo?osoul=1"
+      ]
+    },
+    {
+      "id": 100404,
+      "alias": "shamail-kandhlawi",
+      "values": {
+        "author": "محمد زكريا بن محمد يحيى الكاندهلوي",
+        "author_en": "Muḥammad Zakariyyā al-Kāndhlawī",
+        "description": "*Khaṣāʾil Nabawī* is Muḥammad Zakariyyā al-Kāndhlawī’s (d. 1402 AH) commentary on al-Tirmidhī’s *al-Shamāʾil al-Muḥammadiyyah*. Originally written in Urdu, it explains the reports describing the Prophet’s appearance, character, habits, and daily life. The material presented here is in English. al-Kāndhlawī was a prominent twentieth-century hadith teacher and commentator in South Asia. His command of the major collections, reflected especially in his extensive study of the Muwaṭṭaʾ, supplies the scholarly foundation for this more accessible treatment of the Prophet’s qualities.\n\nThe commentary combines explanations of vocabulary and narration with observations about conduct and religious practice. Its devotional emphasis encourages the reader to connect knowledge of the Prophet’s qualities with personal behavior. It is arranged around al-Tirmidhī’s reports, allowing the explanations to be read alongside the corresponding hadiths.\n\nal-Kāndhlawī was a South Asian hadith scholar associated with the Ḥanafī tradition. His other works include *Awjaz al-Masālik ilā Muwaṭṭaʾ Mālik*, an extensive Arabic commentary on the Muwaṭṭaʾ. That larger legal and hadith project provides a complementary setting for the more focused treatment of prophetic qualities in *Khaṣāʾil Nabawī*.",
+        "death": 1402
+      },
+      "sources": [
+        "https://www.bukhari-pedia.net/book/abwab_trajm/926",
+        "http://inter-islam.org/hadeeth/hadeethdex.htm"
+      ]
+    },
+    {
+      "id": 100405,
+      "alias": "adab-salahi",
+      "values": {
+        "author": "عادل صلاحي",
+        "author_en": "Adil Salahi",
+        "description": "*al-Adab al-Mufrad with Full Commentary: A Perfect Code of Manners and Morality* presents al-Bukhārī’s collection of reports on character and social conduct with English translation and commentary by Adil Salahi. It covers family relationships, care for neighbors, hospitality, speech, and many other aspects of everyday behavior.\n\nSalahi explains the meaning and practical implications of the reports in accessible English, relating their ethical guidance to the situations readers encounter in personal and communal life. The commentary accompanies a collection that is distinct from Ṣaḥīḥ al-Bukhārī: sharing a compiler does not make the two books identical in purpose or in the conditions used to select their material.\n\nSalahi’s other writings include *Muhammad: Man and Prophet* and *Pioneers of Islamic Scholarship*. He also translated Sayyid Quṭb’s *In the Shade of the Qurʾān* into English. His work across biography, translation, and religious education informs the explanatory style of this commentary.",
+        "title": "الأدب المفرد مع الشرح (عادل صلاحي)",
+        "title_en": "Al-Adab al-Mufrad with Full Commentary",
+        "name": "الأدب المفرد مع الشرح (عادل صلاحي)",
+        "name_en": "Al-Adab al-Mufrad with Full Commentary",
+        "shortName": "شرح صلاحي",
+        "shortName_en": "Salahi’s Commentary"
+      },
+      "sources": [
+        "https://www.kubepublishing.com/blogs/news/manners-and-morality-in-islam"
+      ]
+    },
+    {
+      "id": 100406,
+      "alias": "riyad-uthaymin",
+      "values": {
+        "author": "محمد بن صالح العثيمين",
+        "author_en": "Muḥammad b. Ṣāliḥ al-ʿUthaymīn",
+        "description": "*Sharḥ Riyāḍ al-Ṣāliḥīn* is Muḥammad b. Ṣāliḥ al-ʿUthaymīn’s (d. 1421 AH) explanation of al-Nawawī’s collection of Qurʾanic passages and hadiths on faith, worship, character, and daily conduct. Its teaching-oriented style develops the practical lessons of the material in a sustained, accessible form.\n\nThe commentary explains the Qurʾanic verses that introduce the chapters as well as the hadiths that follow them. It discusses vocabulary, the meaning of a passage, legal questions, and applications to personal behavior. The result combines moral exhortation with detailed instruction, reflecting the breadth of subjects gathered in Riyāḍ al-Ṣāliḥīn.\n\nIbn ʿUthaymīn was a Saudi scholar whose teaching was rooted in the Ḥanbalī legal tradition. Among his other major works is *al-Sharḥ al-Mumtiʿ ʿalā Zād al-Mustaqniʿ*, an extensive explanation of a Ḥanbalī legal manual. The two commentaries illustrate complementary sides of his teaching: systematic jurisprudence and the cultivation of everyday religious practice.",
+        "death": 1421
+      },
+      "sources": [
+        "https://foundation.binothaimeen.net/static/about_shekh",
+        "https://old.binothaimeen.net/content/16194"
+      ]
+    },
+    {
+      "id": 100407,
+      "alias": "arbain-ibndaqiq",
+      "values": {
+        "author": "تقي الدين محمد بن علي بن وهب ابن دقيق العيد",
+        "author_en": "Taqī al-Dīn Muḥammad b. ʿAlī Ibn Daqīq al-ʿĪd",
+        "description": "*Sharḥ al-Arbaʿīn al-Nawawiyyah* is Ibn Daqīq al-ʿĪd’s (d. 702 AH) explanation of al-Nawawī’s collection of foundational hadiths. Although conventionally called the Forty Hadith, al-Nawawī’s collection contains forty-two reports addressing central principles of belief, worship, law, and character. Ibn Daqīq al-ʿĪd was among the foremost jurist-hadith scholars of his age, recognized for combining mastery of transmitted evidence with exceptional precision in legal reasoning. His learning encompassed both Mālikī and Shāfiʿī jurisprudence, and later scholars ranked him among the great independent jurists.\n\nThe commentary clarifies key expressions and draws out the general rules and ethical implications of each report. Its relatively compact treatment makes it useful for readers seeking an introduction to the collection’s meanings while retaining the legal precision associated with its author’s scholarship.\n\nIbn Daqīq al-ʿĪd also wrote *Iḥkām al-Aḥkām Sharḥ ʿUmdat al-Aḥkām*, a commentary on a collection of legal hadiths, and *al-Ilmām bi-Aḥādīth al-Aḥkām*. These works reflect his sustained attention to the relationship between hadith evidence and jurisprudence, a concern that also informs his explanation of al-Nawawī’s selected reports.",
+        "death": 702
+      },
+      "sources": [
+        "https://islamport.com/l/srh/2227/1.htm",
+        "https://sites.dlib.nyu.edu/viewer/books/columbia_aco001743/display?lang=ar",
+        "https://usul.ai/ar/t/sharh-ilmam-bi-ahadith/30",
+        "https://islamansiklopedisi.org.tr/ibn-dakikulid"
+      ]
+    },
+    {
+      "id": 100408,
+      "alias": "jami-al-ulum",
+      "values": {
+        "author": "عبد الرحمن بن أحمد بن رجب الحنبلي",
+        "author_en": "ʿAbd al-Raḥmān b. Aḥmad Ibn Rajab al-Ḥanbalī",
+        "description": "*Jāmiʿ al-ʿUlūm wa-l-Ḥikam fī Sharḥ Khamsīn Ḥadīthan min Jawāmiʿ al-Kalim* is Ibn Rajab al-Ḥanbalī’s (d. 795 AH) commentary on fifty foundational hadiths. It expands al-Nawawī’s collection of forty-two reports by adding eight further hadiths selected for their comprehensive meanings. Ibn Rajab was a major Ḥanbalī jurist and an accomplished hadith critic, especially distinguished by his knowledge of the early critics’ methods and the subtle defects of transmission known as ʿilal.\n\nIbn Rajab explores the transmission, language, and implications of each report, drawing together related Qurʾanic passages, hadiths, and statements of early scholars. The discussion moves between legal principles and the inner dimensions of religious life, including intention, sincerity, self-restraint, and responsibility toward others.\n\nHis other works include his unfinished *Fatḥ al-Bārī* on Ṣaḥīḥ al-Bukhārī, *Laṭāʾif al-Maʿārif*, and *al-Dhayl ʿalā Ṭabaqāt al-Ḥanābilah*. These writings share the commentary’s concern with grounding religious understanding and conduct in the learning of earlier generations.",
+        "death": 795
+      },
+      "sources": [
+        "https://nawader.co/product/jam-allwm-walhkm/",
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=42",
+        "https://islamansiklopedisi.org.tr/ibn-receb"
+      ]
+    },
+    {
+      "id": 100409,
+      "alias": "ahmad-arnaut",
+      "values": {
+        "author": "شعيب الأرناؤوط وآخرون",
+        "author_en": "Shuʿayb al-Arnaʾūṭ and colleagues",
+        "description": "This collection presents editorial hadith notes associated with the Muʾassasat al-Risālah edition of *Musnad Aḥmad*, prepared by Shuʿayb al-Arnaʾūṭ (d. 1438 AH) and fellow editors. Aḥmad b. Ḥanbal is the compiler of the Musnad; al-Arnaʾūṭ and his colleagues are responsible for the modern edition’s critical apparatus. al-Arnaʾūṭ was a prominent modern hadith editor whose extensive work on major classical collections helped make their transmission evidence and critical apparatus accessible to contemporary researchers.\n\nThe notes concentrate on chains of transmission, narrator assessments, parallels in other collections, and judgments about the strength of reports. They are therefore best understood as editorial verification and source documentation rather than a continuous thematic commentary. An assessment of a particular chain should be read together with any discussion of supporting routes and the report as a whole.\n\nal-Arnaʾūṭ also contributed to scholarly editions of al-Dhahabī’s *Siyar Aʿlām al-Nubalāʾ*, *al-Iḥsān fī Taqrīb Ṣaḥīḥ Ibn Ḥibbān*, and al-Baghawī’s *Sharḥ al-Sunnah*. These are editorial contributions to earlier authors’ works, reflecting his broader career in the verification and publication of classical Islamic texts.",
+        "publisher": "مؤسسة الرسالة",
+        "death": 1438
+      },
+      "sources": [
+        "https://dorar.net/history/event/6031"
+      ]
+    },
+    {
+      "id": 100414,
+      "alias": "shamail-qari",
+      "values": {
+        "author": "علي بن سلطان محمد القاري",
+        "author_en": "ʿAlī b. Sulṭān Muḥammad al-Qārī",
+        "description": "*Jamʿ al-Wasāʾil fī Sharḥ al-Shamāʾil* is ʿAlī al-Qārī’s (d. 1014 AH) commentary on al-Tirmidhī’s collection concerning the Prophet’s appearance, character, habits, and daily life. It explains the reports within the wider traditions of hadith interpretation and prophetic biography. al-Qārī was a prominent authority in hadith and Ḥanafī jurisprudence, whose extensive commentaries became an important part of the later tradition of explaining foundational religious texts.\n\nal-Qārī discusses vocabulary and expression, draws on related narrations, and considers the legal and devotional implications of the material. His explanation helps readers move from the details of a report to the qualities and patterns of conduct illustrated by it.\n\nA Ḥanafī scholar known for his wide-ranging commentaries, al-Qārī also wrote *Mirqāt al-Mafātīḥ* on Mishkāt al-Maṣābīḥ, *Sharḥ al-Shifāʾ* on Qāḍī ʿIyāḍ’s work, and *al-Asrār al-Marfūʿah*, concerning reports regarded as fabricated. These works show his interests in hadith, jurisprudence, and writings devoted to the Prophet.",
+        "death": 1014
+      },
+      "sources": [
+        "https://quranpedia.net/person/1411-الملا-علي-القاري?type=books",
+        "https://islamansiklopedisi.org.tr/ali-el-kari"
+      ]
+    },
+    {
+      "id": 100415,
+      "alias": "riyad-ibnallan",
+      "values": {
+        "author": "محمد علي بن محمد بن علان البكري الصديقي",
+        "author_en": "Muḥammad ʿAlī b. Muḥammad Ibn ʿAllān al-Bakrī al-Ṣiddīqī",
+        "description": "*Dalīl al-Fāliḥīn li-Ṭuruq Riyāḍ al-Ṣāliḥīn* is Ibn ʿAllān’s (d. 1057 AH) commentary on al-Nawawī’s collection of Qurʾanic verses and hadiths concerning worship, character, and religious conduct. Its author was a Meccan Shāfiʿī scholar.\n\nThe commentary explains chapter themes, vocabulary, grammatical details, and the meanings of the reports. It brings legal and ethical observations together with references to earlier scholarship, helping readers understand both the wording of a passage and the lessons for which al-Nawawī placed it in the collection.\n\nIbn ʿAllān also wrote *al-Futūḥāt al-Rabbāniyyah ʿalā al-Adhkār al-Nawawiyyah*, an extensive commentary on al-Nawawī’s work on remembrance and supplication. The two books complement one another: one explains a broad program of religious conduct, while the other develops the textual and practical study of devotional remembrance.",
+        "death": 1057
+      },
+      "sources": [
+        "https://usul.ai/ar/t/dalil-falihin/1",
+        "https://islamansiklopedisi.org.tr/delilul-falihin"
+      ]
+    },
+    {
+      "id": 100416,
+      "alias": "mukhtalif-ibnqutaybah",
+      "values": {
+        "author": "أبو محمد عبد الله بن مسلم بن قتيبة",
+        "author_en": "Abū Muḥammad ʿAbd Allāh b. Muslim Ibn Qutaybah",
+        "description": "*Taʾwīl Mukhtalif al-Ḥadīth* is Ibn Qutaybah’s (d. 276 AH) treatment of reports that were criticized as contradictory, difficult to understand, or at odds with other religious evidence. It is an early work in the literature devoted to explaining apparent differences between hadiths. Ibn Qutaybah was a major early scholar of Arabic language and literature as well as a defender of the transmitted religious tradition. The work’s historical importance lies in showing how an influential third-century scholar used linguistic learning and reasoned interpretation to answer objections to hadith.\n\nIbn Qutaybah responds to objections through discussion of Arabic usage, context, and the possible meanings of a report. The book also records disputes about the authority and interpretation of transmitted material. Its explanations should be read as arguments about meaning and reconciliation; their inclusion does not by itself establish the authenticity of every report discussed.\n\nHis other writings include *Adab al-Kātib*, *ʿUyūn al-Akhbār*, *Gharīb al-Qurʾān*, and *Taʾwīl Mushkil al-Qurʾān*. His interests in language, literature, and scriptural interpretation are closely connected, and his sensitivity to Arabic expression is central to his approach to difficult hadiths.",
+        "name_en": "Taʾwīl Mukhtalif al-Ḥadīth",
+        "shortName_en": "Taʾwīl Mukhtalif al-Ḥadīth",
+        "title_en": "Taʾwīl Mukhtalif al-Ḥadīth",
+        "death": 276
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=69",
+        "https://islamansiklopedisi.org.tr/ibn-kuteybe"
+      ]
+    },
+    {
+      "id": 100417,
+      "alias": "mushkil-tahawi",
+      "values": {
+        "author": "أبو جعفر أحمد بن محمد بن سلامة الطحاوي",
+        "author_en": "Abū Jaʿfar Aḥmad b. Muḥammad al-Ṭaḥāwī",
+        "description": "*Sharḥ Mushkil al-Āthār* is Abū Jaʿfar al-Ṭaḥāwī’s (d. 321 AH) extensive examination of transmitted reports whose meanings or relationships require explanation. Its scope includes legal questions as well as matters of belief, interpretation, and religious practice. al-Ṭaḥāwī was a leading early Ḥanafī jurist and a major hadith authority in Egypt, esteemed for bringing extensive knowledge of narrations and transmitters into sustained legal argument. This work is an important expression of his contribution to the discipline of reconciling and interpreting difficult reports.\n\nal-Ṭaḥāwī assembles related narrations and examines their wording, chains, and implications. He seeks explanations that resolve apparent conflict by identifying distinctions of context, meaning, or application. The work allows readers to follow the evidence behind a proposed reconciliation rather than encountering an isolated conclusion.\n\nAn Egyptian scholar associated with the Ḥanafī school, al-Ṭaḥāwī also wrote *Sharḥ Maʿānī al-Āthār*, which gives particular attention to legal hadiths, and a *Mukhtaṣar* in jurisprudence. His concise statement of belief is widely known as *al-ʿAqīdah al-Ṭaḥāwiyyah*. These works reflect the breadth of his engagement with transmitted evidence and its systematic interpretation.",
+        "death": 321
+      },
+      "sources": [
+        "https://sunna.alifta.gov.sa/Book/Details?bookId=31",
+        "https://islamansiklopedisi.org.tr/tahavi"
+      ]
+    },
+    {
+      "id": 100418,
+      "alias": "itibar-hazimi",
+      "values": {
+        "author": "أبو بكر محمد بن موسى الحازمي",
+        "author_en": "Abū Bakr Muḥammad b. Mūsā al-Ḥāzimī",
+        "description": "*al-Iʿtibār fī al-Nāsikh wa-l-Mansūkh min al-Āthār* is al-Ḥāzimī’s (d. 584 AH) study of abrogation in transmitted reports. It considers cases in which differing hadiths have been understood to reflect an earlier ruling and a later ruling that supersedes it.\n\nThe work addresses the principles needed to distinguish genuine abrogation from differences that can be reconciled. al-Ḥāzimī brings together reports and scholarly arguments, considering chronology and the evidentiary basis for treating one ruling as later than another. Its discussions belong to the broader study of apparently conflicting hadiths and their legal interpretation.\n\nal-Ḥāzimī was a Shāfiʿī hadith scholar whose other writings include *Shurūṭ al-Aʾimmah al-Khamsah*, concerning the methods and conditions associated with five major hadith compilers. That work complements *al-Iʿtibār* by examining another aspect of how hadith evidence is selected, assessed, and understood.",
+        "name_en": "al-Iʿtibār fī al-Nāsikh wa-l-Mansūkh min al-Āthār",
+        "shortName_en": "al-Iʿtibār",
+        "title_en": "al-Iʿtibār fī al-Nāsikh wa-l-Mansūkh min al-Āthār",
+        "death": 584
+      },
+      "sources": [
+        "https://www.islamweb.net/ar/print.php?id=230107",
+        "https://www.bukhari-pedia.net/book/shorot_5",
+        "https://islamweb.net/ar/library/content/89/3/شروط-النسخ"
+      ]
+    },
+    {
+      "id": 100421,
+      "alias": "mishkat-qari",
+      "values": {
+        "author": "علي بن سلطان محمد القاري",
+        "author_en": "ʿAlī b. Sulṭān Muḥammad al-Qārī",
+        "description": "*Mirqāt al-Mafātīḥ Sharḥ Mishkāt al-Maṣābīḥ* is ʿAlī al-Qārī’s (d. 1014 AH) extensive commentary on al-Tabrīzī’s Mishkāt al-Maṣābīḥ. It follows a collection organized around the principal subjects of belief, worship, conduct, and religious life. al-Qārī was one of the leading Ḥanafī scholars of his era, with expertise extending across hadith, jurisprudence, Qurʾanic recitation, and Arabic learning. *Mirqāt al-Mafātīḥ* is a major achievement of that scholarship and one of the principal commentaries on the Mishkāt.\n\nal-Qārī explains the language of the hadiths and considers their legal and theological implications. He draws on earlier commentaries, compares scholarly interpretations, and often develops the reasoning of the Ḥanafī legal tradition. The work offers a broad setting for studying individual reports alongside others gathered under the same theme.\n\nHis other writings include *Jamʿ al-Wasāʾil fī Sharḥ al-Shamāʾil*, devoted to al-Tirmidhī’s reports about the Prophet; *Sharḥ al-Shifāʾ*; and *al-Asrār al-Marfūʿah*. These related works place the Mishkāt commentary within a scholarly career spanning hadith explanation, prophetic biography, and critical discussion of transmitted reports.",
+        "death": 1014
+      },
+      "sources": [
+        "https://baaheth.ai/kutub/mualif/421",
+        "https://quranpedia.net/person/1411-الملا-علي-القاري?type=books",
+        "https://islamansiklopedisi.org.tr/ali-el-kari"
+      ]
+    },
+    {
+      "id": 100422,
+      "alias": "mishkat-mubarakfuri",
+      "values": {
+        "author": "عبيد الله بن محمد عبد السلام الرحماني المباركفوري",
+        "author_en": "ʿUbayd Allāh al-Raḥmānī al-Mubārakfūrī",
+        "description": "*Mirʿāt al-Mafātīḥ Sharḥ Mishkāt al-Maṣābīḥ* is the commentary of ʿUbayd Allāh al-Raḥmānī al-Mubārakfūrī (d. 1414 AH). It examines the reports assembled in Mishkāt al-Maṣābīḥ, with close attention to their sources, transmission, and legal implications. The commentary was left unfinished.\n\nThe work explains vocabulary, compares related narrations, and discusses the positions of jurists in light of the hadith evidence. Its detailed documentation makes it useful for following a report beyond the wording selected in the Mishkāt and into the collections and critical discussions on which its interpretation depends.\n\nal-Mubārakfūrī also wrote *Bayān al-Shirʿah fī Bayān Maḥall Adhān Khuṭbat al-Jumuʿah*, concerning the Friday call to prayer. He assisted his teacher ʿAbd al-Raḥmān al-Mubārakfūrī with work on *Tuḥfat al-Aḥwadhī*. The two scholars should be distinguished: *Mirʿāt al-Mafātīḥ* is ʿUbayd Allāh’s commentary, while *Tuḥfat al-Aḥwadhī* is attributed to his teacher.",
+        "death": 1414
+      },
+      "sources": [
+        "https://books.islam-db.com/author/عبيد_الله_الرحماني_المباركفوري",
+        "https://islamport.com/l/srh/2404/1.htm"
+      ]
+    },
+    {
+      "id": 100423,
+      "alias": "mishkat-dihlawi",
+      "values": {
+        "author": "عبد الحق بن سيف الدين الدهلوي",
+        "author_en": "ʿAbd al-Ḥaqq b. Sayf al-Dīn al-Dihlawī",
+        "description": "*Lamaʿāt al-Tanqīḥ fī Sharḥ Mishkāt al-Maṣābīḥ* is the Arabic commentary of ʿAbd al-Ḥaqq al-Dihlawī (d. 1052 AH), an important figure in the development of hadith scholarship in South Asia. Through his teaching and his Arabic and Persian writings, he made a substantial contribution to the study and interpretation of hadith in India. This commentary is a major expression of that contribution, bringing the Mishkāt into conversation with the wider tradition of hadith explanation and Ḥanafī legal scholarship.\n\nThe commentary explains the wording and meanings of reports while discussing their legal and devotional implications. al-Dihlawī draws on earlier scholarship and works within the Ḥanafī legal tradition, connecting textual explanation with the broader concerns of religious practice. Its Arabic presentation distinguishes it from his separate Persian commentary on the same collection.\n\nThat Persian work is *Ashiʿʿat al-Lamaʿāt*. al-Dihlawī also wrote *Akhbār al-Akhyār*, a biographical work on religious figures of India, and *Madārij al-Nubuwwah*, concerning the Prophet’s life. These writings reflect his overlapping interests in hadith, prophetic biography, and the history of religious scholarship.",
+        "death": 1052
+      },
+      "sources": [
+        "https://usul.ai/ar/t/lumcat-tanqih",
+        "https://usul.ai/ar/t/lumcat-tanqih/53",
+        "https://www.dawateislami.net/bookslibrary/ar/jadd-ul-mumtar-ala-raddil-muhtar-jild-1/page-375",
+        "https://openaccess.marmara.edu.tr/entities/publication/24f44fd8-d5f5-4475-b728-b9d7b5bb40a5"
+      ]
+    }
+  ],
+  "significance_review": {
+    "reviewed_on": "2026-10-13",
+    "reviewed_books": 29,
+    "revised_aliases": [
+      "bukhari-ibnhajar",
+      "bukhari-ayni",
+      "muslim-nawawi",
+      "nasai-suyuti",
+      "bukhari-ibnrajab",
+      "jami-al-ulum",
+      "malik-tamhid",
+      "malik-istidhkar",
+      "arbain-ibndaqiq",
+      "mushkil-tahawi",
+      "mishkat-qari",
+      "shamail-qari",
+      "mishkat-dihlawi",
+      "mukhtalif-ibnqutaybah",
+      "tirmidhi-mubarakfuri",
+      "ahmad-arnaut",
+      "shamail-kandhlawi"
+    ],
+    "note": "Strengthened documented scholarly standing and specific contributions where the descriptions understated them. Retained distinctions between technical hadith critics, jurists, devotional commentators, translators and institutional resources. Adnan Mukhtar remains excluded."
+  },
+  "style_review": {
+    "lowercase_al_even_at_sentence_start": true,
+    "patronymic_abbreviations": {
+      "ibn_between_personal_names": "b.",
+      "bint_between_personal_names": "bt."
+    },
+    "note": "Established scholarly names such as Ibn Hajar and Ibn Rajab retain Ibn.",
+    "revised_aliases": [
+      "bukhari-ayni",
+      "muslim-nawawi",
+      "tirmidhi-mubarakfuri",
+      "nasai-suyuti",
+      "nasai-sindi",
+      "ibnmajah-sindi",
+      "muslim-qurtubi",
+      "ibnmajah-mughultay",
+      "malik-tamhid",
+      "malik-zarqani",
+      "dorar-s",
+      "shamail-kandhlawi",
+      "adab-salahi",
+      "riyad-uthaymin",
+      "ahmad-arnaut",
+      "shamail-qari",
+      "mushkil-tahawi",
+      "itibar-hazimi",
+      "mishkat-qari",
+      "mishkat-mubarakfuri",
+      "mishkat-dihlawi"
+    ]
+  }
+}

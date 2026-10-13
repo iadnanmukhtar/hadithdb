@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+const site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: req.admin && req.editMode });
+const title = sharhBook ? sharhBook.shortName_en || sharhBook.name_en || sharhBook.alias : 'Sharḥ books';
+const canonical = sharhBook ? `/sharh/${encodeURIComponent(sharhBook.alias)}` : '/sharh';
+const page = { menu: 'Books', title_en: title, description_en: `Browse ${title}.`, canonical: canonical + (offset ? `?o=${offset}` : ''), subtitle_en: sharhBook ? sharhBook.shortName_en : '', subtitle: sharhBook ? sharhBook.shortName : '', context: {} };
+if (sharhBook) {
+  const currentIndex = books.findIndex(book => book.id === sharhBook.id);
+  const prevBook = currentIndex > 0 ? books[currentIndex - 1] : null;
+  const nextBook = currentIndex >= 0 && currentIndex < books.length - 1 ? books[currentIndex + 1] : null;
+  if (prevBook) {
+    page.prev = `/sharh/${encodeURIComponent(prevBook.alias)}`;
+    page.prevTitle = `Previous: ${prevBook.shortName_en || prevBook.name_en || prevBook.alias}`;
+  }
+  if (nextBook) {
+    page.next = `/sharh/${encodeURIComponent(nextBook.alias)}`;
+    page.nextTitle = `Next: ${nextBook.shortName_en || nextBook.name_en || nextBook.alias}`;
+  }
+}
+%>
+<%- include('sub-views/head.ejs', { site, page }); %>
+</head>
+<body>
+<%- include('sub-views/header.ejs', { site, page }); %>
+<div class="container col-lg-8 mx-auto">
+<main class="toc hadith-toc-page">
+  <% if (sharhBook) { %>
+    <nav class="h-menu-wrap mb-3" aria-label="Sharḥ books">
+      <div class="h-menu-scroller"><div class="btn-group h-menu text-nowrap" role="group">
+        <a class="btn btn-outline-primary" href="/sharh">Sharḥ books</a>
+        <% books.forEach(function(book) { %><a class="btn btn-outline-primary text-nowrap<%= book.id === sharhBook.id ? ' active' : '' %>" href="/sharh/<%= encodeURIComponent(book.alias) %>"<% if (book.id === sharhBook.id) { %> aria-current="page" data-current-book="true"<% } %>><%= book.shortName_en || book.name_en || book.alias %></a><% }); %>
+      </div></div>
+    </nav>
+    <article>
+    <%- include('sub-views/book_metadata.ejs', {
+      site, book: sharhBook, tocDisplayBook: sharhBook,
+      tocDisplayBookNameEn: sharhBook.name_en || title,
+      tocDisplayBookTitle: sharhBook.name || sharhBook.title || sharhBook.shortName,
+      showBookLayout: true, showBookMetadata: true,
+      quranCommentaryBook: null, isEnglishQuranTranslation: false
+    }); %>
+    <hr class="mt-3">
+    <section aria-labelledby="sharh-covered-books-title">
+      <h2 id="sharh-covered-books-title" class="fs-4">Commentary on</h2>
+      <% if (coveredBooks.length) { %>
+      <table class="table" aria-label="Books with commentary and hadith counts">
+        <thead><tr><th scope="col">Book</th><th scope="col" lang="ar" dir="rtl">الكتاب</th><th scope="col" class="text-end">Hadiths</th></tr></thead>
+        <tbody><% coveredBooks.forEach(function(book) { %>
+          <tr class="chapter">
+            <td><a href="/<%= encodeURIComponent(book.alias) %>"><%= book.shortName_en || book.name_en || book.alias %></a></td>
+            <td lang="ar" dir="rtl"><a href="/<%= encodeURIComponent(book.alias) %>"><%= book.shortName || book.name || book.title %></a></td>
+            <td class="text-end"><%= Number(book.hadith_count).toLocaleString('en-US') %></td>
+          </tr>
+        <% }); %></tbody>
+      </table>
+      <% } else { %><p class="text-muted">No linked books yet.</p><% } %>
+    </section>
+    </article>
+  <% } else { %>
+    <h1 class="fs-3">Sharḥ books</h1>
+    <div class="list-group"><% books.forEach(function(book) { %><div class="list-group-item">
+      <div class="row" dir="ltr"><a class="col-md-6" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= book.shortName_en || book.name_en || book.alias %></a><span class="col-md-6" lang="ar" dir="rtl"><%= book.shortName || book.title %></span></div>
+      <% if (site.editMode) { %><button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#sharh-book-<%= book.id %>">Edit book metadata</button><% } %>
+    </div><% }); %></div>
+  <% } %>
+</main>
+</div>
+<% if (site.editMode) { (sharhBook ? [] : books).forEach(function(book) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: `sharh-book-${book.id}` }); %><% }); } %>
+<% if (sharhBook) { %><%- include('sub-views/mobile_navigation.ejs', { site, page }); %><% } %>
+<%- include('sub-views/footer.ejs', { site, page }); %>
+<%- include('sub-views/scripts.ejs', { site, page }); %>
+</body>
+</html>

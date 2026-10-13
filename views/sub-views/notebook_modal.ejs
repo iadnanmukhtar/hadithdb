@@ -9,6 +9,14 @@
 [Link text](https://example.com)
 [[Note title]] links to another note
 
+Optional YAML frontmatter at the top:
+---
+topic: Patience
+links:
+  - bukhari:1
+  - quran:2:255
+---
+
 Leave a blank line between paragraphs. Preview to see formatting.`; %>
 <div class="modal fade" id="notebook-modal" data-nosnippet tabindex="-1" aria-labelledby="notebook-modal-title" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
@@ -54,6 +62,33 @@ Leave a blank line between paragraphs. Preview to see formatting.`; %>
           <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-notebook-drive-connect hidden>Connect Google Drive</button>
           <a data-notebook-drive-folder target="_blank" rel="noopener" class="notebook-drive-action ms-1" hidden>Open folder</a>
         </div>
+        <div id="notebook-associated-notes" class="d-flex gap-2 flex-wrap mb-2" aria-live="polite"></div>
+        <div class="notebook-metadata-tools">
+          <button id="notebook-frontmatter" type="button" class="notebook-metadata-toggle notebook-fm-toggle" title="Show frontmatter" aria-label="Show frontmatter" aria-controls="notebook-frontmatter-panel" aria-expanded="false"><span aria-hidden="true">FM</span></button>
+        <details id="notebook-attachments" hidden>
+          <summary class="notebook-metadata-toggle"><span>Linked items</span><span id="notebook-attachment-count" class="notebook-metadata-count" hidden></span></summary>
+          <div class="notebook-attachment-content">
+          <p class="notebook-metadata-hint">Link this note to a hadith or ayah.</p>
+          <div id="notebook-attached-items" class="my-2"></div>
+          <label for="notebook-attachment-reference">Hadith or ayah reference</label>
+          <div class="input-group input-group-sm my-1">
+            <input id="notebook-attachment-reference" class="form-control" placeholder="bukhari:1 or quran:2:255" dir="ltr" maxlength="100">
+            <button id="notebook-attachment-add" type="button" class="btn btn-outline-secondary">Link</button>
+          </div>
+          <div id="notebook-attach-existing" class="mt-2" hidden>
+            <label for="notebook-attachment-search">Link an existing note to this item</label>
+            <input id="notebook-attachment-search" class="form-control form-control-sm" placeholder="Search notes by title" maxlength="500" dir="auto">
+            <div id="notebook-attachment-results" class="d-flex flex-column align-items-start gap-1 mt-2"></div>
+          </div>
+          <p id="notebook-attachment-status" class="mb-0 mt-1" role="status" aria-live="polite"></p>
+          </div>
+        </details>
+        <section id="notebook-frontmatter-panel" aria-label="Editable frontmatter" hidden>
+          <div class="notebook-frontmatter-heading"><label for="notebook-frontmatter-editor">Frontmatter</label><span aria-hidden="true">YAML</span></div>
+          <textarea id="notebook-frontmatter-editor" class="form-control form-control-sm" dir="ltr" rows="7" spellcheck="false" aria-describedby="notebook-frontmatter-status"></textarea>
+          <div id="notebook-frontmatter-status" class="small" role="status" aria-live="polite"></div>
+        </section>
+        </div>
         <div id="notebook-title-row">
           <a id="notebook-drive-file" target="_blank" rel="noopener" title="Open note in Google Drive" aria-label="Open note in Google Drive" hidden><%- include('notebook_drive_icon.ejs'); %></a>
           <input id="notebook-title-editor" class="form-control mb-2" dir="auto" maxlength="500" required aria-label="Note title" placeholder="Note title" hidden>
@@ -97,6 +132,32 @@ Leave a blank line between paragraphs. Preview to see formatting.`; %>
 <style>
 <%- include('notebook_content_styles.ejs') %>
 body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !important; }
+#notebook-attachments :is(a, button), #notebook-associated-notes button { max-width: 100%; overflow-wrap: anywhere; }
+#notebook-associated-notes > .text-muted { width: 100%; }
+#notebook-attachment-results { max-height: 14rem; overflow-y: auto; }
+/* Compact metadata controls share the note's paper and ink colors. */
+.notebook-metadata-tools { position: relative; flex-shrink: 0; margin-bottom: .85rem; font-family: system-ui, sans-serif; font-size: .78rem; }
+.notebook-metadata-tools:has(#notebook-attachments[hidden]) { padding-top: 2rem; }
+.notebook-metadata-toggle { display: inline-flex; align-items: center; gap: .45rem; min-height: 2rem; padding: .3rem .6rem; border: 1px solid transparent; border-radius: .45rem; color: var(--note-ink, #805d00); background: transparent; font: inherit; font-weight: 500; cursor: pointer; }
+.notebook-metadata-toggle:hover, .notebook-metadata-toggle[aria-expanded="true"], #notebook-attachments[open] > summary { background: rgba(212,167,44,.1); border-color: var(--note-edge, #d4a72c); }
+.notebook-metadata-toggle:focus-visible { outline: 2px solid var(--note-edge, #d4a72c); outline-offset: 2px; }
+#notebook-attachments > summary { list-style: none; margin-inline-end: 3.5rem; }
+#notebook-attachments > summary::-webkit-details-marker { display: none; }
+#notebook-attachments > summary::after { content: ''; width: .4rem; height: .4rem; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin: -.2rem .15rem 0 .25rem; }
+#notebook-attachments[open] > summary::after { transform: rotate(225deg); margin-top: .2rem; }
+.notebook-fm-toggle { position: absolute; inset-inline-end: 0; top: 0; font-size: .7rem; letter-spacing: .04em; font-weight: 650; min-width: 2.5rem; }
+.notebook-metadata-count { min-width: 1.15rem; padding: .05rem .3rem; border-radius: 1rem; background: rgba(212,167,44,.15); font-size: .68rem; text-align: center; }
+.notebook-attachment-content, #notebook-frontmatter-panel { margin-top: .55rem; padding: .7rem .8rem; border: 1px solid var(--note-edge, #d4a72c); border-radius: .55rem; background: rgba(255,255,255,.25); }
+.notebook-metadata-hint { margin: 0 0 .6rem; opacity: .75; }
+.notebook-frontmatter-heading { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: .5rem; }
+.notebook-frontmatter-heading label { font-weight: 600; margin: 0; }
+.notebook-frontmatter-heading > span { font-size: .62rem; letter-spacing: .08em; opacity: .6; }
+#notebook-frontmatter-editor { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .78rem; line-height: 1.65; resize: vertical; min-height: 9rem; max-height: 32vh; padding: .6rem; color: inherit; background: rgba(255,255,255,.3); border: 1px solid transparent; border-radius: .35rem; box-shadow: none; }
+#notebook-attachments input { color: inherit; background: rgba(255,255,255,.3); border-color: var(--note-edge, #d4a72c); }
+#notebook-attachments input:focus, #notebook-frontmatter-editor:focus { border-color: var(--note-edge, #d4a72c); outline: 2px solid rgba(212,167,44,.15); outline-offset: 1px; box-shadow: none; }
+#notebook-frontmatter-status:not(:empty) { margin-top: .5rem; }
+[data-bs-theme="dark"] .notebook-attachment-content, [data-bs-theme="dark"] #notebook-frontmatter-panel, [data-bs-theme="dark"] #notebook-frontmatter-editor { background: rgba(0,0,0,.1); }
+
 #notebook-editor { font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
 #notebook-wiki-options { max-height: 12rem; overflow-y: auto; border: 1px solid var(--bs-border-color, #ccc); border-radius: .35rem; background: var(--bs-body-bg, white); margin-block: .25rem; }
 #notebook-wiki-options [role="option"] { padding: .3rem .65rem; cursor: pointer; }
@@ -175,8 +236,8 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-share-url { direction: ltr; }
 .personal-note-actions { display: inline-flex; align-items: center; gap: .5rem; vertical-align: middle; }
 .quran-ayah-hero-toolbar > .personal-note-actions { gap: .75rem; }
-.personal-note-btn { color: #cc9a06; }
-.personal-note-btn:hover, .personal-note-btn:focus-visible { color: #9a7300; background: transparent; }
+.personal-note-btn { color: var(--note-icon-yellow); }
+.personal-note-btn:hover, .personal-note-btn:focus-visible { color: var(--note-icon-yellow); background: transparent; }
 .personal-note-btn .bi { pointer-events: none; }
 /* Personal notes use a consistent amber paper color. */
 #notebook-modal, #personal-notebook { --note-paper: #fff8db; --note-ink: #634800; --note-edge: #d4a72c; }
@@ -227,7 +288,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-drive-file { flex-shrink: 0; }
 #notebook-drive-file .notebook-drive-icon { filter: none; opacity: 1; margin: 0; }
 #notebook-dates { width: 100%; font-size: .65rem; line-height: 1.4; text-align: start; }
-#personal-notebook.notebook-signed-out .notebook-tile { filter: grayscale(1); opacity: .55; }
+#personal-notebook.notebook-signed-out .notebook-tile { opacity: .55; }
 #personal-notebook .notebook-tile-open:disabled { cursor: not-allowed; }
 #personal-notebook .notebook-tile-open:disabled:hover { background: transparent; }
 </style>
@@ -238,6 +299,9 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 <script src="/static/js/notebook-print.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-navigator.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-sidebars.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-links.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-yaml.min.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-frontmatter.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 
 <button id="notebook-restore" type="button" class="notebook-restore-note" hidden aria-controls="notebook-modal" title="Restore note" aria-label="Restore note"><i class="bi bi-sticky" aria-hidden="true"></i><span>Restore note</span></button>

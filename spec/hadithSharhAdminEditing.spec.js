@@ -18,6 +18,10 @@ describe('Hadith Sharh administration', () => {
 		HadithBilingualPairs.resetSchemaForTests();
 		HadithHeadingSharh.resetSchemaForTests();
 		jest.spyOn(HdithMetadata, 'ensureEditableColumns').mockResolvedValue();
+		jest.spyOn(require('../lib/SharhBooks'), 'sync').mockResolvedValue({ created: 0 });
+		jest.spyOn(require('../lib/SharhBooks'), 'assignEntryBook').mockImplementation(async (kind, id, values) => ({ id: 100, shortName: values.title, shortName_en: values.title_en }));
+        jest.spyOn(require('../lib/Model').Library, 'reloadBooks').mockResolvedValue();
+        jest.spyOn(require('../lib/RuntimeRefresh'), 'publish').mockResolvedValue();
 		jest.spyOn(Books, 'touchBookContentLastmodById').mockResolvedValue();
 		jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
 		jest.spyOn(Index, 'update').mockResolvedValue();
@@ -59,7 +63,7 @@ describe('Hadith Sharh administration', () => {
 
 		await updateHandler()(req, res, jest.fn());
 
-		expect(global.query.mock.calls.some(([sql]) => sql.includes("SET title='عمدة القاري', title_en='ʿUmdat al-Qārī' WHERE id=11"))).toBe(true);
+		expect(require('../lib/SharhBooks').assignEntryBook).toHaveBeenCalledWith('hadith', 11, expect.objectContaining({ title: 'عمدة القاري', title_en: 'ʿUmdat al-Qārī' }));
 		expect(res.json.mock.calls[0][0].fields).toEqual({ title: 'عمدة القاري', title_en: 'ʿUmdat al-Qārī' });
 	});
 
@@ -82,6 +86,7 @@ describe('Hadith Sharh administration', () => {
 		expect(Books.touchBookContentLastmodById).toHaveBeenCalledWith(7);
 		expect(Utils.flushCacheContaining).toHaveBeenCalledWith(alias);
 		expect(res.json.mock.calls[0][0]).toEqual(expect.objectContaining({ code: 200, createdSharhId: 77 }));
+		expect(require('../lib/SharhBooks').sync).toHaveBeenCalled();
 	});
 
 	test('updates both heading explanation title languages from a paired selection', async () => {
@@ -101,16 +106,16 @@ describe('Hadith Sharh administration', () => {
 
 		await updateHandler()(req, res, jest.fn());
 
-		expect(global.query.mock.calls.some(([sql]) => sql.includes("UPDATE hdith_toc_sharh SET title='شرح الباب', title_en='Chapter explanation' WHERE id=31"))).toBe(true);
+		expect(require('../lib/SharhBooks').assignEntryBook).toHaveBeenCalledWith('heading', 31, expect.objectContaining({ title: 'شرح الباب', title_en: 'Chapter explanation' }));
 		expect(res.json.mock.calls[0][0].fields).toEqual({ title: 'شرح الباب', title_en: 'Chapter explanation' });
 	});
 
-	test('returns bilingual title pairs while allowing normalized Arabic or English searches', async () => {
+	test('returns books while allowing normalized Arabic or English searches', async () => {
 		global.query = jest.fn(async sql => {
 			if (sql.includes('FROM hdith_bilingual_pairs')) return [];
-			if (sql.includes('sharh_pairs')) return [
-				{ value_ar: 'فَتْحُ البَارِي', value_en: 'Fatḥ al-Bārī', usage_count: 12 },
-				{ value_ar: 'شرح مخصص', value_en: 'Custom explanation', usage_count: 1 }
+			if (sql.includes('FROM books')) return [
+				{ id: 1, value_ar: 'فَتْحُ البَارِي', value_en: 'Fatḥ al-Bārī', usage_count: 12 },
+				{ id: 2, value_ar: 'شرح مخصص', value_en: 'Custom explanation', usage_count: 1 }
 			];
 			return [];
 		});

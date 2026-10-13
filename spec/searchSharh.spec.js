@@ -122,14 +122,14 @@ describe('Sharh book search', () => {
 		expect(filters).toContainEqual({ term: { doctype: 'sharh' } });
 		expect(JSON.stringify(filters)).not.toContain('fath-al-bari');
 	});
-	test('renders separate explanations with current book metadata and the Hadith link', async () => {
+	test('renders separate explanations with current book metadata and the full Sharh link', async () => {
 		Index.docsFromQuery.mockResolvedValue(Object.assign([
 			{ doctype: 'sharh', id: 7, bookId: 101, ref: 'bukhari:1', commentary_alias: 'old-alias', text_en: 'mercy', _highlight: { text_en: ['<i>mercy</i>'] } },
 			{ doctype: 'sharh', id: 8, bookId: 101, ref: 'bukhari:2', text: 'رحمة', text_en: 'mercy' }
 		], { total: 2 }));
 		const results = await Search.a_searchText('mercy', ['sharh'], 0, { excludeQuranAndTafsir: true });
 		expect(results).toHaveLength(2);
-		expect(results[0]).toMatchObject({ url: '/bukhari:1', commentary_alias: 'fath-al-bari', commentary_fragment_html_en: '<mark>mercy</mark>' });
+		expect(results[0]).toMatchObject({ url: '/sharh/fath-al-bari/bukhari:1', commentary_alias: 'fath-al-bari', commentary_fragment_html_en: '<mark>mercy</mark>' });
 		expect(results[0].commentary_ref_en).toContain('Fath al-Bari');
 		expect(results[0].commentary_ref_ar).toBe('فتح الباري · البخاري:١');
 		expect(results[1].commentary_is_bilingual).toBe(true);

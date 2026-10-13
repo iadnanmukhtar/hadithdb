@@ -7,6 +7,7 @@ const express = require('express');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
+const Sharh = require('../lib/Sharh');
 const BookDownloads = require('../lib/BookDownloads');
 
 const router = express.Router();
@@ -99,7 +100,9 @@ router.get('/', async function (req, res, next) {
     var tafsirs = await Tafsir.visibleTafsirs();
     tafsirs = await Tafsir.withFirstPassages(tafsirs);
     var translations = await Tafsir.visibleTranslations();
+    const sharhBooks = await Sharh.catalog();
     const renderLocals = {
+      sharhBooks,
       BookDownloads: BookDownloads,
       books: results,
       Tafsir: Tafsir,
@@ -112,7 +115,7 @@ router.get('/', async function (req, res, next) {
         ...renderLocals
       }));
       Utils.writeCachedHtml(cachedFile, html);
-      await Utils.indexCachedItem(bookCatalogCacheRefs(results, tafsirs, translations), cachedFile);
+      await Utils.indexCachedItem(bookCatalogCacheRefs(results, tafsirs, translations, sharhBooks), cachedFile);
       if (Utils.sendCachedHtml(res, req, cachedFile, 'text/html; charset=UTF-8'))
         return;
     }
@@ -120,8 +123,9 @@ router.get('/', async function (req, res, next) {
   }
 });
 
-function bookCatalogCacheRefs(books, tafsirs, translations) {
+function bookCatalogCacheRefs(books, tafsirs, translations, sharhBooks) {
   const refs = new Set(['books', 'tafsirs', 'tafsir:books', 'translations:books']);
+  (sharhBooks || []).forEach(book => refs.add(book.alias));
   (books || []).forEach(book => refs.add(book.alias));
   (tafsirs || []).forEach(book => refs.add(`tafsir:${book.alias}:catalog`));
   (translations || []).forEach(book => refs.add(`translation:${book.alias}:catalog`));

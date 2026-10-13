@@ -581,6 +581,7 @@ router.get('/autocomplete/sharh-titles', searchRequestLimiter, requireSearchAdmi
 
 router.get('/autocomplete/bilingual-pairs', searchRequestLimiter, requireSearchAdmin, async function (req, res, next) {
   try {
+    if (req.query.type === 'sharh_title') return next(createError(400, 'Manage Sharh books instead of title pairs'));
     var pairs = req.query.type === 'narrator'
       ? await HadithBilingualPairs.searchNarrators(req.query.q || req.query.term || '', req.query.limit)
       : await HadithBilingualPairs.list(req.query.type, req.query.q || req.query.term || '', req.query.limit);

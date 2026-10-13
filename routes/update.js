@@ -296,6 +296,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
     } else if (type === 'hdith_pair') {
       var bilingualPairType = Utils.trimToEmpty(req.body.pairType);
+      if (bilingualPairType === 'sharh_title') throw createError(400, 'Manage Sharh books instead of title pairs');
       var bilingualPairArabic = Utils.trimToEmpty(req.body.valueAr);
       var bilingualPairEnglish = Utils.trimToEmpty(req.body.valueEn);
       var bilingualPairOriginalArabic = Utils.trimToEmpty(req.body.originalAr);
@@ -307,7 +308,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         status.message = `${status.pair.merged_count} pairs merged. All matching metadata references now use the target pair.`;
         try {
           await HadithPairRefresh.refresh(status.pair);
-          if (['sharh_title', 'grader', 'grade'].includes(bilingualPairType)) {
+          if (['grader', 'grade'].includes(bilingualPairType)) {
             await reindexEnrichedHadithIds(status.pair.affected_hadith_ids);
             await Index.refresh('hadiths');
           }
@@ -326,7 +327,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 		]));
 		if (bilingualPairType === 'narrator')
 		  await HadithNarratorIndex.reindex(status.pair.affected_hadith_ids || []);
-		if (['sharh_title', 'grader', 'grade'].includes(bilingualPairType) && status.pair.affected_hadith_ids?.length)
+		if (['grader', 'grade'].includes(bilingualPairType) && status.pair.affected_hadith_ids?.length)
 		  safeBackground(`reindexing ${bilingualPairType} pair`, () => reindexEnrichedHadithIds(status.pair.affected_hadith_ids));
         status.message = 'Bilingual pair saved';
       } else if (col === 'delete') {
@@ -338,7 +339,6 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         throw createError(400, `Invalid bilingual pair action '${col}'`);
 	      }
 	      if (bilingualPairType === 'narrator') HdithMetadata.invalidatePrimaryNarratorSuggestionCache();
-	      else if (bilingualPairType === 'sharh_title') HdithMetadata.invalidateSharhTitleSuggestionCache();
 	      status.code = 200;
 
     } else if (type === 'hdith_metadata') {
@@ -574,12 +574,13 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         HdithMetadata.invalidateSharhTitleSuggestionCache();
         await runHadithPostUpdateTasks(sharhId);
       } else {
-		var sharhRow = (await global.query(`SELECT hs.id, hs.hadith_id, hs.source_id, hs.text, hs.text_en, ss.source_book_id,
+		var sharhRow = (await global.query(`SELECT hs.id, hs.book_id AS sharh_book_id, hs.title AS source_title, hs.hadith_id, hs.source_id, hs.text, hs.text_en, ss.source_book_id,
 		  COALESCE(NULLIF(hs.title, ''), ss.title) AS title, COALESCE(NULLIF(hs.title_en, ''), ss.title_en) AS title_en
 		  FROM hdith_hadith_sharh hs JOIN hdith_sharh_sources ss ON ss.id=hs.source_id
           WHERE hs.id=${sharhId} LIMIT 1`))[0];
         if (!sharhRow)
           throw createError(404, 'Explanation not found');
+        sharhRow = require('../lib/Sharh').decorate(sharhRow);
 	    if (col === 'revise') {
 		  var revisedSharh = await ContentRevision.revise('hdith_sharh', sharhId, { userId });
 		  status.revised = revisedSharh.fields;
@@ -605,21 +606,15 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 		    status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic Sharh book title into concise English. Return only the translation:\n${sharhRow.title}`));
 		  if (col === 'title' && Utils.isFalsey(status.value))
 		    throw createError(400, 'The Arabic Sharh book title cannot be empty');
-		  var pairedSharhTitle = Utils.trimToEmpty(req.body.pairedSharhTitle);
-		  var pairedSharhTitleColumn = col === 'title' ? 'title_en' : 'title';
-		  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)}${pairedSharhTitle ? `, ${pairedSharhTitleColumn}=${sql(pairedSharhTitle)}` : ''} WHERE id=${sharhId}`);
-		  if (pairedSharhTitle)
-			status.fields = { [col]: status.value, [pairedSharhTitleColumn]: pairedSharhTitle };
-		  if ((col === 'title' || col === 'title_en') && Utils.isTruthy(status.value)) {
-			if (!pairedSharhTitle && Number(sharhRow.source_book_id) === HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID && col === 'title_en')
-			  await global.query(`UPDATE hdith_hadith_sharh SET title_en=${sql(status.value)} WHERE source_id=${Number(sharhRow.source_id)} AND COALESCE(NULLIF(title, ''), (SELECT title FROM hdith_sharh_sources WHERE id=${Number(sharhRow.source_id)}))=${MySQL.escape(sharhRow.title)}`);
-			else if (!pairedSharhTitle && Number(sharhRow.source_book_id) !== HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID) {
-			  await global.query(`UPDATE hdith_sharh_sources SET ${col}=${sql(status.value)} WHERE id=${Number(sharhRow.source_id)}`);
-			  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(sharhRow.source_id)}`);
-			  await global.query(`UPDATE hdith_toc_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(sharhRow.source_id)}`);
-			}
-		  }
-		  HdithMetadata.invalidateSharhTitleSuggestionCache();
+		  const selectedBook = await require('../lib/SharhBooks').assignEntryBook('hadith', sharhId, {
+            bookId: req.body.sharhBookId,
+            title: col === 'title' ? status.value : (Utils.trimToEmpty(req.body.pairedSharhTitle) || sharhRow.title),
+            title_en: col === 'title_en' ? status.value : (Utils.trimToEmpty(req.body.pairedSharhTitle) || sharhRow.title_en)
+          });
+          status.fields = { title: selectedBook.shortName, title_en: selectedBook.shortName_en };
+          await Library.reloadBooks();
+          await RuntimeRefresh.publish();
+          HdithMetadata.invalidateSharhTitleSuggestionCache();
 		  status.code = 200;
 		  status.message = 'Explanation book title updated';
         } else {
@@ -674,7 +669,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         await Books.touchBookContentLastmodById(sharhHeading.book_id);
         await Promise.all([Utils.flushCacheContaining(sharhHeading.alias), Utils.flushCacheContaining(`book:${sharhHeading.alias}`)]);
       } else {
-        var tocSharhRow = (await global.query(`SELECT ts.id, ts.toc_id, ts.source_id, ts.text, ts.text_en, ss.source_book_id,
+        var tocSharhRow = (await global.query(`SELECT ts.id, ts.book_id AS sharh_book_id, ts.title AS source_title, ts.toc_id, ts.source_id, ts.text, ts.text_en, ss.source_book_id,
           t.bookId AS book_id, b.alias,
           COALESCE(NULLIF(ts.title, ''), ss.title) AS title,
           COALESCE(NULLIF(ts.title_en, ''), ss.title_en) AS title_en
@@ -683,6 +678,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           WHERE ts.id=${tocSharhId} AND b.alias<>'quran' AND COALESCE(b.type, 'hadith')='hadith' LIMIT 1`))[0];
         if (!tocSharhRow)
           throw createError(404, 'Heading explanation not found');
+        tocSharhRow = require('../lib/Sharh').decorate(tocSharhRow, 'heading');
         if (col === 'revise') {
           var revisedTocSharh = await ContentRevision.revise('hdith_toc_sharh', tocSharhId, { userId });
           status.revised = revisedTocSharh.fields;
@@ -708,16 +704,14 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
             status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic Sharh book title into concise English. Return only the translation:\n${tocSharhRow.title}`));
           if (col === 'title' && Utils.isFalsey(status.value))
             throw createError(400, 'The Arabic Sharh book title cannot be empty');
-          var pairedHeadingSharhTitle = Utils.trimToEmpty(req.body.pairedSharhTitle);
-          var pairedHeadingSharhTitleColumn = col === 'title' ? 'title_en' : 'title';
-          await global.query(`UPDATE hdith_toc_sharh SET ${col}=${sql(status.value)}${pairedHeadingSharhTitle ? `, ${pairedHeadingSharhTitleColumn}=${sql(pairedHeadingSharhTitle)}` : ''} WHERE id=${tocSharhId}`);
-          if (pairedHeadingSharhTitle)
-            status.fields = { [col]: status.value, [pairedHeadingSharhTitleColumn]: pairedHeadingSharhTitle };
-          if (!pairedHeadingSharhTitle && Utils.isTruthy(status.value) && Number(tocSharhRow.source_book_id) !== HdithMetadata.CUSTOM_SHARH_SOURCE_BOOK_ID) {
-            await global.query(`UPDATE hdith_sharh_sources SET ${col}=${sql(status.value)} WHERE id=${Number(tocSharhRow.source_id)}`);
-            await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(tocSharhRow.source_id)}`);
-            await global.query(`UPDATE hdith_toc_sharh SET ${col}=${sql(status.value)} WHERE source_id=${Number(tocSharhRow.source_id)}`);
-          }
+          const selectedBook = await require('../lib/SharhBooks').assignEntryBook('heading', tocSharhId, {
+            bookId: req.body.sharhBookId,
+            title: col === 'title' ? status.value : (Utils.trimToEmpty(req.body.pairedSharhTitle) || tocSharhRow.title),
+            title_en: col === 'title_en' ? status.value : (Utils.trimToEmpty(req.body.pairedSharhTitle) || tocSharhRow.title_en)
+          });
+          status.fields = { title: selectedBook.shortName, title_en: selectedBook.shortName_en };
+          await Library.reloadBooks();
+          await RuntimeRefresh.publish();
           HdithMetadata.invalidateSharhTitleSuggestionCache();
           status.code = 200;
           status.message = 'Explanation book title updated';
@@ -726,6 +720,13 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         }
         await Books.touchBookContentLastmodById(tocSharhRow.book_id);
         await Promise.all([Utils.flushCacheContaining(tocSharhRow.alias), Utils.flushCacheContaining(`book:${tocSharhRow.alias}`)]);
+      }
+      if (['add', 'title', 'title_en'].includes(col)) {
+        const catalog = await require('../lib/SharhBooks').sync();
+        if (catalog.created) {
+          await Library.reloadBooks();
+          await RuntimeRefresh.publish();
+        }
       }
 
     } else if (type == 'tags') {
@@ -948,16 +949,24 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         if (status.value && !['sm', 'md', 'lg'].includes(status.value))
           throw createError(400, `Invalid book size '${status.value}'`);
       }
-      var beforeBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
       if (col === 'alias') {
-        if (!beforeBook || beforeBook.type !== 'sharh')
-          throw createError(400, 'Alias editing here is supported for Sharh books only');
-        status.value = Utils.trimToEmpty(status.value);
-        if (!/^[a-z][a-z0-9-]{1,79}$/.test(status.value) || ['hadith', 'sharh', 'toc', 'tafsir', 'commentaries', 'sahihayn', 'kutubarbaah', 'sixbooks', 'ninebooks'].includes(status.value))
-          throw createError(400, 'Use a unique lowercase alias containing letters, numbers, and hyphens');
-        const duplicateAlias = await global.query(`SELECT id FROM books WHERE alias=${sql(status.value)} AND id<>${Number(beforeBook.id)} LIMIT 1`);
-        if (duplicateAlias.length) throw createError(400, 'This book alias is already in use');
+        const BookAliases = require('../lib/BookAliases');
+        await Books.ensureBookContentLastmodColumn();
+        const renamed = await BookAliases.save(ids[0], status.value);
+        try {
+          await BookAliases.refresh(renamed.book);
+          return res.status(200).json({ code: 200, value: renamed.book.alias, message: renamed.book.type === 'sharh' ? 'Book alias saved.' : 'Book alias saved. Previous URLs redirect to the new alias.' });
+        } catch (error) {
+          debug.error(`Book alias saved but refresh failed: ${error.stack || error.message}`);
+          try {
+            await Library.reloadBooks();
+            await require('../lib/Commentaries').loadCommentaries();
+            await RuntimeRefresh.publish();
+          } catch (refreshError) { debug.error(`Book alias runtime refresh failed: ${refreshError.message}`); }
+          return res.status(200).json({ code: 200, value: renamed.book.alias, refreshPending: true, warning: true, message: 'Alias saved, but refresh is incomplete. Save this alias again to retry.' });
+        }
       }
+      var beforeBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
       var bookValueSql = (col === 'description') ? sqlPreserveWhitespace(status.value) : sql(status.value);
       await Books.ensureBookContentLastmodColumn();
       var result = await global.query(`UPDATE books SET ${col}=${bookValueSql}, content_lastmod=CURRENT_TIMESTAMP() WHERE id=${ids[0]}`);
@@ -973,6 +982,12 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         bookAliases.add(beforeBook.alias);
       if (afterBook && afterBook.alias)
         bookAliases.add(afterBook.alias);
+      if (beforeBook && beforeBook.type === 'sharh') {
+        HdithMetadata.invalidateSharhTitleSuggestionCache();
+        const ownerAliases = await require('../lib/SharhBooks').affectedBookAliases(beforeBook.id);
+        ownerAliases.forEach(alias => bookAliases.add(alias));
+        await RuntimeRefresh.publish();
+      }
       await flushBookCaches(bookAliases);
       if (isQuranCatalogBook(beforeBook) || isQuranCatalogBook(afterBook))
         await flushQuranCatalogBookCaches(bookAliases);

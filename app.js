@@ -416,6 +416,8 @@ const startupPromise = (async () => {
   });
   app.use(RuntimeRefresh.middleware(async function refreshWorkerRuntime() {
     debug.info(`Runtime refresh detected in worker ${process.pid}; reloading Hadith data`);
+    require('./lib/HdithMetadata').invalidateSharhTitleSuggestionCache();
+    await require('./lib/SharhBooks').ensureEntryBooks();
     await Hadith.a_reinit();
   }));
   app.use(express.json({ limit: REQUEST_BODY_LIMIT, verify: preserveStripeWebhookRawBody }));
@@ -455,6 +457,7 @@ const startupPromise = (async () => {
       + `\n\nSitemap: ${domain.replace(/\/+$/, '')}/sitemap.xml\n`
     );
   });
+  app.use(require('./lib/BookAliases').middleware);
   app.use('/', express.static(PUBLIC_DIRECTORY, PUBLIC_STATIC_OPTIONS));
   app.get('/terms', function termsOfService(req, res) {
     res.sendFile(TERMS_FILE, { cacheControl: false });
@@ -552,6 +555,7 @@ const startupPromise = (async () => {
   app.use('/titled', titledRouter);
   app.use('/requests', requestsRouter);
   app.use('/books', booksRouter);
+  app.use('/sharh', require('./routes/sharh'));
   app.use('/tag', tagRouter);
   app.use('/quran/tag', tagRouter);
   app.use('/api/update', updateRouter);
@@ -681,6 +685,8 @@ const startupPromise = (async () => {
     res.render('error');
   });
 
+  await require('./lib/HadithHeadingSharh').ensureSchema();
+  await require('./lib/SharhBooks').ensureEntryBooks();
   await RuntimeRefresh.markCurrent();
   await Hadith.a_reinit();
   app.locals.startupReady = true;

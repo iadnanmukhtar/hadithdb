@@ -119,6 +119,6 @@
   </section>
   <% } %>
 
-  <%- include('hadith_heading_sharh.ejs', { heading: heading }); %>
+  <% if (!locals.contextOnly) { %><%- include('hadith_heading_sharh.ejs', { heading: heading }); %><% } %>
 
 </article>

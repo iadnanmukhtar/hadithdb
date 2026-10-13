@@ -1,0 +1,110 @@
+<%
+    function displayName(value) {
+      return (value || '').toString().replace(/\s+/g, ' ').trim();
+    }
+    function commentaryDeathLabel(book) {
+      var death = displayName(book && book.death);
+      if (!death)
+        return '';
+      if (book && book.type === 'trans') {
+        if (!/\bCE\b/i.test(death))
+          death = `${death} CE`;
+      } else if (!/\b(?:AH|H)\b/i.test(death) && !/هـ/u.test(death)) {
+        death = `${death} AH`;
+      }
+      return /^d\./i.test(death) ? death : `d. ${death}`;
+    }
+    function commentaryArabicDeathLabel(book) {
+      var death = displayName(book && book.death);
+      if (!death)
+        return '';
+      death = death.replace(/\b(?:AH|H)\b/ig, '').replace(/هـ/u, '').trim();
+      return `ت. ${death} هـ`;
+    }
+%>
+        <% if (showBookLayout) { %>
+        <%
+          var editableBookId = site.editMode && tocDisplayBook && tocDisplayBook.id ? tocDisplayBook.id : null;
+          var editableBook = Boolean(editableBookId) && site.editMode;
+          var publicationLabel = [tocDisplayBook.published_year ? `Pub. ${tocDisplayBook.published_year}` : '', tocDisplayBook.publisher ? tocDisplayBook.publisher : '']
+            .filter(Boolean).join(', ');
+          var tocSizeType = tocDisplayBook.type === 'tafsir' ? 'tafsir' : (tocDisplayBook.type === 'hadith' ? 'hadith' : '');
+          var tocBookSize = tocSizeType ? displayName(tocDisplayBook.size) : '';
+          var tocBookSizeLabel = tocBookSize === 'lg' ? `Large ${tocSizeType}` : (tocBookSize === 'md' ? `Medium ${tocSizeType}` : (tocBookSize === 'sm' ? `Small ${tocSizeType}` : ''));
+          var tocHeadingNameProp = 'name_en';
+          var tocHeadingNameRaw = tocDisplayBook[tocHeadingNameProp] || '';
+          var tocHeadingArabicProp = 'name';
+          var tocHeadingArabicRaw = tocDisplayBook[tocHeadingArabicProp] || '';
+        %>
+        <heading class="mb-2">
+          <div class="row text-center justify-content-center">
+            <h2 class="fs-3<%= quranCommentaryBook && quranCommentaryBook.type === 'trans' ? ' quran-translation-toc-title text-truncate w-100' : '' %>" title="<%- tocHeadingNameRaw || tocDisplayBookNameEn || '' %>"><span<% if (editableBook) { %> class="_e" data-id="<%= editableBookId %>" data-prop="book.<%= tocHeadingNameProp %>" data-placeholder="English name"<% } %>><%- editableBook ? tocHeadingNameRaw : (tocHeadingNameRaw || tocDisplayBookNameEn) %></span><% if (tocSizeType && (editableBook || tocBookSizeLabel)) { %><span class="toc-book-inline-size-editor"><span class="<%= tocSizeType %>-size-indicator tafsir-size-tooltip<%= tocBookSize ? ` ${tocSizeType}-size-indicator-${tocBookSize}` : ' toc-book-size-unset' %>" title="<%= tocBookSizeLabel || `Set ${tocSizeType} size` %>" data-tafsir-size-tooltip="<%= tocBookSizeLabel || `Set ${tocSizeType} size` %>" aria-label="<%= tocBookSizeLabel || `Set ${tocSizeType} size` %>" role="img"></span><% if (editableBook) { %><select class="_e" data-id="<%= editableBookId %>" data-prop="book.size" aria-label="<%= tocSizeType === 'tafsir' ? 'Tafsir' : 'Hadith' %> content size"><option value="" <%= !tocDisplayBook.size ? 'selected' : '' %>>Not set</option><option value="sm" <%= tocDisplayBook.size === 'sm' ? 'selected' : '' %>>Small</option><option value="md" <%= tocDisplayBook.size === 'md' ? 'selected' : '' %>>Medium</option><option value="lg" <%= tocDisplayBook.size === 'lg' ? 'selected' : '' %>>Large</option></select><% } %></span><% } %></h2>
+            <% if (!isEnglishQuranTranslation && (editableBook || tocDisplayBookTitle)) { %>
+            <h2 class="fs-3 fw-bold text-center" lang="ar" dir="rtl" title="<%- tocHeadingArabicRaw || '' %>"><span<% if (editableBook) { %> class="_e" data-id="<%= editableBookId %>" data-prop="book.<%= tocHeadingArabicProp %>" data-placeholder="الاسم العربي"<% } %>><%- editableBook ? tocHeadingArabicRaw : (tocHeadingArabicRaw || tocDisplayBookTitle) %></span></h2>
+            <% } %>
+          </div>
+        </heading>
+        <% } %>
+
+        <% if (showBookMetadata) {
+          var tocBookNameEn = displayName(tocDisplayBook.title_en || '');
+          var tocBookNameAr = isEnglishQuranTranslation ? '' : displayName(tocDisplayBook.title || '');
+          var tocBookAuthorEn = displayName(tocDisplayBook.author_en || (isEnglishQuranTranslation ? '' : tocDisplayBook.author) || '');
+          var tocBookAuthorAr = isEnglishQuranTranslation ? '' : displayName(tocDisplayBook.author || '');
+          var tocBookDeathEn = commentaryDeathLabel(tocDisplayBook);
+          var tocBookDeathAr = tocDisplayBook.type === 'trans' ? '' : commentaryArabicDeathLabel(tocDisplayBook);
+        %>
+        <div class="tafsir-book-meta text-muted mb-3<%= tocBookNameAr || tocBookAuthorAr || tocBookDeathAr ? '' : ' tafsir-book-meta-single' %>">
+          <% if (editableBook) { %>
+            <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en" data-placeholder="English short name"><%- tocDisplayBook.shortName_en || '' %></span></div>
+            <div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName" data-placeholder="الاسم المختصر"><%- tocDisplayBook.shortName || '' %></span></div>
+            <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title_en" data-placeholder="Full English title"><%- tocDisplayBook.title_en || '' %></span></div>
+            <% if (!isEnglishQuranTranslation) { %><div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title" data-placeholder="العنوان العربي"><%- tocDisplayBook.title || '' %></span></div><% } %>
+            <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.author_en" data-placeholder="Author"><%- tocDisplayBook.author_en || '' %></span> (d. <span class="_e" data-id="<%= editableBookId %>" data-prop="book.death" data-placeholder="Death year"><%- tocDisplayBook.death || '' %></span><%= tocDisplayBook.type === 'trans' ? ' CE' : ' AH' %>)</div>
+            <% if (!isEnglishQuranTranslation) { %><div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.author" data-placeholder="اسم المؤلف"><%- tocDisplayBook.author || '' %></span><% if (tocBookDeathAr) { %> (<%- tocBookDeathAr %>)<% } %></div><% } %>
+            <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.aqidah" data-placeholder="Aqidah"><%- tocDisplayBook.aqidah || '' %></span></div>
+            <div aria-hidden="true"></div>
+            <div>Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="book.published_year" data-placeholder="Year"><%- tocDisplayBook.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="book.publisher" data-placeholder="Publisher"><%- tocDisplayBook.publisher || '' %></span></div>
+          <% } else { %>
+            <% if (tocBookNameEn) { %><div><%- tocBookNameEn %></div><% } %>
+            <% if (tocBookNameAr) { %><div lang="ar" dir="rtl"><%- tocBookNameAr %></div><% } %>
+            <% if (tocBookAuthorEn || tocBookDeathEn) { %><div><%- tocBookAuthorEn %><% if (tocBookDeathEn) { %> (<%- tocBookDeathEn %>)<% } %></div><% } %>
+            <% if (tocBookAuthorAr || tocBookDeathAr) { %><div lang="ar" dir="rtl"><%- tocBookAuthorAr %><% if (tocBookDeathAr) { %> (<%- tocBookDeathAr %>)<% } %></div><% } %>
+            <% if (publicationLabel) { %><div><%= publicationLabel %></div><% } %>
+            <% if (tocDisplayBook.aqidah) { %><div><%- tocDisplayBook.aqidah %></div><% } %>
+          <% } %>
+        </div>
+        <% } %>
+
+        <% if (showBookLayout) { %>
+        <section>
+          <%
+          const bookDescriptionMarkdown = utils.emptyIfNull(tocDisplayBook.description);
+          const bookDescription = utils.markdownToHtml(bookDescriptionMarkdown) || '';
+          const bookDescriptionPreview = bookDescriptionMarkdown
+            .split(/\r?\n/)
+            .map(function (line) { return line.trim(); })
+	            .find(Boolean) || '';
+          const bookDescriptionPreviewText = bookDescriptionPreview
+	            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+	            .replace(/[*_`#>]+/g, '')
+	            .replace(/\s+/g, ' ')
+	            .trim();
+          const quranCommentaryDescriptionSummary = bookDescriptionPreviewText;
+          %>
+          <% if (site.editMode) { %>
+          <div class="_e mb-1" data-id="<%= editableBookId || book.id %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= bookDescriptionMarkdown %>" data-placeholder="Description"><%- bookDescription %></div>
+          <% } else if (quranCommentaryDescriptionSummary || bookDescription) { %>
+          <p class="toc-book-description-summary text-muted" data-toc-description-summary="book-description">
+            <span class="toc-book-description-preview"><%= quranCommentaryDescriptionSummary %></span>
+            <a href="#toc-book-description" data-toc-description-expand="book-description" role="button" aria-expanded="false" aria-controls="toc-book-description">More...</a>
+          </p>
+          <div id="toc-book-description" class="toc-book-description-full d-none" data-toc-description-full="book-description">
+            <% if (bookDescription) { %>
+            <div class="mb-1"><%- bookDescription %></div>
+            <% } %>
+          </div>
+          <% } %>
+        </section>
+        <% } %>
+
