@@ -132,6 +132,14 @@
   var chapterIntroShowAr = Boolean(utils.emptyIfNull(chapter.intro) || site.editMode);
 %>
 <% if ((heading.level == 1 || isFirstChapterSectionPage) && (chapterIntroShowEn || chapterIntroShowAr)) { %>
+<% if (locals.collapseIntro) { %>
+  <details class="hadith-detail-disclosure">
+    <summary class="hadith-detail-disclosure-summary">
+      <span class="hadith-detail-disclosure-label"><span lang="en">Introduction</span><span class="text-muted" lang="ar" dir="rtl">المقدمة</span></span>
+      <span class="bi bi-chevron-down hadith-detail-disclosure-chevron" aria-hidden="true"></span>
+    </summary>
+    <div class="hadith-detail-disclosure-content">
+<% } %>
 <section class="chapter-intro row mt-2">
   <div class="col-12 mb-2" id="note-intro-<%= chapter.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${chapter.id}`, noteTitle: `Introduction — ${chapter.title_en || chapter.title || chapter.path}`, noteUrl: utils.urlFor(req, `/${chapter.path || req.path.replace(/^\//, "")}#note-intro-${chapter.id}`) }); %></div>
 
@@ -162,6 +170,10 @@
   <% if (site.editMode) { %><div class="col-md-6 col-sm-12<%= utils.trimToEmpty(chapter.intro_en) ? '' : ' ms-md-auto' %>" lang="en" dir="ltr"><aside class="admin hadith-admin-actions mt-1"><button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" data-id="<%= chapter.id %>" data-prop="toc.revise" data-loading-label="Revising" title="Revise this chapter introduction"><span class="bi bi-magic" aria-hidden="true"></span> Revise</button></aside></div><% } %>
 
 </section>
+<% if (locals.collapseIntro) { %>
+    </div>
+  </details>
+<% } %>
 <% } %>
 
 <% if (heading.level == 1 || isFirstChapterSectionPage) { %>

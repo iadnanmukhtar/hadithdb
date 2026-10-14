@@ -39,6 +39,19 @@ describe('Hadith book introductions', () => {
 		delete global.query;
 	});
 
+	test('canonicalizes an empty chapter zero with authored content before serving cached HTML', async () => {
+		const { Chapter } = require('../lib/Model');
+		jest.spyOn(Chapter, 'chapterFromRef').mockResolvedValue({ count: 0 });
+		jest.spyOn(CommentaryHeadings, 'introductionArticles').mockResolvedValue([{ intro_en: 'Foreword' }]);
+		const layer = searchRouter.stack.find(item => item.route && item.route.path === '/:bookAlias/:chapterNum');
+		const req = { params: { bookAlias: 'muslim', chapterNum: '0' }, query: {}, originalUrl: '/muslim/0', admin: false };
+		const res = { locals: {}, redirect: jest.fn() };
+		const next = jest.fn();
+		await layer.route.stack[layer.route.stack.length - 1].handle(req, res, next);
+		expect(next).not.toHaveBeenCalled();
+		expect(res.redirect).toHaveBeenCalledWith(302, '/muslim/introduction');
+	});
+
 	test('renders the friendly introduction route for an authored article', async () => {
 		const article = { id: 91, h1: 0, h2: 1, title_en: 'Foreword', intro_en: 'Text' };
 		jest.spyOn(CommentaryHeadings, 'introductionArticles').mockResolvedValue([article]);

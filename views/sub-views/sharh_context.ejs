@@ -1,7 +1,7 @@
 <% if (page.context.book && page.context.chapter) { %>
-  <%- include('chapterTitle.ejs', { site, page, contextOnly: true }); %>
+  <%- include('chapterTitle.ejs', { site, page, contextOnly: true, collapseIntro: true }); %>
   <% [page.context.section, page.context.subsection].filter(Boolean).forEach(function (heading) { %>
-    <%- include('heading.ejs', { site, page, heading, contextOnly: true }); %>
+    <%- include('heading.ejs', { site, page, heading, contextOnly: true, collapseIntro: true }); %>
   <% }); %>
 <% } else { %>
 <%
@@ -18,6 +18,12 @@
     <h2 class="col-md-6 col-sm-12 <%= index === 0 ? 'fs-4' : 'fs-5' %> title" lang="ar" dir="rtl"><a href="/<%= headingPath %>"><%- heading.title || '' %></a></h2>
   </heading>
   <% if (heading.intro || heading.intro_en) { %>
+  <details class="hadith-detail-disclosure">
+    <summary class="hadith-detail-disclosure-summary">
+      <span class="hadith-detail-disclosure-label"><span lang="en">Introduction</span><span class="text-muted" lang="ar" dir="rtl">المقدمة</span></span>
+      <span class="bi bi-chevron-down hadith-detail-disclosure-chevron" aria-hidden="true"></span>
+    </summary>
+    <div class="hadith-detail-disclosure-content">
   <div class="row heading-intro mb-3">
     <% ['en', 'ar'].forEach(function (lang) { const intro = lang === 'en' ? heading.intro_en : heading.intro; if (!intro) return; %>
     <section class="<%= heading.intro && heading.intro_en ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
@@ -25,6 +31,8 @@
     </section>
     <% }); %>
   </div>
+    </div>
+  </details>
   <% } %>
 </section>
 <% }); %>

@@ -3374,6 +3374,12 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     }
 
     var chapter = await Chapter.chapterFromRef(`${bookAlias}/${chapterNum}`);
+    if (book.type === 'hadith' && Number(chapterNum) === 0 && Number(chapter.count) === 0
+      && shouldRedirectHadithChapterPath(req)) {
+      const articles = await CommentaryHeadings.introductionArticles(book.id);
+      if (CommentaryHeadings.hasIntroduction(articles))
+        return res.redirect(302, `/${book.alias}/introduction${appendChapterSectionRedirectQuery(req)}`);
+    }
     var chapterOffsetError = HttpRange.itemOffsetNotSatisfiable(requestedOffset, chapter.count, `Chapter ${bookAlias}/${chapterNum}`);
     if (chapterOffsetError)
       return next(chapterOffsetError);

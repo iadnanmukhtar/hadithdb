@@ -1634,13 +1634,13 @@
           const response = await fetch('/admin/session', { method: 'POST', headers: { Authorization: `Bearer ${session.token}` } });
           if (!response.ok) { document.querySelectorAll('.admin-page-link').forEach(el => el.remove()); return; }
           if (window.hadithAdmin !== true) return;
-          ['.site-navbar menu.d-md-block ul.nav', '#offcanvas-topnav .offcanvas-col1'].forEach(selector => {
+          ['.site-navbar [data-more-menu]', '#offcanvas-topnav .offcanvas-col1'].forEach(selector => {
             const list = document.querySelector(selector);
             if (!list || list.querySelector('.admin-page-link')) return;
             const item = document.createElement('li');
             item.className = 'nav-item admin-page-link';
             const link = document.createElement('a');
-            link.className = 'nav-link'; link.href = '/admin'; link.textContent = 'Admin'; link.rel = 'nofollow';
+            link.className = list.hasAttribute('data-more-menu') ? 'dropdown-item' : 'nav-link'; link.href = '/admin'; link.textContent = 'Admin'; link.rel = 'nofollow';
             item.appendChild(link); list.appendChild(item);
           });
         } catch (err) { /* Keep administrative navigation hidden when verification fails. */ }

@@ -86,6 +86,14 @@
     var headingIntroShowAr = Boolean(utils.emptyIfNull(heading.intro) || site.editMode);
   %>
   <% if (headingIntroShowEn || headingIntroShowAr) { %>
+<% if (locals.collapseIntro) { %>
+  <details class="hadith-detail-disclosure">
+    <summary class="hadith-detail-disclosure-summary">
+      <span class="hadith-detail-disclosure-label"><span lang="en">Introduction</span><span class="text-muted" lang="ar" dir="rtl">المقدمة</span></span>
+      <span class="bi bi-chevron-down hadith-detail-disclosure-chevron" aria-hidden="true"></span>
+    </summary>
+    <div class="hadith-detail-disclosure-content">
+<% } %>
   <section class="col-12">
     <div class="row heading-intro mb-3">
   <div class="col-12 mb-2" id="note-intro-<%= heading.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${heading.id}`, noteTitle: `Introduction — ${heading.title_en || heading.title || heading.path}`, noteUrl: utils.urlFor(req, `/${heading.path || req.path.replace(/^\//, "")}#note-intro-${heading.id}`) }); %></div>
@@ -117,6 +125,10 @@
 
     </div>
   </section>
+<% if (locals.collapseIntro) { %>
+    </div>
+  </details>
+<% } %>
   <% } %>
 
   <% if (!locals.contextOnly) { %><%- include('hadith_heading_sharh.ejs', { heading: heading }); %><% } %>

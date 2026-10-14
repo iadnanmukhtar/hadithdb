@@ -45,7 +45,15 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
     <%- include('sub-views/sharh_context.ejs', { owner, kind, site, page, Tafsir }); %>
     <% if (kind === 'hadith') { %>
       <section aria-label="Referenced hadith">
+        <details class="hadith-detail-disclosure">
+          <summary class="hadith-detail-disclosure-summary">
+            <span class="hadith-detail-disclosure-label"><span lang="en">Hadith: <%= referenceLabel %></span><span class="text-muted" lang="ar" dir="rtl">الحديث</span></span>
+            <span class="bi bi-chevron-down hadith-detail-disclosure-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="hadith-detail-disclosure-content">
         <%- include('sub-views/hadith.ejs', { site, page, i: owner, main: true, title: true, searchResult: false, contextOnly: true }); %>
+          </div>
+        </details>
       </section>
     <% } %>
   <% } %>
