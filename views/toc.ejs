@@ -504,7 +504,7 @@
 	    number: '',
 	    title: articleTitleEn || articleTitleAr || 'Introduction by the author',
 	    titleLang: articleTitleEn ? 'en' : (articleTitleAr ? 'ar' : 'en'),
-	    href: `${quranCommentaryIntroductionHref}#introduction-${article.h2}`,
+	    href: `${quranCommentaryIntroductionHref}${quranCommentaryIntroductionArticles.filter(a => utils.trimToEmpty(a.intro) || utils.trimToEmpty(a.intro_en)).length > 1 ? `#article-${article.h2}` : ''}`,
 	    track: false
 	  });
 	});
@@ -518,7 +518,7 @@
 	    number: '',
 	    title: articleTitleEn || articleTitleAr || 'Introduction',
 	    titleLang: articleTitleEn ? 'en' : (articleTitleAr ? 'ar' : 'en'),
-	    href: `${hadithIntroductionHref}#introduction-${article.h2}`,
+	    href: `${hadithIntroductionHref}${hadithIntroductionArticles.filter(a => utils.trimToEmpty(a.intro) || utils.trimToEmpty(a.intro_en)).length > 1 ? `#article-${article.h2}` : ''}`,
 	    track: false
 	  });
 	});
@@ -699,8 +699,8 @@
                 <% if (quranCommentaryIntroductionHref && (utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en))) { %>
                 <tr class="chapter quran-commentary-introduction-link-row" data-toc-view="surahs">
                   <td><span class="toc-expand-spacer"></span>Ci</td>
-                  <td><a href="<%= `${quranCommentaryIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title_en) || 'Introduction by the author' %></a></td>
-                  <td lang="ar" dir="rtl"><a href="<%= `${quranCommentaryIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title) || 'مقدمة المؤلف' %></a></td>
+                  <td><a href="<%= `${quranCommentaryIntroductionHref}${quranCommentaryIntroductionArticles.filter(a => utils.trimToEmpty(a.intro) || utils.trimToEmpty(a.intro_en)).length > 1 ? `#article-${article.h2}` : ''}` %>"><%= displayName(article.title_en) || 'Introduction by the author' %></a></td>
+                  <td lang="ar" dir="rtl"><a href="<%= `${quranCommentaryIntroductionHref}${quranCommentaryIntroductionArticles.filter(a => utils.trimToEmpty(a.intro) || utils.trimToEmpty(a.intro_en)).length > 1 ? `#article-${article.h2}` : ''}` %>"><%= displayName(article.title) || 'مقدمة المؤلف' %></a></td>
                 </tr>
                 <% } %>
                 <% }); %>
@@ -829,8 +829,8 @@
 			<% if (hadithIntroductionHref && (utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en))) { %>
 			<tr class="chapter hadith-introduction-link-row">
 			  <% if (showTocStartNumbers) { %><td></td><% } %><td><span class="toc-expand-spacer"></span>Ci</td>
-			  <td><a href="<%= `${hadithIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title_en) || 'Introduction' %></a></td>
-			  <td lang="ar" dir="rtl"><a href="<%= `${hadithIntroductionHref}#introduction-${article.h2}` %>"><%= displayName(article.title) || 'المقدمة' %></a></td>
+			  <td><a href="<%= `${hadithIntroductionHref}${hadithIntroductionArticles.filter(a => utils.trimToEmpty(a.intro) || utils.trimToEmpty(a.intro_en)).length > 1 ? `#article-${article.h2}` : ''}` %>"><%= displayName(article.title_en) || 'Introduction' %></a></td>
+			  <td lang="ar" dir="rtl"><a href="<%= `${hadithIntroductionHref}${hadithIntroductionArticles.filter(a => utils.trimToEmpty(a.intro) || utils.trimToEmpty(a.intro_en)).length > 1 ? `#article-${article.h2}` : ''}` %>"><%= displayName(article.title) || 'المقدمة' %></a></td>
 			</tr>
 			<% } %>
 			<% }); %>

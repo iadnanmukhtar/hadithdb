@@ -53,3 +53,19 @@ test.each([['hadith-section', 'hadith-chapter'], ['hadith-chapter', 'hadith-sect
   expect(scope.appendReaderPage('', '/book/alias')).toBeNull();
   expect(scope.exhausted).toBe(true);
 });
+
+ test.each(['same-book', 'other-book'])('sharh reader validates book identity for %s responses', alias => {
+  const start = source.indexOf('var appendReaderPage = function');
+  const end = source.indexOf('var loadNext = function', start);
+  const scope = vm.createContext({ mode: 'hadith-sharh', loadedUrls: new Set(['/sharh/same-book/bukhari:1']),
+    normalizeReaderInfiniteUrl: value => value, registerHadithHeadingOutlines: jest.fn(),
+    main: { attr: () => 'same-book', removeAttr: jest.fn() },
+    DOMParser: class { parseFromString() { return { querySelectorAll: () => [{ getAttribute: key => ({
+      'data-reader-infinite': 'hadith-sharh', 'data-reader-sharh-book': alias,
+      'data-reader-current-url': '/sharh/same-book/bukhari:1'
+    })[key] }] }; } }
+  });
+  vm.runInContext(source.slice(start, end), scope);
+  if (alias === 'other-book') expect(() => scope.appendReaderPage('', '/next')).toThrow('different sharh');
+  else expect(scope.appendReaderPage('', '/next')).toBeNull();
+ });

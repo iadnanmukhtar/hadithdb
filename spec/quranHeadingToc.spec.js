@@ -166,8 +166,8 @@ describe('Quran heading rail', () => {
       ]
     });
 
-    expect(html).toMatch(/href="\/quran\/tafsir\/unal\/introduction#introduction-1"[^>]*>Foreword<\/a>/);
-    expect(html).toMatch(/href="\/quran\/tafsir\/unal\/introduction#introduction-2"[^>]*>Method<\/a>/);
+    expect(html).toMatch(/href="\/quran\/tafsir\/unal\/introduction#article-1"[^>]*>Foreword<\/a>/);
+    expect(html).toMatch(/href="\/quran\/tafsir\/unal\/introduction#article-2"[^>]*>Method<\/a>/);
     expect(html).not.toContain('>Empty</a>');
     expect(html.indexOf('>Foreword</a>')).toBeLessThan(html.indexOf('>1 al-Fatihah</strong>'));
   });
@@ -190,3 +190,15 @@ describe('Quran heading rail', () => {
 	expect(html).toMatch(/data-quran-introduction-heading="1" hidden>Foreword<\/a>/);
   });
 });
+
+ test('omits the hash when there is only one populated introduction article', async () => {
+   const html = await render({ 1: { surah: 1, nameEn: 'al-Fatihah', sections: [{ key: '1.1', level: 2, surah: 1, section: 1, title: 'Opening', start: 1, end: 7, subsections: [] }] } }, {
+     surah: 1, ayah: 1, tafsirBase: '/quran/tafsir/unal',
+     introductionArticles: [
+       { h2: 2, title_en: 'Foreword', intro_en: 'Text' },
+       { h2: 3, title_en: 'Empty', intro_en: '' }
+     ]
+   });
+   expect(html).toMatch(/href="\/quran\/tafsir\/unal\/introduction"[^>]*>Foreword<\/a>/);
+   expect(html).not.toContain('#article-');
+ });

@@ -51,7 +51,7 @@ describe('TOC heading rail', () => {
 			number: '',
 			title: 'Foreword',
 			titleLang: 'en',
-			href: '/quran/tafsir/rida/introduction#introduction-1',
+			href: '/quran/tafsir/rida/introduction#article-1',
 			track: false
 		}, {
 			key: 'toc-heading-0',
@@ -62,15 +62,15 @@ describe('TOC heading rail', () => {
 		}]);
 
 		expect(html.indexOf('Foreword')).toBeLessThan(html.indexOf('1 al-Fatihah'));
-		expect(html).toContain('href="/quran/tafsir/rida/introduction#introduction-1"');
-		expect(html).not.toMatch(/href="\/quran\/tafsir\/rida\/introduction#introduction-1"[^>]*data-toc-heading-key/);
+		expect(html).toContain('href="/quran/tafsir/rida/introduction#article-1"');
+		expect(html).not.toMatch(/href="\/quran\/tafsir\/rida\/introduction#article-1"[^>]*data-toc-heading-key/);
 		expect(html).toMatch(/class="[^"]*active[^"]*" href="\/quran\/tafsir\/rida\/1"[^>]*data-toc-heading-key="toc-heading-0"/);
 	});
 
 	test('uses a linked introduction row instead of an introduction body on commentary TOCs', () => {
 		const template = fs.readFileSync(tocTemplate, 'utf8');
 		expect(template).toContain('quran-commentary-introduction-link-row');
-		expect(template).toContain('#introduction-${article.h2}');
+		expect(template).toContain('#article-${article.h2}');
 		expect(template).toContain('quranCommentaryIntroductionHref');
 		expect(template).not.toContain("include('sub-views/quran_commentary_introduction.ejs'");
 	});

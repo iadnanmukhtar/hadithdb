@@ -13,13 +13,21 @@ const headingNumber = owner && kind === 'heading' ? [owner.h1, Number(owner.leve
 const referenceLabel = owner ? (kind === 'hadith' ? `${referenceBookName} ${owner.num}` : `${referenceBookName} §${headingNumber}`) : '';
 const headingTitle = owner && kind === 'heading' ? (owner.title_en || (context.chapter && context.chapter.title_en) || owner.title || '') : '';
 const page = { menu: 'Sharh', title_en: [referenceLabel, headingTitle, title].filter(Boolean).join(' | '), description_en: `Read ${title}${reference ? `, ${reference}` : ''}.`, canonical, context };
+Object.assign(page, locals.readerNavigation || {});
+const outlines = locals.hadithHeadingOutlines || {};
+const outlineContext = Object.keys(outlines)[0] || '';
+const currentHeading = context.subsection || context.section || context.chapter;
+const outlineKey = currentHeading ? `${context.book.alias}:${currentHeading.h1}${Number(currentHeading.level) >= 2 ? `.${currentHeading.h2}` : ''}${Number(currentHeading.level) >= 3 ? `.${currentHeading.h3}` : ''}` : '';
+const showHeadingRail = Boolean(outlines[outlineContext]?.sections?.length);
 const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
 %>
 <%- include('sub-views/head.ejs', { site, page }); %>
 </head>
 <body>
 <%- include('sub-views/header.ejs', { site, page }); %>
-<main class="container chapter mt-10 tafsir-only-page sharh-only-page">
+<div class="<%= showHeadingRail ? 'container-fluid hadith-heading-layout' : 'container' %>">
+<div class="<%= showHeadingRail ? 'container col-lg-8 mx-auto hadith-heading-content' : '' %>">
+<main class="chapter mt-10 tafsir-only-page sharh-only-page" data-reader-infinite="hadith-sharh" data-reader-context-key="<%= outlineContext %>" data-reader-current-url="<%= canonical %>" data-reader-sharh-book="<%= book.alias %>" data-reader-prev-url="<%= page.prev || '' %>" data-reader-prev-title="<%= page.prevTitle || '' %>" data-reader-next-url="<%= page.next || '' %>" data-reader-next-title="<%= page.nextTitle || '' %>">
   <% if (locals.availableSharhs && availableSharhs.length > 1) { %>
   <nav class="h-menu-wrap mb-3" aria-label="Available explanations">
     <div class="h-menu-hint d-md-none"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Swipe to browse explanations</div>
@@ -83,6 +91,12 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
   </article>
   <% }); %>
 </main>
+</div>
+<% if (showHeadingRail) { %>
+<%- include('sub-views/hadith_heading_toc.ejs', { hadithHeadingOutlines: outlines, hadithHeadingInitialContext: outlineContext, hadithHeadingInitialKey: outlineKey }); %>
+<% } %>
+</div>
+<%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
 <% if (site.editMode) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: 'sharh-book-metadata' }); %><% } %>
 <%- include('sub-views/footer.ejs', { site, page }); %>
 <%- include('sub-views/scripts.ejs', { site, page }); %>

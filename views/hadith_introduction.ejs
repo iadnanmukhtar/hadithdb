@@ -54,6 +54,7 @@
           commentaryBook: book,
           introductionBilingual: true,
           introductionSharh: true,
+          articleCount: introductionArticles.filter(a => site.editMode || utils.trimToEmpty(a.intro) || utils.trimToEmpty(a.intro_en)).length,
           article: article
         }); %>
         <% } %>
@@ -115,7 +116,7 @@
         const body = await response.json();
         if (!response.ok || body.code !== 200)
           throw new Error(body.message || response.statusText);
-        window.location.hash = `introduction-${body.value.h2}`;
+        window.location.hash = `article-${body.value.h2}`;
         window.location.reload();
       } catch (err) {
         if (window.toastr)

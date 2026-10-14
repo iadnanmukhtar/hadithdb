@@ -11791,10 +11791,10 @@ function quranHeadingLabel(heading) {
 
 function initQuranCommentaryIntroductionDisclosures() {
 	var disclosureForHash = function (hash) {
-		var match = (hash || '').match(/^#introduction-(\d+)$/);
+		var match = (hash || '').match(/^#(?:article|introduction)-(\d+)$/);
 		if (!match)
 			return null;
-		var article = document.getElementById(`introduction-${match[1]}`);
+		var article = document.getElementById(`article-${match[1]}`);
 		if (!article || !article.matches('.quran-commentary-introduction-article'))
 			return null;
 		return article.querySelector('.quran-commentary-introduction-disclosure');
@@ -11807,18 +11807,22 @@ function initQuranCommentaryIntroductionDisclosures() {
 	var openDirectIntroductionDisclosure = function () {
 		var hashDisclosure = disclosureForHash(window.location.hash);
 		if (hashDisclosure) {
+			var articleCount = hashDisclosure.closest('main').querySelectorAll('.quran-commentary-introduction-article').length;
+			var cleanHash = articleCount === 1 ? '' : window.location.hash.replace('#introduction-', '#article-');
+			window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search + cleanHash);
 			hashDisclosure.open = true;
+			if (cleanHash) hashDisclosure.closest('article').scrollIntoView({ block: 'start' });
 			return;
 		}
 		if (!/\/introduction\/?$/.test(window.location.pathname))
 			return;
-		var introductionPage = document.querySelector('main[data-reader-infinite="tafsir"][data-reader-context-key="0"]');
+		var introductionPage = document.querySelector('main.hadith-introduction-page, main[data-reader-infinite="tafsir"][data-reader-context-key="0"]');
 		var disclosure = introductionPage && introductionPage.querySelector('.quran-commentary-introduction-disclosure');
 		if (disclosure)
 			disclosure.open = true;
 	};
 
-	$(document).on('click.quranCommentaryIntroductionDisclosure', 'a[href*="#introduction-"]', function () {
+	$(document).on('click.quranCommentaryIntroductionDisclosure', 'a[href*="#article-"], a[href*="#introduction-"]', function () {
 		var url;
 		try {
 			url = new URL(this.href, window.location.href);
@@ -12225,7 +12229,7 @@ function initHadithHeadingToc(root) {
 	toc.addEventListener('click', function (event) {
 		var articleLink = event.target.closest('[data-quran-introduction-heading]');
 		if (articleLink && !event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
-			var article = document.getElementById('introduction-' + articleLink.getAttribute('data-quran-introduction-heading'));
+			var article = document.getElementById('article-' + articleLink.getAttribute('data-quran-introduction-heading'));
 			if (article) {
 				event.preventDefault();
 				var disclosure = article.querySelector('details');
@@ -13375,7 +13379,7 @@ function initReaderInfiniteNavigation(root) {
 		var mode = main.attr('data-reader-infinite') || '';
 		var startsAtTafsirIntroduction = mode === 'tafsir' && main.attr('data-reader-context-key') === '0';
 		var startsAtReaderIntroduction = startsAtTafsirIntroduction || main.attr('data-reader-starts-introduction') === '1';
-		var prefetchAhead = startsAtReaderIntroduction ? 2 : (mode === 'tafsir' ? 1 : 3);
+		var prefetchAhead = startsAtReaderIntroduction ? 2 : (['tafsir', 'hadith-sharh'].includes(mode) ? 1 : 3);
 		var ensuring = false;
 		var loadingPromise = null;
 		var retryAfter = 0;
@@ -13405,7 +13409,9 @@ function initReaderInfiniteNavigation(root) {
 		var firstContent = main.children('heading.row.major, article, section').filter(function () {
 			return !this.matches('.reader-infinite-status, .reader-infinite-sentinel');
 		}).first();
-		if (firstContent.length)
+		if (mode === 'hadith-sharh')
+			main.prepend(initialAnchor);
+		else if (firstContent.length)
 			initialAnchor.insertBefore(firstContent);
 		else
 			main.prepend(initialAnchor);
@@ -13639,6 +13645,8 @@ function initReaderInfiniteNavigation(root) {
 			initHadithShareModals(chunk);
 			initHadithContentTranslationControls(chunk);
 			initReaderLanguageColumnToggles(chunk);
+			if (mode === 'hadith-sharh')
+				initQuranTafsirFootnotePopups(chunk);
 			if (mode === 'tafsir') {
 				initDropdownFilterSearch(chunk);
 				initTafsirSearchFilterPills(chunk);
@@ -13663,6 +13671,8 @@ function initReaderInfiniteNavigation(root) {
 			});
 			if (!remoteMain)
 				throw new Error('Next page was not found.');
+			if (mode === 'hadith-sharh' && remoteMain.getAttribute('data-reader-sharh-book') !== main.attr('data-reader-sharh-book'))
+				throw new Error('Next page belongs to a different sharh.');
 			var remoteUrl = remoteMain.getAttribute('data-reader-current-url') || url;
 			if (mode.indexOf('hadith-') === 0)
 				remoteUrl = remoteUrl.replace(/^\/api(?=\/)/, '');
@@ -13722,7 +13732,7 @@ function initReaderInfiniteNavigation(root) {
 			}
 			retryAfter = 0;
 			status.removeAttr('data-infinite-load-error').text('Loading next page...');
-			loadingPromise = fetch(mode === 'tafsir' ? quranApiPath(targetUrl) : hadithUrl(`/api${targetUrl}`), {
+			loadingPromise = fetch(mode === 'hadith-sharh' ? targetUrl : (mode === 'tafsir' ? quranApiPath(targetUrl) : hadithUrl(`/api${targetUrl}`)), {
 				credentials: 'same-origin',
 				headers: { 'Accept': 'text/html' }
 			}).then(function (response) {

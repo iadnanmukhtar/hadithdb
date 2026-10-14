@@ -2,6 +2,7 @@
 const express = require('express');
 const createError = require('http-errors');
 const Sharh = require('../lib/Sharh');
+const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const ejs = require('ejs');
@@ -35,7 +36,11 @@ async function passage(req, res, next) {
 	if (!data) return res.sendStatus(404);
 	if (req.params.alias && req.params.alias !== data.book.alias) return next(createError(404, 'Sharh not found'));
 	const [readerContext, availableSharhs] = await Promise.all([Sharh.readerContext(data), Sharh.availableBooks(data)]);
-	const renderLocals = { ...data, readerContext, availableSharhs, Tafsir };
+	const [readerNavigation, hadithHeadingOutlines] = await Promise.all([
+		Sharh.readerNavigation(data),
+		readerContext?.chapter ? HadithHeadingOutlines.forChapter(readerContext.chapter) : {}
+	]);
+	const renderLocals = { ...data, readerContext, availableSharhs, readerNavigation, hadithHeadingOutlines, Tafsir };
 	if (cacheEnabled && !editMode) {
 		const html = await ejs.renderFile(`${__dirname}/../views/sharh_passage.ejs`, Utils.cachedRenderLocals(res, {
 			...renderLocals, req, noadmin: true
