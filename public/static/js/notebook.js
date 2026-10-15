@@ -353,6 +353,7 @@
   }
   function dirty() { return editor.value !== savedText || tagEditor.value !== savedTags || titleEditor.value !== savedTitle; }
   function resetTags() {
+    document.getElementById('notebook-dates').open = false;
     titleEditor.value = savedTitle = current?.title || '';
     renderNoteMetadata();
     tagEditor.value = savedTags = (current?.tags || []).join(' ');
@@ -370,7 +371,7 @@
     const dates = document.getElementById('notebook-dates');
     dates.hidden = !current?.version;
     const format = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'unavailable';
-    dates.textContent = current?.version ? `Created: ${format(current.created_at)} · Modified: ${format(current.updated_at)}` : '';
+    document.getElementById('notebook-dates-content').textContent = current?.version ? `Created: ${format(current.created_at)}\nModified: ${format(current.updated_at)}` : '';
   }
   function renderNoteTags() {
     const container = document.getElementById('notebook-note-tags');
@@ -568,6 +569,7 @@
       const result = await api(`?source=${encodeURIComponent(source.source_key)}${source.version === 0 && !source.source_key.startsWith('general') ? '&context=1' : ''}`);
       if (ownGeneration !== generation) return;
       current = result.note || result.source || source; editor.value = savedText = current.markdown; resetTags();
+      if (current.source_key.startsWith('intro:')) { link.textContent = current.source_title; link.title = current.source_title; }
       if (current.links_explicit && !current.attachments?.some(entry => entry.source_key === current.source_key)) { link.textContent = 'Note'; link.removeAttribute('href'); }
       pendingSource = null;
       preview.innerHTML = current.html || ''; deleteButton.hidden = !current.version;
@@ -611,13 +613,38 @@
   editor.addEventListener('input', () => {
     scheduleSave();
   });
+  const tagsToggle = document.getElementById('notebook-tags-toggle');
+  const noteDates = document.getElementById('notebook-dates');
+  document.addEventListener('click', event => {
+    if (!noteDates.contains(event.target)) noteDates.open = false;
+  });
+  noteDates.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && noteDates.open) {
+      event.preventDefault(); event.stopPropagation(); noteDates.open = false;
+      noteDates.querySelector('summary').focus();
+    }
+  });
+  const tagBar = document.getElementById('notebook-tag-bar');
+  function setTagsCollapsed(collapsed) {
+    tagBar.hidden = collapsed;
+    tagsToggle.setAttribute('aria-expanded', String(!collapsed));
+    tagsToggle.title = collapsed ? 'Show tags' : 'Hide tags';
+    tagsToggle.setAttribute('aria-label', tagsToggle.title);
+    tagsEditing = false;
+    renderNoteTags();
+  }
+  try { setTagsCollapsed(localStorage.getItem('notebook-tags-collapsed') === 'true'); } catch (_) {}
+  tagsToggle.addEventListener('click', () => {
+    setTagsCollapsed(!tagBar.hidden);
+    try { localStorage.setItem('notebook-tags-collapsed', String(tagBar.hidden)); } catch (_) {}
+  });
   function editTags() {
     if (!current || busy) return;
     mode(true);
     tagsEditing = true; renderNoteTags();
     tagEditor.focus();
   }
-  document.getElementById('notebook-tag-bar').addEventListener('click', event => {
+  tagBar.addEventListener('click', event => {
     if (!event.target.closest('input')) editTags();
   });
   document.getElementById('notebook-note-tags').addEventListener('keydown', event => {
@@ -884,18 +911,23 @@
       const item = document.createElement('li');
       const button = document.createElement('button');
       button.type = 'button';
-      button.dir = 'auto';
+      const level = document.createElement('span');
+      level.className = 'notebook-outline-level';
+      level.dir = 'ltr'; level.textContent = heading.tagName.toUpperCase();
+      const text = document.createElement('span');
+      text.className = 'notebook-outline-text'; text.dir = 'auto';
+      button.append(level, text);
       const label = heading.textContent.trim();
       let labelCursor = 0;
       for (const match of label.matchAll(/[\p{Script_Extensions=Arabic}\u200c\u200d]+(?:[ \t]+[\p{Script_Extensions=Arabic}\u200c\u200d]+)*/gu)) {
-        button.append(label.slice(labelCursor, match.index));
+        text.append(label.slice(labelCursor, match.index));
         const arabic = document.createElement('span');
         arabic.className = 'notebook-outline-arabic';
         arabic.textContent = match[0];
-        button.append(arabic);
+        text.append(arabic);
         labelCursor = match.index + match[0].length;
       }
-      button.append(label.slice(labelCursor));
+      text.append(label.slice(labelCursor));
       button.style.setProperty('--outline-depth', Number(heading.tagName.slice(1)) - baseLevel);
       button.addEventListener('click', () => {
         preview.scrollTop += heading.getBoundingClientRect().top - preview.getBoundingClientRect().top - 8;

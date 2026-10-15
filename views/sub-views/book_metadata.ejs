@@ -53,6 +53,10 @@
           var tocBookAuthorAr = isEnglishQuranTranslation ? '' : displayName(tocDisplayBook.author || '');
           var tocBookDeathEn = commentaryDeathLabel(tocDisplayBook);
           var tocBookDeathAr = tocDisplayBook.type === 'trans' ? '' : commentaryArabicDeathLabel(tocDisplayBook);
+          var tocHadithCount = tocDisplayBook.hadith_count;
+          var showTocHadithCount = tocDisplayBook.type === 'hadith'
+            && tocHadithCount !== null && tocHadithCount !== undefined && tocHadithCount !== ''
+            && Number.isSafeInteger(Number(tocHadithCount)) && Number(tocHadithCount) >= 0;
         %>
         <div class="tafsir-book-meta text-muted mb-3<%= tocBookNameAr || tocBookAuthorAr || tocBookDeathAr ? '' : ' tafsir-book-meta-single' %>">
           <% if (editableBook) { %>
@@ -72,6 +76,10 @@
             <% if (tocBookAuthorAr || tocBookDeathAr) { %><div lang="ar" dir="rtl"><%- tocBookAuthorAr %><% if (tocBookDeathAr) { %> (<%- tocBookDeathAr %>)<% } %></div><% } %>
             <% if (publicationLabel) { %><div><%= publicationLabel %></div><% } %>
             <% if (tocDisplayBook.aqidah) { %><div><%- tocDisplayBook.aqidah %></div><% } %>
+          <% } %>
+          <% if (showTocHadithCount) { %>
+            <div>Total ahadith: <%= Number(tocHadithCount).toLocaleString('en-US') %></div>
+            <div lang="ar" dir="rtl">عدد الأحاديث: <%= Number(tocHadithCount).toLocaleString('ar') %></div>
           <% } %>
         </div>
         <% } %>

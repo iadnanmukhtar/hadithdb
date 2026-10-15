@@ -96,7 +96,7 @@
 <% } %>
   <section class="col-12">
     <div class="row heading-intro mb-3">
-  <div class="col-12 mb-2" id="note-intro-<%= heading.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${heading.id}`, noteTitle: `Introduction — ${heading.title_en || heading.title || heading.path}`, noteUrl: utils.urlFor(req, `/${heading.path || req.path.replace(/^\//, "")}#note-intro-${heading.id}`) }); %></div>
+  <div class="col-12 mb-2" id="note-intro-<%= heading.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${heading.id}`, noteTitle: utils.notebookIntroTitle(heading, book), noteUrl: utils.urlFor(req, `/${heading.path || req.path.replace(/^\//, "")}#note-intro-${heading.id}`) }); %></div>
 
       <% if (headingIntroShowEn) { %>
       <section class="_e <%= headingIntroShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= heading.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(heading.intro_en) %>" data-markdown-empty-html="&hellip;">

@@ -13,7 +13,12 @@
       notes.sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')) || a.source_key.localeCompare(b.source_key));
       for (const note of notes) {
         const item = document.createElement('li'), button = document.createElement('button');
-        button.type = 'button'; button.dir = 'auto'; button.textContent = note.title || note.source_title;
+        button.type = 'button';
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-sticky'; icon.setAttribute('aria-hidden', 'true');
+        const title = document.createElement('span');
+        title.dir = 'auto'; title.textContent = note.title || note.source_title;
+        button.append(icon, title);
         if (note.source_key === context()?.source_key) button.setAttribute('aria-current', 'page');
         button.addEventListener('click', async () => {
           if (note.source_key === context()?.source_key) return;

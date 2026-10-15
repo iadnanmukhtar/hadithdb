@@ -3,7 +3,7 @@ const fs = require('fs'), vm = require('vm');
 const source = fs.readFileSync(require.resolve('../public/static/js/notebook-navigator.js'), 'utf8');
 function element() {
   return { children: [], events: {}, attrs: {}, hidden: false, textContent: '',
-    append(child) { this.children.push(child); }, replaceChildren() { this.children = []; },
+    append(...children) { this.children.push(...children); }, replaceChildren() { this.children = []; },
     setAttribute(key, value) { this.attrs[key] = value; }, addEventListener(key, callback) { this.events[key] = callback; } };
 }
 function harness() {
@@ -19,7 +19,7 @@ function harness() {
   const controls = ctx.window.NotebookNavigator.install({ api, open, context: () => current });
   return { ids, api, open, controls, document, show: () => ids['notebook-modal'].events['shown.bs.modal'](),
     collapse: () => { expanded = false; ids['notebook-modal'].events['shown.bs.modal'](); },
-    labels: () => ids['notebook-navigator-items'].children.map(li => li.children[0].textContent),
+    labels: () => ids['notebook-navigator-items'].children.map(li => li.children[0].children[1].textContent),
     buttons: () => ids['notebook-navigator-items'].children.map(li => li.children[0]) };
 }
 const note = (key, date) => ({ source_key: key, title: key, updated_at: date, version: 1 });

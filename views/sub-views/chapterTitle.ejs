@@ -141,7 +141,7 @@
     <div class="hadith-detail-disclosure-content">
 <% } %>
 <section class="chapter-intro row mt-2">
-  <div class="col-12 mb-2" id="note-intro-<%= chapter.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${chapter.id}`, noteTitle: `Introduction — ${chapter.title_en || chapter.title || chapter.path}`, noteUrl: utils.urlFor(req, `/${chapter.path || req.path.replace(/^\//, "")}#note-intro-${chapter.id}`) }); %></div>
+  <div class="col-12 mb-2" id="note-intro-<%= chapter.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${chapter.id}`, noteTitle: utils.notebookIntroTitle(chapter, book), noteUrl: utils.urlFor(req, `/${chapter.path || req.path.replace(/^\//, "")}#note-intro-${chapter.id}`) }); %></div>
 
   <% if (chapterIntroShowEn) { %>
   <section class="_e <%= chapterIntroShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(chapter.intro_en) %>" data-markdown-empty-html="&hellip;">

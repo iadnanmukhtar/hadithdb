@@ -114,14 +114,18 @@ Leave a blank line between paragraphs. Preview to see formatting.`; %>
       <small id="notebook-tag-help" class="text-muted" hidden>Separate tags with spaces. Hashtags in your note also appear here.</small>
     </div>
     <div class="modal-footer py-1 gap-1">
+      <a data-notebook-auth href="/notebook" class="notebook-tool me-auto" title="My Notebook" aria-label="My Notebook"><i class="bi bi-sticky" aria-hidden="true"></i></a>
+      <span id="notebook-status" class="small me-2" role="status" aria-live="polite"></span>
       <div id="notebook-zoom-control">
         <label for="notebook-zoom">Text size</label>
         <input id="notebook-zoom" type="range" min="75" max="200" step="5" value="100" aria-describedby="notebook-zoom-value">
         <output id="notebook-zoom-value" for="notebook-zoom">100%</output>
       </div>
-      <div id="notebook-dates" class="text-muted" aria-live="polite" hidden></div>
-      <a data-notebook-auth href="/notebook" class="notebook-tool me-auto" title="My Notebook" aria-label="My Notebook"><i class="bi bi-sticky" aria-hidden="true"></i></a>
-      <span id="notebook-status" class="small me-2" role="status" aria-live="polite"></span>
+      <details id="notebook-dates" hidden>
+        <summary class="notebook-tool" title="Note dates" aria-label="Note dates"><i class="bi bi-info-circle" aria-hidden="true"></i></summary>
+        <div id="notebook-dates-content" role="status"></div>
+      </details>
+      <button id="notebook-tags-toggle" type="button" class="notebook-tool" title="Hide tags" aria-label="Hide tags" aria-controls="notebook-tag-bar" aria-expanded="true"><i class="bi bi-tags" aria-hidden="true"></i></button>
       <button id="notebook-preview-button" type="button" class="notebook-tool" title="Edit Markdown" aria-label="Edit Markdown"><i class="bi bi-eye" aria-hidden="true"></i></button>
       <button id="notebook-download" type="button" class="notebook-tool" title="Download Markdown" aria-label="Download Markdown"><i class="bi bi-download" aria-hidden="true"></i></button>
       <button id="notebook-delete" type="button" class="notebook-tool" title="Delete note" aria-label="Delete note" hidden><i class="bi bi-trash" aria-hidden="true"></i></button>
@@ -201,12 +205,18 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-navigator-items button:hover, #notebook-navigator-items button[aria-current="page"] { background: rgba(212, 167, 44, .15); border-left-color: var(--note-edge); }
 #notebook-navigator-items button:focus-visible { outline: 2px solid var(--note-edge); outline-offset: -2px; }
 #notebook-navigator-items button { font-family: var(--content-language-latin-font, Georgia), NotebookKitab, Kitab, serif; }
+#notebook-navigator-items button { display: flex; align-items: baseline; gap: .45rem; }
+#notebook-navigator-items button > .bi { flex: 0 0 auto; font-size: .8em; color: var(--note-ink); }
+#notebook-navigator-items button > span { min-width: 0; }
 #notebook-outline[hidden] { display: none; }
 .notebook-outline-label { position: sticky; top: 0; padding-bottom: .5rem; background: var(--note-paper); color: var(--note-ink); font-size: .8rem; font-weight: 600; }
 #notebook-outline-items { list-style: none; padding: 0; margin: 0; }
 #notebook-outline-items button { display: block; width: 100%; border: 0; border-inline-start: 2px solid transparent; border-radius: .2rem; padding: .35rem .5rem; padding-inline-start: calc(.5rem + var(--outline-depth) * .7rem); background: transparent; color: inherit; font: inherit; font-size: .85rem; text-align: start; overflow-wrap: anywhere; }
 #notebook-outline-items button:hover, #notebook-outline-items button[aria-current="location"] { background: rgba(212, 167, 44, .15); color: var(--note-ink); border-inline-start-color: var(--note-edge); }
 #notebook-outline-items button:focus-visible { outline: 2px solid var(--note-edge); outline-offset: -2px; }
+#notebook-outline-items button { display: flex; align-items: baseline; gap: .4rem; }
+#notebook-outline-items .notebook-outline-level { flex: 0 0 auto; font: 600 .6rem/1.5 system-ui, sans-serif; color: var(--note-ink); opacity: .7; }
+#notebook-outline-items .notebook-outline-text { min-width: 0; }
 #notebook-outline-items .notebook-outline-arabic { font-family: NotebookKitab, Kitab, Quran, serif; font-size: 1.2em; line-height: 2; }
 @media (max-width: 767.98px) {
   #notebook-fullscreen { display: none; }
@@ -222,15 +232,18 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 }
 #notebook-editor, #notebook-preview { flex: 1; min-height: 0; overflow: auto; }
 #notebook-editor { resize: none; }
-#notebook-zoom-control { display: none; align-items: center; justify-content: flex-end; gap: .6rem; width: 100%; font-size: .75rem; color: var(--note-ink); }
+#notebook-zoom-control { display: none; align-items: center; justify-content: flex-end; gap: .6rem; width: auto; flex: 0 1 auto; margin-inline-end: .65rem; font-size: .75rem; white-space: nowrap; color: var(--note-ink); }
 #notebook-modal .modal-fullscreen #notebook-zoom-control { display: flex; }
-#notebook-zoom { width: min(10rem, 40vw); accent-color: var(--note-edge); }
+#notebook-zoom { width: clamp(4rem, 12vw, 10rem); min-width: 4rem; accent-color: var(--note-edge); }
 #notebook-zoom-value { min-width: 3em; font-variant-numeric: tabular-nums; }
 #notebook-modal .modal-fullscreen :is(#notebook-preview, #notebook-editor) { font-size: var(--notebook-font-size, 1rem); }
 #notebook-preview:empty::before { content: attr(data-placeholder); white-space: pre-wrap; opacity: .55; }
 .notebook-tool { border: 0; background: transparent; color: #805d00; padding: .45rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .3rem; }
 .notebook-tool:hover, .notebook-tool:focus-visible { background: #ffe69c; }
 .notebook-tool:disabled { opacity: .45; }
+#notebook-modal .modal-footer > a[data-notebook-auth] { margin-inline-end: auto; }
+#notebook-modal .modal-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .25rem; }
+#notebook-modal .modal-footer > .notebook-tool, #notebook-dates { flex: 0 0 auto; }
 #notebook-status:empty { display: none; }
 #notebook-share-panel { flex-shrink: 0; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid var(--note-edge); }
 #notebook-share-url { direction: ltr; }
@@ -287,7 +300,10 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-title-row :is(#notebook-title-editor, #notebook-note-title) { min-width: 0; flex: 1; }
 #notebook-drive-file { flex-shrink: 0; }
 #notebook-drive-file .notebook-drive-icon { filter: none; opacity: 1; margin: 0; }
-#notebook-dates { width: 100%; font-size: .65rem; line-height: 1.4; text-align: start; }
+#notebook-dates { position: relative; font-size: inherit; line-height: inherit; text-align: start; }
+#notebook-dates summary { list-style: none; cursor: pointer; }
+#notebook-dates summary::-webkit-details-marker { display: none; }
+#notebook-dates-content { position: absolute; bottom: calc(100% + .5rem); left: 50%; transform: translateX(-50%); width: max-content; max-width: min(22rem, 75vw); padding: .65rem .8rem; border: 1px solid var(--note-edge); border-radius: .4rem; background: var(--note-paper); color: var(--note-ink); box-shadow: 0 .2rem .6rem #0002; z-index: 5; white-space: pre-line; }
 #personal-notebook.notebook-signed-out .notebook-tile { opacity: .55; }
 #personal-notebook .notebook-tile-open:disabled { cursor: not-allowed; }
 #personal-notebook .notebook-tile-open:disabled:hover { background: transparent; }

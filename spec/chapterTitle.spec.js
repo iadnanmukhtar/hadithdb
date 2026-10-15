@@ -40,7 +40,10 @@ async function renderHadithChapterTitle({ sectionNumber = 1, introEn = '', intro
 		page: { context: { book, chapter, section }, menu: 'Section' },
 		site: { editMode },
 		req: {},
+		Tafsir: { renderCommentaryText: value => value ? `<p>${value}</p>` : '' },
 		utils: {
+			trimToEmpty: value => (value || '').trim(),
+			notebookIntroTitle: require('../lib/NotebookIntro').title,
 			emptyIfNull: value => value || '',
 			markdownToHtml: value => value ? `<p>${value}</p>` : '',
 			urlFor: (_req, href) => href
@@ -73,7 +76,10 @@ test('omits legacy page numbers from English and Arabic chapter headings', async
 		page: { context: { book, chapter }, menu: 'Chapter' },
 		site: { editMode: false },
 		req: {},
+		Tafsir: { renderCommentaryText: value => value ? `<p>${value}</p>` : '' },
 		utils: {
+			trimToEmpty: value => (value || '').trim(),
+			notebookIntroTitle: require('../lib/NotebookIntro').title,
 			emptyIfNull: value => value || '',
 			markdownToHtml: value => value || '',
 			urlFor: (_req, href) => href
