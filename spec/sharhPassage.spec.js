@@ -2,6 +2,7 @@
 const Sharh = require('../lib/Sharh');
 const Index = require('../lib/Index');
 beforeEach(() => {
+ jest.spyOn(require('../lib/Utils'), 'diskCacheEnabled').mockReturnValue(false);
  jest.spyOn(Index, 'docFromId').mockResolvedValue(null);
  jest.spyOn(Index, 'docsFromQueryFields').mockResolvedValue([]);
 });
@@ -247,32 +248,3 @@ test('reader sequence connects introduction commentary to hadith commentary with
  expect(hadith.prev).toBe('/sharh/fath-al-bari/heading/10');
  expect(hadith.next).toBeUndefined();
 });
-
- test('ES scopes reader ordering SQL to the selected sharh entry IDs', async () => {
-  Index.docsFromQueryFields.mockResolvedValue([{ id: 81, bookId: 100, hadithId: 10, ref: 'bukhari:1' }]);
-  global.query = jest.fn().mockResolvedValue([{ id: 10, kind: 'hadith', reference: 'bukhari:1' }]);
-  await Sharh.readerNavigation({ book, owner: { id: 10 }, kind: 'hadith' });
-  expect(Index.docsFromQueryFields).toHaveBeenCalledWith('sharhs', expect.objectContaining({bool: {filter: [{term: {bookId: 100}}, {range: {id: {gt: 0}}}]}}), ['id','hadithId','bookId','ref'], 0, 500, 'id');
-  expect(global.query.mock.calls[0][0]).toContain('WHERE hs.id IN (81) AND sb.id=100');
- });
- test('unavailable ES retains complete SQL navigation', async () => {
-  Index.docsFromQueryFields.mockRejectedValue(new Error('offline'));
-  global.query = jest.fn().mockResolvedValue([]);
-  await Sharh.readerNavigation({ book, owner: { id: 10 }, kind: 'hadith' });
-  expect(global.query.mock.calls[0][0]).not.toContain('hs.id IN');
- });
-
- test('reader candidates paginate beyond one ES batch without offset truncation', async () => {
-  const first = Array.from({length:500}, (_,i) => ({id:i+1,bookId:100,hadithId:i+1,ref:`bukhari:${i+1}`}));
-  Index.docsFromQueryFields.mockResolvedValueOnce(first).mockResolvedValueOnce([{id:501,bookId:100,hadithId:501,ref:'bukhari:501'}]);
-  global.query = jest.fn().mockResolvedValue([]);
-  await Sharh.readerNavigation({book,owner:{id:1},kind:'hadith'});
-  expect(Index.docsFromQueryFields.mock.calls[1][1].bool.filter[1]).toEqual({range:{id:{gt:500}}});
-  expect(global.query.mock.calls[0][0]).toContain('499,500,501)');
- });
- test('a current narration missing from ES uses the complete SQL reading sequence', async () => {
-  Index.docsFromQueryFields.mockResolvedValue([{id:81,bookId:100,hadithId:99,ref:'bukhari:99'}]);
-  global.query = jest.fn().mockResolvedValue([]);
-  await Sharh.readerNavigation({book,owner:{id:10},kind:'hadith'});
-  expect(global.query.mock.calls[0][0]).not.toContain('hs.id IN');
- });

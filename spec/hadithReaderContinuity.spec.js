@@ -69,3 +69,20 @@ test.each([['hadith-section', 'hadith-chapter'], ['hadith-chapter', 'hadith-sect
   if (alias === 'other-book') expect(() => scope.appendReaderPage('', '/next')).toThrow('different sharh');
   else expect(scope.appendReaderPage('', '/next')).toBeNull();
  });
+
+test('long sharh pages do not prefetch until the next passage approaches the viewport', async () => {
+ const start = source.indexOf('var ensureLoadedAhead = function', source.indexOf('function initReaderInfiniteNavigation('));
+ const end = source.indexOf('\n\t\tif (window.IntersectionObserver)', start);
+ let top = 10000;
+ const loadNext = jest.fn().mockResolvedValue(false);
+ const scope = vm.createContext({mode:'hadith-sharh',sentinel:[{getBoundingClientRect:()=>({top})}],
+  window:{innerHeight:800,requestAnimationFrame:jest.fn()},ensuring:false,exhausted:false,nextUrl:'/next',
+  pagesAhead:()=>0,prefetchAhead:1,loadNext,scheduleInfiniteWork:jest.fn()});
+ vm.runInContext(source.slice(start,end),scope);
+ scope.ensureLoadedAhead();
+ expect(loadNext).not.toHaveBeenCalled();
+ top=2500;
+ scope.ensureLoadedAhead();
+ await Promise.resolve();
+ expect(loadNext).toHaveBeenCalledTimes(1);
+});

@@ -13754,6 +13754,9 @@ function initReaderInfiniteNavigation(root) {
 			return loadingPromise;
 		};
 		var ensureLoadedAhead = function () {
+			// Long sharh passages should not fetch another full page until it is near the viewport.
+			if (mode === 'hadith-sharh' && sentinel[0].getBoundingClientRect().top > window.innerHeight + 2400)
+				return;
 			if (ensuring || exhausted || !nextUrl || pagesAhead() >= prefetchAhead)
 				return;
 			ensuring = true;
