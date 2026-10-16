@@ -86,10 +86,13 @@ test('formatting preserves literal code, escaped markers, unmatched markers and 
 test.each(['javascript:alert(1)', '//evil.test', '/\\evil.test', 'https://evil.test/note'])('rejects unsafe source URL %s', url => {
   expect(() => Notebook.sourceUrl(url)).toThrow('Invalid source URL');
 });
-test('validates content size and source identity', async () => {
+test('accepts large notes and validates source identity', async () => {
   expect(() => Notebook.key('item:1 OR 1=1')).toThrow();
   expect(Notebook.key('tafsir:ar-tabari:2:1')).toBe('tafsir:ar-tabari:2:1');
-  await expect(Notebook.save('alice', { source_key: 'item:1', markdown: 'ا'.repeat(33000) })).rejects.toMatchObject({ status: 413 });
+  const markdown = 'ا'.repeat(60000);
+  await Notebook.save('alice', { source_key: 'general', title: 'Large', markdown, version: 0 });
+  expect(global.query.mock.calls.some(([sql]) => sql.includes(markdown))).toBe(true);
+  expect(Notebook.exportMarkdown({ source_key: 'general', markdown })).toContain(markdown);
 });
 
 test('links Quran and hadith references with expand controls, excluding code and URLs', () => {

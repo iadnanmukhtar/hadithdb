@@ -128,7 +128,7 @@ router.post('/expand', async (req, res, next) => {
 });
 router.post('/preview', (req, res) => {
   const text = req.body && req.body.markdown;
-  if (typeof text !== 'string' || Buffer.byteLength(text, 'utf8') > 65535) return res.status(400).json({ error: 'Invalid Markdown.' });
+  if (typeof text !== 'string') return res.status(400).json({ error: 'Invalid Markdown.' });
   res.json({ html: Notebook.render(text) });
 });
 router.use((err, req, res, next) => {

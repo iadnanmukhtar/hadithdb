@@ -707,3 +707,10 @@ test('shared Google API key and project number configure Picker without duplicat
   expect(state.picker).toEqual({ apiKey: 'shared-browser-key', appId: '123456789' });
   expect(state.clientId).toBe('client');
 });
+
+test('large Drive notes save and reopen without a note size cap', async () => {
+  const markdown = 'ا'.repeat(60000);
+  const saved = await Drive.save('alice', { ...note({ markdown }), version: 0 });
+  expect(saved.markdown).toBe(markdown);
+  expect((await Drive.get('alice', saved.source_key)).markdown).toBe(markdown);
+});
