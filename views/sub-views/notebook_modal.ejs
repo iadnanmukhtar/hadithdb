@@ -23,6 +23,7 @@ Leave a blank line between paragraphs. Preview to see formatting.`; %>
     <div class="modal-header py-2">
       <h2 class="modal-title fs-6" id="notebook-modal-title"><i class="bi bi-sticky me-2" aria-hidden="true"></i><a id="notebook-source" dir="auto">Note</a></h2>
       <button id="notebook-share" type="button" class="notebook-tool ms-auto" title="Share note" aria-label="Share note" aria-controls="notebook-share-panel" aria-expanded="false"><i class="bi bi-box-arrow-up" aria-hidden="true"></i></button>
+      <button id="notebook-lock" type="button" class="notebook-tool" title="Lock note" aria-label="Lock note" aria-pressed="false"><i class="bi bi-unlock" aria-hidden="true"></i></button>
       <button id="notebook-print" type="button" class="notebook-tool" title="Print / Save as PDF" aria-label="Print / Save as PDF"><i class="bi bi-printer" aria-hidden="true"></i></button>
       <button id="notebook-float" type="button" class="notebook-tool" title="Float note while browsing" aria-label="Float note while browsing" aria-pressed="false"><i class="bi bi-pin-angle" aria-hidden="true"></i></button>
       <button id="notebook-minimize" type="button" class="notebook-tool" title="Minimize note" aria-label="Minimize note" hidden><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
@@ -168,6 +169,9 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-wiki-options [aria-selected="true"] { background: var(--bs-secondary-bg, #eee); color: var(--bs-body-color, #222); }
 #notebook-modal .modal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #notebook-modal .modal-dialog { height: calc(100vh - 2rem); height: calc(100dvh - 2rem); margin-block: 1rem; }
+body.notebook-page-open > .modal-backdrop { display: none; }
+#notebook-modal.notebook-page { padding: 0 !important; background: var(--note-paper, var(--bs-body-bg)); }
+#notebook-modal.notebook-page .modal-content { border: 0; border-radius: 0; }
 #notebook-modal .modal-dialog.modal-fullscreen { width: 100%; max-width: none; height: 100vh; height: 100dvh; margin: 0; }
 @media (max-width: 575.98px) {
   #notebook-modal:not(.notebook-floating) .modal-dialog { width: 100%; max-width: none; height: 100dvh; max-height: 100dvh; margin: 0; }

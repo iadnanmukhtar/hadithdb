@@ -45,3 +45,21 @@ test.each(['English quote', 'اقتباس عربي'])('quoted blocks contain nes
     await page.screenshot({ path: `/tmp/notebook-quoted-bullets-${geometry.direction}.png` });
   } finally { await page.close(); }
 });
+
+test.each([390, 1280])('Arabic-only blocks and bullet markers use RTL inside an English page at %ipx', async width => {
+  const page = await browser.newPage({ viewport: { width, height: 844 } });
+  try {
+    const css = fs.readFileSync(require.resolve('../views/sub-views/notebook_content_styles.ejs'), 'utf8');
+    const html = Notebook.render('# عنوان عربي\n\n(123) **نص عربي** [رابط](https://example.com)\n\n- **نقطة أولى**\n- 2026: نقطة ثانية\n  - نقطة متداخلة\n\n> اقتباس عربي\n>\n> - نقطة مقتبسة\n\nEnglish paragraph\n\n- English bullet');
+    await page.setContent(`<style>${css}</style><article dir="ltr" class="notebook-markdown">${html}</article>`);
+    const blocks = await page.locator('h1, p, li, blockquote').evaluateAll(elements => elements.map(el => {
+      const style = getComputedStyle(el);
+      return { text: el.textContent.trim(), dir: el.getAttribute('dir'), direction: style.direction, align: style.textAlign };
+    }));
+    for (const block of blocks) {
+      if (block.text.startsWith('English')) expect(block.direction).toBe('ltr');
+      else expect(block).toMatchObject({dir:'rtl',direction:'rtl',align:'right'});
+    }
+    expect(await page.locator('ul[dir="rtl"]').count()).toBe(3);
+  } finally { await page.close(); }
+});

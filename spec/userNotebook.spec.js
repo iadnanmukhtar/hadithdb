@@ -43,7 +43,7 @@ test('new notes do not overwrite an existing note', async () => {
 });
 test('Markdown supports independent block direction and escapes executable HTML', () => {
   const html = Notebook.render('# العربية\n\nEnglish **note**\n\n<script>alert(1)</script>\n\n[x](javascript:alert(1))');
-  expect(html).toContain('<h1 dir="auto"><span class="notebook-arabic">العربية</span></h1>');
+  expect(html).toContain('<h1 dir="rtl"><span class="notebook-arabic">العربية</span></h1>');
   expect(html).toContain('<p dir="auto">English <strong>note</strong></p>');
   expect(html).not.toContain('<script>');
   expect(html).not.toContain('href="javascript:');

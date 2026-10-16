@@ -21,7 +21,7 @@ beforeEach(async () => {
     window.editor=document.getElementById('notebook-editor'); window.preview=document.getElementById('notebook-preview');
     window.titleEditor=document.getElementById('notebook-title-editor'); window.tagEditor=document.getElementById('notebook-tag-editor');
     window.toggle=document.getElementById('notebook-preview-button');
-    window.editing=false; window.titleEditing=false; window.tagsEditing=false; window.busy=false;
+    window.locked=false; window.editing=false; window.titleEditing=false; window.tagsEditing=false; window.busy=false;
     window.current={title:'My note',hashtags:[],version:0}; window.wikiAutocomplete={close:()=>{}};
     window.scheduleSave=()=>{}; titleEditor.value='My note'; tagEditor.value='reflection';
     (0,eval)(functions+'\n'+handlers); mode(true);
@@ -117,4 +117,57 @@ test.each([768, 1280])('fullscreen zoom sits left of icons without moving the ri
   expect(zoom.x + zoom.width).toBeLessThanOrEqual(dates.x);
   expect(Math.abs(zoom.y + zoom.height / 2 - save.y - save.height / 2)).toBeLessThan(2);
   expect(Math.abs(save.x - saveBefore.x)).toBeLessThan(2);
+});
+
+test('locking blocks body, title, and tag editing until explicitly unlocked', async () => {
+  const lockHandler = source.slice(source.indexOf("  lockButton.addEventListener('click'"), source.indexOf('  const saveButton'));
+  await page.evaluate(lockHandler => {
+    window.lockButton=document.getElementById('notebook-lock');
+    window.showPreview=()=>mode(false);
+    (0,eval)(lockHandler);
+  }, lockHandler);
+  await page.locator('#notebook-lock').click();
+  expect(await page.locator('#notebook-lock').getAttribute('aria-pressed')).toBe('true');
+  await page.evaluate(() => mode(true));
+  expect(await page.locator('#notebook-editor').isVisible()).toBe(false);
+  await page.locator('#notebook-note-title').click();
+  await page.locator('#notebook-note-tags').click();
+  expect(await page.locator('#notebook-title-editor').isVisible()).toBe(false);
+  expect(await page.locator('#notebook-tag-editor').isVisible()).toBe(false);
+  await page.locator('#notebook-lock').click();
+  await page.evaluate(() => mode(true));
+  expect(await page.locator('#notebook-editor').isVisible()).toBe(true);
+});
+
+test.each([390, 1280])('expanded note replaces the page and restores its state at %ipx', async width => {
+  await page.setViewportSize({width,height:844});
+  const presentation = source.slice(source.indexOf('  function setExpanded('), source.indexOf('  lockButton.addEventListener'));
+  await page.evaluate(presentation => {
+    window.modal=document.getElementById('notebook-modal');
+    window.fullscreen=document.getElementById('notebook-fullscreen');
+    window.floatButton=document.getElementById('notebook-float');
+    window.pageElements=[];
+    window.bootstrap={Modal:{getInstance:()=>({handleUpdate:()=>{}})}};
+    const styles=document.createElement('style'); styles.textContent='body{margin:0}.modal{position:fixed;inset:0}'; document.head.append(styles);
+    const content=document.createElement('main'); content.id='underlying-page'; content.textContent='Underlying page';
+    const hidden=document.createElement('div'); hidden.id='already-hidden'; hidden.hidden=true;
+    document.body.prepend(content,hidden);
+    (0,eval)(presentation);
+    setExpanded(true);
+  }, presentation);
+  expect(await page.locator('#underlying-page').isVisible()).toBe(false);
+  expect(await page.locator('#underlying-page').evaluate(el=>el.inert)).toBe(true);
+  expect(await page.locator('#notebook-modal').evaluate(el=>el.classList.contains('notebook-page'))).toBe(true);
+  expect(await page.locator('#notebook-modal .modal-dialog').evaluate(el=>el.getBoundingClientRect().width)).toBe(width);
+  const dismissed = await page.evaluate(() => {
+    let dismissed=false;
+    modal.addEventListener('keydown',()=>{dismissed=true;},{once:true});
+    modal.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    return dismissed;
+  });
+  expect(dismissed).toBe(false);
+  await page.evaluate(()=>setExpanded(false));
+  expect(await page.locator('#underlying-page').isVisible()).toBe(true);
+  expect(await page.locator('#underlying-page').evaluate(el=>el.inert)).toBe(false);
+  expect(await page.locator('#already-hidden').isVisible()).toBe(false);
 });

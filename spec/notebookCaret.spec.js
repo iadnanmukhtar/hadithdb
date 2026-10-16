@@ -7,7 +7,7 @@ const handlers = source.slice(source.indexOf('  function previewCaretOffset('), 
 jest.setTimeout(30000);
 let browser, page;
 beforeAll(async () => { browser = await chromium.launch({ channel: 'chrome', headless: true }); });
-beforeEach(async () => { page = await browser.newPage(); });
+beforeEach(async () => { page = await browser.newPage(); await page.evaluate(() => { window.locked = false; }); });
 afterEach(async () => { await page?.close(); });
 afterAll(async () => { await browser?.close(); });
 test('Arabic Unicode overlines preserve the Markdown caret position', async () => {

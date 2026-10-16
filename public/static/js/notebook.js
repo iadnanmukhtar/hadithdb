@@ -21,14 +21,57 @@
     zoomValue.value = `${zoom.value}%`;
     updateOutlinePosition();
   });
-  fullscreen.addEventListener('click', () => {
-    const expanded = modal.querySelector('.modal-dialog').classList.toggle('modal-fullscreen');
+  const lockButton = document.getElementById('notebook-lock');
+  let locked = false;
+  let pageElements = [];
+  function setExpanded(expanded) {
+    modal.querySelector('.modal-dialog').classList.toggle('modal-fullscreen', expanded);
+    modal.classList.toggle('notebook-page', expanded);
+    document.body.classList.toggle('notebook-page-open', expanded);
+    if (expanded && !pageElements.length) {
+      // Hide every sibling along the path to the document body, preserving its state.
+      for (let node = modal; node && node !== document.body; node = node.parentElement) {
+        for (const sibling of node.parentElement.children) {
+          if (sibling === node || sibling.classList.contains('modal-backdrop')) continue;
+          pageElements.push({ element: sibling, hidden: sibling.hidden, inert: sibling.inert });
+          sibling.hidden = true;
+          sibling.inert = true;
+        }
+      }
+    } else if (!expanded) {
+      for (const { element, hidden, inert } of pageElements) {
+        element.hidden = hidden;
+        element.inert = inert;
+      }
+      pageElements = [];
+    }
     const label = expanded ? 'Restore note size' : 'Expand note';
     fullscreen.title = label;
     fullscreen.setAttribute('aria-label', label);
     fullscreen.setAttribute('aria-pressed', String(expanded));
     fullscreen.firstElementChild.className = expanded ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-fullscreen';
+    // Floating is an overlay, so leave page mode explicitly before offering it.
+    floatButton.hidden = expanded;
     bootstrap.Modal.getInstance(modal)?.handleUpdate();
+  }
+  fullscreen.addEventListener('click', () => setExpanded(!modal.classList.contains('notebook-page')));
+  modal.addEventListener('keydown', event => {
+    if (modal.classList.contains('notebook-page') && event.key === 'Escape') {
+      event.stopImmediatePropagation();
+    }
+  }, true);
+  modal.addEventListener('click', event => {
+    if (modal.classList.contains('notebook-page') && event.target === modal) event.stopImmediatePropagation();
+  }, true);
+  lockButton.addEventListener('click', () => {
+    if (busy) return;
+    locked = !locked;
+    lockButton.setAttribute('aria-pressed', String(locked));
+    lockButton.title = locked ? 'Unlock note' : 'Lock note';
+    lockButton.setAttribute('aria-label', lockButton.title);
+    lockButton.firstElementChild.className = locked ? 'bi bi-lock-fill' : 'bi bi-unlock';
+    toggle.disabled = locked;
+    if (locked) showPreview();
   });
   const saveButton = document.getElementById('notebook-save');
   const deleteButton = document.getElementById('notebook-delete');
@@ -169,6 +212,8 @@
     frontmatterControls.setBusy(value);
     document.getElementById('notebook-expanded-new').disabled = value;
     saveButton.disabled = deleteButton.disabled = toggle.disabled = editor.disabled = downloadButton.disabled = tagEditor.disabled = titleEditor.disabled = value;
+    toggle.disabled = value || locked;
+    lockButton.disabled = value;
     printButton.disabled = value;
   }
   function sourceFor(button) {
@@ -260,6 +305,7 @@
   }
   document.addEventListener('quranAyahNoteTarget', event => prepareAyahNote(event.detail.button));
   function mode(edit) {
+    if (edit && locked) return;
     editing = edit;
     titleEditing = tagsEditing = false;
     wikiAutocomplete.close();
@@ -288,6 +334,7 @@
     rememberFloating();
   }
   function configureFloating(enabled) {
+    setExpanded(false);
     modal.classList.toggle('notebook-floating', enabled);
     modal.classList.remove('notebook-minimized');
     modal.querySelector('.modal-dialog').classList.remove('modal-fullscreen');
@@ -601,6 +648,7 @@
   });
   modal.addEventListener('hidden.bs.modal', () => {
     if (changingPresentation) return;
+    setExpanded(false);
     shareControls.reset();
     restoreButton.hidden = true;
     modal.classList.remove('notebook-minimized');
@@ -639,7 +687,7 @@
     try { localStorage.setItem('notebook-tags-collapsed', String(tagBar.hidden)); } catch (_) {}
   });
   function editTags() {
-    if (!current || busy) return;
+    if (!current || busy || locked) return;
     mode(true);
     tagsEditing = true; renderNoteTags();
     tagEditor.focus();
@@ -651,7 +699,7 @@
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); editTags(); }
   });
   function editTitle() {
-    if (!current || busy) return;
+    if (!current || busy || locked) return;
     mode(true);
     titleEditing = true; renderNoteMetadata();
     titleEditor.focus();
@@ -857,9 +905,9 @@
     const pointerCaret = previewPointerCaret;
     previewPointerCaret = null;
     const button = event.target.closest('[data-notebook-reference]');
-    if (button && current) { expandReference(button, current, true); return; }
+    if (button && current && !locked) { expandReference(button, current, true); return; }
     if (event.target.closest('a, button, input, textarea, select, summary')) return;
-    if (current && !busy) {
+    if (current && !busy && !locked) {
       const offset = pointerCaret?.offset ?? previewCaretOffset(event);
       const viewportY = pointerCaret?.viewportY ?? event.clientY - preview.getBoundingClientRect().top;
       mode(true);
@@ -953,7 +1001,7 @@
     if (title && await window.hadithAuth?.getToken()) openWiki(title);
   }
   preview.addEventListener('keydown', event => {
-    if (event.target === preview && event.key === 'Enter' && current && !busy) {
+    if (event.target === preview && event.key === 'Enter' && current && !busy && !locked) {
       event.preventDefault();
       mode(true);
     }

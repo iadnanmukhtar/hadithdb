@@ -56,7 +56,7 @@ test('prints the current draft with safe metadata, Arabic, links and complete pa
   expect(await popup.locator('article').textContent()).not.toContain('Old saved body');
   expect(await popup.locator('.notebook-expand-reference').count()).toBe(0);
   expect(await popup.evaluate(() => document.fonts.check('16px Kitab'))).toBe(true);
-  expect(await popup.locator('article p[dir="auto"]').nth(0).evaluate(el => getComputedStyle(el).direction)).toBe('rtl');
+  expect(await popup.locator('article p[dir="rtl"]').nth(0).evaluate(el => getComputedStyle(el).direction)).toBe('rtl');
   await popup.emulateMedia({ media: 'print' });
   expect(await popup.locator('aside').isVisible()).toBe(false);
   const pdf = await popup.pdf({ path: '/tmp/hadithdb-note-print.pdf', format: 'A4', preferCSSPageSize: true });
