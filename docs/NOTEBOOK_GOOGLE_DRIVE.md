@@ -23,13 +23,13 @@ The current implementation deliberately reports an unavailable-storage message w
 
 Users sign in as usual, then select **Connect Google Drive** in My Notebook or a contextual note modal. Google login users must choose the same Google identity. Other login identities bind to their first connected Google identity. Reconnection cannot silently switch a notebook to another Google account.
 
-The server exchanges the authorization code, verifies Google identity and scope, and encrypts tokens with AES-256-GCM using the notebook owner as authenticated data. Tokens never reach browser storage. The popup exchange requires the authenticated site token, the expected custom header, and an allowed Origin.
+The server exchanges the authorization code, verifies Google identity and scope, and encrypts tokens with AES-256-GCM using the notebook owner as authenticated data. Server refresh tokens never reach the browser. Google Picker obtains a separate short-lived `drive.file` access token through GIS in browser memory only; it is never persisted or sent to the notebook import endpoint. The popup exchange requires the authenticated site token, the expected custom header, and an allowed Origin.
 
 Migration copies existing MySQL notes in resumable batches of up to 20 writes, reads each file back, and checks Markdown, tags, title, and source identity before activating Drive. Pre-generated file IDs are reserved before uploads, so a lost response can be retried without creating duplicate migration files. Divergent remote content stops migration rather than overwriting either copy. Originals are retained, unchanged, as a recovery snapshot; they are not a live backup of subsequent Drive edits. No automatic cleanup deletes them.
 
 After activation, reads, writes, search, tags, previews with source expansion, and ZIP export use Drive content. MySQL stores only connection credentials, migration status, and the per-user source-to-file mapping for active use. Back up these metadata tables as well as the token encryption key.
 
-The folder uses app-owned identity, not a name search, so an unrelated folder named Hadith Unlocked is never adopted. Note files contain standard `title` and `tags` front matter plus a `hadithunlocked` metadata object preserving source identity. Their bodies remain exact UTF-8 Markdown, including Arabic and leading blank lines. Keep the reserved metadata when editing files externally. New files manually added to the folder are not automatically imported.
+The folder uses app-owned identity, not a name search, so an unrelated folder named Hadith Unlocked is never adopted. Note files contain standard `title` and `tags` front matter plus a `hadithunlocked` metadata object preserving source identity. Their bodies remain exact UTF-8 Markdown, including Arabic and leading blank lines. Keep the reserved metadata when editing files externally. For manually added files, use **Import from Google Drive** in Settings → Google Drive and select the `.md` files from this folder. Google Picker grants access to those existing files under `drive.file`; the server normalizes their frontmatter in place, preserves Markdown and custom fields, and registers their existing Drive file IDs. Repeated selection does not duplicate files or notes. A second file with the same source links gets its own note identity. Newly accessible files can also be found by background discovery; discovery does not block notebook requests and is deduplicated and throttled per owner/folder.
 
 ## Conflicts and failures
 
@@ -68,3 +68,16 @@ External editors must update `hadithunlocked.cksum` when changing note content, 
 Editor preview switches immediately on click-away and does not wait for Drive saves. Autosave waits for 1.8 seconds of inactivity; edits made during an in-flight request are coalesced into the next background save. Explicit saves and closing the dialog flush pending edits. Failures retain the draft and surface an error rather than silently discarding it.
 
 Save responses use the accepted upload payload and revision returned by Drive, without an immediate content readback. Title uniqueness scans run on creation or title changes, not every content/tag autosave. Repeatedly unstable read snapshots report a temporary Drive error instead of claiming another editor changed the note.
+
+
+## Google Picker setup (existing Cloud project)
+
+No full Drive scope is required. Keep only `drive.file`, `openid`, and `email` in the notebook connection flow. Previously stored broad-access connections are prompted to reconnect with limited scopes; new requests set `include_granted_scopes: false`. Reconnecting does not itself revoke a previously granted permission from the Google Account permissions page.
+
+1. In the **same Google Cloud project as the OAuth client**, enable **Google Picker API** (Drive API is already required).
+2. Create a **browser API key** in APIs & Services → Credentials. Restrict its API access to **Google Picker API**. Configure website referrer restrictions for the served application origins, including `http://localhost:3004/*` for development. Google's current Picker guide additionally requires `https://docs.google.com/*` because Picker runs in a Google-hosted iframe. Follow the current guide when setting restrictions: https://developers.google.com/workspace/drive/picker/guides/web-picker
+3. Copy the numeric **Project number** from the project settings.
+4. Set `settings.google.apiKey` (the shared browser API key for Picker and Drive) and `settings.google.projectNumber` (the numeric Cloud project number). Legacy Picker-specific settings and environment names remain supported as fallbacks. Restart the server. The browser key is intentionally public; never put an OAuth client secret in this field.
+5. Open Settings → Google Drive → **Import from Google Drive**, choose Markdown files inside the notebook folder, and select them. Imports accept at most 20 files at once. Files outside the configured folder are rejected without moving or copying them.
+
+The import button remains available with a setup message if Picker configuration is missing. Loading the Picker library and obtaining its token happen only after an explicit import action. The server re-fetches selected file metadata using the connected notebook owner's credentials and checks folder membership; it does not trust file names, parents, or tokens supplied by the browser.

@@ -63,6 +63,12 @@ beforeEach(() => {
       const parts = options.data.split('--' + boundary);
       const metadata = JSON.parse(parts[1].split('\r\n\r\n')[1].replace(/\r\n$/, ''));
       const body = parts[2].slice(parts[2].indexOf('\r\n\r\n') + 4).replace(/\r\n$/, '');
+      // Drive v2 uses properties[]; a v3 appProperties object is not saved there.
+      if (path.includes('/v2/')) {
+        delete metadata.appProperties;
+        if (metadata.properties) metadata.appProperties = Object.fromEntries(metadata.properties
+          .filter(property => property.visibility === 'PRIVATE').map(property => [property.key, property.value]));
+      }
       const id = metadata.id || path.split('/').at(-1), old = files.get(id);
       if (options.method === 'POST' && old) fail(409);
       if (options.method === 'PUT' && options.headers['If-Match'] !== '"' + old.version + '"') fail(412);
@@ -70,6 +76,7 @@ beforeEach(() => {
       const saved = files.get(id);
       return { data: { id, version: saved.version, modifiedDate: saved.modifiedTime, createdDate: saved.createdTime } };
     }
+    if (path === 'drive/v3/files' && !options.method) return { data: { files: [...files.values()].filter(file => file.parents?.includes('folder') && !file.trashed).map(file => ({ ...file })) } };
     if (path === 'drive/v3/files' && options.method === 'POST') { files.set(options.data.id, { ...options.data }); return { data: options.data }; }
     const id = path.split('/').at(-1), file = files.get(id);
     if (!file) fail(404);
@@ -81,6 +88,7 @@ beforeEach(() => {
   });
   OAuth2Client.mockImplementation(() => ({ setCredentials: jest.fn(), request, getToken: async () => ({ tokens: { id_token: 'id', refresh_token: 'refresh', scope: Drive.SCOPE } }), verifyIdToken: async () => ({ getPayload: () => ({ sub: 'alice' }) }) }));
   jest.spyOn(Legacy, 'ensureTable').mockResolvedValue();
+  jest.spyOn(Drive.Store.prototype, 'scheduleDiscovery').mockImplementation(() => Promise.resolve());
 });
 afterEach(() => jest.restoreAllMocks());
 test('encrypted credentials are bound to their owner and cannot be tampered with', () => {
@@ -562,4 +570,140 @@ test('legacy additional links migrate alongside the original item without changi
   expect(require('../lib/NotebookFrontmatter').parse(migrated.markdown).attributes.links).toEqual(['bukhari:100', 'quran:2:255']);
   expect(migrated.driveFileUrl).toBe(created.driveFileUrl);
   expect(migrated.markdown).not.toContain('attachments:');
+});
+
+
+test('discovers a directly saved Markdown file and standardizes its frontmatter without replacing the original note', async () => {
+  await Drive.save('alice', { ...note(), version: 0 });
+  const body = '---\ntitle: Riyad 1 v2\ntags: [intention, riyad]\nlinks: ["bukhari:1"]\ncustom: preserve me\n---\n\nArabic العربية and audience notes.\n';
+  files.set('direct', { id: 'direct', name: 'Riyad 1 v2.md', mimeType: 'text/plain', parents: ['folder'], version: '1', body,
+    createdTime: '2026-10-16T00:00:00Z', modifiedTime: '2026-10-16T00:00:00Z', size: Buffer.byteLength(body) });
+  await new Drive.Store('alice', connection, { request }).discover();
+  const result = await Drive.list('alice');
+  const imported = result.notes.find(entry => entry.title === 'Riyad 1 v2');
+  expect(imported).toMatchObject({ tags: ['intention', 'riyad'], attachments: [{ source_key: 'item:42' }] });
+  expect(imported.source_key).toMatch(/^general:/);
+  expect(imported.markdown).toContain('custom: preserve me');
+  expect(imported.markdown).toContain('\n\nArabic العربية and audience notes.\n');
+  expect(mappings.get('item:42')).not.toBe('direct');
+  expect(files.get('direct').name).toBe('Riyad 1 v2.md');
+  expect(files.get('direct').mimeType).toBe('text/markdown');
+  expect(files.get('direct').body).toContain('hadithunlocked:');
+  await Drive.list('alice');
+  expect(mappings.size).toBe(2);
+});
+
+test('imports Markdown without frontmatter using its filename and ignores other file types', async () => {
+  for (const [id, name] of [['plain', 'Untitled.MD'], ['other', 'image.png']])
+    files.set(id, { id, name, mimeType: 'text/plain', parents: ['folder'], version: '1', body: 'Note content\n',
+      createdTime: '2026-10-16T00:00:00Z', modifiedTime: '2026-10-16T00:00:00Z' });
+  await new Drive.Store('alice', connection, { request }).discover();
+  const result = await Drive.list('alice');
+  expect(result.notes).toHaveLength(1);
+  expect(result.notes[0]).toMatchObject({ title: 'Untitled', tags: [] });
+  expect(files.get('plain').body).toContain('title: Untitled');
+  expect(files.get('other').version).toBe('1');
+});
+
+test('does not rewrite a directly saved note if Drive changes during discovery', async () => {
+  files.set('direct', { id: 'direct', name: 'Direct.md', mimeType: 'text/plain', parents: ['folder'], version: '1', body: 'Before' });
+  const originalRequest = request.getMockImplementation();
+  request.mockImplementation(async options => {
+    if (options.params?.alt === 'media' && options.url.endsWith('/direct')) files.get('direct').version = '2';
+    return originalRequest(options);
+  });
+  await expect(new Drive.Store('alice', connection, { request }).discover()).rejects.toThrow('still updating');
+  expect(mappings.size).toBe(0);
+  expect(files.get('direct').body).toBe('Before');
+});
+
+test('connection status offers limited reconnection for old full-access grants', async () => {
+  connection.token_cipher = Drive.encrypt('alice', { refresh_token: 'refresh', scope: 'https://www.googleapis.com/auth/drive' });
+  expect(await Drive.connectionStatus('alice')).toMatchObject({ connected: true, needsDriveAccess: true, scope: Drive.SCOPE });
+  await Drive.connect({ uid: 'alice', provider: 'google.com' }, 'code', 'http://localhost:3004');
+  expect(await Drive.connectionStatus('alice')).toMatchObject({ connected: true, needsDriveAccess: false });
+});
+
+test('registered notes load while background discovery is blocked, and concurrent requests share one job', async () => {
+  await Drive.save('alice', { ...note(), version: 0 });
+  Drive.Store.prototype.scheduleDiscovery.mockRestore();
+  let release;
+  const blocked = new Promise(resolve => { release = resolve; });
+  let started;
+  const running = new Promise(resolve => { started = resolve; });
+  const discover = jest.spyOn(Drive.Store.prototype, 'discover').mockImplementation(async () => { started(); await blocked; });
+  const store = new Drive.Store('alice', connection, { request });
+  const first = await Drive.list('alice');
+  expect(first.notes).toHaveLength(1);
+  await running;
+  const second = await Drive.list('alice');
+  expect(second.notes).toHaveLength(1);
+  expect(discover).toHaveBeenCalledTimes(1);
+  release();
+  await store.scheduleDiscovery();
+  await store.scheduleDiscovery();
+  expect(discover).toHaveBeenCalledTimes(1);
+});
+
+test('a failed background discovery does not reject page loads or produce an unhandled rejection', async () => {
+  connection.folder_id = 'failure-folder';
+  files.set('failure-folder', { id: 'failure-folder', mimeType: 'application/vnd.google-apps.folder' });
+  Drive.Store.prototype.scheduleDiscovery.mockRestore();
+  jest.spyOn(Drive.Store.prototype, 'discover').mockRejectedValue(new Error('Drive unavailable'));
+  const store = new Drive.Store('alice', connection, { request });
+  await expect(Drive.list('alice')).resolves.toMatchObject({ notes: [] });
+  await expect(store.scheduleDiscovery()).resolves.toBeUndefined();
+  await expect(Drive.list('alice')).resolves.toMatchObject({ notes: [] });
+});
+
+function pickedFile(id, overrides = {}) {
+  return { id, name: 'Riyad 1 v2.md', mimeType: 'text/plain', parents: ['folder'], version: '1',
+    body: '---\ntitle: Riyad 1 v2\ntags: [riyad]\nlinks: ["bukhari:1"]\ncustom: keep\n---\n\nAudience text العربية\n',
+    createdTime: '2026-10-16T00:00:00Z', modifiedTime: '2026-10-16T00:00:00Z', ...overrides };
+}
+test('picker import normalizes the same file in place and repeated selection is idempotent', async () => {
+  const saved = await Drive.save('alice', { ...note(), version: 0 });
+  files.set('picked', pickedFile('picked'));
+  const first = await Drive.importFiles('alice', ['picked', 'picked']);
+  expect(first.notes).toHaveLength(1);
+  expect(first.notes[0]).toMatchObject({ title: 'Riyad 1 v2', attachments: [{ source_key: 'item:42' }] });
+  expect(first.notes[0].driveFileUrl).toContain('/picked/');
+  expect(first.notes[0].source_key).not.toBe(saved.source_key);
+  expect(first.notes[0].markdown).toContain('custom: keep');
+  expect(first.notes[0].markdown).toContain('\n\nAudience text العربية\n');
+  const version = files.get('picked').version;
+  const second = await Drive.importFiles('alice', ['picked']);
+  expect(second.notes[0].source_key).toBe(first.notes[0].source_key);
+  expect(files.get('picked').version).toBe(version);
+  expect(files.size).toBe(3); // folder, original, selected file
+  expect(mappings.size).toBe(2);
+  expect(request.mock.calls.filter(([o]) => o.url.includes('upload/') && o.method === 'POST')).toHaveLength(1); // original only
+});
+test('picker imports validate actual Drive metadata before mutating files', async () => {
+  files.set('valid', pickedFile('valid'));
+  files.set('outside', pickedFile('outside', { parents: ['another-folder'] }));
+  await expect(Drive.importFiles('alice', ['valid', 'outside'])).rejects.toThrow('Hadith Unlocked folder');
+  expect(files.get('valid').version).toBe('1');
+  expect(mappings.size).toBe(0);
+  await expect(Drive.importFiles('alice', ['invalid/path'])).rejects.toThrow('1 and 20');
+  await expect(Drive.importFiles('alice', [])).rejects.toThrow('1 and 20');
+});
+test('picker imports require authentication and expose only public metadata', async () => {
+  files.set('picked', pickedFile('picked'));
+  const unauthorized = await fetch(base + '/drive/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileIds: ['picked'] }) });
+  expect(unauthorized.status).toBe(401);
+  const response = await fetch(base + '/drive/import', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer alice' }, body: JSON.stringify({ fileIds: ['picked'] }) });
+  expect(response.status).toBe(200);
+  const data = await response.json();
+  expect(data.notes[0].title).toBe('Riyad 1 v2');
+  expect(data.notes[0]._etag).toBeUndefined();
+  expect(data.notes[0]._id).toBeUndefined();
+});
+
+test('shared Google API key and project number configure Picker without duplicate settings', async () => {
+  global.settings.google.apiKey = 'shared-browser-key';
+  global.settings.google.projectNumber = '123456789';
+  const state = await Drive.connectionStatus('alice');
+  expect(state.picker).toEqual({ apiKey: 'shared-browser-key', appId: '123456789' });
+  expect(state.clientId).toBe('client');
 });

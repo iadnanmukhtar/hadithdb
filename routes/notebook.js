@@ -69,6 +69,9 @@ router.post('/drive/connect', async (req, res, next) => {
     res.json(await Notebook.connect(req.user, req.body?.code, origin));
   } catch (err) { next(err); }
 });
+router.post('/drive/import', async (req, res, next) => {
+  try { res.json(await Notebook.importFiles(req.user.uid, req.body?.fileIds)); } catch (err) { next(err); }
+});
 router.post('/drive/migrate', async (req, res, next) => {
   try { res.json(await Notebook.migrate(req.user.uid)); } catch (err) { next(err); }
 });
