@@ -147,6 +147,7 @@ test.each([390, 1280])('expanded note replaces the page and restores its state a
     window.fullscreen=document.getElementById('notebook-fullscreen');
     window.floatButton=document.getElementById('notebook-float');
     window.pageElements=[];
+    window.syncExpandedUrl=()=>{};
     window.bootstrap={Modal:{getInstance:()=>({handleUpdate:()=>{}})}};
     const styles=document.createElement('style'); styles.textContent='body{margin:0}.modal{position:fixed;inset:0}'; document.head.append(styles);
     const content=document.createElement('main'); content.id='underlying-page'; content.textContent='Underlying page';

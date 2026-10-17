@@ -24,7 +24,24 @@
   const lockButton = document.getElementById('notebook-lock');
   let locked = false;
   let pageElements = [];
+  let expandedReturnUrl = null;
+  function syncExpandedUrl(expanded) {
+    if (expanded && current) {
+      if (expandedReturnUrl === null) {
+        const original = new URL(location.href);
+        original.searchParams.delete('note_source');
+        expandedReturnUrl = original.href;
+      }
+      const url = new URL(quranApiPath('/notebook').replace('/api/', '/'), location.href);
+      url.searchParams.set('note_source', current.source_key);
+      window.history.replaceState(window.history.state, '', url.href);
+    } else if (!expanded && expandedReturnUrl !== null) {
+      window.history.replaceState(window.history.state, '', expandedReturnUrl);
+      expandedReturnUrl = null;
+    }
+  }
   function setExpanded(expanded) {
+    syncExpandedUrl(expanded);
     modal.querySelector('.modal-dialog').classList.toggle('modal-fullscreen', expanded);
     modal.classList.toggle('notebook-page', expanded);
     document.body.classList.toggle('notebook-page-open', expanded);
@@ -377,7 +394,7 @@
     else minimizeFloating(false);
   });
   async function restoreFloating(reveal = false) {
-    if (restoringFloating || modal.classList.contains('show') || new URLSearchParams(location.search).has('note')) return;
+    if (restoringFloating || modal.classList.contains('show') || (new URLSearchParams(location.search).has('note') || new URLSearchParams(location.search).has('note_source'))) return;
     let stored;
     try { stored = JSON.parse(sessionStorage.getItem(floatingStorage)); } catch (_) { return; }
     if (!stored?.source || stored.uid !== (await window.hadithAuth?.getUser())?.uid) return;
@@ -627,6 +644,7 @@
       frontmatterControls.refresh();
       importReflection(source);
       navigatorControls.select();
+      if (modal.classList.contains('notebook-page')) syncExpandedUrl(true);
       if (modal.classList.contains('notebook-floating')) { minimizeFloating(false); rememberFloating(); }
     } catch (err) {
       if (ownGeneration !== generation) return;
@@ -1020,8 +1038,14 @@
   modal.addEventListener('shown.bs.modal', updateOutlinePosition);
   rebuildOutline();
   async function openRequestedWiki() {
-    const title = new URLSearchParams(location.search).get('note');
-    if (title && await window.hadithAuth?.getToken()) openWiki(title);
+    const params = new URLSearchParams(location.search);
+    const sourceKey = params.get('note_source');
+    const title = params.get('note');
+    if (!(sourceKey || title) || !await window.hadithAuth?.getToken()) return;
+    if (sourceKey) {
+      await open({ source_key: sourceKey, source_title: 'Note', source_url: location.pathname, markdown: '', version: 1 });
+      if (current && current.source_key === sourceKey) setExpanded(true);
+    } else await openWiki(title);
   }
   preview.addEventListener('keydown', event => {
     if (event.target === preview && event.key === 'Enter' && current && !busy && !locked) {
