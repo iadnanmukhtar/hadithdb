@@ -238,3 +238,23 @@ test('failed saves do not publish and delayed results cannot leak into the next 
     expect(await page.locator('#notebook-share-url').inputValue()).toBe('');
   } finally { await browser.close(); }
 });
+
+test('shared notes retain native HTML formatting while stripping executable HTML', async () => {
+  notes.get('alice:item:42').markdown = '<div><h2 id="native-section">Native section</h2><p style="color:red">العربية English</p><details open><summary>More</summary>Details</details><img src=x onerror="alert(1)"><script>alert(1)</script><span data-notebook-wiki="Secret">Visible</span></div>';
+  const { token } = await Shares.enable('alice', 'item:42');
+  const shared = await Shares.read(token);
+  expect(shared.html).toContain('style="color:red"');
+  expect(shared.html).toContain('<details open');
+  expect(shared.html).toContain('notebook-arabic');
+  expect(shared.html).not.toMatch(/onerror|<script|data-notebook-wiki/);
+  expect(shared.outline[0].id).toBe('native-section');
+});
+
+test('parallel heading outline includes only the first column', async () => {
+  notes.get('alice:item:42').markdown = '## عنوان || Translation\n\n### Next || ### Other translation';
+  const { token } = await Shares.enable('alice', 'item:42');
+  const shared = await Shares.read(token);
+  expect(shared.outline).toHaveLength(2);
+  expect(shared.outline.map(item => item.parts.map(part => part.text).join(''))).toEqual(['عنوان', 'Next']);
+  expect(shared.html).toContain('Translation</h2>');
+});

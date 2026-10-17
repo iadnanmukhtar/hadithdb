@@ -15,7 +15,7 @@
 .notebook-markdown h6 { font-size: 1em; }
 .notebook-markdown [dir="rtl"] { direction: rtl; unicode-bidi: isolate; text-align: right; }
 .notebook-markdown [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
-.notebook-markdown :is(p, h1, h2, h3, h4, h5, h6, li, td, th):dir(rtl), .notebook-markdown .notebook-arabic { font-family: NotebookKitab, Kitab, Quran, serif; line-height: 2; font-synthesis: weight style; }
+.notebook-markdown .notebook-arabic { font-family: NotebookKitab, Kitab, Quran, serif; line-height: 2; font-synthesis: weight style; }
 .notebook-markdown strong, .notebook-markdown strong .notebook-arabic { font-weight: 700; }
 .notebook-markdown em, .notebook-markdown em .notebook-arabic { font-style: italic; }
 .notebook-markdown mark { background: #ffe680; color: #302a1b; padding: .05em 0; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
@@ -26,11 +26,24 @@
 /* Kitab lacks U+0305; use a face that shapes Arabic and its overline together. */
 .notebook-markdown [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
 .notebook-markdown blockquote { margin: 1rem 0; border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; }
-.notebook-markdown blockquote:has(> :first-child:dir(rtl)),
-.notebook-markdown blockquote:has(> :is(ul, ol):first-child > li:first-child:dir(rtl)) { direction: rtl; }
 .notebook-markdown blockquote > :first-child { margin-top: 0; }
 .notebook-markdown blockquote > :last-child { margin-bottom: 0; }
 .notebook-expand-reference { color: #805d00; margin-inline-start: .3rem; font-size: .85em; }
 .notebook-markdown pre { direction: ltr; text-align: left; overflow: auto; }
 .notebook-markdown img { max-width: 100%; }
 .notebook-markdown table { display: block; overflow-x: auto; }
+
+/* Keep bilingual rows in source order, with equal tracks even on small screens. */
+.notebook-markdown .notebook-parallel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: start; }
+.notebook-markdown .notebook-parallel-cell { min-width: 0; padding-inline: .5rem; }
+.notebook-markdown .notebook-parallel-cell > :first-child { margin-top: 0; }
+.notebook-markdown .notebook-parallel-cell > :last-child { margin-bottom: .5rem; }
+
+.notebook-markdown .notebook-subtext { font-size: .8em; opacity: .75; }
+.notebook-markdown .task-list-item { list-style-type: none; }
+.notebook-markdown .task-list-item-checkbox { margin-inline: 0 .5em; }
+.notebook-markdown dd { margin-inline: 2em 0; }
+.notebook-markdown .hljs-keyword, .hljs-selector-tag, .hljs-literal { color: #8250df; }
+.notebook-markdown .hljs-string, .hljs-attr { color: #116329; }
+.notebook-markdown .hljs-number, .hljs-built_in { color: #0550ae; }
+.notebook-markdown .hljs-comment { color: #656d76; font-style: italic; }

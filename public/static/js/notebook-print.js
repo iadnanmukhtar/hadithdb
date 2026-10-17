@@ -23,7 +23,7 @@
         h1 { font-size: 22pt; } h2 { font-size: 18pt; } h3 { font-size: 15pt; }
         h1, h2, h3, h4, h5, h6 { line-height: 1.4; break-after: avoid; }
         [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
-        :is(p,h1,h2,h3,h4,h5,h6,li,td,th):dir(rtl), .notebook-arabic { font-family: Kitab, serif; line-height: 2; }
+        .notebook-arabic { font-family: Kitab, serif; line-height: 2; }
         .notebook-arabic { font-size: 1.2em; } .notebook-arabic .notebook-arabic { font-size: inherit; }
         [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
         strong, strong .notebook-arabic { font-weight: 700; }
@@ -36,6 +36,17 @@
         header h1 { margin: 0; }
         a { color: inherit; text-decoration: underline; }
         blockquote { margin-inline: 0; padding-inline-start: 1rem; border-inline-start: 3px solid #ccc; }
+        .notebook-parallel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+        .notebook-parallel-cell { min-width: 0; padding-inline: .5rem; }
+        .notebook-parallel-cell > :first-child { margin-top: 0; }
+        .notebook-subtext { font-size: .8em; opacity: .75; }
+        .task-list-item { list-style-type: none; }
+        .task-list-item-checkbox { margin-inline: 0 .5em; }
+        dd { margin-inline: 2em 0; }
+        .hljs-keyword, .hljs-selector-tag, .hljs-literal { color: #8250df; }
+        .hljs-string, .hljs-attr { color: #116329; }
+        .hljs-number, .hljs-built_in { color: #0550ae; }
+        .hljs-comment { color: #656d76; font-style: italic; }
         pre { white-space: pre-wrap; overflow-wrap: anywhere; direction: ltr; text-align: left; }
         img { max-width: 100%; height: auto; break-inside: avoid; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -69,7 +80,7 @@
           tags.textContent = note.tags; header.append(tags);
         }
         const article = doc.createElement('article');
-        // Use the authenticated notebook renderer, which disables raw HTML.
+        // Use the authenticated notebook renderer, which sanitizes native HTML.
         article.innerHTML = result.html;
         article.querySelectorAll('.notebook-expand-reference, .footnote-backref').forEach(node => node.remove());
         article.querySelectorAll('a[href]').forEach(link => {

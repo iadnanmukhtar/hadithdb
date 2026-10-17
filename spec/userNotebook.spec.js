@@ -80,8 +80,8 @@ test('formatting preserves literal code, escaped markers, unmatched markers and 
   expect(Notebook.render('\\=\\=literal\\=\\= \\_\\_literal\\_\\_ \\<u>literal</u>')).not.toMatch(/<(mark|u)>/);
   expect(Notebook.render('==unfinished <u>unfinished')).not.toMatch(/<(mark|u)>/);
   const html = Notebook.render('<u onclick="alert(1)">bad</u> <img src=x onerror=alert(1)> ==<script>alert(1)</script>==');
-  expect(html).not.toMatch(/<(u|img|script)[ >]/);
-  expect(html).toContain('&lt;script&gt;');
+  expect(html).toContain('<img src="x"');
+  expect(html).not.toMatch(/<script|onerror=|onclick=/);
 });
 test.each(['javascript:alert(1)', '//evil.test', '/\\evil.test', 'https://evil.test/note'])('rejects unsafe source URL %s', url => {
   expect(() => Notebook.sourceUrl(url)).toThrow('Invalid source URL');
@@ -112,7 +112,7 @@ test('explicit Markdown links do not receive expand controls in their labels or 
 });
 test.each(['', ' "Expanded reference"'])('saved expansions render as permanent quotations without another expand button (%s)', title => {
   const html = Notebook.render(`> **[bukhari:100](/bukhari:100${title})**\n>\n> النص العربي\n>\n> English translation`);
-  expect(html).toContain('<blockquote dir="auto">');
+  expect(html).toContain('<blockquote dir="ltr">');
   expect(html).toContain('النص العربي');
   expect(html).not.toContain('data-notebook-reference=');
 });
@@ -486,4 +486,26 @@ test.each(['quran:17:18', 'quran:17:18-20'])('plain %s remains expandable when a
 test('a citation alone is not an expandable plain reference', async () => {
   await expect(Notebook.expandedDraft({ markdown: '> النص ([source](/quran:17:18))', reference: 'quran:17:18' })).rejects.toMatchObject({ status: 400 });
   expect(Item.itemFromRef).not.toHaveBeenCalled();
+});
+
+
+test('parallel bilingual rows support independent headings, text and bullets', () => {
+  const html = Notebook.render('## العربية || ## English\nنص **عربي** || English *text*\n- عنصر || - Item');
+  expect((html.match(/class="notebook-parallel"/g) || []).length).toBe(3);
+  expect((html.match(/class="notebook-parallel-cell"/g) || []).length).toBe(6);
+  expect(html).toContain('<h2 dir="rtl">');
+  expect(html).toContain('<h2 dir="auto">English</h2>');
+  expect(html).toContain('<em>text</em>');
+  expect((html.match(/<ul(?: |>)/g) || []).length).toBe(2);
+  expect(html).toContain('<li dir="rtl">');
+  expect(html).toContain('Item');
+});
+
+test('parallel separators preserve literal code, escapes, tables and HTML safety', () => {
+  for (const source of ['`a || b`', 'a \\|\\| b', '```\na || b\n```', '    a || b'])
+    expect(Notebook.render(source)).not.toContain('notebook-parallel');
+  expect(Notebook.render('| A | B |\n| --- | --- |\n| x | y |')).toContain('<table>');
+  const html = Notebook.render('<script>alert(1)</script> || English');
+  expect(html).toContain('notebook-parallel');
+  expect(html).not.toContain('<script>');
 });

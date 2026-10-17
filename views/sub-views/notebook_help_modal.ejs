@@ -39,6 +39,7 @@
               <tr><th scope="row">Strikethrough</th><td><code>~~strikethrough~~</code></td></tr>
               <tr><th scope="row">Highlight</th><td><code>==highlighted text==</code></td></tr>
               <tr><th scope="row">Underline</th><td><code>__underlined text__</code> or <code>&lt;u&gt;underlined text&lt;/u&gt;</code></td></tr>
+              <tr><th scope="row">Subtext</th><td><code>-# Smaller text</code> at the start of a line</td></tr>
               <tr><th scope="row">Lists</th><td><code>- A bullet point</code><br><code>1. A numbered point</code></td></tr>
               <tr><th scope="row">Quotation</th><td><code>&gt; Quoted text</code></td></tr>
               <tr><th scope="row">Bullets inside a quotation</th><td><pre class="mb-0"><code>&gt; - A bullet point
@@ -52,6 +53,22 @@
         </div>
         <p>Leave a blank line between paragraphs. Arabic and English can be used together; text direction adjusts automatically.</p>
         <p>In notes, two underscores mean <strong>underline</strong>; use two asterisks for <strong>bold</strong>. Combine formatting when needed, for example <code>==**bold highlighted text**==</code>. Wrap markers in backticks to show them literally.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Extended Markdown</h3>
+        <p>These formats work in preview, shared notes, and PDF:</p>
+        <ul>
+          <li>Tables: use a header row, a separator such as <code>| --- | --- |</code>, and data rows.</li>
+          <li>Code blocks: surround code with three backticks; add a language such as <code>json</code> after the opening backticks for highlighting.</li>
+          <li>Heading links: <code>### Section {#section}</code> and <code>[Jump to section](#section)</code>.</li>
+          <li>Definitions: write a term, then <code>: Its definition</code> on the next line.</li>
+          <li>Tasks: <code>- [ ] To do</code> and <code>- [x] Done</code>. Change the markers in the editor to update them.</li>
+          <li>Emoji: <code>:joy:</code>, <code>:tent:</code>, or paste an emoji.</li>
+          <li>Subscript: <code>H~2~O</code>. Superscript: <code>X^2^</code>.</li>
+          <li>URLs become links automatically. Wrap a URL in backticks to keep it literal.</li>
+        </ul>
+
+        <h3 class="fs-6 fw-bold mt-4">Native HTML</h3>
+        <p>You can also use HTML such as <code>&lt;br&gt;</code>, <code>&lt;span style="color: red"&gt;colored text&lt;/span&gt;</code>, tables, images, and <code>&lt;details&gt;&lt;summary&gt;More&lt;/summary&gt;Details&lt;/details&gt;</code>. Use <code>dir="rtl"</code> or <code>dir="ltr"</code> to set direction explicitly. Leave blank lines around HTML blocks; Markdown inside a block follows standard Markdown HTML rules. Scripts, event handlers, embedded frames, and unsafe URLs or styles are removed. Wrap HTML in backticks or a fenced code block to display it literally.</p>
 
         <h3 class="fs-6 fw-bold mt-4">Keyboard shortcuts</h3>
         <p>While editing a note, select the text you want to format, then use a shortcut below. Use <kbd>Cmd</kbd> on Mac or <kbd>Ctrl</kbd> on Windows and Linux. These work in the regular, floating, and fullscreen editors.</p>

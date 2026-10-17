@@ -904,6 +904,23 @@
   preview.addEventListener('click', event => {
     const pointerCaret = previewPointerCaret;
     previewPointerCaret = null;
+    const anchor = event.target.closest('a[href^="#"]');
+    if (anchor && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+      // Resolve within this note, without changing the reader page's URL/hash.
+      event.preventDefault();
+      event.stopPropagation();
+      let id = anchor.getAttribute('href').slice(1);
+      try { id = decodeURIComponent(id); } catch (_) { /* Keep literal malformed escapes. */ }
+      const target = Array.from(preview.querySelectorAll('[id]')).find(element => element.id === id);
+      if (target) {
+        for (let parent = target.parentElement; parent && parent !== preview; parent = parent.parentElement)
+          if (parent.tagName === 'DETAILS') parent.open = true;
+        preview.scrollTop += target.getBoundingClientRect().top - preview.getBoundingClientRect().top - 8;
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+      }
+      return;
+    }
     const button = event.target.closest('[data-notebook-reference]');
     if (button && current && !locked) { expandReference(button, current, true); return; }
     if (event.target.closest('a, button, input, textarea, select, summary')) return;
@@ -927,7 +944,13 @@
   // Keep native new-tab links on the current Quran host's notebook route.
   function localizeWikiLinks() {
     document.querySelectorAll('[data-notebook-wiki]').forEach(link => {
-      link.href = quranApiPath('/notebook').replace('/api/', '/') + '?note=' + encodeURIComponent(link.dataset.notebookWiki);
+      link.href = new URL(quranApiPath('/notebook').replace('/api/', '/') + '?note=' + encodeURIComponent(link.dataset.notebookWiki), location.href).href;
+    });
+    preview.querySelectorAll('a[href]').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href.startsWith('#')) return;
+      try { link.setAttribute('href', new URL(href, location.href).href); }
+      catch (_) { /* Leave invalid URLs untouched. */ }
     });
   }
   new MutationObserver(localizeWikiLinks).observe(preview, { childList: true, subtree: true });
@@ -952,7 +975,7 @@
     updateOutlinePosition();
   }
   function rebuildOutline() {
-    outlineHeadings = Array.from(preview.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(heading => heading.textContent.trim());
+    outlineHeadings = Array.from(preview.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(heading => heading.textContent.trim() && !heading.closest('.notebook-parallel-cell + .notebook-parallel-cell'));
     const baseLevel = Math.min(...outlineHeadings.map(heading => Number(heading.tagName.slice(1))));
     outlineItems.replaceChildren();
     outlineButtons = outlineHeadings.map(heading => {

@@ -162,3 +162,39 @@ test.each(['missing hit test', 'element hit test', 'focus scroll'])('preserves a
   await page.mouse.click(point.x, point.y);
   expect(await page.evaluate(() => editor.selectionStart)).toBe(markdown.indexOf('target25') + 3);
 });
+
+test.each(['section', 'قسم', 'part:one.two'])('fragment links scroll to the heading inside the note: %s', async id => {
+  const markdown = `[Jump to **section**](#${encodeURIComponent(id)})\n\n` + 'Paragraph\n\n'.repeat(30) + `### Destination {#${id}}\n\n` + 'More\n\n'.repeat(20);
+  await page.setContent(`<h2 id="${id}">Outside note</h2><style>#preview {height:220px;overflow:auto}</style><textarea id="editor" hidden></textarea><div id="preview"></div>`);
+  await page.evaluate(({ markdown, html, handlers }) => {
+    window.editor = document.getElementById('editor'); window.preview = document.getElementById('preview');
+    editor.value = markdown; preview.innerHTML = html;
+    window.current = {}; window.busy = false; window.editing = false;
+    window.mode = () => { window.editing = true; };
+    (0, eval)(handlers);
+  }, { markdown, html: Notebook.render(markdown), handlers });
+  const url = page.url();
+  await page.locator('#preview a strong').click();
+  const result = await page.evaluate(() => ({ scroll: preview.scrollTop,
+    target: document.activeElement === preview.querySelector('h3'),
+    offset: preview.querySelector('h3').getBoundingClientRect().top - preview.getBoundingClientRect().top,
+    editing }));
+  expect(result.scroll).toBeGreaterThan(300);
+  expect(result.target).toBe(true);
+  expect(result.offset).toBeCloseTo(8, 0);
+  expect(result.editing).toBe(false);
+  expect(page.url()).toBe(url);
+});
+
+test('missing note fragments do not navigate to an underlying page heading', async () => {
+  await page.setContent('<h2 id="outside">Page heading</h2><div id="preview"><a href="#outside">Missing in note</a></div><textarea id="editor"></textarea>');
+  await page.evaluate(handlers => {
+    window.preview = document.getElementById('preview'); window.editor = document.getElementById('editor');
+    window.current = {}; window.busy = false; window.editing = false;
+    (0, eval)(handlers);
+  }, handlers);
+  const url = page.url();
+  await page.locator('#preview a').click();
+  expect(page.url()).toBe(url);
+  expect(await page.locator('#preview').evaluate(el => el.scrollTop)).toBe(0);
+});

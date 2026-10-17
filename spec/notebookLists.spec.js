@@ -63,3 +63,22 @@ test.each([390, 1280])('Arabic-only blocks and bullet markers use RTL inside an 
     expect(await page.locator('ul[dir="rtl"]').count()).toBe(3);
   } finally { await page.close(); }
 });
+
+test('parallel headings share their size and create one private outline entry', async () => {
+  const page = await browser.newPage();
+  try {
+    const css = fs.readFileSync(require.resolve('../views/sub-views/notebook_content_styles.ejs'), 'utf8');
+    const source = fs.readFileSync(require.resolve('../public/static/js/notebook.js'), 'utf8');
+    const rebuild = source.slice(source.indexOf('  function rebuildOutline()'), source.indexOf('  new MutationObserver(rebuildOutline)'));
+    await page.setContent(`<style>${css}</style><article id="preview" class="notebook-markdown">${Notebook.render('## Heading || Translation')}</article><ol id="items"></ol>`);
+    const result = await page.evaluate(rebuild => {
+      window.preview = document.getElementById('preview'); window.outlineItems = document.getElementById('items');
+      window.outlineHeadings = []; window.outlineButtons = []; window.updateOutlineVisibility = () => {};
+      (0, eval)(rebuild); rebuildOutline();
+      return { entries: outlineHeadings.map(h => h.textContent), sizes: [...preview.querySelectorAll('h2')].map(h => getComputedStyle(h).fontSize) };
+    }, rebuild);
+    expect(result.entries).toEqual(['Heading']);
+    expect(result.sizes).toHaveLength(2);
+    expect(result.sizes[0]).toBe(result.sizes[1]);
+  } finally { await page.close(); }
+});
