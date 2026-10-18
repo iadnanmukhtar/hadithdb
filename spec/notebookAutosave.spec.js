@@ -138,3 +138,11 @@ test('server-updated frontmatter replaces only an unchanged draft and does not a
   await jest.advanceTimersByTimeAsync(2000);
   expect(ctx.api).toHaveBeenCalledTimes(1);
 });
+
+
+test.each(['forward', 'backward'])('preview receives the active %s selection endpoint', direction => {
+  const ctx = harness();
+  Object.assign(ctx.editor, {selectionStart: 2, selectionEnd: 4, selectionDirection: direction});
+  ctx.showPreview();
+  expect(ctx.renderPreview).toHaveBeenCalledWith(direction === 'backward' ? 2 : 4);
+});

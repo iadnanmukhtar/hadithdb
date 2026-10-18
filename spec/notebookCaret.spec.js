@@ -3,7 +3,7 @@ const fs = require('fs');
 const { chromium } = require('playwright');
 const Notebook = require('../lib/UserNotebook');
 const source = fs.readFileSync(require.resolve('../public/static/js/notebook.js'), 'utf8');
-const handlers = source.slice(source.indexOf('  function previewCaretOffset('), source.indexOf('  async function openWiki('));
+const handlers = source.slice(source.indexOf('  function revealPreviewCaret('), source.indexOf('  async function openWiki('));
 jest.setTimeout(30000);
 let browser, page;
 beforeAll(async () => { browser = await chromium.launch({ channel: 'chrome', headless: true }); });
@@ -197,4 +197,27 @@ test('missing note fragments do not navigate to an underlying page heading', asy
   await page.locator('#preview a').click();
   expect(page.url()).toBe(url);
   expect(await page.locator('#preview').evaluate(el => el.scrollTop)).toBe(0);
+});
+
+
+test.each([420, 290])('preview centers the editor caret at width %i', async width => {
+  const markdown = Array.from({length: 70}, (_, i) => `Paragraph ${i}: **Repeated words** and العربية with target${i} in a longer passage that wraps across lines.`).join('\n\n');
+  await page.setContent(`<style>#preview {box-sizing:border-box;width:${width}px;height:240px;overflow:auto;font:20px/1.8 monospace} p {margin:0 0 20px}</style><textarea id="editor" hidden></textarea><div id="preview"></div>`);
+  await page.evaluate(({markdown, html, handlers}) => {
+    window.editor = document.getElementById('editor'); window.preview = document.getElementById('preview');
+    editor.value = markdown; preview.innerHTML = html;
+    (0, eval)(handlers);
+  }, {markdown, html:Notebook.render(markdown), handlers});
+  for (const index of [40, 5, 65, 20]) {
+    const result = await page.evaluate(index => {
+      revealPreviewCaret(editor.value.indexOf(`target${index}`) + 3);
+      const paragraph = preview.querySelectorAll('p')[index];
+      const node = paragraph.lastChild;
+      const range = document.createRange();
+      range.setStart(node, node.textContent.indexOf(`target${index}`) + 3); range.collapse(true);
+      const rect = range.getBoundingClientRect();
+      return {y:rect.top + rect.height / 2 - preview.getBoundingClientRect().top, center:preview.clientHeight / 2};
+    }, index);
+    expect(Math.abs(result.y - result.center)).toBeLessThan(2);
+  }
 });

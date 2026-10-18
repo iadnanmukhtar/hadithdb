@@ -475,17 +475,21 @@
       const result = await api('/tags'); if (request === tagRequest) { railTags = result.tags; renderTagRail(); } }
     catch (_) { if (request === tagRequest) { railTags = []; renderTagRail(); } }
   }
-  async function renderPreview() {
+  async function renderPreview(caretOffset) {
     const request = ++previewRequest, ownGeneration = generation, text = editor.value;
     if (current && text === current.markdown && current.html !== undefined) {
       preview.innerHTML = current.html;
+      if (caretOffset !== undefined) revealPreviewCaret(caretOffset);
       return;
     }
     // Avoid showing a stale preview while the new render is in flight.
     preview.textContent = text;
     try {
       const result = await api('/preview', 'POST', { markdown: text });
-      if (request === previewRequest && ownGeneration === generation && editor.value === text) preview.innerHTML = result.html;
+      if (request === previewRequest && ownGeneration === generation && editor.value === text) {
+        preview.innerHTML = result.html;
+        if (!editing && caretOffset !== undefined) revealPreviewCaret(caretOffset);
+      }
     } catch (err) { if (ownGeneration === generation) status.textContent = err.message; }
   }
   function updateList(note) {
@@ -576,8 +580,9 @@
   }
   function showPreview() {
     if (!editing || busy) return;
+    const offset = editor.selectionDirection === 'backward' ? editor.selectionStart : editor.selectionEnd;
     mode(false);
-    renderPreview();
+    renderPreview(offset);
     scheduleSave();
   }
   function saveAndPreview() {
@@ -803,41 +808,61 @@
     } catch (err) { if (ownGeneration === generation) targetStatus.textContent = err.message; }
     finally { if (ownGeneration === generation) { button.disabled = false; setBusy(false); } }
   }
-  function previewCaretOffset(event) {
-    const caret = document.caretPositionFromPoint?.(event.clientX, event.clientY);
-    const range = caret ? null : document.caretRangeFromPoint?.(event.clientX, event.clientY);
-    let node = caret?.offsetNode || range?.startContainer;
-    let offset = caret ? caret.offset : range?.startOffset;
-    if (!node || node.nodeType !== Node.TEXT_NODE || !preview.contains(node)) {
-      // Paragraph margins, blank space and some browser hit tests return an
-      // element (or nothing). Resolve the nearest rendered text, never note end.
-      const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
-      const probe = document.createRange();
-      let part, nearest = null, best = Infinity;
-      const distance = rect => {
-        const dy = Math.max(rect.top - event.clientY, event.clientY - rect.bottom, 0);
-        const dx = Math.max(rect.left - event.clientX, event.clientX - rect.right, 0);
-        return dy * 100000 + dx;
-      };
-      while ((part = walker.nextNode())) {
-        if (!part.nodeValue.trim() || part.parentElement.closest('button, .footnote-backref')) continue;
-        probe.selectNodeContents(part);
-        for (const rect of probe.getClientRects()) {
-          if (!rect.height) continue;
-          const score = distance(rect);
-          if (score < best) { best = score; nearest = part; }
+  function revealPreviewCaret(offset) {
+    const range = previewCaretOffset(null, offset);
+    if (!range) return;
+    // Folded sections must be visible before measuring their caret position.
+    for (let parent = range.startContainer.parentElement; parent && parent !== preview; parent = parent.parentElement) {
+      if (parent.tagName === 'DETAILS') parent.open = true;
+    }
+    const rect = range.getBoundingClientRect();
+    preview.scrollTop += rect.top + rect.height / 2 - preview.getBoundingClientRect().top - preview.clientTop - preview.clientHeight / 2;
+  }
+  function previewCaretOffset(event, sourceCaret) {
+    const locatingPreview = sourceCaret !== undefined;
+    let lastRange = null;
+    const renderedRange = (part, index) => {
+      const range = document.createRange();
+      range.setStart(part, index); range.collapse(true);
+      return range;
+    };
+    let node, offset = 0;
+    if (!locatingPreview) {
+      const caret = document.caretPositionFromPoint?.(event.clientX, event.clientY);
+      const range = caret ? null : document.caretRangeFromPoint?.(event.clientX, event.clientY);
+      node = caret?.offsetNode || range?.startContainer;
+      offset = caret ? caret.offset : range?.startOffset;
+      if (!node || node.nodeType !== Node.TEXT_NODE || !preview.contains(node)) {
+        // Paragraph margins, blank space and some browser hit tests return an
+        // element (or nothing). Resolve the nearest rendered text, never note end.
+        const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
+        const probe = document.createRange();
+        let part, nearest = null, best = Infinity;
+        const distance = rect => {
+          const dy = Math.max(rect.top - event.clientY, event.clientY - rect.bottom, 0);
+          const dx = Math.max(rect.left - event.clientX, event.clientX - rect.right, 0);
+          return dy * 100000 + dx;
+        };
+        while ((part = walker.nextNode())) {
+          if (!part.nodeValue.trim() || part.parentElement.closest('button, .footnote-backref')) continue;
+          probe.selectNodeContents(part);
+          for (const rect of probe.getClientRects()) {
+            if (!rect.height) continue;
+            const score = distance(rect);
+            if (score < best) { best = score; nearest = part; }
+          }
         }
-      }
-      if (!nearest) return 0;
-      node = nearest; offset = 0; best = Infinity;
-      // Collapsed ranges give visual caret positions even in right-to-left text.
-      for (let i = 0; i <= node.length; i++) {
-        if (i && i < node.length && /[\uDC00-\uDFFF]/.test(node.nodeValue[i])) continue;
-        probe.setStart(node, i); probe.collapse(true);
-        for (const rect of probe.getClientRects()) {
-          if (!rect.height) continue;
-          const score = distance(rect);
-          if (score < best) { best = score; offset = i; }
+        if (!nearest) return 0;
+        node = nearest; offset = 0; best = Infinity;
+        // Collapsed ranges give visual caret positions even in right-to-left text.
+        for (let i = 0; i <= node.length; i++) {
+          if (i && i < node.length && /[\uDC00-\uDFFF]/.test(node.nodeValue[i])) continue;
+          probe.setStart(node, i); probe.collapse(true);
+          for (const rect of probe.getClientRects()) {
+            if (!rect.height) continue;
+            const score = distance(rect);
+            if (score < best) { best = score; offset = i; }
+          }
         }
       }
     }
@@ -884,11 +909,26 @@
         if (part === node) return positions[matched];
         continue;
       }
+      if (locatingPreview) {
+        if (sourceCaret <= positions[start + value.length]) {
+          let index = 0;
+          while (index < value.length && positions[start + index] < sourceCaret) index++;
+          if (overlined) {
+            let visible = 0, rendered = 0;
+            while (rendered < part.length && visible < index) {
+              if (part.nodeValue[rendered++] !== '\u0305') visible++;
+            }
+            index = rendered;
+          }
+          return renderedRange(part, index);
+        }
+        lastRange = renderedRange(part, part.length);
+      }
       if (part === node) return positions[start + Math.min(sourceOffset, value.length)];
       cursor = start + value.length;
     }
     // Whitespace outside text nodes uses the nearest preceding source position.
-    return positions[cursor];
+    return locatingPreview ? lastRange : positions[cursor];
   }
   function revealEditorCaret(offset, viewportY) {
     editor.setSelectionRange(offset, offset);
