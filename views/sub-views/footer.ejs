@@ -7,8 +7,7 @@
 			req.path === '/quran/review'
 			|| /^\/quran\/page(?:\/|$)/.test(req.path || '')
 			|| (req.query && (
-				req.query.mushaf !== undefined
-				|| req.query.memorize !== undefined
+				req.query.memorize !== undefined
 				|| req.query.review !== undefined
 			))
 		);

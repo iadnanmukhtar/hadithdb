@@ -51,7 +51,15 @@ router.get('/', async function (req, res, next) {
     const renderLocals = {
       BookDownloads: BookDownloads,
       Tafsir: Tafsir,
-      tafsirs: tafsirs
+      tafsirs: tafsirs,
+      quranHeaderJuzLinks: Array.from({ length: 30 }, function (_unused, index) {
+        const number = index + 1;
+        return {
+          num: number,
+          title: `الجزء ${number}`,
+          href: Utils.quranUrl(req, `/quran/juz/${number}`)
+        };
+      })
     };
     if (!editMode && Utils.diskCacheEnabled()) {
       const html = await ejs.renderFile(`${__dirname}/../views/tafsir_books.ejs`, Utils.cachedRenderLocals(res, {

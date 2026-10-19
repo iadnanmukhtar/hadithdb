@@ -146,6 +146,7 @@
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-sliders"></i> My Settings</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isMcpServerArea) %>" href="<%= utils.urlFor(req, '/mcp-server') %>"><i class="bi bi-braces"></i> MCP Server</a></li>
+            <li hidden data-web-app-install><button class="dropdown-item" type="button" data-web-app-install><i class="bi bi-download" aria-hidden="true"></i> <span data-web-app-install-label>Install app</span></button></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isAboutArea) %>" href="/about"><i class="bi bi-info-circle" aria-hidden="true"></i> About</a></li>
           </ul>
         </li>
@@ -240,6 +241,9 @@
           <a class="offcanvas-quick-action<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>" title="My Settings" aria-label="My Settings">
             <i class="bi bi-sliders" aria-hidden="true"></i>
           </a>
+          <button hidden data-web-app-install class="offcanvas-quick-action" type="button" title="Install app" aria-label="Install app">
+            <i class="bi bi-download" aria-hidden="true"></i>
+          </button>
         </div>
         <div class="row">
           <%- include('offcanvas_primary_nav.ejs', {
@@ -482,7 +486,7 @@
   </nav>
   <% } %>
 
-  <% if ((requestPath === '/quran' || requestPath === '/quran/review' || pageQuranCommentaryBook) && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
+  <% if ((requestPath === '/quran' || requestPath === '/quran/review' || isQuranTafsirArea || pageQuranCommentaryBook) && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
   <nav class="row g-0 chapter-toc quran-section-menu">
     <div class="col-12 chapter-toc-toolbar">
       <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="Show juz sections">
@@ -492,7 +496,7 @@
       </a>
       <span class="chapter-toc-reader-modes">
         <%- include('quran_reader_modes.ejs', {
-          readerMode: pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir' ? 'tafsir' : (requestPath === '/quran/review' ? 'review' : undefined),
+          readerMode: isQuranTafsirArea ? 'tafsir' : (requestPath === '/quran/review' ? 'review' : undefined),
           passageHref: utils.quranUrl(req, '/quran/1'),
           ayahHref: `${utils.quranUrl(req, '/quran/1')}?ayat`,
           mushafHref: utils.quranUrl(req, '/quran/page'),

@@ -1844,8 +1844,7 @@
       req.path === '/quran/review'
       || /^\/quran\/page(?:\/|$)/.test(req.path || '')
       || (req.query && (
-        req.query.mushaf !== undefined
-        || req.query.memorize !== undefined
+        req.query.memorize !== undefined
         || req.query.review !== undefined
       ))
     );
@@ -2409,4 +2408,5 @@
 %>
 
 <script src="/static/js/account-controls.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/web-app-install.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <%- include('notebook_modal.ejs'); %>

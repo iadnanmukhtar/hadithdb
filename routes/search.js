@@ -1695,17 +1695,6 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   }
   if (results[0].book_alias === 'quran')
     await addQuranAdjacentRefs(results[0]);
-  if (results[0].book_alias === 'quran'
-    && req.query.mushaf !== undefined
-    && !('json' in req.query)
-    && !('md' in req.query)) {
-    var selectedSurah = Number(results[0].h1 || (results[0].num || '').toString().split(/:/)[0]);
-    var selectedAyah = Number(results[0].numInChapter || (results[0].num || '').toString().split(/:/).pop());
-    var selectedPage = await QuranMushaf.pageForRef(selectedSurah, selectedAyah);
-    if (!Number.isInteger(selectedPage))
-      return next(createError(404, `A Mushaf page was not found for Quran ayah ${selectedSurah}:${selectedAyah}`));
-    return res.redirect(302, Utils.quranUrl(req, `/quran/page/${selectedPage}?ayah=${selectedSurah}:${selectedAyah}`));
-  }
   if (results[0].book_alias === 'quran' && ('json' in req.query || 'md' in req.query)) {
     var sourceArabicRows = await query(
       `SELECT body, body_ar_alt
@@ -2665,6 +2654,11 @@ async function renderQuranMushafPage(req, res, next, options) {
       current: !!firstJuz && Number(firstJuz.num) === Number(juz.num)
     };
   }))).filter(Boolean);
+  var quranMushafSurahPages = {};
+  if ((global.surahs || []).length > 1)
+    quranMushafSurahPages = await QuranMushaf.firstPagesForSurahs();
+  else if (firstSurah)
+    quranMushafSurahPages[Number(firstSurah.num)] = pageNumber;
   quranHeaderJuzLinks.forEach(function (juz, index) {
     var nextJuz = quranHeaderJuzLinks[index + 1];
     juz.endPage = nextJuz ? nextJuz.startPage - 1 : Number(mushaf.info.number_of_pages);
@@ -2811,6 +2805,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     firstRef: firstWord ? `${firstWord.surah}:${firstWord.ayah}` : '',
     firstSurah: firstSurah,
     firstJuz: firstJuz,
+    quranMushafSurahPages: quranMushafSurahPages,
     quranHeaderJuzLinks: quranHeaderJuzLinks,
     quranHeadingOutlines: quranHeadingOutlines,
     page: {
@@ -3783,8 +3778,6 @@ async function renderBookSection(req, res, next) {
       section.mushafPage = await QuranMushaf.pageForSection(chapterNum, sectionNum, sectionStartAyah);
       if (!section.mushafPage)
 		return next(createError(404, `A Mushaf page was not found for Quran passage ${chapterNum}/${sectionNum}`));
-      if (req.query.mushaf !== undefined)
-        return res.redirect(302, Utils.quranUrl(req, `/quran/page/${section.mushafPage}`));
     }
     var isQuranPassageSection = bookAlias === 'quran' && req.query.ayat == undefined;
     var quranSubsections = isQuranPassageSection

@@ -28,6 +28,7 @@ const ContentTranslations = require('./lib/ContentTranslations');
 const QuranRecitationFeedback = require('./lib/QuranRecitationFeedback');
 const GoogleAnalytics = require('./lib/GoogleAnalytics');
 const RuntimeRefresh = require('./lib/RuntimeRefresh');
+const WebApps = require('./lib/WebApps');
 const { mountInfiniteScrollApiRoutes } = require('./lib/InfiniteScrollApiRoutes');
 
 function debugNewRelicLoadError(err) {
@@ -423,6 +424,17 @@ const startupPromise = (async () => {
   app.use(express.json({ limit: REQUEST_BODY_LIMIT, verify: preserveStripeWebhookRawBody }));
   app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
   app.use(cookieParser());
+  app.use(function exposeInstallableWebApp(req, res, next) {
+    res.locals.webApp = WebApps.forRequest(req);
+    next();
+  });
+  app.get('/manifests/:app.webmanifest', function webAppManifest(req, res, next) {
+    const webApp = WebApps.APPS[req.params.app];
+    if (!webApp)
+      return next();
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.type('application/manifest+json').send(WebApps.manifest(webApp));
+  });
   app.use(function exposeFeatureFlags(req, res, next) {
     res.locals.paymentFeatureEnabled = PaymentConfig.isEnabled();
     res.locals.contentTranslationFeatureEnabled = PaymentConfig.contentTranslationsEnabled();

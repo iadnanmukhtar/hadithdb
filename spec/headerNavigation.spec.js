@@ -40,6 +40,8 @@ describe('shared header navigation', () => {
   const quranToc = fs.readFileSync(path.join(__dirname, '..', 'views', 'toc.ejs'), 'utf8');
   const quranStudy = fs.readFileSync(path.join(__dirname, '..', 'views', 'section_quran.ejs'), 'utf8');
   const tafsirPassage = fs.readFileSync(path.join(__dirname, '..', 'views', 'tafsir_passage.ejs'), 'utf8');
+  const tafsirBooks = fs.readFileSync(path.join(__dirname, '..', 'views', 'tafsir_books.ejs'), 'utf8');
+  const mushaf = fs.readFileSync(path.join(__dirname, '..', 'views', 'quran_mushaf.ejs'), 'utf8');
   const translationPassage = fs.readFileSync(path.join(__dirname, '..', 'views', 'translation_passage.ejs'), 'utf8');
   const searchResults = fs.readFileSync(path.join(__dirname, '..', 'views', 'search.ejs'), 'utf8');
   const readerModes = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'quran_reader_modes.ejs'), 'utf8');
@@ -233,9 +235,23 @@ describe('shared header navigation', () => {
 		expect(header).toContain('mushafHref: quranMappedMushafHref');
 		expect(header).toContain('memorizeHref: `${quranMappedMushafHref}?memorize`');
 		expect(readerModes).toContain("locals.mushafHref || utils.quranUrl(req, '/quran/page')");
-		expect(readerModes).not.toContain('`${utils.quranUrl(req, req.path)}?mushaf`');
 		expect(scripts).toContain("['passage', 'ayat', 'tafsir', 'mushaf', 'memorize', 'review'].forEach");
 		expect(scripts).toContain('updateQuranReaderModeHrefs(pageElement)');
+	});
+
+	test('shows the Quran section menu on the Tafsir catalog', () => {
+		expect(header).toContain("requestPath === '/quran/review' || isQuranTafsirArea || pageQuranCommentaryBook");
+		expect(header).toContain("readerMode: isQuranTafsirArea ? 'tafsir'");
+		expect(tafsirBooks).toContain('quranHeaderJuzLinks: locals.quranHeaderJuzLinks || []');
+	});
+
+	test('uses only canonical Mushaf page URLs for Mushaf navigation', () => {
+		const removedLegacyQuery = '?' + 'mushaf';
+		for (const source of [header, scripts, inlineScripts, mushaf])
+			expect(source).not.toContain(removedLegacyQuery);
+		expect(mushaf).toContain('`/quran/page/${surahPage}?ayah=${surah.num}:1`');
+		expect(scripts).toContain('data-quran-mushaf-juz-start-page');
+		expect(scripts).toContain('data-quran-mushaf-surah-page');
 	});
 
 	test('links Mushaf footer headings and subheadings to their H2 section', () => {

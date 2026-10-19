@@ -124,6 +124,14 @@
 <title><%= headTitle %></title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="theme-color" content="#174d7c">
+<% if (typeof webApp !== 'undefined' && webApp) { %>
+<link rel="manifest" href="/manifests/<%= webApp.key %>.webmanifest">
+<meta name="application-name" content="<%= webApp.name %>">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="<%= webApp.shortName %>">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<% } %>
 <% if (headDescription) { %>
 <meta name="description" content="<%= headDescription %>">
 <% } %>
