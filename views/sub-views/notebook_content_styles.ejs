@@ -1,5 +1,6 @@
 @font-face { font-family: NotebookKitab; font-style: normal; font-weight: 400; src: url('/static/fonts/kitab-base.woff2'); }
 @font-face { font-family: NotebookKitab; font-style: normal; font-weight: 700; src: url('/static/fonts/kitab-base-b.woff2'); }
+@font-face { font-family: QuranV1; font-style: normal; font-weight: 400; src: url('/static/fonts/DigitalKhattV1.otf'); }
 .notebook-markdown { color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
 .notebook-markdown a { color: var(--note-link, #0d6efd); }
 .notebook-markdown .footnotes-list { list-style-type: decimal; }
@@ -24,6 +25,7 @@
 .notebook-markdown .notebook-underline { text-decoration: underline; text-underline-offset: .15em; }
 .notebook-markdown .notebook-arabic { font-size: 1.2em; }
 .notebook-markdown .notebook-arabic .notebook-arabic { font-size: inherit; }
+.notebook-markdown .quran-ayah-end-marker { font-family: QuranV1, serif; font-size: 1em; font-weight: 400; white-space: nowrap; }
 /* Kitab lacks U+0305; use a face that shapes Arabic and its overline together. */
 .notebook-markdown [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
 .notebook-markdown blockquote { margin: 1rem 0; border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; }

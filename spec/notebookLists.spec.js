@@ -82,3 +82,38 @@ test('parallel headings share their size and create one private outline entry', 
     expect(result.sizes[0]).toBe(result.sizes[1]);
   } finally { await page.close(); }
 });
+
+test('the private outline scrolls its rail to keep the highlighted heading visible', async () => {
+  const page = await browser.newPage({ viewport: { width: 900, height: 600 } });
+  try {
+    const source = fs.readFileSync(require.resolve('../public/static/js/notebook.js'), 'utf8');
+    const functions = source.slice(source.indexOf('  function scrollOutlineToActive'), source.indexOf('  function updateOutlineVisibility'));
+    await page.setContent('<div id="outline" style="height:120px"><div id="content" style="height:120px;overflow:auto"><div id="items"></div></div></div><div id="preview"></div>');
+    const result = await page.evaluate(({ functions }) => {
+      window.outline = document.getElementById('outline');
+      window.outlineContent = document.getElementById('content');
+      window.preview = document.getElementById('preview');
+      window.outlineItems = document.getElementById('items');
+      for (let index = 0; index < 20; index++) {
+        const button = document.createElement('button');
+        button.textContent = `Heading ${index + 1}`;
+        button.style.cssText = 'display:block;height:32px;width:100%';
+        outlineItems.append(button);
+      }
+      window.outlineButtons = [...outlineItems.children];
+      window.outlineHeadings = outlineButtons.map((_, index) => ({ getBoundingClientRect: () => ({ top: index <= 15 ? 0 : 1000 }) }));
+      window.outlineActive = -1;
+      preview.getBoundingClientRect = () => ({ top: 0 });
+      (0, eval)(functions);
+      updateOutlinePosition();
+      const afterForward = { scrollTop: outlineContent.scrollTop, current: outlineButtons.findIndex(button => button.getAttribute('aria-current') === 'location') };
+      outlineHeadings = outlineButtons.map((_, index) => ({ getBoundingClientRect: () => ({ top: index === 0 ? 0 : 1000 }) }));
+      updateOutlinePosition();
+      return { afterForward, afterBack: outlineContent.scrollTop, previewScrollTop: preview.scrollTop };
+    }, { functions });
+    expect(result.afterForward.current).toBe(15);
+    expect(result.afterForward.scrollTop).toBeGreaterThan(0);
+    expect(result.afterBack).toBe(0);
+    expect(result.previewScrollTop).toBe(0);
+  } finally { await page.close(); }
+});

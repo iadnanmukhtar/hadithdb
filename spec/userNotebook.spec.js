@@ -453,12 +453,29 @@ test.each(['quran:1:1', 'quran:1:1-2'])('Quran quotation %s uses one decorative 
     expect(result).toContain('> In the name of Allah.');
   }
   expect(Notebook.render(result)).not.toContain('data-notebook-reference=');
+  expect(Notebook.render(result)).toContain('<span class="quran-ayah-end-marker">۝١</span>');
   expect(result).not.toContain('Expanded reference');
+});
+test('ayah ornaments use the Quran font marker without changing ordinary Arabic text', () => {
+  const html = Notebook.render('النص ۝١٥ وما بعده');
+  expect(html).toContain('<span class="notebook-arabic">النص</span> <span class="quran-ayah-end-marker">۝١٥</span>');
+  expect(html).toContain(' <span class="notebook-arabic">وما بعده</span>');
 });
 test('hadith expansion has a title, trailing Arabic source and grade, and English below', async () => {
   Item.itemFromRef.mockResolvedValue({ ref: 'bukhari:1', en: { title: 'Deeds depend on intentions', chain: 'Umar reported:', body: 'Deeds depend on intentions.' }, ar: { body: '«إنما الأعمال بالنيات»', book_shortName: 'البخاري', grade_grade: 'متفق عليه' } });
   const result = await References.snapshot('bukhari:1');
   expect(result).toBe('**Hadith: Deeds depend on intentions**\n\n> «إنما الأعمال بالنيات» ([البخاري ١](/bukhari:1) متفق عليه)\n> \n> Umar reported: *Deeds depend on intentions.*');
+});
+test('reference expansion preserves source punctuation instead of storing HTML entities', async () => {
+  Item.itemFromRef.mockResolvedValue({
+    ref: 'bukhari:1',
+    ar: { body: 'نص & ` * _ { } [ ] # ! | ~' },
+    en: { body: 'Text & ` * _ { } [ ] # ! | ~' }
+  });
+  const result = await References.snapshot('bukhari:1');
+  expect(result).toContain('نص & ` * _ { } [ ] # ! | ~');
+  expect(result).toContain('Text & ` * _ { } [ ] # ! | ~');
+  expect(result).not.toMatch(/&#\d+;|&amp;|&lt;|&gt;/);
 });
 
 test.each(['quran:1:1', 'quran:1:1-2'])('Quran expansion %s uses ordinary script from the current database record', async ref => {

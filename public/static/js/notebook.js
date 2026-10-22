@@ -1062,8 +1062,16 @@
   new MutationObserver(localizeWikiLinks).observe(preview, { childList: true, subtree: true });
   // The outline stays outside the preview's scroll container.
   const outline = document.getElementById('notebook-outline');
+  const outlineContent = document.getElementById('notebook-outline-content');
   const outlineItems = document.getElementById('notebook-outline-items');
-  let outlineHeadings = [], outlineButtons = [];
+  let outlineHeadings = [], outlineButtons = [], outlineActive = -1;
+  function scrollOutlineToActive(button) {
+    if (!button || outlineContent.hidden || !outlineContent.clientHeight) return;
+    const contentBox = outlineContent.getBoundingClientRect();
+    const buttonBox = button.getBoundingClientRect();
+    if (buttonBox.top < contentBox.top) outlineContent.scrollTop += buttonBox.top - contentBox.top;
+    else if (buttonBox.bottom > contentBox.bottom) outlineContent.scrollTop += buttonBox.bottom - contentBox.bottom;
+  }
   function updateOutlinePosition() {
     if (outline.hidden || !outlineHeadings.length) return;
     const top = preview.getBoundingClientRect().top;
@@ -1075,6 +1083,10 @@
       if (index === active) button.setAttribute('aria-current', 'location');
       else button.removeAttribute('aria-current');
     });
+    if (active !== outlineActive) {
+      outlineActive = active;
+      scrollOutlineToActive(outlineButtons[active]);
+    }
   }
   function updateOutlineVisibility() {
     outline.hidden = preview.hidden || !outlineHeadings.length || !modal.querySelector('.modal-dialog').classList.contains('modal-fullscreen');
@@ -1083,6 +1095,7 @@
   function rebuildOutline() {
     outlineHeadings = Array.from(preview.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(heading => heading.textContent.trim() && !heading.closest('.notebook-parallel-cell + .notebook-parallel-cell'));
     const baseLevel = Math.min(...outlineHeadings.map(heading => Number(heading.tagName.slice(1))));
+    outlineActive = -1;
     outlineItems.replaceChildren();
     outlineButtons = outlineHeadings.map(heading => {
       const item = document.createElement('li');
