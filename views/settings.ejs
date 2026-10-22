@@ -18,8 +18,8 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
   <div class="container col-lg-8 mx-auto">
-    <main class="search-results">
-      <div class="mb-3">
+    <main class="search-results settings-page">
+      <div class="settings-page-heading mb-3">
         <h1 class="fs-4 mb-0">My Settings</h1>
         <p class="text-muted small mb-0" id="settings-account-status">Loading account settings...</p>
       </div>
@@ -35,20 +35,27 @@
         </label>
       </section>
 
-      <section class="border-top pt-3 mt-3" id="settings-google-drive-section">
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+      <section class="border-top pt-3 mt-3" id="settings-notebook-section">
+        <div class="mb-3">
+          <h2 class="fs-5 fw-bold mb-1">Notes</h2>
+          <p class="text-muted small mb-0" id="settings-notebook-theme-status">Choose the background used for all your notes.</p>
+        </div>
+        <div class="notebook-theme-options settings-notebook-theme-options" data-notebook-theme-options role="group" aria-label="Default note background"></div>
+        <div class="settings-notes-drive mt-4 pt-3">
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-2">
           <div>
-            <h2 class="fs-5 fw-bold mb-1">Google Drive</h2>
+            <h3 class="fs-6 fw-bold mb-1">Google Drive</h3>
             <p class="text-muted small mb-0">Manage Google Drive storage for My Notebook. Sign in to manage your connection.</p>
           </div>
         </div>
-        <div class="small mb-3" data-notebook-drive-panel data-notebook-drive-settings hidden>
+        <div class="small" data-notebook-drive-panel data-notebook-drive-settings hidden>
           <%- include('sub-views/notebook_drive_icon.ejs'); %>
           <span data-notebook-drive-message role="status"></span>
           <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-notebook-drive-connect hidden>Connect Google Drive</button>
           <button type="button" class="btn btn-link notebook-drive-action ms-2 p-0" data-notebook-drive-import hidden>Import from Google Drive</button>
           <a data-notebook-drive-folder target="_blank" rel="noopener" class="notebook-drive-action ms-1" hidden>Open folder</a>
           <button type="button" class="btn btn-link notebook-drive-action ms-2 p-0" data-notebook-drive-disconnect hidden>Disconnect</button>
+        </div>
         </div>
       </section>
 
@@ -213,14 +220,19 @@
       content.hidden = true;
       const toggle = document.createElement('button');
       toggle.type = 'button';
-      toggle.className = 'btn btn-sm btn-outline-secondary settings-section-toggle';
+      toggle.className = 'settings-section-toggle';
       toggle.setAttribute('aria-expanded', 'false');
       toggle.setAttribute('aria-controls', content.id);
-      toggle.innerHTML = '<span class="visually-hidden">Show section</span><i class="bi bi-chevron-down" aria-hidden="true"></i>';
+      const sectionName = header.querySelector('h2').textContent.trim();
+      toggle.setAttribute('aria-label', `Show ${sectionName} settings`);
+      toggle.title = `Show ${sectionName} settings`;
+      toggle.innerHTML = '<i class="bi bi-chevron-down" aria-hidden="true"></i>';
       toggle.addEventListener('click', () => {
         const expanded = toggle.getAttribute('aria-expanded') === 'true';
         toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-        toggle.querySelector('.visually-hidden').textContent = expanded ? 'Show section' : 'Hide section';
+        const action = expanded ? 'Show' : 'Hide';
+        toggle.setAttribute('aria-label', `${action} ${sectionName} settings`);
+        toggle.title = `${action} ${sectionName} settings`;
         content.hidden = expanded;
       });
       header.classList.add('settings-section-header');
@@ -239,6 +251,7 @@
     const reciterEnableAllBtn = document.getElementById('settings-reciter-enable-all');
     const quranScriptStatusEl = document.getElementById('settings-quran-script-status');
     const quranScriptSelect = document.getElementById('settings-quran-script');
+    const notebookThemeStatusEl = document.getElementById('settings-notebook-theme-status');
     const memorizationStatusEl = document.getElementById('settings-memorization-status');
     const reviewLimitEl = document.getElementById('settings-review-limit');
     const learningLimitEl = document.getElementById('settings-learning-limit');
@@ -365,6 +378,12 @@
       const quran = source.quran && typeof source.quran === 'object' && !Array.isArray(source.quran)
         ? source.quran
         : {};
+      const notebook = source.notebook && typeof source.notebook === 'object' && !Array.isArray(source.notebook)
+        ? source.notebook
+        : {};
+      const notebookTheme = ['note', 'paper', 'calm', 'focus', 'sage', 'quiet'].includes((notebook.theme || '').toString().toLowerCase())
+        ? notebook.theme.toString().toLowerCase()
+        : 'note';
       const quranScript = ['uthmani', 'indo-pak', 'warsh'].includes((quran.script || '').toString().toLowerCase())
         ? quran.script.toString().toLowerCase()
         : 'uthmani';
@@ -392,6 +411,7 @@
       const preferredLanguage = (profile.preferredLanguage || profile.language || '').toString().trim().toLowerCase();
       return {
         ...source,
+        notebook: { ...notebook, theme: notebookTheme },
         quran: { ...quran, script: quranScript },
         profile: {
           ...profile,
@@ -445,6 +465,28 @@
           }
         }
       };
+    };
+
+    const renderNotebookTheme = () => {
+      if (!window.NotebookThemes) return;
+      window.NotebookThemes.render(document.querySelector('#settings-notebook-section [data-notebook-theme-options]'), currentSettings.notebook && currentSettings.notebook.theme, async theme => {
+        if (!currentUser) return renderSignedOut();
+        const previous = currentSettings;
+        currentSettings = normalizeSettings({ ...currentSettings, notebook: { ...currentSettings.notebook, theme } });
+        window.NotebookThemes.apply(theme);
+        renderNotebookTheme();
+        notebookThemeStatusEl.textContent = 'Saving note background...';
+        try {
+          await saveSettings();
+          notebookThemeStatusEl.textContent = 'This background is now used for all your notes.';
+          document.dispatchEvent(new CustomEvent('notebookThemeChanged', { detail: { theme } }));
+        } catch (err) {
+          currentSettings = previous;
+          window.NotebookThemes.apply(currentSettings.notebook && currentSettings.notebook.theme);
+          renderNotebookTheme();
+          notebookThemeStatusEl.textContent = err.message || 'Unable to save note background.';
+        }
+      });
     };
 
     const getOptionalToken = async () => {
@@ -1565,6 +1607,11 @@
       [fsrsRetentionEl,fsrsLearningSpeedEl,fsrsGrowthEl,fsrsLapseEl,fsrsOptimizeBtn].forEach(element => { element.disabled = !currentUser; });
       memorizationSaveBtn.disabled = !currentUser;
       renderProfileSettings();
+      window.NotebookThemes && window.NotebookThemes.apply(currentSettings.notebook.theme);
+      renderNotebookTheme();
+      notebookThemeStatusEl.textContent = currentUser
+        ? 'Choose the background used for all your notes.'
+        : 'Sign in to choose a background for your notes.';
       reciterEnableAllBtn.disabled = !currentUser;
 
       try {

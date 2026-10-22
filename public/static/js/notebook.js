@@ -4,6 +4,54 @@
   const modal = document.getElementById('notebook-modal');
   if (!modal || modal.dataset.initialized) return;
   modal.dataset.initialized = '1';
+  const themeMenu = modal.querySelector('.notebook-theme-menu');
+  const themeOptions = modal.querySelector('[data-notebook-theme-options]');
+  const themeStatus = modal.querySelector('[data-notebook-theme-status]');
+  let notebookTheme = 'note';
+  const renderNotebookTheme = () => window.NotebookThemes?.render(themeOptions, notebookTheme, saveNotebookTheme);
+  const applyNotebookTheme = theme => {
+    notebookTheme = window.NotebookThemes?.apply(theme) || 'note';
+    renderNotebookTheme();
+  };
+  async function loadNotebookTheme() {
+    try {
+      const token = await window.hadithAuth?.getToken();
+      if (!token) return applyNotebookTheme('note');
+      const response = await fetch(quranApiPath('/user-settings'), { credentials: 'same-origin', headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) throw new Error('Unable to load note background.');
+      const data = await response.json();
+      applyNotebookTheme(data.settings?.notebook?.theme);
+    } catch (_err) {
+      applyNotebookTheme('note');
+    }
+  }
+  async function saveNotebookTheme(theme) {
+    const previous = notebookTheme;
+    applyNotebookTheme(theme);
+    themeStatus.textContent = 'Saving...';
+    try {
+      const token = await window.hadithAuth?.getToken();
+      if (!token) throw new Error('Please sign in to save a note background.');
+      const response = await fetch(quranApiPath('/user-settings'), { credentials: 'same-origin', headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) throw new Error('Unable to load your settings.');
+      const data = await response.json();
+      const settings = data.settings && typeof data.settings === 'object' ? data.settings : {};
+      settings.notebook = { ...(settings.notebook || {}), theme: notebookTheme };
+      const saved = await fetch(quranApiPath('/user-settings'), {
+        method: 'PUT', credentials: 'same-origin',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings })
+      });
+      if (!saved.ok) throw new Error((await saved.json().catch(() => ({}))).error || 'Unable to save note background.');
+      themeStatus.textContent = 'Saved';
+      themeMenu.open = false;
+      document.dispatchEvent(new CustomEvent('notebookThemeChanged', { detail: { theme: notebookTheme } }));
+    } catch (err) {
+      applyNotebookTheme(previous);
+      themeStatus.textContent = err.message;
+    }
+  }
+  document.addEventListener('notebookThemeChanged', event => applyNotebookTheme(event.detail?.theme));
   const editor = document.getElementById('notebook-editor');
   const tagEditor = document.getElementById('notebook-tag-editor');
   const titleEditor = document.getElementById('notebook-title-editor');
@@ -1187,6 +1235,7 @@
     window.addEventListener('resize', checkMore);
   }
   document.addEventListener('hadithAuthChanged', () => {
+    loadNotebookTheme();
     clearCreationCount();
     shareControls.reset();
     pendingFloating = false;
@@ -1231,6 +1280,7 @@
     if (current && (saving || dirty())) { event.preventDefault(); event.returnValue = ''; }
   });
   loadList(); loadTags();
+  loadNotebookTheme();
   openRequestedWiki();
   restoreFloating();
 })();

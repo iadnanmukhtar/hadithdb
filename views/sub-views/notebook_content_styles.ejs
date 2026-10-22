@@ -1,6 +1,7 @@
 @font-face { font-family: NotebookKitab; font-style: normal; font-weight: 400; src: url('/static/fonts/kitab-base.woff2'); }
 @font-face { font-family: NotebookKitab; font-style: normal; font-weight: 700; src: url('/static/fonts/kitab-base-b.woff2'); }
-.notebook-markdown { overflow-wrap: anywhere; text-align: start; }
+.notebook-markdown { color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
+.notebook-markdown a { color: var(--note-link, #0d6efd); }
 .notebook-markdown .footnotes-list { list-style-type: decimal; }
 /* Each item chooses its own direction; reserve marker space on that side. */
 .notebook-markdown :is(ul, ol) { padding-inline: 0; }
@@ -28,7 +29,7 @@
 .notebook-markdown blockquote { margin: 1rem 0; border-inline-start: 3px solid var(--note-edge, #d4a72c); padding-inline-start: 1rem; }
 .notebook-markdown blockquote > :first-child { margin-top: 0; }
 .notebook-markdown blockquote > :last-child { margin-bottom: 0; }
-.notebook-expand-reference { color: #805d00; margin-inline-start: .3rem; font-size: .85em; }
+.notebook-expand-reference { color: var(--note-link, #805d00); margin-inline-start: .3rem; font-size: .85em; }
 .notebook-markdown pre { direction: ltr; text-align: left; overflow: auto; }
 .notebook-markdown img { max-width: 100%; }
 .notebook-markdown table { display: block; overflow-x: auto; }

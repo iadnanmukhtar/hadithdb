@@ -23,7 +23,15 @@ Leave a blank line between paragraphs. Preview to see formatting.`; %>
   <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
     <div class="modal-header py-2">
       <h2 class="modal-title fs-6" id="notebook-modal-title"><i class="bi bi-sticky me-2" aria-hidden="true"></i><a id="notebook-source" dir="auto">Note</a></h2>
-      <button id="notebook-share" type="button" class="notebook-tool ms-auto" title="Share note" aria-label="Share note" aria-controls="notebook-share-panel" aria-expanded="false"><i class="bi bi-box-arrow-up" aria-hidden="true"></i></button>
+      <details class="notebook-theme-menu ms-auto">
+        <summary class="notebook-tool" title="Note background" aria-label="Choose note background"><i class="bi bi-palette" aria-hidden="true"></i></summary>
+        <div class="notebook-theme-popover" role="group" aria-label="Note background">
+          <strong>Background</strong>
+          <div class="notebook-theme-options" data-notebook-theme-options></div>
+          <span class="small" data-notebook-theme-status role="status"></span>
+        </div>
+      </details>
+      <button id="notebook-share" type="button" class="notebook-tool" title="Share note" aria-label="Share note" aria-controls="notebook-share-panel" aria-expanded="false"><i class="bi bi-box-arrow-up" aria-hidden="true"></i></button>
       <button id="notebook-lock" type="button" class="notebook-tool" title="Lock note" aria-label="Lock note" aria-pressed="false"><i class="bi bi-unlock" aria-hidden="true"></i></button>
       <button id="notebook-print" type="button" class="notebook-tool" title="Print / Save as PDF" aria-label="Print / Save as PDF"><i class="bi bi-printer" aria-hidden="true"></i></button>
       <button id="notebook-float" type="button" class="notebook-tool" title="Float note while browsing" aria-label="Float note while browsing" aria-pressed="false"><i class="bi bi-pin-angle" aria-hidden="true"></i></button>
@@ -243,8 +251,8 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-zoom-value { min-width: 3em; font-variant-numeric: tabular-nums; }
 #notebook-modal .modal-fullscreen :is(#notebook-preview, #notebook-editor) { font-size: var(--notebook-font-size, 1rem); }
 #notebook-preview:empty::before { content: attr(data-placeholder); white-space: pre-wrap; opacity: .55; }
-.notebook-tool { border: 0; background: transparent; color: #805d00; padding: .45rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .3rem; }
-.notebook-tool:hover, .notebook-tool:focus-visible { background: #ffe69c; }
+.notebook-tool { border: 0; background: transparent; color: var(--note-ink, #805d00); padding: .45rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .3rem; }
+.notebook-tool:hover, .notebook-tool:focus-visible { color: var(--note-ink, #805d00); background: color-mix(in srgb, var(--note-edge, #d4a72c) 28%, transparent); }
 .notebook-tool:disabled { opacity: .45; }
 #notebook-modal .modal-footer > a[data-notebook-auth] { margin-inline-end: auto; }
 #notebook-modal .modal-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .25rem; }
@@ -257,16 +265,39 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 .personal-note-btn { color: var(--note-icon-yellow); }
 .personal-note-btn:hover, .personal-note-btn:focus-visible { color: var(--note-icon-yellow); background: transparent; }
 .personal-note-btn .bi { pointer-events: none; }
-/* Personal notes use a consistent amber paper color. */
-#notebook-modal, #personal-notebook { --note-paper: #fff8db; --note-ink: #634800; --note-edge: #d4a72c; }
+/* Note is the default; the other palettes mirror the calm paper choices in book readers. */
+#notebook-modal, #personal-notebook { --note-paper: #fff8db; --note-ink: #634800; --note-edge: #d4a72c; --note-link: #805d00; }
+#notebook-modal[data-notebook-theme="paper"], #personal-notebook[data-notebook-theme="paper"] { --note-paper: #f3f1ec; --note-ink: #332f2a; --note-edge: #c7c1b8; }
+#notebook-modal[data-notebook-theme="calm"], #personal-notebook[data-notebook-theme="calm"] { --note-paper: #f3dfbd; --note-ink: #3f3023; --note-edge: #c9a978; }
+#notebook-modal[data-notebook-theme="focus"], #personal-notebook[data-notebook-theme="focus"] { --note-paper: #fffdf4; --note-ink: #211f18; --note-edge: #d9d2bc; }
+#notebook-modal[data-notebook-theme="sage"], #personal-notebook[data-notebook-theme="sage"] { --note-paper: #e8eee5; --note-ink: #263426; --note-edge: #aebca8; }
+#notebook-modal[data-notebook-theme="quiet"], #personal-notebook[data-notebook-theme="quiet"] { --note-paper: #505155; --note-ink: #f1edf0; --note-edge: #8d8f95; --note-link: #a9caff; }
+
+.notebook-theme-menu { position: relative; flex: 0 0 auto; }
+.notebook-theme-menu > summary { list-style: none; }
+.notebook-theme-menu > summary::-webkit-details-marker { display: none; }
+.notebook-theme-popover { position: absolute; z-index: 1080; top: calc(100% + .5rem); right: 0; width: min(19rem, calc(100vw - 2rem)); padding: .75rem; border: 1px solid var(--note-edge); border-radius: .75rem; color: var(--note-ink); background: var(--note-paper); box-shadow: 0 .6rem 1.8rem #0003; }
+.notebook-theme-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; margin-top: .5rem; }
+.notebook-theme-choice { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-width: 0; min-height: 2.75rem; padding: .35rem .4rem; border: 2px solid transparent; border-radius: .55rem; background: var(--theme-paper); color: var(--theme-ink); font: 600 .72rem/1.1 system-ui, sans-serif; }
+.notebook-theme-choice::before { content: 'Aa'; flex: 0 0 auto; font: 1.15rem/1 Georgia, serif; }
+.notebook-theme-choice[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 0 0 2px var(--note-paper), 0 0 0 4px var(--note-edge); }
+.notebook-theme-choice:focus-visible { outline: 2px solid var(--note-edge); outline-offset: 2px; }
+.settings-notebook-theme-options { grid-template-columns: repeat(6, minmax(0, 1fr)); max-width: 46rem; gap: .5rem; }
+.settings-notebook-theme-options .notebook-theme-choice { min-height: 3rem; }
+@media (max-width: 767.98px) {
+  .settings-notebook-theme-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 359.98px) {
+  .settings-notebook-theme-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 
-#notebook-modal .modal-content { background: var(--note-paper); border: 1px solid var(--note-edge); }
+#notebook-modal .modal-content { color: var(--note-ink); background: var(--note-paper); border: 1px solid var(--note-edge); }
 #notebook-modal .modal-header { border-bottom-color: var(--note-edge); }
-#notebook-modal #notebook-editor { background: #fffdf3; border-color: var(--note-edge); color: #302a1b; }
+#notebook-modal #notebook-editor { background: color-mix(in srgb, var(--note-paper) 88%, white 12%); border-color: var(--note-edge); color: var(--note-ink); }
 
 #notebook-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); gap: 1rem; margin-bottom: 1rem; }
-.notebook-tile { display: flex; flex-direction: column; align-items: stretch; min-width: 0; background: var(--note-paper); border: 1px solid var(--note-edge); border-radius: .65rem; color: #302a1b; }
+.notebook-tile { display: flex; flex-direction: column; align-items: stretch; min-width: 0; background: var(--note-paper); border: 1px solid var(--note-edge); border-radius: .65rem; color: var(--note-ink); }
 .notebook-tile-open { display: flex; flex-direction: column; gap: .8rem; width: 100%; flex: 1; min-height: 10rem; padding: 1rem; border: 0; border-radius: inherit; background: transparent; color: inherit; text-align: start; }
 .notebook-tile-open:hover { background: rgba(212, 167, 44, .09); }
 .notebook-tile-open:focus-visible { outline: 2px solid var(--note-edge); outline-offset: 3px; }
@@ -276,9 +307,11 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 .notebook-tile-preview { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; width: 100%; font-size: .9rem; line-height: 1.6; opacity: .8; }
 .notebook-tile-preview .notebook-arabic { line-height: inherit; }
 #notebook-list-status:empty { display: none; }
-#personal-notebook h1, #notebook-modal .modal-title { color: var(--note-ink); }
-[data-bs-theme="dark"] #notebook-modal, [data-bs-theme="dark"] #personal-notebook { --note-paper: #302b1b; --note-ink: #ffe69c; --note-edge: #a88732; }
-[data-bs-theme="dark"] #notebook-list > article, [data-bs-theme="dark"] #notebook-modal #notebook-editor { background: #302b1b; color: #fff3bf; }
+#notebook-modal .modal-title { color: var(--note-ink); }
+#personal-notebook .notebook-main > .d-flex .notebook-tool { color: var(--bs-body-color); }
+#personal-notebook .notebook-main > .d-flex .notebook-tool:hover,
+#personal-notebook .notebook-main > .d-flex .notebook-tool:focus-visible { color: var(--bs-body-color); background: var(--bs-secondary-bg); }
+[data-bs-theme="dark"] #notebook-modal[data-notebook-theme="note"], [data-bs-theme="dark"] #personal-notebook[data-notebook-theme="note"] { --note-paper: #302b1b; --note-ink: #ffe69c; --note-edge: #a88732; --note-link: #ffd45c; }
 #notebook-list > .notebook-tile-new { background: #fffdf0; border-color: #e6d99c; }
 [data-bs-theme="dark"] #notebook-list > .notebook-tile-new { background: #403a24; border-color: #a29359; }
 .notebook-tile-tags { display: flex; flex-wrap: wrap; gap: .35rem; padding: 0 .75rem .75rem; }
@@ -286,6 +319,7 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-note-tags:focus-visible { outline: 2px solid var(--note-edge); outline-offset: 3px; }
 #notebook-tag-bar { cursor: text; flex-shrink: 0; border-top: 1px solid var(--note-edge); }
 .notebook-tag-chip { color: var(--note-ink); background: rgba(212, 167, 44, .12); border: 0; border-radius: 999px; padding: .15rem .55rem; font-size: .72rem; line-height: 1.4; overflow-wrap: anywhere; }
+#personal-notebook .notebook-tag-rail .notebook-tag-chip { color: var(--bs-body-color); background: var(--bs-secondary-bg); }
 .notebook-layout { display: grid; grid-template-columns: minmax(0, 1fr) 15rem; gap: 2rem; }
 .notebook-main { min-width: 0; }
 .notebook-tag-rail-slot { min-width: 0; }

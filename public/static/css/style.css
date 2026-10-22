@@ -5884,18 +5884,65 @@ del em strong {
 	.quran-progress-summary-card:nth-child(n+5) { grid-column: span 4; }
 }
 
+.settings-page { padding-bottom: 2rem; }
+
+.settings-page-heading {
+	padding: .25rem .15rem .75rem;
+}
+
+.settings-page > section {
+	margin-top: .75rem !important;
+	padding: 1rem 1.1rem !important;
+	border: 1px solid var(--bs-border-color) !important;
+	border-radius: .75rem;
+	background: color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%);
+}
+
 .settings-section-header {
+	display: flex;
 	align-items: center !important;
+	justify-content: flex-start !important;
+	flex-wrap: nowrap !important;
+	gap: .75rem !important;
+	margin-bottom: 0 !important;
 	cursor: default;
 }
 
+.settings-section-header > :first-child {
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
 .settings-section-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	flex: 0 0 auto;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
 	margin-left: auto;
+	border: 0;
+	border-radius: 50%;
+	color: var(--bs-secondary-color);
+	background: var(--bs-secondary-bg);
+}
+
+.settings-section-toggle:hover,
+.settings-section-toggle:focus-visible {
+	color: var(--bs-body-color);
+	background: color-mix(in srgb, var(--bs-secondary-bg) 82%, var(--bs-primary) 18%);
+}
+
+.settings-section-toggle:focus-visible {
+	outline: 2px solid var(--bs-primary);
+	outline-offset: 2px;
 }
 
 .settings-section-toggle .bi {
 	display: inline-block;
+	font-size: .9rem;
+	line-height: 1;
 	transition: transform .15s ease;
 }
 
@@ -5904,7 +5951,11 @@ del em strong {
 }
 
 .settings-section-content {
-	padding-bottom: .25rem;
+	padding: 1rem .1rem .15rem;
+}
+
+.settings-notes-drive {
+	border-top: 1px solid var(--bs-border-color);
 }
 
 @media (max-width: 575.98px) {

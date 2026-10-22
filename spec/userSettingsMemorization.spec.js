@@ -6,6 +6,13 @@ const { default_w: defaultFsrsWeights } = require('ts-fsrs');
 
 describe('Quran ayah review settings normalization', () => {
   test.each([
+    ['note', 'note'], ['paper', 'paper'], ['calm', 'calm'], ['focus', 'focus'],
+    ['sage', 'sage'], ['quiet', 'quiet'], ['unknown', 'note'], [undefined, 'note']
+  ])('normalizes notebook background %s to %s', (theme, expected) => {
+    expect(UserSettings.normalizeSettings({ notebook: { theme } }).notebook.theme).toBe(expected);
+  });
+
+  test.each([
     [undefined, 'uthmani'],
     ['uthmani', 'uthmani'],
     ['indo-pak', 'indo-pak'],
