@@ -126,6 +126,9 @@ router.post('/status', async (req, res, next) => {
 router.post('/expand', async (req, res, next) => {
   try { res.json({ note: await Notebook.expand(req.user.uid, req.body || {}) }); } catch (err) { next(err); }
 });
+router.post('/auto-expand', async (req, res, next) => {
+  try { res.json(await require('../lib/UserNotebook').autoExpandDraft(req.body || {})); } catch (err) { next(err); }
+});
 router.post('/preview', (req, res) => {
   const text = req.body && req.body.markdown;
   if (typeof text !== 'string') return res.status(400).json({ error: 'Invalid Markdown.' });

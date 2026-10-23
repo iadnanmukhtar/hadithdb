@@ -730,8 +730,56 @@
     if (returnModal?.isConnected) bootstrap.Modal.getOrCreateInstance(returnModal).show();
     returnModal = null;
   });
-  editor.addEventListener('input', () => {
+  let referenceTimer = null, referenceEpoch = 0, composingReference = false;
+  function scheduleReferenceExpansion(event) {
+    clearTimeout(referenceTimer);
+    const epoch = ++referenceEpoch, ownGeneration = generation;
+    if (composingReference || !current || busy || locked || !editing) return;
+    if (!['insertLineBreak', 'insertParagraph'].includes(event?.inputType)) return;
+    const newlineOffset = editor.selectionStart - 1;
+    if (editor.selectionStart !== editor.selectionEnd || editor.value[newlineOffset] !== '\n') return;
+    const lineStart = editor.value.lastIndexOf('\n', newlineOffset - 1) + 1;
+    const line = editor.value.slice(lineStart, newlineOffset);
+    if (!/^[ \t]*(?:quran:\d{1,3}:\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(line)) return;
+    referenceTimer = setTimeout(() => autoExpandReferences(epoch, ownGeneration, newlineOffset), 0);
+  }
+
+  async function autoExpandReferences(epoch, ownGeneration, newlineOffset) {
+    if (epoch !== referenceEpoch || ownGeneration !== generation || composingReference || !current || busy || locked || !editing) return;
+    const text = editor.value;
+    try {
+      const result = await api('/auto-expand', 'POST', { markdown: text, newlineOffset });
+      if (epoch !== referenceEpoch || ownGeneration !== generation || editor.value !== text || composingReference || busy || locked || !editing) return;
+      if (!result.edits.length) return;
+      // Map the live selection, including caret movement while the lookup was running.
+      const start = editor.selectionStart, end = editor.selectionEnd, direction = editor.selectionDirection;
+      const scrollTop = editor.scrollTop, scrollLeft = editor.scrollLeft;
+      const map = position => {
+        let delta = 0;
+        for (const edit of result.edits) {
+          if (position < edit.start) break;
+          if (position < edit.end) return edit.start + delta + edit.text.length;
+          delta += edit.text.length - (edit.end - edit.start);
+        }
+        return position + delta;
+      };
+      for (const edit of [...result.edits].reverse()) editor.setRangeText(edit.text, edit.start, edit.end, 'preserve');
+      editor.setSelectionRange(map(start), map(end), direction);
+      editor.scrollTop = scrollTop; editor.scrollLeft = scrollLeft;
+      scheduleSave();
+    } catch (_err) {
+      // Keep the draft intact on lookup failure; a later edit can retry.
+    }
+  }
+  editor.addEventListener('compositionstart', () => {
+    composingReference = true; ++referenceEpoch; clearTimeout(referenceTimer);
+  });
+  editor.addEventListener('compositionend', () => {
+    composingReference = false;
+  });
+  editor.addEventListener('input', event => {
     scheduleSave();
+    scheduleReferenceExpansion(event);
   });
   const tagsToggle = document.getElementById('notebook-tags-toggle');
   const noteDates = document.getElementById('notebook-dates');

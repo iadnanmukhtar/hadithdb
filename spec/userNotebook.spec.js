@@ -242,14 +242,14 @@ test('removes prose references and Markdown reference links without changing cod
 test('expanded source text is flattened before applying quotation formatting', async () => {
   Item.itemFromRef.mockResolvedValue({ ref: 'bukhari:100', ar: { body: '# عنوان\n\n**النص** و*شرح* و`كلمة`' }, en: { body: '## Heading\n\n**Bold** and *italic*, [label](https://example.com), ~~deleted~~, ==highlight==.\n\n- First\n- Second' } });
   const quote = await References.snapshot('bukhari:100');
-  expect(quote).toContain('> عنوان');
+  expect(quote).toContain('> «عنوان');
   expect(quote).toContain('> النص وشرح وكلمة');
-  expect(quote).toContain('> *Bold and italic, label, deleted, highlight.*');
-  expect(quote).toContain('> *First');
-  expect(quote).toContain('> *Second*');
+  expect(quote).toContain('> Bold and italic, label, deleted, highlight.');
+  expect(quote).toContain('> First');
+  expect(quote).toContain('> Second (Bukhari 100)');
   expect(quote).not.toContain('## Heading');
   expect(quote).not.toContain('https://example.com');
-  expect(Notebook.render(quote)).toContain('<em>');
+  expect(Notebook.render(quote)).not.toContain('<em>');
   expect(quote).not.toContain('Expanded reference');
 });
 
@@ -425,8 +425,8 @@ test('range expansion fetches every exact ayah in order and replaces the referen
 test('single references expand at their position without modifying code, links or surrounding prose', async () => {
   Item.itemFromRef.mockResolvedValue({ ref: 'bukhari:100', en: { body: 'Expanded text' } });
   const result = await Notebook.expandedDraft({ markdown: 'Before bukhari:100 after.\n\n`bukhari:100` [source](/bukhari:100)\n\n```\nbukhari:100\n```', reference: 'bukhari:100' });
-  expect(result.markdown).toContain('Before \n\n> النص العربي غير متوفر ([bukhari ١٠٠](/bukhari:100))');
-  expect(result.markdown).toContain('*Expanded text*\n\n after.');
+  expect(result.markdown).toContain('Before \n\n> «النص العربي غير متوفر» ([bukhari ١٠٠](/bukhari:100))');
+  expect(result.markdown).toContain('Expanded text (Bukhari 100)\n\n after.');
   expect(result.markdown).toContain('`bukhari:100` [source](/bukhari:100)\n\n```\nbukhari:100\n```');
 });
 test.each(['quran:11:16-15', 'quran:0:1-2', 'quran:115:1-2', 'quran:11:1-999'])('invalid range %s fails before a lookup', async ref => {
@@ -461,10 +461,10 @@ test('ayah ornaments use the Quran font marker without changing ordinary Arabic 
   expect(html).toContain('<span class="notebook-arabic">النص</span> <span class="quran-ayah-end-marker">۝١٥</span>');
   expect(html).toContain(' <span class="notebook-arabic">وما بعده</span>');
 });
-test('hadith expansion has a title, trailing Arabic source and grade, and English below', async () => {
+test('hadith expansion uses quotation marks, trailing Arabic source and grade, and English citation', async () => {
   Item.itemFromRef.mockResolvedValue({ ref: 'bukhari:1', en: { title: 'Deeds depend on intentions', chain: 'Umar reported:', body: 'Deeds depend on intentions.' }, ar: { body: '«إنما الأعمال بالنيات»', book_shortName: 'البخاري', grade_grade: 'متفق عليه' } });
   const result = await References.snapshot('bukhari:1');
-  expect(result).toBe('**Hadith: Deeds depend on intentions**\n\n> «إنما الأعمال بالنيات» ([البخاري ١](/bukhari:1) متفق عليه)\n> \n> Umar reported: *Deeds depend on intentions.*');
+  expect(result).toBe('> «إنما الأعمال بالنيات» ([البخاري ١](/bukhari:1) متفق عليه)\n> Umar reported: Deeds depend on intentions. (Bukhari 1)');
 });
 test('reference expansion preserves source punctuation instead of storing HTML entities', async () => {
   Item.itemFromRef.mockResolvedValue({
@@ -478,14 +478,14 @@ test('reference expansion preserves source punctuation instead of storing HTML e
   expect(result).not.toMatch(/&#\d+;|&amp;|&lt;|&gt;/);
 });
 
-test.each(['quran:1:1', 'quran:1:1-2'])('Quran expansion %s uses ordinary script from the current database record', async ref => {
+test.each(['quran:1:1', 'quran:1:1-2'])('Quran expansion %s uses canonical Arabic script from the current database record', async ref => {
   Item.itemFromRef.mockImplementation(async reference => ({ ref: reference, id: Number(reference.split(':')[2]), book_id: 0, ar: { body: 'Cached Uthmani', body_alt: 'Cached ordinary' } }));
   global.query.mockResolvedValue([{ body: 'ٱلْحَمْدُ لِلَّهِ', body_ar_alt: 'الْحَمْدُ لِلَّهِ', body_en: 'Praise be to Allah.' }]);
   const result = await References.snapshot(ref);
-  expect(result).toContain('الْحَمْدُ لِلَّهِ');
-  expect(result).not.toContain('ٱلْحَمْدُ');
+  expect(result).toContain("ٱلْحَمْدُ لِلَّهِ");
+  expect(result).not.toContain("الْحَمْدُ لِلَّهِ");
   expect(result).not.toContain('Cached');
-  expect(result.match(/الْحَمْدُ/g)).toHaveLength(ref.endsWith('-2') ? 2 : 1);
+  expect(result.match(/ٱلْحَمْدُ/g)).toHaveLength(ref.endsWith('-2') ? 2 : 1);
   expect(result).toContain('﴿');
   expect(result).toContain('﴾');
 });
@@ -525,4 +525,41 @@ test('parallel separators preserve literal code, escapes, tables and HTML safety
   const html = Notebook.render('<script>alert(1)</script> || English');
   expect(html).toContain('notebook-parallel');
   expect(html).not.toContain('<script>');
+});
+
+test('automatic expansion targets only the standalone line completed by Enter', async () => {
+  Item.itemFromRef.mockImplementation(async ref => ({ ref, ar: { body: 'العربية' }, en: { body: 'English' } }));
+  const text = 'bukhari:100\n\nBefore quran:2:255 after\n\nquran:8:25\n';
+  const result = await Notebook.autoExpandDraft({ markdown: text, newlineOffset: text.length - 1 });
+  expect(result.edits.map(edit => text.slice(edit.start, edit.end))).toEqual(['quran:8:25']);
+  expect(result.edits[0].text).toContain('العربية');
+  expect(global.query).not.toHaveBeenCalled();
+});
+test.each(['Before bukhari:100\n', 'bukhari:100 after\n', '`bukhari:100`\n', '[source](/bukhari:100)\n', '```\nbukhari:100\n```', 'bukhari:100 '])('automatic expansion ignores prose, code, links and unterminated lines: %s', async text => {
+  const newlineOffset = text.startsWith('```') ? text.indexOf('\n', 4) : text.length - 1;
+  expect(await Notebook.autoExpandDraft({ markdown: text, newlineOffset })).toEqual({ edits: [] });
+  expect(Item.itemFromRef).not.toHaveBeenCalled();
+});
+test('automatic expansion leaves unavailable standalone sources intact', async () => {
+  Item.itemFromRef.mockResolvedValue(null);
+  expect(await Notebook.autoExpandDraft({ markdown: 'bukhari:100\n', newlineOffset: 11 })).toEqual({ edits: [] });
+});
+test('automatic draft expansion requires authentication', async () => {
+  expect((await fetch(`${base}/auto-expand`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).status).toBe(401);
+});
+
+test('ayah expansion matches the bilingual citation format and preserves English bold emphasis', async () => {
+  Item.itemFromRef.mockResolvedValue({ ref: 'quran:8:25',
+    ar: { h1_title: 'الْأَنْفَال', body: 'وَٱتَّقُوا۟ فِتْنَةً' },
+    en: { h1_title: 'Anfal', body: '<strong>Beware of a trial that will not afflict only the wrongdoers among you.</strong> And know that Allah is severe in punishment.' } });
+  const result = await References.snapshot('quran:8:25');
+  expect(result).toBe('> ﴿ وَٱتَّقُوا۟ فِتْنَةً ۝٢٥ ﴾ ([الْأَنْفَال ٨:٢٥](/quran:8:25))\n> **Beware of a trial that will not afflict only the wrongdoers among you.** And know that Allah is severe in punishment. (Anfal 8:25)');
+  expect(Notebook.render(result)).toContain('<strong>Beware');
+});
+test('hadith expansion matches the plain English citation format without a separate title', async () => {
+  Item.itemFromRef.mockResolvedValue({ ref: 'muslim:2884',
+    ar: { body: 'عن عائشة: «عَبِثَ رَسُولُ اللَّهِ ﷺ فِي مَنَامِهِ».', book_shortName: 'مسلم', grade_grade: 'صحيح' },
+    en: { title: 'A dream', body: 'Aishah ᴿᴬ reported that the Messenger of Allah ﷺ stirred in his sleep.' } });
+  const result = await References.snapshot('muslim:2884');
+  expect(result).toBe('> «عن عائشة: «عَبِثَ رَسُولُ اللَّهِ ﷺ فِي مَنَامِهِ».» ([مسلم ٢٨٨٤](/muslim:2884) صحيح)\n> Aishah ᴿᴬ reported that the Messenger of Allah ﷺ stirred in his sleep. (Muslim 2884)');
 });
