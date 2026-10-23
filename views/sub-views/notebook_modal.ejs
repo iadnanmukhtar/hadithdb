@@ -173,7 +173,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 [data-bs-theme="dark"] .notebook-attachment-content, [data-bs-theme="dark"] #notebook-frontmatter-panel, [data-bs-theme="dark"] #notebook-frontmatter-editor { background: rgba(0,0,0,.1); }
 
 #notebook-editor { font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
-#notebook-wiki-options { max-height: 12rem; overflow-y: auto; border: 1px solid var(--bs-border-color, #ccc); border-radius: .35rem; background: var(--bs-body-bg, white); margin-block: .25rem; }
+#notebook-wiki-options { position: absolute; z-index: 10; box-sizing: border-box; max-height: 12rem; overflow-y: auto; border: 1px solid var(--bs-border-color, #ccc); border-radius: .35rem; background: var(--bs-body-bg, white); box-shadow: 0 .2rem .6rem #0002; }
 #notebook-wiki-options [role="option"] { padding: .3rem .65rem; cursor: pointer; }
 #notebook-wiki-options [aria-selected="true"] { background: var(--bs-secondary-bg, #eee); color: var(--bs-body-color, #222); }
 #notebook-modal .modal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -195,7 +195,7 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-modal .modal-header .btn-close { margin: 0; background-size: 1em; }
 #notebook-modal .modal-content { height: 100%; }
 #notebook-modal .modal-body { display: flex; min-height: 0; overflow: hidden; }
-#notebook-surface { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+#notebook-surface { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 #notebook-outline, #notebook-navigator { position: relative; display: flex; flex-direction: column; flex: 0 0 var(--sidebar-width, clamp(10rem, 18vw, 16rem)); min-width: 0; min-height: 0; overflow: hidden; }
 .notebook-sidebar-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: .5rem; margin-bottom: .5rem; }
 .notebook-sidebar-header .notebook-outline-label { padding: 0; }

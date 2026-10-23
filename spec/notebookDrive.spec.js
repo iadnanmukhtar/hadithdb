@@ -353,7 +353,7 @@ test.each(['missing', 'legacy name'])('unchanged saves persist cksum when the fi
 test('wiki suggestions match anywhere in titles without case or diacritics', async () => {
   const title = 'Reflections on Ṣalāh and صَلَاة';
   await Drive.save('alice', { ...note({ title }), version: 0 });
-  for (const query of ['LECTION', 'SALAH', 'lāh', 'صلاة', 'صَلَاة']) {
+  for (const query of ['LECTION', 'SALAH', 'lāh', 'صلاة', 'صَلَاة', 'salah reflections', 'صلاة salah']) {
     expect((await Drive.links('alice', query)).notes).toEqual([{ title, source_key: 'item:42' }]);
   }
   expect((await Drive.links('alice', 'unrelated')).notes).toEqual([]);

@@ -1,5 +1,5 @@
 'use strict';
-const { replacement } = require('../public/static/js/notebook-shortcuts');
+const { replacement, continueLine, indentLines } = require('../public/static/js/notebook-shortcuts');
 const { chromium } = require('playwright');
 const fs = require('fs');
 const source = fs.readFileSync(require.resolve('../public/static/js/notebook-shortcuts'), 'utf8');
@@ -76,4 +76,70 @@ test('Arabic keyboard letters use the physical shortcut key and ignore compositi
   expect(await page.locator('#editor').inputValue()).toBe('Before العربية after');
   await page.evaluate(() => editor.dispatchEvent(new KeyboardEvent('keydown', {key:'لا',code:'KeyB',ctrlKey:true,bubbles:true,cancelable:true})));
   expect(await page.locator('#editor').inputValue()).toBe('Before **العربية** after');
+});
+
+test.each([
+  ['- العَرَبِيَّة', '- العَرَبِيَّة\n- '],
+  ['  * Nested', '  * Nested\n  * '],
+  ['+ Item', '+ Item\n+ '],
+  ['9. Item', '9. Item\n10. '],
+  ['2) Item', '2) Item\n3) '],
+  ['- [x] Finished', '- [x] Finished\n- [ ] '],
+  ['> Quote', '> Quote\n> '],
+  ['> > اقتباس', '> > اقتباس\n> > '],
+  ['> - Item', '> - Item\n> - '],
+  ['- ', ''], ['  -   ', ''], ['> - ', '> '], ['> ', ''], ['> > ', '']
+])('Enter continues or exits Markdown: %j', async (value, expected) => {
+  await page.locator('#editor').fill(value);
+  await page.locator('#editor').press('End');
+  await page.keyboard.press('Enter');
+  expect(await page.locator('#editor').inputValue()).toBe(expected);
+  expect(await page.evaluate(() => editor.selectionStart)).toBe(expected.length);
+});
+
+test('Enter splits list text at the caret and replaces a selection', () => {
+  const value = '- First second';
+  expect(apply(value, continueLine(value, 7, 7))).toBe('- First\n-  second');
+  expect(apply(value, continueLine(value, 7, 8))).toBe('- First\n- second');
+  expect(continueLine(value, 0, 0)).toBeNull();
+});
+
+test.each(['```md\n- literal', '~~~\n> literal', '---\nlinks:\n  - bukhari:1'])('literal code and frontmatter keep native keys: %j', value => {
+  expect(continueLine(value, value.length, value.length)).toBeNull();
+  expect(indentLines(value, value.lastIndexOf('\n') + 1, value.length, false)).toBeNull();
+});
+
+test.each(['- First\n  - العَرَبِيَّة\n- Third', '> - First\n>   - Second'])('Tab and Shift+Tab move a selected list together: %j', async value => {
+  await page.locator('#editor').fill(value + '\nOutside');
+  await page.evaluate(length => editor.setSelectionRange(0, length + 1, 'backward'), value.length);
+  await page.keyboard.press('Tab');
+  const indented = value.split('\n').map(line => line.startsWith('> ') ? '>   ' + line.slice(2) : '  ' + line).join('\n');
+  expect(await page.locator('#editor').inputValue()).toBe(indented + '\nOutside');
+  expect(await page.evaluate(() => editor.selectionDirection)).toBe('backward');
+  await page.keyboard.press('Shift+Tab');
+  expect(await page.locator('#editor').inputValue()).toBe(value + '\nOutside');
+  expect(await page.evaluate(() => document.activeElement.id)).toBe('editor');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+z' : 'Control+z');
+  expect(await page.locator('#editor').inputValue()).toBe(indented + '\nOutside');
+});
+
+test('list indentation retains relative nesting, continuation lines and partial selection', () => {
+  const value = '- First\n  continuation\n\n  - Nested\nOutside', end = value.indexOf('\nOutside');
+  const edit = indentLines(value, 3, end, false), changed = apply(value, edit);
+  expect(changed).toBe('  - First\n    continuation\n\n    - Nested\nOutside');
+  expect(changed.slice(edit.selectStart, edit.selectStart + 4)).toBe('irst');
+  expect(apply(changed, indentLines(changed, edit.selectStart, edit.selectEnd, true))).toBe(value);
+});
+
+test('plain text, modified Enter, and disabled editing keep native behavior', async () => {
+  await page.locator('#editor').fill('Plain');
+  await page.keyboard.press('Tab');
+  expect(await page.evaluate(() => document.activeElement.id)).toBe('title');
+  await page.locator('#editor').fill('- Item');
+  await page.keyboard.press('Shift+Enter');
+  expect(await page.locator('#editor').inputValue()).toBe('- Item\n');
+  await page.locator('#editor').fill('> Quote');
+  await page.evaluate(() => allowed = false);
+  await page.keyboard.press('Enter');
+  expect(await page.locator('#editor').inputValue()).toBe('> Quote\n');
 });
