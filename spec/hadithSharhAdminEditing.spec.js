@@ -49,6 +49,31 @@ describe('Hadith Sharh administration', () => {
 		expect(res.status).toHaveBeenCalledWith(200);
 	});
 
+	test('a slow failed revision keeps the connection alive and returns an error envelope', async () => {
+		jest.useFakeTimers();
+		try {
+			global.query = jest.fn(async sql => sql.includes('WHERE hs.id=11')
+				? [{ id: 11, hadith_id: 123, source_id: 4, text: 'شرح' }] : []);
+			let fail;
+			jest.spyOn(require('../lib/ContentRevision'), 'revise').mockImplementation(() => new Promise((resolve, reject) => { fail = reject; }));
+			const res = {
+				headersSent: false, status: jest.fn().mockReturnThis(), json: jest.fn(), end: jest.fn(), setHeader: jest.fn(), once: jest.fn(),
+				write: jest.fn(() => { res.headersSent = true; })
+			};
+			const task = updateHandler()({ body: { value: '' }, params: { id: '11', prop: 'hdith_sharh.revise' }, user: { uid: 'admin' } }, res, jest.fn());
+			await jest.advanceTimersByTimeAsync(65000);
+			expect(res.write).toHaveBeenCalledTimes(4);
+			fail(Object.assign(new Error('Provider unavailable'), { status: 502 }));
+			await task;
+			expect(JSON.parse(res.end.mock.calls[0][0])).toMatchObject({ code: 502, message: 'Provider unavailable' });
+			expect(res.json).not.toHaveBeenCalled();
+			await jest.advanceTimersByTimeAsync(15000);
+			expect(res.write).toHaveBeenCalledTimes(4);
+		} finally {
+			jest.useRealTimers();
+		}
+	});
+
 	test('updates both title languages from a paired autocomplete selection', async () => {
 		global.query = jest.fn(async sql => {
 			if (sql.includes('WHERE hs.id=11')) return [{ id: 11, hadith_id: 123, source_id: 4, source_book_id: -1, title: 'فتح الباري', title_en: 'Fatḥ al-Bārī', text: 'شرح' }];

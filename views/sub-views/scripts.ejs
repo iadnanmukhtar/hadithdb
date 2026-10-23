@@ -603,7 +603,7 @@
 	      } else if (!resBody.needsHdithUrl) {
         res.statusText = 'Update request body is not present';
       }
-      if (res.status == 200) {
+      if (res.status == 200 && resBody.code == 200) {
         const isTafsirUpdate = (reqBody.prop || '').toString().indexOf('commentary.') === 0;
         const successTitle = options.successTitle || (isTafsirUpdate ? 'Tafsir updated' : 'Changes saved');
         const successMessage = options.successMessage || (isTafsirUpdate

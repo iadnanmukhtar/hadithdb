@@ -28,6 +28,7 @@ beforeEach(async () => {
     window.state = { busy: false, current: { source_key: 'general', version: '22', revision: 'private-checksum', created_at: '2026-10-12', attachments: [{ source_key: 'item:77', source_title: 'quran:2:255', source_url: '/quran:2:255' }] } };
     window.changes = 0;
     window.controls = NotebookFrontmatterEditor.install({ editor, titleEditor: title, tagEditor: tags, context: () => state, changed: () => changes++, render: () => {} });
+    editor.value = controls.load(editor.value);
   });
 });
 afterEach(async () => page.close());
@@ -45,11 +46,12 @@ test('show/hide exposes current editable metadata without changing the note or r
   expect(await page.locator('#notebook-frontmatter-panel').isHidden()).toBe(true);
 });
 test('title and tags controls immediately synchronize YAML while retaining custom fields and body', async () => {
-  await page.evaluate(() => { editor.value = '---\ncustom:\n  topic: صبر\nattachments: []\n---\n\nBody text'; title.value = 'Changed title'; title.dispatchEvent(new Event('input')); tags.value = 'reflection'; tags.dispatchEvent(new Event('input')); });
+  await page.evaluate(() => { editor.value = controls.load('---\ncustom:\n  topic: صبر\nattachments: []\n---\n\nBody text'); title.value = 'Changed title'; title.dispatchEvent(new Event('input')); tags.value = 'reflection'; tags.dispatchEvent(new Event('input')); });
   await page.getByRole('button', { name: 'Show frontmatter', exact: true }).click();
   const result = await page.evaluate(() => jsyaml.safeLoad(document.getElementById('notebook-frontmatter-editor').value));
   expect(result).toEqual({ title: 'Changed title', tags: ['reflection'], links: [], custom: { topic: 'صبر' } });
-  expect(await page.locator('#notebook-editor').inputValue()).toMatch(/---\n\nBody text$/);
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('\nBody text');
+  expect(await page.evaluate(() => controls.markdown(editor.value))).toMatch(/^---\n[\s\S]*custom:[\s\S]*---\n\nBody text$/);
 });
 test('YAML edits synchronize controls, reject protected fields, and retain invalid drafts', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -64,10 +66,10 @@ test('YAML edits synchronize controls, reject protected fields, and retain inval
   expect(await page.locator('#notebook-frontmatter-status').textContent()).toContain('system metadata');
   await page.locator('#notebook-frontmatter-editor').fill('tags: [');
   expect(await page.evaluate(() => controls.valid())).toBe(false);
-  expect(await page.locator('#notebook-editor').inputValue()).toContain('tags: [');
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('Body text');
   await page.locator('#notebook-frontmatter-editor').fill('title: Repaired\ntags: []');
   expect(await page.evaluate(() => controls.valid())).toBe(true);
-  expect(await page.locator('#notebook-editor').inputValue()).toMatch(/---\nBody text$/);
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('Body text');
   await page.evaluate(() => controls.reset());
   expect(await page.locator('#notebook-frontmatter-panel').isHidden()).toBe(true);
   expect(await page.locator('#notebook-frontmatter-editor').inputValue()).toBe('');
@@ -75,7 +77,8 @@ test('YAML edits synchronize controls, reject protected fields, and retain inval
 
 test('an existing custom header does not hide saved links that have no YAML list yet', async () => {
   await page.evaluate(() => {
-    state.current.markdown = editor.value = '---\ntopic: Patience\n---\nBody text';
+    state.current.markdown = '---\ntopic: Patience\n---\nBody text';
+    editor.value = controls.load(state.current.markdown);
   });
   await page.getByRole('button', { name: 'Show frontmatter', exact: true }).click();
   const value = await page.evaluate(() => jsyaml.safeLoad(document.getElementById('notebook-frontmatter-editor').value));
@@ -85,7 +88,7 @@ test('an existing custom header does not hide saved links that have no YAML list
 test('removing an existing YAML attachment list is not undone by refreshing FM', async () => {
   await page.evaluate(() => {
     state.current.markdown = '---\nattachments: [quran:2:255]\n---\nBody';
-    editor.value = '---\ntopic: Patience\n---\nBody';
+    editor.value = controls.load('---\ntopic: Patience\n---\nBody');
   });
   await page.getByRole('button', { name: 'Show frontmatter', exact: true }).click();
   const value = await page.evaluate(() => jsyaml.safeLoad(document.getElementById('notebook-frontmatter-editor').value));
@@ -95,7 +98,7 @@ test('removing an existing YAML attachment list is not undone by refreshing FM',
 test('original and additional items appear together and the original can be removed in FM', async () => {
   await page.evaluate(() => {
     Object.assign(state.current, { source_key: 'item:42', source_title: 'bukhari:100', source_url: '/bukhari:100', markdown: '---\nattachments: [quran:2:255]\n---\nBody' });
-    editor.value = state.current.markdown;
+    editor.value = controls.load(state.current.markdown);
   });
   await page.getByRole('button', { name: 'Show frontmatter', exact: true }).click();
   expect(await page.evaluate(() => jsyaml.safeLoad(document.getElementById('notebook-frontmatter-editor').value).links)).toEqual(['bukhari:100', 'quran:2:255']);
@@ -103,4 +106,18 @@ test('original and additional items appear together and the original can be remo
   await page.evaluate(() => controls.refresh());
   expect(await page.evaluate(() => controls.linksEdited())).toBe(true);
   expect(await page.evaluate(() => jsyaml.safeLoad(document.getElementById('notebook-frontmatter-editor').value).links)).toEqual(['quran:2:255']);
+});
+
+test('imported frontmatter is kept out of the body editor and round-trips through the pulldown', async () => {
+  await page.evaluate(() => {
+    Object.assign(state.current, { title: 'Imported', tags: ['riyad'], markdown: '---\ntitle: Imported\ntags: [riyad]\nauthor: أحمد\n---\n# Body' });
+    editor.value = controls.load(state.current.markdown);
+    title.value = state.current.title; tags.value = state.current.tags.join(' ');
+  });
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('# Body');
+  await page.getByRole('button', { name: 'Show frontmatter', exact: true }).click();
+  expect(await page.evaluate(() => jsyaml.safeLoad(document.getElementById('notebook-frontmatter-editor').value))).toMatchObject({ title: 'Imported', tags: ['riyad'], author: 'أحمد' });
+  const combined = await page.evaluate(() => controls.markdown(editor.value));
+  expect(combined).toContain('author: أحمد');
+  expect(combined).toMatch(/---\n# Body$/);
 });

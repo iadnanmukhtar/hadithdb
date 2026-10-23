@@ -146,7 +146,7 @@
   async function printNote() {
     if (!current || busy || printButton.disabled) return;
     const ownGeneration = generation;
-    const note = { ...current, markdown: editor.value, tags: tagEditor.value, title: titleEditor.value };
+    const note = { ...current, markdown: frontmatterControls.markdown(editor.value), tags: tagEditor.value, title: titleEditor.value };
     printButton.disabled = true;
     try {
       await window.NotebookPrint.open(note, () => api('/preview', 'POST', { markdown: note.markdown }), () => ownGeneration === generation);
@@ -163,7 +163,7 @@
   downloadButton.addEventListener('click', async () => {
     if (!current || busy) return;
     const ownGeneration = generation;
-    const note = { ...current, markdown: editor.value, tags: tagEditor.value, title: titleEditor.value };
+    const note = { ...current, markdown: frontmatterControls.markdown(editor.value), tags: tagEditor.value, title: titleEditor.value };
     const title = (note.title || note.source_title).replace(/[^\p{L}\p{N} _-]/gu, '-').slice(0, 80).trim() || 'Note';
     const identity = note.source_key.replace(/:/g, '-');
     downloadButton.disabled = true;
@@ -248,7 +248,7 @@
   const attachmentControls = window.NotebookAttachments.install({ api, save, setBusy, open,
     context: () => ({ current, busy }), changed: note => {
       if (current?.source_key === note.source_key) {
-        current = note; editor.value = savedText = note.markdown; preview.innerHTML = note.html || ''; resetTags(); frontmatterControls.refresh();
+        current = note; editor.value = savedText = frontmatterControls.load(note.markdown); preview.innerHTML = note.html || ''; resetTags();
       }
       updateList(note); navigatorControls.update(note);
       ++statusEpoch; checked.clear(); scheduleStatus();
@@ -463,7 +463,7 @@
       }
     } finally { restoringFloating = false; restoreButton.disabled = false; }
   }
-  function dirty() { return editor.value !== savedText || tagEditor.value !== savedTags || titleEditor.value !== savedTitle; }
+  function dirty() { return editor.value !== savedText || tagEditor.value !== savedTags || titleEditor.value !== savedTitle || frontmatterControls.dirty(); }
   function resetTags() {
     document.getElementById('notebook-dates').open = false;
     titleEditor.value = savedTitle = current?.title || '';
@@ -525,7 +525,7 @@
   }
   async function renderPreview(caretOffset) {
     const request = ++previewRequest, ownGeneration = generation, text = editor.value;
-    if (current && text === current.markdown && current.html !== undefined) {
+    if (current && !dirty() && current.html !== undefined) {
       preview.innerHTML = current.html;
       if (caretOffset !== undefined) revealPreviewCaret(caretOffset);
       return;
@@ -586,19 +586,21 @@
     const operation = (async () => {
       try {
         while (ownGeneration === generation && (dirty() || current.needsChecksum)) {
-          const text = editor.value, tags = tagEditor.value, title = titleEditor.value;
+          const text = editor.value, tags = tagEditor.value, title = titleEditor.value, frontmatterDraft = frontmatterControls.draft();
+          const markdown = frontmatterControls.markdown(text);
           status.textContent = 'Saving…';
-          const note = (await api('', 'PUT', { ...current, markdown: text, tags, title, links_edited: frontmatterControls.linksEdited() })).note;
+          const note = (await api('', 'PUT', { ...current, markdown, tags, title, links_edited: frontmatterControls.linksEdited() })).note;
           if (ownGeneration !== generation) return false;
           const attachmentsChanged = JSON.stringify(current.attachments || []) !== JSON.stringify(note.attachments || []);
           current = note;
-          if (editor.value === text && text !== note.markdown) editor.value = note.markdown;
-          savedText = note.markdown;
+          const unchangedDraft = editor.value === text && frontmatterControls.draft() === frontmatterDraft
+            && titleEditor.value === title && tagEditor.value === tags;
+          if (unchangedDraft) editor.value = savedText = frontmatterControls.load(note.markdown);
+          else { savedText = text; frontmatterControls.markSaved(frontmatterDraft); }
           if (titleEditor.value === title) titleEditor.value = note.title || '';
           if (tagEditor.value === tags) tagEditor.value = (note.tags || []).join(' ');
           savedTags = (note.tags || []).join(' '); savedTitle = note.title || '';
           renderNoteTags(); renderNoteMetadata();
-          if (editor.value === note.markdown) frontmatterControls.refresh();
           deleteButton.hidden = !note.version;
           markSource(note.source_key, !!note.version);
           updateList(note);
@@ -606,7 +608,7 @@
           attachmentControls.render(note);
           if (attachmentsChanged) { ++statusEpoch; checked.clear(); scheduleStatus(); }
           // Keep any text typed during the request; only advance the saved revision.
-          if (!editing && editor.value === note.markdown) preview.innerHTML = note.html;
+          if (!editing && unchangedDraft) preview.innerHTML = note.html;
           // Coalesce edits made during a slow Drive request into the next idle save.
           if (background) break;
         }
@@ -685,7 +687,7 @@
     try {
       const result = await api(`?source=${encodeURIComponent(source.source_key)}${source.version === 0 && !source.source_key.startsWith('general') ? '&context=1' : ''}`);
       if (ownGeneration !== generation) return;
-      current = result.note || result.source || source; editor.value = savedText = current.markdown; resetTags();
+      current = result.note || result.source || source; editor.value = savedText = frontmatterControls.load(current.markdown); resetTags();
       if (current.source_key.startsWith('intro:')) { link.textContent = current.source_title; link.title = current.source_title; }
       if (current.links_explicit && !current.attachments?.some(entry => entry.source_key === current.source_key)) { link.textContent = 'Note'; link.removeAttribute('href'); }
       pendingSource = null;
@@ -694,7 +696,6 @@
       checked.delete(current.source_key);
       status.textContent = ''; setBusy(false); mode(edit || !current.version);
       attachmentControls.reset(current);
-      frontmatterControls.refresh();
       importReflection(source);
       navigatorControls.select();
       if (modal.classList.contains('notebook-page')) syncExpandedUrl(true);
@@ -834,7 +835,7 @@
       editor.value = savedText = ''; preview.innerHTML = ''; deleteButton.hidden = true;
       markSource(current.source_key, false); updateList(current); status.textContent = ''; mode(false);
       attachmentControls.reset(current);
-      frontmatterControls.refresh();
+      frontmatterControls.load(current.markdown);
       checked.clear(); scheduleStatus();
       navigatorControls.update(current);
     } catch (err) { if (ownGeneration === generation) status.textContent = err.message; }
@@ -849,7 +850,7 @@
       const result = await api('/expand', 'POST', { ...note, reference: button.dataset.notebookReference });
       if (ownGeneration !== generation) return;
       if (inEditor) {
-        current = result.note; editor.value = savedText = current.markdown; resetTags(); frontmatterControls.refresh();
+        current = result.note; editor.value = savedText = frontmatterControls.load(current.markdown); resetTags();
         preview.innerHTML = current.html; mode(false); deleteButton.hidden = false;
       }
       markSource(result.note.source_key, true); updateList(result.note); navigatorControls.update(result.note); targetStatus.textContent = '';

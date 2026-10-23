@@ -12,7 +12,9 @@ function harness() {
     deleteButton: {}, preview: {}, setTimeout, clearTimeout,
     api: jest.fn(), renderNoteTags: jest.fn(), renderNoteMetadata: jest.fn(),
     markSource: jest.fn(), updateList: jest.fn(), renderPreview: jest.fn(),
-    mode: jest.fn(), navigatorControls: { update: jest.fn() }, attachmentControls: { render: jest.fn() }, frontmatterControls: { valid: () => true, linksEdited: () => false, refresh: jest.fn() }
+    mode: jest.fn(), navigatorControls: { update: jest.fn() }, attachmentControls: { render: jest.fn() },
+    frontmatterControls: { valid: () => true, linksEdited: () => false, dirty: () => false, markdown: text => text,
+      draft: () => '', markSaved: jest.fn(), load: text => text }
   });
   vm.runInContext(functions, ctx); return ctx;
 }
@@ -126,13 +128,14 @@ test('closing the modal does not reload the list or tags', () => {
   expect(ctx.loadList).not.toHaveBeenCalled(); expect(ctx.loadTags).not.toHaveBeenCalled();
 });
 
-test('server-updated frontmatter replaces only an unchanged draft and does not autosave repeatedly', async () => {
+test('server-updated frontmatter is separated from an unchanged body and does not autosave repeatedly', async () => {
   const ctx = harness();
   const markdown = '---\nattachments: []\n---\nAfter';
+  ctx.frontmatterControls.load = text => text.replace(/^---\n[\s\S]*?---\n/, '');
   ctx.api.mockResolvedValue(result(markdown));
   expect(await ctx.save()).toBe(true);
-  expect(ctx.editor.value).toBe(markdown);
-  expect(ctx.savedText).toBe(markdown);
+  expect(ctx.editor.value).toBe('After');
+  expect(ctx.savedText).toBe('After');
   expect(ctx.dirty()).toBe(false);
   expect(ctx.attachmentControls.render).toHaveBeenCalled();
   await jest.advanceTimersByTimeAsync(2000);

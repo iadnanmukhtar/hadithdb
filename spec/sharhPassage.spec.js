@@ -85,6 +85,7 @@ test.each([false, true])('renders bilingual hadith above uncollapsed commentary 
  expect($('[data-hadith-sharh-collapsible]')).toHaveLength(0);
  expect($('.quran-tafsir-text')).toHaveLength(2);
  expect($('[data-prop="hdith_sharh.text_en"]')).toHaveLength(editMode ? 1 : 0);
+ expect($('[data-prop="hdith_sharh.revise"]')).toHaveLength(editMode ? 1 : 0);
 });
 
 

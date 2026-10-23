@@ -40,6 +40,7 @@ test('prints the current draft with safe metadata, Arabic, links and complete pa
     window.current = { source_key: 'item:1', source_title: 'quran:1:1', source_url: '/quran:1:1', markdown: 'Old saved body' };
     window.editor = { value: markdown }; window.titleEditor = { value: '<img src=x onerror=alert(1)> Draft title' };
     window.tagEditor = { value: 'study reflection' }; window.busy = false; window.generation = 1;
+    window.frontmatterControls = { markdown: body => body };
     window.printButton = document.getElementById('print'); window.status = { textContent: '' };
     window.api = async (path, method, body) => { window.request = { path, method, body }; return { html }; };
     (0, eval)(printNote); printButton.addEventListener('click', window.printNote);

@@ -27,7 +27,7 @@
     const panel = document.getElementById('notebook-frontmatter-panel');
     const input = document.getElementById('notebook-frontmatter-editor');
     const status = document.getElementById('notebook-frontmatter-status');
-    let linksEdited = false, displayedLinks;
+    let linksEdited = false, displayedLinks, savedRaw = '', loaded = false;
     const tags = () => [...new Set(tagEditor.value.split(/\s+/u).filter(Boolean).map(tag => tag.replace(/^#/, '')))];
     function attachments() {
       const note = context().current || {};
@@ -38,7 +38,7 @@
         return /^\/(?:quran:\d+:\d+|[a-z][a-z0-9_-]*:\d+[a-z]?)$/i.test(path) ? path.slice(1) : entry;
       });
     }
-    function values(data) {
+    function values(data, loading = false) {
       const saved = split(context().current?.markdown || '').fields;
       let linked = Object.hasOwn(data.fields, 'links') ? data.fields.links
         : Object.hasOwn(saved, 'links') ? [] : attachments();
@@ -46,51 +46,51 @@
       // and added items together, without undoing an intentional user edit.
       if (!context().current?.links_explicit && !linksEdited && JSON.stringify(data.fields.links) === JSON.stringify(saved.links))
         linked = [...new Map([...attachments(), ...(Array.isArray(linked) ? linked : [])].map(entry => [JSON.stringify(entry), entry])).values()];
-      return { ...data.fields, title: titleEditor.value, tags: tags(), links: linked };
+      const note = context().current || {};
+      return { ...data.fields,
+        title: loading ? (note.title ?? data.fields.title ?? titleEditor.value) : titleEditor.value,
+        tags: loading ? (note.tags ?? data.fields.tags ?? tags()) : tags(), links: linked };
     }
     function visible(show) {
       panel.hidden = !show; button.setAttribute('aria-expanded', String(show));
       const label = show ? 'Hide frontmatter' : 'Show frontmatter'; button.title = label; button.setAttribute('aria-label', label);
     }
+    function currentFields() { return fields(input.value); }
     function refresh() {
       try {
-        const data = split(editor.value);
+        const data = { fields: currentFields() };
         const value = values(data); input.value = dump(value); displayedLinks = JSON.stringify(value.links); status.textContent = '';
       } catch (err) { status.textContent = err.reason || err.message; }
     }
     function valid() {
-      try { split(editor.value); return true; }
+      try { currentFields(); return true; }
       catch (err) { status.textContent = err.reason || err.message; return false; }
+    }
+    function load(markdown) {
+      const data = split(markdown || '');
+      const value = values(data, true);
+      input.value = dump(value); savedRaw = input.value; loaded = true;
+      displayedLinks = JSON.stringify(value.links); status.textContent = '';
+      return data.body;
+    }
+    function markdown(body) {
+      const value = currentFields();
+      return `---\n${dump(value)}---\n${body}`;
     }
     function fromControls() {
       if (!context().current || context().busy) return;
       try {
-        const data = split(editor.value);
+        const data = { fields: currentFields() };
         const value = values(data);
         const raw = dump(value); displayedLinks = JSON.stringify(value.links);
-        editor.value = `---\n${raw}---\n${data.body}`;
         input.value = raw; status.textContent = ''; changed();
       } catch (err) { status.textContent = err.reason || err.message; }
     }
     function fromMarkdown() {
-      try {
-        const data = split(editor.value);
-        linksEdited = linksEdited || JSON.stringify(data.fields.links) !== JSON.stringify(split(context().current?.markdown || '').fields.links);
-        if (Object.hasOwn(data.fields, 'title')) titleEditor.value = data.fields.title || '';
-        if (Object.hasOwn(data.fields, 'tags')) tagEditor.value = data.fields.tags.join(' ');
-        render(); refresh();
-      } catch (err) { status.textContent = err.reason || err.message; }
+      // The main editor owns only the Markdown body. YAML is edited here.
     }
     input.addEventListener('input', () => {
       if (!context().current || context().busy) return;
-      // Keep invalid YAML in the draft too, so saving cannot discard it silently.
-      let body;
-      try { body = split(editor.value).body; }
-      catch (_) {
-        const match = /^---\r?\n[\s\S]*?^---(?:\r?\n|$)/m.exec(editor.value);
-        body = match ? editor.value.slice(match[0].length) : editor.value;
-      }
-      editor.value = `---\n${input.value.replace(/\n?$/, '\n')}---\n${body}`;
       try {
         const data = fields(input.value);
         linksEdited = linksEdited || JSON.stringify(data.links) !== displayedLinks;
@@ -107,6 +107,9 @@
       if (!context().current || context().busy) return;
       if (panel.hidden) { refresh(); visible(true); input.focus(); } else visible(false);
     });
-    return { refresh, valid, linksEdited: () => linksEdited, reset() { linksEdited = false; displayedLinks = undefined; visible(false); input.value = ''; status.textContent = ''; }, setBusy(value) { input.disabled = button.disabled = value; } };
+    return { refresh, valid, load, markdown, draft: () => input.value, dirty: () => loaded && input.value !== savedRaw,
+      markSaved(raw = input.value) { savedRaw = raw; }, linksEdited: () => linksEdited,
+      reset() { linksEdited = false; displayedLinks = undefined; savedRaw = ''; loaded = false; visible(false); input.value = ''; status.textContent = ''; },
+      setBusy(value) { input.disabled = button.disabled = value; } };
   } };
 })();

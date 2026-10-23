@@ -66,7 +66,7 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
     <% } %>
   <% } %>
   <% (locals.entries || [entry]).forEach(function (entry) { %>
-  <article class="mt-4 sharh-passage-entry" id="<%= kind === 'heading' ? 'note-heading-sharh' : 'note-sharh' %>-<%= entry.id %>" aria-label="Explanation">
+  <article class="mt-4 sharh-passage-entry hadith-sharh-entry" id="<%= kind === 'heading' ? 'note-heading-sharh' : 'note-sharh' %>-<%= entry.id %>" aria-label="Explanation">
     <header class="hadith-sharh-header">
     <div class="hadith-sharh-toolbar" role="group" aria-label="Explanation tools">
       <%- include('sub-views/notebook_anchor.ejs', { noteKey: `${kind === 'heading' ? 'heading-sharh' : 'sharh'}:${entry.id}`, noteTitle: `${reference} — ${title}`, noteUrl: utils.urlFor(req, canonical) }); %>
@@ -88,6 +88,7 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
       </div>
     <% }); %>
     </div>
+    <% if (site.editMode) { %><aside class="admin hadith-admin-actions mt-1" lang="en" dir="ltr"><button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" data-id="<%= entry.id %>" data-prop="<%= updateType %>.revise" data-loading-label="Revising" title="Revise this explanation"><span class="bi bi-magic" aria-hidden="true"></span> Revise</button></aside><% } %>
   </article>
   <% }); %>
 </main>

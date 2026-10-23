@@ -67,6 +67,7 @@ async function requireAdmin(req, res, next) {
 }
 
 router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
+  const stopKeepalive = require('../lib/UpdateKeepalive')(req, res);
   var userId = req.user.uid;
   var status = {
     code: 405,
@@ -598,6 +599,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 		} else if (col === 'text' || col === 'text_en') {
 		  if (col === 'text_en' && Utils.isFalsey(status.value))
 		    status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic hadith explanation into clear scholarly English. Preserve Markdown structure and return only the translation:\n${sharhRow.text}`));
+		  if (col === 'text_en' && Utils.isFalsey(status.value))
+            throw createError(502, 'The translation service returned an empty explanation. Please try again.');
 		  await global.query(`UPDATE hdith_hadith_sharh SET ${col}=${sqlPreserveWhitespace(status.value)} WHERE id=${sharhId}`);
 		  status.code = 200;
 		  status.message = 'Explanation updated';
@@ -696,6 +699,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         } else if (col === 'text' || col === 'text_en') {
           if (col === 'text_en' && Utils.isFalsey(status.value))
             status.value = Utils.trimToEmpty(await Utils.openai(`Translate this Arabic chapter or section explanation into clear scholarly English. Preserve Markdown structure and return only the translation:\n${tocSharhRow.text}`));
+          if (col === 'text_en' && Utils.isFalsey(status.value))
+            throw createError(502, 'The translation service returned an empty explanation. Please try again.');
           await global.query(`UPDATE hdith_toc_sharh SET ${col}=${sqlPreserveWhitespace(status.value)} WHERE id=${tocSharhId}`);
           status.code = 200;
           status.message = 'Heading explanation updated';
@@ -1123,11 +1128,15 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
     var valuePreview = Utils.trimToEmpty(status.value + '').substring(0, 120);
     debug.error(`update failed id:${ids || req.params.id}, prop:${prop || req.params.prop}, value:${valuePreview}: ${status.message}\n${err.stack || ''}`);
   } finally {
+    stopKeepalive();
     debug(`update status:${status.code}, id:${ids}, prop:${prop}, value:${(status.value + '').trim().substring(0, 20)}`);
     debug(status.message);
   }
 
-  res.status(status.code).json(status);
+  if (res.headersSent)
+    res.end(JSON.stringify(status));
+  else
+    res.status(status.code).json(status);
 });
 
 function sql(s) {

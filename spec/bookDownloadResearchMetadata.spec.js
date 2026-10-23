@@ -44,3 +44,19 @@ test('metadata hydration reuses underlying identities and skips Quran and commen
   expect(rows[2]).not.toHaveProperty('hdithMetadata');
   expect(rows[3]).not.toHaveProperty('hdithMetadata');
 });
+
+test('streamed JSON preserves the complete export while hydrating only small batches', async () => {
+  const rows = Array.from({ length: 61 }, (_, i) => ({ hId: i + 1, book_id: 1, book_alias: 'sample', ref: `sample:${i + 1}`, num: String(i + 1), h1: 1, h2: i % 2 ? 2 : null, body: 'متن', body_en: 'Text' }));
+  const book = { id: 1, alias: 'sample', type: 'hadith' };
+  const lookup = jest.spyOn(HdithMetadata, 'forHadiths').mockImplementation(async ids => new Map(ids.map(id => [id, { sharh: [{ id, text: `شرح ${id}`, text_en: `Explanation ${id}` }] }])));
+  const expectedRows = rows.map(row => ({ ...row }));
+  await BookDownloads.attachResearchMetadata(expectedRows);
+  const expected = BookDownloads.buildBookDocument(book, expectedRows);
+  lookup.mockClear();
+  let json = '';
+  for await (const part of BookDownloads.streamBookJson(book, rows)) json += part;
+  expect(JSON.parse(json)).toEqual(expected);
+  expect(lookup.mock.calls.every(([ids]) => ids.length <= 25)).toBe(true);
+  expect(lookup).toHaveBeenCalledTimes(3);
+  expect(rows.every(row => !row.hdithMetadata)).toBe(true);
+});
