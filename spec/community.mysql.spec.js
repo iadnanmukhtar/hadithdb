@@ -152,6 +152,42 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     try{await expect(Community.moderate({uid:'blog-reviewer'},article.id,{action:'approve',version:published.version})).rejects.toMatchObject({status:403});}
     finally{process.env.COMMUNITY_MODERATOR_UIDS=previous;}
   });
+  test('creators delete posts and publishing does not require preview',async()=>{
+    const user={uid:'moderator',name:'Publisher'};
+    let article=await Community.savePost(user,postInput({action:'publish'}));
+    await Community.addComment({uid:'bob',name:'Bob'},article.id,{markdown:'Discussion'});
+    await expect(Community.deletePost({uid:'bob'},article.id,article.version)).rejects.toMatchObject({status:404});
+    await expect(Community.deletePost(user,article.id,article.version+1)).rejects.toMatchObject({status:409});
+    await Community.deletePost(user,article.id,article.version);
+    await expect(Community.post(article.id,user,true)).rejects.toMatchObject({status:404});
+    await expect(Community.comments(article.id)).rejects.toMatchObject({status:404});
+    expect((await Community.feed({scope:'mine'},user)).items.some(item=>item.id===article.id)).toBe(false);
+    await expect(Community.savePost(user,postInput({version:article.version+1,action:'publish'}),article.id)).rejects.toMatchObject({status:404});
+    const legacy=await Community.savePost(user,postInput({action:'publish'}));
+    await q('INSERT INTO '+prefix+'blog_imports (post_id,slug,attributes_json,source_sha256,source_markdown) VALUES (?,?,?,?,?)',[legacy.id,'delete-owned','{}','a'.repeat(64),'Original']);
+    await q("INSERT INTO "+prefix+"blog_comments (post_slug,text,deleted) VALUES ('delete-owned','Legacy discussion',0)");
+    await Community.deletePost(user,legacy.id,legacy.version);
+    expect((await fetch(base+'/blog/delete-owned')).status).toBe(404);
+    expect((await q("SELECT deleted FROM "+prefix+"blog_comments WHERE post_slug='delete-owned'"))[0].deleted).toBe(1);
+    const browser=await require('playwright').chromium.launch({channel:'chrome',headless:true});
+    try{
+      const page=await browser.newPage();let previewCalls=0;
+      await page.addInitScript(()=>{window.quranApiPath=v=>'/api'+v;window.hadithAuth={getToken:async()=>'moderator',getUser:async()=>null};});
+      await page.route('**/*',route=>{if(route.request().resourceType()==='script'&&!/community(?:-media)?\.js/.test(route.request().url()))return route.abort();return route.continue();});
+      page.on('request',request=>{if(request.url().endsWith('/community/preview'))previewCalls++;});
+      await page.goto(base+'/community/write');
+      await page.locator('#community-title').fill('Publish without preview');
+      await page.locator('#community-markdown').fill('Public article body.');
+      const saved=page.waitForResponse(response=>response.url().endsWith('/api/community/posts')&&response.request().method()==='POST');
+      await page.locator('#community-publish').click();
+      const result=await (await saved).json();expect(result.post.status).toBe('published');expect(previewCalls).toBe(0);
+      await page.waitForFunction(()=>!document.getElementById('community-delete').hidden);
+      page.on('dialog',dialog=>dialog.accept());
+      await page.locator('#community-delete').click();
+      await page.waitForURL('**/community/mine');
+      await expect(Community.post(result.post.id)).rejects.toMatchObject({status:404});
+    }finally{await browser.close();}
+  });
   test('article covers are owner-controlled and draft replacements stay private until publication',async()=>{
     const Media=require('../lib/CommunityMedia'),user={uid:'moderator',name:'Publisher'};
     const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII=','base64');
@@ -223,7 +259,15 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       const context=await browser.newContext({viewport:{width:1200,height:900}});
       await context.addInitScript(()=>{window.quranApiPath=p=>'/api'+p;window.hadithAuth={getToken:async()=>localStorage.getItem('admin-test-user')||'moderator',getUser:async()=>null};});
       await context.route('**/*',route=>{if(route.request().resourceType()==='script'&&!/community(?:-media)?\.js/.test(route.request().url()))return route.abort();return route.continue();});
-      const page=await context.newPage();await page.goto(base+article.url);
+      const page=await context.newPage();await page.goto(base+'/community/write?post='+article.id);
+      await page.locator('#community-blog-toggle').waitFor({state:'visible'});
+      expect(await page.locator('#community-blog-toggle').isChecked()).toBe(true);
+      await page.locator('#community-blog-toggle').uncheck();
+      await page.waitForFunction(()=>document.getElementById('community-status').textContent.includes('removed from the Blog'));
+      expect((await Community.post(article.id)).isBlog).toBe(false);
+      await page.locator('#community-blog-toggle').check();
+      await page.waitForFunction(()=>document.getElementById('community-status').textContent.includes('added to the Blog'));
+      await page.goto(base+article.url);
       const toggle=page.locator('#community-blog-toggle');await toggle.waitFor({state:'visible'});expect(await toggle.isChecked()).toBe(true);
       await toggle.uncheck();await page.waitForFunction(()=>document.getElementById('community-status').textContent==='Article removed from the Blog.');
       await page.reload();await toggle.waitFor({state:'visible'});expect(await toggle.isChecked()).toBe(false);
@@ -692,13 +736,13 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await page.setViewportSize({width:1280,height:900});
       await page.locator('#community-title').fill('Browser article العربية');
       await page.locator('#community-markdown').fill('## العربية\n\nA **browser-tested** reflection.');
-      expect(await page.locator('#community-publish').isDisabled()).toBe(true);
+      expect(await page.locator('#community-publish').isDisabled()).toBe(false);
       await page.locator('#community-preview-button').click();
       await page.waitForFunction(()=>!document.getElementById('community-publish').disabled);
       expect(await page.locator('#community-preview strong').textContent()).toBe('browser-tested');
       await page.locator('#community-publish').click();
       await page.waitForFunction(()=>document.getElementById('community-status').textContent==='Your article is public.');
-      expect(await page.locator('#community-publish').isDisabled()).toBe(true);
+      expect(await page.locator('#community-publish').isDisabled()).toBe(false);
       const savedId=new URL(page.url()).searchParams.get('post'); expect(savedId).toBeTruthy();
       await page.goto(base+'/community/@amina/'+savedId);
       await page.waitForFunction(()=>!document.getElementById('community-edit-post').hidden);

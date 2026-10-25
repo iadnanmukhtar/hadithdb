@@ -58,6 +58,7 @@ api.get('/notebook-copy', wrap(async (req, res) => {
 api.put('/posts/:id/blog',wrap(async(req,res)=>res.json(await Community.markBlog(signed(req),req.params.id,req.body.enabled))));
 api.post('/posts', wrap(async (req, res) => res.status(201).json({ post: await Community.savePost(req.user, req.body) })));
 api.get('/posts/:id', wrap(async (req, res) => res.json({ post: await Community.post(req.params.id, req.user, req.query.edit === '1') })));
+api.delete('/posts/:id', wrap(async(req,res)=>{await Community.deletePost(signed(req),req.params.id,req.body.version);res.json({deleted:true});}));
 api.put('/posts/:id', wrap(async (req, res) => res.json({ post: await Community.savePost(req.user, req.body, req.params.id) })));
 api.get('/posts/:id/comments', wrap(async (req, res) => res.json({ comments: await Community.comments(req.params.id, req.user) })));
 api.post('/posts/:id/comments', wrap(async (req, res) => res.status(201).json({ comments: await Community.addComment(req.user, req.params.id, req.body) })));

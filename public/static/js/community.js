@@ -70,7 +70,7 @@
     if (el?.disabled) return;
     if (el) el.disabled = true;
     try { await work(); } catch (err) { status(err.message); }
-    finally { if (el?.isConnected) el.disabled = el.id === 'community-publish' && previewSignature !== signature(); }
+    finally { if (el?.isConnected) el.disabled = false; if(el?.id === 'community-blog-toggle' && view === 'write') renderEditorBlog(); }
   }
   function icon(name) { const el = node('i', undefined, 'bi bi-' + name); el.setAttribute('aria-hidden', 'true'); return el; }
   function avatarImage(container, author) {
@@ -370,7 +370,7 @@
   $('more')?.addEventListener('click', () => { firstBatchMicroOnly = false; const reset = $('more').dataset.retryReset === '1'; delete $('more').dataset.retryReset; run(() => loadFeed(reset), $('more')); });
   function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, action }; }
   function signature() { const data = payload(); delete data.version; return JSON.stringify(data); }
-  function invalidatePreview() { dirty = true; previewSignature = null; $('publish').disabled = true; $('preview-panel').hidden = true; }
+  function invalidatePreview() { dirty = true; previewSignature = null; $('publish').disabled = false; $('preview-panel').hidden = true; }
   function renderEditorCover(post) {
     $('cover-url').value=post.coverUrl||''; $('cover-remove').hidden=!post.coverUrl;
     let figure=$('editor-cover');
@@ -381,16 +381,25 @@
   }
   document.addEventListener('communityCoverChanged',event=>{renderEditorCover({coverUrl:event.detail.url});invalidatePreview();});
   $('cover-remove')?.addEventListener('click',()=>{renderEditorCover({coverUrl:''});invalidatePreview();});
+  function renderEditorBlog() {
+    if(view !== 'write')return;
+    $('blog-control').hidden = !me?.admin || (editing?.kind || $('kind').value) !== 'article';
+    $('blog-toggle').checked = !!editing?.isBlog;
+    $('blog-toggle').disabled = !editing || (editing.status !== 'published' && !editing.isBlog);
+    $('blog-help').hidden = !$('blog-toggle').disabled;
+  }
   function populate(post) {
     renderEditorCover(post); $('cover-controls').hidden=post.kind !== 'article';
     $('publish').hidden = !!post.isBlog && !me?.admin;
+    $('delete').hidden = false;
     editing = post; $('kind').value = post.kind; $('kind').disabled = true; $('title').value = post.draftTitle ?? post.title; $('subtitle').value = post.subtitle || ''; $('subtitle').hidden = post.kind !== 'article';
     $('markdown').value = post.markdown; $('tags').value = post.tags;
     $('title').required = post.kind === 'article';
     $('unpublish').hidden = !['published', 'pending'].includes(post.status);
     $('publish').textContent = post.status === 'published' ? 'Update published version' : 'Publish';
     $('editor-status').textContent = post.status === 'pending' ? 'Submitted for moderation. Your article is not public yet.' : post.status === 'hidden' ? 'A moderator has hidden this article. Contact a moderator for review.' : post.status === 'published' ? 'Published. Saving a draft keeps the current public version until you publish an update.' : 'Draft saved. Only you can see it.';
-    previewSignature = null; dirty = false; $('publish').disabled = true; $('preview-panel').hidden = true;
+    renderEditorBlog();
+    previewSignature = null; dirty = false; $('publish').disabled = false; $('preview-panel').hidden = true;
   }
   async function save(action) {
     if(window.communityMediaPending) throw new Error('Wait for the image upload to finish.');
@@ -398,7 +407,6 @@
     savingPost = true;
     try {
       if (action !== 'unpublish' && !$('editor-form').reportValidity()) return;
-      if (action === 'publish' && previewSignature !== signature()) throw new Error('Preview the latest version before publishing.');
       const currentSignature = signature(), wasDirty = dirty;
       const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, coverUrl: editing.coverUrl, markdown: editing.markdown, tags: editing.tags, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
       const result = await api(editing ? '/posts/' + editing.id : '/posts', editing ? 'PUT' : 'POST', body);
@@ -428,6 +436,12 @@
       $('preview-panel').hidden = false; previewSignature = own; $('publish').disabled = false;
       $('preview-panel').scrollIntoView({ block: 'start', behavior: 'smooth' });
     }, $('preview-button')));
+    $('delete').addEventListener('click',()=>run(async()=>{
+      if(!editing || !window.confirm('Delete this post? It and its discussion will be removed from the site.'))return;
+      if(savingPost)throw new Error('Wait for the current save to finish.');
+      await api('/posts/'+editing.id,'DELETE',{version:editing.version});
+      dirty=false;location.assign('/community/mine');
+    },$('delete')));
     $('unpublish').addEventListener('click', () => run(() => save('unpublish'), $('unpublish')));
     window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
   }
@@ -487,7 +501,7 @@
   $('blog-toggle')?.addEventListener('change',()=>{
     const toggle=$('blog-toggle'),enabled=toggle.checked,own=epoch;
     run(async()=>{
-      try{const result=await api('/posts/'+postId+'/blog','PUT',{enabled});if(own!==epoch)return;toggle.checked=result.isBlog;status(result.isBlog?'Article added to the Blog.':'Article removed from the Blog.');}
+      try{const result=await api('/posts/'+(view === 'write' ? editing.id : postId)+'/blog','PUT',{enabled});if(own!==epoch)return;toggle.checked=result.isBlog;if(view==='write'){editing.isBlog=result.isBlog;renderEditorBlog();}status(result.isBlog?'Article added to the Blog.':'Article removed from the Blog.');}
       catch(err){if(own===epoch)toggle.checked=!enabled;throw err;}
     },toggle);
   });
@@ -645,6 +659,7 @@
       }
       if (['everyone', 'following', 'mine', 'author'].includes(view)) await Promise.all([loadFeed(true), loadContributors()]);
       if (view === 'write') {
+        renderEditorBlog();
         const params = new URLSearchParams(location.search);
         if (!params.get('post') && !editing && params.get('kind') === 'article') { $('kind').value = 'article'; $('kind').dispatchEvent(new Event('change')); }
         if (params.get('post') && !editing) populate((await api('/posts/' + encodeURIComponent(params.get('post')) + '?edit=1')).post);
@@ -658,7 +673,7 @@
     resetQuickComposer();
     if ($('contributors')) $('contributors').replaceChildren();
     // A different account must never inherit the previous account's draft or feed.
-    if (view === 'write') { $('editor-cover')?.remove(); $('editor-form').reset(); $('kind').disabled = false; editing = null; dirty = false; previewSignature = null; $('preview-panel').hidden = true; $('publish').disabled = true; $('unpublish').hidden = true; $('notebook-results').replaceChildren(); $('import-panel').hidden = true; }
+    if (view === 'write') { $('editor-cover')?.remove(); $('editor-form').reset(); $('kind').disabled = false; editing = null; dirty = false; previewSignature = null; $('preview-panel').hidden = true; $('publish').disabled = false; $('unpublish').hidden = true; $('delete').hidden = true; $('notebook-results').replaceChildren(); $('import-panel').hidden = true; }
     if (['mine', 'following'].includes(view)) { $('feed').replaceChildren(); $('more').hidden = true; }
     if (view === 'mine') { $('profile-dialog').close(); $('people-dialog').close(); $('followers').replaceChildren(); $('profile-form').reset(); $('subscriptions').replaceChildren(); $('wall-profile').hidden = true; $('wall-name').textContent = ''; $('wall-handle').textContent = ''; $('wall-bio').textContent = ''; $('wall-stats').textContent = ''; $('wall-avatar').replaceChildren(); }
     if (view === 'moderation') $('moderation').replaceChildren();
