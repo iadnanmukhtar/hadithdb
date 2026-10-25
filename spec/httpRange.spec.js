@@ -1,5 +1,5 @@
 jest.mock('../lib/CommunityBlogSearch',()=>({merge:jest.fn(async(q,offset,size,search)=>search(offset,size))}));
-jest.mock('../lib/CommunityBlogImport', () => ({records:jest.fn(async()=>[])}));
+jest.mock('../lib/CommunityBlogImport', () => ({records:jest.fn(async()=>[]),publicUrls:jest.fn(async()=>[])}));
 'use strict';
 jest.mock('../lib/Community',()=>({blogPosts:jest.fn(async()=>[])}));
 
@@ -56,6 +56,7 @@ describe('Blog offset status errors', () => {
   let originalUtils;
 
   beforeAll(done => {
+    require('../lib/Community').blogPosts.mockResolvedValue([{title:'One',published:new Date('2026-01-02'),url:'/community/@author/1'},{title:'Two',published:new Date('2026-01-01'),url:'/community/@author/2'}]);
     originalSettings = global.settings;
     originalUtils = global.utils;
     blogDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hadithdb-blog-offset-'));

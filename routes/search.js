@@ -6,7 +6,6 @@ const express = require('express');
 const createError = require('http-errors');
 const rateLimit = require('express-rate-limit').default;
 const fs = require('fs');
-const fm = require('front-matter');
 const ejs = require('ejs');
 const Search = require('../lib/Search');
 const SirahReader = require('../lib/SirahReader');
@@ -823,16 +822,8 @@ async function buildSitemapText(req) {
   };
   if (!quranOnly) {
     txt += hadithPublicSitemapUrls(domain);
-    const files = fs.readdirSync(global.settings.blog.dir);
-    for (var file of files) {
-      if (file.endsWith('.md')) {
-        try {
-          const { attributes } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
-          txt += `${domain}/blog/${file.replace(/.md$/, '')}\n`;
-        } catch (e) {
-        }
-      }
-    }
+    const blogUrls = await require('../lib/CommunityBlogImport').publicUrls();
+    for (const url of blogUrls) txt += `${domain}${url}\n`;
   }
   var results = await global.query(`
     select b.alias, null as h1, null as h2 from books b

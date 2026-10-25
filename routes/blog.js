@@ -1,11 +1,8 @@
 /* jslint node:true, esversion:9 */
 'use strict';
 
-const debug = require('../lib/Debug')('hadithdb:Blog');
 const express = require('express');
-const fs = require('fs');
 const createError = require('http-errors');
-const fm = require('front-matter');
 const markdownit = require('markdown-it');
 const markdownitfence = require('markdown-it-fence')
 const HttpRange = require('../lib/HttpRange');
@@ -29,29 +26,7 @@ async function listPosts(req, res, next) {
   }
   var offset = Math.floor(Math.max(0, requestedOffset) / pageSize) * pageSize;
 
-  var posts = [];
-  const migrated = await BlogImport.records();
-  const migratedSlugs = new Set(migrated.map(row=>row.slug));
-  const files = fs.readdirSync(global.settings.blog.dir);
-  for (var file of files) {
-    if (file.endsWith('.md') && !migratedSlugs.has(file.slice(0,-3))) {
-      try {
-        const { attributes } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
-        var post = new Object(attributes);
-        post.file = file.replace(/.md$/, '');
-        applyCoverFallback(post);
-        if (!post.hidden)
-          posts.push(post);
-      } catch (e) {
-        debug(`Unable to read ${file}`);
-      }
-    }
-  }
-  posts.push(...migrated.filter(row=>row.status==='published' && row.featured).map(row=>applyCoverFallback({...BlogImport.attributes(row),file:row.slug,url:BlogImport.url(row.slug),html:renderHtml(row.public_markdown),lastmod:new Date(row.updated_at)})));
-  try { posts.push(...(await require('../lib/Community').blogPosts()).map(applyCoverFallback)); } catch(err) { return next(err); }
-  posts.sort((a, b) => {
-    return b.published - a.published;
-  });
+  var posts = await getPosts();
   var offsetError = HttpRange.itemOffsetNotSatisfiable(requestedOffset, posts.length, 'Blog');
   if (offsetError)
     return next(offsetError);
@@ -100,6 +75,15 @@ router.get('/rss', async function (req, res, next) {
   });
 });
 
+// Keep old image links working after the filesystem blog directory is retired.
+router.get('/Attachments/*', async (req,res,next) => {
+  try {
+    const mediaId=await require('../lib/CommunityBlogImages').publicLegacyImage('Attachments/'+req.params[0]);
+    if(!mediaId)return next(createError(404,'Image not found'));
+    return res.redirect(301,'/community/media/'+mediaId);
+  } catch(err){next(err);}
+});
+
 router.get('/:title', async function (req, res, next) {
 
   res.locals.req = req;
@@ -112,23 +96,7 @@ router.get('/:title', async function (req, res, next) {
     if (migrated.status!=='published') return next(createError(404,'Post not found'));
     return res.render('blog_post',{attr:applyCoverFallback(BlogImport.attributes(migrated)),body:renderHtml(migrated.public_markdown),slug});
   }
-  const filename = `${global.settings.blog.dir}/${slug}.md`;
-  if (fs.existsSync(filename)) {
-
-    const { attributes, body } = fm(fs.readFileSync(filename).toString());
-    const attr = applyCoverFallback(new Object(attributes));
-    const html = renderHtml(body);
-
-    res.render('blog_post', {
-      attr: attr,
-      body: html,
-      slug
-    });
-
-  } else {
-    debug(`Post ${filename} not found`);
-    return next(createError(404, 'Post not found'));
-  }
+  return next(createError(404, 'Post not found'));
 
 });
 
@@ -137,30 +105,9 @@ module.exports = router;
 async function getPosts() {
   var posts = [];
   const migrated = await BlogImport.records();
-  const migratedSlugs = new Set(migrated.map(row=>row.slug));
-  const files = fs.readdirSync(global.settings.blog.dir);
-  for (var file of files) {
-    if (file.endsWith('.md') && !migratedSlugs.has(file.slice(0,-3))) {
-      try {
-        const stat = fs.statSync(`${global.settings.blog.dir}/${file}`);
-        const { attributes, body } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
-        var html = renderHtml(body);
-        html = html.replace(/(href|src)="\//g, `$1="${global.settings.site.url}/`);
-        var post = new Object(attributes);
-        post.lastmod = stat.mtime;
-        post.file = file.replace(/.md$/, '');
-        post.html = html;
-        applyCoverFallback(post);
-        if (post.hidden !== true && post.hidden !== 'true')
-          posts.push(post);
-      } catch (e) {
-        debug(e.toString());
-        debug.error(e.stack || e.message || e);
-      }
-    }
-  }
   posts.push(...migrated.filter(row=>row.status==='published' && row.featured).map(row=>applyCoverFallback({...BlogImport.attributes(row),file:row.slug,url:BlogImport.url(row.slug),html:renderHtml(row.public_markdown),lastmod:new Date(row.updated_at)})));
-  try { posts.push(...(await require('../lib/Community').blogPosts()).map(applyCoverFallback)); } catch(err) { throw err; }
+  posts.push(...(await require('../lib/Community').blogPosts()).map(applyCoverFallback));
+  for (const post of posts) if (post.html) post.html=post.html.replace(/(href|src)="\/(?!\/)/g, `$1="${global.settings.site.url.replace(/\/$/,'')}/`);
   posts.sort((a, b) => {
     return b.published - a.published;
   });

@@ -500,7 +500,7 @@ const startupPromise = (async () => {
       return next();
     return res.redirect(301, appendQueryString(canonicalPath, requestQueryString(req)));
   });
-  app.use('/blog', express.static(`${global.settings.blog.dir}`, { cacheControl: false }));
+  // Blog content and legacy attachment URLs are served from database-backed routes.
 
   // global redirect www
   app.all('/*', function (req, res, next) {

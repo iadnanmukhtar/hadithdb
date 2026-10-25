@@ -52,6 +52,8 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     for (const source of ['hadiths_comments_votes','blog_comments_votes']) await q(`CREATE TABLE ${prefix}${source} (
       id INT PRIMARY KEY AUTO_INCREMENT, commentId INT, user_uid VARCHAR(255) COLLATE utf8mb4_bin, direction VARCHAR(8)) DEFAULT CHARSET=utf8mb4`);
     await q(`CREATE TABLE ${prefix}hadiths_likes (id INT PRIMARY KEY AUTO_INCREMENT, hadithId INT, type VARCHAR(16), ref_num VARCHAR(45), user_uid VARCHAR(255) COLLATE utf8mb4_bin, user_name VARCHAR(255), createdAt DATETIME(3)) DEFAULT CHARSET=utf8mb4`);
+    await Community.authorFor({uid:'original-blog-author',name:'Original author'});
+    await require('../lib/CommunityBlogImport').migrate(blogDir,'original-blog-author',true);
   });
   afterAll(async () => {
     if (server) await new Promise(resolve=>server.close(resolve));
@@ -295,8 +297,19 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       expect(article.coverUrl).toMatch(/^\/community\/media\/[a-f0-9]{32}$/);expect(article.markdown).toContain(article.coverUrl);expect(article.markdown).not.toContain('![[');
       const mediaId=article.coverUrl.split('/').pop();expect((await Media.image(mediaId,null)).data).toEqual(png);
       expect((await Images.migrate(dir,['hadithunlocked.com'],true,dir)).updated).toBe(0);
+      fs.rmSync(dir,{recursive:true,force:true});
+      const oldDirectory=global.settings.blog.dir;global.settings.blog.dir=dir;
+      try {
+        for(const url of ['/blog','/blog/Images','/blog/feed','/blog/rss'])expect((await fetch(base+url)).status).toBe(200);
+        expect(await Import.publicUrls()).toContain('/blog/Images');
+        const legacy=await fetch(base+'/blog/Attachments/Cover%20image.png',{redirect:'manual'});
+        expect(legacy.status).toBe(301);expect(legacy.headers.get('location')).toBe(article.coverUrl);
+        const migrated=await fetch(base+'/blog/Attachments/Cover%20image.png');expect(migrated.status).toBe(200);expect(Buffer.from(await migrated.arrayBuffer())).toEqual(png);
+        expect((await fetch(base+'/blog/Attachments/missing.png')).status).toBe(404);
+      } finally {global.settings.blog.dir=oldDirectory;}
+
       await q('UPDATE '+prefix+'posts SET status=? WHERE id=?',['draft',id]);
-      await expect(Media.image(mediaId,null)).rejects.toMatchObject({status:404});expect((await Media.image(mediaId,{uid:'image-author'})).data).toEqual(png);
+      await expect(Media.image(mediaId,null)).rejects.toMatchObject({status:404});expect((await fetch(base+'/blog/Attachments/Cover%20image.png',{redirect:'manual'})).status).toBe(404);expect((await Media.image(mediaId,{uid:'image-author'})).data).toEqual(png);
       expect(new Date(article.publishedAt).toISOString()).toBe('2020-01-01T00:00:00.000Z');
     } finally {fs.rmSync(dir,{recursive:true,force:true});}
   });
@@ -308,9 +321,9 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     fs.writeFileSync(path.join(blogDir,'hidden.md'),'---\ntitle: Hidden draft\npublished: 2020-01-01\nhidden: true\n---\nPrivate draft');
     const author=await Community.authorFor({uid:'import-author',name:'Blog author'});
     try {
-      const before=await (await fetch(base+Import.url(slug))).text();
       const dry=await Import.migrate(blogDir,'import-author'); expect(dry.pending.some(p=>p.slug===slug)).toBe(true); expect(dry.hidden).toContain('hidden');
       const result=await Import.migrate(blogDir,'import-author',true), imported=result.imported.find(p=>p.slug===slug);
+      const before=await (await fetch(base+Import.url(slug))).text();
       expect((await Import.migrate(blogDir,'import-author',true)).imported).toHaveLength(0);
       const article=await Community.post(imported.id); expect(article.url).toBe(Import.url(slug)); expect(new Date(article.publishedAt).toISOString()).toBe('2021-02-03T00:00:00.000Z'); expect(article.isBlog).toBe(true);
       expect(article.publicationDate).toBe('2021-02-03'); expect(article.coverUrl).toBe('/blog/Attachments/cover.jpg'); expect(article.mediaHtml).toContain('/blog/Attachments/cover.jpg'); expect(article.mediaHtml).toContain('Original description'); expect(article.mediaHtml).toContain('6bSp_7Ig4_s');

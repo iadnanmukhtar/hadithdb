@@ -196,6 +196,8 @@ describe('public MCP Streamable HTTP route', () => {
     const response = await request('POST', { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const payload = await response.json();
     expect(payload.result.tools.map(tool => tool.name)).toEqual([
+      'search_blog',
+      'lookup_blog_post',
       'list_hadith_commentaries',
       'search_hadith_commentary',
       'lookup_hadith_commentary',
