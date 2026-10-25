@@ -40,6 +40,7 @@
                 <h2 class="fs-6 mb-0 text-body-secondary"><%= attr.subtitle %></h2>
               <% } %>
               <p class="fs-6 text-muted"><%= attr.published.toDateString() %></p>
+              <% if (attr.postId) { %><a hidden data-blog-edit data-author="<%= attr.authorHandle %>" href="/community/write?post=<%= attr.postId %>" class="small text-muted text-decoration-none" aria-label="Edit article"><i class="bi bi-pencil" aria-hidden="true"></i> Edit article</a><% } %>
             </header>
             <figure>
               <img class="img-fluid" src="<%- attr.cover %>" alt="<%= attr.title %> cover image">
@@ -65,5 +66,6 @@
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 
+<script src="<%= utils.staticAssetUrl('/static/js/blog-edit.js') %>" defer></script>
 </body>
 </html>

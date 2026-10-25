@@ -52,6 +52,7 @@
             </div>
             <div class="col-md-8">
               <div class="card-body">
+                <% if (posts[i].postId) { %><a hidden data-blog-edit data-author="<%= posts[i].authorHandle %>" href="/community/write?post=<%= posts[i].postId %>" class="small text-muted text-decoration-none" aria-label="Edit article"><i class="bi bi-pencil" aria-hidden="true"></i> Edit article</a><% } %>
                 <h5 class="card-title"><a href="<%= posts[i].url || ('/blog/' + posts[i].file) %>"><%= posts[i].title %></a></h5>
                 <p class="card-text mb-0"><%= posts[i].subtitle %></p>
                 <p class="card-text"><small class="text-body-secondary"><% if (posts[i].author) { %><%= posts[i].author %> · <% } %><%= posts[i].published.toDateString() %></small></p>
@@ -72,5 +73,6 @@
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 
+<script src="<%= utils.staticAssetUrl('/static/js/blog-edit.js') %>" defer></script>
 </body>
 </html>

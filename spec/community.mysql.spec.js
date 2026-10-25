@@ -92,12 +92,18 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     expect((await Community.post(revisedId)).html).toContain('Revised translation');
     const feed=await Community.feed({scope:'mine'},user);
     expect(feed.items.map(item=>item.id)).toEqual(expect.arrayContaining([postId,revisedId]));
-    expect(feed.items.find(item=>item.id===postId)).toMatchObject({microinteraction:'title',hadithTitle:'New title',hadithUrl:'/bukhari:1'});
+    expect(feed.items.find(item=>item.id===postId)).toMatchObject({microinteraction:'title',hadithTitle:'New title',hadithUrl:'/bukhari:1',canEdit:false});
     expect(feed.items.find(item=>item.id===revisedId).microinteraction).toBeUndefined();
     await Community.authorFor({uid:'hadith-reader',name:'Reader'});
     await Community.follow({uid:'hadith-reader',name:'Reader'},post.author.handle,true,false);
     const following=await Community.feed({scope:'following'},{uid:'hadith-reader'});
     expect(following.items.map(item=>item.id)).toContain(postId);
+    expect(following.items.find(item=>item.id===postId).canEdit).toBe(false);
+    const ownPublic=await Community.feed({author:post.author.handle},user);
+    expect(ownPublic.items.find(item=>item.id===postId).canEdit).toBe(false);
+    await expect(Community.post(postId,user,true)).rejects.toMatchObject({status:403});
+    await expect(Community.savePost(user,{kind:'note',title:'Changed',markdown:'Changed',version:1},postId)).rejects.toMatchObject({status:403});
+    expect(ownPublic.items.find(item=>item.id===postId).markdown).toBeUndefined();
     const page=await fetch(base+'/community');expect(page.status).toBe(200);
     const $=require('cheerio').load(await page.text());
     expect($('.offcanvas-quick-actions a').first().attr('href')).toBe('/community');
@@ -112,7 +118,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await page.route('**/*',route=>{if(route.request().resourceType()==='script'&&!/community(?:-media)?\.js/.test(route.request().url()))return route.abort();return route.continue();});
       await page.route('**/api/community/feed?*',route=>{
         const offset=Number(new URL(route.request().url()).searchParams.get('offset')||0);offsets.push(offset);
-        const items=Array.from({length:Math.min(20,42-offset)},(_,i)=>({id:offset+i+5000,activity:'post',kind:'note',microinteraction:offset+i<40?'title':undefined,hadithTitle:'Acceptance of dua',hadithRef:'ahmad:11133',hadithUrl:'/ahmad:11133',title:'Titled ahmad:11133',excerpt:'Normal post',author:{handle:'editor',name:'Editor'},url:'/community/@editor/1',activityAt:new Date().toISOString()}));
+        const items=Array.from({length:Math.min(20,42-offset)},(_,i)=>({id:offset+i+5000,activity:'post',kind:'note',canEdit:true,microinteraction:offset+i<40?'title':undefined,hadithTitle:'Acceptance of dua',hadithRef:'ahmad:11133',hadithUrl:'/ahmad:11133',title:'Titled ahmad:11133',excerpt:'Normal post',author:{handle:'editor',name:'Editor'},url:'/community/@editor/1',activityAt:new Date().toISOString()}));
         return route.fulfill({json:{items,hasMore:offset+20<42,offset:offset+20}});
       });
       await page.goto(base+'/community');
@@ -121,6 +127,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       expect(await page.locator('#community-feed [data-kind=title]:visible').count()).toBe(10);
       const first=page.locator('#community-feed [data-kind=title]').first();
       expect(await first.locator('h2').count()).toBe(0);
+      expect(await first.locator('[aria-label="Edit post"]').count()).toBe(0);
       expect(await first.textContent()).toContain('Acceptance of dua');
       expect((await first.boundingBox()).height).toBeLessThan(90);
       await page.locator('#community-more').click();
@@ -129,6 +136,21 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await page.locator('#community-feed details summary').click();
       expect(await page.locator('#community-feed [data-kind=title]:visible').count()).toBe(40);
     }finally{await browser.close();}
+  });
+  test('only admins publish existing Blog articles while creators can save drafts',async()=>{
+    const owner={uid:'blog-writer',name:'Blog writer'};
+    let article=await Community.savePost(owner,postInput());
+    await q("UPDATE "+prefix+"posts SET status='published',public_title=title,public_markdown=markdown WHERE id=?",[article.id]);
+    await Community.markBlog({uid:'moderator'},article.id,true);
+    article=await Community.savePost(owner,postInput({version:article.version,markdown:'Private edit'}),article.id);
+    await expect(Community.savePost(owner,postInput({version:article.version,action:'publish'}),article.id)).rejects.toMatchObject({status:403});
+    const published=await Community.savePost({...owner,admin:true},postInput({version:article.version,action:'publish'}),article.id);
+    expect(published.status).toBe('published');
+    await q("UPDATE "+prefix+"posts SET status='pending' WHERE id=?",[article.id]);
+    const previous=process.env.COMMUNITY_MODERATOR_UIDS;
+    process.env.COMMUNITY_MODERATOR_UIDS=previous+',blog-reviewer';
+    try{await expect(Community.moderate({uid:'blog-reviewer'},article.id,{action:'approve',version:published.version})).rejects.toMatchObject({status:403});}
+    finally{process.env.COMMUNITY_MODERATOR_UIDS=previous;}
   });
   test('article subtitles preserve public snapshots and backfill legacy metadata only once', async()=>{
     const user={uid:'moderator',name:'Moderator'};

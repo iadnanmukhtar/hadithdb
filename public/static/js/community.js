@@ -171,6 +171,7 @@
     return ()=>togglePanel(true);
   }
   function microType(item) { return item.microinteraction === 'title' ? 'title' : item.kind === 'like' ? item.activity + ':' + (item.likeSource || '') : null; }
+  function editPostLink(item) { const edit = link('', '/community/write?post=' + item.id, 'community-entry-secondary community-edit-post'); edit.title = 'Edit post'; edit.setAttribute('aria-label', 'Edit post'); edit.append(icon('pencil')); return edit; }
   function card(item) {
     const kind = item.microinteraction === 'title' ? 'title' : item.activity === 'comment' ? 'comment' : item.kind;
     const privatePost = item.status && item.status !== 'published';
@@ -185,7 +186,8 @@
       copy.append(author, document.createTextNode(kind === 'title' ? ' titled ' : ' liked '), target);
       if (kind === 'title') copy.append(document.createTextNode(' · ' + item.hadithRef));
       if (item.activityAt) { const time = node('time', activityDate(item)); time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); copy.append(document.createTextNode(' · '), time); }
-      article.append(avatar, copy); return article;
+      article.append(avatar, copy);
+      return article;
     }
     const identity = node('div', undefined, 'community-entry-identity');
     const authorLink = link(item.author.name, '/community/@' + item.author.handle, 'community-author'); authorLink.dir = 'auto'; identity.append(authorLink);
@@ -204,7 +206,7 @@
     let toggleDiscussion;
     const actions = item.likeSource && !privatePost ? interactionControls(item,()=>toggleDiscussion()) : node('div',undefined,'community-entry-actions');
     if(privatePost) { const draft=link('',href);draft.title='Open draft';draft.setAttribute('aria-label','Open draft');draft.append(icon('file-earmark-text'));actions.append(draft); }
-    if (item.status) { const edit = link('', '/community/write?post=' + item.id, 'community-entry-secondary'); edit.title = 'Edit post'; edit.setAttribute('aria-label', 'Edit post'); edit.append(icon('pencil')); actions.append(edit); }
+    if (item.canEdit) actions.append(editPostLink(item));
     if (!privatePost && ['article','note'].includes(kind)) { const read = link('', href, 'community-entry-secondary'); read.title = kind === 'article' ? 'Read article' : 'Open post'; read.setAttribute('aria-label', read.title); read.append(icon('arrow-right')); actions.append(read); }
     article.append(actions);
     if(item.likeSource && !privatePost) toggleDiscussion=attachDiscussion(article,item,actions);
@@ -378,6 +380,7 @@
   }
   function populate(post) {
     renderEditorCover(post);
+    $('publish').hidden = !!post.isBlog && !me?.admin;
     editing = post; $('kind').value = post.kind; $('kind').disabled = true; $('title').value = post.draftTitle ?? post.title; $('subtitle').value = post.subtitle || ''; $('subtitle').hidden = post.kind !== 'article';
     $('markdown').value = post.markdown; $('tags').value = post.tags;
     $('title').required = post.kind === 'article';
@@ -643,7 +646,7 @@
         if (params.get('post') && !editing) populate((await api('/posts/' + encodeURIComponent(params.get('post')) + '?edit=1')).post);
         if (params.get('source') && !editing) await copyNotebook(params.get('source'));
       }
-      if (view === 'post') { $('blog-control').hidden = !me?.admin || $('blog-toggle').dataset.kind !== 'article'; $('edit-post').hidden = me?.author.handle !== handle; await loadComments(); }
+      if (view === 'post') { $('blog-control').hidden = !me?.admin || $('blog-toggle').dataset.kind !== 'article'; $('edit-post').hidden = me?.author.handle !== handle || $('edit-post').dataset.generated === 'true'; await loadComments(); }
       if (view === 'moderation') await loadModeration();
     } catch (err) { if (own === epoch) status(err.message); }
   }

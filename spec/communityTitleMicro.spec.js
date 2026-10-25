@@ -11,3 +11,12 @@ test('server feed renders safe title text and collapses only consecutive title r
  expect($('[data-kind=title]').first().text()).toContain('Acceptance of dua <script>');
  expect($('[data-kind=title] a[href="/ahmad:11133"]').length).toBe(23);
 });
+test('edit pencils appear for owned ordinary posts but never microinteractions',async()=>{
+ const base={id:12,activity:'post',kind:'article',title:'Article',excerpt:'Public text',author:{handle:'writer',name:'Writer'},url:'/community/@writer/12',activityAt:'2026-01-01'};
+ const compact={...base,kind:'note',microinteraction:'title',hadithTitle:'Hadith title',hadithRef:'bukhari:1',hadithUrl:'/bukhari:1'};
+ for(const item of [base,compact]){
+  const render=async canEdit=>load(await ejs.renderFile(path.join(__dirname,'../views/sub-views/community_card.ejs'),{item:{...item,canEdit}}));
+  expect((await render(true))('[aria-label="Edit post"]').length).toBe(item.microinteraction ? 0 : 1);
+  expect((await render(false))('[aria-label="Edit post"]').length).toBe(0);
+ }
+});
