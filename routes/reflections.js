@@ -271,6 +271,7 @@ ${formatThreadHistory(threadRows)}
         WHERE ${targetWhere(target)}
         ORDER BY createdAt DESC
       `);
+      await require('../lib/UserAvatar').decorateRows(rows);
       const voteStats = await getVoteStats(rows.map(row => row.id), user ? user.uid : null);
       res.json(rows.map(row => formatComment(row, user, voteStats[row.id])));
     } catch (err) {
@@ -429,6 +430,7 @@ ${formatThreadHistory(threadRows)}
       await global.query(`INSERT INTO ${config.votesTable} (commentId, user_uid, direction) VALUES (${commentId}, '${escUid}', '${direction}')`);
       const vote = (await getVoteStats([commentId], req.user.uid))[commentId] || {};
       await global.query(`UPDATE ${config.table} SET up_vote=${vote.upVote || 0}, down_vote=${vote.downVote || 0} WHERE id=${commentId}`);
+      await require('../lib/Community').recordReflectionVote(req.user, config.table, commentId, direction);
       res.json(formatVote(row, vote, direction));
       sendVoteEmail({
         ...config.notificationFields(row),
@@ -548,7 +550,8 @@ function buildCommentUser(row, fallbackPhoto = null) {
     provider: row.user_provider,
     name: row.user_name,
     email: row.user_email,
-    photo: row.user_photo || fallbackPhoto || getGravatarUrl(row.user_email)
+    photo: row.avatarPhoto || row.user_photo || fallbackPhoto || getGravatarUrl(row.user_email),
+    avatarFallback: row.avatarFallback || getGravatarUrl(row.user_email)
   };
 }
 

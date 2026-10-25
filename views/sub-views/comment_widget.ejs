@@ -135,9 +135,17 @@
           return label.charAt(0).toUpperCase() + label.slice(1);
         };
 
-        const renderAvatarMarkup = (name, photoUrl = '') => {
+        const avatarRoot = document.getElementById('<%= widgetId %>');
+        avatarRoot.addEventListener('error', event => {
+          const img=event.target;
+          if (!img.matches?.('img[data-avatar-fallback]')) return;
+          const fallback=img.dataset.avatarFallback || 'https://www.gravatar.com/avatar/?d=mp&s=96';
+          if (img.src !== fallback) img.src=fallback;
+          else img.replaceWith(document.createTextNode('◦'));
+        }, true);
+        const renderAvatarMarkup = (name, photoUrl = '', fallback = 'https://www.gravatar.com/avatar/?d=mp&s=96') => {
           if (photoUrl) {
-            return `<img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(name)} avatar" loading="lazy">`;
+            return `<img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(name)} avatar" loading="lazy" referrerpolicy="no-referrer" data-avatar-fallback="${escapeHtml(fallback)}">`;
           }
           return `<span>${escapeHtml(getInitials(name))}</span>`;
         };
@@ -304,7 +312,7 @@
               const replyControls = deleted ? '' : `<button type="button" class="comment-action comment-reply" data-id="${c.id}" aria-label="Reply" title="Reply"><i class="bi bi-reply" aria-hidden="true"></i></button>`;
               item.innerHTML = `
                 <div class="comment-row">
-                  <div class="comment-avatar">${renderAvatarMarkup(userName, userPhoto)}</div>
+                  <div class="comment-avatar">${renderAvatarMarkup(userName, userPhoto, c.user && c.user.avatarFallback)}</div>
                   <div class="comment-entry">
                     <div class="comment-bubble-wrap">
                       <div class="comment-bubble">

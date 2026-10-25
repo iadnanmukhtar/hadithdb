@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en"><head>
+<% var site = Object.assign({}, global.settings.site, { admin: false, editMode: false }); %>
+<%- include('sub-views/head.ejs', { site, page }); %>
+<style><%- include('sub-views/notebook_content_styles.ejs'); %></style>
+</head><body class="community-page">
+<%- include('sub-views/header.ejs', { site, page }); %>
+<main class="container py-4 community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
+  <div class="community-heading">
+    <div><h1 dir="auto"><%= view === 'author' ? author.name : page.title_en %></h1>
+    <% if (['everyone','following','mine'].includes(view)) { %><p class="community-intro"><%= view === 'mine' ? 'Your notes, articles, reflections, comments, and publication drafts.' : view === 'following' ? 'The latest writing and conversations from authors you follow.' : 'Notes, articles, and discussions from the community.' %></p><% } %>
+    </div>
+  </div>
+  <p id="community-status" class="small text-muted" role="status" aria-live="polite"></p>
+  <% if (author && ['author','post'].includes(view)) { %>
+  <section class="community-profile mb-4" aria-label="About the author">
+    <span class="community-avatar community-avatar-large" aria-hidden="true"><%- include('sub-views/community_avatar.ejs', { avatar: author }) %></span>
+    <div class="community-profile-copy"><a class="fw-semibold" href="/community/@<%= author.handle %>" dir="auto"><%= author.name %></a><span class="small text-muted ms-2">@<%= author.handle %></span>
+    <p class="mb-1 mt-2" dir="auto"><%= author.bio %></p><p class="small text-muted mb-0"><%= author.followers %> followers · <%= author.posts %> posts</p></div>
+    <div id="community-follow-controls" class="d-flex flex-wrap gap-2"><button class="btn btn-outline-primary" id="community-follow" type="button">Follow</button><button class="btn btn-outline-secondary" id="community-subscribe" type="button">Subscribe by email</button></div>
+  </section>
+  <% } %>
+  <% if (['everyone','following','mine','author'].includes(view)) { %>
+  <div class="community-columns"><section class="community-wall" aria-label="Activity wall">
+    <% if (['everyone', 'following', 'mine'].includes(view)) { %>
+    <button id="community-quick-open" type="button" class="community-quick-prompt" aria-haspopup="dialog" aria-controls="community-quick-dialog"><span class="community-avatar" id="community-prompt-avatar" aria-hidden="true"><i class="bi bi-person"></i></span><span>What's on your mind?</span></button>
+    <dialog id="community-quick-dialog" class="community-quick-dialog" aria-label="Write a public note">
+    <form id="community-quick-form" class="community-composer" aria-label="Create a quick note">
+      <button type="button" class="btn-close community-composer-close" data-close-quick aria-label="Close editor"></button>
+      <div class="community-composer-heading"><span class="community-avatar" id="community-quick-avatar" aria-hidden="true"><i class="bi bi-person"></i></span><div><span class="community-composer-name" id="community-quick-name">Share a reflection</span><span class="community-composer-audience"><i class="bi bi-globe2" aria-hidden="true"></i> Public note</span></div></div>
+      <label class="visually-hidden" for="community-quick-text">What's on your mind?</label>
+      <textarea id="community-quick-text" rows="6" maxlength="10000" required dir="auto" placeholder="What's on your mind?" aria-describedby="community-quick-status"></textarea>
+      <div id="community-quick-preview" class="notebook-markdown" hidden></div>
+      <div class="community-composer-footer"><a href="/community/write?kind=article"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Write an article</a><div class="d-flex align-items-center gap-2"><button id="community-quick-preview-button" type="button" class="community-preview-action" hidden>Preview</button><button type="button" class="btn btn-sm btn-outline-secondary" data-close-quick>Cancel</button><button id="community-quick-post" class="btn btn-sm btn-primary" type="submit" disabled>Post note <i class="bi bi-arrow-up" aria-hidden="true"></i></button></div></div>
+      <p id="community-quick-status" class="community-composer-status" role="status" aria-live="polite"></p>
+    </form>
+    </dialog>
+    <% } %>
+    <div class="community-feed-toolbar"><h2><%= view === 'mine' ? 'Your activity' : view === 'following' ? 'From authors you follow' : view === 'author' ? 'Writing & conversations' : 'In the community' %></h2>
+    <% if (view === 'mine') { %><a id="community-public-wall" class="community-public-link" hidden>Public profile <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a><% } %>
+    <% if (view !== 'mine') { %><label class="visually-hidden" for="community-filter">Filter activity</label><select class="form-select form-select-sm community-filter" id="community-filter"><option value="all">All activity</option><option value="article">Articles</option><option value="note">Notes</option><option value="comment">Comments</option><option value="like">Likes</option></select><% } %></div>
+    <div id="community-feed" class="community-feed"><% if (initial) { for (const item of initial.items) { %><%- include('sub-views/community_card.ejs', { item }); %><% } if (!initial.items.length) { %><p class="community-empty">No public posts yet. Start a reflection or share an article.</p><% } } %></div>
+    <div id="community-feed-sentinel" class="community-feed-sentinel" aria-hidden="true"></div>
+    <p id="community-feed-status" class="small text-muted" role="status" aria-live="polite"></p>
+    <button class="btn btn-outline-secondary mt-3" id="community-more" type="button" hidden>Load more</button>
+  </section><aside class="community-aside">
+    <div class="community-sidebar-intro"><h2>About Community</h2><p>Share reflections, write articles, and discuss the Quran and hadith with other readers.</p></div>
+    <a class="community-notebook-link" href="/notebook"><i class="bi bi-journal-text" aria-hidden="true"></i><span><strong>My Notebook</strong><small>Your private reading notes</small></span><i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+    <p class="community-sidebar-footnote">Writing here reflects the author’s perspective. Community posts are not scholarly verification.</p>
+    <% if (view === 'mine') { %>
+    <details class="community-card" id="community-profile-settings"><summary class="fw-semibold">My public profile</summary>
+      <form id="community-profile-form" class="mt-3"><label class="form-label" for="community-name">Display name</label><input id="community-name" class="form-control mb-2" maxlength="120" required dir="auto">
+      <label class="form-label" for="community-handle">Handle</label><input id="community-handle" class="form-control mb-2" pattern="[a-z][a-z0-9-]{2,39}" maxlength="40" required><p class="small text-muted">Choose once. This becomes your permanent public address.</p>
+      <label class="form-label" for="community-bio">Bio</label><textarea id="community-bio" class="form-control mb-3" maxlength="1000" dir="auto"></textarea><button class="btn btn-sm btn-primary" type="submit">Save profile</button></form>
+    </details><details class="community-card"><summary class="fw-semibold">Following & email subscriptions</summary><div id="community-subscriptions" class="mt-3 small"></div></details>
+    <% } %>
+  </aside></div>
+  <% } %>
+  <% if (view === 'write') { %>
+  <section class="community-editor" aria-label="Publication editor">
+    <p class="community-notice">Write here or copy a saved notebook note. Your private notebook is unchanged. Preview the public version before publishing.</p>
+    <form id="community-editor-form">
+      <div class="d-flex flex-wrap gap-3 align-items-end mb-3"><div><label class="form-label" for="community-kind">Post type</label><select id="community-kind" class="form-select"><option value="note">Short note</option><option value="article">Article</option></select></div><button id="community-import" class="btn btn-outline-secondary" type="button">Copy from My Notebook</button></div>
+      <div id="community-import-panel" class="community-card" hidden><label class="form-label" for="community-notebook-search">Find a saved note</label><input id="community-notebook-search" class="form-control mb-2" type="search" dir="auto"><div id="community-notebook-results"></div><button id="community-notebook-more" class="btn btn-sm btn-outline-secondary mt-2" type="button" hidden>More notes</button></div>
+      <label class="form-label" for="community-title">Title <span class="text-muted small">(optional for notes)</span></label><input id="community-title" class="form-control mb-3" maxlength="240" dir="auto">
+      <label class="form-label" for="community-markdown">Content</label><textarea id="community-markdown" class="form-control mb-3" rows="16" dir="auto" required placeholder="Write a reflection… Markdown and Arabic are supported."></textarea>
+      <label class="form-label" for="community-tags">Tags</label><input id="community-tags" class="form-control mb-3" maxlength="500" dir="auto" placeholder="Quran, reflections, learning">
+      <div id="community-email-option" class="form-check mb-3" hidden><input id="community-notify" class="form-check-input" type="checkbox"><label class="form-check-label" for="community-notify">Email this article to subscribers when first published</label></div>
+      <div class="d-flex flex-wrap gap-2"><button class="btn btn-outline-secondary" type="submit" data-action="draft">Save draft</button><button id="community-preview-button" class="btn btn-outline-primary" type="button">Preview public version</button><button id="community-publish" class="btn btn-primary" type="submit" data-action="publish" disabled>Publish</button><button id="community-unpublish" class="btn btn-outline-danger" type="button" hidden>Unpublish</button></div>
+      <p class="small text-muted mt-2" id="community-editor-status" role="status">Drafts are private. Your first publication will be reviewed by a moderator.</p>
+    </form><section id="community-preview-panel" class="community-card mt-4" hidden aria-label="Public preview"><h2 class="h5">Public preview</h2><p class="small text-muted">Check that this contains only what you want to share publicly.</p><h3 id="community-preview-title" dir="auto"></h3><div id="community-preview" class="notebook-markdown"></div></section>
+  </section>
+  <% } %>
+  <% if (view === 'post') { %>
+  <article class="community-card community-reading"><p class="small text-muted"><%= post.kind === 'article' ? 'Article' : 'Note' %> · Community contribution · <time datetime="<%= new Date(post.publishedAt).toISOString() %>"><%= new Date(post.publishedAt).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) %></time></p>
+    <div class="notebook-markdown"><%- post.html %></div><% if (post.tags) { %><p class="small text-muted mt-4" dir="auto"><%= post.tags %></p><% } %>
+    <div class="d-flex gap-3 small mt-3"><button id="community-report-post" class="btn btn-sm btn-link p-0" type="button">Report</button><a id="community-edit-post" href="/community/write?post=<%= post.id %>" hidden>Edit post</a></div>
+  </article>
+  <section class="community-reading mt-4" id="comments" aria-label="Discussion"><h2 class="h4">Discussion</h2><div id="community-comments"></div>
+    <form id="community-comment-form" class="community-card"><p id="community-reply-target" class="small text-muted" hidden></p><button id="community-cancel-reply" class="btn btn-sm btn-link mb-2" type="button" hidden>Cancel reply</button><label class="form-label" for="community-comment-text">Join the conversation</label><textarea id="community-comment-text" class="form-control mb-3" dir="auto" rows="3" maxlength="10000" required></textarea><button class="btn btn-primary" type="submit">Post comment</button></form>
+  </section>
+  <% } %>
+  <% if (view === 'moderation') { %><p class="text-muted">Review first publications and reported content. Approval allows the author’s future posts to publish immediately.</p><div id="community-moderation"></div><% } %>
+  <% if (view === 'unsubscribe') { %><section class="community-card"><% if (unsubscribed) { %><p class="mb-0">You have unsubscribed from this author’s emails. You still follow their posts in your feed.</p><% } else { %><p>Stop email updates from this author? You will still follow their posts.</p><form method="post"><button class="btn btn-primary" type="submit">Unsubscribe from emails</button></form><% } %></section><% } %>
+</main>
+<%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
+<%- include('sub-views/footer.ejs', { site, page }); %>
+<% if (view !== 'unsubscribe') { %>
+<%- include('sub-views/scripts.ejs', { site, page }); %>
+<script src="/static/js/community.js?v=<%= utils.scriptAssetVersion() %>"></script><% } %>
+</body></html>

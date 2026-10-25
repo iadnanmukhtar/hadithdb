@@ -123,6 +123,7 @@ test('new notes and deletions update cards locally', () => {
 test('closing the modal does not reload the list or tags', () => {
   const ctx = vm.createContext({ setExpanded: jest.fn(), changingPresentation: false, restoreButton: {}, floatingStorage: 'floating', sessionStorage: { removeItem: jest.fn() }, wikiAutocomplete: { close: jest.fn() }, clearTimeout: jest.fn(), saveTimer: null, loadList: jest.fn(), loadTags: jest.fn(), returnModal: null, modal: { classList: { remove: jest.fn() }, addEventListener: jest.fn() } });
   ctx.shareControls = { reset: jest.fn() };
+  ctx.clearFloating = jest.fn();
   vm.runInContext(source.match(/  modal.addEventListener\('hidden.bs.modal', \(\) => \{[^]*?\n  \}\);/)[0], ctx);
   const close = ctx.modal.addEventListener.mock.calls[0][1]; close(); close();
   expect(ctx.loadList).not.toHaveBeenCalled(); expect(ctx.loadTags).not.toHaveBeenCalled();

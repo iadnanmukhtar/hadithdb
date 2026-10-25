@@ -258,3 +258,33 @@ test('parallel heading outline includes only the first column', async () => {
   expect(shared.outline.map(item => item.parts.map(part => part.text).join(''))).toEqual(['عنوان', 'Next']);
   expect(shared.html).toContain('Translation</h2>');
 });
+
+test('Community handoff requires a saved private note before opening a publication draft', async () => {
+  const browser = await require('playwright').chromium.launch({ channel: 'chrome', headless: true });
+  try {
+    const page = await browser.newPage(); page.setDefaultTimeout(3000); page.setDefaultNavigationTimeout(3000);
+    await page.route('**/community/write?source=*', route => route.fulfill({ contentType: 'text/html', body: '<p>Publication draft preview</p>' }));
+    await page.goto(base + '/test-owner');
+    const markup = (await require('ejs').renderFile(path.join(__dirname, '../views/sub-views/notebook_modal.ejs'), { utils: { scriptAssetVersion: () => 'test' } })).replace(/<script[^]*?<\/script>/g, '');
+    await page.setContent(markup);
+    await page.addScriptTag({ path: path.join(__dirname, '../public/static/js/notebook-share.js') });
+    await page.evaluate(() => {
+      document.getElementById('notebook-modal').setAttribute('aria-hidden', 'false');
+      window.state = { current: { source_key: 'item:42' }, generation: 0, busy: false };
+      window.saveResult = false; window.saveCalls = 0; window.shareWrites = 0;
+      window.controls = NotebookShare.install({ context: () => state, save: async () => { saveCalls++; return saveResult; },
+        api: async (_path, method = 'GET') => { if (method !== 'GET') shareWrites++; return { token: null }; } });
+    });
+    await page.locator('#notebook-share').click();
+    await page.waitForFunction(() => document.getElementById('notebook-share-status').textContent === 'This note is private.');
+    await page.getByRole('button', { name: 'Create a Community post', exact: true }).click();
+    expect(await page.locator('#notebook-share-status').textContent()).toContain('Save this note');
+    expect(page.url()).toBe(base + '/test-owner');
+    expect(await page.evaluate(() => shareWrites)).toBe(0);
+    await page.evaluate(() => { saveResult = true; });
+    await page.getByRole('button', { name: 'Create a Community post', exact: true }).click();
+    await page.waitForURL('**/community/write?source=item%3A42');
+    expect(await page.locator('body').textContent()).toContain('Publication draft preview');
+    // The handoff navigates to a draft; it never enables the existing live share link.
+  } finally { await browser.close(); }
+}, 20000);

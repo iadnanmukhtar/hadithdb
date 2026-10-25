@@ -262,7 +262,7 @@
     const token = await window.hadithAuth?.getToken();
     if (!token) throw new Error('Please sign in to use your notebook.');
     const response = await fetch(quranApiPath('/notebook' + path), {
-      method, cache: 'no-store', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      method, cache: 'no-store', keepalive: path === '/floating' && method === 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       ...(body === undefined ? {} : { body: JSON.stringify(body) })
     });
     const result = await response.json();
@@ -387,9 +387,26 @@
   const restoreButton = document.getElementById('notebook-restore');
   const floatingStorage = 'notebook-floating-note';
   let changingPresentation = false, floatingOwner = null, restoringFloating = false, pendingFloating = false;
+  let floatingWrite = Promise.resolve(), floatingRevision = 0;
+  function persistFloating(state) {
+    ++floatingRevision;
+    const owner = floatingOwner;
+    // Serialize writes so a quick minimize/restore/close cannot arrive out of order.
+    floatingWrite = floatingWrite.catch(() => {}).then(async () => {
+      if (!owner || owner !== (await window.hadithAuth?.getUser())?.uid) return;
+      await api('/floating', 'PUT', { floating: state });
+    }).catch(() => {});
+  }
+  function clearFloating() {
+    pendingFloating = false;
+    try { sessionStorage.removeItem(floatingStorage); } catch (_) {}
+    persistFloating(null);
+  }
   function rememberFloating() {
     if (!current || !floatingOwner || !modal.classList.contains('notebook-floating')) return;
-    try { sessionStorage.setItem(floatingStorage, JSON.stringify({ uid: floatingOwner, source: { source_key: current.source_key, source_title: current.source_title, source_url: current.source_url, markdown: '', version: current.version || 0 }, minimized: modal.classList.contains('notebook-minimized') })); } catch (_) {}
+    const state = { source: { source_key: current.source_key, source_title: current.source_title, source_url: current.source_url, markdown: '' }, minimized: modal.classList.contains('notebook-minimized') };
+    try { sessionStorage.setItem(floatingStorage, JSON.stringify({ uid: floatingOwner, ...state })); } catch (_) {}
+    persistFloating(state);
   }
   function minimizeFloating(minimized) {
     modal.classList.toggle('notebook-minimized', minimized);
@@ -433,7 +450,7 @@
     if (enabled) {
       floatingOwner = (await window.hadithAuth?.getUser())?.uid;
       rememberFloating();
-    } else { try { sessionStorage.removeItem(floatingStorage); } catch (_) {} }
+    } else { clearFloating(); }
   }
   floatButton?.addEventListener('click', () => { if (!busy) setFloating(!modal.classList.contains('notebook-floating')); });
   minimizeButton?.addEventListener('click', () => minimizeFloating(true));
@@ -443,9 +460,26 @@
   });
   async function restoreFloating(reveal = false) {
     if (restoringFloating || modal.classList.contains('show') || (new URLSearchParams(location.search).has('note') || new URLSearchParams(location.search).has('note_source'))) return;
-    let stored;
-    try { stored = JSON.parse(sessionStorage.getItem(floatingStorage)); } catch (_) { return; }
-    if (!stored?.source || stored.uid !== (await window.hadithAuth?.getUser())?.uid) return;
+    const revision = floatingRevision;
+    const user = await window.hadithAuth?.getUser();
+    if (!user) return;
+    let stored, migrate = false;
+    try {
+      const result = await api('/floating');
+      if (result.uid !== user.uid) return;
+      if (result.floating !== undefined) stored = result.floating && { uid: user.uid, ...result.floating };
+      else {
+        // Migrate a note pinned before account-wide persistence was introduced.
+        try { stored = JSON.parse(sessionStorage.getItem(floatingStorage)); migrate = true; } catch (_) {}
+      }
+    } catch (_) {
+      try { stored = JSON.parse(sessionStorage.getItem(floatingStorage)); } catch (_) {}
+    }
+    const activeUser = await window.hadithAuth?.getUser();
+    if (revision !== floatingRevision || restoringFloating || modal.classList.contains('show') || !stored?.source
+      || stored.uid !== user.uid || user.uid !== activeUser?.uid) return;
+    floatingOwner = user.uid;
+    if (migrate) persistFloating(stored);
     if (stored.minimized && !reveal) {
       pendingFloating = true;
       restoreButton.hidden = false;
@@ -724,7 +758,7 @@
     shareControls.reset();
     restoreButton.hidden = true;
     modal.classList.remove('notebook-minimized');
-    try { sessionStorage.removeItem(floatingStorage); } catch (_) {}
+    clearFloating();
     wikiAutocomplete.close();
     clearTimeout(saveTimer);
     if (returnModal?.isConnected) bootstrap.Modal.getOrCreateInstance(returnModal).show();
@@ -1301,6 +1335,8 @@
     clearCreationCount();
     shareControls.reset();
     pendingFloating = false;
+    floatingOwner = null;
+    ++floatingRevision;
     try { sessionStorage.removeItem(floatingStorage); } catch (_) {}
     restoreButton.hidden = true;
     wikiAutocomplete.close();
@@ -1312,7 +1348,7 @@
     const ayahNote = document.querySelector('[data-quran-ayah-note][data-ayah-note-ref]');
     if (ayahNote) prepareAyahNote(ayahNote);
     setBusy(false); saveButton.disabled = true; deleteButton.hidden = true;
-    bootstrap.Modal.getInstance(modal)?.hide(); loadList(); loadTags(); openRequestedWiki();
+    bootstrap.Modal.getInstance(modal)?.hide(); loadList(); loadTags(); openRequestedWiki(); restoreFloating();
   });
   document.addEventListener('notebookDriveConnected', () => {
     ++statusEpoch; checked.clear(); scheduleStatus(); loadList(); loadTags();

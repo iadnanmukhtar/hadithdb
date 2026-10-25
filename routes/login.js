@@ -44,6 +44,8 @@ function csrfError(req) {
 
 async function createLoginResponse(req, res, user) {
   var adminUser = await UserSettings.ensureLoginUser(user);
+  const avatar = await require('../lib/UserAvatar').remember(user);
+  user = { ...user, photo: avatar.photo };
   const loginUser = {
     uid: user.uid,
     provider: user.provider || 'google.com',

@@ -612,6 +612,10 @@ const startupPromise = (async () => {
       return bookmarksRouter(req, res, next);
     next();
   });
+  const communityRouter = require('./routes/community');
+  app.use('/community', communityRouter.pages);
+  app.use('/api/community', communityRouter.api);
+  app.use('/quran/api/community', communityRouter.api);
   const notebookRouter = require('./routes/notebook');
   app.get(['/notebook/shared/:token', '/quran/notebook/shared/:token'], require('./routes/notebook_shared'));
   app.get(['/notebook', '/quran/notebook'], notebookRouter.page);

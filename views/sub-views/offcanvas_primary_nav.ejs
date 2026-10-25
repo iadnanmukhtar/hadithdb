@@ -9,9 +9,11 @@
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>"><%- include('menu_icon.ejs', { type: 'hadith', label: 'Hadith' }) %> Hadith</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(typeof isSirahArea !== 'undefined' && isSirahArea) %>" href="<%= utils.urlFor(req, '/ibnhisham') %>"><i class="app-menu-icon bi bi-book" aria-hidden="true"></i> Sirah</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>"><%- include('menu_icon.ejs', { type: 'books', label: 'Books' }) %> Books</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>"><i class="app-menu-icon bi bi-newspaper" aria-hidden="true"></i> Blog</a></li>
+  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>"><i class="app-menu-icon bi bi-people" aria-hidden="true"></i> Community</a></li>
+  <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>"><i class="app-menu-icon bi bi-newspaper" aria-hidden="true"></i> Blog</a></li>
   <li><hr></li>
   <li data-notebook-auth class="nav-item"><a class="nav-link<%- activeNavAttrs(req.path === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="app-menu-icon bi bi-sticky" aria-hidden="true"></i> My Notebook</a></li>
+  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(req.path === '/community/mine') %>" href="<%= utils.urlFor(req, '/community/mine') %>"><i class="app-menu-icon bi bi-person-lines-fill" aria-hidden="true"></i> My Wall</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="app-menu-icon bi bi-bookmark" aria-hidden="true"></i> My Bookmarks</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="app-menu-icon bi bi-heart" aria-hidden="true"></i> Liked</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="app-menu-icon bi bi-chat-right-text" aria-hidden="true"></i> Latest Reflections</a></li>

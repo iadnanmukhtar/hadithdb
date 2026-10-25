@@ -1,0 +1,27 @@
+<%
+  var isPrivatePost = item.status && item.status !== 'published';
+  var entryHref = isPrivatePost ? '/community/write?post=' + item.id : item.url;
+  var entryKind = item.activity === 'comment' ? 'comment' : item.kind;
+  var entryLabel = entryKind === 'like' ? 'Liked' : entryKind === 'comment' ? 'In conversation' : entryKind === 'article' ? 'Article' : 'Note';
+%>
+<article class="community-entry" data-activity="<%= item.activity %>" data-kind="<%= entryKind %>">
+  <% if (entryKind === 'like') { %>
+    <a class="community-avatar" href="/community/@<%= item.author.handle %>" tabindex="-1" aria-hidden="true"><%- include('community_avatar.ejs', { avatar: item.author }) %></a>
+    <div class="community-reaction-copy"><a href="/community/@<%= item.author.handle %>" dir="auto"><%= item.author.name %></a> liked <a href="<%= entryHref %>" dir="auto"><%= (item.title || 'a post').replace(/^Liked\s+/i, '') %></a><% if (item.activityAt) { %> · <time datetime="<%= new Date(item.activityAt).toISOString() %>"><%= new Date(item.activityAt).toLocaleDateString('en-US', {month:'short',day:'numeric',timeZone:'America/Chicago'}) %></time><% } %></div>
+  <% } else { %>
+  <div class="community-entry-meta">
+    <a class="community-avatar" href="/community/@<%= item.author.handle %>" tabindex="-1" aria-hidden="true"><%- include('community_avatar.ejs', { avatar: item.author }) %></a>
+    <div class="community-entry-identity"><a class="community-author" href="/community/@<%= item.author.handle %>" dir="auto"><%= item.author.name %></a>
+      <div class="community-entry-subline"><span><%= entryLabel %></span><% if (item.activityAt) { %><span aria-hidden="true">·</span><time datetime="<%= new Date(item.activityAt).toISOString() %>"><%= new Date(item.activityAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Chicago' }) %></time><% } %></div>
+    </div><% if (isPrivatePost) { %><span class="community-entry-state"><%= item.status %></span><% } %>
+  </div>
+  <% if (entryKind !== 'note' || (item.title && item.title !== 'Note')) { %><h2 class="community-entry-title" dir="auto"><a href="<%= entryHref %>"><%= item.title %></a></h2><% } %>
+  <p dir="auto" class="community-entry-excerpt"><%= item.excerpt %></p>
+  <% if (item.tags) { %><div class="community-entry-tags" dir="auto"><% for (const tag of item.tags.split(',').map(tag => tag.trim()).filter(Boolean).slice(0, 5)) { %><span><%= tag %></span><% } %></div><% } %>
+  <div class="community-entry-actions">
+    <% if (item.likeSource) { %><span class="community-like" title="Likes" aria-label="<%= item.likeCount || 0 %> likes"><i class="bi bi-heart" aria-hidden="true"></i><% if (item.likeCount) { %> <%= item.likeCount %><% } %></span><% } %>
+    <a href="<%= entryHref %>" title="<%= isPrivatePost ? 'Open draft' : 'View comments' %>" aria-label="<%= isPrivatePost ? 'Open draft' : 'View comments' %>"><i class="bi bi-<%= isPrivatePost ? 'file-earmark-text' : 'chat' %>" aria-hidden="true"></i><% if (item.commentCount) { %> <%= item.commentCount %><% } %></a>
+    <% if (item.status) { %><a class="community-entry-secondary" href="/community/write?post=<%= item.id %>" title="Edit post" aria-label="Edit post"><i class="bi bi-pencil" aria-hidden="true"></i></a><% } else if (entryKind === 'article') { %><a class="community-entry-secondary" href="<%= entryHref %>" title="Read article" aria-label="Read article"><i class="bi bi-arrow-right" aria-hidden="true"></i></a><% } %>
+  </div>
+  <% } %>
+</article>

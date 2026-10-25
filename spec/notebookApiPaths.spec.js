@@ -15,7 +15,7 @@ test.each([
   const fetch = jest.fn(async () => ({ ok: true, json: async () => ({}) }));
   const context = vm.createContext({ window: { location: { hostname, pathname }, hadithAuth: { getToken: async () => 'test-token' } }, fetch });
   vm.runInContext(helpers + '\n' + api, context);
-  for (const [path, method] of [['?source=tafsir:mokhtasar:2:14', 'GET'], ['/status', 'POST'], ['/preview', 'POST'], ['/expand', 'POST'], ['', 'PUT'], ['', 'DELETE'], ['?offset=12', 'GET']]) {
+  for (const [path, method] of [['?source=tafsir:mokhtasar:2:14', 'GET'], ['/floating', 'GET'], ['/floating', 'PUT'], ['/status', 'POST'], ['/preview', 'POST'], ['/expand', 'POST'], ['', 'PUT'], ['', 'DELETE'], ['?offset=12', 'GET']]) {
     await context.api(path, method);
     expect(fetch).toHaveBeenLastCalledWith(prefix + '/notebook' + path, expect.objectContaining({ method, headers: expect.objectContaining({ Authorization: 'Bearer test-token' }) }));
   }

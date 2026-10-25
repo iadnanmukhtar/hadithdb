@@ -22,6 +22,18 @@ router.use(async (req, res, next) => {
   if (!req.user) return res.status(401).json({ error: 'Please sign in to use your notebook.' });
   next();
 });
+router.get('/floating', async (req, res, next) => {
+  try {
+    const settings = await require('../lib/UserSettings').getSettings(req.user.uid);
+    res.json({ uid: req.user.uid, floating: settings.notebookFloating });
+  } catch (err) { next(err); }
+});
+router.put('/floating', async (req, res, next) => {
+  try {
+    const floating = await require('../lib/UserSettings').saveNotebookFloating(req.user, req.body?.floating);
+    res.json({ uid: req.user.uid, floating });
+  } catch (err) { next(err); }
+});
 router.get('/ayah', async (req, res, next) => {
   try {
     const ref = String(req.query.reference || '');

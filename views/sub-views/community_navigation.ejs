@@ -1,0 +1,27 @@
+<%
+  var communityNotebook = page.menu === 'Notebook';
+  var communityBlog = page.menu === 'Blog' || page.menu === 'Blog Post';
+  var communitySection = communityNotebook ? 'notebook' : (communityBlog ? 'blog' : (page.context.communityView || 'everyone'));
+  var communitySections = [
+    { key: 'notebook', href: '/notebook', label: 'My Notebook' },
+    { key: 'mine', href: '/community/mine', label: 'Wall' },
+    { key: 'following', href: '/community/following', label: 'Following' },
+    { key: 'everyone', href: '/community', label: 'Everyone' },
+    { key: 'blog', href: '/blog', label: 'Blog' }
+  ];
+%>
+<nav class="row g-0 chapter-toc community-section-menu" aria-label="Community sections">
+  <div class="col-12 chapter-toc-toolbar">
+    <div class="community-tabs btn-group btn-group-sm" role="group" aria-label="Community sections">
+      <% for (const entry of communitySections) { %>
+      <a class="btn btn-outline-secondary<%= entry.key === communitySection ? ' active' : '' %>" href="<%= utils.urlFor(req, entry.href) %>"<% if (entry.key === communitySection) { %> aria-current="page"<% } %><% if (entry.key === 'notebook') { %> title="Your private notebook"<% } %>><%= entry.label %></a>
+      <% } %>
+    </div>
+    <% if (communityNotebook) { %>
+    <a class="chapter-toc-toggle community-notebook-filter" data-bs-toggle="collapse" href="#notebook-mobile-filter-panel" role="button" aria-expanded="false" aria-controls="notebook-mobile-filter-panel" title="Show notebook filters"><i class="bi bi-funnel" aria-hidden="true"></i><span>Filters</span></a>
+    <% } else if (!communityBlog) { %>
+    <a id="community-moderation-link" class="chapter-toc-toggle" href="/community/moderation" hidden><i class="bi bi-shield-check" aria-hidden="true"></i><span>Moderation</span></a>
+    <% } %>
+  </div>
+  <% if (communityNotebook) { %><div id="notebook-mobile-filter-panel" class="col-12 collapse chapter-toc-panel"></div><% } %>
+</nav>
