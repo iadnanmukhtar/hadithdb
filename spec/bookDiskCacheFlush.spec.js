@@ -53,6 +53,30 @@ describe('full book disk cache flush', () => {
 		expect(await db.allAsync('SELECT * FROM cache_files')).toEqual([]);
 	});
 
+	test('uses indexed filename ranges and preserves adjacent book names', async () => {
+		const remove = path.join(root, 'hadith.v1', 'bukhari', '1', 'page.html');
+		const keep = path.join(root, 'hadith.v1', 'bukhari-notes', 'page.html');
+		for (const filename of [remove, keep]) {
+			fs.mkdirSync(path.dirname(filename), { recursive: true });
+			fs.writeFileSync(filename, 'cached');
+			await db.runAsync('INSERT INTO cachendx VALUES (?, ?)', ['hadith:1', filename]);
+			await db.runAsync('INSERT INTO cache_files VALUES (?, 1, 6, ?)', [filename, 'hadith']);
+		}
+		const run = jest.spyOn(db, 'runAsync');
+		await Utils.flushBookDiskCache('bukhari', { cacheRoot: root, db });
+		const deletes = run.mock.calls.filter(([sql]) => sql.includes('WHERE filename=? OR'));
+		expect(deletes.length).toBeGreaterThan(0);
+		for (const [sql, params] of deletes) {
+			const plan = await db.allAsync(`EXPLAIN QUERY PLAN ${sql}`, params);
+			expect(plan.some(row => /SEARCH .* USING .*INDEX/.test(row.detail))).toBe(true);
+			expect(plan.some(row => /SCAN /.test(row.detail))).toBe(false);
+		}
+		expect(await db.allAsync('SELECT filename FROM cachendx')).toEqual([{ filename: keep }]);
+		expect(await db.allAsync('SELECT filename FROM cache_files')).toEqual([{ filename: keep }]);
+		expect(fs.existsSync(keep)).toBe(true);
+		run.mockRestore();
+	});
+
 	test('numeric book parameters use the named owner for every book cache writer', () => {
 		for (const book of [
 			{ id: 1, alias: 'bukhari', type: 'hadith' },

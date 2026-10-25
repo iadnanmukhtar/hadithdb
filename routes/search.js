@@ -3483,6 +3483,8 @@ router.get('/:bookAlias/:chapterNum', async function (req, res, next) {
     }
 
   } catch (e) {
+    if (e.code === 'VIRTUAL_SNAPSHOT_UNAVAILABLE')
+      return next(e);
     if (e instanceof ReferenceError)
       return next(gone(e.message));
     else {
@@ -3904,6 +3906,8 @@ async function renderBookSection(req, res, next) {
     }
 
   } catch (e) {
+    if (e.code === 'VIRTUAL_SNAPSHOT_UNAVAILABLE')
+      return next(e);
     if (e instanceof ReferenceError)
       return next(gone(e.message));
     else {
