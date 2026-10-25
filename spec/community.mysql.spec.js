@@ -142,6 +142,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     await q(`UPDATE ${prefix}authors SET trusted=1 WHERE uid='alice'`);
     await require('../lib/UserAvatar').remember({uid:'alice',email:'alice@private.test',photo:'https://avatar.test/photo.png'});
     await q(`INSERT INTO ${prefix}hadiths_likes (hadithId,ref_num,type,user_uid,user_name,createdAt) VALUES (6007,'bukhari:6007','hadith','alice','Amina',NOW(3))`);
+    await Community.savePost({uid:'moderator',name:'Community contributor'}, postInput({action:'publish',title:'Contributor article'}));
     const browser=await require('playwright').chromium.launch({channel:'chrome',headless:true});
     try {
       const context=await browser.newContext({viewport:{width:1280,height:900}});
@@ -185,6 +186,13 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       expect(await page.locator('#community-prompt-avatar img').getAttribute('src')).toBe('https://avatar.test/photo.png');
       await page.locator('#community-prompt-avatar img').evaluate(img=>img.src='https://avatar.test/missing.png');
       await page.waitForFunction(()=>document.querySelector('#community-prompt-avatar img')?.src.includes('gravatar.com/avatar/'));
+      await page.locator('#community-contributors .community-contributor-follow').first().waitFor();
+      const contributorToggle=page.locator('#community-contributors .community-contributor-follow').first();
+      expect(await contributorToggle.textContent()).toBe('Follow');
+      await contributorToggle.click();
+      await page.waitForFunction(()=>document.querySelector('#community-contributors .community-contributor-follow').textContent==='Unfollow');
+      await contributorToggle.click();
+      await page.waitForFunction(()=>document.querySelector('#community-contributors .community-contributor-follow').textContent==='Follow');
       expect(await page.locator('.community-tabs a').count()).toBe(5);
       expect(await page.locator('.community-tabs a[href="/blog"]').isVisible()).toBe(true);
       expect(await page.locator('#community-quick-post').isDisabled()).toBe(true);
@@ -220,7 +228,20 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       expect(await reaction.locator('h2').count()).toBe(0);
       expect((await reaction.boundingBox()).height).toBeLessThan(72);
       await reaction.screenshot({path:'/tmp/community-reaction-compact.png'});
+      await page.evaluate(()=>scrollTo(0,0));
+      const railGeometry=await page.evaluate(()=>({rail:document.querySelector('.community-aside').getBoundingClientRect().top,header:document.querySelector('.site-navbar').getBoundingClientRect().bottom}));
+      expect(railGeometry.rail-railGeometry.header).toBeGreaterThanOrEqual(0);
+      expect(railGeometry.rail-railGeometry.header).toBeLessThan(20);
       await page.screenshot({path:'/tmp/community-feed-desktop.png',fullPage:true});
+      await page.evaluate(async()=>{
+        document.querySelector('.community-aside').style.minHeight='600px';
+        await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+        scrollTo(0,document.documentElement.scrollHeight);
+      });
+      await page.waitForFunction(()=>document.querySelector('body > footer').getBoundingClientRect().top < innerHeight);
+      await page.waitForFunction(()=>document.querySelector('.community-aside').getBoundingClientRect().bottom <= document.querySelector('body > footer').getBoundingClientRect().top - 11);
+      await page.screenshot({path:'/tmp/community-footer-desktop.png'});
+
       await page.goto(base+'/community/@amina/'+savedId);
 
       await page.evaluate(()=>localStorage.setItem('community-test-uid','mallory'));
@@ -306,6 +327,68 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===45);
       expect(requestedOffsets).toEqual([0,20,20,40]);
       expect(await page.locator('#community-feed-status').textContent()).toContain('caught up');
+      await page.unroute('**/api/community/feed?*');
+      let releaseNext;
+      const nextPageGate=new Promise(resolve=>{releaseNext=resolve;});
+      await page.route('**/api/community/feed?*', async route=>{
+        const offset=Number(new URL(route.request().url()).searchParams.get('offset') || 0);
+        if(offset===20) await nextPageGate;
+        const items=Array.from({length:Math.min(20,32-offset)},(_,i)=>({id:2000+offset+i,activity:offset+i>=25?'hadiths_comments_like':'hadith_like',kind:'like',title:'Liked bukhari:'+i,excerpt:'',author:{handle:'amina',name:'Amina'},url:'/community/@amina/'+savedId,activityAt:new Date().toISOString()}));
+        return route.fulfill({contentType:'application/json',body:JSON.stringify({items,hasMore:offset+20<32,offset:offset+20})});
+      });
+      await page.reload();
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===20);
+      expect(await page.locator('#community-feed .community-entry:visible').count()).toBe(10);
+      const extra=page.locator('.community-reaction-overflow').first();
+      expect(await extra.locator('summary').textContent()).toContain('Show 10 more activities');
+      await extra.locator('summary').click();
+      expect(await page.locator('#community-feed .community-entry:visible').count()).toBe(20);
+      releaseNext();
+      await page.locator('#community-more').click();
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===32);
+      expect(await extra.getAttribute('open')).not.toBeNull();
+      expect(await page.locator('.community-reaction-overflow').count()).toBe(1);
+      expect(await extra.locator('summary').textContent()).toContain('Show 15 more activities');
+      await extra.locator('summary').click();
+      expect(await page.locator('#community-feed .community-entry:visible').count()).toBe(17);
+      await page.unroute('**/api/community/feed?*');
+      const longRunOffsets=[];
+      await page.route('**/api/community/feed?*', route=>{
+        const offset=Number(new URL(route.request().url()).searchParams.get('offset') || 0); longRunOffsets.push(offset);
+        const items=Array.from({length:Math.min(20,85-offset)},(_,i)=>({id:3000+offset+i,activity:offset+i<65?'hadith_like':'post',kind:offset+i<65?'like':'note',title:offset+i<65?'Liked bukhari:'+i:'Note',excerpt:offset+i<65?'':'Visible post after the long reaction run '+i,author:{handle:'amina',name:'Amina'},url:'/community/@amina/'+savedId,activityAt:new Date().toISOString()}));
+        return route.fulfill({contentType:'application/json',body:JSON.stringify({items,hasMore:offset+20<85,offset:offset+20})});
+      });
+      await page.reload();
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===20);
+      await page.locator('#community-feed-sentinel').scrollIntoViewIfNeeded();
+      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+      expect(longRunOffsets).toEqual([0]);
+      expect(await page.locator('#community-more').isVisible()).toBe(true);
+      await page.locator('#community-more').click();
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length>=80);
+      expect(longRunOffsets.slice(0,4)).toEqual([0,20,40,60]);
+      expect(await page.locator('#community-feed [data-kind=like]:visible').count()).toBe(10);
+      const longGroup=page.locator('.community-reaction-overflow').first();
+      expect(await longGroup.locator('summary').textContent()).toContain('Show 55 more activities');
+      await longGroup.locator('summary').click();
+      expect(await page.locator('#community-feed [data-kind=like]:visible').count()).toBe(65);
+      await longGroup.locator('summary').click();
+      await page.locator('#community-feed-sentinel').scrollIntoViewIfNeeded();
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===85);
+      expect(await page.locator('#community-feed [data-kind=like]:visible').count()).toBe(10);
+      // With automatic observation unavailable, one Load more click must also
+      // advance across hidden-only pages to the next visible posts.
+      await page.addInitScript(()=>{delete window.IntersectionObserver;});
+      longRunOffsets.length=0;
+      await page.reload();
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===20);
+      await page.locator('#community-more').click();
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===80);
+      expect(longRunOffsets).toEqual([0,20,40,60]);
+      expect(await page.locator('#community-feed [data-kind=like]:visible').count()).toBe(10);
+      await page.locator('#community-more').click();
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===85);
+      expect(await page.locator('#community-more').isVisible()).toBe(false);
       expect(errors).toEqual([]);
     } finally { await browser.close(); }
   },60000);
@@ -410,6 +493,26 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await Community.authorFor({...user,photo:'https://avatar.test/stale-token.png'});
       expect((await Community.profile(signedIn.handle)).photo).toBe(Avatars.gravatar(user.email));
     } finally { settingsSpy.mockRestore(); }
+  });
+
+  test('top contributors count only public contributions, exclude self, and expose persisted follow state', async () => {
+    await Community.saveProfile({uid:'rank-high',name:'Top writer'}, {handle:'top-writer',name:'Top writer'});
+    await Community.saveProfile({uid:'rank-low',name:'Likes only'}, {handle:'likes-only',name:'Likes only'});
+    for(let i=0;i<20;i++) await q(`INSERT INTO ${prefix}hadiths_comments (hadithId,ref_num,user_uid,user_name,text,createdAt,deleted) VALUES (1,'bukhari:1','rank-high','Top writer','Public reflection',NOW(3),0)`);
+    await q(`INSERT INTO ${prefix}hadiths_comments (hadithId,ref_num,user_uid,user_name,text,createdAt,deleted) VALUES (1,'bukhari:1','rank-high','Top writer','Removed reflection',NOW(3),1)`);
+    await Community.savePost({uid:'rank-low',name:'Likes only'},postInput({action:'draft'}));
+    await q(`INSERT INTO ${prefix}hadiths_likes (hadithId,ref_num,type,user_uid,user_name,createdAt) VALUES (1,'bukhari:1','hadith','rank-low','Likes only',NOW(3))`);
+    let result=await json('/api/community/contributors','GET',null);
+    expect(result.contributors[0]).toMatchObject({handle:'top-writer',contributions:20,following:false});
+    expect(result.contributors.some(a=>a.handle==='likes-only')).toBe(false);
+    expect(JSON.stringify(result)).not.toMatch(/rank-high|rank-low|private.test/);
+    expect((await Community.contributors({uid:'rank-high'})).some(a=>a.handle==='top-writer')).toBe(false);
+    await Community.follow({uid:'alice'},'top-writer',true,false);
+    result=await json('/api/community/contributors','GET','alice');
+    expect(result.contributors.find(a=>a.handle==='top-writer').following).toBe(true);
+    await Community.follow({uid:'alice'},'top-writer',false,false);
+    expect((await json('/api/community/contributors','GET','alice')).contributors.find(a=>a.handle==='top-writer').following).toBe(false);
+    await json('/api/community/contributors','GET','expired');
   });
 
 });

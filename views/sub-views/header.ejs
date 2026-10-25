@@ -138,7 +138,6 @@
           <a class="nav-link dropdown-toggle<%- activeNavAttrs(isMoreArea) %>" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
           <ul class="dropdown-menu dropdown-menu-end" data-more-menu>
             <li data-notebook-auth><a class="dropdown-item<%- activeNavAttrs(requestPath === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="bi bi-sticky"></i> My Notebook</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(requestPath === '/community/mine') %>" href="<%= utils.urlFor(req, '/community/mine') %>"><i class="bi bi-person-lines-fill"></i> My Wall</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>

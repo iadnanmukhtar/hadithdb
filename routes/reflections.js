@@ -305,6 +305,7 @@ ${formatThreadHistory(threadRows)}
         return;
       }
       const user = req.user;
+      await require('../lib/Community').authorFor(user);
       const typeColumn = config.typeColumn && target.type ? `, ${config.typeColumn}` : '';
       const typeValue = config.typeColumn && target.type ? `, '${Utils.escSQL(target.type)}'` : '';
       const insertRes = await global.query(`

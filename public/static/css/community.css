@@ -153,3 +153,36 @@ button.community-like:hover, .community-like[aria-pressed="true"] { color: var(-
 .community-entry-actions { gap: .2rem; }
 .community-entry-actions :is(a, .community-like) { min-width: 24px; min-height: 24px; padding: .15rem .25rem; font-size: .68rem; }
 .community-entry-actions .bi { font-size: .72rem; }
+
+.community-reaction-overflow { border-top: 1px solid var(--community-line); }
+.community-reaction-overflow > summary { padding: .45rem 0 .45rem 1.7rem; color: var(--community-muted); font-size: .7rem; cursor: pointer; }
+.community-reaction-overflow > summary:hover { color: var(--community-ink); }
+.community-reactions-hide, .community-reaction-overflow[open] > summary .community-reactions-show { display: none; }
+.community-reaction-overflow[open] > summary .community-reactions-hide { display: inline; }
+.community-reaction-overflow-items { border-top: 1px solid var(--community-line); }
+.community-reaction-overflow > summary:focus-visible { outline: 2px solid var(--community-accent); outline-offset: 2px; }
+
+.community-more { font-size: .7rem; padding: .2rem .55rem; margin-top: .4rem; color: var(--community-muted); border-color: var(--community-line); }
+
+/* Use the reader/search rail's quiet divider, heading scale and sticky offset. */
+.community-aside { padding-inline-start: 1rem; }
+main.community #community-contributors-heading { font-size: .8rem !important; margin: 0 0 .3rem; }
+.community-rail-caption { color: var(--community-muted); font-size: .68rem; margin: 0 0 .7rem; }
+.community-contributors-section { margin-bottom: 1rem; }
+.community-contributor { display: flex; align-items: center; gap: .5rem; padding: .55rem 0; min-width: 0; }
+.community-contributor .community-avatar { width: 28px; height: 28px; flex-basis: 28px; }
+.community-contributor-copy { flex: 1; min-width: 0; }
+.community-contributor-copy a { display: block; color: var(--community-ink); font-size: .76rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; text-decoration: none; }
+.community-contributor-copy a:hover { text-decoration: underline; }
+.community-contributor-copy small { display: block; color: var(--community-muted); font-size: .64rem; }
+.community-contributor-follow { flex-shrink: 0; min-width: 4.4em; padding: .15rem .35rem; font-size: .65rem; border-color: var(--community-line); color: var(--community-muted); }
+.community-contributor-follow[aria-pressed="true"] { color: var(--community-accent); border-color: var(--community-line); background: var(--c-primary-soft-08); }
+@media (min-width: 992px) {
+  .community-aside { position: fixed; z-index: 20; left: var(--community-rail-left, auto); width: var(--community-rail-width, 260px); top: calc(var(--site-fixed-header-height, 5rem) + .75rem); max-height: calc(100dvh - var(--site-fixed-header-height, 5rem) - 1.5rem); overflow-y: auto; padding-inline-end: .35rem; }
+}
+@media (max-width: 767px) { .community-aside { padding-inline-start: 0; } }
+
+.community-rail-slot { min-width: 0; }
+@media (min-width: 992px) {
+  .community:has(.community-rail-slot) > :is(.community-heading, #community-status, .community-profile) { max-width: calc(100% - var(--community-rail-width, 260px) - 2rem); }
+}

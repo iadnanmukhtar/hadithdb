@@ -28,6 +28,7 @@ api.get('/me', wrap(async (req, res) => {
 }));
 api.put('/profile', wrap(async (req, res) => res.json({ author: await Community.saveProfile(req.user, req.body) })));
 api.put('/likes/:source/:id', wrap(async (req, res) => res.json(await Community.like(req.user, req.params.source, req.params.id, req.body.liked))));
+api.get('/contributors', wrap(async (req, res) => res.json({contributors:await Community.contributors(req.user)})));
 api.get('/feed', wrap(async (req, res) => res.json(await Community.feed(req.query, req.user))));
 api.get('/authors/:handle/relationship', wrap(async (req, res) => res.json(await Community.relationship(signed(req), req.params.handle))));
 api.put('/authors/:handle/follow', wrap(async (req, res) => {

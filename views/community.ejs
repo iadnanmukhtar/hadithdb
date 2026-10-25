@@ -39,12 +39,16 @@
     <div class="community-feed-toolbar"><h2><%= view === 'mine' ? 'Your activity' : view === 'following' ? 'From authors you follow' : view === 'author' ? 'Writing & conversations' : 'In the community' %></h2>
     <% if (view === 'mine') { %><a id="community-public-wall" class="community-public-link" hidden>Public profile <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a><% } %>
     <% if (view !== 'mine') { %><label class="visually-hidden" for="community-filter">Filter activity</label><select class="form-select form-select-sm community-filter" id="community-filter"><option value="all">All activity</option><option value="article">Articles</option><option value="note">Notes</option><option value="comment">Comments</option><option value="like">Likes</option></select><% } %></div>
-    <div id="community-feed" class="community-feed"><% if (initial) { for (const item of initial.items) { %><%- include('sub-views/community_card.ejs', { item }); %><% } if (!initial.items.length) { %><p class="community-empty">No public posts yet. Start a reflection or share an article.</p><% } } %></div>
+    <div id="community-feed" class="community-feed"><% if (initial) { %><%- include('sub-views/community_feed.ejs', { items: initial.items }); %><% if (!initial.items.length) { %><p class="community-empty">No public posts yet. Start a reflection or share an article.</p><% } } %></div>
     <div id="community-feed-sentinel" class="community-feed-sentinel" aria-hidden="true"></div>
     <p id="community-feed-status" class="small text-muted" role="status" aria-live="polite"></p>
-    <button class="btn btn-outline-secondary mt-3" id="community-more" type="button" hidden>Load more</button>
-  </section><aside class="community-aside">
-    <div class="community-sidebar-intro"><h2>About Community</h2><p>Share reflections, write articles, and discuss the Quran and hadith with other readers.</p></div>
+    <button class="btn btn-sm btn-outline-secondary community-more" id="community-more" type="button" hidden>Load more</button>
+  </section><div class="community-rail-slot"><aside class="community-aside" aria-label="Community contributors">
+    <section class="community-contributors-section" aria-labelledby="community-contributors-heading">
+      <h2 id="community-contributors-heading" class="hadith-heading-toc-title">Top contributors</h2>
+      <p class="community-rail-caption">Public posts, reflections, and comments</p>
+      <div id="community-contributors" aria-live="polite"><p class="community-rail-caption">Loading contributors…</p></div>
+    </section>
     <a class="community-notebook-link" href="/notebook"><i class="bi bi-journal-text" aria-hidden="true"></i><span><strong>My Notebook</strong><small>Your private reading notes</small></span><i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
     <p class="community-sidebar-footnote">Writing here reflects the author’s perspective. Community posts are not scholarly verification.</p>
     <% if (view === 'mine') { %>
@@ -54,7 +58,7 @@
       <label class="form-label" for="community-bio">Bio</label><textarea id="community-bio" class="form-control mb-3" maxlength="1000" dir="auto"></textarea><button class="btn btn-sm btn-primary" type="submit">Save profile</button></form>
     </details><details class="community-card"><summary class="fw-semibold">Following & email subscriptions</summary><div id="community-subscriptions" class="mt-3 small"></div></details>
     <% } %>
-  </aside></div>
+  </aside></div></div>
   <% } %>
   <% if (view === 'write') { %>
   <section class="community-editor" aria-label="Publication editor">

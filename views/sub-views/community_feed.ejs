@@ -1,0 +1,13 @@
+<% for (let index = 0; index < items.length;) {
+  const item = items[index];
+  if (item.kind !== 'like') { %><%- include('community_card.ejs', {item}) %><% index++; continue; }
+  const type = item.activity + ':' + (item.likeSource || '');
+  let end = index;
+  while (end < items.length && items[end].kind === 'like' && items[end].activity + ':' + (items[end].likeSource || '') === type) end++;
+  for (let visible = index; visible < Math.min(index + 10, end); visible++) { %><%- include('community_card.ejs', {item:items[visible]}) %><% }
+  if (end - index > 10) { %>
+  <details class="community-reaction-overflow"><summary><span class="community-reactions-show">Show <%= end-index-10 %> more <%= end-index === 11 ? 'activity' : 'activities' %></span><span class="community-reactions-hide">Hide extra activity</span></summary><div class="community-reaction-overflow-items">
+    <% for (let extra = index + 10; extra < end; extra++) { %><%- include('community_card.ejs', {item:items[extra]}) %><% } %>
+  </div></details>
+  <% } index = end;
+} %>

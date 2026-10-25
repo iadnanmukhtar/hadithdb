@@ -4,6 +4,37 @@
   const root = document.getElementById('community');
   if (!root) return;
   const view = root.dataset.view, handle = root.dataset.author, postId = root.dataset.post;
+  const railSlot = root.querySelector('.community-rail-slot');
+  const rail = railSlot?.querySelector('.community-aside');
+  const footer = document.querySelector('body > footer');
+  function positionCommunityRail() {
+    if (!railSlot) return;
+    const rect = railSlot.getBoundingClientRect();
+    root.style.setProperty('--community-rail-left', rect.left + 'px');
+    root.style.setProperty('--community-rail-width', rect.width + 'px');
+    // Let the fixed rail move above the footer, as a bounded sticky rail would.
+    const fixed = getComputedStyle(rail).position === 'fixed';
+    railSlot.style.minHeight = fixed ? rail.offsetHeight + 'px' : '';
+    const top = parseFloat(getComputedStyle(rail).top) || 0;
+    const shift = fixed && footer ? Math.min(0, footer.getBoundingClientRect().top - 12 - top - rail.offsetHeight) : 0;
+    rail.style.transform = shift ? `translateY(${shift}px)` : '';
+  }
+  if (railSlot) {
+    positionCommunityRail();
+    if (typeof ResizeObserver === 'function') {
+      const observer = new ResizeObserver(positionCommunityRail);
+      [railSlot, rail, root].forEach(element => observer.observe(element));
+    }
+    let railFrame = 0;
+    window.addEventListener('scroll', () => {
+      if (!railFrame) railFrame = requestAnimationFrame(() => {
+        railFrame = 0;
+        positionCommunityRail();
+      });
+    }, { passive: true });
+    window.addEventListener('resize', positionCommunityRail);
+  }
+
   const $ = id => document.getElementById('community-' + id);
   let me = null, epoch = 0, offset = 0, relation = { following: false, email: false }, editing = null;
   let previewSignature = null, dirty = false, replyId = null, loadingFeed = false, feedEpoch = 0, notebookOffset = 0, notebookRequest = 0, savingPost = false, changingRelation = false;
@@ -101,16 +132,39 @@
     else if (kind === 'article') { const read = link('', href, 'community-entry-secondary'); read.title = 'Read article'; read.setAttribute('aria-label', 'Read article'); read.append(icon('arrow-right')); actions.append(read); }
     article.append(actions); return article;
   }
-  let feedHasMore = false, feedObserver = null;
+  let feedHasMore = false, feedObserver = null, reactionRun = null, firstBatchMicroOnly = false;
+  function appendFeedCard(item) {
+    const entry = card(item);
+    if (item.kind !== 'like') { reactionRun = null; $('feed').append(entry); return true; }
+    const type = item.activity + ':' + (item.likeSource || '');
+    if (!reactionRun || reactionRun.type !== type) reactionRun = {type, count: 0, details: null};
+    reactionRun.count++;
+    if (reactionRun.count <= 10) { $('feed').append(entry); return true; }
+    if (!reactionRun.details) {
+      const details = node('details', undefined, 'community-reaction-overflow');
+      const summary = node('summary');
+      reactionRun.label = node('span', '', 'community-reactions-show');
+      summary.append(reactionRun.label, node('span', 'Hide extra activity', 'community-reactions-hide'));
+      reactionRun.content = node('div', undefined, 'community-reaction-overflow-items');
+      details.append(summary, reactionRun.content); reactionRun.details = details; $('feed').append(details);
+      details.addEventListener('toggle', () => {
+        // Either expanding or collapsing can move the sentinel back into view.
+        observeFeedEnd();
+      });
+    }
+    reactionRun.label.textContent = 'Show ' + (reactionRun.count - 10) + ' more ' + (reactionRun.count === 11 ? 'activity' : 'activities');
+    reactionRun.content.append(entry);
+    return reactionRun.details.open;
+  }
   const feedKeys = new Set();
   function observeFeedEnd() {
     if (!feedObserver || !$('feed-sentinel')) return;
     feedObserver.disconnect();
-    if (feedHasMore) feedObserver.observe($('feed-sentinel'));
+    if (feedHasMore && !loadingFeed && !firstBatchMicroOnly) feedObserver.observe($('feed-sentinel'));
   }
-  if ($('feed-sentinel') && 'IntersectionObserver' in window) {
+  if ($('feed-sentinel') && typeof window.IntersectionObserver === 'function') {
     feedObserver = new IntersectionObserver(entries => {
-      if (entries.some(entry => entry.isIntersecting) && feedHasMore && !loadingFeed) run(() => loadFeed());
+      if (entries.some(entry => entry.isIntersecting) && feedHasMore && !loadingFeed && !firstBatchMicroOnly) run(() => loadFeed());
     }, { rootMargin: '300px 0px' });
   }
   async function loadFeed(reset = false) {
@@ -119,21 +173,35 @@
     feedObserver?.disconnect();
     $('feed-status').textContent = 'Loading…';
     $('more').hidden = true;
-    if (reset) offset = 0;
-    const params = new URLSearchParams({ scope: view === 'author' ? 'everyone' : view, kind: $('filter')?.value || 'all', offset: String(offset) });
-    if (view === 'author') params.set('author', handle);
+    if (reset) { offset = 0; firstBatchMicroOnly = false; }
     try {
-      const data = await api('/feed?' + params);
-      if (request !== feedEpoch) return;
-      if (reset) { $('feed').replaceChildren(); feedKeys.clear(); }
-      for (const item of data.items) {
-        const key = item.activity + ':' + item.id;
-        if (!feedKeys.has(key)) { feedKeys.add(key); $('feed').append(card(item)); }
+      // A page containing only collapsed rows must advance to the next visible
+      // activity, rather than presenting a Load more button that appears inert.
+      while (true) {
+        const params = new URLSearchParams({ scope: view === 'author' ? 'everyone' : view, kind: $('filter')?.value || 'all', offset: String(offset) });
+        if (view === 'author') params.set('author', handle);
+        const data = await api('/feed?' + params);
+        if (request !== feedEpoch) return;
+        if (reset) {
+          $('feed').replaceChildren(); feedKeys.clear(); reactionRun = null;
+          firstBatchMicroOnly = data.hasMore && data.items.every(item => item.kind === 'like');
+        }
+        let addedVisible = false;
+        for (const item of data.items) {
+          const key = item.activity + ':' + item.id;
+          if (!feedKeys.has(key)) { feedKeys.add(key); addedVisible = appendFeedCard(item) || addedVisible; }
+        }
+        if (!$('feed').children.length) $('feed').append(node('p', view === 'following' ? 'Follow an author to see their posts, reflections, and comments here.' : view === 'mine' ? 'Your wall is ready. Write a post or copy a saved notebook note.' : 'No activity yet.', 'community-empty'));
+        if (data.hasMore && (!Number.isSafeInteger(data.offset) || data.offset <= offset)) throw new Error('Feed pagination did not advance. Please try again.');
+        offset = data.offset; feedHasMore = data.hasMore; reset = false;
+        if (feedHasMore && !addedVisible && !firstBatchMicroOnly) {
+          $('feed-status').textContent = 'Loading past collapsed activity…';
+          continue;
+        }
+        $('feed-status').textContent = !feedHasMore && feedKeys.size ? 'You’re all caught up.' : '';
+        $('more').textContent = 'Load more'; $('more').hidden = !feedHasMore;
+        break;
       }
-      if (!$('feed').children.length) $('feed').append(node('p', view === 'following' ? 'Follow an author to see their posts, reflections, and comments here.' : view === 'mine' ? 'Your wall is ready. Write a post or copy a saved notebook note.' : 'No activity yet.', 'community-empty'));
-      offset = data.offset; feedHasMore = data.hasMore;
-      $('feed-status').textContent = !feedHasMore && feedKeys.size ? 'You’re all caught up.' : '';
-      $('more').textContent = 'Load more'; $('more').hidden = !feedHasMore || !!feedObserver;
     } catch (err) {
       if (request === feedEpoch) {
         feedHasMore = false; $('feed-status').textContent = 'Could not load the feed. Try again.';
@@ -204,7 +272,7 @@
   });
   function renderRelation() {
     if (!$('follow')) return;
-    $('follow').textContent = relation.following ? 'Following · Unfollow' : 'Follow';
+    $('follow').textContent = relation.following ? 'Unfollow' : 'Follow';
     $('subscribe').textContent = relation.email ? 'Email subscribed · Stop emails' : 'Subscribe by email';
   }
   async function changeRelation(emailAction) {
@@ -212,7 +280,7 @@
     changingRelation = true;
     try {
       const next = emailAction ? { following: true, email: !relation.email } : { following: !relation.following, email: false };
-      relation = await api('/authors/' + encodeURIComponent(handle) + '/follow', 'PUT', next); renderRelation();
+      relation = await api('/authors/' + encodeURIComponent(handle) + '/follow', 'PUT', next); renderRelation(); await loadContributors();
       status(relation.email ? 'Subscribed. You will receive articles the author chooses to email.' : relation.following ? 'Following. Email updates are off.' : 'You have unfollowed this author.');
     } finally { changingRelation = false; }
   }
@@ -220,7 +288,7 @@
   $('follow')?.addEventListener('click', () => run(() => changeRelation(false), $('follow')));
   $('subscribe')?.addEventListener('click', () => run(() => changeRelation(true), $('subscribe')));
   $('filter')?.addEventListener('change', () => run(() => loadFeed(true)));
-  $('more')?.addEventListener('click', () => { const reset = $('more').dataset.retryReset === '1'; delete $('more').dataset.retryReset; run(() => loadFeed(reset), $('more')); });
+  $('more')?.addEventListener('click', () => { firstBatchMicroOnly = false; const reset = $('more').dataset.retryReset === '1'; delete $('more').dataset.retryReset; run(() => loadFeed(reset), $('more')); });
   function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: $('notify').checked, version: editing?.version, action }; }
   function signature() { const data = payload(); delete data.version; return JSON.stringify(data); }
   function invalidatePreview() { dirty = true; previewSignature = null; $('publish').disabled = true; $('preview-panel').hidden = true; }
@@ -343,6 +411,40 @@
     }
     if (!$('moderation').children.length) $('moderation').append(node('p', 'No publications or reports awaiting review.', 'community-empty'));
   }
+  async function loadContributors() {
+    if (!$('contributors')) return;
+    const own = epoch;
+    try {
+      const data = await api('/contributors');
+      if (own !== epoch) return;
+      $('contributors').replaceChildren();
+      for (const author of data.contributors) {
+        const row = node('div', undefined, 'community-contributor');
+        const avatar = link('', '/community/@' + author.handle, 'community-avatar'); avatar.tabIndex=-1; avatar.setAttribute('aria-hidden','true'); avatarImage(avatar, author);
+        const copy = node('div', undefined, 'community-contributor-copy');
+        const name = link(author.name, '/community/@' + author.handle); name.dir='auto'; name.title=author.name;
+        copy.append(name, node('small', author.contributions + (author.contributions===1 ? ' contribution' : ' contributions')));
+        const toggle = button(author.following ? 'Unfollow' : 'Follow', async () => {
+          const own = epoch;
+          const result = await api('/authors/' + encodeURIComponent(author.handle) + '/follow', 'PUT', {following:!author.following,email:false});
+          if (own !== epoch) return;
+          author.following=result.following; author.email=result.email;
+          toggle.textContent=author.following ? 'Unfollow' : 'Follow'; toggle.setAttribute('aria-pressed',String(author.following));
+          toggle.setAttribute('aria-label',(author.following ? 'Unfollow ' : 'Follow ') + author.name);
+          if (handle===author.handle) { relation=result; renderRelation(); }
+          if (view==='following') await loadFeed(true);
+          if (view==='mine') renderSubscriptions((await api('/me')).subscriptions);
+        }, 'btn btn-sm btn-outline-secondary community-contributor-follow');
+        toggle.dataset.author=author.handle; toggle.setAttribute('aria-pressed',String(author.following));
+        toggle.setAttribute('aria-label',(author.following ? 'Unfollow ' : 'Follow ') + author.name);
+        row.append(avatar,copy,toggle); $('contributors').append(row);
+      }
+      if (!data.contributors.length) $('contributors').append(node('p','Contributors will appear as public writing is shared.','community-rail-caption'));
+    } catch (err) {
+      if (own !== epoch) return;
+      $('contributors').replaceChildren(node('p','Contributors could not be loaded.','community-rail-caption'),button('Try again',loadContributors,'btn btn-sm btn-link'));
+    }
+  }
   function renderSubscriptions(items) {
     $('subscriptions').replaceChildren();
     for (const author of items) {
@@ -377,7 +479,7 @@
         const self = me?.author.handle === handle; $('follow-controls').hidden = self;
         relation = me && !self ? await api('/authors/' + encodeURIComponent(handle) + '/relationship') : { following: false, email: false }; renderRelation();
       }
-      if (['everyone', 'following', 'mine', 'author'].includes(view)) await loadFeed(true);
+      if (['everyone', 'following', 'mine', 'author'].includes(view)) await Promise.all([loadFeed(true), loadContributors()]);
       if (view === 'write') {
         const params = new URLSearchParams(location.search);
         if (!params.get('post') && !editing && params.get('kind') === 'article') { $('kind').value = 'article'; $('kind').dispatchEvent(new Event('change')); }
@@ -390,6 +492,7 @@
   }
   document.addEventListener('hadithAuthChanged', () => {
     resetQuickComposer();
+    if ($('contributors')) $('contributors').replaceChildren();
     // A different account must never inherit the previous account's draft or feed.
     if (view === 'write') { $('editor-form').reset(); $('kind').disabled = false; editing = null; dirty = false; previewSignature = null; $('preview-panel').hidden = true; $('publish').disabled = true; $('unpublish').hidden = true; $('notebook-results').replaceChildren(); $('import-panel').hidden = true; }
     if (['mine', 'following'].includes(view)) { $('feed').replaceChildren(); $('more').hidden = true; }
