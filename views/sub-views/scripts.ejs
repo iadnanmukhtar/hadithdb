@@ -34,6 +34,8 @@
 <script src="/static/js/notebook-themes.js?v=<%= utils.scriptAssetVersion() %>"></script>
 
 <% if (site.editMode) { %>
+<%- include('sharh_add_modal.ejs'); %>
+<script src="/static/js/sharh-add-modal.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <!-- Inline Editing -->
 <script>
   $(function () {
@@ -337,6 +339,7 @@
               return;
 	        let dorarSharhUrl = '';
 	        let customSharhTitle = '';
+	        let sharhBookChoice = null;
 	        let customNarratorName = '';
 	        if (propStr === 'hdith_narrator.add') {
 	          customNarratorName = (window.prompt('Enter the Arabic narrator name:') || '').trim();
@@ -346,11 +349,19 @@
 	          }
 	        }
 	        if (propStr === 'hdith_sharh.add' || propStr === 'hdith_toc_sharh.add') {
-	          customSharhTitle = (window.prompt('Enter the Arabic Sharh book title. You may reuse an existing title:', 'شرح مخصص') || '').trim();
-	          if (!customSharhTitle) {
-	            $(this).removeAttr('editing');
+	          if ($el.attr('data-picking-sharh') === 'true') return;
+	          $el.attr('data-picking-sharh', 'true');
+	          try {
+	            sharhBookChoice = await window.pickSharhBook({ apiPath: editHadithApiPath });
+	          } finally {
+	            $el.removeAttr('data-picking-sharh');
+	            $el[0].focus();
+	          }
+	          if (!sharhBookChoice) {
+	            $el.removeAttr('editing');
 	            return;
 	          }
+	          customSharhTitle = sharhBookChoice.title;
 	        }
 	        if (propStr === 'hdith_sharh.import_dorar') {
 	          dorarSharhUrl = (window.prompt('Paste the dorar.net explanation URL:') || '').trim();
@@ -401,8 +412,8 @@
 	          arabizi: arabizi,
 	          value: value,
 	          pairedNarrator: ($el.attr('data-paired-narrator') || '').toString(),
-	          sharhBookId: $el.attr('data-sharh-book-id') || '',
-	          pairedSharhTitle: ($el.attr('data-paired-sharh-title') || '').toString(),
+	          sharhBookId: sharhBookChoice ? sharhBookChoice.bookId : ($el.attr('data-sharh-book-id') || ''),
+	          pairedSharhTitle: sharhBookChoice ? sharhBookChoice.title_en : ($el.attr('data-paired-sharh-title') || '').toString(),
 	          pairedBilingualValue: ($el.attr('data-paired-bilingual-value') || '').toString(),
 	          quranSectionPath: propStr === 'toc.title_en' && isQuranPage() && !$el.closest('.quran-subheading').length
 	            ? window.location.pathname

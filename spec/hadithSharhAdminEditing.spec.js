@@ -114,6 +114,26 @@ describe('Hadith Sharh administration', () => {
 		expect(require('../lib/SharhBooks').sync).toHaveBeenCalled();
 	});
 
+	test.each(['hadith', 'heading'])('assigns the selected book when adding a %s explanation', async kind => {
+		global.query = jest.fn(async sql => {
+			if (sql.includes('SELECT id FROM hadiths WHERE id=42')) return [{ id: 42 }];
+			if (sql.includes('FROM toc t JOIN books b')) return [{ id: 42, book_id: 7, alias: 'riyad' }];
+			if (sql.includes('SELECT id FROM hdith_sharh_sources')) return [{ id: 9 }];
+			if (sql.includes('MIN(source_entry_id)')) return [{ source_entry_id: -2 }];
+			if (sql.includes('MAX(ordinal)')) return [{ ordinal: 3 }];
+			if (/INSERT INTO hdith_(hadith|toc)_sharh/.test(sql)) return { insertId: 77 };
+			return [];
+		});
+		const prop = kind === 'hadith' ? 'hdith_sharh.add' : 'hdith_toc_sharh.add';
+		const req = { body: { value: 'شرح', sharhBookId: '100417', pairedSharhTitle: 'Explanation' }, params: { id: '42', prop }, user: { uid: 'admin' } };
+		const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+		await updateHandler()(req, res, jest.fn());
+		expect(require('../lib/SharhBooks').assignEntryBook).toHaveBeenCalledWith(kind, 77, {
+			bookId: '100417', title: 'شرح', title_en: 'Explanation'
+		});
+		expect(res.json.mock.calls[0][0]).toMatchObject({ code: 200, createdSharhId: 77 });
+	});
+
 	test('updates both heading explanation title languages from a paired selection', async () => {
 		global.query = jest.fn(async sql => {
 			if (sql.startsWith('CREATE TABLE')) return { affectedRows: 0 };

@@ -569,6 +569,16 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 			(hadith_id, ordinal, source_id, source_entry_id, chapter, page_num, title, title_en, text, text_en, format, source_url)
 			VALUES (${sharhId}, ${customSharhOrdinal}, ${Number(customSharhSource.id)}, ${customSourceEntry}, NULL, NULL, ${sql(customSharhTitle)}, NULL, '', NULL, 'md', '')`);
           status.createdSharhId = Number(insertSharh.insertId);
+          try {
+            await require('../lib/SharhBooks').assignEntryBook('hadith', status.createdSharhId, {
+              bookId: req.body.sharhBookId, title: customSharhTitle, title_en: req.body.pairedSharhTitle
+            });
+          } catch (error) {
+            await global.query(`DELETE FROM hdith_hadith_sharh WHERE id=${status.createdSharhId}`);
+            throw error;
+          }
+          await Library.reloadBooks();
+          await RuntimeRefresh.publish();
           status.code = 200;
           status.message = 'Custom explanation added';
         }
@@ -665,6 +675,16 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
             VALUES (${tocSharhId}, ${customHeadingSharhOrdinal}, ${Number(customHeadingSharhSource.id)}, ${customHeadingSourceEntry}, NULL,
               ${sql(customHeadingSharhTitle)}, NULL, '', NULL, 'md', '')`);
           status.createdSharhId = Number(insertHeadingSharh.insertId);
+          try {
+            await require('../lib/SharhBooks').assignEntryBook('heading', status.createdSharhId, {
+              bookId: req.body.sharhBookId, title: customHeadingSharhTitle, title_en: req.body.pairedSharhTitle
+            });
+          } catch (error) {
+            await global.query(`DELETE FROM hdith_toc_sharh WHERE id=${status.createdSharhId}`);
+            throw error;
+          }
+          await Library.reloadBooks();
+          await RuntimeRefresh.publish();
           status.code = 200;
           status.message = 'Custom heading explanation added';
         }

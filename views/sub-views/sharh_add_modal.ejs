@@ -1,0 +1,34 @@
+<div class="modal fade" id="sharh-add-modal" tabindex="-1" aria-labelledby="sharh-add-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <form class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="sharh-add-title">Add explanation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="sharh-add-mode" class="form-label">Sharh book</label>
+        <select id="sharh-add-mode" class="form-select mb-3">
+          <option value="existing">Choose an existing book</option>
+          <option value="new">Create a new book</option>
+        </select>
+        <div data-sharh-existing>
+          <label for="sharh-add-search" class="form-label">Search books</label>
+          <input id="sharh-add-search" type="search" class="form-control mb-2" placeholder="Arabic or English title" autocomplete="off">
+          <label for="sharh-add-book" class="form-label">Existing books</label>
+          <select id="sharh-add-book" class="form-select" size="6" required></select>
+          <p class="small text-muted mt-2 mb-0" data-sharh-status role="status"></p>
+        </div>
+        <div data-sharh-new hidden>
+          <label for="sharh-add-ar" class="form-label">Arabic book title</label>
+          <input id="sharh-add-ar" class="form-control mb-3" lang="ar" dir="rtl" disabled required>
+          <label for="sharh-add-en" class="form-label">English book title (optional)</label>
+          <input id="sharh-add-en" class="form-control" lang="en" dir="ltr" disabled>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary" data-sharh-submit disabled>Add explanation</button>
+      </div>
+    </form>
+  </div>
+</div>
