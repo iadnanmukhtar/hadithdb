@@ -1,14 +1,8 @@
 /* Segmented navigation follows the Quran reader mode controls. */
 .community-section-menu .chapter-toc-toolbar { justify-content: center; flex-wrap: wrap; }
 .community-tabs { max-width: 100%; }
-.community-tabs .btn { display: inline-flex; align-items: center; justify-content: center; font-size: .8rem; line-height: 1.2; padding: .3rem .65rem; white-space: nowrap; }
-.community-tabs .btn.active { background-color: var(--c-accent); border-color: var(--c-accent); color: white; }
 .community-notebook-filter { display: none; }
 .community-section-menu [hidden] { display: none !important; }
-@media (max-width: 575px) {
-  .community-tabs { width: 100%; }
-  .community-tabs .btn { font-size: .68rem; padding: .4rem .25rem; }
-}
 
 /* Community inherits the site's font, background, colors and control styling. */
 .community {
@@ -130,6 +124,7 @@ body:has(.community-quick-dialog[open]) { overflow: hidden; }
 
 .community-entry-actions { justify-content: flex-start; flex-wrap: wrap; }
 .community-entry-actions > .community-entry-secondary { margin-inline-start: auto; }
+.community-entry-actions > .community-entry-secondary ~ .community-entry-secondary { margin-inline-start: 0; }
 .community-like { border: 0; padding: .2rem 0; background: transparent; color: var(--community-muted); font: inherit; font-size: var(--content-size-sm); }
 button.community-like:hover, .community-like[aria-pressed="true"] { color: var(--community-accent); }
 
@@ -186,3 +181,85 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 @media (min-width: 992px) {
   .community:has(.community-rail-slot) > :is(.community-heading, #community-status, .community-profile) { max-width: calc(100% - var(--community-rail-width, 260px) - 2rem); }
 }
+
+/* A quiet, spacious writing surface using the site's existing palette. */
+.community-editor { max-width: 860px; padding: clamp(1rem, 3vw, 2.25rem); border-radius: .8rem; box-shadow: 0 5px 24px rgba(0,0,0,.025); }
+.community-editor-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-bottom: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--community-line); }
+.community-editor-eyebrow { color: var(--community-ink); font-weight: 600; }
+.community-editor-top p { margin: .25rem 0 0; color: var(--community-muted); font-size: .8rem; }
+.community-editor-top button { flex-shrink: 0; }
+.community-editor .form-label { font-size: .8rem; color: var(--community-muted); }
+.community-editor .community-article-title { font-family: inherit; font-size: 1.6rem; font-weight: 600; padding: .65rem .8rem; }
+.community-writing-label { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .25rem .75rem; }
+.community-writing-label span { font-size: .7rem; color: var(--community-muted); }
+.community-editor #community-markdown { padding: 1rem; line-height: 1.8; min-height: 24rem; resize: vertical; font-family: inherit; }
+.community-editor :is(input,textarea)::placeholder { color: var(--community-muted); opacity: .7; }
+.community-editor-actions { display: flex; flex-wrap: wrap; gap: .5rem; border-top: 1px solid var(--community-line); padding-top: 1rem; margin-top: 1.25rem; }
+.community-editor-actions #community-publish { margin-inline-start: auto; }
+.community-editor #community-preview-panel { box-shadow: none; padding: 1.5rem; }
+@media (max-width: 575px) { .community-editor-top { align-items: flex-start; flex-direction: column; } .community-editor .community-article-title { font-size: 1.3rem; } }
+
+.community-entry[data-kind="comment"] .community-entry-title { font-size: .9rem !important; font-weight: 500; margin-block: .55rem; }
+.community-reflection-body { font-size: .9rem; line-height: 1.65; overflow-wrap: anywhere; }
+.community-reflection-body :is(img,video,iframe) { max-width: 100%; }
+.community-entry-actions button { display: inline-flex; align-items: center; gap: .25rem; min-width: 24px; min-height: 24px; padding: .15rem .25rem; border: 0; background: transparent; color: var(--community-muted); font-size: .68rem; border-radius: .35rem; }
+.community-entry-actions button[aria-pressed="true"] { color: var(--community-accent); }
+.community-inline-discussion { margin-top: .65rem; border-top: 1px solid var(--community-line); padding-top: .65rem; }
+.community-thread-reply { border-inline-start: 1px solid var(--community-line); padding: .65rem 0 .65rem .65rem; }
+.community-thread-reply .community-avatar { width: 24px; height: 24px; flex-basis: 24px; }
+.community-thread-reply .community-entry-meta { font-size: .75rem; flex-wrap: wrap; }
+.community-thread-reply .community-reflection-body { font-size: .82rem; margin-top: .35rem; }
+.community-inline-reply label { display: block; }
+.community-inline-reply textarea { display: block; width: 100%; padding: .65rem; border: 1px solid var(--community-line); border-radius: .4rem; background: var(--c-bg,white); color: inherit; margin: .4rem 0; resize: vertical; }
+.community-repost-credit { font-size: .7rem; color: var(--community-muted); margin-bottom: .6rem; }
+.community-repost-credit a { color: inherit; }
+
+.community-media-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; margin: .4rem 0 .7rem; }
+.community-media-toolbar button { border: 0; background: transparent; color: var(--community-muted); border-radius: .3rem; padding: .35rem .45rem; font-size: .75rem; }
+.community-media-toolbar button:hover { color: var(--community-accent); background: var(--c-primary-soft-08); }
+.community-media-status { font-size: .7rem; color: var(--community-muted); }
+.community-media-dialog { width: min(90vw,480px); padding: 1.5rem; border: 1px solid var(--community-line); border-radius: .8rem; color: var(--community-ink); }
+.community-media-dialog::backdrop { background: rgba(0,0,0,.35); }
+.community-media-dialog h2 { font-size: 1.2rem !important; }
+.community-media-dialog label { margin-bottom: .4rem; }
+.community-media-dialog .form-control { margin-bottom: .5rem; }
+.community-feed-media { display: grid; gap: .65rem; margin-block: .75rem; }
+.community :is(.community-feed-media,.notebook-markdown) img { max-width: 100%; height: auto; border-radius: .5rem; }
+.community-feed-media > img { max-height: 480px; object-fit: contain; }
+.community-link-preview { margin-block: .75rem; overflow: hidden; border: 1px solid var(--community-line); border-radius: .6rem; }
+.community-link-card { display: flex; color: inherit; text-decoration: none; }
+.community-link-card > img { width: 120px; min-width: 0; object-fit: cover; border-radius: 0 !important; }
+.community-link-copy { display: grid; padding: .8rem; gap: .25rem; min-width: 0; }
+.community-link-copy small { color: var(--community-muted); font-size: .65rem; }
+.community-link-copy strong { font-size: .9rem; }
+.community-link-copy > span { font-size: .75rem; color: var(--community-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.community-video-play { display: flex; gap: .5rem; align-items: center; justify-content: center; width: 100%; min-height: 5rem; border: 0; background: var(--c-primary-soft-08); color: var(--community-accent); }
+.community-video-player { display: block; width: 100%; aspect-ratio: 16/9; border: 0; background: #111; }
+@media (max-width:575px) { .community-link-card > img { width: 80px; } }
+.community-link-copy { overflow-wrap: anywhere; }
+.community-comments-toggle { border: 0; background: transparent; color: var(--community-muted); padding: .3rem 0; font-size: .72rem; }
+.community-comments-toggle:hover { color: var(--community-accent); text-decoration: underline; }
+.community-blog-control { display: inline-flex; align-items: center; gap: .45rem; font-size: .75rem; margin: 0; }
+.community-blog-control .form-check-input { margin-top: 0; }
+
+.community-profile-dialog { padding: 1.25rem; width: min(520px, calc(100% - 2rem)); }
+.community-profile-dialog h2 { font-size: 1.2rem !important; margin: 0; }
+.community-profile-stat { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-decoration: none; }
+.community-profile-stat:hover { text-decoration: underline; }
+
+.community-link-card.community-blog-preview { flex-direction: column; }
+.community-blog-preview > img { width: 100%; max-height: 320px; aspect-ratio: 16 / 9; object-fit: cover; }
+
+/* Blog Arabic is detected by the Markdown renderer, without ~~ font markers. */
+.blog-post .blog-arabic { font-family: Hafs, Serif; font-size: 1.42em; }
+.blog-post .blog-arabic .blog-arabic { font-size: inherit; }
+.blog-post [dir="rtl"] { text-align: right; }
+.blog-post .footnotes .blog-arabic { font-size: 1.22em; }
+
+.community-editor-cover { margin: 1rem 0; }
+.community-editor-cover img { display: block; width: 100%; max-height: 320px; object-fit: contain; border-radius: .5rem; }
+.community-editor-cover figcaption { margin-top: .35rem; }
+.community-toc { border: 1px solid var(--bs-border-color); border-radius: .5rem; padding: 1rem; margin-block: 1rem; }
+.community-toc ul { padding-inline-start: 1.25rem; margin-block: .35rem; }
+.community-toc a { text-decoration: none; }
+.notebook-markdown :is(h1,h2,h3,h4,h5,h6)[id^="article-"] { scroll-margin-top: 7rem; }

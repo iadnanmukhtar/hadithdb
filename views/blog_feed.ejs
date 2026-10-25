@@ -11,7 +11,7 @@
   <title><%= page.title_en %></title>
   <subtitle><%= page.subtitle_en %></subtitle>
   <link rel="alternate" type="text/html" href="<%= page.alternate %>" />
-  <updated><%= posts[0].lastmod.toISOString() %></updated>
+  <updated><%= (posts[0]?.lastmod || new Date(0)).toISOString() %></updated>
   <icon><%= site.logo32 %></icon>
   <logo><%= site.logo %></logo>
   <id><%= page.canonical %></id>
@@ -30,10 +30,10 @@
       <subtitle><%= post.subtitle %></subtitle>
       <category term="Islam" />
       <category term="Hadith" />
-      <link rel="alternate" type="text/html" href="<%= `${site.url}/${post.file}` %>" />
-      <id><%= `${site.url}/${post.file}` %></id>
+      <link rel="alternate" type="text/html" href="<%= post.url ? new URL(post.url,site.url).href : `${site.url}/${post.file}` %>" />
+      <id><%= post.url ? new URL(post.url,site.url).href : `${site.url}/${post.file}` %></id>
       <author>
-        <name><%= site.owner %></name>
+        <name><%= post.author || site.owner %></name>
       </author>
       <media:content url="<%= post.coverUrl %>" medium="image" type="image/png" />
       <summary><![CDATA[

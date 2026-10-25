@@ -1210,11 +1210,16 @@ async function renderSearchResults(req, res, next, options = {}) {
       delete req.query.sort;
     var offset = Math.max(0, requestedOffset);
     offset = Math.floor(offset / global.settings.search.itemsPerPage) * global.settings.search.itemsPerPage;
-    results = await Search.a_searchText(req.query.q, effectiveBookFilters, offset, {
+    const searchCorpus = (start, size) => Search.a_searchText(req.query.q, effectiveBookFilters, start, {
       tafsirAliases: tafsirFilters,
       generalSearch: !options.quranSearchProxy,
-      sort: searchSort
+      sort: searchSort,
+      resultSize: size
     });
+    const includeBlog = !options.quranSearchProxy && !normalizeBookFilterValues(req.query.b).length && !tafsirFilters.length && !Search.isExpressionQuery(req.query.q);
+    results = includeBlog
+      ? await require('../lib/CommunityBlogSearch').merge(req.query.q, offset, global.settings.search.itemsPerPage + 1, searchCorpus)
+      : await searchCorpus(offset, global.settings.search.itemsPerPage + 1);
     totalResults = Number.isFinite(results.total) ? results.total : results.length;
     var searchOffsetError = HttpRange.itemOffsetNotSatisfiable(requestedOffset, totalResults, 'Search results');
     if (searchOffsetError)

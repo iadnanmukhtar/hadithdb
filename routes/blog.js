@@ -9,11 +9,13 @@ const fm = require('front-matter');
 const markdownit = require('markdown-it');
 const markdownitfence = require('markdown-it-fence')
 const HttpRange = require('../lib/HttpRange');
+const BlogImport = require('../lib/CommunityBlogImport');
 
 const router = express.Router();
 const BLOG_PLACEHOLDER_COVER = '/static/img/pearls_of_the_deep.jpg';
 
-router.get('/', async function (req, res, next) {
+router.get('/', function (req,res,next) { return listPosts(req,res,next).catch(next); });
+async function listPosts(req, res, next) {
 
   res.locals.req = req;
   res.locals.res = res;
@@ -28,9 +30,11 @@ router.get('/', async function (req, res, next) {
   var offset = Math.floor(Math.max(0, requestedOffset) / pageSize) * pageSize;
 
   var posts = [];
+  const migrated = await BlogImport.records();
+  const migratedSlugs = new Set(migrated.map(row=>row.slug));
   const files = fs.readdirSync(global.settings.blog.dir);
   for (var file of files) {
-    if (file.endsWith('.md')) {
+    if (file.endsWith('.md') && !migratedSlugs.has(file.slice(0,-3))) {
       try {
         const { attributes } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
         var post = new Object(attributes);
@@ -43,6 +47,8 @@ router.get('/', async function (req, res, next) {
       }
     }
   }
+  posts.push(...migrated.filter(row=>row.status==='published' && row.featured).map(row=>applyCoverFallback({...BlogImport.attributes(row),file:row.slug,url:BlogImport.url(row.slug),html:renderHtml(row.public_markdown),lastmod:new Date(row.updated_at)})));
+  try { posts.push(...(await require('../lib/Community').blogPosts()).map(applyCoverFallback)); } catch(err) { return next(err); }
   posts.sort((a, b) => {
     return b.published - a.published;
   });
@@ -68,14 +74,15 @@ router.get('/', async function (req, res, next) {
     pagination: pagination
   });
 
-});
+}
 
 router.get('/feed', async function (req, res, next) {
   res.setHeader('Content-Type', 'application/atom+xml; charset=UTF-8');
   res.setHeader('Content-Disposition', `inline; filename="${global.settings.blog.shortName}_atom.xml"`);
   res.locals.req = req;
   res.locals.res = res;
-  var posts = getPosts();
+  var posts;
+  try { posts = await getPosts(); } catch(err) { return next(err); }
   res.render('blog_feed', {
     posts: posts
   });
@@ -86,7 +93,8 @@ router.get('/rss', async function (req, res, next) {
   res.setHeader('Content-Disposition', `inline; filename="${global.settings.blog.shortName}_rss.xml"`);
   res.locals.req = req;
   res.locals.res = res;
-  var posts = getPosts();
+  var posts;
+  try { posts = await getPosts(); } catch(err) { return next(err); }
   res.render('blog_rss', {
     posts: posts
   });
@@ -98,6 +106,12 @@ router.get('/:title', async function (req, res, next) {
   res.locals.res = res;
 
   const slug = req.params.title;
+  let migrated;
+  try { migrated=(await BlogImport.records()).find(row=>row.slug===slug); } catch(err) { return next(err); }
+  if (migrated) {
+    if (migrated.status!=='published') return next(createError(404,'Post not found'));
+    return res.render('blog_post',{attr:applyCoverFallback(BlogImport.attributes(migrated)),body:renderHtml(migrated.public_markdown),slug});
+  }
   const filename = `${global.settings.blog.dir}/${slug}.md`;
   if (fs.existsSync(filename)) {
 
@@ -120,11 +134,13 @@ router.get('/:title', async function (req, res, next) {
 
 module.exports = router;
 
-function getPosts() {
+async function getPosts() {
   var posts = [];
+  const migrated = await BlogImport.records();
+  const migratedSlugs = new Set(migrated.map(row=>row.slug));
   const files = fs.readdirSync(global.settings.blog.dir);
   for (var file of files) {
-    if (file.endsWith('.md')) {
+    if (file.endsWith('.md') && !migratedSlugs.has(file.slice(0,-3))) {
       try {
         const stat = fs.statSync(`${global.settings.blog.dir}/${file}`);
         const { attributes, body } = fm(fs.readFileSync(`${global.settings.blog.dir}/${file}`).toString());
@@ -135,7 +151,7 @@ function getPosts() {
         post.file = file.replace(/.md$/, '');
         post.html = html;
         applyCoverFallback(post);
-        if (!(post.hidden === 'true'))
+        if (post.hidden !== true && post.hidden !== 'true')
           posts.push(post);
       } catch (e) {
         debug(e.toString());
@@ -143,6 +159,8 @@ function getPosts() {
       }
     }
   }
+  posts.push(...migrated.filter(row=>row.status==='published' && row.featured).map(row=>applyCoverFallback({...BlogImport.attributes(row),file:row.slug,url:BlogImport.url(row.slug),html:renderHtml(row.public_markdown),lastmod:new Date(row.updated_at)})));
+  try { posts.push(...(await require('../lib/Community').blogPosts()).map(applyCoverFallback)); } catch(err) { throw err; }
   posts.sort((a, b) => {
     return b.published - a.published;
   });
@@ -174,6 +192,7 @@ function renderHtml(body) {
     linkify: true,
     langPrefix: 'language-',
   });
+  md.use(require('../lib/BlogArabic'));
   md.use(require('markdown-it-toc')); // @[toc]
   md.use(require('markdown-it-wikilinks'));
   md.use(require('markdown-it-obsidian-images')({ relativeBaseURL: 'Attachments/' }));

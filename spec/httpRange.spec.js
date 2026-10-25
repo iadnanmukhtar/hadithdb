@@ -1,4 +1,7 @@
+jest.mock('../lib/CommunityBlogSearch',()=>({merge:jest.fn(async(q,offset,size,search)=>search(offset,size))}));
+jest.mock('../lib/CommunityBlogImport', () => ({records:jest.fn(async()=>[])}));
 'use strict';
+jest.mock('../lib/Community',()=>({blogPosts:jest.fn(async()=>[])}));
 
 const express = require('express');
 const fs = require('fs');

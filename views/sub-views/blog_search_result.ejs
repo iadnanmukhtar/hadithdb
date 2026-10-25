@@ -1,0 +1,7 @@
+<article class="row mt-3 blog-search-result">
+  <section class="col-12 h">
+    <div class="small text-muted">Blog · <%= article.author %><% if (article.publishedAt) { %> · <%= new Date(article.publishedAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}) %><% } %></div>
+    <h2 class="fs-5 mb-2" dir="auto"><a href="<%= article.url %>"><%= article.title_en %></a></h2>
+    <p class="body" dir="auto"><%= article.excerpt %></p>
+  </section>
+</article>

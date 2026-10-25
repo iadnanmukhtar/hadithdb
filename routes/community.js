@@ -24,10 +24,20 @@ api.use((req, res, next) => req.method === 'GET' ? next() : writeLimit(req, res,
 function signed(req) { if (!req.user) throw require('http-errors')(401, 'Please sign in.'); return req.user; }
 api.get('/me', wrap(async (req, res) => {
   const author = await Community.authorFor(signed(req));
-  res.json({ author: Community.publicAuthor(author), moderator: Community.moderator(req.user), subscriptions: await Community.subscriptions(req.user) });
+  res.json({ author: await Community.profile(author.handle), moderator: Community.moderator(req.user), admin: await Community.admin(req.user), subscriptions: await Community.subscriptions(req.user) });
 }));
+api.get('/me/followers', wrap(async (req, res) => res.json(await Community.followers(signed(req), req.query.offset))));
 api.put('/profile', wrap(async (req, res) => res.json({ author: await Community.saveProfile(req.user, req.body) })));
 api.put('/likes/:source/:id', wrap(async (req, res) => res.json(await Community.like(req.user, req.params.source, req.params.id, req.body.liked))));
+const Interactions = require('../lib/CommunityInteractions');
+const Media = require('../lib/CommunityMedia');
+api.post('/media', express.raw({type:()=>true,limit:'5mb'}), wrap(async(req,res)=>res.status(201).json(await Media.upload(signed(req),req.body))));
+api.get('/link-preview',wrap(async(req,res)=>res.json(await Media.preview(req.query.url))));
+api.post('/link-preview',wrap(async(req,res)=>res.json(await Media.preview(req.body.url,true))));
+api.put('/votes/:source/:id', wrap(async (req,res)=>res.json(await Interactions.vote(signed(req),req.params.source,req.params.id,req.body.direction))));
+api.put('/reposts/:source/:id', wrap(async (req,res)=>res.json(await Interactions.repost(signed(req),req.params.source,req.params.id,req.body.reposted))));
+api.get('/discussion/:source/:id', wrap(async (req,res)=>res.json(await Interactions.discussion(req.params.source,req.params.id,req.user,req.query.offset))));
+api.post('/discussion/:source/:id', wrap(async (req,res)=>res.status(201).json(await Interactions.reply(signed(req),req.params.source,req.params.id,req.body))));
 api.get('/contributors', wrap(async (req, res) => res.json({contributors:await Community.contributors(req.user)})));
 api.get('/feed', wrap(async (req, res) => res.json(await Community.feed(req.query, req.user))));
 api.get('/authors/:handle/relationship', wrap(async (req, res) => res.json(await Community.relationship(signed(req), req.params.handle))));
@@ -35,7 +45,7 @@ api.put('/authors/:handle/follow', wrap(async (req, res) => {
   if (typeof req.body.following !== 'boolean' || typeof req.body.email !== 'boolean') return res.status(400).json({ error: 'Choose following and email preferences.' });
   res.json(await Community.follow(req.user, req.params.handle, req.body.following, req.body.email));
 }));
-api.post('/preview', wrap(async (req, res) => res.json(Community.content(req.body.markdown))));
+api.post('/preview', wrap(async (req, res) => res.json(await Media.prepare(req.body.markdown))));
 api.get('/notebook-copy', wrap(async (req, res) => {
   const user = signed(req);
   const note = await require('../lib/NotebookDrive').get(user.uid, req.query.source);
@@ -45,6 +55,7 @@ api.get('/notebook-copy', wrap(async (req, res) => {
   const markdown = rendered.markdown.replace(/\[\[([^\]\n|]+)(?:\|([^\]\n]*))?\]\]/g, (_match, _target, label) => label || 'Private note');
   res.json({ title: note.title || '', markdown, tags: (note.tags || []).join(', ') });
 }));
+api.put('/posts/:id/blog',wrap(async(req,res)=>res.json(await Community.markBlog(signed(req),req.params.id,req.body.enabled))));
 api.post('/posts', wrap(async (req, res) => res.status(201).json({ post: await Community.savePost(req.user, req.body) })));
 api.get('/posts/:id', wrap(async (req, res) => res.json({ post: await Community.post(req.params.id, req.user, req.query.edit === '1') })));
 api.put('/posts/:id', wrap(async (req, res) => res.json({ post: await Community.savePost(req.user, req.body, req.params.id) })));
@@ -60,7 +71,7 @@ api.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.status && err.status < 500 ? err.message : 'Community is temporarily unavailable. Please try again.' });
 });
 function page(res, req, view, extra = {}) {
-  const titles = { everyone: 'Community', following: 'Following', mine: 'My Wall', write: 'Write a post', moderation: 'Community moderation', unsubscribe: 'Email preferences' };
+  const titles = { everyone: 'Community', following: 'Following', mine: 'My Profile', write: 'Write an article', moderation: 'Community moderation', unsubscribe: 'Email preferences' };
   const title = extra.post?.title || extra.author?.name || titles[view] || 'Community';
   res.locals.req = req; res.locals.res = res;
   res.set('Cache-Control', 'private, no-store');
@@ -69,6 +80,11 @@ function page(res, req, view, extra = {}) {
       canonical: extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
       noindex: ['mine', 'following', 'write', 'moderation', 'unsubscribe'].includes(view), context: { communityView: view } } });
 }
+router.get('/media/:id',wrap(async(req,res)=>{
+  let user=null;try{user=await GoogleAuth.verifyRequest(req);}catch{}
+  const image=await Media.image(req.params.id,user);
+  res.set({'Content-Type':image.mime,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"});res.send(image.data);
+}));
 router.get('/unsubscribe/:token', (req, res) => {
   if (!/^[a-f0-9]{64}$/.test(req.params.token)) return res.status(400).send('Invalid unsubscribe link.');
   res.set('Referrer-Policy', 'no-referrer'); page(res, req, 'unsubscribe');
@@ -87,7 +103,7 @@ router.get('/@:handle', wrap(async (req, res) => {
 }));
 router.get('/@:handle/:id', wrap(async (req, res) => {
   const post = await Community.post(req.params.id);
-  if (post.author.handle !== req.params.handle) return res.redirect(301, post.url);
+  if (post.url.startsWith('/blog/') || post.author.handle !== req.params.handle) return res.redirect(301, post.url);
   page(res, req, 'post', { post, author: await Community.profile(post.author.handle) });
 }));
 module.exports = { pages: router, api };

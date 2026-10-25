@@ -3452,7 +3452,8 @@ del em strong {
 	}
 }
 
-.quran-reader-modes .btn {
+.quran-reader-modes .btn,
+.community-tabs .btn {
 	align-items: center;
 	display: inline-flex;
 	font-size: 0.68rem;
@@ -3462,7 +3463,8 @@ del em strong {
 	white-space: nowrap;
 }
 
-.quran-reader-modes .btn.active {
+.quran-reader-modes .btn.active,
+.community-tabs .btn.active {
 	background-color: var(--c-accent);
 	border-color: var(--c-accent);
 	color: white;
@@ -6751,7 +6753,8 @@ del em strong {
 		display: inline;
 	}
 
-	.quran-reader-modes .btn {
+	.quran-reader-modes .btn,
+	.community-tabs .btn {
 		font-size: 0.62rem;
 		padding: 0.18rem 0.3rem;
 	}

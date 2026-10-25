@@ -22,7 +22,7 @@
     if (q) {
         page.menu = 'Search';
         page.title_en = `Search Results for ${q}`;
-        page.description_en = `Search results for “${q}”${isQuranSearchProxy ? ' across the Quran and tafsir' : ' across Hadith, Sharh, History, Tafsir, and Quran'}.`;
+        page.description_en = `Search results for “${q}”${isQuranSearchProxy ? ' across the Quran and tafsir' : ' across Hadith, Sharh, History, Tafsir, Quran, and Blog articles'}.`;
         page.canonical = searchAction;
         page.noindex = true;
         page.title = '';
@@ -161,7 +161,9 @@
         <% for (var i = 0; i < results.length; i++) { 
         var main = !q; %>
         
-        <% if (results[i].doctype == 'suggestion') { %>
+        <% if (results[i].doctype == 'blog') { %>
+          <%- include('sub-views/blog_search_result.ejs', { article: results[i] }); %>
+        <% } else if (results[i].doctype == 'suggestion') { %>
           <%- include('sub-views/search_suggestion_result.ejs', { suggestion: results[i] }); %>
         <% } else if (!results[i].doctype || results[i].doctype == 'hadith' || results[i].doctype == 'sirah') { %>
           <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], title: true, main: main, searchResult: q }); %>
