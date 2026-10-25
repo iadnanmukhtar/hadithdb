@@ -76,7 +76,7 @@ function page(res, req, view, extra = {}) {
   res.locals.req = req; res.locals.res = res;
   res.set('Cache-Control', 'private, no-store');
   res.render('community', { view, author: null, post: null, initial: null, unsubscribed: false, ...extra,
-    page: { menu: 'Community', title_en: title, description_en: extra.post?.excerpt || 'Reader notes, articles, and conversations about Quran and hadith.',
+    page: { menu: 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader notes, articles, and conversations about Quran and hadith.',
       canonical: extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
       noindex: ['mine', 'following', 'write', 'moderation', 'unsubscribe'].includes(view), context: { communityView: view } } });
 }

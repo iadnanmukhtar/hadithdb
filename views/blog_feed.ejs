@@ -38,7 +38,7 @@
       <media:content url="<%= post.coverUrl %>" medium="image" type="image/png" />
       <summary><![CDATA[
         <h1><%- post.title %><h1>
-        <h2><%- post.subtitle %><h2>
+        <h2><%= post.subtitle %><h2>
         <%- post.html %>
         <footer>
           <p>Published on <%= post.published.toDateString() %></p>
@@ -46,7 +46,7 @@
       ]]></summary>
       <content:encoded><![CDATA[
         <h1><%- post.title %><h1>
-        <h2><%- post.subtitle %><h2>
+        <h2><%= post.subtitle %><h2>
         <%- post.html %>
         <footer>
           <p>Published on <%= post.published.toDateString() %></p>

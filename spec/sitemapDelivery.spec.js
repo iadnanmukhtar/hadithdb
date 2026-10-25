@@ -57,7 +57,7 @@ describe('sitemap delivery', () => {
   test('keeps the Hadith sitemap index on its own hostname', async () => {
     const domain = global.settings.site.url;
     jest.spyOn(Utils, 'readCachedTextFile').mockReturnValue([
-      '', '/books', '/highlights', '/titled', '/commented', '/requests', '/blog', '/mcp-server'
+      '', '/books', '/titled', '/community', '/requests', '/blog', '/mcp-server'
     ].map(path => domain + path).join('\n'));
     const res = response();
     await handler('/sitemap.xml')({ hostname: 'hadithunlocked.com', query: {} }, res, jest.fn());

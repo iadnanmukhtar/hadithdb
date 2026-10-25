@@ -19,7 +19,7 @@ test('moderator identity comes only from explicit verified UID configuration', (
   if (old === undefined) delete process.env.COMMUNITY_MODERATOR_UIDS; else process.env.COMMUNITY_MODERATOR_UIDS = old;
 });
 test('public post representation excludes owner identity, draft body, draft status, and revision metadata', () => {
-  const post = Community.postView({ id: 1, kind: 'article', title: 'Private draft title', markdown: 'Unpublished changes', tags: 'private tag', status: 'draft', version: 17, author_uid: 'private-uid', name: 'Author', handle: 'author', public_title: 'Published title', public_markdown: 'Published body', public_tags: 'public tag', published_at: new Date() });
-  expect(post.title).toBe('Published title'); expect(post.html).toContain('Published body');
+  const post = Community.postView({ id: 1, kind: 'article', title: 'Private draft title', subtitle: 'Private subtitle', public_subtitle: 'Published subtitle', markdown: 'Unpublished changes', tags: 'private tag', status: 'draft', version: 17, author_uid: 'private-uid', name: 'Author', handle: 'author', public_title: 'Published title', public_markdown: 'Published body', public_tags: 'public tag', published_at: new Date() });
+  expect(post.subtitle).toBe('Published subtitle'); expect(post.title).toBe('Published title'); expect(post.html).toContain('Published body');
   expect(JSON.stringify(post)).not.toMatch(/Unpublished|Private draft|private tag|private-uid|version|status/);
 });

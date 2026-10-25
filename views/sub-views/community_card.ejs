@@ -3,13 +3,13 @@
   var entryDateLabel = item.publicationDate ? entryDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : entryDate.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/Chicago'});
   var isPrivatePost = item.status && item.status !== 'published';
   var entryHref = isPrivatePost ? '/community/write?post=' + item.id : item.url;
-  var entryKind = item.activity === 'comment' ? 'comment' : item.kind;
+  var entryKind = item.microinteraction === 'title' ? 'title' : item.activity === 'comment' ? 'comment' : item.kind;
   var entryLabel = entryKind === 'like' ? 'Liked' : entryKind === 'comment' ? 'In conversation' : entryKind === 'article' ? 'Article' : 'Note';
 %>
 <article class="community-entry" data-activity="<%= item.activity %>" data-kind="<%= entryKind %>" data-private="<%= !!isPrivatePost %>">
-  <% if (entryKind === 'like') { %>
+  <% if (entryKind === 'like' || entryKind === 'title') { %>
     <a class="community-avatar" href="/community/@<%= item.author.handle %>" tabindex="-1" aria-hidden="true"><%- include('community_avatar.ejs', { avatar: item.author }) %></a>
-    <div class="community-reaction-copy"><a href="/community/@<%= item.author.handle %>" dir="auto"><%= item.author.name %></a> liked <a href="<%= entryHref %>" dir="auto"><%= (item.title || 'a post').replace(/^Liked\s+/i, '') %></a><% if (item.activityAt) { %> · <time datetime="<%= item.publicationDate || new Date(item.activityAt).toISOString() %>"><%= entryDateLabel %></time><% } %></div>
+    <div class="community-reaction-copy"><a href="/community/@<%= item.author.handle %>" dir="auto"><%= item.author.name %></a> <%= entryKind === 'title' ? 'titled' : 'liked' %> <a href="<%= entryKind === 'title' ? item.hadithUrl : entryHref %>" dir="auto"><%= entryKind === 'title' ? item.hadithTitle : (item.title || 'a post').replace(/^Liked\s+/i, '') %></a><% if (entryKind === 'title') { %> · <%= item.hadithRef %><% } %><% if (item.activityAt) { %> · <time datetime="<%= item.publicationDate || new Date(item.activityAt).toISOString() %>"><%= entryDateLabel %></time><% } %></div>
   <% } else { %>
   <% if (item.repostedBy) { %><div class="community-repost-credit"><i class="bi bi-repeat" aria-hidden="true"></i> Reposted by <a href="/community/@<%= item.repostedBy.handle %>"><%= item.repostedBy.name %></a></div><% } %>
   <div class="community-entry-meta">
@@ -19,6 +19,7 @@
     </div><% if (isPrivatePost) { %><span class="community-entry-state"><%= item.status %></span><% } %>
   </div>
   <% if (entryKind !== 'note' || (item.title && item.title !== 'Note')) { %><h2 class="community-entry-title" dir="auto"><a href="<%= entryHref %>"><%= item.title %></a></h2><% } %>
+  <% if (entryKind === 'article' && item.subtitle) { %><p class="community-article-subtitle" dir="auto"><%= item.subtitle %></p><% } %>
   <% if (item.html && entryKind === 'comment') { %><div dir="auto" class="notebook-markdown community-reflection-body"><%- item.html %></div><% } else { %><p dir="auto" class="community-entry-excerpt"><%= item.excerpt %></p><% } %>
   <% if (item.mediaHtml) { %><div class="community-feed-media"><%- item.mediaHtml %></div><% } %>
   <% if (item.tags) { %><div class="community-entry-tags" dir="auto"><% for (const tag of item.tags.split(',').map(tag => tag.trim()).filter(Boolean).slice(0, 5)) { %><span><%= tag %></span><% } %></div><% } %>

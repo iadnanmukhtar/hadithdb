@@ -16,8 +16,8 @@ jest.setTimeout(30000);
 const suite = process.env.HADITHDB_MYSQL_INTEGRATION === '1' ? describe : describe.skip;
 suite('Community publication, privacy, subscriptions, discussion and moderation', () => {
   const prefix = `c_test_${process.pid}_${Date.now()}_`;
-  const tables = ['blog_media_imports','blog_imports','blog_posts','media','link_previews','dislikes','reposts','author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
-  const rewrite = statement => statement.replace(/\b(user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b/g, (_, table) => prefix + table).replace(/\bcommunity_(blog_media_imports|blog_imports|blog_posts|media|link_previews|dislikes|reposts|author_aliases|authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (_, table) => prefix + table);
+  const tables = ['hadith_posts','blog_media_imports','blog_imports','blog_posts','media','link_previews','dislikes','reposts','author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
+  const rewrite = statement => statement.replace(/\b(user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b/g, (_, table) => prefix + table).replace(/\bcommunity_(hadith_posts|blog_media_imports|blog_imports|blog_posts|media|link_previews|dislikes|reposts|author_aliases|authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (_, table) => prefix + table);
   let pool, server, base, q, firstId, adminSpy, blogDir, pendingQueries=0;
   const trackedQuery=(connection,s,v,cb)=>{pendingQueries++;return connection.query(rewrite(s),v,(err,result)=>{pendingQueries--;cb(err,result);});};
   const request = (url, method = 'GET', uid = 'alice', body) => fetch(base + url, { method, headers: { ...(uid ? { Authorization: 'Bearer ' + uid } : {}), 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
@@ -65,6 +65,91 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     if(blogDir)require('fs').rmSync(blogDir,{recursive:true,force:true});
     adminSpy?.mockRestore();
     delete process.env.COMMUNITY_MODERATOR_UIDS;
+  });
+  test('hadith titles and revisions create public, attributed, deduplicated Community posts', async()=>{
+    const publish=require('../lib/CommunityHadithPosts').publish;
+    const user={uid:'hadith-editor',name:'Hadith Editor'};
+    const before={hId:987,ref:'bukhari:1',title_en:'Old title',body_en:'Original translation'};
+    const after={...before,title_en:'New title'};
+    const postId=await publish(user,'title',before,after);
+    const post=await Community.post(postId);
+    expect(post.title).toBe('Titled bukhari:1');expect(post.author.name).toBe('Hadith Editor');
+    expect(post.html).toContain('/bukhari:1');expect(post.html).toContain('New title');
+    expect(await publish(user,'title',before,after)).toBeNull();
+    const backfill=require('../lib/CommunityHadithPosts').backfillTitles;
+    const historic={...after,hId:988,ref:'bukhari:2',lastmod:'2023-02-03T04:05:06.000Z'};
+    expect(await backfill(user,[historic])).toMatchObject({candidates:1,created:0});
+    expect(await backfill(user,[historic],true)).toMatchObject({created:1,existing:0});
+    expect(await backfill(user,[historic],true)).toMatchObject({created:0,existing:1});
+    expect(await publish(user,'title',{...historic,title_en:'Old'},historic)).toBeNull();
+    const dated=(await q('SELECT published_at,created_at,updated_at FROM '+prefix+'posts WHERE author_uid=? AND title=?',[user.uid,'Titled bukhari:2']))[0];
+    expect(+new Date(dated.published_at)).toBe(+new Date(historic.lastmod));
+    expect(+new Date(dated.created_at)).toBe(+new Date(historic.lastmod));
+
+    expect(await publish(user,'title',after,after)).toBeNull();
+    expect(await publish(user,'revise',after,null)).toBeNull();
+    const revisedId=await publish(user,'revise',after,{...after,body_en:'Revised translation'});
+    expect((await Community.post(revisedId)).html).toContain('Revised translation');
+    const feed=await Community.feed({scope:'mine'},user);
+    expect(feed.items.map(item=>item.id)).toEqual(expect.arrayContaining([postId,revisedId]));
+    expect(feed.items.find(item=>item.id===postId)).toMatchObject({microinteraction:'title',hadithTitle:'New title',hadithUrl:'/bukhari:1'});
+    expect(feed.items.find(item=>item.id===revisedId).microinteraction).toBeUndefined();
+    await Community.authorFor({uid:'hadith-reader',name:'Reader'});
+    await Community.follow({uid:'hadith-reader',name:'Reader'},post.author.handle,true,false);
+    const following=await Community.feed({scope:'following'},{uid:'hadith-reader'});
+    expect(following.items.map(item=>item.id)).toContain(postId);
+    const page=await fetch(base+'/community');expect(page.status).toBe(200);
+    const $=require('cheerio').load(await page.text());
+    expect($('.offcanvas-quick-actions a').first().attr('href')).toBe('/community');
+    expect($('a[href="/liked"],a[href="/highlights"],a[href="/commented"]').length).toBe(0);
+
+  });
+  test('title microinteractions collapse across pages and retain compact titles',async()=>{
+    const browser=await require('playwright').chromium.launch({channel:'chrome',headless:true});
+    try{
+      const page=await browser.newPage({viewport:{width:390,height:844}}),offsets=[];
+      await page.addInitScript(()=>{window.quranApiPath=v=>'/api'+v;window.hadithAuth={getToken:async()=>null,getUser:async()=>null};});
+      await page.route('**/*',route=>{if(route.request().resourceType()==='script'&&!/community(?:-media)?\.js/.test(route.request().url()))return route.abort();return route.continue();});
+      await page.route('**/api/community/feed?*',route=>{
+        const offset=Number(new URL(route.request().url()).searchParams.get('offset')||0);offsets.push(offset);
+        const items=Array.from({length:Math.min(20,42-offset)},(_,i)=>({id:offset+i+5000,activity:'post',kind:'note',microinteraction:offset+i<40?'title':undefined,hadithTitle:'Acceptance of dua',hadithRef:'ahmad:11133',hadithUrl:'/ahmad:11133',title:'Titled ahmad:11133',excerpt:'Normal post',author:{handle:'editor',name:'Editor'},url:'/community/@editor/1',activityAt:new Date().toISOString()}));
+        return route.fulfill({json:{items,hasMore:offset+20<42,offset:offset+20}});
+      });
+      await page.goto(base+'/community');
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===20);
+      expect(offsets).toEqual([0]);
+      expect(await page.locator('#community-feed [data-kind=title]:visible').count()).toBe(10);
+      const first=page.locator('#community-feed [data-kind=title]').first();
+      expect(await first.locator('h2').count()).toBe(0);
+      expect(await first.textContent()).toContain('Acceptance of dua');
+      expect((await first.boundingBox()).height).toBeLessThan(90);
+      await page.locator('#community-more').click();
+      await page.waitForFunction(()=>document.querySelectorAll('#community-feed .community-entry').length===42);
+      expect(offsets).toEqual([0,20,40]);
+      await page.locator('#community-feed details summary').click();
+      expect(await page.locator('#community-feed [data-kind=title]:visible').count()).toBe(40);
+    }finally{await browser.close();}
+  });
+  test('article subtitles preserve public snapshots and backfill legacy metadata only once', async()=>{
+    const user={uid:'moderator',name:'Moderator'};
+    let saved=await Community.savePost(user,postInput({subtitle:'Published subtitle',action:'publish'}));
+    expect((await Community.post(saved.id)).subtitle).toBe('Published subtitle');
+    saved=await Community.savePost(user,postInput({subtitle:'Private edit',version:saved.version} ),saved.id);
+    expect(saved.subtitle).toBe('Private edit');
+    expect((await Community.post(saved.id)).subtitle).toBe('Published subtitle');
+    saved=await Community.savePost(user,postInput({subtitle:'',action:'publish',version:saved.version}),saved.id);
+    expect((await Community.post(saved.id)).subtitle).toBe('');
+    const original=(await q('SELECT post_id FROM '+prefix+'blog_imports WHERE slug=?',['original']))[0];
+    await q('UPDATE '+prefix+'blog_imports SET attributes_json=JSON_SET(attributes_json,\'$.subtitle\',?) WHERE post_id=?',['Legacy subtitle',original.post_id]);
+    await q('UPDATE '+prefix+'posts SET subtitle=NULL,public_subtitle=NULL WHERE id=?',[original.post_id]);
+    const migrate=require('../lib/CommunitySubtitle').migrate;
+    await migrate(Community.sql);
+    expect((await Community.post(original.post_id)).subtitle).toBe('Legacy subtitle');
+    expect(await (await fetch(base+'/blog/original')).text()).toContain('Legacy subtitle');
+    await q("UPDATE "+prefix+"posts SET subtitle='',public_subtitle='' WHERE id=?",[original.post_id]);
+    await migrate(Community.sql);
+    expect((await Community.post(original.post_id)).subtitle).toBe('');
+    expect(await (await fetch(base+'/blog/original')).text()).not.toContain('Legacy subtitle');
   });
   test('only admins can mark published articles for Blog and feeds use the public snapshot',async()=>{
     const user={uid:'moderator',name:'Publisher'};
@@ -326,7 +411,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       const before=await (await fetch(base+Import.url(slug))).text();
       expect((await Import.migrate(blogDir,'import-author',true)).imported).toHaveLength(0);
       const article=await Community.post(imported.id); expect(article.url).toBe(Import.url(slug)); expect(new Date(article.publishedAt).toISOString()).toBe('2021-02-03T00:00:00.000Z'); expect(article.isBlog).toBe(true);
-      expect(article.publicationDate).toBe('2021-02-03'); expect(article.coverUrl).toBe('/blog/Attachments/cover.jpg'); expect(article.mediaHtml).toContain('/blog/Attachments/cover.jpg'); expect(article.mediaHtml).toContain('Original description'); expect(article.mediaHtml).toContain('6bSp_7Ig4_s');
+      expect(article.subtitle).toBe('Original description'); expect(article.publicationDate).toBe('2021-02-03'); expect(article.coverUrl).toBe('/blog/Attachments/cover.jpg'); expect(article.mediaHtml).toContain('/blog/Attachments/cover.jpg'); expect(article.mediaHtml).toContain('Original description'); expect(article.mediaHtml).toContain('6bSp_7Ig4_s');
       const preview=await require('../lib/CommunityMedia').preview(base+article.url); expect(preview.title).toBe('Legacy article'); expect(preview.image).toBe(base+'/blog/Attachments/cover.jpg');
       const mine=await Community.feed({scope:'mine'},{uid:'import-author'}); expect(new Date(mine.items.find(i=>i.id===imported.id).activityAt).toISOString()).toBe('2021-02-03T00:00:00.000Z');
       const feed=await Community.feed({author:author.handle}); expect(feed.items.find(i=>i.id===imported.id).url).toBe(article.url);
@@ -348,10 +433,13 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
         });
         await page.goto(base+'/community/write?post='+imported.id);
         await page.waitForSelector('#community-editor-cover img');
+        expect(await page.locator('#community-subtitle').inputValue()).toBe('Original description');
+        await page.locator('#community-subtitle').fill('An edited subtitle');
         expect(await page.locator('#community-editor-cover img').getAttribute('src')).toBe('/blog/Attachments/cover.jpg');
         await page.locator('#community-markdown').fill('@[toc]\n\n# Overview\n\n## العربية');
         await page.locator('#community-preview-button').click();
         await page.waitForSelector('#community-preview .community-toc a');
+        expect(await page.locator('#community-preview-subtitle').textContent()).toBe('An edited subtitle');
         expect(await page.locator('#community-preview .community-toc a').count()).toBe(2);
         expect(await page.locator('#community-preview').textContent()).not.toContain('@[toc]');
       } finally {await browser.close();}

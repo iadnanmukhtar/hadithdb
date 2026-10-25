@@ -42,7 +42,7 @@ xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modul
       <slash:comments>0</slash:comments>
       <description><![CDATA[
         <h1><%- post.title %><h1>
-        <h2><%- post.subtitle %></h2>
+        <h2><%= post.subtitle %></h2>
         <%- post.html %>
         <footer>
           <p>Published on <%= post.published.toDateString() %></p>
@@ -50,7 +50,7 @@ xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modul
       ]]></description>
       <content:encoded><![CDATA[
         <h1><%- post.title %><h1>
-        <h2><%- post.subtitle %><h2>
+        <h2><%= post.subtitle %><h2>
         <%- post.html %>
         <footer>
           <p>Published on <%= post.published.toDateString() %></p>

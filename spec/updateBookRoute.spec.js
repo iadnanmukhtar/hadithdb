@@ -88,17 +88,30 @@ describe('book update route', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
+  test('does not publish a Community post when revision fails', async () => {
+    jest.spyOn(require('../lib/HadithRevision'), 'reviseHadithById').mockRejectedValue(new Error('Revision failed'));
+    const publish=jest.spyOn(require('../lib/CommunityHadithPosts'), 'publish').mockResolvedValue(42);
+    global.query=jest.fn().mockResolvedValue([{hId:123,ref:'bukhari:1'}]);
+    const res={status:jest.fn().mockReturnThis(),json:jest.fn()};
+    await updateHandler()({body:{value:''},params:{id:'123',prop:'hadith.revise'},user:{uid:'admin'}},res,jest.fn());
+    expect(publish).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+
   test('returns revised fields without waiting on post-save refresh and preserves success when it fails', async () => {
     const Revision = require('../lib/HadithRevision');
     const Snapshot = require('../lib/VirtualHadithSnapshot');
     jest.spyOn(Revision, 'reviseHadithById').mockResolvedValue({ item: { body: 'متن', body_en: 'Saved revision' } });
+    const publish = jest.spyOn(require('../lib/CommunityHadithPosts'), 'publish').mockResolvedValue(42);
     jest.spyOn(Snapshot, 'queueHadith').mockImplementation(() => {});
     let failRefresh;
     global.query = jest.fn(() => new Promise((resolve, reject) => { failRefresh = reject; }));
+    global.query.mockResolvedValueOnce([{ hId:123,ref:'bukhari:1',body_en:'Original' }]);
     const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
     await updateHandler()({ body: { value: '' }, params: { id: '123', prop: 'hadith.revise' }, user: { uid: 'admin' } }, res, jest.fn());
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 200, revised: expect.objectContaining({ body_en: 'Saved revision' }) }));
     expect(Snapshot.queueHadith).toHaveBeenCalledWith('123');
+    expect(publish).toHaveBeenCalledWith({uid:'admin'}, 'revise', expect.objectContaining({hId:123}), expect.objectContaining({body_en:'Saved revision'}));
     failRefresh(new Error('cache read failed after revision was saved'));
     await new Promise(resolve => setImmediate(resolve));
     expect(res.status).toHaveBeenCalledTimes(1);

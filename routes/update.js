@@ -96,6 +96,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.value = translationResult.value;
 
     } else if (type == 'hadith') {
+      const contributionAction = ['title','title_en'].includes(col) ? 'title' : col === 'revise' ? 'revise' : null;
+      const contributionBefore = contributionAction ? (await global.query('SELECT * FROM v_hadiths WHERE hId=' + require('../lib/Community').id(ids[0])))[0] : null;
       var result = "";
 
       if (col === 'delete') {
@@ -270,6 +272,16 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
       }
 
+      if (contributionAction) {
+        try {
+          const contributionAfter = col === 'revise' ? revised.item : (await global.query('SELECT * FROM v_hadiths WHERE hId=' + require('../lib/Community').id(ids[0])))[0];
+          await require('../lib/CommunityHadithPosts').publish(req.user, contributionAction, contributionBefore, contributionAfter);
+        } catch (err) {
+          debug.error('Hadith saved but Community post failed: ' + err.message);
+          status.warning = true;
+          result.message = 'Hadith saved, but its Community post could not be created.';
+        }
+      }
       status.code = 200;
       status.message = result.message;
       if (col === 'revise') {

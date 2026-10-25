@@ -51,6 +51,15 @@ describe('shared header navigation', () => {
   const bookNav = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'bookNav.ejs'), 'utf8');
   const tafsirLanguageSwitch = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'tafsirCarouselLanguageSwitch.ejs'), 'utf8');
 
+  test('puts Community first in quick links and removes retired activity menus', () => {
+    const quick = header.slice(header.indexOf('<div class="offcanvas-quick-actions"'), header.indexOf('<div class="row">',header.indexOf('<div class="offcanvas-quick-actions"')));
+    expect(quick.indexOf("'/community'")).toBeLessThan(quick.indexOf("'/notebook'"));
+    expect(quick).toContain('bi bi-people');
+    for (const route of ['/liked','/highlights','/commented']) {
+      expect(header).not.toContain(route);expect(offcanvasPrimaryNav).not.toContain(route);
+    }
+  });
+
   test('uses the full page width', () => {
     expect(header).toContain('<nav class="navbar site-navbar fixed-top">');
     expect(header).toContain('<div class="container-fluid d-block">');

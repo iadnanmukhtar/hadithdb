@@ -533,9 +533,7 @@ const startupPromise = (async () => {
     return res.redirect(301, Utils.quranUrl(req, req.originalUrl));
   });
 
-  const highlightsRouter = require('./routes/highlights');
   const requestsRouter = require('./routes/requests');
-  const commentedRouter = require('./routes/commented');
   const titledRouter = require('./routes/titled');
   const booksRouter = require('./routes/books');
   const tagRouter = require('./routes/tag');
@@ -551,7 +549,6 @@ const startupPromise = (async () => {
   const commentsRouter = require('./routes/comments');
   const blogCommentsRouter = require('./routes/blogComments');
   const likesRouter = require('./routes/likes');
-  const likedRouter = require('./routes/liked');
   const bookmarksRouter = require('./routes/bookmarks');
   const userSettingsRouter = require('./routes/userSettings');
   const quranMemorizationRouter = require('./routes/quranMemorization');
@@ -561,9 +558,9 @@ const startupPromise = (async () => {
   const mcpRouter = require('./routes/mcp');
   const mcpMarketingRouter = require('./routes/mcpMarketing');
 
-  app.use('/recent', highlightsRouter);
-  app.use('/highlights', highlightsRouter);
-  app.use('/commented', commentedRouter);
+  app.use('/recent', (req, res) => res.redirect(301, '/community'));
+  app.use('/highlights', (req, res) => res.redirect(301, '/community'));
+  app.use('/commented', (req, res) => res.redirect(301, '/community'));
   app.use('/titled', titledRouter);
   app.use('/requests', requestsRouter);
   app.use('/books', booksRouter);
@@ -606,7 +603,7 @@ const startupPromise = (async () => {
   app.use('/blog-comments', blogCommentsRouter);
   app.use('/api/likes', likesRouter);
   app.use('/quran/api/likes', likesRouter);
-  app.use('/liked', likedRouter);
+  app.use('/liked', (req, res) => res.redirect(301, '/community'));
   app.use('/bookmarks', function bookmarksPageOnly(req, res, next) {
     if (req.method === 'GET' && (req.path === '/' || req.path === ''))
       return bookmarksRouter(req, res, next);

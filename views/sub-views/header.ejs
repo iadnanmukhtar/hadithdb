@@ -69,9 +69,6 @@
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog' || pageMenu === 'Blog Post';
     var isCommunityArea = isBlogArea || pageMenu === 'Community' || pageMenu === 'Notebook' || requestPath === '/community' || requestPath.indexOf('/community/') === 0;
     var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
-    var isLikedArea = requestPath === '/liked' || requestPath.indexOf('/liked/') === 0;
-    var isCommentedArea = requestPath === '/commented' || requestPath.indexOf('/commented/') === 0;
-    var isHighlightsArea = requestPath === '/highlights' || requestPath.indexOf('/highlights/') === 0;
     var isTitledArea = requestPath === '/titled' || requestPath.indexOf('/titled/') === 0;
     var isMcpServerArea = requestPath === '/mcp-server' || requestPath.indexOf('/mcp-server/') === 0;
     var isSettingsArea = requestPath === '/settings' || requestPath.indexOf('/settings/') === 0
@@ -82,7 +79,7 @@
       ? utils.quranUrl(req, '/quran/settings')
       : utils.urlFor(req, '/settings');
     var isAboutArea = requestPath === '/about' || requestPath === '/about/';
-    var isMoreArea = ['/about', '/settings', '/quran/settings', '/bookmarks', '/liked', '/commented', '/highlights', '/titled', '/mcp-server'].some(function (path) {
+    var isMoreArea = ['/about', '/settings', '/quran/settings', '/bookmarks', '/titled', '/mcp-server'].some(function (path) {
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
         var isSirahArea = !isQuranArea && (isHistoryCatalogArea || (pageBook && pageBook.type === 'sirah') || /^\/(?:ibnhisham|history)(?:[/:]|$)/.test(requestPath));
@@ -139,9 +136,6 @@
           <ul class="dropdown-menu dropdown-menu-end" data-more-menu>
             <li data-notebook-auth><a class="dropdown-item<%- activeNavAttrs(requestPath === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="bi bi-sticky"></i> My Notebook</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>"><i class="bi bi-heart"></i> Liked</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>"><i class="bi bi-chat-right-text"></i> Latest Reflections</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isHighlightsArea) %>" href="<%= utils.urlFor(req, '/highlights') %>"><i class="bi bi-star"></i> Highlighted</a></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isTitledArea) %>" href="<%= utils.urlFor(req, '/titled') %>"><i class="bi bi-card-heading"></i> Titled</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-sliders"></i> My Settings</a></li>
@@ -220,20 +214,12 @@
       </div>
       <div class="offcanvas-body">
         <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">
+          <a class="offcanvas-quick-action<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>" title="Community" aria-label="Community"><i class="bi bi-people" aria-hidden="true"></i></a>
           <a data-notebook-auth class="offcanvas-quick-action<%- activeNavAttrs(requestPath === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>" title="My Notebook" aria-label="My Notebook">
             <i class="bi bi-sticky" aria-hidden="true"></i>
           </a>
           <a class="offcanvas-quick-action<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>" title="My Bookmarks" aria-label="My Bookmarks">
             <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>" aria-hidden="true"></i>
-          </a>
-          <a class="offcanvas-quick-action<%- activeNavAttrs(isLikedArea) %>" href="<%= utils.urlFor(req, '/liked') %>" title="Liked" aria-label="Liked">
-            <i class="bi bi-heart<%= isLikedArea ? '-fill' : '' %>" aria-hidden="true"></i>
-          </a>
-          <a class="offcanvas-quick-action<%- activeNavAttrs(isCommentedArea) %>" href="<%= utils.urlFor(req, '/commented') %>" title="Latest Reflections" aria-label="Latest Reflections">
-            <i class="bi bi-chat-right-text" aria-hidden="true"></i>
-          </a>
-          <a class="offcanvas-quick-action<%- activeNavAttrs(isHighlightsArea) %>" href="<%= utils.urlFor(req, '/highlights') %>" title="Highlighted" aria-label="Highlighted">
-            <i class="bi bi-star<%= isHighlightsArea ? '-fill' : '' %>" aria-hidden="true"></i>
           </a>
           <a class="offcanvas-quick-action<%- activeNavAttrs(isTitledArea) %>" href="<%= utils.urlFor(req, '/titled') %>" title="Titled" aria-label="Titled">
             <i class="bi bi-card-heading" aria-hidden="true"></i>
@@ -262,9 +248,6 @@
             isCommunityArea: isCommunityArea,
             isSettingsArea: isSettingsArea,
             isBookmarksArea: isBookmarksArea,
-            isLikedArea: isLikedArea,
-            isCommentedArea: isCommentedArea,
-            isHighlightsArea: isHighlightsArea,
             isTitledArea: isTitledArea,
             isMcpServerArea: isMcpServerArea,
             isAboutArea: isAboutArea,

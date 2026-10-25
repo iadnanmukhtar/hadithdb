@@ -170,18 +170,20 @@
     async function togglePanel(focus=false){panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));actions.querySelector('.community-reply').setAttribute('aria-expanded',String(!panel.hidden));labelToggle();if(!panel.hidden){if(!loaded)await load();if(focus)textarea.focus();}}
     return ()=>togglePanel(true);
   }
+  function microType(item) { return item.microinteraction === 'title' ? 'title' : item.kind === 'like' ? item.activity + ':' + (item.likeSource || '') : null; }
   function card(item) {
-    const kind = item.activity === 'comment' ? 'comment' : item.kind;
+    const kind = item.microinteraction === 'title' ? 'title' : item.activity === 'comment' ? 'comment' : item.kind;
     const privatePost = item.status && item.status !== 'published';
     const href = privatePost ? '/community/write?post=' + item.id : item.url;
     const article = node('article', undefined, 'community-entry'); article.dataset.activity = item.activity; article.dataset.kind = kind; article.dataset.private=String(!!privatePost);
     const meta = node('div', undefined, 'community-entry-meta');
     const avatar = link(Array.from(item.author.name.trim())[0] || '?', '/community/@' + item.author.handle, 'community-avatar'); avatar.tabIndex = -1; avatar.setAttribute('aria-hidden', 'true'); avatarImage(avatar, item.author);
-    if (kind === 'like') {
+    if (kind === 'like' || kind === 'title') {
       const copy = node('div', undefined, 'community-reaction-copy');
       const author = link(item.author.name, '/community/@' + item.author.handle); author.dir = 'auto';
-      const target = link((item.title || 'a post').replace(/^Liked\s+/i, ''), href); target.dir = 'auto';
-      copy.append(author, document.createTextNode(' liked '), target);
+      const target = link(kind === 'title' ? item.hadithTitle : (item.title || 'a post').replace(/^Liked\s+/i, ''), kind === 'title' ? item.hadithUrl : href); target.dir = 'auto';
+      copy.append(author, document.createTextNode(kind === 'title' ? ' titled ' : ' liked '), target);
+      if (kind === 'title') copy.append(document.createTextNode(' · ' + item.hadithRef));
       if (item.activityAt) { const time = node('time', activityDate(item)); time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); copy.append(document.createTextNode(' · '), time); }
       article.append(avatar, copy); return article;
     }
@@ -194,6 +196,7 @@
     if(item.repostedBy) { const credit=node('div',undefined,'community-repost-credit');credit.append(icon('repeat'),document.createTextNode(' Reposted by '),link(item.repostedBy.name,'/community/@'+item.repostedBy.handle));article.append(credit); }
     article.append(meta);
     if (kind !== 'note' || (item.title && item.title !== 'Note')) { const heading = node('h2', undefined, 'community-entry-title'); heading.dir = 'auto'; heading.append(link(item.title, href)); article.append(heading); }
+    if (kind === 'article' && item.subtitle) { const subtitle = node('p', item.subtitle, 'community-article-subtitle'); subtitle.dir = 'auto'; article.append(subtitle); }
     const excerpt = node(item.html && kind==='comment' ? 'div':'p', undefined, item.html && kind==='comment' ? 'notebook-markdown community-reflection-body':'community-entry-excerpt'); excerpt.dir='auto';
     if(item.html && kind==='comment') excerpt.innerHTML=item.html; else excerpt.textContent=item.excerpt || ''; article.append(excerpt);
     if (item.mediaHtml) { const media=node('div',undefined,'community-feed-media');media.innerHTML=privatePost ? (window.communityPrepareMediaHtml?.(item.mediaHtml)||item.mediaHtml) : item.mediaHtml;article.append(media); }
@@ -210,8 +213,8 @@
   let feedHasMore = false, feedObserver = null, reactionRun = null, firstBatchMicroOnly = false;
   function appendFeedCard(item) {
     const entry = card(item);
-    if (item.kind !== 'like') { reactionRun = null; $('feed').append(entry); return true; }
-    const type = item.activity + ':' + (item.likeSource || '');
+    if (!microType(item)) { reactionRun = null; $('feed').append(entry); return true; }
+    const type = microType(item);
     if (!reactionRun || reactionRun.type !== type) reactionRun = {type, count: 0, details: null};
     reactionRun.count++;
     if (reactionRun.count <= 10) { $('feed').append(entry); return true; }
@@ -259,7 +262,7 @@
         if (request !== feedEpoch) return;
         if (reset) {
           $('feed').replaceChildren(); feedKeys.clear(); reactionRun = null;
-          firstBatchMicroOnly = data.hasMore && data.items.every(item => item.kind === 'like');
+          firstBatchMicroOnly = data.hasMore && data.items.every(item => !!microType(item));
         }
         let addedVisible = false;
         for (const item of data.items) {
@@ -363,7 +366,7 @@
   $('follow')?.addEventListener('click', () => run(() => changeRelation(), $('follow')));
   $('filter')?.addEventListener('change', () => run(() => loadFeed(true)));
   $('more')?.addEventListener('click', () => { firstBatchMicroOnly = false; const reset = $('more').dataset.retryReset === '1'; delete $('more').dataset.retryReset; run(() => loadFeed(reset), $('more')); });
-  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, action }; }
+  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, action }; }
   function signature() { const data = payload(); delete data.version; return JSON.stringify(data); }
   function invalidatePreview() { dirty = true; previewSignature = null; $('publish').disabled = true; $('preview-panel').hidden = true; }
   function renderEditorCover(post) {
@@ -375,7 +378,7 @@
   }
   function populate(post) {
     renderEditorCover(post);
-    editing = post; $('kind').value = post.kind; $('kind').disabled = true; $('title').value = post.draftTitle ?? post.title;
+    editing = post; $('kind').value = post.kind; $('kind').disabled = true; $('title').value = post.draftTitle ?? post.title; $('subtitle').value = post.subtitle || ''; $('subtitle').hidden = post.kind !== 'article';
     $('markdown').value = post.markdown; $('tags').value = post.tags;
     $('title').required = post.kind === 'article';
     $('unpublish').hidden = !['published', 'pending'].includes(post.status);
@@ -391,7 +394,7 @@
       if (action !== 'unpublish' && !$('editor-form').reportValidity()) return;
       if (action === 'publish' && previewSignature !== signature()) throw new Error('Preview the latest version before publishing.');
       const currentSignature = signature(), wasDirty = dirty;
-      const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, markdown: editing.markdown, tags: editing.tags, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
+      const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, markdown: editing.markdown, tags: editing.tags, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
       const result = await api(editing ? '/posts/' + editing.id : '/posts', editing ? 'PUT' : 'POST', body);
       editing = result.post;
       const url = new URL(location.href); url.searchParams.set('post', editing.id); url.searchParams.delete('source'); history.replaceState(null, '', url);
@@ -402,7 +405,7 @@
     } finally { savingPost = false; }
   }
   if (view === 'write') {
-    for (const control of ['title', 'markdown', 'tags', 'kind']) $(control).addEventListener('input', invalidatePreview);
+    for (const control of ['title', 'subtitle', 'markdown', 'tags', 'kind']) $(control).addEventListener('input', invalidatePreview);
     $('kind').addEventListener('change', () => { $('title').required = $('kind').value === 'article'; });
     $('editor-form').addEventListener('submit', event => {
       event.preventDefault();
@@ -414,7 +417,7 @@
       if (!$('editor-form').reportValidity()) return;
       const own = signature(), result = await api('/preview', 'POST', { markdown: $('markdown').value });
       if (signature() !== own) return;
-      $('preview').innerHTML = window.communityPrepareMediaHtml?.(result.html) || result.html; $('preview-title').textContent = $('title').value || 'Untitled article';
+      $('preview').innerHTML = window.communityPrepareMediaHtml?.(result.html) || result.html; $('preview-title').textContent = $('title').value || 'Untitled article'; $('preview-subtitle').textContent = $('subtitle').value;
       $('preview-panel').hidden = false; previewSignature = own; $('publish').disabled = false;
       $('preview-panel').scrollIntoView({ block: 'start', behavior: 'smooth' });
     }, $('preview-button')));

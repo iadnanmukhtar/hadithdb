@@ -139,8 +139,8 @@ button.community-like:hover, .community-like[aria-pressed="true"] { color: var(-
 .community-entry-actions button:disabled { opacity: .5; cursor: wait; }
 
 /* Reactions are quiet activity rows, not full publication cards. */
-.community-entry[data-kind="like"] { display: flex; align-items: center; gap: .5rem; padding: .6rem 0; color: var(--community-muted); }
-.community-entry[data-kind="like"] .community-avatar { width: 22px; height: 22px; flex-basis: 22px; }
+.community-entry:is([data-kind="like"], [data-kind="title"]) { display: flex; align-items: center; gap: .5rem; padding: .6rem 0; color: var(--community-muted); }
+.community-entry:is([data-kind="like"], [data-kind="title"]) .community-avatar { width: 22px; height: 22px; flex-basis: 22px; }
 .community-reaction-copy { min-width: 0; font-size: .76rem; line-height: 1.45; }
 .community-reaction-copy a { color: inherit; font-weight: 400; text-decoration: none; }
 .community-reaction-copy a:hover { text-decoration: underline; }
@@ -263,3 +263,5 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-toc ul { padding-inline-start: 1.25rem; margin-block: .35rem; }
 .community-toc a { text-decoration: none; }
 .notebook-markdown :is(h1,h2,h3,h4,h5,h6)[id^="article-"] { scroll-margin-top: 7rem; }
+
+.community-article-subtitle { color: var(--bs-secondary-color, #6c757d); font-size: 1.05em; line-height: 1.5; margin: .25rem 0 1rem; }

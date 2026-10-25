@@ -733,6 +733,7 @@ function quranRelatedSitemapUrl(url) {
 function hadithSitemapUrl(url, commentaryAliases) {
   try {
     const pathname = new URL(url).pathname;
+    if (/^\/(liked|highlights|commented|recent)(?:\/|$)/.test(pathname)) return false;
     if (pathname.startsWith('/quran') || pathname === '/tafsir' || pathname.startsWith('/tafsir/'))
       return false;
     const firstSegment = decodeURIComponent(pathname.split('/')[1] || '').split(':')[0];
@@ -857,9 +858,8 @@ function hadithPublicSitemapUrlList(domain) {
   return [
     domain,
     `${domain}/books`,
-    `${domain}/highlights`,
     `${domain}/titled`,
-    `${domain}/commented`,
+    `${domain}/community`,
     `${domain}/requests`,
     `${domain}/blog`,
     `${domain}/mcp-server`
