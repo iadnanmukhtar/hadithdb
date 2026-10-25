@@ -32,6 +32,18 @@
       finally{pendingChanged(-1);}
     }
   }
+  $('cover-file')?.addEventListener('change',async event=>{
+    const file=event.target.files[0],own=account;event.target.value='';if(!file)return;
+    const message=$('cover-status');
+    if(file.size>5*1024*1024){message.textContent='Choose an image up to 5 MB.';return;}
+    pendingChanged(1);message.textContent='Uploading cover…';
+    try{
+      const auth=await token();if(own!==account)return;
+      const response=await fetch(quranApiPath('/community/media'),{method:'POST',headers:{Authorization:'Bearer '+auth,'Content-Type':file.type},body:file});
+      const result=await response.json();if(!response.ok)throw Error(result.error||'Cover upload failed.');if(own!==account)return;
+      document.dispatchEvent(new CustomEvent('communityCoverChanged',{detail:{url:result.url}}));message.textContent='Cover ready. Save or publish to apply it.';
+    }catch(err){if(own===account)message.textContent=err.message;}finally{pendingChanged(-1);}
+  });
   root.querySelectorAll('[data-media-editor]').forEach(toolbar=>{
     const textarea=$(toolbar.dataset.mediaEditor),fileInput=toolbar.querySelector('input[type=file]'),message=toolbar.querySelector('[role=status]');
     toolbar.querySelector('[data-add-image]').addEventListener('click',()=>fileInput.click());

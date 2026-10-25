@@ -152,6 +152,36 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     try{await expect(Community.moderate({uid:'blog-reviewer'},article.id,{action:'approve',version:published.version})).rejects.toMatchObject({status:403});}
     finally{process.env.COMMUNITY_MODERATOR_UIDS=previous;}
   });
+  test('article covers are owner-controlled and draft replacements stay private until publication',async()=>{
+    const Media=require('../lib/CommunityMedia'),user={uid:'moderator',name:'Publisher'};
+    const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII=','base64');
+    const first=await Media.upload(user,png),second=await Media.upload(user,png);
+    let article=await Community.savePost(user,postInput({coverUrl:first.url,action:'publish'}));
+    expect((await Community.post(article.id)).coverUrl).toBe(first.url);
+    article=await Community.savePost(user,postInput({coverUrl:second.url,version:article.version}),article.id);
+    expect(article.coverUrl).toBe(second.url);expect((await Community.post(article.id)).coverUrl).toBe(first.url);
+    await expect(Media.image(second.url.split('/').pop(),null)).rejects.toMatchObject({status:404});
+    await expect(Community.savePost({uid:'cover-other',name:'Other'},postInput({coverUrl:first.url}))).rejects.toMatchObject({status:400});
+    article=await Community.savePost(user,postInput({coverUrl:second.url,action:'publish',version:article.version}),article.id);
+    expect((await Media.image(second.url.split('/').pop(),null)).data).toEqual(png);
+    await expect(Media.image(first.url.split('/').pop(),null)).rejects.toMatchObject({status:404});
+    article=await Community.savePost(user,postInput({coverUrl:'',action:'publish',version:article.version}),article.id);
+    expect((await Community.post(article.id)).coverUrl).toBe('');
+    await expect(Media.image(second.url.split('/').pop(),null)).rejects.toMatchObject({status:404});
+    const browser=await require('playwright').chromium.launch({channel:'chrome',headless:true});
+    try{
+      const page=await browser.newPage({viewport:{width:390,height:844}});
+      await page.addInitScript(()=>{window.quranApiPath=v=>'/api'+v;window.hadithAuth={getToken:async()=>'moderator',getUser:async()=>null};});
+      await page.route('**/*',route=>{if(route.request().resourceType()==='script'&&!/community(?:-media)?\.js/.test(route.request().url()))return route.abort();return route.continue();});
+      await page.goto(base+'/community/write');
+      await page.locator('#community-cover-file').setInputFiles({name:'cover.png',mimeType:'image/png',buffer:png});
+      await page.waitForFunction(()=>document.getElementById('community-cover-url').value.startsWith('/community/media/'));
+      expect(await page.locator('#community-editor-cover img').count()).toBe(1);
+      await page.locator('#community-cover-remove').click();
+      expect(await page.locator('#community-cover-url').inputValue()).toBe('');
+      expect(await page.locator('#community-editor-cover').count()).toBe(0);
+    }finally{await browser.close();}
+  });
   test('article subtitles preserve public snapshots and backfill legacy metadata only once', async()=>{
     const user={uid:'moderator',name:'Moderator'};
     let saved=await Community.savePost(user,postInput({subtitle:'Published subtitle',action:'publish'}));

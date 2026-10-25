@@ -128,3 +128,5 @@ Generated titled-hadith posts render in feeds as muted microinteractions with th
 Only a post's creator receives editing controls for ordinary notes/articles. Generated hadith activity is read-only: it has no edit pencil, and both editor reads and save requests reject attempts to edit it, including by its attributed author.
 
 Blog designation and publication of an existing Blog article require administrator access. A creator who is not an admin may save private revisions but cannot publish them; moderator status alone cannot bypass this restriction. The editor hides Publish for non-admin owners of Blog articles, and server checks enforce the restriction on direct save and moderation requests.
+
+Article creators can upload, replace, or remove a cover in the editor. Covers use Community media storage and separate draft/public snapshot fields; selecting an upload from another account is rejected. Publishing applies the cover, while saving a draft leaves the live cover intact. Existing imported covers backfill from database metadata, and removing a cover does not restore legacy metadata on restart. Blog publishing remains admin-only.

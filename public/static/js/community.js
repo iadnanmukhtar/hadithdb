@@ -368,18 +368,21 @@
   $('follow')?.addEventListener('click', () => run(() => changeRelation(), $('follow')));
   $('filter')?.addEventListener('change', () => run(() => loadFeed(true)));
   $('more')?.addEventListener('click', () => { firstBatchMicroOnly = false; const reset = $('more').dataset.retryReset === '1'; delete $('more').dataset.retryReset; run(() => loadFeed(reset), $('more')); });
-  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, action }; }
+  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, action }; }
   function signature() { const data = payload(); delete data.version; return JSON.stringify(data); }
   function invalidatePreview() { dirty = true; previewSignature = null; $('publish').disabled = true; $('preview-panel').hidden = true; }
   function renderEditorCover(post) {
+    $('cover-url').value=post.coverUrl||''; $('cover-remove').hidden=!post.coverUrl;
     let figure=$('editor-cover');
     if(!post.coverUrl){figure?.remove();return;}
     if(!figure){figure=node('figure',undefined,'community-editor-cover');figure.id='community-editor-cover';$('title').insertAdjacentElement('afterend',figure);}
     const img=node('img');if(/^\/community\/media\//.test(post.coverUrl))img.dataset.mediaSrc=post.coverUrl;else img.src=post.coverUrl;img.alt=post.title||'Article cover';
     figure.replaceChildren(img,node('figcaption','Cover image','small text-muted'));
   }
+  document.addEventListener('communityCoverChanged',event=>{renderEditorCover({coverUrl:event.detail.url});invalidatePreview();});
+  $('cover-remove')?.addEventListener('click',()=>{renderEditorCover({coverUrl:''});invalidatePreview();});
   function populate(post) {
-    renderEditorCover(post);
+    renderEditorCover(post); $('cover-controls').hidden=post.kind !== 'article';
     $('publish').hidden = !!post.isBlog && !me?.admin;
     editing = post; $('kind').value = post.kind; $('kind').disabled = true; $('title').value = post.draftTitle ?? post.title; $('subtitle').value = post.subtitle || ''; $('subtitle').hidden = post.kind !== 'article';
     $('markdown').value = post.markdown; $('tags').value = post.tags;
@@ -397,7 +400,7 @@
       if (action !== 'unpublish' && !$('editor-form').reportValidity()) return;
       if (action === 'publish' && previewSignature !== signature()) throw new Error('Preview the latest version before publishing.');
       const currentSignature = signature(), wasDirty = dirty;
-      const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, markdown: editing.markdown, tags: editing.tags, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
+      const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, coverUrl: editing.coverUrl, markdown: editing.markdown, tags: editing.tags, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
       const result = await api(editing ? '/posts/' + editing.id : '/posts', editing ? 'PUT' : 'POST', body);
       editing = result.post;
       const url = new URL(location.href); url.searchParams.set('post', editing.id); url.searchParams.delete('source'); history.replaceState(null, '', url);
@@ -421,6 +424,7 @@
       const own = signature(), result = await api('/preview', 'POST', { markdown: $('markdown').value });
       if (signature() !== own) return;
       $('preview').innerHTML = window.communityPrepareMediaHtml?.(result.html) || result.html; $('preview-title').textContent = $('title').value || 'Untitled article'; $('preview-subtitle').textContent = $('subtitle').value;
+      $('preview-cover')?.remove(); if($('cover-url').value){const img=node('img');img.id='community-preview-cover';img.className='img-fluid mb-3';if(/^\/community\/media\//.test($('cover-url').value))img.dataset.mediaSrc=$('cover-url').value;else img.src=$('cover-url').value;img.alt='Article cover';$('preview').prepend(img);}
       $('preview-panel').hidden = false; previewSignature = own; $('publish').disabled = false;
       $('preview-panel').scrollIntoView({ block: 'start', behavior: 'smooth' });
     }, $('preview-button')));
