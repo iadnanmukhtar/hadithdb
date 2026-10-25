@@ -80,7 +80,11 @@ router.post('/unsubscribe/:token', wrap(async (req, res) => {
 }));
 router.get('/', wrap(async (req, res) => page(res, req, 'everyone', { initial: await Community.feed() })));
 for (const view of ['following', 'mine', 'write', 'moderation']) router.get('/' + view, (req, res) => page(res, req, view));
-router.get('/@:handle', wrap(async (req, res) => page(res, req, 'author', { author: await Community.profile(req.params.handle), initial: await Community.feed({ author: req.params.handle }) })));
+router.get('/@:handle', wrap(async (req, res) => {
+  const author = await Community.profile(req.params.handle);
+  if (author.handle !== req.params.handle) return res.redirect(301, '/community/@' + author.handle);
+  page(res, req, 'author', {author, initial:await Community.feed({author:author.handle})});
+}));
 router.get('/@:handle/:id', wrap(async (req, res) => {
   const post = await Community.post(req.params.id);
   if (post.author.handle !== req.params.handle) return res.redirect(301, post.url);

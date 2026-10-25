@@ -52,3 +52,7 @@ CREATE TABLE IF NOT EXISTS community_likes (
  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
  UNIQUE KEY community_like_user (source, target_id, user_uid), INDEX community_like_feed (created_at, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS community_author_aliases (
+ handle VARCHAR(40) CHARACTER SET ascii COLLATE ascii_general_ci PRIMARY KEY,
+ author_uid VARCHAR(128) COLLATE utf8mb4_bin NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

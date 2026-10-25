@@ -16,8 +16,8 @@ jest.setTimeout(30000);
 const suite = process.env.HADITHDB_MYSQL_INTEGRATION === '1' ? describe : describe.skip;
 suite('Community publication, privacy, subscriptions, discussion and moderation', () => {
   const prefix = `c_test_${process.pid}_${Date.now()}_`;
-  const tables = ['authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
-  const rewrite = statement => statement.replace(/\b(user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b/g, (_, table) => prefix + table).replace(/\bcommunity_(authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (_, table) => prefix + table);
+  const tables = ['author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
+  const rewrite = statement => statement.replace(/\b(user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b/g, (_, table) => prefix + table).replace(/\bcommunity_(author_aliases|authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (_, table) => prefix + table);
   let pool, server, base, q, firstId;
   const request = (url, method = 'GET', uid = 'alice', body) => fetch(base + url, { method, headers: { ...(uid ? { Authorization: 'Bearer ' + uid } : {}), 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   const json = async (url, method, uid, body, expected = 200) => { const response = await request(url, method, uid, body); const data = await response.json(); expect({ status: response.status, error: data.error }).toEqual({ status: expected, error: expected >= 400 ? expect.any(String) : undefined }); return data; };
@@ -43,7 +43,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     await Community.ensure();
     for (const source of ['hadiths_comments','blog_comments']) await q(`CREATE TABLE ${prefix}${source} (
       id INT PRIMARY KEY AUTO_INCREMENT, hadithId INT, ref_num VARCHAR(45), type VARCHAR(16), post_slug VARCHAR(255),
-      parentId INT, user_uid VARCHAR(255) COLLATE utf8mb4_bin, user_name VARCHAR(255), user_email VARCHAR(255),
+      parentId INT, user_uid VARCHAR(255) COLLATE utf8mb4_bin, user_name VARCHAR(255), user_email VARCHAR(255), user_photo VARCHAR(1024),
       text TEXT, up_vote INT DEFAULT 0, down_vote INT DEFAULT 0, createdAt DATETIME(3), deleted TINYINT DEFAULT 0) DEFAULT CHARSET=utf8mb4`);
     for (const source of ['hadiths_comments_votes','blog_comments_votes']) await q(`CREATE TABLE ${prefix}${source} (
       id INT PRIMARY KEY AUTO_INCREMENT, commentId INT, user_uid VARCHAR(255) COLLATE utf8mb4_bin, direction VARCHAR(8)) DEFAULT CHARSET=utf8mb4`);
@@ -55,6 +55,17 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     if (q) for (const table of [...tables].reverse()) await q(`DROP TABLE IF EXISTS ${prefix}${table}`);
     if (pool) await promisify(pool.end).call(pool);
     delete process.env.COMMUNITY_MODERATOR_UIDS;
+  });
+  test('merged profile handles resolve to one author and preserve follow targets', async () => {
+    const author=await Community.authorFor({uid:'canonical-user',name:'Merged author'});
+    await q(`INSERT INTO ${prefix}author_aliases (handle,author_uid) VALUES ('old-author','canonical-user')`);
+    expect((await Community.profile('old-author')).handle).toBe(author.handle);
+    const response=await fetch(base+'/community/@old-author',{redirect:'manual'});
+    expect(response.status).toBe(301);
+    expect(response.headers.get('location')).toBe('/community/@'+author.handle);
+    await Community.follow({uid:'alias-follower',name:'Follower'},'old-author',true,false);
+    expect((await Community.relationship({uid:'alias-follower'},author.handle)).following).toBe(true);
+    expect((await Community.feed({author:'old-author'})).items).toEqual([]);
   });
   test('unauthenticated writes and private feeds are denied; profiles expose no email or UID', async () => {
     await json('/api/community/posts','POST',null,postInput(),401);
@@ -468,6 +479,21 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     await Community.savePost({uid:'moderator'}, {...postInput({action:'unpublish'}),version:published.version},published.id);
     await json(url,'PUT','alice',{liked:true},404);
     expect((await Community.feed({kind:'like'})).items.some(i=>i.likeSource==='comment' && i.likeId===comments[0].id)).toBe(false);
+  });
+
+  test('historical photos and Gravatar reach contributor profiles without overwriting sign-in photos', async () => {
+    const Avatar=require('../lib/UserAvatar');
+    const wrapped=(sql,args)=>q(rewrite(sql),args);
+    const user={uid:'historical-photo',name:'Historical photo'};
+    const author=await Community.authorFor(user);
+    await Avatar.seedHistorical(wrapped,{user_uid:user.uid,user_email:'old@example.test',user_photo:'https://avatar.test/old.png'});
+    expect((await Community.profile(author.handle)).photo).toBe('https://avatar.test/old.png');
+    await Avatar.remember({...user,email:'new@example.test',photo:'https://avatar.test/current.png'});
+    await Avatar.seedHistorical(wrapped,{user_uid:user.uid,user_email:'old@example.test',user_photo:'https://avatar.test/old.png'});
+    expect((await Community.profile(author.handle)).photo).toBe('https://avatar.test/current.png');
+    const fallback=await Community.authorFor({uid:'historical-fallback',name:'Fallback'});
+    await Avatar.seedHistorical(wrapped,{user_uid:'historical-fallback',user_email:'fallback@example.test'});
+    expect((await Community.profile(fallback.handle)).photo).toBe(Avatar.gravatar('fallback@example.test'));
   });
 
   test('each verified sign-in refreshes the central photo used by existing contributions and falls back to Gravatar', async () => {
