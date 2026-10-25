@@ -534,7 +534,6 @@ const startupPromise = (async () => {
   });
 
   const requestsRouter = require('./routes/requests');
-  const titledRouter = require('./routes/titled');
   const booksRouter = require('./routes/books');
   const tagRouter = require('./routes/tag');
   const searchRouter = require('./routes/search');
@@ -561,7 +560,7 @@ const startupPromise = (async () => {
   app.use('/recent', (req, res) => res.redirect(301, '/community'));
   app.use('/highlights', (req, res) => res.redirect(301, '/community'));
   app.use('/commented', (req, res) => res.redirect(301, '/community'));
-  app.use('/titled', titledRouter);
+  app.use('/titled', (req, res) => res.redirect(301, '/community'));
   app.use('/requests', requestsRouter);
   app.use('/books', booksRouter);
   app.use('/sharh', require('./routes/sharh'));

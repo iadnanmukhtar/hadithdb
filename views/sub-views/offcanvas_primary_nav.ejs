@@ -14,7 +14,6 @@
   <li><hr></li>
   <li data-notebook-auth class="nav-item"><a class="nav-link<%- activeNavAttrs(req.path === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="app-menu-icon bi bi-sticky" aria-hidden="true"></i> My Notebook</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="app-menu-icon bi bi-bookmark" aria-hidden="true"></i> My Bookmarks</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isTitledArea) %>" href="<%= utils.urlFor(req, '/titled') %>"><i class="app-menu-icon bi bi-card-heading" aria-hidden="true"></i> Titled</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="app-menu-icon bi bi-sliders" aria-hidden="true"></i> My Settings</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isMcpServerArea) %>" href="<%= utils.urlFor(req, '/mcp-server') %>"><i class="app-menu-icon bi bi-braces" aria-hidden="true"></i> MCP Server</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isAboutArea) %>" href="/about"><i class="app-menu-icon bi bi-info-circle" aria-hidden="true"></i> About</a></li>
