@@ -59,3 +59,28 @@ test('Mushaf search focus and selected Study ayahs take precedence over the pass
   });
   expect(context.quranReaderModeFirstRef(study)).toBe('2:255');
 });
+
+test('comparison translations render the full shared Quran bar with current-ayah destinations', () => {
+  const fs = require('fs'), path = require('path'), ejs = require('ejs');
+  const { JSDOM } = require('jsdom');
+  const filename = path.join(__dirname, '../views/sub-views/header.ejs');
+  const header = fs.readFileSync(filename, 'utf8');
+  const start = header.indexOf('var quranComparisonRef =');
+  const end = header.indexOf('</span>', start);
+  const html = ejs.render('<% ' + header.slice(start, end), {
+    requestPath: '/quran/translations/quran:2:142',
+    page: { context: { quranReaderRef: '2:142', section: { mushafPage: 22 } } },
+    quranStudySectionMenuHref: () => '/quran/2/10', isQuranTafsirArea: false,
+    isQuranReviewArea: false, isQuranMemorizeArea: false, quranSearchTafsirSlug: '',
+    utils: { quranUrl: (_req, url) => url }, req: {}
+  }, { filename });
+  const dom = new JSDOM(html), doc = dom.window.document;
+  expect(doc.querySelector('[data-quran-script-switcher]')).not.toBeNull();
+  const href = mode => doc.querySelector(`[data-quran-reader-mode-link="${mode}"]`).getAttribute('href');
+  expect(href('passage')).toBe('/quran:2:142');
+  expect(href('tafsir')).toBe('/quran/tafsir/mokhtasar/quran:2:142');
+  expect(href('mushaf')).toBe('/quran/page/22?ayah=2:142');
+  expect(href('memorize')).toBe('/quran/page/22?ayah=2:142&memorize');
+  expect(href('review')).toBe('/quran/review');
+  dom.window.close();
+});

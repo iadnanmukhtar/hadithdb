@@ -5,6 +5,7 @@ const ejs = require('ejs');
 const express = require('express');
 const Index = require('../lib/Index');
 const QuranHeadings = require('../lib/QuranHeadings');
+const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
 const QuranMushaf = require('../lib/QuranMushaf');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
@@ -107,7 +108,9 @@ router.get('/:ref', async function (req, res, next) {
   if (section)
     section.mushafPage = await QuranMushaf.pageForRef(surahNum, ayahNum);
 
+  const quranHeadingOutlines = await QuranHeadingOutlines.forSurahs([surahNum]);
   const renderLocals = {
+    quranHeadingOutlines: quranHeadingOutlines,
     Tafsir: Tafsir,
     ayah: ayahNum,
     ayahs: [ayah],

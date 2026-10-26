@@ -93,12 +93,12 @@
 	        Tafsir: Tafsir
 	      }); %>
 	      <heading class="row major">
-	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>">
+	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>"<% if (!site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= surah.num %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
 	        </a>
 	          <span class="quran-revelation-icon quran-revelation-icon-<%= quranSurahRevelation %>" role="img" aria-label="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span>
 	        </h2>
-	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="<%= quranChapterHref %>">
+	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar" dir="rtl"><a href="<%= quranChapterHref %>"<% if (!site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= surah.num %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
 	          <%= arabic.toArabicDigits(surah.num + '') %>۔
 	          <span<%- quranChapter ? ` class="_e ${quranChapterSurahNameGlyph ? 'quran-surah-name-font' : 'quran-surah-name'}" data-id="${quranChapter.id}" data-prop="toc.title"` : ` class="${quranChapterSurahNameGlyph ? 'quran-surah-name-font' : 'quran-surah-name'}"` %><% if (quranChapterSurahNameGlyph) { %> title="<%= quranChapterTitleAr %>" aria-label="<%= quranChapterTitleAr %>"<% } %>><%- quranChapterSurahNameGlyph || quranChapterTitleAr %></span>
 	        </a></h2>

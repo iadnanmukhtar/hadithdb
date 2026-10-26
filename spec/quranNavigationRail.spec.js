@@ -18,6 +18,7 @@ test.each([
   [{ref:'2:255',mode:'mushaf',memorize:''}, '/quran/page/42?ayah=2:255&memorize'],
   [{ref:'2:255',mode:'tafsir',book:'ibn-kathir'}, '/quran/tafsir/ibn-kathir/quran:2:255'],
   [{ref:'2:255',mode:'study',book:'sahih-international',ayat:''}, '/quran/sahih-international/quran:2:255?ayat'],
+  [{ref:'2:142',mode:'translations'}, '/quran/translations/quran:2:142'],
   [{ref:'1:7'}, '/quran:1:7']
 ])('preserves the requested reader destination %j', async (query, target) => {
   Mushaf.pageForRef.mockResolvedValue(42); const res = response(), next = jest.fn();
@@ -73,5 +74,36 @@ test('Mushaf surah-name trigger opens the Surah tab for the clicked page', async
   const event=new dom.window.Event('show.bs.offcanvas'); Object.defineProperty(event,'relatedTarget',{value:trigger}); rail.dispatchEvent(event);
   expect(doc.querySelector('[data-navigation-tab="surah"]').getAttribute('aria-selected')).toBe('true');
   expect(doc.querySelector('.quran-navigation-list .is-current').textContent).toContain('Al-Fatihah');
+  dom.window.close();
+});
+function mushafLabels() {
+  const template=fs.readFileSync(path.join(__dirname,'../views/quran_mushaf.ejs'),'utf8');
+  const start=template.indexOf('<span class="quran-mushaf-page-meta">');
+  return ejs.render(template.slice(start,template.indexOf('</header>',start)),{firstJuz:{num:1},firstSurah:surahs[0],mushaf:{number:604}});
+}
+test('Mushaf navigation labels render without number inputs or forms', () => {
+  const dom=new JSDOM(mushafLabels()), doc=dom.window.document;
+  expect(doc.querySelectorAll('input, form')).toHaveLength(0);
+  expect(doc.querySelectorAll('[data-bs-target="#quran-navigation-rail"]')).toHaveLength(4);
+  expect(doc.querySelector('[data-navigation-open-tab="juz"]').textContent).toBe('Juz 1');
+  expect(doc.querySelector('.quran-mushaf-page-number button').textContent).toBe('604');
+  dom.window.close();
+});
+test.each([['juz','Juz 1'],['page','Page 604'],['surah','Al-Fatihah']])('Mushaf %s label opens its tab and selects the clicked page context',async (tab,label)=>{
+  const {rail,doc,dom}=await browser();
+  const labels=doc.createElement('div'); labels.innerHTML=mushafLabels(); doc.body.append(labels);
+  const trigger=labels.querySelector(`[data-navigation-open-tab="${tab}"]`);
+  const event=new dom.window.Event('show.bs.offcanvas'); Object.defineProperty(event,'relatedTarget',{value:trigger}); rail.dispatchEvent(event);
+  expect(doc.querySelector(`[data-navigation-tab="${tab}"]`).getAttribute('aria-selected')).toBe('true');
+  expect(rail.querySelector('.quran-navigation-list .is-current').textContent).toContain(label);
+  dom.window.close();
+});
+test('Mushaf toolbar Juz progress follows the replacement label without an input',()=>{
+  const dom=new JSDOM('<div id="sheet"><button data-navigation-juz="2">Juz 2</button></div><span data-quran-mushaf-current-juz></span><div data-quran-mushaf-header-juz="2" data-quran-mushaf-juz-start-page="22" data-quran-mushaf-juz-end-page="41"><a></a></div>',{runScripts:'outside-only'});
+  const script=fs.readFileSync(path.join(__dirname,'../public/static/js/script.js'),'utf8');
+  dom.window.eval(script.slice(script.indexOf('function updateQuranMushafHeaderJuz('),script.indexOf('function updateQuranMushafVisiblePage(')));
+  dom.window.updateQuranMushafHeaderJuz(31,dom.window.document.getElementById('sheet'));
+  expect(dom.window.document.querySelector('[data-quran-mushaf-current-juz]').textContent).toBe('2 · 50%');
+  expect(dom.window.document.querySelector('a').getAttribute('aria-current')).toBe('page');
   dom.window.close();
 });

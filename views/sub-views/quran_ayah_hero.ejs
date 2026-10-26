@@ -75,6 +75,7 @@
 			<% }); %>
 		</div>
 	</section>
+	<% if (locals.showTranslation !== false) { %>
 	<section class="col-12" lang="en">
 		<div class="quran-ayah-hero-body"<% if (ayahs.length > 1) { %> data-quran-translation-attribution-scope="range"<% } %>>
 			<% ayahs.forEach(function (ayah) {
@@ -101,6 +102,7 @@
 		</div>
 		<section class="quran-preferred-translation-footnotes d-none" lang="en" data-quran-selected-translation-footnotes="1"></section>
 	</section>
+	<% } %>
 	<% if (heroToolbar) { %>
 		<%- include('quran_ayah_hero_actions.ejs', heroToolbar); %>
 	<% } %>

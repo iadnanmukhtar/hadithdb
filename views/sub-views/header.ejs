@@ -375,15 +375,18 @@
     <div class="col-12 chapter-toc-toolbar">
       <% if (isQuranToc && !isQuranMushafSectionMenu) { %><%- include('quran_navigation_trigger.ejs'); %><% } %>
       <% if (sections && sections.length > 0) { %>
+        <% if (!isQuranTranslationsArea) { %>
 		<a class="chapter-toc-toggle" data-bs-toggle="<%= isQuranMushafSectionMenu ? 'offcanvas' : 'collapse' %>" href="<%= isQuranMushafSectionMenu ? '#quran-navigation-rail' : '#toc2' %>" role="button" aria-expanded="false" aria-controls="<%= isQuranMushafSectionMenu ? 'quran-navigation-rail' : 'toc2' %>" title="<%= isQuranMushafSectionMenu ? 'Show juz' : (isQuranToc ? 'Show passages' : 'Show sections') %>">
           <i class="bi bi-list-ul" aria-hidden="true"></i>
 		  <span><%= isQuranMushafSectionMenu ? 'Juz' : (isQuranToc ? 'Passages' : 'Sections') %></span>
 		  <% if (isQuranMushafSectionMenu && currentMushafHeaderJuz) { %><span class="chapter-toc-current" data-quran-mushaf-current-juz><%= currentMushafHeaderJuz.num %> · <%= currentMushafHeaderJuz.progress %>%</span><% } else if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
           <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
         </a>
+        <% } %>
 	        <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
-	             var quranSectionPath = quranStudySectionMenuHref(page.context.section || page.context.chapter);
-             var quranReaderMode = isQuranTafsirArea ? 'tafsir' : (requestPath.indexOf('/quran/translations/quran:') === 0 ? 'trans' : (requestPath.indexOf('/quran/page/') === 0 ? (isQuranReviewArea ? 'review' : (isQuranMemorizeArea ? 'memorize' : 'mushaf')) : 'passage'));
+	             var quranComparisonRef = requestPath.indexOf('/quran/translations/quran:') === 0 && /^\d+:\d+$/.test(page.context.quranReaderRef || '') ? page.context.quranReaderRef : '';
+             var quranSectionPath = quranComparisonRef ? utils.quranUrl(req, `/quran:${quranComparisonRef}`) : quranStudySectionMenuHref(page.context.section || page.context.chapter);
+             var quranReaderMode = isQuranTafsirArea ? 'tafsir' : (requestPath.indexOf('/quran/translations/quran:') === 0 ? 'translations' : (requestPath.indexOf('/quran/page/') === 0 ? (isQuranReviewArea ? 'review' : (isQuranMemorizeArea ? 'memorize' : 'mushaf')) : 'passage'));
              var quranMappedPage = page.context.section && page.context.section.mushafPage;
              var quranMappedMushafHref = utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`);
         %>
@@ -392,9 +395,9 @@
               readerMode: quranReaderMode,
               passageHref: quranSectionPath,
               ayahHref: `${quranSectionPath}?ayat`,
-              mushafHref: quranMappedMushafHref,
-              tafsirHref: isQuranTafsirArea ? requestPath : utils.quranUrl(req, '/quran/tafsir'),
-              memorizeHref: `${quranMappedMushafHref}?memorize`
+              mushafHref: quranComparisonRef ? utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}?ayah=${quranComparisonRef}`) : quranMappedMushafHref,
+              tafsirHref: quranComparisonRef ? utils.quranUrl(req, `/quran/tafsir/${quranSearchTafsirSlug || 'mokhtasar'}/quran:${quranComparisonRef}`) : (isQuranTafsirArea ? requestPath : utils.quranUrl(req, '/quran/tafsir')),
+              memorizeHref: quranComparisonRef ? utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}?ayah=${quranComparisonRef}&memorize`) : `${quranMappedMushafHref}?memorize`
             }); %>
           </span>
         <% } %>
@@ -402,7 +405,7 @@
         <!-- <a>No sections in this chapter</a> -->
       <% } %>
     </div>
-    <%# Mushaf jump forms still use the static Juz page mappings in this hidden panel. %>
+    <%# The Mushaf toolbar progress indicator uses the static Juz page mappings in this hidden panel. %>
     <div id="toc2" class="col-12 toc2 collapse chapter-toc-panel"<% if (isQuranMushafSectionMenu) { %> hidden<% } %>>
       <table class="table chapter-toc-table">
         <tbody>
@@ -488,4 +491,4 @@
   </div>
 </nav>
 
-<% if (isQuranArea) { %><%- include('quran_navigation_rail.ejs', { navigationMode: quranSearchReturnMode, navigationBook: quranSearchCommentaryBook }); %><% } %>
+<% if (isQuranArea) { %><%- include('quran_navigation_rail.ejs', { navigationMode: requestPath.indexOf('/quran/translations') === 0 ? 'translations' : quranSearchReturnMode, navigationBook: quranSearchCommentaryBook }); %><% } %>

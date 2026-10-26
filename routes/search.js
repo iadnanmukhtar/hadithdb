@@ -2653,11 +2653,6 @@ async function renderQuranMushafPage(req, res, next, options) {
       current: !!firstJuz && Number(firstJuz.num) === Number(juz.num)
     };
   }))).filter(Boolean);
-  var quranMushafSurahPages = {};
-  if ((global.surahs || []).length > 1)
-    quranMushafSurahPages = await QuranMushaf.firstPagesForSurahs();
-  else if (firstSurah)
-    quranMushafSurahPages[Number(firstSurah.num)] = pageNumber;
   quranHeaderJuzLinks.forEach(function (juz, index) {
     var nextJuz = quranHeaderJuzLinks[index + 1];
     juz.endPage = nextJuz ? nextJuz.startPage - 1 : Number(mushaf.info.number_of_pages);
@@ -2804,7 +2799,6 @@ async function renderQuranMushafPage(req, res, next, options) {
     firstRef: firstWord ? `${firstWord.surah}:${firstWord.ayah}` : '',
     firstSurah: firstSurah,
     firstJuz: firstJuz,
-    quranMushafSurahPages: quranMushafSurahPages,
     quranHeaderJuzLinks: quranHeaderJuzLinks,
     quranHeadingOutlines: quranHeadingOutlines,
     page: {

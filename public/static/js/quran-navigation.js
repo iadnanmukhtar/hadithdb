@@ -5,13 +5,14 @@
   var content = rail.querySelector('.quran-navigation-content');
   var status = rail.querySelector('[role="status"]');
   var tabs = Array.from(rail.querySelectorAll('[data-navigation-tab]'));
-  var data, loading, tab = 'juz', surah = 1, currentRef = '', currentPage = 0;
+  var data, loading, tab = 'juz', surah = 1, currentRef = '', currentPage = 0, currentJuz = 0;
 
   function normalize(value) {
     return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f\u064b-\u065f\u0670]/g, '')
       .replace(/[أإآٱ]/g, 'ا').replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x660)).replace(/[\u06f0-\u06f9]/g, d => String(d.charCodeAt(0) - 0x6f0)).replace(/[^\p{L}\p{N}]/gu, '');
   }
   function context() {
+    currentJuz = 0;
     var markers = Array.from(document.querySelectorAll('[data-quran-mushaf-page], main[data-reader-quran-ref], .quran-passage-section'));
     var marker = markers.find(node => { var box = node.getBoundingClientRect(); return box.bottom > 180 && box.top < window.innerHeight; }) || document.querySelector('main');
     currentRef = typeof window.quranReaderModeFirstRef === 'function' ? window.quranReaderModeFirstRef(marker) : '';
@@ -85,7 +86,7 @@
       if (tab === 'verse') renderVerses();
     } else if (tab === 'juz') {
       var activeJuz = data.juz.filter(j => { var p = j.ref.split(':').map(Number), c = currentRef.split(':').map(Number); return p[0] < c[0] || p[0] === c[0] && p[1] <= c[1]; }).pop();
-      content.append(column('Search Juz', data.juz.map(j => link('Juz ' + j.num, href(j.ref), j === activeJuz, j.title))));
+      content.append(column('Search Juz', data.juz.map(j => link('Juz ' + j.num, href(j.ref), currentJuz ? j.num === currentJuz : j === activeJuz, j.title))));
     } else {
       content.append(column('Search Page', Array.from({length: data.pages}, (_, i) => link('Page ' + (i + 1), href('', i + 1), i + 1 === currentPage))));
     }
@@ -109,6 +110,8 @@
     var trigger = event.relatedTarget;
     if (trigger && trigger.dataset.navigationOpenTab) {
       tab = trigger.dataset.navigationOpenTab;
+      if (trigger.dataset.navigationPage) currentPage = Number(trigger.dataset.navigationPage);
+      if (trigger.dataset.navigationJuz) currentJuz = Number(trigger.dataset.navigationJuz);
       if (trigger.dataset.navigationSurah) {
         surah = Number(trigger.dataset.navigationSurah);
         if (Number(currentRef.split(':')[0]) !== surah) currentRef = surah + ':1';

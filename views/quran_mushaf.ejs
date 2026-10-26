@@ -49,18 +49,16 @@
             </aside>
           <% } %>
           <span class="quran-mushaf-page-meta">
-            <% if (firstJuz) { %><form data-quran-mushaf-juz-form><label>Juz <span class="visually-hidden">number</span><input type="text" inputmode="text" enterkeyhint="go" value="<%= firstJuz.num %>" aria-label="Juz number. Enter a Juz from 1 through 30."></label></form><% } %>
+            <% if (firstJuz) { %><button type="button" class="quran-mushaf-navigation-label" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="juz" data-navigation-juz="<%= firstJuz.num %>" data-navigation-page="<%= mushaf.number %>" aria-controls="quran-navigation-rail" aria-label="Choose a Juz. Current Juz <%= firstJuz.num %>.">Juz <%= firstJuz.num %></button><% } %>
             <% if (firstJuz && firstSurah) { %><span aria-hidden="true">·</span><% } %>
             <% if (firstSurah) { %>
-              <span class="quran-mushaf-surah-picker" lang="ar" dir="rtl"><span class="quran-mushaf-surah-picker-dropdown"><span class="quran-mushaf-surah-picker-label">سُورَةُ <%= firstSurah.name_ar || firstSurah.name_en || firstSurah.num %></span><button type="button" class="quran-mushaf-surah-picker-toggle" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= firstSurah.num %>" aria-controls="quran-navigation-rail" aria-label="Choose a Surah"></button></span></span>
+              <span class="quran-mushaf-surah-picker" lang="ar" dir="rtl"><span class="quran-mushaf-surah-picker-dropdown"><span class="quran-mushaf-surah-picker-label">سُورَةُ <%= firstSurah.name_ar || firstSurah.name_en || firstSurah.num %></span><span class="quran-mushaf-navigation-chevron" aria-hidden="true"></span><button type="button" class="quran-mushaf-surah-picker-toggle" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= firstSurah.num %>" data-navigation-page="<%= mushaf.number %>" aria-controls="quran-navigation-rail" aria-label="Choose a Surah"></button></span></span>
               <span aria-hidden="true">·</span>
-              <form data-quran-mushaf-surah-form data-quran-mushaf-surah-pages="<%= JSON.stringify(locals.quranMushafSurahPages || {}) %>"><label><span class="visually-hidden">Surah number</span><input type="text" inputmode="text" enterkeyhint="go" value="<%= firstSurah.num %>" aria-label="Surah number. Enter a Surah from 1 through 114."></label></form>
+              <button type="button" class="quran-mushaf-navigation-label" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= firstSurah.num %>" data-navigation-page="<%= mushaf.number %>" aria-controls="quran-navigation-rail" aria-label="Choose a Surah. Current Surah <%= firstSurah.num %>."><%= firstSurah.num %></button>
             <% } %>
           </span>
           <span class="quran-mushaf-page-number">
-            <form action="/quran/page" data-quran-mushaf-page-form>
-              <label><span class="visually-hidden">Open Mushaf page 2 through <%= mushaf.info.number_of_pages %></span><input type="text" inputmode="text" enterkeyhint="go" value="<%= mushaf.number %>" aria-label="Mushaf page <%= mushaf.number %>. Enter a page from 2 through <%= mushaf.info.number_of_pages %>." title="Enter a page from 2 through <%= mushaf.info.number_of_pages %>"></label>
-            </form>
+            <button type="button" class="quran-mushaf-navigation-label" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="page" data-navigation-page="<%= mushaf.number %>" aria-controls="quran-navigation-rail" aria-label="Choose a Mushaf page. Current page <%= mushaf.number %>."><%= mushaf.number %></button>
           </span>
         </header>
       <% var firstMushafContentLine = mushaf.lines.find(function (line) { return line.line_type !== 'basmallah'; }); %>

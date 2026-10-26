@@ -58,7 +58,7 @@
 <heading class="row major"<% if (hadithFlatHeadingRail) { %> data-hadith-heading-target data-hadith-heading-context="<%= hadithFlatHeadingContext %>" data-hadith-heading-key="<%= hadithFlatHeadingKey %>" data-hadith-heading-level="1"<% } %>>
 
   <% if (!sirahArabicChapterOnly) { %>
-  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.urlFor(req, `/${chapter.path}`) %>">
+  <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.urlFor(req, `/${chapter.path}`) %>"<% if (isQuranChapter && !site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= chapter.h1 %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
     <%- chapter.h1 %>. <span class="_e" data-id="<%= chapter.id %>" data-prop="toc.title_en" data-arabizi="true">
       <%- chapter.title_en || 'Chapter' %>
     </span>
@@ -72,7 +72,7 @@
   </h2>
   
   <% } %>
-  <h2 class="<%= sirahArabicChapterOnly ? 'col-12' : 'col-md-6 col-sm-12' %> fs-4 title" lang="ar" dir="rtl"><a href="<%= utils.urlFor(req, `/${chapter.path}`) %>">
+  <h2 class="<%= sirahArabicChapterOnly ? 'col-12' : 'col-md-6 col-sm-12' %> fs-4 title" lang="ar" dir="rtl"><a href="<%= utils.urlFor(req, `/${chapter.path}`) %>"<% if (isQuranChapter && !site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= chapter.h1 %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
     <%- arabic.toArabicDigits(chapter.h1 + '') %>۔
     <span class="_e<%= quranSurahNameGlyph ? ' quran-surah-name-font' : (isQuranChapter ? ' quran-surah-name' : '') %>" data-id="<%= chapter.id %>" data-prop="toc.title"<% if (quranSurahNameGlyph) { %> title="<%= chapter.title %>" aria-label="<%= chapter.title %>"<% } %>>
       <%- quranSurahNameGlyph || chapter.title %>

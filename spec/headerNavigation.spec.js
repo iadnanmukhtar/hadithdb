@@ -241,8 +241,10 @@ describe('shared header navigation', () => {
 
 	test('keeps Study, Mushaf, and Practice section-menu links on the active Quran page', () => {
 		expect(header).toContain('var quranMappedMushafHref = utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`);');
-		expect(header).toContain('mushafHref: quranMappedMushafHref');
-		expect(header).toContain('memorizeHref: `${quranMappedMushafHref}?memorize`');
+		expect(header).toContain('mushafHref: quranComparisonRef ?');
+		expect(header).toContain(': quranMappedMushafHref,');
+		expect(header).toContain('`/quran/page/${quranMappedPage || 1}?ayah=${quranComparisonRef}&memorize`');
+		expect(header).toContain(': `${quranMappedMushafHref}?memorize`');
 		expect(readerModes).toContain("locals.mushafHref || utils.quranUrl(req, '/quran/page')");
 		expect(scripts).toContain("['passage', 'ayat', 'tafsir', 'mushaf', 'memorize', 'review'].forEach");
 		expect(scripts).toContain('updateQuranReaderModeHrefs(pageElement)');

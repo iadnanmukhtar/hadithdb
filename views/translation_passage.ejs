@@ -24,7 +24,8 @@
         book: { alias: 'quran' },
         chapter: chapter,
         section: section,
-        quranSearchProxy: true
+        quranSearchProxy: true,
+        quranReaderRef: ref
       }
     };
     var quranNavigatorSurahs = (global.surahs || []).map(function (surah) {
@@ -65,10 +66,11 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
-  <div class="container col-lg-8 mx-auto">
-    <main class="chapter mt-10 tafsir-only-page translation-only-page"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %>>
+  <div class="container-fluid quran-heading-layout quran-heading-layout-tafsir">
+    <div class="quran-heading-content quran-heading-content-tafsir">
+    <main class="chapter mt-10 tafsir-only-page translation-only-page" data-reader-quran-ref="<%= ref %>"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %>>
 	      <heading class="row major">
-	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>">
+	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>"<% if (!site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= surah.num %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
 	        </a>
 	          <span class="quran-revelation-icon quran-revelation-icon-<%= quranSurahRevelation %>" role="img" aria-label="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span>
@@ -78,7 +80,7 @@
 	          </button>
 	        <% } %>
 	        </h2>
-	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar"><a href="<%= quranChapterHref %>">
+	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar" dir="rtl"><a href="<%= quranChapterHref %>"<% if (!site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= surah.num %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
 	          <%= arabic.toArabicDigits(surah.num + '') %>۔
 	          <span<%- quranChapter ? ` class="_e ${quranChapterSurahNameGlyph ? 'quran-surah-name-font' : 'quran-surah-name'}" data-id="${quranChapter.id}" data-prop="toc.title"` : ` class="${quranChapterSurahNameGlyph ? 'quran-surah-name-font' : 'quran-surah-name'}"` %><% if (quranChapterSurahNameGlyph) { %> title="<%= quranChapterTitleAr %>" aria-label="<%= quranChapterTitleAr %>"<% } %>><%- quranChapterSurahNameGlyph || quranChapterTitleAr %></span>
 	        </a></h2>
@@ -109,6 +111,7 @@
         site: site,
         page: page,
         selectedAyahs: ayahs,
+        showTranslation: false,
         ayahHref: utils.quranUrl(req, `/quran:${ref}`),
         toolbar: {
           selectedAyahModalIndex: 0,
@@ -144,6 +147,14 @@
       <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: ayahs, quranShareId: `Q${ref.replace(/[^A-Za-z0-9_-]/g, '-')}` }); %>
 
     </main>
+    </div>
+    <%- include('sub-views/quran_heading_toc.ejs', {
+      quranHeadingOutlines: locals.quranHeadingOutlines,
+      quranHeadingInitialSurah: surah.num,
+      quranHeadingInitialAyah: ayah,
+      quranHeadingTranslations: true,
+      quranHeadingBookShortName: 'Quran Translations'
+    }); %>
   </div>
 
 <%- include('sub-views/mobile_navigation.ejs', {

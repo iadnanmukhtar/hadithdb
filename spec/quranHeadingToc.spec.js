@@ -12,6 +12,7 @@ function render(outlines, options = {}) {
     quranHeadingInitialSurah: options.surah,
     quranHeadingInitialAyah: options.ayah,
     quranHeadingInitialKey: options.key,
+    quranHeadingTranslations: options.translations,
     quranHeadingTranslationAlias: options.translationAlias,
 	quranHeadingTafsirBase: options.tafsirBase,
 	quranHeadingBookShortName: options.bookShortName,
@@ -202,3 +203,23 @@ describe('Quran heading rail', () => {
    expect(html).toMatch(/href="\/quran\/tafsir\/unal\/introduction"[^>]*>Foreword<\/a>/);
    expect(html).not.toContain('#article-');
  });
+
+
+test('comparison translations share the heading rail and retain comparison destinations', async () => {
+  const html=await render({2:{surah:2,nameEn:'al-Baqarah',previousH1:{number:1,title:'al-Fatihah'},nextH1:{number:3,title:'Ali Imran'},sections:[{key:'2.20',level:2,surah:2,section:20,title:'The direction of prayer',start:142,end:152,subsections:[{key:'2.20.1',level:3,surah:2,section:20,start:142,end:143,title:'The community'}]}]}},{surah:2,ayah:142,translations:true,bookShortName:'Quran Translations'});
+  expect(html).toContain('data-quran-heading-translations="1"');
+  expect(html).toContain('href="/quran/translations/quran:2:142"');
+  expect(html).toContain('href="/quran/translations/quran:1:1"');
+  expect(html).toContain('href="/quran/translations/quran:3:1"');
+  expect(html).toMatch(/data-quran-heading-key="2\.20\.1"[^>]*aria-current="location"/);
+  const {JSDOM}=require('jsdom');
+  const dom=new JSDOM(html,{runScripts:'outside-only'});
+  dom.window.quranHeadingTocState={toc:dom.window.document.querySelector('aside')};
+  const client=require('fs').readFileSync(path.join(__dirname,'../public/static/js/script.js'),'utf8');
+  dom.window.eval(client.slice(client.indexOf('function applyQuranHeadingTranslationScope('),client.indexOf('function quranHeadingLabel(')));
+  dom.window.applyQuranHeadingTranslationScope('haleem',true);
+  expect(dom.window.quranHeadingHref({surah:2,start:142})).toBe('/quran/translations/quran:2:142');
+  expect(dom.window.quranHeadingH1Href({number:3})).toBe('/quran/translations/quran:3:1');
+  expect(dom.window.document.querySelector('[data-quran-heading-toc-book]').getAttribute('href')).toBe('/quran/translations');
+  dom.window.close();
+});

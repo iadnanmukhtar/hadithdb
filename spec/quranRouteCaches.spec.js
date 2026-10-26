@@ -245,9 +245,13 @@ describe('restored Quran public route caches', () => {
     }]);
     jest.spyOn(QuranHeadings, 'sectionForAyah').mockResolvedValue(section);
     jest.spyOn(QuranMushaf, 'pageForRef').mockResolvedValue(1);
+    const outlines = { 1: { surah: 1, sections: [] } };
+    jest.spyOn(QuranHeadingOutlines, 'forSurahs').mockResolvedValue(outlines);
 
     await routeHandler(router, '/:ref')(req, res, jest.fn());
 
+    expect(QuranHeadingOutlines.forSurahs).toHaveBeenCalledWith([1]);
+    expect(ejs.renderFile).toHaveBeenCalledWith(expect.stringContaining('translation_passage.ejs'), expect.objectContaining({ quranHeadingOutlines: outlines }));
     expect(Utils.writeCachedHtml).toHaveBeenCalledWith(cachedFile, '<html>all translations</html>');
     expect(Utils.indexCachedItem).toHaveBeenCalledWith(
       expect.arrayContaining(['quran:1:1', 'quran:surah:1', 'translations:quran:1:1']),
