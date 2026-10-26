@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const GoogleAuth = require('../lib/GoogleAuth');
 const Community = require('../lib/Community');
 const router = express.Router();
+router.use(require('../lib/BlogPageCache').middleware({ community: true }));
 const api = express.Router();
 const wrap = work => (req, res, next) => Promise.resolve(work(req, res)).catch(next);
 const writeLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: 100, standardHeaders: 'draft-7', legacyHeaders: false,
@@ -87,7 +88,12 @@ function page(res, req, view, extra = {}) {
 router.get('/media/:id',wrap(async(req,res)=>{
   let user=null;try{user=await GoogleAuth.verifyRequest(req);}catch{}
   const image=await Media.image(req.params.id,user);
-  res.set({'Content-Type':image.mime,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"});res.send(image.data);
+  res.set({'Content-Type':image.mime,'Cache-Control':image.cacheable?'private, no-cache':'private, no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"});
+  if(image.cacheable){
+    res.set('ETag','"'+require('crypto').createHash('sha256').update(image.data).digest('hex')+'"');
+    if(req.fresh)return res.status(304).end();
+  }
+  res.send(image.data);
 }));
 router.get('/unsubscribe/:token', (req, res) => {
   if (!/^[a-f0-9]{64}$/.test(req.params.token)) return res.status(400).send('Invalid unsubscribe link.');

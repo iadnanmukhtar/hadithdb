@@ -9,6 +9,7 @@ const HttpRange = require('../lib/HttpRange');
 const BlogImport = require('../lib/CommunityBlogImport');
 
 const router = express.Router();
+router.use(require('../lib/BlogPageCache').middleware());
 const BLOG_PLACEHOLDER_COVER = '/static/img/pearls_of_the_deep.jpg';
 
 router.get('/', function (req,res,next) { return listPosts(req,res,next).catch(next); });
