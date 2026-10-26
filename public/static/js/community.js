@@ -170,21 +170,21 @@
     async function togglePanel(focus=false){panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));actions.querySelector('.community-reply').setAttribute('aria-expanded',String(!panel.hidden));labelToggle();if(!panel.hidden){if(!loaded)await load();if(focus)textarea.focus();}}
     return ()=>togglePanel(true);
   }
-  function microType(item) { return item.microinteraction === 'title' ? 'title' : item.kind === 'like' ? item.activity + ':' + (item.likeSource || '') : null; }
+  function microType(item) { return ['title','revision'].includes(item.microinteraction) ? item.microinteraction : item.kind === 'like' ? item.activity + ':' + (item.likeSource || '') : null; }
   function editPostLink(item) { const edit = link('', (item.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=') + item.id, 'community-entry-secondary community-edit-post'); edit.dataset.editKind=item.kind;edit.dataset.editId=item.id;edit.title = 'Edit post'; edit.setAttribute('aria-label', 'Edit post'); edit.append(icon('pencil')); return edit; }
   function card(item) {
-    const kind = item.microinteraction === 'title' ? 'title' : item.activity === 'comment' ? 'comment' : item.kind;
+    const kind = ['title','revision'].includes(item.microinteraction) ? item.microinteraction : item.activity === 'comment' ? 'comment' : item.kind;
     const privatePost = item.status && item.status !== 'published';
     const href = privatePost ? '/community/write?post=' + item.id : item.url;
     const article = node('article', undefined, 'community-entry'); article.dataset.activity = item.activity; article.dataset.kind = kind; article.dataset.private=String(!!privatePost);
     const meta = node('div', undefined, 'community-entry-meta');
     const avatar = link(Array.from(item.author.name.trim())[0] || '?', '/community/@' + item.author.handle, 'community-avatar'); avatar.tabIndex = -1; avatar.setAttribute('aria-hidden', 'true'); avatarImage(avatar, item.author);
-    if (kind === 'like' || kind === 'title') {
+    if (['like','title','revision'].includes(kind)) {
       const copy = node('div', undefined, 'community-reaction-copy');
       const author = link(item.author.name, '/community/@' + item.author.handle); author.dir = 'auto';
-      const target = link(kind === 'title' ? item.hadithTitle : (item.title || 'a post').replace(/^Liked\s+/i, ''), kind === 'title' ? item.hadithUrl : href); target.dir = 'auto';
-      copy.append(author, document.createTextNode(kind === 'title' ? ' titled ' : ' liked '), target);
-      if (kind === 'title') copy.append(document.createTextNode(' · ' + item.hadithRef));
+      const target = link(kind !== 'like' ? item.hadithTitle : (item.title || 'a post').replace(/^Liked\s+/i, ''), kind !== 'like' ? item.hadithUrl : href); target.dir = 'auto';
+      copy.append(author, document.createTextNode(kind === 'revision' ? ' revised ' : kind === 'title' ? ' titled ' : ' liked '), target);
+      if (kind !== 'like') copy.append(document.createTextNode(' · ' + item.hadithRef));
       if (item.activityAt) { const time = node('time', activityDate(item)); time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); copy.append(document.createTextNode(' · '), time); }
       article.append(avatar, copy);
       return article;
@@ -199,8 +199,9 @@
     article.append(meta);
     if (kind !== 'note' || (item.title && !['Note','Post'].includes(item.title))) { const heading = node('h2', undefined, 'community-entry-title'); heading.dir = 'auto'; heading.append(link(item.title, href)); article.append(heading); }
     if (kind === 'article' && item.subtitle) { const subtitle = node('p', item.subtitle, 'community-article-subtitle'); subtitle.dir = 'auto'; article.append(subtitle); }
-    const excerpt = node(item.html && kind==='comment' ? 'div':'p', undefined, item.html && kind==='comment' ? 'notebook-markdown community-reflection-body':'community-entry-excerpt'); excerpt.dir='auto';
-    if(item.html && kind==='comment') excerpt.innerHTML=item.html; else excerpt.textContent=item.excerpt || ''; article.append(excerpt);
+    const bodyHtml = kind === 'comment' ? item.html : item.feedHtml;
+    const excerpt = node(bodyHtml ? 'div':'p', undefined, bodyHtml ? 'notebook-markdown community-reflection-body':'community-entry-excerpt'); excerpt.dir='auto';
+    if(bodyHtml) excerpt.innerHTML=bodyHtml; else excerpt.textContent=item.excerpt || ''; article.append(excerpt);
     if (item.mediaHtml) { const media=node('div',undefined,'community-feed-media');media.innerHTML=privatePost ? (window.communityPrepareMediaHtml?.(item.mediaHtml)||item.mediaHtml) : item.mediaHtml;article.append(media); }
     if (item.tags) { const tags = node('div', undefined, 'community-entry-tags'); tags.dir = 'auto'; for (const tag of item.tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5)) tags.append(node('span', tag)); article.append(tags); }
     let toggleDiscussion;

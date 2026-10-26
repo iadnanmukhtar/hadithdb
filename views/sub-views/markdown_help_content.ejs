@@ -1,0 +1,113 @@
+        <h3 class="fs-6 fw-bold mt-4">Markdown basics</h3>
+        <p>Type these examples in the editor. Formatting appears in preview.</p>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th scope="col">Formatting</th><th scope="col">What to type</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Headings</th><td><code># Main heading</code><br><code>## Section heading</code><br><code>### Smaller heading</code><br>Use one through six <code>#</code> symbols for heading levels 1–6.</td></tr>
+              <tr><th scope="row">Bold</th><td><code>**bold text**</code></td></tr>
+              <tr><th scope="row">Italic</th><td><code>*italic text*</code> or <code>_italic text_</code></td></tr>
+              <tr><th scope="row">Strikethrough</th><td><code>~~strikethrough~~</code></td></tr>
+              <tr><th scope="row">Highlight</th><td><code>==highlighted text==</code></td></tr>
+              <tr><th scope="row">Underline</th><td><code>__underlined text__</code> or <code>&lt;u&gt;underlined text&lt;/u&gt;</code></td></tr>
+              <tr><th scope="row">Subtext</th><td><code>-# Smaller text</code> at the start of a line</td></tr>
+              <tr><th scope="row">Lists</th><td><code>- A bullet point</code><br><code>1. A numbered point</code></td></tr>
+              <tr><th scope="row">Quotation</th><td><code>&gt; Quoted text</code></td></tr>
+              <tr><th scope="row">Bullets inside a quotation</th><td><pre class="mb-0"><code>&gt; - A bullet point
+&gt;   - An indented bullet
+&gt;     - A deeper bullet</code></pre>Keep <code>&gt;</code> on each line and add two spaces for each bullet level. Numbered lists work inside quotations too.</td></tr>
+              <tr><th scope="row">Link</th><td><code>[Link text](https://example.com)</code></td></tr>
+              <tr><th scope="row">Inline code</th><td><code>`literal text`</code></td></tr>
+              <tr><th scope="row">Divider</th><td><code>---</code> on its own line</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Leave a blank line between paragraphs. A single new line produces a line break. Arabic and English can be used together; text direction adjusts automatically.</p>
+        <p>Two underscores mean <strong>underline</strong>; use two asterisks for <strong>bold</strong>. Combine formatting when needed, for example <code>==**bold highlighted text**==</code>. Wrap markers in backticks to show them literally.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Extended Markdown</h3>
+        <p>These formats work in rendered Markdown:</p>
+        <ul>
+          <li>Tables: use a header row, a separator such as <code>| --- | --- |</code>, and data rows.</li>
+          <li>Code blocks: surround code with three backticks; add a language such as <code>json</code> after the opening backticks for highlighting.</li>
+          <li>Heading links: <code>### Section {#section}</code> and <code>[Jump to section](#section)</code>.</li>
+          <li>Definitions: write a term, then <code>: Its definition</code> on the next line.</li>
+          <li>Tasks: <code>- [ ] To do</code> and <code>- [x] Done</code>. Change the markers in the editor to update them.</li>
+          <li>Emoji: <code>:joy:</code>, <code>:tent:</code>, or paste an emoji.</li>
+          <li>Subscript: <code>H~2~O</code>. Superscript: <code>X^2^</code>.</li>
+          <li>URLs become links automatically. Wrap a URL in backticks to keep it literal.</li>
+        </ul>
+
+        <h3 class="fs-6 fw-bold mt-4">Native HTML</h3>
+        <p>You can also use HTML such as <code>&lt;br&gt;</code>, <code>&lt;span style="color: red"&gt;colored text&lt;/span&gt;</code>, tables, images, and <code>&lt;details&gt;&lt;summary&gt;More&lt;/summary&gt;Details&lt;/details&gt;</code>. Use <code>dir="rtl"</code> or <code>dir="ltr"</code> to set direction explicitly. Leave blank lines around HTML blocks; Markdown inside a block follows standard Markdown HTML rules. Scripts, event handlers, embedded frames, and unsafe URLs or styles are removed. Wrap HTML in backticks or a fenced code block to display it literally.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Parallel text with two pipes</h3>
+        <p>Put <code>||</code> (two pipe symbols) between two pieces of text on the same line to display them in two equal columns. Each column adjusts its text direction automatically.</p>
+        <pre class="bg-body-tertiary rounded p-3" dir="ltr"><code>النص العربي || English translation
+## العنوان || Heading
+**نص عربي** || **English text**</code></pre>
+        <p>Each new line containing <code>||</code> creates another parallel row. Formatting works in both columns; a heading in the first column also makes the second column a matching heading. Wrap <code>||</code> in backticks to show the symbols literally.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Format Arabic text</h3>
+        <p>Use the same markers around Arabic words, including words with vowel marks:</p>
+        <ul>
+          <li>Bold: <code dir="auto">**نص عريض**</code></li>
+          <li>Italic: <code dir="auto">*نص مائل*</code></li>
+          <li>Highlight: <code dir="auto">==نص مظلل==</code></li>
+          <li>Overline: <code dir="auto">__نص عربي__</code> or <code>&lt;u&gt;نص عربي&lt;/u&gt;</code></li>
+        </ul>
+        <p>Underline markers place a Unicode line <strong>above Arabic text</strong> and a line <strong>below English text</strong>, including when both languages share the same marked passage. The Arabic overline is added for display; your saved Markdown keeps the original text and markers.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Footnotes</h3>
+        <p>Put the reference in your text and its definition on a separate line:</p>
+        <pre class="bg-body-tertiary rounded p-3"><code>A point worth explaining.[^1]
+
+[^1]: The explanation goes here.</code></pre>
+        <p>Arabic digits work too: <code>[^١]</code> with <code>[^١]: Explanation</code>. References keep the digits you typed; the footnote list uses English digits.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">More heading and list forms</h3>
+        <p>You can also underline a heading with <code>===</code> for level 1 or <code>---</code> for level 2 on the next line. For a divider, put <code>---</code>, <code>***</code>, or <code>___</code> on its own line, separated from surrounding paragraphs by blank lines.</p>
+        <p>Bullets can start with <code>-</code>, <code>*</code>, or <code>+</code>. Numbered lists accept <code>1.</code> or <code>1)</code>; the first number determines the starting number. Indent nested lists and continuation text beneath the parent item's text. Use <code>&gt; &gt;</code> for a quotation inside a quotation.</p>
+        <pre class="bg-body-tertiary rounded p-3"><code>- Parent item
+  - Nested item
+
+1. First item
+   - A nested bullet
+
+- [ ] Unfinished task
+- [x] Finished task</code></pre>
+
+        <h3 class="fs-6 fw-bold mt-4">Images and reference links</h3>
+        <p>Use <code>![Description](https://example.com/image.jpg)</code> for an image. Optional link or image titles go inside the parentheses: <code>[Example](https://example.com "Optional title")</code>. An image can also be a link: <code>[![Description](image.jpg)](https://example.com)</code>.</p>
+        <p>Reuse a URL with a reference definition. Full <code>[label][source]</code>, collapsed <code>[source][]</code>, and shortcut <code>[source]</code> references are supported:</p>
+        <pre class="bg-body-tertiary rounded p-3"><code>[Read the source][source]
+
+[source]: https://example.com "Source title"</code></pre>
+        <p>Plain web addresses become links automatically. Explicit autolinks use <code>&lt;https://example.com&gt;</code> or <code>&lt;name@example.com&gt;</code>.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">Tables and definitions</h3>
+        <p>Use colons in the separator row to align columns left, center, or right. Escape a literal pipe inside a cell with <code>\|</code>. Keep spaces between separators in empty cells so they are not interpreted as parallel text.</p>
+        <pre class="bg-body-tertiary rounded p-3"><code>| Left | Center | Right |
+| :--- | :---: | ---: |
+| One | Two | Three |
+
+Term
+: A definition
+: Another definition</code></pre>
+
+        <h3 class="fs-6 fw-bold mt-4">Code and literal characters</h3>
+        <p>Wrap inline code in backticks. If the code contains a backtick, surround it with two backticks. For a code block, use matching fences of at least three backticks or tildes, or indent each line by four spaces. A language name enables highlighting when supported.</p>
+        <pre class="bg-body-tertiary rounded p-3"><code>```json
+{"example": true}
+```</code></pre>
+        <p>Escape punctuation with a backslash: <code>\*literal asterisks\*</code>, <code>\# not a heading</code>, or <code>\|\|</code>. HTML entities such as <code>&amp;amp;</code>, <code>&amp;lt;</code>, and <code>&amp;#169;</code> display their corresponding characters outside code.</p>
+        <p>Inline footnotes are also supported: <code>A sentence.^[An inline explanation.]</code>. For a longer footnote, indent continuation paragraphs by four spaces beneath its definition.</p>
+
+        <h3 class="fs-6 fw-bold mt-4">HTML formatting options</h3>
+        <p>Supported HTML includes headings, paragraphs, lists, quotations, links, images, tables, code, emphasis, underline, highlight, subscript, superscript, and expandable <code>&lt;details&gt;</code>. Semantic text such as <code>&lt;abbr title="Explanation"&gt;</code>, <code>&lt;kbd&gt;</code>, <code>&lt;cite&gt;</code>, and ruby annotations is supported too.</p>
+        <p>Allowed inline styles are <code>color</code>, <code>background-color</code>, <code>text-align</code>, <code>font-weight</code>, <code>font-style</code>, <code>text-decoration</code>, and <code>font-size</code>. Images accept width and height; table cells accept row and column spans. Arbitrary CSS, scripts, forms, and embedded frames are not supported.</p>
+        <% if (typeof articleHelp !== 'undefined' && articleHelp) { %>
+        <h3 class="fs-6 fw-bold mt-4">Article table of contents and media</h3>
+        <p>Place <code>@[toc]</code> on its own line, with blank lines around it, to generate links to the article's headings. Use <code>{#section}</code> after a heading to choose its link target.</p>
+        <p>Put a webpage or supported video URL in its own paragraph to show a preview. The Image, Link, and Video controls help insert media; images can also be pasted into the editor. Private notebook links and Drive destinations are removed from public content.</p>
+        <% } %>

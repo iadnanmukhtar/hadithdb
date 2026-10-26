@@ -90,7 +90,14 @@
       <label class="form-label" for="community-subtitle">Subtitle <span class="text-muted">(optional)</span></label><input id="community-subtitle" class="form-control mb-4" maxlength="1000" dir="auto" placeholder="Add a short introduction to your article">
       <div class="community-media-toolbar" data-media-editor="markdown"><button type="button" data-add-image title="Add image"><i class="bi bi-image" aria-hidden="true"></i> Image</button><button type="button" data-add-link title="Add webpage preview"><i class="bi bi-link-45deg" aria-hidden="true"></i> Link</button><button type="button" data-add-video title="Add video preview"><i class="bi bi-play-btn" aria-hidden="true"></i> Video</button><input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden><span class="community-media-status" role="status"></span></div>
       <div id="community-article-attachments" class="community-attachment-list"></div>
-      <div class="community-writing-label"><label class="form-label" for="community-markdown">Article</label><span id="community-markdown-help">Markdown supported · Preview optional</span></div><textarea id="community-markdown" class="form-control mb-3" rows="16" dir="auto" required aria-describedby="community-markdown-help" placeholder="Start with your opening paragraph…
+      <div class="community-writing-label"><label class="form-label" for="community-markdown">Article</label><span id="community-markdown-help">Markdown supported · Preview optional</span></div>
+      <div id="community-format-toolbar" class="community-format-toolbar" role="group" aria-label="Article formatting">
+        <select id="community-format-style" aria-label="Text style"><option value="0">Normal</option><% for (let level=1;level<=6;level++) { %><option value="<%= level %>">Heading <%= level %></option><% } %></select>
+        <% for (const [action,label,icon] of [['bold','Bold','type-bold'],['italic','Italic','type-italic'],['underline','Underline','type-underline'],['strike','Strikethrough','type-strikethrough'],['highlight','Highlight','brush'],['numbered','Numbered list','list-ol'],['bullets','Bullet list','list-ul'],['quote','Quotation','quote'],['link','Insert link','link-45deg'],['clear','Clear formatting','eraser']]) { %>
+        <button type="button" data-format="<%= action %>" title="<%= label %>" aria-label="<%= label %>"><i class="bi bi-<%= icon %>" aria-hidden="true"></i></button><% } %>
+        <button type="button" class="community-format-help" data-bs-toggle="modal" data-bs-target="#community-markdown-help-modal" title="Markdown help" aria-label="Markdown help"><i class="bi bi-question-circle" aria-hidden="true"></i></button>
+      </div>
+      <textarea id="community-markdown" class="form-control mb-3" rows="16" dir="auto" required aria-describedby="community-markdown-help" placeholder="Start with your opening paragraph…
 
 ## A section heading
 
@@ -126,10 +133,20 @@ Use **bold** for emphasis and *italics* for a title.
   <% if (view === 'unsubscribe') { %><section class="community-card"><% if (unsubscribed) { %><p class="mb-0">You have unsubscribed from this author’s emails. You still follow their posts in your feed.</p><% } else { %><p>Stop email updates from this author? You will still follow their posts.</p><form method="post"><button class="btn btn-primary" type="submit">Unsubscribe from emails</button></form><% } %></section><% } %>
   <dialog id="community-media-dialog" class="community-media-dialog" aria-labelledby="community-media-dialog-title"><form id="community-media-link-form"><h2 id="community-media-dialog-title">Add a link</h2><label for="community-media-url">Webpage or video URL</label><input id="community-media-url" class="form-control" type="url" required placeholder="https://…"><p class="small text-muted">YouTube, Vimeo, direct video links, and webpages.</p><div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" id="community-media-cancel">Cancel</button><button type="submit" class="btn btn-sm btn-primary">Add preview</button></div><p id="community-media-error" class="small text-muted" role="status"></p></form></dialog>
 </main>
+<% if (view === 'write') { %>
+<div class="modal fade" id="community-markdown-help-modal" tabindex="-1" aria-labelledby="community-markdown-help-title" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title fs-5" id="community-markdown-help-title">Markdown help</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close help"></button></div>
+    <div class="modal-body"><%- include('sub-views/markdown_help_content.ejs', { articleHelp: true }); %></div>
+    <div class="modal-footer"><button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Got it</button></div>
+  </div></div>
+</div>
+<% } %>
 <%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
 <%- include('sub-views/footer.ejs', { site, page }); %>
 <% if (view !== 'unsubscribe') { %>
 <%- include('sub-views/scripts.ejs', { site, page }); %>
 <script src="/static/js/community.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-media.js?v=<%= utils.scriptAssetVersion() %>"></script><% } %>
+<% if (view === 'write') { %><script src="/static/js/community-formatting.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>
 </body></html>

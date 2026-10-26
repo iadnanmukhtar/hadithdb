@@ -120,5 +120,5 @@
     });
   }
   if (typeof module === 'object' && module.exports) module.exports = { replacement, continueLine, indentLines };
-  else root.NotebookShortcuts = { install };
+  else root.NotebookShortcuts = { install, replacement };
 })(typeof window === 'undefined' ? null : window);

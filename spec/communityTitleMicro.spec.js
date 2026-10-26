@@ -20,3 +20,23 @@ test('edit pencils appear for owned ordinary posts but never microinteractions',
   expect((await render(false))('[aria-label="Edit post"]').length).toBe(0);
  }
 });
+test('revision microinteractions collapse after ten without merging with title activity',async()=>{
+ const revision={id:2,activity:'post',kind:'note',microinteraction:'revision',hadithTitle:'Revised title',hadithRef:'bukhari:1',hadithUrl:'/bukhari:1',author:{handle:'writer',name:'Writer'},activityAt:'2026-01-01'};
+ const items=[...Array(12).fill(revision),{...revision,microinteraction:'title'},revision];
+ const $=load(await ejs.renderFile(path.join(__dirname,'../views/sub-views/community_feed.ejs'),{items}));
+ expect($('details').length).toBe(1);
+ expect($('details article').length).toBe(2);
+ expect($('[data-kind=revision]').length).toBe(13);
+ expect($('[data-kind=revision]').first().text()).toContain('revised Revised title');
+ expect($('[data-kind=revision] h2, [data-kind=revision] button').length).toBe(0);
+});
+test('existing generated revisions are decorated without classifying ordinary posts',async()=>{
+ const C=require('../lib/Community');
+ const spy=jest.spyOn(C,'sql').mockResolvedValue([{id:1,public_markdown:'Revised [bukhari:1](/bukhari:1)\n\nActions by intentions\n\nFull revised body'}]);
+ try {
+  const items=[{id:1,activity:'post',kind:'note',title:'Revised bukhari:1'},{id:2,activity:'post',kind:'note',title:'Revised my article'}];
+  await require('../lib/CommunityHadithPosts').decorate(items);
+  expect(items[0]).toMatchObject({microinteraction:'revision',canEdit:false,hadithTitle:'Actions by intentions',hadithUrl:'/bukhari:1'});
+  expect(items[1].microinteraction).toBeUndefined();
+ } finally {spy.mockRestore();}
+});

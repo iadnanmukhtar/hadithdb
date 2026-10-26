@@ -32,3 +32,16 @@ test('public post representation excludes owner identity, draft body, draft stat
   expect(Community.postView({...row,kind:'article'}).excerpt).toHaveLength(280);
   expect(Array.from(Community.postView({...row,public_markdown:'😀'.repeat(2001)}).excerpt)).toHaveLength(2000);
 });
+test('post and article feed snippets preserve notebook Markdown and truncate valid rendered HTML', () => {
+  const {load}=require('cheerio');
+  const row={id:1,kind:'note',public_markdown:'## Heading\n\n**Bold** and *italic*\n\n- First\n- Second\n\n> Quote\n\n'+ 'x'.repeat(2100),handle:'writer',name:'Writer'};
+  for(const kind of ['note','article']){
+    const item=Community.postView({...row,kind}),$=load(item.feedHtml);
+    expect($('h2').text()).toBe('Heading');
+    expect($('strong').text()).toBe('Bold');
+    expect($('em').text()).toBe('italic');
+    expect($('li').length).toBe(2);
+    expect($('blockquote').text()).toContain('Quote');
+    expect(Array.from($.text()).length).toBeLessThanOrEqual(kind==='note'?2000:280);
+  }
+});
