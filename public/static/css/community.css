@@ -289,3 +289,13 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-format-toolbar :focus-visible { outline:2px solid var(--community-accent); outline-offset:1px; }
 .community-format-toolbar .community-format-help { margin-inline-start:auto; }
 .community-format-toolbar + #community-markdown { border-top-left-radius:0; border-top-right-radius:0; border-top:0; }
+
+.community-reflections .comment-thread-item { scroll-margin-top: calc(var(--site-fixed-header-height, 120px) + 1rem); }
+#community-comment-status:empty { display: none; }
+
+.community-alert-badge { background: var(--c-accent); color: var(--c-white); margin-inline-start: .35rem; font-size: .65rem; vertical-align: middle; }
+.community-alert-row { display: block; color: var(--bs-body-color); text-decoration: none; padding: .65rem 0; border-bottom: 1px solid var(--bs-border-color); overflow-wrap: anywhere; }
+.community-alert-row:hover { color: var(--c-accent); }
+.community-alert-row time { display: block; color: var(--c-muted); font-size: var(--content-size-xs); }
+.community-alerts [data-community-alert-more] { margin-top: .75rem; }
+.community-reflections .comment-vote { width: auto; min-width: 1.4rem; padding-inline: .2rem; }

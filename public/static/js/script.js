@@ -174,7 +174,6 @@ $(function () {
 	initQuranMemorizeReviewLauncher(document);
 	initPageHelpTips(document);
 	initQuranSelectionTranslationMarquee(document);
-	initQuranMushafSurahPicker(document);
 	initQuranMenuRows(document);
 	initQuranDynamicPassageHero(document);
 	canonicalizeQuranTranslationPageUrl();
@@ -1163,7 +1162,19 @@ function quranPath(path) {
 	return pathname + suffix;
 }
 
+// Keep an explicitly opened virtual Mushaf edition through reader navigation.
+function quranMushafEditionUrl(path) {
+	var script = normalizeQuranScriptChoice(new URLSearchParams(window.location.search).get('script'));
+	if (!script || !/^\/(?:quran\/)?page(?:\/|[?#]|$)/.test(path || ''))
+		return path;
+	var url = new URL(path, window.location.href);
+	if (!url.searchParams.has('script'))
+		url.searchParams.set('script', script);
+	return url.pathname + url.search + url.hash;
+}
+
 function quranUrl(path) {
+	path = quranMushafEditionUrl(path);
 	if (!isLocalhostHost(window.location.hostname))
 		return (window.HADITH_QURAN_BASE_URL || '') + quranPath(path);
 	if (isQuranSubdomainHost(window.location.hostname))
@@ -1184,7 +1195,7 @@ function hadithUrl(path) {
 }
 
 function quranApiPath(path) {
-	path = (path || '').toString();
+	path = quranMushafEditionUrl((path || '').toString());
 	if (/^https?:\/\//i.test(path))
 		return path;
 	if (path.charAt(0) !== '/')
@@ -7245,6 +7256,9 @@ function getQuranTafsirSettings() {
 		var quranScript = ['uthmani', 'indo-pak', 'warsh'].indexOf((quran.script || '').toString().toLowerCase()) >= 0
 			? quran.script.toString().toLowerCase()
 			: 'uthmani';
+		var requestedScript = normalizeQuranScriptChoice(new URLSearchParams(window.location.search).get('script'));
+		if (/^\/quran\/page(?:\/|$)/.test(window.location.pathname) && requestedScript)
+			quranScript = requestedScript;
 		var translationDisabledAliases = Array.from(new Set((Array.isArray(translations.disabledAliases) ? translations.disabledAliases : [])
 			.map(function (alias) { return (alias || '').toString().trim(); })
 			.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias); })));
@@ -10500,63 +10514,11 @@ function initPageHelpTips(root) {
 	if (!owner || owner.dataset.pageHelpTipsBound === '1') return;
 	owner.dataset.pageHelpTipsBound = '1';
 	var mode = owner.getAttribute('data-page-help-tour') || '';
-	var labels = { mushaf: 'Mushaf', memorize: 'Practice', review: 'Mudhakkir', progress: 'Review summary', study: 'Study', tafsir: 'Tafsir' };
+	var labels = { memorize: 'Practice', review: 'Mudhakkir', progress: 'Review summary' };
 	if (!labels[mode]) return;
 	var sessionStorageKey = `hadithdb.pageHelpTour.session.${mode}`;
 	var permanentStorageKey = `hadithdb.pageHelpTour.permanent.${mode}`;
 	var stepsByMode = {
-		mushaf: [
-		{
-			title: 'Move around the Mushaf',
-			copy: 'Use the **surah name** to open the surah list, or enter a surah number from 1 through 114. The Juz number beside it can also take you directly to another Juz.',
-			selector: '.quran-mushaf-page-heading .quran-mushaf-page-meta'
-		},
-		{
-			title: 'Change the Mushaf page',
-			copy: 'Select the **page number** and enter a Mushaf page to jump directly to it. The page address updates as you read.',
-			selector: '.quran-mushaf-page-heading .quran-mushaf-page-number'
-		},
-		{
-			title: 'Bookmark this Mushaf page',
-			copy: 'Choose the **bookmark** in the page toolbar to save this Mushaf page. A filled bookmark shows that the page is saved; choose it again to remove the bookmark.',
-			selector: '.quran-mushaf-page-toolbar [data-quran-mushaf-bookmark-page]'
-		},
-		{
-			title: 'Return to your bookmarked page',
-			copy: 'Choose the **bookmark icon** in the top menu to open My Bookmarks. Your saved Mushaf page appears there so you can return to it directly.',
-			selector: '.top-nav-icon-link[aria-label="Bookmarks"], .offcanvas-quick-action[aria-label="My Bookmarks"]'
-		},
-		{
-			title: 'Play the page',
-			copy: 'Choose **Play** to hear the āyāt on this page. Use **Stop** to end playback or **Repeat** to keep practicing the page or its passage ranges.',
-			selector: '.quran-mushaf-page-toolbar [data-quran-passage-audio="1"]'
-		},
-		{
-			title: 'Follow the translation marquee',
-			copy: 'Choose the **translation** used during playback. When audio starts, its translation marquee appears above the sticky footer and follows the current āyah.',
-			selector: '.quran-mushaf-page-toolbar .quran-audio-translation-toggle'
-		},
-		{
-			title: 'Choose a reciter',
-			copy: 'Use the **headphones** to choose the reciter you want to hear before you play the page.',
-			selector: '.quran-mushaf-page-toolbar .quran-passage-reciter-toggle[aria-label^="Choose reciter"]'
-		},
-		{
-			title: 'Read and study an āyah',
-			copy: 'Read down the Arabic Mushaf page. Open the **chevron** beside any āyah marker, then choose **Play** to hear that āyah or **Study** to open its translation, tafsir, and other study tools.',
-			selector: '.quran-mushaf-line:not(.quran-mushaf-line-basmallah) .quran-mushaf-ayah-actions-toggle'
-		},
-		{
-			title: 'Use the headings below each page',
-			copy: 'The bottom of every Mushaf page shows its **section** and **subsection** headings. Choose a heading to open that complete passage in Study view.',
-			selector: '.quran-mushaf-page-footer .quran-mushaf-page-passage'
-		},
-		{
-			title: 'Keep reading as you scroll',
-			copy: '**Scroll** beyond the bottom of the page and the next Mushaf page loads automatically. Its page number, section headings, and address follow you as you continue.',
-			selector: '[data-quran-mushaf-sentinel]'
-		}
-	],
 		review: [
 		{
 			title: 'Recite before looking in Mudhakkir',
@@ -10653,127 +10615,7 @@ function initPageHelpTips(root) {
 			selector: '.quran-reader-modes [data-quran-reader-mode-link="review"]'
 		}
 	],
-	study: [
-		{
-			title: 'Start with an āyah',
-			copy: 'In the Arabic passage, open the chevron beside an āyah marker. Choose **Study** to open that āyah in the hero, or **Play** to hear it without leaving the passage.',
-			selector: '.quran-passage-section .h[lang="ar"] .quran-mushaf-ayah-actions-toggle:not([data-quran-ref$=":0"])'
-		},
-		{
-			title: 'Study from the āyah hero',
-			copy: 'The hero keeps the Arabic āyah and its translation together. You can return to the full passage with the **close** button.',
-			selector: '.quran-selected-ayah-hero .quran-ayah-hero',
-			requiresHero: true
-		},
-		{
-			title: 'Explore the āyah hero',
-			copy: 'The action links beneath the hero let you **Play** the āyah, open **Tafsir** or **Translations**, and **Share** it.',
-			selector: '.quran-selected-ayah-hero .quran-ayah-hero-toolbar',
-			requiresHero: true
-		},
-		{
-			title: 'Play and control the audio',
-			copy: 'Choose **Play** beneath the hero to hear this āyah. While it plays, the sticky footer becomes audio controls for previous, repeat, pause or play, stop, speed, and next.',
-			selector: '.quran-selected-ayah-hero .quran-ayah-hero-toolbar',
-			requiresHero: true
-		},
-		{
-			title: 'Move to the next āyah',
-			copy: 'Use the **left** and **right chevrons** around the hero, or press the **Left Arrow** and **Right Arrow** keys. The same shortcuts move through āyāt while the Tafsir or Translations viewer is open.',
-			selector: '.quran-selected-ayah-hero .quran-ayah-hero-nav',
-			requiresHero: true
-		},
-		{
-			title: 'Share an āyah',
-			copy: 'Choose **Share** beneath the hero. In the sharing screen, use **Share image** to send the āyah to social media or another app, or **Copy image** to paste it yourself.',
-			selector: '.quran-selected-ayah-hero [aria-label="Share selected ayah image"]',
-			requiresHero: true
-		},
-		{
-			title: 'Open tafsir from the hero',
-			copy: 'Choose **Tafsir** beneath the hero to open commentary for the selected āyah.',
-			selector: '.quran-selected-ayah-hero [data-quran-ayah-modal-type="tafsirs"]',
-			requiresHero: true
-		},
-		{
-			title: 'Switch tafsir language',
-			copy: 'After opening **Tafsir** from the hero, choose **Arabic** or **English** above the tafsir list. Your most recent language and tafsir stay selected during this browser session.',
-			selector: '.quran-ayah-modal.show .tafsir-carousel-language-switch, .quran-tafsirs .tafsir-carousel-language-switch',
-			requiresHero: true,
-			requiresModal: 'tafsirs'
-		},
-		{
-			title: 'Open the detailed tafsir page',
-			copy: 'The tafsir carousel changes which commentary is selected. Use the **expand icon** in the top toolbar to open that selected tafsir\'s detailed reading page.',
-			selector: '.quran-ayah-modal.show[data-quran-ayah-modal-type="tafsirs"] .quran-ayah-modal-tafsir-expand',
-			requiresHero: true,
-			requiresModal: 'tafsirs'
-		},
-		{
-			title: 'Compare translations',
-			copy: 'Use the **Translations** viewer to compare the selected āyah across the translations you have enabled.',
-			selector: '.quran-ayah-modal.show[data-quran-ayah-modal-type="translations"] .quran-translation-list',
-			requiresHero: true,
-			requiresModal: 'translations'
-		},
-		{
-			title: 'Read or add reflections',
-			copy: 'The **reflections** action opens the community discussion for this āyah. Read existing reflections, reply, or add your own from the reflection box.',
-			selector: '.quran-ayah-modal.show[data-quran-ayah-modal-type="reflections"] .comment-feed',
-			requiresHero: true,
-			requiresModal: 'reflections'
-		},
-		{
-			title: 'Choose a reciter',
-			copy: 'Use the **headphones** beside the passage audio controls to choose a reciter before you press Play.',
-			selector: '.quran-passage-reciter-toggle[aria-label^="Choose reciter"]',
-			requiresHero: true
-		},
-		{
-			title: 'Change the translation',
-			copy: 'Use the **translation menu** in the passage toolbar to choose which translation appears beside the Arabic.',
-			selector: '.quran-dynamic-translation-toggle',
-			requiresHero: true
-		},
-		{
-			title: 'Share multiple āyāt',
-			copy: 'Choose **Select ayat**, then select the āyāt you want from the passage. Choose **View selected**, followed by **Share**, to create one image for the selected range and send it to social media.',
-			selector: '.quran-ayah-select-toolbar',
-			requiresPassage: true
-		},
-		{
-			title: 'Change script or reading mode',
-			copy: 'Use **Script** to choose **Uthmani**, **Indo-Pak**, or **Warsh**. Switch between **Study**, **Mushaf**, and **Practice** from the reading-mode bar; its green **Mudhakkir** button starts recall.',
-			selector: '.quran-reader-modes'
-		},
-		{
-			title: 'Keep reading with infinite scroll',
-			copy: '**Scroll** past the end of the passage and the next Quran passage loads automatically. The page address and **Previous** and **Next** controls update as you continue.',
-			selector: '[data-quran-infinite-page="1"], .quran-infinite-status'
-		}
-	],
-	tafsir: [
-		{
-			title: 'Read the dedicated tafsir',
-			copy: 'This page keeps one Quran passage and its selected tafsir in a focused reading view. The highlighted commentary loads below the heading.',
-			selector: '.tafsir-only-page .quran-tafsirs'
-		},
-		{
-			title: 'Switch tafsir books',
-			copy: 'Use the sticky horizontal tafsir list to open another commentary at this Quran passage. Each choice opens its dedicated reading page. **Swipe** the list on a phone when more tafsirs are available off screen.',
-			selector: '.tafsir-only-page .quran-commentary-passage-carousel'
-		},
-		{
-			title: 'Compare translations',
-			copy: 'Select **Translations** in the tafsir heading to read the same passage across available Quran translations.',
-			selector: '.tafsir-only-page .quran-section-heading-action[aria-label="Open translations page"], .tafsir-only-page .quran-section-heading-action[aria-label="View translations"]'
-		},
-		{
-			title: 'Continue reading',
-			copy: 'Use **Prev** and **Next** in the sticky footer, or press the **Left Arrow** and **Right Arrow** keys, to move through detailed tafsir passages.',
-			selector: '.mobile-bottom-nav [data-mobile-bottom-nav-prev], .mobile-bottom-nav [data-mobile-bottom-nav-next]'
-		}
-	]
+
 	};
 	var steps = stepsByMode[mode];
 	var tour = null;
@@ -11456,24 +11298,6 @@ function initQuranMushafAyahMarkerActions(root) {
 		if (!menu.hidden && activeMarker)
 			positionMenu(activeMarker);
 	}, { passive: true });
-}
-
-function initQuranMushafSurahPicker(root) {
-	if (document.documentElement.dataset.quranMushafSurahPickerBound === '1')
-		return;
-	document.documentElement.dataset.quranMushafSurahPickerBound = '1';
-	document.addEventListener('shown.bs.dropdown', function (event) {
-		var dropdown = event.target.closest && event.target.closest('.quran-mushaf-surah-picker-dropdown');
-		var menu = dropdown && dropdown.querySelector('.quran-mushaf-surah-picker-menu');
-		var active = menu && menu.querySelector('.dropdown-item.active, .dropdown-item[aria-current="true"]');
-		if (!menu || !active)
-			return;
-		window.requestAnimationFrame(function () {
-			var menuRect = menu.getBoundingClientRect();
-			var activeRect = active.getBoundingClientRect();
-			menu.scrollTop += activeRect.top - menuRect.top - ((menu.clientHeight - activeRect.height) / 2);
-		});
-	});
 }
 
 function updateQuranMushafFooterPageLinks(pageNumber) {
@@ -12575,7 +12399,7 @@ function initQuranMushafInfinite(root) {
 			var pendingPage = reader.querySelector(`[data-quran-mushaf-page="${pendingPageNumber}"]`);
 			if (!querySuffix && quranMushafAyahSelection(selectedRef) && pendingPage && pendingPage.querySelector('.quran-mushaf-search-ayah'))
 				querySuffix = `?ayah=${encodeURIComponent(selectedRef)}`;
-			var nextLocation = `/quran/page/${pendingPageNumber}${querySuffix}`;
+			var nextLocation = quranMushafEditionUrl(`/quran/page/${pendingPageNumber}${querySuffix}`);
 			if (pendingPageNumber && window.history && window.history.replaceState && `${window.location.pathname}${window.location.search}` !== nextLocation)
 				window.history.replaceState({ quranMushafPage: Number(pendingPageNumber) }, '', nextLocation);
 			pendingPageNumber = '';
@@ -12695,8 +12519,9 @@ function initQuranMushafInfinite(root) {
 			var juzRow = document.querySelector(`[data-quran-mushaf-header-juz="${value}"]`);
 			targetPage = Number(juzRow && juzRow.getAttribute('data-quran-mushaf-juz-start-page'));
 		} else if (isSurah) {
-			var surahLink = reader.querySelector(`[data-quran-mushaf-surah="${value}"]`);
-			targetPage = Number(surahLink && surahLink.getAttribute('data-quran-mushaf-surah-page'));
+			var surahPages = {};
+			try { surahPages = JSON.parse(form.getAttribute('data-quran-mushaf-surah-pages') || '{}'); } catch (_err) {}
+			targetPage = Number(surahPages[value]);
 			selectedRef = `${value}:1`;
 		}
 		if (!Number.isInteger(targetPage) || targetPage < 1 || targetPage > 604)
@@ -14134,6 +13959,11 @@ function initQuranScriptSwitchers(root) {
 				var shortLabels = Array.from(document.querySelectorAll('[data-quran-script-short-label]'));
 				shortLabels.forEach(function (label) { label.textContent = '…'; });
 				saveQuranScriptChoice(nextScript).then(function () {
+					var url = new URL(window.location.href);
+					if (url.searchParams.has('script')) {
+						url.searchParams.set('script', nextScript);
+						window.history.replaceState(window.history.state, '', url.href);
+					}
 					window.location.reload();
 				}).catch(function (err) {
 					controls.forEach(function (control) { control.disabled = false; });

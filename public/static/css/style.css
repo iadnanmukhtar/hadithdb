@@ -2209,6 +2209,16 @@ nav .nav-link[aria-current="page"] {
 	text-decoration: none;
 }
 
+/* Mask the shared Books artwork so it follows the rail accent color. */
+.offcanvas-books-icon {
+	background-color: var(--c-accent);
+	display: inline-block;
+	height: 1.25rem;
+	width: 1.25rem;
+	-webkit-mask: url('/static/img/books-icon.svg') center / contain no-repeat;
+	mask: url('/static/img/books-icon.svg') center / contain no-repeat;
+}
+
 .offcanvas-quick-action .bi {
 	color: var(--c-accent);
 	font-size: 1.25rem;

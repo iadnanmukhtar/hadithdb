@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS community_author_aliases (
  author_uid VARCHAR(128) COLLATE utf8mb4_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS community_dislikes (
+ created_at DATETIME(3) NULL,
  source VARCHAR(32) NOT NULL, target_id BIGINT UNSIGNED NOT NULL,
  user_uid VARCHAR(128) COLLATE utf8mb4_bin NOT NULL,
  PRIMARY KEY (source,target_id,user_uid)
@@ -104,4 +105,9 @@ CREATE TABLE IF NOT EXISTS community_hadith_posts (
  event_key CHAR(64) CHARACTER SET ascii PRIMARY KEY,
  post_id BIGINT UNSIGNED NULL,
  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS community_alert_reads (
+ user_uid VARCHAR(128) COLLATE utf8mb4_bin PRIMARY KEY,
+ seen_at DATETIME(3) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

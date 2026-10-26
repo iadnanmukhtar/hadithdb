@@ -3,18 +3,18 @@
   var communityBlog = page.menu === 'Blog' || page.menu === 'Blog Post';
   var communitySection = communityNotebook ? 'notebook' : (communityBlog ? 'blog' : (page.context.communityView || 'everyone'));
   var communitySections = [
-    { key: 'notebook', href: '/notebook', label: 'My Notebook' },
-    { key: 'mine', href: '/community/mine', label: 'Me' },
-    { key: 'following', href: '/community/following', label: 'Following' },
-    { key: 'everyone', href: '/community', label: 'Everyone' },
-    { key: 'blog', href: '/blog', label: 'Blog' }
+    { key: 'notebook', href: '/notebook', label: 'My Notebook', icon: 'sticky' },
+    { key: 'mine', href: '/community/mine', label: 'Me', icon: 'person' },
+    { key: 'following', href: '/community/following', label: 'Following', icon: 'person-check' },
+    { key: 'everyone', href: '/community', label: 'Everyone', icon: 'people' },
+    { key: 'blog', href: '/blog', label: 'Blog', icon: 'newspaper' }
   ];
 %>
 <nav class="row g-0 chapter-toc community-section-menu" aria-label="Community sections">
   <div class="col-12 chapter-toc-toolbar">
     <div class="community-tabs btn-group btn-group-sm" role="group" aria-label="Community sections">
       <% for (const entry of communitySections) { %>
-      <a class="btn btn-outline-secondary<%= entry.key === communitySection ? ' active' : '' %>" href="<%= utils.urlFor(req, entry.href) %>"<% if (entry.key === communitySection) { %> aria-current="page"<% } %><% if (entry.key === 'notebook') { %> title="Your private notebook"<% } %>><%= entry.label %></a>
+      <a class="btn btn-outline-secondary<%= entry.key === communitySection ? ' active' : '' %>" href="<%= utils.urlFor(req, entry.href) %>"<% if (entry.key === communitySection) { %> aria-current="page"<% } %><% if (entry.key === 'notebook') { %> title="Your private notebook"<% } %>><i class="bi bi-<%= entry.icon %>" aria-hidden="true"></i><span><%= entry.label %></span><% if (entry.key === 'following') { %><span class="badge rounded-pill community-alert-badge" data-community-alert-badge hidden aria-live="polite"></span><% } %></a>
       <% } %>
     </div>
     <% if (communityNotebook) { %>

@@ -510,25 +510,68 @@
     if (!reason?.trim()) return;
     await api('/posts/' + postId + '/report', 'POST', { reason, commentId }); status('Report submitted to moderators.');
   }
+  function syncReflectionComposer() {
+    if (!$('comment-form')) return;
+    $('comment-text').disabled = !me;
+    $('comment-form').querySelector('[type="submit"]').disabled = !me;
+    $('comment-hint').hidden = !!me;
+    $('comment-user').hidden = !me;
+    $('comment-user').textContent = me ? 'Posting as ' + me.author.name : '';
+    if (me) avatarImage($('comment-avatar'), me.author);
+    else $('comment-avatar').replaceChildren(icon('person-fill'));
+  }
+  function reflectionAction(label, glyph, work, className = '') {
+    const control = button('', work, 'comment-action ' + className);
+    control.title = label; control.setAttribute('aria-label', label); control.append(icon(glyph));
+    return control;
+  }
   async function loadComments() {
-    const data = await api('/posts/' + postId + '/comments'); $('comments').replaceChildren();
-    const byId = new Map(data.comments.map(c => [c.id, c]));
+    const data = await api('/posts/' + postId + '/comments');
+    $('comments').replaceChildren();
+    const count = data.comments.filter(c => !c.deleted).length;
+    $('comments-count').textContent = count;
+    $('comments-count').title = count + (count === 1 ? ' reflection' : ' reflections');
+    const byId = new Map(data.comments.map(c => [c.id, c])), children = new Map(), rendered = new Set();
     for (const c of data.comments) {
-      const article = node('article', undefined, 'community-comment' + (c.parentId ? ' community-comment-reply' : '')); article.id = 'comment-' + c.id;
-      const meta = node('div', undefined, 'small text-muted mb-2 d-flex align-items-center gap-2'); const avatar = node('span', undefined, 'community-avatar'); avatar.setAttribute('aria-hidden','true'); avatarImage(avatar, c.author); meta.append(avatar, link(c.author.name, '/community/@' + c.author.handle));
-      if (c.parentId) meta.append(document.createTextNode(' · replying to '), link(byId.get(c.parentId)?.author.name || 'comment', '#comment-' + c.parentId));
-      const body = node('div', undefined, 'notebook-markdown'); if (c.deleted) body.textContent = 'Comment removed.'; else body.innerHTML = c.html;
-      article.append(meta, body);
-      if (!c.deleted) {
-        const controls = node('div', undefined, 'd-flex flex-wrap gap-2 mt-2');
-        controls.append(button('Reply', () => { replyId = c.id; $('reply-target').textContent = 'Replying to ' + c.author.name; $('reply-target').hidden = false; $('cancel-reply').hidden = false; $('comment-text').focus(); }), button('Report', () => report(c.id)));
-        if (c.canDelete) controls.append(button('Delete', async () => { if (!window.confirm('Remove this comment?')) return; await api('/comments/' + c.id, 'DELETE'); await loadComments(); }));
-        article.append(controls);
-      }
-      $('comments').append(article);
+      const parent = byId.has(c.parentId) ? c.parentId : null;
+      if (!children.has(parent)) children.set(parent, []);
+      children.get(parent).push(c);
     }
-    if (!data.comments.length) $('comments').append(node('p', 'Be the first to join the conversation.', 'text-muted'));
-    if (/^#comment-\d+$/.test(location.hash)) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+    function append(c, depth) {
+      if (rendered.has(c.id)) return;
+      rendered.add(c.id);
+      const article = node('article', undefined, 'comment-thread-item' + (depth ? ' comment-thread-reply' : ''));
+      article.id = 'comment-' + c.id; article.style.setProperty('--comment-depth', depth);
+      const row = node('div', undefined, 'comment-row');
+      const avatar = node('span', undefined, 'comment-avatar'); avatar.setAttribute('aria-hidden', 'true'); avatarImage(avatar, c.author);
+      const entry = node('div', undefined, 'comment-entry'), bubbleWrap = node('div', undefined, 'comment-bubble-wrap'), bubble = node('div', undefined, 'comment-bubble');
+      const meta = node('div', undefined, 'comment-meta'), authorWrap = node('div', undefined, 'comment-author-wrap');
+      const author = link(c.author.name, '/community/@' + c.author.handle, 'comment-author'); author.dir = 'auto'; authorWrap.append(author); meta.append(authorWrap);
+      const body = node('div', undefined, c.deleted ? 'comment-deleted' : 'comment-text notebook-markdown'); body.dir = 'auto';
+      if (c.deleted) body.textContent = 'This reflection was deleted.'; else body.innerHTML = c.html;
+      bubble.append(meta, body); bubbleWrap.append(bubble); entry.append(bubbleWrap);
+      const controls = node('div', undefined, 'comment-actions');
+      const date = new Date(c.createdAt);
+      if (!Number.isNaN(date.getTime())) { const time = node('time', date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), 'comment-time'); time.dateTime = date.toISOString(); time.title = date.toLocaleString(); controls.append(time); }
+      if (!c.deleted) {
+        for (const [direction, selected, total, glyph, label] of [['up', c.liked, c.likeCount, 'hand-thumbs-up', 'Like'], ['down', c.disliked, c.dislikeCount, 'hand-thumbs-down', 'Disagree']]) {
+          const vote = reflectionAction(label, glyph + (selected ? '-fill' : ''), async () => { await api('/votes/comment/' + c.id, 'PUT', { direction: selected ? null : direction }); await loadComments(); }, 'comment-vote' + (selected ? ' is-active' : ''));
+          vote.setAttribute('aria-pressed', String(!!selected)); if (total) vote.append(document.createTextNode(' ' + total)); controls.append(vote);
+        }
+        controls.append(reflectionAction('Reply', 'reply', () => { replyId = c.id; $('reply-target').textContent = 'Replying to ' + c.author.name; $('reply-target').hidden = false; $('cancel-reply').hidden = false; $('comment-text').focus(); }, 'comment-reply'));
+        controls.append(reflectionAction('Report', 'flag', () => report(c.id)));
+        if (c.canDelete) controls.append(reflectionAction('Delete', 'trash', async () => { if (!window.confirm('Remove this reflection?')) return; await api('/comments/' + c.id, 'DELETE'); if (replyId === c.id) cancelReply(); await loadComments(); }, 'comment-delete comment-action-delete'));
+      }
+      entry.append(controls); row.append(avatar, entry); article.append(row); $('comments').append(article);
+      for (const child of children.get(c.id) || []) append(child, depth + 1);
+    }
+    for (const c of children.get(null) || []) append(c, 0);
+    for (const c of data.comments) if (!rendered.has(c.id)) append(c, 0);
+    if (!data.comments.length) $('comments').append(node('p', 'No reflections yet. Be the first to share.', 'comment-empty-state small'));
+    if (/^#comment-\d+$/.test(location.hash) || location.hash === '#comments') {
+      $('reflections-disclosure').open = true;
+      (document.getElementById(location.hash.slice(1)) || $('reflections-disclosure')).scrollIntoView({ block: 'center' });
+    }
   }
   function cancelReply() { replyId = null; $('reply-target').hidden = true; $('cancel-reply').hidden = true; }
   $('cancel-reply')?.addEventListener('click', cancelReply);
@@ -542,7 +585,7 @@
   $('report-post')?.addEventListener('click', () => run(() => report(), $('report-post')));
   $('comment-form')?.addEventListener('submit', event => { event.preventDefault(); run(async () => {
     const markdown = $('comment-text').value; await api('/posts/' + postId + '/comments', 'POST', { markdown, parentId: replyId });
-    if ($('comment-text').value === markdown) $('comment-text').value = ''; cancelReply(); await loadComments(); status('Comment posted.');
+    if ($('comment-text').value === markdown) $('comment-text').value = ''; cancelReply(); await loadComments(); $('comment-status').textContent = 'Reflection posted.';
   }, $('comment-form').querySelector('[type="submit"]')); });
   async function loadModeration() {
     const data = await api('/moderation'); $('moderation').replaceChildren();
@@ -699,7 +742,7 @@
         if (params.get('post') && !editing) {const post=(await api('/posts/'+encodeURIComponent(params.get('post'))+'?edit=1')).post;if(post.kind==='note'){location.replace('/community/mine?editPost='+post.id);return;}populate(post);}
         if (params.get('source') && !editing) await copyNotebook(params.get('source'));
       }
-      if (view === 'post') { $('blog-control').hidden = !me?.admin || $('blog-toggle').dataset.kind !== 'article'; $('edit-post').hidden = me?.author.handle !== handle || $('edit-post').dataset.generated === 'true'; await loadComments(); }
+      if (view === 'post') { syncReflectionComposer(); $('blog-control').hidden = !me?.admin || $('blog-toggle').dataset.kind !== 'article'; $('edit-post').hidden = me?.author.handle !== handle || $('edit-post').dataset.generated === 'true'; await loadComments(); }
       if (view === 'moderation') await loadModeration();
     } catch (err) { if (own === epoch) status(err.message); }
   }
@@ -711,6 +754,7 @@
     if (['mine', 'following'].includes(view)) { $('feed').replaceChildren(); $('more').hidden = true; }
     if (view === 'mine') { $('profile-dialog').close(); $('people-dialog').close(); $('followers').replaceChildren(); $('profile-form').reset(); $('subscriptions').replaceChildren(); $('wall-profile').hidden = true; $('wall-name').textContent = ''; $('wall-handle').textContent = ''; $('wall-bio').textContent = ''; $('wall-stats').textContent = ''; $('wall-avatar').replaceChildren(); }
     if (view === 'moderation') $('moderation').replaceChildren();
+    if (view === 'post') { me = null; cancelReply(); $('comment-text').value = ''; $('comment-status').textContent = ''; syncReflectionComposer(); }
     run(init);
   });
   run(init);

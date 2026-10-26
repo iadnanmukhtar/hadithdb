@@ -44,7 +44,7 @@ Public responses contain public author names and handles, never account email ad
 
 Writing, commenting, reporting, following, profile edits, and moderation require verified bearer authentication. Mutation rate limits are per verified UID. Replies must reference a comment belonging to the same published post. Deleted comments retain a thread placeholder with no body. Reports are deduplicated per reporter and target.
 
-This first version provides immediate email delivery for selected new articles. Digest scheduling, paid subscriptions, uploaded cover images, follower lists, notification inboxes, search, and a public revision browser are outside this release. The Community wall includes Community discussions; existing contextual Quran/hadith reflections continue to use their existing views and storage.
+This first version provides immediate email delivery for selected new articles. Digest scheduling, paid subscriptions, uploaded cover images, follower lists, search, and a public revision browser are outside this release. The Community wall includes Community discussions; existing contextual Quran/hadith reflections continue to use their existing views and storage.
 
 ## Verification
 
@@ -134,3 +134,12 @@ Article creators can upload, replace, or remove a cover in the editor. Covers us
 Creators can delete their posts from the editor after confirmation. Deletion checks ownership and version, removes posts and their discussions from public reading and feeds, cancels pending email delivery, and prevents reopening or republishing the deleted record. Records remain retained internally. Article Preview is optional; Publish still validates required content, upload completion, moderation, and Blog permissions.
 
 Community feeds call ordinary short contributions posts; private notebook content remains notes. Post pencils open the shared composer modal, including direct edit links and author feeds. Creators can remove inline images and covers, or remove an automatically generated link/video preview while retaining its link (stored as a `Link:` paragraph). Article editors offer the same attachment removal controls. Converting a post explicitly saves the same record as a private article draft before opening the article editor; it requires a title, ownership, and the current version. Conversion does not silently publish an article. Mobile article actions use a two-column layout with a full-width Publish button.
+
+
+## Community alerts and post reflections
+
+The Following button shows a private unread count for new followed-author activity and incoming replies, likes, disagreements, and reposts on the reader's own contributions. Self activity, unpublished posts, deleted targets, and activity predating a follow are excluded. Following displays the latest 101 alerts and acknowledges alerts up to its captured load time only while the page is visible. Later arrivals remain unread; read timestamps are monotonic and scoped to the authenticated account in `community_alert_reads`. The client hides the badge before authentication, resets it on account changes, and refreshes on focus and once per minute while visible.
+
+The existing Community schema initializer adds `community_alert_reads` and a nullable `created_at` to `community_dislikes`. Historical dislikes without dates are not assigned invented alert times. New disagreements through Community and the contextual reflection widget record their timestamps. No alert emails are sent by this feature.
+
+Community post detail uses the shared reflection disclosure, count, comment bubbles, avatars, vote/reply controls, and compact composer styles. Existing `#comment-ID` links open the disclosure and locate the reply; comments retain their existing Community storage and permissions.

@@ -7,12 +7,12 @@
   <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="app-menu-icon bi bi-arrow-repeat" aria-hidden="true"></i> Mudhakkir</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>"><%- include('menu_icon.ejs', { type: 'tafsir', label: 'Tafsir' }) %> Tafsir</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>"><%- include('menu_icon.ejs', { type: 'hadith', label: 'Hadith' }) %> Hadith</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(typeof isSirahArea !== 'undefined' && isSirahArea) %>" href="<%= utils.urlFor(req, '/ibnhisham') %>"><i class="app-menu-icon bi bi-book" aria-hidden="true"></i> Sirah</a></li>
+  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(typeof isSirahArea !== 'undefined' && isSirahArea) %>" href="<%= utils.urlFor(req, '/ibnhisham') %>"><%- include('menu_icon.ejs', { type: 'sirah', label: 'Sirah' }) %> Sirah</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>"><%- include('menu_icon.ejs', { type: 'books', label: 'Books' }) %> Books</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>"><i class="app-menu-icon bi bi-people" aria-hidden="true"></i> Community</a></li>
+  <li data-notebook-auth class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(req.path === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="app-menu-icon bi bi-sticky" aria-hidden="true"></i> My Notebook</a></li>
   <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>"><i class="app-menu-icon bi bi-newspaper" aria-hidden="true"></i> Blog</a></li>
   <li><hr></li>
-  <li data-notebook-auth class="nav-item"><a class="nav-link<%- activeNavAttrs(req.path === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="app-menu-icon bi bi-sticky" aria-hidden="true"></i> My Notebook</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="app-menu-icon bi bi-bookmark" aria-hidden="true"></i> My Bookmarks</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="app-menu-icon bi bi-sliders" aria-hidden="true"></i> My Settings</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isMcpServerArea) %>" href="<%= utils.urlFor(req, '/mcp-server') %>"><i class="app-menu-icon bi bi-braces" aria-hidden="true"></i> MCP Server</a></li>

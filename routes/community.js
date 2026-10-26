@@ -26,6 +26,9 @@ api.get('/me', wrap(async (req, res) => {
   const author = await Community.authorFor(signed(req));
   res.json({ author: await Community.profile(author.handle), moderator: Community.moderator(req.user), admin: await Community.admin(req.user), subscriptions: await Community.subscriptions(req.user) });
 }));
+const Alerts = require('../lib/CommunityAlerts');
+api.get('/alerts', wrap(async (req, res) => res.json(await Alerts.unread(signed(req)))));
+api.put('/alerts/read', wrap(async (req, res) => res.json(await Alerts.markRead(signed(req), req.body.through))));
 api.get('/me/followers', wrap(async (req, res) => res.json(await Community.followers(signed(req), req.query.offset))));
 api.put('/profile', wrap(async (req, res) => res.json({ author: await Community.saveProfile(req.user, req.body) })));
 api.put('/likes/:source/:id', wrap(async (req, res) => res.json(await Community.like(req.user, req.params.source, req.params.id, req.body.liked))));

@@ -16,8 +16,9 @@ jest.setTimeout(30000);
 const suite = process.env.HADITHDB_MYSQL_INTEGRATION === '1' ? describe : describe.skip;
 suite('Community publication, privacy, subscriptions, discussion and moderation', () => {
   const prefix = `c_test_${process.pid}_${Date.now()}_`;
-  const tables = ['hadith_posts','blog_media_imports','blog_imports','blog_posts','media','link_previews','dislikes','reposts','author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
-  const rewrite = statement => statement.replace(/\b(user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b/g, (_, table) => prefix + table).replace(/\bcommunity_(hadith_posts|blog_media_imports|blog_imports|blog_posts|media|link_previews|dislikes|reposts|author_aliases|authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (_, table) => prefix + table);
+  const tables = ['alert_reads','hadith_posts','blog_media_imports','blog_imports','blog_posts','media','link_previews','dislikes','reposts','author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
+  // Rewrite identifiers only: source names stored as SQL string values must stay canonical.
+  const rewrite = statement => statement.replace(/'(?:''|\.|[^'])*'|\b(user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b|\bcommunity_(alert_reads|hadith_posts|blog_media_imports|blog_imports|blog_posts|media|link_previews|dislikes|reposts|author_aliases|authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (match, source, table) => match.startsWith("'") ? match : prefix + (source || table));
   let pool, server, base, q, firstId, adminSpy, blogDir, pendingQueries=0;
   const trackedQuery=(connection,s,v,cb)=>{pendingQueries++;return connection.query(rewrite(s),v,(err,result)=>{pendingQueries--;cb(err,result);});};
   const request = (url, method = 'GET', uid = 'alice', body) => fetch(base + url, { method, headers: { ...(uid ? { Authorization: 'Bearer ' + uid } : {}), 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
@@ -883,6 +884,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await page.locator('#community-follow').click();
       await page.waitForFunction(()=>document.getElementById('community-follow').textContent.includes('Unfollow'));
       expect(await page.locator('#community-subscribe').count()).toBe(0);
+      await page.locator('#community-reflections-disclosure > summary').click();
       await page.locator('#community-comment-text').fill('A mobile reflection');
       await page.locator('#community-comment-form [type=submit]').click();
       await page.waitForFunction(()=>document.getElementById('community-comments').textContent.includes('A mobile reflection'));
@@ -1177,6 +1179,58 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     await Community.follow({uid:'alice'},'top-writer',false,false);
     expect((await json('/api/community/contributors','GET','alice')).contributors.find(a=>a.handle==='top-writer').following).toBe(false);
     await json('/api/community/contributors','GET','expired');
+  });
+
+  test('unread alerts combine followed activity and replies/reactions, with private account read state', async () => {
+    const Alerts = require('../lib/CommunityAlerts');
+    const owner = {uid:'alert-owner',name:'Alert owner'}, writer = {uid:'alert-writer',name:'Followed writer'}, stranger = {uid:'alert-stranger',name:'Other reader'};
+    for (const user of [owner,writer,stranger]) await Community.authorFor(user);
+    const writerProfile = await Community.authorFor(writer);
+    const strangerProfile = await Community.authorFor(stranger);
+    await Community.follow(owner, strangerProfile.handle, true, false);
+    await Community.follow(owner, writerProfile.handle, true, false);
+    const own = await Community.savePost(owner,postInput({kind:'note',title:'My alert post',action:'draft'}));
+    const followed = await Community.savePost(writer,postInput({kind:'note',title:'Followed post',action:'draft'}));
+    await q(`UPDATE ${prefix}posts SET status='published',public_title=title,public_markdown=markdown,published_at=NOW(3) WHERE id IN (?,?)`, [own.id,followed.id]);
+    const reply = (await Community.addComment(stranger,own.id,{markdown:'An incoming reply'}))[0];
+    await Community.like(stranger,'post',own.id,true);
+    await require('../lib/CommunityInteractions').vote(stranger,'comment',reply.id,'down');
+    await require('../lib/CommunityInteractions').repost(stranger,'post',own.id,true);
+    let alerts = await Alerts.unread(owner);
+    expect(alerts.items.map(item=>item.kind)).toEqual(expect.arrayContaining(['post','reply','like','repost']));
+    expect(alerts.items.filter(item=>item.kind==='post' && item.url.endsWith('/'+followed.id))).toHaveLength(1);
+    expect(alerts.items.some(item=>item.kind==='post' && item.url.endsWith('/'+own.id))).toBe(false);
+    expect(alerts.items.find(item=>item.kind==='reply').url).toContain('#comment-'+reply.id);
+    expect(JSON.stringify(alerts)).not.toMatch(/alert-owner|alert-writer|alert-stranger|private.test/);
+    expect(alerts.items.filter(item=>item.kind==='reply' && item.url.endsWith('#comment-'+reply.id))).toHaveLength(1);
+    const other = await Alerts.unread(writer);
+    await Alerts.markRead(owner,alerts.through);
+    expect((await Alerts.unread(owner)).count).toBe(0);
+    expect((await Alerts.unread(writer)).count).toBe(other.count);
+    await Alerts.markRead(owner,'1970-01-01T00:00:00.000Z');
+    expect((await Alerts.unread(owner)).count).toBe(0);
+    // An event committed after the displayed snapshot must survive acknowledgment.
+    await Community.addComment(stranger,own.id,{markdown:'A later incoming reply'});
+    await Alerts.markRead(owner,alerts.through);
+    expect((await Alerts.unread(owner)).items.some(item=>item.kind==='reply')).toBe(true);
+    await q(`UPDATE ${prefix}posts SET status='hidden' WHERE id IN (?,?)`,[own.id,followed.id]);
+    expect((await Alerts.unread(owner)).count).toBe(0);
+    await json('/api/community/alerts','GET',null,undefined,401);
+    await json('/api/community/alerts/read','PUT','alice',{through:'invalid'},400);
+  });
+
+  test('source reflections and reactions notify their owners without a follow and exclude removed targets', async () => {
+    const Alerts = require('../lib/CommunityAlerts');
+    const owner={uid:'reflection-owner',name:'Reflection owner'}, actor={uid:'reflection-reader',name:'Reader'};
+    await Community.authorFor(owner); await Community.authorFor(actor);
+    const target=(await q(`INSERT INTO ${prefix}hadiths_comments (hadithId,ref_num,type,user_uid,user_name,text,createdAt) VALUES (1,'bukhari:1','hadith',?,'Owner','Original',NOW(3))`,[owner.uid])).insertId;
+    await q(`INSERT INTO ${prefix}hadiths_comments (hadithId,ref_num,type,parentId,user_uid,user_name,text,createdAt) VALUES (1,'bukhari:1','hadith',?,?,'Reader','Reply',NOW(3))`,[target,actor.uid]);
+    await require('../lib/CommunityInteractions').vote(actor,'hadiths_comments',target,'down');
+    let result=await Alerts.unread(owner);
+    expect(result.items.map(item=>item.kind)).toEqual(expect.arrayContaining(['reflection','dislike']));
+    expect(result.items.every(item=>item.url==='/bukhari:1#comments')).toBe(true);
+    await q(`UPDATE ${prefix}hadiths_comments SET deleted=1 WHERE id=? OR parentId=?`,[target,target]);
+    expect((await Alerts.unread(owner)).count).toBe(0);
   });
 
 });

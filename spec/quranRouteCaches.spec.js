@@ -349,6 +349,34 @@ describe('restored Quran public route caches', () => {
     expect(QuranMushaf.sectionForPage).not.toHaveBeenCalled();
   });
 
+  test.each(['uthmani', 'indo-pak', 'warsh'])('explicit %s edition takes priority over the script cookie in the cache', async script => {
+    global.books = [{ id: 1, alias: 'quran', hidden: 0 }];
+    const router = require('../routes/search');
+    const req = {
+      url: '/quran/page/1',
+      params: { page: '1' },
+      query: { script },
+      cookies: { quranScript: script === 'warsh' ? 'uthmani' : 'warsh' },
+      admin: false,
+      editMode: false
+    };
+    const res = response();
+    const expectedFile = `${require('os').homedir()}/.hadithdb/cache/quran${Utils.cacheSuffix()}/pages/_quran_page_1__script-${script}__edition.html`;
+    jest.spyOn(QuranMushaf, 'info').mockResolvedValue({ number_of_pages: 604 });
+    jest.spyOn(Utils, 'cacheReqToFilename').mockReturnValue('_quran_page_1');
+    jest.spyOn(Utils, 'cacheFileFromFilename');
+    jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
+    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${expectedFile}.gz`);
+    jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
+    jest.spyOn(QuranMushaf, 'sectionForPage');
+
+    await routeHandler(router, '/quran/page/:page')(req, res, jest.fn());
+
+    expect(Utils.cacheFileFromFilename).toHaveBeenCalledWith(`_quran_page_1__script-${script}__edition`, 'html', 'pages', 'quran');
+    expect(Utils.sendCachedHtml).toHaveBeenCalledWith(res, req, expectedFile, 'text/html; charset=UTF-8');
+    expect(QuranMushaf.sectionForPage).not.toHaveBeenCalled();
+  });
+
   test.each(['1:1', '1:1-2'])('writes and indexes a script-and-ayah-specific Mushaf page cache miss for %s', async (selection) => {
     global.books = [{ id: 1, alias: 'quran', hidden: 0 }];
     global.surahs = [{ num: 1, ayahs: 7, name_en: 'al-Fatihah', name_ar: 'الفاتحة' }];

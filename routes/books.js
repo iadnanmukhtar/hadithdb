@@ -9,6 +9,7 @@ const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const Sharh = require('../lib/Sharh');
 const BookDownloads = require('../lib/BookDownloads');
+const QuranMushafBooks = require('../lib/QuranMushafBooks');
 
 const router = express.Router();
 
@@ -85,6 +86,7 @@ router.get('/', async function (req, res, next) {
     tafsirs = await Tafsir.withFirstPassages(tafsirs);
     var translations = await Tafsir.visibleTranslations();
     Utils.sendJsonDownload(res, 'hadithunlocked_books.json', {
+      mushafs: QuranMushafBooks.catalog(),
       books: results,
       tafsirs: tafsirs,
       translations: translations
@@ -104,6 +106,7 @@ router.get('/', async function (req, res, next) {
     const renderLocals = {
       sharhBooks,
       BookDownloads: BookDownloads,
+      mushafs: QuranMushafBooks.catalog(),
       books: results,
       Tafsir: Tafsir,
       tafsirs: tafsirs,

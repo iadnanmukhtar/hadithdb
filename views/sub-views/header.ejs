@@ -212,6 +212,7 @@
       </div>
       <div class="offcanvas-body">
         <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">
+          <a class="offcanvas-quick-action<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>" title="Books" aria-label="Books"><span class="offcanvas-books-icon" aria-hidden="true"></span></a>
           <a class="offcanvas-quick-action<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>" title="Community" aria-label="Community"><i class="bi bi-people" aria-hidden="true"></i></a>
           <a data-notebook-auth class="offcanvas-quick-action<%- activeNavAttrs(requestPath === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>" title="My Notebook" aria-label="My Notebook">
             <i class="bi bi-sticky" aria-hidden="true"></i>
@@ -222,9 +223,6 @@
           <a class="offcanvas-quick-action<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>" title="My Settings" aria-label="My Settings">
             <i class="bi bi-sliders" aria-hidden="true"></i>
           </a>
-          <button hidden data-web-app-install class="offcanvas-quick-action" type="button" title="Install app" aria-label="Install app">
-            <i class="bi bi-download" aria-hidden="true"></i>
-          </button>
         </div>
         <div class="row">
           <%- include('offcanvas_primary_nav.ejs', {
@@ -371,8 +369,9 @@
   <nav class="row g-0 chapter-toc<%= isQuranToc ? ' quran-section-menu' : '' %>">
     <%# --- TABLE OF CONTENTS --- %>
     <div class="col-12 chapter-toc-toolbar">
+      <% if (isQuranToc && !isQuranMushafSectionMenu) { %><%- include('quran_navigation_trigger.ejs'); %><% } %>
       <% if (sections && sections.length > 0) { %>
-		<a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="<%= isQuranMushafSectionMenu ? 'Show juz' : (isQuranToc ? 'Show passages' : 'Show sections') %>">
+		<a class="chapter-toc-toggle" data-bs-toggle="<%= isQuranMushafSectionMenu ? 'offcanvas' : 'collapse' %>" href="<%= isQuranMushafSectionMenu ? '#quran-navigation-rail' : '#toc2' %>" role="button" aria-expanded="false" aria-controls="<%= isQuranMushafSectionMenu ? 'quran-navigation-rail' : 'toc2' %>" title="<%= isQuranMushafSectionMenu ? 'Show juz' : (isQuranToc ? 'Show passages' : 'Show sections') %>">
           <i class="bi bi-list-ul" aria-hidden="true"></i>
 		  <span><%= isQuranMushafSectionMenu ? 'Juz' : (isQuranToc ? 'Passages' : 'Sections') %></span>
 		  <% if (isQuranMushafSectionMenu && currentMushafHeaderJuz) { %><span class="chapter-toc-current" data-quran-mushaf-current-juz><%= currentMushafHeaderJuz.num %> · <%= currentMushafHeaderJuz.progress %>%</span><% } else if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
@@ -399,7 +398,8 @@
         <!-- <a>No sections in this chapter</a> -->
       <% } %>
     </div>
-    <div id="toc2" class="col-12 toc2 collapse chapter-toc-panel">
+    <%# Mushaf jump forms still use the static Juz page mappings in this hidden panel. %>
+    <div id="toc2" class="col-12 toc2 collapse chapter-toc-panel"<% if (isQuranMushafSectionMenu) { %> hidden<% } %>>
       <table class="table chapter-toc-table">
         <tbody>
           <% if (!isQuranMushafSectionMenu) { %>
@@ -455,14 +455,10 @@
   </nav>
   <% } %>
 
-  <% if ((requestPath === '/quran' || requestPath === '/quran/review' || isQuranTafsirArea || pageQuranCommentaryBook) && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
+  <% if (!(isQuranToc && (page.menu === 'Chapter' || page.menu === 'Section')) && (requestPath === '/quran' || requestPath === '/quran/review' || isQuranTafsirArea || pageQuranCommentaryBook) && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
   <nav class="row g-0 chapter-toc quran-section-menu">
     <div class="col-12 chapter-toc-toolbar">
-      <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="Show juz sections">
-        <i class="bi bi-list-ul" aria-hidden="true"></i>
-        <span>Juz</span>
-        <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
-      </a>
+      <%- include('quran_navigation_trigger.ejs'); %>
       <span class="chapter-toc-reader-modes">
         <%- include('quran_reader_modes.ejs', {
           readerMode: isQuranTafsirArea ? 'tafsir' : (requestPath === '/quran/review' ? 'review' : undefined),
@@ -470,25 +466,9 @@
           ayahHref: `${utils.quranUrl(req, '/quran/1')}?ayat`,
           mushafHref: utils.quranUrl(req, '/quran/page'),
           tafsirHref: pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir' ? requestPath : utils.quranUrl(req, '/quran/tafsir'),
-          memorizeHref: `${utils.quranUrl(req, '/quran/page/1')}?memorize`
+          memorizeHref: utils.quranUrl(req, '/quran/page/1?memorize')
         }); %>
       </span>
-    </div>
-    <div id="toc2" class="col-12 toc2 collapse chapter-toc-panel">
-      <table class="table chapter-toc-table">
-        <tbody>
-          <tr class="title" data-quran-menu-href="<%= utils.quranUrl(req, '/quran') %>">
-            <td><a href="<%= utils.quranUrl(req, '/quran') %>">Table of Contents</a></td>
-            <td lang="ar" dir="rtl"><a href="<%= utils.quranUrl(req, '/quran') %>">الفهرس</a></td>
-          </tr>
-          <% for (var quranHeaderJuz of (Array.isArray(locals.quranHeaderJuzLinks) ? locals.quranHeaderJuzLinks : [])) { %>
-          <tr class="title">
-            <td><a href="<%= quranHeaderJuz.href %>">Juz <%= quranHeaderJuz.num %></a></td>
-            <td lang="ar" dir="rtl"><a href="<%= quranHeaderJuz.href %>"><%- quranHeaderJuz.title || '' %></a></td>
-          </tr>
-          <% } %>
-        </tbody>
-      </table>
     </div>
   </nav>
   <% } %>
@@ -503,3 +483,5 @@
 
   </div>
 </nav>
+
+<% if (isQuranArea) { %><%- include('quran_navigation_rail.ejs', { navigationMode: quranSearchReturnMode, navigationBook: quranSearchCommentaryBook }); %><% } %>

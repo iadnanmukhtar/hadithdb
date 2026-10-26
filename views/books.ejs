@@ -18,7 +18,7 @@
     canonical: `/books`,
     context: {}
     };
-    var initialBookCatalogType = req && req.query && req.query.tab === 'history' ? 'sirah' : (req && req.query && req.query.tab === 'sharh' ? 'sharh' : 'hadith');
+    var initialBookCatalogType = req && req.query && req.query.tab === 'mushaf' ? 'mushaf' : req && req.query && req.query.tab === 'history' ? 'sirah' : (req && req.query && req.query.tab === 'sharh' ? 'sharh' : 'hadith');
     var tafsirBookUrl = function (tafsir) {
       var slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
       return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
@@ -197,7 +197,7 @@
       '@context': 'https://schema.org',
       '@type': 'Table',
       name: 'Available Books',
-      about: 'Available Books of Ḥadīth, Sharḥ, History, Tafsīr, and Quran Translations'
+      about: 'Available Books of Ḥadīth, Sharḥ, History, Tafsīr, Mushaf editions, and Quran Translations'
     }) %>
 
     <nav class="h-menu-wrap home-hadith-book-nav book-catalog-group-filters mb-3" aria-label="Filter books">
@@ -205,7 +205,7 @@
         <div class="btn-group h-menu text-nowrap" role="group">
           <label class="book-carousel-filter">
             <span class="bi bi-search" aria-hidden="true"></span>
-            <input type="search" class="book-carousel-filter-input book-catalog-filter" placeholder="Filter books" aria-label="Filter ḥadīth, sharḥ, tafsīr, and translation books" autocomplete="off" autofocus>
+            <input type="search" class="book-carousel-filter-input book-catalog-filter" placeholder="Filter books" aria-label="Filter mushaf, ḥadīth, sharḥ, tafsīr, and translation books" autocomplete="off" autofocus>
           </label>
           <button type="button" class="btn btn-outline-primary active" data-book-catalog-group-filter="" aria-pressed="true">All</button>
           <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="en" data-book-catalog-group-scope="tafsir" aria-pressed="false">English</button>
@@ -219,6 +219,7 @@
 
     <section class="book-catalog-tabs-section mb-4">
       <ul class="nav nav-tabs book-catalog-tabs mb-3" role="tablist">
+        <%- catalogTabButton('book-catalog-mushaf', 'Mushaf', initialBookCatalogType === 'mushaf') %>
         <% tafsirGroups.forEach(function (group) { %>
           <% var sectionId = `book-catalog-tafsir-${group.key}`; %>
           <%- catalogTabButton(sectionId, group.heading, false) %>
@@ -229,6 +230,9 @@
         <%- catalogTabButton('book-catalog-sirah', 'History &amp; Sirah', initialBookCatalogType === 'sirah') %>
       </ul>
       <div class="tab-content">
+        <div id="book-catalog-mushaf" class="tab-pane fade<%= initialBookCatalogType === 'mushaf' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-mushaf-tab">
+          <%- include('sub-views/mushaf_catalog_list.ejs', { mushafs: locals.mushafs || [] }); %>
+        </div>
         <div id="book-catalog-sharh" class="tab-pane fade<%= initialBookCatalogType === 'sharh' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-sharh-tab">
           <%- include('sub-views/sharh_catalog_list.ejs', { site, sharhBooks: locals.sharhBooks || [] }); %>
         </div>

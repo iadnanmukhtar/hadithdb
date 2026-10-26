@@ -1,0 +1,131 @@
+(function () {
+  'use strict';
+  var rail = document.getElementById('quran-navigation-rail');
+  if (!rail) return;
+  var content = rail.querySelector('.quran-navigation-content');
+  var status = rail.querySelector('[role="status"]');
+  var tabs = Array.from(rail.querySelectorAll('[data-navigation-tab]'));
+  var data, loading, tab = 'juz', surah = 1, currentRef = '', currentPage = 0;
+
+  function normalize(value) {
+    return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f\u064b-\u065f\u0670]/g, '')
+      .replace(/[أإآٱ]/g, 'ا').replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x660)).replace(/[\u06f0-\u06f9]/g, d => String(d.charCodeAt(0) - 0x6f0)).replace(/[^\p{L}\p{N}]/gu, '');
+  }
+  function context() {
+    var markers = Array.from(document.querySelectorAll('[data-quran-mushaf-page], main[data-reader-quran-ref], .quran-passage-section'));
+    var marker = markers.find(node => { var box = node.getBoundingClientRect(); return box.bottom > 180 && box.top < window.innerHeight; }) || document.querySelector('main');
+    currentRef = typeof window.quranReaderModeFirstRef === 'function' ? window.quranReaderModeFirstRef(marker) : '';
+    var verse = marker && (marker.querySelector('.ayah-selected[data-quran-ref]') || marker.querySelector('[data-quran-ref]'));
+    currentRef = currentRef || verse && verse.getAttribute('data-quran-ref') || (new URLSearchParams(window.location.search)).get('ayah') || '';
+    var match = currentRef.match(/^(\d+):(\d+)/);
+    surah = match ? Number(match[1]) : Number((window.location.pathname.match(/\/quran\/(?:[A-Za-z_-]+\/)?(\d+)(?:\/|$)/) || [])[1]) || 1;
+    currentPage = Number(marker && marker.getAttribute('data-quran-mushaf-page')) || Number((window.location.pathname.match(/\/quran\/page\/(\d+)/) || [])[1]) || 0;
+  }
+  function href(ref, page) {
+    var url = new URL(rail.dataset.navigationJump, window.location.origin);
+    url.searchParams.set(page ? 'page' : 'ref', page || ref);
+    url.searchParams.set('mode', rail.dataset.navigationMode);
+    if (rail.dataset.navigationBook) url.searchParams.set('book', rail.dataset.navigationBook);
+    var query = new URLSearchParams(window.location.search);
+    ['memorize', 'ayat'].forEach(key => { if (query.has(key)) url.searchParams.set(key, ''); });
+    if (query.has('script')) url.searchParams.set('script', query.get('script'));
+    return url.pathname + url.search;
+  }
+  function link(label, destination, active, arabic) {
+    var a = document.createElement('a');
+    a.className = 'quran-navigation-item'; a.href = destination;
+    var name = document.createElement('span'); name.textContent = label; a.append(name);
+    if (arabic) { var ar = document.createElement('span'); ar.lang = 'ar'; ar.dir = 'rtl'; ar.textContent = arabic; a.append(ar); }
+    if (active) { a.classList.add('is-current'); a.setAttribute('aria-current', 'location'); }
+    return a;
+  }
+  function column(label, items) {
+    var col = document.createElement('div'); col.className = 'quran-navigation-column';
+    var input = document.createElement('input'); input.type = 'search'; input.className = 'form-control'; input.placeholder = label === 'Search Verse' ? 'Verse' : label; input.setAttribute('aria-label', label);
+    var list = document.createElement('nav'); list.className = 'quran-navigation-list'; list.setAttribute('aria-label', label.replace('Search ', ''));
+    var empty = document.createElement('p'); empty.className = 'text-muted p-2'; empty.textContent = 'No matches'; empty.hidden = true;
+    items.forEach(item => list.append(item)); list.append(empty);
+    input.addEventListener('input', function () {
+      var term = normalize(input.value), count = 0;
+      items.forEach(item => { item.hidden = !normalize(item.textContent).includes(term); if (!item.hidden) count++; });
+      empty.hidden = count > 0;
+    });
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') { var first = items.find(item => !item.hidden); if (first) { event.preventDefault(); first.click(); } }
+      if (event.key === 'ArrowDown') { var first = items.find(item => !item.hidden); if (first) { event.preventDefault(); first.focus(); } }
+    });
+    col.append(input, list); return col;
+  }
+  function centerCurrent() {
+    content.querySelectorAll('.quran-navigation-list').forEach(list => {
+      var active = list.querySelector('.is-current');
+      if (active && !active.hidden) list.scrollTop += active.getBoundingClientRect().top - list.getBoundingClientRect().top - (list.clientHeight - active.offsetHeight) / 2;
+    });
+  }
+  function render() {
+    if (!data) return;
+    content.replaceChildren(); content.classList.toggle('has-verses', tab === 'verse');
+    content.setAttribute('aria-labelledby', 'quran-navigation-tab-' + tab);
+    tabs.forEach(button => { var selected = button.dataset.navigationTab === tab; button.setAttribute('aria-selected', String(selected)); button.tabIndex = selected ? 0 : -1; });
+    if (tab === 'surah' || tab === 'verse') {
+      content.append(column('Search Surah', data.surahs.map(s => {
+        var a = link(s.num + '. ' + s.name, href(s.num + ':1'), s.num === surah, s.arabic);
+        if (tab === 'verse') {
+          a.setAttribute('role', 'button'); a.setAttribute('aria-label', 'Select ' + s.name + ' verses');
+          a.addEventListener('click', event => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault(); surah = s.num;
+            content.querySelectorAll('.quran-navigation-column:first-child .quran-navigation-item').forEach(item => { item.classList.remove('is-current'); item.removeAttribute('aria-current'); });
+            a.classList.add('is-current'); a.setAttribute('aria-current', 'location'); renderVerses();
+          });
+          a.addEventListener('keydown', event => { if (event.key === ' ') { event.preventDefault(); a.click(); } });
+        }
+        return a;
+      })));
+      if (tab === 'verse') renderVerses();
+    } else if (tab === 'juz') {
+      var activeJuz = data.juz.filter(j => { var p = j.ref.split(':').map(Number), c = currentRef.split(':').map(Number); return p[0] < c[0] || p[0] === c[0] && p[1] <= c[1]; }).pop();
+      content.append(column('Search Juz', data.juz.map(j => link('Juz ' + j.num, href(j.ref), j === activeJuz, j.title))));
+    } else {
+      content.append(column('Search Page', Array.from({length: data.pages}, (_, i) => link('Page ' + (i + 1), href('', i + 1), i + 1 === currentPage))));
+    }
+    centerCurrent();
+  }
+  function renderVerses() {
+    var old = content.querySelectorAll('.quran-navigation-column')[1]; if (old) old.remove();
+    var selected = data.surahs.find(s => s.num === surah); if (!selected) return;
+    var col = column('Search Verse', Array.from({length: selected.ayahs}, (_, i) => link(String(i + 1), href(surah + ':' + (i + 1)), currentRef === surah + ':' + (i + 1))));
+    col.classList.add('quran-navigation-verses'); content.append(col); centerCurrent();
+  }
+  tabs.forEach((button, index) => {
+    button.addEventListener('click', () => { tab = button.dataset.navigationTab; render(); });
+    button.addEventListener('keydown', event => {
+      var next = event.key === 'ArrowRight' ? (index + 1) % tabs.length : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1;
+      if (next >= 0) { event.preventDefault(); tabs[next].click(); tabs[next].focus(); }
+    });
+  });
+  rail.addEventListener('show.bs.offcanvas', function (event) {
+    context();
+    var trigger = event.relatedTarget;
+    if (trigger && trigger.dataset.navigationOpenTab) {
+      tab = trigger.dataset.navigationOpenTab;
+      if (trigger.dataset.navigationSurah) {
+        surah = Number(trigger.dataset.navigationSurah);
+        if (Number(currentRef.split(':')[0]) !== surah) currentRef = surah + ':1';
+      }
+    }
+    if (data) return render();
+    if (loading) return;
+    status.textContent = 'Loading Quran navigation…';
+    loading = fetch(rail.dataset.navigationUrl, {headers: {'Accept':'application/json'}})
+      .then(response => { if (!response.ok) throw new Error('Navigation unavailable'); return response.json(); })
+      .then(result => { data = result; status.textContent = ''; render(); })
+      .catch(() => {
+        status.textContent = 'Could not load navigation. ';
+        var retry = document.createElement('button'); retry.className = 'btn btn-link p-0'; retry.textContent = 'Retry';
+        retry.addEventListener('click', () => rail.dispatchEvent(new Event('show.bs.offcanvas'))); status.append(retry);
+      }).finally(() => { loading = null; });
+  });
+  rail.addEventListener('shown.bs.offcanvas', centerCurrent);
+  window.addEventListener('resize', function () { if (rail.classList.contains('show')) centerCurrent(); });
+}());

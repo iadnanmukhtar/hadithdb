@@ -8,7 +8,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   <% var showQuranHeadingToc = !review && locals.quranHeadingOutlines && Object.keys(locals.quranHeadingOutlines).length > 0; %>
   <div<% if (showQuranHeadingToc) { %> class="container-fluid quran-heading-layout quran-heading-layout-mushaf"<% } %>>
-  <main class="container col-xl-7 col-lg-8 mx-auto quran-mushaf-reader<%= memorize ? ' quran-memorize-reader' : '' %> mt-10" data-quran-mushaf-reader data-page-help-tour="<%= memorize ? (review ? 'review' : 'memorize') : 'mushaf' %>"<% if (memorize) { %> data-quran-memorize-reader="1"<% } %><% if (review) { %> data-quran-review-reader="1"<% } %> data-next-url="<%= `/quran/page/${mushaf.number < mushaf.info.number_of_pages ? mushaf.number + 1 : 1}${memorize ? '?memorize' : ''}` %>">
+  <main class="container col-xl-7 col-lg-8 mx-auto quran-mushaf-reader<%= memorize ? ' quran-memorize-reader' : '' %> mt-10" data-quran-mushaf-reader<% if (memorize) { %> data-page-help-tour="<%= review ? 'review' : 'memorize' %>"<% } %><% if (memorize) { %> data-quran-memorize-reader="1"<% } %><% if (review) { %> data-quran-review-reader="1"<% } %> data-next-url="<%= `/quran/page/${mushaf.number < mushaf.info.number_of_pages ? mushaf.number + 1 : 1}${memorize ? '?memorize' : ''}` %>">
     <% if (memorize && !review) { %>
     <div class="d-flex justify-content-center mb-3" data-quran-memorize-get-started>
       <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#quran-get-started-modal"><i class="bi bi-stars me-1" aria-hidden="true"></i>Get Started</button>
@@ -52,9 +52,9 @@
             <% if (firstJuz) { %><form data-quran-mushaf-juz-form><label>Juz <span class="visually-hidden">number</span><input type="text" inputmode="text" enterkeyhint="go" value="<%= firstJuz.num %>" aria-label="Juz number. Enter a Juz from 1 through 30."></label></form><% } %>
             <% if (firstJuz && firstSurah) { %><span aria-hidden="true">·</span><% } %>
             <% if (firstSurah) { %>
-              <span class="quran-mushaf-surah-picker" lang="ar" dir="rtl"><span class="dropdown quran-mushaf-surah-picker-dropdown"><span class="quran-mushaf-surah-picker-label">سُورَةُ <%= firstSurah.name_ar || firstSurah.name_en || firstSurah.num %></span><button type="button" class="quran-mushaf-surah-picker-toggle dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose a Surah"></button><ul class="dropdown-menu quran-mushaf-surah-picker-menu" dir="rtl"><% (global.surahs || []).forEach(function (surah) { var surahPage = Number(locals.quranMushafSurahPages && locals.quranMushafSurahPages[Number(surah.num)]); if (!Number.isInteger(surahPage)) return; %><li><a class="dropdown-item<%= Number(surah.num) === Number(firstSurah.num) ? ' active' : '' %>" href="<%= utils.quranUrl(req, `/quran/page/${surahPage}?ayah=${surah.num}:1`) %>" data-quran-mushaf-surah-page="<%= surahPage %>" data-quran-mushaf-surah="<%= surah.num %>"<% if (Number(surah.num) === Number(firstSurah.num)) { %> aria-current="true"<% } %>><span class="quran-mushaf-surah-option-number"><%= surah.num %></span><span><%= surah.name_ar || surah.name_en || surah.num %></span></a></li><% }); %></ul></span></span>
+              <span class="quran-mushaf-surah-picker" lang="ar" dir="rtl"><span class="quran-mushaf-surah-picker-dropdown"><span class="quran-mushaf-surah-picker-label">سُورَةُ <%= firstSurah.name_ar || firstSurah.name_en || firstSurah.num %></span><button type="button" class="quran-mushaf-surah-picker-toggle" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= firstSurah.num %>" aria-controls="quran-navigation-rail" aria-label="Choose a Surah"></button></span></span>
               <span aria-hidden="true">·</span>
-              <form data-quran-mushaf-surah-form><label><span class="visually-hidden">Surah number</span><input type="text" inputmode="text" enterkeyhint="go" value="<%= firstSurah.num %>" aria-label="Surah number. Enter a Surah from 1 through 114."></label></form>
+              <form data-quran-mushaf-surah-form data-quran-mushaf-surah-pages="<%= JSON.stringify(locals.quranMushafSurahPages || {}) %>"><label><span class="visually-hidden">Surah number</span><input type="text" inputmode="text" enterkeyhint="go" value="<%= firstSurah.num %>" aria-label="Surah number. Enter a Surah from 1 through 114."></label></form>
             <% } %>
           </span>
           <span class="quran-mushaf-page-number">
@@ -147,7 +147,7 @@
   <% } %>
   </div>
   <% if (memorize) { %><%- include('sub-views/quran_memorization_help_modal.ejs', { site: site, page: page }); %><% if (!review) { %><%- include('sub-views/quran_memorize_review_modal.ejs', { site: site, page: page }); %><%- include('sub-views/quran_get_started_modal.ejs', { site: site, page: page }); %><% } %><% } %>
-  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page, helpTour: memorize ? (review ? 'review' : 'memorize') : 'mushaf' }); %>
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page, helpTour: memorize ? (review ? 'review' : 'memorize') : '' }); %>
   <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   <% if (review && reviewPreviousLines && reviewPreviousLines.length) { %>

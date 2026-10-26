@@ -47,6 +47,15 @@
     </form>
     </dialog>
     <% } %>
+    <% if (view === 'following') { %>
+    <section id="community-alerts" class="community-alerts mb-4" aria-labelledby="community-alerts-heading" hidden>
+      <h2 id="community-alerts-heading" class="fs-5">New alerts</h2>
+      <p class="small text-muted">Activity from people you follow, and replies or reactions to your contributions.</p>
+      <div data-community-alert-list></div>
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-community-alert-more hidden>Show more alerts</button>
+      <p class="small text-muted" data-community-alert-status role="status"></p>
+    </section>
+    <% } %>
     <div class="community-feed-toolbar"><h2><%= view === 'mine' ? 'Your activity' : view === 'following' ? 'From authors you follow' : view === 'author' ? 'Writing & conversations' : 'In the community' %></h2>
     <% if (view !== 'mine') { %><label class="visually-hidden" for="community-filter">Filter activity</label><select class="form-select form-select-sm community-filter" id="community-filter"><option value="all">All activity</option><option value="article">Articles</option><option value="note">Posts</option><option value="comment">Comments</option><option value="like">Likes</option></select><% } %></div>
     <div id="community-feed" class="community-feed"><% if (initial) { %><%- include('sub-views/community_feed.ejs', { items: initial.items }); %><% if (!initial.items.length) { %><p class="community-empty">No public posts yet. Start a reflection or share an article.</p><% } } %></div>
@@ -125,9 +134,7 @@ Use **bold** for emphasis and *italics* for a title.
     <div class="notebook-markdown"><%- post.html %></div><% if (post.tags) { %><p class="small text-muted mt-4" dir="auto"><%= post.tags %></p><% } %>
     <div class="d-flex gap-3 flex-wrap small mt-3"><div id="community-blog-control" class="form-check form-switch community-blog-control" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch" data-kind="<%= post.kind %>"<% if (post.isBlog) { %> checked<% } %>><label class="form-check-label" for="community-blog-toggle">Blog post</label></div><button id="community-report-post" class="btn btn-sm btn-link p-0" type="button">Report</button><a id="community-edit-post" data-generated="<%= !!post.generatedActivity %>" href="<%= post.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=' %><%= post.id %>" hidden>Edit post</a></div>
   </article>
-  <section class="community-reading mt-4" id="comments" aria-label="Discussion"><h2 class="h4">Discussion</h2><div id="community-comments"></div>
-    <form id="community-comment-form" class="community-card"><p id="community-reply-target" class="small text-muted" hidden></p><button id="community-cancel-reply" class="btn btn-sm btn-link mb-2" type="button" hidden>Cancel reply</button><label class="form-label" for="community-comment-text">Join the conversation</label><textarea id="community-comment-text" class="form-control mb-3" dir="auto" rows="3" maxlength="10000" required></textarea><button class="btn btn-primary" type="submit">Post comment</button></form>
-  </section>
+  <%- include('sub-views/community_reflections.ejs', { post }); %>
   <% } %>
   <% if (view === 'moderation') { %><p class="text-muted">Review first publications and reported content. Approval allows the author’s future posts to publish immediately.</p><div id="community-moderation"></div><% } %>
   <% if (view === 'unsubscribe') { %><section class="community-card"><% if (unsubscribed) { %><p class="mb-0">You have unsubscribed from this author’s emails. You still follow their posts in your feed.</p><% } else { %><p>Stop email updates from this author? You will still follow their posts.</p><form method="post"><button class="btn btn-primary" type="submit">Unsubscribe from emails</button></form><% } %></section><% } %>

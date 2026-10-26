@@ -2501,6 +2501,10 @@ async function quranReviewHeaderJuzLinks(req) {
   }))).filter(Boolean);
 }
 
+const QuranNavigationRail = require('../lib/QuranNavigationRail');
+router.get('/quran/navigation', QuranNavigationRail.data);
+router.get('/quran/navigate', QuranNavigationRail.navigate);
+
 router.get('/quran/review', async function (req, res) {
   res.locals.req = req;
   res.locals.res = res;
@@ -2849,6 +2853,9 @@ function quranMushafCacheFile(req, pageNumber) {
   };
   var filename = Utils.cacheReqToFilename(normalizedReq);
   filename += `__script-${quranMushafScript(req)}`;
+  // Explicit edition pages carry the edition in their navigation links.
+  if (['uthmani', 'indo-pak', 'warsh'].includes(req.query.script))
+    filename += '__edition';
   var selection = QuranMushaf.ayahSelection(req.query.ayah);
   var selectedAyahRef = selection ? selection.ref : '';
   if (selectedAyahRef)
@@ -2857,6 +2864,9 @@ function quranMushafCacheFile(req, pageNumber) {
 }
 
 function quranMushafScript(req) {
+  var requestedScript = (req.query && req.query.script || '').toString().trim().toLowerCase();
+  if (['uthmani', 'indo-pak', 'warsh'].includes(requestedScript))
+    return requestedScript;
   var script = (req.cookies && req.cookies.quranScript || '').toString().trim().toLowerCase();
   return ['uthmani', 'indo-pak', 'warsh'].includes(script) ? script : 'uthmani';
 }
