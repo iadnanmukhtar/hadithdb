@@ -23,3 +23,12 @@ test('public post representation excludes owner identity, draft body, draft stat
   expect(post.subtitle).toBe('Published subtitle'); expect(post.title).toBe('Published title'); expect(post.html).toContain('Published body');
   expect(JSON.stringify(post)).not.toMatch(/Unpublished|Private draft|private tag|private-uid|version|status/);
 });
+
+ test('feed posts show up to 2000 characters while articles retain short excerpts', () => {
+  const body = 'A'.repeat(2100);
+  const row = {id:1,kind:'note',public_markdown:body,public_title:'',handle:'writer',name:'Writer'};
+  expect(Community.postView(row).excerpt).toBe(body.slice(0,2000));
+  expect(Community.postView({...row,public_markdown:'A'.repeat(900)}).excerpt).toHaveLength(900);
+  expect(Community.postView({...row,kind:'article'}).excerpt).toHaveLength(280);
+  expect(Array.from(Community.postView({...row,public_markdown:'😀'.repeat(2001)}).excerpt)).toHaveLength(2000);
+});

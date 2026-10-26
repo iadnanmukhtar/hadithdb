@@ -265,3 +265,19 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .notebook-markdown :is(h1,h2,h3,h4,h5,h6)[id^="article-"] { scroll-margin-top: 7rem; }
 
 .community-article-subtitle { color: var(--bs-secondary-color, #6c757d); font-size: 1.05em; line-height: 1.5; margin: .25rem 0 1rem; }
+
+.community-attachment-list:empty { display: none; }
+.community-attachment-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .4rem 0; border-bottom: 1px solid var(--community-line); font-size: .8rem; }
+.community-attachment-row > span { min-width: 0; overflow-wrap: anywhere; }
+.community-attachment-row > button { flex-shrink: 0; }
+.community-editor-actions > .btn { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-height: 36px; margin-bottom: 0; font-size: .875rem; padding: .375rem .75rem; }
+@media (max-width: 575.98px) {
+  .community-editor-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: stretch; }
+  .community-editor-actions > .btn { width: 100%; margin-inline: 0; white-space: normal; }
+  .community-editor-actions #community-publish { grid-column: 1 / -1; margin-inline: 0; }
+  .community-composer-footer > div { flex-wrap: wrap; width: 100%; justify-content: flex-end; }
+  .community-attachment-row { flex-wrap: wrap; }
+}
+
+.community-composer-footer > div { margin-inline-start: auto; }
+#community-quick-cover img { max-height: 160px; }

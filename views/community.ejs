@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="en"><head>
 <% var site = Object.assign({}, global.settings.site, { admin: false, editMode: false }); %>
-<%- include('sub-views/head.ejs', { site, page }); %>
+<%- include('sub-views/head.ejs', { site, page: view === 'everyone' ? { ...page, title_en: 'Hadith Unlocked Community' } : page }); %>
 <style><%- include('sub-views/notebook_content_styles.ejs'); %></style>
 </head><body class="community-page">
 <%- include('sub-views/header.ejs', { site, page }); %>
 <main class="container py-4 community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
   <div class="community-heading">
     <div><h1 dir="auto"><%= view === 'author' ? author.name : page.title_en %></h1>
-    <% if (['everyone','following','mine'].includes(view)) { %><p class="community-intro"><%= view === 'mine' ? 'Your notes, articles, reflections, comments, and publication drafts.' : view === 'following' ? 'The latest writing and conversations from authors you follow.' : 'Notes, articles, and discussions from the community.' %></p><% } %>
+    <% if (['everyone','following','mine'].includes(view)) { %><p class="community-intro"><%= view === 'mine' ? 'Your posts, articles, reflections, comments, and publication drafts.' : view === 'following' ? 'The latest writing and conversations from authors you follow.' : 'Posts, articles, and discussions from the community.' %></p><% } %>
     </div>
   </div>
   <p id="community-status" class="small text-muted" role="status" aria-live="polite"></p>
@@ -28,23 +28,27 @@
   <% } %>
   <% if (['everyone','following','mine','author'].includes(view)) { %>
   <div class="community-columns"><section class="community-wall" aria-label="Activity wall">
-    <% if (['everyone', 'following', 'mine'].includes(view)) { %>
+    <% if (['everyone', 'following', 'mine','author'].includes(view)) { %>
     <button id="community-quick-open" type="button" class="community-quick-prompt" aria-haspopup="dialog" aria-controls="community-quick-dialog"><span class="community-avatar" id="community-prompt-avatar" aria-hidden="true"><i class="bi bi-person"></i></span><span>What's on your mind?</span></button>
-    <dialog id="community-quick-dialog" class="community-quick-dialog" aria-label="Write a public note">
-    <form id="community-quick-form" class="community-composer" aria-label="Create a quick note">
+    <dialog id="community-quick-dialog" class="community-quick-dialog" aria-label="Write a public post">
+    <form id="community-quick-form" class="community-composer" aria-label="Create or edit a post">
       <button type="button" class="btn-close community-composer-close" data-close-quick aria-label="Close editor"></button>
-      <div class="community-composer-heading"><span class="community-avatar" id="community-quick-avatar" aria-hidden="true"><i class="bi bi-person"></i></span><div><span class="community-composer-name" id="community-quick-name">Share a post</span><span class="community-composer-audience"><i class="bi bi-globe2" aria-hidden="true"></i> Public note</span></div></div>
+      <div class="community-composer-heading"><span class="community-avatar" id="community-quick-avatar" aria-hidden="true"><i class="bi bi-person"></i></span><div><span class="community-composer-name" id="community-quick-name">Share a post</span><span id="community-quick-audience" class="community-composer-audience"><i class="bi bi-globe2" aria-hidden="true"></i> Public post</span></div></div>
       <label class="visually-hidden" for="community-quick-text">What's on your mind?</label>
       <textarea id="community-quick-text" rows="6" maxlength="10000" required dir="auto" placeholder="What's on your mind?" aria-describedby="community-quick-status"></textarea>
       <div class="community-media-toolbar" data-media-editor="quick-text"><button type="button" data-add-image title="Add image"><i class="bi bi-image" aria-hidden="true"></i> Image</button><button type="button" data-add-link title="Add webpage preview"><i class="bi bi-link-45deg" aria-hidden="true"></i> Link</button><button type="button" data-add-video title="Add video preview"><i class="bi bi-play-btn" aria-hidden="true"></i> Video</button><input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden><span class="community-media-status" role="status"></span></div>
+      <div id="community-quick-attachments" class="community-attachment-list"></div>
+      <div id="community-quick-cover" class="community-editor-cover" hidden></div>
+      <label class="small text-muted">Cover image <input id="community-quick-cover-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="form-control form-control-sm"></label>
+      <div id="community-quick-edit-actions" hidden><div id="community-quick-conversion-title" hidden><label for="community-quick-title" class="small text-muted">Article title</label><input id="community-quick-title" class="form-control form-control-sm" maxlength="240"></div><div class="d-flex flex-wrap gap-2 my-2"><button id="community-quick-convert" type="button" class="btn btn-sm btn-outline-secondary">Convert to article draft</button><button id="community-quick-delete" type="button" class="btn btn-sm btn-outline-danger">Delete post</button></div></div>
       <div id="community-quick-preview" class="notebook-markdown" hidden></div>
-      <div class="community-composer-footer"><a href="/community/write?kind=article"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Write an article</a><div class="d-flex align-items-center gap-2"><button id="community-quick-preview-button" type="button" class="community-preview-action" hidden>Preview</button><button type="button" class="btn btn-sm btn-outline-secondary" data-close-quick>Cancel</button><button id="community-quick-post" class="btn btn-sm btn-primary" type="submit" disabled>Post note <i class="bi bi-arrow-up" aria-hidden="true"></i></button></div></div>
+      <div class="community-composer-footer"><a id="community-quick-new-article" href="/community/write?kind=article"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Write an article</a><div class="d-flex align-items-center gap-2"><button id="community-quick-preview-button" type="button" class="community-preview-action" hidden>Preview</button><button type="button" class="btn btn-sm btn-outline-secondary" data-close-quick>Cancel</button><button id="community-quick-post" class="btn btn-sm btn-primary" type="submit" disabled>Post <i class="bi bi-arrow-up" aria-hidden="true"></i></button></div></div>
       <p id="community-quick-status" class="community-composer-status" role="status" aria-live="polite"></p>
     </form>
     </dialog>
     <% } %>
     <div class="community-feed-toolbar"><h2><%= view === 'mine' ? 'Your activity' : view === 'following' ? 'From authors you follow' : view === 'author' ? 'Writing & conversations' : 'In the community' %></h2>
-    <% if (view !== 'mine') { %><label class="visually-hidden" for="community-filter">Filter activity</label><select class="form-select form-select-sm community-filter" id="community-filter"><option value="all">All activity</option><option value="article">Articles</option><option value="note">Notes</option><option value="comment">Comments</option><option value="like">Likes</option></select><% } %></div>
+    <% if (view !== 'mine') { %><label class="visually-hidden" for="community-filter">Filter activity</label><select class="form-select form-select-sm community-filter" id="community-filter"><option value="all">All activity</option><option value="article">Articles</option><option value="note">Posts</option><option value="comment">Comments</option><option value="like">Likes</option></select><% } %></div>
     <div id="community-feed" class="community-feed"><% if (initial) { %><%- include('sub-views/community_feed.ejs', { items: initial.items }); %><% if (!initial.items.length) { %><p class="community-empty">No public posts yet. Start a reflection or share an article.</p><% } } %></div>
     <div id="community-feed-sentinel" class="community-feed-sentinel" aria-hidden="true"></div>
     <p id="community-feed-status" class="small text-muted" role="status" aria-live="polite"></p>
@@ -85,7 +89,8 @@
       <div class="mb-4" id="community-cover-controls"><input id="community-cover-url" type="hidden"><label class="form-label d-block" for="community-cover-file">Cover image</label><input id="community-cover-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="form-control form-control-sm"><button id="community-cover-remove" type="button" class="btn btn-sm btn-link text-muted" hidden>Remove cover</button><span id="community-cover-status" class="small text-muted" role="status"></span></div>
       <label class="form-label" for="community-subtitle">Subtitle <span class="text-muted">(optional)</span></label><input id="community-subtitle" class="form-control mb-4" maxlength="1000" dir="auto" placeholder="Add a short introduction to your article">
       <div class="community-media-toolbar" data-media-editor="markdown"><button type="button" data-add-image title="Add image"><i class="bi bi-image" aria-hidden="true"></i> Image</button><button type="button" data-add-link title="Add webpage preview"><i class="bi bi-link-45deg" aria-hidden="true"></i> Link</button><button type="button" data-add-video title="Add video preview"><i class="bi bi-play-btn" aria-hidden="true"></i> Video</button><input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden><span class="community-media-status" role="status"></span></div>
-      <div class="community-writing-label"><label class="form-label" for="community-markdown">Article</label><span id="community-markdown-help">Markdown supported · Preview before publishing</span></div><textarea id="community-markdown" class="form-control mb-3" rows="16" dir="auto" required aria-describedby="community-markdown-help" placeholder="Start with your opening paragraph…
+      <div id="community-article-attachments" class="community-attachment-list"></div>
+      <div class="community-writing-label"><label class="form-label" for="community-markdown">Article</label><span id="community-markdown-help">Markdown supported · Preview optional</span></div><textarea id="community-markdown" class="form-control mb-3" rows="16" dir="auto" required aria-describedby="community-markdown-help" placeholder="Start with your opening paragraph…
 
 ## A section heading
 
@@ -107,11 +112,11 @@ Use **bold** for emphasis and *italics* for a title.
   </section>
   <% } %>
   <% if (view === 'post') { %>
-  <article class="community-card community-reading"><p class="small text-muted"><%= post.kind === 'article' ? 'Article' : 'Note' %> · Community contribution · <time datetime="<%= new Date(post.publishedAt).toISOString() %>"><%= new Date(post.publishedAt).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) %></time></p>
+  <article class="community-card community-reading"><p class="small text-muted"><%= post.kind === 'article' ? 'Article' : 'Post' %> · Community contribution · <time datetime="<%= new Date(post.publishedAt).toISOString() %>"><%= new Date(post.publishedAt).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) %></time></p>
     <% if (post.subtitle) { %><p class="community-article-subtitle" dir="auto"><%= post.subtitle %></p><% } %>
     <% if (post.coverUrl) { %><figure class="community-editor-cover"><img src="<%= post.coverUrl %>" alt="Article cover"></figure><% } %>
     <div class="notebook-markdown"><%- post.html %></div><% if (post.tags) { %><p class="small text-muted mt-4" dir="auto"><%= post.tags %></p><% } %>
-    <div class="d-flex gap-3 flex-wrap small mt-3"><div id="community-blog-control" class="form-check form-switch community-blog-control" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch" data-kind="<%= post.kind %>"<% if (post.isBlog) { %> checked<% } %>><label class="form-check-label" for="community-blog-toggle">Blog post</label></div><button id="community-report-post" class="btn btn-sm btn-link p-0" type="button">Report</button><a id="community-edit-post" data-generated="<%= !!post.generatedActivity %>" href="/community/write?post=<%= post.id %>" hidden>Edit post</a></div>
+    <div class="d-flex gap-3 flex-wrap small mt-3"><div id="community-blog-control" class="form-check form-switch community-blog-control" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch" data-kind="<%= post.kind %>"<% if (post.isBlog) { %> checked<% } %>><label class="form-check-label" for="community-blog-toggle">Blog post</label></div><button id="community-report-post" class="btn btn-sm btn-link p-0" type="button">Report</button><a id="community-edit-post" data-generated="<%= !!post.generatedActivity %>" href="<%= post.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=' %><%= post.id %>" hidden>Edit post</a></div>
   </article>
   <section class="community-reading mt-4" id="comments" aria-label="Discussion"><h2 class="h4">Discussion</h2><div id="community-comments"></div>
     <form id="community-comment-form" class="community-card"><p id="community-reply-target" class="small text-muted" hidden></p><button id="community-cancel-reply" class="btn btn-sm btn-link mb-2" type="button" hidden>Cancel reply</button><label class="form-label" for="community-comment-text">Join the conversation</label><textarea id="community-comment-text" class="form-control mb-3" dir="auto" rows="3" maxlength="10000" required></textarea><button class="btn btn-primary" type="submit">Post comment</button></form>

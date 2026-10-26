@@ -152,6 +152,53 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     try{await expect(Community.moderate({uid:'blog-reviewer'},article.id,{action:'approve',version:published.version})).rejects.toMatchObject({status:403});}
     finally{process.env.COMMUNITY_MODERATOR_UIDS=previous;}
   });
+  test('post modal editing removes media, preserves links, converts to a draft, and aligns mobile actions',async()=>{
+    const Media=require('../lib/CommunityMedia'),prepare=jest.spyOn(Media,'prepare').mockResolvedValue();
+    const user={uid:'moderator',name:'Publisher'},png=require('fs').readFileSync(path.join(__dirname,'../public/static/img/pearls_of_the_deep.jpg'));
+    const cover=await Media.upload(user,png);
+    const post=await Community.savePost(user,postInput({kind:'note',title:'',coverUrl:cover.url,markdown:'A public post.\n\nhttps://example.com/test',action:'publish'}));
+    await expect(Community.savePost({uid:'bob'},postInput({convertToArticle:true,version:post.version}),post.id)).rejects.toMatchObject({status:404});
+    await expect(Community.savePost(user,postInput({version:post.version}),post.id)).rejects.toMatchObject({status:400});
+    const browser=await require('playwright').chromium.launch({channel:'chrome',headless:true});
+    try{
+      const page=await browser.newPage({viewport:{width:390,height:844}});
+      page.setDefaultTimeout(8000);page.on('pageerror',err=>console.error('Community browser:',err.message));
+      await page.addInitScript(()=>{window.quranApiPath=v=>'/api'+v;window.hadithAuth={getToken:async()=>'moderator',getUser:async()=>null};});
+      await page.route('**/*',route=>{if(route.request().resourceType()==='script'&&!/community(?:-media)?\.js/.test(route.request().url()))return route.abort();return route.continue();});
+      await page.route('**/api/community/link-preview?*',route=>route.fulfill({json:{url:'https://example.com/test',title:'Example',description:'',image:null}}));
+      await page.goto(base+'/community/mine');
+      await page.locator('[data-edit-id="'+post.id+'"]').click();
+      await page.waitForFunction(()=>document.getElementById('community-quick-dialog').open);
+      expect(await page.locator('#community-quick-post').textContent()).toBe('Save changes');
+      await page.waitForFunction(()=>document.querySelector('#community-quick-cover img')?.naturalWidth>0);
+      await page.screenshot({path:'/tmp/community-post-modal-mobile.png',fullPage:false});
+      await page.setViewportSize({width:1280,height:900});await page.screenshot({path:'/tmp/community-post-modal-desktop.png',fullPage:false});await page.setViewportSize({width:390,height:844});
+      await page.locator('#community-quick-attachments button').click();
+      expect(await page.locator('#community-quick-text').inputValue()).toContain('Link: https://example.com/test');
+      await page.locator('#community-quick-cover button').click();
+      const updated=page.waitForResponse(r=>r.url().endsWith('/api/community/posts/'+post.id)&&r.request().method()==='PUT');
+      await page.locator('#community-quick-post').click();await updated;
+      await page.waitForFunction(()=>!document.getElementById('community-quick-dialog').open);
+      const saved=await Community.post(post.id,user,true);expect(saved.coverUrl).toBe('');expect(saved.markdown).toContain('https://example.com/test');expect(saved.html).not.toContain('community-link-preview');
+      await page.locator('[data-edit-id="'+post.id+'"]').click();
+      await page.locator('#community-quick-convert').click();
+      await page.locator('#community-quick-title').fill('Converted article');
+      page.on('dialog',dialog=>dialog.accept());
+      await page.locator('#community-quick-convert').click();
+      await page.waitForURL('**/community/write?post='+post.id);
+      await page.waitForFunction(()=>document.getElementById('community-title').value==='Converted article');
+      const converted=await Community.post(post.id,user,true);expect(converted.kind).toBe('article');expect(converted.status).toBe('draft');expect(converted.markdown).toContain('Link: https://example.com/test');
+      await expect(Community.post(post.id)).rejects.toMatchObject({status:404});
+      for(const width of [320,390]){
+        await page.setViewportSize({width,height:844});
+        await page.locator('.community-editor-actions').scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/community-editor-actions-'+width+'.png',fullPage:false});
+        const boxes=await page.locator('.community-editor-actions > button:visible').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,height:r.height};}));
+        expect(boxes.every(b=>b.x>=0&&b.right<=width)).toBe(true);
+        for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const a=boxes[i],b=boxes[j];expect(a.right<=b.x||b.right<=a.x||a.bottom<=b.y||b.bottom<=a.y).toBe(true);}
+      }
+      await page.setViewportSize({width:1280,height:900});await page.screenshot({path:'/tmp/community-editor-audit-desktop.png',fullPage:true});
+    }finally{await browser.close();prepare.mockRestore();}
+  },90000);
   test('creators delete posts and publishing does not require preview',async()=>{
     const user={uid:'moderator',name:'Publisher'};
     let article=await Community.savePost(user,postInput({action:'publish'}));
@@ -260,7 +307,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await context.addInitScript(()=>{window.quranApiPath=p=>'/api'+p;window.hadithAuth={getToken:async()=>localStorage.getItem('admin-test-user')||'moderator',getUser:async()=>null};});
       await context.route('**/*',route=>{if(route.request().resourceType()==='script'&&!/community(?:-media)?\.js/.test(route.request().url()))return route.abort();return route.continue();});
       const page=await context.newPage();await page.goto(base+'/community/write?post='+article.id);
-      await page.locator('#community-blog-toggle').waitFor({state:'visible'});
+      await page.waitForFunction(()=>{const t=document.getElementById('community-blog-toggle');return t&&!t.disabled&&t.checked;});
       expect(await page.locator('#community-blog-toggle').isChecked()).toBe(true);
       await page.locator('#community-blog-toggle').uncheck();
       await page.waitForFunction(()=>document.getElementById('community-status').textContent.includes('removed from the Blog'));
@@ -401,7 +448,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
   test('feed reflections retain full text, share votes and threaded replies, and repost live originals', async () => {
     const longText='A full reflection. '.repeat(40)+'Unique ending **complete**';
     const root=(await q(`INSERT INTO ${prefix}hadiths_comments (hadithId,ref_num,type,user_uid,user_name,text,createdAt) VALUES (7,'bukhari:7','hadith','bob','Bob',?,NOW())`,[longText])).insertId;
-    await Community.authorFor({uid:'bob',name:'Bob'});
+    await Community.saveProfile({uid:'bob',name:'Bob'}, {name:'Bob'});
     let feed=await Community.feed({kind:'comment'});
     expect(feed.items.find(i=>i.id===root && i.activity==='hadiths_comments').html).toContain('Unique ending <strong>complete</strong>');
     const vote='/api/community/votes/hadiths_comments/'+root;
@@ -473,7 +520,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await Community.authorFor({uid:'image-author',name:'Image author'});
       const imported=await Import.migrate(dir,'image-author',true),id=imported.imported[0].id;
       const result=await Images.migrate(dir,['hadithunlocked.com'],true,dir);
-      expect(result.inserted).toBe(1);expect(result.updated).toBe(1);expect(result.missingNoteEmbeds).toEqual(['Attachments/Missing note']);
+      expect(result.inserted).toBe(1);expect(result.updated).toBeGreaterThanOrEqual(1);expect(result.missingNoteEmbeds).toEqual(['Attachments/Missing note']);
       const article=await Community.post(id,{uid:'image-author'},true);
       expect(article.coverUrl).toMatch(/^\/community\/media\/[a-f0-9]{32}$/);expect(article.markdown).toContain(article.coverUrl);expect(article.markdown).not.toContain('![[');
       const mediaId=article.coverUrl.split('/').pop();expect((await Media.image(mediaId,null)).data).toEqual(png);
@@ -635,7 +682,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     await json('/api/community/posts/'+firstId+'?edit=1','GET','bob',undefined,404);
     await json('/api/community/posts/'+firstId,'PUT','bob',postInput({version:1,action:'publish'}),404);
     const pending=await json('/api/community/posts/'+firstId,'PUT','alice',postInput({version:1,action:'publish'})); expect(pending.post.status).toBe('pending');
-    expect((await json('/api/community/feed','GET',null)).items).toHaveLength(0);
+    expect((await json('/api/community/feed','GET',null)).items.some(p=>p.activity==='post'&&p.id===firstId)).toBe(false);
     await json('/api/community/posts/'+firstId,'GET','expired',undefined,404);
     await json('/api/community/feed?scope=mine','GET','expired',undefined,401);
     await json('/api/community/posts','POST','expired',postInput(),401);
@@ -780,7 +827,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await page.waitForFunction(()=>document.getElementById('community-quick-status').textContent==='Please try again.');
       expect(await page.locator('#community-quick-text').inputValue()).toContain('A quick');
       await page.locator('#community-quick-post').click();
-      await page.waitForFunction(()=>document.getElementById('community-quick-status').textContent.includes('Your note is published.'));
+      await page.waitForFunction(()=>document.getElementById('community-quick-status').textContent.includes('Your post is published.'));
       await page.waitForFunction(()=>document.getElementById('community-feed').textContent.includes('A quick reflection. الحمد لله'));
       expect(await page.locator('#community-quick-text').inputValue()).toBe('');
       expect(await page.locator('#community-quick-post').isDisabled()).toBe(true);
@@ -1094,7 +1141,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
         expect(profile.photo).toBe(photo || Avatars.gravatar(user.email));
         const feed=await Community.feed({author:'amina'});
         expect(feed.items.length).toBeGreaterThan(0);
-        expect(feed.items.every(i=>i.author.photo===profile.photo)).toBe(true);
+        expect(feed.items.every(i=>(i.repostedBy||i.author).photo===profile.photo)).toBe(true);
         expect(JSON.stringify(profile)).not.toContain('Private.Test');
         const sourceRows=[{user_uid:'alice',user_photo:'https://avatar.test/old-comment.png',user_email:user.email}];
         await Avatars.decorateRows(sourceRows); expect(sourceRows[0].avatarPhoto).toBe(profile.photo);

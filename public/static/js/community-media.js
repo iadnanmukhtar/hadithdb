@@ -32,16 +32,16 @@
       finally{pendingChanged(-1);}
     }
   }
-  $('cover-file')?.addEventListener('change',async event=>{
+  for(const coverEditor of ['article','quick']) $(coverEditor==='quick'?'quick-cover-file':'cover-file')?.addEventListener('change',async event=>{
     const file=event.target.files[0],own=account;event.target.value='';if(!file)return;
-    const message=$('cover-status');
+    const message=$(coverEditor==='quick'?'quick-status':'cover-status');
     if(file.size>5*1024*1024){message.textContent='Choose an image up to 5 MB.';return;}
     pendingChanged(1);message.textContent='Uploading cover…';
     try{
       const auth=await token();if(own!==account)return;
       const response=await fetch(quranApiPath('/community/media'),{method:'POST',headers:{Authorization:'Bearer '+auth,'Content-Type':file.type},body:file});
       const result=await response.json();if(!response.ok)throw Error(result.error||'Cover upload failed.');if(own!==account)return;
-      document.dispatchEvent(new CustomEvent('communityCoverChanged',{detail:{url:result.url}}));message.textContent='Cover ready. Save or publish to apply it.';
+      document.dispatchEvent(new CustomEvent('communityCoverChanged',{detail:{url:result.url,editor:coverEditor}}));message.textContent='Cover ready. Save or publish to apply it.';
     }catch(err){if(own===account)message.textContent=err.message;}finally{pendingChanged(-1);}
   });
   root.querySelectorAll('[data-media-editor]').forEach(toolbar=>{
@@ -61,6 +61,23 @@
     event.preventDefault();let url;try{url=new URL($('media-url').value);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)throw Error();}catch{$('media-error').textContent='Enter a valid http or https URL.';return;}
     insert(activeEditor,'\n\n'+url.href+'\n\n');$('media-dialog').close();activeEditor.focus();
   });
+  for(const [editorId,listId] of [['quick-text','quick-attachments'],['markdown','article-attachments']]){
+    const editor=$(editorId),list=$(listId);if(!editor||!list)continue;
+    function renderAttachments(){
+      list.replaceChildren();const text=editor.value;
+      const matches=[...text.matchAll(/!\[[^\]\n]*\]\([^\s)]+(?:\s+"[^"]*")?\)/g)].map(match=>({index:match.index,raw:match[0],image:true}));
+      let offset=0;for(const line of text.split('\n')){
+        const trimmed=line.trim();if(/^(https?:\/\/\S+|<https?:\/\/[^>]+>|\[[^\]]*\]\(https?:\/\/[^)]+\))$/.test(trimmed))matches.push({index:offset+line.indexOf(trimmed),raw:trimmed,image:false});offset+=line.length+1;
+      }
+      for(const match of matches){
+        const row=element('div',null,'community-attachment-row'),label=element('span',match.image?'Attached image':match.raw),remove=element('button',match.image?'Remove image':'Remove preview (keep link)');
+        remove.type='button';remove.className='btn btn-sm btn-link text-muted';
+        remove.addEventListener('click',()=>{if(editor.disabled||window.communityMediaPending)return;editor.setRangeText(match.image?'':'Link: '+match.raw,match.index,match.index+match.raw.length,'preserve');editor.dispatchEvent(new Event('input',{bubbles:true}));});
+        row.append(label,remove);list.append(row);
+      }
+    }
+    editor.addEventListener('input',renderAttachments);document.addEventListener('communityEditorPopulated',renderAttachments);renderAttachments();
+  }
   function element(tag,text,className){const el=document.createElement(tag);if(text)el.textContent=text;if(className)el.className=className;return el;}
   async function hydratePreview(block){
     if(block.dataset.hydrated)return;block.dataset.hydrated='true';const url=block.dataset.previewUrl;
@@ -80,9 +97,9 @@
   async function hydrateImage(img){
     if(img.dataset.mediaChecked)return;
     const source=img.getAttribute('src')||img.dataset.mediaSrc;if(!/^\/community\/media\/[a-f0-9]{32}$/.test(source||''))return;
-    img.dataset.mediaChecked='true';img.loading='lazy';img.alt=img.alt||'Attached image';
+    img.dataset.mediaChecked='true';img.loading=img.closest('#community-editor-cover,#community-quick-cover')?'eager':'lazy';img.alt=img.alt||'Attached image';
     // Ordinary published images use their canonical URL. Private previews use an authenticated blob.
-    if(!img.closest('#community-editor-cover,#community-preview,#community-quick-preview,#community-moderation,.community-entry[data-private="true"]'))return;
+    if(!img.closest('#community-editor-cover,#community-quick-cover,#community-preview,#community-quick-preview,#community-moderation,.community-entry[data-private="true"]'))return;
     const own=account;
     try{const auth=await window.hadithAuth?.getToken();if(!auth)return;const response=await fetch(source,{headers:{Authorization:'Bearer '+auth}});if(!response.ok)return;const blob=await response.blob();if(own!==account||!img.isConnected)return;const url=URL.createObjectURL(blob);blobs.add(url);img.src=url;}catch{}
   }
