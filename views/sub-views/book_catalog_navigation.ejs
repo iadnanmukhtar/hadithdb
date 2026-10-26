@@ -1,0 +1,22 @@
+<%
+  var catalogNavigationType = page.context.bookCatalogInitialType;
+  var catalogNavigationTabs = [
+    { key: 'mushaf', label: 'Mushaf' },
+    { key: 'tafsir-all', label: 'Tafsir' },
+    { key: 'translations', label: 'Translations' },
+    { key: 'hadith', label: 'Hadith' },
+    { key: 'sharh', label: 'Sharḥ' },
+    { key: 'sirah', label: 'History & Sirah' }
+  ];
+%>
+<nav class="row g-0 chapter-toc book-catalog-navigation" aria-label="Book collections">
+  <div class="col-12 chapter-toc-toolbar">
+    <ul class="nav nav-tabs book-catalog-tabs" role="tablist" aria-label="Book collections">
+      <% catalogNavigationTabs.forEach(function (tab) { var id = `book-catalog-${tab.key}`; var active = tab.key === catalogNavigationType; %>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link<%= active ? ' active' : '' %>" id="<%= id %>-tab" data-bs-toggle="tab" data-bs-target="#<%= id %>" type="button" role="tab" aria-controls="<%= id %>" aria-selected="<%= active ? 'true' : 'false' %>"><%= tab.label %></button>
+      </li>
+      <% }); %>
+    </ul>
+  </div>
+</nav>

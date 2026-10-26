@@ -3,20 +3,20 @@
 <head>
 <%
 const site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: req.admin && req.editMode });
-const title = sharhBook ? sharhBook.shortName_en || sharhBook.name_en || sharhBook.alias : 'Sharḥ books';
+const title = sharhBook ? (sharhBook.shortName_en || sharhBook.name_en || sharhBook.alias) : 'Sharḥ books';
 const canonical = sharhBook ? `/sharh/${encodeURIComponent(sharhBook.alias)}` : '/sharh';
-const page = { menu: 'Books', title_en: title, description_en: `Browse ${title}.`, canonical: canonical + (offset ? `?o=${offset}` : ''), subtitle_en: sharhBook ? sharhBook.shortName_en : '', subtitle: sharhBook ? sharhBook.shortName : '', context: {} };
+const page = { menu: 'Books', title_en: title, description_en: `Browse ${title}.`, canonical: canonical + (offset ? `?o=${offset}` : ''), subtitle_en: sharhBook ? (sharhBook.shortName_en || sharhBook.name_en || sharhBook.alias) : '', subtitle: sharhBook ? sharhBook.shortName : '', context: {} };
 if (sharhBook) {
   const currentIndex = books.findIndex(book => book.id === sharhBook.id);
   const prevBook = currentIndex > 0 ? books[currentIndex - 1] : null;
   const nextBook = currentIndex >= 0 && currentIndex < books.length - 1 ? books[currentIndex + 1] : null;
   if (prevBook) {
     page.prev = `/sharh/${encodeURIComponent(prevBook.alias)}`;
-    page.prevTitle = `Previous: ${prevBook.shortName_en || prevBook.name_en || prevBook.alias}`;
+    page.prevTitle = `Previous: ${(prevBook.shortName_en || prevBook.name_en || prevBook.alias)}`;
   }
   if (nextBook) {
     page.next = `/sharh/${encodeURIComponent(nextBook.alias)}`;
-    page.nextTitle = `Next: ${nextBook.shortName_en || nextBook.name_en || nextBook.alias}`;
+    page.nextTitle = `Next: ${(nextBook.shortName_en || nextBook.name_en || nextBook.alias)}`;
   }
 }
 %>
@@ -30,7 +30,7 @@ if (sharhBook) {
     <nav class="h-menu-wrap mb-3" aria-label="Sharḥ books">
       <div class="h-menu-scroller"><div class="btn-group h-menu text-nowrap" role="group">
         <a class="btn btn-outline-primary" href="/sharh">Sharḥ books</a>
-        <% books.forEach(function(book) { %><a class="btn btn-outline-primary text-nowrap<%= book.id === sharhBook.id ? ' active' : '' %>" href="/sharh/<%= encodeURIComponent(book.alias) %>"<% if (book.id === sharhBook.id) { %> aria-current="page" data-current-book="true"<% } %>><%= book.shortName_en || book.name_en || book.alias %></a><% }); %>
+        <% books.forEach(function(book) { %><a class="btn btn-outline-primary text-nowrap<%= book.id === sharhBook.id ? ' active' : '' %>" href="/sharh/<%= encodeURIComponent(book.alias) %>"<% if (book.id === sharhBook.id) { %> aria-current="page" data-current-book="true"<% } %>><%= (book.shortName_en || book.name_en || book.alias) %></a><% }); %>
       </div></div>
     </nav>
     <article>
@@ -61,7 +61,7 @@ if (sharhBook) {
   <% } else { %>
     <h1 class="fs-3">Sharḥ books</h1>
     <div class="list-group"><% books.forEach(function(book) { %><div class="list-group-item">
-      <div class="row" dir="ltr"><a class="col-md-6" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= book.shortName_en || book.name_en || book.alias %></a><span class="col-md-6" lang="ar" dir="rtl"><%= book.shortName || book.title %></span></div>
+      <div class="row" dir="ltr"><a class="col-md-6" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= (book.shortName_en || book.name_en || book.alias) %></a><span class="col-md-6" lang="ar" dir="rtl"><%= book.shortName || book.title %></span></div>
       <% if (site.editMode) { %><button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#sharh-book-<%= book.id %>">Edit book metadata</button><% } %>
     </div><% }); %></div>
   <% } %>

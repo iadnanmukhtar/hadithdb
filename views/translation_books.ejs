@@ -85,7 +85,7 @@
         <% if (!translations || translations.length < 1) { %>
           <p class="text-muted">No English translations are currently available.</p>
         <% } else { %>
-          <div class="tafsir-book-list">
+          <div class="tafsir-book-list" data-book-catalog-type="Translation">
             <% translations.forEach(function (translation) { %>
               <%
                 var descriptionMarkdown = utils.emptyIfNull(translation.description || '');
@@ -97,13 +97,15 @@
                 var bookUrl = translationBookUrl(translation);
                 var isEnglishTranslation = translation.lang === 'en';
               %>
-              <article class="translation-book-card tafsir-book-row" data-translation-book-filter="<%- [
+              <article class="translation-book-card tafsir-book-row" data-book-catalog-size="<%= translation.size || '' %>" data-book-author-short-en="<%= translation.authorShortName_en || '' %>" data-book-author-short-ar="<%= translation.authorShortName || '' %>" data-book-death="<%= translation.death || '' %>" data-book-catalog-language="<%= translation.lang || '' %>" data-translation-book-filter="<%- [
                 translation.alias,
                 translation.name_en,
                 translation.shortName_en,
 				translation.name,
 				translation.shortName,
 				translation.title,
+                translation.authorShortName_en,
+                translation.authorShortName,
                 translation.author_en,
                 translation.author,
                 translation.published_year,
@@ -116,10 +118,10 @@
                       <% if (site.editMode) { %>
                         <a href="<%= bookUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en" data-placeholder="English name"><%- translation.name_en || '' %></span></a>
                       <% } else { %>
-                        <a href="<%= bookUrl %>"><%- translation.name_en || translation.shortName_en || translation.alias %></a>
+                        <a href="<%= bookUrl %>"><%- translation.shortName_en || translation.name_en || translation.alias %></a>
                       <% } %>
                     </h3>
-                    <% if (!isEnglishTranslation && (site.editMode || translation.name)) { %><h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl"><% if (site.editMode) { %><a href="<%= bookUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name" data-placeholder="الاسم العربي"><%- translation.name || '' %></span></a><% } else { %><a href="<%= bookUrl %>"><%- translation.name %></a><% } %></h3><% } %>
+                    <% if (!isEnglishTranslation && (site.editMode || translation.name)) { %><h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl"><% if (site.editMode) { %><a href="<%= bookUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name" data-placeholder="الاسم العربي"><%- translation.name || '' %></span></a><% } else { %><a href="<%= bookUrl %>"><%- translation.shortName || translation.name %></a><% } %></h3><% } %>
                   </div>
                   <% if (site.editMode) { %>
                     <div class="tafsir-book-full-name text-muted">
@@ -128,7 +130,7 @@
                       <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title_en" data-placeholder="Full English title"><%- translation.title_en || '' %></span></div>
                       <% if (!isEnglishTranslation) { %><div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.title" data-placeholder="العنوان الكامل"><%- translation.title || '' %></span></div><% } %>
                     </div>
-                  <% } else if (translation.title_en || (!isEnglishTranslation && translation.title)) { %><div class="tafsir-book-full-name text-muted"><% if (translation.title_en) { %><div><%- translation.title_en %></div><% } %><% if (!isEnglishTranslation && translation.title) { %><div lang="ar" dir="rtl"><%- translation.title %></div><% } %></div><% } %>
+                  <% } else if (translation.title_en || translation.title) { %><div class="tafsir-book-full-name text-muted"><% if (translation.title_en) { %><div><%- translation.title_en %></div><% } %><% if (translation.title) { %><div lang="ar" dir="rtl"><%- translation.title %></div><% } %></div><% } %>
                   <div class="tafsir-book-meta text-muted<%= !isEnglishTranslation && (translation.author || translation.name) ? '' : ' tafsir-book-meta-single' %>">
                     <div>
                       <span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author_en"<% } %>><%- translation.author_en || (isEnglishTranslation ? '' : translation.author) || '' %></span>
@@ -193,15 +195,17 @@
     var empty = document.querySelector('.translation-book-filter-empty');
     filter.addEventListener('input', function () {
       var query = normalize(filter.value);
+      var activeSize = document.querySelector('.book-catalog-page').dataset.bookCatalogActiveSize || '';
       var visibleCount = 0;
       cards.forEach(function (card) {
-        var match = !query || normalize(card.dataset.translationBookFilter).includes(query);
+        var match = (!query || normalize(card.dataset.translationBookFilter).includes(query))
+          && (!window.bookCatalogMatchesSize || window.bookCatalogMatchesSize(card));
         card.classList.toggle('d-none', !match);
         if (match)
           visibleCount += 1;
       });
       if (empty)
-        empty.classList.toggle('d-none', visibleCount > 0 || !query);
+        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeSize));
     });
   })();
 </script>

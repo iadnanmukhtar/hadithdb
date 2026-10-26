@@ -1,0 +1,406 @@
+{
+  "notes": [
+    "All terminal parentheticals in these 19 reviewed sharh book records identify authors. Preserve Arabic names, all author metadata, and source-title mapping identities."
+  ],
+  "entries": [
+    {
+      "id": 100388,
+      "alias": "bukhari-ibnhajar",
+      "fields": {
+        "shortName_en": {
+          "before": "Fatḥ al-Bārī (Ibn Ḥajar)",
+          "after": "Fatḥ al-Bārī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Fatḥ al-Bārī (Ibn Ḥajar)",
+          "after": "Fatḥ al-Bārī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Fatḥ al-Bārī (Ibn Ḥajar)",
+          "after": "Fatḥ al-Bārī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100389,
+      "alias": "bukhari-ayni",
+      "fields": {
+        "shortName_en": {
+          "before": "ʿUmdat al-Qārī (Badr al-Dīn al-ʿAynī)",
+          "after": "ʿUmdat al-Qārī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "ʿUmdat al-Qārī (Badr al-Dīn al-ʿAynī)",
+          "after": "ʿUmdat al-Qārī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "ʿUmdat al-Qārī (Badr al-Dīn al-ʿAynī)",
+          "after": "ʿUmdat al-Qārī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100390,
+      "alias": "muslim-nawawi",
+      "fields": {
+        "shortName_en": {
+          "before": "al-Minhāj (Nawawī)",
+          "after": "al-Minhāj",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "al-Minhāj (Nawawī)",
+          "after": "al-Minhāj",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "al-Minhāj (Nawawī)",
+          "after": "al-Minhāj",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100391,
+      "alias": "abudawud-shamsalhaqq",
+      "fields": {
+        "shortName_en": {
+          "before": "ʿAwn al-Maʿbūd (Shams al-Ḥaqq)",
+          "after": "ʿAwn al-Maʿbūd",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "ʿAwn al-Maʿbūd (Shams al-Ḥaqq)",
+          "after": "ʿAwn al-Maʿbūd",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "ʿAwn al-Maʿbūd (Shams al-Ḥaqq)",
+          "after": "ʿAwn al-Maʿbūd",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100392,
+      "alias": "tirmidhi-mubarakfuri",
+      "fields": {
+        "shortName_en": {
+          "before": "Tuḥfat al-Aḥwadhī (Mubārakfūrī)",
+          "after": "Tuḥfat al-Aḥwadhī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Tuḥfat al-Aḥwadhī (Mubārakfūrī)",
+          "after": "Tuḥfat al-Aḥwadhī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Tuḥfat al-Aḥwadhī (Mubārakfūrī)",
+          "after": "Tuḥfat al-Aḥwadhī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100396,
+      "alias": "bukhari-ibnrajab",
+      "fields": {
+        "shortName_en": {
+          "before": "Fatḥ al-Bārī (Ibn Rajab)",
+          "after": "Fatḥ al-Bārī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Fatḥ al-Bārī (Ibn Rajab)",
+          "after": "Fatḥ al-Bārī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Fatḥ al-Bārī (Ibn Rajab)",
+          "after": "Fatḥ al-Bārī",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100397,
+      "alias": "muslim-qurtubi",
+      "fields": {
+        "shortName_en": {
+          "before": "al-Mufhim (Abū al-ʿAbbās)",
+          "after": "al-Mufhim",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "al-Mufhim (Abū al-ʿAbbās)",
+          "after": "al-Mufhim",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "al-Mufhim (Abū al-ʿAbbās)",
+          "after": "al-Mufhim",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100398,
+      "alias": "ibnmajah-mughultay",
+      "fields": {
+        "shortName_en": {
+          "before": "al-Iʿlām (Mughulṭāy)",
+          "after": "al-Iʿlām",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "al-Ilam bi-Sunnatihi alayhi al-Salat wa-al-Salam (al-Mughultai)",
+          "after": "al-Ilam bi-Sunnatihi alayhi al-Salat wa-al-Salam",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "al-Ilam bi-Sunnatihi alayhi al-Salat wa-al-Salam (al-Mughultai)",
+          "after": "al-Ilam bi-Sunnatihi alayhi al-Salat wa-al-Salam",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100399,
+      "alias": "malik-tamhid",
+      "fields": {
+        "shortName_en": {
+          "before": "al-Tamhīd (Ibn ʿAbd al-Barr)",
+          "after": "al-Tamhīd",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "al-Tamhid li-ma fi al-Muwatta (Ibn Abd al-Barr)",
+          "after": "al-Tamhid li-ma fi al-Muwatta",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "al-Tamhid li-ma fi al-Muwatta (Ibn Abd al-Barr)",
+          "after": "al-Tamhid li-ma fi al-Muwatta",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100404,
+      "alias": "shamail-kandhlawi",
+      "fields": {
+        "shortName_en": {
+          "before": "Khasail Nabawi (Muhammad Zakariyya)",
+          "after": "Khasail Nabawi",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Khasail Nabawi (Muhammad Zakariyya)",
+          "after": "Khasail Nabawi",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Khasail Nabawi (Muhammad Zakariyya)",
+          "after": "Khasail Nabawi",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100406,
+      "alias": "riyad-uthaymin",
+      "fields": {
+        "shortName_en": {
+          "before": "Sharḥ Riyad al-Salihin (Ibn al-ʿUthaymin)",
+          "after": "Sharḥ Riyad al-Salihin",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Sharḥ Riyad al-Salihin (Ibn al-ʿUthaymin)",
+          "after": "Sharḥ Riyad al-Salihin",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Sharḥ Riyad al-Salihin (Ibn al-ʿUthaymin)",
+          "after": "Sharḥ Riyad al-Salihin",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100407,
+      "alias": "arbain-ibndaqiq",
+      "fields": {
+        "shortName_en": {
+          "before": "Sharḥ al-Arbaʿīn (Ibn Daqīq al-ʿĪd)",
+          "after": "Sharḥ al-Arbaʿīn",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Sharḥ al-Arbaʿīn (Ibn Daqīq al-ʿĪd)",
+          "after": "Sharḥ al-Arbaʿīn",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Sharḥ al-Arbaʿīn (Ibn Daqīq al-ʿĪd)",
+          "after": "Sharḥ al-Arbaʿīn",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100408,
+      "alias": "jami-al-ulum",
+      "fields": {
+        "shortName_en": {
+          "before": "Jāmiʿ al-ʿUlūm wa-l-Ḥikam (Ibn Rajab)",
+          "after": "Jāmiʿ al-ʿUlūm wa-l-Ḥikam",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Jāmiʿ al-ʿUlūm wa-l-Ḥikam (Ibn Rajab)",
+          "after": "Jāmiʿ al-ʿUlūm wa-l-Ḥikam",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Jāmiʿ al-ʿUlūm wa-l-Ḥikam (Ibn Rajab)",
+          "after": "Jāmiʿ al-ʿUlūm wa-l-Ḥikam",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100409,
+      "alias": "ahmad-arnaut",
+      "fields": {
+        "shortName_en": {
+          "before": "Musnad Aḥmad, pub. al-Risālah (Arnaʿūṭ)",
+          "after": "Musnad Aḥmad, pub. al-Risālah",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Musnad Aḥmad, pub. al-Risālah (Arnaʿūṭ)",
+          "after": "Musnad Aḥmad, pub. al-Risālah",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Musnad Aḥmad, pub. al-Risālah (Arnaʿūṭ)",
+          "after": "Musnad Aḥmad, pub. al-Risālah",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100415,
+      "alias": "riyad-ibnallan",
+      "fields": {
+        "shortName_en": {
+          "before": "Dalīl al-Fāliḥīn (Ibn ʿAllān)",
+          "after": "Dalīl al-Fāliḥīn",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Dalīl al-Fāliḥīn (Ibn ʿAllān)",
+          "after": "Dalīl al-Fāliḥīn",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Dalīl al-Fāliḥīn (Ibn ʿAllān)",
+          "after": "Dalīl al-Fāliḥīn",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100417,
+      "alias": "mushkil-tahawi",
+      "fields": {
+        "shortName_en": {
+          "before": "Sharḥ Mushkil al-Āthār (al-Taḥāwī)",
+          "after": "Sharḥ Mushkil al-Āthār",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Sharḥ Mushkil al-Āthār (al-Taḥāwī)",
+          "after": "Sharḥ Mushkil al-Āthār",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Sharḥ Mushkil al-Āthār (al-Taḥāwī)",
+          "after": "Sharḥ Mushkil al-Āthār",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100421,
+      "alias": "mishkat-qari",
+      "fields": {
+        "shortName_en": {
+          "before": "Mirqāt al-Mafātīḥ (al-Mullā ʿAlī Qārī)",
+          "after": "Mirqāt al-Mafātīḥ",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Mirqāt al-Mafātīḥ (al-Mullā ʿAlī Qārī)",
+          "after": "Mirqāt al-Mafātīḥ",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Mirqāt al-Mafātīḥ (al-Mullā ʿAlī Qārī)",
+          "after": "Mirqāt al-Mafātīḥ",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100422,
+      "alias": "mishkat-mubarakfuri",
+      "fields": {
+        "shortName_en": {
+          "before": "Mirʿāt al-Mafātīḥ (al-Mubārakfūrī)",
+          "after": "Mirʿāt al-Mafātīḥ",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Mirʿāt al-Mafātīḥ (al-Mubārakfūrī)",
+          "after": "Mirʿāt al-Mafātīḥ",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Mirʿāt al-Mafātīḥ (al-Mubārakfūrī)",
+          "after": "Mirʿāt al-Mafātīḥ",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    },
+    {
+      "id": 100423,
+      "alias": "mishkat-dihlawi",
+      "fields": {
+        "shortName_en": {
+          "before": "Lamaʿāt al-Tanqīḥ (ʿAbd al-Ḥaqq al-Dihlawī)",
+          "after": "Lamaʿāt al-Tanqīḥ",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "name_en": {
+          "before": "Lamaʿāt al-Tanqīḥ (ʿAbd al-Ḥaqq al-Dihlawī)",
+          "after": "Lamaʿāt al-Tanqīḥ",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        },
+        "title_en": {
+          "before": "Lamaʿāt al-Tanqīḥ (ʿAbd al-Ḥaqq al-Dihlawī)",
+          "after": "Lamaʿāt al-Tanqīḥ",
+          "reason": "Remove reviewed parenthetical author attribution; author remains stored separately and is composed for display"
+        }
+      }
+    }
+  ]
+}

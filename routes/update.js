@@ -975,12 +975,17 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 	  }
       var bookColumns = [
         'shortName_en', 'shortName', 'name_en', 'name',
-        'title_en', 'title', 'author', 'author_en',
+        'title_en', 'title', 'author', 'author_en', 'authorShortName', 'authorShortName_en',
         'death', 'published_year', 'publisher',
         'description', 'aqidah', 'size'
       ];
       if (!bookColumns.includes(col) && col !== 'alias')
         throw createError(400, `Invalid book field '${col}'`);
+      if (col === 'authorShortName' || col === 'authorShortName_en') {
+        status.value = Utils.trimToEmpty(status.value);
+        if ([...status.value].length > 255)
+          throw createError(400, 'Author short names must be 255 characters or fewer');
+      }
       if (col === 'size') {
         status.value = Utils.trimToEmpty(status.value);
         if (status.value && !['sm', 'md', 'lg'].includes(status.value))

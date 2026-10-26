@@ -3,8 +3,8 @@
 <head>
 <%
 const site = Object.assign({}, global.settings.site, { admin: !locals.noadmin && req.admin, editMode: !locals.noadmin && req.admin && req.editMode });
-const title = book.shortName_en || book.name_en || book.title || book.alias;
-const titleAr = book.shortName || book.title || '';
+const title = utils.sharhDisplayName(book);
+const titleAr = utils.sharhArabicDisplayName(book);
 const reference = owner ? (kind === 'hadith' ? `${owner.book_alias}:${owner.num}` : owner.title_en || owner.title || '') : '';
 const context = locals.readerContext || (kind === 'hadith' && owner ? { book: owner.book, chapter: owner.chapter, section: owner.section } : {});
 const referenceBook = (kind === 'hadith' && owner ? owner.book : context.book) || {};
@@ -33,7 +33,7 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
     <div class="h-menu-hint d-md-none"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Swipe to browse explanations</div>
     <div class="h-menu-scroller"><div class="btn-group h-menu text-nowrap">
       <% availableSharhs.forEach(function (source) { %>
-      <a class="btn btn-outline-primary text-nowrap<%= source.id === book.id ? ' active' : '' %>" href="<%= source.url %>"<% if (source.id === book.id) { %> aria-current="page" data-current-book="true"<% } %>><%= source.shortName_en || source.name_en || source.shortName || source.title || source.alias %></a>
+      <a class="btn btn-outline-primary text-nowrap<%= source.id === book.id ? ' active' : '' %>" href="<%= source.url %>"<% if (source.id === book.id) { %> aria-current="page" data-current-book="true"<% } %>><%= utils.sharhDisplayName(source) %></a>
       <% }); %>
     </div></div>
   </nav>
@@ -41,11 +41,11 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
 
     <header class="quran-tafsir-source row text-muted">
       <section class="col-6 text-start" lang="en">
-        <strong><a class="quran-tafsir-book-modal-trigger" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= book.name_en || title %></a></strong>
+        <strong><a class="quran-tafsir-book-modal-trigger" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= utils.sharhDisplayName(book, book.name_en) %></a></strong>
         <span><%= [book.author_en || book.author, book.death ? `d. ${book.death} AH` : '', [book.published_year, book.publisher].filter(Boolean).join(', ')].filter(Boolean).join(', ') %></span>
       </section>
       <section class="col-6 text-end" lang="ar" dir="rtl">
-        <strong><a class="quran-tafsir-book-modal-trigger" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= book.title || titleAr %></a></strong>
+        <strong><a class="quran-tafsir-book-modal-trigger" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= utils.sharhArabicDisplayName(book, book.title) %></a></strong>
         <span><%= [book.author, book.death ? `ت. ${arabic.toArabicDigits(String(book.death))} هـ` : '', [book.published_year, book.publisher].filter(Boolean).join('، ')].filter(Boolean).join('، ') %></span>
       </section>
     </header>

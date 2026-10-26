@@ -183,7 +183,7 @@
         <% if (!catalogTafsirs.length) { %>
           <p class="text-muted">No tafsīr books are currently available.</p>
         <% } else { %>
-        <div class="tafsir-book-list">
+        <div class="tafsir-book-list" data-book-catalog-type="Tafsir">
                 <% catalogTafsirs.forEach(function (tafsir) { %>
                   <%
                     var descriptionMarkdown = utils.emptyIfNull(tafsir.description || '');
@@ -195,11 +195,13 @@
                     var editableBookId = tafsir.id || '';
                     var bookGroupIds = tafsirGroupIds(tafsir);
                   %>
-                  <article class="tafsir-book-card tafsir-book-row" data-tafsir-language="<%= tafsirLanguages(tafsir).join(' ') %>" data-tafsir-book-groups="<%= bookGroupIds.join(' ') %>" data-tafsir-book-filter="<%= [
+                  <article class="tafsir-book-card tafsir-book-row" data-book-catalog-size="<%= tafsir.size || '' %>" data-book-author-short-en="<%= tafsir.authorShortName_en || '' %>" data-book-author-short-ar="<%= tafsir.authorShortName || '' %>" data-book-death="<%= tafsir.death || '' %>" data-tafsir-language="<%= tafsirLanguages(tafsir).join(' ') %>" data-tafsir-book-groups="<%= bookGroupIds.join(' ') %>" data-tafsir-book-filter="<%= [
                     bookGroupIds.map(function (id) { var group = tafsirBookGroups.find(function (candidate) { return candidate.id === id; }); return group && group.label; }).filter(Boolean).join(' '),
                     tafsir.alias,
                     tafsir.name_en,
                     tafsir.shortName_en,
+                    tafsir.authorShortName_en,
+                    tafsir.authorShortName,
                     tafsir.author_en,
 					tafsir.name,
                     tafsir.title,
@@ -215,7 +217,7 @@
                           <% if (site.editMode) { %>
                             <a href="<%= browseUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en" data-placeholder="English name"><%- tafsir.name_en || '' %></span></a>
                           <% } else { %>
-                            <a href="<%= browseUrl %>"><%- tafsir.name_en || tafsir.shortName_en || tafsir.alias %></a>
+                            <a href="<%= browseUrl %>"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></a>
                           <% } %><%- tafsirSizeIndicator(tafsir) %> <span class="badge rounded-pill text-bg-light border book-language-badge"><%= tafsirLanguageBadge(tafsir) %></span>
                         </h3>
                         <% if (site.editMode || tafsir.name || tafsir.shortName) { %>
@@ -223,7 +225,7 @@
                             <% if (site.editMode) { %>
                               <a href="<%= browseUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name" data-placeholder="الاسم العربي"><%- tafsir.name || '' %></span></a>
                             <% } else { %>
-                              <a href="<%= browseUrl %>"><%- tafsir.name || tafsir.shortName || '' %></a>
+                              <a href="<%= browseUrl %>"><%- tafsir.shortName || tafsir.name || '' %></a>
                             <% } %>
                           </h3>
                         <% } %>
@@ -341,7 +343,8 @@
         var groups = (card.dataset.tafsirBookGroups || '').split(/\s+/).filter(Boolean);
         var match = (!query || normalize(card.dataset.tafsirBookFilter).includes(query))
           && (!activeGroup || groups.indexOf(activeGroup) >= 0)
-          && (!activeLanguage || (card.dataset.tafsirLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0);
+          && (!activeLanguage || (card.dataset.tafsirLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0)
+          && (!window.bookCatalogMatchesSize || window.bookCatalogMatchesSize(card));
         card.classList.toggle('d-none', !match);
       });
       var visibleCount = cards.filter(function (card) {

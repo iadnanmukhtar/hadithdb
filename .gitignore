@@ -27,6 +27,9 @@ tmp
 temp
 var
 docs
+!docs/
+docs/*
+!docs/TAFSIR_CATEGORIES.md
 *test*
 ecosystem.config.cjs
 !packages/quran-review-core/index.test.js

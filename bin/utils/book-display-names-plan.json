@@ -1,0 +1,4563 @@
+{
+  "description": "Book-name vocalization, bilingual name consistency and commonly used author display names.",
+  "sources": [
+    {
+      "url": "https://tafsir.app/",
+      "use": "Tafsir work and author identity reference; existing catalog supplies stored vocalization."
+    },
+    {
+      "url": "https://sunnah.com/bukhari",
+      "use": "Hadith collection identity."
+    },
+    {
+      "url": "https://sunnah.com/muslim",
+      "use": "Hadith collection identity and Muslim b. al-Hajjaj distinction."
+    },
+    {
+      "url": "https://faculty.ksu.edu.sa/sites/default/files/ltrjm_lsqt_mn_kml_thdhyb_lkml.pdf",
+      "use": "Scholarly author biography and documented vocalization variant for Mughultay/Qulayj."
+    },
+    {
+      "url": "https://usul.ai/ar/t/tafsir-27",
+      "use": "Edition metadata distinguishes Muhammad al-Iji from his father Abd al-Rahman."
+    },
+    {
+      "url": "https://bridges-foundation.org/muslim-copts-before-muhammad-peace-be-upon-him/",
+      "use": "Publisher Arabic identity and Fadel Soliman."
+    },
+    {
+      "url": "https://d1.islamhouse.com/data/en/ih_books/single2/en-translation-of-the-meanings-of-the-quran.pdf",
+      "use": "Saheeh International identifies the translating team."
+    }
+  ],
+  "notes": [
+    "Unknown author identities remain unknown: Quran has no human author; qiraat and yasir are marked Unknown; mukhtar has no author metadata.",
+    "The uncommon ancestor name خواستى is retained without newly inferred marks because no unambiguous vocalized counterpart was found.",
+    "Existing Arabic base spelling and existing marks are preserved except individually reviewed bilingual corrections listed with a different reason.",
+    "Arabic titles for English translation editions are editorial display renderings of the existing English titles, not original-edition title claims.",
+    "Full Arabic author fields for the Saheeh International and Study Quran teams remain absent; short bilingual team names identify the existing teams without inventing a full Arabic roster."
+  ],
+  "entries": [
+    {
+      "id": 57,
+      "alias": "ibnrajab50",
+      "fields": {
+        "shortName": {
+          "before": "خمسون ابن رجب",
+          "after": "خَمْسُون ابْن رَجَب",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "جَامِعُ العُلُومِ وَالحِكَمِ فِي شَرْحِ خَمْسِينَ حَدِيثًا مِنْ جَوَامِعِ الكَلِمِ",
+          "after": "جَامِعُ الْعُلُومِ وَالْحِكَمِ فِي شَرْحِ خَمْسِينَ حَدِيثًا مِنْ جَوَامِعِ الكَلِمِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عَبْدُ الرَّحْمَنِ بْنُ أَحْمَدَ بْنِ رَجَبٍ الحَنْبَلِيّ",
+          "after": "عَبْدُ الرَّحْمَنِ بْنُ أَحْمَدَ بْنِ رَجَبٍ الْحَنْبَلِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Rajab",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ رَجَبٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": "الأَرْبَعُونَ النَّوَوِيَّة",
+          "after": "جَامِعُ الْعُلُومِ وَالْحِكَمِ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name_en": {
+          "before": "Forty Hadith of Nawawi",
+          "after": "Jami al-Ulum wa-al-Hikam",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title_en": {
+          "before": "Jami al-Ulum wa-al-Hikam",
+          "after": "Jami al-Ulum wa-al-Hikam fi Sharh Khamsin Hadithan min Jawami al-Kalim",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 61,
+      "alias": "riyad",
+      "fields": {
+        "shortName": {
+          "before": "رياض الصالحين",
+          "after": "رِيَاض الصَّالِحِين",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Nawawi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "النَّوَوِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "Riyad al-Salihin",
+          "after": "Riyad al-Salihin min Kalam Sayyid al-Mursalin",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 15,
+      "alias": "adab",
+      "fields": {
+        "shortName": {
+          "before": "الأدب المفرد",
+          "after": "الْأَدَب الْمُفْرَد",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "الأدَبُ المُفْرَد",
+          "after": "الْأَدَبُ الْمُفْرَد",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "الأَدَبُ المُفْرَدُ",
+          "after": "الْأَدَبُ الْمُفْرَدُ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو عَبْدِ اللهِ مُحَمَّدُ بْنُ إِسْمَاعِيلَ البُخَارِيّ",
+          "after": "أَبُو عَبْدِ اللَّهِ مُحَمَّدُ بْنُ إِسْمَاعِيلَ الْبُخَارِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad b. Ismail al-Bukhari",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ بْنُ إِسْمَاعِيلَ الْبُخَارِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author_en": {
+          "before": "Abū ʿAbdullah M. Ismāʿīl al-Bukhārī",
+          "after": "Abu Abdullah Muhammad b. Ismail al-Bukhari",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 32,
+      "alias": "shamail",
+      "fields": {
+        "shortName": {
+          "before": "الشمائل",
+          "after": "الشَّمَائِل",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Isa al-Tirmidhi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو عِيسَى التِّرْمِذِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 50,
+      "alias": "lulu-marjan",
+      "fields": {
+        "shortName": {
+          "before": "اللؤلؤ والمرجان",
+          "after": "اللُّؤْلُؤ وَالْمَرْجَان",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "اللُؤْلُؤُ وَالمَرْجَان (مُتَّفَقٌ عَلَيهِ)",
+          "after": "اللُّؤْلُؤُ وَالْمَرْجَان (مُتَّفَقٌ عَلَيْهِ)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "اللُّؤْلُؤُ وَالمَرْجَانُ فِيمَا اتَّفَقَ عَلَيْهِ الشَّيْخَانِ",
+          "after": "اللُّؤْلُؤُ وَالْمَرْجَانُ فِيمَا اتَّفَقَ عَلَيْهِ الشَّيْخَانِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ فُؤَادُ عَبْدُ البَاقِي",
+          "after": "مُحَمَّدُ فُؤَادُ عَبْدُ الْبَاقِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Fuad Abd al-Baqi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ فُؤَادٍ عَبْدُ الْبَاقِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name_en": {
+          "before": "al-Lulu wa-al-Marjan",
+          "after": "al-Lulu wa-al-Marjan (Agreed upon)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100419,
+      "alias": "mishkat",
+      "fields": {
+        "shortName": {
+          "before": "المشكاة",
+          "after": "الْمِشْكَاة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "مشكاة المصابيح",
+          "after": "مِشْكَاة الْمَصَابِيح",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "محمد بن عبد الله الخطيب العمري، أبو عبد الله، ولي الدين، التبريزي",
+          "after": "مُحَمَّد بْن عَبْد اللَّه الْخَطِيب الْعُمَرِي، أَبُو عَبْد اللَّه، وَلِيّ الدِّين، التَّبْرِيزِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Khatib al-Tabrizi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْخَطِيبُ التَّبْرِيزِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 1,
+      "alias": "bukhari",
+      "fields": {
+        "shortName": {
+          "before": "البخاري",
+          "after": "الْبُخَارِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "صَحِيحُ البُخَارِيّ",
+          "after": "صَحِيحُ الْبُخَارِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "الجَامِعُ المُسْنَدُ الصَّحِيحُ المُخْتَصَرُ مِنْ أُمُورِ رَسُولِ اللهِ ﷺ وَسُنَنِهِ وَأَيَّامِهِ",
+          "after": "الْجَامِعُ المُسْنَدُ الصَّحِيحُ الْمُخْتَصَرُ مِنْ أُمُورِ رَسُولِ اللَّهِ ﷺ وَسُنَنِهِ وَأَيَّامِهِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو عَبْدِ اللهِ مُحَمَّدُ بْنُ إِسْمَاعِيلَ البُخَارِيّ",
+          "after": "أَبُو عَبْدِ اللَّهِ مُحَمَّدُ بْنُ إِسْمَاعِيلَ الْبُخَارِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad b. Ismail al-Bukhari",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ بْنُ إِسْمَاعِيلَ الْبُخَارِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author_en": {
+          "before": "Muhammad Ismail al-Bukhari",
+          "after": "Abu Abdullah Muhammad b. Ismail al-Bukhari",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title_en": {
+          "before": "al-Jami al-Musnad al-Sahih al-Mukhtasar",
+          "after": "al-Jami al-Musnad al-Sahih al-Mukhtasar min Umur Rasul Allah wa-Sunanihi wa-Ayyamihi",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 2,
+      "alias": "muslim",
+      "fields": {
+        "shortName": {
+          "before": "مسلم",
+          "after": "مُسْلِم",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "المُسْنَدُ الصَّحِيحُ المُخْتَصَرُ بِنَقْلِ العَدْلِ عَنِ العَدْلِ إِلَى رَسُولِ اللهِ ﷺ",
+          "after": "المُسْنَدُ الصَّحِيحُ الْمُخْتَصَرُ بِنَقْلِ العَدْلِ عَنِ العَدْلِ إِلَى رَسُولِ اللَّهِ ﷺ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو الحُسَيْنِ مُسْلِمُ بْنُ الحَجَّاجِ القُشَيْرِيّ النَّيْسَابُورِيّ",
+          "after": "أَبُو الْحُسَيْنِ مُسْلِمُ بْنُ الْحَجَّاجِ القُشَيْرِيّ النَّيْسَابُورِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muslim b. al-Hajjaj",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُسْلِمُ بْنُ الْحَجَّاجِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "al-Musnad al-Sahih al-Mukhtasar",
+          "after": "al-Musnad al-Sahih al-Mukhtasar bi-Naql al-Adl an al-Adl ila Rasul Allah",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 4,
+      "alias": "abudawud",
+      "fields": {
+        "shortName": {
+          "before": "أبو داود",
+          "after": "أَبُو دَاوُد",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Dawud al-Sijistani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو دَاوُدَ السِّجِسْتَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author_en": {
+          "before": "Abu Dawud Sulayman b. Ishaq al-Sijistani",
+          "after": "Abu Dawud Sulayman b. al-Ashath al-Sijistani",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 5,
+      "alias": "tirmidhi",
+      "fields": {
+        "shortName": {
+          "before": "الترمذي",
+          "after": "التِّرْمِذِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "الجَامِعُ المُخْتَصَرُ مِنَ السُّنَنِ عَنْ رَسُولِ اللهِ ﷺ وَمَعْرِفَةُ الصَّحِيحِ وَالمَعْلُولِ وَمَا عَلَيْهِ العَمَلُ",
+          "after": "الْجَامِعُ الْمُخْتَصَرُ مِنَ السُّنَنِ عَنْ رَسُولِ اللَّهِ ﷺ وَمَعْرِفَةُ الصَّحِيحِ وَالمَعْلُولِ وَمَا عَلَيْهِ العَمَلُ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Isa al-Tirmidhi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو عِيسَى التِّرْمِذِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "al-Jami al-Mukhtasar min al-Sunan",
+          "after": "al-Jami al-Mukhtasar min al-Sunan an Rasul Allah wa-Marifat al-Sahih wa-al-Malul wa-ma alayhi al-Amal",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 3,
+      "alias": "nasai",
+      "fields": {
+        "shortName": {
+          "before": "النسائي",
+          "after": "النَّسَائِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ahmad al-Nasai",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَحْمَدُ النَّسَائِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 6,
+      "alias": "ibnmajah",
+      "fields": {
+        "shortName": {
+          "before": "ابن ماجة",
+          "after": "ابْن مَاجَة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو عَبْدِ اللهِ مُحَمَّدُ بْنُ يَزِيدَ ابْنُ مَاجَه القَزْوِينِيّ",
+          "after": "أَبُو عَبْدِ اللَّهِ مُحَمَّدُ بْنُ يَزِيدَ ابْنُ مَاجَه القَزْوِينِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad b. Yazid Ibn Majah",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ بْنُ يَزِيدَ ابْنُ مَاجَةَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author_en": {
+          "before": "Abu Abdullah Muhammad b. Majah al-Qazwini",
+          "after": "Abu Abdullah Muhammad b. Yazid Ibn Majah al-Qazwini",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 8,
+      "alias": "ahmad",
+      "fields": {
+        "shortName": {
+          "before": "أحمد",
+          "after": "أَحْمَد",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "مُسْنَدُ الإِمَامِ أَحْمَدَ بْنِ حَنْبَل",
+          "after": "مُسْنَدُ الْإِمَامِ أَحْمَدَ بْنِ حَنْبَل",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو عَبْدِ اللهِ أَحْمَدُ بْنُ مُحَمَّدِ بْنِ حَنْبَلٍ الشَّيْبَانِيّ",
+          "after": "أَبُو عَبْدِ اللَّهِ أَحْمَدُ بْنُ مُحَمَّدِ بْنِ حَنْبَلٍ الشَّيْبَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ahmad b. Hanbal",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَحْمَدُ بْنُ حَنْبَلٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author_en": {
+          "before": "Ahmad b. Hanbal al-Dhuhli",
+          "after": "Abu Abdullah Ahmad b. Muhammad b. Hanbal al-Shaybani",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 9,
+      "alias": "darimi",
+      "fields": {
+        "shortName": {
+          "before": "الدارمي",
+          "after": "الدَّارِمِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو مُحَمَّدٍ عَبْدُ اللهِ بْنُ عَبْدِ الرَّحْمَنِ الدَّارِمِيّ السَّمَرْقَنْدِيّ",
+          "after": "أَبُو مُحَمَّدٍ عَبْدُ اللَّهِ بْنُ عَبْدِ الرَّحْمَنِ الدَّارِمِيّ السَّمَرْقَنْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abdullah al-Darimi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ اللَّهِ الدَّارِمِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 7,
+      "alias": "malik",
+      "fields": {
+        "shortName": {
+          "before": "مالك",
+          "after": "مَالِك",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "المُوَطَّأُ لِلإِمَامِ مَالِكِ بْنِ أَنَس",
+          "after": "الْمُوَطَّأُ لِلإِمَامِ مَالِكِ بْنِ أَنَس",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو عَبْدِ اللهِ مَالِكُ بْنُ أَنَسٍ الأَصْبَحِيّ",
+          "after": "أَبُو عَبْدِ اللَّهِ مَالِكُ بْنُ أَنَسٍ الأَصْبَحِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Malik b. Anas",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَالِكُ بْنُ أَنَسٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 17,
+      "alias": "ibnkhuzaymah",
+      "fields": {
+        "shortName": {
+          "before": "ابن خزيمة",
+          "after": "ابْن خُزَيْمَة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "صَحِيحُ ابْنِ خُزَيمَة",
+          "after": "صَحِيحُ ابْنِ خُزَيْمَة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "مُخْتَصَرُ المُخْتَصَرِ مِنَ المُسْنَدِ الصَّحِيحِ عَنِ النَّبِيِّ ﷺ بِنَقْلِ العَدْلِ عَنِ العَدْلِ مَوْصُولًا إِلَيْهِ ﷺ",
+          "after": "مُخْتَصَرُ الْمُخْتَصَرِ مِنَ المُسْنَدِ الصَّحِيحِ عَنِ النَّبِيِّ ﷺ بِنَقْلِ العَدْلِ عَنِ العَدْلِ مَوْصُولًا إِلَيْهِ ﷺ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad b. Ishaq Ibn Khuzaymah",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ بْنُ إِسْحَاقَ ابْنُ خُزَيْمَةَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "Mukhtasar al-Mukhtasar min al-Musnad al-Sahih",
+          "after": "Mukhtasar al-Mukhtasar min al-Musnad al-Sahih an al-Nabi bi-Naql al-Adl an al-Adl Mawsulan ilayhi",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 18,
+      "alias": "daraqutni",
+      "fields": {
+        "shortName": {
+          "before": "الدارقطني",
+          "after": "الدَّارَقُطْنِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو الحَسَنُ عَلِيُّ ابْنُ عُمَرَ الدَّارَقُطْنِيّ",
+          "after": "أَبُو الْحَسَنُ عَلِيُّ ابْنُ عُمَرَ الدَّارَقُطْنِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ali al-Daraqutni",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَلِيٌّ الدَّارَقُطْنِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 16,
+      "alias": "bazzar",
+      "fields": {
+        "shortName": {
+          "before": "البزّار",
+          "after": "الْبَزَّار",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "مُسْنَدُ البَزَّار",
+          "after": "مُسْنَدُ الْبَزَّار",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "البَحْرُ الزَّخَّارُ المَعْرُوفُ بِمُسْنَدِ البَزَّار",
+          "after": "الْبَحْرُ الزَّخَّارُ المَعْرُوفُ بِمُسْنَدِ الْبَزَّار",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو بَكْرٍ أَحْمَدُ بْنُ عَمْرٍو البَزَّار",
+          "after": "أَبُو بَكْرٍ أَحْمَدُ بْنُ عَمْرٍو الْبَزَّار",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ahmad al-Bazzar",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَحْمَدُ الْبَزَّارُ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "al-Bahr al-Zakhkhar",
+          "after": "al-Bahr al-Zakhkhar, known as Musnad al-Bazzar",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 11,
+      "alias": "ibnhibban",
+      "fields": {
+        "shortName": {
+          "before": "ابن حبّان",
+          "after": "ابْن حِبَّان",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Ibn Hibban",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ ابْنُ حِبَّانَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 10,
+      "alias": "hakim",
+      "fields": {
+        "shortName": {
+          "before": "الحاكم",
+          "after": "الْحَاكِم",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "مُسْتَدْرَكُ الحَاكِم",
+          "after": "مُسْتَدْرَكُ الْحَاكِم",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو عَبْدِ اللهِ مُحَمَّدُ بْنُ عَبْدِ اللهِ الحَاكِمُ النَّيْسَابُورِيّ",
+          "after": "أَبُو عَبْدِ اللَّهِ مُحَمَّدُ بْنُ عَبْدِ اللَّهِ الْحَاكِمُ النَّيْسَابُورِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Abdullah al-Hakim",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو عَبْدِ اللَّهِ الْحَاكِمُ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 35,
+      "alias": "tayalisi",
+      "fields": {
+        "shortName": {
+          "before": "الطيالسي",
+          "after": "الطَّيَالِسِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Dawud al-Tayalisi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو دَاوُدَ الطَّيَالِسِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 13,
+      "alias": "nasai-kubra",
+      "fields": {
+        "shortName": {
+          "before": "الكبرى للنسائي",
+          "after": "الكُبْرَى لِلنَّسَائِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ahmad al-Nasai",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَحْمَدُ النَّسَائِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "al-Sunan al-Kubra",
+          "after": "al-Sunan al-Kubra li-al-Nasai",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 14,
+      "alias": "bayhaqi",
+      "fields": {
+        "shortName": {
+          "before": "  الكبير للبيهقي",
+          "after": "الْكَبِيرُ لِلْبَيْهَقِيِّ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name": {
+          "before": "السُّنَنُ الكَبِيرُ لِلْبَيهَقِيّ",
+          "after": "السُّنَنُ الْكَبِيرُ لِلْبَيْهَقِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "السُّنَنُ الكَبِيرُ لِلْبَيْهَقِيّ",
+          "after": "السُّنَنُ الْكَبِيرُ لِلْبَيْهَقِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو بَكْرٍ أَحْمَدُ بْنُ الحُسَيْنِ البَيْهَقِيّ",
+          "after": "أَبُو بَكْرٍ أَحْمَدُ بْنُ الْحُسَيْنِ الْبَيْهَقِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Bayhaqi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْبَيْهَقِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "al-Sunan al-Kabir",
+          "after": "al-Sunan al-Kabir li-al-Bayhaqi",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 30,
+      "alias": "abdalrazzaq",
+      "fields": {
+        "shortName": {
+          "before": " عبد الرزّاق",
+          "after": " عَبْد الرَّزَّاق",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "مُصَنَّفُ عَبْدِ الرَّزَّاقِ الصَّنْعَانيّ",
+          "after": "مُصَنَّفُ عَبْدِ الرَّزَّاقِ الصَّنْعَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عبد الرزاق بن همام بن نافع الحميري مولاهم اليماني , أبو بكر الصنعاني",
+          "after": "عَبْد الرَّزَّاق بْن هَمَّام بْن نَافِع الْحِمْيَرِي مَوْلَاهُم الْيَمَانِي , أَبُو بَكْر الصَّنْعَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abd al-Razzaq al-Sanaani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ الرَّزَّاقِ الصَّنْعَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 31,
+      "alias": "ibnabishaybah",
+      "fields": {
+        "shortName": {
+          "before": "ابن أبي شيبة",
+          "after": "ابْن أَبِي شَيْبَة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "مُصَنَّفُ ابْنِ أَبِي شَيبَة",
+          "after": "مُصَنَّفُ ابْنِ أَبِي شَيْبَة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "مُصَنَّفُ ابْنِ أَبِي شَيبَة",
+          "after": "مُصَنَّفُ ابْنِ أَبِي شَيْبَة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عبد الله بن محمد بن القاضي أبي شيبة إبراهيم بن عثمان بن خواستى",
+          "after": "عَبْد اللَّه بْن مُحَمَّد بْن الْقَاضِي أَبِي شَيْبَة إِبْرَاهِيم بْن عُثْمَان بْن خواستى",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Bakr Ibn Abi Shaybah",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو بَكْرٍ ابْنُ أَبِي شَيْبَةَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 36,
+      "alias": "abuyaala",
+      "fields": {
+        "shortName": {
+          "before": "أبو يعلى",
+          "after": "أَبُو يَعْلَى",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "مُسْنَدُ أَبِي يَعْلَى المَوْصِلِيّ",
+          "after": "مُسْنَدُ أَبِي يَعْلَى الْمَوْصِلِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "مُسْنَدُ أَبِي يَعْلَى المَوْصِلِيّ",
+          "after": "مُسْنَدُ أَبِي يَعْلَى الْمَوْصِلِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو يَعْلَى أَحْمَدُ بْنُ عَلِيٍّ المَوْصِلِيّ",
+          "after": "أَبُو يَعْلَى أَحْمَدُ بْنُ عَلِيٍّ الْمَوْصِلِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Yala al-Mawsili",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو يَعْلَى الْمَوْصِلِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 37,
+      "alias": "matalib",
+      "fields": {
+        "shortName": {
+          "before": "المطالب",
+          "after": "الْمَطَالِب",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "المَطَالِبُ العَالِيَةُ",
+          "after": "الْمَطَالِبُ العَالِيَةُ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "المَطَالِبُ العَالِيَةُ بِزَوَائِدِ المَسَانِيدِ الثَّمَانِيَةِ",
+          "after": "الْمَطَالِبُ العَالِيَةُ بِزَوَائِدِ المَسَانِيدِ الثَّمَانِيَةِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو الفَضْلِ أَحْمَدُ بْنُ عَلِيٍّ ابْنُ حَجَرٍ العَسْقَلَانِيّ",
+          "after": "أَبُو الفَضْلِ أَحْمَدُ بْنُ عَلِيٍّ ابْنُ حَجَرٍ الْعَسْقَلَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Hajar al-Asqalani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ حَجَرٍ الْعَسْقَلَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 33,
+      "alias": "tabarani-saghir",
+      "fields": {
+        "shortName": {
+          "before": "الصغير للطبراني",
+          "after": "الصَّغِير لِلطَّبَرَانِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Tabarani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الطَّبَرَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 34,
+      "alias": "tabarani-awsat",
+      "fields": {
+        "shortName": {
+          "before": "الأوسط للطبراني",
+          "after": "الْأَوْسَط لِلطَّبَرَانِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "المُعْجَمُ الأَوْسَطُ لِلطَّبَرَانِيّ",
+          "after": "المُعْجَمُ الْأَوْسَطُ لِلطَّبَرَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "المُعْجَمُ الأَوْسَطُ",
+          "after": "المُعْجَمُ الْأَوْسَطُ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Tabarani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الطَّبَرَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 12,
+      "alias": "tabarani",
+      "fields": {
+        "shortName": {
+          "before": "الكبير لللطبراني",
+          "after": "الْكَبِيرُ لِلطَّبَرَانِيِّ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name": {
+          "before": "المُعْجَمُ الكَبِيرُ لِلطَّبَرَانِيّ",
+          "after": "المُعْجَمُ الْكَبِيرُ لِلطَّبَرَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "المُعْجَمُ الكَبِيرُ لِلطَّبَرَانِيّ",
+          "after": "المُعْجَمُ الْكَبِيرُ لِلطَّبَرَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Tabarani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الطَّبَرَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100420,
+      "alias": "shuab",
+      "fields": {
+        "shortName": {
+          "before": "شعب الإيمان",
+          "after": "شُعَب الْإِيمَان",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "شعب الإيمان",
+          "after": "شُعَب الْإِيمَان",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أحمد بن الحسين بن علي بن موسى، أبو بكر البيهقي",
+          "after": "أَحْمَد بْن الْحُسَيْن بْن عَلِيّ بْن مُوسَى، أَبُو بَكْر الْبَيْهَقِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Bayhaqi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْبَيْهَقِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 82,
+      "alias": "ahmad-zuhd",
+      "fields": {
+        "shortName": {
+          "before": "الزهد لأحمد",
+          "after": "الزُّهْد لِأَحْمَد",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "الزُهْدُ لِأَحْمَد",
+          "after": "الزُّهْدُ لِأَحْمَد",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو عَبْدِ اللهِ أَحْمَدُ بْنُ مُحَمَّدِ بْنِ حَنْبَلٍ الشَّيْبَانِيّ",
+          "after": "أَبُو عَبْدِ اللَّهِ أَحْمَدُ بْنُ مُحَمَّدِ بْنِ حَنْبَلٍ الشَّيْبَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ahmad b. Hanbal",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَحْمَدُ بْنُ حَنْبَلٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author_en": {
+          "before": "Ahmad b. Hanbal al-Dhuhli",
+          "after": "Abu Abdullah Ahmad b. Muhammad b. Hanbal al-Shaybani",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title_en": {
+          "before": "al-Zuhd li-Imam Ahmad",
+          "after": "al-Zuhd li-Imam Ahmad b. Hanbal",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 1000,
+      "alias": "suyuti",
+      "fields": {
+        "shortName": {
+          "before": "السيوطي",
+          "after": "السُّيُوطِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "جَمْعُ الجَوَامِعِ المَعْرُوفُ بِالجَامِعِ الكَبِيرِ",
+          "after": "جَمْعُ الجَوَامِعِ المَعْرُوفُ بِالجَامِعِ الْكَبِيرِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Jalal al-Din al-Suyuti",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "جَلَالُ الدِّينِ السُّيُوطِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "Jam al-Jawami / Jami al-Kabir",
+          "after": "Jam al-Jawami, known as al-Jami al-Kabir",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 9999,
+      "alias": "misc",
+      "fields": {
+        "shortName": {
+          "before": "من مختلف",
+          "after": "مِن مُخْتَلِف",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "من مختلف",
+          "after": "مِن مُخْتَلِف",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Various Sources",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَصَادِرُ مُتَنَوِّعَةٌ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 0,
+      "alias": "quran",
+      "fields": {
+        "shortName": {
+          "before": "القرآن",
+          "after": "الْقُرْآن",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "القُرْآنُ الكَرِيم",
+          "after": "الْقُرْآنُ الْكَرِيم",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "القُرْآنُ الكَرِيم",
+          "after": "الْقُرْآنُ الْكَرِيم",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        }
+      }
+    },
+    {
+      "id": 100388,
+      "alias": "bukhari-ibnhajar",
+      "fields": {
+        "author": {
+          "before": "أحمد بن علي بن حجر العسقلاني",
+          "after": "أَحْمَد بْن عَلِيّ بْن حَجَر الْعَسْقَلَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Hajar al-Asqalani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ حَجَرٍ الْعَسْقَلَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100389,
+      "alias": "bukhari-ayni",
+      "fields": {
+        "author": {
+          "before": "بدر الدين محمود بن أحمد العيني",
+          "after": "بَدْر الدِّين مَحْمُود بْن أَحْمَد الْعَيْنِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Badr al-Din al-Ayni",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "بَدْرُ الدِّينِ الْعَيْنِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100390,
+      "alias": "muslim-nawawi",
+      "fields": {
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Nawawi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "النَّوَوِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100391,
+      "alias": "abudawud-shamsalhaqq",
+      "fields": {
+        "author": {
+          "before": "محمد شمس الحق العظيم آبادي",
+          "after": "مُحَمَّد شَمْس الْحَقّ الْعَظِيم آبَادِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Azimabadi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْعَظِيمُ آبَادِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100392,
+      "alias": "tirmidhi-mubarakfuri",
+      "fields": {
+        "author": {
+          "before": "أبو العلا محمد عبد الرحمن بن عبد الرحيم المباركفوري",
+          "after": "أَبُو الْعَلَا مُحَمَّد عَبْد الرَّحْمَن بْن عَبْد الرَّحِيم الْمُبَارَكْفُورِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abd al-Rahman al-Mubarakfuri",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ الرَّحْمَنِ الْمُبَارَكْفُورِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name_en": {
+          "before": "Tuḥfat al-Aḥwadhī (Mubārakpūrī)",
+          "after": "Tuḥfat al-Aḥwadhī (Mubārakfūrī)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100393,
+      "alias": "nasai-suyuti",
+      "fields": {
+        "shortName": {
+          "before": "شرح السيوطي",
+          "after": "شَرْح السُّيُوطِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "شرح السيوطي على سنن النسائي",
+          "after": "شَرْح السُّيُوطِيّ عَلَى سُنَن النَّسَائِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "شرح السيوطي على سنن النسائي",
+          "after": "شَرْح السُّيُوطِيّ عَلَى سُنَن النَّسَائِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "جلال الدين عبد الرحمن بن أبي بكر السيوطي",
+          "after": "جَلَال الدِّين عَبْد الرَّحْمَن بْن أَبِي بَكْر السُّيُوطِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Jalal al-Din al-Suyuti",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "جَلَالُ الدِّينِ السُّيُوطِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100394,
+      "alias": "nasai-sindi",
+      "fields": {
+        "author": {
+          "before": "أبو الحسن محمد بن عبد الهادي السندي",
+          "after": "أَبُو الْحَسَن مُحَمَّد بْن عَبْد الْهَادِي السِّنْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Sindi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "السِّنْدِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName": {
+          "before": "حَاشِيَةُ السِّنْدِيِّ عَلَى سُنَنِ النَّسَائِيِّ",
+          "after": "حَاشِيَةُ السِّنْدِيِّ عَلَى النَّسَائِيِّ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100395,
+      "alias": "ibnmajah-sindi",
+      "fields": {
+        "author": {
+          "before": "أبو الحسن محمد بن عبد الهادي السندي",
+          "after": "أَبُو الْحَسَن مُحَمَّد بْن عَبْد الْهَادِي السِّنْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Sindi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "السِّنْدِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName": {
+          "before": "حَاشِيَةُ السِّنْدِيِّ عَلَى بْنِ مَاجَهْ",
+          "after": "حَاشِيَةُ السِّنْدِيِّ عَلَى ابْنِ مَاجَهْ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name": {
+          "before": "حَاشِيَةُ السِّنْدِيِّ عَلَى بْنِ مَاجَهْ",
+          "after": "حَاشِيَةُ السِّنْدِيِّ عَلَى ابْنِ مَاجَهْ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title": {
+          "before": "حَاشِيَةُ السِّنْدِيِّ عَلَى بْنِ مَاجَهْ",
+          "after": "حَاشِيَةُ السِّنْدِيِّ عَلَى ابْنِ مَاجَهْ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100396,
+      "alias": "bukhari-ibnrajab",
+      "fields": {
+        "author": {
+          "before": "عبد الرحمن بن أحمد بن رجب الحنبلي",
+          "after": "عَبْد الرَّحْمَن بْن أَحْمَد بْن رَجَب الْحَنْبَلِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Rajab",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ رَجَبٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100397,
+      "alias": "muslim-qurtubi",
+      "fields": {
+        "author": {
+          "before": "أبو العباس أحمد بن عمر بن إبراهيم القرطبي",
+          "after": "أَبُو الْعَبَّاس أَحْمَد بْن عُمَر بْن إِبْرَاهِيم الْقُرْطُبِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu al-Abbas al-Qurtubi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو الْعَبَّاسِ الْقُرْطُبِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100398,
+      "alias": "ibnmajah-mughultay",
+      "fields": {
+        "author": {
+          "before": "علاء الدين مغلطاي بن قليج",
+          "after": "عَلَاء الدِّين مُغْلَطَاي بْن قُلَيْج",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Mughultay",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُغْلَطَاي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName": {
+          "before": "الْإِعْلَامُ بِسُنَّتِهِ عَلَيْهِ الصَّلَاةُ وَالسَّلَامُ (الْمُغَلْطَائِيُّ)",
+          "after": "الْإِعْلَامُ (مُغْلَطَاي)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name_en": {
+          "before": "al-Iʿlām (Mughulṭāy)",
+          "after": "al-Ilam bi-Sunnatihi alayhi al-Salat wa-al-Salam (al-Mughultai)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title_en": {
+          "before": "al-Iʿlām (Mughulṭāy)",
+          "after": "al-Ilam bi-Sunnatihi alayhi al-Salat wa-al-Salam (al-Mughultai)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100399,
+      "alias": "malik-tamhid",
+      "fields": {
+        "author": {
+          "before": "أبو عمر يوسف بن عبد الله بن عبد البر",
+          "after": "أَبُو عُمَر يُوسُف بْن عَبْد اللَّه بْن عَبْد الْبَرّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Abd al-Barr",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ عَبْدِ الْبَرِّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName": {
+          "before": "التَّمْهِيدُ لِمَا فِي الْمُوَطَّأِ (ابْنُ عَبْدِ الْبَرِّ)",
+          "after": "التَّمْهِيدُ (ابْنُ عَبْدِ الْبَرِّ)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name_en": {
+          "before": "al-Tamhīd (Ibn ʿAbd al-Barr)",
+          "after": "al-Tamhid li-ma fi al-Muwatta (Ibn Abd al-Barr)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title_en": {
+          "before": "al-Tamhīd (Ibn ʿAbd al-Barr)",
+          "after": "al-Tamhid li-ma fi al-Muwatta (Ibn Abd al-Barr)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100400,
+      "alias": "malik-istidhkar",
+      "fields": {
+        "author": {
+          "before": "أبو عمر يوسف بن عبد الله بن عبد البر",
+          "after": "أَبُو عُمَر يُوسُف بْن عَبْد اللَّه بْن عَبْد الْبَرّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Abd al-Barr",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ عَبْدِ الْبَرِّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName": {
+          "before": "الِاسْتِذْكَارُ الْجَامِعُ لِمَذَاهِبِ فُقَهَاءِ الْأَمْصَارِ وَعُلَمَاءِ الْأَقْطَارِ",
+          "after": "الِاسْتِذْكَارُ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name_en": {
+          "before": "al-Istidhkār",
+          "after": "al-Istidhkar al-Jami li-Madhahib Fuqaha al-Amsar wa-Ulama al-Aqtar",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title_en": {
+          "before": "al-Istidhkār",
+          "after": "al-Istidhkar al-Jami li-Madhahib Fuqaha al-Amsar wa-Ulama al-Aqtar",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100401,
+      "alias": "malik-zarqani",
+      "fields": {
+        "shortName": {
+          "before": "شرح الزرقاني على الموطأ",
+          "after": "شَرْح الزُّرْقَانِيّ عَلَى الْمُوَطَّأ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "شرح الزرقاني على موطأ الإمام مالك",
+          "after": "شَرْح الزُّرْقَانِيّ عَلَى مُوَطَّأ الْإِمَام مَالِك",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "شرح الزرقاني على موطأ الإمام مالك",
+          "after": "شَرْح الزُّرْقَانِيّ عَلَى مُوَطَّأ الْإِمَام مَالِك",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "محمد بن عبد الباقي بن يوسف الزرقاني",
+          "after": "مُحَمَّد بْن عَبْد الْبَاقِي بْن يُوسُف الزُّرْقَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Zurqani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الزُّرْقَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name_en": {
+          "before": "Sharḥ al-Zurqānī on al-Muwaṭṭaʾ",
+          "after": "Sharh al-Zurqani ala Muwatta al-Imam Malik",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title_en": {
+          "before": "Sharḥ al-Zurqānī on al-Muwaṭṭaʾ",
+          "after": "Sharh al-Zurqani ala Muwatta al-Imam Malik",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100402,
+      "alias": "dorar-s",
+      "fields": {
+        "author": {
+          "before": "مؤسسة الدرر السنية",
+          "after": "مُؤَسَّسَة الدُّرَر السَّنِيَّة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Dorar al-Saniyyah Foundation",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُؤَسَّسَةُ الدُّرَرِ السَّنِيَّةِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100404,
+      "alias": "shamail-kandhlawi",
+      "fields": {
+        "author": {
+          "before": "محمد زكريا بن محمد يحيى الكاندهلوي",
+          "after": "مُحَمَّد زَكَرِيَّا بْن مُحَمَّد يَحْيَى الْكَانْدَهْلَوِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Zakariyya al-Kandhlawi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "زَكَرِيَّا الْكَانْدَهْلَوِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName_en": {
+          "before": "Khaṣāʾil Nabawī (Zakariyyah)",
+          "after": "Khasail Nabawi (Muhammad Zakariyya)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name_en": {
+          "before": "Khaṣāʾil Nabawī (Zakariyyah)",
+          "after": "Khasail Nabawi (Muhammad Zakariyya)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title_en": {
+          "before": "Khaṣāʾil Nabawī (Zakariyyah)",
+          "after": "Khasail Nabawi (Muhammad Zakariyya)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100405,
+      "alias": "adab-salahi",
+      "fields": {
+        "shortName": {
+          "before": "شرح صلاحي",
+          "after": "شَرْح صَلَاحِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "الأدب المفرد مع الشرح (عادل صلاحي)",
+          "after": "الْأَدَب الْمُفْرَد مَع الشَّرْح (عَادِل صَلَاحِي)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "الأدب المفرد مع الشرح (عادل صلاحي)",
+          "after": "الْأَدَب الْمُفْرَد مَع الشَّرْح (عَادِل صَلَاحِي)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عادل صلاحي",
+          "after": "عَادِل صَلَاحِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Adil Salahi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَادِلٌ صَلَاحِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName_en": {
+          "before": "Adil Salahi",
+          "after": "Salahi's Commentary",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100406,
+      "alias": "riyad-uthaymin",
+      "fields": {
+        "author": {
+          "before": "محمد بن صالح العثيمين",
+          "after": "مُحَمَّد بْن صَالِح الْعُثَيْمِين",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Ibn Uthaymin",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ ابْنُ عُثَيْمِينَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100407,
+      "alias": "arbain-ibndaqiq",
+      "fields": {
+        "author": {
+          "before": "تقي الدين محمد بن علي بن وهب ابن دقيق العيد",
+          "after": "تَقِيّ الدِّين مُحَمَّد بْن عَلِيّ بْن وَهْب ابْن دَقِيق الْعِيد",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Daqiq al-Id",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ دَقِيقِ الْعِيدِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100408,
+      "alias": "jami-al-ulum",
+      "fields": {
+        "author": {
+          "before": "عبد الرحمن بن أحمد بن رجب الحنبلي",
+          "after": "عَبْد الرَّحْمَن بْن أَحْمَد بْن رَجَب الْحَنْبَلِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Rajab",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ رَجَبٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100409,
+      "alias": "ahmad-arnaut",
+      "fields": {
+        "author": {
+          "before": "شعيب الأرناؤوط وآخرون",
+          "after": "شُعَيْب الْأَرْنَاؤُوط وَآخَرُون",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Shuayb al-Arnaut and colleagues",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "شُعَيْبٌ الْأَرْنَاؤُوطُ وَآخَرُونَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100414,
+      "alias": "shamail-qari",
+      "fields": {
+        "author": {
+          "before": "علي بن سلطان محمد القاري",
+          "after": "عَلِيّ بْن سُلْطَان مُحَمَّد الْقَارِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Mulla Ali al-Qari",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْمُلَّا عَلِيٌّ الْقَارِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100415,
+      "alias": "riyad-ibnallan",
+      "fields": {
+        "author": {
+          "before": "محمد علي بن محمد بن علان البكري الصديقي",
+          "after": "مُحَمَّد عَلِيّ بْن مُحَمَّد بْن عَلَّان الْبَكْرِي الصِّدِّيقِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Allan",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ عَلَّانَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100416,
+      "alias": "mukhtalif-ibnqutaybah",
+      "fields": {
+        "shortName": {
+          "before": "تأويل مختلف الحديث",
+          "after": "تَأْوِيل مُخْتَلِف الْحَدِيث",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تأويل مختلف الحديث",
+          "after": "تَأْوِيل مُخْتَلِف الْحَدِيث",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "تأويل مختلف الحديث",
+          "after": "تَأْوِيل مُخْتَلِف الْحَدِيث",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أبو محمد عبد الله بن مسلم بن قتيبة",
+          "after": "أَبُو مُحَمَّد عَبْد اللَّه بْن مُسْلِم بْن قُتَيْبَة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Qutaybah",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ قُتَيْبَةَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100417,
+      "alias": "mushkil-tahawi",
+      "fields": {
+        "shortName": {
+          "before": "شرح مشكل الآثار (الطحاوي)",
+          "after": "شَرْح مُشْكِل الْآثَار (الطَّحَاوِيّ)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "شرح مشكل الآثار (الطحاوي)",
+          "after": "شَرْح مُشْكِل الْآثَار (الطَّحَاوِيّ)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "شرح مشكل الآثار (الطحاوي)",
+          "after": "شَرْح مُشْكِل الْآثَار (الطَّحَاوِيّ)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أبو جعفر أحمد بن محمد بن سلامة الطحاوي",
+          "after": "أَبُو جَعْفَر أَحْمَد بْن مُحَمَّد بْن سَلَامَة الطَّحَاوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Tahawi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الطَّحَاوِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100418,
+      "alias": "itibar-hazimi",
+      "fields": {
+        "shortName": {
+          "before": "الاعتبار في الناسخ والمنسوخ",
+          "after": "الْاِعْتِبَار فِي النَّاسِخ وَالْمَنْسُوخ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "الاعتبار في الناسخ والمنسوخ",
+          "after": "الِاعْتِبَارُ فِي النَّاسِخِ وَالْمَنْسُوخِ مِنَ الْآثَارِ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title": {
+          "before": "الاعتبار في الناسخ والمنسوخ",
+          "after": "الِاعْتِبَارُ فِي النَّاسِخِ وَالْمَنْسُوخِ مِنَ الْآثَارِ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "author": {
+          "before": "أبو بكر محمد بن موسى الحازمي",
+          "after": "أَبُو بَكْر مُحَمَّد بْن مُوسَى الْحَازِمِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Hazimi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْحَازِمِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100421,
+      "alias": "mishkat-qari",
+      "fields": {
+        "shortName": {
+          "before": "مرقاة المفاتيح (الملا علي قاري)",
+          "after": "مِرْقَاةُ الْمَفَاتِيحِ (الْمُلَّا عَلِيٌّ قَارِي)",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name": {
+          "before": "مرقاة المفاتيح (الملا علي قاري)",
+          "after": "مِرْقَاة الْمَفَاتِيح (الْمُلَّا عَلِيّ قَارِي)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "مرقاة المفاتيح (الملا علي قاري)",
+          "after": "مِرْقَاة الْمَفَاتِيح (الْمُلَّا عَلِيّ قَارِي)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "علي بن سلطان محمد القاري",
+          "after": "عَلِيّ بْن سُلْطَان مُحَمَّد الْقَارِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Mulla Ali al-Qari",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْمُلَّا عَلِيٌّ الْقَارِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100422,
+      "alias": "mishkat-mubarakfuri",
+      "fields": {
+        "shortName": {
+          "before": "مرعاة المفاتيح (المباركفوري)",
+          "after": "مِرْعَاة الْمَفَاتِيح (الْمُبَارَكْفُورِي)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "مرعاة المفاتيح (المباركفوري)",
+          "after": "مِرْعَاة الْمَفَاتِيح (الْمُبَارَكْفُورِي)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "مرعاة المفاتيح (المباركفوري)",
+          "after": "مِرْعَاة الْمَفَاتِيح (الْمُبَارَكْفُورِي)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عبيد الله بن محمد عبد السلام الرحماني المباركفوري",
+          "after": "عُبَيْد اللَّه بْن مُحَمَّد عَبْد السَّلَام الرَّحْمَانِي الْمُبَارَكْفُورِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ubayd Allah al-Mubarakfuri",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عُبَيْدُ اللَّهِ الْمُبَارَكْفُورِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100423,
+      "alias": "mishkat-dihlawi",
+      "fields": {
+        "shortName": {
+          "before": "لمعات التنقيح (عبد الحق الدهلوي)",
+          "after": "لَمَعَات التَّنْقِيح (عَبْد الْحَقّ الدِّهْلَوِيّ)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "لمعات التنقيح (عبد الحق الدهلوي)",
+          "after": "لَمَعَات التَّنْقِيح (عَبْد الْحَقّ الدِّهْلَوِيّ)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "لمعات التنقيح (عبد الحق الدهلوي)",
+          "after": "لَمَعَات التَّنْقِيح (عَبْد الْحَقّ الدِّهْلَوِيّ)",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عبد الحق بن سيف الدين الدهلوي",
+          "after": "عَبْد الْحَقّ بْن سَيْف الدِّين الدِّهْلَوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abd al-Haqq al-Dihlawi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ الْحَقِّ الدِّهْلَوِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100426,
+      "alias": "mukhtar",
+      "fields": {
+        "shortName": {
+          "before": "عدنان مختار",
+          "after": "عَدْنَان مُخْتَار",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "عدنان مختار",
+          "after": "عَدْنَان مُخْتَار",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "عدنان مختار",
+          "after": "عَدْنَان مُخْتَار",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        }
+      }
+    },
+    {
+      "id": 100412,
+      "alias": "ibnhisham",
+      "fields": {
+        "shortName": {
+          "before": "ابن هشام",
+          "after": "ابْن هِشَام",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أبو محمد عبد الملك بن هشام بن أيوب المعافري",
+          "after": "أَبُو مُحَمَّد عَبْد الْمَلِك بْن هِشَام بْن أَيُّوب الْمُعَافِرِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abd al-Malik Ibn Hisham",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ الْمَلِكِ ابْنُ هِشَامٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100413,
+      "alias": "history",
+      "fields": {
+        "shortName": {
+          "before": "التاريخ",
+          "after": "التَّارِيخ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "موسوعة السيرة النبوية والتاريخ الإسلامي",
+          "after": "مَوْسُوعَة السِّيرَة النَّبَوِيَّة وَالتَّارِيخ الْإِسْلَامِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "موسوعة السيرة النبوية والتاريخ الإسلامي",
+          "after": "مَوْسُوعَة السِّيرَة النَّبَوِيَّة وَالتَّارِيخ الْإِسْلَامِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "إسلام ويب",
+          "after": "إِسْلَام وَيْب",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Islamweb",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "إِسْلَامُ وَيْب",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100382,
+      "alias": "rida",
+      "fields": {
+        "shortName": {
+          "before": "الرِضَا",
+          "after": "الرِّضَا",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "التَفْسِيرُ المَنَار",
+          "after": "التَّفْسِيرُ المَنَار",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "التَفْسِيرُ المَنَار",
+          "after": "التَّفْسِيرُ المَنَار",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Rashid Rida",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ رَشِيدٌ رِضَا",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100010,
+      "alias": "tabari",
+      "fields": {
+        "shortName": {
+          "before": "الطبري",
+          "after": "الطَّبَرِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ الطَبَرِيّ",
+          "after": "تَفْسِيرُ الطَّبَرِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Jarir al-Tabari",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ جَرِيرٍ الطَّبَرِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100048,
+      "alias": "ibn-abi-hatim",
+      "fields": {
+        "name": {
+          "before": "تَفْسِيرُ القُرْآنِ العَظِيمِ",
+          "after": "تَفْسِيرُ ابْنِ أَبِي حَاتِمٍ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title": {
+          "before": "تَفْسِيرُ القُرْآنِ العَظِيمِ",
+          "after": "تَفْسِيرُ الْقُرْآنِ الْعَظِيمِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abd al-Rahman Ibn Abi Hatim",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ الرَّحْمَنِ ابْنُ أَبِي حَاتِمٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100021,
+      "alias": "samarqandi",
+      "fields": {
+        "shortName": {
+          "before": "السمرقندي",
+          "after": "السَّمَرْقَنْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu al-Layth al-Samarqandi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو اللَّيْثِ السَّمَرْقَنْدِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100045,
+      "alias": "abu-zamanayn",
+      "fields": {
+        "shortName": {
+          "before": "ابن أبي زمنين",
+          "after": "ابْن أَبِي زَمَنِين",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Ibn Abi Zamanin",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ ابْنُ أَبِي زَمَنِينَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100018,
+      "alias": "makki",
+      "fields": {
+        "shortName": {
+          "before": "مكّي",
+          "after": "مَكِّيُّ بْنُ أَبِي طَالِبٍ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "author": {
+          "before": "مَكِّيُّ بْنُ أَبِي طَالِبٍ القَيْسِيّ",
+          "after": "مَكِّيُّ بْنُ أَبِي طَالِبٍ الْقَيْسِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Makki b. Abi Talib al-Qaysi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَكِّيُّ بْنُ أَبِي طَالِبٍ الْقَيْسِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100014,
+      "alias": "mawardi",
+      "fields": {
+        "shortName": {
+          "before": "الماوردي",
+          "after": "الْمَاوَرْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ المَاوَرْدِيّ",
+          "after": "تَفْسِيرُ الْمَاوَرْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عَلِيُّ بْنُ مُحَمَّدِ المَاوَرْدِيّ",
+          "after": "عَلِيُّ بْنُ مُحَمَّدِ الْمَاوَرْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu al-Hasan al-Mawardi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو الْحَسَنِ الْمَاوَرْدِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100017,
+      "alias": "samaani",
+      "fields": {
+        "shortName": {
+          "before": "السمعاني",
+          "after": "السَّمْعَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu al-Muzaffar al-Samaani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو الْمُظَفَّرِ السَّمْعَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100009,
+      "alias": "baghawi",
+      "fields": {
+        "shortName": {
+          "before": "البغوي",
+          "after": "الْبَغَوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ البَغَوِيّ",
+          "after": "تَفْسِيرُ الْبَغَوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "الحُسَيْنُ بْنُ مَسْعُودِ الفَرَّاءُ البَغَوِيّ",
+          "after": "الْحُسَيْنُ بْنُ مَسْعُودِ الْفَرَّاءُ الْبَغَوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Husayn al-Baghawi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْحُسَيْنُ الْبَغَوِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100035,
+      "alias": "zamakhshari",
+      "fields": {
+        "shortName": {
+          "before": "الزمخشري",
+          "after": "الزَّمَخْشَرِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Mahmud al-Zamakhshari",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَحْمُودٌ الزَّمَخْشَرِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100013,
+      "alias": "ibn-al-jawzi",
+      "fields": {
+        "shortName": {
+          "before": "ابن الجوزي",
+          "after": "ابْن الْجَوْزِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ ابْنِ الجَوزِيّ",
+          "after": "تَفْسِيرُ ابْنِ الْجَوْزِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عَبْدُ الرَّحْمَنِ بْنُ عَلِيِّ ابْنُ الجَوْزِيّ",
+          "after": "عَبْدُ الرَّحْمَنِ بْنُ عَلِيِّ ابْنُ الْجَوْزِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abd al-Rahman Ibn al-Jawzi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ الرَّحْمَنِ ابْنُ الْجَوْزِيِّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100027,
+      "alias": "razi",
+      "fields": {
+        "shortName": {
+          "before": "الرازي",
+          "after": "الرَّازِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ الرَّازِي",
+          "after": "تَفْسِيرُ الرَّازِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ بْنُ فَخْرُ الدِّينِ الرَّازِي",
+          "after": "فَخْرُ الدِّينِ مُحَمَّدُ بْنُ عُمَرَ الرَّازِيُّ",
+          "reason": "Align both author names with the author identity in the edition metadata: https://www.islamweb.net/ar/library/content/132/134/"
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Fakhr al-Din al-Razi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "فَخْرُ الدِّينِ الرَّازِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author_en": {
+          "before": "Muhammad b. Fakhr al-Din al-Razi",
+          "after": "Fakhr al-Din Muhammad b. Umar al-Razi",
+          "reason": "Align both author names with the author identity in the edition metadata: https://www.islamweb.net/ar/library/content/132/134/"
+        }
+      }
+    },
+    {
+      "id": 100012,
+      "alias": "qurtubi",
+      "fields": {
+        "shortName": {
+          "before": "القرطبي",
+          "after": "الْقُرْطُبِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ القُرْطُبِيّ",
+          "after": "تَفْسِيرُ الْقُرْطُبِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ بْنُ أَحْمَدَ القُرْطُبِيّ",
+          "after": "مُحَمَّدُ بْنُ أَحْمَدَ الْقُرْطُبِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Abdullah al-Qurtubi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو عَبْدِ اللَّهِ الْقُرْطُبِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100042,
+      "alias": "baydawi",
+      "fields": {
+        "shortName": {
+          "before": "البيضاوي",
+          "after": "الْبَيْضَاوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ البَيضَاوِيّ",
+          "after": "تَفْسِيرُ الْبَيْضَاوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عَبْدُ اللهِ بْنُ عُمَرَ البَيْضَاوِيّ",
+          "after": "عَبْدُ اللَّهِ بْنُ عُمَرَ الْبَيْضَاوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Nasir al-Din al-Baydawi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "نَاصِرُ الدِّينِ الْبَيْضَاوِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100043,
+      "alias": "nasafi",
+      "fields": {
+        "shortName": {
+          "before": "النسفي",
+          "after": "النَّسَفِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ النَسَفِيّ",
+          "after": "تَفْسِيرُ النَّسَفِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عَبْدُ اللهِ بْنُ أَحْمَدَ النَّسَفِيّ",
+          "after": "عَبْدُ اللَّهِ بْنُ أَحْمَدَ النَّسَفِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu al-Barakat al-Nasafi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو الْبَرَكَاتِ النَّسَفِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100016,
+      "alias": "ibn-taymiyyah",
+      "fields": {
+        "author": {
+          "before": "أَحْمَدُ بْنُ عَبْدِ الحَلِيمِ ابْنُ تَيْمِيَّةَ",
+          "after": "أَحْمَدُ بْنُ عَبْدِ الْحَلِيمِ ابْنُ تَيْمِيَّةَ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ahmad Ibn Taymiyyah",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَحْمَدُ ابْنُ تَيْمِيَّةَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100025,
+      "alias": "ibn-juzay",
+      "fields": {
+        "shortName": {
+          "before": "ابن جزي",
+          "after": "ابْن جُزَيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Ibn Juzay",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ ابْنُ جُزَيٍّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100032,
+      "alias": "abu-hayyan",
+      "fields": {
+        "shortName": {
+          "before": "أبو حيّان",
+          "after": "أَبُو حَيَّان",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسيرُ أبُو حَيَّان",
+          "after": "تَفْسِيرُ أَبُو حَيَّان",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Hayyan al-Andalusi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو حَيَّانَ الْأَنْدَلُسِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100015,
+      "alias": "ibn-alqayyim",
+      "fields": {
+        "name": {
+          "before": "تَفْسِيرِ ابْنِ قَيِّمِ الجَوْزِيَّةِ",
+          "after": "تَفْسِيرِ ابْنِ قَيِّمِ الْجَوْزِيَّةِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "تَفْسِيرِ ابْنِ قَيِّمِ الجَوْزِيَّةِ",
+          "after": "تَفْسِيرِ ابْنِ قَيِّمِ الْجَوْزِيَّةِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ بْنُ أَبِي بَكْرِ ابْنُ قَيِّمِ الجَوْزِيَّةِ",
+          "after": "مُحَمَّدُ بْنُ أَبِي بَكْرِ ابْنُ قَيِّمِ الْجَوْزِيَّةِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Qayyim al-Jawziyyah",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ قَيِّمِ الْجَوْزِيَّةِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author_en": {
+          "before": "Muhammad b. Abu Bakr b. al-Qayyim al-Jawziyyah",
+          "after": "Muhammad b. Abu Bakr Ibn Qayyim al-Jawziyyah",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100002,
+      "alias": "ibn-kathir",
+      "fields": {
+        "shortName": {
+          "before": "ابن كثير",
+          "after": "ابْن كَثِير",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "تَفْسِيرُ القُرْآنِ العَظِيمِ",
+          "after": "تَفْسِيرُ الْقُرْآنِ الْعَظِيمِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ismail Ibn Kathir",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "إِسْمَاعِيلُ ابْنُ كَثِيرٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": "تَفْسِيرُ ابْنِ الكَثِير",
+          "after": "تَفْسِيرُ ابْنِ كَثِيرٍ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100020,
+      "alias": "thalabi",
+      "fields": {
+        "shortName": {
+          "before": "الثعلبي",
+          "after": "الثَّعْلَبِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Ishaq al-Thalabi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو إِسْحَاقَ الثَّعْلَبِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName_en": {
+          "before": "Thaalabi",
+          "after": "Thalabi",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name_en": {
+          "before": "Tafsir al-Thaalabi",
+          "after": "Tafsir al-Thalabi",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "author_en": {
+          "before": "Ahmad b. Muhammad al-Thaalabi",
+          "after": "Ahmad b. Muhammad al-Thalabi",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100347,
+      "alias": "ibn-adil",
+      "fields": {
+        "shortName": {
+          "before": "ابن عادل",
+          "after": "ابْن عَادِل",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ibn Adil al-Hanbali",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "ابْنُ عَادِلٍ الْحَنْبَلِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100029,
+      "alias": "biqaii",
+      "fields": {
+        "shortName": {
+          "before": "البقاعي",
+          "after": "الْبِقَاعِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ البِقَاعِيّ",
+          "after": "تَفْسِيرُ الْبِقَاعِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "إِبْرَاهِيمُ بْنُ عُمَرَ البِقَاعِيّ",
+          "after": "إِبْرَاهِيمُ بْنُ عُمَرَ الْبِقَاعِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Burhan al-Din al-Biqai",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "بُرْهَانُ الدِّينِ الْبِقَاعِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100041,
+      "alias": "iji",
+      "fields": {
+        "shortName": {
+          "before": "الإيجي",
+          "after": "الْإِيجِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ الإِيجِيّ",
+          "after": "تَفْسِيرُ الْإِيجِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ بْنُ عَبْدِ الرَّحْمَنِ الإِيجِيّ",
+          "after": "مُحَمَّدُ بْنُ عَبْدِ الرَّحْمَنِ الْإِيجِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad al-Iji",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ الْإِيجِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100047,
+      "alias": "suyuti-t",
+      "fields": {
+        "shortName": {
+          "before": "السيوطي",
+          "after": "السُّيُوطِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Jalal al-Din al-Suyuti",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "جَلَالُ الدِّينِ السُّيُوطِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100384,
+      "alias": "unal",
+      "fields": {
+        "shortName": {
+          "before": "أونال",
+          "after": "أُونَال",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "علي أونال",
+          "after": "عَلِيّ أُونَال",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ali Ünal",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَلِيٌّ أُونَال",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100227,
+      "alias": "jalalayn",
+      "fields": {
+        "shortName": {
+          "before": "الجلالين",
+          "after": "الجَلَالَيْن",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ الجَلَالَينِ",
+          "after": "تَفْسِيرُ الجَلَالَيْنِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Mahalli and al-Suyuti",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْمَحَلِّيُّ وَالسُّيُوطِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100034,
+      "alias": "abu-alsuod",
+      "fields": {
+        "shortName": {
+          "before": "أبو السعود",
+          "after": "أَبُو السُّعُود",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ بْنُ أَبِي السُّعُودِ أَفَنْدِي العِمَادِيُّ",
+          "after": "مُحَمَّدُ بْنُ مُحَمَّدِ بْنِ مُصْطَفَى أَبُو السُّعُودِ أَفَنْدِي الْعِمَادِيُّ",
+          "reason": "Restore the lineage already present in English from edition metadata: https://islamweb.net/ar/library/content/208/1/"
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu al-Suud al-Imadi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو السُّعُودِ الْعِمَادِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100024,
+      "alias": "shawkani",
+      "fields": {
+        "shortName": {
+          "before": "الشوكاني",
+          "after": "الشَّوْكَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ الشَّوكَانِيّ",
+          "after": "تَفْسِيرُ الشَّوْكَانِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad al-Shawkani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ الشَّوْكَانِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100026,
+      "alias": "alusi",
+      "fields": {
+        "shortName": {
+          "before": "الآلوسي",
+          "after": "الْآلُوسِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ الآلُوسِيّ",
+          "after": "تَفْسِيرُ الْآلُوسِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مَحْمُودُ بْنُ عَبْدِ اللهِ الآلُوسِيّ",
+          "after": "مَحْمُودُ بْنُ عَبْدِ اللَّهِ الْآلُوسِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Shihab al-Din al-Alusi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "شِهَابُ الدِّينِ الْآلُوسِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100023,
+      "alias": "qinnawji",
+      "fields": {
+        "shortName": {
+          "before": "القنّوجي",
+          "after": "الْقِنَّوْجِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ القِنَّوجِيّ",
+          "after": "تَفْسِيرُ الْقِنَّوْجِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "صِدِّيقُ بْنُ حَسَنٍ القِنَّوْجِيّ",
+          "after": "صِدِّيقُ حَسَنٍ خَانُ الْقِنَّوْجِيُّ",
+          "reason": "Use the author identity stated in the Tafsir.app catalog: https://tafsir.app/"
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Siddiq Hasan Khan al-Qinnawji",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "صِدِّيقُ حَسَنٍ خَانُ الْقِنَّوْجِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100019,
+      "alias": "qasimi",
+      "fields": {
+        "shortName": {
+          "before": "القاسمي",
+          "after": "الْقَاسِمِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ القَاسِمِيّ",
+          "after": "تَفْسِيرُ الْقَاسِمِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ جَمَالُ الدِّينِ القَاسِمِيّ",
+          "after": "مُحَمَّدُ جَمَالُ الدِّينِ الْقَاسِمِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Jamal al-Din al-Qasimi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "جَمَالُ الدِّينِ الْقَاسِمِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100332,
+      "alias": "irab-al-quran",
+      "fields": {
+        "shortName": {
+          "before": "الإعراب",
+          "after": "الْإِعْرَاب",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Mahmud Safi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَحْمُودٌ صَافِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100350,
+      "alias": "saadi",
+      "fields": {
+        "shortName": {
+          "before": "السعدي",
+          "after": "السَّعْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ السَّعْدِي",
+          "after": "تَفْسِيرُ السَّعْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عَبْدُ الرَّحْمَنِ بْنُ نَاصِرٍ السَّعْدِي",
+          "after": "عَبْدُ الرَّحْمَنِ بْنُ نَاصِرٍ السَّعْدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abd al-Rahman al-Saadi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ الرَّحْمَنِ السَّعْدِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author_en": {
+          "before": "Abd al-Rahman b. Nasir al-Din al-Saadi",
+          "after": "Abd al-Rahman b. Nasir al-Saadi",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100001,
+      "alias": "en-maududi",
+      "fields": {
+        "shortName": {
+          "before": "مودودي",
+          "after": "مَوْدُودِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ المَودُودِي",
+          "after": "تَفْسِيرُ الْمَوْدُودِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "تَفْهِيمُ القُرْآنِ",
+          "after": "تَفْهِيمُ الْقُرْآنِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "سَيِّدُ أَبُو الأَعْلَى المَوْدُودِيّ",
+          "after": "سَيِّدُ أَبُو الْأَعْلَى الْمَوْدُودِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu al-Ala al-Maududi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو الْأَعْلَى الْمَوْدُودِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100030,
+      "alias": "ibn-ashur",
+      "fields": {
+        "shortName": {
+          "before": "ابن عاشور",
+          "after": "ابْن عَاشُور",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad al-Tahir Ibn Ashur",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ الطَّاهِرُ ابْنُ عَاشُورٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100028,
+      "alias": "shanqiti",
+      "fields": {
+        "shortName": {
+          "before": "الشنقيطي",
+          "after": "الشِّنْقِيطِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ الشَنْقِيطِيّ",
+          "after": "تَفْسِيرُ الشَّنْقِيطِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ الأَمِينُ الشِّنْقِيطِيّ",
+          "after": "مُحَمَّدُ الْأَمِينُ الشِّنْقِيطِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad al-Amin al-Shanqiti",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ الْأَمِينُ الشَّنْقِيطِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100318,
+      "alias": "en-maarif-al-quran",
+      "fields": {
+        "shortName": {
+          "before": "المعارف",
+          "after": "الْمَعَارِف",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "مَعَارِفُ القُرْآنِ",
+          "after": "مَعَارِفُ الْقُرْآنِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "مَعَارِفُ القُرْآنِ",
+          "after": "مَعَارِفُ الْقُرْآنِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Shafi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ شَفِيعٌ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name_en": {
+          "before": "Tafsir Maarif al-Quran",
+          "after": "Maarif al-Quran",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100039,
+      "alias": "ibn-uthaymin",
+      "fields": {
+        "shortName": {
+          "before": "ابن العثيمين",
+          "after": "ابْن الْعُثَيْمِين",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ ابْنِ العُثَيمِين",
+          "after": "تَفْسِيرُ ابْنِ الْعُثَيْمِين",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ بْنُ صَالِحٍ العُثَيْمِينَ",
+          "after": "مُحَمَّدُ بْنُ صَالِحٍ الْعُثَيْمِينَ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Ibn Uthaymin",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدُ ابْنُ عُثَيْمِينَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100037,
+      "alias": "aysar",
+      "fields": {
+        "shortName": {
+          "before": "الجزائري",
+          "after": "الْجَزَائِرِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَفْسِيرُ الجَزَائِرِيّ",
+          "after": "تَفْسِيرُ الْجَزَائِرِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "أَبُو بَكْرٍ جَابِرُ بْنُ مُوسَى الجَزَائِرِيّ",
+          "after": "أَبُو بَكْرٍ جَابِرُ بْنُ مُوسَى الْجَزَائِرِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abu Bakr al-Jazairi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَبُو بَكْرٍ الْجَزَائِرِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100319,
+      "alias": "en-tazkir-al-quran",
+      "fields": {
+        "shortName": {
+          "before": "وحيد الدين",
+          "after": "وَحِيد الدِّين",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "تَذْكِيرُ القُرْآنِ",
+          "after": "تَذْكِيرُ الْقُرْآنِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "تَذْكِيرُ القُرْآنِ",
+          "after": "تَذْكِيرُ الْقُرْآنِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Wahiduddin Khan",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "وَحِيدُ الدِّينِ خَان",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100008,
+      "alias": "muyassar",
+      "fields": {
+        "shortName": {
+          "before": "الميسّر",
+          "after": "الْمُيَسَّر",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُجَمَّعُ المَلِكِ فَهْدٍ لِطِبَاعَةِ المُصْحَفِ الشَّرِيفِ",
+          "after": "مُجَمَّعُ الْمَلِكِ فَهْدٍ لِطِبَاعَةِ الْمُصْحَفِ الشَّرِيفِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "King Fahd Quran Printing Complex",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُجَمَّعُ الْمَلِكِ فَهْدٍ لِطِبَاعَةِ الْمُصْحَفِ الشَّرِيفِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100031,
+      "alias": "ibn-atiyah",
+      "fields": {
+        "shortName": {
+          "before": "ابن عطيّة",
+          "after": "ابْن عَطِيَّة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عَبْدُ الحَقِّ بْنِ عَطِيَّةَ",
+          "after": "عَبْدُ الْحَقِّ بْنِ عَطِيَّةَ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abd al-Haqq Ibn Atiyyah",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ الْحَقِّ ابْنُ عَطِيَّةَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100033,
+      "alias": "basit",
+      "fields": {
+        "shortName": {
+          "before": "البسيط للواحدي",
+          "after": "الْبَسِيط لِلْوَاحِدِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عَلِيُّ بْنُ أَحْمَدَ الوَاحِدِيّ",
+          "after": "عَلِيُّ بْنُ أَحْمَدَ الْوَاحِدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Wahidi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْوَاحِدِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100038,
+      "alias": "tadabbur-wa-amal",
+      "fields": {
+        "author": {
+          "before": "شَرِكَةُ الخِبْرَاتِ الذَّكِيَّةِ",
+          "after": "شَرِكَةُ الْخِبْرَاتِ الذَّكِيَّةِ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Smart Expertise Company",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "شَرِكَةُ الْخِبْرَاتِ الذَّكِيَّةِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100044,
+      "alias": "wajiz",
+      "fields": {
+        "shortName": {
+          "before": "الوجيز",
+          "after": "الْوَجِيزُ لِلْوَاحِدِيِّ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "author": {
+          "before": "عَلِيُّ بْنُ أَحْمَدَ الوَاحِدِيّ",
+          "after": "عَلِيُّ بْنُ أَحْمَدَ الْوَاحِدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Wahidi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْوَاحِدِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100046,
+      "alias": "mathur",
+      "fields": {
+        "shortName": {
+          "before": "المأثور",
+          "after": "الْمَأْثُور",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مَعْهَدُ الإِمَامِ الشَّاطِبِيّ",
+          "after": "مَعْهَدُ الْإِمَامِ الشَّاطِبِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Shatibi Institute",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَعْهَدُ الْإِمَامِ الشَّاطِبِيِّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100331,
+      "alias": "mokhtasar",
+      "fields": {
+        "shortName": {
+          "before": "المختصر",
+          "after": "الْمُخْتَصَر",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Tafsir Center",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَرْكَزُ تَفْسِيرٍ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100334,
+      "alias": "qiraat",
+      "fields": {
+        "shortName": {
+          "before": "القراءآت",
+          "after": "الْقُرَّاءآت",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        }
+      }
+    },
+    {
+      "id": 100343,
+      "alias": "irab-daas",
+      "fields": {
+        "shortName": {
+          "before": "الإعراب للدعّاس",
+          "after": "الْإِعْرَاب للدعّاس",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Daas and colleagues",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الدَّعَّاسُ وَزُمَلَاؤُهُ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100348,
+      "alias": "en-easy-tajwid",
+      "fields": {
+        "shortName": {
+          "before": "التجويد",
+          "after": "التَّجْوِيدُ السَّهْلُ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Adnan Mukhtar",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَدْنَانُ مُخْتَار",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100354,
+      "alias": "shawi",
+      "fields": {
+        "shortName": {
+          "before": "الشاوي",
+          "after": "الشَّاوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ بْنِ صَالِحٍ الشّاوِيّ",
+          "after": "مُحَمَّدُ بْنِ صَالِحٍ الشَّاوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad al-Shawi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ الشَّاوِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100355,
+      "alias": "yasir",
+      "fields": {
+        "shortName": {
+          "before": "اليسير",
+          "after": "الْيَسِير",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        }
+      }
+    },
+    {
+      "id": 100356,
+      "alias": "khadiri",
+      "fields": {
+        "shortName": {
+          "before": "الخضيري",
+          "after": "الْخُضَيْرِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ بْنِ عَبْدِ العَزِيِزِ الخَضِيرِي",
+          "after": "مُحَمَّدُ بْنِ عَبْدِ الْعَزِيِزِ الْخَضِيْرِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad al-Khudayri",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ الْخُضَيْرِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName_en": {
+          "before": "Khadiri",
+          "after": "Khudayri",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "author_en": {
+          "before": "Muhammad b. Abd al-Aziz al-Khadiri",
+          "after": "Muhammad b. Abd al-Aziz al-Khudayri",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100375,
+      "alias": "muntakhab",
+      "fields": {
+        "shortName": {
+          "before": "المنتخب",
+          "after": "الْمُنْتَخَب",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Supreme Council for Islamic Affairs",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْمَجْلِسُ الْأَعْلَى لِلشُّؤُونِ الْإِسْلَامِيَّةِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "author": {
+          "before": null,
+          "after": "الْمَجْلِسُ الْأَعْلَى لِلشُّؤُونِ الْإِسْلَامِيَّةِ بِمِصْرَ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100380,
+      "alias": "wasit",
+      "fields": {
+        "shortName": {
+          "before": "الطنطاوي",
+          "after": "الطَّنْطَاوِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "مُحَمَّدُ سَيِّدْ طَنْطَاوِي",
+          "after": "مُحَمَّدُ سَيِّدْ طَنْطَاوِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Sayyid Tantawi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ سَيِّدٌ طَنْطَاوِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100381,
+      "alias": "en-wahidi",
+      "fields": {
+        "author": {
+          "before": "عَلِيُّ بْنُ أَحْمَدَ الوَاحِدِيّ",
+          "after": "عَلِيُّ بْنُ أَحْمَدَ الْوَاحِدِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Wahidi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْوَاحِدِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title": {
+          "before": "أَسْبَابُ النُّزُولِ القُرْرآنِ",
+          "after": "أَسْبَابُ نُزُولِ الْقُرْآنِ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "title_en": {
+          "before": "Asbab al-Nuzul",
+          "after": "Asbab Nuzul al-Quran",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100383,
+      "alias": "dorar-t",
+      "fields": {
+        "name": {
+          "before": "التَّفْسِيرُ المُحَرَّر",
+          "after": "التَّفْسِيرُ الْمُحَرَّر",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "التَّفْسِيرُ المُحَرَّرُ",
+          "after": "التَّفْسِيرُ الْمُحَرَّرُ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Dorar al-Saniyyah Foundation",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُؤَسَّسَةُ الدُّرَرِ السَّنِيَّةِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName_en": {
+          "before": "Dorar",
+          "after": "Dorar al-Saniyyah",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100385,
+      "alias": "dawat",
+      "fields": {
+        "shortName": {
+          "before": "الدعوة",
+          "after": "الدَّعْوَة",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "name": {
+          "before": "دَعْوَةُ القُرْآن",
+          "after": "دَعْوَةُ الْقُرْآن",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "دَعْوَةُ القُرْآن",
+          "after": "دَعْوَةُ الْقُرْآن",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Shams Pirzada",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "شَمْسٌ پِيرْزَادَة",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100386,
+      "alias": "ishraq",
+      "fields": {
+        "name": {
+          "before": "إِشْرَاقُ المَعَانِي",
+          "after": "إِشْرَاقُ الْمَعَانِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "إِشْرَاقُ المَعَانِي",
+          "after": "إِشْرَاقُ الْمَعَانِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Syed Iqbal Zaheer",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "سَيِّدٌ إِقْبَالٌ زَهِير",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName": {
+          "before": "",
+          "after": "إِشْرَاق",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        }
+      }
+    },
+    {
+      "id": 100387,
+      "alias": "yusuf-ali",
+      "fields": {
+        "shortName": {
+          "before": "يوسف عليّ",
+          "after": "يُوسُف عَلِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "title": {
+          "before": "معاني القرآن",
+          "after": "مَعَانِي الْقُرْآن",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "author": {
+          "before": "عَبْدُ اللهِ يُوسُف عَلِيّ",
+          "after": "عَبْدُ اللَّهِ يُوسُف عَلِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abdullah Yusuf Ali",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ اللَّهِ يُوسُفُ عَلِيٌّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        }
+      }
+    },
+    {
+      "id": 100378,
+      "alias": "en-haleem",
+      "fields": {
+        "shortName": {
+          "before": "عبد الحليم",
+          "after": "عَبْد الْحَلِيم",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "M. A. S. Abdel Haleem",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ عَبْدُ الْحَلِيمِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ عَبْدِ الْحَلِيمِ",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ: تَرْجَمَةٌ جَدِيدَةٌ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُحَمَّدٌ عَبْدُ الْحَلِيمِ",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100372,
+      "alias": "en-khattab",
+      "fields": {
+        "authorShortName_en": {
+          "before": null,
+          "after": "Mustafa Khattab",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُصْطَفَى خَطَّاب",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "الْقُرْآنُ الْوَاضِحُ",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ الْوَاضِحُ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُصْطَفَى خَطَّاب",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100351,
+      "alias": "en-saheeh-intl",
+      "fields": {
+        "shortName": {
+          "before": "صحيح",
+          "after": "صَحِيح إِنْتَرْنَاشُونَال",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Saheeh International team",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "فَرِيقُ صَحِيح إِنْتَرْنَاشُونَال",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ صَحِيح إِنْتَرْنَاشُونَال",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ الْكَرِيمُ: تَرْجَمَةُ صَحِيح إِنْتَرْنَاشُونَال",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        }
+      }
+    },
+    {
+      "id": 100353,
+      "alias": "en-hilali-khan",
+      "fields": {
+        "shortName": {
+          "before": "الهلالي وخان",
+          "after": "الْهِلَالِي وَخَان",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "al-Hilali and Muhsin Khan",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "الْهِلَالِيُّ وَمُحْسِنُ خَان",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ الْهِلَالِيِّ وَخَان",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "تَفْسِيرُ مَعَانِي الْقُرْآنِ الْكَرِيمِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُحَمَّدٌ تَقِيُّ الدِّينِ الْهِلَالِيُّ وَمُحَمَّدٌ مُحْسِنٌ خَان",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100358,
+      "alias": "en-bridges",
+      "fields": {
+        "authorShortName_en": {
+          "before": null,
+          "after": "Fadel Soliman and team",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "فَاضِلٌ سُلَيْمَانُ وَفَرِيقُهُ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "shortName": {
+          "before": "بزيجيز",
+          "after": "جُسُور",
+          "reason": "Use the publisher’s Arabic name (Bridges Foundation: مؤسسة جسور); replace the corrupt transliteration. https://bridges-foundation.org/"
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ جُسُورٍ",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "تَرْجَمَةُ جُسُورٍ لِلْقِرَاءَاتِ الْعَشْرِ لِلْقُرْآنِ الْكَرِيمِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "فَاضِلٌ سُلَيْمَانُ وَفَرِيقُ جُسُورٍ",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100361,
+      "alias": "en-taqi-usmani",
+      "fields": {
+        "shortName": {
+          "before": "عثماني",
+          "after": "عُثْمَانِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Taqi Usmani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "تَقِيٌّ عُثْمَانِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ تَقِيٍّ عُثْمَانِي",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ الْكَرِيمُ: الْمَعْنَى مَعَ مُلَاحَظَاتٍ تَوْضِيحِيَّةٍ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُحَمَّدٌ تَقِيٌّ عُثْمَانِي",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100364,
+      "alias": "en-itani",
+      "fields": {
+        "shortName": {
+          "before": "عيتاني",
+          "after": "عِيتَانِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Talal Itani",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "طَلَالٌ عِيتَانِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ طَلَالٍ عِيتَانِي",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ بِاللُّغَةِ الْإِنْجِلِيزِيَّةِ: وَاضِحٌ وَسَهْلُ الْقِرَاءَةِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "طَلَالٌ عِيتَانِي",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100371,
+      "alias": "en-bewley",
+      "fields": {
+        "shortName": {
+          "before": "بيولي",
+          "after": "بِيُولِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Aisha and Abdalhaqq Bewley",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَائِشَةُ وَعَبْدُ الْحَقِّ بِيُولِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ عَائِشَةَ وَعَبْدِ الْحَقِّ بِيُولِي",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ الْكَرِيمُ: صِيَاغَةٌ جَدِيدَةٌ لِمَعَانِيهِ بِاللُّغَةِ الْإِنْجِلِيزِيَّةِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "name_en": {
+          "before": "Translation: Aisha Bewley",
+          "after": "Translation: Aisha and Abdalhaqq Bewley",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "author": {
+          "before": null,
+          "after": "عَائِشَةُ بِيُولِي وَعَبْدُ الْحَقِّ بِيُولِي",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100373,
+      "alias": "en-study-quran",
+      "fields": {
+        "shortName": {
+          "before": "الدراسي",
+          "after": "الْقُرْآنُ الدِّرَاسِيُّ",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Seyyed Hossein Nasr and editors",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "سَيِّدٌ حُسَيْنٌ نَصْرٌ وَالْمُحَرِّرُونَ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "الْقُرْآنُ الدِّرَاسِيُّ",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ الدِّرَاسِيُّ: تَرْجَمَةٌ جَدِيدَةٌ وَشَرْحٌ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        }
+      }
+    },
+    {
+      "id": 100360,
+      "alias": "en-ghali",
+      "fields": {
+        "shortName": {
+          "before": "غالي",
+          "after": "غَالِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Mahmoud Ghali",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَحْمُودٌ غَالِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ مَحْمُودٍ غَالِي",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "نَحْوَ فَهْمِ الْقُرْآنِ الْمَجِيدِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُحَمَّدٌ مَحْمُودٌ غَالِي",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100362,
+      "alias": "en-ahmedraza",
+      "fields": {
+        "shortName": {
+          "before": "رضا خان",
+          "after": "رِضَا خَان",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ahmad Raza Khan",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَحْمَدُ رِضَا خَان",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ أَحْمَدَ رِضَا خَان",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ الْكَرِيمُ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "أَحْمَدُ رِضَا خَان",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100370,
+      "alias": "en-wahiduddin",
+      "fields": {
+        "shortName": {
+          "before": "وحيد الدين",
+          "after": "وَحِيد الدِّين",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Wahiduddin Khan",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "وَحِيدُ الدِّينِ خَان",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ وَحِيدِ الدِّينِ خَان",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ: تَرْجَمَةٌ وَتَعْلِيقٌ مَعَ النَّصِّ الْعَرَبِيِّ الْمُوَازِي",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "وَحِيدُ الدِّينِ خَان",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100367,
+      "alias": "en-qaribullah",
+      "fields": {
+        "shortName": {
+          "before": "قريب الله",
+          "after": "قَرِيب اللَّه",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Qaribullah and Darwish",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "قَرِيبُ اللَّهِ وَدَرْوِيش",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ قَرِيبِ اللَّهِ وَدَرْوِيش",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ الْكَرِيمُ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "حَسَنٌ الْفَاتِحُ قَرِيبُ اللَّهِ وَأَحْمَدُ دَرْوِيش",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100374,
+      "alias": "en-busool",
+      "fields": {
+        "shortName": {
+          "before": "بسول",
+          "after": "بُسُول",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Assad Nimer Busool",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَسَدٌ نِمْرٌ بُسُول",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ أَسَدٍ بُسُول",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ الْحَكِيمُ: هَذِهِ آيَاتُ الْكِتَابِ الْحَكِيمِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "أَسَدٌ نِمْرٌ بُسُول",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100377,
+      "alias": "en-tahir-ul-qadri",
+      "fields": {
+        "shortName": {
+          "before": "القادري",
+          "after": "الْقَادِرِيّ",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Tahir al-Qadri",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "طَاهِرٌ الْقَادِرِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ طَاهِرٍ الْقَادِرِيِّ",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "عِرْفَانُ الْقُرْآنِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُحَمَّدٌ طَاهِرٌ الْقَادِرِيُّ",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100352,
+      "alias": "en-rowwad",
+      "fields": {
+        "shortName": {
+          "before": "رواد",
+          "after": "رُوَّاد",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Rowwad Translation Center",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَرْكَزُ رُوَّادِ التَّرْجَمَةِ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "Explanation of the ٓMeanings of the Noble Quran",
+          "after": "Explanation of the Meanings of the Noble Quran",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ مَرْكَزِ رُوَّادٍ",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "شَرْحُ مَعَانِي الْقُرْآنِ الْكَرِيمِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مَرْكَزُ رُوَّادِ التَّرْجَمَةِ",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100376,
+      "alias": "en-amatul-rahman-omar",
+      "fields": {
+        "shortName": {
+          "before": "أمة الرحمن",
+          "after": "أَمَة الرَّحْمَن",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Amatul Rahman Omar",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "أَمَةُ الرَّحْمَنِ عُمَر",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "title_en": {
+          "before": "Translation: Amatrul Rahman",
+          "after": "Translation: Amatul Rahman Omar",
+          "reason": "Align the English and Arabic display names for the same existing book/author."
+        },
+        "name": {
+          "before": null,
+          "after": "الْقُرْآنُ الْكَرِيمُ: النَّصُّ الْعَرَبِيُّ وَالتَّرْجَمَةُ الْإِنْجِلِيزِيَّةُ",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "تَرْجَمَةُ أَمَةِ الرَّحْمَنِ عُمَر",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "أَمَةُ الرَّحْمَنِ عُمَر وَآخَرُونَ",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100359,
+      "alias": "en-asad",
+      "fields": {
+        "shortName": {
+          "before": "أسد",
+          "after": "أَسَد",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Asad",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ أَسَد",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ مُحَمَّدٍ أَسَد",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "رِسَالَةُ الْقُرْآنِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُحَمَّدٌ أَسَد",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100368,
+      "alias": "en-sarwar",
+      "fields": {
+        "shortName": {
+          "before": "سرور",
+          "after": "سَرْوَر",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Muhammad Sarwar",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مُحَمَّدٌ سَرْوَر",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ مُحَمَّدٍ سَرْوَر",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ الْكَرِيمُ: النَّصُّ الْعَرَبِيُّ وَالتَّرْجَمَةُ الْإِنْجِلِيزِيَّةُ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُحَمَّدٌ سَرْوَر",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100363,
+      "alias": "en-daryabadi",
+      "fields": {
+        "shortName": {
+          "before": "دريابادي",
+          "after": "دَرْيَابَادِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Abd al-Majid Daryabadi",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَبْدُ الْمَجِيدِ الدَّرْيَابَادِيُّ",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ الدَّرْيَابَادِيِّ",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "التَّفْسِيرُ الْمَاجِدِيُّ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "عَبْدُ الْمَجِيدِ الدَّرْيَابَادِيُّ",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100369,
+      "alias": "en-shakir",
+      "fields": {
+        "shortName": {
+          "before": "شاكر",
+          "after": "شَاكِر",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Habib Shakir",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "حَبِيبٌ شَاكِر",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ حَبِيبٍ شَاكِر",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُحَمَّدٌ حَبِيبٌ شَاكِر",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100365,
+      "alias": "en-pickthall",
+      "fields": {
+        "shortName": {
+          "before": "بكتال",
+          "after": "بَكْتَال",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Marmaduke Pickthall",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "مَارْمَادُوك بَكْتَال",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ بَكْتَال",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "مَعْنَى الْقُرْآنِ الْمَجِيدِ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "مُحَمَّدٌ مَارْمَادُوك بَكْتَال",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    },
+    {
+      "id": 100366,
+      "alias": "en-qarai",
+      "fields": {
+        "shortName": {
+          "before": "قرائي",
+          "after": "قَرَائِي",
+          "reason": "Add missing lexical tashkil; retain every existing base letter and mark."
+        },
+        "authorShortName_en": {
+          "before": null,
+          "after": "Ali Quli Qarai",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "authorShortName": {
+          "before": null,
+          "after": "عَلِيٌّ قُلِي قَرَائِي",
+          "reason": "Commonly used author identity, expanded where needed to distinguish the book short name."
+        },
+        "name": {
+          "before": null,
+          "after": "تَرْجَمَةُ عَلِيٍّ قُلِي قَرَائِي",
+          "reason": "Arabic display rendering of the existing English edition name."
+        },
+        "title": {
+          "before": null,
+          "after": "الْقُرْآنُ مَعَ تَرْجَمَةٍ تَفْسِيرِيَّةٍ إِنْجِلِيزِيَّةٍ",
+          "reason": "Editorial Arabic rendering of the stored English title; not a claim of an original Arabic edition title."
+        },
+        "author": {
+          "before": null,
+          "after": "عَلِيٌّ قُلِي قَرَائِي",
+          "reason": "Arabic rendering of the explicit English author identity; no new person inferred."
+        }
+      }
+    }
+  ]
+}

@@ -57,7 +57,8 @@ const page = { menu: 'Books', title_en: 'Hadith Unlocked | Sharḥ Books', descr
         var groups = (card.dataset.tafsirBookGroups || '').split(/\s+/).filter(Boolean);
         var match = (!query || normalize(card.dataset.tafsirBookFilter).includes(query))
           && (!activeGroup || groups.indexOf(activeGroup) >= 0)
-          && (!activeLanguage || (card.dataset.tafsirLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0);
+          && (!activeLanguage || (card.dataset.tafsirLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0)
+          && (!window.bookCatalogMatchesSize || window.bookCatalogMatchesSize(card));
         card.classList.toggle('d-none', !match);
       });
       var visibleCount = cards.filter(function (card) {

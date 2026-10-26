@@ -34,7 +34,7 @@ window.pickSharhBook = function ({ apiPath }) {
       const rows = await response.json();
       if (request !== sequence) return;
       rows.forEach(book => {
-        const option = new Option([book.title_en, book.title].filter(Boolean).join(' — '), String(book.book_id));
+        const option = new Option([book.display_title_en || book.title_en, book.title].filter(Boolean).join(' — '), String(book.book_id));
         option.dataset.title = book.title || '';
         option.dataset.titleEn = book.title_en || '';
         books.add(option);

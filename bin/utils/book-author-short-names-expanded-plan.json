@@ -1,0 +1,344 @@
+{
+  "notes": [
+    "Expand personal author labels only; retain established organization names and book short names.",
+    "Name elements are taken from the existing full author records; both language labels represent the same abbreviated identity."
+  ],
+  "entries": [
+    {
+      "id": 61,
+      "alias": "riyad",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Nawawi",
+          "after": "Abu Zakariyya al-Nawawi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "النَّوَوِيُّ",
+          "after": "أَبُو زَكَرِيَّا النَّوَوِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "alias": "bayhaqi",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Bayhaqi",
+          "after": "Abu Bakr al-Bayhaqi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الْبَيْهَقِيُّ",
+          "after": "أَبُو بَكْرٍ الْبَيْهَقِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 33,
+      "alias": "tabarani-saghir",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Tabarani",
+          "after": "Abu al-Qasim al-Tabarani",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الطَّبَرَانِيُّ",
+          "after": "أَبُو الْقَاسِمِ الطَّبَرَانِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 34,
+      "alias": "tabarani-awsat",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Tabarani",
+          "after": "Abu al-Qasim al-Tabarani",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الطَّبَرَانِيُّ",
+          "after": "أَبُو الْقَاسِمِ الطَّبَرَانِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "alias": "tabarani",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Tabarani",
+          "after": "Abu al-Qasim al-Tabarani",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الطَّبَرَانِيُّ",
+          "after": "أَبُو الْقَاسِمِ الطَّبَرَانِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100420,
+      "alias": "shuab",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Bayhaqi",
+          "after": "Abu Bakr al-Bayhaqi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الْبَيْهَقِيُّ",
+          "after": "أَبُو بَكْرٍ الْبَيْهَقِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100390,
+      "alias": "muslim-nawawi",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Nawawi",
+          "after": "Abu Zakariyya al-Nawawi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "النَّوَوِيُّ",
+          "after": "أَبُو زَكَرِيَّا النَّوَوِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100391,
+      "alias": "abudawud-shamsalhaqq",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Azimabadi",
+          "after": "Shams al-Haqq al-Azimabadi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الْعَظِيمُ آبَادِيُّ",
+          "after": "شَمْسُ الْحَقِّ الْعَظِيمُ آبَادِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100394,
+      "alias": "nasai-sindi",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Sindi",
+          "after": "Abu al-Hasan al-Sindi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "السِّنْدِيُّ",
+          "after": "أَبُو الْحَسَنِ السِّنْدِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100395,
+      "alias": "ibnmajah-sindi",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Sindi",
+          "after": "Abu al-Hasan al-Sindi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "السِّنْدِيُّ",
+          "after": "أَبُو الْحَسَنِ السِّنْدِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100398,
+      "alias": "ibnmajah-mughultay",
+      "fields": {
+        "authorShortName_en": {
+          "before": "Mughultay",
+          "after": "Ala al-Din Mughultay",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "مُغْلَطَاي",
+          "after": "عَلَاءُ الدِّينِ مُغْلَطَاي",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100401,
+      "alias": "malik-zarqani",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Zurqani",
+          "after": "Muhammad al-Zurqani",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الزُّرْقَانِيُّ",
+          "after": "مُحَمَّدٌ الزُّرْقَانِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100417,
+      "alias": "mushkil-tahawi",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Tahawi",
+          "after": "Abu Jafar al-Tahawi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الطَّحَاوِيُّ",
+          "after": "أَبُو جَعْفَرٍ الطَّحَاوِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100418,
+      "alias": "itibar-hazimi",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Hazimi",
+          "after": "Abu Bakr al-Hazimi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الْحَازِمِيُّ",
+          "after": "أَبُو بَكْرٍ الْحَازِمِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100227,
+      "alias": "jalalayn",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Mahalli and al-Suyuti",
+          "after": "Jalal al-Din al-Mahalli and Jalal al-Din al-Suyuti",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الْمَحَلِّيُّ وَالسُّيُوطِيُّ",
+          "after": "جَلَالُ الدِّينِ الْمَحَلِّيُّ وَجَلَالُ الدِّينِ السُّيُوطِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100033,
+      "alias": "basit",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Wahidi",
+          "after": "Ali al-Wahidi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الْوَاحِدِيُّ",
+          "after": "عَلِيٌّ الْوَاحِدِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100044,
+      "alias": "wajiz",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Wahidi",
+          "after": "Ali al-Wahidi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الْوَاحِدِيُّ",
+          "after": "عَلِيٌّ الْوَاحِدِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100343,
+      "alias": "irab-daas",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Daas and colleagues",
+          "after": "Ahmad Ubayd al-Daas and colleagues",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الدَّعَّاسُ وَزُمَلَاؤُهُ",
+          "after": "أَحْمَدُ عُبَيْدٍ الدَّعَّاسُ وَزُمَلَاؤُهُ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100381,
+      "alias": "en-wahidi",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Wahidi",
+          "after": "Ali al-Wahidi",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الْوَاحِدِيُّ",
+          "after": "عَلِيٌّ الْوَاحِدِيُّ",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100353,
+      "alias": "en-hilali-khan",
+      "fields": {
+        "authorShortName_en": {
+          "before": "al-Hilali and Muhsin Khan",
+          "after": "Taqi al-Din al-Hilali and Muhsin Khan",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "الْهِلَالِيُّ وَمُحْسِنُ خَان",
+          "after": "تَقِيُّ الدِّينِ الْهِلَالِيُّ وَمُحْسِنُ خَان",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    },
+    {
+      "id": 100367,
+      "alias": "en-qaribullah",
+      "fields": {
+        "authorShortName_en": {
+          "before": "Qaribullah and Darwish",
+          "after": "Hasan al-Fatih Qaribullah and Ahmad Darwish",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        },
+        "authorShortName": {
+          "before": "قَرِيبُ اللَّهِ وَدَرْوِيش",
+          "after": "حَسَنُ الْفَاتِحِ قَرِيبُ اللَّهِ وَأَحْمَدُ دَرْوِيش",
+          "reason": "Expand personal short author names to at least two name elements, paired across English and Arabic using existing full author identity"
+        }
+      }
+    }
+  ]
+}

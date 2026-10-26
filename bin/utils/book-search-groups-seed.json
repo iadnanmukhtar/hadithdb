@@ -128,72 +128,178 @@
   {
     "id": "tafsir-major",
     "label": "major tafsirs",
-    "label_ar": "أمّهات",
+    "label_ar": "تفاسير مرجعية",
     "scope": "tafsir",
     "ordinal": 0,
-    "source": "https://tafsir.app/",
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Historical influence: foundational sources, sustained scholarly reception or broad teaching and translation traditions. This is an editorial reference category, not a theological endorsement or an exhaustive ranking.",
     "aliases": [
       "tabari",
-      "ibn-kathir",
-      "qurtubi",
-      "baghawi"
-    ]
-  },
-  {
-    "id": "tafsir-collected-opinions",
-    "label": "collected opinions",
-    "label_ar": "جمع الأقوال",
-    "scope": "tafsir",
-    "ordinal": 1,
-    "source": "https://tafsir.app/",
-    "aliases": [
-      "ibn-al-jawzi",
-      "mawardi"
-    ]
-  },
-  {
-    "id": "tafsir-selected",
-    "label": "selected works",
-    "label_ar": "منتقاة",
-    "scope": "tafsir",
-    "ordinal": 2,
-    "source": "https://tafsir.app/",
-    "aliases": [
-      "ibn-alqayyim",
-      "ibn-taymiyyah"
-    ]
-  },
-  {
-    "id": "tafsir-general",
-    "label": "general tafsirs",
-    "label_ar": "عامّة",
-    "scope": "tafsir",
-    "ordinal": 3,
-    "source": "https://tafsir.app/",
-    "aliases": [
-      "samaani",
-      "makki",
-      "qasimi",
-      "samarqandi",
+      "ibn-abi-hatim",
       "thalabi",
-      "qinnawji",
+      "baghawi",
+      "zamakhshari",
+      "ibn-atiyah",
+      "razi",
+      "qurtubi",
+      "baydawi",
+      "nasafi",
+      "abu-hayyan",
+      "ibn-kathir",
+      "jalalayn",
+      "suyuti-t",
+      "abu-alsuod",
       "shawkani",
-      "ibn-juzay"
-    ]
+      "alusi",
+      "rida",
+      "ibn-ashur",
+      "en-maududi"
+    ],
+    "memberEvidence": {
+      "tabari": {
+        "source": "catalog:tabari",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-abi-hatim": {
+        "source": "catalog:ibn-abi-hatim",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "thalabi": {
+        "source": "https://isamveri.org/pdfdrg/D04073/2019_16/2019_16_AYGUNA.pdf",
+        "classificationBasis": "Influence on later exegetes, including al-Baghawi; report reliability is a separate question."
+      },
+      "baghawi": {
+        "source": "catalog:baghawi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "zamakhshari": {
+        "source": "https://www.nmc.utoronto.ca/research-publications/faculty-publications/medieval-exegesis-golden-age-tafsir",
+        "classificationBasis": "Central commentary and subsequent gloss tradition in the history of medieval exegesis."
+      },
+      "ibn-atiyah": {
+        "source": "https://islamansiklopedisi.org.tr/ibn-atiyye-el-endelusi",
+        "classificationBasis": "Influence on subsequent exegesis, including Abu Hayyan."
+      },
+      "razi": {
+        "source": "https://plato.stanford.edu/entries/al-din-al-razi/",
+        "classificationBasis": "Historically important extensive commentary, independently of agreement with its theology."
+      },
+      "qurtubi": {
+        "source": "catalog:qurtubi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "baydawi": {
+        "source": "https://www.iranicaonline.org/articles/bayzawi-naser-al-din-abul-kayr-or-abu-said-abd-allah-b/",
+        "classificationBasis": "Sustained educational reception and numerous supercommentaries."
+      },
+      "nasafi": {
+        "source": "https://dijital.diyanet.gov.tr/Dergilik/makale/nesefinin-medarikut-tenzil-adli-tefsirinde-arap-gramer-ve-belagatiyla-ilgili-konulara-yapilan?id=36434&productId=6298",
+        "classificationBasis": "Sustained scholarly reception of a concise linguistic commentary."
+      },
+      "abu-hayyan": {
+        "source": "https://islamansiklopedisi.org.tr/el-bahrul-muhit--ebu-hayyan",
+        "classificationBasis": "Major linguistic reference that generated abridgments and later derivative works."
+      },
+      "ibn-kathir": {
+        "source": "catalog:ibn-kathir",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "jalalayn": {
+        "source": "https://fonsvitae.com/product-tag/jalalayn/",
+        "classificationBasis": "Established concise teaching commentary and translation tradition."
+      },
+      "suyuti-t": {
+        "source": "https://islamansiklopedisi.org.tr/ed-durrul-mensur",
+        "classificationBasis": "Historical reference collection for transmitted exegesis."
+      },
+      "abu-alsuod": {
+        "source": "https://dergipark.org.tr/tr/pub/ydoguilaf/article/409881",
+        "classificationBasis": "Rhetorical commentary with a substantial manuscript and reception tradition."
+      },
+      "shawkani": {
+        "source": "https://islamansiklopedisi.org.tr/fethul-kadir--sevkani",
+        "classificationBasis": "Established synthesis combining transmitted reports and analytical interpretation."
+      },
+      "alusi": {
+        "source": "https://islamansiklopedisi.org.tr/ruhul-meani",
+        "classificationBasis": "Extensive synthesis of the earlier exegetical tradition."
+      },
+      "rida": {
+        "source": "https://dergipark.org.tr/en/pub/dinbil/article/1769584",
+        "classificationBasis": "Influential modern reformist commentary; incompleteness does not negate historical influence."
+      },
+      "ibn-ashur": {
+        "source": "https://zenodo.org/records/12573733",
+        "classificationBasis": "Influential modern commentary; importance is compatible with modern and linguistic memberships."
+      },
+      "en-maududi": {
+        "source": "https://idarapublications.com/",
+        "classificationBasis": "Widely circulated and translated modern commentary; inclusion is an editorial reception assessment."
+      }
+    }
   },
   {
     "id": "tafsir-encyclopedic",
     "label": "encyclopedic",
-    "label_ar": "موسوعات",
+    "label_ar": "موسوعية",
     "scope": "tafsir",
-    "ordinal": 4,
-    "source": "https://tafsir.app/",
+    "ordinal": 1,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Extended reference works with broad coverage or large-scale systematic compilation; physical size alone is insufficient.",
     "aliases": [
-      "alusi",
+      "tabari",
+      "thalabi",
       "razi",
+      "qurtubi",
+      "abu-hayyan",
+      "ibn-adil",
+      "alusi",
+      "qasimi",
+      "ibn-ashur",
+      "mathur",
       "dorar-t"
     ],
     "memberEvidence": {
+      "tabari": {
+        "source": "catalog:tabari",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "thalabi": {
+        "source": "catalog:thalabi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "razi": {
+        "source": "catalog:razi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "qurtubi": {
+        "source": "catalog:qurtubi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "abu-hayyan": {
+        "source": "catalog:abu-hayyan",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-adil": {
+        "source": "catalog:ibn-adil",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "alusi": {
+        "source": "catalog:alusi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "qasimi": {
+        "source": "catalog:qasimi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-ashur": {
+        "source": "catalog:ibn-ashur",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "mathur": {
+        "source": "catalog:mathur",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
       "dorar-t": {
         "source": "https://store.dorar.net/tafseer1-44/p646529407",
         "classificationBasis": "Publisher describes a 44-volume work spanning interpretation, vocabulary, syntax, readings, rhetoric and educational benefits; editorial breadth classification."
@@ -201,26 +307,88 @@
     }
   },
   {
-    "id": "tafsir-other",
-    "label": "other tafsirs",
-    "label_ar": "أخرى",
+    "id": "tafsir-narrations",
+    "label": "transmitted tafsir",
+    "label_ar": "التفسير بالمأثور",
     "scope": "tafsir",
-    "ordinal": 14,
-    "source": "https://tafsir.app/",
+    "ordinal": 2,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Early exegetical reports and transmitted interpretation are a defining method; this includes analytical works and does not certify every report.",
     "aliases": [
-      "shanqiti",
-      "biqaii",
-      "en-easy-tajwid",
-      "en-wahidi"
+      "tabari",
+      "ibn-abi-hatim",
+      "samarqandi",
+      "abu-zamanayn",
+      "samaani",
+      "baghawi",
+      "ibn-kathir",
+      "thalabi",
+      "suyuti-t",
+      "mathur"
     ],
     "memberEvidence": {
-      "en-easy-tajwid": {
-        "source": "catalog:en-easy-tajwid",
-        "classificationBasis": "Recitation aid, placed in Other Tafsirs by user request."
+      "tabari": {
+        "source": "catalog:tabari",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
       },
-      "en-wahidi": {
-        "source": "user:search-group-classification",
-        "classificationBasis": "Moved from occasions of revelation to other tafsirs by user request."
+      "ibn-abi-hatim": {
+        "source": "catalog:ibn-abi-hatim",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "samarqandi": {
+        "source": "catalog:samarqandi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "abu-zamanayn": {
+        "source": "catalog:abu-zamanayn",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "samaani": {
+        "source": "catalog:samaani",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "baghawi": {
+        "source": "catalog:baghawi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-kathir": {
+        "source": "catalog:ibn-kathir",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "thalabi": {
+        "source": "catalog:thalabi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "suyuti-t": {
+        "source": "catalog:suyuti-t",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "mathur": {
+        "source": "catalog:mathur",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      }
+    }
+  },
+  {
+    "id": "tafsir-collected-opinions",
+    "label": "collected opinions",
+    "label_ar": "جمع الأقوال",
+    "scope": "tafsir",
+    "ordinal": 3,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Organized presentation of alternative exegetical opinions is a defining format.",
+    "aliases": [
+      "mawardi",
+      "ibn-al-jawzi"
+    ],
+    "memberEvidence": {
+      "mawardi": {
+        "source": "catalog:mawardi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-al-jawzi": {
+        "source": "catalog:ibn-al-jawzi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
       }
     }
   },
@@ -229,22 +397,66 @@
     "label": "language & rhetoric",
     "label_ar": "لغة وبلاغة",
     "scope": "tafsir",
-    "ordinal": 6,
-    "source": "https://tafsir.app/",
+    "ordinal": 4,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Linguistic, grammatical, rhetorical or reading analysis is a defining emphasis; retained reading and vocabulary aids are included.",
     "aliases": [
-      "ibn-ashur",
-      "ibn-atiyah",
-      "abu-hayyan",
-      "basit",
-      "abu-alsuod",
+      "makki",
       "zamakhshari",
+      "ibn-atiyah",
+      "basit",
+      "baydawi",
+      "nasafi",
+      "abu-hayyan",
+      "ibn-adil",
+      "abu-alsuod",
+      "ibn-ashur",
       "qiraat",
       "khadiri",
       "irab-daas",
-      "ibn-adil",
       "irab-al-quran"
     ],
     "memberEvidence": {
+      "makki": {
+        "source": "catalog:makki",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "zamakhshari": {
+        "source": "catalog:zamakhshari",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-atiyah": {
+        "source": "catalog:ibn-atiyah",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "basit": {
+        "source": "catalog:basit",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "baydawi": {
+        "source": "catalog:baydawi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "nasafi": {
+        "source": "catalog:nasafi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "abu-hayyan": {
+        "source": "catalog:abu-hayyan",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-adil": {
+        "source": "user:search-group-classification",
+        "classificationBasis": "Moved from Grammar & Language to Language & Rhetoric by user request."
+      },
+      "abu-alsuod": {
+        "source": "catalog:abu-alsuod",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-ashur": {
+        "source": "catalog:ibn-ashur",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
       "qiraat": {
         "source": "user:search-group-classification",
         "classificationBasis": "Moved from quran readings to language & rhetoric by user request."
@@ -257,10 +469,6 @@
         "source": "user:search-group-classification",
         "classificationBasis": "Moved from Grammar & Language to Language & Rhetoric by user request."
       },
-      "ibn-adil": {
-        "source": "user:search-group-classification",
-        "classificationBasis": "Moved from Grammar & Language to Language & Rhetoric by user request."
-      },
       "irab-al-quran": {
         "source": "user:search-group-classification",
         "classificationBasis": "Moved from Grammar & Language to Language & Rhetoric by user request."
@@ -268,52 +476,308 @@
     }
   },
   {
-    "id": "tafsir-contemporary",
-    "label": "contemporary",
-    "label_ar": "معاصرة",
+    "id": "tafsir-legal",
+    "label": "legal interpretation",
+    "label_ar": "التفسير الفقهي",
+    "scope": "tafsir",
+    "ordinal": 5,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Extended analysis of Quranic legal rulings and juristic arguments is a defining emphasis.",
+    "aliases": [
+      "qurtubi",
+      "shanqiti"
+    ],
+    "memberEvidence": {
+      "qurtubi": {
+        "source": "catalog:qurtubi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "shanqiti": {
+        "source": "catalog:shanqiti",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      }
+    }
+  },
+  {
+    "id": "tafsir-quran-by-quran",
+    "label": "quran by quran",
+    "label_ar": "تفسير القرآن بالقرآن",
+    "scope": "tafsir",
+    "ordinal": 6,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Cross-explanation of Quranic passages is the declared organizing method, not simply an occasionally used technique.",
+    "aliases": [
+      "shanqiti"
+    ],
+    "memberEvidence": {
+      "shanqiti": {
+        "source": "https://tafsir.net/articles/11159",
+        "classificationBasis": "Study of the work’s explicitly declared Quran-by-Quran method."
+      }
+    }
+  },
+  {
+    "id": "tafsir-coherence",
+    "label": "quranic coherence",
+    "label_ar": "نظم القرآن ومناسباته",
     "scope": "tafsir",
     "ordinal": 7,
-    "source": "https://tafsir.app/",
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Relations between verses and surahs form the organizing focus.",
     "aliases": [
-      "muyassar",
-      "mokhtasar",
+      "biqaii"
+    ],
+    "memberEvidence": {
+      "biqaii": {
+        "source": "https://islamansiklopedisi.org.tr/nazmud-durer",
+        "classificationBasis": "Work organized around relations between verses and surahs."
+      }
+    }
+  },
+  {
+    "id": "tafsir-reflection",
+    "label": "reflection & guidance",
+    "label_ar": "تدبر وهدايات",
+    "scope": "tafsir",
+    "ordinal": 8,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Reflection, practical guidance and accessible moral lessons form a defining emphasis.",
+    "aliases": [
+      "tadabbur-wa-amal",
       "saadi",
       "aysar",
-      "tadabbur-wa-amal",
-      "ibn-uthaymin",
-      "rida",
-      "unal",
-      "en-maududi",
-      "en-maarif-al-quran",
+      "en-tazkir-al-quran"
+    ],
+    "memberEvidence": {
+      "tadabbur-wa-amal": {
+        "source": "catalog:tadabbur-wa-amal",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "saadi": {
+        "source": "catalog:saadi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "aysar": {
+        "source": "catalog:aysar",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "en-tazkir-al-quran": {
+        "source": "catalog:en-tazkir-al-quran",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      }
+    }
+  },
+  {
+    "id": "tafsir-mukhtasarat",
+    "label": "concise tafsirs",
+    "label_ar": "تفاسير موجزة",
+    "scope": "tafsir",
+    "ordinal": 9,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Concise explanation, including original concise works and abridgments; does not assert that every work summarizes another book.",
+    "aliases": [
+      "abu-zamanayn",
+      "wajiz",
+      "ibn-al-jawzi",
+      "baydawi",
+      "nasafi",
+      "ibn-juzay",
+      "jalalayn",
+      "iji",
+      "saadi",
+      "aysar",
       "en-tazkir-al-quran",
+      "muyassar",
+      "mokhtasar",
+      "shawi",
+      "yasir",
+      "muntakhab"
+    ],
+    "memberEvidence": {
+      "abu-zamanayn": {
+        "source": "catalog:abu-zamanayn",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "wajiz": {
+        "source": "catalog:wajiz",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-al-jawzi": {
+        "source": "catalog:ibn-al-jawzi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "baydawi": {
+        "source": "catalog:baydawi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "nasafi": {
+        "source": "catalog:nasafi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-juzay": {
+        "source": "catalog:ibn-juzay",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "jalalayn": {
+        "source": "catalog:jalalayn",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "iji": {
+        "source": "catalog:iji",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "saadi": {
+        "source": "catalog:saadi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "aysar": {
+        "source": "catalog:aysar",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "en-tazkir-al-quran": {
+        "source": "https://www.goodwordbooks.com/collections/quran-commentaries",
+        "classificationBasis": "Publisher describes a concise commentary; overlaps with contemporary."
+      },
+      "muyassar": {
+        "source": "catalog:muyassar",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "mokhtasar": {
+        "source": "catalog:mokhtasar",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "shawi": {
+        "source": "https://www.sifatusafwa.com/ar/tafasir-muyassara-wa-mukhtasara/al-nafahat-al-makkiyyah-fi-tafsir-kitab-rabb-al-bariyyah-al-shawi.html",
+        "classificationBasis": "Concise one-volume commentary; editorial classification supported by edition description and text."
+      },
+      "yasir": {
+        "source": "catalog:yasir",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "muntakhab": {
+        "source": "https://api.tafsiroqs.com/storage/attachments/pdfs/2023-08/32225-1691491604-64d21d144150d7.28043908-fy-tfsyr-alkraan.pdf",
+        "classificationBasis": "Its introduction describes a simplified concise commentary; overlaps with contemporary."
+      }
+    }
+  },
+  {
+    "id": "tafsir-contemporary",
+    "label": "modern & contemporary",
+    "label_ar": "حديثة ومعاصرة",
+    "scope": "tafsir",
+    "ordinal": 10,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Period facet for works composed in the nineteenth century CE onward, including modern compilations. Reprints/translations of medieval works do not become modern tafsirs. Undated or unidentified works are not assigned by guesswork.",
+    "aliases": [
+      "shawkani",
+      "alusi",
+      "qinnawji",
+      "qasimi",
+      "rida",
+      "saadi",
+      "en-maududi",
+      "ibn-ashur",
+      "shanqiti",
+      "en-maarif-al-quran",
+      "ibn-uthaymin",
+      "aysar",
+      "en-tazkir-al-quran",
+      "muyassar",
+      "mokhtasar",
+      "tadabbur-wa-amal",
+      "mathur",
+      "irab-al-quran",
+      "irab-daas",
+      "khadiri",
       "shawi",
       "muntakhab",
       "wasit",
       "dorar-t",
+      "unal",
       "dawat",
       "ishraq",
       "yusuf-ali"
     ],
     "memberEvidence": {
+      "shawkani": {
+        "source": "catalog:shawkani",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "alusi": {
+        "source": "catalog:alusi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "qinnawji": {
+        "source": "catalog:qinnawji",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "qasimi": {
+        "source": "catalog:qasimi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
       "rida": {
         "source": "https://dorar.net/files/tafsir-book.pdf",
         "classificationBasis": "Al-Manar of Muhammad Rashid Rida; modern-period commentary."
       },
-      "unal": {
-        "source": "https://tughrabooks.com/wp-content/Catalogue_2020.pdf",
-        "classificationBasis": "Ali Unal’s modern annotated Quran interpretation."
+      "saadi": {
+        "source": "catalog:saadi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
       },
       "en-maududi": {
         "source": "https://www.islamicstudies.info/quran/tafheem/tafheemintroduction.php",
         "classificationBasis": "Abul Ala Mawdudi’s Tafhim al-Quran; modern-period commentary."
       },
+      "ibn-ashur": {
+        "source": "catalog:ibn-ashur",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "shanqiti": {
+        "source": "catalog:shanqiti",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
       "en-maarif-al-quran": {
         "source": "https://www.islamicstudies.info/quran/maarif/maarif.php",
         "classificationBasis": "Maarif al-Quran of Muhammad Shafi; not Idris Kandhlawi’s similarly named work."
       },
+      "ibn-uthaymin": {
+        "source": "catalog:ibn-uthaymin",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "aysar": {
+        "source": "catalog:aysar",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
       "en-tazkir-al-quran": {
         "source": "https://www.goodwordbooks.com/collections/quran-commentaries",
         "classificationBasis": "Wahiduddin Khan’s modern concise commentary."
+      },
+      "muyassar": {
+        "source": "catalog:muyassar",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "mokhtasar": {
+        "source": "catalog:mokhtasar",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "tadabbur-wa-amal": {
+        "source": "catalog:tadabbur-wa-amal",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "mathur": {
+        "source": "catalog:mathur",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "irab-al-quran": {
+        "source": "catalog:irab-al-quran",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "irab-daas": {
+        "source": "catalog:irab-daas",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "khadiri": {
+        "source": "catalog:khadiri",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
       },
       "shawi": {
         "source": "https://quranenc.com/ar/browse/arabic_nafahat",
@@ -331,6 +795,10 @@
         "source": "https://store.dorar.net/tafseer1-44/p646529407",
         "classificationBasis": "Modern al-Tafsir al-Muharrar published by Dorar."
       },
+      "unal": {
+        "source": "https://tughrabooks.com/wp-content/Catalogue_2020.pdf",
+        "classificationBasis": "Ali Unal’s modern annotated Quran interpretation."
+      },
       "dawat": {
         "source": "https://www.islamicstudies.info/",
         "classificationBasis": "Dawat al-Quran by Shams Pirzada; modern-period classification from catalog identity and hosted work."
@@ -346,58 +814,147 @@
     }
   },
   {
-    "id": "tafsir-mukhtasarat",
-    "label": "summarized",
-    "label_ar": "مركَّزة العبارة",
+    "id": "tafsir-selected",
+    "label": "collected exegetical writings",
+    "label_ar": "مجموعات تفسيرية",
     "scope": "tafsir",
-    "ordinal": 8,
-    "source": "https://tafsir.app/",
+    "ordinal": 11,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Later collections drawn from an author’s writings rather than a continuous independently authored tafsir; replaces the evaluative Selected Works label.",
     "aliases": [
-      "ibn-juzay",
-      "jalalayn",
-      "iji",
-      "baydawi",
-      "nasafi",
-      "wajiz",
-      "abu-zamanayn",
-      "en-tazkir-al-quran",
-      "shawi",
-      "muntakhab",
-      "muyassar",
-      "mokhtasar",
-      "yasir"
+      "ibn-taymiyyah",
+      "ibn-alqayyim"
     ],
     "memberEvidence": {
-      "en-tazkir-al-quran": {
-        "source": "https://www.goodwordbooks.com/collections/quran-commentaries",
-        "classificationBasis": "Publisher describes a concise commentary; overlaps with contemporary."
+      "ibn-taymiyyah": {
+        "source": "catalog:ibn-taymiyyah",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
       },
-      "shawi": {
-        "source": "https://www.sifatusafwa.com/ar/tafasir-muyassara-wa-mukhtasara/al-nafahat-al-makkiyyah-fi-tafsir-kitab-rabb-al-bariyyah-al-shawi.html",
-        "classificationBasis": "Concise one-volume commentary; editorial classification supported by edition description and text."
-      },
-      "muntakhab": {
-        "source": "https://api.tafsiroqs.com/storage/attachments/pdfs/2023-08/32225-1691491604-64d21d144150d7.28043908-fy-tfsyr-alkraan.pdf",
-        "classificationBasis": "Its introduction describes a simplified concise commentary; overlaps with contemporary."
+      "ibn-alqayyim": {
+        "source": "catalog:ibn-alqayyim",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
       }
     }
   },
   {
-    "id": "tafsir-narrations",
-    "label": "narration collections",
-    "label_ar": "آثار",
+    "id": "tafsir-general",
+    "label": "general tafsirs",
+    "label_ar": "تفاسير عامة",
     "scope": "tafsir",
-    "ordinal": 9,
-    "source": "https://tafsir.app/",
+    "ordinal": 12,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Broad verse-by-verse commentary without one exclusive specialist method; may overlap with historical prominence or period.",
     "aliases": [
-      "mathur",
-      "suyuti-t",
-      "ibn-abi-hatim"
-    ]
+      "makki",
+      "samaani",
+      "samarqandi",
+      "qinnawji",
+      "qasimi",
+      "shawkani",
+      "ibn-juzay",
+      "en-maarif-al-quran",
+      "ibn-uthaymin",
+      "wasit",
+      "unal",
+      "dawat",
+      "ishraq",
+      "yusuf-ali",
+      "en-maududi",
+      "rida"
+    ],
+    "memberEvidence": {
+      "makki": {
+        "source": "catalog:makki",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "samaani": {
+        "source": "catalog:samaani",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "samarqandi": {
+        "source": "catalog:samarqandi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "qinnawji": {
+        "source": "catalog:qinnawji",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "qasimi": {
+        "source": "catalog:qasimi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "shawkani": {
+        "source": "catalog:shawkani",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-juzay": {
+        "source": "catalog:ibn-juzay",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "en-maarif-al-quran": {
+        "source": "catalog:en-maarif-al-quran",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ibn-uthaymin": {
+        "source": "catalog:ibn-uthaymin",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "wasit": {
+        "source": "catalog:wasit",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "unal": {
+        "source": "catalog:unal",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "dawat": {
+        "source": "catalog:dawat",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "ishraq": {
+        "source": "catalog:ishraq",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "yusuf-ali": {
+        "source": "catalog:yusuf-ali",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "en-maududi": {
+        "source": "catalog:en-maududi",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      },
+      "rida": {
+        "source": "catalog:rida",
+        "classificationBasis": "Editorial review of the identified work and its cataloged scope; see docs/TAFSIR_CATEGORIES.md."
+      }
+    }
+  },
+  {
+    "id": "tafsir-other",
+    "label": "other works & aids",
+    "label_ar": "أعمال وأدوات أخرى",
+    "scope": "tafsir",
+    "ordinal": 13,
+    "source": "docs/TAFSIR_CATEGORIES.md",
+    "classificationBasis": "Related reference and recitation aids retained in this catalog; not a ranking of scholarly merit.",
+    "aliases": [
+      "en-easy-tajwid",
+      "en-wahidi"
+    ],
+    "memberEvidence": {
+      "en-easy-tajwid": {
+        "source": "catalog:en-easy-tajwid",
+        "classificationBasis": "Recitation aid, placed in Other Tafsirs by user request."
+      },
+      "en-wahidi": {
+        "source": "user:search-group-classification",
+        "classificationBasis": "Moved from occasions of revelation to other tafsirs by user request."
+      }
+    }
   },
   {
     "id": "hadith-adab",
-    "label": "adab & akhlaq",
+    "label": "Etiquettes",
     "label_ar": "آداب وأخلاق",
     "scope": "hadith",
     "ordinal": 9,
@@ -416,17 +973,22 @@
   },
   {
     "id": "hadith-zuhd",
-    "label": "zuhd & raqaiq",
+    "label": "Spirituality",
     "label_ar": "زهد ورقائق",
     "scope": "hadith",
     "ordinal": 10,
     "aliases": [
       "ahmad-zuhd",
-      "riyad"
+      "riyad",
+      "adab"
     ],
     "source": "https://dorar.net/h/agT3SiIc?osoul=1",
     "classificationBasis": "Editorial subject classification; al-Zuhd is a separate work from the Musnad.",
     "memberEvidence": {
+      "adab": {
+        "source": "https://sunnah.com/adab",
+        "classificationBasis": "User-requested overlapping subject classification with Adab & Akhlaq."
+      },
       "riyad": {
         "source": "https://beta.sunnah.com/riyadussalihin",
         "classificationBasis": "Includes chapters on sincerity, repentance, piety, renunciation and remembrance; overlaps with adab."
@@ -435,7 +997,7 @@
   },
   {
     "id": "hadith-shamail",
-    "label": "shamail",
+    "label": "Portrait",
     "label_ar": "شمائل",
     "scope": "hadith",
     "ordinal": 11,
@@ -447,7 +1009,7 @@
   },
   {
     "id": "hadith-arbain",
-    "label": "arbain",
+    "label": "Forties",
     "label_ar": "أربعينات",
     "scope": "hadith",
     "ordinal": 12,
@@ -459,7 +1021,7 @@
   },
   {
     "id": "hadith-encyclopedic",
-    "label": "encyclopedic collections",
+    "label": "Encyclopedic",
     "label_ar": "جوامع موسوعية",
     "scope": "hadith",
     "ordinal": 14,

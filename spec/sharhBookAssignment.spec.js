@@ -36,7 +36,7 @@ test('explicit book association and its edited names win over legacy source titl
 });
 test('book page shows metadata and description without commentary entries or pagination', () => {
  const filename=path.join(__dirname,'../views/sharh_books.ejs');
- const html=ejs.render(fs.readFileSync(filename,'utf8'),{global:{settings:{site:{}}},req:{},sharhBook:{id:200,alias:'new',shortName_en:'Title',shortName:'عنوان',author:'Author',description:'Description text'},books:[],coveredBooks:[],offset:0,entries:[{id:3,reference:'must not appear'}],utils:{markdownToHtml:s=>s},include:(name,data)=>name==='sub-views/book_metadata.ejs' ? ejs.render(fs.readFileSync(path.join(__dirname,'../views',name),'utf8'),{...data,utils:{emptyIfNull:s=>s||'',markdownToHtml:s=>s}}) : ''},{filename});
+ const html=ejs.render(fs.readFileSync(filename,'utf8'),{global:{settings:{site:{}}},req:{},sharhBook:{id:200,alias:'new',shortName_en:'Title',shortName:'عنوان',author:'Author',description:'Description text'},books:[],coveredBooks:[],offset:0,entries:[{id:3,reference:'must not appear'}],utils:{sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix,markdownToHtml:s=>s},include:(name,data)=>name==='sub-views/book_metadata.ejs' ? ejs.render(fs.readFileSync(path.join(__dirname,'../views',name),'utf8'),{...data,utils:{sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix,emptyIfNull:s=>s||'',markdownToHtml:s=>s}}) : ''},{filename});
  expect(html).toContain('Author');expect(html).toContain('Description text');expect(html).not.toContain('must not appear');expect(html).not.toContain('Pagination');
 });
 

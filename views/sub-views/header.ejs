@@ -315,6 +315,10 @@
   <%- include('community_navigation.ejs', { page, req }); %>
   <% } %>
 
+  <% if (page.menu === 'Books' && page.context.bookCatalogInitialType) { %>
+  <%- include('book_catalog_navigation.ejs', { page }); %>
+  <% } %>
+
   <% if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
   <%- include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true }); %>
   <% } else if (page.menu === 'Chapter' || page.menu === 'Section') {

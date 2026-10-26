@@ -1,0 +1,422 @@
+{
+  "notes": [
+    "Preserve all Arabic title letters and tashkil preceding the author suffix, author metadata, English names, and source mappings."
+  ],
+  "entries": [
+    {
+      "id": 100388,
+      "alias": "bukhari-ibnhajar",
+      "fields": {
+        "shortName": {
+          "before": "فَتْحُ الْبَارِي (ابْنُ حَجَرٍ)",
+          "after": "فَتْحُ الْبَارِي",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "فَتْحُ الْبَارِي (ابْنُ حَجَرٍ)",
+          "after": "فَتْحُ الْبَارِي",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "فَتْحُ الْبَارِي (ابْنُ حَجَرٍ)",
+          "after": "فَتْحُ الْبَارِي",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100389,
+      "alias": "bukhari-ayni",
+      "fields": {
+        "shortName": {
+          "before": "عُمْدَةُ الْقَارِي (بَدْرُ الدِّينِ الْعَيْنِيُّ)",
+          "after": "عُمْدَةُ الْقَارِي",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "عُمْدَةُ الْقَارِي (بَدْرُ الدِّينِ الْعَيْنِيُّ)",
+          "after": "عُمْدَةُ الْقَارِي",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "عُمْدَةُ الْقَارِي (بَدْرُ الدِّينِ الْعَيْنِيُّ)",
+          "after": "عُمْدَةُ الْقَارِي",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100390,
+      "alias": "muslim-nawawi",
+      "fields": {
+        "shortName": {
+          "before": "الْمِنْهَاجُ (النَّوَوِيُّ)",
+          "after": "الْمِنْهَاجُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "الْمِنْهَاجُ (النَّوَوِيُّ)",
+          "after": "الْمِنْهَاجُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "الْمِنْهَاجُ (النَّوَوِيُّ)",
+          "after": "الْمِنْهَاجُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100391,
+      "alias": "abudawud-shamsalhaqq",
+      "fields": {
+        "shortName": {
+          "before": "عَوْنُ الْمَعْبُودِ (شَمْسُ الْحَقِّ)",
+          "after": "عَوْنُ الْمَعْبُودِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "عَوْنُ الْمَعْبُودِ (شَمْسُ الْحَقِّ)",
+          "after": "عَوْنُ الْمَعْبُودِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "عَوْنُ الْمَعْبُودِ (شَمْسُ الْحَقِّ)",
+          "after": "عَوْنُ الْمَعْبُودِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100392,
+      "alias": "tirmidhi-mubarakfuri",
+      "fields": {
+        "shortName": {
+          "before": "تُحْفَةُ الْأَحْوَذِيِّ (الْمُبَارَكْفُورِى)",
+          "after": "تُحْفَةُ الْأَحْوَذِيِّ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "تُحْفَةُ الْأَحْوَذِيِّ (الْمُبَارَكْفُورِى)",
+          "after": "تُحْفَةُ الْأَحْوَذِيِّ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "تُحْفَةُ الْأَحْوَذِيِّ (الْمُبَارَكْفُورِى)",
+          "after": "تُحْفَةُ الْأَحْوَذِيِّ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100396,
+      "alias": "bukhari-ibnrajab",
+      "fields": {
+        "shortName": {
+          "before": "فَتْحُ الْبَارِي (ابْنُ رَجَبٍ)",
+          "after": "فَتْحُ الْبَارِي",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "فَتْحُ الْبَارِي (ابْنُ رَجَبٍ)",
+          "after": "فَتْحُ الْبَارِي",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "فَتْحُ الْبَارِي (ابْنُ رَجَبٍ)",
+          "after": "فَتْحُ الْبَارِي",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100397,
+      "alias": "muslim-qurtubi",
+      "fields": {
+        "shortName": {
+          "before": "الْمُفْهِمُ (أَبُو الْعَبَّاسِ)",
+          "after": "الْمُفْهِمُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "الْمُفْهِمُ (أَبُو الْعَبَّاسِ)",
+          "after": "الْمُفْهِمُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "الْمُفْهِمُ (أَبُو الْعَبَّاسِ)",
+          "after": "الْمُفْهِمُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100398,
+      "alias": "ibnmajah-mughultay",
+      "fields": {
+        "shortName": {
+          "before": "الْإِعْلَامُ (مُغْلَطَاي)",
+          "after": "الْإِعْلَامُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "الْإِعْلَامُ بِسُنَّتِهِ عَلَيْهِ الصَّلَاةُ وَالسَّلَامُ (الْمُغَلْطَائِيُّ)",
+          "after": "الْإِعْلَامُ بِسُنَّتِهِ عَلَيْهِ الصَّلَاةُ وَالسَّلَامُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "الْإِعْلَامُ بِسُنَّتِهِ عَلَيْهِ الصَّلَاةُ وَالسَّلَامُ (الْمُغَلْطَائِيُّ)",
+          "after": "الْإِعْلَامُ بِسُنَّتِهِ عَلَيْهِ الصَّلَاةُ وَالسَّلَامُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100399,
+      "alias": "malik-tamhid",
+      "fields": {
+        "shortName": {
+          "before": "التَّمْهِيدُ (ابْنُ عَبْدِ الْبَرِّ)",
+          "after": "التَّمْهِيدُ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "التَّمْهِيدُ لِمَا فِي الْمُوَطَّأِ (ابْنُ عَبْدِ الْبَرِّ)",
+          "after": "التَّمْهِيدُ لِمَا فِي الْمُوَطَّأِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "التَّمْهِيدُ لِمَا فِي الْمُوَطَّأِ (ابْنُ عَبْدِ الْبَرِّ)",
+          "after": "التَّمْهِيدُ لِمَا فِي الْمُوَطَّأِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100404,
+      "alias": "shamail-kandhlawi",
+      "fields": {
+        "shortName": {
+          "before": "خَصَائِلُ نَبَوِيٍّ (مُحَمَّد زَكَرِيَّا)",
+          "after": "خَصَائِلُ نَبَوِيٍّ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "خَصَائِلُ نَبَوِيٍّ (مُحَمَّد زَكَرِيَّا)",
+          "after": "خَصَائِلُ نَبَوِيٍّ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "خَصَائِلُ نَبَوِيٍّ (مُحَمَّد زَكَرِيَّا)",
+          "after": "خَصَائِلُ نَبَوِيٍّ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100405,
+      "alias": "adab-salahi",
+      "fields": {
+        "name": {
+          "before": "الْأَدَب الْمُفْرَد مَع الشَّرْح (عَادِل صَلَاحِي)",
+          "after": "الْأَدَب الْمُفْرَد مَع الشَّرْح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "الْأَدَب الْمُفْرَد مَع الشَّرْح (عَادِل صَلَاحِي)",
+          "after": "الْأَدَب الْمُفْرَد مَع الشَّرْح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100406,
+      "alias": "riyad-uthaymin",
+      "fields": {
+        "shortName": {
+          "before": "شَرْحُ رِيَاضِ الصَّالِحِينَ (ابْنُ الْعُثَيْمِينِ)",
+          "after": "شَرْحُ رِيَاضِ الصَّالِحِينَ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "شَرْحُ رِيَاضِ الصَّالِحِينَ (ابْنُ الْعُثَيْمِينِ)",
+          "after": "شَرْحُ رِيَاضِ الصَّالِحِينَ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "شَرْحُ رِيَاضِ الصَّالِحِينَ (ابْنُ الْعُثَيْمِينِ)",
+          "after": "شَرْحُ رِيَاضِ الصَّالِحِينَ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100407,
+      "alias": "arbain-ibndaqiq",
+      "fields": {
+        "shortName": {
+          "before": "شَرْحُ الْأَرْبَعِينَ النَّوَوِيَّةِ (ابْنُ دَقِيقِ الْعِيدِ)",
+          "after": "شَرْحُ الْأَرْبَعِينَ النَّوَوِيَّةِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "شَرْحُ الْأَرْبَعِينَ النَّوَوِيَّةِ (ابْنُ دَقِيقِ الْعِيدِ)",
+          "after": "شَرْحُ الْأَرْبَعِينَ النَّوَوِيَّةِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "شَرْحُ الْأَرْبَعِينَ النَّوَوِيَّةِ (ابْنُ دَقِيقِ الْعِيدِ)",
+          "after": "شَرْحُ الْأَرْبَعِينَ النَّوَوِيَّةِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100408,
+      "alias": "jami-al-ulum",
+      "fields": {
+        "shortName": {
+          "before": "جَامِعُ الْعُلُومِ وَالْحِكَمِ (ابْنُ رَجَبٍ)",
+          "after": "جَامِعُ الْعُلُومِ وَالْحِكَمِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "جَامِعُ الْعُلُومِ وَالْحِكَمِ (ابْنُ رَجَبٍ)",
+          "after": "جَامِعُ الْعُلُومِ وَالْحِكَمِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "جَامِعُ الْعُلُومِ وَالْحِكَمِ (ابْنُ رَجَبٍ)",
+          "after": "جَامِعُ الْعُلُومِ وَالْحِكَمِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100409,
+      "alias": "ahmad-arnaut",
+      "fields": {
+        "shortName": {
+          "before": "مُسْنَدُ أَحْمَدَ ط. الرِّسَالَةِ (الْأَرْنَاؤُوطُ)",
+          "after": "مُسْنَدُ أَحْمَدَ ط. الرِّسَالَةِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "مُسْنَدُ أَحْمَدَ ط. الرِّسَالَةِ (الْأَرْنَاؤُوطُ)",
+          "after": "مُسْنَدُ أَحْمَدَ ط. الرِّسَالَةِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "مُسْنَدُ أَحْمَدَ ط. الرِّسَالَةِ (الْأَرْنَاؤُوطُ)",
+          "after": "مُسْنَدُ أَحْمَدَ ط. الرِّسَالَةِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100415,
+      "alias": "riyad-ibnallan",
+      "fields": {
+        "shortName": {
+          "before": "دَلِيلُ الْفَالِحِينَ (ابْنُ عَلَّانَ)",
+          "after": "دَلِيلُ الْفَالِحِينَ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "دَلِيلُ الْفَالِحِينَ (ابْنُ عَلَّانَ)",
+          "after": "دَلِيلُ الْفَالِحِينَ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "دَلِيلُ الْفَالِحِينَ (ابْنُ عَلَّانَ)",
+          "after": "دَلِيلُ الْفَالِحِينَ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100417,
+      "alias": "mushkil-tahawi",
+      "fields": {
+        "shortName": {
+          "before": "شَرْح مُشْكِل الْآثَار (الطَّحَاوِيّ)",
+          "after": "شَرْح مُشْكِل الْآثَار",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "شَرْح مُشْكِل الْآثَار (الطَّحَاوِيّ)",
+          "after": "شَرْح مُشْكِل الْآثَار",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "شَرْح مُشْكِل الْآثَار (الطَّحَاوِيّ)",
+          "after": "شَرْح مُشْكِل الْآثَار",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100421,
+      "alias": "mishkat-qari",
+      "fields": {
+        "shortName": {
+          "before": "مِرْقَاةُ الْمَفَاتِيحِ (الْمُلَّا عَلِيٌّ قَارِي)",
+          "after": "مِرْقَاةُ الْمَفَاتِيحِ",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "مِرْقَاة الْمَفَاتِيح (الْمُلَّا عَلِيّ قَارِي)",
+          "after": "مِرْقَاة الْمَفَاتِيح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "مِرْقَاة الْمَفَاتِيح (الْمُلَّا عَلِيّ قَارِي)",
+          "after": "مِرْقَاة الْمَفَاتِيح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100422,
+      "alias": "mishkat-mubarakfuri",
+      "fields": {
+        "shortName": {
+          "before": "مِرْعَاة الْمَفَاتِيح (الْمُبَارَكْفُورِي)",
+          "after": "مِرْعَاة الْمَفَاتِيح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "مِرْعَاة الْمَفَاتِيح (الْمُبَارَكْفُورِي)",
+          "after": "مِرْعَاة الْمَفَاتِيح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "مِرْعَاة الْمَفَاتِيح (الْمُبَارَكْفُورِي)",
+          "after": "مِرْعَاة الْمَفَاتِيح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    },
+    {
+      "id": 100423,
+      "alias": "mishkat-dihlawi",
+      "fields": {
+        "shortName": {
+          "before": "لَمَعَات التَّنْقِيح (عَبْد الْحَقّ الدِّهْلَوِيّ)",
+          "after": "لَمَعَات التَّنْقِيح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "name": {
+          "before": "لَمَعَات التَّنْقِيح (عَبْد الْحَقّ الدِّهْلَوِيّ)",
+          "after": "لَمَعَات التَّنْقِيح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        },
+        "title": {
+          "before": "لَمَعَات التَّنْقِيح (عَبْد الْحَقّ الدِّهْلَوِيّ)",
+          "after": "لَمَعَات التَّنْقِيح",
+          "reason": "Remove reviewed parenthetical Arabic author attribution while preserving title spelling and tashkil; compose author separately on hadith pages"
+        }
+      }
+    }
+  ]
+}

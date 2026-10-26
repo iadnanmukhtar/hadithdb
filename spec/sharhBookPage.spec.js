@@ -11,7 +11,7 @@ test.each([false, true])('shared metadata renders with admin editing=%s', async 
  const html = await ejs.renderFile(path.join(__dirname, '../views/sub-views/book_metadata.ejs'), {
   site: { editMode }, book, tocDisplayBook: book, tocDisplayBookNameEn: book.name_en, tocDisplayBookTitle: book.name,
   showBookLayout: true, showBookMetadata: true, quranCommentaryBook: null, isEnglishQuranTranslation: false,
-  utils: { emptyIfNull: value => value || '', markdownToHtml: value => `<p>${value}</p>` }
+  utils: { sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, emptyIfNull: value => value || '', markdownToHtml: value => `<p>${value}</p>` }
  });
  const $ = cheerio.load(html);
  expect($('heading').text()).toContain(book.name_en);
@@ -34,7 +34,7 @@ test('book route supplies coverage and does not load a passage TOC', async () =>
 
 test.each([[[]], [[{ alias: 'malik', shortName_en: 'Muwatta Malik', shortName: 'موطأ مالك', hadith_count: 1200 }]]])('coverage list renders links and an empty state', async coveredBooks => {
  const html = await ejs.renderFile(path.join(__dirname, '../views/sharh_books.ejs'), {
-  global: { settings: { site: {} } }, req: {}, sharhBook: book, books: [book], offset: 0, coveredBooks, include: () => ''
+  global: { settings: { site: {} } }, req: {}, utils: require('../lib/Utils'), sharhBook: book, books: [book], offset: 0, coveredBooks, include: () => ''
  });
  const $ = cheerio.load(html);
  expect($('#toc')).toHaveLength(0);
@@ -47,7 +47,7 @@ test.each([[[]], [[{ alias: 'malik', shortName_en: 'Muwatta Malik', shortName: '
 test.each([false, true])('catalog rows share tafsir styling and inline editors (edit=%s)', async editMode => {
  const html = await ejs.renderFile(path.join(__dirname, '../views/sub-views/sharh_catalog_list.ejs'), {
   site: { editMode }, sharhBooks: [{ ...book, lang: 'ar-en' }],
-  utils: { emptyIfNull: value => value || '', markdownToHtml: value => `<p>${value}</p>` }
+  utils: { sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, emptyIfNull: value => value || '', markdownToHtml: value => `<p>${value}</p>` }
  });
  const $ = cheerio.load(html);
  expect($('.tafsir-book-row')).toHaveLength(1);

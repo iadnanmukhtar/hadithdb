@@ -9,6 +9,7 @@ test('seeded groups do not collide with individual books or broaden an individua
 	for (const group of BookGroups.list(undefined, books)) expect(aliases.has(group.id)).toBe(false);
 	expect(BookGroups.expand(['adab'], 'hadith', books)).toEqual(['adab']);
 	expect(BookGroups.expand(['hadith-adab'], 'hadith', books)).toEqual(['adab', 'riyad']);
+	expect(BookGroups.expand(['hadith-zuhd'], 'hadith', books)).toEqual(['ahmad-zuhd', 'riyad', 'adab']);
 });
 
 test('includes both Irab editions in Language & Rhetoric', () => {

@@ -1,0 +1,311 @@
+{
+  "reviewed": "2026-10-26",
+  "seedHash": "711ff9d59f8b6159a21d521a6cccad4edb904ec877dc4a717334cbf78ce5f010",
+  "entries": [
+    {
+      "id": 100001,
+      "alias": "en-maududi",
+      "beforeHash": "964e6b724e6fe5b7a1b01385ec70cf415fe5325eeb461ee9ba49042832ca9b4e"
+    },
+    {
+      "id": 100002,
+      "alias": "ibn-kathir",
+      "beforeHash": "daffb065a0d7109d1f74952fab310a956720db2ded83ad1cbbfeb9ef8803a04a"
+    },
+    {
+      "id": 100008,
+      "alias": "muyassar",
+      "beforeHash": "0275fde31045ffb07a3a383dcfd4f8967e8367632924940e0b3446509b2b39c8"
+    },
+    {
+      "id": 100009,
+      "alias": "baghawi",
+      "beforeHash": "ee1f920bab59be3a155eb5cc050ef812662a98b9aca74e5dd099d77008b128a1"
+    },
+    {
+      "id": 100010,
+      "alias": "tabari",
+      "beforeHash": "1cd0dc49059fe985191a9f10060be36561a8b03f9264df823ce409e7b1f8b81b"
+    },
+    {
+      "id": 100012,
+      "alias": "qurtubi",
+      "beforeHash": "ac354423b66b4fb31ec8b8bdd6f54fe104109ff1de32c81c922d1966a1486291"
+    },
+    {
+      "id": 100013,
+      "alias": "ibn-al-jawzi",
+      "beforeHash": "ad912c4f23f03ef0b8274142f11938d0de3a1b645cddb59af810993e67ea23d5"
+    },
+    {
+      "id": 100014,
+      "alias": "mawardi",
+      "beforeHash": "7c44007d87ea8d104abae17431fa31b8d7bd3fdd92ed29807458e0bcd65909c8"
+    },
+    {
+      "id": 100015,
+      "alias": "ibn-alqayyim",
+      "beforeHash": "8a91026983b0f7c4f6f9a63747adae6164c29d007d1a858495ec4ead55c647e1"
+    },
+    {
+      "id": 100016,
+      "alias": "ibn-taymiyyah",
+      "beforeHash": "950e4fc04e492ee34b7accb207fd4adae34f5aa770877fbcc5355e5fb5f4a15b"
+    },
+    {
+      "id": 100017,
+      "alias": "samaani",
+      "beforeHash": "c4abc3e3f878cd085f2269b46d3d2f8044e4cc1f118e01c0e0f731ac1f337d65"
+    },
+    {
+      "id": 100018,
+      "alias": "makki",
+      "beforeHash": "144eafbd8794b5d3d4f35d48f10fd81341f74cb3b9aa0c61339c2a0e34286f47"
+    },
+    {
+      "id": 100019,
+      "alias": "qasimi",
+      "beforeHash": "f597ca71f48be5855327b7b44292fde4eb0a3fa7f10890f2e6468c4091cf8f17"
+    },
+    {
+      "id": 100020,
+      "alias": "thalabi",
+      "beforeHash": "9c04b7ebddbaadf9f8add5a90090c2d341739424f9851cfd7023c1d8930aa97e"
+    },
+    {
+      "id": 100021,
+      "alias": "samarqandi",
+      "beforeHash": "2aa1148a59a95c6decc3e71c80e3f82d1428e0fed5e0d80800a9d2e1f311d7e6"
+    },
+    {
+      "id": 100023,
+      "alias": "qinnawji",
+      "beforeHash": "c0a2b1c90f974e02d897088d53ad37b14180de488de17fa14ea294ebc19548bb"
+    },
+    {
+      "id": 100024,
+      "alias": "shawkani",
+      "beforeHash": "97a0172b47cd31130607c67697ecec712039de3c69502c22dd17331b4d9fd55b"
+    },
+    {
+      "id": 100025,
+      "alias": "ibn-juzay",
+      "beforeHash": "1140ad5dec99d2306619f40fdd18e0d1c043abf0575bdea24021158892c7175d"
+    },
+    {
+      "id": 100026,
+      "alias": "alusi",
+      "beforeHash": "60386479d49d90cad9088f8b7a15534605122dc96821c546757fa02cc7c367fb"
+    },
+    {
+      "id": 100027,
+      "alias": "razi",
+      "beforeHash": "575018ae549a7292752ac6ec77ebb1025efffaadc5974aaee394ac3c27e20c86"
+    },
+    {
+      "id": 100028,
+      "alias": "shanqiti",
+      "beforeHash": "d2360c3e29b603f4e9fa32f988ab56b5330ccc18a86487cfd261ec1a7cd93eb7"
+    },
+    {
+      "id": 100029,
+      "alias": "biqaii",
+      "beforeHash": "10a3852e87d660b7dc0fb2ce891e298e15962f20acade3cf2922cd42d72bcf93"
+    },
+    {
+      "id": 100030,
+      "alias": "ibn-ashur",
+      "beforeHash": "df27e133375ebb90ef8df790594fb99f816e650ad9f0b0265b9a8a5e3173bf64"
+    },
+    {
+      "id": 100031,
+      "alias": "ibn-atiyah",
+      "beforeHash": "9fe1e472123d8ccfce905856eed137c8327267f453d76fb6dd12a9dabe10aa37"
+    },
+    {
+      "id": 100032,
+      "alias": "abu-hayyan",
+      "beforeHash": "85520a66222454411be2b01783b38be3d1c8c240d9f65571ac6474fc7e20b6b5"
+    },
+    {
+      "id": 100033,
+      "alias": "basit",
+      "beforeHash": "344702c549cab329321bd455414c4626bbe4c8b0f2e8ca1bff9dfa3f6b898741"
+    },
+    {
+      "id": 100034,
+      "alias": "abu-alsuod",
+      "beforeHash": "0bfeeaca4512d03e5840f5a60277d385af92abe89c33a2ffa2820df2d906513f"
+    },
+    {
+      "id": 100035,
+      "alias": "zamakhshari",
+      "beforeHash": "f4564ab463a55f672f36744e90324405c33f7a86c63fa6c19a2dc39e6371f792"
+    },
+    {
+      "id": 100037,
+      "alias": "aysar",
+      "beforeHash": "41af44edae07f05a071cccdee2efde6e5aa07f68026a7ded8944505a19189b43"
+    },
+    {
+      "id": 100038,
+      "alias": "tadabbur-wa-amal",
+      "beforeHash": "8b760a9dbcea9d41fbdb2244ce00067484e2ca6b91bdf0f51d129d52b878bc06"
+    },
+    {
+      "id": 100039,
+      "alias": "ibn-uthaymin",
+      "beforeHash": "e14e786a04758e734bfd9d8e7b9e76043515a259ed293eb40920f01c8e6eddfc"
+    },
+    {
+      "id": 100041,
+      "alias": "iji",
+      "beforeHash": "690e463af87150ef84a6b55ee431e3cd18982b2d8e230e355ad56d1bb6ed4fa4"
+    },
+    {
+      "id": 100042,
+      "alias": "baydawi",
+      "beforeHash": "5a5f9397546e4b7083e660460891a7407cf7c4b863c91dff153f84c26e59060f"
+    },
+    {
+      "id": 100043,
+      "alias": "nasafi",
+      "beforeHash": "be323a046fa8f9d38ef93e3460fcbb4bd4969f27ab554bab85949d2604f39ef8"
+    },
+    {
+      "id": 100044,
+      "alias": "wajiz",
+      "beforeHash": "67428d06c34a048cccc7d8cd285eb8ea14e6be604594ec6464dccd843bbe582a"
+    },
+    {
+      "id": 100045,
+      "alias": "abu-zamanayn",
+      "beforeHash": "57c473d0d7a4cad003973d455f51da7e87019c2cd24a3c0468b4d4a09211e221"
+    },
+    {
+      "id": 100046,
+      "alias": "mathur",
+      "beforeHash": "bdd934a1d7f706a9c9f8833869097c6f600b6787c08355652df6404089a7016a"
+    },
+    {
+      "id": 100047,
+      "alias": "suyuti-t",
+      "beforeHash": "a69d9ecddfc1a1a85f11480dbb9a5c9795ca65e4a261b5ba4319cd979f71fcc4"
+    },
+    {
+      "id": 100048,
+      "alias": "ibn-abi-hatim",
+      "beforeHash": "fa608249c1c766ada0c40d4c11f17005ea03f65b2a7bd59bc9a459a391d9c63e"
+    },
+    {
+      "id": 100227,
+      "alias": "jalalayn",
+      "beforeHash": "3b0b2f83a24723d2834229edaa7e95352505e9aae9f67a52aff3d6d77c390a7e"
+    },
+    {
+      "id": 100318,
+      "alias": "en-maarif-al-quran",
+      "beforeHash": "a872b535831c0ca22daa2378210c0c1f519ed9b77ca907eb430f037dbfbe6e30"
+    },
+    {
+      "id": 100319,
+      "alias": "en-tazkir-al-quran",
+      "beforeHash": "984299e47a21740fd3141e38727e6cfcd6add0f804ba454892f5b8d6e2a10143"
+    },
+    {
+      "id": 100331,
+      "alias": "mokhtasar",
+      "beforeHash": "61d42c43ce576ad7f24cc959139f6fabe2fb0cb29f3a27206000792f7d709517"
+    },
+    {
+      "id": 100332,
+      "alias": "irab-al-quran",
+      "beforeHash": "be40c7757567ce49763752faf1d47e31c9a40b92f5b13470c8f9c9a5642fa945"
+    },
+    {
+      "id": 100334,
+      "alias": "qiraat",
+      "beforeHash": "bb162b5a6835c02aa1d9319152a8c20a0838952c04a413a410fcb59ac55ceb1b"
+    },
+    {
+      "id": 100343,
+      "alias": "irab-daas",
+      "beforeHash": "81b7c5ffff6474edd69d38636b1a2f37ceef1990fc1641c720370fc414c787bd"
+    },
+    {
+      "id": 100347,
+      "alias": "ibn-adil",
+      "beforeHash": "f3091ef1efbed0048b4d870c3b8de4d6a3aed6bcaec9256ab451510029f9d5a3"
+    },
+    {
+      "id": 100348,
+      "alias": "en-easy-tajwid",
+      "beforeHash": "ba772a60f4e2eb060b659da192a3d8887f94722ac220ffa95fb0aadb0a2d1fee"
+    },
+    {
+      "id": 100350,
+      "alias": "saadi",
+      "beforeHash": "ab1363dfdef0d5a8cf649e138ff19e8a56340a202e3e7ae73e1c98bae4186b80"
+    },
+    {
+      "id": 100354,
+      "alias": "shawi",
+      "beforeHash": "0cb267bed9b98656f3d6d67672d95922506b5185a2b8a57ebe9c6a1e0e3a8acb"
+    },
+    {
+      "id": 100355,
+      "alias": "yasir",
+      "beforeHash": "568d0d5d14fe8e56d788eff0442170fa66429b2ee1c9e5fa584c6554aa4b3618"
+    },
+    {
+      "id": 100356,
+      "alias": "khadiri",
+      "beforeHash": "3849737f806d4013ef45b0577cddf265235f03c161631b2967dd41e671c368dd"
+    },
+    {
+      "id": 100375,
+      "alias": "muntakhab",
+      "beforeHash": "be2f8608d3b73fc4ed5995fe2154e57d2300b5b107f8ac296ffcff770b36a2ca"
+    },
+    {
+      "id": 100380,
+      "alias": "wasit",
+      "beforeHash": "ac0191341dd96f57c9f97ce028dc8057b301a102935a5ce5159bbf015af3df8e"
+    },
+    {
+      "id": 100381,
+      "alias": "en-wahidi",
+      "beforeHash": "5693b8b1122203224fbad2f3f85ffe6c6cf744ccef1eb5560bd77ac0da5d8859"
+    },
+    {
+      "id": 100382,
+      "alias": "rida",
+      "beforeHash": "3c4e5306ba37b601da0ce4c03ae20bd53149f513b109da9e5d28bbe04a233b5b"
+    },
+    {
+      "id": 100383,
+      "alias": "dorar-t",
+      "beforeHash": "9b56243b3167e2c2a99db24181f656767dfc5fb20e879c7c39b84114df67b182"
+    },
+    {
+      "id": 100384,
+      "alias": "unal",
+      "beforeHash": "e640a77fe5843ae130b346a0b7e5598ed63819abfa4c67319659f80a96f1f702"
+    },
+    {
+      "id": 100385,
+      "alias": "dawat",
+      "beforeHash": "51c6dd3bb2a8e1c3de1cf6326d5158c9639b532559186843501f13ca71224221"
+    },
+    {
+      "id": 100386,
+      "alias": "ishraq",
+      "beforeHash": "1554b4961ab20900f309e9d3cdbb375a85f56cd8a492e832782eca13793387b6"
+    },
+    {
+      "id": 100387,
+      "alias": "yusuf-ali",
+      "beforeHash": "5d42585529a78d70d14626f4ee6917a90210af45dc2c1f5275247bad5e7c1947"
+    }
+  ]
+}
