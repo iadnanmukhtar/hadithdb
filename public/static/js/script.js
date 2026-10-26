@@ -18103,3 +18103,11 @@ function cssEscape(value) {
 		return window.CSS.escape(value);
 	return value.toString().replace(/["\\]/g, '\\$&');
 }
+
+// Load the shared catalog presentation here so cached catalog HTML also receives it.
+if (document.querySelector('.book-catalog-page')) {
+  const catalogScript = document.createElement('script');
+  const mainScript = document.querySelector('script[src*="/static/js/script.js"]');
+  catalogScript.src = '/static/js/book-catalog.js' + (mainScript ? new URL(mainScript.src, location.href).search : '');
+  document.head.appendChild(catalogScript);
+}

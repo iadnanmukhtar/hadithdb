@@ -13599,3 +13599,69 @@ html[data-account-signed-in="true"] #notebook-signin { display: none !important;
   color: var(--note-icon-yellow) !important;
 }
 html:not([data-account-signed-in="true"]) .personal-note-btn { cursor: default; }
+
+/* Catalog typography is independent of the larger reader text settings. */
+main.book-catalog-page {
+	font-size: 1rem;
+	line-height: 1.5;
+}
+main.book-catalog-page .tafsir-book-title-line {
+	font-size: 1rem !important;
+	line-height: 1.5;
+}
+main.book-catalog-page .tafsir-book-title-line:lang(ar),
+main.book-catalog-page .tafsir-book-title-line :lang(ar) {
+	font-size: 1.15rem !important;
+	line-height: 1.7;
+}
+.book-catalog-compact .tafsir-book-list { gap: 1.5rem; }
+.book-catalog-category[hidden], .book-catalog-compact [hidden], .book-catalog-dialog [hidden] { display: none !important; }
+.book-catalog-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 1.5rem; }
+.book-catalog-category-title {
+	display: flex; justify-content: space-between; gap: 1rem;
+	font-size: 1rem !important; font-weight: 600; margin: 0; padding-bottom: .5rem;
+	border-bottom: 1px solid var(--bs-border-color);
+}
+.book-catalog-category-title span { font-size: 1.05rem; overflow-wrap: anywhere; min-width: 0; }
+.book-catalog-page .h-menu button :lang(ar),
+.book-catalog-details-button :lang(ar) { font-size: inherit; }
+.book-catalog-compact .tafsir-book-row { padding: .8rem 0; min-width: 0; }
+.book-catalog-compact .tafsir-book-row:first-child { border-top: 0; }
+.book-catalog-summary { display: flex; flex-direction: column; gap: .35rem; height: 100%; }
+.book-catalog-summary .tafsir-book-title-pair,
+.book-catalog-summary .tafsir-book-meta { grid-template-columns: minmax(0, 1fr); gap: .15rem; }
+.book-catalog-summary .tafsir-book-title-line a { text-decoration: none; }
+.book-catalog-summary .tafsir-book-title-line a:hover { text-decoration: underline; }
+.book-catalog-summary .tafsir-book-meta { font-size: .85rem; line-height: 1.5; }
+.book-catalog-details-button {
+	align-self: flex-start; margin-top: auto; padding: .25rem 0;
+	border: 0; background: transparent; color: var(--c-accent); font-size: .85rem;
+}
+.book-catalog-details-button:hover { text-decoration: underline; }
+.book-catalog-details-button:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+.book-catalog-dialog {
+	width: min(44rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: 0;
+	border: 1px solid var(--bs-border-color); border-radius: .6rem;
+	background: var(--bs-body-bg); color: var(--bs-body-color); font-size: 1rem;
+}
+.book-catalog-dialog::backdrop { background: rgb(0 0 0 / .5); }
+.book-catalog-dialog[open] { display: flex; flex-direction: column; }
+.book-catalog-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--bs-border-color); }
+.book-catalog-dialog-header h2 { margin: 0; font-size: 1rem; }
+.book-catalog-dialog-header .btn-close { flex-shrink: 0; }
+.book-catalog-dialog-body { padding: 1rem; overflow-y: auto; overscroll-behavior: contain; }
+.book-catalog-dialog .tafsir-book-row-main { gap: .8rem; }
+.book-catalog-dialog .tafsir-book-title-line { font-size: 1.1rem !important; line-height: 1.6; }
+.book-catalog-dialog .tafsir-book-title-line:lang(ar),
+.book-catalog-dialog .tafsir-book-title-line :lang(ar) { font-size: 1.25rem !important; }
+.book-catalog-dialog .tafsir-book-full-name,
+.book-catalog-dialog .tafsir-book-meta,
+.book-catalog-dialog .tafsir-book-description-full,
+.book-catalog-dialog .tafsir-book-publication,
+.book-catalog-dialog .book-download-links { font-size: .95rem; line-height: 1.6; }
+.book-catalog-dialog-open { overflow: hidden; }
+@media (min-width: 768px) { .book-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1400px) { .book-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 575.98px) {
+	.book-catalog-dialog .tafsir-book-title-pair { grid-template-columns: minmax(0, 1fr); }
+}
