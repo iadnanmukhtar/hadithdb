@@ -66,6 +66,20 @@ test('disk caching disabled still uses ES instead of SQL',async()=>{
  expect(global.query).not.toHaveBeenCalled();
  expect(Navigation.read).toHaveBeenCalledTimes(2);
 });
+test('a new HTML cache version reloads ES without rebuilding navigation in SQL',async()=>{
+ const files=new Map();
+ Utils.readCachedTextFile.mockImplementation(path=>files.get(path));
+ Utils.writeCachedTextFile.mockImplementation((path,text)=>files.set(path,text));
+ Navigation.read.mockResolvedValue(rows);
+ const original=Utils.ASSET_SUFFIX_SLUG;
+ try {
+  await Sharh.readerSequence(book);
+  Utils.ASSET_SUFFIX_SLUG=original+'-navigation-test';
+  await Sharh.readerSequence(book);
+  expect(Navigation.read).toHaveBeenCalledTimes(2);
+  expect(global.query).not.toHaveBeenCalled();
+ } finally { Utils.ASSET_SUFFIX_SLUG=original; }
+});
 test('an empty indexed book does not trigger SQL fallback',async()=>{
  Navigation.read.mockResolvedValue([]);
  expect(await Sharh.readerSequence(book)).toEqual([]);

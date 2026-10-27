@@ -113,3 +113,24 @@ test('partial dependency searches fail instead of silently leaving old books sta
 	await expect(Navigation.syncHadiths([7], [])).rejects.toThrow('Incomplete');
 	expect(Sharh.buildReaderSequence).not.toHaveBeenCalled();
 });
+
+test('hadith indexing refreshes navigation even after its last commentary is deleted', async () => {
+	jest.spyOn(require('../lib/SharhBooks'), 'sync').mockResolvedValue({ created: 0 });
+	jest.spyOn(Navigation, 'syncHadiths').mockResolvedValue();
+	global.query.mockImplementation(async sql => sql.startsWith('SHOW TABLES') ? [{ table: 'hdith_hadith_sharh' }] : []);
+	await require('../lib/HadithSharhIndex').syncHadiths([{ hId: 7, book_alias: 'malik' }]);
+	expect(Navigation.syncHadiths).toHaveBeenCalledWith([7], []);
+});
+
+test('source indexing skips Quran-only changes', async () => {
+	await Navigation.syncSourceBooks([0, null, undefined]);
+	expect(axios.post).not.toHaveBeenCalled();
+	expect(global.query).not.toHaveBeenCalled();
+});
+
+test('heading bulk indexing refreshes navigation for the indexed source books', async () => {
+	jest.spyOn(Navigation, 'syncSourceBooks').mockResolvedValue();
+	axios.post.mockResolvedValue({ status: 200, data: { errors: false, items: [] } });
+	await require('../lib/Index').updateBulk('toc', [{ hId: 55, book_id: 7, ref: 'malik/1' }]);
+	expect(Navigation.syncSourceBooks).toHaveBeenCalledWith([7]);
+});

@@ -3018,7 +3018,6 @@ async function invalidateHeadingCachesByHeadingId(headingId) {
     invalidateBookChapterCache(heading);
     await flushHeadingPathCaches(heading);
   }
-  await require('../lib/SharhNavigationIndex').syncSourceBooks(headings.map(heading => heading.book_id));
   return headings.find(heading => Number(heading.book_virtual) !== 1) || headings[0];
 }
 

@@ -1600,6 +1600,18 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
   }
 }
 
+async function findNumberedHadithFallback(alias, number) {
+  const match = String(number).match(/^(\d+)[a-z]?$/i);
+  if (!match) return null;
+  const base = `${alias}:${match[1]}`;
+  const requested = `${alias}:${number}`;
+  const candidates = [base, ...'abcdefghijklmnopqrstuvwxyz'.split('').map(suffix => base + suffix)]
+    .filter(reference => reference !== requested);
+  const matches = await Index.docsFromQuery(Item.INDEX, { terms: { ref: candidates } }, 0, 100);
+  const existing = new Set(matches.map(item => item.ref));
+  return candidates.find(reference => existing.has(reference)) || null;
+}
+
 // HADITH (SINGLE)
 router.get('/:bookAlias\::num', async function (req, res, next) {
   res.locals.req = req;
@@ -1665,9 +1677,12 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   }
   var results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}` });
   if (results.length == 0) {
-    results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}a` });
-    if (results.length == 0)
-      return next(gone(`Item ${req.params.bookAlias}:${req.params.num} not found`));
+    const canonicalReference = req.params.bookAlias !== 'quran'
+      ? await findNumberedHadithFallback(req.params.bookAlias, req.params.num)
+      : null;
+    if (canonicalReference)
+      return res.redirect(301, `/${canonicalReference}${appendOriginalQuery(req)}`);
+    return next(gone(`Item ${req.params.bookAlias}:${req.params.num} not found`));
   }
 
   results = results.map(item => new Item(item));
