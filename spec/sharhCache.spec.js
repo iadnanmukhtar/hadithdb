@@ -27,13 +27,13 @@ test('cache hit skips SQL and reader construction', async () => {
  await handle()(req, res, jest.fn());
  expect(Sharh.entryByReference).not.toHaveBeenCalled();
  expect(Sharh.readerContext).not.toHaveBeenCalled();
- expect(Utils.sendCachedHtml.mock.calls[0][2]).toContain('/sharh.v507/test-sharh/');
+ expect(Utils.sendCachedHtml.mock.calls[0][2]).toContain(`/sharh${Utils.ASSET_SUFFIX_SLUG}/test-sharh/`);
 });
 test.each(['hadith', 'heading'])('indexes %s pages under their book with edit dependencies', async kind => {
  req.route.path = kind === 'heading' ? '/:alias/heading/:id' : '/:alias/:reference';
  await handle(kind)(req, res, jest.fn());
  expect(ejs.renderFile.mock.calls[0][1].noadmin).toBe(true);
- expect(Utils.indexCachedItem).toHaveBeenCalledWith(expect.arrayContaining(['test-sharh', 'book:test-sharh', 'bukhari', 'book:bukhari', 'riyad', 'other-sharh']), expect.stringContaining('/sharh.v507/test-sharh/'));
+ expect(Utils.indexCachedItem).toHaveBeenCalledWith(expect.arrayContaining(['test-sharh', 'book:test-sharh', 'bukhari', 'book:bukhari', 'riyad', 'other-sharh']), expect.stringContaining(`/sharh${Utils.ASSET_SUFFIX_SLUG}/test-sharh/`));
  if (kind === 'hadith') expect(Utils.indexCachedItem.mock.calls[0][0]).toContain('bukhari:1');
 });
 test.each(['admin', 'disabled'])('%s bypasses cache reads and writes', async mode => {

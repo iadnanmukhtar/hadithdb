@@ -766,6 +766,10 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         }
       }
 
+      await require('../lib/SharhNavigationIndex').syncHeadings([
+        col === 'add' || col === 'reorder' ? tocSharhId : tocSharhRow.toc_id
+      ]);
+
     } else if (type == 'tags') {
       var result = await global.query(`UPDATE tags SET ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
       status.code = 200;
@@ -1390,6 +1394,7 @@ async function finishIntroductionHeadingChange(bookId) {
     return book;
   }
   await Books.touchBookContentLastmodById(book.id);
+  await require('../lib/SharhNavigationIndex').syncSourceBooks([book.id]);
   await Promise.all([
     Utils.flushCacheContaining(book.alias),
     Utils.flushCacheContaining(`book:${book.alias}`)
@@ -3013,6 +3018,7 @@ async function invalidateHeadingCachesByHeadingId(headingId) {
     invalidateBookChapterCache(heading);
     await flushHeadingPathCaches(heading);
   }
+  await require('../lib/SharhNavigationIndex').syncSourceBooks(headings.map(heading => heading.book_id));
   return headings.find(heading => Number(heading.book_virtual) !== 1) || headings[0];
 }
 
@@ -3216,6 +3222,7 @@ async function refreshVirtualHadithEdit(selected) {
   // Reader invalidation must still finish if a search backend is unavailable.
   await Library.reloadBooks();
   await RuntimeRefresh.publish();
+  await require('../lib/SharhNavigationIndex').syncSourceBooks([selected.bookId]);
   for (const hadithId of selected.hadithIds)
     await safeBackground(`indexing saved virtual hadith source ${hadithId}`, () => runHadithPostUpdateTasks(hadithId, { awaitIndex: true }));
 }

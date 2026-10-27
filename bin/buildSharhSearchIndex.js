@@ -21,6 +21,11 @@ const SharhIndex = require('../lib/HadithSharhIndex');
 		}
 		await axios.post(`${global.settings.search.domain}/sharhs/_refresh`, null, SearchHttp.axiosConfig());
 		console.log(`Indexed ${count} Sharh entries`);
+		const Navigation = require('../lib/SharhNavigationIndex');
+		await Navigation.ensureIndex();
+		for (const book of await global.query("SELECT id, alias FROM books WHERE type='sharh' ORDER BY id")) {
+			console.log(`Navigation ${book.alias}: ${await Navigation.refreshBook(book)} entries`);
+		}
 	} catch (error) { console.error(error.message); process.exitCode = 1; }
 	finally { global.dbPool.end(); }
 })();

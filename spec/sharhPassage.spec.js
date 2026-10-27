@@ -4,6 +4,7 @@ const Index = require('../lib/Index');
 beforeEach(() => {
  jest.spyOn(require('../lib/Utils'), 'diskCacheEnabled').mockReturnValue(false);
  jest.spyOn(Index, 'docFromId').mockResolvedValue(null);
+ jest.spyOn(require('../lib/SharhNavigationIndex'), 'read').mockResolvedValue(null);
  jest.spyOn(Index, 'docsFromQueryFields').mockResolvedValue([]);
 });
 const router = require('../routes/sharh');

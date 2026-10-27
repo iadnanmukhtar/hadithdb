@@ -10,6 +10,7 @@ try {
 require('./lib/Globals');
 const Debug = require('./lib/Debug');
 const accessLogMiddleware = require('./lib/AccessLog');
+const decodeRequestPath = require('./lib/DecodeRequestPath');
 const debug = Debug('hadithdb:App');
 const util = require('util');
 const path = require('path');
@@ -386,6 +387,7 @@ const startupPromise = (async () => {
   app.use(accessLogMiddleware);
   app.use(sameSiteSecurityHeaders);
   app.use(rejectUnsafeRequestShape);
+  app.use(decodeRequestPath);
   app.use(function rejectTsvDownloads(req, res, next) {
     if ('tsv' in req.query) {
       res.setHeader('Cache-Control', 'no-store');

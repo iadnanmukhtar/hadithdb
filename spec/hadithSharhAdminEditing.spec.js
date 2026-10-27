@@ -25,6 +25,7 @@ describe('Hadith Sharh administration', () => {
 		jest.spyOn(Books, 'touchBookContentLastmodById').mockResolvedValue();
 		jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
 		jest.spyOn(Index, 'update').mockResolvedValue();
+		jest.spyOn(require('../lib/SharhNavigationIndex'), 'syncHeadings').mockResolvedValue();
 	});
 
 	afterEach(() => {
@@ -109,6 +110,7 @@ describe('Hadith Sharh administration', () => {
 
 		expect(global.query.mock.calls.some(([sql]) => sql.includes('INSERT INTO hdith_toc_sharh') && sql.includes("'شرح مخصص'"))).toBe(true);
 		expect(Books.touchBookContentLastmodById).toHaveBeenCalledWith(7);
+		expect(require('../lib/SharhNavigationIndex').syncHeadings).toHaveBeenCalledWith([42]);
 		expect(Utils.flushCacheContaining).toHaveBeenCalledWith(alias);
 		expect(res.json.mock.calls[0][0]).toEqual(expect.objectContaining({ code: 200, createdSharhId: 77 }));
 		expect(require('../lib/SharhBooks').sync).toHaveBeenCalled();

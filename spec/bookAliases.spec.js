@@ -83,7 +83,9 @@ test('refresh updates search, virtual snapshots, cache paths and worker state be
  jest.spyOn(Utils, 'cacheFileFromFilename').mockReturnValue('/tmp/catalog.html');
  jest.spyOn(Hadith, 'a_reinit').mockResolvedValue();
  jest.spyOn(RuntimeRefresh, 'publish').mockResolvedValue();
+ jest.spyOn(require('../lib/SharhNavigationIndex'), 'syncSourceBooks').mockResolvedValue();
  await Aliases.refresh(book);
+ expect(require('../lib/SharhNavigationIndex').syncSourceBooks).toHaveBeenCalledWith([book.id]);
  expect(global.query).toHaveBeenCalledWith('CALL refresh_v_hadiths_virtual_snapshot(44)');
  expect(axios.post).toHaveBeenCalledWith(expect.stringContaining('_update_by_query'), expect.objectContaining({ script: expect.objectContaining({ params: expect.objectContaining({ old: 'old-book', alias: 'new-book' }) }) }), expect.any(Object));
  for (const alias of ['old-book', 'new-book', 'virtual-book']) expect(Utils.flushBookDiskCache).toHaveBeenCalledWith(alias, { strict: true });
