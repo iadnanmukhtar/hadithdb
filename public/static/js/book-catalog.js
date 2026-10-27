@@ -124,6 +124,9 @@
       : /sharh/.test(context) ? 'Sharḥ' : /tafsir/.test(context) ? 'Tafsir'
       : /translations/.test(context) ? 'Translation' : /sirah|history/.test(context) ? 'History & Sirah' : 'Hadith');
     var cards = Array.from(list.querySelectorAll('.tafsir-book-row'));
+    cards.sort(function (a, b) {
+      return Number(a.dataset.bookSortYear || Infinity) - Number(b.dataset.bookSortYear || Infinity) || 0;
+    });
     var hasCategories = cards.some(function (card) {
       return (card.dataset.bookCatalogGroups || card.dataset.tafsirBookGroups || '').split(/\s+/).some(function (id) { return groups.has(id); });
     });
@@ -219,11 +222,22 @@
       var legacyDeath = details.querySelector('.tafsir-book-meta');
       var deathMatch = legacyDeath && legacyDeath.textContent.match(/\bd\.\s*(\d+)\s*(AH|CE)?/);
       if (!death && deathMatch) death = Number(deathMatch[1]);
-      if (death > 0) {
+      if (card.dataset.bookDeathLabel || death > 0) {
         var deathLine = document.createElement('div');
         deathLine.className = 'book-catalog-death';
-        deathLine.textContent = 'd. ' + death + ' ' + (type === 'Translation' ? 'CE' : 'AH');
+        deathLine.textContent = card.dataset.bookDeathLabel || ('d. ' + death + ' ' + (type === 'Translation' ? 'CE' : 'AH'));
         summary.append(deathLine);
+      }
+      if (type === 'Translation' && card.dataset.bookPublicationYear) {
+        var publicationLine = document.createElement('div');
+        publicationLine.className = 'book-catalog-publication text-muted';
+        publicationLine.textContent = 'Pub. ' + card.dataset.bookPublicationYear;
+        var datesRow = document.createElement('div');
+        datesRow.className = 'book-catalog-dates';
+        datesRow.append(publicationLine);
+        var existingDeathLine = summary.querySelector('.book-catalog-death');
+        if (existingDeathLine) datesRow.append(existingDeathLine);
+        summary.append(datesRow);
       }
       card.prepend(summary); details.hidden = true;
       var id = ids.find(function (candidate) { return groups.has(candidate); }) || '';

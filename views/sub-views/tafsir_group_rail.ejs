@@ -1,0 +1,27 @@
+<%
+  var railBookName = function (book) { return Tafsir.displayShortName(book, 'en').replace(/^Tafs[īi]r\s+/i, ''); };
+  var railBooks = Tafsir.uniqueCarouselTafsirs(tafsirRailBooks || []).filter(function (book) { return Number(book.hidden) !== 1; });
+  var railGroups = BookGroups.list('tafsir').map(function (group) {
+    return { label: group.label, description: group.description, books: group.aliases.map(function (alias) {
+      return railBooks.find(function (book) { return book.alias === alias; });
+    }).filter(Boolean) };
+  }).filter(function (group) { return group.books.length; });
+%>
+<aside class="hadith-heading-toc toc-heading-rail tafsir-group-rail d-none d-lg-block" data-toc-heading-rail aria-label="Tafsir books by group">
+  <div class="hadith-heading-toc-sticky">
+    <a class="heading-toc-book-name" href="<%= utils.quranUrl(req, '/quran/tafsir') %>">TAFSIR BOOKS</a>
+    <nav class="hadith-heading-toc-nav" data-toc-heading-rail-nav aria-label="Tafsir books">
+      <% railGroups.forEach(function (group) { %>
+      <section class="tafsir-rail-group">
+        <h2><%= group.label %></h2>
+        <% if (group.description) { %><p class="small text-muted mb-1"><%= group.description %></p><% } %>
+        <ul>
+          <% group.books.slice().sort(function (a, b) { return railBookName(a).localeCompare(railBookName(b), 'en', { sensitivity: 'base', numeric: true }); }).forEach(function (book) { %>
+          <li><a href="<%= utils.quranUrl(req, '/quran/tafsir/' + encodeURIComponent(book.slug || Tafsir.tafsirSlug(book.alias))) %>"<% if (book.alias === tafsirRailCurrentAlias) { %> class="active" aria-current="page"<% } %>><%= railBookName(book) %></a></li>
+          <% }); %>
+        </ul>
+      </section>
+      <% }); %>
+    </nav>
+  </div>
+</aside>

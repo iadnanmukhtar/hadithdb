@@ -522,7 +522,8 @@
 	    track: false
 	  });
 	});
-	var showTocHeadingRail = tocHeadingRailItems.length > 0;
+	var showTafsirGroupRail = quranCommentaryBook && quranCommentaryBook.type === 'tafsir';
+	var showTocHeadingRail = showTafsirGroupRail || tocHeadingRailItems.length > 0;
 	var tocHeadingRailTitle = quranCommentaryBook && quranCommentaryBook.type !== 'trans'
 	  ? Tafsir.displayShortName(quranCommentaryBook, 'en')
 	  : displayName(tocDisplayBook.shortName_en || tocDisplayBook.name_en || tocDisplayBook.alias);
@@ -907,11 +908,15 @@
       
     </main>
     <% if (showTocHeadingRail) { %></div>
+    <% if (showTafsirGroupRail) { %>
+    <%- include('sub-views/tafsir_group_rail.ejs', { tafsirRailBooks: quranCommentaryBooks, tafsirRailCurrentAlias: quranCommentaryBook.alias }); %>
+    <% } else { %>
     <%- include('sub-views/toc_heading_rail.ejs', {
       tocHeadingRailItems: tocHeadingRailItems,
       tocHeadingRailTitle: tocHeadingRailTitle,
       tocHeadingRailBookHref: utils.urlFor(req, page.canonical || req.path || '/')
     }); %>
+    <% } %>
     <% } %>
   </div>
   

@@ -1,0 +1,12 @@
+<aside class="hadith-heading-toc toc-heading-rail tafsir-group-rail d-none d-lg-block" data-toc-heading-rail aria-label="Books by group">
+  <div class="hadith-heading-toc-sticky">
+    <nav class="hadith-heading-toc-nav" data-toc-heading-rail-nav aria-label="Book collections">
+      <% railCollections.forEach(function (collection) { %>
+      <div<% if (collection.pane) { %> data-book-rail-pane="<%= collection.pane %>"<% if (collection.pane !== 'book-catalog-' + initialBookCatalogType) { %> hidden<% } %><% } %>>
+        <a class="heading-toc-book-name" href="<%= railHomeHref %>"><%= collection.railTitle || railTitle %></a>
+        <%- include('book_group_links.ejs', collection); %>
+      </div>
+      <% }); %>
+    </nav>
+  </div>
+</aside>

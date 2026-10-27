@@ -9,7 +9,8 @@ const page = { menu: 'Books', title_en: 'Hadith Unlocked | Sharḥ Books', descr
 </head>
 <body>
 <%- include('sub-views/header.ejs', { site, page }); %>
-<div class="container col-lg-8 mx-auto">
+<div class="container-fluid hadith-heading-layout toc-heading-layout">
+<div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
   <main class="book-catalog-page">
       <nav class="h-menu-wrap home-hadith-book-nav tafsir-book-group-filters mb-3" aria-label="Filter sharḥ books">
         <div class="h-menu-scroller">
@@ -19,6 +20,7 @@ const page = { menu: 'Books', title_en: 'Hadith Unlocked | Sharḥ Books', descr
               <input type="search" class="book-carousel-filter-input tafsir-book-filter" placeholder="Filter books" aria-label="Filter sharḥ books" autocomplete="off" autofocus>
             </label>
             <button type="button" class="btn btn-outline-primary active" data-tafsir-group-filter="" aria-pressed="true">All</button>
+            <% BookGroups.list('sharh').forEach(function (group) { %><button type="button" class="btn btn-outline-primary" data-tafsir-group-filter="<%= group.id %>" aria-pressed="false"><%= group.label %></button><% }); %>
             <button type="button" class="btn btn-outline-primary" data-tafsir-language-filter="en" aria-pressed="false">English</button>
             <button type="button" class="btn btn-outline-primary" data-tafsir-language-filter="ar" aria-pressed="false">Arabic</button>
           </div>
@@ -30,6 +32,8 @@ const page = { menu: 'Books', title_en: 'Hadith Unlocked | Sharḥ Books', descr
     </section>
     <p class="text-muted d-none tafsir-book-filter-empty">No matching sharḥ books found.</p>
   </main>
+</div>
+<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Hadith Explanations', railHomeHref: utils.urlFor(req, '/sharh'), railCollections: [{ railBooks: books, railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } }] }); %>
 </div>
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>

@@ -24,6 +24,7 @@
       var slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
       return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
     };
+    var translationGroups = BookGroups.translationGroups(translations || []);
     var translationBookUrl = function (translation) {
       return utils.quranUrl(req, `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}`);
     };
@@ -63,6 +64,7 @@
       ].filter(Boolean).join(', ');
     };
     var translationDeathLabel = function (translation) {
+      if (translation.translationDeathLabel) return translation.translationDeathLabel;
       var death = utils.emptyIfNull(translation.death || '').toString().trim();
       if (!death)
         return '';
@@ -100,7 +102,9 @@
     });
     var catalogBookGroups = {
       hadith: BookGroups.list('hadith'),
-      tafsir: BookGroups.list('tafsir')
+      tafsir: BookGroups.list('tafsir'),
+      trans: translationGroups,
+      sharh: BookGroups.list('sharh')
     };
     var catalogGroupIds = function (alias, scope) {
       return (catalogBookGroups[scope] || []).filter(function (group) {
@@ -183,7 +187,8 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-  <div class="container col-lg-8 mx-auto">
+  <div class="container-fluid hadith-heading-layout toc-heading-layout">
+<div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
 
     <main class="book-catalog-page">
 
@@ -202,8 +207,8 @@
             <input type="search" class="book-carousel-filter-input book-catalog-filter" placeholder="Filter books" aria-label="Filter mushaf, ḥadīth, sharḥ, tafsīr, and translation books" autocomplete="off" autofocus>
           </label>
           <button type="button" class="btn btn-outline-primary active" data-book-catalog-group-filter="" aria-pressed="true">All</button>
-          <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="en" data-book-catalog-group-scope="tafsir" aria-pressed="false">English</button>
           <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="ar" data-book-catalog-group-scope="tafsir" aria-pressed="false">Arabic</button>
+          <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="en" data-book-catalog-group-scope="sharh" aria-pressed="false">English</button>
           <% Object.keys(catalogBookGroups).forEach(function (scope) { catalogBookGroups[scope].forEach(function (group) { %>
             <button type="button" class="btn btn-outline-primary<%= scope === 'hadith' ? '' : ' d-none' %>" data-book-catalog-group-filter="<%= group.id %>" data-book-catalog-group-scope="<%= scope %>" aria-pressed="false"><%= group.label %></button>
           <% }); }); %>
@@ -231,7 +236,7 @@
                 var descriptionKey = `${descriptionId}-body`;
               %>
               <% var bookGroupIds = bookType === 'hadith' ? catalogGroupIds(book.alias, 'hadith') : []; %>
-              <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= book.size || '' %>" data-book-author-short-en="<%= book.authorShortName_en || '' %>" data-book-author-short-ar="<%= book.authorShortName || '' %>" data-book-death="<%= book.death || '' %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
+              <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= book.size || '' %>" data-book-author-short-en="<%= book.authorShortName_en || '' %>" data-book-author-short-ar="<%= book.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(book) %>" data-book-death="<%= book.death || '' %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
                 bookGroupIds.map(function (id) { var group = catalogBookGroups.hadith.find(function (candidate) { return candidate.id === id; }); return group && group.label; }).filter(Boolean).join(' '),
                 bookType,
                 book.alias,
@@ -332,7 +337,7 @@
                     var editableBookId = tafsir.id || '';
                   %>
                   <% var bookGroupIds = catalogGroupIds(tafsir.alias, 'tafsir'); %>
-                  <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= tafsir.size || '' %>" data-book-author-short-en="<%= tafsir.authorShortName_en || '' %>" data-book-author-short-ar="<%= tafsir.authorShortName || '' %>" data-book-death="<%= tafsir.death || '' %>" data-book-catalog-language="<%= catalogLanguageCodes(tafsir) %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
+                  <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= tafsir.size || '' %>" data-book-author-short-en="<%= tafsir.authorShortName_en || '' %>" data-book-author-short-ar="<%= tafsir.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(tafsir) %>" data-book-death="<%= tafsir.death || '' %>" data-book-catalog-language="<%= catalogLanguageCodes(tafsir) %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
                     bookGroupIds.map(function (id) { var bookGroup = catalogBookGroups.tafsir.find(function (candidate) { return candidate.id === id; }); return bookGroup && bookGroup.label; }).filter(Boolean).join(' '),
                     'tafsir',
                     tafsir.alias,
@@ -459,7 +464,7 @@
                   var descriptionKey = `${descriptionId}-body`;
                   var editableBookId = translation.id || '';
                 %>
-                <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= translation.size || '' %>" data-book-author-short-en="<%= translation.authorShortName_en || '' %>" data-book-author-short-ar="<%= translation.authorShortName || '' %>" data-book-death="<%= translation.death || '' %>" data-book-catalog-language="<%= translation.lang || '' %>" data-book-catalog-filter="<%- [
+                <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= translation.size || '' %>" data-book-author-short-en="<%= translation.authorShortName_en || '' %>" data-book-author-short-ar="<%= translation.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(translation) %>" data-book-death="<%= translation.death || '' %>" data-book-death-label="<%= translationDeathLabel(translation) %>" data-book-publication-year="<%= translation.published_year || '' %>" data-book-catalog-groups="<%= translationGroups.filter(group => group.aliases.includes(translation.alias)).map(group => group.id).join(' ') %>" data-book-catalog-language="<%= translation.lang || '' %>" data-book-catalog-filter="<%- [
                   'translation',
                   translation.alias,
                   translation.name_en,
@@ -529,6 +534,7 @@
                           Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="book.published_year"><%- translation.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="book.publisher"><%- translation.publisher || '' %></span>
                         <% } else { %>
                           <%- commentaryPublicationLabel(translation) %>
+                        <% if (translation.translationPublicationNote) { %><span class="d-block"><%= translation.translationPublicationNote %></span><% } %>
                         <% } %>
                       </small>
                     <% } %>
@@ -544,6 +550,15 @@
 
     </main>
   </div>
+<%- include('sub-views/book_group_rail.ejs', { initialBookCatalogType: initialBookCatalogType, railTitle: 'Books', railHomeHref: utils.urlFor(req, '/books'), railCollections: [
+      { pane: 'book-catalog-hadith', railTitle: 'Hadith Books', railBooks: books.filter(function (book) { return book.type !== 'sirah'; }), railScope: 'hadith', railLabel: 'Hadith Books', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-sirah', railTitle: 'History Books', railBooks: books.filter(function (book) { return book.type === 'sirah'; }), railScope: 'hadith', railLabel: 'History & Sirah', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-tafsir-all', railTitle: 'Tafsir Books', railBooks: tafsirGroups[0].tafsirs, railScope: 'tafsir', railLabel: 'Tafsir Books', railHref: tafsirBookUrl, railName: function (book) { return Tafsir.displayShortName(book, 'en').replace(/^Tafs[īi]r\s+/i, ''); } },
+      { pane: 'book-catalog-translations', railTitle: 'Quran Translations', railBooks: translations || [], railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl },
+      { pane: 'book-catalog-sharh', railTitle: 'Hadith Explanations', railBooks: locals.sharhBooks || [], railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-mushaf', railTitle: 'Quran Mushafs', railBooks: locals.mushafs || [], railScope: '', railLabel: 'Mushaf Editions', railHref: function (book) { return utils.quranUrl(req, book.href); } }
+    ] }); %>
+</div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
@@ -620,7 +635,10 @@
     };
 
     var setGroupScope = function (paneId) {
-      var scope = paneId === 'book-catalog-hadith' ? 'hadith' : (paneId.indexOf('book-catalog-tafsir-') === 0 ? 'tafsir' : (paneId === 'book-catalog-sharh' ? 'sharh' : ''));
+      document.querySelectorAll('[data-book-rail-pane]').forEach(function (section) {
+        section.hidden = section.dataset.bookRailPane !== paneId;
+      });
+      var scope = paneId === 'book-catalog-hadith' ? 'hadith' : (paneId.indexOf('book-catalog-tafsir-') === 0 ? 'tafsir' : (paneId === 'book-catalog-sharh' ? 'sharh' : (paneId === 'book-catalog-translations' ? 'trans' : '')));
       var scopeChanged = scope !== activeScope;
       activeScope = scope;
       if (scopeChanged)

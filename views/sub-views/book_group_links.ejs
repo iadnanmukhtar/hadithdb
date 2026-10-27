@@ -1,0 +1,23 @@
+<%
+  var visibleRailBooks = (railBooks || []).filter(function (book) { return Number(book.hidden) !== 1 || (railScope === 'sharh' && book.type === 'sharh'); });
+  var railBookName = function (book) { return locals.railName ? railName(book) : (book.shortName_en || book.name_en || book.shortName || book.name || book.alias); };
+  var groupedAliases = new Set();
+  var bookRailGroups = (railScope === 'trans' ? BookGroups.translationGroups(visibleRailBooks) : (railScope ? BookGroups.list(railScope) : [])).map(function (group) {
+    return { label: group.label, description: group.description, books: group.aliases.map(function (alias) {
+      return visibleRailBooks.find(function (book) { return book.alias === alias; });
+    }).filter(function (book) { if (book) groupedAliases.add(book.alias); return !!book; }) };
+  }).filter(function (group) { return group.books.length; });
+  var ungroupedRailBooks = visibleRailBooks.filter(function (book) { return !groupedAliases.has(book.alias); });
+  if (ungroupedRailBooks.length) bookRailGroups.push({ label: bookRailGroups.length ? 'Other ' + railLabel : railLabel, books: ungroupedRailBooks });
+%>
+<% bookRailGroups.forEach(function (group) { %>
+<section class="tafsir-rail-group">
+  <h2><%= group.label %></h2>
+        <% if (group.description) { %><p class="small text-muted mb-1"><%= group.description %></p><% } %>
+  <ul>
+    <% group.books.slice().sort(function (a, b) { return railBookName(a).localeCompare(railBookName(b), 'en', { sensitivity: 'base', numeric: true }); }).forEach(function (book) { %>
+    <li><a href="<%= railHref(book) %>"<% if (book.alias === (locals.railCurrentAlias || '')) { %> class="active" aria-current="page"<% } %>><%= railBookName(book) %></a></li>
+    <% }); %>
+  </ul>
+</section>
+<% }); %>

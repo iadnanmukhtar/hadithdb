@@ -40,6 +40,7 @@
     var tafsirBookUrl = book => `/sharh/${encodeURIComponent(book.alias)}`;
     var tafsirLanguages = book => String(book.lang || 'ar').split(/[-_,\s]+/).filter(language => ['en', 'ar'].includes(language));
     var tafsirLanguageBadge = book => tafsirLanguages(book).includes('en') ? (tafsirLanguages(book).includes('ar') ? 'EN-AR' : 'EN') : 'AR';
+    var sharhCatalogGroups = BookGroups.list('sharh');
     var catalogTafsirs = (sharhBooks || []).slice().sort(function(a, b) {
       var year = book => Number((String(book.death || '').match(/\d+/) || [])[0]) || Infinity;
       return year(a) - year(b) || (a.name_en || a.alias).localeCompare(b.name_en || b.alias);
@@ -49,6 +50,9 @@
         <div class="tafsir-book-list" data-book-catalog-type="Sharḥ">
                 <% catalogTafsirs.forEach(function (tafsir) { %>
                   <%
+                    var bookGroups = sharhCatalogGroups.filter(function (group) { return group.aliases.includes(tafsir.alias); });
+                    var bookGroupIds = bookGroups.map(function (group) { return group.id; }).join(' ');
+                    var bookGroupLabels = bookGroups.map(function (group) { return group.label; }).join(' ');
                     var descriptionMarkdown = utils.emptyIfNull(tafsir.description || '');
                     var descriptionHtml = utils.markdownToHtml(descriptionMarkdown);
                     var descriptionPreview = tafsirDescriptionPreview(descriptionMarkdown);
@@ -58,7 +62,7 @@
                     var editableBookId = tafsir.id || '';
                     
                   %>
-                  <article class="tafsir-book-card book-catalog-card tafsir-book-row" data-book-catalog-size="<%= tafsir.size || '' %>" data-book-author-short-en="<%= tafsir.authorShortName_en || '' %>" data-book-author-short-ar="<%= tafsir.authorShortName || '' %>" data-book-death="<%= tafsir.death || '' %>" data-tafsir-language="<%= tafsirLanguages(tafsir).join(' ') %>" data-book-catalog-language="<%= tafsirLanguages(tafsir).join(' ') %>" data-tafsir-book-filter="<%= [tafsir.alias, tafsir.name_en, tafsir.shortName_en, tafsir.name, tafsir.title_en, tafsir.title, tafsir.shortName, tafsir.authorShortName_en, tafsir.authorShortName, tafsir.author_en, tafsir.author, tafsir.publisher, tafsir.description].filter(Boolean).join(' ') %>" data-book-catalog-filter="<%= [tafsir.alias, tafsir.name_en, tafsir.shortName_en, tafsir.name, tafsir.title_en, tafsir.title, tafsir.shortName, tafsir.authorShortName_en, tafsir.authorShortName, tafsir.author_en, tafsir.author, tafsir.publisher, tafsir.description].filter(Boolean).join(' ') %>">
+                  <article class="tafsir-book-card book-catalog-card tafsir-book-row" data-book-catalog-groups="<%= bookGroupIds %>" data-tafsir-book-groups="<%= bookGroupIds %>" data-book-catalog-size="<%= tafsir.size || '' %>" data-book-author-short-en="<%= tafsir.authorShortName_en || '' %>" data-book-author-short-ar="<%= tafsir.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(tafsir) %>" data-book-death="<%= tafsir.death || '' %>" data-tafsir-language="<%= tafsirLanguages(tafsir).join(' ') %>" data-book-catalog-language="<%= tafsirLanguages(tafsir).join(' ') %>" data-tafsir-book-filter="<%= [bookGroupLabels, tafsir.alias, tafsir.name_en, tafsir.shortName_en, tafsir.name, tafsir.title_en, tafsir.title, tafsir.shortName, tafsir.authorShortName_en, tafsir.authorShortName, tafsir.author_en, tafsir.author, tafsir.publisher, tafsir.description].filter(Boolean).join(' ') %>" data-book-catalog-filter="<%= [bookGroupLabels, tafsir.alias, tafsir.name_en, tafsir.shortName_en, tafsir.name, tafsir.title_en, tafsir.title, tafsir.shortName, tafsir.authorShortName_en, tafsir.authorShortName, tafsir.author_en, tafsir.author, tafsir.publisher, tafsir.description].filter(Boolean).join(' ') %>">
                     <div class="tafsir-book-row-main">
                       <div class="tafsir-book-title-pair">
                         <h3 class="tafsir-book-title-line mb-0">

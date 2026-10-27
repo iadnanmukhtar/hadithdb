@@ -12,11 +12,11 @@ const book = {
   title_en: 'Jami al-Bayan', title: 'جامع البيان', death: '310', description: 'Full book description.', lang: 'ar', type: 'hadith',
   properties: { searchGroups: [{ id: 'tafsir-major', scope: 'tafsir', label: 'major tafsirs' }, { id: 'sihah', scope: 'hadith', label: 'sihah' }] }
 };
-async function render(template, editMode = false, records = [book]) {
+async function render(template, editMode = false, records = [book], query = {}) {
   global.settings = { site: {} };
   global.books = records;
   return ejs.renderFile(path.join(__dirname, '../views', template), {
-    req: { admin: editMode, editMode, query: {} }, books: records, tafsirs: records, translations: records.map(record => ({ ...record, lang: 'en' })), sharhBooks: records, mushafs: [{ ...book, href: '/quran/page/1' }],
+    req: { admin: editMode, editMode, query }, books: records, tafsirs: records, translations: records.map(record => ({ ...record, lang: 'en' })), sharhBooks: records, mushafs: [{ ...book, href: '/quran/page/1' }],
     BookGroups, Tafsir, BookDownloads,
     utils: { sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, emptyIfNull: value => value || '', markdownToHtml: value => '<p>' + value + '</p>', quranUrl: (_req, url) => url, urlFor: (_req, url) => url, jsonLdScript: () => '' }
   }, { includer: (name) => /(?:^|\/)header\.ejs$/.test(name)
@@ -188,5 +188,84 @@ test('sharh cards keep clean titles and display authors in their separate metada
   expect(titles[0].closest('.book-catalog-summary').querySelector('.tafsir-book-meta').textContent).toContain('Ibn Hajar al-Asqalani');
   expect(titles[1].querySelector('.sharh-author-suffix')).toBeNull();
   expect(records[0].shortName_en).toBe('Fatḥ al-Bārī');
+  dom.window.close();
+});
+
+
+test.each(['mushaf', 'history', 'sharh', undefined])('catalog rail follows initial tab %s and subsequent tab changes', async tab => {
+  const dom = browser(await render('books.ejs', false, [book], { tab }));
+  const doc = dom.window.document;
+  const visiblePanes = () => Array.from(doc.querySelectorAll('[data-book-rail-pane]')).filter(pane => !pane.hidden).map(pane => pane.dataset.bookRailPane);
+  expect(visiblePanes()).toEqual(['book-catalog-' + (tab === 'history' ? 'sirah' : tab || 'hadith')]);
+  for (const pane of ['tafsir-all', 'translations', 'hadith', 'sharh', 'sirah', 'mushaf']) {
+    doc.querySelector('#book-catalog-' + pane + '-tab').dispatchEvent(new dom.window.Event('shown.bs.tab'));
+    expect(visiblePanes()).toEqual(['book-catalog-' + pane]);
+    const titles = { 'tafsir-all': 'Tafsir Books', translations: 'Quran Translations', hadith: 'Hadith Books', sharh: 'Hadith Explanations', sirah: 'History Books', mushaf: 'Quran Mushafs' };
+    expect(doc.querySelector('[data-book-rail-pane="book-catalog-' + pane + '"] .heading-toc-book-name').textContent).toBe(titles[pane]);
+  }
+  expect(doc.querySelector('[data-book-rail-pane="book-catalog-mushaf"] li a').getAttribute('href')).toBe('/quran/page/1');
+  dom.window.close();
+});
+
+test.each([
+  ['books.ejs', '/tabari'],
+  ['translation_books.ejs', '/quran/tabari'],
+  ['sharh_catalog.ejs', '/sharh/tabari']
+])('%s rail includes grouped and ungrouped books with canonical links', async (template, href) => {
+  const dom = browser(await render(template, false, [book, { ...book, id: 2, alias: 'ungrouped', shortName_en: 'Ungrouped', properties: {} }]));
+  const rail = dom.window.document.querySelector('[data-toc-heading-rail]');
+  expect(rail.querySelector('li a').getAttribute('href')).toBe(href);
+  expect(rail.textContent).toContain('Ungrouped');
+  if (template === 'books.ejs') expect(rail.textContent).toContain('Sihah');
+  dom.window.close();
+});
+
+test.each(['translation_books.ejs', 'books.ejs'])('%s groups translations chronologically and shows publication and joint death dates', async template => {
+  const records = [
+    { ...book, alias: 'early', type: 'trans', published_year: 1934, death: 1372, translationDeathLabel: 'd. 1953 CE' },
+    { ...book, alias: 'joint', type: 'trans', published_year: 1977, death: null, translationDeathLabel: 'al-Hilali: d. 1987 CE; Khan: d. 2021 CE' },
+    { ...book, alias: 'modern', type: 'trans', published_year: 2015, death: null }
+  ];
+  const dom = browser(await render(template, false, records));
+  const doc = dom.window.document;
+  const catalog = template === 'books.ejs' ? doc.querySelector('#book-catalog-translations') : doc.querySelector('main');
+  expect(Array.from(catalog.querySelectorAll('.book-catalog-category-title')).map(node => node.textContent)).toEqual(['20th Century', '21st Century']);
+  expect(doc.querySelector('.tafsir-group-rail').textContent).not.toMatch(/Pub\.|d\. \d/);
+  expect(Array.from(catalog.querySelectorAll('.book-catalog-publication')).map(node => node.textContent)).toEqual(['Pub. 1934', 'Pub. 1977', 'Pub. 2015']);
+  expect(Array.from(catalog.querySelectorAll('.book-catalog-death')).map(node => node.textContent)).toEqual(['d. 1953 CE', 'al-Hilali: d. 1987 CE; Khan: d. 2021 CE']);
+  dom.window.close();
+});
+
+test.each(['books.ejs', 'tafsir_books.ejs', 'translation_books.ejs', 'sharh_catalog.ejs'])('%s orders category cards by death with publication fallback and undated last', async template => {
+  const records = [
+    { ...book, alias: 'unknown', death: '', published_year: '' },
+    { ...book, alias: 'later', death: '400', published_year: 100 },
+    { ...book, alias: 'fallback', death: '', published_year: 350 },
+    { ...book, alias: 'earlier', death: '300', published_year: 900 }
+  ];
+  const dom = browser(await render(template, false, records));
+  const root = template === 'books.ejs' ? dom.window.document.querySelector('#book-catalog-hadith') : dom.window.document;
+  expect(Array.from(root.querySelectorAll('.book-catalog-grid .tafsir-book-row')).map(card => card.dataset.bookSortYear)).toEqual(['300', '350', '400', 'Infinity']);
+  dom.window.close();
+});
+
+test.each(['books.ejs', 'sharh_catalog.ejs'])('%s tags and filters sharh books by their hadith collection', async template => {
+  const group = { id: 'sharh-bukhari', scope: 'sharh', label: 'Sahih al-Bukhari' };
+  const records = [
+    { ...book, alias: 'bukhari-ibnhajar', type: 'sharh', hidden: 1, properties: { searchGroups: [group] } },
+    { ...book, alias: 'muslim-nawawi', type: 'sharh', hidden: 1, properties: { searchGroups: [{ ...group, id: 'sharh-muslim', label: 'Sahih Muslim' }] } }
+  ];
+  const dom = browser(await render(template, false, records));
+  const doc = dom.window.document;
+  if (template === 'books.ejs') {
+    const tab = doc.querySelector('[data-bs-target="#book-catalog-sharh"]');
+    tab.dispatchEvent(new dom.window.Event('shown.bs.tab', { bubbles: true }));
+  }
+  const scope = template === 'books.ejs' ? doc.querySelector('#book-catalog-sharh') : doc.querySelector('main');
+  expect(Array.from(scope.querySelectorAll('.book-catalog-category-title')).map(node => node.textContent)).toEqual(['Sahih al-Bukhari', 'Sahih Muslim']);
+  expect(scope.querySelector('.book-catalog-summary .book-catalog-classifications').textContent).toContain('Sahih al-Bukhari');
+  doc.querySelector('[data-' + (template === 'books.ejs' ? 'book-catalog' : 'tafsir') + '-group-filter="sharh-bukhari"]').click();
+  expect(scope.querySelectorAll('.tafsir-book-row:not(.d-none)')).toHaveLength(1);
+  expect(scope.querySelector('.tafsir-book-row:not(.d-none)').dataset.bookCatalogGroups).toBe('sharh-bukhari');
   dom.window.close();
 });

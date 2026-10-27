@@ -8,8 +8,9 @@ test('seeded groups do not collide with individual books or broaden an individua
 	const aliases = new Set(books.map(book => book.alias));
 	for (const group of BookGroups.list(undefined, books)) expect(aliases.has(group.id)).toBe(false);
 	expect(BookGroups.expand(['adab'], 'hadith', books)).toEqual(['adab']);
-	expect(BookGroups.expand(['hadith-adab'], 'hadith', books)).toEqual(['adab', 'riyad']);
-	expect(BookGroups.expand(['hadith-zuhd'], 'hadith', books)).toEqual(['ahmad-zuhd', 'riyad', 'adab']);
+	expect(BookGroups.expand(['hadith-personal-development'], 'hadith', books)).toEqual(['adab', 'riyad', 'ahmad-zuhd']);
+	expect(BookGroups.list('hadith', books).find(group => group.id === 'hadith-personal-development').label).toBe('Personal Development');
+	expect(BookGroups.list('hadith', books).some(group => ['hadith-adab', 'hadith-zuhd'].includes(group.id))).toBe(false);
 });
 
 test('includes both Irab editions in Language & Rhetoric', () => {
@@ -35,4 +36,14 @@ test('honors visibility, scope, and JSON properties returned by MySQL', () => {
 	expect(BookGroups.expand(['custom'], 'hadith', books)).toEqual(['one']);
 	expect(BookGroups.expand(['tafsir-group'], 'tafsir', books)).toEqual(['tafsir']);
 	expect(BookGroups.list('hadith', [row('plain', [])])).toEqual([]);
+});
+
+test('category members use death then publication, with undated members last', () => {
+ const books = [
+  row('unknown', [group]),
+  row('late', [group], { death: '400', published_year: 100 }),
+  row('fallback', [group], { death: 'unknown', published_year: 350 }),
+  row('early', [group], { death: '300 AH', published_year: 900 })
+ ];
+ expect(BookGroups.list('hadith', books)[0].aliases).toEqual(['early', 'fallback', 'late', 'unknown']);
 });

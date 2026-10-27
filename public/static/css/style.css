@@ -13657,6 +13657,12 @@ main.book-catalog-page .tafsir-book-title-line :lang(ar) {
 }
 .book-catalog-summary { display: flex; flex-direction: column; gap: .35rem; height: 100%; }
 .book-catalog-death { margin-top: auto; padding-top: .35rem; font-size: .75rem; line-height: 1.4; color: var(--bs-secondary-color); text-align: right; direction: ltr; }
+.book-catalog-dates { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; margin-top: auto; padding-top: .35rem; font-size: .75rem; line-height: 1.4; direction: ltr; }
+.book-catalog-dates .book-catalog-publication,
+.book-catalog-dates .book-catalog-death { font-size: .75rem; line-height: 1.4; }
+.book-catalog-dates .book-catalog-publication { flex-shrink: 0; }
+.book-catalog-dates .book-catalog-death { margin-top: 0; padding-top: 0; }
+
 .book-catalog-classifications { display: flex; flex-wrap: wrap; gap: .25rem; }
 .book-catalog-size-filters { display: inline-flex; align-items: center; gap: .25rem; }
 .book-catalog-page [data-book-catalog-group-filter=""],
@@ -13706,4 +13712,40 @@ main.book-catalog-page .tafsir-book-title-line :lang(ar) {
 @media (min-width: 1400px) { .book-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 575.98px) {
 	.book-catalog-dialog .tafsir-book-title-pair { grid-template-columns: minmax(0, 1fr); }
+}
+
+.tafsir-rail-group {
+	padding: .5rem .7rem;
+}
+.tafsir-rail-group h2 {
+	font-size: .8rem;
+	font-weight: 600;
+	margin: 0 0 .25rem;
+}
+.tafsir-rail-group ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	font-size: .8rem;
+	line-height: 1.8;
+}
+.tafsir-rail-group li {
+	display: inline;
+}
+.tafsir-rail-group li + li::before {
+	content: " • ";
+	color: var(--bs-secondary-color);
+}
+.tafsir-rail-group a {
+	color: var(--bs-secondary-color);
+	text-decoration: none;
+}
+.tafsir-rail-group a:hover,
+.tafsir-rail-group a:focus-visible,
+.tafsir-rail-group a.active {
+	color: var(--bs-primary);
+	text-decoration: underline;
+}
+.tafsir-rail-group a.active {
+	font-weight: 600;
 }

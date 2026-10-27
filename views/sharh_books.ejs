@@ -24,7 +24,8 @@ if (sharhBook) {
 </head>
 <body>
 <%- include('sub-views/header.ejs', { site, page }); %>
-<div class="container col-lg-8 mx-auto">
+<div class="container-fluid hadith-heading-layout toc-heading-layout">
+<div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
 <main class="toc hadith-toc-page">
   <% if (sharhBook) { %>
     <nav class="h-menu-wrap mb-3" aria-label="Sharḥ books">
@@ -66,6 +67,8 @@ if (sharhBook) {
     </div><% }); %></div>
   <% } %>
 </main>
+</div>
+<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Hadith Explanations', railHomeHref: utils.urlFor(req, '/sharh'), railCollections: [{ railBooks: books, railScope: 'sharh', railLabel: 'Sharḥ Books', railCurrentAlias: sharhBook && sharhBook.alias, railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } }] }); %>
 </div>
 <% if (site.editMode) { (sharhBook ? [] : books).forEach(function(book) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: `sharh-book-${book.id}` }); %><% }); } %>
 <% if (sharhBook) { %><%- include('sub-views/mobile_navigation.ejs', { site, page }); %><% } %>

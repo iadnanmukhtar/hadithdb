@@ -6,8 +6,8 @@ const path = require('path');
 const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'tafsir_books.ejs'), 'utf8');
 
 describe('tafsir book catalog filters', () => {
-	test('uses English and Arabic filters instead of language tabs', () => {
-		expect(template).toContain('data-tafsir-language-filter="en"');
+	test('uses the measured English category and retains the Arabic language filter', () => {
+		expect(template).not.toContain('data-tafsir-language-filter="en"');
 		expect(template).toContain('data-tafsir-language-filter="ar"');
 		expect(template).not.toContain('class="nav nav-tabs tafsir-book-tabs mb-3"');
 	});

@@ -22,6 +22,7 @@
         quranSearchProxy: true
       }
     };
+    var translationGroups = BookGroups.translationGroups(translations || []);
     var translationBookUrl = function (translation) {
       return utils.quranUrl(req, `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}`);
     };
@@ -29,6 +30,7 @@
       return BookDownloads.relativeDownloadLinks(book);
     };
     var translationDeathLabel = function (translation) {
+      if (translation.translationDeathLabel) return translation.translationDeathLabel;
       var death = utils.emptyIfNull(translation.death || '').toString().trim();
       if (!death)
         return '';
@@ -67,7 +69,8 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
-  <div class="container col-lg-8 mx-auto">
+  <div class="container-fluid hadith-heading-layout toc-heading-layout">
+<div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
     <main class="book-catalog-page">
       <%- utils.jsonLdScript({
         '@context': 'https://schema.org',
@@ -81,6 +84,7 @@
         <input type="search" class="form-control translation-book-filter" placeholder="Filter translation books" aria-label="Filter translation books" autocomplete="off" autofocus>
       </div>
 
+      <div class="d-none" aria-hidden="true"><% translationGroups.forEach(function (group) { %><span data-book-catalog-group-filter="<%= group.id %>"><%= group.label %></span><% }); %></div>
       <section class="mb-4">
         <% if (!translations || translations.length < 1) { %>
           <p class="text-muted">No English translations are currently available.</p>
@@ -97,7 +101,7 @@
                 var bookUrl = translationBookUrl(translation);
                 var isEnglishTranslation = translation.lang === 'en';
               %>
-              <article class="translation-book-card tafsir-book-row" data-book-catalog-size="<%= translation.size || '' %>" data-book-author-short-en="<%= translation.authorShortName_en || '' %>" data-book-author-short-ar="<%= translation.authorShortName || '' %>" data-book-death="<%= translation.death || '' %>" data-book-catalog-language="<%= translation.lang || '' %>" data-translation-book-filter="<%- [
+              <article class="translation-book-card tafsir-book-row" data-book-catalog-size="<%= translation.size || '' %>" data-book-author-short-en="<%= translation.authorShortName_en || '' %>" data-book-author-short-ar="<%= translation.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(translation) %>" data-book-death="<%= translation.death || '' %>" data-book-death-label="<%= translationDeathLabel(translation) %>" data-book-publication-year="<%= translation.published_year || '' %>" data-book-catalog-groups="<%= translationGroups.filter(group => group.aliases.includes(translation.alias)).map(group => group.id).join(' ') %>" data-book-catalog-language="<%= translation.lang || '' %>" data-translation-book-filter="<%- [
                 translation.alias,
                 translation.name_en,
                 translation.shortName_en,
@@ -166,6 +170,7 @@
                         Pub. <span class="_e" data-id="<%= editableBookId %>" data-prop="book.published_year"><%- translation.published_year || '' %></span>, <span class="_e" data-id="<%= editableBookId %>" data-prop="book.publisher"><%- translation.publisher || '' %></span>
                       <% } else { %>
                         <%- commentaryPublicationLabel(translation) %>
+                        <% if (translation.translationPublicationNote) { %><span class="d-block"><%= translation.translationPublicationNote %></span><% } %>
                       <% } %>
                     </small>
                   <% } %>
@@ -178,6 +183,8 @@
       <p class="text-muted d-none translation-book-filter-empty">No matching translation books found.</p>
     </main>
   </div>
+<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Quran Translations', railHomeHref: utils.quranUrl(req, '/quran/translations'), railCollections: [{ railBooks: translations, railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl }] }); %>
+</div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>

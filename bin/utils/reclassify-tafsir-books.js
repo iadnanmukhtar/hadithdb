@@ -23,6 +23,10 @@ function planUpdates(rows) {
   return review.entries.flatMap(entry => {
     const row = byAlias.get(entry.alias);
     if (!row || row.id !== entry.id || row.type !== 'tafsir') throw new Error(`Book identity changed: ${entry.alias}`);
+    if (entry.preserveMemberships) {
+      if (Number(row.hidden) !== 1) throw new Error(`Previously hidden book is now visible: ${entry.alias}`);
+      return [];
+    }
     const properties = parse(row.properties) || {};
     if (typeof properties !== 'object' || Array.isArray(properties)) throw new Error(`Invalid properties: ${entry.alias}`);
     const before = properties.searchGroups || [];

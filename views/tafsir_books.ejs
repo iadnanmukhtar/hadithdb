@@ -151,7 +151,8 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page, quranHeaderJuzLinks: locals.quranHeaderJuzLinks || [] }); %>
 
-  <div class="container col-lg-8 mx-auto">
+  <div class="container-fluid hadith-heading-layout toc-heading-layout">
+  <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
     <main class="book-catalog-page">
       <%- utils.jsonLdScript({
         '@context': 'https://schema.org',
@@ -169,7 +170,6 @@
             </label>
             <% if (tafsirBookGroups.length) { %>
               <button type="button" class="btn btn-outline-primary active" data-tafsir-group-filter="" aria-pressed="true">All</button>
-              <button type="button" class="btn btn-outline-primary" data-tafsir-language-filter="en" aria-pressed="false">English</button>
               <button type="button" class="btn btn-outline-primary" data-tafsir-language-filter="ar" aria-pressed="false">Arabic</button>
               <% tafsirBookGroups.forEach(function (group) { %>
                 <button type="button" class="btn btn-outline-primary" data-tafsir-group-filter="<%= group.id %>" aria-pressed="false"><%= group.label %></button>
@@ -195,7 +195,7 @@
                     var editableBookId = tafsir.id || '';
                     var bookGroupIds = tafsirGroupIds(tafsir);
                   %>
-                  <article class="tafsir-book-card tafsir-book-row" data-book-catalog-size="<%= tafsir.size || '' %>" data-book-author-short-en="<%= tafsir.authorShortName_en || '' %>" data-book-author-short-ar="<%= tafsir.authorShortName || '' %>" data-book-death="<%= tafsir.death || '' %>" data-tafsir-language="<%= tafsirLanguages(tafsir).join(' ') %>" data-tafsir-book-groups="<%= bookGroupIds.join(' ') %>" data-tafsir-book-filter="<%= [
+                  <article class="tafsir-book-card tafsir-book-row" data-book-catalog-size="<%= tafsir.size || '' %>" data-book-author-short-en="<%= tafsir.authorShortName_en || '' %>" data-book-author-short-ar="<%= tafsir.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(tafsir) %>" data-book-death="<%= tafsir.death || '' %>" data-tafsir-language="<%= tafsirLanguages(tafsir).join(' ') %>" data-tafsir-book-groups="<%= bookGroupIds.join(' ') %>" data-tafsir-book-filter="<%= [
                     bookGroupIds.map(function (id) { var group = tafsirBookGroups.find(function (candidate) { return candidate.id === id; }); return group && group.label; }).filter(Boolean).join(' '),
                     tafsir.alias,
                     tafsir.name_en,
@@ -315,6 +315,8 @@
       </section>
       <p class="text-muted d-none tafsir-book-filter-empty">No matching tafsīr books found.</p>
     </main>
+  </div>
+  <%- include('sub-views/tafsir_group_rail.ejs', { tafsirRailBooks: catalogTafsirs, tafsirRailCurrentAlias: '' }); %>
   </div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>

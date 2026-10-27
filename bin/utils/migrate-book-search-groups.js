@@ -36,7 +36,7 @@ async function main() {
 				}
 			}
 			// Retired groups are replaced by their user-requested memberships in the seed.
-			groups = (groups || []).filter(group => !['combined-sahihayn', 'tafsir-tajwid', 'tafsir-revelation', 'tafsir-readings', 'tafsir-vocabulary', 'tafsir-grammar'].includes(group.id)).map(group => {
+			groups = (groups || []).filter(group => !['hadith-adab', 'hadith-zuhd', 'combined-sahihayn', 'tafsir-tajwid', 'tafsir-revelation', 'tafsir-readings', 'tafsir-vocabulary', 'tafsir-grammar'].includes(group.id)).map(group => {
 				if (!['tafsir-other', 'tafsir-mukhtasarat'].includes(group.id)) return group;
 				const seededGroup = seed.find(item => item.id === group.id);
 				return { ...group, label: seededGroup.label, ordinal: seededGroup.ordinal };
