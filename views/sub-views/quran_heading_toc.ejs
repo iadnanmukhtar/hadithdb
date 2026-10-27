@@ -54,7 +54,7 @@
       return utils.quranUrl(req, `${quranHeadingTafsirBase}/${heading.number}`);
     return utils.quranUrl(req, utils.quranStudySectionPath({ surah: heading.number }, quranHeadingTranslationSlug));
   }
-  var quranHeadingBookHref = utils.quranUrl(req, quranHeadingTranslations ? '/quran/translations' : (quranHeadingTafsirBase || utils.quranStudySectionPath(null, quranHeadingTranslationSlug)));
+  var quranHeadingBookHref = quranHeadingTranslations ? utils.urlFor(req, '/books?translation') : utils.quranUrl(req, quranHeadingTafsirBase || utils.quranStudySectionPath(null, quranHeadingTranslationSlug));
   var quranHeadingIntroductionHref = `${quranHeadingBookHref}/introduction`;
 %>
 <% if (quranHeadingOutline && (quranHeadingOutline.sections || []).length > 0) { %>

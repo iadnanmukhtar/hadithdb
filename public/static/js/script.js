@@ -11151,7 +11151,7 @@ function initQuranMushafAyahMarkerActions(root) {
 	var markerTafsirHref = function (ref) {
 		return markerTafsirBook().then(function (book) {
 			if (!book || !ref || !Number.isInteger(ref.surah) || !Number.isInteger(ref.ayah))
-				return quranUrl('/quran/tafsir');
+				return hadithUrl('/books?tafsir');
 			return quranUrl(`/quran/tafsir/${encodeURIComponent(tafsirBrowseSlug(book.slug || book.alias))}/quran:${encodeURIComponent(ref.surah)}:${encodeURIComponent(ref.ayah)}`);
 		});
 	};

@@ -40,6 +40,7 @@ describe('books catalog performance path', () => {
     originalQuery = global.query;
     global.books = [{ id: 1, alias: 'bukhari', hidden: 0, type: 'hadith', lang: 'ar' }];
     global.query = jest.fn();
+    jest.spyOn(require('../lib/Sharh'), 'catalog').mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -51,7 +52,7 @@ describe('books catalog performance path', () => {
   test('serves a disk cache hit before Elasticsearch, SQL, or Tafsir lookups', async () => {
     const req = request();
     const res = response();
-    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/hadith${Utils.cacheSuffix()}/books/_books.html`;
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/hadith${Utils.cacheSuffix()}/books/_books-types-v1.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${cachedFile}.gz`);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
@@ -69,7 +70,7 @@ describe('books catalog performance path', () => {
   test('uses the same versioned cache path for rendering and metadata invalidation', () => {
     const route = fs.readFileSync(path.join(__dirname, '..', 'routes', 'books.js'), 'utf8');
     const updates = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
-    expect(route).toContain("Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith')");
+    expect(route).toContain("Utils.cacheFileFromFilename('_books-types-v1', 'html', 'books', 'hadith')");
     expect(updates).toContain("Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'))");
   });
 
@@ -123,4 +124,21 @@ describe('books catalog performance path', () => {
     expect(res.render.mock.calls[0][1].books[0].catalog_language_badge).toBe('EN-AR');
     expect(Utils.cachedTextPathForRead).not.toHaveBeenCalled();
   });
+  test.each(['hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'])('type URL ?%s never reuses the default catalog cache', async type => {
+    const req = request({ [type]: '' });
+    const res = response();
+    jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
+    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue('/cache/default.html');
+    jest.spyOn(Utils, 'diskCacheEnabled').mockReturnValue(true);
+    jest.spyOn(Utils, 'writeCachedHtml').mockImplementation(() => {});
+    jest.spyOn(Index, 'distinctTermsFromQuery').mockResolvedValue([]);
+    jest.spyOn(Tafsir, 'visibleTafsirs').mockResolvedValue([]);
+    jest.spyOn(Tafsir, 'withFirstPassages').mockResolvedValue([]);
+    jest.spyOn(Tafsir, 'visibleTranslations').mockResolvedValue([]);
+    await routeHandler()(req, res, jest.fn());
+    expect(Utils.cachedTextPathForRead).not.toHaveBeenCalled();
+    expect(Utils.writeCachedHtml).not.toHaveBeenCalled();
+    expect(res.render).toHaveBeenCalledWith('books', expect.any(Object));
+  });
+
 });

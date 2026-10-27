@@ -1095,7 +1095,7 @@
 
     const translationSettingsHref = (book) => {
       const alias = (book && book.alias || '').toString();
-      return alias ? quranUrl(`/quran/${encodeURIComponent(alias)}`) : quranUrl('/quran/translations');
+      return alias ? quranUrl(`/quran/${encodeURIComponent(alias)}`) : <%- JSON.stringify(utils.urlFor(req, '/books?translation')) %>;
     };
 
     const translationPreferenceAlias = (book) => {

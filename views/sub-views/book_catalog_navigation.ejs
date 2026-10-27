@@ -2,11 +2,11 @@
   var catalogNavigationType = page.context.bookCatalogInitialType;
   var catalogNavigationTabs = [
     { key: 'mushaf', label: 'Mushaf' },
-    { key: 'tafsir-all', label: 'Tafsir' },
-    { key: 'translations', label: 'Translations' },
+    { key: 'tafsir-all', query: 'tafsir', label: 'Tafsir' },
+    { key: 'translations', query: 'translation', label: 'Translations' },
     { key: 'hadith', label: 'Hadith' },
     { key: 'sharh', label: 'Sharḥ' },
-    { key: 'sirah', label: 'History & Sirah' }
+    { key: 'sirah', query: 'history', label: 'History & Sirah' }
   ];
 %>
 <nav class="row g-0 chapter-toc book-catalog-navigation" aria-label="Book collections">
@@ -14,7 +14,7 @@
     <ul class="nav nav-tabs book-catalog-tabs" role="tablist" aria-label="Book collections">
       <% catalogNavigationTabs.forEach(function (tab) { var id = `book-catalog-${tab.key}`; var active = tab.key === catalogNavigationType; %>
       <li class="nav-item" role="presentation">
-        <button class="nav-link<%= active ? ' active' : '' %>" id="<%= id %>-tab" data-bs-toggle="tab" data-bs-target="#<%= id %>" type="button" role="tab" aria-controls="<%= id %>" aria-selected="<%= active ? 'true' : 'false' %>"><%= tab.label %></button>
+        <a href="/books?<%= tab.query || tab.key %>" class="nav-link<%= active ? ' active' : '' %>" id="<%= id %>-tab" data-book-catalog-tab="1" data-bs-target="#<%= id %>" role="tab" aria-controls="<%= id %>" aria-selected="<%= active ? 'true' : 'false' %>"><%= tab.label %></a>
       </li>
       <% }); %>
     </ul>

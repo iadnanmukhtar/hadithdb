@@ -64,8 +64,8 @@ router.get('/', async function (req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
-  const cacheableHtml = !('json' in req.query) && !('tsv' in req.query) && !('tab' in req.query);
-  const cachedFile = Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith');
+  const cacheableHtml = !('json' in req.query) && !('tsv' in req.query) && !['tab', 'hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].some(key => key in req.query);
+  const cachedFile = Utils.cacheFileFromFilename('_books-types-v1', 'html', 'books', 'hadith');
   const flushCache = Utils.shouldFlushCache(req);
   if (flushCache) {
     await Utils.flushCachedFile(cachedFile, { strict: true });
@@ -136,7 +136,7 @@ function bookCatalogCacheRefs(books, tafsirs, translations, sharhBooks) {
 }
 
 router.get('/tafsir', async function (req, res, next) {
-  res.redirect(301, Utils.quranUrl(req, '/quran/tafsir'));
+  res.redirect(301, Utils.urlFor(req, '/books?tafsir'));
 });
 
 module.exports = router;

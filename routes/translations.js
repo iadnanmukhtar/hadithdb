@@ -18,6 +18,8 @@ const { Item } = require('../lib/Model');
 const router = express.Router();
 
 router.get('/', async function (req, res) {
+  if (!('json' in req.query) && !('tsv' in req.query))
+    return res.redirect(301, Utils.urlFor(req, '/books?translation'));
   res.locals.req = req;
   res.locals.res = res;
 
@@ -30,11 +32,6 @@ router.get('/', async function (req, res) {
     if ('keys' in req.query)
       keyNames = req.query.keys.split(/,/);
     res.end(Utils.toTSV(translations, keyNames));
-  } else {
-    res.render('translation_books', {
-      BookDownloads: BookDownloads,
-      translations: translations
-    });
   }
 });
 

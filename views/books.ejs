@@ -18,7 +18,22 @@
     canonical: `/books`,
     context: {}
     };
-    var initialBookCatalogType = req && req.query && req.query.tab === 'mushaf' ? 'mushaf' : req && req.query && req.query.tab === 'history' ? 'sirah' : (req && req.query && req.query.tab === 'sharh' ? 'sharh' : 'hadith');
+    var catalogTypes = {
+      hadith: { pane: 'hadith', title: 'Hadith Books', description: 'Browse hadith collections with Arabic texts, English translations, references, and downloadable editions.' },
+      translation: { pane: 'translations', title: 'Quran Translations', description: 'Browse English Quran translations by century, translator, and publication date.' },
+      tafsir: { pane: 'tafsir-all', title: 'Tafsir Books', description: 'Browse Quran tafsir books and explanations in Arabic and English.' },
+      sharh: { pane: 'sharh', title: 'Hadith Explanations', description: 'Browse hadith commentary books grouped by the hadith collection they explain.' },
+      history: { pane: 'sirah', title: 'History Books', description: 'Browse Islamic history and Prophetic biography books.' },
+      mushaf: { pane: 'mushaf', title: 'Quran Mushafs', description: 'Browse Quran mushaf editions and scripts.' }
+    };
+    var catalogQuery = req.query || {};
+    var catalogType = Object.keys(catalogTypes).find(function (key) { return Object.prototype.hasOwnProperty.call(catalogQuery, key); })
+      || (catalogTypes[catalogQuery.tab] ? catalogQuery.tab : 'hadith');
+    var initialBookCatalogType = catalogTypes[catalogType].pane;
+    page.title_en = 'Hadith Unlocked | ' + catalogTypes[catalogType].title;
+    page.subtitle_en = catalogTypes[catalogType].title;
+    page.description_en = catalogTypes[catalogType].description;
+    page.canonical = '/books?' + catalogType;
     page.context.bookCatalogInitialType = initialBookCatalogType;
     var tafsirBookUrl = function (tafsir) {
       var slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
@@ -321,7 +336,7 @@
 
         <% tafsirGroups.forEach(function (group) { %>
           <% var sectionId = `book-catalog-tafsir-${group.key}`; %>
-          <div id="<%= sectionId %>" class="tab-pane fade book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="<%= sectionId %>-tab">
+          <div id="<%= sectionId %>" class="tab-pane fade<%= initialBookCatalogType === 'tafsir-all' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="<%= sectionId %>-tab">
             <% if (group.tafsirs.length < 1) { %>
               <p class="text-muted">No <%= group.heading.toLowerCase() %> are currently available.</p>
             <% } else { %>
@@ -449,7 +464,7 @@
           </div>
         <% }); %>
 
-        <div id="book-catalog-translations" class="tab-pane fade book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-translations-tab">
+        <div id="book-catalog-translations" class="tab-pane fade<%= initialBookCatalogType === 'translations' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-translations-tab">
           <% if (!translations || translations.length < 1) { %>
             <p class="text-muted">No English translations are currently available.</p>
           <% } else { %>
@@ -683,9 +698,21 @@
       });
     });
     setGroupScope('book-catalog-' + activeScope);
-    document.querySelectorAll('.book-catalog-tabs [data-bs-toggle="tab"]').forEach(function (tab) {
+    document.querySelectorAll('.book-catalog-tabs [data-book-catalog-tab]').forEach(function (tab) {
       tab.addEventListener('shown.bs.tab', function () {
         setGroupScope((tab.dataset.bsTarget || '').replace(/^#/, ''));
+        if (tab.getAttribute('href') && window.location.pathname === '/books') {
+          window.history.replaceState(null, '', tab.getAttribute('href'));
+          var types = <%- JSON.stringify(catalogTypes) %>;
+          var type = types[tab.getAttribute('href').split('?')[1]];
+          if (type) {
+            document.title = 'Hadith Unlocked | ' + type.title;
+            var description = document.querySelector('meta[name="description"]');
+            if (description) description.content = type.description;
+            var canonical = document.querySelector('link[rel="canonical"]');
+            if (canonical) canonical.href = canonical.href.split('?')[0] + '?' + tab.getAttribute('href').split('?')[1];
+          }
+        }
       });
     });
   })();

@@ -698,7 +698,8 @@ async function sitemapUrls(req) {
     const requiredUrls = quranOnly
       ? quranRequiredSitemapUrlList(quranSitemapBaseUrl(req))
       : hadithPublicSitemapUrlList(global.settings.site.url);
-    const hasWrongSiteUrls = siteUrls.length !== cachedUrls.length;
+    const hasWrongSiteUrls = siteUrls.length !== cachedUrls.length
+      || cachedUrls.some(url => /\/quran\/(?:tafsir|translations)\/?$/.test(url));
     if (!hasWrongSiteUrls && !sitemapCacheNeedsRebuild(cachedUrls, requiredUrls))
       return siteUrls;
   }
@@ -858,6 +859,7 @@ function hadithPublicSitemapUrlList(domain) {
   return [
     domain,
     `${domain}/books`,
+    ...['hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].map(type => `${domain}/books?${type}`),
     `${domain}/community`,
     `${domain}/requests`,
     `${domain}/blog`,
@@ -931,10 +933,7 @@ function quranSitemapRequestOrigin(req) {
 }
 
 async function quranCommentarySitemapUrls(quranDomain) {
-  const urls = new Set([
-    `${quranDomain}/quran/translations`,
-    `${quranDomain}/quran/tafsir`
-  ]);
+  const urls = new Set();
   await addQuranTranslationSitemapUrls(urls, quranDomain);
   await addQuranTafsirSitemapUrls(urls, quranDomain);
   return Array.from(urls).map(url => `${url}\n`).join('');

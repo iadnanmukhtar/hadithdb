@@ -30,7 +30,7 @@ if (sharhBook) {
   <% if (sharhBook) { %>
     <nav class="h-menu-wrap mb-3" aria-label="Sharḥ books">
       <div class="h-menu-scroller"><div class="btn-group h-menu text-nowrap" role="group">
-        <a class="btn btn-outline-primary" href="/sharh">Sharḥ books</a>
+        <a class="btn btn-outline-primary" href="/books?sharh">Sharḥ books</a>
         <% books.forEach(function(book) { %><a class="btn btn-outline-primary text-nowrap<%= book.id === sharhBook.id ? ' active' : '' %>" href="/sharh/<%= encodeURIComponent(book.alias) %>"<% if (book.id === sharhBook.id) { %> aria-current="page" data-current-book="true"<% } %>><%= (book.shortName_en || book.name_en || book.alias) %></a><% }); %>
       </div></div>
     </nav>
@@ -68,7 +68,7 @@ if (sharhBook) {
   <% } %>
 </main>
 </div>
-<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Hadith Explanations', railHomeHref: utils.urlFor(req, '/sharh'), railCollections: [{ railBooks: books, railScope: 'sharh', railLabel: 'Sharḥ Books', railCurrentAlias: sharhBook && sharhBook.alias, railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } }] }); %>
+<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Hadith Explanations', railHomeHref: utils.urlFor(req, '/books?sharh'), railCollections: [{ railBooks: books, railScope: 'sharh', railLabel: 'Sharḥ Books', railCurrentAlias: sharhBook && sharhBook.alias, railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } }] }); %>
 </div>
 <% if (site.editMode) { (sharhBook ? [] : books).forEach(function(book) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: `sharh-book-${book.id}` }); %><% }); } %>
 <% if (sharhBook) { %><%- include('sub-views/mobile_navigation.ejs', { site, page }); %><% } %>

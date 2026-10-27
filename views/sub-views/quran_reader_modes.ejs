@@ -1,7 +1,7 @@
 <%
   var modePassageHref = locals.passageHref || utils.quranUrl(req, req.path);
   var modeMushafHref = locals.mushafHref || utils.quranUrl(req, '/quran/page');
-  var modeTafsirHref = locals.tafsirHref || utils.quranUrl(req, '/quran/tafsir');
+  var modeTafsirHref = locals.tafsirHref || utils.urlFor(req, '/books?tafsir');
   var modeMemorizeHref = locals.memorizeHref || `${modeMushafHref}${modeMushafHref.indexOf('?') >= 0 ? '&' : '?'}memorize`;
   var modeReviewHref = utils.quranUrl(req, '/quran/review');
 %>

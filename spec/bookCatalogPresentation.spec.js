@@ -269,3 +269,16 @@ test.each(['books.ejs', 'sharh_catalog.ejs'])('%s tags and filters sharh books b
   expect(scope.querySelector('.tafsir-book-row:not(.d-none)').dataset.bookCatalogGroups).toBe('sharh-bukhari');
   dom.window.close();
 });
+
+test.each([
+ ['hadith', 'hadith'], ['translation', 'translations'], ['tafsir', 'tafsir-all'],
+ ['sharh', 'sharh'], ['history', 'sirah'], ['mushaf', 'mushaf']
+])('direct /books?%s selects its pane and exposes crawlable type links', async (query, pane) => {
+ const dom = browser(await render('books.ejs', false, [book], { [query]: '' }));
+ const doc = dom.window.document;
+ expect(doc.querySelector('.book-catalog-tab-pane.active').id).toBe('book-catalog-' + pane);
+ expect(doc.querySelector('.book-catalog-tabs .active').getAttribute('href')).toBe('/books?' + query);
+ expect(Array.from(doc.querySelectorAll('.book-catalog-tabs a')).map(link => link.getAttribute('href'))).toEqual(['/books?mushaf','/books?tafsir','/books?translation','/books?hadith','/books?sharh','/books?history']);
+ expect(Array.from(doc.querySelectorAll('[data-book-rail-pane]')).filter(node => !node.hidden).map(node => node.dataset.bookRailPane)).toEqual(['book-catalog-' + pane]);
+ dom.window.close();
+});

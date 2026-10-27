@@ -589,10 +589,10 @@ const startupPromise = (async () => {
   app.use('/quran/api/login', loginRouter);
   app.use('/blog', blogRouter);
   app.use('/tafsir', function (req, res) {
-    res.redirect(301, Utils.quranUrl(req, '/quran/tafsir'));
+    res.redirect(301, Utils.urlFor(req, '/books?tafsir'));
   });
   app.use('/quran/tafsirs', function (req, res) {
-    res.redirect(301, Utils.quranUrl(req, '/quran/tafsir'));
+    res.redirect(301, Utils.urlFor(req, '/books?tafsir'));
   });
   app.use('/quran/tafsir', tafsirsRouter);
   app.use('/quran/tafsir', tafsirRouter);

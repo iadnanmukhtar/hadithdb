@@ -60,83 +60,16 @@ describe('restored Quran public route caches', () => {
     expect(res.redirect).toHaveBeenCalledWith(301, '/quran/tafsir/ibn-kathir/quran:2:253-260?ayah=2%3A256');
   });
 
-  test('serves the Tafsir catalog cache before resolving first passages', async () => {
-    const router = require('../routes/tafsirs');
-    const req = {
-      baseUrl: '/quran/tafsir',
-      url: '/',
-      query: {},
-      admin: false,
-      editMode: false
-    };
-    const res = response();
-    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/tafsir${Utils.cacheSuffix()}/tafsirs/_quran_tafsir_.html`;
-    jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
-    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${cachedFile}.gz`);
-    jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
-    jest.spyOn(Tafsir, 'visibleTafsirs');
-    jest.spyOn(Tafsir, 'withFirstPassages');
-
-    await routeHandler(router, '/')(req, res, jest.fn());
-
-    expect(Utils.sendCachedHtml).toHaveBeenCalledWith(
-      res,
-      req,
-      cachedFile,
-      'text/html; charset=UTF-8'
-    );
-    expect(Tafsir.visibleTafsirs).not.toHaveBeenCalled();
-    expect(Tafsir.withFirstPassages).not.toHaveBeenCalled();
-  });
-
-  test('flushes the Tafsir catalog disk file and its Quran memory caches', async () => {
-    const router = require('../routes/tafsirs');
-    const req = { baseUrl: '/quran/tafsir', url: '/?flush=1', query: { flush: '1' }, admin: false, editMode: false };
-    const res = response();
-    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/tafsir${Utils.cacheSuffix()}/tafsirs/_quran_tafsir_.html`;
-    jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(true);
-    jest.spyOn(Utils, 'flushCachedFile').mockResolvedValue(true);
+  test.each([{}, { flush: '1' }])('redirects the deprecated Tafsir catalog before cache or content lookup', async query => {
+    const req = { baseUrl: '/quran/tafsir', url: '/', query };
+    const res = response(); res.redirect = jest.fn();
+    jest.spyOn(Utils, 'urlFor').mockImplementation((_req, url) => url);
     jest.spyOn(Utils, 'cachedTextPathForRead');
-    jest.spyOn(Utils, 'diskCacheEnabled').mockReturnValue(false);
-    jest.spyOn(Tafsir, 'invalidateMemoryCaches');
-    jest.spyOn(Tafsir, 'visibleTafsirs').mockResolvedValue([]);
-    jest.spyOn(Tafsir, 'withFirstPassages').mockResolvedValue([]);
-    jest.spyOn(QuranTocSubdivisions, 'invalidateAll');
-    jest.spyOn(QuranMushaf, 'invalidateAll');
-
-    await routeHandler(router, '/')(req, res, jest.fn());
-
-    expect(Utils.flushCachedFile).toHaveBeenCalledWith(cachedFile, { strict: true });
-    expect(Tafsir.invalidateMemoryCaches).toHaveBeenCalled();
-    expect(QuranTocSubdivisions.invalidateAll).toHaveBeenCalled();
-    expect(QuranMushaf.invalidateAll).toHaveBeenCalled();
+    jest.spyOn(Tafsir, 'visibleTafsirs');
+    await routeHandler(require('../routes/tafsirs'), '/')(req, res);
+    expect(res.redirect).toHaveBeenCalledWith(301, '/books?tafsir');
     expect(Utils.cachedTextPathForRead).not.toHaveBeenCalled();
-    expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store, no-cache, must-revalidate');
-  });
-
-  test('writes and indexes a Tafsir catalog cache miss', async () => {
-    const tafsir = { alias: 'mokhtasar', slug: 'mokhtasar' };
-    const router = require('../routes/tafsirs');
-    const req = { baseUrl: '/quran/tafsir', url: '/', query: {}, admin: false, editMode: false };
-    const res = response();
-    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/tafsir${Utils.cacheSuffix()}/tafsirs/_quran_tafsir_.html`;
-    jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
-    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(null);
-    jest.spyOn(Utils, 'diskCacheEnabled').mockReturnValue(true);
-    jest.spyOn(Utils, 'writeCachedHtml').mockImplementation(() => {});
-    jest.spyOn(Utils, 'indexCachedItem').mockResolvedValue(undefined);
-    jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
-    jest.spyOn(ejs, 'renderFile').mockResolvedValue('<html>tafsir catalog</html>');
-    jest.spyOn(Tafsir, 'visibleTafsirs').mockResolvedValue([tafsir]);
-    jest.spyOn(Tafsir, 'withFirstPassages').mockResolvedValue([tafsir]);
-
-    await routeHandler(router, '/')(req, res, jest.fn());
-
-    expect(Utils.writeCachedHtml).toHaveBeenCalledWith(cachedFile, '<html>tafsir catalog</html>');
-    expect(Utils.indexCachedItem).toHaveBeenCalledWith(
-      expect.arrayContaining(['tafsirs', 'tafsir:books', 'tafsir:mokhtasar:catalog']),
-      cachedFile
-    );
+    expect(Tafsir.visibleTafsirs).not.toHaveBeenCalled();
   });
 
   test('serves a translation TOC cache before loading Quran headings or coverage', async () => {

@@ -183,7 +183,7 @@
       <p class="text-muted d-none translation-book-filter-empty">No matching translation books found.</p>
     </main>
   </div>
-<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Quran Translations', railHomeHref: utils.quranUrl(req, '/quran/translations'), railCollections: [{ railBooks: translations, railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl }] }); %>
+<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Quran Translations', railHomeHref: utils.urlFor(req, '/books?translation'), railCollections: [{ railBooks: translations, railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl }] }); %>
 </div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>

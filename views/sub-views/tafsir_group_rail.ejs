@@ -9,7 +9,7 @@
 %>
 <aside class="hadith-heading-toc toc-heading-rail tafsir-group-rail d-none d-lg-block" data-toc-heading-rail aria-label="Tafsir books by group">
   <div class="hadith-heading-toc-sticky">
-    <a class="heading-toc-book-name" href="<%= utils.quranUrl(req, '/quran/tafsir') %>">TAFSIR BOOKS</a>
+    <a class="heading-toc-book-name" href="<%= utils.urlFor(req, '/books?tafsir') %>">TAFSIR BOOKS</a>
     <nav class="hadith-heading-toc-nav" data-toc-heading-rail-nav aria-label="Tafsir books">
       <% railGroups.forEach(function (group) { %>
       <section class="tafsir-rail-group">

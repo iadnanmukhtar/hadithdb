@@ -127,7 +127,7 @@
       
       <ul class="nav container-fluid justify-content-end top-nav-desktop-actions">
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran/tafsir') %>">Tafsir</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.urlFor(req, '/books?tafsir') %>">Tafsir</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>">Community</a></li>

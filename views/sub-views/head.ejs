@@ -17,6 +17,8 @@
       query = query.replace(/(^|&)help=(?=&|$)/, '$1help');
     if (hasBareMemorize)
       query = query.replace(/(^|&)memorize=(?=&|$)/, '$1memorize');
+    if (parts[0] === '/books')
+      query = query.replace(/(^|&)(hadith|translation|tafsir|sharh|history|mushaf)=(?=&|$)/g, '$1$2');
     return query ? `${parts[0]}?${query}` : parts[0];
   }
   if (page.canonical)

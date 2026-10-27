@@ -33,7 +33,7 @@ const page = { menu: 'Books', title_en: 'Hadith Unlocked | Sharḥ Books', descr
     <p class="text-muted d-none tafsir-book-filter-empty">No matching sharḥ books found.</p>
   </main>
 </div>
-<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Hadith Explanations', railHomeHref: utils.urlFor(req, '/sharh'), railCollections: [{ railBooks: books, railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } }] }); %>
+<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Hadith Explanations', railHomeHref: utils.urlFor(req, '/books?sharh'), railCollections: [{ railBooks: books, railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } }] }); %>
 </div>
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>

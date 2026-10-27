@@ -17,7 +17,7 @@ router.use((req, res, next) => {
 const handle = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 router.get('/', handle(async (req, res) => {
-	res.render('sharh_catalog', { books: await Sharh.catalog() });
+	res.redirect(301, Utils.urlFor(req, '/books?sharh'));
 }));
 async function passage(req, res, next) {
 	const kind = req.params.kind || (req.route.path.includes('/heading/') ? 'heading' : 'hadith');
