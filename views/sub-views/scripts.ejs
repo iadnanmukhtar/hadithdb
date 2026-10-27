@@ -35,6 +35,9 @@
 <script src="/static/js/notebook-themes.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <% if (['Community', 'Notebook', 'Blog', 'Blog Post'].includes(page.menu)) { %><script src="/static/js/community-alerts.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>
 
+<%- include('community_share_composer.ejs'); %>
+<script src="/static/js/community-post-share.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/content-item-actions.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <% if (site.editMode) { %>
 <%- include('sharh_add_modal.ejs'); %>
 <script src="/static/js/sharh-add-modal.js?v=<%= utils.scriptAssetVersion() %>"></script>

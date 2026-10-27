@@ -9,7 +9,7 @@ const GoogleAuth = require('../lib/GoogleAuth');
 const { homedir } = require('os');
 
 const router = express.Router();
-const LIKE_TYPES = new Set(['hadith', 'toc']);
+const LIKE_TYPES = new Set(['hadith', 'toc', 'content']);
 let likesTypeColumnReady;
 
 function normalizeLikeType(value) {
@@ -51,6 +51,10 @@ async function ensureLikesTypeColumn() {
 }
 
 async function targetForLike(type, id) {
+  if (type === 'content') {
+    const item = await require('../lib/ContentItems').get(id);
+    return item ? {id,type,label:item.title,ref:'items/'+id} : null;
+  }
   if (type === 'toc') {
     const rows = await global.query(`
       SELECT tId AS id, path
@@ -98,7 +102,7 @@ async function sendLikeEmail(payload) {
   const transport = getMailer();
   if (!transport) return;
   const action = payload.action === 'unlike' ? 'unlike' : 'like';
-  const targetLabel = payload.type === 'toc' ? 'TOC passage' : 'Hadith';
+  const targetLabel = payload.type === 'content' ? 'item' : payload.type === 'toc' ? 'TOC passage' : 'Hadith';
   const subject = `New ${action} on ${targetLabel} ${payload.ref || payload.hadithId}`;
   const url = itemUrl(payload);
   const body = `
@@ -308,6 +312,7 @@ router.post('/:hadithId', verifyGoogle, async function (req, res, next) {
       liked = true;
       action = 'like';
     }
+    if (type === 'content') await global.query(`UPDATE hadiths_likes SET ref_num='items/${hadithId}' WHERE hadithId=${hadithId} AND type='content'`);
     const countRows = await global.query(`
       SELECT COUNT(*) AS cnt
       FROM hadiths_likes

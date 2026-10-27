@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const selector = '.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .personal-note-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn';
+  const selector = '.content-item-bookmark, .hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .personal-note-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn';
   let signedIn = false, revision = 0;
   function apply(root = document) {
     const controls = [...(root.matches?.(selector) ? [root] : []), ...root.querySelectorAll(selector)];

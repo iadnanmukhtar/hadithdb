@@ -599,6 +599,17 @@ const startupPromise = (async () => {
   app.use('/quran/translations', translationsRouter);
   app.use('/api/proxy', proxyRouter);
   app.use('/quran/api/proxy', proxyRouter);
+  const contentItemsRouter = require('./routes/content_items');
+  app.get('/items/:id', async (req, res, next) => {
+    try {
+      const ContentItems = require('./lib/ContentItems');
+      const item = await ContentItems.get(req.params.id);
+      if (!item) return res.sendStatus(404);
+      res.redirect(ContentItems.url({ ...item, url: item.url.split('#')[0] + '#content-item-' + item.id }, req));
+    } catch (err) { next(err); }
+  });
+  app.use('/api/content-items', contentItemsRouter);
+  app.use('/quran/api/content-items', contentItemsRouter);
   app.use('/api/comments', commentsRouter);
   app.use('/quran/api/comments', commentsRouter);
   app.use('/blog-comments', blogCommentsRouter);

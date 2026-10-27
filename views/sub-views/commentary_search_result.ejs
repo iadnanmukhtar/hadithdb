@@ -62,4 +62,5 @@
 			</aside>
 		</section>
 	<% } %>
+  <% if (commentary.commentary_alias && Number(commentary.ayahFrom) > 0) { %><%- include('notebook_anchor.ejs', { noteKey: `tafsir:${String(commentary.commentary_alias).replace(/^(?:(?:en|ar)-)?(?:tafsir-)?/, '')}:${commentary.surah}:${commentary.ayahFrom}`, noteTitle: commentary.commentary_ref_en, noteUrl: utils.quranUrl(req, commentary.url) }); %><% } %>
 </article>

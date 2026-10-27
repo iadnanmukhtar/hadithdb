@@ -145,7 +145,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="/vendor/toastr/toastr.min.css">
 <link rel="stylesheet" href="/static/css/style.css?v=<%= utils.styleAssetVersion() %>" rel="stylesheet">
-<% if (['Community', 'Notebook', 'Blog', 'Blog Post'].includes(page.menu)) { %><link rel="stylesheet" href="/static/css/community.css?v=<%= utils.styleAssetVersion() %>"><% } %>
+<link rel="stylesheet" href="/static/css/community.css?v=<%= utils.styleAssetVersion() %>">
 <% if (page.feed || page.rss) { 
   if (page.feed) { %>
     <link rel="alternate" type="application/atom+xml" title="<%= page.title_en %>" href="<%= page.feed %>" />

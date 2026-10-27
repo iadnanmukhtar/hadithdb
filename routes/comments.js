@@ -4,7 +4,7 @@
 const { homedir } = require('os');
 const Utils = require('../lib/Utils');
 const createReflectionRouter = require('./reflections');
-const COMMENT_TYPES = new Set(['hadith', 'toc']);
+const COMMENT_TYPES = new Set(['hadith', 'toc', 'content']);
 let commentsTypeColumnReady;
 
 function normalizeCommentType(value) {
@@ -38,6 +38,7 @@ async function ensureCommentsTypeColumn() {
 }
 
 async function targetExists(target) {
+  if (target.type === 'content') return !!await require('../lib/ContentItems').get(target.value);
   if (target.type === 'toc') {
     const rows = await global.query(`SELECT 1 FROM v_toc WHERE tId=${target.value} OR hId=${target.value} LIMIT 1`);
     return !!(rows && rows.length);
@@ -81,6 +82,7 @@ module.exports = createReflectionRouter({
     return { ref: row.ref_num || row.hadithId, type: row.type || 'hadith', targetId: row.hadithId };
   },
   describe(payload) {
+    if (payload.type === 'content') return {subject:`Reflection on this item`,url:`${global.settings.site.url}/items/${payload.targetId}`};
     if (payload.type === 'toc')
       return {
         subject: `Quran passage ${payload.ref || payload.targetId}`,
@@ -92,6 +94,9 @@ module.exports = createReflectionRouter({
     };
   },
   async afterCreate(target) {
+    if (target.type === 'content') {
+      await global.query(`UPDATE hadiths_comments SET ref_num='items/${target.value}' WHERE hadithId=${target.value} AND type='content'`);
+    }
     if (target.type === 'hadith')
       await global.query(`UPDATE hadiths SET commented=(commented+1), lastfixed=CURRENT_TIMESTAMP() WHERE id=${target.value}`);
     await flushCommentedCaches();

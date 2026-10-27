@@ -24,12 +24,14 @@ test('translated Sirah uses two language columns with its English text and notes
  expect($('[data-reader-language-column=english]').text()).toContain('English text');
  expect($('[data-reader-language-column=english] .footnote').text()).toContain('English note');
 });
-test('Sirah passages expose only bookmark, like, and reflection actions', () => {
+test('Sirah passages expose bookmark, note source, like, reflection, and non-image sharing actions', () => {
  const $ = render();
  expect($('.sirah-item-actions .hadith-bookmark-btn')).toHaveLength(1);
  expect($('.sirah-item-actions .hadith-like-btn')).toHaveLength(1);
  expect($('.sirah-item-actions .hadith-comment-count')).toHaveLength(1);
- expect($('.sirah-item-actions').text()).not.toMatch(/Share|Sharh|Sound/i);
+ expect($('.sirah-item-actions [data-content-share-trigger]')).toHaveLength(1);
+ expect($('.sirah-item-actions .hadith-share-action-link').text()).toContain('Share');
+ expect($('.sirah-item-actions').text()).not.toMatch(/Sharh|Sound/i);
  expect($('.sirah-item-actions').closest('.h')).toHaveLength(1);
  expect($('.sirah-item-actions .reflection-count-link').attr('data-reflection-disclosure-trigger')).toBe('sirah-comments-1-disclosure');
  expect($('#sirah-comments-1-disclosure')).toHaveLength(1);

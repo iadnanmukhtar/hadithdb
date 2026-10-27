@@ -3,13 +3,14 @@
   const widgetId = typeof ctx.widgetId === 'string' ? ctx.widgetId : 'comments';
   const heading = typeof ctx.heading === 'string' ? ctx.heading : 'Add your own reflection below:';
   const targetId = typeof ctx.targetId !== 'undefined' ? ctx.targetId : '';
-  const targetType = ctx.targetType === 'toc' ? 'toc' : 'hadith';
+  const targetType = ['toc', 'content'].includes(ctx.targetType) ? ctx.targetType : 'hadith';
   const ref = typeof ctx.ref !== 'undefined' ? ctx.ref : '';
   const endpoint = typeof ctx.endpoint === 'string' && ctx.endpoint.trim() ? ctx.endpoint : '/comments';
   const pingUrl = typeof ctx.pingUrl === 'string' ? ctx.pingUrl : '';
   const subjectLabel = typeof ctx.subjectLabel === 'string' && ctx.subjectLabel.trim() ? ctx.subjectLabel : 'reflection';
   const placeholder = typeof ctx.placeholder === 'string' ? ctx.placeholder : 'Write a comment...';
   const commentPrefix = typeof ctx.commentPrefix === 'string' ? ctx.commentPrefix.trim() : '';
+  const noteSourceKey = typeof ctx.noteSourceKey === 'string' ? ctx.noteSourceKey : '';
   const lazyLoad = ctx.lazyLoad !== false;
   const collapsible = ctx.collapsible === true;
   const collapsed = ctx.collapsed !== false;
@@ -36,7 +37,7 @@
     </a>
   </h4>
   <% } %>
-  <section class="mt-3 comment-feed" id="<%= widgetId %>" data-ref="<%= ref %>" data-target-id="<%= targetId %>" data-target-type="<%= targetType %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>" data-lazy-load="<%= lazyLoad ? '1' : '0' %>">
+  <section class="mt-3 comment-feed" id="<%= widgetId %>" data-ref="<%= ref %>" data-reflection-note-key="<%= noteSourceKey %>" data-target-id="<%= targetId %>" data-target-type="<%= targetType %>" data-endpoint="<%= endpoint %>" data-ping-url="<%= pingUrl %>" data-subject-label="<%= subjectLabel %>" data-lazy-load="<%= lazyLoad ? '1' : '0' %>">
     <div class="comment-feed-shell">
       <div id="<%= widgetId %>-thread" class="comment-thread"></div>
       <div class="comment-composer mt-3" id="<%= widgetId %>-auth">
@@ -77,7 +78,7 @@
         const authHint = document.getElementById('<%= widgetId %>-hint');
         const composerAvatar = document.getElementById('<%= widgetId %>-avatar');
         const targetId = container.dataset.targetId;
-        const targetType = container.dataset.targetType === 'toc' ? 'toc' : 'hadith';
+        const targetType = ['toc', 'content'].includes(container.dataset.targetType) ? container.dataset.targetType : 'hadith';
         const quranApiPath = (path) => {
           path = String(path || '');
           if (/^https?:\/\//i.test(path)) return path;
@@ -369,9 +370,9 @@
               if (!comment || !comment.canEdit || comment.deleted) return;
               const reference = container.dataset.ref || '';
               document.dispatchEvent(new CustomEvent('notebookSaveReflection', { detail: {
-                source_key: `${targetType === 'toc' ? 'heading' : 'item'}:${targetId}`,
+                source_key: container.dataset.reflectionNoteKey || `${targetType === 'toc' ? 'heading' : 'item'}:${targetId}`,
                 source_title: reference || 'Reflection',
-                source_url: reference ? '/' + reference.replace(/^\//, '') : location.pathname,
+                source_url: targetType === 'content' ? reference : reference ? '/' + reference.replace(/^\//, '') : location.pathname,
                 markdown: '', version: 0, reflectionMarkdown: comment.text
               } }));
             };
@@ -572,7 +573,7 @@
 
         document.addEventListener('hadithCommentWidgetLoad', event => {
           if (!event.detail) return;
-          const eventType = event.detail.type === 'toc' ? 'toc' : 'hadith';
+          const eventType = ['toc', 'content'].includes(event.detail.type) ? event.detail.type : 'hadith';
           if (event.detail.widgetId === '<%= widgetId %>' || (String(event.detail.hadithId) === String(targetId) && eventType === targetType)) {
             loadWidget();
           }

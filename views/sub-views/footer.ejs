@@ -390,7 +390,7 @@
 		const getTafsirBookmarkButtons = () => Array.from(document.querySelectorAll('.tafsir-bookmark-btn[data-tafsir-bookmark-key]'));
 		const getMushafBookmarkButtons = () => Array.from(document.querySelectorAll('.quran-mushaf-bookmark-btn[data-quran-mushaf-bookmark-page]'));
 		const getCommentCountBadges = () => Array.from(document.querySelectorAll('.hadith-comment-count[data-hadith-id]'));
-		const likeType = (value) => value === 'toc' ? 'toc' : 'hadith';
+		const likeType = (value) => ['toc', 'content'].includes(value) ? value : 'hadith';
 		const likeKey = (id, type) => `${likeType(type)}:${id}`;
 		const commentWidgetOwnsCount = (id, type) => Array.from(document.querySelectorAll('.comment-feed[data-target-id][data-target-type]')).some(feed => {
 			return String(feed.dataset.targetId) === String(id)

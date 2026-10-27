@@ -7928,8 +7928,9 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-sharh-delete .bi { font-size: .68rem !important; }
 .hadith-sharh-actions { margin-top: .75rem; }
 .hadith-sharh-actions .btn { align-self: auto; }
+/* Keep public item actions out of the metadata admin button treatment. */
 .hadith-admin-action,
-.hadith-metadata-panel .btn:not(.personal-note-btn) {
+.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn) {
 	--bs-btn-active-bg: var(--c-ghostwhite);
 	--bs-btn-active-border-color: var(--bs-secondary-color);
 	--bs-btn-active-color: var(--bs-body-color);
@@ -7954,15 +7955,15 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-admin-action:hover,
 .hadith-admin-action:focus-visible,
 .hadith-admin-action:active,
-.hadith-metadata-panel .btn:not(.personal-note-btn):hover,
-.hadith-metadata-panel .btn:not(.personal-note-btn):focus-visible,
-.hadith-metadata-panel .btn:not(.personal-note-btn):active {
+.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn):hover,
+.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn):focus-visible,
+.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn):active {
 	background: var(--c-ghostwhite) !important;
 	border-color: var(--bs-secondary-color) !important;
 	color: var(--bs-body-color) !important;
 }
 .hadith-admin-action .bi,
-.hadith-metadata-panel .btn:not(.personal-note-btn) .bi,
+.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn) .bi,
 .hadith-similar-admin-search .input-group-text .bi { font-size: .68rem !important; line-height: 1; }
 .hadith-admin-action-icon,
 .hadith-scholarly-grade-actions .btn,
@@ -11722,10 +11723,29 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 
 @media (max-width: 575.98px) {
 	.quran-ayah-hero-toolbar {
-		gap: 1rem;
+		flex-wrap: nowrap;
+		gap: .5rem;
+		justify-content: space-between;
+		white-space: nowrap;
+		overflow-x: auto;
 	}
 
-	.quran-ayah-hero-toolbar .quran-ayah-action-label {
+	.quran-ayah-hero-with-nav > .quran-ayah-hero-toolbar {
+		width: calc(100% + 4rem);
+		max-width: none;
+		margin-inline: -2rem;
+	}
+
+	.quran-ayah-hero-toolbar > * {
+		flex-shrink: 0;
+	}
+
+	.quran-ayah-hero-toolbar > .personal-note-actions {
+		gap: .5rem;
+	}
+
+	.quran-ayah-hero-toolbar .quran-ayah-action-label,
+	.quran-ayah-hero-toolbar .content-translate-button-label {
 		display: none !important;
 	}
 }
@@ -13566,8 +13586,8 @@ a.cmd-btn:hover {
 }
 
 /* Personal reading actions are available after sign-in. */
-html:not([data-account-signed-in="true"]) :is(.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn),
-html:not([data-account-signed-in="true"]) :is(.hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn) *,
+html:not([data-account-signed-in="true"]) :is(.content-item-bookmark, .hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn),
+html:not([data-account-signed-in="true"]) :is(.content-item-bookmark, .hadith-bookmark-btn, .heading-bookmark-btn, .tafsir-bookmark-btn, .quran-mushaf-bookmark-btn, .hadith-like-btn, .reflection-count-link, .reflection-disclosure-summary, .comment-vote, .comment-reply, .comment-edit, .comment-delete, .comment-submit-btn) *,
 html:not([data-account-signed-in="true"]) :is(.hadith-like-count, .comment-composer) {
   color: #8a8a8a !important;
   filter: grayscale(1);
@@ -13749,3 +13769,44 @@ main.book-catalog-page .tafsir-book-title-line :lang(ar) {
 .tafsir-rail-group a.active {
 	font-weight: 600;
 }
+
+/* A single entry point for sharing a hadith or Quran selection. */
+.content-share-pane {
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  margin: auto;
+  padding: 24px;
+  border: 1px solid var(--c-accent-18, #e5e7eb);
+  border-radius: 20px;
+  color: var(--c-black-soft, #222);
+  background: var(--c-white, #fff);
+  box-shadow: 0 18px 70px #0003;
+}
+.content-share-pane::backdrop { background: #0006; }
+.content-share-pane header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.content-share-pane h2 { margin: 0; font: inherit; font-size: 1.2rem; font-weight: 600; }
+.content-share-close { border: 0; background: transparent; color: inherit; width: 36px; height: 36px; border-radius: 50%; }
+.content-share-source { margin: 4px 0 24px; font-size: .88rem; opacity: .65; overflow-wrap: anywhere; }
+.content-share-options { display: grid; grid-template-columns: repeat(var(--share-option-count, 5), minmax(0, 1fr)); gap: 8px; }
+.content-share-options button { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-size: .8rem; }
+.content-share-options i { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--c-accent-10, #f1f5f9); color: var(--c-accent, #436b87); font-size: 1.4rem; transition: background .15s, transform .15s; }
+.content-share-options button:hover i { background: var(--c-accent-18, #e2e8f0); transform: translateY(-2px); }
+.content-share-pane button:focus-visible { outline: 2px solid var(--c-accent, #436b87); outline-offset: 4px; }
+.content-share-status { font-size: .85rem; margin: 20px 0 0; }
+.content-share-status:empty { display: none; }
+@media (max-width: 575px) {
+  .content-share-pane { margin: auto auto 12px; padding: 20px 16px 24px; }
+  .content-share-options { gap: 4px; }
+  .content-share-options i { width: 46px; height: 46px; border-radius: 14px; }
+}
+
+.content-item-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .55rem;
+  margin-top: .75rem;
+  padding-bottom: .75rem;
+}
+.content-item-actions .personal-note-actions { display:inline-flex; align-items:center; gap:.55rem; }

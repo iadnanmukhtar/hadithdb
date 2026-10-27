@@ -639,7 +639,7 @@
       loadingEl.classList.remove('d-none');
       emptyEl.classList.add('d-none');
 
-      if (!sectionKeys.some(key => sections[key] && sections[key].count)) {
+      if (!sectionKeys.some(key => sections[key] && sections[key].count) && !window.contentItemBookmarks?.count()) {
         loadingEl.classList.add('d-none');
         emptyEl.classList.remove('d-none');
         return;
@@ -655,7 +655,7 @@
         });
 
         const total = sectionKeys.reduce((sum, key) => sum + (parseInt(sectionEls[key]?.dataset.bookmarkCount || '0', 10) || 0), 0);
-        emptyEl.classList.toggle('d-none', total > 0);
+        emptyEl.classList.toggle('d-none', total > 0 || window.contentItemBookmarks?.count() > 0);
         if (window.refreshHadithActions) window.refreshHadithActions();
         if (window.refreshHeadingBookmarks) window.refreshHeadingBookmarks();
         if (window.refreshTafsirBookmarks) window.refreshTafsirBookmarks();
@@ -683,6 +683,7 @@
         if (window.mushafPageBookmark && window.mushafPageBookmark.clear) {
           await window.mushafPageBookmark.clear();
         }
+        if (window.contentItemBookmarks) await window.contentItemBookmarks.clear();
         load();
       });
     }
@@ -736,6 +737,7 @@
     }, true);
 
     document.addEventListener('hadithBookmarkToggled', load);
+    document.addEventListener('contentItemBookmarksChanged', load);
     document.addEventListener('hadithBookmarksCleared', load);
     document.addEventListener('headingBookmarkToggled', load);
     document.addEventListener('headingBookmarksCleared', load);

@@ -58,7 +58,7 @@
 		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	  </header>
       <section class="modal-body hadith-share-body">
-		<article class="hadith-share-card quran-share-card" data-share-card data-share-ref="<%= shareRef %>">
+		<article class="hadith-share-card quran-share-card" data-share-card data-share-url="<%= utils.quranUrl(req, '/' + shareRef.replace(/^quran:/, '')) %>" data-share-ref="<%= shareRef %>">
 			<div class="hadith-share-card-inner">
 				<h2 class="hadith-share-title share-editable" contenteditable="false"><%= shareTitle %></h2>
 				<section class="hadith-share-section hadith-share-arabic-section" lang="ar">

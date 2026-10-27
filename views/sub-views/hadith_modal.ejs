@@ -69,7 +69,7 @@
 		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	  </header>
       <section class="modal-body hadith-share-body">
-		<article class="hadith-share-card" data-share-card data-share-ref="<%= shareRef %>"<% if (paymentFeatureEnabled) { %> data-share-generated-item-type="hadith" data-share-generated-item-id="<%= i.actual ? i.actual.id : i.id %>" data-share-available-translations="<%= JSON.stringify(shareContentTranslations) %>"<% } %>>
+		<article class="hadith-share-card" data-share-card data-share-image-allowed="<%= ['hadith', 'quran', 'trans'].includes(((global.books || []).find(book => book.alias === (i.actual ? i.actual.book_alias : i.book_alias)) || {}).type || i.doctype || i.book_type || 'hadith') %>" data-share-url="<%= quranShareRef ? utils.quranUrl(req, '/' + quranShareRef) : utils.urlFor(req, '/' + shareRef) %>" data-share-ref="<%= shareRef %>"<% if (paymentFeatureEnabled) { %> data-share-generated-item-type="hadith" data-share-generated-item-id="<%= i.actual ? i.actual.id : i.id %>" data-share-available-translations="<%= JSON.stringify(shareContentTranslations) %>"<% } %>>
 			<div class="hadith-share-card-inner">
 				<% if (en.title || ar.title) { %>
 					<h2 class="hadith-share-title share-editable" contenteditable="false" data-share-generated-title="1"><%= en.title %></h2>

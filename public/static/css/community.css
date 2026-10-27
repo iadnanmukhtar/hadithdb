@@ -299,3 +299,14 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-alert-row time { display: block; color: var(--c-muted); font-size: var(--content-size-xs); }
 .community-alerts [data-community-alert-more] { margin-top: .75rem; }
 .community-reflections .comment-vote { width: auto; min-width: 1.4rem; padding-inline: .2rem; }
+
+.community-share-dialog {
+  --community-ink: var(--bs-body-color);
+  --community-muted: var(--c-muted);
+  --community-line: var(--bs-border-color);
+  --community-paper: var(--bs-body-bg);
+  --community-accent: var(--c-accent);
+}
+.community-share-dialog textarea { display:block; width:100%; min-height:140px; max-height:280px; border:0; padding:.8rem 0; resize:vertical; font:inherit; color:var(--community-ink); background:transparent; }
+.community-share-dialog textarea:focus-visible { outline:none; }
+.community-share-dialog .community-link-preview { margin:0 0 1rem; }

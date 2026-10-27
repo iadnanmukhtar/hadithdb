@@ -393,7 +393,7 @@
 			&nbsp;
 		<% } %>
 		<% if (sharhBody) { %>
-			<span class="bi bi-book"></span>&nbsp;<a href="#" title="Sharh of this hadith" class="icon hadith-sharh-link" data-hadith-sharh-body="<%= sharhBody %>">Sharh</a>
+			<a href="#" title="Search the web for this hadith’s explanation" aria-label="Search the web for this hadith’s explanation" class="icon hadith-sharh-link" data-hadith-sharh-body="<%= sharhBody %>"><span class="bi bi-globe2" aria-hidden="true"></span></a>
 			&nbsp;
 		<% } %>
 		<a href="#H<%= i.id %>" type="button" title="<%= linkTitle(itemLinkTitleSource) %>" class="btn btn-sm icon content-translate-button hadith-share-action-link" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>">

@@ -312,6 +312,19 @@
     $('quick-dialog').setAttribute('aria-label','Write a post');$('quick-audience').textContent='Public post';
     $('quick-dialog').showModal(); syncQuickComposer(); $('quick-text').focus();
   });
+  function openSharedNote() {
+    const params = new URLSearchParams(location.search), key = params.get('shareNote');
+    if (!key || !/^community-share-[a-z0-9-]+$/.test(key) || !$('quick-dialog')) return;
+    if (!me) { status('Please sign in using the account button to edit and share your Community note.'); return; }
+    const markdown = sessionStorage.getItem(key);
+    if (markdown === null) { status('This shared text is no longer available. Please share it again.'); return; }
+    $('quick-text').value = markdown;
+    $('quick-open').click();
+    $('quick-text').dispatchEvent(new Event('input', { bubbles: true }));
+    sessionStorage.removeItem(key);
+    params.delete('shareNote');
+    history.replaceState(null, '', location.pathname + (params.size ? '?' + params : '') + location.hash);
+  }
   function closeQuick(){if(quickBusy)return false;if(quickEditing && ($('quick-text').value!==quickEditing.markdown || quickCover!==(quickEditing.coverUrl||'')) && !window.confirm('Discard unsaved post changes?'))return false;$('quick-dialog').close();if(quickEditing){quickEditing=null;$('quick-form').reset();showQuickCover('');$('quick-edit-actions').hidden=true;$('quick-new-article').hidden=false;$('quick-post').textContent='Post';$('quick-text').dispatchEvent(new Event('input',{bubbles:true}));}return true;}
   document.querySelectorAll('[data-close-quick]').forEach(button => button.addEventListener('click',closeQuick));
   $('quick-dialog')?.addEventListener('cancel', event => { event.preventDefault();closeQuick(); });
@@ -735,6 +748,7 @@
         relation = me && !self ? await api('/authors/' + encodeURIComponent(handle) + '/relationship') : { following: false, email: false }; renderRelation();
       }
       if (['everyone', 'following', 'mine', 'author'].includes(view)) {await Promise.all([loadFeed(true), loadContributors()]);const params=new URLSearchParams(location.search);if(params.has('editPost') && me){await openQuickEdit(params.get('editPost'));params.delete('editPost');history.replaceState(null,'',location.pathname+(params.size?'?'+params:''));}}
+      if (['everyone', 'following', 'mine'].includes(view)) openSharedNote();
       if (view === 'write') {
         renderEditorBlog();
         const params = new URLSearchParams(location.search);

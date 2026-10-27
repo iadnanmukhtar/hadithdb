@@ -13,4 +13,5 @@
   <% } else { %>
     <div class="commentary-search-fragment col-12" lang="ar" data-reader-language-column="arabic" dir="rtl"><%- commentary.commentary_fragment_html_ar %></div>
   <% } %>
+  <% if (commentary.id) { %><%- include('notebook_anchor.ejs', { noteKey: `sharh:${commentary.id}`, noteTitle: commentary.commentary_ref_en || commentary.ref, noteUrl: commentary.url }); %><% } %>
 </article>

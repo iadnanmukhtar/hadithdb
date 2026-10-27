@@ -34,6 +34,7 @@
     <a href="#sirah-comments-<%= i.id %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="sirah-comments-<%= i.id %>-disclosure" title="View reflections">
       <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.id %>" data-comment-type="hadith" title="0 reflections">0</span>
     </a>
+    <button type="button" class="btn btn-sm icon content-translate-button hadith-share-action-link" data-content-share-trigger data-share-url="/<%= i.ref %>" data-share-title="<%= i.title_en || i.title || i.ref %>" title="Share this passage"><span class="bi bi-box-arrow-up content-translate-button-icon" aria-hidden="true"></span><span class="content-translate-button-label">Share</span></button>
   </aside></footer>
 </article>
 <section class="mt-4 reflection-section col-12" data-reflection-section>
