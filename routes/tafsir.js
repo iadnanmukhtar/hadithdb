@@ -270,6 +270,9 @@ async function renderTafsirPassage(req, res, next) {
 
   const entryStart = entries.length ? Math.min(...entries.map(entry => entry.startAyah)) : ayahNum;
   const entryEnd = entries.length ? Math.max(...entries.map(entry => entry.endAyah)) : ayahNum;
+  const focusMatch = String(req.query.ayah || '').match(/^(\d+):(\d+)$/);
+  const focusAyah = focusMatch && Number(focusMatch[1]) === surahNum && Number(focusMatch[2]) >= entryStart && Number(focusMatch[2]) <= entryEnd
+    ? Number(focusMatch[2]) : ayahNum;
   const allTafsirs = await Tafsir.visibleTafsirs();
   trace('loaded catalog');
   const canonicalPath = Tafsir.passageUrl(tafsir, surahNum, entryStart, entryEnd, allTafsirs);
@@ -278,6 +281,7 @@ async function renderTafsirPassage(req, res, next) {
   const requestPathname = new URL(req.originalUrl || req.url, 'https://quran.islamunlocked.com').pathname;
   if (requestPathname !== canonicalPathname) {
     const query = new URLSearchParams(req.query);
+    if (focusAyah !== entryStart) query.set('ayah', `${surahNum}:${focusAyah}`);
     if (canonicalUrl.searchParams.has('lang'))
       query.set('lang', canonicalUrl.searchParams.get('lang'));
     const suffix = query.toString() ? `?${query.toString()}` : '';
@@ -291,7 +295,7 @@ async function renderTafsirPassage(req, res, next) {
   }
   const ayahs = await quranAyahs(surahNum, entryStart, entryEnd);
   trace('loaded ayahs');
-  const section = await QuranHeadings.sectionForAyah(surahNum, ayahNum);
+  const section = await QuranHeadings.sectionForAyah(surahNum, focusAyah);
   trace('loaded Quran heading');
   const chapter = section
     ? await section.getChapter()
@@ -299,7 +303,7 @@ async function renderTafsirPassage(req, res, next) {
   if (chapter && typeof chapter.getSections === 'function')
     await chapter.getSections();
   if (section)
-    section.mushafPage = await QuranMushaf.pageForRef(surahNum, entryStart);
+    section.mushafPage = await QuranMushaf.pageForRef(surahNum, Math.max(1, focusAyah));
   const navigationEntries = entries.length || tafsir.source !== 'local'
     ? entries
     : await Tafsir.tafsirEntries(tafsir, surahNum, ayahNum, {
@@ -326,7 +330,7 @@ async function renderTafsirPassage(req, res, next) {
   const renderLocals = {
     BookDownloads: BookDownloads,
     Tafsir: Tafsir,
-    ayah: ayahNum,
+    ayah: focusAyah,
     ayahs: ayahs,
     chapter: chapter,
     commentarySurahHeading: commentarySurahHeading,

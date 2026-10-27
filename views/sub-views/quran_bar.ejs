@@ -1,0 +1,15 @@
+<nav class="row g-0 chapter-toc quran-section-menu" aria-label="Quran navigation" data-quran-bar data-quran-current-ref="<%= quranBar.ref %>" data-quran-current-page="<%= quranBar.page %>" data-quran-study-book="<%= quranBar.studyBook %>" data-quran-tafsir-book="<%= quranBar.tafsirBook %>" data-quran-current-mode="<%= quranBar.mode %>">
+  <div class="col-12 chapter-toc-toolbar">
+    <%- include('quran_navigation_trigger.ejs'); %>
+    <span class="chapter-toc-reader-modes">
+      <%- include('quran_reader_modes.ejs', {
+        readerMode: quranBar.mode,
+        passageHref: utils.quranUrl(req, quranBar.paths.passage),
+        tafsirHref: utils.quranUrl(req, quranBar.paths.tafsir),
+        mushafHref: utils.quranUrl(req, quranBar.paths.mushaf),
+        memorizeHref: utils.quranUrl(req, quranBar.paths.memorize),
+        reviewHref: utils.quranUrl(req, quranBar.paths.review)
+      }); %>
+    </span>
+  </div>
+</nav>

@@ -13,6 +13,7 @@
       || requestPath.indexOf('/quran/') === 0
       || (pageBook && pageBook.alias === 'quran')
       || (page.context && page.context.quranSearchProxy);
+    var quranBar = isQuranArea ? utils.quranReaderBar(req, page, locals) : null;
     var isQuranStudyArea = /^\/quran\/(?:[A-Za-z0-9_-]+\/)?(?:\d+|quran:\d+:\d+)(?:\/|$)/.test(requestPath);
     var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0 || (!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans');
     var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
@@ -319,165 +320,12 @@
   <%- include('book_catalog_navigation.ejs', { page }); %>
   <% } %>
 
-  <% if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
+  <% if (isQuranArea) { %>
+  <%- include('quran_bar.ejs', { quranBar: quranBar }); %>
+  <% } else if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
   <%- include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true }); %>
-  <% } else if (page.menu === 'Chapter' || page.menu === 'Section') {
-      var book = page.context.book;
-      var chapter = page.context.chapter;
-      var sections = chapter.sections; 
-      var isQuranToc = book && book.alias === 'quran';
-	  var quranTafsirMenuBase = isQuranTafsirArea && pageQuranCommentaryBook
-	    ? `/quran/tafsir/${encodeURIComponent(pageQuranCommentaryBook.slug || pageQuranCommentaryBook.alias)}`
-	    : '';
-	  var quranStudyTranslationMenuBook = pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans'
-	    ? pageQuranCommentaryBook
-	    : null;
-	  if (!quranStudyTranslationMenuBook) {
-	    var quranStudyTranslationMenuAlias = (req.quranSelectedTranslationAlias
-	      || (req.cookies && req.cookies.quranPreferredTranslationAlias)
-	      || '').toString().trim();
-	    if (/^[A-Za-z0-9_-]+$/.test(quranStudyTranslationMenuAlias))
-	      quranStudyTranslationMenuBook = (Tafsir.visibleTranslationsSync() || []).find(function (translationBook) {
-	        return translationBook && translationBook.alias === quranStudyTranslationMenuAlias;
-	      }) || null;
-	  }
-	  var quranStudyTranslationMenuSlug = quranStudyTranslationMenuBook
-	    ? (quranStudyTranslationMenuBook.quranBookSlug || quranStudyTranslationMenuBook.alias)
-	    : '';
-	  var quranTranslationMenuBase = isQuranTranslationsArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans'
-	    ? `/quran/${encodeURIComponent(pageQuranCommentaryBook.quranBookSlug || pageQuranCommentaryBook.alias)}`
-	    : '';
-	  var quranStudySectionMenuHref = function (section) {
-	    return utils.quranUrl(req, utils.quranStudySectionPath(section, quranStudyTranslationMenuSlug));
-	  };
-	  var quranSectionMenuHref = function (section) {
-	    if (isQuranStudyArea)
-	      return utils.quranUrl(req, utils.quranStudySectionPath(section, quranStudyTranslationMenuSlug));
-	    if (!quranTafsirMenuBase && !quranTranslationMenuBase)
-	      return utils.urlFor(req, `/${section.path}`);
-	    var startParts = String(section.start || '').split(':');
-	    var startAyah = Number(startParts[startParts.length - 1]);
-	    var sectionSurah = Number(section.h1 || chapter.h1);
-	    return utils.quranUrl(req, `${quranTafsirMenuBase || quranTranslationMenuBase}/quran:${sectionSurah}:${startAyah}`);
-	  };
-	  var quranSectionMenuTocHref = isQuranStudyArea || quranTafsirMenuBase || quranTranslationMenuBase
-	    ? utils.quranUrl(req, isQuranStudyArea ? utils.quranStudySectionPath(null, quranStudyTranslationMenuSlug) : (quranTafsirMenuBase || quranTranslationMenuBase))
-	    : utils.quranUrl(req, '/quran');
-      var isQuranMushafSectionMenu = requestPath.indexOf('/quran/page/') === 0
-        && Array.isArray(locals.quranHeaderJuzLinks)
-        && locals.quranHeaderJuzLinks.length > 0;
-      var currentMushafHeaderJuz = isQuranMushafSectionMenu
-        ? locals.quranHeaderJuzLinks.find(function (juz) { return juz.current; })
-        : null;
-  %>
-  <nav class="row g-0 chapter-toc<%= isQuranToc ? ' quran-section-menu' : '' %>">
-    <%# --- TABLE OF CONTENTS --- %>
-    <div class="col-12 chapter-toc-toolbar">
-      <% if (isQuranToc && !isQuranMushafSectionMenu) { %><%- include('quran_navigation_trigger.ejs'); %><% } %>
-      <% if (sections && sections.length > 0) { %>
-        <% if (!isQuranTranslationsArea) { %>
-		<a class="chapter-toc-toggle" data-bs-toggle="<%= isQuranMushafSectionMenu ? 'offcanvas' : 'collapse' %>" href="<%= isQuranMushafSectionMenu ? '#quran-navigation-rail' : '#toc2' %>" role="button" aria-expanded="false" aria-controls="<%= isQuranMushafSectionMenu ? 'quran-navigation-rail' : 'toc2' %>" title="<%= isQuranMushafSectionMenu ? 'Show juz' : (isQuranToc ? 'Show passages' : 'Show sections') %>">
-          <i class="bi bi-list-ul" aria-hidden="true"></i>
-		  <span><%= isQuranMushafSectionMenu ? 'Juz' : (isQuranToc ? 'Passages' : 'Sections') %></span>
-		  <% if (isQuranMushafSectionMenu && currentMushafHeaderJuz) { %><span class="chapter-toc-current" data-quran-mushaf-current-juz><%= currentMushafHeaderJuz.num %> · <%= currentMushafHeaderJuz.progress %>%</span><% } else if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
-          <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
-        </a>
-        <% } %>
-	        <% if (page.context.book && page.context.book.alias === 'quran' && page.menu === 'Section') {
-	             var quranComparisonRef = requestPath.indexOf('/quran/translations/quran:') === 0 && /^\d+:\d+$/.test(page.context.quranReaderRef || '') ? page.context.quranReaderRef : '';
-             var quranSectionPath = quranComparisonRef ? utils.quranUrl(req, `/quran:${quranComparisonRef}`) : quranStudySectionMenuHref(page.context.section || page.context.chapter);
-             var quranReaderMode = isQuranTafsirArea ? 'tafsir' : (requestPath.indexOf('/quran/translations/quran:') === 0 ? 'translations' : (requestPath.indexOf('/quran/page/') === 0 ? (isQuranReviewArea ? 'review' : (isQuranMemorizeArea ? 'memorize' : 'mushaf')) : 'passage'));
-             var quranMappedPage = page.context.section && page.context.section.mushafPage;
-             var quranMappedMushafHref = utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`);
-        %>
-          <span class="chapter-toc-reader-modes">
-            <%- include('quran_reader_modes.ejs', {
-              readerMode: quranReaderMode,
-              passageHref: quranSectionPath,
-              ayahHref: `${quranSectionPath}?ayat`,
-              mushafHref: quranComparisonRef ? utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}?ayah=${quranComparisonRef}`) : quranMappedMushafHref,
-              tafsirHref: quranComparisonRef ? utils.quranUrl(req, `/quran/tafsir/${quranSearchTafsirSlug || 'mokhtasar'}/quran:${quranComparisonRef}`) : (isQuranTafsirArea ? requestPath : utils.quranUrl(req, '/quran/tafsir')),
-              memorizeHref: quranComparisonRef ? utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}?ayah=${quranComparisonRef}&memorize`) : `${quranMappedMushafHref}?memorize`
-            }); %>
-          </span>
-        <% } %>
-      <% } else { %>
-        <!-- <a>No sections in this chapter</a> -->
-      <% } %>
-    </div>
-    <%# The Mushaf toolbar progress indicator uses the static Juz page mappings in this hidden panel. %>
-    <div id="toc2" class="col-12 toc2 collapse chapter-toc-panel"<% if (isQuranMushafSectionMenu) { %> hidden<% } %>>
-      <table class="table chapter-toc-table">
-        <tbody>
-          <% if (!isQuranMushafSectionMenu) { %>
-          <% if (isQuranToc) { %>
-          <tr class="title" data-quran-menu-href="<%= quranSectionMenuTocHref %>">
-            <td><a href="<%= quranSectionMenuTocHref %>">Table of Contents</a></td>
-            <td lang="ar" dir="rtl"><a href="<%= quranSectionMenuTocHref %>">الفهرس</a></td>
-          </tr>
-          <% } %>
-          <%
-				for (var section of sections) {
-					if (section.level < 3) {
-						title_en = utils.truncate(utils.emptyIfNull(section.title_en).toString(), 75);
-						title = utils.truncate(utils.emptyIfNull(section.title).toString(), 150); %>
-          <tr class="title<%= page.context.section && Number(page.context.section.h2) === Number(section.h2) ? ' is-current' : '' %>"<% if (isQuranToc && section.start) { %> data-quran-menu-href="<%= quranSectionMenuHref(section) %>"<% } %>>
-            <% if (!isQuranToc) { %>
-            <td><%- section.start %></td>
-            <% } %>
-            <% if (section.start) { %>
-            <td>
-              <a href="<%= quranSectionMenuHref(section) %>">
-				<%= `§${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>
-				<%- title_en || `${isQuranToc ? 'Passage' : 'Section'} ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%=section.count%>)
-              </a>
-              <% if (page.context.book && page.context.book.alias === 'quran') { %>
-                &nbsp;<a href="<%= quranStudySectionMenuHref(section) %>" title="Study"><i class="bi bi-text-paragraph"></i></a>
-              <% } %>
-            </td>
-            <td lang="ar"><a href="<%= quranSectionMenuHref(section) %>"><%- title %></a></td>
-            <% } else { %>
-			<td><%- title_en || (isQuranToc ? 'Passage' : 'Section') %></td>
-            <td lang="ar"><%- title %></td>
-            <% } %>
-          </tr>
-          <%    }
-					}  %>
-          <% } %>
-          <% if (isQuranMushafSectionMenu) { %>
-          <tr class="title" data-quran-menu-href="<%= utils.quranUrl(req, '/quran') %>">
-            <td><a href="<%= utils.quranUrl(req, '/quran') %>">Table of Contents</a></td>
-            <td lang="ar" dir="rtl"><a href="<%= utils.quranUrl(req, '/quran') %>">الفهرس</a></td>
-          </tr>
-          <% for (var mushafHeaderJuz of locals.quranHeaderJuzLinks) { %>
-          <tr class="title<%= mushafHeaderJuz.current ? ' is-current' : '' %>" data-quran-mushaf-header-juz="<%= mushafHeaderJuz.num %>" data-quran-mushaf-juz-href="<%= mushafHeaderJuz.href %>" data-quran-mushaf-juz-start-page="<%= mushafHeaderJuz.startPage %>" data-quran-mushaf-juz-end-page="<%= mushafHeaderJuz.endPage %>">
-            <td><a href="<%= mushafHeaderJuz.href %>"<% if (mushafHeaderJuz.current) { %> aria-current="page"<% } %>>Juz <%= mushafHeaderJuz.num %></a></td>
-            <td lang="ar" dir="rtl"><a href="<%= mushafHeaderJuz.href %>"<% if (mushafHeaderJuz.current) { %> aria-current="page"<% } %>><%- mushafHeaderJuz.title || '' %></a></td>
-          </tr>
-          <% } %>
-          <% } %>
-        </tbody>
-      </table>
-    </div>
-  </nav>
-  <% } %>
-
-  <% if (!(isQuranToc && (page.menu === 'Chapter' || page.menu === 'Section')) && (requestPath === '/quran' || requestPath === '/quran/review' || isQuranTafsirArea || pageQuranCommentaryBook) && Array.isArray(locals.quranHeaderJuzLinks) && locals.quranHeaderJuzLinks.length > 0) { %>
-  <nav class="row g-0 chapter-toc quran-section-menu">
-    <div class="col-12 chapter-toc-toolbar">
-      <%- include('quran_navigation_trigger.ejs'); %>
-      <span class="chapter-toc-reader-modes">
-        <%- include('quran_reader_modes.ejs', {
-          readerMode: isQuranTafsirArea ? 'tafsir' : (requestPath === '/quran/review' ? 'review' : undefined),
-          passageHref: utils.quranUrl(req, '/quran/1'),
-          ayahHref: `${utils.quranUrl(req, '/quran/1')}?ayat`,
-          mushafHref: utils.quranUrl(req, '/quran/page'),
-          tafsirHref: pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir' ? requestPath : utils.quranUrl(req, '/quran/tafsir'),
-          memorizeHref: utils.quranUrl(req, '/quran/page/1?memorize')
-        }); %>
-      </span>
-    </div>
-  </nav>
+  <% } else if (page.menu === 'Chapter' || page.menu === 'Section') { %>
+  <%- include('chapter_section_menu.ejs'); %>
   <% } %>
 
   <div class="col-12 d-none d-md-flex site-navbar-search-row" role="search">
@@ -491,4 +339,4 @@
   </div>
 </nav>
 
-<% if (isQuranArea) { %><%- include('quran_navigation_rail.ejs', { navigationMode: requestPath.indexOf('/quran/translations') === 0 ? 'translations' : quranSearchReturnMode, navigationBook: quranSearchCommentaryBook }); %><% } %>
+<% if (isQuranArea) { %><%- include('quran_navigation_rail.ejs', { navigationMode: quranBar.navigationMode, navigationBook: quranBar.navigationBook }); %><% } %>

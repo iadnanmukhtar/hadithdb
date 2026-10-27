@@ -21,10 +21,10 @@
 .quran-navigation-item.is-current { background: var(--c-accent-12); color: var(--quran-navigation-ink); box-shadow: inset 3px 0 0 var(--c-accent), inset 0 0 0 1px var(--c-accent-18); font-weight: 700; }
 .quran-navigation-item.is-current:hover, .quran-navigation-item.is-current:focus-visible { background: var(--c-accent-18); }
 .quran-navigation-item [lang="ar"] { font-size: 1.1rem; }
-.has-verses .quran-navigation-column:first-child { flex: 1 1 72%; }
-.has-verses .quran-navigation-column:first-child .quran-navigation-item { display: block; }
-.has-verses .quran-navigation-column:first-child [lang="ar"] { display: block; font-size: .95rem; opacity: .7; }
-.has-verses .quran-navigation-verses { flex: 0 0 25%; }
+.has-ayahs .quran-navigation-column:first-child { flex: 1 1 72%; }
+.has-ayahs .quran-navigation-column:first-child .quran-navigation-item { display: block; }
+.has-ayahs .quran-navigation-column:first-child [lang="ar"] { display: block; font-size: .95rem; opacity: .7; }
+.has-ayahs .quran-navigation-ayahs { flex: 0 0 25%; }
 @media (max-width: 420px) { .quran-navigation-content { padding: 0 .85rem .85rem; } .quran-navigation-tabs { margin-inline: .85rem; } }
 @media (max-width: 576px) {
   .quran-section-menu .chapter-toc-toggle[href="#quran-navigation-rail"] { display: inline-flex; flex-shrink: 0; font-size: .68rem; padding: .28rem .4rem; }
@@ -66,3 +66,6 @@
 .major .title .quran-surah-navigation-title:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) { .quran-navigation-tabs button, .quran-navigation-column input, .quran-navigation-item { transition: none; } }
+
+.quran-navigation-tabs button { min-width: 0; font-size: .9rem; }
+.quran-navigation-rail .offcanvas-title .bi-compass { margin-inline-end: .3rem; color: var(--c-accent); }

@@ -45,6 +45,21 @@ describe('restored Quran public route caches', () => {
     expect(res.redirect).toHaveBeenCalledWith(301, '/quran/tafsir/tabari/18/5?view=full');
   });
 
+  test('keeps a selected ayah when Tafsir canonicalizes a broader entry range', async () => {
+    global.surahs = [{ num: 2, ayahs: 286 }];
+    const router = require('../routes/tafsir');
+    const req = { params: { tafsir: 'ibn-kathir', surah: '2', start: '256' }, originalUrl: '/quran/tafsir/ibn-kathir/quran:2:256', query: {}, admin: false };
+    const res = Object.assign(response(), { redirect: jest.fn() });
+    jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
+    jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(null);
+    jest.spyOn(Tafsir, 'resolveTafsir').mockResolvedValue({ alias: 'ibn-kathir', source: 'local' });
+    jest.spyOn(Tafsir, 'tafsirEntries').mockResolvedValue([{ startAyah: 253, endAyah: 260 }]);
+    jest.spyOn(Tafsir, 'visibleTafsirs').mockResolvedValue([]);
+    jest.spyOn(Tafsir, 'passageUrl').mockReturnValue('/quran/tafsir/ibn-kathir/quran:2:253-260');
+    await routeHandler(router, '/:tafsir/quran::surah::start')(req, res, jest.fn());
+    expect(res.redirect).toHaveBeenCalledWith(301, '/quran/tafsir/ibn-kathir/quran:2:253-260?ayah=2%3A256');
+  });
+
   test('serves the Tafsir catalog cache before resolving first passages', async () => {
     const router = require('../routes/tafsirs');
     const req = {

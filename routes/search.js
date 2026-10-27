@@ -2767,7 +2767,8 @@ async function renderQuranMushafPage(req, res, next, options) {
     book: options.book,
     chapter: options.chapter,
     section: options.section,
-    passage: true
+    passage: true,
+    quranReaderRef: reviewRef || selectedAyahRef || (firstWord ? `${firstWord.surah}:${firstWord.ayah}` : '')
   };
   var firstPageAudioRange = audioRanges[0];
   var lastPageAudioRange = audioRanges[audioRanges.length - 1];

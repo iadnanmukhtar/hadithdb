@@ -11,16 +11,20 @@
     return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f\u064b-\u065f\u0670]/g, '')
       .replace(/[أإآٱ]/g, 'ا').replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x660)).replace(/[\u06f0-\u06f9]/g, d => String(d.charCodeAt(0) - 0x6f0)).replace(/[^\p{L}\p{N}]/gu, '');
   }
-  function context() {
+  function context(trigger) {
     currentJuz = 0;
+    var bar = document.querySelector('[data-quran-bar]');
+    var clickedPage = trigger && trigger.closest('[data-quran-mushaf-page]');
+    if (bar && typeof window.updateQuranReaderModeHrefs === 'function') window.updateQuranReaderModeHrefs(clickedPage || bar.quranReaderMarker || document.querySelector('main'), clickedPage && window.quranReaderModeFirstRef(clickedPage));
     var markers = Array.from(document.querySelectorAll('[data-quran-mushaf-page], main[data-reader-quran-ref], .quran-passage-section'));
-    var marker = markers.find(node => { var box = node.getBoundingClientRect(); return box.bottom > 180 && box.top < window.innerHeight; }) || document.querySelector('main');
+    var marker = clickedPage || markers.find(node => { var box = node.getBoundingClientRect(); return box.bottom > 180 && box.top < window.innerHeight; }) || document.querySelector('main');
     currentRef = typeof window.quranReaderModeFirstRef === 'function' ? window.quranReaderModeFirstRef(marker) : '';
-    var verse = marker && (marker.querySelector('.ayah-selected[data-quran-ref]') || marker.querySelector('[data-quran-ref]'));
-    currentRef = currentRef || verse && verse.getAttribute('data-quran-ref') || (new URLSearchParams(window.location.search)).get('ayah') || '';
+    var ayah = marker && (marker.querySelector('.ayah-selected[data-quran-ref]') || marker.querySelector('[data-quran-ref]'));
+    currentRef = bar && bar.getAttribute('data-quran-current-ref') || currentRef;
+    currentRef = currentRef || ayah && ayah.getAttribute('data-quran-ref') || (new URLSearchParams(window.location.search)).get('ayah') || '';
     var match = currentRef.match(/^(\d+):(\d+)/);
     surah = match ? Number(match[1]) : Number((window.location.pathname.match(/\/quran\/(?:[A-Za-z_-]+\/)?(\d+)(?:\/|$)/) || [])[1]) || 1;
-    currentPage = Number(marker && marker.getAttribute('data-quran-mushaf-page')) || Number((window.location.pathname.match(/\/quran\/page\/(\d+)/) || [])[1]) || 0;
+    currentPage = Number(bar && bar.getAttribute('data-quran-current-page')) || Number(marker && marker.getAttribute('data-quran-mushaf-page')) || Number((window.location.pathname.match(/\/quran\/page\/(\d+)/) || [])[1]) || 0;
   }
   function href(ref, page) {
     var url = new URL(rail.dataset.navigationJump, window.location.origin);
@@ -42,9 +46,9 @@
   }
   function column(label, items) {
     var col = document.createElement('div'); col.className = 'quran-navigation-column';
-    var input = document.createElement('input'); input.type = 'search'; input.className = 'form-control'; input.placeholder = label === 'Search Verse' ? 'Verse' : label; input.setAttribute('aria-label', label);
+    var input = document.createElement('input'); input.type = 'search'; input.className = 'form-control'; input.placeholder = label === 'Search Ayah' ? 'Ayah' : label; input.setAttribute('aria-label', label);
     var list = document.createElement('nav'); list.className = 'quran-navigation-list'; list.setAttribute('aria-label', label.replace('Search ', ''));
-    var empty = document.createElement('p'); empty.className = 'text-muted p-2'; empty.textContent = 'No matches'; empty.hidden = true;
+    var empty = document.createElement('p'); empty.className = 'text-muted p-2'; empty.textContent = 'No matches'; empty.hidden = items.length > 0;
     items.forEach(item => list.append(item)); list.append(empty);
     input.addEventListener('input', function () {
       var term = normalize(input.value), count = 0;
@@ -65,38 +69,39 @@
   }
   function render() {
     if (!data) return;
-    content.replaceChildren(); content.classList.toggle('has-verses', tab === 'verse');
+    content.replaceChildren(); content.classList.toggle('has-ayahs', tab === 'ayah');
     content.setAttribute('aria-labelledby', 'quran-navigation-tab-' + tab);
     tabs.forEach(button => { var selected = button.dataset.navigationTab === tab; button.setAttribute('aria-selected', String(selected)); button.tabIndex = selected ? 0 : -1; });
-    if (tab === 'surah' || tab === 'verse') {
+    if (tab === 'surah' || tab === 'ayah') {
       content.append(column('Search Surah', data.surahs.map(s => {
         var a = link(s.num + '. ' + s.name, href(s.num + ':1'), s.num === surah, s.arabic);
-        if (tab === 'verse') {
-          a.setAttribute('role', 'button'); a.setAttribute('aria-label', 'Select ' + s.name + ' verses');
+        if (tab === 'ayah') {
+          a.setAttribute('role', 'button'); a.setAttribute('aria-label', 'Select ' + s.name + ' ayahs');
           a.addEventListener('click', event => {
             if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             event.preventDefault(); surah = s.num;
             content.querySelectorAll('.quran-navigation-column:first-child .quran-navigation-item').forEach(item => { item.classList.remove('is-current'); item.removeAttribute('aria-current'); });
-            a.classList.add('is-current'); a.setAttribute('aria-current', 'location'); renderVerses();
+            a.classList.add('is-current'); a.setAttribute('aria-current', 'location'); renderAyahs();
           });
           a.addEventListener('keydown', event => { if (event.key === ' ') { event.preventDefault(); a.click(); } });
         }
         return a;
       })));
-      if (tab === 'verse') renderVerses();
-    } else if (tab === 'juz') {
-      var activeJuz = data.juz.filter(j => { var p = j.ref.split(':').map(Number), c = currentRef.split(':').map(Number); return p[0] < c[0] || p[0] === c[0] && p[1] <= c[1]; }).pop();
-      content.append(column('Search Juz', data.juz.map(j => link('Juz ' + j.num, href(j.ref), currentJuz ? j.num === currentJuz : j === activeJuz, j.title))));
+      if (tab === 'ayah') renderAyahs();
+    } else if (tab === 'juz' || tab === 'manzil') {
+      var rows = data[tab] || [], label = tab === 'manzil' ? 'Manzil' : 'Juz';
+      var activeSubdivision = rows.filter(row => { var p = row.ref.split(':').map(Number), c = currentRef.split(':').map(Number); return p[0] < c[0] || p[0] === c[0] && p[1] <= c[1]; }).pop();
+      content.append(column('Search ' + label, rows.map(row => link(label + ' ' + row.num, href(row.ref), tab === 'juz' && currentJuz ? row.num === currentJuz : row === activeSubdivision, row.title))));
     } else {
       content.append(column('Search Page', Array.from({length: data.pages}, (_, i) => link('Page ' + (i + 1), href('', i + 1), i + 1 === currentPage))));
     }
     centerCurrent();
   }
-  function renderVerses() {
+  function renderAyahs() {
     var old = content.querySelectorAll('.quran-navigation-column')[1]; if (old) old.remove();
     var selected = data.surahs.find(s => s.num === surah); if (!selected) return;
-    var col = column('Search Verse', Array.from({length: selected.ayahs}, (_, i) => link(String(i + 1), href(surah + ':' + (i + 1)), currentRef === surah + ':' + (i + 1))));
-    col.classList.add('quran-navigation-verses'); content.append(col); centerCurrent();
+    var col = column('Search Ayah', Array.from({length: selected.ayahs}, (_, i) => link(String(i + 1), href(surah + ':' + (i + 1)), currentRef === surah + ':' + (i + 1))));
+    col.classList.add('quran-navigation-ayahs'); content.append(col); centerCurrent();
   }
   tabs.forEach((button, index) => {
     button.addEventListener('click', () => { tab = button.dataset.navigationTab; render(); });
@@ -106,8 +111,8 @@
     });
   });
   rail.addEventListener('show.bs.offcanvas', function (event) {
-    context();
     var trigger = event.relatedTarget;
+    context(trigger);
     if (trigger && trigger.dataset.navigationOpenTab) {
       tab = trigger.dataset.navigationOpenTab;
       if (trigger.dataset.navigationPage) currentPage = Number(trigger.dataset.navigationPage);

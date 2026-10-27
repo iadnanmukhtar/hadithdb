@@ -139,7 +139,6 @@ $(function () {
 		$('.toggle').removeClass('bi-toggle-off');
 		$('.toggle').addClass('bi-toggle-on');
 		updateFixedHeaderOffset();
-		scrollQuranMushafJuzMenuToCurrent();
 	});
 
 	initMarkdownEditablePreviews(document);
@@ -162,6 +161,7 @@ $(function () {
 	initTocHeadingRail(document);
 	initHeadingRailHeaderOffset();
 	rememberCurrentQuranTafsir();
+	initQuranReaderBar();
 	initQuranMushafLastPageLinks(document);
 	initQuranMushafInfinite(document);
 	initQuranMushafLineFitting(document);
@@ -8342,6 +8342,7 @@ function initQuranMushafAyahSelection(root) {
 			refreshQuranMushafAyahBackgrounds([document]);
 		}, { passive: true });
 		document.addEventListener('click', function (event) {
+			if (event.target.closest('[data-quran-bar], #quran-navigation-rail')) return;
 			var searchAyah = event.target.closest('[data-quran-ref].quran-mushaf-search-ayah');
 			if (!searchAyah) {
 				document.querySelectorAll('.quran-mushaf-search-ayah').forEach(function (element) {
@@ -8389,6 +8390,7 @@ function initQuranMushafAyahSelection(root) {
 				element.classList.toggle('quran-mushaf-ayah-selected', !!ref && element.getAttribute('data-quran-ref') === ref);
 			});
 			refreshQuranMushafAyahBackgrounds([page]);
+			updateQuranReaderModeHrefs(page, ref);
 		};
 		page.addEventListener('pointerover', function (event) {
 			var target = event.target.closest('.quran-corpus-word[data-quran-ref], .quran-mushaf-ayah-marker[data-quran-ref]');
@@ -10290,7 +10292,7 @@ function initQuranAyahReview(root) {
 		var syncReviewedAyahsFromSession = async function () {
 			var auth = window.hadithAuth;
 			var token = auth && auth.getToken ? await auth.getToken() : null;
-			if (!token) return;
+			if (!token) throw new Error('Please sign in to restore your review.');
 			var parts = ref.split(':');
 			if (parts.length !== 2) return;
 			var response = await fetch(quranApiPath(`/memorization/review/active/${parts[0]}/${parts[1]}/reviewed?day_start=${encodeURIComponent(localReviewDayStart)}`), {
@@ -10298,6 +10300,12 @@ function initQuranAyahReview(root) {
 				headers: { 'Authorization': `Bearer ${token}` }
 			});
 			var data = await response.json().catch(function () { return {}; });
+			if (response.status === 404) {
+				window.navigateWithPageNotice(quranUrl('/quran/review'),
+					{ type:'info', title:'Open Mudhakkir', message:'This review item is no longer active. Start or continue a session from Mudhakkir.', scrollToTop:true },
+					'Opening Mudhakkir...');
+				return;
+			}
 			if (!response.ok) throw new Error(data.error || 'Unable to restore the active review.');
 			if (!data.session_id || !data.attempt_token)
 				throw new Error('The active review attempt could not be restored.');
@@ -10319,6 +10327,7 @@ function initQuranAyahReview(root) {
 				if (/^\d+:\d+$/.test(reviewedRef)) reviewedRefs.add(reviewedRef);
 			});
 			revealReviewContextAyahs();
+			if (status) status.textContent = '';
 			enableReviewButtons();
 			if (sessionActions) sessionActions.querySelectorAll('button').forEach(function (item) { item.disabled = false; });
 		};
@@ -10371,10 +10380,24 @@ function initQuranAyahReview(root) {
 				element.classList.toggle('quran-review-target-ayah', reviewTargetRefs.has(element.getAttribute('data-quran-ref')));
 			});
 			revealReviewContextAyahs();
-			syncReviewedAyahsFromSession().catch(function (err) {
-				if (status) status.textContent = err.message;
-				if (window.toastr) window.toastr.error(err.message, 'Review unavailable');
-			});
+			var restoreReview = function () {
+				if (status) status.textContent = 'Restoring your review...';
+				return syncReviewedAyahsFromSession().catch(function (err) {
+					if (status) {
+						status.textContent = err.message + ' ';
+						var retry = document.createElement('button');
+						retry.type = 'button';
+						retry.className = 'btn btn-sm btn-outline-secondary';
+						retry.textContent = 'Retry';
+						retry.addEventListener('click', restoreReview);
+						var dashboard = document.createElement('a');
+						dashboard.href = quranUrl('/quran/review');
+						dashboard.textContent = ' Open Mudhakkir';
+						status.append(retry, dashboard);
+					}
+				});
+			};
+			restoreReview();
 			window.requestAnimationFrame(function () {
 				var target = Array.from(page.querySelectorAll('.quran-review-target-ayah')).find(function (element) {
 					return element.classList.contains('quran-ayah-end-marker');
@@ -10611,7 +10634,7 @@ function initPageHelpTips(root) {
 		},
 		{
 			title: 'Test your learning in Mudhakkir',
-			copy: 'When you are ready to test yourself, select the green **Mudhakkir** button in the reading-mode bar. You can review this page or a surah, and the Mudhakkir guide will show you how to reveal, grade, pause, and finish a session.',
+			copy: 'When you are ready to test yourself, select the green **Mudhakkir** button in the reading-mode bar to open your dashboard and start or continue a review session. Use the page review button for a custom review of this page.',
 			selector: '.quran-reader-modes [data-quran-reader-mode-link="review"]'
 		}
 	],
@@ -11351,88 +11374,98 @@ function updateLazyReaderDocumentTitle(title) {
 }
 
 function copyQuranReaderModeHrefs(source, target) {
-	if (!source || !target)
-		return;
+	if (!source || !target) return;
 	['passage', 'ayat', 'tafsir', 'mushaf', 'memorize', 'review'].forEach(function (mode) {
 		var link = source.querySelector(`[data-quran-reader-mode-link="${mode}"]`);
 		var href = link && link.getAttribute('href');
-		if (href)
-			target.setAttribute(`data-quran-reader-${mode}-href`, href);
+		if (href) target.setAttribute(`data-quran-reader-${mode}-href`, href);
 	});
-	var firstRef = quranReaderModeFirstRef(source);
-	if (firstRef)
-		target.setAttribute('data-quran-reader-first-ref', firstRef);
+	var bar = source.querySelector('[data-quran-bar]');
+	['study-book', 'tafsir-book'].forEach(function (key) {
+		if (bar) target.setAttribute('data-quran-reader-' + key, bar.getAttribute('data-quran-' + key) || '');
+	});
+	var firstRef = bar && bar.getAttribute('data-quran-current-ref') || quranReaderModeFirstRef(source);
+	if (firstRef) target.setAttribute('data-quran-reader-first-ref', firstRef);
 }
 
 function quranReaderModeFirstRef(source) {
-	if (!source)
-		return '';
+	if (!source) return '';
+	var selected = source.querySelector && (source.querySelector('.quran-mushaf-ayah-selected[data-quran-ref]') || source.querySelector('.ayah.ayah-selected[data-quran-ref]'));
+	var selectedRef = selected && selected.getAttribute('data-quran-ref');
+	if (/^\d+:\d+$/.test(selectedRef || '')) return selectedRef;
 	var storedRef = source.getAttribute && (source.getAttribute('data-reader-quran-ref') || source.getAttribute('data-quran-reader-first-ref'));
 	var commentary = source.querySelector && source.querySelector('[data-reader-quran-ref]');
 	storedRef = storedRef || commentary && commentary.getAttribute('data-reader-quran-ref');
-	if (/^\d+:\d+$/.test(storedRef || ''))
-		return storedRef;
-	var mushafPage = source.matches && source.matches('[data-quran-mushaf-page]')
-		? source
-		: source.querySelector && source.querySelector('[data-quran-mushaf-page]');
+	if (/^\d+:\d+$/.test(storedRef || '')) return storedRef;
+	var mushafPage = source.matches && source.matches('[data-quran-mushaf-page]') ? source : source.querySelector && source.querySelector('[data-quran-mushaf-page]');
 	var refElement = mushafPage && (mushafPage.querySelector('.quran-mushaf-search-ayah[data-quran-ref]') || mushafPage.querySelector('.quran-mushaf-sheet:not(.quran-review-page-continuity) [data-quran-ref]'));
-	if (!refElement && source.querySelector)
-		refElement = source.querySelector('.quran-passage-section .ayah.ayah-selected[data-quran-ref]');
-	if (!refElement && source.querySelector)
-		refElement = source.querySelector('.quran-passage-section .ayah[data-quran-ref]');
+	if (!refElement && source.querySelector) refElement = source.querySelector('.quran-passage-section .ayah.ayah-selected[data-quran-ref]');
+	if (!refElement && source.querySelector) refElement = source.querySelector('.quran-passage-section .ayah[data-quran-ref]');
 	var ref = refElement && refElement.getAttribute('data-quran-ref') || '';
 	return /^\d+:\d+$/.test(ref) ? ref : '';
 }
 
-function quranReaderTafsirHref(firstRef) {
-	if (!/^\d+:\d+$/.test(firstRef || ''))
-		return '';
-	var parts = firstRef.split(':');
-	var slug = getLastVisitedQuranTafsirSlug();
-	return quranUrl(`/quran/tafsir/${encodeURIComponent(slug)}/quran:${encodeURIComponent(parts[0])}:${encodeURIComponent(parts[1])}`);
+function visibleQuranMushafSelection() {
+	var reader = document.querySelector('[data-quran-mushaf-reader]');
+	if (!reader) return null;
+	var navbar = document.querySelector('.site-navbar.fixed-top');
+	var top = navbar ? navbar.getBoundingClientRect().bottom : 0;
+	return Array.from(reader.querySelectorAll('.quran-mushaf-ayah-selected[data-quran-ref], .quran-mushaf-search-ayah[data-quran-ref]')).find(function (node) {
+		var rect = node.getBoundingClientRect();
+		return rect.height > 0 && rect.bottom > top && rect.top < window.innerHeight;
+	}) || null;
 }
 
-function updateQuranReaderModeHrefs(marker) {
-	if (!marker)
-		return;
-	['passage', 'ayat', 'tafsir', 'mushaf', 'memorize', 'review'].forEach(function (mode) {
-		var href = marker.getAttribute(`data-quran-reader-${mode}-href`);
-		if (!href)
-			return;
-		document.querySelectorAll(`[data-quran-reader-mode-link="${mode}"]`).forEach(function (link) {
-			link.setAttribute('href', href);
-		});
+function updateQuranReaderModeHrefs(marker, selectedRef) {
+	var bar = document.querySelector('[data-quran-bar]');
+	if (!bar || !marker || !window.QuranReaderLinks) return;
+	var explicitFocus = !!selectedRef;
+	var visibleSelection = !selectedRef && visibleQuranMushafSelection();
+	if (visibleSelection) {
+		marker = visibleSelection.closest('[data-quran-mushaf-page]') || marker;
+		selectedRef = visibleSelection.getAttribute('data-quran-ref');
+	}
+	var ref = window.QuranReaderLinks.reference(selectedRef || quranReaderModeFirstRef(marker));
+	if (!ref) return;
+	var page = marker.getAttribute('data-quran-mushaf-page');
+	var mappedHref = explicitFocus && !page ? '' : marker.getAttribute('data-quran-reader-mushaf-href') || '';
+	if (!page) page = (mappedHref.match(/\/(?:quran\/)?page\/(\d+)/) || [])[1];
+	if (!page && ref === bar.getAttribute('data-quran-current-ref')) page = bar.getAttribute('data-quran-current-page');
+	['study-book', 'tafsir-book'].forEach(function (key) {
+		var value = marker.getAttribute('data-quran-reader-' + key);
+		if (value !== null) bar.setAttribute('data-quran-' + key, value);
 	});
-	var firstRef = quranReaderModeFirstRef(marker);
-	if (firstRef) {
-		var mushafHref = marker.getAttribute('data-quran-reader-mushaf-href');
-		if (mushafHref) {
-			var mushafUrl = new URL(mushafHref, window.location.origin);
-			mushafUrl.searchParams.set('ayah', firstRef);
-			document.querySelectorAll('[data-quran-reader-mode-link="mushaf"]').forEach(function (link) {
-				link.setAttribute('href', mushafUrl.pathname + mushafUrl.search);
-			});
-		}
-		if (marker.matches('[data-quran-mushaf-page]') || marker.getAttribute('data-reader-mode') === 'tafsir') {
-			document.querySelectorAll('[data-quran-reader-mode-link="passage"]').forEach(function (link) {
-				link.setAttribute('href', quranUrl(`/quran:${firstRef}`));
-			});
-		}
+	var query = new URLSearchParams(window.location.search);
+	var paths = window.QuranReaderLinks.paths({
+		ref: ref, page: page,
+		studyBook: bar.getAttribute('data-quran-study-book'),
+		tafsirBook: bar.getAttribute('data-quran-tafsir-book') || getLastVisitedQuranTafsirSlug(),
+		script: query.get('script'), ayat: query.has('ayat')
+	});
+	Object.keys(paths).forEach(function (mode) {
+		bar.querySelectorAll(`[data-quran-reader-mode-link="${mode}"]`).forEach(function (link) { link.setAttribute('href', quranUrl(paths[mode])); });
+	});
+	bar.setAttribute('data-quran-current-ref', ref);
+	bar.setAttribute('data-quran-current-page', page || '');
+	if (explicitFocus && !marker.hasAttribute('data-quran-mushaf-page')) {
+		var anchor = marker.querySelector('[data-quran-infinite-anchor]') || marker;
+		anchor.setAttribute('data-quran-reader-first-ref', ref);
+		anchor.setAttribute('data-quran-reader-mushaf-href', paths.mushaf);
+		if (anchor.hasAttribute('data-reader-quran-ref')) anchor.setAttribute('data-reader-quran-ref', ref);
+		if (anchor.hasAttribute('data-quran-url')) anchor.setAttribute('data-quran-url', quranUrl(paths.passage));
+		marker = anchor;
 	}
-	var tafsirHref = quranReaderTafsirHref(quranReaderModeFirstRef(marker));
-	if (tafsirHref) {
-		document.querySelectorAll('[data-quran-reader-mode-link="tafsir"]:not(.active)').forEach(function (link) {
-			link.setAttribute('href', tafsirHref);
-		});
-	}
+	bar.quranReaderMarker = marker;
 }
 
-function scrollQuranMushafJuzMenuToCurrent() {
-	var panel = document.querySelector('.site-navbar #toc2');
-	var current = panel && panel.querySelector('[data-quran-mushaf-header-juz].is-current');
-	if (!panel || !current)
-		return;
-	panel.scrollTop = Math.max(0, current.offsetTop - ((panel.clientHeight - current.offsetHeight) / 2));
+function initQuranReaderBar() {
+	var bar = document.querySelector('[data-quran-bar]');
+	if (!bar) return;
+	updateQuranReaderModeHrefs(document.querySelector('main'));
+	bar.addEventListener('click', function (event) {
+		if (event.target.closest('[data-quran-reader-mode-link], [href="#quran-navigation-rail"]'))
+			updateQuranReaderModeHrefs(bar.quranReaderMarker || document.querySelector('main'));
+	});
 }
 
 function initQuranMenuRows(root) {
@@ -12172,39 +12205,6 @@ function initTocHeadingRail(root) {
 	scheduleTocHeadingRailUpdate();
 }
 
-function updateQuranMushafHeaderJuz(pageNumber, pageElement) {
-	pageNumber = parseInt(pageNumber, 10);
-	var label = pageElement && pageElement.querySelector('[data-navigation-juz]');
-	var juzNumber = parseInt(label && label.getAttribute('data-navigation-juz'), 10);
-	if (!Number.isInteger(pageNumber) || !Number.isInteger(juzNumber) || juzNumber < 1 || juzNumber > 30)
-		return;
-	var currentRow = null;
-	document.querySelectorAll('[data-quran-mushaf-header-juz]').forEach(function (row) {
-		var current = Number(row.getAttribute('data-quran-mushaf-header-juz')) === juzNumber;
-		row.classList.toggle('is-current', current);
-		if (current)
-			currentRow = row;
-		row.querySelectorAll('a').forEach(function (link) {
-			if (current)
-				link.setAttribute('aria-current', 'page');
-			else
-				link.removeAttribute('aria-current');
-		});
-	});
-	var currentLabel = document.querySelector('[data-quran-mushaf-current-juz]');
-	if (currentLabel && currentRow) {
-		var startPage = parseInt(currentRow.getAttribute('data-quran-mushaf-juz-start-page'), 10);
-		var endPage = parseInt(currentRow.getAttribute('data-quran-mushaf-juz-end-page'), 10);
-		var completedPages = Math.max(1, pageNumber - startPage + 1);
-		var totalPages = Math.max(1, endPage - startPage + 1);
-		var progress = Math.max(0, Math.min(100, Math.round((completedPages / totalPages) * 100)));
-		currentLabel.textContent = `${juzNumber} · ${progress}%`;
-	}
-	var panel = document.querySelector('.site-navbar #toc2');
-	if (panel && panel.classList.contains('show'))
-		scrollQuranMushafJuzMenuToCurrent();
-}
-
 function updateQuranMushafVisiblePage(pageNumber, pageElement) {
 	pageNumber = parseInt(pageNumber, 10);
 	if (!Number.isInteger(pageNumber) || pageNumber < 1 || pageNumber > 604)
@@ -12219,7 +12219,6 @@ function updateQuranMushafVisiblePage(pageNumber, pageElement) {
 		subtitle.textContent = `Page ${pageNumber}`;
 	pageElement = pageElement || document.querySelector(`[data-quran-mushaf-page="${pageNumber}"]`);
 	updateQuranReaderModeHrefs(pageElement);
-	updateQuranMushafHeaderJuz(pageNumber, pageElement);
 	updateLazyReaderDocumentTitle(pageElement && pageElement.getAttribute('data-page-title'));
 }
 
@@ -12398,6 +12397,9 @@ function initQuranMushafInfinite(root) {
 			window.clearTimeout(pageUrlTimer);
 		pageUrlTimer = window.setTimeout(function () {
 			pageUrlTimer = null;
+			var activeSelection = visibleQuranMushafSelection();
+			var selectedPage = activeSelection && activeSelection.closest('[data-quran-mushaf-page]');
+			if (selectedPage) pendingPageNumber = selectedPage.getAttribute('data-quran-mushaf-page');
 			var querySuffix = reader.hasAttribute('data-quran-memorize-reader') ? '?memorize' : '';
 			var selectedRef = new URLSearchParams(window.location.search).get('ayah') || '';
 			var pendingPage = reader.querySelector(`[data-quran-mushaf-page="${pendingPageNumber}"]`);
@@ -12414,10 +12416,12 @@ function initQuranMushafInfinite(root) {
 			entries.filter(function (entry) { return entry.isIntersecting; }).sort(function (a, b) {
 				return b.intersectionRatio - a.intersectionRatio;
 			}).slice(0, 1).forEach(function (entry) {
-				var pageNumber = entry.target.getAttribute('data-quran-mushaf-page');
+				var activeSelection = visibleQuranMushafSelection();
+				var visiblePage = activeSelection && activeSelection.closest('[data-quran-mushaf-page]') || entry.target;
+				var pageNumber = visiblePage.getAttribute('data-quran-mushaf-page');
 				if (!pageNumber)
 					return;
-				updateQuranMushafVisiblePage(pageNumber, entry.target);
+				updateQuranMushafVisiblePage(pageNumber, visiblePage);
 				schedulePageUrlUpdate(pageNumber);
 			});
 		}, { rootMargin: '-35% 0px -35% 0px', threshold: [0, 0.25, 0.5, 0.75] });
@@ -12545,6 +12549,8 @@ function initQuranDynamicPassageHero(root) {
 		$('.quran-passage-section .body.passage .ayah').each(function () {
 			$(this).toggleClass('ayah-selected', ($(this).attr('data-quran-ref') || '') === ref);
 		});
+		var selected = document.querySelector('.quran-passage-section .ayah.ayah-selected');
+		if (selected) updateQuranReaderModeHrefs(selected.closest('[data-quran-infinite-page], main'), ref);
 		var parts = ref.split(/:/);
 		if (parts.length >= 2) {
 			$('.quran-passage-surah').val(parts[0]);

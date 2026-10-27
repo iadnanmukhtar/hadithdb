@@ -1,0 +1,29 @@
+<% var sectionBook = page.context.book, sectionChapter = page.context.chapter, menuSections = sectionChapter.sections || []; %>
+<nav class="row g-0 chapter-toc">
+  <div class="col-12 chapter-toc-toolbar">
+    <% if (menuSections.length) { %>
+    <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#toc2" role="button" aria-expanded="false" aria-controls="toc2" title="Show sections">
+      <i class="bi bi-list-ul" aria-hidden="true"></i><span>Sections</span>
+      <% if (page.context.section && page.context.section.h2) { %><span class="chapter-toc-current">§<%= page.context.section.h2 %></span><% } %>
+      <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
+    </a>
+    <% } %>
+  </div>
+  <div id="toc2" class="col-12 toc2 collapse chapter-toc-panel">
+    <table class="table chapter-toc-table"><tbody>
+      <% menuSections.forEach(function (section) { if (section.level >= 3) return;
+        var titleEn = utils.truncate(utils.emptyIfNull(section.title_en).toString(), 75);
+        var titleAr = utils.truncate(utils.emptyIfNull(section.title).toString(), 150);
+        var sectionHref = utils.urlFor(req, `/${section.path}`);
+      %>
+      <tr class="title<%= page.context.section && Number(page.context.section.h2) === Number(section.h2) ? ' is-current' : '' %>">
+        <td><%- section.start %></td>
+        <% if (section.start) { %>
+        <td><a href="<%= sectionHref %>">§<%= section.h2 + (section.h3 ? `-${section.h3}` : '') %> <%- titleEn || `Section ${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %> (<%= section.count %>)</a></td>
+        <td lang="ar"><a href="<%= sectionHref %>"><%- titleAr %></a></td>
+        <% } else { %><td><%- titleEn || 'Section' %></td><td lang="ar"><%- titleAr %></td><% } %>
+      </tr>
+      <% }); %>
+    </tbody></table>
+  </div>
+</nav>

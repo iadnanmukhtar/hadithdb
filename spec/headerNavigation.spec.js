@@ -4,6 +4,10 @@ const fs = require('fs');
 const path = require('path');
 
 describe('shared header navigation', () => {
+  const quranBar = fs.readFileSync(path.join(__dirname, '../views/sub-views/quran_bar.ejs'), 'utf8');
+  const sectionMenu = fs.readFileSync(path.join(__dirname, '../views/sub-views/chapter_section_menu.ejs'), 'utf8');
+  const readerLinks = fs.readFileSync(path.join(__dirname, '../public/static/js/quran-reader-links.js'), 'utf8');
+  const readerBarContext = fs.readFileSync(path.join(__dirname, '../lib/QuranReaderBar.js'), 'utf8');
   const header = fs.readFileSync(
     path.join(__dirname, '..', 'views', 'sub-views', 'header.ejs'),
     'utf8'
@@ -239,30 +243,23 @@ describe('shared header navigation', () => {
 		expect(scripts).toContain('`/quran/tafsir/${encodeURIComponent(tafsirMode)}`');
 	});
 
-	test('keeps Study, Mushaf, and Practice section-menu links on the active Quran page', () => {
-		expect(header).toContain('var quranMappedMushafHref = utils.quranUrl(req, `/quran/page/${quranMappedPage || 1}`);');
-		expect(header).toContain('mushafHref: quranComparisonRef ?');
-		expect(header).toContain(': quranMappedMushafHref,');
-		expect(header).toContain('`/quran/page/${quranMappedPage || 1}?ayah=${quranComparisonRef}&memorize`');
-		expect(header).toContain(': `${quranMappedMushafHref}?memorize`');
-		expect(readerModes).toContain("locals.mushafHref || utils.quranUrl(req, '/quran/page')");
-		expect(scripts).toContain("['passage', 'ayat', 'tafsir', 'mushaf', 'memorize', 'review'].forEach");
-		expect(scripts).toContain('updateQuranReaderModeHrefs(pageElement)');
+	test('uses the shared Quran context paths for every mode', () => {
+		expect(header).toContain("include('quran_bar.ejs'");
+		for (const mode of ['passage', 'tafsir', 'mushaf', 'memorize', 'review']) expect(quranBar).toContain(`quranBar.paths.${mode}`);
+		expect(scripts).toContain('window.QuranReaderLinks.paths(');
 	});
 
-	test('shows the Quran section menu on the Tafsir catalog', () => {
-		expect(header).toContain("requestPath === '/quran/review' || isQuranTafsirArea || pageQuranCommentaryBook");
-		expect(header).toContain("readerMode: isQuranTafsirArea ? 'tafsir'");
-		expect(tafsirBooks).toContain('quranHeaderJuzLinks: locals.quranHeaderJuzLinks || []');
+	test('shows the same Quran bar independently of chapter sections', () => {
+		expect(header).toContain("if (isQuranArea) {");
+		expect(header).toContain("include('quran_bar.ejs'");
+		expect(quranBar).not.toContain('sections.length');
 	});
 
-	test('uses only canonical Mushaf page URLs for Mushaf navigation', () => {
+	test('uses canonical Mushaf page destinations or the exact ayah resolver', () => {
 		const removedLegacyQuery = '?' + 'mushaf';
-		for (const source of [header, scripts, inlineScripts, mushaf])
-			expect(source).not.toContain(removedLegacyQuery);
-		expect(mushaf).toContain('`/quran/page/${surahPage}?ayah=${surah.num}:1`');
-		expect(scripts).toContain('data-quran-mushaf-juz-start-page');
-		expect(scripts).toContain('data-quran-mushaf-surah-page');
+		for (const content of [header, scripts, inlineScripts, mushaf, readerLinks]) expect(content).not.toContain(removedLegacyQuery);
+		expect(readerLinks).toContain("'/quran/page/' + page + '?ayah=' + ref");
+		expect(readerLinks).toContain("'/quran/navigate?ref=' + ref");
 	});
 
 	test('links Mushaf footer headings and subheadings to their H2 section', () => {
@@ -271,24 +268,16 @@ describe('shared header navigation', () => {
 		expect(mushaf).toContain('utils.quranStudySectionPath({ surah: subsection.surah, section: subsection.section })');
 	});
 
-	test('keeps Study passage links out of tafsir scope and inside the selected translation scope', () => {
-		expect(header).toContain("req.cookies && req.cookies.quranPreferredTranslationAlias");
-		expect(header).toContain('translationBook.alias === quranStudyTranslationMenuAlias');
-		expect(header).toContain('var quranStudyTranslationMenuSlug = quranStudyTranslationMenuBook');
-		expect(header).toContain('utils.quranStudySectionPath(section, quranStudyTranslationMenuSlug)');
-		expect(header).toContain('utils.quranStudySectionPath(null, quranStudyTranslationMenuSlug)');
-		expect(header).toContain("pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans'");
-		expect(header).toContain('var quranSectionPath = quranStudySectionMenuHref(page.context.section || page.context.chapter);');
-		expect(header).toContain("(!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir')");
-		expect(header).toContain('`${quranTafsirMenuBase || quranTranslationMenuBase}/quran:${sectionSurah}:${startAyah}`');
-		expect(header).toContain('href="<%= quranStudySectionMenuHref(section) %>" title="Study"');
-		expect(quranStudy).toContain('`/quran/${encodeURIComponent(quranSelectedTranslationSlug)}/quran:${quranRefMatch[1]}:${quranRefMatch[2]}');
-		expect(searchRoutes).toContain("router.get('/quran/:translationAlias/quran\\::surah\\::ayah1', renderScopedQuranTranslationPassage);");
+	test('retains the selected Study translation independently of Tafsir scope', () => {
+		expect(readerBarContext).toContain('quranPreferredTranslationAlias');
+		expect(readerBarContext).toContain("commentary.type === 'trans'");
+		expect(readerLinks).toContain("studyBase + '/quran:' + ref");
+		expect(readerLinks).toContain("tafsirBase + '/quran:' + ref");
 	});
 
 	test('compacts Quran section menus on mobile', () => {
-		expect(header).toContain("chapter-toc<%= isQuranToc ? ' quran-section-menu' : '' %>");
-		expect(header).toContain('chapter-toc quran-section-menu');
+		expect(quranBar).toContain('chapter-toc quran-section-menu');
+		expect(quranBar).toContain('chapter-toc quran-section-menu');
 		expect(styles).toMatch(/@media \(max-width: 576px\)[\s\S]*?\.quran-section-menu \.chapter-toc-toggle,[\s\S]*?display: none;/);
 		expect(readerModes).toContain('data-quran-script-short-label');
 		expect(scripts).toContain("return { uthmani: 'Uth', 'indo-pak': 'Ind', warsh: 'War' }");
@@ -303,29 +292,19 @@ describe('shared header navigation', () => {
 		expect(searchRoutes).toContain("return ['uthmani', 'indo-pak', 'warsh'].includes(script) ? script : 'uthmani';");
 	});
 
-	test('shows Tafsir after Study in every Quran reader-mode group', () => {
-		const [commentaryModes, standardModes] = readerModes.split('<% } else { %>');
-		expect(readerModes).toContain("var commentaryReaderMode = ['translation', 'trans'].indexOf(locals.readerMode) >= 0;");
-		for (const modeGroup of [commentaryModes, standardModes]) {
-			expect(modeGroup.indexOf('data-quran-reader-mode-link="passage"')).toBeGreaterThanOrEqual(0);
-			expect(modeGroup.indexOf('data-quran-reader-mode-link="tafsir"')).toBeGreaterThan(modeGroup.indexOf('data-quran-reader-mode-link="passage"'));
-			expect(modeGroup.indexOf('data-quran-reader-mode-link="mushaf"')).toBeGreaterThan(modeGroup.indexOf('data-quran-reader-mode-link="tafsir"'));
-		}
-		expect(readerModes.match(/data-quran-reader-mode-link="tafsir"/g)).toHaveLength(2);
-		expect(scripts).toContain("lastVisited: 'hadithdb_quran_last_visited_tafsir'");
-		expect(scripts).toContain("var defaultQuranTafsirAlias = 'mokhtasar';");
-		expect(scripts).toContain('|| defaultQuranTafsirAlias;');
-		expect(scripts).toContain("target.setAttribute('data-quran-reader-first-ref', firstRef)");
-		expect(scripts).toContain("source.querySelector('.quran-passage-section .ayah[data-quran-ref]')");
-		expect(scripts).toContain("source.querySelector('[data-quran-mushaf-page]')");
-		expect(scripts).toContain('quranReaderTafsirHref(quranReaderModeFirstRef(marker))');
+	test('uses a single consistent reader-mode group with Tafsir after Study', () => {
+		expect(readerModes).not.toContain('commentaryReaderMode');
+		expect(readerModes.match(/data-quran-reader-mode-link="tafsir"/g)).toHaveLength(1);
+		expect(readerModes.indexOf('data-quran-reader-mode-link="tafsir"')).toBeGreaterThan(readerModes.indexOf('data-quran-reader-mode-link="passage"'));
+		expect(readerModes.indexOf('data-quran-reader-mode-link="mushaf"')).toBeGreaterThan(readerModes.indexOf('data-quran-reader-mode-link="tafsir"'));
+		expect(scripts).toContain('getLastVisitedQuranTafsirSlug()');
 	});
 
-	test('renames only the Quran Sections menu label to Passages', () => {
-	  expect(header).toContain("isQuranToc ? 'Show passages' : 'Show sections'");
-	  expect(header).toContain("isQuranToc ? 'Passages' : 'Sections'");
-	  expect(header).toContain('<span class="chapter-toc-current">§<%= page.context.section.h2 %></span>');
-	  expect(header).toContain("<%= `§${section.h2 + (section.h3 ? `-${section.h3}` : '')}` %>");
+	test('removes Quran Passages while retaining the Hadith Sections menu', () => {
+		expect(quranBar).not.toContain('Passages');
+		expect(quranBar).not.toContain('toc2');
+		expect(sectionMenu).toContain('<span>Sections</span>');
+		expect(sectionMenu).toContain('href="#toc2"');
 	});
 
 	test('fades the tafsir book carousel with reader navigation chrome', () => {
