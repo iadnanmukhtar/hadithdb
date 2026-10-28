@@ -131,3 +131,19 @@ test('prefills bilingual text and preserves edits when reopening the same item',
   expect(editor.value).toBe('النص التالي\n\nNext text');
  }finally{dom.window.close();}
 });
+
+test('late metadata cannot replace the small brand thumbnail or expand the composer card',async()=>{
+ let resolvePreview;
+ const fetch=jest.fn(url=>url.includes('/link-preview?')?new Promise(resolve=>{resolvePreview=resolve;}):new Promise(()=>{}));
+ const {dom,d,open}=await fixture(fetch);
+ try{
+  open('Advice to Abu Hurayrah','https://hadithunlocked.com/bukhari:1178');
+  const icon=d.querySelector('.community-link-card img');
+  resolvePreview({ok:true,json:async()=>({title:'Bukhari 1178',description:'Updated excerpt',image:'https://hadithunlocked.com/large-logo.png',imageKind:'image',source:true})});
+  await settle();
+  expect(d.querySelector('.community-link-card img')).toBe(icon);
+  expect(icon.getAttribute('src')).toBe('/static/img/apple-touch-icon.png');
+  expect(d.querySelector('.community-source-preview')).toBeNull();
+  expect(d.querySelector('.community-link-card strong').textContent).toBe('Bukhari 1178');
+ }finally{dom.window.close();}
+});

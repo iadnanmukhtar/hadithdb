@@ -18,7 +18,8 @@
     return quran ? '/static/img/quran-apple-touch-icon.png' : '/static/img/apple-touch-icon.png';
   }
   function preview(data) {
-    const link = element('a', '', 'community-link-card' + (data.source && data.imageKind !== 'icon' ? ' community-source-preview' : ''));
+    // Composer previews always retain the compact thumbnail layout.
+    const link = element('a', '', 'community-link-card');
     link.href = source.url; link.target = '_blank'; link.rel = 'noopener';
     if (data.image && (/^https:\/\//.test(data.image) || (new URL(data.image,source.url).origin === new URL(source.url).origin || new URL(data.image,location.href).origin === location.origin))) {
       const existing = $('preview').querySelector('img');
@@ -71,7 +72,7 @@
     const own = revision;
     fetch(quranApiPath('/community/link-preview')+'?url='+encodeURIComponent(source.url), {cache:'no-store'})
       .then(async response => { if(!response.ok) return; const data=await response.json(); if(own!==revision || !source)return;
-        preview({title:data.title && data.title!==new URL(source.url).hostname ? data.title : source.title,description:data.description || source.description,image:data.image || source.image,imageKind:data.imageKind || source.imageKind,source:data.source || source.source});
+        preview({title:data.title && data.title!==new URL(source.url).hostname ? data.title : source.title,description:data.description || source.description,image:source.image || data.image,imageKind:source.imageKind,source:data.source || source.source});
       }).catch(() => { /* Keep the source title and excerpt already on screen. */ });
   }
   dialog.querySelectorAll('[data-community-share-close]').forEach(button => button.addEventListener('click',close));
