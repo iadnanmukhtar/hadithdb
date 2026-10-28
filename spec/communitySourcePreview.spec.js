@@ -1,15 +1,17 @@
 'use strict';
 const Source=require('../lib/CommunitySourcePreview');
 const Media=require('../lib/CommunityMedia');
-let previous,fetchSource;
+let previous,fetchSource,sourceEnsure,sourceSql;
 beforeEach(()=>{
+ sourceEnsure=jest.spyOn(require('../lib/Community'),'ensure').mockResolvedValue();
+ sourceSql=jest.spyOn(require('../lib/Community'),'sql').mockResolvedValue([]);
  fetchSource=jest.spyOn(Media,'fetchHtml').mockRejectedValue(Error('Offline source preview'));
  previous={settings:global.settings,books:global.books,surahs:global.surahs,query:global.query};
  global.settings={site:{url:'https://hadithunlocked.com',quranUrl:'https://quranunlocked.com'}};
  global.books=[{id:1,alias:'bukhari',shortName_en:'Bukhari',type:'hadith'},{id:61,alias:'riyad',shortName_en:'Riyad',virtual:1}];
  global.surahs=[{num:2,name_en:'Baqarah'}];global.query=jest.fn(async()=>[]);
 });
-afterEach(()=>{fetchSource.mockRestore();Object.assign(global,previous);});
+afterEach(()=>{fetchSource.mockRestore();sourceEnsure.mockRestore();sourceSql.mockRestore();Object.assign(global,previous);});
 test('Bukhari 1 gets its stored title, readable source excerpt, and the actual site icon',async()=>{
  global.query.mockResolvedValue([{title_en:'Actions depend on intentions',body_en:'I heard the Messenger say: **"Deeds are judged by intentions."** [^1]\n\n[^1]: Footnote apparatus'}]);
  const result=await Media.preview('https://hadithunlocked.com/bukhari:1');
@@ -72,7 +74,7 @@ test.each(['/riyad','/riyad/','/riyad?view=chapters'])('collection URL %s has it
   expect(data.title).toBe('Riyad al-Salihin');
   expect(data.description).toBe('A collection of hadith arranged by topics for daily practice.');
   expect(data.image).toBe('/static/img/apple-touch-icon.png');
-  expect(data.source).toBe(true);expect(ensure).not.toHaveBeenCalled();
+  expect(data.source).toBe(true);
  }finally{ensure.mockRestore();}
 });
 test('collection fallback reads its stored introduction and still supplies artwork without a summary',async()=>{
@@ -157,4 +159,32 @@ test('Open Graph description wins and invalid images do not replace site brandin
  const result=await Media.preview('https://hadithunlocked.com/bukhari:1');
  expect(result.description).toBe('Publisher summary');
  expect(result.image).toBe('/static/img/apple-touch-icon.png');
+});
+
+test('warm hadith preview returns cached Open Graph metadata without source queries or network work',async()=>{
+ sourceSql.mockResolvedValue([{title:'Cached title',description:'Cached translation',image:'https://hadithunlocked.com/social.png',updated_at:new Date()}]);
+ const data=await Media.preview('https://hadithunlocked.com/bukhari:1');
+ expect(data).toMatchObject({title:'Cached title',description:'Cached translation',image:'https://hadithunlocked.com/social.png',source:true});
+ expect(global.query).not.toHaveBeenCalled();expect(fetchSource).not.toHaveBeenCalled();
+});
+test('cold source preview is persisted and the next request skips enrichment',async()=>{
+ let saved;
+ sourceSql.mockImplementation(async(sql,args)=>{if(sql.startsWith('SELECT'))return saved?[saved]:[];saved={title:args[2],description:args[3],image:args[4],updated_at:new Date()};return [];});
+ global.query.mockResolvedValue([{title_en:'Title',body_en:'Translated text'}]);
+ await Media.preview('https://hadithunlocked.com/bukhari:2');
+ global.query.mockClear();fetchSource.mockClear();
+ const data=await Media.preview('https://hadithunlocked.com/bukhari:2');
+ expect(data.description).toBe('Bukhari 2: Translated text');
+ expect(global.query).not.toHaveBeenCalled();expect(fetchSource).not.toHaveBeenCalled();
+});
+test('stale source preview is immediately usable while one shared refresh remains pending',async()=>{
+ sourceSql.mockResolvedValue([{title:'Existing title',description:'Existing translation',image:'/static/img/apple-touch-icon.png',updated_at:new Date(0)}]);
+ let finish;
+ fetchSource.mockImplementation(()=>new Promise(resolve=>{finish=resolve;}));
+ const url='https://hadithunlocked.com/bukhari:3';
+ const first=await Media.preview(url),second=await Media.preview(url);
+ expect(first.title).toBe('Existing title');expect(second.title).toBe('Existing title');expect(fetchSource).toHaveBeenCalledTimes(1);
+ finish({url,html:'<meta property="og:title" content="Updated title">'});
+ for(let i=0;i<4;i++)await new Promise(resolve=>setImmediate(resolve));
+ expect(sourceSql.mock.calls.some(([sql,args])=>sql.startsWith('INSERT')&&args[2]==='Updated title')).toBe(true);
 });

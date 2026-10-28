@@ -70,6 +70,7 @@ test('ignores an old preview response after a different source is selected',asyn
 });
 
 test('first-party source links retain useful metadata when Open Graph fetching fails',async()=>{
+ const cache=jest.spyOn(require('../lib/Community'),'ensure').mockRejectedValue(Error('Offline'));
  const fetchSource=jest.spyOn(require('../lib/CommunityMedia'),'fetchHtml').mockRejectedValue(Error('Offline'));
  const previous={settings:global.settings,books:global.books,surahs:global.surahs};
  global.settings={site:{url:'https://hadithunlocked.com',quranUrl:'https://quranunlocked.com'}};
@@ -82,7 +83,7 @@ test('first-party source links retain useful metadata when Open Graph fetching f
   Media.placeholders($);expect($('.community-link-preview')).toHaveLength(1);
   expect(require('../lib/CommunitySourcePreview').preview('https://evil.example/bukhari:1')).toBeNull();
   expect(require('../lib/CommunitySourcePreview').preview('http://localhost:3004/admin')).toBeNull();
- }finally{fetchSource.mockRestore();Object.assign(global,previous);}
+ }finally{cache.mockRestore();fetchSource.mockRestore();Object.assign(global,previous);}
 });
 
 test('keeps an unsigned draft through sign-in and requires another explicit Post click',async()=>{
