@@ -7258,7 +7258,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	grid-column: 2;
 }
 
-.mobile-bottom-nav > [data-mobile-bottom-nav-home] {
+.mobile-bottom-nav > [data-mobile-bottom-nav-community] {
 	grid-column: 3;
 }
 

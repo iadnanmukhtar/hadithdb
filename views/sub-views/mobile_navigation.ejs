@@ -67,24 +67,13 @@
   var mobileNextTitle = typeof nextTitle !== 'undefined' ? nextTitle : (page.nextTitle || 'Next');
   var mobilePrevHref = mobilePrev && typeof utils !== 'undefined' && typeof req !== 'undefined' ? utils.urlFor(req, mobilePrev) : mobilePrev;
   var mobileNextHref = mobileNext && typeof utils !== 'undefined' && typeof req !== 'undefined' ? utils.urlFor(req, mobileNext) : mobileNext;
-  var mobileContext = page && page.context ? page.context : {};
-  var mobileBook = mobileContext.book || {};
-  var mobileRequestPath = typeof req !== 'undefined' && req.path ? req.path : '';
-  var mobileCanonical = page && page.canonical ? page.canonical : '';
-  var mobileIsQuran = mobileContext.quranSearchProxy
-    || mobileBook.alias === 'quran'
-    || mobileRequestPath === '/quran'
-    || mobileRequestPath.indexOf('/quran/') === 0
-    || mobileCanonical === '/quran'
-    || mobileCanonical.indexOf('/quran/') === 0
-    || mobileCanonical.indexOf('/quran:') === 0;
-  var mobileHomeHref = '/';
+  var mobileCommunityHref = '/community';
   var mobileHelpTour = typeof helpTour !== 'undefined' ? (helpTour || '').toString() : '';
   var mobileHelpTourLabels = { memorize: 'Practice', review: 'Mudhakkir', progress: 'Review summary' };
   if (!Object.prototype.hasOwnProperty.call(mobileHelpTourLabels, mobileHelpTour)) mobileHelpTour = '';
   var mobileHelpTourLabel = mobileHelpTourLabels[mobileHelpTour] || 'Page';
   if (typeof utils !== 'undefined' && typeof req !== 'undefined')
-    mobileHomeHref = mobileIsQuran ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
+    mobileCommunityHref = utils.urlFor(req, '/community');
 %>
 
 <nav class="mobile-bottom-nav<%= mobileHelpTour ? ' mobile-bottom-nav-has-tour' : '' %>" aria-label="Page navigation">
@@ -96,9 +85,9 @@
     <span class="bi bi-arrow-clockwise mobile-bottom-nav-icon" aria-hidden="true"></span>
     <span class="mobile-bottom-nav-label">Refresh</span>
   </button>
-  <a class="mobile-bottom-nav-item" data-mobile-bottom-nav-home href="<%- mobileHomeHref %>" title="Home" aria-label="Home">
-    <span class="bi bi-house mobile-bottom-nav-icon" aria-hidden="true"></span>
-    <span class="mobile-bottom-nav-label">Home</span>
+  <a class="mobile-bottom-nav-item" data-mobile-bottom-nav-community href="<%- mobileCommunityHref %>" title="Community" aria-label="Community">
+    <span class="bi bi-people mobile-bottom-nav-icon" aria-hidden="true"></span>
+    <span class="mobile-bottom-nav-label">Community</span>
   </a>
   <% if (mobileHelpTour) { %>
   <button type="button" class="mobile-bottom-nav-item" data-page-help-tour-trigger="<%= mobileHelpTour %>" title="Show <%= mobileHelpTourLabel %> tour" aria-label="Show <%= mobileHelpTourLabel %> tour">
