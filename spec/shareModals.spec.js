@@ -42,7 +42,7 @@ describe('Hadith and Quran share modals', () => {
     const open = jest.fn();
     const card = {querySelector:()=>({textContent:'Source title'}),querySelectorAll:()=>[],getAttribute:()=>ref};
     vm.runInNewContext(fn + ';shareCardToCommunity(card);', {card,window:{CommunityPostShare:{open}},contentShareUrl:()=>`https://hadithunlocked.com/${ref}`,plainTextFromShareSection:()=> 'Selected text'});
-    expect(open).toHaveBeenCalledWith({url:`https://hadithunlocked.com/${ref}`,title:'Source title',description:'Selected text'});
+    expect(open).toHaveBeenCalledWith({url:`https://hadithunlocked.com/${ref}`,title:'Source title',description:'Selected text',text:''});
   });
   test('waits for sign-in, opens an editable note, then consumes the handoff', () => {
     const { JSDOM } = require('jsdom');
@@ -137,4 +137,91 @@ test('Community post composer shows the source preview while the user edits', as
     expect(w.document.querySelector('.community-link-card')).toBeNull();
     expect(editor.value).toContain('Link: https://');
   } finally { dom.window.close(); }
+});
+
+test('Community post receives complete Arabic then English even when an image language is hidden',()=>{
+ const {JSDOM}=require('jsdom');
+ const dom=new JSDOM('<article id="card"><section class="hadith-share-section" lang="en"><div class="hadith-share-text"><p>English first paragraph.</p><p>Second paragraph.</p></div></section><section class="hadith-share-section d-none" lang="ar"><div class="hadith-share-text">نَصٌّ عربي<br>سطر آخر</div></section></article>',{runScripts:'outside-only'});
+ try{
+  const w=dom.window,client=source('public/static/js/script.js'),open=jest.fn();
+  w.CommunityPostShare={open};w.contentShareUrl=()=> 'https://hadithunlocked.com/bukhari:2';
+  w.eval(client.slice(client.indexOf('function plainTextFromShareSection('),client.indexOf('function updateHadithShareMetadataFromEditable(')));
+  w.eval(client.slice(client.indexOf('function shareCardToCommunity('),client.indexOf('async function copyHadithShareCardText(')));
+  w.shareCardToCommunity(w.document.getElementById('card'));
+  expect(open.mock.calls[0][0].text).toBe('نَصٌّ عربي\nسطر آخر\n\nEnglish first paragraph.\n\nSecond paragraph.');
+ }finally{dom.window.close();}
+});
+
+test('Quran post text uses normal Arabic for each ayah without changing the display script',()=>{
+ const {JSDOM}=require('jsdom');
+ const dom=new JSDOM('<section lang="ar"><div class="hadith-share-text"><span data-quran-post-text="بِسْمِ اللَّهِ">DISPLAY SCRIPT ONE</span> ۝١ <span data-quran-post-text="الْحَمْدُ لِلَّهِ">DISPLAY SCRIPT TWO</span> ۝٢</div></section>',{runScripts:'outside-only'});
+ try{
+  const w=dom.window,client=source('public/static/js/script.js');
+  w.eval(client.slice(client.indexOf('function plainTextFromShareSection('),client.indexOf('function updateHadithShareMetadataFromEditable(')));
+  const section=w.document.querySelector('section');
+  expect(w.plainTextFromShareSection(section,true)).toBe('بِسْمِ اللَّهِ ۝١ الْحَمْدُ لِلَّهِ ۝٢');
+  expect(section.textContent).toContain('DISPLAY SCRIPT ONE');
+  expect(source('views/sub-views/quran_modal.ejs')).toContain('data-quran-post-text="<%= utils.quranDisplayText(ayah.ar?.body_alt || ayah.body_ar_alt || ayah.ar?.body) %>"');
+  expect(client).toContain("'data-quran-post-text': compactQuranPlainText(ayah && ayah.ar && ayah.ar.body)");
+ }finally{dom.window.close();}
+});
+
+test.each(['nested', 'flat'])('server Quran share uses %s alt Arabic through the actual template and post extraction', field=>{
+ const {JSDOM}=require('jsdom'),ejs=require('ejs');
+ const normal='فَسَقَى لَهُمَا ثُمَّ تَوَلَّى إِلَى الظِّلِّ';
+ const ayah={num:'28:24',ar:{num:'٢٨:٢٤',body:'DISPLAY \uE000 \uE001'},en:{num:'28:24',body:'So he watered for them.'}};
+ if(field==='nested')ayah.ar.body_alt=normal;else ayah.body_ar_alt=normal;
+ const html=ejs.render(source('views/sub-views/quran_modal.ejs'),{
+  selectedAyahs:[ayah],page:{context:{}},quranShareId:'test-share',req:{},
+  utils:{quranUrl:(_req,url)=>url,quranDisplayText:s=>s || '',defaultQuranTranslationLabel:()=> 'Translation'},
+  arabic:{toLatinDigits:s=>s,toArabicDigits:s=>s}
+ });
+ const dom=new JSDOM(html,{runScripts:'outside-only'});
+ try{
+  const w=dom.window,client=source('public/static/js/script.js');
+  w.eval(client.slice(client.indexOf('function plainTextFromShareSection('),client.indexOf('function updateHadithShareMetadataFromEditable(')));
+  const section=w.document.querySelector('.hadith-share-arabic-section');
+  const text=w.plainTextFromShareSection(section,true);
+  expect(text).toContain(normal);
+  expect(text).not.toMatch(/[\uE000-\uF8FF]/u);
+  expect(text).not.toContain('DISPLAY');
+  expect(section.textContent).toContain('DISPLAY');
+ }finally{dom.window.close();}
+});
+
+test('post text collapses template indentation and places translator on the next line',()=>{
+ const {JSDOM}=require('jsdom');
+ const dom=new JSDOM(`<section lang="en"><div class="hadith-share-text">
+       <p>
+          <span>28:24 So he watered for them.</span>
+                  <span data-quran-share-translation-attribution="1">— Saheeh Int'l</span>
+       </p>
+       <p>Another paragraph.<br>Another line.</p>
+    </div></section>`,{runScripts:'outside-only'});
+ try{
+  const w=dom.window,client=source('public/static/js/script.js');
+  w.eval(client.slice(client.indexOf('function plainTextFromShareSection('),client.indexOf('function updateHadithShareMetadataFromEditable(')));
+  expect(w.plainTextFromShareSection(w.document.querySelector('section'),true)).toBe("28:24 So he watered for them.\n— Saheeh Int'l\n\nAnother paragraph.\nAnother line.");
+ }finally{dom.window.close();}
+});
+
+test('Post waits for the scoped translation and shares its text, attribution and URL',async()=>{
+ const {JSDOM}=require('jsdom');
+ const dom=new JSDOM('<div class="hadith-share-modal"><article class="quran-share-card" data-share-ref="quran:28:24"><section class="hadith-share-section" lang="en"><div class="hadith-share-text">Old translation — Saheeh</div></section></article></div>',{url:'http://localhost:3004/quran/en-khattab/quran:28:24',runScripts:'outside-only'});
+ try{
+  const w=dom.window,client=source('public/static/js/script.js'),open=jest.fn();let finish;
+  w.CommunityPostShare={open};w.quranSelectedTranslationAliasFromLocation=()=> 'en-khattab';w.quranUrl=p=>p;
+  w.contentShareUrl=card=>new URL(card.getAttribute('data-share-url'),w.location.href).href;
+  w.applyQuranShareTranslation=jest.fn((modal,card,alias,required)=>new Promise(resolve=>{finish=()=>{modal.querySelector('.hadith-share-text').textContent='Khattab translation\n— Mustafa Khattab';resolve();};}));
+  w.eval(client.slice(client.indexOf('function plainTextFromShareSection('),client.indexOf('function updateHadithShareMetadataFromEditable(')));
+  w.eval(client.slice(client.indexOf('function shareCardToCommunity('),client.indexOf('async function copyHadithShareCardText(')));
+  const pending=w.shareCardToCommunity(w.document.querySelector('article'));
+  expect(open).not.toHaveBeenCalled();
+  expect(w.applyQuranShareTranslation.mock.calls[0].slice(2)).toEqual(['en-khattab',true]);
+  finish();await pending;
+  expect(open.mock.calls[0][0]).toMatchObject({url:'http://localhost:3004/quran/en-khattab/quran:28:24',text:'Khattab translation — Mustafa Khattab'});
+  w.applyQuranShareTranslation=()=>Promise.reject(Error('Unavailable'));
+  await expect(w.shareCardToCommunity(w.document.querySelector('article'))).rejects.toThrow('Unavailable');
+  expect(open).toHaveBeenCalledTimes(1);
+ }finally{dom.window.close();}
 });

@@ -74,7 +74,7 @@ test.each([false, true])('renders bilingual hadith above uncollapsed commentary 
   global: { settings: { site: {} } }, req: { admin: editMode, editMode },
   book, entry: { id: 7, text: 'شرح', text_en: 'Explanation' },
   owner: { book_alias: 'bukhari', num: 1, body: 'متن', body_en: 'Hadith' }, kind: 'hadith', canonical: '/sharh/fath-al-bari/7',
-  utils: { sharhArabicDisplayName: (book, title) => require('../lib/SharhDisplayName').displayName(book, title, 'ar'), sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, markdownToHtml: s => `<p>${s}</p>`, urlFor: (_req, url) => url }, Tafsir: { renderCommentaryText: s => `<p>${s}</p>` }, include: (name, data) => name === 'sub-views/hadith.ejs' ? `<div class="shared-hadith">${data.i.body_en} ${data.i.body}</div>` : ''
+  utils: { socialMetadata: () => require('../lib/SocialMetadata'), sharhArabicDisplayName: (book, title) => require('../lib/SharhDisplayName').displayName(book, title, 'ar'), sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, markdownToHtml: s => `<p>${s}</p>`, urlFor: (_req, url) => url }, Tafsir: { renderCommentaryText: s => `<p>${s}</p>` }, include: (name, data) => name === 'sub-views/hadith.ejs' ? `<div class="shared-hadith">${data.i.body_en} ${data.i.body}</div>` : ''
  }, { filename });
  const $ = cheerio.load(html);
  expect($('main').attr('data-reader-infinite')).toBe('hadith-sharh');
@@ -152,7 +152,7 @@ test.each([0, 1, 2])('carousel appears only for multiple available books (%s)', 
   global: { settings: { site: {} } }, req: {}, book, entry: { id: 7, text: 'شرح', text_en: 'Explanation' },
   owner: null, kind: 'hadith', canonical: '/sharh/fath-al-bari/bukhari:100',
   availableSharhs: Array.from({ length: count }, (_, index) => ({ ...book, id: 100 + index, url: `/sharh/book-${index}/bukhari:100` })),
-  utils: { sharhArabicDisplayName: (book, title) => require('../lib/SharhDisplayName').displayName(book, title, 'ar'), sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, urlFor: (_req, url) => url }, Tafsir: { renderCommentaryText: s => s }, include: () => ''
+  utils: { socialMetadata: () => require('../lib/SocialMetadata'), sharhArabicDisplayName: (book, title) => require('../lib/SharhDisplayName').displayName(book, title, 'ar'), sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, urlFor: (_req, url) => url }, Tafsir: { renderCommentaryText: s => s }, include: () => ''
  }, { filename });
  const $ = cheerio.load(html);
  expect($('[aria-label="Available explanations"]').length).toBe(count > 1 ? 1 : 0);
@@ -210,7 +210,7 @@ test.each([
   global: { settings: { site: {} } }, req: {}, book, owner, kind,
   readerContext: { book: { shortName_en: kind === 'hadith' ? 'Riyad' : 'Bukhari' } },
   entry: { id: 7, text: 'شرح' }, canonical: '/sharh/example',
-  utils: { sharhArabicDisplayName: (book, title) => require('../lib/SharhDisplayName').displayName(book, title, 'ar'), sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, formatHadithHeadingNumber: require('../lib/Utils').formatHadithHeadingNumber, urlFor: (_req, url) => url },
+  utils: { socialMetadata: () => require('../lib/SocialMetadata'), sharhArabicDisplayName: (book, title) => require('../lib/SharhDisplayName').displayName(book, title, 'ar'), sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, formatHadithHeadingNumber: require('../lib/Utils').formatHadithHeadingNumber, urlFor: (_req, url) => url },
   Tafsir: { renderCommentaryText: s => s },
   include: (name, data) => { if (name === 'sub-views/head.ejs') pageTitle = data.page.title_en; return ''; }
  }, { filename });

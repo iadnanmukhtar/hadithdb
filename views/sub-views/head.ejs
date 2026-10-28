@@ -52,8 +52,8 @@
       && req && req.query
       && (req.query.memorize !== undefined || req.query.review !== undefined || req.query.reviewRef !== undefined));
   var quranHeadBrandName = isMudhakkirHeadPage ? 'Mudhakkir' : 'Quran Unlocked';
-  var headTitle = page.title_en || (isQuranPathHeadPage ? quranHeadBrandName : site.name);
-  var headDescription = page.description_en || site.desc || '';
+  var headTitle = utils.socialMetadata().plain(page.title_en || (isQuranPathHeadPage ? quranHeadBrandName : site.name));
+  var headDescription = utils.socialMetadata().excerpt(page.description_en || site.desc || '');
   var headSiteName = isQuranHeadPage ? quranHeadBrandName : site.name;
   var headSiteUrl = isQuranHeadPage ? quranCanonicalBaseUrl : site.url;
   var headAppLogo = isMudhakkirHeadPage
@@ -64,7 +64,7 @@
   var headAppFavicon16Path = isQuranHeadPage ? '/static/img/quran-favicon-16x16.png' : '/static/img/favicon-16x16.png';
   var headAppTouchIconPath = isMudhakkirHeadPage ? '/static/img/quran/mudhakkir.png' : (isQuranHeadPage ? '/static/img/quran-apple-touch-icon.png' : '/static/img/apple-touch-icon.png');
   var headAppIcoPath = isMudhakkirHeadPage ? '/static/img/quran/mudhakkir.ico' : (isQuranHeadPage ? '/static/img/quran-favicon.ico' : '/favicon.ico');
-  var headLogo = utils.staticAssetUrl(page.cover) || headAppLogo;
+  var headLogo = utils.socialMetadata().image(utils.staticAssetUrl(page.cover) || (isMudhakkirHeadPage ? headAppLogo : null), isQuranHeadPage ? quranCanonicalBaseUrl : hadithCanonicalBaseUrl, isQuranHeadPage);
   function quranCanonicalPath(path) {
     if (!path)
       return path;
@@ -175,8 +175,9 @@
 	} %>
 
 <meta property="og:site_name" content="<%= headSiteName %>">
-<meta property="og:locale" content="en">
+<meta property="og:locale" content="en_US">
 <meta property="og:image" content="<%= headLogo %>">
+<meta property="og:image:alt" content="<%= headSiteName %>">
 <meta property="og:url" content="<%= headCanonicalUrl %>">
 <meta property="og:title" content="<%= headTitle %>">
 <meta property="og:description" content="<%= headDescription %>">
@@ -184,6 +185,7 @@
 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="<%= headLogo %>">
+<meta name="twitter:image:alt" content="<%= headSiteName %>">
 <meta name="twitter:title" content="<%= headTitle %>">
 <meta name="twitter:description" content="<%= headDescription %>">
 

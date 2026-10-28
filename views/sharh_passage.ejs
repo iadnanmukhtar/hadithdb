@@ -13,6 +13,7 @@ const headingNumber = owner && kind === 'heading' ? [owner.h1, Number(owner.leve
 const referenceLabel = owner ? (kind === 'hadith' ? `${referenceBookName} ${owner.num}` : `${referenceBookName} §${headingNumber}`) : '';
 const headingTitle = owner && kind === 'heading' ? (owner.title_en || (context.chapter && context.chapter.title_en) || owner.title || '') : '';
 const page = { menu: 'Sharh', title_en: [referenceLabel, headingTitle, title].filter(Boolean).join(' | '), description_en: `Read ${title}${reference ? `, ${reference}` : ''}.`, canonical, context };
+page.description_en = utils.socialMetadata().description([title, referenceLabel].filter(Boolean).join(" — "), (locals.entries || [entry]).map(item => item.text_en || item.text), page.description_en);
 Object.assign(page, locals.readerNavigation || {});
 const outlines = locals.hadithHeadingOutlines || {};
 const outlineContext = Object.keys(outlines)[0] || '';

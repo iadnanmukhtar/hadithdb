@@ -10,7 +10,8 @@
 	const surahTitle = page.context.chapter?.title_en || firstAyah.h1_title_en || firstAyah.en?.h1_title || 'Qurʾān';
 	const shareTitleRef = firstRef && lastRef && firstRef !== lastRef ? `${firstRef}-${lastRefPart}` : firstRef;
 	const shareTitle = shareTitleRef ? `${surahTitle} ${shareTitleRef}` : surahTitle;
-	const defaultTranslationShortName = utils.defaultQuranTranslationLabel();
+	const shareTranslationBook = page.context.quranCommentaryBook;
+	const defaultTranslationShortName = shareTranslationBook ? utils.quranTranslationBookLabel(shareTranslationBook) : utils.defaultQuranTranslationLabel();
 %>
 <% if (ayahs.length > 0) { %>
 <aside class="h modal fade hadith-share-root quran-share-root" id="<%= quranShareId %>" tabindex="-1">
@@ -70,7 +71,7 @@
 									const ayahPart = ayahNum.split(/:/)[1] || ayahNum;
 									const ayahPartArabic = arabic.toArabicDigits(arabic.toLatinDigits(ayahPart) || ayahPart);
 								%>
-										<span><span data-quran-script-text="ayah" data-quran-ref="<%= ayahRef %>"><%= utils.quranDisplayText(ayah.ar?.body) %></span>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahNum %>">۝<%= ayahPartArabic %></span></span>
+										<span><span data-quran-script-text="ayah" data-quran-ref="<%= ayahRef %>" data-quran-post-text="<%= utils.quranDisplayText(ayah.ar?.body_alt || ayah.body_ar_alt || ayah.ar?.body) %>"><%= utils.quranDisplayText(ayah.ar?.body) %></span>&nbsp;<span class="quran-ayah-end-marker" aria-label="Quran <%= ayahNum %>">۝<%= ayahPartArabic %></span></span>
 								<% }); %>
 							</p>
 					</div>

@@ -36,15 +36,17 @@ api.put('/likes/:source/:id', wrap(async (req, res) => res.json(await Community.
 const Interactions = require('../lib/CommunityInteractions');
 const Media = require('../lib/CommunityMedia');
 api.post('/media', express.raw({type:()=>true,limit:'5mb'}), wrap(async(req,res)=>res.status(201).json(await Media.upload(signed(req),req.body))));
-api.get('/source-preview-image', wrap(async(req,res)=>{
-  const svg=require('../lib/CommunitySourcePreview').image(req.query.url);
-  if(!svg)return res.status(404).end();
-  res.set({'Content-Type':'image/svg+xml; charset=utf-8','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; sandbox"});res.send(svg);
-}));
-api.get('/link-preview-image', wrap(async(req,res)=>{
-  const svg=Media.previewImage(req.query.url);if(!svg)return res.status(404).end();
-  res.set({'Content-Type':'image/svg+xml; charset=utf-8','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; sandbox"});res.send(svg);
-}));
+// Older cached cards may still request the retired generated artwork URL.
+api.get('/source-preview-image', (req,res)=>{
+  const data=require('../lib/CommunitySourcePreview').preview(req.query.url);
+  if(!data)return res.status(404).end();
+  res.redirect(data.image);
+});
+api.get('/link-preview-image', (req,res)=>{
+  const data=require('../lib/CommunitySourcePreview').preview(req.query.url);
+  if(!data)return res.status(404).end();
+  res.redirect(data.image);
+});
 api.get('/link-preview',wrap(async(req,res)=>res.json(await Media.preview(req.query.url))));
 api.post('/link-preview',wrap(async(req,res)=>res.json(await Media.preview(req.body.url,true))));
 api.put('/votes/:source/:id', wrap(async (req,res)=>res.json(await Interactions.vote(signed(req),req.params.source,req.params.id,req.body.direction))));

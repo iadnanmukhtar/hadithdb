@@ -153,6 +153,7 @@
       quranMetaTitle = `Surah ${quranSurahTitleShort} §${section.h1}.${section.h2}${quranTranslationSurname ? ` | ${quranTranslationSurname}` : ''}${quranSectionTitle ? ` | ${quranSectionTitle}` : ''}`;
     }
     var quranMetaDescription = `Read Quran ${quranMetaRef}, ${quranSurahTitle}${quranSectionTitle ? `, ${quranSectionTitle}` : ''}, with Arabic text, English translation, and tafsir.`;
+    quranMetaDescription = utils.socialMetadata().description(`${quranSurahTitleShort} ${quranMetaRef}`, (selectedAyahs.length ? selectedAyahs : results).map(item => utils.socialMetadata().body(item)), quranMetaDescription);
     var page = {
       menu: 'Section',
       title_en: quranMetaTitle,

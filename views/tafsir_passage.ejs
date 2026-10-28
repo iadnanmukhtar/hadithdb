@@ -22,6 +22,7 @@
     var tafsirMetaTitle = `Tafsir ${tafsirPassageTitle}${tafsirSectionIdentifier} | Ayat ${tafsirMetaRef}`;
     var tafsirAuthor = tafsir.author_en || tafsir.author || '';
     var tafsirMetaDescription = `Read ${tafsirTitle}${tafsirAuthor ? ` by ${tafsirAuthor}` : ''} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
+    tafsirMetaDescription = utils.socialMetadata().description(`${tafsirTitle} — ${surah.name_en} ${tafsirMetaRef}`, entries.map(entry => entry.translationHtml || entry.html || entry.arabicHtml), tafsirMetaDescription);
     var page = {
       menu: 'Section',
       title_en: tafsirMetaTitle,

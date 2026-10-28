@@ -18,6 +18,8 @@ test('opens immediately on the current page with a source card while profile and
   expect(d.querySelector('.community-link-card strong').textContent).toBe('Bukhari 1');
   expect(d.querySelector('.community-link-copy > span').textContent).toBe('Selected source text');
   expect(d.getElementById('community-share-text').disabled).toBe(false);
+  expect(d.querySelector('.community-link-card img').getAttribute('src')).toBe('/static/img/apple-touch-icon.png');
+  expect(d.querySelector('.community-link-card img').loading).toBe('eager');
   expect(w.location.href).toBe(before);
   expect(fetch.mock.calls.some(([url])=>url.includes('/link-preview?'))).toBe(true);
   d.getElementById('community-share-text').value='My reflection';
@@ -67,7 +69,8 @@ test('ignores an old preview response after a different source is selected',asyn
  }finally{dom.window.close();}
 });
 
-test('first-party source links produce preview cards without network scraping or Community schema initialization',async()=>{
+test('first-party source links retain useful metadata when Open Graph fetching fails',async()=>{
+ const fetchSource=jest.spyOn(require('../lib/CommunityMedia'),'fetchHtml').mockRejectedValue(Error('Offline'));
  const previous={settings:global.settings,books:global.books,surahs:global.surahs};
  global.settings={site:{url:'https://hadithunlocked.com',quranUrl:'https://quranunlocked.com'}};
  global.books=[{alias:'bukhari',shortName_en:'Sahih al-Bukhari'}];global.surahs=[{num:2,name_en:'Baqarah'}];
@@ -79,7 +82,7 @@ test('first-party source links produce preview cards without network scraping or
   Media.placeholders($);expect($('.community-link-preview')).toHaveLength(1);
   expect(require('../lib/CommunitySourcePreview').preview('https://evil.example/bukhari:1')).toBeNull();
   expect(require('../lib/CommunitySourcePreview').preview('http://localhost:3004/admin')).toBeNull();
- }finally{Object.assign(global,previous);}
+ }finally{fetchSource.mockRestore();Object.assign(global,previous);}
 });
 
 test('keeps an unsigned draft through sign-in and requires another explicit Post click',async()=>{
@@ -95,5 +98,36 @@ test('keeps an unsigned draft through sign-in and requires another explicit Post
   expect(d.getElementById('community-share-dialog').open).toBe(true);
   expect(d.getElementById('community-share-text').value).toBe('My unsigned draft');
   expect(fetch.mock.calls.some(([url])=>url.endsWith('/posts'))).toBe(false);
+ }finally{dom.window.close();}
+});
+
+test('Quran icon starts before metadata and the same image stays mounted after enrichment',async()=>{
+ let resolvePreview;
+ const fetch=jest.fn(url=>url.includes('/link-preview?')?new Promise(resolve=>{resolvePreview=resolve;}):new Promise(()=>{}));
+ const {dom,d,open}=await fixture(fetch);
+ try{
+  open('Al-Qasas 28:24','https://quran.islamunlocked.com/quran:28:24');
+  const icon=d.querySelector('.community-link-card img');
+  expect(icon.getAttribute('src')).toBe('/static/img/quran-apple-touch-icon.png');
+  resolvePreview({ok:true,json:async()=>({title:'Al-Qasas 28:24',description:'Translation',image:'/static/img/quran-apple-touch-icon.png',imageKind:'icon',source:true})});
+  await settle();
+  expect(d.querySelector('.community-link-card img')).toBe(icon);
+  expect(d.querySelector('.community-link-copy > span').textContent).toBe('Translation');
+ }finally{dom.window.close();}
+});
+
+test('prefills bilingual text and preserves edits when reopening the same item',async()=>{
+ const {dom,w,d}=await fixture(jest.fn(()=>new Promise(()=>{})));
+ try{
+  const source={url:'/bukhari:2',title:'Bukhari 2',text:'نَصٌّ عربي\n\nEnglish text'};
+  w.CommunityPostShare.open(source);
+  const editor=d.getElementById('community-share-text');
+  expect(editor.value).toBe(source.text);
+  editor.value='Edited Arabic and English';
+  d.getElementById('community-share-dialog').close();
+  w.CommunityPostShare.open(source);
+  expect(editor.value).toBe('Edited Arabic and English');
+  w.CommunityPostShare.open({...source,url:'/bukhari:3',text:'النص التالي\n\nNext text'});
+  expect(editor.value).toBe('النص التالي\n\nNext text');
  }finally{dom.window.close();}
 });

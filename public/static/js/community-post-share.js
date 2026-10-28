@@ -11,12 +11,22 @@
     if (className) node.className = className;
     return node;
   }
+  function sourceIcon(url) {
+    const own = url.origin === location.origin || ['hadithunlocked.com','quranunlocked.com','quran.islamunlocked.com','hadith.islamunlocked.com'].includes(url.hostname);
+    if (!own) return null;
+    const quran = url.hostname.startsWith('quran') || /^\/(?:quran(?:[/:]|$)|\d+:|translations\/|tafsir\/)/.test(url.pathname);
+    return quran ? '/static/img/quran-apple-touch-icon.png' : '/static/img/apple-touch-icon.png';
+  }
   function preview(data) {
     const link = element('a', '', 'community-link-card' + (data.source && data.imageKind !== 'icon' ? ' community-source-preview' : ''));
     link.href = source.url; link.target = '_blank'; link.rel = 'noopener';
     if (data.image && (/^https:\/\//.test(data.image) || (new URL(data.image,source.url).origin === new URL(source.url).origin || new URL(data.image,location.href).origin === location.origin))) {
-      const image = element('img'); image.src = data.image; image.alt = ''; image.referrerPolicy = 'no-referrer';
-      image.addEventListener('error', () => image.remove(), {once:true}); link.append(image);
+      const existing = $('preview').querySelector('img');
+      const reuse = existing && existing.getAttribute('src') === data.image;
+      const image = reuse ? existing : element('img');
+      image.loading = 'eager'; image.fetchPriority = 'high'; image.alt = ''; image.referrerPolicy = 'no-referrer';
+      if (!reuse) {image.src = data.image; image.addEventListener('error', () => image.remove(), {once:true});}
+      link.append(image);
     }
     const copy = element('span', '', 'community-link-copy');
     const title = element('strong', data.title || source.title); title.dir = 'auto';
@@ -48,10 +58,10 @@
     if (busy) return;
     const url = new URL(data.url, location.href);
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw Error('Invalid source link.');
-    const next = {url:url.href, title:data.title || url.hostname, description:data.description || ''};
+    const next = {url:url.href, title:data.title || url.hostname, description:data.description || '', image:sourceIcon(url), imageKind:'icon', source:true};
     const changed = source?.url !== next.url;
     source = next; ++revision; waitingForSignIn = false;
-    if (changed) $('text').value = '';
+    if (changed) $('text').value = typeof data.text === 'string' ? data.text : '';
     $('status').replaceChildren(); setBusy(false); preview(source);
     document.getElementById('content-share-pane')?.close();
     if (!dialog.open) dialog.showModal();
@@ -61,7 +71,7 @@
     const own = revision;
     fetch(quranApiPath('/community/link-preview')+'?url='+encodeURIComponent(source.url), {cache:'no-store'})
       .then(async response => { if(!response.ok) return; const data=await response.json(); if(own!==revision || !source)return;
-        preview({title:data.title && data.title!==new URL(source.url).hostname ? data.title : source.title,description:data.description || source.description,image:data.image,imageKind:data.imageKind,source:data.source});
+        preview({title:data.title && data.title!==new URL(source.url).hostname ? data.title : source.title,description:data.description || source.description,image:data.image || source.image,imageKind:data.imageKind || source.imageKind,source:data.source || source.source});
       }).catch(() => { /* Keep the source title and excerpt already on screen. */ });
   }
   dialog.querySelectorAll('[data-community-share-close]').forEach(button => button.addEventListener('click',close));

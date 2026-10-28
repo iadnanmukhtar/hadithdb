@@ -30,13 +30,14 @@
         page.subtitle = '';
     } else if (results.length > 0 && typeof book !== 'undefined') {
         page.canonical = `/${book.alias}:${results[0].num}`;
-        var hadithHeadingTitle = results[0].title_en
+        var hadithHeadingTitle = (results[0].en && results[0].en.title) || results[0].title_en
           || (results[0].section && (results[0].section.title_en || results[0].section.h2_title_en))
           || results[0].h2_title_en
           || '';
         var hadithMetaHeadingTitle = utils.truncate(hadithHeadingTitle, 65, true);
-        page.title_en = `${book.shortName_en} ${results[0].num}${hadithHeadingTitle ? ` | ${hadithHeadingTitle}` : ''}`;
+        page.title_en = `${book.shortName_en} ${results[0].num}${hadithHeadingTitle ? ` — ${utils.socialMetadata().plain(hadithHeadingTitle)}` : ''}`;
         page.description_en = `Read ${book.shortName_en} ${results[0].num}${hadithMetaHeadingTitle ? `, ${hadithMetaHeadingTitle}` : ''}, with Arabic text, English translation, source references, and related narrations.`;
+        page.description_en = utils.socialMetadata().description(`${book.shortName_en || book.name_en} ${results[0].num}`, [utils.socialMetadata().body(results[0])], page.description_en);
         page.title = `${book.title} ${results[0].num_ar}`;
         page.subtitle_en = `${book.shortName_en}`;
         page.subtitle = `${book.shortName}`;

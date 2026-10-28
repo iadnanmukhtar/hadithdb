@@ -8058,8 +8058,10 @@ function quranShareModalHtml(ayah, shareId) {
 	var $card = $('<article>').addClass('hadith-share-card quran-share-card').attr({ 'data-share-card': '', 'data-share-ref': `quran:${ref}` }).appendTo($body);
 	var $inner = $('<div>').addClass('hadith-share-card-inner').appendTo($card);
 	$('<h2>').addClass('hadith-share-title share-editable').attr('contenteditable', 'false').text(shareTitle).appendTo($inner);
+	// Dynamic ayahs come from ?json=1, which puts normal Arabic in ar.body
+	// and the original display script in ar.body_alt (the reverse of HTML locals).
 	var $arText = $('<div>').addClass('body hadith-share-text quran-share-text share-editable').attr({ lang: 'ar', contenteditable: 'false' });
-	$('<p>').append($('<span>').attr({ 'data-quran-script-text': 'ayah', 'data-quran-ref': ref }).text(compactQuranPlainText(ayah && ayah.ar && ayah.ar.body)).append(document.createTextNode(' ')).append($('<span>').addClass('quran-ayah-end-marker').attr('aria-label', `Quran ${arabicRef}`).text(`۝${toArabicDigits(arabicPart)}`))).appendTo($arText);
+	$('<p>').append($('<span>').attr({ 'data-quran-script-text': 'ayah', 'data-quran-ref': ref, 'data-quran-post-text': compactQuranPlainText(ayah && ayah.ar && ayah.ar.body) }).text(compactQuranPlainText(ayah && ayah.ar && ayah.ar.body)).append(document.createTextNode(' ')).append($('<span>').addClass('quran-ayah-end-marker').attr('aria-label', `Quran ${arabicRef}`).text(`۝${toArabicDigits(arabicPart)}`))).appendTo($arText);
 	$('<section>').addClass('hadith-share-section hadith-share-arabic-section').attr('lang', 'ar').append($arText).appendTo($inner);
 	var $enText = $('<div>').addClass('body hadith-share-text quran-share-text share-editable').attr({ lang: 'en', contenteditable: 'false', 'data-quran-share-translation-target': '1' });
 	$('<p>')
@@ -8154,7 +8156,7 @@ function setQuranShareTranslationAttribution(modal, label) {
 		attribution.textContent = label ? `— ${label}` : '';
 }
 
-function applyQuranShareTranslation(modal, card, alias) {
+function applyQuranShareTranslation(modal, card, alias, requireSelected) {
 	var target = modal ? modal.querySelector('[data-quran-share-translation-target="1"]') : null;
 	if (!target)
 		return Promise.resolve();
@@ -8170,6 +8172,7 @@ function applyQuranShareTranslation(modal, card, alias) {
 			return candidate && candidate.alias === alias && candidate.source === 'local';
 		});
 		if (!book) {
+			if (requireSelected) throw new Error('Unable to load selected translation. Please try again.');
 			target.innerHTML = target.dataset.quranShareDefaultTranslationHtml || '';
 			setQuranShareTranslationAttribution(modal, defaultQuranTranslationShortName());
 			return;
@@ -8191,6 +8194,7 @@ function applyQuranShareTranslation(modal, card, alias) {
 					var text = quranTranslationTextFromPayload(entry);
 					return `<span><sup>${$('<div>').text(label).html()}</sup>&nbsp;${$('<div>').text(text).html()}</span>`;
 				}).join(' ');
+				if (!spans && requireSelected) throw new Error('Selected translation is unavailable for this passage.');
 				if (spans)
 					target.innerHTML = `<p>${spans}</p>`;
 				setQuranShareTranslationAttribution(modal, quranTranslationBookLabel(book));
@@ -17915,11 +17919,30 @@ async function exportHadithShareCard(card, mode, button) {
 	}
 }
 
-function plainTextFromShareSection(section) {
-	if (!section || section.classList.contains('d-none'))
+function plainTextFromShareSection(section, includeHidden) {
+	if (!section || (includeHidden !== true && section.classList.contains('d-none')))
 		return '';
 	var copyBody = section.querySelector('[data-share-copy-body="1"]') || section.querySelector('.hadith-share-text');
-	var text = copyBody ? copyBody.innerText : section.innerText;
+	var text;
+	if (includeHidden === true) {
+		var clone = (copyBody || section).cloneNode(true);
+		clone.querySelectorAll('[data-quran-post-text]').forEach(function (node) {
+			node.textContent = node.getAttribute('data-quran-post-text');
+		});
+		clone.querySelectorAll('script,style,button,.footnote-ref,.footnote-backref').forEach(function (node) { node.remove(); });
+		// Collapse HTML source indentation before introducing intentional line breaks.
+		var walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
+		while (walker.nextNode())
+			walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/\s+/g, ' ');
+		clone.querySelectorAll('[data-quran-share-translation-attribution]').forEach(function (node) {
+			node.before('\n');
+		});
+		clone.querySelectorAll('br').forEach(function (node) { node.replaceWith('\n'); });
+		clone.querySelectorAll('p,div,li,blockquote,h1,h2,h3').forEach(function (node) { node.append('\n\n'); });
+		text = clone.textContent.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n');
+	} else {
+		text = copyBody ? copyBody.innerText : section.innerText;
+	}
 	return (text || '').replace(/\n{3,}/g, '\n\n').trim();
 }
 
@@ -18001,7 +18024,7 @@ function openContentSharePane(modalRoot, card) {
 	options.style.setProperty('--share-option-count', imageAllowed ? '5' : '4');
 	[
 		['Image', 'image', function () { pane.close(); modalRoot.dataset.shareImageRequested = 'true'; bootstrap.Modal.getOrCreateInstance(modalRoot).show(); }],
-		['Post', 'people', function () { shareCardToCommunity(card); }],
+		['Post', 'people', function () { return shareCardToCommunity(card); }],
 		['Text', 'card-text', async function () { await copyTextToClipboard(hadithShareCardText(card)); status.textContent = 'Text copied'; }],
 		['Link', 'link-45deg', async function () { await copyTextToClipboard(contentShareUrl(card)); status.textContent = 'Link copied'; }],
 		['More…', 'three-dots', async function () { if (!navigator.share) { status.textContent = 'Native sharing is unavailable in this browser. Use Text or Link to copy instead.'; return; } await navigator.share({ title: shareTitle, url: contentShareUrl(card) }); }]
@@ -18020,11 +18043,29 @@ function openContentSharePane(modalRoot, card) {
 }
 
 function shareCardToCommunity(card) {
-	var title = card.querySelector('.hadith-share-title');
-	var sections = Array.from(card.querySelectorAll('.hadith-share-section'));
-	var english = sections.find(function (section) { return section.getAttribute('lang') === 'en'; });
-	var description = plainTextFromShareSection(english) || sections.map(plainTextFromShareSection).find(Boolean) || '';
-	window.CommunityPostShare.open({ url: contentShareUrl(card), title: title ? title.textContent.trim() : card.getAttribute('data-share-ref'), description: description.slice(0, 600) });
+	function openPost() {
+		var title = card.querySelector('.hadith-share-title');
+		var sections = Array.from(card.querySelectorAll('.hadith-share-section'));
+		var english = sections.find(function (section) { return section.getAttribute('lang') === 'en'; });
+		var description = plainTextFromShareSection(english) || sections.map(plainTextFromShareSection).find(Boolean) || '';
+		var postText = ['ar', 'en'].map(function (lang) {
+			return sections.filter(function (section) { return section.getAttribute('lang') === lang; })
+				.map(function (section) { return plainTextFromShareSection(section, true); }).filter(Boolean).join('\n\n');
+		}).filter(Boolean).join('\n\n');
+		window.CommunityPostShare.open({ url: contentShareUrl(card), title: title ? title.textContent.trim() : card.getAttribute('data-share-ref'), description: description.slice(0, 600), text: postText });
+	}
+	if (card.classList && card.classList.contains('quran-share-card')) {
+		var alias = quranSelectedTranslationAliasFromLocation() || storedQuranSelectedTranslationAlias();
+		if (alias) {
+			var modal = card.closest('.hadith-share-modal') || card.parentElement;
+			return applyQuranShareTranslation(modal, card, alias, true).then(function () {
+				var ref = card.getAttribute('data-share-ref') || '';
+				card.setAttribute('data-share-url', quranUrl(`/quran/${encodeURIComponent(alias)}/${ref}`));
+				openPost();
+			});
+		}
+	}
+	openPost();
 }
 
 async function copyHadithShareCardText(card, button) {
