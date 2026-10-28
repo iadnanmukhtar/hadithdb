@@ -2,8 +2,8 @@
   data-navigation-url="<%= utils.quranUrl(req, '/quran/navigation') %>" data-navigation-jump="<%= utils.quranUrl(req, '/quran/navigate') %>"
   data-navigation-mode="<%= navigationMode || 'study' %>" data-navigation-book="<%= navigationBook ? (navigationBook.type === 'trans' ? (navigationBook.quranBookSlug || navigationBook.alias) : (navigationBook.slug || navigationBook.alias)) : '' %>">
   <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="quran-navigation-title"><i class="bi bi-compass" aria-hidden="true"></i> Navigate Quran</h2><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close Quran navigation"></button></div>
-  <div class="quran-navigation-tabs" role="tablist" aria-label="Navigate by">
-    <% ['Surah', 'Ayah', 'Manzil', 'Juz', 'Page'].forEach(function (tab) { %><button type="button" role="tab" id="quran-navigation-tab-<%= tab.toLowerCase() %>" data-navigation-tab="<%= tab.toLowerCase() %>" aria-controls="quran-navigation-content" aria-selected="<%= tab === 'Juz' ? 'true' : 'false' %>" tabindex="<%= tab === 'Juz' ? '0' : '-1' %>"><%= tab %></button><% }); %>
+  <div class="quran-navigation-tabs quran-reader-modes btn-group btn-group-sm" role="tablist" aria-label="Navigate by">
+    <% ['Surah', 'Ayah', 'Manzil', 'Juz', 'Page'].forEach(function (tab) { %><button type="button" class="btn btn-outline-secondary<%= tab === 'Juz' ? ' active' : '' %>" role="tab" id="quran-navigation-tab-<%= tab.toLowerCase() %>" data-navigation-tab="<%= tab.toLowerCase() %>" aria-controls="quran-navigation-content" aria-selected="<%= tab === 'Juz' ? 'true' : 'false' %>" tabindex="<%= tab === 'Juz' ? '0' : '-1' %>"><%= tab %></button><% }); %>
   </div>
   <div class="quran-navigation-status text-muted" role="status" aria-live="polite"></div>
   <div id="quran-navigation-content" class="quran-navigation-content" role="tabpanel" aria-labelledby="quran-navigation-tab-juz"></div>

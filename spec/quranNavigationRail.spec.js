@@ -9,7 +9,7 @@ jest.mock('../lib/Utils', () => ({ quranUrl: (_req, url) => url }));
 const Mushaf = require('../lib/QuranMushaf');
 const Juz = require('../lib/QuranTocSubdivisions');
 const Rail = require('../lib/QuranNavigationRail');
-const surahs = [{num:1,name_en:'Al-Fatihah',name_ar:'الفاتحة',ayahs:7}, {num:2,name_en:'Al-Baqarah',name_ar:'البقرة',ayahs:286}];
+const surahs = [{num:1,name_en:'Al-Fatihah',name_ar:'الفاتحة',ayahs:7,aliases:['Umm al-Kitāb','أُمّ الْكِتَاب']}, {num:2,name_en:'Al-Baqarah',name_ar:'البقرة',ayahs:286}];
 const data = {surahs:surahs.map(s => ({num:s.num,name:s.name_en,arabic:s.name_ar,ayahs:s.ayahs})),manzil:[{num:1,title:'الأول',ref:'1:1'},{num:2,title:'الثاني',ref:'2:142'}],juz:[{num:1,title:'الم',ref:'1:1'},{num:2,title:'سيقول',ref:'2:142'}],pages:604};
 function response() { const res = {json:jest.fn(),redirect:jest.fn(),send:jest.fn(),status:jest.fn()}; res.status.mockReturnValue(res); return res; }
 beforeEach(() => { jest.clearAllMocks(); global.surahs = surahs; Juz.manzilRows.mockResolvedValue([{num:1,start:'1:1',title:'الأول'},{num:2,start:'2:142',title:'الثاني'}]); Mushaf.info.mockResolvedValue({number_of_pages:604}); });
@@ -37,7 +37,7 @@ test.each([{ref:'2:287'},{ref:'115:1'},{ref:'2:0'},{page:'605'},{page:'2.5'}])('
 test('metadata exposes canonical surah counts and Juz references', async () => {
   Juz.juzRows.mockResolvedValue([{num:2,title:'سيقول',start:'2:142'}]); const res=response();
   await Rail.data({},res,jest.fn()); expect(res.json.mock.calls[0][0].manzil.map(m=>m.title)).toEqual(['الفاتحة','البقرة']);
-  expect(res.json.mock.calls[0][0]).toMatchObject({pages:604,surahs:[{num:1,ayahs:7},{num:2,ayahs:286}],juz:[{ref:'2:142'}]});
+  expect(res.json.mock.calls[0][0]).toMatchObject({pages:604,surahs:[{num:1,ayahs:7,aliases:surahs[0].aliases},{num:2,ayahs:286,aliases:[]}],juz:[{ref:'2:142'}]});
 });
 async function browser(fetcher) {
   const html = await ejs.renderFile(path.join(__dirname,'../views/sub-views/quran_navigation_rail.ejs'), {navigationMode:'mushaf',navigationBook:null,utils:{quranUrl:(_req,url)=>url},req:{}});
@@ -111,4 +111,21 @@ test('Manzil appears before Juz and uses the same mode-aware jumps',async()=>{
  const input=doc.querySelector('input');input.value='1';input.dispatchEvent(new dom.window.Event('input'));
  expect(Array.from(doc.querySelectorAll('.quran-navigation-item')).filter(el=>!el.hidden)).toHaveLength(1);
  dom.window.close();
+});
+
+ test.each(['surah', 'ayah'])('surah search normalizes names and aliases in the %s tab', async tab => {
+  const catalog = { ...data, surahs: [
+    {num:13,name:'al-Raʿd',arabic:'الرَّعْد',ayahs:43},
+    {num:40,name:'Ghāfir',arabic:'غَافِر',aliases:['al-Muʾmin','الْمُؤْمِن'],ayahs:85}
+  ] };
+  const {doc,dom} = await browser(jest.fn().mockResolvedValue({ok:true,json:async()=>catalog}));
+  doc.querySelector(`[data-navigation-tab="${tab}"]`).click();
+  const input = doc.querySelector('input');
+  for (const [term, number] of [['rad',13],['raad',13],['AL-RĀʿD',13],['الرعد',13],['الرَّعْـد',13],['١٣',13],['ghafir',40],['mumin',40],['mu’min',40],['المؤمن',40],['الْمُؤْمِن',40],['missing',null],['',null]]) {
+    input.value = term; input.dispatchEvent(new dom.window.Event('input'));
+    const visible = Array.from(doc.querySelectorAll('.quran-navigation-column:first-child a')).filter(a => !a.hidden);
+    expect(visible).toHaveLength(term === '' ? 2 : number ? 1 : 0);
+    if (number) expect(visible[0].textContent).toMatch(new RegExp('^' + number + '\\.'));
+  }
+  dom.window.close();
 });

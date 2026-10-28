@@ -96,3 +96,23 @@ test('dedicated tafsir actions reuse the existing passage reflections without ad
     expect(d.querySelector('.content-item-footer').textContent).not.toContain('Reflect on this item');
   }finally{dom.window.close();}
 });
+
+test.each([
+  [{title_en:'The journey',title:'الرحلة',path:'ibnhisham/19'},'The journey'],
+  [{title_en:'',title:'الرحلة',path:'ibnhisham/19'},'الرحلة'],
+  [{title_en:'',title:'',path:'ibnhisham/19'},'intro:161496']
+])('introduction actions use the stored heading title and preserve their target',async(row,title)=>{
+  const previous=global.query;
+  global.query=jest.fn(async query=>{
+    // Reject the invalid view projection that caused ER_BAD_FIELD_ERROR.
+    expect(query).toContain('SELECT t.title_en,t.title,v.path');
+    expect(query).toContain('JOIN toc t ON t.id=v.id');
+    expect(query).toContain("WHERE v.id='161496'");
+    return [row];
+  });
+  try {
+    expect(await require('../lib/ContentItems').source('intro:161496')).toEqual({title,url:'/ibnhisham/19#note-intro-161496'});
+    global.query.mockResolvedValue([]);
+    await expect(require('../lib/ContentItems').source('intro:161496')).rejects.toMatchObject({status:404});
+  }finally{global.query=previous;}
+});

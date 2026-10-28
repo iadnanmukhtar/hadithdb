@@ -3,27 +3,30 @@
 .quran-navigation-rail .offcanvas-title { color: var(--quran-navigation-ink); font-weight: 600; }
 .quran-navigation-rail .btn-close { border-radius: 50%; padding: .6rem; }
 .quran-navigation-rail .btn-close:hover, .quran-navigation-rail .btn-close:focus-visible { background-color: var(--c-accent-12); opacity: 1; }
-.quran-navigation-tabs { display: flex; margin: 0 1.25rem 1rem; padding: .25rem; gap: .15rem; border-radius: 2rem; background: var(--c-accent-08); border: 1px solid var(--c-accent-18); }
-.quran-navigation-tabs button { flex: 1; border: 0; padding: .6rem .3rem; border-radius: 2rem; background: transparent; color: var(--c-muted); transition: background-color .15s ease, color .15s ease, box-shadow .15s ease; }
-.quran-navigation-tabs button:hover, .quran-navigation-tabs button:focus-visible { background: var(--c-accent-12); color: var(--quran-navigation-ink); }
-.quran-navigation-tabs button[aria-selected="true"] { background: var(--c-accent-18); color: var(--quran-navigation-ink); box-shadow: inset 0 0 0 1px var(--c-accent-30); font-weight: 700; }
+.quran-navigation-tabs { display: flex; margin: 0 1.25rem .65rem; }
+.quran-navigation-tabs .btn { flex: 1; min-width: 0; justify-content: center; }
 .quran-navigation-rail :focus-visible { outline: 2px solid var(--bs-primary, #0d6efd); outline-offset: -2px; }
 .quran-navigation-status:not(:empty) { padding: 0 1.25rem 1rem; }
 .quran-navigation-content { display: flex; flex: 1; min-height: 0; padding: 0 1.25rem 1.25rem; gap: .65rem; }
-.quran-navigation-column { display: flex; flex-direction: column; min-width: 0; flex: 1; gap: .75rem; }
-.quran-navigation-column input { min-width: 0; border-radius: .8rem; padding: .7rem; border-color: var(--c-accent-22); transition: border-color .15s ease, box-shadow .15s ease; }
+.quran-navigation-column { display: flex; flex-direction: column; min-width: 0; flex: 1; gap: .5rem; }
+.quran-navigation-column input { min-width: 0; min-height: 0; font-size: .85rem; line-height: 1.35; border-radius: .5rem; padding: .4rem .6rem; border-color: var(--c-accent-22); transition: border-color .15s ease, box-shadow .15s ease; }
 .quran-navigation-column input:hover { border-color: var(--c-accent-40); }
 .quran-navigation-column input:focus { border-color: var(--c-accent); background: var(--c-accent-045); box-shadow: 0 0 0 .18rem var(--c-accent-12); }
+.quran-navigation-filter { flex-shrink: 0; flex-wrap: nowrap; border-color: var(--c-accent-22); }
+.quran-navigation-filter:hover { border-color: var(--c-accent-40); }
+.quran-navigation-filter:focus-within { border-color: var(--c-accent); box-shadow: 0 0 0 .18rem var(--c-accent-12); }
+.quran-navigation-filter .input-group-text { padding: .4rem .45rem; font-size: .85rem; }
+.quran-navigation-filter input.form-control { padding-inline-start: .25rem; }
 .quran-navigation-list { position: relative; overflow-y: auto; overscroll-behavior: contain; min-height: 0; flex: 1; scrollbar-width: thin; scrollbar-color: var(--c-accent-40) transparent; }
-.quran-navigation-item { display: flex; align-items: center; justify-content: space-between; gap: .6rem; min-height: 48px; padding: .65rem .75rem; margin-bottom: .2rem; border-radius: .8rem; color: inherit; text-decoration: none; transition: background-color .15s ease, color .15s ease, box-shadow .15s ease; }
+.quran-navigation-item { font-size: .8rem; display: flex; align-items: center; justify-content: space-between; gap: .6rem; min-height: 48px; padding: .65rem .75rem; margin-bottom: .2rem; border-radius: .8rem; color: inherit; text-decoration: none; transition: background-color .15s ease, color .15s ease, box-shadow .15s ease; }
 .quran-navigation-item[hidden] { display: none; }
 .quran-navigation-item:hover, .quran-navigation-item:focus-visible { background: var(--c-accent-08); color: var(--quran-navigation-ink); }
 .quran-navigation-item.is-current { background: var(--c-accent-12); color: var(--quran-navigation-ink); box-shadow: inset 3px 0 0 var(--c-accent), inset 0 0 0 1px var(--c-accent-18); font-weight: 700; }
 .quran-navigation-item.is-current:hover, .quran-navigation-item.is-current:focus-visible { background: var(--c-accent-18); }
-.quran-navigation-item [lang="ar"] { font-size: 1.1rem; }
+.quran-navigation-item [lang="ar"] { font-size: .9rem; }
 .has-ayahs .quran-navigation-column:first-child { flex: 1 1 72%; }
 .has-ayahs .quran-navigation-column:first-child .quran-navigation-item { display: block; }
-.has-ayahs .quran-navigation-column:first-child [lang="ar"] { display: block; font-size: .95rem; opacity: .7; }
+.has-ayahs .quran-navigation-column:first-child [lang="ar"] { display: block; font-size: .85rem; opacity: .7; }
 .has-ayahs .quran-navigation-ayahs { flex: 0 0 25%; }
 @media (max-width: 420px) { .quran-navigation-content { padding: 0 .85rem .85rem; } .quran-navigation-tabs { margin-inline: .85rem; } }
 @media (max-width: 576px) {
@@ -67,5 +70,4 @@
 
 @media (prefers-reduced-motion: reduce) { .quran-navigation-tabs button, .quran-navigation-column input, .quran-navigation-item { transition: none; } }
 
-.quran-navigation-tabs button { min-width: 0; font-size: .9rem; }
 .quran-navigation-rail .offcanvas-title .bi-compass { margin-inline-end: .3rem; color: var(--c-accent); }

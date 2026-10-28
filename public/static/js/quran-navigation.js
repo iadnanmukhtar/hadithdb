@@ -8,8 +8,9 @@
   var data, loading, tab = 'juz', surah = 1, currentRef = '', currentPage = 0, currentJuz = 0;
 
   function normalize(value) {
-    return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f\u064b-\u065f\u0670]/g, '')
-      .replace(/[أإآٱ]/g, 'ا').replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x660)).replace(/[\u06f0-\u06f9]/g, d => String(d.charCodeAt(0) - 0x6f0)).replace(/[^\p{L}\p{N}]/gu, '');
+    return String(value || '').toLowerCase().normalize('NFKD').replace(/\p{M}/gu, '')
+      .replace(/[أإآٱ]/g, 'ا').replace(/[ى]/g, 'ي').replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x660)).replace(/[\u06f0-\u06f9]/g, d => String(d.charCodeAt(0) - 0x6f0))
+      .replace(/[^a-z0-9\u0621-\u063a\u0641-\u064a]/g, '').replace(/([aeiou])\1+/g, '$1');
   }
   function context(trigger) {
     currentJuz = 0;
@@ -47,19 +48,22 @@
   function column(label, items) {
     var col = document.createElement('div'); col.className = 'quran-navigation-column';
     var input = document.createElement('input'); input.type = 'search'; input.className = 'form-control'; input.placeholder = label === 'Search Ayah' ? 'Ayah' : label; input.setAttribute('aria-label', label);
+    var filter = document.createElement('div'); filter.className = 'page-content-filter input-group quran-navigation-filter';
+    var icon = document.createElement('span'); icon.className = 'input-group-text bi bi-funnel'; icon.setAttribute('aria-hidden', 'true');
+    filter.append(icon, input);
     var list = document.createElement('nav'); list.className = 'quran-navigation-list'; list.setAttribute('aria-label', label.replace('Search ', ''));
     var empty = document.createElement('p'); empty.className = 'text-muted p-2'; empty.textContent = 'No matches'; empty.hidden = items.length > 0;
     items.forEach(item => list.append(item)); list.append(empty);
     input.addEventListener('input', function () {
       var term = normalize(input.value), count = 0;
-      items.forEach(item => { item.hidden = !normalize(item.textContent).includes(term); if (!item.hidden) count++; });
+      items.forEach(item => { item.hidden = !(item.navigationSearchNames || [item.textContent]).some(name => normalize(name).includes(term)); if (!item.hidden) count++; });
       empty.hidden = count > 0;
     });
     input.addEventListener('keydown', function (event) {
       if (event.key === 'Enter') { var first = items.find(item => !item.hidden); if (first) { event.preventDefault(); first.click(); } }
       if (event.key === 'ArrowDown') { var first = items.find(item => !item.hidden); if (first) { event.preventDefault(); first.focus(); } }
     });
-    col.append(input, list); return col;
+    col.append(filter, list); return col;
   }
   function centerCurrent() {
     content.querySelectorAll('.quran-navigation-list').forEach(list => {
@@ -71,10 +75,11 @@
     if (!data) return;
     content.replaceChildren(); content.classList.toggle('has-ayahs', tab === 'ayah');
     content.setAttribute('aria-labelledby', 'quran-navigation-tab-' + tab);
-    tabs.forEach(button => { var selected = button.dataset.navigationTab === tab; button.setAttribute('aria-selected', String(selected)); button.tabIndex = selected ? 0 : -1; });
+    tabs.forEach(button => { var selected = button.dataset.navigationTab === tab; button.classList.toggle('active', selected); button.setAttribute('aria-selected', String(selected)); button.tabIndex = selected ? 0 : -1; });
     if (tab === 'surah' || tab === 'ayah') {
       content.append(column('Search Surah', data.surahs.map(s => {
         var a = link(s.num + '. ' + s.name, href(s.num + ':1'), s.num === surah, s.arabic);
+        a.navigationSearchNames = [String(s.num), s.name, s.arabic].concat(s.aliases || []);
         if (tab === 'ayah') {
           a.setAttribute('role', 'button'); a.setAttribute('aria-label', 'Select ' + s.name + ' ayahs');
           a.addEventListener('click', event => {
