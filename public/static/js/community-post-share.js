@@ -52,7 +52,7 @@
       const data = await response.json();
       if (own !== revision || request !== authRevision) return;
       if (owner && owner !== data.author.handle) { source = null; $('text').value = ''; dialog.close(); return; }
-      owner = data.author.handle; $('name').textContent = data.author.name;
+      owner = data.author.handle; $('name').textContent = data.author.publicName || data.author.name.trim().split(/\s+/u)[0];
     } catch (_) { /* The editor remains available while account details load. */ }
   }
   function open(data) {

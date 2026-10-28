@@ -529,7 +529,7 @@
     $('comment-form').querySelector('[type="submit"]').disabled = !me;
     $('comment-hint').hidden = !!me;
     $('comment-user').hidden = !me;
-    $('comment-user').textContent = me ? 'Posting as ' + me.author.name : '';
+    $('comment-user').textContent = me ? 'Posting as ' + (me.author.publicName || me.author.name.trim().split(/\s+/u)[0]) : '';
     if (me) avatarImage($('comment-avatar'), me.author);
     else $('comment-avatar').replaceChildren(icon('person-fill'));
   }
@@ -662,8 +662,21 @@
     }
     if (!items.length) $('subscriptions').textContent = 'You are not following any authors yet.';
   }
+  function updateBioCount() {
+    if (!$('bio') || !window.CommunityBio) return;
+    const Bio = window.CommunityBio;
+    $('bio-count').textContent = `${Bio.length($('bio').value)} / ${Bio.limit}`;
+    $('bio').setCustomValidity(Bio.error($('bio').value));
+    $('bio-count').classList.toggle('text-danger', !!Bio.error($('bio').value));
+  }
+  $('bio')?.addEventListener('input', updateBioCount);
+  const profilePhoto = window.CommunityProfilePhoto?.();
+  $('profile-dialog')?.addEventListener('close', () => profilePhoto?.cancel());
   $('edit-profile')?.addEventListener('click', () => {
     $('name').value = me.author.name; $('handle').value = me.author.handle; $('bio').value = me.author.bio || '';
+    $('visibility').checked = (me.author.profile_visibility || 'public') === 'public';
+    updateBioCount();
+    profilePhoto?.reset(me.author);
     $('profile-error').textContent = ''; $('profile-dialog').showModal();
   });
   document.querySelectorAll('[data-close-profile-dialog]').forEach(el => el.addEventListener('click', () => $('profile-dialog').close()));
@@ -708,13 +721,19 @@
     const submit = $('profile-form').querySelector('[type="submit"]'), own = epoch;
     submit.disabled = true; $('profile-error').textContent = '';
     try {
-      await api('/profile', 'PUT', { name: $('name').value, handle: $('handle').value, bio: $('bio').value });
+      await api('/profile', 'PUT', { name: $('name').value, handle: $('handle').value, bio: $('bio').value, photo: profilePhoto?.value(), visibility: $('visibility').checked ? 'public' : 'private' });
       if (own !== epoch) return;
-      $('profile-dialog').close(); await init(); status('Public profile saved.');
+      $('profile-dialog').close(); await init(); status('Profile saved.');
     } catch (err) { if (own === epoch) $('profile-error').textContent = err.message; }
     finally { submit.disabled = false; }
   });
   async function init() {
+    if (view === 'author') {
+      $('author-profile').hidden = true; $('author-content').hidden = true;
+      $('page-title').textContent = 'Profile';
+      for (const key of ['author-name','author-bio','author-stats','author-avatar']) $(key).replaceChildren();
+      $('feed')?.replaceChildren();
+    }
     const own = ++epoch; ++feedEpoch; loadingFeed = false; feedHasMore = false; feedObserver?.disconnect(); me = null; status('');
     $('moderation-link').hidden = true;
     if($('blog-control'))$('blog-control').hidden=true;
@@ -727,13 +746,27 @@
       } catch (err) { if (!publicView) throw err; me = null; }
       if (own !== epoch) return;
       $('moderation-link').hidden = !me?.moderator;
-      if ($('quick-name')) { $('quick-name').textContent = me?.author.name || 'Share a post'; if (me) { avatarImage($('quick-avatar'), me.author); avatarImage($('prompt-avatar'), me.author); } }
-      if (!me && ['mine', 'following', 'write', 'moderation'].includes(view)) { status('Please sign in using the account button to open your ' + (view === 'write' ? 'publication editor.' : 'personal wall.')); return; }
+      if ($('quick-name')) { $('quick-name').textContent = me?.author.publicName || me?.author.name.trim().split(/\s+/u)[0] || 'Share a post'; if (me) { avatarImage($('quick-avatar'), me.author); avatarImage($('prompt-avatar'), me.author); } }
+      if (!me && view === 'author') { status('Please sign in using the account button to view this profile.'); return; }
+      if (!me && ['author', 'mine', 'following', 'write', 'moderation'].includes(view)) { status('Please sign in using the account button to open your ' + (view === 'write' ? 'publication editor.' : 'personal wall.')); return; }
+      if (view === 'author') {
+        const {author} = await api('/authors/' + encodeURIComponent(handle));
+        if (own !== epoch) return;
+        if (author.handle !== handle) { location.replace('/community/@' + author.handle); return; }
+        $('page-title').textContent = author.name;
+        $('author-name').textContent = author.name;
+        if (window.CommunityBio) window.CommunityBio.render($('author-bio'), author.bio);
+        else $('author-bio').textContent = author.bio || '';
+        $('author-stats').textContent = `${author.followers} followers · ${author.following} following · ${author.posts} posts · ${author.comments} reflections`;
+        avatarImage($('author-avatar'), author);
+        $('author-profile').hidden = false; $('author-content').hidden = false;
+      }
       if (view === 'author' && me?.author.handle === handle) { location.replace('/community/mine'); return; }
       if (view === 'mine') {
         $('wall-name').textContent = me.author.name;
         $('wall-handle').textContent = '@' + me.author.handle;
-        $('wall-bio').textContent = me.author.bio || '';
+        if (window.CommunityBio) window.CommunityBio.render($('wall-bio'), me.author.bio);
+        else $('wall-bio').textContent = me.author.bio || '';
         const followers = button(`${me.author.followers} ${Number(me.author.followers) === 1 ? 'follower' : 'followers'}`, () => showPeople('followers'), 'community-profile-stat');
         const following = button(`${me.author.following} following`, () => showPeople('following'), 'community-profile-stat');
         for (const el of [followers, following]) { el.setAttribute('aria-haspopup', 'dialog'); el.setAttribute('aria-controls', 'community-people-dialog'); }

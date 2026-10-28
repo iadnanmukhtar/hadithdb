@@ -5,6 +5,7 @@ const Research = require('../lib/HadithMcpResearch');
 const context = { baseUrls: { hadith: 'https://hadith.example', quran: 'https://quran.example' } };
 const row = (id, extra = {}) => ({ id, public_title: 'الاستخارة', public_markdown: 'How to pray istikharah',
   name: 'Author', handle: 'author', slug: 'Istikharah', published_at: '2026-10-01', updated_at: '2026-10-02', ...extra });
+beforeEach(() => jest.spyOn(Community, 'ensure').mockResolvedValue());
 afterEach(() => jest.restoreAllMocks());
 
 test('blog search reads only published public blog snapshots, escapes LIKE wildcards and preserves identity', async () => {

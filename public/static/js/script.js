@@ -145,7 +145,6 @@ $(function () {
 	initHadithSharhLinks(document);
 	initHadithSharhDisclosures(document);
 	initHadithShareModals(document);
-	initGlobalContentLanguageSelect(document);
 	initHadithContentTranslationControls(document);
 	initLegacyHadithTranslationLink();
 	resumePendingContentTranslationCheckout();
@@ -924,48 +923,53 @@ function setHadithAdminMode(enabled) {
 window.setHadithAdminMode = setHadithAdminMode;
 
 function renderHadithAdminGear() {
-	if (window.hadithAdmin !== true) {
-		if (window.hadithAdminSessionChecked) {
-			document.querySelectorAll('.edit-gear').forEach(function (el) { el.remove(); });
-			setHadithEditMode(false);
-		}
-		return;
-	}
+    if (window.hadithAdmin !== true) {
+      if (window.hadithAdminSessionChecked) {
+        document.querySelectorAll('.edit-gear, .admin-page-link, .admin-menu-divider').forEach(el => el.remove());
+        setHadithEditMode(false);
+      }
+      return;
+    }
+    if (typeof ensureAdminPageLinks === 'function') ensureAdminPageLinks();
+    const editMode = getHadithEditMode();
+    document.querySelectorAll('[data-profile-menu], #offcanvas-topnav .offcanvas-col1').forEach(list => {
+      let item = list.querySelector('.edit-gear');
+      if (!item) {
+        item = document.createElement('li');
+        item.className = 'edit-gear px-3 py-2';
+        const toggle = document.createElement('div');
+        toggle.className = 'btn-group btn-group-sm';
+        toggle.setAttribute('role', 'group');
+        toggle.setAttribute('aria-label', 'Edit/View');
+        for (const [label, enabled] of [['Edit', true], ['View', false]]) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'btn btn-outline-secondary';
+          button.textContent = label;
+          button.dataset.editMode = String(enabled);
+          button.addEventListener('click', () => {
+            if (getHadithEditMode() !== enabled) setHadithAdminMode(enabled);
+          });
+          toggle.appendChild(button);
+        }
+        item.appendChild(toggle);
+        const signout = list.querySelector('[data-profile-signout]');
+        const divider = document.createElement('li');
+        divider.className = 'admin-menu-divider';
+        divider.innerHTML = '<hr class="dropdown-divider">';
+        list.insertBefore(divider, signout);
+        list.insertBefore(item, signout);
+        if (signout) list.insertBefore(divider.cloneNode(true), signout);
+      }
+      item.querySelectorAll('[data-edit-mode]').forEach(button => {
+        const selected = (button.dataset.editMode === 'true') === editMode;
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      });
+    });
+  }
 
-	$('.edit-gear').show();
-
-	const editMode = getHadithEditMode();
-	const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
-	const desktopList = document.querySelector('.site-navbar menu.d-md-block ul.nav');
-	if (desktopList && !desktopList.querySelector('.edit-gear')) {
-		const authItem = desktopList.querySelector('#nav-auth-desktop');
-		const item = document.createElement('li');
-		item.className = 'nav-item edit-gear';
-		item.innerHTML = `<a class="nav-link" role="button" title="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}" aria-label="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}"><i class="bi ${icon}"></i></a>`;
-		item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
-		if (authItem)
-			authItem.after(item);
-		else
-			desktopList.appendChild(item);
-	}
-
-	const mobileList = document.querySelector('#offcanvas-topnav .offcanvas-col1');
-	if (mobileList && !mobileList.querySelector('.edit-gear')) {
-		const separator = document.createElement('li');
-		separator.className = 'edit-gear';
-		separator.innerHTML = '<hr>';
-
-		const item = document.createElement('li');
-		item.className = 'nav-item edit-gear';
-		item.innerHTML = `<a class="nav-link" role="button"><i class="app-menu-icon bi ${icon}" aria-hidden="true"></i> <strong>${editMode ? 'View' : 'Edit'}</strong></a>`;
-		item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
-
-		mobileList.appendChild(separator);
-		mobileList.appendChild(item);
-	}
-}
-
-function hadithLoginPath(userId) {
+  function hadithLoginPath(userId) {
 	var encodedUserId = encodeURIComponent(userId);
 	if (typeof isQuranSubdomainHost === 'function' && isQuranSubdomainHost(window.location.hostname))
 		return `/quran/login/${encodedUserId}`;
@@ -15644,38 +15648,6 @@ var CONTENT_TRANSLATION_SUPPORTED_LANGUAGE_CODES = new Set([
 	'en', 'zh', 'hi', 'es', 'fr', 'ar', 'bn', 'pt', 'ru', 'id', 'ur', 'de', 'ja', 'pcm', 'mr', 'te',
 	'tr', 'ta', 'vi', 'yue', 'wuu', 'ko', 'fa', 'ha', 'th', 'gu', 'kn', 'it', 'pa', 'ml', 'he'
 ]);
-var GLOBAL_CONTENT_LANGUAGE_DEFAULTS = Object.freeze([
-	Object.freeze({ code: 'bn', label: 'Bengali', dir: 'ltr', script: 'Bengali', fontClass: 'content-language-bengali' }),
-	Object.freeze({ code: 'yue', label: 'Chinese (Cantonese)', dir: 'ltr', script: 'Han', fontClass: 'content-language-cjk' }),
-	Object.freeze({ code: 'zh', label: 'Chinese (Mandarin)', dir: 'ltr', script: 'Han', fontClass: 'content-language-cjk' }),
-	Object.freeze({ code: 'wuu', label: 'Chinese (Wu)', dir: 'ltr', script: 'Han', fontClass: 'content-language-cjk' }),
-	Object.freeze({ code: 'en', label: 'English', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'fr', label: 'French', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'de', label: 'German', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'gu', label: 'Gujarati', dir: 'ltr', script: 'Gujarati', fontClass: 'content-language-gujarati' }),
-	Object.freeze({ code: 'ha', label: 'Hausa', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'he', label: 'Hebrew', dir: 'rtl', script: 'Hebrew', fontClass: 'content-language-hebrew' }),
-	Object.freeze({ code: 'hi', label: 'Hindi', dir: 'ltr', script: 'Devanagari', fontClass: 'content-language-devanagari' }),
-	Object.freeze({ code: 'id', label: 'Indonesian', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'it', label: 'Italian', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'ja', label: 'Japanese', dir: 'ltr', script: 'Japanese', fontClass: 'content-language-japanese' }),
-	Object.freeze({ code: 'kn', label: 'Kannada', dir: 'ltr', script: 'Kannada', fontClass: 'content-language-kannada' }),
-	Object.freeze({ code: 'ko', label: 'Korean', dir: 'ltr', script: 'Hangul', fontClass: 'content-language-korean' }),
-	Object.freeze({ code: 'ml', label: 'Malayalam', dir: 'ltr', script: 'Malayalam', fontClass: 'content-language-malayalam' }),
-	Object.freeze({ code: 'mr', label: 'Marathi', dir: 'ltr', script: 'Devanagari', fontClass: 'content-language-devanagari' }),
-	Object.freeze({ code: 'pcm', label: 'Nigerian Pidgin', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'fa', label: 'Persian', dir: 'rtl', script: 'Arabic', fontClass: 'content-language-persian' }),
-	Object.freeze({ code: 'pt', label: 'Portuguese', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'pa', label: 'Punjabi', dir: 'ltr', script: 'Gurmukhi', fontClass: 'content-language-gurmukhi' }),
-	Object.freeze({ code: 'ru', label: 'Russian', dir: 'ltr', script: 'Cyrillic', fontClass: 'content-language-cyrillic' }),
-	Object.freeze({ code: 'es', label: 'Spanish', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'ta', label: 'Tamil', dir: 'ltr', script: 'Tamil', fontClass: 'content-language-tamil' }),
-	Object.freeze({ code: 'te', label: 'Telugu', dir: 'ltr', script: 'Telugu', fontClass: 'content-language-telugu' }),
-	Object.freeze({ code: 'th', label: 'Thai', dir: 'ltr', script: 'Thai', fontClass: 'content-language-thai' }),
-	Object.freeze({ code: 'tr', label: 'Turkish', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' }),
-	Object.freeze({ code: 'ur', label: 'Urdu', dir: 'rtl', script: 'Arabic', fontClass: 'content-language-urdu' }),
-	Object.freeze({ code: 'vi', label: 'Vietnamese', dir: 'ltr', script: 'Latin', fontClass: 'content-language-latin' })
-]);
 
 function paymentFeatureEnabled() {
 	return window.HADITH_PAYMENT_FEATURE_ENABLED === true;
@@ -15781,20 +15753,6 @@ function resolveInitialGlobalContentLanguage() {
 		language = normalizeGlobalContentLanguage(language || 'en');
 		writeGlobalContentLanguage(language);
 		return language;
-	});
-}
-
-function syncGlobalContentLanguageSelects(code) {
-	code = normalizeGlobalContentLanguage(code);
-	$('[data-global-content-language-dropdown="1"]').each(function () {
-		var dropdown = $(this);
-		dropdown.attr('data-global-content-language-current', code);
-		dropdown.find('[data-global-content-language-button="1"]').text(code.toUpperCase());
-		dropdown.find('[data-global-content-language-option]').each(function () {
-			var option = $(this);
-			var active = option.attr('data-global-content-language-option') === code;
-			option.toggleClass('active', active).attr('aria-current', active ? 'true' : null);
-		});
 	});
 }
 
@@ -16628,42 +16586,6 @@ function setUnderItemLanguageSelectDirection(selector) {
 	setNeutralLanguageSelectDisplay(selector);
 }
 
-function globalContentLanguageOptions(configLanguages) {
-	var byCode = {};
-	normalizeContentTranslationLanguages(GLOBAL_CONTENT_LANGUAGE_DEFAULTS).forEach(function (language) {
-		byCode[language.code] = language;
-	});
-	normalizeContentTranslationLanguages(configLanguages).forEach(function (language) {
-		byCode[language.code] = language;
-	});
-	if (!byCode.en)
-		byCode.en = { code: 'en', label: 'English', dir: 'ltr', fontClass: 'content-language-latin' };
-	return Object.values(byCode).sort(contentTranslationLanguageSort);
-}
-
-function populateGlobalContentLanguageSelects(languages) {
-	var selected = readGlobalContentLanguage();
-	var options = globalContentLanguageOptions(languages);
-	$('[data-global-content-language-dropdown="1"]').each(function () {
-		var dropdown = $(this);
-		var menu = dropdown.find('[data-global-content-language-menu="1"]').first();
-		var current = dropdown.attr('data-global-content-language-current') || selected;
-		menu.empty();
-		options.forEach(function (language) {
-			var option = $('<button>').addClass('dropdown-item global-content-language-option').attr({
-				type: 'button',
-				'data-global-content-language-option': language.code,
-				title: language.label || language.code.toUpperCase()
-			});
-			$('<span>').addClass('global-content-language-code').text(language.code.toUpperCase()).appendTo(option);
-			$('<span>').addClass('global-content-language-name').text(language.label || language.code.toUpperCase()).appendTo(option);
-			option.appendTo(menu);
-		});
-		dropdown.attr('data-global-content-language-current', normalizeGlobalContentLanguage(current));
-	});
-	syncGlobalContentLanguageSelects(selected);
-}
-
 function selectAdminContentTranslationLanguage(code) {
 	code = normalizeGlobalContentLanguage(code);
 	$('[data-admin-content-translation-select="1"]').each(function () {
@@ -16706,33 +16628,8 @@ function setGlobalContentLanguage(code, options) {
 	code = normalizeGlobalContentLanguage(code);
 	options = options || {};
 	writeGlobalContentLanguage(code);
-	syncGlobalContentLanguageSelects(code);
 	applyGlobalContentLanguage(document, code, options.force === true);
 	document.dispatchEvent(new CustomEvent('hadithContentLanguageChanged', { detail: { language: code } }));
-}
-
-function initGlobalContentLanguageSelect(root) {
-	var scope = root || document;
-	var dropdowns = $(scope).find('[data-global-content-language-dropdown="1"]').addBack('[data-global-content-language-dropdown="1"]');
-	if (!dropdowns.length)
-		return;
-	populateGlobalContentLanguageSelects([]);
-	dropdowns.each(function () {
-		var dropdown = $(this);
-		if (dropdown.data('globalContentLanguageBound'))
-			return;
-		dropdown.data('globalContentLanguageBound', true);
-		dropdown.on('click', '[data-global-content-language-option]', function () {
-			setGlobalContentLanguage($(this).attr('data-global-content-language-option'));
-		});
-	});
-	contentTranslationLanguages().then(function (languages) {
-		resolveInitialGlobalContentLanguage().then(function (language) {
-			populateGlobalContentLanguageSelects(languages);
-			syncGlobalContentLanguageSelects(language);
-			applyGlobalContentLanguage(document, language, false);
-		});
-	});
 }
 
 function chooseAvailableContentTranslationLanguage(translations, requestedLanguage) {

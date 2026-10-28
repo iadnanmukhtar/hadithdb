@@ -79,11 +79,11 @@
       ? utils.quranUrl(req, '/quran/settings')
       : utils.urlFor(req, '/settings');
     var isAboutArea = requestPath === '/about' || requestPath === '/about/';
-    var isMoreArea = ['/about', '/settings', '/quran/settings', '/bookmarks', '/mcp-server'].some(function (path) {
+    var isMoreArea = ['/about', '/bookmarks', '/mcp-server'].some(function (path) {
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
         var isSirahArea = !isQuranArea && (isHistoryCatalogArea || (pageBook && pageBook.type === 'sirah') || /^\/(?:ibnhisham|history)(?:[/:]|$)/.test(requestPath));
-    var isHadithArea = !isQuranArea && !isSirahArea && !isBooksArea && !isCommunityArea && !isMoreArea;
+    var isHadithArea = !isQuranArea && !isSirahArea && !isBooksArea && !isCommunityArea && !isMoreArea && !isSettingsArea;
     var headerLogo = isMudhakkirArea ? '/static/img/quran/mudhakkir.svg' : (isQuranArea ? '/static/img/quran-logo2.svg' : '/static/img/logo2.svg');
     var headerBrandName = isMudhakkirArea ? 'Mudhakkir' : (isQuranArea ? 'Quran Unlocked' : site.name);
     var headerLogoAlt = headerBrandName;
@@ -130,50 +130,14 @@
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.urlFor(req, '/books?tafsir') %>">Tafsir</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>">Community</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle<%- activeNavAttrs(isMoreArea) %>" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
-          <ul class="dropdown-menu dropdown-menu-end" data-more-menu>
-            <li data-notebook-auth><a class="dropdown-item<%- activeNavAttrs(requestPath === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="bi bi-sticky"></i> My Notebook</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="bi bi-bookmark"></i> My Bookmarks</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="bi bi-sliders"></i> My Settings</a></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isMcpServerArea) %>" href="<%= utils.urlFor(req, '/mcp-server') %>"><i class="bi bi-braces"></i> MCP Server</a></li>
-            <li hidden data-web-app-install><button class="dropdown-item" type="button" data-web-app-install><i class="bi bi-download" aria-hidden="true"></i> <span data-web-app-install-label>Install app</span></button></li>
-            <li><a class="dropdown-item<%- activeNavAttrs(isAboutArea) %>" href="/about"><i class="bi bi-info-circle" aria-hidden="true"></i> About</a></li>
-          </ul>
-        </li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>"><i class="bi bi-people-fill top-nav-community-icon" aria-hidden="true"></i> Community</a></li>
         <li class="nav-item command-search-compact-item">
           <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-compact-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" title="Search" aria-label="Search">
             <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
           </button>
         </li>
-        <li data-notebook-auth class="nav-item">
-          <a class="nav-link top-nav-icon-link<%- activeNavAttrs(requestPath === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>" title="My Notebook" aria-label="My Notebook">
-            <i class="bi bi-sticky" aria-hidden="true"></i>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link top-nav-icon-link" href="<%= utils.urlFor(req, '/bookmarks') %>" title="Bookmarks" aria-label="Bookmarks">
-            <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>"></i>
-          </a>
-        </li>
-        <% if (!isQuranArea) { %>
-        <li class="nav-item top-nav-language-item">
-          <div class="dropdown global-content-language-dropdown" data-global-content-language-dropdown="1">
-            <button id="global-content-language-select" class="btn btn-sm btn-outline-secondary dropdown-toggle global-content-language-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Content language" title="Content language" data-global-content-language-button="1">EN</button>
-            <div class="dropdown-menu dropdown-menu-end global-content-language-menu" data-global-content-language-menu="1" aria-labelledby="global-content-language-select">
-              <button class="dropdown-item global-content-language-option active" type="button" data-global-content-language-option="en"><span class="global-content-language-code">EN</span><span class="global-content-language-name">English</span></button>
-            </div>
-          </div>
-        </li>
-        <% } %>
-        <li class="nav-item d-flex align-items-center" id="nav-auth-desktop"></li>
-        <% if (site.admin) { %>
-        <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/(?:^|; )editMode=1(?:;|$)/) : false); if (window.setHadithAdminMode) { setHadithAdminMode(!editMode); } else { try { localStorage.setItem('hadithdb_edit_mode', editMode ? '0' : '1'); } catch (err) {} if (editMode) { document.cookie='editMode=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT'; if (window.HADITH_COOKIE_DOMAIN) document.cookie='editMode=;path=/;domain='+window.HADITH_COOKIE_DOMAIN+';expires=Thu, 01 Jan 1970 00:00:00 GMT'; } else { var domain=window.HADITH_COOKIE_DOMAIN ? ';domain='+window.HADITH_COOKIE_DOMAIN : ''; document.cookie='editMode=1;path=/;max-age=7776000;samesite=lax'+domain; } location.reload(); }">
-            <i class="bi bi-gear<%=site.editMode ? '-fill' : ''%>"></i></a>
-        </li>
-        <% } %>
+        <li class="nav-item d-flex align-items-center" id="nav-auth-desktop" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= utils.urlFor(req, '/community/mine') %>"></li>
+
       </ul>
       
     </menu>
@@ -181,21 +145,11 @@
 
     <menu class="col-auto d-md-none d-block">
       <div class="nav container-fluid justify-content-end align-items-center gap-2 top-nav-mobile-actions">
-        <% if (!isQuranArea) { %>
-        <div class="dropdown global-content-language-dropdown" data-global-content-language-dropdown="1">
-          <button id="global-content-language-select-mobile" class="btn btn-sm btn-outline-secondary dropdown-toggle global-content-language-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Content language" title="Content language" data-global-content-language-button="1">EN</button>
-          <div class="dropdown-menu dropdown-menu-end global-content-language-menu" data-global-content-language-menu="1" aria-labelledby="global-content-language-select-mobile">
-            <button class="dropdown-item global-content-language-option active" type="button" data-global-content-language-option="en"><span class="global-content-language-code">EN</span><span class="global-content-language-name">English</span></button>
-          </div>
-        </div>
-        <% } %>
-        <a class="nav-link top-nav-icon-link" href="<%= utils.urlFor(req, '/bookmarks') %>" title="Bookmarks" aria-label="Bookmarks">
-          <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>"></i>
-        </a>
+
         <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-mobile-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" title="Search" aria-label="Search">
           <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
         </button>
-        <button type="button" class="btn btn-sm nav-auth-btn" id="nav-auth-mobile">Sign in</button>
+        <div class="d-flex align-items-center nav-auth-btn" id="nav-auth-mobile" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= utils.urlFor(req, '/community/mine') %>"></div>
       </div>
     </menu>
 
@@ -221,9 +175,7 @@
           <a class="offcanvas-quick-action<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>" title="My Bookmarks" aria-label="My Bookmarks">
             <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>" aria-hidden="true"></i>
           </a>
-          <a class="offcanvas-quick-action<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>" title="My Settings" aria-label="My Settings">
-            <i class="bi bi-sliders" aria-hidden="true"></i>
-          </a>
+
         </div>
         <div class="row">
           <%- include('offcanvas_primary_nav.ejs', {

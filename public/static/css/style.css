@@ -1935,76 +1935,8 @@ nav .nav-link[aria-current="page"] {
 	}
 }
 
-.top-nav-language-item {
-	align-items: center;
-	display: flex;
-}
-
-.global-content-language-dropdown {
-	direction: ltr !important;
-	font-family: inherit !important;
-	text-align: left;
-}
-
-.global-content-language-dropdown * {
-	font-family: inherit !important;
-}
-
-.global-content-language-toggle {
-	align-items: center;
-	display: inline-flex;
-	font-size: 0.75rem;
-	font-weight: 600;
-	justify-content: center;
-	line-height: 1.2;
-	min-width: 2.9rem;
-	padding: 0.1rem 0.25rem;
-	text-transform: uppercase;
-	width: 2.9rem;
-}
-
-.global-content-language-toggle.dropdown-toggle::after {
-	margin-left: 0.22rem;
-}
-
-.global-content-language-menu {
-	max-height: min(70vh, 28rem);
-	min-width: 12rem;
-	overflow-y: auto;
-}
-
-.global-content-language-option {
-	align-items: baseline;
-	display: flex;
-	gap: 0.55rem;
-}
-
-.global-content-language-code {
-	font-size: 0.78rem;
-	font-weight: 700;
-	min-width: 2.4rem;
-	text-transform: uppercase;
-}
-
-.global-content-language-name {
-	flex: 1 1 auto;
-}
-
-.site-navbar.shrink .global-content-language-toggle {
-	font-size: 0.7rem;
-	min-width: 2.75rem;
-	padding-bottom: 0;
-	padding-top: 0;
-	width: 2.75rem;
-}
-
 .top-nav-mobile-actions .top-nav-icon-link {
 	padding-right: 0.5rem;
-}
-
-.top-nav-mobile-actions .global-content-language-toggle {
-	min-width: 2.75rem;
-	width: 2.75rem;
 }
 
 .nav-tabs .nav-link:not(.active) {
@@ -13810,3 +13742,5 @@ main.book-catalog-page .tafsir-book-title-line :lang(ar) {
   padding-bottom: .75rem;
 }
 .content-item-actions .personal-note-actions { display:inline-flex; align-items:center; gap:.55rem; }
+
+.site-navbar .top-nav-community-icon { color: var(--c-accent); margin-inline-end: .25rem; }

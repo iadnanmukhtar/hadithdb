@@ -25,7 +25,7 @@ api.use((req, res, next) => req.method === 'GET' ? next() : writeLimit(req, res,
 function signed(req) { if (!req.user) throw require('http-errors')(401, 'Please sign in.'); return req.user; }
 api.get('/me', wrap(async (req, res) => {
   const author = await Community.authorFor(signed(req));
-  res.json({ author: await Community.profile(author.handle), moderator: Community.moderator(req.user), admin: await Community.admin(req.user), subscriptions: await Community.subscriptions(req.user) });
+  res.json({ author: await Community.profile(author.handle, req.user), moderator: Community.moderator(req.user), admin: await Community.admin(req.user), subscriptions: await Community.subscriptions(req.user) });
 }));
 const Alerts = require('../lib/CommunityAlerts');
 api.get('/alerts', wrap(async (req, res) => res.json(await Alerts.unread(signed(req)))));
@@ -55,6 +55,7 @@ api.get('/discussion/:source/:id', wrap(async (req,res)=>res.json(await Interact
 api.post('/discussion/:source/:id', wrap(async (req,res)=>res.status(201).json(await Interactions.reply(signed(req),req.params.source,req.params.id,req.body))));
 api.get('/contributors', wrap(async (req, res) => res.json({contributors:await Community.contributors(req.user)})));
 api.get('/feed', wrap(async (req, res) => res.json(await Community.feed(req.query, req.user))));
+api.get('/authors/:handle', wrap(async (req, res) => res.json({author:await Community.profile(req.params.handle, signed(req))})));
 api.get('/authors/:handle/relationship', wrap(async (req, res) => res.json(await Community.relationship(signed(req), req.params.handle))));
 api.put('/authors/:handle/follow', wrap(async (req, res) => {
   if (typeof req.body.following !== 'boolean' || typeof req.body.email !== 'boolean') return res.status(400).json({ error: 'Choose following and email preferences.' });
@@ -94,8 +95,13 @@ function page(res, req, view, extra = {}) {
   res.render('community', { view, author: null, post: null, initial: null, unsubscribed: false, ...extra,
     page: { menu: 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
       canonical: extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
-      noindex: ['mine', 'following', 'write', 'moderation', 'unsubscribe'].includes(view), context: { communityView: view } } });
+      noindex: ['author', 'mine', 'following', 'write', 'moderation', 'unsubscribe'].includes(view), context: { communityView: view } } });
 }
+router.get('/profile-photo/:handle/:hash', wrap(async (req, res) => {
+  const data = await require('../lib/CommunityProfilePhoto').image(req.params.handle, req.params.hash);
+  res.set({'Content-Type':'image/png','Cache-Control':'private, no-cache','X-Content-Type-Options':'nosniff'});
+  res.send(data);
+}));
 router.get('/media/:id',wrap(async(req,res)=>{
   let user=null;try{user=await GoogleAuth.verifyRequest(req);}catch{}
   const image=await Media.image(req.params.id,user);
@@ -118,13 +124,12 @@ router.post('/unsubscribe/:token', wrap(async (req, res) => {
 router.get('/', wrap(async (req, res) => page(res, req, 'everyone', { initial: await Community.feed() })));
 for (const view of ['following', 'mine', 'write', 'moderation']) router.get('/' + view, (req, res) => page(res, req, view));
 router.get('/@:handle', wrap(async (req, res) => {
-  const author = await Community.profile(req.params.handle);
-  if (author.handle !== req.params.handle) return res.redirect(301, '/community/@' + author.handle);
-  page(res, req, 'author', {author, initial:await Community.feed({author:author.handle})});
+  if (!/^[a-z0-9_.-]{3,40}$/.test(req.params.handle)) return res.sendStatus(404);
+  page(res, req, 'author', {author:{handle:req.params.handle, name:'Profile'}});
 }));
 router.get('/@:handle/:id', wrap(async (req, res) => {
   const post = await Community.post(req.params.id);
   if (post.url.startsWith('/blog/') || post.author.handle !== req.params.handle) return res.redirect(301, post.url);
-  page(res, req, 'post', { post, author: await Community.profile(post.author.handle) });
+  page(res, req, 'post', { post, author: post.author });
 }));
 module.exports = { pages: router, api };

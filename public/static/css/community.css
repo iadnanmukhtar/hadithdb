@@ -23,6 +23,7 @@
 .community-columns > *, .community-profile > * { min-width: 0; }
 .community-avatar { width: 34px; height: 34px; flex: 0 0 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--c-primary-soft-08); color: var(--community-accent); font-size: var(--content-size-meta); text-decoration: none; }
 .community-avatar-large { width: 48px; height: 48px; flex-basis: 48px; font-size: var(--content-size-h3); }
+.community-profile > .community-avatar-large { width: 64px; height: 64px; flex-basis: 64px; align-self: flex-start; }
 .community-composer { border: 1px solid var(--community-line); border-radius: .5rem; padding: 1rem; margin-bottom: 1.5rem; }
 .community-composer:focus-within { border-color: var(--community-accent); }
 .community-composer-heading { display: flex; align-items: center; gap: .6rem; }
@@ -333,3 +334,11 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
     height: 80px;
   }
 }
+
+.community-profile-photo-preview{display:block;width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px}
+#community-photo-canvas{display:block;width:min(100%,280px);height:auto;aspect-ratio:1;border-radius:50%;margin:12px auto;touch-action:none;cursor:grab;background:#eee}
+.community-photo-editor input[type=range]{display:block;width:100%;margin-bottom:10px}
+#community-profile-dialog{max-height:90dvh;overflow-y:auto}
+
+#community-wall-bio, #community-author-bio { font-size: var(--content-size-sm, .84em); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+#community-wall-bio a, #community-author-bio a { font-size: inherit; }

@@ -7,7 +7,7 @@
 <%- include('sub-views/header.ejs', { site, page }); %>
 <main class="container py-4 community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
   <div class="community-heading">
-    <div><h1 dir="auto"><%= view === 'author' ? author.name : page.title_en %></h1>
+    <div><h1 id="community-page-title" dir="auto"><%= view === 'author' ? author.name : page.title_en %></h1>
     <% if (['everyone','following','mine'].includes(view)) { %><p class="community-intro"><%= view === 'mine' ? 'Your posts, articles, reflections, comments, and publication drafts.' : view === 'following' ? 'The latest writing and conversations from authors you follow.' : 'Posts, articles, and discussions from the community.' %></p><% } %>
     </div>
   </div>
@@ -15,19 +15,25 @@
   <% if (view === 'mine') { %>
   <section id="community-wall-profile" class="community-profile mb-4" aria-label="My profile" hidden>
     <span id="community-wall-avatar" class="community-avatar community-avatar-large" aria-hidden="true"></span>
-    <div class="community-profile-copy"><strong id="community-wall-name" dir="auto"></strong><span id="community-wall-handle" class="small text-muted ms-2"></span><p id="community-wall-bio" class="mb-1 mt-2" dir="auto"></p><p id="community-wall-stats" class="small text-muted mb-0"></p><button id="community-edit-profile" type="button" class="btn btn-sm btn-outline-secondary mt-2" aria-haspopup="dialog" aria-controls="community-profile-dialog">Edit profile</button></div>
+    <div class="community-profile-copy">
+      <div class="d-flex align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-baseline flex-wrap gap-2"><strong id="community-wall-name" dir="auto"></strong><span id="community-wall-handle" class="small text-muted"></span></div>
+        <button id="community-edit-profile" type="button" class="btn btn-sm btn-outline-secondary ms-auto flex-shrink-0" aria-haspopup="dialog" aria-controls="community-profile-dialog">Edit profile</button>
+      </div>
+      <p id="community-wall-bio" class="mb-1 mt-2" dir="auto"></p><p id="community-wall-stats" class="small text-muted mb-0"></p>
+    </div>
   </section>
   <% } %>
   <% if (author && ['author','post'].includes(view)) { %>
-  <section class="community-profile mb-4" aria-label="About the author">
-    <span class="community-avatar community-avatar-large" aria-hidden="true"><%- include('sub-views/community_avatar.ejs', { avatar: author }) %></span>
-    <div class="community-profile-copy"><a class="fw-semibold" href="/community/@<%= author.handle %>" dir="auto"><%= author.name %></a><span class="small text-muted ms-2">@<%= author.handle %></span>
-    <p class="mb-1 mt-2" dir="auto"><%= author.bio %></p><p class="small text-muted mb-0"><%= author.followers %> <%= Number(author.followers) === 1 ? 'follower' : 'followers' %> · <%= author.following %> following · <%= author.posts %> <%= Number(author.posts) === 1 ? 'post' : 'posts' %> · <%= author.comments %> reflections</p></div>
+  <section id="community-author-profile" class="community-profile mb-4" aria-label="About the author"<% if (view === 'author') { %> hidden<% } %>>
+    <span id="community-author-avatar" class="community-avatar community-avatar-large" aria-hidden="true"><%- include('sub-views/community_avatar.ejs', { avatar: author }) %></span>
+    <div class="community-profile-copy"><a id="community-author-name" class="fw-semibold" href="/community/@<%= author.handle %>" dir="auto"><%= author.name %></a><span class="small text-muted ms-2">@<%= author.handle %></span>
+    <% if (view === 'author') { %><p id="community-author-bio" class="mb-1 mt-2" dir="auto"></p><p id="community-author-stats" class="small text-muted mb-0"></p><% } %></div>
     <div id="community-follow-controls" class="d-flex flex-wrap gap-2"><button class="btn btn-outline-primary" id="community-follow" type="button">Follow</button></div>
   </section>
   <% } %>
   <% if (['everyone','following','mine','author'].includes(view)) { %>
-  <div class="community-columns"><section class="community-wall" aria-label="Activity wall">
+  <div class="community-columns"<% if (view === 'author') { %> id="community-author-content" hidden<% } %>><section class="community-wall" aria-label="Activity wall">
     <% if (['everyone', 'following', 'mine','author'].includes(view)) { %>
     <button id="community-quick-open" type="button" class="community-quick-prompt" aria-haspopup="dialog" aria-controls="community-quick-dialog"><span class="community-avatar" id="community-prompt-avatar" aria-hidden="true"><i class="bi bi-person"></i></span><span>What's on your mind?</span></button>
     <dialog id="community-quick-dialog" class="community-quick-dialog" aria-label="Write a public post">
@@ -76,9 +82,31 @@
   <dialog id="community-profile-dialog" class="community-quick-dialog community-profile-dialog" aria-labelledby="community-profile-dialog-title">
     <div class="d-flex justify-content-between align-items-center"><h2 id="community-profile-dialog-title">Edit profile</h2><button type="button" class="btn btn-sm btn-link text-muted" data-close-profile-dialog aria-label="Close"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
     <form id="community-profile-form" class="mt-3">
-      <label class="form-label" for="community-name">Display name</label><input id="community-name" class="form-control mb-2" maxlength="120" required dir="auto">
+      <div class="community-photo-editor mb-3">
+        <img id="community-photo-preview" class="community-profile-photo-preview" alt="Profile photo preview">
+        <label class="form-label" for="community-photo-file">Profile picture</label>
+        <input id="community-photo-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="form-control mb-2">
+        <button id="community-photo-remove" type="button" class="btn btn-sm btn-outline-secondary" disabled>Use account photo</button>
+        <div id="community-photo-crop" hidden>
+          <p class="small text-muted mt-2">Drag to position your photo, or use the sliders. Your picture appears in a circle.</p>
+          <canvas id="community-photo-canvas" width="512" height="512" aria-label="Profile picture crop preview"></canvas>
+          <label for="community-photo-zoom">Zoom</label><input id="community-photo-zoom" type="range" min="1" max="4" step="0.01" value="1">
+          <label for="community-photo-x">Horizontal position</label><input id="community-photo-x" type="range" min="0" max="100" step="0.1" value="50">
+          <label for="community-photo-y">Vertical position</label><input id="community-photo-y" type="range" min="0" max="100" step="0.1" value="50">
+          <div class="d-flex gap-2"><button id="community-photo-reset" type="button" class="btn btn-sm btn-outline-secondary" disabled>Reset crop</button><button id="community-photo-apply" type="button" class="btn btn-sm btn-primary" disabled>Apply crop</button></div>
+        </div>
+        <p id="community-photo-error" class="small mt-2" role="status" aria-live="polite"></p>
+      </div>
+      <label class="form-label" for="community-name">Community display name</label><input id="community-name" class="form-control mb-2" maxlength="120" required dir="auto">
+      <p class="small text-muted">Your custom display name is shown as entered. If it matches your Google name, others see only your first name.</p>
       <label class="form-label" for="community-handle">Handle</label><input id="community-handle" class="form-control mb-2" pattern="[a-zA-Z0-9_.\-]{3,40}" maxlength="40" required><p class="small text-muted">Use 3–40 letters, numbers, periods, underscores, or hyphens. Choose once; this becomes your permanent public address.</p>
-      <label class="form-label" for="community-bio">Bio</label><textarea id="community-bio" class="form-control mb-3" maxlength="1000" dir="auto"></textarea>
+      <label class="form-label" for="community-bio">Bio</label><textarea id="community-bio" class="form-control" rows="3" dir="auto" aria-describedby="community-bio-help community-bio-count"></textarea>
+      <div class="d-flex justify-content-between gap-2 mb-3 small text-muted"><span id="community-bio-help">Up to 150 characters, 3 lines, and 5 web links. Plain text only.</span><span id="community-bio-count" class="text-nowrap">0 / 150</span></div>
+      <div class="form-check form-switch mb-2">
+        <input id="community-visibility" class="form-check-input" type="checkbox" role="switch" aria-describedby="community-visibility-help">
+        <label class="form-check-label" for="community-visibility">Public profile</label>
+      </div>
+      <p id="community-visibility-help" class="small text-muted">On: signed-in users can view your profile. Off: only you can view it. Published posts and comments remain visible in Community.</p>
       <p id="community-profile-error" class="small text-danger" role="status"></p>
       <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-close-profile-dialog>Cancel</button><button class="btn btn-sm btn-primary" type="submit">Save profile</button></div>
     </form>
@@ -153,6 +181,8 @@ Use **bold** for emphasis and *italics* for a title.
 <%- include('sub-views/footer.ejs', { site, page }); %>
 <% if (view !== 'unsubscribe') { %>
 <%- include('sub-views/scripts.ejs', { site, page }); %>
+<script src="/static/js/community-bio.js?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="/static/js/community-profile-photo.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-media.js?v=<%= utils.scriptAssetVersion() %>"></script><% } %>
 <% if (view === 'write') { %><script src="/static/js/community-formatting.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>

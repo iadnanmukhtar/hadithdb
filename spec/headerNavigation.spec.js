@@ -78,10 +78,18 @@ describe('shared header navigation', () => {
     expect(header).toContain('data-bs-target="#offcanvas-topnav"');
   });
 
-  test('keeps the desktop edit gear after the profile in every render path', () => {
-    expect(header.indexOf('id="nav-auth-desktop"')).toBeLessThan(header.indexOf('class="nav-item edit-gear"'));
-    expect(scripts).toContain('authItem.after(item)');
-    expect(inlineScripts).toContain('authItem.after(item)');
+  test('keeps account links in the profile dropdown and mode controls in both menus', () => {
+    expect(header).not.toContain('class="nav-item edit-gear"');
+    expect(offcanvasPrimaryNav).not.toContain('edit-gear');
+    expect(header).not.toContain('> My Settings</a>');
+    expect(offcanvasPrimaryNav).not.toContain('> My Settings</a>');
+    for (const source of [scripts, inlineScripts]) {
+      expect(source).toContain("document.querySelectorAll('[data-profile-menu], #offcanvas-topnav .offcanvas-col1')");
+      expect(source).not.toContain('authItem.after(item)');
+    }
+    expect(inlineScripts).toContain('>My Profile</a>');
+    expect(header).toContain('data-settings-href="<%= settingsHref %>"');
+    expect(header).not.toMatch(/<button[^>]*id="nav-auth-mobile"/);
   });
 
   test('links the desktop Quran item to the Quran home and keeps the off-canvas submenu', () => {

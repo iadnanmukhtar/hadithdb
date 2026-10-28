@@ -1649,16 +1649,15 @@
       adminPageLinkCheck = (async () => {
         try {
           const response = await fetch('/admin/session', { method: 'POST', headers: { Authorization: `Bearer ${session.token}` } });
+          if (window.hadithAdmin !== true || readHadithLoginSessionCache()?.token !== session.token) return;
           if (!response.ok) { document.querySelectorAll('.admin-page-link').forEach(el => el.remove()); return; }
-          if (window.hadithAdmin !== true) return;
-          ['.site-navbar [data-more-menu]', '#offcanvas-topnav .offcanvas-col1'].forEach(selector => {
-            const list = document.querySelector(selector);
+          document.querySelectorAll('[data-profile-menu]').forEach(list => {
             if (!list || list.querySelector('.admin-page-link')) return;
             const item = document.createElement('li');
             item.className = 'nav-item admin-page-link';
             const link = document.createElement('a');
-            link.className = list.hasAttribute('data-more-menu') ? 'dropdown-item' : 'nav-link'; link.href = '/admin'; link.textContent = 'Admin'; link.rel = 'nofollow';
-            item.appendChild(link); list.appendChild(item);
+            link.className = 'dropdown-item'; link.href = '/admin'; link.textContent = 'Admin'; link.rel = 'nofollow';
+            item.appendChild(link); list.insertBefore(item, list.querySelector('.edit-gear, [data-profile-signout]'));
           });
         } catch (err) { /* Keep administrative navigation hidden when verification fails. */ }
         finally { adminPageLinkCheck = null; }
@@ -1667,41 +1666,50 @@
   }
 
   function renderHadithAdminGear() {
-      if (window.hadithAdmin !== true) {
-        if (window.hadithAdminSessionChecked) {
-          document.querySelectorAll('.edit-gear, .admin-page-link').forEach((el) => el.remove());
-          setHadithEditMode(false);
+    if (window.hadithAdmin !== true) {
+      if (window.hadithAdminSessionChecked) {
+        document.querySelectorAll('.edit-gear, .admin-page-link, .admin-menu-divider').forEach(el => el.remove());
+        setHadithEditMode(false);
+      }
+      return;
+    }
+    if (typeof ensureAdminPageLinks === 'function') ensureAdminPageLinks();
+    const editMode = getHadithEditMode();
+    document.querySelectorAll('[data-profile-menu], #offcanvas-topnav .offcanvas-col1').forEach(list => {
+      let item = list.querySelector('.edit-gear');
+      if (!item) {
+        item = document.createElement('li');
+        item.className = 'edit-gear px-3 py-2';
+        const toggle = document.createElement('div');
+        toggle.className = 'btn-group btn-group-sm';
+        toggle.setAttribute('role', 'group');
+        toggle.setAttribute('aria-label', 'Edit/View');
+        for (const [label, enabled] of [['Edit', true], ['View', false]]) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'btn btn-outline-secondary';
+          button.textContent = label;
+          button.dataset.editMode = String(enabled);
+          button.addEventListener('click', () => {
+            if (getHadithEditMode() !== enabled) setHadithAdminMode(enabled);
+          });
+          toggle.appendChild(button);
         }
-        return;
+        item.appendChild(toggle);
+        const signout = list.querySelector('[data-profile-signout]');
+        const divider = document.createElement('li');
+        divider.className = 'admin-menu-divider';
+        divider.innerHTML = '<hr class="dropdown-divider">';
+        list.insertBefore(divider, signout);
+        list.insertBefore(item, signout);
+        if (signout) list.insertBefore(divider.cloneNode(true), signout);
       }
-      ensureAdminPageLinks();
-      const editMode = getHadithEditMode();
-      const icon = editMode ? 'bi-gear-fill' : 'bi-gear';
-      const desktopList = document.querySelector('.site-navbar menu.d-md-block ul.nav');
-      if (desktopList && !desktopList.querySelector('.edit-gear')) {
-        const authItem = desktopList.querySelector('#nav-auth-desktop');
-        const item = document.createElement('li');
-        item.className = 'nav-item edit-gear';
-        item.innerHTML = `<a class="nav-link" role="button" title="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}" aria-label="${editMode ? 'Turn off admin mode' : 'Turn on admin mode'}"><i class="bi ${icon}"></i></a>`;
-        item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
-        if (authItem)
-          authItem.after(item);
-        else
-          desktopList.appendChild(item);
-      }
-
-      const mobileList = document.querySelector('#offcanvas-topnav .offcanvas-col1');
-      if (mobileList && !mobileList.querySelector('.edit-gear')) {
-        const item = document.createElement('li');
-        item.className = 'nav-item edit-gear';
-        item.innerHTML = `<a class="nav-link" role="button"><i class="app-menu-icon bi ${icon}" aria-hidden="true"></i> <strong>${editMode ? 'View' : 'Edit'}</strong></a>`;
-        item.querySelector('a').addEventListener('click', () => setHadithAdminMode(!editMode));
-        const separator = document.createElement('li');
-        separator.className = 'edit-gear';
-        separator.innerHTML = '<hr>';
-        mobileList.appendChild(separator);
-        mobileList.appendChild(item);
-      }
+      item.querySelectorAll('[data-edit-mode]').forEach(button => {
+        const selected = (button.dataset.editMode === 'true') === editMode;
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      });
+    });
   }
 
   function hadithLoginPath() {
@@ -2227,12 +2235,15 @@
       `;
       const profileHtml = `
         <div class="dropdown">
-          <button class="btn btn-link p-0 border-0 dropdown-toggle d-flex align-items-center nav-auth-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <button type="button" aria-label="Profile menu" class="btn btn-link p-0 border-0 dropdown-toggle d-flex align-items-center nav-auth-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="${avatar}" alt="${name}" class="rounded-circle" width="32" height="32">
           </button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/settings">My Settings</a></li>
-            <li><button type="button" class="dropdown-item nav-signout">Sign out</button></li>
+          <ul class="dropdown-menu dropdown-menu-end" data-profile-menu>
+            <li><a class="dropdown-item" data-profile-link href="/community/mine">My Profile</a></li>
+            <li><a class="dropdown-item" data-notebook-link href="/notebook">My Notebook</a></li>
+            <li><a class="dropdown-item" data-bookmarks-link href="/bookmarks">My Bookmarks</a></li>
+            <li><a class="dropdown-item" data-settings-link href="/settings">My Settings</a></li>
+            <li data-profile-signout><button type="button" class="dropdown-item nav-signout">Sign out</button></li>
           </ul>
         </div>
       `;
@@ -2245,7 +2256,15 @@
       `;
       if (desktopSlot) desktopSlot.innerHTML = user ? profileHtml : loginHtml;
       if (mobileSlot) mobileSlot.innerHTML = user ? profileHtml : loginHtml;
+      for (const slot of [desktopSlot, mobileSlot]) {
+        if (!slot || !user) continue;
+        slot.querySelector('[data-profile-link]').href = slot.dataset.profileHref || '/community/mine';
+        slot.querySelector('[data-notebook-link]').href = slot.dataset.notebookHref || '/notebook';
+        slot.querySelector('[data-bookmarks-link]').href = slot.dataset.bookmarksHref || '/bookmarks';
+        slot.querySelector('[data-settings-link]').href = slot.dataset.settingsHref || '/settings';
+      }
       attachHandlers();
+      if (user) renderHadithAdminGear();
       if (!user) renderGoogleButtons();
     };
 

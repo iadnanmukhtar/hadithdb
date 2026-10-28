@@ -14,17 +14,5 @@
   <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>"><i class="app-menu-icon bi bi-newspaper" aria-hidden="true"></i> Blog</a></li>
   <li><hr></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="app-menu-icon bi bi-bookmark" aria-hidden="true"></i> My Bookmarks</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isSettingsArea) %>" href="<%= settingsHref %>"><i class="app-menu-icon bi bi-sliders" aria-hidden="true"></i> My Settings</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isMcpServerArea) %>" href="<%= utils.urlFor(req, '/mcp-server') %>"><i class="app-menu-icon bi bi-braces" aria-hidden="true"></i> MCP Server</a></li>
   <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isAboutArea) %>" href="/about"><i class="app-menu-icon bi bi-info-circle" aria-hidden="true"></i> About</a></li>
-  <% if (site.admin) { %>
-    <li><hr></li>
-    <li class="nav-item edit-gear"><a class="nav-link" onclick="var editMode=(document.cookie ? document.cookie.match(/(?:^|; )editMode=1(?:;|$)/) : false); if (window.setHadithAdminMode) { setHadithAdminMode(!editMode); } else { try { localStorage.setItem('hadithdb_edit_mode', editMode ? '0' : '1'); } catch (err) {} if (editMode) { document.cookie='editMode=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT'; if (window.HADITH_COOKIE_DOMAIN) document.cookie='editMode=;path=/;domain='+window.HADITH_COOKIE_DOMAIN+';expires=Thu, 01 Jan 1970 00:00:00 GMT'; } else { var domain=window.HADITH_COOKIE_DOMAIN ? ';domain='+window.HADITH_COOKIE_DOMAIN : ''; document.cookie='editMode=1;path=/;max-age=7776000;samesite=lax'+domain; } location.reload(); }">
-      <% if (site.editMode) { %>
-        <i class="app-menu-icon bi bi-gear-fill" aria-hidden="true"></i> <strong>View</strong>
-      <% } else { %>
-        <i class="app-menu-icon bi bi-gear" aria-hidden="true"></i> <strong>Edit</strong>
-      <% } %>
-    </a></li>
-    <% } %>
 </ul>
