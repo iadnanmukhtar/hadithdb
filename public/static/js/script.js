@@ -12777,7 +12777,7 @@ function initQuranInfinitePassageNavigation(root) {
 	};
 	var currentPageIndex = function () {
 		var markers = pageMarkers();
-		var position = window.pageYOffset + (mode.indexOf('hadith-') === 0 ? Math.max(96, window.innerHeight * 0.28) : window.innerHeight * 0.65);
+		var position = window.pageYOffset + window.innerHeight * 0.65;
 		var index = 0;
 		markers.forEach(function (marker, markerIndex) {
 			var top = marker.getBoundingClientRect().top + window.pageYOffset;

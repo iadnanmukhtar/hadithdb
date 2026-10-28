@@ -8,6 +8,8 @@ jest.mock('../lib/QuranTocSubdivisions', () => ({ juzRows: jest.fn(), manzilRows
 jest.mock('../lib/Utils', () => ({ quranUrl: (_req, url) => url }));
 const Mushaf = require('../lib/QuranMushaf');
 const Juz = require('../lib/QuranTocSubdivisions');
+jest.mock('../lib/QuranHeadings', () => ({ sectionForAyah: jest.fn() }));
+const Headings = require('../lib/QuranHeadings');
 const Rail = require('../lib/QuranNavigationRail');
 const surahs = [{num:1,name_en:'Al-Fatihah',name_ar:'الفاتحة',ayahs:7,aliases:['Umm al-Kitāb','أُمّ الْكِتَاب']}, {num:2,name_en:'Al-Baqarah',name_ar:'البقرة',ayahs:286}];
 const data = {surahs:surahs.map(s => ({num:s.num,name:s.name_en,arabic:s.name_ar,ayahs:s.ayahs})),manzil:[{num:1,title:'الأول',ref:'1:1'},{num:2,title:'الثاني',ref:'2:142'}],juz:[{num:1,title:'الم',ref:'1:1'},{num:2,title:'سيقول',ref:'2:142'}],pages:604};
@@ -107,7 +109,7 @@ test('Manzil appears before Juz and uses the same mode-aware jumps',async()=>{
  expect(doc.querySelectorAll('.bi-compass')).toHaveLength(1);
  doc.querySelector('[data-navigation-tab="manzil"]').click();
  expect(doc.querySelector('.is-current').textContent).toContain('Manzil 2');
- expect(doc.querySelector('.is-current').href).toContain('ref=2%3A142&mode=mushaf&memorize=');
+ expect(doc.querySelector('.is-current').href).toContain('ref=2%3A142&mode=mushaf&destination=passage&memorize=');
  const input=doc.querySelector('input');input.value='1';input.dispatchEvent(new dom.window.Event('input'));
  expect(Array.from(doc.querySelectorAll('.quran-navigation-item')).filter(el=>!el.hidden)).toHaveLength(1);
  dom.window.close();
@@ -126,6 +128,28 @@ test('Manzil appears before Juz and uses the same mode-aware jumps',async()=>{
     const visible = Array.from(doc.querySelectorAll('.quran-navigation-column:first-child a')).filter(a => !a.hidden);
     expect(visible).toHaveLength(term === '' ? 2 : number ? 1 : 0);
     if (number) expect(visible[0].textContent).toMatch(new RegExp('^' + number + '\\.'));
+  }
+  dom.window.close();
+});
+
+test.each([
+  [{ref:'2:1',mode:'study'},1,'/quran/2/1'],
+  [{ref:'2:142',mode:'study'},18,'/quran/2/18'],
+  [{ref:'2:1',mode:'study',book:'sahih-international',ayat:''},1,'/quran/sahih-international/2/1?ayat'],
+  [{ref:'2:142',mode:'tafsir',book:'ibn-kathir'},18,'/quran/tafsir/ibn-kathir/2/18'],
+  [{page:'42',mode:'study'},34,'/quran/2/34']
+])('opens the containing passage for navigator destinations %j', async (query,h2,target) => {
+  Headings.sectionForAyah.mockResolvedValue({h2});
+  Mushaf.page.mockResolvedValue({lines:[{words:[{surah:2,ayah:253,is_ayah_marker:0}]}]});
+  const res=response(); await Rail.navigate({query:{...query,destination:'passage'}},res,jest.fn());
+  expect(res.redirect).toHaveBeenCalledWith(302,target);
+});
+test('only broad navigation tabs request a passage destination', async () => {
+  const {doc,dom}=await browser();
+  for (const tab of ['surah','juz','manzil','page','ayah']) {
+    doc.querySelector(`[data-navigation-tab="${tab}"]`).click();
+    const link = doc.querySelector(tab === 'ayah' ? '.quran-navigation-ayahs a' : '.quran-navigation-list a');
+    expect(new URL(link.href).searchParams.get('destination')).toBe(tab === 'ayah' ? null : 'passage');
   }
   dom.window.close();
 });

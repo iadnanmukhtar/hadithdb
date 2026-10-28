@@ -31,6 +31,7 @@
     var url = new URL(rail.dataset.navigationJump, window.location.origin);
     url.searchParams.set(page ? 'page' : 'ref', page || ref);
     url.searchParams.set('mode', rail.dataset.navigationMode);
+    if (tab !== 'ayah') url.searchParams.set('destination', 'passage');
     if (rail.dataset.navigationBook) url.searchParams.set('book', rail.dataset.navigationBook);
     var query = new URLSearchParams(window.location.search);
     ['memorize', 'ayat'].forEach(key => { if (query.has(key)) url.searchParams.set(key, ''); });
