@@ -1,0 +1,29 @@
+{
+  "reason": "Study omits Quran 6:1 because passage 6/1 starts at 6:2 while subsection 6/1/1 starts at 6:1.",
+  "verified_before": {
+    "heading_id": 126818,
+    "start": "6:2",
+    "end": "6:18",
+    "start0": 6.002,
+    "end0": 6.018,
+    "count": 17
+  },
+  "request": {
+    "method": "POST",
+    "path": "/quran/api/update/126818/toc.passageRange",
+    "body": {
+      "value": {
+        "h1": 6,
+        "h2": 1,
+        "startAyah": 1,
+        "endAyah": 18
+      }
+    }
+  },
+  "execution": "Applied with user approval through the authenticated passage editor. Database and live Study view verified: 6:1-18, count 18; all three subsections preserved; Arabic and Khattab translation for ayah 1 visible.",
+  "verify_after": [
+    "Passage 6/1 has start 6:1, end 6:18, start0 6.001, end0 6.018, count 18.",
+    "Subsection 6/1/1 remains 6:1-6.",
+    "Study /quran/6/1 displays ayahs 1 through 18, including Arabic and translation for ayah 1."
+  ]
+}

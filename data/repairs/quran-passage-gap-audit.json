@@ -1,0 +1,1596 @@
+{
+  "scope": "All 114 surahs; canonical ayahs 1 through the Hafs count. Level 0 cross-surah juz headings excluded.",
+  "summary": {
+    "surahs": 114,
+    "canonicalAyahs": 6236,
+    "missingSourceAyahs": 0,
+    "uncoveredAyahs": 94,
+    "affectedSurahs": [
+      6,
+      11,
+      12,
+      15,
+      17,
+      20,
+      26,
+      35,
+      37,
+      39,
+      40,
+      43,
+      44
+    ],
+    "passageRepairs": 16
+  },
+  "gaps": [
+    {
+      "surah": 6,
+      "ayah": 1,
+      "owners": [
+        1
+      ]
+    },
+    {
+      "surah": 11,
+      "ayah": 25,
+      "owners": [
+        3
+      ]
+    },
+    {
+      "surah": 11,
+      "ayah": 26,
+      "owners": [
+        3
+      ]
+    },
+    {
+      "surah": 11,
+      "ayah": 27,
+      "owners": [
+        3
+      ]
+    },
+    {
+      "surah": 11,
+      "ayah": 28,
+      "owners": [
+        3
+      ]
+    },
+    {
+      "surah": 11,
+      "ayah": 29,
+      "owners": [
+        3
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 69,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 70,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 71,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 72,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 73,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 74,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 75,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 76,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 77,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 78,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 79,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 80,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 81,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 82,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 83,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 84,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 12,
+      "ayah": 85,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 15,
+      "ayah": 61,
+      "owners": [
+        6
+      ]
+    },
+    {
+      "surah": 17,
+      "ayah": 23,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 17,
+      "ayah": 24,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 17,
+      "ayah": 45,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 56,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 57,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 58,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 59,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 60,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 61,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 62,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 63,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 64,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 65,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 66,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 67,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 68,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 69,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 70,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 20,
+      "ayah": 71,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 26,
+      "ayah": 160,
+      "owners": [
+        9
+      ]
+    },
+    {
+      "surah": 26,
+      "ayah": 161,
+      "owners": [
+        9
+      ]
+    },
+    {
+      "surah": 26,
+      "ayah": 162,
+      "owners": [
+        9
+      ]
+    },
+    {
+      "surah": 26,
+      "ayah": 163,
+      "owners": [
+        9
+      ]
+    },
+    {
+      "surah": 26,
+      "ayah": 164,
+      "owners": [
+        9
+      ]
+    },
+    {
+      "surah": 26,
+      "ayah": 165,
+      "owners": [
+        9
+      ]
+    },
+    {
+      "surah": 26,
+      "ayah": 166,
+      "owners": [
+        9
+      ]
+    },
+    {
+      "surah": 26,
+      "ayah": 167,
+      "owners": [
+        9
+      ]
+    },
+    {
+      "surah": 35,
+      "ayah": 12,
+      "owners": [
+        3
+      ]
+    },
+    {
+      "surah": 35,
+      "ayah": 13,
+      "owners": [
+        3
+      ]
+    },
+    {
+      "surah": 35,
+      "ayah": 14,
+      "owners": [
+        3
+      ]
+    },
+    {
+      "surah": 35,
+      "ayah": 15,
+      "owners": [
+        3
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 99,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 100,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 101,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 102,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 103,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 104,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 105,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 106,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 107,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 108,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 109,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 37,
+      "ayah": 110,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 39,
+      "ayah": 10,
+      "owners": [
+        2
+      ]
+    },
+    {
+      "surah": 39,
+      "ayah": 11,
+      "owners": [
+        2
+      ]
+    },
+    {
+      "surah": 40,
+      "ayah": 51,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 40,
+      "ayah": 52,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 40,
+      "ayah": 53,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 40,
+      "ayah": 54,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 40,
+      "ayah": 55,
+      "owners": [
+        7
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 9,
+      "owners": [
+        2
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 36,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 37,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 38,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 68,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 69,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 70,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 71,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 72,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 73,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 74,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 75,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 76,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 77,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 78,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 79,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 80,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 43,
+      "ayah": 81,
+      "owners": [
+        8
+      ]
+    },
+    {
+      "surah": 44,
+      "ayah": 51,
+      "owners": [
+        5
+      ]
+    },
+    {
+      "surah": 44,
+      "ayah": 52,
+      "owners": [
+        5
+      ]
+    }
+  ],
+  "repairs": [
+    {
+      "before": {
+        "id": 126818,
+        "level": 2,
+        "h1": 6,
+        "h2": 1,
+        "h3": null,
+        "start": "6:2",
+        "end": "6:18",
+        "start0": 6.002,
+        "end0": 6.018,
+        "count": 17,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 126818,
+        "level": 2,
+        "h1": 6,
+        "h2": 1,
+        "h3": null,
+        "start": "6:1",
+        "end": "6:18",
+        "start0": 6.001,
+        "end0": 6.018,
+        "count": 18,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        1
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 126957,
+        "level": 2,
+        "h1": 11,
+        "h2": 3,
+        "h3": null,
+        "start": "11:30",
+        "end": "11:35",
+        "start0": 11.03,
+        "end0": 11.035,
+        "count": 6,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 126957,
+        "level": 2,
+        "h1": 11,
+        "h2": 3,
+        "h3": null,
+        "start": "11:25",
+        "end": "11:35",
+        "start0": 11.025,
+        "end0": 11.035,
+        "count": 11,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 126986,
+        "level": 2,
+        "h1": 12,
+        "h2": 7,
+        "h3": null,
+        "start": "12:86",
+        "end": "12:87",
+        "start0": 12.086,
+        "end0": 12.087,
+        "count": 2,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 126986,
+        "level": 2,
+        "h1": 12,
+        "h2": 7,
+        "h3": null,
+        "start": "12:69",
+        "end": "12:87",
+        "start0": 12.069,
+        "end0": 12.087,
+        "count": 19,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127020,
+        "level": 2,
+        "h1": 15,
+        "h2": 6,
+        "h3": null,
+        "start": "15:62",
+        "end": "15:79",
+        "start0": 15.062,
+        "end0": 15.079,
+        "count": 18,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127020,
+        "level": 2,
+        "h1": 15,
+        "h2": 6,
+        "h3": null,
+        "start": "15:61",
+        "end": "15:79",
+        "start0": 15.061,
+        "end0": 15.079,
+        "count": 19,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        61
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127048,
+        "level": 2,
+        "h1": 17,
+        "h2": 5,
+        "h3": null,
+        "start": "17:25",
+        "end": "17:40",
+        "start0": 17.025,
+        "end0": 17.04,
+        "count": 16,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127048,
+        "level": 2,
+        "h1": 17,
+        "h2": 5,
+        "h3": null,
+        "start": "17:23",
+        "end": "17:40",
+        "start0": 17.023,
+        "end0": 17.04,
+        "count": 18,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        23,
+        24
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127052,
+        "level": 2,
+        "h1": 17,
+        "h2": 7,
+        "h3": null,
+        "start": "17:46",
+        "end": "17:52",
+        "start0": 17.046,
+        "end0": 17.052,
+        "count": 7,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127052,
+        "level": 2,
+        "h1": 17,
+        "h2": 7,
+        "h3": null,
+        "start": "17:45",
+        "end": "17:52",
+        "start0": 17.045,
+        "end0": 17.052,
+        "count": 8,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        45
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127099,
+        "level": 2,
+        "h1": 20,
+        "h2": 5,
+        "h3": null,
+        "start": "20:72",
+        "end": "20:76",
+        "start0": 20.072,
+        "end0": 20.076,
+        "count": 5,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127099,
+        "level": 2,
+        "h1": 20,
+        "h2": 5,
+        "h3": null,
+        "start": "20:56",
+        "end": "20:76",
+        "start0": 20.056,
+        "end0": 20.076,
+        "count": 21,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127203,
+        "level": 2,
+        "h1": 26,
+        "h2": 9,
+        "h3": null,
+        "start": "26:168",
+        "end": "26:175",
+        "start0": 26.168,
+        "end0": 26.175,
+        "count": 8,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127203,
+        "level": 2,
+        "h1": 26,
+        "h2": 9,
+        "h3": null,
+        "start": "26:160",
+        "end": "26:175",
+        "start0": 26.16,
+        "end0": 26.175,
+        "count": 16,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127296,
+        "level": 2,
+        "h1": 35,
+        "h2": 3,
+        "h3": null,
+        "start": "35:16",
+        "end": "35:18",
+        "start0": 35.016,
+        "end0": 35.018,
+        "count": 3,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127296,
+        "level": 2,
+        "h1": 35,
+        "h2": 3,
+        "h3": null,
+        "start": "35:12",
+        "end": "35:18",
+        "start0": 35.012,
+        "end0": 35.018,
+        "count": 7,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127318,
+        "level": 2,
+        "h1": 37,
+        "h2": 8,
+        "h3": null,
+        "start": "37:111",
+        "end": "37:113",
+        "start0": 37.111,
+        "end0": 37.113,
+        "count": 3,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127318,
+        "level": 2,
+        "h1": 37,
+        "h2": 8,
+        "h3": null,
+        "start": "37:99",
+        "end": "37:113",
+        "start0": 37.099,
+        "end0": 37.113,
+        "count": 15,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127334,
+        "level": 2,
+        "h1": 39,
+        "h2": 2,
+        "h3": null,
+        "start": "39:12",
+        "end": "39:18",
+        "start0": 39.012,
+        "end0": 39.018,
+        "count": 7,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127334,
+        "level": 2,
+        "h1": 39,
+        "h2": 2,
+        "h3": null,
+        "start": "39:10",
+        "end": "39:18",
+        "start0": 39.01,
+        "end0": 39.018,
+        "count": 9,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        10,
+        11
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127349,
+        "level": 2,
+        "h1": 40,
+        "h2": 7,
+        "h3": null,
+        "start": "40:56",
+        "end": "40:61",
+        "start0": 40.056,
+        "end0": 40.061,
+        "count": 6,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127349,
+        "level": 2,
+        "h1": 40,
+        "h2": 7,
+        "h3": null,
+        "start": "40:51",
+        "end": "40:61",
+        "start0": 40.051,
+        "end0": 40.061,
+        "count": 11,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        51,
+        52,
+        53,
+        54,
+        55
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127370,
+        "level": 2,
+        "h1": 43,
+        "h2": 2,
+        "h3": null,
+        "start": "43:10",
+        "end": "43:15",
+        "start0": 43.01,
+        "end0": 43.015,
+        "count": 6,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127370,
+        "level": 2,
+        "h1": 43,
+        "h2": 2,
+        "h3": null,
+        "start": "43:9",
+        "end": "43:15",
+        "start0": 43.009,
+        "end0": 43.015,
+        "count": 7,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        9
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127373,
+        "level": 2,
+        "h1": 43,
+        "h2": 5,
+        "h3": null,
+        "start": "43:39",
+        "end": "43:45",
+        "start0": 43.039,
+        "end0": 43.045,
+        "count": 7,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127373,
+        "level": 2,
+        "h1": 43,
+        "h2": 5,
+        "h3": null,
+        "start": "43:36",
+        "end": "43:45",
+        "start0": 43.036,
+        "end0": 43.045,
+        "count": 10,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        36,
+        37,
+        38
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127376,
+        "level": 2,
+        "h1": 43,
+        "h2": 8,
+        "h3": null,
+        "start": "43:82",
+        "end": "43:89",
+        "start0": 43.082,
+        "end0": 43.089,
+        "count": 8,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127376,
+        "level": 2,
+        "h1": 43,
+        "h2": 8,
+        "h3": null,
+        "start": "43:68",
+        "end": "43:89",
+        "start0": 43.068,
+        "end0": 43.089,
+        "count": 22,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    },
+    {
+      "before": {
+        "id": 127381,
+        "level": 2,
+        "h1": 44,
+        "h2": 5,
+        "h3": null,
+        "start": "44:53",
+        "end": "44:59",
+        "start0": 44.053,
+        "end0": 44.059,
+        "count": 7,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127381,
+        "level": 2,
+        "h1": 44,
+        "h2": 5,
+        "h3": null,
+        "start": "44:51",
+        "end": "44:59",
+        "start0": 44.051,
+        "end0": 44.059,
+        "count": 9,
+        "surah_ayahs": null
+      },
+      "recoveredAyahs": [
+        51,
+        52
+      ],
+      "evidence": "Every recovered ayah is already assigned to this passage in hadiths.h2; expansion does not overlap another passage."
+    }
+  ],
+  "countMismatches": [
+    {
+      "id": 126870,
+      "level": 2,
+      "h1": 7,
+      "h2": 11,
+      "h3": null,
+      "start": "7:94",
+      "end": "7:102",
+      "start0": 7.094,
+      "end0": 7.102,
+      "count": 14,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127415,
+      "level": 2,
+      "h1": 50,
+      "h2": 3,
+      "h3": null,
+      "start": "50:36",
+      "end": "50:45",
+      "start0": 50.036,
+      "end0": 50.045,
+      "count": 9,
+      "surah_ayahs": null
+    }
+  ],
+  "subsectionsOutsideParent": [
+    {
+      "id": 126819,
+      "level": 3,
+      "h1": 6,
+      "h2": 1,
+      "h3": 1,
+      "start": "6:1",
+      "end": "6:6",
+      "start0": 6.001,
+      "end0": 6.006,
+      "count": 6,
+      "surah_ayahs": null
+    },
+    {
+      "id": 126987,
+      "level": 3,
+      "h1": 12,
+      "h2": 7,
+      "h3": 1,
+      "start": "12:69",
+      "end": "12:79",
+      "start0": 12.069,
+      "end0": 12.079,
+      "count": 11,
+      "surah_ayahs": null
+    },
+    {
+      "id": 126988,
+      "level": 3,
+      "h1": 12,
+      "h2": 7,
+      "h3": 2,
+      "start": "12:80",
+      "end": "12:82",
+      "start0": 12.08,
+      "end0": 12.082,
+      "count": 3,
+      "surah_ayahs": null
+    },
+    {
+      "id": 126989,
+      "level": 3,
+      "h1": 12,
+      "h2": 7,
+      "h3": 3,
+      "start": "12:83",
+      "end": "12:87",
+      "start0": 12.083,
+      "end0": 12.087,
+      "count": 5,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127655,
+      "level": 3,
+      "h1": 15,
+      "h2": 6,
+      "h3": 1,
+      "start": "15:61",
+      "end": "15:66",
+      "start0": 15.061,
+      "end0": 15.066,
+      "count": 6,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127049,
+      "level": 3,
+      "h1": 17,
+      "h2": 5,
+      "h3": 1,
+      "start": "17:23",
+      "end": "17:30",
+      "start0": 17.023,
+      "end0": 17.03,
+      "count": 8,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127100,
+      "level": 3,
+      "h1": 20,
+      "h2": 5,
+      "h3": 1,
+      "start": "20:56",
+      "end": "20:64",
+      "start0": 20.056,
+      "end0": 20.064,
+      "count": 9,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127101,
+      "level": 3,
+      "h1": 20,
+      "h2": 5,
+      "h3": 2,
+      "start": "20:65",
+      "end": "20:76",
+      "start0": 20.065,
+      "end0": 20.076,
+      "count": 12,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127767,
+      "level": 3,
+      "h1": 26,
+      "h2": 9,
+      "h3": 1,
+      "start": "26:160",
+      "end": "26:166",
+      "start0": 26.16,
+      "end0": 26.166,
+      "count": 7,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127768,
+      "level": 3,
+      "h1": 26,
+      "h2": 9,
+      "h3": 2,
+      "start": "26:167",
+      "end": "26:169",
+      "start0": 26.167,
+      "end0": 26.169,
+      "count": 3,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127817,
+      "level": 3,
+      "h1": 37,
+      "h2": 8,
+      "h3": 1,
+      "start": "37:99",
+      "end": "37:101",
+      "start0": 37.099,
+      "end0": 37.101,
+      "count": 3,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127818,
+      "level": 3,
+      "h1": 37,
+      "h2": 8,
+      "h3": 2,
+      "start": "37:102",
+      "end": "37:107",
+      "start0": 37.102,
+      "end0": 37.107,
+      "count": 6,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127819,
+      "level": 3,
+      "h1": 37,
+      "h2": 8,
+      "h3": 3,
+      "start": "37:108",
+      "end": "37:111",
+      "start0": 37.108,
+      "end0": 37.111,
+      "count": 4,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127619,
+      "level": 3,
+      "h1": 43,
+      "h2": 8,
+      "h3": 1,
+      "start": "43:68",
+      "end": "43:73",
+      "start0": 43.068,
+      "end0": 43.073,
+      "count": 6,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127620,
+      "level": 3,
+      "h1": 43,
+      "h2": 8,
+      "h3": 2,
+      "start": "43:74",
+      "end": "43:78",
+      "start0": 43.074,
+      "end0": 43.078,
+      "count": 5,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127621,
+      "level": 3,
+      "h1": 43,
+      "h2": 8,
+      "h3": 3,
+      "start": "43:79",
+      "end": "43:80",
+      "start0": 43.079,
+      "end0": 43.08,
+      "count": 2,
+      "surah_ayahs": null
+    },
+    {
+      "id": 127622,
+      "level": 3,
+      "h1": 43,
+      "h2": 8,
+      "h3": 4,
+      "start": "43:81",
+      "end": "43:83",
+      "start0": 43.081,
+      "end0": 43.083,
+      "count": 3,
+      "surah_ayahs": null
+    }
+  ],
+  "status": "Applied: Surah 6 through its approved editor operation; remaining 15 boundary repairs and 2 count corrections directly in one database transaction. All Quran headings and ayahs reindexed; alternate-script fields refreshed; Quran disk caches invalidated and runtime refresh published.",
+  "validation": "Applying these 16 proposed boundaries in memory covers all 6236 canonical ayahs exactly once and contains every subsection in its parent.",
+  "executionWarning": "Do not run passageRange endpoints sequentially for multi-gap surahs: normalization may expand preceding sections and delete still-outside subsections. Apply all approved boundaries together before indexing; preserve all subsection identities and ranges.",
+  "countRepairs": [
+    {
+      "before": {
+        "id": 126870,
+        "level": 2,
+        "h1": 7,
+        "h2": 11,
+        "h3": null,
+        "start": "7:94",
+        "end": "7:102",
+        "start0": 7.094,
+        "end0": 7.102,
+        "count": 14,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 126870,
+        "level": 2,
+        "h1": 7,
+        "h2": 11,
+        "h3": null,
+        "start": "7:94",
+        "end": "7:102",
+        "start0": 7.094,
+        "end0": 7.102,
+        "count": 9,
+        "surah_ayahs": null
+      }
+    },
+    {
+      "before": {
+        "id": 127415,
+        "level": 2,
+        "h1": 50,
+        "h2": 3,
+        "h3": null,
+        "start": "50:36",
+        "end": "50:45",
+        "start0": 50.036,
+        "end0": 50.045,
+        "count": 9,
+        "surah_ayahs": null
+      },
+      "after": {
+        "id": 127415,
+        "level": 2,
+        "h1": 50,
+        "h2": 3,
+        "h3": null,
+        "start": "50:36",
+        "end": "50:45",
+        "start0": 50.036,
+        "end0": 50.045,
+        "count": 10,
+        "surah_ayahs": null
+      }
+    }
+  ],
+  "verification": {
+    "canonicalAyahs": 6236,
+    "coverage": "exactly once in database and search index",
+    "subsections": "all contained; identities and ranges preserved",
+    "pendingRepairs": 0,
+    "backupDirectory": "data/repairs/quran-gap-backup-1793156737943"
+  }
+}
