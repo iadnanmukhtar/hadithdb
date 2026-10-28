@@ -311,13 +311,13 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-share-dialog textarea:focus-visible { outline:none; }
 .community-share-dialog .community-link-preview { margin:0 0 1rem; }
 
-.community-link-card.community-source-preview { flex-direction: column; }
-.community-link-card.community-source-preview > img { width:100%; max-height:280px; aspect-ratio:1200/630; object-fit:contain; background:#193957; }
+/* Keep legacy source cards compact too, including cached Open Graph responses. */
+.community-link-card.community-source-preview { flex-direction: row; }
 .community-source-preview .community-link-copy { gap:.4rem; }
 .community-source-preview .community-link-copy > span { -webkit-line-clamp:3; }
 
-/* External thumbnails keep their own column instead of shrinking behind the copy. */
-.community-link-card:not(.community-source-preview):not(.community-blog-preview) > img {
+/* Post thumbnails keep a compact column regardless of metadata image type. */
+.community-link-card:not(.community-blog-preview) > img {
   flex: 0 0 120px;
   width: 120px;
   height: 120px;
@@ -327,7 +327,7 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
   padding: .5rem;
 }
 @media (max-width:575px) {
-  .community-link-card:not(.community-source-preview):not(.community-blog-preview) > img {
+  .community-link-card:not(.community-blog-preview) > img {
     flex-basis: 80px;
     width: 80px;
     height: 80px;

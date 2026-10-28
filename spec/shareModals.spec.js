@@ -139,16 +139,16 @@ test('Community post composer shows the source preview while the user edits', as
   } finally { dom.window.close(); }
 });
 
-test('Community post receives complete Arabic then English even when an image language is hidden',()=>{
+test('Hadith post receives Arabic then English with a trailing reference even when an image language is hidden',()=>{
  const {JSDOM}=require('jsdom');
- const dom=new JSDOM('<article id="card"><section class="hadith-share-section" lang="en"><div class="hadith-share-text"><p>English first paragraph.</p><p>Second paragraph.</p></div></section><section class="hadith-share-section d-none" lang="ar"><div class="hadith-share-text">نَصٌّ عربي<br>سطر آخر</div></section></article>',{runScripts:'outside-only'});
+ const dom=new JSDOM('<article id="card" data-share-ref="bukhari:2"><section class="hadith-share-section" lang="en"><div class="hadith-share-text"><p>English first paragraph.</p><p>Second paragraph.</p></div></section><section class="hadith-share-section d-none" lang="ar"><div class="hadith-share-text">نَصٌّ عربي<br>سطر آخر</div></section></article>',{runScripts:'outside-only'});
  try{
   const w=dom.window,client=source('public/static/js/script.js'),open=jest.fn();
   w.CommunityPostShare={open};w.contentShareUrl=()=> 'https://hadithunlocked.com/bukhari:2';
   w.eval(client.slice(client.indexOf('function plainTextFromShareSection('),client.indexOf('function updateHadithShareMetadataFromEditable(')));
   w.eval(client.slice(client.indexOf('function shareCardToCommunity('),client.indexOf('async function copyHadithShareCardText(')));
   w.shareCardToCommunity(w.document.getElementById('card'));
-  expect(open.mock.calls[0][0].text).toBe('نَصٌّ عربي\nسطر آخر\n\nEnglish first paragraph.\n\nSecond paragraph.');
+  expect(open.mock.calls[0][0].text).toBe('نَصٌّ عربي\nسطر آخر\n\nEnglish first paragraph.\n\nSecond paragraph. — bukhari:2');
  }finally{dom.window.close();}
 });
 

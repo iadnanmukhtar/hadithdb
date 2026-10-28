@@ -18048,9 +18048,14 @@ function shareCardToCommunity(card) {
 		var sections = Array.from(card.querySelectorAll('.hadith-share-section'));
 		var english = sections.find(function (section) { return section.getAttribute('lang') === 'en'; });
 		var description = plainTextFromShareSection(english) || sections.map(plainTextFromShareSection).find(Boolean) || '';
+		var reference = card.getAttribute('data-share-ref') || '';
+		var hadithReference = /^[a-z][a-z0-9_-]*:[0-9][a-z0-9:.-]*$/i.test(reference) && !/^quran:/i.test(reference) && !(card.classList && card.classList.contains('quran-share-card'));
 		var postText = ['ar', 'en'].map(function (lang) {
-			return sections.filter(function (section) { return section.getAttribute('lang') === lang; })
+			var text = sections.filter(function (section) { return section.getAttribute('lang') === lang; })
 				.map(function (section) { return plainTextFromShareSection(section, true); }).filter(Boolean).join('\n\n');
+			if (lang === 'en' && text && hadithReference && !text.endsWith('— ' + reference))
+				text += ' — ' + reference;
+			return text;
 		}).filter(Boolean).join('\n\n');
 		window.CommunityPostShare.open({ url: contentShareUrl(card), title: title ? title.textContent.trim() : card.getAttribute('data-share-ref'), description: description.slice(0, 600), text: postText });
 	}

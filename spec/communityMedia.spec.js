@@ -35,3 +35,18 @@ test('feed media includes inline video links without duplicating standalone prev
   expect((result.match(/data-preview-url=/g)||[])).toHaveLength(1);
   expect(result).toContain('6bSp_7Ig4_s');
 });
+
+test('feed Open Graph source images remain compact link thumbnails',async()=>{
+ const {JSDOM}=require('jsdom'),fs=require('fs'),path=require('path');
+ const dom=new JSDOM('<main id="community"><div class="community-link-preview" data-preview-url="https://hadithunlocked.com/shuab:9344"></div></main>',{url:'https://hadithunlocked.com/community',runScripts:'outside-only'});
+ try{
+  const w=dom.window;w.quranApiPath=p=>'/api'+p;
+  w.fetch=jest.fn(async()=>({ok:true,json:async()=>({url:'https://hadithunlocked.com/shuab:9344',source:true,imageKind:'cover',image:'https://hadithunlocked.com/static/img/apple-touch-icon.png',title:'Shuab al-Iman 9344',description:'Translated source text.'})}));
+  w.eval(fs.readFileSync(path.join(__dirname,'../public/static/js/community-media.js'),'utf8'));
+  for(let i=0;i<4;i++)await new Promise(resolve=>setImmediate(resolve));
+  const card=w.document.querySelector('.community-link-card');
+  expect(card.querySelector('img').src).toBe('https://hadithunlocked.com/static/img/apple-touch-icon.png');
+  expect(card.classList.contains('community-source-preview')).toBe(false);
+  expect(card.querySelector('strong').textContent).toBe('Shuab al-Iman 9344');
+ }finally{dom.window.close();}
+});
