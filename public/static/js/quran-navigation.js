@@ -5,7 +5,14 @@
   var content = rail.querySelector('.quran-navigation-content');
   var status = rail.querySelector('[role="status"]');
   var tabs = Array.from(rail.querySelectorAll('[data-navigation-tab]'));
-  var data, loading, tab = 'juz', surah = 1, currentRef = '', currentPage = 0, currentJuz = 0;
+  // Cached HTML can predate the button-group markup while loading current assets.
+  var tabList = rail.querySelector('.quran-navigation-tabs');
+  if (tabList) tabList.classList.add('quran-reader-modes', 'btn-group', 'btn-group-sm');
+  tabs.forEach(button => {
+    button.classList.add('btn', 'btn-outline-secondary');
+    button.classList.toggle('active', button.getAttribute('aria-selected') === 'true');
+  });
+  var data, loading, tab = 'surah', surah = 1, currentRef = '', currentPage = 0, currentJuz = 0;
 
   function normalize(value) {
     return String(value || '').toLowerCase().normalize('NFKD').replace(/\p{M}/gu, '')
@@ -119,8 +126,8 @@
   rail.addEventListener('show.bs.offcanvas', function (event) {
     var trigger = event.relatedTarget;
     context(trigger);
+    tab = trigger && ['page', 'juz'].includes(trigger.dataset.navigationOpenTab) ? trigger.dataset.navigationOpenTab : 'surah';
     if (trigger && trigger.dataset.navigationOpenTab) {
-      tab = trigger.dataset.navigationOpenTab;
       if (trigger.dataset.navigationPage) currentPage = Number(trigger.dataset.navigationPage);
       if (trigger.dataset.navigationJuz) currentJuz = Number(trigger.dataset.navigationJuz);
       if (trigger.dataset.navigationSurah) {

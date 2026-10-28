@@ -41,11 +41,15 @@ test('metadata exposes canonical surah counts and Juz references', async () => {
   await Rail.data({},res,jest.fn()); expect(res.json.mock.calls[0][0].manzil.map(m=>m.title)).toEqual(['الفاتحة','البقرة']);
   expect(res.json.mock.calls[0][0]).toMatchObject({pages:604,surahs:[{num:1,ayahs:7,aliases:surahs[0].aliases},{num:2,ayahs:286,aliases:[]}],juz:[{ref:'2:142'}]});
 });
-async function browser(fetcher) {
+async function browser(fetcher, cachedMarkup = false) {
   const html = await ejs.renderFile(path.join(__dirname,'../views/sub-views/quran_navigation_rail.ejs'), {navigationMode:'mushaf',navigationBook:null,utils:{quranUrl:(_req,url)=>url},req:{}});
   const dom = new JSDOM(html,{url:'http://localhost/quran/page/42?memorize',runScripts:'outside-only'});
   dom.window.fetch = fetcher || jest.fn().mockResolvedValue({ok:true,json:async()=>data});
   dom.window.quranReaderModeFirstRef = () => '2:255';
+  if (cachedMarkup) {
+    dom.window.document.querySelector('.quran-navigation-tabs').className = 'quran-navigation-tabs';
+    dom.window.document.querySelectorAll('[data-navigation-tab]').forEach(button => button.removeAttribute('class'));
+  }
   dom.window.eval(fs.readFileSync(path.join(__dirname,'../public/static/js/quran-navigation.js'),'utf8'));
   const rail=dom.window.document.querySelector('aside');
   rail.dispatchEvent(new dom.window.Event('show.bs.offcanvas'));
@@ -54,7 +58,7 @@ async function browser(fetcher) {
 }
 test('tabs search both languages, select surah ayahs, and retain Mushaf mode', async () => {
   const {doc,dom}=await browser();
-  expect(doc.querySelector('.is-current').textContent).toContain('Juz 2');
+  expect(doc.querySelector('.is-current').textContent).toContain('Al-Baqarah');
   doc.querySelector('[data-navigation-tab="ayah"]').click();
   expect(doc.querySelectorAll('.quran-navigation-ayahs a')).toHaveLength(286);
   const ayah=Array.from(doc.querySelectorAll('.quran-navigation-ayahs a')).find(a=>a.textContent==='255');
@@ -151,5 +155,26 @@ test('only broad navigation tabs request a passage destination', async () => {
     const link = doc.querySelector(tab === 'ayah' ? '.quran-navigation-ayahs a' : '.quran-navigation-list a');
     expect(new URL(link.href).searchParams.get('destination')).toBe(tab === 'ayah' ? null : 'passage');
   }
+  dom.window.close();
+});
+
+test('cached tab markup gains Quran bar styling and tracks the active tab', async () => {
+  const {doc,dom} = await browser(undefined, true);
+  expect(doc.querySelector('.quran-navigation-tabs').classList.contains('btn-group')).toBe(true);
+  expect(doc.querySelectorAll('.quran-navigation-tabs .btn.btn-outline-secondary')).toHaveLength(5);
+  expect(doc.querySelector('.quran-navigation-tabs .active').dataset.navigationTab).toBe('surah');
+  doc.querySelector('[data-navigation-tab="surah"]').click();
+  expect(doc.querySelectorAll('.quran-navigation-tabs .active')).toHaveLength(1);
+  expect(doc.querySelector('.quran-navigation-tabs .active').dataset.navigationTab).toBe('surah');
+  dom.window.close();
+});
+
+test.each(['ayah', 'manzil', 'juz', 'page'])('generic reopening defaults to Surah after using %s', async previous => {
+  const {doc,dom,rail} = await browser();
+  doc.querySelector(`[data-navigation-tab="${previous}"]`).click();
+  rail.dispatchEvent(new dom.window.Event('show.bs.offcanvas'));
+  expect(doc.querySelector('.quran-navigation-tabs .active').dataset.navigationTab).toBe('surah');
+  expect(doc.querySelector('.quran-navigation-content').getAttribute('aria-labelledby')).toBe('quran-navigation-tab-surah');
+  expect(doc.querySelector('.quran-navigation-ayahs')).toBeNull();
   dom.window.close();
 });
