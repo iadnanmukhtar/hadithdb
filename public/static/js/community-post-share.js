@@ -12,15 +12,16 @@
     return node;
   }
   function preview(data) {
-    const link = element('a', '', 'community-link-card');
+    const link = element('a', '', 'community-link-card' + (data.source && data.imageKind !== 'icon' ? ' community-source-preview' : ''));
     link.href = source.url; link.target = '_blank'; link.rel = 'noopener';
-    if (data.image && /^https:\/\//.test(data.image)) {
+    if (data.image && (/^https:\/\//.test(data.image) || (new URL(data.image,source.url).origin === new URL(source.url).origin || new URL(data.image,location.href).origin === location.origin))) {
       const image = element('img'); image.src = data.image; image.alt = ''; image.referrerPolicy = 'no-referrer';
       image.addEventListener('error', () => image.remove(), {once:true}); link.append(image);
     }
     const copy = element('span', '', 'community-link-copy');
-    copy.append(element('small', new URL(source.url).hostname), element('strong', data.title || source.title));
-    if (data.description) copy.append(element('span', data.description));
+    const title = element('strong', data.title || source.title); title.dir = 'auto';
+    copy.append(element('small', new URL(source.url).hostname), title);
+    if (data.description) {const summary=element('span',data.description);summary.dir='auto';copy.append(summary);}
     link.append(copy); $('preview').replaceChildren(link);
   }
   function setBusy(value) {
@@ -60,7 +61,7 @@
     const own = revision;
     fetch(quranApiPath('/community/link-preview')+'?url='+encodeURIComponent(source.url), {cache:'no-store'})
       .then(async response => { if(!response.ok) return; const data=await response.json(); if(own!==revision || !source)return;
-        preview({title:data.title && data.title!==new URL(source.url).hostname ? data.title : source.title,description:source.description || data.description,image:data.image});
+        preview({title:data.title && data.title!==new URL(source.url).hostname ? data.title : source.title,description:data.description || source.description,image:data.image,imageKind:data.imageKind,source:data.source});
       }).catch(() => { /* Keep the source title and excerpt already on screen. */ });
   }
   dialog.querySelectorAll('[data-community-share-close]').forEach(button => button.addEventListener('click',close));

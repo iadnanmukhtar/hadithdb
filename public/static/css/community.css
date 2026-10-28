@@ -229,7 +229,7 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-link-preview { margin-block: .75rem; overflow: hidden; border: 1px solid var(--community-line); border-radius: .6rem; }
 .community-link-card { display: flex; color: inherit; text-decoration: none; }
 .community-link-card > img { width: 120px; min-width: 0; object-fit: cover; border-radius: 0 !important; }
-.community-link-copy { display: grid; padding: .8rem; gap: .25rem; min-width: 0; }
+.community-link-copy { display: grid; flex: 1; padding: .8rem; gap: .25rem; min-width: 0; }
 .community-link-copy small { color: var(--community-muted); font-size: .65rem; }
 .community-link-copy strong { font-size: .9rem; }
 .community-link-copy > span { font-size: .75rem; color: var(--community-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -310,3 +310,26 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-share-dialog textarea { display:block; width:100%; min-height:140px; max-height:280px; border:0; padding:.8rem 0; resize:vertical; font:inherit; color:var(--community-ink); background:transparent; }
 .community-share-dialog textarea:focus-visible { outline:none; }
 .community-share-dialog .community-link-preview { margin:0 0 1rem; }
+
+.community-link-card.community-source-preview { flex-direction: column; }
+.community-link-card.community-source-preview > img { width:100%; max-height:280px; aspect-ratio:1200/630; object-fit:contain; background:#193957; }
+.community-source-preview .community-link-copy { gap:.4rem; }
+.community-source-preview .community-link-copy > span { -webkit-line-clamp:3; }
+
+/* External thumbnails keep their own column instead of shrinking behind the copy. */
+.community-link-card:not(.community-source-preview):not(.community-blog-preview) > img {
+  flex: 0 0 120px;
+  width: 120px;
+  height: 120px;
+  align-self: center;
+  object-fit: contain;
+  object-position: center;
+  padding: .5rem;
+}
+@media (max-width:575px) {
+  .community-link-card:not(.community-source-preview):not(.community-blog-preview) > img {
+    flex-basis: 80px;
+    width: 80px;
+    height: 80px;
+  }
+}
